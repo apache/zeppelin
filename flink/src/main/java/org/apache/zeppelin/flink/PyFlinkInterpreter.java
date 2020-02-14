@@ -17,7 +17,7 @@
 
 package org.apache.zeppelin.flink;
 
-import org.apache.zeppelin.interpreter.BaseZeppelinContext;
+import org.apache.zeppelin.interpreter.ZeppelinContext;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.python.IPythonInterpreter;
@@ -136,7 +136,7 @@ public class PyFlinkInterpreter extends PythonInterpreter {
   }
 
   @Override
-  public BaseZeppelinContext getZeppelinContext() {
+  public ZeppelinContext getZeppelinContext() {
     return flinkInterpreter.getZeppelinContext();
   }
 

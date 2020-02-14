@@ -33,7 +33,7 @@ public abstract class AbstractInterpreter extends Interpreter {
   public InterpreterResult interpret(String st,
                                      InterpreterContext context) throws InterpreterException {
     InterpreterContext.set(context);
-    BaseZeppelinContext z = getZeppelinContext();
+    ZeppelinContext z = getZeppelinContext();
     if (z != null) {
       z.setGui(context.getGui());
       z.setNoteGui(context.getNoteGui());
@@ -47,7 +47,7 @@ public abstract class AbstractInterpreter extends Interpreter {
     return internalInterpret(st, context);
   }
 
-  public abstract BaseZeppelinContext getZeppelinContext();
+  public abstract ZeppelinContext getZeppelinContext();
 
   protected boolean isInterpolate() {
     return false;

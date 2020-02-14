@@ -19,7 +19,7 @@ package org.apache.zeppelin.spark;
 
 import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.zeppelin.interpreter.BaseZeppelinContext;
+import org.apache.zeppelin.interpreter.ZeppelinContext;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
@@ -150,7 +150,7 @@ public class SparkRInterpreter extends RInterpreter {
   }
 
   @Override
-  public BaseZeppelinContext getZeppelinContext() {
+  public ZeppelinContext getZeppelinContext() {
     return sparkInterpreter.getZeppelinContext();
   }
 

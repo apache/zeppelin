@@ -26,7 +26,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.interpreter.AbstractInterpreter;
-import org.apache.zeppelin.interpreter.BaseZeppelinContext;
+import org.apache.zeppelin.interpreter.ZeppelinContext;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
@@ -67,7 +67,7 @@ public class JupyterKernelInterpreter extends AbstractInterpreter {
 
   private JupyterKernelProcessLauncher jupyterKernelProcessLauncher;
   protected JupyterKernelClient jupyterKernelClient;
-  protected BaseZeppelinContext z;
+  protected ZeppelinContext z;
 
   private String kernel;
   // working directory of jupyter kernel
@@ -99,7 +99,7 @@ public class JupyterKernelInterpreter extends AbstractInterpreter {
     return requiredPackages;
   }
 
-  protected BaseZeppelinContext buildZeppelinContext() {
+  protected ZeppelinContext buildZeppelinContext() {
     return new JupyterZeppelinContext(null, 1000);
   }
 
@@ -309,7 +309,7 @@ public class JupyterKernelInterpreter extends AbstractInterpreter {
     return completions;
   }
 
-  public BaseZeppelinContext getZeppelinContext() {
+  public ZeppelinContext getZeppelinContext() {
     return z;
   }
 

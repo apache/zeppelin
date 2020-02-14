@@ -20,7 +20,7 @@ package org.apache.zeppelin.python;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.zeppelin.interpreter.BaseZeppelinContext;
+import org.apache.zeppelin.interpreter.ZeppelinContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.jupyter.proto.ExecuteRequest;
 import org.apache.zeppelin.interpreter.jupyter.proto.ExecuteResponse;
@@ -98,7 +98,7 @@ public class IPythonInterpreter extends JupyterKernelInterpreter {
   }
 
   @Override
-  public BaseZeppelinContext buildZeppelinContext() {
+  public ZeppelinContext buildZeppelinContext() {
     return new PythonZeppelinContext(
         getInterpreterGroup().getInterpreterHookRegistry(),
         Integer.parseInt(getProperty("zeppelin.python.maxResult", "1000")));

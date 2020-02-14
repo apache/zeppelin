@@ -33,16 +33,15 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
 /**
- * Base class for ZeppelinContext
+ * Abstract class for ZeppelinContext
  */
-public abstract class BaseZeppelinContext {
+public abstract class ZeppelinContext {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(BaseZeppelinContext.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(ZeppelinContext.class);
 
   protected InterpreterContext interpreterContext;
   protected int maxResult;
@@ -50,7 +49,7 @@ public abstract class BaseZeppelinContext {
   protected GUI gui;
   protected GUI noteGui;
 
-  public BaseZeppelinContext(InterpreterHookRegistry hooks, int maxResult) {
+  public ZeppelinContext(InterpreterHookRegistry hooks, int maxResult) {
     this.hooks = hooks;
     this.maxResult = maxResult;
   }

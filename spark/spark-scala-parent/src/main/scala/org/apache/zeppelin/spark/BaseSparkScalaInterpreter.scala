@@ -27,7 +27,7 @@ import org.apache.commons.lang3.StringUtils
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.zeppelin.interpreter.util.InterpreterOutputStream
-import org.apache.zeppelin.interpreter.{BaseZeppelinContext, InterpreterContext, InterpreterGroup, InterpreterResult}
+import org.apache.zeppelin.interpreter.{ZeppelinContext, InterpreterContext, InterpreterGroup, InterpreterResult}
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.collection.JavaConverters._
@@ -159,7 +159,7 @@ abstract class BaseSparkScalaInterpreter(val conf: SparkConf,
 
   override def getSparkUrl: String = sparkUrl
 
-  override def getZeppelinContext: BaseZeppelinContext = z
+  override def getZeppelinContext: ZeppelinContext = z
 
   protected def bind(name: String, tpe: String, value: Object, modifier: List[String]): Unit
 

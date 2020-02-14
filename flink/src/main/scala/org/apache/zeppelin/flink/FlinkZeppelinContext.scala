@@ -28,7 +28,7 @@ import org.apache.zeppelin.annotation.ZeppelinApi
 import org.apache.zeppelin.display.AngularObjectWatcher
 import org.apache.zeppelin.display.ui.OptionInput.ParamOption
 import org.apache.zeppelin.flink.util.TableUtil
-import org.apache.zeppelin.interpreter.{BaseZeppelinContext, InterpreterContext, InterpreterHookRegistry, ResultMessages}
+import org.apache.zeppelin.interpreter.{ZeppelinContext, InterpreterContext, InterpreterHookRegistry, ResultMessages}
 
 import scala.collection.{JavaConversions, Seq}
 
@@ -38,7 +38,7 @@ import scala.collection.{JavaConversions, Seq}
   */
 class FlinkZeppelinContext(val btenv: TableEnvironment,
                            val hooks2: InterpreterHookRegistry,
-                           val maxResult2: Int) extends BaseZeppelinContext(hooks2, maxResult2) {
+                           val maxResult2: Int) extends ZeppelinContext(hooks2, maxResult2) {
 
   private var currentSql: String = _
 
