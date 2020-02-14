@@ -21,7 +21,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.sql.SQLContext;
-import org.apache.zeppelin.interpreter.BaseZeppelinContext;
+import org.apache.zeppelin.interpreter.ZeppelinContext;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
@@ -118,7 +118,7 @@ public class PySparkInterpreter extends PythonInterpreter {
   }
 
   @Override
-  protected BaseZeppelinContext createZeppelinContext() {
+  protected ZeppelinContext createZeppelinContext() {
     return sparkInterpreter.getZeppelinContext();
   }
 
@@ -165,7 +165,7 @@ public class PySparkInterpreter extends PythonInterpreter {
     return "python";
   }
 
-  public BaseZeppelinContext getZeppelinContext() {
+  public ZeppelinContext getZeppelinContext() {
     if (sparkInterpreter != null) {
       return sparkInterpreter.getZeppelinContext();
     } else {

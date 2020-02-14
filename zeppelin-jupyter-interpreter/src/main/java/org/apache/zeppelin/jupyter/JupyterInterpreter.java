@@ -19,7 +19,7 @@
 package org.apache.zeppelin.jupyter;
 
 import org.apache.zeppelin.interpreter.AbstractInterpreter;
-import org.apache.zeppelin.interpreter.BaseZeppelinContext;
+import org.apache.zeppelin.interpreter.ZeppelinContext;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
@@ -45,7 +45,7 @@ public class JupyterInterpreter extends AbstractInterpreter {
   }
 
   @Override
-  public BaseZeppelinContext getZeppelinContext() {
+  public ZeppelinContext getZeppelinContext() {
     return new JupyterZeppelinContext(getInterpreterGroup().getInterpreterHookRegistry(), 1000);
   }
 

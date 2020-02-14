@@ -17,7 +17,7 @@
 
 package org.apache.zeppelin.python;
 
-import org.apache.zeppelin.interpreter.BaseZeppelinContext;
+import org.apache.zeppelin.interpreter.ZeppelinContext;
 import org.apache.zeppelin.interpreter.InterpreterHookRegistry;
 
 import java.util.List;
@@ -26,7 +26,7 @@ import java.util.Map;
 /**
  * ZeppelinContext for Python
  */
-public class PythonZeppelinContext extends BaseZeppelinContext {
+public class PythonZeppelinContext extends ZeppelinContext {
 
   public PythonZeppelinContext(InterpreterHookRegistry hooks, int maxResult) {
     super(hooks, maxResult);

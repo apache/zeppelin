@@ -35,7 +35,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import scala.Console;
-import org.apache.zeppelin.interpreter.BaseZeppelinContext;
+import org.apache.zeppelin.interpreter.ZeppelinContext;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
@@ -53,7 +53,7 @@ public class KotlinSparkInterpreter extends Interpreter {
   private InterpreterResult unsupportedMessage;
   private KotlinInterpreter interpreter;
   private SparkInterpreter sparkInterpreter;
-  private BaseZeppelinContext z;
+  private ZeppelinContext z;
   private JavaSparkContext jsc;
 
   public KotlinSparkInterpreter(Properties properties) {

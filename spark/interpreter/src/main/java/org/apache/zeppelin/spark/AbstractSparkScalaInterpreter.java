@@ -19,7 +19,7 @@ package org.apache.zeppelin.spark;
 
 import org.apache.spark.SparkContext;
 import org.apache.spark.sql.SQLContext;
-import org.apache.zeppelin.interpreter.BaseZeppelinContext;
+import org.apache.zeppelin.interpreter.ZeppelinContext;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
@@ -42,7 +42,7 @@ public abstract class AbstractSparkScalaInterpreter {
 
   public abstract String getSparkUrl();
 
-  public abstract BaseZeppelinContext getZeppelinContext();
+  public abstract ZeppelinContext getZeppelinContext();
 
   public int getProgress(InterpreterContext context) throws InterpreterException {
     return getProgress(Utils.buildJobGroupId(context), context);
