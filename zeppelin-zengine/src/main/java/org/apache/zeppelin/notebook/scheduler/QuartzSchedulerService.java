@@ -76,24 +76,32 @@ public class QuartzSchedulerService implements SchedulerService {
     try {
       note = notebook.getNote(noteId);
     } catch (IOException e) {
-      LOGGER.warn("Fail to get note: " + noteId, e);
+      LOGGER.warn("Skip refresh cron of note: " + noteId + " because fail to get it", e);
       return;
     }
-    if (note == null || note.isTrash()) {
+    if (note == null) {
+      LOGGER.warn("Skip refresh cron of note: " + noteId + " because there's no such note");
       return;
     }
+    if (note.isTrash()) {
+      LOGGER.warn("Skip refresh cron of note: " + noteId + " because it is in trash");
+      return;
+    }
+
     Map<String, Object> config = note.getConfig();
     if (config == null) {
+      LOGGER.warn("Skip refresh cron of note: " + noteId + " because its config is empty.");
       return;
     }
 
     if (!note.isCronSupported(zeppelinConfiguration)) {
-      LOGGER.warn("execution of the cron job is skipped cron is not enabled from Zeppelin server");
+      LOGGER.warn("Skip refresh cron of note " + noteId + " because its cron is not enabled.");
       return;
     }
 
     String cronExpr = (String) note.getConfig().get("cron");
     if (cronExpr == null || cronExpr.trim().length() == 0) {
+      LOGGER.warn("Skip refresh cron of note " + noteId + " because its cron expression is empty.");
       return;
     }
 
@@ -122,16 +130,17 @@ public class QuartzSchedulerService implements SchedulerService {
               .forJob(noteId, "note")
               .build();
     } catch (Exception e) {
-      LOGGER.error("Error", e);
+      LOGGER.error("Fail to create cron trigger for note: " + note.getName(), e);
       info.put("cron", e.getMessage());
     }
 
     try {
       if (trigger != null) {
+        LOGGER.info("Trigger cron for note: " + note.getName() + ", with cron expression: " + cronExpr);
         scheduler.scheduleJob(newJob, trigger);
       }
     } catch (SchedulerException e) {
-      LOGGER.error("Error", e);
+      LOGGER.error("Fail to schedule cron job for note: " + note.getName(), e);
       info.put("cron", "Scheduler Exception");
     }
   }
