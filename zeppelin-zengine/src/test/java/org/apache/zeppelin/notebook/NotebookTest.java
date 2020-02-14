@@ -1550,23 +1550,6 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     }
   }
 
-
-
-  @Override
-  public void onOutputAppend(Paragraph paragraph, int idx, String output) {
-
-  }
-
-  @Override
-  public void onOutputUpdate(Paragraph paragraph, int idx, InterpreterResultMessage msg) {
-
-  }
-
-  @Override
-  public void onOutputUpdateAll(Paragraph paragraph, List<InterpreterResultMessage> msgs) {
-
-  }
-
   @Override
   public void noteRunningStatusChange(String noteId, boolean newStatus) {
 
