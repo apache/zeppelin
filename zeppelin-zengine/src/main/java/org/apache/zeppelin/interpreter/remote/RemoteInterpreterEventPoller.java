@@ -261,6 +261,9 @@ public class RemoteInterpreterEventPoller extends Thread {
     }
     if (appendFuture != null) {
       appendFuture.cancel(true);
+      //Close thread pool
+      appendService.shutdown();
+
     }
   }
 
