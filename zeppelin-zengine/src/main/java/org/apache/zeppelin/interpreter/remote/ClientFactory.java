@@ -45,7 +45,6 @@ public class ClientFactory extends BasePooledObjectFactory<Client>{
   }
 
   public void close() {
-
     //Close transfer
     for (TSocket eachTransfer: clientSocketMap.values()) {
       eachTransfer.close();
