@@ -19,12 +19,11 @@ package org.apache.zeppelin.interpreter.remote;
 import com.google.gson.Gson;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.thrift.TException;
-import org.apache.zeppelin.helium.ApplicationEventListener;
-import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.launcher.InterpreterClient;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService.Client;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 
 /**
  * Abstract class for interpreter process
@@ -36,6 +35,7 @@ public abstract class RemoteInterpreterProcess implements InterpreterClient {
   private RemoteInterpreterEventPoller remoteInterpreterEventPoller;
   private final InterpreterContextRunnerPool interpreterContextRunnerPool;
   private int connectTimeout;
+  private ClientFactory clientFactory = null;
 
   public RemoteInterpreterProcess(
       int connectTimeout) {
@@ -51,13 +51,22 @@ public abstract class RemoteInterpreterProcess implements InterpreterClient {
     this.remoteInterpreterEventPoller = eventPoller;
   }
 
+  public void shutdown() {
+
+    // Close client socket connection
+    if (clientFactory != null) {
+      clientFactory.close();
+    }
+  }
+
   public int getConnectTimeout() {
     return connectTimeout;
   }
 
   public synchronized Client getClient() throws Exception {
     if (clientPool == null || clientPool.isClosed()) {
-      clientPool = new GenericObjectPool<>(new ClientFactory(getHost(), getPort()));
+      clientFactory = new ClientFactory(getHost(), getPort());
+      clientPool = new GenericObjectPool<>(clientFactory);
     }
     return clientPool.borrowObject();
   }
