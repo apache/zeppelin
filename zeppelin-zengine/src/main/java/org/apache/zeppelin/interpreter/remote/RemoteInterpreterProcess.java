@@ -19,14 +19,11 @@ package org.apache.zeppelin.interpreter.remote;
 import com.google.gson.Gson;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.thrift.TException;
-import org.apache.thrift.transport.TSocket;
-import org.apache.zeppelin.helium.ApplicationEventListener;
-import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.launcher.InterpreterClient;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService.Client;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import sun.font.TextSource;
+
 
 /**
  * Abstract class for interpreter process
@@ -54,16 +51,11 @@ public abstract class RemoteInterpreterProcess implements InterpreterClient {
     this.remoteInterpreterEventPoller = eventPoller;
   }
 
-  public void shutdown()
-  {
+  public void shutdown() {
 
     // Close client socket connection
-    if (clientFactory != null)
-    {
-      for (TSocket eachTransfer: clientFactory.clientSocketMap.values())
-      {
-        eachTransfer.close();
-      }
+    if (clientFactory != null) {
+      clientFactory.close();
     }
   }
 
