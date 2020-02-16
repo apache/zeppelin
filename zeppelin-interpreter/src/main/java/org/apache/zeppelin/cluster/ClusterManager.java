@@ -131,7 +131,7 @@ import static org.apache.zeppelin.cluster.meta.ClusterMetaType.INTP_PROCESS_META
 public abstract class ClusterManager {
   private static Logger LOGGER = LoggerFactory.getLogger(ClusterManager.class);
 
-  public final ZeppelinConfiguration zconf = ZeppelinConfiguration.create();
+  public ZeppelinConfiguration zConf;
 
   protected Collection<Node> clusterNodes = new ArrayList<>();
 
@@ -157,10 +157,11 @@ public abstract class ClusterManager {
 
   protected boolean isTest = false;
 
-  public ClusterManager() {
+  public ClusterManager(ZeppelinConfiguration zConf) {
     try {
+      this.zConf = zConf;
       zeplServerHost = RemoteInterpreterUtils.findAvailableHostAddress();
-      String clusterAddr = zconf.getClusterAddress();
+      String clusterAddr = this.zConf.getClusterAddress();
       if (!StringUtils.isEmpty(clusterAddr)) {
         String cluster[] = clusterAddr.split(",");
 
@@ -179,13 +180,14 @@ public abstract class ClusterManager {
           raftAddressMap.put(MemberId.from(memberId), address);
           clusterMemberIds.add(MemberId.from(memberId));
         }
+      } else {
+        throw new RuntimeException("No zeppelin.cluster.addr specified in zeppelin-site.xml");
       }
     } catch (UnknownHostException e) {
       LOGGER.error(e.getMessage());
     } catch (SocketException e) {
       LOGGER.error(e.getMessage());
     }
-
   }
 
   // Check if the raft environment is initialized
@@ -208,7 +210,7 @@ public abstract class ClusterManager {
   }
 
   public void start() {
-    if (!zconf.isClusterMode()) {
+    if (!zConf.isClusterMode()) {
       return;
     }
 
@@ -294,7 +296,7 @@ public abstract class ClusterManager {
 
   // cluster shutdown
   public void shutdown() {
-    if (!zconf.isClusterMode()) {
+    if (!zConf.isClusterMode()) {
       return;
     }
 

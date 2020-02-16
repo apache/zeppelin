@@ -17,6 +17,7 @@
 package org.apache.zeppelin.cluster;
 
 import io.atomix.primitive.PrimitiveState;
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
 
 import static org.apache.zeppelin.cluster.meta.ClusterMetaType.INTP_PROCESS_META;
 
@@ -26,17 +27,17 @@ import static org.apache.zeppelin.cluster.meta.ClusterMetaType.INTP_PROCESS_META
 public class ClusterManagerClient extends ClusterManager {
   private static ClusterManagerClient instance = null;
 
-  public static ClusterManagerClient getInstance() {
+  public static ClusterManagerClient getInstance(ZeppelinConfiguration zConf) {
     synchronized (ClusterManagerClient.class) {
       if (instance == null) {
-        instance = new ClusterManagerClient();
+        instance = new ClusterManagerClient(zConf);
       }
       return instance;
     }
   }
 
-  public ClusterManagerClient() {
-    super();
+  public ClusterManagerClient(ZeppelinConfiguration zConf) {
+    super(zConf);
   }
 
   @Override
@@ -56,7 +57,7 @@ public class ClusterManagerClient extends ClusterManager {
 
   // In the ClusterManagerClient metaKey equal interperterGroupId
   public void start(String metaKey) {
-    if (!zconf.isClusterMode()) {
+    if (!zConf.isClusterMode()) {
       return;
     }
     super.start();
@@ -67,11 +68,12 @@ public class ClusterManagerClient extends ClusterManager {
   }
 
   public void shutdown() {
-    if (!zconf.isClusterMode()) {
+    if (!zConf.isClusterMode()) {
       return;
     }
     clusterMonitor.shutdown();
 
     super.shutdown();
+    instance = null;
   }
 }

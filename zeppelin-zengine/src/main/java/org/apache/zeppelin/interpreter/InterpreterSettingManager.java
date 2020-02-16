@@ -1143,7 +1143,7 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
     ClusterMessage message = new ClusterMessage(event);
     message.put("intpSetting", jsonIntpSetting);
     String msg = ClusterMessage.serializeMessage(message);
-    ClusterManagerServer.getInstance().broadcastClusterEvent(
+    ClusterManagerServer.getInstance(conf).broadcastClusterEvent(
         CLUSTER_INTP_SETTING_EVENT_TOPIC, msg);
   }
 

@@ -173,7 +173,6 @@ public class ZeppelinServerMock {
       LOG.info("ZeppelinServerMock shutDown...");
       ZeppelinServer.jettyWebServer.stop();
       executor.shutdown();
-      PluginManager.reset();
       System.clearProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HOME.getVarName());
       System.clearProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_WAR.getVarName());
       System.clearProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_CONF_DIR.getVarName());
@@ -194,7 +193,8 @@ public class ZeppelinServerMock {
         throw new RuntimeException("Can not stop Zeppelin server");
       }
 
-      ClusterManagerServer clusterManagerServer = ClusterManagerServer.getInstance();
+      ClusterManagerServer clusterManagerServer =
+              ClusterManagerServer.getInstance(ZeppelinConfiguration.create());
       clusterManagerServer.shutdown();
 
       LOG.info("ZeppelinServerMock terminated.");
@@ -202,6 +202,9 @@ public class ZeppelinServerMock {
       if (deleteConfDir) {
         FileUtils.deleteDirectory(confDir);
       }
+      PluginManager.reset();
+      ZeppelinConfiguration.reset();
+      ZeppelinServer.reset();
     }
   }
 

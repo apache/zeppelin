@@ -671,7 +671,7 @@ public class NotebookServer extends WebSocketServlet
     }
 
     String msg = ClusterMessage.serializeMessage(clusterMessage);
-    ClusterManagerServer.getInstance().broadcastClusterEvent(
+    ClusterManagerServer.getInstance(conf).broadcastClusterEvent(
         ClusterManagerServer.CLUSTER_NOTE_EVENT_TOPIC, msg);
   }
 

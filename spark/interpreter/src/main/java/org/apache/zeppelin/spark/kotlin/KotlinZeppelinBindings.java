@@ -25,15 +25,15 @@ public class KotlinZeppelinBindings {
   //Simpler Kotlin syntax for z.select
   public static final String Z_SELECT_KOTLIN_SYNTAX =
       "import org.apache.zeppelin.display.ui.OptionInput.ParamOption\n" +
-      "import org.apache.zeppelin.interpreter.BaseZeppelinContext\n" +
+      "import org.apache.zeppelin.interpreter.ZeppelinContext\n" +
       "\n" +
-      "fun BaseZeppelinContext.select(name: String, defaultValue: Any?, " +
+      "fun ZeppelinContext.select(name: String, defaultValue: Any?, " +
           "options: List<Pair<Any?, String>>): Any? {\n" +
       "    return select(name, defaultValue, " +
           "options.map{ ParamOption(it.first, it.second) }.toTypedArray())\n" +
       "}\n" +
       "\n" +
-      "fun BaseZeppelinContext.select(name: String, options: List<Pair<Any?, String>>): Any? {\n" +
+      "fun ZeppelinContext.select(name: String, options: List<Pair<Any?, String>>): Any? {\n" +
       "    return select(name, \"\", options)\n" +
       "}";
 

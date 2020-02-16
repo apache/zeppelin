@@ -102,7 +102,13 @@ public class ZeppelinServer extends ResourceConfig {
   public static Server jettyWebServer;
   public static ServiceLocator sharedServiceLocator;
 
-  private static ZeppelinConfiguration conf = ZeppelinConfiguration.create();
+  private static ZeppelinConfiguration conf;
+
+  public static void reset() {
+    conf = null;
+    jettyWebServer = null;
+    sharedServiceLocator = null;
+  }
 
   @Inject
   public ZeppelinServer() {
@@ -112,7 +118,7 @@ public class ZeppelinServer extends ResourceConfig {
   }
 
   public static void main(String[] args) throws InterruptedException {
-    final ZeppelinConfiguration conf = ZeppelinConfiguration.create();
+    ZeppelinServer.conf = ZeppelinConfiguration.create();
     conf.setProperty("args", args);
 
     jettyWebServer = setupJettyServer(conf);
@@ -346,7 +352,8 @@ public class ZeppelinServer extends ResourceConfig {
 
   private static void setupClusterManagerServer(ServiceLocator serviceLocator) {
     if (conf.isClusterMode()) {
-      ClusterManagerServer clusterManagerServer = ClusterManagerServer.getInstance();
+      LOG.info("Cluster mode is enabled, starting ClusterManagerServer");
+      ClusterManagerServer clusterManagerServer = ClusterManagerServer.getInstance(conf);
 
       NotebookServer notebookServer = serviceLocator.getService(NotebookServer.class);
       clusterManagerServer.addClusterEventListeners(ClusterManagerServer.CLUSTER_NOTE_EVENT_TOPIC, notebookServer);
@@ -373,6 +380,8 @@ public class ZeppelinServer extends ResourceConfig {
       }
 
       clusterManagerServer.start();
+    } else {
+      LOG.info("Cluster mode is disabled");
     }
   }
 

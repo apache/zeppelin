@@ -141,8 +141,8 @@ public class RemoteInterpreterServer extends Thread
   private boolean isTest;
 
   // cluster manager client
-  ClusterManagerClient clusterManagerClient = ClusterManagerClient.getInstance();
   ZeppelinConfiguration zconf = ZeppelinConfiguration.create();
+  ClusterManagerClient clusterManagerClient;
 
   public RemoteInterpreterServer(String intpEventServerHost,
                                  int intpEventServerPort,
@@ -191,7 +191,10 @@ public class RemoteInterpreterServer extends Thread
         new TThreadPoolServer.Args(serverTransport).processor(processor));
     remoteWorksResponsePool = Collections.synchronizedMap(new HashMap<String, Object>());
 
-    clusterManagerClient.start(interpreterGroupId);
+    if (zconf.isClusterMode()) {
+      clusterManagerClient = ClusterManagerClient.getInstance(zconf);
+      clusterManagerClient.start(interpreterGroupId);
+    }
   }
 
   @Override

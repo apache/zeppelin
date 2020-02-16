@@ -180,6 +180,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return conf;
   }
 
+  public static void reset() {
+    conf = null;
+  }
+
   private String getStringValue(String name, String d) {
     String value = this.properties.get(name);
     if (value != null) {
