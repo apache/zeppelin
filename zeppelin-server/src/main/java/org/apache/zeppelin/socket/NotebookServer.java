@@ -1174,13 +1174,16 @@ public class NotebookServer extends WebSocketServlet
   }
 
   protected void convertNote(NotebookSocket conn, Message fromMessage) throws IOException {
-    String note = gson.toJson(fromMessage.get("note"));
-
-    Message resp = new Message(OP.CONVERT_NOTE_NBFORMAT)
-            .put("nbformat", new JupyterUtil().getNbformat(note))
-            .put("name", fromMessage.get("name"));
-
-    conn.send(serializeMessage(resp));
+    String noteId = fromMessage.get("noteId").toString();
+    Note note = getNotebook().getNote(noteId);
+    if (note == null) {
+      throw new IOException("No such note: " + noteId);
+    } else {
+      Message resp = new Message(OP.CONVERTED_NOTE_NBFORMAT)
+              .put("nbformat", new JupyterUtil().getNbformat(note.toJson()))
+              .put("name", fromMessage.get("name"));
+      conn.send(serializeMessage(resp));
+    }
   }
 
   protected Note importNote(NotebookSocket conn, Message fromMessage) throws IOException {

@@ -270,12 +270,12 @@ function WebsocketMessageService($rootScope, websocketEvents) {
       });
     },
 
-    convertNote: function(note, name) {
+    convertNote: function(noteId, noteName) {
       websocketEvents.sendNewEvent({
         op: 'CONVERT_NOTE_NBFORMAT',
         data: {
-          note: note,
-          name: name,
+          noteId: noteId,
+          noteName: noteName,
         },
       });
     },
