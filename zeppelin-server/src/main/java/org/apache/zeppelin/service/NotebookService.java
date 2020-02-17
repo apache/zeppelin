@@ -344,6 +344,42 @@ public class NotebookService {
     }
   }
 
+  public boolean runNote(String noteId,
+                      ServiceContext context,
+                      ServiceCallback<Paragraph> callback) throws IOException {
+    if (!checkPermission(noteId, Permission.RUNNER, Message.OP.RUN_ALL_PARAGRAPHS, context,
+            callback)) {
+      return false;
+    }
+
+    Note note = notebook.getNote(noteId);
+    if (note == null) {
+      callback.onFailure(new NoteNotFoundException(noteId), context);
+      return false;
+    }
+
+    note.setRunning(true);
+    try {
+      for (Paragraph p : note.getParagraphs()) {
+        String paragraphId = p.getId();
+        String text = p.getText();
+        String title = p.getTitle();
+        Map<String, Object> params = p.settings.getParams();
+        Map<String, Object> config = p.getConfig();
+
+        if (!runParagraph(noteId, paragraphId, title, text, params, config, false, true,
+                context, callback)) {
+          // stop execution when one paragraph fails.
+          return false;
+        }
+      }
+    } finally {
+      note.setRunning(false);
+    }
+
+    return true;
+  }
+
   public void runAllParagraphs(String noteId,
                                List<Map<String, Object>> paragraphs,
                                ServiceContext context,

@@ -16,9 +16,12 @@
  */
 package org.apache.zeppelin.server;
 
+import com.google.gson.Gson;
 import java.io.File;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
+import java.util.Base64;
+import java.util.HashSet;
 import java.util.List;
 import java.util.EnumSet;
 import java.util.Objects;
@@ -30,6 +33,7 @@ import javax.servlet.DispatcherType;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import org.apache.commons.lang.StringUtils;
+import org.apache.directory.api.util.Strings;
 import org.apache.shiro.web.env.EnvironmentLoaderListener;
 import org.apache.shiro.web.servlet.ShiroFilter;
 import org.apache.zeppelin.cluster.ClusterManagerServer;
@@ -49,6 +53,7 @@ import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
 import org.apache.zeppelin.notebook.NoteEventListener;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.AuthorizationService;
+import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.notebook.repo.NotebookRepoSync;
 import org.apache.zeppelin.notebook.scheduler.NoSchedulerService;
@@ -61,6 +66,7 @@ import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.service.*;
 import org.apache.zeppelin.service.AuthenticationService;
 import org.apache.zeppelin.socket.NotebookServer;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
 import org.apache.zeppelin.util.ReflectionUtils;
 import org.eclipse.jetty.http.HttpVersion;
@@ -117,7 +123,7 @@ public class ZeppelinServer extends ResourceConfig {
     packages("org.apache.zeppelin.rest");
   }
 
-  public static void main(String[] args) throws InterruptedException {
+  public static void main(String[] args) throws InterruptedException, IOException {
     ZeppelinServer.conf = ZeppelinConfiguration.create();
     conf.setProperty("args", args);
 
@@ -254,23 +260,9 @@ public class ZeppelinServer extends ResourceConfig {
     }
     LOG.info("Done, zeppelin server started");
 
-    Runtime.getRuntime()
-        .addShutdownHook(
-            new Thread(
-                () -> {
-                  LOG.info("Shutting down Zeppelin Server ... ");
-                  try {
-                    jettyWebServer.stop();
-                    if (!conf.isRecoveryEnabled()) {
-                      sharedServiceLocator.getService(InterpreterSettingManager.class).close();
-                    }
-                    sharedServiceLocator.getService(Notebook.class).close();
-                    Thread.sleep(3000);
-                  } catch (Exception e) {
-                    LOG.error("Error while stopping servlet container", e);
-                  }
-                  LOG.info("Bye");
-                }));
+    runNoteOnStart(conf);
+
+    Runtime.getRuntime().addShutdownHook(shutdown(conf));
 
     // when zeppelin is started inside of ide (especially for eclipse)
     // for graceful shutdown, input any key in console window
@@ -287,6 +279,24 @@ public class ZeppelinServer extends ResourceConfig {
     if (!conf.isRecoveryEnabled()) {
       sharedServiceLocator.getService(InterpreterSettingManager.class).close();
     }
+  }
+
+  private static Thread shutdown(ZeppelinConfiguration conf) {
+    return new Thread(
+            () -> {
+              LOG.info("Shutting down Zeppelin Server ... ");
+              try {
+                jettyWebServer.stop();
+                if (!conf.isRecoveryEnabled()) {
+                  sharedServiceLocator.getService(InterpreterSettingManager.class).close();
+                }
+                sharedServiceLocator.getService(Notebook.class).close();
+                Thread.sleep(3000);
+              } catch (Exception e) {
+                LOG.error("Error while stopping servlet container", e);
+              }
+              LOG.info("Bye");
+            });
   }
 
   private static Server setupJettyServer(ZeppelinConfiguration conf) {
@@ -330,6 +340,46 @@ public class ZeppelinServer extends ResourceConfig {
     connector.setIdleTimeout(timeout);
     connector.setHost(conf.getServerAddress());
     server.addConnector(connector);
+  }
+
+  private static void runNoteOnStart(ZeppelinConfiguration conf) throws IOException, InterruptedException {
+    String noteIdToRun = conf.getNotebookRunId();
+    if (!Strings.isEmpty(noteIdToRun)) {
+      NotebookService notebookService = (NotebookService) ServiceLocatorUtilities.getService(
+              sharedServiceLocator, NotebookService.class.getName());
+
+      ServiceContext serviceContext;
+      String base64EncodedJsonSerializedServiceContext = conf.getNotebookRunServiceContext();
+      if (Strings.isEmpty(base64EncodedJsonSerializedServiceContext)) {
+        LOG.info("No service context provided. use ANONYMOUS");
+        serviceContext = new ServiceContext(AuthenticationInfo.ANONYMOUS, new HashSet<String>() {});
+      } else {
+        serviceContext = new Gson().fromJson(
+                new String(Base64.getDecoder().decode(base64EncodedJsonSerializedServiceContext)),
+                ServiceContext.class);
+      }
+
+      boolean success = notebookService.runNote(noteIdToRun, serviceContext, new ServiceCallback<Paragraph>() {
+        @Override
+        public void onStart(String message, ServiceContext context) throws IOException {
+        }
+
+        @Override
+        public void onSuccess(Paragraph result, ServiceContext context) throws IOException {
+        }
+
+        @Override
+        public void onFailure(Exception ex, ServiceContext context) throws IOException {
+        }
+      });
+
+      if (conf.getNotebookRunAutoShutdown()) {
+        Thread t = shutdown(conf);
+        t.start();
+        t.join();
+        System.exit(success ? 0 : 1);
+      }
+    }
   }
 
   private static void configureRequestHeaderSize(
