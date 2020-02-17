@@ -57,12 +57,13 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 /**
  *
  */
 public class JupyterUtil {
+
+  private static Gson Pretty_Gson = new GsonBuilder().setPrettyPrinting().create();
 
   private final RuntimeTypeAdapterFactory<Cell> cellTypeFactory;
   private final RuntimeTypeAdapterFactory<Output> outputTypeFactory;
@@ -256,7 +257,7 @@ public class JupyterUtil {
     nbformat.addProperty("nbformat", 4);
     nbformat.addProperty("nbformat_minor", 2);
     nbformat.add("cells", cells);
-    return nbformat.toString();
+    return Pretty_Gson.toJson(nbformat);
   }
 
   public static void main(String[] args) throws ParseException, IOException {

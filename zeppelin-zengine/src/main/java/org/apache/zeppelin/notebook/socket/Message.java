@@ -65,7 +65,8 @@ public class Message implements JsonSerializable {
     IMPORT_NOTE,      // [c-s] import notebook
                       // @param object notebook
 
-    CONVERT_NOTE_NBFORMAT,     // converting note to nbformat
+    CONVERT_NOTE_NBFORMAT,     // [c-s] converting note to nbformat
+    CONVERTED_NOTE_NBFORMAT,     // [s-c] converting note to nbformat
 
     NOTE_UPDATE,
 
