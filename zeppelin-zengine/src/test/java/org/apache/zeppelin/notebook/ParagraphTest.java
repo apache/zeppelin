@@ -307,6 +307,10 @@ public class ParagraphTest extends AbstractInterpreterTest {
     spyParagraph.jobRun();
     Paragraph p1 = spyParagraph.getUserParagraph(user1.getUser());
 
+    mockInterpreterResult = mock(InterpreterResult.class);
+    when(mockInterpreter.interpret(anyString(), Mockito.<InterpreterContext>any())).thenReturn(mockInterpreterResult);
+    when(mockInterpreterResult.code()).thenReturn(Code.SUCCESS);
+
     List<InterpreterResultMessage> result2 = Lists.newArrayList();
     result2.add(new InterpreterResultMessage(Type.TEXT, "result2"));
     when(mockInterpreterResult.message()).thenReturn(result2);

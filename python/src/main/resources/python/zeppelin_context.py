@@ -189,9 +189,13 @@ class PyZeppelinContext(object):
     def normalizeColumn(self, column):
         return column.replace("\t", " ").replace("\r\n", " ").replace("\n", " ")
 
-    def show_dataframe(self, df, show_index=False, **kwargs):
+    def show_dataframe(self, df, **kwargs):
         """Pretty prints DF using Table Display System
         """
+        show_index = False
+        if 'show_index' in kwargs:
+            show_index = kwargs['show_index']
+
         exceed_limit = len(df) > self.max_result
         header_buf = StringIO("")
         if show_index:

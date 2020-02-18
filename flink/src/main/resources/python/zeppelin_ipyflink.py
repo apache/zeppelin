@@ -54,11 +54,11 @@ class IPyFlinkZeppelinContext(PyZeppelinContext):
     def __init__(self, z, gateway):
         super(IPyFlinkZeppelinContext, self).__init__(z, gateway)
 
-    def show(self, obj):
+    def show(self, obj, **kwargs):
         from pyflink.table import Table
         if isinstance(obj, Table):
             print(self.z.showData(obj._j_table))
         else:
-            super(IPyFlinkZeppelinContext, self).show(obj)
+            super(IPyFlinkZeppelinContext, self).show(obj, **kwargs)
 
 z = __zeppelin__ = IPyFlinkZeppelinContext(intp.getZeppelinContext(), gateway)

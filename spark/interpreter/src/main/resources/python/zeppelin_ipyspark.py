@@ -61,11 +61,11 @@ class IPySparkZeppelinContext(PyZeppelinContext):
     def __init__(self, z, gateway):
         super(IPySparkZeppelinContext, self).__init__(z, gateway)
 
-    def show(self, obj):
+    def show(self, obj, **kwargs):
         from pyspark.sql import DataFrame
         if isinstance(obj, DataFrame):
             print(self.z.showData(obj._jdf))
         else:
-            super(IPySparkZeppelinContext, self).show(obj)
+            super(IPySparkZeppelinContext, self).show(obj, **kwargs)
 
 z = __zeppelin__ = IPySparkZeppelinContext(intp.getZeppelinContext(), gateway)
