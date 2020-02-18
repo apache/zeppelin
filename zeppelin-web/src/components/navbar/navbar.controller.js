@@ -91,73 +91,83 @@ function NavCtrl($scope, $rootScope, $http, $routeParams, $location,
     let logoutURL = baseUrlSrv.getRestApiBase() + '/login/logout';
 
     $http.post(logoutURL).then(function() {}, function(response) {
-      if (response.data) {
-        let res = angular.fromJson(response.data).body;
-        if (res['redirectURL']) {
-          if (res['isLogoutAPI'] === 'true') {
-            $http.get(res['redirectURL']).then(function() {
-            }, function() {
-              window.location = baseUrlSrv.getBase();
-            });
-          } else {
-            window.location.href = res['redirectURL'] + window.location.href;
-          }
-          return undefined;
-        }
-      }
-
-      // force authcBasic (if configured) to logout
-      if (detectIE()) {
-        let outcome;
-        try {
-          outcome = document.execCommand('ClearAuthenticationCache');
-        } catch (e) {
-          console.log(e);
-        }
-        if (!outcome) {
-          // Let's create an xmlhttp object
-          outcome = (function(x) {
-            if (x) {
-              // the reason we use "random" value for password is
-              // that browsers cache requests. changing
-              // password effectively behaves like cache-busing.
-              x.open('HEAD', location.href, true, 'logout',
-                (new Date()).getTime().toString());
-              x.send('');
-              // x.abort()
-              return 1; // this is **speculative** "We are done."
-            } else {
-              // eslint-disable-next-line no-useless-return
-              return;
-            }
-          })(window.XMLHttpRequest ? new window.XMLHttpRequest()
-            // eslint-disable-next-line no-undef
-            : (window.ActiveXObject ? new ActiveXObject('Microsoft.XMLHTTP') : u));
-        }
-        if (!outcome) {
-          let m = 'Your browser is too old or too weird to support log out functionality. Close all windows and ' +
-            'restart the browser.';
-          alert(m);
-        }
+      let forbiddenLocation = response.headers('Location');
+      let isForbiddenRedirect = response.status === 403 && forbiddenLocation !== null;
+      if (isForbiddenRedirect) {
+        clearScopeAndRedirect(forbiddenLocation);
       } else {
-        // for firefox and safari
-        logoutURL = logoutURL.replace('//', '//false:false@');
-      }
+        if (!isForbiddenRedirect && response.data) {
+          let res = angular.fromJson(response.data).body;
+          if (res['redirectURL']) {
+            if (res['isLogoutAPI'] === 'true') {
+              $http.get(res['redirectURL']).then(function() {
+              }, function() {
+                window.location = baseUrlSrv.getBase();
+              });
+            } else {
+              window.location.href = res['redirectURL'] + window.location.href;
+            }
+            return undefined;
+          }
+        }
 
-      $http.post(logoutURL).error(function() {
-        $rootScope.userName = '';
-        $rootScope.ticket.principal = '';
-        $rootScope.ticket.screenUsername = '';
-        $rootScope.ticket.ticket = '';
-        $rootScope.ticket.roles = '';
-        BootstrapDialog.show({
-          message: 'Logout Success',
+        // force authcBasic (if configured) to logout
+        if (detectIE()) {
+          let outcome;
+          try {
+            outcome = document.execCommand('ClearAuthenticationCache');
+          } catch (e) {
+            console.log(e);
+          }
+          if (!outcome) {
+            // Let's create an xmlhttp object
+            outcome = (function(x) {
+              if (x) {
+                // the reason we use "random" value for password is
+                // that browsers cache requests. changing
+                // password effectively behaves like cache-busing.
+                x.open('HEAD', location.href, true, 'logout',
+                  (new Date()).getTime().toString());
+                x.send('');
+                // x.abort()
+                return 1; // this is **speculative** "We are done."
+              } else {
+                // eslint-disable-next-line no-useless-return
+                return;
+              }
+            })(window.XMLHttpRequest ? new window.XMLHttpRequest()
+              // eslint-disable-next-line no-undef
+              : (window.ActiveXObject ? new ActiveXObject('Microsoft.XMLHTTP') : u));
+          }
+          if (!outcome) {
+            let m = 'Your browser is too old or too weird to support log out functionality. Close all windows and ' +
+              'restart the browser.';
+            alert(m);
+          }
+        } else {
+          // for firefox and safari
+          logoutURL = logoutURL.replace('//', '//false:false@');
+        }
+
+        $http.post(logoutURL).error(function() {
+          clearScopeAndRedirect(baseUrlSrv.getBase());
         });
-        setTimeout(function() {
-          window.location = baseUrlSrv.getBase();
-        }, 1000);
-      });
+      }
     });
+  }
+
+  function clearScopeAndRedirect(location) {
+    $rootScope.userName = '';
+    $rootScope.ticket.principal = '';
+    $rootScope.ticket.screenUsername = '';
+    $rootScope.ticket.ticket = '';
+    $rootScope.ticket.roles = '';
+    BootstrapDialog.show({
+      message: 'Logout Success',
+    });
+    setTimeout(function() {
+      window.location = location;
+    }, 1000);
   }
 
   function detectIE() {

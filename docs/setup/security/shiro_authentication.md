@@ -247,6 +247,92 @@ knoxJwtRealm.principalMapping = principal.mapping
 authc = org.apache.zeppelin.realm.jwt.KnoxAuthenticationFilter
 ```
 
+### OpenID Connect
+OpenID Connect is a protocol used by many auth providers like google or facebook but also with some external tools like keycloak. Below you'll find a `conf/shiro.ini` related to `keycloak` integration.
+
+To enable this, make sure you've built zeppelin with oidc profile and then apply the following change in `conf/shiro.ini` under `[main]` section.
+
+You'll have to fill the different parameters below :
+ - CLIENT_ID: for instance zeppelin
+ - CLIENT_SECRET: for instance 4bde2ee4-80bb-4b72-9369-53940201d554. In order to get a secret, you'll need to define the client with `confidential` access-type.
+ - REALM: the realm defined in keycloak. By default, it's `master`.
+ - KEYCLOAK_BASE_URI: base uri of keycloak. For instance `http://localhost:8080/auth`. This attribute is then concataned with **"/realms/"+realm+"/.well-known/openid-configuration"**
+ - LOGOUT_URL: url to logout from keycloak. For instance `http://localhost:8080/auth/realms/master/protocol/openid-connect/logout`
+ - ZEPPELIN_CALLBACK_URL: url redirected to after successful login. For instance `http://localhost:8090/api/callback`
+ - LOGOUT_REDIRECT_URI: For instance go back to zeppelin. `http://localhost:8090`. 
+
+```
+[main]
+roleAdminAuthGenerator = org.pac4j.core.authorization.generator.FromAttributesAuthorizationGenerator
+roleAdminAuthGenerator.roleAttributes = ROLE_ADMIN
+
+oidcConfig = org.pac4j.oidc.config.KeycloakOidcConfiguration
+oidcConfig.clientId = <CLIENT_ID>
+oidcConfig.secret = <CLIENT_SECRET>
+oidcConfig.realm = <REALM>
+oidcConfig.baseUri = <KEYCLOAK_BASE_URI>
+oidcConfig.useNonce = true
+oidcConfig.clientAuthenticationMethodAsString = client_secret_basic
+
+oidcConfig.logoutUrl = <LOGOUT_URL>
+
+keycloakOidcClient = org.pac4j.oidc.client.KeycloakOidcClient
+keycloakOidcClient.configuration = $oidcConfig
+keycloakOidcClient.authorizationGenerator = $roleAdminAuthGenerator
+
+clients = org.pac4j.core.client.Clients
+clients.callbackUrl = <ZEPPELIN_CALLBACK_URL>
+clients.clients = $keycloakOidcClient
+
+requireRoleAdmin = org.pac4j.core.authorization.authorizer.RequireAnyRoleAuthorizer
+requireRoleAdmin.elements = ROLE_ADMIN
+
+config = org.pac4j.core.config.Config
+config.clients = $clients
+config.authorizers = admin:$requireRoleAdmin
+
+pac4jRealm = io.buji.pac4j.realm.Pac4jRealm
+pac4jRealm.principalNameAttribute = preferred_username
+pac4jSubjectFactory = io.buji.pac4j.subject.Pac4jSubjectFactory
+securityManager.subjectFactory = $pac4jSubjectFactory
+
+oidcSecurityFilter = io.buji.pac4j.filter.SecurityFilter
+oidcSecurityFilter.config = $config
+oidcSecurityFilter.clients = keycloakOidcClient
+
+sessionManager = org.apache.shiro.web.session.mgt.DefaultWebSessionManager
+
+callbackFilter = io.buji.pac4j.filter.CallbackFilter
+callbackFilter.defaultUrl = /
+callbackFilter.config = $config
+
+logoutFilter = io.buji.pac4j.filter.LogoutFilter
+logoutFilter.defaultUrl = <LOGOUT_REDIRECT_URI>
+
+logoutFilter.localLogout = true
+logoutFilter.centralLogout = true
+logoutFilter.config = $config
+
+### If caching of user is required then uncomment below lines
+#cacheManager = org.apache.shiro.cache.MemoryConstrainedCacheManager
+#securityManager.cacheManager = $cacheManager
+
+securityManager.sessionManager = $sessionManager
+# 86,400,000 milliseconds = 24 hour
+securityManager.sessionManager.globalSessionTimeout = 86400000
+
+[roles]
+
+[urls]
+# This section is used for url-based security.
+# You can secure interpreter, configuration and credential information by urls. Comment or uncomment the below urls that you want to hide.
+# anon means the access is anonymous.
+# authc means Form based Auth Security
+/api/version = anon
+/api/callback = callbackFilter
+/api/login/logout = logoutFilter
+/** = oidcSecurityFilter
+```
 
 ## Secure Cookie for Zeppelin Sessions (optional)
 Zeppelin can be configured to set `HttpOnly` flag in the session cookie. With this configuration, Zeppelin cookies can 
