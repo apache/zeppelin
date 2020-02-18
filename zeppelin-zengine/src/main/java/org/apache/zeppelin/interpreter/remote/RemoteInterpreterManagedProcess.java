@@ -141,8 +141,13 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess {
         LOGGER.warn("ignore the exception when shutting down", e);
       }
 
+      // Shutdown connection
+      shutdown();
+
       this.interpreterProcessLauncher.stop();
     }
+
+
 
     interpreterProcessLauncher = null;
     LOGGER.info("Remote process terminated");
