@@ -26,7 +26,7 @@ import java.util.Map;
 import static org.junit.Assert.assertEquals;
 
 
-public class BaseZeppelinContextTest {
+public class ZeppelinContextTest {
 
   @Test
   public void testHooks() throws InvalidHookException {
@@ -113,7 +113,7 @@ public class BaseZeppelinContextTest {
   }
 
 
-  public static class TestZeppelinContext extends BaseZeppelinContext {
+  public static class TestZeppelinContext extends ZeppelinContext {
 
     public TestZeppelinContext(InterpreterHookRegistry hooks, int maxResult) {
       super(hooks, maxResult);

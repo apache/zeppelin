@@ -51,7 +51,7 @@ as in `sparkContext` option `spark.repl.class.outputDir`.
 
 ### Kotlin Spark Interpreter
 Kotlin interpreter in Spark intepreter group takes `SparkSession`, `JavaSparkContext`, `SQLContext` 
-and `BaseZeppelinContext` from `SparkInterpreter` in the same session and binds them in its scope.
+and `ZeppelinContext` from `SparkInterpreter` in the same session and binds them in its scope.
   
 ## Testing
 Kotlin Interpreter and Spark Kotlin Interpreter come with unit tests. 

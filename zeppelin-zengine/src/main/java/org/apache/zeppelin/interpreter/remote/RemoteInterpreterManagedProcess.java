@@ -144,7 +144,6 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess {
       // Shutdown connection
       shutdown();
 
-
       this.interpreterProcessLauncher.stop();
     }
 

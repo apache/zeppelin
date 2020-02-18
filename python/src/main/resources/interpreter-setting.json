@@ -3,6 +3,7 @@
     "group": "python",
     "name": "python",
     "className": "org.apache.zeppelin.python.PythonInterpreter",
+    "defaultInterpreter": true,
     "properties": {
       "zeppelin.python": {
         "envName": null,

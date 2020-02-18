@@ -115,7 +115,7 @@ public class ClusterEventTest extends ZeppelinServerMock {
     // wait zeppelin cluster startup
     Thread.sleep(10000);
     // mock cluster manager client
-    clusterClient = ClusterManagerClient.getInstance();
+    clusterClient = ClusterManagerClient.getInstance(zconf);
     clusterClient.start(metaKey);
 
     // Waiting for cluster startup
@@ -154,7 +154,7 @@ public class ClusterEventTest extends ZeppelinServerMock {
       ZeppelinConfiguration zconf = ZeppelinConfiguration.create();
       zconf.setClusterAddress("");
     }
-
+    ZeppelinConfiguration.reset();
     LOGGER.info("stopCluster <<<");
   }
 
@@ -183,12 +183,15 @@ public class ClusterEventTest extends ZeppelinServerMock {
     return zconf;
   }
 
-  public static ClusterManagerServer startClusterSingleNode(String clusterAddrList, String clusterHost, int clusterPort)
+  public static ClusterManagerServer startClusterSingleNode(String clusterAddrList,
+                                                            String clusterHost,
+                                                            int clusterPort,
+                                                            ZeppelinConfiguration zConf)
       throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
     Class clazz = ClusterManagerServer.class;
-    Constructor constructor = clazz.getDeclaredConstructor();
+    Constructor constructor = clazz.getDeclaredConstructor(ZeppelinConfiguration.class);
     constructor.setAccessible(true);
-    ClusterManagerServer clusterServer = (ClusterManagerServer) constructor.newInstance();
+    ClusterManagerServer clusterServer = (ClusterManagerServer) constructor.newInstance(zConf);
     clusterServer.initTestCluster(clusterAddrList, clusterHost, clusterPort);
 
     clusterServer.addClusterEventListeners(ClusterManagerServer.CLUSTER_NOTE_EVENT_TOPIC, notebookServer);
@@ -212,7 +215,7 @@ public class ClusterEventTest extends ZeppelinServerMock {
         int clusterPort = Integer.valueOf(parts[1]);
 
         ClusterManagerServer clusterServer
-            = startClusterSingleNode(clusterAddrList, clusterHost, clusterPort);
+            = startClusterSingleNode(clusterAddrList, clusterHost, clusterPort, zconf);
         clusterServers.add(clusterServer);
       }
     } catch (Exception e) {

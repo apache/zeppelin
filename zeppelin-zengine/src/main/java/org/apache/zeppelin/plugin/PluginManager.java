@@ -77,7 +77,8 @@ public class PluginManager {
     try {
       notebookRepo = (NotebookRepo) (Class.forName(notebookRepoClassName, true, pluginClassLoader)).newInstance();
     } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
-      LOGGER.warn("Fail to instantiate notebookrepo from plugin classpath:" + notebookRepoClassName, e);
+      LOGGER.warn("Fail to instantiate notebookrepo " + notebookRepoClassName +
+              " from plugin classpath:" + pluginsDir, e);
     }
 
     if (notebookRepo == null) {
@@ -120,7 +121,8 @@ public class PluginManager {
     try {
       notebookRepo = (OldNotebookRepo) (Class.forName(oldNotebookRepoClassName, true, pluginClassLoader)).newInstance();
     } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
-      LOGGER.warn("Fail to instantiate notebookrepo from plugin classpath:" + oldNotebookRepoClassName, e);
+      LOGGER.warn("Fail to instantiate notebookrepo " + oldNotebookRepoClassName +
+              " from plugin classpath:" + pluginsDir, e);
     }
 
     if (notebookRepo == null) {
@@ -159,7 +161,8 @@ public class PluginManager {
           .newInstance(zConf, recoveryStorage);
     } catch (InstantiationException | IllegalAccessException | ClassNotFoundException
         | NoSuchMethodException | InvocationTargetException e) {
-      LOGGER.warn("Fail to instantiate Launcher from plugin classpath:" + launcherPlugin, e);
+      LOGGER.warn("Fail to instantiate Launcher " + launcherPlugin +
+              " from plugin pluginDir: " + pluginsDir, e);
     }
 
     if (launcher == null) {

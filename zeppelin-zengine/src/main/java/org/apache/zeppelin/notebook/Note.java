@@ -911,9 +911,7 @@ public class Note implements JsonSerializable {
   }
 
   public List<Paragraph> getParagraphs() {
-    synchronized (paragraphs) {
-      return new LinkedList<>(paragraphs);
-    }
+    return this.paragraphs;
   }
 
   // TODO(zjffdu) how does this used ?
@@ -1002,6 +1000,24 @@ public class Note implements JsonSerializable {
       }
     }
 
+    return new ArrayList<>(settings);
+  }
+
+  /**
+   * Get InterpreterSetting used by the paragraphs of this note.
+   * @return
+   */
+  public List<InterpreterSetting> getUsedInterpreterSettings() {
+    Set<InterpreterSetting> settings = new HashSet<>();
+    for (Paragraph p : getParagraphs()) {
+      try {
+        Interpreter intp = p.getBindedInterpreter();
+        settings.add((
+                (ManagedInterpreterGroup) intp.getInterpreterGroup()).getInterpreterSetting());
+      } catch (InterpreterNotFoundException e) {
+        // ignore this
+      }
+    }
     return new ArrayList<>(settings);
   }
 

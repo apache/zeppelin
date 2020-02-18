@@ -97,7 +97,7 @@ matrix:
     - sudo: required
       jdk: "openjdk8"
       dist: xenial
-      env: BUILD_PLUGINS="false" PYTHON="3" R="true" PROFILE="-Phelium-dev -Pexamples" BUILD_FLAG="install -Pbuild-distr -DskipRat -DskipTests" TEST_FLAG="verify -Pusing-packaged-distr -DskipRat" MODULES="-pl zeppelin-server,spark/spark-dependencies,markdown,angular,shell -am" TEST_PROJECTS="-Dtests.to.exclude=**/org/apache/zeppelin/spark/*,**/HeliumApplicationFactoryTest.java -DfailIfNoTests=false"
+      env: BUILD_PLUGINS="true" PYTHON="3" R="true" PROFILE="-Phelium-dev -Pexamples" BUILD_FLAG="install -Pbuild-distr -DskipRat -DskipTests" TEST_FLAG="verify -Pusing-packaged-distr -DskipRat" MODULES="-pl zeppelin-server,zeppelin-web,spark/spark-dependencies,markdown,angular,shell -am" TEST_PROJECTS="-Dtests.to.exclude=**/org/apache/zeppelin/spark/*,**/HeliumApplicationFactoryTest.java -DfailIfNoTests=false"
 
     # Test selenium with spark module for spark 2.3
     - jdk: "openjdk8"

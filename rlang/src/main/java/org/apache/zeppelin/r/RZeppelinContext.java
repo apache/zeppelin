@@ -17,7 +17,7 @@
 
 package org.apache.zeppelin.r;
 
-import org.apache.zeppelin.interpreter.BaseZeppelinContext;
+import org.apache.zeppelin.interpreter.ZeppelinContext;
 import org.apache.zeppelin.interpreter.InterpreterHookRegistry;
 
 import java.util.List;
@@ -26,7 +26,7 @@ import java.util.Map;
 /**
  * ZeppelinContext for R, only contains the basic function of ZeppelinContext.
  */
-public class RZeppelinContext extends BaseZeppelinContext {
+public class RZeppelinContext extends ZeppelinContext {
 
   public RZeppelinContext(InterpreterHookRegistry hooks, int maxResult) {
     super(hooks, maxResult);

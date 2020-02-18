@@ -388,7 +388,7 @@ public class AuthorizationService implements ClusterEventListener {
     }.getType());
     message.put("set", json);
     String msg = ClusterMessage.serializeMessage(message);
-    ClusterManagerServer.getInstance().broadcastClusterEvent(
+    ClusterManagerServer.getInstance(conf).broadcastClusterEvent(
         ClusterManagerServer.CLUSTER_AUTH_EVENT_TOPIC, msg);
   }
 }

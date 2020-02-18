@@ -29,7 +29,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Properties;
 import org.apache.hadoop.util.VersionInfo;
-import org.apache.zeppelin.interpreter.BaseZeppelinContext;
+import org.apache.zeppelin.interpreter.ZeppelinContext;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterEventClient;
 import org.junit.Before;
@@ -41,7 +41,6 @@ import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
-import org.mockito.Mock;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
@@ -110,7 +109,7 @@ public class SparkShimsTest {
   }
 
   @RunWith(PowerMockRunner.class)
-  @PrepareForTest({BaseZeppelinContext.class, VersionInfo.class})
+  @PrepareForTest({ZeppelinContext.class, VersionInfo.class})
   @PowerMockIgnore({"javax.net.*", "javax.security.*"})
   public static class SingleTests {
     @Captor ArgumentCaptor<Map<String, String>> argumentCaptor;

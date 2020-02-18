@@ -13,7 +13,7 @@
         "type": "string"
       },
       "master": {
-        "envName": "",
+        "envName": "MASTER",
         "propertyName": "spark.master",
         "defaultValue": "local[*]",
         "description": "Spark master uri. ex) spark://master_host:7077",

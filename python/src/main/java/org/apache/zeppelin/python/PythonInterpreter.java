@@ -25,7 +25,7 @@ import org.apache.commons.exec.ExecuteException;
 import org.apache.commons.exec.environment.EnvironmentUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.zeppelin.interpreter.BaseZeppelinContext;
+import org.apache.zeppelin.interpreter.ZeppelinContext;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
@@ -68,7 +68,7 @@ public class PythonInterpreter extends Interpreter {
   private InterpreterOutputStream outputStream;
   private long pythonPid = -1;
   private IPythonInterpreter iPythonInterpreter;
-  private BaseZeppelinContext zeppelinContext;
+  private ZeppelinContext zeppelinContext;
   // set by PythonCondaInterpreter
   private String condaPythonExec;
   private boolean usePy4jAuth = false;
@@ -375,7 +375,7 @@ public class PythonInterpreter extends Interpreter {
     }
 
     outputStream.setInterpreterOutput(context.out);
-    BaseZeppelinContext z = getZeppelinContext();
+    ZeppelinContext z = getZeppelinContext();
     z.setInterpreterContext(context);
     z.setGui(context.getGui());
     z.setNoteGui(context.getNoteGui());
@@ -536,13 +536,13 @@ public class PythonInterpreter extends Interpreter {
     return getInterpreterInTheSameSessionByClassName(IPythonInterpreter.class, false);
   }
 
-  protected BaseZeppelinContext createZeppelinContext() {
+  protected ZeppelinContext createZeppelinContext() {
     return new PythonZeppelinContext(
         getInterpreterGroup().getInterpreterHookRegistry(),
         Integer.parseInt(getProperty("zeppelin.python.maxResult", "1000")));
   }
 
-  public BaseZeppelinContext getZeppelinContext() {
+  public ZeppelinContext getZeppelinContext() {
     if (zeppelinContext == null) {
       zeppelinContext = createZeppelinContext();
     }
