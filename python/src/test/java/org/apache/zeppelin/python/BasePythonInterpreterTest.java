@@ -322,6 +322,21 @@ public abstract class BasePythonInterpreterTest extends ConcurrentTestCase {
     assertEquals("<font color=red>Results are limited by 3.</font>\n",
         interpreterResultMessages.get(1).getData());
 
+    // z.show(df, show_index=True)
+    context = getInterpreterContext();
+    result = interpreter.interpret("import pandas as pd\n" +
+                    "df = pd.DataFrame({'id':[1,2,3], 'name':['a','b','c']})\nz.show(df, show_index=True)",
+            context);
+    assertEquals(context.out.toInterpreterResultMessage().toString(),
+            InterpreterResult.Code.SUCCESS, result.code());
+    interpreterResultMessages = context.out.toInterpreterResultMessage();
+    assertEquals(1, interpreterResultMessages.size());
+    assertEquals(InterpreterResult.Type.TABLE, interpreterResultMessages.get(0).getType());
+    assertEquals("\tid\tname\n" +
+            "%html <strong>0</strong>\t1\ta\n" +
+            "%html <strong>1</strong>\t2\tb\n" +
+            "%html <strong>2</strong>\t3\tc\n", interpreterResultMessages.get(0).getData());
+
     // z.show(matplotlib)
     context = getInterpreterContext();
     result = interpreter.interpret("import matplotlib.pyplot as plt\n" +
