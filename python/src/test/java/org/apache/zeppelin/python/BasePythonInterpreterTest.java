@@ -325,7 +325,8 @@ public abstract class BasePythonInterpreterTest extends ConcurrentTestCase {
     // z.show(df, show_index=True)
     context = getInterpreterContext();
     result = interpreter.interpret("import pandas as pd\n" +
-                    "df = pd.DataFrame({'id':[1,2,3], 'name':['a','b','c']})\nz.show(df, show_index=True)",
+                    "df = pd.DataFrame({'id':[1,2,3], 'name':['a','b','c']})\n" +
+                    "z.show(df, show_index=True)",
             context);
     assertEquals(context.out.toInterpreterResultMessage().toString(),
             InterpreterResult.Code.SUCCESS, result.code());
