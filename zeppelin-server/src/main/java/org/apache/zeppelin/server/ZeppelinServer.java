@@ -345,6 +345,7 @@ public class ZeppelinServer extends ResourceConfig {
   private static void runNoteOnStart(ZeppelinConfiguration conf) throws IOException, InterruptedException {
     String noteIdToRun = conf.getNotebookRunId();
     if (!Strings.isEmpty(noteIdToRun)) {
+      LOG.info("Running note {} on start", noteIdToRun);
       NotebookService notebookService = (NotebookService) ServiceLocatorUtilities.getService(
               sharedServiceLocator, NotebookService.class.getName());
 
@@ -359,7 +360,7 @@ public class ZeppelinServer extends ResourceConfig {
                 ServiceContext.class);
       }
 
-      boolean success = notebookService.runNote(noteIdToRun, serviceContext, new ServiceCallback<Paragraph>() {
+      boolean success = notebookService.runAllParagraphs(noteIdToRun, serviceContext, new ServiceCallback<Paragraph>() {
         @Override
         public void onStart(String message, ServiceContext context) throws IOException {
         }
