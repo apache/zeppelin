@@ -33,6 +33,7 @@ import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Properties;
 
@@ -81,8 +82,8 @@ public class SparkSqlInterpreter extends AbstractInterpreter {
     }
     Utils.printDeprecateMessage(sparkInterpreter.getSparkVersion(), context, properties);
     sparkInterpreter.getZeppelinContext().setInterpreterContext(context);
-    SQLContext sqlc = sparkInterpreter.getSQLContext();
-    SparkContext sc = sqlc.sparkContext();
+    Object sqlContext = sparkInterpreter.getSQLContext();
+    SparkContext sc = sparkInterpreter.getSparkContext();
 
     StringBuilder builder = new StringBuilder();
     List<String> sqls = sqlSplitter.splitSql(st);
@@ -92,10 +93,17 @@ public class SparkSqlInterpreter extends AbstractInterpreter {
     sc.setLocalProperty("spark.scheduler.pool", context.getLocalProperties().get("pool"));
     sc.setJobGroup(Utils.buildJobGroupId(context), Utils.buildJobDesc(context), false);
     String curSql = null;
+    ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
     try {
+      if (!sparkInterpreter.isScala212()) {
+        // TODO(zjffdu) scala 2.12 still doesn't work for codegen (ZEPPELIN-4627)
+      Thread.currentThread().setContextClassLoader(sparkInterpreter.getScalaShellClassLoader());
+      }
+      Method method = sqlContext.getClass().getMethod("sql", String.class);
       for (String sql : sqls) {
         curSql = sql;
-        String result = sparkInterpreter.getZeppelinContext().showData(sqlc.sql(sql), maxResult);
+        String result = sparkInterpreter.getZeppelinContext()
+                .showData(method.invoke(sqlContext, sql), maxResult);
         builder.append(result);
       }
     } catch (Exception e) {
@@ -111,6 +119,9 @@ public class SparkSqlInterpreter extends AbstractInterpreter {
       return new InterpreterResult(Code.ERROR, builder.toString());
     } finally {
       sc.clearJobGroup();
+      if (!sparkInterpreter.isScala212()) {
+        Thread.currentThread().setContextClassLoader(originalClassLoader);
+      }
     }
 
     return new InterpreterResult(Code.SUCCESS, builder.toString());
