@@ -198,7 +198,7 @@ public class PySparkInterpreter extends PythonInterpreter {
     }
   }
 
-  public SQLContext getSQLContext() {
+  public Object getSQLContext() {
     if (sparkInterpreter == null) {
       return null;
     } else {

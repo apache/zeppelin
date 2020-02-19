@@ -205,7 +205,14 @@ public class SparkInterpreter extends AbstractInterpreter {
     return this.sc;
   }
 
-  public SQLContext getSQLContext() {
+  /**
+   * Must use Object, because the its api signature in Spark 1.x is different from
+   * that of Spark 2.x.
+   * e.g. SqlContext.sql(sql) return different type.
+   *
+   * @return
+   */
+  public Object getSQLContext() {
     return sqlContext;
   }
 
@@ -235,6 +242,10 @@ public class SparkInterpreter extends AbstractInterpreter {
     }
   }
 
+  public boolean isScala212() throws InterpreterException {
+    return extractScalaVersion().contains("2.12");
+  }
+
   private List<String> getDependencyFiles() throws InterpreterException {
     List<String> depFiles = new ArrayList<>();
     // add jar from local repo
@@ -251,6 +262,10 @@ public class SparkInterpreter extends AbstractInterpreter {
       }
     }
     return depFiles;
+  }
+
+  public ClassLoader getScalaShellClassLoader() {
+    return innerInterpreter.getScalaShellClassLoader();
   }
 
   public boolean isUnsupportedSparkVersion() {

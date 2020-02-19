@@ -68,4 +68,6 @@ public abstract class AbstractSparkScalaInterpreter {
   public abstract List<InterpreterCompletion> completion(String buf,
                                                          int cursor,
                                                          InterpreterContext interpreterContext);
+
+  public abstract ClassLoader getScalaShellClassLoader();
 }
