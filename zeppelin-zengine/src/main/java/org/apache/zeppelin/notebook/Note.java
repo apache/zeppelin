@@ -112,8 +112,9 @@ public class Note implements JsonSerializable {
    */
   private Map<String, Object> info = new HashMap<>();
 
-  // The front end needs to judge TRASH_FOLDER according to the path
-  private String path;
+  // The front end needs to judge TRASH_FOLDER according to the path,
+  // it doesn't need to be saved in note json.
+  private transient String path;
 
   /********************************** transient fields ******************************************/
   private transient boolean loaded = false;
@@ -126,7 +127,6 @@ public class Note implements JsonSerializable {
 
   public Note() {
     generateId();
-    setCronSupported(ZeppelinConfiguration.create());
   }
 
   public Note(String path, String defaultInterpreterGroup, InterpreterFactory factory,
@@ -392,12 +392,11 @@ public class Note implements JsonSerializable {
   public Boolean isCronSupported(ZeppelinConfiguration config) {
     if (config.isZeppelinNotebookCronEnable()) {
       config.getZeppelinNotebookCronFolders();
-      if (config.getZeppelinNotebookCronFolders() == null) {
+      if (StringUtils.isBlank(config.getZeppelinNotebookCronFolders())) {
         return true;
       } else {
         for (String folder : config.getZeppelinNotebookCronFolders().split(",")) {
-          folder = folder.replaceAll("\\*", "\\.*").replaceAll("\\?", "\\.");
-          if (getName().matches(folder)) {
+          if (getPath().startsWith(folder)) {
             return true;
           }
         }
@@ -1097,7 +1096,7 @@ public class Note implements JsonSerializable {
   public String toJson() {
     return gson.toJson(this);
   }
-  
+
   /**
    * Parse note json from note file. Throw IOException if fail to parse note json.
    *
@@ -1108,7 +1107,6 @@ public class Note implements JsonSerializable {
   public static Note fromJson(String json) throws IOException {
     try {
       Note note = gson.fromJson(json, Note.class);
-      note.setCronSupported(ZeppelinConfiguration.create());
       convertOldInput(note);
       note.info.remove("isRunning");
       note.postProcessParagraphs();

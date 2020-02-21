@@ -117,10 +117,12 @@ public class IRKernelTest {
             InterpreterResult.Type.IMG, resultMessages.get(0).getType());
 
     // ggplot2
+    context = getInterpreterContext();
     result = interpreter.interpret("library(ggplot2)\n" +
             "ggplot(diamonds, aes(x=carat, y=price, color=cut)) + geom_point()",
-            getInterpreterContext());
-    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+            context);
+    assertEquals(context.out.toInterpreterResultMessage().get(0).toString(),
+            InterpreterResult.Code.SUCCESS, result.code());
     resultMessages = context.out.toInterpreterResultMessage();
     assertEquals(1, resultMessages.size());
     assertEquals(resultMessages.toString(),
@@ -139,7 +141,7 @@ public class IRKernelTest {
       assertEquals(InterpreterResult.Code.SUCCESS, result.code());
       resultMessages = context.out.toInterpreterResultMessage();
       assertEquals(2, resultMessages.size());
-      assertEquals(resultMessages.toString(),
+      assertEquals(resultMessages.get(0).toString(),
               InterpreterResult.Type.HTML, resultMessages.get(1).getType());
       assertTrue(resultMessages.get(1).getData(),
               resultMessages.get(1).getData().contains("javascript"));

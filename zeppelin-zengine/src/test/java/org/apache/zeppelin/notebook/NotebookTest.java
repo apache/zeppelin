@@ -615,7 +615,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
   @Test
   public void testScheduleDisabledWithName() throws InterruptedException, IOException {
 
-    System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_CRON_FOLDERS.getVarName(), "System/*");
+    System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_CRON_FOLDERS.getVarName(), "/System");
     try {
       final int timeout = 10;
       final String everySecondCron = "* * * * * ?";
@@ -639,7 +639,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
       afterStatusChangedListener = null;
 
       final Note noteNameSystem = notebook.createNote("note1", anonymous);
-      noteNameSystem.setName("System/test1");
+      noteNameSystem.setPath("/System/test1");
       final CountDownLatch jobsToExecuteCountNameSystem = new CountDownLatch(5);
 
       executeNewParagraphByCron(noteNameSystem, everySecondCron);
