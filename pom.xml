@@ -789,9 +789,6 @@
 
     <profile>
       <id>web-angular</id>
-      <activation>
-        <activeByDefault>true</activeByDefault>
-      </activation>
       <modules>
         <module>zeppelin-web-angular</module>
       </modules>
