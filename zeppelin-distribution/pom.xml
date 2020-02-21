@@ -145,9 +145,6 @@
 
     <profile>
       <id>web-angular</id>
-      <activation>
-        <activeByDefault>true</activeByDefault>
-      </activation>
       <dependencies>
         <dependency>
           <groupId>${project.groupId}</groupId>
