@@ -62,11 +62,11 @@ if [[ "$R" == "true" ]] ; then
   sudo apt-get install r-base
 
   mkdir -p ~/R
-  R -e "install.packages('evaluate', repos = 'http://cran.us.r-project.org', lib='~/R')"  > /dev/null 2>&1
-  R -e "install.packages('base64enc', repos = 'http://cran.us.r-project.org', lib='~/R')"  > /dev/null 2>&1
-  R -e "install.packages('knitr', repos = 'http://cran.us.r-project.org', lib='~/R')"  > /dev/null 2>&1
+  R -e "install.packages('evaluate', repos = 'https://cloud.r-project.org', lib='~/R')"  > /dev/null 2>&1
+  R -e "install.packages('base64enc', repos = 'https://cloud.r-project.org', lib='~/R')"  > /dev/null 2>&1
+  R -e "install.packages('knitr', repos = 'https://cloud.r-project.org', lib='~/R')"  > /dev/null 2>&1
   R -e "install.packages('ggplot2', repos = 'https://cloud.r-project.org', lib='~/R')"  > /dev/null 2>&1
   R -e "install.packages('IRkernel', repos = 'https://cloud.r-project.org', lib='~/R');IRkernel::installspec()" > /dev/null 2>&1
-  R -e "install.packages('shiny', repos = 'http://cran.us.r-project.org', lib='~/R')" > /dev/null 2>&1
-  R -e "install.packages('googleVis', repos = 'http://cran.us.r-project.org', lib='~/R')" > /dev/null 2>&1
+  R -e "install.packages('shiny', repos = 'https://cloud.r-project.org', lib='~/R')" > /dev/null 2>&1
+  R -e "install.packages('googleVis', repos = 'https://cloud.r-project.org', lib='~/R')" > /dev/null 2>&1
 fi
