@@ -67,11 +67,11 @@ import java.util.Set;
 public class Note implements JsonSerializable {
   private static final Logger logger = LoggerFactory.getLogger(Note.class);
 
-  // serialize Paragraph#runtimeInfos to frontend but not to note file
+  // serialize Paragraph#runtimeInfos and Note#path to frontend but not to note file
   private static final ExclusionStrategy strategy = new ExclusionStrategy() {
     @Override
     public boolean shouldSkipField(FieldAttributes f) {
-      return f.getName().equals("runtimeInfos");
+      return f.getName().equals("runtimeInfos") || f.getName().equals("path");
     }
 
     @Override
@@ -112,7 +112,9 @@ public class Note implements JsonSerializable {
    */
   private Map<String, Object> info = new HashMap<>();
 
-  // The front end needs to judge TRASH_FOLDER according to the path
+  // The front end needs to judge TRASH_FOLDER according to the path,
+  // But it doesn't need to be saved in note json. So we will exclude this when saving
+  // note to NotebookRepo.
   private String path;
 
   /********************************** transient fields ******************************************/
@@ -1097,7 +1099,7 @@ public class Note implements JsonSerializable {
   public String toJson() {
     return gson.toJson(this);
   }
-  
+
   /**
    * Parse note json from note file. Throw IOException if fail to parse note json.
    *
