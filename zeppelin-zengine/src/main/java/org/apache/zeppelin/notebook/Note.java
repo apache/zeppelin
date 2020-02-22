@@ -67,11 +67,11 @@ import java.util.Set;
 public class Note implements JsonSerializable {
   private static final Logger logger = LoggerFactory.getLogger(Note.class);
 
-  // serialize Paragraph#runtimeInfos to frontend but not to note file
+  // serialize Paragraph#runtimeInfos and Note#path to frontend but not to note file
   private static final ExclusionStrategy strategy = new ExclusionStrategy() {
     @Override
     public boolean shouldSkipField(FieldAttributes f) {
-      return f.getName().equals("runtimeInfos");
+      return f.getName().equals("runtimeInfos") || f.getName().equals("path");
     }
 
     @Override
@@ -113,8 +113,9 @@ public class Note implements JsonSerializable {
   private Map<String, Object> info = new HashMap<>();
 
   // The front end needs to judge TRASH_FOLDER according to the path,
-  // it doesn't need to be saved in note json.
-  private transient String path;
+  // But it doesn't need to be saved in note json. So we will exclude this when saving
+  // note to NotebookRepo.
+  private String path;
 
   /********************************** transient fields ******************************************/
   private transient boolean loaded = false;
@@ -127,6 +128,7 @@ public class Note implements JsonSerializable {
 
   public Note() {
     generateId();
+    setCronSupported(ZeppelinConfiguration.create());
   }
 
   public Note(String path, String defaultInterpreterGroup, InterpreterFactory factory,
@@ -392,11 +394,12 @@ public class Note implements JsonSerializable {
   public Boolean isCronSupported(ZeppelinConfiguration config) {
     if (config.isZeppelinNotebookCronEnable()) {
       config.getZeppelinNotebookCronFolders();
-      if (StringUtils.isBlank(config.getZeppelinNotebookCronFolders())) {
+      if (config.getZeppelinNotebookCronFolders() == null) {
         return true;
       } else {
         for (String folder : config.getZeppelinNotebookCronFolders().split(",")) {
-          if (getPath().startsWith(folder)) {
+          folder = folder.replaceAll("\\*", "\\.*").replaceAll("\\?", "\\.");
+          if (getName().matches(folder)) {
             return true;
           }
         }
@@ -1107,6 +1110,7 @@ public class Note implements JsonSerializable {
   public static Note fromJson(String json) throws IOException {
     try {
       Note note = gson.fromJson(json, Note.class);
+      note.setCronSupported(ZeppelinConfiguration.create());
       convertOldInput(note);
       note.info.remove("isRunning");
       note.postProcessParagraphs();

@@ -57,4 +57,4 @@ Set property **zeppelin.notebook.cron.enable** to **true** in `$ZEPPELIN_HOME/co
 
 ### Run cron selectively on folders
 
-In `$ZEPPELIN_HOME/conf/zeppelin-site.xml` make sure the property **zeppelin.notebook.cron.enable** is set to **true**, and then set property **zeppelin.notebook.cron.folders** to the desired folder as comma-separated values, e.g. `/cron,/test/cron`.
+In `$ZEPPELIN_HOME/conf/zeppelin-site.xml` make sure the property **zeppelin.notebook.cron.enable** is set to **true**, and then set property **zeppelin.notebook.cron.folders** to the desired folder as comma-separated values, e.g. `*yst*, Sys?em, System`. This property accepts wildcard and joker.
