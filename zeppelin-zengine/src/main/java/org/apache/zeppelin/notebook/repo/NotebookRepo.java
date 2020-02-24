@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Notebook repository (persistence layer) abstraction
+ * Notebook repository (persistence layer) abstraction.
  */
 public interface NotebookRepo {
 
@@ -36,17 +36,17 @@ public interface NotebookRepo {
 
   /**
    * Lists notebook information about all notebooks in storage. This method should only read
-   * the metadata of note, rather than reading all notes which usually takes long time.
+   * the note file name, rather than reading all note content which usually takes long time.
    *
    * @param subject contains user information.
-   * @return
+   * @return Map of noteId -> NoteInfo
    * @throws IOException
    */
   @ZeppelinApi
   Map<String, NoteInfo> list(AuthenticationInfo subject) throws IOException;
 
   /**
-   * Get the notebook with the given id and given notePath.
+   * Get the notebook with the given noteId and given notePath.
    *
    * @param noteId   is note id.
    * @param notePath is note path

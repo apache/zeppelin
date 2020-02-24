@@ -29,7 +29,9 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
+import org.apache.zeppelin.notebook.AuthorizationService;
 import org.apache.zeppelin.notebook.Note;
+import org.apache.zeppelin.notebook.NoteManager;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
@@ -54,7 +56,7 @@ public class LuceneSearchTest {
     InterpreterSetting defaultInterpreterSetting = mock(InterpreterSetting.class);
     when(defaultInterpreterSetting.getName()).thenReturn("test");
     when(interpreterSettingManager.getDefaultInterpreterSetting()).thenReturn(defaultInterpreterSetting);
-    notebook = new Notebook(ZeppelinConfiguration.create(), mock(NotebookRepo.class),
+    notebook = new Notebook(ZeppelinConfiguration.create(), mock(AuthorizationService.class), mock(NotebookRepo.class), mock(NoteManager.class),
         mock(InterpreterFactory.class), interpreterSettingManager,
         noteSearchService,
         mock(Credentials.class), null);

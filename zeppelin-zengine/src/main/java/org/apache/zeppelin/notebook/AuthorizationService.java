@@ -17,8 +17,6 @@
 
 package org.apache.zeppelin.notebook;
 
-import com.google.common.base.Predicate;
-import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -28,6 +26,7 @@ import org.apache.zeppelin.cluster.event.ClusterEvent;
 import org.apache.zeppelin.cluster.event.ClusterEventListener;
 import org.apache.zeppelin.cluster.event.ClusterMessage;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.storage.ConfigStorage;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,7 +35,6 @@ import javax.inject.Inject;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -50,17 +48,63 @@ public class AuthorizationService implements ClusterEventListener {
   private static final Set<String> EMPTY_SET = new HashSet<>();
 
   private ZeppelinConfiguration conf;
-  private Notebook notebook;
+  private ConfigStorage configStorage;
+
   // contains roles for each user (username --> roles)
   private Map<String, Set<String>> userRoles = new HashMap<>();
 
+  // cached note permission info. (noteId --> NoteAuth)
+  private Map<String, NoteAuth> notesAuth = new HashMap<>();
+
   @Inject
-  public AuthorizationService(Notebook notebook, ZeppelinConfiguration conf) {
-    this.notebook = notebook;
+  public AuthorizationService(ZeppelinConfiguration conf) {
     this.conf = conf;
+    try {
+      this.configStorage = ConfigStorage.getInstance(conf);
+      // init notesAuth by reading notebook-authorization.json
+      NotebookAuthorizationInfoSaving authorizationInfoSaving = configStorage.loadNotebookAuthorization();
+      if (authorizationInfoSaving != null) {
+        for (Map.Entry<String, Map<String, Set<String>>> entry : authorizationInfoSaving.authInfo.entrySet()) {
+          String noteId = entry.getKey();
+          Map<String, Set<String>> permissions = entry.getValue();
+          notesAuth.put(noteId, new NoteAuth(noteId, permissions));
+        }
+      }
+    } catch (IOException e) {
+      throw new RuntimeException("Fail to create ConfigStorage", e);
+    }
   }
 
-  private Set<String> validateUser(Set<String> users) {
+  /**
+   * Create NoteAuth, this method only create NoteAuth in memory, you need to call method
+   * saveNoteAuth to persistent it to storage.
+   * @param noteId
+   * @param subject
+   * @throws IOException
+   */
+  public void createNoteAuth(String noteId, AuthenticationInfo subject) throws IOException {
+    NoteAuth noteAuth =  new NoteAuth(noteId, subject);
+    this.notesAuth.put(noteId, noteAuth);
+  }
+
+  public void cloneNoteMeta(String noteId, String sourceNoteId, AuthenticationInfo subject) throws IOException {
+    NoteAuth noteAuth =  new NoteAuth(noteId, subject);
+    this.notesAuth.put(noteId, noteAuth);
+  }
+
+  /**
+   * Persistent NoteAuth
+   *
+   * @param noteId
+   * @param subject
+   * @throws IOException
+   */
+  public void saveNoteAuth(String noteId, AuthenticationInfo subject) throws IOException {
+    configStorage.save(new NotebookAuthorizationInfoSaving(this.notesAuth));
+  }
+
+  // skip empty user and remove the white space around user name.
+  private Set<String> normalizeUsers(Set<String> users) {
     Set<String> returnUser = new HashSet<>();
     for (String user : users) {
       if (!user.trim().isEmpty()) {
@@ -71,164 +115,167 @@ public class AuthorizationService implements ClusterEventListener {
   }
 
   public void setOwners(String noteId, Set<String> entities) throws IOException {
-    inlineSetOwners(noteId, entities);
-    broadcastClusterEvent(ClusterEvent.SET_OWNERS_PERMISSIONS, noteId, null, entities);
-  }
-
-  private void inlineSetOwners(String noteId, Set<String> entities) throws IOException {
-    entities = validateUser(entities);
-    notebook.getNote(noteId).setOwners(entities);
+    setOwners(noteId, entities, true);
   }
 
   public void setReaders(String noteId, Set<String> entities) throws IOException {
-    inlineSetReaders(noteId, entities);
-    broadcastClusterEvent(ClusterEvent.SET_READERS_PERMISSIONS, noteId, null, entities);
-  }
-
-  private void inlineSetReaders(String noteId, Set<String> entities) throws IOException {
-    entities = validateUser(entities);
-    notebook.getNote(noteId).setReaders(entities);
-  }
-
-  public void setRunners(String noteId, Set<String> entities) throws IOException {
-    inlineSetRunners(noteId, entities);
-    broadcastClusterEvent(ClusterEvent.SET_RUNNERS_PERMISSIONS, noteId, null, entities);
-  }
-
-  private void inlineSetRunners(String noteId, Set<String> entities) throws IOException {
-    entities = validateUser(entities);
-    notebook.getNote(noteId).setRunners(entities);
+    setReaders(noteId, entities, true);
   }
 
   public void setWriters(String noteId, Set<String> entities) throws IOException {
-    inlineSetWriters(noteId, entities);
-    broadcastClusterEvent(ClusterEvent.SET_WRITERS_PERMISSIONS, noteId, null, entities);
+    setWriters(noteId, entities, true);
   }
 
-  private void inlineSetWriters(String noteId, Set<String> entities) throws IOException {
-    entities = validateUser(entities);
-    notebook.getNote(noteId).setWriters(entities);
+  public void setRunners(String noteId, Set<String> entities) throws IOException {
+    setRunners(noteId, entities, true);
+  }
+
+  public void setRoles(String user, Set<String> roles) {
+    setRoles(user, roles, true);
+  }
+
+  public void clearPermission(String noteId) throws IOException {
+    clearPermission(noteId, true);
+  }
+
+  public void setOwners(String noteId, Set<String> entities, boolean broadcast) throws IOException {
+    entities = normalizeUsers(entities);
+    NoteAuth noteAuth = notesAuth.get(noteId);
+    if (noteAuth == null) {
+      throw new IOException("No note found for noteId: " + noteId);
+    }
+    noteAuth.setOwners(entities);
+    if (broadcast) {
+      broadcastClusterEvent(ClusterEvent.SET_OWNERS_PERMISSIONS, noteId, null, entities);
+    }
+  }
+
+  public void setReaders(String noteId, Set<String> entities, boolean broadcast) throws IOException {
+    entities = normalizeUsers(entities);
+    NoteAuth noteAuth = notesAuth.get(noteId);
+    if (noteAuth == null) {
+      throw new IOException("No note found for noteId: " + noteId);
+    }
+    noteAuth.setReaders(entities);
+    if (broadcast) {
+      broadcastClusterEvent(ClusterEvent.SET_READERS_PERMISSIONS, noteId, null, entities);
+    }
+  }
+
+  public void setRunners(String noteId, Set<String> entities, boolean broadcast) throws IOException {
+    entities = normalizeUsers(entities);
+    NoteAuth noteAuth = notesAuth.get(noteId);
+    if (noteAuth == null) {
+      throw new IOException("No note found for noteId: " + noteId);
+    }
+    noteAuth.setRunners(entities);
+    if (broadcast) {
+      broadcastClusterEvent(ClusterEvent.SET_RUNNERS_PERMISSIONS, noteId, null, entities);
+    }
+  }
+
+  public void setWriters(String noteId, Set<String> entities, boolean broadcast) throws IOException {
+    entities = normalizeUsers(entities);
+    NoteAuth noteAuth = notesAuth.get(noteId);
+    if (noteAuth == null) {
+      throw new IOException("No note found for noteId: " + noteId);
+    }
+    noteAuth.setWriters(entities);
+    if (broadcast) {
+      broadcastClusterEvent(ClusterEvent.SET_WRITERS_PERMISSIONS, noteId, null, entities);
+    }
+  }
+
+  public void setRoles(String user, Set<String> roles, boolean broadcast) {
+    if (StringUtils.isBlank(user)) {
+      LOGGER.warn("Setting roles for empty user");
+      return;
+    }
+    roles = normalizeUsers(roles);
+    userRoles.put(user, roles);
+    if (broadcast) {
+      broadcastClusterEvent(ClusterEvent.SET_ROLES, null, user, roles);
+    }
+  }
+
+  public void clearPermission(String noteId, boolean broadcast) throws IOException {
+    NoteAuth noteAuth = notesAuth.get(noteId);
+    if (noteAuth == null) {
+      throw new IOException("No note found for noteId: " + noteId);
+    }
+    noteAuth.setReaders(Sets.newHashSet());
+    noteAuth.setRunners(Sets.newHashSet());
+    noteAuth.setWriters(Sets.newHashSet());
+    noteAuth.setOwners(Sets.newHashSet());
+
+    if (broadcast) {
+      broadcastClusterEvent(ClusterEvent.CLEAR_PERMISSION, noteId, null, null);
+    }
   }
 
   public Set<String> getOwners(String noteId) {
-    try {
-      Note note = notebook.getNote(noteId);
-      if (note == null) {
-        LOGGER.warn("Note " + noteId + " not found");
-        return EMPTY_SET;
-      }
-      return note.getOwners();
-    } catch (IOException e) {
-      LOGGER.warn("Fail to getOwner for note: " + noteId, e);
+    NoteAuth noteAuth = notesAuth.get(noteId);
+    if (noteAuth == null) {
+      LOGGER.warn("No note found for noteId: " + noteId);
       return EMPTY_SET;
     }
+    return noteAuth.getOwners();
   }
 
   public Set<String> getReaders(String noteId) {
-    try {
-      Note note = notebook.getNote(noteId);
-      if (note == null) {
-        LOGGER.warn("Note " + noteId + " not found");
-        return EMPTY_SET;
-      }
-      return note.getReaders();
-    } catch (IOException e) {
-      LOGGER.warn("Fail to getReaders for note: " + noteId, e);
+    NoteAuth noteAuth = notesAuth.get(noteId);
+    if (noteAuth == null) {
+      LOGGER.warn("No note found for noteId: " + noteId);
       return EMPTY_SET;
     }
+    return noteAuth.getReaders();
   }
 
   public Set<String> getRunners(String noteId) {
-    try {
-      Note note = notebook.getNote(noteId);
-      if (note == null) {
-        LOGGER.warn("Note " + noteId + " not found");
-        return EMPTY_SET;
-      }
-      return note.getRunners();
-    } catch (IOException e) {
-      LOGGER.warn("Fail to getRunners for note: " + noteId, e);
+    NoteAuth noteAuth = notesAuth.get(noteId);
+    if (noteAuth == null) {
+      LOGGER.warn("No note found for noteId: " + noteId);
       return EMPTY_SET;
     }
+    return noteAuth.getRunners();
   }
 
   public Set<String> getWriters(String noteId) {
-    try {
-      Note note = notebook.getNote(noteId);
-      if (note == null) {
-        LOGGER.warn("Note " + noteId + " not found");
-        return EMPTY_SET;
-      }
-      return note.getWriters();
-    } catch (IOException e) {
-      LOGGER.warn("Fail to getWriters for note: " + noteId, e);
+    NoteAuth noteAuth = notesAuth.get(noteId);
+    if (noteAuth == null) {
+      LOGGER.warn("No note found for noteId: " + noteId);
       return EMPTY_SET;
     }
+    return noteAuth.getWriters();
+  }
+
+  public Set<String> getRoles(String user) {
+    return userRoles.getOrDefault(user, Sets.newHashSet());
   }
 
   public boolean isOwner(String noteId, Set<String> entities) {
-    try {
-      Note note = notebook.getNote(noteId);
-      if (note == null) {
-        LOGGER.warn("Note " + noteId + " not found");
-        return false;
-      }
-      return isMember(entities, note.getOwners()) || isAdmin(entities);
-    } catch (IOException e) {
-      LOGGER.warn("Fail to check isOwner for note: " + noteId, e);
-      return false;
-    }
+    return isMember(entities, getOwners(noteId)) || isAdmin(entities);
   }
 
   public boolean isWriter(String noteId, Set<String> entities) {
-    try {
-      Note note = notebook.getNote(noteId);
-      if (note == null) {
-        LOGGER.warn("Note " + noteId + " not found");
-        return false;
-      }
-      return isMember(entities, note.getWriters()) ||
-              isMember(entities, note.getOwners()) ||
-              isAdmin(entities);
-    } catch (IOException e) {
-      LOGGER.warn("Fail to check isWriter for note: " + noteId, e);
-      return false;
-    }
+    return isMember(entities, getWriters(noteId)) ||
+            isMember(entities, getOwners(noteId)) ||
+            isAdmin(entities);
   }
 
   public boolean isReader(String noteId, Set<String> entities) {
-    try {
-      Note note = notebook.getNote(noteId);
-      if (note == null) {
-        LOGGER.warn("Note " + noteId + " not found");
-        return false;
-      }
-      return isMember(entities, note.getReaders()) ||
-              isMember(entities, note.getOwners()) ||
-              isMember(entities, note.getWriters()) ||
-              isMember(entities, note.getRunners()) ||
-              isAdmin(entities);
-    } catch (IOException e) {
-      LOGGER.warn("Fail to check isReader for note: " + noteId, e);
-      return false;
-    }
+    return isMember(entities, getReaders(noteId)) ||
+            isMember(entities, getOwners(noteId)) ||
+            isMember(entities, getWriters(noteId)) ||
+            isMember(entities, getRunners(noteId)) ||
+            isAdmin(entities);
   }
 
   public boolean isRunner(String noteId, Set<String> entities) {
-    try {
-      Note note = notebook.getNote(noteId);
-      if (note == null) {
-        LOGGER.warn("Note " + noteId + " not found");
-        return false;
-      }
-      return isMember(entities, note.getRunners()) ||
-              isMember(entities, note.getWriters()) ||
-              isMember(entities, note.getOwners()) ||
-              isAdmin(entities);
-    } catch (IOException e) {
-      LOGGER.warn("Fail to check isRunner for note: " + noteId, e);
-      return false;
-    }
+    return isMember(entities, getRunners(noteId)) ||
+            isMember(entities, getWriters(noteId)) ||
+            isMember(entities, getOwners(noteId)) ||
+            isAdmin(entities);
   }
 
   private boolean isAdmin(Set<String> entities) {
@@ -295,40 +342,6 @@ public class AuthorizationService implements ClusterEventListener {
     return conf.isNotebookPublic();
   }
 
-  public void setRoles(String user, Set<String> roles) {
-    inlineSetRoles(user, roles);
-    broadcastClusterEvent(ClusterEvent.SET_ROLES, null, user, roles);
-  }
-
-  private void inlineSetRoles(String user, Set<String> roles) {
-    if (StringUtils.isBlank(user)) {
-      LOGGER.warn("Setting roles for empty user");
-      return;
-    }
-    roles = validateUser(roles);
-    userRoles.put(user, roles);
-  }
-
-  public Set<String> getRoles(String user) {
-    Set<String> roles = Sets.newHashSet();
-    if (userRoles.containsKey(user)) {
-      roles.addAll(userRoles.get(user));
-    }
-    return roles;
-  }
-
-  public void clearPermission(String noteId) throws IOException {
-    inlineClearPermission(noteId);
-    broadcastClusterEvent(ClusterEvent.CLEAR_PERMISSION, noteId, null, null);
-  }
-
-  public void inlineClearPermission(String noteId) throws IOException {
-    notebook.getNote(noteId).setReaders(Sets.newHashSet());
-    notebook.getNote(noteId).setRunners(Sets.newHashSet());
-    notebook.getNote(noteId).setWriters(Sets.newHashSet());
-    notebook.getNote(noteId).setOwners(Sets.newHashSet());
-  }
-
   @Override
   public void onClusterEvent(String msg) {
     if (LOGGER.isDebugEnabled()) {
@@ -347,22 +360,22 @@ public class AuthorizationService implements ClusterEventListener {
     try {
       switch (message.clusterEvent) {
         case SET_READERS_PERMISSIONS:
-          inlineSetReaders(noteId, set);
+          setReaders(noteId, set, false);
           break;
         case SET_WRITERS_PERMISSIONS:
-          inlineSetWriters(noteId, set);
+          setWriters(noteId, set, false);
           break;
         case SET_OWNERS_PERMISSIONS:
-          inlineSetOwners(noteId, set);
+          setOwners(noteId, set, false);
           break;
         case SET_RUNNERS_PERMISSIONS:
-          inlineSetRunners(noteId, set);
+          setRunners(noteId, set, false);
           break;
         case SET_ROLES:
-          inlineSetRoles(user, set);
+          setRoles(user, set, false);
           break;
         case CLEAR_PERMISSION:
-          inlineClearPermission(noteId);
+          clearPermission(noteId, false);
           break;
         default:
           LOGGER.error("Unknown clusterEvent:{}, msg:{} ", message.clusterEvent, msg);

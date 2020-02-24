@@ -69,7 +69,6 @@ public class FileSystemNotebookRepo implements NotebookRepo {
     return noteInfos;
   }
 
-
   @Override
   public Note get(String noteId, String notePath, AuthenticationInfo subject) throws IOException {
     String content = this.fs.readFile(
@@ -122,18 +121,18 @@ public class FileSystemNotebookRepo implements NotebookRepo {
 
   @Override
   public void close() {
-    LOGGER.warn("close is not implemented for HdfsNotebookRepo");
+    LOGGER.warn("close is not implemented for FileSystemNotebookRepo");
   }
 
   @Override
   public List<NotebookRepoSettingsInfo> getSettings(AuthenticationInfo subject) {
-    LOGGER.warn("getSettings is not implemented for HdfsNotebookRepo");
+    LOGGER.warn("getSettings is not implemented for FileSystemNotebookRepo");
     return null;
   }
 
   @Override
   public void updateSettings(Map<String, String> settings, AuthenticationInfo subject) {
-    LOGGER.warn("updateSettings is not implemented for HdfsNotebookRepo");
+    LOGGER.warn("updateSettings is not implemented for FileSystemNotebookRepo");
   }
 
 }

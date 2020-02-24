@@ -30,7 +30,6 @@ import java.util.Map;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.vfs2.FileObject;
-import org.apache.commons.vfs2.FileSystemException;
 import org.apache.commons.vfs2.FileSystemManager;
 import org.apache.commons.vfs2.NameScope;
 import org.apache.commons.vfs2.Selectors;
@@ -39,6 +38,7 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
+import org.apache.zeppelin.notebook.NoteAuth;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,7 +61,7 @@ public class VFSNotebookRepo implements NotebookRepo {
   @Override
   public void init(ZeppelinConfiguration conf) throws IOException {
     this.conf = conf;
-    setNotebookDirectory(conf.getRelativeDir(conf.getNotebookDir()));
+    setNotebookDirectory(conf.getNotebookDir());
   }
 
   protected void setNotebookDirectory(String notebookDirPath) throws IOException {
@@ -123,9 +123,6 @@ public class VFSNotebookRepo implements NotebookRepo {
         } catch (IOException e) {
           LOGGER.warn(e.getMessage());
         }
-
-      } else {
-        LOGGER.debug("Unrecognized note file: " + noteFileName);
       }
     }
     return noteInfos;
@@ -163,7 +160,9 @@ public class VFSNotebookRepo implements NotebookRepo {
   }
 
   @Override
-  public void move(String noteId, String notePath, String newNotePath,
+  public void move(String noteId,
+                   String notePath,
+                   String newNotePath,
                    AuthenticationInfo subject) throws IOException {
     LOGGER.info("Move note " + noteId + " from " + notePath + " to " + newNotePath);
     FileObject fileObject = rootNotebookFileObject.resolveFile(
@@ -246,6 +245,5 @@ public class VFSNotebookRepo implements NotebookRepo {
       LOGGER.error("Cannot update notebook directory", e);
     }
   }
-
 }
 

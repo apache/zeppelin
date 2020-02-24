@@ -21,11 +21,12 @@ package org.apache.zeppelin.notebook;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
-import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -47,6 +48,7 @@ import java.util.stream.Collectors;
  * TODO(zjffdu) implement the lifecycle manager of Note
  * (release memory if note is not used for some period)
  */
+@Singleton
 public class NoteManager {
   private static final Logger LOGGER = LoggerFactory.getLogger(NoteManager.class);
   public static String TRASH_FOLDER = "~Trash";
@@ -57,6 +59,7 @@ public class NoteManager {
   // noteId -> notePath
   private Map<String, String> notesInfo;
 
+  @Inject
   public NoteManager(NotebookRepo notebookRepo) throws IOException {
     this.notebookRepo = notebookRepo;
     this.root = new Folder("/", notebookRepo);
@@ -171,7 +174,6 @@ public class NoteManager {
 
   public void addNote(Note note, AuthenticationInfo subject) throws IOException {
     addOrUpdateNoteNode(note, true);
-    this.notebookRepo.save(note, subject);
     note.setLoaded(true);
   }
 
@@ -221,7 +223,6 @@ public class NoteManager {
     // update notebookrepo
     this.notebookRepo.move(noteId, notePath, newNotePath, subject);
   }
-
 
   public void moveFolder(String folderPath,
                          String newFolderPath,

@@ -18,12 +18,11 @@
 package org.apache.zeppelin.notebook.repo;
 
 import com.google.common.collect.Lists;
-import javax.inject.Inject;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.notebook.Note;
+import org.apache.zeppelin.notebook.NoteAuth;
 import org.apache.zeppelin.notebook.NoteInfo;
-import org.apache.zeppelin.notebook.NotebookAuthorization;
 import org.apache.zeppelin.notebook.OldNoteInfo;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.plugin.PluginManager;
@@ -32,8 +31,14 @@ import org.apache.zeppelin.util.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.inject.Inject;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Notebook repository sync with remote storage
@@ -143,23 +148,6 @@ public class NotebookRepoSync implements NotebookRepoWithVersionControl {
     }
   }
 
-  public void mergeAuthorizationInfo() throws IOException {
-    LOGGER.info("Merge AuthorizationInfo into note file");
-    NotebookAuthorization notebookAuthorization = NotebookAuthorization.getInstance();
-    for (int i = 0; i < repos.size(); ++i) {
-      NotebookRepo notebookRepo = repos.get(i);
-      Map<String, NoteInfo> notesInfo = notebookRepo.list(AuthenticationInfo.ANONYMOUS);
-      for (NoteInfo noteInfo : notesInfo.values()) {
-        Note note = notebookRepo.get(noteInfo.getId(), noteInfo.getPath(), AuthenticationInfo.ANONYMOUS);
-        note.setOwners(notebookAuthorization.getOwners(noteInfo.getId()));
-        note.setRunners(notebookAuthorization.getRunners(noteInfo.getId()));
-        note.setReaders(notebookAuthorization.getReaders(noteInfo.getId()));
-        note.setWriters(notebookAuthorization.getWriters(noteInfo.getId()));
-        notebookRepo.save(note, AuthenticationInfo.ANONYMOUS);
-      }
-    }
-  }
-
   public List<NotebookRepoWithSettings> getNotebookRepos(AuthenticationInfo subject) {
     List<NotebookRepoWithSettings> reposSetting = Lists.newArrayList();
 
@@ -201,26 +189,26 @@ public class NotebookRepoSync implements NotebookRepoWithVersionControl {
     return getRepo(0).list(subject);
   }
 
-  /* list from specific repo (for tests) */
+  /* List NoteInfo from specific repo (for tests) */
   List<NoteInfo> list(int repoIndex, AuthenticationInfo subject) throws IOException {
     return new ArrayList<>(getRepo(repoIndex).list(subject).values());
   }
 
   /**
-   *  Returns from Notebook from the first repository
+   * Get Note from the first repository
    */
   @Override
   public Note get(String noteId, String notePath, AuthenticationInfo subject) throws IOException {
     return getRepo(0).get(noteId, notePath, subject);
   }
 
-  /* get note from specific repo (for tests) */
+  /* Get Note from specific repo (for tests) */
   Note get(int repoIndex, String noteId, String noteName, AuthenticationInfo subject) throws IOException {
     return getRepo(repoIndex).get(noteId, noteName, subject);
   }
 
   /**
-   *  Saves to all repositories
+   *  Saves note to all repositories
    */
   @Override
   public void save(Note note, AuthenticationInfo subject) throws IOException {

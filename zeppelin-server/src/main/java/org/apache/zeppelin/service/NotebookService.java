@@ -39,8 +39,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
-import org.apache.zeppelin.interpreter.Interpreter;
-import org.apache.zeppelin.interpreter.InterpreterNotFoundException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
@@ -50,7 +48,6 @@ import org.apache.zeppelin.notebook.NoteManager;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.notebook.AuthorizationService;
-import org.apache.zeppelin.notebook.ParagraphTextParser;
 import org.apache.zeppelin.notebook.repo.NotebookRepoWithVersionControl;
 import org.apache.zeppelin.notebook.scheduler.SchedulerService;
 import org.apache.zeppelin.notebook.socket.Message;
@@ -150,7 +147,7 @@ public class NotebookService {
 
     try {
       Note note = notebook.createNote(normalizeNotePath(notePath), defaultInterpreterGroup,
-          context.getAutheInfo());
+          context.getAutheInfo(), false);
       // it's an empty note. so add one paragraph
       note.addNewParagraph(context.getAutheInfo());
       notebook.saveNote(note, context.getAutheInfo());
@@ -928,8 +925,8 @@ public class NotebookService {
   }
 
   public void moveNoteToTrash(String noteId,
-                                 ServiceContext context,
-                                 ServiceCallback<Note> callback) throws IOException {
+                              ServiceContext context,
+                              ServiceCallback<Note> callback) throws IOException {
     Note note = notebook.getNote(noteId);
     if (note == null) {
       callback.onFailure(new NoteNotFoundException(noteId), context);

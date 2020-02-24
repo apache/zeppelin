@@ -80,10 +80,9 @@ public class ZeppelinConfigurationTest {
 
   @Test
   public void getNotebookDirTest() throws ConfigurationException {
-
     ZeppelinConfiguration conf = new ZeppelinConfiguration(this.getClass().getResource("/zeppelin-site.xml"));
     String notebookLocation = conf.getNotebookDir();
-    Assert.assertEquals("notebook", notebookLocation);
+    assertTrue(notebookLocation.endsWith("notebook"));
   }
 
   @Test

@@ -27,13 +27,12 @@ import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterNotFoundException;
 import org.apache.zeppelin.interpreter.InterpreterOption;
 import org.apache.zeppelin.interpreter.InterpreterResult;
-import org.apache.zeppelin.interpreter.InterpreterResultMessage;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
-import org.apache.zeppelin.notebook.repo.InMemoryNotebookRepo;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.notebook.repo.NotebookRepoSettingsInfo;
 import org.apache.zeppelin.notebook.repo.NotebookRepoWithVersionControl;
+import org.apache.zeppelin.notebook.repo.VFSNotebookRepo;
 import org.apache.zeppelin.notebook.scheduler.QuartzSchedulerService;
 import org.apache.zeppelin.notebook.scheduler.SchedulerService;
 import org.apache.zeppelin.resource.LocalResourcePool;
@@ -78,6 +77,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
   private static final Logger logger = LoggerFactory.getLogger(NotebookTest.class);
 
   private Notebook notebook;
+  private NoteManager noteManager;
   private NotebookRepo notebookRepo;
   private AuthorizationService authorizationService;
   private Credentials credentials;
@@ -92,20 +92,23 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     super.setUp();
 
     SearchService search = mock(SearchService.class);
-    notebookRepo = new InMemoryNotebookRepo();
+    notebookRepo = new VFSNotebookRepo();
+    notebookRepo.init(conf);
+    noteManager = new NoteManager(notebookRepo);
+    authorizationService = new AuthorizationService(conf);
 
     credentials = new Credentials(conf.credentialsPersist(), conf.getCredentialsPath(), null);
-    notebook = new Notebook(conf, notebookRepo, interpreterFactory, interpreterSettingManager, search,
+    notebook = new Notebook(conf, authorizationService, notebookRepo, noteManager, interpreterFactory, interpreterSettingManager, search,
             credentials, null);
-    authorizationService = new AuthorizationService(notebook, notebook.getConf());
     notebook.setParagraphJobListener(this);
     schedulerService = new QuartzSchedulerService(conf, notebook);
-
   }
 
   @After
   public void tearDown() throws Exception {
     super.tearDown();
+    System.clearProperty(ConfVars.ZEPPELIN_NOTEBOOK_PUBLIC.getVarName());
+    System.clearProperty(ConfVars.ZEPPELIN_NOTEBOOK_CRON_ENABLE.getVarName());
   }
 
   @Test
@@ -114,13 +117,13 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     Notebook notebook;
 
     notebookRepo = new DummyNotebookRepo();
-    notebook = new Notebook(conf, notebookRepo, interpreterFactory,
+    notebook = new Notebook(conf, mock(AuthorizationService.class), notebookRepo, new NoteManager(notebookRepo), interpreterFactory,
         interpreterSettingManager, null,
         credentials, null);
     assertFalse("Revision is not supported in DummyNotebookRepo", notebook.isRevisionSupported());
 
     notebookRepo = new DummyNotebookRepoWithVersionControl();
-    notebook = new Notebook(conf, notebookRepo, interpreterFactory,
+    notebook = new Notebook(conf, mock(AuthorizationService.class), notebookRepo, new NoteManager(notebookRepo), interpreterFactory,
         interpreterSettingManager, null,
         credentials, null);
     assertTrue("Revision is supported in DummyNotebookRepoWithVersionControl",
@@ -138,7 +141,6 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     public Map<String, NoteInfo> list(AuthenticationInfo subject) throws IOException {
       return new HashMap<>();
     }
-
 
     @Override
     public Note get(String noteId, String notePath, AuthenticationInfo subject) throws IOException {
@@ -297,13 +299,14 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     Note note = notebook.createNote("note1", AuthenticationInfo.ANONYMOUS);
     Paragraph p1 = note.insertNewParagraph(0, AuthenticationInfo.ANONYMOUS);
     p1.setText("%md hello world");
+    notebook.saveNote(note, AuthenticationInfo.ANONYMOUS);
 
     // when load
     notebook.reloadAllNotes(anonymous);
     assertEquals(1, notebook.getAllNotes().size());
 
     // then interpreter factory should be injected into all the paragraphs
-    note = notebook.getAllNotes().get(0);
+    note = notebook.getNote(note.getId());
     try {
       note.getParagraphs().get(0).getBindedInterpreter();
       fail("Should throw InterpreterNotFoundException");
@@ -339,10 +342,9 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
 
 
     // delete notebook from notebook list when reloadAllNotes() is called
-    ((InMemoryNotebookRepo) notebookRepo).reset();
     notebook.reloadAllNotes(anonymous);
     notes = notebook.getAllNotes();
-    assertEquals(notes.size(), 0);
+    assertEquals(notes.size(), 2);
   }
 
   @Test
