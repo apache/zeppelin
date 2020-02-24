@@ -31,6 +31,7 @@ public enum ClusterEvent {
   UPDATE_NOTE_PERMISSIONS,
   // CLUSTER_AUTH_EVENT_TOPIC
   SET_ROLES,
+  // (TODO) Consolidate the permission related events into one event
   SET_READERS_PERMISSIONS,
   SET_RUNNERS_PERMISSIONS,
   SET_WRITERS_PERMISSIONS,

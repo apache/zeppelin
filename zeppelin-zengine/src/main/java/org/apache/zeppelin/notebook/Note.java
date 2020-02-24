@@ -95,9 +95,7 @@ public class Note implements JsonSerializable {
   private String id;
   private String defaultInterpreterGroup;
   private String version;
-  // permissions -> users
-  // e.g. "owners" -> {"u1"}, "readers" -> {"u1", "u2"}
-  private Map<String, Set<String>> permissions = new HashMap<>();
+
   private Map<String, Object> noteParams = new LinkedHashMap<>();
   private Map<String, Input> noteForms = new LinkedHashMap<>();
   private Map<String, List<AngularObject>> angularObjects = new HashMap<>();
@@ -245,103 +243,6 @@ public class Note implements JsonSerializable {
     this.defaultInterpreterGroup = defaultInterpreterGroup;
   }
 
-  // used when creating new note
-  public void initPermissions(AuthenticationInfo subject) {
-    if (!AuthenticationInfo.isAnonymous(subject)) {
-      if (ZeppelinConfiguration.create().isNotebookPublic()) {
-        // add current user to owners - can be public
-        Set<String> owners = getOwners();
-        owners.add(subject.getUser());
-        setOwners(owners);
-      } else {
-        // add current user to owners, readers, runners, writers - private note
-        Set<String> entities = getOwners();
-        entities.add(subject.getUser());
-        setOwners(entities);
-        entities = getReaders();
-        entities.add(subject.getUser());
-        setReaders(entities);
-        entities = getRunners();
-        entities.add(subject.getUser());
-        setRunners(entities);
-        entities = getWriters();
-        entities.add(subject.getUser());
-        setWriters(entities);
-      }
-    }
-  }
-
-  public void setOwners(Set<String> entities) {
-    permissions.put("owners", entities);
-  }
-
-  public Set<String> getOwners() {
-    Set<String> owners = permissions.get("owners");
-    if (owners == null) {
-      owners = new HashSet<>();
-    } else {
-      owners = checkCaseAndConvert(owners);
-    }
-    return owners;
-  }
-
-  public Set<String> getReaders() {
-    Set<String> readers = permissions.get("readers");
-    if (readers == null) {
-      readers = new HashSet<>();
-    } else {
-      readers = checkCaseAndConvert(readers);
-    }
-    return readers;
-  }
-
-  public void setReaders(Set<String> entities) {
-    permissions.put("readers", entities);
-  }
-
-  public Set<String> getRunners() {
-    Set<String> runners = permissions.get("runners");
-    if (runners == null) {
-      runners = new HashSet<>();
-    } else {
-      runners = checkCaseAndConvert(runners);
-    }
-    return runners;
-  }
-
-  public void setRunners(Set<String> entities) {
-    permissions.put("runners", entities);
-  }
-
-  public Set<String> getWriters() {
-    Set<String> writers = permissions.get("writers");
-    if (writers == null) {
-      writers = new HashSet<>();
-    } else {
-      writers = checkCaseAndConvert(writers);
-    }
-    return writers;
-  }
-
-  public void setWriters(Set<String> entities) {
-    permissions.put("writers", entities);
-  }
-
-  /*
-   * If case conversion is enforced, then change entity names to lower case
-   */
-  private Set<String> checkCaseAndConvert(Set<String> entities) {
-    if (ZeppelinConfiguration.create().isUsernameForceLowerCase()) {
-      Set<String> set2 = new HashSet<String>();
-      for (String name : entities) {
-        set2.add(name.toLowerCase());
-      }
-      return set2;
-    } else {
-      return entities;
-    }
-  }
-
   public Map<String, Object> getNoteParams() {
     return noteParams;
   }
@@ -360,6 +261,7 @@ public class Note implements JsonSerializable {
 
   public void setName(String name) {
     this.name = name;
+    // for the notes before 0.9, get path from name.
     if (this.path == null) {
       if (name.startsWith("/")) {
         this.path = name;

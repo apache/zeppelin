@@ -51,6 +51,7 @@ import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.interpreter.recovery.RecoveryStorage;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
 import org.apache.zeppelin.notebook.NoteEventListener;
+import org.apache.zeppelin.notebook.NoteManager;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.AuthorizationService;
 import org.apache.zeppelin.notebook.Paragraph;
@@ -164,6 +165,7 @@ public class ZeppelinServer extends ResourceConfig {
             bindAsContract(AdminService.class).in(Singleton.class);
             bindAsContract(AuthorizationService.class).in(Singleton.class);
             bindAsContract(ConnectionManager.class).in(Singleton.class);
+            bindAsContract(NoteManager.class).in(Singleton.class);
             // TODO(jl): Will make it more beautiful
             if (!StringUtils.isBlank(conf.getShiroPath())) {
               bind(ShiroAuthenticationService.class).to(AuthenticationService.class).in(Singleton.class);

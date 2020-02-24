@@ -24,7 +24,6 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -64,8 +63,8 @@ import org.slf4j.LoggerFactory;
 public class Notebook {
   private static final Logger LOGGER = LoggerFactory.getLogger(Notebook.class);
 
+  private AuthorizationService authorizationService;
   private NoteManager noteManager;
-
   private InterpreterFactory replFactory;
   private InterpreterSettingManager interpreterSettingManager;
   private ZeppelinConfiguration conf;
@@ -83,14 +82,17 @@ public class Notebook {
    */
   public Notebook(
       ZeppelinConfiguration conf,
+      AuthorizationService authorizationService,
       NotebookRepo notebookRepo,
+      NoteManager noteManager,
       InterpreterFactory replFactory,
       InterpreterSettingManager interpreterSettingManager,
       SearchService noteSearchService,
       Credentials credentials)
       throws IOException {
-    this.noteManager = new NoteManager(notebookRepo);
     this.conf = conf;
+    this.authorizationService = authorizationService;
+    this.noteManager = noteManager;
     this.notebookRepo = notebookRepo;
     this.replFactory = replFactory;
     this.interpreterSettingManager = interpreterSettingManager;
@@ -106,7 +108,9 @@ public class Notebook {
   @Inject
   public Notebook(
       ZeppelinConfiguration conf,
+      AuthorizationService authorizationService,
       NotebookRepo notebookRepo,
+      NoteManager noteManager,
       InterpreterFactory replFactory,
       InterpreterSettingManager interpreterSettingManager,
       SearchService noteSearchService,
@@ -115,7 +119,9 @@ public class Notebook {
       throws IOException {
     this(
         conf,
+        authorizationService,
         notebookRepo,
+        noteManager,
         replFactory,
         interpreterSettingManager,
         noteSearchService,
@@ -124,6 +130,10 @@ public class Notebook {
       this.noteEventListeners.add(noteEventListener);
     }
     this.paragraphJobListener = (ParagraphJobListener) noteEventListener;
+  }
+
+  public NoteManager getNoteManager() {
+    return noteManager;
   }
 
   /**
@@ -150,6 +160,23 @@ public class Notebook {
   }
 
   /**
+   * Creating new note. defaultInterpreterGroup is not provided, so the global
+   * defaultInterpreterGroup (zeppelin.interpreter.group.default) is used
+   *
+   * @param notePath
+   * @param subject
+   * @param save
+   * @return
+   * @throws IOException
+   */
+  public Note createNote(String notePath,
+                         AuthenticationInfo subject,
+                         boolean save) throws IOException {
+    return createNote(notePath, interpreterSettingManager.getDefaultInterpreterSetting().getName(),
+            subject, save);
+  }
+
+  /**
    * Creating new note.
    *
    * @param notePath
@@ -161,11 +188,32 @@ public class Notebook {
   public Note createNote(String notePath,
                          String defaultInterpreterGroup,
                          AuthenticationInfo subject) throws IOException {
+    return createNote(notePath, defaultInterpreterGroup, subject, true);
+  }
+
+  /**
+   * Creating new note.
+   *
+   * @param notePath
+   * @param defaultInterpreterGroup
+   * @param subject
+   * @return
+   * @throws IOException
+   */
+  public Note createNote(String notePath,
+                         String defaultInterpreterGroup,
+                         AuthenticationInfo subject,
+                         boolean save) throws IOException {
     Note note =
-        new Note(notePath, defaultInterpreterGroup, replFactory, interpreterSettingManager,
-            paragraphJobListener, credentials, noteEventListeners);
-    note.initPermissions(subject);
+            new Note(notePath, defaultInterpreterGroup, replFactory, interpreterSettingManager,
+                    paragraphJobListener, credentials, noteEventListeners);
     noteManager.addNote(note, subject);
+    // init noteMeta
+    authorizationService.createNoteAuth(note.getId(), subject);
+    authorizationService.saveNoteAuth(note.getId(), subject);
+    if (save) {
+      noteManager.saveNote(note, subject);
+    }
     fireNoteCreateEvent(note, subject);
     return note;
   }
@@ -225,12 +273,13 @@ public class Notebook {
     if (sourceNote == null) {
       throw new IOException("Source note: " + sourceNoteId + " not found");
     }
-    Note newNote = createNote(newNotePath, subject);
+    Note newNote = createNote(newNotePath, subject, false);
     List<Paragraph> paragraphs = sourceNote.getParagraphs();
     for (Paragraph p : paragraphs) {
       newNote.addCloneParagraph(p, subject);
     }
     saveNote(newNote, subject);
+    authorizationService.cloneNoteMeta(newNote.getId(), sourceNoteId, subject);
     return newNote;
   }
 
@@ -502,6 +551,7 @@ public class Notebook {
   }
 
   public List<NoteInfo> getNotesInfo(Function<String, Boolean> func) {
+    LOGGER.info("Start getNoteList");
     String homescreenNoteId = conf.getString(ConfVars.ZEPPELIN_NOTEBOOK_HOMESCREEN);
     boolean hideHomeScreenNotebookFromList =
         conf.getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_HOMESCREEN_HIDE);
@@ -525,6 +575,7 @@ public class Notebook {
             }
             return name1.compareTo(name2);
           });
+      LOGGER.info("Finish getNoteList");
       return notesInfo;
     }
   }

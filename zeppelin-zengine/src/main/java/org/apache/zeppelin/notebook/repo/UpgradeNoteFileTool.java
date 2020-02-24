@@ -40,6 +40,5 @@ public class UpgradeNoteFileTool {
     ZeppelinConfiguration conf = ZeppelinConfiguration.create();
     NotebookRepoSync notebookRepoSync = new NotebookRepoSync(conf);
     notebookRepoSync.convertNoteFiles(conf, cmd.hasOption("d"));
-    notebookRepoSync.mergeAuthorizationInfo();
   }
 }

@@ -295,7 +295,7 @@ public class NotebookRestApi extends AbstractRestApi {
             authorizationService.getReaders(noteId), authorizationService.getRunners(noteId),
             authorizationService.getWriters(noteId));
     AuthenticationInfo subject = new AuthenticationInfo(authenticationService.getPrincipal());
-    notebook.saveNote(note, subject);
+    authorizationService.saveNoteAuth(noteId, subject);
     notebookServer.broadcastNote(note);
     notebookServer.broadcastNoteList(subject, userAndRoles);
     return new JsonResponse<>(Status.OK).build();
