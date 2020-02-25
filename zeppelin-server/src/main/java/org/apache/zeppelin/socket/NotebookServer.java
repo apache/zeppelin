@@ -552,6 +552,8 @@ public class NotebookServer extends WebSocketServlet
                       new TypeToken<ArrayList<String>>() {}.getType());
       if (!settingIdList.isEmpty()) {
         note.setDefaultInterpreterGroup(settingIdList.get(0));
+        getNotebook().saveNote(note,
+                new AuthenticationInfo(fromMessage.principal, fromMessage.roles, fromMessage.ticket));
       }
       List<InterpreterSetting> bindedSettings = note.getBindedInterpreterSettings();
       for (InterpreterSetting setting : bindedSettings) {
