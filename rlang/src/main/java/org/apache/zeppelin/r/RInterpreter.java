@@ -110,7 +110,7 @@ public class RInterpreter extends AbstractInterpreter {
       zeppelinR.open();
       LOGGER.info("ZeppelinR is opened successfully.");
     } catch (IOException e) {
-      throw new InterpreterException("Exception while opening SparkRInterpreter", e);
+      throw new InterpreterException("Exception while opening RInterpreter", e);
     }
 
     if (useKnitr) {
