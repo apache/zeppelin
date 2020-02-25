@@ -153,7 +153,7 @@ public abstract class ProcessLauncher implements ExecuteResultHandler {
   }
 
   public void stop() {
-    if (watchdog != null) {
+    if (watchdog != null && isRunning()) {
       watchdog.destroyProcess();
       watchdog = null;
     }
