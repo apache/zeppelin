@@ -58,6 +58,12 @@
       <groupId>org.apache.zeppelin</groupId>
       <artifactId>zeppelin-markdown</artifactId>
       <version>${project.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.apache.zeppelin</groupId>
+          <artifactId>zeppelin-interpreter-shaded</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <!-- Test -->
