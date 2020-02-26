@@ -916,7 +916,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     // create a note and a paragraph
     Note note = notebook.createNote("note1", anonymous);
 
-    AngularObjectRegistry registry = note.getBindedInterpreterSettings().get(0).getOrCreateInterpreterGroup(anonymous.getUser(), "sharedProcess")
+    AngularObjectRegistry registry = note.getBindedInterpreterSettings(new ArrayList<>()).get(0).getOrCreateInterpreterGroup(anonymous.getUser(), "sharedProcess")
         .getAngularObjectRegistry();
 
     Paragraph p1 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
@@ -947,7 +947,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     // create a note and a paragraph
     Note note = notebook.createNote("note1", anonymous);
 
-    AngularObjectRegistry registry = note.getBindedInterpreterSettings().get(0).getOrCreateInterpreterGroup(anonymous.getUser(), "sharedProcess")
+    AngularObjectRegistry registry = note.getBindedInterpreterSettings(new ArrayList<>()).get(0).getOrCreateInterpreterGroup(anonymous.getUser(), "sharedProcess")
         .getAngularObjectRegistry();
 
     Paragraph p1 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
@@ -979,7 +979,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     // create a note and a paragraph
     Note note = notebook.createNote("note1", anonymous);
 
-    AngularObjectRegistry registry = note.getBindedInterpreterSettings().get(0).getOrCreateInterpreterGroup(anonymous.getUser(), "sharedProcess")
+    AngularObjectRegistry registry = note.getBindedInterpreterSettings(new ArrayList<>()).get(0).getOrCreateInterpreterGroup(anonymous.getUser(), "sharedProcess")
         .getAngularObjectRegistry();
 
     // add local scope object
@@ -988,8 +988,8 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     registry.add("o2", "object2", null, null);
 
     // restart interpreter
-    interpreterSettingManager.restart(note.getBindedInterpreterSettings().get(0).getId());
-    registry = note.getBindedInterpreterSettings().get(0)
+    interpreterSettingManager.restart(note.getBindedInterpreterSettings(new ArrayList<>()).get(0).getId());
+    registry = note.getBindedInterpreterSettings(new ArrayList<>()).get(0)
         .getOrCreateInterpreterGroup(anonymous.getUser(), "sharedProcess")
         .getAngularObjectRegistry();
 
@@ -1195,7 +1195,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     p1.setAuthenticationInfo(anonymous);
 
     // restart interpreter with per user session enabled
-    for (InterpreterSetting setting : note1.getBindedInterpreterSettings()) {
+    for (InterpreterSetting setting : note1.getBindedInterpreterSettings(new ArrayList<>())) {
       setting.getOption().setPerNote(setting.getOption().SCOPED);
       notebook.getInterpreterSettingManager().restart(setting.getId());
     }
@@ -1243,7 +1243,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
 
 
     // restart interpreter with per note session enabled
-    for (InterpreterSetting setting : note1.getBindedInterpreterSettings()) {
+    for (InterpreterSetting setting : note1.getBindedInterpreterSettings(new ArrayList<>())) {
       setting.getOption().setPerNote(InterpreterOption.SCOPED);
       notebook.getInterpreterSettingManager().restart(setting.getId());
     }
@@ -1286,7 +1286,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     assertEquals(p1.getReturn().message().get(0).getData(), p2.getReturn().message().get(0).getData());
 
     // restart interpreter with scoped mode enabled
-    for (InterpreterSetting setting : note1.getBindedInterpreterSettings()) {
+    for (InterpreterSetting setting : note1.getBindedInterpreterSettings(new ArrayList<>())) {
       setting.getOption().setPerNote(InterpreterOption.SCOPED);
       notebook.getInterpreterSettingManager().restart(setting.getId());
     }
@@ -1301,7 +1301,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     assertNotEquals(p1.getReturn().message().get(0).getData(), p2.getReturn().message().get(0).getData());
 
     // restart interpreter with isolated mode enabled
-    for (InterpreterSetting setting : note1.getBindedInterpreterSettings()) {
+    for (InterpreterSetting setting : note1.getBindedInterpreterSettings(new ArrayList<>())) {
       setting.getOption().setPerNote(InterpreterOption.ISOLATED);
       setting.getInterpreterSettingManager().restart(setting.getId());
     }

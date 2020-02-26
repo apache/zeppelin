@@ -21,6 +21,8 @@ import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 
 import java.io.IOException;
+import java.util.ArrayList;
+
 import org.apache.zeppelin.interpreter.AbstractInterpreterTest;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterException;
@@ -233,7 +235,7 @@ public class HeliumApplicationFactoryTest extends AbstractInterpreterTest {
 
     Note note1 = notebook.createNote("note1", anonymous);
     String mock1IntpSettingId = null;
-    for (InterpreterSetting setting : note1.getBindedInterpreterSettings()) {
+    for (InterpreterSetting setting : note1.getBindedInterpreterSettings(new ArrayList<>())) {
       if (setting.getName().equals("mock1")) {
         mock1IntpSettingId = setting.getId();
         break;

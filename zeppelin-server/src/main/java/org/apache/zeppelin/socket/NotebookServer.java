@@ -271,7 +271,8 @@ public class NotebookServer extends WebSocketServlet
       ZeppelinConfiguration conf = ZeppelinConfiguration.create();
       boolean allowAnonymous = conf.isAnonymousAllowed();
       if (!allowAnonymous && messagereceived.principal.equals("anonymous")) {
-        throw new Exception("Anonymous access not allowed ");
+        LOG.warn("Anonymous access not allowed.");
+        return;
       }
 
       if (Message.isDisabledForRunningNotes(messagereceived.op)) {
@@ -429,7 +430,7 @@ public class NotebookServer extends WebSocketServlet
           getEditorSetting(conn, messagereceived);
           break;
         case GET_INTERPRETER_SETTINGS:
-          getInterpreterSettings(conn);
+          getInterpreterSettings(conn, messagereceived);
           break;
         case WATCHER:
           connectionManager.switchConnectionToWatcher(conn);
@@ -529,10 +530,12 @@ public class NotebookServer extends WebSocketServlet
 
   public void getInterpreterBindings(NotebookSocket conn, Message fromMessage) throws IOException {
     List<InterpreterSettingsList> settingList = new ArrayList<>();
+    ServiceContext context = getServiceContext(fromMessage);
     String noteId = (String) fromMessage.data.get("noteId");
     Note note = getNotebook().getNote(noteId);
     if (note != null) {
-      List<InterpreterSetting> bindedSettings = note.getBindedInterpreterSettings();
+      List<InterpreterSetting> bindedSettings =
+              note.getBindedInterpreterSettings(new ArrayList<>(context.getUserAndRoles()));
       for (InterpreterSetting setting : bindedSettings) {
         settingList.add(new InterpreterSettingsList(setting.getId(), setting.getName(),
                 setting.getInterpreterInfos(), true));
@@ -545,6 +548,7 @@ public class NotebookServer extends WebSocketServlet
   public void saveInterpreterBindings(NotebookSocket conn, Message fromMessage) throws IOException {
     List<InterpreterSettingsList> settingList = new ArrayList<>();
     String noteId = (String) fromMessage.data.get("noteId");
+    ServiceContext context = getServiceContext(fromMessage);
     Note note = getNotebook().getNote(noteId);
     if (note != null) {
       List<String> settingIdList =
@@ -555,7 +559,8 @@ public class NotebookServer extends WebSocketServlet
         getNotebook().saveNote(note,
                 new AuthenticationInfo(fromMessage.principal, fromMessage.roles, fromMessage.ticket));
       }
-      List<InterpreterSetting> bindedSettings = note.getBindedInterpreterSettings();
+      List<InterpreterSetting> bindedSettings =
+              note.getBindedInterpreterSettings(new ArrayList<>(context.getUserAndRoles()));
       for (InterpreterSetting setting : bindedSettings) {
         settingList.add(new InterpreterSettingsList(setting.getId(), setting.getName(),
                 setting.getInterpreterInfos(), true));
@@ -1973,7 +1978,8 @@ public class NotebookServer extends WebSocketServlet
         continue;
       }
 
-      List<InterpreterSetting> intpSettings = note.getBindedInterpreterSettings();
+      List<InterpreterSetting> intpSettings =
+              note.getBindedInterpreterSettings(new ArrayList<>(note.getOwners()));
       if (intpSettings.isEmpty()) {
         continue;
       }
@@ -2031,11 +2037,18 @@ public class NotebookServer extends WebSocketServlet
         });
   }
 
-  private void getInterpreterSettings(NotebookSocket conn)
+  private void getInterpreterSettings(NotebookSocket conn, Message message)
       throws IOException {
-    List<InterpreterSetting> availableSettings = getNotebook().getInterpreterSettingManager().get();
+    ServiceContext context = getServiceContext(message);
+    List<InterpreterSetting> allSettings = getNotebook().getInterpreterSettingManager().get();
+    List<InterpreterSetting> result = new ArrayList<>();
+    for (InterpreterSetting setting : allSettings) {
+      if (setting.isUserAuthorized(new ArrayList<>(context.getUserAndRoles()))) {
+        result.add(setting);
+      }
+    }
     conn.send(serializeMessage(
-        new Message(OP.INTERPRETER_SETTINGS).put("interpreterSettings", availableSettings)));
+        new Message(OP.INTERPRETER_SETTINGS).put("interpreterSettings", result)));
   }
 
   @Override

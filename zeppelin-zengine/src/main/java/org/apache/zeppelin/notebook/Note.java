@@ -18,6 +18,7 @@
 package org.apache.zeppelin.notebook;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.Lists;
 import com.google.gson.ExclusionStrategy;
 import com.google.gson.FieldAttributes;
 import com.google.gson.Gson;
@@ -920,7 +921,7 @@ public class Note implements JsonSerializable {
   private void snapshotAngularObjectRegistry(String user) {
     angularObjects = new HashMap<>();
 
-    List<InterpreterSetting> settings = getBindedInterpreterSettings();
+    List<InterpreterSetting> settings = getBindedInterpreterSettings(Lists.newArrayList(user));
     if (settings == null || settings.size() == 0) {
       return;
     }
@@ -937,7 +938,7 @@ public class Note implements JsonSerializable {
   private void removeAllAngularObjectInParagraph(String user, String paragraphId) {
     angularObjects = new HashMap<>();
 
-    List<InterpreterSetting> settings = getBindedInterpreterSettings();
+    List<InterpreterSetting> settings = getBindedInterpreterSettings(Lists.newArrayList(user));
     if (settings == null || settings.size() == 0) {
       return;
     }
@@ -975,7 +976,7 @@ public class Note implements JsonSerializable {
     }
   }
 
-  public List<InterpreterSetting> getBindedInterpreterSettings() {
+  public List<InterpreterSetting> getBindedInterpreterSettings(List<String> userAndRoles) {
     // use LinkedHashSet because order matters, the first one represent the default interpreter setting.
     Set<InterpreterSetting> settings = new LinkedHashSet<>();
     // add the default interpreter group
@@ -987,7 +988,9 @@ public class Note implements JsonSerializable {
     // add the interpreter setting with the same group of default interpreter group
     for (InterpreterSetting intpSetting : interpreterSettingManager.get()) {
       if (intpSetting.getGroup().equals(defaultIntpSetting.getGroup())) {
-        settings.add(intpSetting);
+        if (intpSetting.isUserAuthorized(userAndRoles)) {
+          settings.add(intpSetting);
+        }
       }
     }
 
@@ -995,8 +998,11 @@ public class Note implements JsonSerializable {
     for (Paragraph p : getParagraphs()) {
       try {
         Interpreter intp = p.getBindedInterpreter();
-        settings.add((
-                (ManagedInterpreterGroup) intp.getInterpreterGroup()).getInterpreterSetting());
+        InterpreterSetting interpreterSetting = (
+                (ManagedInterpreterGroup) intp.getInterpreterGroup()).getInterpreterSetting();
+        if (interpreterSetting.isUserAuthorized(userAndRoles)) {
+          settings.add(interpreterSetting);
+        }
       } catch (InterpreterNotFoundException e) {
         // ignore this
       }
