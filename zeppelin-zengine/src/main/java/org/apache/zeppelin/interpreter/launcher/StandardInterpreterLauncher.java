@@ -18,6 +18,7 @@
 
 package org.apache.zeppelin.interpreter.launcher;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.InterpreterOption;
 import org.apache.zeppelin.interpreter.InterpreterRunner;
@@ -90,9 +91,11 @@ public class StandardInterpreterLauncher extends InterpreterLauncher {
 
   public Map<String, String> buildEnvFromProperties(InterpreterLaunchContext context) throws IOException {
     Map<String, String> env = new HashMap<>();
-    for (Object key : context.getProperties().keySet()) {
-      if (RemoteInterpreterUtils.isEnvString((String) key)) {
-        env.put((String) key, context.getProperties().getProperty((String) key));
+    for (Map.Entry entry : context.getProperties().entrySet()) {
+      String key = (String) entry.getKey();
+      String value = (String) entry.getValue();
+      if (RemoteInterpreterUtils.isEnvString(key) && !StringUtils.isBlank(value)) {
+        env.put(key, value);
       }
     }
     env.put("INTERPRETER_GROUP_ID", context.getInterpreterGroupId());
