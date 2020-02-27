@@ -360,7 +360,7 @@ public class ZeppelinServer extends ResourceConfig {
                 ServiceContext.class);
       }
 
-      boolean success = notebookService.runAllParagraphs(noteIdToRun, serviceContext, new ServiceCallback<Paragraph>() {
+      boolean success = notebookService.runAllParagraphs(noteIdToRun, null, serviceContext, new ServiceCallback<Paragraph>() {
         @Override
         public void onStart(String message, ServiceContext context) throws IOException {
         }

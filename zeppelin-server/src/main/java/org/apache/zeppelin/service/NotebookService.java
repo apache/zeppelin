@@ -349,29 +349,18 @@ public class NotebookService {
     }
   }
 
-  public boolean runAllParagraphs(String noteId,
-                      ServiceContext context,
-                      ServiceCallback<Paragraph> callback) throws IOException {
-    Note note = notebook.getNote(noteId);
-    if (note == null) {
-      callback.onFailure(new NoteNotFoundException(noteId), context);
-      return false;
-    }
-
-    List<Paragraph> paragraphs = note.getParagraphs();
-    List<Map<String, Object>> rawParagraphs = paragraphs.stream()
-            .map(p ->
-                    (Map<String, Object>) gson.fromJson(gson.toJson(p), new TypeToken<Map<String, Object>>(){}.getType()))
-            .collect(Collectors.toList());
-
-    return runAllParagraphs(
-            noteId,
-            rawParagraphs,
-            context,
-            callback
-    );
-  }
-
+  /**
+   * Run list of paragraphs. This method runs provided paragraphs one by one, synchronously.
+   * When a paragraph fails, subsequent paragraphs are not going to run and this method returns false.
+   * When list of paragraphs provided from argument is null, list of paragraphs stored in the Note will be used.
+   *
+   * @param noteId
+   * @param paragraphs list of paragraphs to run. List of paragraph stored in the Note will be used when null.
+   * @param context
+   * @param callback
+   * @return true when all paragraphs successfully run. false when any paragraph fails.
+   * @throws IOException
+   */
   public boolean runAllParagraphs(String noteId,
                                List<Map<String, Object>> paragraphs,
                                ServiceContext context,
@@ -387,6 +376,10 @@ public class NotebookService {
       return false;
     }
 
+    if (paragraphs == null) {
+      paragraphs = gson.fromJson(gson.toJson(note.getParagraphs()), new TypeToken<List>(){}.getType());
+    }
+
     note.setRunning(true);
     try {
       for (Map<String, Object> raw : paragraphs) {
@@ -394,7 +387,7 @@ public class NotebookService {
         if (paragraphId == null) {
           continue;
         }
-        String text = (String) raw.get("paragraph");
+        String text = (String) raw.get("text");
         String title = (String) raw.get("title");
         Map<String, Object> params = (Map<String, Object>) raw.get("params");
         Map<String, Object> config = (Map<String, Object>) raw.get("config");
