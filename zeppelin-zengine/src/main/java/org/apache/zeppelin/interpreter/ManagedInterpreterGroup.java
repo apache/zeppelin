@@ -141,10 +141,15 @@ public class ManagedInterpreterGroup extends InterpreterGroup {
   private void closeInterpreter(Interpreter interpreter) {
     Scheduler scheduler = interpreter.getScheduler();
 
-    for (final Job job : scheduler.getAllJobs()) {
-      job.abort();
-      job.setStatus(Job.Status.ABORT);
-      LOGGER.info("Job " + job.getJobName() + " aborted ");
+    if (Boolean.parseBoolean(
+            interpreter.getProperty("zeppelin.interpreter.close.cancel_job", "true"))) {
+      for (final Job job : scheduler.getAllJobs()) {
+        job.abort();
+        job.setStatus(Job.Status.ABORT);
+        LOGGER.info("Job " + job.getJobName() + " aborted ");
+      }
+    } else {
+      LOGGER.info("Keep job running while closing interpreter: " + interpreter.getClassName());
     }
 
     try {
