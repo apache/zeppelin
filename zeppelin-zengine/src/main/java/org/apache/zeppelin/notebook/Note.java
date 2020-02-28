@@ -129,7 +129,6 @@ public class Note implements JsonSerializable {
 
   public Note() {
     generateId();
-    setCronSupported(ZeppelinConfiguration.create());
   }
 
   public Note(String path, String defaultInterpreterGroup, InterpreterFactory factory,
@@ -395,12 +394,11 @@ public class Note implements JsonSerializable {
   public Boolean isCronSupported(ZeppelinConfiguration config) {
     if (config.isZeppelinNotebookCronEnable()) {
       config.getZeppelinNotebookCronFolders();
-      if (config.getZeppelinNotebookCronFolders() == null) {
+      if (StringUtils.isBlank(config.getZeppelinNotebookCronFolders())) {
         return true;
       } else {
         for (String folder : config.getZeppelinNotebookCronFolders().split(",")) {
-          folder = folder.replaceAll("\\*", "\\.*").replaceAll("\\?", "\\.");
-          if (getName().matches(folder)) {
+          if (this.path.startsWith(folder)) {
             return true;
           }
         }
@@ -1116,7 +1114,6 @@ public class Note implements JsonSerializable {
   public static Note fromJson(String json) throws IOException {
     try {
       Note note = gson.fromJson(json, Note.class);
-      note.setCronSupported(ZeppelinConfiguration.create());
       convertOldInput(note);
       note.info.remove("isRunning");
       note.postProcessParagraphs();

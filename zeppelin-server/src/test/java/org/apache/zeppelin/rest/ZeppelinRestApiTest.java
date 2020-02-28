@@ -590,6 +590,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     // create a note and a paragraph
     Note note = null;
     try {
+      System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_CRON_ENABLE.getVarName(), "true");
       note = TestUtils.getInstance(Notebook.class).createNote("note1_testJobs", anonymous);
 
       note.setName("note for run test");
@@ -630,6 +631,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
       if (null != note) {
         TestUtils.getInstance(Notebook.class).removeNote(note.getId(), anonymous);
       }
+      System.clearProperty(ConfVars.ZEPPELIN_NOTEBOOK_CRON_ENABLE.getVarName());
     }
   }
 
@@ -658,7 +660,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
       postCron.releaseConnection();
 
       System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_CRON_ENABLE.getVarName(), "true");
-      System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_CRON_FOLDERS.getVarName(), "System/*");
+      System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_CRON_FOLDERS.getVarName(), "/System");
 
       note.setName("System/test2");
       note.runAll(AuthenticationInfo.ANONYMOUS, false);
@@ -679,6 +681,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
       if (null != note) {
         TestUtils.getInstance(Notebook.class).removeNote(note.getId(), anonymous);
       }
+      System.clearProperty(ConfVars.ZEPPELIN_NOTEBOOK_CRON_ENABLE.getVarName());
     }
   }
 

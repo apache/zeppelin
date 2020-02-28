@@ -19,6 +19,7 @@
 package org.apache.zeppelin.notebook;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.user.AuthenticationInfo;
@@ -523,6 +524,7 @@ public class NoteManager {
         } else {
           note.setPath(parent.toString() + "/" + note.getName());
         }
+        note.setCronSupported(ZeppelinConfiguration.create());
         note.setLoaded(true);
       }
       return note;
