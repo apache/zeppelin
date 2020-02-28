@@ -22,6 +22,8 @@ package org.apache.zeppelin.service;
 import static org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_HOMESCREEN;
 
 import com.google.common.base.Strings;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -30,6 +32,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.inject.Inject;
+
+import java.util.stream.Collectors;
 import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.display.AngularObject;
@@ -82,6 +86,7 @@ public class NotebookService {
   private Notebook notebook;
   private AuthorizationService authorizationService;
   private SchedulerService schedulerService;
+  private Gson gson = new Gson();
 
   @Inject
   public NotebookService(
@@ -344,19 +349,35 @@ public class NotebookService {
     }
   }
 
-  public void runAllParagraphs(String noteId,
+  /**
+   * Run list of paragraphs. This method runs provided paragraphs one by one, synchronously.
+   * When a paragraph fails, subsequent paragraphs are not going to run and this method returns false.
+   * When list of paragraphs provided from argument is null, list of paragraphs stored in the Note will be used.
+   *
+   * @param noteId
+   * @param paragraphs list of paragraphs to run. List of paragraph stored in the Note will be used when null.
+   * @param context
+   * @param callback
+   * @return true when all paragraphs successfully run. false when any paragraph fails.
+   * @throws IOException
+   */
+  public boolean runAllParagraphs(String noteId,
                                List<Map<String, Object>> paragraphs,
                                ServiceContext context,
                                ServiceCallback<Paragraph> callback) throws IOException {
     if (!checkPermission(noteId, Permission.RUNNER, Message.OP.RUN_ALL_PARAGRAPHS, context,
         callback)) {
-      return;
+      return false;
     }
 
     Note note = notebook.getNote(noteId);
     if (note == null) {
       callback.onFailure(new NoteNotFoundException(noteId), context);
-      return;
+      return false;
+    }
+
+    if (paragraphs == null) {
+      paragraphs = gson.fromJson(gson.toJson(note.getParagraphs()), new TypeToken<List>(){}.getType());
     }
 
     note.setRunning(true);
@@ -366,7 +387,7 @@ public class NotebookService {
         if (paragraphId == null) {
           continue;
         }
-        String text = (String) raw.get("paragraph");
+        String text = (String) raw.get("text");
         String title = (String) raw.get("title");
         Map<String, Object> params = (Map<String, Object>) raw.get("params");
         Map<String, Object> config = (Map<String, Object>) raw.get("config");
@@ -374,12 +395,14 @@ public class NotebookService {
         if (!runParagraph(noteId, paragraphId, title, text, params, config, false, true,
                 context, callback)) {
           // stop execution when one paragraph fails.
-          break;
+          return false;
         }
       }
     } finally {
       note.setRunning(false);
     }
+
+    return true;
   }
 
   public void cancelParagraph(String noteId,
