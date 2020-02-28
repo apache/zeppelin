@@ -210,7 +210,7 @@ abstract class BaseSparkScalaInterpreter(val conf: SparkConf,
 
     val hiveSiteExisted: Boolean =
       Thread.currentThread().getContextClassLoader.getResource("hive-site.xml") != null
-    val hiveEnabled = conf.getBoolean("spark.useHiveContext", false)
+    val hiveEnabled = conf.getBoolean("zeppelin.spark.useHiveContext", false)
     if (hiveEnabled && hiveSiteExisted) {
       sqlContext = Class.forName("org.apache.spark.sql.hive.HiveContext")
         .getConstructor(classOf[SparkContext]).newInstance(sc).asInstanceOf[SQLContext]
@@ -244,7 +244,7 @@ abstract class BaseSparkScalaInterpreter(val conf: SparkConf,
     builder.getClass.getMethod("config", classOf[SparkConf]).invoke(builder, conf)
 
     if (conf.get("spark.sql.catalogImplementation", "in-memory").toLowerCase == "hive"
-      || conf.get("spark.useHiveContext", "false").toLowerCase == "true") {
+      || conf.get("zeppelin.spark.useHiveContext", "false").toLowerCase == "true") {
       val hiveSiteExisted: Boolean =
         Thread.currentThread().getContextClassLoader.getResource("hive-site.xml") != null
       val hiveClassesPresent =
