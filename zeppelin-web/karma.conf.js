@@ -38,7 +38,7 @@ module.exports = function(config) {
     // list of files / patterns to load in the browser
     files: [
       // for polyfill
-      'node_modules/babel-polyfill/dist/polyfill.js',
+      //'node_modules/babel-polyfill/dist/polyfill.js',
 
       // bower:js
       'bower_components/jquery/dist/jquery.js',
