@@ -160,6 +160,7 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
   // queue for append output
   const textResultQueueForAppend = [];
 
+  const retryRenderElements = {};
   // prevent body area scrollbar from blocking due to scroll in paragraph results
   $scope.mouseOver = false;
   $scope.onMouseOver = function() {
@@ -205,10 +206,19 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
     return elem.length;
   }
 
+  function cancelRetryRender(targetElemId) {
+    if (retryRenderElements[targetElemId]) {
+      $timeout.cancel(retryRenderElements[targetElemId]);
+      delete retryRenderElements[targetElemId];
+    }
+  }
+
   function retryUntilElemIsLoaded(targetElemId, callback) {
+    cancelRetryRender(targetElemId);
     function retry() {
+      cancelRetryRender(targetElemId);
       if (!isDOMLoaded(targetElemId)) {
-        $timeout(retry, 10);
+        retryRenderElements[targetElemId] = $timeout(retry, 10);
         return;
       }
 
@@ -220,7 +230,7 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
       const elem = angular.element(`#${targetElemId}`);
       callback(elem);
     } else {
-      $timeout(retry);
+      retryRenderElements[targetElemId] = $timeout(retry);
     }
   }
 
