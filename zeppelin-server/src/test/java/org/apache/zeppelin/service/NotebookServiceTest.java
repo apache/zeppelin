@@ -414,14 +414,4 @@ public class NotebookServiceTest {
       assertEquals("Note name can not contain '..'", e.getMessage());
     }
   }
-
-  @Test
-  public void testRunNote() throws IOException {
-    // given
-    Note note1 = notebookService.createNote("note1", "python", context, callback);
-    Paragraph p = notebookService.insertParagraph(note1.getId(), 1, new HashMap<>(), context, callback);
-
-    p.setText("%");
-
-  }
 }
