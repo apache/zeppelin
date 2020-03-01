@@ -474,6 +474,22 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getString(ConfVars.ZEPPELIN_NOTEBOOK_S3_SIGNEROVERRIDE);
   }
 
+  public String getOSSBucketName() {
+    return getString(ConfVars.ZEPPELIN_NOTEBOOK_OSS_BUCKET);
+  }
+
+  public String getOSSEndpoint() {
+    return getString(ConfVars.ZEPPELIN_NOTEBOOK_OSS_ENDPOINT);
+  }
+
+  public String getOSSAccessKeyId() {
+    return getString(ConfVars.ZEPPELIN_NOTEBOOK_OSS_ACCESSKEYID);
+  }
+
+  public String getOSSAccessKeySecret() {
+    return getString(ConfVars.ZEPPELIN_NOTEBOOK_OSS_ACCESSKEYSECRET);
+  }
+
   public String getMongoUri() {
     return getString(ConfVars.ZEPPELIN_NOTEBOOK_MONGO_URI);
   }
@@ -873,6 +889,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_NOTEBOOK_S3_KMS_KEY_REGION("zeppelin.notebook.s3.kmsKeyRegion", null),
     ZEPPELIN_NOTEBOOK_S3_SSE("zeppelin.notebook.s3.sse", false),
     ZEPPELIN_NOTEBOOK_S3_SIGNEROVERRIDE("zeppelin.notebook.s3.signerOverride", null),
+    ZEPPELIN_NOTEBOOK_OSS_BUCKET("zeppelin.notebook.oss.bucket", "zeppelin"),
+    ZEPPELIN_NOTEBOOK_OSS_ENDPOINT("zeppelin.notebook.oss.endpoint", "http://oss-cn-hangzhou.aliyuncs.com"),
+    ZEPPELIN_NOTEBOOK_OSS_ACCESSKEYID("zeppelin.notebook.oss.accesskeyid", null),
+    ZEPPELIN_NOTEBOOK_OSS_ACCESSKEYSECRET("zeppelin.notebook.oss.accesskeysecret", null),
     ZEPPELIN_NOTEBOOK_AZURE_CONNECTION_STRING("zeppelin.notebook.azure.connectionString", null),
     ZEPPELIN_NOTEBOOK_AZURE_SHARE("zeppelin.notebook.azure.share", "zeppelin"),
     ZEPPELIN_NOTEBOOK_AZURE_USER("zeppelin.notebook.azure.user", "user"),

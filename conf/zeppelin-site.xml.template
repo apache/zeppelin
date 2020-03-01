@@ -193,6 +193,42 @@
 </property>
 -->
 
+<!-- Aliyun OSS notebook storage -->
+<!-- Creates the following directory structure: oss://{bucket}/{notebook_dir}/note_path -->
+<!--
+
+<property>
+  <name>zeppelin.notebook.oss.bucket</name>
+  <value>zeppelin</value>
+  <description>bucket name for notebook storage</description>
+</property>
+
+<property>
+  <name>zeppelin.notebook.oss.endpoint</name>
+  <value>http://oss-cn-hangzhou.aliyuncs.com</value>
+  <description>endpoint for oss bucket</description>
+</property>
+
+<property>
+  <name>zeppelin.notebook.oss.accesskeyid</name>
+  <value></value>
+  <description>Access key id for your OSS account</description>
+</property>
+
+<property>
+  <name>zeppelin.notebook.oss.accesskeysecret</name>
+  <value></value>
+  <description>Access key secret for your OSS account</description>
+</property>
+
+<property>
+  <name>zeppelin.notebook.storage</name>
+  <value>org.apache.zeppelin.notebook.repo.OSSNotebookRepo</value>
+  <description>notebook persistence layer implementation</description>
+</property>
+
+-->
+
 <!-- If using Azure for storage use the following settings -->
 <!--
 <property>

@@ -43,6 +43,7 @@
         <module>notebookrepo/zeppelin-hub</module>
         <module>notebookrepo/filesystem</module>
         <module>notebookrepo/mongo</module>
+        <module>notebookrepo/oss</module>
 
         <module>launcher/k8s-standard</module>
         <module>launcher/cluster</module>

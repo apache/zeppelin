@@ -34,6 +34,7 @@ There are few notebook storage systems available for a use out of the box:
   * storage using Amazon S3 service - `S3NotebookRepo`
   * storage using Azure service - `AzureNotebookRepo`
   * storage using Google Cloud Storage - `GCSNotebookRepo`
+  * storage using Aliyun OSS - `OSSNotebookRepo`
   * storage using MongoDB - `MongoNotebookRepo`
   * storage using GitHub - `GitHubNotebookRepo`
 
@@ -370,6 +371,59 @@ file for authentication with GCS, update the following property :
 </property>
 ```
 
+
+</br>
+
+## Notebook Storage in OSS <a name="OSS"></a>
+
+Notebooks may be stored in Aliyun OSS.
+
+</br>
+The following folder structure will be created in OSS:
+
+```
+oss://bucket_name/{noteboo_dir}/note_path
+```
+
+
+And you should configure oss related properties in file **zeppelin-site.xml**.
+
+```xml
+<property>
+  <name>zeppelin.notebook.oss.bucket</name>
+  <value>zeppelin</value>
+  <description>bucket name for notebook storage</description>
+</property>
+
+<property>
+  <name>zeppelin.notebook.oss.endpoint</name>
+  <value>http://oss-cn-hangzhou.aliyuncs.com</value>
+  <description>endpoint for oss bucket</description>
+</property>
+
+<property>
+  <name>zeppelin.notebook.oss.accesskeyid</name>
+  <value></value>
+  <description>Access key id for your OSS account</description>
+</property>
+
+<property>
+  <name>zeppelin.notebook.oss.accesskeysecret</name>
+  <value></value>
+  <description>Access key secret for your OSS account</description>
+</property>
+
+```
+
+Uncomment the next property for use OSSNotebookRepo class:
+
+```xml
+<property>
+  <name>zeppelin.notebook.storage</name>
+  <value>org.apache.zeppelin.notebook.repo.OSSNotebookRepo</value>
+  <description>notebook persistence layer implementation</description>
+</property>
+```
 
 </br>
 ## Notebook Storage in ZeppelinHub  <a name="ZeppelinHub"></a>
