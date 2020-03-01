@@ -66,7 +66,16 @@ public class FlinkInterpreter extends Interpreter {
     this.z.setInterpreterContext(context);
     this.z.setGui(context.getGui());
     this.z.setNoteGui(context.getNoteGui());
-    return innerIntp.interpret(st, context);
+
+    // set ClassLoader of current Thread to be the ClassLoader of Flink scala-shell,
+    // otherwise codegen will fail to find classes defined in scala-shell
+    ClassLoader originClassLoader = Thread.currentThread().getContextClassLoader();
+    try {
+      Thread.currentThread().setContextClassLoader(getFlinkScalaShellLoader());
+      return innerIntp.interpret(st, context);
+    } finally {
+      Thread.currentThread().setContextClassLoader(originClassLoader);
+    }
   }
 
   @Override
@@ -122,6 +131,10 @@ public class FlinkInterpreter extends Interpreter {
 
   int getDefaultParallelism() {
     return this.innerIntp.getDefaultParallelism();
+  }
+
+  int getDefaultSqlParallelism() {
+    return this.innerIntp.getDefaultSqlParallelism();
   }
 
   public ClassLoader getFlinkScalaShellLoader() {

@@ -39,13 +39,17 @@ public class IPyFlinkInterpreter extends IPythonInterpreter {
 
   private FlinkInterpreter flinkInterpreter;
   private InterpreterContext curInterpreterContext;
+  private boolean opened = false;
 
   public IPyFlinkInterpreter(Properties property) {
     super(property);
   }
 
   @Override
-  public void open() throws InterpreterException {
+  public synchronized void open() throws InterpreterException {
+    if (opened) {
+      return;
+    }
     FlinkInterpreter pyFlinkInterpreter =
         getInterpreterInTheSameSessionByClassName(FlinkInterpreter.class, false);
     setProperty("zeppelin.python",
@@ -53,6 +57,7 @@ public class IPyFlinkInterpreter extends IPythonInterpreter {
     flinkInterpreter = getInterpreterInTheSameSessionByClassName(FlinkInterpreter.class);
     setAdditionalPythonInitFile("python/zeppelin_ipyflink.py");
     super.open();
+    opened = true;
   }
 
   @Override
