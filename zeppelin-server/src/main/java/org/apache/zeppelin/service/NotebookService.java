@@ -86,7 +86,6 @@ public class NotebookService {
   private Notebook notebook;
   private AuthorizationService authorizationService;
   private SchedulerService schedulerService;
-  private Gson gson = new Gson();
 
   @Inject
   public NotebookService(
@@ -293,6 +292,7 @@ public class NotebookService {
                               ServiceContext context,
                               ServiceCallback<Paragraph> callback) throws IOException {
 
+    LOGGER.info("Start to run paragraph: " + paragraphId + " of note: " + noteId);
     if (!checkPermission(noteId, Permission.RUNNER, Message.OP.RUN_PARAGRAPH, context, callback)) {
       return false;
     }
@@ -355,16 +355,16 @@ public class NotebookService {
    * When list of paragraphs provided from argument is null, list of paragraphs stored in the Note will be used.
    *
    * @param noteId
-   * @param paragraphs list of paragraphs to run. List of paragraph stored in the Note will be used when null.
+   * @param paragraphs list of paragraphs to run (passed from frontend). Run note directly when it is null.
    * @param context
    * @param callback
    * @return true when all paragraphs successfully run. false when any paragraph fails.
    * @throws IOException
    */
   public boolean runAllParagraphs(String noteId,
-                               List<Map<String, Object>> paragraphs,
-                               ServiceContext context,
-                               ServiceCallback<Paragraph> callback) throws IOException {
+                                  List<Map<String, Object>> paragraphs,
+                                  ServiceContext context,
+                                  ServiceCallback<Paragraph> callback) throws IOException {
     if (!checkPermission(noteId, Permission.RUNNER, Message.OP.RUN_ALL_PARAGRAPHS, context,
         callback)) {
       return false;
@@ -376,25 +376,38 @@ public class NotebookService {
       return false;
     }
 
-    if (paragraphs == null) {
-      paragraphs = gson.fromJson(gson.toJson(note.getParagraphs()), new TypeToken<List>(){}.getType());
-    }
-
     note.setRunning(true);
     try {
-      for (Map<String, Object> raw : paragraphs) {
-        String paragraphId = (String) raw.get("id");
-        if (paragraphId == null) {
-          continue;
-        }
-        String text = (String) raw.get("text");
-        String title = (String) raw.get("title");
-        Map<String, Object> params = (Map<String, Object>) raw.get("params");
-        Map<String, Object> config = (Map<String, Object>) raw.get("config");
+      if (paragraphs != null) {
+        // run note via the data passed from frontend
+        for (Map<String, Object> raw : paragraphs) {
+          String paragraphId = (String) raw.get("id");
+          if (paragraphId == null) {
+            LOGGER.warn("No id found in paragraph json: " + raw);
+            continue;
+          }
+          try {
+            String text = (String) raw.get("paragraph");
+            String title = (String) raw.get("title");
+            Map<String, Object> params = (Map<String, Object>) raw.get("params");
+            Map<String, Object> config = (Map<String, Object>) raw.get("config");
 
-        if (!runParagraph(noteId, paragraphId, title, text, params, config, false, true,
-                context, callback)) {
-          // stop execution when one paragraph fails.
+            if (!runParagraph(noteId, paragraphId, title, text, params, config, false, true,
+                    context, callback)) {
+              // stop execution when one paragraph fails.
+              return false;
+            }
+          } catch (Exception e) {
+            throw new IOException("Fail to run paragraph json: " + raw);
+          }
+        }
+      } else {
+        try {
+          // run note directly when parameter `paragraphs` is null.
+          note.runAll(context.getAutheInfo(), true);
+          return true;
+        } catch (Exception e) {
+          LOGGER.warn("Fail to run note: " + note.getName(), e);
           return false;
         }
       }
