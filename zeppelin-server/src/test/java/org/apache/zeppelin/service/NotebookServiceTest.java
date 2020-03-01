@@ -359,23 +359,12 @@ public class NotebookServiceTest {
     verify(callback).onSuccess(p, context);
     assertEquals(2, p.getConfig().size());
 
-    // run all paragraphs
-    reset(callback);
-    String textBefore = p.getText();
-    notebookService.runAllParagraphs(
-            note1.getId(),
-            gson.fromJson(gson.toJson(note1.getParagraphs()), new TypeToken<List>(){}.getType()),
-            context, callback);
-    verify(callback, times(2)).onSuccess(any(), any());
-    assertEquals(textBefore, p.getText());
-
     // run all paragraphs, with null paragraph list provided
     reset(callback);
-    notebookService.runAllParagraphs(
+    assertTrue(notebookService.runAllParagraphs(
             note1.getId(),
             null,
-            context, callback);
-    verify(callback, times(2)).onSuccess(any(), any());
+            context, callback));
 
     reset(callback);
     runStatus = notebookService.runParagraph(note1.getId(), p.getId(), "my_title", "invalid_code",
