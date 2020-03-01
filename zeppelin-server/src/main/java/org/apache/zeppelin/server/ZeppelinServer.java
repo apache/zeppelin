@@ -65,6 +65,7 @@ import org.apache.zeppelin.search.LuceneSearch;
 import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.service.*;
 import org.apache.zeppelin.service.AuthenticationService;
+import org.apache.zeppelin.socket.ConnectionManager;
 import org.apache.zeppelin.socket.NotebookServer;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
@@ -161,7 +162,8 @@ public class ZeppelinServer extends ResourceConfig {
             bindAsContract(GsonProvider.class).in(Singleton.class);
             bindAsContract(WebApplicationExceptionMapper.class).in(Singleton.class);
             bindAsContract(AdminService.class).in(Singleton.class);
-            bindAsContract(AuthorizationService.class).to(Singleton.class);
+            bindAsContract(AuthorizationService.class).in(Singleton.class);
+            bindAsContract(ConnectionManager.class).in(Singleton.class);
             // TODO(jl): Will make it more beautiful
             if (!StringUtils.isBlank(conf.getShiroPath())) {
               bind(ShiroAuthenticationService.class).to(AuthenticationService.class).in(Singleton.class);
