@@ -29,7 +29,7 @@
       "spark.app.name": {
         "envName": "",
         "propertyName": "spark.app.name",
-        "defaultValue": "Zeppelin",
+        "defaultValue": "",
         "description": "The name of spark application.",
         "type": "string"
       },
