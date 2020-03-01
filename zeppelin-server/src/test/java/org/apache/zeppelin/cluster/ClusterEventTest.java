@@ -100,7 +100,7 @@ public class ClusterEventTest extends ZeppelinServerMock {
 
     ZeppelinServerMock.startUp("ClusterEventTest", zconf);
     notebook = TestUtils.getInstance(Notebook.class);
-    authorizationService = new AuthorizationService(notebook, zconf);
+    authorizationService = TestUtils.getInstance(AuthorizationService.class);
 
     schedulerService = new QuartzSchedulerService(zconf, notebook);
     notebookServer = spy(NotebookServer.getInstance());

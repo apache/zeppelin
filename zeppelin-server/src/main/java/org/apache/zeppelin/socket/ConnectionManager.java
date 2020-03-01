@@ -40,6 +40,7 @@ import org.eclipse.jetty.websocket.api.WebSocketException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.inject.Inject;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -87,8 +88,8 @@ public class ConnectionManager {
 
   private AuthorizationService authorizationService;
 
-  public void setAuthorizationService(
-          AuthorizationService authorizationService) {
+  @Inject
+  public ConnectionManager(AuthorizationService authorizationService) {
     this.authorizationService = authorizationService;
   }
 
