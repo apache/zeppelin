@@ -144,6 +144,10 @@ public abstract class ProcessLauncher implements ExecuteResultHandler {
     }
   }
 
+  public String getProcessLaunchOutput() {
+    return this.processOutput.getProcessExecutionOutput();
+  }
+
   public boolean isLaunchTimeout() {
     return launchTimeout;
   }

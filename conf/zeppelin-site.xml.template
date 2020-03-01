@@ -456,6 +456,12 @@
   <description>Enable directory listings on server.</description>
 </property>
 
+<property>
+  <name>zeppelin.interpreter.yarn.monitor.interval_secs</name>
+  <value>10</value>
+  <description>Check interval in secs for yarn apps monitors</description>
+</property>
+
 <!--
 <property>
   <name>zeppelin.interpreter.lifecyclemanager.class</name>

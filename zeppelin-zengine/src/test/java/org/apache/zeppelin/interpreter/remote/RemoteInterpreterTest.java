@@ -93,19 +93,10 @@ public class RemoteInterpreterTest extends AbstractInterpreterTest {
     // RemoteInterpreterProcess leakage.
     remoteInterpreter1.getInterpreterGroup().close(remoteInterpreter1.getSessionId());
     assertNull(remoteInterpreter1.getInterpreterGroup().getRemoteInterpreterProcess());
-    try {
-      assertEquals("hello", remoteInterpreter1.interpret("hello", context1).message().get(0).getData());
-      fail("Should not be able to call interpret after interpreter is closed");
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
 
-    try {
-      assertEquals("hello", remoteInterpreter2.interpret("hello", context1).message().get(0).getData());
-      fail("Should not be able to call getProgress after RemoterInterpreterProcess is stoped");
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
+    InterpreterResult result = remoteInterpreter1.interpret("hello", context1);
+    assertEquals(Code.ERROR, result.code());
+    assertEquals("Interpreter process is not running\n", result.message().get(0).getData());
   }
 
   @Test
@@ -145,12 +136,10 @@ public class RemoteInterpreterTest extends AbstractInterpreterTest {
     assertTrue(remoteInterpreter2.getInterpreterGroup().getRemoteInterpreterProcess().isRunning());
     assertEquals("hello", remoteInterpreter2.interpret("hello", context1).message().get(0).getData());
     remoteInterpreter2.getInterpreterGroup().close(remoteInterpreter2.getSessionId());
-    try {
-      assertEquals("hello", remoteInterpreter2.interpret("hello", context1));
-      fail("Should not be able to call interpret after interpreter is closed");
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
+
+    InterpreterResult result = remoteInterpreter2.interpret("hello", context1);
+    assertEquals(Code.ERROR, result.code());
+    assertEquals("Interpreter process is not running\n", result.message().get(0).getData());
     assertNull(remoteInterpreter2.getInterpreterGroup().getRemoteInterpreterProcess());
   }
 
@@ -182,21 +171,18 @@ public class RemoteInterpreterTest extends AbstractInterpreterTest {
     remoteInterpreter1.getInterpreterGroup().close(remoteInterpreter1.getSessionId());
     assertNull(remoteInterpreter1.getInterpreterGroup().getRemoteInterpreterProcess());
     assertTrue(remoteInterpreter2.getInterpreterGroup().getRemoteInterpreterProcess().isRunning());
-    try {
-      remoteInterpreter1.interpret("hello", context1);
-      fail("Should not be able to call getProgress after interpreter is closed");
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
+
+    InterpreterResult result = remoteInterpreter1.interpret("hello", context1);
+    assertEquals(Code.ERROR, result.code());
+    assertEquals("Interpreter process is not running\n", result.message().get(0).getData());
 
     assertEquals("hello", remoteInterpreter2.interpret("hello", context1).message().get(0).getData());
     remoteInterpreter2.getInterpreterGroup().close(remoteInterpreter2.getSessionId());
-    try {
-      assertEquals("hello", remoteInterpreter2.interpret("hello", context1).message().get(0).getData());
-      fail("Should not be able to call interpret after interpreter is closed");
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
+
+    result = remoteInterpreter2.interpret("hello", context1);
+    assertEquals(Code.ERROR, result.code());
+    assertEquals("Interpreter process is not running\n", result.message().get(0).getData());
+
     assertNull(remoteInterpreter2.getInterpreterGroup().getRemoteInterpreterProcess());
 
   }
