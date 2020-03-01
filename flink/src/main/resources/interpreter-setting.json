@@ -68,6 +68,13 @@
         "description": "yarn queue name",
         "type": "string"
       },
+      "flink.webui.yarn.useProxy": {
+        "envName": null,
+        "propertyName": null,
+        "defaultValue": false,
+        "description": "whether use yarn proxy url as flink weburl, e.g. http://localhost:8088/proxy/application_1583396598068_0004",
+        "type": "checkbox"
+      },
       "flink.udf.jars": {
         "envName": null,
         "propertyName": null,
@@ -103,6 +110,13 @@
         "description": "whether enable hive",
         "type": "checkbox"
       },
+      "zeppelin.flink.hive.version": {
+        "envName": null,
+        "propertyName": null,
+        "defaultValue": "2.3.4",
+        "description": "hive version that you would like to connect",
+        "type": "string"
+      },
       "zeppelin.flink.printREPLOutput": {
         "envName": null,
         "propertyName": "zeppelin.flink.printREPLOutput",
@@ -127,9 +141,16 @@
       "flink.interpreter.close.shutdown_cluster": {
         "envName": "flink.interpreter.close.shutdown_cluster",
         "propertyName": "flink.interpreter.close.shutdown_cluster",
-        "defaultValue": "true",
+        "defaultValue": true,
         "description": "Whether shutdown application when close interpreter",
-        "type": "string"
+        "type": "checkbox"
+      },
+      "zeppelin.interpreter.close.cancel_job": {
+        "envName": "zeppelin.interpreter.close.cancel_job",
+        "propertyName": "zeppelin.interpreter.close.cancel_job",
+        "defaultValue": true,
+        "description": "Whether cancel flink job when closing interpreter",
+        "type": "checkbox"
       }
     },
     "editor": {

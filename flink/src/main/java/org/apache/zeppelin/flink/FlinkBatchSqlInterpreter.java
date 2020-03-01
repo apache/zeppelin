@@ -55,23 +55,10 @@ public class FlinkBatchSqlInterpreter extends FlinkSqlInterrpeter {
 
   @Override
   public void callInnerSelect(String sql, InterpreterContext context) throws IOException {
-    int defaultSqlParallelism = this.tbenv.getConfig().getConfiguration()
-            .getInteger(ExecutionConfigOptions.TABLE_EXEC_RESOURCE_DEFAULT_PARALLELISM);
-    try {
-      if (context.getLocalProperties().containsKey("parallelism")) {
-        this.tbenv.getConfig().getConfiguration()
-                .set(ExecutionConfigOptions.TABLE_EXEC_RESOURCE_DEFAULT_PARALLELISM,
-                        Integer.parseInt(context.getLocalProperties().get("parallelism")));
-      }
-      Table table = this.tbenv.sqlQuery(sql);
-      z.setCurrentSql(sql);
-      String result = z.showData(table);
-      context.out.write(result);
-    } finally {
-      this.tbenv.getConfig().getConfiguration()
-              .set(ExecutionConfigOptions.TABLE_EXEC_RESOURCE_DEFAULT_PARALLELISM,
-                      defaultSqlParallelism);
-    }
+    Table table = this.tbenv.sqlQuery(sql);
+    z.setCurrentSql(sql);
+    String result = z.showData(table);
+    context.out.write(result);
   }
 
   @Override

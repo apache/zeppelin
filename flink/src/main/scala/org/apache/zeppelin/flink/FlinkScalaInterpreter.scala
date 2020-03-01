@@ -18,7 +18,7 @@
 
 package org.apache.zeppelin.flink
 
-import java.io.{BufferedReader, File}
+import java.io.{BufferedReader, File, IOException}
 import java.net.{URL, URLClassLoader}
 import java.nio.file.Files
 import java.util.{Map, Properties}
@@ -34,7 +34,9 @@ import org.apache.flink.configuration._
 import org.apache.flink.core.execution.{JobClient, JobListener}
 import org.apache.flink.streaming.api.TimeCharacteristic
 import org.apache.flink.streaming.api.environment.{StreamExecutionEnvironmentFactory, StreamExecutionEnvironment => JStreamExecutionEnvironment}
+import org.apache.flink.api.java.{ExecutionEnvironmentFactory, ExecutionEnvironment => JExecutionEnvironment}
 import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment
+import org.apache.flink.table.api.config.ExecutionConfigOptions
 import org.apache.flink.table.api.java.internal.StreamTableEnvironmentImpl
 import org.apache.flink.table.api.scala.{BatchTableEnvironment, StreamTableEnvironment}
 import org.apache.flink.table.api.{EnvironmentSettings, TableConfig, TableEnvironment}
@@ -43,6 +45,11 @@ import org.apache.flink.table.catalog.hive.HiveCatalog
 import org.apache.flink.table.functions.{AggregateFunction, ScalarFunction, TableAggregateFunction, TableFunction}
 import org.apache.flink.table.module.ModuleManager
 import org.apache.flink.table.module.hive.HiveModule
+import org.apache.hadoop.fs.{FileSystem, Path}
+import org.apache.hadoop.yarn.api.records.ApplicationId
+import org.apache.hadoop.yarn.client.api.YarnClient
+import org.apache.hadoop.yarn.conf
+import org.apache.hadoop.yarn.conf.YarnConfiguration
 import org.apache.zeppelin.flink.util.DependencyUtils
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion
 import org.apache.zeppelin.interpreter.util.InterpreterOutputStream
@@ -95,6 +102,7 @@ class FlinkScalaInterpreter(val properties: Properties) {
   private var jmWebUrl: String = _
   private var jobManager: JobManager = _
   private var defaultParallelism = 1;
+  private var defaultSqlParallelism = 1;
   private var userJars: Seq[String] = _
 
   def open(): Unit = {
@@ -149,7 +157,9 @@ class FlinkScalaInterpreter(val properties: Properties) {
     // load other configuration from interpreter properties
     properties.asScala.foreach(entry => configuration.setString(entry._1, entry._2))
     this.defaultParallelism = configuration.getInteger(CoreOptions.DEFAULT_PARALLELISM)
+    this.defaultSqlParallelism = configuration.getInteger(ExecutionConfigOptions.TABLE_EXEC_RESOURCE_DEFAULT_PARALLELISM)
     LOGGER.info("Default Parallelism: " + this.defaultParallelism)
+    LOGGER.info("Default SQL Parallelism: " + this.defaultSqlParallelism)
 
     // set scala.color
     if (properties.getProperty("zeppelin.flink.scala.color", "true").toBoolean) {
@@ -187,13 +197,27 @@ class FlinkScalaInterpreter(val properties: Properties) {
           // local mode or yarn
           if (mode == ExecutionMode.LOCAL) {
             LOGGER.info("Starting FlinkCluster in local mode")
+            this.jmWebUrl = clusterClient.getWebInterfaceURL
           } else if (mode == ExecutionMode.YARN) {
             LOGGER.info("Starting FlinkCluster in yarn mode")
+            if (properties.getProperty("flink.webui.yarn.useProxy", "false").toBoolean) {
+              val yarnAppId = clusterClient.getClusterId.asInstanceOf[ApplicationId]
+              val yarnClient = YarnClient.createYarnClient
+              val yarnConf = new YarnConfiguration()
+              // disable timeline service as we only query yarn app here.
+              // Otherwise we may hit this kind of ERROR:
+              // java.lang.ClassNotFoundException: com.sun.jersey.api.client.config.ClientConfig
+              yarnConf.set("yarn.timeline-service.enabled", "false")
+              yarnClient.init(yarnConf)
+              yarnClient.start()
+              val appReport = yarnClient.getApplicationReport(yarnAppId)
+              this.jmWebUrl = appReport.getTrackingUrl
+            } else {
+              this.jmWebUrl = clusterClient.getWebInterfaceURL
+            }
           } else {
             throw new Exception("Starting FlinkCluster in invalid mode: " + mode)
           }
-
-          this.jmWebUrl = clusterClient.getWebInterfaceURL;
         case None =>
           // remote mode
           LOGGER.info("Use FlinkCluster in remote mode")
@@ -458,14 +482,23 @@ class FlinkScalaInterpreter(val properties: Properties) {
   }
 
   def setAsContext(): Unit = {
-    val factory = new StreamExecutionEnvironmentFactory() {
+    val streamFactory = new StreamExecutionEnvironmentFactory() {
       override def createExecutionEnvironment = senv.getJavaEnv
     }
     //StreamExecutionEnvironment
-    val method = classOf[JStreamExecutionEnvironment].getDeclaredMethod("initializeContextEnvironment",
+    var method = classOf[JStreamExecutionEnvironment].getDeclaredMethod("initializeContextEnvironment",
       classOf[StreamExecutionEnvironmentFactory])
     method.setAccessible(true)
-    method.invoke(null, factory);
+    method.invoke(null, streamFactory);
+
+    val batchFactory = new ExecutionEnvironmentFactory() {
+      override def createExecutionEnvironment = benv.getJavaEnv
+    }
+    //StreamExecutionEnvironment
+    method = classOf[JExecutionEnvironment].getDeclaredMethod("initializeContextEnvironment",
+      classOf[ExecutionEnvironmentFactory])
+    method.setAccessible(true)
+    method.invoke(null, batchFactory);
   }
 
   // for use in java side
@@ -580,10 +613,15 @@ class FlinkScalaInterpreter(val properties: Properties) {
             LOGGER.info("Shutdown FlinkCluster")
             clusterClient.shutDownCluster()
             clusterClient.close()
+            // delete staging dir
+            if (mode == ExecutionMode.YARN) {
+              cleanupStagingDirInternal(clusterClient.getClusterId.asInstanceOf[ApplicationId])
+            }
           case None =>
             LOGGER.info("Don't close the Remote FlinkCluster")
         }
       }
+
     } else {
       LOGGER.info("Keep cluster alive when closing interpreter")
     }
@@ -591,6 +629,19 @@ class FlinkScalaInterpreter(val properties: Properties) {
     if (flinkILoop != null) {
       flinkILoop.closeInterpreter()
       flinkILoop = null
+    }
+  }
+
+  private def cleanupStagingDirInternal(appId: ApplicationId): Unit = {
+    try {
+      val fs = FileSystem.get(new org.apache.hadoop.conf.Configuration())
+      val stagingDirPath = new Path(fs.getHomeDirectory, ".flink/" + appId.toString)
+      if (fs.delete(stagingDirPath, true)) {
+        LOGGER.info(s"Deleted staging directory $stagingDirPath")
+      }
+    } catch {
+      case ioe: IOException =>
+        LOGGER.warn("Failed to cleanup staging dir", ioe)
     }
   }
 
@@ -619,6 +670,8 @@ class FlinkScalaInterpreter(val properties: Properties) {
   }
 
   def getDefaultParallelism = this.defaultParallelism
+
+  def getDefaultSqlParallelism = this.defaultSqlParallelism
 
   def getUserJars: Seq[String] = {
     val flinkJars =

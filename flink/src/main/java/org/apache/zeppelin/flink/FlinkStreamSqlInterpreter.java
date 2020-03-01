@@ -69,50 +69,37 @@ public class FlinkStreamSqlInterpreter extends FlinkSqlInterrpeter {
                 .setString("execution.savepoint.path", savepointPath.toString());
       }
     }
-    int defaultSqlParallelism = this.tbenv.getConfig().getConfiguration()
-            .getInteger(ExecutionConfigOptions.TABLE_EXEC_RESOURCE_DEFAULT_PARALLELISM);
-    try {
-      if (context.getLocalProperties().containsKey("parallelism")) {
-        this.tbenv.getConfig().getConfiguration()
-                .set(ExecutionConfigOptions.TABLE_EXEC_RESOURCE_DEFAULT_PARALLELISM,
-                        Integer.parseInt(context.getLocalProperties().get("parallelism")));
-      }
 
-      String streamType = context.getLocalProperties().get("type");
-      if (streamType == null) {
-        throw new IOException("type must be specified for stream sql");
-      }
-      if (streamType.equalsIgnoreCase("single")) {
-        SingleRowStreamSqlJob streamJob = new SingleRowStreamSqlJob(
-                flinkInterpreter.getStreamExecutionEnvironment(),
-                tbenv,
-                flinkInterpreter.getJobManager(),
-                context,
-                flinkInterpreter.getDefaultParallelism());
-        streamJob.run(sql);
-      } else if (streamType.equalsIgnoreCase("append")) {
-        AppendStreamSqlJob streamJob = new AppendStreamSqlJob(
-                flinkInterpreter.getStreamExecutionEnvironment(),
-                flinkInterpreter.getStreamTableEnvironment(),
-                flinkInterpreter.getJobManager(),
-                context,
-                flinkInterpreter.getDefaultParallelism());
-        streamJob.run(sql);
-      } else if (streamType.equalsIgnoreCase("update")) {
-        UpdateStreamSqlJob streamJob = new UpdateStreamSqlJob(
-                flinkInterpreter.getStreamExecutionEnvironment(),
-                flinkInterpreter.getStreamTableEnvironment(),
-                flinkInterpreter.getJobManager(),
-                context,
-                flinkInterpreter.getDefaultParallelism());
-        streamJob.run(sql);
-      } else {
-        throw new IOException("Unrecognized stream type: " + streamType);
-      }
-    } finally {
-      this.tbenv.getConfig().getConfiguration()
-              .set(ExecutionConfigOptions.TABLE_EXEC_RESOURCE_DEFAULT_PARALLELISM,
-                      defaultSqlParallelism);
+    String streamType = context.getLocalProperties().get("type");
+    if (streamType == null) {
+      throw new IOException("type must be specified for stream sql");
+    }
+    if (streamType.equalsIgnoreCase("single")) {
+      SingleRowStreamSqlJob streamJob = new SingleRowStreamSqlJob(
+              flinkInterpreter.getStreamExecutionEnvironment(),
+              tbenv,
+              flinkInterpreter.getJobManager(),
+              context,
+              flinkInterpreter.getDefaultParallelism());
+      streamJob.run(sql);
+    } else if (streamType.equalsIgnoreCase("append")) {
+      AppendStreamSqlJob streamJob = new AppendStreamSqlJob(
+              flinkInterpreter.getStreamExecutionEnvironment(),
+              flinkInterpreter.getStreamTableEnvironment(),
+              flinkInterpreter.getJobManager(),
+              context,
+              flinkInterpreter.getDefaultParallelism());
+      streamJob.run(sql);
+    } else if (streamType.equalsIgnoreCase("update")) {
+      UpdateStreamSqlJob streamJob = new UpdateStreamSqlJob(
+              flinkInterpreter.getStreamExecutionEnvironment(),
+              flinkInterpreter.getStreamTableEnvironment(),
+              flinkInterpreter.getJobManager(),
+              context,
+              flinkInterpreter.getDefaultParallelism());
+      streamJob.run(sql);
+    } else {
+      throw new IOException("Unrecognized stream type: " + streamType);
     }
   }
 

@@ -18,6 +18,7 @@
 
 package org.apache.zeppelin.flink;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.flink.api.common.JobExecutionResult;
@@ -26,6 +27,7 @@ import org.apache.flink.core.execution.JobListener;
 import org.apache.flink.table.api.Table;
 import org.apache.flink.table.api.TableEnvironment;
 import org.apache.flink.table.api.TableSchema;
+import org.apache.flink.table.api.config.ExecutionConfigOptions;
 import org.apache.zeppelin.flink.sql.SqlCommandParser;
 import org.apache.zeppelin.flink.sql.SqlCommandParser.SqlCommand;
 import org.apache.zeppelin.interpreter.Interpreter;
@@ -40,21 +42,25 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public abstract class FlinkSqlInterrpeter extends Interpreter {
 
   protected static final Logger LOGGER = LoggerFactory.getLogger(FlinkSqlInterrpeter.class);
 
-  protected static final String MESSAGE_HELP = new AttributedStringBuilder()
+  public static final AttributedString MESSAGE_HELP = new AttributedStringBuilder()
           .append("The following commands are available:\n\n")
           .append(formatCommand(SqlCommand.CREATE_TABLE, "Create table under current catalog and database."))
-          .append(formatCommand(SqlCommand.DROP_TABLE,
-                  "Drop table with optional catalog and database. Syntax: 'DROP TABLE [IF EXISTS] <name>;'"))
+          .append(formatCommand(SqlCommand.DROP_TABLE, "Drop table with optional catalog and database. Syntax: 'DROP TABLE [IF EXISTS] <name>;'"))
           .append(formatCommand(SqlCommand.CREATE_VIEW, "Creates a virtual table from a SQL query. Syntax: 'CREATE VIEW <name> AS <query>;'"))
           .append(formatCommand(SqlCommand.DESCRIBE, "Describes the schema of a table with the given name."))
           .append(formatCommand(SqlCommand.DROP_VIEW, "Deletes a previously created virtual table. Syntax: 'DROP VIEW <name>;'"))
@@ -65,20 +71,22 @@ public abstract class FlinkSqlInterrpeter extends Interpreter {
           .append(formatCommand(SqlCommand.SELECT, "Executes a SQL SELECT query on the Flink cluster."))
           .append(formatCommand(SqlCommand.SHOW_FUNCTIONS, "Shows all user-defined and built-in functions."))
           .append(formatCommand(SqlCommand.SHOW_TABLES, "Shows all registered tables."))
+          .append(formatCommand(SqlCommand.SOURCE, "Reads a SQL SELECT query from a file and executes it on the Flink cluster."))
           .append(formatCommand(SqlCommand.USE_CATALOG, "Sets the current catalog. The current database is set to the catalog's default one. Experimental! Syntax: 'USE CATALOG <name>;'"))
           .append(formatCommand(SqlCommand.USE, "Sets the current default database. Experimental! Syntax: 'USE <name>;'"))
           .style(AttributedStyle.DEFAULT.underline())
           .append("\nHint")
           .style(AttributedStyle.DEFAULT)
           .append(": Make sure that a statement ends with ';' for finalizing (multi-line) statements.")
-          .toAttributedString()
-          .toString();
+          .toAttributedString();
 
   protected FlinkInterpreter flinkInterpreter;
   protected TableEnvironment tbenv;
   protected TableEnvironment tbenv_2;
   private SqlSplitter sqlSplitter;
-  private ReentrantLock lock = new ReentrantLock();
+  private int defaultSqlParallelism;
+  private ReentrantReadWriteLock.WriteLock lock = new ReentrantReadWriteLock().writeLock();
+
 
   public FlinkSqlInterrpeter(Properties properties) {
     super(properties);
@@ -94,8 +102,10 @@ public abstract class FlinkSqlInterrpeter extends Interpreter {
     JobListener jobListener = new JobListener() {
       @Override
       public void onJobSubmitted(@Nullable JobClient jobClient, @Nullable Throwable throwable) {
-        lock.unlock();
-        LOGGER.info("UnLock JobSubmitLock");
+        if (lock.isHeldByCurrentThread()) {
+          lock.unlock();
+          LOGGER.info("UnLock JobSubmitLock");
+        }
       }
 
       @Override
@@ -106,6 +116,7 @@ public abstract class FlinkSqlInterrpeter extends Interpreter {
 
     flinkInterpreter.getExecutionEnvironment().getJavaEnv().registerJobListener(jobListener);
     flinkInterpreter.getStreamExecutionEnvironment().getJavaEnv().registerJobListener(jobListener);
+    this.defaultSqlParallelism = flinkInterpreter.getDefaultSqlParallelism();
   }
 
   @Override
@@ -134,7 +145,7 @@ public abstract class FlinkSqlInterrpeter extends Interpreter {
       if (!sqlCommand.isPresent()) {
         try {
           context.out.write("%text Invalid Sql statement: " + sql + "\n");
-          context.out.write(MESSAGE_HELP);
+          context.out.write(MESSAGE_HELP.toString());
         } catch (IOException e) {
           return new InterpreterResult(InterpreterResult.Code.ERROR, e.toString());
         }
@@ -174,6 +185,9 @@ public abstract class FlinkSqlInterrpeter extends Interpreter {
         break;
       case SHOW_TABLES:
         callShowTables(context);
+        break;
+      case SOURCE:
+        callSource(cmdCall.operands[0], context);
         break;
       case SHOW_FUNCTIONS:
         callShowFunctions(context);
@@ -231,10 +245,10 @@ public abstract class FlinkSqlInterrpeter extends Interpreter {
 
   private void callAlterTable(String sql, InterpreterContext context) throws IOException {
     try {
-      lock.tryLock();
+      lock.lock();
       this.tbenv.sqlUpdate(sql);
     } finally {
-      if (lock.isLocked()) {
+      if (lock.isHeldByCurrentThread()) {
         lock.unlock();
       }
     }
@@ -243,10 +257,10 @@ public abstract class FlinkSqlInterrpeter extends Interpreter {
 
   private void callAlterDatabase(String sql, InterpreterContext context) throws IOException {
     try {
-      lock.tryLock();
+      lock.lock();
       this.tbenv.sqlUpdate(sql);
     } finally {
-      if (lock.isLocked()) {
+      if (lock.isHeldByCurrentThread()) {
         lock.unlock();
       }
     }
@@ -257,7 +271,7 @@ public abstract class FlinkSqlInterrpeter extends Interpreter {
     try {
       this.tbenv.sqlUpdate(sql);
     } finally {
-      if (lock.isLocked()) {
+      if (lock.isHeldByCurrentThread()) {
         lock.unlock();
       }
     }
@@ -268,7 +282,7 @@ public abstract class FlinkSqlInterrpeter extends Interpreter {
     try {
       this.tbenv.sqlUpdate(sql);
     } finally {
-      if (lock.isLocked()) {
+      if (lock.isHeldByCurrentThread()) {
         lock.unlock();
       }
     }
@@ -285,7 +299,7 @@ public abstract class FlinkSqlInterrpeter extends Interpreter {
       lock.lock();
       this.tbenv.createTemporaryView(name, tbenv.sqlQuery(query));
     } finally {
-      if (lock.isLocked()) {
+      if (lock.isHeldByCurrentThread()) {
         lock.unlock();
       }
     }
@@ -294,10 +308,10 @@ public abstract class FlinkSqlInterrpeter extends Interpreter {
 
   private void callCreateTable(String sql, InterpreterContext context) throws IOException {
     try {
-      lock.tryLock();
+      lock.lock();
       this.tbenv.sqlUpdate(sql);
     } finally {
-      if (lock.isLocked()) {
+      if (lock.isHeldByCurrentThread()) {
         lock.unlock();
       }
     }
@@ -306,10 +320,10 @@ public abstract class FlinkSqlInterrpeter extends Interpreter {
 
   private void callDropTable(String sql, InterpreterContext context) throws IOException {
     try {
-      lock.tryLock();
+      lock.lock();
       this.tbenv.sqlUpdate(sql);
     } finally {
-      if (lock.isLocked()) {
+      if (lock.isHeldByCurrentThread()) {
         lock.unlock();
       }
     }
@@ -326,7 +340,7 @@ public abstract class FlinkSqlInterrpeter extends Interpreter {
   }
 
   private void callHelp(InterpreterContext context) throws IOException {
-    context.out.write(MESSAGE_HELP);
+    context.out.write(MESSAGE_HELP.toString());
   }
 
   private void callShowCatalogs(InterpreterContext context) throws IOException {
@@ -344,6 +358,11 @@ public abstract class FlinkSqlInterrpeter extends Interpreter {
     String[] tables = this.tbenv.listTables();
     context.out.write(
             "%table table\n" + StringUtils.join(tables, "\n") + "\n");
+  }
+
+  private void callSource(String sqlFile, InterpreterContext context) throws IOException {
+    String sql = IOUtils.toString(new FileInputStream(sqlFile));
+    runSqlList(sql, context);
   }
 
   private void callShowFunctions(InterpreterContext context) throws IOException {
@@ -369,11 +388,11 @@ public abstract class FlinkSqlInterrpeter extends Interpreter {
 
   private void callExplain(String sql, InterpreterContext context) throws IOException {
     try {
-      lock.tryLock();
+      lock.lock();
       Table table = this.tbenv.sqlQuery(sql);
       context.out.write(this.tbenv.explain(table) + "\n");
     } finally {
-      if (lock.isLocked()) {
+      if (lock.isHeldByCurrentThread()) {
         lock.unlock();
       }
     }
@@ -381,12 +400,21 @@ public abstract class FlinkSqlInterrpeter extends Interpreter {
 
   public void callSelect(String sql, InterpreterContext context) throws IOException {
     try {
-      lock.tryLock();
+      lock.lock();
+      if (context.getLocalProperties().containsKey("parallelism")) {
+        this.tbenv.getConfig().getConfiguration()
+                .set(ExecutionConfigOptions.TABLE_EXEC_RESOURCE_DEFAULT_PARALLELISM,
+                        Integer.parseInt(context.getLocalProperties().get("parallelism")));
+      }
       callInnerSelect(sql, context);
+
     } finally {
-      if (lock.isLocked()) {
+      if (lock.isHeldByCurrentThread()) {
         lock.unlock();
       }
+      this.tbenv.getConfig().getConfiguration()
+              .set(ExecutionConfigOptions.TABLE_EXEC_RESOURCE_DEFAULT_PARALLELISM,
+                      defaultSqlParallelism);
     }
   }
 
@@ -398,15 +426,23 @@ public abstract class FlinkSqlInterrpeter extends Interpreter {
        context.getLocalProperties().put("flink.streaming.insert_into", "true");
      }
      try {
-       lock.tryLock();
+       lock.lock();
+       if (context.getLocalProperties().containsKey("parallelism")) {
+         this.tbenv.getConfig().getConfiguration()
+                 .set(ExecutionConfigOptions.TABLE_EXEC_RESOURCE_DEFAULT_PARALLELISM,
+                         Integer.parseInt(context.getLocalProperties().get("parallelism")));
+       }
        this.tbenv.sqlUpdate(sql);
        this.tbenv.execute(sql);
      } catch (Exception e) {
        throw new IOException(e);
      } finally {
-       if (lock.isLocked()) {
+       if (lock.isHeldByCurrentThread()) {
          lock.unlock();
        }
+       this.tbenv.getConfig().getConfiguration()
+               .set(ExecutionConfigOptions.TABLE_EXEC_RESOURCE_DEFAULT_PARALLELISM,
+                       defaultSqlParallelism);
      }
      context.out.write("Insertion successfully.\n");
   }

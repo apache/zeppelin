@@ -132,6 +132,11 @@ You can also set other flink properties which are not listed in the table. For a
     <td>queue name of yarn app</td>
   </tr>
   <tr>
+    <td>flink.webui.yarn.useProxy</td>
+    <td>false</td>
+    <td>whether use yarn proxy url as flink weburl, e.g. http://localhost:8088/proxy/application_1583396598068_0004</td>
+  </tr>
+  <tr>
     <td>flink.udf.jars</td>
     <td></td>
     <td>udf jars (comma separated), zeppelin will register udf in this jar automatically for user. The udf name is the class name.</td>
@@ -185,6 +190,16 @@ You can also set other flink properties which are not listed in the table. For a
     <td>zeppelin.flink.maxResult</td>
     <td>1000</td>
     <td>max number of row returned by sql interpreter</td>
+  </tr>
+  <tr>
+    <td>flink.interpreter.close.shutdown_cluster</td>
+    <td>true</td>
+    <td>Whether shutdown application when closing interpreter</td>
+  </tr>
+  <tr>
+    <td>zeppelin.interpreter.close.cancel_job</td>
+    <td>true</td>
+    <td>Whether cancel flink job when closing interpreter</td>
   </tr>
 </table>
 
