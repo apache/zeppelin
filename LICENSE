@@ -266,6 +266,7 @@ The text of each license is also included at licenses/LICENSE-[project]-[version
     (Apache 2.0) concurrentunit (https://github.com/jhalterman/concurrentunit)
     (Apache 2.0) Embedded MongoDB (https://github.com/flapdoodle-oss/de.flapdoodle.embed.mongo)
     (Apache 2.0) Kotlin (https://github.com/JetBrains/kotlin)
+    (Apache 2.0) s3proxy (https://github.com/gaul/s3proxy)
 
 ========================================================================
 BSD 3-Clause licenses
