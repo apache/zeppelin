@@ -39,31 +39,37 @@ public class IPySparkInterpreter extends IPythonInterpreter {
   private static final Logger LOGGER = LoggerFactory.getLogger(IPySparkInterpreter.class);
 
   private SparkInterpreter sparkInterpreter;
+  private boolean opened = false;
 
   public IPySparkInterpreter(Properties property) {
     super(property);
   }
 
   @Override
-  public void open() throws InterpreterException {
+  public synchronized void open() throws InterpreterException {
+    // IPySparkInterpreter may already be opened in PySparkInterpreter when ipython is available.
+    if (opened) {
+      return;
+    }
     PySparkInterpreter pySparkInterpreter =
-        getInterpreterInTheSameSessionByClassName(PySparkInterpreter.class, false);
+            getInterpreterInTheSameSessionByClassName(PySparkInterpreter.class, false);
     setProperty("zeppelin.python", pySparkInterpreter.getPythonExec());
     sparkInterpreter = getInterpreterInTheSameSessionByClassName(SparkInterpreter.class);
     setProperty("zeppelin.py4j.useAuth",
-        sparkInterpreter.getSparkVersion().isSecretSocketSupported() + "");
+            sparkInterpreter.getSparkVersion().isSecretSocketSupported() + "");
     SparkConf conf = sparkInterpreter.getSparkContext().getConf();
     // only set PYTHONPATH in embedded, local or yarn-client mode.
     // yarn-cluster will setup PYTHONPATH automatically.
     if (!conf.contains("spark.submit.deployMode") ||
-        !conf.get("spark.submit.deployMode").equals("cluster")) {
+            !conf.get("spark.submit.deployMode").equals("cluster")) {
       setAdditionalPythonPath(PythonUtils.sparkPythonPath());
     }
     setUseBuiltinPy4j(false);
     setAdditionalPythonInitFile("python/zeppelin_ipyspark.py");
     setProperty("zeppelin.py4j.useAuth",
-        sparkInterpreter.getSparkVersion().isSecretSocketSupported() + "");
+            sparkInterpreter.getSparkVersion().isSecretSocketSupported() + "");
     super.open();
+    opened = true;
   }
 
   @Override
