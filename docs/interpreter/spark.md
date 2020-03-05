@@ -186,6 +186,10 @@ You can also set other Spark properties which are not listed in the table. For a
     <td></td>
     <td>Overrides Spark UI default URL. Value should be a full URL (ex: http://{hostName}/{uniquePath}</td>
   </tr>
+  <td>spark.webui.yarn.useProxy</td>
+    <td>false</td>
+    <td>whether use yarn proxy url as spark weburl, e.g. http://localhost:8088/proxy/application_1583396598068_0004</td>
+  </tr>
 </table>
 
 Without any configuration, Spark interpreter works out of box in local mode. But if you want to connect to your Spark cluster, you'll need to follow below two simple steps.
