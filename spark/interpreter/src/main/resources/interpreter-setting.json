@@ -119,6 +119,13 @@
         "description": "Whether to hide spark ui in zeppelin ui",
         "type": "checkbox"
       },
+      "spark.webui.yarn.useProxy": {
+        "envName": null,
+        "propertyName": "",
+        "defaultValue": false,
+        "description": "whether use yarn proxy url as spark weburl, e.g. http://localhost:8088/proxy/application_1583396598068_0004",
+        "type": "checkbox"
+      },
       "zeppelin.spark.scala.color": {
         "envName": null,
         "propertyName": "zeppelin.spark.scala.color",
