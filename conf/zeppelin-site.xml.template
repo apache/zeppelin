@@ -687,10 +687,28 @@
   <description>Kubernetes yaml spec files</description>
 </property>
 
-  <property>
-    <name>zeppelin.docker.container.image</name>
-    <value>apache/zeppelin:0.8.0</value>
-    <description>Docker image for interpreters</description>
-  </property>
+<property>
+  <name>zeppelin.docker.container.image</name>
+  <value>apache/zeppelin:0.8.0</value>
+  <description>Docker image for interpreters</description>
+</property>
+
+<property>
+  <name>zeppelin.search.index.rebuild</name>
+  <value>false</value>
+  <description>Whether rebuild index when zeppelin start. If true, it would read all notes and rebuild the index, this would consume lots of memory if you have large amounts of notes, so by default it is false</description>
+</property>
+
+<property>
+  <name>zeppelin.search.use.disk</name>
+  <value>true</value>
+  <description>Whether using disk for storing search index, if false, memory will be used instead.</description>
+</property>
+
+<property>
+  <name>zeppelin.search.index.path</name>
+  <value>/tmp/zeppelin-index</value>
+  <description>path for storing search index on disk.</description>
+</property>
 
 </configuration>

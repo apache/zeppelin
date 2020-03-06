@@ -723,12 +723,16 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getString(ConfVars.ZEPPELIN_PROXY_PASSWORD);
   }
 
+  public Boolean isIndexRebuild() {
+    return getBoolean(ConfVars.ZEPPELIN_SEARCH_INDEX_REBUILD);
+  }
+
   public Boolean isZeppelinSearchUseDisk() {
     return getBoolean(ConfVars.ZEPPELIN_SEARCH_USE_DISK);
   }
 
-  public String getZeppelinSearchTempPath() {
-    return getRelativeDir(ConfVars.ZEPPELIN_SEARCH_TEMP_PATH);
+  public String getZeppelinSearchIndexPath() {
+    return getRelativeDir(ConfVars.ZEPPELIN_SEARCH_INDEX_PATH);
   }
 
   public String getClusterAddress() {
@@ -987,8 +991,9 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_PROXY_URL("zeppelin.proxy.url", null),
     ZEPPELIN_PROXY_USER("zeppelin.proxy.user", null),
     ZEPPELIN_PROXY_PASSWORD("zeppelin.proxy.password", null),
-    ZEPPELIN_SEARCH_USE_DISK("zeppelin.search.use.disk", false),
-    ZEPPELIN_SEARCH_TEMP_PATH("zeppelin.search.temp.path", System.getProperty("java.io.tmpdir"));
+    ZEPPELIN_SEARCH_INDEX_REBUILD("zeppelin.search.index.rebuild", false),
+    ZEPPELIN_SEARCH_USE_DISK("zeppelin.search.use.disk", true),
+    ZEPPELIN_SEARCH_INDEX_PATH("zeppelin.search.index.path", "/tmp/zeppelin-index");
 
     private String varName;
     @SuppressWarnings("rawtypes")
