@@ -100,9 +100,12 @@ public class Notebook {
     this.interpreterSettingManager.setNotebook(this);
     this.noteSearchService = noteSearchService;
     this.credentials = credentials;
-
     this.noteEventListeners.add(this.noteSearchService);
     this.noteEventListeners.add(this.interpreterSettingManager);
+
+    if (conf.isIndexRebuild()) {
+      noteSearchService.startRebuildIndex(getAllNotes());
+    }
   }
 
   @Inject
