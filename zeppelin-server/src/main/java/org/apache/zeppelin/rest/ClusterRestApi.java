@@ -58,7 +58,7 @@ public class ClusterRestApi {
     if (zConf.isClusterMode()) {
       clusterManagerServer = ClusterManagerServer.getInstance(zConf);
     } else {
-      LOG.warn("Cluster mode id disabled, ClusterRestApi won't work");
+      LOG.warn("Cluster mode is disabled, ClusterRestApi won't work");
     }
   }
 
