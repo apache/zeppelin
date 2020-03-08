@@ -257,6 +257,7 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
       // InterpreterSetting, while InterpreterSetting is from interpreter.json which represent
       // the user saved interpreter setting
       if (interpreterSettingTemplate != null) {
+        savedInterpreterSetting.sortPropertiesByTemplate(interpreterSettingTemplate.getProperties());
         // merge InterpreterDir, InterpreterInfo & InterpreterRunner
         savedInterpreterSetting.setInterpreterDir(
             interpreterSettingTemplate.getInterpreterDir());
