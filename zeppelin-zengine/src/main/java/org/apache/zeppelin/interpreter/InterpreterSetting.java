@@ -145,6 +145,7 @@ public class InterpreterSetting {
   private transient RemoteInterpreterEventServer interpreterEventServer;
 
   public static final String CLUSTER_INTERPRETER_LAUNCHER_NAME = "ClusterInterpreterLauncher";
+
   ///////////////////////////////////////////////////////////////////////////////////////////
 
   /**
@@ -558,6 +559,38 @@ public class InterpreterSetting {
     }
   }
 
+  /**
+   * This method will sort the properties by the order defined in template.
+   * It is because when interpreter setting is loaded in interpreter-setting.json, it is
+   * still not in correct order.
+   * @param propertiesInTemplate
+   */
+  public void sortPropertiesByTemplate(Object propertiesInTemplate) {
+    if (propertiesInTemplate instanceof LinkedHashMap) {
+      List<String> sortedKeys = new ArrayList(((LinkedHashMap) propertiesInTemplate).keySet());
+      if (this.properties instanceof LinkedHashMap) {
+        LinkedHashMap<String, InterpreterProperty> unSortedProperties = (LinkedHashMap) this.properties;
+        List<String> keys = new ArrayList(unSortedProperties.keySet());
+        keys.sort((o1, o2) -> {
+          int i1 = sortedKeys.indexOf(o1);
+          int i2 = sortedKeys.indexOf(o2);
+          if (i1 < i2) {
+            return -1;
+          } else if (i1 > i2) {
+            return 1;
+          } else {
+            return 0;
+          }
+        });
+
+        LinkedHashMap<String, InterpreterProperty> sortedProperties = new LinkedHashMap<>();
+        for (String key : keys) {
+          sortedProperties.put(key, unSortedProperties.get(key));
+        }
+        this.properties = sortedProperties;
+      }
+    }
+  }
 
   public Object getProperties() {
     return properties;
