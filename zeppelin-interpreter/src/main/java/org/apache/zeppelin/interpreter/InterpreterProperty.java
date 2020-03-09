@@ -24,6 +24,14 @@ public class InterpreterProperty {
   private String name;
   private Object value;
   private String type;
+  private String description;
+
+  public InterpreterProperty(String name, Object value, String type, String description) {
+    this.name = name;
+    this.value = value;
+    this.type = type;
+    this.description = description;
+  }
 
   public InterpreterProperty(String name, Object value, String type) {
     this.name = name;
@@ -61,8 +69,13 @@ public class InterpreterProperty {
     this.type = type;
   }
 
+  public void setDescription(String description) {
+    this.description = description;
+  }
+
   @Override
   public String toString() {
-    return String.format("{name=%s, value=%s, type=%s}", name, value, type);
+    return String.format("{name=%s, value=%s, type=%s, description=%s}",
+            name, value, type, description);
   }
 }

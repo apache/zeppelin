@@ -258,6 +258,7 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
       // the user saved interpreter setting
       if (interpreterSettingTemplate != null) {
         savedInterpreterSetting.sortPropertiesByTemplate(interpreterSettingTemplate.getProperties());
+        savedInterpreterSetting.fillPropertyDescription(interpreterSettingTemplate.getProperties());
         // merge InterpreterDir, InterpreterInfo & InterpreterRunner
         savedInterpreterSetting.setInterpreterDir(
             interpreterSettingTemplate.getInterpreterDir());
