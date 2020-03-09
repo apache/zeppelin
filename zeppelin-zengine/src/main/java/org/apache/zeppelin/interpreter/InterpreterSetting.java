@@ -560,6 +560,28 @@ public class InterpreterSetting {
   }
 
   /**
+   * This is just to fix the issue of ZEPPELIN-4672.
+   * (TODO zjffdu), we should remove these ungly code after we unify the interpreter properties in
+   * interpreter.json & interpreter-setting.json
+   * @param propertiesInTemplate
+   */
+  public void fillPropertyDescription(Object propertiesInTemplate) {
+    if (propertiesInTemplate instanceof LinkedHashMap) {
+      LinkedHashMap<String, DefaultInterpreterProperty> propertiesInTemplate2 =
+              (LinkedHashMap<String, DefaultInterpreterProperty>) propertiesInTemplate;
+      if (this.properties instanceof LinkedHashMap) {
+        LinkedHashMap<String, InterpreterProperty> newInterpreterProperties = (LinkedHashMap)this.properties;
+        for (Map.Entry<String, InterpreterProperty> entry : newInterpreterProperties.entrySet()) {
+          if (propertiesInTemplate2.containsKey(entry.getKey())) {
+            entry.getValue().setDescription(propertiesInTemplate2.get(entry.getKey()).getDescription());
+          }
+        }
+        this.properties = newInterpreterProperties;
+      }
+    }
+  }
+
+  /**
    * This method will sort the properties by the order defined in template.
    * It is because when interpreter setting is loaded in interpreter-setting.json, it is
    * still not in correct order.
