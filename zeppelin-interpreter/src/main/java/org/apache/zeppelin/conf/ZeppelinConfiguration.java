@@ -739,6 +739,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getRelativeDir(ConfVars.ZEPPELIN_SEARCH_INDEX_PATH);
   }
 
+  public Boolean isOnlyYarnCluster() {
+    return getBoolean(ConfVars.ZEPPELIN_SPARK_ONLY_YARN_CLUSTER);
+  }
+
   public String getClusterAddress() {
     return getString(ConfVars.ZEPPELIN_CLUSTER_ADDR);
   }
@@ -998,7 +1002,8 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_SEARCH_INDEX_REBUILD("zeppelin.search.index.rebuild", false),
     ZEPPELIN_SEARCH_USE_DISK("zeppelin.search.use.disk", true),
     ZEPPELIN_SEARCH_INDEX_PATH("zeppelin.search.index.path", "/tmp/zeppelin-index"),
-    ZEPPELIN_JOBMANAGER_ENABLE("zeppelin.jobmanager.enable", true);
+    ZEPPELIN_JOBMANAGER_ENABLE("zeppelin.jobmanager.enable", false),
+    ZEPPELIN_SPARK_ONLY_YARN_CLUSTER("zeppelin.spark.only_yarn_cluster", false);
 
     private String varName;
     @SuppressWarnings("rawtypes")
