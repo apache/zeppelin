@@ -76,6 +76,10 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
     if (isYarnMode() && getDeployMode().equals("cluster")) {
       env.put("ZEPPELIN_SPARK_YARN_CLUSTER", "true");
       sparkProperties.setProperty("spark.yarn.submit.waitAppCompletion", "false");
+    } else if (zConf.isOnlyYarnCluster()){
+      throw new IOException("Only yarn-cluster mode is allowed, please set " +
+              ZeppelinConfiguration.ConfVars.ZEPPELIN_SPARK_ONLY_YARN_CLUSTER.getVarName() +
+              " to false if you want to use other modes.");
     }
 
     StringBuilder sparkConfBuilder = new StringBuilder();

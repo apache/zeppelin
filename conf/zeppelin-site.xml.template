@@ -718,4 +718,10 @@
   Disable it can save lots of memory</description>
 </property>
 
+<property>
+  <name>zeppelin.spark.only_yarn_cluster</name>
+  <value>false</value>
+  <description>Whether only allow yarn cluster mode</description>
+</property>
+
 </configuration>
