@@ -1037,7 +1037,8 @@ public class InterpreterSetting {
           InterpreterProperty property = new InterpreterProperty(
               key,
               dProperty.getValue(),
-              dProperty.getType() != null ? dProperty.getType() : "string"
+              dProperty.getType() != null ? dProperty.getType() : "string",
+              dProperty.getDescription()
               // in case user forget to specify type in interpreter-setting.json
           );
           newProperties.put(key, property);
