@@ -9,7 +9,7 @@
         "envName": null,
         "propertyName": "zeppelin.python",
         "defaultValue": "python",
-        "description": "Python directory. It is set to python by default.(assume python is in your $PATH)",
+        "description": "Python binary executable path. It is set to python by default.(assume python is in your $PATH)",
         "type": "string"
       },
       "zeppelin.python.maxResult": {
@@ -22,7 +22,7 @@
       "zeppelin.python.useIPython": {
         "propertyName": "zeppelin.python.useIPython",
         "defaultValue": true,
-        "description": "whether use IPython when it is available",
+        "description": "Whether use IPython when it is available in `%python`",
         "type": "checkbox"
       }
     },
@@ -40,7 +40,7 @@
       "zeppelin.ipython.launch.timeout": {
         "propertyName": "zeppelin.ipython.launch.timeout",
         "defaultValue": "30000",
-        "description": "time out for ipython launch",
+        "description": "Time out for ipython launch",
         "type": "number"
       },
       "zeppelin.ipython.grpc.message_size": {
