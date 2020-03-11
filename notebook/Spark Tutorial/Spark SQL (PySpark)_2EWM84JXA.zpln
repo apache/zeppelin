@@ -2,19 +2,19 @@
   "paragraphs": [
     {
       "title": "Introduction",
-      "text": "%md\n\nThis is a tutorial for Spark SQL in PySpark (based on Spark 2.x).  First we need to clarifiy serveral concetps of Spark SQL\n\n* **SparkSession**   - This is the entry point of Spark SQL, you use `SparkSession` to create DataFrame/Dataset, register UDF, query table and etc.\n* **DataFrame**      - There\u0027s no Dataset in PySpark, but only DataFrame. The DataFrame of PySpark is very similar with DataFrame concept of Pandas, but is distributed. \n",
+      "text": "%md\n\nThis is a tutorial for Spark SQL in PySpark (based on Spark 2.x).  First we need to clarifiy serveral concetps of Spark SQL\n\n* **SparkSession**   - This is the entry point of Spark SQL, you need use `SparkSession` to create DataFrame/Dataset, register UDF, query table and etc.\n* **DataFrame**      - There\u0027s no Dataset in PySpark, but only DataFrame. The DataFrame of PySpark is very similar with DataFrame concept of Pandas, but is distributed. \n",
       "user": "anonymous",
-      "dateUpdated": "2020-01-21 15:46:33.852",
+      "dateUpdated": "2020-03-11 11:16:37.393",
       "config": {
         "tableHide": false,
         "editorSetting": {
-          "language": "markdown",
-          "editOnDblClick": true,
+          "language": "text",
+          "editOnDblClick": false,
           "completionKey": "TAB",
           "completionSupport": false
         },
         "colWidth": 12.0,
-        "editorMode": "ace/mode/markdown",
+        "editorMode": "ace/mode/text",
         "fontSize": 9.0,
         "editorHide": true,
         "results": {},
@@ -32,7 +32,7 @@
         "msg": [
           {
             "type": "HTML",
-            "data": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003cp\u003eThis is a tutorial for Spark SQL in PySpark (based on Spark 2.x).  First we need to clarifiy serveral concetps of Spark SQL\u003c/p\u003e\n\u003cul\u003e\n\u003cli\u003e\u003cstrong\u003eSparkSession\u003c/strong\u003e   - This is the entry point of Spark SQL, you use \u003ccode\u003eSparkSession\u003c/code\u003e to create DataFrame/Dataset, register UDF, query table and etc.\u003c/li\u003e\n\u003cli\u003e\u003cstrong\u003eDataFrame\u003c/strong\u003e      - There\u0026rsquo;s no Dataset in PySpark, but only DataFrame. The DataFrame of PySpark is very similar with DataFrame concept of Pandas, but is distributed.\u003c/li\u003e\n\u003c/ul\u003e\n\n\u003c/div\u003e"
+            "data": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003cp\u003eThis is a tutorial for Spark SQL in PySpark (based on Spark 2.x).  First we need to clarifiy serveral concetps of Spark SQL\u003c/p\u003e\n\u003cul\u003e\n\u003cli\u003e\u003cstrong\u003eSparkSession\u003c/strong\u003e   - This is the entry point of Spark SQL, you need use \u003ccode\u003eSparkSession\u003c/code\u003e to create DataFrame/Dataset, register UDF, query table and etc.\u003c/li\u003e\n\u003cli\u003e\u003cstrong\u003eDataFrame\u003c/strong\u003e      - There\u0026rsquo;s no Dataset in PySpark, but only DataFrame. The DataFrame of PySpark is very similar with DataFrame concept of Pandas, but is distributed.\u003c/li\u003e\n\u003c/ul\u003e\n\n\u003c/div\u003e"
           }
         ]
       },
@@ -41,8 +41,8 @@
       "jobName": "paragraph_1578387700849_2035279674",
       "id": "20180530-101118_380906698",
       "dateCreated": "2020-01-07 17:01:40.849",
-      "dateStarted": "2020-01-21 15:46:33.862",
-      "dateFinished": "2020-01-21 15:46:35.134",
+      "dateStarted": "2020-03-11 11:16:34.341",
+      "dateFinished": "2020-03-11 11:16:35.545",
       "status": "FINISHED"
     },
     {
@@ -137,9 +137,9 @@
     },
     {
       "title": "Spark Configuration",
-      "text": "%spark.conf\n\n# It is strongly recommended to set SPARK_HOME explictly instead of using the embedded spark of Zeppelin. As the function of embedded spark of Zeppelin is limited and can only run in local mode.\n# SPARK_HOME /Users/jzhang/Java/lib/spark-2.3.0-bin-hadoop2.7\n\n# Uncomment the following line if you want to use yarn-cluster mode (It is recommended to use yarn-cluster mode from Zeppelin 0.8, as the driver will run on the remote host of yarn cluster which can mitigate memory pressure of zeppelin server)\n# master yarn-cluster\n\n# Uncomment the following line if you want to use yarn-client mode (It is not recommended to use after 0.8. Because it would launch the driver in the same host of zeppelin server which will increase memory pressure of zeppelin server)\n# master yarn-client\n\n# Uncomment the following line to enable HiveContext, and also put hive-site.xml under SPARK_CONF_DIR\n# zeppelin.spark.useHiveContext true\n\n# Uncomment the following to enable IPython, PySpark will also check IPython automatically and enable it if existed.\n# zeppelin.spark.pyspark.useIPython true",
+      "text": "%spark.conf\n\n# It is strongly recommended to set SPARK_HOME explictly instead of using the embedded spark of Zeppelin. As the function of embedded spark of Zeppelin is limited and can only run in local mode.\n# SPARK_HOME \u003cyour_spark_dist_path\u003e\n\n# Uncomment the following line if you want to use yarn-cluster mode (It is recommended to use yarn-cluster mode from Zeppelin 0.8, as the driver will run on the remote host of yarn cluster which can mitigate memory pressure of zeppelin server)\n# master yarn-cluster\n\n# Uncomment the following line if you want to use yarn-client mode (It is not recommended to use yarn-client after 0.8. Because it would launch the driver in the same host of zeppelin server which will increase memory pressure of zeppelin server)\n# master yarn-client\n\n# Uncomment the following line to enable HiveContext, and also put hive-site.xml under SPARK_CONF_DIR\n# zeppelin.spark.useHiveContext true\n",
       "user": "anonymous",
-      "dateUpdated": "2020-01-21 15:46:35.418",
+      "dateUpdated": "2020-03-11 13:26:01.470",
       "config": {
         "editorSetting": {
           "language": "text",
@@ -169,15 +169,15 @@
       "jobName": "paragraph_1578387700850_-1532509261",
       "id": "20180530-110007_162886838",
       "dateCreated": "2020-01-07 17:01:40.850",
-      "dateStarted": "2020-01-21 15:46:35.428",
-      "dateFinished": "2020-01-21 15:46:35.453",
+      "dateStarted": "2020-03-11 11:18:41.548",
+      "dateFinished": "2020-03-11 11:18:41.575",
       "status": "FINISHED"
     },
     {
       "title": "Create Dataset/DataFrame via SparkSession",
-      "text": "%spark.pyspark\n\n# create DataFrame from python list. It can infer schema for you.\ndf1 \u003d spark.createDataFrame([(1, \"andy\", 20, \"USA\"), (2, \"jeff\", 23, \"China\"), (3, \"james\", 18, \"USA\")]).toDF(\"id\", \"name\", \"age\", \"country\")\ndf1.printSchema\ndf1.show()\n\n# create DataFrame from pandas dataframe\ndf2 \u003d spark.createDataFrame(df1.toPandas())\ndf2.printSchema\ndf2.show()\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n",
+      "text": "%spark.pyspark\n\n# create DataFrame from python list. It can infer schema for you.\ndf1 \u003d spark.createDataFrame([(1, \"andy\", 20, \"USA\"), (2, \"jeff\", 23, \"China\"), (3, \"james\", 18, \"USA\")]).toDF(\"id\", \"name\", \"age\", \"country\")\ndf1.printSchema()\ndf1.show()\n\n# create DataFrame from pandas dataframe\ndf2 \u003d spark.createDataFrame(df1.toPandas())\ndf2.printSchema()\ndf2.show()\n\n\n\n\n\n\n\n\n\n\n\n\n",
       "user": "anonymous",
-      "dateUpdated": "2020-01-21 15:46:35.640",
+      "dateUpdated": "2020-03-11 11:19:32.923",
       "config": {
         "editorSetting": {
           "language": "python",
@@ -203,7 +203,7 @@
         "msg": [
           {
             "type": "TEXT",
-            "data": "+---+-----+---+-------+\n| id| name|age|country|\n+---+-----+---+-------+\n|  1| andy| 20|    USA|\n|  2| jeff| 23|  China|\n|  3|james| 18|    USA|\n+---+-----+---+-------+\n\n+---+-----+---+-------+\n| id| name|age|country|\n+---+-----+---+-------+\n|  1| andy| 20|    USA|\n|  2| jeff| 23|  China|\n|  3|james| 18|    USA|\n+---+-----+---+-------+\n\n"
+            "data": "root\n |-- id: long (nullable \u003d true)\n |-- name: string (nullable \u003d true)\n |-- age: long (nullable \u003d true)\n |-- country: string (nullable \u003d true)\n\n+---+-----+---+-------+\n| id| name|age|country|\n+---+-----+---+-------+\n|  1| andy| 20|    USA|\n|  2| jeff| 23|  China|\n|  3|james| 18|    USA|\n+---+-----+---+-------+\n\nroot\n |-- id: long (nullable \u003d true)\n |-- name: string (nullable \u003d true)\n |-- age: long (nullable \u003d true)\n |-- country: string (nullable \u003d true)\n\n+---+-----+---+-------+\n| id| name|age|country|\n+---+-----+---+-------+\n|  1| andy| 20|    USA|\n|  2| jeff| 23|  China|\n|  3|james| 18|    USA|\n+---+-----+---+-------+\n\n"
           }
         ]
       },
@@ -212,15 +212,15 @@
       "jobName": "paragraph_1578387700850_1345292725",
       "id": "20180530-101750_1491737301",
       "dateCreated": "2020-01-07 17:01:40.850",
-      "dateStarted": "2020-01-21 15:46:35.647",
-      "dateFinished": "2020-01-21 15:46:57.355",
+      "dateStarted": "2020-03-11 11:19:32.929",
+      "dateFinished": "2020-03-11 11:19:33.544",
       "status": "FINISHED"
     },
     {
       "title": "Create DataFrame via DataFrameReader",
-      "text": "%spark.pyspark\n\n# Read data from json file\n# link for this people.json (https://github.com/apache/spark/blob/master/examples/src/main/resources/people.json)\n# Make sure you have this file on local file system or hdfs\ndf1 \u003d spark.read.json(\"file:///Users/jzhang/Java/lib/spark-2.4.3-bin-hadoop2.7/examples/src/main/resources/people.json\")\ndf1.printSchema()\ndf1.show()\n\n# Read data from csv file. You can customize it via spark.read.options. E.g. In the following example, we customize the sep and header\ndf2 \u003d spark.read.options(sep\u003d\";\", header\u003dTrue).csv(\"file:///Users/jzhang/Java/lib/spark-2.4.3-bin-hadoop2.7/examples/src/main/resources/people.csv\")\ndf2.printSchema()\ndf2.show()\n\n# Specify schema for your csv file\nfrom pyspark.sql.types import StructType, StringType, IntegerType\n\nschema \u003d StructType().add(\"name\", StringType(), True) \\\n    .add(\"age\", IntegerType(), True) \\\n    .add(\"job\", StringType(), True)\n    \ndf3 \u003d spark.read.options(sep\u003d\";\", header\u003dTrue) \\\n    .schema(schema) \\\n    .csv(\"file:///Users/jzhang/Java/lib/spark-2.4.3-bin-hadoop2.7/examples/src/main/resources/people.csv\") \ndf3.printSchema()\ndf3.show()\n\n",
+      "text": "%spark.pyspark\n\nSPARK_HOME \u003d os.getenv(\u0027SPARK_HOME\u0027)\n\n# Read data from json file\n# link for this people.json (https://github.com/apache/spark/blob/master/examples/src/main/resources/people.json)\n# Use hdfs path if you are using hdfs\ndf1 \u003d spark.read.json(\"file://\" + SPARK_HOME + \"/examples/src/main/resources/people.json\")\ndf1.printSchema()\ndf1.show()\n\n# Read data from csv file. You can customize it via spark.read.options. E.g. In the following example, we customize the sep and header\ndf2 \u003d spark.read.options(sep\u003d\";\", header\u003dTrue).csv(\"file://\"  + SPARK_HOME + \"/examples/src/main/resources/people.csv\")\ndf2.printSchema()\ndf2.show()\n\n# Specify schema for your csv file\nfrom pyspark.sql.types import StructType, StringType, IntegerType\n\nschema \u003d StructType().add(\"name\", StringType(), True) \\\n    .add(\"age\", IntegerType(), True) \\\n    .add(\"job\", StringType(), True)\n    \ndf3 \u003d spark.read.options(sep\u003d\";\", header\u003dTrue) \\\n    .schema(schema) \\\n    .csv(\"file://\" + SPARK_HOME + \"/examples/src/main/resources/people.csv\") \ndf3.printSchema()\ndf3.show()\n\n",
       "user": "anonymous",
-      "dateUpdated": "2020-01-21 15:46:57.398",
+      "dateUpdated": "2020-03-11 13:32:31.553",
       "config": {
         "lineNumbers": false,
         "editorSetting": {
@@ -256,15 +256,15 @@
       "jobName": "paragraph_1578387700850_581443636",
       "id": "20180530-101930_1495479697",
       "dateCreated": "2020-01-07 17:01:40.850",
-      "dateStarted": "2020-01-21 15:46:57.417",
-      "dateFinished": "2020-01-21 15:47:00.449",
+      "dateStarted": "2020-03-11 11:28:43.699",
+      "dateFinished": "2020-03-11 11:28:53.117",
       "status": "FINISHED"
     },
     {
       "title": "Add New Column",
       "text": "%spark.pyspark\n\n# withColumn could be used to add new Column\ndf1 \u003d spark.createDataFrame([(1, \"andy\", 20, \"USA\"), (2, \"jeff\", 23, \"China\"), (3, \"james\", 18, \"USA\")]).toDF(\"id\", \"name\", \"age\", \"country\")\n\ndf2 \u003d df1.withColumn(\"age2\", df1[\"age\"] + 1)\ndf2.show()\n\n# the new column could replace the existing the column if the new column name is the same as the old column\ndf3 \u003d df1.withColumn(\"age\", df1[\"age\"] + 1)\ndf3.show()\n\n# Besides using expression to create new column, you could also use udf to create new column\n# Use F.upper instead of upper, because the builtin udf of spark may conclifct with that of python, such as max\nimport pyspark.sql.functions as F\ndf4 \u003d df1.withColumn(\"name\", F.upper(df1[\"name\"]))\ndf4.show()",
       "user": "anonymous",
-      "dateUpdated": "2020-01-21 15:47:00.454",
+      "dateUpdated": "2020-03-11 11:37:52.839",
       "config": {
         "editorSetting": {
           "language": "python",
@@ -299,15 +299,15 @@
       "jobName": "paragraph_1578387700850_-775755394",
       "id": "20180530-105113_693855403",
       "dateCreated": "2020-01-07 17:01:40.850",
-      "dateStarted": "2020-01-21 15:47:00.460",
-      "dateFinished": "2020-01-21 15:47:01.062",
+      "dateStarted": "2020-03-11 11:37:52.905",
+      "dateFinished": "2020-03-11 11:37:54.953",
       "status": "FINISHED"
     },
     {
       "title": "Remove Column",
       "text": "%spark.pyspark\n\n\ndf1 \u003d spark.createDataFrame([(1, \"andy\", 20, \"USA\"), (2, \"jeff\", 23, \"China\"), (3, \"james\", 18, \"USA\")]).toDF(\"id\", \"name\", \"age\", \"country\")\n# drop could be used to remove Column\ndf2 \u003d df1.drop(\"id\")\ndf2.show()\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n",
       "user": "anonymous",
-      "dateUpdated": "2020-01-21 15:47:01.074",
+      "dateUpdated": "2020-03-11 11:37:56.819",
       "config": {
         "editorSetting": {
           "language": "python",
@@ -342,15 +342,15 @@
       "jobName": "paragraph_1578387700850_-886487025",
       "id": "20180530-112045_1274721210",
       "dateCreated": "2020-01-07 17:01:40.850",
-      "dateStarted": "2020-01-21 15:47:01.080",
-      "dateFinished": "2020-01-21 15:47:01.415",
+      "dateStarted": "2020-03-11 11:37:56.829",
+      "dateFinished": "2020-03-11 11:37:57.411",
       "status": "FINISHED"
     },
     {
       "title": "Select Subset of Columns",
       "text": "%spark.pyspark\n\ndf1 \u003d spark.createDataFrame([(1, \"andy\", 20, \"USA\"), (2, \"jeff\", 23, \"China\"), (3, \"james\", 18, \"USA\")]).toDF(\"id\", \"name\", \"age\", \"country\")\n# select can accept a list of string of the column names\ndf2 \u003d df1.select(\"id\", \"name\")\ndf2.show()\n\n# select can also accept a list of Column. You can create column via $ or udf\nimport pyspark.sql.functions as F\ndf3 \u003d df1.select(df1[\"id\"], F.upper(df1[\"name\"]), df1[\"age\"] + 1)\ndf3.show()\n\n\n",
       "user": "anonymous",
-      "dateUpdated": "2020-01-21 15:47:01.495",
+      "dateUpdated": "2020-03-11 11:38:05.490",
       "config": {
         "editorSetting": {
           "language": "python",
@@ -385,15 +385,15 @@
       "jobName": "paragraph_1578387700850_2124268380",
       "id": "20180530-113042_1154914545",
       "dateCreated": "2020-01-07 17:01:40.850",
-      "dateStarted": "2020-01-21 15:47:01.501",
-      "dateFinished": "2020-01-21 15:47:01.947",
+      "dateStarted": "2020-03-11 11:38:05.497",
+      "dateFinished": "2020-03-11 11:38:05.941",
       "status": "FINISHED"
     },
     {
       "title": "Filter Rows",
       "text": "%spark.pyspark\n\ndf1 \u003d spark.createDataFrame([(1, \"andy\", 20, \"USA\"), (2, \"jeff\", 23, \"China\"), (3, \"james\", 18, \"USA\")]).toDF(\"id\", \"name\", \"age\", \"country\")\n\n# filter accept a Column \ndf2 \u003d df1.filter(df1[\"age\"] \u003e\u003d 20)\ndf2.show()\n\n# To be noticed, you need to use \"\u0026\" instead of \"\u0026\u0026\" or \"AND\" \ndf3 \u003d df1.filter((df1[\"age\"] \u003e\u003d 20) \u0026 (df1[\"country\"] \u003d\u003d \"China\"))\ndf3.show()\n\n\n\n\n\n\n",
       "user": "anonymous",
-      "dateUpdated": "2020-01-21 15:47:02.009",
+      "dateUpdated": "2020-03-11 11:38:08.030",
       "config": {
         "editorSetting": {
           "language": "python",
@@ -428,15 +428,15 @@
       "jobName": "paragraph_1578387700850_1501705200",
       "id": "20180530-113407_58454283",
       "dateCreated": "2020-01-07 17:01:40.850",
-      "dateStarted": "2020-01-21 15:47:02.015",
-      "dateFinished": "2020-01-21 15:47:02.458",
+      "dateStarted": "2020-03-11 11:38:08.067",
+      "dateFinished": "2020-03-11 11:38:08.577",
       "status": "FINISHED"
     },
     {
       "title": "Create UDF",
       "text": "%spark.pyspark\n\ndf1 \u003d spark.createDataFrame([(1, \"andy\", 20, \"USA\"), (2, \"jeff\", 23, \"China\"), (3, \"james\", 18, \"USA\")]) \\\n            .toDF(\"id\", \"name\", \"age\", \"country\")\n\n# Create udf create python lambda\nfrom pyspark.sql.functions import udf\nudf1 \u003d udf(lambda e: e.upper())\ndf2 \u003d df1.select(udf1(df1[\"name\"]))\ndf2.show()\n\n# UDF could also be used in filter, in this case the return type must be Boolean\n# We can also use annotation to create udf\nfrom pyspark.sql.types import *\n@udf(returnType\u003dBooleanType())\ndef udf2(e):\n    if e \u003e\u003d 20:\n        return True;\n    else:\n        return False\n\ndf3 \u003d df1.filter(udf2(df1[\"age\"]))\ndf3.show()\n\n# UDF could also accept more than 1 argument.\nudf3 \u003d udf(lambda e1, e2: e1 + \"_\" + e2)\ndf4 \u003d df1.select(udf3(df1[\"name\"], df1[\"country\"]).alias(\"name_country\"))\ndf4.show()\n",
       "user": "anonymous",
-      "dateUpdated": "2020-01-21 15:47:02.525",
+      "dateUpdated": "2020-03-11 11:38:10.873",
       "config": {
         "editorSetting": {
           "language": "python",
@@ -471,15 +471,15 @@
       "jobName": "paragraph_1578387700850_574730063",
       "id": "20180530-113720_1986531680",
       "dateCreated": "2020-01-07 17:01:40.850",
-      "dateStarted": "2020-01-21 15:47:02.532",
-      "dateFinished": "2020-01-21 15:47:03.455",
+      "dateStarted": "2020-03-11 11:38:10.878",
+      "dateFinished": "2020-03-11 11:38:12.133",
       "status": "FINISHED"
     },
     {
       "title": "GroupBy",
       "text": "%spark.pyspark\n\ndf1 \u003d spark.createDataFrame([(1, \"andy\", 20, \"USA\"), (2, \"jeff\", 23, \"China\"), (3, \"james\", 18, \"USA\")]) \\\n           .toDF(\"id\", \"name\", \"age\", \"country\")\n\n# You can call agg function after groupBy directly, such as count/min/max/avg/sum\ndf2 \u003d df1.groupBy(\"country\").count()\ndf2.show()\n\n# Pass a Map if you want to do multiple aggregation\ndf3 \u003d df1.groupBy(\"country\").agg({\"age\": \"avg\", \"id\": \"count\"})\ndf3.show()\n\nimport pyspark.sql.functions as F\n# Or you can pass a list of agg function\ndf4 \u003d df1.groupBy(\"country\").agg(F.avg(df1[\"age\"]).alias(\"avg_age\"), F.count(df1[\"id\"]).alias(\"count\"))\ndf4.show()\n\n# You can not pass Map if you want to do multiple aggregation on the same column as the key of Map should be unique. So in this case\n# you have to pass a list of agg functions\ndf5 \u003d df1.groupBy(\"country\").agg(F.avg(df1[\"age\"]).alias(\"avg_age\"), F.max(df1[\"age\"]).alias(\"max_age\"))\ndf5.show()\n\n\n\n\n\n\n",
       "user": "anonymous",
-      "dateUpdated": "2020-01-21 15:47:03.553",
+      "dateUpdated": "2020-03-11 11:38:14.569",
       "config": {
         "editorSetting": {
           "language": "python",
@@ -514,15 +514,15 @@
       "jobName": "paragraph_1578387700850_1233271138",
       "id": "20180530-114404_2076888937",
       "dateCreated": "2020-01-07 17:01:40.850",
-      "dateStarted": "2020-01-21 15:47:03.560",
-      "dateFinished": "2020-01-21 15:47:08.101",
+      "dateStarted": "2020-03-11 11:38:14.574",
+      "dateFinished": "2020-03-11 11:38:18.059",
       "status": "FINISHED"
     },
     {
       "title": "Join on Single Field",
       "text": "%spark.pyspark\n\ndf1 \u003d spark.createDataFrame([(1, \"andy\", 20, 1), (2, \"jeff\", 23, 2), (3, \"james\", 18, 3)]).toDF(\"id\", \"name\", \"age\", \"c_id\")\ndf1.show()\n\ndf2 \u003d spark.createDataFrame([(1, \"USA\"), (2, \"China\")]).toDF(\"c_id\", \"c_name\")\ndf2.show()\n\n# You can just specify the key name if join on the same key\ndf3 \u003d df1.join(df2, \"c_id\")\ndf3.show()\n\n# Or you can specify the join condition expclitly in case the key is different between tables\ndf4 \u003d df1.join(df2, df1[\"c_id\"] \u003d\u003d df2[\"c_id\"])\ndf4.show()\n\n# You can specify the join type afte the join condition, by default it is inner join\ndf5 \u003d df1.join(df2, df1[\"c_id\"] \u003d\u003d df2[\"c_id\"], \"left_outer\")\ndf5.show()",
       "user": "anonymous",
-      "dateUpdated": "2020-01-21 15:47:08.177",
+      "dateUpdated": "2020-03-11 11:38:21.059",
       "config": {
         "editorSetting": {
           "language": "python",
@@ -557,15 +557,15 @@
       "jobName": "paragraph_1578387700851_-770209064",
       "id": "20180530-130126_1642948432",
       "dateCreated": "2020-01-07 17:01:40.851",
-      "dateStarted": "2020-01-21 15:47:08.182",
-      "dateFinished": "2020-01-21 15:47:11.909",
+      "dateStarted": "2020-03-11 11:38:21.067",
+      "dateFinished": "2020-03-11 11:38:24.204",
       "status": "FINISHED"
     },
     {
       "title": "Join on Multiple Fields",
       "text": "%spark.pyspark\n\ndf1 \u003d spark.createDataFrame([(\"andy\", 20, 1, 1), (\"jeff\", 23, 1, 2), (\"james\", 12, 2, 2)]).toDF(\"name\", \"age\", \"key_1\", \"key_2\")\ndf1.show()\n\ndf2 \u003d spark.createDataFrame([(1, 1, \"USA\"), (2, 2, \"China\")]).toDF(\"key_1\", \"key_2\", \"country\")\ndf2.show()\n\n# Join on 2 fields: key_1, key_2\n\n# You can pass a list of field name if the join field names are the same in both tables\ndf3 \u003d df1.join(df2, [\"key_1\", \"key_2\"])\ndf3.show()\n\n# Or you can specify the join condition expclitly in case when the join fields name is differetnt in the two tables\ndf4 \u003d df1.join(df2, (df1[\"key_1\"] \u003d\u003d df2[\"key_1\"]) \u0026 (df1[\"key_2\"] \u003d\u003d df2[\"key_2\"]))\ndf4.show()\n\n",
       "user": "anonymous",
-      "dateUpdated": "2020-01-21 15:47:11.948",
+      "dateUpdated": "2020-03-11 11:38:23.541",
       "config": {
         "editorSetting": {
           "language": "python",
@@ -600,15 +600,15 @@
       "jobName": "paragraph_1578387700851_-177297320",
       "id": "20180530-135600_354945835",
       "dateCreated": "2020-01-07 17:01:40.851",
-      "dateStarted": "2020-01-21 15:47:11.957",
-      "dateFinished": "2020-01-21 15:47:14.394",
+      "dateStarted": "2020-03-11 11:38:23.549",
+      "dateFinished": "2020-03-11 11:38:26.102",
       "status": "FINISHED"
     },
     {
       "title": "Use SQL directly",
       "text": "%spark.pyspark\n\ndf1 \u003d spark.createDataFrame([(1, \"andy\", 20, \"USA\"), (2, \"jeff\", 23, \"China\"), (3, \"james\", 18, \"USA\")]) \\\n           .toDF(\"id\", \"name\", \"age\", \"country\")\n# call createOrReplaceTempView first if you want to query this DataFrame via sql\ndf1.createOrReplaceTempView(\"people\")\n# SparkSession.sql return DataFrame\ndf2 \u003d spark.sql(\"select name, age from people\")\ndf2.show()\n\n# You need to register udf if you want to use it in sql\nspark.udf.register(\"udf1\", lambda e : e.upper())\ndf3 \u003d spark.sql(\"select udf1(name), age from people\")\ndf3.show()",
       "user": "anonymous",
-      "dateUpdated": "2020-01-21 15:47:14.406",
+      "dateUpdated": "2020-03-11 11:38:31.003",
       "config": {
         "editorSetting": {
           "language": "python",
@@ -643,14 +643,15 @@
       "jobName": "paragraph_1578387700851_1756979054",
       "id": "20180530-132023_995737505",
       "dateCreated": "2020-01-07 17:01:40.851",
-      "dateStarted": "2020-01-21 15:47:14.411",
-      "dateFinished": "2020-01-21 15:47:16.881",
+      "dateStarted": "2020-03-11 11:38:31.009",
+      "dateFinished": "2020-03-11 11:38:43.891",
       "status": "FINISHED"
     },
     {
+      "title": "Show Tables",
       "text": "%spark.sql\n\nshow tables",
       "user": "anonymous",
-      "dateUpdated": "2020-01-21 15:48:23.385",
+      "dateUpdated": "2020-03-11 11:38:57.265",
       "config": {
         "runOnSelectionChange": true,
         "title": true,
@@ -701,15 +702,6 @@
         "params": {},
         "forms": {}
       },
-      "results": {
-        "code": "SUCCESS",
-        "msg": [
-          {
-            "type": "TABLE",
-            "data": "database\ttableName\tisTemporary\ndefault\tbank\tfalse\ndefault\tbank_raw\tfalse\ndefault\tdepartments\tfalse\ndefault\tdest_csv\tfalse\ndefault\tdest_kafka\tfalse\ndefault\tdest_orc\tfalse\ndefault\temployees\tfalse\ndefault\titems\tfalse\ndefault\tsource_csv\tfalse\ndefault\tsource_kafka\tfalse\ndefault\tweb_log_small\tfalse\n\tpeople\ttrue\n"
-          }
-        ]
-      },
       "apps": [],
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1578388432752_877455036",
@@ -717,49 +709,6 @@
       "dateCreated": "2020-01-07 17:13:52.752",
       "dateStarted": "2020-01-21 15:47:16.980",
       "dateFinished": "2020-01-21 15:47:17.086",
-      "status": "FINISHED"
-    },
-    {
-      "title": "Query Spark Catalog",
-      "text": "%spark.pyspark\n\nprint(spark.catalog.listTables())\n\n# make sure you have table `cities` in your database\nprint(spark.catalog.listColumns(\"bank\"))",
-      "user": "anonymous",
-      "dateUpdated": "2020-01-21 15:48:18.292",
-      "config": {
-        "editorSetting": {
-          "language": "python",
-          "editOnDblClick": false,
-          "completionKey": "TAB",
-          "completionSupport": true
-        },
-        "colWidth": 12.0,
-        "editorMode": "ace/mode/python",
-        "fontSize": 9.0,
-        "title": true,
-        "results": {},
-        "enabled": true,
-        "runOnSelectionChange": true,
-        "checkEmpty": true
-      },
-      "settings": {
-        "params": {},
-        "forms": {}
-      },
-      "results": {
-        "code": "SUCCESS",
-        "msg": [
-          {
-            "type": "TEXT",
-            "data": "[Table(name\u003d\u0027bank\u0027, database\u003d\u0027default\u0027, description\u003dNone, tableType\u003d\u0027MANAGED\u0027, isTemporary\u003dFalse), Table(name\u003d\u0027bank_raw\u0027, database\u003d\u0027default\u0027, description\u003dNone, tableType\u003d\u0027MANAGED\u0027, isTemporary\u003dFalse), Table(name\u003d\u0027departments\u0027, database\u003d\u0027default\u0027, description\u003dNone, tableType\u003d\u0027MANAGED\u0027, isTemporary\u003dFalse), Table(name\u003d\u0027dest_csv\u0027, database\u003d\u0027default\u0027, description\u003dNone, tableType\u003d\u0027MANAGED\u0027, isTemporary\u003dFalse), Table(name\u003d\u0027dest_kafka\u0027, database\u003d\u0027default\u0027, description\u003dNone, tableType\u003d\u0027MANAGED\u0027, isTemporary\u003dFalse), Table(name\u003d\u0027dest_orc\u0027, database\u003d\u0027default\u0027, description\u003dNone, tableType\u003d\u0027MANAGED\u0027, isTemporary\u003dFalse), Table(name\u003d\u0027employees\u0027, database\u003d\u0027default\u0027, description\u003dNone, tableType\u003d\u0027MANAGED\u0027, isTemporary\u003dFalse), Table(name\u003d\u0027items\u0027, database\u003d\u0027default\u0027, description\u003dNone, tableType\u003d\u0027MANAGED\u0027, isTemporary\u003dFalse), Table(name\u003d\u0027source_csv\u0027, database\u003d\u0027default\u0027, description\u003dNone, tableType\u003d\u0027MANAGED\u0027, isTemporary\u003dFalse), Table(name\u003d\u0027source_kafka\u0027, database\u003d\u0027default\u0027, description\u003dNone, tableType\u003d\u0027MANAGED\u0027, isTemporary\u003dFalse), Table(name\u003d\u0027web_log_small\u0027, database\u003d\u0027default\u0027, description\u003dNone, tableType\u003d\u0027MANAGED\u0027, isTemporary\u003dFalse), Table(name\u003d\u0027people\u0027, database\u003dNone, description\u003dNone, tableType\u003d\u0027TEMPORARY\u0027, isTemporary\u003dTrue)]\n[Column(name\u003d\u0027age\u0027, description\u003dNone, dataType\u003d\u0027int\u0027, nullable\u003dTrue, isPartition\u003dFalse, isBucket\u003dFalse), Column(name\u003d\u0027job\u0027, description\u003dNone, dataType\u003d\u0027string\u0027, nullable\u003dTrue, isPartition\u003dFalse, isBucket\u003dFalse), Column(name\u003d\u0027marital\u0027, description\u003dNone, dataType\u003d\u0027string\u0027, nullable\u003dTrue, isPartition\u003dFalse, isBucket\u003dFalse), Column(name\u003d\u0027education\u0027, description\u003dNone, dataType\u003d\u0027string\u0027, nullable\u003dTrue, isPartition\u003dFalse, isBucket\u003dFalse), Column(name\u003d\u0027default\u0027, description\u003dNone, dataType\u003d\u0027string\u0027, nullable\u003dTrue, isPartition\u003dFalse, isBucket\u003dFalse), Column(name\u003d\u0027balance\u0027, description\u003dNone, dataType\u003d\u0027string\u0027, nullable\u003dTrue, isPartition\u003dFalse, isBucket\u003dFalse), Column(name\u003d\u0027housing\u0027, description\u003dNone, dataType\u003d\u0027string\u0027, nullable\u003dTrue, isPartition\u003dFalse, isBucket\u003dFalse), Column(name\u003d\u0027loan\u0027, description\u003dNone, dataType\u003d\u0027string\u0027, nullable\u003dTrue, isPartition\u003dFalse, isBucket\u003dFalse), Column(name\u003d\u0027contact\u0027, description\u003dNone, dataType\u003d\u0027string\u0027, nullable\u003dTrue, isPartition\u003dFalse, isBucket\u003dFalse), Column(name\u003d\u0027day\u0027, description\u003dNone, dataType\u003d\u0027string\u0027, nullable\u003dTrue, isPartition\u003dFalse, isBucket\u003dFalse), Column(name\u003d\u0027month\u0027, description\u003dNone, dataType\u003d\u0027string\u0027, nullable\u003dTrue, isPartition\u003dFalse, isBucket\u003dFalse), Column(name\u003d\u0027duration\u0027, description\u003dNone, dataType\u003d\u0027int\u0027, nullable\u003dTrue, isPartition\u003dFalse, isBucket\u003dFalse), Column(name\u003d\u0027campaign\u0027, description\u003dNone, dataType\u003d\u0027int\u0027, nullable\u003dTrue, isPartition\u003dFalse, isBucket\u003dFalse), Column(name\u003d\u0027pdays\u0027, description\u003dNone, dataType\u003d\u0027int\u0027, nullable\u003dTrue, isPartition\u003dFalse, isBucket\u003dFalse), Column(name\u003d\u0027previous\u0027, description\u003dNone, dataType\u003d\u0027int\u0027, nullable\u003dTrue, isPartition\u003dFalse, isBucket\u003dFalse), Column(name\u003d\u0027poutcome\u0027, description\u003dNone, dataType\u003d\u0027string\u0027, nullable\u003dTrue, isPartition\u003dFalse, isBucket\u003dFalse), Column(name\u003d\u0027y\u0027, description\u003dNone, dataType\u003d\u0027string\u0027, nullable\u003dTrue, isPartition\u003dFalse, isBucket\u003dFalse)]\n"
-          }
-        ]
-      },
-      "apps": [],
-      "progressUpdateIntervalMs": 500,
-      "jobName": "paragraph_1578387700851_1504531246",
-      "id": "20180530-141842_1851074658",
-      "dateCreated": "2020-01-07 17:01:40.851",
-      "dateStarted": "2020-01-21 15:47:17.187",
-      "dateFinished": "2020-01-21 15:47:18.281",
       "status": "FINISHED"
     },
     {
@@ -809,9 +758,9 @@
     },
     {
       "title": "Visualize DataFrame/Dataset via z.show",
-      "text": "%spark.pyspark\n\ndf1 \u003d spark.createDataFrame([(1, \"andy\", 20, \"USA\"), (2, \"jeff\", 23, \"China\"), (3, \"james\", 18, \"USA\")]).toDF(\"id\", \"name\", \"age\", \"country\")\ndf2 \u003d df1.groupBy(\"country\").count()\nz.show(df2)\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n",
+      "text": "%spark.pyspark\n\ndf1 \u003d spark.createDataFrame([(1, \"andy\", 20, \"USA\"), (2, \"jeff\", 23, \"China\"), (3, \"james\", 18, \"USA\")]).toDF(\"id\", \"name\", \"age\", \"country\")\ndf2 \u003d df1.groupBy(\"country\").count()\nz.show(df2)\n\n\n\n\n\n\n",
       "user": "anonymous",
-      "dateUpdated": "2020-01-21 15:48:10.658",
+      "dateUpdated": "2020-03-11 13:25:43.355",
       "config": {
         "editorSetting": {
           "language": "python",
@@ -947,15 +896,15 @@
       "jobName": "paragraph_1578387700851_-809695439",
       "id": "20180530-132634_1285621466",
       "dateCreated": "2020-01-07 17:01:40.851",
-      "dateStarted": "2020-01-21 15:47:18.414",
-      "dateFinished": "2020-01-21 15:47:19.426",
+      "dateStarted": "2020-03-11 13:25:07.549",
+      "dateFinished": "2020-03-11 13:25:11.121",
       "status": "FINISHED"
     },
     {
       "title": "Visualize DataFrame/Dataset via %spark.sql",
       "text": "%spark.pyspark\n\ndf1 \u003d spark.createDataFrame([(1, \"andy\", 20, \"USA\"), (2, \"jeff\", 23, \"China\"), (3, \"james\", 18, \"USA\")]) \\\n            .toDF(\"id\", \"name\", \"age\", \"country\")\n            \n# register this DataFrame first before querying it via %spark.sql\ndf1.createOrReplaceTempView(\"people\")",
       "user": "anonymous",
-      "dateUpdated": "2020-01-21 15:48:13.928",
+      "dateUpdated": "2020-03-11 13:25:15.482",
       "config": {
         "editorSetting": {
           "language": "python",
@@ -985,15 +934,15 @@
       "jobName": "paragraph_1578387700851_381269276",
       "id": "20180530-132657_668624333",
       "dateCreated": "2020-01-07 17:01:40.851",
-      "dateStarted": "2020-01-21 15:47:19.436",
-      "dateFinished": "2020-01-21 15:47:19.667",
+      "dateStarted": "2020-03-11 13:25:15.489",
+      "dateFinished": "2020-03-11 13:25:15.730",
       "status": "FINISHED"
     },
     {
       "title": "",
       "text": "%spark.sql\n\nselect country, count(1) as count from people group by country",
       "user": "anonymous",
-      "dateUpdated": "2020-01-21 15:47:19.742",
+      "dateUpdated": "2020-03-11 13:25:18.833",
       "config": {
         "editorSetting": {
           "language": "sql",
@@ -1127,8 +1076,8 @@
       "jobName": "paragraph_1578387700851_601200360",
       "id": "20180530-132823_944494152",
       "dateCreated": "2020-01-07 17:01:40.851",
-      "dateStarted": "2020-01-21 15:47:19.750",
-      "dateFinished": "2020-01-21 15:47:20.480",
+      "dateStarted": "2020-03-11 13:25:18.841",
+      "dateFinished": "2020-03-11 13:25:19.474",
       "status": "FINISHED"
     },
     {
@@ -1161,24 +1110,15 @@
       "status": "FINISHED"
     }
   ],
-  "name": "Spark SQL Tutorial (PySpark)",
+  "name": "Spark SQL (PySpark)",
   "id": "2EWM84JXA",
   "defaultInterpreterGroup": "spark",
   "version": "0.9.0-SNAPSHOT",
-  "permissions": {
-    "owners": [],
-    "runners": [],
-    "readers": [],
-    "writers": []
-  },
   "noteParams": {},
   "noteForms": {},
   "angularObjects": {},
   "config": {
-    "isZeppelinNotebookCronEnable": true
+    "isZeppelinNotebookCronEnable": false
   },
-  "info": {
-    "isRunning": false
-  },
-  "path": "/Spark Tutorial/Spark SQL Tutorial (PySpark)"
+  "info": {}
 }

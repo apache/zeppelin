@@ -1,9 +1,9 @@
 {
   "paragraphs": [
     {
-      "text": "%md\n## Introduction\nIn this tutorial we will go through some of the basic features of Zeppelin\u0027s built-in matplotlib integration. To be noticed, this tutorial is only for Vanilla Python Interpreter (`%python` or `%spark.pyspark`). You can refer another tutorial (IPython Visualization Tutorial) for using Matplotlib in IPython Interpreter.\n\n### Prerequisites\n`matplotlib` must be installed to your local python installation. (use `pip install matplotlib` or `conda install matplotlib` if you have `conda`). Additionally, you will need Zeppelin\u0027s matplotlib backend files which are usually found in `$ZEPPELIN_HOME/lib/python`. Although Zeppelin should automatically find this directory, it might be a good idea to add it to your `PYTHONPATH` just in case. \n\n### Interpreters\nMost of the examples shown in this tutorial can be used interchangeably with either the `python` or `pyspark` interpreters. Iterative plotting using the Angular Display System is currently only available for `pyspark`, but this functionality will eventually be added to the base `python` interpreter. \n\n### macOS\nMake sure locale is set, to avoid `ValueError: unknown locale: UTF-8`\n\n### virtualenv\nIn case you want to use virtualenv or conda env:\n - configure python interpreter property -\u003e `absolute/path/to/venv/bin/python`\n - see *Working with Matplotlib in Virtual environments* in the [Matplotlib FAQ](http://matplotlib.org/faq/virtualenv_faq.html)\n \n### A simple example\nLet\u0027s start by making a very simple line plot:",
+      "text": "%md\n## Introduction\n\u003cspan style\u003d\"color:red\"\u003eTo be noticed, this is outdated tutorial for using Matplotlib in Zeppelin. We recommend user to use IPython in Zeppelin. Please refer the IPython Tutorial.\u003c/span\u003e\n\nIn this tutorial we will go through some of the basic features of Zeppelin\u0027s built-in matplotlib integration. To be noticed, this tutorial is only for Vanilla Python Interpreter (`%python` or `%spark.pyspark`). You can refer another tutorial (IPython Visualization Tutorial) for using Matplotlib in IPython Interpreter.\n\n### Prerequisites\n`matplotlib` must be installed to your local python installation. (use `pip install matplotlib` or `conda install matplotlib` if you have `conda`). Additionally, you will need Zeppelin\u0027s matplotlib backend files which are usually found in `$ZEPPELIN_HOME/lib/python`. Although Zeppelin should automatically find this directory, it might be a good idea to add it to your `PYTHONPATH` just in case. \n\n### Interpreters\nMost of the examples shown in this tutorial can be used interchangeably with either the `python` or `pyspark` interpreters. Iterative plotting using the Angular Display System is currently only available for `pyspark`, but this functionality will eventually be added to the base `python` interpreter. \n\n### macOS\nMake sure locale is set, to avoid `ValueError: unknown locale: UTF-8`\n\n### virtualenv\nIn case you want to use virtualenv or conda env:\n - configure python interpreter property -\u003e `absolute/path/to/venv/bin/python`\n - see *Working with Matplotlib in Virtual environments* in the [Matplotlib FAQ](http://matplotlib.org/faq/virtualenv_faq.html)\n \n### A simple example\nLet\u0027s start by making a very simple line plot:",
       "user": "anonymous",
-      "dateUpdated": "2020-02-05 15:48:09.193",
+      "dateUpdated": "2020-03-11 14:28:30.637",
       "config": {
         "tableHide": false,
         "colWidth": 12.0,
@@ -38,7 +38,7 @@
         "msg": [
           {
             "type": "HTML",
-            "data": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003ch2\u003eIntroduction\u003c/h2\u003e\n\u003cp\u003eIn this tutorial we will go through some of the basic features of Zeppelin\u0026rsquo;s built-in matplotlib integration. To be noticed, this tutorial is only for Vanilla Python Interpreter (\u003ccode\u003e%python\u003c/code\u003e or \u003ccode\u003e%spark.pyspark\u003c/code\u003e). You can refer another tutorial (IPython Visualization Tutorial) for using Matplotlib in IPython Interpreter.\u003c/p\u003e\n\u003ch3\u003ePrerequisites\u003c/h3\u003e\n\u003cp\u003e\u003ccode\u003ematplotlib\u003c/code\u003e must be installed to your local python installation. (use \u003ccode\u003epip install matplotlib\u003c/code\u003e or \u003ccode\u003econda install matplotlib\u003c/code\u003e if you have \u003ccode\u003econda\u003c/code\u003e). Additionally, you will need Zeppelin\u0026rsquo;s matplotlib backend files which are usually found in \u003ccode\u003e$ZEPPELIN_HOME/lib/python\u003c/code\u003e. Although Zeppelin should automatically find this directory, it might be a good idea to add it to your \u003ccode\u003ePYTHONPATH\u003c/code\u003e just in case.\u003c/p\u003e\n\u003ch3\u003eInterpreters\u003c/h3\u003e\n\u003cp\u003eMost of the examples shown in this tutorial can be used interchangeably with either the \u003ccode\u003epython\u003c/code\u003e or \u003ccode\u003epyspark\u003c/code\u003e interpreters. Iterative plotting using the Angular Display System is currently only available for \u003ccode\u003epyspark\u003c/code\u003e, but this functionality will eventually be added to the base \u003ccode\u003epython\u003c/code\u003e interpreter.\u003c/p\u003e\n\u003ch3\u003emacOS\u003c/h3\u003e\n\u003cp\u003eMake sure locale is set, to avoid \u003ccode\u003eValueError: unknown locale: UTF-8\u003c/code\u003e\u003c/p\u003e\n\u003ch3\u003evirtualenv\u003c/h3\u003e\n\u003cp\u003eIn case you want to use virtualenv or conda env:\u003c/p\u003e\n\u003cul\u003e\n\u003cli\u003econfigure python interpreter property -\u0026gt; \u003ccode\u003eabsolute/path/to/venv/bin/python\u003c/code\u003e\u003c/li\u003e\n\u003cli\u003esee \u003cem\u003eWorking with Matplotlib in Virtual environments\u003c/em\u003e in the \u003ca href\u003d\"http://matplotlib.org/faq/virtualenv_faq.html\"\u003eMatplotlib FAQ\u003c/a\u003e\u003c/li\u003e\n\u003c/ul\u003e\n\u003ch3\u003eA simple example\u003c/h3\u003e\n\u003cp\u003eLet\u0026rsquo;s start by making a very simple line plot:\u003c/p\u003e\n\n\u003c/div\u003e"
+            "data": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003ch2\u003eIntroduction\u003c/h2\u003e\n\u003cp\u003e\u003cspan style\u003d\"color:red\"\u003eTo be noticed, this is outdated tutorial for using Matplotlib in Zeppelin. We recommend user to use IPython in Zeppelin. Please refer the IPython Tutorial.\u003c/span\u003e\u003c/p\u003e\n\u003cp\u003eIn this tutorial we will go through some of the basic features of Zeppelin\u0026rsquo;s built-in matplotlib integration. To be noticed, this tutorial is only for Vanilla Python Interpreter (\u003ccode\u003e%python\u003c/code\u003e or \u003ccode\u003e%spark.pyspark\u003c/code\u003e). You can refer another tutorial (IPython Visualization Tutorial) for using Matplotlib in IPython Interpreter.\u003c/p\u003e\n\u003ch3\u003ePrerequisites\u003c/h3\u003e\n\u003cp\u003e\u003ccode\u003ematplotlib\u003c/code\u003e must be installed to your local python installation. (use \u003ccode\u003epip install matplotlib\u003c/code\u003e or \u003ccode\u003econda install matplotlib\u003c/code\u003e if you have \u003ccode\u003econda\u003c/code\u003e). Additionally, you will need Zeppelin\u0026rsquo;s matplotlib backend files which are usually found in \u003ccode\u003e$ZEPPELIN_HOME/lib/python\u003c/code\u003e. Although Zeppelin should automatically find this directory, it might be a good idea to add it to your \u003ccode\u003ePYTHONPATH\u003c/code\u003e just in case.\u003c/p\u003e\n\u003ch3\u003eInterpreters\u003c/h3\u003e\n\u003cp\u003eMost of the examples shown in this tutorial can be used interchangeably with either the \u003ccode\u003epython\u003c/code\u003e or \u003ccode\u003epyspark\u003c/code\u003e interpreters. Iterative plotting using the Angular Display System is currently only available for \u003ccode\u003epyspark\u003c/code\u003e, but this functionality will eventually be added to the base \u003ccode\u003epython\u003c/code\u003e interpreter.\u003c/p\u003e\n\u003ch3\u003emacOS\u003c/h3\u003e\n\u003cp\u003eMake sure locale is set, to avoid \u003ccode\u003eValueError: unknown locale: UTF-8\u003c/code\u003e\u003c/p\u003e\n\u003ch3\u003evirtualenv\u003c/h3\u003e\n\u003cp\u003eIn case you want to use virtualenv or conda env:\u003c/p\u003e\n\u003cul\u003e\n\u003cli\u003econfigure python interpreter property -\u0026gt; \u003ccode\u003eabsolute/path/to/venv/bin/python\u003c/code\u003e\u003c/li\u003e\n\u003cli\u003esee \u003cem\u003eWorking with Matplotlib in Virtual environments\u003c/em\u003e in the \u003ca href\u003d\"http://matplotlib.org/faq/virtualenv_faq.html\"\u003eMatplotlib FAQ\u003c/a\u003e\u003c/li\u003e\n\u003c/ul\u003e\n\u003ch3\u003eA simple example\u003c/h3\u003e\n\u003cp\u003eLet\u0026rsquo;s start by making a very simple line plot:\u003c/p\u003e\n\n\u003c/div\u003e"
           }
         ]
       },
@@ -47,8 +47,8 @@
       "jobName": "paragraph_1478123627954_-1473548609",
       "id": "20160614-174657_1772993700",
       "dateCreated": "2016-11-02 14:53:47.000",
-      "dateStarted": "2020-02-05 15:47:58.416",
-      "dateFinished": "2020-02-05 15:47:59.573",
+      "dateStarted": "2020-03-11 14:28:26.251",
+      "dateFinished": "2020-03-11 14:28:26.267",
       "status": "FINISHED"
     },
     {
@@ -755,7 +755,6 @@
   "name": "Matplotlib (Python, PySpark)",
   "id": "2C2AUG798",
   "defaultInterpreterGroup": "spark",
-  "permissions": {},
   "noteParams": {},
   "noteForms": {},
   "angularObjects": {
@@ -780,8 +779,7 @@
     "2C3NE73HG:shared_process": []
   },
   "config": {
-    "isZeppelinNotebookCronEnable": true
+    "isZeppelinNotebookCronEnable": false
   },
-  "info": {},
-  "path": "/Python Tutorial/Matplotlib (Python, PySpark)"
+  "info": {}
 }

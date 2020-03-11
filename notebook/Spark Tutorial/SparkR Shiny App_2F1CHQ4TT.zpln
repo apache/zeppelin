@@ -150,19 +150,6 @@
         "params": {},
         "forms": {}
       },
-      "results": {
-        "code": "ERROR",
-        "msg": [
-          {
-            "type": "HTML",
-            "data": "\u003ciframe src\u003d\"http://0.0.0.0:56065\" height \u003d\"500px\" width\u003d\"100%\" frameBorder\u003d\"0\"\u003e\u003c/iframe\u003e\n"
-          },
-          {
-            "type": "TEXT",
-            "data": "\nio.grpc.StatusRuntimeException: UNKNOWN: Exception iterating responses: \u0027payload\u0027\n\tat io.grpc.Status.asRuntimeException(Status.java:526)\n\tat io.grpc.stub.ClientCalls$StreamObserverToCallListenerAdapter.onClose(ClientCalls.java:434)\n\tat io.grpc.PartialForwardingClientCallListener.onClose(PartialForwardingClientCallListener.java:39)\n\tat io.grpc.ForwardingClientCallListener.onClose(ForwardingClientCallListener.java:23)\n\tat io.grpc.ForwardingClientCallListener$SimpleForwardingClientCallListener.onClose(ForwardingClientCallListener.java:40)\n\tat io.grpc.internal.CensusStatsModule$StatsClientInterceptor$1$1.onClose(CensusStatsModule.java:678)\n\tat io.grpc.PartialForwardingClientCallListener.onClose(PartialForwardingClientCallListener.java:39)\n\tat io.grpc.ForwardingClientCallListener.onClose(ForwardingClientCallListener.java:23)\n\tat io.grpc.ForwardingClientCallListener$SimpleForwardingClientCallListener.onClose(ForwardingClientCallListener.java:40)\n\tat io.grpc.internal.CensusTracingModule$TracingClientInterceptor$1$1.onClose(CensusTracingModule.java:403)\n\tat io.grpc.internal.ClientCallImpl.closeObserver(ClientCallImpl.java:459)\n\tat io.grpc.internal.ClientCallImpl.access$300(ClientCallImpl.java:63)\n\tat io.grpc.internal.ClientCallImpl$ClientStreamListenerImpl.close(ClientCallImpl.java:546)\n\tat io.grpc.internal.ClientCallImpl$ClientStreamListenerImpl.access$600(ClientCallImpl.java:467)\n\tat io.grpc.internal.ClientCallImpl$ClientStreamListenerImpl$1StreamClosed.runInContext(ClientCallImpl.java:584)\n\tat io.grpc.internal.ContextRunnable.run(ContextRunnable.java:37)\n\tat io.grpc.internal.SerializingExecutor.run(SerializingExecutor.java:123)\n\tat java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)\n\tat java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)\n\tat java.lang.Thread.run(Thread.java:748)\n"
-          }
-        ]
-      },
       "apps": [],
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1580981260311_-1138471389",
@@ -175,9 +162,9 @@
     {
       "text": "%spark.shiny\n",
       "user": "anonymous",
-      "dateUpdated": "2020-02-06 17:27:40.307",
+      "dateUpdated": "2020-03-11 14:09:23.435",
       "config": {
-        "colWidth": 6.0,
+        "colWidth": 12.0,
         "fontSize": 9.0,
         "enabled": true,
         "results": {},
@@ -205,13 +192,11 @@
   "id": "2F1CHQ4TT",
   "defaultInterpreterGroup": "spark",
   "version": "0.9.0-SNAPSHOT",
-  "permissions": {},
   "noteParams": {},
   "noteForms": {},
   "angularObjects": {},
   "config": {
-    "isZeppelinNotebookCronEnable": true
+    "isZeppelinNotebookCronEnable": false
   },
-  "info": {},
-  "path": "/Spark Tutorial/SparkR Shiny App"
+  "info": {}
 }

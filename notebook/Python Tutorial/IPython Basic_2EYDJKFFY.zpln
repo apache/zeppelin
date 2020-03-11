@@ -44,9 +44,9 @@
     },
     {
       "title": "",
-      "text": "%md\n\n# Prerequisite\n\nFirst you need to use Zeppelin 0.8.0 or afterwards. You need to install the following 2 packages to make IPython work in Jupyter.\n\n* jupyter `pip install jupyter`\n* grpcio `pip install grpcio`\n* protobuf `pip install protobuf`\n\nIf you have anaconda installed, then you just need to install `grpcio` and `protobuf` as Jupyter is already included in anaconda.\n\n",
+      "text": "%md\n\n# Prerequisite\n\nFirst you need to use Zeppelin 0.8.0 or afterwards. You need to install the following 2 packages to make IPython work in Zeppelin.\n\n* jupyter `pip install jupyter`\n* grpcio `pip install grpcio`\n* protobuf `pip install protobuf`\n\nIf you have anaconda installed, then you just need to install `grpcio` and `protobuf` as Jupyter is already included in anaconda.\n\n",
       "user": "anonymous",
-      "dateUpdated": "2020-02-05 14:45:28.518",
+      "dateUpdated": "2020-03-11 14:15:41.332",
       "config": {
         "tableHide": false,
         "editorSetting": {
@@ -70,7 +70,7 @@
         "msg": [
           {
             "type": "HTML",
-            "data": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003ch1\u003ePrerequisite\u003c/h1\u003e\n\u003cp\u003eFirst you need to use Zeppelin 0.8.0 or afterwards. You need to install the following 2 packages to make IPython work in Jupyter.\u003c/p\u003e\n\u003cul\u003e\n\u003cli\u003ejupyter \u003ccode\u003epip install jupyter\u003c/code\u003e\u003c/li\u003e\n\u003cli\u003egrpcio \u003ccode\u003epip install grpcio\u003c/code\u003e\u003c/li\u003e\n\u003cli\u003eprotobuf \u003ccode\u003epip install protobuf\u003c/code\u003e\u003c/li\u003e\n\u003c/ul\u003e\n\u003cp\u003eIf you have anaconda installed, then you just need to install \u003ccode\u003egrpcio\u003c/code\u003e and \u003ccode\u003eprotobuf\u003c/code\u003e as Jupyter is already included in anaconda.\u003c/p\u003e\n\n\u003c/div\u003e"
+            "data": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003ch1\u003ePrerequisite\u003c/h1\u003e\n\u003cp\u003eFirst you need to use Zeppelin 0.8.0 or afterwards. You need to install the following 2 packages to make IPython work in Zeppelin.\u003c/p\u003e\n\u003cul\u003e\n\u003cli\u003ejupyter \u003ccode\u003epip install jupyter\u003c/code\u003e\u003c/li\u003e\n\u003cli\u003egrpcio \u003ccode\u003epip install grpcio\u003c/code\u003e\u003c/li\u003e\n\u003cli\u003eprotobuf \u003ccode\u003epip install protobuf\u003c/code\u003e\u003c/li\u003e\n\u003c/ul\u003e\n\u003cp\u003eIf you have anaconda installed, then you just need to install \u003ccode\u003egrpcio\u003c/code\u003e and \u003ccode\u003eprotobuf\u003c/code\u003e as Jupyter is already included in anaconda.\u003c/p\u003e\n\n\u003c/div\u003e"
           }
         ]
       },
@@ -79,15 +79,15 @@
       "jobName": "paragraph_1580883128401_-91751836",
       "id": "20180118-105734_546968647",
       "dateCreated": "2020-02-05 14:12:08.401",
-      "dateStarted": "2020-02-05 14:15:52.966",
-      "dateFinished": "2020-02-05 14:15:52.978",
+      "dateStarted": "2020-03-11 14:15:39.160",
+      "dateFinished": "2020-03-11 14:15:39.805",
       "status": "FINISHED"
     },
     {
       "title": "",
-      "text": "%md\n\n# How to use IPython\n\nAfter you get the above prerequisite installed, you can use IPython in Zeppelin via `%python.ipython` or `%spark.ipyspark`. If you want to make IPython as your default interpreter via `%python` or `%spark.pyspark`, then you can configure `zeppelin.python.useIPython` as `true` in python\u0027s interpreter setting or `zeppelin.pyspark.useIPython` in spark\u0027s interpreter setting. So that Zeppelin will use IPython as the default python interpreter, and will fall back to the old python interpreter if the IPython prerequisite is not met.\n",
+      "text": "%md\n\n# How to use IPython\n\nAfter you get the above prerequisite installed, you can use IPython in Zeppelin via `%python.ipython` or `%spark.ipyspark`. If you want to make IPython as your default interpreter via `%python` or `%spark.pyspark`, then you can configure `zeppelin.python.useIPython` as `true` in python\u0027s interpreter setting or `zeppelin.pyspark.useIPython` as `true` in spark\u0027s interpreter setting. So that Zeppelin will use IPython as the default python interpreter, and will fall back to the old python interpreter if the IPython prerequisite is not met.\n",
       "user": "anonymous",
-      "dateUpdated": "2020-02-05 14:16:52.364",
+      "dateUpdated": "2020-03-11 14:16:19.699",
       "config": {
         "tableHide": false,
         "editorSetting": {
@@ -111,7 +111,7 @@
         "msg": [
           {
             "type": "HTML",
-            "data": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003ch1\u003eHow to use IPython\u003c/h1\u003e\n\u003cp\u003eAfter you get the above prerequisite installed, you can use IPython in Zeppelin via \u003ccode\u003e%python.ipython\u003c/code\u003e or \u003ccode\u003e%spark.ipyspark\u003c/code\u003e. If you want to make IPython as your default interpreter via \u003ccode\u003e%python\u003c/code\u003e or \u003ccode\u003e%spark.pyspark\u003c/code\u003e, then you can configure \u003ccode\u003ezeppelin.python.useIPython\u003c/code\u003e as \u003ccode\u003etrue\u003c/code\u003e in python\u0026rsquo;s interpreter setting or \u003ccode\u003ezeppelin.pyspark.useIPython\u003c/code\u003e in spark\u0026rsquo;s interpreter setting. So that Zeppelin will use IPython as the default python interpreter, and will fall back to the old python interpreter if the IPython prerequisite is not met.\u003c/p\u003e\n\n\u003c/div\u003e"
+            "data": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003ch1\u003eHow to use IPython\u003c/h1\u003e\n\u003cp\u003eAfter you get the above prerequisite installed, you can use IPython in Zeppelin via \u003ccode\u003e%python.ipython\u003c/code\u003e or \u003ccode\u003e%spark.ipyspark\u003c/code\u003e. If you want to make IPython as your default interpreter via \u003ccode\u003e%python\u003c/code\u003e or \u003ccode\u003e%spark.pyspark\u003c/code\u003e, then you can configure \u003ccode\u003ezeppelin.python.useIPython\u003c/code\u003e as \u003ccode\u003etrue\u003c/code\u003e in python\u0026rsquo;s interpreter setting or \u003ccode\u003ezeppelin.pyspark.useIPython\u003c/code\u003e as \u003ccode\u003etrue\u003c/code\u003e in spark\u0026rsquo;s interpreter setting. So that Zeppelin will use IPython as the default python interpreter, and will fall back to the old python interpreter if the IPython prerequisite is not met.\u003c/p\u003e\n\n\u003c/div\u003e"
           }
         ]
       },
@@ -120,8 +120,8 @@
       "jobName": "paragraph_1580883128402_-1251111399",
       "id": "20180118-112614_44484642",
       "dateCreated": "2020-02-05 14:12:08.402",
-      "dateStarted": "2020-02-05 14:16:50.898",
-      "dateFinished": "2020-02-05 14:16:50.907",
+      "dateStarted": "2020-03-11 14:16:17.945",
+      "dateFinished": "2020-03-11 14:16:17.968",
       "status": "FINISHED"
     },
     {
@@ -164,10 +164,10 @@
       "status": "READY"
     },
     {
-      "title": "",
+      "title": "Get Python Help (1)",
       "text": "%python.ipython\n\nimport sys\n\nsys?",
       "user": "anonymous",
-      "dateUpdated": "2020-02-05 14:17:03.465",
+      "dateUpdated": "2020-03-11 14:17:03.133",
       "config": {
         "editorSetting": {
           "language": "python",
@@ -180,7 +180,7 @@
         "fontSize": 9.0,
         "results": {},
         "enabled": true,
-        "title": false
+        "title": true
       },
       "settings": {
         "params": {},
@@ -203,21 +203,23 @@
       "status": "READY"
     },
     {
-      "title": "",
+      "title": "Get Python Help (2)",
       "text": "%python.ipython\n\nimport sys\n\nhelp(sys)",
       "user": "anonymous",
-      "dateUpdated": "2020-02-05 14:12:08.403",
+      "dateUpdated": "2020-03-11 14:17:10.004",
       "config": {
         "editorSetting": {
-          "language": "scala",
+          "language": "python",
           "editOnDblClick": false,
-          "completionKey": "TAB"
+          "completionKey": "TAB",
+          "completionSupport": true
         },
         "colWidth": 12.0,
-        "editorMode": "ace/mode/scala",
+        "editorMode": "ace/mode/python",
         "fontSize": 9.0,
         "results": {},
-        "enabled": true
+        "enabled": true,
+        "title": true
       },
       "settings": {
         "params": {},
@@ -282,18 +284,20 @@
       "title": "",
       "text": "%python.ipython\n\n%timeit range(1000)",
       "user": "anonymous",
-      "dateUpdated": "2020-02-05 14:12:08.405",
+      "dateUpdated": "2020-03-11 14:17:30.821",
       "config": {
         "editorSetting": {
           "language": "python",
           "editOnDblClick": false,
-          "completionKey": "TAB"
+          "completionKey": "TAB",
+          "completionSupport": true
         },
         "colWidth": 12.0,
         "editorMode": "ace/mode/python",
         "fontSize": 9.0,
         "results": {},
-        "enabled": true
+        "enabled": true,
+        "title": false
       },
       "settings": {
         "params": {},
@@ -317,18 +321,18 @@
     },
     {
       "title": "",
-      "text": "%md\n\n# Tab completion\n\nTab completion, especially for attributes, is a convenient way to explore the structure of any object you’re dealing with. Simply type `object_name.\u003cTAB\u003e` to view the object’s attributes. See the following snapshot of how tab completion works in IPython Interpreter.\n![alt text](https://user-images.githubusercontent.com/164491/34858941-3f28105a-f78e-11e7-8341-2fbfd306ba5b.gif \"Logo Title Text 1\")\n\n\n\n",
+      "text": "%md\n\n# Tab completion\n\nTab completion, especially for attributes, is a convenient way to explore the structure of any object you’re dealing with. Simply type `object_name.\u003cTAB\u003e` to view the object’s attributes. See the following screenshot of how tab completion works in IPython Interpreter.\n![alt text](https://user-images.githubusercontent.com/164491/34858941-3f28105a-f78e-11e7-8341-2fbfd306ba5b.gif \"Logo Title Text 1\")\n\n\n\n",
       "user": "anonymous",
-      "dateUpdated": "2020-02-05 14:12:08.405",
+      "dateUpdated": "2020-03-11 14:17:56.326",
       "config": {
         "tableHide": false,
         "editorSetting": {
-          "language": "markdown",
-          "editOnDblClick": true,
+          "language": "text",
+          "editOnDblClick": false,
           "completionKey": "TAB"
         },
         "colWidth": 12.0,
-        "editorMode": "ace/mode/markdown",
+        "editorMode": "ace/mode/text",
         "fontSize": 9.0,
         "editorHide": true,
         "results": {},
@@ -343,7 +347,7 @@
         "msg": [
           {
             "type": "HTML",
-            "data": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003ch1\u003eTab completion\u003c/h1\u003e\n\u003cp\u003eTab completion, especially for attributes, is a convenient way to explore the structure of any object you’re dealing with. Simply type \u003ccode\u003eobject_name.\u0026lt;TAB\u0026gt;\u003c/code\u003e to view the object’s attributes. See the following snapshot of how tab completion works in IPython Interpreter.\u003cbr/\u003e\u003cimg src\u003d\"https://user-images.githubusercontent.com/164491/34858941-3f28105a-f78e-11e7-8341-2fbfd306ba5b.gif\" alt\u003d\"alt text\" title\u003d\"Logo Title Text 1\" /\u003e\u003c/p\u003e\n\u003c/div\u003e"
+            "data": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003ch1\u003eTab completion\u003c/h1\u003e\n\u003cp\u003eTab completion, especially for attributes, is a convenient way to explore the structure of any object you’re dealing with. Simply type \u003ccode\u003eobject_name.\u0026lt;TAB\u0026gt;\u003c/code\u003e to view the object’s attributes. See the following screenshot of how tab completion works in IPython Interpreter.\u003cbr /\u003e\n\u003cimg src\u003d\"https://user-images.githubusercontent.com/164491/34858941-3f28105a-f78e-11e7-8341-2fbfd306ba5b.gif\" alt\u003d\"alt text\" title\u003d\"Logo Title Text 1\" /\u003e\u003c/p\u003e\n\n\u003c/div\u003e"
           }
         ]
       },
@@ -352,22 +356,24 @@
       "jobName": "paragraph_1580883128405_-1429375020",
       "id": "20180118-113333_768199475",
       "dateCreated": "2020-02-05 14:12:08.405",
-      "status": "READY"
+      "dateStarted": "2020-03-11 14:17:54.626",
+      "dateFinished": "2020-03-11 14:17:54.749",
+      "status": "FINISHED"
     },
     {
       "title": "",
-      "text": "%md\n\n\n# Visualization\n\nOne big advangae of notebook is that you can inline visualization with your code in notebook. There\u0027re many awesome visualization libraries in Python, you can use most of them in Zeppelin.\nRefer this [tutorial](https://www.zepl.com/viewer/notebooks/bm90ZTovL3pqZmZkdS9lN2Q3ODNiODRkNjA0ZjVjODM1OWZlMWExZjM4OTk3Zi9ub3RlLmpzb24) for how to use Python visualization libraries in Apache Zeppelin.\n\n\n",
+      "text": "%md\n\n\n# Visualization\n\nOne big advangae of notebook is that you can inline visualize with your code in notebook. There\u0027re many awesome visualization libraries in Python, you can use most of them in Zeppelin.\nRefer this `IPython Visualization Tutorial` in Zeppelin for how to use Python visualization libraries in Apache Zeppelin.\n\n\n",
       "user": "anonymous",
-      "dateUpdated": "2020-02-05 14:12:08.405",
+      "dateUpdated": "2020-03-11 14:19:38.401",
       "config": {
         "tableHide": false,
         "editorSetting": {
-          "language": "markdown",
-          "editOnDblClick": true,
+          "language": "text",
+          "editOnDblClick": false,
           "completionKey": "TAB"
         },
         "colWidth": 12.0,
-        "editorMode": "ace/mode/markdown",
+        "editorMode": "ace/mode/text",
         "fontSize": 9.0,
         "editorHide": true,
         "results": {},
@@ -382,7 +388,7 @@
         "msg": [
           {
             "type": "HTML",
-            "data": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003ch1\u003eVisualization\u003c/h1\u003e\n\u003cp\u003eOne big advangae of notebook is that you can inline visualization with your code in notebook. There\u0026rsquo;re many awesome visualization libraries in Python, you can use most of them in Zeppelin.\u003cbr/\u003eRefer this \u003ca href\u003d\"https://www.zepl.com/viewer/notebooks/bm90ZTovL3pqZmZkdS9lN2Q3ODNiODRkNjA0ZjVjODM1OWZlMWExZjM4OTk3Zi9ub3RlLmpzb24\"\u003etutorial\u003c/a\u003e for how to use Python visualization libraries in Apache Zeppelin.\u003c/p\u003e\n\u003c/div\u003e"
+            "data": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003ch1\u003eVisualization\u003c/h1\u003e\n\u003cp\u003eOne big advangae of notebook is that you can inline visualize with your code in notebook. There\u0026rsquo;re many awesome visualization libraries in Python, you can use most of them in Zeppelin.\u003cbr /\u003e\nRefer this \u003ccode\u003eIPython Visualization Tutorial\u003c/code\u003e in Zeppelin for how to use Python visualization libraries in Apache Zeppelin.\u003c/p\u003e\n\n\u003c/div\u003e"
           }
         ]
       },
@@ -391,7 +397,9 @@
       "jobName": "paragraph_1580883128405_-1181474830",
       "id": "20180118-114439_1191932175",
       "dateCreated": "2020-02-05 14:12:08.405",
-      "status": "READY"
+      "dateStarted": "2020-03-11 14:19:36.246",
+      "dateFinished": "2020-03-11 14:19:36.254",
+      "status": "FINISHED"
     },
     {
       "title": "",
@@ -626,13 +634,11 @@
   "id": "2EYDJKFFY",
   "defaultInterpreterGroup": "spark",
   "version": "0.9.0-SNAPSHOT",
-  "permissions": {},
   "noteParams": {},
   "noteForms": {},
   "angularObjects": {},
   "config": {
-    "isZeppelinNotebookCronEnable": true
+    "isZeppelinNotebookCronEnable": false
   },
-  "info": {},
-  "path": "/Python Tutorial/IPython Basic"
+  "info": {}
 }
