@@ -198,14 +198,14 @@
         "envName": "PYSPARK_PYTHON",
         "propertyName": "PYSPARK_PYTHON",
         "defaultValue": "python",
-        "description": "Python binary executable to use for PySpark in both driver and workers (default is python2.7 if available, otherwise python). Property <code>spark.pyspark.python</code> take precedence if it is set",
+        "description": "Python binary executable to use for PySpark in both driver and workers (default is python2.7 if available, otherwise python). Property `spark.pyspark.python` take precedence if it is set",
         "type": "string"
       },
       "PYSPARK_DRIVER_PYTHON": {
         "envName": "PYSPARK_DRIVER_PYTHON",
         "propertyName": "PYSPARK_DRIVER_PYTHON",
         "defaultValue": "python",
-        "description": "Python binary executable to use for PySpark in driver only (default is `PYSPARK_PYTHON`). Property <code>spark.pyspark.driver.python</code> take precedence if it is set",
+        "description": "Python binary executable to use for PySpark in driver only (default is `PYSPARK_PYTHON`). Property `spark.pyspark.driver.python` take precedence if it is set",
         "type": "string"
       },
       "zeppelin.pyspark.useIPython": {
