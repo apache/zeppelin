@@ -29,6 +29,8 @@ import com.google.gson.reflect.TypeToken;
 import java.util.Properties;
 import java.util.LinkedHashMap;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.inject.Inject;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -767,9 +769,17 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
                                                     InterpreterOption option,
                                                     Map<String, InterpreterProperty> properties)
       throws IOException {
-    if (name.indexOf(".") >= 0) {
-      throw new IOException("'.' is invalid for InterpreterSetting name.");
+    if (name == null) {
+      throw new IOException("Interpreter name shouldn't be empty.");
     }
+
+    // check if name is valid
+    Pattern pattern = Pattern.compile("^[-_a-zA-Z0-9]+$");
+    Matcher matcher = pattern.matcher(name);
+    if(!matcher.find()){
+      throw new IOException("Interpreter name shouldn't be empty, and can consist only of: -_a-zA-Z0-9");
+    }
+
     // check if name is existed
     for (InterpreterSetting interpreterSetting : interpreterSettings.values()) {
       if (interpreterSetting.getName().equals(name)) {
@@ -827,7 +837,7 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
     dependencyResolver.delRepo(id);
     saveToFile();
   }
-  
+
   /** restart in interpreter setting page */
   private InterpreterSetting inlineSetPropertyAndRestart(
       String id,
