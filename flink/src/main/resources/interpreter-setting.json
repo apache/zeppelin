@@ -5,6 +5,13 @@
     "className": "org.apache.zeppelin.flink.FlinkInterpreter",
     "defaultInterpreter": true,
     "properties": {
+      "FLINK_HOME": {
+        "envName": null,
+        "propertyName": null,
+        "defaultValue": "",
+        "description": "Location of flink distribution",
+        "type": "string"
+      },
       "flink.execution.mode": {
         "envName": null,
         "propertyName": null,
