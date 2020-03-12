@@ -86,7 +86,7 @@ public class ClusterEventTest extends ZeppelinServerMock {
 
   private static Notebook notebook;
   private static NotebookServer notebookServer;
-  private static SchedulerService schedulerService;
+  private static QuartzSchedulerService schedulerService;
   private static NotebookService notebookService;
   private static AuthorizationService authorizationService;
   private HttpServletRequest mockRequest;
@@ -103,6 +103,7 @@ public class ClusterEventTest extends ZeppelinServerMock {
     authorizationService = TestUtils.getInstance(AuthorizationService.class);
 
     schedulerService = new QuartzSchedulerService(zconf, notebook);
+    schedulerService.waitForFinishInit();
     notebookServer = spy(NotebookServer.getInstance());
     notebookService = new NotebookService(notebook, authorizationService, zconf, schedulerService);
 

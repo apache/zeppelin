@@ -609,6 +609,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return anonymousAllowed;
   }
 
+  public boolean isJobManagerEnabled() {
+    return getBoolean(ConfVars.ZEPPELIN_JOBMANAGER_ENABLE);
+  }
+
   public boolean isUsernameForceLowerCase() {
     return getBoolean(ConfVars.ZEPPELIN_USERNAME_FORCE_LOWERCASE);
   }
@@ -993,7 +997,8 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_PROXY_PASSWORD("zeppelin.proxy.password", null),
     ZEPPELIN_SEARCH_INDEX_REBUILD("zeppelin.search.index.rebuild", false),
     ZEPPELIN_SEARCH_USE_DISK("zeppelin.search.use.disk", true),
-    ZEPPELIN_SEARCH_INDEX_PATH("zeppelin.search.index.path", "/tmp/zeppelin-index");
+    ZEPPELIN_SEARCH_INDEX_PATH("zeppelin.search.index.path", "/tmp/zeppelin-index"),
+    ZEPPELIN_JOBMANAGER_ENABLE("zeppelin.jobmanager.enable", true);
 
     private String varName;
     @SuppressWarnings("rawtypes")

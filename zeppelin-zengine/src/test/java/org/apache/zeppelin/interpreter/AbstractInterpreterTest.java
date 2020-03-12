@@ -42,6 +42,7 @@ public abstract class AbstractInterpreterTest {
     interpreterDir = new File(zeppelinHome, "interpreter_" + getClass().getSimpleName());
     confDir = new File(zeppelinHome, "conf_" + getClass().getSimpleName());
     notebookDir = new File(zeppelinHome, "notebook_" + getClass().getSimpleName());
+    FileUtils.deleteDirectory(notebookDir);
 
     interpreterDir.mkdirs();
     confDir.mkdirs();

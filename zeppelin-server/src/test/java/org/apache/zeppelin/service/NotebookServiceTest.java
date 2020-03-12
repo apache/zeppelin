@@ -130,7 +130,8 @@ public class NotebookServiceTest {
             credentials,
             null);
 
-    SchedulerService schedulerService = new QuartzSchedulerService(zeppelinConfiguration, notebook);
+    QuartzSchedulerService schedulerService = new QuartzSchedulerService(zeppelinConfiguration, notebook);
+    schedulerService.waitForFinishInit();
     notebookService =
         new NotebookService(
             notebook, authorizationService, zeppelinConfiguration, schedulerService);

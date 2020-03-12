@@ -180,6 +180,19 @@ public class Note implements JsonSerializable {
     this.loaded = loaded;
   }
 
+  /**
+   * Release note memory
+   */
+  public void unLoad() {
+    this.setLoaded(false);
+    this.paragraphs = null;
+    this.config = null;
+    this.info = null;
+    this.noteForms = null;
+    this.noteParams = null;
+    this.angularObjects = null;
+  }
+
   public boolean isPersonalizedMode() {
     Object v = getConfig().get("personalizedMode");
     return null != v && "true".equals(v);
