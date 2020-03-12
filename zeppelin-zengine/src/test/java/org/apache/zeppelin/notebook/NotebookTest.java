@@ -83,7 +83,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
   private Credentials credentials;
   private AuthenticationInfo anonymous = AuthenticationInfo.ANONYMOUS;
   private StatusChangedListener afterStatusChangedListener;
-  private SchedulerService schedulerService;
+  private QuartzSchedulerService schedulerService;
 
   @Before
   public void setUp() throws Exception {
@@ -102,6 +102,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
             credentials, null);
     notebook.setParagraphJobListener(this);
     schedulerService = new QuartzSchedulerService(conf, notebook);
+    schedulerService.waitForFinishInit();
   }
 
   @After

@@ -275,6 +275,22 @@ public class NoteManager {
    * @return return null if not found on NotebookRepo.
    * @throws IOException
    */
+  public Note getNote(String noteId, boolean forceLoad) throws IOException {
+    String notePath = this.notesInfo.get(noteId);
+    if (notePath == null) {
+      return null;
+    }
+    NoteNode noteNode = getNoteNode(notePath);
+    return noteNode.getNote(forceLoad);
+  }
+
+  /**
+   * Get note from NotebookRepo.
+   *
+   * @param noteId
+   * @return return null if not found on NotebookRepo.
+   * @throws IOException
+   */
   public Note getNote(String noteId) throws IOException {
     String notePath = this.notesInfo.get(noteId);
     if (notePath == null) {
@@ -511,14 +527,18 @@ public class NoteManager {
       this.notebookRepo = notebookRepo;
     }
 
+    public synchronized Note getNote() throws IOException {
+        return getNote(true);
+    }
+
     /**
      * This method will load note from NotebookRepo. If you just want to get noteId, noteName or
      * notePath, you can call method getNoteId, getNoteName & getNotePath
      * @return
      * @throws IOException
      */
-    public synchronized Note getNote() throws IOException {
-      if (!note.isLoaded()) {
+    public synchronized Note getNote(boolean forceLoad) throws IOException {
+      if (!note.isLoaded() && forceLoad) {
         note = notebookRepo.get(note.getId(), note.getPath(), AuthenticationInfo.ANONYMOUS);
         if (parent.toString().equals("/")) {
           note.setPath("/" + note.getName());
