@@ -26,17 +26,14 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
-import java.util.Properties;
 import java.util.LinkedHashMap;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.inject.Inject;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.hadoop.yarn.webapp.hamlet.Hamlet;
 import org.apache.zeppelin.cluster.ClusterManagerServer;
 import org.apache.zeppelin.cluster.event.ClusterEvent;
 import org.apache.zeppelin.cluster.event.ClusterEventListener;
@@ -107,6 +104,7 @@ import static org.apache.zeppelin.cluster.ClusterManagerServer.CLUSTER_INTP_SETT
 @ManagedObject("interpreterSettingManager")
 public class InterpreterSettingManager implements NoteEventListener, ClusterEventListener {
 
+  private static final Pattern VALID_INTERPRETER_NAME = Pattern.compile("^[-_a-zA-Z0-9]+$");
   private static final Logger LOGGER = LoggerFactory.getLogger(InterpreterSettingManager.class);
   private static final Map<String, Object> DEFAULT_EDITOR = ImmutableMap.of(
       "language", (Object) "text",
@@ -774,8 +772,7 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
     }
 
     // check if name is valid
-    Pattern pattern = Pattern.compile("^[-_a-zA-Z0-9]+$");
-    Matcher matcher = pattern.matcher(name);
+    Matcher matcher = VALID_INTERPRETER_NAME.matcher(name);
     if(!matcher.find()){
       throw new IOException("Interpreter name shouldn't be empty, and can consist only of: -_a-zA-Z0-9");
     }
