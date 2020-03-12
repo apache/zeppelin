@@ -259,7 +259,7 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
         + "\"session\": false"
         + "}"
         + "}";
-    JsonObject jsonRequest = gson.fromJson(StringUtils.replace(reqBody, "mdName", "md2"), JsonElement.class).getAsJsonObject();
+    JsonObject jsonRequest = gson.fromJson(StringUtils.replace(reqBody, "mdName", "mdValidName"), JsonElement.class).getAsJsonObject();
     PostMethod post = httpPost("/interpreter/setting/", jsonRequest.toString());
     String postResponse = post.getResponseBodyAsString();
     LOG.info("testSetting with valid name\n" + post.getResponseBodyAsString());
