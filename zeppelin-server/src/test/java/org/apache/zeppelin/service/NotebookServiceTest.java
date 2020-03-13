@@ -117,7 +117,7 @@ public class NotebookServiceTest {
     SearchService searchService = new LuceneSearch(zeppelinConfiguration);
     Credentials credentials = new Credentials(false, null, null);
     NoteManager noteManager = new NoteManager(notebookRepo);
-    AuthorizationService authorizationService = new AuthorizationService(zeppelinConfiguration);
+    AuthorizationService authorizationService = new AuthorizationService(noteManager, zeppelinConfiguration);
     Notebook notebook =
         new Notebook(
             zeppelinConfiguration,
