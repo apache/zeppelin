@@ -814,7 +814,7 @@ public class Note implements JsonSerializable {
   }
 
   public List<Paragraph> getParagraphs() {
-    return this.paragraphs;
+    return new ArrayList<>(this.paragraphs);
   }
 
   // TODO(zjffdu) how does this used ?

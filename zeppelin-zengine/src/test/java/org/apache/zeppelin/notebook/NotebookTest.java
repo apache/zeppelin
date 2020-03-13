@@ -95,7 +95,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     notebookRepo = new VFSNotebookRepo();
     notebookRepo.init(conf);
     noteManager = new NoteManager(notebookRepo);
-    authorizationService = new AuthorizationService(conf);
+    authorizationService = new AuthorizationService(noteManager, conf);
 
     credentials = new Credentials(conf.credentialsPersist(), conf.getCredentialsPath(), null);
     notebook = new Notebook(conf, authorizationService, notebookRepo, noteManager, interpreterFactory, interpreterSettingManager, search,
