@@ -609,6 +609,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return anonymousAllowed;
   }
 
+  public boolean isJobManagerEnabled() {
+    return getBoolean(ConfVars.ZEPPELIN_JOBMANAGER_ENABLE);
+  }
+
   public boolean isUsernameForceLowerCase() {
     return getBoolean(ConfVars.ZEPPELIN_USERNAME_FORCE_LOWERCASE);
   }
@@ -920,7 +924,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_CONFIG_STORAGE_CLASS("zeppelin.config.storage.class",
         "org.apache.zeppelin.storage.LocalConfigStorage"),
     ZEPPELIN_DEP_LOCALREPO("zeppelin.dep.localrepo", "local-repo"),
-    ZEPPELIN_HELIUM_REGISTRY("zeppelin.helium.registry", "helium," + HELIUM_PACKAGE_DEFAULT_URL),
+    ZEPPELIN_HELIUM_REGISTRY("zeppelin.helium.registry", "helium"),
     ZEPPELIN_HELIUM_NODE_INSTALLER_URL("zeppelin.helium.node.installer.url",
             "https://nodejs.org/dist/"),
     ZEPPELIN_HELIUM_NPM_INSTALLER_URL("zeppelin.helium.npm.installer.url",
@@ -993,7 +997,8 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_PROXY_PASSWORD("zeppelin.proxy.password", null),
     ZEPPELIN_SEARCH_INDEX_REBUILD("zeppelin.search.index.rebuild", false),
     ZEPPELIN_SEARCH_USE_DISK("zeppelin.search.use.disk", true),
-    ZEPPELIN_SEARCH_INDEX_PATH("zeppelin.search.index.path", "/tmp/zeppelin-index");
+    ZEPPELIN_SEARCH_INDEX_PATH("zeppelin.search.index.path", "/tmp/zeppelin-index"),
+    ZEPPELIN_JOBMANAGER_ENABLE("zeppelin.jobmanager.enable", true);
 
     private String varName;
     @SuppressWarnings("rawtypes")

@@ -101,7 +101,7 @@ public class NotebookRepoSyncTest {
     search = mock(SearchService.class);
     notebookRepoSync = new NotebookRepoSync(conf);
     noteManager = new NoteManager(notebookRepoSync);
-    authorizationService = new AuthorizationService(conf);
+    authorizationService = new AuthorizationService(noteManager, conf);
     credentials = new Credentials(conf.credentialsPersist(), conf.getCredentialsPath(), null);
     notebook = new Notebook(conf, authorizationService, notebookRepoSync, noteManager, factory, interpreterSettingManager, search, credentials, null);
     anonymous = new AuthenticationInfo("anonymous");
