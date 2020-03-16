@@ -78,7 +78,7 @@ import io.atomix.protocols.raft.storage.system.Configuration;
 import io.atomix.utils.net.Address;
 import io.atomix.utils.serializer.Namespace;
 import io.atomix.utils.serializer.Serializer;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.cluster.meta.ClusterMeta;
 import org.apache.zeppelin.cluster.meta.ClusterMetaEntity;
 import org.apache.zeppelin.cluster.meta.ClusterMetaOperation;

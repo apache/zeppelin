@@ -17,7 +17,7 @@
 
 package org.apache.zeppelin.dep;
 
-import org.apache.commons.lang.Validate;
+import org.apache.commons.lang3.Validate;
 import org.apache.maven.repository.internal.MavenRepositorySystemSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

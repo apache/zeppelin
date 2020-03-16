@@ -21,7 +21,7 @@ package org.apache.zeppelin.file;
 import com.google.gson.Gson;
 
 import com.google.gson.annotations.SerializedName;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;

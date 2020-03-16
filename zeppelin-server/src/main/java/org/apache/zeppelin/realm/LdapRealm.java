@@ -216,7 +216,7 @@ public class LdapRealm extends JndiLdapRealm {
 
   protected void onInit() {
     super.onInit();
-    if (!org.apache.commons.lang.StringUtils.isEmpty(this.hadoopSecurityCredentialPath)
+    if (!org.apache.commons.lang3.StringUtils.isEmpty(this.hadoopSecurityCredentialPath)
         && getContextFactory() != null) {
       ((JndiLdapContextFactory) getContextFactory()).setSystemPassword(
           getSystemPassword(this.hadoopSecurityCredentialPath, keystorePass));
@@ -238,7 +238,7 @@ public class LdapRealm extends JndiLdapRealm {
     } catch (IOException e) {
       throw new ShiroException("Error from getting credential entry from keystore", e);
     }
-    if (org.apache.commons.lang.StringUtils.isEmpty(password)) {
+    if (org.apache.commons.lang3.StringUtils.isEmpty(password)) {
       throw new ShiroException("Error getting SystemPassword from the provided keystore:"
           + keystorePass + ", in path:" + hadoopSecurityCredentialPath);
     }

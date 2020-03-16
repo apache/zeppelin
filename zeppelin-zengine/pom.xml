@@ -38,7 +38,6 @@
   <properties>
     <!--library versions-->
     <hadoop.version>2.7.3</hadoop.version>
-    <commons.lang3.version>3.7</commons.lang3.version>
     <jackrabbit.webdav.version>1.5.2</jackrabbit.webdav.version>
     <quartz.scheduler.version>2.2.1</quartz.scheduler.version>
     <lucene.version>5.3.1</lucene.version>
@@ -264,7 +263,6 @@
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
-      <version>${commons.lang3.version}</version>
     </dependency>
 
     <dependency>
