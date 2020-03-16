@@ -19,7 +19,7 @@ package org.apache.zeppelin.notebook.repo;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Representation of a notebook repo with settings. This is mostly a Wrapper around notebook repo

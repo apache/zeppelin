@@ -19,7 +19,7 @@ package org.apache.zeppelin.flink;
 
 import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.flink.api.common.JobID;
 import org.apache.flink.core.execution.JobClient;
 import org.apache.zeppelin.interpreter.InterpreterContext;

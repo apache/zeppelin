@@ -36,7 +36,6 @@
         <cassandra.driver.version>3.7.2</cassandra.driver.version>
         <snappy.version>1.1.2.6</snappy.version>
         <lz4.version>1.4.1</lz4.version>
-        <commons-lang.version>3.3.2</commons-lang.version>
         <scalate.version>1.7.1</scalate.version>
         <cassandra.guava.version>19.0</cassandra.guava.version>
 
@@ -117,7 +116,6 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <version>${commons-lang.version}</version>
         </dependency>
 
         <dependency>

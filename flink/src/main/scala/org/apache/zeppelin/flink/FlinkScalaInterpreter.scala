@@ -25,7 +25,7 @@ import java.util.{Map, Properties}
 import java.util.concurrent.TimeUnit
 import java.util.jar.JarFile
 
-import org.apache.commons.lang.StringUtils
+import org.apache.commons.lang3.StringUtils
 import org.apache.flink.api.common.JobExecutionResult
 import org.apache.flink.api.scala.FlinkShell.{ExecutionMode, _}
 import org.apache.flink.api.scala.{ExecutionEnvironment, FlinkILoop}
