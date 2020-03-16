@@ -17,7 +17,7 @@
 
 package org.apache.zeppelin.graph.neo4j;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.neo4j.driver.internal.types.InternalTypeSystem;
 import org.neo4j.driver.internal.util.Iterables;
 import org.neo4j.driver.v1.Record;

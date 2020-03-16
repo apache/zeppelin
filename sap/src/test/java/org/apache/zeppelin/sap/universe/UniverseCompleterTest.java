@@ -14,7 +14,7 @@
  */
 package org.apache.zeppelin.sap.universe;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.completer.CachedCompleter;
 import org.junit.Before;
 import org.junit.Test;

@@ -18,7 +18,7 @@
 package org.apache.zeppelin.pig;
 
 import org.apache.commons.io.output.ByteArrayOutputStream;
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.pig.PigServer;
 import org.apache.pig.impl.logicalLayer.FrontendException;
 import org.apache.pig.tools.pigscript.parser.ParseException;

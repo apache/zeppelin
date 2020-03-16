@@ -19,7 +19,7 @@ package org.apache.zeppelin.notebook.repo.zeppelinhub.model;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Simple and yet dummy container for zeppelinhub session.

@@ -21,8 +21,8 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.SerializedName;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.http.auth.AuthSchemeProvider;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.Credentials;
@@ -730,7 +730,7 @@ public abstract class BaseLivyInterpreter extends Interpreter {
           throw new SessionNotFoundException(cause.getResponseBodyAsString());
         }
         throw new LivyException(cause.getResponseBodyAsString() + "\n"
-            + ExceptionUtils.getFullStackTrace(ExceptionUtils.getRootCause(e)));
+            + ExceptionUtils.getStackTrace(ExceptionUtils.getRootCause(e)));
       }
       if (e instanceof HttpServerErrorException) {
         HttpServerErrorException errorException = (HttpServerErrorException) e;
