@@ -12,6 +12,20 @@
         "description": "Location of flink distribution",
         "type": "string"
       },
+      "HADOOP_CONF_DIR": {
+        "envName": null,
+        "propertyName": null,
+        "defaultValue": "",
+        "description": "Location of hadoop conf (core-site.xml, hdfs-site.xml and etc.)",
+        "type": "string"
+      },
+      "HIVE_CONF_DIR": {
+        "envName": null,
+        "propertyName": null,
+        "defaultValue": "",
+        "description": "Location of hive conf (hive-site.xml)",
+        "type": "string"
+      },
       "flink.execution.mode": {
         "envName": null,
         "propertyName": null,
@@ -71,7 +85,7 @@
       "flink.yarn.queue": {
         "envName": null,
         "propertyName": null,
-        "defaultValue": "default",
+        "defaultValue": "",
         "description": "Yarn queue name",
         "type": "string"
       },

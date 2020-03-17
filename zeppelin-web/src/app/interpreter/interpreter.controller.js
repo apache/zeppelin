@@ -536,6 +536,7 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
         newProperties[p] = {
           value: newSetting.properties[p].value,
           type: newSetting.properties[p].type,
+          description: newSetting.properties[p].description,
           name: p,
         };
       }
