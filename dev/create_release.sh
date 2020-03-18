@@ -65,7 +65,6 @@ function make_binary_release() {
 
   cp -r "${WORKING_DIR}/zeppelin" "${WORKING_DIR}/zeppelin-${RELEASE_VERSION}-bin-${BIN_RELEASE_NAME}"
   cd "${WORKING_DIR}/zeppelin-${RELEASE_VERSION}-bin-${BIN_RELEASE_NAME}"
-  ./dev/change_scala_version.sh "${SCALA_VERSION}"
   echo "mvn clean package -Pbuild-distr -DskipTests ${BUILD_FLAGS}"
   mvn clean package -Pbuild-distr -DskipTests ${BUILD_FLAGS}
   if [[ $? -ne 0 ]]; then
