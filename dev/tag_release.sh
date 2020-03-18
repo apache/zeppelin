@@ -28,7 +28,7 @@ done
 
 set -e
 
-git clone https://git-wip-us.apache.org/repos/asf/zeppelin.git "${WORKING_DIR}"
+git clone https://gitbox.apache.org/repos/asf/zeppelin.git "${WORKING_DIR}"
 pushd "${WORKING_DIR}" 
 
 git checkout "${GIT_BRANCH}"

@@ -65,6 +65,7 @@
     <module>spark</module>
     <module>submarine</module>
     <module>markdown</module>
+    <module>mongodb</module>
     <module>angular</module>
     <module>shell</module>
     <module>livy</module>
@@ -96,7 +97,6 @@
     <module>zeppelin-jupyter</module>
     <module>zeppelin-plugins</module>
     <module>zeppelin-distribution</module>
-    <module>mongodb</module>
   </modules>
 
   <properties>
