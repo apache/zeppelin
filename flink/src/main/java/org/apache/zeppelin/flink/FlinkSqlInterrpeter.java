@@ -202,6 +202,30 @@ public abstract class FlinkSqlInterrpeter extends Interpreter {
       }
     }
 
+    boolean runAsOne = Boolean.parseBoolean(context.getStringLocalProperty("runAsOne", "false"));
+    if (runAsOne) {
+      try {
+        lock.lock();
+        if (context.getLocalProperties().containsKey("parallelism")) {
+          this.tbenv.getConfig().getConfiguration()
+                  .set(ExecutionConfigOptions.TABLE_EXEC_RESOURCE_DEFAULT_PARALLELISM,
+                          Integer.parseInt(context.getLocalProperties().get("parallelism")));
+        }
+        this.tbenv.execute(st);
+        context.out.write("Insertion successfully.\n");
+      } catch (Exception e) {
+        LOGGER.error("Fail to execute sql as one job", e);
+        return new InterpreterResult(InterpreterResult.Code.ERROR, ExceptionUtils.getStackTrace(e));
+      } finally {
+        if (lock.isHeldByCurrentThread()) {
+          lock.unlock();
+        }
+        this.tbenv.getConfig().getConfiguration()
+                .set(ExecutionConfigOptions.TABLE_EXEC_RESOURCE_DEFAULT_PARALLELISM,
+                        defaultSqlParallelism);
+      }
+    }
+
     return new InterpreterResult(InterpreterResult.Code.SUCCESS);
   }
 
@@ -498,7 +522,11 @@ public abstract class FlinkSqlInterrpeter extends Interpreter {
        }
 
        this.tbenv.sqlUpdate(sql);
-       this.tbenv.execute(sql);
+       boolean runAsOne = Boolean.parseBoolean(context.getStringLocalProperty("runAsOne", "false"));
+       if (!runAsOne) {
+         this.tbenv.execute(sql);
+         context.out.write("Insertion successfully.\n");
+       }
      } catch (Exception e) {
        throw new IOException(e);
      } finally {
@@ -519,7 +547,6 @@ public abstract class FlinkSqlInterrpeter extends Interpreter {
        }
        this.tbenv.getConfig().getConfiguration().addAll(flinkInterpreter.getFlinkConfiguration());
      }
-     context.out.write("Insertion successfully.\n");
   }
 
   private static AttributedString formatCommand(SqlCommand cmd, String description) {
