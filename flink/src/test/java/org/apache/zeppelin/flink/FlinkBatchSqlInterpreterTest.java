@@ -259,12 +259,12 @@ public class FlinkBatchSqlInterpreterTest extends SqlInterpreterTest {
                     "'format.type'='csv'\n" +
                     ");", getInterpreterContext());
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-
+    
     // set parallelism then insert into
     InterpreterContext context = getInterpreterContext();
     result = sqlInterpreter.interpret(
             "set table.exec.resource.default-parallelism=10;" +
-            "insert into sink_table select * from source_table", context);
+                    "insert into sink_table select * from source_table", context);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
     List<InterpreterResultMessage> resultMessages = context.out.toInterpreterResultMessage();
     assertEquals("Insertion successfully.\n", resultMessages.get(0).getData());
@@ -295,5 +295,87 @@ public class FlinkBatchSqlInterpreterTest extends SqlInterpreterTest {
     resultMessages = context.out.toInterpreterResultMessage();
     assertTrue(resultMessages.get(0).getData(),
             resultMessages.get(0).getData().contains("table.invalid_config is not a valid table/sql config"));
+  }
+
+  @Test
+  public void testMultipleInsertInto() throws InterpreterException, IOException {
+    hiveShell.execute("create table source_table (id int, name string)");
+    hiveShell.execute("insert into source_table values(1, 'a'), (2, 'b')");
+
+    File destDir = Files.createTempDirectory("flink_test").toFile();
+    FileUtils.deleteDirectory(destDir);
+    InterpreterResult result = sqlInterpreter.interpret(
+            "CREATE TABLE sink_table (\n" +
+                    "id int,\n" +
+                    "name string" +
+                    ") WITH (\n" +
+                    "'format.field-delimiter'=',',\n" +
+                    "'connector.type'='filesystem',\n" +
+                    "'format.derive-schema'='true',\n" +
+                    "'connector.path'='" + destDir.getAbsolutePath() + "',\n" +
+                    "'format.type'='csv'\n" +
+                    ");", getInterpreterContext());
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+
+    File destDir2 = Files.createTempDirectory("flink_test").toFile();
+    FileUtils.deleteDirectory(destDir2);
+    result = sqlInterpreter.interpret(
+            "CREATE TABLE sink_table2 (\n" +
+                    "id int,\n" +
+                    "name string" +
+                    ") WITH (\n" +
+                    "'format.field-delimiter'=',',\n" +
+                    "'connector.type'='filesystem',\n" +
+                    "'format.derive-schema'='true',\n" +
+                    "'connector.path'='" + destDir2.getAbsolutePath() + "',\n" +
+                    "'format.type'='csv'\n" +
+                    ");", getInterpreterContext());
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+
+    // insert into
+    InterpreterContext context = getInterpreterContext();
+    result = sqlInterpreter.interpret(
+            "insert into sink_table select * from source_table;insert into sink_table2 select * from source_table", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    List<InterpreterResultMessage> resultMessages = context.out.toInterpreterResultMessage();
+    assertEquals("Insertion successfully.\nInsertion successfully.\n", resultMessages.get(0).getData());
+
+    // verify insert into via select from sink_table
+    context = getInterpreterContext();
+    result = sqlInterpreter.interpret("select * from sink_table", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    resultMessages = context.out.toInterpreterResultMessage();
+    assertEquals("id\tname\n1\ta\n2\tb\n", resultMessages.get(0).getData());
+
+    context = getInterpreterContext();
+    result = sqlInterpreter.interpret("select * from sink_table2", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    resultMessages = context.out.toInterpreterResultMessage();
+    assertEquals("id\tname\n1\ta\n2\tb\n", resultMessages.get(0).getData());
+
+    // insert into (runAsOne)
+    destDir.delete();
+    destDir2.delete();
+
+    context = getInterpreterContext();
+    context.getLocalProperties().put("runAsOne", "true");
+    result = sqlInterpreter.interpret(
+            "insert into sink_table select * from source_table;insert into sink_table2 select * from source_table", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    resultMessages = context.out.toInterpreterResultMessage();
+    assertEquals("Insertion successfully.\n", resultMessages.get(0).getData());
+
+    // verify insert into via select from sink_table
+    context = getInterpreterContext();
+    result = sqlInterpreter.interpret("select * from sink_table", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    resultMessages = context.out.toInterpreterResultMessage();
+    assertEquals("id\tname\n1\ta\n2\tb\n", resultMessages.get(0).getData());
+
+    context = getInterpreterContext();
+    result = sqlInterpreter.interpret("select * from sink_table2", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    resultMessages = context.out.toInterpreterResultMessage();
+    assertEquals("id\tname\n1\ta\n2\tb\n", resultMessages.get(0).getData());
   }
 }

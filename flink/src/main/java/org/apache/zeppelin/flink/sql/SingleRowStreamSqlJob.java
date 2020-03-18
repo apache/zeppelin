@@ -22,8 +22,10 @@ import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment;
 import org.apache.flink.table.api.TableEnvironment;
 import org.apache.flink.table.api.scala.StreamTableEnvironment;
 import org.apache.flink.types.Row;
+import org.apache.flink.util.StringUtils;
 import org.apache.zeppelin.flink.JobManager;
 import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.tabledata.TableDataUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,7 +67,8 @@ public class SingleRowStreamSqlJob extends AbstractStreamSqlJob {
     builder.append("%html\n");
     String outputText = template;
     for (int i = 0; i < latestRow.getArity(); ++i) {
-      outputText = outputText.replace("{" + i + "}", latestRow.getField(i).toString());
+      outputText = outputText.replace("{" + i + "}",
+              TableDataUtils.normalizeColumn(StringUtils.arrayAwareToString(latestRow.getField(i))));
     }
     builder.append(outputText);
     return builder.toString();

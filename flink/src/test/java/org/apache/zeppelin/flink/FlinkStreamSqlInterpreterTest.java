@@ -152,6 +152,50 @@ public class FlinkStreamSqlInterpreterTest extends SqlInterpreterTest {
   }
 
   @Test
+  public void testMultipleInsertInto() throws InterpreterException, IOException {
+    hiveShell.execute("create table source_table (id int, name string)");
+
+    File destDir = Files.createTempDirectory("flink_test").toFile();
+    FileUtils.deleteDirectory(destDir);
+    InterpreterResult result = sqlInterpreter.interpret(
+            "CREATE TABLE dest_table (\n" +
+                    "id int,\n" +
+                    "name string" +
+                    ") WITH (\n" +
+                    "'format.field-delimiter'=',',\n" +
+                    "'connector.type'='filesystem',\n" +
+                    "'format.derive-schema'='true',\n" +
+                    "'connector.path'='" + destDir.getAbsolutePath() + "',\n" +
+                    "'format.type'='csv'\n" +
+                    ");", getInterpreterContext());
+
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+
+    File destDir2 = Files.createTempDirectory("flink_test").toFile();
+    FileUtils.deleteDirectory(destDir2);
+    result = sqlInterpreter.interpret(
+            "CREATE TABLE dest_table2 (\n" +
+                    "id int,\n" +
+                    "name string" +
+                    ") WITH (\n" +
+                    "'format.field-delimiter'=',',\n" +
+                    "'connector.type'='filesystem',\n" +
+                    "'format.derive-schema'='true',\n" +
+                    "'connector.path'='" + destDir2.getAbsolutePath() + "',\n" +
+                    "'format.type'='csv'\n" +
+                    ");", getInterpreterContext());
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+
+    InterpreterContext context = getInterpreterContext();
+    context.getLocalProperties().put("runAsOne", "true");
+    result = sqlInterpreter.interpret(
+            "insert into dest_table select * from source_table;insert into dest_table2 select * from source_table",
+            context);
+
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+  }
+
+  @Test
   public void testCreateTableWithWaterMark() throws InterpreterException, IOException {
     // create table
     InterpreterContext context = getInterpreterContext();
