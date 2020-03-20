@@ -713,7 +713,7 @@
 
 <property>
   <name>zeppelin.jobmanager.enable</name>
-  <value>true</value>
+  <value>false</value>
   <description>The Job tab in zeppelin page seems not so useful instead it cost lots of memory and affect the performance.
   Disable it can save lots of memory</description>
 </property>
