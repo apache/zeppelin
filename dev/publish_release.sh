@@ -47,7 +47,7 @@ if [[ $RELEASE_VERSION == *"SNAPSHOT"* ]]; then
 fi
 
 PUBLISH_PROFILES="-Ppublish-distr -Phadoop-2.6 -Pweb-angular"
-PROJECT_OPTIONS="-pl !zeppelin-distribution"
+PROJECT_OPTIONS="-pl !zeppelin-distribution -Dmaven.javadoc.skip=true"
 NEXUS_STAGING="https://repository.apache.org/service/local/staging"
 NEXUS_PROFILE="153446d1ac37c4"
 
