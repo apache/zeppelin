@@ -26,15 +26,6 @@
         "params": {},
         "forms": {}
       },
-      "results": {
-        "code": "SUCCESS",
-        "msg": [
-          {
-            "type": "HTML",
-            "data": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003cp\u003eThis tutorial demonstrates how to use Flink do data exploration analytics via its.\u003c/p\u003e\n\u003cul\u003e\n\u003cli\u003ebatch sql\u003c/li\u003e\n\u003cli\u003eudf (scala, python \u0026amp; hive)\u003c/li\u003e\n\u003cli\u003eZeppelin\u0026rsquo;s dynamic forms and builtin visualization\u003c/li\u003e\n\u003c/ul\u003e\n\u003cp\u003eWe the bank data registered in another tutorial note. You can also use any existed hive table.\u003c/p\u003e\n\n\u003c/div\u003e"
-          }
-        ]
-      },
       "apps": [],
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1579053946947_-1754951794",
@@ -119,15 +110,6 @@
       "settings": {
         "params": {},
         "forms": {}
-      },
-      "results": {
-        "code": "SUCCESS",
-        "msg": [
-          {
-            "type": "TABLE",
-            "data": "age\taval\n19\t4\n20\t3\n21\t7\n22\t9\n23\t20\n24\t24\n25\t44\n26\t77\n27\t94\n28\t103\n29\t97\n"
-          }
-        ]
       },
       "apps": [],
       "progressUpdateIntervalMs": 500,
@@ -222,15 +204,6 @@
             "hidden": false
           }
         }
-      },
-      "results": {
-        "code": "SUCCESS",
-        "msg": [
-          {
-            "type": "TABLE",
-            "data": "age\tval\n19\t4\n20\t3\n21\t7\n22\t9\n23\t20\n24\t24\n25\t44\n26\t77\n27\t94\n28\t103\n29\t97\n30\t150\n31\t199\n32\t224\n33\t186\n34\t231\n35\t180\n36\t188\n37\t161\n38\t159\n39\t130\n40\t142\n41\t135\n42\t141\n43\t115\n44\t105\n45\t112\n46\t119\n47\t108\n48\t114\n49\t112\n"
-          }
-        ]
       },
       "apps": [],
       "progressUpdateIntervalMs": 500,
@@ -337,15 +310,6 @@
           }
         }
       },
-      "results": {
-        "code": "SUCCESS",
-        "msg": [
-          {
-            "type": "TABLE",
-            "data": "age\tval\n23\t3\n24\t11\n25\t11\n26\t18\n27\t26\n28\t23\n29\t37\n30\t56\n31\t104\n32\t105\n33\t103\n34\t142\n35\t109\n36\t117\n37\t100\n38\t99\n39\t88\n40\t105\n41\t97\n42\t91\n43\t79\n44\t68\n45\t76\n46\t82\n47\t78\n48\t91\n49\t87\n50\t74\n51\t63\n52\t66\n53\t75\n54\t56\n55\t68\n56\t50\n57\t78\n58\t67\n59\t56\n60\t36\n61\t15\n62\t5\n63\t7\n64\t6\n65\t4\n66\t7\n67\t5\n68\t1\n69\t5\n70\t5\n71\t5\n72\t4\n73\t6\n74\t2\n75\t3\n76\t1\n77\t5\n78\t2\n79\t3\n80\t6\n81\t1\n83\t2\n86\t1\n87\t1\n"
-          }
-        ]
-      },
       "apps": [],
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1578904047823_-1212655985",
@@ -380,15 +344,6 @@
         "params": {},
         "forms": {}
       },
-      "results": {
-        "code": "SUCCESS",
-        "msg": [
-          {
-            "type": "TEXT",
-            "data": "defined class ScalaUpper\n"
-          }
-        ]
-      },
       "apps": [],
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1578905208609_-1175158458",
@@ -422,10 +377,6 @@
       "settings": {
         "params": {},
         "forms": {}
-      },
-      "results": {
-        "code": "SUCCESS",
-        "msg": []
       },
       "apps": [],
       "progressUpdateIntervalMs": 500,
@@ -466,15 +417,6 @@
       "settings": {
         "params": {},
         "forms": {}
-      },
-      "results": {
-        "code": "SUCCESS",
-        "msg": [
-          {
-            "type": "TEXT",
-            "data": "The following commands are available:\n\nCREATE TABLE\t\tCreate table under current catalog and database.\nDROP TABLE\t\tDrop table with optional catalog and database. Syntax: \u0027DROP TABLE [IF EXISTS] \u003cname\u003e;\u0027\nCREATE VIEW\t\tCreates a virtual table from a SQL query. Syntax: \u0027CREATE VIEW \u003cname\u003e AS \u003cquery\u003e;\u0027\nDESCRIBE\t\tDescribes the schema of a table with the given name.\nDROP VIEW\t\tDeletes a previously created virtual table. Syntax: \u0027DROP VIEW \u003cname\u003e;\u0027\nEXPLAIN\t\tDescribes the execution plan of a query or table with the given name.\nHELP\t\tPrints the available commands.\nINSERT INTO\t\tInserts the results of a SQL SELECT query into a declared table sink.\nINSERT OVERWRITE\t\tInserts the results of a SQL SELECT query into a declared table sink and overwrite existing data.\nSELECT\t\tExecutes a SQL SELECT query on the Flink cluster.\nSHOW FUNCTIONS\t\tShows all user-defined and built-in functions.\nSHOW TABLES\t\tShows all registered tables.\nUSE CATALOG\t\tSets the current catalog. The current database is set to the catalog\u0027s default one. Experimental! Syntax: \u0027USE CATALOG \u003cname\u003e;\u0027\nUSE\t\tSets the current default database. Experimental! Syntax: \u0027USE \u003cname\u003e;\u0027\n\nHint: Make sure that a statement ends with \u0027;\u0027 for finalizing (multi-line) statements."
-          }
-        ]
       },
       "apps": [],
       "progressUpdateIntervalMs": 500,
@@ -560,15 +502,6 @@
       "settings": {
         "params": {},
         "forms": {}
-      },
-      "results": {
-        "code": "SUCCESS",
-        "msg": [
-          {
-            "type": "TABLE",
-            "data": "EXPR$0\tEXPR$1\nPRIMARY\t678\nSECONDARY\t2306\nTERTIARY\t1350\nUNKNOWN\t187\n"
-          }
-        ]
       },
       "apps": [],
       "progressUpdateIntervalMs": 500,
@@ -668,15 +601,6 @@
         "params": {},
         "forms": {}
       },
-      "results": {
-        "code": "SUCCESS",
-        "msg": [
-          {
-            "type": "TABLE",
-            "data": "edu\tc\nPRIMARY\t678\nSECONDARY\t2306\nTERTIARY\t1350\nUNKNOWN\t187\n"
-          }
-        ]
-      },
       "apps": [],
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1578905276271_782994324",
@@ -765,15 +689,6 @@
         "params": {},
         "forms": {}
       },
-      "results": {
-        "code": "SUCCESS",
-        "msg": [
-          {
-            "type": "TABLE",
-            "data": "tab_name\nbank\nbank_raw\ndepartments\ndest_csv\ndest_orc\nemployee\nitems\nsink_kafka\nsource_csv\nsource_kafka\nweb_log_small\n"
-          }
-        ]
-      },
       "apps": [],
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1580889919226_-1710921935",
@@ -833,15 +748,6 @@
       "settings": {
         "params": {},
         "forms": {}
-      },
-      "results": {
-        "code": "SUCCESS",
-        "msg": [
-          {
-            "type": "TABLE",
-            "data": "table\nUnnamedTable$0\nbank\nbank_raw\ndepartments\ndest_csv\ndest_orc\nemployee\nitems\nsink_kafka\nsource_csv\nsource_kafka\nweb_log_small\n"
-          }
-        ]
       },
       "apps": [],
       "progressUpdateIntervalMs": 500,
@@ -906,15 +812,6 @@
         "params": {},
         "forms": {}
       },
-      "results": {
-        "code": "SUCCESS",
-        "msg": [
-          {
-            "type": "TABLE",
-            "data": "eid\tname\tsalary\tdestination\n1201\tGopal\t45000\tTechnical manager\n1202\tManisha\t45000\tProof reader\n1203\tMasthanvali\t40000\tTechnical writer\n1204\tKiran\t40000\tHr Admin\n1205\tKranthi\t30000\tOp Admin\n"
-          }
-        ]
-      },
       "apps": [],
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1578043607185_590649655",
@@ -945,18 +842,11 @@
   "id": "2EZ9G3JJU",
   "defaultInterpreterGroup": "flink",
   "version": "0.9.0-SNAPSHOT",
-  "permissions": {
-    "owners": [],
-    "runners": [],
-    "readers": [],
-    "writers": []
-  },
   "noteParams": {},
   "noteForms": {},
   "angularObjects": {},
   "config": {
     "isZeppelinNotebookCronEnable": false
   },
-  "info": {},
-  "path": "/Flink Tutorial/Exploratory Data Analytics"
+  "info": {}
 }
