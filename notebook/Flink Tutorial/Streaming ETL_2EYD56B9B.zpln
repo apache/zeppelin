@@ -4,10 +4,10 @@
       "title": "Overview",
       "text": "%md\n\nThis tutorial demonstrate how to use Flink do streaming processing via its streaming sql + udf. In this tutorial, we read data from kafka queue and do some simple processing (just filtering here) and then write it back to another kafka queue. We use this [docker](https://kafka-connect-datagen.readthedocs.io/en/latest/) to create kafka cluster and source data \n\n",
       "user": "anonymous",
-      "dateUpdated": "2020-01-19 15:36:08.418",
+      "dateUpdated": "2020-03-23 15:03:54.596",
       "config": {
         "runOnSelectionChange": true,
-        "title": false,
+        "title": true,
         "checkEmpty": true,
         "colWidth": 12.0,
         "fontSize": 9.0,
@@ -324,18 +324,11 @@
   "id": "2EYD56B9B",
   "defaultInterpreterGroup": "spark",
   "version": "0.9.0-SNAPSHOT",
-  "permissions": {
-    "owners": [],
-    "runners": [],
-    "readers": [],
-    "writers": []
-  },
   "noteParams": {},
   "noteForms": {},
   "angularObjects": {},
   "config": {
     "isZeppelinNotebookCronEnable": false
   },
-  "info": {},
-  "path": "/Flink Tutorial/Streaming ETL"
+  "info": {}
 }

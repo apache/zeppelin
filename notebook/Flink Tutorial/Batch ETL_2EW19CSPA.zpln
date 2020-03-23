@@ -45,40 +45,6 @@
       "status": "FINISHED"
     },
     {
-      "text": "%flink.conf\n\nflink.interpreter.close.shutdown_cluster false",
-      "user": "anonymous",
-      "dateUpdated": "2020-02-25 09:33:04.023",
-      "config": {
-        "colWidth": 12.0,
-        "fontSize": 9.0,
-        "enabled": true,
-        "results": {},
-        "editorSetting": {
-          "language": "text",
-          "editOnDblClick": false,
-          "completionKey": "TAB",
-          "completionSupport": true
-        },
-        "editorMode": "ace/mode/text"
-      },
-      "settings": {
-        "params": {},
-        "forms": {}
-      },
-      "results": {
-        "code": "SUCCESS",
-        "msg": []
-      },
-      "apps": [],
-      "progressUpdateIntervalMs": 500,
-      "jobName": "paragraph_1582594367896_465966821",
-      "id": "paragraph_1582594367896_465966821",
-      "dateCreated": "2020-02-25 09:32:47.896",
-      "dateStarted": "2020-02-25 09:33:04.028",
-      "dateFinished": "2020-02-25 09:33:04.032",
-      "status": "FINISHED"
-    },
-    {
       "title": "Download bank data",
       "text": "%sh\n\ncd /tmp\nwget https://archive.ics.uci.edu/ml/machine-learning-databases/00222/bank.zip\ntar -xvf bank.zip\n# upload data to hdfs if you want to run it in yarn mode\n# hadoop fs -put /tmp/bank.csv /tmp/bank.csv\n",
       "user": "anonymous",
@@ -499,18 +465,11 @@
   "id": "2EW19CSPA",
   "defaultInterpreterGroup": "flink",
   "version": "0.9.0-SNAPSHOT",
-  "permissions": {
-    "owners": [],
-    "runners": [],
-    "readers": [],
-    "writers": []
-  },
   "noteParams": {},
   "noteForms": {},
   "angularObjects": {},
   "config": {
     "isZeppelinNotebookCronEnable": false
   },
-  "info": {},
-  "path": "/Flink Tutorial/Batch ETL"
+  "info": {}
 }
