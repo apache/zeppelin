@@ -17,7 +17,7 @@
 
 package org.apache.zeppelin.livy;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterOutput;
@@ -32,7 +32,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import static org.apache.commons.lang.StringEscapeUtils.escapeJavaScript;
+import static org.apache.commons.lang3.StringEscapeUtils.escapeEcmaScript;
 
 /**
  * Livy SparkSQL Interpreter for Zeppelin.
@@ -191,7 +191,7 @@ public class LivySparkSQLInterpreter extends BaseLivyInterpreter {
         List<String> cells = new ArrayList<>();
         for (Pair pair : pairs) {
           // strip the blank space around the cell and escape the string
-          cells.add(escapeJavaScript(line.substring(pair.start, pair.end)).trim());
+          cells.add(escapeEcmaScript(line.substring(pair.start, pair.end)).trim());
         }
         rows.add(StringUtils.join(cells, "\t"));
       }

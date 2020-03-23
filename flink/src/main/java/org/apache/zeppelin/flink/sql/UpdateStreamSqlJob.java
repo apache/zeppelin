@@ -75,7 +75,7 @@ public class UpdateStreamSqlJob extends AbstractStreamSqlJob {
     StringBuilder builder = new StringBuilder();
     builder.append("%table\n");
     for (int i = 0; i < schema.getFieldCount(); ++i) {
-      String field = schema.getFieldName(i).get();
+      String field = schema.getFieldNames()[i];
       builder.append(field);
       if (i != (schema.getFieldCount() - 1)) {
         builder.append("\t");
@@ -84,8 +84,8 @@ public class UpdateStreamSqlJob extends AbstractStreamSqlJob {
     builder.append("\n");
     // sort it by the first column
     materializedTable.sort((r1, r2) -> {
-      String f1 = r1.getField(0).toString();
-      String f2 = r2.getField(0).toString();
+      String f1 = TableDataUtils.normalizeColumn(StringUtils.arrayAwareToString(r1.getField(0)));
+      String f2 = TableDataUtils.normalizeColumn(StringUtils.arrayAwareToString(r2.getField(0)));
       return f1.compareTo(f2);
     });
     for (Row row : materializedTable) {

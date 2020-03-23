@@ -48,7 +48,7 @@ public abstract class RemoteInterpreterProcess implements InterpreterClient {
       clientFactory = new ClientFactory(getHost(), getPort());
       clientPool = new GenericObjectPool<>(clientFactory);
     }
-    return clientPool.borrowObject();
+    return clientPool.borrowObject(5_000);
   }
 
   public void shutdown() {

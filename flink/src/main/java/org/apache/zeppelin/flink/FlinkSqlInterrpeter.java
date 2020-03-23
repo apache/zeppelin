@@ -22,12 +22,16 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.flink.api.common.JobExecutionResult;
+import org.apache.flink.configuration.ConfigOption;
 import org.apache.flink.core.execution.JobClient;
 import org.apache.flink.core.execution.JobListener;
+import org.apache.flink.python.PythonConfig;
+import org.apache.flink.python.PythonOptions;
 import org.apache.flink.table.api.Table;
 import org.apache.flink.table.api.TableEnvironment;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.table.api.config.ExecutionConfigOptions;
+import org.apache.flink.table.api.config.OptimizerConfigOptions;
 import org.apache.zeppelin.flink.sql.SqlCommandParser;
 import org.apache.zeppelin.flink.sql.SqlCommandParser.SqlCommand;
 import org.apache.zeppelin.interpreter.Interpreter;
@@ -42,15 +46,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.lang.reflect.Field;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public abstract class FlinkSqlInterrpeter extends Interpreter {
@@ -69,6 +72,7 @@ public abstract class FlinkSqlInterrpeter extends Interpreter {
           .append(formatCommand(SqlCommand.INSERT_INTO, "Inserts the results of a SQL SELECT query into a declared table sink."))
           .append(formatCommand(SqlCommand.INSERT_OVERWRITE, "Inserts the results of a SQL SELECT query into a declared table sink and overwrite existing data."))
           .append(formatCommand(SqlCommand.SELECT, "Executes a SQL SELECT query on the Flink cluster."))
+          .append(formatCommand(SqlCommand.SET, "Sets a session configuration property. Syntax: 'SET <key>=<value>;'. Use 'SET;' for listing all properties."))
           .append(formatCommand(SqlCommand.SHOW_FUNCTIONS, "Shows all user-defined and built-in functions."))
           .append(formatCommand(SqlCommand.SHOW_TABLES, "Shows all registered tables."))
           .append(formatCommand(SqlCommand.SOURCE, "Reads a SQL SELECT query from a file and executes it on the Flink cluster."))
@@ -86,7 +90,11 @@ public abstract class FlinkSqlInterrpeter extends Interpreter {
   private SqlSplitter sqlSplitter;
   private int defaultSqlParallelism;
   private ReentrantReadWriteLock.WriteLock lock = new ReentrantReadWriteLock().writeLock();
-
+  // all the available sql config options. see
+  // https://ci.apache.org/projects/flink/flink-docs-release-1.10/dev/table/config.html
+  private Map<String, ConfigOption> tableConfigOptions;
+  // represent the current paragraph's configOptions
+  private Map<String, String> currentConfigOptions = new HashMap<>();
 
   public FlinkSqlInterrpeter(Properties properties) {
     super(properties);
@@ -117,6 +125,31 @@ public abstract class FlinkSqlInterrpeter extends Interpreter {
     flinkInterpreter.getExecutionEnvironment().getJavaEnv().registerJobListener(jobListener);
     flinkInterpreter.getStreamExecutionEnvironment().getJavaEnv().registerJobListener(jobListener);
     this.defaultSqlParallelism = flinkInterpreter.getDefaultSqlParallelism();
+    this.tableConfigOptions = extractTableConfigOptions();
+  }
+
+  private Map<String, ConfigOption> extractTableConfigOptions() {
+    Map<String, ConfigOption> configOptions = new HashMap<>();
+    configOptions.putAll(extractConfigOptions(ExecutionConfigOptions.class));
+    configOptions.putAll(extractConfigOptions(OptimizerConfigOptions.class));
+    configOptions.putAll(extractConfigOptions(PythonOptions.class));
+    return configOptions;
+  }
+
+  private Map<String, ConfigOption> extractConfigOptions(Class clazz) {
+    Map<String, ConfigOption> configOptions = new HashMap();
+    Field[] fields = clazz.getDeclaredFields();
+    for (Field field : fields) {
+      if (field.getType().isAssignableFrom(ConfigOption.class)) {
+        try {
+          ConfigOption configOption = (ConfigOption) field.get(ConfigOption.class);
+          configOptions.put(configOption.key(), configOption);
+        } catch (Throwable e) {
+          LOGGER.warn("Fail to get ConfigOption", e);
+        }
+      }
+    }
+    return configOptions;
   }
 
   @Override
@@ -139,6 +172,7 @@ public abstract class FlinkSqlInterrpeter extends Interpreter {
   }
 
   private InterpreterResult runSqlList(String st, InterpreterContext context) {
+    currentConfigOptions.clear();
     List<String> sqls = sqlSplitter.splitSql(st);
     for (String sql : sqls) {
       Optional<SqlCommandParser.SqlCommandCall> sqlCommand = SqlCommandParser.parse(sql);
@@ -165,6 +199,30 @@ public abstract class FlinkSqlInterrpeter extends Interpreter {
                   ExceptionUtils.getStackTrace(e));
         }
         return new InterpreterResult(InterpreterResult.Code.ERROR);
+      }
+    }
+
+    boolean runAsOne = Boolean.parseBoolean(context.getStringLocalProperty("runAsOne", "false"));
+    if (runAsOne) {
+      try {
+        lock.lock();
+        if (context.getLocalProperties().containsKey("parallelism")) {
+          this.tbenv.getConfig().getConfiguration()
+                  .set(ExecutionConfigOptions.TABLE_EXEC_RESOURCE_DEFAULT_PARALLELISM,
+                          Integer.parseInt(context.getLocalProperties().get("parallelism")));
+        }
+        this.tbenv.execute(st);
+        context.out.write("Insertion successfully.\n");
+      } catch (Exception e) {
+        LOGGER.error("Fail to execute sql as one job", e);
+        return new InterpreterResult(InterpreterResult.Code.ERROR, ExceptionUtils.getStackTrace(e));
+      } finally {
+        if (lock.isHeldByCurrentThread()) {
+          lock.unlock();
+        }
+        this.tbenv.getConfig().getConfiguration()
+                .set(ExecutionConfigOptions.TABLE_EXEC_RESOURCE_DEFAULT_PARALLELISM,
+                        defaultSqlParallelism);
       }
     }
 
@@ -209,6 +267,9 @@ public abstract class FlinkSqlInterrpeter extends Interpreter {
         break;
       case SELECT:
         callSelect(cmdCall.operands[0], context);
+        break;
+      case SET:
+        callSet(cmdCall.operands[0], cmdCall.operands[1], context);
         break;
       case INSERT_INTO:
       case INSERT_OVERWRITE:
@@ -401,24 +462,46 @@ public abstract class FlinkSqlInterrpeter extends Interpreter {
   public void callSelect(String sql, InterpreterContext context) throws IOException {
     try {
       lock.lock();
+      // set parallelism from paragraph local property
       if (context.getLocalProperties().containsKey("parallelism")) {
         this.tbenv.getConfig().getConfiguration()
                 .set(ExecutionConfigOptions.TABLE_EXEC_RESOURCE_DEFAULT_PARALLELISM,
                         Integer.parseInt(context.getLocalProperties().get("parallelism")));
       }
-      callInnerSelect(sql, context);
 
+      // set table config from set statement until now.
+      for (Map.Entry<String, String> entry : currentConfigOptions.entrySet()) {
+        this.tbenv.getConfig().getConfiguration().setString(entry.getKey(), entry.getValue());
+      }
+      callInnerSelect(sql, context);
     } finally {
       if (lock.isHeldByCurrentThread()) {
         lock.unlock();
       }
+      // reset parallelism
       this.tbenv.getConfig().getConfiguration()
               .set(ExecutionConfigOptions.TABLE_EXEC_RESOURCE_DEFAULT_PARALLELISM,
                       defaultSqlParallelism);
+      // reset table config
+      for (ConfigOption configOption: tableConfigOptions.values()) {
+        // some may has no default value, e.g. ExecutionConfigOptions#TABLE_EXEC_DISABLED_OPERATORS
+        if (configOption.defaultValue() != null) {
+          this.tbenv.getConfig().getConfiguration().set(configOption, configOption.defaultValue());
+        }
+      }
+      this.tbenv.getConfig().getConfiguration().addAll(flinkInterpreter.getFlinkConfiguration());
     }
   }
 
   public abstract void callInnerSelect(String sql, InterpreterContext context) throws IOException;
+
+  public void callSet(String key, String value, InterpreterContext context) throws IOException {
+    if (!tableConfigOptions.containsKey(key)) {
+      throw new IOException(key + " is not a valid table/sql config, please check link: " +
+              "https://ci.apache.org/projects/flink/flink-docs-release-1.10/dev/table/config.html");
+    }
+    currentConfigOptions.put(key, value);
+  }
 
   private void callInsertInto(String sql,
                               InterpreterContext context) throws IOException {
@@ -432,19 +515,38 @@ public abstract class FlinkSqlInterrpeter extends Interpreter {
                  .set(ExecutionConfigOptions.TABLE_EXEC_RESOURCE_DEFAULT_PARALLELISM,
                          Integer.parseInt(context.getLocalProperties().get("parallelism")));
        }
+
+       // set table config from set statement until now.
+       for (Map.Entry<String, String> entry : currentConfigOptions.entrySet()) {
+         this.tbenv.getConfig().getConfiguration().setString(entry.getKey(), entry.getValue());
+       }
+
        this.tbenv.sqlUpdate(sql);
-       this.tbenv.execute(sql);
+       boolean runAsOne = Boolean.parseBoolean(context.getStringLocalProperty("runAsOne", "false"));
+       if (!runAsOne) {
+         this.tbenv.execute(sql);
+         context.out.write("Insertion successfully.\n");
+       }
      } catch (Exception e) {
        throw new IOException(e);
      } finally {
        if (lock.isHeldByCurrentThread()) {
          lock.unlock();
        }
+
+       // reset parallelism
        this.tbenv.getConfig().getConfiguration()
                .set(ExecutionConfigOptions.TABLE_EXEC_RESOURCE_DEFAULT_PARALLELISM,
                        defaultSqlParallelism);
+       // reset table config
+       for (ConfigOption configOption: tableConfigOptions.values()) {
+         // some may has no default value, e.g. ExecutionConfigOptions#TABLE_EXEC_DISABLED_OPERATORS
+         if (configOption.defaultValue() != null) {
+           this.tbenv.getConfig().getConfiguration().set(configOption, configOption.defaultValue());
+         }
+       }
+       this.tbenv.getConfig().getConfiguration().addAll(flinkInterpreter.getFlinkConfiguration());
      }
-     context.out.write("Insertion successfully.\n");
   }
 
   private static AttributedString formatCommand(SqlCommand cmd, String description) {

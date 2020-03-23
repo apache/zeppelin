@@ -65,7 +65,6 @@ function make_binary_release() {
 
   cp -r "${WORKING_DIR}/zeppelin" "${WORKING_DIR}/zeppelin-${RELEASE_VERSION}-bin-${BIN_RELEASE_NAME}"
   cd "${WORKING_DIR}/zeppelin-${RELEASE_VERSION}-bin-${BIN_RELEASE_NAME}"
-  ./dev/change_scala_version.sh "${SCALA_VERSION}"
   echo "mvn clean package -Pbuild-distr -DskipTests ${BUILD_FLAGS}"
   mvn clean package -Pbuild-distr -DskipTests ${BUILD_FLAGS}
   if [[ $? -ne 0 ]]; then
@@ -98,8 +97,8 @@ function make_binary_release() {
 
 git_clone
 make_source_package
-make_binary_release all "-Phadoop-2.6 -Pscala-${SCALA_VERSION}"
-make_binary_release netinst "-Phadoop-2.6 -Pscala-${SCALA_VERSION} -pl zeppelin-interpreter,zeppelin-zengine,:zeppelin-display_${SCALA_VERSION},:zeppelin-spark-dependencies_${SCALA_VERSION},:zeppelin-spark_${SCALA_VERSION},zeppelin-web,zeppelin-server,zeppelin-distribution -am"
+make_binary_release all "-Pweb-angular -Phadoop-2.6"
+make_binary_release netinst "-Pweb-angular -Phadoop-2.6 -pl zeppelin-server,zeppelin-display,markdown,shell,spark/spark-dependencies,zeppelin-web,zeppelin-web-angular,zeppelin-distribution -am"
 
 # remove non release files and dirs
 rm -rf "${WORKING_DIR}/zeppelin"

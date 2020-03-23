@@ -31,7 +31,7 @@ import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.dep.Dependency;
 import org.apache.zeppelin.dep.DependencyResolver;
@@ -596,12 +596,20 @@ public class InterpreterSetting {
         keys.sort((o1, o2) -> {
           int i1 = sortedKeys.indexOf(o1);
           int i2 = sortedKeys.indexOf(o2);
-          if (i1 < i2) {
-            return -1;
-          } else if (i1 > i2) {
-            return 1;
+          if (i1 != -1 && i2 != -1) {
+            if (i1 < i2) {
+              return -1;
+            } else if (i1 > i2) {
+              return 1;
+            } else {
+              return 0;
+            }
           } else {
-            return 0;
+            if (i1 == -1) {
+              return 1;
+            } else {
+              return -1;
+            }
           }
         });
 

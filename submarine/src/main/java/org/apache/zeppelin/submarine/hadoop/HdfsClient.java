@@ -14,7 +14,7 @@
 
 package org.apache.zeppelin.submarine.hadoop;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -302,7 +302,7 @@ public class HdfsClient {
     for (int i = 0; i < paragraphInfos.size(); i++) {
       ParagraphInfo paragraph = paragraphInfos.get(i);
       String paragraphTitle = paragraph.getParagraphTitle();
-      if (org.apache.commons.lang.StringUtils.isEmpty(paragraphTitle)) {
+      if (org.apache.commons.lang3.StringUtils.isEmpty(paragraphTitle)) {
         String message = "WARN: The title of the [" + i
             + "] paragraph is empty and was not submitted to HDFS.\n";
         LOGGER.warn(message);

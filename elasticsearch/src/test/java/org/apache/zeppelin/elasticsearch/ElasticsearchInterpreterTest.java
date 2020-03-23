@@ -21,7 +21,7 @@ import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import org.apache.commons.lang.math.RandomUtils;
+import org.apache.commons.lang3.RandomUtils;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.settings.Settings;
@@ -98,12 +98,12 @@ public class ElasticsearchInterpreterTest {
           .startObject()
             .field("date", new Date())
             .startObject("request")
-              .field("method", METHODS[RandomUtils.nextInt(METHODS.length)])
+              .field("method", METHODS[RandomUtils.nextInt(0, METHODS.length)])
               .field("url", "/zeppelin/" + UUID.randomUUID().toString())
               .field("headers", Arrays.asList("Accept: *.*", "Host: apache.org"))
             .endObject()
-            .field("status", STATUS[RandomUtils.nextInt(STATUS.length)])
-            .field("content_length", RandomUtils.nextInt(2000))
+            .field("status", STATUS[RandomUtils.nextInt(0, STATUS.length)])
+            .field("content_length", RandomUtils.nextInt(0, 2000))
           )
         .get();
     }
@@ -115,12 +115,12 @@ public class ElasticsearchInterpreterTest {
             .startObject()
               .field("date", new Date())
               .startObject("request")
-                .field("method", METHODS[RandomUtils.nextInt(METHODS.length)])
+                .field("method", METHODS[RandomUtils.nextInt(0, METHODS.length)])
                 .field("url", "/zeppelin/" + UUID.randomUUID().toString())
                 .field("headers", Arrays.asList("Accept: *.*", "Host: apache.org"))
               .endObject()
-              .field("status", STATUS[RandomUtils.nextInt(STATUS.length)])
-              .field("content_length", RandomUtils.nextInt(2000))
+              .field("status", STATUS[RandomUtils.nextInt(0, STATUS.length)])
+              .field("content_length", RandomUtils.nextInt(0, 2000))
             )
         .get();
     }

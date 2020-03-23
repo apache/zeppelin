@@ -17,7 +17,7 @@
 
 package org.apache.zeppelin.util;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.util.Properties;

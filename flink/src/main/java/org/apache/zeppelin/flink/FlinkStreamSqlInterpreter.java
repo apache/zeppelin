@@ -18,7 +18,7 @@
 
 package org.apache.zeppelin.flink;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.flink.table.api.config.ExecutionConfigOptions;
 import org.apache.zeppelin.flink.sql.UpdateStreamSqlJob;
 import org.apache.zeppelin.flink.sql.SingleRowStreamSqlJob;
