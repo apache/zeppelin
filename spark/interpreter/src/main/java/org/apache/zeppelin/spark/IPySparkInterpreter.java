@@ -23,11 +23,13 @@ import org.apache.zeppelin.interpreter.ZeppelinContext;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.util.InterpreterOutputStream;
 import org.apache.zeppelin.python.IPythonInterpreter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.Map;
 import java.util.Properties;
 
@@ -91,25 +93,35 @@ public class IPySparkInterpreter extends IPythonInterpreter {
   @Override
   public InterpreterResult interpret(String st,
                                      InterpreterContext context) throws InterpreterException {
-    Utils.printDeprecateMessage(sparkInterpreter.getSparkVersion(), context, properties);
-    InterpreterContext.set(context);
-    String jobGroupId = Utils.buildJobGroupId(context);
-    String jobDesc = Utils.buildJobDesc(context);
-    String setJobGroupStmt = "sc.setJobGroup('" +  jobGroupId + "', '" + jobDesc + "')";
-    InterpreterResult result = super.interpret(setJobGroupStmt, context);
-    if (result.code().equals(InterpreterResult.Code.ERROR)) {
-      return new InterpreterResult(InterpreterResult.Code.ERROR, "Fail to setJobGroup");
+    // redirect java stdout/stdout to interpreter output. Because pyspark may call java code.
+    PrintStream originalStdout = System.out;
+    PrintStream originalStderr = System.err;
+    try {
+      System.setOut(new PrintStream(context.out));
+      System.setErr(new PrintStream(context.out));
+      Utils.printDeprecateMessage(sparkInterpreter.getSparkVersion(), context, properties);
+      InterpreterContext.set(context);
+      String jobGroupId = Utils.buildJobGroupId(context);
+      String jobDesc = Utils.buildJobDesc(context);
+      String setJobGroupStmt = "sc.setJobGroup('" + jobGroupId + "', '" + jobDesc + "')";
+      InterpreterResult result = super.interpret(setJobGroupStmt, context);
+      if (result.code().equals(InterpreterResult.Code.ERROR)) {
+        return new InterpreterResult(InterpreterResult.Code.ERROR, "Fail to setJobGroup");
+      }
+      String pool = "None";
+      if (context.getLocalProperties().containsKey("pool")) {
+        pool = "'" + context.getLocalProperties().get("pool") + "'";
+      }
+      String setPoolStmt = "sc.setLocalProperty('spark.scheduler.pool', " + pool + ")";
+      result = super.interpret(setPoolStmt, context);
+      if (result.code().equals(InterpreterResult.Code.ERROR)) {
+        return new InterpreterResult(InterpreterResult.Code.ERROR, "Fail to setPool");
+      }
+      return super.interpret(st, context);
+    } finally {
+      System.setOut(originalStdout);
+      System.setErr(originalStderr);
     }
-    String pool = "None";
-    if (context.getLocalProperties().containsKey("pool")) {
-      pool = "'" + context.getLocalProperties().get("pool") + "'";
-    }
-    String setPoolStmt = "sc.setLocalProperty('spark.scheduler.pool', " + pool + ")";
-    result = super.interpret(setPoolStmt, context);
-    if (result.code().equals(InterpreterResult.Code.ERROR)) {
-      return new InterpreterResult(InterpreterResult.Code.ERROR, "Fail to setPool");
-    }
-    return super.interpret(st, context);
   }
 
   @Override
