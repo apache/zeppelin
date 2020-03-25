@@ -16,7 +16,8 @@
  */
 package org.apache.zeppelin.cassandra
 
-import com.datastax.driver.core._
+import com.datastax.oss.driver.api.core.{ConsistencyLevel, CqlSession}
+import com.datastax.oss.driver.api.core.cql.{BatchStatement, BatchType, PreparedStatement}
 import org.apache.zeppelin.interpreter.InterpreterException
 import org.scalatest.mock.MockitoSugar
 import org.scalatest.{BeforeAndAfterEach, FlatSpec, Matchers}
@@ -30,7 +31,7 @@ class ParagraphParserTest extends FlatSpec
   with Matchers
   with MockitoSugar {
 
-  val session: Session = mock[Session]
+  val session: CqlSession = mock[CqlSession]
   val preparedStatements:collection.mutable.Map[String,PreparedStatement] = collection.mutable.Map()
   val parser: ParagraphParser = new ParagraphParser()
 
@@ -62,14 +63,14 @@ class ParagraphParserTest extends FlatSpec
     parsed should matchPattern {
       case parser.Success(List(
         SimpleStm("SELECT * FROM albums LIMIT 10;"),
-        BatchStm(BatchStatement.Type.UNLOGGED,
+        BatchStm(BatchType.UNLOGGED,
           List(
             SimpleStm("INSERT INTO users(id) VALUES(10);"),
             BoundStm("test","'a',12.34")
           )
         ),
         SimpleStm("SELECT * FROM users LIMIT 10;"),
-        BatchStm(BatchStatement.Type.LOGGED,
+        BatchStm(BatchType.LOGGED,
           List(
             SimpleStm("Insert INTO users(id) VALUES(11);"),
             SimpleStm("INSERT INTO users(id) VALUES(12);")
@@ -162,20 +163,6 @@ class ParagraphParserTest extends FlatSpec
     ex.getMessage should be(s"Invalid syntax for @timestamp. It should comply to the pattern ${TIMESTAMP_PATTERN.toString}")
   }
 
-  "Parser" should "parse retry policy" in {
-    val query:String ="@retryPolicy="+CassandraInterpreter.DOWNGRADING_CONSISTENCY_RETRY
-    val parsed = parser.parseAll(parser.retryPolicy, query)
-    parsed should matchPattern {case parser.Success(DowngradingRetryPolicy, _) => }
-  }
-
-  "Parser" should "fails parsing invalid retry policy" in {
-    val query:String =""" @retryPolicy=TEST""".stripMargin
-    val ex = intercept[InterpreterException] {
-      parser.parseAll(parser.retryPolicy, query)
-    }
-    ex.getMessage should be(s"Invalid syntax for @retryPolicy. It should comply to the pattern ${RETRY_POLICIES_PATTERN.toString}")
-  }
-
   "Parser" should "parse fetch size" in {
     val query:String ="@fetchSize=100"
     val parsed = parser.parseAll(parser.fetchSize, query)
@@ -201,7 +188,7 @@ class ParagraphParserTest extends FlatSpec
     val query:String =""" sElecT * FROM users LIMIT ? ;""".stripMargin
 
     //When
-    val parsed = parser.parseAll(parser.genericStatement, query)
+    val parsed = parser.parseAll(parser.genericStatement(), query)
 
     //Then
     parsed should matchPattern { case parser.Success(SimpleStm("sElecT * FROM users LIMIT ? ;"), _) =>}
@@ -212,7 +199,7 @@ class ParagraphParserTest extends FlatSpec
     val query:String =""" @prepare[select_users]=SELECT * FROM users LIMIT ? """.stripMargin
 
     //When
-    val parsed = parser.parseAll(parser.prepare, query)
+    val parsed = parser.parseAll(parser.prepare(), query)
 
     //Then
     parsed should matchPattern { case parser.Success(PrepareStm("select_users","SELECT * FROM users LIMIT ?"), _) => }
@@ -221,7 +208,7 @@ class ParagraphParserTest extends FlatSpec
   "Parser" should "fails parsing invalid prepared statement" in {
     val query:String =""" @prepare=SELECT * FROM users LIMIT ?""".stripMargin
     val ex = intercept[InterpreterException] {
-      parser.parseAll(parser.prepare, query)
+      parser.parseAll(parser.prepare(), query)
     }
     ex.getMessage should be(s"Invalid syntax for @prepare. It should comply to the pattern: @prepare[prepared_statement_name]=CQL Statement (without semi-colon)")
   }
@@ -231,7 +218,7 @@ class ParagraphParserTest extends FlatSpec
     val query:String =""" @remove_prepare[select_users  ]""".stripMargin
 
     //When
-    val parsed = parser.parseAll(parser.removePrepare, query)
+    val parsed = parser.parseAll(parser.removePrepare(), query)
 
     //Then
     parsed should matchPattern { case parser.Success(RemovePrepareStm("select_users"), _) => }
@@ -240,7 +227,7 @@ class ParagraphParserTest extends FlatSpec
   "Parser" should "fails parsing invalid remove prepared statement" in {
     val query:String =""" @remove_prepare[select_users]=SELECT * FROM users LIMIT ?""".stripMargin
     val ex = intercept[InterpreterException] {
-      parser.parseAll(parser.removePrepare, query)
+      parser.parseAll(parser.removePrepare(), query)
     }
     ex.getMessage should be(s"Invalid syntax for @remove_prepare. It should comply to the pattern: @remove_prepare[prepared_statement_name]")
   }
@@ -250,7 +237,7 @@ class ParagraphParserTest extends FlatSpec
     val query:String =""" @bind[select_users  ]=10,'toto'""".stripMargin
 
     //When
-    val parsed = parser.parseAll(parser.bind, query)
+    val parsed = parser.parseAll(parser.bind(), query)
 
     //Then
     parsed should matchPattern { case parser.Success(BoundStm("select_users","10,'toto'"), _) => }
@@ -259,7 +246,7 @@ class ParagraphParserTest extends FlatSpec
   "Parser" should "fails parsing invalid bind statement" in {
     val query:String =""" @bind[select_users]=""".stripMargin
     val ex = intercept[InterpreterException] {
-      parser.parseAll(parser.bind, query)
+      parser.parseAll(parser.bind(), query)
     }
     ex.getMessage should be("""Invalid syntax for @bind. It should comply to the pattern: @bind[prepared_statement_name]=10,'jdoe','John DOE',12345,'2015-07-32 12:04:23.234' OR @bind[prepared_statement_name] with no bound value. No semi-colon""")
   }
@@ -280,7 +267,7 @@ class ParagraphParserTest extends FlatSpec
     //Then
     parsed should matchPattern {
       case parser.Success(BatchStm(
-      BatchStatement.Type.LOGGED,
+      BatchType.LOGGED,
       List(
         SimpleStm("Insert INTO users(id) VALUES(10);"),
         BoundStm("select_users", "10,'toto'"),
@@ -346,7 +333,6 @@ class ParagraphParserTest extends FlatSpec
       "   INSERT INTO zeppelin.albums(title,artist,year) VALUES('Primitive','Soulfly',2003);\n"+
       "APPLY BATCH;\n"+
       "@timestamp=10\n" +
-      "@retryPolicy=DOWNGRADING_CONSISTENCY\n" +
       "SELECT * FROM zeppelin.albums;"
 
     val parsed = parser.parseAll(parser.queries, query)
@@ -356,7 +342,7 @@ class ParagraphParserTest extends FlatSpec
       SimpleStm("CREATE TABLE IF NOT EXISTS zeppelin.albums(\n    title text PRIMARY KEY,\n    artist text,\n    year int\n);"),
       Consistency(ConsistencyLevel.THREE),
       SerialConsistency(ConsistencyLevel.SERIAL),
-      BatchStm(BatchStatement.Type.LOGGED,
+      BatchStm(BatchType.LOGGED,
         List(
           SimpleStm("INSERT INTO zeppelin.albums(title,artist,year) VALUES('The Impossible Dream EP','Carter the Unstoppable Sex Machine',1992);"),
           SimpleStm("INSERT INTO zeppelin.albums(title,artist,year) VALUES('The Way You Are','Tears for Fears',1983);"),
@@ -364,7 +350,6 @@ class ParagraphParserTest extends FlatSpec
         )
       ),
       Timestamp(10L),
-      DowngradingRetryPolicy,
       SimpleStm("SELECT * FROM zeppelin.albums;")
       ), _) =>
     }
@@ -389,7 +374,7 @@ class ParagraphParserTest extends FlatSpec
     parsed should matchPattern {
       case parser.Success(List(
       SimpleStm("CREATE TABLE IF NOT EXISTS zeppelin.albums(\n    title text PRIMARY KEY,\n    artist text,\n    year int\n);"),
-      BatchStm(BatchStatement.Type.LOGGED,
+      BatchStm(BatchType.LOGGED,
         List(
           SimpleStm("INSERT INTO zeppelin.albums(title,artist,year) VALUES('The Impossible Dream EP','Carter the Unstoppable Sex Machine',1992);"),
           SimpleStm("INSERT INTO zeppelin.albums(title,artist,year) VALUES('The Way You Are','Tears for Fears',1983);"),

@@ -18,7 +18,7 @@
 --%>
 #import(org.apache.zeppelin.cassandra.MetaDataHierarchy._)
 #import(java.util.UUID)
-<%@ val allTables: Map[(UUID,String),List[String]] %>
+<%@ val allTables: Map[(UUID,String),Seq[String]] %>
 <div class="container">
 
     <div class="row">

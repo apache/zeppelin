@@ -16,6 +16,12 @@
  */
 package org.apache.zeppelin.cassandra;
 
+import static com.datastax.oss.driver.api.core.ConsistencyLevel.ALL;
+import static com.datastax.oss.driver.api.core.ConsistencyLevel.LOCAL_SERIAL;
+import static com.datastax.oss.driver.api.core.ConsistencyLevel.ONE;
+import static com.datastax.oss.driver.api.core.ConsistencyLevel.QUORUM;
+import static com.datastax.oss.driver.api.core.ConsistencyLevel.SERIAL;
+import static com.datastax.oss.driver.api.core.cql.BatchType.UNLOGGED;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
@@ -26,12 +32,11 @@ import static org.mockito.Mockito.when;
 
 import static java.util.Arrays.asList;
 
-import static com.datastax.driver.core.BatchStatement.Type.UNLOGGED;
-import static com.datastax.driver.core.ConsistencyLevel.ALL;
-import static com.datastax.driver.core.ConsistencyLevel.LOCAL_SERIAL;
-import static com.datastax.driver.core.ConsistencyLevel.ONE;
-import static com.datastax.driver.core.ConsistencyLevel.QUORUM;
-import static com.datastax.driver.core.ConsistencyLevel.SERIAL;
+import com.datastax.oss.driver.api.core.ConsistencyLevel;
+import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.cql.BatchStatement;
+import com.datastax.oss.driver.api.core.cql.BatchableStatement;
+import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -43,27 +48,20 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.temporal.ChronoField;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
-
-import com.datastax.driver.core.BatchStatement;
-import com.datastax.driver.core.ConsistencyLevel;
-import com.datastax.driver.core.Session;
-import com.datastax.driver.core.SimpleStatement;
-import com.datastax.driver.core.Statement;
 
 import scala.Option;
 
 import org.apache.zeppelin.cassandra.TextBlockHierarchy.AnyBlock;
 import org.apache.zeppelin.cassandra.TextBlockHierarchy.Consistency;
-import org.apache.zeppelin.cassandra.TextBlockHierarchy.DowngradingRetryPolicy$;
-import org.apache.zeppelin.cassandra.TextBlockHierarchy.LoggingDefaultRetryPolicy$;
 import org.apache.zeppelin.cassandra.TextBlockHierarchy.QueryParameters;
 import org.apache.zeppelin.cassandra.TextBlockHierarchy.RequestTimeOut;
-import org.apache.zeppelin.cassandra.TextBlockHierarchy.RetryPolicy;
 import org.apache.zeppelin.cassandra.TextBlockHierarchy.SerialConsistency;
 import org.apache.zeppelin.cassandra.TextBlockHierarchy.SimpleStm;
 import org.apache.zeppelin.cassandra.TextBlockHierarchy.Timestamp;
@@ -82,7 +80,7 @@ public class InterpreterLogicTest {
   private InterpreterContext intrContext;
 
   @Mock
-  private Session session;
+  private CqlSession session;
 
   final InterpreterLogic helper = new InterpreterLogic(session);
 
@@ -268,19 +266,6 @@ public class InterpreterLogicTest {
   }
 
   @Test
-  public void should_extract_retry_policy_option() throws Exception {
-    //Given
-    List<QueryParameters> options = Arrays.<QueryParameters>asList(DowngradingRetryPolicy$.MODULE$,
-            LoggingDefaultRetryPolicy$.MODULE$);
-
-    //When
-    final CassandraQueryOptions actual = helper.extractQueryOptions(toScalaList(options));
-
-    //Then
-    assertThat(actual.retryPolicy().get()).isSameAs(DowngradingRetryPolicy$.MODULE$);
-  }
-
-  @Test
   public void should_extract_request_timeout_option() throws Exception {
     //Given
     List<QueryParameters> options = Arrays.<QueryParameters>asList(new RequestTimeOut(100));
@@ -299,7 +284,6 @@ public class InterpreterLogicTest {
     CassandraQueryOptions options = new CassandraQueryOptions(Option.apply(QUORUM),
             Option.<ConsistencyLevel>empty(),
             Option.empty(),
-            Option.<RetryPolicy>empty(),
             Option.empty(),
             Option.empty());
 
@@ -309,20 +293,20 @@ public class InterpreterLogicTest {
 
     //Then
     assertThat(actual).isNotNull();
-    assertThat(actual.getQueryString()).isEqualTo("SELECT * FROM users LIMIT 10;");
+    assertThat(actual.getQuery()).isEqualTo("SELECT * FROM users LIMIT 10;");
     assertThat(actual.getConsistencyLevel()).isSameAs(QUORUM);
   }
 
   @Test
   public void should_generate_batch_statement() throws Exception {
     //Given
-    Statement st1 = new SimpleStatement("SELECT * FROM users LIMIT 10;");
-    Statement st2 = new SimpleStatement("INSERT INTO users(id) VALUES(10);");
-    Statement st3 = new SimpleStatement("UPDATE users SET name = 'John DOE' WHERE id=10;");
+    SimpleStatement st1 = SimpleStatement.newInstance("SELECT * FROM users LIMIT 10;");
+    SimpleStatement st2 = SimpleStatement.newInstance("INSERT INTO users(id) VALUES(10);");
+    SimpleStatement st3 = SimpleStatement.newInstance(
+            "UPDATE users SET name = 'John DOE' WHERE id=10;");
     CassandraQueryOptions options = new CassandraQueryOptions(Option.apply(QUORUM),
             Option.<ConsistencyLevel>empty(),
             Option.empty(),
-            Option.<RetryPolicy>empty(),
             Option.empty(),
             Option.empty());
 
@@ -332,7 +316,10 @@ public class InterpreterLogicTest {
 
     //Then
     assertThat(actual).isNotNull();
-    final List<Statement> statements = new ArrayList<>(actual.getStatements());
+    List<BatchableStatement> statements = new ArrayList<BatchableStatement>();
+    for (BatchableStatement b: actual) {
+      statements.add(b);
+    }
     assertThat(statements).hasSize(3);
     assertThat(statements.get(0)).isSameAs(st1);
     assertThat(statements.get(1)).isSameAs(st2);
@@ -359,18 +346,17 @@ public class InterpreterLogicTest {
     String dateString = "2015-07-30 12:00:01";
 
     //When
-    final Date actual = helper.parseDate(dateString);
+    final Instant actual = helper.parseDate(dateString);
 
     //Then
-    Calendar calendar = Calendar.getInstance();
-    calendar.setTime(actual);
+    ZonedDateTime dt = actual.atZone(ZoneOffset.UTC);
 
-    assertThat(calendar.get(Calendar.YEAR)).isEqualTo(2015);
-    assertThat(calendar.get(Calendar.MONTH)).isEqualTo(Calendar.JULY);
-    assertThat(calendar.get(Calendar.DAY_OF_MONTH)).isEqualTo(30);
-    assertThat(calendar.get(Calendar.HOUR_OF_DAY)).isEqualTo(12);
-    assertThat(calendar.get(Calendar.MINUTE)).isEqualTo(0);
-    assertThat(calendar.get(Calendar.SECOND)).isEqualTo(1);
+    assertThat(dt.getLong(ChronoField.YEAR_OF_ERA)).isEqualTo(2015);
+    assertThat(dt.getLong(ChronoField.MONTH_OF_YEAR)).isEqualTo(7);
+    assertThat(dt.getLong(ChronoField.DAY_OF_MONTH)).isEqualTo(30);
+    assertThat(dt.getLong(ChronoField.HOUR_OF_DAY)).isEqualTo(12);
+    assertThat(dt.getLong(ChronoField.MINUTE_OF_HOUR)).isEqualTo(0);
+    assertThat(dt.getLong(ChronoField.SECOND_OF_MINUTE)).isEqualTo(1);
   }
 
   @Test
@@ -379,19 +365,18 @@ public class InterpreterLogicTest {
     String dateString = "2015-07-30 12:00:01.123";
 
     //When
-    final Date actual = helper.parseDate(dateString);
+    final Instant actual = helper.parseDate(dateString);
 
     //Then
-    Calendar calendar = Calendar.getInstance();
-    calendar.setTime(actual);
+    ZonedDateTime dt = actual.atZone(ZoneOffset.UTC);
 
-    assertThat(calendar.get(Calendar.YEAR)).isEqualTo(2015);
-    assertThat(calendar.get(Calendar.MONTH)).isEqualTo(Calendar.JULY);
-    assertThat(calendar.get(Calendar.DAY_OF_MONTH)).isEqualTo(30);
-    assertThat(calendar.get(Calendar.HOUR_OF_DAY)).isEqualTo(12);
-    assertThat(calendar.get(Calendar.MINUTE)).isEqualTo(0);
-    assertThat(calendar.get(Calendar.SECOND)).isEqualTo(1);
-    assertThat(calendar.get(Calendar.MILLISECOND)).isEqualTo(123);
+    assertThat(dt.getLong(ChronoField.YEAR_OF_ERA)).isEqualTo(2015);
+    assertThat(dt.getLong(ChronoField.MONTH_OF_YEAR)).isEqualTo(7);
+    assertThat(dt.getLong(ChronoField.DAY_OF_MONTH)).isEqualTo(30);
+    assertThat(dt.getLong(ChronoField.HOUR_OF_DAY)).isEqualTo(12);
+    assertThat(dt.getLong(ChronoField.MINUTE_OF_HOUR)).isEqualTo(0);
+    assertThat(dt.getLong(ChronoField.SECOND_OF_MINUTE)).isEqualTo(1);
+    assertThat(dt.getLong(ChronoField.MILLI_OF_SECOND)).isEqualTo(123);
   }
 
   private <A> scala.collection.immutable.List<A> toScalaList(java.util.List<A> list)  {

@@ -19,17 +19,17 @@
 
 #import(java.util.UUID)
 
-#import(com.datastax.driver.core.utils.UUIDs)
+#import(com.datastax.oss.driver.api.core.uuid.Uuids)
 
-<%@ val basicCommandsId: UUID = UUIDs.random() %>
-<%@ val schemaDiscoveryId: UUID = UUIDs.random() %>
-<%@ val queryParamsId: UUID = UUIDs.random() %>
-<%@ val preparedStatementsId: UUID = UUIDs.random() %>
-<%@ val dynamicFormsId: UUID = UUIDs.random() %>
-<%@ val configurationId: UUID = UUIDs.random() %>
-<%@ val sharedStatesId: UUID = UUIDs.random() %>
-<%@ val changelogId: UUID = UUIDs.random() %>
-<%@ val contactsId: UUID = UUIDs.random() %>
+<%@ val basicCommandsId: UUID = Uuids.random() %>
+<%@ val schemaDiscoveryId: UUID = Uuids.random() %>
+<%@ val queryParamsId: UUID = Uuids.random() %>
+<%@ val preparedStatementsId: UUID = Uuids.random() %>
+<%@ val dynamicFormsId: UUID = Uuids.random() %>
+<%@ val configurationId: UUID = Uuids.random() %>
+<%@ val sharedStatesId: UUID = Uuids.random() %>
+<%@ val changelogId: UUID = Uuids.random() %>
+<%@ val contactsId: UUID = Uuids.random() %>
 
 <br/>
 <br/>
@@ -463,11 +463,6 @@
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td>Retry Policy</td>
-                                    <td><strong>@retryPolicy=<em>value</em></strong></td>
-                                    <td>Apply the given retry policy to all queries in the paragraph</td>
-                                </tr>
-                                <tr>
                                     <td>Fetch Size</td>
                                     <td><strong>@fetchSize=<em>int value</em></strong></td>
                                     <td>Apply the given fetch size to all queries in the paragraph</td>
@@ -505,15 +500,6 @@
                                 <tr>
                                     <td>Timestamp</td>
                                     <td>Any long value</td>
-                                </tr>
-                                <tr>
-                                    <td>Retry Policy</td>
-                                    <td>
-                                        <strong>
-                                            DEFAULT, DOWNGRADING_CONSISTENCY, FALLTHROUGH, LOGGING_DEFAULT,
-                                            LOGGING_DOWNGRADING, LOGGING_FALLTHROUGH
-                                        </strong>
-                                    </td>
                                 </tr>
                                 <tr>
                                     <td>Fetch Size</td>
