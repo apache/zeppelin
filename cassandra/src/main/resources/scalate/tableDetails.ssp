@@ -44,7 +44,7 @@
                             <i class="glyphicon glyphicon-fullscreen" title="Partition Key"/>
                         </td>
                         <td class="col-md-4">${column.name}</td>
-                        <td class="col-md-4">${column.dataType}</td>
+                        <td class="col-md-4">${column.dataType.asCql(true,true)}</td>
                     </tr>
                         #case(StaticColumn)
                     <tr class="warning">
@@ -52,7 +52,7 @@
                             <i class="glyphicon glyphicon-pushpin" title="Static Column"/>
                         </td>
                         <td class="col-md-4">${column.name}</td>
-                        <td class="col-md-4">${column.dataType}</td>
+                        <td class="col-md-4">${column.dataType.asCql(true,true)}</td>
                     </tr>
                         #case(ClusteringColumn(ASC))
                     <tr class="success">
@@ -62,7 +62,7 @@
                             <i class="glyphicon glyphicon-sort-by-attributes" title="Sort ASC"/>
                         </td>
                         <td class="col-md-4">${column.name}</td>
-                        <td class="col-md-4">${column.dataType}</td>
+                        <td class="col-md-4">${column.dataType.asCql(true,true)}</td>
                     </tr>
                         #case(ClusteringColumn(DESC))
                     <tr class="success">
@@ -72,13 +72,13 @@
                             <i class="glyphicon glyphicon-sort-by-attributes-alt" title="Sort DESC"/>
                         </td>
                         <td class="col-md-4">${column.name}</td>
-                        <td class="col-md-4">${column.dataType}</td>
+                        <td class="col-md-4">${column.dataType.asCql(true,true)}</td>
                     </tr>
                         #otherwise
                     <tr>
                         <td class="col-md-4"></td>
                         <td class="col-md-4">${column.name}</td>
-                        <td class="col-md-4">${column.dataType}</td>
+                        <td class="col-md-4">${column.dataType.asCql(true,true)}</td>
                     </tr>
                         #end
                     #end

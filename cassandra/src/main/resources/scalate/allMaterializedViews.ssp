@@ -18,7 +18,7 @@
 --%>
 #import(org.apache.zeppelin.cassandra.MetaDataHierarchy._)
 #import(java.util.UUID)
-<%@ val allMVs: Map[(UUID,String),List[MaterializedViewSummary]] %>
+<%@ val allMVs: Map[(UUID,String),Seq[MaterializedViewSummary]] %>
 <div class="container">
 
     <div class="row">
