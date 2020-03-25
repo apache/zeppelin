@@ -16,18 +16,15 @@
  */
 package org.apache.zeppelin.cassandra
 
-import java.text.SimpleDateFormat
-import java.util.{Date}
-
+import scala.util.matching.Regex
 import scala.util.parsing.combinator._
 
 /**
  * Parser of bound values passed into @bind parameters
  */
 class BoundValuesParser extends RegexParsers with JavaTokenParsers {
-
-  val STANDARD_DATE_PATTERN = """(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})""".r
-  val ACCURATE_DATE_PATTERN = """(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3})""".r
+  val STANDARD_DATE_PATTERN: Regex  = """(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})""".r
+  val ACCURATE_DATE_PATTERN: Regex = """(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3})""".r
 
   def value : Parser[String] = "null" | "true" | "false" | zeppelinVariable |
     map | list | set | tuple| udt |

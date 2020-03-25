@@ -18,20 +18,23 @@ package org.apache.zeppelin.cassandra
 
 import java.util.regex.Pattern
 
-import com.datastax.driver.core._
+import com.datastax.oss.driver.api.core.CqlSession
+import com.datastax.oss.driver.api.core.cql.{BatchStatement, BatchType, BoundStatement, ExecutionInfo, ResultSet, SimpleStatement, Statement}
+import com.datastax.oss.driver.api.core.metadata.Metadata
+import com.datastax.oss.driver.api.core.metadata.schema.{AggregateMetadata, FunctionMetadata, KeyspaceMetadata, ViewMetadata}
 import org.apache.zeppelin.cassandra.TextBlockHierarchy._
 import org.apache.zeppelin.interpreter.InterpreterException
 import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConverters._
+import scala.compat.java8.OptionConverters._
 
 /**
  * Enhance the Java driver session
  * with special statements
  * to describe schema
  */
-class EnhancedSession(val session: Session) {
-
+class EnhancedSession(val session: CqlSession) {
   val clusterDisplay = DisplaySystem.ClusterDisplay
   val keyspaceDisplay = DisplaySystem.KeyspaceDisplay
   val tableDisplay = DisplaySystem.TableDisplay
@@ -41,7 +44,8 @@ class EnhancedSession(val session: Session) {
   val materializedViewDisplay = DisplaySystem.MaterializedViewDisplay
   val helpDisplay = DisplaySystem.HelpDisplay
   private val noResultDisplay = DisplaySystem.NoResultDisplay
-  private val DEFAULT_CHECK_TIME = 200 // half second
+  private val DEFAULT_CHECK_TIME: Int = 200
+  private val MAX_SCHEMA_AGREEMENT_WAIT: Int = 120000 // 120 seconds
   private val LOGGER = LoggerFactory.getLogger(classOf[EnhancedSession])
 
   val HTML_MAGIC = "%html \n"
@@ -53,130 +57,132 @@ class EnhancedSession(val session: Session) {
   }
 
   private def execute(describeCluster: DescribeClusterCmd): String = {
-    val metaData = session.getCluster.getMetadata
+    val metaData = session.getMetadata
     HTML_MAGIC + clusterDisplay.formatClusterOnly(describeCluster.statement, metaData)
   }
 
   private def execute(describeKeyspaces: DescribeKeyspacesCmd): String = {
-    val metaData = session.getCluster.getMetadata
+    val metaData = session.getMetadata
     HTML_MAGIC + clusterDisplay.formatClusterContent(describeKeyspaces.statement, metaData)
   }
 
   private def execute(describeTables: DescribeTablesCmd): String = {
-    val metadata: Metadata = session.getCluster.getMetadata
+    val metadata = session.getMetadata
     HTML_MAGIC + clusterDisplay.formatAllTables(describeTables.statement,metadata)
   }
 
   private def execute(describeKeyspace: DescribeKeyspaceCmd): String = {
     val keyspace: String = describeKeyspace.keyspace
-    val metadata: Option[KeyspaceMetadata] = Option(session.getCluster.getMetadata.getKeyspace(keyspace))
+    val metadata: Option[KeyspaceMetadata] = session.getMetadata.getKeyspace(keyspace).asScala
     metadata match {
       case Some(ksMeta) => HTML_MAGIC + keyspaceDisplay.formatKeyspaceContent(describeKeyspace.statement, ksMeta,
-        session.getCluster.getConfiguration.getCodecRegistry)
+        session.getContext.getCodecRegistry)
       case None => throw new InterpreterException(s"Cannot find keyspace $keyspace")
     }
   }
 
-  private def execute(describeTable: DescribeTableCmd): String = {
-    val metaData = session.getCluster.getMetadata
-    val tableName: String = describeTable.table
-    val keyspace: String = describeTable.keyspace.orElse(Option(session.getLoggedKeyspace)).getOrElse("system")
+  private def getKeySpace(session: CqlSession): String = {
+    session.getKeyspace.asScala.map(_.asCql(true)).getOrElse("system")
+  }
 
-    Option(metaData.getKeyspace(keyspace)).flatMap(ks => Option(ks.getTable(tableName))) match {
-      case Some(tableMeta) => HTML_MAGIC + tableDisplay.format(describeTable.statement, tableMeta, true)
+  private def execute(describeTable: DescribeTableCmd): String = {
+    val metaData = session.getMetadata
+    val tableName: String = describeTable.table
+    val keyspace: String = describeTable.keyspace.getOrElse(getKeySpace(session))
+
+    metaData.getKeyspace(keyspace).asScala.flatMap(ks => ks.getTable(tableName).asScala) match {
+      case Some(tableMeta) => HTML_MAGIC + tableDisplay.format(describeTable.statement, tableMeta, withCaption = true)
       case None => throw new InterpreterException(s"Cannot find table $keyspace.$tableName")
     }
   }
 
   private def execute(describeUDT: DescribeTypeCmd): String = {
-    val metaData = session.getCluster.getMetadata
-    val keyspace: String = describeUDT.keyspace.orElse(Option(session.getLoggedKeyspace)).getOrElse("system")
+    val metaData = session.getMetadata
+    val keyspace: String = describeUDT.keyspace.getOrElse(getKeySpace(session))
     val udtName: String = describeUDT.udtName
 
-    Option(metaData.getKeyspace(keyspace)).flatMap(ks => Option(ks.getUserType(udtName))) match {
-      case Some(userType) => HTML_MAGIC + udtDisplay.format(describeUDT.statement, userType, true)
+    metaData.getKeyspace(keyspace).asScala.flatMap(ks => ks.getUserDefinedType(udtName).asScala) match {
+      case Some(userType) => HTML_MAGIC + udtDisplay.format(describeUDT.statement, userType, withCaption = true)
       case None => throw new InterpreterException(s"Cannot find type $keyspace.$udtName")
     }
   }
 
   private def execute(describeUDTs: DescribeTypesCmd): String = {
-    val metadata: Metadata = session.getCluster.getMetadata
+    val metadata: Metadata = session.getMetadata
     HTML_MAGIC + clusterDisplay.formatAllUDTs(describeUDTs.statement, metadata)
   }
 
   private def execute(describeFunction: DescribeFunctionCmd): String = {
-    val metaData = session.getCluster.getMetadata
-    val keyspaceName: String = describeFunction.keyspace.orElse(Option(session.getLoggedKeyspace)).getOrElse("system")
-    val functionName: String = describeFunction.function;
+    val metaData = session.getMetadata
+    val keyspaceName: String = describeFunction.keyspace.getOrElse(getKeySpace(session))
+    val functionName: String = describeFunction.function
 
-    Option(metaData.getKeyspace(keyspaceName)) match {
-      case Some(keyspace) => {
-        val functionMetas: List[FunctionMetadata] = keyspace.getFunctions.asScala.toList
-          .filter(func => func.getSimpleName.toLowerCase == functionName.toLowerCase)
+    metaData.getKeyspace(keyspaceName).asScala match {
+      case Some(keyspace) =>
+        val functionMetas: Seq[FunctionMetadata] = keyspace.getFunctions.asScala.toSeq
+          .filter { case (sig, _) => sig.getName.asCql(true).toLowerCase == functionName.toLowerCase}
+          .map(_._2)
 
         if(functionMetas.isEmpty) {
-          throw new InterpreterException(s"Cannot find function ${keyspaceName}.$functionName")
-        } else {
-          HTML_MAGIC + functionDisplay.format(describeFunction.statement, functionMetas, true)
+          throw new InterpreterException(s"Cannot find function $keyspaceName.$functionName")
         }
-      }
-      case None => throw new InterpreterException(s"Cannot find function ${keyspaceName}.$functionName")
+        HTML_MAGIC + functionDisplay.format(describeFunction.statement, functionMetas, withCaption = true)
+
+      case None =>
+        throw new InterpreterException(s"Cannot find function $keyspaceName.$functionName")
     }
   }
 
   private def execute(describeFunctions: DescribeFunctionsCmd): String = {
-    val metadata: Metadata = session.getCluster.getMetadata
+    val metadata: Metadata = session.getMetadata
     HTML_MAGIC + clusterDisplay.formatAllFunctions(describeFunctions.statement, metadata)
   }
 
   private def execute(describeAggregate: DescribeAggregateCmd): String = {
-    val metaData = session.getCluster.getMetadata
-    val keyspaceName: String = describeAggregate.keyspace.orElse(Option(session.getLoggedKeyspace)).getOrElse("system")
-    val aggregateName: String = describeAggregate.aggregate;
+    val metaData = session.getMetadata
+    val keyspaceName: String = describeAggregate.keyspace.getOrElse(getKeySpace(session))
+    val aggregateName: String = describeAggregate.aggregate
 
-    Option(metaData.getKeyspace(keyspaceName)) match {
-      case Some(keyspace) => {
-        val aggMetas: List[AggregateMetadata] = keyspace.getAggregates.asScala.toList
-          .filter(agg => agg.getSimpleName.toLowerCase == aggregateName.toLowerCase)
+    metaData.getKeyspace(keyspaceName).asScala match {
+      case Some(keyspace) =>
+        val aggMetas: Seq[AggregateMetadata] = keyspace.getAggregates.asScala.toSeq
+          .filter { case (sig, _) => sig.getName.asCql(true).toLowerCase == aggregateName.toLowerCase }
+          .map(_._2)
 
         if(aggMetas.isEmpty) {
-          throw new InterpreterException(s"Cannot find aggregate ${keyspaceName}.$aggregateName")
-        } else {
-          HTML_MAGIC + aggregateDisplay.format(describeAggregate.statement, aggMetas, true,
-            session
-            .getCluster
-            .getConfiguration
-            .getCodecRegistry)
+          throw new InterpreterException(s"Cannot find aggregate $keyspaceName.$aggregateName")
         }
-      }
-      case None => throw new InterpreterException(s"Cannot find aggregate ${keyspaceName}.$aggregateName")
+        HTML_MAGIC + aggregateDisplay.format(describeAggregate.statement, aggMetas, withCaption = true,
+          session.getContext.getCodecRegistry)
+
+      case None => throw new InterpreterException(s"Cannot find aggregate $keyspaceName.$aggregateName")
     }
   }
 
   private def execute(describeAggregates: DescribeAggregatesCmd): String = {
-    val metadata: Metadata = session.getCluster.getMetadata
+    val metadata: Metadata = session.getMetadata
     HTML_MAGIC + clusterDisplay.formatAllAggregates(describeAggregates.statement, metadata)
   }
 
   private def execute(describeMV: DescribeMaterializedViewCmd): String = {
-    val metaData = session.getCluster.getMetadata
-    val keyspaceName: String = describeMV.keyspace.orElse(Option(session.getLoggedKeyspace)).getOrElse("system")
+    val metaData = session.getMetadata
+    val keyspaceName: String = describeMV.keyspace.getOrElse(getKeySpace(session))
     val viewName: String = describeMV.view
 
-    Option(metaData.getKeyspace(keyspaceName)) match {
-      case Some(keyspace) => {
-        val viewMeta: Option[MaterializedViewMetadata] = Option(keyspace.getMaterializedView(viewName))
+    metaData.getKeyspace(keyspaceName).asScala match {
+      case Some(keyspace) =>
+        val viewMeta: Option[ViewMetadata] = keyspace.getView(viewName).asScala
         viewMeta match {
-          case Some(vMeta) => HTML_MAGIC + materializedViewDisplay.format(describeMV.statement, vMeta, true)
-          case None => throw new InterpreterException(s"Cannot find materialized view ${keyspaceName}.$viewName")
+          case Some(vMeta) => HTML_MAGIC + materializedViewDisplay.format(describeMV.statement, vMeta, withCaption = true)
+          case None => throw new InterpreterException(s"Cannot find materialized view $keyspaceName.$viewName")
         }
-      }
-      case None => throw new InterpreterException(s"Cannot find materialized view ${keyspaceName}.$viewName")
+
+      case None => throw new InterpreterException(s"Cannot find materialized view $keyspaceName.$viewName")
     }
   }
 
   private def execute(describeMVs: DescribeMaterializedViewsCmd): String = {
-    val metadata: Metadata = session.getCluster.getMetadata
+    val metadata: Metadata = session.getMetadata
     HTML_MAGIC + clusterDisplay.formatAllMaterializedViews(describeMVs.statement, metadata)
   }
 
@@ -184,38 +190,45 @@ class EnhancedSession(val session: Session) {
     HTML_MAGIC + helpDisplay.formatHelp()
   }
 
-
-  private def execute(st: Statement): Any = {
-    val rs = session.execute(st)
+  private def executeStatement[StatementT <: Statement[StatementT]](st: StatementT): Any = {
+    val rs: ResultSet = session.execute(st)
     if (EnhancedSession.isDDLStatement(st)) {
       if (!rs.getExecutionInfo.isSchemaInAgreement) {
-        val metadata = session.getCluster.getMetadata
-        while(!metadata.checkSchemaAgreement) {
+        val startTime = System.currentTimeMillis()
+        while(!session.checkSchemaAgreement()) {
           LOGGER.info("Schema is still not in agreement, waiting...")
-          Thread.sleep(DEFAULT_CHECK_TIME)
+          try {
+            Thread.sleep(DEFAULT_CHECK_TIME)
+          } catch {
+            case x: InterruptedException => None
+          }
+          val sinceStart = (System.currentTimeMillis() - startTime) / 1000
+          if (sinceStart > MAX_SCHEMA_AGREEMENT_WAIT) {
+            throw new RuntimeException(s"Can't achieve schema agreement after $sinceStart seconds")
+          }
         }
       }
     }
     rs
   }
 
-  def execute(st: Any): Any = {
+  def execute[StatementT <: Statement[StatementT]](st: Any): Any = {
     st match {
-      case x:DescribeClusterCmd => execute(x)
-      case x:DescribeKeyspaceCmd => execute(x)
-      case x:DescribeKeyspacesCmd => execute(x)
-      case x:DescribeTableCmd => execute(x)
-      case x:DescribeTablesCmd => execute(x)
-      case x:DescribeTypeCmd => execute(x)
-      case x:DescribeTypesCmd => execute(x)
-      case x:DescribeFunctionCmd => execute(x)
-      case x:DescribeFunctionsCmd => execute(x)
-      case x:DescribeAggregateCmd => execute(x)
-      case x:DescribeAggregatesCmd => execute(x)
-      case x:DescribeMaterializedViewCmd => execute(x)
-      case x:DescribeMaterializedViewsCmd => execute(x)
-      case x:HelpCmd => execute(x)
-      case x:Statement => execute(x)
+      case x: DescribeClusterCmd => execute(x)
+      case x: DescribeKeyspaceCmd => execute(x)
+      case x: DescribeKeyspacesCmd => execute(x)
+      case x: DescribeTableCmd => execute(x)
+      case x: DescribeTablesCmd => execute(x)
+      case x: DescribeTypeCmd => execute(x)
+      case x: DescribeTypesCmd => execute(x)
+      case x: DescribeFunctionCmd => execute(x)
+      case x: DescribeFunctionsCmd => execute(x)
+      case x: DescribeAggregateCmd => execute(x)
+      case x: DescribeAggregatesCmd => execute(x)
+      case x: DescribeMaterializedViewCmd => execute(x)
+      case x: DescribeMaterializedViewsCmd => execute(x)
+      case x: HelpCmd => execute(x)
+      case x: StatementT => executeStatement(x)
       case _ => throw new InterpreterException(s"Cannot execute statement '$st' of type ${st.getClass}")
     }
   }
@@ -228,16 +241,44 @@ object EnhancedSession {
     DDL_REGEX.matcher(query.trim).matches()
   }
 
-  def isDDLStatement(st: Statement): Boolean = {
+  def isDDLStatement[StatementT <: Statement[StatementT]](st: StatementT): Boolean = {
     st match {
-      case x:BoundStatement =>
-        isDDLStatement(x.preparedStatement.getQueryString)
-      case x:BatchStatement =>
-        x.getStatements.asScala.seq.exists(isDDLStatement)
-      case x:RegularStatement =>
-        isDDLStatement(x.getQueryString)
+      case x: BoundStatement =>
+        isDDLStatement(x.getPreparedStatement.getQuery)
+      case x: BatchStatement =>
+        x.iterator().asScala.toSeq.exists {
+          case t: BoundStatement => isDDLStatement(t.getPreparedStatement.getQuery)
+          case t: SimpleStatement => isDDLStatement(t.getQuery)
+        }
+      case x: SimpleStatement =>
+        isDDLStatement(x.getQuery)
       case _ => // only should be for StatementWrapper
         true
     }
   }
+
+  def getCqlStatement[StatementT <: Statement[StatementT]](st: StatementT): String = {
+    st match {
+      case x: BoundStatement =>
+        x.getPreparedStatement.getQuery
+      case x: BatchStatement =>
+        val batchType = x.getBatchType
+        val timestamp = x.getQueryTimestamp
+        val timestampStr = if (timestamp == Long.MinValue) "" else " USING TIMESTAMP " + timestamp
+        val batchTypeStr = if (batchType == BatchType.COUNTER) "COUNTER "
+        else if (batchType == BatchType.UNLOGGED) "UNLOGGED "
+        else ""
+
+        "BEGIN " +  batchTypeStr + "BATCH" + timestampStr + "\n"
+          x.iterator().asScala.toSeq.map {
+            case t: BoundStatement => t.getPreparedStatement.getQuery
+            case t: SimpleStatement => t.getQuery
+          }.mkString("\n") + "\nAPPLY BATCH;"
+      case x: SimpleStatement =>
+        x.getQuery
+      case _ =>
+        ""
+    }
+  }
+
 }

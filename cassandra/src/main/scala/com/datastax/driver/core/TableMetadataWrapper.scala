@@ -16,8 +16,10 @@
  */
 package com.datastax.driver.core
 
+import com.datastax.oss.driver.api.core.metadata.schema.TableMetadata
+
 case class TableMetadataWrapper(val meta: TableMetadata) {
     def exportTableOnlyAsString(): String = {
-      meta.asCQLQuery(true)
+      meta.describe(true)
     }
 }

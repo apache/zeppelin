@@ -17,7 +17,7 @@
 
 package org.apache.zeppelin.cassandra
 
-import com.datastax.driver.core.{BatchStatement, SimpleStatement}
+import com.datastax.oss.driver.api.core.cql.{BatchStatement, BatchType, SimpleStatement}
 import org.scalatest.FlatSpec
 
 class EnhancedSessionTest extends FlatSpec {
@@ -48,24 +48,24 @@ class EnhancedSessionTest extends FlatSpec {
 
   it should "be detected as DDL for create in simple statement" in {
     assertResult(true) {
-      EnhancedSession.isDDLStatement(new SimpleStatement("create TABLE if not exists test.test(id int primary key);"))
+      EnhancedSession.isDDLStatement(SimpleStatement.newInstance("create TABLE if not exists test.test(id int primary key);"))
     }
   }
 
   it should "be detected as DDL for create in batch statement" in {
-    val batch = new BatchStatement
-    batch.add(new SimpleStatement("create TABLE if not exists test.test(id int primary key);"))
-    batch.add(new SimpleStatement("insert into test.test(id) values(1);"))
+    val batch = BatchStatement.newInstance(BatchType.UNLOGGED)
+      .add(SimpleStatement.newInstance("create TABLE if not exists test.test(id int primary key);"))
+      .add(SimpleStatement.newInstance("insert into test.test(id) values(1);"))
     assertResult(true) {
       EnhancedSession.isDDLStatement(batch)
     }
   }
 
   it should "not be detected as DDL for only inserts in batch statement" in {
-    val batch = new BatchStatement
-    batch.add(new SimpleStatement("insert into test.test(id) values(1);"))
-    batch.add(new SimpleStatement("insert into test.test(id) values(2);"))
-    batch.add(new SimpleStatement("insert into test.test(id) values(3);"))
+    val batch = BatchStatement.newInstance(BatchType.LOGGED)
+      .add(SimpleStatement.newInstance("insert into test.test(id) values(1);"))
+      .add(SimpleStatement.newInstance("insert into test.test(id) values(2);"))
+      .add(SimpleStatement.newInstance("insert into test.test(id) values(3);"))
     assertResult(false) {
       EnhancedSession.isDDLStatement(batch)
     }
