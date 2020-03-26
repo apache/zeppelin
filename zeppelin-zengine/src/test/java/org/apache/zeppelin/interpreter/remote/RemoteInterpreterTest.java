@@ -188,6 +188,41 @@ public class RemoteInterpreterTest extends AbstractInterpreterTest {
   }
 
   @Test
+  public void testMaxRunningProcess() throws InterpreterException, IOException {
+    try {
+      System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_PROCESS_MAX.getVarName(), "2");
+      interpreterSetting.getOption().setPerUser(InterpreterOption.ISOLATED);
+
+      Interpreter interpreter1 = interpreterSetting.getDefaultInterpreter("user1", "note1");
+      Interpreter interpreter2 = interpreterSetting.getDefaultInterpreter("user2", "note1");
+      Interpreter interpreter3 = interpreterSetting.getDefaultInterpreter("user3", "note1");
+      assertTrue(interpreter1 instanceof RemoteInterpreter);
+      RemoteInterpreter remoteInterpreter1 = (RemoteInterpreter) interpreter1;
+      assertTrue(interpreter2 instanceof RemoteInterpreter);
+      RemoteInterpreter remoteInterpreter2 = (RemoteInterpreter) interpreter2;
+      assertTrue(interpreter3 instanceof RemoteInterpreter);
+      RemoteInterpreter remoteInterpreter3 = (RemoteInterpreter) interpreter3;
+
+      assertNotEquals(interpreter1.getScheduler(), interpreter2.getScheduler());
+
+      // running 2 interpreter processes.
+      InterpreterContext context1 = createDummyInterpreterContext();
+      assertEquals("hello", remoteInterpreter1.interpret("hello", context1).message().get(0).getData());
+      assertEquals("hello", remoteInterpreter2.interpret("hello", context1).message().get(0).getData());
+
+      // run third interpreter process which will exceed the limit.
+      try {
+        remoteInterpreter3.interpret("hello", context1);
+        fail("Should fail to launch the third interpreter process");
+      } catch (InterpreterException e) {
+        assertTrue(e.getMessage().contains("You have reached the max number of running interpreter process: 2"));
+      }
+    } finally {
+      System.clearProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_PROCESS_MAX.getVarName());
+    }
+  }
+
+  @Test
   public void testExecuteIncorrectPrecode() throws TTransportException, IOException, InterpreterException {
     interpreterSetting.getOption().setPerUser(InterpreterOption.SHARED);
     interpreterSetting.setProperty("zeppelin.SleepInterpreter.precode", "fail test");

@@ -718,4 +718,10 @@
   Disable it can save lots of memory</description>
 </property>
 
+<property>
+  <name>zeppelin.interpreter.process.max</name>
+  <value>10</value>
+  <description>The max number of interpreter process running in zeppelin machine.</description>
+</property>
+
 </configuration>

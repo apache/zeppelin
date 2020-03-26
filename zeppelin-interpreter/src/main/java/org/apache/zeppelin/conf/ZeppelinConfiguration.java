@@ -998,7 +998,8 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_SEARCH_INDEX_REBUILD("zeppelin.search.index.rebuild", false),
     ZEPPELIN_SEARCH_USE_DISK("zeppelin.search.use.disk", true),
     ZEPPELIN_SEARCH_INDEX_PATH("zeppelin.search.index.path", "/tmp/zeppelin-index"),
-    ZEPPELIN_JOBMANAGER_ENABLE("zeppelin.jobmanager.enable", true);
+    ZEPPELIN_JOBMANAGER_ENABLE("zeppelin.jobmanager.enable", true),
+    ZEPPELIN_INTERPRETER_PROCESS_MAX("zeppelin.interpreter.process.max", 10);
 
     private String varName;
     @SuppressWarnings("rawtypes")

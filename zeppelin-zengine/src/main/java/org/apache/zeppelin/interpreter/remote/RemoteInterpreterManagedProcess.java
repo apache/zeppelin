@@ -23,6 +23,7 @@ import org.apache.commons.exec.ExecuteException;
 import org.apache.commons.exec.environment.EnvironmentUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.yarn.util.ConverterUtils;
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.YarnAppMonitor;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService;
 import org.apache.zeppelin.interpreter.util.ProcessLauncher;
@@ -42,6 +43,9 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess {
       RemoteInterpreterManagedProcess.class);
   private static final Pattern YARN_APP_PATTER =
           Pattern.compile("Submitted application (\\w+)");
+  private static int TOTAL_RUNNING_PROCESS = 0;
+  private static int MAX_RUNNING_PROCESS = ZeppelinConfiguration.create()
+          .getInt(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_PROCESS_MAX);
 
   private final String interpreterRunner;
   private final int zeppelinServerRPCPort;
@@ -96,6 +100,11 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess {
 
   @Override
   public void start(String userName) throws IOException {
+
+    if (TOTAL_RUNNING_PROCESS >= MAX_RUNNING_PROCESS) {
+      throw new IOException("You have reached the max number of running interpreter process: "
+              + MAX_RUNNING_PROCESS);
+    }
     // start server process
     CommandLine cmdLine = CommandLine.parse(interpreterRunner);
     cmdLine.addArgument("-d", false);
@@ -252,6 +261,7 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess {
 
     @Override
     public void onProcessRunning() {
+      TOTAL_RUNNING_PROCESS ++;
       super.onProcessRunning();
       synchronized(this) {
         notify();
@@ -260,6 +270,12 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess {
 
     @Override
     public void onProcessComplete(int exitValue) {
+      TOTAL_RUNNING_PROCESS --;
+      // check TOTAL_RUNNING_PROCESS just in case.
+      if (TOTAL_RUNNING_PROCESS < 0) {
+        LOGGER.error("TOTAL_RUNNING_PROCESS is less than 0.");
+        TOTAL_RUNNING_PROCESS = 0;
+      }
       LOGGER.warn("Process is exited with exit value " + exitValue);
       if (env.getOrDefault("ZEPPELIN_SPARK_YARN_CLUSTER", "false").equals("false")) {
         // don't call notify in yarn-cluster mode
@@ -278,6 +294,12 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess {
 
     @Override
     public void onProcessFailed(ExecuteException e) {
+      TOTAL_RUNNING_PROCESS --;
+      // check TOTAL_RUNNING_PROCESS just in case.
+      if (TOTAL_RUNNING_PROCESS < 0) {
+        LOGGER.error("TOTAL_RUNNING_PROCESS is less than 0.");
+        TOTAL_RUNNING_PROCESS = 0;
+      }
       super.onProcessFailed(e);
       synchronized (this) {
         notify();
