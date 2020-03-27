@@ -20,7 +20,9 @@ limitations under the License.
 
 
 # Apache Zeppelin Documentation
- 
+  * [Zeppelin 0.9.0-preview1](docs/0.9.0-preview1)
+  * [Zeppelin 0.8.2](docs/0.8.2)
+  * [Zeppelin 0.8.1](docs/0.8.1)
   * [Zeppelin 0.8.0](docs/0.8.0)
   * [Zeppelin 0.7.3](docs/0.7.3)
   * [Zeppelin 0.7.2](docs/0.7.2)
