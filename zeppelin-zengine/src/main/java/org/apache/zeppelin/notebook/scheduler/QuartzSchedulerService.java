@@ -55,7 +55,7 @@ public class QuartzSchedulerService implements SchedulerService {
       throws SchedulerException {
     this.zeppelinConfiguration = zeppelinConfiguration;
     this.notebook = notebook;
-    this.scheduler = new StdSchedulerFactory().getScheduler();
+    this.scheduler = getScheduler();
     this.scheduler.start();
 
     // Do in a separated thread because there may be many notes,
@@ -83,6 +83,13 @@ public class QuartzSchedulerService implements SchedulerService {
     loadingNotesThread.setName("Init CronJob Thread");
     loadingNotesThread.setDaemon(true);
     loadingNotesThread.start();
+  }
+
+  private Scheduler getScheduler() throws SchedulerException {
+    // Make sure to not check for Quartz update since this leaks information about running process
+    // http://www.quartz-scheduler.org/documentation/2.4.0-SNAPSHOT/best-practices.html#skip-update-check
+    System.setProperty(StdSchedulerFactory.PROP_SCHED_SKIP_UPDATE_CHECK, "true");
+    return new StdSchedulerFactory().getScheduler();
   }
 
   /**
