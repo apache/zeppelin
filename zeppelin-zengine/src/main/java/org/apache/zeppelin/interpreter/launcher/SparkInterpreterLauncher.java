@@ -63,7 +63,7 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
     Properties sparkProperties = new Properties();
     String sparkMaster = getSparkMaster(properties);
     for (String key : properties.stringPropertyNames()) {
-      if (RemoteInterpreterUtils.isEnvString(key)) {
+      if (RemoteInterpreterUtils.isEnvString(key) && !StringUtils.isBlank(properties.getProperty(key))) {
         env.put(key, properties.getProperty(key));
       }
       if (isSparkConf(key, properties.getProperty(key))) {
@@ -167,7 +167,7 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
     // we also fallback to zeppelin-env.sh if it is not specified in interpreter setting.
     for (String envName : new String[]{"SPARK_HOME", "SPARK_CONF_DIR", "HADOOP_CONF_DIR"})  {
       String envValue = getEnv(envName);
-      if (envValue != null) {
+      if (!StringUtils.isBlank(envValue)) {
         env.put(envName, envValue);
       }
     }
