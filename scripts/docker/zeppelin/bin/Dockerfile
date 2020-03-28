@@ -75,7 +75,7 @@ RUN echo "$LOG_TAG Install python related packages" && \
     conda info -a && \
     conda config --add channels conda-forge && \
     pip install -q pycodestyle==2.5.0 && \
-    pip install -q numpy==1.17.3 pandas==0.25.0 scipy==1.3.1 grpcio==1.19.0 bkzep==0.6.1 hvplot==0.5.2 protobuf==3.10.0 pandasql==0.7.3 ipython==7.8.0 matplotlib==3.0.3 ipykernel==5.1.2 jupyter_client==5.3.4 bokeh==1.3.4 panel==0.6.0 holoviews==1.12.3 pycodestyle==2.5.0 apache_beam==2.15.0
+    pip install -q numpy==1.17.3 pandas==0.25.0 scipy==1.3.1 grpcio==1.19.0 bkzep==0.6.1 hvplot==0.5.2 protobuf==3.10.0 pandasql==0.7.3 ipython==7.8.0 matplotlib==3.0.3 ipykernel==5.1.2 jupyter_client==5.3.4 bokeh==1.3.4 panel==0.6.0 holoviews==1.12.3 seaborn==0.9.0 plotnine==0.5.1 intake==0.5.3 intake-parquet=0.2.2 altair=3.2.0 pycodestyle==2.5.0 apache_beam==2.15.0
 
 RUN echo "$LOG_TAG Install R related packages" && \
     echo "PATH: $PATH" && \
