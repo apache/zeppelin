@@ -50,8 +50,6 @@
     <xml.apis.version>1.4.01</xml.apis.version>
     <powermock.version>1.6.6</powermock.version>
 
-    <!--plugin library versions-->
-    <plugin.failsafe.version>2.16</plugin.failsafe.version>
   </properties>
 
   <dependencies>
@@ -352,7 +350,6 @@
     <plugins>
       <plugin>
         <artifactId>maven-failsafe-plugin</artifactId>
-        <version>${plugin.failsafe.version}</version>
         <executions>
           <execution>
             <goals>
@@ -368,7 +365,6 @@
 
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>${plugin.surefire.version}</version>
         <configuration combine.children="append">
           <argLine>-Xmx2g -Xms1g -Dfile.encoding=UTF-8</argLine>
           <excludes>
@@ -384,7 +380,6 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
-        <version>3.0.2</version>
         <executions>
           <execution>
             <goals>

@@ -40,8 +40,6 @@
         <datanucleus.apijdo.version>3.2.6</datanucleus.apijdo.version>
         <datanucleus.core.version>3.2.10</datanucleus.core.version>
 
-        <!--plugin versions-->
-        <plugin.scala.version>2.15.2</plugin.scala.version>
         <!-- spark versions -->
         <spark.version>2.4.4</spark.version>
         <spark.scala.version>2.11.12</spark.scala.version>
@@ -109,14 +107,12 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-clean-plugin</artifactId>
-                <version>${plugin.clean.version}</version>
                 <configuration combine.self="override"></configuration>
             </plugin>
 
             <plugin>
                 <groupId>net.alchim31.maven</groupId>
                 <artifactId>scala-maven-plugin</artifactId>
-                <version>3.2.2</version>
                 <executions>
                     <execution>
                         <id>eclipse-add-source</id>

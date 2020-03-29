@@ -158,7 +158,6 @@
       <plugin>
         <groupId>org.scala-tools</groupId>
         <artifactId>maven-scala-plugin</artifactId>
-        <version>${plugin.scala.version}</version>
         <executions>
           <execution>
             <id>compile</id>
