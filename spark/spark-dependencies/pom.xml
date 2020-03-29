@@ -172,15 +172,8 @@
       </plugin>
 
       <plugin>
-        <groupId>com.googlecode.maven-download-plugin</groupId>
-        <artifactId>download-maven-plugin</artifactId>
-        <version>${plugin.download.version}</version>
-      </plugin>
-
-      <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
-        <version>${plugin.shade.version}</version>
         <configuration>
           <filters>
             <filter>
