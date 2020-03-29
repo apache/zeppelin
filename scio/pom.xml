@@ -42,10 +42,6 @@
     <scio.scala.version>${scala.2.10.version}</scio.scala.version>
     <scio.scala.binary.version>2.10</scio.scala.binary.version>
 
-    <!--plugin versions-->
-    <plugin.scala.version>2.15.2</plugin.scala.version>
-    <plugin.avro.version>1.7.7</plugin.avro.version>
-
     <!--test library versions-->
     <hamcrest.all.version>1.3</hamcrest.all.version>
   </properties>
@@ -138,7 +134,6 @@
       <plugin>
         <groupId>org.scala-tools</groupId>
         <artifactId>maven-scala-plugin</artifactId>
-        <version>${plugin.scala.version}</version>
         <configuration>
           <scalaVersion>${scio.scala.version}</scalaVersion>
         </configuration>
@@ -170,7 +165,6 @@
       <plugin>
         <groupId>org.apache.avro</groupId>
         <artifactId>avro-maven-plugin</artifactId>
-        <version>${plugin.avro.version}</version>
         <executions>
           <execution>
             <phase>generate-sources</phase>
