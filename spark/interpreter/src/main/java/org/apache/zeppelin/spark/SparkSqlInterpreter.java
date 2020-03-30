@@ -112,7 +112,7 @@ public class SparkSqlInterpreter extends AbstractInterpreter {
         builder.append(ExceptionUtils.getStackTrace(e));
       } else {
         logger.error("Invocation target exception", e);
-        String msg = e.getCause().getMessage()
+        String msg = e.getMessage()
                 + "\nset zeppelin.spark.sql.stacktrace = true to see full stacktrace";
         builder.append(msg);
       }
