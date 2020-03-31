@@ -676,20 +676,23 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
         if (paragraphId != null) {
           resourceSet = resourceSet.filterByParagraphId(paragraphId);
         }
+        try{
+          for (final Resource r : resourceSet) {
+            remoteInterpreterProcess.callRemoteFunction(
+                    new RemoteInterpreterProcess.RemoteFunction<Void>() {
 
-        for (final Resource r : resourceSet) {
-          remoteInterpreterProcess.callRemoteFunction(
-              new RemoteInterpreterProcess.RemoteFunction<Void>() {
-
-                @Override
-                public Void call(RemoteInterpreterService.Client client) throws Exception {
-                  client.resourceRemove(
-                      r.getResourceId().getNoteId(),
-                      r.getResourceId().getParagraphId(),
-                      r.getResourceId().getName());
-                  return null;
-                }
-              });
+                      @Override
+                      public Void call(RemoteInterpreterService.Client client) throws Exception {
+                        client.resourceRemove(
+                                r.getResourceId().getNoteId(),
+                                r.getResourceId().getParagraphId(),
+                                r.getResourceId().getName());
+                        return null;
+                      }
+                    });
+          }
+        }catch (Exception e){
+          LOGGER.error(e.getMessage());
         }
       }
     }
