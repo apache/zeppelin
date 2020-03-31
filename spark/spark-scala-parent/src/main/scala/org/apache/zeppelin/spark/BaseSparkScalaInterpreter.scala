@@ -237,6 +237,13 @@ abstract class BaseSparkScalaInterpreter(val conf: SparkConf,
       case None =>
     }
 
+    val webUiUrl = properties.getProperty("zeppelin.spark.uiWebUrl");
+    if (!StringUtils.isBlank(webUiUrl)) {
+      this.sparkUrl = webUiUrl.replace("{{applicationId}}", sc.applicationId);
+    } else {
+      useYarnProxyURLIfNeeded()
+    }
+
     val hiveSiteExisted: Boolean =
       Thread.currentThread().getContextClassLoader.getResource("hive-site.xml") != null
     val hiveEnabled = conf.getBoolean("zeppelin.spark.useHiveContext", false)
@@ -306,7 +313,13 @@ abstract class BaseSparkScalaInterpreter(val conf: SparkConf,
       case Some(url) => sparkUrl = url
       case None =>
     }
-    useYarnProxyURLIfNeeded()
+
+    val webUiUrl = properties.getProperty("zeppelin.spark.uiWebUrl");
+    if (!StringUtils.isBlank(webUiUrl)) {
+      this.sparkUrl = webUiUrl.replace("{{applicationId}}", sc.applicationId);
+    } else {
+      useYarnProxyURLIfNeeded()
+    }
 
     bind("spark", sparkSession.getClass.getCanonicalName, sparkSession, List("""@transient"""))
     bind("sc", "org.apache.spark.SparkContext", sc, List("""@transient"""))
@@ -329,13 +342,8 @@ abstract class BaseSparkScalaInterpreter(val conf: SparkConf,
     } else {
       sparkShims = SparkShims.getInstance(sc.version, properties, sc)
     }
-    var webUiUrl = properties.getProperty("zeppelin.spark.uiWebUrl");
-    if (StringUtils.isBlank(webUiUrl)) {
-      webUiUrl = sparkUrl;
-    }
-    useYarnProxyURLIfNeeded()
 
-    sparkShims.setupSparkListener(sc.master, webUiUrl, InterpreterContext.get)
+    sparkShims.setupSparkListener(sc.master, sparkUrl, InterpreterContext.get)
 
     z = new SparkZeppelinContext(sc, sparkShims,
       interpreterGroup.getInterpreterHookRegistry,
