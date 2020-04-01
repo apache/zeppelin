@@ -40,10 +40,10 @@ public class FlinkInterpreterLauncher extends StandardInterpreterLauncher {
     }
     File flinkHomeFile = new File(flinkHome);
     if (!flinkHomeFile.exists()) {
-      throw new IOException(String.format("FLINK_HOME {} doesn't exist", flinkHome));
+      throw new IOException(String.format("FLINK_HOME %s doesn't exist", flinkHome));
     }
     if (flinkHomeFile.isFile()) {
-      throw new IOException(String.format("FLINK_HOME {} is a file, but should be directory",
+      throw new IOException(String.format("FLINK_HOME %s is a file, but should be directory",
               flinkHome));
     }
     envs.put("FLINK_CONF_DIR", flinkHome + "/conf");
