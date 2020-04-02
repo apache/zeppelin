@@ -27,7 +27,7 @@ public class CredentialsTest {
 
   @Test
   public void testDefaultProperty() throws IOException {
-    Credentials credentials = new Credentials(false, null, null);
+    Credentials credentials = new Credentials();
     UserCredentials userCredentials = new UserCredentials();
     UsernamePassword up1 = new UsernamePassword("user2", "password");
     userCredentials.putUsernamePassword("hive(vertica)", up1);
