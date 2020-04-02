@@ -125,8 +125,10 @@ public class AppendStreamSqlJob extends AbstractStreamSqlJob {
     context.out().clear();
     try {
       jobManager.sendFlinkJobUrl(context);
-      context.out.write(buildResult());
+      String result = buildResult();
+      context.out.write(result);
       context.out.flush();
+      LOGGER.debug("Refresh with data: " + result);
     } catch (IOException e) {
       LOGGER.error("Fail to refresh data", e);
     }

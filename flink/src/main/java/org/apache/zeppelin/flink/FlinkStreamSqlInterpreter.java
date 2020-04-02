@@ -19,6 +19,7 @@
 package org.apache.zeppelin.flink;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.flink.runtime.jobgraph.SavepointConfigOptions;
 import org.apache.flink.table.api.config.ExecutionConfigOptions;
 import org.apache.zeppelin.flink.sql.UpdateStreamSqlJob;
 import org.apache.zeppelin.flink.sql.SingleRowStreamSqlJob;
@@ -47,7 +48,6 @@ public class FlinkStreamSqlInterpreter extends FlinkSqlInterrpeter {
   public void open() throws InterpreterException {
     super.open();
     this.tbenv = flinkInterpreter.getJavaStreamTableEnvironment("blink");
-    this.tbenv_2 = flinkInterpreter.getJavaStreamTableEnvironment("flink");
   }
 
   @Override
@@ -57,18 +57,8 @@ public class FlinkStreamSqlInterpreter extends FlinkSqlInterrpeter {
 
   @Override
   public void callInnerSelect(String sql, InterpreterContext context) throws IOException {
-    String savepointDir = context.getLocalProperties().get("savepointDir");
-    if (!StringUtils.isBlank(savepointDir)) {
-      Object savepointPath = flinkInterpreter.getZeppelinContext()
-              .angular(context.getParagraphId() + "_savepointpath", context.getNoteId(), null);
-      if (savepointPath == null) {
-        LOGGER.info("savepointPath is null because it is the first run");
-      } else {
-        LOGGER.info("set savepointPath to: " + savepointPath.toString());
-        this.flinkInterpreter.getFlinkConfiguration()
-                .setString("execution.savepoint.path", savepointPath.toString());
-      }
-    }
+    flinkInterpreter.setSavePointIfNecessary(context);
+    flinkInterpreter.setParallelismIfNecessary(context);
 
     String streamType = context.getLocalProperties().get("type");
     if (streamType == null) {
@@ -104,11 +94,12 @@ public class FlinkStreamSqlInterpreter extends FlinkSqlInterrpeter {
   }
 
   @Override
+  public void callInsertInto(String sql, InterpreterContext context) throws IOException {
+    super.callInsertInto(sql, context);
+  }
+
   public void cancel(InterpreterContext context) throws InterpreterException {
-    this.flinkInterpreter.getZeppelinContext().setInterpreterContext(context);
-    this.flinkInterpreter.getZeppelinContext().setNoteGui(context.getNoteGui());
-    this.flinkInterpreter.getZeppelinContext().setGui(context.getGui());
-    this.flinkInterpreter.getJobManager().cancelJob(context);
+    this.flinkInterpreter.cancel(context);
   }
 
   @Override

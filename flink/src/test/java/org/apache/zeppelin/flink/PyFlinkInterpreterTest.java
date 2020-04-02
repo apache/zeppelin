@@ -25,9 +25,6 @@ import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterOutput;
-import org.apache.zeppelin.interpreter.InterpreterOutputListener;
-import org.apache.zeppelin.interpreter.InterpreterResult;
-import org.apache.zeppelin.interpreter.InterpreterResultMessageOutput;
 import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterEventClient;
 import org.apache.zeppelin.python.PythonInterpreterTest;
@@ -36,24 +33,17 @@ import org.junit.Test;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.Properties;
+import java.util.concurrent.TimeoutException;
 
 import static org.mockito.Mockito.mock;
 
 
 public class PyFlinkInterpreterTest extends PythonInterpreterTest {
 
-  private RemoteInterpreterEventClient mockRemoteEventClient =
-          mock(RemoteInterpreterEventClient.class);
-
   private Interpreter flinkScalaInterpreter;
   private Interpreter streamSqlInterpreter;
   private Interpreter batchSqlInterpreter;
 
-  // catch the streaming appendOutput in onAppend
-  protected volatile String appendOutput = "";
-  protected volatile InterpreterResult.Type appendOutputType;
-  // catch the flinkInterpreter appendOutput in onUpdate
-  protected InterpreterResultMessageOutput updatedOutput;
 
   @Override
   public void setUp() throws InterpreterException {
@@ -64,15 +54,14 @@ public class PyFlinkInterpreterTest extends PythonInterpreterTest {
     properties.setProperty("zeppelin.pyflink.useIPython", "false");
     properties.setProperty("zeppelin.flink.test", "true");
     properties.setProperty("zeppelin.python.gatewayserver_address", "127.0.0.1");
+    properties.setProperty("local.number-taskmanager", "4");
 
     // create interpreter group
     intpGroup = new InterpreterGroup();
     intpGroup.put("session_1", new LinkedList<>());
 
-    InterpreterContext context = InterpreterContext.builder()
-        .setInterpreterOut(new InterpreterOutput(null))
-        .setIntpEventClient(mockRemoteEventClient)
-        .build();
+    IPyFlinkInterpreterTest.angularObjectRegistry = new AngularObjectRegistry("flink", null);
+    InterpreterContext context = getInterpreterContext();
     InterpreterContext.set(context);
     flinkScalaInterpreter = new LazyOpenInterpreter(new FlinkInterpreter(properties));
     intpGroup.get("session_1").add(flinkScalaInterpreter);
@@ -129,35 +118,26 @@ public class PyFlinkInterpreterTest extends PythonInterpreterTest {
     IPyFlinkInterpreterTest.testAppendStreamTableApi(interpreter, flinkScalaInterpreter);
   }
 
+  @Test
+  public void testCancelStreamSql() throws InterpreterException, IOException, TimeoutException, InterruptedException {
+    IPyFlinkInterpreterTest.testCancelStreamSql(interpreter, flinkScalaInterpreter);
+  }
+
+  // TODO(zjffdu) flaky test
+  // @Test
+  public void testResumeStreamSqlFromSavePoint() throws InterpreterException, IOException, TimeoutException, InterruptedException {
+    IPyFlinkInterpreterTest.testResumeStreamSqlFromSavePoint(interpreter, flinkScalaInterpreter);
+  }
+
   protected InterpreterContext getInterpreterContext() {
-    appendOutput = "";
     InterpreterContext context = InterpreterContext.builder()
+            .setNoteId("noteId")
+            .setParagraphId("paragraphId")
             .setInterpreterOut(new InterpreterOutput(null))
-            .setAngularObjectRegistry(new AngularObjectRegistry("flink", null))
-            .setIntpEventClient(mockRemoteEventClient)
+            .setAngularObjectRegistry(IPyFlinkInterpreterTest.angularObjectRegistry)
+            .setIntpEventClient(mock(RemoteInterpreterEventClient.class))
             .build();
-    context.out = new InterpreterOutput(
-            new InterpreterOutputListener() {
-              @Override
-              public void onUpdateAll(InterpreterOutput out) {
-                System.out.println();
-              }
-
-              @Override
-              public void onAppend(int index, InterpreterResultMessageOutput out, byte[] line) {
-                try {
-                  appendOutputType = out.toInterpreterResultMessage().getType();
-                  appendOutput = out.toInterpreterResultMessage().getData();
-                } catch (IOException e) {
-                  e.printStackTrace();
-                }
-              }
-
-              @Override
-              public void onUpdate(int index, InterpreterResultMessageOutput out) {
-                updatedOutput = out;
-              }
-            });
+    InterpreterContext.set(context);
     return context;
   }
 }

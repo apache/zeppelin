@@ -362,6 +362,15 @@ public class InterpreterOutput extends OutputStream {
   }
 
   @Override
+  public String toString() {
+    try {
+      return new String(toByteArray());
+    } catch (IOException e) {
+      return e.toString();
+    }
+  }
+
+  @Override
   public void close() throws IOException {
     synchronized (resultMessageOutputs) {
       for (InterpreterResultMessageOutput out : resultMessageOutputs) {
