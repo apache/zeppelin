@@ -16,9 +16,10 @@
  */
 package org.apache.zeppelin.conf;
 
-import junit.framework.Assert;
+
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -75,6 +76,30 @@ public class ZeppelinConfigurationTest {
 
     ZeppelinConfiguration conf = new ZeppelinConfiguration(this.getClass().getResource("/zeppelin-site.xml"));
     Boolean isIt = conf.isWindowsPath("~/test/file.xml");
+    Assert.assertFalse(isIt);
+  }
+
+  @Test
+  public void isPathWithSchemeTestTrue() throws ConfigurationException {
+
+    ZeppelinConfiguration conf = new ZeppelinConfiguration(this.getClass().getResource("/zeppelin-site.xml"));
+    Boolean isIt = conf.isPathWithScheme("hdfs://hadoop.example.com/zeppelin/notebook");
+    Assert.assertTrue(isIt);
+  }
+
+  @Test
+  public void isPathWithSchemeTestFalse() throws ConfigurationException {
+
+    ZeppelinConfiguration conf = new ZeppelinConfiguration(this.getClass().getResource("/zeppelin-site.xml"));
+    Boolean isIt = conf.isPathWithScheme("~/test/file.xml");
+    Assert.assertFalse(isIt);
+  }
+
+  @Test
+  public void isPathWithInvalidSchemeTest() throws ConfigurationException {
+
+    ZeppelinConfiguration conf = new ZeppelinConfiguration(this.getClass().getResource("/zeppelin-site.xml"));
+    Boolean isIt = conf.isPathWithScheme("c:\\test\\file.txt");
     Assert.assertFalse(isIt);
   }
 
