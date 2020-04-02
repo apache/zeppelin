@@ -6,20 +6,21 @@ import java.util.Collections
 import scala.collection.JavaConversions._
 
 senv.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
-senv.enableCheckpointing(1000)
+senv.enableCheckpointing(5000)
 
 val data = senv.addSource(new SourceFunction[(Long, String)] with ListCheckpointed[java.lang.Long] {
 
   val pages = Seq("home", "search", "search", "product", "product", "product")
   var count: Long = 0
+  var running : Boolean = true
   // startTime is 2018/1/1
   var startTime: Long = new java.util.Date(2018 - 1900,0,1).getTime
-  var sleepInterval = 100
+  var sleepInterval = {{sleep_interval}}
 
   override def run(ctx: SourceFunction.SourceContext[(Long, String)]): Unit = {
     val lock = ctx.getCheckpointLock
 
-    while (count < 20) {
+    while (count < 60 && running) {
       lock.synchronized({
         ctx.collect((startTime + count * sleepInterval, pages(count.toInt % pages.size)))
         count += 1
@@ -29,7 +30,7 @@ val data = senv.addSource(new SourceFunction[(Long, String)] with ListCheckpoint
   }
 
   override def cancel(): Unit = {
-
+    running = false
   }
 
   override def snapshotState(checkpointId: Long, timestamp: Long): java.util.List[java.lang.Long] = {

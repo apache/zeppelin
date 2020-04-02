@@ -105,18 +105,21 @@ public class PyFlinkInterpreter extends PythonInterpreter {
   @Override
   public InterpreterResult interpret(String st, InterpreterContext context) throws InterpreterException {
     try {
-      if (isOpened) {
-        // set InterpreterContext in the python thread first, otherwise flink job could not be
-        // associated with paragraph in JobListener
-        this.curInterpreterContext = context;
-        InterpreterResult result =
-                super.interpret("intp.initJavaThread()", context);
-        if (result.code() != InterpreterResult.Code.SUCCESS) {
-          throw new InterpreterException("Fail to initJavaThread: " +
-                  result.toString());
+      if (!useIPython()) {
+        if (isOpened) {
+          // set InterpreterContext in the python thread first, otherwise flink job could not be
+          // associated with paragraph in JobListener
+          this.curInterpreterContext = context;
+          InterpreterResult result =
+                  super.interpret("intp.initJavaThread()", context);
+          if (result.code() != InterpreterResult.Code.SUCCESS) {
+            throw new InterpreterException("Fail to initJavaThread: " +
+                    result.toString());
+          }
         }
+        flinkInterpreter.setSavePointIfNecessary(context);
+        flinkInterpreter.setParallelismIfNecessary(context);
       }
-      flinkInterpreter.createPlannerAgain();
       return super.interpret(st, context);
     } finally {
       if (useIPython() || (!useIPython() && getPythonProcessLauncher().isRunning())) {
@@ -149,8 +152,12 @@ public class PyFlinkInterpreter extends PythonInterpreter {
 
   @Override
   public void cancel(InterpreterContext context) throws InterpreterException {
-    super.cancel(context);
     flinkInterpreter.cancel(context);
+    if (useIPython()) {
+      // only cancel it in the case of ipython, because python interpreter will
+      // kill the current python process which usually is not what user expect.
+      super.cancel(context);
+    }
   }
 
   @Override

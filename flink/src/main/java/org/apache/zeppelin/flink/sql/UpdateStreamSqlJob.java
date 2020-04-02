@@ -108,9 +108,9 @@ public class UpdateStreamSqlJob extends AbstractStreamSqlJob {
     try {
       jobManager.sendFlinkJobUrl(context);
       String result = buildResult();
-      LOGGER.debug(("Refresh with data: " + result));
       context.out.write(result);
       context.out.flush();
+      LOGGER.debug("Refresh with data: " + result);
       this.lastSnapshot.clear();
       for (Row row : materializedTable) {
         this.lastSnapshot.add(row);

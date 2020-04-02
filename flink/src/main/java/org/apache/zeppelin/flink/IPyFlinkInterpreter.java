@@ -89,6 +89,8 @@ public class IPyFlinkInterpreter extends IPythonInterpreter {
         throw new InterpreterException("Fail to initJavaThread: " +
                 result.toString());
       }
+      flinkInterpreter.setSavePointIfNecessary(context);
+      flinkInterpreter.setParallelismIfNecessary(context);
       return super.internalInterpret(st, context);
     } finally {
       if (getKernelProcessLauncher().isRunning()) {
@@ -103,8 +105,8 @@ public class IPyFlinkInterpreter extends IPythonInterpreter {
 
   @Override
   public void cancel(InterpreterContext context) throws InterpreterException {
-    super.cancel(context);
     flinkInterpreter.cancel(context);
+    super.cancel(context);
   }
 
   @Override
