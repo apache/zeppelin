@@ -422,8 +422,8 @@ public class JDBCInterpreter extends KerberosInterpreter {
     if (driverClass != null && (driverClass.equals("com.facebook.presto.jdbc.PrestoDriver")
             || driverClass.equals("io.prestosql.jdbc.PrestoDriver"))) {
       // Only add valid properties otherwise presto won't work.
-      for (Object key : properties.keySet()) {
-        if (!PRESTO_PROPERTIES.contains(key.toString())) {
+      for (String key : properties.stringPropertyNames()) {
+        if (!PRESTO_PROPERTIES.contains(key)) {
           properties.remove(key);
         }
       }
