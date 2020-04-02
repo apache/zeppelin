@@ -20,6 +20,8 @@ package org.apache.zeppelin.conf;
 import com.google.common.annotations.VisibleForTesting;
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -583,7 +585,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
   }
 
   public String getRelativeDir(String path) {
-    if (path != null && path.startsWith(File.separator) || isWindowsPath(path)) {
+    if (path != null && (path.startsWith(File.separator) || isWindowsPath(path) || isPathWithScheme(path))) {
       return path;
     } else {
       return getString(ConfVars.ZEPPELIN_HOME) + File.separator + path;
@@ -600,6 +602,14 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 
   public boolean isWindowsPath(String path){
     return path.matches("^[A-Za-z]:\\\\.*");
+  }
+
+  public boolean isPathWithScheme(String path){
+      try {
+        return StringUtils.isNotBlank(new URI(path).getScheme());
+    } catch (URISyntaxException e) {
+        return false;
+    }
   }
 
   public boolean isAnonymousAllowed() {
