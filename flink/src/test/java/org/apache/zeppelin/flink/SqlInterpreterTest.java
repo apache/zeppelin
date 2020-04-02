@@ -83,6 +83,8 @@ public abstract class SqlInterpreterTest {
   protected PyFlinkInterpreter pyFlinkInterpreter;
   protected FlinkSqlInterrpeter sqlInterpreter;
 
+  private AngularObjectRegistry angularObjectRegistry;
+
   @HiveSQL(files = {})
   protected static HiveShell hiveShell;
 
@@ -93,6 +95,7 @@ public abstract class SqlInterpreterTest {
     p.setProperty("taskmanager.managed.memory.size", "32");
     p.setProperty("zeppelin.flink.hive.version", "2.3.4");
     p.setProperty("zeppelin.pyflink.useIPython", "false");
+    p.setProperty("local.number-taskmanager", "4");
     File hiveConfDir = Files.createTempDir();
     hiveShell.getHiveConf().writeXml(new FileWriter(new File(hiveConfDir, "hive-site.xml")));
     p.setProperty("HIVE_CONF_DIR", hiveConfDir.getAbsolutePath());
@@ -116,6 +119,7 @@ public abstract class SqlInterpreterTest {
     intpGroup.addInterpreterToSession(iPyFlinkInterpreter, "session_1");
     intpGroup.addInterpreterToSession(pyFlinkInterpreter, "session_1");
 
+    angularObjectRegistry = new AngularObjectRegistry("flink", null);
     InterpreterContext.set(getInterpreterContext());
     flinkInterpreter.open();
     sqlInterpreter.open();
@@ -364,13 +368,15 @@ public abstract class SqlInterpreterTest {
   }
 
   protected InterpreterContext getInterpreterContext() {
-    return InterpreterContext.builder()
+    InterpreterContext context = InterpreterContext.builder()
             .setParagraphId("paragraphId")
             .setInterpreterOut(new InterpreterOutput(null))
-            .setAngularObjectRegistry(new AngularObjectRegistry("flink", null))
+            .setAngularObjectRegistry(angularObjectRegistry)
             .setIntpEventClient(mock(RemoteInterpreterEventClient.class))
             .setInterpreterOut(new InterpreterOutput(null))
             .build();
+    InterpreterContext.set(context);
+    return context;
   }
 
   public static File createInputFile(String data) throws IOException {

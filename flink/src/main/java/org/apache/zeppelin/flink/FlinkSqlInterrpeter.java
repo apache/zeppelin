@@ -26,7 +26,6 @@ import org.apache.flink.api.common.JobExecutionResult;
 import org.apache.flink.configuration.ConfigOption;
 import org.apache.flink.core.execution.JobClient;
 import org.apache.flink.core.execution.JobListener;
-import org.apache.flink.python.PythonConfig;
 import org.apache.flink.python.PythonOptions;
 import org.apache.flink.table.api.Table;
 import org.apache.flink.table.api.TableEnvironment;
@@ -88,15 +87,15 @@ public abstract class FlinkSqlInterrpeter extends Interpreter {
 
   protected FlinkInterpreter flinkInterpreter;
   protected TableEnvironment tbenv;
-  protected TableEnvironment tbenv_2;
   private SqlSplitter sqlSplitter;
   private int defaultSqlParallelism;
   private ReentrantReadWriteLock.WriteLock lock = new ReentrantReadWriteLock().writeLock();
   // all the available sql config options. see
   // https://ci.apache.org/projects/flink/flink-docs-release-1.10/dev/table/config.html
   private Map<String, ConfigOption> tableConfigOptions;
-  // represent the current paragraph's configOptions
-  private Map<String, String> currentConfigOptions = new HashMap<>();
+  // represent paragraph's tableConfig
+  // paragraphId --> tableConfig
+  private Map<String, Map<String, String>> paragraphTableConfigMap = new HashMap<>();
 
   public FlinkSqlInterrpeter(Properties properties) {
     super(properties);
@@ -167,6 +166,8 @@ public abstract class FlinkSqlInterrpeter extends Interpreter {
     ClassLoader originClassLoader = Thread.currentThread().getContextClassLoader();
     try {
       Thread.currentThread().setContextClassLoader(flinkInterpreter.getFlinkScalaShellLoader());
+      flinkInterpreter.setParallelismIfNecessary(context);
+      flinkInterpreter.setSavePointIfNecessary(context);
       return runSqlList(st, context);
     } finally {
       Thread.currentThread().setContextClassLoader(originClassLoader);
@@ -174,58 +175,69 @@ public abstract class FlinkSqlInterrpeter extends Interpreter {
   }
 
   private InterpreterResult runSqlList(String st, InterpreterContext context) {
-    currentConfigOptions.clear();
-    List<String> sqls = sqlSplitter.splitSql(st);
-    for (String sql : sqls) {
-      Optional<SqlCommandParser.SqlCommandCall> sqlCommand = SqlCommandParser.parse(sql);
-      if (!sqlCommand.isPresent()) {
-        try {
-          context.out.write("%text Invalid Sql statement: " + sql + "\n");
-          context.out.write(MESSAGE_HELP.toString());
-        } catch (IOException e) {
-          return new InterpreterResult(InterpreterResult.Code.ERROR, e.toString());
-        }
-        return new InterpreterResult(InterpreterResult.Code.ERROR);
-      }
-      try {
-        callCommand(sqlCommand.get(), context);
-        context.out.flush();
-      } catch (Throwable e) {
-        LOGGER.error("Fail to run sql:" + sql, e);
-        try {
-          context.out.write("%text Fail to run sql command: " +
-                  sql + "\n" + ExceptionUtils.getStackTrace(e) + "\n");
-        } catch (IOException ex) {
-          LOGGER.warn("Unexpected exception:", ex);
-          return new InterpreterResult(InterpreterResult.Code.ERROR,
-                  ExceptionUtils.getStackTrace(e));
-        }
-        return new InterpreterResult(InterpreterResult.Code.ERROR);
-      }
-    }
+    // clear current paragraph's tableConfig before running any sql statements
+    Map<String, String> tableConfig = paragraphTableConfigMap.getOrDefault(context.getParagraphId(), new HashMap<>());
+    tableConfig.clear();
+    paragraphTableConfigMap.put(context.getParagraphId(), tableConfig);
 
-    boolean runAsOne = Boolean.parseBoolean(context.getStringLocalProperty("runAsOne", "false"));
-    if (runAsOne) {
-      try {
-        lock.lock();
-        if (context.getLocalProperties().containsKey("parallelism")) {
-          this.tbenv.getConfig().getConfiguration()
-                  .set(ExecutionConfigOptions.TABLE_EXEC_RESOURCE_DEFAULT_PARALLELISM,
-                          Integer.parseInt(context.getLocalProperties().get("parallelism")));
+    try {
+      List<String> sqls = sqlSplitter.splitSql(st);
+      for (String sql : sqls) {
+        Optional<SqlCommandParser.SqlCommandCall> sqlCommand = SqlCommandParser.parse(sql);
+        if (!sqlCommand.isPresent()) {
+          try {
+            context.out.write("%text Invalid Sql statement: " + sql + "\n");
+            context.out.write(MESSAGE_HELP.toString());
+          } catch (IOException e) {
+            return new InterpreterResult(InterpreterResult.Code.ERROR, e.toString());
+          }
+          return new InterpreterResult(InterpreterResult.Code.ERROR);
         }
-        this.tbenv.execute(st);
-        context.out.write("Insertion successfully.\n");
-      } catch (Exception e) {
-        LOGGER.error("Fail to execute sql as one job", e);
-        return new InterpreterResult(InterpreterResult.Code.ERROR, ExceptionUtils.getStackTrace(e));
-      } finally {
-        if (lock.isHeldByCurrentThread()) {
-          lock.unlock();
+        try {
+          callCommand(sqlCommand.get(), context);
+          context.out.flush();
+        } catch (Throwable e) {
+          LOGGER.error("Fail to run sql:" + sql, e);
+          try {
+            context.out.write("%text Fail to run sql command: " +
+                    sql + "\n" + ExceptionUtils.getStackTrace(e) + "\n");
+          } catch (IOException ex) {
+            LOGGER.warn("Unexpected exception:", ex);
+            return new InterpreterResult(InterpreterResult.Code.ERROR,
+                    ExceptionUtils.getStackTrace(e));
+          }
+          return new InterpreterResult(InterpreterResult.Code.ERROR);
         }
-        this.tbenv.getConfig().getConfiguration()
-                .set(ExecutionConfigOptions.TABLE_EXEC_RESOURCE_DEFAULT_PARALLELISM,
-                        defaultSqlParallelism);
       }
+
+      boolean runAsOne = Boolean.parseBoolean(context.getStringLocalProperty("runAsOne", "false"));
+      if (runAsOne) {
+        try {
+          lock.lock();
+          this.tbenv.execute(st);
+          context.out.write("Insertion successfully.\n");
+        } catch (Exception e) {
+          LOGGER.error("Fail to execute sql as one job", e);
+          return new InterpreterResult(InterpreterResult.Code.ERROR, ExceptionUtils.getStackTrace(e));
+        } finally {
+          if (lock.isHeldByCurrentThread()) {
+            lock.unlock();
+          }
+        }
+      }
+    } finally {
+      // reset parallelism
+      this.tbenv.getConfig().getConfiguration()
+              .set(ExecutionConfigOptions.TABLE_EXEC_RESOURCE_DEFAULT_PARALLELISM,
+                      defaultSqlParallelism);
+      // reset table config
+      for (ConfigOption configOption: tableConfigOptions.values()) {
+        // some may has no default value, e.g. ExecutionConfigOptions#TABLE_EXEC_DISABLED_OPERATORS
+        if (configOption.defaultValue() != null) {
+          this.tbenv.getConfig().getConfiguration().set(configOption, configOption.defaultValue());
+        }
+      }
+      this.tbenv.getConfig().getConfiguration().addAll(flinkInterpreter.getFlinkConfiguration());
     }
 
     return new InterpreterResult(InterpreterResult.Code.SUCCESS);
@@ -466,34 +478,17 @@ public abstract class FlinkSqlInterrpeter extends Interpreter {
   public void callSelect(String sql, InterpreterContext context) throws IOException {
     try {
       lock.lock();
-      // set parallelism from paragraph local property
-      if (context.getLocalProperties().containsKey("parallelism")) {
-        this.tbenv.getConfig().getConfiguration()
-                .set(ExecutionConfigOptions.TABLE_EXEC_RESOURCE_DEFAULT_PARALLELISM,
-                        Integer.parseInt(context.getLocalProperties().get("parallelism")));
-      }
-
       // set table config from set statement until now.
-      for (Map.Entry<String, String> entry : currentConfigOptions.entrySet()) {
+      Map<String, String> paragraphTableConfig = paragraphTableConfigMap.get(context.getParagraphId());
+      for (Map.Entry<String, String> entry : paragraphTableConfig.entrySet()) {
         this.tbenv.getConfig().getConfiguration().setString(entry.getKey(), entry.getValue());
       }
+
       callInnerSelect(sql, context);
     } finally {
       if (lock.isHeldByCurrentThread()) {
         lock.unlock();
       }
-      // reset parallelism
-      this.tbenv.getConfig().getConfiguration()
-              .set(ExecutionConfigOptions.TABLE_EXEC_RESOURCE_DEFAULT_PARALLELISM,
-                      defaultSqlParallelism);
-      // reset table config
-      for (ConfigOption configOption: tableConfigOptions.values()) {
-        // some may has no default value, e.g. ExecutionConfigOptions#TABLE_EXEC_DISABLED_OPERATORS
-        if (configOption.defaultValue() != null) {
-          this.tbenv.getConfig().getConfiguration().set(configOption, configOption.defaultValue());
-        }
-      }
-      this.tbenv.getConfig().getConfiguration().addAll(flinkInterpreter.getFlinkConfiguration());
     }
   }
 
@@ -504,24 +499,20 @@ public abstract class FlinkSqlInterrpeter extends Interpreter {
       throw new IOException(key + " is not a valid table/sql config, please check link: " +
               "https://ci.apache.org/projects/flink/flink-docs-release-1.10/dev/table/config.html");
     }
-    currentConfigOptions.put(key, value);
+    paragraphTableConfigMap.get(context.getParagraphId()).put(key, value);
   }
 
-  private void callInsertInto(String sql,
+  public void callInsertInto(String sql,
                               InterpreterContext context) throws IOException {
      if (!isBatch()) {
        context.getLocalProperties().put("flink.streaming.insert_into", "true");
      }
      try {
        lock.lock();
-       if (context.getLocalProperties().containsKey("parallelism")) {
-         this.tbenv.getConfig().getConfiguration()
-                 .set(ExecutionConfigOptions.TABLE_EXEC_RESOURCE_DEFAULT_PARALLELISM,
-                         Integer.parseInt(context.getLocalProperties().get("parallelism")));
-       }
 
        // set table config from set statement until now.
-       for (Map.Entry<String, String> entry : currentConfigOptions.entrySet()) {
+       Map<String, String> paragraphTableConfig = paragraphTableConfigMap.get(context.getParagraphId());
+       for (Map.Entry<String, String> entry : paragraphTableConfig.entrySet()) {
          this.tbenv.getConfig().getConfiguration().setString(entry.getKey(), entry.getValue());
        }
 
@@ -537,20 +528,12 @@ public abstract class FlinkSqlInterrpeter extends Interpreter {
        if (lock.isHeldByCurrentThread()) {
          lock.unlock();
        }
-
-       // reset parallelism
-       this.tbenv.getConfig().getConfiguration()
-               .set(ExecutionConfigOptions.TABLE_EXEC_RESOURCE_DEFAULT_PARALLELISM,
-                       defaultSqlParallelism);
-       // reset table config
-       for (ConfigOption configOption: tableConfigOptions.values()) {
-         // some may has no default value, e.g. ExecutionConfigOptions#TABLE_EXEC_DISABLED_OPERATORS
-         if (configOption.defaultValue() != null) {
-           this.tbenv.getConfig().getConfiguration().set(configOption, configOption.defaultValue());
-         }
-       }
-       this.tbenv.getConfig().getConfiguration().addAll(flinkInterpreter.getFlinkConfiguration());
      }
+  }
+
+  @Override
+  public void cancel(InterpreterContext context) throws InterpreterException {
+    this.flinkInterpreter.cancel(context);
   }
 
   private static AttributedString formatCommand(SqlCommand cmd, String description) {

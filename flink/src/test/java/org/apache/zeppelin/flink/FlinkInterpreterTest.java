@@ -17,6 +17,9 @@
 package org.apache.zeppelin.flink;
 
 
+import junit.framework.TestCase;
+import net.jodah.concurrentunit.Waiter;
+import org.apache.commons.io.FileUtils;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.ui.CheckBox;
 import org.apache.zeppelin.display.ui.Select;
@@ -32,11 +35,15 @@ import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.TimeoutException;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -46,7 +53,10 @@ import static org.mockito.Mockito.mock;
 
 public class FlinkInterpreterTest {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(FlinkInterpreterTest.class);
+
   private FlinkInterpreter interpreter;
+  private AngularObjectRegistry angularObjectRegistry;
 
   @Before
   public void setUp() throws InterpreterException {
@@ -54,11 +64,14 @@ public class FlinkInterpreterTest {
     p.setProperty("zeppelin.flink.printREPLOutput", "true");
     p.setProperty("zeppelin.flink.scala.color", "false");
     p.setProperty("flink.execution.mode", "local");
+    p.setProperty("local.number-taskmanager", "4");
 
     interpreter = new FlinkInterpreter(p);
     InterpreterGroup intpGroup = new InterpreterGroup();
     interpreter.setInterpreterGroup(intpGroup);
     interpreter.open();
+
+    angularObjectRegistry = new AngularObjectRegistry("flink", null);
   }
 
   @After
@@ -216,7 +229,7 @@ public class FlinkInterpreterTest {
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
     context = getInterpreterContext();
     result = interpreter.interpret("z.show(data)", context);
-    assertEquals(new String(context.out.toByteArray()), InterpreterResult.Code.SUCCESS, result.code());
+    assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
     List<InterpreterResultMessage> resultMessages = context.out.toInterpreterResultMessage();
     assertEquals(InterpreterResult.Type.TABLE, resultMessages.get(0).getType());
     assertEquals("_1\t_2\n1\tjeff\n2\tandy\n3\tjames\n", resultMessages.get(0).getData());
@@ -285,12 +298,113 @@ public class FlinkInterpreterTest {
     }
   }
 
+  @Test
+  public void testCancelStreamSql() throws IOException, InterpreterException, InterruptedException, TimeoutException {
+    String initStreamScalaScript = FlinkStreamSqlInterpreterTest.getInitStreamScript(1000);
+    InterpreterResult result = interpreter.interpret(initStreamScalaScript,
+            getInterpreterContext());
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+
+    final Waiter waiter = new Waiter();
+    Thread thread = new Thread(() -> {
+      try {
+        InterpreterContext context = getInterpreterContext();
+        context.getLocalProperties().put("type", "update");
+        InterpreterResult result2 = interpreter.interpret(
+                "val table = stenv.sqlQuery(\"select url, count(1) as pv from " +
+                "log group by url\")\nz.show(table, streamType=\"update\")", context);
+        LOGGER.info("---------------" + context.out.toString());
+        LOGGER.info("---------------" + result2);
+        waiter.assertTrue(context.out.toString().contains("Job was cancelled"));
+        waiter.assertEquals(InterpreterResult.Code.ERROR, result2.code());
+      } catch (Exception e) {
+        e.printStackTrace();
+        waiter.fail("Should not fail here");
+      }
+      waiter.resume();
+    });
+    thread.start();
+
+    // the streaming job will run for 20 seconds. check init_stream.scala
+    // sleep 10 seconds to make sure the job is started but not finished
+    Thread.sleep(10 * 1000);
+
+    InterpreterContext context = getInterpreterContext();
+    context.getLocalProperties().put("type", "update");
+    interpreter.cancel(context);
+    waiter.await(10 * 1000);
+    // resume job
+    interpreter.interpret("val table = stenv.sqlQuery(\"select url, count(1) as pv from " +
+            "log group by url\")\nz.show(table, streamType=\"update\")", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    List<InterpreterResultMessage> resultMessages = context.out.toInterpreterResultMessage();
+    assertEquals(InterpreterResult.Type.TABLE, resultMessages.get(0).getType());
+    TestCase.assertTrue(resultMessages.toString(),
+            resultMessages.get(0).getData().contains("url\tpv\n"));
+  }
+
+  // TODO(zjffdu) flaky test
+  // @Test
+  public void testResumeStreamSqlFromSavePoint() throws IOException, InterpreterException, InterruptedException, TimeoutException {
+    String initStreamScalaScript = FlinkStreamSqlInterpreterTest.getInitStreamScript(1000);
+    InterpreterResult result = interpreter.interpret(initStreamScalaScript,
+            getInterpreterContext());
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+
+    File savePointDir = FileUtils.getTempDirectory();
+    final Waiter waiter = new Waiter();
+    Thread thread = new Thread(() -> {
+      try {
+        InterpreterContext context = getInterpreterContext();
+        context.getLocalProperties().put("type", "update");
+        context.getLocalProperties().put("savepointDir", savePointDir.getAbsolutePath());
+        context.getLocalProperties().put("parallelism", "1");
+        context.getLocalProperties().put("maxParallelism", "10");
+        InterpreterResult result2 = interpreter.interpret(
+                "val table = stenv.sqlQuery(\"select url, count(1) as pv from " +
+                "log group by url\")\nz.show(table, streamType=\"update\")", context);
+        System.out.println("------------" + context.out.toString());
+        System.out.println("------------" + result2);
+        waiter.assertTrue(context.out.toString().contains("url\tpv\n"));
+        waiter.assertEquals(InterpreterResult.Code.SUCCESS, result2.code());
+      } catch (Exception e) {
+        e.printStackTrace();
+        waiter.fail("Should not fail here");
+      }
+      waiter.resume();
+    });
+    thread.start();
+
+    // the streaming job will run for 60 seconds. check init_stream.scala
+    // sleep 20 seconds to make sure the job is started but not finished
+    Thread.sleep(20 * 1000);
+
+    InterpreterContext context = getInterpreterContext();
+    context.getLocalProperties().put("type", "update");
+    context.getLocalProperties().put("savepointDir", savePointDir.getAbsolutePath());
+    context.getLocalProperties().put("parallelism", "2");
+    context.getLocalProperties().put("maxParallelism", "10");
+    interpreter.cancel(context);
+    waiter.await(20 * 1000);
+    // resume job from savepoint
+    interpreter.interpret(
+            "val table = stenv.sqlQuery(\"select url, count(1) as pv from " +
+            "log group by url\")\nz.show(table, streamType=\"update\")", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    List<InterpreterResultMessage> resultMessages = context.out.toInterpreterResultMessage();
+    assertEquals(InterpreterResult.Type.TABLE, resultMessages.get(0).getType());
+    TestCase.assertTrue(resultMessages.toString(),
+            resultMessages.get(0).getData().contains("url\tpv\n"));
+  }
+
   private InterpreterContext getInterpreterContext() {
-    return InterpreterContext.builder()
+    InterpreterContext context = InterpreterContext.builder()
+            .setParagraphId("paragraphId")
             .setInterpreterOut(new InterpreterOutput(null))
-            .setAngularObjectRegistry(new AngularObjectRegistry("flink", null))
+            .setAngularObjectRegistry(angularObjectRegistry)
             .setIntpEventClient(mock(RemoteInterpreterEventClient.class))
-            .setInterpreterOut(new InterpreterOutput(null))
             .build();
+    InterpreterContext.set(context);
+    return context;
   }
 }

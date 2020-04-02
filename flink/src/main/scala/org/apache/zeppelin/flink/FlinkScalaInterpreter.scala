@@ -35,6 +35,7 @@ import org.apache.flink.core.execution.{JobClient, JobListener}
 import org.apache.flink.streaming.api.TimeCharacteristic
 import org.apache.flink.streaming.api.environment.{StreamExecutionEnvironmentFactory, StreamExecutionEnvironment => JStreamExecutionEnvironment}
 import org.apache.flink.api.java.{ExecutionEnvironmentFactory, ExecutionEnvironment => JExecutionEnvironment}
+import org.apache.flink.runtime.jobgraph.SavepointConfigOptions
 import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment
 import org.apache.flink.table.api.config.ExecutionConfigOptions
 import org.apache.flink.table.api.java.internal.StreamTableEnvironmentImpl
@@ -410,7 +411,7 @@ class FlinkScalaInterpreter(val properties: Properties) {
     this.benv.registerJobListener(jobListener)
     this.senv.registerJobListener(jobListener)
 
-    //register hive catalog
+    // register hive catalog
     if (properties.getProperty("zeppelin.flink.enableHive", "false").toBoolean) {
       LOGGER.info("Hive is enabled, registering hive catalog.")
       val hiveConfDir =
@@ -564,7 +565,6 @@ class FlinkScalaInterpreter(val properties: Properties) {
   }
 
   def interpret(code: String, context: InterpreterContext): InterpreterResult = {
-    createPlannerAgain()
     val originalStdOut = System.out
     val originalStdErr = System.err;
     if (context != null) {
@@ -611,6 +611,42 @@ class FlinkScalaInterpreter(val properties: Properties) {
       System.setOut(originalStdOut)
       System.setErr(originalStdErr)
       return new InterpreterResult(lastStatus)
+    }
+  }
+
+  def setSavePointIfNecessary(context: InterpreterContext): Unit = {
+    val savepointDir = context.getLocalProperties.get("savepointDir")
+    if (!StringUtils.isBlank(savepointDir)) {
+      val savepointPath = z.angular(context.getParagraphId + "_savepointpath", context.getNoteId, null)
+      if (savepointPath == null) {
+        LOGGER.info("savepointPath is null because it is the first run")
+        // remove the SAVEPOINT_PATH which may be set by last job.
+        configuration.removeConfig(SavepointConfigOptions.SAVEPOINT_PATH)
+      } else {
+        LOGGER.info("Set savepointPath to: " + savepointPath.toString)
+        configuration.setString("execution.savepoint.path", savepointPath.toString)
+      }
+    } else {
+      // remove the SAVEPOINT_PATH which may be set by last job.
+      configuration.removeConfig(SavepointConfigOptions.SAVEPOINT_PATH)
+    }
+  }
+
+  def setParallelismIfNecessary(context: InterpreterContext): Unit = {
+    val parallelismStr = context.getLocalProperties.get("parallelism")
+    if (!StringUtils.isBlank(parallelismStr)) {
+      val parallelism = parallelismStr.toInt
+      this.senv.setParallelism(parallelism)
+      this.benv.setParallelism(parallelism)
+      this.stenv.getConfig.getConfiguration
+        .setString(ExecutionConfigOptions.TABLE_EXEC_RESOURCE_DEFAULT_PARALLELISM.key(), parallelism + "")
+      this.btenv.getConfig.getConfiguration
+        .setString(ExecutionConfigOptions.TABLE_EXEC_RESOURCE_DEFAULT_PARALLELISM.key(), parallelism + "")
+    }
+    val maxParallelismStr = context.getLocalProperties.get("maxParallelism")
+    if (!StringUtils.isBlank(maxParallelismStr)) {
+      val maxParallelism = maxParallelismStr.toInt
+      senv.setParallelism(maxParallelism)
     }
   }
 
