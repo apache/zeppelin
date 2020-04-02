@@ -17,7 +17,6 @@
 
 package org.apache.zeppelin.jupyter;
 
-import com.google.common.annotations.VisibleForTesting;
 import io.grpc.ManagedChannelBuilder;
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.environment.EnvironmentUtils;
@@ -213,7 +212,6 @@ public class JupyterKernelInterpreter extends AbstractInterpreter {
     return EnvironmentUtils.getProcEnvironment();
   }
 
-  @VisibleForTesting
   public JupyterKernelProcessLauncher getKernelProcessLauncher() {
     return jupyterKernelProcessLauncher;
   }
