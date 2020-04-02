@@ -33,15 +33,17 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.FileSystems;
 import java.nio.file.FileSystem;
-import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.nio.file.attribute.PosixFilePermission;
+import java.util.EnumSet;
+import java.util.Set;
 
 /**
  * Storing config in local file system
  */
 public class LocalConfigStorage extends ConfigStorage {
 
-  private static Logger LOGGER = LoggerFactory.getLogger(LocalConfigStorage.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(LocalConfigStorage.class);
 
   private File interpreterSettingPath;
   private File authorizationPath;
@@ -56,7 +58,7 @@ public class LocalConfigStorage extends ConfigStorage {
 
   @Override
   public void save(InterpreterInfoSaving settingInfos) throws IOException {
-    LOGGER.info("Save Interpreter Setting to " + interpreterSettingPath.getAbsolutePath());
+    LOGGER.info("Save Interpreter Setting to {}", interpreterSettingPath.getAbsolutePath());
     atomicWriteToFile(settingInfos.toJson(), interpreterSettingPath);
   }
 
@@ -66,14 +68,14 @@ public class LocalConfigStorage extends ConfigStorage {
       LOGGER.warn("Interpreter Setting file {} is not existed", interpreterSettingPath);
       return null;
     }
-    LOGGER.info("Load Interpreter Setting from file: " + interpreterSettingPath);
+    LOGGER.info("Load Interpreter Setting from file: {}", interpreterSettingPath);
     String json = readFromFile(interpreterSettingPath);
     return buildInterpreterInfoSaving(json);
   }
 
   @Override
   public void save(NotebookAuthorizationInfoSaving authorizationInfoSaving) throws IOException {
-    LOGGER.info("Save notebook authorization to file: " + authorizationPath);
+    LOGGER.info("Save notebook authorization to file: {}", authorizationPath);
     atomicWriteToFile(authorizationInfoSaving.toJson(), authorizationPath);
   }
 
@@ -83,7 +85,7 @@ public class LocalConfigStorage extends ConfigStorage {
       LOGGER.warn("NotebookAuthorization file {} is not existed", authorizationPath);
       return null;
     }
-    LOGGER.info("Load notebook authorization from file: " + authorizationPath);
+    LOGGER.info("Load notebook authorization from file: {}", authorizationPath);
     String json = readFromFile(authorizationPath);
     return NotebookAuthorizationInfoSaving.fromJson(json);
   }
@@ -94,14 +96,15 @@ public class LocalConfigStorage extends ConfigStorage {
       LOGGER.warn("Credential file {} is not existed", credentialPath);
       return null;
     }
-    LOGGER.info("Load Credential from file: " + credentialPath);
+    LOGGER.info("Load Credential from file: {}", credentialPath);
     return readFromFile(credentialPath);
   }
 
   @Override
   public void saveCredentials(String credentials) throws IOException {
-    LOGGER.info("Save Credentials to file: " + credentialPath);
-    atomicWriteToFile(credentials, credentialPath);
+    LOGGER.info("Save Credentials to file: {}", credentialPath);
+    Set<PosixFilePermission> permissions = EnumSet.of(PosixFilePermission.OWNER_READ, PosixFilePermission.OWNER_WRITE);
+    atomicWriteToFile(credentials, credentialPath, permissions);
   }
 
   @VisibleForTesting
@@ -112,12 +115,15 @@ public class LocalConfigStorage extends ConfigStorage {
   }
 
   @VisibleForTesting
-  static void atomicWriteToFile(String content, File file) throws IOException {
+  static void atomicWriteToFile(String content, File file, Set<PosixFilePermission> permissions) throws IOException {
     FileSystem defaultFileSystem = FileSystems.getDefault();
     Path destinationFilePath = defaultFileSystem.getPath(file.getCanonicalPath());
     Path destinationDirectory = destinationFilePath.getParent();
     Files.createDirectories(destinationDirectory);
     File tempFile = Files.createTempFile(destinationDirectory, file.getName(), null).toFile();
+    if (permissions != null && !permissions.isEmpty()) {
+      Files.setPosixFilePermissions(tempFile.toPath(), permissions);
+    }
     try (FileOutputStream out = new FileOutputStream(tempFile)) {
       IOUtils.write(content, out);
     } catch (IOException iox) {
@@ -136,6 +142,11 @@ public class LocalConfigStorage extends ConfigStorage {
       }
       throw iox;
     }
+  }
+
+  @VisibleForTesting
+  static void atomicWriteToFile(String content, File file) throws IOException {
+    atomicWriteToFile(content, file, null);
   }
 
 }

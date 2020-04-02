@@ -45,7 +45,7 @@ import org.slf4j.LoggerFactory;
 @Produces("application/json")
 @Singleton
 public class CredentialRestApi {
-  Logger logger = LoggerFactory.getLogger(CredentialRestApi.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(CredentialRestApi.class);
   private Credentials credentials;
   private AuthenticationService authenticationService;
   private Gson gson = new Gson();
@@ -61,11 +61,9 @@ public class CredentialRestApi {
    *
    * @param message - JSON with entity, username, password.
    * @return JSON with status.OK
-   * @throws IOException
-   * @throws IllegalArgumentException
    */
   @PUT
-  public Response putCredentials(String message) throws IOException, IllegalArgumentException {
+  public Response putCredentials(String message) {
     Map<String, String> messageMap =
         gson.fromJson(message, new TypeToken<Map<String, String>>() {}.getType());
     String entity = messageMap.get("entity");
@@ -75,47 +73,62 @@ public class CredentialRestApi {
     if (Strings.isNullOrEmpty(entity)
         || Strings.isNullOrEmpty(username)
         || Strings.isNullOrEmpty(password)) {
-      return new JsonResponse(Status.BAD_REQUEST).build();
+      return new JsonResponse<>(Status.BAD_REQUEST).build();
     }
 
     String user = authenticationService.getPrincipal();
-    logger.info("Update credentials for user {} entity {}", user, entity);
-    UserCredentials uc = credentials.getUserCredentials(user);
-    uc.putUsernamePassword(entity, new UsernamePassword(username, password));
-    credentials.putUserCredentials(user, uc);
-    return new JsonResponse(Status.OK).build();
+    LOGGER.info("Update credentials for user {} entity {}", user, entity);
+    UserCredentials uc;
+    try {
+      uc = credentials.getUserCredentials(user);
+      uc.putUsernamePassword(entity, new UsernamePassword(username, password));
+      credentials.putUserCredentials(user, uc);
+      return new JsonResponse<>(Status.OK).build();
+    } catch (IOException e) {
+      LOGGER.error(e.getMessage(), e);
+      return new JsonResponse<>(Status.INTERNAL_SERVER_ERROR).build();
+    }
   }
 
   /**
    * Get User Credentials list REST API.
    *
    * @return JSON with status.OK
-   * @throws IllegalArgumentException
    */
   @GET
-  public Response getCredentials() throws IllegalArgumentException {
+  public Response getCredentials() {
     String user = authenticationService.getPrincipal();
-    logger.info("getCredentials credentials for user {} ", user);
-    UserCredentials uc = credentials.getUserCredentials(user);
-    return new JsonResponse<>(Status.OK, uc).build();
+    LOGGER.info("getCredentials for user {} ", user);
+    UserCredentials uc;
+    try {
+      uc = credentials.getUserCredentials(user);
+      return new JsonResponse<>(Status.OK, uc).build();
+    } catch (IOException e) {
+      LOGGER.error(e.getMessage(), e);
+      return new JsonResponse<>(Status.INTERNAL_SERVER_ERROR).build();
+    }
   }
 
   /**
    * Remove User Credentials REST API.
    *
    * @return JSON with status.OK
-   * @throws IOException
-   * @throws IllegalArgumentException
    */
   @DELETE
-  public Response removeCredentials() throws IOException, IllegalArgumentException {
+  public Response removeCredentials() {
     String user = authenticationService.getPrincipal();
-    logger.info("removeCredentials credentials for user {} ", user);
-    UserCredentials uc = credentials.removeUserCredentials(user);
-    if (uc == null) {
-      return new JsonResponse(Status.NOT_FOUND).build();
+    LOGGER.info("removeCredentials for user {} ", user);
+    UserCredentials uc;
+    try {
+      uc = credentials.removeUserCredentials(user);
+      if (uc == null) {
+        return new JsonResponse<>(Status.NOT_FOUND).build();
+      }
+      return new JsonResponse<>(Status.OK).build();
+    } catch (IOException e) {
+      LOGGER.error(e.getMessage(), e);
+      return new JsonResponse<>(Status.INTERNAL_SERVER_ERROR).build();
     }
-    return new JsonResponse(Status.OK).build();
   }
 
   /**
@@ -123,18 +136,20 @@ public class CredentialRestApi {
    *
    * @param
    * @return JSON with status.OK
-   * @throws IOException
-   * @throws IllegalArgumentException
    */
   @DELETE
   @Path("{entity}")
-  public Response removeCredentialEntity(@PathParam("entity") String entity)
-      throws IOException, IllegalArgumentException {
+  public Response removeCredentialEntity(@PathParam("entity") String entity) {
     String user = authenticationService.getPrincipal();
-    logger.info("removeCredentialEntity for user {} entity {}", user, entity);
-    if (!credentials.removeCredentialEntity(user, entity)) {
-      return new JsonResponse(Status.NOT_FOUND).build();
+    LOGGER.info("removeCredentialEntity for user {} entity {}", user, entity);
+    try {
+      if (!credentials.removeCredentialEntity(user, entity)) {
+        return new JsonResponse<>(Status.NOT_FOUND).build();
+      }
+      return new JsonResponse<>(Status.OK).build();
+    } catch (IOException e) {
+      LOGGER.error(e.getMessage(), e);
+      return new JsonResponse<>(Status.INTERNAL_SERVER_ERROR).build();
     }
-    return new JsonResponse(Status.OK).build();
   }
 }

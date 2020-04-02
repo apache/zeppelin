@@ -102,7 +102,7 @@ public class NotebookRepoSyncTest {
     notebookRepoSync = new NotebookRepoSync(conf);
     noteManager = new NoteManager(notebookRepoSync);
     authorizationService = new AuthorizationService(noteManager, conf);
-    credentials = new Credentials(conf.credentialsPersist(), conf.getCredentialsPath(), null);
+    credentials = new Credentials(conf);
     notebook = new Notebook(conf, authorizationService, notebookRepoSync, noteManager, factory, interpreterSettingManager, search, credentials, null);
     anonymous = new AuthenticationInfo("anonymous");
   }

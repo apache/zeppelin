@@ -70,7 +70,7 @@ public class HeliumApplicationFactoryTest extends AbstractInterpreterTest {
             interpreterFactory,
             interpreterSettingManager,
             search,
-            new Credentials(false, null, null));
+            new Credentials());
 
     heliumAppFactory = new HeliumApplicationFactory(notebook, null);
 

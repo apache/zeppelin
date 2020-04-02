@@ -97,7 +97,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     noteManager = new NoteManager(notebookRepo);
     authorizationService = new AuthorizationService(noteManager, conf);
 
-    credentials = new Credentials(conf.credentialsPersist(), conf.getCredentialsPath(), null);
+    credentials = new Credentials(conf);
     notebook = new Notebook(conf, authorizationService, notebookRepo, noteManager, interpreterFactory, interpreterSettingManager, search,
             credentials, null);
     notebook.setParagraphJobListener(this);

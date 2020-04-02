@@ -145,12 +145,7 @@ public class ZeppelinServer extends ResourceConfig {
         new AbstractBinder() {
           @Override
           protected void configure() {
-            Credentials credentials =
-                new Credentials(
-                    conf.credentialsPersist(),
-                    conf.getCredentialsPath(),
-                    conf.getCredentialsEncryptKey());
-
+            Credentials credentials = new Credentials(conf);
             bindAsContract(InterpreterFactory.class).in(Singleton.class);
             bindAsContract(NotebookRepoSync.class).to(NotebookRepo.class).in(Immediate.class);
             bind(LuceneSearch.class).to(SearchService.class).in(Singleton.class);

@@ -526,13 +526,17 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
 
     Credentials credentials = note.getCredentials();
     if (subject != null) {
-      UserCredentials userCredentials =
-          credentials.getUserCredentials(subject.getUser());
+      UserCredentials userCredentials;
+      try {
+        userCredentials = credentials.getUserCredentials(subject.getUser());
+      } catch (IOException e) {
+        LOGGER.warn("Unable to get Usercredentials. Working with empty UserCredentials", e);
+        userCredentials = new UserCredentials();
+      }
       subject.setUserCredentials(userCredentials);
     }
 
-    InterpreterContext interpreterContext =
-        InterpreterContext.builder()
+    return InterpreterContext.builder()
             .setNoteId(note.getId())
             .setNoteName(note.getName())
             .setParagraphId(getId())
@@ -547,7 +551,6 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
             .setAngularObjectRegistry(registry)
             .setResourcePool(resourcePool)
             .build();
-    return interpreterContext;
   }
 
   public void setStatusToUserParagraph(Status status) {
