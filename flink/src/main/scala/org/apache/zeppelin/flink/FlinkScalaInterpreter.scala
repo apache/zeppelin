@@ -79,6 +79,7 @@ class FlinkScalaInterpreter(val properties: Properties) {
 
   private var mode: ExecutionMode.Value = _
 
+  private var tblEnvFactory: TableEnvFactory = _
   private var benv: ExecutionEnvironment = _
   private var senv: StreamExecutionEnvironment = _
 
@@ -229,7 +230,7 @@ class FlinkScalaInterpreter(val properties: Properties) {
         config.externalJars.getOrElse(Array.empty[String]).mkString(":"))
       val classLoader = Thread.currentThread().getContextClassLoader
       try {
-        // use FlinkClassLoader to initialize FlinkILoop, otherwise TableFactoryService could find
+        // use FlinkClassLoader to initialize FlinkILoop, otherwise TableFactoryService could not find
         // the TableFactory properly
         Thread.currentThread().setContextClassLoader(getFlinkClassLoader)
         val repl = new FlinkILoop(configuration, config.externalJars, None, replOut)
@@ -299,7 +300,7 @@ class FlinkScalaInterpreter(val properties: Properties) {
       val flinkFunctionCatalog = new FunctionCatalog(tblConfig, catalogManager, moduleManager);
       val blinkFunctionCatalog = new FunctionCatalog(tblConfig, catalogManager, moduleManager);
 
-      val tblEnvFactory = new TableEnvFactory(this.benv, this.senv, tblConfig,
+      this.tblEnvFactory = new TableEnvFactory(this.benv, this.senv, tblConfig,
         catalogManager, moduleManager, flinkFunctionCatalog, blinkFunctionCatalog)
 
       // blink planner
@@ -547,7 +548,23 @@ class FlinkScalaInterpreter(val properties: Properties) {
     field.get(obj)
   }
 
+  /**
+   * This is just a workaround to make table api work in multiple threads.
+   */
+  def createPlannerAgain(): Unit = {
+    val originalClassLoader = Thread.currentThread().getContextClassLoader
+    try {
+      Thread.currentThread().setContextClassLoader(getFlinkClassLoader)
+      val stEnvSetting =
+        EnvironmentSettings.newInstance().inStreamingMode().useBlinkPlanner().build()
+      this.tblEnvFactory.createPlanner(stEnvSetting)
+    } finally {
+      Thread.currentThread().setContextClassLoader(originalClassLoader)
+    }
+  }
+
   def interpret(code: String, context: InterpreterContext): InterpreterResult = {
+    createPlannerAgain()
     val originalStdOut = System.out
     val originalStdErr = System.err;
     if (context != null) {

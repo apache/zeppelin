@@ -40,6 +40,7 @@ public class IPyFlinkInterpreter extends IPythonInterpreter {
   private FlinkInterpreter flinkInterpreter;
   private InterpreterContext curInterpreterContext;
   private boolean opened = false;
+  private ClassLoader originalClassLoader;
 
   public IPyFlinkInterpreter(Properties property) {
     super(property);
@@ -78,16 +79,26 @@ public class IPyFlinkInterpreter extends IPythonInterpreter {
   public InterpreterResult internalInterpret(String st,
                                              InterpreterContext context)
           throws InterpreterException {
-    // set InterpreterContext in the python thread first, otherwise flink job could not be
-    // associated with paragraph in JobListener
-    this.curInterpreterContext = context;
-    InterpreterResult result =
-            super.internalInterpret("intp.setInterpreterContextInPythonThread()", context);
-    if (result.code() != InterpreterResult.Code.SUCCESS) {
-      throw new InterpreterException("Fail to setInterpreterContextInPythonThread: " +
-              result.toString());
+    try {
+      // set InterpreterContext in the python thread first, otherwise flink job could not be
+      // associated with paragraph in JobListener
+      this.curInterpreterContext = context;
+      InterpreterResult result =
+              super.internalInterpret("intp.initJavaThread()", context);
+      if (result.code() != InterpreterResult.Code.SUCCESS) {
+        throw new InterpreterException("Fail to initJavaThread: " +
+                result.toString());
+      }
+      return super.internalInterpret(st, context);
+    } finally {
+      if (getKernelProcessLauncher().isRunning()) {
+        InterpreterResult result =
+                super.internalInterpret("intp.resetClassLoaderInPythonThread()", context);
+        if (result.code() != InterpreterResult.Code.SUCCESS) {
+          LOGGER.warn("Fail to resetClassLoaderInPythonThread: " + result.toString());
+        }
+      }
     }
-    return super.internalInterpret(st, context);
   }
 
   @Override
@@ -105,8 +116,23 @@ public class IPyFlinkInterpreter extends IPythonInterpreter {
     }
   }
 
-  public void setInterpreterContextInPythonThread() {
+  /**
+   * Called by python process.
+   */
+  public void initJavaThread() {
     InterpreterContext.set(curInterpreterContext);
+    originalClassLoader = Thread.currentThread().getContextClassLoader();
+    Thread.currentThread().setContextClassLoader(flinkInterpreter.getFlinkScalaShellLoader());
+    flinkInterpreter.createPlannerAgain();
+  }
+
+  /**
+   * Called by python process.
+   */
+  public void resetClassLoaderInPythonThread() {
+    if (originalClassLoader != null) {
+      Thread.currentThread().setContextClassLoader(originalClassLoader);
+    }
   }
 
   @Override

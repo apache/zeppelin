@@ -17,7 +17,6 @@
 
 package org.apache.zeppelin.python;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.io.Files;
 import com.google.gson.Gson;
 import org.apache.commons.exec.CommandLine;
@@ -60,7 +59,7 @@ public class PythonInterpreter extends Interpreter {
   private static final int MAX_TIMEOUT_SEC = 30;
 
   private GatewayServer gatewayServer;
-  private PythonProcessLauncher pythonProcessLauncher;
+  protected PythonProcessLauncher pythonProcessLauncher;
   private File pythonWorkDir;
   protected boolean useBuiltinPy4j = true;
 
@@ -163,7 +162,6 @@ public class PythonInterpreter extends Interpreter {
     }
   }
 
-  @VisibleForTesting
   public PythonProcessLauncher getPythonProcessLauncher() {
     return pythonProcessLauncher;
   }
@@ -572,7 +570,7 @@ public class PythonInterpreter extends Interpreter {
     LOGGER.debug("Python Process Output: " + message);
   }
 
-  class PythonProcessLauncher extends ProcessLauncher {
+  public class PythonProcessLauncher extends ProcessLauncher {
 
     PythonProcessLauncher(CommandLine commandLine, Map<String, String> envs) {
       super(commandLine, envs);

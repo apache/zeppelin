@@ -137,6 +137,13 @@ public class FlinkInterpreter extends Interpreter {
     return this.innerIntp.getDefaultSqlParallelism();
   }
 
+  /**
+   * Workaround for issue of FLINK-16936.
+   */
+  public void createPlannerAgain() {
+    this.innerIntp.createPlannerAgain();
+  }
+
   public ClassLoader getFlinkScalaShellLoader() {
     return innerIntp.getFlinkScalaShellLoader();
   }
