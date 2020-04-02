@@ -84,7 +84,7 @@ public class FlinkBatchSqlInterpreterTest extends SqlInterpreterTest {
     // select which use scala udf
     context = getInterpreterContext();
     result = sqlInterpreter.interpret("SELECT addOne(id) as add_one FROM source_table", context);
-    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    assertEquals(new String(context.out.toByteArray()), InterpreterResult.Code.SUCCESS, result.code());
     resultMessages = context.out.toInterpreterResultMessage();
     assertEquals(1, resultMessages.size());
     assertEquals(InterpreterResult.Type.TABLE, resultMessages.get(0).getType());
