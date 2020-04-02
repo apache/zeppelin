@@ -115,7 +115,7 @@ public class NotebookServiceTest {
     when(mockInterpreterGroup.getInterpreterSetting()).thenReturn(mockInterpreterSetting);
     when(mockInterpreterSetting.getStatus()).thenReturn(InterpreterSetting.Status.READY);
     SearchService searchService = new LuceneSearch(zeppelinConfiguration);
-    Credentials credentials = new Credentials(false, null, null);
+    Credentials credentials = new Credentials();
     NoteManager noteManager = new NoteManager(notebookRepo);
     AuthorizationService authorizationService = new AuthorizationService(noteManager, zeppelinConfiguration);
     Notebook notebook =
