@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.interpreter.launcher;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.recovery.RecoveryStorage;
 
@@ -34,16 +35,16 @@ public class FlinkInterpreterLauncher extends StandardInterpreterLauncher {
   public Map<String, String> buildEnvFromProperties(InterpreterLaunchContext context)
           throws IOException {
     Map<String, String> envs = super.buildEnvFromProperties(context);
-    String flinkHome = context.getProperties().getProperty("FLINK_HOME");
-    if (flinkHome == null) {
+    String flinkHome = context.getProperties().getProperty("FLINK_HOME", envs.get("FLINK_HOME"));
+    if (StringUtils.isBlank(flinkHome)) {
       throw new IOException("FLINK_HOME is not specified");
     }
     File flinkHomeFile = new File(flinkHome);
     if (!flinkHomeFile.exists()) {
-      throw new IOException(String.format("FLINK_HOME %s doesn't exist", flinkHome));
+      throw new IOException(String.format("FLINK_HOME '%s' doesn't exist", flinkHome));
     }
     if (flinkHomeFile.isFile()) {
-      throw new IOException(String.format("FLINK_HOME %s is a file, but should be directory",
+      throw new IOException(String.format("FLINK_HOME '%s' is a file, but should be directory",
               flinkHome));
     }
     envs.put("FLINK_CONF_DIR", flinkHome + "/conf");
