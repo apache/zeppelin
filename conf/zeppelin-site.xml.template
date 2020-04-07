@@ -63,7 +63,7 @@
 
 <property>
   <name>zeppelin.note.file.exclude.fields</name>
-  <value>results,status</value>
+  <value></value>
   <description>fields to be excluded from being saved in note files</description>
 </property>
 
