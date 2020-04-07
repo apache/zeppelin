@@ -85,7 +85,7 @@
       "flink.yarn.queue": {
         "envName": null,
         "propertyName": null,
-        "defaultValue": "",
+        "defaultValue": "default",
         "description": "Yarn queue name",
         "type": "string"
       },
