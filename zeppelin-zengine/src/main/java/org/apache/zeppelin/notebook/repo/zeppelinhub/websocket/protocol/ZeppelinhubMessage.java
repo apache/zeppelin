@@ -18,7 +18,7 @@ package org.apache.zeppelin.notebook.repo.zeppelinhub.websocket.protocol;
 
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.common.JsonSerializable;
 import org.apache.zeppelin.notebook.repo.zeppelinhub.websocket.Client;
 import org.apache.zeppelin.notebook.socket.Message;

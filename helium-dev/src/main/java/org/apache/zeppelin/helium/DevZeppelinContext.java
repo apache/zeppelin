@@ -18,7 +18,7 @@
 
 package org.apache.zeppelin.helium;
 
-import org.apache.zeppelin.interpreter.BaseZeppelinContext;
+import org.apache.zeppelin.interpreter.ZeppelinContext;
 import org.apache.zeppelin.interpreter.InterpreterHookRegistry;
 
 import java.util.List;
@@ -27,7 +27,7 @@ import java.util.Map;
 /**
  * ZeppelinContext for DevInterpreter
  */
-public class DevZeppelinContext extends BaseZeppelinContext {
+public class DevZeppelinContext extends ZeppelinContext {
   public DevZeppelinContext(InterpreterHookRegistry hooks, int maxResult) {
     super(hooks, maxResult);
   }

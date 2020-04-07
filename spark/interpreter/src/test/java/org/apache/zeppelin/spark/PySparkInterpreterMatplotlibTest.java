@@ -227,7 +227,7 @@ public class PySparkInterpreterMatplotlibTest {
     // again but in a different color.
     ret = pyspark.interpret("plt.plot([1, 2, 3])", context);
     ret2 = pyspark.interpret("plt.show()", context);
-    assertNotSame(ret1.message().get(0).getData(), ret2.message().get(0).getData());
+    assertEquals(0, ret2.message().size());
   }
 
   @Test

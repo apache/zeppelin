@@ -16,7 +16,7 @@
  */
 package org.apache.zeppelin.integration;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.CommandExecutor;
 import org.apache.zeppelin.ProcessData;
 import org.apache.zeppelin.AbstractZeppelinIT;

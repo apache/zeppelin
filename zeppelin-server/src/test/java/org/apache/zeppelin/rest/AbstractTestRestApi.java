@@ -181,10 +181,12 @@ public abstract class AbstractTestRestApi {
         withAuth, testClassName, withKnox);
 
     if (!WAS_RUNNING) {
+      ZeppelinConfiguration.reset();
       // copy the resources files to a temp folder
       zeppelinHome = new File("..");
       LOG.info("ZEPPELIN_HOME: " + zeppelinHome.getAbsolutePath());
       confDir = new File(zeppelinHome, "conf_" + testClassName);
+      LOG.info("ZEPPELIN_CONF_DIR: " + confDir.getAbsolutePath());
       confDir.mkdirs();
 
       System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HOME.getVarName(),
@@ -212,7 +214,7 @@ public abstract class AbstractTestRestApi {
       new File("../zeppelin-web/dist").mkdirs();
       new File("../zeppelin-web-angular/dist").mkdirs();
 
-      LOG.info("Staring test Zeppelin up...");
+      LOG.info("Starting Zeppelin Server...");
       ZeppelinConfiguration conf = ZeppelinConfiguration.create();
       LOG.info("zconf.getClusterAddress() = {}", conf.getClusterAddress());
 
@@ -252,8 +254,8 @@ public abstract class AbstractTestRestApi {
       if (started == false) {
         throw new RuntimeException("Can not start Zeppelin server");
       }
-      //ZeppelinServer.notebook.setParagraphJobListener(NotebookServer.getInstance());
-      LOG.info("Test Zeppelin stared.");
+
+      LOG.info("Zeppelin Server is started.");
     }
   }
 
@@ -300,10 +302,11 @@ public abstract class AbstractTestRestApi {
       if (shiroIni != null) {
         FileUtils.deleteQuietly(shiroIni);
       }
-      LOG.info("Terminating test Zeppelin...");
+      LOG.info("Terminating Zeppelin Server...");
       ZeppelinServer.jettyWebServer.stop();
       executor.shutdown();
       PluginManager.reset();
+      ZeppelinConfiguration.reset();
 
       long s = System.currentTimeMillis();
       boolean started = true;
@@ -318,7 +321,7 @@ public abstract class AbstractTestRestApi {
         throw new RuntimeException("Can not stop Zeppelin server");
       }
 
-      LOG.info("Test Zeppelin terminated.");
+      LOG.info("Zeppelin Server is terminated.");
 
       if (isRunningWithAuth) {
         isRunningWithAuth = shiroIni.exists();
@@ -330,6 +333,8 @@ public abstract class AbstractTestRestApi {
         // properly
         FileUtils.deleteDirectory(confDir);
       }
+      TestUtils.clearInstances();
+      ZeppelinServer.reset();
     }
 
   }
@@ -595,5 +600,9 @@ public abstract class AbstractTestRestApi {
 
   protected Matcher<? super HttpMethodBase> isNotAllowed() {
     return responsesWith(405);
+  }
+
+  protected Matcher<? super HttpMethodBase> isExpectationFailed() {
+    return responsesWith(417);
   }
 }

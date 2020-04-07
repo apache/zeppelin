@@ -18,8 +18,8 @@
 package org.apache.zeppelin.r;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.exception.ExceptionUtils;
-import org.apache.zeppelin.interpreter.BaseZeppelinContext;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.zeppelin.interpreter.ZeppelinContext;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
@@ -133,7 +133,7 @@ public class IRInterpreter extends JupyterKernelInterpreter {
             .replace("${timeout}", timeout)
             .replace("${isSparkSupported}", "\"" + isSparkSupported() + "\"")
             .replace("${authSecret}", "\"" + sparkRBackend.socketSecret() + "\"");
-    LOGGER.info("Init IRKernel via script:\n" + code);
+    LOGGER.debug("Init IRKernel via script:\n" + code);
     ExecuteResponse response = jupyterKernelClient.block_execute(ExecuteRequest.newBuilder()
             .setCode(code).build());
     if (response.getStatus() != ExecuteStatus.SUCCESS) {
@@ -147,7 +147,7 @@ public class IRInterpreter extends JupyterKernelInterpreter {
   }
 
   @Override
-  public BaseZeppelinContext buildZeppelinContext() {
+  public ZeppelinContext buildZeppelinContext() {
     return new RZeppelinContext(getInterpreterGroup().getInterpreterHookRegistry(),
             Integer.parseInt(getProperty("zeppelin.r.maxResult", "1000")));
   }

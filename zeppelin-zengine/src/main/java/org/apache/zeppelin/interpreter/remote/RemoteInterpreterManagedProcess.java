@@ -21,6 +21,9 @@ import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.ExecuteException;
 import org.apache.commons.exec.environment.EnvironmentUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.hadoop.yarn.util.ConverterUtils;
+import org.apache.zeppelin.interpreter.YarnAppMonitor;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService;
 import org.apache.zeppelin.interpreter.util.ProcessLauncher;
 import org.slf4j.Logger;
@@ -28,6 +31,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * This class manages start / stop of remote interpreter process
@@ -35,6 +40,8 @@ import java.util.Map;
 public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess {
   private static final Logger LOGGER = LoggerFactory.getLogger(
       RemoteInterpreterManagedProcess.class);
+  private static final Pattern YARN_APP_PATTER =
+          Pattern.compile("Submitted application (\\w+)");
 
   private final String interpreterRunner;
   private final int zeppelinServerRPCPort;
@@ -48,6 +55,7 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess {
   private final String interpreterSettingName;
   private final String interpreterGroupId;
   private final boolean isUserImpersonated;
+  private String errorMessage;
 
   private Map<String, String> env;
 
@@ -120,9 +128,18 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess {
               "setting zeppelin.interpreter.connect.timeout of this interpreter.\n" +
               interpreterProcessLauncher.getErrorMessage());
     }
+
     if (!interpreterProcessLauncher.isRunning()) {
       throw new IOException("Fail to launch interpreter process:\n" +
               interpreterProcessLauncher.getErrorMessage());
+    } else {
+      String launchOutput = interpreterProcessLauncher.getProcessLaunchOutput();
+      Matcher m = YARN_APP_PATTER.matcher(launchOutput);
+      if (m.find()) {
+        String appId = m.group(1);
+        LOGGER.info("Detected yarn app: " + appId + ", add it to YarnAppMonitor");
+        YarnAppMonitor.get().addYarnApp(ConverterUtils.toApplicationId(appId), this);
+      }
     }
   }
 
@@ -140,6 +157,9 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess {
       } catch (Exception e) {
         LOGGER.warn("ignore the exception when shutting down", e);
       }
+
+      // Shutdown connection
+      shutdown();
       this.interpreterProcessLauncher.stop();
     }
 
@@ -151,7 +171,14 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess {
   public void processStarted(int port, String host) {
     this.port = port;
     this.host = host;
+    // for yarn cluster it may be transitioned from COMPLETED to RUNNING.
     interpreterProcessLauncher.onProcessRunning();
+  }
+
+  // called when remote interpreter process is stopped, e.g. YarnAppsMonitor will call this
+  // after detecting yarn app is killed/failed.
+  public void processStopped(String errorMessage) {
+    this.errorMessage = errorMessage;
   }
 
   @VisibleForTesting
@@ -188,12 +215,15 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess {
   }
 
   public boolean isRunning() {
-    return interpreterProcessLauncher != null && interpreterProcessLauncher.isRunning();
+    return interpreterProcessLauncher != null && interpreterProcessLauncher.isRunning()
+            && errorMessage == null;
   }
 
   @Override
   public String getErrorMessage() {
-    return this.interpreterProcessLauncher != null ? this.interpreterProcessLauncher.getErrorMessage() : "";
+    String interpreterProcessError = this.interpreterProcessLauncher != null
+            ? this.interpreterProcessLauncher.getErrorMessage() : "";
+    return errorMessage != null ? errorMessage : interpreterProcessError;
   }
 
   private class InterpreterProcessLauncher extends ProcessLauncher {

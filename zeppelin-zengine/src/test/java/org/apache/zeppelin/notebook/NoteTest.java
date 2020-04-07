@@ -24,11 +24,14 @@ import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.interpreter.InterpreterNotFoundException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
+import org.apache.zeppelin.interpreter.ManagedInterpreterGroup;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -57,6 +60,12 @@ public class NoteTest {
   Interpreter interpreter;
 
   @Mock
+  ManagedInterpreterGroup interpreterGroup;
+
+  @Mock
+  InterpreterSetting interpreterSetting;
+
+  @Mock
   Scheduler scheduler;
 
   List<NoteEventListener> noteEventListener = new ArrayList<>();
@@ -68,6 +77,12 @@ public class NoteTest {
   InterpreterSettingManager interpreterSettingManager;
 
   private AuthenticationInfo anonymous = new AuthenticationInfo("anonymous");
+
+  @Before
+  public void setUp() {
+    when(interpreter.getInterpreterGroup()).thenReturn(interpreterGroup);
+    when(interpreterGroup.getInterpreterSetting()).thenReturn(interpreterSetting);
+  }
 
   @Test
   public void runNormalTest() throws InterpreterNotFoundException {

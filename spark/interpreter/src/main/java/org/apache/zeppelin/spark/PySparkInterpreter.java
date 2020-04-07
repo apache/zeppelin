@@ -17,14 +17,15 @@
 
 package org.apache.zeppelin.spark;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.sql.SQLContext;
-import org.apache.zeppelin.interpreter.BaseZeppelinContext;
+import org.apache.zeppelin.interpreter.ZeppelinContext;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.util.InterpreterOutputStream;
 import org.apache.zeppelin.python.IPythonInterpreter;
 import org.apache.zeppelin.python.PythonInterpreter;
 import org.slf4j.Logger;
@@ -32,6 +33,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -118,15 +120,25 @@ public class PySparkInterpreter extends PythonInterpreter {
   }
 
   @Override
-  protected BaseZeppelinContext createZeppelinContext() {
+  protected ZeppelinContext createZeppelinContext() {
     return sparkInterpreter.getZeppelinContext();
   }
 
   @Override
   public InterpreterResult interpret(String st, InterpreterContext context)
       throws InterpreterException {
-    Utils.printDeprecateMessage(sparkInterpreter.getSparkVersion(), context, properties);
-    return super.interpret(st, context);
+    // redirect java stdout/stdout to interpreter output. Because pyspark may call java code.
+    PrintStream originalStdout = System.out;
+    PrintStream originalStderr = System.err;
+    try {
+      System.setOut(new PrintStream(context.out));
+      System.setErr(new PrintStream(context.out));
+      Utils.printDeprecateMessage(sparkInterpreter.getSparkVersion(), context, properties);
+      return super.interpret(st, context);
+    } finally {
+      System.setOut(originalStdout);
+      System.setErr(originalStderr);
+    }
   }
 
   @Override
@@ -165,7 +177,7 @@ public class PySparkInterpreter extends PythonInterpreter {
     return "python";
   }
 
-  public BaseZeppelinContext getZeppelinContext() {
+  public ZeppelinContext getZeppelinContext() {
     if (sparkInterpreter != null) {
       return sparkInterpreter.getZeppelinContext();
     } else {
@@ -198,7 +210,7 @@ public class PySparkInterpreter extends PythonInterpreter {
     }
   }
 
-  public SQLContext getSQLContext() {
+  public Object getSQLContext() {
     if (sparkInterpreter == null) {
       return null;
     } else {
@@ -206,7 +218,7 @@ public class PySparkInterpreter extends PythonInterpreter {
     }
   }
 
-  public boolean isSpark2() {
-    return sparkInterpreter.getSparkVersion().newerThanEquals(SparkVersion.SPARK_2_0_0);
+  public boolean isSpark1() {
+    return sparkInterpreter.getSparkVersion().getMajorVersion() == 1;
   }
 }

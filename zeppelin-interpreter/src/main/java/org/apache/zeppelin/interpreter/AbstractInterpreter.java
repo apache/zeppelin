@@ -17,6 +17,10 @@
 
 package org.apache.zeppelin.interpreter;
 
+import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 public abstract class AbstractInterpreter extends Interpreter {
@@ -29,7 +33,7 @@ public abstract class AbstractInterpreter extends Interpreter {
   public InterpreterResult interpret(String st,
                                      InterpreterContext context) throws InterpreterException {
     InterpreterContext.set(context);
-    BaseZeppelinContext z = getZeppelinContext();
+    ZeppelinContext z = getZeppelinContext();
     if (z != null) {
       z.setGui(context.getGui());
       z.setNoteGui(context.getNoteGui());
@@ -43,7 +47,7 @@ public abstract class AbstractInterpreter extends Interpreter {
     return internalInterpret(st, context);
   }
 
-  public abstract BaseZeppelinContext getZeppelinContext();
+  public abstract ZeppelinContext getZeppelinContext();
 
   protected boolean isInterpolate() {
     return false;
@@ -52,4 +56,11 @@ public abstract class AbstractInterpreter extends Interpreter {
   protected abstract InterpreterResult internalInterpret(
           String st,
           InterpreterContext context) throws InterpreterException;
+
+  @Override
+  public List<InterpreterCompletion> completion(String buf,
+                                                int cursor,
+                                                InterpreterContext interpreterContext) throws InterpreterException {
+    return new ArrayList<>();
+  }
 }

@@ -26,14 +26,14 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
-import java.util.Properties;
+import java.util.LinkedHashMap;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.inject.Inject;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.hadoop.yarn.webapp.hamlet.Hamlet;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.cluster.ClusterManagerServer;
 import org.apache.zeppelin.cluster.event.ClusterEvent;
 import org.apache.zeppelin.cluster.event.ClusterEventListener;
@@ -104,6 +104,7 @@ import static org.apache.zeppelin.cluster.ClusterManagerServer.CLUSTER_INTP_SETT
 @ManagedObject("interpreterSettingManager")
 public class InterpreterSettingManager implements NoteEventListener, ClusterEventListener {
 
+  private static final Pattern VALID_INTERPRETER_NAME = Pattern.compile("^[-_a-zA-Z0-9]+$");
   private static final Logger LOGGER = LoggerFactory.getLogger(InterpreterSettingManager.class);
   private static final Map<String, Object> DEFAULT_EDITOR = ImmutableMap.of(
       "language", (Object) "text",
@@ -256,6 +257,8 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
       // InterpreterSetting, while InterpreterSetting is from interpreter.json which represent
       // the user saved interpreter setting
       if (interpreterSettingTemplate != null) {
+        savedInterpreterSetting.sortPropertiesByTemplate(interpreterSettingTemplate.getProperties());
+        savedInterpreterSetting.fillPropertyDescription(interpreterSettingTemplate.getProperties());
         // merge InterpreterDir, InterpreterInfo & InterpreterRunner
         savedInterpreterSetting.setInterpreterDir(
             interpreterSettingTemplate.getInterpreterDir());
@@ -419,7 +422,7 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
   private void registerInterpreterSetting(List<RegisteredInterpreter> registeredInterpreters,
       String interpreterDir, boolean override) {
 
-    Map<String, DefaultInterpreterProperty> properties = new HashMap<>();
+    Map<String, DefaultInterpreterProperty> properties = new LinkedHashMap<>();
     List<InterpreterInfo> interpreterInfos = new ArrayList<>();
     InterpreterOption option = defaultOption;
     String group = null;
@@ -764,9 +767,16 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
                                                     InterpreterOption option,
                                                     Map<String, InterpreterProperty> properties)
       throws IOException {
-    if (name.indexOf(".") >= 0) {
-      throw new IOException("'.' is invalid for InterpreterSetting name.");
+    if (name == null) {
+      throw new IOException("Interpreter name shouldn't be empty.");
     }
+
+    // check if name is valid
+    Matcher matcher = VALID_INTERPRETER_NAME.matcher(name);
+    if(!matcher.find()){
+      throw new IOException("Interpreter name shouldn't be empty, and can consist only of: -_a-zA-Z0-9");
+    }
+
     // check if name is existed
     for (InterpreterSetting interpreterSetting : interpreterSettings.values()) {
       if (interpreterSetting.getName().equals(name)) {
@@ -824,7 +834,7 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
     dependencyResolver.delRepo(id);
     saveToFile();
   }
-  
+
   /** restart in interpreter setting page */
   private InterpreterSetting inlineSetPropertyAndRestart(
       String id,
@@ -1143,7 +1153,7 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
     ClusterMessage message = new ClusterMessage(event);
     message.put("intpSetting", jsonIntpSetting);
     String msg = ClusterMessage.serializeMessage(message);
-    ClusterManagerServer.getInstance().broadcastClusterEvent(
+    ClusterManagerServer.getInstance(conf).broadcastClusterEvent(
         CLUSTER_INTP_SETTING_EVENT_TOPIC, msg);
   }
 

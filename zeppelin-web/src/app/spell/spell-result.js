@@ -217,7 +217,7 @@ export class SpellResult {
   }
 
   static isObject(data) {
-    return (data &&
+    return (typeof data !== 'undefined' &&
       !SpellResult.isFunction(data) &&
       !SpellResult.isPromise(data));
   }

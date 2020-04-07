@@ -24,7 +24,7 @@ limitations under the License.
          tooltip-placement="bottom"
          uib-tooltip={{noteName(note)}}
          ng-click="input.showEditor = !revisionView; input.value = note.name"
-         ng-show="!input.showEditor"><span>{{notePath(note)}}</span></p>
+         ng-show="!input.showEditor"><span>{{noteName(note)}}</span></p>
     </div>
     <div style="float: left; padding-bottom: 10px">
       <span class="labelBtn btn-group">
@@ -73,7 +73,15 @@ limitations under the License.
               class="btn btn-default btn-xs"
               ng-hide="viewOnly"
               ng-click="exportNote()"
-              tooltip-placement="bottom" uib-tooltip="Export this note"
+              tooltip-placement="bottom" uib-tooltip="Export this note (zpln)"
+              ng-disabled="revisionView">
+        <i class="fa fa-download"></i>
+      </button>
+      <button type="button"
+              class="btn btn-default btn-xs"
+              ng-hide="viewOnly"
+              ng-click="exportNbformat()"
+              tooltip-placement="bottom" uib-tooltip="Export this note (ipynb)"
               ng-disabled="revisionView">
         <i class="fa fa-download"></i>
       </button>

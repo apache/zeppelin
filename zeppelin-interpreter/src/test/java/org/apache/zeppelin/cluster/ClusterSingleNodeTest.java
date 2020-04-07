@@ -16,6 +16,7 @@
  */
 package org.apache.zeppelin.cluster;
 
+import org.apache.commons.configuration.ConfigurationException;
 import org.apache.zeppelin.cluster.meta.ClusterMeta;
 import org.apache.zeppelin.cluster.meta.ClusterMetaType;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
@@ -44,7 +45,7 @@ public class ClusterSingleNodeTest {
   static final String metaKey = "ClusterSingleNodeTestKey";
 
   @BeforeClass
-  public static void startCluster() throws IOException, InterruptedException {
+  public static void startCluster() throws IOException, InterruptedException, ConfigurationException {
     LOGGER.info("startCluster >>>");
 
     zconf = ZeppelinConfiguration.create();
@@ -55,11 +56,12 @@ public class ClusterSingleNodeTest {
     zconf.setClusterAddress(zServerHost + ":" + zServerPort);
 
     // mock cluster manager server
-    clusterServer = ClusterManagerServer.getInstance();
+    zconf.load(ClusterSingleNodeTest.class.getResource("/zeppelin-site-test.xml"));
+    clusterServer = ClusterManagerServer.getInstance(zconf);
     clusterServer.start();
 
     // mock cluster manager client
-    clusterClient = ClusterManagerClient.getInstance();
+    clusterClient = ClusterManagerClient.getInstance(zconf);
     clusterClient.start(metaKey);
 
     // Waiting for cluster startup
@@ -90,6 +92,7 @@ public class ClusterSingleNodeTest {
     if (null != clusterClient) {
       clusterServer.shutdown();
     }
+    ZeppelinConfiguration.reset();
     LOGGER.info("stopCluster");
   }
 

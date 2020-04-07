@@ -19,6 +19,7 @@ package org.apache.zeppelin.flink;
 
 
 import com.google.common.io.Files;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
@@ -27,22 +28,25 @@ import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterEventClient;
+import org.apache.zeppelin.python.IPythonInterpreterTest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Properties;
 
+import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 
-public class IPyFlinkInterpreterTest {
+public class IPyFlinkInterpreterTest extends IPythonInterpreterTest {
 
-  private InterpreterGroup intpGroup;
-  private Interpreter interpreter;
   private RemoteInterpreterEventClient mockIntpEventClient =
           mock(RemoteInterpreterEventClient.class);
+  private LazyOpenInterpreter flinkScalaInterpreter;
 
   protected Properties initIntpProperties() {
     Properties p = new Properties();
@@ -54,17 +58,18 @@ public class IPyFlinkInterpreterTest {
     return p;
   }
 
+  @Override
   protected void startInterpreter(Properties properties) throws InterpreterException {
     InterpreterContext context = getInterpreterContext();
     context.setIntpEventClient(mockIntpEventClient);
     InterpreterContext.set(context);
 
-    LazyOpenInterpreter flinkInterpreter = new LazyOpenInterpreter(
+    this.flinkScalaInterpreter = new LazyOpenInterpreter(
         new FlinkInterpreter(properties));
     intpGroup = new InterpreterGroup();
     intpGroup.put("session_1", new ArrayList<Interpreter>());
-    intpGroup.get("session_1").add(flinkInterpreter);
-    flinkInterpreter.setInterpreterGroup(intpGroup);
+    intpGroup.get("session_1").add(flinkScalaInterpreter);
+    flinkScalaInterpreter.setInterpreterGroup(intpGroup);
 
     LazyOpenInterpreter pyFlinkInterpreter =
         new LazyOpenInterpreter(new PyFlinkInterpreter(properties));
@@ -90,14 +95,18 @@ public class IPyFlinkInterpreterTest {
   }
 
   @Test
-  public void testIPyFlink() throws InterpreterException {
-    testBatchPyFlink(interpreter);
-    testStreamPyFlink(interpreter);
+  public void testBatchIPyFlink() throws InterpreterException {
+    testBatchPyFlink(interpreter, flinkScalaInterpreter);
   }
 
-  public static void testBatchPyFlink(Interpreter interpreter) throws InterpreterException {
+  @Test
+  public void testStreamIPyFlink() throws InterpreterException, IOException {
+    testStreamPyFlink(interpreter, flinkScalaInterpreter);
+  }
+
+  public static void testBatchPyFlink(Interpreter pyflinkInterpreter, Interpreter flinkScalaInterpreter) throws InterpreterException {
     InterpreterContext context = createInterpreterContext(mock(RemoteInterpreterEventClient.class));
-    InterpreterResult result = interpreter.interpret(
+    InterpreterResult result = pyflinkInterpreter.interpret(
         "import tempfile\n" +
         "import os\n" +
         "import shutil\n" +
@@ -124,35 +133,122 @@ public class IPyFlinkInterpreterTest {
         "bt_env.execute(\"batch_job\")"
             , context);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+
+    // use group by
+    context = createInterpreterContext(mock(RemoteInterpreterEventClient.class));
+    result = pyflinkInterpreter.interpret(
+            "import tempfile\n" +
+            "import os\n" +
+            "import shutil\n" +
+            "sink_path = tempfile.gettempdir() + '/streaming.csv'\n" +
+            "if os.path.exists(sink_path):\n" +
+            "    if os.path.isfile(sink_path):\n" +
+            "      os.remove(sink_path)\n" +
+            "    else:\n" +
+            "      shutil.rmtree(sink_path)\n" +
+            "b_env.set_parallelism(1)\n" +
+            "t = bt_env.from_elements([(1, 'hi', 'hello'), (2, 'hi', 'hello')], ['a', 'b', 'c'])\n" +
+            "bt_env.connect(FileSystem().path(sink_path)) \\\n" +
+            "    .with_format(OldCsv()\n" +
+            "      .field_delimiter(',')\n" +
+            "      .field(\"a\", DataTypes.STRING())\n" +
+            "      .field(\"b\", DataTypes.BIGINT())\n" +
+            "      .field(\"c\", DataTypes.BIGINT())) \\\n" +
+            "    .with_schema(Schema()\n" +
+            "      .field(\"a\", DataTypes.STRING())\n" +
+            "      .field(\"b\", DataTypes.BIGINT())\n" +
+            "      .field(\"c\", DataTypes.BIGINT())) \\\n" +
+            "    .register_table_sink(\"batch_sink4\")\n" +
+            "t.group_by(\"c\").select(\"c, sum(a), count(b)\").insert_into(\"batch_sink4\")\n" +
+            "bt_env.execute(\"batch_job4\")"
+            , context);
+    assertEquals(result.toString(),InterpreterResult.Code.SUCCESS, result.code());
+
+    // use scala udf in pyflink
+    // define scala udf
+    result = flinkScalaInterpreter.interpret(
+            "class AddOne extends ScalarFunction {\n" +
+                    "  def eval(a: java.lang.Long): String = a + \"\1\"\n" +
+                    "}", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+
+    result = flinkScalaInterpreter.interpret("btenv.registerFunction(\"addOne\", new AddOne())",
+            context);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+
+    context = createInterpreterContext(mock(RemoteInterpreterEventClient.class));
+    result = pyflinkInterpreter.interpret(
+            "import tempfile\n" +
+            "import os\n" +
+            "import shutil\n" +
+            "sink_path = tempfile.gettempdir() + '/streaming.csv'\n" +
+            "if os.path.exists(sink_path):\n" +
+            "    if os.path.isfile(sink_path):\n" +
+            "      os.remove(sink_path)\n" +
+            "    else:\n" +
+            "      shutil.rmtree(sink_path)\n" +
+            "b_env.set_parallelism(1)\n" +
+            "t = bt_env.from_elements([(1, 'hi', 'hello'), (2, 'hi', 'hello')], ['a', 'b', 'c'])\n" +
+            "bt_env.connect(FileSystem().path(sink_path)) \\\n" +
+            "    .with_format(OldCsv()\n" +
+            "      .field_delimiter(',')\n" +
+            "      .field(\"a\", DataTypes.BIGINT())\n" +
+            "      .field(\"b\", DataTypes.STRING())\n" +
+            "      .field(\"c\", DataTypes.STRING())) \\\n" +
+            "    .with_schema(Schema()\n" +
+            "      .field(\"a\", DataTypes.BIGINT())\n" +
+            "      .field(\"b\", DataTypes.STRING())\n" +
+            "      .field(\"c\", DataTypes.STRING())) \\\n" +
+            "    .register_table_sink(\"batch_sink3\")\n" +
+            "t.select(\"a, addOne(a), c\").insert_into(\"batch_sink3\")\n" +
+            "bt_env.execute(\"batch_job3\")"
+            , context);
+    assertEquals(result.toString(),InterpreterResult.Code.SUCCESS, result.code());
   }
 
-  public static void testStreamPyFlink(Interpreter interpreter) throws InterpreterException {
+  @Override
+  public void testIPythonFailToLaunch() throws InterpreterException {
+    tearDown();
+
+    Properties properties = initIntpProperties();
+    properties.setProperty("zeppelin.pyflink.python", "invalid_python");
+
+    try {
+      startInterpreter(properties);
+      fail("Should not be able to start IPyFlinkInterpreter");
+    } catch (InterpreterException e) {
+      String exceptionMsg = ExceptionUtils.getStackTrace(e);
+      assertTrue(exceptionMsg, exceptionMsg.contains("No such file or directory"));
+    }
+  }
+
+  public static void testStreamPyFlink(Interpreter interpreter, Interpreter flinkScalaInterpreter) throws InterpreterException, IOException {
     InterpreterContext context = createInterpreterContext(mock(RemoteInterpreterEventClient.class));
     InterpreterResult result = interpreter.interpret(
-          "import tempfile\n" +
-          "import os\n" +
-          "import shutil\n" +
-          "sink_path = tempfile.gettempdir() + '/streaming.csv'\n" +
-          "if os.path.exists(sink_path):\n" +
-          "    if os.path.isfile(sink_path):\n" +
-          "      os.remove(sink_path)\n" +
-          "    else:\n" +
-          "      shutil.rmtree(sink_path)\n" +
-          "s_env.set_parallelism(1)\n" +
-          "t = st_env.from_elements([(1, 'hi', 'hello'), (2, 'hi', 'hello')], ['a', 'b', 'c'])\n" +
-          "st_env.connect(FileSystem().path(sink_path)) \\\n" +
-          "    .with_format(OldCsv()\n" +
-          "      .field_delimiter(',')\n" +
-          "      .field(\"a\", DataTypes.BIGINT())\n" +
-          "      .field(\"b\", DataTypes.STRING())\n" +
-          "      .field(\"c\", DataTypes.STRING())) \\\n" +
-          "    .with_schema(Schema()\n" +
-          "      .field(\"a\", DataTypes.BIGINT())\n" +
-          "      .field(\"b\", DataTypes.STRING())\n" +
-          "      .field(\"c\", DataTypes.STRING())) \\\n" +
-          "    .register_table_sink(\"stream_sink\")\n" +
-          "t.select(\"a + 1, b, c\").insert_into(\"stream_sink\")\n" +
-          "st_env.execute(\"stream_job\")"
+            "import tempfile\n" +
+            "import os\n" +
+            "import shutil\n" +
+            "sink_path = tempfile.gettempdir() + '/streaming.csv'\n" +
+            "if os.path.exists(sink_path):\n" +
+            "    if os.path.isfile(sink_path):\n" +
+            "      os.remove(sink_path)\n" +
+            "    else:\n" +
+            "      shutil.rmtree(sink_path)\n" +
+            "s_env.set_parallelism(1)\n" +
+            "t = st_env.from_elements([(1, 'hi', 'hello'), (2, 'hi', 'hello')], ['a', 'b', 'c'])\n" +
+            "st_env.connect(FileSystem().path(sink_path)) \\\n" +
+            "    .with_format(OldCsv()\n" +
+            "      .field_delimiter(',')\n" +
+            "      .field(\"a\", DataTypes.BIGINT())\n" +
+            "      .field(\"b\", DataTypes.STRING())\n" +
+            "      .field(\"c\", DataTypes.STRING())) \\\n" +
+            "    .with_schema(Schema()\n" +
+            "      .field(\"a\", DataTypes.BIGINT())\n" +
+            "      .field(\"b\", DataTypes.STRING())\n" +
+            "      .field(\"c\", DataTypes.STRING())) \\\n" +
+            "    .register_table_sink(\"stream_sink\")\n" +
+            "t.select(\"a + 1, b, c\").insert_into(\"stream_sink\")\n" +
+            "st_env.execute(\"stream_job\")"
             , context);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
   }

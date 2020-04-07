@@ -47,10 +47,20 @@ public class ClusterRestApi {
   private static final Logger LOG = LoggerFactory.getLogger(ClusterRestApi.class);
   Gson gson = new Gson();
 
-  private ClusterManagerServer clusterManagerServer = ClusterManagerServer.getInstance();
+  private ClusterManagerServer clusterManagerServer;
+
 
   // Do not modify, Use by `zeppelin-web/src/app/cluster/cluster.html`
   private static String PROPERTIES = "properties";
+
+  public ClusterRestApi() {
+    ZeppelinConfiguration zConf = ZeppelinConfiguration.create();
+    if (zConf.isClusterMode()) {
+      clusterManagerServer = ClusterManagerServer.getInstance(zConf);
+    } else {
+      LOG.warn("Cluster mode is disabled, ClusterRestApi won't work");
+    }
+  }
 
   @GET
   @Path("/address")

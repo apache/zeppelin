@@ -24,6 +24,7 @@ from pyflink.datastream import *
 from pyflink.table import *
 from pyflink.table.catalog import *
 from pyflink.table.descriptors import *
+from pyflink.table.udf import *
 from pyflink.table.window import *
 
 import pyflink
@@ -45,20 +46,22 @@ pyflink.java_gateway.import_flink_view(gateway)
 pyflink.java_gateway.install_exception_handler()
 
 b_env = pyflink.dataset.ExecutionEnvironment(intp.getJavaExecutionEnvironment())
-bt_env = BatchTableEnvironment.create(b_env)
+bt_env = BatchTableEnvironment(intp.getJavaBatchTableEnvironment("blink"), True)
+bt_env_2 = BatchTableEnvironment(intp.getJavaBatchTableEnvironment("flink"), False)
 s_env = StreamExecutionEnvironment(intp.getJavaStreamExecutionEnvironment())
-st_env = StreamTableEnvironment.create(s_env)
+st_env = StreamTableEnvironment(intp.getJavaStreamTableEnvironment("blink"), True)
+st_env_2 = StreamTableEnvironment(intp.getJavaStreamTableEnvironment("flink"), False)
 
 class IPyFlinkZeppelinContext(PyZeppelinContext):
 
     def __init__(self, z, gateway):
         super(IPyFlinkZeppelinContext, self).__init__(z, gateway)
 
-    def show(self, obj):
+    def show(self, obj, **kwargs):
         from pyflink.table import Table
         if isinstance(obj, Table):
             print(self.z.showData(obj._j_table))
         else:
-            super(IPyFlinkZeppelinContext, self).show(obj)
+            super(IPyFlinkZeppelinContext, self).show(obj, **kwargs)
 
 z = __zeppelin__ = IPyFlinkZeppelinContext(intp.getZeppelinContext(), gateway)

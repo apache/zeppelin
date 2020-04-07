@@ -10,6 +10,7 @@ import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterOption;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -31,10 +32,12 @@ public class FileSystemRecoveryStorageTest extends AbstractInterpreterTest {
     super.setUp();
   }
 
-  @Override
+  @After
   public void tearDown() throws Exception {
     super.tearDown();
     FileUtils.deleteDirectory(recoveryDir);
+    System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_RECOVERY_STORAGE_CLASS.getVarName(),
+            ZeppelinConfiguration.ConfVars.ZEPPELIN_RECOVERY_STORAGE_CLASS.getStringValue());
   }
 
   @Test

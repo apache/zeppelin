@@ -31,6 +31,7 @@ The following guides explain how to use Apache Zeppelin that enables you to writ
 - can query using [PandasSQL](../interpreter/python.html#sql-over-pandas-dataframes)
 - also, provides [PySpark](../interpreter/spark.html)
 - with [matplotlib integration](../interpreter/python.html#matplotlib-integration)
+- support [ipython](../interpreter/python.html#ipython-interpreter-pythonipython-recommended) 
 - can create results including **UI widgets** using [Dynamic Form](../interpreter/python.html#using-zeppelin-dynamic-forms)
 
 <br/>

@@ -44,6 +44,13 @@ public class ClientFactory extends BasePooledObjectFactory<Client>{
     this.port = port;
   }
 
+  public void close() {
+    //Close transfer
+    for (TSocket eachTransfer: clientSocketMap.values()) {
+      eachTransfer.close();
+    }
+  }
+
   @Override
   public Client create() throws Exception {
     TSocket transport = new TSocket(host, port);

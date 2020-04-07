@@ -17,7 +17,7 @@
 
 package org.apache.zeppelin.interpreter;
 
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -85,7 +85,7 @@ public class ConfInterpreter extends Interpreter {
 
   @Override
   public FormType getFormType() throws InterpreterException {
-    return null;
+    return FormType.NATIVE;
   }
 
   @Override

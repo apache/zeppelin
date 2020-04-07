@@ -16,6 +16,7 @@
  */
 package org.apache.zeppelin.rest;
 
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
@@ -228,10 +229,11 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
       p2.setText("%python user2='abc'\nprint(user2)");
 
       PostMethod post = httpPost("/notebook/job/" + note1.getId(), "");
-      assertThat(post, isAllowed());
+      assertThat(post, isExpectationFailed());
       Map<String, Object> resp = gson.fromJson(post.getResponseBodyAsString(),
               new TypeToken<Map<String, Object>>() {}.getType());
-      assertEquals(resp.get("status"), "OK");
+      assertEquals(resp.get("status"), "EXPECTATION_FAILED");
+      assertTrue(resp.get("message").toString().contains("Fail to run note because paragraph"));
       post.releaseConnection();
 
       assertEquals(Job.Status.ERROR, p1.getStatus());

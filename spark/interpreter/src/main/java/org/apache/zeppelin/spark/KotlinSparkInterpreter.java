@@ -21,6 +21,7 @@ import static org.apache.zeppelin.spark.Utils.buildJobDesc;
 import static org.apache.zeppelin.spark.Utils.buildJobGroupId;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.sql.SQLContext;
 import org.apache.spark.util.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,7 +36,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import scala.Console;
-import org.apache.zeppelin.interpreter.BaseZeppelinContext;
+import org.apache.zeppelin.interpreter.ZeppelinContext;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
@@ -53,7 +54,7 @@ public class KotlinSparkInterpreter extends Interpreter {
   private InterpreterResult unsupportedMessage;
   private KotlinInterpreter interpreter;
   private SparkInterpreter sparkInterpreter;
-  private BaseZeppelinContext z;
+  private ZeppelinContext z;
   private JavaSparkContext jsc;
 
   public KotlinSparkInterpreter(Properties properties) {
@@ -78,10 +79,11 @@ public class KotlinSparkInterpreter extends Interpreter {
 
     z = sparkInterpreter.getZeppelinContext();
 
+    // convert Object to SQLContext explicitly, that means Kotlin Spark may not work with Spark 1.x
     SparkKotlinReceiver ctx = new SparkKotlinReceiver(
         sparkInterpreter.getSparkSession(),
         jsc,
-        sparkInterpreter.getSQLContext(),
+        (SQLContext) sparkInterpreter.getSQLContext(),
         z);
 
     List<String> classpath = sparkClasspath();

@@ -19,12 +19,14 @@
 package org.apache.zeppelin.notebook;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
-import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -46,6 +48,7 @@ import java.util.stream.Collectors;
  * TODO(zjffdu) implement the lifecycle manager of Note
  * (release memory if note is not used for some period)
  */
+@Singleton
 public class NoteManager {
   private static final Logger LOGGER = LoggerFactory.getLogger(NoteManager.class);
   public static String TRASH_FOLDER = "~Trash";
@@ -56,6 +59,7 @@ public class NoteManager {
   // noteId -> notePath
   private Map<String, String> notesInfo;
 
+  @Inject
   public NoteManager(NotebookRepo notebookRepo) throws IOException {
     this.notebookRepo = notebookRepo;
     this.root = new Folder("/", notebookRepo);
@@ -170,7 +174,6 @@ public class NoteManager {
 
   public void addNote(Note note, AuthenticationInfo subject) throws IOException {
     addOrUpdateNoteNode(note, true);
-    this.notebookRepo.save(note, subject);
     note.setLoaded(true);
   }
 
@@ -221,7 +224,6 @@ public class NoteManager {
     this.notebookRepo.move(noteId, notePath, newNotePath, subject);
   }
 
-
   public void moveFolder(String folderPath,
                          String newFolderPath,
                          AuthenticationInfo subject) throws IOException {
@@ -264,6 +266,22 @@ public class NoteManager {
     }
 
     return notes;
+  }
+
+  /**
+   * Get note from NotebookRepo.
+   *
+   * @param noteId
+   * @return return null if not found on NotebookRepo.
+   * @throws IOException
+   */
+  public Note getNote(String noteId, boolean forceLoad) throws IOException {
+    String notePath = this.notesInfo.get(noteId);
+    if (notePath == null) {
+      return null;
+    }
+    NoteNode noteNode = getNoteNode(notePath);
+    return noteNode.getNote(forceLoad);
   }
 
   /**
@@ -509,20 +527,25 @@ public class NoteManager {
       this.notebookRepo = notebookRepo;
     }
 
+    public synchronized Note getNote() throws IOException {
+        return getNote(true);
+    }
+
     /**
      * This method will load note from NotebookRepo. If you just want to get noteId, noteName or
      * notePath, you can call method getNoteId, getNoteName & getNotePath
      * @return
      * @throws IOException
      */
-    public synchronized Note getNote() throws IOException {
-      if (!note.isLoaded()) {
+    public synchronized Note getNote(boolean forceLoad) throws IOException {
+      if (!note.isLoaded() && forceLoad) {
         note = notebookRepo.get(note.getId(), note.getPath(), AuthenticationInfo.ANONYMOUS);
         if (parent.toString().equals("/")) {
           note.setPath("/" + note.getName());
         } else {
           note.setPath(parent.toString() + "/" + note.getName());
         }
+        note.setCronSupported(ZeppelinConfiguration.create());
         note.setLoaded(true);
       }
       return note;

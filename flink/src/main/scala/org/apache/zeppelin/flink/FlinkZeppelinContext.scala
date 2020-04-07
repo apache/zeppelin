@@ -21,14 +21,15 @@ package org.apache.zeppelin.flink
 import org.apache.flink.api.scala.DataSet
 import org.apache.flink.streaming.api.scala._
 import org.apache.flink.table.api.internal.TableImpl
-import org.apache.flink.table.api.{Table, TableEnvironment}
+import org.apache.flink.table.api.{Table, TableEnvironment, TableUtils}
 import org.apache.flink.table.api.scala.BatchTableEnvironment
 import org.apache.flink.types.Row
+import org.apache.flink.util.StringUtils
 import org.apache.zeppelin.annotation.ZeppelinApi
 import org.apache.zeppelin.display.AngularObjectWatcher
 import org.apache.zeppelin.display.ui.OptionInput.ParamOption
-import org.apache.zeppelin.flink.util.TableUtil
-import org.apache.zeppelin.interpreter.{BaseZeppelinContext, InterpreterContext, InterpreterHookRegistry, ResultMessages}
+import org.apache.zeppelin.interpreter.{InterpreterContext, InterpreterHookRegistry, ResultMessages, ZeppelinContext}
+import org.apache.zeppelin.tabledata.TableDataUtils
 
 import scala.collection.{JavaConversions, Seq}
 
@@ -37,8 +38,9 @@ import scala.collection.{JavaConversions, Seq}
   * ZeppelinContext for Flink
   */
 class FlinkZeppelinContext(val btenv: TableEnvironment,
+                           val btenv_2: TableEnvironment,
                            val hooks2: InterpreterHookRegistry,
-                           val maxResult2: Int) extends BaseZeppelinContext(hooks2, maxResult2) {
+                           val maxResult2: Int) extends ZeppelinContext(hooks2, maxResult2) {
 
   private var currentSql: String = _
 
@@ -62,59 +64,64 @@ class FlinkZeppelinContext(val btenv: TableEnvironment,
   override def getInterpreterClassMap: _root_.java.util.Map[String, String] =
     JavaConversions.mapAsJavaMap(interpreterClassMap)
 
-  override def showData(obj: Any, maxResult: Int): String = {
-    def showTable(columnsNames: Array[String], rows: Seq[Row]): String = {
-      val columnNames = obj.asInstanceOf[Table].getSchema.getFieldNames
-      val builder: StringBuilder = new StringBuilder("%table ")
-      builder.append(columnNames.mkString("\t"))
-      builder.append("\n")
-      val isLargerThanMaxResult = rows.size > maxResult
-      var displayRows = rows
-      if (isLargerThanMaxResult) {
-        displayRows = rows.take(maxResult)
-      }
-      for (row <- displayRows) {
-        var i = 0;
-        while (i < row.getArity) {
-          builder.append(row.getField(i))
-          i += 1
-          if (i != row.getArity) {
-            builder.append("\t");
-          }
+  private def showTable(columnsNames: Array[String], rows: Seq[Row]): String = {
+    val builder = new java.lang.StringBuilder("%table ")
+    builder.append(columnsNames.mkString("\t"))
+    builder.append("\n")
+    val isLargerThanMaxResult = rows.size > maxResult
+    var displayRows = rows
+    if (isLargerThanMaxResult) {
+      displayRows = rows.take(maxResult)
+    }
+    for (row <- displayRows) {
+      var i = 0;
+      while (i < row.getArity) {
+        // expand array if the column is array
+        builder.append(TableDataUtils.normalizeColumn(StringUtils.arrayAwareToString(row.getField(i))))
+        i += 1
+        if (i != row.getArity) {
+          builder.append("\t");
         }
-        builder.append("\n")
       }
-
-      if (isLargerThanMaxResult) {
-        builder.append("\n")
-        builder.append(ResultMessages.getExceedsLimitRowsMessage(maxResult, "zeppelin.spark.maxResult"))
-      }
-      // append %text at the end, otherwise the following output will be put in table as well.
-      builder.append("\n%text ")
-      builder.toString()
+      builder.append("\n")
     }
 
+    if (isLargerThanMaxResult) {
+      builder.append("\n")
+      builder.append(ResultMessages.getExceedsLimitRowsMessage(maxResult, "zeppelin.spark.maxResult"))
+    }
+    // append %text at the end, otherwise the following output will be put in table as well.
+    builder.append("\n%text ")
+    builder.toString()
+  }
+
+  override def showData(obj: Any, maxResult: Int): String = {
     if (obj.isInstanceOf[DataSet[_]]) {
       val ds = obj.asInstanceOf[DataSet[_]]
-      val env = btenv.asInstanceOf[BatchTableEnvironment]
+      val env = btenv_2.asInstanceOf[BatchTableEnvironment]
       val table = env.fromDataSet(ds)
       val columnNames: Array[String] = table.getSchema.getFieldNames
       val dsRows: DataSet[Row] = env.toDataSet[Row](table)
       showTable(columnNames, dsRows.first(maxResult + 1).collect())
     } else if (obj.isInstanceOf[Table]) {
-      if (btenv.isInstanceOf[BatchTableEnvironment]) {
-        val table = obj.asInstanceOf[Table]
-        val columnNames: Array[String] = table.getSchema.getFieldNames
-        val dsRows: DataSet[Row] = btenv.asInstanceOf[BatchTableEnvironment].toDataSet[Row](table)
-        showTable(columnNames, dsRows.first(maxResult + 1).collect())
-      } else {
-        var rows = TableUtil.collect(obj.asInstanceOf[TableImpl], currentSql)
-        val columnNames = obj.asInstanceOf[Table].getSchema.getFieldNames
-        showTable(columnNames, rows)
-      }
+      val rows = JavaConversions.asScalaBuffer(TableUtils.collectToList(obj.asInstanceOf[TableImpl])).toSeq
+      val columnNames = obj.asInstanceOf[Table].getSchema.getFieldNames
+      showTable(columnNames, rows)
     } else {
       obj.toString
     }
+  }
+
+  def showFlinkTable(table: Table): String = {
+    val columnNames: Array[String] = table.getSchema.getFieldNames
+    val dsRows: DataSet[Row] = btenv.asInstanceOf[BatchTableEnvironment].toDataSet[Row](table)
+    showTable(columnNames, dsRows.first(maxResult + 1).collect())
+  }
+
+  def showBlinkTable(table: Table): String = {
+    val rows = JavaConversions.asScalaBuffer(TableUtils.collectToList(table.asInstanceOf[TableImpl])).toSeq
+    val columnNames = table.getSchema.getFieldNames
+    showTable(columnNames, rows)
   }
 
   @ZeppelinApi

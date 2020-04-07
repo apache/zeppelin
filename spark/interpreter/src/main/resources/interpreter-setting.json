@@ -13,10 +13,10 @@
         "type": "string"
       },
       "master": {
-        "envName": "",
+        "envName": "MASTER",
         "propertyName": "spark.master",
         "defaultValue": "local[*]",
-        "description": "Spark master uri. ex) spark://master_host:7077",
+        "description": "Spark master uri. local | yarn-client | yarn-cluster | spark master address of standalone mode, ex) spark://master_host:7077",
         "type": "string"
       },
       "spark.app.name": {
@@ -31,7 +31,7 @@
         "propertyName": "spark.driver.cores",
         "defaultValue": "1",
         "description": "Number of cores to use for the driver process, only in cluster mode.",
-        "type": "int"
+        "type": "number"
       },
       "spark.driver.memory": {
         "envName": "",
@@ -45,12 +45,12 @@
         "propertyName": "spark.executor.cores",
         "defaultValue": "1",
         "description": "The number of cores to use on each executor",
-        "type": "int"
+        "type": "number"
       },
       "spark.executor.memory": {
         "envName": null,
         "propertyName": "spark.executor.memory",
-        "defaultValue": "",
+        "defaultValue": "1g",
         "description": "Executor memory per worker instance. ex) 512m, 32g",
         "type": "string"
       },
@@ -102,7 +102,7 @@
         "envName": null,
         "propertyName": "zeppelin.spark.enableSupportedVersionCheck",
         "defaultValue": true,
-        "description": "Do not change - developer only setting, not for production use",
+        "description": "Whether checking supported spark version. Developer only setting, not for production use",
         "type": "checkbox"
       },
       "zeppelin.spark.uiWebUrl": {
@@ -116,21 +116,28 @@
         "envName": null,
         "propertyName": "zeppelin.spark.ui.hidden",
         "defaultValue": false,
-        "description": "Whether to hide spark ui in zeppelin ui",
+        "description": "Whether hide spark ui in zeppelin ui",
+        "type": "checkbox"
+      },
+      "spark.webui.yarn.useProxy": {
+        "envName": null,
+        "propertyName": "",
+        "defaultValue": false,
+        "description": "whether use yarn proxy url as spark weburl, e.g. http://localhost:8088/proxy/application_1583396598068_0004",
         "type": "checkbox"
       },
       "zeppelin.spark.scala.color": {
         "envName": null,
         "propertyName": "zeppelin.spark.scala.color",
         "defaultValue": true,
-        "description": "Whether to enable color output of spark scala interpreter",
+        "description": "Whether enable color output of spark scala interpreter",
         "type": "checkbox"
       },
       "zeppelin.spark.deprecatedMsg.show": {
         "envName": null,
         "propertyName": "zeppelin.spark.deprecatedMsg.show",
         "defaultValue": true,
-        "description": "Whether show the spark deprecated message",
+        "description": "Whether show the spark deprecated message, spark 2.2 and before are deprecated. Zeppelin will display warning message by default",
         "type": "checkbox"
       }
     },
@@ -156,7 +163,7 @@
       "zeppelin.spark.concurrentSQL.max": {
         "envName": null,
         "propertyName": "zeppelin.spark.concurrentSQL.max",
-        "defaultValue": 10,
+        "defaultValue": "10",
         "description": "Max number of SQL concurrently executed",
         "type": "number"
       },
@@ -172,20 +179,6 @@
         "propertyName": "zeppelin.spark.sql.interpolation",
         "defaultValue": false,
         "description": "Enable ZeppelinContext variable interpolation into spark sql",
-        "type": "checkbox"
-      },
-      "zeppelin.spark.maxResult": {
-        "envName": null,
-        "propertyName": "zeppelin.spark.maxResult",
-        "defaultValue": "1000",
-        "description": "Max number of Spark SQL result to display.",
-        "type": "number"
-      },
-      "zeppelin.spark.importImplicit": {
-        "envName": null,
-        "propertyName": "zeppelin.spark.importImplicit",
-        "defaultValue": true,
-        "description": "Import implicits, UDF collection, and sql if set true. true by default.",
         "type": "checkbox"
       }
     },
@@ -205,14 +198,14 @@
         "envName": "PYSPARK_PYTHON",
         "propertyName": "PYSPARK_PYTHON",
         "defaultValue": "python",
-        "description": "Python binary executable to use for PySpark in driver only (default is `PYSPARK_PYTHON`). Property <code>spark.pyspark.driver.python</code> take precedence if it is set",
+        "description": "Python binary executable to use for PySpark in both driver and workers (default is python2.7 if available, otherwise python). Property `spark.pyspark.python` take precedence if it is set",
         "type": "string"
       },
       "PYSPARK_DRIVER_PYTHON": {
         "envName": "PYSPARK_DRIVER_PYTHON",
         "propertyName": "PYSPARK_DRIVER_PYTHON",
         "defaultValue": "python",
-        "description": "Python binary executable to use for PySpark in driver only (default is `PYSPARK_PYTHON`). Property <code>spark.pyspark.driver.python</code> take precedence if it is set",
+        "description": "Python binary executable to use for PySpark in driver only (default is `PYSPARK_PYTHON`). Property `spark.pyspark.driver.python` take precedence if it is set",
         "type": "string"
       },
       "zeppelin.pyspark.useIPython": {
@@ -265,7 +258,7 @@
         "envName": null,
         "propertyName": "zeppelin.R.image.width",
         "defaultValue": "100%",
-        "description": "",
+        "description": "Image width of R plotting",
         "type": "number"
       },
       "zeppelin.R.render.options": {

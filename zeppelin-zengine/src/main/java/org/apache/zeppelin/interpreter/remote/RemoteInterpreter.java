@@ -162,7 +162,7 @@ public class RemoteInterpreter extends Interpreter {
       if (!isCreated) {
         this.interpreterProcess = getOrCreateInterpreterProcess();
         if (!interpreterProcess.isRunning()) {
-          throw new IOException("Interpreter process is not running:\n" +
+          throw new IOException("Interpreter process is not running\n" +
                   interpreterProcess.getErrorMessage());
         }
         interpreterProcess.callRemoteFunction(new RemoteInterpreterProcess.RemoteFunction<Void>() {
@@ -218,8 +218,8 @@ public class RemoteInterpreter extends Interpreter {
       throw new InterpreterException(e);
     }
     if (!interpreterProcess.isRunning()) {
-      throw new InterpreterException("Interpreter process is not running:\n" +
-              interpreterProcess.getErrorMessage());
+      return new InterpreterResult(InterpreterResult.Code.ERROR,
+              "Interpreter process is not running\n" + interpreterProcess.getErrorMessage());
     }
     this.lifecycleManager.onInterpreterUse(this.getInterpreterGroup(), sessionId);
     return interpreterProcess.callRemoteFunction(

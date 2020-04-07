@@ -19,7 +19,7 @@ package org.apache.zeppelin.spark;
 
 import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.zeppelin.interpreter.BaseZeppelinContext;
+import org.apache.zeppelin.interpreter.ZeppelinContext;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
@@ -42,7 +42,7 @@ public class SparkRInterpreter extends RInterpreter {
 
   private SparkInterpreter sparkInterpreter;
   private SparkVersion sparkVersion;
-  private boolean isSpark2;
+  private boolean isSpark1;
   private SparkContext sc;
   private JavaSparkContext jsc;
 
@@ -71,11 +71,11 @@ public class SparkRInterpreter extends RInterpreter {
     this.sc = sparkInterpreter.getSparkContext();
     this.jsc = sparkInterpreter.getJavaSparkContext();
     this.sparkVersion = new SparkVersion(sc.version());
-    this.isSpark2 = sparkVersion.newerThanEquals(SparkVersion.SPARK_2_0_0);
+    this.isSpark1 = sparkVersion.getMajorVersion() == 1;
 
     ZeppelinRContext.setSparkContext(sc);
     ZeppelinRContext.setJavaSparkContext(jsc);
-    if (isSpark2) {
+    if (!isSpark1) {
       ZeppelinRContext.setSparkSession(sparkInterpreter.getSparkSession());
     }
     ZeppelinRContext.setSqlContext(sparkInterpreter.getSQLContext());
@@ -93,7 +93,7 @@ public class SparkRInterpreter extends RInterpreter {
     sparkInterpreter.getSparkContext().setJobGroup(jobGroup, jobDesc, false);
     String setJobGroup = "";
     // assign setJobGroup to dummy__, otherwise it would print NULL for this statement
-    if (isSpark2) {
+    if (!isSpark1) {
       setJobGroup = "dummy__ <- setJobGroup(\"" + jobGroup +
           "\", \" +" + jobDesc + "\", TRUE)";
     } else {
@@ -150,7 +150,7 @@ public class SparkRInterpreter extends RInterpreter {
   }
 
   @Override
-  public BaseZeppelinContext getZeppelinContext() {
+  public ZeppelinContext getZeppelinContext() {
     return sparkInterpreter.getZeppelinContext();
   }
 
@@ -158,5 +158,9 @@ public class SparkRInterpreter extends RInterpreter {
   public List<InterpreterCompletion> completion(String buf, int cursor,
                                                 InterpreterContext interpreterContext) {
     return new ArrayList<>();
+  }
+
+  public boolean isSpark1() {
+    return isSpark1;
   }
 }

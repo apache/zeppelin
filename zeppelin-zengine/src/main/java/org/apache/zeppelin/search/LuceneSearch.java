@@ -20,7 +20,6 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
@@ -30,7 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import javax.inject.Inject;
-import org.apache.commons.io.FileUtils;
+
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
@@ -57,7 +56,7 @@ import org.apache.lucene.search.highlight.SimpleHTMLFormatter;
 import org.apache.lucene.search.highlight.TextFragment;
 import org.apache.lucene.search.highlight.TokenSources;
 import org.apache.lucene.store.Directory;
-import org.apache.lucene.store.MMapDirectory;
+import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.RAMDirectory;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.Note;
@@ -78,34 +77,32 @@ public class LuceneSearch extends SearchService {
   private static final String PARAGRAPH = "paragraph";
   private static final String ID_FIELD = "id";
 
-  private final ZeppelinConfiguration zeppelinConfiguration;
-  private Directory directory;
-  private Path directoryPath;
+  private Path indexPath;
+  private Directory indexDirectory;
   private Analyzer analyzer;
   private IndexWriterConfig indexWriterConfig;
   private IndexWriter indexWriter;
 
   @Inject
-  public LuceneSearch(ZeppelinConfiguration zeppelinConfiguration) {
+  public LuceneSearch(ZeppelinConfiguration conf) {
     super("LuceneSearch-Thread");
-    this.zeppelinConfiguration = zeppelinConfiguration;
-    if (zeppelinConfiguration.isZeppelinSearchUseDisk()) {
+
+    if (conf.isZeppelinSearchUseDisk()) {
       try {
-        this.directoryPath =
-            Files.createTempDirectory(
-                Paths.get(zeppelinConfiguration.getZeppelinSearchTempPath()), "zeppelin-search-");
-        this.directory = new MMapDirectory(directoryPath);
+        this.indexPath = Paths.get(conf.getZeppelinSearchIndexPath());
+        this.indexDirectory = FSDirectory.open(indexPath);
+        logger.info("Use {} for storing lucene search index", this.indexPath);
       } catch (IOException e) {
         throw new RuntimeException(
-            "Failed to create temporary directory for search service. Use memory instead", e);
+            "Failed to create index directory for search service. Use memory instead", e);
       }
     } else {
-      this.directory = new RAMDirectory();
+      this.indexDirectory = new RAMDirectory();
     }
     this.analyzer = new StandardAnalyzer();
     this.indexWriterConfig = new IndexWriterConfig(analyzer);
     try {
-      this.indexWriter = new IndexWriter(directory, indexWriterConfig);
+      this.indexWriter = new IndexWriter(indexDirectory, indexWriterConfig);
     } catch (IOException e) {
       logger.error("Failed to create new IndexWriter", e);
     }
@@ -116,12 +113,12 @@ public class LuceneSearch extends SearchService {
    */
   @Override
   public List<Map<String, String>> query(String queryStr) {
-    if (null == directory) {
+    if (null == indexDirectory) {
       throw new IllegalStateException(
           "Something went wrong on instance creation time, index dir is null");
     }
     List<Map<String, String>> result = Collections.emptyList();
-    try (IndexReader indexReader = DirectoryReader.open(directory)) {
+    try (IndexReader indexReader = DirectoryReader.open(indexDirectory)) {
       IndexSearcher indexSearcher = new IndexSearcher(indexReader);
       Analyzer analyzer = new StandardAnalyzer();
       MultiFieldQueryParser parser =
@@ -135,7 +132,7 @@ public class LuceneSearch extends SearchService {
 
       result = doSearch(indexSearcher, query, analyzer, highlighter);
     } catch (IOException e) {
-      logger.error("Failed to open index dir {}, make sure indexing finished OK", directory, e);
+      logger.error("Failed to open index dir {}, make sure indexing finished OK", indexDirectory, e);
     } catch (ParseException e) {
       logger.error("Failed to parse query " + queryStr, e);
     }
@@ -248,7 +245,7 @@ public class LuceneSearch extends SearchService {
       indexWriter.updateDocument(new Term(ID_FIELD, id), doc);
       indexWriter.commit();
     } catch (IOException e) {
-      logger.error("Failed to updaet index of notebook {}", noteId, e);
+      logger.error("Failed to update index of notebook {}", noteId, e);
     }
   }
 
@@ -396,9 +393,6 @@ public class LuceneSearch extends SearchService {
   public void close() {
     try {
       indexWriter.close();
-      if (zeppelinConfiguration.isZeppelinNotebookCronEnable() && null != directoryPath) {
-        FileUtils.deleteDirectory(directoryPath.toFile());
-      }
     } catch (IOException e) {
       logger.error("Failed to .close() the notebook index", e);
     }
@@ -424,5 +418,18 @@ public class LuceneSearch extends SearchService {
     String id = formatId(noteId, p);
     Document doc = newDocument(id, noteName, p);
     w.addDocument(doc);
+  }
+
+  @Override
+  public void startRebuildIndex(List<Note> notes) {
+    Thread thread = new Thread(() -> {
+      logger.info("Starting rebuild index");
+      for (Note note:  notes) {
+        addIndexDoc(note);
+      }
+      logger.info("Finish rebuild index");
+    });
+    thread.setName("LuceneSearch-RebuildIndex-Thread");
+    thread.start();
   }
 }

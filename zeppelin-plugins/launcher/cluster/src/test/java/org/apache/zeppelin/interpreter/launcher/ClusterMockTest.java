@@ -61,11 +61,11 @@ public class ClusterMockTest {
     zconf.setClusterAddress(zServerHost + ":" + zServerPort);
 
     // mock cluster manager server
-    clusterServer = ClusterManagerServer.getInstance();
+    clusterServer = ClusterManagerServer.getInstance(zconf);
     clusterServer.start();
 
     // mock cluster manager client
-    clusterClient = ClusterManagerClient.getInstance();
+    clusterClient = ClusterManagerClient.getInstance(zconf);
     clusterClient.start(metaKey);
 
     // Waiting for cluster startup
@@ -104,7 +104,7 @@ public class ClusterMockTest {
     }
 
     tSocket.close();
-
+    ZeppelinConfiguration.reset();
     LOGGER.info("stopCluster <<<");
   }
 

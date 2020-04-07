@@ -42,6 +42,7 @@ import static org.junit.Assert.assertTrue;
 public class IRKernelTest {
 
   protected Interpreter interpreter;
+  protected static boolean ENABLE_GOOGLEVIS_TEST = true;
 
   protected Interpreter createInterpreter(Properties properties) {
     return new JupyterInterpreter(properties);
@@ -90,6 +91,22 @@ public class IRKernelTest {
     assertTrue(resultMessages.toString(),
             resultMessages.get(0).getData().contains("object 'unknown_var' not found"));
 
+    context = getInterpreterContext();
+    result = interpreter.interpret("foo <- TRUE\n" +
+            "print(foo)\n" +
+            "bare <- c(1, 2.5, 4)\n" +
+            "print(bare)\n" +
+            "double <- 15.0\n" +
+            "print(double)", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    resultMessages = context.out.toInterpreterResultMessage();
+    assertEquals(1, resultMessages.size());
+    assertEquals(result.toString(), InterpreterResult.Type.TEXT, resultMessages.get(0).getType());
+    assertTrue(resultMessages.toString(),
+            resultMessages.get(0).getData().contains("[1] TRUE\n" +
+                    "[1] 1.0 2.5 4.0\n" +
+                    "[1] 15\n"));
+
     // plotting
     context = getInterpreterContext();
     result = interpreter.interpret("hist(mtcars$mpg)", context);
@@ -99,6 +116,7 @@ public class IRKernelTest {
     assertEquals(resultMessages.toString(),
             InterpreterResult.Type.IMG, resultMessages.get(0).getType());
 
+    // ggplot2
     result = interpreter.interpret("library(ggplot2)\n" +
             "ggplot(diamonds, aes(x=carat, y=price, color=cut)) + geom_point()",
             getInterpreterContext());
@@ -107,6 +125,25 @@ public class IRKernelTest {
     assertEquals(1, resultMessages.size());
     assertEquals(resultMessages.toString(),
             InterpreterResult.Type.IMG, resultMessages.get(0).getType());
+
+    // googlevis
+    // TODO(zjffdu) It is weird that googlevis doesn't work with spark 2.2
+    if (ENABLE_GOOGLEVIS_TEST) {
+      context = getInterpreterContext();
+      result = interpreter.interpret("library(googleVis)\n" +
+              "df=data.frame(country=c(\"US\", \"GB\", \"BR\"), \n" +
+              "              val1=c(10,13,14), \n" +
+              "              val2=c(23,12,32))\n" +
+              "Bar <- gvisBarChart(df)\n" +
+              "print(Bar, tag = 'chart')", context);
+      assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+      resultMessages = context.out.toInterpreterResultMessage();
+      assertEquals(2, resultMessages.size());
+      assertEquals(resultMessages.toString(),
+              InterpreterResult.Type.HTML, resultMessages.get(1).getType());
+      assertTrue(resultMessages.get(1).getData(),
+              resultMessages.get(1).getData().contains("javascript"));
+    }
   }
 
   protected InterpreterContext getInterpreterContext() {

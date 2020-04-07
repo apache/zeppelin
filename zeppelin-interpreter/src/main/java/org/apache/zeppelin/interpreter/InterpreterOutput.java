@@ -17,7 +17,7 @@
 package org.apache.zeppelin.interpreter;
 
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -329,9 +329,11 @@ public class InterpreterOutput extends OutputStream {
     List<InterpreterResultMessage> list = new LinkedList<>();
     synchronized (resultMessageOutputs) {
       for (InterpreterResultMessageOutput out : resultMessageOutputs) {
-        if (out.toInterpreterResultMessage().getType() == InterpreterResult.Type.TEXT &&
+        InterpreterResultMessage msg = out.toInterpreterResultMessage();
+        if ((msg.getType() == InterpreterResult.Type.TEXT ||
+                msg.getType() == InterpreterResult.Type.HTML) &&
                 StringUtils.isBlank(out.toInterpreterResultMessage().getData())) {
-          // skip blank text, because when print table data we usually need to print '%text \n'
+          // skip blank text/html, because when print table data we usually need to print '%text \n'
           // first to separate it from previous other kind of data. e.g. z.show(df)
           continue;
         }

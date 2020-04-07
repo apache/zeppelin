@@ -133,4 +133,6 @@ public abstract class SearchService extends NoteEventAsyncListener {
       e.printStackTrace();
     }
   }
+
+  public abstract void startRebuildIndex(List<Note> notes);
 }

@@ -24,6 +24,7 @@ import java.util.Set;
 
 import javax.inject.Inject;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Notebook;
@@ -47,21 +48,36 @@ public class QuartzSchedulerService implements SchedulerService {
   private final ZeppelinConfiguration zeppelinConfiguration;
   private final Notebook notebook;
   private final Scheduler scheduler;
+  private final Thread loadingNotesThread;
 
   @Inject
   public QuartzSchedulerService(ZeppelinConfiguration zeppelinConfiguration, Notebook notebook)
       throws SchedulerException {
     this.zeppelinConfiguration = zeppelinConfiguration;
     this.notebook = notebook;
-    this.scheduler = new StdSchedulerFactory().getScheduler();
+    this.scheduler = getScheduler();
     this.scheduler.start();
 
     // Do in a separated thread because there may be many notes,
     // loop all notes in the main thread may block the restarting of Zeppelin server
-    Thread loadingNotesThread = new Thread(() -> {
+    // TODO(zjffdu) It may cause issue when user delete note before this thread is finished
+    this.loadingNotesThread = new Thread(() -> {
         LOGGER.info("Starting init cronjobs");
         notebook.getNotesInfo().stream()
-                .forEach(entry -> refreshCron(entry.getId()));
+                .forEach(entry -> {
+                  try {
+                    if (!refreshCron(entry.getId())) {
+                      try {
+                        LOGGER.debug("Unload note: " + entry.getId());
+                        notebook.getNote(entry.getId()).unLoad();
+                      } catch (Exception e) {
+                        LOGGER.warn("Fail to unload note: " + entry.getId(), e);
+                      }
+                    }
+                  } catch (Exception e) {
+                    LOGGER.warn("Fail to refresh cron for note: " + entry.getId());
+                  }
+                });
         LOGGER.info("Complete init cronjobs");
     });
     loadingNotesThread.setName("Init CronJob Thread");
@@ -69,32 +85,59 @@ public class QuartzSchedulerService implements SchedulerService {
     loadingNotesThread.start();
   }
 
+  private Scheduler getScheduler() throws SchedulerException {
+    // Make sure to not check for Quartz update since this leaks information about running process
+    // http://www.quartz-scheduler.org/documentation/2.4.0-SNAPSHOT/best-practices.html#skip-update-check
+    System.setProperty(StdSchedulerFactory.PROP_SCHED_SKIP_UPDATE_CHECK, "true");
+    return new StdSchedulerFactory().getScheduler();
+  }
+
+  /**
+   * This is only for testing, unit test should always call this method in setup() before testing.
+   */
+  @VisibleForTesting
+  public void waitForFinishInit() {
+    try {
+      loadingNotesThread.join();
+    } catch (InterruptedException e) {
+      LOGGER.warn("Unexpected exception", e);
+    }
+  }
+
   @Override
-  public void refreshCron(String noteId) {
+  public boolean refreshCron(String noteId) {
     removeCron(noteId);
     Note note = null;
     try {
       note = notebook.getNote(noteId);
     } catch (IOException e) {
-      LOGGER.warn("Fail to get note: " + noteId, e);
-      return;
+      LOGGER.warn("Skip refresh cron of note: " + noteId + " because fail to get it", e);
+      return false;
     }
-    if (note == null || note.isTrash()) {
-      return;
+    if (note == null) {
+      LOGGER.warn("Skip refresh cron of note: " + noteId + " because there's no such note");
+      return false;
     }
+    if (note.isTrash()) {
+      LOGGER.warn("Skip refresh cron of note: " + noteId + " because it is in trash");
+      return false;
+    }
+
     Map<String, Object> config = note.getConfig();
     if (config == null) {
-      return;
+      LOGGER.warn("Skip refresh cron of note: " + noteId + " because its config is empty.");
+      return false;
     }
 
     if (!note.isCronSupported(zeppelinConfiguration)) {
-      LOGGER.warn("execution of the cron job is skipped cron is not enabled from Zeppelin server");
-      return;
+      LOGGER.warn("Skip refresh cron of note " + noteId + " because its cron is not enabled.");
+      return false;
     }
 
     String cronExpr = (String) note.getConfig().get("cron");
     if (cronExpr == null || cronExpr.trim().length() == 0) {
-      return;
+      LOGGER.warn("Skip refresh cron of note " + noteId + " because its cron expression is empty.");
+      return false;
     }
 
     JobDataMap jobDataMap =
@@ -122,17 +165,19 @@ public class QuartzSchedulerService implements SchedulerService {
               .forJob(noteId, "note")
               .build();
     } catch (Exception e) {
-      LOGGER.error("Error", e);
+      LOGGER.error("Fail to create cron trigger for note: " + note.getName(), e);
       info.put("cron", e.getMessage());
+      return false;
     }
 
     try {
-      if (trigger != null) {
-        scheduler.scheduleJob(newJob, trigger);
-      }
+      LOGGER.info("Trigger cron for note: " + note.getName() + ", with cron expression: " + cronExpr);
+      scheduler.scheduleJob(newJob, trigger);
+      return true;
     } catch (SchedulerException e) {
-      LOGGER.error("Error", e);
+      LOGGER.error("Fail to schedule cron job for note: " + note.getName(), e);
       info.put("cron", "Scheduler Exception");
+      return false;
     }
   }
 

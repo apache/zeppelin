@@ -130,10 +130,9 @@ public class ShiroAuthenticationService implements AuthenticationService {
   }
 
   @Override
-  public Collection getRealmsList() {
-    DefaultWebSecurityManager defaultWebSecurityManager;
+  public Collection<Realm> getRealmsList() {
     String key = ThreadContext.SECURITY_MANAGER_KEY;
-    defaultWebSecurityManager = (DefaultWebSecurityManager) ThreadContext.get(key);
+    DefaultWebSecurityManager defaultWebSecurityManager = (DefaultWebSecurityManager) ThreadContext.get(key);
     return defaultWebSecurityManager.getRealms();
   }
 
@@ -154,7 +153,7 @@ public class ShiroAuthenticationService implements AuthenticationService {
   public List<String> getMatchedUsers(String searchText, int numUsersToFetch) {
     List<String> usersList = new ArrayList<>();
     try {
-      Collection<Realm> realmsList = (Collection<Realm>) getRealmsList();
+      Collection<Realm> realmsList = getRealmsList();
       if (realmsList != null) {
         for (Realm realm : realmsList) {
           String realClassName = realm.getClass().getName();
@@ -188,10 +187,9 @@ public class ShiroAuthenticationService implements AuthenticationService {
   public List<String> getMatchedRoles() {
     List<String> rolesList = new ArrayList<>();
     try {
-      Collection realmsList = getRealmsList();
+      Collection<Realm> realmsList = getRealmsList();
       if (realmsList != null) {
-        for (Iterator<Realm> iterator = realmsList.iterator(); iterator.hasNext(); ) {
-          Realm realm = iterator.next();
+        for (Realm realm : realmsList) {
           String name = realm.getClass().getName();
           LOGGER.debug("RealmClass.getName: " + name);
           if (name.equals("org.apache.shiro.realm.text.IniRealm")) {
@@ -220,9 +218,8 @@ public class ShiroAuthenticationService implements AuthenticationService {
     Map allRoles = null;
 
     if (subject.isAuthenticated()) {
-      Collection realmsList = getRealmsList();
-      for (Iterator<Realm> iterator = realmsList.iterator(); iterator.hasNext(); ) {
-        Realm realm = iterator.next();
+      Collection<Realm> realmsList = getRealmsList();
+      for (Realm realm : realmsList) {
         String name = realm.getClass().getName();
         if (name.equals("org.apache.shiro.realm.text.IniRealm")) {
           allRoles = ((IniRealm) realm).getIni().get("roles");

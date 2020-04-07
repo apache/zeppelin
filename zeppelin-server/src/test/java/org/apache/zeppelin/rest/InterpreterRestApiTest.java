@@ -25,6 +25,7 @@ import org.apache.commons.httpclient.methods.DeleteMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.PutMethod;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.interpreter.InterpreterOption;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.notebook.Note;
@@ -234,6 +235,62 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
     post.releaseConnection();
   }
 
+  @Test
+  public void testSettingsCreateWithInvalidName() throws IOException {
+    String reqBody = "{"
+        + "\"name\": \"mdName\","
+        + "\"group\": \"md\","
+        + "\"properties\": {"
+        + "\"propname\": {"
+        + "\"value\": \"propvalue\","
+        + "\"name\": \"propname\","
+        + "\"type\": \"textarea\""
+        + "}"
+        + "},"
+        + "\"interpreterGroup\": ["
+        + "{"
+        + "\"class\": \"org.apache.zeppelin.markdown.Markdown\","
+        + "\"name\": \"md\""
+        + "}"
+        + "],"
+        + "\"dependencies\": [],"
+        + "\"option\": {"
+        + "\"remote\": true,"
+        + "\"session\": false"
+        + "}"
+        + "}";
+    JsonObject jsonRequest = gson.fromJson(StringUtils.replace(reqBody, "mdName", "mdValidName"), JsonElement.class).getAsJsonObject();
+    PostMethod post = httpPost("/interpreter/setting/", jsonRequest.toString());
+    String postResponse = post.getResponseBodyAsString();
+    LOG.info("testSetting with valid name\n" + post.getResponseBodyAsString());
+    InterpreterSetting created = convertResponseToInterpreterSetting(postResponse);
+    String newSettingId = created.getId();
+    // then : call create setting API
+    assertThat("test create method:", post, isAllowed());
+    post.releaseConnection();
+
+    // when: call delete setting API
+    DeleteMethod delete = httpDelete("/interpreter/setting/" + newSettingId);
+    LOG.info("testSetting delete response\n" + delete.getResponseBodyAsString());
+    // then: call delete setting API
+    assertThat("Test delete method:", delete, isAllowed());
+    delete.releaseConnection();
+
+
+    JsonObject jsonRequest2 = gson.fromJson(StringUtils.replace(reqBody, "mdName", "name space"), JsonElement.class).getAsJsonObject();
+    PostMethod post2 = httpPost("/interpreter/setting/", jsonRequest2.toString());
+    LOG.info("testSetting with name with space\n" + post2.getResponseBodyAsString());
+    assertThat("test create method with space:", post2, isNotFound());
+    post2.releaseConnection();
+
+    JsonObject jsonRequest3 = gson.fromJson(StringUtils.replace(reqBody, "mdName", ""), JsonElement.class).getAsJsonObject();
+    PostMethod post3 = httpPost("/interpreter/setting/", jsonRequest3.toString());
+    LOG.info("testSetting with empty name\n" + post3.getResponseBodyAsString());
+    assertThat("test create method with empty name:", post3, isNotFound());
+    post3.releaseConnection();
+
+  }
+
   public void testInterpreterRestart() throws IOException, InterruptedException {
     Note note = null;
     try {
@@ -255,7 +312,7 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
       assertEquals(p.getReturn().message().get(0).getData(), getSimulatedMarkdownResult("markdown"));
 
       // when: restart interpreter
-      for (InterpreterSetting setting : note.getBindedInterpreterSettings()) {
+      for (InterpreterSetting setting : note.getBindedInterpreterSettings(new ArrayList<>())) {
         if (setting.getName().equals("md")) {
           // call restart interpreter API
           PutMethod put = httpPut("/interpreter/setting/restart/" + setting.getId(), "");
@@ -308,7 +365,7 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
 
       // when: get md interpreter
       InterpreterSetting mdIntpSetting = null;
-      for (InterpreterSetting setting : note.getBindedInterpreterSettings()) {
+      for (InterpreterSetting setting : note.getBindedInterpreterSettings(new ArrayList<>())) {
         if (setting.getName().equals("md")) {
           mdIntpSetting = setting;
           break;

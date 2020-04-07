@@ -74,7 +74,7 @@
           </transformers>
           <artifactSet>
             <excludes>
-              <exclude>org.apache.zeppelin:zeppelin-interpreter-api</exclude>
+              <exclude>org.apache.zeppelin:zeppelin-interpreter-shaded</exclude>
             </excludes>
           </artifactSet>
           <relocations>

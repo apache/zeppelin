@@ -249,7 +249,7 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
   });
 
   $scope.exportNote = function() {
-    let jsonContent = JSON.stringify($scope.note);
+    let jsonContent = JSON.stringify($scope.note, null, 2);
     if (jsonContent.length > limit) {
       BootstrapDialog.confirm({
         closable: true,
@@ -257,13 +257,18 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
         message: 'Do you still want to export this note?',
         callback: function(result) {
           if (result) {
-            saveAsService.saveAs(jsonContent, $scope.note.name, 'json');
+            saveAsService.saveAs(jsonContent, $scope.note.name, 'zpln');
           }
         },
       });
     } else {
-      saveAsService.saveAs(jsonContent, $scope.note.name, 'json');
+      saveAsService.saveAs(jsonContent, $scope.note.name, 'zpln');
     }
+  };
+
+  // Export nbformat
+  $scope.exportNbformat = function() {
+    websocketMsgSrv.convertNote($scope.note.id, $scope.note.name);
   };
 
   // Clone note
@@ -1246,11 +1251,11 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
   };
 
   const isSettingDirty = function() {
-    // if (angular.equals($scope.interpreterBindings, $scope.interpreterBindingsOrig)) {
-    //   return false;
-    // } else {
-    return false;
-    // }
+    if (angular.equals($scope.interpreterBindings, $scope.interpreterBindingsOrig)) {
+      return false;
+    } else {
+      return true;
+    }
   };
 
   const isPermissionsDirty = function() {

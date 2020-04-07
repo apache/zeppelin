@@ -20,7 +20,7 @@ package org.apache.zeppelin.shell.terminal.service;
 import com.google.gson.Gson;
 import com.pty4j.PtyProcess;
 import com.pty4j.WinSize;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.shell.terminal.helper.IOHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

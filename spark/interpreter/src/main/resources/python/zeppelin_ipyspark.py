@@ -49,9 +49,8 @@ jconf = jsc.getConf()
 conf = SparkConf(_jvm=gateway.jvm, _jconf=jconf)
 sc = _zsc_ = SparkContext(jsc=jsc, gateway=gateway, conf=conf)
 
-if intp.isSpark2():
+if not intp.isSpark1():
     from pyspark.sql import SparkSession
-
     spark = __zSpark__ = SparkSession(sc, intp.getSparkSession())
     sqlContext = sqlc = __zSqlc__ = __zSpark__._wrapped
 else:
@@ -62,11 +61,11 @@ class IPySparkZeppelinContext(PyZeppelinContext):
     def __init__(self, z, gateway):
         super(IPySparkZeppelinContext, self).__init__(z, gateway)
 
-    def show(self, obj):
+    def show(self, obj, **kwargs):
         from pyspark.sql import DataFrame
         if isinstance(obj, DataFrame):
             print(self.z.showData(obj._jdf))
         else:
-            super(IPySparkZeppelinContext, self).show(obj)
+            super(IPySparkZeppelinContext, self).show(obj, **kwargs)
 
 z = __zeppelin__ = IPySparkZeppelinContext(intp.getZeppelinContext(), gateway)

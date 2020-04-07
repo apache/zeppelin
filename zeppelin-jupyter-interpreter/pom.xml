@@ -66,8 +66,8 @@
     </dependency>
 
     <dependency>
-      <groupId>commons-lang</groupId>
-      <artifactId>commons-lang</artifactId>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
     </dependency>
 
     <dependency>
@@ -82,7 +82,7 @@
 
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>zeppelin-interpreter-api</artifactId>
+      <artifactId>zeppelin-interpreter-shaded</artifactId>
       <version>${project.version}</version>
     </dependency>
 

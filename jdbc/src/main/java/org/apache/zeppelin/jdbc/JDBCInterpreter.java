@@ -32,8 +32,9 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.alias.CredentialProvider;
 import org.apache.hadoop.security.alias.CredentialProviderFactory;
-import org.apache.zeppelin.interpreter.BaseZeppelinContext;
+import org.apache.zeppelin.interpreter.ZeppelinContext;
 import org.apache.zeppelin.interpreter.util.SqlSplitter;
+import org.apache.zeppelin.tabledata.TableDataUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -140,7 +141,16 @@ public class JDBCInterpreter extends KerberosInterpreter {
   private static final String DBCP_STRING = "jdbc:apache:commons:dbcp:";
   private static final String MAX_ROWS_KEY = "zeppelin.jdbc.maxRows";
 
-  private final HashMap<String, Properties> basePropretiesMap;
+  private static final Set<String> PRESTO_PROPERTIES = new HashSet<>(Arrays.asList(
+          "user", "password",
+          "socksProxy", "httpProxy", "clientTags", "applicationNamePrefix", "accessToken",
+          "SSL", "SSLKeyStorePath", "SSLKeyStorePassword", "SSLTrustStorePath",
+          "SSLTrustStorePassword", "KerberosRemoteServiceName", "KerberosPrincipal",
+          "KerberosUseCanonicalHostname", "KerberosServicePrincipalPattern",
+          "KerberosConfigPath", "KerberosKeytabPath", "KerberosCredentialCachePath",
+          "extraCredentials", "roles", "sessionProperties"));
+
+  private final HashMap<String, Properties> basePropertiesMap;
   private final HashMap<String, JDBCUserConfigurations> jdbcUserConfigurationsMap;
   private final HashMap<String, SqlCompleter> sqlCompletersMap;
 
@@ -152,13 +162,13 @@ public class JDBCInterpreter extends KerberosInterpreter {
   public JDBCInterpreter(Properties property) {
     super(property);
     jdbcUserConfigurationsMap = new HashMap<>();
-    basePropretiesMap = new HashMap<>();
+    basePropertiesMap = new HashMap<>();
     sqlCompletersMap = new HashMap<>();
     maxLineResults = MAX_LINE_DEFAULT;
   }
 
   @Override
-  public BaseZeppelinContext getZeppelinContext() {
+  public ZeppelinContext getZeppelinContext() {
     return null;
   }
 
@@ -179,7 +189,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
   }
 
   public HashMap<String, Properties> getPropertiesMap() {
-    return basePropretiesMap;
+    return basePropertiesMap;
   }
 
   @Override
@@ -192,20 +202,20 @@ public class JDBCInterpreter extends KerberosInterpreter {
         logger.debug("key: {}, value: {}", keyValue[0], keyValue[1]);
 
         Properties prefixProperties;
-        if (basePropretiesMap.containsKey(keyValue[0])) {
-          prefixProperties = basePropretiesMap.get(keyValue[0]);
+        if (basePropertiesMap.containsKey(keyValue[0])) {
+          prefixProperties = basePropertiesMap.get(keyValue[0]);
         } else {
           prefixProperties = new Properties();
-          basePropretiesMap.put(keyValue[0].trim(), prefixProperties);
+          basePropertiesMap.put(keyValue[0].trim(), prefixProperties);
         }
         prefixProperties.put(keyValue[1].trim(), getProperty(propertyKey));
       }
     }
 
     Set<String> removeKeySet = new HashSet<>();
-    for (String key : basePropretiesMap.keySet()) {
+    for (String key : basePropertiesMap.keySet()) {
       if (!COMMON_KEY.equals(key)) {
-        Properties properties = basePropretiesMap.get(key);
+        Properties properties = basePropertiesMap.get(key);
         if (!properties.containsKey(DRIVER_KEY) || !properties.containsKey(URL_KEY)) {
           logger.error("{} will be ignored. {}.{} and {}.{} is mandatory.",
               key, DRIVER_KEY, key, key, URL_KEY);
@@ -215,9 +225,9 @@ public class JDBCInterpreter extends KerberosInterpreter {
     }
 
     for (String key : removeKeySet) {
-      basePropretiesMap.remove(key);
+      basePropertiesMap.remove(key);
     }
-    logger.debug("JDBC PropretiesMap: {}", basePropretiesMap);
+    logger.debug("JDBC PropretiesMap: {}", basePropertiesMap);
 
     setMaxLineResults();
     setMaxRows();
@@ -237,9 +247,9 @@ public class JDBCInterpreter extends KerberosInterpreter {
   }
 
   private void setMaxLineResults() {
-    if (basePropretiesMap.containsKey(COMMON_KEY) &&
-        basePropretiesMap.get(COMMON_KEY).containsKey(MAX_LINE_KEY)) {
-      maxLineResults = Integer.valueOf(basePropretiesMap.get(COMMON_KEY).getProperty(MAX_LINE_KEY));
+    if (basePropertiesMap.containsKey(COMMON_KEY) &&
+        basePropertiesMap.get(COMMON_KEY).containsKey(MAX_LINE_KEY)) {
+      maxLineResults = Integer.valueOf(basePropertiesMap.get(COMMON_KEY).getProperty(MAX_LINE_KEY));
     }
   }
 
@@ -345,9 +355,9 @@ public class JDBCInterpreter extends KerberosInterpreter {
   }
 
   private boolean existAccountInBaseProperty(String propertyKey) {
-    return basePropretiesMap.get(propertyKey).containsKey(USER_KEY) &&
-        !isEmpty((String) basePropretiesMap.get(propertyKey).get(USER_KEY)) &&
-        basePropretiesMap.get(propertyKey).containsKey(PASSWORD_KEY);
+    return basePropertiesMap.get(propertyKey).containsKey(USER_KEY) &&
+        !isEmpty((String) basePropertiesMap.get(propertyKey).get(USER_KEY)) &&
+        basePropertiesMap.get(propertyKey).containsKey(PASSWORD_KEY);
   }
 
   private UsernamePassword getUsernamePassword(InterpreterContext interpreterContext,
@@ -383,14 +393,14 @@ public class JDBCInterpreter extends KerberosInterpreter {
     String user = interpreterContext.getAuthenticationInfo().getUser();
 
     JDBCUserConfigurations jdbcUserConfigurations = getJDBCConfiguration(user);
-    if (basePropretiesMap.get(propertyKey).containsKey(USER_KEY) &&
-        !basePropretiesMap.get(propertyKey).getProperty(USER_KEY).isEmpty()) {
-      String password = getPassword(basePropretiesMap.get(propertyKey));
+    if (basePropertiesMap.get(propertyKey).containsKey(USER_KEY) &&
+        !basePropertiesMap.get(propertyKey).getProperty(USER_KEY).isEmpty()) {
+      String password = getPassword(basePropertiesMap.get(propertyKey));
       if (!isEmpty(password)) {
-        basePropretiesMap.get(propertyKey).setProperty(PASSWORD_KEY, password);
+        basePropertiesMap.get(propertyKey).setProperty(PASSWORD_KEY, password);
       }
     }
-    jdbcUserConfigurations.setPropertyMap(propertyKey, basePropretiesMap.get(propertyKey));
+    jdbcUserConfigurations.setPropertyMap(propertyKey, basePropertiesMap.get(propertyKey));
     if (existAccountInBaseProperty(propertyKey)) {
       return;
     }
@@ -406,7 +416,19 @@ public class JDBCInterpreter extends KerberosInterpreter {
   }
 
   private void createConnectionPool(String url, String user, String propertyKey,
-      Properties properties) throws SQLException, ClassNotFoundException {
+      Properties properties) throws SQLException, ClassNotFoundException, IOException {
+
+    String driverClass = properties.getProperty(DRIVER_KEY);
+    if (driverClass != null && (driverClass.equals("com.facebook.presto.jdbc.PrestoDriver")
+            || driverClass.equals("io.prestosql.jdbc.PrestoDriver"))) {
+      // Only add valid properties otherwise presto won't work.
+      for (String key : properties.stringPropertyNames()) {
+        if (!PRESTO_PROPERTIES.contains(key)) {
+          properties.remove(key);
+        }
+      }
+    }
+
     ConnectionFactory connectionFactory =
             new DriverManagerConnectionFactory(url, properties);
 
@@ -419,14 +441,14 @@ public class JDBCInterpreter extends KerberosInterpreter {
     ObjectPool connectionPool = new GenericObjectPool(poolableConnectionFactory);
 
     poolableConnectionFactory.setPool(connectionPool);
-    Class.forName(properties.getProperty(DRIVER_KEY));
+    Class.forName(driverClass);
     PoolingDriver driver = new PoolingDriver();
     driver.registerPool(propertyKey + user, connectionPool);
     getJDBCConfiguration(user).saveDBDriverPool(propertyKey, driver);
   }
 
   private Connection getConnectionFromPool(String url, String user, String propertyKey,
-      Properties properties) throws SQLException, ClassNotFoundException {
+      Properties properties) throws SQLException, ClassNotFoundException, IOException {
     String jdbcDriver = getJDBCDriverName(user, propertyKey);
 
     if (!getJDBCConfiguration(user).isConnectionInDBDriverPool(propertyKey)) {
@@ -439,7 +461,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
       throws ClassNotFoundException, SQLException, InterpreterException, IOException {
     final String user =  interpreterContext.getAuthenticationInfo().getUser();
     Connection connection;
-    if (propertyKey == null || basePropretiesMap.get(propertyKey) == null) {
+    if (propertyKey == null || basePropertiesMap.get(propertyKey) == null) {
       return null;
     }
 
@@ -464,7 +486,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
               getProperty("zeppelin.jdbc.auth.kerberos.proxy.enable"))) {
             connection = getConnectionFromPool(connectionUrl, user, propertyKey, properties);
           } else {
-            if (basePropretiesMap.get(propertyKey).containsKey("proxy.user.property")) {
+            if (basePropertiesMap.get(propertyKey).containsKey("proxy.user.property")) {
               connection = getConnectionFromPool(connectionUrl, user, propertyKey, properties);
             } else {
               UserGroupInformation ugi = null;
@@ -504,7 +526,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
     StringBuilder connectionUrl = new StringBuilder(url);
 
     if (user != null && !user.equals("anonymous") &&
-        basePropretiesMap.get(propertyKey).containsKey("proxy.user.property")) {
+        basePropertiesMap.get(propertyKey).containsKey("proxy.user.property")) {
 
       Integer lastIndexOfUrl = connectionUrl.indexOf("?");
       if (lastIndexOfUrl == -1) {
@@ -512,9 +534,9 @@ public class JDBCInterpreter extends KerberosInterpreter {
       }
       logger.info("Using proxy user as :" + user);
       logger.info("Using proxy property for user as :" +
-          basePropretiesMap.get(propertyKey).getProperty("proxy.user.property"));
+          basePropertiesMap.get(propertyKey).getProperty("proxy.user.property"));
       connectionUrl.insert(lastIndexOfUrl, ";" +
-          basePropretiesMap.get(propertyKey).getProperty("proxy.user.property") + "=" + user + ";");
+          basePropertiesMap.get(propertyKey).getProperty("proxy.user.property") + "=" + user + ";");
     } else if (user != null && !user.equals("anonymous") && url.contains("hive")) {
       logger.warn("User impersonation for hive has changed please refer: http://zeppelin.apache" +
           ".org/docs/latest/interpreter/jdbc.html#apache-hive");
@@ -566,9 +588,11 @@ public class JDBCInterpreter extends KerberosInterpreter {
         msg.append(TAB);
       }
       if (StringUtils.isNotEmpty(md.getColumnLabel(i))) {
-        msg.append(removeTablePrefix(replaceReservedChars(md.getColumnLabel(i))));
+        msg.append(removeTablePrefix(replaceReservedChars(
+                TableDataUtils.normalizeColumn(md.getColumnLabel(i)))));
       } else {
-        msg.append(removeTablePrefix(replaceReservedChars(md.getColumnName(i))));
+        msg.append(removeTablePrefix(replaceReservedChars(
+                TableDataUtils.normalizeColumn(md.getColumnName(i)))));
       }
     }
     msg.append(NEWLINE);
@@ -588,7 +612,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
         } else {
           resultValue = resultSet.getString(i);
         }
-        msg.append(replaceReservedChars(resultValue));
+        msg.append(replaceReservedChars(TableDataUtils.normalizeColumn(resultValue)));
         if (i != md.getColumnCount()) {
           msg.append(TAB);
         }
@@ -605,7 +629,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
 
   public InterpreterResult executePrecode(InterpreterContext interpreterContext) {
     InterpreterResult interpreterResult = null;
-    for (String propertyKey : basePropretiesMap.keySet()) {
+    for (String propertyKey : basePropertiesMap.keySet()) {
       String precode = getProperty(String.format("%s.precode", propertyKey));
       if (StringUtils.isNotBlank(precode)) {
         interpreterResult = executeSql(propertyKey, precode, interpreterContext);

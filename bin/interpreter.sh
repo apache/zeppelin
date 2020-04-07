@@ -69,7 +69,7 @@ fi
 
 . "${bin}/common.sh"
 
-ZEPPELIN_INTERPRETER_API_JAR=$(find "${ZEPPELIN_HOME}/interpreter" -name 'zeppelin-interpreter-api-*.jar')
+ZEPPELIN_INTERPRETER_API_JAR=$(find "${ZEPPELIN_HOME}/interpreter" -name 'zeppelin-interpreter-shaded-*.jar')
 ZEPPELIN_INTP_CLASSPATH="${CLASSPATH}:${ZEPPELIN_INTERPRETER_API_JAR}"
 
 # construct classpath
@@ -83,7 +83,7 @@ if [[ -d "${ZEPPELIN_HOME}/zeppelin-zengine/target/test-classes" ]]; then
   addJarInDirForIntp "${ZEPPELIN_HOME}/zeppelin-zengine/target/test-classes"
 fi
 
-addJarInDirForIntp "${ZEPPELIN_HOME}/zeppelin-interpreter-api/target"
+addJarInDirForIntp "${ZEPPELIN_HOME}/zeppelin-interpreter-shaded/target"
 addJarInDirForIntp "${INTERPRETER_DIR}"
 
 HOSTNAME=$(hostname)
@@ -203,11 +203,14 @@ elif [[ "${INTERPRETER_ID}" == "pig" ]]; then
     echo "TEZ_CONF_DIR is not set, configuration might not be loaded"
   fi
 elif [[ "${INTERPRETER_ID}" == "flink" ]]; then
-  addJarInDirForIntp "${FLINK_HOME}/lib"
-  addJarInDirForIntp "${FLINK_HOME}/opt"
+  addEachJarInDirRecursiveForIntp "${FLINK_HOME}/lib"
+
+  FLINK_PYTHON_JAR=$(find "${FLINK_HOME}/opt" -name 'flink-python_*.jar')
+  ZEPPELIN_INTP_CLASSPATH+=":${FLINK_PYTHON_JAR}"
 
   if [[ -n "${HADOOP_CONF_DIR}" ]] && [[ -d "${HADOOP_CONF_DIR}" ]]; then
-    ZEPPELIN_INTP_CLASSPATH+=`hadoop classpath`
+    ZEPPELIN_INTP_CLASSPATH+=":${HADOOP_CONF_DIR}"
+    ZEPPELIN_INTP_CLASSPATH+=":`hadoop classpath`"
     export HADOOP_CONF_DIR=${HADOOP_CONF_DIR}
   else
     # autodetect HADOOP_CONF_HOME by heuristic

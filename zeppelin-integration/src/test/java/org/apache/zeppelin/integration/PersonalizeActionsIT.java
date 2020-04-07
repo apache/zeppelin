@@ -16,7 +16,7 @@
  */
 package org.apache.zeppelin.integration;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.AbstractZeppelinIT;
 import org.apache.zeppelin.integration.AuthenticationIT;
 import org.apache.zeppelin.WebDriverManager;

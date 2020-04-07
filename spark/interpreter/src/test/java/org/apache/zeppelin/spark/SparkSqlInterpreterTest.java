@@ -89,14 +89,17 @@ public class SparkSqlInterpreterTest {
 
   @Test
   public void test() throws InterpreterException {
-    sparkInterpreter.interpret("case class Test(name:String, age:Int)", context);
-    sparkInterpreter.interpret("val test = sc.parallelize(Seq(Test(\"moon\", 33), Test(\"jobs\", 51), Test(\"gates\", 51), Test(\"park\", 34)))", context);
-    sparkInterpreter.interpret("test.toDF.registerTempTable(\"test\")", context);
+    InterpreterResult result = sparkInterpreter.interpret("case class Test(name:String, age:Int)", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    result = sparkInterpreter.interpret("val test = sc.parallelize(Seq(Test(\"moon\\t1\", 33), Test(\"jobs\", 51), Test(\"gates\", 51), Test(\"park\\n1\", 34)))", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    result = sparkInterpreter.interpret("test.toDF.registerTempTable(\"test\")", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
 
     InterpreterResult ret = sqlInterpreter.interpret("select name, age from test where age < 40", context);
     assertEquals(InterpreterResult.Code.SUCCESS, ret.code());
     assertEquals(Type.TABLE, ret.message().get(0).getType());
-    assertEquals("name\tage\nmoon\t33\npark\t34\n", ret.message().get(0).getData());
+    assertEquals("name\tage\nmoon 1\t33\npark 1\t34\n", ret.message().get(0).getData());
 
     ret = sqlInterpreter.interpret("select wrong syntax", context);
     assertEquals(InterpreterResult.Code.ERROR, ret.code());
@@ -191,7 +194,7 @@ public class SparkSqlInterpreterTest {
     assertEquals(InterpreterResult.Code.ERROR, ret.code());
     assertEquals(ret.message().toString(), 2, ret.message().size());
     assertEquals(ret.message().toString(), Type.TABLE, ret.message().get(0).getType());
-    if (sparkInterpreter.getSparkVersion().isSpark2()) {
+    if (!sparkInterpreter.getSparkVersion().isSpark1()) {
       assertTrue(ret.message().toString(), ret.message().get(1).getData().contains("ParseException"));
     }
     
@@ -200,7 +203,7 @@ public class SparkSqlInterpreterTest {
     assertEquals(InterpreterResult.Code.ERROR, ret.code());
     assertEquals(ret.message().toString(), 2, ret.message().size());
     assertEquals(ret.message().toString(), Type.TABLE, ret.message().get(0).getType());
-    if (sparkInterpreter.getSparkVersion().isSpark2()) {
+    if (!sparkInterpreter.getSparkVersion().isSpark1()) {
       assertTrue(ret.message().toString(), ret.message().get(1).getData().contains("ParseException"));
     }
 
@@ -213,7 +216,7 @@ public class SparkSqlInterpreterTest {
 
   @Test
   public void testConcurrentSQL() throws InterpreterException, InterruptedException {
-    if (sparkInterpreter.getSparkVersion().isSpark2()) {
+    if (!sparkInterpreter.getSparkVersion().isSpark1()) {
       sparkInterpreter.interpret("spark.udf.register(\"sleep\", (e:Int) => {Thread.sleep(e*1000); e})", context);
     } else {
       sparkInterpreter.interpret("sqlContext.udf.register(\"sleep\", (e:Int) => {Thread.sleep(e*1000); e})", context);

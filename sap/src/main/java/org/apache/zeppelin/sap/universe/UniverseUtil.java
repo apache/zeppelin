@@ -18,7 +18,7 @@
 package org.apache.zeppelin.sap.universe;
 
 import jline.console.completer.ArgumentCompleter.WhitespaceArgumentDelimiter;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.*;
 

@@ -33,6 +33,9 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.Properties;
 
+/**
+ * Interpreter for flink scala. It delegates all the function to FlinkScalaInterpreter.
+ */
 public class FlinkInterpreter extends Interpreter {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(FlinkInterpreter.class);
@@ -63,7 +66,16 @@ public class FlinkInterpreter extends Interpreter {
     this.z.setInterpreterContext(context);
     this.z.setGui(context.getGui());
     this.z.setNoteGui(context.getNoteGui());
-    return innerIntp.interpret(st, context);
+
+    // set ClassLoader of current Thread to be the ClassLoader of Flink scala-shell,
+    // otherwise codegen will fail to find classes defined in scala-shell
+    ClassLoader originClassLoader = Thread.currentThread().getContextClassLoader();
+    try {
+      Thread.currentThread().setContextClassLoader(getFlinkScalaShellLoader());
+      return innerIntp.interpret(st, context);
+    } finally {
+      Thread.currentThread().setContextClassLoader(originClassLoader);
+    }
   }
 
   @Override
@@ -98,7 +110,15 @@ public class FlinkInterpreter extends Interpreter {
   }
 
   StreamTableEnvironment getStreamTableEnvironment() {
-    return this.innerIntp.getStreamTableEnvionment();
+    return this.innerIntp.getStreamTableEnvironment();
+  }
+
+  org.apache.flink.table.api.TableEnvironment getJavaBatchTableEnvironment(String planner) {
+    return this.innerIntp.getJavaBatchTableEnvironment(planner);
+  }
+
+  TableEnvironment getJavaStreamTableEnvironment(String planner) {
+    return this.innerIntp.getJavaStreamTableEnvironment(planner);
   }
 
   TableEnvironment getBatchTableEnvironment() {
@@ -111,6 +131,17 @@ public class FlinkInterpreter extends Interpreter {
 
   int getDefaultParallelism() {
     return this.innerIntp.getDefaultParallelism();
+  }
+
+  int getDefaultSqlParallelism() {
+    return this.innerIntp.getDefaultSqlParallelism();
+  }
+
+  /**
+   * Workaround for issue of FLINK-16936.
+   */
+  public void createPlannerAgain() {
+    this.innerIntp.createPlannerAgain();
   }
 
   public ClassLoader getFlinkScalaShellLoader() {
@@ -128,5 +159,4 @@ public class FlinkInterpreter extends Interpreter {
   public FlinkScalaInterpreter getInnerIntp() {
     return this.innerIntp;
   }
-
 }

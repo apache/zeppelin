@@ -19,7 +19,7 @@ package org.apache.zeppelin.sap.universe;
 
 import jline.console.completer.ArgumentCompleter.ArgumentList;
 import jline.console.completer.ArgumentCompleter.WhitespaceArgumentDelimiter;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.completer.CachedCompleter;
 import org.apache.zeppelin.completer.CompletionType;
 import org.apache.zeppelin.completer.StringsCompleter;

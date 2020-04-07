@@ -14,7 +14,7 @@ val data = senv.addSource(new SourceFunction[(Long, String)] with ListCheckpoint
   var count: Long = 0
   // startTime is 2018/1/1
   var startTime: Long = new java.util.Date(2018 - 1900,0,1).getTime
-  var sleepInterval = 1000
+  var sleepInterval = 100
 
   override def run(ctx: SourceFunction.SourceContext[(Long, String)]): Unit = {
     val lock = ctx.getCheckpointLock

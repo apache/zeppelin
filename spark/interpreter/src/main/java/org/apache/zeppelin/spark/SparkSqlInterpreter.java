@@ -17,11 +17,11 @@
 
 package org.apache.zeppelin.spark;
 
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.spark.SparkContext;
 import org.apache.spark.sql.SQLContext;
 import org.apache.zeppelin.interpreter.AbstractInterpreter;
-import org.apache.zeppelin.interpreter.BaseZeppelinContext;
+import org.apache.zeppelin.interpreter.ZeppelinContext;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
@@ -69,7 +69,7 @@ public class SparkSqlInterpreter extends AbstractInterpreter {
   }
 
   @Override
-  public BaseZeppelinContext getZeppelinContext() {
+  public ZeppelinContext getZeppelinContext() {
     return null;
   }
 
@@ -82,8 +82,8 @@ public class SparkSqlInterpreter extends AbstractInterpreter {
     }
     Utils.printDeprecateMessage(sparkInterpreter.getSparkVersion(), context, properties);
     sparkInterpreter.getZeppelinContext().setInterpreterContext(context);
-    SQLContext sqlc = sparkInterpreter.getSQLContext();
-    SparkContext sc = sqlc.sparkContext();
+    Object sqlContext = sparkInterpreter.getSQLContext();
+    SparkContext sc = sparkInterpreter.getSparkContext();
 
     StringBuilder builder = new StringBuilder();
     List<String> sqls = sqlSplitter.splitSql(st);
@@ -93,10 +93,17 @@ public class SparkSqlInterpreter extends AbstractInterpreter {
     sc.setLocalProperty("spark.scheduler.pool", context.getLocalProperties().get("pool"));
     sc.setJobGroup(Utils.buildJobGroupId(context), Utils.buildJobDesc(context), false);
     String curSql = null;
+    ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
     try {
+      if (!sparkInterpreter.isScala212()) {
+        // TODO(zjffdu) scala 2.12 still doesn't work for codegen (ZEPPELIN-4627)
+      Thread.currentThread().setContextClassLoader(sparkInterpreter.getScalaShellClassLoader());
+      }
+      Method method = sqlContext.getClass().getMethod("sql", String.class);
       for (String sql : sqls) {
         curSql = sql;
-        String result = sparkInterpreter.getZeppelinContext().showData(sqlc.sql(sql), maxResult);
+        String result = sparkInterpreter.getZeppelinContext()
+                .showData(method.invoke(sqlContext, sql), maxResult);
         builder.append(result);
       }
     } catch (Exception e) {
@@ -105,13 +112,16 @@ public class SparkSqlInterpreter extends AbstractInterpreter {
         builder.append(ExceptionUtils.getStackTrace(e));
       } else {
         logger.error("Invocation target exception", e);
-        String msg = e.getCause().getMessage()
+        String msg = e.getMessage()
                 + "\nset zeppelin.spark.sql.stacktrace = true to see full stacktrace";
         builder.append(msg);
       }
       return new InterpreterResult(Code.ERROR, builder.toString());
     } finally {
       sc.clearJobGroup();
+      if (!sparkInterpreter.isScala212()) {
+        Thread.currentThread().setContextClassLoader(originalClassLoader);
+      }
     }
 
     return new InterpreterResult(Code.SUCCESS, builder.toString());

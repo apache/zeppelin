@@ -24,8 +24,8 @@ import org.apache.commons.exec.ExecuteResultHandler;
 import org.apache.commons.exec.ExecuteWatchdog;
 import org.apache.commons.exec.LogOutputStream;
 import org.apache.commons.exec.PumpStreamHandler;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -144,6 +144,10 @@ public abstract class ProcessLauncher implements ExecuteResultHandler {
     }
   }
 
+  public String getProcessLaunchOutput() {
+    return this.processOutput.getProcessExecutionOutput();
+  }
+
   public boolean isLaunchTimeout() {
     return launchTimeout;
   }
@@ -153,7 +157,7 @@ public abstract class ProcessLauncher implements ExecuteResultHandler {
   }
 
   public void stop() {
-    if (watchdog != null) {
+    if (watchdog != null && isRunning()) {
       watchdog.destroyProcess();
       watchdog = null;
     }

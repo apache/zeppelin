@@ -18,13 +18,13 @@
 
 package org.apache.zeppelin.jupyter;
 
-import org.apache.zeppelin.interpreter.BaseZeppelinContext;
+import org.apache.zeppelin.interpreter.ZeppelinContext;
 import org.apache.zeppelin.interpreter.InterpreterHookRegistry;
 
 import java.util.List;
 import java.util.Map;
 
-public class JupyterZeppelinContext extends BaseZeppelinContext {
+public class JupyterZeppelinContext extends ZeppelinContext {
   public JupyterZeppelinContext(InterpreterHookRegistry hooks, int maxResult) {
     super(hooks, maxResult);
   }

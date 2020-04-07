@@ -17,13 +17,13 @@
 
 package org.apache.zeppelin.spark;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.sql.SQLContext;
 import org.apache.zeppelin.interpreter.AbstractInterpreter;
-import org.apache.zeppelin.interpreter.BaseZeppelinContext;
+import org.apache.zeppelin.interpreter.ZeppelinContext;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
@@ -197,7 +197,7 @@ public class SparkInterpreter extends AbstractInterpreter {
     return innerInterpreter.getProgress(Utils.buildJobGroupId(context), context);
   }
 
-  public BaseZeppelinContext getZeppelinContext() {
+  public ZeppelinContext getZeppelinContext() {
     return this.innerInterpreter.getZeppelinContext();
   }
 
@@ -205,7 +205,14 @@ public class SparkInterpreter extends AbstractInterpreter {
     return this.sc;
   }
 
-  public SQLContext getSQLContext() {
+  /**
+   * Must use Object, because the its api signature in Spark 1.x is different from
+   * that of Spark 2.x.
+   * e.g. SqlContext.sql(sql) return different type.
+   *
+   * @return
+   */
+  public Object getSQLContext() {
     return sqlContext;
   }
 
@@ -235,6 +242,10 @@ public class SparkInterpreter extends AbstractInterpreter {
     }
   }
 
+  public boolean isScala212() throws InterpreterException {
+    return extractScalaVersion().contains("2.12");
+  }
+
   private List<String> getDependencyFiles() throws InterpreterException {
     List<String> depFiles = new ArrayList<>();
     // add jar from local repo
@@ -251,6 +262,10 @@ public class SparkInterpreter extends AbstractInterpreter {
       }
     }
     return depFiles;
+  }
+
+  public ClassLoader getScalaShellClassLoader() {
+    return innerInterpreter.getScalaShellClassLoader();
   }
 
   public boolean isUnsupportedSparkVersion() {

@@ -27,13 +27,12 @@ import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterNotFoundException;
 import org.apache.zeppelin.interpreter.InterpreterOption;
 import org.apache.zeppelin.interpreter.InterpreterResult;
-import org.apache.zeppelin.interpreter.InterpreterResultMessage;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
-import org.apache.zeppelin.notebook.repo.InMemoryNotebookRepo;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.notebook.repo.NotebookRepoSettingsInfo;
 import org.apache.zeppelin.notebook.repo.NotebookRepoWithVersionControl;
+import org.apache.zeppelin.notebook.repo.VFSNotebookRepo;
 import org.apache.zeppelin.notebook.scheduler.QuartzSchedulerService;
 import org.apache.zeppelin.notebook.scheduler.SchedulerService;
 import org.apache.zeppelin.resource.LocalResourcePool;
@@ -78,12 +77,13 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
   private static final Logger logger = LoggerFactory.getLogger(NotebookTest.class);
 
   private Notebook notebook;
+  private NoteManager noteManager;
   private NotebookRepo notebookRepo;
   private AuthorizationService authorizationService;
   private Credentials credentials;
   private AuthenticationInfo anonymous = AuthenticationInfo.ANONYMOUS;
   private StatusChangedListener afterStatusChangedListener;
-  private SchedulerService schedulerService;
+  private QuartzSchedulerService schedulerService;
 
   @Before
   public void setUp() throws Exception {
@@ -92,20 +92,24 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     super.setUp();
 
     SearchService search = mock(SearchService.class);
-    notebookRepo = new InMemoryNotebookRepo();
+    notebookRepo = new VFSNotebookRepo();
+    notebookRepo.init(conf);
+    noteManager = new NoteManager(notebookRepo);
+    authorizationService = new AuthorizationService(noteManager, conf);
 
     credentials = new Credentials(conf.credentialsPersist(), conf.getCredentialsPath(), null);
-    notebook = new Notebook(conf, notebookRepo, interpreterFactory, interpreterSettingManager, search,
+    notebook = new Notebook(conf, authorizationService, notebookRepo, noteManager, interpreterFactory, interpreterSettingManager, search,
             credentials, null);
-    authorizationService = new AuthorizationService(notebook, notebook.getConf());
     notebook.setParagraphJobListener(this);
     schedulerService = new QuartzSchedulerService(conf, notebook);
-
+    schedulerService.waitForFinishInit();
   }
 
   @After
   public void tearDown() throws Exception {
     super.tearDown();
+    System.clearProperty(ConfVars.ZEPPELIN_NOTEBOOK_PUBLIC.getVarName());
+    System.clearProperty(ConfVars.ZEPPELIN_NOTEBOOK_CRON_ENABLE.getVarName());
   }
 
   @Test
@@ -114,13 +118,13 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     Notebook notebook;
 
     notebookRepo = new DummyNotebookRepo();
-    notebook = new Notebook(conf, notebookRepo, interpreterFactory,
+    notebook = new Notebook(conf, mock(AuthorizationService.class), notebookRepo, new NoteManager(notebookRepo), interpreterFactory,
         interpreterSettingManager, null,
         credentials, null);
     assertFalse("Revision is not supported in DummyNotebookRepo", notebook.isRevisionSupported());
 
     notebookRepo = new DummyNotebookRepoWithVersionControl();
-    notebook = new Notebook(conf, notebookRepo, interpreterFactory,
+    notebook = new Notebook(conf, mock(AuthorizationService.class), notebookRepo, new NoteManager(notebookRepo), interpreterFactory,
         interpreterSettingManager, null,
         credentials, null);
     assertTrue("Revision is supported in DummyNotebookRepoWithVersionControl",
@@ -138,7 +142,6 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     public Map<String, NoteInfo> list(AuthenticationInfo subject) throws IOException {
       return new HashMap<>();
     }
-
 
     @Override
     public Note get(String noteId, String notePath, AuthenticationInfo subject) throws IOException {
@@ -297,13 +300,14 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     Note note = notebook.createNote("note1", AuthenticationInfo.ANONYMOUS);
     Paragraph p1 = note.insertNewParagraph(0, AuthenticationInfo.ANONYMOUS);
     p1.setText("%md hello world");
+    notebook.saveNote(note, AuthenticationInfo.ANONYMOUS);
 
     // when load
     notebook.reloadAllNotes(anonymous);
     assertEquals(1, notebook.getAllNotes().size());
 
     // then interpreter factory should be injected into all the paragraphs
-    note = notebook.getAllNotes().get(0);
+    note = notebook.getNote(note.getId());
     try {
       note.getParagraphs().get(0).getBindedInterpreter();
       fail("Should throw InterpreterNotFoundException");
@@ -339,10 +343,9 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
 
 
     // delete notebook from notebook list when reloadAllNotes() is called
-    ((InMemoryNotebookRepo) notebookRepo).reset();
     notebook.reloadAllNotes(anonymous);
     notes = notebook.getAllNotes();
-    assertEquals(notes.size(), 0);
+    assertEquals(notes.size(), 2);
   }
 
   @Test
@@ -450,7 +453,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
   }
 
   @Test
-  public void testRunAll() throws IOException {
+  public void testRunAll() throws Exception {
     Note note = notebook.createNote("note1", anonymous);
 
     // p1
@@ -615,7 +618,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
   @Test
   public void testScheduleDisabledWithName() throws InterruptedException, IOException {
 
-    System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_CRON_FOLDERS.getVarName(), "System/*");
+    System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_CRON_FOLDERS.getVarName(), "/System");
     try {
       final int timeout = 10;
       final String everySecondCron = "* * * * * ?";
@@ -638,8 +641,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
       terminateScheduledNote(note);
       afterStatusChangedListener = null;
 
-      final Note noteNameSystem = notebook.createNote("note1", anonymous);
-      noteNameSystem.setName("System/test1");
+      final Note noteNameSystem = notebook.createNote("/System/test1", anonymous);
       final CountDownLatch jobsToExecuteCountNameSystem = new CountDownLatch(5);
 
       executeNewParagraphByCron(noteNameSystem, everySecondCron);
@@ -822,8 +824,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
   }
 
   @Test
-  public void testExportAndImportNote() throws IOException, CloneNotSupportedException,
-      InterruptedException, InterpreterException, SchedulerException, RepositoryException {
+  public void testExportAndImportNote() throws Exception {
     Note note = notebook.createNote("note1", anonymous);
 
     final Paragraph p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
@@ -857,7 +858,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
   }
 
   @Test
-  public void testCloneNote() throws IOException {
+  public void testCloneNote() throws Exception {
     Note note = notebook.createNote("note1", anonymous);
 
     final Paragraph p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
@@ -888,7 +889,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
   }
 
   @Test
-  public void testResourceRemovealOnParagraphNoteRemove() throws IOException {
+  public void testResourceRemovealOnParagraphNoteRemove() throws Exception {
     Note note = notebook.createNote("note1", anonymous);
 
     Paragraph p1 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
@@ -917,7 +918,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     // create a note and a paragraph
     Note note = notebook.createNote("note1", anonymous);
 
-    AngularObjectRegistry registry = note.getBindedInterpreterSettings().get(0).getOrCreateInterpreterGroup(anonymous.getUser(), "sharedProcess")
+    AngularObjectRegistry registry = note.getBindedInterpreterSettings(new ArrayList<>()).get(0).getOrCreateInterpreterGroup(anonymous.getUser(), "sharedProcess")
         .getAngularObjectRegistry();
 
     Paragraph p1 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
@@ -948,7 +949,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     // create a note and a paragraph
     Note note = notebook.createNote("note1", anonymous);
 
-    AngularObjectRegistry registry = note.getBindedInterpreterSettings().get(0).getOrCreateInterpreterGroup(anonymous.getUser(), "sharedProcess")
+    AngularObjectRegistry registry = note.getBindedInterpreterSettings(new ArrayList<>()).get(0).getOrCreateInterpreterGroup(anonymous.getUser(), "sharedProcess")
         .getAngularObjectRegistry();
 
     Paragraph p1 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
@@ -980,7 +981,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     // create a note and a paragraph
     Note note = notebook.createNote("note1", anonymous);
 
-    AngularObjectRegistry registry = note.getBindedInterpreterSettings().get(0).getOrCreateInterpreterGroup(anonymous.getUser(), "sharedProcess")
+    AngularObjectRegistry registry = note.getBindedInterpreterSettings(new ArrayList<>()).get(0).getOrCreateInterpreterGroup(anonymous.getUser(), "sharedProcess")
         .getAngularObjectRegistry();
 
     // add local scope object
@@ -989,8 +990,8 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     registry.add("o2", "object2", null, null);
 
     // restart interpreter
-    interpreterSettingManager.restart(note.getBindedInterpreterSettings().get(0).getId());
-    registry = note.getBindedInterpreterSettings().get(0)
+    interpreterSettingManager.restart(note.getBindedInterpreterSettings(new ArrayList<>()).get(0).getId());
+    registry = note.getBindedInterpreterSettings(new ArrayList<>()).get(0)
         .getOrCreateInterpreterGroup(anonymous.getUser(), "sharedProcess")
         .getAngularObjectRegistry();
 
@@ -1108,12 +1109,12 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     // create paragraphs
     Paragraph p1 = note.addNewParagraph(anonymous);
     Map<String, Object> config = p1.getConfig();
-    assertTrue(config.containsKey(Paragraph.PARAGRAPH_CONFIG_RUNONSELECTIONCHANGE));
-    assertTrue(config.containsKey(Paragraph.PARAGRAPH_CONFIG_TITLE));
-    assertTrue(config.containsKey(Paragraph.PARAGRAPH_CONFIG_CHECK_EMTPY));
-    assertEquals(config.get(Paragraph.PARAGRAPH_CONFIG_RUNONSELECTIONCHANGE), false);
-    assertEquals(config.get(Paragraph.PARAGRAPH_CONFIG_TITLE), true);
-    assertEquals(config.get(Paragraph.PARAGRAPH_CONFIG_CHECK_EMTPY), false);
+    assertTrue(config.containsKey(InterpreterSetting.PARAGRAPH_CONFIG_RUNONSELECTIONCHANGE));
+    assertTrue(config.containsKey(InterpreterSetting.PARAGRAPH_CONFIG_TITLE));
+    assertTrue(config.containsKey(InterpreterSetting.PARAGRAPH_CONFIG_CHECK_EMTPY));
+    assertEquals(config.get(InterpreterSetting.PARAGRAPH_CONFIG_RUNONSELECTIONCHANGE), false);
+    assertEquals(config.get(InterpreterSetting.PARAGRAPH_CONFIG_TITLE), true);
+    assertEquals(config.get(InterpreterSetting.PARAGRAPH_CONFIG_CHECK_EMTPY), false);
 
     // The config_test interpreter sets the default parameters
     // in interpreter/config_test/interpreter-setting.json
@@ -1123,34 +1124,39 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     //      "checkEmpty": true
     //    },
     p1.setText("%config_test sleep 1000");
-    note.runAll(AuthenticationInfo.ANONYMOUS, false);
-
-    // wait until first paragraph finishes and second paragraph starts
-    while (p1.getStatus() != Status.FINISHED) Thread.yield();
+    p1.execute(true);
 
     // Check if the config_test interpreter default parameter takes effect
     LOGGER.info("p1.getConfig() =  " + p1.getConfig());
-    assertEquals(config.get(Paragraph.PARAGRAPH_CONFIG_RUNONSELECTIONCHANGE), false);
-    assertEquals(config.get(Paragraph.PARAGRAPH_CONFIG_TITLE), true);
-    assertEquals(config.get(Paragraph.PARAGRAPH_CONFIG_CHECK_EMTPY), false);
+    assertEquals(config.get(InterpreterSetting.PARAGRAPH_CONFIG_RUNONSELECTIONCHANGE), false);
+    assertEquals(config.get(InterpreterSetting.PARAGRAPH_CONFIG_TITLE), true);
+    assertEquals(config.get(InterpreterSetting.PARAGRAPH_CONFIG_CHECK_EMTPY), false);
 
     // The mock1 interpreter does not set default parameters
     p1.setText("%mock1 sleep 1000");
-    note.runAll(AuthenticationInfo.ANONYMOUS, false);
+    p1.execute(true);
 
-    // wait until first paragraph finishes and second paragraph starts
-    while (p1.getStatus() != Status.FINISHED) Thread.yield();
-
-    // Check if the mock1 interpreter parameter is updated
+    // mock1 has no config setting in interpreter-setting.json, so keep the previous config
     LOGGER.info("changed intp p1.getConfig() =  " + p1.getConfig());
-    assertEquals(config.get(Paragraph.PARAGRAPH_CONFIG_RUNONSELECTIONCHANGE), true);
-    assertEquals(config.get(Paragraph.PARAGRAPH_CONFIG_TITLE), false);
-    assertEquals(config.get(Paragraph.PARAGRAPH_CONFIG_CHECK_EMTPY), true);
+    assertEquals(config.get(InterpreterSetting.PARAGRAPH_CONFIG_RUNONSELECTIONCHANGE), false);
+    assertEquals(config.get(InterpreterSetting.PARAGRAPH_CONFIG_TITLE), true);
+    assertEquals(config.get(InterpreterSetting.PARAGRAPH_CONFIG_CHECK_EMTPY), false);
+
+    // user manually change config
+    p1.getConfig().put(InterpreterSetting.PARAGRAPH_CONFIG_RUNONSELECTIONCHANGE, true);
+    p1.getConfig().put(InterpreterSetting.PARAGRAPH_CONFIG_TITLE, false);
+    p1.setText("%mock1 sleep 1000");
+    p1.execute(true);
+
+    // manually config change take effect after execution
+    LOGGER.info("changed intp p1.getConfig() =  " + p1.getConfig());
+    assertEquals(config.get(InterpreterSetting.PARAGRAPH_CONFIG_RUNONSELECTIONCHANGE), true);
+    assertEquals(config.get(InterpreterSetting.PARAGRAPH_CONFIG_TITLE), false);
+    assertEquals(config.get(InterpreterSetting.PARAGRAPH_CONFIG_CHECK_EMTPY), false);
   }
 
   @Test
-  public void testAbortParagraphStatusOnInterpreterRestart() throws InterruptedException,
-      IOException, InterpreterException {
+  public void testAbortParagraphStatusOnInterpreterRestart() throws Exception {
     Note note = notebook.createNote("note1", anonymous);
 
     // create three paragraphs
@@ -1191,7 +1197,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     p1.setAuthenticationInfo(anonymous);
 
     // restart interpreter with per user session enabled
-    for (InterpreterSetting setting : note1.getBindedInterpreterSettings()) {
+    for (InterpreterSetting setting : note1.getBindedInterpreterSettings(new ArrayList<>())) {
       setting.getOption().setPerNote(setting.getOption().SCOPED);
       notebook.getInterpreterSettingManager().restart(setting.getId());
     }
@@ -1239,7 +1245,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
 
 
     // restart interpreter with per note session enabled
-    for (InterpreterSetting setting : note1.getBindedInterpreterSettings()) {
+    for (InterpreterSetting setting : note1.getBindedInterpreterSettings(new ArrayList<>())) {
       setting.getOption().setPerNote(InterpreterOption.SCOPED);
       notebook.getInterpreterSettingManager().restart(setting.getId());
     }
@@ -1282,7 +1288,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     assertEquals(p1.getReturn().message().get(0).getData(), p2.getReturn().message().get(0).getData());
 
     // restart interpreter with scoped mode enabled
-    for (InterpreterSetting setting : note1.getBindedInterpreterSettings()) {
+    for (InterpreterSetting setting : note1.getBindedInterpreterSettings(new ArrayList<>())) {
       setting.getOption().setPerNote(InterpreterOption.SCOPED);
       notebook.getInterpreterSettingManager().restart(setting.getId());
     }
@@ -1297,7 +1303,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     assertNotEquals(p1.getReturn().message().get(0).getData(), p2.getReturn().message().get(0).getData());
 
     // restart interpreter with isolated mode enabled
-    for (InterpreterSetting setting : note1.getBindedInterpreterSettings()) {
+    for (InterpreterSetting setting : note1.getBindedInterpreterSettings(new ArrayList<>())) {
       setting.getOption().setPerNote(InterpreterOption.ISOLATED);
       setting.getInterpreterSettingManager().restart(setting.getId());
     }
@@ -1544,23 +1550,6 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
       }
       file.delete();
     }
-  }
-
-
-
-  @Override
-  public void onOutputAppend(Paragraph paragraph, int idx, String output) {
-
-  }
-
-  @Override
-  public void onOutputUpdate(Paragraph paragraph, int idx, InterpreterResultMessage msg) {
-
-  }
-
-  @Override
-  public void onOutputUpdateAll(Paragraph paragraph, List<InterpreterResultMessage> msgs) {
-
   }
 
   @Override
