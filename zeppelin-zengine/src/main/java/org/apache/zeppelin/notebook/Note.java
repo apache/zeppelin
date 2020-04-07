@@ -60,6 +60,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Arrays;
 
 /**
  * Represent the note of Zeppelin. All the note and its paragraph operations are done
@@ -70,9 +71,13 @@ public class Note implements JsonSerializable {
 
   // serialize Paragraph#runtimeInfos and Note#path to frontend but not to note file
   private static final ExclusionStrategy strategy = new ExclusionStrategy() {
+    List<String> fieldsExcluded = Arrays.asList(
+            System.getProperty("zeppelin.note.file.exclude.fields", "")
+            .split(","));
+
     @Override
     public boolean shouldSkipField(FieldAttributes f) {
-      return f.getName().equals("runtimeInfos") || f.getName().equals("path");
+      return f.getName().equals("runtimeInfos") || f.getName().equals("path") || fieldsExcluded.contains(f.getName());
     }
 
     @Override
