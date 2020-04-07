@@ -62,6 +62,12 @@
 </property>
 
 <property>
+  <name>zeppelin.note.file.exclude.fields</name>
+  <value>results,status</value>
+  <description>fields to be excluded from being saved in note files</description>
+</property>
+
+<property>
   <name>zeppelin.notebook.homescreen</name>
   <value></value>
   <description>id of notebook to be displayed in homescreen. ex) 2A94M5J1Z Empty value displays default home screen</description>
