@@ -725,6 +725,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_COLLABORATIVE_MODE_ENABLE);
   }
 
+  public List<String> getNoteFileExcludedFields() {
+    return Arrays.asList(getString(ConfVars.ZEPPELIN_NOTE_FILE_EXCLUDE_FIELDS).split(","));
+  }
+
   public String getZeppelinProxyUrl() {
     return getString(ConfVars.ZEPPELIN_PROXY_URL);
   }
