@@ -237,12 +237,7 @@ abstract class BaseSparkScalaInterpreter(val conf: SparkConf,
       case None =>
     }
 
-    val webUiUrl = properties.getProperty("zeppelin.spark.uiWebUrl");
-    if (!StringUtils.isBlank(webUiUrl)) {
-      this.sparkUrl = webUiUrl.replace("{{applicationId}}", sc.applicationId);
-    } else {
-      useYarnProxyURLIfNeeded()
-    }
+    initSparkWebUrl()
 
     val hiveSiteExisted: Boolean =
       Thread.currentThread().getContextClassLoader.getResource("hive-site.xml") != null
@@ -314,12 +309,7 @@ abstract class BaseSparkScalaInterpreter(val conf: SparkConf,
       case None =>
     }
 
-    val webUiUrl = properties.getProperty("zeppelin.spark.uiWebUrl");
-    if (!StringUtils.isBlank(webUiUrl)) {
-      this.sparkUrl = webUiUrl.replace("{{applicationId}}", sc.applicationId);
-    } else {
-      useYarnProxyURLIfNeeded()
-    }
+    initSparkWebUrl()
 
     bind("spark", sparkSession.getClass.getCanonicalName, sparkSession, List("""@transient"""))
     bind("sc", "org.apache.spark.SparkContext", sc, List("""@transient"""))
@@ -332,6 +322,15 @@ abstract class BaseSparkScalaInterpreter(val conf: SparkConf,
     // print empty string otherwise the last statement's output of this method
     // (aka. import org.apache.spark.sql.functions._) will mix with the output of user code
     scalaInterpret("print(\"\")")
+  }
+
+  private def initSparkWebUrl(): Unit = {
+    val webUiUrl = properties.getProperty("zeppelin.spark.uiWebUrl");
+    if (!StringUtils.isBlank(webUiUrl)) {
+      this.sparkUrl = webUiUrl.replace("{{applicationId}}", sc.applicationId);
+    } else {
+      useYarnProxyURLIfNeeded()
+    }
   }
 
   protected def createZeppelinContext(): Unit = {
