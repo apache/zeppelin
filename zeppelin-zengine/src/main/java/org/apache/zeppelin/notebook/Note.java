@@ -72,8 +72,9 @@ public class Note implements JsonSerializable {
   // serialize Paragraph#runtimeInfos and Note#path to frontend but not to note file
   private static final ExclusionStrategy strategy = new ExclusionStrategy() {
     List<String> fieldsExcluded = Arrays.asList(
-            System.getProperty("zeppelin.note.file.exclude.fields", "")
-            .split(","));
+            ZeppelinConfiguration.create()
+                    .getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTE_FILE_EXCLUDE_FIELDS)
+                    .split(","));
 
     @Override
     public boolean shouldSkipField(FieldAttributes f) {
