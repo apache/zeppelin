@@ -17,7 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
-  private static final Logger LOGGER = LoggerFactory.getLogger(K8sStandardInterpreterLauncher.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(K8sRemoteInterpreterProcess.class);
   private static final int K8S_INTERPRETER_SERVICE_PORT = 12321;
   private final Kubectl kubectl;
   private final String interpreterGroupId;
@@ -114,9 +114,7 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
     }
 
     if (!started.get()) {
-      LOGGER.info(
-          String.format("Interpreter pod creation is time out in %d seconds",
-              getConnectTimeout()/1000));
+      LOGGER.info("Interpreter pod creation is time out in {} seconds", getConnectTimeout()/1000);
     }
 
     // waits for interpreter thrift rpc server ready
@@ -208,7 +206,7 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
    */
   void apply(File path, boolean delete) throws IOException {
     if (path.getName().startsWith(".") || path.isHidden() || path.getName().endsWith("~")) {
-      LOGGER.info("Skip " + path.getAbsolutePath());
+      LOGGER.info("Skip {}", path.getAbsolutePath());
     }
 
     if (path.isDirectory()) {
@@ -222,7 +220,7 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
         apply(f, delete);
       }
     } else if (path.isFile()) {
-      LOGGER.info("Apply " + path.getAbsolutePath());
+      LOGGER.info("Apply {}", path.getAbsolutePath());
       K8sSpecTemplate specTemplate = new K8sSpecTemplate();
       specTemplate.loadProperties(getTemplateBindings());
 
@@ -233,12 +231,12 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
         kubectl.apply(spec);
       }
     } else {
-      LOGGER.error("Can't apply " + path.getAbsolutePath());
+      LOGGER.error("Can't apply {}", path.getAbsolutePath());
     }
   }
 
   @VisibleForTesting
-  Properties getTemplateBindings() throws IOException {
+  Properties getTemplateBindings() {
     Properties k8sProperties = new Properties();
 
     // k8s template properties
@@ -292,11 +290,7 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
 
   boolean isSparkOnKubernetes(Properties interpreteProperties) {
     String propertySparkMaster = (String) interpreteProperties.getOrDefault("master", "");
-    if (propertySparkMaster.startsWith("k8s://")) {
-      return true;
-    } else {
-      return false;
-    }
+    return propertySparkMaster.startsWith("k8s://");
   }
 
   @VisibleForTesting
@@ -366,9 +360,7 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
       char c = chars[random.nextInt(chars.length)];
       sb.append(c);
     }
-    String randomStr = sb.toString();
-
-    return randomStr;
+    return sb.toString();
   }
 
   @Override

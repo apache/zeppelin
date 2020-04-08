@@ -70,11 +70,7 @@ public class K8sStandardInterpreterLauncher extends InterpreterLauncher {
    * @return
    */
   boolean isRunningOnKubernetes() {
-    if (new File("/var/run/secrets/kubernetes.io").exists()) {
-      return true;
-    } else {
-      return false;
-    }
+    return new File("/var/run/secrets/kubernetes.io").exists();
   }
 
   /**
@@ -132,7 +128,7 @@ public class K8sStandardInterpreterLauncher extends InterpreterLauncher {
 
   @Override
   public InterpreterClient launch(InterpreterLaunchContext context) throws IOException {
-    LOGGER.info("Launching Interpreter: " + context.getInterpreterSettingGroup());
+    LOGGER.info("Launching Interpreter: {}", context.getInterpreterSettingGroup());
     this.context = context;
     this.properties = context.getProperties();
     int connectTimeout = getConnectTimeout();
