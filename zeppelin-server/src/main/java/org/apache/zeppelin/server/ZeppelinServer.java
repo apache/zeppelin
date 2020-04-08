@@ -85,7 +85,6 @@ import org.eclipse.jetty.server.handler.ContextHandlerCollection;
 import org.eclipse.jetty.server.session.SessionHandler;
 import org.eclipse.jetty.servlet.DefaultServlet;
 import org.eclipse.jetty.servlet.FilterHolder;
-import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
@@ -441,7 +440,7 @@ public class ZeppelinServer extends ResourceConfig {
   }
 
   private static SslContextFactory getSslContextFactory(ZeppelinConfiguration conf) {
-    SslContextFactory sslContextFactory = new SslContextFactory();
+    SslContextFactory.Server sslContextFactory = new SslContextFactory.Server();
 
     // Set keystore
     sslContextFactory.setKeyStorePath(conf.getKeyStorePath());
