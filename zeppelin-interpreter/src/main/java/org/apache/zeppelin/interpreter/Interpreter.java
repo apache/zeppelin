@@ -32,8 +32,8 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -157,7 +157,7 @@ public abstract class Interpreter {
   @ZeppelinApi
   public List<InterpreterCompletion> completion(String buf, int cursor,
       InterpreterContext interpreterContext) throws InterpreterException {
-    return new ArrayList<>();
+    return Collections.emptyList();
   }
 
   /**
