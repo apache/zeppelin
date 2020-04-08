@@ -11,6 +11,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.exec.ExecuteWatchdog;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterUtils;
 import org.slf4j.Logger;
@@ -37,6 +39,9 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
   private ExecuteWatchdog portForwardWatchdog;
   private int podPort = K8S_INTERPRETER_SERVICE_PORT;
 
+  private final boolean isUserImpersonatedForSpark;
+  private String userName;
+
   private AtomicBoolean started = new AtomicBoolean(false);
 
   public K8sRemoteInterpreterProcess(
@@ -52,7 +57,8 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
           String zeppelinServiceRpcPort,
           boolean portForward,
           String sparkImage,
-          int connectTimeout
+          int connectTimeout,
+          boolean isUserImpersonatedForSpark
   ) {
     super(connectTimeout);
     this.kubectl = kubectl;
@@ -62,12 +68,13 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
     this.interpreterGroupName = interpreterGroupName;
     this.interpreterSettingName = interpreterSettingName;
     this.properties = properties;
-    this.envs = new HashMap(envs);
+    this.envs = new HashMap<>(envs);
     this.zeppelinServiceHost = zeppelinServiceHost;
     this.zeppelinServiceRpcPort = zeppelinServiceRpcPort;
     this.portForward = portForward;
     this.sparkImage = sparkImage;
     this.podName = interpreterGroupName.toLowerCase() + "-" + getRandomString(6);
+    this.isUserImpersonatedForSpark = isUserImpersonatedForSpark;
   }
 
 
@@ -87,6 +94,14 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
 
   @Override
   public void start(String userName) throws IOException {
+    /**
+     * If a spark interpreter process is running, userName is set in preparation for --proxy-user
+     */
+    if (isUserImpersonatedForSpark && !StringUtils.containsIgnoreCase(userName, "anonymous") && isSpark()) {
+      this.userName = userName;
+    } else {
+      this.userName = null;
+    }
     // create new pod
     apply(specTempaltes, false);
     kubectl.wait(String.format("pod/%s", getPodName()), "condition=Ready", getConnectTimeout()/1000);
@@ -301,6 +316,9 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
     options.append(" --deploy-mode client");
     if (properties.containsKey("spark.driver.memory")) {
       options.append(" --driver-memory " + properties.get("spark.driver.memory"));
+    }
+    if (userName != null) {
+      options.append(" --proxy-user " + userName);
     }
     options.append(" --conf spark.kubernetes.namespace=" + kubectl.getNamespace());
     options.append(" --conf spark.executor.instances=1");

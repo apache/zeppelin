@@ -126,6 +126,18 @@ public class K8sStandardInterpreterLauncher extends InterpreterLauncher {
     }
   }
 
+  /**
+   * Interpreter Process will run in K8s. There is no point in changing the user after starting the container.
+   * Switching to an other user (non-privileged) should be done during the image creation process.
+   *
+   * Only if a spark interpreter process is running, userImpersonatation should be possible for --proxy-user
+   */
+  private boolean isUserImpersonateForSparkInterpreter(InterpreterLaunchContext context) {
+      return zConf.getZeppelinImpersonateSparkProxyUser() &&
+          context.getOption().isUserImpersonate() &&
+          "spark".equalsIgnoreCase(context.getInterpreterGroupId());
+  }
+
   @Override
   public InterpreterClient launch(InterpreterLaunchContext context) throws IOException {
     LOGGER.info("Launching Interpreter: {}", context.getInterpreterSettingGroup());
@@ -146,7 +158,8 @@ public class K8sStandardInterpreterLauncher extends InterpreterLauncher {
             getZeppelinServiceRpcPort(),
             zConf.getK8sPortForward(),
             zConf.getK8sSparkContainerImage(),
-            connectTimeout);
+            connectTimeout,
+            isUserImpersonateForSparkInterpreter(context));
   }
 
   protected Map<String, String> buildEnvFromProperties(InterpreterLaunchContext context) {
