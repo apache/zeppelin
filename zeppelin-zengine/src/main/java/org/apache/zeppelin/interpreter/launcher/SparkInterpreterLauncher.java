@@ -156,9 +156,8 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
     for (String name : sparkProperties.stringPropertyNames()) {
       sparkConfBuilder.append(" --conf " + name + "=" + sparkProperties.getProperty(name));
     }
-    String useProxyUserEnv = System.getenv("ZEPPELIN_IMPERSONATE_SPARK_PROXY_USER");
-    if (context.getOption().isUserImpersonate() && (StringUtils.isBlank(useProxyUserEnv) ||
-            !useProxyUserEnv.equals("false"))) {
+
+    if (context.getOption().isUserImpersonate() && zConf.getZeppelinImpersonateSparkProxyUser()) {
       sparkConfBuilder.append(" --proxy-user " + context.getUserName());
     }
 
