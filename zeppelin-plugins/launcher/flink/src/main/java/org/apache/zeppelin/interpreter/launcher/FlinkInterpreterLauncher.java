@@ -43,7 +43,7 @@ public class FlinkInterpreterLauncher extends StandardInterpreterLauncher {
     if (!flinkHomeFile.exists()) {
       throw new IOException(String.format("FLINK_HOME '%s' doesn't exist", flinkHome));
     }
-    if (flinkHomeFile.isFile()) {
+    if (!flinkHomeFile.isDirectory()) {
       throw new IOException(String.format("FLINK_HOME '%s' is a file, but should be directory",
               flinkHome));
     }
