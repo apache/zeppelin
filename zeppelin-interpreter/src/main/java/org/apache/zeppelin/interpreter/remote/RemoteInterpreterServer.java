@@ -751,11 +751,14 @@ public class RemoteInterpreterServer extends Thread
     if (job != null && job.getStatus() == Status.PENDING) {
       job.setStatus(Status.ABORT);
     } else {
-      try {
-        intp.cancel(convert(interpreterContext, null));
-      } catch (InterpreterException e) {
-        throw new TException("Fail to cancel", e);
-      }
+      Thread thread = new Thread( ()-> {
+        try {
+          intp.cancel(convert(interpreterContext, null));
+        } catch (InterpreterException e) {
+          logger.error("Fail to cancel paragraph: " + interpreterContext.getParagraphId());
+        }
+      });
+      thread.start();
     }
   }
 
