@@ -140,6 +140,12 @@ public class JobManager {
     jobProgressPoller.interrupt();
   }
 
+  public void shutdown() {
+    for (FlinkJobProgressPoller jobProgressPoller : jobProgressPollerMap.values()) {
+      jobProgressPoller.cancel();
+    }
+  }
+
   class FlinkJobProgressPoller extends Thread {
 
     private String flinkWebUI;

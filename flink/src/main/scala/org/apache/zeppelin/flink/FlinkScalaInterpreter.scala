@@ -360,7 +360,7 @@ class FlinkScalaInterpreter(val properties: Properties) {
     flinkILoop.interpret("import org.apache.flink.table.functions.AggregateFunction")
     flinkILoop.interpret("import org.apache.flink.table.functions.TableFunction")
 
-    this.z = new FlinkZeppelinContext(this.btenv, this.btenv_2, new InterpreterHookRegistry(),
+    this.z = new FlinkZeppelinContext(this, new InterpreterHookRegistry(),
       Integer.parseInt(properties.getProperty("zeppelin.flink.maxResult", "1000")))
     val modifiers = new java.util.ArrayList[String]()
     modifiers.add("@transient")
@@ -638,7 +638,6 @@ class FlinkScalaInterpreter(val properties: Properties) {
             LOGGER.info("Don't close the Remote FlinkCluster")
         }
       }
-
     } else {
       LOGGER.info("Keep cluster alive when closing interpreter")
     }
@@ -646,6 +645,9 @@ class FlinkScalaInterpreter(val properties: Properties) {
     if (flinkILoop != null) {
       flinkILoop.closeInterpreter()
       flinkILoop = null
+    }
+    if (jobManager != null) {
+      jobManager.shutdown()
     }
   }
 
@@ -666,9 +668,19 @@ class FlinkScalaInterpreter(val properties: Properties) {
 
   def getStreamExecutionEnvironment(): StreamExecutionEnvironment = this.senv
 
-  def getBatchTableEnvironment(): TableEnvironment = this.btenv
+  def getBatchTableEnvironment(planner: String = "blink"): TableEnvironment = {
+    if (planner == "blink")
+      this.btenv
+    else
+      this.btenv_2
+  }
 
-  def getStreamTableEnvironment(): StreamTableEnvironment = this.stenv
+  def getStreamTableEnvironment(planner: String = "blink"): StreamTableEnvironment = {
+    if (planner == "blink")
+      this.stenv
+    else
+      this.stenv_2
+  }
 
   def getJavaBatchTableEnvironment(planner: String): TableEnvironment = {
     if (planner == "blink") {

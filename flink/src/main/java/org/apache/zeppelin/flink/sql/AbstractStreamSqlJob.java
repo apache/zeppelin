@@ -96,11 +96,15 @@ public abstract class AbstractStreamSqlJob {
   protected abstract String getType();
 
   public InterpreterResult run(String st) throws IOException {
+    Table table = stenv.sqlQuery(st);
+    String tableName = st + "_" + SQL_INDEX.getAndIncrement();
+    return run(table, tableName);
+  }
+
+  public InterpreterResult run(Table table, String tableName) throws IOException {
     try {
       int parallelism = Integer.parseInt(context.getLocalProperties()
               .getOrDefault("parallelism", defaultParallelism + ""));
-
-      Table table = stenv.sqlQuery(st);
       this.schema = removeTimeAttributes(table.getSchema());
       checkTableSchema(schema);
 
@@ -132,7 +136,6 @@ public abstract class AbstractStreamSqlJob {
       try {
         stenv.useCatalog("default_catalog");
         stenv.useDatabase("default_database");
-        String tableName = st + "_" + SQL_INDEX.getAndIncrement();
         stenv.registerTableSink(tableName, collectTableSink);
         table.insertInto(new StreamQueryConfig(), tableName);
       } finally {
@@ -149,7 +152,7 @@ public abstract class AbstractStreamSqlJob {
       retrievalThread.start();
 
       LOGGER.info("Run job without savePointPath, " + ", parallelism: " + parallelism);
-      stenv.execute(st);
+      stenv.execute(tableName);
       LOGGER.info("Flink Job is finished");
       // wait for retrieve thread consume all data
       LOGGER.info("Waiting for retrieve thread to be done");

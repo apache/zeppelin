@@ -110,7 +110,7 @@ public class FlinkInterpreter extends Interpreter {
   }
 
   StreamTableEnvironment getStreamTableEnvironment() {
-    return this.innerIntp.getStreamTableEnvironment();
+    return this.innerIntp.getStreamTableEnvironment("blink");
   }
 
   org.apache.flink.table.api.TableEnvironment getJavaBatchTableEnvironment(String planner) {
@@ -122,7 +122,7 @@ public class FlinkInterpreter extends Interpreter {
   }
 
   TableEnvironment getBatchTableEnvironment() {
-    return this.innerIntp.getBatchTableEnvironment();
+    return this.innerIntp.getBatchTableEnvironment("blink");
   }
 
   JobManager getJobManager() {

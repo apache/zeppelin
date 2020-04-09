@@ -31,16 +31,12 @@ import org.apache.zeppelin.interpreter.InterpreterResultMessageOutput;
 import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterEventClient;
 import org.apache.zeppelin.python.PythonInterpreterTest;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.Properties;
 
-import static junit.framework.TestCase.assertTrue;
-import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 
 
@@ -109,9 +105,28 @@ public class PyFlinkInterpreterTest extends PythonInterpreterTest {
   }
 
   @Test
-  public void testPyFlink() throws InterpreterException, IOException {
+  public void testBatchPyFlink() throws InterpreterException, IOException {
     IPyFlinkInterpreterTest.testBatchPyFlink(interpreter, flinkScalaInterpreter);
+  }
+
+  @Test
+  public void testStreamIPyFlink() throws InterpreterException, IOException {
     IPyFlinkInterpreterTest.testStreamPyFlink(interpreter, flinkScalaInterpreter);
+  }
+
+  @Test
+  public void testSingleStreamTableApi() throws InterpreterException, IOException {
+    IPyFlinkInterpreterTest.testSingleStreamTableApi(interpreter, flinkScalaInterpreter);
+  }
+
+  @Test
+  public void testUpdateStreamTableApi() throws InterpreterException, IOException {
+    IPyFlinkInterpreterTest.testUpdateStreamTableApi(interpreter, flinkScalaInterpreter);
+  }
+
+  @Test
+  public void testAppendStreamTableApi() throws InterpreterException, IOException {
+    IPyFlinkInterpreterTest.testAppendStreamTableApi(interpreter, flinkScalaInterpreter);
   }
 
   protected InterpreterContext getInterpreterContext() {
