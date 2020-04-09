@@ -18,16 +18,21 @@
 
 package org.apache.zeppelin.flink
 
+import java.io.IOException
+import java.util.concurrent.atomic.AtomicInteger
+
+import com.google.common.collect.Maps
 import org.apache.flink.api.scala.DataSet
 import org.apache.flink.streaming.api.scala._
 import org.apache.flink.table.api.internal.TableImpl
 import org.apache.flink.table.api.{Table, TableEnvironment, TableUtils}
-import org.apache.flink.table.api.scala.BatchTableEnvironment
+import org.apache.flink.table.api.scala.{BatchTableEnvironment, StreamTableEnvironment}
 import org.apache.flink.types.Row
 import org.apache.flink.util.StringUtils
 import org.apache.zeppelin.annotation.ZeppelinApi
 import org.apache.zeppelin.display.AngularObjectWatcher
 import org.apache.zeppelin.display.ui.OptionInput.ParamOption
+import org.apache.zeppelin.flink.sql.{AppendStreamSqlJob, SingleRowStreamSqlJob, UpdateStreamSqlJob}
 import org.apache.zeppelin.interpreter.{InterpreterContext, InterpreterHookRegistry, ResultMessages, ZeppelinContext}
 import org.apache.zeppelin.tabledata.TableDataUtils
 
@@ -37,11 +42,11 @@ import scala.collection.{JavaConversions, Seq}
 /**
   * ZeppelinContext for Flink
   */
-class FlinkZeppelinContext(val btenv: TableEnvironment,
-                           val btenv_2: TableEnvironment,
+class FlinkZeppelinContext(val flinkInterpreter: FlinkScalaInterpreter,
                            val hooks2: InterpreterHookRegistry,
                            val maxResult2: Int) extends ZeppelinContext(hooks2, maxResult2) {
 
+  private val SQL_INDEX = new AtomicInteger(0)
   private var currentSql: String = _
 
   private val interpreterClassMap = Map(
@@ -98,10 +103,10 @@ class FlinkZeppelinContext(val btenv: TableEnvironment,
   override def showData(obj: Any, maxResult: Int): String = {
     if (obj.isInstanceOf[DataSet[_]]) {
       val ds = obj.asInstanceOf[DataSet[_]]
-      val env = btenv_2.asInstanceOf[BatchTableEnvironment]
-      val table = env.fromDataSet(ds)
+      val btenv = flinkInterpreter.getBatchTableEnvironment("flink").asInstanceOf[BatchTableEnvironment]
+      val table = btenv.fromDataSet(ds)
       val columnNames: Array[String] = table.getSchema.getFieldNames
-      val dsRows: DataSet[Row] = env.toDataSet[Row](table)
+      val dsRows: DataSet[Row] = btenv.toDataSet[Row](table)
       showTable(columnNames, dsRows.first(maxResult + 1).collect())
     } else if (obj.isInstanceOf[Table]) {
       val rows = JavaConversions.asScalaBuffer(TableUtils.collectToList(obj.asInstanceOf[TableImpl])).toSeq
@@ -114,7 +119,8 @@ class FlinkZeppelinContext(val btenv: TableEnvironment,
 
   def showFlinkTable(table: Table): String = {
     val columnNames: Array[String] = table.getSchema.getFieldNames
-    val dsRows: DataSet[Row] = btenv.asInstanceOf[BatchTableEnvironment].toDataSet[Row](table)
+    val dsRows: DataSet[Row] = flinkInterpreter.getJavaBatchTableEnvironment("flink")
+      .asInstanceOf[BatchTableEnvironment].toDataSet[Row](table)
     showTable(columnNames, dsRows.first(maxResult + 1).collect())
   }
 
@@ -122,6 +128,39 @@ class FlinkZeppelinContext(val btenv: TableEnvironment,
     val rows = JavaConversions.asScalaBuffer(TableUtils.collectToList(table.asInstanceOf[TableImpl])).toSeq
     val columnNames = table.getSchema.getFieldNames
     showTable(columnNames, rows)
+  }
+
+  def show(table: Table, streamType: String, configs: Map[String, String] = Map.empty): Unit = {
+    val stenv = flinkInterpreter.getStreamTableEnvironment()
+    val context = InterpreterContext.get()
+    configs.foreach(e => context.getLocalProperties.put(e._1, e._2))
+    val tableName = context.getParagraphId.replace("-", "_") + "_" + SQL_INDEX.getAndIncrement()
+    if (streamType.equalsIgnoreCase("single")) {
+      val streamJob = new SingleRowStreamSqlJob(flinkInterpreter.getStreamExecutionEnvironment,
+        stenv, flinkInterpreter.getJobManager, context, flinkInterpreter.getDefaultParallelism)
+      streamJob.run(table, tableName)
+    }
+    else if (streamType.equalsIgnoreCase("append")) {
+      val streamJob = new AppendStreamSqlJob(flinkInterpreter.getStreamExecutionEnvironment,
+        stenv, flinkInterpreter.getJobManager, context, flinkInterpreter.getDefaultParallelism)
+      streamJob.run(table, tableName)
+    }
+    else if (streamType.equalsIgnoreCase("update")) {
+      val streamJob = new UpdateStreamSqlJob(flinkInterpreter.getStreamExecutionEnvironment,
+        stenv, flinkInterpreter.getJobManager, context, flinkInterpreter.getDefaultParallelism)
+      streamJob.run(table, tableName)
+    }
+    else throw new IOException("Unrecognized stream type: " + streamType)
+  }
+
+  /**
+   * Called by python
+   * @param table
+   * @param streamType
+   * @param configs
+   */
+  def show(table: Table, streamType: String, configs: java.util.Map[String, String]): Unit = {
+    show(table, streamType, JavaConversions.mapAsScalaMap(configs).toMap)
   }
 
   @ZeppelinApi
