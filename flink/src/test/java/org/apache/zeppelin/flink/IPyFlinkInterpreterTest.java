@@ -19,6 +19,7 @@ package org.apache.zeppelin.flink;
 
 
 import com.google.common.io.Files;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
@@ -26,6 +27,7 @@ import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.InterpreterResultMessage;
 import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterEventClient;
 import org.apache.zeppelin.python.IPythonInterpreterTest;
@@ -35,6 +37,7 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 import static junit.framework.TestCase.assertTrue;
@@ -95,7 +98,7 @@ public class IPyFlinkInterpreterTest extends IPythonInterpreterTest {
   }
 
   @Test
-  public void testBatchIPyFlink() throws InterpreterException {
+  public void testBatchIPyFlink() throws InterpreterException, IOException {
     testBatchPyFlink(interpreter, flinkScalaInterpreter);
   }
 
@@ -104,8 +107,23 @@ public class IPyFlinkInterpreterTest extends IPythonInterpreterTest {
     testStreamPyFlink(interpreter, flinkScalaInterpreter);
   }
 
-  public static void testBatchPyFlink(Interpreter pyflinkInterpreter, Interpreter flinkScalaInterpreter) throws InterpreterException {
-    InterpreterContext context = createInterpreterContext(mock(RemoteInterpreterEventClient.class));
+  @Test
+  public void testSingleStreamTableApi() throws InterpreterException, IOException {
+    testSingleStreamTableApi(interpreter, flinkScalaInterpreter);
+  }
+
+  @Test
+  public void testUpdateStreamTableApi() throws InterpreterException, IOException {
+    testUpdateStreamTableApi(interpreter, flinkScalaInterpreter);
+  }
+
+  @Test
+  public void testAppendStreamTableApi() throws InterpreterException, IOException {
+    testAppendStreamTableApi(interpreter, flinkScalaInterpreter);
+  }
+
+  public static void testBatchPyFlink(Interpreter pyflinkInterpreter, Interpreter flinkScalaInterpreter) throws InterpreterException, IOException {
+    InterpreterContext context = createInterpreterContext();
     InterpreterResult result = pyflinkInterpreter.interpret(
         "import tempfile\n" +
         "import os\n" +
@@ -135,7 +153,7 @@ public class IPyFlinkInterpreterTest extends IPythonInterpreterTest {
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
 
     // use group by
-    context = createInterpreterContext(mock(RemoteInterpreterEventClient.class));
+    context = createInterpreterContext();
     result = pyflinkInterpreter.interpret(
             "import tempfile\n" +
             "import os\n" +
@@ -176,7 +194,7 @@ public class IPyFlinkInterpreterTest extends IPythonInterpreterTest {
             context);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
 
-    context = createInterpreterContext(mock(RemoteInterpreterEventClient.class));
+    context = createInterpreterContext();
     result = pyflinkInterpreter.interpret(
             "import tempfile\n" +
             "import os\n" +
@@ -204,6 +222,28 @@ public class IPyFlinkInterpreterTest extends IPythonInterpreterTest {
             "bt_env.execute(\"batch_job3\")"
             , context);
     assertEquals(result.toString(),InterpreterResult.Code.SUCCESS, result.code());
+
+    // z.show
+    context = createInterpreterContext();
+    result = pyflinkInterpreter.interpret(
+            "import tempfile\n" +
+            "import os\n" +
+            "import shutil\n" +
+            "sink_path = tempfile.gettempdir() + '/streaming.csv'\n" +
+            "if os.path.exists(sink_path):\n" +
+            "    if os.path.isfile(sink_path):\n" +
+            "      os.remove(sink_path)\n" +
+            "    else:\n" +
+            "      shutil.rmtree(sink_path)\n" +
+            "b_env.set_parallelism(1)\n" +
+            "t = bt_env.from_elements([(1, 'hi', 'hello'), (2, 'hi', 'hello')], ['a', 'b', 'c'])\n" +
+            "z.show(t)"
+            , context);
+    assertEquals(result.toString(),InterpreterResult.Code.SUCCESS, result.code());
+    List<InterpreterResultMessage> resultMessages = context.out.toInterpreterResultMessage();
+    assertEquals(new String(context.out.toByteArray()), 1, resultMessages.size());
+    assertEquals(new String(context.out.toByteArray()), InterpreterResult.Type.TABLE, resultMessages.get(0).getType());
+    assertEquals(new String(context.out.toByteArray()), "a\tb\tc\n1\thi\thello\n2\thi\thello\n", resultMessages.get(0).getData());
   }
 
   @Override
@@ -223,7 +263,7 @@ public class IPyFlinkInterpreterTest extends IPythonInterpreterTest {
   }
 
   public static void testStreamPyFlink(Interpreter interpreter, Interpreter flinkScalaInterpreter) throws InterpreterException, IOException {
-    InterpreterContext context = createInterpreterContext(mock(RemoteInterpreterEventClient.class));
+    InterpreterContext context = createInterpreterContext();
     InterpreterResult result = interpreter.interpret(
             "import tempfile\n" +
             "import os\n" +
@@ -253,13 +293,65 @@ public class IPyFlinkInterpreterTest extends IPythonInterpreterTest {
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
   }
 
-  private static InterpreterContext createInterpreterContext(
-          RemoteInterpreterEventClient mockRemoteEventClient) {
+  public static void testSingleStreamTableApi(Interpreter interpreter,
+                                              Interpreter flinkScalaInterpreter) throws IOException, InterpreterException {
+    String initStreamScalaScript = IOUtils.toString(IPyFlinkInterpreterTest.class.getResource("/init_stream.scala"));
+    InterpreterContext context = createInterpreterContext();
+    InterpreterResult result = flinkScalaInterpreter.interpret(initStreamScalaScript, context);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+
+    context = createInterpreterContext();
+    String code = "table = st_env.sql_query('select max(rowtime), count(1) from log')\nz.show(table,stream_type='single',template = 'Total Count: {1} <br/> {0}')";
+    result = interpreter.interpret(code, context);
+    assertEquals(new String(context.out.toByteArray()), InterpreterResult.Code.SUCCESS, result.code());
+    List<InterpreterResultMessage> resultMessages = context.out.toInterpreterResultMessage();
+    assertEquals(InterpreterResult.Type.HTML, resultMessages.get(0).getType());
+    assertTrue(resultMessages.toString(),
+            resultMessages.get(0).getData().contains("Total Count"));
+  }
+
+  public static void testUpdateStreamTableApi(Interpreter interpreter,
+                                              Interpreter flinkScalaInterpreter) throws IOException, InterpreterException {
+    String initStreamScalaScript = IOUtils.toString(IPyFlinkInterpreterTest.class.getResource("/init_stream.scala"));
+    InterpreterContext context = createInterpreterContext();
+    InterpreterResult result = flinkScalaInterpreter.interpret(initStreamScalaScript, context);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+
+    context = createInterpreterContext();
+    String code = "table = st_env.sql_query('select url, count(1) as pv from log group by url')\nz.show(table,stream_type='update')";
+    result = interpreter.interpret(code, context);
+    assertEquals(new String(context.out.toByteArray()), InterpreterResult.Code.SUCCESS, result.code());
+    List<InterpreterResultMessage> resultMessages = context.out.toInterpreterResultMessage();
+    assertEquals(InterpreterResult.Type.TABLE, resultMessages.get(0).getType());
+    assertTrue(resultMessages.toString(),
+            resultMessages.get(0).getData().contains("url\tpv\n"));
+  }
+
+  public static void testAppendStreamTableApi(Interpreter interpreter,
+                                              Interpreter flinkScalaInterpreter) throws IOException, InterpreterException {
+    String initStreamScalaScript = IOUtils.toString(IPyFlinkInterpreterTest.class.getResource("/init_stream.scala"));
+    InterpreterContext context = createInterpreterContext();
+    InterpreterResult result = flinkScalaInterpreter.interpret(initStreamScalaScript, context);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+
+    context = createInterpreterContext();
+    String code = "table = st_env.sql_query(\"select TUMBLE_START(rowtime, INTERVAL '5' SECOND) as " +
+            "start_time, url, count(1) as pv from log group by " +
+            "TUMBLE(rowtime, INTERVAL '5' SECOND), url\")\nz.show(table,stream_type='append')";
+    result = interpreter.interpret(code, context);
+    assertEquals(new String(context.out.toByteArray()), InterpreterResult.Code.SUCCESS, result.code());
+    List<InterpreterResultMessage> resultMessages = context.out.toInterpreterResultMessage();
+    assertEquals(InterpreterResult.Type.TABLE, resultMessages.get(0).getType());
+    assertTrue(resultMessages.toString(),
+            resultMessages.get(0).getData().contains("url\tpv\n"));
+  }
+
+  private static InterpreterContext createInterpreterContext() {
     return InterpreterContext.builder()
         .setNoteId("noteId")
         .setParagraphId("paragraphId")
-        .setIntpEventClient(mockRemoteEventClient)
         .setInterpreterOut(new InterpreterOutput(null))
+        .setIntpEventClient(mock(RemoteInterpreterEventClient.class))
         .build();
   }
 
