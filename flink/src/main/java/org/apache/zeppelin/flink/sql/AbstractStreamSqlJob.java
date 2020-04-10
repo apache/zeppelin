@@ -97,7 +97,7 @@ public abstract class AbstractStreamSqlJob {
 
   public InterpreterResult run(String st) throws IOException {
     Table table = stenv.sqlQuery(st);
-    String tableName = st + "_" + SQL_INDEX.getAndIncrement();
+    String tableName = "UnnamedTable_" + st + "_" + SQL_INDEX.getAndIncrement();
     return run(table, tableName);
   }
 

@@ -18,6 +18,7 @@
 
 package org.apache.zeppelin.flink;
 
+import com.google.common.collect.Lists;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -55,6 +56,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.stream.Collectors;
 
 public abstract class FlinkSqlInterrpeter extends Interpreter {
 
@@ -416,7 +418,9 @@ public abstract class FlinkSqlInterrpeter extends Interpreter {
   }
 
   private void callShowTables(InterpreterContext context) throws IOException {
-    String[] tables = this.tbenv.listTables();
+    List<String> tables =
+            Lists.newArrayList(this.tbenv.listTables()).stream()
+                    .filter(tbl -> !tbl.startsWith("UnnamedTable")).collect(Collectors.toList());
     context.out.write(
             "%table table\n" + StringUtils.join(tables, "\n") + "\n");
   }
