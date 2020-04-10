@@ -295,13 +295,20 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
 
   @VisibleForTesting
   String sparkUiWebUrlFromTemplate(String templateString, int port, String serviceName, String serviceDomain) {
-    Jinjava jinJava = new Jinjava();
     ImmutableMap<String, Object> binding = ImmutableMap.of(
         "PORT", port,
         "SERVICE_NAME", serviceName,
         "SERVICE_DOMAIN", serviceDomain
     );
-    return jinJava.render(templateString, binding);
+
+    ClassLoader oldCl = Thread.currentThread().getContextClassLoader();
+    try {
+      Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
+      Jinjava jinja = new Jinjava();
+      return jinja.render(templateString, binding);
+    } finally {
+      Thread.currentThread().setContextClassLoader(oldCl);
+    }
   }
 
   @VisibleForTesting
