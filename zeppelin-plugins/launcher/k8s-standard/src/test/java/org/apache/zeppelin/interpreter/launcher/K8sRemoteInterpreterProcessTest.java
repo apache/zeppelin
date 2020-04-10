@@ -193,4 +193,46 @@ public class K8sRemoteInterpreterProcessTest {
     assertTrue(sparkSubmitOptions.contains("spark.driver.port=" + intp.getSparkDriverPort()));
     assertTrue(sparkSubmitOptions.contains("spark.blockManager.port=" + intp.getSparkBlockmanagerPort()));
   }
+
+  @Test
+  public void testSparkUiWebUrlTemplate() {
+    // given
+    Kubectl kubectl = mock(Kubectl.class);
+    when(kubectl.getNamespace()).thenReturn("default");
+
+    Properties properties = new Properties();
+    HashMap<String, String> envs = new HashMap<String, String>();
+    envs.put("SERVICE_DOMAIN", "mydomain");
+
+    K8sRemoteInterpreterProcess intp = new K8sRemoteInterpreterProcess(
+        kubectl,
+        new File(".skip"),
+        "interpreter-container:1.0",
+        "shared_process",
+        "spark",
+        "myspark",
+        properties,
+        envs,
+        "zeppelin.server.hostname",
+        "12320",
+        false,
+        "spark-container:1.0",
+        10);
+
+    // when non template url
+    assertEquals("static.url",
+        intp.sparkUiWebUrlFromTemplate(
+            "static.url",
+            4040,
+            "zeppelin-server",
+            "my.domain.com"));
+
+    // when template url
+    assertEquals("//4040-zeppelin-server.my.domain.com",
+        intp.sparkUiWebUrlFromTemplate(
+            "//{{PORT}}-{{SERVICE_NAME}}.{{SERVICE_DOMAIN}}",
+            4040,
+            "zeppelin-server",
+            "my.domain.com"));
+  }
 }
