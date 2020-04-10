@@ -1,6 +1,7 @@
 package org.apache.zeppelin.interpreter.launcher;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -9,6 +10,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import com.hubspot.jinjava.Jinjava;
 import org.apache.commons.exec.ExecuteWatchdog;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
@@ -273,9 +275,15 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
       // configure interpreter property "zeppelin.spark.uiWebUrl" if not defined, to enable spark ui through reverse proxy
       String webUrl = (String) properties.get("zeppelin.spark.uiWebUrl");
       if (webUrl == null || webUrl.trim().isEmpty()) {
-        properties.put("zeppelin.spark.uiWebUrl",
-            String.format("//%d-%s.%s", webUiPort, getPodName(), envs.get("SERVICE_DOMAIN")));
+        webUrl = "//{{PORT}}-{{SERVICE_NAME}}.{{SERVICE_DOMAIN}}";
       }
+      properties.put("zeppelin.spark.uiWebUrl",
+          sparkUiWebUrlFromTemplate(
+              webUrl,
+              webUiPort,
+              getPodName(),
+              envs.get("SERVICE_DOMAIN")
+          ));
     }
 
     k8sProperties.put("zeppelin.k8s.envs", envs);
@@ -283,6 +291,24 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
     // interpreter properties overrides the values
     k8sProperties.putAll(Maps.fromProperties(properties));
     return k8sProperties;
+  }
+
+  @VisibleForTesting
+  String sparkUiWebUrlFromTemplate(String templateString, int port, String serviceName, String serviceDomain) {
+    ImmutableMap<String, Object> binding = ImmutableMap.of(
+        "PORT", port,
+        "SERVICE_NAME", serviceName,
+        "SERVICE_DOMAIN", serviceDomain
+    );
+
+    ClassLoader oldCl = Thread.currentThread().getContextClassLoader();
+    try {
+      Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
+      Jinjava jinja = new Jinjava();
+      return jinja.render(templateString, binding);
+    } finally {
+      Thread.currentThread().setContextClassLoader(oldCl);
+    }
   }
 
   @VisibleForTesting

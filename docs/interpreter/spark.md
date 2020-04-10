@@ -184,7 +184,11 @@ You can also set other Spark properties which are not listed in the table. For a
   <tr>
   <td>zeppelin.spark.uiWebUrl</td>
     <td></td>
-    <td>Overrides Spark UI default URL. Value should be a full URL (ex: http://{hostName}/{uniquePath}</td>
+    <td>
+      Overrides Spark UI default URL. Value should be a full URL (ex: http://{hostName}/{uniquePath}.
+      In Kubernetes mode, value can be Jinja template string with 3 template variables 'PORT', 'SERVICE_NAME' and 'SERVICE_DOMAIN'.
+      (ex: http://{{PORT}}-{{SERVICE_NAME}}.{{SERVICE_DOMAIN}})
+     </td>
   </tr>
   <td>spark.webui.yarn.useProxy</td>
     <td>false</td>
