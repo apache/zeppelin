@@ -75,6 +75,13 @@ public class FlinkStreamSqlInterpreterTest extends SqlInterpreterTest {
     assertEquals(InterpreterResult.Type.HTML, resultMessages.get(0).getType());
     assertTrue(resultMessages.toString(),
             resultMessages.get(0).getData().contains("Total Count"));
+
+    context = getInterpreterContext();
+    result = sqlInterpreter.interpret("show tables", context);
+    assertEquals(new String(context.out.toByteArray()), InterpreterResult.Code.SUCCESS, result.code());
+    resultMessages = context.out.toInterpreterResultMessage();
+    assertEquals(InterpreterResult.Type.TABLE, resultMessages.get(0).getType());
+    assertEquals("table\nlog\n", resultMessages.get(0).getData());
   }
 
   @Test
@@ -198,6 +205,17 @@ public class FlinkStreamSqlInterpreterTest extends SqlInterpreterTest {
             getInterpreterContext());
 
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+
+    // after these select queries, `show tables` should still show only one source table,
+    // other temporary tables should not be displayed.
+    InterpreterContext context = getInterpreterContext();
+    result = sqlInterpreter.interpret("show tables", context);
+    List<InterpreterResultMessage> resultMessages = context.out.toInterpreterResultMessage();
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    assertEquals(1, resultMessages.size());
+    assertEquals(InterpreterResult.Type.TABLE, resultMessages.get(0).getType());
+    assertEquals(resultMessages.get(0).toString(),
+            "table\ndest_table\nsource_table\n", resultMessages.get(0).getData());
   }
 
   @Test

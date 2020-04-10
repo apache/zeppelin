@@ -134,7 +134,7 @@ class FlinkZeppelinContext(val flinkInterpreter: FlinkScalaInterpreter,
     val stenv = flinkInterpreter.getStreamTableEnvironment()
     val context = InterpreterContext.get()
     configs.foreach(e => context.getLocalProperties.put(e._1, e._2))
-    val tableName = context.getParagraphId.replace("-", "_") + "_" + SQL_INDEX.getAndIncrement()
+    val tableName = "UnnamedTable_" + context.getParagraphId.replace("-", "_") + "_" + SQL_INDEX.getAndIncrement()
     if (streamType.equalsIgnoreCase("single")) {
       val streamJob = new SingleRowStreamSqlJob(flinkInterpreter.getStreamExecutionEnvironment,
         stenv, flinkInterpreter.getJobManager, context, flinkInterpreter.getDefaultParallelism)

@@ -135,6 +135,18 @@ public class FlinkBatchSqlInterpreterTest extends SqlInterpreterTest {
     assertEquals(1, resultMessages.size());
     assertEquals(InterpreterResult.Type.TABLE, resultMessages.get(0).getType());
     assertEquals("name\nA\nB\n", resultMessages.get(0).getData());
+
+    // after these select queries, `show tables` should still show only one source table,
+    // other temporary tables should not be displayed.
+    context = getInterpreterContext();
+    result = sqlInterpreter.interpret("show tables", context);
+    resultMessages = context.out.toInterpreterResultMessage();
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    assertEquals(1, resultMessages.size());
+    assertEquals(InterpreterResult.Type.TABLE, resultMessages.get(0).getType());
+    assertEquals(resultMessages.get(0).toString(),
+            "table\nsource_table\n", resultMessages.get(0).getData());
+
   }
 
   @Test
