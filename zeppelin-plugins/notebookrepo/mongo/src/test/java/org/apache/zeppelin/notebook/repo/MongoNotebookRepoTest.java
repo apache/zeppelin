@@ -49,7 +49,9 @@ public class MongoNotebookRepoTest {
   @Before
   public void setUp() throws IOException {
     String bindIp = "localhost";
-    int port = new ServerSocket(0).getLocalPort();
+    ServerSocket socket = new ServerSocket(0);
+    int port = socket.getLocalPort();
+    socket.close();
 
     IMongodConfig mongodConfig = new MongodConfigBuilder()
         .version(Version.Main.PRODUCTION)
@@ -122,6 +124,24 @@ public class MongoNotebookRepoTest {
     assertEquals(1, notebookRepo.list(AuthenticationInfo.ANONYMOUS).size());
 
     notebookRepo.remove("/my_project3", AuthenticationInfo.ANONYMOUS);
+    assertEquals(0, notebookRepo.list(AuthenticationInfo.ANONYMOUS).size());
+  }
+
+  @Test
+  public void testGetNotePath() throws IOException {
+    assertEquals(0, notebookRepo.list(AuthenticationInfo.ANONYMOUS).size());
+
+    Note note = new Note();
+    String notePath = "/folder1/folder2/folder3/folder4/folder5/my_note";
+    note.setPath(notePath);
+    notebookRepo.save(note, AuthenticationInfo.ANONYMOUS);
+
+    notebookRepo.init(zConf);
+    Map<String, NoteInfo> noteInfos = notebookRepo.list(AuthenticationInfo.ANONYMOUS);
+    assertEquals(1, notebookRepo.list(AuthenticationInfo.ANONYMOUS).size());
+    assertEquals(notePath, noteInfos.get(note.getId()).getPath());
+
+    notebookRepo.remove(note.getId(), note.getPath(), AuthenticationInfo.ANONYMOUS);
     assertEquals(0, notebookRepo.list(AuthenticationInfo.ANONYMOUS).size());
   }
 }
