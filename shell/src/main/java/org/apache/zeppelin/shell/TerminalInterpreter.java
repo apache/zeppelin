@@ -66,6 +66,7 @@ public class TerminalInterpreter extends KerberosInterpreter {
 
   // Internal and external IP mapping of zeppelin server
   private HashMap<String, String> mapIpMapping = new HashMap<>();
+  private Gson gson = new Gson();
 
   // terminal web socket status
   // ui_templates/terminal-dashboard.jinja
@@ -132,7 +133,6 @@ public class TerminalInterpreter extends KerberosInterpreter {
     Properties properties = getProperties();
     String strIpMapping = properties.getProperty("zeppelin.terminal.ip.mapping");
     if (!StringUtils.isEmpty(strIpMapping)) {
-      Gson gson = new Gson();
       mapIpMapping = gson.fromJson(strIpMapping, new TypeToken<Map<String, String>>(){}.getType());
     }
 

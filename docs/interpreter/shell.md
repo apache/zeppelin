@@ -74,6 +74,11 @@ At the "Interpreters" menu in Zeppelin dropdown menu, you can set the property v
     <td>false</td>
     <td>Enable ZeppelinContext variable interpolation into paragraph text</td>
   </tr>
+  <tr>
+    <td>zeppelin.terminal.ip.mapping</td>
+    <td></td>
+    <td>Internal and external IP mapping of zeppelin server</td>
+  </tr>
 </table>
 
 ## Example
@@ -129,22 +134,6 @@ input any char
 ```
 
 <img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/shell-terminal.gif" />
-
-## Configuration
-At the "Interpreters" menu in Zeppelin dropdown menu, you can set the property value for Terminal interpreter.
-
-<table class="table-configuration">
-  <tr>
-    <th>Name</th>
-    <th>Default</th>
-    <th>Description</th>
-  </tr>
-  <tr>
-    <td>zeppelin.terminal.ip.mapping</td>
-    <td></td>
-    <td>Internal and external IP mapping of zeppelin server</td>
-  </tr>
-</table>
 
 ### zeppelin.terminal.ip.mapping
 
