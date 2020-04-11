@@ -19,6 +19,8 @@ package org.apache.zeppelin.shell;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.io.Resources;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.hubspot.jinjava.Jinjava;
 import org.apache.commons.io.Charsets;
 import org.apache.commons.lang3.StringUtils;
@@ -43,6 +45,7 @@ import java.net.URL;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -60,6 +63,10 @@ public class TerminalInterpreter extends KerberosInterpreter {
   private InterpreterContext intpContext;
 
   private int terminalPort = 0;
+
+  // Internal and external IP mapping of zeppelin server
+  private HashMap<String, String> mapIpMapping = new HashMap<>();
+  private Gson gson = new Gson();
 
   // terminal web socket status
   // ui_templates/terminal-dashboard.jinja
@@ -123,6 +130,12 @@ public class TerminalInterpreter extends KerberosInterpreter {
       }
     }
     setParagraphConfig();
+    Properties properties = getProperties();
+    String strIpMapping = properties.getProperty("zeppelin.terminal.ip.mapping");
+    if (!StringUtils.isEmpty(strIpMapping)) {
+      mapIpMapping = gson.fromJson(strIpMapping, new TypeToken<Map<String, String>>(){}.getType());
+    }
+
     createTerminalDashboard(context.getNoteId(), context.getParagraphId(), terminalPort);
 
     return new InterpreterResult(Code.SUCCESS);
@@ -137,6 +150,13 @@ public class TerminalInterpreter extends KerberosInterpreter {
       InetAddress addr = InetAddress.getLocalHost();
       hostName = addr.getHostName().toString();
       hostIp = RemoteInterpreterUtils.findAvailableHostAddress();
+
+      // Internal and external IP mapping of zeppelin server
+      if (mapIpMapping.containsKey(hostIp)) {
+        LOGGER.info("Internal IP: {}", hostIp);
+        hostIp = mapIpMapping.get(hostIp);
+        LOGGER.info("External IP: {}", hostIp);
+      }
     } catch (IOException e) {
       LOGGER.error(e.getMessage(), e);
     }

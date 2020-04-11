@@ -74,6 +74,11 @@ At the "Interpreters" menu in Zeppelin dropdown menu, you can set the property v
     <td>false</td>
     <td>Enable ZeppelinContext variable interpolation into paragraph text</td>
   </tr>
+  <tr>
+    <td>zeppelin.terminal.ip.mapping</td>
+    <td></td>
+    <td>Internal and external IP mapping of zeppelin server</td>
+  </tr>
 </table>
 
 ## Example
@@ -129,3 +134,14 @@ input any char
 ```
 
 <img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/shell-terminal.gif" />
+
+### zeppelin.terminal.ip.mapping
+
+When running the terminal interpreter in the notebook, the front end of the notebook needs to obtain the IP address of the server where the terminal interpreter is located to communicate.
+
+In a public cloud environment, the cloud host has an internal IP and an external access IP, and the interpreter runs in the cloud host. This will cause the notebook front end to be unable to connect to the terminal interpreter properly, resulting in the terminal interpreter being unusable.
+
+Solution: Set the mapping between internal IP and external IP in the terminal interpreter, and connect the front end of the notebook through the external IP of the terminal interpreter.
+
+Example: 
+{"internal-ip1":"external-ip1", "internal-ip2":"external-ip2"}
