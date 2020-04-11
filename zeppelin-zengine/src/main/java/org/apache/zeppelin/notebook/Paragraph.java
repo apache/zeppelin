@@ -136,7 +136,7 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
   }
 
   private static String generateId() {
-    return "paragraph_" + System.currentTimeMillis() + "_" + new SecureRandom().nextInt();
+    return "paragraph_" + System.currentTimeMillis() + "_" + Math.abs(new SecureRandom().nextInt());
   }
 
   public Map<String, Paragraph> getUserParagraphMap() {
