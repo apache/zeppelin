@@ -528,8 +528,8 @@
 <!--
 <property>
     <name>zeppelin.server.send.jetty.name</name>
-    <value>true</value>
-    <description>If set to true, will not show the Jetty version to prevent Fingerprinting</description>
+    <value>false</value>
+    <description>If set to false, will not show the Jetty version to prevent Fingerprinting</description>
 </property>
 -->
 
