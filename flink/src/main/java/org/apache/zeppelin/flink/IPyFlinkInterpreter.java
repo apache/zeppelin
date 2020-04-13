@@ -17,9 +17,11 @@
 
 package org.apache.zeppelin.flink;
 
-import org.apache.zeppelin.interpreter.BaseZeppelinContext;
+import org.apache.zeppelin.interpreter.ZeppelinContext;
+import org.apache.flink.table.api.TableEnvironment;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
+import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.python.IPythonInterpreter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,13 +38,19 @@ public class IPyFlinkInterpreter extends IPythonInterpreter {
   private static final Logger LOGGER = LoggerFactory.getLogger(IPyFlinkInterpreter.class);
 
   private FlinkInterpreter flinkInterpreter;
+  private InterpreterContext curInterpreterContext;
+  private boolean opened = false;
+  private ClassLoader originalClassLoader;
 
   public IPyFlinkInterpreter(Properties property) {
     super(property);
   }
 
   @Override
-  public void open() throws InterpreterException {
+  public synchronized void open() throws InterpreterException {
+    if (opened) {
+      return;
+    }
     FlinkInterpreter pyFlinkInterpreter =
         getInterpreterInTheSameSessionByClassName(FlinkInterpreter.class, false);
     setProperty("zeppelin.python",
@@ -50,10 +58,11 @@ public class IPyFlinkInterpreter extends IPythonInterpreter {
     flinkInterpreter = getInterpreterInTheSameSessionByClassName(FlinkInterpreter.class);
     setAdditionalPythonInitFile("python/zeppelin_ipyflink.py");
     super.open();
+    opened = true;
   }
 
   @Override
-  public BaseZeppelinContext buildZeppelinContext() {
+  public ZeppelinContext buildZeppelinContext() {
     return flinkInterpreter.getZeppelinContext();
   }
 
@@ -64,6 +73,32 @@ public class IPyFlinkInterpreter extends IPythonInterpreter {
     String pyflinkPythonPath = PyFlinkInterpreter.getPyFlinkPythonPath(properties);
     envs.put("PYTHONPATH", pythonPath + ":" + pyflinkPythonPath);
     return envs;
+  }
+
+  @Override
+  public InterpreterResult internalInterpret(String st,
+                                             InterpreterContext context)
+          throws InterpreterException {
+    try {
+      // set InterpreterContext in the python thread first, otherwise flink job could not be
+      // associated with paragraph in JobListener
+      this.curInterpreterContext = context;
+      InterpreterResult result =
+              super.internalInterpret("intp.initJavaThread()", context);
+      if (result.code() != InterpreterResult.Code.SUCCESS) {
+        throw new InterpreterException("Fail to initJavaThread: " +
+                result.toString());
+      }
+      return super.internalInterpret(st, context);
+    } finally {
+      if (getKernelProcessLauncher().isRunning()) {
+        InterpreterResult result =
+                super.internalInterpret("intp.resetClassLoaderInPythonThread()", context);
+        if (result.code() != InterpreterResult.Code.SUCCESS) {
+          LOGGER.warn("Fail to resetClassLoaderInPythonThread: " + result.toString());
+        }
+      }
+    }
   }
 
   @Override
@@ -81,6 +116,25 @@ public class IPyFlinkInterpreter extends IPythonInterpreter {
     }
   }
 
+  /**
+   * Called by python process.
+   */
+  public void initJavaThread() {
+    InterpreterContext.set(curInterpreterContext);
+    originalClassLoader = Thread.currentThread().getContextClassLoader();
+    Thread.currentThread().setContextClassLoader(flinkInterpreter.getFlinkScalaShellLoader());
+    flinkInterpreter.createPlannerAgain();
+  }
+
+  /**
+   * Called by python process.
+   */
+  public void resetClassLoaderInPythonThread() {
+    if (originalClassLoader != null) {
+      Thread.currentThread().setContextClassLoader(originalClassLoader);
+    }
+  }
+
   @Override
   public int getProgress(InterpreterContext context) throws InterpreterException {
     return flinkInterpreter.getProgress(context);
@@ -93,5 +147,13 @@ public class IPyFlinkInterpreter extends IPythonInterpreter {
   public org.apache.flink.streaming.api.environment.StreamExecutionEnvironment
       getJavaStreamExecutionEnvironment() {
     return flinkInterpreter.getStreamExecutionEnvironment().getJavaEnv();
+  }
+
+  public TableEnvironment getJavaBatchTableEnvironment(String planner) {
+    return flinkInterpreter.getJavaBatchTableEnvironment(planner);
+  }
+
+  public TableEnvironment getJavaStreamTableEnvironment(String planner) {
+    return flinkInterpreter.getJavaStreamTableEnvironment(planner);
   }
 }

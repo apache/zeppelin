@@ -105,15 +105,6 @@ class Utils {
     }
   }
 
-  static boolean isSpark2() {
-    try {
-      Class.forName("org.apache.spark.sql.SparkSession");
-      return true;
-    } catch (ClassNotFoundException e) {
-      return false;
-    }
-  }
-  
   public static String buildJobGroupId(InterpreterContext context) {
     String uName = "anonymous";
     if (context.getAuthenticationInfo() != null) {

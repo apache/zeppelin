@@ -38,14 +38,13 @@
   <properties>
     <!--library versions-->
     <hadoop.version>2.7.3</hadoop.version>
-    <commons.lang3.version>3.7</commons.lang3.version>
     <jackrabbit.webdav.version>1.5.2</jackrabbit.webdav.version>
     <quartz.scheduler.version>2.2.1</quartz.scheduler.version>
     <lucene.version>5.3.1</lucene.version>
     <org.reflections.version>0.9.8</org.reflections.version>
     <xml.apis.version>1.4.01</xml.apis.version>
     <frontend.maven.plugin.version>1.3</frontend.maven.plugin.version>
-    <aws.sdk.s3.version>1.10.62</aws.sdk.s3.version>
+    <aws.sdk.s3.version>1.11.736</aws.sdk.s3.version>
     <commons.vfs2.version>2.2</commons.vfs2.version>
     <eclipse.jgit.version>4.5.4.201711221230-r</eclipse.jgit.version>
     <jettison.version>1.4.0</jettison.version>
@@ -60,6 +59,22 @@
       <groupId>${project.groupId}</groupId>
       <artifactId>zeppelin-interpreter</artifactId>
       <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>zeppelin-jupyter</artifactId>
+      <version>${project.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.ow2.asm</groupId>
+          <artifactId>asm</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.jsoup</groupId>
+          <artifactId>jsoup</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <dependency>
@@ -248,7 +263,6 @@
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
-      <version>${commons.lang3.version}</version>
     </dependency>
 
     <dependency>
@@ -281,7 +295,6 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
-        <version>3.0.2</version>
         <executions>
           <execution>
             <goals>

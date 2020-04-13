@@ -21,13 +21,17 @@ import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 
 import java.io.IOException;
+import java.util.ArrayList;
+
 import org.apache.zeppelin.interpreter.AbstractInterpreterTest;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterNotFoundException;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.notebook.ApplicationState;
+import org.apache.zeppelin.notebook.AuthorizationService;
 import org.apache.zeppelin.notebook.Note;
+import org.apache.zeppelin.notebook.NoteManager;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
@@ -55,11 +59,14 @@ public class HeliumApplicationFactoryTest extends AbstractInterpreterTest {
     }
 
     SearchService search = mock(SearchService.class);
+    AuthorizationService authorizationService = mock(AuthorizationService.class);
     notebookRepo = mock(NotebookRepo.class);
     notebook =
         new Notebook(
             conf,
+            authorizationService,
             notebookRepo,
+            new NoteManager(notebookRepo),
             interpreterFactory,
             interpreterSettingManager,
             search,
@@ -233,7 +240,7 @@ public class HeliumApplicationFactoryTest extends AbstractInterpreterTest {
 
     Note note1 = notebook.createNote("note1", anonymous);
     String mock1IntpSettingId = null;
-    for (InterpreterSetting setting : note1.getBindedInterpreterSettings()) {
+    for (InterpreterSetting setting : note1.getBindedInterpreterSettings(new ArrayList<>())) {
       if (setting.getName().equals("mock1")) {
         mock1IntpSettingId = setting.getId();
         break;

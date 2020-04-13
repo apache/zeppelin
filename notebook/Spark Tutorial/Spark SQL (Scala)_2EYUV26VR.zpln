@@ -1,0 +1,1030 @@
+{
+  "paragraphs": [
+    {
+      "title": "Introduction",
+      "text": "%md\n\nThis is a tutorial for Spark SQL in scala (based on Spark 2.x).  First we need to clarifiy serveral basic concepts of Spark SQL\n\n* **SparkSession**   - This is the entry point of Spark SQL, you need use `SparkSession` to create DataFrame/Dataset, register UDF, query table and etc.\n* **Dataset**        - Dataset is the core abstraction of Spark SQL. Underneath Dataset is RDD, but Dataset know more about your data, specifically its structure, so that Dataset could do more optimization for you. It is recommended to use Spark SQL intead of RDD api.\n* **DataFrame**      - DataFrame is just an alias of Dataset[Row]\n",
+      "user": "anonymous",
+      "dateUpdated": "2020-03-11 13:26:59.236",
+      "config": {
+        "tableHide": false,
+        "editorSetting": {
+          "language": "text",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": false
+        },
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/text",
+        "fontSize": 9.0,
+        "editorHide": true,
+        "results": {},
+        "enabled": true,
+        "title": false,
+        "runOnSelectionChange": true,
+        "checkEmpty": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003cp\u003eThis is a tutorial for Spark SQL in scala (based on Spark 2.x).  First we need to clarifiy serveral basic concepts of Spark SQL\u003c/p\u003e\n\u003cul\u003e\n\u003cli\u003e\u003cstrong\u003eSparkSession\u003c/strong\u003e   - This is the entry point of Spark SQL, you need use \u003ccode\u003eSparkSession\u003c/code\u003e to create DataFrame/Dataset, register UDF, query table and etc.\u003c/li\u003e\n\u003cli\u003e\u003cstrong\u003eDataset\u003c/strong\u003e        - Dataset is the core abstraction of Spark SQL. Underneath Dataset is RDD, but Dataset know more about your data, specifically its structure, so that Dataset could do more optimization for you. It is recommended to use Spark SQL intead of RDD api.\u003c/li\u003e\n\u003cli\u003e\u003cstrong\u003eDataFrame\u003c/strong\u003e      - DataFrame is just an alias of Dataset[Row]\u003c/li\u003e\n\u003c/ul\u003e\n\n\u003c/div\u003e"
+          }
+        ]
+      },
+      "apps": [],
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1579593308067_-799293654",
+      "id": "20180530-101118_380906698",
+      "dateCreated": "2020-01-21 15:55:08.068",
+      "dateStarted": "2020-03-11 13:26:56.974",
+      "dateFinished": "2020-03-11 13:26:57.048",
+      "status": "FINISHED"
+    },
+    {
+      "title": "Create Dataset/DataFrame",
+      "text": "%md\n\nThere\u0027s 2 ways to create Dataset/DataFrame\n\n* Use SparkSession to create Dataset/DataFrame directly. You can either create Dataset/DataFrame from RDD, Seq type and etc.\n* Use DataFrameReader to create Dataset/DataFrame from many kind of storages that is supported by spark, such as HDFS, jdbc and etc.",
+      "user": "anonymous",
+      "dateUpdated": "2020-02-01 21:18:56.268",
+      "config": {
+        "tableHide": false,
+        "editorSetting": {
+          "language": "markdown",
+          "editOnDblClick": true,
+          "completionKey": "TAB",
+          "completionSupport": false
+        },
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/markdown",
+        "fontSize": 9.0,
+        "editorHide": true,
+        "title": false,
+        "results": {},
+        "enabled": true,
+        "runOnSelectionChange": true,
+        "checkEmpty": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003cp\u003eThere\u0026rsquo;s 2 ways to create Dataset/DataFrame\u003c/p\u003e\n\u003cul\u003e\n\u003cli\u003eUse SparkSession to create Dataset/DataFrame directly. You can either create Dataset/DataFrame from RDD, Seq type and etc.\u003c/li\u003e\n\u003cli\u003eUse DataFrameReader to create Dataset/DataFrame from many kind of storages that is supported by spark, such as HDFS, jdbc and etc.\u003c/li\u003e\n\u003c/ul\u003e\n\n\u003c/div\u003e"
+          }
+        ]
+      },
+      "apps": [],
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1579593308068_1022597750",
+      "id": "20180530-101515_948520659",
+      "dateCreated": "2020-01-21 15:55:08.068",
+      "dateStarted": "2020-02-01 21:18:56.276",
+      "dateFinished": "2020-02-01 21:18:56.289",
+      "status": "FINISHED"
+    },
+    {
+      "title": "Prerequisites",
+      "text": "%md\n\n\n\n**It is strongly recommended to run the following %spark.conf paragraph first to make sure correct configuration is used.**",
+      "user": "anonymous",
+      "dateUpdated": "2020-02-01 21:18:56.377",
+      "config": {
+        "tableHide": false,
+        "editorSetting": {
+          "language": "markdown",
+          "editOnDblClick": true,
+          "completionKey": "TAB",
+          "completionSupport": false
+        },
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/markdown",
+        "fontSize": 9.0,
+        "editorHide": true,
+        "title": false,
+        "results": {},
+        "enabled": true,
+        "runOnSelectionChange": true,
+        "checkEmpty": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003cp\u003e\u003cstrong\u003eIt is strongly recommended to run the following %spark.conf paragraph first to make sure correct configuration is used.\u003c/strong\u003e\u003c/p\u003e\n\n\u003c/div\u003e"
+          }
+        ]
+      },
+      "apps": [],
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1579593308068_-974291943",
+      "id": "20180530-110023_1756702033",
+      "dateCreated": "2020-01-21 15:55:08.069",
+      "dateStarted": "2020-02-01 21:18:56.382",
+      "dateFinished": "2020-02-01 21:18:56.390",
+      "status": "FINISHED"
+    },
+    {
+      "title": "",
+      "text": "%spark.conf\n\n# It is strongly recommended to set SPARK_HOME explictly instead of using the embedded spark of Zeppelin. As the function of embedded spark of Zeppelin is limited and can only run in local mode.\n# SPARK_HOME \u003cyour_spark_dist_path\u003e\n\n# Uncomment the following line if you want to use yarn-cluster mode (It is recommended to use yarn-cluster mode after Zeppelin 0.8, as the driver will run on the remote host of yarn cluster which can mitigate memory pressure of zeppelin server)\n# master yarn-cluster\n\n# Uncomment the following line if you want to use yarn-client mode (It is not recommended to use it after 0.8. Because it would launch the driver in the same host of zeppelin server which will increase memory pressure of zeppelin server)\n# master yarn-client\n\n# Uncomment the following line to enable HiveContext, and also put hive-site.xml under SPARK_CONF_DIR\n# zeppelin.spark.useHiveContext true\n\n",
+      "user": "anonymous",
+      "dateUpdated": "2020-03-11 13:28:13.784",
+      "config": {
+        "editorSetting": {
+          "language": "text",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/text",
+        "fontSize": 9.0,
+        "results": {},
+        "enabled": true,
+        "runOnSelectionChange": true,
+        "title": false,
+        "checkEmpty": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": []
+      },
+      "apps": [],
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1579593308069_-1239490192",
+      "id": "20180530-110007_162886838",
+      "dateCreated": "2020-01-21 15:55:08.069",
+      "dateStarted": "2020-02-01 21:18:56.488",
+      "dateFinished": "2020-02-01 21:18:56.495",
+      "status": "FINISHED"
+    },
+    {
+      "title": "Create Dataset/DataFrame via SparkSession",
+      "text": "%spark\n\n// create DataFrame from scala Seq. It can infer schema for you.\nval df1 \u003d spark.createDataFrame(Seq((1, \"andy\", 20, \"USA\"), (2, \"jeff\", 23, \"China\"), (3, \"james\", 18, \"USA\"))).toDF(\"id\", \"name\", \"age\", \"country\")\ndf1.printSchema\ndf1.show()\n\n// create DataFrame from scala case class\ncase class Person(id:Int, name:String, age:Int, country:String)\nval df2 \u003d spark.createDataFrame(Seq(Person(1, \"andy\", 20, \"USA\"), Person(2, \"jeff\", 23, \"China\"), Person(3, \"james\", 18, \"USA\")))\ndf2.printSchema\ndf2.show()\n\nimport spark.implicits._\n// you can also create Dataset from scala case class\nval df3 \u003d spark.createDataset(Seq(Person(1, \"andy\", 20, \"USA\"), Person(2, \"jeff\", 23, \"China\"), Person(3, \"james\", 18, \"USA\")))\ndf3.printSchema\ndf3.show()\n\n\n\n\n\n\n\n\n\n",
+      "user": "anonymous",
+      "dateUpdated": "2020-03-11 13:28:18.980",
+      "config": {
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 6.0,
+        "editorMode": "ace/mode/scala",
+        "fontSize": 9.0,
+        "title": true,
+        "results": {},
+        "enabled": true,
+        "runOnSelectionChange": true,
+        "checkEmpty": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "root\n |-- id: integer (nullable \u003d false)\n |-- name: string (nullable \u003d true)\n |-- age: integer (nullable \u003d false)\n |-- country: string (nullable \u003d true)\n\n+---+-----+---+-------+\n| id| name|age|country|\n+---+-----+---+-------+\n|  1| andy| 20|    USA|\n|  2| jeff| 23|  China|\n|  3|james| 18|    USA|\n+---+-----+---+-------+\n\nroot\n |-- id: integer (nullable \u003d false)\n |-- name: string (nullable \u003d true)\n |-- age: integer (nullable \u003d false)\n |-- country: string (nullable \u003d true)\n\n+---+-----+---+-------+\n| id| name|age|country|\n+---+-----+---+-------+\n|  1| andy| 20|    USA|\n|  2| jeff| 23|  China|\n|  3|james| 18|    USA|\n+---+-----+---+-------+\n\nroot\n |-- id: integer (nullable \u003d false)\n |-- name: string (nullable \u003d true)\n |-- age: integer (nullable \u003d false)\n |-- country: string (nullable \u003d true)\n\n+---+-----+---+-------+\n| id| name|age|country|\n+---+-----+---+-------+\n|  1| andy| 20|    USA|\n|  2| jeff| 23|  China|\n|  3|james| 18|    USA|\n+---+-----+---+-------+\n\n\u001b[1m\u001b[34mdf1\u001b[0m: \u001b[1m\u001b[32morg.apache.spark.sql.DataFrame\u001b[0m \u003d [id: int, name: string ... 2 more fields]\ndefined class Person\n\u001b[1m\u001b[34mdf2\u001b[0m: \u001b[1m\u001b[32morg.apache.spark.sql.DataFrame\u001b[0m \u003d [id: int, name: string ... 2 more fields]\nimport spark.implicits._\n\u001b[1m\u001b[34mdf3\u001b[0m: \u001b[1m\u001b[32morg.apache.spark.sql.Dataset[Person]\u001b[0m \u003d [id: int, name: string ... 2 more fields]\n"
+          }
+        ]
+      },
+      "apps": [],
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1579593308069_-1317689018",
+      "id": "20180530-101750_1491737301",
+      "dateCreated": "2020-01-21 15:55:08.069",
+      "dateStarted": "2020-03-11 13:28:18.987",
+      "dateFinished": "2020-03-11 13:28:22.868",
+      "status": "FINISHED"
+    },
+    {
+      "title": "Create Dataset/DataFrame via DataFrameReader",
+      "text": "%spark\n\n\nval SPARK_HOME \u003d System.getenv(\"SPARK_HOME\")\n// Read data from json file\n// link for this people.json (https://github.com/apache/spark/blob/master/examples/src/main/resources/people.json)\n// Use hdfs path if you are using hdfs\nval df1 \u003d spark.read.json(s\"file://$SPARK_HOME/examples/src/main/resources/people.json\")\ndf1.printSchema\ndf1.show()\n\n// Read data from csv file. You can customize it via spark.read.options. E.g. In the following example, we customize the sep and header\n// Add . at the end of this line to indidate this is not the end of this line of code.\nval df2 \u003d spark.read.options(Map(\"sep\"-\u003e\";\", \"header\"-\u003e \"true\")).\n                    csv(s\"file://$SPARK_HOME/examples/src/main/resource/people.csv\")\ndf2.printSchema\ndf2.show()\n\n// Specify schema for your csv file\nimport org.apache.spark.sql.types._\n\nval schema \u003d new StructType().\n                add(\"name\", StringType, true).\n                add(\"age\", IntegerType, true).\n                add(\"job\", StringType, true)\nval df3 \u003d spark.read.options(Map(\"sep\"-\u003e\";\", \"header\"-\u003e \"true\")).\n                schema(schema).\n                csv(s\"file://$SPARK_HOME/examples/src/main/resource/people.csv\")\ndf3.printSchema\ndf3.show()\n\n",
+      "user": "anonymous",
+      "dateUpdated": "2020-03-11 13:33:22.138",
+      "config": {
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 6.0,
+        "editorMode": "ace/mode/scala",
+        "fontSize": 9.0,
+        "title": true,
+        "results": {},
+        "enabled": true,
+        "runOnSelectionChange": true,
+        "checkEmpty": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "ERROR",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "root\n |-- age: long (nullable \u003d true)\n |-- name: string (nullable \u003d true)\n\n+----+-------+\n| age|   name|\n+----+-------+\n|null|Michael|\n|  30|   Andy|\n|  19| Justin|\n+----+-------+\n\norg.apache.spark.sql.AnalysisException: Path does not exist: file:/Users/jzhang/Java/lib/spark-2.4.3-bin-hadoop2.7/examples/src/main/resource/people.csv;\n  at org.apache.spark.sql.execution.datasources.DataSource$$anonfun$org$apache$spark$sql$execution$datasources$DataSource$$checkAndGlobPathIfNecessary$1.apply(DataSource.scala:558)\n  at org.apache.spark.sql.execution.datasources.DataSource$$anonfun$org$apache$spark$sql$execution$datasources$DataSource$$checkAndGlobPathIfNecessary$1.apply(DataSource.scala:545)\n  at scala.collection.TraversableLike$$anonfun$flatMap$1.apply(TraversableLike.scala:241)\n  at scala.collection.TraversableLike$$anonfun$flatMap$1.apply(TraversableLike.scala:241)\n  at scala.collection.immutable.List.foreach(List.scala:392)\n  at scala.collection.TraversableLike$class.flatMap(TraversableLike.scala:241)\n  at scala.collection.immutable.List.flatMap(List.scala:355)\n  at org.apache.spark.sql.execution.datasources.DataSource.org$apache$spark$sql$execution$datasources$DataSource$$checkAndGlobPathIfNecessary(DataSource.scala:545)\n  at org.apache.spark.sql.execution.datasources.DataSource.resolveRelation(DataSource.scala:359)\n  at org.apache.spark.sql.DataFrameReader.loadV1Source(DataFrameReader.scala:223)\n  at org.apache.spark.sql.DataFrameReader.load(DataFrameReader.scala:211)\n  at org.apache.spark.sql.DataFrameReader.csv(DataFrameReader.scala:615)\n  at org.apache.spark.sql.DataFrameReader.csv(DataFrameReader.scala:467)\n  ... 47 elided\n"
+          }
+        ]
+      },
+      "apps": [],
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1579593308069_-1400272236",
+      "id": "20180530-101930_1495479697",
+      "dateCreated": "2020-01-21 15:55:08.069",
+      "dateStarted": "2020-03-11 13:33:22.143",
+      "dateFinished": "2020-03-11 13:33:24.362",
+      "status": "ERROR"
+    },
+    {
+      "title": "Add New Column",
+      "text": "%spark\n\n// withColumn could be used to add new Column\nval df1 \u003d spark.createDataFrame(Seq((1, \"andy\", 20, \"USA\"), (2, \"jeff\", 23, \"China\"), (3, \"james\", 18, \"USA\"))).toDF(\"id\", \"name\", \"age\", \"country\")\nval df2 \u003d df1.withColumn(\"age2\", $\"age\" + 1)\ndf2.show()\n\n// the new column could replace the existing the column if the new column name is the same as the old column\nval df3 \u003d df1.withColumn(\"age\", $\"age\" + 1)\ndf3.show()\n\n// Besides using expression to create new column, you could also use udf to create new column\nval df4 \u003d df1.withColumn(\"name\", upper($\"name\"))\ndf4.show()\n",
+      "user": "anonymous",
+      "dateUpdated": "2020-03-11 13:33:27.496",
+      "config": {
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 6.0,
+        "editorMode": "ace/mode/scala",
+        "fontSize": 9.0,
+        "title": true,
+        "results": {},
+        "enabled": true,
+        "runOnSelectionChange": true,
+        "checkEmpty": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "+---+-----+---+-------+----+\n| id| name|age|country|age2|\n+---+-----+---+-------+----+\n|  1| andy| 20|    USA|  21|\n|  2| jeff| 23|  China|  24|\n|  3|james| 18|    USA|  19|\n+---+-----+---+-------+----+\n\n+---+-----+---+-------+\n| id| name|age|country|\n+---+-----+---+-------+\n|  1| andy| 21|    USA|\n|  2| jeff| 24|  China|\n|  3|james| 19|    USA|\n+---+-----+---+-------+\n\n+---+-----+---+-------+\n| id| name|age|country|\n+---+-----+---+-------+\n|  1| ANDY| 20|    USA|\n|  2| JEFF| 23|  China|\n|  3|JAMES| 18|    USA|\n+---+-----+---+-------+\n\n\u001b[1m\u001b[34mdf1\u001b[0m: \u001b[1m\u001b[32morg.apache.spark.sql.DataFrame\u001b[0m \u003d [id: int, name: string ... 2 more fields]\n\u001b[1m\u001b[34mdf2\u001b[0m: \u001b[1m\u001b[32morg.apache.spark.sql.DataFrame\u001b[0m \u003d [id: int, name: string ... 3 more fields]\n\u001b[1m\u001b[34mdf3\u001b[0m: \u001b[1m\u001b[32morg.apache.spark.sql.DataFrame\u001b[0m \u003d [id: int, name: string ... 2 more fields]\n\u001b[1m\u001b[34mdf4\u001b[0m: \u001b[1m\u001b[32morg.apache.spark.sql.DataFrame\u001b[0m \u003d [id: int, name: string ... 2 more fields]\n"
+          }
+        ]
+      },
+      "apps": [],
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1579593308069_-1399664813",
+      "id": "20180530-105113_693855403",
+      "dateCreated": "2020-01-21 15:55:08.070",
+      "dateStarted": "2020-03-11 13:33:27.500",
+      "dateFinished": "2020-03-11 13:33:28.222",
+      "status": "FINISHED"
+    },
+    {
+      "title": "Remove Column",
+      "text": "%spark\n\n\nval df1 \u003d spark.createDataFrame(Seq((1, \"andy\", 20, \"USA\"), (2, \"jeff\", 23, \"China\"), (3, \"james\", 18, \"USA\"))).toDF(\"id\", \"name\", \"age\", \"country\")\n// drop could be used to remove Column\nval df2 \u003d df1.drop(\"id\")\ndf2.show()\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n",
+      "user": "anonymous",
+      "dateUpdated": "2020-03-11 13:33:29.425",
+      "config": {
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 6.0,
+        "editorMode": "ace/mode/scala",
+        "fontSize": 9.0,
+        "title": true,
+        "results": {},
+        "enabled": true,
+        "runOnSelectionChange": true,
+        "checkEmpty": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "+-----+---+-------+\n| name|age|country|\n+-----+---+-------+\n| andy| 20|    USA|\n| jeff| 23|  China|\n|james| 18|    USA|\n+-----+---+-------+\n\n\u001b[1m\u001b[34mdf1\u001b[0m: \u001b[1m\u001b[32morg.apache.spark.sql.DataFrame\u001b[0m \u003d [id: int, name: string ... 2 more fields]\n\u001b[1m\u001b[34mdf2\u001b[0m: \u001b[1m\u001b[32morg.apache.spark.sql.DataFrame\u001b[0m \u003d [name: string, age: int ... 1 more field]\n"
+          }
+        ]
+      },
+      "apps": [],
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1579593308070_-1089278693",
+      "id": "20180530-112045_1274721210",
+      "dateCreated": "2020-01-21 15:55:08.070",
+      "dateStarted": "2020-03-11 13:33:29.428",
+      "dateFinished": "2020-03-11 13:33:29.817",
+      "status": "FINISHED"
+    },
+    {
+      "title": "Select Subset of Columns",
+      "text": "%spark\n\nval df1 \u003d spark.createDataFrame(Seq((1, \"andy\", 20, \"USA\"), (2, \"jeff\", 23, \"China\"), (3, \"james\", 18, \"USA\"))).toDF(\"id\", \"name\", \"age\", \"country\")\n// select can accept a list of string of the column names\nval df2 \u003d df1.select(\"id\", \"name\")\ndf2.show()\n\n// select can also accept a list of Column. You can create column via $ or udf\nval df3 \u003d df1.select($\"id\", upper($\"name\"), $\"age\" + 1)\ndf3.show()\n",
+      "user": "anonymous",
+      "dateUpdated": "2020-03-11 13:33:33.289",
+      "config": {
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 6.0,
+        "editorMode": "ace/mode/scala",
+        "fontSize": 9.0,
+        "title": true,
+        "results": {},
+        "enabled": true,
+        "runOnSelectionChange": true,
+        "checkEmpty": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "+---+-----+\n| id| name|\n+---+-----+\n|  1| andy|\n|  2| jeff|\n|  3|james|\n+---+-----+\n\n+---+-----------+---------+\n| id|upper(name)|(age + 1)|\n+---+-----------+---------+\n|  1|       ANDY|       21|\n|  2|       JEFF|       24|\n|  3|      JAMES|       19|\n+---+-----------+---------+\n\n\u001b[1m\u001b[34mdf1\u001b[0m: \u001b[1m\u001b[32morg.apache.spark.sql.DataFrame\u001b[0m \u003d [id: int, name: string ... 2 more fields]\n\u001b[1m\u001b[34mdf2\u001b[0m: \u001b[1m\u001b[32morg.apache.spark.sql.DataFrame\u001b[0m \u003d [id: int, name: string]\n\u001b[1m\u001b[34mdf3\u001b[0m: \u001b[1m\u001b[32morg.apache.spark.sql.DataFrame\u001b[0m \u003d [id: int, upper(name): string ... 1 more field]\n"
+          }
+        ]
+      },
+      "apps": [],
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1579593308070_462807812",
+      "id": "20180530-113042_1154914545",
+      "dateCreated": "2020-01-21 15:55:08.070",
+      "dateStarted": "2020-03-11 13:33:33.292",
+      "dateFinished": "2020-03-11 13:33:33.942",
+      "status": "FINISHED"
+    },
+    {
+      "title": "Filter Rows",
+      "text": "%spark\n\nval df1 \u003d spark.createDataFrame(Seq((1, \"andy\", 20, \"USA\"), (2, \"jeff\", 23, \"China\"), (3, \"james\", 18, \"USA\"))).toDF(\"id\", \"name\", \"age\", \"country\")\n\n// filter accept a Column \nval df2 \u003d df1.filter($\"age\" \u003e\u003d 20)\ndf2.show()\n\n// To be noticed, you need to use \"\u003d\u003d\u003d\" for equal instead of \"\u003d\u003d\"\nval df3 \u003d df1.filter($\"age\" \u003e\u003d 20 \u0026\u0026 $\"country\" \u003d\u003d\u003d \"China\")\ndf3.show()\n\n",
+      "user": "anonymous",
+      "dateUpdated": "2020-03-11 13:33:35.170",
+      "config": {
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 6.0,
+        "editorMode": "ace/mode/scala",
+        "fontSize": 9.0,
+        "title": true,
+        "results": {},
+        "enabled": true,
+        "runOnSelectionChange": true,
+        "checkEmpty": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "+---+----+---+-------+\n| id|name|age|country|\n+---+----+---+-------+\n|  1|andy| 20|    USA|\n|  2|jeff| 23|  China|\n+---+----+---+-------+\n\n+---+----+---+-------+\n| id|name|age|country|\n+---+----+---+-------+\n|  2|jeff| 23|  China|\n+---+----+---+-------+\n\n\u001b[1m\u001b[34mdf1\u001b[0m: \u001b[1m\u001b[32morg.apache.spark.sql.DataFrame\u001b[0m \u003d [id: int, name: string ... 2 more fields]\n\u001b[1m\u001b[34mdf2\u001b[0m: \u001b[1m\u001b[32morg.apache.spark.sql.Dataset[org.apache.spark.sql.Row]\u001b[0m \u003d [id: int, name: string ... 2 more fields]\n\u001b[1m\u001b[34mdf3\u001b[0m: \u001b[1m\u001b[32morg.apache.spark.sql.Dataset[org.apache.spark.sql.Row]\u001b[0m \u003d [id: int, name: string ... 2 more fields]\n"
+          }
+        ]
+      },
+      "apps": [],
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1579593308070_-1931299693",
+      "id": "20180530-113407_58454283",
+      "dateCreated": "2020-01-21 15:55:08.070",
+      "dateStarted": "2020-03-11 13:33:35.178",
+      "dateFinished": "2020-03-11 13:33:35.649",
+      "status": "FINISHED"
+    },
+    {
+      "title": "Create UDF",
+      "text": "%spark\n\nval df1 \u003d spark.createDataFrame(Seq((1, \"andy\", 20, \"USA\"), (2, \"jeff\", 23, \"China\"), (3, \"james\", 18, \"USA\"))).toDF(\"id\", \"name\", \"age\", \"country\")\n\n// [String, String] The first String is return type of this UDF, and the second String is the UDF argument type\nval udf1 \u003d udf[String, String]((e:String) \u003d\u003e e.toUpperCase)\nval df2 \u003d df1.select(udf1($\"name\"))\ndf2.show()\n\n// UDF could also be used in filter, in this case the return type must be Boolean\nval udf2 \u003d udf[Boolean, Int]((e:Int) \u003d\u003e e \u003e\u003d 20)\nval df3 \u003d df1.filter(udf2($\"age\"))\ndf3.show()\n\n// UDF could also accept more than 1 argument.\nval udf3 \u003d udf[String, String, String]((e1:String, e2:String) \u003d\u003e e1 + \"_\" + e2)\nval df4 \u003d df1.select(udf3($\"name\", $\"country\").as(\"name_country\"))\ndf4.show()\n\n\n",
+      "user": "anonymous",
+      "dateUpdated": "2020-03-11 13:33:53.391",
+      "config": {
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 6.0,
+        "editorMode": "ace/mode/scala",
+        "fontSize": 9.0,
+        "title": true,
+        "results": {},
+        "enabled": true,
+        "runOnSelectionChange": true,
+        "checkEmpty": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "+---------+\n|UDF(name)|\n+---------+\n|     ANDY|\n|     JEFF|\n|    JAMES|\n+---------+\n\n+---+----+---+-------+\n| id|name|age|country|\n+---+----+---+-------+\n|  1|andy| 20|    USA|\n|  2|jeff| 23|  China|\n+---+----+---+-------+\n\n+------------+\n|name_country|\n+------------+\n|    andy_USA|\n|  jeff_China|\n|   james_USA|\n+------------+\n\n\u001b[1m\u001b[34mdf1\u001b[0m: \u001b[1m\u001b[32morg.apache.spark.sql.DataFrame\u001b[0m \u003d [id: int, name: string ... 2 more fields]\n\u001b[1m\u001b[34mudf1\u001b[0m: \u001b[1m\u001b[32morg.apache.spark.sql.expressions.UserDefinedFunction\u001b[0m \u003d UserDefinedFunction(\u003cfunction1\u003e,StringType,Some(List(StringType)))\n\u001b[1m\u001b[34mdf2\u001b[0m: \u001b[1m\u001b[32morg.apache.spark.sql.DataFrame\u001b[0m \u003d [UDF(name): string]\n\u001b[1m\u001b[34mudf2\u001b[0m: \u001b[1m\u001b[32morg.apache.spark.sql.expressions.UserDefinedFunction\u001b[0m \u003d UserDefinedFunction(\u003cfunction1\u003e,BooleanType,Some(List(IntegerType)))\n\u001b[1m\u001b[34mdf3\u001b[0m: \u001b[1m\u001b[32morg.apache.spark.sql.Dataset[org.apache.spark.sql.Row]\u001b[0m \u003d [id: int, name: string ... 2 more fields]\n\u001b[1m\u001b[34mudf3\u001b[0m: \u001b[1m\u001b[32morg.apache.spark.sql.expressions.UserDefinedFunction\u001b[0m \u003d UserDefinedFunction(\u003cfunction2\u003e,StringType,Some(List(StringType, StringType)))\n\u001b..."
+          }
+        ]
+      },
+      "apps": [],
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1579593308070_2030518177",
+      "id": "20180530-113720_1986531680",
+      "dateCreated": "2020-01-21 15:55:08.070",
+      "dateStarted": "2020-03-11 13:33:39.513",
+      "dateFinished": "2020-03-11 13:33:40.421",
+      "status": "FINISHED"
+    },
+    {
+      "title": "GroupBy",
+      "text": "%spark\n\nval df1 \u003d spark.createDataFrame(Seq((1, \"andy\", 20, \"USA\"), (2, \"jeff\", 23, \"China\"), (3, \"james\", 18, \"USA\"))).toDF(\"id\", \"name\", \"age\", \"country\")\n\n// You can call agg function after groupBy directly, such as count/min/max/avg/sum\nval df2 \u003d df1.groupBy(\"country\").count()\ndf2.show()\n\n// Pass a Map if you want to do multiple aggregation\nval df3 \u003d df1.groupBy(\"country\").agg(Map(\"age\"-\u003e\"avg\", \"id\" -\u003e \"count\"))\ndf3.show()\n\n// Or you can pass a list of agg function\nval df4 \u003d df1.groupBy(\"country\").agg(avg(\"age\").as(\"avg_age\"), count(\"id\").as(\"count\"))\ndf4.show()\n\n// You can not pass Map if you want to do multiple aggregation on the same column as the key of Map should be unique. So in this case\n// you have to pass a list of agg functions\nval df5 \u003d df1.groupBy(\"country\").agg(avg(\"age\").as(\"avg_age\"), max(\"age\").as(\"max_age\"))\ndf5.show()\n",
+      "user": "anonymous",
+      "dateUpdated": "2020-03-11 13:33:56.598",
+      "config": {
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 6.0,
+        "editorMode": "ace/mode/scala",
+        "fontSize": 9.0,
+        "title": true,
+        "results": {},
+        "enabled": true,
+        "runOnSelectionChange": true,
+        "checkEmpty": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "+-------+-----+\n|country|count|\n+-------+-----+\n|  China|    1|\n|    USA|    2|\n+-------+-----+\n\n+-------+--------+---------+\n|country|avg(age)|count(id)|\n+-------+--------+---------+\n|  China|    23.0|        1|\n|    USA|    19.0|        2|\n+-------+--------+---------+\n\n+-------+-------+-----+\n|country|avg_age|count|\n+-------+-------+-----+\n|  China|   23.0|    1|\n|    USA|   19.0|    2|\n+-------+-------+-----+\n\n+-------+-------+-------+\n|country|avg_age|max_age|\n+-------+-------+-------+\n|  China|   23.0|     23|\n|    USA|   19.0|     20|\n+-------+-------+-------+\n\n\u001b[1m\u001b[34mdf1\u001b[0m: \u001b[1m\u001b[32morg.apache.spark.sql.DataFrame\u001b[0m \u003d [id: int, name: string ... 2 more fields]\n\u001b[1m\u001b[34mdf2\u001b[0m: \u001b[1m\u001b[32morg.apache.spark.sql.DataFrame\u001b[0m \u003d [country: string, count: bigint]\n\u001b[1m\u001b[34mdf3\u001b[0m: \u001b[1m\u001b[32morg.apache.spark.sql.DataFrame\u001b[0m \u003d [country: string, avg(age): double ... 1 more field]\n\u001b[1m\u001b[34mdf4\u001b[0m: \u001b[1m\u001b[32morg.apache.spark.sql.DataFrame\u001b[0m \u003d [country: string, avg_age: double ... 1 more field]\n\u001b[1m\u001b[34mdf5\u001b[0m: \u001b[1m\u001b[32morg.apache.spark.sql.DataFrame\u001b[0m \u003d [country: string, avg_age: double ... 1 more field]\n"
+          }
+        ]
+      },
+      "apps": [],
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1579593308070_839300878",
+      "id": "20180530-114404_2076888937",
+      "dateCreated": "2020-01-21 15:55:08.071",
+      "dateStarted": "2020-03-11 13:33:41.861",
+      "dateFinished": "2020-03-11 13:33:44.395",
+      "status": "FINISHED"
+    },
+    {
+      "title": "Join on Single Field",
+      "text": "%spark\n\nval df1 \u003d spark.createDataFrame(Seq((1, \"andy\", 20, 1), (2, \"jeff\", 23, 2), (3, \"james\", 18, 3))).toDF(\"id\", \"name\", \"age\", \"c_id\")\ndf1.show()\n\nval df2 \u003d spark.createDataFrame(Seq((1, \"USA\"), (2, \"China\"))).toDF(\"c_id\", \"c_name\")\ndf2.show()\n\n// You can just specify the key name if join on the same key\nval df3 \u003d df1.join(df2, \"c_id\")\ndf3.show()\n\n// Or you can specify the join condition expclitly in case the key is different between tables\nval df4 \u003d df1.join(df2, df1(\"c_id\") \u003d\u003d\u003d df2(\"c_id\"))\ndf4.show()\n\n// You can specify the join type afte the join condition, by default it is inner join\nval df5 \u003d df1.join(df2, df1(\"c_id\") \u003d\u003d\u003d df2(\"c_id\"), \"left_outer\")\ndf5.show()",
+      "user": "anonymous",
+      "dateUpdated": "2020-03-11 13:34:11.058",
+      "config": {
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 6.0,
+        "editorMode": "ace/mode/scala",
+        "fontSize": 9.0,
+        "title": true,
+        "results": {},
+        "enabled": true,
+        "runOnSelectionChange": true,
+        "checkEmpty": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "+---+-----+---+----+\n| id| name|age|c_id|\n+---+-----+---+----+\n|  1| andy| 20|   1|\n|  2| jeff| 23|   2|\n|  3|james| 18|   3|\n+---+-----+---+----+\n\n+----+------+\n|c_id|c_name|\n+----+------+\n|   1|   USA|\n|   2| China|\n+----+------+\n\n+----+---+----+---+------+\n|c_id| id|name|age|c_name|\n+----+---+----+---+------+\n|   1|  1|andy| 20|   USA|\n|   2|  2|jeff| 23| China|\n+----+---+----+---+------+\n\n+---+----+---+----+----+------+\n| id|name|age|c_id|c_id|c_name|\n+---+----+---+----+----+------+\n|  1|andy| 20|   1|   1|   USA|\n|  2|jeff| 23|   2|   2| China|\n+---+----+---+----+----+------+\n\n+---+-----+---+----+----+------+\n| id| name|age|c_id|c_id|c_name|\n+---+-----+---+----+----+------+\n|  1| andy| 20|   1|   1|   USA|\n|  2| jeff| 23|   2|   2| China|\n|  3|james| 18|   3|null|  null|\n+---+-----+---+----+----+------+\n\n\u001b[1m\u001b[34mdf1\u001b[0m: \u001b[1m\u001b[32morg.apache.spark.sql.DataFrame\u001b[0m \u003d [id: int, name: string ... 2 more fields]\n\u001b[1m\u001b[34mdf2\u001b[0m: \u001b[1m\u001b[32morg.apache.spark.sql.DataFrame\u001b[0m \u003d [c_id: int, c_name: string]\n\u001b[1m\u001b[34mdf3\u001b[0m: \u001b[1m\u001b[32morg.apache.spark.sql.DataFrame\u001b[0m \u003d [c_id: int, id: int ... 3 more fields]\n\u001b[1m\u001b[34mdf4\u001b[0m: \u001b[1m\u001b[32morg.apache.spark.sql.DataFrame\u001b[0m \u003d [id: int, name: string ... 4 more fields]\n\u001b[1m\u001b[34mdf5\u001b[0m: \u001b[1m\u001b[32morg.apache.spark.sql.DataFrame\u001b[0m \u003d [id: int, name: string ... 4 more fields]\n"
+          }
+        ]
+      },
+      "apps": [],
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1579593308071_2037234671",
+      "id": "20180530-130126_1642948432",
+      "dateCreated": "2020-01-21 15:55:08.071",
+      "dateStarted": "2020-03-11 13:34:11.061",
+      "dateFinished": "2020-03-11 13:34:12.076",
+      "status": "FINISHED"
+    },
+    {
+      "title": "Join on Multiple Fields",
+      "text": "%spark\n\nval df1 \u003d spark.createDataFrame(Seq((\"andy\", 20, 1, 1), (\"jeff\", 23, 1, 2), (\"james\", 12, 2, 2))).toDF(\"name\", \"age\", \"key_1\", \"key_2\")\ndf1.show()\n\nval df2 \u003d spark.createDataFrame(Seq((1, 1, \"USA\"), (2, 2, \"China\"))).toDF(\"key_1\", \"key_2\", \"country\")\ndf2.show()\n\n// Join on 2 fields: key_1, key_2\n\n// You can pass a list of field name if the join field names are the same in both tables\nval df3 \u003d df1.join(df2, Seq(\"key_1\", \"key_2\"))\ndf3.show()\n\n// Or you can specify the join condition expclitly in case when the join fields name is differetnt in the two tables\nval df4 \u003d df1.join(df2, df1(\"key_1\") \u003d\u003d\u003d df2(\"key_1\") \u0026\u0026 df1(\"key_2\") \u003d\u003d\u003d df2(\"key_2\"))\ndf4.show()\n\n",
+      "user": "anonymous",
+      "dateUpdated": "2020-03-11 13:34:12.577",
+      "config": {
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 6.0,
+        "editorMode": "ace/mode/scala",
+        "fontSize": 9.0,
+        "title": true,
+        "results": {},
+        "enabled": true,
+        "runOnSelectionChange": true,
+        "checkEmpty": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "+-----+---+-----+-----+\n| name|age|key_1|key_2|\n+-----+---+-----+-----+\n| andy| 20|    1|    1|\n| jeff| 23|    1|    2|\n|james| 12|    2|    2|\n+-----+---+-----+-----+\n\n+-----+-----+-------+\n|key_1|key_2|country|\n+-----+-----+-------+\n|    1|    1|    USA|\n|    2|    2|  China|\n+-----+-----+-------+\n\n+-----+-----+-----+---+-------+\n|key_1|key_2| name|age|country|\n+-----+-----+-----+---+-------+\n|    1|    1| andy| 20|    USA|\n|    2|    2|james| 12|  China|\n+-----+-----+-----+---+-------+\n\n+-----+---+-----+-----+-----+-----+-------+\n| name|age|key_1|key_2|key_1|key_2|country|\n+-----+---+-----+-----+-----+-----+-------+\n| andy| 20|    1|    1|    1|    1|    USA|\n|james| 12|    2|    2|    2|    2|  China|\n+-----+---+-----+-----+-----+-----+-------+\n\n\u001b[1m\u001b[34mdf1\u001b[0m: \u001b[1m\u001b[32morg.apache.spark.sql.DataFrame\u001b[0m \u003d [name: string, age: int ... 2 more fields]\n\u001b[1m\u001b[34mdf2\u001b[0m: \u001b[1m\u001b[32morg.apache.spark.sql.DataFrame\u001b[0m \u003d [key_1: int, key_2: int ... 1 more field]\n\u001b[1m\u001b[34mdf3\u001b[0m: \u001b[1m\u001b[32morg.apache.spark.sql.DataFrame\u001b[0m \u003d [key_1: int, key_2: int ... 3 more fields]\n\u001b[1m\u001b[34mdf4\u001b[0m: \u001b[1m\u001b[32morg.apache.spark.sql.DataFrame\u001b[0m \u003d [name: string, age: int ... 5 more fields]\n"
+          }
+        ]
+      },
+      "apps": [],
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1579593308071_-1986687979",
+      "id": "20180530-135600_354945835",
+      "dateCreated": "2020-01-21 15:55:08.071",
+      "dateStarted": "2020-03-11 13:34:12.580",
+      "dateFinished": "2020-03-11 13:34:13.290",
+      "status": "FINISHED"
+    },
+    {
+      "title": "Use SQL directly",
+      "text": "%spark\n\nval df1 \u003d spark.createDataFrame(Seq((1, \"andy\", 20, \"USA\"), (2, \"jeff\", 23, \"China\"), (3, \"james\", 18, \"USA\"))).toDF(\"id\", \"name\", \"age\", \"country\")\n// call createOrReplaceTempView first if you want to query this DataFrame via sql\ndf1.createOrReplaceTempView(\"people\")\n// SparkSession.sql return DataFrame\nval df2 \u003d spark.sql(\"select name, age from people\")\ndf2.show()\n\n// You need to register udf if you want to use it in sql\nspark.udf.register(\"udf1\", (e: String) \u003d\u003e e.toUpperCase)\nval df3 \u003d spark.sql(\"select udf1(name), age from people\")\ndf3.show()",
+      "user": "anonymous",
+      "dateUpdated": "2020-03-11 13:34:21.857",
+      "config": {
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/scala",
+        "fontSize": 9.0,
+        "title": true,
+        "results": {},
+        "enabled": true,
+        "runOnSelectionChange": true,
+        "checkEmpty": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "+-----+---+\n| name|age|\n+-----+---+\n| andy| 20|\n| jeff| 23|\n|james| 18|\n+-----+---+\n\n+--------------+---+\n|UDF:udf1(name)|age|\n+--------------+---+\n|          ANDY| 20|\n|          JEFF| 23|\n|         JAMES| 18|\n+--------------+---+\n\n\u001b[1m\u001b[34mdf1\u001b[0m: \u001b[1m\u001b[32morg.apache.spark.sql.DataFrame\u001b[0m \u003d [id: int, name: string ... 2 more fields]\n\u001b[1m\u001b[34mdf2\u001b[0m: \u001b[1m\u001b[32morg.apache.spark.sql.DataFrame\u001b[0m \u003d [name: string, age: int]\n\u001b[1m\u001b[34mdf3\u001b[0m: \u001b[1m\u001b[32morg.apache.spark.sql.DataFrame\u001b[0m \u003d [UDF:udf1(name): string, age: int]\n"
+          }
+        ]
+      },
+      "apps": [],
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1579593308071_-1489550728",
+      "id": "20180530-132023_995737505",
+      "dateCreated": "2020-01-21 15:55:08.071",
+      "dateStarted": "2020-03-11 13:34:18.194",
+      "dateFinished": "2020-03-11 13:34:18.814",
+      "status": "FINISHED"
+    },
+    {
+      "title": "Visualize DataFrame/Dataset",
+      "text": "%md\n\nThere\u0027s 2 approaches to visuliaze DataFrame/Dataset in Zeppelin\n\n* Use SparkSQLInterpreter via `%spark.sql`\n* Use ZeppelinContext via `z.show`\n\n",
+      "user": "anonymous",
+      "dateUpdated": "2020-01-21 15:55:08.071",
+      "config": {
+        "tableHide": false,
+        "editorSetting": {
+          "language": "markdown",
+          "editOnDblClick": true,
+          "completionKey": "TAB",
+          "completionSupport": false
+        },
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/markdown",
+        "fontSize": 9.0,
+        "editorHide": true,
+        "title": true,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003cp\u003eThere\u0026rsquo;s 2 approaches to visuliaze DataFrame/Dataset in Zeppelin\u003c/p\u003e\n\u003cul\u003e\n  \u003cli\u003eUse SparkSQLInterpreter via \u003ccode\u003e%spark.sql\u003c/code\u003e\u003c/li\u003e\n  \u003cli\u003eUse ZeppelinContext via \u003ccode\u003ez.show\u003c/code\u003e\u003c/li\u003e\n\u003c/ul\u003e\n\u003c/div\u003e"
+          }
+        ]
+      },
+      "apps": [],
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1579593308071_11859357",
+      "id": "20180530-132128_2114955642",
+      "dateCreated": "2020-01-21 15:55:08.071",
+      "status": "READY"
+    },
+    {
+      "title": "Visualize DataFrame/Dataset via z.show",
+      "text": "%spark\n\nval df1 \u003d spark.createDataFrame(Seq((1, \"andy\", 20, \"USA\"), (2, \"jeff\", 23, \"China\"), (3, \"james\", 18, \"USA\"))).toDF(\"id\", \"name\", \"age\", \"country\")\nval df2 \u003d df1.groupBy(\"country\").count()\nz.show(df2)\n\n\n\n\n",
+      "user": "anonymous",
+      "dateUpdated": "2020-03-11 13:34:33.358",
+      "config": {
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 6.0,
+        "editorMode": "ace/mode/scala",
+        "fontSize": 9.0,
+        "title": true,
+        "results": {
+          "0": {
+            "graph": {
+              "mode": "table",
+              "height": 300.0,
+              "optionOpen": false,
+              "setting": {
+                "table": {
+                  "tableGridState": {},
+                  "tableColumnTypeState": {
+                    "names": {
+                      "country": "string",
+                      "count": "string"
+                    },
+                    "updated": false
+                  },
+                  "tableOptionSpecHash": "[{\"name\":\"useFilter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable filter for columns\"},{\"name\":\"showPagination\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable pagination for better navigation\"},{\"name\":\"showAggregationFooter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable a footer for displaying aggregated values\"}]",
+                  "tableOptionValue": {
+                    "useFilter": false,
+                    "showPagination": false,
+                    "showAggregationFooter": false
+                  },
+                  "updated": false,
+                  "initialized": false
+                }
+              },
+              "commonSetting": {}
+            }
+          },
+          "1": {
+            "graph": {
+              "mode": "multiBarChart",
+              "height": 300.0,
+              "optionOpen": false,
+              "setting": {
+                "table": {
+                  "tableGridState": {},
+                  "tableColumnTypeState": {
+                    "names": {
+                      "country": "string",
+                      "count": "string"
+                    },
+                    "updated": false
+                  },
+                  "tableOptionSpecHash": "[{\"name\":\"useFilter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable filter for columns\"},{\"name\":\"showPagination\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable pagination for better navigation\"},{\"name\":\"showAggregationFooter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable a footer for displaying aggregated values\"}]",
+                  "tableOptionValue": {
+                    "useFilter": false,
+                    "showPagination": false,
+                    "showAggregationFooter": false
+                  },
+                  "updated": false,
+                  "initialized": false
+                },
+                "multiBarChart": {
+                  "rotate": {
+                    "degree": "-45"
+                  },
+                  "xLabelStatus": "default"
+                }
+              },
+              "commonSetting": {},
+              "keys": [
+                {
+                  "name": "country",
+                  "index": 0.0,
+                  "aggr": "sum"
+                }
+              ],
+              "groups": [],
+              "values": [
+                {
+                  "name": "count",
+                  "index": 1.0,
+                  "aggr": "sum"
+                }
+              ]
+            },
+            "helium": {}
+          }
+        },
+        "enabled": true,
+        "runOnSelectionChange": true,
+        "checkEmpty": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TABLE",
+            "data": "country\tcount\nChina\t1\nUSA\t2\n"
+          },
+          {
+            "type": "TEXT",
+            "data": "\u001b[1m\u001b[34mdf1\u001b[0m: \u001b[1m\u001b[32morg.apache.spark.sql.DataFrame\u001b[0m \u003d [id: int, name: string ... 2 more fields]\n\u001b[1m\u001b[34mdf2\u001b[0m: \u001b[1m\u001b[32morg.apache.spark.sql.DataFrame\u001b[0m \u003d [country: string, count: bigint]\n"
+          }
+        ]
+      },
+      "apps": [],
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1579593308072_-324341501",
+      "id": "20180530-132634_1285621466",
+      "dateCreated": "2020-01-21 15:55:08.072",
+      "dateStarted": "2020-03-11 13:34:27.029",
+      "dateFinished": "2020-03-11 13:34:27.717",
+      "status": "FINISHED"
+    },
+    {
+      "title": "Visualize DataFrame/Dataset via %spark.sql",
+      "text": "%spark\n\nval df1 \u003d spark.createDataFrame(Seq((1, \"andy\", 20, \"USA\"), (2, \"jeff\", 23, \"China\"), (3, \"james\", 18, \"USA\"))).toDF(\"id\", \"name\", \"age\", \"country\")\n// register this DataFrame first before querying it via %spark.sql\ndf1.createOrReplaceTempView(\"people\")",
+      "user": "anonymous",
+      "dateUpdated": "2020-03-11 13:34:35.980",
+      "config": {
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 6.0,
+        "editorMode": "ace/mode/scala",
+        "fontSize": 9.0,
+        "title": true,
+        "results": {},
+        "enabled": true,
+        "runOnSelectionChange": true,
+        "checkEmpty": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "\u001b[1m\u001b[34mdf1\u001b[0m: \u001b[1m\u001b[32morg.apache.spark.sql.DataFrame\u001b[0m \u003d [id: int, name: string ... 2 more fields]\n"
+          }
+        ]
+      },
+      "apps": [],
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1579593308072_-1114338291",
+      "id": "20180530-132657_668624333",
+      "dateCreated": "2020-01-21 15:55:08.072",
+      "dateStarted": "2020-03-11 13:34:29.679",
+      "dateFinished": "2020-03-11 13:34:29.931",
+      "status": "FINISHED"
+    },
+    {
+      "title": "",
+      "text": "%spark.sql\n\nselect country, count(1) as count from people group by country",
+      "user": "anonymous",
+      "dateUpdated": "2020-03-11 13:34:38.344",
+      "config": {
+        "editorSetting": {
+          "language": "sql",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 6.0,
+        "editorMode": "ace/mode/sql",
+        "fontSize": 9.0,
+        "results": {
+          "0": {
+            "graph": {
+              "mode": "multiBarChart",
+              "height": 300.0,
+              "optionOpen": false,
+              "setting": {
+                "table": {
+                  "tableGridState": {
+                    "columns": [
+                      {
+                        "name": "country",
+                        "visible": true,
+                        "width": "*",
+                        "sort": {},
+                        "filters": [
+                          {}
+                        ],
+                        "pinned": ""
+                      },
+                      {
+                        "name": "count",
+                        "visible": true,
+                        "width": "*",
+                        "sort": {},
+                        "filters": [
+                          {}
+                        ],
+                        "pinned": ""
+                      }
+                    ],
+                    "scrollFocus": {},
+                    "selection": [],
+                    "grouping": {
+                      "grouping": [],
+                      "aggregations": [],
+                      "rowExpandedStates": {}
+                    },
+                    "treeView": {},
+                    "pagination": {
+                      "paginationCurrentPage": 1.0,
+                      "paginationPageSize": 250.0
+                    }
+                  },
+                  "tableColumnTypeState": {
+                    "names": {
+                      "country": "string",
+                      "count": "number"
+                    },
+                    "updated": false
+                  },
+                  "tableOptionSpecHash": "[{\"name\":\"useFilter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable filter for columns\"},{\"name\":\"showPagination\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable pagination for better navigation\"},{\"name\":\"showAggregationFooter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable a footer for displaying aggregated values\"}]",
+                  "tableOptionValue": {
+                    "useFilter": false,
+                    "showPagination": false,
+                    "showAggregationFooter": false
+                  },
+                  "updated": false,
+                  "initialized": false
+                },
+                "multiBarChart": {
+                  "rotate": {
+                    "degree": "-45"
+                  },
+                  "xLabelStatus": "default",
+                  "stacked": false
+                },
+                "stackedAreaChart": {
+                  "rotate": {
+                    "degree": "-45"
+                  },
+                  "xLabelStatus": "default"
+                },
+                "lineChart": {
+                  "rotate": {
+                    "degree": "-45"
+                  },
+                  "xLabelStatus": "default"
+                }
+              },
+              "commonSetting": {},
+              "keys": [
+                {
+                  "name": "country",
+                  "index": 0.0,
+                  "aggr": "sum"
+                }
+              ],
+              "groups": [],
+              "values": [
+                {
+                  "name": "count",
+                  "index": 1.0,
+                  "aggr": "sum"
+                }
+              ]
+            },
+            "helium": {}
+          }
+        },
+        "enabled": true,
+        "runOnSelectionChange": true,
+        "title": false,
+        "checkEmpty": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TABLE",
+            "data": "country\tcount\nChina\t1\nUSA\t2\n"
+          }
+        ]
+      },
+      "apps": [],
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1579593308072_-1957405672",
+      "id": "20180530-132823_944494152",
+      "dateCreated": "2020-01-21 15:55:08.072",
+      "dateStarted": "2020-03-11 13:34:38.347",
+      "dateFinished": "2020-03-11 13:34:38.691",
+      "status": "FINISHED"
+    },
+    {
+      "title": "",
+      "text": "%spark.sql\n",
+      "user": "anonymous",
+      "dateUpdated": "2020-01-21 15:55:08.072",
+      "config": {},
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1579593308072_972780641",
+      "id": "20180530-132849_1305166760",
+      "dateCreated": "2020-01-21 15:55:08.072",
+      "status": "READY"
+    }
+  ],
+  "name": "Spark SQL (Scala)",
+  "id": "2EYUV26VR",
+  "defaultInterpreterGroup": "spark",
+  "version": "0.9.0-SNAPSHOT",
+  "noteParams": {},
+  "noteForms": {},
+  "angularObjects": {},
+  "config": {
+    "isZeppelinNotebookCronEnable": false
+  },
+  "info": {}
+}

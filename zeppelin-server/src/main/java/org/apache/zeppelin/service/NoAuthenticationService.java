@@ -24,6 +24,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import javax.inject.Inject;
+
+import org.apache.shiro.realm.Realm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,7 +49,7 @@ public class NoAuthenticationService implements AuthenticationService {
   }
 
   @Override
-  public Collection getRealmsList() {
+  public Collection<Realm> getRealmsList() {
     return Collections.emptyList();
   }
 

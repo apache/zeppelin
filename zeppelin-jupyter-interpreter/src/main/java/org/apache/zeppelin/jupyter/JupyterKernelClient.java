@@ -20,7 +20,7 @@ package org.apache.zeppelin.jupyter;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.stub.StreamObserver;
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResultMessageOutput;
@@ -168,6 +168,11 @@ public class JupyterKernelClient {
                         curOutput.getType() != InterpreterResult.Type.TEXT) {
                   interpreterOutput.write("%text ".getBytes());
                 }
+                // explicitly use html output for ir kernel in some cases. otherwise some
+                // R packages doesn't work. e.g. googlevis
+                if (executeResponse.getOutput().contains("<script type=\"text/javascript\">")) {
+                  interpreterOutput.write("\n%html ".getBytes());
+                }
                 interpreterOutput.write(executeResponse.getOutput().getBytes());
               }
               interpreterOutput.getInterpreterOutput().flush();
@@ -192,6 +197,9 @@ public class JupyterKernelClient {
               LOGGER.error("Unexpected IOException", e);
             }
             break;
+          case CLEAR:
+            interpreterOutput.getInterpreterOutput().clear();
+            break;
           default:
             LOGGER.error("Unrecognized type:" + executeResponse.getType());
         }
@@ -207,8 +215,13 @@ public class JupyterKernelClient {
       @Override
       public void onError(Throwable throwable) {
         try {
-          interpreterOutput.getInterpreterOutput().write(ExceptionUtils.getStackTrace(throwable));
-          interpreterOutput.getInterpreterOutput().flush();
+          // only output the extra error when no error message is displayed before.
+          if (finalResponseBuilder.getStatus() != null &&
+                  finalResponseBuilder.getStatus() != ExecuteStatus.ERROR) {
+            interpreterOutput.getInterpreterOutput().write("\n%text " +
+                    ExceptionUtils.getStackTrace(throwable));
+            interpreterOutput.getInterpreterOutput().flush();
+          }
         } catch (IOException e) {
           LOGGER.error("Unexpected IOException", e);
         }

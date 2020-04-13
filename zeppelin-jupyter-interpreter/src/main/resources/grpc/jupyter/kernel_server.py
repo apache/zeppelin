@@ -57,8 +57,11 @@ class KernelServer(kernel_pb2_grpc.JupyterKernelServicer):
         stream_reply_queue = queue.Queue(maxsize = 30)
         payload_reply = []
         def _output_hook(msg):
+            # print("msg: " + str(msg))
             msg_type = msg['header']['msg_type']
             content = msg['content']
+            # print("******************")
+            # print(msg)
             outStatus, outType, output = kernel_pb2.SUCCESS, None, None
             # prepare the reply
             if msg_type == 'stream':
@@ -90,6 +93,9 @@ class KernelServer(kernel_pb2_grpc.JupyterKernelServicer):
                 outStatus = kernel_pb2.ERROR
                 outType = kernel_pb2.TEXT
                 output = '\n'.join(content['traceback'])
+            elif msg_type == 'clear_output':
+                outType = kernel_pb2.CLEAR
+                output = ""
 
             # send reply if we supported the output type
             if outType is not None:

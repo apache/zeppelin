@@ -8,21 +8,21 @@
         "envName": "ZEPPELIN_R_KNITR",
         "propertyName": "zeppelin.R.knitr",
         "defaultValue": true,
-        "description": "whether use knitr or not",
+        "description": "Whether use knitr or not",
         "type": "checkbox"
       },
       "zeppelin.R.cmd": {
         "envName": "ZEPPELIN_R_CMD",
         "propertyName": "zeppelin.R.cmd",
         "defaultValue": "R",
-        "description": "R repl path",
+        "description": "R binary executable path",
         "type": "string"
       },
       "zeppelin.R.image.width": {
         "envName": "ZEPPELIN_R_IMAGE_WIDTH",
         "propertyName": "zeppelin.R.image.width",
         "defaultValue": "100%",
-        "description": "",
+        "description": "Image width of R plotting",
         "type": "number"
       },
       "zeppelin.R.render.options": {
@@ -60,14 +60,14 @@
         "envName": "",
         "propertyName": "zeppelin.R.shiny.iframe_width",
         "defaultValue": "100%",
-        "description": "",
+        "description": "Width of iframe of R shiny app",
         "type": "text"
       },
       "zeppelin.R.shiny.iframe_height": {
         "envName": "",
         "propertyName": "zeppelin.R.shiny.iframe_height",
         "defaultValue": "500px",
-        "description": "",
+        "description": "Height of iframe of R shiny app",
         "type": "text"
       }
     },

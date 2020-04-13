@@ -72,7 +72,7 @@ public class SparkInterpreterTest {
     properties.setProperty("spark.master", "local");
     properties.setProperty("spark.app.name", "test");
     properties.setProperty("zeppelin.spark.maxResult", "100");
-    properties.setProperty("zeppelin.spark.uiWebUrl", "fake_spark_weburl");
+    properties.setProperty("zeppelin.spark.uiWebUrl", "fake_spark_weburl/{{applicationId}}");
     // disable color output for easy testing
     properties.setProperty("zeppelin.spark.scala.color", "false");
     properties.setProperty("zeppelin.spark.deprecatedMsg.show", "false");
@@ -180,7 +180,8 @@ public class SparkInterpreterTest {
     // spark job url is sent
     ArgumentCaptor<Map> onParaInfosReceivedArg = ArgumentCaptor.forClass(Map.class);
     verify(mockRemoteEventClient).onParaInfosReceived(onParaInfosReceivedArg.capture());
-    assertTrue(((String) onParaInfosReceivedArg.getValue().get("jobUrl")).startsWith("fake_spark_weburl"));
+    assertTrue(((String) onParaInfosReceivedArg.getValue().get("jobUrl")).startsWith("fake_spark_weburl/"
+            + interpreter.getJavaSparkContext().sc().applicationId()));
 
     // case class
     result = interpreter.interpret("val bankText = sc.textFile(\"bank.csv\")", getInterpreterContext());
@@ -220,6 +221,15 @@ public class SparkInterpreterTest {
               "|  2|null|\n" +
               "+---+----+"));
     } else if (version.contains("String = 2.")) {
+      // create dataset from case class
+      context = getInterpreterContext();
+      result = interpreter.interpret("case class Person(id:Int, name:String, age:Int, country:String)\n" +
+              "val df2 = spark.createDataFrame(Seq(Person(1, \"andy\", 20, \"USA\"), " +
+              "Person(2, \"jeff\", 23, \"China\"), Person(3, \"james\", 18, \"USA\")))\n" +
+              "df2.printSchema\n" +
+              "df2.show() ", context);
+      assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+
       result = interpreter.interpret("spark", getInterpreterContext());
       assertEquals(InterpreterResult.Code.SUCCESS, result.code());
 

@@ -536,6 +536,7 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
         newProperties[p] = {
           value: newSetting.properties[p].value,
           type: newSetting.properties[p].type,
+          description: newSetting.properties[p].description,
           name: p,
         };
       }
@@ -623,8 +624,8 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
         return;
       }
 
-      setting.properties[setting.propertyKey] =
-        {value: setting.propertyValue, type: setting.propertyType};
+      setting.properties[setting.propertyKey] = {name: setting.propertyKey, value: setting.propertyValue,
+        type: setting.propertyType, description: setting.description};
 
       emptyNewProperty(setting);
     }

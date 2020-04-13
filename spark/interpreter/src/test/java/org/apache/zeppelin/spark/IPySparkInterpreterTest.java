@@ -128,7 +128,7 @@ public class IPySparkInterpreterTest extends IPythonInterpreterTest {
 
     // spark sql
     context = createInterpreterContext(mockIntpEventClient);
-    if (!isSpark2(sparkVersion)) {
+    if (isSpark1(sparkVersion)) {
       result = interpreter.interpret("df = sqlContext.createDataFrame([(1,'a'),(2,'b')])\ndf.show()", context);
       assertEquals(InterpreterResult.Code.SUCCESS, result.code());
       interpreterResultMessages = context.out.toInterpreterResultMessage();
@@ -217,6 +217,14 @@ public class IPySparkInterpreterTest extends IPythonInterpreterTest {
     assertTrue(completions.size() > 0);
     completions.contains(new InterpreterCompletion("sc", "sc", ""));
 
+    // python call java via py4j
+    context = createInterpreterContext(mockIntpEventClient);
+    result = interpreter.interpret("sc._jvm.java.lang.System.out.println(\"hello world\")", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    interpreterResultMessages = context.out.toInterpreterResultMessage();
+    assertEquals(1, interpreterResultMessages.size());
+    assertEquals("hello world\n", interpreterResultMessages.get(0).getData());
+
     // pyspark streaming TODO(zjffdu) disable pyspark streaming test temporary
     context = createInterpreterContext(mockIntpEventClient);
     //    result = interpreter.interpret(
@@ -256,8 +264,8 @@ public class IPySparkInterpreterTest extends IPythonInterpreterTest {
     }
   }
 
-  private static boolean isSpark2(String sparkVersion) {
-    return sparkVersion.startsWith("'2.") || sparkVersion.startsWith("u'2.");
+  private static boolean isSpark1(String sparkVersion) {
+    return sparkVersion.startsWith("'1.") || sparkVersion.startsWith("u'1.");
   }
 
   private static InterpreterContext createInterpreterContext(RemoteInterpreterEventClient mockRemoteEventClient) {

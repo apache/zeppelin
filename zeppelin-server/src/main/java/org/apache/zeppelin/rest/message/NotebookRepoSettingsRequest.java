@@ -18,7 +18,7 @@ package org.apache.zeppelin.rest.message;
 
 import com.google.gson.Gson;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.Collections;
 import java.util.Map;

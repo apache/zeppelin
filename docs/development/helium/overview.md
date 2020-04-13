@@ -37,3 +37,7 @@ Currently, Helium supports 4 types of package.
 - [Helium Interpreter](../writing_zeppelin_interpreter.html): Adding a new custom interpreter
 
 
+## Configuration
+
+Zeppelin ships with several builtin helium plugins which is located in $ZEPPELIN_HOME/heliums. If you want to try more types of heliums plugins,
+you can configure `zeppelin.helium.registry` to be `helium,https://s3.amazonaws.com/helium-package/helium.json` in zeppelin-site.xml. `https://s3.amazonaws.com/helium-package/helium.json` will be updated regularly.

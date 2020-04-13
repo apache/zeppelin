@@ -17,15 +17,14 @@
 
 package org.apache.zeppelin.python;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.io.Files;
 import com.google.gson.Gson;
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.ExecuteException;
 import org.apache.commons.exec.environment.EnvironmentUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.zeppelin.interpreter.BaseZeppelinContext;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.zeppelin.interpreter.ZeppelinContext;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
@@ -60,7 +59,7 @@ public class PythonInterpreter extends Interpreter {
   private static final int MAX_TIMEOUT_SEC = 30;
 
   private GatewayServer gatewayServer;
-  private PythonProcessLauncher pythonProcessLauncher;
+  protected PythonProcessLauncher pythonProcessLauncher;
   private File pythonWorkDir;
   protected boolean useBuiltinPy4j = true;
 
@@ -68,7 +67,7 @@ public class PythonInterpreter extends Interpreter {
   private InterpreterOutputStream outputStream;
   private long pythonPid = -1;
   private IPythonInterpreter iPythonInterpreter;
-  private BaseZeppelinContext zeppelinContext;
+  private ZeppelinContext zeppelinContext;
   // set by PythonCondaInterpreter
   private String condaPythonExec;
   private boolean usePy4jAuth = false;
@@ -163,7 +162,6 @@ public class PythonInterpreter extends Interpreter {
     }
   }
 
-  @VisibleForTesting
   public PythonProcessLauncher getPythonProcessLauncher() {
     return pythonProcessLauncher;
   }
@@ -375,7 +373,7 @@ public class PythonInterpreter extends Interpreter {
     }
 
     outputStream.setInterpreterOutput(context.out);
-    BaseZeppelinContext z = getZeppelinContext();
+    ZeppelinContext z = getZeppelinContext();
     z.setInterpreterContext(context);
     z.setGui(context.getGui());
     z.setNoteGui(context.getNoteGui());
@@ -536,13 +534,13 @@ public class PythonInterpreter extends Interpreter {
     return getInterpreterInTheSameSessionByClassName(IPythonInterpreter.class, false);
   }
 
-  protected BaseZeppelinContext createZeppelinContext() {
+  protected ZeppelinContext createZeppelinContext() {
     return new PythonZeppelinContext(
         getInterpreterGroup().getInterpreterHookRegistry(),
         Integer.parseInt(getProperty("zeppelin.python.maxResult", "1000")));
   }
 
-  public BaseZeppelinContext getZeppelinContext() {
+  public ZeppelinContext getZeppelinContext() {
     if (zeppelinContext == null) {
       zeppelinContext = createZeppelinContext();
     }
@@ -572,7 +570,7 @@ public class PythonInterpreter extends Interpreter {
     LOGGER.debug("Python Process Output: " + message);
   }
 
-  class PythonProcessLauncher extends ProcessLauncher {
+  public class PythonProcessLauncher extends ProcessLauncher {
 
     PythonProcessLauncher(CommandLine commandLine, Map<String, String> envs) {
       super(commandLine, envs);

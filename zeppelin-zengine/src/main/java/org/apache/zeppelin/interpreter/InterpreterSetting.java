@@ -31,7 +31,7 @@ import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.dep.Dependency;
 import org.apache.zeppelin.dep.DependencyResolver;
@@ -60,6 +60,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -144,6 +145,7 @@ public class InterpreterSetting {
   private transient RemoteInterpreterEventServer interpreterEventServer;
 
   public static final String CLUSTER_INTERPRETER_LAUNCHER_NAME = "ClusterInterpreterLauncher";
+
   ///////////////////////////////////////////////////////////////////////////////////////////
 
   /**
@@ -557,6 +559,68 @@ public class InterpreterSetting {
     }
   }
 
+  /**
+   * This is just to fix the issue of ZEPPELIN-4672.
+   * (TODO zjffdu), we should remove these ungly code after we unify the interpreter properties in
+   * interpreter.json & interpreter-setting.json
+   * @param propertiesInTemplate
+   */
+  public void fillPropertyDescription(Object propertiesInTemplate) {
+    if (propertiesInTemplate instanceof LinkedHashMap) {
+      LinkedHashMap<String, DefaultInterpreterProperty> propertiesInTemplate2 =
+              (LinkedHashMap<String, DefaultInterpreterProperty>) propertiesInTemplate;
+      if (this.properties instanceof LinkedHashMap) {
+        LinkedHashMap<String, InterpreterProperty> newInterpreterProperties = (LinkedHashMap)this.properties;
+        for (Map.Entry<String, InterpreterProperty> entry : newInterpreterProperties.entrySet()) {
+          if (propertiesInTemplate2.containsKey(entry.getKey())) {
+            entry.getValue().setDescription(propertiesInTemplate2.get(entry.getKey()).getDescription());
+          }
+        }
+        this.properties = newInterpreterProperties;
+      }
+    }
+  }
+
+  /**
+   * This method will sort the properties by the order defined in template.
+   * It is because when interpreter setting is loaded in interpreter-setting.json, it is
+   * still not in correct order.
+   * @param propertiesInTemplate
+   */
+  public void sortPropertiesByTemplate(Object propertiesInTemplate) {
+    if (propertiesInTemplate instanceof LinkedHashMap) {
+      List<String> sortedKeys = new ArrayList(((LinkedHashMap) propertiesInTemplate).keySet());
+      if (this.properties instanceof LinkedHashMap) {
+        LinkedHashMap<String, InterpreterProperty> unSortedProperties = (LinkedHashMap) this.properties;
+        List<String> keys = new ArrayList(unSortedProperties.keySet());
+        keys.sort((o1, o2) -> {
+          int i1 = sortedKeys.indexOf(o1);
+          int i2 = sortedKeys.indexOf(o2);
+          if (i1 != -1 && i2 != -1) {
+            if (i1 < i2) {
+              return -1;
+            } else if (i1 > i2) {
+              return 1;
+            } else {
+              return 0;
+            }
+          } else {
+            if (i1 == -1) {
+              return 1;
+            } else {
+              return -1;
+            }
+          }
+        });
+
+        LinkedHashMap<String, InterpreterProperty> sortedProperties = new LinkedHashMap<>();
+        for (String key : keys) {
+          sortedProperties.put(key, unSortedProperties.get(key));
+        }
+        this.properties = sortedProperties;
+      }
+    }
+  }
 
   public Object getProperties() {
     return properties;
@@ -885,7 +949,7 @@ public class InterpreterSetting {
 
           // load dependencies
           List<Dependency> deps = getDependencies();
-          if (deps != null) {
+          if (deps != null && !deps.isEmpty()) {
             LOGGER.info("Start to download dependencies for interpreter: " + name);
             for (Dependency d : deps) {
               File destDir = new File(
@@ -939,7 +1003,7 @@ public class InterpreterSetting {
   // For backward compatibility of interpreter.json format after ZEPPELIN-2403
   static Map<String, InterpreterProperty> convertInterpreterProperties(Object properties) {
     if (properties != null && properties instanceof StringMap) {
-      Map<String, InterpreterProperty> newProperties = new HashMap<>();
+      Map<String, InterpreterProperty> newProperties = new LinkedHashMap<>();
       StringMap p = (StringMap) properties;
       for (Object o : p.entrySet()) {
         Map.Entry entry = (Map.Entry) o;
@@ -963,7 +1027,7 @@ public class InterpreterSetting {
     } else if (properties instanceof Map) {
       Map<String, Object> dProperties =
           (Map<String, Object>) properties;
-      Map<String, InterpreterProperty> newProperties = new HashMap<>();
+      Map<String, InterpreterProperty> newProperties = new LinkedHashMap<>();
       for (String key : dProperties.keySet()) {
         Object value = dProperties.get(key);
         if (value instanceof InterpreterProperty) {
@@ -981,7 +1045,8 @@ public class InterpreterSetting {
           InterpreterProperty property = new InterpreterProperty(
               key,
               dProperty.getValue(),
-              dProperty.getType() != null ? dProperty.getType() : "string"
+              dProperty.getType() != null ? dProperty.getType() : "string",
+              dProperty.getDescription()
               // in case user forget to specify type in interpreter-setting.json
           );
           newProperties.put(key, property);

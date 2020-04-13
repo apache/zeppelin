@@ -492,7 +492,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
   }
 
   @Test
-  public void zRunTest() throws IOException {
+  public void zRunTest() throws IOException, InterruptedException {
     Note note = null;
     Note note2 = null;
     try {
@@ -536,6 +536,8 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
       p3.setText("%spark println(\"END\")");
 
       note.run(p0.getId(), true);
+      // Sleep 1 second to ensure p3 start running
+      Thread.sleep(1000);
       waitForFinish(p3);
       assertEquals(Status.FINISHED, p3.getStatus());
       assertEquals("END\n", p3.getReturn().message().get(0).getData());

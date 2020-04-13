@@ -51,11 +51,11 @@ public class ClusterInterpreterLauncher extends StandardInterpreterLauncher
   private static final Logger LOGGER = LoggerFactory.getLogger(ClusterInterpreterLauncher.class);
 
   private InterpreterLaunchContext context;
-  private ClusterManagerServer clusterServer = ClusterManagerServer.getInstance();
-
+  private ClusterManagerServer clusterServer;
   public ClusterInterpreterLauncher(ZeppelinConfiguration zConf, RecoveryStorage recoveryStorage)
       throws IOException {
     super(zConf, recoveryStorage);
+    this.clusterServer = ClusterManagerServer.getInstance(zConf);
     clusterServer.addClusterEventListeners(ClusterManagerServer.CLUSTER_INTP_EVENT_TOPIC, this);
   }
 

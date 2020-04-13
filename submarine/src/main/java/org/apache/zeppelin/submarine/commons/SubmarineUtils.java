@@ -14,7 +14,7 @@
 
 package org.apache.zeppelin.submarine.commons;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.Path;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.interpreter.InterpreterContext;

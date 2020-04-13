@@ -36,7 +36,6 @@
         <cassandra.driver.version>3.7.2</cassandra.driver.version>
         <snappy.version>1.1.2.6</snappy.version>
         <lz4.version>1.4.1</lz4.version>
-        <commons-lang.version>3.3.2</commons-lang.version>
         <scalate.version>1.7.1</scalate.version>
         <cassandra.guava.version>19.0</cassandra.guava.version>
 
@@ -44,10 +43,6 @@
         <achilles.version>3.2.4-Zeppelin</achilles.version>
         <jna.version>4.2.0</jna.version>
 
-        <!-- plugin versions -->
-        <plugin.scala.version>2.15.2</plugin.scala.version>
-        <plugin.scalatest.version>1.0</plugin.scalatest.version>
-        <plugin.scalate.version>1.7.1</plugin.scalate.version>
         <interpreter.name>cassandra</interpreter.name>
     </properties>
 
@@ -117,7 +112,6 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <version>${commons-lang.version}</version>
         </dependency>
 
         <dependency>
@@ -201,7 +195,6 @@
             <plugin>
                 <groupId>org.scala-tools</groupId>
                 <artifactId>maven-scala-plugin</artifactId>
-                <version>${plugin.scala.version}</version>
                 <executions>
                     <execution>
                         <id>compile</id>
@@ -229,7 +222,6 @@
             <plugin>
                 <groupId>org.scalatest</groupId>
                 <artifactId>scalatest-maven-plugin</artifactId>
-                <version>${plugin.scalatest.version}</version>
                 <executions>
                     <execution>
                         <id>test</id>
@@ -243,7 +235,6 @@
             <plugin>
                 <groupId>org.scalatra.scalate</groupId>
                 <artifactId>maven-scalate-plugin_${scala.binary.version}</artifactId>
-                <version>${plugin.scalate.version}</version>
                 <executions>
                     <execution>
                         <id>compile</id>

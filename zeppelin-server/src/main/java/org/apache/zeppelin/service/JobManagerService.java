@@ -19,6 +19,7 @@ package org.apache.zeppelin.service;
 
 import javax.inject.Inject;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.Paragraph;
@@ -39,16 +40,21 @@ public class JobManagerService {
   private static final Logger LOGGER = LoggerFactory.getLogger(JobManagerService.class);
 
   private Notebook notebook;
+  private ZeppelinConfiguration conf;
 
   @Inject
-  public JobManagerService(Notebook notebook) {
+  public JobManagerService(Notebook notebook, ZeppelinConfiguration conf) {
     this.notebook = notebook;
+    this.conf = conf;
   }
 
   public List<NoteJobInfo> getNoteJobInfo(String noteId,
                                           ServiceContext context,
                                           ServiceCallback<List<NoteJobInfo>> callback)
       throws IOException {
+    if (!conf.isJobManagerEnabled()) {
+      return new ArrayList<>();
+    }
     List<NoteJobInfo> notesJobInfo = new ArrayList<>();
     Note jobNote = notebook.getNote(noteId);
     if (jobNote == null) {
@@ -66,6 +72,9 @@ public class JobManagerService {
                                                     ServiceContext context,
                                                     ServiceCallback<List<NoteJobInfo>> callback)
       throws IOException {
+    if (!conf.isJobManagerEnabled()) {
+      return new ArrayList<>();
+    }
     List<Note> notes = notebook.getAllNotes();
     List<NoteJobInfo> notesJobInfo = new ArrayList<>();
     for (Note note : notes) {
@@ -81,6 +90,9 @@ public class JobManagerService {
   public void removeNoteJobInfo(String noteId,
                                 ServiceContext context,
                                 ServiceCallback<List<NoteJobInfo>> callback) throws IOException {
+    if (!conf.isJobManagerEnabled()) {
+      return;
+    }
     List<NoteJobInfo> notesJobInfo = new ArrayList<>();
     notesJobInfo.add(new NoteJobInfo(noteId, true));
     callback.onSuccess(notesJobInfo, context);

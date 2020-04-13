@@ -193,6 +193,42 @@
 </property>
 -->
 
+<!-- Aliyun OSS notebook storage -->
+<!-- Creates the following directory structure: oss://{bucket}/{notebook_dir}/note_path -->
+<!--
+
+<property>
+  <name>zeppelin.notebook.oss.bucket</name>
+  <value>zeppelin</value>
+  <description>bucket name for notebook storage</description>
+</property>
+
+<property>
+  <name>zeppelin.notebook.oss.endpoint</name>
+  <value>http://oss-cn-hangzhou.aliyuncs.com</value>
+  <description>endpoint for oss bucket</description>
+</property>
+
+<property>
+  <name>zeppelin.notebook.oss.accesskeyid</name>
+  <value></value>
+  <description>Access key id for your OSS account</description>
+</property>
+
+<property>
+  <name>zeppelin.notebook.oss.accesskeysecret</name>
+  <value></value>
+  <description>Access key secret for your OSS account</description>
+</property>
+
+<property>
+  <name>zeppelin.notebook.storage</name>
+  <value>org.apache.zeppelin.notebook.repo.OSSNotebookRepo</value>
+  <description>notebook persistence layer implementation</description>
+</property>
+
+-->
+
 <!-- If using Azure for storage use the following settings -->
 <!--
 <property>
@@ -446,14 +482,20 @@
 
 <property>
   <name>zeppelin.websocket.max.text.message.size</name>
-  <value>1024000</value>
-  <description>Size in characters of the maximum text message to be received by websocket. Defaults to 1024000</description>
+  <value>10240000</value>
+  <description>Size in characters of the maximum text message to be received by websocket. Defaults to 10240000</description>
 </property>
 
 <property>
   <name>zeppelin.server.default.dir.allowed</name>
   <value>false</value>
   <description>Enable directory listings on server.</description>
+</property>
+
+<property>
+  <name>zeppelin.interpreter.yarn.monitor.interval_secs</name>
+  <value>10</value>
+  <description>Check interval in secs for yarn apps monitors</description>
 </property>
 
 <!--
@@ -477,13 +519,11 @@
 </property>
 -->
 
-<!--
 <property>
     <name>zeppelin.server.jetty.name</name>
-    <value>Jetty(7.6.0.v20120127)</value>
+    <value> </value>
     <description>Hardcoding Application Server name to Prevent Fingerprinting</description>
 </property>
--->
 
 <!--
 <property>
@@ -531,13 +571,11 @@
 </property>
 -->
 
-<!--
 <property>
   <name>zeppelin.server.xframe.options</name>
   <value>SAMEORIGIN</value>
   <description>The X-Frame-Options HTTP response header can be used to indicate whether or not a browser should be allowed to render a page in a frame/iframe/object.</description>
 </property>
--->
 
 <!--
 <property>
@@ -546,22 +584,18 @@
   <description>The HTTP Strict-Transport-Security response header is a security feature that lets a web site tell browsers that it should only be communicated with using HTTPS, instead of using HTTP. Enable this when Zeppelin is running on HTTPS. Value is in Seconds, the default value is equivalent to 20 years.</description>
 </property>
 -->
-<!--
 
 <property>
   <name>zeppelin.server.xxss.protection</name>
-  <value>1</value>
+  <value>1; mode=block</value>
   <description>The HTTP X-XSS-Protection response header is a feature of Internet Explorer, Chrome and Safari that stops pages from loading when they detect reflected cross-site scripting (XSS) attacks. When value is set to 1 and a cross-site scripting attack is detected, the browser will sanitize the page (remove the unsafe parts).</description>
 </property>
--->
 
-<!--
 <property>
   <name>zeppelin.server.xcontent.type.options</name>
   <value>nosniff</value>
   <description>The HTTP X-Content-Type-Options response header helps to prevent MIME type sniffing attacks. It directs the browser to honor the type specified in the Content-Type header, rather than trying to determine the type from the content itself. The default value "nosniff" is really the only meaningful value. This header is supported on all browsers except Safari and Safari on iOS.</description>
 </property>
--->
 
 <!--
 <property>
@@ -653,10 +687,41 @@
   <description>Kubernetes yaml spec files</description>
 </property>
 
-  <property>
-    <name>zeppelin.docker.container.image</name>
-    <value>apache/zeppelin:0.8.0</value>
-    <description>Docker image for interpreters</description>
-  </property>
+<property>
+  <name>zeppelin.docker.container.image</name>
+  <value>apache/zeppelin:0.8.0</value>
+  <description>Docker image for interpreters</description>
+</property>
+
+<property>
+  <name>zeppelin.search.index.rebuild</name>
+  <value>false</value>
+  <description>Whether rebuild index when zeppelin start. If true, it would read all notes and rebuild the index, this would consume lots of memory if you have large amounts of notes, so by default it is false</description>
+</property>
+
+<property>
+  <name>zeppelin.search.use.disk</name>
+  <value>true</value>
+  <description>Whether using disk for storing search index, if false, memory will be used instead.</description>
+</property>
+
+<property>
+  <name>zeppelin.search.index.path</name>
+  <value>/tmp/zeppelin-index</value>
+  <description>path for storing search index on disk.</description>
+</property>
+
+<property>
+  <name>zeppelin.jobmanager.enable</name>
+  <value>false</value>
+  <description>The Job tab in zeppelin page seems not so useful instead it cost lots of memory and affect the performance.
+  Disable it can save lots of memory</description>
+</property>
+
+<property>
+  <name>zeppelin.spark.only_yarn_cluster</name>
+  <value>false</value>
+  <description>Whether only allow yarn cluster mode</description>
+</property>
 
 </configuration>

@@ -54,7 +54,7 @@
   <modules>
     <module>zeppelin-interpreter-parent</module>
     <module>zeppelin-interpreter</module>
-    <module>zeppelin-interpreter-api</module>
+    <module>zeppelin-interpreter-shaded</module>
     <module>zeppelin-zengine</module>
     <module>zeppelin-display</module>
     <module>rlang</module>
@@ -65,6 +65,7 @@
     <module>spark</module>
     <module>submarine</module>
     <module>markdown</module>
+    <module>mongodb</module>
     <module>angular</module>
     <module>shell</module>
     <module>livy</module>
@@ -96,7 +97,6 @@
     <module>zeppelin-jupyter</module>
     <module>zeppelin-plugins</module>
     <module>zeppelin-distribution</module>
-    <module>zeppelin-web-angular</module>
   </modules>
 
   <properties>
@@ -120,11 +120,12 @@
     <libthrift.version>0.13.0</libthrift.version>
     <gson.version>2.2</gson.version>
     <gson-extras.version>0.2.1</gson-extras.version>
-    <jetty.version>9.4.18.v20190429</jetty.version>
+    <jetty.version>9.4.27.v20200227</jetty.version>
     <httpcomponents.core.version>4.4.1</httpcomponents.core.version>
     <httpcomponents.client.version>4.5.1</httpcomponents.client.version>
     <httpcomponents.asyncclient.version>4.0.2</httpcomponents.asyncclient.version>
     <commons.lang.version>2.5</commons.lang.version>
+    <commons.lang3.version>3.7</commons.lang3.version>
     <commons.configuration.version>1.9</commons.configuration.version>
     <commons.exec.version>1.3</commons.exec.version>
     <commons.codec.version>1.5</commons.codec.version>
@@ -142,24 +143,43 @@
     <powermock.version>1.6.4</powermock.version>
 
     <!-- plugin versions -->
-    <plugin.compiler.version>3.1</plugin.compiler.version>
-    <plugin.resource.version>2.7</plugin.resource.version>
-    <plugin.dependency.version>2.8</plugin.dependency.version>
-    <plugin.jar.version>2.4</plugin.jar.version>
-    <plugin.remote.resource.version>1.5</plugin.remote.resource.version>
-    <plugin.scm.version>1.8.1</plugin.scm.version>
-    <plugin.enforcer.version>1.3.1</plugin.enforcer.version>
-    <plugin.checkstyle.version>2.13</plugin.checkstyle.version>
-    <plugin.surefire.version>2.17</plugin.surefire.version>
-    <plugin.assembly.version>3.0.0</plugin.assembly.version>
-    <plugin.exec.version>1.2.1</plugin.exec.version>
+    <plugin.antrun.version>1.8</plugin.antrun.version>
+    <plugin.assembly.version>3.2.0</plugin.assembly.version>
+    <plugin.avro.version>1.7.7</plugin.avro.version>
+    <plugin.buildhelper.version>1.7</plugin.buildhelper.version>
+    <plugin.buildnumber.version>1.4</plugin.buildnumber.version>
+    <plugin.checkstyle.version>2.17</plugin.checkstyle.version>
+    <plugin.clean.version>3.1.0</plugin.clean.version>
     <plugin.cobertura.version>2.7</plugin.cobertura.version>
-    <plugin.clean.version>2.6.1</plugin.clean.version>
-    <plugin.lifecycle.mapping.version>1.0.0</plugin.lifecycle.mapping.version>
-    <plugin.antrun.version>1.7</plugin.antrun.version>
-    <plugin.download.version>1.3.0</plugin.download.version>
+    <plugin.compiler.version>3.8.1</plugin.compiler.version>
+    <plugin.dependency.version>3.1.2</plugin.dependency.version>
     <plugin.deploy.version>2.8.2</plugin.deploy.version>
-    <plugin.shade.version>3.1.1</plugin.shade.version>
+    <plugin.download.version>1.3.0</plugin.download.version>
+    <plugin.eclipse.version>2.8</plugin.eclipse.version>
+    <plugin.enforcer.version>3.0.0-M3</plugin.enforcer.version>
+    <plugin.exec.version>1.6.0</plugin.exec.version>
+    <plugin.failsafe.version>2.17</plugin.failsafe.version>
+    <plugin.git.commit.id.version>4.0.0</plugin.git.commit.id.version>
+    <plugin.gpg.version>1.6</plugin.gpg.version>
+    <plugin.install.version>3.0.0-M1</plugin.install.version>
+    <plugin.jar.version>3.2.0</plugin.jar.version>
+    <plugin.javadoc.version>3.2.0</plugin.javadoc.version>
+    <plugin.jdeb.version>1.8</plugin.jdeb.version>
+    <plugin.lifecycle.mapping.version>1.0.0</plugin.lifecycle.mapping.version>
+    <plugin.protobuf.version>0.5.0</plugin.protobuf.version>
+    <plugin.rat.version>0.13</plugin.rat.version>
+    <plugin.remote.resource.version>1.7.0</plugin.remote.resource.version>
+    <plugin.resource.version>3.1.0</plugin.resource.version>
+    <plugin.s3.upload.version>1.4</plugin.s3.upload.version>
+    <plugin.scala.alchim31.version>3.4.6</plugin.scala.alchim31.version>
+    <plugin.scala.tools.version>2.15.2</plugin.scala.tools.version>
+    <plugin.scalate.version>1.7.1</plugin.scalate.version>
+    <plugin.scalatest.version>2.0.0</plugin.scalatest.version>
+    <plugin.scm.version>1.11.2</plugin.scm.version>
+    <plugin.shade.version>3.2.2</plugin.shade.version>
+    <plugin.source.version>3.2.1</plugin.source.version>
+    <plugin.surefire.version>2.17</plugin.surefire.version>
+    <plugin.xml.version>1.0.2</plugin.xml.version>
 
     <plugin.gitcommitid.useNativeGit>false</plugin.gitcommitid.useNativeGit>
 
@@ -225,6 +245,12 @@
         <groupId>commons-lang</groupId>
         <artifactId>commons-lang</artifactId>
         <version>${commons.lang.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-lang3</artifactId>
+        <version>${commons.lang3.version}</version>
       </dependency>
 
       <dependency>
@@ -368,6 +394,7 @@
 
     <plugins>
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
         <version>${plugin.compiler.version}</version>
         <configuration>
@@ -376,31 +403,31 @@
         </configuration>
       </plugin>
 
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>flatten-maven-plugin</artifactId>
-        <version>1.0.0</version>
-        <configuration>
-          <flattenMode>ossrh</flattenMode>
-          <updatePomFile>true</updatePomFile>
-        </configuration>
-        <executions>
-          <execution>
-            <id>flatten</id>
-            <phase>process-resources</phase>
-            <goals>
-              <goal>flatten</goal>
-            </goals>
-          </execution>
-          <execution>
-            <id>flatten.clean</id>
-            <phase>clean</phase>
-            <goals>
-              <goal>clean</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
+<!--      <plugin>-->
+<!--        <groupId>org.codehaus.mojo</groupId>-->
+<!--        <artifactId>flatten-maven-plugin</artifactId>-->
+<!--        <version>1.0.0</version>-->
+<!--        <configuration>-->
+<!--          <flattenMode>ossrh</flattenMode>-->
+<!--          <updatePomFile>true</updatePomFile>-->
+<!--        </configuration>-->
+<!--        <executions>-->
+<!--          <execution>-->
+<!--            <id>flatten</id>-->
+<!--            <phase>process-resources</phase>-->
+<!--            <goals>-->
+<!--              <goal>flatten</goal>-->
+<!--            </goals>-->
+<!--          </execution>-->
+<!--          <execution>-->
+<!--            <id>flatten.clean</id>-->
+<!--            <phase>clean</phase>-->
+<!--            <goals>-->
+<!--              <goal>clean</goal>-->
+<!--            </goals>-->
+<!--          </execution>-->
+<!--        </executions>-->
+<!--      </plugin>-->
 
       <!-- (TODO zjffdu disable it temporary to make CI pass)Test coverage plugin -->
 
@@ -427,13 +454,13 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-checkstyle-plugin</artifactId>
-        <version>2.17</version>
+        <version>${plugin.checkstyle.version}</version>
         <configuration>
           <skip>true</skip>
           <failOnViolation>false</failOnViolation>
           <includeTestSourceDirectory>true</includeTestSourceDirectory>
           <sourceDirectories>${basedir}/src/main/java,${basedir}/src/main/scala</sourceDirectories>
-          <testSourceDirectory>${basedir}/src/test/java</testSourceDirectory>
+          <testSourceDirectories>${basedir}/src/test/java</testSourceDirectories>
           <configLocation>_tools/checkstyle.xml</configLocation>
           <outputFile>${basedir}/target/checkstyle-output.xml</outputFile>
           <inputEncoding>${project.build.sourceEncoding}</inputEncoding>
@@ -465,6 +492,7 @@
       </plugin>
 
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
         <version>${plugin.jar.version}</version>
         <configuration>
@@ -479,6 +507,7 @@
       </plugin>
 
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-remote-resources-plugin</artifactId>
         <version>${plugin.remote.resource.version}</version>
         <executions>
@@ -497,6 +526,7 @@
       </plugin>
 
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-scm-plugin</artifactId>
         <version>${plugin.scm.version}</version>
         <configuration>
@@ -507,6 +537,7 @@
       </plugin>
 
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-enforcer-plugin</artifactId>
         <version>${plugin.enforcer.version}</version>
         <executions>
@@ -522,6 +553,20 @@
               <goal>enforce</goal>
             </goals>
           </execution>
+          <!-- https://maven.apache.org/enforcer/enforcer-rules/requireMavenVersion.html -->
+          <execution>
+            <id>enforce-maven</id>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <requireMavenVersion>
+                  <version>[3.1.0,)</version>
+                </requireMavenVersion>
+              </rules>
+            </configuration>
+          </execution>
         </executions>
       </plugin>
 
@@ -534,7 +579,7 @@
       <plugin>
         <groupId>pl.project13.maven</groupId>
         <artifactId>git-commit-id-plugin</artifactId>
-        <version>2.2.2</version>
+        <version>${plugin.git.commit.id.version}</version>
         <executions>
           <execution>
             <goals>
@@ -576,11 +621,16 @@
 
     <pluginManagement>
       <plugins>
+          <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-shade-plugin</artifactId>
+              <version>${plugin.shade.version}</version>
+          </plugin>
 
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-install-plugin</artifactId>
-          <version>3.0.0-M1</version>
+          <version>${plugin.install.version}</version>
         </plugin>
 
         <plugin>
@@ -590,6 +640,19 @@
         </plugin>
 
         <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-clean-plugin</artifactId>
+          <version>${plugin.clean.version}</version>
+        </plugin>
+
+        <plugin>
+          <groupId>net.alchim31.maven</groupId>
+          <artifactId>scala-maven-plugin</artifactId>
+          <version>${plugin.scala.alchim31.version}</version>
+        </plugin>
+        
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-surefire-plugin</artifactId>
           <version>${plugin.surefire.version}</version>
           <configuration combine.children="append">
@@ -609,6 +672,7 @@
         </plugin>
 
         <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-assembly-plugin</artifactId>
           <version>${plugin.assembly.version}</version>
         </plugin>
@@ -628,7 +692,7 @@
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>xml-maven-plugin</artifactId>
-          <version>1.0.1</version>
+          <version>${plugin.xml.version}</version>
           <executions>
             <execution>
               <phase>verify</phase>
@@ -718,6 +782,13 @@
         </plugin>
 
         <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-eclipse-plugin</artifactId>
+          <version>${plugin.eclipse.version}</version>
+        </plugin>
+        
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-dependency-plugin</artifactId>
           <version>${plugin.dependency.version}</version>
           <executions>
@@ -739,6 +810,7 @@
         </plugin>
 
         <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-resources-plugin</artifactId>
           <version>${plugin.resource.version}</version>
           <executions>
@@ -764,6 +836,96 @@
           </executions>
         </plugin>
 
+      <plugin>
+        <groupId>org.scalatest</groupId>
+        <artifactId>scalatest-maven-plugin</artifactId>
+        <version>${plugin.scalatest.version}</version>
+      </plugin>
+
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <version>${plugin.buildhelper.version}</version>
+      </plugin>
+
+      <plugin>
+        <groupId>com.github.eirslett</groupId>
+        <artifactId>frontend-maven-plugin</artifactId>
+        <version>${plugin.frontend.version}</version>
+      </plugin>
+      
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <version>${plugin.failsafe.version}</version>
+      </plugin>
+
+      <plugin>
+        <groupId>org.xolstice.maven.plugins</groupId>
+        <artifactId>protobuf-maven-plugin</artifactId>
+        <version>${plugin.protobuf.version}</version>
+      </plugin>
+
+      <plugin>
+        <groupId>com.bazaarvoice.maven.plugins</groupId>
+        <artifactId>s3-upload-maven-plugin</artifactId>
+        <version>${plugin.s3.upload.version}</version>
+      </plugin>
+
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>buildnumber-maven-plugin</artifactId>
+        <version>${plugin.buildnumber.version}</version>
+      </plugin>
+
+      <plugin>
+        <groupId>org.vafer</groupId>
+        <artifactId>jdeb</artifactId>
+        <version>${plugin.jdeb.version}</version>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.avro</groupId>
+        <artifactId>avro-maven-plugin</artifactId>
+        <version>${plugin.avro.version}</version>
+      </plugin>
+
+      <plugin>
+        <groupId>org.scalatra.scalate</groupId>
+        <artifactId>maven-scalate-plugin_${scala.binary.version}</artifactId>
+        <version>${plugin.scalate.version}</version>
+      </plugin>
+
+      <plugin>
+        <groupId>org.scala-tools</groupId>
+        <artifactId>maven-scala-plugin</artifactId>
+        <version>${plugin.scala.tools.version}</version>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-source-plugin</artifactId>
+        <version>${plugin.source.version}</version>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>${plugin.javadoc.version}</version>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-gpg-plugin</artifactId>
+        <version>${plugin.gpg.version}</version>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.rat</groupId>
+        <artifactId>apache-rat-plugin</artifactId>
+        <version>${plugin.rat.version}</version>
+      </plugin>
+      
       </plugins>
     </pluginManagement>
   </build>
@@ -789,9 +951,9 @@
     </profile>
 
     <profile>
-      <id>r</id>
+      <id>web-angular</id>
       <modules>
-        <module>r</module>
+        <module>zeppelin-web-angular</module>
       </modules>
     </profile>
 
@@ -840,6 +1002,7 @@
         <pluginManagement>
           <plugins>
             <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
               <artifactId>maven-surefire-plugin</artifactId>
               <configuration>
                 <skipTests>true</skipTests>
@@ -847,6 +1010,7 @@
             </plugin>
 
             <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
               <artifactId>maven-assembly-plugin</artifactId>
               <executions>
                 <execution>
@@ -872,6 +1036,7 @@
       <build>
         <plugins>
           <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-surefire-plugin</artifactId>
             <configuration>
               <skipTests>true</skipTests>
@@ -881,7 +1046,6 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-source-plugin</artifactId>
-            <version>3.0.0</version>
             <executions>
               <execution>
                 <id>attach-sources</id>
@@ -895,7 +1059,6 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-javadoc-plugin</artifactId>
-            <version>2.10.3</version>
             <executions>
               <execution>
                 <id>attach-javadocs</id>
@@ -920,8 +1083,8 @@
       <build>
         <plugins>
           <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-gpg-plugin</artifactId>
-            <version>1.6</version>
             <executions>
               <execution>
                 <id>sign-artifacts</id>
@@ -946,7 +1109,6 @@
         <plugin>
           <groupId>org.apache.rat</groupId>
           <artifactId>apache-rat-plugin</artifactId>
-          <version>0.11</version>
           <configuration>
             <excludes>
               <exclude>**/*.keywords</exclude>
@@ -956,6 +1118,7 @@
               <exclude>.git/</exclude>
               <exclude>.github/*</exclude>
               <exclude>.gitignore</exclude>
+              <exclude>git.properties</exclude>
               <exclude>.repository/</exclude>
               <exclude>.rat-excludes/</exclude>
               <exclude>.Rhistory</exclude>
@@ -964,6 +1127,7 @@
               <exclude>**/*.avsc</exclude>
               <exclude>**/*.avro</exclude>
               <exclude>**/*.log</exclude>
+              <exclude>**/*.ipynb</exclude>
               <exclude>**/test/resources/**</exclude>
               <exclude>**/.settings/*</exclude>
               <exclude>**/.classpath</exclude>
@@ -1104,8 +1268,8 @@
                <!--The following files are mechanical-->
               <exclude>**/R/rzeppelin/DESCRIPTION</exclude>
               <exclude>**/R/rzeppelin/NAMESPACE</exclude>
-
-              <exclude>zeppelin-jupyter-adapter/src/main/resources/grpc/**/*</exclude>
+              
+              <exclude>zeppelin-jupyter-interpreter/src/main/resources/grpc/jupyter/*.py</exclude>
             </excludes>
           </configuration>
 

@@ -301,13 +301,14 @@ public abstract class BasePythonInterpreterTest extends ConcurrentTestCase {
     // Pandas DataFrame
     context = getInterpreterContext();
     result = interpreter.interpret("import pandas as pd\n" +
-        "df = pd.DataFrame({'id':[1,2,3], 'name':['a','b','c']})\nz.show(df)", context);
+        "df = pd.DataFrame({'id':[1,2,3], 'name':['a\ta','b\\nb','c\\r\\nc']})\nz.show(df)",
+            context);
     assertEquals(context.out.toInterpreterResultMessage().toString(),
             InterpreterResult.Code.SUCCESS, result.code());
     interpreterResultMessages = context.out.toInterpreterResultMessage();
     assertEquals(1, interpreterResultMessages.size());
     assertEquals(InterpreterResult.Type.TABLE, interpreterResultMessages.get(0).getType());
-    assertEquals("id\tname\n1\ta\n2\tb\n3\tc\n", interpreterResultMessages.get(0).getData());
+    assertEquals("id\tname\n1\ta a\n2\tb b\n3\tc c\n", interpreterResultMessages.get(0).getData());
 
     context = getInterpreterContext();
     result = interpreter.interpret("import pandas as pd\n" +
@@ -320,6 +321,22 @@ public abstract class BasePythonInterpreterTest extends ConcurrentTestCase {
     assertEquals(InterpreterResult.Type.HTML, interpreterResultMessages.get(1).getType());
     assertEquals("<font color=red>Results are limited by 3.</font>\n",
         interpreterResultMessages.get(1).getData());
+
+    // z.show(df, show_index=True)
+    context = getInterpreterContext();
+    result = interpreter.interpret("import pandas as pd\n" +
+                    "df = pd.DataFrame({'id':[1,2,3], 'name':['a','b','c']})\n" +
+                    "z.show(df, show_index=True)",
+            context);
+    assertEquals(context.out.toInterpreterResultMessage().toString(),
+            InterpreterResult.Code.SUCCESS, result.code());
+    interpreterResultMessages = context.out.toInterpreterResultMessage();
+    assertEquals(1, interpreterResultMessages.size());
+    assertEquals(InterpreterResult.Type.TABLE, interpreterResultMessages.get(0).getType());
+    assertEquals("\tid\tname\n" +
+            "%html <strong>0</strong>\t1\ta\n" +
+            "%html <strong>1</strong>\t2\tb\n" +
+            "%html <strong>2</strong>\t3\tc\n", interpreterResultMessages.get(0).getData());
 
     // z.show(matplotlib)
     context = getInterpreterContext();

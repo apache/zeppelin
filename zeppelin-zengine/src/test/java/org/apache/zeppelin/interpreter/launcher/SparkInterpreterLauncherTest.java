@@ -36,6 +36,7 @@ import java.nio.file.Paths;
 import java.util.Properties;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class SparkInterpreterLauncherTest {
@@ -88,6 +89,7 @@ public class SparkInterpreterLauncherTest {
     SparkInterpreterLauncher launcher = new SparkInterpreterLauncher(zConf, null);
     Properties properties = new Properties();
     properties.setProperty("SPARK_HOME", sparkHome);
+    properties.setProperty("ENV_1", "");
     properties.setProperty("property_1", "value_1");
     properties.setProperty("master", "local[*]");
     properties.setProperty("spark.files", "file_1");
@@ -104,6 +106,7 @@ public class SparkInterpreterLauncherTest {
     assertEquals(zConf.getInterpreterRemoteRunnerPath(), interpreterProcess.getInterpreterRunner());
     assertTrue(interpreterProcess.getEnv().size() >= 2);
     assertEquals(sparkHome, interpreterProcess.getEnv().get("SPARK_HOME"));
+    assertFalse(interpreterProcess.getEnv().containsKey("ENV_1"));
     assertEquals(InterpreterLauncher.escapeSpecialCharacter(" --master local[*] --conf spark.files=file_1 --conf spark.jars=jar_1"),
             interpreterProcess.getEnv().get("ZEPPELIN_SPARK_CONF"));
   }
@@ -199,7 +202,8 @@ public class SparkInterpreterLauncherTest {
 
     assertEquals("true", interpreterProcess.getEnv().get("ZEPPELIN_SPARK_YARN_CLUSTER"));
     String sparkJars = "jar_1," +
-            zeppelinHome + "/interpreter/spark/scala-2.11/spark-scala-2.11-" + Util.getVersion() + ".jar";
+            zeppelinHome + "/interpreter/spark/scala-2.11/spark-scala-2.11-" + Util.getVersion() + ".jar," +
+            zeppelinHome + "/interpreter/zeppelin-interpreter-shaded-" + Util.getVersion() + ".jar";
     String sparkrZip = sparkHome + "/R/lib/sparkr.zip#sparkr";
     String sparkFiles = "file_1," + zeppelinHome + "/conf/log4j_yarn_cluster.properties";
     assertEquals(InterpreterLauncher.escapeSpecialCharacter(" --master yarn-cluster --conf spark.yarn.dist.archives=" + sparkrZip +
@@ -242,7 +246,8 @@ public class SparkInterpreterLauncherTest {
     assertEquals("true", interpreterProcess.getEnv().get("ZEPPELIN_SPARK_YARN_CLUSTER"));
     String sparkJars = "jar_1," +
             Paths.get(localRepoPath.toAbsolutePath().toString(), "test.jar").toString() + "," +
-            zeppelinHome + "/interpreter/spark/scala-2.11/spark-scala-2.11-" + Util.getVersion() + ".jar";
+            zeppelinHome + "/interpreter/spark/scala-2.11/spark-scala-2.11-" + Util.getVersion() + ".jar," +
+            zeppelinHome + "/interpreter/zeppelin-interpreter-shaded-" + Util.getVersion() + ".jar";
     String sparkrZip = sparkHome + "/R/lib/sparkr.zip#sparkr";
     String sparkFiles = "file_1," + zeppelinHome + "/conf/log4j_yarn_cluster.properties";
     assertEquals(InterpreterLauncher.escapeSpecialCharacter(" --master yarn --conf spark.yarn.dist.archives=" + sparkrZip +
@@ -286,7 +291,8 @@ public class SparkInterpreterLauncherTest {
     assertEquals("true", interpreterProcess.getEnv().get("ZEPPELIN_SPARK_YARN_CLUSTER"));
 
     String sparkJars = "jar_1," +
-            zeppelinHome + "/interpreter/spark/scala-2.11/spark-scala-2.11-" + Util.getVersion() + ".jar";
+            zeppelinHome + "/interpreter/spark/scala-2.11/spark-scala-2.11-" + Util.getVersion() + ".jar," +
+            zeppelinHome + "/interpreter/zeppelin-interpreter-shaded-" + Util.getVersion() + ".jar";
     String sparkrZip = sparkHome + "/R/lib/sparkr.zip#sparkr";
     // escape special characters
     String sparkFiles = "{}," + zeppelinHome + "/conf/log4j_yarn_cluster.properties";

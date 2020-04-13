@@ -150,7 +150,6 @@
     <plugins>
       <plugin>
         <artifactId>maven-failsafe-plugin</artifactId>
-        <version>${plugin.failsafe.version}</version>
         <executions>
           <execution>
             <goals>

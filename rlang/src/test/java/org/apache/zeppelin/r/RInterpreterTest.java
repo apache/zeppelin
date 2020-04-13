@@ -30,6 +30,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Properties;
 
@@ -64,13 +65,26 @@ public class RInterpreterTest {
   }
 
   @Test
-  public void testSparkRInterpreter() throws InterpreterException, InterruptedException {
+  public void testSparkRInterpreter() throws InterpreterException, InterruptedException, IOException {
     InterpreterResult result = rInterpreter.interpret("1+1", getInterpreterContext());
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
     assertTrue(result.message().get(0).getData().contains("2"));
 
-    // plotting
     InterpreterContext context = getInterpreterContext();
+    result = rInterpreter.interpret("foo <- TRUE\n" +
+            "print(foo)\n" +
+            "bare <- c(1, 2.5, 4)\n" +
+            "print(bare)\n" +
+            "double <- 15.0\n" +
+            "print(double)", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    assertTrue(result.toString(),
+                       result.message().get(0).getData().contains("[1] TRUE\n" +
+                               "[1] 1.0 2.5 4.0\n" +
+                               "[1] 15\n"));
+
+    // plotting
+    context = getInterpreterContext();
     context.getLocalProperties().put("imageWidth", "100");
     result = rInterpreter.interpret("hist(mtcars$mpg)", context);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());

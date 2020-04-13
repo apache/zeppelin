@@ -16,14 +16,10 @@
  */
 package org.apache.zeppelin.jupyter.nbformat;
 
-import com.google.common.base.Joiner;
-import com.google.common.collect.Lists;
 import com.google.gson.annotations.SerializedName;
-import org.apache.zeppelin.jupyter.types.JupyterOutputType;
 import org.apache.zeppelin.jupyter.types.ZeppelinOutputType;
 import org.apache.zeppelin.jupyter.zformat.TypeData;
 
-import java.util.List;
 import java.util.Map;
 
 /**

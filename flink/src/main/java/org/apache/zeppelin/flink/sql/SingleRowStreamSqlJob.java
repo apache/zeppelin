@@ -18,15 +18,17 @@
 
 package org.apache.zeppelin.flink.sql;
 
-import com.google.common.collect.Lists;
 import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment;
+import org.apache.flink.table.api.TableEnvironment;
 import org.apache.flink.table.api.scala.StreamTableEnvironment;
 import org.apache.flink.types.Row;
+import org.apache.flink.util.StringUtils;
+import org.apache.zeppelin.flink.JobManager;
 import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.tabledata.TableDataUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
 
 public class SingleRowStreamSqlJob extends AbstractStreamSqlJob {
 
@@ -36,22 +38,17 @@ public class SingleRowStreamSqlJob extends AbstractStreamSqlJob {
   private String template;
 
   public SingleRowStreamSqlJob(StreamExecutionEnvironment senv,
-                               StreamTableEnvironment stenv,
+                               TableEnvironment stenv,
+                               JobManager jobManager,
                                InterpreterContext context,
                                int defaultParallelism) {
-    super(senv, stenv, context, defaultParallelism);
+    super(senv, stenv, jobManager, context, defaultParallelism);
     this.template = context.getLocalProperties().getOrDefault("template", "{0}");
   }
 
   @Override
   protected String getType() {
     return "single";
-  }
-
-  @Override
-  protected List<String> getValidLocalProperties() {
-    return Lists.newArrayList("type", "parallelism",
-            "refreshInterval", "template", "enableSavePoint", "runWithSavePoint");
   }
 
   protected void processInsert(Row row) {
@@ -61,7 +58,20 @@ public class SingleRowStreamSqlJob extends AbstractStreamSqlJob {
 
   @Override
   protected void processDelete(Row row) {
-    LOGGER.debug("Ignore delete");
+    //LOGGER.debug("Ignore delete");
+  }
+
+  @Override
+  protected String buildResult() {
+    StringBuilder builder = new StringBuilder();
+    builder.append("%html\n");
+    String outputText = template;
+    for (int i = 0; i < latestRow.getArity(); ++i) {
+      outputText = outputText.replace("{" + i + "}",
+              TableDataUtils.normalizeColumn(StringUtils.arrayAwareToString(latestRow.getField(i))));
+    }
+    builder.append(outputText);
+    return builder.toString();
   }
 
   @Override
@@ -71,13 +81,10 @@ public class SingleRowStreamSqlJob extends AbstractStreamSqlJob {
       return;
     }
     context.out().clear();
-    context.out.write("%html\n");
-    String outputText = template;
-    for (int i = 0; i < latestRow.getArity(); ++i) {
-      outputText = outputText.replace("{" + i + "}", latestRow.getField(i).toString());
-    }
-    LOGGER.debug("SingleRow Output: " + outputText);
-    context.out.write(outputText);
+    String output = buildResult();
+    context.out.write(output);
+    jobManager.sendFlinkJobUrl(context);
+    LOGGER.debug("Refresh Output: " + output);
     context.out.flush();
   }
 }

@@ -63,7 +63,7 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
     Properties sparkProperties = new Properties();
     String sparkMaster = getSparkMaster(properties);
     for (String key : properties.stringPropertyNames()) {
-      if (RemoteInterpreterUtils.isEnvString(key)) {
+      if (RemoteInterpreterUtils.isEnvString(key) && !StringUtils.isBlank(properties.getProperty(key))) {
         env.put(key, properties.getProperty(key));
       }
       if (isSparkConf(key, properties.getProperty(key))) {
@@ -76,6 +76,10 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
     if (isYarnMode() && getDeployMode().equals("cluster")) {
       env.put("ZEPPELIN_SPARK_YARN_CLUSTER", "true");
       sparkProperties.setProperty("spark.yarn.submit.waitAppCompletion", "false");
+    } else if (zConf.isOnlyYarnCluster()){
+      throw new IOException("Only yarn-cluster mode is allowed, please set " +
+              ZeppelinConfiguration.ConfVars.ZEPPELIN_SPARK_ONLY_YARN_CLUSTER.getVarName() +
+              " to false if you want to use other modes.");
     }
 
     StringBuilder sparkConfBuilder = new StringBuilder();
@@ -110,12 +114,33 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
 
         String scalaVersion = detectSparkScalaVersion(properties.getProperty("SPARK_HOME"));
         Path scalaFolder =  Paths.get(zConf.getZeppelinHome(), "/interpreter/spark/scala-" + scalaVersion);
+        if (!scalaFolder.toFile().exists()) {
+          throw new IOException("spark scala folder " + scalaFolder.toFile() + " doesn't exist");
+        }
         List<String> scalaJars = StreamSupport.stream(
                 Files.newDirectoryStream(scalaFolder, entry -> Files.isRegularFile(entry))
                         .spliterator(),
                 false)
                 .map(jar -> jar.toAbsolutePath().toString()).collect(Collectors.toList());
         additionalJars.addAll(scalaJars);
+
+        // add zeppelin-interpreter-shaded
+        Path interpreterFolder = Paths.get(zConf.getZeppelinHome(), "/interpreter");
+        List<String> interpreterJars = StreamSupport.stream(
+                Files.newDirectoryStream(interpreterFolder, entry -> Files.isRegularFile(entry))
+                        .spliterator(),
+                false)
+                .filter(jar -> jar.toFile().getName().startsWith("zeppelin-interpreter-shaded")
+                        && jar.toFile().getName().endsWith(".jar"))
+                .map(jar -> jar.toAbsolutePath().toString())
+                .collect(Collectors.toList());
+        if (interpreterJars.size() == 0) {
+          throw new IOException("zeppelin-interpreter-shaded jar is not found");
+        } else if (interpreterJars.size() > 1) {
+          throw new IOException("more than 1 zeppelin-interpreter-shaded jars are found: "
+                  + StringUtils.join(interpreterJars, ","));
+        }
+        additionalJars.addAll(interpreterJars);
 
         if (sparkProperties.containsKey("spark.jars")) {
           sparkProperties.put("spark.jars", sparkProperties.getProperty("spark.jars") + "," +
@@ -146,7 +171,7 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
     // we also fallback to zeppelin-env.sh if it is not specified in interpreter setting.
     for (String envName : new String[]{"SPARK_HOME", "SPARK_CONF_DIR", "HADOOP_CONF_DIR"})  {
       String envValue = getEnv(envName);
-      if (envValue != null) {
+      if (!StringUtils.isBlank(envValue)) {
         env.put(envName, envValue);
       }
     }

@@ -16,7 +16,7 @@
  */
 package org.apache.zeppelin.notebook.repo.zeppelinhub.websocket.session;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jetty.websocket.api.Session;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

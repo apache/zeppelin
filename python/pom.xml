@@ -60,8 +60,8 @@
     </dependency>
 
     <dependency>
-      <groupId>commons-lang</groupId>
-      <artifactId>commons-lang</artifactId>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
     </dependency>
     <dependency>
       <groupId>commons-io</groupId>
@@ -102,7 +102,6 @@
 
       <plugin>
         <artifactId>maven-antrun-plugin</artifactId>
-        <version>1.7</version>
         <executions>
           <execution>
             <phase>package</phase>
@@ -117,7 +116,6 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
-        <version>3.0.2</version>
         <executions>
           <execution>
             <goals>
@@ -142,14 +140,13 @@
 
       <!--
       shade for python interpreter is different from other interpreter, it depends on zeppelin-interpreter instead of
-      zeppelin-interpreter-api. Because spark interpreter depends on python interpreter and spark's py4j conflict with python interpreter's py4j.
+      zeppelin-interpreter-shaded. Because spark interpreter depends on python interpreter and spark's py4j conflict with python interpreter's py4j.
       python interpreter would generate 2 versions of jars, one is shaded jar which is used for running python interpreter, another is normal jar
       which is used by spark interpreter as dependency.
       -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
-        <version>${plugin.shade.version}</version>
         <configuration>
           <filters>
             <filter>
@@ -164,7 +161,7 @@
           </transformers>
           <artifactSet>
             <excludes>
-              <exclude>org.apache.zeppelin:zeppelin-interpreter-api</exclude>
+              <exclude>org.apache.zeppelin:zeppelin-interpreter-shaded</exclude>
             </excludes>
           </artifactSet>
           <outputFile>${project.build.directory}/../../interpreter/python/${interpreter.jar.name}-${project.version}.jar</outputFile>

@@ -24,7 +24,7 @@ import org.apache.commons.exec.ExecuteWatchdog;
 import org.apache.commons.exec.LogOutputStream;
 import org.apache.commons.exec.PumpStreamHandler;
 import org.apache.commons.io.Charsets;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.submarine.commons.SubmarineConstants;
 import org.apache.zeppelin.submarine.commons.SubmarineUI;
 import org.apache.zeppelin.submarine.commons.SubmarineUtils;

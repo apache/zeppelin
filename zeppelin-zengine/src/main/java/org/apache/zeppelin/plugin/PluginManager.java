@@ -77,7 +77,8 @@ public class PluginManager {
     try {
       notebookRepo = (NotebookRepo) (Class.forName(notebookRepoClassName, true, pluginClassLoader)).newInstance();
     } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
-      LOGGER.warn("Fail to instantiate notebookrepo from plugin classpath:" + notebookRepoClassName, e);
+      LOGGER.warn("Fail to instantiate notebookrepo " + notebookRepoClassName +
+              " from plugin classpath:" + pluginsDir, e);
     }
 
     if (notebookRepo == null) {
@@ -99,15 +100,16 @@ public class PluginManager {
    * @throws IOException
    */
   public OldNotebookRepo loadOldNotebookRepo(String notebookRepoClassName) throws IOException {
-    LOGGER.info("Loading OldNotebookRepo Plugin: " + notebookRepoClassName);
+    String oldNotebookRepoClassName = getOldNotebookRepoClassName(notebookRepoClassName);
+    LOGGER.info("Loading OldNotebookRepo Plugin: " + oldNotebookRepoClassName);
     // load plugin from classpath directly first for these builtin NotebookRepo (such as VFSNoteBookRepo
     // and GitNotebookRepo). If fails, then try to load it from plugin folder
     try {
       OldNotebookRepo notebookRepo = (OldNotebookRepo)
-          (Class.forName(notebookRepoClassName).newInstance());
+          (Class.forName(oldNotebookRepoClassName).newInstance());
       return notebookRepo;
     } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
-      LOGGER.warn("Fail to instantiate notebookrepo from classpath directly:" + notebookRepoClassName);
+      LOGGER.warn("Fail to instantiate notebookrepo from classpath directly:" + oldNotebookRepoClassName);
     }
 
     String simpleClassName = notebookRepoClassName.substring(notebookRepoClassName.lastIndexOf(".") + 1);
@@ -117,14 +119,14 @@ public class PluginManager {
     }
     OldNotebookRepo notebookRepo = null;
     try {
-      notebookRepoClassName = getOldNotebookRepoClassName(notebookRepoClassName);
-      notebookRepo = (OldNotebookRepo) (Class.forName(notebookRepoClassName, true, pluginClassLoader)).newInstance();
+      notebookRepo = (OldNotebookRepo) (Class.forName(oldNotebookRepoClassName, true, pluginClassLoader)).newInstance();
     } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
-      LOGGER.warn("Fail to instantiate notebookrepo from plugin classpath:" + notebookRepoClassName, e);
+      LOGGER.warn("Fail to instantiate notebookrepo " + oldNotebookRepoClassName +
+              " from plugin classpath:" + pluginsDir, e);
     }
 
     if (notebookRepo == null) {
-      LOGGER.warn("Unable to load NotebookRepo Plugin: " + notebookRepoClassName);
+      LOGGER.warn("Unable to load NotebookRepo Plugin: " + oldNotebookRepoClassName);
     }
     return notebookRepo;
   }
@@ -159,7 +161,8 @@ public class PluginManager {
           .newInstance(zConf, recoveryStorage);
     } catch (InstantiationException | IllegalAccessException | ClassNotFoundException
         | NoSuchMethodException | InvocationTargetException e) {
-      LOGGER.warn("Fail to instantiate Launcher from plugin classpath:" + launcherPlugin, e);
+      LOGGER.warn("Fail to instantiate Launcher " + launcherPlugin +
+              " from plugin pluginDir: " + pluginsDir, e);
     }
 
     if (launcher == null) {

@@ -18,8 +18,10 @@
 package org.apache.zeppelin.notebook;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import org.apache.zeppelin.common.JsonSerializable;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -28,9 +30,16 @@ import java.util.Set;
  */
 public class NotebookAuthorizationInfoSaving implements JsonSerializable {
 
-  private static final Gson gson = new Gson();
+  private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
   public Map<String, Map<String, Set<String>>> authInfo;
+
+  public NotebookAuthorizationInfoSaving(Map<String, NoteAuth> notesAuth) {
+    this.authInfo = new HashMap<>();
+    for (Map.Entry<String, NoteAuth> entry : notesAuth.entrySet()) {
+      this.authInfo.put(entry.getKey(), entry.getValue().toMap());
+    }
+  }
 
   public String toJson() {
     return gson.toJson(this);

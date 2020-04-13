@@ -40,7 +40,7 @@ public abstract class AbstractScheduler implements Scheduler {
   protected volatile boolean terminate = false;
   protected BlockingQueue<Job> queue = new LinkedBlockingQueue<>();
   protected Map<String, Job> jobs = new ConcurrentHashMap<>();
-
+  private Thread schedulerThread;
 
   public AbstractScheduler(String name) {
     this.name = name;
@@ -63,7 +63,11 @@ public abstract class AbstractScheduler implements Scheduler {
   @Override
   public void submit(Job job) {
     job.setStatus(Job.Status.PENDING);
-    queue.add(job);
+    try {
+      queue.put(job);
+    } catch (InterruptedException e) {
+      throw new RuntimeException(String.format("Unable to submit job %s", job.getId()), e);
+    }
     jobs.put(job.getId(), job);
   }
 
@@ -76,12 +80,13 @@ public abstract class AbstractScheduler implements Scheduler {
 
   @Override
   public void run() {
-    while (!terminate && !Thread.currentThread().isInterrupted()) {
+    schedulerThread = Thread.currentThread();
+    while (!terminate && !schedulerThread.isInterrupted()) {
       Job runningJob = null;
       try {
         runningJob = queue.take();
       } catch (InterruptedException e) {
-        LOGGER.warn("{} is interrupted", getClass().getSimpleName(), e);
+        LOGGER.warn("{} is interrupted", getClass().getSimpleName());
         break;
       }
 
@@ -98,6 +103,9 @@ public abstract class AbstractScheduler implements Scheduler {
       job.aborted = true;
       job.jobAbort();
     }
+    if (schedulerThread != null) {
+      schedulerThread.interrupt();
+    }
   }
 
   /**
@@ -108,6 +116,7 @@ public abstract class AbstractScheduler implements Scheduler {
    */
   protected void runJob(Job runningJob) {
     if (runningJob.isAborted()) {
+      LOGGER.info("Job {} is aborted", runningJob.getId());
       runningJob.setStatus(Job.Status.ABORT);
       runningJob.aborted = false;
       return;

@@ -31,10 +31,11 @@ import io.atomix.protocols.raft.protocol.RaftServerProtocol;
 import io.atomix.protocols.raft.storage.RaftStorage;
 import io.atomix.storage.StorageLevel;
 import io.atomix.utils.net.Address;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.cluster.event.ClusterEventListener;
 import org.apache.zeppelin.cluster.meta.ClusterMeta;
 import org.apache.zeppelin.cluster.protocol.RaftServerMessagingProtocol;
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -76,21 +77,21 @@ public class ClusterManagerServer extends ClusterManager {
   public static String CLUSTER_AUTH_EVENT_TOPIC = "CLUSTER_AUTH_EVENT_TOPIC";
   public static String CLUSTER_INTP_SETTING_EVENT_TOPIC = "CLUSTER_INTP_SETTING_EVENT_TOPIC";
 
-  private ClusterManagerServer() {
-    super();
+  private ClusterManagerServer(ZeppelinConfiguration zConf) {
+    super(zConf);
   }
 
-  public static ClusterManagerServer getInstance() {
+  public static ClusterManagerServer getInstance(ZeppelinConfiguration zConf) {
     synchronized (ClusterManagerServer.class) {
       if (instance == null) {
-        instance = new ClusterManagerServer();
+        instance = new ClusterManagerServer(zConf);
       }
       return instance;
     }
   }
 
   public void start() {
-    if (!zconf.isClusterMode()) {
+    if (!zConf.isClusterMode()) {
       return;
     }
 
@@ -227,7 +228,7 @@ public class ClusterManagerServer extends ClusterManager {
 
   @Override
   public void shutdown() {
-    if (!zconf.isClusterMode()) {
+    if (!zConf.isClusterMode()) {
       return;
     }
 
@@ -235,7 +236,9 @@ public class ClusterManagerServer extends ClusterManager {
       // delete local machine meta
       deleteClusterMeta(SERVER_META, getClusterNodeName());
       Thread.sleep(300);
-      clusterMonitor.shutdown();
+      if (clusterMonitor != null) {
+        clusterMonitor.shutdown();
+      }
       // wait raft commit metadata
       Thread.sleep(300);
     } catch (InterruptedException e) {
@@ -255,6 +258,7 @@ public class ClusterManagerServer extends ClusterManager {
     }
 
     super.shutdown();
+    instance = null;
   }
 
   // Obtain the server node whose resources are idle in the cluster

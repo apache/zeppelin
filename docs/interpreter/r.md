@@ -74,79 +74,198 @@ We recommend you to also install the following optional R libraries for happy da
 + sqldf
 + wordcloud
 
+## Supported Interpreters
+
+Zeppelin supports R language in 3 interpreters
+
+<table class="table-configuration">
+  <tr>
+    <th>Name</th>
+    <th>Class</th>
+    <th>Description</th>
+  </tr>
+  <tr>
+    <td>%r.r</td>
+    <td>RInterpreter</td>
+    <td>Vanilla r interpreter, with least dependencies, only R environment installed is required.
+    It is always recommended to use the fully qualified interpreter name <code>%r.r</code>code>, because <code>%r</code> is ambiguous, 
+    it could mean both <code>%spark.r</code> and <code>%r.r</code></td>
+  </tr>
+  <tr>
+    <td>%r.ir</td>
+    <td>IRInterpreter</td>
+    <td>Provide more fancy R runtime via [IRKernel](https://github.com/IRkernel/IRkernel), almost the same experience like using R in Jupyter. It requires more things, but is the recommended interpreter for using R in Zeppelin.</td>
+  </tr>
+  <tr>
+    <td>%r.shiny</td>
+    <td>ShinyInterpreter</td>
+    <td>Run Shiny app in Zeppelin</td>
+  </tr>
+</table>
+
+If you want to use R with Spark, it is almost the same via `%spark.r`, `%spark.ir` & `%spark.shiny` . You can refer Spark Interpreter docs for more details.
+
 ## Configuration
 
-To run Zeppelin with the R Interpreter, the `SPARK_HOME` environment variable must be set. The best way to do this is by editing `conf/zeppelin-env.sh`.
-If it is not set, the R Interpreter will not be able to interface with Spark.
+<table class="table-configuration">
+  <tr>
+    <th>Property</th>
+    <th>Default</th>
+    <th>Description</th>
+  </tr>
+  <tr>
+    <td>zeppelin.R.cmd</td>
+    <td>R</td>
+    <td>Path of the installed R binary. You should set this property explicitly if R is not in your <code>$PATH</code>(example: /usr/bin/R).
+    </td>
+  </tr>
+  <tr>
+    <td>zeppelin.R.knitr</td>
+    <td>true</td>
+    <td>Whether to use knitr or not. It is recommended to install [knitr](https://yihui.org/knitr/)</td>
+  </tr>
+  <tr>
+    <td>zeppelin.R.image.width</td>
+    <td>100%</td>
+    <td>Image width of R plotting</td>
+  </tr>
+  <tr>
+    <td>zeppelin.R.shiny.iframe_width</td>
+    <td>100%</td>
+    <td>IFrame width of Shiny App</td>
+  </tr>
+  <tr>
+    <td>zeppelin.R.shiny.iframe_height</td>
+    <td>500px</td>
+    <td>IFrame height of Shiny App</td>
+  </tr>
+</table>
 
-You should also copy `conf/zeppelin-site.xml.template` to `conf/zeppelin-site.xml`. That will ensure that Zeppelin sees the R Interpreter the first time it starts up.
+## Using the R Interpreter(`%r.r` & `%r.ir`)
 
-## Using the R Interpreter
+By default, the R Interpreter appears as two Zeppelin Interpreters, `%r.r` and `%r.ir`.
 
-By default, the R Interpreter appears as two Zeppelin Interpreters, `%r` and `%knitr`.
+`%r.r` behaves like an ordinary REPL and use SparkR to communicate between R process and JVM process.
+`%r.ir` use IRKernel underneath, it behaves like using IRKernel in Jupyter notebook.  
 
-`%r` will behave like an ordinary REPL.  You can execute commands as in the CLI.   
+R basic expression
 
-<img class="img-responsive" src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/repl2plus2.png" width="700px"/>
+<img class="img-responsive" src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/r_basic.png" width="800px"/>
 
 R base plotting is fully supported
 
-<img class="img-responsive" src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/replhist.png" width="550px"/>
+<img class="img-responsive" src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/r_plotting.png" width="800px"/>
 
-If you return a data.frame, Zeppelin will attempt to display it using Zeppelin's built-in visualizations.
+Besides R base plotting, you can use other visualization library, e.g. `ggplot` and `googlevis` 
 
-<img class="img-responsive" src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/replhead.png" width="550px"/>
+<img class="img-responsive" src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/r_ggplot.png" width="800px"/>
 
-`%knitr` interfaces directly against `knitr`, with chunk options on the first line:
+<img class="img-responsive" src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/r_googlevis.png" width="800px"/>
 
-<img class="img-responsive" src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/knitgeo.png" width="550px"/>
 
-<img class="img-responsive" src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/knitstock.png" width="550px"/>
+## Make Shiny App in Zeppelin
 
-<img class="img-responsive" src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/knitmotion.png" width="550px"/>
+[Shiny](https://shiny.rstudio.com/tutorial/) is an R package that makes it easy to build interactive web applications (apps) straight from R.
+For developing one Shiny App in Zeppelin, you need to at least 3 paragraphs (server paragraph, ui paragraph and run type paragraph)
 
-The two interpreters share the same environment.  If you define a variable from `%r`, it will be within-scope if you then make a call using `knitr`.
+* Server type R shiny paragraph
 
-## Using SparkR & Moving Between Languages
+```r
 
-If `SPARK_HOME` is set, the `SparkR` package will be loaded automatically:
+%r.shiny(type=server)
 
-<img class="img-responsive" src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/sparkrfaithful.png" width="550px"/>
+# Define server logic to summarize and view selected dataset ----
+server <- function(input, output) {
 
-The Spark Context and SQL Context are created and injected into the local environment automatically as `sc` and `sql`.
+    # Return the requested dataset ----
+    datasetInput <- reactive({
+        switch(input$dataset,
+        "rock" = rock,
+        "pressure" = pressure,
+        "cars" = cars)
+    })
 
-The same context are shared with the `%spark`, `%sql` and `%pyspark` interpreters:
+    # Generate a summary of the dataset ----
+    output$summary <- renderPrint({
+        dataset <- datasetInput()
+        summary(dataset)
+    })
 
-<img class="img-responsive" src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/backtoscala.png" width="700px"/>
+    # Show the first "n" observations ----
+    output$view <- renderTable({
+        head(datasetInput(), n = input$obs)
+    })
+}
+```
 
-You can also make an ordinary R variable accessible in scala and Python:
+* UI type R shiny paragraph
 
-<img class="img-responsive" src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/varr1.png" width="550px"/>
+```r
+%r.shiny(type=ui)
 
-And vice versa:
+# Define UI for dataset viewer app ----
+ui <- fluidPage(
 
-<img class="img-responsive" src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/varscala.png" width="550px"/>
+    # App title ----
+    titlePanel("Shiny Text"),
+    
+    # Sidebar layout with a input and output definitions ----
+    sidebarLayout(
 
-<img class="img-responsive" src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/varr2.png" width="550px"/>
+        # Sidebar panel for inputs ----
+        sidebarPanel(
+        
+        # Input: Selector for choosing dataset ----
+        selectInput(inputId = "dataset",
+        label = "Choose a dataset:",
+        choices = c("rock", "pressure", "cars")),
+        
+        # Input: Numeric entry for number of obs to view ----
+        numericInput(inputId = "obs",
+        label = "Number of observations to view:",
+        value = 10)
+        ),
 
-## Caveats & Troubleshooting
+        # Main panel for displaying outputs ----
+        mainPanel(
+        
+        # Output: Verbatim text for data summary ----
+        verbatimTextOutput("summary"),
+        
+        # Output: HTML table with requested number of observations ----
+        tableOutput("view")
+        
+        )
+    )
+)
+```
 
-* Almost all issues with the R interpreter turned out to be caused by an incorrectly set `SPARK_HOME`.  The R interpreter must load a version of the `SparkR` package that matches the running version of Spark, and it does this by searching `SPARK_HOME`. If Zeppelin isn't configured to interface with Spark in `SPARK_HOME`, the R interpreter will not be able to connect to Spark.
+* Run type R shiny paragraph
 
-* The `knitr` environment is persistent. If you run a chunk from Zeppelin that changes a variable, then run the same chunk again, the variable has already been changed.  Use immutable variables.
+```r
 
-* (Note that `%spark.r` and `%r` are two different ways of calling the same interpreter, as are `%spark.knitr` and `%knitr`. By default, Zeppelin puts the R interpreters in the `%spark.` Interpreter Group.
+%r.shiny(type=run)
 
-* Using the `%r` interpreter, if you return a data.frame, HTML, or an image, it will dominate the result. So if you execute three commands, and one is `hist()`, all you will see is the histogram, not the results of the other commands. This is a Zeppelin limitation.
+```
 
-* If you return a data.frame (for instance, from calling `head()`) from the `%spark.r` interpreter, it will be parsed by Zeppelin's built-in data visualization system.  
+After executing the run type R shiny paragraph, the shiny app will be launched and embedded as Iframe in paragraph.
 
-* Why `knitr` Instead of `rmarkdown`?  Why no `htmlwidgets`?  In order to support `htmlwidgets`, which has indirect dependencies, `rmarkdown` uses `pandoc`, which requires writing to and reading from disc.  This makes it many times slower than `knitr`, which can operate entirely in RAM.
+<img class="img-responsive" src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/r_shiny.png" width="800px"/>
 
-* Why no `ggvis` or `shiny`?  Supporting `shiny` would require integrating a reverse-proxy into Zeppelin, which is a task.
+### Run multiple shiny app
 
-* Max OS X & case-insensitive filesystem.  If you try to install on a case-insensitive filesystem, which is the Mac OS X default, maven can unintentionally delete the install directory because `r` and `R` become the same subdirectory.
+If you want to run multiple shiny app, you can specify `app` in paragraph local property to differentiate shiny app.
 
-* Error `unable to start device X11` with the repl interpreter.  Check your shell login scripts to see if they are adjusting the `DISPLAY` environment variable.  This is common on some operating systems as a workaround for ssh issues, but can interfere with R plotting.
+e.g.
 
-* akka Library Version or `TTransport` errors.  This can happen if you try to run Zeppelin with a SPARK_HOME that has a version of Spark other than the one specified with `-Pspark-1.x` when Zeppelin was compiled.
+```r
+%r.shiny(type=ui, app=app_1)
+```
+
+```r
+%r.shiny(type=server, app=app_1)
+```
+
+```r
+%r.shiny(type=run, app=app_1)
+```

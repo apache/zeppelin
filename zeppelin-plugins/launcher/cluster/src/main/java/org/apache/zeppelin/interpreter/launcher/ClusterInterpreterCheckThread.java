@@ -19,6 +19,7 @@ package org.apache.zeppelin.interpreter.launcher;
 
 import org.apache.zeppelin.cluster.ClusterCallback;
 import org.apache.zeppelin.cluster.ClusterManagerServer;
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,7 +50,8 @@ public class ClusterInterpreterCheckThread extends Thread {
   public void run() {
     LOGGER.info("ClusterInterpreterCheckThread run() >>>");
 
-    ClusterManagerServer clusterServer = ClusterManagerServer.getInstance();
+    ClusterManagerServer clusterServer = ClusterManagerServer.getInstance(
+            ZeppelinConfiguration.create());
 
     clusterServer.getIntpProcessStatus(intpGroupId, connectTimeout,
         new ClusterCallback<HashMap<String, Object>>() {

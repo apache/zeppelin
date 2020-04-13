@@ -19,7 +19,7 @@ package org.apache.zeppelin.interpreter.remote;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
@@ -141,8 +141,8 @@ public class RemoteInterpreterServer extends Thread
   private boolean isTest;
 
   // cluster manager client
-  ClusterManagerClient clusterManagerClient = ClusterManagerClient.getInstance();
   ZeppelinConfiguration zconf = ZeppelinConfiguration.create();
+  ClusterManagerClient clusterManagerClient;
 
   public RemoteInterpreterServer(String intpEventServerHost,
                                  int intpEventServerPort,
@@ -191,7 +191,10 @@ public class RemoteInterpreterServer extends Thread
         new TThreadPoolServer.Args(serverTransport).processor(processor));
     remoteWorksResponsePool = Collections.synchronizedMap(new HashMap<String, Object>());
 
-    clusterManagerClient.start(interpreterGroupId);
+    if (zconf.isClusterMode()) {
+      clusterManagerClient = ClusterManagerClient.getInstance(zconf);
+      clusterManagerClient.start(interpreterGroupId);
+    }
   }
 
   @Override
@@ -239,48 +242,53 @@ public class RemoteInterpreterServer extends Thread
 
   @Override
   public void shutdown() throws TException {
-    logger.info("Shutting down...");
-    // delete interpreter cluster meta
-    deleteClusterMeta();
+    Thread shutDownThread = new Thread(() -> {
+      logger.info("Shutting down...");
+      // delete interpreter cluster meta
+      deleteClusterMeta();
 
-    if (interpreterGroup != null) {
-      synchronized (interpreterGroup) {
-        for (List<Interpreter> session : interpreterGroup.values()) {
-          for (Interpreter interpreter : session) {
-            try {
-              interpreter.close();
-            } catch (InterpreterException e) {
-              logger.warn("Fail to close interpreter", e);
+      if (interpreterGroup != null) {
+        synchronized (interpreterGroup) {
+          for (List<Interpreter> session : interpreterGroup.values()) {
+            for (Interpreter interpreter : session) {
+              try {
+                interpreter.close();
+              } catch (InterpreterException e) {
+                logger.warn("Fail to close interpreter", e);
+              }
             }
           }
         }
       }
-    }
-    if (!isTest) {
-      SchedulerFactory.singleton().destroy();
-    }
-    server.stop();
-
-    // server.stop() does not always finish server.serve() loop
-    // sometimes server.serve() is hanging even after server.stop() call.
-    // this case, need to force kill the process
-
-    long startTime = System.currentTimeMillis();
-    while (System.currentTimeMillis() - startTime < DEFAULT_SHUTDOWN_TIMEOUT &&
-        server.isServing()) {
-      try {
-        Thread.sleep(300);
-      } catch (InterruptedException e) {
-        logger.info("Exception in RemoteInterpreterServer while shutdown, Thread.sleep", e);
+      if (!isTest) {
+        SchedulerFactory.singleton().destroy();
       }
-    }
 
-    if (server.isServing()) {
-      logger.info("Force shutting down");
-      System.exit(0);
-    }
+      server.stop();
 
-    logger.info("Shutting down");
+      // server.stop() does not always finish server.serve() loop
+      // sometimes server.serve() is hanging even after server.stop() call.
+      // this case, need to force kill the process
+
+      long startTime = System.currentTimeMillis();
+      while (System.currentTimeMillis() - startTime < DEFAULT_SHUTDOWN_TIMEOUT &&
+              server.isServing()) {
+        try {
+          Thread.sleep(300);
+        } catch (InterruptedException e) {
+          logger.info("Exception in RemoteInterpreterServer while shutdown, Thread.sleep", e);
+        }
+      }
+
+      if (server.isServing()) {
+        logger.info("Force shutting down");
+        System.exit(0);
+      }
+
+      logger.info("Shutting down");
+    }, "Shutdown-Thread");
+
+    shutDownThread.start();
   }
 
   public int getPort() {
@@ -743,11 +751,14 @@ public class RemoteInterpreterServer extends Thread
     if (job != null && job.getStatus() == Status.PENDING) {
       job.setStatus(Status.ABORT);
     } else {
-      try {
-        intp.cancel(convert(interpreterContext, null));
-      } catch (InterpreterException e) {
-        throw new TException("Fail to cancel", e);
-      }
+      Thread thread = new Thread( ()-> {
+        try {
+          intp.cancel(convert(interpreterContext, null));
+        } catch (InterpreterException e) {
+          logger.error("Fail to cancel paragraph: " + interpreterContext.getParagraphId());
+        }
+      });
+      thread.start();
     }
   }
 
@@ -894,9 +905,7 @@ public class RemoteInterpreterServer extends Thread
 
       for (Interpreter intp : interpreters) {
         Job job = intp.getScheduler().getJob(jobId);
-        logger.info("job:" + job);
         if (job != null) {
-          logger.info("getStatus: " + job.getStatus().name());
           return job.getStatus().name();
         }
       }

@@ -58,8 +58,9 @@ class SparkScala210Interpreter(override val conf: SparkConf,
       interpreterOutput.setInterpreterOutput(InterpreterContext.get().out)
     }
     val rootDir = conf.get("spark.repl.classdir", System.getProperty("java.io.tmpdir"))
-    val outputDir = Files.createTempDirectory(Paths.get(rootDir), "spark").toFile
+    this.outputDir = Files.createTempDirectory(Paths.get(rootDir), "spark").toFile
     outputDir.deleteOnExit()
+    LOGGER.info("Scala shell repl output dir: " + outputDir.getAbsolutePath)
     conf.set("spark.repl.class.outputDir", outputDir.getAbsolutePath)
     // Only Spark1 requires to create http server, Spark2 removes HttpServer class.
     startHttpServer(outputDir).foreach { case (server, uri) =>
@@ -70,7 +71,9 @@ class SparkScala210Interpreter(override val conf: SparkConf,
     val settings = new Settings()
     settings.embeddedDefaults(sparkInterpreterClassLoader)
     settings.usejavacp.value = true
-    settings.classpath.value = getUserJars.mkString(File.pathSeparator)
+    this.userJars = getUserJars()
+    LOGGER.info("UserJars: " + userJars.mkString(File.pathSeparator))
+    settings.classpath.value = userJars.mkString(File.pathSeparator)
     if (properties.getProperty("zeppelin.spark.printREPLOutput", "true").toBoolean) {
       Console.setOut(interpreterOutput)
     }
@@ -107,4 +110,8 @@ class SparkScala210Interpreter(override val conf: SparkConf,
     }
   }
 
+  override def getScalaShellClassLoader: ClassLoader = {
+    val sparkIMain = sparkILoop.interpreter
+    callMethod(sparkIMain, "classLoader").asInstanceOf[ClassLoader]
+  }
 }

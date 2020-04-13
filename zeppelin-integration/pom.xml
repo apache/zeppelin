@@ -96,7 +96,6 @@
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
-      <version>${commons.lang3.version}</version>
     </dependency>
     <dependency>
       <groupId>org.rauschig</groupId>
@@ -126,7 +125,6 @@
     <plugins>
       <plugin>
         <artifactId>maven-failsafe-plugin</artifactId>
-        <version>${plugin.failsafe.version}</version>
         <executions>
           <execution>
             <goals>
@@ -141,7 +139,6 @@
       </plugin>
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>${plugin.surefire.version}</version>
         <configuration combine.children="append">
           <argLine>-Xmx2g -Xms1g -Dfile.encoding=UTF-8</argLine>
           <excludes>

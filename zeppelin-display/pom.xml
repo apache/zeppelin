@@ -115,7 +115,6 @@
     <plugins>
       <plugin>
         <artifactId>maven-failsafe-plugin</artifactId>
-        <version>${plugin.failsafe.version}</version>
         <executions>
           <execution>
             <goals>
@@ -132,7 +131,6 @@
       <plugin>
         <groupId>org.scala-tools</groupId>
         <artifactId>maven-scala-plugin</artifactId>
-        <version>${plugin.scala.version}</version>
         <executions>
           <execution>
             <id>compile</id>
@@ -160,7 +158,6 @@
       <plugin>
         <groupId>org.scalatest</groupId>
         <artifactId>scalatest-maven-plugin</artifactId>
-        <version>${plugin.scalatest.version}</version>
         <executions>
           <execution>
             <id>test</id>

@@ -14,7 +14,7 @@
 
 angular.module('zeppelinWebApp').factory('websocketEvents', WebsocketEventFactory);
 
-function WebsocketEventFactory($rootScope, $websocket, $location, baseUrlSrv, ngToast) {
+function WebsocketEventFactory($rootScope, $websocket, $location, baseUrlSrv, saveAsService, ngToast) {
   'ngInject';
 
   let websocketCalls = {};
@@ -183,6 +183,8 @@ function WebsocketEventFactory($rootScope, $websocket, $location, baseUrlSrv, ng
       $rootScope.$broadcast('setNoteRevisionResult', data);
     } else if (op === 'PARAS_INFO') {
       $rootScope.$broadcast('updateParaInfos', data);
+    } else if (op === 'CONVERTED_NOTE_NBFORMAT') {
+      saveAsService.saveAs(data.nbformat, data.name, 'zepl.ipynb');
     } else if (op === 'INTERPRETER_INSTALL_STARTED') {
       ngToast.info(data.message);
     } else if (op === 'INTERPRETER_INSTALL_RESULT') {

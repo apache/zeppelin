@@ -66,8 +66,15 @@ public class LazyOpenInterpreter
 
     synchronized (intp) {
       if (opened == false) {
-        intp.open();
-        opened = true;
+        try {
+          intp.open();
+          opened = true;
+        } catch (Throwable e) {
+          // close interpreter to release resource,
+          // otherwise these resources may leak when open it again.
+          intp.close();
+          throw new InterpreterException(e);
+        }
       }
     }
   }

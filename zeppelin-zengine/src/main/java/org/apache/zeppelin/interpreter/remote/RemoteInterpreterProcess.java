@@ -32,6 +32,7 @@ public abstract class RemoteInterpreterProcess implements InterpreterClient {
 
   private GenericObjectPool<Client> clientPool;
   private int connectTimeout;
+  private ClientFactory clientFactory = null;
 
   public RemoteInterpreterProcess(
       int connectTimeout) {
@@ -44,9 +45,18 @@ public abstract class RemoteInterpreterProcess implements InterpreterClient {
 
   public synchronized Client getClient() throws Exception {
     if (clientPool == null || clientPool.isClosed()) {
-      clientPool = new GenericObjectPool<>(new ClientFactory(getHost(), getPort()));
+      clientFactory = new ClientFactory(getHost(), getPort());
+      clientPool = new GenericObjectPool<>(clientFactory);
     }
-    return clientPool.borrowObject();
+    return clientPool.borrowObject(5_000);
+  }
+
+  public void shutdown() {
+
+    // Close client socket connection
+    if (clientFactory != null) {
+      clientFactory.close();
+    }
   }
 
   private void releaseClient(Client client) {

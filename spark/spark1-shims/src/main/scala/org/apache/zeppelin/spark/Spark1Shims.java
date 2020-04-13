@@ -29,6 +29,7 @@ import org.apache.spark.sql.types.StructType;
 import org.apache.spark.ui.jobs.JobProgressListener;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.ResultMessages;
+import org.apache.zeppelin.tabledata.TableDataUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -71,7 +72,7 @@ public class Spark1Shims extends SparkShims {
       List<Row> rows = df.takeAsList(maxResult + 1);
       StringBuilder msg = new StringBuilder();
       msg.append("\n%table ");
-      msg.append(StringUtils.join(columns, "\t"));
+      msg.append(StringUtils.join(TableDataUtils.normalizeColumns(columns), "\t"));
       msg.append("\n");
       boolean isLargerThanMaxResult = rows.size() > maxResult;
       if (isLargerThanMaxResult) {
@@ -79,7 +80,7 @@ public class Spark1Shims extends SparkShims {
       }
       for (Row row : rows) {
         for (int i = 0; i < row.size(); ++i) {
-          msg.append(row.get(i));
+          msg.append(TableDataUtils.normalizeColumn(row.get(i)));
           if (i != row.size() - 1) {
             msg.append("\t");
           }

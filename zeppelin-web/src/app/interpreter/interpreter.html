@@ -393,42 +393,46 @@ limitations under the License.
         <table class="table table-striped">
           <thead>
             <tr>
-              <th style="width:40%">name</th>
-              <th style="width:40%">value</th>
-              <th style="width:20%" ng-if="valueform.$visible">action</th>
+              <th style="width:25%;text-align: left">Name</th>
+              <th style="width:30%;text-align: left">Value</th>
+              <th style="width:30%;text-align: left">Description</th>
+              <th style="width:15%;text-align: left" ng-if="valueform.$visible">Action</th>
             </tr>
           </thead>
-          <tr ng-repeat="key in setting.properties | sortByKey" >
-            <td style="vertical-align: middle;">{{key}}</td>
-            <td style="vertical-align: middle;">
-              <span ng-if="setting.properties[key].type === 'textarea'"
-                    editable-textarea="setting.properties[key].value" e-form="valueform" e-msd-elastic>
-                 {{setting.properties[key].value | breakFilter}}
+          <tr ng-repeat="property in setting.properties" >
+            <td style="vertical-align: middle;text-align: left;">{{property.name}}</td>
+            <td style="vertical-align: middle;text-align: left;">
+              <span ng-if="property.type === 'textarea'"
+                    editable-textarea="property.value" e-form="valueform" e-msd-elastic>
+                 {{property.value | breakFilter}}
               </span>
-              <span ng-if="setting.properties[key].type === 'string'"
-                    editable-text="setting.properties[key].value" e-form="valueform" e-msd-elastic>
-                {{setting.properties[key].value}}
+              <span ng-if="property.type === 'string'"
+                    editable-text="property.value" e-form="valueform" e-msd-elastic>
+                {{property.value}}
               </span>
-              <span ng-if="setting.properties[key].type === 'number'"
-                    editable-text="setting.properties[key].value" e-widget-number e-form="valueform" e-msd-elastic>
-                {{setting.properties[key].value}}
+              <span ng-if="property.type === 'number'"
+                    editable-text="property.value" e-widget-number e-form="valueform" e-msd-elastic>
+                {{property.value}}
               </span>
-              <span ng-if="setting.properties[key].type === 'url'"
-                    editable-text="setting.properties[key].value" e-form="valueform" e-msd-elastic>
-                <a ng-href="{{setting.properties[key].value}}">{{setting.properties[key].value}}</a>
+              <span ng-if="property.type === 'url'"
+                    editable-text="property.value" e-form="valueform" e-msd-elastic>
+                <a ng-href="{{property.value}}">{{property.value}}</a>
               </span>
-              <span ng-if="setting.properties[key].type === 'password'"
-                    editable-password="setting.properties[key].value" e-form="valueform" e-msd-elastic>
-                {{setting.properties[key].value ? '***' : ''}}
+              <span ng-if="property.type === 'password'"
+                    editable-password="property.value" e-form="valueform" e-msd-elastic>
+                {{property.value ? '***' : ''}}
               </span>
-              <span ng-if="setting.properties[key].type === 'checkbox'"
-                    editable-checkbox="setting.properties[key].value" e-form="valueform" e-msd-elastic>
-                {{setting.properties[key].value}}
+              <span ng-if="property.type === 'checkbox'"
+                    editable-checkbox="property.value" e-form="valueform" e-msd-elastic>
+                {{property.value}}
               </span>
+            </td>
+            <td style="vertical-align: middle; text-align: left">
+              {{property.description}}
             </td>
             <td style="vertical-align: middle;" ng-if="valueform.$visible">
               <button class="btn btn-default btn-sm fa fa-remove"
-                   ng-click="removeInterpreterProperty(key, setting.id)">
+                   ng-click="removeInterpreterProperty(property.name, setting.id)">
               </button>
             </td>
           </tr>
@@ -445,6 +449,10 @@ limitations under the License.
               <input ng-switch-when="url" type="text" msd-elastic ng-model="setting.propertyValue" />
               <input ng-switch-when="password" type="password" msd-elastic ng-model="setting.propertyValue" />
               <input ng-switch-when="checkbox" type="checkbox" msd-elastic ng-model="setting.propertyValue" />
+            </td>
+            <td style="vertical-align: middle;">
+              <input ng-model="setting.description"
+                     pu-elastic-input pu-elastic-input-minwidth="280px" />
             </td>
             <td style="vertical-align: middle;">
               <select ng-model="setting.propertyType" ng-init="setting.propertyType=interpreterPropertyTypes[0]"

@@ -17,16 +17,15 @@
 
 package org.apache.zeppelin.jupyter;
 
-import com.google.common.annotations.VisibleForTesting;
 import io.grpc.ManagedChannelBuilder;
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.environment.EnvironmentUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.exception.ExceptionUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.interpreter.AbstractInterpreter;
-import org.apache.zeppelin.interpreter.BaseZeppelinContext;
+import org.apache.zeppelin.interpreter.ZeppelinContext;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
@@ -67,7 +66,7 @@ public class JupyterKernelInterpreter extends AbstractInterpreter {
 
   private JupyterKernelProcessLauncher jupyterKernelProcessLauncher;
   protected JupyterKernelClient jupyterKernelClient;
-  protected BaseZeppelinContext z;
+  protected ZeppelinContext z;
 
   private String kernel;
   // working directory of jupyter kernel
@@ -99,7 +98,7 @@ public class JupyterKernelInterpreter extends AbstractInterpreter {
     return requiredPackages;
   }
 
-  protected BaseZeppelinContext buildZeppelinContext() {
+  protected ZeppelinContext buildZeppelinContext() {
     return new JupyterZeppelinContext(null, 1000);
   }
 
@@ -213,7 +212,6 @@ public class JupyterKernelInterpreter extends AbstractInterpreter {
     return EnvironmentUtils.getProcEnvironment();
   }
 
-  @VisibleForTesting
   public JupyterKernelProcessLauncher getKernelProcessLauncher() {
     return jupyterKernelProcessLauncher;
   }
@@ -245,11 +243,6 @@ public class JupyterKernelInterpreter extends AbstractInterpreter {
     interpreterOutput.setInterpreterOutput(context.out);
     jupyterKernelClient.setInterpreterContext(context);
     try {
-      // always use html output for ir kernel. otherwise some R packages doesn't work.
-      // e.g. googlevis
-      if (getKernelName().equals("ir")) {
-        context.out.write("%html\n");
-      }
       ExecuteResponse response =
               jupyterKernelClient.stream_execute(ExecuteRequest.newBuilder().setCode(st).build(),
                       interpreterOutput);
@@ -314,7 +307,7 @@ public class JupyterKernelInterpreter extends AbstractInterpreter {
     return completions;
   }
 
-  public BaseZeppelinContext getZeppelinContext() {
+  public ZeppelinContext getZeppelinContext() {
     return z;
   }
 

@@ -18,8 +18,8 @@
 package org.apache.zeppelin.sap.universe;
 
 import com.sun.org.apache.xpath.internal.NodeSet;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.config.RequestConfig;

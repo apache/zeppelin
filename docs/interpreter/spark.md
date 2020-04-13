@@ -186,6 +186,10 @@ You can also set other Spark properties which are not listed in the table. For a
     <td></td>
     <td>Overrides Spark UI default URL. Value should be a full URL (ex: http://{hostName}/{uniquePath}</td>
   </tr>
+  <td>spark.webui.yarn.useProxy</td>
+    <td>false</td>
+    <td>whether use yarn proxy url as spark weburl, e.g. http://localhost:8088/proxy/application_1583396598068_0004</td>
+  </tr>
 </table>
 
 Without any configuration, Spark interpreter works out of box in local mode. But if you want to connect to your Spark cluster, you'll need to follow below two simple steps.
@@ -254,6 +258,8 @@ That's it. Zeppelin will work with any version of Spark and any deployment type 
 For the further information about Spark & Zeppelin version compatibility, please refer to "Available Interpreters" section in [Zeppelin download page](https://zeppelin.apache.org/download.html).
 
 > Note that without exporting `SPARK_HOME`, it's running in local mode with included version of Spark. The included version may vary depending on the build profile.
+
+> Yarn client mode and local mode will run driver in the same machine with zeppelin server, this would be dangerous for production. Because it may run out of memory when there's many spark interpreters running at the same time. So we suggest you only allow yarn-cluster mode via setting `zeppelin.spark.only_yarn_cluster` in `zeppelin-site.xml`.
 
 ## SparkContext, SQLContext, SparkSession, ZeppelinContext
 

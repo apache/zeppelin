@@ -33,6 +33,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -40,7 +41,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import org.apache.commons.lang.StringUtils;
+import com.google.common.io.Files;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.Interpreter.FormType;
@@ -53,16 +55,19 @@ import org.apache.zeppelin.interpreter.ManagedInterpreterGroup;
 import org.apache.zeppelin.notebook.AuthorizationService;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
+import org.apache.zeppelin.notebook.NoteManager;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.notebook.repo.InMemoryNotebookRepo;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
+import org.apache.zeppelin.notebook.repo.VFSNotebookRepo;
 import org.apache.zeppelin.notebook.scheduler.QuartzSchedulerService;
 import org.apache.zeppelin.notebook.scheduler.SchedulerService;
 import org.apache.zeppelin.search.LuceneSearch;
 import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -74,6 +79,7 @@ public class NotebookServiceTest {
 
   private static NotebookService notebookService;
 
+  private File notebookDir;
   private ServiceContext context =
       new ServiceContext(AuthenticationInfo.ANONYMOUS, new HashSet<>());
 
@@ -84,8 +90,12 @@ public class NotebookServiceTest {
 
   @Before
   public void setUp() throws Exception {
+    notebookDir = Files.createTempDir().getAbsoluteFile();
+    System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_DIR.getVarName(),
+            notebookDir.getAbsolutePath());
     ZeppelinConfiguration zeppelinConfiguration = ZeppelinConfiguration.create();
-    NotebookRepo notebookRepo = new InMemoryNotebookRepo();
+    NotebookRepo notebookRepo = new VFSNotebookRepo();
+    notebookRepo.init(zeppelinConfiguration);
 
     InterpreterSettingManager mockInterpreterSettingManager = mock(InterpreterSettingManager.class);
     InterpreterFactory mockInterpreterFactory = mock(InterpreterFactory.class);
@@ -106,18 +116,22 @@ public class NotebookServiceTest {
     when(mockInterpreterSetting.getStatus()).thenReturn(InterpreterSetting.Status.READY);
     SearchService searchService = new LuceneSearch(zeppelinConfiguration);
     Credentials credentials = new Credentials(false, null, null);
+    NoteManager noteManager = new NoteManager(notebookRepo);
+    AuthorizationService authorizationService = new AuthorizationService(noteManager, zeppelinConfiguration);
     Notebook notebook =
         new Notebook(
             zeppelinConfiguration,
+            authorizationService,
             notebookRepo,
+            noteManager,
             mockInterpreterFactory,
             mockInterpreterSettingManager,
             searchService,
             credentials,
             null);
-    AuthorizationService authorizationService =
-        new AuthorizationService(notebook, notebook.getConf());
-    SchedulerService schedulerService = new QuartzSchedulerService(zeppelinConfiguration, notebook);
+
+    QuartzSchedulerService schedulerService = new QuartzSchedulerService(zeppelinConfiguration, notebook);
+    schedulerService.waitForFinishInit();
     notebookService =
         new NotebookService(
             notebook, authorizationService, zeppelinConfiguration, schedulerService);
@@ -126,6 +140,11 @@ public class NotebookServiceTest {
     when(mockInterpreterSetting.getName()).thenReturn(interpreterName);
     when(mockInterpreterSettingManager.getDefaultInterpreterSetting())
         .thenReturn(mockInterpreterSetting);
+  }
+
+  @After
+  public void tearDown() {
+    notebookDir.delete();
   }
 
   @Test
@@ -343,10 +362,13 @@ public class NotebookServiceTest {
 
     // run paragraph asynchronously
     reset(callback);
+    p.getConfig().put("colWidth", "6.0");
+    p.getConfig().put("title", true);
     boolean runStatus = notebookService.runParagraph(note1.getId(), p.getId(), "my_title", "1+1",
         new HashMap<>(), new HashMap<>(), false, false, context, callback);
     assertTrue(runStatus);
     verify(callback).onSuccess(p, context);
+    assertEquals(2, p.getConfig().size());
 
     // run paragraph synchronously via correct code
     reset(callback);
@@ -354,23 +376,15 @@ public class NotebookServiceTest {
         new HashMap<>(), new HashMap<>(), false, true, context, callback);
     assertTrue(runStatus);
     verify(callback).onSuccess(p, context);
+    assertEquals(2, p.getConfig().size());
 
-    // run all paragraphs
+    // run all paragraphs, with null paragraph list provided
     reset(callback);
-    notebookService.runAllParagraphs(
+    assertTrue(notebookService.runAllParagraphs(
             note1.getId(),
-            gson.fromJson(gson.toJson(note1.getParagraphs()), new TypeToken<List>(){}.getType()),
-            context, callback);
-    verify(callback, times(2)).onSuccess(any(), any());
+            null,
+            context, callback));
 
-    // run paragraph synchronously via invalid code
-    //TODO(zjffdu) must sleep for a while, otherwise will get wrong status. This should be due to
-    //bug of job component.
-    try {
-      Thread.sleep(1000);
-    } catch (InterruptedException e) {
-      e.printStackTrace();
-    }
     reset(callback);
     runStatus = notebookService.runParagraph(note1.getId(), p.getId(), "my_title", "invalid_code",
         new HashMap<>(), new HashMap<>(), false, true, context, callback);

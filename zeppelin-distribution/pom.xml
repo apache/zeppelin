@@ -85,12 +85,6 @@
       <version>${project.version}</version>
       <type>war</type>
     </dependency>
-    <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>zeppelin-web-angular</artifactId>
-      <version>${project.version}</version>
-      <type>war</type>
-    </dependency>
   </dependencies>
 
   <build>
@@ -150,6 +144,18 @@
     </profile>
 
     <profile>
+      <id>web-angular</id>
+      <dependencies>
+        <dependency>
+          <groupId>${project.groupId}</groupId>
+          <artifactId>zeppelin-web-angular</artifactId>
+          <version>${project.version}</version>
+          <type>war</type>
+        </dependency>
+      </dependencies>
+    </profile>
+
+    <profile>
       <id>publish-distr</id>
       <activation>
         <activeByDefault>false</activeByDefault>
@@ -197,7 +203,6 @@
           <plugin>
             <groupId>com.bazaarvoice.maven.plugins</groupId>
             <artifactId>s3-upload-maven-plugin</artifactId>
-            <version>1.2</version>
             <configuration>
               <bucketName>zeppel.in</bucketName>
               <endpoint>s3-ap-northeast-1.amazonaws.com</endpoint>
@@ -242,7 +247,6 @@
           <plugin>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>buildnumber-maven-plugin</artifactId>
-            <version>1.2</version>
             <executions>
               <execution>
                 <phase>validate</phase>
@@ -258,7 +262,6 @@
           <plugin>
             <groupId>org.vafer</groupId>
             <artifactId>jdeb</artifactId>
-            <version>1.4</version>
             <executions>
               <execution>
                 <phase>package</phase>
