@@ -684,6 +684,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getString(ConfVars.ZEPPELIN_SERVER_JETTY_NAME);
   }
 
+  public boolean sendJettyName() {
+    return getBoolean(ConfVars.ZEPPELIN_SERVER_SEND_JETTY_NAME);
+  }
+
   public Integer getJettyRequestHeaderSize() {
     return getInt(ConfVars.ZEPPELIN_SERVER_JETTY_REQUEST_HEADER_SIZE);
   }
@@ -983,6 +987,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_SERVER_DEFAULT_DIR_ALLOWED("zeppelin.server.default.dir.allowed", false),
     ZEPPELIN_SERVER_XFRAME_OPTIONS("zeppelin.server.xframe.options", "SAMEORIGIN"),
     ZEPPELIN_SERVER_JETTY_NAME("zeppelin.server.jetty.name", " "),
+    ZEPPELIN_SERVER_SEND_JETTY_NAME("zeppelin.server.send.jetty.name", true),
     ZEPPELIN_SERVER_JETTY_THREAD_POOL_MAX("zeppelin.server.jetty.thread.pool.max", 400),
     ZEPPELIN_SERVER_JETTY_THREAD_POOL_MIN("zeppelin.server.jetty.thread.pool.min", 8),
     ZEPPELIN_SERVER_JETTY_THREAD_POOL_TIMEOUT("zeppelin.server.jetty.thread.pool.timeout", 30),

@@ -122,3 +122,13 @@ The below property to mask Jetty server version is enabled by default and config
 ```
 
 The value can be any "String". Removing this property from configuration will cause Zeppelin to send correct Jetty server version.
+
+Also, it can be removed the from response headers and from 300/400/500 HTTP response pages.
+
+```xml
+<property>
+    <name>zeppelin.server.send.jetty.name</name>
+    <value>false</value>
+    <description>If set to false, will not show the Jetty version to prevent Fingerprinting</description>
+</property>
+```
