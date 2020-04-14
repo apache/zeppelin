@@ -60,7 +60,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Arrays;
 
 /**
  * Represent the note of Zeppelin. All the note and its paragraph operations are done
