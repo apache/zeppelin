@@ -19,24 +19,33 @@
 # Run Zeppelin
 #
 
-# Check whether there is a passwd entry for the container UID
-myuid=$(id -u)
-mygid=$(id -g)
-# turn off -e for getent because it will return error code in anonymous uid case
-set +e
-uidentry=$(getent passwd $myuid)
-set -e
-
-# If there is no passwd entry for the container UID, attempt to create one
-if [ -z "$uidentry" ] ; then
-    if [ -w /etc/passwd ] ; then
-        echo "zeppelin:x:$myuid:$mygid:anonymous uid:$Z_HOME:/bin/false" >> /etc/passwd
-    else
-        echo "Container ENTRYPOINT failed to add passwd entry for anonymous UID"
+# pre-requisites for checking that we're running in container
+if [ -f /proc/self/cgroup ] && [ -n "$(command -v getent)" ]; then
+    # checks if we're running in container...
+    if awk -F: '/cpu/ && $3 ~ /^\/$/{ c=1 } END { exit c }' /proc/self/cgroup; then
+        # Check whether there is a passwd entry for the container UID
+        myuid="$(id -u)"
+        mygid="$(id -g)"
+        # turn off -e for getent because it will return error code in anonymous uid case
+        set +e
+        uidentry="$(getent passwd "$myuid")"
+        set -e
+        
+        # If there is no passwd entry for the container UID, attempt to create one
+        if [ -z "$uidentry" ] ; then
+            if [ -w /etc/passwd ] ; then
+                echo "zeppelin:x:$myuid:$mygid:anonymous uid:$Z_HOME:/bin/false" >> /etc/passwd
+            else
+                echo "Container ENTRYPOINT failed to add passwd entry for anonymous UID"
+            fi
+        fi
     fi
 fi
 
-USAGE="Usage: bin/zeppelin.sh [--config <conf-dir>] [--run <noteId>]"
+function usage() {
+    echo "Usage: bin/zeppelin.sh [--config <conf-dir>] [--run <noteId>]"
+    exit 0
+}
 
 POSITIONAL=()
 while [[ $# -gt 0 ]]
@@ -53,6 +62,12 @@ do
     shift # past argument
     shift # past value
     ;;
+    --help)
+        usage
+        ;;
+    -h)
+        usage
+        ;;
   esac
 done
 set -- "${POSITIONAL[@]}" # restore positional parameters
@@ -68,7 +83,6 @@ fi
 
 HOSTNAME=$(hostname)
 ZEPPELIN_LOGFILE="${ZEPPELIN_LOG_DIR}/zeppelin-${ZEPPELIN_IDENT_STRING}-${HOSTNAME}.log"
-LOG="${ZEPPELIN_LOG_DIR}/zeppelin-cli-${ZEPPELIN_IDENT_STRING}-${HOSTNAME}.out"
 
 ZEPPELIN_SERVER=org.apache.zeppelin.server.ZeppelinServer
 JAVA_OPTS+=" -Dzeppelin.log.file=${ZEPPELIN_LOGFILE}"
@@ -103,12 +117,12 @@ fi
 
 if [[ ! -d "${ZEPPELIN_LOG_DIR}" ]]; then
   echo "Log dir doesn't exist, create ${ZEPPELIN_LOG_DIR}"
-  $(mkdir -p "${ZEPPELIN_LOG_DIR}")
+  mkdir -p "${ZEPPELIN_LOG_DIR}"
 fi
 
 if [[ ! -d "${ZEPPELIN_PID_DIR}" ]]; then
   echo "Pid dir doesn't exist, create ${ZEPPELIN_PID_DIR}"
-  $(mkdir -p "${ZEPPELIN_PID_DIR}")
+  mkdir -p "${ZEPPELIN_PID_DIR}"
 fi
 
 exec $ZEPPELIN_RUNNER $JAVA_OPTS -cp $ZEPPELIN_CLASSPATH_OVERRIDES:${ZEPPELIN_CLASSPATH} $ZEPPELIN_SERVER "$@"
