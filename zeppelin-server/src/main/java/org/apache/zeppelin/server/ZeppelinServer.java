@@ -20,6 +20,8 @@ import com.google.gson.Gson;
 import java.io.File;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
+import java.nio.file.Files;
+import java.security.GeneralSecurityException;
 import java.util.Base64;
 import java.util.HashSet;
 import java.util.List;
@@ -71,6 +73,7 @@ import org.apache.zeppelin.socket.NotebookServer;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
 import org.apache.zeppelin.util.ReflectionUtils;
+import org.apache.zeppelin.utils.PEMImporter;
 import org.eclipse.jetty.http.HttpVersion;
 import org.eclipse.jetty.jmx.ConnectorServer;
 import org.eclipse.jetty.jmx.MBeanContainer;
@@ -438,22 +441,73 @@ public class ZeppelinServer extends ResourceConfig {
   private static SslContextFactory getSslContextFactory(ZeppelinConfiguration conf) {
     SslContextFactory.Server sslContextFactory = new SslContextFactory.Server();
 
-    // Set keystore
-    sslContextFactory.setKeyStorePath(conf.getKeyStorePath());
-    sslContextFactory.setKeyStoreType(conf.getKeyStoreType());
-    sslContextFactory.setKeyStorePassword(conf.getKeyStorePassword());
-    sslContextFactory.setKeyManagerPassword(conf.getKeyManagerPassword());
+    // initialize KeyStore
+    // Check for PEM files
+    if (StringUtils.isNoneBlank(conf.getPemKeyFile(), conf.getPemCertFile())) {
+      setupKeystoreWithPemFiles(sslContextFactory, conf);
+    } else {
+      // Set keystore
+      sslContextFactory.setKeyStorePath(conf.getKeyStorePath());
+      sslContextFactory.setKeyStoreType(conf.getKeyStoreType());
+      sslContextFactory.setKeyStorePassword(conf.getKeyStorePassword());
+      sslContextFactory.setKeyManagerPassword(conf.getKeyManagerPassword());
+    }
 
+    // initialize TrustStore
     if (conf.useClientAuth()) {
-      sslContextFactory.setNeedClientAuth(conf.useClientAuth());
-
-      // Set truststore
-      sslContextFactory.setTrustStorePath(conf.getTrustStorePath());
-      sslContextFactory.setTrustStoreType(conf.getTrustStoreType());
-      sslContextFactory.setTrustStorePassword(conf.getTrustStorePassword());
+      if (StringUtils.isNotBlank(conf.getPemCAFile())) {
+        setupTruststoreWithPemFiles(sslContextFactory, conf);
+      } else {
+        sslContextFactory.setNeedClientAuth(conf.useClientAuth());
+        // Set truststore
+        sslContextFactory.setTrustStorePath(conf.getTrustStorePath());
+        sslContextFactory.setTrustStoreType(conf.getTrustStoreType());
+        sslContextFactory.setTrustStorePassword(conf.getTrustStorePassword());
+      }
     }
 
     return sslContextFactory;
+  }
+
+  private static void setupKeystoreWithPemFiles(SslContextFactory.Server sslContextFactory, ZeppelinConfiguration conf) {
+    File pemKey = new File(conf.getPemKeyFile());
+    File pemCert = new File(conf.getPemCertFile());
+    boolean isPemKeyFileReadable = Files.isReadable(pemKey.toPath());
+    boolean isPemCertFileReadable = Files.isReadable(pemCert.toPath());
+    if (!isPemKeyFileReadable) {
+      LOG.warn("PEM key file {} is not readable", pemKey);
+    }
+    if (!isPemCertFileReadable) {
+      LOG.warn("PEM cert file {} is not readable", pemCert);
+    }
+    if (isPemKeyFileReadable && isPemCertFileReadable) {
+      try {
+        String password = conf.getPemKeyPassword();
+        sslContextFactory.setKeyStore(PEMImporter.loadKeyStore(pemCert, pemKey, password));
+        sslContextFactory.setKeyStoreType("JKS");
+        sslContextFactory.setKeyStorePassword(password);
+      } catch (IOException | GeneralSecurityException e) {
+        LOG.error("Failed to initialize KeyStore from PEM files", e);
+      }
+    } else {
+      LOG.error("Failed to read PEM files");
+    }
+  }
+
+  private static void setupTruststoreWithPemFiles(SslContextFactory.Server sslContextFactory, ZeppelinConfiguration conf) {
+    File pemCa = new File(conf.getPemCAFile());
+    if (Files.isReadable(pemCa.toPath())) {
+      try {
+        sslContextFactory.setTrustStore(PEMImporter.loadTrustStore(pemCa));
+        sslContextFactory.setTrustStoreType("JKS");
+        sslContextFactory.setTrustStorePassword("");
+        sslContextFactory.setNeedClientAuth(conf.useClientAuth());
+      } catch (IOException | GeneralSecurityException e) {
+        LOG.error("Failed to initialize TrustStore from PEM CA file", e);
+      }
+    } else {
+      LOG.error("PEM CA file {} is not readable", pemCa);
+    }
   }
 
   private static void setupRestApiContextHandler(WebAppContext webapp, ZeppelinConfiguration conf) {
