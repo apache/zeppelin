@@ -135,6 +135,7 @@
     <commons.cli.version>1.4</commons.cli.version>
     <shiro.version>1.4.2</shiro.version>
     <joda.version>2.9.9</joda.version>
+    <bouncycastle.version>1.60</bouncycastle.version>
 
     <hadoop2.7.version>2.7.7</hadoop2.7.version>
     <hadoop2.6.version>2.6.5</hadoop2.6.version>
@@ -328,6 +329,12 @@
         <groupId>org.apache.shiro</groupId>
         <artifactId>shiro-config-core</artifactId>
         <version>${shiro.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.bouncycastle</groupId>
+        <artifactId>bcpkix-jdk15on</artifactId>
+        <version>${bouncycastle.version}</version>
       </dependency>
 
       <!-- Test libraries -->
