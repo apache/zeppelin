@@ -318,7 +318,8 @@ public class K8sRemoteInterpreterProcessTest {
         "12320",
         false,
         "spark-container:1.0",
-        10);
+        10,
+        false);
 
     // when non template url
     assertEquals("static.url",
