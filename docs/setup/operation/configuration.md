@@ -174,6 +174,30 @@ If both are defined, then the **environment variables** will take priority.
     <td></td>
   </tr>
   <tr>
+    <td><h6 class="properties">ZEPPELIN_SSL_PEM_KEY</h6></td>
+    <td><h6 class="properties">zeppelin.ssl.pem.key</h6></td>
+    <td></td>
+    <td>This directive points to the PEM-encoded private key file for the server.</td>
+  </tr>
+  <tr>
+    <td><h6 class="properties">ZEPPELIN_SSL_PEM_KEY_PASSWORD</h6></td>
+    <td><h6 class="properties">zeppelin.ssl.pem.key.password</h6></td>
+    <td></td>
+    <td>Password of the PEM-encoded private key.</td>
+  </tr>
+  <tr>
+    <td><h6 class="properties">ZEPPELIN_SSL_PEM_CERT</h6></td>
+    <td><h6 class="properties">zeppelin.ssl.pem.cert</h6></td>
+    <td></td>
+    <td>This directive points to a file with certificate data in PEM format.</td>
+  </tr>
+  <tr>
+    <td><h6 class="properties">ZEPPELIN_SSL_PEM_CA</h6></td>
+    <td><h6 class="properties">zeppelin.ssl.pem.ca</h6></td>
+    <td></td>
+    <td>This directive sets the all-in-one file where you can assemble the Certificates of Certification Authorities (CA) whose clients you deal with. These are used for Client Authentication. Such a file is simply the concatenation of the various PEM-encoded Certificate files.</td>
+  </tr>
+  <tr>
     <td><h6 class="properties">ZEPPELIN_NOTEBOOK_HOMESCREEN</h6></td>
     <td><h6 class="properties">zeppelin.notebook.homescreen</h6></td>
     <td></td>

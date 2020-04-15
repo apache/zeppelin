@@ -395,6 +395,22 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     }
   }
 
+  public String getPemKeyFile() {
+      return getString(ConfVars.ZEPPELIN_SSL_PEM_KEY);
+  }
+
+  public String getPemKeyPassword() {
+      return getString(ConfVars.ZEPPELIN_SSL_PEM_KEY_PASSWORD);
+  }
+
+  public String getPemCertFile() {
+      return getString(ConfVars.ZEPPELIN_SSL_PEM_CERT);
+  }
+
+  public String getPemCAFile() {
+      return getString(ConfVars.ZEPPELIN_SSL_PEM_CA);
+  }
+
   public String getNotebookDir() {
     return getRelativeDir(ConfVars.ZEPPELIN_NOTEBOOK_DIR);
   }
@@ -870,6 +886,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_SSL_KEYSTORE_TYPE("zeppelin.ssl.keystore.type", "JKS"),
     ZEPPELIN_SSL_KEYSTORE_PASSWORD("zeppelin.ssl.keystore.password", ""),
     ZEPPELIN_SSL_KEY_MANAGER_PASSWORD("zeppelin.ssl.key.manager.password", null),
+    ZEPPELIN_SSL_PEM_KEY("zeppelin.ssl.pem.key", null),
+    ZEPPELIN_SSL_PEM_KEY_PASSWORD("zeppelin.ssl.pem.key.password", ""),
+    ZEPPELIN_SSL_PEM_CERT("zeppelin.ssl.pem.cert", null),
+    ZEPPELIN_SSL_PEM_CA("zeppelin.ssl.pem.ca", null),
     ZEPPELIN_SSL_TRUSTSTORE_PATH("zeppelin.ssl.truststore.path", null),
     ZEPPELIN_SSL_TRUSTSTORE_TYPE("zeppelin.ssl.truststore.type", null),
     ZEPPELIN_SSL_TRUSTSTORE_PASSWORD("zeppelin.ssl.truststore.password", null),
