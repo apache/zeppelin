@@ -24,6 +24,29 @@ function usage() {
     echo "usage) $0 -p <port> -r <intp_port> -d <interpreter dir to load> -l <local interpreter repo dir to load> -g <interpreter group name>"
 }
 
+# pre-requisites for checking that we're running in container
+if [ -f /proc/self/cgroup ] && [ -n "$(command -v getent)" ]; then
+    # checks if we're running in container...
+    if awk -F: '/cpu/ && $3 ~ /^\/$/{ c=1 } END { exit c }' /proc/self/cgroup; then
+        # Check whether there is a passwd entry for the container UID
+        myuid="$(id -u)"
+        mygid="$(id -g)"
+        # turn off -e for getent because it will return error code in anonymous uid case
+        set +e
+        uidentry="$(getent passwd "$myuid")"
+        set -e
+        
+        # If there is no passwd entry for the container UID, attempt to create one
+        if [ -z "$uidentry" ] ; then
+            if [ -w /etc/passwd ] ; then
+                echo "zeppelin:x:$myuid:$mygid:anonymous uid:$Z_HOME:/bin/false" >> /etc/passwd
+            else
+                echo "Container ENTRYPOINT failed to add passwd entry for anonymous UID"
+            fi
+        fi
+    fi
+fi
+
 while getopts "hc:p:r:i:d:l:v:u:g:" o; do
     case ${o} in
         h)
