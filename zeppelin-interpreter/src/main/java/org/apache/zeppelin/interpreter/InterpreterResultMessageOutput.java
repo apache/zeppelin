@@ -74,6 +74,14 @@ public class InterpreterResultMessageOutput extends OutputStream {
   }
 
   public void clear() {
+     clear(true);
+  }
+
+  /**
+   *
+   * @param sendUpdateToFrontend Whether send empty result to frontend to clear the paragraph output
+   */
+  public void clear(boolean sendUpdateToFrontend) {
     synchronized (outList) {
       buffer.reset();
       outList.clear();
@@ -81,7 +89,7 @@ public class InterpreterResultMessageOutput extends OutputStream {
         watcher.clear();
       }
 
-      if (flushListener != null) {
+      if (flushListener != null && sendUpdateToFrontend) {
         flushListener.onUpdate(this);
       }
     }
