@@ -128,3 +128,6 @@ tramp
 
 # Git properties
 **/git.properties
+
+# To keep track of the scala version used in the build
+/dev/current_scala_version
