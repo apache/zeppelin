@@ -122,7 +122,7 @@ public class AppendStreamSqlJob extends AbstractStreamSqlJob {
 
   @Override
   protected void refresh(InterpreterContext context) {
-    context.out().clear();
+    context.out().clear(false);
     try {
       jobManager.sendFlinkJobUrl(context);
       String result = buildResult();

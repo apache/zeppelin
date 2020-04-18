@@ -139,6 +139,14 @@ public class InterpreterOutput extends OutputStream {
   }
 
   public void clear() {
+    clear(true);
+  }
+
+  /**
+   *
+   * @param sendUpdateToFrontend  Whether send empty result to frontend to clear the paragraph output
+   */
+  public void clear(boolean sendUpdateToFrontend) {
     size = 0;
     lastCRIndex = -1;
     truncated = false;
@@ -146,7 +154,7 @@ public class InterpreterOutput extends OutputStream {
 
     synchronized (resultMessageOutputs) {
       for (InterpreterResultMessageOutput out : resultMessageOutputs) {
-        out.clear();
+        out.clear(sendUpdateToFrontend);
         try {
           out.close();
         } catch (IOException e) {
@@ -159,7 +167,9 @@ public class InterpreterOutput extends OutputStream {
       currentOut = null;
       startOfTheNewLine = true;
       firstCharIsPercentSign = false;
-      updateAllResultMessages();
+      if (sendUpdateToFrontend) {
+        updateAllResultMessages();
+      }
     }
   }
 
