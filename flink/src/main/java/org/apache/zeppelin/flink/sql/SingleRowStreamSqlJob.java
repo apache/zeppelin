@@ -80,7 +80,7 @@ public class SingleRowStreamSqlJob extends AbstractStreamSqlJob {
       LOGGER.warn("Skip RefreshTask as no data available");
       return;
     }
-    context.out().clear();
+    context.out().clear(false);
     String output = buildResult();
     context.out.write(output);
     jobManager.sendFlinkJobUrl(context);

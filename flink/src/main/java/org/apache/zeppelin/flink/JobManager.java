@@ -198,10 +198,10 @@ public class JobManager {
           if (isStreamingInsertInto) {
             StringBuilder builder = new StringBuilder("%html ");
             builder.append("<h1>Duration: " +
-                    Integer.parseInt(rootNode.getObject().getString("duration")) / 1000 +
+                    rootNode.getObject().getLong("duration") / 1000 +
                     " seconds");
             builder.append("\n%text ");
-            context.out.clear();
+            context.out.clear(false);
             sendFlinkJobUrl(context);
             context.out.write(builder.toString());
             context.out.flush();
