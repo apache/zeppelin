@@ -145,8 +145,7 @@
                     <jvmArgs>
                         <jvmArg>-Xms1024m</jvmArg>
                         <jvmArg>-Xmx1024m</jvmArg>
-                        <jvmArg>-XX:PermSize=${PermGen}</jvmArg>
-                        <jvmArg>-XX:MaxPermSize=${MaxPermGen}</jvmArg>
+                        <jvmArg>-XX:MaxMetaspaceSize=${MaxMetaspace}</jvmArg>
                     </jvmArgs>
                     <javacArgs>
                         <javacArg>-source</javacArg>
