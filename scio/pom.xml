@@ -127,7 +127,7 @@
         <configuration>
           <forkCount>1</forkCount>
           <reuseForks>false</reuseForks>
-          <argLine>-Xmx1024m -XX:MaxPermSize=256m</argLine>
+          <argLine>-Xmx1024m -XX:MaxMetaspaceSize=512m</argLine>
         </configuration>
       </plugin>
 

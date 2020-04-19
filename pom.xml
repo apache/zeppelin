@@ -183,8 +183,7 @@
 
     <plugin.gitcommitid.useNativeGit>false</plugin.gitcommitid.useNativeGit>
 
-    <PermGen>64m</PermGen>
-    <MaxPermGen>512m</MaxPermGen>
+    <MaxMetaspace>512m</MaxMetaspace>
 
     <!-- to be able to exclude some tests using command line -->
     <tests.to.exclude/>

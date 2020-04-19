@@ -72,10 +72,12 @@ do
 done
 set -- "${POSITIONAL[@]}" # restore positional parameters
 
-bin=$(dirname "${BASH_SOURCE-$0}")
-bin=$(cd "${bin}">/dev/null; pwd)
+bin="$(dirname "${BASH_SOURCE-$0}")"
+bin="$(cd "${bin}">/dev/null; pwd)"
 
 . "${bin}/common.sh"
+
+check_java_version
 
 if [ "$1" == "--version" ] || [ "$1" == "-v" ]; then
     getZeppelinVersion

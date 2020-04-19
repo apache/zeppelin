@@ -74,7 +74,7 @@ If both are defined, then the **environment variables** will take priority.
   <tr>
     <td><h6 class="properties">ZEPPELIN_MEM</h6></td>
     <td>N/A</td>
-    <td>-Xmx1024m -XX:MaxPermSize=512m</td>
+    <td>-Xmx1024m -XX:MaxMetaspaceSize=512m</td>
     <td>JVM mem options</td>
   </tr>
   <tr>
