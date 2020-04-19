@@ -17,7 +17,9 @@ package org.apache.zeppelin.jdbc;
 import com.mockrunner.jdbc.BasicJDBCTestCaseAdapter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
+import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.InterpreterResultMessage;
 import org.apache.zeppelin.resource.LocalResourcePool;
 import org.apache.zeppelin.resource.ResourcePool;
 import org.apache.zeppelin.user.AuthenticationInfo;
@@ -30,6 +32,7 @@ import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.Statement;
+import java.util.List;
 import java.util.Properties;
 
 import static java.lang.String.format;
@@ -70,11 +73,7 @@ public class JDBCInterpreterInterpolationTest extends BasicJDBCTestCaseAdapter {
                 "('mou', 'mouse');");
     resourcePool = new LocalResourcePool("JdbcInterpolationTest");
 
-    interpreterContext = InterpreterContext.builder()
-        .setParagraphId("paragraph_1")
-        .setAuthenticationInfo(new AuthenticationInfo("testUser"))
-        .setResourcePool(resourcePool)
-        .build();
+    interpreterContext = getInterpreterContext();
   }
 
   @Test
@@ -97,9 +96,12 @@ public class JDBCInterpreterInterpolationTest extends BasicJDBCTestCaseAdapter {
     t.open();
     InterpreterResult interpreterResult = t.interpret(sqlQuery, interpreterContext);
     assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
-    assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(0).getType());
-    assertEquals(1, interpreterResult.message().size());
-    assertEquals("ID\tNAME\n", interpreterResult.message().get(0).getData());
+
+    List<InterpreterResultMessage> resultMessages =
+            interpreterContext.out.toInterpreterResultMessage();
+    assertEquals(1, resultMessages.size());
+    assertEquals(InterpreterResult.Type.TABLE, resultMessages.get(0).getType());
+    assertEquals("ID\tNAME\n", resultMessages.get(0).getData());
 
     //
     // 1 result expected because "zeppelin.jdbc.interpolation" set to "true" ...
@@ -107,12 +109,14 @@ public class JDBCInterpreterInterpolationTest extends BasicJDBCTestCaseAdapter {
     properties.setProperty("zeppelin.jdbc.interpolation", "true");
     t = new JDBCInterpreter(properties);
     t.open();
+    interpreterContext = getInterpreterContext();
     interpreterResult = t.interpret(sqlQuery, interpreterContext);
     assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
-    assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(0).getType());
-    assertEquals(1, interpreterResult.message().size());
-    assertEquals("ID\tNAME\nmem\tmemory\n",
-            interpreterResult.message().get(0).getData());
+
+    resultMessages = interpreterContext.out.toInterpreterResultMessage();
+    assertEquals(1, resultMessages.size());
+    assertEquals(InterpreterResult.Type.TABLE, resultMessages.get(0).getType());
+    assertEquals("ID\tNAME\nmem\tmemory\n", resultMessages.get(0).getData());
   }
 
   @Test
@@ -136,9 +140,12 @@ public class JDBCInterpreterInterpolationTest extends BasicJDBCTestCaseAdapter {
     String sqlQuery = "select * from test_table where id = '{kbd}'";
     InterpreterResult interpreterResult = t.interpret(sqlQuery, interpreterContext);
     assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
-    assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(0).getType());
-    assertEquals(1, interpreterResult.message().size());
-    assertEquals("ID\tNAME\n", interpreterResult.message().get(0).getData());
+
+    List<InterpreterResultMessage> resultMessages =
+            interpreterContext.out.toInterpreterResultMessage();
+    assertEquals(1, resultMessages.size());
+    assertEquals(InterpreterResult.Type.TABLE, resultMessages.get(0).getType());
+    assertEquals("ID\tNAME\n", resultMessages.get(0).getData());
 
     resourcePool.put("itemId", "key");
 
@@ -146,12 +153,13 @@ public class JDBCInterpreterInterpolationTest extends BasicJDBCTestCaseAdapter {
     // 1 result expected because z-variable 'item' is 'key' ...
     //
     sqlQuery = "select * from test_table where id = '{itemId}'";
+    interpreterContext = getInterpreterContext();
     interpreterResult = t.interpret(sqlQuery, interpreterContext);
     assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
-    assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(0).getType());
-    assertEquals(1, interpreterResult.message().size());
-    assertEquals("ID\tNAME\nkey\tkeyboard\n",
-            interpreterResult.message().get(0).getData());
+    resultMessages = interpreterContext.out.toInterpreterResultMessage();
+    assertEquals(1, resultMessages.size());
+    assertEquals(InterpreterResult.Type.TABLE, resultMessages.get(0).getType());
+    assertEquals("ID\tNAME\nkey\tkeyboard\n", resultMessages.get(0).getData());
   }
 
   @Test
@@ -176,10 +184,19 @@ public class JDBCInterpreterInterpolationTest extends BasicJDBCTestCaseAdapter {
     String sqlQuery = "select * from test_table where name regexp '[aeiou]{{2}}'";
     InterpreterResult interpreterResult = t.interpret(sqlQuery, interpreterContext);
     assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
-    assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(0).getType());
-    assertEquals(1, interpreterResult.message().size());
-    assertEquals("ID\tNAME\nkey\tkeyboard\nmou\tmouse\n",
-                 interpreterResult.message().get(0).getData());
+    List<InterpreterResultMessage> resultMessages =
+            interpreterContext.out.toInterpreterResultMessage();
+    assertEquals(1, resultMessages.size());
+    assertEquals(InterpreterResult.Type.TABLE, resultMessages.get(0).getType());
+    assertEquals("ID\tNAME\nkey\tkeyboard\nmou\tmouse\n", resultMessages.get(0).getData());
   }
 
+  private InterpreterContext getInterpreterContext() {
+    return InterpreterContext.builder()
+            .setParagraphId("paragraph_1")
+            .setAuthenticationInfo(new AuthenticationInfo("testUser"))
+            .setResourcePool(resourcePool)
+            .setInterpreterOut(new InterpreterOutput(null))
+            .build();
+  }
 }
