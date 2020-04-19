@@ -25,7 +25,6 @@ import org.apache.commons.dbcp2.PoolableConnectionFactory;
 import org.apache.commons.dbcp2.PoolingDriver;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.pool2.ObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.hadoop.conf.Configuration;
@@ -56,7 +55,9 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
@@ -158,6 +159,9 @@ public class JDBCInterpreter extends KerberosInterpreter {
   private int maxRows;
 
   private SqlSplitter sqlSplitter;
+
+  private Map<String, ScheduledExecutorService> refreshExecutorServices = new HashMap<>();
+  private Map<String, Boolean> paragraphCancelMap = new HashMap<>();
 
   public JDBCInterpreter(Properties property) {
     super(property);
@@ -573,9 +577,32 @@ public class JDBCInterpreter extends KerberosInterpreter {
     return null;
   }
 
-  private String getResults(ResultSet resultSet, boolean isTableType, MutableBoolean isComplete)
+  private String getResults(ResultSet resultSet,
+                            boolean isTableType,
+                            String template)
       throws SQLException {
+
     ResultSetMetaData md = resultSet.getMetaData();
+
+    /**
+     * If html template is provided, only fetch the first row.
+     */
+    if (template != null) {
+      resultSet.next();
+      String result = "%html " + template + "\n";
+      for (int i = 1; i <= md.getColumnCount(); ++i) {
+        Object columnObject = resultSet.getObject(i);
+        String columnValue = null;
+        if (columnObject == null) {
+          columnValue = "null";
+        } else {
+          columnValue = resultSet.getString(i);
+        }
+        result = result.replace("{" + (i - 1) + "}", columnValue);
+      }
+      return result;
+    }
+
     StringBuilder msg;
     if (isTableType) {
       msg = new StringBuilder(TABLE_MAGIC_TAG);
@@ -598,9 +625,10 @@ public class JDBCInterpreter extends KerberosInterpreter {
     msg.append(NEWLINE);
 
     int displayRowCount = 0;
+    boolean truncate = false;
     while (resultSet.next()) {
       if (displayRowCount >= getMaxResult()) {
-        isComplete.setValue(false);
+        truncate = true;
         break;
       }
       for (int i = 1; i < md.getColumnCount() + 1; i++) {
@@ -620,6 +648,11 @@ public class JDBCInterpreter extends KerberosInterpreter {
       msg.append(NEWLINE);
       displayRowCount++;
     }
+
+    if (truncate) {
+      msg.append("\n" + ResultMessages.getExceedsLimitRowsMessage(getMaxResult(),
+              String.format("%s.%s", COMMON_KEY, MAX_LINE_KEY)).toString());
+    }
     return msg.toString();
   }
 
@@ -627,7 +660,8 @@ public class JDBCInterpreter extends KerberosInterpreter {
     return updatedCount < 0 && columnCount <= 0 ? true : false;
   }
 
-  public InterpreterResult executePrecode(InterpreterContext interpreterContext) {
+  public InterpreterResult executePrecode(InterpreterContext interpreterContext)
+          throws InterpreterException {
     InterpreterResult interpreterResult = null;
     for (String propertyKey : basePropertiesMap.keySet()) {
       String precode = getProperty(String.format("%s.precode", propertyKey));
@@ -648,12 +682,12 @@ public class JDBCInterpreter extends KerberosInterpreter {
   }
 
   private InterpreterResult executeSql(String propertyKey, String sql,
-      InterpreterContext interpreterContext) {
+      InterpreterContext context) throws InterpreterException {
     Connection connection = null;
     Statement statement;
     ResultSet resultSet = null;
-    String paragraphId = interpreterContext.getParagraphId();
-    String user = interpreterContext.getAuthenticationInfo().getUser();
+    String paragraphId = context.getParagraphId();
+    String user = context.getAuthenticationInfo().getUser();
 
     boolean splitQuery = false;
     String splitQueryProperty = getProperty(String.format("%s.%s", propertyKey, SPLIT_QURIES_KEY));
@@ -661,9 +695,8 @@ public class JDBCInterpreter extends KerberosInterpreter {
       splitQuery = true;
     }
 
-    InterpreterResult interpreterResult = new InterpreterResult(InterpreterResult.Code.SUCCESS);
     try {
-      connection = getConnection(propertyKey, interpreterContext);
+      connection = getConnection(propertyKey, context);
     } catch (Exception e) {
       String errorMsg = ExceptionUtils.getStackTrace(e);
       try {
@@ -671,8 +704,12 @@ public class JDBCInterpreter extends KerberosInterpreter {
       } catch (SQLException e1) {
         logger.error("Cannot close DBPool for user, propertyKey: " + user + propertyKey, e1);
       }
-      interpreterResult.add(errorMsg);
-      return new InterpreterResult(Code.ERROR, interpreterResult.message());
+      try {
+        context.out.write(errorMsg);
+      } catch (IOException ex) {
+        throw new InterpreterException("Fail to write output", ex);
+      }
+      return new InterpreterResult(Code.ERROR);
     }
     if (connection == null) {
       return new InterpreterResult(Code.ERROR, "Prefix not found.");
@@ -695,8 +732,8 @@ public class JDBCInterpreter extends KerberosInterpreter {
         statement = connection.createStatement();
 
         // fetch n+1 rows in order to indicate there's more rows available (for large selects)
-        statement.setFetchSize(interpreterContext.getIntLocalProperty("limit", getMaxResult()));
-        statement.setMaxRows(interpreterContext.getIntLocalProperty("limit", maxRows));
+        statement.setFetchSize(context.getIntLocalProperty("limit", getMaxResult()));
+        statement.setMaxRows(context.getIntLocalProperty("limit", maxRows));
 
         if (statement == null) {
           return new InterpreterResult(Code.ERROR, "Prefix not found.");
@@ -720,22 +757,18 @@ public class JDBCInterpreter extends KerberosInterpreter {
             // Regards that the command is DDL.
             if (isDDLCommand(statement.getUpdateCount(),
                 resultSet.getMetaData().getColumnCount())) {
-              interpreterResult.add(InterpreterResult.Type.TEXT,
-                  "Query executed successfully.");
+              context.out.write("%text Query executed successfully.\n");
             } else {
-              MutableBoolean isComplete = new MutableBoolean(true);
               String results = getResults(resultSet,
-                  !containsIgnoreCase(sqlToExecute, EXPLAIN_PREDICATE), isComplete);
-              interpreterResult.add(results);
-              if (!isComplete.booleanValue()) {
-                interpreterResult.add(ResultMessages.getExceedsLimitRowsMessage(getMaxResult(),
-                    String.format("%s.%s", COMMON_KEY, MAX_LINE_KEY)));
-              }
+                  !containsIgnoreCase(sqlToExecute, EXPLAIN_PREDICATE),
+                      context.getLocalProperties().get("template"));
+              context.out.write(results);
+              context.out.write("\n%text ");
             }
           } else {
             // Response contains either an update count or there are no results.
             int updateCount = statement.getUpdateCount();
-            interpreterResult.add(InterpreterResult.Type.TEXT,
+            context.out.write("\n%text " +
                 "Query executed successfully. Affected rows : " +
                     updateCount);
           }
@@ -754,9 +787,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
       }
     } catch (Throwable e) {
       logger.error("Cannot run " + sql, e);
-      String errorMsg = ExceptionUtils.getStackTrace(e);
-      interpreterResult.add(errorMsg);
-      return new InterpreterResult(Code.ERROR, interpreterResult.message());
+      return new InterpreterResult(Code.ERROR,  ExceptionUtils.getStackTrace(e));
     } finally {
       //In case user ran an insert/update/upsert statement
       if (connection != null) {
@@ -769,7 +800,8 @@ public class JDBCInterpreter extends KerberosInterpreter {
       }
       getJDBCConfiguration(user).removeStatement(paragraphId);
     }
-    return interpreterResult;
+
+    return new InterpreterResult(Code.SUCCESS);
   }
 
   /**
@@ -801,17 +833,71 @@ public class JDBCInterpreter extends KerberosInterpreter {
     return Boolean.parseBoolean(getProperty("zeppelin.jdbc.interpolation", "false"));
   }
 
+  private boolean isRefreshMode(InterpreterContext context) {
+    return context.getLocalProperties().get("refreshInterval") != null;
+  }
+
   @Override
-  public InterpreterResult internalInterpret(String cmd, InterpreterContext contextInterpreter) {
+  public InterpreterResult internalInterpret(String cmd, InterpreterContext context)
+          throws InterpreterException {
     logger.debug("Run SQL command '{}'", cmd);
-    String propertyKey = getPropertyKey(contextInterpreter);
-    cmd = cmd.trim();
+    String propertyKey = getPropertyKey(context);
     logger.debug("PropertyKey: {}, SQL command: '{}'", propertyKey, cmd);
-    return executeSql(propertyKey, cmd, contextInterpreter);
+    if (!isRefreshMode(context)) {
+      return executeSql(propertyKey, cmd.trim(), context);
+    } else {
+      int refreshInterval = Integer.parseInt(context.getLocalProperties().get("refreshInterval"));
+      final String code = cmd.trim();
+      paragraphCancelMap.put(context.getParagraphId(), false);
+      ScheduledExecutorService refreshExecutor = Executors.newSingleThreadScheduledExecutor();
+      refreshExecutorServices.put(context.getParagraphId(), refreshExecutor);
+      final AtomicReference<InterpreterResult> interpreterResultRef = new AtomicReference();
+      refreshExecutor.scheduleAtFixedRate(() -> {
+        context.out.clear(false);
+        try {
+          InterpreterResult result = executeSql(propertyKey, code, context);
+          context.out.flush();
+          interpreterResultRef.set(result);
+          if (result.code() != Code.SUCCESS) {
+            refreshExecutor.shutdownNow();
+          }
+        } catch (Exception e) {
+          logger.warn("Fail to run sql", e);
+        }
+      }, 0, refreshInterval, TimeUnit.MILLISECONDS);
+
+      while (!refreshExecutor.isTerminated()) {
+        try {
+          Thread.sleep(1000);
+        } catch (InterruptedException e) {
+          logger.error("");
+        }
+      }
+      refreshExecutorServices.remove(context.getParagraphId());
+      if (paragraphCancelMap.getOrDefault(context.getParagraphId(), false)) {
+        return new InterpreterResult(Code.ERROR);
+      } else if (interpreterResultRef.get().code() == Code.ERROR) {
+        return interpreterResultRef.get();
+      } else {
+        return new InterpreterResult(Code.SUCCESS);
+      }
+    }
   }
 
   @Override
   public void cancel(InterpreterContext context) {
+
+    if (isRefreshMode(context)) {
+      logger.info("Shutdown refreshExecutorService for paragraph: " + context.getParagraphId());
+      ScheduledExecutorService executorService =
+              refreshExecutorServices.get(context.getParagraphId());
+      if (executorService != null) {
+        executorService.shutdownNow();
+      }
+      paragraphCancelMap.put(context.getParagraphId(), true);
+      return;
+    }
+
     logger.info("Cancel current query statement.");
     String paragraphId = context.getParagraphId();
     JDBCUserConfigurations jdbcUserConfigurations =
