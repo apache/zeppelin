@@ -28,7 +28,7 @@ limitations under the License.
 This interpreter allows to perform queries in [Flux Language](https://v2.docs.influxdata.com/v2.0/reference/flux/) in Zeppelin Notebook.
 
 ### Notes
-* This interpreter is compatible with InfluxDB 2.0+ (v2 API, Flux language) 
+* This interpreter is compatible with InfluxDB 1.8+ and InfluxDB 2.0+ (v2 API, Flux language)
 * Code complete and syntax highlighting is not supported for now
 
 ### Example notebook
@@ -50,12 +50,12 @@ This interpreter allows to perform queries in [Flux Language](https://v2.docs.in
   <tr>
     <td>influxdb.org</td>
     <td>my-org</td>
-    <td>organization name</td>
+    <td>organization name, Organizations are supported in InfluxDB 2.0+, use "-" as org for InfluxDB 1.8</td>
   </tr>
   <tr>
     <td>influxdb.token</td>
     <td>my-token</td>
-    <td>authorization token for InfluxDB API</td>
+    <td>authorization token for InfluxDB API, token are supported in InfluxDB 2.0+, for InfluxDB 1.8 use 'username:password' as a token.</td>
   </tr>
   <tr>
     <td>influxdb.logLevel</td>

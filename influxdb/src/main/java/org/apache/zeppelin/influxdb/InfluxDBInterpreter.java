@@ -49,19 +49,19 @@ import org.apache.zeppelin.interpreter.InterpreterResult;
  */
 public class InfluxDBInterpreter extends AbstractInterpreter {
 
-  static final String INFLUXDB_API_URL_PROPERTY = "influxdb.url";
-  static final String INFLUXDB_TOKEN_PROPERTY = "influxdb.token";
-  static final String INFLUXDB_ORG_PROPERTY = "influxdb.org";
+  private static final String INFLUXDB_API_URL_PROPERTY = "influxdb.url";
+  private static final String INFLUXDB_TOKEN_PROPERTY = "influxdb.token";
+  private static final String INFLUXDB_ORG_PROPERTY = "influxdb.org";
   private static final String INFLUXDB_LOGLEVEL_PROPERTY = "influxdb.logLevel";
 
   private static final String TABLE_MAGIC_TAG = "%table ";
   private static final String WHITESPACE = " ";
   private static final String NEWLINE = "\n";
   private static final String TAB = "\t";
-  static final String EMPTY_COLUMN_VALUE = "";
+  private static final String EMPTY_COLUMN_VALUE = "";
 
-  InfluxDBClient client;
-  QueryApi queryApi;
+  private volatile InfluxDBClient client;
+  private volatile QueryApi queryApi;
 
   public InfluxDBInterpreter(Properties properties) {
     super(properties);
