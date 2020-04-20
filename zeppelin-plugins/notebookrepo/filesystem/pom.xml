@@ -53,7 +53,7 @@
         <profile>
             <id>hadoop2-azure</id>
             <properties>
-                <hadoop.version>2.7.3</hadoop.version>
+                <hadoop.version>${hadoop2.7.version}</hadoop.version>
             </properties>
             <dependencies>
                 <dependency>
@@ -100,7 +100,7 @@
         <profile>
             <id>hadoop2-aws</id>
             <properties>
-                <hadoop.version>2.7.3</hadoop.version>
+                <hadoop.version>${hadoop2.7.version}</hadoop.version>
             </properties>
             <dependencies>
                 <dependency>
@@ -132,7 +132,7 @@
         <profile>
             <id>hadoop3-azure</id>
             <properties>
-                <hadoop.version>3.0.0</hadoop.version>
+                <hadoop.version>${hadoop3.0.version}</hadoop.version>
             </properties>
             <dependencies>
                 <dependency>
@@ -211,7 +211,7 @@
         <profile>
             <id>hadoop3-aws</id>
             <properties>
-                <hadoop.version>3.0.0</hadoop.version>
+                <hadoop.version>${hadoop3.0.version}</hadoop.version>
             </properties>
             <dependencies>
                 <dependency>

@@ -39,7 +39,6 @@
     <path.separator>/</path.separator>
     <!--library versions-->
     <spark.version>1.4.1</spark.version>
-    <jsoup.version>[1.8.0,)</jsoup.version>
 
     <!--test library versions-->
     <datanucleus.rdbms.version>3.2.9</datanucleus.rdbms.version>

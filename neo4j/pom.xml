@@ -37,7 +37,7 @@
   	<neo4j.driver.version>1.7.1</neo4j.driver.version>
   	<test.neo4j.kernel.version>3.4.10</test.neo4j.kernel.version>
   	<neo4j.version>3.4.10</neo4j.version>
-  	<jackson.version>2.8.9</jackson.version>
+  	<jackson.version>2.10.3</jackson.version>
     <interpreter.name>neo4j</interpreter.name>
   </properties>
 
