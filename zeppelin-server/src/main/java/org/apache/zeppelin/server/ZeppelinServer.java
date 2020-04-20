@@ -312,7 +312,7 @@ public class ZeppelinServer extends ResourceConfig {
     HttpConfiguration httpConfig = new HttpConfiguration();
     httpConfig.addCustomizer(new ForwardedRequestCustomizer());
     if (conf.useSsl()) {
-      LOG.debug("Enabling SSL for Zeppelin Server on port " + sslPort);
+      LOG.debug("Enabling SSL for Zeppelin Server on port {}", sslPort);
       httpConfig.setSecureScheme("https");
       httpConfig.setSecurePort(sslPort);
       httpConfig.setOutputBufferSize(32768);
@@ -328,6 +328,7 @@ public class ZeppelinServer extends ResourceConfig {
                       server,
                       new SslConnectionFactory(getSslContextFactory(conf), HttpVersion.HTTP_1_1.asString()),
                       new HttpConnectionFactory(httpsConfig));
+      connector.setPort(sslPort);
     } else {
       connector = new ServerConnector(server, new HttpConnectionFactory(httpConfig));
       connector.setPort(port);
