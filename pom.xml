@@ -75,6 +75,7 @@
     <module>file</module>
     <module>flink</module>
     <module>ignite</module>
+    <module>influxdb</module>
     <module>kylin</module>
     <module>python</module>
     <module>lens</module>
