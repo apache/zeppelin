@@ -108,7 +108,7 @@
     <profile>
       <id>jdbc-hadoop2</id>
       <properties>
-        <hadoop-common.version>2.7.3</hadoop-common.version>
+        <hadoop-common.version>${hadoop2.7.version}</hadoop-common.version>
       </properties>
       <dependencies>
         <dependency>
@@ -169,7 +169,7 @@
     <profile>
       <id>jdbc-hadoop3</id>
       <properties>
-        <hadoop-common.version>3.0.0</hadoop-common.version>
+        <hadoop-common.version>${hadoop3.0.version}</hadoop-common.version>
       </properties>
       <dependencies>
         <dependency>
@@ -232,7 +232,7 @@
     <!--library versions-->
     <interpreter.name>jdbc</interpreter.name>
     <postgresql.version>9.4-1201-jdbc41</postgresql.version>
-    <hadoop.common.version>2.7.2</hadoop.common.version>
+    <hadoop.common.version>${hadoop2.7.version}</hadoop.common.version>
     <h2.version>1.4.190</h2.version>
     <commons.dbcp2.version>2.0.1</commons.dbcp2.version>
 

@@ -36,8 +36,7 @@
 
     <properties>
         <interpreter.name>r</interpreter.name>
-        <jsoup.version>1.12.1</jsoup.version>
-        <spark.version>2.4.4</spark.version>
+        <spark.version>2.4.5</spark.version>
         <grpc.version>1.15.0</grpc.version>
 
         <spark.archive>spark-${spark.version}</spark.archive>

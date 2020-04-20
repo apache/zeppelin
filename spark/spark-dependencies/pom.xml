@@ -44,7 +44,7 @@
          instead of changing spark.version in this section.
     -->
 
-    <hadoop.version>2.7.3</hadoop.version>
+    <hadoop.version>${hadoop2.7.version}</hadoop.version>
     <yarn.version>${hadoop.version}</yarn.version>
     <avro.version>1.7.7</avro.version>
     <avro.mapred.classifier/>
