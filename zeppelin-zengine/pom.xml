@@ -37,9 +37,8 @@
 
   <properties>
     <!--library versions-->
-    <hadoop.version>2.7.3</hadoop.version>
+    <hadoop.version>${hadoop2.7.version}</hadoop.version>
     <jackrabbit.webdav.version>1.5.2</jackrabbit.webdav.version>
-    <quartz.scheduler.version>2.2.1</quartz.scheduler.version>
     <lucene.version>5.3.1</lucene.version>
     <org.reflections.version>0.9.8</org.reflections.version>
     <xml.apis.version>1.4.01</xml.apis.version>

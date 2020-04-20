@@ -38,10 +38,9 @@
     <!--library versions-->
     <commons.httpclient.version>4.3.6</commons.httpclient.version>
     <jersey.version>2.27</jersey.version>
-    <quartz.scheduler.version>2.2.1</quartz.scheduler.version>
     <jersey.servlet.version>1.13</jersey.servlet.version>
     <javax.ws.rsapi.version>2.1</javax.ws.rsapi.version>
-    <libpam4j.version>1.8</libpam4j.version>
+    <libpam4j.version>1.11</libpam4j.version>
     <jna.version>4.1.0</jna.version>
     <commons.configuration2.version>2.2</commons.configuration2.version>
 

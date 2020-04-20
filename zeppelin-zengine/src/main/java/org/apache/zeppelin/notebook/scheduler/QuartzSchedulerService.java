@@ -88,7 +88,7 @@ public class QuartzSchedulerService implements SchedulerService {
   private Scheduler getScheduler() throws SchedulerException {
     // Make sure to not check for Quartz update since this leaks information about running process
     // http://www.quartz-scheduler.org/documentation/2.4.0-SNAPSHOT/best-practices.html#skip-update-check
-    System.setProperty(StdSchedulerFactory.PROP_SCHED_SKIP_UPDATE_CHECK, "true");
+    System.setProperty("org.terracotta.quartz.skipUpdateCheck", "true");
     return new StdSchedulerFactory().getScheduler();
   }
 
