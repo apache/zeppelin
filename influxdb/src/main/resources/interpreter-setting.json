@@ -1,0 +1,42 @@
+[
+  {
+    "group": "influxdb",
+    "name": "influxdb",
+    "className": "org.apache.zeppelin.influxdb.InfluxDBInterpreter",
+    "properties": {
+      "influxdb.url": {
+        "envName": null,
+        "propertyName": "influxdb.url",
+        "defaultValue": "http://localhost:9999",
+        "description": "The URL for InfluxDB 2.X API",
+        "type": "string"
+      },
+      "influxdb.token": {
+        "envName": null,
+        "propertyName": "influxdb.token",
+        "defaultValue": "my-token",
+        "description": "InfluxDB auth token",
+        "type": "password"
+      },
+      "influxdb.org": {
+        "envName": null,
+        "propertyName": "influxdb.org",
+        "defaultValue": "my-org",
+        "description": "InfluxDB org name",
+        "type": "string"
+      },
+      "influxdb.logLevel": {
+        "envName": null,
+        "propertyName": "influxdb.logLevel",
+        "defaultValue": "NONE",
+        "description": "InfluxDB http client library verbosity level (NONE, BASIC, HEADERS, BODY)",
+        "type": "string"
+      }
+    },
+    "editor": {
+      "language": "sql",
+      "editOnDblClick": false,
+      "completionSupport": false
+    }
+  }
+]
