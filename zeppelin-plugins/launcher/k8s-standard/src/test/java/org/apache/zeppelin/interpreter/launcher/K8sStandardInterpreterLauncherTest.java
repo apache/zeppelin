@@ -25,6 +25,7 @@ import org.junit.Test;
 import java.io.IOException;
 import java.util.Properties;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -74,5 +75,91 @@ public class K8sStandardInterpreterLauncherTest {
 
     // then
     assertTrue(client instanceof K8sRemoteInterpreterProcess);
+  }
+
+  @Test
+  public void testK8sLauncherWithSparkAndUserImpersonate() throws IOException {
+    // given
+    Kubectl kubectl = mock(Kubectl.class);
+    when(kubectl.getNamespace()).thenReturn("default");
+
+    ZeppelinConfiguration zConf = new ZeppelinConfiguration();
+    K8sStandardInterpreterLauncher launcher = new K8sStandardInterpreterLauncher(zConf, null, kubectl);
+    Properties properties = new Properties();
+    properties.setProperty("ENV_1", "VALUE_1");
+    properties.setProperty("property_1", "value_1");
+    properties.setProperty("CALLBACK_HOST", "zeppelin-server.default.svc");
+    properties.setProperty("CALLBACK_PORT", "12320");
+    properties.setProperty("SERVICE_DOMAIN", "example.com");
+    properties.setProperty("zeppelin.interpreter.connect.timeout", "60");
+    InterpreterOption option = new InterpreterOption();
+    option.setUserImpersonate(true);
+    InterpreterLaunchContext context = new InterpreterLaunchContext(
+            properties,
+            option,
+            null,
+            "user1", // username
+            "spark-user1", //interpretergroupId
+            "dummy", // interpreterSettingId
+            "spark", // interpreterSettingGroup
+            "spark", // interpreterSettingName
+            0,
+            "host");
+    // when
+    InterpreterClient client = launcher.launch(context);
+
+    // then
+    assertTrue(client instanceof K8sRemoteInterpreterProcess);
+    K8sRemoteInterpreterProcess process = (K8sRemoteInterpreterProcess) client;
+    assertTrue(process.isSpark());
+
+    // when
+    process.start(context.getUserName());
+
+    // then
+    assertTrue(process.buildSparkSubmitOptions().contains("--proxy-user user1"));
+  }
+
+  @Test
+  public void testK8sLauncherWithSparkAndWithoutUserImpersonate() throws IOException {
+    // given
+    Kubectl kubectl = mock(Kubectl.class);
+    when(kubectl.getNamespace()).thenReturn("default");
+
+    ZeppelinConfiguration zConf = new ZeppelinConfiguration();
+    K8sStandardInterpreterLauncher launcher = new K8sStandardInterpreterLauncher(zConf, null, kubectl);
+    Properties properties = new Properties();
+    properties.setProperty("ENV_1", "VALUE_1");
+    properties.setProperty("property_1", "value_1");
+    properties.setProperty("CALLBACK_HOST", "zeppelin-server.default.svc");
+    properties.setProperty("CALLBACK_PORT", "12320");
+    properties.setProperty("SERVICE_DOMAIN", "example.com");
+    properties.setProperty("zeppelin.interpreter.connect.timeout", "60");
+    InterpreterOption option = new InterpreterOption();
+    option.setUserImpersonate(false);
+    InterpreterLaunchContext context = new InterpreterLaunchContext(
+            properties,
+            option,
+            null,
+            "user1", // username
+            "spark-user1", //interpretergroupId
+            "dummy", // interpreterSettingId
+            "spark", // interpreterSettingGroup
+            "spark", // interpreterSettingName
+            0,
+            "host");
+    // when
+    InterpreterClient client = launcher.launch(context);
+
+    // then
+    assertTrue(client instanceof K8sRemoteInterpreterProcess);
+    K8sRemoteInterpreterProcess process = (K8sRemoteInterpreterProcess) client;
+    assertTrue(process.isSpark());
+
+    // when
+    process.start(context.getUserName());
+
+    // then
+    assertFalse(process.buildSparkSubmitOptions().contains("--proxy-user user1"));
   }
 }

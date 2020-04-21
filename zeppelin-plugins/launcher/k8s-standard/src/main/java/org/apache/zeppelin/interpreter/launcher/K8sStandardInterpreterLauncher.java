@@ -135,7 +135,7 @@ public class K8sStandardInterpreterLauncher extends InterpreterLauncher {
   private boolean isUserImpersonateForSparkInterpreter(InterpreterLaunchContext context) {
       return zConf.getZeppelinImpersonateSparkProxyUser() &&
           context.getOption().isUserImpersonate() &&
-          "spark".equalsIgnoreCase(context.getInterpreterGroupId());
+          "spark".equalsIgnoreCase(context.getInterpreterSettingGroup());
   }
 
   @Override
