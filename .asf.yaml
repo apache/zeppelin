@@ -21,6 +21,10 @@ github:
   description: "Web-based notebook that enables data-driven, interactive data analytics and collaborative documents with SQL, Scala and more."
   homepage: https://zeppelin.apache.org/
   labels:
+    - spark
+    - flink
+    - database
+    - nosql
     - scala
     - java
     - big-data
