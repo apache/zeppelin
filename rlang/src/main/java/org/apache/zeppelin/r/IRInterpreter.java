@@ -54,7 +54,7 @@ public class IRInterpreter extends JupyterKernelInterpreter {
   private SparkRBackend sparkRBackend;
 
   public IRInterpreter(Properties properties) {
-    super(properties);
+    super("ir", properties);
   }
 
   /**

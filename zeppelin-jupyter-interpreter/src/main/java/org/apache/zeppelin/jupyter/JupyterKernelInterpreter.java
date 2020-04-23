@@ -125,7 +125,7 @@ public class JupyterKernelInterpreter extends AbstractInterpreter {
 
       jupyterKernelClient = new JupyterKernelClient(ManagedChannelBuilder.forAddress("127.0.0.1",
               kernelPort).usePlaintext(true).maxInboundMessageSize(message_size),
-              getProperties());
+              getProperties(), kernel);
       launchJupyterKernel(kernelPort);
     } catch (Exception e) {
       throw new InterpreterException("Fail to open JupyterKernelInterpreter:\n" +
