@@ -1103,10 +1103,10 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
     }
   };
 
-  let getEditorSetting = function(paragraph, magic) {
+  let getEditorSetting = function(paragraph, pragraphText) {
     let deferred = $q.defer();
     if (!$scope.revisionView) {
-      websocketMsgSrv.getEditorSetting(paragraph.id, magic);
+      websocketMsgSrv.getEditorSetting(paragraph.id, pragraphText);
       $timeout(
         $scope.$on('editorSetting', function(event, data) {
           if (paragraph.id === data.paragraphId) {
@@ -1139,7 +1139,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
         let magic = getParagraphMagic(paragraphText);
         if (editorSetting.magic !== magic) {
           editorSetting.magic = magic;
-          getEditorSetting($scope.paragraph, magic)
+          getEditorSetting($scope.paragraph, paragraphText)
             .then(function(setting) {
               setEditorLanguage(session, setting.editor.language);
               _.merge($scope.paragraph.config.editorSetting, setting.editor);

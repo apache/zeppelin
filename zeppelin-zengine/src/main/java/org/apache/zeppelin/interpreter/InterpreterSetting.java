@@ -1093,6 +1093,9 @@ public class InterpreterSetting {
         return interpreterInfo;
       }
     }
+    if (interpreterInfos.size() == 1) {
+      return interpreterInfos.get(0);
+    }
     throw new Exception("No default interpreter info found in interpreter setting: " + name);
   }
 
