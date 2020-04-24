@@ -499,14 +499,14 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
   }
 
   /**
-   * Get editor setting for one paragraph based on its magic part and noteId
+   * Get editor setting for one paragraph based on its paragraph text and noteId
    *
-   * @param magic
+   * @param paragraphText
    * @param noteId
    * @return
    */
-  public Map<String, Object> getEditorSetting(String magic, String noteId) {
-    ParagraphTextParser.ParseResult parseResult = ParagraphTextParser.parse(magic);
+  public Map<String, Object> getEditorSetting(String paragraphText, String noteId) {
+    ParagraphTextParser.ParseResult parseResult = ParagraphTextParser.parse(paragraphText);
     if (StringUtils.isBlank(parseResult.getIntpText())) {
       // Use default interpreter setting if no interpreter is specified.
       InterpreterSetting interpreterSetting = getDefaultInterpreterSetting(noteId);
