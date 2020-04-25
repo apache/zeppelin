@@ -83,7 +83,6 @@ public class SingleRowStreamSqlJob extends AbstractStreamSqlJob {
     context.out().clear(false);
     String output = buildResult();
     context.out.write(output);
-    jobManager.sendFlinkJobUrl(context);
     LOGGER.debug("Refresh Output: " + output);
     context.out.flush();
   }
