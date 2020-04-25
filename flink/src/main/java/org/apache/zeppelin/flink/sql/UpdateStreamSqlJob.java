@@ -106,7 +106,6 @@ public class UpdateStreamSqlJob extends AbstractStreamSqlJob {
   protected void refresh(InterpreterContext context) {
     context.out().clear(false);
     try {
-      jobManager.sendFlinkJobUrl(context);
       String result = buildResult();
       context.out.write(result);
       context.out.flush();
