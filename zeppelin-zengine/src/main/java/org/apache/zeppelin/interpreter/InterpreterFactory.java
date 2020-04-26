@@ -17,13 +17,10 @@
 
 package org.apache.zeppelin.interpreter;
 
-import com.google.common.base.Preconditions;
 import javax.inject.Inject;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.List;
 
 /**
  * //TODO(zjffdu) considering to move to InterpreterSettingManager
@@ -42,17 +39,16 @@ public class InterpreterFactory implements InterpreterFactoryInterface {
   }
 
   @Override
-  public Interpreter getInterpreter(String user,
-                                    String noteId,
-                                    String replName,
-                                    String defaultInterpreterSetting)
+  public Interpreter getInterpreter(String replName,
+                                    String defaultInterpreterSetting,
+                                    ExecutionContext executionContext)
       throws InterpreterNotFoundException {
 
     if (StringUtils.isBlank(replName)) {
       // Get the default interpreter of the defaultInterpreterSetting
       InterpreterSetting defaultSetting =
           interpreterSettingManager.getByName(defaultInterpreterSetting);
-      return defaultSetting.getDefaultInterpreter(user, noteId);
+      return defaultSetting.getDefaultInterpreter(executionContext);
     }
 
     String[] replNameSplits = replName.split("\\.");
@@ -61,7 +57,7 @@ public class InterpreterFactory implements InterpreterFactoryInterface {
       String name = replNameSplits[1];
       InterpreterSetting setting = interpreterSettingManager.getByName(group);
       if (null != setting) {
-        Interpreter interpreter = setting.getInterpreter(user, noteId, name);
+        Interpreter interpreter = setting.getInterpreter(executionContext, name);
         if (null != interpreter) {
           return interpreter;
         }
@@ -74,7 +70,7 @@ public class InterpreterFactory implements InterpreterFactoryInterface {
       InterpreterSetting setting =
           interpreterSettingManager.getByName(defaultInterpreterSetting);
       if (setting != null) {
-        Interpreter interpreter = setting.getInterpreter(user, noteId, replName);
+        Interpreter interpreter = setting.getInterpreter(executionContext, replName);
         if (null != interpreter) {
           return interpreter;
         }
@@ -83,7 +79,7 @@ public class InterpreterFactory implements InterpreterFactoryInterface {
       // then assume interpreter name is omitted
       setting = interpreterSettingManager.getByName(replName);
       if (null != setting) {
-        return setting.getDefaultInterpreter(user, noteId);
+        return setting.getDefaultInterpreter(executionContext);
       }
     }
 

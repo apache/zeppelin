@@ -383,7 +383,7 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
   }
 
   private boolean registerInterpreterFromResource(ClassLoader cl, String interpreterDir,
-      String interpreterJson, boolean override) throws IOException {
+                                                  String interpreterJson, boolean override) throws IOException {
     URL[] urls = recursiveBuildLibList(new File(interpreterDir));
     ClassLoader tempClassLoader = new URLClassLoader(urls, null);
 
@@ -884,7 +884,12 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
   }
 
   // restart in note page
-  public void restart(String settingId, String noteId, String user) throws InterpreterException {
+  public void restart(String settingId, String user, String noteId) throws InterpreterException {
+    restart(settingId, new ExecutionContext(user, noteId));
+  }
+
+  // restart in note page
+  public void restart(String settingId, ExecutionContext executionContext) throws InterpreterException {
     InterpreterSetting intpSetting = interpreterSettings.get(settingId);
     Preconditions.checkNotNull(intpSetting);
     intpSetting = interpreterSettings.get(settingId);
@@ -892,7 +897,7 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
     // If it did, overwrite old dependency jar with new one
     if (intpSetting != null) {
       copyDependenciesFromLocalPath(intpSetting);
-      intpSetting.closeInterpreters(user, noteId);
+      intpSetting.closeInterpreters(executionContext);
     } else {
       throw new InterpreterException("Interpreter setting id " + settingId + " not found");
     }
@@ -1033,7 +1038,8 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
   public void onNoteRemove(Note note, AuthenticationInfo subject) throws IOException {
     // remove from all interpreter instance's angular object registry
     for (InterpreterSetting settings : interpreterSettings.values()) {
-      InterpreterGroup interpreterGroup = settings.getInterpreterGroup(subject.getUser(), note.getId());
+      InterpreterGroup interpreterGroup = settings.getInterpreterGroup(
+              new ExecutionContext(subject.getUser(), note.getId()));
       if (interpreterGroup != null) {
         AngularObjectRegistry registry = interpreterGroup.getAngularObjectRegistry();
         if (registry instanceof RemoteAngularObjectRegistry) {

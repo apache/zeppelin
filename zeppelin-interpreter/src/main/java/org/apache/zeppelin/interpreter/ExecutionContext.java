@@ -14,20 +14,43 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.zeppelin.interpreter;
 
-/**
- * InterpreterFactory Interface
- * Provides the interface to the ClusterManagerServer
- * through the user, nodeId, replName query interpreter
- * Since the InterpreterFactory is in the zeppelin-zengine module,
- * the ClusterManagerServer in the zeppelin-interpreter module
- * cannot access InterpreterFactory#getInterpreter(...),
- * So access through the interface.
- */
-public interface InterpreterFactoryInterface {
-  Interpreter getInterpreter(String replName,
-                             String defaultInterpreterSetting,
-                             ExecutionContext executionContext)
-      throws InterpreterNotFoundException;
+public class ExecutionContext {
+
+  private String user;
+  private String noteId;
+  private boolean inCronMode;
+
+  public ExecutionContext(String user, String noteId) {
+    this(user, noteId, false);
+  }
+
+  public ExecutionContext(String user, String noteId, boolean inCronMode) {
+    this.user = user;
+    this.noteId = noteId;
+    this.inCronMode = inCronMode;
+  }
+
+  public String getUser() {
+    return user;
+  }
+
+  public String getNoteId() {
+    return noteId;
+  }
+
+  public boolean isInCronMode() {
+    return inCronMode;
+  }
+
+  @Override
+  public String toString() {
+    return "ExecutionContext{" +
+            "user='" + user + '\'' +
+            ", noteId='" + noteId + '\'' +
+            ", inCronMode=" + inCronMode +
+            '}';
+  }
 }

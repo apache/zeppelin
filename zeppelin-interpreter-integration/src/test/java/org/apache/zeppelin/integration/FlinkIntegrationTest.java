@@ -23,6 +23,7 @@ import org.apache.hadoop.yarn.api.protocolrecords.GetApplicationsResponse;
 import org.apache.hadoop.yarn.api.records.YarnApplicationState;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.apache.hadoop.yarn.exceptions.YarnException;
+import org.apache.zeppelin.interpreter.ExecutionContext;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
@@ -99,7 +100,7 @@ public class FlinkIntegrationTest {
 
   private void testInterpreterBasics() throws IOException, InterpreterException {
     // test FlinkInterpreter
-    Interpreter flinkInterpreter = interpreterFactory.getInterpreter("user1", "note1", "flink", "flink");
+    Interpreter flinkInterpreter = interpreterFactory.getInterpreter("flink", "flink", new ExecutionContext("user1", "note1"));
 
     InterpreterContext context = new InterpreterContext.Builder().setNoteId("note1").setParagraphId("paragraph_1").build();
     InterpreterResult interpreterResult = flinkInterpreter.interpret("1+1", context);

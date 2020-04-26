@@ -40,6 +40,7 @@ import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.display.Input;
 import org.apache.zeppelin.helium.HeliumPackage;
 import org.apache.zeppelin.interpreter.Constants;
+import org.apache.zeppelin.interpreter.ExecutionContext;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.Interpreter.FormType;
 import org.apache.zeppelin.interpreter.InterpreterContext;
@@ -275,8 +276,8 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
   }
 
   public Interpreter getBindedInterpreter() throws InterpreterNotFoundException {
-    return this.note.getInterpreterFactory().getInterpreter(user, note.getId(), intpText,
-        note.getDefaultInterpreterGroup());
+    return this.note.getInterpreterFactory().getInterpreter(intpText,
+        note.getDefaultInterpreterGroup(), new ExecutionContext(user, note.getId(), note.isCronMode()));
   }
 
   public void setInterpreter(Interpreter interpreter) {
@@ -651,8 +652,8 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
 
   public boolean isValidInterpreter(String replName) {
     try {
-      return note.getInterpreterFactory().getInterpreter(user, note.getId(), replName,
-          note.getDefaultInterpreterGroup()) != null;
+      return note.getInterpreterFactory().getInterpreter( replName,
+          note.getDefaultInterpreterGroup(), new ExecutionContext(user, note.getId())) != null;
     } catch (InterpreterNotFoundException e) {
       return false;
     }

@@ -21,6 +21,8 @@ import java.io.IOException;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.zeppelin.interpreter.ExecutionContext;
+import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.notebook.Note;
@@ -38,77 +40,42 @@ public class CronJob implements org.quartz.Job {
   @Override
   public void execute(JobExecutionContext context) {
     JobDataMap jobDataMap = context.getJobDetail().getJobDataMap();
-    Notebook notebook = (Notebook) jobDataMap.get("notebook");
-    String noteId = jobDataMap.getString("noteId");
-    LOGGER.info("Start cron job of note: " + noteId);
-    Note note = null;
-    try {
-      note = notebook.getNote(noteId);
-      if (note == null) {
-        LOGGER.warn("Skip cron job of note: " + noteId + ", because it is not found");
-        return;
-      }
-    } catch (IOException e) {
-      LOGGER.warn("Skip cron job of note: " + noteId + ", because fail to get it", e);
-      return;
-    }
+    Note note = (Note) jobDataMap.get("note");
+    LOGGER.info("Start cron job of note: " + note.getId());
     if (note.haveRunningOrPendingParagraphs()) {
       LOGGER.warn(
           "execution of the cron job is skipped because there is a running or pending "
               + "paragraph (note id: {})",
-          noteId);
+          note.getId());
       return;
     }
 
-    if (!note.isCronSupported(notebook.getConf())) {
-      LOGGER.warn("execution of the cron job is skipped cron is not enabled from Zeppelin server");
-      return;
-    }
 
-    runAll(note);
-
-    boolean releaseResource = false;
-    String cronExecutingUser = null;
-    Map<String, Object> config = note.getConfig();
-    if (config != null) {
-      if (config.containsKey("releaseresource")) {
-        releaseResource = (boolean) config.get("releaseresource");
-      }
-      cronExecutingUser = (String) config.get("cronExecutingUser");
-    }
-
-    if (releaseResource) {
-      LOGGER.info("Releasing interpreters used by this note: " + noteId);
-      for (InterpreterSetting setting : note.getUsedInterpreterSettings()) {
-        try {
-          notebook
-              .getInterpreterSettingManager()
-              .restart(
-                  setting.getId(),
-                  noteId,
-                  cronExecutingUser != null ? cronExecutingUser : "anonymous");
-        } catch (InterpreterException e) {
-          LOGGER.error("Fail to restart interpreter: " + setting.getId(), e);
-        }
-      }
-    }
-  }
-
-  void runAll(Note note) {
-    String cronExecutingUser = (String) note.getConfig().get("cronExecutingUser");
-    String cronExecutingRoles = (String) note.getConfig().get("cronExecutingRoles");
-    if (null == cronExecutingUser) {
-      cronExecutingUser = "anonymous";
-    }
-    AuthenticationInfo authenticationInfo =
-        new AuthenticationInfo(
-            cronExecutingUser,
-            StringUtils.isEmpty(cronExecutingRoles) ? null : cronExecutingRoles,
-            null);
     try {
-      note.runAll(authenticationInfo, true);
-    } catch (Exception e) {
-      LOGGER.warn("Fail to run note: " + note.getName(), e);
+      note.setCronMode(true);
+
+      String cronExecutingUser = (String) note.getConfig().get("cronExecutingUser");
+      String cronExecutingRoles = (String) note.getConfig().get("cronExecutingRoles");
+      if (null == cronExecutingUser) {
+        cronExecutingUser = "anonymous";
+      }
+      AuthenticationInfo authenticationInfo =
+              new AuthenticationInfo(
+                      cronExecutingUser,
+                      StringUtils.isEmpty(cronExecutingRoles) ? null : cronExecutingRoles,
+                      null);
+      try {
+        note.runAll(authenticationInfo, true);
+      } catch (Exception e) {
+        LOGGER.warn("Fail to run note: " + note.getName(), e);
+      }
+
+      LOGGER.info("Releasing interpreters used by this note: " + note.getId());
+      for (InterpreterSetting setting : note.getUsedInterpreterSettings()) {
+          setting.closeInterpreters(new ExecutionContext(cronExecutingUser, note.getId(), true));
+      }
+    } finally {
+      note.setCronMode(false);
     }
   }
 }

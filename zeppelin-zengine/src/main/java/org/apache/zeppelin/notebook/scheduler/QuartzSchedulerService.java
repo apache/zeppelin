@@ -126,7 +126,7 @@ public class QuartzSchedulerService implements SchedulerService {
       return false;
     }
 
-    if (!note.isCronSupported(zeppelinConfiguration).booleanValue()) {
+    if (!note.isCronSupported(zeppelinConfiguration)) {
       LOGGER.warn("Skip refresh cron of note {} because its cron is not enabled.", noteId);
       return false;
     }
@@ -138,9 +138,7 @@ public class QuartzSchedulerService implements SchedulerService {
     }
 
     JobDataMap jobDataMap = new JobDataMap();
-    jobDataMap.put("noteId", noteId);
-    jobDataMap.put("notebook", notebook);
-
+    jobDataMap.put("note", note);
     JobDetail newJob =
         JobBuilder.newJob(CronJob.class)
             .withIdentity(noteId, "note")

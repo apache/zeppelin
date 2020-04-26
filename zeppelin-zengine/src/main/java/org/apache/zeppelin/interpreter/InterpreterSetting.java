@@ -56,6 +56,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -422,16 +424,23 @@ public class InterpreterSetting {
     return group;
   }
 
-  private String getInterpreterGroupId(String user, String noteId) {
+  private static DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss");
+
+
+  private String getInterpreterGroupId(ExecutionContext executionContext) {
+    if (executionContext.isInCronMode()) {
+      return "cron-" + name + "-" + executionContext.getNoteId() + "-" + dtf.format(LocalDateTime.now());
+    }
+
     List<String> keys = new ArrayList<>();
     if (option.isExistingProcess) {
       keys.add(Constants.EXISTING_PROCESS);
     } else if (getOption().isIsolated()) {
       if (option.perUserIsolated()) {
-        keys.add(user);
+        keys.add(executionContext.getUser());
       }
       if (option.perNoteIsolated()) {
-        keys.add(noteId);
+        keys.add(executionContext.getNoteId());
       }
     } else {
       keys.add(SHARED_PROCESS);
@@ -441,16 +450,16 @@ public class InterpreterSetting {
     return id + "-" + StringUtils.join(keys, "-");
   }
 
-  private String getInterpreterSessionId(String user, String noteId) {
+  private String getInterpreterSessionId(ExecutionContext executionContext) {
     String key;
     if (option.isExistingProcess()) {
       key = Constants.EXISTING_PROCESS;
     } else if (option.perNoteScoped() && option.perUserScoped()) {
-      key = user + ":" + noteId;
+      key = executionContext.getUser() + ":" + executionContext.getNoteId();
     } else if (option.perUserScoped()) {
-      key = user;
+      key = executionContext.getUser();
     } else if (option.perNoteScoped()) {
-      key = noteId;
+      key = executionContext.getNoteId();
     } else {
       key = SHARED_SESSION;
     }
@@ -459,12 +468,16 @@ public class InterpreterSetting {
   }
 
   public ManagedInterpreterGroup getOrCreateInterpreterGroup(String user, String noteId) {
-    String groupId = getInterpreterGroupId(user, noteId);
+    return getOrCreateInterpreterGroup(new ExecutionContext(user, noteId));
+  }
+
+  public ManagedInterpreterGroup getOrCreateInterpreterGroup(ExecutionContext executionContext) {
+    String groupId = getInterpreterGroupId(executionContext);
     try {
       interpreterGroupWriteLock.lock();
       if (!interpreterGroups.containsKey(groupId)) {
-        LOGGER.info("Create InterpreterGroup with groupId: {} for user: {} and note: {}",
-            groupId, user, noteId);
+        LOGGER.info("Create InterpreterGroup with groupId: {} for {}",
+            groupId, executionContext);
         ManagedInterpreterGroup intpGroup = createInterpreterGroup(groupId);
         interpreterGroups.put(groupId, intpGroup);
       }
@@ -484,7 +497,11 @@ public class InterpreterSetting {
   }
 
   public ManagedInterpreterGroup getInterpreterGroup(String user, String noteId) {
-    String groupId = getInterpreterGroupId(user, noteId);
+    return getInterpreterGroup(new ExecutionContext(user, noteId));
+  }
+
+  public ManagedInterpreterGroup getInterpreterGroup(ExecutionContext executionContext) {
+    String groupId = getInterpreterGroupId(executionContext);
     try {
       interpreterGroupReadLock.lock();
       return interpreterGroups.get(groupId);
@@ -518,10 +535,14 @@ public class InterpreterSetting {
     return DEFAULT_EDITOR;
   }
 
-  void closeInterpreters(String user, String noteId) {
-    ManagedInterpreterGroup interpreterGroup = getInterpreterGroup(user, noteId);
+  public void closeInterpreters(String user, String noteId) {
+    closeInterpreters(new ExecutionContext(user, noteId));
+  }
+
+  public void closeInterpreters(ExecutionContext executionContext) {
+    ManagedInterpreterGroup interpreterGroup = getInterpreterGroup(executionContext);
     if (interpreterGroup != null) {
-      String sessionId = getInterpreterSessionId(user, noteId);
+      String sessionId = getInterpreterSessionId(executionContext);
       interpreterGroup.close(sessionId);
     }
   }
@@ -850,26 +871,36 @@ public class InterpreterSetting {
   }
 
   List<Interpreter> getOrCreateSession(String user, String noteId) {
-    ManagedInterpreterGroup interpreterGroup = getOrCreateInterpreterGroup(user, noteId);
-    Preconditions.checkNotNull(interpreterGroup, "No InterpreterGroup existed for user {}, " +
-        "noteId {}", user, noteId);
-    String sessionId = getInterpreterSessionId(user, noteId);
-    return interpreterGroup.getOrCreateSession(user, sessionId);
+    return getOrCreateSession(new ExecutionContext(user, noteId));
+  }
+
+  List<Interpreter> getOrCreateSession(ExecutionContext executionContext) {
+    ManagedInterpreterGroup interpreterGroup = getOrCreateInterpreterGroup(executionContext);
+    Preconditions.checkNotNull(interpreterGroup, "No InterpreterGroup existed for {}", executionContext);
+    String sessionId = getInterpreterSessionId(executionContext);
+    return interpreterGroup.getOrCreateSession(executionContext.getUser(), sessionId);
   }
 
   public Interpreter getDefaultInterpreter(String user, String noteId) {
-    return getOrCreateSession(user, noteId).get(0);
+    return getOrCreateSession(new ExecutionContext(user, noteId)).get(0);
+  }
+
+  public Interpreter getDefaultInterpreter(ExecutionContext executionContext) {
+    return getOrCreateSession(executionContext).get(0);
   }
 
   public Interpreter getInterpreter(String user, String noteId, String replName) {
-    Preconditions.checkNotNull(noteId, "noteId should be not null");
+    return getInterpreter(new ExecutionContext(user, noteId), replName);
+  }
+
+  public Interpreter getInterpreter(ExecutionContext executionContext, String replName) {
     Preconditions.checkNotNull(replName, "replName should be not null");
 
     String className = getInterpreterClassFromInterpreterSetting(replName);
     if (className == null) {
       return null;
     }
-    List<Interpreter> interpreters = getOrCreateSession(user, noteId);
+    List<Interpreter> interpreters = getOrCreateSession(executionContext);
     for (Interpreter interpreter : interpreters) {
       if (className.equals(interpreter.getClassName())) {
         return interpreter;

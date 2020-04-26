@@ -23,6 +23,7 @@ import javax.inject.Singleton;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.zeppelin.annotation.ZeppelinApi;
 import org.apache.zeppelin.dep.Repository;
+import org.apache.zeppelin.interpreter.ExecutionContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterPropertyType;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
@@ -200,7 +201,8 @@ public class InterpreterRestApi {
       if (null == noteId) {
         interpreterSettingManager.close(settingId);
       } else {
-        interpreterSettingManager.restart(settingId, noteId, authenticationService.getPrincipal());
+        interpreterSettingManager.restart(settingId,
+                new ExecutionContext(authenticationService.getPrincipal(), noteId));
       }
 
     } catch (InterpreterException e) {
