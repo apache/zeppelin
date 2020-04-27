@@ -47,12 +47,6 @@
     <scala.binary.version>2.11</scala.binary.version>
     <scala.version>2.11.12</scala.version>
 
-    <!--plugin versions-->
-    <plugin.scalamaven.version>3.2.2</plugin.scalamaven.version>
-    <plugin.eclipse.version>2.8</plugin.eclipse.version>
-    <plugin.buildhelper.version>1.7</plugin.buildhelper.version>
-    <plugin.scalastyle.version>0.5.0</plugin.scalastyle.version>
-
     <flink.bin.download.url>https://archive.apache.org/dist/flink/flink-${flink.version}/flink-${flink.version}-bin-scala_${scala.binary.version}.tgz</flink.bin.download.url>
   </properties>
 
@@ -552,6 +546,13 @@
       </exclusions>
     </dependency>
 
+    <dependency>
+      <groupId>net.jodah</groupId>
+      <artifactId>concurrentunit</artifactId>
+      <version>0.4.4</version>
+      <scope>test</scope>
+    </dependency>
+
   </dependencies>
 
   <build>
@@ -559,7 +560,6 @@
       <plugin>
         <groupId>net.alchim31.maven</groupId>
         <artifactId>scala-maven-plugin</artifactId>
-        <version>3.2.2</version>
         <executions>
           <execution>
             <id>eclipse-add-source</id>
@@ -595,8 +595,7 @@
           <jvmArgs>
             <jvmArg>-Xms1024m</jvmArg>
             <jvmArg>-Xmx1024m</jvmArg>
-            <jvmArg>-XX:PermSize=${PermGen}</jvmArg>
-            <jvmArg>-XX:MaxPermSize=${MaxPermGen}</jvmArg>
+            <jvmArg>-XX:MaxMetaspaceSize=${MaxMetaspace}</jvmArg>
           </jvmArgs>
           <javacArgs>
             <javacArg>-source</javacArg>
@@ -635,12 +634,13 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
           <skip>false</skip>
+          <forkMode>always</forkMode>
           <forkCount>1</forkCount>
           <reuseForks>false</reuseForks>
           <!-- set sun.zip.disableMemoryMapping=true because of
           https://blogs.oracle.com/poonam/crashes-in-zipgetentry
           https://bugs.java.com/bugdatabase/view_bug.do?bug_id=8191484 -->
-          <argLine>-Xmx3072m -XX:MaxMetaspaceSize=512m -Dsun.zip.disableMemoryMapping=true</argLine>
+          <argLine>-Xmx4096m -XX:MaxMetaspaceSize=512m -Dsun.zip.disableMemoryMapping=true</argLine>
 
           <environmentVariables>
             <FLINK_HOME>${project.build.directory}/flink-${flink.version}</FLINK_HOME>
@@ -649,12 +649,10 @@
         </configuration>
       </plugin>
 
-
       <!-- Eclipse Integration -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-eclipse-plugin</artifactId>
-        <version>${plugin.eclipse.version}</version>
         <configuration>
           <downloadSources>true</downloadSources>
           <projectnatures>
@@ -679,7 +677,6 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>build-helper-maven-plugin</artifactId>
-        <version>${plugin.buildhelper.version}</version>
         <executions>
           <!-- Add src/main/scala to eclipse build path -->
           <execution>
@@ -711,16 +708,6 @@
       </plugin>
 
       <plugin>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <configuration>
-          <forkMode>always</forkMode>
-          <environmentVariables>
-            <FLINK_CONF_DIR>${project.build.directory}/test-classes</FLINK_CONF_DIR>
-          </environmentVariables>
-        </configuration>
-      </plugin>
-
-      <plugin>
         <artifactId>maven-enforcer-plugin</artifactId>
       </plugin>
       <plugin>
@@ -732,7 +719,6 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
-        <version>${plugin.shade.version}</version>
         <configuration>
           <filters>
             <filter>

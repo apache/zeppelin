@@ -885,7 +885,7 @@ public class NotebookService {
   }
 
   public void getEditorSetting(String noteId,
-                               String magic,
+                               String paragraphText,
                                ServiceContext context,
                                ServiceCallback<Map<String, Object>> callback) throws IOException {
     Note note = notebook.getNote(noteId);
@@ -895,7 +895,7 @@ public class NotebookService {
     }
     try {
       Map<String, Object> settings = notebook.getInterpreterSettingManager().
-          getEditorSetting(magic, noteId);
+          getEditorSetting(paragraphText, noteId);
       callback.onSuccess(settings, context);
     } catch (Exception e) {
       callback.onFailure(new IOException("Fail to getEditorSetting", e), context);

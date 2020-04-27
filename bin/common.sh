@@ -62,6 +62,20 @@ fi
 
 ZEPPELIN_CLASSPATH+=":${ZEPPELIN_CONF_DIR}"
 
+function check_java_version() {
+    java_ver_output=$("${JAVA:-java}" -version 2>&1)
+    jvmver=$(echo "$java_ver_output" | grep '[openjdk|java] version' | awk -F'"' 'NR==1 {print $2}' | cut -d\- -f1)
+    JVM_VERSION=$(echo "$jvmver"|sed -e 's|^\([0-9]\+\)\..*$|\1|')
+    if [ "$JVM_VERSION" = "1" ]; then
+        JVM_VERSION=$(echo "$jvmver"|sed -e 's|^1\.\([0-9]\+\)\..*$|\1|')
+    fi
+
+    if [ "$JVM_VERSION" -lt 8 ] || ([ "$JVM_VERSION" -eq 8 ] && [ "${jvmver#*_}" -lt 151 ]) ; then
+        echo "Apache Zeppelin requires either Java 8 update 151 or newer"
+        exit 1;
+    fi
+}
+
 function addEachJarInDir(){
   if [[ -d "${1}" ]]; then
     for jar in $(find -L "${1}" -maxdepth 1 -name '*jar'); do
@@ -118,11 +132,11 @@ if [[ -z "${ZEPPELIN_ENCODING}" ]]; then
 fi
 
 if [[ -z "${ZEPPELIN_MEM}" ]]; then
-  export ZEPPELIN_MEM="-Xms1024m -Xmx1024m -XX:MaxPermSize=512m"
+  export ZEPPELIN_MEM="-Xms1024m -Xmx1024m"
 fi
 
 if [[ -z "${ZEPPELIN_INTP_MEM}" ]]; then
-  export ZEPPELIN_INTP_MEM="-Xms1024m -Xmx2048m -XX:MaxPermSize=512m"
+  export ZEPPELIN_INTP_MEM="-Xms1024m -Xmx2048m"
 fi
 
 JAVA_OPTS+=" ${ZEPPELIN_JAVA_OPTS} -Dfile.encoding=${ZEPPELIN_ENCODING} ${ZEPPELIN_MEM}"

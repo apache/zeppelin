@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.Properties;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -53,11 +54,8 @@ public class K8sRemoteInterpreterProcessTest {
         "12320",
         false,
         "spark-container:1.0",
-        10);
-
-    // when
-    String host = intp.getHost();
-    int port = intp.getPort();
+        10,
+        false);
 
     // then
     assertEquals(String.format("%s.%s.svc", intp.getPodName(), kubectl.getNamespace()), intp.getHost());
@@ -86,7 +84,8 @@ public class K8sRemoteInterpreterProcessTest {
         "12320",
         false,
         "spark-container:1.0",
-        10);
+        10,
+        false);
 
 
     // following values are hardcoded in k8s/interpreter/100-interpreter.yaml.
@@ -120,7 +119,8 @@ public class K8sRemoteInterpreterProcessTest {
         "12320",
         false,
         "spark-container:1.0",
-        10);
+        10,
+        false);
 
     // when
     Properties p = intp.getTemplateBindings();
@@ -172,9 +172,11 @@ public class K8sRemoteInterpreterProcessTest {
         "12320",
         false,
         "spark-container:1.0",
-        10);
+        10,
+        false);
 
     // when
+    intp.start("mytestUser");
     Properties p = intp.getTemplateBindings();
 
     // then
@@ -192,5 +194,147 @@ public class K8sRemoteInterpreterProcessTest {
     assertTrue(sparkSubmitOptions.contains("spark.driver.host=" + intp.getHost()));
     assertTrue(sparkSubmitOptions.contains("spark.driver.port=" + intp.getSparkDriverPort()));
     assertTrue(sparkSubmitOptions.contains("spark.blockManager.port=" + intp.getSparkBlockmanagerPort()));
+    assertFalse(sparkSubmitOptions.contains("--proxy-user"));
+    assertTrue(intp.isSpark());
+  }
+
+  @Test
+  public void testGetTemplateBindingsForSparkWithProxyUser() throws IOException {
+    // given
+    Kubectl kubectl = mock(Kubectl.class);
+    when(kubectl.getNamespace()).thenReturn("default");
+
+    Properties properties = new Properties();
+    properties.put("my.key1", "v1");
+    properties.put("master", "k8s://http://api");
+    HashMap<String, String> envs = new HashMap<String, String>();
+    envs.put("MY_ENV1", "V1");
+    envs.put("SPARK_SUBMIT_OPTIONS", "my options");
+    envs.put("SERVICE_DOMAIN", "mydomain");
+
+    K8sRemoteInterpreterProcess intp = new K8sRemoteInterpreterProcess(
+        kubectl,
+        new File(".skip"),
+        "interpreter-container:1.0",
+        "shared_process",
+        "spark",
+        "myspark",
+        properties,
+        envs,
+        "zeppelin.server.hostname",
+        "12320",
+        false,
+        "spark-container:1.0",
+        10,
+        true);
+
+    // when
+    intp.start("mytestUser");
+    Properties p = intp.getTemplateBindings();
+    // then
+    assertEquals("spark-container:1.0", p.get("zeppelin.k8s.spark.container.image"));
+    assertEquals(String.format("//4040-%s.%s", intp.getPodName(), "mydomain"), p.get("zeppelin.spark.uiWebUrl"));
+
+    envs = (HashMap<String, String>) p.get("zeppelin.k8s.envs");
+    assertTrue( envs.containsKey("SPARK_HOME"));
+
+    String sparkSubmitOptions = envs.get("SPARK_SUBMIT_OPTIONS");
+    assertTrue(sparkSubmitOptions.startsWith("my options "));
+    assertTrue(sparkSubmitOptions.contains("spark.kubernetes.namespace=" + kubectl.getNamespace()));
+    assertTrue(sparkSubmitOptions.contains("spark.kubernetes.driver.pod.name=" + intp.getPodName()));
+    assertTrue(sparkSubmitOptions.contains("spark.kubernetes.container.image=spark-container:1.0"));
+    assertTrue(sparkSubmitOptions.contains("spark.driver.host=" + intp.getHost()));
+    assertTrue(sparkSubmitOptions.contains("spark.driver.port=" + intp.getSparkDriverPort()));
+    assertTrue(sparkSubmitOptions.contains("spark.blockManager.port=" + intp.getSparkBlockmanagerPort()));
+    assertTrue(sparkSubmitOptions.contains("--proxy-user mytestUser"));
+    assertTrue(intp.isSpark());
+  }
+
+  @Test
+  public void testGetTemplateBindingsForSparkWithProxyUserAnonymous() throws IOException {
+    // given
+    Kubectl kubectl = mock(Kubectl.class);
+    when(kubectl.getNamespace()).thenReturn("default");
+
+    Properties properties = new Properties();
+    properties.put("my.key1", "v1");
+    properties.put("master", "k8s://http://api");
+    HashMap<String, String> envs = new HashMap<String, String>();
+    envs.put("MY_ENV1", "V1");
+    envs.put("SPARK_SUBMIT_OPTIONS", "my options");
+    envs.put("SERVICE_DOMAIN", "mydomain");
+
+    K8sRemoteInterpreterProcess intp = new K8sRemoteInterpreterProcess(
+        kubectl,
+        new File(".skip"),
+        "interpreter-container:1.0",
+        "shared_process",
+        "spark",
+        "myspark",
+        properties,
+        envs,
+        "zeppelin.server.hostname",
+        "12320",
+        false,
+        "spark-container:1.0",
+        10,
+        true);
+
+    // when
+    intp.start("anonymous");
+    Properties p = intp.getTemplateBindings();
+    // then
+    assertEquals("spark-container:1.0", p.get("zeppelin.k8s.spark.container.image"));
+    assertEquals(String.format("//4040-%s.%s", intp.getPodName(), "mydomain"), p.get("zeppelin.spark.uiWebUrl"));
+
+    envs = (HashMap<String, String>) p.get("zeppelin.k8s.envs");
+    assertTrue( envs.containsKey("SPARK_HOME"));
+
+    String sparkSubmitOptions = envs.get("SPARK_SUBMIT_OPTIONS");
+    assertFalse(sparkSubmitOptions.contains("--proxy-user"));
+    assertTrue(intp.isSpark());
+  }
+
+  @Test
+  public void testSparkUiWebUrlTemplate() {
+    // given
+    Kubectl kubectl = mock(Kubectl.class);
+    when(kubectl.getNamespace()).thenReturn("default");
+
+    Properties properties = new Properties();
+    HashMap<String, String> envs = new HashMap<String, String>();
+    envs.put("SERVICE_DOMAIN", "mydomain");
+
+    K8sRemoteInterpreterProcess intp = new K8sRemoteInterpreterProcess(
+        kubectl,
+        new File(".skip"),
+        "interpreter-container:1.0",
+        "shared_process",
+        "spark",
+        "myspark",
+        properties,
+        envs,
+        "zeppelin.server.hostname",
+        "12320",
+        false,
+        "spark-container:1.0",
+        10,
+        false);
+
+    // when non template url
+    assertEquals("static.url",
+        intp.sparkUiWebUrlFromTemplate(
+            "static.url",
+            4040,
+            "zeppelin-server",
+            "my.domain.com"));
+
+    // when template url
+    assertEquals("//4040-zeppelin-server.my.domain.com",
+        intp.sparkUiWebUrlFromTemplate(
+            "//{{PORT}}-{{SERVICE_NAME}}.{{SERVICE_DOMAIN}}",
+            4040,
+            "zeppelin-server",
+            "my.domain.com"));
   }
 }

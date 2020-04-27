@@ -35,10 +35,10 @@
   <properties>
     <!--library versions-->
     <interpreter.name>submarine</interpreter.name>
-    <hadoop.version>2.7.3</hadoop.version>
+    <hadoop.version>${hadoop2.7.version}</hadoop.version>
     <jinjava.version>2.4.0</jinjava.version>
     <squirrel.version>0.3.8</squirrel.version>
-    <guava.version>20.0</guava.version>
+    <guava.version>24.1.1-jre</guava.version>
     <!--test library versions-->
     <hamcrest.all.version>1.3</hamcrest.all.version>
   </properties>

@@ -499,14 +499,14 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
   }
 
   /**
-   * Get editor setting for one paragraph based on its magic part and noteId
+   * Get editor setting for one paragraph based on its paragraph text and noteId
    *
-   * @param magic
+   * @param paragraphText
    * @param noteId
    * @return
    */
-  public Map<String, Object> getEditorSetting(String magic, String noteId) {
-    ParagraphTextParser.ParseResult parseResult = ParagraphTextParser.parse(magic);
+  public Map<String, Object> getEditorSetting(String paragraphText, String noteId) {
+    ParagraphTextParser.ParseResult parseResult = ParagraphTextParser.parse(paragraphText);
     if (StringUtils.isBlank(parseResult.getIntpText())) {
       // Use default interpreter setting if no interpreter is specified.
       InterpreterSetting interpreterSetting = getDefaultInterpreterSetting(noteId);
@@ -676,20 +676,23 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
         if (paragraphId != null) {
           resourceSet = resourceSet.filterByParagraphId(paragraphId);
         }
+        try{
+          for (final Resource r : resourceSet) {
+            remoteInterpreterProcess.callRemoteFunction(
+                    new RemoteInterpreterProcess.RemoteFunction<Void>() {
 
-        for (final Resource r : resourceSet) {
-          remoteInterpreterProcess.callRemoteFunction(
-              new RemoteInterpreterProcess.RemoteFunction<Void>() {
-
-                @Override
-                public Void call(RemoteInterpreterService.Client client) throws Exception {
-                  client.resourceRemove(
-                      r.getResourceId().getNoteId(),
-                      r.getResourceId().getParagraphId(),
-                      r.getResourceId().getName());
-                  return null;
-                }
-              });
+                      @Override
+                      public Void call(RemoteInterpreterService.Client client) throws Exception {
+                        client.resourceRemove(
+                                r.getResourceId().getNoteId(),
+                                r.getResourceId().getParagraphId(),
+                                r.getResourceId().getName());
+                        return null;
+                      }
+                    });
+          }
+        }catch (Exception e){
+          LOGGER.error(e.getMessage());
         }
       }
     }

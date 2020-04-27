@@ -44,7 +44,7 @@
          instead of changing spark.version in this section.
     -->
 
-    <hadoop.version>2.7.3</hadoop.version>
+    <hadoop.version>${hadoop2.7.version}</hadoop.version>
     <yarn.version>${hadoop.version}</yarn.version>
     <avro.version>1.7.7</avro.version>
     <avro.mapred.classifier/>
@@ -167,20 +167,13 @@
         <configuration>
           <forkCount>1</forkCount>
           <reuseForks>false</reuseForks>
-          <argLine>-Xmx1024m -XX:MaxPermSize=256m</argLine>
+          <argLine>-Xmx1024m -XX:MaxMetaspaceSize=256m</argLine>
         </configuration>
-      </plugin>
-
-      <plugin>
-        <groupId>com.googlecode.maven-download-plugin</groupId>
-        <artifactId>download-maven-plugin</artifactId>
-        <version>${plugin.download.version}</version>
       </plugin>
 
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
-        <version>${plugin.shade.version}</version>
         <configuration>
           <filters>
             <filter>

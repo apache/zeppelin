@@ -109,7 +109,7 @@
         "envName": null,
         "propertyName": "zeppelin.spark.uiWebUrl",
         "defaultValue": "",
-        "description": "Override Spark UI default URL",
+        "description": "Override Spark UI default URL. In Kubernetes mode, value can be Jinja template string with 3 template variables 'PORT', 'SERVICE_NAME' and 'SERVICE_DOMAIN'. (ex: http://{{PORT}}-{{SERVICE_NAME}}.{{SERVICE_DOMAIN}})",
         "type": "string"
       },
       "zeppelin.spark.ui.hidden": {

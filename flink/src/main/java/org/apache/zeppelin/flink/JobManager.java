@@ -74,6 +74,7 @@ public class JobManager {
     FlinkJobProgressPoller jobProgressPoller =
             this.jobProgressPollerMap.remove(jobClient.getJobID());
     jobProgressPoller.cancel();
+    jobProgressPoller.interrupt();
   }
 
   public void sendFlinkJobUrl(InterpreterContext context) {
@@ -86,7 +87,6 @@ public class JobManager {
       infos.put("tooltip", "View in Flink web UI");
       infos.put("noteId", context.getNoteId());
       infos.put("paraId", context.getParagraphId());
-      LOGGER.info("Job is started at: " + jobUrl);
       context.getIntpEventClient().onParaInfosReceived(infos);
     } else {
       LOGGER.warn("No job is associated with paragraph: " + context.getParagraphId());
@@ -110,7 +110,8 @@ public class JobManager {
   }
 
   public void cancelJob(InterpreterContext context) throws InterpreterException {
-    JobClient jobClient = this.jobs.remove(context.getParagraphId());
+    LOGGER.info("Canceling job associated of paragraph: "+ context.getParagraphId());
+    JobClient jobClient = this.jobs.get(context.getParagraphId());
     if (jobClient == null) {
       LOGGER.warn("Unable to remove Job from paragraph {} as no job associated to this paragraph",
               context.getParagraphId());
@@ -125,19 +126,30 @@ public class JobManager {
       } else {
         LOGGER.info("Trying to stop job of paragraph {} with save point dir: {}",
                 context.getParagraphId(), savepointDir);
-        String savePointPath = jobClient.stopWithSavepoint(false, savepointDir).get();
+        String savePointPath = jobClient.stopWithSavepoint(true, savepointDir).get();
         z.angularBind(context.getParagraphId() + "_savepointpath", savePointPath);
+        LOGGER.info("Job {} of paragraph {} is stopped with save point path: {}",
+                jobClient.getJobID(), context.getParagraphId(), savePointPath);
       }
     } catch (Exception e) {
       String errorMessage = String.format("Fail to cancel job %s that is associated " +
               "with paragraph %s", jobClient.getJobID(), context.getParagraphId());
       LOGGER.warn(errorMessage, e);
       throw new InterpreterException(errorMessage, e);
+    } finally {
+      FlinkJobProgressPoller jobProgressPoller = jobProgressPollerMap.remove(jobClient.getJobID());
+      if (jobProgressPoller != null) {
+        jobProgressPoller.cancel();
+        jobProgressPoller.interrupt();
+      }
+      this.jobs.remove(context.getParagraphId());
     }
+  }
 
-    FlinkJobProgressPoller jobProgressPoller = jobProgressPollerMap.remove(jobClient.getJobID());
-    jobProgressPoller.cancel();
-    jobProgressPoller.interrupt();
+  public void shutdown() {
+    for (FlinkJobProgressPoller jobProgressPoller : jobProgressPollerMap.values()) {
+      jobProgressPoller.cancel();
+    }
   }
 
   class FlinkJobProgressPoller extends Thread {
@@ -159,8 +171,9 @@ public class JobManager {
     @Override
     public void run() {
       while (!Thread.currentThread().isInterrupted() && running.get()) {
+        JsonNode rootNode = null;
         try {
-          JsonNode rootNode = Unirest.get(flinkWebUI + "/jobs/" + jobId.toString())
+          rootNode = Unirest.get(flinkWebUI + "/jobs/" + jobId.toString())
                   .asJson().getBody();
           JSONArray vertices = rootNode.getObject().getJSONArray("vertices");
           int totalTasks = 0;
@@ -186,16 +199,16 @@ public class JobManager {
           if (isStreamingInsertInto) {
             StringBuilder builder = new StringBuilder("%html ");
             builder.append("<h1>Duration: " +
-                    Integer.parseInt(rootNode.getObject().getString("duration")) / 1000 +
+                    rootNode.getObject().getLong("duration") / 1000 +
                     " seconds");
             builder.append("\n%text ");
-            context.out.clear();
+            context.out.clear(false);
             sendFlinkJobUrl(context);
             context.out.write(builder.toString());
             context.out.flush();
           }
         } catch (Exception e) {
-          LOGGER.error("Fail to poll flink job progress via rest api", e);
+          LOGGER.error("Fail to poll flink job progress via rest api, rest api: " + rootNode, e);
         }
       }
     }

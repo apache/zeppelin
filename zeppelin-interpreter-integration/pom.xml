@@ -40,10 +40,7 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <hadoop.version>2.7.3</hadoop.version>
-
-    <!--plugin library versions-->
-    <plugin.failsafe.version>2.16</plugin.failsafe.version>
+    <hadoop.version>${hadoop2.7.version}</hadoop.version>
   </properties>
 
   <dependencies>
@@ -150,7 +147,6 @@
     <plugins>
       <plugin>
         <artifactId>maven-failsafe-plugin</artifactId>
-        <version>${plugin.failsafe.version}</version>
         <executions>
           <execution>
             <goals>
@@ -519,7 +515,7 @@
     <profile>
       <id>hadoop3</id>
       <properties>
-        <hadoop.version>3.1.1</hadoop.version>
+        <hadoop.version>${hadoop3.1.version}</hadoop.version>
       </properties>
       <dependencies>
         <dependency>

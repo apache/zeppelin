@@ -17,12 +17,9 @@
  */
 package org.apache.zeppelin.flink;
 
+import net.jodah.concurrentunit.Waiter;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.flink.streaming.api.TimeCharacteristic;
-import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
-import org.apache.flink.table.api.EnvironmentSettings;
-import org.apache.flink.table.api.java.StreamTableEnvironment;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
@@ -34,6 +31,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.TimeoutException;
 
 import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
@@ -47,7 +45,7 @@ public class FlinkStreamSqlInterpreterTest extends SqlInterpreterTest {
 
   @Test
   public void testSingleStreamSql() throws IOException, InterpreterException {
-    String initStreamScalaScript = IOUtils.toString(getClass().getResource("/init_stream.scala"));
+    String initStreamScalaScript = getInitStreamScript(100);
     InterpreterContext context = getInterpreterContext();
     InterpreterResult result = flinkInterpreter.interpret(initStreamScalaScript, context);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
@@ -65,8 +63,32 @@ public class FlinkStreamSqlInterpreterTest extends SqlInterpreterTest {
   }
 
   @Test
+  public void testSingleStreamTableApi() throws IOException, InterpreterException {
+    String initStreamScalaScript = getInitStreamScript(100);
+    InterpreterContext context = getInterpreterContext();
+    InterpreterResult result = flinkInterpreter.interpret(initStreamScalaScript, context);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+
+    context = getInterpreterContext();
+    String code = "val table = stenv.sqlQuery(\"select max(rowtime), count(1) from log\")\nz.show(table,streamType=\"single\", configs = Map(\"template\" -> \"Total Count: {1} <br/> {0}\"))";
+    result = flinkInterpreter.interpret(code, context);
+    assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
+    List<InterpreterResultMessage> resultMessages = context.out.toInterpreterResultMessage();
+    assertEquals(InterpreterResult.Type.HTML, resultMessages.get(0).getType());
+    assertTrue(resultMessages.toString(),
+            resultMessages.get(0).getData().contains("Total Count"));
+
+    context = getInterpreterContext();
+    result = sqlInterpreter.interpret("show tables", context);
+    assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
+    resultMessages = context.out.toInterpreterResultMessage();
+    assertEquals(InterpreterResult.Type.TABLE, resultMessages.get(0).getType());
+    assertEquals("table\nlog\n", resultMessages.get(0).getData());
+  }
+
+  @Test
   public void testUpdateStreamSql() throws IOException, InterpreterException {
-    String initStreamScalaScript = IOUtils.toString(getClass().getResource("/init_stream.scala"));
+    String initStreamScalaScript = getInitStreamScript(100);
     InterpreterResult result = flinkInterpreter.interpret(initStreamScalaScript,
             getInterpreterContext());
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
@@ -83,8 +105,25 @@ public class FlinkStreamSqlInterpreterTest extends SqlInterpreterTest {
   }
 
   @Test
+  public void testUpdateStreamTableApi() throws IOException, InterpreterException {
+    String initStreamScalaScript = getInitStreamScript(100);
+    InterpreterResult result = flinkInterpreter.interpret(initStreamScalaScript,
+            getInterpreterContext());
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+
+    InterpreterContext context = getInterpreterContext();
+    String code = "val table = stenv.sqlQuery(\"select url, count(1) as pv from log group by url\")\nz.show(table, streamType=\"update\")";
+    result = flinkInterpreter.interpret(code, context);
+    assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
+    List<InterpreterResultMessage> resultMessages = context.out.toInterpreterResultMessage();
+    assertEquals(InterpreterResult.Type.TABLE, resultMessages.get(0).getType());
+    assertTrue(resultMessages.toString(),
+            resultMessages.get(0).getData().contains("url\tpv\n"));
+  }
+
+  @Test
   public void testAppendStreamSql() throws IOException, InterpreterException {
-    String initStreamScalaScript = IOUtils.toString(getClass().getResource("/init_stream.scala"));
+    String initStreamScalaScript = getInitStreamScript(100);
     InterpreterResult result = flinkInterpreter.interpret(initStreamScalaScript,
             getInterpreterContext());
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
@@ -102,8 +141,121 @@ public class FlinkStreamSqlInterpreterTest extends SqlInterpreterTest {
   }
 
   @Test
+  public void testAppendStreamTableApi() throws IOException, InterpreterException {
+    String initStreamScalaScript = getInitStreamScript(100);
+    InterpreterResult result = flinkInterpreter.interpret(initStreamScalaScript,
+            getInterpreterContext());
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+
+    InterpreterContext context = getInterpreterContext();
+    String code = "val table = stenv.sqlQuery(\"select TUMBLE_START(rowtime, INTERVAL '5' SECOND) as " +
+            "start_time, url, count(1) as pv from log group by " +
+            "TUMBLE(rowtime, INTERVAL '5' SECOND), url\")\nz.show(table, streamType=\"append\")";
+    result = flinkInterpreter.interpret(code, context);
+    assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
+    List<InterpreterResultMessage> resultMessages = context.out.toInterpreterResultMessage();
+    assertEquals(InterpreterResult.Type.TABLE, resultMessages.get(0).getType());
+    assertTrue(resultMessages.toString(),
+            resultMessages.get(0).getData().contains("url\tpv\n"));
+  }
+
+  @Test
+  public void testCancelStreamSql() throws IOException, InterpreterException, InterruptedException, TimeoutException {
+    String initStreamScalaScript = getInitStreamScript(1000);
+    InterpreterResult result = flinkInterpreter.interpret(initStreamScalaScript,
+            getInterpreterContext());
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+
+    final Waiter waiter = new Waiter();
+    Thread thread = new Thread(() -> {
+      try {
+        InterpreterContext context = getInterpreterContext();
+        context.getLocalProperties().put("type", "update");
+        InterpreterResult result2 = sqlInterpreter.interpret("select url, count(1) as pv from " +
+                "log group by url", context);
+        waiter.assertTrue(context.out.toString().contains("Job was cancelled"));
+        waiter.assertEquals(InterpreterResult.Code.ERROR, result2.code());
+      } catch (Exception e) {
+        e.printStackTrace();
+        waiter.fail("Should not fail here");
+      }
+      waiter.resume();
+    });
+    thread.start();
+
+    // the streaming job will run for 20 seconds. check init_stream.scala
+    // sleep 10 seconds to make sure the job is started but not finished
+    Thread.sleep(10 * 1000);
+
+    InterpreterContext context = getInterpreterContext();
+    context.getLocalProperties().put("type", "update");
+    sqlInterpreter.cancel(context);
+    waiter.await(10 * 1000);
+    // resume job
+    sqlInterpreter.interpret("select url, count(1) as pv from " +
+            "log group by url", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    List<InterpreterResultMessage> resultMessages = context.out.toInterpreterResultMessage();
+    assertEquals(InterpreterResult.Type.TABLE, resultMessages.get(0).getType());
+    assertTrue(resultMessages.toString(),
+            resultMessages.get(0).getData().contains("url\tpv\n"));
+  }
+
+  // TODO(zjffdu) flaky test
+  // @Test
+  public void testResumeStreamSqlFromSavePoint() throws IOException, InterpreterException, InterruptedException, TimeoutException {
+    String initStreamScalaScript = getInitStreamScript(1000);
+    InterpreterResult result = flinkInterpreter.interpret(initStreamScalaScript,
+            getInterpreterContext());
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+
+    File savePointDir = FileUtils.getTempDirectory();
+    final Waiter waiter = new Waiter();
+    Thread thread = new Thread(() -> {
+      try {
+        InterpreterContext context = getInterpreterContext();
+        context.getLocalProperties().put("type", "update");
+        context.getLocalProperties().put("savepointDir", savePointDir.getAbsolutePath());
+        context.getLocalProperties().put("parallelism", "1");
+        context.getLocalProperties().put("maxParallelism", "10");
+        InterpreterResult result2 = sqlInterpreter.interpret("select url, count(1) as pv from " +
+                "log group by url", context);
+        System.out.println("------------" + context.out.toString());
+        System.out.println("------------" + result2);
+        waiter.assertTrue(context.out.toString().contains("url\tpv\n"));
+        waiter.assertEquals(InterpreterResult.Code.SUCCESS, result2.code());
+      } catch (Exception e) {
+        e.printStackTrace();
+        waiter.fail("Should not fail here");
+      }
+      waiter.resume();
+    });
+    thread.start();
+
+    // the streaming job will run for 20 seconds. check init_stream.scala
+    // sleep 10 seconds to make sure the job is started but not finished
+    Thread.sleep(10 * 1000);
+
+    InterpreterContext context = getInterpreterContext();
+    context.getLocalProperties().put("type", "update");
+    context.getLocalProperties().put("savepointDir", savePointDir.getAbsolutePath());
+    context.getLocalProperties().put("parallelism", "2");
+    context.getLocalProperties().put("maxParallelism", "10");
+    sqlInterpreter.cancel(context);
+    waiter.await(10 * 1000);
+    // resume job from savepoint
+    sqlInterpreter.interpret("select url, count(1) as pv from " +
+            "log group by url", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    List<InterpreterResultMessage> resultMessages = context.out.toInterpreterResultMessage();
+    assertEquals(InterpreterResult.Type.TABLE, resultMessages.get(0).getType());
+    assertTrue(resultMessages.toString(),
+            resultMessages.get(0).getData().contains("url\tpv\n"));
+  }
+
+  @Test
   public void testStreamUDF() throws IOException, InterpreterException {
-    String initStreamScalaScript = IOUtils.toString(getClass().getResource("/init_stream.scala"));
+    String initStreamScalaScript = getInitStreamScript(100);
     InterpreterResult result = flinkInterpreter.interpret(initStreamScalaScript,
             getInterpreterContext());
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
@@ -118,7 +270,7 @@ public class FlinkStreamSqlInterpreterTest extends SqlInterpreterTest {
     context.getLocalProperties().put("type", "update");
     result = sqlInterpreter.interpret("select myupper(url), count(1) as pv from " +
             "log group by url", context);
-    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
 //    assertEquals(InterpreterResult.Type.TABLE,
 //            updatedOutput.toInterpreterResultMessage().getType());
 //    assertTrue(updatedOutput.toInterpreterResultMessage().getData(),
@@ -149,6 +301,17 @@ public class FlinkStreamSqlInterpreterTest extends SqlInterpreterTest {
             getInterpreterContext());
 
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+
+    // after these select queries, `show tables` should still show only one source table,
+    // other temporary tables should not be displayed.
+    InterpreterContext context = getInterpreterContext();
+    result = sqlInterpreter.interpret("show tables", context);
+    List<InterpreterResultMessage> resultMessages = context.out.toInterpreterResultMessage();
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    assertEquals(1, resultMessages.size());
+    assertEquals(InterpreterResult.Type.TABLE, resultMessages.get(0).getType());
+    assertEquals(resultMessages.get(0).toString(),
+            "table\ndest_table\nsource_table\n", resultMessages.get(0).getData());
   }
 
   @Test
@@ -221,5 +384,10 @@ public class FlinkStreamSqlInterpreterTest extends SqlInterpreterTest {
     assertEquals(1, resultMessages.size());
     assertEquals(InterpreterResult.Type.TEXT, resultMessages.get(0).getType());
     assertEquals("Table has been created.\n", resultMessages.get(0).getData());
+  }
+
+  public static String getInitStreamScript(int sleep_interval) throws IOException {
+    return IOUtils.toString(FlinkStreamSqlInterpreterTest.class.getResource("/init_stream.scala"))
+            .replace("{{sleep_interval}}", sleep_interval + "");
   }
 }

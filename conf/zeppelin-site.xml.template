@@ -456,6 +456,38 @@
 </property>
 -->
 
+<!--
+<property>
+  <name>zeppelin.ssl.pem.key</name>
+  <value></value>
+  <description>This directive points to the PEM-encoded private key file for the server.</description>
+</property>
+-->
+
+<!--
+<property>
+  <name>zeppelin.ssl.pem.key.password</name>
+  <value></value>
+  <description>Password of the PEM-encoded private key.</description>
+</property>
+-->
+
+<!--
+<property>
+  <name>zeppelin.ssl.pem.cert</name>
+  <value></value>
+  <description>This directive points to a file with certificate data in PEM format.</description>
+</property>
+-->
+
+<!--
+<property>
+  <name>zeppelin.ssl.pem.ca</name>
+  <value></value>
+  <description>This directive sets the all-in-one file where you can assemble the Certificates of Certification Authorities (CA) whose clients you deal with. These are used for Client Authentication. Such a file is simply the concatenation of the various PEM-encoded Certificate files.</description>
+</property>
+-->
+
 <property>
   <name>zeppelin.server.allowed.origins</name>
   <value>*</value>

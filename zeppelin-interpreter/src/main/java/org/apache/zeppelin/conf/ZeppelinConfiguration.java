@@ -395,6 +395,22 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     }
   }
 
+  public String getPemKeyFile() {
+      return getString(ConfVars.ZEPPELIN_SSL_PEM_KEY);
+  }
+
+  public String getPemKeyPassword() {
+      return getString(ConfVars.ZEPPELIN_SSL_PEM_KEY_PASSWORD);
+  }
+
+  public String getPemCertFile() {
+      return getString(ConfVars.ZEPPELIN_SSL_PEM_CERT);
+  }
+
+  public String getPemCAFile() {
+      return getString(ConfVars.ZEPPELIN_SSL_PEM_CA);
+  }
+
   public String getNotebookDir() {
     return getRelativeDir(ConfVars.ZEPPELIN_NOTEBOOK_DIR);
   }
@@ -697,6 +713,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getString(ConfVars.ZEPPELIN_INTERPRETER_LIFECYCLE_MANAGER_CLASS);
   }
 
+  public boolean getZeppelinImpersonateSparkProxyUser() {
+      return getBoolean(ConfVars.ZEPPELIN_IMPERSONATE_SPARK_PROXY_USER);
+  }
+
   public String getZeppelinNotebookGitURL() {
     return  getString(ConfVars.ZEPPELIN_NOTEBOOK_GIT_REMOTE_URL);
   }
@@ -866,6 +886,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_SSL_KEYSTORE_TYPE("zeppelin.ssl.keystore.type", "JKS"),
     ZEPPELIN_SSL_KEYSTORE_PASSWORD("zeppelin.ssl.keystore.password", ""),
     ZEPPELIN_SSL_KEY_MANAGER_PASSWORD("zeppelin.ssl.key.manager.password", null),
+    ZEPPELIN_SSL_PEM_KEY("zeppelin.ssl.pem.key", null),
+    ZEPPELIN_SSL_PEM_KEY_PASSWORD("zeppelin.ssl.pem.key.password", ""),
+    ZEPPELIN_SSL_PEM_CERT("zeppelin.ssl.pem.cert", null),
+    ZEPPELIN_SSL_PEM_CA("zeppelin.ssl.pem.ca", null),
     ZEPPELIN_SSL_TRUSTSTORE_PATH("zeppelin.ssl.truststore.path", null),
     ZEPPELIN_SSL_TRUSTSTORE_TYPE("zeppelin.ssl.truststore.type", null),
     ZEPPELIN_SSL_TRUSTSTORE_PASSWORD("zeppelin.ssl.truststore.password", null),
@@ -998,6 +1022,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 
     ZEPPELIN_DOCKER_CONTAINER_IMAGE("zeppelin.docker.container.image", "apache/zeppelin:" + Util.getVersion()),
 
+    ZEPPELIN_IMPERSONATE_SPARK_PROXY_USER("zeppelin.impersonate.spark.proxy.user", true),
     ZEPPELIN_NOTEBOOK_GIT_REMOTE_URL("zeppelin.notebook.git.remote.url", ""),
     ZEPPELIN_NOTEBOOK_GIT_REMOTE_USERNAME("zeppelin.notebook.git.remote.username", "token"),
     ZEPPELIN_NOTEBOOK_GIT_REMOTE_ACCESS_TOKEN("zeppelin.notebook.git.remote.access-token", ""),

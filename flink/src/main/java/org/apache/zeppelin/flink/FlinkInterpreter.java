@@ -17,10 +17,13 @@
 
 package org.apache.zeppelin.flink;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.flink.api.scala.ExecutionEnvironment;
 import org.apache.flink.configuration.Configuration;
+import org.apache.flink.runtime.jobgraph.SavepointConfigOptions;
 import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment;
 import org.apache.flink.table.api.TableEnvironment;
+import org.apache.flink.table.api.config.ExecutionConfigOptions;
 import org.apache.flink.table.api.scala.StreamTableEnvironment;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
@@ -72,6 +75,9 @@ public class FlinkInterpreter extends Interpreter {
     ClassLoader originClassLoader = Thread.currentThread().getContextClassLoader();
     try {
       Thread.currentThread().setContextClassLoader(getFlinkScalaShellLoader());
+      createPlannerAgain();
+      setParallelismIfNecessary(context);
+      setSavePointIfNecessary(context);
       return innerIntp.interpret(st, context);
     } finally {
       Thread.currentThread().setContextClassLoader(originClassLoader);
@@ -110,7 +116,7 @@ public class FlinkInterpreter extends Interpreter {
   }
 
   StreamTableEnvironment getStreamTableEnvironment() {
-    return this.innerIntp.getStreamTableEnvironment();
+    return this.innerIntp.getStreamTableEnvironment("blink");
   }
 
   org.apache.flink.table.api.TableEnvironment getJavaBatchTableEnvironment(String planner) {
@@ -122,7 +128,7 @@ public class FlinkInterpreter extends Interpreter {
   }
 
   TableEnvironment getBatchTableEnvironment() {
-    return this.innerIntp.getBatchTableEnvironment();
+    return this.innerIntp.getBatchTableEnvironment("blink");
   }
 
   JobManager getJobManager() {
@@ -159,4 +165,13 @@ public class FlinkInterpreter extends Interpreter {
   public FlinkScalaInterpreter getInnerIntp() {
     return this.innerIntp;
   }
+
+  public void setSavePointIfNecessary(InterpreterContext context) {
+    this.innerIntp.setSavePointIfNecessary(context);
+  }
+
+  public void setParallelismIfNecessary(InterpreterContext context) {
+    this.innerIntp.setParallelismIfNecessary(context);
+  }
+
 }
