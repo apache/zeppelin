@@ -68,14 +68,14 @@ public class QuartzSchedulerService implements SchedulerService {
                   try {
                     if (!refreshCron(entry.getId())) {
                       try {
-                        LOGGER.debug("Unload note: " + entry.getId());
+                        LOGGER.debug("Unload note: {}", entry.getId());
                         notebook.getNote(entry.getId()).unLoad();
                       } catch (Exception e) {
-                        LOGGER.warn("Fail to unload note: " + entry.getId(), e);
+                        LOGGER.warn("Fail to unload note: {}", entry.getId(), e);
                       }
                     }
                   } catch (Exception e) {
-                    LOGGER.warn("Fail to refresh cron for note: " + entry.getId());
+                    LOGGER.warn("Fail to refresh cron for note: {}", entry.getId());
                   }
                 });
         LOGGER.info("Complete init cronjobs");
@@ -86,9 +86,6 @@ public class QuartzSchedulerService implements SchedulerService {
   }
 
   private Scheduler getScheduler() throws SchedulerException {
-    // Make sure to not check for Quartz update since this leaks information about running process
-    // http://www.quartz-scheduler.org/documentation/2.4.0-SNAPSHOT/best-practices.html#skip-update-check
-    System.setProperty("org.terracotta.quartz.skipUpdateCheck", "true");
     return new StdSchedulerFactory().getScheduler();
   }
 
@@ -115,38 +112,35 @@ public class QuartzSchedulerService implements SchedulerService {
       return false;
     }
     if (note == null) {
-      LOGGER.warn("Skip refresh cron of note: " + noteId + " because there's no such note");
+      LOGGER.warn("Skip refresh cron of note: {} because there's no such note", noteId);
       return false;
     }
     if (note.isTrash()) {
-      LOGGER.warn("Skip refresh cron of note: " + noteId + " because it is in trash");
+      LOGGER.warn("Skip refresh cron of note: {} because it is in trash", noteId);
       return false;
     }
 
     Map<String, Object> config = note.getConfig();
     if (config == null) {
-      LOGGER.warn("Skip refresh cron of note: " + noteId + " because its config is empty.");
+      LOGGER.warn("Skip refresh cron of note: {} because its config is empty.", noteId);
       return false;
     }
 
-    if (!note.isCronSupported(zeppelinConfiguration)) {
-      LOGGER.warn("Skip refresh cron of note " + noteId + " because its cron is not enabled.");
+    if (!note.isCronSupported(zeppelinConfiguration).booleanValue()) {
+      LOGGER.warn("Skip refresh cron of note {} because its cron is not enabled.", noteId);
       return false;
     }
 
     String cronExpr = (String) note.getConfig().get("cron");
     if (cronExpr == null || cronExpr.trim().length() == 0) {
-      LOGGER.warn("Skip refresh cron of note " + noteId + " because its cron expression is empty.");
+      LOGGER.warn("Skip refresh cron of note {} because its cron expression is empty.", noteId);
       return false;
     }
 
-    JobDataMap jobDataMap =
-        new JobDataMap() {
-          {
-            put("noteId", noteId);
-            put("notebook", notebook);
-          }
-        };
+    JobDataMap jobDataMap = new JobDataMap();
+    jobDataMap.put("noteId", noteId);
+    jobDataMap.put("notebook", notebook);
+
     JobDetail newJob =
         JobBuilder.newJob(CronJob.class)
             .withIdentity(noteId, "note")
@@ -171,7 +165,7 @@ public class QuartzSchedulerService implements SchedulerService {
     }
 
     try {
-      LOGGER.info("Trigger cron for note: " + note.getName() + ", with cron expression: " + cronExpr);
+      LOGGER.info("Trigger cron for note: {}, with cron expression: {}",  note.getName(), cronExpr);
       scheduler.scheduleJob(newJob, trigger);
       return true;
     } catch (SchedulerException e) {
