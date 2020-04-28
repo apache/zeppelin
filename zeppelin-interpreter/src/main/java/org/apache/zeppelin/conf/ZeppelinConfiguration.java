@@ -415,6 +415,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getRelativeDir(ConfVars.ZEPPELIN_NOTEBOOK_DIR);
   }
 
+  public String getGitRepoDir() {
+    return getString(ConfVars.ZEPPELIN_GIT_REPO_DIR);
+  }
+
   public String getNotebookRunId() {
     return getString(ConfVars.ZEPPELIN_NOTEBOOK_RUN_ID);
   }
@@ -909,6 +913,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_INTERPRETER_OUTPUT_LIMIT("zeppelin.interpreter.output.limit", 1024 * 100),
     ZEPPELIN_ENCODING("zeppelin.encoding", "UTF-8"),
     ZEPPELIN_NOTEBOOK_DIR("zeppelin.notebook.dir", "notebook"),
+    ZEPPELIN_GIT_REPO_DIR("zeppelin.git.repo.dir", ""),
 
     ZEPPELIN_NOTEBOOK_RUN_ID("zeppelin.notebook.run.id", null),   // run particular note id on zeppelin start
     ZEPPELIN_NOTEBOOK_RUN_REV("zeppelin.notebook.run.rev", null), // revision id for ZEPPELIN_NOTEBOOK_RUN_ID.
