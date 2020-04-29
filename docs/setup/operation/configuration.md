@@ -418,7 +418,13 @@ If both are defined, then the **environment variables** will take priority.
     <td><h6 class="properties">zeppelin.k8s.template.dir</h6></td>
     <td>k8s</td>
     <td>Kubernetes yaml spec files</td>
-  </tr>  
+  </tr>
+  <tr>
+    <td><h6 class="properties">ZEPPELIN_K8S_SERVICE_NAME</h6></td>
+    <td><h6 class="properties">zeppelin.k8s.service.name</h6></td>
+    <td>zeppelin-server</td>
+    <td>Name of the Zeppelin server service resources</td>
+  </tr>
 </table>
 
 

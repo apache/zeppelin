@@ -94,6 +94,7 @@ Thumbs.db
 **/.settings/
 .project
 .settings/
+.factorypath
 
 # intelliJ IDEA project files
 .idea/

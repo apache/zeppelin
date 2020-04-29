@@ -25,6 +25,7 @@ import org.apache.commons.exec.*;
 import org.apache.commons.io.IOUtils;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -106,7 +107,7 @@ public class Kubectl {
 
   @VisibleForTesting
   String execAndGet(String [] args, String stdin) throws IOException {
-    InputStream ins = IOUtils.toInputStream(stdin);
+    InputStream ins = IOUtils.toInputStream(stdin, StandardCharsets.UTF_8);
     ByteArrayOutputStream stdout = new ByteArrayOutputStream();
     ByteArrayOutputStream stderr = new ByteArrayOutputStream();
     ArrayList<String> argsToOverride = new ArrayList<>(Arrays.asList(args));
