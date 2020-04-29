@@ -186,7 +186,7 @@ spec:
 kind: Service
 apiVersion: v1
 metadata:
-  name: zeppelin-server    # keep Service name the same to Pod name.
+  name: zeppelin-server
 spec:
   ports:
     - name: http

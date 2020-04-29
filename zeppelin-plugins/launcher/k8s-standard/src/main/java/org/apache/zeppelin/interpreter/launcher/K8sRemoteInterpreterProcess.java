@@ -14,7 +14,6 @@ import com.hubspot.jinjava.Jinjava;
 import org.apache.commons.exec.ExecuteWatchdog;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterUtils;
 import org.slf4j.Logger;
@@ -31,7 +30,7 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
   private final String containerImage;
   private final Properties properties;
   private final Map<String, String> envs;
-  private final String zeppelinServiceHost;
+  private final String zeppelinService;
   private final String zeppelinServiceRpcPort;
 
   private final Gson gson = new Gson();
@@ -55,7 +54,7 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
           String interpreterSettingName,
           Properties properties,
           Map<String, String> envs,
-          String zeppelinServiceHost,
+          String zeppelinService,
           String zeppelinServiceRpcPort,
           boolean portForward,
           String sparkImage,
@@ -71,7 +70,7 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
     this.interpreterSettingName = interpreterSettingName;
     this.properties = properties;
     this.envs = new HashMap<>(envs);
-    this.zeppelinServiceHost = zeppelinServiceHost;
+    this.zeppelinService = zeppelinService;
     this.zeppelinServiceRpcPort = zeppelinServiceRpcPort;
     this.portForward = portForward;
     this.sparkImage = sparkImage;
@@ -266,7 +265,7 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
     k8sProperties.put("zeppelin.k8s.interpreter.setting.name", interpreterSettingName);
     k8sProperties.put("zeppelin.k8s.interpreter.localRepo", "/tmp/local-repo");
     k8sProperties.put("zeppelin.k8s.interpreter.rpc.portRange", String.format("%d:%d", getPort(), getPort()));
-    k8sProperties.put("zeppelin.k8s.server.rpc.host", zeppelinServiceHost);
+    k8sProperties.put("zeppelin.k8s.server.rpc.service", zeppelinService);
     k8sProperties.put("zeppelin.k8s.server.rpc.portRange", zeppelinServiceRpcPort);
     if (ownerUID() != null && ownerName() != null) {
       k8sProperties.put("zeppelin.k8s.server.uid", ownerUID());

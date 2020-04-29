@@ -98,14 +98,14 @@ public class K8sStandardInterpreterLauncher extends InterpreterLauncher {
   }
 
   /**
-   * get Zeppelin server host dns.
-   * return <hostname>.<namespace>.svc
+   * get Zeppelin service.
+   * return <service-name>.<namespace>.svc
    * @throws IOException
    */
-  private String getZeppelinServiceHost() throws IOException {
+  private String getZeppelinService() throws IOException {
     if (isRunningOnKubernetes()) {
       return String.format("%s.%s.svc",
-              getHostname(), // service name and pod name should be the same
+              zConf.getK8sServiceName(),
               getNamespace());
     } else {
       return context.getZeppelinServerHost();
@@ -154,7 +154,7 @@ public class K8sStandardInterpreterLauncher extends InterpreterLauncher {
             context.getInterpreterSettingName(),
             properties,
             buildEnvFromProperties(context),
-            getZeppelinServiceHost(),
+            getZeppelinService(),
             getZeppelinServiceRpcPort(),
             zConf.getK8sPortForward(),
             zConf.getK8sSparkContainerImage(),
