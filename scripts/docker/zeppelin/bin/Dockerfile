@@ -81,8 +81,7 @@ RUN echo "$LOG_TAG Install R related packages" && \
     echo "PATH: $PATH" && \
     ls /opt/conda/bin && \
     echo "deb http://cran.rstudio.com/bin/linux/ubuntu xenial/" | tee -a /etc/apt/sources.list && \
-    gpg --keyserver keyserver.ubuntu.com --recv-key E084DAB9 && \
-    gpg -a --export E084DAB9 | apt-key add - && \
+    apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 51716619E084DAB9 && \
     apt-get -y update && \
     apt-get -y --allow-unauthenticated install r-base r-base-dev && \
     R -e "install.packages('evaluate', repos = 'https://cloud.r-project.org')" && \
