@@ -20,9 +20,7 @@ package org.apache.zeppelin.flink.sql;
 
 import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment;
 import org.apache.flink.table.api.TableEnvironment;
-import org.apache.flink.table.api.scala.StreamTableEnvironment;
 import org.apache.flink.types.Row;
-import org.apache.flink.util.StringUtils;
 import org.apache.zeppelin.flink.JobManager;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.tabledata.TableDataUtils;
@@ -36,6 +34,7 @@ public class SingleRowStreamSqlJob extends AbstractStreamSqlJob {
 
   private Row latestRow;
   private String template;
+  private boolean isFirstRefresh = true;
 
   public SingleRowStreamSqlJob(StreamExecutionEnvironment senv,
                                TableEnvironment stenv,
@@ -64,11 +63,10 @@ public class SingleRowStreamSqlJob extends AbstractStreamSqlJob {
   @Override
   protected String buildResult() {
     StringBuilder builder = new StringBuilder();
-    builder.append("%html\n");
+    builder.append("%angular ");
     String outputText = template;
     for (int i = 0; i < latestRow.getArity(); ++i) {
-      outputText = outputText.replace("{" + i + "}",
-              TableDataUtils.normalizeColumn(StringUtils.arrayAwareToString(latestRow.getField(i))));
+      outputText = outputText.replace("{" + i + "}", "{{value_" + i + "}}");
     }
     builder.append(outputText);
     return builder.toString();
@@ -80,10 +78,19 @@ public class SingleRowStreamSqlJob extends AbstractStreamSqlJob {
       LOGGER.warn("Skip RefreshTask as no data available");
       return;
     }
-    context.out().clear(false);
-    String output = buildResult();
-    context.out.write(output);
-    LOGGER.debug("Refresh Output: " + output);
-    context.out.flush();
+    if (isFirstRefresh) {
+      context.out().clear(false);
+      String output = buildResult();
+      context.out.write(output);
+      context.out.flush();
+      isFirstRefresh = false;
+    }
+
+    for (int i = 0; i < latestRow.getArity(); ++i) {
+      context.getAngularObjectRegistry().add("value_" + i,
+              TableDataUtils.normalizeColumn(latestRow.getField(i)),
+              context.getNoteId(),
+              context.getParagraphId());
+    }
   }
 }
