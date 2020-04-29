@@ -287,7 +287,7 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
 
       // configure interpreter property "zeppelin.spark.uiWebUrl" if not defined, to enable spark ui through reverse proxy
       String webUrl = (String) properties.get("zeppelin.spark.uiWebUrl");
-      if (webUrl == null || webUrl.trim().isEmpty()) {
+      if (StringUtils.isBlank(webUrl)) {
         webUrl = "//{{PORT}}-{{SERVICE_NAME}}.{{SERVICE_DOMAIN}}";
       }
       properties.put("zeppelin.spark.uiWebUrl",
