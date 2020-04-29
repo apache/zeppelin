@@ -160,6 +160,7 @@ public class JobManager {
     private boolean isStreamingInsertInto;
     private int progress;
     private AtomicBoolean running = new AtomicBoolean(true);
+    private boolean isFirstPoll = true;
 
     FlinkJobProgressPoller(String flinkWebUI, JobID jobId, InterpreterContext context) {
       this.flinkWebUI = flinkWebUI;
@@ -196,15 +197,19 @@ public class JobManager {
             running.wait(1000);
           }
           if (isStreamingInsertInto) {
-            StringBuilder builder = new StringBuilder("%html ");
-            builder.append("<h1>Duration: " +
-                    rootNode.getObject().getLong("duration") / 1000 +
-                    " seconds");
-            builder.append("\n%text ");
-            context.out.clear(false);
-            sendFlinkJobUrl(context);
-            context.out.write(builder.toString());
-            context.out.flush();
+            if (isFirstPoll) {
+              StringBuilder builder = new StringBuilder("%angular ");
+              builder.append("<h1>Duration: {{duration}} seconds");
+              builder.append("\n%text ");
+              context.out.clear(false);
+              context.out.write(builder.toString());
+              context.out.flush();
+              isFirstPoll = false;
+            }
+            context.getAngularObjectRegistry().add("duration",
+                    rootNode.getObject().getLong("duration") / 1000,
+                    context.getNoteId(),
+                    context.getParagraphId());
           }
         } catch (Exception e) {
           LOGGER.error("Fail to poll flink job progress via rest api", e);

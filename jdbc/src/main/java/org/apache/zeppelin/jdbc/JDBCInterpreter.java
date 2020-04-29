@@ -161,6 +161,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
   private SqlSplitter sqlSplitter;
 
   private Map<String, ScheduledExecutorService> refreshExecutorServices = new HashMap<>();
+  private Map<String, Boolean> isFirstRefreshMap = new HashMap<>();
   private Map<String, Boolean> paragraphCancelMap = new HashMap<>();
 
   public JDBCInterpreter(Properties property) {
@@ -577,32 +578,10 @@ public class JDBCInterpreter extends KerberosInterpreter {
     return null;
   }
 
-  private String getResults(ResultSet resultSet,
-                            boolean isTableType,
-                            String template)
+  private String getResults(ResultSet resultSet, boolean isTableType)
       throws SQLException {
 
     ResultSetMetaData md = resultSet.getMetaData();
-
-    /**
-     * If html template is provided, only fetch the first row.
-     */
-    if (template != null) {
-      resultSet.next();
-      String result = "%html " + template + "\n";
-      for (int i = 1; i <= md.getColumnCount(); ++i) {
-        Object columnObject = resultSet.getObject(i);
-        String columnValue = null;
-        if (columnObject == null) {
-          columnValue = "null";
-        } else {
-          columnValue = resultSet.getString(i);
-        }
-        result = result.replace("{" + (i - 1) + "}", columnValue);
-      }
-      return result;
-    }
-
     StringBuilder msg;
     if (isTableType) {
       msg = new StringBuilder(TABLE_MAGIC_TAG);
@@ -759,11 +738,38 @@ public class JDBCInterpreter extends KerberosInterpreter {
                 resultSet.getMetaData().getColumnCount())) {
               context.out.write("%text Query executed successfully.\n");
             } else {
-              String results = getResults(resultSet,
-                  !containsIgnoreCase(sqlToExecute, EXPLAIN_PREDICATE),
-                      context.getLocalProperties().get("template"));
-              context.out.write(results);
-              context.out.write("\n%text ");
+              String template = context.getLocalProperties().get("template");
+              if (!StringUtils.isBlank(template)) {
+                resultSet.next();
+                ResultSetMetaData md = resultSet.getMetaData();
+                if (isFirstRefreshMap.get(context.getParagraphId())) {
+                  String angularTemplate = template;
+                  for (int j = 0; j < md.getColumnCount(); ++j) {
+                    angularTemplate = angularTemplate.replace("{" + j + "}", "{{value_" + j + "}}");
+                  }
+                  context.out.write("%angular " + angularTemplate);
+                  context.out.write("\n%text ");
+                  context.out.flush();
+                  isFirstRefreshMap.put(context.getParagraphId(), false);
+                }
+                for (int j = 1; j <= md.getColumnCount(); ++j) {
+                  Object columnObject = resultSet.getObject(j);
+                  String columnValue = null;
+                  if (columnObject == null) {
+                    columnValue = "null";
+                  } else {
+                    columnValue = resultSet.getString(j);
+                  }
+                  context.getAngularObjectRegistry().add("value_" + (j - 1),
+                          columnValue, context.getNoteId(), context.getParagraphId());
+                }
+              } else {
+                String results = getResults(resultSet,
+                        !containsIgnoreCase(sqlToExecute, EXPLAIN_PREDICATE));
+                context.out.write(results);
+                context.out.write("\n%text ");
+                context.out.flush();
+              }
             }
           } else {
             // Response contains either an update count or there are no results.
@@ -851,6 +857,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
       paragraphCancelMap.put(context.getParagraphId(), false);
       ScheduledExecutorService refreshExecutor = Executors.newSingleThreadScheduledExecutor();
       refreshExecutorServices.put(context.getParagraphId(), refreshExecutor);
+      isFirstRefreshMap.put(context.getParagraphId(), true);
       final AtomicReference<InterpreterResult> interpreterResultRef = new AtomicReference();
       refreshExecutor.scheduleAtFixedRate(() -> {
         context.out.clear(false);
