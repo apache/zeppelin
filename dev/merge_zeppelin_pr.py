@@ -249,7 +249,7 @@ def resolve_jira_issue(merge_branches, comment, default_jira_id=""):
     # Consider only x.y.z versions
     versions = filter(lambda x: re.match('\d+\.\d+\.\d+', x.name), versions)
 
-    default_fix_versions = map(lambda x: fix_version_from_branch(x, versions).name, merge_branches)
+    default_fix_versions = set(map(lambda x: fix_version_from_branch(x, versions).name, merge_branches))
     for v in default_fix_versions:
         # Handles the case where we have forked a release branch but not yet made the release.
         # In this case, if the PR is committed to the master branch and the release branch, we
