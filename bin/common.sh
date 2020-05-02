@@ -65,9 +65,9 @@ ZEPPELIN_CLASSPATH+=":${ZEPPELIN_CONF_DIR}"
 function check_java_version() {
     java_ver_output=$("${JAVA:-java}" -version 2>&1)
     jvmver=$(echo "$java_ver_output" | grep '[openjdk|java] version' | awk -F'"' 'NR==1 {print $2}' | cut -d\- -f1)
-    JVM_VERSION=$(echo "$jvmver"|sed -e 's|^\([0-9]\+\)\..*$|\1|')
+    JVM_VERSION=$(echo "$jvmver"|sed -e 's|^\([0-9][0-9]*\)\..*$|\1|')
     if [ "$JVM_VERSION" = "1" ]; then
-        JVM_VERSION=$(echo "$jvmver"|sed -e 's|^1\.\([0-9]\+\)\..*$|\1|')
+        JVM_VERSION=$(echo "$jvmver"|sed -e 's|^1\.\([0-9][0-9]*\)\..*$|\1|')
     fi
 
     if [ "$JVM_VERSION" -lt 8 ] || ([ "$JVM_VERSION" -eq 8 ] && [ "${jvmver#*_}" -lt 151 ]) ; then
