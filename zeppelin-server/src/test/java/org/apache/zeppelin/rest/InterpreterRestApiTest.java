@@ -291,6 +291,7 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
 
   }
 
+  @Test
   public void testInterpreterRestart() throws IOException, InterruptedException {
     Note note = null;
     try {

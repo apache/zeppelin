@@ -60,8 +60,8 @@ public class SimplePrincipalMapper implements PrincipalMapper {
           String value = mapping.substring(mapping.indexOf('=') + 1);
           String[] v = value.split(",");
           String[] p = principals.split(",");
-          for (int i = 0; i < p.length; i++) {
-            table.put(p[i], v);
+          for (String s : p) {
+            table.put(s, v);
           }
         } while (t.hasMoreTokens());
       }
@@ -98,7 +98,7 @@ public class SimplePrincipalMapper implements PrincipalMapper {
   @Override
   public String[] mapGroupPrincipal(String principalName) {
     String[] groups = null;
-    String[] wildCardGroups = null;
+    String[] wildCardGroups;
 
     if (groupMappings != null) {
       groups = groupMappings.get(principalName);
@@ -112,13 +112,15 @@ public class SimplePrincipalMapper implements PrincipalMapper {
 
     return groups;
   }
-
+  
   /**
+   *
    * @param groups
    * @param wildCardGroups
+   * @param <T>
    * @return
    */
-  public static <T> T[] concat(T[] groups, T[] wildCardGroups) {
+  public static <T> T[] concat(T[] groups, T ... wildCardGroups) {
     T[] result = Arrays.copyOf(groups, groups.length + wildCardGroups.length);
     System.arraycopy(wildCardGroups, 0, result, groups.length, wildCardGroups.length);
     return result;

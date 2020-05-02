@@ -698,14 +698,13 @@ public class NotebookServerTest extends AbstractTestRestApi {
       notebook.saveNote(note, anonymous);
 
       String noteId = note.getId();
-      String user1Id = "user1", user2Id = "user2";
-
+      String user1Id = "user1";
+      String user2Id = "user2";
+  
       // test user1 can get anonymous's note
       List<ParagraphInfo> paragraphList0 = null;
       try {
         paragraphList0 = notebookServer.getParagraphList(user1Id, noteId);
-      } catch (ServiceException e) {
-        e.printStackTrace();
       } catch (TException e) {
         e.printStackTrace();
       }

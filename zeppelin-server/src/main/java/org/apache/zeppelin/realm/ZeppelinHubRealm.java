@@ -173,7 +173,7 @@ public class ZeppelinHubRealm extends AuthorizingRealm {
    * @param pwd
    * @return
    */
-  protected String createLoginPayload(String login, char[] pwd) {
+  protected String createLoginPayload(String login, char ... pwd) {
     StringBuilder sb = new StringBuilder("{\"login\":\"");
     return sb.append(login).append("\", \"password\":\"").append(pwd).append("\"}").toString();
   }

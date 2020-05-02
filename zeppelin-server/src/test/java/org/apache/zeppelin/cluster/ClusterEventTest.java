@@ -66,9 +66,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
@@ -134,7 +132,7 @@ public class ClusterEventTest extends ZeppelinServerMock {
     }
 
     Thread.sleep(3000);
-    assertEquals(true, clusterIsStartup());
+    assertTrue(clusterIsStartup());
 
     getClusterServerMeta();
   }
@@ -282,7 +280,7 @@ public class ClusterEventTest extends ZeppelinServerMock {
     LOGGER.info(intpMeta.toString());
 
     assertNotNull(srvMeta);
-    assertEquals(true, (srvMeta instanceof HashMap));
+    assertTrue((srvMeta instanceof HashMap));
     HashMap hashMap = (HashMap) srvMeta;
 
     assertEquals(hashMap.size(), 3);
@@ -406,8 +404,9 @@ public class ClusterEventTest extends ZeppelinServerMock {
       notebookServer.getNotebook().saveNote(note, anonymous);
 
       String noteId = note.getId();
-      String user1Id = "user1", user2Id = "user2";
-
+      String user1Id = "user1";
+      String user2Id = "user2";
+  
       // test user1 can get anonymous's note
       List<ParagraphInfo> paragraphList0 = null;
       try {

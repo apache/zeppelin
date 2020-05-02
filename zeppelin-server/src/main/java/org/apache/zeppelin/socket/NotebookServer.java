@@ -2111,8 +2111,7 @@ public class NotebookServer extends WebSocketServlet
     // Convert Paragraph to ParagraphInfo
     List<ParagraphInfo> paragraphInfos = new ArrayList();
     List<Paragraph> paragraphs = note.getParagraphs();
-    for (Iterator<Paragraph> iter = paragraphs.iterator(); iter.hasNext();) {
-      Paragraph paragraph = iter.next();
+    for (Paragraph paragraph : paragraphs) {
       ParagraphInfo paraInfo = new ParagraphInfo();
       paraInfo.setNoteId(noteId);
       paraInfo.setParagraphId(paragraph.getId());

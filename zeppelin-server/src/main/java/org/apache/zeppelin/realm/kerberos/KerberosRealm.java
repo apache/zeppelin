@@ -699,7 +699,7 @@ public class KerberosRealm extends AuthorizingRealm {
     return token;
   }
 
-  private static AuthenticationToken getTokenFromCookies(Cookie[] cookies)
+  private static AuthenticationToken getTokenFromCookies(Cookie ... cookies)
       throws AuthenticationException {
     AuthenticationToken token = null;
     String tokenStr = null;
