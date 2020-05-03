@@ -232,6 +232,7 @@ public class ActiveDirectoryGroupRealm extends AbstractLdapRealm {
    * @return the AuthorizationInfo for the given Subject principal.
    * @throws NamingException if an error occurs when searching the LDAP server.
    */
+  
   @Override
   protected AuthorizationInfo queryForAuthorizationInfo(PrincipalCollection principals,
           LdapContextFactory ldapContextFactory) throws NamingException {
