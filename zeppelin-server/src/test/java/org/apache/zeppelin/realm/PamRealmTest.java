@@ -16,6 +16,7 @@
  */
 package org.apache.zeppelin.realm;
 
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 import static org.mockito.Mockito.mock;
@@ -55,8 +56,8 @@ public class PamRealmTest {
     when(authToken.getCredentials()).thenReturn(pamPass);
 
     AuthenticationInfo authInfo = realm.doGetAuthenticationInfo(authToken);
-
-    assertTrue(authInfo.getCredentials() != null);
+  
+    assertNotNull(authInfo.getCredentials());
   }
 
   public static void main(String[] args) {

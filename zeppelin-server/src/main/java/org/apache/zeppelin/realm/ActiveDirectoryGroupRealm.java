@@ -136,6 +136,7 @@ public class ActiveDirectoryGroupRealm extends AbstractLdapRealm {
     }
   }
 
+  
   @Override
   protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals) {
     try {

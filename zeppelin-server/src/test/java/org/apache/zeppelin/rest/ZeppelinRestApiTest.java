@@ -367,7 +367,8 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
   @Test
   public void testCloneNote() throws IOException, IllegalArgumentException {
     LOG.info("testCloneNote");
-    Note note = null, newNote = null;
+    Note note = null;
+    Note newNote = null;
     try {
       // Create note to clone
       note = TestUtils.getInstance(Notebook.class).createNote("note1_testCloneNote", anonymous);
@@ -948,13 +949,13 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
       ArrayList searchBody = (ArrayList) respSearchResult.get("body");
 
       int numberOfTitleHits = 0;
-      for (int i = 0; i < searchBody.size(); i++) {
-        Map<String, String> searchResult = (Map<String, String>) searchBody.get(i);
+      for (Object o : searchBody) {
+        Map<String, String> searchResult = (Map<String, String>) o;
         if (searchResult.get("header").contains("testTitleSearchOfParagraph")) {
           numberOfTitleHits++;
         }
       }
-      assertEquals("Paragraph title hits must be at-least one", true, numberOfTitleHits >= 1);
+      assertTrue("Paragraph title hits must be at-least one", numberOfTitleHits >= 1);
       searchNote.releaseConnection();
     } finally {
       //cleanup

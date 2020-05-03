@@ -97,13 +97,13 @@ public class NotebookRepoRestApiTest extends AbstractTestRestApi {
     List<Map<String, Object>> listOfRepositories = getListOfReposotiry();
     String localVfs = StringUtils.EMPTY;
     String className = StringUtils.EMPTY;
-
-    for (int i = 0; i < listOfRepositories.size(); i++) {
-      if (listOfRepositories.get(i).get("name").equals("VFSNotebookRepo")) {
+  
+    for (Map<String, Object> listOfRepository : listOfRepositories) {
+      if (listOfRepository.get("name").equals("VFSNotebookRepo")) {
         localVfs =
-                (String) ((List<Map<String, Object>>) listOfRepositories.get(i).get("settings"))
-                        .get(0).get("selected");
-        className = (String) listOfRepositories.get(i).get("className");
+                (String) ((List<Map<String, Object>>) listOfRepository.get("settings"))
+                                 .get(0).get("selected");
+        className = (String) listOfRepository.get("className");
         break;
       }
     }
@@ -120,11 +120,11 @@ public class NotebookRepoRestApiTest extends AbstractTestRestApi {
     // Verify
     listOfRepositories = getListOfReposotiry();
     String updatedPath = StringUtils.EMPTY;
-    for (int i = 0; i < listOfRepositories.size(); i++) {
-      if (listOfRepositories.get(i).get("name").equals("VFSNotebookRepo")) {
+    for (Map<String, Object> listOfRepository : listOfRepositories) {
+      if (listOfRepository.get("name").equals("VFSNotebookRepo")) {
         updatedPath =
-                (String) ((List<Map<String, Object>>) listOfRepositories.get(i).get("settings"))
-                        .get(0).get("selected");
+                (String) ((List<Map<String, Object>>) listOfRepository.get("settings"))
+                                 .get(0).get("selected");
         break;
       }
     }

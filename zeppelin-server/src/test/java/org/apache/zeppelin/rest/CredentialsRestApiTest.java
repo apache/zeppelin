@@ -43,14 +43,14 @@ public class CredentialsRestApiTest {
   private AuthenticationService authenticationService;
 
   @Before
-  public void setUp() throws IOException {
+  public void setUp() {
     credentials = new Credentials();
     authenticationService = new NoAuthenticationService();
     credentialRestApi = new CredentialRestApi(credentials, authenticationService);
   }
 
   @Test
-  public void testInvalidRequest() throws IOException {
+  public void testInvalidRequest() {
     String jsonInvalidRequestEntityNull =
         "{\"entity\" : null, \"username\" : \"test\", " + "\"password\" : \"testpass\"}";
     String jsonInvalidRequestNameNull =
@@ -73,19 +73,18 @@ public class CredentialsRestApiTest {
     assertEquals(Status.BAD_REQUEST, response.getStatusInfo().toEnum());
   }
 
-  public Map<String, UserCredentials> testGetUserCredentials() throws IOException {
+  @Test
+  public Map<String, UserCredentials> testGetUserCredentials() {
     Response response = credentialRestApi.getCredentials();
     Map<String, Object> resp =
         gson.fromJson(
             response.getEntity().toString(), new TypeToken<Map<String, Object>>() {}.getType());
     Map<String, Object> body = (Map<String, Object>) resp.get("body");
-    Map<String, UserCredentials> credentialMap =
-        (Map<String, UserCredentials>) body.get("userCredentials");
-    return credentialMap;
+    return (Map<String, UserCredentials>) body.get("userCredentials");
   }
 
   @Test
-  public void testCredentialsAPIs() throws IOException {
+  public void testCredentialsAPIs() {
     String requestData1 =
         "{\"entity\" : \"entityname\", \"username\" : \"myuser\", \"password\" " + ": \"mypass\"}";
     String entity = "entityname";
