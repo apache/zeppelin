@@ -330,7 +330,7 @@ public class IPyFlinkInterpreterTest extends IPythonInterpreterTest {
     result = interpreter.interpret(code, context);
     assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
     List<InterpreterResultMessage> resultMessages = context.out.toInterpreterResultMessage();
-    assertEquals(InterpreterResult.Type.HTML, resultMessages.get(0).getType());
+    assertEquals(InterpreterResult.Type.ANGULAR, resultMessages.get(0).getType());
     assertTrue(resultMessages.toString(),
             resultMessages.get(0).getData().contains("Total Count"));
   }
