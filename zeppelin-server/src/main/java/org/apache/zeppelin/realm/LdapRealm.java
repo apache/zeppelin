@@ -269,7 +269,7 @@ public class LdapRealm extends JndiLdapRealm {
 
   /**
   * Get groups from LDAP.
-  * 
+  *
   * @param principals
   *            the principals of the Subject whose AuthenticationInfo should
   *            be queried from the LDAP server.
@@ -353,8 +353,8 @@ public class LdapRealm extends JndiLdapRealm {
     byte[] cookie = null;
     try {
       ldapCtx.addToEnvironment(Context.REFERRAL, "ignore");
-        
-      ldapCtx.setRequestControls(new Control[]{new PagedResultsControl(pageSize, 
+      
+      ldapCtx.setRequestControls(new Control[]{new PagedResultsControl(pageSize,
             Control.NONCRITICAL)});
         
       do {
@@ -376,7 +376,7 @@ public class LdapRealm extends JndiLdapRealm {
               final SearchResult group = searchResultEnum.next();
 
               Attribute attribute = group.getAttributes().get(getGroupIdAttribute());
-              String groupName = attribute.get().toString();            
+              String groupName = attribute.get().toString();
               
               String roleName = roleNameFor(groupName);
               if (roleName != null) {
@@ -601,7 +601,7 @@ public class LdapRealm extends JndiLdapRealm {
 
   /**
   * Set Member Attribute Template for LDAP.
-  * 
+  *
   * @param template
   *            DN template to be used to query ldap.
   * @throws IllegalArgumentException
@@ -658,7 +658,7 @@ public class LdapRealm extends JndiLdapRealm {
 
   /**
   * Set User Search Attribute Name for LDAP.
-  * 
+  *
   * @param userSearchAttributeName
   *            userAttribute to search ldap.
   */
@@ -718,14 +718,14 @@ public class LdapRealm extends JndiLdapRealm {
     LdapName searchBaseDn = new LdapName(searchBaseString);
 
     // do scope test
-    if (searchScope.equalsIgnoreCase("base")) {
+    if ("base".equalsIgnoreCase(searchScope)) {
       log.debug("DynamicGroup SearchScope base");
       return false;
     }
     if (!userLdapDn.toString().endsWith(searchBaseDn.toString())) {
       return false;
     }
-    if (searchScope.equalsIgnoreCase("one") && (userLdapDn.size() != searchBaseDn.size() - 1)) {
+    if ("one".equalsIgnoreCase(searchScope) && (userLdapDn.size() != searchBaseDn.size() - 1)) {
       log.debug("DynamicGroup SearchScope one");
       return false;
     }
@@ -737,7 +737,7 @@ public class LdapRealm extends JndiLdapRealm {
     NamingEnumeration<SearchResult> searchResultEnum = null;
     try {
       searchResultEnum = systemLdapCtx.search(userLdapDn, searchFilter,
-          searchScope.equalsIgnoreCase("sub") ? SUBTREE_SCOPE : ONELEVEL_SCOPE);
+                                              "sub".equalsIgnoreCase(searchScope) ? SUBTREE_SCOPE : ONELEVEL_SCOPE);
       if (searchResultEnum.hasMore()) {
         return true;
       }
@@ -759,7 +759,7 @@ public class LdapRealm extends JndiLdapRealm {
 
   /**
   * Set Regex for Principal LDAP.
-  * 
+  *
   * @param regex
   *            regex to use to search for principal in shiro.
   */
