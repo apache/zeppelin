@@ -58,7 +58,7 @@ public class FlinkStreamSqlInterpreterTest extends SqlInterpreterTest {
             "from log", context);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
     List<InterpreterResultMessage> resultMessages = context.out.toInterpreterResultMessage();
-    assertEquals(InterpreterResult.Type.HTML, resultMessages.get(0).getType());
+    assertEquals(InterpreterResult.Type.ANGULAR, resultMessages.get(0).getType());
     assertTrue(resultMessages.toString(),
             resultMessages.get(0).getData().contains("Total Count"));
   }
@@ -75,7 +75,7 @@ public class FlinkStreamSqlInterpreterTest extends SqlInterpreterTest {
     result = flinkInterpreter.interpret(code, context);
     assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
     List<InterpreterResultMessage> resultMessages = context.out.toInterpreterResultMessage();
-    assertEquals(InterpreterResult.Type.HTML, resultMessages.get(0).getType());
+    assertEquals(InterpreterResult.Type.ANGULAR, resultMessages.get(0).getType());
     assertTrue(resultMessages.toString(),
             resultMessages.get(0).getData().contains("Total Count"));
 
