@@ -44,6 +44,7 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
   private String userName;
 
   private AtomicBoolean started = new AtomicBoolean(false);
+  private Random rand = new Random();
 
   public K8sRemoteInterpreterProcess(
           Kubectl kubectl,
@@ -273,7 +274,7 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
     }
 
     // environment variables
-    envs.put("SERVICE_DOMAIN", envs.getOrDefault("SERVICE_DOMAIN", System.getenv("SERVICE_DOMAIN")));
+    envs.put(ENV_SERVICE_DOMAIN, envs.getOrDefault(ENV_SERVICE_DOMAIN, System.getenv(ENV_SERVICE_DOMAIN)));
     envs.put("ZEPPELIN_HOME", envs.getOrDefault("ZEPPELIN_HOME", "/zeppelin"));
 
     if (isSpark()) {
@@ -294,7 +295,7 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
               webUrl,
               webUiPort,
               getPodName(),
-              envs.get("SERVICE_DOMAIN")
+              envs.get(ENV_SERVICE_DOMAIN)
           ));
     }
 
@@ -310,7 +311,7 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
     ImmutableMap<String, Object> binding = ImmutableMap.of(
         "PORT", port,
         "SERVICE_NAME", serviceName,
-        "SERVICE_DOMAIN", serviceDomain
+        ENV_SERVICE_DOMAIN, serviceDomain
     );
 
     ClassLoader oldCl = Thread.currentThread().getContextClassLoader();
@@ -398,9 +399,8 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
     char[] chars = "abcdefghijklmnopqrstuvwxyz".toCharArray();
 
     StringBuilder sb = new StringBuilder();
-    Random random = new Random();
     for (int i = 0; i < length; i++) {
-      char c = chars[random.nextInt(chars.length)];
+      char c = chars[rand.nextInt(chars.length)];
       sb.append(c);
     }
     return sb.toString();
