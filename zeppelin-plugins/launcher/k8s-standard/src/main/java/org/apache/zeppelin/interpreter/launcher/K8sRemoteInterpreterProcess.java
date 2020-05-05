@@ -46,6 +46,11 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
   private AtomicBoolean started = new AtomicBoolean(false);
   private Random rand = new Random();
 
+  private static final String SPARK_DRIVER_MEMROY = "spark.driver.memory";
+  private static final String SPARK_DRIVER_MEMROY_OVERHEAD = "spark.driver.memoryOverhead";
+  private static final String SPARK_DRIVER_CORES = "spark.driver.cores";
+  private static final String ENV_SERVICE_DOMAIN = "SERVICE_DOMAIN";
+
   public K8sRemoteInterpreterProcess(
           Kubectl kubectl,
           File specTemplates,
@@ -297,6 +302,20 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
               getPodName(),
               envs.get(ENV_SERVICE_DOMAIN)
           ));
+      // Resources of Interpreter Pod
+      if (properties.containsKey(SPARK_DRIVER_MEMROY)) {
+        String memory;
+        if (properties.containsKey(SPARK_DRIVER_MEMROY_OVERHEAD)) {
+          memory = K8sUtils.calculateSparkMemory(properties.getProperty(SPARK_DRIVER_MEMROY),
+                                                 properties.getProperty(SPARK_DRIVER_MEMROY_OVERHEAD));
+        } else {
+          memory = K8sUtils.calculateMemoryWithDefaultOverhead(properties.getProperty(SPARK_DRIVER_MEMROY));
+        }
+        k8sProperties.put("zeppelin.k8s.interpreter.memory", memory);
+      }
+      if (properties.containsKey(SPARK_DRIVER_CORES)) {
+        k8sProperties.put("zeppelin.k8s.interpreter.cores", properties.getProperty(SPARK_DRIVER_CORES));
+      }
     }
 
     k8sProperties.put("zeppelin.k8s.envs", envs);
@@ -340,8 +359,8 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
 
     options.append(" --master k8s://https://kubernetes.default.svc");
     options.append(" --deploy-mode client");
-    if (properties.containsKey("spark.driver.memory")) {
-      options.append(" --driver-memory " + properties.get("spark.driver.memory"));
+    if (properties.containsKey(SPARK_DRIVER_MEMROY)) {
+      options.append(" --driver-memory " + properties.get(SPARK_DRIVER_MEMROY));
     }
     if (userName != null) {
       options.append(" --proxy-user " + userName);
