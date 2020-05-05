@@ -57,7 +57,7 @@ class FlinkZeppelinContext(val flinkInterpreter: FlinkScalaInterpreter,
     "ipyflink" -> "org.apache.zeppelin.flink.IPyFlinkInterpreter"
   )
 
-  private val supportedClasses = Seq(classOf[DataSet[_]])
+  private val supportedClasses = Seq(classOf[DataSet[_]], classOf[Table])
 
   def setCurrentSql(sql: String): Unit = {
     this.currentSql = sql
