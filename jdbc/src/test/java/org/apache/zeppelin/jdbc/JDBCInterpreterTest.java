@@ -391,11 +391,14 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
 
     List<InterpreterResultMessage> resultMessages = context.out.toInterpreterResultMessage();
-    assertEquals(1, resultMessages.size());
+    assertEquals(2, resultMessages.size());
 
     assertEquals(InterpreterResult.Type.TABLE, resultMessages.get(0).getType());
     assertEquals("ID\tNAME\na\ta_name\nb\tb_name\nc\tnull\n",
             resultMessages.get(0).getData());
+    assertEquals(InterpreterResult.Type.TABLE, resultMessages.get(1).getType());
+    assertEquals("ID\tNAME\n",
+            resultMessages.get(1).getData());
   }
 
   @Test
@@ -612,12 +615,15 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
 
     assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
     List<InterpreterResultMessage> resultMessages = context.out.toInterpreterResultMessage();
-    assertEquals(2, resultMessages.size());
+    assertEquals(3, resultMessages.size());
     assertEquals(InterpreterResult.Type.TEXT, resultMessages.get(0).getType());
     assertEquals("Query executed successfully. Affected rows : 0\n",
             resultMessages.get(0).getData());
-    assertEquals(InterpreterResult.Type.TABLE, resultMessages.get(1).getType());
-    assertEquals("ID\n1\n", resultMessages.get(1).getData());
+    assertEquals(InterpreterResult.Type.TEXT, resultMessages.get(1).getType());
+    assertEquals("Query executed successfully. Affected rows : 1\n",
+            resultMessages.get(1).getData());
+    assertEquals(InterpreterResult.Type.TABLE, resultMessages.get(2).getType());
+    assertEquals("ID\n1\n", resultMessages.get(2).getData());
   }
 
   @Test
@@ -670,12 +676,15 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     List<InterpreterResultMessage> resultMessages = context.out.toInterpreterResultMessage();
     assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
 
-    assertEquals(2, resultMessages.size());
+    assertEquals(3, resultMessages.size());
     assertEquals(InterpreterResult.Type.TEXT, resultMessages.get(0).getType());
     assertEquals("Query executed successfully. Affected rows : 0\n",
             resultMessages.get(0).getData());
-    assertEquals(InterpreterResult.Type.TABLE, resultMessages.get(1).getType());
-    assertEquals("ID\n2\n", resultMessages.get(1).getData());
+    assertEquals(InterpreterResult.Type.TEXT, resultMessages.get(1).getType());
+    assertEquals("Query executed successfully. Affected rows : 1\n",
+            resultMessages.get(1).getData());
+    assertEquals(InterpreterResult.Type.TABLE, resultMessages.get(2).getType());
+    assertEquals("ID\n2\n", resultMessages.get(2).getData());
   }
 
   @Test
