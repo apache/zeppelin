@@ -17,13 +17,10 @@
 
 package org.apache.zeppelin.flink;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.flink.api.scala.ExecutionEnvironment;
 import org.apache.flink.configuration.Configuration;
-import org.apache.flink.runtime.jobgraph.SavepointConfigOptions;
 import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment;
 import org.apache.flink.table.api.TableEnvironment;
-import org.apache.flink.table.api.config.ExecutionConfigOptions;
 import org.apache.flink.table.api.scala.StreamTableEnvironment;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
@@ -50,27 +47,21 @@ public class FlinkInterpreter extends Interpreter {
     super(properties);
   }
 
-  private String extractScalaVersion() throws InterpreterException {
+  private void checkScalaVersion() throws InterpreterException {
     String scalaVersionString = scala.util.Properties.versionString();
     LOGGER.info("Using Scala: " + scalaVersionString);
-    if (scalaVersionString.contains("version 2.10")) {
-      return "2.10";
-    } else if (scalaVersionString.contains("version 2.11")) {
-      return "2.11";
-    } else if (scalaVersionString.contains("version 2.12")) {
-      return "2.12";
+    if (scalaVersionString.contains("version 2.11")) {
+      return;
     } else {
-      throw new InterpreterException("Unsupported scala version: " + scalaVersionString);
+      throw new InterpreterException("Unsupported scala version: " + scalaVersionString +
+              ", Only scala 2.11 is supported");
     }
   }
 
   @Override
   public void open() throws InterpreterException {
-    String scalaVersion = extractScalaVersion();
-    if (!scalaVersion.equals("2.11")) {
-      throw new InterpreterException("Only scala 2.11 is supported for flink, " +
-              "but the current scala version is: " + scalaVersion);
-    }
+    checkScalaVersion();
+    
     this.innerIntp = new FlinkScalaInterpreter(getProperties());
     this.innerIntp.open();
     this.z = this.innerIntp.getZeppelinContext();
