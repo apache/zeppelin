@@ -112,7 +112,6 @@ public class JDBCInterpreter extends KerberosInterpreter {
   static final String COMPLETER_SCHEMA_FILTERS_KEY = "completer.schemaFilters";
   static final String COMPLETER_TTL_KEY = "completer.ttlInSeconds";
   static final String DEFAULT_COMPLETER_TTL = "120";
-  static final String SPLIT_QURIES_KEY = "splitQueries";
   static final String JDBC_JCEKS_FILE = "jceks.file";
   static final String JDBC_JCEKS_CREDENTIAL_KEY = "jceks.credentialKey";
   static final String PRECODE_KEY_TEMPLATE = "%s.precode";
@@ -668,12 +667,6 @@ public class JDBCInterpreter extends KerberosInterpreter {
     String paragraphId = context.getParagraphId();
     String user = context.getAuthenticationInfo().getUser();
 
-    boolean splitQuery = false;
-    String splitQueryProperty = getProperty(String.format("%s.%s", propertyKey, SPLIT_QURIES_KEY));
-    if (StringUtils.isNotBlank(splitQueryProperty) && splitQueryProperty.equalsIgnoreCase("true")) {
-      splitQuery = true;
-    }
-
     try {
       connection = getConnection(propertyKey, context);
     } catch (Exception e) {
@@ -695,19 +688,8 @@ public class JDBCInterpreter extends KerberosInterpreter {
     }
 
     try {
-      List<String> sqlArray;
-      sql = sql.trim();
-      if (splitQuery) {
-        sqlArray = sqlSplitter.splitSql(sql);
-      } else {
-        if (sql.endsWith(";")) {
-          sql = sql.substring(0, sql.length() - 1);
-        }
-        sqlArray = Arrays.asList(sql);
-      }
-
-      for (int i = 0; i < sqlArray.size(); i++) {
-        String sqlToExecute = sqlArray.get(i);
+      List<String> sqlArray = sqlSplitter.splitSql(sql);
+      for (String sqlToExecute : sqlArray) {
         statement = connection.createStatement();
 
         // fetch n+1 rows in order to indicate there's more rows available (for large selects)
