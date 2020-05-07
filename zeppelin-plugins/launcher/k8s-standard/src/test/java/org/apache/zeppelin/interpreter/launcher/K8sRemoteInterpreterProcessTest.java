@@ -141,8 +141,8 @@ public class K8sRemoteInterpreterProcessTest {
     assertEquals("V1", envs.get("MY_ENV1"));
 
     envs = (HashMap<String, String>) p.get("zeppelin.k8s.envs");
-    assertEquals(true, envs.containsKey("SERVICE_DOMAIN"));
-    assertEquals(true, envs.containsKey("ZEPPELIN_HOME"));
+    assertTrue(envs.containsKey("SERVICE_DOMAIN"));
+    assertTrue(envs.containsKey("ZEPPELIN_HOME"));
   }
 
   @Test
@@ -337,4 +337,78 @@ public class K8sRemoteInterpreterProcessTest {
             "zeppelin-server",
             "my.domain.com"));
   }
+
+  @Test
+  public void testSparkPodResources() {
+    // given
+    Kubectl kubectl = mock(Kubectl.class);
+    when(kubectl.getNamespace()).thenReturn("default");
+
+    Properties properties = new Properties();
+    properties.put("spark.driver.memory", "1g");
+    properties.put("spark.driver.cores", "1");
+    HashMap<String, String> envs = new HashMap<String, String>();
+    envs.put("SERVICE_DOMAIN", "mydomain");
+
+    K8sRemoteInterpreterProcess intp = new K8sRemoteInterpreterProcess(
+        kubectl,
+        new File(".skip"),
+        "interpreter-container:1.0",
+        "shared_process",
+        "spark",
+        "myspark",
+        properties,
+        envs,
+        "zeppelin.server.service",
+        "12320",
+        false,
+        "spark-container:1.0",
+        10,
+        false);
+
+    // when
+    Properties p = intp.getTemplateBindings();
+
+    // then
+    assertEquals("1", p.get("zeppelin.k8s.interpreter.cores"));
+    assertEquals("1408Mi", p.get("zeppelin.k8s.interpreter.memory"));
+  }
+
+  @Test
+  public void testSparkPodResourcesMemoryOverhead() {
+    // given
+    Kubectl kubectl = mock(Kubectl.class);
+    when(kubectl.getNamespace()).thenReturn("default");
+
+    Properties properties = new Properties();
+    properties.put("spark.driver.memory", "1g");
+    properties.put("spark.driver.memoryOverhead", "256m");
+    properties.put("spark.driver.cores", "5");
+    HashMap<String, String> envs = new HashMap<String, String>();
+    envs.put("SERVICE_DOMAIN", "mydomain");
+
+    K8sRemoteInterpreterProcess intp = new K8sRemoteInterpreterProcess(
+        kubectl,
+        new File(".skip"),
+        "interpreter-container:1.0",
+        "shared_process",
+        "spark",
+        "myspark",
+        properties,
+        envs,
+        "zeppelin.server.service",
+        "12320",
+        false,
+        "spark-container:1.0",
+        10,
+        false);
+
+    // when
+    Properties p = intp.getTemplateBindings();
+
+    // then
+    assertEquals("5", p.get("zeppelin.k8s.interpreter.cores"));
+    assertEquals("1280Mi", p.get("zeppelin.k8s.interpreter.memory"));
+  }
+
 }

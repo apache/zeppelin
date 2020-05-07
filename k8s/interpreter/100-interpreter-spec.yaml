@@ -54,6 +54,15 @@ spec:
     - name: {{key}}
       value: {{value}}
   {% endfor %}
+  {% if zeppelin.k8s.interpreter.cores is defined and zeppelin.k8s.interpreter.memory is defined %}
+    resources:
+      requests:
+        memory: "{{zeppelin.k8s.interpreter.memory}}"
+        cpu: "{{zeppelin.k8s.interpreter.cores}}"
+{# limits.memory is not set because of a potential OOM-Killer. https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#requests-and-limits #}
+      limits:
+        cpu: "{{zeppelin.k8s.interpreter.cores}}"
+  {% endif %}
   {% if zeppelin.k8s.interpreter.group.name == "spark" %}
     volumeMounts:
     - name: spark-home
