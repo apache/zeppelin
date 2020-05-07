@@ -29,6 +29,7 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.Input;
+import org.apache.zeppelin.interpreter.ExecutionContext;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
@@ -244,7 +245,7 @@ public class Note implements JsonSerializable {
   }
 
   public String getDefaultInterpreterGroup() {
-    if (defaultInterpreterGroup == null) {
+    if (StringUtils.isBlank(defaultInterpreterGroup)) {
       defaultInterpreterGroup = ZeppelinConfiguration.create()
           .getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_GROUP_DEFAULT);
     }
@@ -306,7 +307,7 @@ public class Note implements JsonSerializable {
     this.paragraphJobListener = paragraphJobListener;
   }
 
-  public Boolean isCronSupported(ZeppelinConfiguration config) {
+  public boolean isCronSupported(ZeppelinConfiguration config) {
     if (config.isZeppelinNotebookCronEnable()) {
       config.getZeppelinNotebookCronFolders();
       if (StringUtils.isBlank(config.getZeppelinNotebookCronFolders())) {
@@ -840,7 +841,7 @@ public class Note implements JsonSerializable {
     }
 
     for (InterpreterSetting setting : settings) {
-      InterpreterGroup intpGroup = setting.getInterpreterGroup(user, id);
+      InterpreterGroup intpGroup = setting.getInterpreterGroup(new ExecutionContext(user, id));
       if (intpGroup != null) {
         AngularObjectRegistry registry = intpGroup.getAngularObjectRegistry();
         angularObjects.put(intpGroup.getId(), registry.getAllWithGlobal(id));
@@ -857,10 +858,10 @@ public class Note implements JsonSerializable {
     }
 
     for (InterpreterSetting setting : settings) {
-      if (setting.getInterpreterGroup(user, id) == null) {
+      if (setting.getInterpreterGroup(new ExecutionContext(user, id)) == null) {
         continue;
       }
-      InterpreterGroup intpGroup = setting.getInterpreterGroup(user, id);
+      InterpreterGroup intpGroup = setting.getInterpreterGroup(new ExecutionContext(user, id));
       AngularObjectRegistry registry = intpGroup.getAngularObjectRegistry();
 
       if (registry instanceof RemoteAngularObjectRegistry) {
@@ -999,6 +1000,15 @@ public class Note implements JsonSerializable {
         paragraphJobListener.noteRunningStatusChange(this.id, runStatus);
       }
     }
+  }
+
+  public void setCronMode(boolean cronMode) {
+    info.put("inCronMode", cronMode);
+  }
+
+  public boolean isCronMode() {
+    return Boolean.parseBoolean(
+            info.getOrDefault("inCronMode", "false").toString());
   }
 
   public boolean isRunning() {

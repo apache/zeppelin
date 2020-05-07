@@ -86,7 +86,7 @@ public class NoteTest {
 
   @Test
   public void runNormalTest() throws InterpreterNotFoundException {
-    when(interpreterFactory.getInterpreter(anyString(), anyString(), eq("spark"), anyString())).thenReturn(interpreter);
+    when(interpreterFactory.getInterpreter(eq("spark"), any())).thenReturn(interpreter);
     when(interpreter.getScheduler()).thenReturn(scheduler);
 
     String pText = "%spark sc.version";
@@ -99,7 +99,7 @@ public class NoteTest {
 
     ArgumentCaptor<Paragraph> pCaptor = ArgumentCaptor.forClass(Paragraph.class);
     verify(scheduler, only()).submit(pCaptor.capture());
-    verify(interpreterFactory, times(1)).getInterpreter(anyString(), anyString(), eq("spark"), anyString());
+    verify(interpreterFactory, times(1)).getInterpreter(eq("spark"), any());
 
     assertEquals("Paragraph text", pText, pCaptor.getValue().getText());
   }
@@ -113,7 +113,7 @@ public class NoteTest {
 
   @Test
   public void addParagraphWithLastReplNameTest() throws InterpreterNotFoundException {
-    when(interpreterFactory.getInterpreter(anyString(), anyString(), eq("spark"), anyString())).thenReturn(interpreter);
+    when(interpreterFactory.getInterpreter(eq("spark"), any())).thenReturn(interpreter);
     Note note = new Note("test", "", interpreterFactory, interpreterSettingManager, paragraphJobListener, credentials, noteEventListener);
     Paragraph p1 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     p1.setText("%spark ");
@@ -124,7 +124,7 @@ public class NoteTest {
 
   @Test
   public void insertParagraphWithLastReplNameTest() throws InterpreterNotFoundException {
-    when(interpreterFactory.getInterpreter(anyString(), anyString(), eq("spark"), anyString())).thenReturn(interpreter);
+    when(interpreterFactory.getInterpreter(eq("spark"), any())).thenReturn(interpreter);
     Note note = new Note("test", "", interpreterFactory, interpreterSettingManager, paragraphJobListener, credentials, noteEventListener);
     Paragraph p1 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     p1.setText("%spark ");
@@ -135,7 +135,7 @@ public class NoteTest {
 
   @Test
   public void insertParagraphWithInvalidReplNameTest() throws InterpreterNotFoundException {
-    when(interpreterFactory.getInterpreter(anyString(), anyString(), eq("invalid"), anyString())).thenReturn(null);
+    when(interpreterFactory.getInterpreter(eq("invalid"), any())).thenReturn(null);
     Note note = new Note("test", "", interpreterFactory, interpreterSettingManager, paragraphJobListener, credentials, noteEventListener);
     Paragraph p1 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     p1.setText("%invalid ");
@@ -153,7 +153,7 @@ public class NoteTest {
 
   @Test
   public void clearAllParagraphOutputTest() throws InterpreterNotFoundException {
-    when(interpreterFactory.getInterpreter(anyString(), anyString(), eq("md"), anyString())).thenReturn(interpreter);
+    when(interpreterFactory.getInterpreter(eq("md"), any())).thenReturn(interpreter);
     when(interpreter.getScheduler()).thenReturn(scheduler);
 
     Note note = new Note("test", "", interpreterFactory, interpreterSettingManager, paragraphJobListener, credentials, noteEventListener);
