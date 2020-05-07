@@ -40,14 +40,13 @@ public class InterpreterFactory implements InterpreterFactoryInterface {
 
   @Override
   public Interpreter getInterpreter(String replName,
-                                    String defaultInterpreterSetting,
                                     ExecutionContext executionContext)
       throws InterpreterNotFoundException {
 
     if (StringUtils.isBlank(replName)) {
       // Get the default interpreter of the defaultInterpreterSetting
       InterpreterSetting defaultSetting =
-          interpreterSettingManager.getByName(defaultInterpreterSetting);
+          interpreterSettingManager.getByName(executionContext.getDefaultInterpreterGroup());
       return defaultSetting.getDefaultInterpreter(executionContext);
     }
 
@@ -68,7 +67,7 @@ public class InterpreterFactory implements InterpreterFactoryInterface {
     } else if (replNameSplits.length == 1){
       // first assume group is omitted
       InterpreterSetting setting =
-          interpreterSettingManager.getByName(defaultInterpreterSetting);
+          interpreterSettingManager.getByName(executionContext.getDefaultInterpreterGroup());
       if (setting != null) {
         Interpreter interpreter = setting.getInterpreter(executionContext, replName);
         if (null != interpreter) {

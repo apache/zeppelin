@@ -87,6 +87,9 @@ public class InterpreterSetting {
   private static final Map<String, Object> DEFAULT_EDITOR = ImmutableMap.of(
       "language", (Object) "text",
       "editOnDblClick", false);
+  private static final DateTimeFormatter DATE_TIME_FORMATTER =
+          DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss");
+
 
   public static String  PARAGRAPH_CONFIG_RUNONSELECTIONCHANGE = "runOnSelectionChange";
   public static String  PARAGRAPH_CONFIG_TITLE = "title";
@@ -424,12 +427,10 @@ public class InterpreterSetting {
     return group;
   }
 
-  private static DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss");
-
-
   private String getInterpreterGroupId(ExecutionContext executionContext) {
     if (executionContext.isInCronMode()) {
-      return "cron-" + name + "-" + executionContext.getNoteId() + "-" + dtf.format(LocalDateTime.now());
+      return "cron-" + name + "-" + executionContext.getNoteId() + "-" +
+              DATE_TIME_FORMATTER.format(LocalDateTime.now());
     }
 
     List<String> keys = new ArrayList<>();

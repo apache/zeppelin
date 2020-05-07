@@ -70,7 +70,7 @@ public class JdbcIntegrationTest {
     interpreterSetting.setDependencies(Lists.newArrayList(dependency));
     interpreterSettingManager.restart(interpreterSetting.getId());
     interpreterSetting.waitForReady(60 * 1000);
-    Interpreter jdbcInterpreter = interpreterFactory.getInterpreter("jdbc", "test", new ExecutionContext("user1", "note1"));
+    Interpreter jdbcInterpreter = interpreterFactory.getInterpreter("jdbc", new ExecutionContext("user1", "note1", "test"));
     assertNotNull("JdbcInterpreter is null", jdbcInterpreter);
 
     InterpreterContext context = new InterpreterContext.Builder()
@@ -89,7 +89,7 @@ public class JdbcIntegrationTest {
     assertEquals("c1\tc2\n1\t2\n", interpreterResult.message().get(0).getData());
 
     // read table_1 from python interpreter
-    Interpreter pythonInterpreter = interpreterFactory.getInterpreter("python", "test", new ExecutionContext("user1", "note1"));
+    Interpreter pythonInterpreter = interpreterFactory.getInterpreter("python", new ExecutionContext("user1", "note1", "test"));
     assertNotNull("PythonInterpreter is null", pythonInterpreter);
 
     context = new InterpreterContext.Builder()

@@ -19,17 +19,23 @@ package org.apache.zeppelin.interpreter;
 
 public class ExecutionContext {
 
-  private String user;
-  private String noteId;
-  private boolean inCronMode;
+  private final String user;
+  private final String noteId;
+  private final String defaultInterpreterGroup;
+  private final boolean inCronMode;
 
   public ExecutionContext(String user, String noteId) {
-    this(user, noteId, false);
+    this(user, noteId, "", false);
   }
 
-  public ExecutionContext(String user, String noteId, boolean inCronMode) {
+  public ExecutionContext(String user, String noteId, String defaultInterpreterGroup) {
+    this(user, noteId, defaultInterpreterGroup, false);
+  }
+
+  public ExecutionContext(String user, String noteId, String defaultInterpreterGroup, boolean inCronMode) {
     this.user = user;
     this.noteId = noteId;
+    this.defaultInterpreterGroup = defaultInterpreterGroup;
     this.inCronMode = inCronMode;
   }
 
@@ -41,6 +47,10 @@ public class ExecutionContext {
     return noteId;
   }
 
+  public String getDefaultInterpreterGroup() {
+    return defaultInterpreterGroup;
+  }
+
   public boolean isInCronMode() {
     return inCronMode;
   }
@@ -50,6 +60,7 @@ public class ExecutionContext {
     return "ExecutionContext{" +
             "user='" + user + '\'' +
             ", noteId='" + noteId + '\'' +
+            ", defaultInterpreterGroup='" + defaultInterpreterGroup + '\'' +
             ", inCronMode=" + inCronMode +
             '}';
   }

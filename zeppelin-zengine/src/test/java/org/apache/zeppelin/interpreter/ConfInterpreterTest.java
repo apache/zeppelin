@@ -27,12 +27,12 @@ import static org.junit.Assert.assertTrue;
 
 public class ConfInterpreterTest extends AbstractInterpreterTest {
 
-  private ExecutionContext executionContext = new ExecutionContext("user1", "note1");
+  private ExecutionContext executionContext = new ExecutionContext("user1", "note1", "test");
 
   @Test
-  public void testCorrectConf() throws IOException, InterpreterException {
-    assertTrue(interpreterFactory.getInterpreter("test.conf", "test", executionContext) instanceof ConfInterpreter);
-    ConfInterpreter confInterpreter = (ConfInterpreter) interpreterFactory.getInterpreter("test.conf", "test", executionContext);
+  public void testCorrectConf() throws InterpreterException {
+    assertTrue(interpreterFactory.getInterpreter("test.conf", executionContext) instanceof ConfInterpreter);
+    ConfInterpreter confInterpreter = (ConfInterpreter) interpreterFactory.getInterpreter("test.conf", executionContext);
 
     InterpreterContext context = InterpreterContext.builder()
         .setNoteId("noteId")
@@ -42,8 +42,8 @@ public class ConfInterpreterTest extends AbstractInterpreterTest {
     InterpreterResult result = confInterpreter.interpret("property_1\tnew_value\nnew_property\tdummy_value", context);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code);
 
-    assertTrue(interpreterFactory.getInterpreter("test", "test", executionContext) instanceof RemoteInterpreter);
-    RemoteInterpreter remoteInterpreter = (RemoteInterpreter) interpreterFactory.getInterpreter("test", "test", executionContext);
+    assertTrue(interpreterFactory.getInterpreter("test", executionContext) instanceof RemoteInterpreter);
+    RemoteInterpreter remoteInterpreter = (RemoteInterpreter) interpreterFactory.getInterpreter("test", executionContext);
     remoteInterpreter.interpret("hello world", context);
     assertEquals(7, remoteInterpreter.getProperties().size());
     assertEquals("new_value", remoteInterpreter.getProperty("property_1"));
@@ -60,9 +60,9 @@ public class ConfInterpreterTest extends AbstractInterpreterTest {
   }
 
   @Test
-  public void testEmptyConf() throws IOException, InterpreterException {
-    assertTrue(interpreterFactory.getInterpreter("test.conf", "test", executionContext) instanceof ConfInterpreter);
-    ConfInterpreter confInterpreter = (ConfInterpreter) interpreterFactory.getInterpreter("test.conf", "test", executionContext);
+  public void testEmptyConf() throws InterpreterException {
+    assertTrue(interpreterFactory.getInterpreter("test.conf", executionContext) instanceof ConfInterpreter);
+    ConfInterpreter confInterpreter = (ConfInterpreter) interpreterFactory.getInterpreter("test.conf", executionContext);
 
     InterpreterContext context = InterpreterContext.builder()
         .setNoteId("noteId")
@@ -71,8 +71,8 @@ public class ConfInterpreterTest extends AbstractInterpreterTest {
     InterpreterResult result = confInterpreter.interpret("", context);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code);
 
-    assertTrue(interpreterFactory.getInterpreter("test", "test", executionContext) instanceof RemoteInterpreter);
-    RemoteInterpreter remoteInterpreter = (RemoteInterpreter) interpreterFactory.getInterpreter("test", "test", executionContext);
+    assertTrue(interpreterFactory.getInterpreter("test", executionContext) instanceof RemoteInterpreter);
+    RemoteInterpreter remoteInterpreter = (RemoteInterpreter) interpreterFactory.getInterpreter("test", executionContext);
     assertEquals(6, remoteInterpreter.getProperties().size());
     assertEquals("value_1", remoteInterpreter.getProperty("property_1"));
     assertEquals("value_3", remoteInterpreter.getProperty("property_3"));
@@ -80,16 +80,16 @@ public class ConfInterpreterTest extends AbstractInterpreterTest {
 
 
   @Test
-  public void testRunningAfterOtherInterpreter() throws IOException, InterpreterException {
-    assertTrue(interpreterFactory.getInterpreter("test.conf", "test", executionContext) instanceof ConfInterpreter);
-    ConfInterpreter confInterpreter = (ConfInterpreter) interpreterFactory.getInterpreter("test.conf", "test", executionContext);
+  public void testRunningAfterOtherInterpreter() throws InterpreterException {
+    assertTrue(interpreterFactory.getInterpreter("test.conf", executionContext) instanceof ConfInterpreter);
+    ConfInterpreter confInterpreter = (ConfInterpreter) interpreterFactory.getInterpreter("test.conf", executionContext);
 
     InterpreterContext context = InterpreterContext.builder()
         .setNoteId("noteId")
         .setParagraphId("paragraphId")
         .build();
 
-    RemoteInterpreter remoteInterpreter = (RemoteInterpreter) interpreterFactory.getInterpreter("test", "test", executionContext);
+    RemoteInterpreter remoteInterpreter = (RemoteInterpreter) interpreterFactory.getInterpreter("test", executionContext);
     InterpreterResult result = remoteInterpreter.interpret("hello world", context);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code);
 

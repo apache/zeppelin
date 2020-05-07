@@ -695,9 +695,9 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     schedulerService.refreshCron(note.getId());
 
 
-    RemoteInterpreter mock1 = (RemoteInterpreter) interpreterFactory.getInterpreter("mock1", "test", new ExecutionContext(anonymous.getUser(), note.getId()));
+    RemoteInterpreter mock1 = (RemoteInterpreter) interpreterFactory.getInterpreter("mock1", new ExecutionContext(anonymous.getUser(), note.getId(), "test"));
 
-    RemoteInterpreter mock2 = (RemoteInterpreter) interpreterFactory.getInterpreter("mock2", "test", new ExecutionContext(anonymous.getUser(), note.getId()));
+    RemoteInterpreter mock2 = (RemoteInterpreter) interpreterFactory.getInterpreter("mock2", new ExecutionContext(anonymous.getUser(), note.getId(), "test"));
 
     // wait until interpreters are started
     while (!mock1.isOpened() || !mock2.isOpened()) {
@@ -734,7 +734,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
       }
     });
     RemoteInterpreter cronNoteInterpreter =
-        (RemoteInterpreter) interpreterFactory.getInterpreter("mock1", "test", new ExecutionContext(anonymous.getUser(), cronNote.getId()));
+        (RemoteInterpreter) interpreterFactory.getInterpreter("mock1", new ExecutionContext(anonymous.getUser(), cronNote.getId(), "test"));
 
     // create a paragraph of the cron scheduled note.
     Paragraph cronNoteParagraph = cronNote.addNewParagraph(AuthenticationInfo.ANONYMOUS);
@@ -749,7 +749,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     Note anotherNote = notebook.createNote("note1", anonymous);
 
     RemoteInterpreter anotherNoteInterpreter =
-        (RemoteInterpreter) interpreterFactory.getInterpreter("mock2", "test", new ExecutionContext(anonymous.getUser(), anotherNote.getId()));
+        (RemoteInterpreter) interpreterFactory.getInterpreter("mock2", new ExecutionContext(anonymous.getUser(), anotherNote.getId(), "test"));
 
     // create a paragraph of another note
     Paragraph anotherNoteParagraph = anotherNote.addNewParagraph(AuthenticationInfo.ANONYMOUS);

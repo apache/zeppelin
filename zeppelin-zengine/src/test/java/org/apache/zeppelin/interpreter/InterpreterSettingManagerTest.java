@@ -192,13 +192,13 @@ public class InterpreterSettingManagerTest extends AbstractInterpreterTest {
 
   //@Test
   public void testGetEditor() throws IOException, InterpreterNotFoundException {
-    Interpreter echoInterpreter = interpreterFactory.getInterpreter("test.echo", "test", new ExecutionContext("user1", "note1"));
+    Interpreter echoInterpreter = interpreterFactory.getInterpreter("test.echo", new ExecutionContext("user1", "note1", "test"));
     // get editor setting from interpreter-setting.json
     Map<String, Object> editor = interpreterSettingManager.getEditorSetting("test.echo", "note1");
     assertEquals("java", editor.get("language"));
 
     // when editor setting doesn't exit, return the default editor
-    Interpreter mock1Interpreter = interpreterFactory.getInterpreter("mock1", "test", new ExecutionContext("user1", "note1"));
+    Interpreter mock1Interpreter = interpreterFactory.getInterpreter("mock1", new ExecutionContext("user1", "note1", "test"));
     editor = interpreterSettingManager.getEditorSetting("mock1", "note1");
     assertEquals("text", editor.get("language"));
   }

@@ -17,16 +17,10 @@
 
 package org.apache.zeppelin.notebook.scheduler;
 
-import java.io.IOException;
-import java.util.Map;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.interpreter.ExecutionContext;
-import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.notebook.Note;
-import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
@@ -50,7 +44,6 @@ public class CronJob implements org.quartz.Job {
       return;
     }
 
-
     try {
       note.setCronMode(true);
 
@@ -72,7 +65,8 @@ public class CronJob implements org.quartz.Job {
 
       LOGGER.info("Releasing interpreters used by this note: " + note.getId());
       for (InterpreterSetting setting : note.getUsedInterpreterSettings()) {
-          setting.closeInterpreters(new ExecutionContext(cronExecutingUser, note.getId(), true));
+          setting.closeInterpreters(new ExecutionContext(cronExecutingUser, note.getId(),
+                  note.getDefaultInterpreterGroup(), true));
       }
     } finally {
       note.setCronMode(false);
