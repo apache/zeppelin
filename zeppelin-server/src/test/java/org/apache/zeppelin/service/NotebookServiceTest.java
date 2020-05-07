@@ -100,7 +100,7 @@ public class NotebookServiceTest {
     InterpreterSettingManager mockInterpreterSettingManager = mock(InterpreterSettingManager.class);
     InterpreterFactory mockInterpreterFactory = mock(InterpreterFactory.class);
     Interpreter mockInterpreter = mock(Interpreter.class);
-    when(mockInterpreterFactory.getInterpreter(any(), any(), any(), any()))
+    when(mockInterpreterFactory.getInterpreter(any(), any()))
         .thenReturn(mockInterpreter);
     when(mockInterpreter.interpret(eq("invalid_code"), any()))
         .thenReturn(new InterpreterResult(Code.ERROR, "failed"));
