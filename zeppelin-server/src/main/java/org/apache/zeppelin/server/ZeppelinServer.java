@@ -287,11 +287,15 @@ public class ZeppelinServer extends ResourceConfig {
             () -> {
               LOG.info("Shutting down Zeppelin Server ... ");
               try {
-                jettyWebServer.stop();
-                if (!conf.isRecoveryEnabled()) {
-                  sharedServiceLocator.getService(InterpreterSettingManager.class).close();
+                if (jettyWebServer != null) {
+                  jettyWebServer.stop();
                 }
-                sharedServiceLocator.getService(Notebook.class).close();
+                if (sharedServiceLocator != null) {
+                  if (!conf.isRecoveryEnabled()) {
+                    sharedServiceLocator.getService(InterpreterSettingManager.class).close();
+                  }
+                  sharedServiceLocator.getService(Notebook.class).close();
+                }
                 Thread.sleep(3000);
               } catch (Exception e) {
                 LOG.error("Error while stopping servlet container", e);
