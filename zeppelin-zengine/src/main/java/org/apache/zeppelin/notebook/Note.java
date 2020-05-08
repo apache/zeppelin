@@ -780,7 +780,7 @@ public class Note implements JsonSerializable {
   }
 
   /**
-   * Run a single paragraph
+   * Run a single paragraph. Return true only when paragraph run successfully.
    *
    * @param paragraphId
    * @param blocking

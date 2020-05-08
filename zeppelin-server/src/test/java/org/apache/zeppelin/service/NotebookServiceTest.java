@@ -388,7 +388,7 @@ public class NotebookServiceTest {
     reset(callback);
     runStatus = notebookService.runParagraph(note1.getId(), p.getId(), "my_title", "invalid_code",
         new HashMap<>(), new HashMap<>(), false, true, context, callback);
-    assertFalse(runStatus);
+    assertTrue(runStatus);
     // TODO(zjffdu) Enable it after ZEPPELIN-3699
     // assertNotNull(p.getResult());
     verify(callback).onSuccess(p, context);

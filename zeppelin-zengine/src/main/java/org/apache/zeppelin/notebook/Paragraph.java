@@ -347,6 +347,11 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
     return checkEmptyConfig && Strings.isNullOrEmpty(scriptText) && localProperties.isEmpty();
   }
 
+  /**
+   * Return true only when paragraph run successfully with state of FINISHED.
+   * @param blocking
+   * @return
+   */
   public boolean execute(boolean blocking) {
     try {
       this.interpreter = getBindedInterpreter();

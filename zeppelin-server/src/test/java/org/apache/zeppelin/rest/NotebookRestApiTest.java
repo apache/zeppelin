@@ -24,6 +24,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 
 import com.google.gson.Gson;
+import com.google.gson.internal.StringMap;
 import com.google.gson.reflect.TypeToken;
 
 import org.apache.commons.httpclient.methods.GetMethod;
@@ -40,6 +41,7 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -154,6 +156,28 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
       Map<String, Object> resp = gson.fromJson(post.getResponseBodyAsString(),
           new TypeToken<Map<String, Object>>() {}.getType());
       assertEquals(resp.get("status"), "OK");
+      post.releaseConnection();
+      assertNotEquals(p.getStatus(), Job.Status.READY);
+
+      // Check if the paragraph is emptied
+      assertEquals(title, p.getTitle());
+      assertEquals(text, p.getText());
+
+      // run invalid code
+      text = "%sh\n invalid_cmd";
+      p.setTitle(title);
+      p.setText(text);
+
+      post = httpPost("/notebook/run/" + note1.getId() + "/" + p.getId(), "");
+      assertEquals(500, post.getStatusCode());
+      resp = gson.fromJson(post.getResponseBodyAsString(),
+              new TypeToken<Map<String, Object>>() {}.getType());
+      assertEquals("INTERNAL_SERVER_ERROR", resp.get("status"));
+      StringMap stringMap = (StringMap) resp.get("body");
+      assertEquals("ERROR", stringMap.get("code"));
+      List<StringMap> interpreterResults = (List<StringMap>) stringMap.get("msg");
+      assertTrue(interpreterResults.get(0).toString(),
+              interpreterResults.get(0).get("data").toString().contains("invalid_cmd: command not found"));
       post.releaseConnection();
       assertNotEquals(p.getStatus(), Job.Status.READY);
 
