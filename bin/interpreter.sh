@@ -236,6 +236,10 @@ elif [[ "${INTERPRETER_ID}" == "flink" ]]; then
 
   if [[ -n "${HADOOP_CONF_DIR}" ]] && [[ -d "${HADOOP_CONF_DIR}" ]]; then
     ZEPPELIN_INTP_CLASSPATH+=":${HADOOP_CONF_DIR}"
+    if ! [ -x "$(command -v hadoop)" ]; then
+      echo 'Error: hadoop is not in PATH when HADOOP_CONF_DIR is specified.'
+      exit 1
+    fi
     ZEPPELIN_INTP_CLASSPATH+=":`hadoop classpath`"
     export HADOOP_CONF_DIR=${HADOOP_CONF_DIR}
   else
