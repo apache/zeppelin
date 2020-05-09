@@ -18,10 +18,10 @@
 
 package org.apache.zeppelin.flink
 
-import java.io.{BufferedReader, File, IOException}
+import java.io.{BufferedReader, File}
 import java.net.{URL, URLClassLoader}
 import java.nio.file.Files
-import java.util.{Map, Properties}
+import java.util.Properties
 import java.util.concurrent.TimeUnit
 import java.util.jar.JarFile
 
@@ -46,11 +46,7 @@ import org.apache.flink.table.catalog.hive.HiveCatalog
 import org.apache.flink.table.functions.{AggregateFunction, ScalarFunction, TableAggregateFunction, TableFunction}
 import org.apache.flink.table.module.ModuleManager
 import org.apache.flink.table.module.hive.HiveModule
-import org.apache.hadoop.fs.{FileSystem, Path}
-import org.apache.hadoop.yarn.api.records.ApplicationId
-import org.apache.hadoop.yarn.client.api.YarnClient
-import org.apache.hadoop.yarn.conf
-import org.apache.hadoop.yarn.conf.YarnConfiguration
+import org.apache.flink.yarn.cli.FlinkYarnSessionCli
 import org.apache.zeppelin.flink.util.DependencyUtils
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion
 import org.apache.zeppelin.interpreter.util.InterpreterOutputStream
@@ -191,7 +187,19 @@ class FlinkScalaInterpreter(val properties: Properties) {
       new JPrintWriter(Console.out, true)
     }
 
-    val (iLoop, cluster) = try {
+    val (iLoop, cluster) = {
+      // workaround of checking hadoop jars in yarn  mode
+      if (mode == ExecutionMode.YARN) {
+        try {
+          Class.forName(classOf[FlinkYarnSessionCli].getName)
+        } catch {
+          case e: ClassNotFoundException =>
+            throw new InterpreterException("Unable to load FlinkYarnSessionCli for yarn mode", e)
+          case e: NoClassDefFoundError =>
+            throw new InterpreterException("No hadoop jar found, make sure you have hadoop command in your PATH", e)
+        }
+      }
+
       val (effectiveConfig, cluster) = fetchConnectionInfo(config, configuration)
       this.configuration = effectiveConfig
       cluster match {
@@ -203,17 +211,7 @@ class FlinkScalaInterpreter(val properties: Properties) {
           } else if (mode == ExecutionMode.YARN) {
             LOGGER.info("Starting FlinkCluster in yarn mode")
             if (properties.getProperty("flink.webui.yarn.useProxy", "false").toBoolean) {
-              val yarnAppId = clusterClient.getClusterId.asInstanceOf[ApplicationId]
-              val yarnClient = YarnClient.createYarnClient
-              val yarnConf = new YarnConfiguration()
-              // disable timeline service as we only query yarn app here.
-              // Otherwise we may hit this kind of ERROR:
-              // java.lang.ClassNotFoundException: com.sun.jersey.api.client.config.ClientConfig
-              yarnConf.set("yarn.timeline-service.enabled", "false")
-              yarnClient.init(yarnConf)
-              yarnClient.start()
-              val appReport = yarnClient.getApplicationReport(yarnAppId)
-              this.jmWebUrl = appReport.getTrackingUrl
+              this.jmWebUrl = HadoopUtils.getYarnAppTrackingUrl(clusterClient)
             } else {
               this.jmWebUrl = clusterClient.getWebInterfaceURL
             }
@@ -239,10 +237,6 @@ class FlinkScalaInterpreter(val properties: Properties) {
       } finally {
         Thread.currentThread().setContextClassLoader(classLoader)
       }
-    } catch {
-      case e: IllegalArgumentException =>
-        println(s"Error: ${e.getMessage}")
-        sys.exit()
     }
 
     this.flinkILoop = iLoop
@@ -668,7 +662,7 @@ class FlinkScalaInterpreter(val properties: Properties) {
             clusterClient.close()
             // delete staging dir
             if (mode == ExecutionMode.YARN) {
-              cleanupStagingDirInternal(clusterClient.getClusterId.asInstanceOf[ApplicationId])
+              HadoopUtils.cleanupStagingDirInternal(clusterClient)
             }
           case None =>
             LOGGER.info("Don't close the Remote FlinkCluster")
@@ -684,19 +678,6 @@ class FlinkScalaInterpreter(val properties: Properties) {
     }
     if (jobManager != null) {
       jobManager.shutdown()
-    }
-  }
-
-  private def cleanupStagingDirInternal(appId: ApplicationId): Unit = {
-    try {
-      val fs = FileSystem.get(new org.apache.hadoop.conf.Configuration())
-      val stagingDirPath = new Path(fs.getHomeDirectory, ".flink/" + appId.toString)
-      if (fs.delete(stagingDirPath, true)) {
-        LOGGER.info(s"Deleted staging directory $stagingDirPath")
-      }
-    } catch {
-      case ioe: IOException =>
-        LOGGER.warn("Failed to cleanup staging dir", ioe)
     }
   }
 
