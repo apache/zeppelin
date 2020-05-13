@@ -90,7 +90,6 @@ public class Credentials {
   }
 
   public UserCredentials getUserCredentials(String username) throws IOException {
-    loadCredentials();
     UserCredentials uc = credentialsMap.get(username);
     if (uc == null) {
       uc = new UserCredentials();
