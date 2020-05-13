@@ -18,51 +18,36 @@
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <artifactId>zeppelin-interpreter-parent</artifactId>
+        <artifactId>flink-parent</artifactId>
         <groupId>org.apache.zeppelin</groupId>
         <version>0.9.0-SNAPSHOT</version>
-        <relativePath>../zeppelin-interpreter-parent/pom.xml</relativePath>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
+    <modelVersion>4.0.0</modelVersion>
     <groupId>org.apache.zeppelin</groupId>
-    <artifactId>flink-parent</artifactId>
-    <packaging>pom</packaging>
+    <artifactId>flink-shims</artifactId>
     <version>0.9.0-SNAPSHOT</version>
-    <name>Zeppelin: Flink Parent</name>
-    <description>Zeppelin Flink Support</description>
+    <packaging>jar</packaging>
+    <name>Zeppelin: Flink Shims</name>
 
-    <modules>
-        <module>interpreter</module>
-        <module>flink-shims</module>
-        <module>flink1.10-shims</module>
-        <module>flink1.11-shims</module>
-    </modules>
-
-    <dependencies>
-
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-resources-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-interpreter-setting</id>
+                        <phase>none</phase>
+                        <configuration>
+                            <skip>true</skip>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>
