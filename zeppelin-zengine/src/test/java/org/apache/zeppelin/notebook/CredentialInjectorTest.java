@@ -31,7 +31,7 @@ import org.junit.Test;
 public class CredentialInjectorTest {
 
   private static final String TEMPLATE =
-    "val jdbcUrl = \"jdbc:mysql://localhost/emp?user={mysql.user}&password={mysql.password}\"";
+    "val jdbcUrl = \"jdbc:mysql://localhost/emp?user={user.mysql}&password={password.mysql}\"";
   private static final String CORRECT_REPLACED =
     "val jdbcUrl = \"jdbc:mysql://localhost/emp?user=username&password=pwd\"";
 

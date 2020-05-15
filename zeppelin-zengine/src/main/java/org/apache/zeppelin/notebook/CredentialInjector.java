@@ -37,8 +37,8 @@ class CredentialInjector {
 
   private Set<String> passwords = new HashSet<>();
   private final UserCredentials creds;
-  private static final Pattern userpattern = Pattern.compile("\\{([^\\}]+)\\.user\\}");
-  private static final Pattern passwordpattern = Pattern.compile("\\{([^\\}]+)\\.password\\}");
+  private static final Pattern userpattern = Pattern.compile("\\{user\\.([^\\}]+)\\}");
+  private static final Pattern passwordpattern = Pattern.compile("\\{password\\.([^\\}]+)\\}");
 
 
   public CredentialInjector(UserCredentials creds) {
