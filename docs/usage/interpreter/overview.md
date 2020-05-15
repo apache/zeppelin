@@ -131,7 +131,7 @@ Snippet of code (language of interpreter) that executes after initialization of 
 
 ## Credential Injection
 
-Credentials from the credential manager can be injected into Notebooks. Credential injection works by replacing the following patterns in Notebooks with matching credentials for the Credential Manager: `{CREDENTIAL_ENTITY.user}` and `{CREDENTIAL_ENTITY.password}`. However, credential injection must be enabled per Interpreter, by adding a boolean `injectCredentials` setting in the Interpreters configuration. Injected passwords are removed from Notebook output to prevent accidentally leaking passwords.
+Credentials from the credential manager can be injected into Notebooks. Credential injection works by replacing the following patterns in Notebooks with matching credentials for the Credential Manager: `{user.CREDENTIAL_ENTITY}` and `{password.CREDENTIAL_ENTITY}`. However, credential injection must be enabled per Interpreter, by adding a boolean `injectCredentials` setting in the Interpreters configuration. Injected passwords are removed from Notebook output to prevent accidentally leaking passwords.
 
 **Credential Injection Setting**
 <img src="{{BASE_PATH}}/assets/themes/zeppelin/img/screenshots/credential_injection_setting.png" width="500px">
@@ -142,9 +142,9 @@ Credentials from the credential manager can be injected into Notebooks. Credenti
 **Credential Injection Example**
 
 ```scala
-val password = "{SOME_CREDENTIAL_ENTITY.password}"
+val password = "{password.SOME_CREDENTIAL_ENTITY}"
 
-val username = "{SOME_CREDENTIAL_ENTITY.user}"
+val username = "{user.SOME_CREDENTIAL_ENTITY}"
 ```
 
 ## Interpreter Process Recovery (Experimental)
