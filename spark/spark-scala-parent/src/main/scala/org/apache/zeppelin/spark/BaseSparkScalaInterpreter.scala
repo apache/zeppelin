@@ -77,6 +77,8 @@ abstract class BaseSparkScalaInterpreter(val conf: SparkConf,
 
   protected val interpreterOutput: InterpreterOutputStream
 
+  protected val sparkMaster: String = conf.get(SparkStringConstants.MASTER_PROP_NAME,
+    SparkStringConstants.DEFAULT_MASTER_VALUE)
 
   protected def open(): Unit = {
     /* Required for scoped mode.
@@ -186,7 +188,7 @@ abstract class BaseSparkScalaInterpreter(val conf: SparkConf,
 
   protected def close(): Unit = {
     // delete stagingDir for yarn mode
-    if (conf.get("spark.master").startsWith("yarn")) {
+    if (sparkMaster.startsWith("yarn")) {
       val hadoopConf = new YarnConfiguration()
       val appStagingBaseDir = if (conf.contains("spark.yarn.stagingDir")) {
         new Path(conf.get("spark.yarn.stagingDir"))
@@ -357,7 +359,7 @@ abstract class BaseSparkScalaInterpreter(val conf: SparkConf,
 
   private def useYarnProxyURLIfNeeded() {
     if (properties.getProperty("spark.webui.yarn.useProxy", "false").toBoolean) {
-      if (sc.getConf.get("spark.master").startsWith("yarn")) {
+      if (sparkMaster.startsWith("yarn")) {
         val appId = sc.applicationId
         val yarnClient = YarnClient.createYarnClient
         val yarnConf = new YarnConfiguration()

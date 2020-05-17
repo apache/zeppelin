@@ -153,7 +153,7 @@ public class K8sRemoteInterpreterProcessTest {
 
     Properties properties = new Properties();
     properties.put("my.key1", "v1");
-    properties.put("master", "k8s://http://api");
+    properties.put("spark.master", "k8s://http://api");
     HashMap<String, String> envs = new HashMap<String, String>();
     envs.put("MY_ENV1", "V1");
     envs.put("SPARK_SUBMIT_OPTIONS", "my options");
@@ -206,7 +206,7 @@ public class K8sRemoteInterpreterProcessTest {
 
     Properties properties = new Properties();
     properties.put("my.key1", "v1");
-    properties.put("master", "k8s://http://api");
+    properties.put("spark.master", "k8s://http://api");
     HashMap<String, String> envs = new HashMap<String, String>();
     envs.put("MY_ENV1", "V1");
     envs.put("SPARK_SUBMIT_OPTIONS", "my options");
@@ -258,7 +258,7 @@ public class K8sRemoteInterpreterProcessTest {
 
     Properties properties = new Properties();
     properties.put("my.key1", "v1");
-    properties.put("master", "k8s://http://api");
+    properties.put("spark.master", "k8s://http://api");
     HashMap<String, String> envs = new HashMap<String, String>();
     envs.put("MY_ENV1", "V1");
     envs.put("SPARK_SUBMIT_OPTIONS", "my options");

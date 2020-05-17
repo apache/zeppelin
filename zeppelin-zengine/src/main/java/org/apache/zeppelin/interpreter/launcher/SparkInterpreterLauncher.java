@@ -27,6 +27,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -51,6 +52,9 @@ import java.util.Properties;
 public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SparkInterpreterLauncher.class);
+  public static final String SPARK_MASTER_KEY = "spark.master";
+  private static final String DEFAULT_MASTER = "local[*]";
+  Optional<String> sparkMaster = Optional.empty();
 
   public SparkInterpreterLauncher(ZeppelinConfiguration zConf, RecoveryStorage recoveryStorage) {
     super(zConf, recoveryStorage);
@@ -60,13 +64,17 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
   public Map<String, String> buildEnvFromProperties(InterpreterLaunchContext context) throws IOException {
     Map<String, String> env = super.buildEnvFromProperties(context);
     Properties sparkProperties = new Properties();
-    String sparkMaster = getSparkMaster(properties);
+    String spMaster = getSparkMaster();
+    if (spMaster != null) {
+      sparkProperties.put(SPARK_MASTER_KEY, spMaster);
+    }
     for (String key : properties.stringPropertyNames()) {
-      if (RemoteInterpreterUtils.isEnvString(key) && !StringUtils.isBlank(properties.getProperty(key))) {
-        env.put(key, properties.getProperty(key));
+      String propValue = properties.getProperty(key);
+      if (RemoteInterpreterUtils.isEnvString(key) && !StringUtils.isBlank(propValue)) {
+        env.put(key, propValue);
       }
-      if (isSparkConf(key, properties.getProperty(key))) {
-        sparkProperties.setProperty(key, properties.getProperty(key));
+      if (isSparkConf(key, propValue)) {
+        sparkProperties.setProperty(key, propValue);
       }
     }
 
@@ -82,9 +90,6 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
     }
 
     StringBuilder sparkConfBuilder = new StringBuilder();
-    if (sparkMaster != null) {
-      sparkConfBuilder.append(" --master " + sparkMaster);
-    }
     if (isYarnMode() && getDeployMode().equals("cluster")) {
       if (sparkProperties.containsKey("spark.files")) {
         sparkProperties.put("spark.files", sparkProperties.getProperty("spark.files") + "," +
@@ -294,7 +299,7 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
       String sparkHome = getEnv("SPARK_HOME");
       File sparkRBasePath = null;
       if (sparkHome == null) {
-        if (!getSparkMaster(properties).startsWith("local")) {
+        if (!getSparkMaster().startsWith("local")) {
           throw new RuntimeException("SPARK_HOME is not specified in interpreter-setting" +
                   " for non-local mode, if you specify it in zeppelin-env.sh, please move that into " +
                   " interpreter setting");
@@ -317,31 +322,36 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
   }
 
   /**
+   * Returns cached Spark Master value if it's present, or calculate it
+   *
    * Order to look for spark master
    * 1. master in interpreter setting
    * 2. spark.master interpreter setting
    * 3. use local[*]
-   * @param properties
-   * @return
+   * @return Spark Master string
    */
-  private String getSparkMaster(Properties properties) {
-    String master = properties.getProperty("master");
-    if (master == null) {
-      master = properties.getProperty("spark.master");
+  private String getSparkMaster() {
+    if (!sparkMaster.isPresent()) {
+      String master = properties.getProperty(SPARK_MASTER_KEY);
       if (master == null) {
-        master = "local[*]";
+        master = properties.getProperty("master");
+        if (master == null) {
+          String masterEnv = System.getenv("SPARK_MASTER");
+          master = (masterEnv == null ? DEFAULT_MASTER : masterEnv);
+        }
+        properties.put(SPARK_MASTER_KEY, master);
       }
+      sparkMaster = Optional.of(master);
     }
-    return master;
+    return sparkMaster.get();
   }
 
   private String getDeployMode() {
-    String master = getSparkMaster(properties);
-    if (master.equals("yarn-client")) {
+    if (getSparkMaster().equals("yarn-client")) {
       return "client";
-    } else if (master.equals("yarn-cluster")) {
+    } else if (getSparkMaster().equals("yarn-cluster")) {
       return "cluster";
-    } else if (master.startsWith("local")) {
+    } else if (getSparkMaster().startsWith("local")) {
       return "client";
     } else {
       String deployMode = properties.getProperty("spark.submit.deployMode");
@@ -357,7 +367,7 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
   }
 
   private boolean isYarnMode() {
-    return getSparkMaster(properties).startsWith("yarn");
+    return getSparkMaster().startsWith("yarn");
   }
 
 }

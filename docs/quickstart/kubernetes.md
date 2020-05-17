@@ -113,7 +113,7 @@ And then start your spark interpreter
 sc.parallelize(1 to 100).count
 ...
 ```
-While `master` property of SparkInterpreter starts with `k8s://` (default `k8s://https://kubernetes.default.svc` when Zeppelin started using zeppelin-server.yaml), Spark executors will be automatically created in your Kubernetes cluster.
+While `spark.master` property of SparkInterpreter starts with `k8s://` (default `k8s://https://kubernetes.default.svc` when Zeppelin started using zeppelin-server.yaml), Spark executors will be automatically created in your Kubernetes cluster.
 Spark UI is accessible by clicking `SPARK JOB` on the Paragraph. 
 
 Check [here](https://spark.apache.org/docs/latest/running-on-kubernetes.html) to know more about Running Spark on Kubernetes.
@@ -192,7 +192,7 @@ and all interpreter properties are accessible inside the templates.
 
 When interpreter group is `spark`, Zeppelin sets necessary spark configuration automatically to use Spark on Kubernetes.
 It uses client mode, so Spark interpreter Pod works as a Spark driver, spark executors are launched in separate Pods.
-This auto configuration can be overrided by manually setting `master` property of Spark interpreter.
+This auto configuration can be overrided by manually setting `spark.master` property of Spark interpreter.
 
 
 ### Accessing Spark UI (or Service running in interpreter Pod)

@@ -12,8 +12,8 @@
         "description": "Location of spark distribution",
         "type": "string"
       },
-      "master": {
-        "envName": "MASTER",
+      "spark.master": {
+        "envName": "SPARK_MASTER",
         "propertyName": "spark.master",
         "defaultValue": "local[*]",
         "description": "Spark master uri. local | yarn-client | yarn-cluster | spark master address of standalone mode, ex) spark://master_host:7077",

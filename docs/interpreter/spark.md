@@ -81,7 +81,7 @@ You can also set other Spark properties which are not listed in the table. For a
     <td>Location of spark distribution</td>
   <tr>
   <tr>
-    <td>master</td>
+    <td>spark.master</td>
     <td>local[*]</td>
     <td>Spark master uri. <br/> e.g. spark://master_host:7077</td>
   <tr>
@@ -248,7 +248,7 @@ configuration with code together for more flexibility. e.g.
 </center>
 
 ### Set master in Interpreter menu
-After starting Zeppelin, go to **Interpreter** menu and edit **master** property in your Spark interpreter setting. The value may vary depending on your Spark cluster deployment type.
+After starting Zeppelin, go to **Interpreter** menu and edit **spark.master** property in your Spark interpreter setting. The value may vary depending on your Spark cluster deployment type.
 
 For example,
 

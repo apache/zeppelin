@@ -350,7 +350,7 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
   }
 
   boolean isSparkOnKubernetes(Properties interpreteProperties) {
-    String propertySparkMaster = (String) interpreteProperties.getOrDefault("master", "");
+    String propertySparkMaster = (String) interpreteProperties.getOrDefault("spark.master", "");
     return propertySparkMaster.startsWith("k8s://");
   }
 
