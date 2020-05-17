@@ -23,7 +23,6 @@ import org.apache.zeppelin.interpreter.ZeppelinContext;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
-import org.apache.zeppelin.interpreter.util.InterpreterOutputStream;
 import org.apache.zeppelin.python.IPythonInterpreter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,8 +61,8 @@ public class IPySparkInterpreter extends IPythonInterpreter {
     SparkConf conf = sparkInterpreter.getSparkContext().getConf();
     // only set PYTHONPATH in embedded, local or yarn-client mode.
     // yarn-cluster will setup PYTHONPATH automatically.
-    if (!conf.contains("spark.submit.deployMode") ||
-            !conf.get("spark.submit.deployMode").equals("cluster")) {
+    if (!conf.contains(SparkStringConstants.SUBMIT_DEPLOY_MODE_PROP_NAME) ||
+            !conf.get(SparkStringConstants.SUBMIT_DEPLOY_MODE_PROP_NAME).equals("cluster")) {
       setAdditionalPythonPath(PythonUtils.sparkPythonPath());
     }
     setUseBuiltinPy4j(false);

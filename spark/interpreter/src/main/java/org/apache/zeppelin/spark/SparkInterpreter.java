@@ -89,11 +89,19 @@ public class SparkInterpreter extends AbstractInterpreter {
         }
         if (entry.getKey().toString().equals("zeppelin.spark.concurrentSQL")
             && entry.getValue().toString().equals("true")) {
-          conf.set("spark.scheduler.mode", "FAIR");
+          conf.set(SparkStringConstants.SCHEDULER_MODE_PROP_NAME, "FAIR");
         }
       }
       // use local mode for embedded spark mode when spark.master is not found
-      conf.setIfMissing("spark.master", "local");
+      if (!conf.contains(SparkStringConstants.MASTER_PROP_NAME)) {
+        if (conf.contains("master")) {
+          conf.set(SparkStringConstants.MASTER_PROP_NAME, conf.get("master"));
+        } else {
+          String masterEnv = System.getenv(SparkStringConstants.MASTER_ENV_NAME);
+          conf.set(SparkStringConstants.MASTER_PROP_NAME,
+                  masterEnv == null ? SparkStringConstants.DEFAULT_MASTER_VALUE : masterEnv);
+        }
+      }
       this.innerInterpreter = loadSparkScalaInterpreter(conf);
       this.innerInterpreter.open();
 
@@ -198,6 +206,9 @@ public class SparkInterpreter extends AbstractInterpreter {
   }
 
   public ZeppelinContext getZeppelinContext() {
+    if (this.innerInterpreter == null) {
+      LOGGER.error("innerInterpreter is null!");
+    }
     return this.innerInterpreter.getZeppelinContext();
   }
 

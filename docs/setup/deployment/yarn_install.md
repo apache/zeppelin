@@ -136,7 +136,7 @@ It was assumed that 1.6.0 version of Spark is installed at /usr/lib/spark. Look 
     <th>Remarks</th>
   </tr>
   <tr>
-    <td>master</td>
+    <td>spark.master</td>
     <td>yarn-client</td>
     <td>In yarn-client mode, the driver runs in the client process, and the application master is only used for requesting resources from YARN.</td>
   </tr>

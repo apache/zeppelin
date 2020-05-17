@@ -17,35 +17,35 @@ REM limitations under the License.
 REM
 
 REM set JAVA_HOME=
-REM set MASTER=                 		REM Spark master url. eg. spark://master_addr:7077. Leave empty if you want to use local mode.
-REM set ZEPPELIN_JAVA_OPTS      		REM Additional jvm options. for example, set ZEPPELIN_JAVA_OPTS="-Dspark.executor.memory=8g -Dspark.cores.max=16"
-REM set ZEPPELIN_MEM            		REM Zeppelin jvm mem options Default -Xms1024m -Xmx1024m -XX:MaxMetaspaceSize=512m
-REM set ZEPPELIN_INTP_MEM       		REM zeppelin interpreter process jvm mem options. Default -Xmx1024m -Xms1024m -XX:MaxMetaspaceSize=512m
-REM set ZEPPELIN_INTP_JAVA_OPTS 		REM zeppelin interpreter process jvm options.
-REM set ZEPPELIN_JMX_ENABLE     		REM Enable JMX feature by defining it like "true"
-REM set ZEPPELIN_JMX_PORT       		REM Port number which JMX uses. If not set, JMX won't be enabled
+REM set SPARK_MASTER=                          REM Spark master url. eg. spark://master_addr:7077. Leave empty if you want to use local mode.
+REM set ZEPPELIN_JAVA_OPTS                     REM Additional jvm options. for example, set ZEPPELIN_JAVA_OPTS="-Dspark.executor.memory=8g -Dspark.cores.max=16"
+REM set ZEPPELIN_MEM                           REM Zeppelin jvm mem options Default -Xms1024m -Xmx1024m -XX:MaxMetaspaceSize=512m
+REM set ZEPPELIN_INTP_MEM                      REM zeppelin interpreter process jvm mem options. Default -Xmx1024m -Xms1024m -XX:MaxMetaspaceSize=512m
+REM set ZEPPELIN_INTP_JAVA_OPTS                REM zeppelin interpreter process jvm options.
+REM set ZEPPELIN_JMX_ENABLE                    REM Enable JMX feature by defining it like "true"
+REM set ZEPPELIN_JMX_PORT                      REM Port number which JMX uses. If not set, JMX won't be enabled
 
-REM set ZEPPELIN_LOG_DIR        		REM Where log files are stored.  PWD by default.
-REM set ZEPPELIN_PID_DIR        		REM The pid files are stored. /tmp by default.
-REM set ZEPPELIN_WAR_TEMPDIR    		REM The location of jetty temporary directory.
-REM set ZEPPELIN_NOTEBOOK_DIR   		REM Where notebook saved
-REM set ZEPPELIN_NOTEBOOK_HOMESCREEN		REM Id of notebook to be displayed in homescreen. ex) 2A94M5J1Z
-REM set ZEPPELIN_NOTEBOOK_HOMESCREEN_HIDE	REM hide homescreen notebook from list when this value set to "true". default "false"
+REM set ZEPPELIN_LOG_DIR                       REM Where log files are stored.  PWD by default.
+REM set ZEPPELIN_PID_DIR                       REM The pid files are stored. /tmp by default.
+REM set ZEPPELIN_WAR_TEMPDIR                   REM The location of jetty temporary directory.
+REM set ZEPPELIN_NOTEBOOK_DIR                  REM Where notebook saved
+REM set ZEPPELIN_NOTEBOOK_HOMESCREEN           REM Id of notebook to be displayed in homescreen. ex) 2A94M5J1Z
+REM set ZEPPELIN_NOTEBOOK_HOMESCREEN_HIDE      REM hide homescreen notebook from list when this value set to "true". default "false"
 REM set ZEPPELIN_NOTEBOOK_S3_BUCKET            REM Bucket where notebook saved
 REM set ZEPPELIN_NOTEBOOK_S3_USER              REM User in bucket where notebook saved. For example bucket/user/notebook/2A94M5J1Z/note.json
 REM set ZEPPELIN_NOTEBOOK_S3_ENDPOINT          REM Endpoint of the bucket
 REM set ZEPPELIN_NOTEBOOK_S3_KMS_KEY_ID        REM AWS KMS key ID
 REM set ZEPPELIN_NOTEBOOK_S3_KMS_KEY_REGION    REM AWS KMS key region
 REM set ZEPPELIN_NOTEBOOK_S3_SSE               REM Server-side encryption enabled for notebooks
-REM set ZEPPELIN_IDENT_STRING   		REM A string representing this instance of zeppelin. $USER by default.
-REM set ZEPPELIN_NICENESS       		REM The scheduling priority for daemons. Defaults to 0.
+REM set ZEPPELIN_IDENT_STRING                  REM A string representing this instance of zeppelin. $USER by default.
+REM set ZEPPELIN_NICENESS                      REM The scheduling priority for daemons. Defaults to 0.
 REM set ZEPPELIN_INTERPRETER_LOCALREPO         REM Local repository for interpreter's additional dependency loading
 REM set ZEPPELIN_INTERPRETER_DEP_MVNREPO       REM Maven principal repository for interpreter's additional dependency loading
 REM set ZEPPELIN_HELIUM_NODE_INSTALLER_URL     REM Remote Node installer url for Helium dependency loader
 REM set ZEPPELIN_HELIUM_NPM_INSTALLER_URL      REM Remote Npm installer url for Helium dependency loader
 REM set ZEPPELIN_HELIUM_YARNPKG_INSTALLER_URL  REM Remote Yarn package installer url for Helium dependency loader
-REM set ZEPPELIN_NOTEBOOK_STORAGE		REM Refers to pluggable notebook storage class, can have two classes simultaneously with a sync between them (e.g. local and remote).
-REM set ZEPPELIN_NOTEBOOK_ONE_WAY_SYNC		REM If there are multiple notebook storages, should we treat the first one as the only source of truth?
+REM set ZEPPELIN_NOTEBOOK_STORAGE              REM Refers to pluggable notebook storage class, can have two classes simultaneously with a sync between them (e.g. local and remote).
+REM set ZEPPELIN_NOTEBOOK_ONE_WAY_SYNC         REM If there are multiple notebook storages, should we treat the first one as the only source of truth?
 
 
 REM Spark interpreter configuration
@@ -62,10 +62,10 @@ REM without SPARK_HOME defined, Zeppelin still able to run spark interpreter pro
 REM however, it is not encouraged when you can define SPARK_HOME
 REM
 REM Options read in YARN client mode
-REM set HADOOP_CONF_DIR         		REM yarn-site.xml is located in configuration directory in HADOOP_CONF_DIR.
+REM set HADOOP_CONF_DIR                         REM yarn-site.xml is located in configuration directory in HADOOP_CONF_DIR.
 REM Pyspark (supported with Spark 1.2.1 and above)
 REM To configure pyspark, you need to set spark distribution's path to 'spark.home' property in Interpreter setting screen in Zeppelin GUI
-REM set PYSPARK_PYTHON          		REM path to the python command. must be the same path on the driver(Zeppelin) and all workers.
+REM set PYSPARK_PYTHON                          REM path to the python command. must be the same path on the driver(Zeppelin) and all workers.
 REM set PYTHONPATH
 
 REM Spark interpreter options
@@ -77,6 +77,6 @@ REM set ZEPPELIN_SPARK_MAXRESULT       REM Max number of Spark SQL result to dis
 
 REM ZeppelinHub connection configuration
 REM
-REM set ZEPPELINHUB_API_ADDRESS	       REM Refers to the address of the ZeppelinHub service in use
+REM set ZEPPELINHUB_API_ADDRESS        REM Refers to the address of the ZeppelinHub service in use
 REM set ZEPPELINHUB_API_TOKEN          REM Refers to the Zeppelin instance token of the user
 REM set ZEPPELINHUB_USER_KEY           REM Optional, when using Zeppelin with authentication.
