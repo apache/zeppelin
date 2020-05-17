@@ -31,6 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
@@ -72,6 +73,12 @@ public class SparkRInterpreter extends RInterpreter {
     this.jsc = sparkInterpreter.getJavaSparkContext();
     this.sparkVersion = new SparkVersion(sc.version());
     this.isSpark1 = sparkVersion.getMajorVersion() == 1;
+
+    LOGGER.info("SparkRInterpreter: SPARK_HOME={}", sc.getConf().getenv("SPARK_HOME"));
+    Arrays.stream(sc.getConf().getAll())
+            .forEach(x -> LOGGER.info("SparkRInterpreter: conf, {}={}", x._1, x._2));
+    properties.entrySet().stream().forEach(x ->
+            LOGGER.info("SparkRInterpreter: prop, {}={}", x.getKey(), x.getValue()));
 
     ZeppelinRContext.setSparkContext(sc);
     ZeppelinRContext.setJavaSparkContext(jsc);

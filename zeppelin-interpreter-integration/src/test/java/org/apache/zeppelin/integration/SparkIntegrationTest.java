@@ -44,6 +44,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.EnumSet;
+import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -101,34 +102,34 @@ public abstract class SparkIntegrationTest {
 
     InterpreterContext context = new InterpreterContext.Builder().setNoteId("note1").setParagraphId("paragraph_1").build();
     InterpreterResult interpreterResult = sparkInterpreter.interpret("sc.version", context);
-    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
+    assertEquals(interpreterResult.toString(), InterpreterResult.Code.SUCCESS, interpreterResult.code());
     String detectedSparkVersion = interpreterResult.message().get(0).getData();
     assertTrue(detectedSparkVersion +" doesn't contain " + this.sparkVersion, detectedSparkVersion.contains(this.sparkVersion));
     interpreterResult = sparkInterpreter.interpret("sc.range(1,10).sum()", context);
-    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
-    assertTrue(interpreterResult.message().get(0).getData().contains("45"));
+    assertEquals(interpreterResult.toString(), InterpreterResult.Code.SUCCESS, interpreterResult.code());
+    assertTrue(interpreterResult.toString(), interpreterResult.message().get(0).getData().contains("45"));
 
     // test jars & packages can be loaded correctly
     interpreterResult = sparkInterpreter.interpret("import org.apache.zeppelin.interpreter.integration.DummyClass\n" +
             "import com.maxmind.geoip2._", context);
-    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
+    assertEquals(interpreterResult.toString(), InterpreterResult.Code.SUCCESS, interpreterResult.code());
 
     // test PySparkInterpreter
     Interpreter pySparkInterpreter = interpreterFactory.getInterpreter("spark.pyspark", new ExecutionContext("user1", "note1", "test"));
     interpreterResult = pySparkInterpreter.interpret("sqlContext.createDataFrame([(1,'a'),(2,'b')], ['id','name']).registerTempTable('test')", context);
-    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
+    assertEquals(interpreterResult.toString(), InterpreterResult.Code.SUCCESS, interpreterResult.code());
 
     // test IPySparkInterpreter
     Interpreter ipySparkInterpreter = interpreterFactory.getInterpreter("spark.ipyspark", new ExecutionContext("user1", "note1", "test"));
     interpreterResult = ipySparkInterpreter.interpret("sqlContext.table('test').show()", context);
-    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
+    assertEquals(interpreterResult.toString(), InterpreterResult.Code.SUCCESS, interpreterResult.code());
 
     // test SparkSQLInterpreter
     Interpreter sqlInterpreter = interpreterFactory.getInterpreter("spark.sql", new ExecutionContext("user1", "note1", "test"));
     interpreterResult = sqlInterpreter.interpret("select count(1) as c from test", context);
-    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
-    assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(0).getType());
-    assertEquals("c\n2\n", interpreterResult.message().get(0).getData());
+    assertEquals(interpreterResult.toString(), InterpreterResult.Code.SUCCESS, interpreterResult.code());
+    assertEquals(interpreterResult.toString(), InterpreterResult.Type.TABLE, interpreterResult.message().get(0).getType());
+    assertEquals(interpreterResult.toString(), "c\n2\n", interpreterResult.message().get(0).getData());
 
     // test SparkRInterpreter
     Interpreter sparkrInterpreter = interpreterFactory.getInterpreter("spark.r", new ExecutionContext("user1", "note1", "test"));
@@ -138,14 +139,14 @@ public abstract class SparkIntegrationTest {
       interpreterResult = sparkrInterpreter.interpret("df <- createDataFrame(sqlContext, faithful)\nhead(df)", context);
     }
     assertEquals(interpreterResult.toString(), InterpreterResult.Code.SUCCESS, interpreterResult.code());
-    assertEquals(InterpreterResult.Type.TEXT, interpreterResult.message().get(0).getType());
-    assertTrue(interpreterResult.message().get(0).getData().contains("eruptions waiting"));
+    assertEquals(interpreterResult.toString(), InterpreterResult.Type.TEXT, interpreterResult.message().get(0).getType());
+    assertTrue(interpreterResult.toString(), interpreterResult.message().get(0).getData().contains("eruptions waiting"));
   }
 
   @Test
   public void testLocalMode() throws IOException, YarnException, InterpreterException, XmlPullParserException {
     InterpreterSetting sparkInterpreterSetting = interpreterSettingManager.getInterpreterSettingByName("spark");
-    sparkInterpreterSetting.setProperty("master", "local[*]");
+    sparkInterpreterSetting.setProperty("spark.master", "local[*]");
     sparkInterpreterSetting.setProperty("SPARK_HOME", sparkHome);
     sparkInterpreterSetting.setProperty("ZEPPELIN_CONF_DIR", zeppelin.getZeppelinConfDir().getAbsolutePath());
     sparkInterpreterSetting.setProperty("zeppelin.spark.useHiveContext", "false");
@@ -166,7 +167,7 @@ public abstract class SparkIntegrationTest {
   @Test
   public void testYarnClientMode() throws IOException, YarnException, InterruptedException, InterpreterException, XmlPullParserException {
     InterpreterSetting sparkInterpreterSetting = interpreterSettingManager.getInterpreterSettingByName("spark");
-    sparkInterpreterSetting.setProperty("master", "yarn-client");
+    sparkInterpreterSetting.setProperty("spark.master", "yarn-client");
     sparkInterpreterSetting.setProperty("HADOOP_CONF_DIR", hadoopCluster.getConfigPath());
     sparkInterpreterSetting.setProperty("SPARK_HOME", sparkHome);
     sparkInterpreterSetting.setProperty("ZEPPELIN_CONF_DIR", zeppelin.getZeppelinConfDir().getAbsolutePath());
@@ -211,7 +212,7 @@ public abstract class SparkIntegrationTest {
   @Test
   public void testYarnClusterMode() throws IOException, YarnException, InterruptedException, InterpreterException, XmlPullParserException {
     InterpreterSetting sparkInterpreterSetting = interpreterSettingManager.getInterpreterSettingByName("spark");
-    sparkInterpreterSetting.setProperty("master", "yarn-cluster");
+    sparkInterpreterSetting.setProperty("spark.master", "yarn-cluster");
     sparkInterpreterSetting.setProperty("HADOOP_CONF_DIR", hadoopCluster.getConfigPath());
     sparkInterpreterSetting.setProperty("SPARK_HOME", sparkHome);
     sparkInterpreterSetting.setProperty("ZEPPELIN_CONF_DIR", zeppelin.getZeppelinConfDir().getAbsolutePath());

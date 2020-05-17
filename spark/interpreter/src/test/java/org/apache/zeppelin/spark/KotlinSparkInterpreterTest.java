@@ -68,8 +68,8 @@ public class KotlinSparkInterpreterTest {
 
   public static Properties getSparkTestProperties(TemporaryFolder tmpDir) throws IOException {
     Properties p = new Properties();
-    p.setProperty("master", "local[*]");
-    p.setProperty("spark.app.name", "Zeppelin Test");
+    p.setProperty(SparkStringConstants.MASTER_PROP_NAME, "local[*]");
+    p.setProperty(SparkStringConstants.APP_NAME_PROP_NAME, "Zeppelin Test");
     p.setProperty("zeppelin.spark.useHiveContext", "true");
     p.setProperty("zeppelin.spark.maxResult", "1000");
     p.setProperty("zeppelin.spark.importImplicit", "true");

@@ -48,8 +48,8 @@ public class SparkSqlInterpreterTest {
   @BeforeClass
   public static void setUp() throws Exception {
     Properties p = new Properties();
-    p.setProperty("spark.master", "local[4]");
-    p.setProperty("spark.app.name", "test");
+    p.setProperty(SparkStringConstants.MASTER_PROP_NAME, "local[4]");
+    p.setProperty(SparkStringConstants.APP_NAME_PROP_NAME, "test");
     p.setProperty("zeppelin.spark.maxResult", "10");
     p.setProperty("zeppelin.spark.concurrentSQL", "true");
     p.setProperty("zeppelin.spark.sql.stacktrace", "true");

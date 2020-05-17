@@ -51,7 +51,7 @@ class SparkScala212Interpreter(override val conf: SparkConf,
 
   override def open(): Unit = {
     super.open()
-    if (conf.get("spark.master", "local") == "yarn-client") {
+    if (sparkMaster == "yarn-client") {
       System.setProperty("SPARK_YARN_MODE", "true")
     }
     // Only Spark1 requires to create http server, Spark2 removes HttpServer class.

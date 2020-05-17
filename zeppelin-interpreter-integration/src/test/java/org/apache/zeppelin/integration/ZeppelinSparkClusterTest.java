@@ -63,6 +63,7 @@ import static org.junit.Assert.assertTrue;
 public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ZeppelinSparkClusterTest.class);
+  public static final String SPARK_MASTER_PROPERTY_NAME = "spark.master";
 
   //This is for only run setupSparkInterpreter one time for each spark version, otherwise
   //each test method will run setupSparkInterpreter which will cost a long time and may cause travis
@@ -93,14 +94,10 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
     Map<String, InterpreterProperty> sparkProperties =
         (Map<String, InterpreterProperty>) sparkIntpSetting.getProperties();
     LOG.info("SPARK HOME detected " + sparkHome);
-    if (System.getenv("SPARK_MASTER") != null) {
-      sparkProperties.put("master",
-          new InterpreterProperty("master", System.getenv("SPARK_MASTER")));
-    } else {
-      sparkProperties.put("master", new InterpreterProperty("master", "local[2]"));
-    }
+    String masterEnv = System.getenv("SPARK_MASTER");
+    sparkProperties.put(SPARK_MASTER_PROPERTY_NAME,
+        new InterpreterProperty(SPARK_MASTER_PROPERTY_NAME, masterEnv == null ? "local[2]" : masterEnv));
     sparkProperties.put("SPARK_HOME", new InterpreterProperty("SPARK_HOME", sparkHome));
-    sparkProperties.put("spark.master", new InterpreterProperty("spark.master", "local[2]"));
     sparkProperties.put("spark.cores.max",
         new InterpreterProperty("spark.cores.max", "2"));
     sparkProperties.put("zeppelin.spark.useHiveContext",
