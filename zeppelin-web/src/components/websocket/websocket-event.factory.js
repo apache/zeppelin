@@ -184,7 +184,7 @@ function WebsocketEventFactory($rootScope, $websocket, $location, baseUrlSrv, sa
     } else if (op === 'PARAS_INFO') {
       $rootScope.$broadcast('updateParaInfos', data);
     } else if (op === 'CONVERTED_NOTE_NBFORMAT') {
-      saveAsService.saveAs(data.nbformat, data.name, 'zepl.ipynb');
+      saveAsService.saveAs(data.nbformat, data.noteName, '.ipynb');
     } else if (op === 'INTERPRETER_INSTALL_STARTED') {
       ngToast.info(data.message);
     } else if (op === 'INTERPRETER_INSTALL_RESULT') {
