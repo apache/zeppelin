@@ -1193,7 +1193,7 @@ public class NotebookServer extends WebSocketServlet
     } else {
       Message resp = new Message(OP.CONVERTED_NOTE_NBFORMAT)
               .put("nbformat", new JupyterUtil().getNbformat(note.toJson()))
-              .put("name", fromMessage.get("name"));
+              .put("noteName", fromMessage.get("noteName"));
       conn.send(serializeMessage(resp));
     }
   }
