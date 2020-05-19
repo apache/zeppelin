@@ -193,7 +193,7 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
   }
 
   @Test
-  public void testRunAllParagraph_AllSuccess() throws IOException {
+  public void testRunNoteBlocking() throws IOException {
     Note note1 = null;
     try {
       note1 = TestUtils.getInstance(Notebook.class).createNote("note1", anonymous);
@@ -223,6 +223,48 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
       assertEquals(Job.Status.FINISHED, p1.getStatus());
       assertEquals(Job.Status.FINISHED, p2.getStatus());
       assertEquals("abc\n", p2.getReturn().message().get(0).getData());
+    } finally {
+      // cleanup
+      if (null != note1) {
+        TestUtils.getInstance(Notebook.class).removeNote(note1.getId(), anonymous);
+      }
+    }
+  }
+
+  @Test
+  public void testRunNoteNonBlocking() throws Exception {
+    Note note1 = null;
+    try {
+      note1 = TestUtils.getInstance(Notebook.class).createNote("note1", anonymous);
+      // 2 paragraphs
+      // P1:
+      //    %python
+      //    import time
+      //    time.sleep(5)
+      //    name='hello'
+      //    z.put('name', name)
+      // P2:
+      //    %%sh(interpolate=true)
+      //    echo '{name}'
+      //
+      Paragraph p1 = note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
+      Paragraph p2 = note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
+      p1.setText("%python import time\ntime.sleep(5)\nname='hello'\nz.put('name', name)");
+      p2.setText("%sh(interpolate=true) echo '{name}'");
+
+      PostMethod post = httpPost("/notebook/job/" + note1.getId() + "?waitToFinish=false", "");
+      assertThat(post, isAllowed());
+      Map<String, Object> resp = gson.fromJson(post.getResponseBodyAsString(),
+              new TypeToken<Map<String, Object>>() {}.getType());
+      assertEquals(resp.get("status"), "OK");
+      post.releaseConnection();
+
+      p1.waitUntilFinished();
+      p2.waitUntilFinished();
+
+      assertEquals(Job.Status.FINISHED, p1.getStatus());
+      assertEquals(Job.Status.FINISHED, p2.getStatus());
+      assertEquals("hello\n", p2.getReturn().message().get(0).getData());
     } finally {
       // cleanup
       if (null != note1) {
