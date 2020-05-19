@@ -707,6 +707,14 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
     }
   }
 
+  @VisibleForTesting
+  public void waitUntilFinished() throws Exception {
+    while(!isTerminated()) {
+      LOGGER.debug("Wait for paragraph to be finished");
+      Thread.sleep(1000);
+    }
+  }
+
   private GUI getNoteGui() {
     GUI gui = new GUI();
     gui.setParams(this.note.getNoteParams());
