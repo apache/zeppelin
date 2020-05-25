@@ -170,7 +170,7 @@
       "zeppelin.spark.sql.stacktrace": {
         "envName": null,
         "propertyName": "zeppelin.spark.sql.stacktrace",
-        "defaultValue": false,
+        "defaultValue": true,
         "description": "Show full exception stacktrace for SQL queries if set to true.",
         "type": "checkbox"
       },
