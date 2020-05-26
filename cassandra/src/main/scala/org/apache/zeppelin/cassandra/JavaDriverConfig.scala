@@ -18,296 +18,130 @@ package org.apache.zeppelin.cassandra
 
 import java.lang.Boolean._
 
-import com.datastax.driver.core.HostDistance._
-import com.datastax.driver.core.ProtocolOptions.Compression
-import com.datastax.driver.core._
-import com.datastax.driver.core.policies._
+import com.datastax.oss.driver.api.core.ProtocolVersion
+import com.datastax.oss.driver.api.core.config.{DefaultDriverOption, ProgrammaticDriverConfigLoaderBuilder}
 import org.apache.commons.lang3.StringUtils._
 import org.apache.zeppelin.interpreter.Interpreter
 import org.apache.zeppelin.cassandra.CassandraInterpreter._
-import org.slf4j.LoggerFactory
+import org.slf4j.{Logger, LoggerFactory}
 
 /**
  * Utility class to extract and configure the Java driver
  */
 class JavaDriverConfig {
+  val LOGGER: Logger = LoggerFactory.getLogger(classOf[JavaDriverConfig])
 
-  val LOGGER = LoggerFactory.getLogger(classOf[JavaDriverConfig])
+  def setSocketOptions(intpr: Interpreter, configBuilder: ProgrammaticDriverConfigLoaderBuilder): Unit = {
+    val connectTimeoutMillis: Int = intpr.getProperty(CASSANDRA_SOCKET_CONNECTION_TIMEOUT_MILLIS,
+      CassandraInterpreter.DEFAULT_CONNECTION_TIMEOUT).toInt
+    configBuilder.withInt(DefaultDriverOption.CONNECTION_INIT_QUERY_TIMEOUT, connectTimeoutMillis)
+    configBuilder.withInt(DefaultDriverOption.CONTROL_CONNECTION_TIMEOUT, connectTimeoutMillis)
 
-  def getSocketOptions(intpr: Interpreter): SocketOptions = {
-    val socketOptions: SocketOptions = new SocketOptions
-    val socketOptionsInfo: StringBuilder = new StringBuilder("Socket options : \n\n")
+    val readTimeoutMillis: Int = intpr.getProperty(CASSANDRA_SOCKET_READ_TIMEOUT_MILLIS,
+      CassandraInterpreter.DEFAULT_READ_TIMEOUT).toInt
+    configBuilder.withInt(DefaultDriverOption.REQUEST_TIMEOUT, readTimeoutMillis)
 
-    val connectTimeoutMillis: Int = intpr.getProperty(CASSANDRA_SOCKET_CONNECTION_TIMEOUT_MILLIS).toInt
-    socketOptions.setConnectTimeoutMillis(connectTimeoutMillis)
-    socketOptionsInfo
-      .append("\t")
-      .append(CASSANDRA_SOCKET_CONNECTION_TIMEOUT_MILLIS)
-      .append(" : ")
-      .append(connectTimeoutMillis).append("\n")
-
-    val readTimeoutMillis: Int = intpr.getProperty(CASSANDRA_SOCKET_READ_TIMEOUT_MILLIS).toInt
-    socketOptions.setReadTimeoutMillis(readTimeoutMillis)
-    socketOptionsInfo
-      .append("\t")
-      .append(CASSANDRA_SOCKET_READ_TIMEOUT_MILLIS)
-      .append(" : ")
-      .append(readTimeoutMillis).append("\n")
-
-    val tcpNoDelay: Boolean = parseBoolean(intpr.getProperty(CASSANDRA_SOCKET_TCP_NO_DELAY))
-    socketOptions.setTcpNoDelay(tcpNoDelay)
-    socketOptionsInfo
-      .append("\t")
-      .append(CASSANDRA_SOCKET_TCP_NO_DELAY)
-      .append(" : ")
-      .append(tcpNoDelay)
-      .append("\n")
+    val tcpNoDelay = intpr.getProperty(CASSANDRA_SOCKET_TCP_NO_DELAY, CassandraInterpreter.DEFAULT_TCP_NO_DELAY)
+    if (isNotBlank(tcpNoDelay)) {
+      configBuilder.withBoolean(DefaultDriverOption.SOCKET_TCP_NODELAY, parseBoolean(tcpNoDelay))
+    }
 
     val keepAlive: String = intpr.getProperty(CASSANDRA_SOCKET_KEEP_ALIVE)
     if (isNotBlank(keepAlive)) {
-      val keepAliveValue: Boolean = parseBoolean(keepAlive)
-      socketOptions.setKeepAlive(keepAliveValue)
-      socketOptionsInfo
-        .append("\t")
-        .append(CASSANDRA_SOCKET_KEEP_ALIVE)
-        .append(" : ")
-        .append(keepAliveValue).append("\n")
+      configBuilder.withBoolean(DefaultDriverOption.SOCKET_KEEP_ALIVE, parseBoolean(keepAlive))
     }
 
     val receivedBuffSize: String = intpr.getProperty(CASSANDRA_SOCKET_RECEIVED_BUFFER_SIZE_BYTES)
     if (isNotBlank(receivedBuffSize)) {
-      val receiveBufferSizeValue: Int = receivedBuffSize.toInt
-      socketOptions.setReceiveBufferSize(receiveBufferSizeValue)
-      socketOptionsInfo
-        .append("\t")
-        .append(CASSANDRA_SOCKET_RECEIVED_BUFFER_SIZE_BYTES)
-        .append(" : ")
-        .append(receiveBufferSizeValue)
-        .append("\n")
+      configBuilder.withInt(DefaultDriverOption.SOCKET_RECEIVE_BUFFER_SIZE, receivedBuffSize.toInt)
     }
 
     val sendBuffSize: String = intpr.getProperty(CASSANDRA_SOCKET_SEND_BUFFER_SIZE_BYTES)
     if (isNotBlank(sendBuffSize)) {
-      val sendBufferSizeValue: Int = sendBuffSize.toInt
-      socketOptions.setSendBufferSize(sendBufferSizeValue)
-      socketOptionsInfo
-        .append("\t")
-        .append(CASSANDRA_SOCKET_SEND_BUFFER_SIZE_BYTES)
-        .append(" : ")
-        .append(sendBufferSizeValue)
-        .append("\n")
+      configBuilder.withInt(DefaultDriverOption.SOCKET_SEND_BUFFER_SIZE, sendBuffSize.toInt)
     }
 
     val reuseAddress: String = intpr.getProperty(CASSANDRA_SOCKET_REUSE_ADDRESS)
     if (isNotBlank(reuseAddress)) {
-      val reuseAddressValue: Boolean = parseBoolean(reuseAddress)
-      socketOptions.setReuseAddress(reuseAddressValue)
-      socketOptionsInfo
-        .append("\t")
-        .append(CASSANDRA_SOCKET_REUSE_ADDRESS)
-        .append(" : ")
-        .append(reuseAddressValue)
-        .append("\n")
+      configBuilder.withBoolean(DefaultDriverOption.SOCKET_REUSE_ADDRESS, parseBoolean(reuseAddress))
     }
 
     val soLinger: String = intpr.getProperty(CASSANDRA_SOCKET_SO_LINGER)
     if (isNotBlank(soLinger)) {
-      val soLingerValue: Int = soLinger.toInt
-      socketOptions.setSoLinger(soLingerValue)
-      socketOptionsInfo
-        .append("\t")
-        .append(CASSANDRA_SOCKET_SO_LINGER)
-        .append(" : ")
-        .append(soLingerValue)
-        .append("\n")
+      configBuilder.withInt(DefaultDriverOption.SOCKET_LINGER_INTERVAL, soLinger.toInt)
     }
-
-    LOGGER.debug(socketOptionsInfo.append("\n").toString)
-
-    return socketOptions
   }
 
-  def getQueryOptions(intpr: Interpreter): QueryOptions = {
-    val queryOptions: QueryOptions = new QueryOptions
-    val queryOptionsInfo: StringBuilder = new StringBuilder("Query options : \n\n")
+  def setQueryOptions(intpr: Interpreter, configBuilder: ProgrammaticDriverConfigLoaderBuilder): Unit = {
+    val consistencyLevel = intpr.getProperty(CASSANDRA_QUERY_DEFAULT_CONSISTENCY,
+      CassandraInterpreter.DEFAULT_CONSISTENCY)
+    configBuilder.withString(DefaultDriverOption.REQUEST_CONSISTENCY, consistencyLevel)
 
-    val consistencyLevel: ConsistencyLevel = ConsistencyLevel.valueOf(intpr.getProperty(CASSANDRA_QUERY_DEFAULT_CONSISTENCY))
-    queryOptions.setConsistencyLevel(consistencyLevel)
-    queryOptionsInfo
-      .append("\t")
-      .append(CASSANDRA_QUERY_DEFAULT_CONSISTENCY)
-      .append(" : ")
-      .append(consistencyLevel)
-      .append("\n")
+    val serialConsistencyLevel = intpr.getProperty(CASSANDRA_QUERY_DEFAULT_SERIAL_CONSISTENCY,
+      CassandraInterpreter.DEFAULT_SERIAL_CONSISTENCY)
+    configBuilder.withString(DefaultDriverOption.REQUEST_SERIAL_CONSISTENCY, serialConsistencyLevel)
 
-    val serialConsistencyLevel: ConsistencyLevel = ConsistencyLevel.valueOf(intpr.getProperty(CASSANDRA_QUERY_DEFAULT_SERIAL_CONSISTENCY))
-    queryOptions.setSerialConsistencyLevel(serialConsistencyLevel)
-    queryOptionsInfo
-      .append("\t")
-      .append(CASSANDRA_QUERY_DEFAULT_SERIAL_CONSISTENCY)
-      .append(" : ")
-      .append(serialConsistencyLevel)
-      .append("\n")
+    val fetchSize = intpr.getProperty(CASSANDRA_QUERY_DEFAULT_FETCH_SIZE,
+      CassandraInterpreter.DEFAULT_FETCH_SIZE).toInt
+    configBuilder.withInt(DefaultDriverOption.REQUEST_PAGE_SIZE, fetchSize)
 
-    val fetchSize: Int = intpr.getProperty(CASSANDRA_QUERY_DEFAULT_FETCH_SIZE).toInt
-    queryOptions.setFetchSize(fetchSize)
-    queryOptionsInfo
-      .append("\t")
-      .append(CASSANDRA_QUERY_DEFAULT_FETCH_SIZE)
-      .append(" : ")
-      .append(fetchSize)
-      .append("\n")
-
-    val defaultIdempotence: Boolean = parseBoolean(intpr.getProperty(CASSANDRA_QUERY_DEFAULT_IDEMPOTENCE))
-    queryOptions.setDefaultIdempotence(defaultIdempotence)
-    queryOptionsInfo
-      .append("\t")
-      .append(CASSANDRA_QUERY_DEFAULT_IDEMPOTENCE)
-      .append(" : ")
-      .append(defaultIdempotence)
-      .append("\n")
-
-    LOGGER.debug(queryOptionsInfo.append("\n").toString)
-
-    return queryOptions
+    configBuilder.withBoolean(DefaultDriverOption.REQUEST_DEFAULT_IDEMPOTENCE,
+      parseBoolean(intpr.getProperty(CASSANDRA_QUERY_DEFAULT_IDEMPOTENCE)))
   }
 
-  def getProtocolVersion(intpr: Interpreter): ProtocolVersion = {
-    val protocolVersion: String = intpr.getProperty(CASSANDRA_PROTOCOL_VERSION)
+  val PROTOCOL_MAPPING: Map[String, ProtocolVersion] = Map("3" -> ProtocolVersion.V3, "4" -> ProtocolVersion.V4,
+    "5" -> ProtocolVersion.V5, "DSE1" -> ProtocolVersion.DSE_V1, "DSE2" -> ProtocolVersion.DSE_V2)
+
+  def setProtocolVersion(intpr: Interpreter, configBuilder: ProgrammaticDriverConfigLoaderBuilder): Unit = {
+    val protocolVersion: String = intpr.getProperty(CASSANDRA_PROTOCOL_VERSION,
+      CassandraInterpreter.DEFAULT_PROTOCOL_VERSION)
     LOGGER.debug("Protocol version : " + protocolVersion)
 
     protocolVersion match {
-      case "1" =>
-        defaultMaxConnectionPerHostLocal = "8"
-        defaultMaxConnectionPerHostRemote = "2"
-        defaultCoreConnectionPerHostLocal = "2"
-        defaultCoreConnectionPerHostRemote = "1"
-        defaultNewConnectionThresholdLocal = "100"
-        defaultNewConnectionThresholdRemote = "1"
-        defaultMaxRequestPerConnectionLocal = "128"
-        defaultMaxRequestPerConnectionRemote = "128"
-        return ProtocolVersion.V1
-      case "2" =>
-        defaultMaxConnectionPerHostLocal = "8"
-        defaultMaxConnectionPerHostRemote = "2"
-        defaultCoreConnectionPerHostLocal = "2"
-        defaultCoreConnectionPerHostRemote = "1"
-        defaultNewConnectionThresholdLocal = "100"
-        defaultNewConnectionThresholdRemote = "1"
-        defaultMaxRequestPerConnectionLocal = "128"
-        defaultMaxRequestPerConnectionRemote = "128"
-        return ProtocolVersion.V2
-      case "3" =>
-        defaultMaxConnectionPerHostLocal = "1"
-        defaultMaxConnectionPerHostRemote = "1"
-        defaultCoreConnectionPerHostLocal = "1"
-        defaultCoreConnectionPerHostRemote = "1"
-        defaultNewConnectionThresholdLocal = "800"
-        defaultNewConnectionThresholdRemote = "200"
-        defaultMaxRequestPerConnectionLocal = "1024"
-        defaultMaxRequestPerConnectionRemote = "256"
-        return ProtocolVersion.V3
-      case "4" =>
-        defaultMaxConnectionPerHostLocal = "1"
-        defaultMaxConnectionPerHostRemote = "1"
-        defaultCoreConnectionPerHostLocal = "1"
-        defaultCoreConnectionPerHostRemote = "1"
-        defaultNewConnectionThresholdLocal = "800"
-        defaultNewConnectionThresholdRemote = "200"
-        defaultMaxRequestPerConnectionLocal = "1024"
-        defaultMaxRequestPerConnectionRemote = "256"
-        return ProtocolVersion.V4
+      case "1" | "2" =>
+        throw new RuntimeException(s"Protocol V${protocolVersion} isn't supported")
       case _ =>
-        defaultMaxConnectionPerHostLocal = "1"
-        defaultMaxConnectionPerHostRemote = "1"
-        defaultCoreConnectionPerHostLocal = "1"
-        defaultCoreConnectionPerHostRemote = "1"
-        defaultNewConnectionThresholdLocal = "800"
-        defaultNewConnectionThresholdRemote = "200"
-        defaultMaxRequestPerConnectionLocal = "1024"
-        defaultMaxRequestPerConnectionRemote = "256"
-        return ProtocolVersion.NEWEST_SUPPORTED
+        configBuilder.withString(DefaultDriverOption.PROTOCOL_VERSION,
+          PROTOCOL_MAPPING.getOrElse(protocolVersion, ProtocolVersion.DEFAULT).name())
     }
   }
 
-  def getPoolingOptions(intpr: Interpreter): PoolingOptions = {
-    val poolingOptions: PoolingOptions = new PoolingOptions
+  def setPoolingOptions(intpr: Interpreter, configBuilder: ProgrammaticDriverConfigLoaderBuilder): Unit = {
     val poolingOptionsInfo: StringBuilder = new StringBuilder("Pooling options : \n\n")
 
-    val maxConnPerHostLocal: Int = intpr.getProperty(CASSANDRA_POOLING_MAX_CONNECTION_PER_HOST_LOCAL).toInt
-    poolingOptions.setMaxConnectionsPerHost(LOCAL, maxConnPerHostLocal)
+    val coreConnPerHostLocal: Int = intpr.getProperty(CASSANDRA_POOLING_CONNECTION_PER_HOST_LOCAL,
+      DEFAULT_CONNECTIONS_PER_HOST).toInt
+    configBuilder.withInt(DefaultDriverOption.CONNECTION_POOL_LOCAL_SIZE, coreConnPerHostLocal)
     poolingOptionsInfo
       .append("\t")
-      .append(CASSANDRA_POOLING_MAX_CONNECTION_PER_HOST_LOCAL)
-      .append(" : ")
-      .append(maxConnPerHostLocal)
-      .append("\n")
-
-    val maxConnPerHostRemote: Int = intpr.getProperty(CASSANDRA_POOLING_MAX_CONNECTION_PER_HOST_REMOTE).toInt
-    poolingOptions.setMaxConnectionsPerHost(REMOTE, maxConnPerHostRemote)
-    poolingOptionsInfo
-      .append("\t")
-      .append(CASSANDRA_POOLING_MAX_CONNECTION_PER_HOST_REMOTE)
-      .append(" : ")
-      .append(maxConnPerHostRemote)
-      .append("\n")
-
-    val coreConnPerHostLocal: Int = intpr.getProperty(CASSANDRA_POOLING_CORE_CONNECTION_PER_HOST_LOCAL).toInt
-    poolingOptions.setCoreConnectionsPerHost(LOCAL, coreConnPerHostLocal)
-    poolingOptionsInfo
-      .append("\t")
-      .append(CASSANDRA_POOLING_CORE_CONNECTION_PER_HOST_LOCAL)
+      .append(CASSANDRA_POOLING_CONNECTION_PER_HOST_LOCAL)
       .append(" : ")
       .append(coreConnPerHostLocal)
       .append("\n")
 
-    val coreConnPerHostRemote: Int = intpr.getProperty(CASSANDRA_POOLING_CORE_CONNECTION_PER_HOST_REMOTE).toInt
-    poolingOptions.setCoreConnectionsPerHost(REMOTE, coreConnPerHostRemote)
+    val coreConnPerHostRemote: Int = intpr.getProperty(CASSANDRA_POOLING_CONNECTION_PER_HOST_REMOTE,
+      DEFAULT_CONNECTIONS_PER_HOST).toInt
+    configBuilder.withInt(DefaultDriverOption.CONNECTION_POOL_REMOTE_SIZE, coreConnPerHostRemote)
     poolingOptionsInfo
       .append("\t")
-      .append(CASSANDRA_POOLING_CORE_CONNECTION_PER_HOST_REMOTE)
+      .append(CASSANDRA_POOLING_CONNECTION_PER_HOST_REMOTE)
       .append(" : ")
       .append(coreConnPerHostRemote)
       .append("\n")
 
-    val newConnThresholdLocal: Int = intpr.getProperty(CASSANDRA_POOLING_NEW_CONNECTION_THRESHOLD_LOCAL).toInt
-    poolingOptions.setNewConnectionThreshold(LOCAL, newConnThresholdLocal)
+    val maxReqPerConnLocal: Int = intpr.getProperty(CASSANDRA_POOLING_MAX_REQUESTS_PER_CONNECTION,
+      DEFAULT_MAX_REQUEST_PER_CONNECTION).toInt
+    configBuilder.withInt(DefaultDriverOption.CONNECTION_MAX_REQUESTS, maxReqPerConnLocal)
     poolingOptionsInfo
       .append("\t")
-      .append(CASSANDRA_POOLING_NEW_CONNECTION_THRESHOLD_LOCAL)
-      .append(" : ")
-      .append(newConnThresholdLocal)
-      .append("\n")
-
-    val newConnThresholdRemote: Int = intpr.getProperty(CASSANDRA_POOLING_NEW_CONNECTION_THRESHOLD_REMOTE).toInt
-    poolingOptions.setNewConnectionThreshold(REMOTE, newConnThresholdRemote)
-    poolingOptionsInfo
-      .append("\t")
-      .append(CASSANDRA_POOLING_NEW_CONNECTION_THRESHOLD_REMOTE)
-      .append(" : ")
-      .append(newConnThresholdRemote)
-      .append("\n")
-
-    val maxReqPerConnLocal: Int = intpr.getProperty(CASSANDRA_POOLING_MAX_REQUESTS_PER_CONNECTION_LOCAL).toInt
-    poolingOptions.setMaxRequestsPerConnection(LOCAL, maxReqPerConnLocal)
-    poolingOptionsInfo
-      .append("\t")
-      .append(CASSANDRA_POOLING_MAX_REQUESTS_PER_CONNECTION_LOCAL)
+      .append(CASSANDRA_POOLING_MAX_REQUESTS_PER_CONNECTION)
       .append(" : ")
       .append(maxReqPerConnLocal)
       .append("\n")
 
-    val maxReqPerConnRemote: Int = intpr.getProperty(CASSANDRA_POOLING_MAX_REQUESTS_PER_CONNECTION_REMOTE).toInt
-    poolingOptions.setMaxRequestsPerConnection(REMOTE, maxReqPerConnRemote)
-    poolingOptionsInfo
-      .append("\t")
-      .append(CASSANDRA_POOLING_MAX_REQUESTS_PER_CONNECTION_REMOTE)
-      .append(" : ")
-      .append(maxReqPerConnRemote)
-      .append("\n")
-
-    val heartbeatIntervalSeconds: Int = intpr.getProperty(CASSANDRA_POOLING_HEARTBEAT_INTERVAL_SECONDS).toInt
-    poolingOptions.setHeartbeatIntervalSeconds(heartbeatIntervalSeconds)
+    val heartbeatIntervalSeconds: Int = intpr.getProperty(CASSANDRA_POOLING_HEARTBEAT_INTERVAL_SECONDS,
+      DEFAULT_HEARTBEAT_INTERVAL).toInt
+    configBuilder.withInt(DefaultDriverOption.HEARTBEAT_INTERVAL, heartbeatIntervalSeconds)
     poolingOptionsInfo
       .append("\t")
       .append(CASSANDRA_POOLING_HEARTBEAT_INTERVAL_SECONDS)
@@ -315,126 +149,59 @@ class JavaDriverConfig {
       .append(heartbeatIntervalSeconds)
       .append("\n")
 
-    val idleTimeoutSeconds: Int = intpr.getProperty(CASSANDRA_POOLING_IDLE_TIMEOUT_SECONDS).toInt
-    poolingOptions.setIdleTimeoutSeconds(idleTimeoutSeconds)
-    poolingOptionsInfo
-      .append("\t")
-      .append(CASSANDRA_POOLING_IDLE_TIMEOUT_SECONDS)
-      .append(" : ")
-      .append(idleTimeoutSeconds)
-      .append("\n")
-
-    val poolTimeoutMillis: Int = intpr.getProperty(CASSANDRA_POOLING_POOL_TIMEOUT_MILLIS).toInt
-    poolingOptions.setPoolTimeoutMillis(poolTimeoutMillis)
+    val idleTimeoutSeconds: Int = intpr.getProperty(CASSANDRA_POOLING_POOL_TIMEOUT_MILLIS,
+      DEFAULT_POOL_TIMEOUT).toInt
+    configBuilder.withInt(DefaultDriverOption.HEARTBEAT_TIMEOUT, idleTimeoutSeconds)
     poolingOptionsInfo
       .append("\t")
       .append(CASSANDRA_POOLING_POOL_TIMEOUT_MILLIS)
       .append(" : ")
-      .append(poolTimeoutMillis)
+      .append(idleTimeoutSeconds)
       .append("\n")
 
     LOGGER.debug(poolingOptionsInfo.append("\n").toString)
-
-    return poolingOptions
   }
 
-  def getCompressionProtocol(intpr: Interpreter): ProtocolOptions.Compression = {
-    var compression: ProtocolOptions.Compression = null
-    val compressionProtocol: String = intpr.getProperty(CASSANDRA_COMPRESSION_PROTOCOL)
-
+  def setCompressionProtocol(intpr: Interpreter, configBuilder: ProgrammaticDriverConfigLoaderBuilder): Unit = {
+    val compressionProtocol = intpr.getProperty(CASSANDRA_COMPRESSION_PROTOCOL,
+      CassandraInterpreter.DEFAULT_COMPRESSION).toLowerCase
     LOGGER.debug("Compression protocol : " + compressionProtocol)
 
-    if (compressionProtocol == null) "NONE"
-    else compressionProtocol.toUpperCase match {
-      case "NONE" =>
-        compression = Compression.NONE
-      case "SNAPPY" =>
-        compression = Compression.SNAPPY
-      case "LZ4" =>
-        compression = Compression.LZ4
-      case _ =>
-        compression = Compression.NONE
-    }
-    return compression
-  }
-
-  def getLoadBalancingPolicy(intpr: Interpreter): LoadBalancingPolicy = {
-    val loadBalancingPolicy: String = intpr.getProperty(CASSANDRA_LOAD_BALANCING_POLICY)
-    LOGGER.debug("Load Balancing Policy : " + loadBalancingPolicy)
-
-    if (isBlank(loadBalancingPolicy) || (DEFAULT_POLICY == loadBalancingPolicy)) {
-      return Policies.defaultLoadBalancingPolicy
-    }
-    else {
-      try {
-        return (Class.forName(loadBalancingPolicy).asInstanceOf[Class[LoadBalancingPolicy]]).newInstance
-      }
-      catch {
-        case e: Any => {
-          e.printStackTrace
-          throw new RuntimeException("Cannot instantiate " + CASSANDRA_LOAD_BALANCING_POLICY + " = " + loadBalancingPolicy)
-        }
-      }
+    compressionProtocol match {
+      case "snappy" | "lz4" =>
+        configBuilder.withString(DefaultDriverOption.PROTOCOL_COMPRESSION, compressionProtocol)
+      case _ => ()
     }
   }
 
-  def getRetryPolicy(intpr: Interpreter): RetryPolicy = {
+  private def isNotDefaultParameter(param: String) = {
+    !(isBlank(param) || DEFAULT_POLICY == param)
+  }
+
+  def setRetryPolicy(intpr: Interpreter, configBuilder: ProgrammaticDriverConfigLoaderBuilder): Unit = {
     val retryPolicy: String = intpr.getProperty(CASSANDRA_RETRY_POLICY)
     LOGGER.debug("Retry Policy : " + retryPolicy)
 
-    if (isBlank(retryPolicy) || (DEFAULT_POLICY == retryPolicy)) {
-      return Policies.defaultRetryPolicy
-    }
-    else {
-      try {
-        return (Class.forName(retryPolicy).asInstanceOf[Class[RetryPolicy]]).newInstance
-      }
-      catch {
-        case e: Any => {
-          e.printStackTrace
-          throw new RuntimeException("Cannot instantiate " + CASSANDRA_RETRY_POLICY + " = " + retryPolicy)
-        }
-      }
+    if (isNotDefaultParameter(retryPolicy)) {
+      configBuilder.withString(DefaultDriverOption.RETRY_POLICY_CLASS, retryPolicy)
     }
   }
 
-  def getReconnectionPolicy(intpr: Interpreter): ReconnectionPolicy = {
+  def setReconnectionPolicy(intpr: Interpreter, configBuilder: ProgrammaticDriverConfigLoaderBuilder): Unit = {
     val reconnectionPolicy: String = intpr.getProperty(CASSANDRA_RECONNECTION_POLICY)
     LOGGER.debug("Reconnection Policy : " + reconnectionPolicy)
 
-    if (isBlank(reconnectionPolicy) || (DEFAULT_POLICY == reconnectionPolicy)) {
-      return Policies.defaultReconnectionPolicy
-    }
-    else {
-      try {
-        return (Class.forName(reconnectionPolicy).asInstanceOf[Class[ReconnectionPolicy]]).newInstance
-      }
-      catch {
-        case e: Any => {
-          e.printStackTrace
-          throw new RuntimeException("Cannot instantiate " + CASSANDRA_RECONNECTION_POLICY + " = " + reconnectionPolicy)
-        }
-      }
+    if (isNotDefaultParameter(reconnectionPolicy)) {
+      configBuilder.withString(DefaultDriverOption.RECONNECTION_POLICY_CLASS, reconnectionPolicy)
     }
   }
 
-  def getSpeculativeExecutionPolicy(intpr: Interpreter): SpeculativeExecutionPolicy = {
+  def setSpeculativeExecutionPolicy(intpr: Interpreter, configBuilder: ProgrammaticDriverConfigLoaderBuilder): Unit = {
     val specExecPolicy: String = intpr.getProperty(CASSANDRA_SPECULATIVE_EXECUTION_POLICY)
     LOGGER.debug("Speculative Execution Policy : " + specExecPolicy)
 
-    if (isBlank(specExecPolicy) || (DEFAULT_POLICY == specExecPolicy)) {
-      return Policies.defaultSpeculativeExecutionPolicy
+    if (isNotDefaultParameter(specExecPolicy)) {
+      configBuilder.withString(DefaultDriverOption.SPECULATIVE_EXECUTION_POLICY_CLASS, specExecPolicy)
     }
-    else {
-      try {
-        return (Class.forName(specExecPolicy).asInstanceOf[Class[SpeculativeExecutionPolicy]]).newInstance
-      }
-      catch {
-        case e: Any => {
-          e.printStackTrace
-          throw new RuntimeException("Cannot instantiate " + CASSANDRA_SPECULATIVE_EXECUTION_POLICY + " = " + specExecPolicy)
-        }
-      }
-    }
-  }  
+  }
 }

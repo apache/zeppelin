@@ -279,6 +279,23 @@ public class NotebookService {
     }
   }
 
+  /**
+   * Executes given paragraph with passed paragraph info like noteId, paragraphId, title, text and etc.
+   *
+   * @param noteId
+   * @param paragraphId
+   * @param title
+   * @param text
+   * @param params
+   * @param config
+   * @param failIfDisabled
+   * @param blocking
+   * @param context
+   * @param callback
+   * @return return true only when paragraph execution finished, it could end with succeed or error due to user code.
+   * return false when paragraph execution fails due to zeppelin internal issue.
+   * @throws IOException
+   */
   public boolean runParagraph(String noteId,
                               String paragraphId,
                               String title,
@@ -334,9 +351,9 @@ public class NotebookService {
 
     try {
       notebook.saveNote(note, context.getAutheInfo());
-      boolean result = note.run(p.getId(), blocking, context.getAutheInfo().getUser());
+      note.run(p.getId(), blocking, context.getAutheInfo().getUser());
       callback.onSuccess(p, context);
-      return result;
+      return true;
     } catch (Exception ex) {
       LOGGER.error("Exception from run", ex);
       p.setReturn(new InterpreterResult(InterpreterResult.Code.ERROR, ex.getMessage()), ex);
@@ -885,7 +902,7 @@ public class NotebookService {
   }
 
   public void getEditorSetting(String noteId,
-                               String magic,
+                               String paragraphText,
                                ServiceContext context,
                                ServiceCallback<Map<String, Object>> callback) throws IOException {
     Note note = notebook.getNote(noteId);
@@ -895,7 +912,7 @@ public class NotebookService {
     }
     try {
       Map<String, Object> settings = notebook.getInterpreterSettingManager().
-          getEditorSetting(magic, noteId);
+          getEditorSetting(paragraphText, noteId);
       callback.onSuccess(settings, context);
     } catch (Exception e) {
       callback.onFailure(new IOException("Fail to getEditorSetting", e), context);

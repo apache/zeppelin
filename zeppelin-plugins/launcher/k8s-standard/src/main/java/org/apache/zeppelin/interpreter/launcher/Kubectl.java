@@ -18,7 +18,6 @@
 package org.apache.zeppelin.interpreter.launcher;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.gson.Gson;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -26,14 +25,14 @@ import org.apache.commons.exec.*;
 import org.apache.commons.io.IOUtils;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class Kubectl {
-  private final Logger LOGGER = LoggerFactory.getLogger(Kubectl.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(Kubectl.class);
   private final String kubectlCmd;
-  private final Gson gson = new Gson();
   private String namespace;
 
   public Kubectl(String kubectlCmd) {
@@ -108,7 +107,7 @@ public class Kubectl {
 
   @VisibleForTesting
   String execAndGet(String [] args, String stdin) throws IOException {
-    InputStream ins = IOUtils.toInputStream(stdin);
+    InputStream ins = IOUtils.toInputStream(stdin, StandardCharsets.UTF_8);
     ByteArrayOutputStream stdout = new ByteArrayOutputStream();
     ByteArrayOutputStream stderr = new ByteArrayOutputStream();
     ArrayList<String> argsToOverride = new ArrayList<>(Arrays.asList(args));
@@ -118,7 +117,7 @@ public class Kubectl {
       argsToOverride.add("--namespace=" + namespace);
     }
 
-    LOGGER.info("kubectl " + argsToOverride);
+    LOGGER.info("kubectl {}", argsToOverride);
     LOGGER.debug(stdin);
 
     try {
@@ -130,8 +129,7 @@ public class Kubectl {
       );
 
       if (exitCode == 0) {
-        String output = new String(stdout.toByteArray());
-        return output;
+        return new String(stdout.toByteArray());
       } else {
         String output = new String(stderr.toByteArray());
         throw new IOException(String.format("non zero return code (%d). %s", exitCode, output));
@@ -147,7 +145,7 @@ public class Kubectl {
     CommandLine cmd = new CommandLine(kubectlCmd);
     cmd.addArguments(args);
 
-    ExecuteWatchdog watchdog = new ExecuteWatchdog(60 * 1000);
+    ExecuteWatchdog watchdog = new ExecuteWatchdog(60 * 1000L);
     executor.setWatchdog(watchdog);
 
     PumpStreamHandler streamHandler = new PumpStreamHandler(stdout, stderr, stdin);

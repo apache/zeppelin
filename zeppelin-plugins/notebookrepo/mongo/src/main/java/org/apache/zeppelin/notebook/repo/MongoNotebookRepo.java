@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -127,6 +128,7 @@ public class MongoNotebookRepo implements NotebookRepo {
         String id = document.getString(Fields.ID);
         String name = document.getString(Fields.NAME);
         List<Document> fullPath = document.get(Fields.FULL_PATH, List.class);
+        fullPath.sort(Comparator.comparing(pathNode -> pathNode.getString(Fields.ID)));
 
         StringBuilder sb = new StringBuilder();
         for (Document pathNode : fullPath) {

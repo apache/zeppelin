@@ -37,12 +37,13 @@ So, copying `notebook` and `conf` directory should be enough.
 
 ### Upgrading from Zeppelin 0.8 to 0.9
 
- - From 0.9, we change the notes file name structure ([ZEPPELIN-2619](https://issues.apache.org/jira/browse/ZEPPELIN-2619)) and move permissions info from `notebook-authorization.json` into note file itself [ZEPPELIN-3985](https://issues.apache.org/jira/browse/ZEPPELIN-3985). So when you upgrading zeppelin to 0.9, you need to upgrade note file. Here's steps you need to follow:
+ - From 0.9, we change the notes file name structure ([ZEPPELIN-2619](https://issues.apache.org/jira/browse/ZEPPELIN-2619)). So when you upgrading zeppelin to 0.9, you need to upgrade note files. Here's steps you need to follow:
    1. Backup your notes file in case the upgrade fails
-   2. Call `bin/upgrade-note.sh -d` to upgrade note, `-d` option means to delete the old note file, missing this option will keep the old file.
- - From 0.9, Zeppelin server bind `127.0.0.1` by default instead of `0.0.0.0`. Configure `zeppelin.server.addr` property or `ZEPPELIN_ADDR` env variable to change.
- - From 0.9, we have removed `zeppelin.anonymous.allowed` ([ZEPPELIN-4489](https://issues.apache.org/jira/browse/ZEPPELIN-4489)). So, when you upgrade Zeppelin to 0.9 and if `shiro.ini` file does not exists in conf path then all the Zeppelin-Users runs as anonymous.
-
+   2. Call `bin/upgrade-note.sh -d` to upgrade notes, `-d` option means to delete the old note file, missing this option will keep the old file.
+ - From 0.9, Zeppelin server bind `127.0.0.1` by default instead of `0.0.0.0`. Configure `zeppelin.server.addr` property or `ZEPPELIN_ADDR` env variable to change it to `0.0.0.0` if you want to access it remotely.
+ - From 0.9, we have removed `zeppelin.anonymous.allowed` ([ZEPPELIN-4489](https://issues.apache.org/jira/browse/ZEPPELIN-4489)). So, when you upgrade Zeppelin to 0.9 and if `shiro.ini` file does not exist in conf path then all the Zeppelin-Users runs as anonymous.
+ - From 0.9, we use `{crendential_entry.user}` and `{crendential_entry.password}` for credential injection, while before 0.9 we use `{user.crendential_entry}` and `{password.crendential_entry}`
+ 
 ### Upgrading from Zeppelin 0.8.1 (and before) to 0.8.2 (and later)
  - From 0.8.2, Zeppelin server bind `127.0.0.1` by default instead of `0.0.0.0`. Configure `zeppelin.server.addr` property or `ZEPPELIN_ADDR` env variable to change.
 
@@ -53,7 +54,7 @@ So, copying `notebook` and `conf` directory should be enough.
 
 ### Upgrading from Zeppelin 0.6 to 0.7
 
- - From 0.7, we don't use `ZEPPELIN_JAVA_OPTS` as default value of `ZEPPELIN_INTP_JAVA_OPTS` and also the same for `ZEPPELIN_MEM`/`ZEPPELIN_INTP_MEM`. If user want to configure the jvm opts of interpreter process, please set `ZEPPELIN_INTP_JAVA_OPTS` and `ZEPPELIN_INTP_MEM` explicitly. If you don't set `ZEPPELIN_INTP_MEM`, Zeppelin will set it to `-Xms1024m -Xmx1024m -XX:MaxPermSize=512m` by default.
+ - From 0.7, we don't use `ZEPPELIN_JAVA_OPTS` as default value of `ZEPPELIN_INTP_JAVA_OPTS` and also the same for `ZEPPELIN_MEM`/`ZEPPELIN_INTP_MEM`. If user want to configure the jvm opts of interpreter process, please set `ZEPPELIN_INTP_JAVA_OPTS` and `ZEPPELIN_INTP_MEM` explicitly. If you don't set `ZEPPELIN_INTP_MEM`, Zeppelin will set it to `-Xms1024m -Xmx1024m -XX:MaxMetaspaceSize=512m` by default.
  - Mapping from `%jdbc(prefix)` to `%prefix` is no longer available. Instead, you can use %[interpreter alias] with multiple interpreter setttings on GUI.
  - Usage of `ZEPPELIN_PORT` is not supported in ssl mode. Instead use `ZEPPELIN_SSL_PORT` to configure the ssl port. Value from `ZEPPELIN_PORT` is used only when `ZEPPELIN_SSL` is set to `false`.
  - The support on Spark 1.1.x to 1.3.x is deprecated.

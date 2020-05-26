@@ -133,7 +133,7 @@ You can also set other flink properties which are not listed in the table. For a
   </tr>
   <tr>
     <td>flink.yarn.queue</td>
-    <td></td>
+    <td>default</td>
     <td>queue name of yarn app</td>
   </tr>
   <tr>

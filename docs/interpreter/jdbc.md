@@ -139,11 +139,6 @@ The JDBC interpreter properties are defined by default like below.
     <td>120</td>
     <td>Time to live sql completer in seconds (-1 to update everytime, 0 to disable update)</td>
   </tr>
-  <tr>
-    <td>default.splitQueries</td>
-    <td>false</td>
-    <td>Each query is executed apart and returns the result</td>
-  </tr>
 </table>
 
 If you want to connect other databases such as `Mysql`, `Redshift` and `Hive`, you need to edit the property values.
@@ -244,6 +239,19 @@ If the paragraph is `FINISHED` without any errors, a new paragraph will be autom
 So you don't need to type this prefix in every paragraphs' header.
 
 <img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/run_paragraph_with_jdbc.png" width="600px" />
+
+
+### Multiple SQL statements
+
+You can write multiple sql statements in one paragraph, just separate them with semi-colon. e.g
+
+```sql
+
+USE zeppelin_demo;
+
+CREATE TABLE pet (name VARCHAR(20), owner VARCHAR(20),
+       species VARCHAR(20), sex CHAR(1), birth DATE, death DATE);
+```
 
 ### Apply Zeppelin Dynamic Forms
 

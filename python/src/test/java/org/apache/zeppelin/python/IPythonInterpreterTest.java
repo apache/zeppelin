@@ -146,7 +146,7 @@ public class IPythonInterpreterTest extends BasePythonInterpreterTest {
     assertEquals(Code.ERROR, result.code());
     output = context.out.toInterpreterResultMessage().get(0);
     assertTrue(output.getData(),
-            output.getData().equals("Ipython kernel has been stopped. Please check logs. "
+            output.getData().contains("Ipython kernel has been stopped. Please check logs. "
         + "It might be because of an out of memory issue."));
   }
 
@@ -296,15 +296,31 @@ public class IPythonInterpreterTest extends BasePythonInterpreterTest {
         "df = pd.DataFrame(np.random.randn(1000, 4), index=idx, columns=list('ABCD')).cumsum()\n" +
         "import hvplot.pandas\n" +
         "df.hvplot()", context);
-    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    assertEquals(context.out.toInterpreterResultMessage().get(0).getData(),
+            InterpreterResult.Code.SUCCESS, result.code());
     interpreterResultMessages = context.out.toInterpreterResultMessage();
-    assertEquals(4, interpreterResultMessages.size());
-    assertEquals(InterpreterResult.Type.HTML, interpreterResultMessages.get(0).getType());
-    assertEquals(InterpreterResult.Type.HTML, interpreterResultMessages.get(1).getType());
-    assertEquals(InterpreterResult.Type.HTML, interpreterResultMessages.get(2).getType());
-    assertEquals(InterpreterResult.Type.HTML, interpreterResultMessages.get(3).getType());
-    // docs_json is the source data of plotting which bokeh would use to render the plotting.
-    assertTrue(interpreterResultMessages.get(3).getData().contains("docs_json"));
+
+    if (isPython2) {
+      // python 2 will have one extra output
+      // %text /home/travis/miniconda/lib/python2.7/site-packages/param/parameterized.py:2812: 
+      // UserWarning: Config option `use_jedi` not recognized by `IPCompleter`.
+      // return inst.__call__(*args,**params)
+      assertEquals(5, interpreterResultMessages.size());
+      assertEquals(InterpreterResult.Type.HTML, interpreterResultMessages.get(1).getType());
+      assertEquals(InterpreterResult.Type.HTML, interpreterResultMessages.get(2).getType());
+      assertEquals(InterpreterResult.Type.HTML, interpreterResultMessages.get(3).getType());
+      assertEquals(InterpreterResult.Type.HTML, interpreterResultMessages.get(4).getType());
+      // docs_json is the source data of plotting which bokeh would use to render the plotting.
+      assertTrue(interpreterResultMessages.get(4).getData().contains("docs_json"));
+    } else {
+      assertEquals(4, interpreterResultMessages.size());
+      assertEquals(InterpreterResult.Type.HTML, interpreterResultMessages.get(0).getType());
+      assertEquals(InterpreterResult.Type.HTML, interpreterResultMessages.get(1).getType());
+      assertEquals(InterpreterResult.Type.HTML, interpreterResultMessages.get(2).getType());
+      assertEquals(InterpreterResult.Type.HTML, interpreterResultMessages.get(3).getType());
+      // docs_json is the source data of plotting which bokeh would use to render the plotting.
+      assertTrue(interpreterResultMessages.get(3).getData().contains("docs_json"));
+    }
   }
 
 

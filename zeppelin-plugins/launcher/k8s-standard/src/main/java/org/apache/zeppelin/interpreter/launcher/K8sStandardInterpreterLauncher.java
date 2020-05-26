@@ -70,11 +70,7 @@ public class K8sStandardInterpreterLauncher extends InterpreterLauncher {
    * @return
    */
   boolean isRunningOnKubernetes() {
-    if (new File("/var/run/secrets/kubernetes.io").exists()) {
-      return true;
-    } else {
-      return false;
-    }
+    return new File("/var/run/secrets/kubernetes.io").exists();
   }
 
   /**
@@ -102,14 +98,14 @@ public class K8sStandardInterpreterLauncher extends InterpreterLauncher {
   }
 
   /**
-   * get Zeppelin server host dns.
-   * return <hostname>.<namespace>.svc
+   * get Zeppelin service.
+   * return <service-name>.<namespace>.svc
    * @throws IOException
    */
-  private String getZeppelinServiceHost() throws IOException {
+  private String getZeppelinService() throws IOException {
     if (isRunningOnKubernetes()) {
       return String.format("%s.%s.svc",
-              getHostname(), // service name and pod name should be the same
+              zConf.getK8sServiceName(),
               getNamespace());
     } else {
       return context.getZeppelinServerHost();
@@ -130,9 +126,21 @@ public class K8sStandardInterpreterLauncher extends InterpreterLauncher {
     }
   }
 
+  /**
+   * Interpreter Process will run in K8s. There is no point in changing the user after starting the container.
+   * Switching to an other user (non-privileged) should be done during the image creation process.
+   *
+   * Only if a spark interpreter process is running, userImpersonatation should be possible for --proxy-user
+   */
+  private boolean isUserImpersonateForSparkInterpreter(InterpreterLaunchContext context) {
+      return zConf.getZeppelinImpersonateSparkProxyUser() &&
+          context.getOption().isUserImpersonate() &&
+          "spark".equalsIgnoreCase(context.getInterpreterSettingGroup());
+  }
+
   @Override
   public InterpreterClient launch(InterpreterLaunchContext context) throws IOException {
-    LOGGER.info("Launching Interpreter: " + context.getInterpreterSettingGroup());
+    LOGGER.info("Launching Interpreter: {}", context.getInterpreterSettingGroup());
     this.context = context;
     this.properties = context.getProperties();
     int connectTimeout = getConnectTimeout();
@@ -146,11 +154,12 @@ public class K8sStandardInterpreterLauncher extends InterpreterLauncher {
             context.getInterpreterSettingName(),
             properties,
             buildEnvFromProperties(context),
-            getZeppelinServiceHost(),
+            getZeppelinService(),
             getZeppelinServiceRpcPort(),
             zConf.getK8sPortForward(),
             zConf.getK8sSparkContainerImage(),
-            connectTimeout);
+            connectTimeout,
+            isUserImpersonateForSparkInterpreter(context));
   }
 
   protected Map<String, String> buildEnvFromProperties(InterpreterLaunchContext context) {

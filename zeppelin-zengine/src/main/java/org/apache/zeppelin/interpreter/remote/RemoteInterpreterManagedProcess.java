@@ -20,8 +20,6 @@ package org.apache.zeppelin.interpreter.remote;
 import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.ExecuteException;
-import org.apache.commons.exec.environment.EnvironmentUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.yarn.util.ConverterUtils;
 import org.apache.zeppelin.interpreter.YarnAppMonitor;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService;
@@ -117,9 +115,7 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess {
     cmdLine.addArgument("-g", false);
     cmdLine.addArgument(interpreterSettingName, false);
 
-    Map procEnv = EnvironmentUtils.getProcEnvironment();
-    procEnv.putAll(env);
-    interpreterProcessLauncher = new InterpreterProcessLauncher(cmdLine, procEnv);
+    interpreterProcessLauncher = new InterpreterProcessLauncher(cmdLine, env);
     interpreterProcessLauncher.launch();
     interpreterProcessLauncher.waitForReady(getConnectTimeout());
     if (interpreterProcessLauncher.isLaunchTimeout()) {

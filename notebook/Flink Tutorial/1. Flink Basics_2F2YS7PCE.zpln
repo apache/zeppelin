@@ -2,23 +2,24 @@
   "paragraphs": [
     {
       "title": "Introduction",
-      "text": "%md\n\n[Apache Flink](https://flink.apache.org/) is a framework and distributed processing engine for stateful computations over unbounded and bounded data streams. This is Flink tutorial for runninb classical wordcount in both batch and streaming mode. \n\n",
+      "text": "%md\n\n# Introduction\n\n[Apache Flink](https://flink.apache.org/) is a framework and distributed processing engine for stateful computations over unbounded and bounded data streams. This is Flink tutorial for runninb classical wordcount in both batch and streaming mode. \n\nThere\u0027re 3 things you need to do before using flink in zeppelin.\n\n* Download [Flink 1.10](https://flink.apache.org/downloads.html) for scala 2.11 (Only scala-2.11 is supported, scala-2.12 is not supported yet in Zeppelin), unpack it and set `FLINK_HOME` in flink interpreter setting to this location.\n* Copy flink-python_2.11–1.10.0.jar from flink opt folder to flink lib folder (it is used by pyflink which is supported in Zeppelin)\n* If you want to run yarn mode, you need to set `HADOOP_CONF_DIR` in flink interpreter setting. And make sure `hadoop` is in your `PATH`, because internally flink will call command `hadoop classpath` and load all the hadoop related jars in the flink interpreter process.\n\nThere\u0027re 6 sub interpreters in flink interpreter, each is used for different purpose. However they are in the the JVM and share the same ExecutionEnviroment/StremaExecutionEnvironment/BatchTableEnvironment/StreamTableEnvironment.\n\n\n* `%flink`\t- Creates ExecutionEnvironment/StreamExecutionEnvironment/BatchTableEnvironment/StreamTableEnvironment and provides a Scala environment \n* `%flink.pyflink`\t- Provides a python environment \n* `%flink.ipyflink`\t- Provides an ipython environment \n* `%flink.ssql`\t - Provides a stream sql environment \n* `%flink.bsql`\t- Provides a batch sql environment ",
       "user": "anonymous",
-      "dateUpdated": "2020-02-06 22:14:18.226",
+      "dateUpdated": "2020-05-11 14:22:22.877",
       "config": {
         "colWidth": 12.0,
         "fontSize": 9.0,
         "enabled": true,
         "results": {},
         "editorSetting": {
-          "language": "text",
-          "editOnDblClick": false,
+          "language": "markdown",
+          "editOnDblClick": true,
           "completionKey": "TAB",
-          "completionSupport": true
+          "completionSupport": false
         },
-        "editorMode": "ace/mode/text",
-        "title": true,
-        "editorHide": true
+        "editorMode": "ace/mode/markdown",
+        "title": false,
+        "editorHide": true,
+        "tableHide": false
       },
       "settings": {
         "params": {},
@@ -29,7 +30,7 @@
         "msg": [
           {
             "type": "HTML",
-            "data": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003cp\u003e\u003ca href\u003d\"https://flink.apache.org/\"\u003eApache Flink\u003c/a\u003e is a framework and distributed processing engine for stateful computations over unbounded and bounded data streams. This is Flink tutorial for runninb classical wordcount in both batch and streaming mode.\u003c/p\u003e\n\n\u003c/div\u003e"
+            "data": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003ch1\u003eIntroduction\u003c/h1\u003e\n\u003cp\u003e\u003ca href\u003d\"https://flink.apache.org/\"\u003eApache Flink\u003c/a\u003e is a framework and distributed processing engine for stateful computations over unbounded and bounded data streams. This is Flink tutorial for runninb classical wordcount in both batch and streaming mode.\u003c/p\u003e\n\u003cp\u003eThere\u0026rsquo;re 3 things you need to do before using flink in zeppelin.\u003c/p\u003e\n\u003cul\u003e\n\u003cli\u003eDownload \u003ca href\u003d\"https://flink.apache.org/downloads.html\"\u003eFlink 1.10\u003c/a\u003e for scala 2.11 (Only scala-2.11 is supported, scala-2.12 is not supported yet in Zeppelin), unpack it and set \u003ccode\u003eFLINK_HOME\u003c/code\u003e in flink interpreter setting to this location.\u003c/li\u003e\n\u003cli\u003eCopy flink-python_2.11–1.10.0.jar from flink opt folder to flink lib folder (it is used by pyflink which is supported in Zeppelin)\u003c/li\u003e\n\u003cli\u003eIf you want to run yarn mode, you need to set \u003ccode\u003eHADOOP_CONF_DIR\u003c/code\u003e in flink interpreter setting. And make sure \u003ccode\u003ehadoop\u003c/code\u003e is in your \u003ccode\u003ePATH\u003c/code\u003e, because internally flink will call command \u003ccode\u003ehadoop classpath\u003c/code\u003e and load all the hadoop related jars in the flink interpreter process.\u003c/li\u003e\n\u003c/ul\u003e\n\u003cp\u003eThere\u0026rsquo;re 6 sub interpreters in flink interpreter, each is used for different purpose. However they are in the the JVM and share the same ExecutionEnviroment/StremaExecutionEnvironment/BatchTableEnvironment/StreamTableEnvironment.\u003c/p\u003e\n\u003cul\u003e\n\u003cli\u003e\u003ccode\u003e%flink\u003c/code\u003e\t- Creates ExecutionEnvironment/StreamExecutionEnvironment/BatchTableEnvironment/StreamTableEnvironment and provides a Scala environment\u003c/li\u003e\n\u003cli\u003e\u003ccode\u003e%flink.pyflink\u003c/code\u003e\t- Provides a python environment\u003c/li\u003e\n\u003cli\u003e\u003ccode\u003e%flink.ipyflink\u003c/code\u003e\t- Provides an ipython environment\u003c/li\u003e\n\u003cli\u003e\u003ccode\u003e%flink.ssql\u003c/code\u003e\t - Provides a stream sql environment\u003c/li\u003e\n\u003cli\u003e\u003ccode\u003e%flink.bsql\u003c/code\u003e\t- Provides a batch sql environment\u003c/li\u003e\n\u003c/ul\u003e\n\n\u003c/div\u003e"
           }
         ]
       },
@@ -38,15 +39,15 @@
       "jobName": "paragraph_1580997898536_-1239502599",
       "id": "paragraph_1580997898536_-1239502599",
       "dateCreated": "2020-02-06 22:04:58.536",
-      "dateStarted": "2020-02-06 22:14:15.858",
-      "dateFinished": "2020-02-06 22:14:17.319",
+      "dateStarted": "2020-05-11 14:22:22.878",
+      "dateFinished": "2020-05-11 14:22:24.363",
       "status": "FINISHED"
     },
     {
       "title": "Batch WordCount",
       "text": "%flink\n\nval data \u003d benv.fromElements(\"hello world\", \"hello flink\", \"hello hadoop\")\ndata.flatMap(line \u003d\u003e line.split(\"\\\\s\"))\n             .map(w \u003d\u003e (w, 1))\n             .groupBy(0)\n             .sum(1)\n             .print()\n",
       "user": "anonymous",
-      "dateUpdated": "2020-02-25 11:34:15.508",
+      "dateUpdated": "2020-04-29 10:57:40.471",
       "config": {
         "colWidth": 6.0,
         "fontSize": 9.0,
@@ -70,7 +71,7 @@
         "msg": [
           {
             "type": "TEXT",
-            "data": "\u001b[1m\u001b[34mdata\u001b[0m: \u001b[1m\u001b[32morg.apache.flink.api.scala.DataSet[String]\u001b[0m \u003d org.apache.flink.api.scala.DataSet@5883980f\n(flink,1)\n(hadoop,1)\n(hello,3)\n(world,1)\n"
+            "data": "\u001b[1m\u001b[34mdata\u001b[0m: \u001b[1m\u001b[32morg.apache.flink.api.scala.DataSet[String]\u001b[0m \u003d org.apache.flink.api.scala.DataSet@177908f2\n(flink,1)\n(hadoop,1)\n(hello,3)\n(world,1)\n"
           }
         ]
       },
@@ -79,15 +80,15 @@
       "jobName": "paragraph_1580998080340_1531975932",
       "id": "paragraph_1580998080340_1531975932",
       "dateCreated": "2020-02-06 22:08:00.340",
-      "dateStarted": "2020-02-25 11:34:15.520",
-      "dateFinished": "2020-02-25 11:34:41.976",
+      "dateStarted": "2020-04-29 10:57:40.495",
+      "dateFinished": "2020-04-29 10:57:56.468",
       "status": "FINISHED"
     },
     {
       "title": "Streaming WordCount",
       "text": "%flink\n\nval data \u003d senv.fromElements(\"hello world\", \"hello flink\", \"hello hadoop\")\ndata.flatMap(line \u003d\u003e line.split(\"\\\\s\"))\n  .map(w \u003d\u003e (w, 1))\n  .keyBy(0)\n  .sum(1)\n  .print\n\nsenv.execute()",
       "user": "anonymous",
-      "dateUpdated": "2020-02-25 11:34:43.530",
+      "dateUpdated": "2020-04-29 10:58:47.117",
       "config": {
         "colWidth": 6.0,
         "fontSize": 9.0,
@@ -111,7 +112,7 @@
         "msg": [
           {
             "type": "TEXT",
-            "data": "\u001b[1m\u001b[34mdata\u001b[0m: \u001b[1m\u001b[32morg.apache.flink.streaming.api.scala.DataStream[String]\u001b[0m \u003d org.apache.flink.streaming.api.scala.DataStream@3385fb69\n\u001b[1m\u001b[34mres2\u001b[0m: \u001b[1m\u001b[32morg.apache.flink.streaming.api.datastream.DataStreamSink[(String, Int)]\u001b[0m \u003d org.apache.flink.streaming.api.datastream.DataStreamSink@348a8146\n\u001b[1m\u001b[34mres3\u001b[0m: \u001b[1m\u001b[32morg.apache.flink.api.common.JobExecutionResult\u001b[0m \u003d\nProgram execution finished\nJob with JobID d85232db283565c933e2c0d64c9d5509 has finished.\nJob Runtime: 351 ms\n"
+            "data": "\u001b[1m\u001b[34mdata\u001b[0m: \u001b[1m\u001b[32morg.apache.flink.streaming.api.scala.DataStream[String]\u001b[0m \u003d org.apache.flink.streaming.api.scala.DataStream@614839e8\n\u001b[1m\u001b[34mres2\u001b[0m: \u001b[1m\u001b[32morg.apache.flink.streaming.api.datastream.DataStreamSink[(String, Int)]\u001b[0m \u003d org.apache.flink.streaming.api.datastream.DataStreamSink@1ead6506\n(hello,1)\n(world,1)\n(hello,2)\n(flink,1)\n(hello,3)\n(hadoop,1)\n\u001b[1m\u001b[34mres3\u001b[0m: \u001b[1m\u001b[32morg.apache.flink.api.common.JobExecutionResult\u001b[0m \u003d\nProgram execution finished\nJob with JobID e84edd21e622b11646b0ec1e7f73bb18 has finished.\nJob Runtime: 171 ms\n"
           }
         ]
       },
@@ -120,8 +121,8 @@
       "jobName": "paragraph_1580998084555_-697674675",
       "id": "paragraph_1580998084555_-697674675",
       "dateCreated": "2020-02-06 22:08:04.555",
-      "dateStarted": "2020-02-25 11:34:43.540",
-      "dateFinished": "2020-02-25 11:34:45.863",
+      "dateStarted": "2020-04-29 10:58:47.129",
+      "dateFinished": "2020-04-29 10:58:49.108",
       "status": "FINISHED"
     },
     {
@@ -186,17 +187,15 @@
       "status": "READY"
     }
   ],
-  "name": "Flink Basic",
+  "name": "1. Flink Basics",
   "id": "2F2YS7PCE",
   "defaultInterpreterGroup": "spark",
   "version": "0.9.0-SNAPSHOT",
-  "permissions": {},
   "noteParams": {},
   "noteForms": {},
   "angularObjects": {},
   "config": {
     "isZeppelinNotebookCronEnable": false
   },
-  "info": {},
-  "path": "/Flink Tutorial/Flink Basic"
+  "info": {}
 }

@@ -57,7 +57,7 @@ public class IPythonInterpreter extends JupyterKernelInterpreter {
   private String py4jGatewaySecret;
 
   public IPythonInterpreter(Properties properties) {
-    super(properties);
+    super("python", properties);
   }
 
   @Override

@@ -54,7 +54,7 @@
       "title": "Load data into table",
       "text": "import org.apache.commons.io.IOUtils\nimport java.net.URL\nimport java.nio.charset.Charset\n\n// Zeppelin creates and injects sc (SparkContext) and sqlContext (HiveContext or SqlContext)\n// So you don\u0027t need create them manually\n\n// load bank data\nval bankText \u003d sc.parallelize(\n    IOUtils.toString(\n        new URL(\"https://s3.amazonaws.com/apache-zeppelin/tutorial/bank/bank.csv\"),\n        Charset.forName(\"utf8\")).split(\"\\n\"))\n\ncase class Bank(age: Integer, job: String, marital: String, education: String, balance: Integer)\n\nval bank \u003d bankText.map(s \u003d\u003e s.split(\";\")).filter(s \u003d\u003e s(0) !\u003d \"\\\"age\\\"\").map(\n    s \u003d\u003e Bank(s(0).toInt, \n            s(1).replaceAll(\"\\\"\", \"\"),\n            s(2).replaceAll(\"\\\"\", \"\"),\n            s(3).replaceAll(\"\\\"\", \"\"),\n            s(5).replaceAll(\"\\\"\", \"\").toInt\n        )\n).toDF()\nbank.registerTempTable(\"bank\")",
       "user": "anonymous",
-      "dateUpdated": "2020-01-21 22:58:52.064",
+      "dateUpdated": "2020-05-08 11:18:36.766",
       "config": {
         "colWidth": 12.0,
         "title": true,
@@ -95,14 +95,14 @@
       "jobName": "paragraph_1423500779206_-1502780787",
       "id": "20150210-015259_1403135953",
       "dateCreated": "2015-02-10 01:52:59.000",
-      "dateStarted": "2020-01-21 22:58:52.084",
-      "dateFinished": "2020-01-21 22:59:18.740",
+      "dateStarted": "2020-05-08 11:18:36.791",
+      "dateFinished": "2020-05-08 11:19:58.268",
       "status": "FINISHED"
     },
     {
       "text": "%sql \nselect age, count(1) value\nfrom bank \nwhere age \u003c 30 \ngroup by age \norder by age",
       "user": "anonymous",
-      "dateUpdated": "2020-01-19 16:58:04.490",
+      "dateUpdated": "2020-05-04 23:34:43.954",
       "config": {
         "colWidth": 4.0,
         "results": [
@@ -142,7 +142,9 @@
         "enabled": true,
         "editorSetting": {
           "language": "sql",
-          "editOnDblClick": false
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
         },
         "editorMode": "ace/mode/sql",
         "fontSize": 9.0
@@ -165,14 +167,14 @@
       "jobName": "paragraph_1423500782552_-1439281894",
       "id": "20150210-015302_1492795503",
       "dateCreated": "2015-02-10 01:53:02.000",
-      "dateStarted": "2016-12-17 15:30:13.000",
-      "dateFinished": "2016-12-17 15:31:04.000",
+      "dateStarted": "2020-05-04 23:34:43.959",
+      "dateFinished": "2020-05-04 23:34:52.126",
       "status": "FINISHED"
     },
     {
       "text": "%sql \nselect age, count(1) value \nfrom bank \nwhere age \u003c ${maxAge\u003d30} \ngroup by age \norder by age",
       "user": "anonymous",
-      "dateUpdated": "2020-01-19 16:58:04.541",
+      "dateUpdated": "2020-05-04 23:34:45.514",
       "config": {
         "colWidth": 4.0,
         "results": [
@@ -212,7 +214,9 @@
         "enabled": true,
         "editorSetting": {
           "language": "sql",
-          "editOnDblClick": false
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
         },
         "editorMode": "ace/mode/sql",
         "fontSize": 9.0
@@ -230,28 +234,19 @@
           }
         }
       },
-      "results": {
-        "code": "SUCCESS",
-        "msg": [
-          {
-            "type": "TABLE",
-            "data": "age\tvalue\n19\t4\n20\t3\n21\t7\n22\t9\n23\t20\n24\t24\n25\t44\n26\t77\n27\t94\n28\t103\n29\t97\n30\t150\n31\t199\n32\t224\n33\t186\n34\t231\n"
-          }
-        ]
-      },
       "apps": [],
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1423720444030_-1424110477",
       "id": "20150212-145404_867439529",
       "dateCreated": "2015-02-12 14:54:04.000",
-      "dateStarted": "2016-12-17 15:30:58.000",
-      "dateFinished": "2016-12-17 15:31:07.000",
+      "dateStarted": "2020-05-04 23:34:45.520",
+      "dateFinished": "2020-05-04 23:34:54.074",
       "status": "FINISHED"
     },
     {
       "text": "%sql \nselect age, count(1) value \nfrom bank \nwhere marital\u003d\"${marital\u003dsingle,single|divorced|married}\" \ngroup by age \norder by age",
       "user": "anonymous",
-      "dateUpdated": "2020-01-19 16:58:04.590",
+      "dateUpdated": "2020-05-04 23:34:47.079",
       "config": {
         "colWidth": 4.0,
         "results": [
@@ -291,7 +286,9 @@
         "enabled": true,
         "editorSetting": {
           "language": "sql",
-          "editOnDblClick": false
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
         },
         "editorMode": "ace/mode/sql",
         "fontSize": 9.0,
@@ -335,8 +332,8 @@
       "jobName": "paragraph_1423836262027_-210588283",
       "id": "20150213-230422_1600658137",
       "dateCreated": "2015-02-13 23:04:22.000",
-      "dateStarted": "2016-12-17 15:31:05.000",
-      "dateFinished": "2016-12-17 15:31:09.000",
+      "dateStarted": "2020-05-04 23:34:52.255",
+      "dateFinished": "2020-05-04 23:34:55.739",
       "status": "FINISHED"
     },
     {
@@ -445,19 +442,15 @@
       "status": "READY"
     }
   ],
-  "name": "Basic Features (Spark)",
+  "name": "2. Spark Basic Features",
   "id": "2A94M5J1Z",
   "defaultInterpreterGroup": "spark",
-  "permissions": {},
   "noteParams": {},
   "noteForms": {},
-  "angularObjects": {
-    "2C73DY9P9:shared_process": []
-  },
+  "angularObjects": {},
   "config": {
     "looknfeel": "default",
-    "isZeppelinNotebookCronEnable": true
+    "isZeppelinNotebookCronEnable": false
   },
-  "info": {},
-  "path": "/Spark Tutorial/Basic Features (Spark)"
+  "info": {}
 }

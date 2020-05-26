@@ -1193,7 +1193,7 @@ public class NotebookServer extends WebSocketServlet
     } else {
       Message resp = new Message(OP.CONVERTED_NOTE_NBFORMAT)
               .put("nbformat", new JupyterUtil().getNbformat(note.toJson()))
-              .put("name", fromMessage.get("name"));
+              .put("noteName", fromMessage.get("noteName"));
       conn.send(serializeMessage(resp));
     }
   }
@@ -2020,10 +2020,10 @@ public class NotebookServer extends WebSocketServlet
 
   private void getEditorSetting(NotebookSocket conn, Message fromMessage) throws IOException {
     String paragraphId = (String) fromMessage.get("paragraphId");
-    String magic = (String) fromMessage.get("magic");
+    String paragraphText = (String) fromMessage.get("paragraphText");
     String noteId = getConnectionManager().getAssociatedNoteId(conn);
 
-    getNotebookService().getEditorSetting(noteId, magic,
+    getNotebookService().getEditorSetting(noteId, paragraphText,
         getServiceContext(fromMessage),
         new WebSocketServiceCallback<Map<String, Object>>(conn) {
           @Override

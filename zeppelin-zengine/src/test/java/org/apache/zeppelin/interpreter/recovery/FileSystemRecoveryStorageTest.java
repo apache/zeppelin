@@ -83,7 +83,7 @@ public class FileSystemRecoveryStorageTest extends AbstractInterpreterTest {
 
     assertEquals(2, interpreterSettingManager.getRecoveryStorage().restore().size());
 
-    interpreterSettingManager.restart(interpreterSetting.getId(), "note1", "user1");
+    interpreterSettingManager.restart(interpreterSetting.getId(), "user1", "note1");
     assertEquals(1, interpreterSettingManager.getRecoveryStorage().restore().size());
 
     interpreterSetting.close();

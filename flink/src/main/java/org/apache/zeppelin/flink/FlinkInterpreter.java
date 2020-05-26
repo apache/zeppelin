@@ -45,18 +45,33 @@ public class FlinkInterpreter extends Interpreter {
 
   public FlinkInterpreter(Properties properties) {
     super(properties);
-    this.innerIntp = new FlinkScalaInterpreter(getProperties());
+  }
+
+  private void checkScalaVersion() throws InterpreterException {
+    String scalaVersionString = scala.util.Properties.versionString();
+    LOGGER.info("Using Scala: " + scalaVersionString);
+    if (scalaVersionString.contains("version 2.11")) {
+      return;
+    } else {
+      throw new InterpreterException("Unsupported scala version: " + scalaVersionString +
+              ", Only scala 2.11 is supported");
+    }
   }
 
   @Override
   public void open() throws InterpreterException {
+    checkScalaVersion();
+    
+    this.innerIntp = new FlinkScalaInterpreter(getProperties());
     this.innerIntp.open();
     this.z = this.innerIntp.getZeppelinContext();
   }
 
   @Override
   public void close() throws InterpreterException {
-    this.innerIntp.close();
+    if (this.innerIntp != null) {
+      this.innerIntp.close();
+    }
   }
 
   @Override
@@ -72,6 +87,9 @@ public class FlinkInterpreter extends Interpreter {
     ClassLoader originClassLoader = Thread.currentThread().getContextClassLoader();
     try {
       Thread.currentThread().setContextClassLoader(getFlinkScalaShellLoader());
+      createPlannerAgain();
+      setParallelismIfNecessary(context);
+      setSavePointIfNecessary(context);
       return innerIntp.interpret(st, context);
     } finally {
       Thread.currentThread().setContextClassLoader(originClassLoader);
@@ -110,7 +128,7 @@ public class FlinkInterpreter extends Interpreter {
   }
 
   StreamTableEnvironment getStreamTableEnvironment() {
-    return this.innerIntp.getStreamTableEnvironment();
+    return this.innerIntp.getStreamTableEnvironment("blink");
   }
 
   org.apache.flink.table.api.TableEnvironment getJavaBatchTableEnvironment(String planner) {
@@ -122,7 +140,7 @@ public class FlinkInterpreter extends Interpreter {
   }
 
   TableEnvironment getBatchTableEnvironment() {
-    return this.innerIntp.getBatchTableEnvironment();
+    return this.innerIntp.getBatchTableEnvironment("blink");
   }
 
   JobManager getJobManager() {
@@ -135,6 +153,13 @@ public class FlinkInterpreter extends Interpreter {
 
   int getDefaultSqlParallelism() {
     return this.innerIntp.getDefaultSqlParallelism();
+  }
+
+  /**
+   * Workaround for issue of FLINK-16936.
+   */
+  public void createPlannerAgain() {
+    this.innerIntp.createPlannerAgain();
   }
 
   public ClassLoader getFlinkScalaShellLoader() {
@@ -152,4 +177,13 @@ public class FlinkInterpreter extends Interpreter {
   public FlinkScalaInterpreter getInnerIntp() {
     return this.innerIntp;
   }
+
+  public void setSavePointIfNecessary(InterpreterContext context) {
+    this.innerIntp.setSavePointIfNecessary(context);
+  }
+
+  public void setParallelismIfNecessary(InterpreterContext context) {
+    this.innerIntp.setParallelismIfNecessary(context);
+  }
+
 }

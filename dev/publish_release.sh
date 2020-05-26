@@ -36,7 +36,7 @@ for var in GPG_PASSPHRASE ASF_USERID ASF_PASSWORD; do
   fi
 done
 
-export MAVEN_OPTS="-Xmx2g -XX:MaxPermSize=512m"
+export MAVEN_OPTS="-Xmx2g -XX:MaxMetaspaceSize=512m"
 RED='\033[0;31m'
 NC='\033[0m' # No Color
 
@@ -47,7 +47,7 @@ if [[ $RELEASE_VERSION == *"SNAPSHOT"* ]]; then
 fi
 
 PUBLISH_PROFILES="-Ppublish-distr -Phadoop-2.6 -Pweb-angular"
-PROJECT_OPTIONS="-pl !zeppelin-distribution"
+PROJECT_OPTIONS="-pl !zeppelin-distribution -Dmaven.javadoc.skip=true"
 NEXUS_STAGING="https://repository.apache.org/service/local/staging"
 NEXUS_PROFILE="153446d1ac37c4"
 

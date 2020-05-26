@@ -79,7 +79,7 @@ The **Cassandra** interpreter accepts the following commands
     </tr>
     <tr>
       <td nowrap>Option commands</td>
-      <td>`@consistency`, `@retryPolicy`, `@fetchSize` ...</td>
+      <td>`@consistency`, `@fetchSize` ...</td>
       <td>Inject runtime options to all statements in the paragraph</td>
     </tr>
     <tr>
@@ -113,9 +113,8 @@ Each statement should be separated by a semi-colon ( **;** ) except the special 
 4. `@consistency`
 5. `@serialConsistency`
 6. `@timestamp`
-7. `@retryPolicy`
-8. `@fetchSize`
-9. `@requestTimeOut`
+7. `@fetchSize`
+8. `@requestTimeOut`
 
 Multi-line statements as well as multiple statements on the same line are also supported as long as they are separated by a semi-colon. Ex:
 
@@ -165,8 +164,8 @@ The complete list of all CQL statements and versions can be found below:
      <td><strong>3.x</strong></td>
      <td>
         <a target="_blank"
-          href="http://docs.datastax.com/en/cql/3.3/cql/cqlIntro.html">
-          http://docs.datastax.com/en/cql/3.3/cql/cqlIntro.html
+          href="https://docs.datastax.com/en/archived/cql/3.3/cql/cqlIntro.html">
+          https://docs.datastax.com/en/archived/cql/3.3/cql/cqlIntro.html
         </a>
      </td>
    </tr>   
@@ -174,8 +173,8 @@ The complete list of all CQL statements and versions can be found below:
      <td><strong>2.2</strong></td>
      <td>
         <a target="_blank"
-          href="http://docs.datastax.com/en/cql/3.3/cql/cqlIntro.html">
-          http://docs.datastax.com/en/cql/3.3/cql/cqlIntro.html
+          href="https://docs.datastax.com/en/archived/cql/3.3/cql/cqlIntro.html">
+          https://docs.datastax.com/en/archived/cql/3.3/cql/cqlIntro.html
         </a>
      </td>
    </tr>
@@ -192,8 +191,8 @@ The complete list of all CQL statements and versions can be found below:
      <td><strong>1.2</strong></td>
      <td>
         <a target="_blank"
-          href="http://docs.datastax.com/en/cql/3.0/cql/aboutCQL.html">
-          http://docs.datastax.com/en/cql/3.0/cql/aboutCQL.html
+          href="https://docs.datastax.com/en/archived/cql/3.1/cql/cql_intro_c.html">
+          https://docs.datastax.com/en/archived/cql/3.1/cql/cql_intro_c.html
         </a>
      </td>
    </tr>
@@ -351,11 +350,6 @@ Below is the list of all parameters:
       </td>
    </tr>
    <tr>
-     <td nowrap>Retry Policy</td>
-     <td><strong>@retryPolicy=<em>value</em></strong></td>
-     <td>Apply the given retry policy to all queries in the paragraph</td>
-   </tr>
-   <tr>
      <td nowrap>Fetch Size</td>
      <td><strong>@fetchSize=<em>integer value</em></strong></td>
      <td>Apply the given fetch size to all queries in the paragraph</td>
@@ -387,10 +381,6 @@ Some parameters only accept restricted values:
    <tr>
      <td nowrap>Timestamp</td>
      <td>Any long value</td>
-   </tr>
-   <tr>
-     <td nowrap>Retry Policy</td>
-     <td><strong>DEFAULT, DOWNGRADING_CONSISTENCY, FALLTHROUGH, LOGGING_DEFAULT, LOGGING_DOWNGRADING, LOGGING_FALLTHROUGH</strong></td>
    </tr>
    <tr>
      <td nowrap>Fetch Size</td>
@@ -494,6 +484,7 @@ Bound values are not mandatory for the **@bind** statement. However if you provi
 * Date values should be enclosed between simple quotes (**'**) and respect the formats (full list is in the [documentation](https://docs.datastax.com/en/cql/3.3/cql/cql_reference/timestamp_type_r.html)):
   1. yyyy-MM-dd HH:MM:ss
   2. yyyy-MM-dd HH:MM:ss.SSS
+  2. yyyy-mm-dd'T'HH:mm:ss.SSSZ
 * **null** is parsed as-is
 * **boolean** (`true`|`false`) are parsed as-is
 * collection values must follow the **[standard CQL syntax]**:
@@ -584,7 +575,7 @@ The **isolated** mode is the most extreme and will create as many JVM/`com.datas
 ## Interpreter Configuration
 
 To configure the **Cassandra** interpreter, go to the **Interpreter** menu and scroll down to change the parameters.
-The **Cassandra** interpreter is using the official **[Cassandra Java Driver]** and most of the parameters are used
+The **Cassandra** interpreter is using the official **[Datastax Java Driver for Apache Cassandra]®** and most of the parameters are used
 to configure the Java driver
 
 Below are the configuration parameters and their default values.
@@ -644,10 +635,9 @@ Below are the configuration parameters and their default values.
    <tr>
      <td>`cassandra.load.balancing.policy`</td>
      <td>
-        Load balancing policy. Default = `new TokenAwarePolicy(new DCAwareRoundRobinPolicy())`
+        Load balancing policy. Default = `DefaultLoadBalancingPolicy`
         To Specify your own policy, provide the <em>fully qualify class name (FQCN)</em> of your policy.
-        At runtime the interpreter will instantiate the policy using
-        <strong>Class.forName(FQCN)</strong>
+        At runtime the driver will instantiate the policy using class name.
      </td>
      <td>DEFAULT</td>
    </tr>
@@ -657,12 +647,12 @@ Below are the configuration parameters and their default values.
      <td>10</td>
    </tr>
    <tr>
-     <td>`cassandra.pooling.core.connection.per.host.local`</td>
+     <td>`cassandra.pooling.connection.per.host.local`</td>
      <td>Protocol V2 and below default = 2. Protocol V3 and above default = 1</td>
      <td>2</td>
    </tr>
    <tr>
-     <td>`cassandra.pooling.core.connection.per.host.remote`</td>
+     <td>`cassandra.pooling.connection.per.host.remote`</td>
      <td>Protocol V2 and below default = 1. Protocol V3 and above default = 1</td>
      <td>1</td>
    </tr>
@@ -672,39 +662,9 @@ Below are the configuration parameters and their default values.
      <td>30</td>
    </tr>
    <tr>
-     <td>`cassandra.pooling.idle.timeout.seconds`</td>
-     <td>Cassandra idle time out in seconds</td>
-     <td>120</td>
-   </tr>
-   <tr>
-     <td>`cassandra.pooling.max.connection.per.host.local`</td>
-     <td>Protocol V2 and below default = 8. Protocol V3 and above default = 1</td>
-     <td>8</td>
-   </tr>
-   <tr>
-     <td>`cassandra.pooling.max.connection.per.host.remote`</td>
-     <td>Protocol V2 and below default = 2. Protocol V3 and above default = 1</td>
-     <td>2</td>
-   </tr>
-   <tr>
-     <td>`cassandra.pooling.max.request.per.connection.local`</td>
+     <td>`cassandra.pooling.max.request.per.connection`</td>
      <td>Protocol V2 and below default = 128. Protocol V3 and above default = 1024</td>
      <td>128</td>
-   </tr>
-   <tr>
-     <td>`cassandra.pooling.max.request.per.connection.remote`</td>
-     <td>Protocol V2 and below default = 128. Protocol V3 and above default = 256</td>
-     <td>128</td>
-   </tr>
-   <tr>
-     <td>`cassandra.pooling.new.connection.threshold.local`</td>
-     <td>Protocol V2 and below default = 100. Protocol V3 and above default = 800</td>
-     <td>100</td>
-   </tr>
-   <tr>
-     <td>`cassandra.pooling.new.connection.threshold.remote`</td>
-     <td>Protocol V2 and below default = 100. Protocol V3 and above default = 200</td>
-     <td>100</td>
    </tr>
    <tr>
      <td>`cassandra.pooling.pool.timeout.millisecs`</td>
@@ -713,8 +673,8 @@ Below are the configuration parameters and their default values.
    </tr>
    <tr>
      <td>`cassandra.protocol.version`</td>
-     <td>Cassandra binary protocol version</td>
-     <td>4</td>
+     <td>Cassandra binary protocol version (`3`, `4`, `DSE1`, `DSE2`)</td>
+     <td>`DEFAULT` (detected automatically)</td>
    </tr>
    <tr>
      <td>cassandra.query.default.consistency</td>
@@ -743,10 +703,9 @@ Below are the configuration parameters and their default values.
      <td>`cassandra.reconnection.policy`</td>
      <td>
         Cassandra Reconnection Policy.
-        Default = `new ExponentialReconnectionPolicy(1000, 10 * 60 * 1000)`
+        Default = `ExponentialReconnectionPolicy`
         To Specify your own policy, provide the <em>fully qualify class name (FQCN)</em> of your policy.
-        At runtime the interpreter will instantiate the policy using
-        <strong>Class.forName(FQCN)</strong>
+        At runtime the driver will instantiate the policy using class name.
      </td>
      <td>DEFAULT</td>
    </tr>
@@ -754,10 +713,9 @@ Below are the configuration parameters and their default values.
      <td>`cassandra.retry.policy`</td>
      <td>
         Cassandra Retry Policy.
-        Default = `DefaultRetryPolicy.INSTANCE`
+        Default = `DefaultRetryPolicy`
         To Specify your own policy, provide the <em>fully qualify class name (FQCN)</em> of your policy.
-        At runtime the interpreter will instantiate the policy using
-        <strong>Class.forName(FQCN)</strong>
+        At runtime the driver will instantiate the policy using class name.
      </td>
      <td>DEFAULT</td>
    </tr>
@@ -780,10 +738,9 @@ Below are the configuration parameters and their default values.
      <td>`cassandra.speculative.execution.policy`</td>
      <td>
         Cassandra Speculative Execution Policy.
-        Default = `NoSpeculativeExecutionPolicy.INSTANCE`
+        Default = `NoSpeculativeExecutionPolicy`
         To Specify your own policy, provide the <em>fully qualify class name (FQCN)</em> of your policy.
-        At runtime the interpreter will instantiate the policy using
-        <strong>Class.forName(FQCN)</strong>
+        At runtime the driver will instantiate the policy using class name.
      </td>
      <td>DEFAULT</td>
    </tr>
@@ -813,6 +770,15 @@ Below are the configuration parameters and their default values.
  </table>
 
 ## Change Log
+
+**3.2** _(Zeppelin {{ site.ZEPPELIN_VERSION }})_ :
+
+* Refactor to use unified Java driver 4.5
+  ([ZEPPELIN-4378](https://issues.apache.org/jira/browse/ZEPPELIN-4378):
+  * changes in configuration were necessary, as new driver has different architecture, and
+  configuration options;
+  * interpreter got support for DSE-specific data types, and other extensions;
+  * support for `@retryPolicy` is removed, as only single retry policy is shipped with driver.
 
 **3.1** _(Zeppelin {{ site.ZEPPELIN_VERSION }})_ :
 
@@ -844,14 +810,12 @@ Below are the configuration parameters and their default values.
 
 ## Bugs & Contacts
 
- If you encounter a bug for this interpreter, please create a **[JIRA]** ticket and ping me on Twitter
- at **[@doanduyhai]**
+ If you encounter a bug for this interpreter, please create a **[JIRA]** ticket.
 
-[Cassandra Java Driver]: https://github.com/datastax/java-driver
+[Datastax Java Driver for Apache Cassandra]: https://docs.datastax.com/en/developer/java-driver/latest/
 [standard CQL syntax]: http://docs.datastax.com/en/cql/3.1/cql/cql_using/use_collections_c.html
 [Tuple CQL syntax]: http://docs.datastax.com/en/cql/3.1/cql/cql_reference/tupleType.html
 [UDT CQL syntax]: http://docs.datastax.com/en/cql/3.1/cql/cql_using/cqlUseUDT.html
 [Zeppelin Dynamic Form](../usage/dynamic_form/intro.html)
 [Interpreter Binding Mode](../usage/interpreter/interpreter_binding_mode.html)
-[JIRA]: https://issues.apache.org/jira/browse/ZEPPELIN-382?jql=project%20%3D%20ZEPPELIN
-[@doanduyhai]: https://twitter.com/doanduyhai
+[JIRA]: https://issues.apache.org/jira/browse/ZEPPELIN

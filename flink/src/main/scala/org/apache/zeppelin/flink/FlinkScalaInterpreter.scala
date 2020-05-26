@@ -18,10 +18,10 @@
 
 package org.apache.zeppelin.flink
 
-import java.io.{BufferedReader, File, IOException}
+import java.io.{BufferedReader, File}
 import java.net.{URL, URLClassLoader}
 import java.nio.file.Files
-import java.util.{Map, Properties}
+import java.util.Properties
 import java.util.concurrent.TimeUnit
 import java.util.jar.JarFile
 
@@ -35,6 +35,7 @@ import org.apache.flink.core.execution.{JobClient, JobListener}
 import org.apache.flink.streaming.api.TimeCharacteristic
 import org.apache.flink.streaming.api.environment.{StreamExecutionEnvironmentFactory, StreamExecutionEnvironment => JStreamExecutionEnvironment}
 import org.apache.flink.api.java.{ExecutionEnvironmentFactory, ExecutionEnvironment => JExecutionEnvironment}
+import org.apache.flink.runtime.jobgraph.SavepointConfigOptions
 import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment
 import org.apache.flink.table.api.config.ExecutionConfigOptions
 import org.apache.flink.table.api.java.internal.StreamTableEnvironmentImpl
@@ -45,11 +46,7 @@ import org.apache.flink.table.catalog.hive.HiveCatalog
 import org.apache.flink.table.functions.{AggregateFunction, ScalarFunction, TableAggregateFunction, TableFunction}
 import org.apache.flink.table.module.ModuleManager
 import org.apache.flink.table.module.hive.HiveModule
-import org.apache.hadoop.fs.{FileSystem, Path}
-import org.apache.hadoop.yarn.api.records.ApplicationId
-import org.apache.hadoop.yarn.client.api.YarnClient
-import org.apache.hadoop.yarn.conf
-import org.apache.hadoop.yarn.conf.YarnConfiguration
+import org.apache.flink.yarn.cli.FlinkYarnSessionCli
 import org.apache.zeppelin.flink.util.DependencyUtils
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion
 import org.apache.zeppelin.interpreter.util.InterpreterOutputStream
@@ -79,6 +76,7 @@ class FlinkScalaInterpreter(val properties: Properties) {
 
   private var mode: ExecutionMode.Value = _
 
+  private var tblEnvFactory: TableEnvFactory = _
   private var benv: ExecutionEnvironment = _
   private var senv: StreamExecutionEnvironment = _
 
@@ -189,7 +187,19 @@ class FlinkScalaInterpreter(val properties: Properties) {
       new JPrintWriter(Console.out, true)
     }
 
-    val (iLoop, cluster) = try {
+    val (iLoop, cluster) = {
+      // workaround of checking hadoop jars in yarn  mode
+      if (mode == ExecutionMode.YARN) {
+        try {
+          Class.forName(classOf[FlinkYarnSessionCli].getName)
+        } catch {
+          case e: ClassNotFoundException =>
+            throw new InterpreterException("Unable to load FlinkYarnSessionCli for yarn mode", e)
+          case e: NoClassDefFoundError =>
+            throw new InterpreterException("No hadoop jar found, make sure you have hadoop command in your PATH", e)
+        }
+      }
+
       val (effectiveConfig, cluster) = fetchConnectionInfo(config, configuration)
       this.configuration = effectiveConfig
       cluster match {
@@ -201,17 +211,7 @@ class FlinkScalaInterpreter(val properties: Properties) {
           } else if (mode == ExecutionMode.YARN) {
             LOGGER.info("Starting FlinkCluster in yarn mode")
             if (properties.getProperty("flink.webui.yarn.useProxy", "false").toBoolean) {
-              val yarnAppId = clusterClient.getClusterId.asInstanceOf[ApplicationId]
-              val yarnClient = YarnClient.createYarnClient
-              val yarnConf = new YarnConfiguration()
-              // disable timeline service as we only query yarn app here.
-              // Otherwise we may hit this kind of ERROR:
-              // java.lang.ClassNotFoundException: com.sun.jersey.api.client.config.ClientConfig
-              yarnConf.set("yarn.timeline-service.enabled", "false")
-              yarnClient.init(yarnConf)
-              yarnClient.start()
-              val appReport = yarnClient.getApplicationReport(yarnAppId)
-              this.jmWebUrl = appReport.getTrackingUrl
+              this.jmWebUrl = HadoopUtils.getYarnAppTrackingUrl(clusterClient)
             } else {
               this.jmWebUrl = clusterClient.getWebInterfaceURL
             }
@@ -229,7 +229,7 @@ class FlinkScalaInterpreter(val properties: Properties) {
         config.externalJars.getOrElse(Array.empty[String]).mkString(":"))
       val classLoader = Thread.currentThread().getContextClassLoader
       try {
-        // use FlinkClassLoader to initialize FlinkILoop, otherwise TableFactoryService could find
+        // use FlinkClassLoader to initialize FlinkILoop, otherwise TableFactoryService could not find
         // the TableFactory properly
         Thread.currentThread().setContextClassLoader(getFlinkClassLoader)
         val repl = new FlinkILoop(configuration, config.externalJars, None, replOut)
@@ -237,10 +237,6 @@ class FlinkScalaInterpreter(val properties: Properties) {
       } finally {
         Thread.currentThread().setContextClassLoader(classLoader)
       }
-    } catch {
-      case e: IllegalArgumentException =>
-        println(s"Error: ${e.getMessage}")
-        sys.exit()
     }
 
     this.flinkILoop = iLoop
@@ -299,7 +295,7 @@ class FlinkScalaInterpreter(val properties: Properties) {
       val flinkFunctionCatalog = new FunctionCatalog(tblConfig, catalogManager, moduleManager);
       val blinkFunctionCatalog = new FunctionCatalog(tblConfig, catalogManager, moduleManager);
 
-      val tblEnvFactory = new TableEnvFactory(this.benv, this.senv, tblConfig,
+      this.tblEnvFactory = new TableEnvFactory(this.benv, this.senv, tblConfig,
         catalogManager, moduleManager, flinkFunctionCatalog, blinkFunctionCatalog)
 
       // blink planner
@@ -359,7 +355,7 @@ class FlinkScalaInterpreter(val properties: Properties) {
     flinkILoop.interpret("import org.apache.flink.table.functions.AggregateFunction")
     flinkILoop.interpret("import org.apache.flink.table.functions.TableFunction")
 
-    this.z = new FlinkZeppelinContext(this.btenv, this.btenv_2, new InterpreterHookRegistry(),
+    this.z = new FlinkZeppelinContext(this, new InterpreterHookRegistry(),
       Integer.parseInt(properties.getProperty("zeppelin.flink.maxResult", "1000")))
     val modifiers = new java.util.ArrayList[String]()
     modifiers.add("@transient")
@@ -409,7 +405,7 @@ class FlinkScalaInterpreter(val properties: Properties) {
     this.benv.registerJobListener(jobListener)
     this.senv.registerJobListener(jobListener)
 
-    //register hive catalog
+    // register hive catalog
     if (properties.getProperty("zeppelin.flink.enableHive", "false").toBoolean) {
       LOGGER.info("Hive is enabled, registering hive catalog.")
       val hiveConfDir =
@@ -547,6 +543,21 @@ class FlinkScalaInterpreter(val properties: Properties) {
     field.get(obj)
   }
 
+  /**
+   * This is just a workaround to make table api work in multiple threads.
+   */
+  def createPlannerAgain(): Unit = {
+    val originalClassLoader = Thread.currentThread().getContextClassLoader
+    try {
+      Thread.currentThread().setContextClassLoader(getFlinkClassLoader)
+      val stEnvSetting =
+        EnvironmentSettings.newInstance().inStreamingMode().useBlinkPlanner().build()
+      this.tblEnvFactory.createPlanner(stEnvSetting)
+    } finally {
+      Thread.currentThread().setContextClassLoader(originalClassLoader)
+    }
+  }
+
   def interpret(code: String, context: InterpreterContext): InterpreterResult = {
     val originalStdOut = System.out
     val originalStdErr = System.err;
@@ -597,6 +608,42 @@ class FlinkScalaInterpreter(val properties: Properties) {
     }
   }
 
+  def setSavePointIfNecessary(context: InterpreterContext): Unit = {
+    val savepointDir = context.getLocalProperties.get("savepointDir")
+    if (!StringUtils.isBlank(savepointDir)) {
+      val savepointPath = z.angular(context.getParagraphId + "_savepointpath", context.getNoteId, null)
+      if (savepointPath == null) {
+        LOGGER.info("savepointPath is null because it is the first run")
+        // remove the SAVEPOINT_PATH which may be set by last job.
+        configuration.removeConfig(SavepointConfigOptions.SAVEPOINT_PATH)
+      } else {
+        LOGGER.info("Set savepointPath to: " + savepointPath.toString)
+        configuration.setString("execution.savepoint.path", savepointPath.toString)
+      }
+    } else {
+      // remove the SAVEPOINT_PATH which may be set by last job.
+      configuration.removeConfig(SavepointConfigOptions.SAVEPOINT_PATH)
+    }
+  }
+
+  def setParallelismIfNecessary(context: InterpreterContext): Unit = {
+    val parallelismStr = context.getLocalProperties.get("parallelism")
+    if (!StringUtils.isBlank(parallelismStr)) {
+      val parallelism = parallelismStr.toInt
+      this.senv.setParallelism(parallelism)
+      this.benv.setParallelism(parallelism)
+      this.stenv.getConfig.getConfiguration
+        .setString(ExecutionConfigOptions.TABLE_EXEC_RESOURCE_DEFAULT_PARALLELISM.key(), parallelism + "")
+      this.btenv.getConfig.getConfiguration
+        .setString(ExecutionConfigOptions.TABLE_EXEC_RESOURCE_DEFAULT_PARALLELISM.key(), parallelism + "")
+    }
+    val maxParallelismStr = context.getLocalProperties.get("maxParallelism")
+    if (!StringUtils.isBlank(maxParallelismStr)) {
+      val maxParallelism = maxParallelismStr.toInt
+      senv.setParallelism(maxParallelism)
+    }
+  }
+
   def cancel(context: InterpreterContext): Unit = {
     jobManager.cancelJob(context)
   }
@@ -615,13 +662,12 @@ class FlinkScalaInterpreter(val properties: Properties) {
             clusterClient.close()
             // delete staging dir
             if (mode == ExecutionMode.YARN) {
-              cleanupStagingDirInternal(clusterClient.getClusterId.asInstanceOf[ApplicationId])
+              HadoopUtils.cleanupStagingDirInternal(clusterClient)
             }
           case None =>
             LOGGER.info("Don't close the Remote FlinkCluster")
         }
       }
-
     } else {
       LOGGER.info("Keep cluster alive when closing interpreter")
     }
@@ -630,18 +676,8 @@ class FlinkScalaInterpreter(val properties: Properties) {
       flinkILoop.closeInterpreter()
       flinkILoop = null
     }
-  }
-
-  private def cleanupStagingDirInternal(appId: ApplicationId): Unit = {
-    try {
-      val fs = FileSystem.get(new org.apache.hadoop.conf.Configuration())
-      val stagingDirPath = new Path(fs.getHomeDirectory, ".flink/" + appId.toString)
-      if (fs.delete(stagingDirPath, true)) {
-        LOGGER.info(s"Deleted staging directory $stagingDirPath")
-      }
-    } catch {
-      case ioe: IOException =>
-        LOGGER.warn("Failed to cleanup staging dir", ioe)
+    if (jobManager != null) {
+      jobManager.shutdown()
     }
   }
 
@@ -649,9 +685,19 @@ class FlinkScalaInterpreter(val properties: Properties) {
 
   def getStreamExecutionEnvironment(): StreamExecutionEnvironment = this.senv
 
-  def getBatchTableEnvironment(): TableEnvironment = this.btenv
+  def getBatchTableEnvironment(planner: String = "blink"): TableEnvironment = {
+    if (planner == "blink")
+      this.btenv
+    else
+      this.btenv_2
+  }
 
-  def getStreamTableEnvironment(): StreamTableEnvironment = this.stenv
+  def getStreamTableEnvironment(planner: String = "blink"): StreamTableEnvironment = {
+    if (planner == "blink")
+      this.stenv
+    else
+      this.stenv_2
+  }
 
   def getJavaBatchTableEnvironment(planner: String): TableEnvironment = {
     if (planner == "blink") {

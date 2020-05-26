@@ -29,6 +29,7 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.Input;
+import org.apache.zeppelin.interpreter.ExecutionContext;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
@@ -244,7 +245,7 @@ public class Note implements JsonSerializable {
   }
 
   public String getDefaultInterpreterGroup() {
-    if (defaultInterpreterGroup == null) {
+    if (StringUtils.isBlank(defaultInterpreterGroup)) {
       defaultInterpreterGroup = ZeppelinConfiguration.create()
           .getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_GROUP_DEFAULT);
     }
@@ -306,7 +307,7 @@ public class Note implements JsonSerializable {
     this.paragraphJobListener = paragraphJobListener;
   }
 
-  public Boolean isCronSupported(ZeppelinConfiguration config) {
+  public boolean isCronSupported(ZeppelinConfiguration config) {
     if (config.isZeppelinNotebookCronEnable()) {
       config.getZeppelinNotebookCronFolders();
       if (StringUtils.isBlank(config.getZeppelinNotebookCronFolders())) {
@@ -746,7 +747,8 @@ public class Note implements JsonSerializable {
     }
   }
 
-  public void runAll(AuthenticationInfo authenticationInfo, boolean blocking) throws Exception {
+  public void runAll(AuthenticationInfo authenticationInfo,
+                     boolean blocking) throws Exception {
     setRunning(true);
     try {
       for (Paragraph p : getParagraphs()) {
@@ -754,6 +756,17 @@ public class Note implements JsonSerializable {
           continue;
         }
         p.setAuthenticationInfo(authenticationInfo);
+        try {
+          Interpreter interpreter = p.getBindedInterpreter();
+          if (interpreter != null) {
+            // set interpreter property to execution.mode to be note
+            // so that it could use the correct scheduler. see ZEPPELIN-4832
+            interpreter.setProperty(".execution.mode", "note");
+            interpreter.setProperty(".noteId", id);
+          }
+        } catch (InterpreterNotFoundException e) {
+          // ignore, because the following run method will fail if interpreter not found.
+        }
         if (!run(p.getId(), blocking)) {
           logger.warn("Skip running the remain notes because paragraph {} fails", p.getId());
           throw new Exception("Fail to run note because paragraph " + p.getId() + " is failed, " +
@@ -779,14 +792,16 @@ public class Note implements JsonSerializable {
   }
 
   /**
-   * Run a single paragraph
+   * Run a single paragraph. Return true only when paragraph run successfully.
    *
    * @param paragraphId
    * @param blocking
    * @param ctxUser
    * @return
    */
-  public boolean run(String paragraphId, boolean blocking, String ctxUser) {
+  public boolean run(String paragraphId,
+                     boolean blocking,
+                     String ctxUser) {
     Paragraph p = getParagraph(paragraphId);
 
     if (isPersonalizedMode() && ctxUser != null)
@@ -840,7 +855,7 @@ public class Note implements JsonSerializable {
     }
 
     for (InterpreterSetting setting : settings) {
-      InterpreterGroup intpGroup = setting.getInterpreterGroup(user, id);
+      InterpreterGroup intpGroup = setting.getInterpreterGroup(new ExecutionContext(user, id));
       if (intpGroup != null) {
         AngularObjectRegistry registry = intpGroup.getAngularObjectRegistry();
         angularObjects.put(intpGroup.getId(), registry.getAllWithGlobal(id));
@@ -857,10 +872,10 @@ public class Note implements JsonSerializable {
     }
 
     for (InterpreterSetting setting : settings) {
-      if (setting.getInterpreterGroup(user, id) == null) {
+      if (setting.getInterpreterGroup(new ExecutionContext(user, id)) == null) {
         continue;
       }
-      InterpreterGroup intpGroup = setting.getInterpreterGroup(user, id);
+      InterpreterGroup intpGroup = setting.getInterpreterGroup(new ExecutionContext(user, id));
       AngularObjectRegistry registry = intpGroup.getAngularObjectRegistry();
 
       if (registry instanceof RemoteAngularObjectRegistry) {
@@ -999,6 +1014,15 @@ public class Note implements JsonSerializable {
         paragraphJobListener.noteRunningStatusChange(this.id, runStatus);
       }
     }
+  }
+
+  public void setCronMode(boolean cronMode) {
+    info.put("inCronMode", cronMode);
+  }
+
+  public boolean isCronMode() {
+    return Boolean.parseBoolean(
+            info.getOrDefault("inCronMode", "false").toString());
   }
 
   public boolean isRunning() {
