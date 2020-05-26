@@ -47,14 +47,31 @@ public class RemoteScheduler extends AbstractScheduler {
   public void runJobInScheduler(Job job) {
     JobRunner jobRunner = new JobRunner(this, job);
     executor.execute(jobRunner);
-    // wait until it is submitted to the remote
-    while (!jobRunner.isJobSubmittedInRemote()) {
-      try {
-        Thread.sleep(100);
-      } catch (InterruptedException e) {
-        LOGGER.error("Exception in RemoteScheduler while jobRunner.isJobSubmittedInRemote " +
-            "queue.wait", e);
+    String executionMode =
+            remoteInterpreter.getProperty(".execution.mode", "paragraph");
+    if (executionMode.equals("paragraph")) {
+      // wait until it is submitted to the remote
+      while (!jobRunner.isJobSubmittedInRemote()) {
+        try {
+          Thread.sleep(100);
+        } catch (InterruptedException e) {
+          LOGGER.error("Exception in RemoteScheduler while jobRunner.isJobSubmittedInRemote " +
+                  "queue.wait", e);
+        }
       }
+    } else if (executionMode.equals("note")){
+      // wait until it is finished
+      while (!jobRunner.isJobExecuted()) {
+        try {
+          Thread.sleep(100);
+        } catch (InterruptedException e) {
+          LOGGER.error("Exception in RemoteScheduler while jobRunner.isJobExecuted " +
+                  "queue.wait", e);
+        }
+      }
+    } else {
+      throw new RuntimeException("Invalid job execution.mode: " + executionMode +
+              ", only 'note' and 'paragraph' are valid");
     }
   }
 
@@ -150,6 +167,10 @@ public class RemoteScheduler extends AbstractScheduler {
 
     public boolean isJobSubmittedInRemote() {
       return jobSubmittedRemotely;
+    }
+
+    public boolean isJobExecuted() {
+      return jobExecuted;
     }
 
     @Override

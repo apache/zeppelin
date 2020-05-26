@@ -456,6 +456,38 @@
 </property>
 -->
 
+<!--
+<property>
+  <name>zeppelin.ssl.pem.key</name>
+  <value></value>
+  <description>This directive points to the PEM-encoded private key file for the server.</description>
+</property>
+-->
+
+<!--
+<property>
+  <name>zeppelin.ssl.pem.key.password</name>
+  <value></value>
+  <description>Password of the PEM-encoded private key.</description>
+</property>
+-->
+
+<!--
+<property>
+  <name>zeppelin.ssl.pem.cert</name>
+  <value></value>
+  <description>This directive points to a file with certificate data in PEM format.</description>
+</property>
+-->
+
+<!--
+<property>
+  <name>zeppelin.ssl.pem.ca</name>
+  <value></value>
+  <description>This directive sets the all-in-one file where you can assemble the Certificates of Certification Authorities (CA) whose clients you deal with. These are used for Client Authentication. Such a file is simply the concatenation of the various PEM-encoded Certificate files.</description>
+</property>
+-->
+
 <property>
   <name>zeppelin.server.allowed.origins</name>
   <value>*</value>
@@ -519,11 +551,17 @@
 </property>
 -->
 
-<!--
 <property>
     <name>zeppelin.server.jetty.name</name>
-    <value>Jetty(7.6.0.v20120127)</value>
+    <value> </value>
     <description>Hardcoding Application Server name to Prevent Fingerprinting</description>
+</property>
+
+<!--
+<property>
+    <name>zeppelin.server.send.jetty.name</name>
+    <value>false</value>
+    <description>If set to false, will not show the Jetty version to prevent Fingerprinting</description>
 </property>
 -->
 
@@ -565,13 +603,11 @@
 </property>
 -->
 
-<!--
 <property>
   <name>zeppelin.server.xframe.options</name>
   <value>SAMEORIGIN</value>
   <description>The X-Frame-Options HTTP response header can be used to indicate whether or not a browser should be allowed to render a page in a frame/iframe/object.</description>
 </property>
--->
 
 <!--
 <property>
@@ -580,22 +616,18 @@
   <description>The HTTP Strict-Transport-Security response header is a security feature that lets a web site tell browsers that it should only be communicated with using HTTPS, instead of using HTTP. Enable this when Zeppelin is running on HTTPS. Value is in Seconds, the default value is equivalent to 20 years.</description>
 </property>
 -->
-<!--
 
 <property>
   <name>zeppelin.server.xxss.protection</name>
-  <value>1</value>
+  <value>1; mode=block</value>
   <description>The HTTP X-XSS-Protection response header is a feature of Internet Explorer, Chrome and Safari that stops pages from loading when they detect reflected cross-site scripting (XSS) attacks. When value is set to 1 and a cross-site scripting attack is detected, the browser will sanitize the page (remove the unsafe parts).</description>
 </property>
--->
 
-<!--
 <property>
   <name>zeppelin.server.xcontent.type.options</name>
   <value>nosniff</value>
   <description>The HTTP X-Content-Type-Options response header helps to prevent MIME type sniffing attacks. It directs the browser to honor the type specified in the Content-Type header, rather than trying to determine the type from the content itself. The default value "nosniff" is really the only meaningful value. This header is supported on all browsers except Safari and Safari on iOS.</description>
 </property>
--->
 
 <!--
 <property>
@@ -716,6 +748,12 @@
   <value>false</value>
   <description>The Job tab in zeppelin page seems not so useful instead it cost lots of memory and affect the performance.
   Disable it can save lots of memory</description>
+</property>
+
+<property>
+  <name>zeppelin.spark.only_yarn_cluster</name>
+  <value>false</value>
+  <description>Whether only allow yarn cluster mode</description>
 </property>
 
 </configuration>

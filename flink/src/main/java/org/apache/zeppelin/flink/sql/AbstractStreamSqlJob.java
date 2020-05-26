@@ -95,12 +95,16 @@ public abstract class AbstractStreamSqlJob {
 
   protected abstract String getType();
 
-  public InterpreterResult run(String st) throws IOException {
+  public String run(String st) throws IOException {
+    Table table = stenv.sqlQuery(st);
+    String tableName = "UnnamedTable_" + st + "_" + SQL_INDEX.getAndIncrement();
+    return run(table, tableName);
+  }
+
+  public String run(Table table, String tableName) throws IOException {
     try {
       int parallelism = Integer.parseInt(context.getLocalProperties()
               .getOrDefault("parallelism", defaultParallelism + ""));
-
-      Table table = stenv.sqlQuery(st);
       this.schema = removeTimeAttributes(table.getSchema());
       checkTableSchema(schema);
 
@@ -132,7 +136,6 @@ public abstract class AbstractStreamSqlJob {
       try {
         stenv.useCatalog("default_catalog");
         stenv.useDatabase("default_database");
-        String tableName = st + "_" + SQL_INDEX.getAndIncrement();
         stenv.registerTableSink(tableName, collectTableSink);
         table.insertInto(new StreamQueryConfig(), tableName);
       } finally {
@@ -148,16 +151,16 @@ public abstract class AbstractStreamSqlJob {
       ResultRetrievalThread retrievalThread = new ResultRetrievalThread(refreshScheduler);
       retrievalThread.start();
 
-      LOGGER.info("Run job without savePointPath, " + ", parallelism: " + parallelism);
-      stenv.execute(st);
-      LOGGER.info("Flink Job is finished");
+      LOGGER.info("Run job: " + tableName + ", parallelism: " + parallelism);
+      stenv.execute(tableName);
+      LOGGER.info("Flink Job is finished, tableName: " + tableName);
       // wait for retrieve thread consume all data
       LOGGER.info("Waiting for retrieve thread to be done");
       retrievalThread.join();
       refresh(context);
       String finalResult = buildResult();
       LOGGER.info("Final Result: " + finalResult);
-      return new InterpreterResult(InterpreterResult.Code.SUCCESS, finalResult);
+      return finalResult;
     } catch (Exception e) {
       LOGGER.error("Fail to run stream sql job", e);
       throw new IOException("Fail to run stream sql job", e);
@@ -204,7 +207,7 @@ public abstract class AbstractStreamSqlJob {
           final Tuple2<Boolean, Row> change = iterator.next();
           processRecord(change);
         }
-      } catch (Exception e) {
+      } catch (Throwable e) {
         // ignore socket exceptions
         LOGGER.error("Fail to process record", e);
       }
@@ -239,6 +242,7 @@ public abstract class AbstractStreamSqlJob {
           if (!enableToRefresh) {
             resultLock.wait();
           }
+          LOGGER.info("Refresh result of paragraph: " + context.getParagraphId());
           refresh(context);
         }
       } catch (Exception e) {

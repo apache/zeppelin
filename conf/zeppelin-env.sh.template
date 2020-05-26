@@ -22,8 +22,8 @@
 # export ZEPPELIN_PORT                  # port number to listen (default 8080)
 # export ZEPPELIN_LOCAL_IP              # Zeppelin's thrift server ip address, if not specified, one random IP address will be choosen.
 # export ZEPPELIN_JAVA_OPTS      		# Additional jvm options. for example, export ZEPPELIN_JAVA_OPTS="-Dspark.executor.memory=8g -Dspark.cores.max=16"
-# export ZEPPELIN_MEM            		# Zeppelin jvm mem options Default -Xms1024m -Xmx1024m -XX:MaxPermSize=512m
-# export ZEPPELIN_INTP_MEM       		# zeppelin interpreter process jvm mem options. Default -Xms1024m -Xmx1024m -XX:MaxPermSize=512m
+# export ZEPPELIN_MEM            		# Zeppelin jvm mem options Default -Xms1024m -Xmx1024m -XX:MaxMetaspaceSize=512m
+# export ZEPPELIN_INTP_MEM       		# zeppelin interpreter process jvm mem options. Default -Xms1024m -Xmx1024m -XX:MaxMetaspaceSize=512m
 # export ZEPPELIN_INTP_JAVA_OPTS 		# zeppelin interpreter process jvm options.
 # export ZEPPELIN_SSL_PORT       		# ssl port (used when ssl environment variable is set to true)
 # export ZEPPELIN_JMX_ENABLE    		# Enable JMX feature by defining "true"

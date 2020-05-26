@@ -70,6 +70,16 @@ public class FlinkBatchSqlInterpreterTest extends SqlInterpreterTest {
     assertEquals(InterpreterResult.Type.TABLE, resultMessages.get(0).getType());
     assertEquals("id\tname\n1\ta\n2\tb\n", resultMessages.get(0).getData());
 
+    // z.show
+    context = getInterpreterContext();
+    result =
+            flinkInterpreter.interpret("z.show(btenv.sqlQuery(\"select * from source_table\"))", context);
+    resultMessages = context.out.toInterpreterResultMessage();
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    assertEquals(1, resultMessages.size());
+    assertEquals(InterpreterResult.Type.TABLE, resultMessages.get(0).getType());
+    assertEquals("id\tname\n1\ta\n2\tb\n", resultMessages.get(0).getData());
+
     // define scala udf
     result = flinkInterpreter.interpret(
             "class AddOne extends ScalarFunction {\n" +
@@ -84,7 +94,7 @@ public class FlinkBatchSqlInterpreterTest extends SqlInterpreterTest {
     // select which use scala udf
     context = getInterpreterContext();
     result = sqlInterpreter.interpret("SELECT addOne(id) as add_one FROM source_table", context);
-    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
     resultMessages = context.out.toInterpreterResultMessage();
     assertEquals(1, resultMessages.size());
     assertEquals(InterpreterResult.Type.TABLE, resultMessages.get(0).getType());
@@ -109,7 +119,7 @@ public class FlinkBatchSqlInterpreterTest extends SqlInterpreterTest {
     // select which use python udf
     context = getInterpreterContext();
     result = sqlInterpreter.interpret("SELECT python_upper(name) as name FROM source_table", context);
-    assertEquals(new String(context.out.toByteArray()), InterpreterResult.Code.SUCCESS, result.code());
+    assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
     resultMessages = context.out.toInterpreterResultMessage();
     assertEquals(1, resultMessages.size());
     assertEquals(InterpreterResult.Type.TABLE, resultMessages.get(0).getType());
@@ -135,6 +145,18 @@ public class FlinkBatchSqlInterpreterTest extends SqlInterpreterTest {
     assertEquals(1, resultMessages.size());
     assertEquals(InterpreterResult.Type.TABLE, resultMessages.get(0).getType());
     assertEquals("name\nA\nB\n", resultMessages.get(0).getData());
+
+    // after these select queries, `show tables` should still show only one source table,
+    // other temporary tables should not be displayed.
+    context = getInterpreterContext();
+    result = sqlInterpreter.interpret("show tables", context);
+    resultMessages = context.out.toInterpreterResultMessage();
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    assertEquals(1, resultMessages.size());
+    assertEquals(InterpreterResult.Type.TABLE, resultMessages.get(0).getType());
+    assertEquals(resultMessages.get(0).toString(),
+            "table\nsource_table\n", resultMessages.get(0).getData());
+
   }
 
   @Test

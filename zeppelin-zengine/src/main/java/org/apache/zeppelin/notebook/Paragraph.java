@@ -40,6 +40,7 @@ import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.display.Input;
 import org.apache.zeppelin.helium.HeliumPackage;
 import org.apache.zeppelin.interpreter.Constants;
+import org.apache.zeppelin.interpreter.ExecutionContext;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.Interpreter.FormType;
 import org.apache.zeppelin.interpreter.InterpreterContext;
@@ -136,7 +137,7 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
   }
 
   private static String generateId() {
-    return "paragraph_" + System.currentTimeMillis() + "_" + new SecureRandom().nextInt();
+    return "paragraph_" + System.currentTimeMillis() + "_" + Math.abs(new SecureRandom().nextInt());
   }
 
   public Map<String, Paragraph> getUserParagraphMap() {
@@ -275,8 +276,9 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
   }
 
   public Interpreter getBindedInterpreter() throws InterpreterNotFoundException {
-    return this.note.getInterpreterFactory().getInterpreter(user, note.getId(), intpText,
-        note.getDefaultInterpreterGroup());
+    return this.note.getInterpreterFactory().getInterpreter(intpText,
+        new ExecutionContext(user, note.getId(),
+                note.getDefaultInterpreterGroup(), note.isCronMode()));
   }
 
   public void setInterpreter(Interpreter interpreter) {
@@ -345,6 +347,11 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
     return checkEmptyConfig && Strings.isNullOrEmpty(scriptText) && localProperties.isEmpty();
   }
 
+  /**
+   * Return true only when paragraph run successfully with state of FINISHED.
+   * @param blocking
+   * @return
+   */
   public boolean execute(boolean blocking) {
     try {
       this.interpreter = getBindedInterpreter();
@@ -526,13 +533,17 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
 
     Credentials credentials = note.getCredentials();
     if (subject != null) {
-      UserCredentials userCredentials =
-          credentials.getUserCredentials(subject.getUser());
+      UserCredentials userCredentials;
+      try {
+        userCredentials = credentials.getUserCredentials(subject.getUser());
+      } catch (IOException e) {
+        LOGGER.warn("Unable to get Usercredentials. Working with empty UserCredentials", e);
+        userCredentials = new UserCredentials();
+      }
       subject.setUserCredentials(userCredentials);
     }
 
-    InterpreterContext interpreterContext =
-        InterpreterContext.builder()
+    return InterpreterContext.builder()
             .setNoteId(note.getId())
             .setNoteName(note.getName())
             .setParagraphId(getId())
@@ -547,7 +558,6 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
             .setAngularObjectRegistry(registry)
             .setResourcePool(resourcePool)
             .build();
-    return interpreterContext;
   }
 
   public void setStatusToUserParagraph(Status status) {
@@ -648,8 +658,8 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
 
   public boolean isValidInterpreter(String replName) {
     try {
-      return note.getInterpreterFactory().getInterpreter(user, note.getId(), replName,
-          note.getDefaultInterpreterGroup()) != null;
+      return note.getInterpreterFactory().getInterpreter(replName,
+              new ExecutionContext(user, note.getId(), note.getDefaultInterpreterGroup())) != null;
     } catch (InterpreterNotFoundException e) {
       return false;
     }
@@ -694,6 +704,14 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
     this.results = new InterpreterResult(Code.SUCCESS);
     for (InterpreterResultMessage buffer : outputBuffer) {
       results.add(buffer);
+    }
+  }
+
+  @VisibleForTesting
+  public void waitUntilFinished() throws Exception {
+    while(!isTerminated()) {
+      LOGGER.debug("Wait for paragraph to be finished");
+      Thread.sleep(1000);
     }
   }
 

@@ -53,7 +53,7 @@ Read more about HSTS [here](https://developer.mozilla.org/en-US/docs/Web/HTTP/He
 
 The HTTP X-XSS-Protection response header is a feature of Internet Explorer, Chrome and Safari Web browsers that initiates configured action when they detect reflected cross-site scripting (XSS) attacks.
  
-The following property needs to be updated in the zeppelin-site.xml in order to set X-XSS-PROTECTION header. 
+The below property to set X-XSS-Protection header is enabled with default value of "1; mode=block" in the zeppelin-site.xml
 
 ```xml
 <property>
@@ -64,7 +64,7 @@ The following property needs to be updated in the zeppelin-site.xml in order to 
 ```
 
 
-You can choose appropriate value from below.
+You can choose appropriate value from below to update the configuration if required.
 
 * 0  (Disables XSS filtering)
 * 1  (Enables XSS filtering. If a cross-site scripting attack is detected, the browser will sanitize the page.)
@@ -76,7 +76,7 @@ Read more about HTTP X-XSS-Protection response header [here](https://developer.m
 
 The X-Frame-Options HTTP response header can indicate browser to avoid clickjacking attacks, by ensuring that their content is not embedded into other sites in a `<frame>`,`<iframe>` or `<object>`.
 
-The following property needs to be updated in the zeppelin-site.xml in order to set X-Frame-Options header.
+The below property to set X-Frame-Options header is enabled with default value of "SAMEORIGIN" in the zeppelin-site.xml
 
 ```xml
 <property>
@@ -87,7 +87,7 @@ The following property needs to be updated in the zeppelin-site.xml in order to 
 ```
 
 
-You can choose appropriate value from below.
+You can choose appropriate value from below to update the configuration if required.
 
 * `DENY`
 * `SAMEORIGIN`
@@ -97,7 +97,7 @@ You can choose appropriate value from below.
 
 The HTTP X-Content-Type-Options response header helps to prevent MIME type sniffing attacks. It directs the browser to honor the type specified in the Content-Type header, rather than trying to determine the type from the content itself. The default value `nosniff` is really the only meaningful value. This header is supported on all browsers except Safari and Safari on iOS.
 
-Zeppelin server will add this header to HTTP response by default. The following property needs to be updated in the zeppelin-site.xml in order to change X-Content-Type-Options header value.
+The below property to set X-Content-Type-Options header is enabled with default value of "nosniff" in the zeppelin-site.xml
 
 ```xml
 <property>
@@ -111,14 +111,24 @@ Zeppelin server will add this header to HTTP response by default. The following 
 
 Security conscious organisations does not want to reveal the Application Server name and version to prevent finding this information easily by Attacker while fingerprinting the Application. The exact version number can tell an Attacker if the current Application Server is patched for or vulnerable to certain publicly known CVE associated to it.
 
-The following property needs to be updated in the zeppelin-site.xml in order to set Server header.
+The below property to mask Jetty server version is enabled by default and configured with value of " " (one whitespace char) in the zeppelin-site.xml
 
 ```xml
 <property>
     <name>zeppelin.server.jetty.name</name>
-    <value>Jetty(7.6.0.v20120127)</value>
+    <value> </value>
     <description>Hardcoding Application Server name to Prevent Fingerprinting</description>
 </property>
 ```
 
-The value can be any "String".
+The value can be any "String". Removing this property from configuration will cause Zeppelin to send correct Jetty server version.
+
+Also, it can be removed the from response headers and from 300/400/500 HTTP response pages.
+
+```xml
+<property>
+    <name>zeppelin.server.send.jetty.name</name>
+    <value>false</value>
+    <description>If set to false, will not show the Jetty version to prevent Fingerprinting</description>
+</property>
+```

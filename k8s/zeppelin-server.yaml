@@ -17,7 +17,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: zeppelin-server-conf
+  name: zeppelin-server-conf-map
 data:
   # 'serviceDomain' is a Domain name to use for accessing Zeppelin UI.
   # Should point IP address of 'zeppelin-server' service.
@@ -27,8 +27,21 @@ data:
   #
   # Default value is 'local.zeppelin-project.org' while it points 127.0.0.1 and `kubectl port-forward zeppelin-server` will give localhost to connects.
   # If you have your ingress controller configured to connect to `zeppelin-server` service and have a domain name for it (with wildcard subdomain point the same address), you can replace serviceDomain field with your own domain.
-  serviceDomain: local.zeppelin-project.org:8080
-  sparkContainerImage: spark:2.4.5
+  SERVICE_DOMAIN: local.zeppelin-project.org:8080
+  ZEPPELIN_K8S_SPARK_CONTAINER_IMAGE: spark:2.4.5
+  ZEPPELIN_K8S_CONTAINER_IMAGE: apache/zeppelin:0.9.0-SNAPSHOT
+  ZEPPELIN_HOME: /zeppelin
+  ZEPPELIN_SERVER_RPC_PORTRANGE: 12320:12320
+  # default value of 'master' property for spark interpreter.
+  MASTER: k8s://https://kubernetes.default.svc
+  # default value of 'SPARK_HOME' property for spark interpreter.
+  SPARK_HOME: /spark
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: zeppelin-server-conf
+data:
   nginx.conf: |
     daemon off;
     worker_processes auto;
@@ -74,101 +87,106 @@ data:
       }
     }
 ---
-kind: Pod
-apiVersion: v1
+apiVersion: apps/v1
+kind: Deployment
 metadata:
   name: zeppelin-server
   labels:
-    app: zeppelin-server
+    app.kubernetes.io/name: zeppelin-server
 spec:
-  automountServiceAccountToken: true
-  containers:
-  - name: zeppelin-server
-    image: apache/zeppelin:0.9.0-SNAPSHOT
-    command: ["sh", "-c", "$(ZEPPELIN_HOME)/bin/zeppelin.sh"]
-    lifecycle:
-      preStop:
-        exec:
-          # SIGTERM triggers a quick exit; gracefully terminate instead
-          command: ["sh", "-c", "ps -ef | grep org.apache.zeppelin.server.ZeppelinServer | grep -v grep | awk '{print $2}' | xargs kill"]
-    env:
-    - name: ZEPPELIN_K8S_CONTAINER_IMAGE
-      value: apache/zeppelin:0.9.0-SNAPSHOT
-    - name: ZEPPELIN_HOME
-      value: /zeppelin
-    - name: ZEPPELIN_SERVER_RPC_PORTRANGE
-      value: 12320:12320
-    - name: POD_UID
-      valueFrom:
-        fieldRef:
-          apiVersion: v1
-          fieldPath: metadata.uid
-    - name: POD_NAME
-      valueFrom:
-        fieldRef:
-          apiVersion: v1
-          fieldPath: metadata.name
-    - name: ZEPPELIN_K8S_SPARK_CONTAINER_IMAGE
-      valueFrom:
-        configMapKeyRef:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: zeppelin-server
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: zeppelin-server
+    spec:
+      serviceAccountName: zeppelin-server
+      volumes:
+      - name: nginx-conf
+        configMap:
           name: zeppelin-server-conf
-          key: sparkContainerImage
-    - name: SERVICE_DOMAIN
-      valueFrom:
-        configMapKeyRef:
-          name: zeppelin-server-conf
-          key: serviceDomain
-    - name: MASTER   # default value of 'master' property for spark interpreter.
-      value: k8s://https://kubernetes.default.svc
-    - name: SPARK_HOME # default value of 'SPARK_HOME' property for spark interpreter.
-      value: /spark
-    # volumeMounts:
-    #  - name: zeppelin-server-notebook-volume     # configure this to persist notebook
-    #    mountPath: /zeppelin/notebook
-    #  - name: zeppelin-server-conf                # configure this to persist Zeppelin configuration
-    #    mountPath: /zeppelin/conf
-    #  - name: zeppelin-server-custom-k8s          # configure this to mount customized Kubernetes spec for interpreter
-    #    mountPath: /zeppelin/k8s
-  - name: zeppelin-server-gateway
-    image: nginx:1.14.0
-    command: ["/bin/sh", "-c"]
-    args:
-      - cp -f /tmp/conf/nginx.conf /etc/nginx/nginx.conf;
-        sed -i -e "s/SERVICE_DOMAIN/$(cat /tmp/conf/serviceDomain)/g" /etc/nginx/nginx.conf;
-        sed -i -e "s/NAMESPACE/$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace)/g" /etc/nginx/nginx.conf;
-        cat /etc/nginx/nginx.conf;
-        /usr/sbin/nginx
-    volumeMounts:
-      - name: zeppelin-server-conf-volume
-        mountPath: /tmp/conf
-    lifecycle:
-      preStop:
-        exec:
-          # SIGTERM triggers a quick exit; gracefully terminate instead
-          command: ["/usr/sbin/nginx", "-s", "quit"]
-  - name: dnsmasq  # nginx requires dns resolver for dynamic dns resolution
-    image: "janeczku/go-dnsmasq:release-1.0.5"
-    args:
-      - --listen
-      - "127.0.0.1:53"
-      - --default-resolver
-      - --append-search-domains
-      - --hostsfile=/etc/hosts
-      - --verbose
-  volumes:
-  - name: zeppelin-server-conf-volume
-    configMap:
-      name: zeppelin-server-conf
-      items:
-      - key: nginx.conf
-        path: nginx.conf
-      - key: serviceDomain
-        path: serviceDomain
+          items:
+          - key: nginx.conf
+            path: nginx.conf
+      containers:
+      - name: zeppelin-server
+        image: apache/zeppelin:0.9.0-SNAPSHOT
+        command: ["sh", "-c", "$(ZEPPELIN_HOME)/bin/zeppelin.sh"]
+        lifecycle:
+          preStop:
+            exec:
+              # SIGTERM triggers a quick exit; gracefully terminate instead
+              command: ["sh", "-c", "ps -ef | grep org.apache.zeppelin.server.ZeppelinServer | grep -v grep | awk '{print $2}' | xargs kill"]
+        ports:
+        - name: http
+          containerPort: 8080
+        - name: https
+          containerPort: 8443
+        - name: rpc
+          containerPort: 12320
+        env:
+        - name: POD_UID
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.uid
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.name
+        envFrom:
+        - configMapRef:
+            name: zeppelin-server-conf-map
+      # volumeMounts:
+      #  - name: zeppelin-server-notebook-volume     # configure this to persist notebook
+      #    mountPath: /zeppelin/notebook
+      #  - name: zeppelin-server-conf                # configure this to persist Zeppelin configuration
+      #    mountPath: /zeppelin/conf
+      #  - name: zeppelin-server-custom-k8s          # configure this to mount customized Kubernetes spec for interpreter
+      #    mountPath: /zeppelin/k8s
+      - name: zeppelin-server-gateway
+        image: nginx:1.14.0
+        command: ["/bin/sh", "-c"]
+        env:
+        - name: SERVICE_DOMAIN
+          valueFrom:
+            configMapKeyRef:
+              name: zeppelin-server-conf-map
+              key: SERVICE_DOMAIN
+        args:
+          - cp -f /tmp/conf/nginx.conf /etc/nginx/nginx.conf;
+            sed -i -e "s/SERVICE_DOMAIN/$SERVICE_DOMAIN/g" /etc/nginx/nginx.conf;
+            sed -i -e "s/NAMESPACE/$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace)/g" /etc/nginx/nginx.conf;
+            cat /etc/nginx/nginx.conf;
+            /usr/sbin/nginx
+        volumeMounts:
+          - name: nginx-conf
+            mountPath: /tmp/conf
+        lifecycle:
+          preStop:
+            exec:
+              # SIGTERM triggers a quick exit; gracefully terminate instead
+              command: ["/usr/sbin/nginx", "-s", "quit"]
+      - name: dnsmasq  # nginx requires dns resolver for dynamic dns resolution
+        image: "janeczku/go-dnsmasq:release-1.0.5"
+        args:
+          - --listen
+          - "127.0.0.1:53"
+          - --default-resolver
+          - --append-search-domains
+          - --hostsfile=/etc/hosts
+          - --verbose
 ---
 kind: Service
 apiVersion: v1
 metadata:
-  name: zeppelin-server    # keep Service name the same to Pod name.
+  name: zeppelin-server
 spec:
   ports:
     - name: http
@@ -176,7 +194,12 @@ spec:
     - name: rpc            # port name is referenced in the code. So it shouldn't be changed.
       port: 12320
   selector:
-    app: zeppelin-server
+    app.kubernetes.io/name: zeppelin-server
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: zeppelin-server
 ---
 kind: Role
 apiVersion: rbac.authorization.k8s.io/v1
@@ -196,7 +219,7 @@ metadata:
   name: zeppelin-server-role-binding
 subjects:
 - kind: ServiceAccount
-  name: default
+  name: zeppelin-server
 roleRef:
   kind: Role
   name: zeppelin-server-role

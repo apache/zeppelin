@@ -22,6 +22,7 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.interpreter.AbstractInterpreterTest;
+import org.apache.zeppelin.interpreter.ExecutionContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterNotFoundException;
@@ -97,7 +98,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     noteManager = new NoteManager(notebookRepo);
     authorizationService = new AuthorizationService(noteManager, conf);
 
-    credentials = new Credentials(conf.credentialsPersist(), conf.getCredentialsPath(), null);
+    credentials = new Credentials(conf);
     notebook = new Notebook(conf, authorizationService, notebookRepo, noteManager, interpreterFactory, interpreterSettingManager, search,
             credentials, null);
     notebook.setParagraphJobListener(this);
@@ -694,9 +695,9 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     schedulerService.refreshCron(note.getId());
 
 
-    RemoteInterpreter mock1 = (RemoteInterpreter) interpreterFactory.getInterpreter(anonymous.getUser(), note.getId(), "mock1", "test");
+    RemoteInterpreter mock1 = (RemoteInterpreter) interpreterFactory.getInterpreter("mock1", new ExecutionContext(anonymous.getUser(), note.getId(), "test"));
 
-    RemoteInterpreter mock2 = (RemoteInterpreter) interpreterFactory.getInterpreter(anonymous.getUser(), note.getId(), "mock2", "test");
+    RemoteInterpreter mock2 = (RemoteInterpreter) interpreterFactory.getInterpreter("mock2", new ExecutionContext(anonymous.getUser(), note.getId(), "test"));
 
     // wait until interpreters are started
     while (!mock1.isOpened() || !mock2.isOpened()) {
@@ -733,8 +734,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
       }
     });
     RemoteInterpreter cronNoteInterpreter =
-        (RemoteInterpreter) interpreterFactory.getInterpreter(anonymous.getUser(),
-            cronNote.getId(), "mock1", "test");
+        (RemoteInterpreter) interpreterFactory.getInterpreter("mock1", new ExecutionContext(anonymous.getUser(), cronNote.getId(), "test"));
 
     // create a paragraph of the cron scheduled note.
     Paragraph cronNoteParagraph = cronNote.addNewParagraph(AuthenticationInfo.ANONYMOUS);
@@ -749,8 +749,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     Note anotherNote = notebook.createNote("note1", anonymous);
 
     RemoteInterpreter anotherNoteInterpreter =
-        (RemoteInterpreter) interpreterFactory.getInterpreter(anonymous.getUser(),
-            anotherNote.getId(), "mock2", "test");
+        (RemoteInterpreter) interpreterFactory.getInterpreter("mock2", new ExecutionContext(anonymous.getUser(), anotherNote.getId(), "test"));
 
     // create a paragraph of another note
     Paragraph anotherNoteParagraph = anotherNote.addNewParagraph(AuthenticationInfo.ANONYMOUS);
@@ -1405,7 +1404,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     notebook.removeNote(note1.getId(), AuthenticationInfo.ANONYMOUS);
     notebook.removeNote(note2.getId(), AuthenticationInfo.ANONYMOUS);
   }
-  
+
   @Test
   public void testCreateDuplicateNote() throws Exception {
     Note note1 = notebook.createNote("note1", anonymous);

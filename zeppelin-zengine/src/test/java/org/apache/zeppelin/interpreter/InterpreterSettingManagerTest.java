@@ -176,7 +176,7 @@ public class InterpreterSettingManagerTest extends AbstractInterpreterTest {
     InterpreterGroup interpreterGroup = interpreterSetting.getInterpreterGroup("user1", "note1");
     assertEquals(3, interpreterGroup.getSessionNum());
     // only close user1's session
-    interpreterSettingManager.restart(interpreterSetting.getId(), "note1", "user1");
+    interpreterSettingManager.restart(interpreterSetting.getId(), "user1", "note1");
     assertEquals(2, interpreterGroup.getSessionNum());
 
     // remove interpreter setting
@@ -192,13 +192,13 @@ public class InterpreterSettingManagerTest extends AbstractInterpreterTest {
 
   //@Test
   public void testGetEditor() throws IOException, InterpreterNotFoundException {
-    Interpreter echoInterpreter = interpreterFactory.getInterpreter("user1", "note1", "test.echo", "test");
+    Interpreter echoInterpreter = interpreterFactory.getInterpreter("test.echo", new ExecutionContext("user1", "note1", "test"));
     // get editor setting from interpreter-setting.json
     Map<String, Object> editor = interpreterSettingManager.getEditorSetting("test.echo", "note1");
     assertEquals("java", editor.get("language"));
 
     // when editor setting doesn't exit, return the default editor
-    Interpreter mock1Interpreter = interpreterFactory.getInterpreter("user1", "note1", "mock1", "test");
+    Interpreter mock1Interpreter = interpreterFactory.getInterpreter("mock1", new ExecutionContext("user1", "note1", "test"));
     editor = interpreterSettingManager.getEditorSetting("mock1", "note1");
     assertEquals("text", editor.get("language"));
   }
@@ -227,7 +227,7 @@ public class InterpreterSettingManagerTest extends AbstractInterpreterTest {
     interpreterSetting.getOrCreateSession("user2", "note2");
     assertEquals(2, interpreterSetting.getAllInterpreterGroups().size());
 
-    interpreterSettingManager.restart(interpreterSetting.getId(), "note1", "user1");
+    interpreterSettingManager.restart(interpreterSetting.getId(), "user1", "note1");
     assertEquals(1, interpreterSetting.getAllInterpreterGroups().size());
   }
 
@@ -241,7 +241,7 @@ public class InterpreterSettingManagerTest extends AbstractInterpreterTest {
     interpreterSetting.getOrCreateSession("user2", "note2");
     assertEquals(2, interpreterSetting.getAllInterpreterGroups().size());
 
-    interpreterSettingManager.restart(interpreterSetting.getId(), "note1", "user1");
+    interpreterSettingManager.restart(interpreterSetting.getId(), "user1", "note1");
     assertEquals(1, interpreterSetting.getAllInterpreterGroups().size());
   }
 
@@ -256,7 +256,7 @@ public class InterpreterSettingManagerTest extends AbstractInterpreterTest {
     assertEquals(1, interpreterSetting.getAllInterpreterGroups().size());
     assertEquals(2, interpreterSetting.getAllInterpreterGroups().get(0).getSessionNum());
 
-    interpreterSettingManager.restart(interpreterSetting.getId(), "note1", "user1");
+    interpreterSettingManager.restart(interpreterSetting.getId(), "user1", "note1");
     assertEquals(1, interpreterSetting.getAllInterpreterGroups().size());
     assertEquals(1, interpreterSetting.getAllInterpreterGroups().get(0).getSessionNum());
   }
@@ -272,7 +272,7 @@ public class InterpreterSettingManagerTest extends AbstractInterpreterTest {
     assertEquals(1, interpreterSetting.getAllInterpreterGroups().size());
     assertEquals(2, interpreterSetting.getAllInterpreterGroups().get(0).getSessionNum());
 
-    interpreterSettingManager.restart(interpreterSetting.getId(), "note1", "user1");
+    interpreterSettingManager.restart(interpreterSetting.getId(), "user1", "note1");
     assertEquals(1, interpreterSetting.getAllInterpreterGroups().size());
     assertEquals(1, interpreterSetting.getAllInterpreterGroups().get(0).getSessionNum());
   }

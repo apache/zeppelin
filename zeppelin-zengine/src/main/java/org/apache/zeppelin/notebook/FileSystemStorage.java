@@ -6,6 +6,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.RawLocalFileSystem;
+import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
@@ -14,13 +15,17 @@ import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.FilePermission;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.attribute.PosixFilePermission;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 
 /**
@@ -93,7 +98,7 @@ public class FileSystemStorage {
 
     this.fs = FileSystem.get(zepConfigURI, this.hadoopConf);
   }
-  
+
   public boolean isS3AFileSystem(URI defaultFSURI, URI zepConfigURI) {
     return defaultFSURI.getScheme().equals(S3A)
       || (StringUtils.isNotEmpty(zepConfigURI.getScheme())
@@ -201,6 +206,20 @@ public class FileSystemStorage {
 
   public void writeFile(final String content, final Path file, boolean writeTempFileFirst)
       throws IOException {
+      writeFile(content, file, writeTempFileFirst, null);
+  }
+
+  public void writeFile(final String content, final Path file, boolean writeTempFileFirst, Set<PosixFilePermission> permissions)
+      throws IOException {
+    FsPermission fsPermission;
+    if (permissions == null || permissions.isEmpty()) {
+      fsPermission = FsPermission.getFileDefault();
+    } else {
+      // FsPermission expects a 10-character string because of the leading
+      // directory indicator, i.e. "drwx------". The JDK toString method returns
+      // a 9-character string, so prepend a leading character.
+      fsPermission = FsPermission.valueOf("-" + PosixFilePermissions.toString(permissions));
+    }
     callHdfsOperation(new HdfsOperation<Void>() {
       @Override
       public Void call() throws IOException {
@@ -208,6 +227,7 @@ public class FileSystemStorage {
             zConf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_ENCODING)));
         Path tmpFile = new Path(file.toString() + ".tmp");
         IOUtils.copyBytes(in, fs.create(tmpFile), hadoopConf);
+        fs.setPermission(tmpFile, fsPermission);
         fs.delete(file, true);
         fs.rename(tmpFile, file);
         return null;

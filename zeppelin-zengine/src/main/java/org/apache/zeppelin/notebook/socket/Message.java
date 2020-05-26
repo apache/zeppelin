@@ -108,7 +108,7 @@ public class Message implements JsonSerializable {
                       // @param params paragraph params
 
     EDITOR_SETTING,   // [c-s] ask paragraph editor setting
-                      // @param magic magic keyword written in paragraph
+                      // @param paragraph text keyword written in paragraph
                       // ex) spark.spark or spark
 
     COMPLETION,       // [c-s] ask completion candidates

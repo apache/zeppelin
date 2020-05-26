@@ -34,6 +34,7 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
+import org.apache.zeppelin.interpreter.ExecutionContext;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
@@ -475,7 +476,8 @@ public class Notebook {
       SnapshotAngularObject snapshot = angularObjectSnapshot.get(name);
       List<InterpreterSetting> settings = interpreterSettingManager.get();
       for (InterpreterSetting setting : settings) {
-        InterpreterGroup intpGroup = setting.getInterpreterGroup(subject.getUser(), note.getId());
+        InterpreterGroup intpGroup = setting.getInterpreterGroup(
+                new ExecutionContext(subject.getUser(), note.getId()));
         if (intpGroup != null && intpGroup.getId().equals(snapshot.getIntpGroupId())) {
           AngularObjectRegistry registry = intpGroup.getAngularObjectRegistry();
           String noteId = snapshot.getAngularObject().getNoteId();

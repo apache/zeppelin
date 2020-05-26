@@ -38,10 +38,9 @@
     <!--library versions-->
     <commons.httpclient.version>4.3.6</commons.httpclient.version>
     <jersey.version>2.27</jersey.version>
-    <quartz.scheduler.version>2.2.1</quartz.scheduler.version>
     <jersey.servlet.version>1.13</jersey.servlet.version>
     <javax.ws.rsapi.version>2.1</javax.ws.rsapi.version>
-    <libpam4j.version>1.8</libpam4j.version>
+    <libpam4j.version>1.11</libpam4j.version>
     <jna.version>4.1.0</jna.version>
     <commons.configuration2.version>2.2</commons.configuration2.version>
 
@@ -50,8 +49,6 @@
     <xml.apis.version>1.4.01</xml.apis.version>
     <powermock.version>1.6.6</powermock.version>
 
-    <!--plugin library versions-->
-    <plugin.failsafe.version>2.16</plugin.failsafe.version>
   </properties>
 
   <dependencies>
@@ -155,6 +152,11 @@
       <groupId>javax.ws.rs</groupId>
       <artifactId>javax.ws.rs-api</artifactId>
       <version>${javax.ws.rsapi.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.bouncycastle</groupId>
+      <artifactId>bcpkix-jdk15on</artifactId>
     </dependency>
 
     <dependency>
@@ -352,7 +354,6 @@
     <plugins>
       <plugin>
         <artifactId>maven-failsafe-plugin</artifactId>
-        <version>${plugin.failsafe.version}</version>
         <executions>
           <execution>
             <goals>
@@ -368,7 +369,6 @@
 
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>${plugin.surefire.version}</version>
         <configuration combine.children="append">
           <argLine>-Xmx2g -Xms1g -Dfile.encoding=UTF-8</argLine>
           <excludes>
@@ -384,7 +384,6 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
-        <version>3.0.2</version>
         <executions>
           <execution>
             <goals>

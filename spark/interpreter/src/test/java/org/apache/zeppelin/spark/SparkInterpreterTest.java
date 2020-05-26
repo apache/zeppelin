@@ -72,7 +72,7 @@ public class SparkInterpreterTest {
     properties.setProperty("spark.master", "local");
     properties.setProperty("spark.app.name", "test");
     properties.setProperty("zeppelin.spark.maxResult", "100");
-    properties.setProperty("zeppelin.spark.uiWebUrl", "fake_spark_weburl");
+    properties.setProperty("zeppelin.spark.uiWebUrl", "fake_spark_weburl/{{applicationId}}");
     // disable color output for easy testing
     properties.setProperty("zeppelin.spark.scala.color", "false");
     properties.setProperty("zeppelin.spark.deprecatedMsg.show", "false");
@@ -180,7 +180,8 @@ public class SparkInterpreterTest {
     // spark job url is sent
     ArgumentCaptor<Map> onParaInfosReceivedArg = ArgumentCaptor.forClass(Map.class);
     verify(mockRemoteEventClient).onParaInfosReceived(onParaInfosReceivedArg.capture());
-    assertTrue(((String) onParaInfosReceivedArg.getValue().get("jobUrl")).startsWith("fake_spark_weburl"));
+    assertTrue(((String) onParaInfosReceivedArg.getValue().get("jobUrl")).startsWith("fake_spark_weburl/"
+            + interpreter.getJavaSparkContext().sc().applicationId()));
 
     // case class
     result = interpreter.interpret("val bankText = sc.textFile(\"bank.csv\")", getInterpreterContext());

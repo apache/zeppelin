@@ -17,6 +17,8 @@
 package org.apache.zeppelin.cassandra
 
 import com.datastax.driver.core._
+import com.datastax.oss.driver.api.core.ConsistencyLevel
+import com.datastax.oss.driver.api.core.cql.BatchType
 
 /**
  * Define a Scala object hierarchy
@@ -42,7 +44,6 @@ object TextBlockHierarchy {
   object ConsistencyParam extends ParameterType
   object SerialConsistencyParam extends ParameterType
   object TimestampParam extends ParameterType
-  object RetryPolicyParam extends ParameterType
   object FetchSizeParam extends ParameterType
   object RequestTimeOutParam extends ParameterType
 
@@ -63,15 +64,6 @@ object TextBlockHierarchy {
 
   case class RequestTimeOut(value: Int) extends QueryParameters(RequestTimeOutParam)
 
-  abstract class RetryPolicy extends QueryParameters(RetryPolicyParam)
-
-  object DefaultRetryPolicy extends RetryPolicy
-  object DowngradingRetryPolicy extends RetryPolicy
-  object FallThroughRetryPolicy extends RetryPolicy
-  object LoggingDefaultRetryPolicy extends RetryPolicy
-  object LoggingDowngradingRetryPolicy extends RetryPolicy
-  object LoggingFallThroughRetryPolicy extends RetryPolicy
-  
   sealed trait StatementType
   object PrepareStatementType extends StatementType
   object RemovePrepareStatementType extends StatementType
@@ -106,7 +98,7 @@ object TextBlockHierarchy {
   
   case class BoundStm(name: String, values:String) extends QueryStatement(BoundStatementType)
   
-  case class BatchStm(batchType: BatchStatement.Type, statements: List[QueryStatement])
+  case class BatchStm(batchType: BatchType, statements: List[QueryStatement])
     extends QueryStatement(BatchStatementType)
 
   sealed trait DescribeCommandStatement {

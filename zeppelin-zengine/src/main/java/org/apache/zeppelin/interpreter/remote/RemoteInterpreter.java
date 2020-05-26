@@ -391,11 +391,24 @@ public class RemoteInterpreter extends Interpreter {
   public Scheduler getScheduler() {
     // one session own one Scheduler, so that when one session is closed, all the jobs/paragraphs
     // running under the scheduler of this session will be aborted.
-    Scheduler s = new RemoteScheduler(
-        RemoteInterpreter.class.getSimpleName() + "-" + getInterpreterGroup().getId() + "-" + sessionId,
-        SchedulerFactory.singleton().getExecutor(),
-        this);
-    return SchedulerFactory.singleton().createOrGetScheduler(s);
+    String executionMode = getProperty(".execution.mode", "paragraph");
+    if (executionMode.equals("paragraph")) {
+      Scheduler s = new RemoteScheduler(
+              RemoteInterpreter.class.getSimpleName() + "-" + getInterpreterGroup().getId() + "-" + sessionId,
+              SchedulerFactory.singleton().getExecutor(),
+              this);
+      return SchedulerFactory.singleton().createOrGetScheduler(s);
+    } else if (executionMode.equals("note")) {
+      String noteId = getProperty(".noteId");
+      Scheduler s = new RemoteScheduler(
+              RemoteInterpreter.class.getSimpleName() + "-" + noteId,
+              SchedulerFactory.singleton().getExecutor(),
+              this);
+      return SchedulerFactory.singleton().createOrGetScheduler(s);
+    } else {
+      throw new RuntimeException("Invalid execution mode: " + executionMode);
+    }
+
   }
 
   private RemoteInterpreterContext convert(InterpreterContext ic) {

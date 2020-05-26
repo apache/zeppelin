@@ -18,20 +18,18 @@
 
 package org.apache.zeppelin.storage;
 
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import org.apache.hadoop.fs.Path;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
-import org.apache.zeppelin.helium.HeliumConf;
 import org.apache.zeppelin.interpreter.InterpreterInfoSaving;
-import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.notebook.FileSystemStorage;
 import org.apache.zeppelin.notebook.NotebookAuthorizationInfoSaving;
-import org.apache.zeppelin.user.CredentialsInfoSaving;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.nio.file.attribute.PosixFilePermission;
+import java.util.EnumSet;
+import java.util.Set;
 
 /**
  * It could be used either local file system or hadoop distributed file system,
@@ -50,8 +48,7 @@ public class FileSystemConfigStorage extends ConfigStorage {
   public FileSystemConfigStorage(ZeppelinConfiguration zConf) throws IOException {
     super(zConf);
     this.fs = new FileSystemStorage(zConf, zConf.getConfigFSDir());
-    LOGGER.info("Creating FileSystem: " + this.fs.getFs().getClass().getName() +
-        " for Zeppelin Config");
+    LOGGER.info("Creating FileSystem: {} for Zeppelin Config", this.fs.getFs().getClass().getName());
     Path configPath = this.fs.makeQualified(new Path(zConf.getConfigFSDir()));
     this.fs.tryMkDir(configPath);
     LOGGER.info("Using folder {} to store Zeppelin Config", configPath);
@@ -62,7 +59,7 @@ public class FileSystemConfigStorage extends ConfigStorage {
 
   @Override
   public void save(InterpreterInfoSaving settingInfos) throws IOException {
-    LOGGER.info("Save Interpreter Settings to " + interpreterSettingPath);
+    LOGGER.info("Save Interpreter Settings to {}", interpreterSettingPath);
     fs.writeFile(settingInfos.toJson(), interpreterSettingPath, false);
   }
 
@@ -72,13 +69,14 @@ public class FileSystemConfigStorage extends ConfigStorage {
       LOGGER.warn("Interpreter Setting file {} is not existed", interpreterSettingPath);
       return null;
     }
-    LOGGER.info("Load Interpreter Setting from file: " + interpreterSettingPath);
+    LOGGER.info("Load Interpreter Setting from file: {}", interpreterSettingPath);
     String json = fs.readFile(interpreterSettingPath);
     return buildInterpreterInfoSaving(json);
   }
 
+  @Override
   public void save(NotebookAuthorizationInfoSaving authorizationInfoSaving) throws IOException {
-    LOGGER.info("Save notebook authorization to file: " + authorizationPath);
+    LOGGER.info("Save notebook authorization to file: {}", authorizationPath);
     fs.writeFile(authorizationInfoSaving.toJson(), authorizationPath, false);
   }
 
@@ -88,7 +86,7 @@ public class FileSystemConfigStorage extends ConfigStorage {
       LOGGER.warn("Notebook Authorization file {} is not existed", authorizationPath);
       return null;
     }
-    LOGGER.info("Load notebook authorization from file: " + authorizationPath);
+    LOGGER.info("Load notebook authorization from file: {}", authorizationPath);
     String json = this.fs.readFile(authorizationPath);
     return NotebookAuthorizationInfoSaving.fromJson(json);
   }
@@ -99,14 +97,15 @@ public class FileSystemConfigStorage extends ConfigStorage {
       LOGGER.warn("Credential file {} is not existed", credentialPath);
       return null;
     }
-    LOGGER.info("Load Credential from file: " + credentialPath);
+    LOGGER.info("Load Credential from file: {}", credentialPath);
     return this.fs.readFile(credentialPath);
   }
 
   @Override
   public void saveCredentials(String credentials) throws IOException {
-    LOGGER.info("Save Credentials to file: " + credentialPath);
-    fs.writeFile(credentials, credentialPath, false);
+    LOGGER.info("Save Credentials to file: {}", credentialPath);
+    Set<PosixFilePermission> permissions = EnumSet.of(PosixFilePermission.OWNER_READ, PosixFilePermission.OWNER_WRITE);
+    fs.writeFile(credentials, credentialPath, false, permissions);
   }
 
 }

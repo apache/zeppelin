@@ -63,7 +63,7 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
     Properties sparkProperties = new Properties();
     String sparkMaster = getSparkMaster(properties);
     for (String key : properties.stringPropertyNames()) {
-      if (RemoteInterpreterUtils.isEnvString(key)) {
+      if (RemoteInterpreterUtils.isEnvString(key) && !StringUtils.isBlank(properties.getProperty(key))) {
         env.put(key, properties.getProperty(key));
       }
       if (isSparkConf(key, properties.getProperty(key))) {
@@ -76,6 +76,10 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
     if (isYarnMode() && getDeployMode().equals("cluster")) {
       env.put("ZEPPELIN_SPARK_YARN_CLUSTER", "true");
       sparkProperties.setProperty("spark.yarn.submit.waitAppCompletion", "false");
+    } else if (zConf.isOnlyYarnCluster()){
+      throw new IOException("Only yarn-cluster mode is allowed, please set " +
+              ZeppelinConfiguration.ConfVars.ZEPPELIN_SPARK_ONLY_YARN_CLUSTER.getVarName() +
+              " to false if you want to use other modes.");
     }
 
     StringBuilder sparkConfBuilder = new StringBuilder();
@@ -152,9 +156,8 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
     for (String name : sparkProperties.stringPropertyNames()) {
       sparkConfBuilder.append(" --conf " + name + "=" + sparkProperties.getProperty(name));
     }
-    String useProxyUserEnv = System.getenv("ZEPPELIN_IMPERSONATE_SPARK_PROXY_USER");
-    if (context.getOption().isUserImpersonate() && (StringUtils.isBlank(useProxyUserEnv) ||
-            !useProxyUserEnv.equals("false"))) {
+
+    if (context.getOption().isUserImpersonate() && zConf.getZeppelinImpersonateSparkProxyUser()) {
       sparkConfBuilder.append(" --proxy-user " + context.getUserName());
     }
 
@@ -167,7 +170,7 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
     // we also fallback to zeppelin-env.sh if it is not specified in interpreter setting.
     for (String envName : new String[]{"SPARK_HOME", "SPARK_CONF_DIR", "HADOOP_CONF_DIR"})  {
       String envValue = getEnv(envName);
-      if (envValue != null) {
+      if (!StringUtils.isBlank(envValue)) {
         env.put(envName, envValue);
       }
     }

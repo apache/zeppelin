@@ -20,24 +20,27 @@ import java.io.{ByteArrayOutputStream, PrintStream}
 import java.net.InetAddress
 import java.nio.ByteBuffer
 import java.text.SimpleDateFormat
+import java.time.format.DateTimeFormatter
+import java.time.{Duration, Instant, LocalDateTime, ZoneOffset}
 import java.util
-import java.util.Date
 import java.util.concurrent.ConcurrentHashMap
 
-import com.datastax.driver.core.DataType.Name._
-import com.datastax.driver.core._
-import com.datastax.driver.core.exceptions.DriverException
-import com.datastax.driver.core.policies.{LoggingRetryPolicy, FallthroughRetryPolicy, DowngradingConsistencyRetryPolicy, Policies}
+import com.datastax.oss.driver.api.core.`type`.{DataType, ListType, MapType, SetType, TupleType, UserDefinedType}
+import com.datastax.oss.driver.api.core.`type`.DataTypes._
+import com.datastax.oss.driver.api.core.`type`.codec.TypeCodec
+import com.datastax.oss.driver.api.core.`type`.codec.registry.CodecRegistry
+import com.datastax.oss.driver.api.core.cql.{BatchStatement, BatchType, BatchableStatement, BoundStatement, ExecutionInfo, PreparedStatement, ResultSet, Row, SimpleStatement, Statement}
+import com.datastax.oss.driver.api.core.{ConsistencyLevel, CqlSession, DriverException, ProtocolVersion}
 import org.apache.zeppelin.cassandra.TextBlockHierarchy._
-import org.apache.zeppelin.display.AngularObjectRegistry
 import org.apache.zeppelin.display.ui.OptionInput.ParamOption
 import org.apache.zeppelin.interpreter.InterpreterResult.Code
-import org.apache.zeppelin.interpreter.{InterpreterException, InterpreterResult, InterpreterContext}
-import org.slf4j.LoggerFactory
-import scala.collection.JavaConversions._
+import org.apache.zeppelin.interpreter.{InterpreterContext, InterpreterException, InterpreterResult}
+import org.slf4j.{Logger, LoggerFactory}
+
 import scala.collection.JavaConverters._
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
+import scala.util.matching.Regex
 
 
 /**
@@ -46,14 +49,12 @@ import scala.collection.mutable.ArrayBuffer
   * @param consistency consistency level
  * @param serialConsistency serial consistency level
  * @param timestamp timestamp
- * @param retryPolicy retry policy
  * @param fetchSize query fetch size
  * @param requestTimeOut request time out in millisecs
  */
 case class CassandraQueryOptions(consistency: Option[ConsistencyLevel],
                                  serialConsistency:Option[ConsistencyLevel],
                                  timestamp: Option[Long],
-                                 retryPolicy: Option[RetryPolicy],
                                  fetchSize: Option[Int],
                                  requestTimeOut: Option[Int])
 
@@ -63,27 +64,24 @@ case class CassandraQueryOptions(consistency: Option[ConsistencyLevel],
 object InterpreterLogic {
   
   val CHOICES_SEPARATOR : String = """\|"""
-  val VARIABLE_PATTERN = """\{\{[^}]+\}\}""".r
-  val SIMPLE_VARIABLE_DEFINITION_PATTERN = """\{\{([^=]+)=([^=]+)\}\}""".r
-  val MULTIPLE_CHOICES_VARIABLE_DEFINITION_PATTERN = """\{\{([^=]+)=((?:[^=]+\|)+[^|]+)\}\}""".r
+  val VARIABLE_PATTERN: Regex = """\{\{[^}]+\}\}""".r
+  val SIMPLE_VARIABLE_DEFINITION_PATTERN: Regex = """\{\{([^=]+)=([^=]+)\}\}""".r
+  val MULTIPLE_CHOICES_VARIABLE_DEFINITION_PATTERN: Regex = """\{\{([^=]+)=((?:[^=]+\|)+[^|]+)\}\}""".r
 
   val STANDARD_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss"
   val ACCURATE_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss.SSS"
+  // TODO(alex): add more time formatters, like, ISO...
+  val STANDARD_DATE_FORMATTER: DateTimeFormatter = DateTimeFormatter.ofPattern(STANDARD_DATE_FORMAT)
+  val ACCURATE_DATE_FORMATTER: DateTimeFormatter = DateTimeFormatter.ofPattern(ACCURATE_DATE_FORMAT)
 
-  val defaultRetryPolicy = Policies.defaultRetryPolicy()
-  val downgradingConsistencyRetryPolicy = DowngradingConsistencyRetryPolicy.INSTANCE
-  val fallThroughRetryPolicy = FallthroughRetryPolicy.INSTANCE
-  val loggingDefaultRetryPolicy = new LoggingRetryPolicy(defaultRetryPolicy)
-  val loggingDownGradingRetryPolicy = new LoggingRetryPolicy(downgradingConsistencyRetryPolicy)
-  val loggingFallThroughRetryPolicy = new LoggingRetryPolicy(fallThroughRetryPolicy)
 
-  val preparedStatements : mutable.Map[String,PreparedStatement] = new ConcurrentHashMap[String,PreparedStatement]().asScala
+  val preparedStatements : mutable.Map[String, PreparedStatement] = new ConcurrentHashMap[String,PreparedStatement]().asScala
 
-  val logger = LoggerFactory.getLogger(classOf[InterpreterLogic])
+  val logger: Logger = LoggerFactory.getLogger(classOf[InterpreterLogic])
 
   val paragraphParser = new ParagraphParser
   val boundValuesParser = new BoundValuesParser
-  
+
 }
 
 /**
@@ -93,18 +91,19 @@ object InterpreterLogic {
  *
  * @param session java driver session
  */
-class InterpreterLogic(val session: Session)  {
+class InterpreterLogic(val session: CqlSession)  {
 
   val enhancedSession: EnhancedSession = new EnhancedSession(session)
 
   import InterpreterLogic._
 
-  def interpret(session:Session, stringStatements : String, context: InterpreterContext): InterpreterResult = {
+  def interpret[StatementT <: Statement[StatementT]](session:CqlSession, stringStatements : String,
+                                                     context: InterpreterContext): InterpreterResult = {
 
     logger.info(s"Executing CQL statements : \n\n$stringStatements\n")
 
     try {
-      val protocolVersion = session.getCluster.getConfiguration.getProtocolOptions.getProtocolVersion
+      val protocolVersion = session.getContext.getProtocolVersion
 
       val queries:List[AnyBlock] = parseInput(stringStatements)
 
@@ -131,61 +130,64 @@ class InterpreterLogic(val session: Session)  {
         .map(_.getStatement[PrepareStm])
         .foreach(statement => {
           logger.debug(s"Get or prepare statement '${statement.name}' : ${statement.query}")
-          preparedStatements.getOrElseUpdate(statement.name,session.prepare(statement.query))
+          preparedStatements.getOrElseUpdate(statement.name, session.prepare(statement.query))
         })
 
-      val statements: List[Any] = queryStatements
+      val statements: Seq[Any] = queryStatements
         .filter(st => (st.statementType != PrepareStatementType) && (st.statementType != RemovePrepareStatementType))
-        .map{
-          case x:SimpleStm => generateSimpleStatement(x, queryOptions, context)
-          case x:BatchStm => {
-            val builtStatements: List[Statement] = x.statements.map {
-              case st:SimpleStm => generateSimpleStatement(st, queryOptions, context)
-              case st:BoundStm => generateBoundStatement(session, st, queryOptions, context)
+        .map {
+          case x: SimpleStm =>
+            generateSimpleStatement(x, queryOptions, context)
+
+          case x: BatchStm =>
+            val builtStatements = x.statements.map {
+              case st: SimpleStm => generateSimpleStatement(st, queryOptions, context)
+              case st: BoundStm => generateBoundStatement(session, st, queryOptions, context)
               case _ => throw new InterpreterException(s"Unknown statement type")
             }
             generateBatchStatement(x.batchType, queryOptions, builtStatements)
-          }
-          case x:BoundStm => generateBoundStatement(session, x, queryOptions, context)
-          case x:DescribeCommandStatement => x
-          case x:HelpCmd => x
-          case x => throw new InterpreterException(s"Unknown statement type : ${x}")
+
+          case x: BoundStm =>
+            generateBoundStatement(session, x, queryOptions, context)
+          case x: DescribeCommandStatement => x
+          case x: HelpCmd => x
+          case x => throw new InterpreterException(s"Unknown statement type : $x")
        }
 
-      val results: List[(Any,Any)] = for (statement <- statements) yield (enhancedSession.execute(statement),statement)
+      val results: Seq[(Any,Any)] = for (statement <- statements)
+        yield (enhancedSession.execute(statement),statement)
 
       if (results.nonEmpty) {
         results.last match {
-          case(res: ResultSet, st: Statement) => buildResponseMessage((res, st), protocolVersion)
+          case(res: ResultSet, st: StatementT) =>
+            buildResponseMessage((res, st), protocolVersion)
           case(output: String, _) => new InterpreterResult(Code.SUCCESS, output)
           case _ => throw new InterpreterException(s"Cannot parse result type : ${results.last}")
         }
-
       } else {
         new InterpreterResult(Code.SUCCESS, enhancedSession.displayNoResult)
       }
-
     } catch {
-      case dex: DriverException => {
+      case dex: DriverException =>
         logger.error(dex.getMessage, dex)
         new InterpreterResult(Code.ERROR, parseException(dex))
-      }
-      case pex:ParsingException => {
+
+      case pex:ParsingException =>
         logger.error(pex.getMessage, pex)
         new InterpreterResult(Code.ERROR, pex.getMessage)
-      }
-      case iex: InterpreterException => {
+
+      case iex: InterpreterException =>
         logger.error(iex.getMessage, iex)
         new InterpreterResult(Code.ERROR, iex.getMessage)
-      }
-      case ex: java.lang.Exception => {
+
+      case ex: java.lang.Exception =>
         logger.error(ex.getMessage, ex)
         new InterpreterResult(Code.ERROR, parseException(ex))
-      }
     }
   }
 
-  def buildResponseMessage(lastResultSet: (ResultSet,Statement), protocolVersion: ProtocolVersion): InterpreterResult = {
+  def buildResponseMessage[StatementT <: Statement[StatementT]](lastResultSet: (ResultSet, StatementT),
+                                                                protocolVersion: ProtocolVersion): InterpreterResult = {
     val output = new StringBuilder()
     val rows: collection.mutable.ArrayBuffer[Row] = ArrayBuffer()
 
@@ -196,10 +198,9 @@ class InterpreterLogic(val session: Session)  {
 
     val columnsDefinitions: List[(String, DataType)] = lastResultSet._1
       .getColumnDefinitions
-      .asList
-      .toList // Java list -> Scala list
-      .map(definition => (definition.getName, definition.getType))
-
+      .asScala
+      .toList
+      .map(definition => (definition.getName.asCql(true), definition.getType))
 
     if (rows.nonEmpty) {
       // Create table headers
@@ -211,15 +212,19 @@ class InterpreterLogic(val session: Session)  {
       rows.foreach {
         row => {
           val data = columnsDefinitions.map {
-            case (name, dataType) => {
-              if (row.isNull(name)) null else row.getObject(name)
-            }
+            case (name, dataType) =>
+              if (row.isNull(name)) {
+                null
+              } else {
+                val value = row.getObject(name)
+                row.codecRegistry().codecFor(dataType, value).format(value)
+              }
           }
           output.append(data.mkString("\t")).append("\n")
         }
       }
     } else {
-      val lastQuery: String = lastResultSet._2.toString
+      val lastQuery: String = EnhancedSession.getCqlStatement(lastResultSet._2)
       val executionInfo: ExecutionInfo = lastResultSet._1.getExecutionInfo
       output.append(enhancedSession.displayExecutionStatistics(lastQuery, executionInfo))
     }
@@ -232,14 +237,17 @@ class InterpreterLogic(val session: Session)  {
   def parseInput(input:String): List[AnyBlock] = {
     val parsingResult: ParagraphParser#ParseResult[List[AnyBlock]] = paragraphParser.parseAll(paragraphParser.queries, input)
     parsingResult match {
-      case paragraphParser.Success(blocks,_) => blocks
-      case paragraphParser.Failure(msg,next) => {
+      case paragraphParser.Success(blocks,_) =>
+        blocks
+
+      case paragraphParser.Failure(_,_) =>
         throw new InterpreterException(s"Error parsing input:\n\t'$input'\nDid you forget to add ; (semi-colon) at the end of each CQL statement ?")
-      }
-      case paragraphParser.Error(msg,next) => {
+
+      case paragraphParser.Error(_,_) =>
         throw new InterpreterException(s"Error parsing input:\n\t'$input'\nDid you forget to add ; (semi-colon) at the end of each CQL statement ?")
-      }
-      case _ => throw new InterpreterException(s"Error parsing input: $input")
+
+      case _ =>
+        throw new InterpreterException(s"Error parsing input: $input")
     }
   }
 
@@ -266,11 +274,6 @@ class InterpreterLogic(val session: Session)  {
       .flatMap(x => Option(x.value))
       .headOption
 
-    val retryPolicy: Option[RetryPolicy] = parameters
-      .filter(_.paramType == RetryPolicyParam)
-      .map(_.getParam[RetryPolicy])
-      .headOption
-
     val fetchSize: Option[Int] = parameters
       .filter(_.paramType == FetchSizeParam)
       .map(_.getParam[FetchSize])
@@ -283,34 +286,34 @@ class InterpreterLogic(val session: Session)  {
       .flatMap(x => Option(x.value))
       .headOption
 
-    CassandraQueryOptions(consistency,serialConsistency, timestamp, retryPolicy, fetchSize, requestTimeOut)
+    CassandraQueryOptions(consistency,serialConsistency, timestamp, fetchSize, requestTimeOut)
   }
 
   def generateSimpleStatement(st: SimpleStm, options: CassandraQueryOptions,context: InterpreterContext): SimpleStatement = {
     logger.debug(s"Generating simple statement : '${st.text}'")
-    val statement = new SimpleStatement(maybeExtractVariables(st.text, context))
+    val statement = SimpleStatement.newInstance(maybeExtractVariables(st.text, context))
     applyQueryOptions(options, statement)
-    statement
   }
 
-  def generateBoundStatement(session: Session, st: BoundStm, options: CassandraQueryOptions,context: InterpreterContext): BoundStatement = {
+  def generateBoundStatement(session: CqlSession, st: BoundStm, options: CassandraQueryOptions,context: InterpreterContext): BoundStatement = {
     logger.debug(s"Generating bound statement with name : '${st.name}' and bound values : ${st.values}")
     preparedStatements.get(st.name) match {
-      case Some(ps) => {
+      case Some(ps) =>
         val boundValues = maybeExtractVariables(st.values, context)
-        createBoundStatement(session.getCluster.getConfiguration.getCodecRegistry, st.name, ps, boundValues)
-      }
-      case None => throw new InterpreterException(s"The statement '${st.name}' can not be bound to values. " +
+        createBoundStatement(session.getContext.getCodecRegistry, st.name, ps, boundValues)
+
+      case None =>
+        throw new InterpreterException(s"The statement '${st.name}' can not be bound to values. " +
           s"Are you sure you did prepare it with @prepare[${st.name}] ?")
     }
   }
 
-  def generateBatchStatement(batchType: BatchStatement.Type, options: CassandraQueryOptions, statements: List[Statement]): BatchStatement = {
-    logger.debug(s"""Generating batch statement of type '${batchType} for ${statements.mkString(",")}'""")
-    val batch = new BatchStatement(batchType)
-    statements.foreach(batch.add(_))
+  def generateBatchStatement(batchType: BatchType,
+                             options: CassandraQueryOptions,
+                             statements: Seq[BatchableStatement[_]]): BatchStatement = {
+    logger.debug(s"""Generating batch statement of type '$batchType for ${statements.mkString(",")}'""")
+    val batch = BatchStatement.newInstance(batchType).addAll(statements:_*)
     applyQueryOptions(options, batch)
-    batch
   }
 
   def maybeExtractVariables(statement: String, context: InterpreterContext): String = {
@@ -324,57 +327,46 @@ class InterpreterLogic(val session: Session)  {
       paragraphScoped
     }
 
-    def extractVariableAndDefaultValue(statement: String, exp: String):String = {
-      exp match {
-        case MULTIPLE_CHOICES_VARIABLE_DEFINITION_PATTERN(variable, choices) => {
-          val escapedExp: String = exp.replaceAll( """\{""", """\\{""").replaceAll( """\}""", """\\}""").replaceAll("""\|""","""\\|""")
-          findInAngularRepository(variable) match {
-            case Some(value) => statement.replaceAll(escapedExp,value.toString)
-            case None => {
-              val listChoices:List[String] = choices.trim.split(CHOICES_SEPARATOR).toList
-              val paramOptions = listChoices.map(choice => new ParamOption(choice, choice))
-              val selected = context.getGui.select(variable, paramOptions.toArray, listChoices.head)
-              statement.replaceAll(escapedExp,selected.toString)
-            }
-          }
+    def extractVariableAndDefaultValue(statement: String, exp: String): String = exp match {
+      case MULTIPLE_CHOICES_VARIABLE_DEFINITION_PATTERN(variable, choices) =>
+        val escapedExp: String = exp.replaceAll( """\{""", """\\{""").replaceAll( """\}""", """\\}""").replaceAll("""\|""","""\\|""")
+        findInAngularRepository(variable) match {
+          case Some(value) => statement.replaceAll(escapedExp,value.toString)
+          case None =>
+            val listChoices:List[String] = choices.trim.split(CHOICES_SEPARATOR).toList
+            val paramOptions = listChoices.map(choice => new ParamOption(choice, choice))
+            val selected = context.getGui.select(variable, paramOptions.toArray, listChoices.head)
+            statement.replaceAll(escapedExp,selected.toString)
         }
-        case SIMPLE_VARIABLE_DEFINITION_PATTERN(variable,defaultVal) => {
-          val escapedExp: String = exp.replaceAll( """\{""", """\\{""").replaceAll( """\}""", """\\}""")
-          findInAngularRepository(variable) match {
-            case Some(value) => statement.replaceAll(escapedExp,value.toString)
-            case None => {
-              val value = context.getGui.input(variable,defaultVal)
-              statement.replaceAll(escapedExp,value.toString)
-            }
-          }
+
+      case SIMPLE_VARIABLE_DEFINITION_PATTERN(variable,defaultVal) =>
+        val escapedExp: String = exp.replaceAll( """\{""", """\\{""").replaceAll( """\}""", """\\}""")
+        findInAngularRepository(variable) match {
+          case Some(value) => statement.replaceAll(escapedExp,value.toString)
+          case None =>
+            val value = context.getGui.input(variable,defaultVal)
+            statement.replaceAll(escapedExp,value.toString)
         }
-        case _ => throw new ParsingException(s"Invalid bound variable definition for '$exp' in '$statement'. It should be of form 'variable=defaultValue' or 'variable=value1|value2|...|valueN'")
-      }
+
+      case _ =>
+        throw new ParsingException(s"Invalid bound variable definition for '$exp' in '$statement'. It should be of form 'variable=defaultValue' or 'variable=value1|value2|...|valueN'")
     }
 
-    VARIABLE_PATTERN.findAllIn(statement).foldLeft(statement)(extractVariableAndDefaultValue _)
+    VARIABLE_PATTERN.findAllIn(statement).foldLeft(statement)(extractVariableAndDefaultValue)
   }
 
-  def applyQueryOptions(options: CassandraQueryOptions, statement: Statement): Unit = {
-    options.consistency.foreach(statement.setConsistencyLevel(_))
-    options.serialConsistency.foreach(statement.setSerialConsistencyLevel(_))
-    options.timestamp.foreach(statement.setDefaultTimestamp(_))
-    options.retryPolicy.foreach {
-      case DefaultRetryPolicy => statement.setRetryPolicy(defaultRetryPolicy)
-      case DowngradingRetryPolicy => statement.setRetryPolicy(downgradingConsistencyRetryPolicy)
-      case FallThroughRetryPolicy => statement.setRetryPolicy(fallThroughRetryPolicy)
-      case LoggingDefaultRetryPolicy => statement.setRetryPolicy(loggingDefaultRetryPolicy)
-      case LoggingDowngradingRetryPolicy => statement.setRetryPolicy(loggingDownGradingRetryPolicy)
-      case LoggingFallThroughRetryPolicy => statement.setRetryPolicy(loggingFallThroughRetryPolicy)
-      case _ => throw new InterpreterException(s"""Unknown retry policy ${options.retryPolicy.getOrElse("???")}""")
-    }
-    options.fetchSize.foreach(statement.setFetchSize(_))
-    options.requestTimeOut.foreach(statement.setReadTimeoutMillis(_))
+  def applyQueryOptions[StatementT <: Statement[StatementT]](options: CassandraQueryOptions, statement: StatementT): StatementT = {
+    val stmt1: StatementT = if (options.consistency.isDefined) statement.setConsistencyLevel(options.consistency.get) else statement
+    val stmt2: StatementT = if (options.serialConsistency.isDefined) stmt1.setSerialConsistencyLevel(options.serialConsistency.get) else stmt1
+    val stmt3: StatementT = if (options.timestamp.isDefined) stmt2.setQueryTimestamp(options.timestamp.get) else stmt2
+    val stmt4: StatementT = if (options.fetchSize.isDefined) stmt3.setPageSize(options.fetchSize.get) else stmt3
+    val stmt5: StatementT = if (options.requestTimeOut.isDefined) stmt4.setTimeout(Duration.ofSeconds(options.requestTimeOut.get)) else stmt4
+    stmt5
   }
 
-  private def createBoundStatement(codecRegistry: CodecRegistry, name: String, ps: PreparedStatement, rawBoundValues: String): BoundStatement = {
-    val dataTypes = ps.getVariables.toList
-      .map(cfDef => cfDef.getType)
+  private def createBoundStatement(codecRegistry: CodecRegistry, name: String, ps: PreparedStatement,
+                                   rawBoundValues: String): BoundStatement = {
+    val dataTypes = ps.getVariableDefinitions.iterator.asScala.toSeq.map(cfDef => cfDef.getType)
 
     val boundValuesAsText = parseBoundValues(name,rawBoundValues)
 
@@ -383,15 +375,15 @@ class InterpreterLogic(val session: Session)  {
 
     val convertedValues: List[AnyRef] = boundValuesAsText
       .zip(dataTypes).map {
-        case (value, dataType) => {
+        case (value, dataType) =>
           if(value.trim == "null") {
             null
           } else {
             val codec: TypeCodec[AnyRef] = codecRegistry.codecFor[AnyRef](dataType)
-            dataType.getName match {
-            case (ASCII | TEXT | VARCHAR) => value.trim.replaceAll("(?<!')'","")
-            case (INT | VARINT) => value.trim.toInt
-            case (BIGINT | COUNTER) => value.trim.toLong
+            dataType match {
+            case ASCII | TEXT  => value.trim.replaceAll("(?<!')'","")
+            case INT | VARINT => value.trim.toInt
+            case BIGINT | COUNTER => value.trim.toLong
             case BLOB => ByteBuffer.wrap(value.trim.getBytes)
             case BOOLEAN => value.trim.toBoolean
             case DECIMAL => BigDecimal(value.trim)
@@ -399,16 +391,15 @@ class InterpreterLogic(val session: Session)  {
             case FLOAT => value.trim.toFloat
             case INET => InetAddress.getByName(value.trim)
             case TIMESTAMP => parseDate(value.trim)
-            case (UUID | TIMEUUID) => java.util.UUID.fromString(value.trim)
-            case LIST => codec.parse(boundValuesParser.parse(boundValuesParser.list, value).get)
-            case SET => codec.parse(boundValuesParser.parse(boundValuesParser.set, value).get)
-            case MAP => codec.parse(boundValuesParser.parse(boundValuesParser.map, value).get)
-            case UDT => codec.parse(boundValuesParser.parse(boundValuesParser.udt, value).get)
-            case TUPLE => codec.parse(boundValuesParser.parse(boundValuesParser.tuple, value).get)
+            case UUID | TIMEUUID => java.util.UUID.fromString(value.trim)
+            case _: ListType => codec.parse(boundValuesParser.parse(boundValuesParser.list, value).get)
+            case _: SetType => codec.parse(boundValuesParser.parse(boundValuesParser.set, value).get)
+            case _: MapType => codec.parse(boundValuesParser.parse(boundValuesParser.map, value).get)
+            case _: UserDefinedType => codec.parse(boundValuesParser.parse(boundValuesParser.udt, value).get)
+            case _: TupleType => codec.parse(boundValuesParser.parse(boundValuesParser.tuple, value).get)
             case _ => throw new InterpreterException(s"Cannot parse data of type : ${dataType.toString}")
           }
         }
-      }
     }.asInstanceOf[List[AnyRef]]
 
     ps.bind(convertedValues.toArray: _*)
@@ -423,13 +414,15 @@ class InterpreterLogic(val session: Session)  {
     }
   }
 
-  def parseDate(dateString: String): Date = {
-    dateString match {
-      case boundValuesParser.STANDARD_DATE_PATTERN(datePattern) => new SimpleDateFormat(STANDARD_DATE_FORMAT).parse(datePattern)
-      case boundValuesParser.ACCURATE_DATE_PATTERN(datePattern) => new SimpleDateFormat(ACCURATE_DATE_FORMAT).parse(datePattern)
+  def parseDate(dateString: String): Instant = {
+    val formatter = dateString match {
+      case boundValuesParser.STANDARD_DATE_PATTERN(_) => STANDARD_DATE_FORMATTER
+      case boundValuesParser.ACCURATE_DATE_PATTERN(_) => ACCURATE_DATE_FORMATTER
       case _ => throw new InterpreterException(s"Cannot parse date '$dateString'. " +
         s"Accepted formats : $STANDARD_DATE_FORMAT OR $ACCURATE_DATE_FORMAT");
     }
+    // TODO(alex): check about timezone...
+    LocalDateTime.parse(dateString, formatter).toInstant(ZoneOffset.UTC)
   }
 
   def parseException(ex: Exception): String = {

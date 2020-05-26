@@ -18,69 +18,78 @@
 package org.apache.zeppelin.user;
 
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.storage.ConfigStorage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.nio.file.Files;
-import java.nio.file.attribute.PosixFilePermission;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-
-import static java.nio.file.attribute.PosixFilePermission.OWNER_READ;
-import static java.nio.file.attribute.PosixFilePermission.OWNER_WRITE;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 /**
  * Class defining credentials for data source authorization
  */
 public class Credentials {
+
   private static final Logger LOG = LoggerFactory.getLogger(Credentials.class);
 
+  private ConfigStorage storage;
   private Map<String, UserCredentials> credentialsMap;
   private Gson gson;
-  private Boolean credentialsPersist = true;
-  File credentialsFile;
-
   private Encryptor encryptor;
-  
+
   /**
-   * Wrapper fro user credentials. It can load credentials from a file if credentialsPath is
-   * supplied, and will encrypt the file if an encryptKey is supplied.
+   * Wrapper for user credentials. It can load credentials from a file
+   * and will encrypt the file if an encryptKey is configured.
    *
-   * @param credentialsPersist
-   * @param credentialsPath
-   * @param encryptKey
+   * @param conf
+   * @throws IOException
    */
-  public Credentials(Boolean credentialsPersist, String credentialsPath, String encryptKey) {
-    if (encryptKey != null) {
-      this.encryptor = new Encryptor(encryptKey);
-    }
-
-    this.credentialsPersist = credentialsPersist;
-    if (credentialsPath != null) {
-      credentialsFile = new File(credentialsPath);
-    }
+  public Credentials(ZeppelinConfiguration conf) {
     credentialsMap = new HashMap<>();
-
-    if (credentialsPersist) {
-      GsonBuilder builder = new GsonBuilder();
-      builder.setPrettyPrinting();
-      gson = builder.create();
-      loadFromFile();
+    if (conf.credentialsPersist().booleanValue()) {
+      String encryptKey = conf.getCredentialsEncryptKey();
+      if (StringUtils.isNotBlank(encryptKey)) {
+        this.encryptor = new Encryptor(encryptKey);
+      }
+      try {
+        storage = ConfigStorage.getInstance(conf);
+        GsonBuilder builder = new GsonBuilder();
+        builder.setPrettyPrinting();
+        gson = builder.create();
+        loadFromFile();
+      } catch (IOException e) {
+        LOG.error("Fail to create ConfigStorage for Credentials. Persistenz will be disabled", e);
+        encryptor = null;
+        storage = null;
+        gson = null;
+      }
+    } else {
+      encryptor = null;
+      storage = null;
+      gson = null;
     }
   }
 
-  public UserCredentials getUserCredentials(String username) {
+  /**
+   * Wrapper for inmemory user credentials.
+   *
+   * @param conf
+   * @throws IOException
+   */
+  public Credentials() {
+    credentialsMap = new HashMap<>();
+    encryptor = null;
+    storage = null;
+    gson = null;
+  }
+
+  public UserCredentials getUserCredentials(String username) throws IOException {
     UserCredentials uc = credentialsMap.get(username);
     if (uc == null) {
       uc = new UserCredentials();
@@ -89,20 +98,22 @@ public class Credentials {
   }
 
   public void putUserCredentials(String username, UserCredentials uc) throws IOException {
+    loadCredentials();
     credentialsMap.put(username, uc);
     saveCredentials();
   }
 
   public UserCredentials removeUserCredentials(String username) throws IOException {
-    UserCredentials uc;
-    uc = credentialsMap.remove(username);
+    loadCredentials();
+    UserCredentials uc = credentialsMap.remove(username);
     saveCredentials();
     return uc;
   }
 
   public boolean removeCredentialEntity(String username, String entity) throws IOException {
+    loadCredentials();
     UserCredentials uc = credentialsMap.get(username);
-    if (uc != null && uc.existUsernamePassword(entity) == false) {
+    if (uc == null || !uc.existUsernamePassword(entity)) {
       return false;
     }
 
@@ -112,41 +123,30 @@ public class Credentials {
   }
 
   public void saveCredentials() throws IOException {
-    if (credentialsPersist) {
+    if (storage != null) {
       saveToFile();
     }
   }
 
-  private void loadFromFile() {
-    LOG.info(credentialsFile.getAbsolutePath());
-    if (!credentialsFile.exists()) {
-      // nothing to read
-      return;
+  private void loadCredentials() throws IOException {
+    if (storage != null) {
+      loadFromFile();
     }
+  }
 
+  private void loadFromFile() throws IOException {
     try {
-      FileInputStream fis = new FileInputStream(credentialsFile);
-      InputStreamReader isr = new InputStreamReader(fis);
-      BufferedReader bufferedReader = new BufferedReader(isr);
-      StringBuilder sb = new StringBuilder();
-      String line;
-      while ((line = bufferedReader.readLine()) != null) {
-        sb.append(line);
-      }
-      isr.close();
-      fis.close();
-
-      String json = sb.toString();
-
+      String json = storage.loadCredentials();
       if (encryptor != null) {
         json = encryptor.decrypt(json);
       }
 
       CredentialsInfoSaving info = CredentialsInfoSaving.fromJson(json);
-      this.credentialsMap = info.credentialsMap;
+      if (info != null) {
+        this.credentialsMap = info.credentialsMap;
+      }
     } catch (IOException e) {
-      LOG.error("Error loading credentials file", e);
-      e.printStackTrace();
+      throw new IOException("Error loading credentials file", e);
     }
   }
 
@@ -160,25 +160,12 @@ public class Credentials {
     }
 
     try {
-      if (!credentialsFile.exists()) {
-        credentialsFile.createNewFile();
-
-        Set<PosixFilePermission> permissions = EnumSet.of(OWNER_READ, OWNER_WRITE);
-        Files.setPosixFilePermissions(credentialsFile.toPath(), permissions);
-      }
-
-      FileOutputStream fos = new FileOutputStream(credentialsFile, false);
-      OutputStreamWriter out = new OutputStreamWriter(fos);
-
       if (encryptor != null) {
         jsonString = encryptor.encrypt(jsonString);
       }
-
-      out.append(jsonString);
-      out.close();
-      fos.close();
+      storage.saveCredentials(jsonString);
     } catch (IOException e) {
-      LOG.error("Error saving credentials file", e);
+      throw new IOException("Error saving credentials file", e);
     }
   }
 }

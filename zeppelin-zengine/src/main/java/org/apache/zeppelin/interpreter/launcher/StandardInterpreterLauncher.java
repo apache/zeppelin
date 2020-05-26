@@ -18,6 +18,7 @@
 
 package org.apache.zeppelin.interpreter.launcher;
 
+import org.apache.commons.exec.environment.EnvironmentUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.InterpreterOption;
@@ -90,7 +91,7 @@ public class StandardInterpreterLauncher extends InterpreterLauncher {
   }
 
   public Map<String, String> buildEnvFromProperties(InterpreterLaunchContext context) throws IOException {
-    Map<String, String> env = new HashMap<>();
+    Map<String, String> env = EnvironmentUtils.getProcEnvironment();
     for (Map.Entry entry : context.getProperties().entrySet()) {
       String key = (String) entry.getKey();
       String value = (String) entry.getValue();

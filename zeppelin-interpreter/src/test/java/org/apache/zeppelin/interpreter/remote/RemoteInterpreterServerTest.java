@@ -174,6 +174,8 @@ public class RemoteInterpreterServerTest {
     Thread.sleep(1000);
     assertFalse(interpreter1.cancelled.get());
     server.cancel("session_1", Test1Interpreter.class.getName(), intpContext);
+    // Sleep 1 second, because cancel is async.
+    Thread.sleep(1000);
     assertTrue(interpreter1.cancelled.get());
 
     // getProgress

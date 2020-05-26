@@ -182,6 +182,20 @@ public class TableEnvFactory {
             settings.isStreamingMode());
   }
 
+  public void createPlanner(EnvironmentSettings settings) {
+    Map<String, String> executorProperties = settings.toExecutorProperties();
+    Executor executor = lookupExecutor(executorProperties, senv.getJavaEnv());
+
+    Map<String, String> plannerProperties = settings.toPlannerProperties();
+    ComponentFactoryService.find(PlannerFactory.class, plannerProperties)
+            .create(
+                    plannerProperties,
+                    executor,
+                    tblConfig,
+                    blinkFunctionCatalog,
+                    catalogManager);
+  }
+
   public StreamTableEnvironment createJavaBlinkStreamTableEnvironment(
           EnvironmentSettings settings) {
 

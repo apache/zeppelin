@@ -55,6 +55,8 @@ public class DockerInterpreterLauncher extends InterpreterLauncher {
     StandardInterpreterLauncher interpreterLauncher = null;
     if (isSpark()) {
       interpreterLauncher = new SparkInterpreterLauncher(zConf, recoveryStorage);
+    } else if (isFlink()) {
+      interpreterLauncher = new FlinkInterpreterLauncher(zConf, recoveryStorage);
     } else {
       interpreterLauncher = new StandardInterpreterLauncher(zConf, recoveryStorage);
     }
@@ -76,5 +78,9 @@ public class DockerInterpreterLauncher extends InterpreterLauncher {
 
   boolean isSpark() {
     return "spark".equalsIgnoreCase(context.getInterpreterSettingName());
+  }
+
+  boolean isFlink() {
+    return "flink".equalsIgnoreCase(context.getInterpreterSettingName());
   }
 }

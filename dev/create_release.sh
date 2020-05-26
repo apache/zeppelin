@@ -97,8 +97,8 @@ function make_binary_release() {
 
 git_clone
 make_source_package
+make_binary_release netinst "-Pweb-angular -Phadoop-2.6 -pl !beam,!hbase,!pig,!jdbc,!file,!flink,!ignite,!kylin,!lens,!cassandra,!elasticsearch,!bigquery,!alluxio,!scio,!livy,!groovy,!sap,!java,!geode,!neo4j,!hazelcastjet,!submarine,!sparql,!mongodb,!ksql,!scalding -am"
 make_binary_release all "-Pweb-angular -Phadoop-2.6"
-make_binary_release netinst "-Pweb-angular -Phadoop-2.6 -pl zeppelin-server,zeppelin-display,markdown,shell,spark/spark-dependencies,zeppelin-web,zeppelin-web-angular,zeppelin-distribution -am"
 
 # remove non release files and dirs
 rm -rf "${WORKING_DIR}/zeppelin"
