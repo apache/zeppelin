@@ -60,7 +60,10 @@ class IPyFlinkZeppelinContext(PyZeppelinContext):
     def show(self, obj, **kwargs):
         from pyflink.table import Table
         if isinstance(obj, Table):
-            print(self.z.showData(obj._j_table))
+            if 'stream_type' in kwargs:
+                self.z.show(obj._j_table, kwargs['stream_type'], kwargs)
+            else:
+                print(self.z.showData(obj._j_table))
         else:
             super(IPyFlinkZeppelinContext, self).show(obj, **kwargs)
 

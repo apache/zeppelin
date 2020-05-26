@@ -20,6 +20,8 @@ package org.apache.zeppelin.conf;
 import com.google.common.annotations.VisibleForTesting;
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -393,6 +395,22 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     }
   }
 
+  public String getPemKeyFile() {
+      return getString(ConfVars.ZEPPELIN_SSL_PEM_KEY);
+  }
+
+  public String getPemKeyPassword() {
+      return getString(ConfVars.ZEPPELIN_SSL_PEM_KEY_PASSWORD);
+  }
+
+  public String getPemCertFile() {
+      return getString(ConfVars.ZEPPELIN_SSL_PEM_CERT);
+  }
+
+  public String getPemCAFile() {
+      return getString(ConfVars.ZEPPELIN_SSL_PEM_CA);
+  }
+
   public String getNotebookDir() {
     return getRelativeDir(ConfVars.ZEPPELIN_NOTEBOOK_DIR);
   }
@@ -583,7 +601,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
   }
 
   public String getRelativeDir(String path) {
-    if (path != null && path.startsWith(File.separator) || isWindowsPath(path)) {
+    if (path != null && (path.startsWith(File.separator) || isWindowsPath(path) || isPathWithScheme(path))) {
       return path;
     } else {
       return getString(ConfVars.ZEPPELIN_HOME) + File.separator + path;
@@ -600,6 +618,14 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 
   public boolean isWindowsPath(String path){
     return path.matches("^[A-Za-z]:\\\\.*");
+  }
+
+  public boolean isPathWithScheme(String path){
+      try {
+        return StringUtils.isNotBlank(new URI(path).getScheme());
+    } catch (URISyntaxException e) {
+        return false;
+    }
   }
 
   public boolean isAnonymousAllowed() {
@@ -658,6 +684,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getString(ConfVars.ZEPPELIN_SERVER_JETTY_NAME);
   }
 
+  public boolean sendJettyName() {
+    return getBoolean(ConfVars.ZEPPELIN_SERVER_SEND_JETTY_NAME);
+  }
+
   public Integer getJettyRequestHeaderSize() {
     return getInt(ConfVars.ZEPPELIN_SERVER_JETTY_REQUEST_HEADER_SIZE);
   }
@@ -685,6 +715,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 
   public String getLifecycleManagerClass() {
     return getString(ConfVars.ZEPPELIN_INTERPRETER_LIFECYCLE_MANAGER_CLASS);
+  }
+
+  public boolean getZeppelinImpersonateSparkProxyUser() {
+      return getBoolean(ConfVars.ZEPPELIN_IMPERSONATE_SPARK_PROXY_USER);
   }
 
   public String getZeppelinNotebookGitURL() {
@@ -737,6 +771,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 
   public String getZeppelinSearchIndexPath() {
     return getRelativeDir(ConfVars.ZEPPELIN_SEARCH_INDEX_PATH);
+  }
+
+  public Boolean isOnlyYarnCluster() {
+    return getBoolean(ConfVars.ZEPPELIN_SPARK_ONLY_YARN_CLUSTER);
   }
 
   public String getClusterAddress() {
@@ -802,6 +840,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getRelativeDir(ConfVars.ZEPPELIN_K8S_TEMPLATE_DIR);
   }
 
+  public String getK8sServiceName() {
+    return getString(ConfVars.ZEPPELIN_K8S_SERVICE_NAME);
+  }
+
   public String getDockerContainerImage() {
     return getString(ConfVars.ZEPPELIN_DOCKER_CONTAINER_IMAGE);
   }
@@ -852,6 +894,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_SSL_KEYSTORE_TYPE("zeppelin.ssl.keystore.type", "JKS"),
     ZEPPELIN_SSL_KEYSTORE_PASSWORD("zeppelin.ssl.keystore.password", ""),
     ZEPPELIN_SSL_KEY_MANAGER_PASSWORD("zeppelin.ssl.key.manager.password", null),
+    ZEPPELIN_SSL_PEM_KEY("zeppelin.ssl.pem.key", null),
+    ZEPPELIN_SSL_PEM_KEY_PASSWORD("zeppelin.ssl.pem.key.password", ""),
+    ZEPPELIN_SSL_PEM_CERT("zeppelin.ssl.pem.cert", null),
+    ZEPPELIN_SSL_PEM_CA("zeppelin.ssl.pem.ca", null),
     ZEPPELIN_SSL_TRUSTSTORE_PATH("zeppelin.ssl.truststore.path", null),
     ZEPPELIN_SSL_TRUSTSTORE_TYPE("zeppelin.ssl.truststore.type", null),
     ZEPPELIN_SSL_TRUSTSTORE_PASSWORD("zeppelin.ssl.truststore.password", null),
@@ -940,14 +986,15 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_WEBSOCKET_MAX_TEXT_MESSAGE_SIZE("zeppelin.websocket.max.text.message.size", "10240000"),
     ZEPPELIN_SERVER_DEFAULT_DIR_ALLOWED("zeppelin.server.default.dir.allowed", false),
     ZEPPELIN_SERVER_XFRAME_OPTIONS("zeppelin.server.xframe.options", "SAMEORIGIN"),
-    ZEPPELIN_SERVER_JETTY_NAME("zeppelin.server.jetty.name", null),
+    ZEPPELIN_SERVER_JETTY_NAME("zeppelin.server.jetty.name", " "),
+    ZEPPELIN_SERVER_SEND_JETTY_NAME("zeppelin.server.send.jetty.name", true),
     ZEPPELIN_SERVER_JETTY_THREAD_POOL_MAX("zeppelin.server.jetty.thread.pool.max", 400),
     ZEPPELIN_SERVER_JETTY_THREAD_POOL_MIN("zeppelin.server.jetty.thread.pool.min", 8),
     ZEPPELIN_SERVER_JETTY_THREAD_POOL_TIMEOUT("zeppelin.server.jetty.thread.pool.timeout", 30),
     ZEPPELIN_SERVER_JETTY_REQUEST_HEADER_SIZE("zeppelin.server.jetty.request.header.size", 8192),
     ZEPPELIN_SERVER_AUTHORIZATION_HEADER_CLEAR("zeppelin.server.authorization.header.clear", true),
     ZEPPELIN_SERVER_STRICT_TRANSPORT("zeppelin.server.strict.transport", "max-age=631138519"),
-    ZEPPELIN_SERVER_X_XSS_PROTECTION("zeppelin.server.xxss.protection", "1"),
+    ZEPPELIN_SERVER_X_XSS_PROTECTION("zeppelin.server.xxss.protection", "1; mode=block"),
     ZEPPELIN_SERVER_X_CONTENT_TYPE_OPTIONS("zeppelin.server.xcontent.type.options", "nosniff"),
 
     ZEPPELIN_SERVER_KERBEROS_KEYTAB("zeppelin.server.kerberos.keytab", ""),
@@ -981,9 +1028,11 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_K8S_CONTAINER_IMAGE("zeppelin.k8s.container.image", "apache/zeppelin:" + Util.getVersion()),
     ZEPPELIN_K8S_SPARK_CONTAINER_IMAGE("zeppelin.k8s.spark.container.image", "apache/spark:latest"),
     ZEPPELIN_K8S_TEMPLATE_DIR("zeppelin.k8s.template.dir", "k8s"),
+    ZEPPELIN_K8S_SERVICE_NAME("zeppelin.k8s.service.name", "zeppelin-server"),
 
     ZEPPELIN_DOCKER_CONTAINER_IMAGE("zeppelin.docker.container.image", "apache/zeppelin:" + Util.getVersion()),
 
+    ZEPPELIN_IMPERSONATE_SPARK_PROXY_USER("zeppelin.impersonate.spark.proxy.user", true),
     ZEPPELIN_NOTEBOOK_GIT_REMOTE_URL("zeppelin.notebook.git.remote.url", ""),
     ZEPPELIN_NOTEBOOK_GIT_REMOTE_USERNAME("zeppelin.notebook.git.remote.username", "token"),
     ZEPPELIN_NOTEBOOK_GIT_REMOTE_ACCESS_TOKEN("zeppelin.notebook.git.remote.access-token", ""),
@@ -998,7 +1047,8 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_SEARCH_INDEX_REBUILD("zeppelin.search.index.rebuild", false),
     ZEPPELIN_SEARCH_USE_DISK("zeppelin.search.use.disk", true),
     ZEPPELIN_SEARCH_INDEX_PATH("zeppelin.search.index.path", "/tmp/zeppelin-index"),
-    ZEPPELIN_JOBMANAGER_ENABLE("zeppelin.jobmanager.enable", true);
+    ZEPPELIN_JOBMANAGER_ENABLE("zeppelin.jobmanager.enable", false),
+    ZEPPELIN_SPARK_ONLY_YARN_CLUSTER("zeppelin.spark.only_yarn_cluster", false);
 
     private String varName;
     @SuppressWarnings("rawtypes")

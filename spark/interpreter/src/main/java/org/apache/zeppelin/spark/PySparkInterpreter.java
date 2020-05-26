@@ -25,6 +25,7 @@ import org.apache.zeppelin.interpreter.ZeppelinContext;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.util.InterpreterOutputStream;
 import org.apache.zeppelin.python.IPythonInterpreter;
 import org.apache.zeppelin.python.PythonInterpreter;
 import org.slf4j.Logger;
@@ -32,6 +33,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -125,8 +127,18 @@ public class PySparkInterpreter extends PythonInterpreter {
   @Override
   public InterpreterResult interpret(String st, InterpreterContext context)
       throws InterpreterException {
-    Utils.printDeprecateMessage(sparkInterpreter.getSparkVersion(), context, properties);
-    return super.interpret(st, context);
+    // redirect java stdout/stdout to interpreter output. Because pyspark may call java code.
+    PrintStream originalStdout = System.out;
+    PrintStream originalStderr = System.err;
+    try {
+      System.setOut(new PrintStream(context.out));
+      System.setErr(new PrintStream(context.out));
+      Utils.printDeprecateMessage(sparkInterpreter.getSparkVersion(), context, properties);
+      return super.interpret(st, context);
+    } finally {
+      System.setOut(originalStdout);
+      System.setErr(originalStderr);
+    }
   }
 
   @Override

@@ -24,6 +24,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 
 import com.google.gson.Gson;
+import com.google.gson.internal.StringMap;
 import com.google.gson.reflect.TypeToken;
 
 import org.apache.commons.httpclient.methods.GetMethod;
@@ -40,6 +41,7 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -160,6 +162,28 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
       // Check if the paragraph is emptied
       assertEquals(title, p.getTitle());
       assertEquals(text, p.getText());
+
+      // run invalid code
+      text = "%sh\n invalid_cmd";
+      p.setTitle(title);
+      p.setText(text);
+
+      post = httpPost("/notebook/run/" + note1.getId() + "/" + p.getId(), "");
+      assertEquals(500, post.getStatusCode());
+      resp = gson.fromJson(post.getResponseBodyAsString(),
+              new TypeToken<Map<String, Object>>() {}.getType());
+      assertEquals("INTERNAL_SERVER_ERROR", resp.get("status"));
+      StringMap stringMap = (StringMap) resp.get("body");
+      assertEquals("ERROR", stringMap.get("code"));
+      List<StringMap> interpreterResults = (List<StringMap>) stringMap.get("msg");
+      assertTrue(interpreterResults.get(0).toString(),
+              interpreterResults.get(0).get("data").toString().contains("invalid_cmd: command not found"));
+      post.releaseConnection();
+      assertNotEquals(p.getStatus(), Job.Status.READY);
+
+      // Check if the paragraph is emptied
+      assertEquals(title, p.getTitle());
+      assertEquals(text, p.getText());
     } finally {
       // cleanup
       if (null != note1) {
@@ -169,7 +193,7 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
   }
 
   @Test
-  public void testRunAllParagraph_AllSuccess() throws IOException {
+  public void testRunNoteBlocking() throws IOException {
     Note note1 = null;
     try {
       note1 = TestUtils.getInstance(Notebook.class).createNote("note1", anonymous);
@@ -199,6 +223,48 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
       assertEquals(Job.Status.FINISHED, p1.getStatus());
       assertEquals(Job.Status.FINISHED, p2.getStatus());
       assertEquals("abc\n", p2.getReturn().message().get(0).getData());
+    } finally {
+      // cleanup
+      if (null != note1) {
+        TestUtils.getInstance(Notebook.class).removeNote(note1.getId(), anonymous);
+      }
+    }
+  }
+
+  @Test
+  public void testRunNoteNonBlocking() throws Exception {
+    Note note1 = null;
+    try {
+      note1 = TestUtils.getInstance(Notebook.class).createNote("note1", anonymous);
+      // 2 paragraphs
+      // P1:
+      //    %python
+      //    import time
+      //    time.sleep(5)
+      //    name='hello'
+      //    z.put('name', name)
+      // P2:
+      //    %%sh(interpolate=true)
+      //    echo '{name}'
+      //
+      Paragraph p1 = note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
+      Paragraph p2 = note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
+      p1.setText("%python import time\ntime.sleep(5)\nname='hello'\nz.put('name', name)");
+      p2.setText("%sh(interpolate=true) echo '{name}'");
+
+      PostMethod post = httpPost("/notebook/job/" + note1.getId() + "?waitToFinish=false", "");
+      assertThat(post, isAllowed());
+      Map<String, Object> resp = gson.fromJson(post.getResponseBodyAsString(),
+              new TypeToken<Map<String, Object>>() {}.getType());
+      assertEquals(resp.get("status"), "OK");
+      post.releaseConnection();
+
+      p1.waitUntilFinished();
+      p2.waitUntilFinished();
+
+      assertEquals(Job.Status.FINISHED, p1.getStatus());
+      assertEquals(Job.Status.FINISHED, p2.getStatus());
+      assertEquals("hello\n", p2.getReturn().message().get(0).getData());
     } finally {
       // cleanup
       if (null != note1) {

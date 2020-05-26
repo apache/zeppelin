@@ -64,28 +64,28 @@
         "envName": null,
         "propertyName": "cassandra.load.balancing.policy",
         "defaultValue": "DEFAULT",
-        "description": "Cassandra Load Balancing Policy. Default = new TokenAwarePolicy(new DCAwareRoundRobinPolicy())",
+        "description": "Class name for Load Balancing Policy. Default = DefaultLoadBalancingPolicy",
         "type": "string"
       },
       "cassandra.retry.policy": {
         "envName": null,
         "propertyName": "cassandra.retry.policy",
         "defaultValue": "DEFAULT",
-        "description": "Cassandra Retry Policy. Default = DefaultRetryPolicy.INSTANCE",
+        "description": "Class name for Retry Policy. Default = DefaultRetryPolicy",
         "type": "string"
       },
       "cassandra.reconnection.policy": {
         "envName": null,
         "propertyName": "cassandra.reconnection.policy",
         "defaultValue": "DEFAULT",
-        "description": "Cassandra Reconnection Policy. Default = new ExponentialReconnectionPolicy(1000, 10 * 60 * 1000)",
+        "description": "Class name for Reconnection Policy. Default = ExponentialReconnectionPolicy",
         "type": "string"
       },
       "cassandra.speculative.execution.policy": {
         "envName": null,
         "propertyName": "cassandra.speculative.execution.policy",
         "defaultValue": "DEFAULT",
-        "description": "Cassandra Speculative Execution Policy. Default = NoSpeculativeExecutionPolicy.INSTANCE",
+        "description": "Class name for Speculative Execution Policy. Default = NoSpeculativeExecutionPolicy",
         "type": "string"
       },
       "cassandra.interpreter.parallelism": {
@@ -102,67 +102,25 @@
         "description": "Cassandra max schema agreement wait in second.Default = ProtocolOptions.DEFAULT_MAX_SCHEMA_AGREEMENT_WAIT_SECONDS",
         "type": "number"
       },
-      "cassandra.pooling.new.connection.threshold.local": {
+      "cassandra.pooling.connection.per.host.local": {
         "envName": null,
-        "propertyName": "cassandra.pooling.new.connection.threshold.local",
-        "defaultValue": "100",
-        "description": "Cassandra new connection threshold local. Protocol V2 and below default = 100 Protocol V3 and above default = 800",
-        "type": "number"
-      },
-      "cassandra.pooling.new.connection.threshold.remote": {
-        "envName": null,
-        "propertyName": "cassandra.pooling.new.connection.threshold.remote",
-        "defaultValue": "100",
-        "description": "Cassandra new connection threshold remove. Protocol V2 and below default = 100 Protocol V3 and above default = 200",
-        "type": "number"
-      },
-      "cassandra.pooling.core.connection.per.host.local": {
-        "envName": null,
-        "propertyName": "cassandra.pooling.core.connection.per.host.local",
-        "defaultValue": "2",
-        "description": "Cassandra core connection per host local. Protocol V2 and below default = 2 Protocol V3 and above default = 1",
-        "type": "number"
-      },
-      "cassandra.pooling.core.connection.per.host.remote": {
-        "envName": null,
-        "propertyName": "cassandra.pooling.core.connection.per.host.remote",
-        "defaultValue": "1",
-        "description": "Cassandra core connection per host remove. Protocol V2 and below default = 1 Protocol V3 and above default = 1",
-        "type": "number"
-      },
-      "cassandra.pooling.max.connection.per.host.local": {
-        "envName": null,
-        "propertyName": "cassandra.pooling.max.connection.per.host.local",
+        "propertyName": "cassandra.pooling.connection.per.host.local",
         "defaultValue": "8",
-        "description": "Cassandra max connection per host local. Protocol V2 and below default = 8 Protocol V3 and above default = 1",
+        "description": "Cassandra connections per host local. Protocol V2 and below default = 8 Protocol V3 and above default = 1",
         "type": "number"
       },
-      "cassandra.pooling.max.connection.per.host.remote": {
+      "cassandra.pooling.connection.per.host.remote": {
         "envName": null,
-        "propertyName": "cassandra.pooling.max.connection.per.host.remote",
+        "propertyName": "cassandra.pooling.connection.per.host.remote",
         "defaultValue": "2",
-        "description": "Cassandra max connection per host remote. Protocol V2 and below default = 2 Protocol V3 and above default = 1",
+        "description": "Cassandra connections per host remote. Protocol V2 and below default = 2 Protocol V3 and above default = 1",
         "type": "number"
       },
-      "cassandra.pooling.max.request.per.connection.local": {
+      "cassandra.pooling.max.request.per.connection": {
         "envName": null,
-        "propertyName": "cassandra.pooling.max.request.per.connection.local",
+        "propertyName": "cassandra.pooling.max.request.per.connection",
         "defaultValue": "1024",
-        "description": "Cassandra max request per connection local. Protocol V2 and below default = 128 Protocol V3 and above default = 1024",
-        "type": "number"
-      },
-      "cassandra.pooling.max.request.per.connection.remote": {
-        "envName": null,
-        "propertyName": "cassandra.pooling.max.request.per.connection.remote",
-        "defaultValue": "256",
-        "description": "Cassandra max request per connection remote. Protocol V2 and below default = 128 Protocol V3 and above default = 256",
-        "type": "number"
-      },
-      "cassandra.pooling.idle.timeout.seconds": {
-        "envName": null,
-        "propertyName": "cassandra.pooling.idle.timeout.seconds",
-        "defaultValue": "120",
-        "description": "Cassandra idle time out in seconds. Default = 120",
+        "description": "Cassandra max requests per connection. Protocol V2 and below default = 128 Protocol V3 and above default = 1024",
         "type": "number"
       },
       "cassandra.pooling.pool.timeout.millisecs": {

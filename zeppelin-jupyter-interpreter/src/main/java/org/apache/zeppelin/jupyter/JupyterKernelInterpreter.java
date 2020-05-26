@@ -17,7 +17,6 @@
 
 package org.apache.zeppelin.jupyter;
 
-import com.google.common.annotations.VisibleForTesting;
 import io.grpc.ManagedChannelBuilder;
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.environment.EnvironmentUtils;
@@ -126,7 +125,7 @@ public class JupyterKernelInterpreter extends AbstractInterpreter {
 
       jupyterKernelClient = new JupyterKernelClient(ManagedChannelBuilder.forAddress("127.0.0.1",
               kernelPort).usePlaintext(true).maxInboundMessageSize(message_size),
-              getProperties());
+              getProperties(), kernel);
       launchJupyterKernel(kernelPort);
     } catch (Exception e) {
       throw new InterpreterException("Fail to open JupyterKernelInterpreter:\n" +
@@ -213,7 +212,6 @@ public class JupyterKernelInterpreter extends AbstractInterpreter {
     return EnvironmentUtils.getProcEnvironment();
   }
 
-  @VisibleForTesting
   public JupyterKernelProcessLauncher getKernelProcessLauncher() {
     return jupyterKernelProcessLauncher;
   }

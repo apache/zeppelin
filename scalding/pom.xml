@@ -36,9 +36,8 @@
   <properties>
     <interpreter.name>scalding</interpreter.name>
     <!--library versions-->
-    <hadoop.version>2.6.0</hadoop.version>
+    <hadoop.version>${hadoop2.6.version}</hadoop.version>
     <scalding.version>0.16.1-RC1</scalding.version>
-    <commons.exec.version>1.3</commons.exec.version>
 
     <!--plugin versions-->
     <plugin.scala.version>2.15.2</plugin.scala.version>
@@ -158,7 +157,6 @@
       <plugin>
         <groupId>org.scala-tools</groupId>
         <artifactId>maven-scala-plugin</artifactId>
-        <version>${plugin.scala.version}</version>
         <executions>
           <execution>
             <id>compile</id>

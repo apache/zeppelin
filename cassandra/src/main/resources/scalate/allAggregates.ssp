@@ -19,7 +19,7 @@
 
 #import(org.apache.zeppelin.cassandra.MetaDataHierarchy._)
 #import(java.util.UUID)
-<%@ val allAggregates: Map[(UUID, String), List[AggregateSummary]] %>
+<%@ val allAggregates: Map[(UUID, String), Seq[AggregateSummary]] %>
 
 <div class="container">
 

@@ -39,7 +39,6 @@
     <path.separator>/</path.separator>
     <!--library versions-->
     <spark.version>1.4.1</spark.version>
-    <jsoup.version>[1.8.0,)</jsoup.version>
 
     <!--test library versions-->
     <datanucleus.rdbms.version>3.2.9</datanucleus.rdbms.version>
@@ -178,14 +177,13 @@
         <configuration>
           <forkCount>1</forkCount>
           <reuseForks>false</reuseForks>
-          <argLine>-Xmx1024m -XX:MaxPermSize=256m</argLine>
+          <argLine>-Xmx1024m -XX:MaxMetaspaceSize=512m</argLine>
           <skipTests>true</skipTests>
         </configuration>
       </plugin>
       <plugin>
         <groupId>org.scalatest</groupId>
         <artifactId>scalatest-maven-plugin</artifactId>
-        <version>${plugin.scalatest.version}</version>
         <configuration>
           <reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory>
           <junitxml>.</junitxml>
@@ -208,7 +206,6 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
-        <version>${plugin.shade.version}</version>
         <configuration>
           <filters>
             <filter>

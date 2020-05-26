@@ -213,24 +213,33 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
     }
   }
 
-  function retryUntilElemIsLoaded(targetElemId, callback) {
+  /**
+   * Retry until the target element is loaded
+   * @param targetElemId
+   * @param callback
+   * @param nextTick - sometimes need run in next tick
+   */
+  function retryUntilElemIsLoaded(targetElemId, callback, nextTick = false) {
     cancelRetryRender(targetElemId);
-    function retry() {
-      cancelRetryRender(targetElemId);
-      if (!isDOMLoaded(targetElemId)) {
-        retryRenderElements[targetElemId] = $timeout(retry, 10);
-        return;
-      }
 
+    function callbackFun() {
       const elem = angular.element(`#${targetElemId}`);
       callback(elem);
     }
 
-    if(isDOMLoaded(targetElemId)) {
-      const elem = angular.element(`#${targetElemId}`);
-      callback(elem);
+    function retry() {
+      cancelRetryRender(targetElemId);
+      if (!isDOMLoaded(targetElemId)) {
+        retryRenderElements[targetElemId] = $timeout(retry, 16);
+        return;
+      }
+      callbackFun();
+    }
+
+    if(isDOMLoaded(targetElemId) && !nextTick) {
+      callbackFun();
     } else {
-      retryRenderElements[targetElemId] = $timeout(retry);
+      retryRenderElements[targetElemId] = $timeout(retry, 16);
     }
   }
 
@@ -727,7 +736,9 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
     }
 
     const tableElemId = `p${$scope.id}_${graphMode}`;
-    retryUntilElemIsLoaded(tableElemId, afterLoaded);
+
+    // Run the callback in next tick to ensure get the correct size for rendering graph
+    retryUntilElemIsLoaded(tableElemId, afterLoaded, true);
   };
 
   $scope.switchViz = function(newMode) {
@@ -767,11 +778,7 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
 
   $scope.toggleGraphSetting = function() {
     let newConfig = angular.copy($scope.config);
-    if (newConfig.graph.optionOpen) {
-      newConfig.graph.optionOpen = false;
-    } else {
-      newConfig.graph.optionOpen = true;
-    }
+    newConfig.graph.optionOpen = !newConfig.graph.optionOpen;
 
     let newParams = angular.copy(paragraph.settings.params);
     commitParagraphResult(paragraph.title, paragraph.text, newConfig, newParams);

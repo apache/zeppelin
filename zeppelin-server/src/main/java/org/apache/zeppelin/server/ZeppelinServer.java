@@ -20,6 +20,8 @@ import com.google.gson.Gson;
 import java.io.File;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
+import java.nio.file.Files;
+import java.security.GeneralSecurityException;
 import java.util.Base64;
 import java.util.HashSet;
 import java.util.List;
@@ -71,6 +73,7 @@ import org.apache.zeppelin.socket.NotebookServer;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
 import org.apache.zeppelin.util.ReflectionUtils;
+import org.apache.zeppelin.utils.PEMImporter;
 import org.eclipse.jetty.http.HttpVersion;
 import org.eclipse.jetty.jmx.ConnectorServer;
 import org.eclipse.jetty.jmx.MBeanContainer;
@@ -85,7 +88,6 @@ import org.eclipse.jetty.server.handler.ContextHandlerCollection;
 import org.eclipse.jetty.server.session.SessionHandler;
 import org.eclipse.jetty.servlet.DefaultServlet;
 import org.eclipse.jetty.servlet.FilterHolder;
-import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
@@ -146,12 +148,7 @@ public class ZeppelinServer extends ResourceConfig {
         new AbstractBinder() {
           @Override
           protected void configure() {
-            Credentials credentials =
-                new Credentials(
-                    conf.credentialsPersist(),
-                    conf.getCredentialsPath(),
-                    conf.getCredentialsEncryptKey());
-
+            Credentials credentials = new Credentials(conf);
             bindAsContract(InterpreterFactory.class).in(Singleton.class);
             bindAsContract(NotebookRepoSync.class).to(NotebookRepo.class).in(Immediate.class);
             bind(LuceneSearch.class).to(SearchService.class).in(Singleton.class);
@@ -290,11 +287,15 @@ public class ZeppelinServer extends ResourceConfig {
             () -> {
               LOG.info("Shutting down Zeppelin Server ... ");
               try {
-                jettyWebServer.stop();
-                if (!conf.isRecoveryEnabled()) {
-                  sharedServiceLocator.getService(InterpreterSettingManager.class).close();
+                if (jettyWebServer != null) {
+                  jettyWebServer.stop();
                 }
-                sharedServiceLocator.getService(Notebook.class).close();
+                if (sharedServiceLocator != null) {
+                  if (!conf.isRecoveryEnabled()) {
+                    sharedServiceLocator.getService(InterpreterSettingManager.class).close();
+                  }
+                  sharedServiceLocator.getService(Notebook.class).close();
+                }
                 Thread.sleep(3000);
               } catch (Exception e) {
                 LOG.error("Error while stopping servlet container", e);
@@ -317,13 +318,13 @@ public class ZeppelinServer extends ResourceConfig {
     ServerConnector connector;
     HttpConfiguration httpConfig = new HttpConfiguration();
     httpConfig.addCustomizer(new ForwardedRequestCustomizer());
+    httpConfig.setSendServerVersion(conf.sendJettyName());
     if (conf.useSsl()) {
-      LOG.debug("Enabling SSL for Zeppelin Server on port " + sslPort);
+      LOG.debug("Enabling SSL for Zeppelin Server on port {}", sslPort);
       httpConfig.setSecureScheme("https");
       httpConfig.setSecurePort(sslPort);
       httpConfig.setOutputBufferSize(32768);
       httpConfig.setResponseHeaderSize(8192);
-      httpConfig.setSendServerVersion(true);
 
       HttpConfiguration httpsConfig = new HttpConfiguration(httpConfig);
       SecureRequestCustomizer src = new SecureRequestCustomizer();
@@ -334,6 +335,7 @@ public class ZeppelinServer extends ResourceConfig {
                       server,
                       new SslConnectionFactory(getSslContextFactory(conf), HttpVersion.HTTP_1_1.asString()),
                       new HttpConnectionFactory(httpsConfig));
+      connector.setPort(sslPort);
     } else {
       connector = new ServerConnector(server, new HttpConnectionFactory(httpConfig));
       connector.setPort(port);
@@ -441,24 +443,75 @@ public class ZeppelinServer extends ResourceConfig {
   }
 
   private static SslContextFactory getSslContextFactory(ZeppelinConfiguration conf) {
-    SslContextFactory sslContextFactory = new SslContextFactory();
+    SslContextFactory.Server sslContextFactory = new SslContextFactory.Server();
 
-    // Set keystore
-    sslContextFactory.setKeyStorePath(conf.getKeyStorePath());
-    sslContextFactory.setKeyStoreType(conf.getKeyStoreType());
-    sslContextFactory.setKeyStorePassword(conf.getKeyStorePassword());
-    sslContextFactory.setKeyManagerPassword(conf.getKeyManagerPassword());
+    // initialize KeyStore
+    // Check for PEM files
+    if (StringUtils.isNoneBlank(conf.getPemKeyFile(), conf.getPemCertFile())) {
+      setupKeystoreWithPemFiles(sslContextFactory, conf);
+    } else {
+      // Set keystore
+      sslContextFactory.setKeyStorePath(conf.getKeyStorePath());
+      sslContextFactory.setKeyStoreType(conf.getKeyStoreType());
+      sslContextFactory.setKeyStorePassword(conf.getKeyStorePassword());
+      sslContextFactory.setKeyManagerPassword(conf.getKeyManagerPassword());
+    }
 
+    // initialize TrustStore
     if (conf.useClientAuth()) {
-      sslContextFactory.setNeedClientAuth(conf.useClientAuth());
-
-      // Set truststore
-      sslContextFactory.setTrustStorePath(conf.getTrustStorePath());
-      sslContextFactory.setTrustStoreType(conf.getTrustStoreType());
-      sslContextFactory.setTrustStorePassword(conf.getTrustStorePassword());
+      if (StringUtils.isNotBlank(conf.getPemCAFile())) {
+        setupTruststoreWithPemFiles(sslContextFactory, conf);
+      } else {
+        sslContextFactory.setNeedClientAuth(conf.useClientAuth());
+        // Set truststore
+        sslContextFactory.setTrustStorePath(conf.getTrustStorePath());
+        sslContextFactory.setTrustStoreType(conf.getTrustStoreType());
+        sslContextFactory.setTrustStorePassword(conf.getTrustStorePassword());
+      }
     }
 
     return sslContextFactory;
+  }
+
+  private static void setupKeystoreWithPemFiles(SslContextFactory.Server sslContextFactory, ZeppelinConfiguration conf) {
+    File pemKey = new File(conf.getPemKeyFile());
+    File pemCert = new File(conf.getPemCertFile());
+    boolean isPemKeyFileReadable = Files.isReadable(pemKey.toPath());
+    boolean isPemCertFileReadable = Files.isReadable(pemCert.toPath());
+    if (!isPemKeyFileReadable) {
+      LOG.warn("PEM key file {} is not readable", pemKey);
+    }
+    if (!isPemCertFileReadable) {
+      LOG.warn("PEM cert file {} is not readable", pemCert);
+    }
+    if (isPemKeyFileReadable && isPemCertFileReadable) {
+      try {
+        String password = conf.getPemKeyPassword();
+        sslContextFactory.setKeyStore(PEMImporter.loadKeyStore(pemCert, pemKey, password));
+        sslContextFactory.setKeyStoreType("JKS");
+        sslContextFactory.setKeyStorePassword(password);
+      } catch (IOException | GeneralSecurityException e) {
+        LOG.error("Failed to initialize KeyStore from PEM files", e);
+      }
+    } else {
+      LOG.error("Failed to read PEM files");
+    }
+  }
+
+  private static void setupTruststoreWithPemFiles(SslContextFactory.Server sslContextFactory, ZeppelinConfiguration conf) {
+    File pemCa = new File(conf.getPemCAFile());
+    if (Files.isReadable(pemCa.toPath())) {
+      try {
+        sslContextFactory.setTrustStore(PEMImporter.loadTrustStore(pemCa));
+        sslContextFactory.setTrustStoreType("JKS");
+        sslContextFactory.setTrustStorePassword("");
+        sslContextFactory.setNeedClientAuth(conf.useClientAuth());
+      } catch (IOException | GeneralSecurityException e) {
+        LOG.error("Failed to initialize TrustStore from PEM CA file", e);
+      }
+    } else {
+      LOG.error("PEM CA file {} is not readable", pemCa);
+    }
   }
 
   private static void setupRestApiContextHandler(WebAppContext webapp, ZeppelinConfiguration conf) {

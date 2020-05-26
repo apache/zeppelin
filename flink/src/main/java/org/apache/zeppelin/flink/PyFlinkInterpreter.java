@@ -46,6 +46,7 @@ public class PyFlinkInterpreter extends PythonInterpreter {
   private FlinkInterpreter flinkInterpreter;
   private InterpreterContext curInterpreterContext;
   private boolean isOpened = false;
+  private ClassLoader originalClassLoader;
 
   public PyFlinkInterpreter(Properties properties) {
     super(properties);
@@ -103,22 +104,60 @@ public class PyFlinkInterpreter extends PythonInterpreter {
 
   @Override
   public InterpreterResult interpret(String st, InterpreterContext context) throws InterpreterException {
-    if (isOpened) {
-      // set InterpreterContext in the python thread first, otherwise flink job could not be
-      // associated with paragraph in JobListener
-      this.curInterpreterContext = context;
-      InterpreterResult result =
-              super.interpret("intp.setInterpreterContextInPythonThread()", context);
-      if (result.code() != InterpreterResult.Code.SUCCESS) {
-        throw new InterpreterException("Fail to setInterpreterContextInPythonThread: " +
-                result.toString());
+    try {
+      if (!useIPython()) {
+        if (isOpened) {
+          // set InterpreterContext in the python thread first, otherwise flink job could not be
+          // associated with paragraph in JobListener
+          this.curInterpreterContext = context;
+          InterpreterResult result =
+                  super.interpret("intp.initJavaThread()", context);
+          if (result.code() != InterpreterResult.Code.SUCCESS) {
+            throw new InterpreterException("Fail to initJavaThread: " +
+                    result.toString());
+          }
+        }
+        flinkInterpreter.setSavePointIfNecessary(context);
+        flinkInterpreter.setParallelismIfNecessary(context);
+      }
+      return super.interpret(st, context);
+    } finally {
+      if (useIPython() || (!useIPython() && getPythonProcessLauncher().isRunning())) {
+        InterpreterResult result = super.interpret("intp.resetClassLoaderInPythonThread()", context);
+        if (result.code() != InterpreterResult.Code.SUCCESS) {
+          LOGGER.warn("Fail to resetClassLoaderInPythonThread: " + result.toString());
+        }
       }
     }
-    return super.interpret(st, context);
   }
 
-  public void setInterpreterContextInPythonThread() {
+  /**
+   * Called by python process.
+   */
+  public void initJavaThread() {
     InterpreterContext.set(curInterpreterContext);
+    originalClassLoader = Thread.currentThread().getContextClassLoader();
+    Thread.currentThread().setContextClassLoader(flinkInterpreter.getFlinkScalaShellLoader());
+    flinkInterpreter.createPlannerAgain();
+  }
+
+  /**
+   * Called by python process.
+   */
+  public void resetClassLoaderInPythonThread() {
+    if (originalClassLoader != null) {
+      Thread.currentThread().setContextClassLoader(originalClassLoader);
+    }
+  }
+
+  @Override
+  public void cancel(InterpreterContext context) throws InterpreterException {
+    flinkInterpreter.cancel(context);
+    if (useIPython()) {
+      // only cancel it in the case of ipython, because python interpreter will
+      // kill the current python process which usually is not what user expect.
+      super.cancel(context);
+    }
   }
 
   @Override

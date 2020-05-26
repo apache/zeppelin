@@ -245,7 +245,7 @@ public class LuceneSearch extends SearchService {
       indexWriter.updateDocument(new Term(ID_FIELD, id), doc);
       indexWriter.commit();
     } catch (IOException e) {
-      logger.error("Failed to updaet index of notebook {}", noteId, e);
+      logger.error("Failed to update index of notebook {}", noteId, e);
     }
   }
 

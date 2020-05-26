@@ -44,8 +44,7 @@ public class CredentialsRestApiTest {
 
   @Before
   public void setUp() throws IOException {
-    credentials =
-        new Credentials(false, Files.createTempFile("credentials", "test").toString(), null);
+    credentials = new Credentials();
     authenticationService = new NoAuthenticationService();
     credentialRestApi = new CredentialRestApi(credentials, authenticationService);
   }

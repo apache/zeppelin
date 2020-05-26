@@ -383,7 +383,7 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
   }
 
   private boolean registerInterpreterFromResource(ClassLoader cl, String interpreterDir,
-      String interpreterJson, boolean override) throws IOException {
+                                                  String interpreterJson, boolean override) throws IOException {
     URL[] urls = recursiveBuildLibList(new File(interpreterDir));
     ClassLoader tempClassLoader = new URLClassLoader(urls, null);
 
@@ -499,14 +499,14 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
   }
 
   /**
-   * Get editor setting for one paragraph based on its magic part and noteId
+   * Get editor setting for one paragraph based on its paragraph text and noteId
    *
-   * @param magic
+   * @param paragraphText
    * @param noteId
    * @return
    */
-  public Map<String, Object> getEditorSetting(String magic, String noteId) {
-    ParagraphTextParser.ParseResult parseResult = ParagraphTextParser.parse(magic);
+  public Map<String, Object> getEditorSetting(String paragraphText, String noteId) {
+    ParagraphTextParser.ParseResult parseResult = ParagraphTextParser.parse(paragraphText);
     if (StringUtils.isBlank(parseResult.getIntpText())) {
       // Use default interpreter setting if no interpreter is specified.
       InterpreterSetting interpreterSetting = getDefaultInterpreterSetting(noteId);
@@ -676,20 +676,23 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
         if (paragraphId != null) {
           resourceSet = resourceSet.filterByParagraphId(paragraphId);
         }
+        try{
+          for (final Resource r : resourceSet) {
+            remoteInterpreterProcess.callRemoteFunction(
+                    new RemoteInterpreterProcess.RemoteFunction<Void>() {
 
-        for (final Resource r : resourceSet) {
-          remoteInterpreterProcess.callRemoteFunction(
-              new RemoteInterpreterProcess.RemoteFunction<Void>() {
-
-                @Override
-                public Void call(RemoteInterpreterService.Client client) throws Exception {
-                  client.resourceRemove(
-                      r.getResourceId().getNoteId(),
-                      r.getResourceId().getParagraphId(),
-                      r.getResourceId().getName());
-                  return null;
-                }
-              });
+                      @Override
+                      public Void call(RemoteInterpreterService.Client client) throws Exception {
+                        client.resourceRemove(
+                                r.getResourceId().getNoteId(),
+                                r.getResourceId().getParagraphId(),
+                                r.getResourceId().getName());
+                        return null;
+                      }
+                    });
+          }
+        }catch (Exception e){
+          LOGGER.error(e.getMessage());
         }
       }
     }
@@ -881,7 +884,12 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
   }
 
   // restart in note page
-  public void restart(String settingId, String noteId, String user) throws InterpreterException {
+  public void restart(String settingId, String user, String noteId) throws InterpreterException {
+    restart(settingId, new ExecutionContext(user, noteId));
+  }
+
+  // restart in note page
+  public void restart(String settingId, ExecutionContext executionContext) throws InterpreterException {
     InterpreterSetting intpSetting = interpreterSettings.get(settingId);
     Preconditions.checkNotNull(intpSetting);
     intpSetting = interpreterSettings.get(settingId);
@@ -889,7 +897,7 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
     // If it did, overwrite old dependency jar with new one
     if (intpSetting != null) {
       copyDependenciesFromLocalPath(intpSetting);
-      intpSetting.closeInterpreters(user, noteId);
+      intpSetting.closeInterpreters(executionContext);
     } else {
       throw new InterpreterException("Interpreter setting id " + settingId + " not found");
     }
@@ -1030,7 +1038,8 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
   public void onNoteRemove(Note note, AuthenticationInfo subject) throws IOException {
     // remove from all interpreter instance's angular object registry
     for (InterpreterSetting settings : interpreterSettings.values()) {
-      InterpreterGroup interpreterGroup = settings.getInterpreterGroup(subject.getUser(), note.getId());
+      InterpreterGroup interpreterGroup = settings.getInterpreterGroup(
+              new ExecutionContext(subject.getUser(), note.getId()));
       if (interpreterGroup != null) {
         AngularObjectRegistry registry = interpreterGroup.getAngularObjectRegistry();
         if (registry instanceof RemoteAngularObjectRegistry) {

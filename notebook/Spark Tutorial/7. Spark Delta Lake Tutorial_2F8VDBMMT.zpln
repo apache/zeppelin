@@ -1,0 +1,311 @@
+{
+  "paragraphs": [
+    {
+      "text": "%md\n\n# Introduction\n\nThis is a tutorial for using spark [delta lake](https://delta.io/) in Zeppelin. You need to run the following paragraph first to load delta package.\n\n",
+      "user": "anonymous",
+      "dateUpdated": "2020-05-04 14:11:57.999",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "markdown",
+          "editOnDblClick": true,
+          "completionKey": "TAB",
+          "completionSupport": false
+        },
+        "editorMode": "ace/mode/markdown",
+        "editorHide": true,
+        "tableHide": false
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003ch1\u003eIntroduction\u003c/h1\u003e\n\u003cp\u003eThis is a tutorial for using spark \u003ca href\u003d\"https://delta.io/\"\u003edelta lake\u003c/a\u003e in Zeppelin. You need to run the following paragraph first to load delta package.\u003c/p\u003e\n\n\u003c/div\u003e"
+          }
+        ]
+      },
+      "apps": [],
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1588572279774_1507831415",
+      "id": "paragraph_1588572279774_1507831415",
+      "dateCreated": "2020-05-04 14:04:39.775",
+      "dateStarted": "2020-05-04 14:11:57.999",
+      "dateFinished": "2020-05-04 14:11:58.021",
+      "status": "FINISHED"
+    },
+    {
+      "text": "%spark.conf\n\nspark.jars.packages io.delta:delta-core_2.11:0.6.0",
+      "user": "anonymous",
+      "dateUpdated": "2020-05-04 14:12:12.254",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "text",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/text"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": []
+      },
+      "apps": [],
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1588147206215_1200788867",
+      "id": "paragraph_1588147206215_1200788867",
+      "dateCreated": "2020-04-29 16:00:06.215",
+      "dateStarted": "2020-04-29 16:10:33.429",
+      "dateFinished": "2020-04-29 16:10:33.434",
+      "status": "FINISHED"
+    },
+    {
+      "title": "Create a table",
+      "text": "%spark\n\nval data \u003d spark.range(0, 5)\ndata.write.format(\"delta\").save(\"/tmp/delta-table\")\n",
+      "user": "anonymous",
+      "dateUpdated": "2020-04-29 16:13:31.957",
+      "config": {
+        "colWidth": 6.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/scala",
+        "title": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "\u001b[1m\u001b[34mdata\u001b[0m: \u001b[1m\u001b[32morg.apache.spark.sql.Dataset[Long]\u001b[0m \u003d [id: bigint]\n"
+          }
+        ]
+      },
+      "apps": [],
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1588147833426_1914590471",
+      "id": "paragraph_1588147833426_1914590471",
+      "dateCreated": "2020-04-29 16:10:33.426",
+      "dateStarted": "2020-04-29 16:11:45.197",
+      "dateFinished": "2020-04-29 16:11:49.694",
+      "status": "FINISHED"
+    },
+    {
+      "title": "Read a table",
+      "text": "%spark\n\nval df \u003d spark.read.format(\"delta\").load(\"/tmp/delta-table\")\ndf.show()",
+      "user": "anonymous",
+      "dateUpdated": "2020-04-29 16:13:35.297",
+      "config": {
+        "colWidth": 6.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/scala",
+        "title": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "+---+\n| id|\n+---+\n|  0|\n|  3|\n|  1|\n|  2|\n|  4|\n+---+\n\n\u001b[1m\u001b[34mdf\u001b[0m: \u001b[1m\u001b[32morg.apache.spark.sql.DataFrame\u001b[0m \u003d [id: bigint]\n"
+          }
+        ]
+      },
+      "apps": [],
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1588147853461_1624743216",
+      "id": "paragraph_1588147853461_1624743216",
+      "dateCreated": "2020-04-29 16:10:53.462",
+      "dateStarted": "2020-04-29 16:11:55.302",
+      "dateFinished": "2020-04-29 16:11:56.658",
+      "status": "FINISHED"
+    },
+    {
+      "title": "Overwrite",
+      "text": "%spark\n\nval data \u003d spark.range(5, 10)\ndata.write.format(\"delta\").mode(\"overwrite\").save(\"/tmp/delta-table\")\ndf.show()",
+      "user": "anonymous",
+      "dateUpdated": "2020-04-29 16:14:41.855",
+      "config": {
+        "colWidth": 6.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/scala",
+        "title": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "+---+\n| id|\n+---+\n|  5|\n|  6|\n|  7|\n|  9|\n|  8|\n+---+\n\n\u001b[1m\u001b[34mdata\u001b[0m: \u001b[1m\u001b[32morg.apache.spark.sql.Dataset[Long]\u001b[0m \u003d [id: bigint]\n"
+          }
+        ]
+      },
+      "apps": [],
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1588148062120_1790808564",
+      "id": "paragraph_1588148062120_1790808564",
+      "dateCreated": "2020-04-29 16:14:22.120",
+      "dateStarted": "2020-04-29 16:14:41.863",
+      "dateFinished": "2020-04-29 16:14:45.093",
+      "status": "FINISHED"
+    },
+    {
+      "title": "Conditional update without overwrite",
+      "text": "%spark\n\nimport io.delta.tables._\nimport org.apache.spark.sql.functions._\n\nval deltaTable \u003d DeltaTable.forPath(\"/tmp/delta-table\")\n\n// Update every even value by adding 100 to it\ndeltaTable.update(\n  condition \u003d expr(\"id % 2 \u003d\u003d 0\"),\n  set \u003d Map(\"id\" -\u003e expr(\"id + 100\")))\n\n// Delete every even value\ndeltaTable.delete(condition \u003d expr(\"id % 2 \u003d\u003d 0\"))\n\n// Upsert (merge) new data\nval newData \u003d spark.range(0, 20).toDF\n\ndeltaTable.as(\"oldData\")\n  .merge(\n    newData.as(\"newData\"),\n    \"oldData.id \u003d newData.id\")\n  .whenMatched\n  .update(Map(\"id\" -\u003e col(\"newData.id\")))\n  .whenNotMatched\n  .insert(Map(\"id\" -\u003e col(\"newData.id\")))\n  .execute()\n\ndeltaTable.toDF.show()",
+      "user": "anonymous",
+      "dateUpdated": "2020-04-29 16:15:33.129",
+      "config": {
+        "colWidth": 6.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/scala",
+        "title": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "+---+\n| id|\n+---+\n| 15|\n| 16|\n|  1|\n| 18|\n| 14|\n|  4|\n|  8|\n| 17|\n|  0|\n| 10|\n|  6|\n|  2|\n|  3|\n| 13|\n|  5|\n| 12|\n| 19|\n|  7|\n|  9|\n| 11|\n+---+\n\nimport io.delta.tables._\nimport org.apache.spark.sql.functions._\n\u001b[1m\u001b[34mdeltaTable\u001b[0m: \u001b[1m\u001b[32mio.delta.tables.DeltaTable\u001b[0m \u003d io.delta.tables.DeltaTable@355329ee\n\u001b[1m\u001b[34mnewData\u001b[0m: \u001b[1m\u001b[32morg.apache.spark.sql.DataFrame\u001b[0m \u003d [id: bigint]\n"
+          }
+        ]
+      },
+      "apps": [],
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1588147954117_626957150",
+      "id": "paragraph_1588147954117_626957150",
+      "dateCreated": "2020-04-29 16:12:34.117",
+      "dateStarted": "2020-04-29 16:15:33.132",
+      "dateFinished": "2020-04-29 16:15:48.086",
+      "status": "FINISHED"
+    },
+    {
+      "title": "Read older versions of data using time travel",
+      "text": "%spark\n\nval df \u003d spark.read.format(\"delta\").option(\"versionAsOf\", 0).load(\"/tmp/delta-table\")\ndf.show()",
+      "user": "anonymous",
+      "dateUpdated": "2020-04-29 16:16:04.935",
+      "config": {
+        "colWidth": 6.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/scala",
+        "title": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "+---+\n| id|\n+---+\n|  0|\n|  3|\n|  1|\n|  2|\n|  4|\n+---+\n\n\u001b[1m\u001b[34mdf\u001b[0m: \u001b[1m\u001b[32morg.apache.spark.sql.DataFrame\u001b[0m \u003d [id: bigint]\n"
+          }
+        ]
+      },
+      "apps": [],
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1588148133131_1770029903",
+      "id": "paragraph_1588148133131_1770029903",
+      "dateCreated": "2020-04-29 16:15:33.131",
+      "dateStarted": "2020-04-29 16:16:04.937",
+      "dateFinished": "2020-04-29 16:16:08.415",
+      "status": "FINISHED"
+    },
+    {
+      "text": "%spark\n",
+      "user": "anonymous",
+      "dateUpdated": "2020-04-29 16:18:21.603",
+      "config": {},
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1588148301603_1997345504",
+      "id": "paragraph_1588148301603_1997345504",
+      "dateCreated": "2020-04-29 16:18:21.603",
+      "status": "READY"
+    }
+  ],
+  "name": "6. Spark Delta Lake Tutorial",
+  "id": "2F8VDBMMT",
+  "defaultInterpreterGroup": "spark",
+  "version": "0.9.0-SNAPSHOT",
+  "noteParams": {},
+  "noteForms": {},
+  "angularObjects": {},
+  "config": {
+    "isZeppelinNotebookCronEnable": false
+  },
+  "info": {}
+}

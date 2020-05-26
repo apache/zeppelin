@@ -59,6 +59,13 @@
     "name": "terminal",
     "className": "org.apache.zeppelin.shell.TerminalInterpreter",
     "properties": {
+      "zeppelin.terminal.ip.mapping": {
+        "envName": null,
+        "propertyName": "zeppelin.terminal.ip.mapping",
+        "defaultValue": "",
+        "description": "Internal and external IP mapping of zeppelin server",
+        "type": "string"
+      }
     },
     "editor": {
       "language": "sh",

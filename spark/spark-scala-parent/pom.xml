@@ -34,7 +34,7 @@
     <name>Zeppelin: Spark Scala Parent</name>
 
     <properties>
-        <spark.version>2.4.4</spark.version>
+        <spark.version>2.4.5</spark.version>
         <spark.scala.binary.version>2.11</spark.scala.binary.version>
         <spark.scala.version>2.11.12</spark.scala.version>
         <saprk.scala.compile.version>${spark.scala.binary.version}</saprk.scala.compile.version>
@@ -133,7 +133,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-clean-plugin</artifactId>
-                <version>${plugin.clean.version}</version>
                 <configuration>
                     <filesets>
                         <fileset>
@@ -219,7 +218,6 @@
             <plugin>
                 <groupId>net.alchim31.maven</groupId>
                 <artifactId>scala-maven-plugin</artifactId>
-                <version>3.2.2</version>
                 <executions>
                     <execution>
                         <id>eclipse-add-source</id>
@@ -252,8 +250,7 @@
                     <jvmArgs>
                         <jvmArg>-Xms1024m</jvmArg>
                         <jvmArg>-Xmx1024m</jvmArg>
-                        <jvmArg>-XX:PermSize=${PermGen}</jvmArg>
-                        <jvmArg>-XX:MaxPermSize=${MaxPermGen}</jvmArg>
+                        <jvmArg>-XX:MaxMetaspaceSize=${MaxMetaspace}</jvmArg>
                     </jvmArgs>
                     <javacArgs>
                         <javacArg>-source</javacArg>
@@ -268,7 +265,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>2.3.1</version>
                 <configuration>
                     <outputDirectory>${project.basedir}/../../interpreter/spark/scala-${spark.scala.binary.version}</outputDirectory>
                 </configuration>

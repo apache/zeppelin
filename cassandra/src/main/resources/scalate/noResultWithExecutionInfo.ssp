@@ -17,7 +17,6 @@
 */
 --%>
 <%@ val query: String%>
-<%@ val consistency: String%>
 <%@ val triedHosts: String%>
 <%@ val queriedHosts: String%>
 <%@ val schemaInAgreement: String%>
@@ -43,10 +42,6 @@
                     <td>${query}</td>
                 </tr>
                 <tr>
-                    <td>Achieved Consistency</td>
-                    <td>${consistency}</td>
-                </tr>
-                <tr>
                     <td>Tried Hosts</td>
                     <td>${triedHosts}</td>
                 </tr>
@@ -55,7 +50,7 @@
                     <td>${queriedHosts}</td>
                 </tr>
                 <tr>
-                    <td>Schema In Agreement</td>
+                    <td>Schema in Agreement</td>
                     <td>${schemaInAgreement}</td>
                 </tr>
             </tbody>

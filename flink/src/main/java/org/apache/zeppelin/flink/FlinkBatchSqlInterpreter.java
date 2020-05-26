@@ -44,7 +44,6 @@ public class FlinkBatchSqlInterpreter extends FlinkSqlInterrpeter {
   public void open() throws InterpreterException {
     super.open();
     this.tbenv = flinkInterpreter.getJavaBatchTableEnvironment("blink");
-    this.tbenv_2 = flinkInterpreter.getJavaBatchTableEnvironment("flink");
     this.z = flinkInterpreter.getZeppelinContext();
   }
 
@@ -63,7 +62,7 @@ public class FlinkBatchSqlInterpreter extends FlinkSqlInterrpeter {
 
   @Override
   public void cancel(InterpreterContext context) throws InterpreterException {
-    flinkInterpreter.getJobManager().cancelJob(context);
+    flinkInterpreter.cancel(context);
   }
 
   @Override
