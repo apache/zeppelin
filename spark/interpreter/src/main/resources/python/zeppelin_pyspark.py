@@ -15,6 +15,8 @@
 # limitations under the License.
 #
 
+import warnings
+
 from py4j.java_gateway import java_import
 from pyspark.conf import SparkConf
 from pyspark.context import SparkContext
@@ -23,6 +25,9 @@ from pyspark.context import SparkContext
 from pyspark.sql import SQLContext, Row
 
 intp = gateway.entry_point
+
+if intp.isSpark3():
+  warnings.filterwarnings(action='ignore', module='pyspark.util')
 
 jsc = intp.getJavaSparkContext()
 java_import(gateway.jvm, "org.apache.spark.SparkEnv")
