@@ -148,6 +148,10 @@ public class IPySparkInterpreter extends IPythonInterpreter {
     return sparkInterpreter.getSparkVersion().getMajorVersion() == 1;
   }
 
+  public boolean isSpark3() {
+    return sparkInterpreter.getSparkVersion().getMajorVersion() == 3;
+  }
+
   public JavaSparkContext getJavaSparkContext() {
     return sparkInterpreter.getJavaSparkContext();
   }

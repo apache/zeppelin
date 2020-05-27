@@ -39,6 +39,10 @@ java_import(gateway.jvm, "org.apache.spark.api.python.*")
 java_import(gateway.jvm, "org.apache.spark.mllib.api.python.*")
 
 intp = gateway.entry_point
+
+if intp.isSpark3():
+    warnings.filterwarnings(action='ignore', module='pyspark.util')
+
 jsc = intp.getJavaSparkContext()
 
 java_import(gateway.jvm, "org.apache.spark.sql.*")
