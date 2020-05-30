@@ -120,6 +120,7 @@ public class RemoteInterpreterServer extends Thread
   private DistributedResourcePool resourcePool;
   private ApplicationLoader appLoader;
   private Gson gson = new Gson();
+  private String launcherEnv = System.getenv("ZEPPELIN_INTERPRETER_LAUNCHER");
 
   private String intpEventServerHost;
   private int intpEventServerPort;
@@ -241,6 +242,26 @@ public class RemoteInterpreterServer extends Thread
               }
             }
           }
+
+          if ("yarn".endsWith(launcherEnv)) {
+            try {
+              YarnUtils.register(host, port);
+              Thread thread = new Thread(() -> {
+                while(!Thread.interrupted() && server.isServing()) {
+                  YarnUtils.heartbeat();
+                  try {
+                    Thread.sleep(60 * 1000);
+                  } catch (InterruptedException e) {
+                    LOGGER.warn(e.getMessage(), e);
+                  }
+                }
+              });
+              thread.setName("RM-Heartbeat-Thread");
+              thread.start();
+            } catch (Exception e) {
+              LOGGER.error("Fail to register yarn app", e);
+            }
+          }
         }
       }).start();
     }
@@ -269,6 +290,14 @@ public class RemoteInterpreterServer extends Thread
       }
       if (!isTest) {
         SchedulerFactory.singleton().destroy();
+      }
+
+      if ("yarn".equals(launcherEnv)) {
+        try {
+          YarnUtils.unregister(true, "");
+        } catch (Exception e) {
+          LOGGER.error("Fail to unregister yarn app", e);
+        }
       }
 
       server.stop();
@@ -310,7 +339,6 @@ public class RemoteInterpreterServer extends Thread
     }
   }
 
-
   public static void main(String[] args)
       throws TTransportException, InterruptedException, IOException {
     String zeppelinServerHost = null;
@@ -334,6 +362,7 @@ public class RemoteInterpreterServer extends Thread
       @Override
       public void handle(Signal signal) {
         try {
+          LOGGER.info("Receive TERM Signal");
           remoteInterpreterServer.shutdown();
         } catch (TException e) {
           LOGGER.error("Error on shutdown RemoteInterpreterServer", e);
@@ -342,6 +371,7 @@ public class RemoteInterpreterServer extends Thread
     });
 
     remoteInterpreterServer.join();
+    LOGGER.info("RemoteInterpreterServer thread is finished");
     System.exit(0);
   }
 
@@ -424,10 +454,11 @@ public class RemoteInterpreterServer extends Thread
       } catch (ClassNotFoundException | NoSuchMethodException | SecurityException
               | InstantiationException | IllegalAccessException
               | IllegalArgumentException | InvocationTargetException e) {
-        LOGGER.error(e.toString(), e);
+        LOGGER.error(e.getMessage(), e);
         throw new TException(e);
       }
     } catch (Exception e) {
+      LOGGER.error(e.getMessage(), e);
       throw new TException(e.getMessage(), e);
     }
   }

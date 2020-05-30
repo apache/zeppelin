@@ -108,16 +108,7 @@ public class IPyFlinkInterpreter extends IPythonInterpreter {
     flinkInterpreter.cancel(context);
     super.cancel(context);
   }
-
-  @Override
-  public void close() throws InterpreterException {
-    LOGGER.info("Close IPyFlinkInterpreter");
-    super.close();
-    if (flinkInterpreter != null) {
-      flinkInterpreter.close();
-    }
-  }
-
+  
   /**
    * Called by python process.
    */

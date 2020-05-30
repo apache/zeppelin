@@ -118,6 +118,7 @@ public class JobManager {
       return;
     }
 
+    boolean cancelled = false;
     try {
       String savepointDir = context.getLocalProperties().get("savepointDir");
       if (StringUtils.isBlank(savepointDir)) {
@@ -131,18 +132,23 @@ public class JobManager {
         LOGGER.info("Job {} of paragraph {} is stopped with save point path: {}",
                 jobClient.getJobID(), context.getParagraphId(), savePointPath);
       }
+      cancelled = true;
     } catch (Exception e) {
       String errorMessage = String.format("Fail to cancel job %s that is associated " +
               "with paragraph %s", jobClient.getJobID(), context.getParagraphId());
       LOGGER.warn(errorMessage, e);
       throw new InterpreterException(errorMessage, e);
     } finally {
-      FlinkJobProgressPoller jobProgressPoller = jobProgressPollerMap.remove(jobClient.getJobID());
-      if (jobProgressPoller != null) {
-        jobProgressPoller.cancel();
-        jobProgressPoller.interrupt();
+      if (cancelled) {
+        LOGGER.info("Cancelling is successful, remove the associated FlinkJobProgressPoller of paragraph: "
+                + context.getParagraphId());
+        FlinkJobProgressPoller jobProgressPoller = jobProgressPollerMap.remove(jobClient.getJobID());
+        if (jobProgressPoller != null) {
+          jobProgressPoller.cancel();
+          jobProgressPoller.interrupt();
+        }
+        this.jobs.remove(context.getParagraphId());
       }
-      this.jobs.remove(context.getParagraphId());
     }
   }
 

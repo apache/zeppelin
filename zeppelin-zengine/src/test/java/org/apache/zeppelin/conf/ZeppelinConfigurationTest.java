@@ -58,7 +58,7 @@ public class ZeppelinConfigurationTest {
   @Test
   public void getAllowedOriginsNoneTest() throws MalformedURLException, ConfigurationException {
 
-    ZeppelinConfiguration conf = new ZeppelinConfiguration(this.getClass().getResource("/zeppelin-site.xml"));
+    ZeppelinConfiguration conf = new ZeppelinConfiguration(this.getClass().getResource("/zeppelin-test-site.xml"));
     List<String> origins = conf.getAllowedOrigins();
     Assert.assertEquals(1, origins.size());
   }
@@ -66,7 +66,7 @@ public class ZeppelinConfigurationTest {
   @Test
   public void isWindowsPathTestTrue() throws ConfigurationException {
 
-    ZeppelinConfiguration conf = new ZeppelinConfiguration(this.getClass().getResource("/zeppelin-site.xml"));
+    ZeppelinConfiguration conf = new ZeppelinConfiguration(this.getClass().getResource("/zeppelin-test-site.xml"));
     Boolean isIt = conf.isWindowsPath("c:\\test\\file.txt");
     Assert.assertTrue(isIt);
   }
@@ -74,7 +74,7 @@ public class ZeppelinConfigurationTest {
   @Test
   public void isWindowsPathTestFalse() throws ConfigurationException {
 
-    ZeppelinConfiguration conf = new ZeppelinConfiguration(this.getClass().getResource("/zeppelin-site.xml"));
+    ZeppelinConfiguration conf = new ZeppelinConfiguration(this.getClass().getResource("/zeppelin-test-site.xml"));
     Boolean isIt = conf.isWindowsPath("~/test/file.xml");
     Assert.assertFalse(isIt);
   }
@@ -82,7 +82,7 @@ public class ZeppelinConfigurationTest {
   @Test
   public void isPathWithSchemeTestTrue() throws ConfigurationException {
 
-    ZeppelinConfiguration conf = new ZeppelinConfiguration(this.getClass().getResource("/zeppelin-site.xml"));
+    ZeppelinConfiguration conf = new ZeppelinConfiguration(this.getClass().getResource("/zeppelin-test-site.xml"));
     Boolean isIt = conf.isPathWithScheme("hdfs://hadoop.example.com/zeppelin/notebook");
     Assert.assertTrue(isIt);
   }
@@ -90,7 +90,7 @@ public class ZeppelinConfigurationTest {
   @Test
   public void isPathWithSchemeTestFalse() throws ConfigurationException {
 
-    ZeppelinConfiguration conf = new ZeppelinConfiguration(this.getClass().getResource("/zeppelin-site.xml"));
+    ZeppelinConfiguration conf = new ZeppelinConfiguration(this.getClass().getResource("/zeppelin-test-site.xml"));
     Boolean isIt = conf.isPathWithScheme("~/test/file.xml");
     Assert.assertFalse(isIt);
   }
@@ -98,14 +98,14 @@ public class ZeppelinConfigurationTest {
   @Test
   public void isPathWithInvalidSchemeTest() throws ConfigurationException {
 
-    ZeppelinConfiguration conf = new ZeppelinConfiguration(this.getClass().getResource("/zeppelin-site.xml"));
+    ZeppelinConfiguration conf = new ZeppelinConfiguration(this.getClass().getResource("/zeppelin-test-site.xml"));
     Boolean isIt = conf.isPathWithScheme("c:\\test\\file.txt");
     Assert.assertFalse(isIt);
   }
 
   @Test
   public void getNotebookDirTest() throws ConfigurationException {
-    ZeppelinConfiguration conf = new ZeppelinConfiguration(this.getClass().getResource("/zeppelin-site.xml"));
+    ZeppelinConfiguration conf = new ZeppelinConfiguration(this.getClass().getResource("/zeppelin-test-site.xml"));
     String notebookLocation = conf.getNotebookDir();
     assertTrue(notebookLocation.endsWith("notebook"));
   }
@@ -113,7 +113,7 @@ public class ZeppelinConfigurationTest {
   @Test
   public void isNotebookPublicTest() throws ConfigurationException {
 
-    ZeppelinConfiguration conf = new ZeppelinConfiguration(this.getClass().getResource("/zeppelin-site.xml"));
+    ZeppelinConfiguration conf = new ZeppelinConfiguration(this.getClass().getResource("/zeppelin-test-site.xml"));
     boolean isIt = conf.isNotebookPublic();
     assertTrue(isIt);
   }
@@ -121,7 +121,7 @@ public class ZeppelinConfigurationTest {
   @Test
   public void getPathTest() throws ConfigurationException {
     System.setProperty(ConfVars.ZEPPELIN_HOME.getVarName(), "/usr/lib/zeppelin");
-    ZeppelinConfiguration conf = new ZeppelinConfiguration(this.getClass().getResource("/zeppelin-site.xml"));
+    ZeppelinConfiguration conf = new ZeppelinConfiguration(this.getClass().getResource("/zeppelin-test-site.xml"));
     Assert.assertEquals("/usr/lib/zeppelin", conf.getZeppelinHome());
     Assert.assertEquals("/usr/lib/zeppelin/conf", conf.getConfDir());
   }
@@ -130,7 +130,7 @@ public class ZeppelinConfigurationTest {
   public void getConfigFSPath() throws ConfigurationException {
     System.setProperty(ConfVars.ZEPPELIN_HOME.getVarName(), "/usr/lib/zeppelin");
     System.setProperty(ConfVars.ZEPPELIN_CONFIG_FS_DIR.getVarName(), "conf");
-    ZeppelinConfiguration conf = new ZeppelinConfiguration(this.getClass().getResource("/zeppelin-site.xml"));
+    ZeppelinConfiguration conf = new ZeppelinConfiguration(this.getClass().getResource("/zeppelin-test-site.xml"));
     assertEquals("/usr/lib/zeppelin/conf", conf.getConfigFSDir());
 
     System.setProperty(ConfVars.ZEPPELIN_CONFIG_STORAGE_CLASS.getVarName(), "org.apache.zeppelin.storage.FileSystemConfigStorage");

@@ -117,6 +117,15 @@ ZEPPELIN_SERVER=org.apache.zeppelin.interpreter.remote.RemoteInterpreterServer
 
 INTERPRETER_ID=$(basename "${INTERPRETER_DIR}")
 ZEPPELIN_PID="${ZEPPELIN_PID_DIR}/zeppelin-interpreter-${INTP_GROUP_ID}-${ZEPPELIN_IDENT_STRING}-${HOSTNAME}-${PORT}.pid"
+
+if [[ "${ZEPPELIN_INTERPRETER_LAUNCHER}" == "yarn" ]]; then
+    # {LOG_DIRS} is env name in yarn container which point to the log dirs of container
+    # split the log dirs to array and use the first one
+    IFS=','
+    read -ra LOG_DIRS_ARRAY <<< "${LOG_DIRS}"
+    ZEPPELIN_LOG_DIR=${LOG_DIRS_ARRAY[0]}
+fi
+
 ZEPPELIN_LOGFILE="${ZEPPELIN_LOG_DIR}/zeppelin-interpreter-${INTERPRETER_GROUP_ID}-"
 
 if [[ -z "$ZEPPELIN_IMPERSONATE_CMD" ]]; then
@@ -236,11 +245,17 @@ elif [[ "${INTERPRETER_ID}" == "flink" ]]; then
 
   if [[ -n "${HADOOP_CONF_DIR}" ]] && [[ -d "${HADOOP_CONF_DIR}" ]]; then
     ZEPPELIN_INTP_CLASSPATH+=":${HADOOP_CONF_DIR}"
-    if ! [ -x "$(command -v hadoop)" ]; then
-      echo 'Error: hadoop is not in PATH when HADOOP_CONF_DIR is specified.'
-      exit 1
+    # Don't use `hadoop classpath` if flink-hadoop-shaded in in lib folder
+    flink_hadoop_shaded_jar=$(find "${FLINK_HOME}/lib" -name 'flink-shaded-hadoop-*.jar')
+    if [[ ! -z "$flink_hadoop_shaded_jar" ]]; then
+      echo ""
+    else
+      if [[ ! ( -x "$(command -v hadoop)" ) && ( "${ZEPPELIN_INTERPRETER_LAUNCHER}" != "yarn" ) ]]; then
+        echo 'Error: hadoop is not in PATH when HADOOP_CONF_DIR is specified and no flink-shaded-hadoop jar '
+        exit 1
+      fi
+      ZEPPELIN_INTP_CLASSPATH+=":`hadoop classpath`"
     fi
-    ZEPPELIN_INTP_CLASSPATH+=":`hadoop classpath`"
     export HADOOP_CONF_DIR=${HADOOP_CONF_DIR}
   else
     # autodetect HADOOP_CONF_HOME by heuristic
@@ -295,6 +310,7 @@ trap 'shutdown_hook;' SIGTERM SIGINT SIGQUIT
 function shutdown_hook() {
   local count
   count=0
+  echo "trying to shutdown..."
   while [[ "${count}" -lt 10 ]]; do
     $(kill ${pid} > /dev/null 2> /dev/null)
     if kill -0 ${pid} > /dev/null 2>&1; then
