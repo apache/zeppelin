@@ -40,6 +40,13 @@
         <plugin.name>NotebookRepo/FileSystemNotebookRepo</plugin.name>
     </properties>
 
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-client</artifactId>
+        </dependency>
+    </dependencies>
+
     <build>
         <plugins>
             <plugin>

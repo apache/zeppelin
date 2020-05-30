@@ -173,14 +173,6 @@ public class PyFlinkInterpreter extends PythonInterpreter {
   }
 
   @Override
-  public void close() throws InterpreterException {
-    super.close();
-    if (flinkInterpreter != null) {
-      flinkInterpreter.close();
-    }
-  }
-
-  @Override
   public ZeppelinContext getZeppelinContext() {
     return flinkInterpreter.getZeppelinContext();
   }

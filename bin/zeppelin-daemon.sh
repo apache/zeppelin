@@ -83,6 +83,21 @@ addJarInDir "${ZEPPELIN_HOME}/zeppelin-server/target/lib"
 addJarInDir "${ZEPPELIN_HOME}/zeppelin-web/target/lib"
 addJarInDir "${ZEPPELIN_HOME}/zeppelin-web-angular/target/lib"
 
+## Add hadoop jars when env USE_HADOOP is true
+if [[ "${USE_HADOOP}" == "true"  ]]; then
+  if [[ -z "${HADOOP_CONF_DIR}" ]]; then
+    echo "Please specify HADOOP_CONF_DIR if USE_HADOOP is true"
+    exit 1
+  else
+    ZEPPELIN_CLASSPATH+=":${HADOOP_CONF_DIR}"
+    if ! [ -x "$(command -v hadoop)" ]; then
+        echo 'Error: hadoop is not in PATH when HADOOP_CONF_DIR is specified.'
+        exit 1
+    fi
+    ZEPPELIN_CLASSPATH+=":`hadoop classpath`"
+  fi
+fi
+
 CLASSPATH+=":${ZEPPELIN_CLASSPATH}"
 
 if [[ "${ZEPPELIN_NICENESS}" = "" ]]; then
