@@ -222,7 +222,8 @@ public abstract class AbstractStreamSqlJob {
       // no result anymore
       // either the job is done or an error occurred
       isRunning = false;
-      LOGGER.info("ResultRetrieval Thread is done");
+      LOGGER.info("ResultRetrieval Thread is done, isRunning={}, hasNext={}",
+              isRunning, iterator.hasNext());
       LOGGER.info("Final Result: " + buildResult());
       refreshExecutorService.shutdownNow();
     }
