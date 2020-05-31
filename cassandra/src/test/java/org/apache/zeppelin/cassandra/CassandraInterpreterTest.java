@@ -759,7 +759,7 @@ public class CassandraInterpreterTest { //extends AbstractCassandraUnit4CQLTestC
 
     //Then
     assertThat(actual.code()).isEqualTo(Code.SUCCESS);
-    assertThat(reformatHtml(actual.message().get(0).getData())).isEqualTo(expected);
+    assertThat(reformatHtml(actual.message().get(0).getData())).contains(expected);
   }
 
   private static String reformatHtml(String rawHtml) {
