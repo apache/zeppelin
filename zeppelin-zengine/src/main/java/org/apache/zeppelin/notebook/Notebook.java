@@ -48,6 +48,7 @@ import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.notebook.repo.NotebookRepoSync;
 import org.apache.zeppelin.notebook.repo.NotebookRepoWithVersionControl;
 import org.apache.zeppelin.notebook.repo.NotebookRepoWithVersionControl.Revision;
+import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
@@ -109,6 +110,21 @@ public class Notebook {
     }
   }
 
+  private void recoverRunningParagraphs() {
+
+    Thread thread = new Thread(() -> {
+      for (Note note : getAllNotes()) {
+        for (Paragraph paragraph : note.getParagraphs()) {
+          if (paragraph.getStatus() == Job.Status.RUNNING) {
+            paragraph.recover();
+          }
+        }
+      }
+    });
+    thread.setName("Recovering-Thread");
+    thread.start();
+  }
+
   @Inject
   public Notebook(
       ZeppelinConfiguration conf,
@@ -134,6 +150,8 @@ public class Notebook {
       this.noteEventListeners.add(noteEventListener);
     }
     this.paragraphJobListener = (ParagraphJobListener) noteEventListener;
+
+    recoverRunningParagraphs();
   }
 
   public NoteManager getNoteManager() {
@@ -545,6 +563,17 @@ public class Notebook {
 
   public List<Note> getAllNotes() {
     List<Note> noteList = noteManager.getAllNotes();
+    for (Note note : noteList) {
+      note.setInterpreterFactory(replFactory);
+      note.setInterpreterSettingManager(interpreterSettingManager);
+      note.setParagraphJobListener(paragraphJobListener);
+      note.setNoteEventListeners(noteEventListeners);
+      note.setCredentials(credentials);
+      for (Paragraph p : note.getParagraphs()) {
+        p.setNote(note);
+        p.setListener(paragraphJobListener);
+      }
+    }
     Collections.sort(noteList, Comparator.comparing(Note::getPath));
     return noteList;
   }

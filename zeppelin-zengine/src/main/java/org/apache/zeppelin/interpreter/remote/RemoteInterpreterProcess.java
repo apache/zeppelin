@@ -23,6 +23,8 @@ import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransportException;
 import org.apache.zeppelin.interpreter.launcher.InterpreterClient;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService.Client;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
@@ -30,13 +32,20 @@ import java.io.IOException;
  * Abstract class for interpreter process
  */
 public abstract class RemoteInterpreterProcess implements InterpreterClient {
+  private static final Logger LOGGER = LoggerFactory.getLogger(RemoteInterpreterProcess.class);
   private static final Gson GSON = new Gson();
 
   private int connectTimeout;
+  protected String intpEventServerHost;
+  protected int intpEventServerPort;
   private PooledRemoteClient<Client> remoteClient;
 
-  public RemoteInterpreterProcess(int connectTimeout) {
+  public RemoteInterpreterProcess(int connectTimeout,
+                                  String intpEventServerHost,
+                                  int intpEventServerPort) {
     this.connectTimeout = connectTimeout;
+    this.intpEventServerHost = intpEventServerHost;
+    this.intpEventServerPort = intpEventServerPort;
     this.remoteClient = new PooledRemoteClient<Client>(() -> {
       TSocket transport = new TSocket(getHost(), getPort());
       try {
@@ -54,7 +63,6 @@ public abstract class RemoteInterpreterProcess implements InterpreterClient {
   }
 
   public void shutdown() {
-    // Close client socket connection
     if (remoteClient != null) {
       remoteClient.shutdown();
     }
@@ -66,7 +74,10 @@ public abstract class RemoteInterpreterProcess implements InterpreterClient {
    * @param name
    * @param o
    */
-  public void updateRemoteAngularObject(String name, String noteId, String paragraphId, Object o) {
+  public void updateRemoteAngularObject(String name,
+                                        String noteId,
+                                        String paragraphId,
+                                        Object o) {
     remoteClient.callRemoteFunction((PooledRemoteClient.RemoteFunction<Void, Client>) client -> {
        client.angularObjectUpdate(name, noteId, paragraphId, GSON.toJson(o));
        return null;
@@ -76,6 +87,21 @@ public abstract class RemoteInterpreterProcess implements InterpreterClient {
   public <R> R callRemoteFunction(PooledRemoteClient.RemoteFunction<R, Client> func) {
     return remoteClient.callRemoteFunction(func);
   }
+
+  @Override
+  public boolean recover() {
+    try {
+      remoteClient.callRemoteFunction(client -> {
+        client.reconnect(intpEventServerHost, intpEventServerPort);
+        return null;
+      });
+      return true;
+    } catch (Exception e) {
+      LOGGER.error("Fail to recover remote interpreter process: {}" , e.getMessage());
+      return false;
+    }
+  }
+
 
   /**
    * called by RemoteInterpreterEventServer to notify that RemoteInterpreter Process is started

@@ -289,12 +289,17 @@ public abstract class AbstractTestRestApi {
   }
 
   protected static void shutDown(final boolean deleteConfDir) throws Exception {
+    shutDown(deleteConfDir, false);
+  }
+
+  protected static void shutDown(final boolean deleteConfDir,
+                                 boolean forceShutdownInterpreter) throws Exception {
 
     if (!WAS_RUNNING && TestUtils.getInstance(Notebook.class) != null) {
       // restart interpreter to stop all interpreter processes
       List<InterpreterSetting> settingList = TestUtils.getInstance(Notebook.class).getInterpreterSettingManager()
               .get();
-      if (!TestUtils.getInstance(Notebook.class).getConf().isRecoveryEnabled()) {
+      if (!TestUtils.getInstance(Notebook.class).getConf().isRecoveryEnabled() || forceShutdownInterpreter) {
         for (InterpreterSetting setting : settingList) {
           TestUtils.getInstance(Notebook.class).getInterpreterSettingManager().restart(setting.getId());
         }
@@ -336,7 +341,6 @@ public abstract class AbstractTestRestApi {
       TestUtils.clearInstances();
       ZeppelinServer.reset();
     }
-
   }
 
   protected static boolean checkIfServerIsRunning() {

@@ -177,12 +177,15 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
     this.angularObjectRegistryListener = angularObjectRegistryListener;
     this.remoteInterpreterProcessListener = remoteInterpreterProcessListener;
     this.appEventListener = appEventListener;
+
+    this.interpreterEventServer = new RemoteInterpreterEventServer(conf, this);
+    this.interpreterEventServer.start();
+
     this.recoveryStorage =
         ReflectionUtils.createClazzInstance(
             conf.getRecoveryStorageClass(),
             new Class[] {ZeppelinConfiguration.class, InterpreterSettingManager.class},
             new Object[] {conf, this});
-    this.recoveryStorage.init();
     LOGGER.info("Using RecoveryStorage: " + this.recoveryStorage.getClass().getName());
     this.lifecycleManager =
         ReflectionUtils.createClazzInstance(
@@ -192,9 +195,11 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
     LOGGER.info("Using LifecycleManager: " + this.lifecycleManager.getClass().getName());
 
     this.configStorage = configStorage;
-    this.interpreterEventServer = new RemoteInterpreterEventServer(conf, this);
-    this.interpreterEventServer.start();
     init();
+  }
+
+  public RemoteInterpreterEventServer getInterpreterEventServer() {
+    return interpreterEventServer;
   }
 
   public void refreshInterpreterTemplates() {
@@ -322,6 +327,9 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
     loadInterpreterSettingFromDefaultDir(true);
     loadFromFile();
     saveToFile();
+
+    // must init Recovery after init of InterpreterSettingManagaer
+    recoveryStorage.init();
   }
 
   private void loadJupyterKernelLanguageMap() throws IOException {

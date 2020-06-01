@@ -54,6 +54,7 @@ import org.apache.zeppelin.interpreter.InterpreterResultMessage;
 import org.apache.zeppelin.interpreter.InterpreterResultMessageOutput;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.ManagedInterpreterGroup;
+import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.resource.ResourcePool;
 import org.apache.zeppelin.scheduler.Job;
@@ -101,10 +102,9 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
   // personalized
   private transient Map<String, Paragraph> userParagraphMap = new HashMap<>();
   private transient Map<String, String> localProperties = new HashMap<>();
-  // serialize runtimeInfos to frontend but not to note file (via gson's ExclusionStrategy)
+
   private Map<String, ParagraphRuntimeInfo> runtimeInfos = new HashMap<>();
   private transient List<InterpreterResultMessage> outputBuffer = new ArrayList<>();
-
 
 
   @VisibleForTesting
@@ -405,7 +405,9 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
   @Override
   protected InterpreterResult jobRun() throws Throwable {
     try {
-      this.runtimeInfos.clear();
+      if (localProperties.getOrDefault("isRecover", "false").equals("false")) {
+        this.runtimeInfos.clear();
+      }
       this.interpreter = getBindedInterpreter();
       if (this.interpreter == null) {
         LOGGER.error("Can not find interpreter name " + intpText);
@@ -505,6 +507,8 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
       }
     } catch (Exception e) {
       return new InterpreterResult(Code.ERROR, ExceptionUtils.getStackTrace(e));
+    } finally {
+      localProperties.remove("isRecover");
     }
   }
 
@@ -792,6 +796,53 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
     } else {
       LOGGER.warn("Get output of index: " + index + ", but there's only " +
               outputBuffer.size() + " output in outputBuffer");
+    }
+  }
+
+  public void recover() {
+    try {
+      LOGGER.info("Recovering paragraph: " + getId());
+
+      this.interpreter = getBindedInterpreter();
+      InterpreterSetting interpreterSetting = ((ManagedInterpreterGroup)
+              interpreter.getInterpreterGroup()).getInterpreterSetting();
+      Map<String, Object> config
+              = interpreterSetting.getConfig(interpreter.getClassName());
+      mergeConfig(config);
+
+      if (shouldSkipRunParagraph()) {
+        LOGGER.info("Skip to run blank paragraph. {}", getId());
+        setStatus(Job.Status.FINISHED);
+        return ;
+      }
+      setStatus(Status.READY);
+      localProperties.put("isRecover", "true");
+      for (List<Interpreter> sessions : this.interpreter.getInterpreterGroup().values()) {
+        for (Interpreter intp : sessions) {
+          // exclude ConfInterpreter
+          if (intp instanceof RemoteInterpreter) {
+            ((RemoteInterpreter) intp).setOpened(true);
+          }
+        }
+      }
+
+      if (getConfig().get("enabled") == null || (Boolean) getConfig().get("enabled")) {
+        setAuthenticationInfo(getAuthenticationInfo());
+        interpreter.getScheduler().submit(this);
+      }
+
+    } catch (InterpreterNotFoundException e) {
+      InterpreterResult intpResult =
+              new InterpreterResult(InterpreterResult.Code.ERROR,
+                      String.format("Interpreter %s not found", this.intpText));
+      setReturn(intpResult, e);
+      setStatus(Job.Status.ERROR);
+    } catch (Throwable e) {
+      InterpreterResult intpResult =
+              new InterpreterResult(InterpreterResult.Code.ERROR,
+                      "Unexpected exception: " + ExceptionUtils.getStackTrace(e));
+      setReturn(intpResult, e);
+      setStatus(Job.Status.ERROR);
     }
   }
 }

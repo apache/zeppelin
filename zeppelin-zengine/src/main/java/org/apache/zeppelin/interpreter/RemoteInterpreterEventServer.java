@@ -166,7 +166,8 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
       LOGGER.warn("Interpreter process does not existed yet for InterpreterGroup: " +
           registerInfo.getInterpreterGroupId());
     }
-
+    LOGGER.info("Register interpreter process: {}:{}, {}",
+            registerInfo.getHost(), registerInfo.getPort(), registerInfo.getInterpreterGroupId());
     interpreterProcess.processStarted(registerInfo.port, registerInfo.host);
   }
 

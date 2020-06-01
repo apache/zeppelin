@@ -90,7 +90,7 @@ public class DockerInterpreterProcessTest {
         properties,
         envs,
         "zeppelin.server.hostname",
-        "12320",
+        12320,
         5000);
 
     assertEquals(intp.CONTAINER_SPARK_HOME, "my-spark-home");
@@ -116,7 +116,7 @@ public class DockerInterpreterProcessTest {
         properties,
         envs,
         "zeppelin.server.hostname",
-        "12320",
+        12320,
         5000);
 
     Properties dockerProperties = intp.getTemplateBindings();

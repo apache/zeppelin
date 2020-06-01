@@ -35,8 +35,8 @@ public class InterpreterLaunchContext {
   private String interpreterSettingId;
   private String interpreterSettingGroup;
   private String interpreterSettingName;
-  private int zeppelinServerRPCPort;
-  private String zeppelinServerHost;
+  private int intpEventServerPort;
+  private String intpEventServerHost;
 
   public InterpreterLaunchContext(Properties properties,
                                   InterpreterOption option,
@@ -46,8 +46,8 @@ public class InterpreterLaunchContext {
                                   String interpreterSettingId,
                                   String interpreterSettingGroup,
                                   String interpreterSettingName,
-                                  int zeppelinServerRPCPort,
-                                  String zeppelinServerHost) {
+                                  int intpEventServerPort,
+                                  String intpEventServerHost) {
     this.properties = properties;
     this.option = option;
     this.runner = runner;
@@ -56,8 +56,8 @@ public class InterpreterLaunchContext {
     this.interpreterSettingId = interpreterSettingId;
     this.interpreterSettingGroup = interpreterSettingGroup;
     this.interpreterSettingName = interpreterSettingName;
-    this.zeppelinServerRPCPort = zeppelinServerRPCPort;
-    this.zeppelinServerHost = zeppelinServerHost;
+    this.intpEventServerPort = intpEventServerPort;
+    this.intpEventServerHost = intpEventServerHost;
   }
 
   public Properties getProperties() {
@@ -92,11 +92,11 @@ public class InterpreterLaunchContext {
     return userName;
   }
 
-  public int getZeppelinServerRPCPort() {
-    return zeppelinServerRPCPort;
+  public int getIntpEventServerPort() {
+    return intpEventServerPort;
   }
 
-  public String getZeppelinServerHost() {
-    return zeppelinServerHost;
+  public String getIntpEventServerHost() {
+    return intpEventServerHost;
   }
 }
