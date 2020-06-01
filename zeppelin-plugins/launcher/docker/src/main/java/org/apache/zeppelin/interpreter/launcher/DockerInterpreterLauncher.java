@@ -38,7 +38,7 @@ public class DockerInterpreterLauncher extends InterpreterLauncher {
   }
 
   @Override
-  public InterpreterClient launch(InterpreterLaunchContext context) throws IOException {
+  public InterpreterClient launchDirectly(InterpreterLaunchContext context) throws IOException {
     LOGGER.info("Launching Interpreter: " + context.getInterpreterSettingGroup());
     this.context = context;
     this.properties = context.getProperties();
@@ -71,8 +71,8 @@ public class DockerInterpreterLauncher extends InterpreterLauncher {
         context.getInterpreterSettingName(),
         properties,
         env,
-        context.getZeppelinServerHost(),
-        Integer.toString(context.getZeppelinServerRPCPort()),
+        context.getIntpEventServerHost(),
+        context.getIntpEventServerPort(),
         connectTimeout);
   }
 

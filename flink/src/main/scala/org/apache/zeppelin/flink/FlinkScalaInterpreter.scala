@@ -653,6 +653,7 @@ class FlinkScalaInterpreter(val properties: Properties) {
   }
 
   def close(): Unit = {
+    LOGGER.info("Closing FlinkScalaInterpreter")
     if (properties.getProperty("flink.interpreter.close.shutdown_cluster", "true").toBoolean) {
       if (cluster != null) {
         cluster match {

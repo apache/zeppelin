@@ -22,6 +22,7 @@ import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.interpreter.launcher.InterpreterClient;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 
 
@@ -49,6 +50,6 @@ public class NullRecoveryStorage extends RecoveryStorage {
 
   @Override
   public Map<String, InterpreterClient> restore() throws IOException {
-    return null;
+    return new HashMap<>();
   }
 }

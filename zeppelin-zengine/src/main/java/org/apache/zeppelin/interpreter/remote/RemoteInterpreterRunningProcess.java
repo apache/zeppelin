@@ -30,19 +30,23 @@ public class RemoteInterpreterRunningProcess extends RemoteInterpreterProcess {
   private final int port;
   private final String interpreterSettingName;
   private final String interpreterGroupId;
+  private final boolean isRecovery;
 
   public RemoteInterpreterRunningProcess(
       String interpreterSettingName,
       String interpreterGroupId,
       int connectTimeout,
+      String intpEventServerHost,
+      int intpEventServerPort,
       String host,
-      int port
-  ) {
-    super(connectTimeout);
+      int port,
+      boolean isRecovery) {
+    super(connectTimeout, intpEventServerHost, intpEventServerPort);
     this.interpreterSettingName = interpreterSettingName;
     this.interpreterGroupId = interpreterGroupId;
     this.host = host;
     this.port = port;
+    this.isRecovery = isRecovery;
   }
 
   @Override
@@ -74,7 +78,7 @@ public class RemoteInterpreterRunningProcess extends RemoteInterpreterProcess {
   public void stop() {
     // assume process is externally managed. nothing to do. But will kill it
     // when you want to force stop it. ENV ZEPPELIN_FORCE_STOP control that.
-    if (System.getenv("ZEPPELIN_FORCE_STOP") != null) {
+    if (System.getenv("ZEPPELIN_FORCE_STOP") != null || isRecovery) {
       if (isRunning()) {
         LOGGER.info("Kill interpreter process of interpreter group: {}", interpreterGroupId);
         try {

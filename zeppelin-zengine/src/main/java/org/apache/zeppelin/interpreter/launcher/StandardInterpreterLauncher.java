@@ -31,7 +31,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -46,8 +45,8 @@ public class StandardInterpreterLauncher extends InterpreterLauncher {
   }
 
   @Override
-  public InterpreterClient launch(InterpreterLaunchContext context) throws IOException {
-    LOGGER.info("Launching Interpreter: " + context.getInterpreterSettingGroup());
+  public InterpreterClient launchDirectly(InterpreterLaunchContext context) throws IOException {
+    LOGGER.info("Launching new interpreter process of " + context.getInterpreterSettingGroup());
     this.properties = context.getProperties();
     InterpreterOption option = context.getOption();
     InterpreterRunner runner = context.getRunner();
@@ -60,31 +59,18 @@ public class StandardInterpreterLauncher extends InterpreterLauncher {
           context.getInterpreterSettingName(),
           context.getInterpreterGroupId(),
           connectTimeout,
+          context.getIntpEventServerHost(),
+          context.getIntpEventServerPort(),
           option.getHost(),
-          option.getPort());
+          option.getPort(),
+          false);
     } else {
-      // try to recover it first
-      if (zConf.isRecoveryEnabled()) {
-        InterpreterClient recoveredClient =
-            recoveryStorage.getInterpreterClient(context.getInterpreterGroupId());
-        if (recoveredClient != null) {
-          if (recoveredClient.isRunning()) {
-            LOGGER.info("Recover interpreter process: " + recoveredClient.getHost() + ":" +
-                recoveredClient.getPort());
-            return recoveredClient;
-          } else {
-            LOGGER.warn("Cannot recover interpreter process: " + recoveredClient.getHost() + ":"
-                + recoveredClient.getPort() + ", as it is already terminated.");
-          }
-        }
-      }
-
       // create new remote process
       String localRepoPath = zConf.getInterpreterLocalRepoPath() + "/"
           + context.getInterpreterSettingId();
       return new RemoteInterpreterManagedProcess(
           runner != null ? runner.getPath() : zConf.getInterpreterRemoteRunnerPath(),
-          context.getZeppelinServerRPCPort(), context.getZeppelinServerHost(), zConf.getInterpreterPortRange(),
+          context.getIntpEventServerPort(), context.getIntpEventServerHost(), zConf.getInterpreterPortRange(),
           zConf.getInterpreterDir() + "/" + groupName, localRepoPath,
           buildEnvFromProperties(context), connectTimeout, name,
           context.getInterpreterGroupId(), option.isUserImpersonate());

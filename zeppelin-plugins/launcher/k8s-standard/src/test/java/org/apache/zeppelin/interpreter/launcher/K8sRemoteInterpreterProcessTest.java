@@ -51,7 +51,7 @@ public class K8sRemoteInterpreterProcessTest {
         properties,
         envs,
         "zeppelin.server.hostname",
-        "12320",
+        12320,
         false,
         "spark-container:1.0",
         10,
@@ -81,7 +81,7 @@ public class K8sRemoteInterpreterProcessTest {
         properties,
         envs,
         "zeppelin.server.hostname",
-        "12320",
+        12320,
         false,
         "spark-container:1.0",
         10,
@@ -116,7 +116,7 @@ public class K8sRemoteInterpreterProcessTest {
         properties,
         envs,
         "zeppelin.server.service",
-        "12320",
+        12320,
         false,
         "spark-container:1.0",
         10,
@@ -136,7 +136,7 @@ public class K8sRemoteInterpreterProcessTest {
     assertEquals(true , p.containsKey("zeppelin.k8s.interpreter.localRepo"));
     assertEquals("12321:12321" , p.get("zeppelin.k8s.interpreter.rpc.portRange"));
     assertEquals("zeppelin.server.service" , p.get("zeppelin.k8s.server.rpc.service"));
-    assertEquals("12320" , p.get("zeppelin.k8s.server.rpc.portRange"));
+    assertEquals(12320 , p.get("zeppelin.k8s.server.rpc.portRange"));
     assertEquals("v1", p.get("my.key1"));
     assertEquals("V1", envs.get("MY_ENV1"));
 
@@ -169,7 +169,7 @@ public class K8sRemoteInterpreterProcessTest {
         properties,
         envs,
         "zeppelin.server.service",
-        "12320",
+        12320,
         false,
         "spark-container:1.0",
         10,
@@ -222,7 +222,7 @@ public class K8sRemoteInterpreterProcessTest {
         properties,
         envs,
         "zeppelin.server.service",
-        "12320",
+        12320,
         false,
         "spark-container:1.0",
         10,
@@ -274,7 +274,7 @@ public class K8sRemoteInterpreterProcessTest {
         properties,
         envs,
         "zeppelin.server.service",
-        "12320",
+        12320,
         false,
         "spark-container:1.0",
         10,
@@ -315,7 +315,7 @@ public class K8sRemoteInterpreterProcessTest {
         properties,
         envs,
         "zeppelin.server.service",
-        "12320",
+        12320,
         false,
         "spark-container:1.0",
         10,
@@ -360,7 +360,7 @@ public class K8sRemoteInterpreterProcessTest {
         properties,
         envs,
         "zeppelin.server.service",
-        "12320",
+        12320,
         false,
         "spark-container:1.0",
         10,
@@ -397,7 +397,7 @@ public class K8sRemoteInterpreterProcessTest {
         properties,
         envs,
         "zeppelin.server.service",
-        "12320",
+        12320,
         false,
         "spark-container:1.0",
         10,
