@@ -1894,12 +1894,14 @@ public class NotebookServer extends WebSocketServlet
       }
     }
 
-    if (p.isTerminated()) {
+    if (p.isTerminated() || after == Status.RUNNING) {
       if (p.getStatus() == Status.FINISHED) {
         LOG.info("Job {} is finished successfully, status: {}", p.getId(), p.getStatus());
-      } else {
+      } else if (p.isTerminated()) {
         LOG.warn("Job {} is finished, status: {}, exception: {}, result: {}", p.getId(),
             p.getStatus(), p.getException(), p.getReturn());
+      } else {
+        LOG.info("Job {} starts to RUNNING", p.getId());
       }
 
       try {
@@ -1928,6 +1930,7 @@ public class NotebookServer extends WebSocketServlet
     try {
       Note note = getNotebook().getNote(noteId);
       note.getParagraph(paragraphId).checkpointOutput();
+      getNotebook().saveNote(note, AuthenticationInfo.ANONYMOUS);
     } catch (IOException e) {
       LOG.warn("Fail to save note: " + noteId , e);
     }
@@ -2076,6 +2079,7 @@ public class NotebookServer extends WebSocketServlet
 
           paragraph
                   .updateRuntimeInfos(label, tooltip, metaInfos, setting.getGroup(), setting.getId());
+          getNotebook().saveNote(note, AuthenticationInfo.ANONYMOUS);
           getConnectionManager().broadcast(
                   note.getId(),
                   new Message(OP.PARAS_INFO).put("id", paragraphId).put("infos",

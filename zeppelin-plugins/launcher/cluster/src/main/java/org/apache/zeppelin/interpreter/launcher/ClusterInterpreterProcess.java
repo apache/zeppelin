@@ -10,8 +10,8 @@ public class ClusterInterpreterProcess extends RemoteInterpreterManagedProcess {
 
   public ClusterInterpreterProcess(
       String intpRunner,
-      int zeppelinServerRPCPort,
-      String zeppelinServerRPCHost,
+      int intpEventServerPort,
+      String intpEventServerHost,
       String interpreterPortRange,
       String intpDir,
       String localRepoDir,
@@ -22,8 +22,8 @@ public class ClusterInterpreterProcess extends RemoteInterpreterManagedProcess {
       boolean isUserImpersonated) {
 
     super(intpRunner,
-      zeppelinServerRPCPort,
-      zeppelinServerRPCHost,
+      intpEventServerPort,
+      intpEventServerHost,
       interpreterPortRange,
       intpDir,
       localRepoDir,

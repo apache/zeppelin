@@ -33,6 +33,7 @@ import org.apache.zeppelin.interpreter.thrift.OutputAppendEvent;
 import org.apache.zeppelin.interpreter.thrift.OutputUpdateAllEvent;
 import org.apache.zeppelin.interpreter.thrift.OutputUpdateEvent;
 import org.apache.zeppelin.interpreter.thrift.ParagraphInfo;
+import org.apache.zeppelin.interpreter.thrift.RegisterInfo;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterEventService;
 import org.apache.zeppelin.interpreter.thrift.RunParagraphsEvent;
 import org.apache.zeppelin.interpreter.thrift.ServiceException;
@@ -62,9 +63,9 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector,
   private PooledRemoteClient<RemoteInterpreterEventService.Client> remoteClient;
   private String intpGroupId;
 
-  public RemoteInterpreterEventClient(String host, int port) {
+  public RemoteInterpreterEventClient(String intpEventHost, int intpEventPort) {
     this.remoteClient = new PooledRemoteClient<>(() -> {
-      TSocket transport = new TSocket(host, port);
+      TSocket transport = new TSocket(intpEventHost, intpEventPort);
       try {
         transport.open();
       } catch (TTransportException e) {
@@ -81,6 +82,13 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector,
 
   public void setIntpGroupId(String intpGroupId) {
     this.intpGroupId = intpGroupId;
+  }
+
+  public void registerInterpreterProcess(RegisterInfo registerInfo) {
+    callRemoteFunction(client -> {
+      client.registerInterpreterProcess(registerInfo);
+      return null;
+    });
   }
 
   /**

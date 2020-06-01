@@ -77,8 +77,6 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
   private final String containerImage;
   private final Properties properties;
   private final Map<String, String> envs;
-  private final String zeppelinServiceHost;
-  private final String zeppelinServiceRpcPort;
 
   private AtomicBoolean dockerStarted = new AtomicBoolean(false);
 
@@ -117,11 +115,11 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
       String interpreterSettingName,
       Properties properties,
       Map<String, String> envs,
-      String zeppelinServiceHost,
-      String zeppelinServiceRpcPort,
+      String intpEventServerHost,
+      int intpEventServerPort,
       int connectTimeout
   ) {
-    super(connectTimeout);
+    super(connectTimeout, intpEventServerHost, intpEventServerPort);
 
     this.containerImage = containerImage;
     this.interpreterGroupId = interpreterGroupId;
@@ -129,8 +127,6 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
     this.interpreterSettingName = interpreterSettingName;
     this.properties = properties;
     this.envs = new HashMap(envs);
-    this.zeppelinServiceHost = zeppelinServiceHost;
-    this.zeppelinServiceRpcPort = zeppelinServiceRpcPort;
 
     this.zconf = zconf;
     this.containerName = interpreterGroupId.toLowerCase();
@@ -212,7 +208,7 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
     // Create container with exposed ports
     final ContainerConfig containerConfig = ContainerConfig.builder()
         .hostConfig(hostConfig)
-        .hostname(this.zeppelinServiceHost)
+        .hostname(this.intpEventServerHost)
         .image(containerImage)
         .workingDir("/")
         .env(listEnv)
@@ -305,8 +301,8 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
     dockerProperties.put("zeppelin.interpreter.localRepo", "/tmp/local-repo");
     dockerProperties.put("zeppelin.interpreter.rpc.portRange",
         dockerIntpServicePort + ":" + dockerIntpServicePort);
-    dockerProperties.put("zeppelin.server.rpc.host", zeppelinServiceHost);
-    dockerProperties.put("zeppelin.server.rpc.portRange", zeppelinServiceRpcPort);
+    dockerProperties.put("zeppelin.server.rpc.host", intpEventServerHost);
+    dockerProperties.put("zeppelin.server.rpc.portRange", intpEventServerPort);
 
     // interpreter properties overrides the values
     dockerProperties.putAll(Maps.fromProperties(properties));

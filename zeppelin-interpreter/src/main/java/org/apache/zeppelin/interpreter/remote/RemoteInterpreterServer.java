@@ -90,7 +90,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -99,6 +98,9 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import static org.apache.zeppelin.cluster.meta.ClusterMetaType.INTP_PROCESS_META;
 
@@ -109,7 +111,7 @@ import static org.apache.zeppelin.cluster.meta.ClusterMetaType.INTP_PROCESS_META
 public class RemoteInterpreterServer extends Thread
     implements RemoteInterpreterService.Iface {
 
-  private static Logger logger = LoggerFactory.getLogger(RemoteInterpreterServer.class);
+  private static Logger LOGGER = LoggerFactory.getLogger(RemoteInterpreterServer.class);
 
   private String interpreterGroupId;
   private InterpreterGroup interpreterGroup;
@@ -120,11 +122,10 @@ public class RemoteInterpreterServer extends Thread
   private Gson gson = new Gson();
 
   private String intpEventServerHost;
+  private int intpEventServerPort;
   private String host;
   private int port;
   private TThreadPoolServer server;
-  RemoteInterpreterEventService.Client intpEventServiceClient;
-
   RemoteInterpreterEventClient intpEventClient;
   private DependencyResolver depLoader;
 
@@ -138,11 +139,18 @@ public class RemoteInterpreterServer extends Thread
   // Hold information for manual progress update
   private ConcurrentMap<String, Integer> progressMap = new ConcurrentHashMap<>();
 
+  // keep track of the running jobs for job recovery.
+  private ConcurrentMap<String, InterpretJob> runningJobs = new ConcurrentHashMap<>();
+  // cache result threshold, result cache is for purpose of recover paragraph even after
+  // paragraph is finished
+  private int resultCacheInSeconds;
+  private ScheduledExecutorService resultCleanService = Executors.newSingleThreadScheduledExecutor();
+
   private boolean isTest;
 
   // cluster manager client
-  ZeppelinConfiguration zconf = ZeppelinConfiguration.create();
-  ClusterManagerClient clusterManagerClient;
+  private ZeppelinConfiguration zconf = ZeppelinConfiguration.create();
+  private ClusterManagerClient clusterManagerClient;
 
   public RemoteInterpreterServer(String intpEventServerHost,
                                  int intpEventServerPort,
@@ -158,15 +166,12 @@ public class RemoteInterpreterServer extends Thread
                                  String interpreterGroupId,
                                  boolean isTest)
       throws TTransportException, IOException {
-    logger.info("Starting remote interpreter server on port {}, intpEventServerAddress: {}:{}", port,
+    LOGGER.info("Starting remote interpreter server on port {}, intpEventServerAddress: {}:{}", port,
             intpEventServerHost, intpEventServerPort);
     if (null != intpEventServerHost) {
       this.intpEventServerHost = intpEventServerHost;
+      this.intpEventServerPort = intpEventServerPort;
       if (!isTest) {
-        TTransport transport = new TSocket(intpEventServerHost, intpEventServerPort);
-        transport.open();
-        TProtocol protocol = new TBinaryProtocol(transport);
-        intpEventServiceClient = new RemoteInterpreterEventService.Client(protocol);
         intpEventClient = new RemoteInterpreterEventClient(intpEventServerHost, intpEventServerPort);
       }
     } else {
@@ -185,7 +190,7 @@ public class RemoteInterpreterServer extends Thread
       serverTransport = RemoteInterpreterUtils.createTServerSocket(portRange);
       this.port = serverTransport.getServerSocket().getLocalPort();
       this.host = RemoteInterpreterUtils.findAvailableHostAddress();
-      logger.info("Launching ThriftServer at " + this.host + ":" + this.port);
+      LOGGER.info("Launching ThriftServer at " + this.host + ":" + this.port);
     }
     server = new TThreadPoolServer(
         new TThreadPoolServer.Args(serverTransport).processor(processor));
@@ -223,13 +228,15 @@ public class RemoteInterpreterServer extends Thread
             if (!interrupted) {
               RegisterInfo registerInfo = new RegisterInfo(host, port, interpreterGroupId);
               try {
-                intpEventServiceClient.registerInterpreterProcess(registerInfo);
-              } catch (TException e) {
-                logger.error("Error while registering interpreter: {}", registerInfo, e);
+                LOGGER.info("Registering interpreter process");
+                intpEventClient.registerInterpreterProcess(registerInfo);
+                LOGGER.info("Registered interpreter process");
+              } catch (Exception e) {
+                LOGGER.error("Error while registering interpreter: {}", registerInfo, e);
                 try {
                   shutdown();
                 } catch (TException e1) {
-                  logger.warn("Exception occurs while shutting down", e1);
+                  LOGGER.warn("Exception occurs while shutting down", e1);
                 }
               }
             }
@@ -243,7 +250,7 @@ public class RemoteInterpreterServer extends Thread
   @Override
   public void shutdown() throws TException {
     Thread shutDownThread = new Thread(() -> {
-      logger.info("Shutting down...");
+      LOGGER.info("Shutting down...");
       // delete interpreter cluster meta
       deleteClusterMeta();
 
@@ -254,7 +261,7 @@ public class RemoteInterpreterServer extends Thread
               try {
                 interpreter.close();
               } catch (InterpreterException e) {
-                logger.warn("Fail to close interpreter", e);
+                LOGGER.warn("Fail to close interpreter", e);
               }
             }
           }
@@ -276,16 +283,16 @@ public class RemoteInterpreterServer extends Thread
         try {
           Thread.sleep(300);
         } catch (InterruptedException e) {
-          logger.info("Exception in RemoteInterpreterServer while shutdown, Thread.sleep", e);
+          LOGGER.info("Exception in RemoteInterpreterServer while shutdown, Thread.sleep", e);
         }
       }
 
       if (server.isServing()) {
-        logger.info("Force shutting down");
+        LOGGER.info("Force shutting down");
         System.exit(0);
       }
 
-      logger.info("Shutting down");
+      LOGGER.info("Shutting down");
     }, "Shutdown-Thread");
 
     shutDownThread.start();
@@ -329,7 +336,7 @@ public class RemoteInterpreterServer extends Thread
         try {
           remoteInterpreterServer.shutdown();
         } catch (TException e) {
-          logger.error("Error on shutdown RemoteInterpreterServer", e);
+          LOGGER.error("Error on shutdown RemoteInterpreterServer", e);
         }
       }
     });
@@ -368,53 +375,60 @@ public class RemoteInterpreterServer extends Thread
       clusterManagerClient.deleteClusterMeta(INTP_PROCESS_META, interpreterGroupId);
       Thread.sleep(300);
     } catch (InterruptedException e) {
-      logger.error(e.getMessage(), e);
+      LOGGER.error(e.getMessage(), e);
     }
   }
 
   @Override
   public void createInterpreter(String interpreterGroupId, String sessionId, String
       className, Map<String, String> properties, String userName) throws TException {
-    if (interpreterGroup == null) {
-      interpreterGroup = new InterpreterGroup(interpreterGroupId);
-      angularObjectRegistry = new AngularObjectRegistry(interpreterGroup.getId(), intpEventClient);
-      hookRegistry = new InterpreterHookRegistry();
-      resourcePool = new DistributedResourcePool(interpreterGroup.getId(), intpEventClient);
-      interpreterGroup.setInterpreterHookRegistry(hookRegistry);
-      interpreterGroup.setAngularObjectRegistry(angularObjectRegistry);
-      interpreterGroup.setResourcePool(resourcePool);
-      intpEventClient.setIntpGroupId(interpreterGroupId);
+    try {
+      if (interpreterGroup == null) {
+        interpreterGroup = new InterpreterGroup(interpreterGroupId);
+        angularObjectRegistry = new AngularObjectRegistry(interpreterGroup.getId(), intpEventClient);
+        hookRegistry = new InterpreterHookRegistry();
+        resourcePool = new DistributedResourcePool(interpreterGroup.getId(), intpEventClient);
+        interpreterGroup.setInterpreterHookRegistry(hookRegistry);
+        interpreterGroup.setAngularObjectRegistry(angularObjectRegistry);
+        interpreterGroup.setResourcePool(resourcePool);
+        intpEventClient.setIntpGroupId(interpreterGroupId);
 
-      String localRepoPath = properties.get("zeppelin.interpreter.localRepo");
-      if (properties.containsKey("zeppelin.interpreter.output.limit")) {
-        InterpreterOutput.limit = Integer.parseInt(
-            properties.get("zeppelin.interpreter.output.limit"));
+        String localRepoPath = properties.get("zeppelin.interpreter.localRepo");
+        if (properties.containsKey("zeppelin.interpreter.output.limit")) {
+          InterpreterOutput.limit = Integer.parseInt(
+                  properties.get("zeppelin.interpreter.output.limit"));
+        }
+
+        depLoader = new DependencyResolver(localRepoPath);
+        appLoader = new ApplicationLoader(resourcePool, depLoader);
+
+        resultCacheInSeconds =
+                Integer.parseInt(properties.getOrDefault("zeppelin.interpreter.result.cache", "0"));
       }
 
-      depLoader = new DependencyResolver(localRepoPath);
-      appLoader = new ApplicationLoader(resourcePool, depLoader);
-    }
+      try {
+        Class<Interpreter> replClass = (Class<Interpreter>) Object.class.forName(className);
+        Properties p = new Properties();
+        p.putAll(properties);
+        setSystemProperty(p);
 
-    try {
-      Class<Interpreter> replClass = (Class<Interpreter>) Object.class.forName(className);
-      Properties p = new Properties();
-      p.putAll(properties);
-      setSystemProperty(p);
+        Constructor<Interpreter> constructor =
+                replClass.getConstructor(new Class[]{Properties.class});
+        Interpreter repl = constructor.newInstance(p);
+        repl.setClassloaderUrls(new URL[]{});
+        LOGGER.info("Instantiate interpreter {}", className);
+        repl.setInterpreterGroup(interpreterGroup);
+        repl.setUserName(userName);
 
-      Constructor<Interpreter> constructor =
-          replClass.getConstructor(new Class[]{Properties.class});
-      Interpreter repl = constructor.newInstance(p);
-      repl.setClassloaderUrls(new URL[]{});
-      logger.info("Instantiate interpreter {}", className);
-      repl.setInterpreterGroup(interpreterGroup);
-      repl.setUserName(userName);
-
-      interpreterGroup.addInterpreterToSession(new LazyOpenInterpreter(repl), sessionId);
-    } catch (ClassNotFoundException | NoSuchMethodException | SecurityException
-        | InstantiationException | IllegalAccessException
-        | IllegalArgumentException | InvocationTargetException e) {
-      logger.error(e.toString(), e);
-      throw new TException(e);
+        interpreterGroup.addInterpreterToSession(new LazyOpenInterpreter(repl), sessionId);
+      } catch (ClassNotFoundException | NoSuchMethodException | SecurityException
+              | InstantiationException | IllegalAccessException
+              | IllegalArgumentException | InvocationTargetException e) {
+        LOGGER.error(e.toString(), e);
+        throw new TException(e);
+      }
+    } catch (Exception e) {
+      throw new TException(e.getMessage(), e);
     }
   }
 
@@ -464,7 +478,7 @@ public class RemoteInterpreterServer extends Thread
 
   @Override
   public void open(String sessionId, String className) throws TException {
-    logger.info(String.format("Open Interpreter %s for session %s ", className, sessionId));
+    LOGGER.info(String.format("Open Interpreter %s for session %s ", className, sessionId));
     Interpreter intp = getInterpreter(sessionId, className);
     try {
       intp.open();
@@ -482,12 +496,12 @@ public class RemoteInterpreterServer extends Thread
       // see NoteInterpreterLoader.SHARED_SESSION
       if (appInfo.noteId.equals(sessionId) || sessionId.equals("shared_session")) {
         try {
-          logger.info("Unload App {} ", appInfo.pkg.getName());
+          LOGGER.info("Unload App {} ", appInfo.pkg.getName());
           appInfo.app.unload();
           // see ApplicationState.Status.UNLOADED
           intpEventClient.onAppStatusUpdate(appInfo.noteId, appInfo.paragraphId, appId, "UNLOADED");
         } catch (ApplicationException e) {
-          logger.error(e.getMessage(), e);
+          LOGGER.error(e.getMessage(), e);
         }
       }
     }
@@ -504,7 +518,7 @@ public class RemoteInterpreterServer extends Thread
               try {
                 inp.close();
               } catch (InterpreterException e) {
-                logger.warn("Fail to close interpreter", e);
+                LOGGER.warn("Fail to close interpreter", e);
               }
               it.remove();
               break;
@@ -516,48 +530,94 @@ public class RemoteInterpreterServer extends Thread
   }
 
   @Override
-  public RemoteInterpreterResult interpret(String sessionId, String className, String st,
+  public void reconnect(String host, int port) throws TException {
+    try {
+      LOGGER.info("Reconnect to this interpreter process from {}:{}", host, port);
+      this.intpEventServerHost = host;
+      this.intpEventServerPort = port;
+      intpEventClient = new RemoteInterpreterEventClient(intpEventServerHost, intpEventServerPort);
+      intpEventClient.setIntpGroupId(interpreterGroupId);
+
+      this.angularObjectRegistry = new AngularObjectRegistry(interpreterGroup.getId(), intpEventClient);
+      this.resourcePool = new DistributedResourcePool(interpreterGroup.getId(), intpEventClient);
+
+      // reset all the available InterpreterContext's components that use intpEventClient.
+      for (InterpreterContext context : InterpreterContext.getAllContexts().values()) {
+        context.setIntpEventClient(intpEventClient);
+        context.setAngularObjectRegistry(angularObjectRegistry);
+        context.setResourcePool(resourcePool);
+      }
+    } catch (Exception e) {
+      throw new TException("Fail to reconnect", e);
+    }
+  }
+
+  @Override
+  public RemoteInterpreterResult interpret(String sessionId,
+                                           String className,
+                                           String st,
                                            RemoteInterpreterContext interpreterContext)
       throws TException {
-    if (logger.isDebugEnabled()) {
-      logger.debug("st:\n{}", st);
+    if (LOGGER.isDebugEnabled()) {
+      LOGGER.debug("st:\n{}", st);
     }
     Interpreter intp = getInterpreter(sessionId, className);
     InterpreterContext context = convert(interpreterContext);
     context.setInterpreterClassName(intp.getClassName());
 
-    Scheduler scheduler = intp.getScheduler();
-    InterpretJobListener jobListener = new InterpretJobListener();
-    InterpretJob job = new InterpretJob(
-        interpreterContext.getParagraphId(),
-        "RemoteInterpretJob_" + System.currentTimeMillis(),
-        jobListener,
-        intp,
-        st,
-        context);
-    scheduler.submit(job);
+    InterpretJob interpretJob = null;
+    boolean isRecover = Boolean.parseBoolean(
+            context.getLocalProperties().getOrDefault("isRecover", "false"));
+    if (isRecover) {
+      LOGGER.info("Recovering paragraph: " + context.getParagraphId() + " of note: "
+              + context.getNoteId());
+      interpretJob = runningJobs.get(context.getParagraphId());
+      if (interpretJob == null) {
+        InterpreterResult result = new InterpreterResult(Code.ERROR, "Job is finished, unable to recover it");
+        return convert(result,
+                context.getConfig(),
+                context.getGui(),
+                context.getNoteGui());
+      }
+    } else {
+      Scheduler scheduler = intp.getScheduler();
+      InterpretJobListener jobListener = new InterpretJobListener();
+      interpretJob = new InterpretJob(
+              context.getParagraphId(),
+              "RemoteInterpretJob_" + System.currentTimeMillis(),
+              jobListener,
+              intp,
+              st,
+              context);
+      runningJobs.put(context.getParagraphId(), interpretJob);
+      scheduler.submit(interpretJob);
+    }
 
-    while (!job.isTerminated()) {
+    while (!interpretJob.isTerminated()) {
+      JobListener jobListener = interpretJob.getListener();
       synchronized (jobListener) {
         try {
           jobListener.wait(1000);
         } catch (InterruptedException e) {
-          logger.info("Exception in RemoteInterpreterServer while interpret, jobListener.wait", e);
+          LOGGER.info("Exception in RemoteInterpreterServer while interpret, jobListener.wait", e);
         }
       }
     }
 
-    progressMap.remove(interpreterContext.getParagraphId());
+    progressMap.remove(context.getParagraphId());
+    resultCleanService.schedule(()-> {
+      runningJobs.remove(context.getParagraphId());
+      }, resultCacheInSeconds, TimeUnit.SECONDS);
 
-    InterpreterResult  result = (InterpreterResult) job.getReturn();
+    InterpreterResult result = interpretJob.getReturn();
     // in case of job abort in PENDING status, result can be null
     if (result == null) {
       result = new InterpreterResult(Code.KEEP_PREVIOUS_RESULT);
     }
     return convert(result,
-        context.getConfig(),
-        context.getGui(),
-        context.getNoteGui());
+            context.getConfig(),
+            context.getGui(),
+            context.getNoteGui());
   }
 
   class InterpretJobListener implements JobListener {
@@ -575,7 +635,6 @@ public class RemoteInterpreterServer extends Thread
   }
 
   public static class InterpretJob extends Job<InterpreterResult> {
-
 
     private Interpreter interpreter;
     private String script;
@@ -657,6 +716,8 @@ public class RemoteInterpreterServer extends Thread
       ClassLoader currentThreadContextClassloader = Thread.currentThread().getContextClassLoader();
       try {
         InterpreterContext.set(context);
+        // clear the result of last run in frontend before running this paragraph.
+        context.out.clear();
 
         InterpreterResult result = null;
 
@@ -680,7 +741,7 @@ public class RemoteInterpreterServer extends Thread
           //     global_post_hook
           processInterpreterHooks(context.getNoteId());
           processInterpreterHooks(null);
-          logger.debug("Script after hooks: " + script);
+          LOGGER.debug("Script after hooks: " + script);
           result = interpreter.interpret(script, context);
         }
 
@@ -698,21 +759,21 @@ public class RemoteInterpreterServer extends Thread
         List<String> stringResult = new ArrayList<>();
         for (InterpreterResultMessage msg : resultMessages) {
           if (msg.getType() == InterpreterResult.Type.IMG) {
-            logger.debug("InterpreterResultMessage: IMAGE_DATA");
+            LOGGER.debug("InterpreterResultMessage: IMAGE_DATA");
           } else {
-            logger.debug("InterpreterResultMessage: " + msg.toString());
+            LOGGER.debug("InterpreterResultMessage: " + msg.toString());
           }
           stringResult.add(msg.getData());
         }
         // put result into resource pool
         if (context.getLocalProperties().containsKey("saveAs")) {
           if (stringResult.size() == 1) {
-            logger.info("Saving result into ResourcePool as single string: " +
+            LOGGER.info("Saving result into ResourcePool as single string: " +
                     context.getLocalProperties().get("saveAs"));
             context.getResourcePool().put(
                     context.getLocalProperties().get("saveAs"), stringResult.get(0));
           } else {
-            logger.info("Saving result into ResourcePool as string list: " +
+            LOGGER.info("Saving result into ResourcePool as string list: " +
                     context.getLocalProperties().get("saveAs"));
             context.getResourcePool().put(
                     context.getLocalProperties().get("saveAs"), stringResult);
@@ -743,7 +804,7 @@ public class RemoteInterpreterServer extends Thread
   public void cancel(String sessionId,
                      String className,
                      RemoteInterpreterContext interpreterContext) throws TException {
-    logger.info("cancel {} {}", className, interpreterContext.getParagraphId());
+    LOGGER.info("cancel {} {}", className, interpreterContext.getParagraphId());
     Interpreter intp = getInterpreter(sessionId, className);
     String jobId = interpreterContext.getParagraphId();
     Job job = intp.getScheduler().getJob(jobId);
@@ -755,7 +816,7 @@ public class RemoteInterpreterServer extends Thread
         try {
           intp.cancel(convert(interpreterContext, null));
         } catch (InterpreterException e) {
-          logger.error("Fail to cancel paragraph: " + interpreterContext.getParagraphId());
+          LOGGER.error("Fail to cancel paragraph: " + interpreterContext.getParagraphId());
         }
       });
       thread.start();
@@ -845,14 +906,14 @@ public class RemoteInterpreterServer extends Thread
           intpEventClient.onInterpreterOutputUpdateAll(
               noteId, paragraphId, out.toInterpreterResultMessage());
         } catch (IOException e) {
-          logger.error(e.getMessage(), e);
+          LOGGER.error(e.getMessage(), e);
         }
       }
 
       @Override
       public void onAppend(int index, InterpreterResultMessageOutput out, byte[] line) {
         String output = new String(line);
-        logger.debug("Output Append: {}", output);
+        LOGGER.debug("Output Append: {}", output);
         intpEventClient.onInterpreterOutputAppend(
             noteId, paragraphId, index, output);
       }
@@ -862,11 +923,11 @@ public class RemoteInterpreterServer extends Thread
         String output;
         try {
           output = new String(out.toByteArray());
-          logger.debug("Output Update for index {}: {}", index, output);
+          LOGGER.debug("Output Update for index {}: {}", index, output);
           intpEventClient.onInterpreterOutputUpdate(
               noteId, paragraphId, index, out.getType(), output);
         } catch (IOException e) {
-          logger.error(e.getMessage(), e);
+          LOGGER.error(e.getMessage(), e);
         }
       }
     });
@@ -932,7 +993,7 @@ public class RemoteInterpreterServer extends Thread
     // first try local objects
     AngularObject ao = registry.get(name, noteId, paragraphId);
     if (ao == null) {
-      logger.debug("Angular object {} not exists", name);
+      LOGGER.debug("Angular object {} not exists", name);
       return;
     }
 
@@ -950,7 +1011,7 @@ public class RemoteInterpreterServer extends Thread
         return;
       } catch (Exception e) {
         // it's not a previous object's type. proceed to treat as a generic type
-        logger.debug(e.getMessage(), e);
+        LOGGER.debug(e.getMessage(), e);
       }
     }
 
@@ -962,7 +1023,7 @@ public class RemoteInterpreterServer extends Thread
             }.getType());
       } catch (Exception e) {
         // it's not a generic json object, too. okay, proceed to threat as a string type
-        logger.debug(e.getMessage(), e);
+        LOGGER.debug(e.getMessage(), e);
       }
     }
 
@@ -997,7 +1058,7 @@ public class RemoteInterpreterServer extends Thread
           }.getType());
     } catch (Exception e) {
       // it's okay. proceed to treat object as a string
-      logger.debug(e.getMessage(), e);
+      LOGGER.debug(e.getMessage(), e);
     }
 
     // try string object type at last
@@ -1017,7 +1078,7 @@ public class RemoteInterpreterServer extends Thread
 
   @Override
   public List<String> resourcePoolGetAll() throws TException {
-    logger.debug("Request resourcePoolGetAll from ZeppelinServer");
+    LOGGER.debug("Request resourcePoolGetAll from ZeppelinServer");
     List<String> result = new LinkedList<>();
 
     if (resourcePool == null) {
@@ -1041,7 +1102,7 @@ public class RemoteInterpreterServer extends Thread
   @Override
   public ByteBuffer resourceGet(String noteId, String paragraphId, String resourceName)
       throws TException {
-    logger.debug("Request resourceGet {} from ZeppelinServer", resourceName);
+    LOGGER.debug("Request resourceGet {} from ZeppelinServer", resourceName);
     Resource resource = resourcePool.get(noteId, paragraphId, resourceName, false);
 
     if (resource == null || resource.get() == null || !resource.isSerializable()) {
@@ -1050,7 +1111,7 @@ public class RemoteInterpreterServer extends Thread
       try {
         return Resource.serializeObject(resource.get());
       } catch (IOException e) {
-        logger.error(e.getMessage(), e);
+        LOGGER.error(e.getMessage(), e);
         return ByteBuffer.allocate(0);
       }
     }
@@ -1099,7 +1160,7 @@ public class RemoteInterpreterServer extends Thread
           }
         }
       } catch (Exception e) {
-        logger.error(e.getMessage(), e);
+        LOGGER.error(e.getMessage(), e);
         return ByteBuffer.allocate(0);
       }
     }
@@ -1114,7 +1175,7 @@ public class RemoteInterpreterServer extends Thread
               }.getType());
       interpreterGroup.getAngularObjectRegistry().setRegistry(deserializedRegistry);
     } catch (Exception e) {
-      logger.info("Exception in RemoteInterpreterServer while angularRegistryPush, nolock", e);
+      LOGGER.info("Exception in RemoteInterpreterServer while angularRegistryPush, nolock", e);
     }
   }
 
@@ -1138,7 +1199,7 @@ public class RemoteInterpreterServer extends Thread
           intpEventClient.onAppOutputUpdate(noteId, paragraphId, index, appId,
               out.getType(), new String(out.toByteArray()));
         } catch (IOException e) {
-          logger.error(e.getMessage(), e);
+          LOGGER.error(e.getMessage(), e);
         }
       }
     });
@@ -1161,7 +1222,7 @@ public class RemoteInterpreterServer extends Thread
       String applicationInstanceId, String packageInfo, String noteId, String paragraphId)
       throws TException {
     if (runningApplications.containsKey(applicationInstanceId)) {
-      logger.warn("Application instance {} is already running");
+      LOGGER.warn("Application instance {} is already running");
       return new RemoteApplicationResult(true, "");
     }
     HeliumPackage pkgInfo = HeliumPackage.fromJson(packageInfo);
@@ -1169,7 +1230,7 @@ public class RemoteInterpreterServer extends Thread
         pkgInfo, noteId, paragraphId, applicationInstanceId);
     try {
       Application app = null;
-      logger.info(
+      LOGGER.info(
           "Loading application {}({}), artifact={}, className={} into note={}, paragraph={}",
           pkgInfo.getName(),
           applicationInstanceId,
@@ -1183,7 +1244,7 @@ public class RemoteInterpreterServer extends Thread
           new RunningApplication(pkgInfo, app, noteId, paragraphId));
       return new RemoteApplicationResult(true, "");
     } catch (Exception e) {
-      logger.error(e.getMessage(), e);
+      LOGGER.error(e.getMessage(), e);
       return new RemoteApplicationResult(false, e.getMessage());
     }
   }
@@ -1194,10 +1255,10 @@ public class RemoteInterpreterServer extends Thread
     RunningApplication runningApplication = runningApplications.remove(applicationInstanceId);
     if (runningApplication != null) {
       try {
-        logger.info("Unloading application {}", applicationInstanceId);
+        LOGGER.info("Unloading application {}", applicationInstanceId);
         runningApplication.app.unload();
       } catch (ApplicationException e) {
-        logger.error(e.getMessage(), e);
+        LOGGER.error(e.getMessage(), e);
         return new RemoteApplicationResult(false, e.getMessage());
       }
     }
@@ -1207,11 +1268,11 @@ public class RemoteInterpreterServer extends Thread
   @Override
   public RemoteApplicationResult runApplication(String applicationInstanceId)
       throws TException {
-    logger.info("run application {}", applicationInstanceId);
+    LOGGER.info("run application {}", applicationInstanceId);
 
     RunningApplication runningApp = runningApplications.get(applicationInstanceId);
     if (runningApp == null) {
-      logger.error("Application instance {} not exists", applicationInstanceId);
+      LOGGER.error("Application instance {} not exists", applicationInstanceId);
       return new RemoteApplicationResult(false, "Application instance does not exists");
     } else {
       ApplicationContext context = runningApp.app.context();
