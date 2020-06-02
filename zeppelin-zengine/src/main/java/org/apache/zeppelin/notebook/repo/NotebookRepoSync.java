@@ -81,10 +81,8 @@ public class NotebookRepoSync implements NotebookRepoWithVersionControl {
     // init the underlying NotebookRepo
     for (int i = 0; i < Math.min(storageClassNames.length, getMaxRepoNum()); i++) {
       NotebookRepo notebookRepo = PluginManager.get().loadNotebookRepo(storageClassNames[i].trim());
-      if (notebookRepo != null) {
-        notebookRepo.init(conf);
-        repos.add(notebookRepo);
-      }
+      notebookRepo.init(conf);
+      repos.add(notebookRepo);
     }
 
     // couldn't initialize any storage, use default
