@@ -58,6 +58,7 @@ public class StandardInterpreterLauncher extends InterpreterLauncher {
     if (option.isExistingProcess()) {
       return new RemoteInterpreterRunningProcess(
           context.getInterpreterSettingName(),
+          context.getInterpreterGroupId(),
           connectTimeout,
           option.getHost(),
           option.getPort());

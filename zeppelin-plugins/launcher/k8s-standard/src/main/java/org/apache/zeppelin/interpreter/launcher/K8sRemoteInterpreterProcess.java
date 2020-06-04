@@ -95,6 +95,11 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
   }
 
   @Override
+  public String getInterpreterGroupId() {
+    return interpreterGroupId;
+  }
+
+  @Override
   public String getInterpreterSettingName() {
     return interpreterSettingName;
   }

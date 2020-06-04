@@ -78,6 +78,7 @@ public class ClusterInterpreterLauncher extends StandardInterpreterLauncher
 
             return new RemoteInterpreterRunningProcess(
                 context.getInterpreterSettingName(),
+                context.getInterpreterGroupId(),
                 connectTimeout,
                 intpTserverHost,
                 intpTserverPort);
@@ -149,6 +150,7 @@ public class ClusterInterpreterLauncher extends StandardInterpreterLauncher
 
             return new RemoteInterpreterRunningProcess(
                 context.getInterpreterSettingName(),
+                context.getInterpreterGroupId(),
                 connectTimeout,
                 intpTserverHost,
                 intpTserverPort);

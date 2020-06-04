@@ -141,7 +141,7 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess {
 
   public void stop() {
     if (isRunning()) {
-      LOGGER.info("Kill interpreter process");
+      LOGGER.info("Kill interpreter process for interpreter group: {}", getInterpreterGroupId());
       try {
         callRemoteFunction(new RemoteFunction<Void>() {
           @Override
@@ -157,10 +157,9 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess {
       // Shutdown connection
       shutdown();
       this.interpreterProcessLauncher.stop();
+      this.interpreterProcessLauncher = null;
+      LOGGER.info("Remote process of interpreter group: {} is terminated", getInterpreterGroupId());
     }
-
-    interpreterProcessLauncher = null;
-    LOGGER.info("Remote process terminated");
   }
 
   @Override
@@ -196,6 +195,7 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess {
     return interpreterSettingName;
   }
 
+  @Override
   public String getInterpreterGroupId() {
     return interpreterGroupId;
   }
