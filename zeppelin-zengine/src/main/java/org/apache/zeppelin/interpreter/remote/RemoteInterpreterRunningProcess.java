@@ -16,7 +16,6 @@
  */
 package org.apache.zeppelin.interpreter.remote;
 
-import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,7 +24,8 @@ import org.slf4j.LoggerFactory;
  * This class connects to existing process
  */
 public class RemoteInterpreterRunningProcess extends RemoteInterpreterProcess {
-  private final Logger logger = LoggerFactory.getLogger(RemoteInterpreterRunningProcess.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(RemoteInterpreterRunningProcess.class);
+
   private final String host;
   private final int port;
   private final String interpreterSettingName;
@@ -76,7 +76,7 @@ public class RemoteInterpreterRunningProcess extends RemoteInterpreterProcess {
     // when you want to force stop it. ENV ZEPPELIN_FORCE_STOP control that.
     if (System.getenv("ZEPPELIN_FORCE_STOP") != null) {
       if (isRunning()) {
-        logger.info("Kill interpreter process of interpreter group: " + interpreterGroupId);
+        LOGGER.info("Kill interpreter process of interpreter group: " + interpreterGroupId);
         try {
           callRemoteFunction(new RemoteFunction<Void>() {
             @Override
@@ -86,12 +86,12 @@ public class RemoteInterpreterRunningProcess extends RemoteInterpreterProcess {
             }
           });
         } catch (Exception e) {
-          logger.warn("ignore the exception when shutting down interpreter process.", e);
+          LOGGER.warn("ignore the exception when shutting down interpreter process.", e);
         }
 
         // Shutdown connection
         shutdown();
-        logger.info("Remote process of interpreter group: " + getInterpreterGroupId() + " is terminated");
+        LOGGER.info("Remote process of interpreter group: " + getInterpreterGroupId() + " is terminated");
       }
     }
   }
