@@ -26,6 +26,8 @@ import java.io.IOException;
  */
 public interface InterpreterClient {
 
+  String getInterpreterGroupId();
+
   String getInterpreterSettingName();
 
   void start(String userName) throws IOException;
