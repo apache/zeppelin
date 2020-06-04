@@ -110,7 +110,7 @@ public class FileSystemRecoveryStorage extends RecoveryStorage {
           int connectTimeout =
               zConf.getInt(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT);
           RemoteInterpreterRunningProcess client = new RemoteInterpreterRunningProcess(
-              interpreterSettingName, connectTimeout, hostPort[0], Integer.parseInt(hostPort[1]));
+              interpreterSettingName, groupId, connectTimeout, hostPort[0], Integer.parseInt(hostPort[1]));
           // interpreterSettingManager may be null when this class is used when it is used
           // stop-interpreter.sh
           clients.put(groupId, client);

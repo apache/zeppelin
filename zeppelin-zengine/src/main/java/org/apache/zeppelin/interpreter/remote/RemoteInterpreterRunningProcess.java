@@ -29,15 +29,18 @@ public class RemoteInterpreterRunningProcess extends RemoteInterpreterProcess {
   private final String host;
   private final int port;
   private final String interpreterSettingName;
+  private final String interpreterGroupId;
 
   public RemoteInterpreterRunningProcess(
       String interpreterSettingName,
+      String interpreterGroupId,
       int connectTimeout,
       String host,
       int port
   ) {
     super(connectTimeout);
     this.interpreterSettingName = interpreterSettingName;
+    this.interpreterGroupId = interpreterGroupId;
     this.host = host;
     this.port = port;
   }
@@ -58,6 +61,11 @@ public class RemoteInterpreterRunningProcess extends RemoteInterpreterProcess {
   }
 
   @Override
+  public String getInterpreterGroupId() {
+    return interpreterGroupId;
+  }
+
+  @Override
   public void start(String userName) {
     // assume process is externally managed. nothing to do
   }
@@ -68,7 +76,7 @@ public class RemoteInterpreterRunningProcess extends RemoteInterpreterProcess {
     // when you want to force stop it. ENV ZEPPELIN_FORCE_STOP control that.
     if (System.getenv("ZEPPELIN_FORCE_STOP") != null) {
       if (isRunning()) {
-        logger.info("Kill interpreter process");
+        logger.info("Kill interpreter process of interpreter group: " + interpreterGroupId);
         try {
           callRemoteFunction(new RemoteFunction<Void>() {
             @Override
@@ -80,6 +88,10 @@ public class RemoteInterpreterRunningProcess extends RemoteInterpreterProcess {
         } catch (Exception e) {
           logger.warn("ignore the exception when shutting down interpreter process.", e);
         }
+
+        // Shutdown connection
+        shutdown();
+        logger.info("Remote process of interpreter group: " + getInterpreterGroupId() + " is terminated");
       }
     }
   }
