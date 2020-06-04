@@ -76,7 +76,7 @@ public class RemoteInterpreterRunningProcess extends RemoteInterpreterProcess {
     // when you want to force stop it. ENV ZEPPELIN_FORCE_STOP control that.
     if (System.getenv("ZEPPELIN_FORCE_STOP") != null) {
       if (isRunning()) {
-        LOGGER.info("Kill interpreter process of interpreter group: " + interpreterGroupId);
+        LOGGER.info("Kill interpreter process of interpreter group: {}", interpreterGroupId);
         try {
           callRemoteFunction(new RemoteFunction<Void>() {
             @Override
@@ -91,7 +91,7 @@ public class RemoteInterpreterRunningProcess extends RemoteInterpreterProcess {
 
         // Shutdown connection
         shutdown();
-        LOGGER.info("Remote process of interpreter group: " + getInterpreterGroupId() + " is terminated");
+        LOGGER.info("Remote process of interpreter group: {} is terminated.", getInterpreterGroupId());
       }
     }
   }
