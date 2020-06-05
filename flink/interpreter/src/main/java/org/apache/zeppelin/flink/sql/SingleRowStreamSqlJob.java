@@ -24,9 +24,13 @@ import org.apache.flink.types.Row;
 import org.apache.zeppelin.flink.FlinkShims;
 import org.apache.zeppelin.flink.JobManager;
 import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.SingleRowInterpreterResult;
 import org.apache.zeppelin.tabledata.TableDataUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class SingleRowStreamSqlJob extends AbstractStreamSqlJob {
@@ -64,14 +68,10 @@ public class SingleRowStreamSqlJob extends AbstractStreamSqlJob {
 
   @Override
   protected String buildResult() {
-    StringBuilder builder = new StringBuilder();
-    builder.append("%angular ");
-    String outputText = template;
-    for (int i = 0; i < latestRow.getArity(); ++i) {
-      outputText = outputText.replace("{" + i + "}", "{{value_" + i + "}}");
-    }
-    builder.append(outputText);
-    return builder.toString();
+    SingleRowInterpreterResult singleRowResult =
+            new SingleRowInterpreterResult(rowToList(latestRow), template, context);
+    singleRowResult.pushAngularObjects();
+    return singleRowResult.toAngular();
   }
 
   @Override
@@ -80,10 +80,11 @@ public class SingleRowStreamSqlJob extends AbstractStreamSqlJob {
       LOGGER.warn("Skip RefreshTask as no data available");
       return;
     }
+    SingleRowInterpreterResult singleRowResult =
+            new SingleRowInterpreterResult(rowToList(latestRow), template, context);
     if (isFirstRefresh) {
       context.out().clear(false);
-      String output = buildResult();
-      context.out.write(output);
+      context.out.write(singleRowResult.toAngular());
       context.out.flush();
       // should checkpoint the html output, otherwise frontend won't display the output
       // after recovering.
@@ -91,11 +92,14 @@ public class SingleRowStreamSqlJob extends AbstractStreamSqlJob {
       isFirstRefresh = false;
     }
 
-    for (int i = 0; i < latestRow.getArity(); ++i) {
-      context.getAngularObjectRegistry().add("value_" + i,
-              TableDataUtils.normalizeColumn(latestRow.getField(i)),
-              context.getNoteId(),
-              context.getParagraphId());
+    singleRowResult.pushAngularObjects();
+  }
+
+  private List rowToList(Row row) {
+    List list = new ArrayList<>();
+    for (int i = 0; i < row.getArity(); i++) {
+      list.add(row.getField(i));
     }
+    return list;
   }
 }
