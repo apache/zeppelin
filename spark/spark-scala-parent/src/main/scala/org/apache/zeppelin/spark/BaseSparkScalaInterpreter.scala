@@ -103,11 +103,16 @@ abstract class BaseSparkScalaInterpreter(val conf: SparkConf,
   def interpret(code: String, context: InterpreterContext): InterpreterResult = {
 
     val originalOut = System.out
+    val printREPLOutput = context.getStringLocalProperty("printREPLOutput", "true").toBoolean
 
     def _interpret(code: String): scala.tools.nsc.interpreter.Results.Result = {
       Console.withOut(interpreterOutput) {
         System.setOut(Console.out)
-        interpreterOutput.setInterpreterOutput(context.out)
+        if (printREPLOutput) {
+          interpreterOutput.setInterpreterOutput(context.out)
+        } else {
+          interpreterOutput.setInterpreterOutput(null)
+        }
         interpreterOutput.ignoreLeadingNewLinesFromScalaReporter()
 
         val status = scalaInterpret(code) match {
