@@ -158,4 +158,12 @@ val username = "{SOME_CREDENTIAL_ENTITY.user}"
 Before 0.8.0, shutting down Zeppelin also meant to shutdown all the running interpreter processes. Usually, an administrator will shutdown the Zeppelin server for maintenance or upgrades, but would not want to shut down the running interpreter processes.
 In such cases, interpreter process recovery is necessary. Starting from 0.8.0, users can enable interpreter process recovery via the setting `zeppelin.recovery.storage.class` as 
 `org.apache.zeppelin.interpreter.recovery.FileSystemRecoveryStorage` or other implementations if available in the future. By default it is `org.apache.zeppelin.interpreter.recovery.NullRecoveryStorage`,
- which means recovery is not enabled. Enabling recovery means shutting down Zeppelin would not terminate interpreter processes, and when Zeppelin is restarted, it would try to reconnect to the existing running interpreter processes. If you want to kill all the interpreter processes after terminating Zeppelin even when recovery is enabled, you can run `bin/stop-interpreter.sh` 
+ which means recovery is not enabled. `zeppelin.recovery.dir` is used for specify where to store the recovery metadata. 
+Enabling recovery means shutting down Zeppelin would not terminate interpreter processes, and when Zeppelin is restarted, it would try to reconnect to the existing running interpreter processes. If you want to kill all the interpreter processes after terminating Zeppelin even when recovery is enabled, you can run `bin/stop-interpreter.sh`.
+ 
+In 0.8.x, Zeppelin server would reconnect to the running interpreter process only when you run paragraph again, but it won't recover the running paragraph. E.g. if you restart zeppelin server when some paragraph is still running,
+then when you restart Zeppelin, although the interpreter process is still running, you won't see the paragraph is running in frontend. In 0.9.x, we fix it by recovering the running paragraphs.
+Here's one screenshot of how one running paragraph of flink interpreter works.
+
+
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/flink_recovery.gif" width="800px">
