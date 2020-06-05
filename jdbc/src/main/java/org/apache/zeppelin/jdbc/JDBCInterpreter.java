@@ -31,6 +31,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.alias.CredentialProvider;
 import org.apache.hadoop.security.alias.CredentialProviderFactory;
+import org.apache.zeppelin.interpreter.SingleRowInterpreterResult;
 import org.apache.zeppelin.interpreter.ZeppelinContext;
 import org.apache.zeppelin.interpreter.util.SqlSplitter;
 import org.apache.zeppelin.tabledata.TableDataUtils;
@@ -723,28 +724,17 @@ public class JDBCInterpreter extends KerberosInterpreter {
               String template = context.getLocalProperties().get("template");
               if (!StringUtils.isBlank(template)) {
                 resultSet.next();
-                ResultSetMetaData md = resultSet.getMetaData();
+                SingleRowInterpreterResult singleRowResult =
+                        new SingleRowInterpreterResult(getFirstRow(resultSet), template, context);
+
                 if (isFirstRefreshMap.get(context.getParagraphId())) {
-                  String angularTemplate = template;
-                  for (int j = 0; j < md.getColumnCount(); ++j) {
-                    angularTemplate = angularTemplate.replace("{" + j + "}", "{{value_" + j + "}}");
-                  }
-                  context.out.write("%angular " + angularTemplate);
+                  context.out.write(singleRowResult.toAngular());
                   context.out.write("\n%text ");
                   context.out.flush();
                   isFirstRefreshMap.put(context.getParagraphId(), false);
                 }
-                for (int j = 1; j <= md.getColumnCount(); ++j) {
-                  Object columnObject = resultSet.getObject(j);
-                  String columnValue = null;
-                  if (columnObject == null) {
-                    columnValue = "null";
-                  } else {
-                    columnValue = resultSet.getString(j);
-                  }
-                  context.getAngularObjectRegistry().add("value_" + (j - 1),
-                          columnValue, context.getNoteId(), context.getParagraphId());
-                }
+                singleRowResult.pushAngularObjects();
+
               } else {
                 String results = getResults(resultSet,
                         !containsIgnoreCase(sqlToExecute, EXPLAIN_PREDICATE));
@@ -790,6 +780,22 @@ public class JDBCInterpreter extends KerberosInterpreter {
     }
 
     return new InterpreterResult(Code.SUCCESS);
+  }
+
+  private List getFirstRow(ResultSet rs) throws SQLException {
+    List list = new ArrayList();
+    ResultSetMetaData md = rs.getMetaData();
+    for (int i = 1; i <= md.getColumnCount(); ++i) {
+      Object columnObject = rs.getObject(i);
+      String columnValue = null;
+      if (columnObject == null) {
+        columnValue = "null";
+      } else {
+        columnValue = rs.getString(i);
+      }
+      list.add(columnValue);
+    }
+    return list;
   }
 
   /**
