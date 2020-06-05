@@ -19,7 +19,6 @@ package org.apache.zeppelin.spark;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.spark.SparkContext;
-import org.apache.spark.sql.SQLContext;
 import org.apache.zeppelin.interpreter.AbstractInterpreter;
 import org.apache.zeppelin.interpreter.ZeppelinContext;
 import org.apache.zeppelin.interpreter.InterpreterContext;
@@ -41,7 +40,7 @@ import java.util.Properties;
  * Spark SQL interpreter for Zeppelin.
  */
 public class SparkSqlInterpreter extends AbstractInterpreter {
-  private Logger logger = LoggerFactory.getLogger(SparkSqlInterpreter.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(SparkSqlInterpreter.class);
 
   private SparkInterpreter sparkInterpreter;
   private SqlSplitter sqlSplitter;
@@ -111,7 +110,7 @@ public class SparkSqlInterpreter extends AbstractInterpreter {
       if (Boolean.parseBoolean(getProperty("zeppelin.spark.sql.stacktrace", "false"))) {
         builder.append(ExceptionUtils.getStackTrace(e));
       } else {
-        logger.error("Invocation target exception", e);
+        LOGGER.error("Invocation target exception", e);
         String msg = e.getMessage()
                 + "\nset zeppelin.spark.sql.stacktrace = true to see full stacktrace";
         builder.append(msg);
