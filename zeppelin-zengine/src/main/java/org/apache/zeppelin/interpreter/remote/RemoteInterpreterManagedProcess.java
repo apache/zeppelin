@@ -143,12 +143,9 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess {
     if (isRunning()) {
       LOGGER.info("Kill interpreter process");
       try {
-        callRemoteFunction(new RemoteFunction<Void>() {
-          @Override
-          public Void call(RemoteInterpreterService.Client client) throws Exception {
-            client.shutdown();
-            return null;
-          }
+        callRemoteFunction(client -> {
+          client.shutdown();
+          return null;
         });
       } catch (Exception e) {
         LOGGER.warn("ignore the exception when shutting down", e);

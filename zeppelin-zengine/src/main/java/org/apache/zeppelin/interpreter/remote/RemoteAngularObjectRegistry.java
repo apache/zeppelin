@@ -18,13 +18,10 @@
 package org.apache.zeppelin.interpreter.remote;
 
 import com.google.gson.Gson;
-import org.apache.thrift.TException;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.AngularObjectRegistryListener;
-import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.ManagedInterpreterGroup;
-import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService.Client;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,7 +31,9 @@ import java.util.List;
  * Proxy for AngularObjectRegistry that exists in remote interpreter process
  */
 public class RemoteAngularObjectRegistry extends AngularObjectRegistry {
-  Logger logger = LoggerFactory.getLogger(RemoteAngularObjectRegistry.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(RemoteAngularObjectRegistry.class);
+  private static final Gson GSON = new Gson();
+
   private ManagedInterpreterGroup interpreterGroup;
 
   public RemoteAngularObjectRegistry(String interpreterId,
@@ -66,16 +65,10 @@ public class RemoteAngularObjectRegistry extends AngularObjectRegistry {
       return super.add(name, o, noteId, paragraphId, true);
     }
 
-    remoteInterpreterProcess.callRemoteFunction(
-        new RemoteInterpreterProcess.RemoteFunction<Void>() {
-          @Override
-          public Void call(Client client) throws Exception {
-            Gson gson = new Gson();
-            client.angularObjectAdd(name, noteId, paragraphId, gson.toJson(o));
-            return null;
-          }
-        }
-    );
+    remoteInterpreterProcess.callRemoteFunction(client -> {
+      client.angularObjectAdd(name, noteId, paragraphId, GSON.toJson(o));
+      return null;
+    });
 
     return super.add(name, o, noteId, paragraphId, true);
 
@@ -96,15 +89,10 @@ public class RemoteAngularObjectRegistry extends AngularObjectRegistry {
     if (remoteInterpreterProcess == null || !remoteInterpreterProcess.isRunning()) {
       return super.remove(name, noteId, paragraphId);
     }
-    remoteInterpreterProcess.callRemoteFunction(
-      new RemoteInterpreterProcess.RemoteFunction<Void>() {
-        @Override
-        public Void call(Client client) throws Exception {
-          client.angularObjectRemove(name, noteId, paragraphId);
-          return null;
-        }
-      }
-    );
+    remoteInterpreterProcess.callRemoteFunction(client -> {
+      client.angularObjectRemove(name, noteId, paragraphId);
+      return null;
+    });
 
     return super.remove(name, noteId, paragraphId);
   }
