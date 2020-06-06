@@ -344,12 +344,12 @@ public class JDBCInterpreter extends KerberosInterpreter {
     }
   }
 
-  private String getEntityName(String replName) {
-    StringBuffer entityName = new StringBuffer();
-    entityName.append(INTERPRETER_NAME);
-    entityName.append(".");
-    entityName.append(replName);
-    return entityName.toString();
+  private String getEntityName(String replName, String propertyKey) {
+    if (propertyKey.equals("default")) {
+      return replName;
+    } else {
+      return replName + "." + propertyKey;
+    }
   }
 
   private String getJDBCDriverName(String user, String propertyKey) {
@@ -367,10 +367,10 @@ public class JDBCInterpreter extends KerberosInterpreter {
   }
 
   private UsernamePassword getUsernamePassword(InterpreterContext interpreterContext,
-                                               String replName) {
+                                               String entity) {
     UserCredentials uc = interpreterContext.getAuthenticationInfo().getUserCredentials();
     if (uc != null) {
-      return uc.getUsernamePassword(replName);
+      return uc.getUsernamePassword(entity);
     }
     return null;
   }
@@ -413,7 +413,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
     jdbcUserConfigurations.cleanUserProperty(propertyKey);
 
     UsernamePassword usernamePassword = getUsernamePassword(interpreterContext,
-            getEntityName(interpreterContext.getReplName()));
+            getEntityName(interpreterContext.getReplName(), propertyKey));
     if (usernamePassword != null) {
       jdbcUserConfigurations.setUserProperty(propertyKey, usernamePassword);
     } else {

@@ -582,13 +582,13 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     InterpreterContext ctx4 = InterpreterContext.builder()
         .setAuthenticationInfo(user2Credential)
         .setInterpreterOut(new InterpreterOutput(null))
-        .setReplName("jdbc2")
+        .setReplName("jdbc")
         .build();
     jdbc2.interpret("", ctx4);
 
     JDBCUserConfigurations user2JDBC2Conf = jdbc2.getJDBCConfiguration("user2");
-    assertEquals("user2Id", user2JDBC2Conf.getPropertyMap("default").get("user"));
-    assertEquals("user2Pw", user2JDBC2Conf.getPropertyMap("default").get("password"));
+    assertEquals("user2Id", user2JDBC2Conf.getPropertyMap("jdbc2").get("user"));
+    assertEquals("user2Pw", user2JDBC2Conf.getPropertyMap("jdbc2").get("password"));
     jdbc2.close();
   }
 

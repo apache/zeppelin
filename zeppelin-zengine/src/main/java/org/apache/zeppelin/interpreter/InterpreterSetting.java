@@ -713,6 +713,16 @@ public class InterpreterSetting {
     return interpreterInfos;
   }
 
+  public String getInterpreterNameByClass(String className) {
+    for (InterpreterInfo interpreterInfo : this.interpreterInfos) {
+      if (interpreterInfo.getClassName().equals(className)) {
+        return interpreterInfo.getName();
+      }
+    }
+    LOGGER.warn("Unable to find interpreter name for class: " + className);
+    return "";
+  }
+
   void appendDependencies(List<Dependency> dependencies) {
     for (Dependency dependency : dependencies) {
       if (!this.dependencies.contains(dependency)) {

@@ -501,10 +501,17 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
   private InterpreterContext getInterpreterContext() {
     AngularObjectRegistry registry = null;
     ResourcePool resourcePool = null;
-
+    String replName = null;
     if (this.interpreter != null) {
       registry = this.interpreter.getInterpreterGroup().getAngularObjectRegistry();
       resourcePool = this.interpreter.getInterpreterGroup().getResourcePool();
+      InterpreterSetting interpreterSetting = ((ManagedInterpreterGroup)
+              interpreter.getInterpreterGroup()).getInterpreterSetting();
+      replName = interpreterSetting.getName();
+      if (interpreterSetting.getInterpreterInfos().size() > 1) {
+        String interpreterName = interpreterSetting.getInterpreterNameByClass(this.interpreter.getClassName());
+        replName = replName + "." + interpreterName;
+      }
     }
 
     Credentials credentials = note.getCredentials();
@@ -523,7 +530,7 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
             .setNoteId(note.getId())
             .setNoteName(note.getName())
             .setParagraphId(getId())
-            .setReplName(intpText)
+            .setReplName(replName)
             .setParagraphTitle(title)
             .setParagraphText(text)
             .setAuthenticationInfo(subject)
