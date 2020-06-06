@@ -112,6 +112,22 @@ public class CassandraInterpreter extends Interpreter {
   public static final String CASSANDRA_TRUSTSTORE_PASSWORD =
           "cassandra.ssl.truststore.password";
 
+  public static final String CASSANDRA_FORMAT_FLOAT_PRECISION =
+          "cassandra.format.float_precision";
+  public static final String CASSANDRA_FORMAT_DOUBLE_PRECISION =
+          "cassandra.format.double_precision";
+  public static final String CASSANDRA_FORMAT_TIMESTAMP =
+          "cassandra.format.timestamp";
+  public static final String CASSANDRA_FORMAT_TIME =
+          "cassandra.format.time";
+  public static final String CASSANDRA_FORMAT_DATE =
+          "cassandra.format.date";
+  public static final String CASSANDRA_FORMAT_TYPE =
+          "cassandra.format.type";
+  public static final String CASSANDRA_FORMAT_TIMEZONE =
+          "cassandra.format.timezone";
+  public static final String CASSANDRA_FORMAT_LOCALE =
+          "cassandra.format.locale";
 
   public static final String DEFAULT_HOST = "127.0.0.1";
   public static final String DEFAULT_PORT = "9042";
@@ -226,7 +242,7 @@ public class CassandraInterpreter extends Interpreter {
     }
 
     session = clusterBuilder.withConfigLoader(loader).build();
-    helper = new InterpreterLogic(session);
+    helper = new InterpreterLogic(session, properties);
   }
 
   @Override

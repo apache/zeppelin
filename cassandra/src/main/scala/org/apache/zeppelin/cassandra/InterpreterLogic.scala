@@ -19,10 +19,10 @@ package org.apache.zeppelin.cassandra
 import java.io.{ByteArrayOutputStream, PrintStream}
 import java.net.InetAddress
 import java.nio.ByteBuffer
-import java.text.SimpleDateFormat
 import java.time.format.DateTimeFormatter
 import java.time.{Duration, Instant, LocalDateTime, ZoneOffset}
 import java.util
+import java.util.Properties
 import java.util.concurrent.ConcurrentHashMap
 
 import com.datastax.oss.driver.api.core.`type`.{DataType, ListType, MapType, SetType, TupleType, UserDefinedType}
@@ -91,9 +91,11 @@ object InterpreterLogic {
  *
  * @param session java driver session
  */
-class InterpreterLogic(val session: CqlSession)  {
+class InterpreterLogic(val session: CqlSession, val properties: Properties)  {
 
   val enhancedSession: EnhancedSession = new EnhancedSession(session)
+
+  val formatter: CqlFormatter = new CqlFormatter(properties)
 
   import InterpreterLogic._
 
@@ -216,8 +218,7 @@ class InterpreterLogic(val session: CqlSession)  {
               if (row.isNull(name)) {
                 null
               } else {
-                val value = row.getObject(name)
-                row.codecRegistry().codecFor(dataType, value).format(value)
+                formatter.getValueAsString(row, name, dataType)
               }
           }
           output.append(data.mkString("\t")).append("\n")

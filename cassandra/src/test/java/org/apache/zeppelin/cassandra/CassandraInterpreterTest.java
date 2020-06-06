@@ -17,7 +17,6 @@
 package org.apache.zeppelin.cassandra;
 
 import com.datastax.oss.driver.api.core.CqlSession;
-import com.datastax.oss.driver.internal.core.type.codec.TimestampCodec;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
@@ -40,7 +39,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.time.Instant;
 import java.util.Properties;
 
 import static org.apache.zeppelin.cassandra.CassandraInterpreter.CASSANDRA_CLUSTER_NAME;
@@ -145,20 +143,20 @@ public class CassandraInterpreterTest { //extends AbstractCassandraUnit4CQLTestC
     assertThat(actual.code()).isEqualTo(Code.SUCCESS);
     assertThat(actual.message().get(0).getData()).isEqualTo("name\tborn\tcountry\tdied\tgender\t" +
         "styles\ttype\n" +
-        "'Bogdan Raczynski'\t'1977-01-01'\t'Poland'\tnull\t'Male'\t" +
-        "['Dance','Electro']\t'Person'\n" +
-        "'Krishna Das'\t'1947-05-31'\t'USA'\tnull\t'Male'\t['Unknown']\t'Person'\n" +
-        "'Sheryl Crow'\t'1962-02-11'\t'USA'\tnull\t'Female'\t" +
-        "['Classic','Rock','Country','Blues','Pop','Folk']\t'Person'\n" +
-        "'Doof'\t'1968-08-31'\t'United Kingdom'\tnull\tnull\t['Unknown']\t'Person'\n" +
-        "'House of Large Sizes'\t'1986-01-01'\t'USA'\t'2003'\tnull\t['Unknown']\t'Group'\n" +
-        "'Fanfarlo'\t'2006-01-01'\t'United Kingdom'\tnull\tnull\t" +
-        "['Rock','Indie','Pop','Classic']\t'Group'\n" +
-        "'Jeff Beck'\t'1944-06-24'\t'United Kingdom'\tnull\t'Male'\t" +
-        "['Rock','Pop','Classic']\t'Person'\n" +
-        "'Los Paranoias'\tnull\t'Unknown'\tnull\tnull\t['Unknown']\tnull\n" +
-        "'…And You Will Know Us by the Trail of Dead'\t'1994-01-01'\t'USA'\tnull\tnull\t" +
-        "['Rock','Pop','Classic']\t'Group'\n");
+        "Bogdan Raczynski\t1977-01-01\tPoland\tnull\tMale\t" +
+        "[Dance, Electro]\tPerson\n" +
+        "Krishna Das\t1947-05-31\tUSA\tnull\tMale\t[Unknown]\tPerson\n" +
+        "Sheryl Crow\t1962-02-11\tUSA\tnull\tFemale\t" +
+        "[Classic, Rock, Country, Blues, Pop, Folk]\tPerson\n" +
+        "Doof\t1968-08-31\tUnited Kingdom\tnull\tnull\t[Unknown]\tPerson\n" +
+        "House of Large Sizes\t1986-01-01\tUSA\t2003\tnull\t[Unknown]\tGroup\n" +
+        "Fanfarlo\t2006-01-01\tUnited Kingdom\tnull\tnull\t" +
+        "[Rock, Indie, Pop, Classic]\tGroup\n" +
+        "Jeff Beck\t1944-06-24\tUnited Kingdom\tnull\tMale\t" +
+        "[Rock, Pop, Classic]\tPerson\n" +
+        "Los Paranoias\tnull\tUnknown\tnull\tnull\t[Unknown]\tnull\n" +
+        "…And You Will Know Us by the Trail of Dead\t1994-01-01\tUSA\tnull\tnull\t" +
+        "[Rock, Pop, Classic]\tGroup\n");
   }
 
   @Test
@@ -174,9 +172,9 @@ public class CassandraInterpreterTest { //extends AbstractCassandraUnit4CQLTestC
     assertThat(actual.code()).isEqualTo(Code.SUCCESS);
     assertThat(actual.message().get(0).getData())
         .isEqualTo("name\tborn\tcountry\tdied\tgender\tstyles\ttype\n" +
-        "'Bogdan Raczynski'\t'1977-01-01'\t'Poland'\tnull\t'Male'\t" +
-        "['Dance','Electro']\t'Person'\n" +
-        "'Krishna Das'\t'1947-05-31'\t'USA'\tnull\t'Male'\t['Unknown']\t'Person'\n");
+        "Bogdan Raczynski\t1977-01-01\tPoland\tnull\tMale\t" +
+        "[Dance, Electro]\tPerson\n" +
+        "Krishna Das\t1947-05-31\tUSA\tnull\tMale\t[Unknown]\tPerson\n");
   }
 
   @Test
@@ -202,9 +200,9 @@ public class CassandraInterpreterTest { //extends AbstractCassandraUnit4CQLTestC
     //Then
     assertThat(actual.code()).isEqualTo(Code.SUCCESS);
     assertThat(actual.message().get(0).getData()).isEqualTo("title\tartist\tyear\n" +
-            "'The Impossible Dream EP'\t'Carter the Unstoppable Sex Machine'\t1992\n" +
-            "'The Way You Are'\t'Tears for Fears'\t1983\n" +
-            "'Primitive'\t'Soulfly'\t2003\n");
+            "The Impossible Dream EP\tCarter the Unstoppable Sex Machine\t1992\n" +
+            "The Way You Are\tTears for Fears\t1983\n" +
+            "Primitive\tSoulfly\t2003\n");
   }
     
   @Test
@@ -323,7 +321,7 @@ public class CassandraInterpreterTest { //extends AbstractCassandraUnit4CQLTestC
     //Then
     assertThat(actual.code()).isEqualTo(Code.SUCCESS);
     assertThat(actual.message().get(0).getData()).isEqualTo("key\tval\n" +
-            "'myKey'\t'myValue'\n");
+            "myKey\tmyValue\n");
   }
 
   @Test
@@ -345,15 +343,15 @@ public class CassandraInterpreterTest { //extends AbstractCassandraUnit4CQLTestC
     assertThat(actual.code()).isEqualTo(Code.SUCCESS);
     assertThat(actual.message().get(0).getData()).isEqualTo(
             "login\taddresses\tage\tdeceased\tfirstname\tlast_update\tlastname\tlocation\n" +
-                    "'jdoe'\t" +
-                    "{street_number:3,street_name:'Beverly Hills Bld',zip_code:90209," +
-                    "country:'USA',extra_info:['Right on the hills','Next to the post box']," +
-                    "phone_numbers:{'home':2016778524,'office':2015790847}}\tnull\t" +
+                    "jdoe\t" +
+                    "{street_number: 3, street_name: Beverly Hills Bld, zip_code: 90209, " +
+                    "country: USA, extra_info: [Right on the hills, Next to the post box], " +
+                    "phone_numbers: {home: 2016778524, office: 2015790847}}\tnull\t" +
                     "null\t" +
-                    "'John'\t" +
+                    "John\t" +
                     "null\t" +
-                    "'DOE'\t" +
-                    "('USA',90209,'Beverly Hills')\n");
+                    "DOE\t" +
+                    "(USA, 90209, Beverly Hills)\n");
   }
 
   @Test
@@ -389,7 +387,7 @@ public class CassandraInterpreterTest { //extends AbstractCassandraUnit4CQLTestC
     //Then
     assertThat(actual.code()).isEqualTo(Code.SUCCESS);
     assertThat(actual.message().get(0).getData()).isEqualTo("firstname\tlastname\tage\n" +
-            "'Helen'\t'SUE'\t27\n");
+            "Helen\tSUE\t27\n");
   }
 
   @Test
@@ -421,9 +419,9 @@ public class CassandraInterpreterTest { //extends AbstractCassandraUnit4CQLTestC
     //Then
     assertThat(actual.code()).isEqualTo(Code.SUCCESS);
     assertThat(actual.message().get(0).getData()).isEqualTo("name\tcountry\tstyles\n" +
-            "'Bogdan Raczynski'\t'Poland'\t['Dance','Electro']\n" +
-            "'Krishna Das'\t'USA'\t['Unknown']\n" +
-            "'Sheryl Crow'\t'USA'\t['Classic','Rock','Country','Blues','Pop','Folk']\n");
+            "Bogdan Raczynski\tPoland\t[Dance, Electro]\n" +
+            "Krishna Das\tUSA\t[Unknown]\n" +
+            "Sheryl Crow\tUSA\t[Classic, Rock, Country, Blues, Pop, Folk]\n");
   }
 
   @Test
@@ -438,9 +436,7 @@ public class CassandraInterpreterTest { //extends AbstractCassandraUnit4CQLTestC
 
     //Then
     assertThat(actual.code()).isEqualTo(Code.SUCCESS);
-    Instant tm = Instant.parse("2015-07-30T12:00:01Z");
-    assertThat(actual.message().get(0).getData()).contains("last_update\n" +
-            new TimestampCodec().format(tm));
+    assertThat(actual.message().get(0).getData()).contains("last_update\n2015-07-30T12:00:01.000Z");
   }
 
   @Test
@@ -456,7 +452,7 @@ public class CassandraInterpreterTest { //extends AbstractCassandraUnit4CQLTestC
     //Then
     assertThat(actual.code()).isEqualTo(Code.SUCCESS);
     assertThat(actual.message().get(0).getData()).isEqualTo("firstname\tlastname\n" +
-            "null\t'NULL'\n");
+            "null\tNULL\n");
   }
 
   @Test
@@ -472,7 +468,7 @@ public class CassandraInterpreterTest { //extends AbstractCassandraUnit4CQLTestC
     //Then
     assertThat(actual.code()).isEqualTo(Code.SUCCESS);
     assertThat(actual.message().get(0).getData()).isEqualTo("login\tdeceased\n" +
-            "'bind_bool'\tfalse\n");
+            "bind_bool\tfalse\n");
   }
 
   @Test
