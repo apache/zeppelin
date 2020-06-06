@@ -109,8 +109,8 @@ public class Flink110Shims extends FlinkShims {
   }
 
   @Override
-  public boolean executeMultipleInsertInto(String sql, Object tblEnv, InterpreterContext context) throws Exception {
-    ((TableEnvironment) tblEnv).execute(sql);
+  public boolean executeMultipleInsertInto(String jobName, Object tblEnv, InterpreterContext context) throws Exception {
+    ((TableEnvironment) tblEnv).execute(jobName);
     return true;
   }
 

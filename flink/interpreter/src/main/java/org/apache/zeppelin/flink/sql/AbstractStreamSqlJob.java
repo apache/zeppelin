@@ -157,8 +157,9 @@ public abstract class AbstractStreamSqlJob {
       retrievalThread.start();
 
       LOGGER.info("Run job: " + tableName + ", parallelism: " + parallelism);
-      stenv.execute(tableName);
-      LOGGER.info("Flink Job is finished, tableName: " + tableName);
+      String jobName = context.getStringLocalProperty("jobName", tableName);
+      stenv.execute(jobName);
+      LOGGER.info("Flink Job is finished, jobName: " + jobName);
       // wait for retrieve thread consume all data
       LOGGER.info("Waiting for retrieve thread to be done");
       retrievalThread.join();
