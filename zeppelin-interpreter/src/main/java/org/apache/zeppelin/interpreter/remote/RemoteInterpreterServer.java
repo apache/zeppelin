@@ -167,7 +167,7 @@ public class RemoteInterpreterServer extends Thread
         transport.open();
         TProtocol protocol = new TBinaryProtocol(transport);
         intpEventServiceClient = new RemoteInterpreterEventService.Client(protocol);
-        intpEventClient = new RemoteInterpreterEventClient(intpEventServiceClient);
+        intpEventClient = new RemoteInterpreterEventClient(intpEventServerHost, intpEventServerPort);
       }
     } else {
       // DevInterpreter

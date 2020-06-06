@@ -615,13 +615,7 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
           resourceSet.addAll(localPool.getAll());
         }
       } else if (remoteInterpreterProcess.isRunning()) {
-        List<String> resourceList = remoteInterpreterProcess.callRemoteFunction(
-            new RemoteInterpreterProcess.RemoteFunction<List<String>>() {
-              @Override
-              public List<String> call(RemoteInterpreterService.Client client) throws Exception {
-                return client.resourcePoolGetAll();
-              }
-            });
+        List<String> resourceList = remoteInterpreterProcess.callRemoteFunction(client -> client.resourcePoolGetAll());
         if (resourceList != null) {
           for (String res : resourceList) {
             resourceSet.add(Resource.fromJson(res));
@@ -659,13 +653,7 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
               r.getResourceId().getName());
         }
       } else if (remoteInterpreterProcess.isRunning()) {
-        List<String> resourceList = remoteInterpreterProcess.callRemoteFunction(
-            new RemoteInterpreterProcess.RemoteFunction<List<String>>() {
-              @Override
-              public List<String> call(RemoteInterpreterService.Client client) throws Exception {
-                return client.resourcePoolGetAll();
-              }
-            });
+        List<String> resourceList = remoteInterpreterProcess.callRemoteFunction(client -> client.resourcePoolGetAll());
         for (String res : resourceList) {
           resourceSet.add(Resource.fromJson(res));
         }
@@ -678,18 +666,12 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
         }
         try{
           for (final Resource r : resourceSet) {
-            remoteInterpreterProcess.callRemoteFunction(
-                    new RemoteInterpreterProcess.RemoteFunction<Void>() {
-
-                      @Override
-                      public Void call(RemoteInterpreterService.Client client) throws Exception {
-                        client.resourceRemove(
-                                r.getResourceId().getNoteId(),
-                                r.getResourceId().getParagraphId(),
-                                r.getResourceId().getName());
-                        return null;
-                      }
-                    });
+            remoteInterpreterProcess.callRemoteFunction(client -> {
+              client.resourceRemove(r.getResourceId().getNoteId(),
+                      r.getResourceId().getParagraphId(),
+                      r.getResourceId().getName());
+              return null;
+            });
           }
         }catch (Exception e){
           LOGGER.error(e.getMessage());

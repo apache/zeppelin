@@ -21,6 +21,7 @@ import org.apache.zeppelin.interpreter.InterpreterOption;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.slf4j.Logger;
@@ -38,6 +39,7 @@ import static org.junit.Assert.assertTrue;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({System.class, DockerInterpreterProcess.class})
+@PowerMockIgnore( {"javax.management.*"})
 public class DockerInterpreterProcessTest {
   private static final Logger LOGGER = LoggerFactory.getLogger(DockerInterpreterProcessTest.class);
 
