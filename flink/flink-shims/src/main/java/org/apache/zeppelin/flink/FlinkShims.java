@@ -89,7 +89,7 @@ public abstract class FlinkShims {
 
   public abstract void addInsertStatement(String sql, Object tblEnv, InterpreterContext context) throws Exception;
 
-  public abstract boolean executeMultipleInsertInto(String sql, Object tblEnv, InterpreterContext context) throws Exception;
+  public abstract boolean executeMultipleInsertInto(String jobName, Object tblEnv, InterpreterContext context) throws Exception;
 
   public abstract boolean rowEquals(Object row1, Object row2);
 

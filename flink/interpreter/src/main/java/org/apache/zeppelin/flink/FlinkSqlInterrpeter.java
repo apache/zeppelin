@@ -223,7 +223,8 @@ public abstract class FlinkSqlInterrpeter extends Interpreter {
       if (runAsOne) {
         try {
           lock.lock();
-          if (flinkInterpreter.getFlinkShims().executeMultipleInsertInto(st, this.tbenv, context)) {
+          String jobName = context.getStringLocalProperty("jobName", st);
+          if (flinkInterpreter.getFlinkShims().executeMultipleInsertInto(jobName, this.tbenv, context)) {
             context.out.write("Insertion successfully.\n");
           }
         } catch (Exception e) {
@@ -532,7 +533,8 @@ public abstract class FlinkSqlInterrpeter extends Interpreter {
        boolean runAsOne = Boolean.parseBoolean(context.getStringLocalProperty("runAsOne", "false"));
        if (!runAsOne) {
          this.tbenv.sqlUpdate(sql);
-         this.tbenv.execute(sql);
+         String jobName = context.getStringLocalProperty("jobName", sql);
+         this.tbenv.execute(jobName);
          context.out.write("Insertion successfully.\n");
        } else {
          flinkInterpreter.getFlinkShims().addInsertStatement(sql, this.tbenv, context);
