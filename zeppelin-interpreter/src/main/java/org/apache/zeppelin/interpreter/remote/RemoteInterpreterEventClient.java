@@ -18,6 +18,10 @@ package org.apache.zeppelin.interpreter.remote;
 
 import com.google.gson.Gson;
 import org.apache.thrift.TException;
+import org.apache.thrift.protocol.TBinaryProtocol;
+import org.apache.thrift.protocol.TProtocol;
+import org.apache.thrift.transport.TSocket;
+import org.apache.thrift.transport.TTransportException;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistryListener;
 import org.apache.zeppelin.interpreter.InterpreterResult;
@@ -37,7 +41,6 @@ import org.apache.zeppelin.resource.Resource;
 import org.apache.zeppelin.resource.ResourceId;
 import org.apache.zeppelin.resource.ResourcePoolConnector;
 import org.apache.zeppelin.resource.ResourceSet;
-import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,14 +56,27 @@ import java.util.Map;
  */
 public class RemoteInterpreterEventClient implements ResourcePoolConnector,
     AngularObjectRegistryListener {
-  private final Logger LOGGER = LoggerFactory.getLogger(RemoteInterpreterEventClient.class);
-  private final Gson gson = new Gson();
+  private final static Logger LOGGER = LoggerFactory.getLogger(RemoteInterpreterEventClient.class);
+  private final static Gson GSON = new Gson();
 
-  private RemoteInterpreterEventService.Client intpEventServiceClient;
+  private PooledRemoteClient<RemoteInterpreterEventService.Client> remoteClient;
   private String intpGroupId;
 
-  public RemoteInterpreterEventClient(RemoteInterpreterEventService.Client intpEventServiceClient) {
-    this.intpEventServiceClient = intpEventServiceClient;
+  public RemoteInterpreterEventClient(String host, int port) {
+    this.remoteClient = new PooledRemoteClient<>(() -> {
+      TSocket transport = new TSocket(host, port);
+      try {
+        transport.open();
+      } catch (TTransportException e) {
+        throw new IOException(e);
+      }
+      TProtocol protocol = new TBinaryProtocol(transport);
+      return new RemoteInterpreterEventService.Client(protocol);
+    });
+  }
+
+  public <R> R callRemoteFunction(PooledRemoteClient.RemoteFunction<R, RemoteInterpreterEventService.Client> func) {
+    return remoteClient.callRemoteFunction(func);
   }
 
   public void setIntpGroupId(String intpGroupId) {
@@ -73,9 +89,11 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector,
    * @return
    */
   @Override
-  public synchronized ResourceSet getAllResources() {
+  public ResourceSet getAllResources() {
     try {
-      List<String> resources = intpEventServiceClient.getAllResources(intpGroupId);
+      List<String> resources = callRemoteFunction(client -> {
+        return client.getAllResources(intpGroupId);
+      });
       ResourceSet resourceSet = new ResourceSet();
       for (String res : resources) {
         RemoteResource resource = RemoteResource.fromJson(res);
@@ -83,26 +101,25 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector,
         resourceSet.add(resource);
       }
       return resourceSet;
-    } catch (TException e) {
+    } catch (Exception e) {
       LOGGER.warn("Fail to getAllResources", e);
       return null;
     }
   }
 
-  public synchronized List<ParagraphInfo> getParagraphList(String user, String noteId)
-      throws TException, ServiceException {
-    List<ParagraphInfo> paragraphList = intpEventServiceClient.getParagraphList(user, noteId);
+  public List<ParagraphInfo> getParagraphList(String user, String noteId) {
+    List<ParagraphInfo> paragraphList = callRemoteFunction(client -> client.getParagraphList(user, noteId));
     return paragraphList;
   }
 
   @Override
-  public synchronized Object readResource(ResourceId resourceId) {
+  public Object readResource(ResourceId resourceId) {
     try {
-      ByteBuffer buffer = intpEventServiceClient.getResource(resourceId.toJson());
+      ByteBuffer buffer = callRemoteFunction(client -> client.getResource(resourceId.toJson()));
       Object o = Resource.deserializeObject(buffer);
       return o;
-    } catch (TException | IOException | ClassNotFoundException e) {
-      LOGGER.warn("Failt to readResource: " + resourceId, e);
+    } catch (IOException | ClassNotFoundException e) {
+      LOGGER.warn("Fail to readResource: " + resourceId, e);
       return null;
     }
   }
@@ -117,7 +134,7 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector,
    * @return
    */
   @Override
-  public synchronized Object invokeMethod(
+  public Object invokeMethod(
       ResourceId resourceId,
       String methodName,
       Class[] paramTypes,
@@ -131,10 +148,10 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector,
             params,
             null);
     try {
-      ByteBuffer buffer = intpEventServiceClient.invokeMethod(intpGroupId, invokeMethod.toJson());
+      ByteBuffer buffer = callRemoteFunction(client -> client.invokeMethod(intpGroupId, invokeMethod.toJson()));
       Object o = Resource.deserializeObject(buffer);
       return o;
-    } catch (TException | IOException | ClassNotFoundException e) {
+    } catch (IOException | ClassNotFoundException e) {
       LOGGER.error("Failed to invoke method", e);
       return null;
     }
@@ -151,7 +168,7 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector,
    * @return
    */
   @Override
-  public synchronized Resource invokeMethod(
+  public Resource invokeMethod(
       ResourceId resourceId,
       String methodName,
       Class[] paramTypes,
@@ -167,45 +184,56 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector,
             returnResourceName);
 
     try {
-      ByteBuffer serializedResource = intpEventServiceClient.invokeMethod(intpGroupId, invokeMethod.toJson());
+      ByteBuffer serializedResource = callRemoteFunction(client -> client.invokeMethod(intpGroupId, invokeMethod.toJson()));
       Resource deserializedResource = (Resource) Resource.deserializeObject(serializedResource);
-      RemoteResource remoteResource = RemoteResource.fromJson(gson.toJson(deserializedResource));
+      RemoteResource remoteResource = RemoteResource.fromJson(GSON.toJson(deserializedResource));
       remoteResource.setResourcePoolConnector(this);
 
       return remoteResource;
-    } catch (TException | IOException | ClassNotFoundException e) {
+    } catch (IOException | ClassNotFoundException e) {
       LOGGER.error("Failed to invoke method", e);
       return null;
     }
   }
 
-  public synchronized void onInterpreterOutputAppend(
+  public void onInterpreterOutputAppend(
       String noteId, String paragraphId, int outputIndex, String output) {
     try {
-      intpEventServiceClient.appendOutput(
-          new OutputAppendEvent(noteId, paragraphId, outputIndex, output, null));
-    } catch (TException e) {
+      callRemoteFunction(client -> {
+        client.appendOutput(
+                new OutputAppendEvent(noteId, paragraphId, outputIndex, output, null));
+        return null;
+      });
+    } catch (Exception e) {
       LOGGER.warn("Fail to appendOutput", e);
     }
   }
 
-  public synchronized void onInterpreterOutputUpdate(
+  public void onInterpreterOutputUpdate(
       String noteId, String paragraphId, int outputIndex,
       InterpreterResult.Type type, String output) {
     try {
-      intpEventServiceClient.updateOutput(
-          new OutputUpdateEvent(noteId, paragraphId, outputIndex, type.name(), output, null));
-    } catch (TException e) {
+      callRemoteFunction(client -> {
+        client.updateOutput(
+                new OutputUpdateEvent(noteId, paragraphId, outputIndex, type.name(), output, null));
+        return null;
+      });
+
+    } catch (Exception e) {
       LOGGER.warn("Fail to updateOutput", e);
     }
   }
 
-  public synchronized void onInterpreterOutputUpdateAll(
+  public void onInterpreterOutputUpdateAll(
       String noteId, String paragraphId, List<InterpreterResultMessage> messages) {
     try {
-      intpEventServiceClient.updateAllOutput(
-          new OutputUpdateAllEvent(noteId, paragraphId, convertToThrift(messages)));
-    } catch (TException e) {
+      callRemoteFunction(client -> {
+        client.updateAllOutput(
+                new OutputUpdateAllEvent(noteId, paragraphId, convertToThrift(messages)));
+        return null;
+      });
+
+    } catch (Exception e) {
       LOGGER.warn("Fail to updateAllOutput", e);
     }
   }
@@ -222,66 +250,84 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector,
     return thriftMessages;
   }
 
-  public synchronized void runParagraphs(String noteId,
+  public void runParagraphs(String noteId,
                                          List<String> paragraphIds,
                                          List<Integer> paragraphIndices,
                                          String curParagraphId) {
     RunParagraphsEvent event =
         new RunParagraphsEvent(noteId, paragraphIds, paragraphIndices, curParagraphId);
     try {
-      intpEventServiceClient.runParagraphs(event);
-    } catch (TException e) {
+      callRemoteFunction(client -> {
+        client.runParagraphs(event);
+        return null;
+      });
+    } catch (Exception e) {
       LOGGER.warn("Fail to runParagraphs: " + event, e);
     }
   }
 
-  public synchronized void checkpointOutput(String noteId, String paragraphId) {
+  public void checkpointOutput(String noteId, String paragraphId) {
     try {
-      intpEventServiceClient.checkpointOutput(noteId, paragraphId);
-    } catch (TException e) {
+      callRemoteFunction(client -> {
+        client.checkpointOutput(noteId, paragraphId);
+        return null;
+      });
+    } catch (Exception e) {
       LOGGER.warn("Fail to checkpointOutput of paragraph: " +
               paragraphId + " of note: " + noteId, e);
     }
   }
 
-  public synchronized void onAppOutputAppend(
+  public void onAppOutputAppend(
       String noteId, String paragraphId, int index, String appId, String output) {
     AppOutputAppendEvent event =
         new AppOutputAppendEvent(noteId, paragraphId, appId, index, output);
     try {
-      intpEventServiceClient.appendAppOutput(event);
-    } catch (TException e) {
+      callRemoteFunction(client -> {
+        client.appendAppOutput(event);
+        return null;
+      });
+    } catch (Exception e) {
       LOGGER.warn("Fail to appendAppOutput: " + event, e);
     }
   }
 
 
-  public synchronized void onAppOutputUpdate(
+  public void onAppOutputUpdate(
       String noteId, String paragraphId, int index, String appId,
       InterpreterResult.Type type, String output) {
     AppOutputUpdateEvent event =
         new AppOutputUpdateEvent(noteId, paragraphId, appId, index, type.name(), output);
     try {
-      intpEventServiceClient.updateAppOutput(event);
-    } catch (TException e) {
+      callRemoteFunction(client -> {
+        client.updateAppOutput(event);
+        return null;
+      });
+    } catch (Exception e) {
       LOGGER.warn("Fail to updateAppOutput: " + event, e);
     }
   }
 
-  public synchronized void onAppStatusUpdate(String noteId, String paragraphId, String appId,
+  public void onAppStatusUpdate(String noteId, String paragraphId, String appId,
                                              String status) {
     AppStatusUpdateEvent event = new AppStatusUpdateEvent(noteId, paragraphId, appId, status);
     try {
-      intpEventServiceClient.updateAppStatus(event);
-    } catch (TException e) {
+      callRemoteFunction(client -> {
+        client.updateAppStatus(event);
+        return null;
+      });
+    } catch (Exception e) {
       LOGGER.warn("Fail to updateAppStatus: " + event, e);
     }
   }
 
-  public synchronized void onParaInfosReceived(Map<String, String> infos) {
+  public void onParaInfosReceived(Map<String, String> infos) {
     try {
-      intpEventServiceClient.sendParagraphInfo(intpGroupId, gson.toJson(infos));
-    } catch (TException e) {
+      callRemoteFunction(client -> {
+        client.sendParagraphInfo(intpGroupId, GSON.toJson(infos));
+        return null;
+      });
+    } catch (Exception e) {
       LOGGER.warn("Fail to onParaInfosReceived: " + infos, e);
     }
   }
@@ -289,27 +335,36 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector,
   @Override
   public synchronized void onAdd(String interpreterGroupId, AngularObject object) {
     try {
-      intpEventServiceClient.addAngularObject(intpGroupId, object.toJson());
-    } catch (TException e) {
+      callRemoteFunction(client -> {
+        client.addAngularObject(intpGroupId, object.toJson());
+        return null;
+      });
+    } catch (Exception e) {
       LOGGER.warn("Fail to add AngularObject: " + object, e);
     }
   }
 
   @Override
-  public synchronized void onUpdate(String interpreterGroupId, AngularObject object) {
+  public void onUpdate(String interpreterGroupId, AngularObject object) {
     try {
-      intpEventServiceClient.updateAngularObject(intpGroupId, object.toJson());
-    } catch (TException e) {
+      callRemoteFunction(client -> {
+        client.updateAngularObject(intpGroupId, object.toJson());
+        return null;
+      });
+    } catch (Exception e) {
       LOGGER.warn("Fail to update AngularObject: " + object, e);
     }
   }
 
   @Override
-  public synchronized void onRemove(String interpreterGroupId, String name, String noteId,
+  public void onRemove(String interpreterGroupId, String name, String noteId,
                                     String paragraphId) {
     try {
-      intpEventServiceClient.removeAngularObject(intpGroupId, noteId, paragraphId, name);
-    } catch (TException e) {
+      callRemoteFunction(client -> {
+        client.removeAngularObject(intpGroupId, noteId, paragraphId, name);
+        return null;
+      });
+    } catch (Exception e) {
       LOGGER.warn("Fail to remove AngularObject", e);
     }
   }
