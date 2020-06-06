@@ -116,7 +116,7 @@ public class Flink111Shims extends FlinkShims {
   }
 
   @Override
-  public boolean executeMultipleInsertInto(String sql, Object tblEnv, InterpreterContext context) throws Exception {
+  public boolean executeMultipleInsertInto(String jobName, Object tblEnv, InterpreterContext context) throws Exception {
     JobClient jobClient = statementSetMap.get(context.getParagraphId()).execute().getJobClient().get();
     while(!jobClient.getJobStatus().get().isTerminalState()) {
       LOGGER.debug("Wait for job to finish");
