@@ -18,20 +18,20 @@ package org.apache.zeppelin.cassandra
 
 import java.net.InetAddress
 import java.nio.ByteBuffer
-import java.nio.charset.Charset
 import java.text.DecimalFormat
 import java.text.NumberFormat
 import java.time.{Instant, LocalDate, LocalTime, ZoneId}
 import java.time.format.DateTimeFormatter
-import java.util.Properties
+import java.util.concurrent.ConcurrentHashMap
+import java.util.{Locale, Properties, TimeZone}
 
 import com.datastax.oss.driver.api.core.`type`.codec.TypeCodec
 import com.datastax.oss.driver.api.core.`type`.{DataType, DataTypes}
 import com.datastax.oss.driver.api.core.cql.Row
 import com.datastax.oss.driver.api.core.data.{TupleValue, UdtValue}
-import com.datastax.oss.driver.internal.core.`type`.codec.{DecimalCodec, DoubleCodec, FloatCodec, InetCodec, StringCodec, TimestampCodec}
 import io.netty.buffer.ByteBufUtil
 import org.apache.commons.lang3.LocaleUtils
+import org.apache.zeppelin.interpreter.InterpreterException
 
 import scala.collection.JavaConverters._
 
@@ -44,6 +44,41 @@ object CqlFormatter {
   val DEFAULT_TIME_FORMAT = "HH:mm:ss.SSS"
   val DEFAULT_DATE_FORMAT = "yyyy-MM-dd"
   val DEFAULT_LOCALE = "en_US"
+
+  val allAvailableTimezones: Set[String] = TimeZone.getAvailableIDs.toSet
+
+  def getNumberFormatter(locale: Locale, precision: Int): DecimalFormat = {
+    val df = NumberFormat.getNumberInstance(locale).asInstanceOf[DecimalFormat]
+    df.applyPattern("#." + "#" * precision)
+    df
+  }
+
+  def getDateTimeFormatter(locale: Locale, timeZone: ZoneId, format: String): DateTimeFormatter = {
+    try {
+      DateTimeFormatter.ofPattern(format).withLocale(locale).withZone(timeZone)
+    } catch {
+      case ex: IllegalArgumentException =>
+        throw new InterpreterException(
+          s"Invalid time/date format: '$format'. error message: ${ex.getMessage}")
+    }
+  }
+
+  def getLocale(localeStr: String): Locale = {
+    try {
+      LocaleUtils.toLocale(localeStr)
+    } catch {
+      case _: IllegalArgumentException =>
+        throw new InterpreterException(s"Invalid locale: '$localeStr'")
+    }
+  }
+
+  def getTimezone(tzStr: String): ZoneId = {
+    if (!allAvailableTimezones.contains(tzStr)) {
+      throw new InterpreterException(s"Invalid timezone: '$tzStr'")
+    }
+    TimeZone.getTimeZone(tzStr).toZoneId
+  }
+
 }
 
 class CqlFormatter(val outputFormat: String = CqlFormatter.DEFAULT_FORMAT,
@@ -56,25 +91,18 @@ class CqlFormatter(val outputFormat: String = CqlFormatter.DEFAULT_FORMAT,
                    val localeStr: String = CqlFormatter.DEFAULT_LOCALE) {
 
   val isCqlFormat: Boolean = "cql".equalsIgnoreCase(outputFormat)
-  val locale = LocaleUtils.toLocale(localeStr)
-  val timeZone: ZoneId = ZoneId.of(timeZoneId)
+  val locale: Locale = CqlFormatter.getLocale(localeStr)
+  val timeZone: ZoneId = CqlFormatter.getTimezone(timeZoneId)
 
-  val floatFormatter: DecimalFormat = {
-    val df = NumberFormat.getNumberInstance(locale).asInstanceOf[DecimalFormat]
-    df.applyPattern("#." + "#" * floatPrecision)
-    df
-  }
-  val doubleFormatter: DecimalFormat = {
-    val df = NumberFormat.getNumberInstance(locale).asInstanceOf[DecimalFormat]
-    df.applyPattern("#." + "#" * doublePrecision)
-    df
-  }
-  val timestampFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern(timestampFormat)
-    .withLocale(locale).withZone(timeZone)
-  val timeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern(timeFormat)
-    .withLocale(locale).withZone(timeZone)
-  val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern(dateFormat)
-    .withLocale(locale).withZone(timeZone)
+  val floatFormatter: DecimalFormat = CqlFormatter.getNumberFormatter(locale, floatPrecision)
+  val doubleFormatter: DecimalFormat = CqlFormatter.getNumberFormatter(locale, doublePrecision)
+
+  val timestampFormatter: DateTimeFormatter = CqlFormatter.getDateTimeFormatter(
+    locale, timeZone, timestampFormat)
+  val timeFormatter: DateTimeFormatter = CqlFormatter.getDateTimeFormatter(
+    locale, timeZone, timeFormat)
+  val dateFormatter: DateTimeFormatter = CqlFormatter.getDateTimeFormatter(
+    locale, timeZone, dateFormat)
 
   def this(properties: Properties) {
     this(
@@ -162,4 +190,8 @@ class CqlFormatter(val outputFormat: String = CqlFormatter.DEFAULT_FORMAT,
       formatHuman(value)
     }
   }
+
+  override def toString = s"CqlFormatter(format=$outputFormat, fp=$floatPrecision, dp=$doublePrecision, " +
+    s"tsFormat=$timestampFormat, tmFormat=$timeFormat, dtFormat=$dateFormat, " +
+    s"timeozone=$timeZoneId, locale=$localeStr)"
 }

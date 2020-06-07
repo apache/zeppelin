@@ -18,6 +18,7 @@ package org.apache.zeppelin.cassandra;
 
 import com.datastax.oss.driver.api.core.CqlSession;
 import org.apache.zeppelin.display.AngularObjectRegistry;
+import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterResult;
@@ -26,19 +27,15 @@ import org.cassandraunit.CQLDataLoader;
 import org.cassandraunit.dataset.cql.ClassPathCQLDataSet;
 import org.cassandraunit.utils.EmbeddedCassandraServerHelper;
 import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Answers;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Map;
 import java.util.Properties;
 
 import static org.apache.zeppelin.cassandra.CassandraInterpreter.CASSANDRA_CLUSTER_NAME;
@@ -63,17 +60,16 @@ import static org.apache.zeppelin.cassandra.CassandraInterpreter.CASSANDRA_SOCKE
 import static org.apache.zeppelin.cassandra.CassandraInterpreter.CASSANDRA_SOCKET_TCP_NO_DELAY;
 import static org.apache.zeppelin.cassandra.CassandraInterpreter.CASSANDRA_SPECULATIVE_EXECUTION_POLICY;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
 
-@RunWith(MockitoJUnitRunner.class)
 public class CassandraInterpreterTest { //extends AbstractCassandraUnit4CQLTestCase {
   private static final String ARTISTS_TABLE = "zeppelin.artists";
   private static final int DEFAULT_UNIT_TEST_PORT = 9142;
 
   private static volatile CassandraInterpreter interpreter;
 
-  @Mock(answer = Answers.RETURNS_DEEP_STUBS)
-  private InterpreterContext intrContext;
+  private InterpreterContext intrContext = InterpreterContext.builder()
+          .setParagraphTitle("Paragraph1")
+          .build();
 
   @BeforeClass
   public static synchronized void setUp() throws IOException, InterruptedException {
@@ -117,11 +113,6 @@ public class CassandraInterpreterTest { //extends AbstractCassandraUnit4CQLTestC
   @AfterClass
   public static void tearDown() {
     interpreter.close();
-  }
-
-  @Before
-  public void prepareContext() {
-    when(intrContext.getParagraphTitle()).thenReturn("Paragraph1");
   }
 
   @Test
@@ -175,6 +166,57 @@ public class CassandraInterpreterTest { //extends AbstractCassandraUnit4CQLTestC
         "Bogdan Raczynski\t1977-01-01\tPoland\tnull\tMale\t" +
         "[Dance, Electro]\tPerson\n" +
         "Krishna Das\t1947-05-31\tUSA\tnull\tMale\t[Unknown]\tPerson\n");
+  }
+
+  @Test
+  public void should_interpret_select_statement_with_cql_format() throws Exception {
+    //When
+    intrContext.getLocalProperties().put("outputFormat", "cql");
+    final InterpreterResult actual = interpreter.interpret(
+            "SELECT * FROM " + ARTISTS_TABLE + " LIMIT 2;", intrContext);
+    intrContext.getLocalProperties().remove("outputFormat");
+
+    //Then
+    assertThat(actual).isNotNull();
+    assertThat(actual.code()).isEqualTo(Code.SUCCESS);
+    assertThat(actual.message().get(0).getData())
+            .isEqualTo("name\tborn\tcountry\tdied\tgender\tstyles\ttype\n" +
+                    "'Bogdan Raczynski'\t'1977-01-01'\t'Poland'\tnull\t'Male'\t" +
+                    "['Dance','Electro']\t'Person'\n" +
+                    "'Krishna Das'\t'1947-05-31'\t'USA'\tnull\t'Male'\t['Unknown']\t'Person'\n");
+  }
+
+  @Test
+  public void should_interpret_select_statement_with_formatting_options() throws Exception {
+    //When
+    Map<String, String> props = intrContext.getLocalProperties();
+    props.put("outputFormat", "human");
+    props.put("locale", "de_DE");
+    props.put("floatPrecision", "2");
+    props.put("doublePrecision", "4");
+    props.put("timeFormat", "hh:mma");
+    props.put("timestampFormat", "MM/dd/yy HH:mm");
+    props.put("dateFormat", "E, d MMM yy");
+    props.put("timezone", "Etc/GMT+2");
+    String query =
+            "select date, time, timestamp, double, float, tuple, udt from zeppelin.test_format;";
+    final InterpreterResult actual = interpreter.interpret(query, intrContext);
+    props.remove("outputFormat");
+    props.remove("locale");
+    props.remove("floatPrecision");
+    props.remove("doublePrecision");
+    props.remove("timeFormat");
+    props.remove("timestampFormat");
+    props.remove("dateFormat");
+    props.remove("timezone");
+
+    //Then
+    assertThat(actual).isNotNull();
+    assertThat(actual.code()).isEqualTo(Code.SUCCESS);
+    String expected = "date\ttime\ttimestamp\tdouble\tfloat\ttuple\tudt\n" +
+            "Di, 29 Jan 19\t04:05AM\t06/16/20 21:59\t10,0153\t20,03\t(1, text, 10)\t" +
+            "{id: 1, t: text, lst: [1, 2, 3]}\n";
+    assertThat(actual.message().get(0).getData()).isEqualTo(expected);
   }
 
   @Test
@@ -373,9 +415,14 @@ public class CassandraInterpreterTest { //extends AbstractCassandraUnit4CQLTestC
   public void should_extract_variable_from_statement() throws Exception {
     //Given
     AngularObjectRegistry angularObjectRegistry = new AngularObjectRegistry("cassandra", null);
-    when(intrContext.getAngularObjectRegistry()).thenReturn(angularObjectRegistry);
-    when(intrContext.getGui().input("login", "hsue")).thenReturn("hsue");
-    when(intrContext.getGui().input("age", "27")).thenReturn("27");
+    GUI gui = new GUI();
+    gui.textbox("login", "hsue");
+    gui.textbox("age", "27");
+    InterpreterContext intrContext = InterpreterContext.builder()
+            .setParagraphTitle("Paragraph1")
+            .setAngularObjectRegistry(angularObjectRegistry)
+            .setGUI(gui)
+            .build();
 
     String queries = "@prepare[test_insert_with_variable]=" +
             "INSERT INTO zeppelin.users(login,firstname,lastname,age) VALUES(?,?,?,?)\n" +

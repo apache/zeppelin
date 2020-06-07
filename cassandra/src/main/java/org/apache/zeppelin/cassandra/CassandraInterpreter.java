@@ -123,7 +123,7 @@ public class CassandraInterpreter extends Interpreter {
   public static final String CASSANDRA_FORMAT_DATE =
           "cassandra.format.date";
   public static final String CASSANDRA_FORMAT_TYPE =
-          "cassandra.format.type";
+          "cassandra.format.output";
   public static final String CASSANDRA_FORMAT_TIMEZONE =
           "cassandra.format.timezone";
   public static final String CASSANDRA_FORMAT_LOCALE =
