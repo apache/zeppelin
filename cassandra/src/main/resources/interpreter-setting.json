@@ -199,6 +199,62 @@
         "defaultValue": "none",
         "description": "Cassandra truststore password. Default = none",
         "type": "password"
+      },
+      "cassandra.format.output": {
+        "envName": null,
+        "propertyName": "cassandra.format.output",
+        "defaultValue": "human",
+        "description": "Output format: human-readable, or strict CQL. Default = human",
+        "type": "string"
+      },
+      "cassandra.format.locale": {
+        "envName": null,
+        "propertyName": "cassandra.format.locale",
+        "defaultValue": "en_US",
+        "description": "Locale for formatting of output data. Default = en_US",
+        "type": "string"
+      },
+      "cassandra.format.timezone": {
+        "envName": null,
+        "propertyName": "cassandra.format.timezone",
+        "defaultValue": "UTC",
+        "description": "Timezone for output of time/date-related values. Default = UTC",
+        "type": "string"
+      },
+      "cassandra.format.timestamp": {
+        "envName": null,
+        "propertyName": "cassandra.format.timestamp",
+        "defaultValue": "yyyy-MM-dd'T'HH:mm:ss.SSSXXX",
+        "description": "Format string for timestamp columns",
+        "type": "string"
+      },
+      "cassandra.format.date": {
+        "envName": null,
+        "propertyName": "cassandra.format.date",
+        "defaultValue": "yyyy-MM-dd",
+        "description": "Format string for date columns",
+        "type": "string"
+      },
+      "cassandra.format.time": {
+        "envName": null,
+        "propertyName": "cassandra.format.time",
+        "defaultValue": "HH:mm:ss.SSS",
+        "description": "Format string for time columns",
+        "type": "string"
+      },
+      "cassandra.format.float_precision": {
+        "envName": null,
+        "propertyName": "cassandra.format.float_precision",
+        "defaultValue": "5",
+        "description": "Precision for formatting of float columns",
+        "type": "number"
+      },
+      "cassandra.format.double_precision": {
+        "envName": null,
+        "propertyName": "cassandra.format.double_precision",
+        "defaultValue": "12",
+        "description": "Precision for formatting of double columns",
+        "type": "number"
       }
     },
     "editor": {

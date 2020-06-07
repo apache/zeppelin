@@ -316,7 +316,7 @@ There is a drop-down menu on the top left corner to expand objects details. On t
   ![Describe Schema]({{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/cassandra-DescribeSchema.png)
 </center>
 
-## Runtime Parameters
+## Runtime Execution Parameters
 
 Sometimes you want to be able to pass runtime query parameters to your statements.
 
@@ -423,6 +423,99 @@ Some remarks about query parameters:
 > 2. if the **same** query parameter is set many time with different values, the interpreter only take into account the first value
 > 3. each query parameter applies to **all CQL statements** in the same paragraph, unless you override the option using plain CQL text (like forcing timestamp with the `USING` clause)
 > 4. the order of each query parameter with regard to CQL statement does not matter
+
+## Runtime Formatting Parameters
+
+Sometimes you want to be able to format output of your statement. Cassandra interpreter allows to specify different parameters as local properties of the paragraph. Below is the list of all formatting parameters:
+
+<center>
+ <table class="table-configuration">
+   <tr>
+     <th>Parameter</th>
+     <th>Syntax</th>
+     <th>Description</th>
+   </tr>
+   <tr>
+     <td nowrap>Output Format</td>
+     <td><strong>outputFormat=<em>value</em></strong></td>
+     <td>Controls, should we output data as CQL literals, or in human-readable form. Possible values: <strong>cql, human</strong> (default: <strong>human</strong></td>
+   </tr>
+   <tr>
+     <td nowrap>Locale</td>
+     <td><strong>locale=<em>value</em></strong></td>
+     <td>Locale for formatting of numbers & time-related values. Could be any locale supported by JVM (default: <strong>en_US</strong>)</td>
+   </tr>
+   <tr>
+     <td nowrap>Timezone</td>
+     <td><strong>timezone=<em>value</em></strong></td>
+     <td>Timezone for formatting of time-related values. Could be any timezone supported by JVM (default: <strong>UTC</strong>)</td>
+   </tr>
+   <tr>
+     <td nowrap>Float precision</td>
+     <td><strong>floatPrecision=<em>value</em></strong></td>
+     <td>Precision when formatting <tt>float</tt> values. Any positive integer value</td>
+   </tr>
+   <tr>
+     <td nowrap>Double precision</td>
+     <td><strong>doublePrecision=<em>value</em></strong></td>
+     <td>Precision when formatting <tt>double</tt> values. Any positive integer value</td>
+   </tr>
+   <tr>
+     <td nowrap>Timestamp Format</td>
+     <td><strong>timestampFormat=<em>value</em></strong></td>
+     <td>Format string for <tt>timestamp</tt> values. Should be valid <a href="https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html">DateTimeFormatter</a> pattern</td>
+   </tr>
+   <tr>
+     <td nowrap>Time Format</td>
+     <td><strong>timeFormat=<em>value</em></strong></td>
+     <td>Format string for <tt>time</tt> values. Should be valid <a href="https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html">DateTimeFormatter</a> pattern</td>
+   </tr>
+   <tr>
+     <td nowrap>Date Format</td>
+     <td><strong>dateFormat=<em>value</em></strong></td>
+     <td>Format string for <tt>date</tt> values. Should be valid <a href="https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html">DateTimeFormatter</a> pattern</td>
+   </tr>
+ </table>
+</center>
+
+
+Some examples:
+
+```sql
+create table if not exists zep.test_format (
+  id int primary key,
+  text text,
+  date date,
+  timestamp timestamp,
+  time time,
+  double double,
+  float float
+);
+
+insert into zep.test_format(id, text, date, timestamp, time, double, float)
+  values (1, 'text', '2019-01-29', '2020-06-16T23:59:59.123Z', '04:05:00.234', 
+  10.0153423453425634653463466346543, 20.0303443); 
+```
+  
+```
+%cassandra(outputFormat=human, locale=de_DE, floatPrecision=2, doublePrecision=4, timeFormat=hh:mma, timestampFormat=MM/dd/yy HH:mm, dateFormat="E, d MMM yy", timezone=Etc/GMT+2)
+select id, double, float, text, date, time, timestamp from zep.test_format;
+```
+
+will output data formatted according to settings, including German locale:
+
+```
+id  double   float  text  date           time     timestamp
+1   10,0153	 20,03  text  Di, 29 Jan 19  04:05AM  06/16/20 21:59
+```
+
+while with `outputFormat=cql`, data is formatted as CQL literals:
+
+```
+id double              float       text    date        time                  timestamp
+1  10.015342345342564  20.030344  'text'  '2019-01-29' '04:05:00.234000000'  '2020-06-17T01:59:59.123+02:00'
+```
+
 
 ## Support for Prepared Statements
 
@@ -767,18 +860,57 @@ Below are the configuration parameters and their default values.
      </td>
      <td></td>
    </tr>
+   <tr>
+     <td>`cassandra.format.output`</td>
+     <td>Output format for data - strict CQL (`cql`), or human-readable (`human`)</td>
+     <td>`human`</td>
+   </tr>
+   <tr>
+     <td>`cassandra.format.locale`</td>
+     <td>Which locale to use for output (any locale supported by JVM could be specified)</td>
+     <td>`en_US`</td>
+   </tr>
+   <tr>
+     <td>`cassandra.format.timezone`</td>
+     <td>For which timezone format time/date-related types (any timezone supported by JVM could be specified)</td>
+     <td>`UTC`</td>
+   </tr>
+   <tr>
+     <td>`cassandra.format.timestamp`</td>
+     <td>Format string for `timestamp` columns (any valid <a href="https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html">DateTimeFormatter</a> pattern could be used)</td>
+     <td>`yyyy-MM-dd'T'HH:mm:ss.SSSXXX`</td>
+   </tr>
+   <tr>
+     <td>`cassandra.format.time`</td>
+     <td>Format string for `time` columns (any valid <a href="https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html">DateTimeFormatter</a> pattern could be used)</td>
+     <td>`HH:mm:ss.SSS`</td>
+   </tr>
+   <tr>
+     <td>`cassandra.format.date`</td>
+     <td>Format string for `date` columns (any valid <a href="https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html">DateTimeFormatter</a> pattern could be used)</td>
+     <td>`yyyy-MM-dd`</td>
+   </tr>
+   <tr>
+     <td>`cassandra.format.float_precision`</td>
+     <td>Precision when formatting values of `float` type</td>
+     <td>`5`</td>
+   </tr>
+   <tr>
+     <td>`cassandra.format.double_precision`</td>
+     <td>Precision when formatting values of `double` type</td>
+     <td>`12`</td>
+   </tr>
  </table>
 
 ## Change Log
 
-**3.2** _(Zeppelin {{ site.ZEPPELIN_VERSION }})_ :
+**4.0** _(Zeppelin {{ site.ZEPPELIN_VERSION }})_ :
 
-* Refactor to use unified Java driver 4.5
-  ([ZEPPELIN-4378](https://issues.apache.org/jira/browse/ZEPPELIN-4378):
-  * changes in configuration were necessary, as new driver has different architecture, and
-  configuration options;
-  * interpreter got support for DSE-specific data types, and other extensions;
-  * support for `@retryPolicy` is removed, as only single retry policy is shipped with driver.
+* Refactor to use unified Java driver 4.5 ([ZEPPELIN-4378](https://issues.apache.org/jira/browse/ZEPPELIN-4378):
+  * changes in configuration were necessary, as new driver has different architecture, and configuration options
+  * interpreter got support for DSE-specific data types, and other extensions
+  * support for `@retryPolicy` is removed, as only single retry policy is shipped with driver
+  * added support for formatting options, both interpreter & cell level
 
 **3.1** _(Zeppelin {{ site.ZEPPELIN_VERSION }})_ :
 
