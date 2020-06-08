@@ -14,11 +14,12 @@
  */
 package org.apache.zeppelin.jdbc;
 
-import com.mockrunner.jdbc.BasicJDBCTestCaseAdapter;
-import net.jodah.concurrentunit.Waiter;
+
 import org.apache.zeppelin.completer.CompletionType;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
+
+import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResultMessage;
@@ -45,6 +46,9 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.TimeoutException;
 
+import com.mockrunner.jdbc.BasicJDBCTestCaseAdapter;
+import net.jodah.concurrentunit.Waiter;
+
 import static java.lang.String.format;
 import static org.apache.zeppelin.jdbc.JDBCInterpreter.COMMON_MAX_LINE;
 import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_DRIVER;
@@ -55,11 +59,12 @@ import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_URL;
 import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_USER;
 import static org.apache.zeppelin.jdbc.JDBCInterpreter.PRECODE_KEY_TEMPLATE;
 import static org.apache.zeppelin.jdbc.JDBCInterpreter.STATEMENT_PRECODE_KEY_TEMPLATE;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+
 
 /**
  * JDBC interpreter unit tests.
@@ -116,21 +121,21 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     InterpreterContext interpreterContext = InterpreterContext.builder()
         .setLocalProperties(localProperties)
         .build();
-    assertEquals(JDBCInterpreter.DEFAULT_KEY, t.getPropertyKey(interpreterContext));
+    assertEquals(JDBCInterpreter.DEFAULT_KEY, t.getDBPrefix(interpreterContext));
 
     localProperties = new HashMap<>();
     localProperties.put("db", "mysql");
     interpreterContext = InterpreterContext.builder()
         .setLocalProperties(localProperties)
         .build();
-    assertEquals("mysql", t.getPropertyKey(interpreterContext));
+    assertEquals("mysql", t.getDBPrefix(interpreterContext));
 
     localProperties = new HashMap<>();
     localProperties.put("hive", "hive");
     interpreterContext = InterpreterContext.builder()
         .setLocalProperties(localProperties)
         .build();
-    assertEquals("hive", t.getPropertyKey(interpreterContext));
+    assertEquals("hive", t.getDBPrefix(interpreterContext));
   }
 
   @Test
@@ -270,7 +275,8 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
 
     InterpreterResult interpreterResult = t.interpret(sqlQuery, context);
     List<InterpreterResultMessage> resultMessages = context.out.toInterpreterResultMessage();
-    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
+    assertEquals(interpreterResult.toString(),
+            InterpreterResult.Code.SUCCESS, interpreterResult.code());
     assertEquals(InterpreterResult.Type.TABLE, resultMessages.get(0).getType());
     assertEquals("SOME_OTHER_NAME\na_name\n", resultMessages.get(0).getData());
   }
@@ -491,17 +497,21 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     assertEquals(true, completionList.contains(correctCompletionKeyword));
   }
 
-  private Properties getDBProperty(String dbUser,
+  private Properties getDBProperty(String dbPrefix,
+                                   String dbUser,
                                    String dbPassowrd) throws IOException {
     Properties properties = new Properties();
     properties.setProperty("common.max_count", "1000");
     properties.setProperty("common.max_retry", "3");
-    properties.setProperty("default.driver", "org.h2.Driver");
-    properties.setProperty("default.url", getJdbcConnection());
-    if (dbUser != null) {
+    if (!StringUtils.isBlank(dbPrefix)) {
+      properties.setProperty(dbPrefix + ".driver", "org.h2.Driver");
+      properties.setProperty(dbPrefix + ".url", getJdbcConnection());
+      properties.setProperty(dbPrefix + ".user", dbUser);
+      properties.setProperty(dbPrefix + ".password", dbPassowrd);
+    } else {
+      properties.setProperty("default.driver", "org.h2.Driver");
+      properties.setProperty("default.url", getJdbcConnection());
       properties.setProperty("default.user", dbUser);
-    }
-    if (dbPassowrd != null) {
       properties.setProperty("default.password", dbPassowrd);
     }
     return properties;
@@ -521,75 +531,95 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
   }
 
   @Test
-  public void testMultiTenant() throws IOException, InterpreterException {
-    /*
-     * assume that the database user is 'dbuser' and password is 'dbpassword'
-     * 'jdbc1' interpreter has user('dbuser')/password('dbpassword') property
-     * 'jdbc2' interpreter doesn't have user/password property
-     * 'user1' doesn't have Credential information.
-     * 'user2' has 'jdbc2' Credential information that is 'user2Id' / 'user2Pw' as id and password
-     */
+  public void testMultiTenant_1() throws IOException, InterpreterException {
+    // user1 %jdbc  select from default db
+    // user2 %jdbc  select from default db
+    // user2 %jdbc  select from from hive db
+    Properties properties = getDBProperty("default", "dbuser", "dbpassword");
+    properties.putAll(getDBProperty("hive", "", ""));
 
-    JDBCInterpreter jdbc1 = new JDBCInterpreter(getDBProperty("dbuser", "dbpassword"));
-    JDBCInterpreter jdbc2 = new JDBCInterpreter(getDBProperty("", ""));
-
+    JDBCInterpreter jdbc = new JDBCInterpreter(properties);
     AuthenticationInfo user1Credential = getUserAuth("user1", null, null, null);
-    AuthenticationInfo user2Credential = getUserAuth("user2", "jdbc.jdbc2", "user2Id", "user2Pw");
+    AuthenticationInfo user2Credential = getUserAuth("user2", "hive", "user2Id", "user2Pw");
+    jdbc.open();
 
-    // user1 runs jdbc1
-    jdbc1.open();
-    InterpreterContext ctx1 = InterpreterContext.builder()
-        .setAuthenticationInfo(user1Credential)
-        .setInterpreterOut(new InterpreterOutput(null))
-        .setReplName("jdbc1")
-        .build();
-    jdbc1.interpret("", ctx1);
+    // user1 runs default
+    InterpreterContext context = InterpreterContext.builder()
+            .setAuthenticationInfo(user1Credential)
+            .setInterpreterOut(new InterpreterOutput(null))
+            .setReplName("jdbc")
+            .build();
+    jdbc.interpret("", context);
 
-    JDBCUserConfigurations user1JDBC1Conf = jdbc1.getJDBCConfiguration("user1");
+    JDBCUserConfigurations user1JDBC1Conf = jdbc.getJDBCConfiguration("user1");
     assertEquals("dbuser", user1JDBC1Conf.getPropertyMap("default").get("user"));
     assertEquals("dbpassword", user1JDBC1Conf.getPropertyMap("default").get("password"));
-    jdbc1.close();
 
-    // user1 runs jdbc2
-    jdbc2.open();
-    InterpreterContext ctx2 = InterpreterContext.builder()
-        .setAuthenticationInfo(user1Credential)
-        .setReplName("jdbc2")
-        .build();
-    jdbc2.interpret("", ctx2);
-
-    JDBCUserConfigurations user1JDBC2Conf = jdbc2.getJDBCConfiguration("user1");
-    assertNull(user1JDBC2Conf.getPropertyMap("default").get("user"));
-    assertNull(user1JDBC2Conf.getPropertyMap("default").get("password"));
-    jdbc2.close();
-
-    // user2 runs jdbc1
-    jdbc1.open();
-    InterpreterContext ctx3 = InterpreterContext.builder()
+    // user2 run default
+    context = InterpreterContext.builder()
         .setAuthenticationInfo(user2Credential)
         .setInterpreterOut(new InterpreterOutput(null))
-        .setReplName("jdbc1")
+        .setReplName("jdbc")
         .build();
-    jdbc1.interpret("", ctx3);
+    jdbc.interpret("", context);
 
-    JDBCUserConfigurations user2JDBC1Conf = jdbc1.getJDBCConfiguration("user2");
+    JDBCUserConfigurations user2JDBC1Conf = jdbc.getJDBCConfiguration("user2");
     assertEquals("dbuser", user2JDBC1Conf.getPropertyMap("default").get("user"));
     assertEquals("dbpassword", user2JDBC1Conf.getPropertyMap("default").get("password"));
-    jdbc1.close();
 
-    // user2 runs jdbc2
-    jdbc2.open();
-    InterpreterContext ctx4 = InterpreterContext.builder()
-        .setAuthenticationInfo(user2Credential)
-        .setInterpreterOut(new InterpreterOutput(null))
-        .setReplName("jdbc2")
-        .build();
-    jdbc2.interpret("", ctx4);
+    // user2 run hive
+    Map<String, String> localProperties = new HashMap<>();
+    localProperties.put("db", "hive");
+    context = InterpreterContext.builder()
+            .setAuthenticationInfo(user2Credential)
+            .setInterpreterOut(new InterpreterOutput(null))
+            .setLocalProperties(localProperties)
+            .setReplName("jdbc")
+            .build();
+    jdbc.interpret("", context);
 
-    JDBCUserConfigurations user2JDBC2Conf = jdbc2.getJDBCConfiguration("user2");
-    assertEquals("user2Id", user2JDBC2Conf.getPropertyMap("default").get("user"));
-    assertEquals("user2Pw", user2JDBC2Conf.getPropertyMap("default").get("password"));
-    jdbc2.close();
+    user2JDBC1Conf = jdbc.getJDBCConfiguration("user2");
+    assertEquals("user2Id", user2JDBC1Conf.getPropertyMap("hive").get("user"));
+    assertEquals("user2Pw", user2JDBC1Conf.getPropertyMap("hive").get("password"));
+
+    jdbc.close();
+  }
+
+  @Test
+  public void testMultiTenant_2() throws IOException, InterpreterException {
+    // user1 %hive  select from default db
+    // user2 %hive  select from default db
+    Properties properties = getDBProperty("default", "", "");
+    JDBCInterpreter jdbc = new JDBCInterpreter(properties);
+    AuthenticationInfo user1Credential = getUserAuth("user1", "hive", "user1Id", "user1Pw");
+    AuthenticationInfo user2Credential = getUserAuth("user2", "hive", "user2Id", "user2Pw");
+    jdbc.open();
+
+    // user1 runs default
+    InterpreterContext context = InterpreterContext.builder()
+            .setAuthenticationInfo(user1Credential)
+            .setInterpreterOut(new InterpreterOutput(null))
+            .setReplName("hive")
+            .build();
+    jdbc.interpret("", context);
+
+    JDBCUserConfigurations user1JDBC1Conf = jdbc.getJDBCConfiguration("user1");
+    assertEquals("user1Id", user1JDBC1Conf.getPropertyMap("default").get("user"));
+    assertEquals("user1Pw", user1JDBC1Conf.getPropertyMap("default").get("password"));
+
+    // user2 run default
+    context = InterpreterContext.builder()
+            .setAuthenticationInfo(user2Credential)
+            .setInterpreterOut(new InterpreterOutput(null))
+            .setReplName("hive")
+            .build();
+    jdbc.interpret("", context);
+
+    JDBCUserConfigurations user2JDBC1Conf = jdbc.getJDBCConfiguration("user2");
+    assertEquals("user2Id", user2JDBC1Conf.getPropertyMap("default").get("user"));
+    assertEquals("user2Pw", user2JDBC1Conf.getPropertyMap("default").get("password"));
+
+    jdbc.close();
   }
 
   @Test
