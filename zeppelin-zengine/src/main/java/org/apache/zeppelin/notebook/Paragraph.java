@@ -508,10 +508,6 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
       InterpreterSetting interpreterSetting = ((ManagedInterpreterGroup)
               interpreter.getInterpreterGroup()).getInterpreterSetting();
       replName = interpreterSetting.getName();
-      if (interpreterSetting.getInterpreterInfos().size() > 1) {
-        String interpreterName = interpreterSetting.getInterpreterNameByClass(this.interpreter.getClassName());
-        replName = replName + "." + interpreterName;
-      }
     }
 
     Credentials credentials = note.getCredentials();
