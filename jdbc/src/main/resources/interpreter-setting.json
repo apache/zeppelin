@@ -25,19 +25,19 @@
         "description": "The JDBC user password",
         "type": "password"
       },
-      "default.completer.ttlInSeconds": {
-        "envName": null,
-        "propertyName": "default.completer.ttlInSeconds",
-        "defaultValue": "120",
-        "description": "Time to live sql completer in seconds (-1 to update everytime, 0 to disable update)",
-        "type": "number"
-      },
       "default.driver": {
         "envName": null,
         "propertyName": "default.driver",
         "defaultValue": "org.postgresql.Driver",
         "description": "JDBC Driver Name",
         "type": "string"
+      },
+      "default.completer.ttlInSeconds": {
+        "envName": null,
+        "propertyName": "default.completer.ttlInSeconds",
+        "defaultValue": "120",
+        "description": "Time to live sql completer in seconds (-1 to update everytime, 0 to disable update)",
+        "type": "number"
       },
       "default.completer.schemaFilters": {
         "envName": null,
