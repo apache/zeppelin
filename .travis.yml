@@ -140,12 +140,12 @@ jobs:
     # Test python/pyspark with python 2, livy 0.5
     - dist: xenial
       jdk: "openjdk8"
-      env: PYTHON="2" SCALA_VER="2.10" SPARK_VER="1.6.3" HADOOP_VER="2.6" LIVY_VER="0.5.0-incubating" PROFILE="-Pspark-1.6 -Phadoop2 -Pscala-2.10" BUILD_FLAG="install -DskipTests -DskipRat" TEST_FLAG="verify -DskipRat" MODULES="-pl livy -am" TEST_PROJECTS=""
+      env: PYTHON="2" SCALA_VER="2.10" SPARK_VER="1.6.3" HADOOP_VER="2.6" LIVY_VER="0.5.0-incubating" R="true" PROFILE="-Pspark-1.6 -Phadoop2 -Pscala-2.10" BUILD_FLAG="install -DskipTests -DskipRat" TEST_FLAG="verify -DskipRat" MODULES="-pl livy -am" TEST_PROJECTS=""
 
     # Test livy 0.5 with spark 2.2.0 under python3
     - dist: xenial
       jdk: "openjdk8"
-      env: PYTHON="3" SPARK_VER="2.2.0" HADOOP_VER="2.6" LIVY_VER="0.5.0-incubating" PROFILE="" BUILD_FLAG="install -DskipTests -DskipRat" TEST_FLAG="verify -DskipRat" MODULES="-pl livy -am" TEST_PROJECTS=""
+      env: PYTHON="3" SPARK_VER="2.2.0" HADOOP_VER="2.6" LIVY_VER="0.5.0-incubating" R="true" PROFILE="" BUILD_FLAG="install -DskipTests -DskipRat" TEST_FLAG="verify -DskipRat" MODULES="-pl livy -am" TEST_PROJECTS=""
 
 before_install:
   # check files included in commit range, clear bower_components if a bower.json file has changed.
