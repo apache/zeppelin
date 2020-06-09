@@ -22,9 +22,9 @@ touch ~/.environ
 
 # Install Python dependencies for Python specific tests
 if [[ -n "$PYTHON" ]] ; then
-  wget https://repo.continuum.io/miniconda/Miniconda${PYTHON}-4.6.14-Linux-x86_64.sh -O miniconda.sh
+  wget "https://repo.continuum.io/miniconda/Miniconda${PYTHON}-4.6.14-Linux-x86_64.sh" -O miniconda.sh
 
-  bash miniconda.sh -b -p $HOME/miniconda
+  bash miniconda.sh -b -p "$HOME/miniconda"
   echo "export PATH='$HOME/miniconda/bin:$PATH'" >> ~/.environ
   source ~/.environ
 
@@ -44,9 +44,9 @@ if [[ -n "$PYTHON" ]] ; then
   fi
 
   if [[ -n "$TENSORFLOW" ]] ; then
-    check_results=`conda search -c conda-forge tensorflow`
+    check_results=$(conda search -c conda-forge tensorflow)
     echo "search tensorflow = $check_results"
-    pip install tensorflow==${TENSORFLOW}
+    pip install "tensorflow==${TENSORFLOW}"
   fi
 fi
 
