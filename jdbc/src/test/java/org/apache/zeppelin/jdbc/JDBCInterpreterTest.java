@@ -14,30 +14,23 @@
  */
 package org.apache.zeppelin.jdbc;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
-import static java.lang.String.format;
-
-import static org.apache.zeppelin.jdbc.JDBCInterpreter.COMMON_MAX_LINE;
-import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_DRIVER;
-import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_PASSWORD;
-import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_STATEMENT_PRECODE;
-import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_USER;
-import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_URL;
-import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_PRECODE;
-import static org.apache.zeppelin.jdbc.JDBCInterpreter.PRECODE_KEY_TEMPLATE;
-
+import com.mockrunner.jdbc.BasicJDBCTestCaseAdapter;
 import net.jodah.concurrentunit.Waiter;
+import org.apache.zeppelin.completer.CompletionType;
+import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterOutput;
+import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResultMessage;
+import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
+import org.apache.zeppelin.scheduler.FIFOScheduler;
+import org.apache.zeppelin.scheduler.ParallelScheduler;
+import org.apache.zeppelin.scheduler.Scheduler;
+import org.apache.zeppelin.user.AuthenticationInfo;
+import org.apache.zeppelin.user.UserCredentials;
+import org.apache.zeppelin.user.UsernamePassword;
 import org.junit.Before;
 import org.junit.Test;
-import static org.apache.zeppelin.jdbc.JDBCInterpreter.STATEMENT_PRECODE_KEY_TEMPLATE;
-import static org.junit.Assert.fail;
-
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -52,19 +45,21 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.TimeoutException;
 
-import com.mockrunner.jdbc.BasicJDBCTestCaseAdapter;
-
-import org.apache.zeppelin.completer.CompletionType;
-import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterException;
-import org.apache.zeppelin.interpreter.InterpreterResult;
-import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
-import org.apache.zeppelin.scheduler.FIFOScheduler;
-import org.apache.zeppelin.scheduler.ParallelScheduler;
-import org.apache.zeppelin.scheduler.Scheduler;
-import org.apache.zeppelin.user.AuthenticationInfo;
-import org.apache.zeppelin.user.UserCredentials;
-import org.apache.zeppelin.user.UsernamePassword;
+import static java.lang.String.format;
+import static org.apache.zeppelin.jdbc.JDBCInterpreter.COMMON_MAX_LINE;
+import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_DRIVER;
+import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_PASSWORD;
+import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_PRECODE;
+import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_STATEMENT_PRECODE;
+import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_URL;
+import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_USER;
+import static org.apache.zeppelin.jdbc.JDBCInterpreter.PRECODE_KEY_TEMPLATE;
+import static org.apache.zeppelin.jdbc.JDBCInterpreter.STATEMENT_PRECODE_KEY_TEMPLATE;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * JDBC interpreter unit tests.
@@ -496,7 +491,8 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     assertEquals(true, completionList.contains(correctCompletionKeyword));
   }
 
-  private Properties getDBProperty(String dbUser, String dbPassowrd) throws IOException {
+  private Properties getDBProperty(String dbUser,
+                                   String dbPassowrd) throws IOException {
     Properties properties = new Properties();
     properties.setProperty("common.max_count", "1000");
     properties.setProperty("common.max_retry", "3");

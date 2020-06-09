@@ -34,6 +34,7 @@ import org.apache.hadoop.security.alias.CredentialProviderFactory;
 import org.apache.zeppelin.interpreter.SingleRowInterpreterResult;
 import org.apache.zeppelin.interpreter.ZeppelinContext;
 import org.apache.zeppelin.interpreter.util.SqlSplitter;
+import org.apache.zeppelin.jdbc.hive.HiveUtils;
 import org.apache.zeppelin.tabledata.TableDataUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -711,6 +712,12 @@ public class JDBCInterpreter extends KerberosInterpreter {
             statement.execute(statementPrecode);
           }
 
+          // start hive monitor thread if it is hive jdbc
+          if (getJDBCConfiguration(user).getPropertyMap(propertyKey).getProperty(URL_KEY)
+                  .startsWith("jdbc:hive2://")) {
+            HiveUtils.startHiveMonitorThread(statement, context,
+                    Boolean.parseBoolean(getProperty("hive.log.display", "true")));
+          }
           boolean isResultSetAvailable = statement.execute(sqlToExecute);
           getJDBCConfiguration(user).setConnectionInDBDriverPoolSuccessful(propertyKey);
           if (isResultSetAvailable) {
