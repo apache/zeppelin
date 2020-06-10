@@ -38,7 +38,7 @@
     <!--library versions-->
     <interpreter.name>flink</interpreter.name>
 <!--    <flink.version>1.11-SNAPSHOT</flink.version>-->
-    <flink.version>1.10.0</flink.version>
+    <flink.version>1.10.1</flink.version>
     <flink.hadoop.version>2.6.5</flink.hadoop.version>
     <hive.version>2.3.4</hive.version>
     <hiverunner.version>4.0.0</hiverunner.version>
