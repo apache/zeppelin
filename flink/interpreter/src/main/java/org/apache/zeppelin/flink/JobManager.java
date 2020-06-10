@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class JobManager {
@@ -110,7 +111,7 @@ public class JobManager {
   }
 
   public void cancelJob(InterpreterContext context) throws InterpreterException {
-    LOGGER.info("Canceling job associated of paragraph: "+ context.getParagraphId());
+    LOGGER.info("Canceling job associated of paragraph: " + context.getParagraphId());
     JobClient jobClient = this.jobs.get(context.getParagraphId());
     if (jobClient == null) {
       LOGGER.warn("Unable to remove Job from paragraph {} as no job associated to this paragraph",
@@ -172,8 +173,12 @@ public class JobManager {
     @Override
     public void run() {
       while (!Thread.currentThread().isInterrupted() && running.get()) {
+
         JsonNode rootNode = null;
         try {
+          synchronized (running) {
+            running.wait(1000);
+          }
           rootNode = Unirest.get(flinkWebUI + "/jobs/" + jobId.toString())
                   .asJson().getBody();
           JSONArray vertices = rootNode.getObject().getJSONArray("vertices");
@@ -194,13 +199,12 @@ public class JobManager {
           if (jobState.equalsIgnoreCase("finished")) {
             break;
           }
-          synchronized (running) {
-            running.wait(1000);
-          }
+          long duration = rootNode.getObject().getLong("duration") / 1000;
+
           if (isStreamingInsertInto) {
             if (isFirstPoll) {
               StringBuilder builder = new StringBuilder("%angular ");
-              builder.append("<h1>Duration: {{duration}} seconds");
+              builder.append("<h1>Duration: {{duration}} </h1>");
               builder.append("\n%text ");
               context.out.clear(false);
               context.out.write(builder.toString());
@@ -208,7 +212,7 @@ public class JobManager {
               isFirstPoll = false;
             }
             context.getAngularObjectRegistry().add("duration",
-                    rootNode.getObject().getLong("duration") / 1000,
+                    toRichTimeDuration(duration),
                     context.getNoteId(),
                     context.getParagraphId());
           }
@@ -218,15 +222,39 @@ public class JobManager {
       }
     }
 
-      public void cancel () {
-        this.running.set(false);
-        synchronized (running) {
-          running.notify();
-        }
-      }
-
-      public int getProgress () {
-        return progress;
+    public void cancel() {
+      this.running.set(false);
+      synchronized (running) {
+        running.notify();
       }
     }
+
+    public int getProgress() {
+      return progress;
+    }
   }
+
+  static String toRichTimeDuration(long duration) {
+    long days = TimeUnit.SECONDS.toDays(duration);
+    duration -= TimeUnit.DAYS.toSeconds(days);
+    long hours = TimeUnit.SECONDS.toHours(duration);
+    duration -= TimeUnit.HOURS.toSeconds(hours);
+    long minutes = TimeUnit.SECONDS.toMinutes(duration);
+    duration -= TimeUnit.MINUTES.toSeconds(minutes);
+    long seconds = TimeUnit.SECONDS.toSeconds(duration);
+
+    StringBuilder builder = new StringBuilder();
+    if (days != 0) {
+      builder.append(days + " days ");
+    }
+    if (days != 0 || hours != 0) {
+      builder.append(hours + " hours ");
+    }
+    if (days != 0 || hours != 0 || minutes != 0) {
+      builder.append(minutes + " minutes ");
+    }
+    builder.append(seconds + " seconds");
+    return builder.toString();
+  }
+
+}
