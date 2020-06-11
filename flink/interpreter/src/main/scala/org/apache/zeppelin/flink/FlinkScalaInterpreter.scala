@@ -463,6 +463,7 @@ class FlinkScalaInterpreter(val properties: Properties) {
     val jarFile = new JarFile(jar)
     val entries = jarFile.entries
 
+    val udfPackages = properties.getProperty("flink.udf.jars.packages", "").split(",").toSet
     val urls = Array(new URL("jar:file:" + jar + "!/"))
     val cl = new URLClassLoader(urls)
 
@@ -473,22 +474,24 @@ class FlinkScalaInterpreter(val properties: Properties) {
           // -6 because of .class
           var className = je.getName.substring(0, je.getName.length - 6)
           className = className.replace('/', '.')
-          val c = cl.loadClass(className)
-          val udf = c.newInstance()
-          if (udf.isInstanceOf[ScalarFunction]) {
-            val scalarUDF = udf.asInstanceOf[ScalarFunction]
-            btenv.registerFunction(c.getSimpleName, scalarUDF)
-          } else if (udf.isInstanceOf[TableFunction[_]]) {
-            val tableUDF = udf.asInstanceOf[TableFunction[_]]
-            flinkShims.registerTableFunction(btenv, c.getSimpleName, tableUDF)
-          } else if (udf.isInstanceOf[AggregateFunction[_,_]]) {
-            val aggregateUDF = udf.asInstanceOf[AggregateFunction[_,_]]
-            flinkShims.registerAggregateFunction(btenv, c.getSimpleName, aggregateUDF)
-          } else if (udf.isInstanceOf[TableAggregateFunction[_,_]]) {
-            val tableAggregateUDF = udf.asInstanceOf[TableAggregateFunction[_,_]]
-            flinkShims.registerTableAggregateFunction(btenv, c.getSimpleName, tableAggregateUDF)
-          } else {
-            LOGGER.warn("No UDF definition found in class file: " + je.getName)
+          if (udfPackages.isEmpty || udfPackages.exists( p => className.startsWith(p))) {
+            val c = cl.loadClass(className)
+            val udf = c.newInstance()
+            if (udf.isInstanceOf[ScalarFunction]) {
+              val scalarUDF = udf.asInstanceOf[ScalarFunction]
+              btenv.registerFunction(c.getSimpleName, scalarUDF)
+            } else if (udf.isInstanceOf[TableFunction[_]]) {
+              val tableUDF = udf.asInstanceOf[TableFunction[_]]
+              flinkShims.registerTableFunction(btenv, c.getSimpleName, tableUDF)
+            } else if (udf.isInstanceOf[AggregateFunction[_, _]]) {
+              val aggregateUDF = udf.asInstanceOf[AggregateFunction[_, _]]
+              flinkShims.registerAggregateFunction(btenv, c.getSimpleName, aggregateUDF)
+            } else if (udf.isInstanceOf[TableAggregateFunction[_, _]]) {
+              val tableAggregateUDF = udf.asInstanceOf[TableAggregateFunction[_, _]]
+              flinkShims.registerTableAggregateFunction(btenv, c.getSimpleName, tableAggregateUDF)
+            } else {
+              LOGGER.warn("No UDF definition found in class file: " + je.getName)
+            }
           }
         } catch {
           case e : Exception =>
