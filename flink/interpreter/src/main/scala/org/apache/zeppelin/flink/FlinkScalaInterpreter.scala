@@ -24,6 +24,7 @@ import java.nio.file.Files
 import java.util.Properties
 import java.util.concurrent.TimeUnit
 import java.util.jar.JarFile
+import java.util.regex.Pattern
 
 import org.apache.commons.lang3.StringUtils
 import org.apache.commons.lang3.exception.ExceptionUtils
@@ -259,6 +260,11 @@ class FlinkScalaInterpreter(val properties: Properties) {
             LOGGER.info("Starting FlinkCluster in yarn mode")
             if (properties.getProperty("flink.webui.yarn.useProxy", "false").toBoolean) {
               this.jmWebUrl = HadoopUtils.getYarnAppTrackingUrl(clusterClient)
+              // for some cloud vender, the yarn address may be mapped to some other address.
+              val yarnAddress = properties.getProperty("flink.webui.yarn.address")
+              if (!StringUtils.isBlank(yarnAddress)) {
+                this.jmWebUrl = replaceYarnAddress(this.jmWebUrl, yarnAddress)
+              }
             } else {
               this.jmWebUrl = clusterClient.getWebInterfaceURL
             }
@@ -828,6 +834,12 @@ class FlinkScalaInterpreter(val properties: Properties) {
         }
       }
     }
+  }
+
+  def replaceYarnAddress(webURL: String, yarnAddress: String): String = {
+    val pattern = "(https?://.*:\\d+)(.*)".r
+    val pattern(prefix, remaining) = webURL
+    yarnAddress + remaining
   }
 }
 

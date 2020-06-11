@@ -626,6 +626,13 @@
       <scope>test</scope>
     </dependency>
 
+    <dependency>
+      <groupId>org.scalatest</groupId>
+      <artifactId>scalatest_2.11</artifactId>
+      <version>3.0.8</version>
+      <scope>test</scope>
+    </dependency>
+
   </dependencies>
 
   <build>
@@ -722,6 +729,12 @@
             <FLINK_CONF_DIR>${project.build.directory}/test-classes</FLINK_CONF_DIR>
           </environmentVariables>
         </configuration>
+      </plugin>
+
+      <!-- Scalatest runs all Scala tests -->
+      <plugin>
+        <groupId>org.scalatest</groupId>
+        <artifactId>scalatest-maven-plugin</artifactId>
       </plugin>
 
       <!-- Eclipse Integration -->
