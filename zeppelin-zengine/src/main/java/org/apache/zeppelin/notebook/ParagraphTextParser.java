@@ -17,13 +17,12 @@
 
 package org.apache.zeppelin.notebook;
 
-import org.apache.commons.lang3.StringUtils;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Parser which is used for parsing the paragraph text.
@@ -42,6 +41,7 @@ import java.util.regex.Pattern;
  * localProperties: Map(pool->pool_1)
  */
 public class ParagraphTextParser {
+  private static final Logger LOGGER = LoggerFactory.getLogger(ParagraphTextParser.class);
 
   public static class ParseResult {
     private String intpText;
@@ -67,41 +67,112 @@ public class ParagraphTextParser {
     }
   }
 
-  private static Pattern REPL_PATTERN =
-          Pattern.compile("(\\s*)%([\\w\\.]+)(\\(.*?\\))?.*", Pattern.DOTALL);
+  private static Pattern REPL_PATTERN = Pattern.compile("^(\\s*)%(\\w+(?:\\.\\w+)*)");
+
+  private static int parseLocalProperties(
+          final String text, int startPos,
+          Map<String, String> localProperties) throws  RuntimeException{
+    startPos++;
+    String propKey = null;
+    boolean insideQuotes = false, parseKey = true, finished = false;
+    StringBuilder sb = new StringBuilder();
+    while(!finished && startPos < text.length()) {
+      char ch = text.charAt(startPos);
+      switch (ch) {
+        case ')': {
+          if (!insideQuotes) {
+            if (parseKey) {
+              propKey = sb.toString().trim();
+              if (!propKey.isEmpty()) {
+                localProperties.put(propKey, propKey);
+              }
+            } else {
+              localProperties.put(propKey, sb.toString().trim());
+            }
+            finished = true;
+          } else {
+            sb.append(ch);
+          }
+          break;
+        }
+        case '\\': {
+          if ((startPos + 1) == text.length()) {
+            throw new RuntimeException(
+                    "Problems by parsing paragraph. Unfinished escape sequence");
+          }
+          startPos++;
+          ch = text.charAt(startPos);
+          switch (ch) {
+            case 'n':
+              sb.append('\n');
+              break;
+            case 't':
+              sb.append('\t');
+              break;
+            default:
+              sb.append(ch);
+          }
+          break;
+        }
+        case '"': {
+          insideQuotes = !insideQuotes;
+          break;
+        }
+        case '=': {
+          if (insideQuotes) {
+            sb.append(ch);
+          } else {
+            propKey = sb.toString().trim();
+            sb.delete(0, sb.length());
+            parseKey = false;
+          }
+          break;
+        }
+        case ',': {
+          if (insideQuotes) {
+            sb.append(ch);
+          } else if (propKey == null || propKey.trim().isEmpty()) {
+            throw new RuntimeException(
+                    "Problems by parsing paragraph. Local property key is empty");
+          } else {
+            if (parseKey) {
+              propKey = sb.toString().trim();
+              localProperties.put(propKey, propKey);
+            } else {
+              localProperties.put(propKey, sb.toString().trim());
+            }
+          }
+          propKey = null;
+          parseKey = true;
+          sb.delete(0, sb.length());
+          break;
+        }
+        default:
+          sb.append(ch);
+      }
+      startPos++;
+    }
+    if (!finished) {
+      throw new RuntimeException(
+              "Problems by parsing paragraph. Not finished interpreter configuration");
+    }
+    return startPos;
+  }
 
   public static ParseResult parse(String text) {
     Map<String, String> localProperties = new HashMap<>();
-    String intpText = null;
+    String intpText = "";
     String scriptText = null;
 
     Matcher matcher = REPL_PATTERN.matcher(text);
-    if (matcher.matches()) {
+    if (matcher.find()) {
       String headingSpace = matcher.group(1);
       intpText = matcher.group(2);
-      if (matcher.groupCount() == 3 && matcher.group(3) != null) {
-        String localPropertiesText = matcher.group(3);
-        String[] splits = localPropertiesText.substring(1, localPropertiesText.length() - 1)
-                .split(",");
-        for (String split : splits) {
-          String[] kv = split.split("=");
-          if (StringUtils.isBlank(split) || kv.length == 0) {
-            continue;
-          }
-          if (kv.length > 2) {
-            throw new RuntimeException("Invalid paragraph properties format: " + split);
-          }
-          if (kv.length == 1) {
-            localProperties.put(kv[0].trim(), kv[0].trim());
-          } else {
-            localProperties.put(kv[0].trim(), kv[1].trim());
-          }
-        }
-        scriptText = text.substring(headingSpace.length() + intpText.length() +
-                localPropertiesText.length() + 1).trim();
-      } else {
-        scriptText = text.substring(headingSpace.length() + intpText.length() + 1).trim();
+      int startPos = headingSpace.length() + intpText.length() + 1;
+      if (text.charAt(startPos) == '(') {
+        startPos = parseLocalProperties(text, startPos, localProperties);
       }
+      scriptText = text.substring(startPos).trim();
     } else {
       intpText = "";
       scriptText = text;
