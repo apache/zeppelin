@@ -147,6 +147,11 @@ You can also set other flink properties which are not listed in the table. For a
     <td>Flink udf jars (comma separated), zeppelin will register udf in this jar automatically for user. The udf name is the class name.</td>
   </tr>
   <tr>
+    <td>flink.udf.jars.packages</td>
+    <td></td>
+    <td>Packages (comma separated) that would be searched for the udf defined in `flink.udf.jars`.</td>
+  </tr>
+  <tr>
     <td>flink.execution.jars</td>
     <td></td>
     <td>Additional user jars (comma separated)</td>
