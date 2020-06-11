@@ -139,7 +139,12 @@ You can also set other flink properties which are not listed in the table. For a
   <tr>
     <td>flink.webui.yarn.useProxy</td>
     <td>false</td>
-    <td>whether use yarn proxy url as flink weburl, e.g. http://localhost:8088/proxy/application_1583396598068_0004</td>
+    <td>whether use yarn proxy url as flink weburl, e.g. http://resource-manager:8088/proxy/application_1583396598068_0004</td>
+  </tr>
+  <tr>
+    <td>flink.webui.yarn.yarnAddress</td>
+    <td></td>
+    <td>Set this value only when your yarn address is mapped to some other address, e.g. some cloud vender will map `http://resource-manager:8088` to `https://xxx-yarn.yy.cn/gateway/kkk/yarn`</td>
   </tr>
   <tr>
     <td>flink.udf.jars</td>
