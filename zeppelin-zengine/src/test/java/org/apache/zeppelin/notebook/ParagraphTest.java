@@ -77,7 +77,7 @@ public class ParagraphTest extends AbstractInterpreterTest {
   public void scriptBodyWithReplName() {
     Note note = createNote();
     Paragraph paragraph = new Paragraph(note, null);
-    paragraph.setText("%test(1234567");
+    paragraph.setText("%test (1234567");
     assertEquals("test", paragraph.getIntpText());
     assertEquals("(1234567", paragraph.getScriptText());
 

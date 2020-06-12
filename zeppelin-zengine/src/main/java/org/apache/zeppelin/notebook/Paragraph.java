@@ -194,40 +194,10 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
     // parse text to get interpreter component
     if (this.text != null) {
       // clean localProperties, otherwise previous localProperties will be used for the next run
-      this.localProperties.clear();
-      Matcher matcher = REPL_PATTERN.matcher(this.text);
-      if (matcher.matches()) {
-        String headingSpace = matcher.group(1);
-        setIntpText(matcher.group(2));
-
-        if (matcher.groupCount() == 3 && matcher.group(3) != null) {
-          String localPropertiesText = matcher.group(3);
-          String[] splits = localPropertiesText.substring(1, localPropertiesText.length() -1)
-              .split(",");
-          for (String split : splits) {
-            String[] kv = split.split("=");
-            if (StringUtils.isBlank(split) || kv.length == 0) {
-              continue;
-            }
-            if (kv.length > 2) {
-              throw new RuntimeException("Invalid paragraph properties format: " + split);
-            }
-            if (kv.length == 1) {
-              localProperties.put(kv[0].trim(), kv[0].trim());
-            } else {
-              localProperties.put(kv[0].trim(), kv[1].trim());
-            }
-          }
-          this.scriptText = this.text.substring(headingSpace.length() + intpText.length() +
-              localPropertiesText.length() + 1).trim();
-        } else {
-          this.scriptText = this.text.substring(headingSpace.length() + intpText.length() + 1).trim();
-        }
-        config.putAll(localProperties);
-      } else {
-        setIntpText("");
-        this.scriptText = this.text.trim();
-      }
+      ParagraphTextParser.ParseResult result = ParagraphTextParser.parse(this.text);
+      localProperties = result.getLocalProperties();
+      setIntpText(result.getIntpText());
+      this.scriptText = result.getScriptText();
     }
   }
 
