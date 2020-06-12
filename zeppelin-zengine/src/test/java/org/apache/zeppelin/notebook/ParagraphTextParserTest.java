@@ -34,6 +34,18 @@ public class ParagraphTextParserTest {
     assertEquals("", parseResult.getScriptText());
   }
 
+
+  @Test
+  public void testCassandra() {
+    ParagraphTextParser.ParseResult parseResult = ParagraphTextParser.parse(
+            "%cassandra(locale=ru_RU, timeFormat=\"E, d MMM yy\", floatPrecision = 5, output=cql)\n"
+                    + "select * from system_auth.roles;");
+    assertEquals("cassandra", parseResult.getIntpText());
+    assertEquals(4, parseResult.getLocalProperties().size());
+    assertEquals("E, d MMM yy", parseResult.getLocalProperties().get("timeFormat"));
+    assertEquals("select * from system_auth.roles;", parseResult.getScriptText());
+  }
+
   @Test
   public void testParagraphTextLocalPropertiesAndText() {
     ParagraphTextParser.ParseResult parseResult = ParagraphTextParser.parse("%spark.pyspark(pool=pool_1) sc.version");
