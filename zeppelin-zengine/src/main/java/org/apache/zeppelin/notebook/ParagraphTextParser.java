@@ -122,6 +122,10 @@ public class ParagraphTextParser {
           if (insideQuotes) {
             sb.append(ch);
           } else {
+            if (!parseKey) {
+              throw new RuntimeException(
+                      "Invalid paragraph properties format");
+            }
             propKey = sb.toString().trim();
             sb.delete(0, sb.length());
             parseKey = false;
@@ -141,10 +145,10 @@ public class ParagraphTextParser {
             } else {
               localProperties.put(propKey, sb.toString().trim());
             }
+            propKey = null;
+            parseKey = true;
+            sb.delete(0, sb.length());
           }
-          propKey = null;
-          parseKey = true;
-          sb.delete(0, sb.length());
           break;
         }
         default:
@@ -169,14 +173,15 @@ public class ParagraphTextParser {
       String headingSpace = matcher.group(1);
       intpText = matcher.group(2);
       int startPos = headingSpace.length() + intpText.length() + 1;
-      if (text.charAt(startPos) == '(') {
+      if (startPos < text.length() && text.charAt(startPos) == '(') {
         startPos = parseLocalProperties(text, startPos, localProperties);
       }
       scriptText = text.substring(startPos).trim();
     } else {
       intpText = "";
-      scriptText = text;
+      scriptText = text.trim();
     }
+
     return new ParseResult(intpText, scriptText, localProperties);
   }
 
