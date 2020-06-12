@@ -111,7 +111,7 @@ public class JobManager {
   }
 
   public void cancelJob(InterpreterContext context) throws InterpreterException {
-    LOGGER.info("Canceling job associated of paragraph: " + context.getParagraphId());
+    LOGGER.info("Canceling job associated of paragraph: {}", context.getParagraphId());
     JobClient jobClient = this.jobs.get(context.getParagraphId());
     if (jobClient == null) {
       LOGGER.warn("Unable to remove Job from paragraph {} as no job associated to this paragraph",
