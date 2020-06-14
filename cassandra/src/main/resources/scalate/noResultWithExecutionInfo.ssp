@@ -16,45 +16,57 @@
 * limitations under the License.
 */
 --%>
+#import(java.util.UUID)
+
+#import(com.datastax.oss.driver.api.core.uuid.Uuids)
+
+<%@ val execId: UUID = Uuids.random() %>
 <%@ val query: String%>
 <%@ val triedHosts: String%>
 <%@ val queriedHosts: String%>
 <%@ val schemaInAgreement: String%>
 <div class="container">
-<div class="row text-center">
-<h4>No Result</h4>
+<div class="row">
+  <h5>No Result &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <a role="button" data-toggle="collapse" data-target="#${execId}" aria-expanded="false">
+      <span class="text-info"><strong>Last query execution info</strong></span>
+    </a>
+  </h5>
 </div>
-<br/>
-    <div class="row">
-    <div class="col-md-3"></div>
-    <div class="col-md-6 col-offset-md-3 table-responsive table-bordered">
-        <table class="table">
-            <caption><h5>Last query execution info</h5></caption>
+<div class="panel panel-default">
+  <div id="${execId}" class="panel-collapse collapse" role="tabpanel">
+    <div class="panel-body">
+      <div class="row">
+        <div class="col-md-3"></div>
+        <div class="col-md-6 col-offset-md-3 table-responsive table-bordered">
+          <table class="table">
             <thead>
-                <tr>
-                    <th>Info</th>
-                    <th>Value</th>
-                </tr>
+              <tr>
+                <th>Info</th>
+                <th>Value</th>
+              </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td>Statement</td>
-                    <td>${query}</td>
-                </tr>
-                <tr>
-                    <td>Tried Hosts</td>
-                    <td>${triedHosts}</td>
-                </tr>
-                <tr>
-                    <td>Queried Hosts</td>
-                    <td>${queriedHosts}</td>
-                </tr>
-                <tr>
-                    <td>Schema in Agreement</td>
-                    <td>${schemaInAgreement}</td>
-                </tr>
+              <tr>
+                <td>Statement</td>
+                <td>${query}</td>
+              </tr>
+              <tr>
+                <td>Tried Hosts</td>
+                <td>${triedHosts}</td>
+              </tr>
+              <tr>
+                <td>Queried Hosts</td>
+                <td>${queriedHosts}</td>
+              </tr>
+              <tr>
+                <td>Schema in Agreement</td>
+                <td>${schemaInAgreement}</td>
+              </tr>
             </tbody>
-        </table>
+          </table>
+        </div>
+      </div>
     </div>
-    </div>
+  </div>
 </div>
