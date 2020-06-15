@@ -29,6 +29,7 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -234,6 +235,12 @@ public class JobManager {
     }
   }
 
+  /**
+   * Convert duration in seconds to rich time duration format. e.g. 2 days 3 hours 4 minutes 5 seconds
+   *
+   * @param duration in second
+   * @return
+   */
   static String toRichTimeDuration(long duration) {
     long days = TimeUnit.SECONDS.toDays(duration);
     duration -= TimeUnit.DAYS.toSeconds(days);
