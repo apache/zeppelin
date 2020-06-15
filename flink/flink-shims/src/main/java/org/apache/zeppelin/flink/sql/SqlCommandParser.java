@@ -18,44 +18,31 @@
 
 package org.apache.zeppelin.flink.sql;
 
+import org.apache.zeppelin.flink.FlinkShims;
+
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
  * Simple parser for determining the type of command and its parameters.
+ * All the SqlCommands should be put into this class, and the parsing logic needs to be put ito FlinkShims
+ * because each version of flink has different sql syntax support.
  */
 public final class SqlCommandParser {
 
-  private SqlCommandParser() {
-    // private
+  private FlinkShims flinkShims;
+  private Object tableEnv;
+
+  public SqlCommandParser(FlinkShims flinkShims, Object tableEnv) {
+    this.flinkShims = flinkShims;
+    this.tableEnv = tableEnv;
   }
 
-  public static Optional<SqlCommandCall> parse(String stmt) {
-    // normalize
-    stmt = stmt.trim();
-    // remove ';' at the end
-    if (stmt.endsWith(";")) {
-      stmt = stmt.substring(0, stmt.length() - 1).trim();
-    }
-
-    // parse
-    for (SqlCommand cmd : SqlCommand.values()) {
-      final Matcher matcher = cmd.pattern.matcher(stmt);
-      if (matcher.matches()) {
-        final String[] groups = new String[matcher.groupCount()];
-        for (int i = 0; i < groups.length; i++) {
-          groups[i] = matcher.group(i + 1);
-        }
-        final String sql = stmt;
-        return cmd.operandConverter.apply(groups)
-                .map((operands) -> new SqlCommandCall(cmd, operands, sql));
-      }
-    }
-    return Optional.empty();
+  public Optional<SqlCommandCall> parse(String stmt) {
+    return flinkShims.parseSql(tableEnv, stmt);
   }
 
   // --------------------------------------------------------------------------------------------
@@ -112,6 +99,14 @@ public final class SqlCommandParser {
             "USE\\s+(?!CATALOG)(.*)",
             SINGLE_OPERAND),
 
+    CREATE_CATALOG(null, SINGLE_OPERAND),
+
+    DROP_CATALOG(null, SINGLE_OPERAND),
+
+    DESC(
+            "DESC\\s+(.*)",
+            SINGLE_OPERAND),
+
     DESCRIBE(
             "DESCRIBE\\s+(.*)",
             SINGLE_OPERAND),
@@ -119,6 +114,45 @@ public final class SqlCommandParser {
     EXPLAIN(
             "EXPLAIN\\s+(.*)",
             SINGLE_OPERAND),
+
+    CREATE_DATABASE(
+            "(CREATE\\s+DATABASE\\s+.*)",
+            SINGLE_OPERAND),
+
+    DROP_DATABASE(
+            "(DROP\\s+DATABASE\\s+.*)",
+            SINGLE_OPERAND),
+
+    ALTER_DATABASE(
+            "(ALTER\\s+DATABASE\\s+.*)",
+            SINGLE_OPERAND),
+
+    CREATE_TABLE("(CREATE\\s+TABLE\\s+.*)", SINGLE_OPERAND),
+
+    DROP_TABLE("(DROP\\s+TABLE\\s+.*)", SINGLE_OPERAND),
+
+    ALTER_TABLE(
+            "(ALTER\\s+TABLE\\s+.*)",
+            SINGLE_OPERAND),
+
+    DROP_VIEW(
+            "DROP\\s+VIEW\\s+(.*)",
+            SINGLE_OPERAND),
+
+    CREATE_VIEW(
+            "CREATE\\s+VIEW\\s+(\\S+)\\s+AS\\s+(.*)",
+            (operands) -> {
+              if (operands.length < 2) {
+                return Optional.empty();
+              }
+              return Optional.of(new String[]{operands[0], operands[1]});
+            }),
+
+    CREATE_FUNCTION(null, SINGLE_OPERAND),
+
+    DROP_FUNCTION(null, SINGLE_OPERAND),
+
+    ALTER_FUNCTION(null, SINGLE_OPERAND),
 
     SELECT(
             "(SELECT.*)",
@@ -130,39 +164,6 @@ public final class SqlCommandParser {
 
     INSERT_OVERWRITE(
             "(INSERT\\s+OVERWRITE.*)",
-            SINGLE_OPERAND),
-
-    CREATE_TABLE("(CREATE\\s+TABLE\\s+.*)", SINGLE_OPERAND),
-
-    DROP_TABLE("(DROP\\s+TABLE\\s+.*)", SINGLE_OPERAND),
-
-    CREATE_VIEW(
-            "CREATE\\s+VIEW\\s+(\\S+)\\s+AS\\s+(.*)",
-            (operands) -> {
-              if (operands.length < 2) {
-                return Optional.empty();
-              }
-              return Optional.of(new String[]{operands[0], operands[1]});
-            }),
-
-    CREATE_DATABASE(
-            "(CREATE\\s+DATABASE\\s+.*)",
-            SINGLE_OPERAND),
-
-    DROP_DATABASE(
-            "(DROP\\s+DATABASE\\s+.*)",
-            SINGLE_OPERAND),
-
-    DROP_VIEW(
-            "DROP\\s+VIEW\\s+(.*)",
-            SINGLE_OPERAND),
-
-    ALTER_DATABASE(
-            "(ALTER\\s+DATABASE\\s+.*)",
-            SINGLE_OPERAND),
-
-    ALTER_TABLE(
-            "(ALTER\\s+TABLE\\s+.*)",
             SINGLE_OPERAND),
 
     SET(
@@ -188,7 +189,11 @@ public final class SqlCommandParser {
     public final Function<String[], Optional<String[]>> operandConverter;
 
     SqlCommand(String matchingRegex, Function<String[], Optional<String[]>> operandConverter) {
-      this.pattern = Pattern.compile(matchingRegex, DEFAULT_PATTERN_FLAGS);
+      if (matchingRegex == null) {
+        this.pattern = null;
+      } else {
+        this.pattern = Pattern.compile(matchingRegex, DEFAULT_PATTERN_FLAGS);
+      }
       this.operandConverter = operandConverter;
     }
 
