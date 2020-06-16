@@ -41,6 +41,11 @@
         <module>flink1.11-shims</module>
     </modules>
 
+    <properties>
+        <flink1.10.version>1.10.1</flink1.10.version>
+        <flink1.11.version>1.11-SNAPSHOT</flink1.11.version>
+    </properties>
+
     <dependencies>
 
         <dependency>
