@@ -106,8 +106,8 @@ public class SqlSplitter {
               && text.length() > (index + 1)) {
         if (isSingleLineComment(text.charAt(index), text.charAt(index + 1))) {
           singleLineComment = true;
-        } else if (text.length() > (index + 2) && text.charAt(index + 2) != '+' &&
-                text.charAt(index) == '/' && text.charAt(index + 1) == '*') {
+        } else if (text.charAt(index) == '/' && text.length() > (index + 2)
+                && text.charAt(index + 1) == '*' && text.charAt(index + 2) != '+') {
           multiLineComment = true;
         }
       }
