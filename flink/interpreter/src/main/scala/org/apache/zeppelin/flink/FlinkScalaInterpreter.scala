@@ -455,7 +455,9 @@ class FlinkScalaInterpreter(val properties: Properties) {
     this.btenv.registerCatalog("hive", hiveCatalog)
     this.btenv.useCatalog("hive")
     this.btenv.useDatabase(database)
-    this.btenv.loadModule("hive", new HiveModule(hiveVersion))
+    if (properties.getProperty("zeppelin.flink.module.enableHive", "false").toBoolean) {
+      this.btenv.loadModule("hive", new HiveModule(hiveVersion))
+    }
   }
 
   private def loadUDFJar(jar: String): Unit = {

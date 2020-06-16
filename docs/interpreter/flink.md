@@ -202,6 +202,11 @@ You can also set other flink properties which are not listed in the table. For a
     <td>Hive version that you would like to connect</td>
   </tr>
   <tr>
+    <td>zeppelin.flink.module.enableHive</td>
+    <td>false</td>
+    <td>Whether enable hive module, hive udf take precedence over flink udf if hive module is enabled.</td>
+  </tr>
+  <tr>
     <td>zeppelin.flink.maxResult</td>
     <td>1000</td>
     <td>max number of row returned by sql interpreter</td>

@@ -145,6 +145,13 @@
         "description": "Hive version that you would like to connect",
         "type": "string"
       },
+      "zeppelin.flink.module.enableHive": {
+        "envName": null,
+        "propertyName": null,
+        "defaultValue": false,
+        "description": "Whether enable hive module, hive udf take precedence over flink udf if hive module is enabled.",
+        "type": "checkbox"
+      },
       "zeppelin.flink.printREPLOutput": {
         "envName": null,
         "propertyName": "zeppelin.flink.printREPLOutput",
