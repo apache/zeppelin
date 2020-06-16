@@ -47,6 +47,7 @@ import org.apache.flink.table.functions.{AggregateFunction, ScalarFunction, Tabl
 import org.apache.flink.table.module.ModuleManager
 import org.apache.flink.table.module.hive.HiveModule
 import org.apache.flink.yarn.cli.FlinkYarnSessionCli
+import org.apache.flink.yarn.executors.YarnSessionClusterExecutor
 import org.apache.zeppelin.flink.util.DependencyUtils
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion
 import org.apache.zeppelin.interpreter.util.InterpreterOutputStream
@@ -223,6 +224,10 @@ class FlinkScalaInterpreter(val properties: Properties) {
         .copy(port = Some(Integer.parseInt(port)))
     }
 
+    if (config.executionMode == ExecutionMode.YARN) {
+      // workaround for FLINK-17788, otherwise it won't work with flink 1.10.1 which has been released.
+      configuration.set(DeploymentOptions.TARGET, YarnSessionClusterExecutor.NAME)
+    }
     config
   }
 
