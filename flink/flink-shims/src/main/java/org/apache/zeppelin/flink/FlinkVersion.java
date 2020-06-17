@@ -47,7 +47,7 @@ public class FlinkVersion {
       }
 
     } catch (Exception e) {
-      logger.error("Can not recognize Spark version " + versionString +
+      logger.error("Can not recognize Flink version " + versionString +
           ". Assume it's a future release", e);
     }
   }
