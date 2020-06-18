@@ -17,8 +17,8 @@
 */
 --%>
 <div class="container">
-    <div class="row text-center">
-        <h4>No Result</h4>
+    <div class="row">
+        <h5>No Result</h5>
     </div>
     <br>
 </div>
