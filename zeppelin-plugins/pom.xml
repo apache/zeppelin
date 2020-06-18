@@ -101,7 +101,7 @@
                                 <goal>copy-dependencies</goal>
                             </goals>
                             <configuration>
-                                <outputDirectory>${project.build.directory}/../../../../plugins/${plugin.name}</outputDirectory>
+                                <outputDirectory>${project.basedir}/../../../plugins/${plugin.name}</outputDirectory>
                                 <overWriteReleases>false</overWriteReleases>
                                 <overWriteSnapshots>false</overWriteSnapshots>
                                 <overWriteIfNewer>true</overWriteIfNewer>
@@ -115,7 +115,7 @@
                                 <goal>copy</goal>
                             </goals>
                             <configuration>
-                                <outputDirectory>${project.build.directory}/../../../../plugins/${plugin.name}</outputDirectory>
+                                <outputDirectory>${project.basedir}/../../../plugins/${plugin.name}</outputDirectory>
                                 <overWriteReleases>false</overWriteReleases>
                                 <overWriteSnapshots>false</overWriteSnapshots>
                                 <overWriteIfNewer>true</overWriteIfNewer>
@@ -127,6 +127,27 @@
                                         <type>${project.packaging}</type>
                                     </artifactItem>
                                 </artifactItems>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-clean-plugin</artifactId>
+                    <executions>
+                        <execution>
+                            <id>delete-plugin-dir</id>
+                            <goals>
+                                <goal>clean</goal>
+                            </goals>
+                            <phase>clean</phase>
+                            <configuration>
+                                <filesets>
+                                    <fileset>
+                                        <directory>${project.basedir}/../../../plugins/${plugin.name}</directory>
+                                        <followSymlinks>true</followSymlinks>
+                                        <useDefaultExcludes>false</useDefaultExcludes>
+                                    </fileset>
+                                </filesets>
                             </configuration>
                         </execution>
                     </executions>
