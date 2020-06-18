@@ -59,7 +59,6 @@ public class InterpreterOutput extends OutputStream {
   public InterpreterOutput(InterpreterOutputListener flushListener) {
     this.flushListener = flushListener;
     changeListener = null;
-    clear();
   }
 
   public InterpreterOutput(InterpreterOutputListener flushListener,
@@ -67,7 +66,6 @@ public class InterpreterOutput extends OutputStream {
       throws IOException {
     this.flushListener = flushListener;
     this.changeListener = listener;
-    clear();
   }
 
   public void setType(InterpreterResult.Type type) throws IOException {

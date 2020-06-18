@@ -135,21 +135,18 @@ public class RemoteInterpreter extends Interpreter {
           }
         }
 
-        interpreterProcess.callRemoteFunction(new RemoteInterpreterProcess.RemoteFunction<Void>() {
-          @Override
-          public Void call(Client client) throws Exception {
-            LOGGER.info("Open RemoteInterpreter {}", getClassName());
-            // open interpreter here instead of in the jobRun method in RemoteInterpreterServer
-            // client.open(sessionId, className);
-            // Push angular object loaded from JSON file to remote interpreter
-            synchronized (getInterpreterGroup()) {
-              if (!getInterpreterGroup().isAngularRegistryPushed()) {
-                pushAngularObjectRegistryToRemote(client);
-                getInterpreterGroup().setAngularRegistryPushed(true);
-              }
+        interpreterProcess.callRemoteFunction(client -> {
+          LOGGER.info("Open RemoteInterpreter {}", getClassName());
+          // open interpreter here instead of in the jobRun method in RemoteInterpreterServer
+          // client.open(sessionId, className);
+          // Push angular object loaded from JSON file to remote interpreter
+          synchronized (getInterpreterGroup()) {
+            if (!getInterpreterGroup().isAngularRegistryPushed()) {
+              pushAngularObjectRegistryToRemote(client);
+              getInterpreterGroup().setAngularRegistryPushed(true);
             }
-            return null;
           }
+          return null;
         });
         isOpened = true;
         this.lifecycleManager.onInterpreterUse(this.getInterpreterGroup(), sessionId);
@@ -165,14 +162,11 @@ public class RemoteInterpreter extends Interpreter {
           throw new IOException("Interpreter process is not running\n" +
                   interpreterProcess.getErrorMessage());
         }
-        interpreterProcess.callRemoteFunction(new RemoteInterpreterProcess.RemoteFunction<Void>() {
-          @Override
-          public Void call(Client client) throws Exception {
-            LOGGER.info("Create RemoteInterpreter {}", getClassName());
-            client.createInterpreter(getInterpreterGroup().getId(), sessionId,
-                className, (Map) getProperties(), getUserName());
-            return null;
-          }
+        interpreterProcess.callRemoteFunction(client -> {
+          LOGGER.info("Create RemoteInterpreter {}", getClassName());
+          client.createInterpreter(getInterpreterGroup().getId(), sessionId,
+              className, (Map) getProperties(), getUserName());
+          return null;
         });
         isCreated = true;
       }
@@ -189,12 +183,9 @@ public class RemoteInterpreter extends Interpreter {
       } catch (IOException e) {
         throw new InterpreterException(e);
       }
-      interpreterProcess.callRemoteFunction(new RemoteInterpreterProcess.RemoteFunction<Void>() {
-        @Override
-        public Void call(Client client) throws Exception {
-          client.close(sessionId, className);
-          return null;
-        }
+      interpreterProcess.callRemoteFunction(client -> {
+        client.close(sessionId, className);
+        return null;
       });
       isOpened = false;
       this.lifecycleManager.onInterpreterUse(this.getInterpreterGroup(), sessionId);
@@ -222,43 +213,38 @@ public class RemoteInterpreter extends Interpreter {
               "Interpreter process is not running\n" + interpreterProcess.getErrorMessage());
     }
     this.lifecycleManager.onInterpreterUse(this.getInterpreterGroup(), sessionId);
-    return interpreterProcess.callRemoteFunction(
-        new RemoteInterpreterProcess.RemoteFunction<InterpreterResult>() {
-          @Override
-          public InterpreterResult call(Client client) throws Exception {
-
-            RemoteInterpreterResult remoteResult = client.interpret(
-                sessionId, className, st, convert(context));
-            Map<String, Object> remoteConfig = (Map<String, Object>) gson.fromJson(
-                remoteResult.getConfig(), new TypeToken<Map<String, Object>>() {
-                }.getType());
-            context.getConfig().clear();
-            if (remoteConfig != null) {
-              context.getConfig().putAll(remoteConfig);
-            }
-            GUI currentGUI = context.getGui();
-            GUI currentNoteGUI = context.getNoteGui();
-            if (form == FormType.NATIVE) {
-              GUI remoteGui = GUI.fromJson(remoteResult.getGui());
-              GUI remoteNoteGui = GUI.fromJson(remoteResult.getNoteGui());
-              currentGUI.clear();
-              currentGUI.setParams(remoteGui.getParams());
-              currentGUI.setForms(remoteGui.getForms());
-              currentNoteGUI.setParams(remoteNoteGui.getParams());
-              currentNoteGUI.setForms(remoteNoteGui.getForms());
-            } else if (form == FormType.SIMPLE) {
-              final Map<String, Input> currentForms = currentGUI.getForms();
-              final Map<String, Object> currentParams = currentGUI.getParams();
-              final GUI remoteGUI = GUI.fromJson(remoteResult.getGui());
-              final Map<String, Input> remoteForms = remoteGUI.getForms();
-              final Map<String, Object> remoteParams = remoteGUI.getParams();
-              currentForms.putAll(remoteForms);
-              currentParams.putAll(remoteParams);
-            }
-
-            InterpreterResult result = convert(remoteResult);
-            return result;
+    return interpreterProcess.callRemoteFunction(client -> {
+          RemoteInterpreterResult remoteResult = client.interpret(
+              sessionId, className, st, convert(context));
+          Map<String, Object> remoteConfig = (Map<String, Object>) gson.fromJson(
+              remoteResult.getConfig(), new TypeToken<Map<String, Object>>() {
+              }.getType());
+          context.getConfig().clear();
+          if (remoteConfig != null) {
+            context.getConfig().putAll(remoteConfig);
           }
+          GUI currentGUI = context.getGui();
+          GUI currentNoteGUI = context.getNoteGui();
+          if (form == FormType.NATIVE) {
+            GUI remoteGui = GUI.fromJson(remoteResult.getGui());
+            GUI remoteNoteGui = GUI.fromJson(remoteResult.getNoteGui());
+            currentGUI.clear();
+            currentGUI.setParams(remoteGui.getParams());
+            currentGUI.setForms(remoteGui.getForms());
+            currentNoteGUI.setParams(remoteNoteGui.getParams());
+            currentNoteGUI.setForms(remoteNoteGui.getForms());
+          } else if (form == FormType.SIMPLE) {
+            final Map<String, Input> currentForms = currentGUI.getForms();
+            final Map<String, Object> currentParams = currentGUI.getParams();
+            final GUI remoteGUI = GUI.fromJson(remoteResult.getGui());
+            final Map<String, Input> remoteForms = remoteGUI.getForms();
+            final Map<String, Object> remoteParams = remoteGUI.getParams();
+            currentForms.putAll(remoteForms);
+            currentParams.putAll(remoteParams);
+          }
+
+          InterpreterResult result = convert(remoteResult);
+          return result;
         }
     );
 
@@ -277,12 +263,9 @@ public class RemoteInterpreter extends Interpreter {
       throw new InterpreterException(e);
     }
     this.lifecycleManager.onInterpreterUse(this.getInterpreterGroup(), sessionId);
-    interpreterProcess.callRemoteFunction(new RemoteInterpreterProcess.RemoteFunction<Void>() {
-      @Override
-      public Void call(Client client) throws Exception {
-        client.cancel(sessionId, className, convert(context));
-        return null;
-      }
+    interpreterProcess.callRemoteFunction(client -> {
+      client.cancel(sessionId, className, convert(context));
+      return null;
     });
   }
 
@@ -306,14 +289,10 @@ public class RemoteInterpreter extends Interpreter {
     }
 
     this.lifecycleManager.onInterpreterUse(this.getInterpreterGroup(), sessionId);
-    FormType type = interpreterProcess.callRemoteFunction(
-        new RemoteInterpreterProcess.RemoteFunction<FormType>() {
-          @Override
-          public FormType call(Client client) throws Exception {
-            formType = FormType.valueOf(client.getFormType(sessionId, className));
-            return formType;
-          }
-        });
+    FormType type = interpreterProcess.callRemoteFunction(client -> {
+          formType = FormType.valueOf(client.getFormType(sessionId, className));
+          return formType;
+    });
     return type;
   }
 
@@ -331,13 +310,8 @@ public class RemoteInterpreter extends Interpreter {
       throw new InterpreterException(e);
     }
     this.lifecycleManager.onInterpreterUse(this.getInterpreterGroup(), sessionId);
-    return interpreterProcess.callRemoteFunction(
-        new RemoteInterpreterProcess.RemoteFunction<Integer>() {
-          @Override
-          public Integer call(Client client) throws Exception {
-            return client.getProgress(sessionId, className, convert(context));
-          }
-        });
+    return interpreterProcess.callRemoteFunction(client ->
+            client.getProgress(sessionId, className, convert(context)));
   }
 
 
@@ -355,14 +329,8 @@ public class RemoteInterpreter extends Interpreter {
       throw new InterpreterException(e);
     }
     this.lifecycleManager.onInterpreterUse(this.getInterpreterGroup(), sessionId);
-    return interpreterProcess.callRemoteFunction(
-        new RemoteInterpreterProcess.RemoteFunction<List<InterpreterCompletion>>() {
-          @Override
-          public List<InterpreterCompletion> call(Client client) throws Exception {
-            return client.completion(sessionId, className, buf, cursor,
-                convert(interpreterContext));
-          }
-        });
+    return interpreterProcess.callRemoteFunction(client ->
+            client.completion(sessionId, className, buf, cursor, convert(interpreterContext)));
   }
 
   public String getStatus(final String jobId) {
@@ -377,13 +345,9 @@ public class RemoteInterpreter extends Interpreter {
       throw new RuntimeException(e);
     }
     this.lifecycleManager.onInterpreterUse(this.getInterpreterGroup(), sessionId);
-    return interpreterProcess.callRemoteFunction(
-        new RemoteInterpreterProcess.RemoteFunction<String>() {
-          @Override
-          public String call(Client client) throws Exception {
-            return client.getStatus(sessionId, jobId);
-          }
-        });
+    return interpreterProcess.callRemoteFunction(client -> {
+      return client.getStatus(sessionId, jobId);
+    });
   }
 
 

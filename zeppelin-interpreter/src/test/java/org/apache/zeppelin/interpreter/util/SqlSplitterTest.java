@@ -100,7 +100,16 @@ public class SqlSplitterTest {
 
     sqls = sqlSplitter.splitSql("select a -- comment\n from table_1");
     assertEquals(1, sqls.size());
-    assertEquals("select a -- comment\n from table_1", sqls.get(0));
+    assertEquals("select a \n from table_1", sqls.get(0));
+
+    sqls = sqlSplitter.splitSql("--comment 1\nselect a from table_1\n--comment 2");
+    assertEquals(1, sqls.size());
+    assertEquals("select a from table_1", sqls.get(0));
+
+    sqls = sqlSplitter.splitSql("--comment 1\nselect a from table_1;\n--comment 2\nselect b from table_1");
+    assertEquals(2, sqls.size());
+    assertEquals("select a from table_1", sqls.get(0));
+    assertEquals("select b from table_1", sqls.get(1));
   }
 
   @Test
@@ -145,7 +154,21 @@ public class SqlSplitterTest {
 
     sqls = sqlSplitter.splitSql("select a /*comment*/ from table_1");
     assertEquals(1, sqls.size());
-    assertEquals("select a /*comment*/ from table_1", sqls.get(0));
+    assertEquals("select a  from table_1", sqls.get(0));
+
+    sqls = sqlSplitter.splitSql("/*comment 1*/\nselect a from table_1\n/*comment 2*/");
+    assertEquals(1, sqls.size());
+    assertEquals("select a from table_1", sqls.get(0));
+
+    sqls = sqlSplitter.splitSql("/*comment 1*/\nselect a from table_1;\n/*comment 2*/select b from table_1");
+    assertEquals(2, sqls.size());
+    assertEquals("select a from table_1", sqls.get(0));
+    assertEquals("select b from table_1", sqls.get(1));
+
+    sqls = sqlSplitter.splitSql("/*comment 1*/\nselect a /*+ hint*/ from table_1;\n/*comment 2*/select b from table_1");
+    assertEquals(2, sqls.size());
+    assertEquals("select a /*+ hint*/ from table_1", sqls.get(0));
+    assertEquals("select b from table_1", sqls.get(1));
   }
 
   @Test
@@ -231,7 +254,7 @@ public class SqlSplitterTest {
 
     sqls = sqlSplitter.splitSql("select a // comment\n from table_1");
     assertEquals(1, sqls.size());
-    assertEquals("select a // comment\n from table_1", sqls.get(0));
+    assertEquals("select a \n from table_1", sqls.get(0));
   }
 
   @Test
@@ -281,6 +304,6 @@ public class SqlSplitterTest {
 
     sqls = sqlSplitter.splitSql("select a # comment\n from table_1");
     assertEquals(1, sqls.size());
-    assertEquals("select a # comment\n from table_1", sqls.get(0));
+    assertEquals("select a \n from table_1", sqls.get(0));
   }
 }

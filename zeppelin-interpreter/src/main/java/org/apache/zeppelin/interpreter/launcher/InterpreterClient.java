@@ -21,20 +21,59 @@ import java.io.IOException;
 
 /**
  * Interface to InterpreterClient which is created by InterpreterLauncher. This is the component
- * that is used to for the communication from zeppelin-server process to zeppelin interpreter
- * process.
+ * that is used for the communication from zeppelin-server process to zeppelin interpreter
+ * process and also manage the lifecycle of interpreter process.
  */
 public interface InterpreterClient {
 
+  /**
+   * InterpreterGroupId that is associated with this interpreter process.
+   *
+   * @return
+   */
+  String getInterpreterGroupId();
+
+  /**
+   * InterpreterSetting name of this interpreter process.
+   *
+   * @return
+   */
   String getInterpreterSettingName();
 
+  /**
+   * Start interpreter process.
+   *
+   * @param userName
+   * @throws IOException
+   */
   void start(String userName) throws IOException;
 
+  /**
+   * Stop interpreter process.
+   *
+   */
   void stop();
 
+  /**
+   * Host name of interpreter process thrift server
+   *
+   * @return
+   */
   String getHost();
 
+  /**
+   * Port of interpreter process thrift server
+   *
+   * @return
+   */
   int getPort();
 
   boolean isRunning();
+
+  /**
+   * Return true if recovering successfully, otherwise return false.
+   *
+   * @return
+   */
+  boolean recover();
 }

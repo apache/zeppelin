@@ -42,7 +42,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
@@ -187,6 +186,8 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
     } else {
       LOGGER.info("Run Spark under non-secure mode as no keytab and principal is specified");
     }
+
+    env.put("PYSPARK_PIN_THREAD", "true");
     LOGGER.debug("buildEnvFromProperties: " + env);
     return env;
 

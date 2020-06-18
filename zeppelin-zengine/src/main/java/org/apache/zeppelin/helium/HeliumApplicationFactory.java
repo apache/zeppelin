@@ -131,19 +131,12 @@ public class HeliumApplicationFactory implements ApplicationEventListener, NoteE
         final String pkgInfo = pkg.toJson();
         final String appId = appState.getId();
 
-        RemoteApplicationResult ret = intpProcess.callRemoteFunction(
-            new RemoteInterpreterProcess.RemoteFunction<RemoteApplicationResult>() {
-              @Override
-              public RemoteApplicationResult call(RemoteInterpreterService.Client client)
-                  throws Exception {
-                return client.loadApplication(
-                    appId,
-                    pkgInfo,
-                    paragraph.getNote().getId(),
-                    paragraph.getId());
-              }
-            }
-        );
+        RemoteApplicationResult ret = intpProcess.callRemoteFunction(client ->
+                client.loadApplication(
+                        appId,
+                        pkgInfo,
+                        paragraph.getNote().getId(),
+                        paragraph.getId()));
         if (ret.isSuccess()) {
           appStatusChange(paragraph, appState.getId(), ApplicationState.Status.LOADED);
         } else {
@@ -230,15 +223,8 @@ public class HeliumApplicationFactory implements ApplicationEventListener, NoteE
           throw new ApplicationException("Target interpreter process is not running");
         }
 
-        RemoteApplicationResult ret = intpProcess.callRemoteFunction(
-            new RemoteInterpreterProcess.RemoteFunction<RemoteApplicationResult>() {
-              @Override
-              public RemoteApplicationResult call(RemoteInterpreterService.Client client)
-                  throws Exception {
-                return client.unloadApplication(appsToUnload.getId());
-              }
-            }
-        );
+        RemoteApplicationResult ret = intpProcess.callRemoteFunction(client ->
+                client.unloadApplication(appsToUnload.getId()));
         if (ret.isSuccess()) {
           appStatusChange(paragraph, appsToUnload.getId(), ApplicationState.Status.UNLOADED);
         } else {
@@ -311,15 +297,8 @@ public class HeliumApplicationFactory implements ApplicationEventListener, NoteE
         if (intpProcess == null) {
           throw new ApplicationException("Target interpreter process is not running");
         }
-        RemoteApplicationResult ret = intpProcess.callRemoteFunction(
-            new RemoteInterpreterProcess.RemoteFunction<RemoteApplicationResult>() {
-              @Override
-              public RemoteApplicationResult call(RemoteInterpreterService.Client client)
-                  throws Exception {
-                return client.runApplication(app.getId());
-              }
-            }
-        );
+        RemoteApplicationResult ret = intpProcess.callRemoteFunction(client ->
+                client.runApplication(app.getId()));
         if (ret.isSuccess()) {
           // success
         } else {

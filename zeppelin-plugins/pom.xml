@@ -48,6 +48,7 @@
         <module>launcher/k8s-standard</module>
         <module>launcher/cluster</module>
         <module>launcher/docker</module>
+        <module>launcher/yarn</module>
         <module>launcher/flink</module>
     </modules>
 

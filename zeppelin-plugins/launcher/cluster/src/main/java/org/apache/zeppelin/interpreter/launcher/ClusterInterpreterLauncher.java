@@ -60,7 +60,7 @@ public class ClusterInterpreterLauncher extends StandardInterpreterLauncher
   }
 
   @Override
-  public InterpreterClient launch(InterpreterLaunchContext context) throws IOException {
+  public InterpreterClient launchDirectly(InterpreterLaunchContext context) throws IOException {
     LOGGER.info("Launching Interpreter: " + context.getInterpreterSettingGroup());
 
     this.context = context;
@@ -78,9 +78,13 @@ public class ClusterInterpreterLauncher extends StandardInterpreterLauncher
 
             return new RemoteInterpreterRunningProcess(
                 context.getInterpreterSettingName(),
+                context.getInterpreterGroupId(),
                 connectTimeout,
+                context.getIntpEventServerHost(),
+                context.getIntpEventServerPort(),
                 intpTserverHost,
-                intpTserverPort);
+                intpTserverPort,
+                false);
           }
 
           @Override
@@ -149,9 +153,13 @@ public class ClusterInterpreterLauncher extends StandardInterpreterLauncher
 
             return new RemoteInterpreterRunningProcess(
                 context.getInterpreterSettingName(),
+                context.getInterpreterGroupId(),
                 connectTimeout,
+                context.getIntpEventServerHost(),
+                context.getIntpEventServerPort(),
                 intpTserverHost,
-                intpTserverPort);
+                intpTserverPort,
+                false);
           }
 
           @Override
@@ -242,8 +250,8 @@ public class ClusterInterpreterLauncher extends StandardInterpreterLauncher
 
       clusterIntpProcess = new ClusterInterpreterProcess(
           runner != null ? runner.getPath() : zConf.getInterpreterRemoteRunnerPath(),
-          context.getZeppelinServerRPCPort(),
-          context.getZeppelinServerHost(),
+          context.getIntpEventServerPort(),
+          context.getIntpEventServerHost(),
           zConf.getInterpreterPortRange(),
           zConf.getInterpreterDir() + "/" + intpSetGroupName,
           localRepoPath,

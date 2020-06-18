@@ -30,6 +30,7 @@
 <%@ val sharedStatesId: UUID = Uuids.random() %>
 <%@ val changelogId: UUID = Uuids.random() %>
 <%@ val contactsId: UUID = Uuids.random() %>
+<%@ val driverVersion: String %>
 
 <br/>
 <br/>
@@ -103,17 +104,17 @@
             <ul class="dropdown-menu">
                 <li>
                     <a role="button">
-                        <span class="text-info">Version <strong>3.0</strong></span>
+                        <span class="text-info">Version <strong>4.0</strong></span>
                     </a>
                 </li>
                 <li>
                     <a role="button">
-                        <span class="text-info">Java Driver Version <strong>3.0.1</strong></span>
+                        <span class="text-info">Java Driver Version <strong>${driverVersion}</strong></span>
                     </a>
                 </li>
                 <li>
                     <a role="button">
-                        <span class="text-info">Author <strong>@doanduyhai</strong></span>
+                        <span class="text-info">Author <strong>@doanduyhai, @alexott</strong></span>
                     </a>
                 </li>
             </ul>
@@ -257,7 +258,7 @@
                     <h3>II Comments</h3>
                     <p>
                         It is possible to add comments between statements. Single line comments start with the
-                        <strong>hash</strong> sign (#) or <strong>double slashes</strong> (//). Multi-line comments are enclosed between
+                        <strong>hash</strong> sign (<code>#</code>), <strong>double minus</strong> (<code>--</code>), or <strong>double slashes</strong> (<code>//</code>). Multi-line comments are enclosed between
                         <strong>&sol;&ast;&ast;</strong> and <strong>&ast;&ast;&sol;</strong>. Ex:
 
                         <br/>
@@ -266,11 +267,12 @@
                             <div class="col-md-8 col-md-offset-2">
                                 <pre>
 
-    #Single line comment style 1
+    # Single line comment style 1
     INSERT INTO users(login,name) VALUES('jdoe','John DOE');
 
-    //Single line comment style 2
+    -- Single line comment style 2
 
+    // Single line comment style 3
 
     /**
      Multi line
@@ -998,6 +1000,13 @@
         </div>        
         <div id="${changelogId}" class="panel-collapse collapse" role="tabpanel">
             <div class="panel-body">
+                <strong>4.0</strong>&nbsp;:
+                <br/>
+                <ul>
+                    <li>Migrate to DataStax Java driver 4.x that supports both Cassandra and DSE.  This contains breaking changes, like, removal of <code>@retryPolicy</code></li>
+                    <li>Fix schema disagreement that could arise when executing multiple DDL statements</li>
+                    <li>Added support for <code>--</code> comment style</li>
+                </ul>
                 <strong>3.0</strong>&nbsp;:
                 <br/>
                 <ul>
@@ -1037,7 +1046,7 @@
         </div>        
         <div id="${contactsId}" class="panel-collapse collapse" role="tabpanel">
             <div class="panel-body">
-                If you encounter a bug for this interpreter, please create a <a href="https://issues.apache.org/jira/browse/ZEPPELIN-382?jql=project%20%3D%20ZEPPELIN" target="_blank"><strong>JIRA</strong></a> ticket and ping me on Twitter at <a href="https://twitter.com/doanduyhai" target="_blank"><strong>@doanduyhai</strong></a>
+                If you encounter a bug for this interpreter, please create a <a href="https://issues.apache.org/jira/browse/ZEPPELIN" target="_blank"><strong>JIRA</strong></a> ticket.</a>
             </div>
         </div>            
     </div>    

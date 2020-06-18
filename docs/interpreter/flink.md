@@ -139,12 +139,22 @@ You can also set other flink properties which are not listed in the table. For a
   <tr>
     <td>flink.webui.yarn.useProxy</td>
     <td>false</td>
-    <td>whether use yarn proxy url as flink weburl, e.g. http://localhost:8088/proxy/application_1583396598068_0004</td>
+    <td>whether use yarn proxy url as flink weburl, e.g. http://resource-manager:8088/proxy/application_1583396598068_0004</td>
+  </tr>
+  <tr>
+    <td>flink.webui.yarn.yarnAddress</td>
+    <td></td>
+    <td>Set this value only when your yarn address is mapped to some other address, e.g. some cloud vender will map `http://resource-manager:8088` to `https://xxx-yarn.yy.cn/gateway/kkk/yarn`</td>
   </tr>
   <tr>
     <td>flink.udf.jars</td>
     <td></td>
     <td>Flink udf jars (comma separated), zeppelin will register udf in this jar automatically for user. The udf name is the class name.</td>
+  </tr>
+  <tr>
+    <td>flink.udf.jars.packages</td>
+    <td></td>
+    <td>Packages (comma separated) that would be searched for the udf defined in `flink.udf.jars`.</td>
   </tr>
   <tr>
     <td>flink.execution.jars</td>
@@ -195,6 +205,11 @@ You can also set other flink properties which are not listed in the table. For a
     <td>zeppelin.flink.hive.version</td>
     <td>2.3.4</td>
     <td>Hive version that you would like to connect</td>
+  </tr>
+  <tr>
+    <td>zeppelin.flink.module.enableHive</td>
+    <td>false</td>
+    <td>Whether enable hive module, hive udf take precedence over flink udf if hive module is enabled.</td>
   </tr>
   <tr>
     <td>zeppelin.flink.maxResult</td>

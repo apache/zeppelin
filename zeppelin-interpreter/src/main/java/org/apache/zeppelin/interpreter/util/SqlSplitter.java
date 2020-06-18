@@ -19,6 +19,8 @@
 package org.apache.zeppelin.interpreter.util;
 
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -79,11 +81,9 @@ public class SqlSplitter {
       }
 
       // end of multiple line comment
-      if (multiLineComment && character == '/' && text.charAt(index - 1) == '*') {
+      if (multiLineComment && (index - 1) >= 0 && text.charAt(index - 1) == '/'
+              && (index - 2) >= 0 && text.charAt(index - 2) == '*') {
         multiLineComment = false;
-        if (query.toString().trim().isEmpty()) {
-          continue;
-        }
       }
 
       if (character == '\'') {
@@ -106,38 +106,29 @@ public class SqlSplitter {
               && text.length() > (index + 1)) {
         if (isSingleLineComment(text.charAt(index), text.charAt(index + 1))) {
           singleLineComment = true;
-        } else if (text.charAt(index) == '/' && text.charAt(index + 1) == '*') {
+        } else if (text.charAt(index) == '/' && text.length() > (index + 2)
+                && text.charAt(index + 1) == '*' && text.charAt(index + 2) != '+') {
           multiLineComment = true;
         }
       }
 
-      if (character == ';' && !singleQuoteString && !doubleQuoteString && !multiLineComment
-              && !singleLineComment) {
-        // meet semicolon
-        queries.add(query.toString().trim());
-        query = new StringBuilder();
+      if (character == ';' && !singleQuoteString && !doubleQuoteString && !multiLineComment && !singleLineComment) {
+        // meet the end of semicolon
+        if (!query.toString().trim().isEmpty()) {
+          queries.add(query.toString().trim());
+          query = new StringBuilder();
+        }
       } else if (index == (text.length() - 1)) {
         // meet the last character
         if (!singleLineComment && !multiLineComment) {
           query.append(character);
+        }
+        if (!query.toString().trim().isEmpty()) {
           queries.add(query.toString().trim());
+          query = new StringBuilder();
         }
       } else if (!singleLineComment && !multiLineComment) {
         // normal case, not in single line comment and not in multiple line comment
-        query.append(character);
-      } else if (singleLineComment && !query.toString().trim().isEmpty()) {
-        // in single line comment, only add it to query when the single line comment is
-        // in the middle of sql statement
-        // e.g.
-        // select a -- comment
-        // from table_1
-        query.append(character);
-      } else if (multiLineComment && !query.toString().trim().isEmpty()) {
-        // in multiple line comment, only add it to query when the multiple line comment
-        // is in the middle of sql statement.
-        // e.g.
-        // select a /* comment */
-        // from table_1
         query.append(character);
       }
     }

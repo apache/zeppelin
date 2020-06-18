@@ -38,7 +38,13 @@ When you click the ```+Create``` button on the interpreter page, the interpreter
 
 You can create multiple interpreters for the same engine with different interpreter setting. e.g. You can create `spark2` for Spark 2.x and create `spark1` for Spark 1.x.
 
-For each paragraph you write in Zeppelin, you need to specify its interpreter first via `%interpreter_group.interpreter_name`. e.g. `%spark.pyspark`, `%spark.r`
+For each paragraph you write in Zeppelin, you need to specify its interpreter first via `%interpreter_group.interpreter_name`. e.g. `%spark.pyspark`, `%spark.r`.
+
+If you specify interpreter, you can also pass local properties to it (if it needs them).  This is done by providing a set of key/value pairs, separated by comma, inside the round brackets right after the interpreter name. If key or value contain characters like `=`, or `,`, then you can either escape them with `\` character, or wrap the whole value inside the double quotes For example:
+
+```
+%cassandra(outputFormat=cql, dateFormat="E, d MMM yy", timeFormat=E\, d MMM yy)
+```
 
 ## What are the Interpreter Settings?
 The interpreter settings are the configuration of a given interpreter on the Zeppelin server. For example, certain properties need to be set for the Apache Hive JDBC interpreter to connect to the Hive server.
