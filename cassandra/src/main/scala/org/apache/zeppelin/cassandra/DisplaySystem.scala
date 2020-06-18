@@ -16,7 +16,8 @@
  */
 package org.apache.zeppelin.cassandra
 
-import java.util.UUID
+import java.io.InputStream
+import java.util.{Properties, UUID}
 
 import org.apache.zeppelin.cassandra.MetaDataHierarchy._
 import org.fusesource.scalate.TemplateEngine
@@ -42,32 +43,38 @@ object DisplaySystem {
 
   val engine = new TemplateEngine
 
-  val CLUSTER_DETAILS_TEMPLATE = "scalate/clusterDetails.ssp"
-  val KEYSPACE_DETAILS_TEMPLATE = "scalate/keyspaceDetails.ssp"
+  val CLUSTER_DETAILS_TEMPLATE: String = "scalate/clusterDetails.ssp"
+  val KEYSPACE_DETAILS_TEMPLATE: String = "scalate/keyspaceDetails.ssp"
 
-  val TABLE_DETAILS_TEMPLATE = "scalate/tableDetails.ssp"
-  val ALL_TABLES_TEMPLATE = "scalate/allTables.ssp"
+  val TABLE_DETAILS_TEMPLATE: String = "scalate/tableDetails.ssp"
+  val ALL_TABLES_TEMPLATE: String = "scalate/allTables.ssp"
 
-  val UDT_DETAILS_TEMPLATE = "scalate/udtDetails.ssp"
-  val ALL_UDTS_TEMPLATE = "scalate/allUDTs.ssp"
+  val UDT_DETAILS_TEMPLATE: String = "scalate/udtDetails.ssp"
+  val ALL_UDTS_TEMPLATE: String = "scalate/allUDTs.ssp"
 
-  val FUNCTION_DETAILS_TEMPLATE = "scalate/functionDetails.ssp"
-  val ALL_FUNCTIONS_TEMPLATE = "scalate/allFunctions.ssp"
+  val FUNCTION_DETAILS_TEMPLATE: String = "scalate/functionDetails.ssp"
+  val ALL_FUNCTIONS_TEMPLATE: String = "scalate/allFunctions.ssp"
 
-  val AGGREGATE_DETAILS_TEMPLATE = "scalate/aggregateDetails.ssp"
-  val ALL_AGGREGATES_TEMPLATE = "scalate/allAggregates.ssp"
+  val AGGREGATE_DETAILS_TEMPLATE: String = "scalate/aggregateDetails.ssp"
+  val ALL_AGGREGATES_TEMPLATE: String = "scalate/allAggregates.ssp"
 
-  val MATERIALIZED_VIEW_DETAILS_TEMPLATE = "scalate/materializedViewDetails.ssp"
-  val ALL_MATERIALIZED_VIEWS_TEMPLATE = "scalate/allMaterializedViews.ssp"
+  val MATERIALIZED_VIEW_DETAILS_TEMPLATE: String = "scalate/materializedViewDetails.ssp"
+  val ALL_MATERIALIZED_VIEWS_TEMPLATE: String = "scalate/allMaterializedViews.ssp"
 
-  val MENU_TEMPLATE = "scalate/menu.ssp"
-  val CLUSTER_DROPDOWN_TEMPLATE = "scalate/dropDownMenuForCluster.ssp"
+  val MENU_TEMPLATE: String = "scalate/menu.ssp"
+  val CLUSTER_DROPDOWN_TEMPLATE: String = "scalate/dropDownMenuForCluster.ssp"
 
-  val KEYSPACE_DROPDOWN_TEMPLATE = "scalate/dropDownMenuForKeyspace.ssp"
-  val CLUSTER_CONTENT_TEMPLATE = "scalate/clusterContent.ssp"
-  val KEYSPACE_CONTENT_TEMPLATE = "scalate/keyspaceContent.ssp"
+  val KEYSPACE_DROPDOWN_TEMPLATE: String = "scalate/dropDownMenuForKeyspace.ssp"
+  val CLUSTER_CONTENT_TEMPLATE: String = "scalate/clusterContent.ssp"
+  val KEYSPACE_CONTENT_TEMPLATE: String = "scalate/keyspaceContent.ssp"
 
-  val DEFAULT_CLUSTER_NAME = "Test Cluster"
+  val NO_RESULT_TEMPLATE: String = "scalate/noResult.ssp"
+  val NO_RESULT_WITH_EXECINFO_TEMPLATE: String = "scalate/noResultWithExecutionInfo.ssp"
+
+  val HELP_TEMPLATE = "scalate/helpMenu.ssp"
+
+  val DEFAULT_CLUSTER_NAME: String = "Test Cluster"
+
   def clusterName(meta: Metadata): String = {
     if (meta != null) {
       meta.getClusterName.orElse(DEFAULT_CLUSTER_NAME)
@@ -384,14 +391,28 @@ object DisplaySystem {
 
   object HelpDisplay {
 
+    lazy val driverProperties: Properties = {
+      val properties = new Properties()
+      try {
+        val is = getClass.getClassLoader.getResourceAsStream("driver-info.properties")
+        properties.load(is)
+        is.close()
+      } catch {
+        case x: Exception => println(s"Exception: ${x.getMessage}")
+      }
+      properties
+    }
+
     def formatHelp(): String = {
-      engine.layout("/scalate/helpMenu.ssp")
+      engine.layout(HELP_TEMPLATE,
+        Map[String, String]("driverVersion" ->
+          driverProperties.getProperty("driverVersion", "Unknown")))
     }
   }
 
   object NoResultDisplay {
 
-    val formatNoResult: String = engine.layout("/scalate/noResult.ssp")
+    val formatNoResult: String = engine.layout(NO_RESULT_TEMPLATE)
 
     def nodeToString(node: Node): String = {
       node.getEndPoint.toString
@@ -403,7 +424,7 @@ object DisplaySystem {
         .toSet + queriedHosts).mkString(", ")
       val schemaInAgreement = Option(execInfo.isSchemaInAgreement).map(_.toString).getOrElse("N/A")
 
-      engine.layout("/scalate/noResultWithExecutionInfo.ssp",
+      engine.layout(NO_RESULT_WITH_EXECINFO_TEMPLATE,
         Map[String, Any]("query" -> lastQuery,
           "triedHosts" -> triedHosts, "queriedHosts" -> queriedHosts,
           "schemaInAgreement" -> schemaInAgreement))

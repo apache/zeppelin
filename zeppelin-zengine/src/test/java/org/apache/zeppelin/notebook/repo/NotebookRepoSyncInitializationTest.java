@@ -31,10 +31,11 @@ import java.io.IOException;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 //TODO(zjffdu) move it to zeppelin-zengine
 public class NotebookRepoSyncInitializationTest {
-  private static final Logger LOG = LoggerFactory.getLogger(NotebookRepoSyncInitializationTest.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(NotebookRepoSyncInitializationTest.class);
   private String validFirstStorageClass = "org.apache.zeppelin.notebook.repo.VFSNotebookRepo";
   private String validSecondStorageClass = "org.apache.zeppelin.notebook.repo.mock.VFSNotebookRepoMock";
   private String invalidStorageClass = "org.apache.zeppelin.notebook.repo.DummyNotebookRepo";
@@ -47,12 +48,12 @@ public class NotebookRepoSyncInitializationTest {
   @Before
   public void setUp(){
     System.setProperty(ConfVars.ZEPPELIN_PLUGINS_DIR.getVarName(), new File("../../../plugins").getAbsolutePath());
-    //setup routine
+    System.setProperty("zeppelin.isTest", "true");
   }
 
   @After
   public void tearDown() {
-    //tear-down routine
+    System.clearProperty("zeppelin.isTest");
   }
 
   @Test
@@ -101,11 +102,13 @@ public class NotebookRepoSyncInitializationTest {
     System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_STORAGE.getVarName(), invalidTwoStorageConf);
     ZeppelinConfiguration conf = ZeppelinConfiguration.create();
     // create repo
-    NotebookRepoSync notebookRepoSync = new NotebookRepoSync(conf);
-    // check that second didn't initialize
-    LOG.info(" " + notebookRepoSync.getRepoCount());
-    assertEquals(notebookRepoSync.getRepoCount(), 1);
-    assertTrue(notebookRepoSync.getRepo(0) instanceof VFSNotebookRepo);
+    try {
+      NotebookRepoSync notebookRepoSync = new NotebookRepoSync(conf);
+      fail("Should throw exception due to invalid NotebookRepo");
+    } catch (IOException e) {
+      LOGGER.error(e.getMessage());
+      assertTrue(e.getMessage().contains("Fail to instantiate notebookrepo from classpath directly"));
+    }
   }
 
   @Test
@@ -148,14 +151,16 @@ public class NotebookRepoSyncInitializationTest {
   }
 
   @Test
-  public void initOneDummyStorageTest() throws IOException {
- // set confs
+  public void initOneDummyStorageTest() {
     System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_STORAGE.getVarName(), invalidStorageClass);
     ZeppelinConfiguration conf = ZeppelinConfiguration.create();
     // create repo
-    NotebookRepoSync notebookRepoSync = new NotebookRepoSync(conf);
-    // check initialization of one default storage instead of invalid one
-    assertEquals(notebookRepoSync.getRepoCount(), 1);
-    assertTrue(notebookRepoSync.getRepo(0) instanceof NotebookRepo);
+    try {
+      NotebookRepoSync notebookRepoSync = new NotebookRepoSync(conf);
+      fail("Should throw exception due to invalid NotebookRepo");
+    } catch (IOException e) {
+      LOGGER.error(e.getMessage());
+      assertTrue(e.getMessage().contains("Fail to instantiate notebookrepo from classpath directly"));
+    }
   }
 }

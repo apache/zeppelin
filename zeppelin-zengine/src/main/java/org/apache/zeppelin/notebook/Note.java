@@ -73,7 +73,7 @@ public class Note implements JsonSerializable {
   private static final ExclusionStrategy strategy = new ExclusionStrategy() {
     @Override
     public boolean shouldSkipField(FieldAttributes f) {
-      return f.getName().equals("runtimeInfos") || f.getName().equals("path");
+      return f.getName().equals("path");
     }
 
     @Override
@@ -1065,11 +1065,11 @@ public class Note implements JsonSerializable {
 
   public void postProcessParagraphs() {
     for (Paragraph p : paragraphs) {
-      p.cleanRuntimeInfos();
-      p.cleanOutputBuffer();
       p.parseText();
+      p.setNote(this);
+      p.setAuthenticationInfo(AuthenticationInfo.ANONYMOUS);
 
-      if (p.getStatus() == Status.PENDING || p.getStatus() == Status.RUNNING) {
+      if (p.getStatus() == Status.PENDING) {
         p.setStatus(Status.ABORT);
       }
 

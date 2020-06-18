@@ -419,6 +419,50 @@ public class SparkInterpreterTest {
   }
 
   @Test
+  public void testDisableReplOutputForParagraph() throws InterpreterException {
+    Properties properties = new Properties();
+    properties.setProperty("spark.master", "local");
+    properties.setProperty("spark.app.name", "test");
+    properties.setProperty("zeppelin.spark.maxResult", "100");
+    properties.setProperty("zeppelin.spark.printREPLOutput", "true");
+    // disable color output for easy testing
+    properties.setProperty("zeppelin.spark.scala.color", "false");
+    properties.setProperty("zeppelin.spark.deprecatedMsg.show", "false");
+
+    InterpreterContext.set(getInterpreterContext());
+    interpreter = new SparkInterpreter(properties);
+    interpreter.setInterpreterGroup(mock(InterpreterGroup.class));
+    interpreter.open();
+
+    InterpreterResult result = interpreter.interpret("val a=\"hello world\"", getInterpreterContext());
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    assertEquals("a: String = hello world\n", output);
+
+    result = interpreter.interpret("print(a)", getInterpreterContext());
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    // output from print statement will still be displayed
+    assertEquals("hello world", output);
+
+    // disable REPL output
+    InterpreterContext context = getInterpreterContext();
+    context.getLocalProperties().put("printREPLOutput", "false");
+    result = interpreter.interpret("print(a)", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    // output from print statement will disappear
+    assertEquals("", output);
+
+    // REPL output get back if we don't set printREPLOutput in paragraph local properties
+    result = interpreter.interpret("val a=\"hello world\"", getInterpreterContext());
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    assertEquals("a: String = hello world\n", output);
+
+    result = interpreter.interpret("print(a)", getInterpreterContext());
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    // output from print statement will still be displayed
+    assertEquals("hello world", output);
+  }
+
+  @Test
   public void testSchedulePool() throws InterpreterException {
     Properties properties = new Properties();
     properties.setProperty("spark.master", "local");

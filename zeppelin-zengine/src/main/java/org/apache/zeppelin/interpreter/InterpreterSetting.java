@@ -141,10 +141,6 @@ public class InterpreterSetting {
 
   private transient ZeppelinConfiguration conf = new ZeppelinConfiguration();
 
-  // TODO(zjffdu) ShellScriptLauncher is the only launcher implemention for now. It could be other
-  // launcher in future when we have other launcher implementation. e.g. third party launcher
-  // service like livy
-  private transient InterpreterLauncher launcher;
   private transient LifecycleManager lifecycleManager;
   private transient RecoveryStorage recoveryStorage;
   private transient RemoteInterpreterEventServer interpreterEventServer;
@@ -309,9 +305,9 @@ public class InterpreterSetting {
     this.conf = o.getConf();
   }
 
-  private void createLauncher() throws IOException {
-    this.launcher = PluginManager.get().loadInterpreterLauncher(
-        getLauncherPlugin(), recoveryStorage);
+  private InterpreterLauncher createLauncher(Properties properties) throws IOException {
+    return PluginManager.get().loadInterpreterLauncher(
+        getLauncherPlugin(properties), recoveryStorage);
   }
 
   public AngularObjectRegistryListener getAngularObjectRegistryListener() {
@@ -783,7 +779,7 @@ public class InterpreterSetting {
     this.interpreterRunner = interpreterRunner;
   }
 
-  public String getLauncherPlugin() {
+  public String getLauncherPlugin(Properties properties) {
     if (isRunningOnKubernetes()) {
       return "K8sStandardInterpreterLauncher";
     } else if (isRunningOnCluster()) {
@@ -791,11 +787,19 @@ public class InterpreterSetting {
     } if (isRunningOnDocker()) {
       return "DockerInterpreterLauncher";
     } else {
+      String launcher = properties.getProperty("zeppelin.interpreter.launcher");
+      LOGGER.debug("zeppelin.interpreter.launcher: " + launcher);
       if (group.equals("spark")) {
         return "SparkInterpreterLauncher";
       } else if (group.equals("flink")) {
+        if ("yarn".equals(launcher)) {
+          return "YarnInterpreterLauncher";
+        }
         return "FlinkInterpreterLauncher";
       } else {
+        if ("yarn".equals(launcher)) {
+          return "YarnInterpreterLauncher";
+        }
         return "StandardInterpreterLauncher";
       }
     }
@@ -860,9 +864,7 @@ public class InterpreterSetting {
                                                                  String userName,
                                                                  Properties properties)
       throws IOException {
-    if (launcher == null) {
-      createLauncher();
-    }
+    InterpreterLauncher launcher = createLauncher(properties);
     InterpreterLaunchContext launchContext = new
         InterpreterLaunchContext(properties, option, interpreterRunner, userName,
         interpreterGroupId, id, group, name, interpreterEventServer.getPort(), interpreterEventServer.getHost());

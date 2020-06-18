@@ -28,20 +28,6 @@ cache:
     -  zeppelin-web/node_modules
     -  zeppelin-web/bower_components
 
-addons:
-  apt:
-    sources:
-    - r-source
-    - sourceline: 'deb http://cran.rstudio.com/bin/linux/ubuntu trusty/'
-      key_url: 'keyserver.ubuntu.com/pks/lookup?op=get&search=0x51716619E084DAB9'
-    - r-packages-trusty
-    - mysql-5.7-trusty
-    packages:
-    - r-base
-    - r-base-dev
-    - mysql-server
-    - mysql-client
-
 services:
   - mysql
 
@@ -84,13 +70,18 @@ jobs:
           packages:
             - google-chrome-stable
 
-    # Test core modules (zeppelin-interpreter,zeppelin-zengine,zeppelin-server)
+    # Test core modules (zeppelin-interpreter,zeppelin-zengine,zeppelin-server) on hadoop2
     # Several tests were excluded from this configuration due to the following issues:
     # HeliumApplicationFactoryTest - https://issues.apache.org/jira/browse/ZEPPELIN-2470
     # After issues are fixed these tests need to be included back by removing them from the "-Dtests.to.exclude" property
     - jdk: "openjdk8"
       dist: xenial
-      env: BUILD_PLUGINS="true" PYTHON="3" R="true" PROFILE="-Phelium-dev -Pexamples" BUILD_FLAG="install -Pbuild-distr -DskipRat -DskipTests" TEST_FLAG="verify -Pusing-packaged-distr -DskipRat" MODULES="-pl zeppelin-server,zeppelin-web,spark/spark-dependencies,markdown,angular,shell -am" TEST_PROJECTS="-Dtests.to.exclude=**/org/apache/zeppelin/spark/*,**/HeliumApplicationFactoryTest.java -DfailIfNoTests=false"
+      env: BUILD_PLUGINS="true" PYTHON="3" R="true" PROFILE="-Phelium-dev -Pexamples -Phadoop2" BUILD_FLAG="install -Pbuild-distr -DskipRat -DskipTests" TEST_FLAG="verify -Pusing-packaged-distr -DskipRat" MODULES="-pl zeppelin-server,zeppelin-web,spark/spark-dependencies,markdown,angular,shell -am" TEST_PROJECTS="-Dtests.to.exclude=**/org/apache/zeppelin/spark/*,**/HeliumApplicationFactoryTest.java -DfailIfNoTests=false"
+
+    # Test core modules (zeppelin-interpreter,zeppelin-zengine,zeppelin-server) on hadoop3
+    - jdk: "openjdk8"
+      dist: xenial
+      env: BUILD_PLUGINS="true" PYTHON="3" R="true" PROFILE="-Phelium-dev -Pexamples -Phadoop3" BUILD_FLAG="install -Pbuild-distr -DskipRat -DskipTests" TEST_FLAG="verify -Pusing-packaged-distr -DskipRat" MODULES="-pl zeppelin-server,zeppelin-web,spark/spark-dependencies,markdown,angular,shell -am" TEST_PROJECTS="-Dtests.to.exclude=**/org/apache/zeppelin/spark/*,**/HeliumApplicationFactoryTest.java -DfailIfNoTests=false"
 
     # Test selenium with spark module for spark 2.3
     - jdk: "openjdk8"
@@ -154,12 +145,12 @@ jobs:
     # Test python/pyspark with python 2, livy 0.5
     - dist: xenial
       jdk: "openjdk8"
-      env: PYTHON="2" SCALA_VER="2.10" SPARK_VER="1.6.3" HADOOP_VER="2.6" LIVY_VER="0.5.0-incubating" PROFILE="-Pspark-1.6 -Phadoop2 -Pscala-2.10" BUILD_FLAG="install -DskipTests -DskipRat" TEST_FLAG="verify -DskipRat" MODULES="-pl livy -am" TEST_PROJECTS=""
+      env: PYTHON="2" SCALA_VER="2.10" SPARK_VER="1.6.3" HADOOP_VER="2.6" LIVY_VER="0.5.0-incubating" R="true" PROFILE="-Pspark-1.6 -Phadoop2 -Pscala-2.10" BUILD_FLAG="install -DskipTests -DskipRat" TEST_FLAG="verify -DskipRat" MODULES="-pl livy -am" TEST_PROJECTS=""
 
     # Test livy 0.5 with spark 2.2.0 under python3
     - dist: xenial
       jdk: "openjdk8"
-      env: PYTHON="3" SPARK_VER="2.2.0" HADOOP_VER="2.6" LIVY_VER="0.5.0-incubating" PROFILE="" BUILD_FLAG="install -DskipTests -DskipRat" TEST_FLAG="verify -DskipRat" MODULES="-pl livy -am" TEST_PROJECTS=""
+      env: PYTHON="3" SPARK_VER="2.2.0" HADOOP_VER="2.6" LIVY_VER="0.5.0-incubating" R="true" PROFILE="" BUILD_FLAG="install -DskipTests -DskipRat" TEST_FLAG="verify -DskipRat" MODULES="-pl livy -am" TEST_PROJECTS=""
 
 before_install:
   # check files included in commit range, clear bower_components if a bower.json file has changed.

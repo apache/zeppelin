@@ -42,8 +42,6 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess {
           Pattern.compile("Submitted application (\\w+)");
 
   private final String interpreterRunner;
-  private final int zeppelinServerRPCPort;
-  private final String zeppelinServerRPCHost;
   private final String interpreterPortRange;
   private InterpreterProcessLauncher interpreterProcessLauncher;
   private String host = null;
@@ -59,8 +57,8 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess {
 
   public RemoteInterpreterManagedProcess(
       String intpRunner,
-      int zeppelinServerRPCPort,
-      String zeppelinServerRPCHost,
+      int intpEventServerPort,
+      String intpEventServerHost,
       String interpreterPortRange,
       String intpDir,
       String localRepoDir,
@@ -69,10 +67,8 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess {
       String interpreterSettingName,
       String interpreterGroupId,
       boolean isUserImpersonated) {
-    super(connectTimeout);
+    super(connectTimeout, intpEventServerHost, intpEventServerPort);
     this.interpreterRunner = intpRunner;
-    this.zeppelinServerRPCPort = zeppelinServerRPCPort;
-    this.zeppelinServerRPCHost = zeppelinServerRPCHost;
     this.interpreterPortRange = interpreterPortRange;
     this.env = env;
     this.interpreterDir = intpDir;
@@ -99,9 +95,9 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess {
     cmdLine.addArgument("-d", false);
     cmdLine.addArgument(interpreterDir, false);
     cmdLine.addArgument("-c", false);
-    cmdLine.addArgument(zeppelinServerRPCHost, false);
+    cmdLine.addArgument(intpEventServerHost, false);
     cmdLine.addArgument("-p", false);
-    cmdLine.addArgument(String.valueOf(zeppelinServerRPCPort), false);
+    cmdLine.addArgument(String.valueOf(intpEventServerPort), false);
     cmdLine.addArgument("-r", false);
     cmdLine.addArgument(interpreterPortRange, false);
     cmdLine.addArgument("-i", false);
@@ -141,14 +137,11 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess {
 
   public void stop() {
     if (isRunning()) {
-      LOGGER.info("Kill interpreter process");
+      LOGGER.info("Kill interpreter process for interpreter group: {}", getInterpreterGroupId());
       try {
-        callRemoteFunction(new RemoteFunction<Void>() {
-          @Override
-          public Void call(RemoteInterpreterService.Client client) throws Exception {
-            client.shutdown();
-            return null;
-          }
+        callRemoteFunction(client -> {
+          client.shutdown();
+          return null;
         });
       } catch (Exception e) {
         LOGGER.warn("ignore the exception when shutting down", e);
@@ -157,10 +150,9 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess {
       // Shutdown connection
       shutdown();
       this.interpreterProcessLauncher.stop();
+      this.interpreterProcessLauncher = null;
+      LOGGER.info("Remote process of interpreter group: {} is terminated", getInterpreterGroupId());
     }
-
-    interpreterProcessLauncher = null;
-    LOGGER.info("Remote process terminated");
   }
 
   @Override
@@ -196,6 +188,7 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess {
     return interpreterSettingName;
   }
 
+  @Override
   public String getInterpreterGroupId() {
     return interpreterGroupId;
   }

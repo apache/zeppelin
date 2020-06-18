@@ -35,6 +35,8 @@ import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.commons.httpclient.methods.RequestEntity;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.zeppelin.interpreter.InterpreterSettingManager;
+import org.apache.zeppelin.interpreter.integration.DownloadUtils;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.plugin.PluginManager;
 import org.apache.zeppelin.utils.TestUtils;
@@ -200,6 +202,7 @@ public abstract class AbstractTestRestApi {
       System.setProperty(
           ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_GROUP_DEFAULT.getVarName(),
           "spark");
+      
       notebookDir = new File(zeppelinHome.getAbsolutePath() + "/notebook_" + testClassName);
       if (cleanData) {
         FileUtils.deleteDirectory(notebookDir);
@@ -256,6 +259,12 @@ public abstract class AbstractTestRestApi {
       }
 
       LOG.info("Zeppelin Server is started.");
+
+      // set up spark interpreter
+      String sparkHome = DownloadUtils.downloadSpark("2.4.4");
+      InterpreterSettingManager interpreterSettingManager = TestUtils.getInstance(InterpreterSettingManager.class);
+      InterpreterSetting interpreterSetting = interpreterSettingManager.getInterpreterSettingByName("spark");
+      interpreterSetting.setProperty("SPARK_HOME", sparkHome);
     }
   }
 
@@ -289,12 +298,17 @@ public abstract class AbstractTestRestApi {
   }
 
   protected static void shutDown(final boolean deleteConfDir) throws Exception {
+    shutDown(deleteConfDir, false);
+  }
+
+  protected static void shutDown(final boolean deleteConfDir,
+                                 boolean forceShutdownInterpreter) throws Exception {
 
     if (!WAS_RUNNING && TestUtils.getInstance(Notebook.class) != null) {
       // restart interpreter to stop all interpreter processes
       List<InterpreterSetting> settingList = TestUtils.getInstance(Notebook.class).getInterpreterSettingManager()
               .get();
-      if (!TestUtils.getInstance(Notebook.class).getConf().isRecoveryEnabled()) {
+      if (!TestUtils.getInstance(Notebook.class).getConf().isRecoveryEnabled() || forceShutdownInterpreter) {
         for (InterpreterSetting setting : settingList) {
           TestUtils.getInstance(Notebook.class).getInterpreterSettingManager().restart(setting.getId());
         }
@@ -336,7 +350,6 @@ public abstract class AbstractTestRestApi {
       TestUtils.clearInstances();
       ZeppelinServer.reset();
     }
-
   }
 
   protected static boolean checkIfServerIsRunning() {

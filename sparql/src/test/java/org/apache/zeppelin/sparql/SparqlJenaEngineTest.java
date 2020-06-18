@@ -166,11 +166,13 @@ public class SparqlJenaEngineTest {
     SparqlInterpreter interpreter = new SparqlInterpreter(properties);
     interpreter.open();
 
-    final InterpreterResult result = interpreter.interpret(
-        "SELECT DISTINCT ?Concept WHERE {[] a ?Concept} LIMIT 1", null);
+    String query = "PREFIX rdfs:<http://www.w3.org/2000/01/rdf-schema#>" +
+            "\nSELECT * WHERE {?athlete rdfs:label " +
+            "\"Cristiano Ronaldo\"@en}  order by ?athlete limit 1";
+    final InterpreterResult result = interpreter.interpret(query, null);
     assertEquals(Code.SUCCESS, result.code());
 
-    final String expected = "?Concept\n<http://www.openlinksw.com/schemas/virtrdf#QuadMapFormat>\n";
+    final String expected = "?athlete\n<http://dbpedia.org/resource/Cristiano_Ronaldo>\n";
     assertEquals(expected, result.message().get(0).getData());
   }
 

@@ -35,7 +35,6 @@ import javax.servlet.DispatcherType;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.directory.api.util.Strings;
 import org.apache.shiro.web.env.EnvironmentLoaderListener;
 import org.apache.shiro.web.servlet.ShiroFilter;
 import org.apache.zeppelin.cluster.ClusterManagerServer;
@@ -350,14 +349,14 @@ public class ZeppelinServer extends ResourceConfig {
 
   private static void runNoteOnStart(ZeppelinConfiguration conf) throws IOException, InterruptedException {
     String noteIdToRun = conf.getNotebookRunId();
-    if (!Strings.isEmpty(noteIdToRun)) {
+    if (!StringUtils.isEmpty(noteIdToRun)) {
       LOG.info("Running note {} on start", noteIdToRun);
       NotebookService notebookService = (NotebookService) ServiceLocatorUtilities.getService(
               sharedServiceLocator, NotebookService.class.getName());
 
       ServiceContext serviceContext;
       String base64EncodedJsonSerializedServiceContext = conf.getNotebookRunServiceContext();
-      if (Strings.isEmpty(base64EncodedJsonSerializedServiceContext)) {
+      if (StringUtils.isEmpty(base64EncodedJsonSerializedServiceContext)) {
         LOG.info("No service context provided. use ANONYMOUS");
         serviceContext = new ServiceContext(AuthenticationInfo.ANONYMOUS, new HashSet<String>() {});
       } else {

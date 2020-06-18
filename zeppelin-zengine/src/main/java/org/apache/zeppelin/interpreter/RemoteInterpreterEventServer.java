@@ -166,7 +166,8 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
       LOGGER.warn("Interpreter process does not existed yet for InterpreterGroup: " +
           registerInfo.getInterpreterGroupId());
     }
-
+    LOGGER.info("Register interpreter process: {}:{}, {}",
+            registerInfo.getHost(), registerInfo.getPort(), registerInfo.getInterpreterGroupId());
     interpreterProcess.processStarted(registerInfo.port, registerInfo.host);
   }
 
@@ -412,18 +413,12 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
         return null;
       }
     } else if (remoteInterpreterProcess.isRunning()) {
-      ByteBuffer res = remoteInterpreterProcess.callRemoteFunction(
-          new RemoteInterpreterProcess.RemoteFunction<ByteBuffer>() {
-            @Override
-            public ByteBuffer call(RemoteInterpreterService.Client client) throws Exception {
-              return client.resourceInvokeMethod(
+      ByteBuffer res = remoteInterpreterProcess.callRemoteFunction(client ->
+              client.resourceInvokeMethod(
                   resourceId.getNoteId(),
                   resourceId.getParagraphId(),
                   resourceId.getName(),
-                  message.toJson());
-            }
-          }
-      );
+                  message.toJson()));
 
       try {
         return Resource.deserializeObject(res);
@@ -442,17 +437,11 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
       return null;
     }
     RemoteInterpreterProcess remoteInterpreterProcess = intpGroup.getRemoteInterpreterProcess();
-    ByteBuffer buffer = remoteInterpreterProcess.callRemoteFunction(
-        new RemoteInterpreterProcess.RemoteFunction<ByteBuffer>() {
-          @Override
-          public ByteBuffer call(RemoteInterpreterService.Client client) throws Exception {
-            return  client.resourceGet(
+    ByteBuffer buffer = remoteInterpreterProcess.callRemoteFunction(client ->
+            client.resourceGet(
                 resourceId.getNoteId(),
                 resourceId.getParagraphId(),
-                resourceId.getName());
-          }
-        }
-    );
+                resourceId.getName()));
 
     try {
       Object o = Resource.deserializeObject(buffer);
@@ -478,13 +467,7 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
         }
       } else if (remoteInterpreterProcess.isRunning()) {
         List<String> resourceList = remoteInterpreterProcess.callRemoteFunction(
-            new RemoteInterpreterProcess.RemoteFunction<List<String>>() {
-              @Override
-              public List<String> call(RemoteInterpreterService.Client client) throws Exception {
-                return client.resourcePoolGetAll();
-              }
-            }
-        );
+                client -> client.resourcePoolGetAll());
         for (String res : resourceList) {
           resourceSet.add(RemoteResource.fromJson(res));
         }

@@ -543,14 +543,8 @@ public class Helium {
           resourceSet.addAll(localPool.getAll());
         }
       } else if (remoteInterpreterProcess.isRunning()) {
-        List<String> resourceList = remoteInterpreterProcess.callRemoteFunction(
-            new RemoteInterpreterProcess.RemoteFunction<List<String>>() {
-              @Override
-              public List<String> call(RemoteInterpreterService.Client client) throws Exception {
-                return client.resourcePoolGetAll();
-              }
-            }
-        );
+        List<String> resourceList = remoteInterpreterProcess.callRemoteFunction(client ->
+                client.resourcePoolGetAll());
         Gson gson = new Gson();
         for (String res : resourceList) {
           resourceSet.add(gson.fromJson(res, Resource.class));

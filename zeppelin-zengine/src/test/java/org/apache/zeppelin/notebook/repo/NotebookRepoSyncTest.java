@@ -72,6 +72,7 @@ public class NotebookRepoSyncTest {
 
   @Before
   public void setUp() throws Exception {
+    System.setProperty("zeppelin.isTest", "true");
     ZEPPELIN_HOME = Files.createTempDir();
     new File(ZEPPELIN_HOME, "conf").mkdirs();
     String mainNotePath = ZEPPELIN_HOME.getAbsolutePath() + "/notebook";
@@ -110,6 +111,7 @@ public class NotebookRepoSyncTest {
   @After
   public void tearDown() throws Exception {
     delete(ZEPPELIN_HOME);
+    System.clearProperty("zeppelin.isTest");
   }
 
   @Test

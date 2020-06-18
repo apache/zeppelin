@@ -94,8 +94,8 @@ function addEachJarInDirRecursive(){
 
 function addEachJarInDirRecursiveForIntp(){
   if [[ -d "${1}" ]]; then
-    for jar in $(find -L "${1}" -type f -name '*jar'); do
-      ZEPPELIN_INTP_CLASSPATH="$jar:$ZEPPELIN_INTP_CLASSPATH"
+    for jar in ${1}/*.jar; do
+      ZEPPELIN_INTP_CLASSPATH="$jar:${ZEPPELIN_INTP_CLASSPATH}"
     done
   fi
 }
@@ -135,7 +135,7 @@ if [[ -z "${ZEPPELIN_MEM}" ]]; then
   export ZEPPELIN_MEM="-Xms1024m -Xmx1024m"
 fi
 
-if [[ -z "${ZEPPELIN_INTP_MEM}" ]]; then
+if [[ ( -z "${ZEPPELIN_INTP_MEM}" ) && ( "${ZEPPELIN_INTERPRETER_LAUNCHER}" != "yarn" ) ]]; then
   export ZEPPELIN_INTP_MEM="-Xms1024m -Xmx2048m"
 fi
 
@@ -145,7 +145,7 @@ export JAVA_OPTS
 
 JAVA_INTP_OPTS="${ZEPPELIN_INTP_JAVA_OPTS} -Dfile.encoding=${ZEPPELIN_ENCODING}"
 if [[ -z "${ZEPPELIN_SPARK_YARN_CLUSTER}" ]]; then
-    JAVA_INTP_OPTS+=" -Dlog4j.configuration=file://${ZEPPELIN_CONF_DIR}/log4j.properties"
+    JAVA_INTP_OPTS+=" -Dlog4j.configuration='file://${ZEPPELIN_CONF_DIR}/log4j.properties' -Dlog4j.configurationFile='file://${ZEPPELIN_CONF_DIR}/log4j2.properties'"
 else
     JAVA_INTP_OPTS+=" -Dlog4j.configuration=log4j_yarn_cluster.properties"
 fi

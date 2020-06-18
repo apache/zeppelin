@@ -22,11 +22,12 @@ public class StopInterpreter {
 
   public static void main(String[] args) throws IOException {
     ZeppelinConfiguration zConf = ZeppelinConfiguration.create();
-    RecoveryStorage recoveryStorage = null;
+    InterpreterSettingManager interpreterSettingManager =
+            new InterpreterSettingManager(zConf, null, null, null);
 
-    recoveryStorage = ReflectionUtils.createClazzInstance(zConf.getRecoveryStorageClass(),
+    RecoveryStorage recoveryStorage  = ReflectionUtils.createClazzInstance(zConf.getRecoveryStorageClass(),
         new Class[] {ZeppelinConfiguration.class, InterpreterSettingManager.class},
-        new Object[] {zConf, null});
+        new Object[] {zConf, interpreterSettingManager});
 
     LOGGER.info("Using RecoveryStorage: " + recoveryStorage.getClass().getName());
     Map<String, InterpreterClient> restoredClients = recoveryStorage.restore();

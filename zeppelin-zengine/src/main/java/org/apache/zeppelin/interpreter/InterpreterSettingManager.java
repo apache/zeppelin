@@ -177,12 +177,15 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
     this.angularObjectRegistryListener = angularObjectRegistryListener;
     this.remoteInterpreterProcessListener = remoteInterpreterProcessListener;
     this.appEventListener = appEventListener;
+
+    this.interpreterEventServer = new RemoteInterpreterEventServer(conf, this);
+    this.interpreterEventServer.start();
+
     this.recoveryStorage =
         ReflectionUtils.createClazzInstance(
             conf.getRecoveryStorageClass(),
             new Class[] {ZeppelinConfiguration.class, InterpreterSettingManager.class},
             new Object[] {conf, this});
-    this.recoveryStorage.init();
     LOGGER.info("Using RecoveryStorage: " + this.recoveryStorage.getClass().getName());
     this.lifecycleManager =
         ReflectionUtils.createClazzInstance(
@@ -192,9 +195,11 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
     LOGGER.info("Using LifecycleManager: " + this.lifecycleManager.getClass().getName());
 
     this.configStorage = configStorage;
-    this.interpreterEventServer = new RemoteInterpreterEventServer(conf, this);
-    this.interpreterEventServer.start();
     init();
+  }
+
+  public RemoteInterpreterEventServer getInterpreterEventServer() {
+    return interpreterEventServer;
   }
 
   public void refreshInterpreterTemplates() {
@@ -322,6 +327,9 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
     loadInterpreterSettingFromDefaultDir(true);
     loadFromFile();
     saveToFile();
+
+    // must init Recovery after init of InterpreterSettingManagaer
+    recoveryStorage.init();
   }
 
   private void loadJupyterKernelLanguageMap() throws IOException {
@@ -615,13 +623,7 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
           resourceSet.addAll(localPool.getAll());
         }
       } else if (remoteInterpreterProcess.isRunning()) {
-        List<String> resourceList = remoteInterpreterProcess.callRemoteFunction(
-            new RemoteInterpreterProcess.RemoteFunction<List<String>>() {
-              @Override
-              public List<String> call(RemoteInterpreterService.Client client) throws Exception {
-                return client.resourcePoolGetAll();
-              }
-            });
+        List<String> resourceList = remoteInterpreterProcess.callRemoteFunction(client -> client.resourcePoolGetAll());
         if (resourceList != null) {
           for (String res : resourceList) {
             resourceSet.add(Resource.fromJson(res));
@@ -659,13 +661,7 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
               r.getResourceId().getName());
         }
       } else if (remoteInterpreterProcess.isRunning()) {
-        List<String> resourceList = remoteInterpreterProcess.callRemoteFunction(
-            new RemoteInterpreterProcess.RemoteFunction<List<String>>() {
-              @Override
-              public List<String> call(RemoteInterpreterService.Client client) throws Exception {
-                return client.resourcePoolGetAll();
-              }
-            });
+        List<String> resourceList = remoteInterpreterProcess.callRemoteFunction(client -> client.resourcePoolGetAll());
         for (String res : resourceList) {
           resourceSet.add(Resource.fromJson(res));
         }
@@ -678,18 +674,12 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
         }
         try{
           for (final Resource r : resourceSet) {
-            remoteInterpreterProcess.callRemoteFunction(
-                    new RemoteInterpreterProcess.RemoteFunction<Void>() {
-
-                      @Override
-                      public Void call(RemoteInterpreterService.Client client) throws Exception {
-                        client.resourceRemove(
-                                r.getResourceId().getNoteId(),
-                                r.getResourceId().getParagraphId(),
-                                r.getResourceId().getName());
-                        return null;
-                      }
-                    });
+            remoteInterpreterProcess.callRemoteFunction(client -> {
+              client.resourceRemove(r.getResourceId().getNoteId(),
+                      r.getResourceId().getParagraphId(),
+                      r.getResourceId().getName());
+              return null;
+            });
           }
         }catch (Exception e){
           LOGGER.error(e.getMessage());

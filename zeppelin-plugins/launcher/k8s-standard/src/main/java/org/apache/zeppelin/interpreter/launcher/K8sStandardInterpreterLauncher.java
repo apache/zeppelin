@@ -108,7 +108,7 @@ public class K8sStandardInterpreterLauncher extends InterpreterLauncher {
               zConf.getK8sServiceName(),
               getNamespace());
     } else {
-      return context.getZeppelinServerHost();
+      return context.getIntpEventServerHost();
     }
   }
 
@@ -116,13 +116,13 @@ public class K8sStandardInterpreterLauncher extends InterpreterLauncher {
    * get Zeppelin server rpc port
    * Read env variable "<HOSTNAME>_SERVICE_PORT_RPC"
    */
-  private String getZeppelinServiceRpcPort() {
+  private int getZeppelinServiceRpcPort() {
     String envServicePort = System.getenv(
             String.format("%s_SERVICE_PORT_RPC", getHostname().replaceAll("[-.]", "_").toUpperCase()));
     if (envServicePort != null) {
-      return envServicePort;
+      return Integer.parseInt(envServicePort);
     } else {
-      return Integer.toString(context.getZeppelinServerRPCPort());
+      return context.getIntpEventServerPort();
     }
   }
 
@@ -139,7 +139,7 @@ public class K8sStandardInterpreterLauncher extends InterpreterLauncher {
   }
 
   @Override
-  public InterpreterClient launch(InterpreterLaunchContext context) throws IOException {
+  public InterpreterClient launchDirectly(InterpreterLaunchContext context) throws IOException {
     LOGGER.info("Launching Interpreter: {}", context.getInterpreterSettingGroup());
     this.context = context;
     this.properties = context.getProperties();

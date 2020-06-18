@@ -40,6 +40,7 @@ public class ManagedInterpreterGroup extends InterpreterGroup {
 
   private InterpreterSetting interpreterSetting;
   private RemoteInterpreterProcess remoteInterpreterProcess; // attached remote interpreter process
+  private Object interpreterProcessCreationLock = new Object();
 
   /**
    * Create InterpreterGroup with given id and interpreterSetting, used in ZeppelinServer
@@ -55,19 +56,21 @@ public class ManagedInterpreterGroup extends InterpreterGroup {
     return interpreterSetting;
   }
 
-  public synchronized RemoteInterpreterProcess getOrCreateInterpreterProcess(String userName,
-                                                                             Properties properties)
+  public RemoteInterpreterProcess getOrCreateInterpreterProcess(String userName,
+                                                                Properties properties)
       throws IOException {
-    if (remoteInterpreterProcess == null) {
-      LOGGER.info("Create InterpreterProcess for InterpreterGroup: " + getId());
-      remoteInterpreterProcess = interpreterSetting.createInterpreterProcess(id, userName,
-          properties);
-      remoteInterpreterProcess.start(userName);
-      interpreterSetting.getLifecycleManager().onInterpreterProcessStarted(this);
-      getInterpreterSetting().getRecoveryStorage()
-          .onInterpreterClientStart(remoteInterpreterProcess);
+    synchronized (interpreterProcessCreationLock) {
+      if (remoteInterpreterProcess == null) {
+        LOGGER.info("Create InterpreterProcess for InterpreterGroup: " + getId());
+        remoteInterpreterProcess = interpreterSetting.createInterpreterProcess(id, userName,
+                properties);
+        remoteInterpreterProcess.start(userName);
+        interpreterSetting.getLifecycleManager().onInterpreterProcessStarted(this);
+        getInterpreterSetting().getRecoveryStorage()
+                .onInterpreterClientStart(remoteInterpreterProcess);
+      }
+      return remoteInterpreterProcess;
     }
-    return remoteInterpreterProcess;
   }
 
   public RemoteInterpreterProcess getInterpreterProcess() {

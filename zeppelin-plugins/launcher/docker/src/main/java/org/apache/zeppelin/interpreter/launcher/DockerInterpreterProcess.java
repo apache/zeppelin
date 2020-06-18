@@ -60,7 +60,6 @@ import org.apache.zeppelin.interpreter.launcher.utils.TarFileEntry;
 import org.apache.zeppelin.interpreter.launcher.utils.TarUtils;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterUtils;
-import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,8 +77,6 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
   private final String containerImage;
   private final Properties properties;
   private final Map<String, String> envs;
-  private final String zeppelinServiceHost;
-  private final String zeppelinServiceRpcPort;
 
   private AtomicBoolean dockerStarted = new AtomicBoolean(false);
 
@@ -118,11 +115,11 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
       String interpreterSettingName,
       Properties properties,
       Map<String, String> envs,
-      String zeppelinServiceHost,
-      String zeppelinServiceRpcPort,
+      String intpEventServerHost,
+      int intpEventServerPort,
       int connectTimeout
   ) {
-    super(connectTimeout);
+    super(connectTimeout, intpEventServerHost, intpEventServerPort);
 
     this.containerImage = containerImage;
     this.interpreterGroupId = interpreterGroupId;
@@ -130,8 +127,6 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
     this.interpreterSettingName = interpreterSettingName;
     this.properties = properties;
     this.envs = new HashMap(envs);
-    this.zeppelinServiceHost = zeppelinServiceHost;
-    this.zeppelinServiceRpcPort = zeppelinServiceRpcPort;
 
     this.zconf = zconf;
     this.containerName = interpreterGroupId.toLowerCase();
@@ -152,6 +147,11 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
     String defDockerHost = "http://0.0.0.0:2375";
     String dockerHost = System.getenv("DOCKER_HOST");
     DOCKER_HOST = (dockerHost == null) ?  defDockerHost : dockerHost;
+  }
+
+  @Override
+  public String getInterpreterGroupId() {
+    return interpreterGroupId;
   }
 
   @Override
@@ -208,7 +208,7 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
     // Create container with exposed ports
     final ContainerConfig containerConfig = ContainerConfig.builder()
         .hostConfig(hostConfig)
-        .hostname(this.zeppelinServiceHost)
+        .hostname(this.intpEventServerHost)
         .image(containerImage)
         .workingDir("/")
         .env(listEnv)
@@ -301,8 +301,8 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
     dockerProperties.put("zeppelin.interpreter.localRepo", "/tmp/local-repo");
     dockerProperties.put("zeppelin.interpreter.rpc.portRange",
         dockerIntpServicePort + ":" + dockerIntpServicePort);
-    dockerProperties.put("zeppelin.server.rpc.host", zeppelinServiceHost);
-    dockerProperties.put("zeppelin.server.rpc.portRange", zeppelinServiceRpcPort);
+    dockerProperties.put("zeppelin.server.rpc.host", intpEventServerHost);
+    dockerProperties.put("zeppelin.server.rpc.portRange", intpEventServerPort);
 
     // interpreter properties overrides the values
     dockerProperties.putAll(Maps.fromProperties(properties));
@@ -338,12 +338,9 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
     if (isRunning()) {
       LOGGER.info("Kill interpreter process");
       try {
-        callRemoteFunction(new RemoteFunction<Void>() {
-          @Override
-          public Void call(RemoteInterpreterService.Client client) throws Exception {
-            client.shutdown();
-            return null;
-          }
+        callRemoteFunction(client -> {
+          client.shutdown();
+          return null;
         });
       } catch (Exception e) {
         LOGGER.warn("ignore the exception when shutting down", e);

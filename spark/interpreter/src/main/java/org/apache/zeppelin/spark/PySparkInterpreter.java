@@ -221,4 +221,8 @@ public class PySparkInterpreter extends PythonInterpreter {
   public boolean isSpark1() {
     return sparkInterpreter.getSparkVersion().getMajorVersion() == 1;
   }
+
+  public boolean isSpark3() {
+    return sparkInterpreter.getSparkVersion().getMajorVersion() == 3;
+  }
 }

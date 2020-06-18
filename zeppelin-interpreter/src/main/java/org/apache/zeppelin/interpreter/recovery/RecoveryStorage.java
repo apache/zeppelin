@@ -21,11 +21,13 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.launcher.InterpreterClient;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 
 
 /**
  * Interface for storing interpreter process recovery metadata.
+ * Just store mapping between interpreterGroupId to interpreter process host:ip
  *
  */
 public abstract class RecoveryStorage {
@@ -33,12 +35,15 @@ public abstract class RecoveryStorage {
   protected ZeppelinConfiguration zConf;
   protected Map<String, InterpreterClient> restoredClients;
 
-  public RecoveryStorage(ZeppelinConfiguration zConf) throws IOException {
+  // TODO(zjffdu) The constructor is inconsistent between base class and its implementation.
+  //  The implementation actually use InterpreterSettingManager, the interface should also use it.
+  public RecoveryStorage(ZeppelinConfiguration zConf) {
     this.zConf = zConf;
   }
 
   /**
    * Update RecoveryStorage when new InterpreterClient is started
+   *
    * @param client
    * @throws IOException
    */
@@ -46,6 +51,7 @@ public abstract class RecoveryStorage {
 
   /**
    * Update RecoveryStorage when InterpreterClient is stopped
+   *
    * @param client
    * @throws IOException
    */
@@ -55,7 +61,7 @@ public abstract class RecoveryStorage {
    *
    * It is only called when Zeppelin Server is started.
    *
-   * @return
+   * @return Map between interpreterGroupId to InterpreterClient
    * @throws IOException
    */
   public abstract Map<String, InterpreterClient> restore() throws IOException;
@@ -67,14 +73,33 @@ public abstract class RecoveryStorage {
    * @throws IOException
    */
   public void init() throws IOException {
-    this.restoredClients = restore();
+    Map<String, InterpreterClient> restoredClientsInStorage= restore();
+    this.restoredClients = new HashMap<String, InterpreterClient>();
+    for (Map.Entry<String, InterpreterClient> entry : restoredClientsInStorage.entrySet()) {
+      if (entry.getValue().recover()) {
+        this.restoredClients.put(entry.getKey(), entry.getValue());
+      } else {
+        onInterpreterClientStop(entry.getValue());
+      }
+    }
   }
 
+  /**
+   * Get InterpreterClient that is associated with this interpreterGroupId, return null when there's
+   * no such InterpreterClient.
+   *
+   * @param interpreterGroupId
+   * @return InterpreterClient
+   */
   public InterpreterClient getInterpreterClient(String interpreterGroupId) {
     if (restoredClients.containsKey(interpreterGroupId)) {
       return restoredClients.get(interpreterGroupId);
     } else {
       return null;
     }
+  }
+
+  public void removeInterpreterClient(String interpreterGroupId) {
+    this.restoredClients.remove(interpreterGroupId);
   }
 }

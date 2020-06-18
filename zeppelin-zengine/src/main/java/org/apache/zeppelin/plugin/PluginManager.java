@@ -18,11 +18,18 @@
 package org.apache.zeppelin.plugin;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.Lists;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.launcher.InterpreterLauncher;
+import org.apache.zeppelin.interpreter.launcher.SparkInterpreterLauncher;
+import org.apache.zeppelin.interpreter.launcher.StandardInterpreterLauncher;
 import org.apache.zeppelin.interpreter.recovery.RecoveryStorage;
+import org.apache.zeppelin.notebook.repo.GitNotebookRepo;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
+import org.apache.zeppelin.notebook.repo.OldGitNotebookRepo;
 import org.apache.zeppelin.notebook.repo.OldNotebookRepo;
+import org.apache.zeppelin.notebook.repo.OldVFSNotebookRepo;
+import org.apache.zeppelin.notebook.repo.VFSNotebookRepo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,7 +44,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Class for loading Plugins
+ * Class for loading Plugins. It is singleton and factory class.
+ *
  */
 public class PluginManager {
   private static final Logger LOGGER = LoggerFactory.getLogger(PluginManager.class);
@@ -49,6 +57,16 @@ public class PluginManager {
 
   private Map<String, InterpreterLauncher> cachedLaunchers = new HashMap<>();
 
+  private List<String> builtinLauncherClassNames = Lists.newArrayList(
+          StandardInterpreterLauncher.class.getName(),
+          SparkInterpreterLauncher.class.getName());
+  private List<String> builtinNotebookRepoClassNames = Lists.newArrayList(
+          VFSNotebookRepo.class.getName(),
+          GitNotebookRepo.class.getName());
+  private List<String> builtinOldNotebookRepoClassNames = Lists.newArrayList(
+          OldVFSNotebookRepo.class.getName(),
+          OldGitNotebookRepo.class.getName());
+
   public static synchronized PluginManager get() {
     if (instance == null) {
       instance = new PluginManager();
@@ -58,14 +76,16 @@ public class PluginManager {
 
   public NotebookRepo loadNotebookRepo(String notebookRepoClassName) throws IOException {
     LOGGER.info("Loading NotebookRepo Plugin: " + notebookRepoClassName);
-    // load plugin from classpath directly first for these builtin NotebookRepo (such as VFSNoteBookRepo
-    // and GitNotebookRepo). If fails, then try to load it from plugin folder
-    try {
-      NotebookRepo notebookRepo = (NotebookRepo)
-              (Class.forName(notebookRepoClassName).newInstance());
-      return notebookRepo;
-    } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
-      LOGGER.warn("Fail to instantiate notebookrepo from classpath directly:" + notebookRepoClassName);
+    if (builtinNotebookRepoClassNames.contains(notebookRepoClassName) ||
+            Boolean.parseBoolean(System.getProperty("zeppelin.isTest", "false"))) {
+      try {
+        NotebookRepo notebookRepo = (NotebookRepo)
+                (Class.forName(notebookRepoClassName).newInstance());
+        return notebookRepo;
+      } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+        throw new IOException("Fail to instantiate notebookrepo from classpath directly:"
+                + notebookRepoClassName, e);
+      }
     }
 
     String simpleClassName = notebookRepoClassName.substring(notebookRepoClassName.lastIndexOf(".") + 1);
@@ -77,13 +97,10 @@ public class PluginManager {
     try {
       notebookRepo = (NotebookRepo) (Class.forName(notebookRepoClassName, true, pluginClassLoader)).newInstance();
     } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
-      LOGGER.warn("Fail to instantiate notebookrepo " + notebookRepoClassName +
+      throw new IOException("Fail to instantiate notebookrepo " + notebookRepoClassName +
               " from plugin classpath:" + pluginsDir, e);
     }
 
-    if (notebookRepo == null) {
-      LOGGER.warn("Unable to load NotebookRepo Plugin: " + notebookRepoClassName);
-    }
     return notebookRepo;
   }
 
@@ -93,7 +110,7 @@ public class PluginManager {
   }
 
   /**
-   * This is a temporary class which is used for loading old implemention of NotebookRepo.
+   * This is a temporary class which is used for loading old implementation of NotebookRepo.
    *
    * @param notebookRepoClassName
    * @return
@@ -102,14 +119,16 @@ public class PluginManager {
   public OldNotebookRepo loadOldNotebookRepo(String notebookRepoClassName) throws IOException {
     String oldNotebookRepoClassName = getOldNotebookRepoClassName(notebookRepoClassName);
     LOGGER.info("Loading OldNotebookRepo Plugin: " + oldNotebookRepoClassName);
-    // load plugin from classpath directly first for these builtin NotebookRepo (such as VFSNoteBookRepo
-    // and GitNotebookRepo). If fails, then try to load it from plugin folder
-    try {
-      OldNotebookRepo notebookRepo = (OldNotebookRepo)
-          (Class.forName(oldNotebookRepoClassName).newInstance());
-      return notebookRepo;
-    } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
-      LOGGER.warn("Fail to instantiate notebookrepo from classpath directly:" + oldNotebookRepoClassName);
+    if (builtinOldNotebookRepoClassNames.contains(oldNotebookRepoClassName) ||
+            Boolean.parseBoolean(System.getProperty("zeppelin.isTest", "false"))) {
+      try {
+        OldNotebookRepo notebookRepo = (OldNotebookRepo)
+                (Class.forName(oldNotebookRepoClassName).newInstance());
+        return notebookRepo;
+      } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+        throw new IOException("Fail to instantiate notebookrepo from classpath directly:"
+                + oldNotebookRepoClassName);
+      }
     }
 
     String simpleClassName = notebookRepoClassName.substring(notebookRepoClassName.lastIndexOf(".") + 1);
@@ -121,13 +140,10 @@ public class PluginManager {
     try {
       notebookRepo = (OldNotebookRepo) (Class.forName(oldNotebookRepoClassName, true, pluginClassLoader)).newInstance();
     } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
-      LOGGER.warn("Fail to instantiate notebookrepo " + oldNotebookRepoClassName +
+      throw new IOException("Fail to instantiate notebookrepo " + oldNotebookRepoClassName +
               " from plugin classpath:" + pluginsDir, e);
     }
 
-    if (notebookRepo == null) {
-      LOGGER.warn("Unable to load NotebookRepo Plugin: " + oldNotebookRepoClassName);
-    }
     return notebookRepo;
   }
 
@@ -138,36 +154,36 @@ public class PluginManager {
     if (cachedLaunchers.containsKey(launcherPlugin)) {
       return cachedLaunchers.get(launcherPlugin);
     }
-    LOGGER.info("Loading Interpreter Launcher Plugin: " + launcherPlugin);
-    // load plugin from classpath directly first for these builtin InterpreterLauncher.
-    // If fails, then try to load it from plugin folder.
-    try {
-      InterpreterLauncher launcher = (InterpreterLauncher)
-              (Class.forName("org.apache.zeppelin.interpreter.launcher." + launcherPlugin))
-                      .getConstructor(ZeppelinConfiguration.class, RecoveryStorage.class)
-                      .newInstance(zConf, recoveryStorage);
-      return launcher;
-    } catch (InstantiationException | IllegalAccessException | ClassNotFoundException
-            | NoSuchMethodException | InvocationTargetException e) {
-      LOGGER.warn("Fail to instantiate InterpreterLauncher from classpath directly:" + launcherPlugin, e);
+    String launcherClassName = "org.apache.zeppelin.interpreter.launcher." + launcherPlugin;
+    LOGGER.info("Loading Interpreter Launcher Plugin: " + launcherClassName);
+
+    if (builtinLauncherClassNames.contains(launcherClassName) ||
+            Boolean.parseBoolean(System.getProperty("zeppelin.isTest", "false"))) {
+      try {
+        InterpreterLauncher launcher = (InterpreterLauncher)
+                (Class.forName(launcherClassName))
+                        .getConstructor(ZeppelinConfiguration.class, RecoveryStorage.class)
+                        .newInstance(zConf, recoveryStorage);
+        return launcher;
+      } catch (InstantiationException | IllegalAccessException | ClassNotFoundException
+              | NoSuchMethodException | InvocationTargetException e) {
+        throw new IOException("Fail to instantiate InterpreterLauncher from classpath directly:"
+                + launcherClassName, e);
+      }
     }
 
     URLClassLoader pluginClassLoader = getPluginClassLoader(pluginsDir, "Launcher", launcherPlugin);
-    String pluginClass = "org.apache.zeppelin.interpreter.launcher." + launcherPlugin;
     InterpreterLauncher launcher = null;
     try {
-      launcher = (InterpreterLauncher) (Class.forName(pluginClass, true, pluginClassLoader))
+      launcher = (InterpreterLauncher) (Class.forName(launcherClassName, true, pluginClassLoader))
           .getConstructor(ZeppelinConfiguration.class, RecoveryStorage.class)
           .newInstance(zConf, recoveryStorage);
     } catch (InstantiationException | IllegalAccessException | ClassNotFoundException
         | NoSuchMethodException | InvocationTargetException e) {
-      LOGGER.warn("Fail to instantiate Launcher " + launcherPlugin +
+      throw new IOException("Fail to instantiate Launcher " + launcherPlugin +
               " from plugin pluginDir: " + pluginsDir, e);
     }
 
-    if (launcher == null) {
-      throw new IOException("Fail to load plugin: " + launcherPlugin);
-    }
     cachedLaunchers.put(launcherPlugin, launcher);
     return launcher;
   }
