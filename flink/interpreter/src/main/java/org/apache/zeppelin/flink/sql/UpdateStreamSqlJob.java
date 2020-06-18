@@ -65,7 +65,7 @@ public class UpdateStreamSqlJob extends AbstractStreamSqlJob {
     enableToRefresh = false;
     LOGGER.debug("processDelete: " + row.toString());
     for (int i = 0; i < materializedTable.size(); i++) {
-      if (materializedTable.get(i).equals(row)) {
+      if (flinkShims.rowEquals(materializedTable.get(i), row)) {
         LOGGER.debug("real processDelete: " + row.toString());
         materializedTable.remove(i);
         break;
