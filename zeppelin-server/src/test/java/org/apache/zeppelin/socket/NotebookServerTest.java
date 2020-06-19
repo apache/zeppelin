@@ -172,7 +172,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
     verify(sock1, times(++sock1SendCount)).send(anyString());
     verify(sock2, times(sock2SendCount)).send(anyString());
 
-    notebook.removeNote(createdNote.getId(), anonymous);
+    notebook.removeNote(createdNote, anonymous);
   }
 
   private void patchParagraph(NotebookSocket noteSocket, String paragraphId, String patch) {
@@ -250,7 +250,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
       verify(sock2, times(1)).send(anyString());
     } finally {
       if (note1 != null) {
-        notebook.removeNote(note1.getId(), anonymous);
+        notebook.removeNote(note1, anonymous);
       }
     }
   }
@@ -355,7 +355,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
       assertNull(ao2);
     } finally {
       if (note1 != null) {
-        notebook.removeNote(note1.getId(), anonymous);
+        notebook.removeNote(note1, anonymous);
       }
     }
   }
@@ -417,7 +417,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
       assertEquals(ao1.get(), "COMMAND_TYPE_VALUE");
     } finally {
       if (note1 != null) {
-        notebook.removeNote(note1.getId(), anonymous);
+        notebook.removeNote(note1, anonymous);
       }
     }
   }
@@ -447,7 +447,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
               .getText());
     } finally {
       if (note != null) {
-        notebook.removeNote(note.getId(), anonymous);
+        notebook.removeNote(note, anonymous);
       }
     }
   }
@@ -476,7 +476,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
               notebook.getNote(note.getId()).getParagraphs().get(0).getScriptText());
     } finally {
       if (note != null) {
-        notebook.removeNote(note.getId(), anonymous);
+        notebook.removeNote(note, anonymous);
       }
     }
   }
@@ -635,7 +635,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
       assertEquals(notebook.getInterpreterSettingManager().getDefaultInterpreterSetting(
               createdNote.getId()).getId(), defaultInterpreterId);
     }
-    notebook.removeNote(createdNote.getId(), anonymous);
+    notebook.removeNote(createdNote, anonymous);
   }
 
   @Test
@@ -742,7 +742,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
       assertNotNull(user1Id + " can get " + user2Id + "'s shared note", paragraphList2);
     } finally {
       if (null != note) {
-        notebook.removeNote(note.getId(), anonymous);
+        notebook.removeNote(note, anonymous);
       }
     }
   }
@@ -778,7 +778,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
       assertEquals(0, note.getParagraphCount());
     } finally {
       if (null != note) {
-        notebook.removeNote(note.getId(), anonymous);
+        notebook.removeNote(note, anonymous);
       }
     }
   }

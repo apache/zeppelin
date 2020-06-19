@@ -100,7 +100,7 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
     } finally {
       // cleanup
       if (null != note1) {
-        TestUtils.getInstance(Notebook.class).removeNote(note1.getId(), anonymous);
+        TestUtils.getInstance(Notebook.class).removeNote(note1, anonymous);
       }
     }
   }
@@ -135,7 +135,7 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
     } finally {
       // cleanup
       if (null != note1) {
-        TestUtils.getInstance(Notebook.class).removeNote(note1.getId(), anonymous);
+        TestUtils.getInstance(Notebook.class).removeNote(note1, anonymous);
       }
     }
   }
@@ -191,7 +191,7 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
     } finally {
       // cleanup
       if (null != note1) {
-        TestUtils.getInstance(Notebook.class).removeNote(note1.getId(), anonymous);
+        TestUtils.getInstance(Notebook.class).removeNote(note1, anonymous);
       }
     }
   }
@@ -230,7 +230,7 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
     } finally {
       // cleanup
       if (null != note1) {
-        TestUtils.getInstance(Notebook.class).removeNote(note1.getId(), anonymous);
+        TestUtils.getInstance(Notebook.class).removeNote(note1, anonymous);
       }
     }
   }
@@ -272,7 +272,7 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
     } finally {
       // cleanup
       if (null != note1) {
-        TestUtils.getInstance(Notebook.class).removeNote(note1.getId(), anonymous);
+        TestUtils.getInstance(Notebook.class).removeNote(note1, anonymous);
       }
     }
   }
@@ -319,7 +319,7 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
     } finally {
       // cleanup
       if (null != note1) {
-        TestUtils.getInstance(Notebook.class).removeNote(note1.getId(), anonymous);
+        TestUtils.getInstance(Notebook.class).removeNote(note1, anonymous);
       }
     }
   }
@@ -370,7 +370,7 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
     } finally {
       // cleanup
       if (null != note1) {
-        TestUtils.getInstance(Notebook.class).removeNote(note1.getId(), anonymous);
+        TestUtils.getInstance(Notebook.class).removeNote(note1, anonymous);
       }
     }
   }
@@ -433,7 +433,7 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
     } finally {
       // cleanup
       if (null != note1) {
-        TestUtils.getInstance(Notebook.class).removeNote(note1.getId(), anonymous);
+        TestUtils.getInstance(Notebook.class).removeNote(note1, anonymous);
       }
     }
   }
@@ -503,10 +503,13 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
     } finally {
       // cleanup
       if (null != note1) {
-        TestUtils.getInstance(Notebook.class).removeNote(note1.getId(), anonymous);
+        TestUtils.getInstance(Notebook.class).removeNote(note1, anonymous);
       }
       if (null != clonedNoteId) {
-        TestUtils.getInstance(Notebook.class).removeNote(clonedNoteId, anonymous);
+        Note clonedNote = TestUtils.getInstance(Notebook.class).getNote(clonedNoteId);
+        if (clonedNote != null) {
+          TestUtils.getInstance(Notebook.class).removeNote(clonedNote, anonymous);
+        }
       }
     }
   }
@@ -531,7 +534,7 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
     } finally {
       // cleanup
       if (null != note) {
-        TestUtils.getInstance(Notebook.class).removeNote(note.getId(), anonymous);
+        TestUtils.getInstance(Notebook.class).removeNote(note, anonymous);
       }
     }
   }
@@ -563,7 +566,7 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
     } finally {
       // cleanup
       if (null != note) {
-        TestUtils.getInstance(Notebook.class).removeNote(note.getId(), anonymous);
+        TestUtils.getInstance(Notebook.class).removeNote(note, anonymous);
       }
     }
   }
@@ -606,7 +609,7 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
     } finally {
       // cleanup
       if (null != note) {
-        TestUtils.getInstance(Notebook.class).removeNote(note.getId(), anonymous);
+        TestUtils.getInstance(Notebook.class).removeNote(note, anonymous);
       }
     }
   }
@@ -662,7 +665,7 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
     } finally {
       // cleanup
       if (null != note1) {
-        TestUtils.getInstance(Notebook.class).removeNote(note1.getId(), anonymous);
+        TestUtils.getInstance(Notebook.class).removeNote(note1, anonymous);
       }
     }
   }
