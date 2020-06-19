@@ -133,7 +133,7 @@ public abstract class SparkIntegrationTest {
 
     // test SparkRInterpreter
     Interpreter sparkrInterpreter = interpreterFactory.getInterpreter("spark.r", new ExecutionContext("user1", "note1", "test"));
-    if (isSpark2()) {
+    if (isSpark2() || isSpark3()) {
       interpreterResult = sparkrInterpreter.interpret("df <- as.DataFrame(faithful)\nhead(df)", context);
     } else {
       interpreterResult = sparkrInterpreter.interpret("df <- createDataFrame(sqlContext, faithful)\nhead(df)", context);
@@ -237,6 +237,10 @@ public abstract class SparkIntegrationTest {
 
   private boolean isSpark2() {
     return this.sparkVersion.startsWith("2.");
+  }
+
+  private boolean isSpark3() {
+    return this.sparkVersion.startsWith("3.");
   }
 
   private String getPythonExec() throws IOException, InterruptedException {

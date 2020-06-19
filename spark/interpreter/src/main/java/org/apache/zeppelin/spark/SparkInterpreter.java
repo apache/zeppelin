@@ -91,6 +91,13 @@ public class SparkInterpreter extends AbstractInterpreter {
             && entry.getValue().toString().equals("true")) {
           conf.set(SparkStringConstants.SCHEDULER_MODE_PROP_NAME, "FAIR");
         }
+        // yarn-client and yarn-cluster is removed in spark 3.0, use yarn instead.
+        if (entry.getKey().toString().equals("spark.master")) {
+          String spMaster = entry.getValue().toString();
+          if (spMaster.equals("yarn-client") || spMaster.equals("yarn-cluster")) {
+            conf.set(entry.getKey().toString(), "yarn");
+          }
+        }
       }
       // use local mode for embedded spark mode when spark.master is not found
       if (!conf.contains(SparkStringConstants.MASTER_PROP_NAME)) {

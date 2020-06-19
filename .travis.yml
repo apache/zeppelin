@@ -17,6 +17,7 @@ language: java
 
 before_cache:
     - sudo chown -R travis:travis $HOME/.m2
+    -
 
 cache:
   apt: true
@@ -97,6 +98,12 @@ jobs:
 
     # Run Spark integration test and unit test
 
+    # Run spark integration of in one zeppelin instance (3.0)
+    - jdk: "openjdk8"
+      dist: xenial
+      env: BUILD_PLUGINS="true" PYTHON="3" SCALA_VER="2.12" PROFILE="-Phadoop2 -Pintegration" R="true" BUILD_FLAG="install -DskipTests -DskipRat" TEST_FLAG="test -DskipRat" MODULES="-pl zeppelin-interpreter-integration,zeppelin-web,spark/spark-dependencies,markdown -am" TEST_PROJECTS="-Dtest=ZeppelinSparkClusterTest30,SparkIntegrationTest30 -DfailIfNoTests=false"
+
+
     # Run spark integration of in one zeppelin instance (2.4, 2.3, 2.2)
     - jdk: "openjdk8"
       dist: xenial
@@ -175,6 +182,11 @@ install:
   - if [ x"$BUILD_PLUGINS" == x"true" ]; then echo "mvn clean package -T 2C -pl zeppelin-plugins -amd -B"; mvn clean package -T 2C -pl zeppelin-plugins -amd -B; fi
 
 before_script:
+  - sudo echo "deb http://cran.rstudio.com/bin/linux/ubuntu xenial/" | sudo tee -a /etc/apt/sources.list
+  - gpg --keyserver keyserver.ubuntu.com --recv-key E084DAB9
+  - gpg -a --export E084DAB9 | sudo apt-key add -
+  - sudo apt-get update
+  - sudo apt-get install r-base r-base-dev
   - if [[ -n $SPARK_VER ]]; then travis_retry ./testing/downloadSpark.sh $SPARK_VER $HADOOP_VER; fi
   - if [[ -n $LIVY_VER ]]; then ./testing/downloadLivy.sh $LIVY_VER; fi
   - if [[ -n $LIVY_VER ]]; then export LIVY_HOME=`pwd`/livy-$LIVY_VER-bin; fi

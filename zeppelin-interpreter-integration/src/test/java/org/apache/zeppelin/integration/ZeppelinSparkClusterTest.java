@@ -224,14 +224,14 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
       IOUtils.copy(new StringReader("{\"metadata\": { \"key\": 84896, \"value\": 54 }}\n"),
               jsonFileWriter);
       jsonFileWriter.close();
-      if (isSpark2()) {
+      if (isSpark2() || isSpark3()) {
         p.setText("%spark spark.read.json(\"file://" + tmpJsonFile.getAbsolutePath() + "\")");
       } else {
         p.setText("%spark sqlContext.read.json(\"file://" + tmpJsonFile.getAbsolutePath() + "\")");
       }
       note.run(p.getId(), true);
       assertEquals(Status.FINISHED, p.getStatus());
-      if (isSpark2()) {
+      if (isSpark2() || isSpark3()) {
         assertTrue(p.getReturn().message().get(0).getData().contains(
                 "org.apache.spark.sql.DataFrame = [metadata: struct<key: bigint, value: bigint>]"));
       } else {
@@ -247,7 +247,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
 
   @Test
   public void sparkReadCSVTest() throws IOException {
-    if (!isSpark2()) {
+    if (!isSpark2() || isSpark3()) {
       // csv if not supported in spark 1.x natively
       return;
     }
@@ -279,7 +279,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
       note = TestUtils.getInstance(Notebook.class).createNote("note1", anonymous);
       // test basic dataframe api
       Paragraph p = note.addNewParagraph(anonymous);
-      if (isSpark2()) {
+      if (isSpark2() || isSpark3()) {
         p.setText("%spark val df=spark.createDataFrame(Seq((\"hello\",20)))" +
                 ".toDF(\"name\", \"age\")\n" +
                 "df.collect()");
@@ -295,7 +295,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
 
       // test display DataFrame
       p = note.addNewParagraph(anonymous);
-      if (isSpark2()) {
+      if (isSpark2() || isSpark3()) {
         p.setText("%spark val df=spark.createDataFrame(Seq((\"hello\",20)))" +
                 ".toDF(\"name\", \"age\")\n" +
                 "df.createOrReplaceTempView(\"test_table\")\n" +
@@ -353,7 +353,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
               p.getReturn().message().get(0).getData().contains("name age\n1 hello  20"));
 
       // test display DataSet
-      if (isSpark2()) {
+      if (isSpark2() || isSpark3()) {
         p = note.addNewParagraph(anonymous);
         p.setText("%spark val ds=spark.createDataset(Seq((\"hello\",20)))\n" +
             "z.show(ds)");
@@ -376,7 +376,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
       note = TestUtils.getInstance(Notebook.class).createNote("note1", anonymous);
 
       String sqlContextName = "sqlContext";
-      if (isSpark2()) {
+      if (isSpark2() || isSpark3()) {
         sqlContextName = "spark";
       }
       Paragraph p = note.addNewParagraph(anonymous);
@@ -415,7 +415,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
       assertEquals(Status.FINISHED, p.getStatus());
       assertEquals("name_abc\n", p.getReturn().message().get(0).getData());
 
-      if (!isSpark2()) {
+      if (!isSpark2() || isSpark3()) {
         // run sqlContext test
         p = note.addNewParagraph(anonymous);
         p.setText("%pyspark from pyspark.sql import Row\n" +
@@ -688,6 +688,10 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
 
   private boolean isSpark2() {
     return toIntSparkVersion(sparkVersion) >= 20;
+  }
+
+  private boolean isSpark3() {
+    return toIntSparkVersion(sparkVersion) >= 30;
   }
 
   @Test

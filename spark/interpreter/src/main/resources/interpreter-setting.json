@@ -19,6 +19,13 @@
         "description": "Spark master uri. local | yarn-client | yarn-cluster | spark master address of standalone mode, ex) spark://master_host:7077",
         "type": "string"
       },
+      "spark.submit.deployMode": {
+        "envName": "",
+        "propertyName": "spark.submit.deployMode",
+        "defaultValue": "",
+        "description": "The deploy mode of Spark driver program, either \"client\" or \"cluster\", Which means to launch driver program locally (\"client\") or remotely (\"cluster\") on one of the nodes inside the cluster.",
+        "type": "string"
+      },
       "spark.app.name": {
         "envName": "",
         "propertyName": "spark.app.name",
