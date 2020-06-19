@@ -71,7 +71,7 @@
             <artifactId>zeppelin-zengine</artifactId>
             <version>${project.version}</version>
             <classifier>tests</classifier>
-            <scope>provided</scope>
+            <scope>test</scope>
         </dependency>
 
         <!-- Test libraries -->
