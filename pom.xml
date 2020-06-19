@@ -1834,21 +1834,6 @@
         <curator.version>2.13.0</curator.version>
         <kerberos-client.version>2.0.0-M15</kerberos-client.version>
       </properties>
-
-      <dependencies>
-        <dependency>
-          <groupId>org.apache.hadoop</groupId>
-          <artifactId>hadoop-aws</artifactId>
-          <version>${hadoop.version}</version>
-          <scope>${hadoop.deps.scope}</scope>
-        </dependency>
-        <dependency>
-          <groupId>org.apache.directory.server</groupId>
-          <artifactId>kerberos-client</artifactId>
-          <version>${kerberos-client.version}</version>
-          <scope>${hadoop.deps.scope}</scope>
-        </dependency>
-      </dependencies>
     </profile>
 
   </profiles>

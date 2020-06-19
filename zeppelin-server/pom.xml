@@ -249,10 +249,12 @@
       <artifactId>hadoop-client</artifactId>
     </dependency>
 
+    <!--test libraries-->
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-common</artifactId>
       <classifier>tests</classifier>
+      <scope>test</scope>
     </dependency>
 
     <dependency>
@@ -260,6 +262,7 @@
       <artifactId>zeppelin-zengine</artifactId>
       <version>${project.version}</version>
       <classifier>tests</classifier>
+      <scope>test</scope>
       <exclusions>
         <exclusion>
           <groupId>com.google.guava</groupId>
@@ -268,7 +271,6 @@
       </exclusions>
     </dependency>
 
-    <!--test libraries-->
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
@@ -433,6 +435,17 @@
 	        ../zeppelin-distribution/target/zeppelin-${project.version}/zeppelin-${project.version}/bin
         </zeppelin.daemon.package.base>
       </properties>
+    </profile>
+    <profile>
+      <id>hadoop3</id>
+      <dependencies>
+        <dependency>
+          <groupId>org.apache.directory.server</groupId>
+          <artifactId>kerberos-client</artifactId>
+          <version>${kerberos-client.version}</version>
+          <scope>${hadoop.deps.scope}</scope>
+        </dependency>
+      </dependencies>
     </profile>
   </profiles>
 
