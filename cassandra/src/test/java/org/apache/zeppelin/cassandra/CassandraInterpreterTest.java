@@ -73,6 +73,11 @@ public class CassandraInterpreterTest { //extends AbstractCassandraUnit4CQLTestC
 
   @BeforeClass
   public static synchronized void setUp() throws IOException, InterruptedException {
+    System.setProperty("cassandra.skip_wait_for_gossip_to_settle", "0");
+    System.setProperty("cassandra.load_ring_state", "false");
+    System.setProperty("cassandra.initial_token", "0");
+    System.setProperty("cassandra.num_tokens", "nil");
+    System.setProperty("cassandra.allocate_tokens_for_local_replication_factor", "nil");
     EmbeddedCassandraServerHelper.startEmbeddedCassandra();
     CqlSession session = EmbeddedCassandraServerHelper.getSession();
     new CQLDataLoader(session).load(new ClassPathCQLDataSet("prepare_all.cql", "zeppelin"));
