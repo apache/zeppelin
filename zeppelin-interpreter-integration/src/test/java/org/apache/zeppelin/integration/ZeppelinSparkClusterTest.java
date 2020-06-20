@@ -76,10 +76,10 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
   private String sparkHome;
   private AuthenticationInfo anonymous = new AuthenticationInfo("anonymous");
 
-  public ZeppelinSparkClusterTest(String sparkVersion) throws Exception {
+  public ZeppelinSparkClusterTest(String sparkVersion, String hadoopVersion) throws Exception {
     this.sparkVersion = sparkVersion;
     LOGGER.info("Testing SparkVersion: " + sparkVersion);
-    this.sparkHome = DownloadUtils.downloadSpark(sparkVersion);
+    this.sparkHome = DownloadUtils.downloadSpark(sparkVersion, hadoopVersion);
     if (!verifiedSparkVersions.contains(sparkVersion)) {
       verifiedSparkVersions.add(sparkVersion);
       setupSparkInterpreter(sparkHome);
@@ -247,7 +247,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
 
   @Test
   public void sparkReadCSVTest() throws IOException {
-    if (!isSpark2() || isSpark3()) {
+    if (isSpark1()) {
       // csv if not supported in spark 1.x natively
       return;
     }
@@ -374,16 +374,24 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
     Note note = null;
     try {
       note = TestUtils.getInstance(Notebook.class).createNote("note1", anonymous);
-
-      String sqlContextName = "sqlContext";
-      if (isSpark2() || isSpark3()) {
-        sqlContextName = "spark";
-      }
       Paragraph p = note.addNewParagraph(anonymous);
-      p.setText("%spark.r localDF <- data.frame(name=c(\"a\", \"b\", \"c\"), age=c(19, 23, 18))\n" +
-          "df <- createDataFrame(" + sqlContextName + ", localDF)\n" +
-          "count(df)"
-      );
+
+      if (isSpark3()) {
+        p.setText("%spark.r localDF <- data.frame(name=c(\"a\", \"b\", \"c\"), age=c(19, 23, 18))\n" +
+                "df <- createDataFrame(localDF)\n" +
+                "count(df)"
+        );
+      } else {
+        String sqlContextName = "sqlContext";
+        if (isSpark2() || isSpark3()) {
+          sqlContextName = "spark";
+        }
+        p.setText("%spark.r localDF <- data.frame(name=c(\"a\", \"b\", \"c\"), age=c(19, 23, 18))\n" +
+                "df <- createDataFrame(" + sqlContextName + ", localDF)\n" +
+                "count(df)"
+        );
+      }
+
       note.run(p.getId(), true);
       assertEquals(Status.FINISHED, p.getStatus());
       assertEquals("[1] 3", p.getReturn().message().get(0).getData().trim());
@@ -415,7 +423,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
       assertEquals(Status.FINISHED, p.getStatus());
       assertEquals("name_abc\n", p.getReturn().message().get(0).getData());
 
-      if (!isSpark2() || isSpark3()) {
+      if (isSpark1()) {
         // run sqlContext test
         p = note.addNewParagraph(anonymous);
         p.setText("%pyspark from pyspark.sql import Row\n" +
@@ -461,7 +469,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
             .contains("Fail to execute line 3: print(a2)"));
         assertTrue(p.getReturn().message().get(0).getData()
             .contains("name 'a2' is not defined"));
-      } else {
+      } else if (isSpark2()){
         // run SparkSession test
         p = note.addNewParagraph(anonymous);
         p.setText("%pyspark from pyspark.sql import Row\n" +
@@ -480,6 +488,25 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
         assertEquals(Status.FINISHED, p.getStatus());
         assertTrue("[Row(len=u'3')]\n".equals(p.getReturn().message().get(0).getData()) ||
             "[Row(len='3')]\n".equals(p.getReturn().message().get(0).getData()));
+      } else {
+        // run SparkSession test
+        p = note.addNewParagraph(anonymous);
+        p.setText("%pyspark from pyspark.sql import Row\n" +
+                "df=sqlContext.createDataFrame([Row(id=1, age=20)])\n" +
+                "df.collect()");
+        note.run(p.getId(), true);
+        assertEquals(Status.FINISHED, p.getStatus());
+        assertEquals("[Row(id=1, age=20)]\n", p.getReturn().message().get(0).getData());
+
+        // test udf
+        p = note.addNewParagraph(anonymous);
+        // use SQLContext to register UDF but use this UDF through SparkSession
+        p.setText("%pyspark sqlContext.udf.register(\"f1\", lambda x: len(x))\n" +
+                "spark.sql(\"select f1(\\\"abc\\\") as len\").collect()");
+        note.run(p.getId(), true);
+        assertEquals(Status.FINISHED, p.getStatus());
+        assertTrue("[Row(len=u'3')]\n".equals(p.getReturn().message().get(0).getData()) ||
+                "[Row(len='3')]\n".equals(p.getReturn().message().get(0).getData()));
       }
     } finally {
       if (null != note) {
@@ -680,18 +707,16 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
     }
   }
 
-  private int toIntSparkVersion(String sparkVersion) {
-    String[] split = sparkVersion.split("\\.");
-    int version = Integer.parseInt(split[0]) * 10 + Integer.parseInt(split[1]);
-    return version;
+  private boolean isSpark1() {
+    return sparkVersion.startsWith("1.");
   }
 
   private boolean isSpark2() {
-    return toIntSparkVersion(sparkVersion) >= 20;
+    return sparkVersion.startsWith("2.");
   }
 
   private boolean isSpark3() {
-    return toIntSparkVersion(sparkVersion) >= 30;
+    return sparkVersion.startsWith("3.");
   }
 
   @Test

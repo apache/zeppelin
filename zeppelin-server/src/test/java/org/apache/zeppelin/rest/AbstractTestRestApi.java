@@ -261,7 +261,7 @@ public abstract class AbstractTestRestApi {
       LOG.info("Zeppelin Server is started.");
 
       // set up spark interpreter
-      String sparkHome = DownloadUtils.downloadSpark("2.4.4");
+      String sparkHome = DownloadUtils.downloadSpark("2.4.4", "2.7");
       InterpreterSettingManager interpreterSettingManager = TestUtils.getInstance(InterpreterSettingManager.class);
       InterpreterSetting interpreterSetting = interpreterSettingManager.getInterpreterSettingByName("spark");
       interpreterSetting.setProperty("SPARK_HOME", sparkHome);

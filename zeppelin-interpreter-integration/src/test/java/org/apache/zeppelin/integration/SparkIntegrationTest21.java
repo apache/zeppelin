@@ -26,14 +26,14 @@ import java.util.List;
 @RunWith(value = Parameterized.class)
 public class SparkIntegrationTest21 extends SparkIntegrationTest{
 
-  public SparkIntegrationTest21(String sparkVersion) {
-    super(sparkVersion);
+  public SparkIntegrationTest21(String sparkVersion, String hadoopVersion) {
+    super(sparkVersion, hadoopVersion);
   }
 
   @Parameterized.Parameters
   public static List<Object[]> data() {
     return Arrays.asList(new Object[][]{
-            {"2.1.3"}
+            {"2.1.3", "2.7"}
     });
   }
 

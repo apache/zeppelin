@@ -54,8 +54,7 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
   private static final Logger LOGGER = LoggerFactory.getLogger(SparkInterpreterLauncher.class);
   public static final String SPARK_MASTER_KEY = "spark.master";
   private static final String DEFAULT_MASTER = "local[*]";
-
-  private Optional<String> sparkMaster = Optional.empty();
+  Optional<String> sparkMaster = Optional.empty();
 
   public SparkInterpreterLauncher(ZeppelinConfiguration zConf, RecoveryStorage recoveryStorage) {
     super(zConf, recoveryStorage);
@@ -65,8 +64,10 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
   public Map<String, String> buildEnvFromProperties(InterpreterLaunchContext context) throws IOException {
     Map<String, String> env = super.buildEnvFromProperties(context);
     Properties sparkProperties = new Properties();
-
-    // extract all the spark specific properties and env
+    String spMaster = getSparkMaster();
+    if (spMaster != null) {
+      sparkProperties.put(SPARK_MASTER_KEY, spMaster);
+    }
     for (String key : properties.stringPropertyNames()) {
       String propValue = properties.getProperty(key);
       if (RemoteInterpreterUtils.isEnvString(key) && !StringUtils.isBlank(propValue)) {
@@ -77,24 +78,6 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
       }
     }
 
-    String versionOutput = getSparkVersionOutput();
-    String sparkVersion = detectSparkVersion(versionOutput);
-    String scalaVersion = detectScalaVersion(versionOutput);
-
-    String spMaster = getSparkMaster();
-    if (spMaster != null) {
-      if ((spMaster.equals("yarn-client") || spMaster.equals("yarn-cluster")) && sparkVersion.startsWith("3.")) {
-        // yarn-client and yarn-cluster is removed from spark 3.0, should use --conf spark.master=yarn
-        // and --conf spark.submit.deployMode=client or cluster
-        sparkProperties.put(SPARK_MASTER_KEY, "yarn");
-      } else {
-        sparkProperties.put(SPARK_MASTER_KEY, spMaster);
-      }
-    }
-
-    if (sparkVersion.startsWith("3.")) {
-      setupDeployMode(spMaster, sparkProperties);
-    }
     setupPropertiesForPySpark(sparkProperties);
     setupPropertiesForSparkR(sparkProperties);
     if (isYarnMode() && getDeployMode().equals("cluster")) {
@@ -133,6 +116,7 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
           additionalJars.addAll(localRepoJars);
         }
 
+        String scalaVersion = detectSparkScalaVersion(properties.getProperty("SPARK_HOME"));
         Path scalaFolder =  Paths.get(zConf.getZeppelinHome(), "/interpreter/spark/scala-" + scalaVersion);
         if (!scalaFolder.toFile().exists()) {
           throw new IOException("spark scala folder " + scalaFolder.toFile() + " doesn't exist");
@@ -214,23 +198,15 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
 
   }
 
-  private String getSparkVersionOutput() throws IOException {
-    try {
-      String sparkHome = properties.getProperty("SPARK_HOME");
-      ProcessBuilder builder = new ProcessBuilder(sparkHome + "/bin/spark-submit", "--version");
-      File processOutputFile = File.createTempFile("zeppelin-spark", ".out");
-      builder.redirectError(processOutputFile);
-      Process process = builder.start();
-      process.waitFor();
-      return IOUtils.toString(new FileInputStream(processOutputFile));
-    } catch (InterruptedException e) {
-      throw new IOException("Fail to get spark version", e);
-    }
-  }
-
-  private String detectScalaVersion(String sparkVersionOutput) throws IOException {
+  private String detectSparkScalaVersion(String sparkHome) throws Exception {
+    ProcessBuilder builder = new ProcessBuilder(sparkHome + "/bin/spark-submit", "--version");
+    File processOutputFile = File.createTempFile("zeppelin-spark", ".out");
+    builder.redirectError(processOutputFile);
+    Process process = builder.start();
+    process.waitFor();
+    String processOutput = IOUtils.toString(new FileInputStream(processOutputFile));
     Pattern pattern = Pattern.compile(".*Using Scala version (.*),.*");
-    Matcher matcher = pattern.matcher(sparkVersionOutput);
+    Matcher matcher = pattern.matcher(processOutput);
     if (matcher.find()) {
       String scalaVersion = matcher.group(1);
       if (scalaVersion.startsWith("2.10")) {
@@ -240,14 +216,14 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
       } else if (scalaVersion.startsWith("2.12")) {
         return "2.12";
       } else {
-        throw new IOException("Unsupported scala version: " + scalaVersion);
+        throw new Exception("Unsupported scala version: " + scalaVersion);
       }
     } else {
-      return detectSparkScalaVersionByReplClass(properties.getProperty("SPARK_HOME"));
+      return detectSparkScalaVersionByReplClass(sparkHome);
     }
   }
 
-  private String detectSparkScalaVersionByReplClass(String sparkHome) throws IOException {
+  private String detectSparkScalaVersionByReplClass(String sparkHome) throws Exception {
     File sparkLibFolder = new File(sparkHome + "/lib");
     if (sparkLibFolder.exists()) {
       // spark 1.6 if spark/lib exists
@@ -258,10 +234,10 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
         }
       });
       if (sparkAssemblyJars.length == 0) {
-        throw new IOException("No spark assembly file found in SPARK_HOME: " + sparkHome);
+        throw new Exception("No spark assembly file found in SPARK_HOME: " + sparkHome);
       }
       if (sparkAssemblyJars.length > 1) {
-        throw new IOException("Multiple spark assembly file found in SPARK_HOME: " + sparkHome);
+        throw new Exception("Multiple spark assembly file found in SPARK_HOME: " + sparkHome);
       }
       URLClassLoader urlClassLoader = new URLClassLoader(new URL[]{sparkAssemblyJars[0].toURI().toURL()});
       try {
@@ -283,15 +259,6 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
     }
   }
 
-  private String detectSparkVersion(String sparkVersionOutput) throws IOException {
-    Pattern pattern = Pattern.compile(".*version (.*).*");
-    Matcher matcher = pattern.matcher(sparkVersionOutput);
-    if (matcher.find()) {
-      return matcher.group(1);
-    }
-    throw new IOException("Unable to detect spark version from: " + sparkVersionOutput);
-  }
-
   /**
    * get environmental variable in the following order
    *
@@ -309,14 +276,6 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
 
   private boolean isSparkConf(String key, String value) {
     return !StringUtils.isEmpty(key) && key.startsWith("spark.") && !StringUtils.isEmpty(value);
-  }
-
-  private void setupDeployMode(String sparkMaster, Properties sparkProperties) {
-    if (sparkMaster.equals("yarn-client")) {
-      sparkProperties.setProperty("spark.submit.deployMode", "client");
-    } else if (sparkMaster.equals("yarn-cluster")) {
-      sparkProperties.setProperty("spark.submit.deployMode", "cluster");
-    }
   }
 
   private void setupPropertiesForPySpark(Properties sparkProperties) {

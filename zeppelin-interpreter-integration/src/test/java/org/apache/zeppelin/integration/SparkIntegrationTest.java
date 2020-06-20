@@ -44,7 +44,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.EnumSet;
-import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -61,10 +60,11 @@ public abstract class SparkIntegrationTest {
   private String sparkVersion;
   private String sparkHome;
 
-  public SparkIntegrationTest(String sparkVersion) {
-    LOGGER.info("Testing SparkVersion: " + sparkVersion);
+  public SparkIntegrationTest(String sparkVersion, String hadoopVersion) {
+    LOGGER.info("Testing Spark Version: " + sparkVersion);
+    LOGGER.info("Testing Hadoop Version: " + hadoopVersion);
     this.sparkVersion = sparkVersion;
-    this.sparkHome = DownloadUtils.downloadSpark(sparkVersion);
+    this.sparkHome = DownloadUtils.downloadSpark(sparkVersion, hadoopVersion);
   }
 
   @BeforeClass
@@ -86,6 +86,10 @@ public abstract class SparkIntegrationTest {
     if (hadoopCluster != null) {
       hadoopCluster.stop();
     }
+  }
+
+  protected void setUpSparkInterpreterSetting(InterpreterSetting interpreterSetting) {
+    // sub class can customize spark interpreter setting.
   }
 
   private void testInterpreterBasics() throws IOException, InterpreterException, XmlPullParserException {
@@ -154,14 +158,17 @@ public abstract class SparkIntegrationTest {
     sparkInterpreterSetting.setProperty("zeppelin.spark.scala.color", "false");
     sparkInterpreterSetting.setProperty("zeppelin.spark.deprecatedMsg.show", "false");
 
-    testInterpreterBasics();
+    try {
+      setUpSparkInterpreterSetting(sparkInterpreterSetting);
+      testInterpreterBasics();
 
-    // no yarn application launched
-    GetApplicationsRequest request = GetApplicationsRequest.newInstance(EnumSet.of(YarnApplicationState.RUNNING));
-    GetApplicationsResponse response = hadoopCluster.getYarnCluster().getResourceManager().getClientRMService().getApplications(request);
-    assertEquals(0, response.getApplicationList().size());
-
-    interpreterSettingManager.close();
+      // no yarn application launched
+      GetApplicationsRequest request = GetApplicationsRequest.newInstance(EnumSet.of(YarnApplicationState.RUNNING));
+      GetApplicationsResponse response = hadoopCluster.getYarnCluster().getResourceManager().getClientRMService().getApplications(request);
+      assertEquals(0, response.getApplicationList().size());
+    } finally {
+      interpreterSettingManager.close();
+    }
   }
 
   @Test
@@ -178,16 +185,19 @@ public abstract class SparkIntegrationTest {
     sparkInterpreterSetting.setProperty("zeppelin.spark.scala.color", "false");
     sparkInterpreterSetting.setProperty("zeppelin.spark.deprecatedMsg.show", "false");
 
-    testInterpreterBasics();
+    try {
+      setUpSparkInterpreterSetting(sparkInterpreterSetting);
+      testInterpreterBasics();
 
-    // 1 yarn application launched
-    GetApplicationsRequest request = GetApplicationsRequest.newInstance(EnumSet.of(YarnApplicationState.RUNNING));
-    GetApplicationsResponse response = hadoopCluster.getYarnCluster().getResourceManager().getClientRMService().getApplications(request);
-    assertEquals(1, response.getApplicationList().size());
+      // 1 yarn application launched
+      GetApplicationsRequest request = GetApplicationsRequest.newInstance(EnumSet.of(YarnApplicationState.RUNNING));
+      GetApplicationsResponse response = hadoopCluster.getYarnCluster().getResourceManager().getClientRMService().getApplications(request);
+      assertEquals(1, response.getApplicationList().size());
 
-    interpreterSettingManager.close();
-
-    waitForYarnAppCompleted(30 * 1000);
+    } finally {
+      interpreterSettingManager.close();
+      waitForYarnAppCompleted(30 * 1000);
+    }
   }
 
   private void waitForYarnAppCompleted(int timeout) throws YarnException {
@@ -223,16 +233,19 @@ public abstract class SparkIntegrationTest {
     sparkInterpreterSetting.setProperty("zeppelin.spark.scala.color", "false");
     sparkInterpreterSetting.setProperty("zeppelin.spark.deprecatedMsg.show", "false");
 
-    testInterpreterBasics();
+    try {
+      setUpSparkInterpreterSetting(sparkInterpreterSetting);
+      testInterpreterBasics();
 
-    // 1 yarn application launched
-    GetApplicationsRequest request = GetApplicationsRequest.newInstance(EnumSet.of(YarnApplicationState.RUNNING));
-    GetApplicationsResponse response = hadoopCluster.getYarnCluster().getResourceManager().getClientRMService().getApplications(request);
-    assertEquals(1, response.getApplicationList().size());
+      // 1 yarn application launched
+      GetApplicationsRequest request = GetApplicationsRequest.newInstance(EnumSet.of(YarnApplicationState.RUNNING));
+      GetApplicationsResponse response = hadoopCluster.getYarnCluster().getResourceManager().getClientRMService().getApplications(request);
+      assertEquals(1, response.getApplicationList().size());
 
-    interpreterSettingManager.close();
-
-    waitForYarnAppCompleted(30 * 1000);
+    } finally {
+      interpreterSettingManager.close();
+      waitForYarnAppCompleted(30 * 1000);
+    }
   }
 
   private boolean isSpark2() {
