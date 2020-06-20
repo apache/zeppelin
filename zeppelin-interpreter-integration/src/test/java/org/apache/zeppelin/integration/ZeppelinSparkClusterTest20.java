@@ -26,15 +26,15 @@ import java.util.List;
 @RunWith(value = Parameterized.class)
 public class ZeppelinSparkClusterTest20 extends ZeppelinSparkClusterTest {
 
-  public ZeppelinSparkClusterTest20(String sparkVersion) throws Exception {
-    super(sparkVersion);
+  public ZeppelinSparkClusterTest20(String sparkVersion, String hadoopVersion) throws Exception {
+    super(sparkVersion, hadoopVersion);
   }
 
 
   @Parameterized.Parameters
   public static List<Object[]> data() {
     return Arrays.asList(new Object[][]{
-            {"2.0.2"}
+            {"2.0.2", "2.7"}
     });
   }
 }
