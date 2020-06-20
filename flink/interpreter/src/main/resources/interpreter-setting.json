@@ -96,7 +96,7 @@
         "description": "Whether use yarn proxy url as flink weburl, e.g. http://localhost:8088/proxy/application_1583396598068_0004",
         "type": "checkbox"
       },
-      "flink.webui.yarn.yarnAddress": {
+      "flink.webui.yarn.address": {
         "envName": null,
         "propertyName": null,
         "defaultValue": "",
