@@ -183,6 +183,15 @@
 </property>
 -->
 
+<!-- S3 Object Permissions (Canned ACL) for notebooks -->
+<!--
+<property>
+  <name>zeppelin.notebook.s3.cannedAcl</name>
+  <value>BucketOwnerFullControl</value>
+  <description>Saves notebooks in S3 with the given Canned Access Control List.</description>
+</property>
+-->
+
 <!-- Optional override to control which signature algorithm should be used to sign AWS requests -->
 <!-- Set this property to "S3SignerType" if your AWS S3 compatible APIs support only AWS Signature Version 2 such as Ceph. -->
 <!--
