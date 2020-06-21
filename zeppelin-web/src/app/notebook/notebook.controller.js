@@ -332,6 +332,7 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
         $scope.noteRevisions.splice(0, 0, {
           id: 'Head',
           message: 'Head',
+          time: $scope.noteRevisions[0].time,
         });
       }
       if ($routeParams.revisionId) {
