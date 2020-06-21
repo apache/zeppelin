@@ -21,8 +21,8 @@
       "cassandra.protocol.version": {
         "envName": null,
         "propertyName": "cassandra.protocol.version",
-        "defaultValue": "4",
-        "description": "Cassandra protocol version. Default = 4",
+        "defaultValue": "DEFAULT",
+        "description": "Cassandra protocol version. Default = auto-detect",
         "type": "string"
       },
       "cassandra.cluster": {
@@ -105,22 +105,22 @@
       "cassandra.pooling.connection.per.host.local": {
         "envName": null,
         "propertyName": "cassandra.pooling.connection.per.host.local",
-        "defaultValue": "8",
-        "description": "Cassandra connections per host local. Protocol V2 and below default = 8 Protocol V3 and above default = 1",
+        "defaultValue": "1",
+        "description": "Cassandra connections per host local. Protocol V3 and above default = 1",
         "type": "number"
       },
       "cassandra.pooling.connection.per.host.remote": {
         "envName": null,
         "propertyName": "cassandra.pooling.connection.per.host.remote",
-        "defaultValue": "2",
-        "description": "Cassandra connections per host remote. Protocol V2 and below default = 2 Protocol V3 and above default = 1",
+        "defaultValue": "1",
+        "description": "Cassandra connections per host remote. Protocol V3 and above default = 1",
         "type": "number"
       },
       "cassandra.pooling.max.request.per.connection": {
         "envName": null,
         "propertyName": "cassandra.pooling.max.request.per.connection",
         "defaultValue": "1024",
-        "description": "Cassandra max requests per connection. Protocol V2 and below default = 128 Protocol V3 and above default = 1024",
+        "description": "Cassandra max requests per connection. Protocol V3 and above default = 1024",
         "type": "number"
       },
       "cassandra.pooling.pool.timeout.millisecs": {
