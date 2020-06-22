@@ -17,6 +17,8 @@
 package org.apache.zeppelin.cassandra;
 
 import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.config.DefaultDriverOption;
+import com.datastax.oss.driver.api.core.config.DriverExecutionProfile;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.interpreter.Interpreter;
@@ -73,6 +75,11 @@ public class CassandraInterpreterTest { //extends AbstractCassandraUnit4CQLTestC
 
   @BeforeClass
   public static synchronized void setUp() throws IOException, InterruptedException {
+    System.setProperty("cassandra.skip_wait_for_gossip_to_settle", "0");
+    System.setProperty("cassandra.load_ring_state", "false");
+    System.setProperty("cassandra.initial_token", "0");
+    System.setProperty("cassandra.num_tokens", "nil");
+    System.setProperty("cassandra.allocate_tokens_for_local_replication_factor", "nil");
     EmbeddedCassandraServerHelper.startEmbeddedCassandra();
     CqlSession session = EmbeddedCassandraServerHelper.getSession();
     new CQLDataLoader(session).load(new ClassPathCQLDataSet("prepare_all.cql", "zeppelin"));
@@ -106,6 +113,7 @@ public class CassandraInterpreterTest { //extends AbstractCassandraUnit4CQLTestC
     properties.setProperty(CASSANDRA_HOSTS, EmbeddedCassandraServerHelper.getHost());
     properties.setProperty(CASSANDRA_PORT,
             Integer.toString(EmbeddedCassandraServerHelper.getNativeTransportPort()));
+    properties.setProperty("datastax-java-driver.advanced.connection.pool.local.size", "1");
     interpreter = new CassandraInterpreter(properties);
     interpreter.open();
   }
@@ -119,6 +127,15 @@ public class CassandraInterpreterTest { //extends AbstractCassandraUnit4CQLTestC
   public void should_create_cluster_and_session_upon_call_to_open() throws Exception {
     assertThat(interpreter.session).isNotNull();
     assertThat(interpreter.helper).isNotNull();
+  }
+
+  @Test
+  public void should_set_custom_option() throws Exception {
+    assertThat(interpreter.session).isNotNull();
+    DriverExecutionProfile config = interpreter.session.getContext()
+            .getConfig().getDefaultProfile();
+    assertThat(config.getInt(DefaultDriverOption.CONNECTION_POOL_LOCAL_SIZE, 10))
+            .isEqualTo(1);
   }
 
   @Test
