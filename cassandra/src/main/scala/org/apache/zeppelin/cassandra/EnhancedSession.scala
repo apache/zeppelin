@@ -16,6 +16,7 @@
  */
 package org.apache.zeppelin.cassandra
 
+import java.time.Duration
 import java.util.regex.Pattern
 
 import com.datastax.oss.driver.api.core.CqlSession
@@ -46,7 +47,9 @@ class EnhancedSession(val session: CqlSession) {
   private val noResultDisplay = DisplaySystem.NoResultDisplay
   private val DEFAULT_CHECK_TIME: Int = 200
   private val MAX_SCHEMA_AGREEMENT_WAIT: Int = 120000 // 120 seconds
+  private val defaultDDLTimeout: Duration = Duration.ofSeconds(MAX_SCHEMA_AGREEMENT_WAIT / 10000)
   private val LOGGER = LoggerFactory.getLogger(classOf[EnhancedSession])
+
 
   val HTML_MAGIC = "%html \n"
 
@@ -191,8 +194,14 @@ class EnhancedSession(val session: CqlSession) {
   }
 
   private def executeStatement[StatementT <: Statement[StatementT]](st: StatementT): Any = {
-    val rs: ResultSet = session.execute(st)
-    if (EnhancedSession.isDDLStatement(st)) {
+    val isDDL = EnhancedSession.isDDLStatement(st)
+    val newSt = if (isDDL) {
+      st.setTimeout(defaultDDLTimeout)
+    } else {
+      st
+    }
+    val rs: ResultSet = session.execute(newSt)
+    if (isDDL) {
       if (!rs.getExecutionInfo.isSchemaInAgreement) {
         val startTime = System.currentTimeMillis()
         while(!session.checkSchemaAgreement()) {

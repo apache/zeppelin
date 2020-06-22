@@ -668,10 +668,9 @@ The **isolated** mode is the most extreme and will create as many JVM/`com.datas
 ## Interpreter Configuration
 
 To configure the **Cassandra** interpreter, go to the **Interpreter** menu and scroll down to change the parameters.
-The **Cassandra** interpreter is using the official **[Datastax Java Driver for Apache Cassandra]®** and most of the parameters are used
-to configure the Java driver
+The **Cassandra** interpreter is using the official **[Datastax Java Driver for Apache Cassandra]®** and most of the parameters are used to configure the Java driver
 
-Below are the configuration parameters and their default values.
+Below are the configuration parameters supported by interpreter and their default values.
 
  <table class="table-configuration">
    <tr>
@@ -741,12 +740,12 @@ Below are the configuration parameters and their default values.
    </tr>
    <tr>
      <td>`cassandra.pooling.connection.per.host.local`</td>
-     <td>Protocol V2 and below default = 2. Protocol V3 and above default = 1</td>
-     <td>2</td>
+     <td>Protocol V3 and above default = 1</td>
+     <td>1</td>
    </tr>
    <tr>
      <td>`cassandra.pooling.connection.per.host.remote`</td>
-     <td>Protocol V2 and below default = 1. Protocol V3 and above default = 1</td>
+     <td>Protocol V3 and above default = 1</td>
      <td>1</td>
    </tr>
    <tr>
@@ -756,8 +755,8 @@ Below are the configuration parameters and their default values.
    </tr>
    <tr>
      <td>`cassandra.pooling.max.request.per.connection`</td>
-     <td>Protocol V2 and below default = 128. Protocol V3 and above default = 1024</td>
-     <td>128</td>
+     <td>Protocol V3 and above default = 1024</td>
+     <td>1024</td>
    </tr>
    <tr>
      <td>`cassandra.pooling.pool.timeout.millisecs`</td>
@@ -766,7 +765,7 @@ Below are the configuration parameters and their default values.
    </tr>
    <tr>
      <td>`cassandra.protocol.version`</td>
-     <td>Cassandra binary protocol version (`3`, `4`, `DSE1`, `DSE2`)</td>
+     <td>Cassandra binary protocol version (`V3`, `V4`, ...)</td>
      <td>`DEFAULT` (detected automatically)</td>
    </tr>
    <tr>
@@ -901,6 +900,8 @@ Below are the configuration parameters and their default values.
      <td>`12`</td>
    </tr>
  </table>
+
+Besides these parameters, it's also possible to set other driver parameters by adding them into interpreter configuration.  The configuration key should have full form with `datastax-java-driver` prefix, as [described in documentation](https://docs.datastax.com/en/developer/java-driver/latest/manual/core/configuration/).  For example, to specify 5 seconds request timeout, you can use `datastax-java-driver.basic.request.timeout` with value of `5 seconds`.  Full list of available configuration options is [available in documentation](https://docs.datastax.com/en/developer/java-driver/latest/manual/core/configuration/reference/).  Additional options may override the options that are specified by the interpreter's configuration parameters.
 
 ## Change Log
 
