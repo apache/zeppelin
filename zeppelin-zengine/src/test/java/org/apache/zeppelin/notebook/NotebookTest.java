@@ -22,7 +22,7 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.interpreter.AbstractInterpreterTest;
-import org.apache.zeppelin.interpreter.ExecutionContext;
+import org.apache.zeppelin.interpreter.ExecutionContextBuilder;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterNotFoundException;
@@ -35,7 +35,6 @@ import org.apache.zeppelin.notebook.repo.NotebookRepoSettingsInfo;
 import org.apache.zeppelin.notebook.repo.NotebookRepoWithVersionControl;
 import org.apache.zeppelin.notebook.repo.VFSNotebookRepo;
 import org.apache.zeppelin.notebook.scheduler.QuartzSchedulerService;
-import org.apache.zeppelin.notebook.scheduler.SchedulerService;
 import org.apache.zeppelin.resource.LocalResourcePool;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Job.Status;
@@ -476,7 +475,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     p3.setText("%mock1 p3");
 
     // when
-    note.runAll(anonymous, true);
+    note.runAll(anonymous, true, false);
 
     assertEquals("repl1: p1", p1.getReturn().message().get(0).getData());
     assertNull(p2.getReturn());
@@ -695,9 +694,9 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     schedulerService.refreshCron(note.getId());
 
 
-    RemoteInterpreter mock1 = (RemoteInterpreter) interpreterFactory.getInterpreter("mock1", new ExecutionContext(anonymous.getUser(), note.getId(), "test"));
+    RemoteInterpreter mock1 = (RemoteInterpreter) interpreterFactory.getInterpreter("mock1", new ExecutionContextBuilder().setUser(anonymous.getUser()).setNoteId(note.getId()).setDefaultInterpreterGroup("test").createExecutionContext());
 
-    RemoteInterpreter mock2 = (RemoteInterpreter) interpreterFactory.getInterpreter("mock2", new ExecutionContext(anonymous.getUser(), note.getId(), "test"));
+    RemoteInterpreter mock2 = (RemoteInterpreter) interpreterFactory.getInterpreter("mock2", new ExecutionContextBuilder().setUser(anonymous.getUser()).setNoteId(note.getId()).setDefaultInterpreterGroup("test").createExecutionContext());
 
     // wait until interpreters are started
     while (!mock1.isOpened() || !mock2.isOpened()) {
@@ -734,7 +733,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
       }
     });
     RemoteInterpreter cronNoteInterpreter =
-        (RemoteInterpreter) interpreterFactory.getInterpreter("mock1", new ExecutionContext(anonymous.getUser(), cronNote.getId(), "test"));
+        (RemoteInterpreter) interpreterFactory.getInterpreter("mock1", new ExecutionContextBuilder().setUser(anonymous.getUser()).setNoteId(cronNote.getId()).setDefaultInterpreterGroup("test").createExecutionContext());
 
     // create a paragraph of the cron scheduled note.
     Paragraph cronNoteParagraph = cronNote.addNewParagraph(AuthenticationInfo.ANONYMOUS);
@@ -749,7 +748,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     Note anotherNote = notebook.createNote("note1", anonymous);
 
     RemoteInterpreter anotherNoteInterpreter =
-        (RemoteInterpreter) interpreterFactory.getInterpreter("mock2", new ExecutionContext(anonymous.getUser(), anotherNote.getId(), "test"));
+        (RemoteInterpreter) interpreterFactory.getInterpreter("mock2", new ExecutionContextBuilder().setUser(anonymous.getUser()).setNoteId(anotherNote.getId()).setDefaultInterpreterGroup("test").createExecutionContext());
 
     // create a paragraph of another note
     Paragraph anotherNoteParagraph = anotherNote.addNewParagraph(AuthenticationInfo.ANONYMOUS);
@@ -830,7 +829,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     String simpleText = "hello world";
     p.setText(simpleText);
 
-    note.runAll(anonymous, true);
+    note.runAll(anonymous, true, false);
 
     String exportedNoteJson = notebook.exportNote(note.getId());
 
@@ -862,7 +861,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
 
     final Paragraph p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     p.setText("hello world");
-    note.runAll(anonymous, true);
+    note.runAll(anonymous, true, false);
 
     p.setStatus(Status.RUNNING);
     Note cloneNote = notebook.cloneNote(note.getId(), "clone note", anonymous);
@@ -898,7 +897,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     for (InterpreterGroup intpGroup : interpreterSettingManager.getAllInterpreterGroup()) {
       intpGroup.setResourcePool(new LocalResourcePool(intpGroup.getId()));
     }
-    note.runAll(anonymous, true);
+    note.runAll(anonymous, true, false);
 
     assertEquals(2, interpreterSettingManager.getAllResources().size());
 
@@ -1167,14 +1166,14 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     p3.setText("%mock1 sleep 1000");
 
 
-    note.runAll(AuthenticationInfo.ANONYMOUS, false);
+    note.runAll(AuthenticationInfo.ANONYMOUS, false, false);
 
     // wait until first paragraph finishes and second paragraph starts
     while (p1.getStatus() != Status.FINISHED || p2.getStatus() != Status.RUNNING) Thread.yield();
 
     assertEquals(Status.FINISHED, p1.getStatus());
     assertEquals(Status.RUNNING, p2.getStatus());
-    assertEquals(Status.PENDING, p3.getStatus());
+    assertEquals(Status.READY, p3.getStatus());
 
     // restart interpreter
     interpreterSettingManager.restart(interpreterSettingManager.getInterpreterSettingByName("mock1").getId());
@@ -1182,7 +1181,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     // make sure three different status aborted well.
     assertEquals(Status.FINISHED, p1.getStatus());
     assertEquals(Status.ABORT, p2.getStatus());
-    assertEquals(Status.ABORT, p3.getStatus());
+    assertEquals(Status.READY, p3.getStatus());
 
     notebook.removeNote(note.getId(), anonymous);
   }

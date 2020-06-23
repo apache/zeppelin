@@ -447,7 +447,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
       TestUtils.getInstance(Notebook.class).saveNote(note, anonymous);
       String noteId = note.getId();
 
-      note.runAll(anonymous, true);
+      note.runAll(anonymous, true, false);
       // wait until job is finished or timeout.
       int timeout = 1;
       while (!paragraph.isTerminated()) {
@@ -459,7 +459,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
       }
 
       // Call Run note jobs REST API
-      PostMethod postNoteJobs = httpPost("/notebook/job/" + noteId, "");
+      PostMethod postNoteJobs = httpPost("/notebook/job/" + noteId + "?blocking=true", "");
       assertThat("test note jobs run:", postNoteJobs, isAllowed());
       postNoteJobs.releaseConnection();
 
@@ -509,7 +509,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
       TestUtils.getInstance(Notebook.class).saveNote(note, anonymous);
       String noteId = note.getId();
 
-      note.runAll(anonymous, true);
+      note.runAll(anonymous, true, false);
       // assume that status of the paragraph is running
       GetMethod get = httpGet("/notebook/job/" + noteId);
       assertThat("test get note job: ", get, isAllowed());
@@ -563,7 +563,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
       TestUtils.getInstance(Notebook.class).saveNote(note, anonymous);
       String noteId = note.getId();
 
-      note.runAll(anonymous, true);
+      note.runAll(anonymous, true, false);
 
       // Call Run paragraph REST API
       PostMethod postParagraph = httpPost("/notebook/job/" + noteId + "/" + paragraph.getId(),
@@ -601,7 +601,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
       config.put("enabled", true);
       paragraph.setConfig(config);
 
-      note.runAll(AuthenticationInfo.ANONYMOUS, false);
+      note.runAll(AuthenticationInfo.ANONYMOUS, false, false);
 
       String jsonRequest = "{\"cron\":\"* * * * * ?\" }";
       // right cron expression but not exist note.
@@ -651,7 +651,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
       config.put("enabled", true);
       paragraph.setConfig(config);
 
-      note.runAll(AuthenticationInfo.ANONYMOUS, false);
+      note.runAll(AuthenticationInfo.ANONYMOUS, false, false);
 
       String jsonRequest = "{\"cron\":\"* * * * * ?\" }";
       // right cron expression.
@@ -663,7 +663,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
       System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_CRON_FOLDERS.getVarName(), "/System");
 
       note.setName("System/test2");
-      note.runAll(AuthenticationInfo.ANONYMOUS, false);
+      note.runAll(AuthenticationInfo.ANONYMOUS, false, false);
       postCron = httpPost("/notebook/cron/" + note.getId(), jsonRequest);
       assertThat("", postCron, isAllowed());
       postCron.releaseConnection();

@@ -85,7 +85,7 @@ public class RecoveryTest extends AbstractTestRestApi {
       // run python interpreter and create new variable `user`
       Paragraph p1 = note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
       p1.setText("%python user='abc'");
-      PostMethod post = httpPost("/notebook/job/" + note1.getId(), "");
+      PostMethod post = httpPost("/notebook/job/" + note1.getId() +"?blocking=true", "");
       assertThat(post, isAllowed());
       Map<String, Object> resp = gson.fromJson(post.getResponseBodyAsString(),
               new TypeToken<Map<String, Object>>() {}.getType());
@@ -102,7 +102,7 @@ public class RecoveryTest extends AbstractTestRestApi {
       note1 = TestUtils.getInstance(Notebook.class).getNote(note1.getId());
       p1 = note1.getParagraph(p1.getId());
       p1.setText("%python print(user)");
-      post = httpPost("/notebook/job/" + note1.getId(), "");
+      post = httpPost("/notebook/job/" + note1.getId() + "?blocking=true", "");
       assertEquals(resp.get("status"), "OK");
       post.releaseConnection();
       assertEquals(Job.Status.FINISHED, p1.getStatus());
@@ -127,7 +127,7 @@ public class RecoveryTest extends AbstractTestRestApi {
       // run python interpreter and create new variable `user`
       Paragraph p1 = note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
       p1.setText("%python user='abc'");
-      PostMethod post = httpPost("/notebook/job/" + note1.getId(), "");
+      PostMethod post = httpPost("/notebook/job/" + note1.getId() + "?blocking=true", "");
       assertThat(post, isAllowed());
       Map<String, Object> resp = gson.fromJson(post.getResponseBodyAsString(),
               new TypeToken<Map<String, Object>>() {}.getType());
@@ -150,7 +150,7 @@ public class RecoveryTest extends AbstractTestRestApi {
       note1 = TestUtils.getInstance(Notebook.class).getNote(note1.getId());
       p1 = note1.getParagraph(p1.getId());
       p1.setText("%python print(user)");
-      post = httpPost("/notebook/job/" + note1.getId(), "");
+      post = httpPost("/notebook/job/" + note1.getId() + "?blocking=true", "");
       assertEquals(resp.get("status"), "OK");
       post.releaseConnection();
       assertEquals(Job.Status.ERROR, p1.getStatus());
@@ -174,7 +174,7 @@ public class RecoveryTest extends AbstractTestRestApi {
       // run python interpreter and create new variable `user`
       Paragraph p1 = note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
       p1.setText("%python user='abc'");
-      PostMethod post = httpPost("/notebook/job/" + note1.getId(), "");
+      PostMethod post = httpPost("/notebook/job/" + note1.getId() + "?blocking=true", "");
       assertThat(post, isAllowed());
       Map<String, Object> resp = gson.fromJson(post.getResponseBodyAsString(),
               new TypeToken<Map<String, Object>>() {}.getType());
@@ -194,7 +194,7 @@ public class RecoveryTest extends AbstractTestRestApi {
       note1 = TestUtils.getInstance(Notebook.class).getNote(note1.getId());
       p1 = note1.getParagraph(p1.getId());
       p1.setText("%python print(user)");
-      post = httpPost("/notebook/job/" + note1.getId(), "");
+      post = httpPost("/notebook/job/" + note1.getId() + "?blocking=true", "");
       assertEquals(resp.get("status"), "OK");
       post.releaseConnection();
       assertEquals(Job.Status.ERROR, p1.getStatus());

@@ -50,7 +50,6 @@ import org.apache.zeppelin.interpreter.recovery.RecoveryStorage;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
-import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService;
 import org.apache.zeppelin.notebook.ApplicationState;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteEventListener;
@@ -689,7 +688,11 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
   }
 
   public void removeResourcesBelongsToNote(String noteId) {
-    removeResourcesBelongsToParagraph(noteId, null);
+    try {
+      removeResourcesBelongsToParagraph(noteId, null);
+    } catch (Exception e) {
+      LOGGER.warn("Fail to remove resources", e);
+    }
   }
 
   /**
@@ -875,7 +878,7 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
 
   // restart in note page
   public void restart(String settingId, String user, String noteId) throws InterpreterException {
-    restart(settingId, new ExecutionContext(user, noteId));
+    restart(settingId, new ExecutionContextBuilder().setUser(user).setNoteId(noteId).createExecutionContext());
   }
 
   // restart in note page
@@ -1029,7 +1032,7 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
     // remove from all interpreter instance's angular object registry
     for (InterpreterSetting settings : interpreterSettings.values()) {
       InterpreterGroup interpreterGroup = settings.getInterpreterGroup(
-              new ExecutionContext(subject.getUser(), note.getId()));
+              new ExecutionContextBuilder().setUser(subject.getUser()).setNoteId(note.getId()).createExecutionContext());
       if (interpreterGroup != null) {
         AngularObjectRegistry registry = interpreterGroup.getAngularObjectRegistry();
         if (registry instanceof RemoteAngularObjectRegistry) {
