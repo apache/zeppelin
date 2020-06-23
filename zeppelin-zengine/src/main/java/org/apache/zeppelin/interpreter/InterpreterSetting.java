@@ -87,9 +87,6 @@ public class InterpreterSetting {
   private static final Map<String, Object> DEFAULT_EDITOR = ImmutableMap.of(
       "language", (Object) "text",
       "editOnDblClick", false);
-  private static final DateTimeFormatter DATE_TIME_FORMATTER =
-          DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss");
-
 
   public static String  PARAGRAPH_CONFIG_RUNONSELECTIONCHANGE = "runOnSelectionChange";
   public static String  PARAGRAPH_CONFIG_TITLE = "title";
@@ -424,9 +421,9 @@ public class InterpreterSetting {
   }
 
   private String getInterpreterGroupId(ExecutionContext executionContext) {
-    if (executionContext.isInCronMode()) {
-      return "cron-" + name + "-" + executionContext.getNoteId() + "-" +
-              DATE_TIME_FORMATTER.format(LocalDateTime.now());
+    if (executionContext.isInIsolatedMode()) {
+      return name + "-isolated-" + executionContext.getNoteId() + "-" +
+              executionContext.getStartTime();
     }
 
     List<String> keys = new ArrayList<>();
@@ -465,7 +462,7 @@ public class InterpreterSetting {
   }
 
   public ManagedInterpreterGroup getOrCreateInterpreterGroup(String user, String noteId) {
-    return getOrCreateInterpreterGroup(new ExecutionContext(user, noteId));
+    return getOrCreateInterpreterGroup(new ExecutionContextBuilder().setUser(user).setNoteId(noteId).createExecutionContext());
   }
 
   public ManagedInterpreterGroup getOrCreateInterpreterGroup(ExecutionContext executionContext) {
@@ -494,7 +491,7 @@ public class InterpreterSetting {
   }
 
   public ManagedInterpreterGroup getInterpreterGroup(String user, String noteId) {
-    return getInterpreterGroup(new ExecutionContext(user, noteId));
+    return getInterpreterGroup(new ExecutionContextBuilder().setUser(user).setNoteId(noteId).createExecutionContext());
   }
 
   public ManagedInterpreterGroup getInterpreterGroup(ExecutionContext executionContext) {
@@ -533,7 +530,7 @@ public class InterpreterSetting {
   }
 
   public void closeInterpreters(String user, String noteId) {
-    closeInterpreters(new ExecutionContext(user, noteId));
+    closeInterpreters(new ExecutionContextBuilder().setUser(user).setNoteId(noteId).createExecutionContext());
   }
 
   public void closeInterpreters(ExecutionContext executionContext) {
@@ -874,7 +871,7 @@ public class InterpreterSetting {
   }
 
   List<Interpreter> getOrCreateSession(String user, String noteId) {
-    return getOrCreateSession(new ExecutionContext(user, noteId));
+    return getOrCreateSession(new ExecutionContextBuilder().setUser(user).setNoteId(noteId).createExecutionContext());
   }
 
   List<Interpreter> getOrCreateSession(ExecutionContext executionContext) {
@@ -885,7 +882,7 @@ public class InterpreterSetting {
   }
 
   public Interpreter getDefaultInterpreter(String user, String noteId) {
-    return getOrCreateSession(new ExecutionContext(user, noteId)).get(0);
+    return getOrCreateSession(new ExecutionContextBuilder().setUser(user).setNoteId(noteId).createExecutionContext()).get(0);
   }
 
   public Interpreter getDefaultInterpreter(ExecutionContext executionContext) {
@@ -893,7 +890,7 @@ public class InterpreterSetting {
   }
 
   public Interpreter getInterpreter(String user, String noteId, String replName) {
-    return getInterpreter(new ExecutionContext(user, noteId), replName);
+    return getInterpreter(new ExecutionContextBuilder().setUser(user).setNoteId(noteId).createExecutionContext(), replName);
   }
 
   public Interpreter getInterpreter(ExecutionContext executionContext, String replName) {

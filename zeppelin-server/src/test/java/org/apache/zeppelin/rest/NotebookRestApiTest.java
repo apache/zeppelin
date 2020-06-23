@@ -30,6 +30,8 @@ import com.google.gson.reflect.TypeToken;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.PutMethod;
+import org.apache.zeppelin.interpreter.InterpreterSetting;
+import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.socket.NotebookServer;
 import org.apache.zeppelin.utils.TestUtils;
@@ -111,7 +113,7 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
       Paragraph p = note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
 
       // run blank paragraph
-      PostMethod post = httpPost("/notebook/job/" + note1.getId() + "/" + p.getId(), "");
+      PostMethod post = httpPost("/notebook/job/" + note1.getId() + "/" + p.getId() + "?blocking=true", "");
       assertThat(post, isAllowed());
       Map<String, Object> resp = gson.fromJson(post.getResponseBodyAsString(),
               new TypeToken<Map<String, Object>>() {}.getType());
@@ -121,7 +123,7 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
 
       // run non-blank paragraph
       p.setText("test");
-      post = httpPost("/notebook/job/" + note1.getId() + "/" + p.getId(), "");
+      post = httpPost("/notebook/job/" + note1.getId() + "/" + p.getId() + "?blocking=true", "");
       assertThat(post, isAllowed());
       resp = gson.fromJson(post.getResponseBodyAsString(),
               new TypeToken<Map<String, Object>>() {}.getType());
@@ -213,7 +215,7 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
       p1.setText("%python import time\ntime.sleep(1)\nuser='abc'");
       p2.setText("%python from __future__ import print_function\nprint(user)");
 
-      PostMethod post = httpPost("/notebook/job/" + note1.getId(), "");
+      PostMethod post = httpPost("/notebook/job/" + note1.getId() + "?blocking=true", "");
       assertThat(post, isAllowed());
       Map<String, Object> resp = gson.fromJson(post.getResponseBodyAsString(),
               new TypeToken<Map<String, Object>>() {}.getType());
@@ -252,7 +254,7 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
       p1.setText("%python import time\ntime.sleep(5)\nname='hello'\nz.put('name', name)");
       p2.setText("%sh(interpolate=true) echo '{name}'");
 
-      PostMethod post = httpPost("/notebook/job/" + note1.getId() + "?waitToFinish=false", "");
+      PostMethod post = httpPost("/notebook/job/" + note1.getId() + "?blocking=true", "");
       assertThat(post, isAllowed());
       Map<String, Object> resp = gson.fromJson(post.getResponseBodyAsString(),
               new TypeToken<Map<String, Object>>() {}.getType());
@@ -265,6 +267,104 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
       assertEquals(Job.Status.FINISHED, p1.getStatus());
       assertEquals(Job.Status.FINISHED, p2.getStatus());
       assertEquals("hello\n", p2.getReturn().message().get(0).getData());
+    } finally {
+      // cleanup
+      if (null != note1) {
+        TestUtils.getInstance(Notebook.class).removeNote(note1.getId(), anonymous);
+      }
+    }
+  }
+
+  @Test
+  public void testRunNoteBlocking_Isolated() throws IOException {
+    Note note1 = null;
+    try {
+      InterpreterSettingManager interpreterSettingManager =
+              TestUtils.getInstance(InterpreterSettingManager.class);
+      InterpreterSetting interpreterSetting = interpreterSettingManager.getInterpreterSettingByName("python");
+      int pythonProcessNum = interpreterSetting.getAllInterpreterGroups().size();
+
+      note1 = TestUtils.getInstance(Notebook.class).createNote("note1", anonymous);
+      // 2 paragraphs
+      // P1:
+      //    %python
+      //    import time
+      //    time.sleep(1)
+      //    user='abc'
+      // P2:
+      //    %python
+      //    from __future__ import print_function
+      //    print(user)
+      //
+      Paragraph p1 = note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
+      Paragraph p2 = note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
+      p1.setText("%python import time\ntime.sleep(1)\nuser='abc'");
+      p2.setText("%python from __future__ import print_function\nprint(user)");
+
+      PostMethod post = httpPost("/notebook/job/" + note1.getId() + "?blocking=true&isolated=true", "");
+      assertThat(post, isAllowed());
+      Map<String, Object> resp = gson.fromJson(post.getResponseBodyAsString(),
+              new TypeToken<Map<String, Object>>() {}.getType());
+      assertEquals(resp.get("status"), "OK");
+      post.releaseConnection();
+
+      assertEquals(Job.Status.FINISHED, p1.getStatus());
+      assertEquals(Job.Status.FINISHED, p2.getStatus());
+      assertEquals("abc\n", p2.getReturn().message().get(0).getData());
+
+      // no new python process is created because it is isolated mode.
+      assertEquals(pythonProcessNum, interpreterSetting.getAllInterpreterGroups().size());
+    } finally {
+      // cleanup
+      if (null != note1) {
+        TestUtils.getInstance(Notebook.class).removeNote(note1.getId(), anonymous);
+      }
+    }
+  }
+
+  @Test
+  public void testRunNoteNonBlocking_Isolated() throws IOException, InterruptedException {
+    Note note1 = null;
+    try {
+      InterpreterSettingManager interpreterSettingManager =
+              TestUtils.getInstance(InterpreterSettingManager.class);
+      InterpreterSetting interpreterSetting = interpreterSettingManager.getInterpreterSettingByName("python");
+      int pythonProcessNum = interpreterSetting.getAllInterpreterGroups().size();
+
+      note1 = TestUtils.getInstance(Notebook.class).createNote("note1", anonymous);
+      // 2 paragraphs
+      // P1:
+      //    %python
+      //    import time
+      //    time.sleep(1)
+      //    user='abc'
+      // P2:
+      //    %python
+      //    from __future__ import print_function
+      //    print(user)
+      //
+      Paragraph p1 = note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
+      Paragraph p2 = note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
+      p1.setText("%python import time\ntime.sleep(1)\nuser='abc'");
+      p2.setText("%python from __future__ import print_function\nprint(user)");
+
+      PostMethod post = httpPost("/notebook/job/" + note1.getId() + "?blocking=false&isolated=true", "");
+      assertThat(post, isAllowed());
+      Map<String, Object> resp = gson.fromJson(post.getResponseBodyAsString(),
+              new TypeToken<Map<String, Object>>() {}.getType());
+      assertEquals(resp.get("status"), "OK");
+      post.releaseConnection();
+
+      // wait for all the paragraphs are done
+      while(note1.isRunning()) {
+        Thread.sleep(1000);
+      }
+      assertEquals(Job.Status.FINISHED, p1.getStatus());
+      assertEquals(Job.Status.FINISHED, p2.getStatus());
+      assertEquals("abc\n", p2.getReturn().message().get(0).getData());
+
+      // no new python process is created because it is isolated mode.
+      assertEquals(pythonProcessNum, interpreterSetting.getAllInterpreterGroups().size());
     } finally {
       // cleanup
       if (null != note1) {
@@ -294,7 +394,7 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
       p1.setText("%python import time\ntime.sleep(1)\nfrom __future__ import print_function\nprint(user2)");
       p2.setText("%python user2='abc'\nprint(user2)");
 
-      PostMethod post = httpPost("/notebook/job/" + note1.getId(), "");
+      PostMethod post = httpPost("/notebook/job/" + note1.getId() + "?blocking=true", "");
       assertThat(post, isExpectationFailed());
       Map<String, Object> resp = gson.fromJson(post.getResponseBodyAsString(),
               new TypeToken<Map<String, Object>>() {}.getType());
@@ -467,7 +567,7 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
       p1.setText("%python import time\ntime.sleep(1)\nuser='abc'");
       p2.setText("%python from __future__ import print_function\nprint(user)");
 
-      PostMethod post1 = httpPost("/notebook/job/" + note1.getId(), "");
+      PostMethod post1 = httpPost("/notebook/job/" + note1.getId() + "?blocking=true", "");
       assertThat(post1, isAllowed());
       post1.releaseConnection();
       PutMethod put = httpPut("/notebook/" + note1.getId() + "/clear", "");
@@ -483,7 +583,7 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
       p1 = note1.getParagraph(p1.getId());
       p2 = note1.getParagraph(p2.getId());
 
-      PostMethod post2 = httpPost("/notebook/job/" + note1.getId(), "");
+      PostMethod post2 = httpPost("/notebook/job/" + note1.getId() + "?blocking=true", "");
       assertThat(post2, isAllowed());
       Map<String, Object> resp = gson.fromJson(post2.getResponseBodyAsString(),
           new TypeToken<Map<String, Object>>() {}.getType());

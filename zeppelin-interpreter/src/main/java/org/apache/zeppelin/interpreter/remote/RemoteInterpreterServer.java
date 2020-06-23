@@ -243,7 +243,7 @@ public class RemoteInterpreterServer extends Thread
             }
           }
 
-          if ("yarn".endsWith(launcherEnv)) {
+          if (launcherEnv != null && "yarn".endsWith(launcherEnv)) {
             try {
               YarnUtils.register(host, port);
               Thread thread = new Thread(() -> {
