@@ -276,4 +276,54 @@ public class InterpreterSettingManagerTest extends AbstractInterpreterTest {
     assertEquals(1, interpreterSetting.getAllInterpreterGroups().size());
     assertEquals(1, interpreterSetting.getAllInterpreterGroups().get(0).getSessionNum());
   }
+
+  @Test
+  public void testInterpreterInclude() throws Exception {
+    try {
+      System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_INCLUDES.getVarName(), "mock1");
+      setUp();
+
+      assertEquals(1, interpreterSettingManager.get().size());
+      assertEquals("mock1", interpreterSettingManager.get().get(0).getGroup());
+    } finally {
+      System.clearProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_INCLUDES.getVarName());
+    }
+  }
+
+  @Test
+  public void testInterpreterExclude() throws Exception {
+    try {
+      System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_EXCLUDES.getVarName(),
+              "test,config_test,mock_resource_pool");
+      setUp();
+
+      assertEquals(2, interpreterSettingManager.get().size());
+      assertNotNull(interpreterSettingManager.getByName("mock1"));
+      assertNotNull(interpreterSettingManager.getByName("mock2"));
+    } finally {
+      System.clearProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_EXCLUDES.getVarName());
+    }
+  }
+
+  @Test
+  public void testInterpreterIncludeExcludeTogether() throws Exception {
+    try {
+      System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_INCLUDES.getVarName(),
+              "test,");
+      System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_EXCLUDES.getVarName(),
+              "config_test,mock_resource_pool");
+
+      try {
+        setUp();
+        fail("Should not able to create InterpreterSettingManager");
+      } catch (Exception e) {
+        e.printStackTrace();
+        assertEquals("zeppelin.interpreter.include and zeppelin.interpreter.exclude can not be specified together, only one can be set.",
+                e.getMessage());
+      }
+    } finally {
+      System.clearProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_INCLUDES.getVarName());
+      System.clearProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_EXCLUDES.getVarName());
+    }
+  }
 }

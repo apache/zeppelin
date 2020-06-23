@@ -167,3 +167,9 @@ Here's one screenshot of how one running paragraph of flink interpreter works.
 
 
 <img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/flink_recovery.gif" width="800px">
+
+## Choose Interpreters
+
+By default, Zeppelin will register and display all the interpreters under folder `$ZEPPELIN_HOME/interpreters`.
+But you can configure property `zeppelin.interpreter.include` to specify what interpreters you want to include or `zeppelin.interpreter.exclude` to specify what interpreters you want to exclude.
+Only one of them can be specified, you can not specify them together.
