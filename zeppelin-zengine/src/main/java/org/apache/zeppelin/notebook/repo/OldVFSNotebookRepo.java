@@ -29,7 +29,6 @@ import org.apache.commons.vfs2.VFS;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.notebook.Note;
-import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.OldNoteInfo;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
@@ -76,7 +75,7 @@ public class OldVFSNotebookRepo implements OldNotebookRepo {
     }
 
     if (filesystemRoot.getScheme() == null) { // it is local path
-      File f = new File(conf.getRelativeDir(filesystemRoot.getPath()));
+      File f = new File(conf.getAbsoluteDir(filesystemRoot.getPath()));
       this.filesystemRoot = f.toURI();
     }
 
