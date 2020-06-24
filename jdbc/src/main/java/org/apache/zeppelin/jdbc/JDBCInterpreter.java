@@ -427,6 +427,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
     boolean testWhileIdle = "true".equalsIgnoreCase(properties.getProperty("testWhileIdle"));
     long timeBetweenEvictionRunsMillis = PropertiesUtil.getLong(
         properties, "timeBetweenEvictionRunsMillis", -1L);
+
     long maxWaitMillis = PropertiesUtil.getLong(properties, "maxWaitMillis", -1L);
     int maxIdle = PropertiesUtil.getInt(properties, "maxIdle", 8);
     int minIdle = PropertiesUtil.getInt(properties, "minIdle", 0);
