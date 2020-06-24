@@ -746,7 +746,7 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
         LOGGER.info("Start to copy dependencies for interpreter: " + setting.getName());
         for (Dependency d : deps) {
           File destDir = new File(
-              conf.getRelativeDir(ConfVars.ZEPPELIN_DEP_LOCALREPO));
+              conf.getAbsoluteDir(ConfVars.ZEPPELIN_DEP_LOCALREPO));
 
           int numSplits = d.getGroupArtifactVersion().split(":").length;
           if (!(numSplits >= 3 && numSplits <= 6)) {

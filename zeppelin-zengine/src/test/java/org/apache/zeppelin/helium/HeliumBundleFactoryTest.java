@@ -48,7 +48,8 @@ public class HeliumBundleFactoryTest {
 
     ZeppelinConfiguration conf = ZeppelinConfiguration.create();
     nodeInstallationDir =
-        new File(conf.getRelativeDir(ConfVars.ZEPPELIN_DEP_LOCALREPO), HELIUM_LOCAL_REPO).getAbsoluteFile();
+        new File(conf.getAbsoluteDir(ConfVars.ZEPPELIN_DEP_LOCALREPO), HELIUM_LOCAL_REPO);
+
     hbf = new HeliumBundleFactory(conf);
     hbf.installNodeAndNpm();
     hbf.copyFrameworkModulesToInstallPath(true);
