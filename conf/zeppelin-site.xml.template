@@ -648,8 +648,14 @@
 <!--
 <property>
   <name>zeppelin.recovery.storage.class</name>
+  <value>org.apache.zeppelin.interpreter.recovery.LocalRecoveryStorage</value>
+  <description>ReoveryStorage implementation based on java native local file system</description>
+</property>
+
+<property>
+  <name>zeppelin.recovery.storage.class</name>
   <value>org.apache.zeppelin.interpreter.recovery.FileSystemRecoveryStorage</value>
-  <description>ReoveryStorage implementation</description>
+  <description>ReoveryStorage implementation based on hadoop FileSystem</description>
 </property>
 -->
 
