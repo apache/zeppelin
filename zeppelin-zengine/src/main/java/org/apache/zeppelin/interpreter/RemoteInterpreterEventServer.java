@@ -285,12 +285,16 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
     }
     interpreterGroup.getAngularObjectRegistry().add(angularObject.getName(),
         angularObject.get(), angularObject.getNoteId(), angularObject.getParagraphId());
+
     if (angularObject.getNoteId() != null) {
       try {
         Note note = interpreterSettingManager.getNotebook().getNote(angularObject.getNoteId());
-        note.addOrUpdateAngularObject(intpGroupId, angularObject);
+        if (note != null) {
+          note.addOrUpdateAngularObject(intpGroupId, angularObject);
+          interpreterSettingManager.getNotebook().saveNote(note, AuthenticationInfo.ANONYMOUS);
+        }
       } catch (IOException e) {
-        LOGGER.warn("Fail to get note: " + angularObject.getNoteId(), e);
+        LOGGER.error("Fail to get note: {}", angularObject.getNoteId());
       }
     }
   }
@@ -316,9 +320,12 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
     if (angularObject.getNoteId() != null) {
       try {
         Note note = interpreterSettingManager.getNotebook().getNote(angularObject.getNoteId());
-        note.addOrUpdateAngularObject(intpGroupId, angularObject);
+        if (note != null) {
+          note.addOrUpdateAngularObject(intpGroupId, angularObject);
+          interpreterSettingManager.getNotebook().saveNote(note, AuthenticationInfo.ANONYMOUS);
+        }
       } catch (IOException e) {
-        LOGGER.warn("Fail to get note: " + angularObject.getNoteId(), e);
+        LOGGER.error("Fail to get note: {}", angularObject.getNoteId());
       }
     }
   }

@@ -82,7 +82,7 @@ public class AuthenticationIT extends AbstractZeppelinIT {
     try {
       System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HOME.getVarName(), new File("../").getAbsolutePath());
       ZeppelinConfiguration conf = ZeppelinConfiguration.create();
-      shiroPath = conf.getRelativeDir(String.format("%s/shiro.ini", conf.getConfDir()));
+      shiroPath = conf.getAbsoluteDir(String.format("%s/shiro.ini", conf.getConfDir()));
       File file = new File(shiroPath);
       if (file.exists()) {
         originalShiro = StringUtils.join(FileUtils.readLines(file, "UTF-8"), "\n");

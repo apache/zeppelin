@@ -47,14 +47,15 @@ public class FileSystemConfigStorage extends ConfigStorage {
 
   public FileSystemConfigStorage(ZeppelinConfiguration zConf) throws IOException {
     super(zConf);
-    this.fs = new FileSystemStorage(zConf, zConf.getConfigFSDir());
+    String configDir = zConf.getConfigFSDir(false);
+    this.fs = new FileSystemStorage(zConf, configDir);
     LOGGER.info("Creating FileSystem: {} for Zeppelin Config", this.fs.getFs().getClass().getName());
-    Path configPath = this.fs.makeQualified(new Path(zConf.getConfigFSDir()));
+    Path configPath = this.fs.makeQualified(new Path(configDir));
     this.fs.tryMkDir(configPath);
     LOGGER.info("Using folder {} to store Zeppelin Config", configPath);
-    this.interpreterSettingPath = fs.makeQualified(new Path(zConf.getInterpreterSettingPath()));
-    this.authorizationPath = fs.makeQualified(new Path(zConf.getNotebookAuthorizationPath()));
-    this.credentialPath = fs.makeQualified(new Path(zConf.getCredentialsPath()));
+    this.interpreterSettingPath = fs.makeQualified(new Path(zConf.getInterpreterSettingPath(false)));
+    this.authorizationPath = fs.makeQualified(new Path(zConf.getNotebookAuthorizationPath(false)));
+    this.credentialPath = fs.makeQualified(new Path(zConf.getCredentialsPath(false)));
   }
 
   @Override

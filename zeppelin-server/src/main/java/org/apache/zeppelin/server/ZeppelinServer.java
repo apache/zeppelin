@@ -549,7 +549,7 @@ public class ZeppelinServer extends ResourceConfig {
       // use packaged WAR
       webApp.setWar(warFile.getAbsolutePath());
       webApp.setExtractWAR(false);
-      File warTempDirectory = new File(conf.getRelativeDir(ConfVars.ZEPPELIN_WAR_TEMPDIR) + contextPath);
+      File warTempDirectory = new File(conf.getAbsoluteDir(ConfVars.ZEPPELIN_WAR_TEMPDIR) + contextPath);
       warTempDirectory.mkdir();
       LOG.info("ZeppelinServer Webapp path: {}", warTempDirectory.getPath());
       webApp.setTempDirectory(warTempDirectory);

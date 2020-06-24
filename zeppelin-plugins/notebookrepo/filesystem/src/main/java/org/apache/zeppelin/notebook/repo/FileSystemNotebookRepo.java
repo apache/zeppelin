@@ -46,7 +46,7 @@ public class FileSystemNotebookRepo implements NotebookRepo {
   }
 
   public void init(ZeppelinConfiguration zConf) throws IOException {
-    this.fs = new FileSystemStorage(zConf, zConf.getNotebookDir());
+    this.fs = new FileSystemStorage(zConf, zConf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_DIR));
     LOGGER.info("Creating FileSystem: " + this.fs.getFs().getClass().getName());
     this.notebookDir = this.fs.makeQualified(new Path(zConf.getNotebookDir()));
     LOGGER.info("Using folder {} to store notebook", notebookDir);
