@@ -145,11 +145,11 @@ class FlinkScalaInterpreter(val properties: Properties) {
   }
 
   private def initFlinkConfig(): Config = {
-    val flinkHome = properties.getProperty("FLINK_HOME", sys.env.getOrElse("FLINK_HOME", ""))
-    val flinkConfDir = properties.getProperty("FLINK_CONF_DIR", sys.env.getOrElse("FLINK_CONF_DIR", ""))
-    val hadoopConfDir = properties.getProperty("HADOOP_CONF_DIR", sys.env.getOrElse("HADOOP_CONF_DIR", ""))
-    val yarnConfDir = properties.getProperty("YARN_CONF_DIR", sys.env.getOrElse("YARN_CONF_DIR", ""))
-    val hiveConfDir = properties.getProperty("HIVE_CONF_DIR", sys.env.getOrElse("HIVE_CONF_DIR", ""))
+    val flinkHome = sys.env.getOrElse("FLINK_HOME", "")
+    val flinkConfDir = sys.env.getOrElse("FLINK_CONF_DIR", "")
+    val hadoopConfDir = sys.env.getOrElse("HADOOP_CONF_DIR", "")
+    val yarnConfDir = sys.env.getOrElse("YARN_CONF_DIR", "")
+    val hiveConfDir = sys.env.getOrElse("HIVE_CONF_DIR", "")
     LOGGER.info("FLINK_HOME: " + flinkHome)
     LOGGER.info("FLINK_CONF_DIR: " + flinkConfDir)
     LOGGER.info("HADOOP_CONF_DIR: " + hadoopConfDir)
