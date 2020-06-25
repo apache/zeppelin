@@ -1370,7 +1370,7 @@ public class NotebookServer extends WebSocketServlet
           interpreterGroup.getAngularObjectRegistry();
       AngularObject ao = removeAngularFromRemoteRegistry(noteId, paragraphId, varName, registry,
           interpreterGroup.getId(), conn);
-      note.deleteAngularObject(interpreterGroup.getId(), ao);
+      note.deleteAngularObject(interpreterGroup.getId(), noteId, paragraphId, varName);
     }
   }
 

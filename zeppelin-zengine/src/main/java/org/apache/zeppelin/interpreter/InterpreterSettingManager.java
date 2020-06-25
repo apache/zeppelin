@@ -416,6 +416,10 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
     this.notebook = notebook;
   }
 
+  public Notebook getNotebook() {
+    return notebook;
+  }
+
   public RemoteInterpreterProcessListener getRemoteInterpreterProcessListener() {
     return remoteInterpreterProcessListener;
   }
