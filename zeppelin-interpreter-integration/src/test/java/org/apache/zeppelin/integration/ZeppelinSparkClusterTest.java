@@ -806,8 +806,15 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
       p1.setText("%spark z.angularBind(\"name\", \"world\")");
       note.run(p1.getId(), true);
       assertEquals(Status.FINISHED, p1.getStatus());
+      // angular object is saved to InterpreterGroup's AngularObjectRegistry
       List<AngularObject> angularObjects = p1.getBindedInterpreter().getInterpreterGroup()
               .getAngularObjectRegistry().getAll(note.getId(), null);
+      assertEquals(1, angularObjects.size());
+      assertEquals("name", angularObjects.get(0).getName());
+      assertEquals("world", angularObjects.get(0).get());
+
+      // angular object is saved to note as well.
+      angularObjects = note.getAngularObjects(p1.getBindedInterpreter().getInterpreterGroup().getId());
       assertEquals(1, angularObjects.size());
       assertEquals("name", angularObjects.get(0).getName());
       assertEquals("world", angularObjects.get(0).get());
@@ -821,6 +828,9 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
               .getAll(note.getId(), null);
       assertEquals(0, angularObjects.size());
 
+      angularObjects = note.getAngularObjects(p1.getBindedInterpreter().getInterpreterGroup().getId());
+      assertEquals(0, angularObjects.size());
+
       // add global angular object
       Paragraph p3 = note.addNewParagraph(anonymous);
       p3.setText("%spark z.angularBindGlobal(\"name2\", \"world2\")");
@@ -832,6 +842,10 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
       assertEquals("name2", globalAngularObjects.get(0).getName());
       assertEquals("world2", globalAngularObjects.get(0).get());
 
+      // global angular object is not saved to note
+      angularObjects = note.getAngularObjects(p1.getBindedInterpreter().getInterpreterGroup().getId());
+      assertEquals(0, angularObjects.size());
+
       // remove global angular object
       Paragraph p4 = note.addNewParagraph(anonymous);
       p4.setText("%spark z.angularUnbindGlobal(\"name2\")");
@@ -840,6 +854,10 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
       globalAngularObjects = p4.getBindedInterpreter().getInterpreterGroup()
               .getAngularObjectRegistry().getAll(note.getId(), null);
       assertEquals(0, globalAngularObjects.size());
+
+      // global angular object is not saved to note
+      angularObjects = note.getAngularObjects(p1.getBindedInterpreter().getInterpreterGroup().getId());
+      assertEquals(0, angularObjects.size());
     } finally {
       if (null != note) {
         TestUtils.getInstance(Notebook.class).removeNote(note, anonymous);
