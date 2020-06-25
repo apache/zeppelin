@@ -394,7 +394,7 @@ public class Note implements JsonSerializable {
   /**
    * Delete the note AngularObject.
    */
-  public void deleteAngularObject(String intpGroupId, AngularObject angularObject) {
+  public void deleteAngularObject(String intpGroupId, String noteId, String paragraphId, String name) {
     List<AngularObject> angularObjectList;
     if (!angularObjects.containsKey(intpGroupId)) {
       return;
@@ -404,21 +404,26 @@ public class Note implements JsonSerializable {
       // Delete existing AngularObject
       Iterator<AngularObject> iter = angularObjectList.iterator();
       while(iter.hasNext()){
-        String noteId = "", paragraphId = "";
+        String noteIdCandidate = "";
+        String paragraphIdCandidate = "";
+        String nameCandidate = "";
         Object object = iter.next();
         if (object instanceof AngularObject) {
           AngularObject ao = (AngularObject)object;
-          noteId = ao.getNoteId();
-          paragraphId = ao.getParagraphId();
+          noteIdCandidate = ao.getNoteId();
+          paragraphIdCandidate = ao.getParagraphId();
+          nameCandidate = ao.getName();
         } else if (object instanceof RemoteAngularObject) {
-          RemoteAngularObject rao = (RemoteAngularObject)object;
-          noteId = rao.getNoteId();
-          paragraphId = rao.getParagraphId();
+          RemoteAngularObject rao = (RemoteAngularObject) object;
+          noteIdCandidate = rao.getNoteId();
+          paragraphIdCandidate = rao.getParagraphId();
+          nameCandidate = rao.getName();
         } else {
           continue;
         }
-        if (StringUtils.equals(noteId, angularObject.getNoteId())
-            && StringUtils.equals(paragraphId, angularObject.getParagraphId())) {
+        if (StringUtils.equals(noteId, noteIdCandidate)
+            && StringUtils.equals(paragraphId, paragraphIdCandidate)
+            && StringUtils.equals(name, nameCandidate)) {
           iter.remove();
         }
       }
