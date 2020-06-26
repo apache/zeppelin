@@ -84,6 +84,12 @@ public abstract class FlinkSqlInterrpeter extends Interpreter {
   public void open() throws InterpreterException {
     flinkInterpreter =
             getInterpreterInTheSameSessionByClassName(FlinkInterpreter.class);
+
+    if (this instanceof FlinkStreamSqlInterpreter){
+      this.tbenv = flinkInterpreter.getJavaStreamTableEnvironment("blink");
+    }else {
+      this.tbenv = flinkInterpreter.getJavaBatchTableEnvironment("blink");
+    }
     sqlCommandParser = new SqlCommandParser(flinkInterpreter.getFlinkShims(), tbenv);
     this.sqlSplitter = new SqlSplitter();
     JobListener jobListener = new JobListener() {

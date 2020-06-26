@@ -42,7 +42,6 @@ public class FlinkBatchSqlInterpreter extends FlinkSqlInterrpeter {
   @Override
   public void open() throws InterpreterException {
     super.open();
-    this.tbenv = flinkInterpreter.getJavaBatchTableEnvironment("blink");
     this.z = flinkInterpreter.getZeppelinContext();
   }
 

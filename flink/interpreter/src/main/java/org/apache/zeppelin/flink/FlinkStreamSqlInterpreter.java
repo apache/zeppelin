@@ -44,7 +44,6 @@ public class FlinkStreamSqlInterpreter extends FlinkSqlInterrpeter {
   @Override
   public void open() throws InterpreterException {
     super.open();
-    this.tbenv = flinkInterpreter.getJavaStreamTableEnvironment("blink");
   }
 
   @Override
