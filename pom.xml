@@ -1662,6 +1662,7 @@
               <exclude>**/*.ipynb</exclude>
               <exclude>**/test/resources/**</exclude>
               <exclude>**/.settings/*</exclude>
+              <exclude>**/.factorypath</exclude>
               <exclude>**/.classpath</exclude>
               <exclude>**/.project</exclude>
               <exclude>**/target/**</exclude>
