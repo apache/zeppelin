@@ -647,6 +647,14 @@ class FlinkScalaInterpreter(val properties: Properties) {
 
   def setSavePointIfNecessary(context: InterpreterContext): Unit = {
     val savepointDir = context.getLocalProperties.get("savepointDir")
+    val savepointPath = context.getLocalProperties.get("savepointPath");
+
+    if (!StringUtils.isBlank(savepointPath)){
+      LOGGER.info("savepointPath has been setup by user , savepointPath = {}", savepointPath)
+      configuration.setString("execution.savepoint.path", savepointPath)
+      return
+    }
+
     if (!StringUtils.isBlank(savepointDir)) {
       val savepointPath = z.angular(context.getParagraphId + "_savepointpath", context.getNoteId, null)
       if (savepointPath == null) {

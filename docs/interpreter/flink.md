@@ -457,6 +457,11 @@ In this section, we will list and explain all the supported local properties in 
     <td>If you specify it, then when you cancel your flink job in Zeppelin, it would also do savepoint and store state in this directory. And when you resume your job, it would resume from this savepoint.</td>
   </tr>
   <tr>
+    <td>savepointPath</td>
+    <td></td>
+    <td>If you specify it, then when you resume your job, it would resume from this savepointPath .</td>
+  </tr>
+  <tr>
     <td>runAsOne</td>
     <td>false</td>
     <td>All the insert into sql will run in a single flink job if this is true.</td>
