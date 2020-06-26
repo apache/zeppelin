@@ -132,31 +132,38 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
     }
 
     long startTime = System.currentTimeMillis();
+    long timeoutTime = startTime + getConnectTimeout();
 
     // wait until interpreter send started message through thrift rpc
     synchronized (started) {
-      if (!started.get()) {
+      while (!started.get()) {
+        long timetoTimeout = timeoutTime - System.currentTimeMillis();
+        if (timetoTimeout <= 0) {
+          stop();
+          throw new IOException("Launching zeppelin interpreter on kubernetes is time out, kill it now");
+        }
         try {
-          started.wait(getConnectTimeout());
+          started.wait(timetoTimeout);
         } catch (InterruptedException e) {
-          LOGGER.error("Remote interpreter is not accessible");
+          LOGGER.error("Interrupt received. Try to stop the interpreter and interrupt the current thread.", e);
+          stop();
+          Thread.currentThread().interrupt();
         }
       }
     }
 
-    if (!started.get()) {
-      LOGGER.info("Interpreter pod creation is time out in {} seconds", getConnectTimeout()/1000);
-    }
-
     // waits for interpreter thrift rpc server ready
-    while (System.currentTimeMillis() - startTime < getConnectTimeout()) {
-      if (RemoteInterpreterUtils.checkIfRemoteEndpointAccessible(getHost(), getPort())) {
-        break;
-      } else {
-        try {
-          Thread.sleep(1000);
-        } catch (InterruptedException e) {
-        }
+    while (!RemoteInterpreterUtils.checkIfRemoteEndpointAccessible(getHost(), getPort())) {
+      if (System.currentTimeMillis() - timeoutTime > 0) {
+        stop();
+        throw new IOException("Launching zeppelin interpreter on kubernetes is time out, kill it now");
+      }
+      try {
+        Thread.sleep(1000);
+      } catch (InterruptedException e) {
+        LOGGER.error("Interrupt received. Try to stop the interpreter and interrupt the current thread.", e);
+        stop();
+        Thread.currentThread().interrupt();
       }
     }
   }
@@ -177,6 +184,8 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
             LOGGER.info("Error on closing portforwarder", e);
         }
     }
+    // Shutdown connection
+    shutdown();
   }
 
   @Override
@@ -421,7 +430,7 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
     LOGGER.info("Interpreter pod created {}:{}", host, port);
     synchronized (started) {
       started.set(true);
-      started.notify();
+      started.notifyAll();
     }
   }
 
