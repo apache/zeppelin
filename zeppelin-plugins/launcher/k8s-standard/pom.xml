@@ -43,7 +43,7 @@
         <dependency>
             <groupId>com.hubspot.jinjava</groupId>
             <artifactId>jinjava</artifactId>
-            <version>2.4.12</version>
+            <version>2.5.4</version>
         </dependency>
     </dependencies>
 
