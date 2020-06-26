@@ -280,6 +280,7 @@ public abstract class FlinkSqlInterrpeter extends Interpreter {
       case DROP_CATALOG:
         callDropCatalog(cmdCall.operands[0], context);
         break;
+      case DESC:
       case DESCRIBE:
         callDescribe(cmdCall.operands[0], context);
         break;
