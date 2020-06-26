@@ -37,26 +37,93 @@
 
     <properties>
         <plugin.name>Launcher/K8sStandardInterpreterLauncher</plugin.name>
+        <version.kubernetes.client>4.10.2</version.kubernetes.client>
     </properties>
 
     <dependencies>
         <dependency>
+            <groupId>io.fabric8</groupId>
+            <artifactId>kubernetes-client</artifactId>
+            <version>${version.kubernetes.client}</version>
+            <scope>compile</scope>
+        </dependency>
+
+        <dependency>
             <groupId>com.hubspot.jinjava</groupId>
             <artifactId>jinjava</artifactId>
             <version>2.5.4</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-databind</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-annotations</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <!-- Test libraries -->
+        <dependency>
+            <groupId>io.fabric8</groupId>
+            <artifactId>kubernetes-server-mock</artifactId>
+            <version>${version.kubernetes.client}</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
     <build>
         <plugins>
             <plugin>
-                <artifactId>maven-dependency-plugin</artifactId>
-            </plugin>
-            <plugin>
                 <artifactId>maven-enforcer-plugin</artifactId>
                 <executions>
                     <execution>
                         <id>enforce</id>
+                        <phase>none</phase>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- Shade the whole plugin, because spark provides an other version of okio -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <relocations>
+                        <relocation>
+                            <pattern>okio</pattern>
+                            <shadedPattern>org.apache.zeppelin.shaded.okio</shadedPattern>
+                        </relocation>
+                    </relocations>
+                    <filters>
+                        <filter>
+                            <artifact>*:*</artifact>
+                            <excludes>
+                                <exclude>META-INF/*.SF</exclude>
+                                <exclude>META-INF/*.DSA</exclude>
+                                <exclude>META-INF/*.RSA</exclude>
+                            </excludes>
+                        </filter>
+                    </filters>
+                </configuration>
+            </plugin>
+            <!--  disable maven-dependency-plugin with execution copy-plugin-dependencies because we shade the whole dependency -->
+            <plugin>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-plugin-dependencies</id>
                         <phase>none</phase>
                     </execution>
                 </executions>
