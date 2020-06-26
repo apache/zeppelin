@@ -272,8 +272,6 @@ public class FlinkStreamSqlInterpreterTest extends SqlInterpreterTest {
         context.getLocalProperties().put("maxParallelism", "10");
         InterpreterResult result2 = sqlInterpreter.interpret("select url, count(1) as pv from " +
                 "log group by url", context);
-        System.out.println("------------" + context.out.toString());
-        System.out.println("------------" + result2);
         waiter.assertTrue(context.out.toString().contains("url\tpv\n"));
         waiter.assertEquals(InterpreterResult.Code.SUCCESS, result2.code());
       } catch (Exception e) {
@@ -312,6 +310,29 @@ public class FlinkStreamSqlInterpreterTest extends SqlInterpreterTest {
     assertEquals(InterpreterResult.Type.TABLE, resultMessages.get(0).getType());
     assertTrue(resultMessages.toString(),
             resultMessages.get(0).getData().contains("url\tpv\n"));
+
+  }
+
+  @Test
+  public void testResumeStreamSqlFromInvalidSavePointPath() throws IOException, InterpreterException, InterruptedException, TimeoutException {
+    String initStreamScalaScript = getInitStreamScript(1000);
+    InterpreterResult result = flinkInterpreter.interpret(initStreamScalaScript,
+            getInterpreterContext());
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+
+    File savepointPath = FileUtils.getTempDirectory();
+    InterpreterContext context = getInterpreterContext();
+    context.getLocalProperties().put("type", "update");
+    context.getLocalProperties().put("savepointPath", savepointPath.getAbsolutePath());
+    context.getLocalProperties().put("parallelism", "1");
+    context.getLocalProperties().put("maxParallelism", "10");
+    InterpreterResult result2 = sqlInterpreter.interpret("select url, count(1) as pv from " +
+            "log group by url", context);
+
+    // due to invalid savepointPath, failed to submit job and throw exception
+    assertEquals(InterpreterResult.Code.ERROR, result2.code());
+    List<InterpreterResultMessage> resultMessages = context.out.toInterpreterResultMessage();
+    assertTrue(resultMessages.toString().contains("Failed to submit job."));
 
   }
 
