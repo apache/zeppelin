@@ -136,7 +136,6 @@ public class K8sStandardInterpreterLauncher extends InterpreterLauncher {
     LOGGER.info("Launching Interpreter: {}", context.getInterpreterSettingGroup());
     this.context = context;
     this.properties = context.getProperties();
-    int connectTimeout = getConnectTimeout();
 
     return new K8sRemoteInterpreterProcess(
             client,
@@ -152,7 +151,7 @@ public class K8sStandardInterpreterLauncher extends InterpreterLauncher {
             getZeppelinServiceRpcPort(),
             zConf.getK8sPortForward(),
             zConf.getK8sSparkContainerImage(),
-            connectTimeout,
+            getConnectTimeout(),
             isUserImpersonateForSparkInterpreter(context));
   }
 
