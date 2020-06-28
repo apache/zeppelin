@@ -678,7 +678,7 @@ public class NotebookRestApi extends AbstractRestApi {
       params = request.getParams();
     }
 
-    LOG.info("Run note jobs, noteId: {} blocking: {}, isolated: {}, params: {}", noteId, blocking, isolated, params);
+    LOG.info("Run note jobs, noteId: {}, blocking: {}, isolated: {}, params: {}", noteId, blocking, isolated, params);
     Note note = notebook.getNote(noteId);
     AuthenticationInfo subject = new AuthenticationInfo(authenticationService.getPrincipal());
     subject.setRoles(new LinkedList<>(authenticationService.getAssociatedRoles()));

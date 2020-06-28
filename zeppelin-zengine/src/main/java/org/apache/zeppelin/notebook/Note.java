@@ -766,14 +766,27 @@ public class Note implements JsonSerializable {
                      boolean blocking,
                      boolean isolated,
                      Map<String, Object> params) throws Exception {
+    setIsolatedMode(isolated);
+    setRunning(true);
+    setStartTime(DATE_TIME_FORMATTER.format(LocalDateTime.now()));
     if (blocking) {
-      runAllSync(authInfo, isolated, params);
+      try {
+        runAllSync(authInfo, isolated, params);
+      } finally {
+        setRunning(false);
+        setIsolatedMode(false);
+        clearStartTime();
+      }
     } else {
       ExecutorFactory.singleton().getNoteJobExecutor().submit(() -> {
         try {
           runAllSync(authInfo, isolated, params);
         } catch (Exception e) {
           LOGGER.warn("Fail to run note: " + id, e);
+        } finally {
+          setRunning(false);
+          setIsolatedMode(false);
+          clearStartTime();
         }
       });
     }
@@ -786,9 +799,6 @@ public class Note implements JsonSerializable {
    * @param isolated
    */
   private void runAllSync(AuthenticationInfo authInfo, boolean isolated, Map<String, Object> params) throws Exception {
-    setIsolatedMode(isolated);
-    setRunning(true);
-    setStartTime(DATE_TIME_FORMATTER.format(LocalDateTime.now()));
     try {
       for (Paragraph p : getParagraphs()) {
         if (!p.isEnabled()) {
@@ -836,9 +846,6 @@ public class Note implements JsonSerializable {
           setting.closeInterpreters(executionContext);
         }
       }
-      setRunning(false);
-      setIsolatedMode(false);
-      clearStartTime();
     }
   }
 
