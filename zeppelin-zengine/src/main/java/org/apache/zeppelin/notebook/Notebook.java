@@ -125,9 +125,9 @@ public class Notebook {
             }
           }
           // unload note to save memory when there's no paragraph recovering.
-          if (!hasRecoveredParagraph) {
-            note.unLoad();
-          }
+//          if (!hasRecoveredParagraph) {
+//            note.unLoad();
+//          }
         } catch (Exception e) {
           LOGGER.warn("Fail to recovery note: " + note.getPath(), e);
         }
