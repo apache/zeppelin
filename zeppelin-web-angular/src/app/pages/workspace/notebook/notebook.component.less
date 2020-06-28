@@ -32,28 +32,13 @@
 
   .sidebar-area {
     box-shadow: 4px 0px 2px 0 rgba(0, 0, 0, 0.06);
-    border-right: solid thin @component-background;;
-    overflow-y: auto;
-    overflow-x: hidden;
+    border-right: solid thin @component-background;
+    overflow: hidden;
     background: @component-background;
-    padding: 20px;
     z-index: 25;
     position: sticky;
     top: 0px;
     height: 100vh;
-  }
-
-  .sidebar-toggle {
-    width: 40px;
-    position: absolute;
-    top: 0;
-    right: 0;
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 10px 0;
-    font-size: 20px;
-    z-index: 30;
   }
 
   .sidebar-resize {
@@ -68,22 +53,12 @@
 
   .simple .sidebar-area {
     box-shadow: none;
-
-    .sidebar-toggle {
-      opacity: 0;
-      transition: opacity 0.2s ease;
-    }
-
+    
     &:hover {
       border-right: solid thin rgba(0, 0, 0, 0.06);
-
-      .sidebar-toggle {
-        opacity: 1;
-      }
     }
-
   }
-
+  
   .notebook-area {
     overflow: hidden;
   }
@@ -96,6 +71,7 @@
     top: 0px;
     z-index: 20;
   }
+
   .paragraph-area {
     padding: 0 5px;
   }

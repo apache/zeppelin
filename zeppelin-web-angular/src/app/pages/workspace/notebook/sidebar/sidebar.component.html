@@ -1,0 +1,35 @@
+<!--
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<div class="sidebar" [class.simple]="note.config.looknfeel !== 'default'">
+  <div class="sidebar-nav">
+    <button [class.sidebar-button-active]="sidebarState === SidebarState.TOC"
+            class="sidebar-button"
+            (click)="setOrToggleSidebarState(SidebarState.TOC)">
+      <i nz-icon nzType="unordered-list" nzTheme="outline"></i>
+    </button>
+    <button [class.sidebar-button-active]="sidebarState === SidebarState.FILE_TREE"
+            class="sidebar-button"
+            (click)="setOrToggleSidebarState(SidebarState.FILE_TREE)">
+      <i nz-icon nzType="folder" nzTheme="outline"></i>
+    </button>
+  </div>
+  <button class="sidebar-button sidebar-close" (click)="setOrToggleSidebarState(SidebarState.CLOSED)">
+    <i *ngIf="sidebarState !== 'CLOSED'" nz-icon nzType="close" nzTheme="outline"></i>
+  </button>
+  <div class="sidebar-main">
+    <zeppelin-node-list *ngIf="sidebarState === SidebarState.FILE_TREE"></zeppelin-node-list>
+    <zeppelin-note-toc *ngIf="sidebarState === SidebarState.TOC"
+                      [note]="note"
+                      (scrollToParagraph)="onScrollToParagraph($event)"></zeppelin-note-toc>
+  </div>
+<div>
