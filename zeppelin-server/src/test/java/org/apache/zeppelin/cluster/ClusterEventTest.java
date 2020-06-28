@@ -316,7 +316,7 @@ public class ClusterEventTest extends ZeppelinServerMock {
     } finally {
       // cleanup
       if (null != note) {
-        TestUtils.getInstance(Notebook.class).removeNote(note.getId(), anonymous);
+        TestUtils.getInstance(Notebook.class).removeNote(note, anonymous);
       }
     }
   }
@@ -354,10 +354,11 @@ public class ClusterEventTest extends ZeppelinServerMock {
     } finally {
       // cleanup
       if (null != note1) {
-        TestUtils.getInstance(Notebook.class).removeNote(note1.getId(), anonymous);
+        TestUtils.getInstance(Notebook.class).removeNote(note1, anonymous);
       }
-      if (null != clonedNoteId) {
-        TestUtils.getInstance(Notebook.class).removeNote(clonedNoteId, anonymous);
+      Note clonedNote = TestUtils.getInstance(Notebook.class).getNote(clonedNoteId);
+      if (null != clonedNote) {
+        TestUtils.getInstance(Notebook.class).removeNote(clonedNote, anonymous);
       }
     }
   }
@@ -389,7 +390,7 @@ public class ClusterEventTest extends ZeppelinServerMock {
     } finally {
       // cleanup
       if (null != note) {
-        TestUtils.getInstance(Notebook.class).removeNote(note.getId(), anonymous);
+        TestUtils.getInstance(Notebook.class).removeNote(note, anonymous);
       }
     }
   }
@@ -455,7 +456,7 @@ public class ClusterEventTest extends ZeppelinServerMock {
       LOGGER.error(e.getMessage(), e);
     } finally {
       if (null != note) {
-        notebook.removeNote(note.getId(), anonymous);
+        notebook.removeNote(note, anonymous);
       }
     }
   }

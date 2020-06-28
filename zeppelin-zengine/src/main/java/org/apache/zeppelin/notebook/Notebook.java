@@ -29,7 +29,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.inject.Inject;
+
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.display.AngularObject;
@@ -106,23 +109,45 @@ public class Notebook {
     this.noteEventListeners.add(this.interpreterSettingManager);
 
     if (conf.isIndexRebuild()) {
-      noteSearchService.startRebuildIndex(getAllNotes());
+      noteSearchService.startRebuildIndex(getNoteStream());
+    }
+  }
+
+  public void recoveryIfNecessary() {
+    if (conf.isRecoveryEnabled()) {
+      recoverRunningParagraphs();
     }
   }
 
   private void recoverRunningParagraphs() {
-
     Thread thread = new Thread(() -> {
-      for (Note note : getAllNotes()) {
-        for (Paragraph paragraph : note.getParagraphs()) {
-          if (paragraph.getStatus() == Job.Status.RUNNING) {
-            paragraph.recover();
+      getNoteStream().forEach(note -> {
+        try {
+          boolean hasRecoveredParagraph = false;
+          for (Paragraph paragraph : note.getParagraphs()) {
+            if (paragraph.getStatus() == Job.Status.RUNNING) {
+              paragraph.recover();
+              hasRecoveredParagraph = true;
+            }
           }
+          // unload note to save memory when there's no paragraph recovering.
+          if (!hasRecoveredParagraph) {
+            note.unLoad();
+          }
+        } catch (Exception e) {
+          LOGGER.warn("Fail to recovery note: " + note.getPath(), e);
         }
-      }
+      });
     });
     thread.setName("Recovering-Thread");
     thread.start();
+    LOGGER.info("Start paragraph recovering thread");
+    
+    try {
+      thread.join();
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
   }
 
   @Inject
@@ -150,8 +175,6 @@ public class Notebook {
       this.noteEventListeners.add(noteEventListener);
     }
     this.paragraphJobListener = (ParagraphJobListener) noteEventListener;
-
-    recoverRunningParagraphs();
   }
 
   public NoteManager getNoteManager() {
@@ -305,13 +328,9 @@ public class Notebook {
     return newNote;
   }
 
-  public void removeNote(String noteId, AuthenticationInfo subject) throws IOException {
-    LOGGER.info("Remove note " + noteId);
-    Note note = getNote(noteId);
-    if (note == null) {
-      throw new IOException("Note " + noteId + " not found");
-    }
-    noteManager.removeNote(noteId, subject);
+  public void removeNote(Note note, AuthenticationInfo subject) throws IOException {
+    LOGGER.info("Remove note: {}", note.getId());
+    noteManager.removeNote(note.getId(), subject);
     fireNoteRemoveEvent(note, subject);
   }
 
@@ -561,9 +580,8 @@ public class Notebook {
         .collect(Collectors.toList());
   }
 
-  public List<Note> getAllNotes() {
-    List<Note> noteList = noteManager.getAllNotes();
-    for (Note note : noteList) {
+  public Stream<Note> getNoteStream() {
+    return noteManager.getNotesStream().map(note -> {
       note.setInterpreterFactory(replFactory);
       note.setInterpreterSettingManager(interpreterSettingManager);
       note.setParagraphJobListener(paragraphJobListener);
@@ -573,19 +591,25 @@ public class Notebook {
         p.setNote(note);
         p.setListener(paragraphJobListener);
       }
-    }
-    Collections.sort(noteList, Comparator.comparing(Note::getPath));
-    return noteList;
+      return note;
+    });
   }
 
+  @VisibleForTesting
   public List<Note> getAllNotes(Function<Note, Boolean> func){
     return getAllNotes().stream()
         .filter(note -> func.apply(note))
         .collect(Collectors.toList());
   }
 
+  @VisibleForTesting
+  public List<Note> getAllNotes() {
+    List<Note> notes = getNoteStream().collect(Collectors.toList());
+    Collections.sort(notes, Comparator.comparing(Note::getPath));
+    return notes;
+  }
+
   public List<NoteInfo> getNotesInfo(Function<String, Boolean> func) {
-    LOGGER.info("Start getNoteList");
     String homescreenNoteId = conf.getString(ConfVars.ZEPPELIN_NOTEBOOK_HOMESCREEN);
     boolean hideHomeScreenNotebookFromList =
         conf.getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_HOMESCREEN_HIDE);
@@ -609,7 +633,6 @@ public class Notebook {
             }
             return name1.compareTo(name2);
           });
-      LOGGER.info("Finish getNoteList");
       return notesInfo;
     }
   }

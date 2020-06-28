@@ -75,14 +75,13 @@ public class JobManagerService {
     if (!conf.isJobManagerEnabled()) {
       return new ArrayList<>();
     }
-    List<Note> notes = notebook.getAllNotes();
     List<NoteJobInfo> notesJobInfo = new ArrayList<>();
-    for (Note note : notes) {
+    notebook.getNoteStream().forEach(note -> {
       NoteJobInfo noteJobInfo = new NoteJobInfo(note);
       if (noteJobInfo.unixTimeLastRun > lastUpdateServerUnixTime) {
         notesJobInfo.add(noteJobInfo);
       }
-    }
+    });
     callback.onSuccess(notesJobInfo, context);
     return notesJobInfo;
   }
