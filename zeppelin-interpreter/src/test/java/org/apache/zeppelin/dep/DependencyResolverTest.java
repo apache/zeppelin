@@ -86,6 +86,14 @@ public class DependencyResolverTest {
     assertEquals(testCopyPath.list().length, 3);
     FileUtils.cleanDirectory(testCopyPath);
 
+    // load from added http repository
+    resolver.addRepo("httpmvn",
+        "http://insecure.repo1.maven.org/maven2/", false);
+    resolver.load("com.databricks:spark-csv_2.10:1.3.0", testCopyPath);
+    assertEquals(testCopyPath.list().length, 4);
+    FileUtils.cleanDirectory(testCopyPath);
+    resolver.delRepo("httpmvn");
+
     // load from added repository
     resolver.addRepo("sonatype",
         "https://oss.sonatype.org/content/repositories/ksoap2-android-releases/", false);
