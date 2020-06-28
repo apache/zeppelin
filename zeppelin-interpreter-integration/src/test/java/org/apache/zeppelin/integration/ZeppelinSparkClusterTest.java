@@ -191,7 +191,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
       assertEquals(Status.ABORT, p.getStatus());
     } finally {
       if (null != note) {
-        TestUtils.getInstance(Notebook.class).removeNote(note.getId(), anonymous);
+        TestUtils.getInstance(Notebook.class).removeNote(note, anonymous);
       }
     }
   }
@@ -208,7 +208,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
       assertEquals("55", p.getReturn().message().get(0).getData());
     } finally {
       if (null != note) {
-        TestUtils.getInstance(Notebook.class).removeNote(note.getId(), anonymous);
+        TestUtils.getInstance(Notebook.class).removeNote(note, anonymous);
       }
     }
   }
@@ -240,7 +240,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
       }
     } finally {
       if (null != note) {
-        TestUtils.getInstance(Notebook.class).removeNote(note.getId(), anonymous);
+        TestUtils.getInstance(Notebook.class).removeNote(note, anonymous);
       }
     }
   }
@@ -267,7 +267,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
               "org.apache.spark.sql.DataFrame = [_c0: string, _c1: string]\n"));
     } finally {
       if (null != note) {
-        TestUtils.getInstance(Notebook.class).removeNote(note.getId(), anonymous);
+        TestUtils.getInstance(Notebook.class).removeNote(note, anonymous);
       }
     }
   }
@@ -364,7 +364,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
       }
     } finally {
       if (null != note) {
-        TestUtils.getInstance(Notebook.class).removeNote(note.getId(), anonymous);
+        TestUtils.getInstance(Notebook.class).removeNote(note, anonymous);
       }
     }
   }
@@ -397,7 +397,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
       assertEquals("[1] 3", p.getReturn().message().get(0).getData().trim());
     } finally {
       if (null != note) {
-        TestUtils.getInstance(Notebook.class).removeNote(note.getId(), anonymous);
+        TestUtils.getInstance(Notebook.class).removeNote(note, anonymous);
       }
     }
   }
@@ -510,7 +510,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
       }
     } finally {
       if (null != note) {
-        TestUtils.getInstance(Notebook.class).removeNote(note.getId(), anonymous);
+        TestUtils.getInstance(Notebook.class).removeNote(note, anonymous);
       }
     }
   }
@@ -589,10 +589,10 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
       assertEquals("1", p21.getReturn().message().get(0).getData());
     } finally {
       if (null != note) {
-        TestUtils.getInstance(Notebook.class).removeNote(note.getId(), anonymous);
+        TestUtils.getInstance(Notebook.class).removeNote(note, anonymous);
       }
       if (null != note2) {
-        TestUtils.getInstance(Notebook.class).removeNote(note2.getId(), anonymous);
+        TestUtils.getInstance(Notebook.class).removeNote(note2, anonymous);
       }
     }
   }
@@ -637,7 +637,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
       assertEquals("hello world\n", p5.getReturn().message().get(0).getData());
     } finally {
       if (null != note) {
-        TestUtils.getInstance(Notebook.class).removeNote(note.getId(), anonymous);
+        TestUtils.getInstance(Notebook.class).removeNote(note, anonymous);
       }
     }
   }
@@ -674,10 +674,10 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
       assertEquals("1\n6\n2\n", p3.getReturn().message().get(0).getData());
     } finally {
       if (null != note) {
-        TestUtils.getInstance(Notebook.class).removeNote(note.getId(), anonymous);
+        TestUtils.getInstance(Notebook.class).removeNote(note, anonymous);
       }
       if (null != note2) {
-        TestUtils.getInstance(Notebook.class).removeNote(note2.getId(), anonymous);
+        TestUtils.getInstance(Notebook.class).removeNote(note2, anonymous);
       }
     }
   }
@@ -702,7 +702,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
               p.getReturn().message().get(0).getData().contains(sparkVersion));
     } finally {
       if (null != note) {
-        TestUtils.getInstance(Notebook.class).removeNote(note.getId(), anonymous);
+        TestUtils.getInstance(Notebook.class).removeNote(note, anonymous);
       }
     }
   }
@@ -753,7 +753,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
       assertEquals("items: Seq[Any] = Buffer(2)", result[4]);
     } finally {
       if (null != note) {
-        TestUtils.getInstance(Notebook.class).removeNote(note.getId(), anonymous);
+        TestUtils.getInstance(Notebook.class).removeNote(note, anonymous);
       }
     }
   }
@@ -790,7 +790,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
       assertEquals("2", result[3]);
     } finally {
       if (null != note) {
-        TestUtils.getInstance(Notebook.class).removeNote(note.getId(), anonymous);
+        TestUtils.getInstance(Notebook.class).removeNote(note, anonymous);
       }
     }
   }
@@ -842,7 +842,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
       assertEquals(0, globalAngularObjects.size());
     } finally {
       if (null != note) {
-        TestUtils.getInstance(Notebook.class).removeNote(note.getId(), anonymous);
+        TestUtils.getInstance(Notebook.class).removeNote(note, anonymous);
       }
     }
   }
@@ -906,7 +906,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
       assertTrue(p2.getReturn().toString(), p2.getReturn().toString().contains("hello java,scala"));
     } finally {
       if (null != note) {
-        TestUtils.getInstance(Notebook.class).removeNote(note.getId(), anonymous);
+        TestUtils.getInstance(Notebook.class).removeNote(note, anonymous);
       }
     }
   }
@@ -970,7 +970,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
       assertTrue(p2.getReturn().toString(), p2.getReturn().toString().contains("hello java,scala"));
     } finally {
       if (null != note) {
-        TestUtils.getInstance(Notebook.class).removeNote(note.getId(), anonymous);
+        TestUtils.getInstance(Notebook.class).removeNote(note, anonymous);
       }
     }
   }
@@ -1000,7 +1000,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
       assertTrue(p2.getReturn().toString(), p2.getReturn().toString().contains("hello world"));
     } finally {
       if (null != note) {
-        TestUtils.getInstance(Notebook.class).removeNote(note.getId(), anonymous);
+        TestUtils.getInstance(Notebook.class).removeNote(note, anonymous);
       }
     }
   }
@@ -1022,7 +1022,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
       assertEquals(Status.FINISHED, p1.getStatus());
     } finally {
       if (null != note) {
-        TestUtils.getInstance(Notebook.class).removeNote(note.getId(), anonymous);
+        TestUtils.getInstance(Notebook.class).removeNote(note, anonymous);
       }
     }
   }
@@ -1052,7 +1052,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
               p1.getReturn().message().get(0).getData().contains("No such file or directory"));
     } finally {
       if (null != note) {
-        TestUtils.getInstance(Notebook.class).removeNote(note.getId(), anonymous);
+        TestUtils.getInstance(Notebook.class).removeNote(note, anonymous);
       }
       // reset SPARK_HOME, otherwise it will cause the following test fail
       InterpreterSetting sparkIntpSetting = TestUtils.getInstance(Notebook.class).getInterpreterSettingManager()

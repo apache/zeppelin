@@ -382,6 +382,7 @@
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration combine.children="append">
+          <forkMode>always</forkMode>
           <argLine>-Xmx3g -Xms1g -Dfile.encoding=UTF-8</argLine>
           <excludes>
             <exclude>${tests.to.exclude}</exclude>

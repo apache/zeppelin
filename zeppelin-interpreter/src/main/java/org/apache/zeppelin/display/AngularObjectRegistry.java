@@ -34,18 +34,18 @@ public class AngularObjectRegistry {
   Map<String, Map<String, AngularObject>> registry = new HashMap<>();
   private final String GLOBAL_KEY = "_GLOBAL_";
   private AngularObjectRegistryListener listener;
-  private String interpreterId;
+  private String interpreterGroupId;
   private AngularObjectListener angularObjectListener;
 
-  public AngularObjectRegistry(final String interpreterId,
+  public AngularObjectRegistry(final String interpreterGroupId,
       final AngularObjectRegistryListener listener) {
-    this.interpreterId = interpreterId;
+    this.interpreterGroupId = interpreterGroupId;
     this.listener = listener;
     angularObjectListener = new AngularObjectListener() {
       @Override
       public void updated(AngularObject updatedObject) {
         if (listener != null) {
-          listener.onUpdate(interpreterId, updatedObject);
+          listener.onUpdateAngularObject(interpreterGroupId, updatedObject);
         }
       }
     };
@@ -117,7 +117,7 @@ public class AngularObjectRegistry {
       Map<String, AngularObject> noteLocalRegistry = getRegistryForKey(noteId, paragraphId);
       noteLocalRegistry.put(name, ao);
       if (listener != null && emit) {
-        listener.onAdd(interpreterId, ao);
+        listener.onAddAngularObject(interpreterGroupId, ao);
       }
     }
 
@@ -159,7 +159,7 @@ public class AngularObjectRegistry {
       Map<String, AngularObject> r = getRegistryForKey(noteId, paragraphId);
       AngularObject o = r.remove(name);
       if (listener != null && emit) {
-        listener.onRemove(interpreterId, name, noteId, paragraphId);
+        listener.onRemoveAngularObject(interpreterGroupId, o);
       }
       return o;
     }
@@ -240,7 +240,7 @@ public class AngularObjectRegistry {
   }
 
   public String getInterpreterGroupId() {
-    return interpreterId;
+    return interpreterGroupId;
   }
 
   public Map<String, Map<String, AngularObject>> getRegistry() {

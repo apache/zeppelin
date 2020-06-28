@@ -190,11 +190,12 @@ public class NotebookService {
   public void removeNote(String noteId,
                          ServiceContext context,
                          ServiceCallback<String> callback) throws IOException {
-    if (notebook.getNote(noteId) != null) {
-      if (!checkPermission(noteId, Permission.OWNER, Message.OP.DEL_NOTE, context, callback)) {
+    Note note = notebook.getNote(noteId);
+    if (note != null) {
+      if (!checkPermission(note.getId(), Permission.OWNER, Message.OP.DEL_NOTE, context, callback)) {
         return;
       }
-      notebook.removeNote(noteId, context.getAutheInfo());
+      notebook.removeNote(note, context.getAutheInfo());
       callback.onSuccess("Delete note successfully", context);
     } else {
       callback.onFailure(new NoteNotFoundException(noteId), context);
