@@ -28,6 +28,8 @@ import org.quartz.JobExecutionContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashMap;
+
 /** Cron task for the note. */
 public class CronJob implements org.quartz.Job {
   private static final Logger LOGGER = LoggerFactory.getLogger(CronJob.class);
@@ -56,7 +58,7 @@ public class CronJob implements org.quartz.Job {
                     StringUtils.isEmpty(cronExecutingRoles) ? null : cronExecutingRoles,
                     null);
     try {
-      note.runAll(authenticationInfo, true, true);
+      note.runAll(authenticationInfo, true, true, new HashMap<>());
     } catch (Exception e) {
       LOGGER.warn("Fail to run note: " + note.getName(), e);
     }

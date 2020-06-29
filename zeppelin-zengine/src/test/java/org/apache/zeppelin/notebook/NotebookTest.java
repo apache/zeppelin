@@ -475,7 +475,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     p3.setText("%mock1 p3");
 
     // when
-    note.runAll(anonymous, true, false);
+    note.runAll(anonymous, true, false, new HashMap<>());
 
     assertEquals("repl1: p1", p1.getReturn().message().get(0).getData());
     assertNull(p2.getReturn());
@@ -829,7 +829,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     String simpleText = "hello world";
     p.setText(simpleText);
 
-    note.runAll(anonymous, true, false);
+    note.runAll(anonymous, true, false, new HashMap<>());
 
     String exportedNoteJson = notebook.exportNote(note.getId());
 
@@ -861,7 +861,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
 
     final Paragraph p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     p.setText("hello world");
-    note.runAll(anonymous, true, false);
+    note.runAll(anonymous, true, false, new HashMap<>());
 
     p.setStatus(Status.RUNNING);
     Note cloneNote = notebook.cloneNote(note.getId(), "clone note", anonymous);
@@ -897,7 +897,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     for (InterpreterGroup intpGroup : interpreterSettingManager.getAllInterpreterGroup()) {
       intpGroup.setResourcePool(new LocalResourcePool(intpGroup.getId()));
     }
-    note.runAll(anonymous, true, false);
+    note.runAll(anonymous, true, false, new HashMap<>());
 
     assertEquals(2, interpreterSettingManager.getAllResources().size());
 
@@ -1166,7 +1166,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     p3.setText("%mock1 sleep 1000");
 
 
-    note.runAll(AuthenticationInfo.ANONYMOUS, false, false);
+    note.runAll(AuthenticationInfo.ANONYMOUS, false, false, new HashMap<>());
 
     // wait until first paragraph finishes and second paragraph starts
     while (p1.getStatus() != Status.FINISHED || p2.getStatus() != Status.RUNNING) Thread.yield();

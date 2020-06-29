@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -419,7 +420,7 @@ public class NotebookService {
       } else {
         try {
           // run note directly when parameter `paragraphs` is null.
-          note.runAll(context.getAutheInfo(), true, false);
+          note.runAll(context.getAutheInfo(), true, false, new HashMap<>());
           return true;
         } catch (Exception e) {
           LOGGER.warn("Fail to run note: " + note.getName(), e);

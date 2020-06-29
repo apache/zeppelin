@@ -23,14 +23,18 @@ import java.util.Map;
 import org.apache.zeppelin.common.JsonSerializable;
 
 /**
- * RunParagraphWithParametersRequest rest api request message.
+ * ParametersRequest rest api request message.
  */
-public class RunParagraphWithParametersRequest implements JsonSerializable {
-  private static final Gson gson = new Gson();
+public class ParametersRequest implements JsonSerializable {
+  private static final Gson GSON = new Gson();
 
-  Map<String, Object> params;
+  private Map<String, Object> params;
 
-  public RunParagraphWithParametersRequest() {
+  public ParametersRequest() {
+  }
+
+  public ParametersRequest(Map<String, Object> params) {
+    this.params = params;
   }
 
   public Map<String, Object> getParams() {
@@ -38,10 +42,10 @@ public class RunParagraphWithParametersRequest implements JsonSerializable {
   }
 
   public String toJson() {
-    return gson.toJson(this);
+    return GSON.toJson(this);
   }
 
-  public static RunParagraphWithParametersRequest fromJson(String json) {
-    return gson.fromJson(json, RunParagraphWithParametersRequest.class);
+  public static ParametersRequest fromJson(String json) {
+    return GSON.fromJson(json, ParametersRequest.class);
   }
 }

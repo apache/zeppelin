@@ -764,13 +764,14 @@ public class Note implements JsonSerializable {
    */
   public void runAll(AuthenticationInfo authInfo,
                      boolean blocking,
-                     boolean isolated) throws Exception {
+                     boolean isolated,
+                     Map<String, Object> params) throws Exception {
     if (blocking) {
-      runAllSync(authInfo, isolated);
+      runAllSync(authInfo, isolated, params);
     } else {
       ExecutorFactory.singleton().getNoteJobExecutor().submit(() -> {
         try {
-          runAllSync(authInfo, isolated);
+          runAllSync(authInfo, isolated, params);
         } catch (Exception e) {
           LOGGER.warn("Fail to run note: " + id, e);
         }
@@ -784,7 +785,7 @@ public class Note implements JsonSerializable {
    * @param authInfo
    * @param isolated
    */
-  private void runAllSync(AuthenticationInfo authInfo, boolean isolated) throws Exception {
+  private void runAllSync(AuthenticationInfo authInfo, boolean isolated, Map<String, Object> params) throws Exception {
     setIsolatedMode(isolated);
     setRunning(true);
     setStartTime(DATE_TIME_FORMATTER.format(LocalDateTime.now()));
@@ -794,7 +795,11 @@ public class Note implements JsonSerializable {
           continue;
         }
         p.setAuthenticationInfo(authInfo);
+        Map<String, Object> originalParams = p.settings.getParams();
         try {
+          if (params != null && !params.isEmpty()) {
+            p.settings.setParams(params);
+          }
           Interpreter interpreter = p.getBindedInterpreter();
           if (interpreter != null) {
             // set interpreter property to execution.mode to be note
@@ -802,14 +807,17 @@ public class Note implements JsonSerializable {
             interpreter.setProperty(".execution.mode", "note");
             interpreter.setProperty(".noteId", id);
           }
+          // Must run each paragraph in blocking way.
+          if (!run(p.getId(), true)) {
+            LOGGER.warn("Skip running the remain notes because paragraph {} fails", p.getId());
+            throw new Exception("Fail to run note because paragraph " + p.getId() + " is failed, result: " +
+                    p.getReturn());
+          }
         } catch (InterpreterNotFoundException e) {
           // ignore, because the following run method will fail if interpreter not found.
-        }
-        // Must run each paragraph in blocking way.
-        if (!run(p.getId(), true)) {
-          LOGGER.warn("Skip running the remain notes because paragraph {} fails", p.getId());
-          throw new Exception("Fail to run note because paragraph " + p.getId() + " is failed, result: " +
-                  p.getReturn());
+        } finally {
+          // reset params to the original value
+          p.settings.setParams(originalParams);
         }
       }
     } catch (Exception e) {
