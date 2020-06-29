@@ -33,6 +33,7 @@ import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.notebook.Notebook;
+import org.apache.zeppelin.rest.message.ParametersRequest;
 import org.apache.zeppelin.socket.NotebookServer;
 import org.apache.zeppelin.utils.TestUtils;
 import org.junit.AfterClass;
@@ -43,6 +44,7 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -365,6 +367,69 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
 
       // no new python process is created because it is isolated mode.
       assertEquals(pythonProcessNum, interpreterSetting.getAllInterpreterGroups().size());
+    } finally {
+      // cleanup
+      if (null != note1) {
+        TestUtils.getInstance(Notebook.class).removeNote(note1.getId(), anonymous);
+      }
+    }
+  }
+
+  @Test
+  public void testRunNoteWithParams() throws IOException, InterruptedException {
+    Note note1 = null;
+    try {
+      note1 = TestUtils.getInstance(Notebook.class).createNote("note1", anonymous);
+      // 2 paragraphs
+      // P1:
+      //    %python
+      //    name = z.input('name', 'world')
+      //    print(name)
+      // P2:
+      //    %sh
+      //    echo ${name|world}
+      //
+      Paragraph p1 = note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
+      Paragraph p2 = note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
+      p1.setText("%python name = z.input('name', 'world')\nprint(name)");
+      p2.setText("%sh echo '${name=world}'");
+
+      Map<String, Object> paramsMap = new HashMap<>();
+      paramsMap.put("name", "zeppelin");
+      ParametersRequest parametersRequest = new ParametersRequest(paramsMap);
+      PostMethod post = httpPost("/notebook/job/" + note1.getId() + "?blocking=false&isolated=true&",
+              parametersRequest.toJson());
+      assertThat(post, isAllowed());
+      Map<String, Object> resp = gson.fromJson(post.getResponseBodyAsString(),
+              new TypeToken<Map<String, Object>>() {}.getType());
+      assertEquals(resp.get("status"), "OK");
+      post.releaseConnection();
+
+      // wait for all the paragraphs are done
+      while(note1.isRunning()) {
+        Thread.sleep(1000);
+      }
+      assertEquals(Job.Status.FINISHED, p1.getStatus());
+      assertEquals(Job.Status.FINISHED, p2.getStatus());
+      assertEquals("zeppelin\n", p1.getReturn().message().get(0).getData());
+      assertEquals("zeppelin\n", p2.getReturn().message().get(0).getData());
+
+      // another attempt rest api call without params
+      post = httpPost("/notebook/job/" + note1.getId() + "?blocking=false&isolated=true", "");
+      assertThat(post, isAllowed());
+      resp = gson.fromJson(post.getResponseBodyAsString(),
+              new TypeToken<Map<String, Object>>() {}.getType());
+      assertEquals(resp.get("status"), "OK");
+      post.releaseConnection();
+
+      // wait for all the paragraphs are done
+      while(note1.isRunning()) {
+        Thread.sleep(1000);
+      }
+      assertEquals(Job.Status.FINISHED, p1.getStatus());
+      assertEquals(Job.Status.FINISHED, p2.getStatus());
+      assertEquals("world\n", p1.getReturn().message().get(0).getData());
+      assertEquals("world\n", p2.getReturn().message().get(0).getData());
     } finally {
       // cleanup
       if (null != note1) {
