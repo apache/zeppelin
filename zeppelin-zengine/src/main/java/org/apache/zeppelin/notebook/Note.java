@@ -985,10 +985,12 @@ public class Note implements JsonSerializable {
       settings.add(defaultIntpSetting);
     }
     // add the interpreter setting with the same group of default interpreter group
-    for (InterpreterSetting intpSetting : interpreterSettingManager.get()) {
-      if (intpSetting.getGroup().equals(defaultIntpSetting.getGroup())) {
-        if (intpSetting.isUserAuthorized(userAndRoles)) {
-          settings.add(intpSetting);
+    if (defaultIntpSetting != null) {
+      for (InterpreterSetting intpSetting : interpreterSettingManager.get()) {
+        if (intpSetting.getGroup().equals(defaultIntpSetting.getGroup())) {
+          if (intpSetting.isUserAuthorized(userAndRoles)) {
+            settings.add(intpSetting);
+          }
         }
       }
     }
