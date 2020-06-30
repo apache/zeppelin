@@ -24,9 +24,9 @@
     </button>
   </div>
   <button class="sidebar-button sidebar-close" (click)="setOrToggleSidebarState(SidebarState.CLOSED)">
-    <i *ngIf="sidebarState !== 'CLOSED'" nz-icon nzType="close" nzTheme="outline"></i>
+    <i *ngIf="sidebarState !== SidebarState.CLOSED" nz-icon nzType="close" nzTheme="outline"></i>
   </button>
-  <div class="sidebar-main">
+  <div class="sidebar-main" *ngIf="sidebarState !== SidebarState.CLOSED">
     <zeppelin-node-list *ngIf="sidebarState === SidebarState.FILE_TREE"></zeppelin-node-list>
     <zeppelin-note-toc *ngIf="sidebarState === SidebarState.TOC"
                       [note]="note"

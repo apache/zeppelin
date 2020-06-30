@@ -35,14 +35,14 @@ export class NoteTocComponent implements OnInit, DoCheck {
   @Output() readonly scrollToParagraph = new EventEmitter<string>();
   Arr = Array;
   rows = [];
-  resultHistory: TocResult[];
+  oldNote: Note['note'];
 
   onRowClick(id: string) {
     this.scrollToParagraph.emit(id);
   }
 
-  getResults(): TocResult[] {
-    const results = this.note.paragraphs.reduce((allResults: TocResult[], paragraph) => {
+  getResults(note: Note['note']): TocResult[] {
+    const results = note.paragraphs.reduce((allResults: TocResult[], paragraph) => {
       const newResults = [];
       if (paragraph.results && paragraph.results.msg) {
         paragraph.results.msg.forEach(result =>
@@ -64,7 +64,7 @@ export class NoteTocComponent implements OnInit, DoCheck {
   }
 
   computeRows() {
-    const htmlResults = this.getResults();
+    const htmlResults = this.getResults(this.note);
     const rows: TocRow[] = htmlResults.reduce((allRows: TocRow[], result) => {
       const parser = new DOMParser();
       const resultDOM = parser.parseFromString(result.resultData, 'text/html');
@@ -85,22 +85,26 @@ export class NoteTocComponent implements OnInit, DoCheck {
   }
 
   shouldRecomputeRows() {
-    return this.getResults().reduce(
+    if (this.note.id !== this.oldNote.id) {
+      return true;
+    }
+    const oldResult = this.getResults(this.oldNote);
+    return this.getResults(this.note).reduce(
       (hasParagraphUpdated, result, resultIndex) =>
-        hasParagraphUpdated || result.resultData !== this.resultHistory[resultIndex].resultData,
+        hasParagraphUpdated || !oldResult[resultIndex] || result.resultData !== oldResult[resultIndex].resultData,
       false
     );
   }
 
   ngOnInit() {
     this.computeRows();
-    this.resultHistory = this.getResults();
+    this.oldNote = this.note;
   }
 
   ngDoCheck() {
     if (this.shouldRecomputeRows()) {
       this.computeRows();
-      this.resultHistory = this.getResults();
+      this.oldNote = this.note;
     }
   }
 }
