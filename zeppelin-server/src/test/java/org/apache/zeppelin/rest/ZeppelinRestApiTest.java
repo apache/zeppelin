@@ -34,6 +34,7 @@ import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.notebook.AuthorizationService;
 import org.apache.zeppelin.notebook.Notebook;
+import org.apache.zeppelin.rest.message.NoteJobStatus;
 import org.apache.zeppelin.service.AuthenticationService;
 import org.apache.zeppelin.utils.TestUtils;
 import org.junit.AfterClass;
@@ -521,10 +522,9 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
       Map<String, Object> resp = gson.fromJson(responseBody,
               new TypeToken<Map<String, Object>>() {}.getType());
 
-      List<Map<String, Object>> paragraphs = (List<Map<String, Object>>) resp.get("body");
-      assertEquals(1, paragraphs.size());
-      assertTrue(paragraphs.get(0).containsKey("progress"));
-      int progress = Integer.parseInt((String) paragraphs.get(0).get("progress"));
+      NoteJobStatus noteJobStatus = NoteJobStatus.fromJson(gson.toJson(resp.get("body")));
+      assertEquals(1, noteJobStatus.getParagraphJobStatusList().size());
+      int progress = Integer.parseInt(noteJobStatus.getParagraphJobStatusList().get(0).getProgress());
       assertTrue(progress >= 0 && progress <= 100);
 
       // wait until job is finished or timeout.
@@ -652,7 +652,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
       config.put("enabled", true);
       paragraph.setConfig(config);
 
-      note.runAll(AuthenticationInfo.ANONYMOUS, false, false, new HashMap<>());
+      note.runAll(AuthenticationInfo.ANONYMOUS, true, true, new HashMap<>());
 
       String jsonRequest = "{\"cron\":\"* * * * * ?\" }";
       // right cron expression.
@@ -664,7 +664,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
       System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_CRON_FOLDERS.getVarName(), "/System");
 
       note.setName("System/test2");
-      note.runAll(AuthenticationInfo.ANONYMOUS, false, false, new HashMap<>());
+      note.runAll(AuthenticationInfo.ANONYMOUS, true, true, new HashMap<>());
       postCron = httpPost("/notebook/cron/" + note.getId(), jsonRequest);
       assertThat("", postCron, isAllowed());
       postCron.releaseConnection();
@@ -687,7 +687,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
   }
 
   @Test
-  public void testRegressionZEPPELIN_527() throws IOException {
+  public void testRegressionZEPPELIN_527() throws Exception {
     Note note = null;
     try {
       note = TestUtils.getInstance(Notebook.class).createNote("note1_testRegressionZEPPELIN_527", anonymous);
@@ -695,16 +695,16 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
       note.setName("note for run test");
       Paragraph paragraph = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
       paragraph.setText("%spark\nval param = z.input(\"param\").toString\nprintln(param)");
-
+      note.runAll(AuthenticationInfo.ANONYMOUS, true, false, new HashMap<>());
       TestUtils.getInstance(Notebook.class).saveNote(note, anonymous);
 
       GetMethod getNoteJobs = httpGet("/notebook/job/" + note.getId());
       assertThat("test note jobs run:", getNoteJobs, isAllowed());
       Map<String, Object> resp = gson.fromJson(getNoteJobs.getResponseBodyAsString(),
               new TypeToken<Map<String, Object>>() {}.getType());
-      List<Map<String, String>> body = (List<Map<String, String>>) resp.get("body");
-      assertFalse(body.get(0).containsKey("started"));
-      assertFalse(body.get(0).containsKey("finished"));
+      NoteJobStatus noteJobStatus = NoteJobStatus.fromJson(gson.toJson(resp.get("body")));
+      assertNotNull(noteJobStatus.getParagraphJobStatusList().get(0).getStarted());
+      assertNotNull(noteJobStatus.getParagraphJobStatusList().get(0).getFinished());
       getNoteJobs.releaseConnection();
     } finally {
       //cleanup
