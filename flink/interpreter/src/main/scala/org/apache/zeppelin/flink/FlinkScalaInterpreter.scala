@@ -653,6 +653,10 @@ class FlinkScalaInterpreter(val properties: Properties) {
       LOGGER.info("savepointPath has been setup by user , savepointPath = {}", savepointPath)
       configuration.setString("execution.savepoint.path", savepointPath)
       return
+    } else if ("".equals(savepointPath)) {
+      LOGGER.info("savepointPath is empty, remove execution.savepoint.path")
+      configuration.removeConfig(SavepointConfigOptions.SAVEPOINT_PATH);
+      return;
     }
 
     if (!StringUtils.isBlank(savepointDir)) {
@@ -665,9 +669,6 @@ class FlinkScalaInterpreter(val properties: Properties) {
         LOGGER.info("Set savepointPath to: " + savepointPath.toString)
         configuration.setString("execution.savepoint.path", savepointPath.toString)
       }
-    } else {
-      // remove the SAVEPOINT_PATH which may be set by last job.
-      configuration.removeConfig(SavepointConfigOptions.SAVEPOINT_PATH)
     }
   }
 
