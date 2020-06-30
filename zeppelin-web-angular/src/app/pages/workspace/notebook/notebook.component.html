@@ -25,15 +25,13 @@
   <div class="flex-container">
     <div class="sidebar-area"
         nz-resizable
-        [nzMaxWidth]="!isSidebarOpen ? 30 : 800"
-        [nzMinWidth]="!isSidebarOpen ? 30 : 280"
+        [nzMaxWidth]="!isSidebarOpen ? 40 : 800"
+        [nzMinWidth]="!isSidebarOpen ? 40 : 280"
         (nzResize)="onResizeSidebar($event)"
-        [style.min-width.px]="!isSidebarOpen ? 30 : sidebarWidth">
-      <button class="sidebar-toggle" (click)="toggleSidebar()">
-        <i *ngIf="!isSidebarOpen" nz-icon nzType="folder" nzTheme="outline"></i>
-        <i *ngIf="isSidebarOpen" nz-icon nzType="folder-open" nzTheme="outline"></i>
-      </button>
-      <zeppelin-node-list *ngIf="isSidebarOpen"></zeppelin-node-list>
+        [style.min-width.px]="!isSidebarOpen ? 40 : sidebarWidth">
+      <zeppelin-notebook-sidebar [note]="note"
+                                (isSidebarOpenChange)="onSidebarOpenChange($event)"
+                                (scrollToParagraph)="onParagraphScrolled($event)"></zeppelin-notebook-sidebar>
       <nz-resize-handle  *ngIf="isSidebarOpen" nzDirection="right"><div class="sidebar-resize"></div></nz-resize-handle>
     </div>
     <div class="notebook-area">
