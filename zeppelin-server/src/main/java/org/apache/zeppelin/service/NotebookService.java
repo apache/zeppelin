@@ -393,10 +393,10 @@ public class NotebookService {
       return false;
     }
 
-    note.setRunning(true);
-    try {
-      if (paragraphs != null) {
-        // run note via the data passed from frontend
+    if (paragraphs != null) {
+      // run note via the data passed from frontend
+      try {
+        note.setRunning(true);
         for (Map<String, Object> raw : paragraphs) {
           String paragraphId = (String) raw.get("id");
           if (paragraphId == null) {
@@ -418,18 +418,18 @@ public class NotebookService {
             throw new IOException("Fail to run paragraph json: " + raw);
           }
         }
-      } else {
-        try {
-          // run note directly when parameter `paragraphs` is null.
-          note.runAll(context.getAutheInfo(), true, false, new HashMap<>());
-          return true;
-        } catch (Exception e) {
-          LOGGER.warn("Fail to run note: " + note.getName(), e);
-          return false;
-        }
+      } finally {
+        note.setRunning(false);
       }
-    } finally {
-      note.setRunning(false);
+    } else {
+      try {
+        // run note directly when parameter `paragraphs` is null.
+        note.runAll(context.getAutheInfo(), true, false, new HashMap<>());
+        return true;
+      } catch (Exception e) {
+        LOGGER.warn("Fail to run note: " + note.getName(), e);
+        return false;
+      }
     }
 
     return true;
