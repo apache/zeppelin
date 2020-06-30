@@ -703,46 +703,6 @@ public class Note implements JsonSerializable {
     }
   }
 
-  public List<Map<String, String>> generateParagraphsInfo() {
-    List<Map<String, String>> paragraphsInfo = new LinkedList<>();
-    synchronized (paragraphs) {
-      for (Paragraph p : paragraphs) {
-        Map<String, String> info = populateParagraphInfo(p);
-        paragraphsInfo.add(info);
-      }
-    }
-    return paragraphsInfo;
-  }
-
-  public Map<String, String> generateSingleParagraphInfo(String paragraphId) {
-    synchronized (paragraphs) {
-      for (Paragraph p : paragraphs) {
-        if (p.getId().equals(paragraphId)) {
-          return populateParagraphInfo(p);
-        }
-      }
-      return new HashMap<>();
-    }
-  }
-
-  private Map<String, String> populateParagraphInfo(Paragraph p) {
-    Map<String, String> info = new HashMap<>();
-    info.put("id", p.getId());
-    info.put("status", p.getStatus().toString());
-    if (p.getDateStarted() != null) {
-      info.put("started", p.getDateStarted().toString());
-    }
-    if (p.getDateFinished() != null) {
-      info.put("finished", p.getDateFinished().toString());
-    }
-    if (p.getStatus().isRunning()) {
-      info.put("progress", String.valueOf(p.progress()));
-    } else {
-      info.put("progress", String.valueOf(100));
-    }
-    return info;
-  }
-
   private void setParagraphMagic(Paragraph p, int index) {
     if (paragraphs.size() > 0) {
       String replName;
@@ -771,6 +731,9 @@ public class Note implements JsonSerializable {
                      boolean blocking,
                      boolean isolated,
                      Map<String, Object> params) throws Exception {
+    if (isRunning()) {
+      throw new Exception("Unable to run note:" + id + " because it is still in RUNNING state.");
+    }
     setIsolatedMode(isolated);
     setRunning(true);
     setStartTime(DATE_TIME_FORMATTER.format(LocalDateTime.now()));
