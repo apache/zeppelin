@@ -28,6 +28,7 @@ import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterPropertyType;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
+import org.apache.zeppelin.notebook.AuthorizationService;
 import org.apache.zeppelin.notebook.socket.Message;
 import org.apache.zeppelin.notebook.socket.Message.OP;
 import org.apache.zeppelin.rest.message.InterpreterInstallationRequest;
@@ -55,8 +56,10 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Interpreter Rest API.
@@ -69,6 +72,7 @@ public class InterpreterRestApi {
   private static final Logger logger = LoggerFactory.getLogger(InterpreterRestApi.class);
 
   private final AuthenticationService authenticationService;
+  private final AuthorizationService authorizationService;
   private final InterpreterService interpreterService;
   private final InterpreterSettingManager interpreterSettingManager;
   private final NotebookServer notebookServer;
@@ -76,10 +80,12 @@ public class InterpreterRestApi {
   @Inject
   public InterpreterRestApi(
       AuthenticationService authenticationService,
+      AuthorizationService authorizationService,
       InterpreterService interpreterService,
       InterpreterSettingManager interpreterSettingManager,
       NotebookServer notebookWsServer) {
     this.authenticationService = authenticationService;
+    this.authorizationService = authorizationService;
     this.interpreterService = interpreterService;
     this.interpreterSettingManager = interpreterSettingManager;
     this.notebookServer = notebookWsServer;
@@ -201,10 +207,22 @@ public class InterpreterRestApi {
       if (null == noteId) {
         interpreterSettingManager.close(settingId);
       } else {
-        interpreterSettingManager.restart(settingId,
-                new ExecutionContextBuilder().setUser(authenticationService.getPrincipal()).setNoteId(noteId).createExecutionContext());
+        Set<String> entities = new HashSet<>();
+        entities.add(authenticationService.getPrincipal());
+        entities.addAll(authenticationService.getAssociatedRoles());
+        if (authorizationService.hasRunPermission(entities, noteId) ||
+                authorizationService.hasWritePermission(entities, noteId) ||
+                authorizationService.isOwner(entities, noteId)) {
+          interpreterSettingManager.restart(settingId,
+                  new ExecutionContextBuilder()
+                          .setUser(authenticationService.getPrincipal())
+                          .setNoteId(noteId)
+                          .createExecutionContext());
+        } else {
+          return new JsonResponse<>(Status.FORBIDDEN, "No privilege to restart interpreter")
+                  .build();
+        }
       }
-
     } catch (InterpreterException e) {
       logger.error("Exception in InterpreterRestApi while restartSetting ", e);
       return new JsonResponse<>(Status.NOT_FOUND, e.getMessage(), ExceptionUtils.getStackTrace(e))
