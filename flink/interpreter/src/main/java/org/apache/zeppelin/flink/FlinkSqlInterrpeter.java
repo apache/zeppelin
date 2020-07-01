@@ -473,12 +473,12 @@ public abstract class FlinkSqlInterrpeter extends Interpreter {
 
   private void callDropFunction(String sql, InterpreterContext context) throws IOException {
     flinkInterpreter.getFlinkShims().executeSql(tbenv, sql);
-    context.out.write("Catalog has been dropped.\n");
+    context.out.write("Function has been dropped.\n");
   }
 
   private void callAlterFunction(String sql, InterpreterContext context) throws IOException {
     flinkInterpreter.getFlinkShims().executeSql(tbenv, sql);
-    context.out.write("Catalog has been modified.\n");
+    context.out.write("Function has been modified.\n");
   }
 
   private void callShowFunctions(InterpreterContext context) throws IOException {
