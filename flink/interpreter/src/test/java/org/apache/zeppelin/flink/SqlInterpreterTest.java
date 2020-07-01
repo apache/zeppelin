@@ -276,7 +276,7 @@ public abstract class SqlInterpreterTest {
     assertEquals(Code.ERROR, result.code());
     assertEquals(1, resultMessages.size());
     assertTrue(resultMessages.toString(),
-            resultMessages.get(0).getData().contains("does not exist in"));
+            resultMessages.get(0).getData().contains("does not exist"));
 
     // drop table
     context = getInterpreterContext();
@@ -335,7 +335,7 @@ public abstract class SqlInterpreterTest {
     assertEquals(Type.TEXT, resultMessages.get(0).getType());
     assertTrue(resultMessages.get(0).getData(), resultMessages.get(0).getData().contains("already exists"));
 
-    // show tables
+    // show view
     context = getInterpreterContext();
     result = sqlInterpreter.interpret("show tables", context);
     assertEquals(Code.SUCCESS, result.code());
@@ -343,7 +343,7 @@ public abstract class SqlInterpreterTest {
     assertEquals(Type.TABLE, resultMessages.get(0).getType());
     assertEquals("table\nmy_view\nsource_table\n", resultMessages.get(0).getData());
 
-    // drop table
+    // drop view
     context = getInterpreterContext();
     result = sqlInterpreter.interpret("drop view my_view", context);
     assertEquals(Code.SUCCESS, result.code());
