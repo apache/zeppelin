@@ -78,7 +78,7 @@ public class HiveUtils {
             context.out.write(logsOutput + "\n");
             context.out.flush();
           }
-          if (!StringUtils.isBlank(logsOutput) && progressBar != null) {
+          if (!StringUtils.isBlank(logsOutput) && progressBar != null && displayLogProperty) {
             progressBar.operationLogShowedToUser();
           }
           Optional<String> jobURL = extractJobURL(logsOutput);
