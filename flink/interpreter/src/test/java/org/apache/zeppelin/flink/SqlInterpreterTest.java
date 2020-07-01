@@ -64,6 +64,7 @@ import static org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import static org.apache.zeppelin.interpreter.InterpreterResult.Type;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 import static org.mockito.Mockito.mock;
 
 
@@ -366,6 +367,54 @@ public abstract class SqlInterpreterTest {
     assertTrue(resultMessages.get(0).getData(),
             resultMessages.get(0).getData().contains("The following commands are available"));
   }
+
+
+@Test
+public void testFunction() throws IOException, InterpreterException {
+
+    InterpreterContext context = getInterpreterContext();
+
+    // CREATE UDF
+    InterpreterResult result = sqlInterpreter.interpret(
+            "CREATE FUNCTION myudf AS 'org.apache.zeppelin.flink.JavaUpper' ;", context);
+    assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
+    List<InterpreterResultMessage> resultMessages = context.out.toInterpreterResultMessage();
+    assertTrue(resultMessages.toString(),resultMessages.get(0).getData().contains("Function has been created."));
+
+    // SHOW UDF
+    result = sqlInterpreter.interpret(
+            "SHOW FUNCTIONS ;", context);
+    assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
+    resultMessages = context.out.toInterpreterResultMessage();
+    assertTrue(resultMessages.toString(),resultMessages.get(1).getData().contains("myudf"));
+
+
+    // ALTER
+    context = getInterpreterContext();
+    result = sqlInterpreter.interpret(
+            "ALTER FUNCTION myUDF AS 'org.apache.zeppelin.flink.JavaLower' ; ", context);
+    assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
+    resultMessages = context.out.toInterpreterResultMessage();
+    assertTrue(resultMessages.toString(),resultMessages.get(0).getData().contains("Function has been modified."));
+
+
+    // DROP UDF
+    context = getInterpreterContext();
+    result = sqlInterpreter.interpret("DROP FUNCTION myudf ;", context);
+    assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
+    resultMessages = context.out.toInterpreterResultMessage();
+    assertTrue(resultMessages.toString(),resultMessages.get(0).getData().contains("Function has been dropped."));
+
+
+    // SHOW UDF. Due to drop UDF before, it shouldn't contain 'myudf'
+    result = sqlInterpreter.interpret(
+            "SHOW FUNCTIONS ;", context);
+    assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
+    resultMessages = context.out.toInterpreterResultMessage();
+    assertFalse(resultMessages.toString(),resultMessages.get(0).getData().contains("myudf"));
+
+
+    }
 
   protected InterpreterContext getInterpreterContext() {
     InterpreterContext context = InterpreterContext.builder()
