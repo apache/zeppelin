@@ -73,3 +73,8 @@ class IPySparkZeppelinContext(PyZeppelinContext):
             super(IPySparkZeppelinContext, self).show(obj, **kwargs)
 
 z = __zeppelin__ = IPySparkZeppelinContext(intp.getZeppelinContext(), gateway)
+
+# add jars to path
+import sys
+jarlist = map(lambda url: url.replace("file:/", "/"), sc.getConf().get("spark.jars").split(","))
+sys.path.extend(filter(lambda jar: jar not in sys.path, jarlist))
