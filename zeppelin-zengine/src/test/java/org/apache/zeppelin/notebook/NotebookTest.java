@@ -436,6 +436,39 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
   }
 
   @Test
+  public void testRemoveNote() throws IOException, InterruptedException {
+    try {
+      LOGGER.info("--------------- Test testRemoveNote ---------------");
+      // create a note and a paragraph
+      Note note = notebook.createNote("note1", anonymous);
+      int mock1ProcessNum = interpreterSettingManager.getByName("mock1").getAllInterpreterGroups().size();
+      Paragraph p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
+      Map config = new HashMap<>();
+      p.setConfig(config);
+      p.setText("%mock1 sleep 100000");
+      p.execute(false);
+      // wait until it is running
+      while (!p.isRunning()) {
+        try {
+          Thread.sleep(1000);
+        } catch (InterruptedException e) {
+          e.printStackTrace();
+        }
+      }
+      assertEquals(mock1ProcessNum + 1, interpreterSettingManager.getByName("mock1").getAllInterpreterGroups().size());
+      LOGGER.info("--------------- Finish Test testRemoveNote ---------------");
+      notebook.removeNote(note, anonymous);
+      // stop interpreter process is async, so we wait for 5 seconds here.
+      Thread.sleep(5 * 1000);
+      assertEquals(mock1ProcessNum, interpreterSettingManager.getByName("mock1").getAllInterpreterGroups().size());
+
+      LOGGER.info("--------------- Finish Test testRemoveNote ---------------");
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+  }
+
+  @Test
   public void testInvalidInterpreter() throws IOException, InterruptedException {
     Note note = notebook.createNote("note1", anonymous);
     Paragraph p1 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
