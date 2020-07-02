@@ -1068,6 +1068,20 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
 
   @Override
   public void onNoteRemove(Note note, AuthenticationInfo subject) throws IOException {
+    // stop all associated interpreters
+    for (Paragraph paragraph : note.getParagraphs()) {
+      try {
+        Interpreter interpreter = paragraph.getBindedInterpreter();
+        InterpreterSetting interpreterSetting =
+                ((ManagedInterpreterGroup) interpreter.getInterpreterGroup()).getInterpreterSetting();
+        restart(interpreterSetting.getId(), subject.getUser(), note.getId());
+      } catch (InterpreterNotFoundException e) {
+
+      } catch (InterpreterException e) {
+        LOGGER.warn("Fail to stop interpreter setting", e);
+      }
+    }
+
     // remove from all interpreter instance's angular object registry
     for (InterpreterSetting settings : interpreterSettings.values()) {
       InterpreterGroup interpreterGroup = settings.getInterpreterGroup(
