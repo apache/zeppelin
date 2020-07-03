@@ -242,8 +242,8 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
       }
     } else if (path.isFile()) {
       K8sSpecTemplate specTemplate = new K8sSpecTemplate();
-      String template = specTemplate.render(path);
       specTemplate.loadProperties(templateProperties);
+      String template = specTemplate.render(path);
       ParameterNamespaceListVisitFromServerGetDeleteRecreateWaitApplicable<HasMetadata, Boolean> k8sObjects = client.load(IOUtils.toInputStream(template, StandardCharsets.UTF_8));
       LOGGER.info("Apply {} with {} K8s Objects", path.getAbsolutePath(), k8sObjects.get().size());
       LOGGER.debug(template);
