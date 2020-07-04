@@ -15,23 +15,27 @@
  * limitations under the License.
  */
 
-package org.apache.zeppelin.kotlin.context;
+package org.apache.zeppelin.kotlin.script;
 
-import org.apache.zeppelin.kotlin.repl.KotlinRepl;
+import kotlin.reflect.KFunction;
 
 /**
- * The implicit receiver for lines in Kotlin REPL.
- *  It is passed to the script as an implicit receiver, identical to:
- *  with (context) {
- *     ...
- *  }
- *
- *  KotlinReceiver can be inherited from and passed to REPL building properties,
- *  so other variables and functions can be accessed inside REPL.
- *  By default, it only has KotlinContext.
- *  Inherited KotlinReceivers should be in separate java file, they can't be inner or nested.
+ * Util class for pretty-printing Kotlin variables and functions.
  */
-public class KotlinReceiver {
-  public KotlinRepl.KotlinContext kc;
-}
+public class KotlinReflectUtil {
+  public static final String SCRIPT_PREFIX = "zeppelin";
 
+  private static final String functionSignatureRegex = "Line_\\d+_" + SCRIPT_PREFIX + "\\.";
+
+  public static String functionSignature(KFunction<?> function) {
+    return function.toString().replaceAll(functionSignatureRegex, "");
+  }
+
+  public static String shorten(String name) {
+    if (name == null) {
+      return null;
+    }
+    // kotlin.collections.List<kotlin.Int> -> List<Int>
+    return name.replaceAll("(\\b[_a-zA-Z$][_a-zA-Z0-9$]*\\b\\.)+", "");
+  }
+}

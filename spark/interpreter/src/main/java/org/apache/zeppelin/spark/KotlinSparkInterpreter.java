@@ -95,7 +95,6 @@ public class KotlinSparkInterpreter extends Interpreter {
     }
 
     interpreter.getKotlinReplProperties()
-        .receiver(ctx)
         .classPath(classpath)
         .outputDir(outputDir)
         .codeOnLoad(KotlinZeppelinBindings.Z_SELECT_KOTLIN_SYNTAX)

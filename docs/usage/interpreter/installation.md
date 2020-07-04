@@ -190,7 +190,7 @@ You can also find the below community managed interpreter list in `conf/interpre
   </tr>
   <tr>
     <td>kotlin</td>
-    <td>org.apache.zeppelin:zeppelin-kotlin:0.7.0</td>
+    <td>org.apache.zeppelin:zeppelin-kotlin:0.9.0</td>
     <td>Kotlin interpreter</td>
   </tr>
   <tr>

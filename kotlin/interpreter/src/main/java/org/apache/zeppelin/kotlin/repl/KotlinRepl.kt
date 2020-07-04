@@ -14,259 +14,202 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.zeppelin.kotlin.repl
 
-package org.apache.zeppelin.kotlin.repl;
-
-import static org.apache.zeppelin.kotlin.reflect.KotlinReflectUtil.shorten;
-import org.jetbrains.kotlin.cli.common.repl.AggregatedReplStageState;
-import org.jetbrains.kotlin.cli.common.repl.InvokeWrapper;
-import org.jetbrains.kotlin.cli.common.repl.ReplCodeLine;
-import org.jetbrains.kotlin.cli.common.repl.ReplCompileResult;
-import org.jetbrains.kotlin.cli.common.repl.ReplEvalResult;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.stream.Collectors;
-import kotlin.jvm.functions.Function0;
-import kotlin.script.experimental.jvmhost.repl.JvmReplCompiler;
-import kotlin.script.experimental.jvmhost.repl.JvmReplEvaluator;
-import org.apache.zeppelin.interpreter.InterpreterResult;
-import org.apache.zeppelin.kotlin.reflect.ContextUpdater;
-import org.apache.zeppelin.kotlin.reflect.KotlinFunctionInfo;
-import org.apache.zeppelin.kotlin.reflect.KotlinVariableInfo;
-import org.apache.zeppelin.kotlin.repl.building.KotlinReplProperties;
-import org.apache.zeppelin.kotlin.repl.building.ReplBuilding;
+import kotlinx.coroutines.runBlocking
+import org.apache.zeppelin.interpreter.InterpreterResult
+import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion
+import org.apache.zeppelin.kotlin.reflect.ContextUpdater
+import org.apache.zeppelin.kotlin.script.BaseScriptClass
+import org.apache.zeppelin.kotlin.script.InvokeWrapper
+import org.apache.zeppelin.kotlin.script.KotlinContext
+import org.apache.zeppelin.kotlin.script.KotlinReflectUtil.SCRIPT_PREFIX
+import org.jetbrains.kotlin.scripting.ide_services.compiler.KJvmReplCompilerWithIdeServices
+import org.jetbrains.kotlin.scripting.resolve.skipExtensionsResolutionForImplicitsExceptInnermost
+import java.util.*
+import java.util.concurrent.atomic.AtomicInteger
+import java.util.stream.Collectors
+import kotlin.script.experimental.api.KotlinType
+import kotlin.script.experimental.api.ResultValue
+import kotlin.script.experimental.api.ResultWithDiagnostics
+import kotlin.script.experimental.api.ScriptCompilationConfiguration
+import kotlin.script.experimental.api.ScriptEvaluationConfiguration
+import kotlin.script.experimental.api.SourceCode
+import kotlin.script.experimental.api.baseClass
+import kotlin.script.experimental.api.compilerOptions
+import kotlin.script.experimental.api.constructorArgs
+import kotlin.script.experimental.api.defaultImports
+import kotlin.script.experimental.api.fileExtension
+import kotlin.script.experimental.api.hostConfiguration
+import kotlin.script.experimental.api.implicitReceivers
+import kotlin.script.experimental.host.withDefaultsFrom
+import kotlin.script.experimental.jvm.BasicJvmReplEvaluator
+import kotlin.script.experimental.jvm.KJvmEvaluatedSnippet
+import kotlin.script.experimental.jvm.defaultJvmScriptingHostConfiguration
+import kotlin.script.experimental.jvm.impl.KJvmCompiledScript
+import kotlin.script.experimental.jvm.jvm
+import kotlin.script.experimental.jvm.updateClasspath
+import kotlin.script.experimental.jvm.util.isIncomplete
+import kotlin.script.experimental.jvm.util.scriptCompilationClasspathFromContext
+import kotlin.script.experimental.jvm.util.toSourceCodePosition
+import kotlin.script.experimental.util.LinkedSnippet
 
 /**
  * Read-evaluate-print loop for Kotlin code.
  * Each code snippet is compiled into Line_N class and evaluated.
- *
- * Outside variables and functions can be bound to REPL
- * by inheriting KotlinReceiver class and passing it to REPL properties on creation.
- * After that, all fields and methods of receiver are seen inside the snippet scope
- * as if the code was run in Kotlin's `with` block.
- *
- * By default, KotlinReceiver has KotlinContext bound by the name `kc`.
- * It can be used to show user-defined variables and functions
- * and setting invokeWrapper to add effects to snippet evaluation.
  */
-public class KotlinRepl {
-  private static Logger logger = LoggerFactory.getLogger(KotlinRepl.class);
+class KotlinRepl(properties: KotlinReplProperties) {
+    private val compiler: KJvmReplCompilerWithIdeServices = KJvmReplCompilerWithIdeServices()
+    private val evaluator: BasicJvmReplEvaluator = BasicJvmReplEvaluator()
+    private val counter: AtomicInteger = AtomicInteger(0)
 
-  private JvmReplCompiler compiler;
-  private JvmReplEvaluator evaluator;
-  private AggregatedReplStageState<?, ?> state;
-  private AtomicInteger counter;
-  private ClassWriter writer;
-  private KotlinContext ctx;
-  private InvokeWrapper wrapper;
-  private int maxResult;
-  private ContextUpdater contextUpdater;
-  boolean shortenTypes;
+    private val maxResult = properties.maxResult
+    private val shortenTypes = properties.shortenTypes
+    private var wrapper: InvokeWrapper? = null
 
-  private KotlinRepl() { }
+    val kotlinContext: KotlinContext = KotlinContext(shortenTypes, ::wrapper)
 
-  @SuppressWarnings("unchecked")
-  public KotlinRepl(KotlinReplProperties properties) {
-    compiler = ReplBuilding.buildCompiler(properties);
-    evaluator = ReplBuilding.buildEvaluator(properties);
-    ReentrantReadWriteLock stateLock = new ReentrantReadWriteLock();
-    state = new AggregatedReplStageState(
-        compiler.createState(stateLock),
-        evaluator.createState(stateLock),
-        stateLock);
-    counter = new AtomicInteger(0);
+    private val compilationConfiguration = ScriptCompilationConfiguration {
+        hostConfiguration.update { it.withDefaultsFrom(defaultJvmScriptingHostConfiguration) }
+        baseClass.put(KotlinType(BaseScriptClass::class))
+        fileExtension.put("$SCRIPT_PREFIX.kts")
+        defaultImports(BaseScriptClass::class)
 
-    writer = new ClassWriter(properties.getOutputDir());
-    maxResult = properties.getMaxResult();
-    shortenTypes = properties.getShortenTypes();
+        jvm {
+            val classpath = scriptCompilationClasspathFromContext("script-dependencies", classLoader = BaseScriptClass::class.java.classLoader)
+            updateClasspath(classpath)
+            updateClasspath(properties.getClasspath())
+        }
 
-    ctx = new KotlinContext();
-    properties.getReceiver().kc = ctx;
-
-    contextUpdater = new ContextUpdater(
-        state, ctx.vars, ctx.functions);
-
-    for (String line: properties.getCodeOnLoad()) {
-      eval(line);
-    }
-  }
-
-  public List<KotlinVariableInfo> getVariables() {
-    return ctx.getVars();
-  }
-
-  public List<KotlinFunctionInfo> getFunctions() {
-    return ctx.getFunctions();
-  }
-
-  public KotlinContext getKotlinContext() {
-    return ctx;
-  }
-
-  /**
-   * Evaluates code snippet and returns interpreter result.
-   * REPL evaluation consists of:
-   * - Compiling code in JvmReplCompiler
-   * - Writing compiled classes to disk
-   * - Evaluating compiled classes inside InvokeWrapper
-   * - Updating list of user-defined functions and variables
-   * - Formatting result
-   * @param code Kotlin code to execute
-   * @return result of interpretation
-   */
-  public InterpreterResult eval(String code) {
-    ReplCompileResult compileResult = compiler.compile(state,
-        new ReplCodeLine(counter.getAndIncrement(), 0, code));
-
-    Optional<InterpreterResult> compileError = checkCompileError(compileResult);
-    if (compileError.isPresent()) {
-      return compileError.get();
+        val receiversTypes = mutableListOf<KotlinType>()
+        //properties.receiver?.javaClass?.canonicalName?.let { receiversTypes.add(KotlinType(it)) }
+        implicitReceivers(receiversTypes)
+        skipExtensionsResolutionForImplicitsExceptInnermost(receiversTypes)
+        compilerOptions(listOf("-jvm-target", "1.8"))
     }
 
-    ReplCompileResult.CompiledClasses classes =
-        (ReplCompileResult.CompiledClasses) compileResult;
-    writer.writeClasses(classes);
-
-    ReplEvalResult evalResult  = evalInWrapper(classes);
-
-    Optional<InterpreterResult> evalError = checkEvalError(evalResult);
-    if (evalError.isPresent()) {
-      return evalError.get();
+    private val evaluationConfiguration = ScriptEvaluationConfiguration {
+        constructorArgs.invoke(kotlinContext)
     }
 
-    contextUpdater.update();
+    private val writer: ClassWriter = ClassWriter(properties.outputDir)
+    private val contextUpdater = ContextUpdater(kotlinContext, evaluator)
 
-    if (evalResult instanceof ReplEvalResult.UnitResult) {
-      return new InterpreterResult(InterpreterResult.Code.SUCCESS);
-    }
-    if (evalResult instanceof ReplEvalResult.ValueResult) {
-      ReplEvalResult.ValueResult v = (ReplEvalResult.ValueResult) evalResult;
-      String typeString = shortenTypes ? shorten(v.getType()) : v.getType();
-      String valueString = prepareValueString(v.getValue());
-
-      return new InterpreterResult(
-          InterpreterResult.Code.SUCCESS,
-          v.getName() + ": " + typeString + " = " + valueString);
-    }
-    return new InterpreterResult(InterpreterResult.Code.ERROR,
-        "unknown evaluation result: " + evalResult.toString());
-  }
-
-  private ReplEvalResult evalInWrapper(ReplCompileResult.CompiledClasses classes) {
-    ReplEvalResult evalResult;
-    // For now, invokeWrapper parameter in evaluator.eval does not work, so wrapping happens here
-    Function0<ReplEvalResult> runEvaluator = () -> evaluator.eval(state, classes, null, null);
-    if (wrapper != null) {
-      evalResult = wrapper.invoke(runEvaluator);
-    } else {
-      evalResult = runEvaluator.invoke();
-    }
-    return evalResult;
-  }
-
-  private Optional<InterpreterResult> checkCompileError(ReplCompileResult compileResult) {
-    if (compileResult instanceof ReplCompileResult.Incomplete) {
-      return Optional.of(new InterpreterResult(InterpreterResult.Code.INCOMPLETE));
+    init {
+        //properties.receiver?.kc = kotlinContext
+        for (line in properties.codeOnLoad) {
+            eval(line)
+        }
     }
 
-    if (compileResult instanceof ReplCompileResult.Error) {
-      ReplCompileResult.Error e = (ReplCompileResult.Error) compileResult;
-      return Optional.of(new InterpreterResult(InterpreterResult.Code.ERROR, e.getMessage()));
+    val variables: List<org.apache.zeppelin.kotlin.script.KotlinVariableInfo>
+        get() = ArrayList(kotlinContext.vars.values)
+    val functions: List<org.apache.zeppelin.kotlin.script.KotlinFunctionInfo>
+        get() = ArrayList(kotlinContext.functions.values)
+
+    /**
+     * Evaluates code snippet and returns interpreter result.
+     * REPL evaluation consists of:
+     * - Compiling code in JvmReplCompiler
+     * - Writing compiled classes to disk
+     * - Evaluating compiled classes inside InvokeWrapper
+     * - Updating list of user-defined functions and variables
+     * - Formatting result
+     * @param code Kotlin code to execute
+     * @return result of interpretation
+     */
+    fun eval(code: String): InterpreterResult {
+        val snippet: SourceCode = SourceCodeImpl(counter.getAndIncrement(), code)
+        val compileResult = runBlocking { compiler.compile(snippet, compilationConfiguration) }
+        val compileError = checkCompileError(compileResult)
+
+        val classesList = compileError?.let { return it } ?: (compileResult as ResultWithDiagnostics.Success).value
+        val classes = classesList.get()
+
+        writer.writeClasses(snippet, classes)
+        val runnable = { runBlocking { evaluator.eval(classesList, evaluationConfiguration) } }
+        val evalResult = wrapper?.let { it(runnable) } ?: runnable()
+
+        val interpreterResult = checkEvalError(evalResult)
+        contextUpdater.update()
+        return interpreterResult
     }
 
-    if (!(compileResult instanceof ReplCompileResult.CompiledClasses)) {
-      return Optional.of(new InterpreterResult(InterpreterResult.Code.ERROR,
-          "unknown compilation result:" + compileResult.toString()));
+    fun complete(code: String, cursor: Int): List<InterpreterCompletion> {
+        val snippet: SourceCode = SourceCodeImpl(counter.getAndIncrement(), code)
+        val codePos = cursor.toSourceCodePosition(snippet)
+        val completionResult = runBlocking {
+            compiler.complete(snippet, codePos, compilationConfiguration)
+        }
+        return when(completionResult) {
+            is ResultWithDiagnostics.Success -> {
+                val result = completionResult.value
+                result.map { variant ->
+                    InterpreterCompletion(variant.text, variant.displayText, variant.tail)
+                }.toList()
+            }
+            else -> {
+                emptyList()
+            }
+        }
     }
 
-    return Optional.empty();
-  }
-
-  private Optional<InterpreterResult> checkEvalError(ReplEvalResult evalResult) {
-    if (evalResult instanceof ReplEvalResult.Error) {
-      ReplEvalResult.Error e = (ReplEvalResult.Error) evalResult;
-      return Optional.of(new InterpreterResult(InterpreterResult.Code.ERROR, e.getMessage()));
+    private fun checkCompileError(compileResult: ResultWithDiagnostics<LinkedSnippet<KJvmCompiledScript>>): InterpreterResult? {
+        return when(compileResult) {
+            is ResultWithDiagnostics.Failure -> {
+                when {
+                    compileResult.isIncomplete() -> InterpreterResult(InterpreterResult.Code.INCOMPLETE)
+                    else -> InterpreterResult(InterpreterResult.Code.ERROR, compileResult.getErrors())
+                }
+            }
+            is ResultWithDiagnostics.Success -> {
+                null
+            }
+        }
     }
 
-    if (evalResult instanceof ReplEvalResult.Incomplete) {
-      return Optional.of(new InterpreterResult(InterpreterResult.Code.INCOMPLETE));
+    private fun checkEvalError(evalResult: ResultWithDiagnostics<LinkedSnippet<KJvmEvaluatedSnippet>>): InterpreterResult {
+        return when(evalResult) {
+            is ResultWithDiagnostics.Success -> {
+                val pureResult = evalResult.value.get()
+                when (val resultValue = pureResult.result) {
+                    is ResultValue.Error -> InterpreterResult(InterpreterResult.Code.ERROR, resultValue.error.stackTraceToString())
+                    is ResultValue.Unit -> {
+                        return InterpreterResult(InterpreterResult.Code.SUCCESS)
+                    }
+                    is ResultValue.Value -> {
+                        val typeString = (if (shortenTypes) org.apache.zeppelin.kotlin.script.KotlinReflectUtil.shorten(resultValue.type) else resultValue.type)!!
+                        val valueString = prepareValueString(resultValue.value)
+                        InterpreterResult(
+                                InterpreterResult.Code.SUCCESS,
+                                resultValue.name + ": " + typeString + " = " + valueString)
+                    }
+                    is ResultValue.NotEvaluated -> {
+                        InterpreterResult(InterpreterResult.Code.ERROR, buildString {
+                            val cause = evalResult.reports.firstOrNull()?.exception
+                            append("This snippet was not evaluated: ")
+                            appendLine(cause.toString())
+                            cause?.stackTraceToString()?.let { appendLine(it) }
+                        })
+                    }
+                }
+            }
+            is ResultWithDiagnostics.Failure -> InterpreterResult(InterpreterResult.Code.ERROR, evalResult.getErrors())
+        }
     }
 
-    if (evalResult instanceof ReplEvalResult.HistoryMismatch) {
-      ReplEvalResult.HistoryMismatch e = (ReplEvalResult.HistoryMismatch) evalResult;
-      return Optional.of(new InterpreterResult(
-          InterpreterResult.Code.ERROR, "history mismatch at " + e.getLineNo()));
+    private fun prepareValueString(value: Any?): String {
+        if (value == null) {
+            return "null"
+        }
+        if (value !is Collection<*>) {
+            return value.toString()
+        }
+        return if (value.size <= maxResult) value.toString()
+        else "[" + value.stream()
+                .limit(maxResult.toLong())
+                .map { it.toString() }
+                .collect(Collectors.joining(",")) +
+                " ... " + (value.size - maxResult) + " more]"
     }
-
-    return Optional.empty();
-  }
-
-  private String prepareValueString(Object value) {
-    if (value == null) {
-      return "null";
-    }
-    if (!(value instanceof Collection<?>)) {
-      return value.toString();
-    }
-
-    Collection<?> collection = (Collection<?>) value;
-
-    if (collection.size() <= maxResult) {
-      return value.toString();
-    }
-
-    return "[" + collection.stream()
-        .limit(maxResult)
-        .map(Object::toString)
-        .collect(Collectors.joining(","))
-        + " ... " + (collection.size() - maxResult) + " more]";
-  }
-
-  /**
-   * Kotlin REPL has built-in context for getting user-declared functions and variables
-   * and setting invokeWrapper for additional side effects in evaluation.
-   * It can be accessed inside REPL by name `kc`, e.g. kc.showVars()
-   */
-  public class KotlinContext {
-    private Map<String, KotlinVariableInfo> vars = new HashMap<>();
-    private Set<KotlinFunctionInfo> functions = new TreeSet<>();
-
-    public List<KotlinVariableInfo> getVars() {
-      return new ArrayList<>(vars.values());
-    }
-
-    public void setWrapper(InvokeWrapper wrapper) {
-      KotlinRepl.this.wrapper = wrapper;
-    }
-
-    public InvokeWrapper getWrapper() {
-      return KotlinRepl.this.wrapper;
-    }
-
-    public List<KotlinFunctionInfo> getFunctions() {
-      return new ArrayList<>(functions);
-    }
-
-    public void showVars() {
-      for (KotlinVariableInfo var : vars.values()) {
-        System.out.println(var.toString(shortenTypes));
-      }
-    }
-
-    public void showFunctions() {
-      for (KotlinFunctionInfo fun : functions) {
-        System.out.println(fun.toString(shortenTypes));
-      }
-    }
-  }
 }

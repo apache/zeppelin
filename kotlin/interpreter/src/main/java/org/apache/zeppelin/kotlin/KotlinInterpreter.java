@@ -17,6 +17,9 @@
 
 package org.apache.zeppelin.kotlin;
 
+import org.apache.zeppelin.kotlin.script.KotlinFunctionInfo;
+import org.apache.zeppelin.kotlin.script.KotlinVariableInfo;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.File;
@@ -33,22 +36,17 @@ import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.interpreter.util.InterpreterOutputStream;
-import org.apache.zeppelin.kotlin.completion.KotlinCompleter;
-import org.apache.zeppelin.kotlin.context.KotlinReceiver;
-import org.apache.zeppelin.kotlin.reflect.KotlinFunctionInfo;
-import org.apache.zeppelin.kotlin.reflect.KotlinVariableInfo;
 import org.apache.zeppelin.kotlin.repl.KotlinRepl;
-import org.apache.zeppelin.kotlin.repl.building.KotlinReplProperties;
+import org.apache.zeppelin.kotlin.repl.KotlinReplProperties;
 import org.apache.zeppelin.scheduler.Job;
 
 public class KotlinInterpreter extends Interpreter {
 
-  private static Logger logger = LoggerFactory.getLogger(KotlinInterpreter.class);
+  private static final Logger logger = LoggerFactory.getLogger(KotlinInterpreter.class);
 
   private InterpreterOutputStream out;
   private KotlinRepl interpreter;
-  private KotlinReplProperties replProperties;
-  private KotlinCompleter completer;
+  private final KotlinReplProperties replProperties;
 
   public KotlinInterpreter(Properties properties) {
     super(properties);
@@ -61,9 +59,7 @@ public class KotlinInterpreter extends Interpreter {
         properties.getProperty("zeppelin.kotlin.shortenTypes", "true"));
     String imports = properties.getProperty("zeppelin.interpreter.localRepo", "");
 
-    completer = new KotlinCompleter();
     replProperties
-        .receiver(new KotlinReceiver())
         .maxResult(maxResult)
         .codeOnLoad("")
         .classPath(getImportClasspath(imports))
@@ -78,7 +74,6 @@ public class KotlinInterpreter extends Interpreter {
   public void open() throws InterpreterException {
     interpreter = new KotlinRepl(replProperties);
 
-    completer.setCtx(interpreter.getKotlinContext());
     out = new InterpreterOutputStream(logger);
   }
 
@@ -129,7 +124,7 @@ public class KotlinInterpreter extends Interpreter {
   @Override
   public List<InterpreterCompletion> completion(String buf, int cursor,
       InterpreterContext interpreterContext) throws InterpreterException {
-    return completer.completion(buf, cursor, interpreterContext);
+    return interpreter.complete(buf, cursor);
   }
 
   public List<KotlinVariableInfo> getVariables() {
@@ -168,6 +163,7 @@ public class KotlinInterpreter extends Interpreter {
     }
   }
 
+  @NotNull
   private List<String> getImportClasspath(String localRepo) {
     List<String> classpath = new ArrayList<>();
     if (localRepo.equals("")) {

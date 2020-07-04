@@ -15,10 +15,8 @@
  * limitations under the License.
  */
 
-package org.apache.zeppelin.kotlin.reflect;
+package org.apache.zeppelin.kotlin.script;
 
-import static org.apache.zeppelin.kotlin.reflect.KotlinReflectUtil.functionSignature;
-import static org.apache.zeppelin.kotlin.reflect.KotlinReflectUtil.shorten;
 import org.jetbrains.annotations.NotNull;
 import kotlin.reflect.KFunction;
 
@@ -39,14 +37,14 @@ public class KotlinFunctionInfo implements Comparable<KotlinFunctionInfo> {
 
   public String toString(boolean shortenTypes) {
     if (shortenTypes) {
-      return shorten(toString());
+      return KotlinReflectUtil.shorten(toString());
     }
     return toString();
   }
 
   @Override
   public String toString() {
-    return functionSignature(function);
+    return KotlinReflectUtil.functionSignature(function);
   }
 
   @Override

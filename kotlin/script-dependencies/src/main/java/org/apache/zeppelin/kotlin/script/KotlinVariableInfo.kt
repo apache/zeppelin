@@ -14,47 +14,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.zeppelin.kotlin.script
 
-package org.apache.zeppelin.kotlin.reflect;
+import kotlin.reflect.KProperty
 
-import static org.apache.zeppelin.kotlin.reflect.KotlinReflectUtil.shorten;
-import kotlin.reflect.KProperty;
+class KotlinVariableInfo(private val valueGetter: () -> Any, val descriptor: KProperty<*>) {
+    val name: String
+        get() = descriptor.name
+    val type: String
+        get() = descriptor.returnType.toString()
 
-public class KotlinVariableInfo {
-    private final Object value;
-    private final KProperty<?> descriptor;
+    var _value: Any = valueGetter()
+    val value: Any
+        get() = _value
 
-    public KotlinVariableInfo(Object value, KProperty<?> descriptor) {
-        this.value = value;
-        this.descriptor = descriptor;
-    }
-
-    public Object getValue() {
-        return value;
-    }
-
-    public KProperty<?> getDescriptor() {
-        return descriptor;
-    }
-
-    public String getName() {
-        return descriptor.getName();
-    }
-
-    public String getType() {
-        return descriptor.getReturnType().toString();
-    }
-
-    public String toString(boolean shortenTypes) {
-        String type = getType();
+    fun toString(shortenTypes: Boolean): String {
+        var type = type
         if (shortenTypes) {
-            type = shorten(type);
+            type = KotlinReflectUtil.shorten(type)
         }
-        return getName() + ": " + type + " = " + getValue();
+        return "$name: $type = $value"
     }
 
-    @Override
-    public String toString() {
-        return toString(false);
+    fun update() {
+        _value = valueGetter()
+    }
+
+    override fun toString(): String {
+        return toString(false)
     }
 }
