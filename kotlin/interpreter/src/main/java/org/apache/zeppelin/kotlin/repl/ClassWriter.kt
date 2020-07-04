@@ -64,10 +64,10 @@ public class ClassWriter {
   private void writeModuleInMemory(ReplCompileResult.CompiledClasses classes) {
     try {
       KJvmCompiledScript<?> compiledScript = Objects.requireNonNull(
-          (KJvmCompiledScript<?>) classes.getData());
+              (KJvmCompiledScript<?>) classes.getData());
 
       KJvmCompiledModuleInMemory moduleInMemory = Objects.requireNonNull(
-          (KJvmCompiledModuleInMemory) compiledScript.getCompiledModule());
+              (KJvmCompiledModuleInMemory) compiledScript.getCompiledModule());
 
       moduleInMemory.getCompilerOutputFiles().forEach((name, bytes) -> {
         if (name.contains("class")) {
@@ -81,11 +81,11 @@ public class ClassWriter {
 
   private void writeClass(byte[] classBytes, String path) {
     try (FileOutputStream fos = new FileOutputStream(path);
-         OutputStream out = new BufferedOutputStream(fos)) {
-      out.write(classBytes);
-      out.flush();
-    } catch (IOException e) {
-      logger.error(e.getMessage());
+      OutputStream out = new BufferedOutputStream(fos)) {
+        out.write(classBytes);
+        out.flush();
+      } catch (IOException e) {
+        logger.error(e.getMessage());
+      }
     }
-  }
 }
