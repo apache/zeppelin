@@ -19,7 +19,6 @@ package org.apache.zeppelin.kotlin.repl
 
 import org.slf4j.LoggerFactory
 import java.io.BufferedOutputStream
-import java.io.FileOutputStream
 import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
@@ -37,7 +36,7 @@ import kotlin.script.experimental.jvm.impl.KJvmCompiledScript
  */
 class ClassWriter(_outputDir: String?) {
   val outputDir: Path  = if(_outputDir == null) {
-    val tempDir = Files.createTempDirectory("kotlin-jupyter")
+    val tempDir = Files.createTempDirectory("kotlin-zeppelin")
     tempDir.toFile().deleteOnExit()
     tempDir.toAbsolutePath()
   } else {
@@ -61,15 +60,15 @@ class ClassWriter(_outputDir: String?) {
         }
       }
     } catch (e: ClassCastException) {
-      logger.info("Compiled line " + code.name + " has no in-memory modules")
+      logger.info("Compiled line ${code.name} has no in-memory modules")
     } catch (e: NullPointerException) {
-      logger.info("Compiled line " + code.name + " has no in-memory modules")
+      logger.info("Compiled line ${code.name} has no in-memory modules")
     }
   }
 
   private fun writeClass(classBytes: ByteArray, path: Path) {
     try {
-      FileOutputStream(path.toAbsolutePath().toString()).use { fos ->
+      Files.newOutputStream(path).use { fos ->
         BufferedOutputStream(fos).use { out ->
           out.write(classBytes)
           out.flush()

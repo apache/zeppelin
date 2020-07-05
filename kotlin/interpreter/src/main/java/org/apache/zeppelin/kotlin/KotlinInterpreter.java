@@ -42,7 +42,7 @@ import org.apache.zeppelin.scheduler.Job;
 
 public class KotlinInterpreter extends Interpreter {
 
-  private static final Logger logger = LoggerFactory.getLogger(KotlinInterpreter.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(KotlinInterpreter.class);
 
   private InterpreterOutputStream out;
   private KotlinRepl interpreter;
@@ -74,7 +74,7 @@ public class KotlinInterpreter extends Interpreter {
   public void open() throws InterpreterException {
     interpreter = new KotlinRepl(replProperties);
 
-    out = new InterpreterOutputStream(logger);
+    out = new InterpreterOutputStream(LOGGER);
   }
 
   @Override
@@ -105,7 +105,7 @@ public class KotlinInterpreter extends Interpreter {
           Thread t = (Thread) object;
           t.interrupt();
         } catch (Throwable t) {
-          logger.error("Failed to cancel script: " + t, t);
+          LOGGER.error("Failed to cancel script: " + t, t);
         }
       }
     }
