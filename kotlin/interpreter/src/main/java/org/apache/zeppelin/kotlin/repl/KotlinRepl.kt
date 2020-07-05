@@ -82,13 +82,14 @@ class KotlinRepl(properties: KotlinReplProperties) {
         }
 
         val receiversTypes = mutableListOf<KotlinType>()
-        //properties.receiver?.javaClass?.canonicalName?.let { receiversTypes.add(KotlinType(it)) }
+        receiversTypes.addAll(properties.implicitReceivers.map { KotlinType(it::class) })
         implicitReceivers(receiversTypes)
         skipExtensionsResolutionForImplicitsExceptInnermost(receiversTypes)
         compilerOptions(listOf("-jvm-target", "1.8"))
     }
 
     private val evaluationConfiguration = ScriptEvaluationConfiguration {
+        implicitReceivers.invoke(v = properties.implicitReceivers)
         constructorArgs.invoke(kotlinContext)
     }
 

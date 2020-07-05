@@ -31,6 +31,7 @@ import java.io.File
 class KotlinReplProperties {
     private val classpath: MutableSet<String> = HashSet()
     private val codeOnLoadSet: MutableList<String> = mutableListOf()
+    private val receivers: MutableList<Any> = mutableListOf()
 
     val codeOnLoad: List<String>
         get() = codeOnLoadSet
@@ -40,6 +41,8 @@ class KotlinReplProperties {
         private set
     var shortenTypes = true
         private set
+    val implicitReceivers: List<Any>
+        get() = receivers
 
     fun classPath(path: String): KotlinReplProperties {
         classpath.add(path)
@@ -73,6 +76,11 @@ class KotlinReplProperties {
 
     fun shortenTypes(shortenTypes: Boolean): KotlinReplProperties {
         this.shortenTypes = shortenTypes
+        return this
+    }
+
+    fun addImplicitReceiver(receiver: Any): KotlinReplProperties {
+        receivers.add(receiver)
         return this
     }
 

@@ -228,9 +228,9 @@ public class KotlinSparkInterpreterTest {
     Path outPath = Paths.get(classOutputDir);
     Files.walk(outPath).forEach(System.out::println);
     assertTrue(Files.walk(outPath).anyMatch(path -> path.toString().matches(
-        ".*Line_\\d+\\$f\\$1\\.class")));
+        ".*Line_\\d+_zeppelin\\$f\\$1\\.class")));
     assertTrue(Files.walk(outPath).anyMatch(path -> path.toString().matches(
-        ".*Line_\\d+\\$sam\\$org_apache_spark_api_java_function_ForeachFunction\\$0\\.class")));
+        ".*Line_\\d+_zeppelin\\$sam\\$org_apache_spark_api_java_function_ForeachFunction\\$0\\.class")));
   }
 
   @Test
