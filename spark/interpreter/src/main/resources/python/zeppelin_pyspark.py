@@ -74,5 +74,5 @@ __zeppelin__._setup_matplotlib()
 
 # add jars to path
 import sys
-jarlist = map(lambda url: url.replace("file:/", "/"), sc.getConf().get("spark.jars").split(","))
+jarlist = map(lambda url: url.replace("file:/", "/"), (conf.get("spark.jars") or "").split(","))
 sys.path.extend(filter(lambda jar: jar not in sys.path, jarlist))
