@@ -76,8 +76,6 @@ class KotlinRepl(properties: KotlinReplProperties) {
         defaultImports(BaseScriptClass::class)
 
         jvm {
-            val classpath = scriptCompilationClasspathFromContext("script-dependencies", classLoader = BaseScriptClass::class.java.classLoader)
-            updateClasspath(classpath)
             updateClasspath(properties.getClasspath())
         }
 
