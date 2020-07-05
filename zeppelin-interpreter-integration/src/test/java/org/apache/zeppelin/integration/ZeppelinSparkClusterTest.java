@@ -1026,6 +1026,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
   @Test
   public void testConfInterpreter() throws IOException {
     Note note = null;
+    Note note2 = null;
     try {
       TestUtils.getInstance(Notebook.class).getInterpreterSettingManager().close();
       note = TestUtils.getInstance(Notebook.class).createNote("note1", anonymous);
@@ -1038,9 +1039,32 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
       p1.setText("%spark\nimport com.databricks.spark.csv._");
       note.run(p1.getId(), true);
       assertEquals(Status.FINISHED, p1.getStatus());
+
+      // test pyspark imports
+      TestUtils.getInstance(Notebook.class).getInterpreterSettingManager().close();
+      note2 = TestUtils.getInstance(Notebook.class).createNote("note2", anonymous);
+      Paragraph p2 = note2.addNewParagraph(anonymous);
+      p2.setText("%spark.conf spark.jars.packages\tcom.microsoft.ml.spark:mmlspark_2.11:1.0.0-rc1\nspark.jars.repositories\thttps://mmlspark.azureedge.net/maven");
+      note2.run(p2.getId(), true);
+      assertEquals(Status.FINISHED, p2.getStatus());
+
+      Paragraph p3 = note2.addNewParagraph(anonymous);
+      p3.setText("%spark.pyspark\nimport mmlspark");
+      note2.run(p3.getId(), true);
+      assertEquals(Status.FINISHED, p3.getStatus());
+
+
+      Paragraph p4 = note2.addNewParagraph(anonymous);
+      p4.setText("%spark.ipyspark\nimport mmlspark");
+      note2.run(p4.getId(), true);
+      assertEquals(Status.FINISHED, p4.getStatus());
+
     } finally {
       if (null != note) {
         TestUtils.getInstance(Notebook.class).removeNote(note, anonymous);
+      }
+      if (null != note2) {
+        TestUtils.getInstance(Notebook.class).removeNote(note2, anonymous);
       }
     }
   }
