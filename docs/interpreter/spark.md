@@ -81,9 +81,14 @@ You can also set other Spark properties which are not listed in the table. For a
     <td>Location of spark distribution</td>
   <tr>
   <tr>
-    <td>master</td>
+    <td>spark.master</td>
     <td>local[*]</td>
     <td>Spark master uri. <br/> e.g. spark://master_host:7077</td>
+  <tr>
+  <tr>
+    <td>spark.submit.deployMode</td>
+    <td></td>
+    <td>The deploy mode of Spark driver program, either "client" or "cluster", Which means to launch driver program locally ("client") or remotely ("cluster") on one of the nodes inside the cluster.</td>
   <tr>
     <td>spark.app.name</td>
     <td>Zeppelin</td>
@@ -248,14 +253,14 @@ configuration with code together for more flexibility. e.g.
 </center>
 
 ### Set master in Interpreter menu
-After starting Zeppelin, go to **Interpreter** menu and edit **master** property in your Spark interpreter setting. The value may vary depending on your Spark cluster deployment type.
+After starting Zeppelin, go to **Interpreter** menu and edit **spark.master** property in your Spark interpreter setting. The value may vary depending on your Spark cluster deployment type.
 
 For example,
 
  * **local[*]** in local mode
  * **spark://master:7077** in standalone cluster
- * **yarn-client** in Yarn client mode
- * **yarn-cluster** in Yarn cluster mode
+ * **yarn-client** in Yarn client mode  (Not supported in spark 3.x, refer below for how to configure yarn-client in Spark 3.x)
+ * **yarn-cluster** in Yarn cluster mode  (Not supported in spark 3.x, refer below for how to configure yarn-client in Spark 3.x)
  * **mesos://host:5050** in Mesos cluster
 
 That's it. Zeppelin will work with any version of Spark and any deployment type without rebuilding Zeppelin in this way.
@@ -264,6 +269,29 @@ For the further information about Spark & Zeppelin version compatibility, please
 > Note that without exporting `SPARK_HOME`, it's running in local mode with included version of Spark. The included version may vary depending on the build profile.
 
 > Yarn client mode and local mode will run driver in the same machine with zeppelin server, this would be dangerous for production. Because it may run out of memory when there's many spark interpreters running at the same time. So we suggest you only allow yarn-cluster mode via setting `zeppelin.spark.only_yarn_cluster` in `zeppelin-site.xml`.
+
+#### Configure yarn mode for Spark 3.x
+
+Specifying `yarn-client` & `yarn-cluster` in `spark.master` is not supported in Spark 3.x any more, instead you need to use `spark.master` and `spark.submit.deployMode` together.
+
+<table class="table-configuration">
+  <tr>
+    <th>Mode</th>
+    <th>spark.master</th>
+    <th>spark.submit.deployMode</th>
+  </tr>
+  <tr>
+    <td>Yarn Client</td>
+    <td>yarn</td>
+    <td>client</td>
+  </tr>
+  <tr>
+    <td>Yarn Cluster</td>
+    <td>yarn</td>
+    <td>cluster</td>
+  </tr>  
+</table>
+
 
 ## SparkContext, SQLContext, SparkSession, ZeppelinContext
 

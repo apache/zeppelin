@@ -18,19 +18,62 @@
     background: @layout-body-background;
     display: block;
     position: relative;
-    padding-top: 50px;
+    padding-top: 60px;
     min-height: calc(~"100vh - 50px");
 
     &.simple {
       background: @component-background;
     }
   }
+
+  .flex-container {
+    display: flex;
+  }
+
+  .sidebar-area {
+    box-shadow: 4px 0px 2px 0 rgba(0, 0, 0, 0.06);
+    border-right: solid thin @component-background;
+    overflow: hidden;
+    background: @component-background;
+    z-index: 25;
+    position: sticky;
+    top: 0px;
+    height: 100vh;
+  }
+
+  .sidebar-resize {
+    height: 100%;
+    width: 5px;
+    transition: all 0.2s ease;
+
+    &:hover {
+      border-right: solid 2px #5d99f8;
+    }
+  }
+
+  .simple .sidebar-area {
+    box-shadow: none;
+    
+    &:hover {
+      border-right: solid thin rgba(0, 0, 0, 0.06);
+    }
+  }
+  
+  .notebook-area {
+    overflow: hidden;
+    width: 100%;
+  }
+
   .extension-area {
     padding: 24px;
     background: @component-background;
     box-shadow: -2px 4px 2px 0 rgba(0, 0, 0, 0.06);
+    position: sticky;
+    top: 0px;
+    z-index: 20;
   }
+
   .paragraph-area {
-    margin: 6px 0 0 0;
+    padding: 0 5px;
   }
 });

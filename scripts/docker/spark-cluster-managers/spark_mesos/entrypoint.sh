@@ -20,7 +20,7 @@ export SPARK_MASTER_WEBUI_PORT=8080
 export SPARK_WORKER_PORT=8888
 export SPARK_WORKER_WEBUI_PORT=8081
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$JAVA_HOME/jre/lib/amd64/server/
-export MASTER=mesos://127.0.1.1:5050
+export SPARK_MASTER=mesos://127.0.1.1:5050
 export MESOS_NATIVE_JAVA_LIBRARY=/usr/lib/libmesos.so
 
 # spark configuration

@@ -47,6 +47,7 @@ import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.AmazonS3EncryptionClient;
+import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.CryptoConfiguration;
 import com.amazonaws.services.s3.model.EncryptionMaterialsProvider;
 import com.amazonaws.services.s3.model.GetObjectRequest;
@@ -84,6 +85,7 @@ public class S3NotebookRepo implements NotebookRepo {
   private String bucketName;
   private String user;
   private boolean useServerSideEncryption;
+  private CannedAccessControlList objectCannedAcl;
   private ZeppelinConfiguration conf;
   private String rootFolder;
 
@@ -97,6 +99,9 @@ public class S3NotebookRepo implements NotebookRepo {
     user = conf.getS3User();
     rootFolder = user + "/notebook";
     useServerSideEncryption = conf.isS3ServerSideEncryption();
+    if (StringUtils.isNotBlank(conf.getS3CannedAcl())) {
+        objectCannedAcl = CannedAccessControlList.valueOf(conf.getS3CannedAcl());
+    }
 
     // always use the default provider chain
     AWSCredentialsProvider credentialsProvider = new DefaultAWSCredentialsProviderChain();
@@ -236,6 +241,9 @@ public class S3NotebookRepo implements NotebookRepo {
         ObjectMetadata objectMetadata = new ObjectMetadata();
         objectMetadata.setSSEAlgorithm(ObjectMetadata.AES_256_SERVER_SIDE_ENCRYPTION);
         putRequest.setMetadata(objectMetadata);
+      }
+      if (objectCannedAcl != null) {
+          putRequest.withCannedAcl(objectCannedAcl);
       }
       s3client.putObject(putRequest);
     }

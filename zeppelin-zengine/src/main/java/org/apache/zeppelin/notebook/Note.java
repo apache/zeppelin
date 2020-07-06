@@ -30,6 +30,7 @@ import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.Input;
 import org.apache.zeppelin.interpreter.ExecutionContext;
+import org.apache.zeppelin.interpreter.ExecutionContextBuilder;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
@@ -42,6 +43,7 @@ import org.apache.zeppelin.interpreter.remote.RemoteAngularObject;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.notebook.utility.IdHashes;
+import org.apache.zeppelin.scheduler.ExecutorFactory;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
@@ -50,6 +52,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -67,8 +71,8 @@ import java.util.Set;
  * via this class.
  */
 public class Note implements JsonSerializable {
-  private static final Logger logger = LoggerFactory.getLogger(Note.class);
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(Note.class);
   // serialize Paragraph#runtimeInfos and Note#path to frontend but not to note file
   private static final ExclusionStrategy strategy = new ExclusionStrategy() {
     @Override
@@ -81,17 +85,17 @@ public class Note implements JsonSerializable {
       return false;
     }
   };
-
-  private static Gson gson = new GsonBuilder()
+  private static final Gson GSON = new GsonBuilder()
       .setPrettyPrinting()
       .setDateFormat("yyyy-MM-dd HH:mm:ss.SSS")
       .registerTypeAdapter(Date.class, new NotebookImportDeserializer())
       .registerTypeAdapterFactory(Input.TypeAdapterFactory)
       .setExclusionStrategies(strategy)
       .create();
+  private static final DateTimeFormatter DATE_TIME_FORMATTER =
+          DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss");
 
   private List<Paragraph> paragraphs = new LinkedList<>();
-
   private String name = "";
   private String id;
   private String defaultInterpreterGroup;
@@ -100,6 +104,7 @@ public class Note implements JsonSerializable {
   private Map<String, Object> noteParams = new LinkedHashMap<>();
   private Map<String, Input> noteForms = new LinkedHashMap<>();
   private Map<String, List<AngularObject>> angularObjects = new HashMap<>();
+
   /*
    * note configurations.
    * - looknfeel - cron
@@ -389,7 +394,7 @@ public class Note implements JsonSerializable {
   /**
    * Delete the note AngularObject.
    */
-  public void deleteAngularObject(String intpGroupId, AngularObject angularObject) {
+  public void deleteAngularObject(String intpGroupId, String noteId, String paragraphId, String name) {
     List<AngularObject> angularObjectList;
     if (!angularObjects.containsKey(intpGroupId)) {
       return;
@@ -399,21 +404,26 @@ public class Note implements JsonSerializable {
       // Delete existing AngularObject
       Iterator<AngularObject> iter = angularObjectList.iterator();
       while(iter.hasNext()){
-        String noteId = "", paragraphId = "";
+        String noteIdCandidate = "";
+        String paragraphIdCandidate = "";
+        String nameCandidate = "";
         Object object = iter.next();
         if (object instanceof AngularObject) {
           AngularObject ao = (AngularObject)object;
-          noteId = ao.getNoteId();
-          paragraphId = ao.getParagraphId();
+          noteIdCandidate = ao.getNoteId();
+          paragraphIdCandidate = ao.getParagraphId();
+          nameCandidate = ao.getName();
         } else if (object instanceof RemoteAngularObject) {
-          RemoteAngularObject rao = (RemoteAngularObject)object;
-          noteId = rao.getNoteId();
-          paragraphId = rao.getParagraphId();
+          RemoteAngularObject rao = (RemoteAngularObject) object;
+          noteIdCandidate = rao.getNoteId();
+          paragraphIdCandidate = rao.getParagraphId();
+          nameCandidate = rao.getName();
         } else {
           continue;
         }
-        if (StringUtils.equals(noteId, angularObject.getNoteId())
-            && StringUtils.equals(paragraphId, angularObject.getParagraphId())) {
+        if (StringUtils.equals(noteId, noteIdCandidate)
+            && StringUtils.equals(paragraphId, paragraphIdCandidate)
+            && StringUtils.equals(name, nameCandidate)) {
           iter.remove();
         }
       }
@@ -441,7 +451,7 @@ public class Note implements JsonSerializable {
     Map<String, Object> param = srcParagraph.settings.getParams();
     Map<String, Input> form = srcParagraph.settings.getForms();
 
-    logger.debug("srcParagraph user: " + srcParagraph.getUser());
+    LOGGER.debug("srcParagraph user: " + srcParagraph.getUser());
 
     newParagraph.setAuthenticationInfo(subject);
     newParagraph.setConfig(config);
@@ -450,15 +460,15 @@ public class Note implements JsonSerializable {
     newParagraph.setText(srcParagraph.getText());
     newParagraph.setTitle(srcParagraph.getTitle());
 
-    logger.debug("newParagraph user: " + newParagraph.getUser());
+    LOGGER.debug("newParagraph user: " + newParagraph.getUser());
 
     try {
-      String resultJson = gson.toJson(srcParagraph.getReturn());
+      String resultJson = GSON.toJson(srcParagraph.getReturn());
       InterpreterResult result = InterpreterResult.fromJson(resultJson);
       newParagraph.setReturn(result, null);
     } catch (Exception e) {
       // 'result' part of Note consists of exception, instead of actual interpreter results
-      logger.warn(
+      LOGGER.warn(
           "Paragraph " + srcParagraph.getId() + " has a result with exception. " + e.getMessage());
     }
 
@@ -747,16 +757,64 @@ public class Note implements JsonSerializable {
     }
   }
 
-  public void runAll(AuthenticationInfo authenticationInfo,
-                     boolean blocking) throws Exception {
+  /**
+   * Run all the paragraphs of this note in different kinds of ways:
+   * - blocking/non-blocking
+   * - isolated/non-isolated
+   *
+   * @param authInfo
+   * @param blocking
+   * @param isolated
+   * @throws Exception
+   */
+  public void runAll(AuthenticationInfo authInfo,
+                     boolean blocking,
+                     boolean isolated,
+                     Map<String, Object> params) throws Exception {
+    setIsolatedMode(isolated);
     setRunning(true);
+    setStartTime(DATE_TIME_FORMATTER.format(LocalDateTime.now()));
+    if (blocking) {
+      try {
+        runAllSync(authInfo, isolated, params);
+      } finally {
+        setRunning(false);
+        setIsolatedMode(false);
+        clearStartTime();
+      }
+    } else {
+      ExecutorFactory.singleton().getNoteJobExecutor().submit(() -> {
+        try {
+          runAllSync(authInfo, isolated, params);
+        } catch (Exception e) {
+          LOGGER.warn("Fail to run note: " + id, e);
+        } finally {
+          setRunning(false);
+          setIsolatedMode(false);
+          clearStartTime();
+        }
+      });
+    }
+  }
+
+  /**
+   * Run all the paragraphs in sync(blocking) way.
+   *
+   * @param authInfo
+   * @param isolated
+   */
+  private void runAllSync(AuthenticationInfo authInfo, boolean isolated, Map<String, Object> params) throws Exception {
     try {
       for (Paragraph p : getParagraphs()) {
         if (!p.isEnabled()) {
           continue;
         }
-        p.setAuthenticationInfo(authenticationInfo);
+        p.setAuthenticationInfo(authInfo);
+        Map<String, Object> originalParams = p.settings.getParams();
         try {
+          if (params != null && !params.isEmpty()) {
+            p.settings.setParams(params);
+          }
           Interpreter interpreter = p.getBindedInterpreter();
           if (interpreter != null) {
             // set interpreter property to execution.mode to be note
@@ -764,20 +822,44 @@ public class Note implements JsonSerializable {
             interpreter.setProperty(".execution.mode", "note");
             interpreter.setProperty(".noteId", id);
           }
+          // Must run each paragraph in blocking way.
+          if (!run(p.getId(), true)) {
+            LOGGER.warn("Skip running the remain notes because paragraph {} fails", p.getId());
+            throw new Exception("Fail to run note because paragraph " + p.getId() + " is failed, result: " +
+                    p.getReturn());
+          }
         } catch (InterpreterNotFoundException e) {
           // ignore, because the following run method will fail if interpreter not found.
-        }
-        if (!run(p.getId(), blocking)) {
-          logger.warn("Skip running the remain notes because paragraph {} fails", p.getId());
-          throw new Exception("Fail to run note because paragraph " + p.getId() + " is failed, " +
-                  p.getReturn());
+        } finally {
+          // reset params to the original value
+          p.settings.setParams(originalParams);
         }
       }
+    } catch (Exception e) {
+      throw e;
     } finally {
-      setRunning(false);
+      if (isolated) {
+        LOGGER.info("Releasing interpreters used by this note: {}", id);
+        for (InterpreterSetting setting : getUsedInterpreterSettings()) {
+          ExecutionContext executionContext = new ExecutionContextBuilder()
+                  .setUser(authInfo.getUser())
+                  .setNoteId(id)
+                  .setDefaultInterpreterGroup(defaultInterpreterGroup)
+                  .setInIsolatedMode(isolated)
+                  .setStartTime(getStartTime())
+                  .createExecutionContext();
+          setting.closeInterpreters(executionContext);
+        }
+      }
     }
   }
 
+  /**
+   * Run a single paragraph in non-blocking way.
+   *
+   * @param paragraphId
+   * @return
+   */
   public boolean run(String paragraphId) {
     return run(paragraphId, false);
   }
@@ -786,6 +868,7 @@ public class Note implements JsonSerializable {
    * Run a single paragraph.
    *
    * @param paragraphId ID of paragraph
+   * @param blocking Whether run this paragraph in blocking way
    */
   public boolean run(String paragraphId, boolean blocking) {
     return run(paragraphId, blocking, null);
@@ -855,7 +938,7 @@ public class Note implements JsonSerializable {
     }
 
     for (InterpreterSetting setting : settings) {
-      InterpreterGroup intpGroup = setting.getInterpreterGroup(new ExecutionContext(user, id));
+      InterpreterGroup intpGroup = setting.getInterpreterGroup(new ExecutionContextBuilder().setUser(user).setNoteId(id).createExecutionContext());
       if (intpGroup != null) {
         AngularObjectRegistry registry = intpGroup.getAngularObjectRegistry();
         angularObjects.put(intpGroup.getId(), registry.getAllWithGlobal(id));
@@ -872,10 +955,10 @@ public class Note implements JsonSerializable {
     }
 
     for (InterpreterSetting setting : settings) {
-      if (setting.getInterpreterGroup(new ExecutionContext(user, id)) == null) {
+      if (setting.getInterpreterGroup(new ExecutionContextBuilder().setUser(user).setNoteId(id).createExecutionContext()) == null) {
         continue;
       }
-      InterpreterGroup intpGroup = setting.getInterpreterGroup(new ExecutionContext(user, id));
+      InterpreterGroup intpGroup = setting.getInterpreterGroup(new ExecutionContextBuilder().setUser(user).setNoteId(id).createExecutionContext());
       AngularObjectRegistry registry = intpGroup.getAngularObjectRegistry();
 
       if (registry instanceof RemoteAngularObjectRegistry) {
@@ -914,10 +997,12 @@ public class Note implements JsonSerializable {
       settings.add(defaultIntpSetting);
     }
     // add the interpreter setting with the same group of default interpreter group
-    for (InterpreterSetting intpSetting : interpreterSettingManager.get()) {
-      if (intpSetting.getGroup().equals(defaultIntpSetting.getGroup())) {
-        if (intpSetting.isUserAuthorized(userAndRoles)) {
-          settings.add(intpSetting);
+    if (defaultIntpSetting != null) {
+      for (InterpreterSetting intpSetting : interpreterSettingManager.get()) {
+        if (intpSetting.getGroup().equals(defaultIntpSetting.getGroup())) {
+          if (intpSetting.isUserAuthorized(userAndRoles)) {
+            settings.add(intpSetting);
+          }
         }
       }
     }
@@ -1016,13 +1101,25 @@ public class Note implements JsonSerializable {
     }
   }
 
-  public void setCronMode(boolean cronMode) {
-    info.put("inCronMode", cronMode);
+  public void setIsolatedMode(boolean isolatedMode) {
+    info.put("inIsolatedMode", isolatedMode);
   }
 
-  public boolean isCronMode() {
+  public boolean isIsolatedMode() {
     return Boolean.parseBoolean(
-            info.getOrDefault("inCronMode", "false").toString());
+            info.getOrDefault("inIsolatedMode", "false").toString());
+  }
+
+  public void setStartTime(String startTime) {
+    info.put("startTime", startTime);
+  }
+
+  public String getStartTime() {
+    return info.getOrDefault("startTime", "").toString();
+  }
+
+  public void clearStartTime() {
+    info.remove("startTime");
   }
 
   public boolean isRunning() {
@@ -1040,7 +1137,7 @@ public class Note implements JsonSerializable {
 
   @Override
   public String toJson() {
-    return gson.toJson(this);
+    return GSON.toJson(this);
   }
 
   /**
@@ -1052,13 +1149,13 @@ public class Note implements JsonSerializable {
    */
   public static Note fromJson(String json) throws IOException {
     try {
-      Note note = gson.fromJson(json, Note.class);
+      Note note = GSON.fromJson(json, Note.class);
       convertOldInput(note);
       note.info.remove("isRunning");
       note.postProcessParagraphs();
       return note;
     } catch (Exception e) {
-      logger.error("Fail to parse note json: " + e.toString());
+      LOGGER.error("Fail to parse note json: " + e.toString());
       throw new IOException("Fail to parse note json: " + json, e);
     }
   }
@@ -1132,8 +1229,8 @@ public class Note implements JsonSerializable {
   }
 
   @VisibleForTesting
-  public static Gson getGson() {
-    return gson;
+  public static Gson getGSON() {
+    return GSON;
   }
 
   public void setNoteEventListeners(List<NoteEventListener> noteEventListeners) {

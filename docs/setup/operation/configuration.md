@@ -264,6 +264,12 @@ If both are defined, then the **environment variables** will take priority.
     <td>Save notebooks to S3 with server-side encryption enabled</td>
   </tr>
   <tr>
+      <td><h6 class="properties">ZEPPELIN_NOTEBOOK_S3_CANNED_ACL</h6></td>
+      <td><h6 class="properties">zeppelin.notebook.s3.cannedAcl</h6></td>
+      <td></td>
+      <td>Save notebooks to S3 with the given [Canned ACL](https://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/s3/model/CannedAccessControlList.html) which determines the S3 permissions.</td>
+  </tr>
+  <tr>
     <td><h6 class="properties">ZEPPELIN_NOTEBOOK_S3_SIGNEROVERRIDE</h6></td>
     <td><h6 class="properties">zeppelin.notebook.s3.signerOverride</h6></td>
     <td></td>

@@ -49,8 +49,8 @@ public class SparkShinyInterpreterTest extends ShinyInterpreterTest {
   @Before
   public void setUp() throws InterpreterException {
     Properties properties = new Properties();
-    properties.setProperty("master", "local[*]");
-    properties.setProperty("spark.app.name", "test");
+    properties.setProperty(SparkStringConstants.MASTER_PROP_NAME, "local[*]");
+    properties.setProperty(SparkStringConstants.APP_NAME_PROP_NAME, "test");
 
     InterpreterContext context = getInterpreterContext();
     InterpreterContext.set(context);

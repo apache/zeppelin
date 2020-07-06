@@ -56,7 +56,6 @@ import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.helium.HeliumPackage;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterResult;
-import org.apache.zeppelin.interpreter.InterpreterResultMessage;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
@@ -1371,7 +1370,7 @@ public class NotebookServer extends WebSocketServlet
           interpreterGroup.getAngularObjectRegistry();
       AngularObject ao = removeAngularFromRemoteRegistry(noteId, paragraphId, varName, registry,
           interpreterGroup.getId(), conn);
-      note.deleteAngularObject(interpreterGroup.getId(), ao);
+      note.deleteAngularObject(interpreterGroup.getId(), noteId, paragraphId, varName);
     }
   }
 
@@ -1970,53 +1969,80 @@ public class NotebookServer extends WebSocketServlet
   }
 
   @Override
-  public void onAdd(String interpreterGroupId, AngularObject object) {
-    onUpdate(interpreterGroupId, object);
+  public void onAddAngularObject(String interpreterGroupId, AngularObject angularObject) {
+    onUpdateAngularObject(interpreterGroupId, angularObject);
   }
 
   @Override
-  public void onUpdate(String interpreterGroupId, AngularObject object) {
+  public void onUpdateAngularObject(String interpreterGroupId, AngularObject angularObject) {
     if (getNotebook() == null) {
       return;
     }
 
-    List<Note> notes = getNotebook().getAllNotes();
-    for (Note note : notes) {
-      if (object.getNoteId() != null && !note.getId().equals(object.getNoteId())) {
-        continue;
+    // not global scope, so we just need to load the corresponded note.
+    if (angularObject.getNoteId() != null) {
+      try {
+        Note note = getNotebook().getNote(angularObject.getNoteId());
+        updateNoteAngularObject(note, angularObject, interpreterGroupId);
+      } catch (IOException e) {
+        LOG.error("AngularObject's note: {} is not found", angularObject.getNoteId());
       }
-
-      List<InterpreterSetting> intpSettings =
-              note.getBindedInterpreterSettings(
-                      new ArrayList<>(getNotebookAuthorizationService().getOwners(note.getId())));
-      if (intpSettings.isEmpty()) {
-        continue;
-      }
-
-      getConnectionManager().broadcast(note.getId(), new Message(OP.ANGULAR_OBJECT_UPDATE)
-          .put("angularObject", object)
-          .put("interpreterGroupId", interpreterGroupId).put("noteId", note.getId())
-          .put("paragraphId", object.getParagraphId()));
+    } else {
+      // global scope angular object needs to load and iterate all notes, this is inefficient.
+      getNotebook().getNoteStream().forEach(note -> {
+        if (angularObject.getNoteId() != null && !note.getId().equals(angularObject.getNoteId())) {
+          return;
+        }
+        updateNoteAngularObject(note, angularObject, interpreterGroupId);
+      });
     }
   }
 
-  @Override
-  public void onRemove(String interpreterGroupId, String name, String noteId, String paragraphId) {
-    List<Note> notes = getNotebook().getAllNotes();
-    for (Note note : notes) {
-      if (noteId != null && !note.getId().equals(noteId)) {
-        continue;
-      }
+  private void updateNoteAngularObject(Note note, AngularObject angularObject, String interpreterGroupId) {
+    List<InterpreterSetting> intpSettings =
+            note.getBindedInterpreterSettings(
+                    new ArrayList<>(getNotebookAuthorizationService().getOwners(note.getId())));
+    if (intpSettings.isEmpty()) {
+      return;
+    }
+    getConnectionManager().broadcast(note.getId(), new Message(OP.ANGULAR_OBJECT_UPDATE)
+            .put("angularObject", angularObject)
+            .put("interpreterGroupId", interpreterGroupId).put("noteId", note.getId())
+            .put("paragraphId", angularObject.getParagraphId()));
+  }
 
-      List<String> settingIds =
-          getNotebook().getInterpreterSettingManager().getSettingIds();
-      for (String id : settingIds) {
-        if (interpreterGroupId.contains(id)) {
-          getConnectionManager().broadcast(note.getId(),
-              new Message(OP.ANGULAR_OBJECT_REMOVE).put("name", name).put("noteId", noteId)
-                  .put("paragraphId", paragraphId));
-          break;
+  @Override
+  public void onRemoveAngularObject(String interpreterGroupId, AngularObject angularObject) {
+    // not global scope, so we just need to load the corresponded note.
+    if (angularObject.getNoteId() != null) {
+      try {
+        Note note = getNotebook().getNote(angularObject.getNoteId());
+        removeNoteAngularObject(angularObject.getNoteId(), angularObject, interpreterGroupId);
+      } catch (IOException e) {
+        LOG.error("AngularObject's note: {} is not found", angularObject.getNoteId());
+      }
+    } else {
+      // global scope angular object needs to load and iterate all notes, this is inefficient.
+      getNotebook().getNoteStream().forEach(note -> {
+        if (angularObject.getNoteId() != null && !note.getId().equals(angularObject.getNoteId())) {
+          return;
         }
+        removeNoteAngularObject(note.getId(), angularObject, interpreterGroupId);
+      });
+    }
+  }
+
+  private void removeNoteAngularObject(String noteId, AngularObject angularObject, String interpreterGroupId) {
+    List<String> settingIds =
+            getNotebook().getInterpreterSettingManager().getSettingIds();
+    for (String id : settingIds) {
+      if (interpreterGroupId.contains(id)) {
+        getConnectionManager().broadcast(noteId,
+                new Message(OP.ANGULAR_OBJECT_REMOVE)
+                        .put("name", angularObject.getName())
+                        .put("noteId", angularObject.getNoteId())
+                        .put("paragraphId", angularObject.getParagraphId()));
+        break;
       }
     }
   }

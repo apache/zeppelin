@@ -34,6 +34,10 @@
     <version>0.9.0-SNAPSHOT</version>
     <name>Zeppelin: Plugins Parent</name>
     <description>Zeppelin Plugins Parent</description>
+    <properties>
+        <!-- no need to include hadoop jar, because it's already included in zeppelin-zengine -->
+        <hadoop.deps.scope>provided</hadoop.deps.scope>
+    </properties>
 
     <modules>
         <module>notebookrepo/s3</module>
@@ -71,7 +75,7 @@
             <artifactId>zeppelin-zengine</artifactId>
             <version>${project.version}</version>
             <classifier>tests</classifier>
-            <scope>provided</scope>
+            <scope>test</scope>
         </dependency>
 
         <!-- Test libraries -->
@@ -101,7 +105,7 @@
                                 <goal>copy-dependencies</goal>
                             </goals>
                             <configuration>
-                                <outputDirectory>${project.build.directory}/../../../../plugins/${plugin.name}</outputDirectory>
+                                <outputDirectory>${project.basedir}/../../../plugins/${plugin.name}</outputDirectory>
                                 <overWriteReleases>false</overWriteReleases>
                                 <overWriteSnapshots>false</overWriteSnapshots>
                                 <overWriteIfNewer>true</overWriteIfNewer>
@@ -115,7 +119,7 @@
                                 <goal>copy</goal>
                             </goals>
                             <configuration>
-                                <outputDirectory>${project.build.directory}/../../../../plugins/${plugin.name}</outputDirectory>
+                                <outputDirectory>${project.basedir}/../../../plugins/${plugin.name}</outputDirectory>
                                 <overWriteReleases>false</overWriteReleases>
                                 <overWriteSnapshots>false</overWriteSnapshots>
                                 <overWriteIfNewer>true</overWriteIfNewer>
@@ -127,6 +131,27 @@
                                         <type>${project.packaging}</type>
                                     </artifactItem>
                                 </artifactItems>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-clean-plugin</artifactId>
+                    <executions>
+                        <execution>
+                            <id>delete-plugin-dir</id>
+                            <goals>
+                                <goal>clean</goal>
+                            </goals>
+                            <phase>clean</phase>
+                            <configuration>
+                                <filesets>
+                                    <fileset>
+                                        <directory>${project.basedir}/../../../plugins/${plugin.name}</directory>
+                                        <followSymlinks>true</followSymlinks>
+                                        <useDefaultExcludes>false</useDefaultExcludes>
+                                    </fileset>
+                                </filesets>
                             </configuration>
                         </execution>
                     </executions>

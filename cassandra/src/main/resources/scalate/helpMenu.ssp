@@ -24,6 +24,7 @@
 <%@ val basicCommandsId: UUID = Uuids.random() %>
 <%@ val schemaDiscoveryId: UUID = Uuids.random() %>
 <%@ val queryParamsId: UUID = Uuids.random() %>
+<%@ val formatParamsId: UUID = Uuids.random() %>
 <%@ val preparedStatementsId: UUID = Uuids.random() %>
 <%@ val dynamicFormsId: UUID = Uuids.random() %>
 <%@ val configurationId: UUID = Uuids.random() %>
@@ -55,6 +56,11 @@
                     <li>
                         <a role="button" data-toggle="collapse" data-target="#${queryParamsId}">
                             <span class="text-info"><i class="glyphicon glyphicon-bookmark"/>&nbsp;&nbsp;Query Parameters</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a role="button" data-toggle="collapse" data-target="#${formatParamsId}">
+                            <span class="text-info"><i class="glyphicon glyphicon-bookmark"/>&nbsp;&nbsp;Formatting Parameters</span>
                         </a>
                     </li>
                     <li>
@@ -519,7 +525,7 @@
                             Please note that you <strong>should not add semi-colon (;)</strong> at the end of each parameter statement
                         </div>
 
-                        Some example:
+                        Some examples:
                         <br/><br/>
                         <div class="row">
                             <div class="col-md-8 col-md-offset-2">
@@ -563,6 +569,119 @@
                                 </li>
                                 <li>the order of each query parameter with regard to CQL statement does not matter</li>
                             </ul>
+                        </div>
+                    </p>
+                    </div>
+                </div>
+
+
+            </div>
+        </div>
+    </div>        
+    
+    <div class="panel panel-default">
+        <div class="panel-heading" role="tab">
+            <h4 class="panel-title">
+                <a role="button" data-toggle="collapse" data-target="#${formatParamsId}" aria-expanded="false">
+                    <span class="text-info"><strong>Formatting Parameters</strong></span>
+                </a>
+            </h4>
+        </div>
+        <div id="${formatParamsId}" class="panel-collapse collapse" role="tabpanel">
+            <div class="panel-body">
+
+                <div class="panel panel-default">
+                  <div class="panel-body">
+                    <p>
+                        Sometimes you want to be able to adjust formatting of results just
+                        for single paragraph. You can do this by passing one or more
+                        following parameters in the <tt>%cassandra</tt> interpreter local
+                        properties:
+
+                        <br/><br/>
+                        <table class="table table-bordered">
+                            <caption>
+                                <h4>Formatting Parameters</h4>
+                            </caption>
+                            <thead>
+                                <tr>
+                                    <th>Parameter</th>
+                                    <th>Syntax</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Output Format</td>
+                                    <td><strong>outputFormat=<em>cql|human</em></strong></td>
+                                    <td>Selects formatting of the results - as CQL
+                                    literals, or human-readable (default)</td>
+                                </tr>
+                                <tr>
+                                    <td>Locale</td>
+                                    <td><strong>locale=<em>value</em></strong></td>
+                                    <td>Name of the locale for formatting of results.
+                                    Should be a locale name supported by JVM.</td>
+                                </tr>
+                                <tr>
+                                    <td>Timezone</td>
+                                    <td><strong>timezone=<em>value</em></strong></td>
+                                    <td>Timezone string for formatting of values of
+                                    time/date/timestamp type.  Should be a timezone
+                                    supported by JVM.</td>
+                                </tr>
+                                <tr>
+                                    <td>Timestamp Format</td>
+                                    <td><strong>timestampFormat=<em>string</em></strong></td>
+                                    <td>Format string
+                                    for <a href="https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html">DateTimeFormatter</>
+                                    that will be used for formatting of the values
+                                    of <tt>timestamp</tt> type</td>
+                                </tr>
+                                <tr>
+                                    <td>Time Format</td>
+                                    <td><strong>timeFormat=<em>string</em></strong></td>
+                                    <td>Format string
+                                    for <a href="https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html">DateTimeFormatter</>
+                                    that will be used for formatting of the values
+                                    of <tt>time</tt> type</td>
+                                </tr>
+                                <tr>
+                                    <td>Date Format</td>
+                                    <td><strong>dateFormat=<em>string</em></strong></td>
+                                    <td>Format string
+                                    for <a href="https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html">DateTimeFormatter</>
+                                    that will be used for formatting of the values
+                                    of <tt>date</tt> type</td>
+                                </tr>
+                                <tr>
+                                  <td>Float Precision</td>
+                                  <td><strong>floatPrecision=<em>int value</em></strong></td>
+                                  <td>Precision when output values of <tt>float</tt> type</td>
+                                </tr>
+                                <tr>
+                                  <td>Double Precision</td>
+                                  <td><strong>doublePrecision=<em>int value</em></strong></td>
+                                  <td>Precision when output values of <tt>double</tt> type</td>
+                                </tr>
+                            </tbody>
+                        </table>
+<br/><br/><b>Note</b>: if you need to apply the same output for all paragraphs, you can set
+corresponding settings on the interpreter level!
+<br/><br/>
+
+                        Some examples:
+                        <br/><br/>
+                        <div class="row">
+                            <div class="col-md-8 col-md-offset-2">
+                              <pre>
+%cassandra(locale=de_DE, floatPrecision=2, doublePrecision=4, timeFormat=hh:mma, timestampFormat=MM/dd/yy HH:mm, dateFormat="E, d MMM yy", timezone=Etc/GMT+2)
+select date, time, timestamp, double, float, tuple, udt from zep.test_format;
+                                
+%cassandra(outputFormat=cql)
+select id, double, float, text, date, time, timestamp from zep.test_format;                                
+                              </pre>
+                            </div>
                         </div>
                     </p>
                     </div>
@@ -1003,9 +1122,10 @@
                 <strong>4.0</strong>&nbsp;:
                 <br/>
                 <ul>
-                    <li>Migrate to DataStax Java driver 4.x that supports both Cassandra and DSE.  This contains breaking changes, like, removal of <code>@retryPolicy</code></li>
+                    <li>Migrate to DataStax Java driver 4.x that supports both Cassandra and DSE.  This contains breaking changes, like, deprecation of <code>@retryPolicy</code></li>
                     <li>Fix schema disagreement that could arise when executing multiple DDL statements</li>
                     <li>Added support for <code>--</code> comment style</li>
+                    <li>Added options for formatting of output (interpreter and cell level)</li>
                 </ul>
                 <strong>3.0</strong>&nbsp;:
                 <br/>

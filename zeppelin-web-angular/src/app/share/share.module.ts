@@ -47,6 +47,7 @@ import { NodeListComponent } from '@zeppelin/share/node-list/node-list.component
 import { NoteCreateComponent } from '@zeppelin/share/note-create/note-create.component';
 import { NoteImportComponent } from '@zeppelin/share/note-import/note-import.component';
 import { NoteRenameComponent } from '@zeppelin/share/note-rename/note-rename.component';
+import { NoteTocComponent } from '@zeppelin/share/note-toc/note-toc.component';
 import { PageHeaderComponent } from '@zeppelin/share/page-header/page-header.component';
 import { HumanizeBytesPipe } from '@zeppelin/share/pipes';
 import { RunScriptsDirective } from '@zeppelin/share/run-scripts/run-scripts.directive';
@@ -62,7 +63,14 @@ const MODAL_LIST = [
   FolderRenameComponent,
   Ng1MigrationComponent
 ];
-const EXPORT_LIST = [HeaderComponent, NodeListComponent, PageHeaderComponent, SpinComponent, ResizeHandleComponent];
+const EXPORT_LIST = [
+  HeaderComponent,
+  NodeListComponent,
+  NoteTocComponent,
+  PageHeaderComponent,
+  SpinComponent,
+  ResizeHandleComponent
+];
 const PIPES = [HumanizeBytesPipe];
 
 @NgModule({

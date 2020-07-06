@@ -42,7 +42,7 @@ public class InputTest {
     assertEquals(1, forms.size());
     Input form = forms.get("input_form");
     assertEquals("input_form", form.name);
-    assertNull(form.displayName);
+    assertEquals("input_form", form.displayName);
     assertEquals("", form.defaultValue);
     assertTrue(form instanceof TextBox);
 
@@ -78,6 +78,7 @@ public class InputTest {
     script = "${checkbox:checkbox_form=op1,op1|op2|op3}";
     form = Input.extractSimpleQueryForm(script, false).get("checkbox_form");
     assertEquals("checkbox_form", form.name);
+    assertEquals("checkbox_form", form.displayName);
     assertTrue(form instanceof CheckBox);
 
     assertArrayEquals(new Object[]{"op1"}, (Object[]) form.defaultValue);

@@ -134,7 +134,8 @@ public class NotebookRepoSyncTest {
     assertEquals(1, notebookRepoSync.list(1, anonymous).size());
     assertEquals(notebookRepoSync.list(0, anonymous).get(0).getId(), notebookRepoSync.list(1, anonymous).get(0).getId());
 
-    notebook.removeNote(notebookRepoSync.list(0, null).get(0).getId(), anonymous);
+    NoteInfo noteInfo = notebookRepoSync.list(0, null).get(0);
+    notebook.removeNote(notebookRepoSync.get(noteInfo.getId(), note.getPath(), anonymous), anonymous);
   }
 
   @Test
@@ -152,7 +153,8 @@ public class NotebookRepoSyncTest {
     assertEquals(notebookRepoSync.list(0, anonymous).get(0).getId(), notebookRepoSync.list(1, anonymous).get(0).getId());
 
     /* remove Note */
-    notebook.removeNote(notebookRepoSync.list(0, anonymous).get(0).getId(), anonymous);
+    NoteInfo noteInfo = notebookRepoSync.list(0, null).get(0);
+    notebook.removeNote(notebookRepoSync.get(noteInfo.getId(), noteInfo.getPath(), anonymous), anonymous);
 
     /* check that deleted in both storages */
     assertEquals(0, notebookRepoSync.list(0, anonymous).size());

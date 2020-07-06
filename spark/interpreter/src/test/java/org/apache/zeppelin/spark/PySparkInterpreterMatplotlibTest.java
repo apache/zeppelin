@@ -93,8 +93,8 @@ public class PySparkInterpreterMatplotlibTest {
 
   private static Properties getPySparkTestProperties() throws IOException {
     Properties p = new Properties();
-    p.setProperty("spark.master", "local[*]");
-    p.setProperty("spark.app.name", "Zeppelin Test");
+    p.setProperty(SparkStringConstants.MASTER_PROP_NAME, "local[*]");
+    p.setProperty(SparkStringConstants.APP_NAME_PROP_NAME, "Zeppelin Test");
     p.setProperty("zeppelin.spark.useHiveContext", "true");
     p.setProperty("zeppelin.spark.maxResult", "1000");
     p.setProperty("zeppelin.spark.importImplicit", "true");

@@ -29,8 +29,11 @@ CREATE TYPE IF NOT EXISTS zeppelin.address(
  country text,
  extra_info list<text>,
  phone_numbers map<text,bigint>
-
 );
+
+TRUNCATE zeppelin.ts;
+
+TRUNCATE zeppelin.prepared;
 
 
 CREATE TABLE IF NOT EXISTS zeppelin.users(
@@ -44,6 +47,60 @@ CREATE TABLE IF NOT EXISTS zeppelin.users(
  location frozen<tuple<text,bigint,text>>,
  PRIMARY KEY(login)
 );
+
+TRUNCATE zeppelin.users;
+
+-- for formatting test
+create type if not exists zeppelin.tudt (
+  id int,
+  t text,
+  lst frozen<list<int>>
+);
+
+create table if not exists zeppelin.test_format (
+  id int primary key,
+  text text,
+  date date,
+  timestamp timestamp,
+  time time,
+  uuid uuid,
+  tuuid timeuuid,
+  m1 map<int, text>,
+  m2 frozen<map<text,int>>,
+  l1 list<int>,
+  l2 frozen<list<int>>,
+  s1 set<int>,
+  s2 frozen<set<text>>,
+  udt zeppelin.tudt,
+  ludt1 list<frozen<zeppelin.tudt>>,
+  ludt2 frozen<list<zeppelin.tudt>>,
+  blob blob,
+  bool boolean,
+  dec decimal,
+  double double,
+  float float,
+  bigint bigint,
+  smallint smallint,
+  tinyint tinyint,
+  varint varint,
+  ascii ascii,
+  tuple tuple<int, text, float>,
+  varchar varchar,
+  nullval text
+);
+
+TRUNCATE zeppelin.test_format;
+
+insert into zeppelin.test_format(id, text, date, timestamp, time, uuid, tuuid, m1, m2, l1, l2, s1, s2,
+  udt, ludt1, ludt2, blob, bool, dec, double, float, bigint, smallint, tinyint, varint, ascii, tuple, varchar)
+  values (1, 'text', '2019-01-29', '2020-06-16T23:59:59.123Z', '04:05:00.234', 123e4567-e89b-12d3-a456-426655440000,
+  now(), {1:'m1', 2:'m2'}, {'m1':1, 'm2':2}, [1,2,3], [1,2,3], {1,2,3}, {'1','2','3'},
+  {id: 1, t: 'text', lst: [1,2,3]}, [{id: 1, t: 'text', lst: [1,2,3]}, {id: 2, t: 'text2'}],
+  [{id: 1, t: 'text', lst: [1,2,3]}, {id: 2, t: 'text2'}], bigintAsBlob(1024), true, 123562352352.0,
+  10.0153423453425634653463466346543, 20.0303443, 123562352352, 10000, 10,
+  124325345634643900999999, 'ascii', (1, 'text', 10.0), 'varchar русский'); 
+
+-- other tests
 
 CREATE KEYSPACE IF NOT EXISTS samples
     WITH REPLICATION = {'class':'SimpleStrategy', 'replication_factor':1}
@@ -88,8 +145,6 @@ CREATE INDEX IF NOT EXISTS idx2 ON live_data.complex_table(indexed2);
 CREATE INDEX IF NOT EXISTS keys_map_idx ON live_data.complex_table(KEYS(key_indexed_map));
 
 
-
-
 CREATE TABLE IF NOT EXISTS live_data.sensor_data (
     sensor_id uuid,
     month int,
@@ -126,8 +181,3 @@ INSERT INTO zeppelin.artists(name,born,country,died,gender,styles,type) VALUES('
 INSERT INTO zeppelin.artists(name,born,country,died,gender,styles,type) VALUES('Los Paranoias',null,'Unknown',null,null,['Unknown'],null);
 INSERT INTO zeppelin.artists(name,born,country,died,gender,styles,type) VALUES('…And You Will Know Us by the Trail of Dead','1994-01-01','USA',null,null,['Rock', 'Pop', 'Classic'],'Group');
 
-TRUNCATE zeppelin.ts;
-
-TRUNCATE zeppelin.prepared;
-
-TRUNCATE zeppelin.users;

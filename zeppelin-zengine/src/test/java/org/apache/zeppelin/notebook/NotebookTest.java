@@ -22,7 +22,7 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.interpreter.AbstractInterpreterTest;
-import org.apache.zeppelin.interpreter.ExecutionContext;
+import org.apache.zeppelin.interpreter.ExecutionContextBuilder;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterNotFoundException;
@@ -35,7 +35,6 @@ import org.apache.zeppelin.notebook.repo.NotebookRepoSettingsInfo;
 import org.apache.zeppelin.notebook.repo.NotebookRepoWithVersionControl;
 import org.apache.zeppelin.notebook.repo.VFSNotebookRepo;
 import org.apache.zeppelin.notebook.scheduler.QuartzSchedulerService;
-import org.apache.zeppelin.notebook.scheduler.SchedulerService;
 import org.apache.zeppelin.resource.LocalResourcePool;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Job.Status;
@@ -293,7 +292,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     note.run(p2.getId());
     while (p2.isTerminated() == false || p2.getReturn() == null) Thread.yield();
     assertEquals("repl2: hello world", p2.getReturn().message().get(0).getData());
-    notebook.removeNote(note.getId(), anonymous);
+    notebook.removeNote(note, anonymous);
   }
 
   @Test
@@ -386,7 +385,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
 //        interpreterSettingManager, null, null, null);
 
     //assertEquals(1, notebook2.getAllNotes().size());
-    notebook.removeNote(note.getId(), anonymous);
+    notebook.removeNote(note, anonymous);
   }
 
   @Test
@@ -399,7 +398,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     Set<String> owners = new HashSet<>();
     owners.add("user1");
     assertEquals(owners, authorizationService.getOwners(note.getId()));
-    notebook.removeNote(note.getId(), anonymous);
+    notebook.removeNote(note, anonymous);
   }
 
   @Test
@@ -419,7 +418,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     // clear paragraph output/result
     note.clearParagraphOutput(p1.getId());
     assertNull(p1.getReturn());
-    notebook.removeNote(note.getId(), anonymous);
+    notebook.removeNote(note, anonymous);
   }
 
   @Test
@@ -433,7 +432,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     Thread.sleep(2 * 1000);
     assertEquals(p1.getStatus(), Status.FINISHED);
     assertNull(p1.getDateStarted());
-    notebook.removeNote(note.getId(), anonymous);
+    notebook.removeNote(note, anonymous);
   }
 
   @Test
@@ -450,7 +449,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     assertEquals(InterpreterResult.Code.ERROR, result.code());
     assertEquals("Interpreter invalid not found", result.message().get(0).getData());
     assertNull(p1.getDateStarted());
-    notebook.removeNote(note.getId(), anonymous);
+    notebook.removeNote(note, anonymous);
   }
 
   @Test
@@ -476,13 +475,13 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     p3.setText("%mock1 p3");
 
     // when
-    note.runAll(anonymous, true);
+    note.runAll(anonymous, true, false, new HashMap<>());
 
     assertEquals("repl1: p1", p1.getReturn().message().get(0).getData());
     assertNull(p2.getReturn());
     assertEquals("repl1: p3", p3.getReturn().message().get(0).getData());
 
-    notebook.removeNote(note.getId(), anonymous);
+    notebook.removeNote(note, anonymous);
   }
 
   @Test
@@ -513,7 +512,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     assertNotNull(dateFinished);
     Thread.sleep(2 * 1000);
     assertEquals(dateFinished, p.getDateFinished());
-    notebook.removeNote(note.getId(), anonymous);
+    notebook.removeNote(note, anonymous);
   }
 
   @Test
@@ -550,7 +549,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     }
 
     // remove the note
-    notebook.removeNote(note.getId(), anonymous);
+    notebook.removeNote(note, anonymous);
   }
 
   @Test
@@ -668,7 +667,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
   private void terminateScheduledNote(Note note) throws IOException {
     note.getConfig().remove("cron");
     schedulerService.refreshCron(note.getId());
-    notebook.removeNote(note.getId(), anonymous);
+    notebook.removeNote(note, anonymous);
   }
 
 
@@ -695,9 +694,9 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     schedulerService.refreshCron(note.getId());
 
 
-    RemoteInterpreter mock1 = (RemoteInterpreter) interpreterFactory.getInterpreter("mock1", new ExecutionContext(anonymous.getUser(), note.getId(), "test"));
+    RemoteInterpreter mock1 = (RemoteInterpreter) interpreterFactory.getInterpreter("mock1", new ExecutionContextBuilder().setUser(anonymous.getUser()).setNoteId(note.getId()).setDefaultInterpreterGroup("test").createExecutionContext());
 
-    RemoteInterpreter mock2 = (RemoteInterpreter) interpreterFactory.getInterpreter("mock2", new ExecutionContext(anonymous.getUser(), note.getId(), "test"));
+    RemoteInterpreter mock2 = (RemoteInterpreter) interpreterFactory.getInterpreter("mock2", new ExecutionContextBuilder().setUser(anonymous.getUser()).setNoteId(note.getId()).setDefaultInterpreterGroup("test").createExecutionContext());
 
     // wait until interpreters are started
     while (!mock1.isOpened() || !mock2.isOpened()) {
@@ -717,7 +716,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     // make sure all paragraph has been executed
     assertNotNull(p.getDateFinished());
     assertNotNull(p2.getDateFinished());
-    notebook.removeNote(note.getId(), anonymous);
+    notebook.removeNote(note, anonymous);
   }
 
 //  @Test
@@ -734,7 +733,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
       }
     });
     RemoteInterpreter cronNoteInterpreter =
-        (RemoteInterpreter) interpreterFactory.getInterpreter("mock1", new ExecutionContext(anonymous.getUser(), cronNote.getId(), "test"));
+        (RemoteInterpreter) interpreterFactory.getInterpreter("mock1", new ExecutionContextBuilder().setUser(anonymous.getUser()).setNoteId(cronNote.getId()).setDefaultInterpreterGroup("test").createExecutionContext());
 
     // create a paragraph of the cron scheduled note.
     Paragraph cronNoteParagraph = cronNote.addNewParagraph(AuthenticationInfo.ANONYMOUS);
@@ -749,7 +748,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     Note anotherNote = notebook.createNote("note1", anonymous);
 
     RemoteInterpreter anotherNoteInterpreter =
-        (RemoteInterpreter) interpreterFactory.getInterpreter("mock2", new ExecutionContext(anonymous.getUser(), anotherNote.getId(), "test"));
+        (RemoteInterpreter) interpreterFactory.getInterpreter("mock2", new ExecutionContextBuilder().setUser(anonymous.getUser()).setNoteId(anotherNote.getId()).setDefaultInterpreterGroup("test").createExecutionContext());
 
     // create a paragraph of another note
     Paragraph anotherNoteParagraph = anotherNote.addNewParagraph(AuthenticationInfo.ANONYMOUS);
@@ -797,8 +796,8 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     schedulerService.refreshCron(cronNote.getId());
 
     // remove notebooks
-    notebook.removeNote(cronNote.getId(), anonymous);
-    notebook.removeNote(anotherNote.getId(), anonymous);
+    notebook.removeNote(cronNote, anonymous);
+    notebook.removeNote(anotherNote, anonymous);
   }
 
   @Test
@@ -819,7 +818,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     // remove cron scheduler.
     config.remove("cron");
     schedulerService.refreshCron(note.getId());
-    notebook.removeNote(note.getId(), anonymous);
+    notebook.removeNote(note, anonymous);
   }
 
   @Test
@@ -830,7 +829,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     String simpleText = "hello world";
     p.setText(simpleText);
 
-    note.runAll(anonymous, true);
+    note.runAll(anonymous, true, false, new HashMap<>());
 
     String exportedNoteJson = notebook.exportNote(note.getId());
 
@@ -851,9 +850,9 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     Set<String> owners = new HashSet<>();
     owners.add("user1");
     assertEquals(owners, authorizationService.getOwners(importedNote2.getId()));
-    notebook.removeNote(note.getId(), anonymous);
-    notebook.removeNote(importedNote.getId(), anonymous);
-    notebook.removeNote(importedNote2.getId(), anonymous);
+    notebook.removeNote(note, anonymous);
+    notebook.removeNote(importedNote, anonymous);
+    notebook.removeNote(importedNote2, anonymous);
   }
 
   @Test
@@ -862,7 +861,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
 
     final Paragraph p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     p.setText("hello world");
-    note.runAll(anonymous, true);
+    note.runAll(anonymous, true, false, new HashMap<>());
 
     p.setStatus(Status.RUNNING);
     Note cloneNote = notebook.cloneNote(note.getId(), "clone note", anonymous);
@@ -882,9 +881,9 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     Set<String> owners = new HashSet<>();
     owners.add("user1");
     assertEquals(owners, authorizationService.getOwners(cloneNote2.getId()));
-    notebook.removeNote(note.getId(), anonymous);
-    notebook.removeNote(cloneNote.getId(), anonymous);
-    notebook.removeNote(cloneNote2.getId(), anonymous);
+    notebook.removeNote(note, anonymous);
+    notebook.removeNote(cloneNote, anonymous);
+    notebook.removeNote(cloneNote2, anonymous);
   }
 
   @Test
@@ -898,7 +897,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     for (InterpreterGroup intpGroup : interpreterSettingManager.getAllInterpreterGroup()) {
       intpGroup.setResourcePool(new LocalResourcePool(intpGroup.getId()));
     }
-    note.runAll(anonymous, true);
+    note.runAll(anonymous, true, false, new HashMap<>());
 
     assertEquals(2, interpreterSettingManager.getAllResources().size());
 
@@ -907,7 +906,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     assertEquals(1, interpreterSettingManager.getAllResources().size());
 
     // remove note
-    notebook.removeNote(note.getId(), anonymous);
+    notebook.removeNote(note, anonymous);
     assertEquals(0, interpreterSettingManager.getAllResources().size());
   }
 
@@ -932,7 +931,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     registry.add("o3", "object3", null, null);
 
     // remove notebook
-    notebook.removeNote(note.getId(), anonymous);
+    notebook.removeNote(note, anonymous);
 
     // notebook scope or paragraph scope object should be removed
     assertNull(registry.get("o1", note.getId(), null));
@@ -971,7 +970,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     // notebook scope and global object sould be remained
     assertNotNull(registry.get("o2", note.getId(), null));
     assertNotNull(registry.get("o3", null, null));
-    notebook.removeNote(note.getId(), anonymous);
+    notebook.removeNote(note, anonymous);
   }
 
   @Test
@@ -997,7 +996,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     // New InterpreterGroup will be created and its AngularObjectRegistry will be created
     assertNull(registry.get("o1", note.getId(), null));
     assertNull(registry.get("o2", null, null));
-    notebook.removeNote(note.getId(), anonymous);
+    notebook.removeNote(note, anonymous);
   }
 
   @Test
@@ -1050,7 +1049,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     assertEquals(authorizationService.isReader(note.getId(),
         new HashSet<>(Arrays.asList("user4"))), true);
 
-    notebook.removeNote(note.getId(), anonymous);
+    notebook.removeNote(note, anonymous);
   }
 
   @Test
@@ -1167,14 +1166,14 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     p3.setText("%mock1 sleep 1000");
 
 
-    note.runAll(AuthenticationInfo.ANONYMOUS, false);
+    note.runAll(AuthenticationInfo.ANONYMOUS, false, false, new HashMap<>());
 
     // wait until first paragraph finishes and second paragraph starts
     while (p1.getStatus() != Status.FINISHED || p2.getStatus() != Status.RUNNING) Thread.yield();
 
     assertEquals(Status.FINISHED, p1.getStatus());
     assertEquals(Status.RUNNING, p2.getStatus());
-    assertEquals(Status.PENDING, p3.getStatus());
+    assertEquals(Status.READY, p3.getStatus());
 
     // restart interpreter
     interpreterSettingManager.restart(interpreterSettingManager.getInterpreterSettingByName("mock1").getId());
@@ -1182,9 +1181,9 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     // make sure three different status aborted well.
     assertEquals(Status.FINISHED, p1.getStatus());
     assertEquals(Status.ABORT, p2.getStatus());
-    assertEquals(Status.ABORT, p3.getStatus());
+    assertEquals(Status.READY, p3.getStatus());
 
-    notebook.removeNote(note.getId(), anonymous);
+    notebook.removeNote(note, anonymous);
   }
 
   @Test
@@ -1206,7 +1205,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     InterpreterResult result = p1.getReturn();
 
     // remove note and recreate
-    notebook.removeNote(note1.getId(), anonymous);
+    notebook.removeNote(note1, anonymous);
     note1 = notebook.createNote("note1", anonymous);
     p1 = note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     p1.setText("%mock1 getId");
@@ -1216,7 +1215,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     while (p1.getStatus() != Status.FINISHED) Thread.yield();
     assertNotEquals(p1.getReturn().message(), result.message());
 
-    notebook.removeNote(note1.getId(), anonymous);
+    notebook.removeNote(note1, anonymous);
   }
 
   @Test
@@ -1258,8 +1257,8 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
 
     assertNotEquals(p1.getReturn().message(), p2.getReturn().message().get(0).getData());
 
-    notebook.removeNote(note1.getId(), anonymous);
-    notebook.removeNote(note2.getId(), anonymous);
+    notebook.removeNote(note1, anonymous);
+    notebook.removeNote(note2, anonymous);
   }
 
 
@@ -1316,8 +1315,8 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
 
     assertNotEquals(p1.getReturn().message().get(0).getData(), p2.getReturn().message().get(0).getData());
 
-    notebook.removeNote(note1.getId(), anonymous);
-    notebook.removeNote(note2.getId(), anonymous);
+    notebook.removeNote(note1, anonymous);
+    notebook.removeNote(note2, anonymous);
   }
 
   public void testNotebookEventListener() throws IOException {
@@ -1376,7 +1375,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     note1.removeParagraph(anonymous.getUser(), p1.getId());
     assertEquals(1, onParagraphRemove.get());
 
-    notebook.removeNote(note1.getId(), anonymous);
+    notebook.removeNote(note1, anonymous);
     assertEquals(1, onNoteRemove.get());
     assertEquals(1, onParagraphRemove.get());
   }
@@ -1401,8 +1400,8 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     assertEquals(0, notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), Sets.newHashSet("anonymous"))).size());
     assertEquals(1, notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), Sets.newHashSet("user1"))).size());
     assertEquals(1, notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), Sets.newHashSet("user2"))).size());
-    notebook.removeNote(note1.getId(), AuthenticationInfo.ANONYMOUS);
-    notebook.removeNote(note2.getId(), AuthenticationInfo.ANONYMOUS);
+    notebook.removeNote(note1, AuthenticationInfo.ANONYMOUS);
+    notebook.removeNote(note2, AuthenticationInfo.ANONYMOUS);
   }
 
   @Test
@@ -1414,7 +1413,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     } catch (Exception e) {
       assertTrue(e.getMessage().contains("Note '/note1' existed"));
     } finally {
-      notebook.removeNote(note1.getId(), anonymous);
+      notebook.removeNote(note1, anonymous);
     }
   }
 
