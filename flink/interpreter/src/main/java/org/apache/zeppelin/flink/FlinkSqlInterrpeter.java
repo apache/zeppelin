@@ -82,8 +82,6 @@ public abstract class FlinkSqlInterrpeter extends Interpreter {
 
   @Override
   public void open() throws InterpreterException {
-    flinkInterpreter =
-            getInterpreterInTheSameSessionByClassName(FlinkInterpreter.class);
     sqlCommandParser = new SqlCommandParser(flinkInterpreter.getFlinkShims(), tbenv);
     this.sqlSplitter = new SqlSplitter();
     JobListener jobListener = new JobListener() {
