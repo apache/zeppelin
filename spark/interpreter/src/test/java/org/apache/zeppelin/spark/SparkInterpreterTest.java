@@ -69,8 +69,8 @@ public class SparkInterpreterTest {
   @Test
   public void testSparkInterpreter() throws IOException, InterruptedException, InterpreterException {
     Properties properties = new Properties();
-    properties.setProperty("spark.master", "local");
-    properties.setProperty("spark.app.name", "test");
+    properties.setProperty(SparkStringConstants.MASTER_PROP_NAME, "local");
+    properties.setProperty(SparkStringConstants.APP_NAME_PROP_NAME, "test");
     properties.setProperty("zeppelin.spark.maxResult", "100");
     properties.setProperty("zeppelin.spark.uiWebUrl", "fake_spark_weburl/{{applicationId}}");
     // disable color output for easy testing
@@ -394,8 +394,8 @@ public class SparkInterpreterTest {
   @Test
   public void testDisableReplOutput() throws InterpreterException {
     Properties properties = new Properties();
-    properties.setProperty("spark.master", "local");
-    properties.setProperty("spark.app.name", "test");
+    properties.setProperty(SparkStringConstants.MASTER_PROP_NAME, "local");
+    properties.setProperty(SparkStringConstants.APP_NAME_PROP_NAME, "test");
     properties.setProperty("zeppelin.spark.maxResult", "100");
     properties.setProperty("zeppelin.spark.printREPLOutput", "false");
     // disable color output for easy testing
@@ -465,8 +465,8 @@ public class SparkInterpreterTest {
   @Test
   public void testSchedulePool() throws InterpreterException {
     Properties properties = new Properties();
-    properties.setProperty("spark.master", "local");
-    properties.setProperty("spark.app.name", "test");
+    properties.setProperty(SparkStringConstants.MASTER_PROP_NAME, "local");
+    properties.setProperty(SparkStringConstants.APP_NAME_PROP_NAME, "test");
     properties.setProperty("zeppelin.spark.maxResult", "100");
     properties.setProperty("spark.scheduler.mode", "FAIR");
     // disable color output for easy testing
@@ -494,8 +494,8 @@ public class SparkInterpreterTest {
   @Test
   public void testDisableSparkUI_1() throws InterpreterException {
     Properties properties = new Properties();
-    properties.setProperty("spark.master", "local");
-    properties.setProperty("spark.app.name", "test");
+    properties.setProperty(SparkStringConstants.MASTER_PROP_NAME, "local");
+    properties.setProperty(SparkStringConstants.APP_NAME_PROP_NAME, "test");
     properties.setProperty("zeppelin.spark.maxResult", "100");
     properties.setProperty("spark.ui.enabled", "false");
     // disable color output for easy testing
@@ -519,8 +519,8 @@ public class SparkInterpreterTest {
   @Test
   public void testDisableSparkUI_2() throws InterpreterException {
     Properties properties = new Properties();
-    properties.setProperty("spark.master", "local");
-    properties.setProperty("spark.app.name", "test");
+    properties.setProperty(SparkStringConstants.MASTER_PROP_NAME, "local");
+    properties.setProperty(SparkStringConstants.APP_NAME_PROP_NAME, "test");
     properties.setProperty("zeppelin.spark.maxResult", "100");
     properties.setProperty("zeppelin.spark.ui.hidden", "true");
     // disable color output for easy testing
@@ -543,8 +543,8 @@ public class SparkInterpreterTest {
   @Test
   public void testScopedMode() throws InterpreterException {
     Properties properties = new Properties();
-    properties.setProperty("spark.master", "local");
-    properties.setProperty("spark.app.name", "test");
+    properties.setProperty(SparkStringConstants.MASTER_PROP_NAME, "local");
+    properties.setProperty(SparkStringConstants.APP_NAME_PROP_NAME, "test");
     properties.setProperty("zeppelin.spark.maxResult", "100");
     // disable color output for easy testing
     properties.setProperty("zeppelin.spark.scala.color", "false");

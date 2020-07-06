@@ -22,46 +22,61 @@
                                 [currentRevision]="currentRevision"
                                 (tableHideChange)="setAllParagraphTableHide($event)"
                                 (editorHideChange)="setAllParagraphEditorHide($event)"></zeppelin-notebook-action-bar>
-  <div class="extension-area" [ngSwitch]="activatedExtension" *ngIf="activatedExtension!=='hide'">
-    <zeppelin-notebook-interpreter-binding *ngSwitchCase="'interpreter'"
-                                           [noteId]="note.id"
-                                           [(activatedExtension)]="activatedExtension"
-                                           [interpreterBindings]="interpreterBindings"></zeppelin-notebook-interpreter-binding>
-    <zeppelin-notebook-permissions *ngSwitchCase="'permissions'"
-                                   [noteId]="note.id"
-                                   [(activatedExtension)]="activatedExtension"
-                                   [permissions]="permissions"></zeppelin-notebook-permissions>
-    <zeppelin-notebook-revisions-comparator *ngSwitchCase="'revisions'"></zeppelin-notebook-revisions-comparator>
-  </div>
-  <div class="paragraph-area">
-    <zeppelin-note-form-block *ngIf="isShowNoteForms"
-                              [formDefs]="note.noteForms"
-                              [paramDefs]="note.noteParams"
-                              [noteTitle]="note.config?.noteFormTitle"
-                              (noteFormChange)="onNoteFormChange($event)"
-                              (noteFormNameRemove)="onFormNameRemove($event)"
-                              (noteTitleChange)="onNoteTitleChange($event)">
-    </zeppelin-note-form-block>
-    <div class="paragraph-inner" nz-row>
-      <zeppelin-notebook-paragraph nz-col
-                                   *ngFor="let p of note.paragraphs;let first = first; let last = last; index as i"
-                                   [nzSpan]="p.config.colWidth * 2"
-                                   [select]="p.id === selectId"
-                                   [scrolled]="p.id === scrolledId"
-                                   [index]="i"
-                                   [paragraph]="p"
-                                   [note]="note"
-                                   [looknfeel]="note.config.looknfeel"
-                                   [interpreterBindings]="interpreterBindings"
-                                   [collaborativeMode]="collaborativeMode"
-                                   [viewOnly]="viewOnly"
-                                   [revisionView]="revisionView"
-                                   [first]="first"
-                                   [last]="last"
-                                   (selectAtIndex)="onSelectAtIndex($event)"
-                                   (selected)="onParagraphSelect($event)"
-                                   (triggerSaveParagraph)="saveParagraph($event)"
-                                   (saveNoteTimer)="startSaveTimer()"></zeppelin-notebook-paragraph>
+  <div class="flex-container">
+    <div class="sidebar-area"
+        nz-resizable
+        [nzMaxWidth]="!isSidebarOpen ? 40 : 800"
+        [nzMinWidth]="!isSidebarOpen ? 40 : 280"
+        (nzResize)="onResizeSidebar($event)"
+        [style.min-width.px]="!isSidebarOpen ? 40 : sidebarWidth">
+      <zeppelin-notebook-sidebar [note]="note"
+                                (isSidebarOpenChange)="onSidebarOpenChange($event)"
+                                (scrollToParagraph)="onParagraphScrolled($event)"></zeppelin-notebook-sidebar>
+      <nz-resize-handle  *ngIf="isSidebarOpen" nzDirection="right"><div class="sidebar-resize"></div></nz-resize-handle>
+    </div>
+    <div class="notebook-area">
+      <div class="extension-area" [ngSwitch]="activatedExtension" *ngIf="activatedExtension!=='hide'">
+        <zeppelin-notebook-interpreter-binding *ngSwitchCase="'interpreter'"
+                                              [noteId]="note.id"
+                                              [(activatedExtension)]="activatedExtension"
+                                              [interpreterBindings]="interpreterBindings"></zeppelin-notebook-interpreter-binding>
+        <zeppelin-notebook-permissions *ngSwitchCase="'permissions'"
+                                      [noteId]="note.id"
+                                      [(activatedExtension)]="activatedExtension"
+                                      [permissions]="permissions"></zeppelin-notebook-permissions>
+        <zeppelin-notebook-revisions-comparator *ngSwitchCase="'revisions'"></zeppelin-notebook-revisions-comparator>
+      </div>
+      <div class="paragraph-area">
+        <zeppelin-note-form-block *ngIf="isShowNoteForms"
+                                  [formDefs]="note.noteForms"
+                                  [paramDefs]="note.noteParams"
+                                  [noteTitle]="note.config?.noteFormTitle"
+                                  (noteFormChange)="onNoteFormChange($event)"
+                                  (noteFormNameRemove)="onFormNameRemove($event)"
+                                  (noteTitleChange)="onNoteTitleChange($event)">
+        </zeppelin-note-form-block>
+        <div class="paragraph-inner" nz-row>
+          <zeppelin-notebook-paragraph nz-col
+                                      *ngFor="let p of note.paragraphs;let first = first; let last = last; index as i"
+                                      [nzSpan]="p.config.colWidth * 2"
+                                      [select]="p.id === selectId"
+                                      [scrolled]="p.id === scrolledId"
+                                      [index]="i"
+                                      [paragraph]="p"
+                                      [note]="note"
+                                      [looknfeel]="note.config.looknfeel"
+                                      [interpreterBindings]="interpreterBindings"
+                                      [collaborativeMode]="collaborativeMode"
+                                      [viewOnly]="viewOnly"
+                                      [revisionView]="revisionView"
+                                      [first]="first"
+                                      [last]="last"
+                                      (selectAtIndex)="onSelectAtIndex($event)"
+                                      (selected)="onParagraphSelect($event)"
+                                      (triggerSaveParagraph)="saveParagraph($event)"
+                                      (saveNoteTimer)="startSaveTimer()"></zeppelin-notebook-paragraph>
+        </div>
+      </div>
     </div>
   </div>
 </div>

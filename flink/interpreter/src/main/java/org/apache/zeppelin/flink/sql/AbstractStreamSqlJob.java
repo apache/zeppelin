@@ -211,7 +211,6 @@ public abstract class AbstractStreamSqlJob {
       try {
         while (isRunning && iterator.hasNext()) {
           final Tuple2<Boolean, Row> change = iterator.next();
-          LOGGER.info(change.f0 + ", " + change.f1);
           processRecord(change);
         }
       } catch (Throwable e) {

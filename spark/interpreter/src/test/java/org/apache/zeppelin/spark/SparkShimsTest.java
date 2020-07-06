@@ -95,7 +95,7 @@ public class SparkShimsTest {
                                            InterpreterContext context) {}
 
             @Override
-            public String showDataFrame(Object obj, int maxResult) {
+            public String showDataFrame(Object obj, int maxResult, InterpreterContext context) {
               return null;
             }
 

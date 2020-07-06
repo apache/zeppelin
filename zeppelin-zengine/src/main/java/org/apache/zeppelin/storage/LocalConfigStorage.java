@@ -17,23 +17,15 @@
 
 package org.apache.zeppelin.storage;
 
-import com.google.common.annotations.VisibleForTesting;
-import org.apache.commons.io.IOUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.InterpreterInfoSaving;
 import org.apache.zeppelin.notebook.NotebookAuthorizationInfoSaving;
+import org.apache.zeppelin.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.FileSystems;
-import java.nio.file.FileSystem;
-import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.EnumSet;
 import java.util.Set;
@@ -59,7 +51,7 @@ public class LocalConfigStorage extends ConfigStorage {
   @Override
   public void save(InterpreterInfoSaving settingInfos) throws IOException {
     LOGGER.info("Save Interpreter Setting to {}", interpreterSettingPath.getAbsolutePath());
-    atomicWriteToFile(settingInfos.toJson(), interpreterSettingPath);
+    FileUtils.atomicWriteToFile(settingInfos.toJson(), interpreterSettingPath);
   }
 
   @Override
@@ -69,14 +61,14 @@ public class LocalConfigStorage extends ConfigStorage {
       return null;
     }
     LOGGER.info("Load Interpreter Setting from file: {}", interpreterSettingPath);
-    String json = readFromFile(interpreterSettingPath);
+    String json = FileUtils.readFromFile(interpreterSettingPath);
     return buildInterpreterInfoSaving(json);
   }
 
   @Override
   public void save(NotebookAuthorizationInfoSaving authorizationInfoSaving) throws IOException {
     LOGGER.info("Save notebook authorization to file: {}", authorizationPath);
-    atomicWriteToFile(authorizationInfoSaving.toJson(), authorizationPath);
+    FileUtils.atomicWriteToFile(authorizationInfoSaving.toJson(), authorizationPath);
   }
 
   @Override
@@ -86,7 +78,7 @@ public class LocalConfigStorage extends ConfigStorage {
       return null;
     }
     LOGGER.info("Load notebook authorization from file: {}", authorizationPath);
-    String json = readFromFile(authorizationPath);
+    String json = FileUtils.readFromFile(authorizationPath);
     return NotebookAuthorizationInfoSaving.fromJson(json);
   }
 
@@ -97,56 +89,13 @@ public class LocalConfigStorage extends ConfigStorage {
       return null;
     }
     LOGGER.info("Load Credential from file: {}", credentialPath);
-    return readFromFile(credentialPath);
+    return FileUtils.readFromFile(credentialPath);
   }
 
   @Override
   public void saveCredentials(String credentials) throws IOException {
     LOGGER.info("Save Credentials to file: {}", credentialPath);
     Set<PosixFilePermission> permissions = EnumSet.of(PosixFilePermission.OWNER_READ, PosixFilePermission.OWNER_WRITE);
-    atomicWriteToFile(credentials, credentialPath, permissions);
+    FileUtils.atomicWriteToFile(credentials, credentialPath, permissions);
   }
-
-  @VisibleForTesting
-  static String readFromFile(File file) throws IOException {
-    try (FileInputStream is = new FileInputStream(file)) {
-      return IOUtils.toString(is);
-    }
-  }
-
-  @VisibleForTesting
-  static void atomicWriteToFile(String content, File file, Set<PosixFilePermission> permissions) throws IOException {
-    FileSystem defaultFileSystem = FileSystems.getDefault();
-    Path destinationFilePath = defaultFileSystem.getPath(file.getCanonicalPath());
-    Path destinationDirectory = destinationFilePath.getParent();
-    Files.createDirectories(destinationDirectory);
-    File tempFile = Files.createTempFile(destinationDirectory, file.getName(), null).toFile();
-    if (permissions != null && !permissions.isEmpty()) {
-      Files.setPosixFilePermissions(tempFile.toPath(), permissions);
-    }
-    try (FileOutputStream out = new FileOutputStream(tempFile)) {
-      IOUtils.write(content, out);
-    } catch (IOException iox) {
-      if (!tempFile.delete()) {
-        tempFile.deleteOnExit();
-      }
-      throw iox;
-    }
-    try {
-      file.getParentFile().mkdirs();
-      Files.move(tempFile.toPath(), destinationFilePath,
-              StandardCopyOption.REPLACE_EXISTING); //StandardCopyOption.ATOMIC_MOVE);
-    } catch (IOException iox) {
-      if (!tempFile.delete()) {
-        tempFile.deleteOnExit();
-      }
-      throw iox;
-    }
-  }
-
-  @VisibleForTesting
-  static void atomicWriteToFile(String content, File file) throws IOException {
-    atomicWriteToFile(content, file, null);
-  }
-
 }

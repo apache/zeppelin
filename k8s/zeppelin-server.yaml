@@ -33,7 +33,7 @@ data:
   ZEPPELIN_HOME: /zeppelin
   ZEPPELIN_SERVER_RPC_PORTRANGE: 12320:12320
   # default value of 'master' property for spark interpreter.
-  MASTER: k8s://https://kubernetes.default.svc
+  SPARK_MASTER: k8s://https://kubernetes.default.svc
   # default value of 'SPARK_HOME' property for spark interpreter.
   SPARK_HOME: /spark
 ---

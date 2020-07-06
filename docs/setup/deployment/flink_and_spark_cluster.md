@@ -394,7 +394,7 @@ Open a web browser and go to the Zeppelin web-ui at http://yourip:8080.
 Now go back to the Zeppelin web-ui at http://`yourip`:8080 and this time click on *anonymous* at the top right, which will open a drop-down menu, select *Interpreters* to enter interpreter configuration.
 
 In the Spark section, click the edit button in the top right corner to make the property values editable (looks like a pencil).
-The only field that needs to be edited in the Spark interpreter is the master field. Change this value from `local[*]` to the URL you used to start the slave, mine was `spark://ubuntu:7077`.
+The only field that needs to be edited in the Spark interpreter is the `spark.master` field. Change this value from `local[*]` to the URL you used to start the slave, mine was `spark://ubuntu:7077`.
 
 Click *Save* to update the parameters, and click *OK* when it asks you about restarting the interpreter.
 

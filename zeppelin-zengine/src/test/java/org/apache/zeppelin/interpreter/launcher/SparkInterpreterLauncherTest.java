@@ -52,7 +52,7 @@ public class SparkInterpreterLauncherTest {
       System.clearProperty(confVar.getVarName());
     }
 
-    sparkHome = DownloadUtils.downloadSpark("2.3.2");
+    sparkHome = DownloadUtils.downloadSpark("2.3.2", "2.7");
     System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HOME.getVarName(),
             new File("..").getAbsolutePath());
 
@@ -91,7 +91,7 @@ public class SparkInterpreterLauncherTest {
     properties.setProperty("SPARK_HOME", sparkHome);
     properties.setProperty("ENV_1", "");
     properties.setProperty("property_1", "value_1");
-    properties.setProperty("master", "local[*]");
+    properties.setProperty("spark.master", "local[*]");
     properties.setProperty("spark.files", "file_1");
     properties.setProperty("spark.jars", "jar_1");
 
@@ -107,7 +107,8 @@ public class SparkInterpreterLauncherTest {
     assertTrue(interpreterProcess.getEnv().size() >= 2);
     assertEquals(sparkHome, interpreterProcess.getEnv().get("SPARK_HOME"));
     assertFalse(interpreterProcess.getEnv().containsKey("ENV_1"));
-    assertEquals(InterpreterLauncher.escapeSpecialCharacter(" --master local[*] --conf spark.files=file_1 --conf spark.jars=jar_1"),
+    assertEquals(InterpreterLauncher.escapeSpecialCharacter(" --conf spark.files=file_1" +
+                    " --conf spark.jars=jar_1 --conf spark.master=local[*]"),
             interpreterProcess.getEnv().get("ZEPPELIN_SPARK_CONF"));
   }
 
@@ -118,7 +119,7 @@ public class SparkInterpreterLauncherTest {
     Properties properties = new Properties();
     properties.setProperty("SPARK_HOME", sparkHome);
     properties.setProperty("property_1", "value_1");
-    properties.setProperty("master", "yarn-client");
+    properties.setProperty("spark.master", "yarn-client");
     properties.setProperty("spark.files", "file_1");
     properties.setProperty("spark.jars", "jar_1");
 
@@ -137,9 +138,9 @@ public class SparkInterpreterLauncherTest {
     String sparkJars = "jar_1";
     String sparkrZip = sparkHome + "/R/lib/sparkr.zip#sparkr";
     String sparkFiles = "file_1";
-    assertEquals(InterpreterLauncher.escapeSpecialCharacter(" --master yarn-client --conf spark.yarn.dist.archives=" + sparkrZip +
+    assertEquals(InterpreterLauncher.escapeSpecialCharacter(" --conf spark.yarn.dist.archives=" + sparkrZip +
                     " --conf spark.files=" + sparkFiles + " --conf spark.jars=" + sparkJars +
-                    " --conf spark.yarn.isPython=true"),
+                    " --conf spark.yarn.isPython=true --conf spark.master=yarn-client"),
             interpreterProcess.getEnv().get("ZEPPELIN_SPARK_CONF"));
   }
 
@@ -150,7 +151,7 @@ public class SparkInterpreterLauncherTest {
     Properties properties = new Properties();
     properties.setProperty("SPARK_HOME", sparkHome);
     properties.setProperty("property_1", "value_1");
-    properties.setProperty("master", "yarn");
+    properties.setProperty("spark.master", "yarn");
     properties.setProperty("spark.submit.deployMode", "client");
     properties.setProperty("spark.files", "file_1");
     properties.setProperty("spark.jars", "jar_1");
@@ -170,10 +171,10 @@ public class SparkInterpreterLauncherTest {
     String sparkJars = "jar_1";
     String sparkrZip = sparkHome + "/R/lib/sparkr.zip#sparkr";
     String sparkFiles = "file_1";
-    assertEquals(InterpreterLauncher.escapeSpecialCharacter(" --master yarn --conf spark.yarn.dist.archives=" + sparkrZip +
+    assertEquals(InterpreterLauncher.escapeSpecialCharacter(" --conf spark.yarn.dist.archives=" + sparkrZip +
                     " --conf spark.files=" + sparkFiles + " --conf spark.jars=" + sparkJars +
                     " --conf spark.submit.deployMode=client" +
-                    " --conf spark.yarn.isPython=true"),
+                    " --conf spark.yarn.isPython=true --conf spark.master=yarn"),
             interpreterProcess.getEnv().get("ZEPPELIN_SPARK_CONF"));
   }
 
@@ -184,7 +185,7 @@ public class SparkInterpreterLauncherTest {
     Properties properties = new Properties();
     properties.setProperty("SPARK_HOME", sparkHome);
     properties.setProperty("property_1", "value_1");
-    properties.setProperty("master", "yarn-cluster");
+    properties.setProperty("spark.master", "yarn-cluster");
     properties.setProperty("spark.files", "file_1");
     properties.setProperty("spark.jars", "jar_1");
 
@@ -206,11 +207,12 @@ public class SparkInterpreterLauncherTest {
             zeppelinHome + "/interpreter/zeppelin-interpreter-shaded-" + Util.getVersion() + ".jar";
     String sparkrZip = sparkHome + "/R/lib/sparkr.zip#sparkr";
     String sparkFiles = "file_1," + zeppelinHome + "/conf/log4j_yarn_cluster.properties";
-    assertEquals(InterpreterLauncher.escapeSpecialCharacter(" --master yarn-cluster --conf spark.yarn.dist.archives=" + sparkrZip +
+    assertEquals(InterpreterLauncher.escapeSpecialCharacter(" --conf spark.yarn.dist.archives=" + sparkrZip +
                     " --conf spark.yarn.maxAppAttempts=1" +
                     " --conf spark.files=" + sparkFiles + " --conf spark.jars=" + sparkJars +
                     " --conf spark.yarn.isPython=true" +
-                    " --conf spark.yarn.submit.waitAppCompletion=false"),
+                    " --conf spark.yarn.submit.waitAppCompletion=false" +
+                    " --conf spark.master=yarn-cluster"),
             interpreterProcess.getEnv().get("ZEPPELIN_SPARK_CONF"));
   }
 
@@ -221,7 +223,7 @@ public class SparkInterpreterLauncherTest {
     Properties properties = new Properties();
     properties.setProperty("SPARK_HOME", sparkHome);
     properties.setProperty("property_1", "value_1");
-    properties.setProperty("master", "yarn");
+    properties.setProperty("spark.master", "yarn");
     properties.setProperty("spark.submit.deployMode", "cluster");
     properties.setProperty("spark.files", "file_1");
     properties.setProperty("spark.jars", "jar_1");
@@ -250,11 +252,12 @@ public class SparkInterpreterLauncherTest {
             zeppelinHome + "/interpreter/zeppelin-interpreter-shaded-" + Util.getVersion() + ".jar";
     String sparkrZip = sparkHome + "/R/lib/sparkr.zip#sparkr";
     String sparkFiles = "file_1," + zeppelinHome + "/conf/log4j_yarn_cluster.properties";
-    assertEquals(InterpreterLauncher.escapeSpecialCharacter(" --master yarn --conf spark.yarn.dist.archives=" + sparkrZip +
+    assertEquals(InterpreterLauncher.escapeSpecialCharacter(" --conf spark.yarn.dist.archives=" + sparkrZip +
             " --conf spark.yarn.maxAppAttempts=1" +
             " --conf spark.files=" + sparkFiles + " --conf spark.jars=" + sparkJars +
             " --conf spark.submit.deployMode=cluster --conf spark.yarn.isPython=true" +
-            " --conf spark.yarn.submit.waitAppCompletion=false --proxy-user user1"),
+            " --conf spark.yarn.submit.waitAppCompletion=false --conf spark.master=yarn" +
+            " --proxy-user user1"),
             interpreterProcess.getEnv().get("ZEPPELIN_SPARK_CONF"));
     Files.deleteIfExists(Paths.get(localRepoPath.toAbsolutePath().toString(), "test.jar"));
     FileUtils.deleteDirectory(localRepoPath.toFile());
@@ -267,7 +270,7 @@ public class SparkInterpreterLauncherTest {
     Properties properties = new Properties();
     properties.setProperty("SPARK_HOME", sparkHome);
     properties.setProperty("property_1", "value_1");
-    properties.setProperty("master", "yarn");
+    properties.setProperty("spark.master", "yarn");
     properties.setProperty("spark.submit.deployMode", "cluster");
     properties.setProperty("spark.files", "{}");
     properties.setProperty("spark.jars", "jar_1");
@@ -296,11 +299,12 @@ public class SparkInterpreterLauncherTest {
     String sparkrZip = sparkHome + "/R/lib/sparkr.zip#sparkr";
     // escape special characters
     String sparkFiles = "{}," + zeppelinHome + "/conf/log4j_yarn_cluster.properties";
-    assertEquals(InterpreterLauncher.escapeSpecialCharacter(" --master yarn --conf spark.yarn.dist.archives=" + sparkrZip +
+    assertEquals(InterpreterLauncher.escapeSpecialCharacter(" --conf spark.yarn.dist.archives=" + sparkrZip +
                     " --conf spark.yarn.maxAppAttempts=1" +
                     " --conf spark.files=" + sparkFiles + " --conf spark.jars=" + sparkJars +
                     " --conf spark.submit.deployMode=cluster --conf spark.yarn.isPython=true" +
-                    " --conf spark.yarn.submit.waitAppCompletion=false --proxy-user user1"),
+                    " --conf spark.yarn.submit.waitAppCompletion=false" +
+                    " --conf spark.master=yarn --proxy-user user1"),
             interpreterProcess.getEnv().get("ZEPPELIN_SPARK_CONF"));
     FileUtils.deleteDirectory(localRepoPath.toFile());
   }

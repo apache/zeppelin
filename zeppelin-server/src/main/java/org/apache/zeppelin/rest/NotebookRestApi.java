@@ -57,7 +57,7 @@ import org.apache.zeppelin.rest.message.CronRequest;
 import org.apache.zeppelin.rest.message.NewNoteRequest;
 import org.apache.zeppelin.rest.message.NewParagraphRequest;
 import org.apache.zeppelin.rest.message.RenameNoteRequest;
-import org.apache.zeppelin.rest.message.RunParagraphWithParametersRequest;
+import org.apache.zeppelin.rest.message.ParametersRequest;
 import org.apache.zeppelin.rest.message.UpdateParagraphRequest;
 import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.server.JsonResponse;
@@ -650,6 +650,9 @@ public class NotebookRestApi extends AbstractRestApi {
    * Run note jobs REST API.
    *
    * @param noteId ID of Note
+   * @param blocking blocking until jobs are done
+   * @param isolated use isolated interpreter for running this note
+   * @param message any parameters passed to note
    * @return JSON with status.OK
    * @throws IOException
    * @throws IllegalArgumentException
@@ -658,23 +661,38 @@ public class NotebookRestApi extends AbstractRestApi {
   @Path("job/{noteId}")
   @ZeppelinApi
   public Response runNoteJobs(@PathParam("noteId") String noteId,
-                              @QueryParam("waitToFinish") Boolean waitToFinish)
+                              @QueryParam("blocking") Boolean blocking,
+                              @QueryParam("isolated") Boolean isolated,
+                              String message)
       throws IOException, IllegalArgumentException {
-    boolean blocking = waitToFinish == null || waitToFinish;
-    LOG.info("run note jobs {} waitToFinish: {}", noteId, blocking);
+    if (blocking == null) {
+      blocking = false;
+    }
+    if (isolated == null) {
+      isolated = false;
+    }
+    Map<String, Object> params = new HashMap<>();
+    if (!StringUtils.isEmpty(message)) {
+      ParametersRequest request =
+              ParametersRequest.fromJson(message);
+      params = request.getParams();
+    }
+
+    LOG.info("Run note jobs, noteId: {}, blocking: {}, isolated: {}, params: {}", noteId, blocking, isolated, params);
     Note note = notebook.getNote(noteId);
     AuthenticationInfo subject = new AuthenticationInfo(authenticationService.getPrincipal());
     subject.setRoles(new LinkedList<>(authenticationService.getAssociatedRoles()));
     checkIfNoteIsNotNull(note);
     checkIfUserCanRun(noteId, "Insufficient privileges you cannot run job for this note");
 
+    //TODO(zjffdu), can we run a note via rest api when cron is enabled ?
     try {
-      note.runAll(subject, blocking);
+      note.runAll(subject, blocking, isolated, params);
+      return new JsonResponse<>(Status.OK).build();
     } catch (Exception ex) {
       LOG.error("Exception from run", ex);
       return new JsonResponse<>(Status.EXPECTATION_FAILED, ex.getMessage()).build();
     }
-    return new JsonResponse<>(Status.OK).build();
   }
 
   /**
@@ -775,8 +793,8 @@ public class NotebookRestApi extends AbstractRestApi {
 
     Map<String, Object> params = new HashMap<>();
     if (!StringUtils.isEmpty(message)) {
-      RunParagraphWithParametersRequest request =
-          RunParagraphWithParametersRequest.fromJson(message);
+      ParametersRequest request =
+          ParametersRequest.fromJson(message);
       params = request.getParams();
     }
     notebookService.runParagraph(noteId, paragraphId, paragraph.getTitle(),
@@ -812,8 +830,8 @@ public class NotebookRestApi extends AbstractRestApi {
 
     Map<String, Object> params = new HashMap<>();
     if (!StringUtils.isEmpty(message)) {
-      RunParagraphWithParametersRequest request =
-          RunParagraphWithParametersRequest.fromJson(message);
+      ParametersRequest request =
+          ParametersRequest.fromJson(message);
       params = request.getParams();
     }
 
@@ -1023,8 +1041,8 @@ public class NotebookRestApi extends AbstractRestApi {
       throws IOException {
     // handle params if presented
     if (!StringUtils.isEmpty(message)) {
-      RunParagraphWithParametersRequest request =
-          RunParagraphWithParametersRequest.fromJson(message);
+      ParametersRequest request =
+          ParametersRequest.fromJson(message);
       Map<String, Object> paramsForUpdating = request.getParams();
       if (paramsForUpdating != null) {
         paragraph.settings.getParams().putAll(paramsForUpdating);
