@@ -81,8 +81,8 @@ public class JobManagerService {
     if (!conf.isJobManagerEnabled()) {
       return new ArrayList<>();
     }
-    List<NoteJobInfo> notesJobInfo = new ArrayList<>();
-    notebook.getNoteStream()
+
+    List<NoteJobInfo> notesJobInfo = notebook.getNoteStream()
             .filter(note -> authorizationService.isOwner(context.getUserAndRoles(), note.getId()))
             .map(note -> new NoteJobInfo(note))
             .filter(noteJobInfo -> noteJobInfo.unixTimeLastRun > lastUpdateServerUnixTime)
