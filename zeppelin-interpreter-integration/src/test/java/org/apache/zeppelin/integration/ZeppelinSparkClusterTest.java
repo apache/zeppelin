@@ -1044,7 +1044,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
       TestUtils.getInstance(Notebook.class).getInterpreterSettingManager().close();
       note2 = TestUtils.getInstance(Notebook.class).createNote("note2", anonymous);
       Paragraph p2 = note2.addNewParagraph(anonymous);
-      p2.setText("%spark.conf spark.jars.packages\tcom.microsoft.ml.spark:mmlspark_2.11:1.0.0-rc1\nspark.jars.repositories\thttps://mmlspark.azureedge.net/maven");
+      p2.setText("%spark.conf spark.jars.packages\tAzure:mmlspark:0.17\nspark.jars.repositories\thttps://mmlspark.azureedge.net/maven");
       note2.run(p2.getId(), true);
       assertEquals(Status.FINISHED, p2.getStatus());
 
