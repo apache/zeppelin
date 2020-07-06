@@ -71,7 +71,7 @@ object ParagraphParser {
 
   val GENERIC_STATEMENT_PREFIX: Regex =
     """(?is)\s*(?:INSERT|UPDATE|DELETE|SELECT|CREATE|ALTER|
-      |DROP|GRANT|REVOKE|TRUNCATE|LIST|USE)\s+""".r
+      |DROP|GRANT|REVOKE|TRUNCATE|LIST|USE|[a-z]\w+)\s+""".r
 
   val VALID_IDENTIFIER = "[a-z][a-z0-9_]*"
 
