@@ -25,12 +25,14 @@ import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.scala.DataSet;
 import org.apache.flink.configuration.ReadableConfig;
 import org.apache.flink.core.execution.JobClient;
+import org.apache.flink.table.api.EnvironmentSettings;
 import org.apache.flink.table.api.StatementSet;
 import org.apache.flink.table.api.Table;
 import org.apache.flink.table.api.TableEnvironment;
 import org.apache.flink.table.api.bridge.java.internal.StreamTableEnvironmentImpl;
 import org.apache.flink.table.api.bridge.scala.BatchTableEnvironment;
 import org.apache.flink.table.api.internal.TableEnvironmentInternal;
+import org.apache.flink.table.api.internal.CatalogTableSchemaResolver;
 import org.apache.flink.table.catalog.CatalogManager;
 import org.apache.flink.table.catalog.GenericInMemoryCatalog;
 import org.apache.flink.table.delegation.Parser;
@@ -365,5 +367,21 @@ public class Flink111Shims extends FlinkShims {
   @Override
   public String sqlHelp() {
     return MESSAGE_HELP.toString();
+  }
+
+  /**
+   * Flink 1.11 bind CatalogManager with parser which make blink and flink could not share the same CatalogManager.
+   * This is a workaround which always reset CatalogTableSchemaResolver before running any flink code.
+   * @param catalogManager
+   * @param parserObject
+   * @param environmentSetting
+   */
+  @Override
+  public void setCatalogManagerSchemaResolver(Object catalogManager,
+                                              Object parserObject,
+                                              Object environmentSetting) {
+    ((CatalogManager) catalogManager).setCatalogTableSchemaResolver(
+            new CatalogTableSchemaResolver((Parser)parserObject,
+                    ((EnvironmentSettings)environmentSetting).isStreamingMode()));
   }
 }

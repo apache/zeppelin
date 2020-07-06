@@ -203,4 +203,11 @@ public class Flink110Shims extends FlinkShims {
   public String sqlHelp() {
     return MESSAGE_HELP.toString();
   }
+
+  @Override
+  public void setCatalogManagerSchemaResolver(Object catalogManager,
+                                              Object parser,
+                                              Object environmentSetting) {
+    // do nothing for flink 1.10
+  }
 }
