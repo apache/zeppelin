@@ -62,6 +62,18 @@
 </property>
 
 <property>
+  <name>zeppelin.interpreter.include</name>
+  <value></value>
+  <description>All the inteprreters that you would like to include. You can only specify either 'zeppelin.interpreter.include' or 'zeppelin.interpreter.exclude'. Specifying them together is not allowed.</description>
+</property>
+
+<property>
+  <name>zeppelin.interpreter.exclude</name>
+  <value></value>
+  <description>All the inteprreters that you would like to exclude. You can only specify either 'zeppelin.interpreter.include' or 'zeppelin.interpreter.exclude'. Specifying them together is not allowed.</description>
+</property>
+
+<property>
   <name>zeppelin.notebook.homescreen</name>
   <value></value>
   <description>id of notebook to be displayed in homescreen. ex) 2A94M5J1Z Empty value displays default home screen</description>
@@ -648,8 +660,14 @@
 <!--
 <property>
   <name>zeppelin.recovery.storage.class</name>
+  <value>org.apache.zeppelin.interpreter.recovery.LocalRecoveryStorage</value>
+  <description>ReoveryStorage implementation based on java native local file system</description>
+</property>
+
+<property>
+  <name>zeppelin.recovery.storage.class</name>
   <value>org.apache.zeppelin.interpreter.recovery.FileSystemRecoveryStorage</value>
-  <description>ReoveryStorage implementation</description>
+  <description>ReoveryStorage implementation based on hadoop FileSystem</description>
 </property>
 -->
 

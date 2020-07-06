@@ -55,6 +55,15 @@ public class ExecutorFactory {
     }
   }
 
+  /**
+   * ThreadPool created for running note via rest api.
+   * TODO(zjffdu) Should use property to configure the thread pool size.
+   * @return
+   */
+  public ExecutorService getNoteJobExecutor() {
+    return createOrGet("NoteJobThread-", 50);
+  }
+
   public void shutdown(String name) {
     synchronized (executors) {
       if (executors.containsKey(name)) {

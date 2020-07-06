@@ -267,7 +267,9 @@ public class ZeppelinServer extends ResourceConfig {
     // Try to get Notebook from ServiceLocator, because Notebook instantiation is lazy, it is
     // created when user open zeppelin in browser if we don't get it explicitly here.
     // Lazy loading will cause paragraph recovery and cron job initialization is delayed.
-    sharedServiceLocator.getService(Notebook.class);
+    Notebook notebook = sharedServiceLocator.getService(Notebook.class);
+    // Try to recover here, don't do it in constructor of Notebook, because it would cause deadlock.
+    notebook.recoveryIfNecessary();
 
     // when zeppelin is started inside of ide (especially for eclipse)
     // for graceful shutdown, input any key in console window

@@ -37,20 +37,17 @@ public class AngularObjectRegistryTest {
         new AngularObjectRegistryListener() {
 
           @Override
-          public void onAdd(String interpreterGroupId, AngularObject object) {
+          public void onAddAngularObject(String interpreterGroupId, AngularObject angularObject) {
             onAdd.incrementAndGet();
           }
 
           @Override
-          public void onUpdate(String interpreterGroupId, AngularObject object) {
+          public void onUpdateAngularObject(String interpreterGroupId, AngularObject angularObject) {
             onUpdate.incrementAndGet();
           }
 
           @Override
-          public void onRemove(String interpreterGroupId,
-                               String name,
-                               String noteId,
-                               String paragraphId) {
+          public void onRemoveAngularObject(String interpreterGroupId, AngularObject angularObject) {
             onRemove.incrementAndGet();
           }
         });

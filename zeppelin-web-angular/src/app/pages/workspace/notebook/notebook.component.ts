@@ -24,6 +24,8 @@ import { isNil } from 'lodash';
 import { Subject } from 'rxjs';
 import { distinctUntilKeyChanged, map, startWith, takeUntil } from 'rxjs/operators';
 
+import { NzResizeEvent } from 'ng-zorro-antd/resizable';
+
 import { MessageListener, MessageListenersManager } from '@zeppelin/core';
 import { Permissions } from '@zeppelin/interfaces';
 import {
@@ -70,6 +72,9 @@ export class NotebookComponent extends MessageListenersManager implements OnInit
   saveTimer = null;
   interpreterBindings: InterpreterBindingItem[] = [];
   activatedExtension: 'interpreter' | 'permissions' | 'revisions' | 'hide' = 'hide';
+  sidebarWidth = 370;
+  sidebarAnimationFrame = -1;
+  isSidebarOpen = false;
 
   @MessageListener(OP.NOTE)
   getNote(data: MessageReceiveDataTypeMap[OP.NOTE]) {
@@ -333,6 +338,17 @@ export class NotebookComponent extends MessageListenersManager implements OnInit
   setNoteFormsStatus() {
     this.isShowNoteForms = this.note && this.note.noteForms && Object.keys(this.note.noteForms).length !== 0;
     this.cdr.markForCheck();
+  }
+
+  onSidebarOpenChange(isSidebarOpen: boolean) {
+    this.isSidebarOpen = isSidebarOpen;
+  }
+
+  onResizeSidebar({ width }: NzResizeEvent): void {
+    cancelAnimationFrame(this.sidebarAnimationFrame);
+    this.sidebarAnimationFrame = requestAnimationFrame(() => {
+      this.sidebarWidth = width!;
+    });
   }
 
   constructor(

@@ -29,6 +29,7 @@ import { NzPopconfirmModule } from 'ng-zorro-antd/popconfirm';
 import { NzPopoverModule } from 'ng-zorro-antd/popover';
 import { NzProgressModule } from 'ng-zorro-antd/progress';
 import { NzRadioModule } from 'ng-zorro-antd/radio';
+import { NzResizableModule } from 'ng-zorro-antd/resizable';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzSwitchModule } from 'ng-zorro-antd/switch';
 import { NzToolTipModule } from 'ng-zorro-antd/tooltip';
@@ -52,6 +53,7 @@ import { NoteFormBlockComponent } from './note-form-block/note-form-block.compon
 import { NotebookRoutingModule } from './notebook-routing.module';
 import { NotebookComponent } from './notebook.component';
 import { NotebookShareModule } from './share/share.module';
+import { NotebookSidebarComponent } from './sidebar/sidebar.component';
 
 @NgModule({
   declarations: [
@@ -66,7 +68,8 @@ import { NotebookShareModule } from './share/share.module';
     NotebookParagraphProgressComponent,
     NotebookParagraphFooterComponent,
     NotebookParagraphControlComponent,
-    NoteFormBlockComponent
+    NoteFormBlockComponent,
+    NotebookSidebarComponent
   ],
   imports: [
     CommonModule,
@@ -94,7 +97,8 @@ import { NotebookShareModule } from './share/share.module';
     NzRadioModule,
     DragDropModule,
     NzCodeEditorModule,
-    NzCheckboxModule
+    NzCheckboxModule,
+    NzResizableModule
   ]
 })
 export class NotebookModule {}

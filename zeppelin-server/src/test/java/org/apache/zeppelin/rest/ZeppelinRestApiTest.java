@@ -45,6 +45,7 @@ import org.junit.runners.MethodSorters;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -125,7 +126,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
       assertEquals(paragraphText, paragraphs.get(0).get("text"));
     } finally {
       if (null != note) {
-        TestUtils.getInstance(Notebook.class).removeNote(note.getId(), anonymous);
+        TestUtils.getInstance(Notebook.class).removeNote(note, anonymous);
       }
     }
   }
@@ -187,7 +188,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
       }
     }
     // cleanup
-    TestUtils.getInstance(Notebook.class).removeNote(newNoteId, anonymous);
+    TestUtils.getInstance(Notebook.class).removeNote(newNote, anonymous);
     post.releaseConnection();
   }
 
@@ -213,7 +214,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     }
     assertEquals("compare note name", noteName, newNoteName);
     // cleanup
-    TestUtils.getInstance(Notebook.class).removeNote(newNoteId, anonymous);
+    TestUtils.getInstance(Notebook.class).removeNote(newNote, anonymous);
     post.releaseConnection();
   }
 
@@ -229,7 +230,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     } finally {
       if (null != note) {
         if (TestUtils.getInstance(Notebook.class).getNote(note.getId()) != null) {
-          TestUtils.getInstance(Notebook.class).removeNote(note.getId(), anonymous);
+          TestUtils.getInstance(Notebook.class).removeNote(note, anonymous);
         }
       }
     }
@@ -272,7 +273,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
       get.releaseConnection();
     } finally {
       if (null != note) {
-        TestUtils.getInstance(Notebook.class).removeNote(note.getId(), anonymous);
+        TestUtils.getInstance(Notebook.class).removeNote(note, anonymous);
       }
     }
   }
@@ -301,7 +302,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
       // get note content as JSON
       oldJson = getNoteContent(sourceNoteId);
       // delete it first then import it
-      TestUtils.getInstance(Notebook.class).removeNote(note.getId(), anonymous);
+      TestUtils.getInstance(Notebook.class).removeNote(note, anonymous);
 
       // call note post
       PostMethod importPost = httpPost("/notebook/import/", oldJson);
@@ -320,12 +321,12 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     } finally {
       if (null != note) {
         if (TestUtils.getInstance(Notebook.class).getNote(note.getId()) != null) {
-          TestUtils.getInstance(Notebook.class).removeNote(note.getId(), anonymous);
+          TestUtils.getInstance(Notebook.class).removeNote(note, anonymous);
         }
       }
       if (null != newNote) {
         if (TestUtils.getInstance(Notebook.class).getNote(newNote.getId()) != null) {
-          TestUtils.getInstance(Notebook.class).removeNote(newNote.getId(), anonymous);
+          TestUtils.getInstance(Notebook.class).removeNote(newNote, anonymous);
         }
       }
     }
@@ -402,10 +403,10 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     } finally {
       //cleanup
       if (null != note) {
-        TestUtils.getInstance(Notebook.class).removeNote(note.getId(), anonymous);
+        TestUtils.getInstance(Notebook.class).removeNote(note, anonymous);
       }
       if (null != newNote) {
-        TestUtils.getInstance(Notebook.class).removeNote(newNote.getId(), anonymous);
+        TestUtils.getInstance(Notebook.class).removeNote(newNote, anonymous);
       }
     }
   }
@@ -447,7 +448,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
       TestUtils.getInstance(Notebook.class).saveNote(note, anonymous);
       String noteId = note.getId();
 
-      note.runAll(anonymous, true);
+      note.runAll(anonymous, true, false, new HashMap<>());
       // wait until job is finished or timeout.
       int timeout = 1;
       while (!paragraph.isTerminated()) {
@@ -459,7 +460,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
       }
 
       // Call Run note jobs REST API
-      PostMethod postNoteJobs = httpPost("/notebook/job/" + noteId, "");
+      PostMethod postNoteJobs = httpPost("/notebook/job/" + noteId + "?blocking=true", "");
       assertThat("test note jobs run:", postNoteJobs, isAllowed());
       postNoteJobs.releaseConnection();
 
@@ -483,7 +484,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     } finally {
       //cleanup
       if (null != note) {
-        TestUtils.getInstance(Notebook.class).removeNote(note.getId(), anonymous);
+        TestUtils.getInstance(Notebook.class).removeNote(note, anonymous);
       }
     }
   }
@@ -509,7 +510,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
       TestUtils.getInstance(Notebook.class).saveNote(note, anonymous);
       String noteId = note.getId();
 
-      note.runAll(anonymous, true);
+      note.runAll(anonymous, true, false, new HashMap<>());
       // assume that status of the paragraph is running
       GetMethod get = httpGet("/notebook/job/" + noteId);
       assertThat("test get note job: ", get, isAllowed());
@@ -538,7 +539,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     } finally {
       //cleanup
       if (null != note) {
-        TestUtils.getInstance(Notebook.class).removeNote(note.getId(), anonymous);
+        TestUtils.getInstance(Notebook.class).removeNote(note, anonymous);
       }
     }
   }
@@ -563,7 +564,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
       TestUtils.getInstance(Notebook.class).saveNote(note, anonymous);
       String noteId = note.getId();
 
-      note.runAll(anonymous, true);
+      note.runAll(anonymous, true, false, new HashMap<>());
 
       // Call Run paragraph REST API
       PostMethod postParagraph = httpPost("/notebook/job/" + noteId + "/" + paragraph.getId(),
@@ -580,7 +581,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     } finally {
       //cleanup
       if (null != note) {
-        TestUtils.getInstance(Notebook.class).removeNote(note.getId(), anonymous);
+        TestUtils.getInstance(Notebook.class).removeNote(note, anonymous);
       }
     }
   }
@@ -601,7 +602,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
       config.put("enabled", true);
       paragraph.setConfig(config);
 
-      note.runAll(AuthenticationInfo.ANONYMOUS, false);
+      note.runAll(AuthenticationInfo.ANONYMOUS, false, false, new HashMap<>());
 
       String jsonRequest = "{\"cron\":\"* * * * * ?\" }";
       // right cron expression but not exist note.
@@ -629,7 +630,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     } finally {
       //cleanup
       if (null != note) {
-        TestUtils.getInstance(Notebook.class).removeNote(note.getId(), anonymous);
+        TestUtils.getInstance(Notebook.class).removeNote(note, anonymous);
       }
       System.clearProperty(ConfVars.ZEPPELIN_NOTEBOOK_CRON_ENABLE.getVarName());
     }
@@ -651,7 +652,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
       config.put("enabled", true);
       paragraph.setConfig(config);
 
-      note.runAll(AuthenticationInfo.ANONYMOUS, false);
+      note.runAll(AuthenticationInfo.ANONYMOUS, false, false, new HashMap<>());
 
       String jsonRequest = "{\"cron\":\"* * * * * ?\" }";
       // right cron expression.
@@ -663,7 +664,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
       System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_CRON_FOLDERS.getVarName(), "/System");
 
       note.setName("System/test2");
-      note.runAll(AuthenticationInfo.ANONYMOUS, false);
+      note.runAll(AuthenticationInfo.ANONYMOUS, false, false, new HashMap<>());
       postCron = httpPost("/notebook/cron/" + note.getId(), jsonRequest);
       assertThat("", postCron, isAllowed());
       postCron.releaseConnection();
@@ -679,7 +680,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     } finally {
       //cleanup
       if (null != note) {
-        TestUtils.getInstance(Notebook.class).removeNote(note.getId(), anonymous);
+        TestUtils.getInstance(Notebook.class).removeNote(note, anonymous);
       }
       System.clearProperty(ConfVars.ZEPPELIN_NOTEBOOK_CRON_ENABLE.getVarName());
     }
@@ -708,7 +709,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     } finally {
       //cleanup
       if (null != note) {
-        TestUtils.getInstance(Notebook.class).removeNote(note.getId(), anonymous);
+        TestUtils.getInstance(Notebook.class).removeNote(note, anonymous);
       }
     }
   }
@@ -772,7 +773,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     } finally {
       //cleanup
       if (null != note) {
-        TestUtils.getInstance(Notebook.class).removeNote(note.getId(), anonymous);
+        TestUtils.getInstance(Notebook.class).removeNote(note, anonymous);
       }
     }
   }
@@ -821,7 +822,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     } finally {
       //cleanup
       if (null != note) {
-        TestUtils.getInstance(Notebook.class).removeNote(note.getId(), anonymous);
+        TestUtils.getInstance(Notebook.class).removeNote(note, anonymous);
       }
     }
   }
@@ -856,7 +857,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     } finally {
       //cleanup
       if (null != note) {
-        TestUtils.getInstance(Notebook.class).removeNote(note.getId(), anonymous);
+        TestUtils.getInstance(Notebook.class).removeNote(note, anonymous);
       }
     }
   }
@@ -896,7 +897,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     } finally {
       //cleanup
       if (null != note) {
-        TestUtils.getInstance(Notebook.class).removeNote(note.getId(), anonymous);
+        TestUtils.getInstance(Notebook.class).removeNote(note, anonymous);
       }
     }
   }
@@ -923,7 +924,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     } finally {
       //cleanup
       if (null != note) {
-        TestUtils.getInstance(Notebook.class).removeNote(note.getId(), anonymous);
+        TestUtils.getInstance(Notebook.class).removeNote(note, anonymous);
       }
     }
   }
@@ -959,7 +960,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     } finally {
       //cleanup
       if (null != note) {
-        TestUtils.getInstance(Notebook.class).removeNote(note.getId(), anonymous);
+        TestUtils.getInstance(Notebook.class).removeNote(note, anonymous);
       }
     }
   }

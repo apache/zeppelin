@@ -24,7 +24,7 @@ import org.apache.hadoop.yarn.api.protocolrecords.GetApplicationsResponse;
 import org.apache.hadoop.yarn.api.records.YarnApplicationState;
 import org.apache.hadoop.yarn.exceptions.YarnException;
 import org.apache.zeppelin.dep.Dependency;
-import org.apache.zeppelin.interpreter.ExecutionContext;
+import org.apache.zeppelin.interpreter.ExecutionContextBuilder;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
@@ -85,7 +85,7 @@ public class YarnInterpreterLauncherIntegrationTest {
     shellInterpreterSetting.setProperty("zeppelin.interpreter.launcher", "yarn");
     shellInterpreterSetting.setProperty("HADOOP_CONF_DIR", hadoopCluster.getConfigPath());
 
-    Interpreter shellInterpreter = interpreterFactory.getInterpreter("sh", new ExecutionContext("user1", "note1", "sh"));
+    Interpreter shellInterpreter = interpreterFactory.getInterpreter("sh", new ExecutionContextBuilder().setUser("user1").setNoteId("note1").setDefaultInterpreterGroup("sh").createExecutionContext());
 
     InterpreterContext context = new InterpreterContext.Builder().setNoteId("note1").setParagraphId("paragraph_1").build();
     InterpreterResult interpreterResult = shellInterpreter.interpret("pwd", context);
@@ -121,7 +121,7 @@ public class YarnInterpreterLauncherIntegrationTest {
     pythonInterpreterSetting.setProperty("zeppelin.interpreter.yarn.resource.memory", "512");
     pythonInterpreterSetting.setProperty("HADOOP_CONF_DIR", hadoopCluster.getConfigPath());
 
-    Interpreter jdbcInterpreter = interpreterFactory.getInterpreter("jdbc", new ExecutionContext("user1", "note1", "test"));
+    Interpreter jdbcInterpreter = interpreterFactory.getInterpreter("jdbc", new ExecutionContextBuilder().setUser("user1").setNoteId("note1").setDefaultInterpreterGroup("test").createExecutionContext());
     assertNotNull("JdbcInterpreter is null", jdbcInterpreter);
 
     InterpreterContext context = new InterpreterContext.Builder()
@@ -140,7 +140,7 @@ public class YarnInterpreterLauncherIntegrationTest {
     assertEquals("c1\tc2\n1\t2\n", interpreterResult.message().get(0).getData());
 
     // read table_1 from python interpreter
-    Interpreter pythonInterpreter = interpreterFactory.getInterpreter("python", new ExecutionContext("user1", "note1", "test"));
+    Interpreter pythonInterpreter = interpreterFactory.getInterpreter("python", new ExecutionContextBuilder().setUser("user1").setNoteId("note1").setDefaultInterpreterGroup("test").createExecutionContext());
     assertNotNull("PythonInterpreter is null", pythonInterpreter);
 
     context = new InterpreterContext.Builder()

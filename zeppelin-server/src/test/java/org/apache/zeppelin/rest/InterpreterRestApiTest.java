@@ -337,7 +337,7 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
               getSimulatedMarkdownResult("markdown restarted"));
     } finally {
       if (null != note) {
-        TestUtils.getInstance(Notebook.class).removeNote(note.getId(), anonymous);
+        TestUtils.getInstance(Notebook.class).removeNote(note, anonymous);
       }
     }
   }
@@ -394,7 +394,7 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
 
     } finally {
       if (null != note) {
-        TestUtils.getInstance(Notebook.class).removeNote(note.getId(), anonymous);
+        TestUtils.getInstance(Notebook.class).removeNote(note, anonymous);
       }
     }
   }

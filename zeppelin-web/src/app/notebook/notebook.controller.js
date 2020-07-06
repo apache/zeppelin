@@ -54,6 +54,15 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
     return moment.unix(date).format('MMMM Do YYYY, h:mm a');
   };
 
+  // reorder this array without Head revision, put Head revision in the first
+  $scope.revisionSort = function(array) {
+    let orderArr = array.slice(1).sort((a, b) => {
+      return b.time-a.time;
+    });
+    orderArr.unshift(array[0]);
+    return orderArr;
+  };
+
   $scope.interpreterSettings = [];
   $scope.interpreterBindings = [];
   $scope.isNoteDirty = null;
@@ -332,6 +341,7 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
         $scope.noteRevisions.splice(0, 0, {
           id: 'Head',
           message: 'Head',
+          time: $scope.noteRevisions[0].time,
         });
       }
       if ($routeParams.revisionId) {

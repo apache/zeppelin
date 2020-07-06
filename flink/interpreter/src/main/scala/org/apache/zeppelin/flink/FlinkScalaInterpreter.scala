@@ -102,6 +102,7 @@ class FlinkScalaInterpreter(val properties: Properties) {
   private var flinkVersion: FlinkVersion = _
   private var flinkShims: FlinkShims = _
   private var jmWebUrl: String = _
+  private var replacedJMWebUrl: String = _
   private var jobManager: JobManager = _
   private var defaultParallelism = 1
   private var defaultSqlParallelism = 1
@@ -120,7 +121,7 @@ class FlinkScalaInterpreter(val properties: Properties) {
     modifiers.add("@transient")
     this.bind("z", z.getClass().getCanonicalName(), z, modifiers);
 
-    this.jobManager = new JobManager(this.z, jmWebUrl)
+    this.jobManager = new JobManager(this.z, jmWebUrl, replacedJMWebUrl)
 
     // register JobListener
     val jobListener = new FlinkJobListener()
@@ -145,11 +146,11 @@ class FlinkScalaInterpreter(val properties: Properties) {
   }
 
   private def initFlinkConfig(): Config = {
-    val flinkHome = properties.getProperty("FLINK_HOME", sys.env.getOrElse("FLINK_HOME", ""))
-    val flinkConfDir = properties.getProperty("FLINK_CONF_DIR", sys.env.getOrElse("FLINK_CONF_DIR", ""))
-    val hadoopConfDir = properties.getProperty("HADOOP_CONF_DIR", sys.env.getOrElse("HADOOP_CONF_DIR", ""))
-    val yarnConfDir = properties.getProperty("YARN_CONF_DIR", sys.env.getOrElse("YARN_CONF_DIR", ""))
-    val hiveConfDir = properties.getProperty("HIVE_CONF_DIR", sys.env.getOrElse("HIVE_CONF_DIR", ""))
+    val flinkHome = sys.env.getOrElse("FLINK_HOME", "")
+    val flinkConfDir = sys.env.getOrElse("FLINK_CONF_DIR", "")
+    val hadoopConfDir = sys.env.getOrElse("HADOOP_CONF_DIR", "")
+    val yarnConfDir = sys.env.getOrElse("YARN_CONF_DIR", "")
+    val hiveConfDir = sys.env.getOrElse("HIVE_CONF_DIR", "")
     LOGGER.info("FLINK_HOME: " + flinkHome)
     LOGGER.info("FLINK_CONF_DIR: " + flinkConfDir)
     LOGGER.info("HADOOP_CONF_DIR: " + hadoopConfDir)
@@ -268,7 +269,7 @@ class FlinkScalaInterpreter(val properties: Properties) {
               // for some cloud vender, the yarn address may be mapped to some other address.
               val yarnAddress = properties.getProperty("flink.webui.yarn.address")
               if (!StringUtils.isBlank(yarnAddress)) {
-                this.jmWebUrl = replaceYarnAddress(this.jmWebUrl, yarnAddress)
+                this.replacedJMWebUrl = replaceYarnAddress(this.jmWebUrl, yarnAddress)
               }
             } else {
               this.jmWebUrl = clusterClient.getWebInterfaceURL
@@ -647,6 +648,18 @@ class FlinkScalaInterpreter(val properties: Properties) {
 
   def setSavePointIfNecessary(context: InterpreterContext): Unit = {
     val savepointDir = context.getLocalProperties.get("savepointDir")
+    val savepointPath = context.getLocalProperties.get("savepointPath");
+
+    if (!StringUtils.isBlank(savepointPath)){
+      LOGGER.info("savepointPath has been setup by user , savepointPath = {}", savepointPath)
+      configuration.setString("execution.savepoint.path", savepointPath)
+      return
+    } else if ("".equals(savepointPath)) {
+      LOGGER.info("savepointPath is empty, remove execution.savepoint.path")
+      configuration.removeConfig(SavepointConfigOptions.SAVEPOINT_PATH);
+      return;
+    }
+
     if (!StringUtils.isBlank(savepointDir)) {
       val savepointPath = z.angular(context.getParagraphId + "_savepointpath", context.getNoteId, null)
       if (savepointPath == null) {
@@ -657,9 +670,6 @@ class FlinkScalaInterpreter(val properties: Properties) {
         LOGGER.info("Set savepointPath to: " + savepointPath.toString)
         configuration.setString("execution.savepoint.path", savepointPath.toString)
       }
-    } else {
-      // remove the SAVEPOINT_PATH which may be set by last job.
-      configuration.removeConfig(SavepointConfigOptions.SAVEPOINT_PATH)
     }
   }
 
