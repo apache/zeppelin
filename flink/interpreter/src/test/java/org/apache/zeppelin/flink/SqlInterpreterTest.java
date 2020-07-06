@@ -369,52 +369,127 @@ public abstract class SqlInterpreterTest {
   }
 
 
-@Test
-public void testFunction() throws IOException, InterpreterException {
+  @Test
+  public void testFunction() throws IOException, InterpreterException {
 
-    InterpreterContext context = getInterpreterContext();
+    FlinkVersion flinkVersion = flinkInterpreter.getFlinkVersion();
+    if(!flinkVersion.isFlink110()){
+      InterpreterContext context = getInterpreterContext();
 
-    // CREATE UDF
-    InterpreterResult result = sqlInterpreter.interpret(
-            "CREATE FUNCTION myudf AS 'org.apache.zeppelin.flink.JavaUpper' ;", context);
-    assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
-    List<InterpreterResultMessage> resultMessages = context.out.toInterpreterResultMessage();
-    assertTrue(resultMessages.toString(),resultMessages.get(0).getData().contains("Function has been created."));
+      // CREATE UDF
+      InterpreterResult result = sqlInterpreter.interpret(
+              "CREATE FUNCTION myudf AS 'org.apache.zeppelin.flink.JavaUpper' ;", context);
+      assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
+      List<InterpreterResultMessage> resultMessages = context.out.toInterpreterResultMessage();
+      assertTrue(resultMessages.toString(),resultMessages.get(0).getData().contains("Function has been created."));
 
-    // SHOW UDF
-    result = sqlInterpreter.interpret(
-            "SHOW FUNCTIONS ;", context);
-    assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
-    resultMessages = context.out.toInterpreterResultMessage();
-    assertTrue(resultMessages.toString(),resultMessages.get(1).getData().contains("myudf"));
-
-
-    // ALTER
-    context = getInterpreterContext();
-    result = sqlInterpreter.interpret(
-            "ALTER FUNCTION myUDF AS 'org.apache.zeppelin.flink.JavaLower' ; ", context);
-    assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
-    resultMessages = context.out.toInterpreterResultMessage();
-    assertTrue(resultMessages.toString(),resultMessages.get(0).getData().contains("Function has been modified."));
+      // SHOW UDF
+      context = getInterpreterContext();
+      result = sqlInterpreter.interpret(
+              "SHOW FUNCTIONS ;", context);
+      assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
+      resultMessages = context.out.toInterpreterResultMessage();
+      assertTrue(resultMessages.toString(),resultMessages.get(0).getData().contains("myudf"));
 
 
-    // DROP UDF
-    context = getInterpreterContext();
-    result = sqlInterpreter.interpret("DROP FUNCTION myudf ;", context);
-    assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
-    resultMessages = context.out.toInterpreterResultMessage();
-    assertTrue(resultMessages.toString(),resultMessages.get(0).getData().contains("Function has been dropped."));
+      // ALTER
+      context = getInterpreterContext();
+      result = sqlInterpreter.interpret(
+              "ALTER FUNCTION myUDF AS 'org.apache.zeppelin.flink.JavaLower' ; ", context);
+      assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
+      resultMessages = context.out.toInterpreterResultMessage();
+      assertTrue(resultMessages.toString(),resultMessages.get(0).getData().contains("Function has been modified."));
 
 
-    // SHOW UDF. Due to drop UDF before, it shouldn't contain 'myudf'
-    result = sqlInterpreter.interpret(
-            "SHOW FUNCTIONS ;", context);
-    assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
-    resultMessages = context.out.toInterpreterResultMessage();
-    assertFalse(resultMessages.toString(),resultMessages.get(0).getData().contains("myudf"));
+      // DROP UDF
+      context = getInterpreterContext();
+      result = sqlInterpreter.interpret("DROP FUNCTION myudf ;", context);
+      assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
+      resultMessages = context.out.toInterpreterResultMessage();
+      assertTrue(resultMessages.toString(),resultMessages.get(0).getData().contains("Function has been dropped."));
 
 
+      // SHOW UDF. Due to drop UDF before, it shouldn't contain 'myudf'
+      result = sqlInterpreter.interpret(
+              "SHOW FUNCTIONS ;", context);
+      assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
+      resultMessages = context.out.toInterpreterResultMessage();
+      assertFalse(resultMessages.toString(), resultMessages.get(0).getData().contains("myudf"));
+    } else {
+      // Flink1.10 don't support ddl for function
+      assertTrue(flinkVersion.isFlink110());
     }
+
+  }
+
+  @Test
+  public void testCatelog() throws IOException, InterpreterException{
+    FlinkVersion flinkVersion = flinkInterpreter.getFlinkVersion();
+
+    if (!flinkVersion.isFlink110()){
+      InterpreterContext context = getInterpreterContext();
+
+      // CREATE CATALOG
+      InterpreterResult result = sqlInterpreter.interpret(
+              "CREATE CATALOG test_catalog \n" +
+                      "WITH( \n" +
+                      "'type'='generic_in_memory' \n" +
+                      ");", context);
+      assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
+      List<InterpreterResultMessage> resultMessages = context.out.toInterpreterResultMessage();
+      assertTrue(resultMessages.toString(),resultMessages.get(0).getData().contains("Catalog has been created."));
+
+      // USE CATALOG & SHOW DATABASES;
+      context = getInterpreterContext();
+      result = sqlInterpreter.interpret(
+              "USE CATALOG test_catalog ;\n" +
+                      "SHOW DATABASES;", context);
+      assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
+      resultMessages = context.out.toInterpreterResultMessage();
+      assertTrue(resultMessages.toString(),resultMessages.get(0).getData().contains("default"));
+
+      // DROP CATALOG
+      context = getInterpreterContext();
+      result = sqlInterpreter.interpret(
+              "DROP CATALOG test_catalog ;\n", context);
+      assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
+      resultMessages = context.out.toInterpreterResultMessage();
+      assertTrue(resultMessages.toString(),resultMessages.get(0).getData().contains("Catalog has been dropped."));
+
+      // SHOW CATALOG. Due to drop CATALOG before, it shouldn't contain 'test_catalog'
+      context = getInterpreterContext();
+      result = sqlInterpreter.interpret(
+              "SHOW CATALOGS ;\n", context);
+      assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
+      resultMessages = context.out.toInterpreterResultMessage();
+      assertTrue(resultMessages.toString(),resultMessages.get(0).getData().contains("default_catalog"));
+      assertFalse(resultMessages.toString(),resultMessages.get(0).getData().contains("test_catalog"));
+    } else {
+      // Flink1.10 don't support ddl for catalog
+      assertTrue(flinkVersion.isFlink110());
+    }
+
+  }
+
+  @Test
+  public void testShowModules() throws InterpreterException, IOException {
+    FlinkVersion flinkVersion = flinkInterpreter.getFlinkVersion();
+
+    if (!flinkVersion.isFlink110()) {
+      InterpreterContext context = getInterpreterContext();
+
+      // CREATE CATALOG
+      InterpreterResult result = sqlInterpreter.interpret(
+              "show modules", context);
+      assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
+      List<InterpreterResultMessage> resultMessages = context.out.toInterpreterResultMessage();
+      assertTrue(resultMessages.toString(), resultMessages.get(0).getData().contains("core"));
+    } else {
+      // Flink1.10 don't support show modules
+      assertTrue(flinkVersion.isFlink110());
+    }
+  }
+
 
   protected InterpreterContext getInterpreterContext() {
     InterpreterContext context = InterpreterContext.builder()
