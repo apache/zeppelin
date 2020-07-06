@@ -1026,7 +1026,6 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
   @Test
   public void testConfInterpreter() throws IOException {
     Note note = null;
-    Note note2 = null;
     try {
       TestUtils.getInstance(Notebook.class).getInterpreterSettingManager().close();
       note = TestUtils.getInstance(Notebook.class).createNote("note1", anonymous);
@@ -1040,31 +1039,22 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
       note.run(p1.getId(), true);
       assertEquals(Status.FINISHED, p1.getStatus());
 
-      // test pyspark imports
-      TestUtils.getInstance(Notebook.class).getInterpreterSettingManager().close();
-      note2 = TestUtils.getInstance(Notebook.class).createNote("note2", anonymous);
-      Paragraph p2 = note2.addNewParagraph(anonymous);
-      p2.setText("%spark.conf spark.jars.packages\tAzure:mmlspark:0.17\nspark.jars.repositories\thttps://mmlspark.azureedge.net/maven");
-      note2.run(p2.getId(), true);
+      // test pyspark imports path
+      Paragraph p2 = note.addNewParagraph(anonymous);
+      p2.setText("%spark.pyspark\nimport sys\nsys.path");
+      note.run(p2.getId(), true);
       assertEquals(Status.FINISHED, p2.getStatus());
+      assertTrue(p2.getReturn().toString().contains("databricks_spark"));
 
-      Paragraph p3 = note2.addNewParagraph(anonymous);
-      p3.setText("%spark.pyspark\nimport mmlspark");
-      note2.run(p3.getId(), true);
+      Paragraph p3 = note.addNewParagraph(anonymous);
+      p3.setText("%spark.ipyspark\nimport sys\nsys.path");
+      note.run(p3.getId(), true);
       assertEquals(Status.FINISHED, p3.getStatus());
-
-
-      Paragraph p4 = note2.addNewParagraph(anonymous);
-      p4.setText("%spark.ipyspark\nimport mmlspark");
-      note2.run(p4.getId(), true);
-      assertEquals(Status.FINISHED, p4.getStatus());
+      assertTrue(p3.getReturn().toString().contains("databricks_spark"));
 
     } finally {
       if (null != note) {
         TestUtils.getInstance(Notebook.class).removeNote(note, anonymous);
-      }
-      if (null != note2) {
-        TestUtils.getInstance(Notebook.class).removeNote(note2, anonymous);
       }
     }
   }
