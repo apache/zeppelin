@@ -180,9 +180,6 @@ public class Flink110Shims extends FlinkShims {
   public Optional<SqlCommandParser.SqlCommandCall> parseSql(Object tableEnv, String stmt) {
     // parse
     for (SqlCommandParser.SqlCommand cmd : SqlCommandParser.SqlCommand.values()) {
-      if(cmd.pattern == null){
-        continue;
-      }
       final Matcher matcher = cmd.pattern.matcher(stmt);
       if (matcher.matches()) {
         final String[] groups = new String[matcher.groupCount()];
@@ -205,5 +202,12 @@ public class Flink110Shims extends FlinkShims {
   @Override
   public String sqlHelp() {
     return MESSAGE_HELP.toString();
+  }
+
+  @Override
+  public void setCatalogManagerSchemaResolver(Object catalogManager,
+                                              Object parser,
+                                              Object environmentSetting) {
+    // do nothing for flink 1.10
   }
 }

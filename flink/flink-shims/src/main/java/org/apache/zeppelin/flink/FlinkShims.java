@@ -126,4 +126,9 @@ public abstract class FlinkShims {
   public abstract void executeSql(Object tableEnv, String sql);
 
   public abstract String sqlHelp();
+
+  public abstract void setCatalogManagerSchemaResolver(Object catalogManager,
+                                                       Object parser,
+                                                       Object environmentSetting);
+
 }
