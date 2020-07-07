@@ -40,13 +40,17 @@ if [[ -n "$PYTHON" ]] ; then
   else
     pip install -q pycodestyle==2.5.0
     pip install -q numpy==1.17.3 pandas==0.25.0 scipy==1.3.1 grpcio==1.19.0 bkzep==0.6.1 hvplot==0.5.2 protobuf==3.10.0 \
-    pandasql==0.7.3 ipython==7.8.0 matplotlib==3.0.3 ipykernel==5.1.2 jupyter_client==5.3.4 bokeh==1.3.4 panel==0.6.0 holoviews==1.12.3 pycodestyle==2.5.0 apache_beam==2.15.0
+    pandasql==0.7.3 ipython==7.8.0 matplotlib==3.0.3 ipykernel==5.1.2 jupyter_client==5.3.4 bokeh==1.3.4 panel==0.6.0 holoviews==1.12.3 pycodestyle==2.5.0
   fi
 
   if [[ -n "$TENSORFLOW" ]] ; then
     check_results=$(conda search -c conda-forge tensorflow)
     echo "search tensorflow = $check_results"
-    pip install "tensorflow==${TENSORFLOW}"
+    pip install -q "tensorflow==${TENSORFLOW}"
+  fi
+
+  if [[ -n "${FLINK}" ]]; then
+    pip install -q "apache-flink==${FLINK}"
   fi
 fi
 
