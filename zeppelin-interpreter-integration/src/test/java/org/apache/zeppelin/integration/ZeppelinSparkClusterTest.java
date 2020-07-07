@@ -1038,6 +1038,20 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
       p1.setText("%spark\nimport com.databricks.spark.csv._");
       note.run(p1.getId(), true);
       assertEquals(Status.FINISHED, p1.getStatus());
+
+      // test pyspark imports path
+      Paragraph p2 = note.addNewParagraph(anonymous);
+      p2.setText("%spark.pyspark\nimport sys\nsys.path");
+      note.run(p2.getId(), true);
+      assertEquals(Status.FINISHED, p2.getStatus());
+      assertTrue(p2.getReturn().toString().contains("databricks_spark"));
+
+      Paragraph p3 = note.addNewParagraph(anonymous);
+      p3.setText("%spark.ipyspark\nimport sys\nsys.path");
+      note.run(p3.getId(), true);
+      assertEquals(Status.FINISHED, p3.getStatus());
+      assertTrue(p3.getReturn().toString().contains("databricks_spark"));
+
     } finally {
       if (null != note) {
         TestUtils.getInstance(Notebook.class).removeNote(note, anonymous);
