@@ -50,7 +50,7 @@ import static org.junit.Assert.assertTrue;
 
 @RunWith(value = Parameterized.class)
 public class FlinkIntegrationTest {
-  private static Logger LOGGER = LoggerFactory.getLogger(SparkIntegrationTest.class);
+  private static Logger LOGGER = LoggerFactory.getLogger(FlinkIntegrationTest.class);
 
   private static MiniHadoopCluster hadoopCluster;
   private static MiniZeppelin zeppelin;
@@ -65,13 +65,14 @@ public class FlinkIntegrationTest {
     LOGGER.info("Testing FlinkVersion: " + flinkVersion);
     this.flinkVersion = flinkVersion;
     this.flinkHome = DownloadUtils.downloadFlink(flinkVersion);
-    this.hadoopHome = DownloadUtils.downloadHadoop("2.7.3");
+    this.hadoopHome = DownloadUtils.downloadHadoop("2.7.7");
   }
 
   @Parameterized.Parameters
   public static List<Object[]> data() {
     return Arrays.asList(new Object[][]{
-        {"1.9.0"}
+        {"1.10.1"},
+        {"1.11.0"}
     });
   }
 
@@ -110,6 +111,9 @@ public class FlinkIntegrationTest {
     interpreterResult = flinkInterpreter.interpret("val data = benv.fromElements(1, 2, 3)\ndata.collect()", context);
     assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
     assertTrue(interpreterResult.message().get(0).getData().contains("1, 2, 3"));
+
+    interpreterResult = flinkInterpreter.interpret("val data = senv.fromElements(1, 2, 3)\ndata.print()", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
   }
 
   @Test
@@ -117,6 +121,7 @@ public class FlinkIntegrationTest {
     InterpreterSetting flinkInterpreterSetting = interpreterSettingManager.getInterpreterSettingByName("flink");
     flinkInterpreterSetting.setProperty("FLINK_HOME", flinkHome);
     flinkInterpreterSetting.setProperty("ZEPPELIN_CONF_DIR", zeppelin.getZeppelinConfDir().getAbsolutePath());
+    flinkInterpreterSetting.setProperty("flink.execution.mode", "local");
 
     testInterpreterBasics();
 
