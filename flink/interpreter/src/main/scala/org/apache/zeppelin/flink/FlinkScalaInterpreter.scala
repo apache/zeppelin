@@ -24,12 +24,10 @@ import java.nio.file.Files
 import java.util.Properties
 import java.util.concurrent.TimeUnit
 import java.util.jar.JarFile
-import java.util.regex.Pattern
 
 import org.apache.commons.lang3.StringUtils
 import org.apache.commons.lang3.exception.ExceptionUtils
 import org.apache.flink.api.common.JobExecutionResult
-import org.apache.flink.api.scala.FlinkShell.{ExecutionMode, _}
 import org.apache.flink.api.scala.{ExecutionEnvironment, FlinkILoop}
 import org.apache.flink.client.program.ClusterClient
 import org.apache.flink.configuration._
@@ -48,8 +46,8 @@ import org.apache.flink.table.functions.{AggregateFunction, ScalarFunction, Tabl
 import org.apache.flink.table.module.ModuleManager
 import org.apache.flink.table.module.hive.HiveModule
 import org.apache.flink.yarn.cli.FlinkYarnSessionCli
-import org.apache.flink.yarn.executors.YarnSessionClusterExecutor
 import org.apache.zeppelin.flink.util.DependencyUtils
+import org.apache.zeppelin.flink.FlinkShell._
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion
 import org.apache.zeppelin.interpreter.util.InterpreterOutputStream
 import org.apache.zeppelin.interpreter.{InterpreterContext, InterpreterException, InterpreterHookRegistry, InterpreterResult}
@@ -226,10 +224,6 @@ class FlinkScalaInterpreter(val properties: Properties) {
         .copy(port = Some(Integer.parseInt(port)))
     }
 
-    if (config.executionMode == ExecutionMode.YARN) {
-      // workaround for FLINK-17788, otherwise it won't work with flink 1.10.1 which has been released.
-      configuration.set(DeploymentOptions.TARGET, YarnSessionClusterExecutor.NAME)
-    }
     config
   }
 
@@ -254,7 +248,7 @@ class FlinkScalaInterpreter(val properties: Properties) {
         }
       }
 
-      val (effectiveConfig, cluster) = fetchConnectionInfo(config, configuration)
+      val (effectiveConfig, cluster) = fetchConnectionInfo(config, configuration, flinkShims)
       this.configuration = effectiveConfig
       cluster match {
         case Some(clusterClient) =>
