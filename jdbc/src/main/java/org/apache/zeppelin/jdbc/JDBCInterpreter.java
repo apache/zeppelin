@@ -425,7 +425,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
     boolean testOnCreate = "true".equalsIgnoreCase(properties.getProperty("testOnCreate"));
     boolean testOnReturn = "true".equalsIgnoreCase(properties.getProperty("testOnReturn"));
     boolean testWhileIdle = "true".equalsIgnoreCase(properties.getProperty("testWhileIdle"));
-    long betweenEvictionRunsMillis = PropertiesUtil.getLong(properties, "betweenEvictionRunsMillis", -1L);
+    long timeBetweenEvictionRunsMillis = PropertiesUtil.getLong(properties, "timeBetweenEvictionRunsMillis", -1L);
     long maxWaitMillis = PropertiesUtil.getLong(properties, "maxWaitMillis", -1L);
     int maxIdle = PropertiesUtil.getInt(properties, "maxIdle", 8);
     int minIdle = PropertiesUtil.getInt(properties, "minIdle", 0);
@@ -435,7 +435,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
     connectionPool.setTestOnCreate(testOnCreate);
     connectionPool.setTestOnReturn(testOnReturn);
     connectionPool.setTestWhileIdle(testWhileIdle);
-    connectionPool.setTimeBetweenEvictionRunsMillis(betweenEvictionRunsMillis);
+    connectionPool.setTimeBetweenEvictionRunsMillis(timeBetweenEvictionRunsMillis);
     connectionPool.setMaxIdle(maxIdle);
     connectionPool.setMinIdle(minIdle);
     connectionPool.setMaxTotal(maxTotal);
