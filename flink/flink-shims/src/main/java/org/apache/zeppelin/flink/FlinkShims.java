@@ -104,4 +104,6 @@ public abstract class FlinkShims {
   public abstract void registerTableAggregateFunction(Object btenv, String name, Object tableAggregateFunction);
 
   public abstract void registerTableSink(Object stenv, String tableName, Object collectTableSink);
+
+  public abstract Object getCustomCli(Object cliFrontend, Object commandLine);
 }
