@@ -74,7 +74,7 @@ public class K8sStandardInterpreterLauncher extends InterpreterLauncher {
     if (isRunningOnKubernetes()) {
       return readFile(Config.KUBERNETES_NAMESPACE_PATH, Charset.defaultCharset()).trim();
     } else {
-      return "default";
+      return zConf.getK8sNamepsace();
     }
   }
 

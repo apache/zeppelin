@@ -828,6 +828,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getBoolean(ConfVars.ZEPPELIN_K8S_PORTFORWARD);
   }
 
+  public String getK8sNamepsace() {
+    return getString(ConfVars.ZEPPELIN_K8S_NAMESPACE);
+  }
+
   public String getK8sContainerImage() {
     return getString(ConfVars.ZEPPELIN_K8S_CONTAINER_IMAGE);
   }
@@ -1029,6 +1033,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 
     ZEPPELIN_K8S_PORTFORWARD("zeppelin.k8s.portforward", false), // kubectl port-forward incase of Zeppelin is running outside of kuberentes
     ZEPPELIN_K8S_CONTAINER_IMAGE("zeppelin.k8s.container.image", "apache/zeppelin:" + Util.getVersion()),
+    ZEPPELIN_K8S_NAMESPACE("zeppelin.k8s.namespace", "default"), // specify a namespace incase of Zeppelin is running outside of kuberentes
     ZEPPELIN_K8S_SPARK_CONTAINER_IMAGE("zeppelin.k8s.spark.container.image", "apache/spark:latest"),
     ZEPPELIN_K8S_TEMPLATE_DIR("zeppelin.k8s.template.dir", "k8s"),
     ZEPPELIN_K8S_SERVICE_NAME("zeppelin.k8s.service.name", "zeppelin-server"),
