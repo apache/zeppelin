@@ -24,7 +24,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.net.ConnectException;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -40,14 +39,16 @@ import java.util.Collections;
  *
  */
 public class RemoteInterpreterUtils {
-  static Logger LOGGER = LoggerFactory.getLogger(RemoteInterpreterUtils.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(RemoteInterpreterUtils.class);
 
+  private RemoteInterpreterUtils() {
+    throw new IllegalStateException("Utility class");
+  }
 
   public static int findRandomAvailablePortOnAllLocalInterfaces() throws IOException {
     int port;
     try (ServerSocket socket = new ServerSocket(0);) {
       port = socket.getLocalPort();
-      socket.close();
     }
     return port;
   }
@@ -117,25 +118,14 @@ public class RemoteInterpreterUtils {
   }
 
   public static boolean checkIfRemoteEndpointAccessible(String host, int port) {
-    try {
-      Socket discover = new Socket();
+    try (Socket discover = new Socket()) {
       discover.setSoTimeout(1000);
       discover.connect(new InetSocketAddress(host, port), 1000);
-      discover.close();
       return true;
-    } catch (ConnectException cne) {
+    } catch (IOException e) {
       // end point is not accessible
-      if (LOGGER.isDebugEnabled()) {
-        LOGGER.debug("Remote endpoint '" + host + ":" + port + "' is not accessible " +
-            "(might be initializing): " + cne.getMessage());
-      }
-      return false;
-    } catch (IOException ioe) {
-      // end point is not accessible
-      if (LOGGER.isDebugEnabled()) {
-        LOGGER.debug("Remote endpoint '" + host + ":" + port + "' is not accessible " +
-            "(might be initializing): " + ioe.getMessage());
-      }
+      LOGGER.debug("Remote endpoint '{}:{}' is not accessible " +
+            "(might be initializing): {}" , host, port, e.getMessage());
       return false;
     }
   }
@@ -143,7 +133,7 @@ public class RemoteInterpreterUtils {
   public static String getInterpreterSettingId(String intpGrpId) {
     String settingId = null;
     if (intpGrpId != null) {
-      int indexOfColon = intpGrpId.indexOf("-");
+      int indexOfColon = intpGrpId.indexOf('-');
       settingId = intpGrpId.substring(0, indexOfColon);
     }
     return settingId;

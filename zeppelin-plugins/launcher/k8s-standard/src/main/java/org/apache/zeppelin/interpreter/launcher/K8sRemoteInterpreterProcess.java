@@ -1,17 +1,16 @@
 package org.apache.zeppelin.interpreter.launcher;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import com.hubspot.jinjava.Jinjava;
-import org.apache.commons.exec.ExecuteWatchdog;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
@@ -19,10 +18,23 @@ import org.apache.zeppelin.interpreter.remote.RemoteInterpreterUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
+import com.hubspot.jinjava.Jinjava;
+
+import io.fabric8.kubernetes.api.model.HasMetadata;
+import io.fabric8.kubernetes.api.model.Pod;
+import io.fabric8.kubernetes.api.model.PodStatus;
+import io.fabric8.kubernetes.client.KubernetesClient;
+import io.fabric8.kubernetes.client.LocalPortForward;
+import io.fabric8.kubernetes.client.dsl.ParameterNamespaceListVisitFromServerGetDeleteRecreateWaitApplicable;
+
 public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
   private static final Logger LOGGER = LoggerFactory.getLogger(K8sRemoteInterpreterProcess.class);
   private static final int K8S_INTERPRETER_SERVICE_PORT = 12321;
-  private final Kubectl kubectl;
+  private final KubernetesClient client;
+  private final String namespace;
   private final String interpreterGroupId;
   private final String interpreterGroupName;
   private final String interpreterSettingName;
@@ -31,15 +43,13 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
   private final Properties properties;
   private final Map<String, String> envs;
 
-  private final Gson gson = new Gson();
   private final String podName;
   private final boolean portForward;
   private final String sparkImage;
-  private ExecuteWatchdog portForwardWatchdog;
+  private LocalPortForward localPortForward;
   private int podPort = K8S_INTERPRETER_SERVICE_PORT;
 
   private final boolean isUserImpersonatedForSpark;
-  private String userName;
 
   private AtomicBoolean started = new AtomicBoolean(false);
   private Random rand = new Random();
@@ -50,7 +60,8 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
   private static final String ENV_SERVICE_DOMAIN = "SERVICE_DOMAIN";
 
   public K8sRemoteInterpreterProcess(
-          Kubectl kubectl,
+          KubernetesClient client,
+          String namespace,
           File specTemplates,
           String containerImage,
           String interpreterGroupId,
@@ -66,7 +77,8 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
           boolean isUserImpersonatedForSpark
   ) {
     super(connectTimeout, intpEventServerHost, intpEventServerPort);
-    this.kubectl = kubectl;
+    this.client = client;
+    this.namespace = namespace;
     this.specTempaltes = specTemplates;
     this.containerImage = containerImage;
     this.interpreterGroupId = interpreterGroupId;
@@ -85,9 +97,16 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
    * Get interpreter pod name
    * @return
    */
-  @VisibleForTesting
-  String getPodName() {
+  public String getPodName() {
     return podName;
+  }
+
+  /**
+   * Get namespace
+   * @return
+   */
+  public String getNamespace() {
+    return namespace;
   }
 
   @Override
@@ -102,76 +121,71 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
 
   @Override
   public void start(String userName) throws IOException {
-    /**
-     * If a spark interpreter process is running, userName is set in preparation for --proxy-user
-     */
-    if (isUserImpersonatedForSpark && !StringUtils.containsIgnoreCase(userName, "anonymous") && isSpark()) {
-      this.userName = userName;
-    } else {
-      this.userName = null;
-    }
+
+    Properties templateProperties = getTemplateBindings(userName);
     // create new pod
-    apply(specTempaltes, false);
-    kubectl.wait(String.format("pod/%s", getPodName()), "condition=Ready", getConnectTimeout()/1000);
+    apply(specTempaltes, false, templateProperties);
 
     if (portForward) {
       podPort = RemoteInterpreterUtils.findRandomAvailablePortOnAllLocalInterfaces();
-      portForwardWatchdog = kubectl.portForward(
-          String.format("pod/%s", getPodName()),
-          new String[] {
-              String.format("%s:%s", podPort, K8S_INTERPRETER_SERVICE_PORT)
-          });
+      localPortForward = client.pods().inNamespace(namespace).withName(podName).portForward(K8S_INTERPRETER_SERVICE_PORT, podPort);
     }
 
     long startTime = System.currentTimeMillis();
+    long timeoutTime = startTime + getConnectTimeout();
 
     // wait until interpreter send started message through thrift rpc
     synchronized (started) {
-      if (!started.get()) {
+      while (!started.get()) {
+        long timetoTimeout = timeoutTime - System.currentTimeMillis();
+        if (timetoTimeout <= 0) {
+          stop();
+          throw new IOException("Launching zeppelin interpreter on kubernetes is time out, kill it now");
+        }
         try {
-          started.wait(getConnectTimeout());
+          started.wait(timetoTimeout);
         } catch (InterruptedException e) {
-          LOGGER.error("Remote interpreter is not accessible");
+          LOGGER.error("Interrupt received. Try to stop the interpreter and interrupt the current thread.", e);
+          stop();
+          Thread.currentThread().interrupt();
         }
       }
     }
 
-    if (!started.get()) {
-      LOGGER.info("Interpreter pod creation is time out in {} seconds", getConnectTimeout()/1000);
-    }
-
     // waits for interpreter thrift rpc server ready
-    while (System.currentTimeMillis() - startTime < getConnectTimeout()) {
-      if (RemoteInterpreterUtils.checkIfRemoteEndpointAccessible(getHost(), getPort())) {
-        break;
-      } else {
-        try {
-          Thread.sleep(1000);
-        } catch (InterruptedException e) {
-        }
+    while (!RemoteInterpreterUtils.checkIfRemoteEndpointAccessible(getHost(), getPort())) {
+      if (System.currentTimeMillis() - timeoutTime > 0) {
+        stop();
+        throw new IOException("Launching zeppelin interpreter on kubernetes is time out, kill it now");
+      }
+      try {
+        Thread.sleep(1000);
+      } catch (InterruptedException e) {
+        LOGGER.error("Interrupt received. Try to stop the interpreter and interrupt the current thread.", e);
+        stop();
+        Thread.currentThread().interrupt();
       }
     }
   }
 
   @Override
   public void stop() {
+    Properties templateProperties = getTemplateBindings(null);
     // delete pod
     try {
-      apply(specTempaltes, true);
+      apply(specTempaltes, true, templateProperties);
     } catch (IOException e) {
       LOGGER.info("Error on removing interpreter pod", e);
     }
-
-    try {
-      kubectl.wait(String.format("pod/%s", getPodName()), "delete", 60);
-    } catch (IOException e) {
-      LOGGER.debug("Error on waiting pod delete", e);
+    if (portForward) {
+        try {
+            localPortForward.close();
+        } catch (IOException e) {
+            LOGGER.info("Error on closing portforwarder", e);
+        }
     }
-
-
-    if (portForwardWatchdog != null) {
-      portForwardWatchdog.destroyProcess();
-    }
+    // Shutdown connection
+    shutdown();
   }
 
   @Override
@@ -194,40 +208,24 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
       if (RemoteInterpreterUtils.checkIfRemoteEndpointAccessible(getHost(), getPort())) {
         return true;
       }
-
-      String ret = kubectl.execAndGet(new String[]{
-              "get",
-              String.format("pods/%s", getPodName()),
-              "-o",
-              "json"
-      });
-
-      if (ret == null) {
-        return false;
+      Pod pod = client.pods().inNamespace(namespace).withName(podName).get();
+      if (pod != null) {
+        PodStatus status = pod.getStatus();
+        if (status != null) {
+          return "Running".equals(status.getPhase()) && started.get();
+        }
       }
-
-      Map<String, Object> pod = gson.fromJson(ret, new TypeToken<Map<String, Object>>() {}.getType());
-      if (pod == null || !pod.containsKey("status")) {
-        return false;
-      }
-
-      Map<String, Object> status = (Map<String, Object>) pod.get("status");
-      if (status == null || !status.containsKey("phase")) {
-        return false;
-      }
-
-      return "Running".equals(status.get("phase")) && started.get();
     } catch (Exception e) {
       LOGGER.error("Can't get pod status", e);
-      return false;
     }
+    return false;
   }
 
   /**
    * Apply spec file(s) in the path.
    * @param path
    */
-  void apply(File path, boolean delete) throws IOException {
+  void apply(File path, boolean delete, Properties templateProperties) throws IOException {
     if (path.getName().startsWith(".") || path.isHidden() || path.getName().endsWith("~")) {
       LOGGER.info("Skip {}", path.getAbsolutePath());
     }
@@ -240,18 +238,19 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
       }
 
       for (File f : files) {
-        apply(f, delete);
+        apply(f, delete, templateProperties);
       }
     } else if (path.isFile()) {
-      LOGGER.info("Apply {}", path.getAbsolutePath());
       K8sSpecTemplate specTemplate = new K8sSpecTemplate();
-      specTemplate.loadProperties(getTemplateBindings());
-
-      String spec = specTemplate.render(path);
+      specTemplate.loadProperties(templateProperties);
+      String template = specTemplate.render(path);
+      ParameterNamespaceListVisitFromServerGetDeleteRecreateWaitApplicable<HasMetadata, Boolean> k8sObjects = client.load(IOUtils.toInputStream(template, StandardCharsets.UTF_8));
+      LOGGER.info("Apply {} with {} K8s Objects", path.getAbsolutePath(), k8sObjects.get().size());
+      LOGGER.debug(template);
       if (delete) {
-        kubectl.delete(spec);
+        k8sObjects.inNamespace(namespace).delete();
       } else {
-        kubectl.apply(spec);
+        k8sObjects.inNamespace(namespace).createOrReplace();
       }
     } else {
       LOGGER.error("Can't apply {}", path.getAbsolutePath());
@@ -259,11 +258,11 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
   }
 
   @VisibleForTesting
-  Properties getTemplateBindings() {
+  Properties getTemplateBindings(String userName) {
     Properties k8sProperties = new Properties();
 
     // k8s template properties
-    k8sProperties.put("zeppelin.k8s.namespace", kubectl.getNamespace());
+    k8sProperties.put("zeppelin.k8s.namespace", getNamespace());
     k8sProperties.put("zeppelin.k8s.interpreter.pod.name", getPodName());
     k8sProperties.put("zeppelin.k8s.interpreter.container.name", interpreterGroupName.toLowerCase());
     k8sProperties.put("zeppelin.k8s.interpreter.container.image", containerImage);
@@ -287,7 +286,7 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
       int webUiPort = 4040;
       k8sProperties.put("zeppelin.k8s.spark.container.image", sparkImage);
       if (isSparkOnKubernetes(properties)) {
-        envs.put("SPARK_SUBMIT_OPTIONS", envs.getOrDefault("SPARK_SUBMIT_OPTIONS", "") + buildSparkSubmitOptions());
+        envs.put("SPARK_SUBMIT_OPTIONS", envs.getOrDefault("SPARK_SUBMIT_OPTIONS", "") + buildSparkSubmitOptions(userName));
       }
       envs.put("SPARK_HOME", envs.getOrDefault("SPARK_HOME", "/spark"));
 
@@ -355,7 +354,7 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
   }
 
   @VisibleForTesting
-  String buildSparkSubmitOptions() {
+  String buildSparkSubmitOptions(String userName) {
     StringBuilder options = new StringBuilder();
 
     options.append(" --master k8s://https://kubernetes.default.svc");
@@ -363,10 +362,10 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
     if (properties.containsKey(SPARK_DRIVER_MEMROY)) {
       options.append(" --driver-memory " + properties.get(SPARK_DRIVER_MEMROY));
     }
-    if (userName != null) {
+    if (isUserImpersonatedForSpark && !StringUtils.containsIgnoreCase(userName, "anonymous") && isSpark()) {
       options.append(" --proxy-user " + userName);
     }
-    options.append(" --conf spark.kubernetes.namespace=" + kubectl.getNamespace());
+    options.append(" --conf spark.kubernetes.namespace=" + getNamespace());
     options.append(" --conf spark.executor.instances=1");
     options.append(" --conf spark.kubernetes.driver.pod.name=" + getPodName());
     options.append(" --conf spark.kubernetes.container.image=" + sparkImage);
@@ -381,7 +380,7 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
   private String getInterpreterPodDnsName() {
     return String.format("%s.%s.svc",
         getPodName(), // service name and pod name is the same
-        kubectl.getNamespace());
+        getNamespace());
   }
 
   /**
@@ -431,7 +430,7 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
     LOGGER.info("Interpreter pod created {}:{}", host, port);
     synchronized (started) {
       started.set(true);
-      started.notify();
+      started.notifyAll();
     }
   }
 

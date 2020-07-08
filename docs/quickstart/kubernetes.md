@@ -264,5 +264,6 @@ Zeppelin can run locally (such as inside your IDE in debug mode) and able to run
 | ZEPPELIN_K8S_PORTFORWARD | true | Enable port forwarding from local Zeppelin instance to Interpreters running on Kubernetes |
 | ZEPPELIN_K8S_CONTAINER_IMAGE | <image>:<version> | Zeppelin interpreter docker image to use |
 | ZEPPELIN_K8S_SPARK_CONTAINER_IMAGE | <image>:<version> | Spark docker image to use |
+| ZEPPELIN_K8S_NAMESPACE | <k8s namespace> | Kubernetes namespace  to use |
+| KUBERNETES_AUTH_TOKEN | <token> | Kubernetes auth token to create resources |
 
-`kubectl` command need to be configured to connect your Kubernetes cluster.

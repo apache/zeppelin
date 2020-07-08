@@ -16,9 +16,6 @@
  */
 package org.apache.zeppelin.interpreter.launcher;
 
-import com.hubspot.jinjava.Jinjava;
-import org.apache.commons.io.FileUtils;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -26,6 +23,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+
+import org.apache.commons.io.FileUtils;
+
+import com.hubspot.jinjava.Jinjava;
+import com.hubspot.jinjava.JinjavaConfig;
 
 public class K8sSpecTemplate extends HashMap<String, Object> {
   public String render(File templateFile) throws IOException {
@@ -37,7 +39,8 @@ public class K8sSpecTemplate extends HashMap<String, Object> {
     ClassLoader oldCl = Thread.currentThread().getContextClassLoader();
     try {
       Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
-      Jinjava jinja = new Jinjava();
+      JinjavaConfig config = JinjavaConfig.newBuilder().withLstripBlocks(true).withTrimBlocks(true).build();
+      Jinjava jinja = new Jinjava(config);
       return jinja.render(template, this);
     } finally {
       Thread.currentThread().setContextClassLoader(oldCl);
