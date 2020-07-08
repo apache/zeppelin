@@ -36,6 +36,7 @@ import org.apache.zeppelin.interpreter.ZeppelinContext;
 import org.apache.zeppelin.interpreter.util.SqlSplitter;
 import org.apache.zeppelin.jdbc.hive.HiveUtils;
 import org.apache.zeppelin.tabledata.TableDataUtils;
+import org.apache.zeppelin.util.PropertiesUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -419,6 +420,28 @@ public class JDBCInterpreter extends KerberosInterpreter {
     }
   }
 
+  private void configConnectionPool(GenericObjectPool connectionPool, Properties properties) {
+    boolean testOnBorrow = "true".equalsIgnoreCase(properties.getProperty("testOnBorrow"));
+    boolean testOnCreate = "true".equalsIgnoreCase(properties.getProperty("testOnCreate"));
+    boolean testOnReturn = "true".equalsIgnoreCase(properties.getProperty("testOnReturn"));
+    boolean testWhileIdle = "true".equalsIgnoreCase(properties.getProperty("testWhileIdle"));
+    long timeBetweenEvictionRunsMillis = PropertiesUtil.getLong(properties, "timeBetweenEvictionRunsMillis", -1L);
+    long maxWaitMillis = PropertiesUtil.getLong(properties, "maxWaitMillis", -1L);
+    int maxIdle = PropertiesUtil.getInt(properties, "maxIdle", 8);
+    int minIdle = PropertiesUtil.getInt(properties, "minIdle", 0);
+    int maxTotal = PropertiesUtil.getInt(properties, "maxTotal", -1);
+
+    connectionPool.setTestOnBorrow(testOnBorrow);
+    connectionPool.setTestOnCreate(testOnCreate);
+    connectionPool.setTestOnReturn(testOnReturn);
+    connectionPool.setTestWhileIdle(testWhileIdle);
+    connectionPool.setTimeBetweenEvictionRunsMillis(timeBetweenEvictionRunsMillis);
+    connectionPool.setMaxIdle(maxIdle);
+    connectionPool.setMinIdle(minIdle);
+    connectionPool.setMaxTotal(maxTotal);
+    connectionPool.setMaxWaitMillis(maxWaitMillis);
+  }
+
   private void createConnectionPool(String url, String user, String dbPrefix,
       Properties properties) throws SQLException, ClassNotFoundException {
 
@@ -441,8 +464,10 @@ public class JDBCInterpreter extends KerberosInterpreter {
     final String maxConnectionLifetime =
         StringUtils.defaultIfEmpty(getProperty("zeppelin.jdbc.maxConnLifetime"), "-1");
     poolableConnectionFactory.setMaxConnLifetimeMillis(Long.parseLong(maxConnectionLifetime));
-    poolableConnectionFactory.setValidationQuery("show databases");
+    poolableConnectionFactory.setValidationQuery(
+            PropertiesUtil.getString(properties, "validationQuery", "show databases"));
     ObjectPool connectionPool = new GenericObjectPool(poolableConnectionFactory);
+    this.configConnectionPool((GenericObjectPool)connectionPool, properties);
 
     poolableConnectionFactory.setPool(connectionPool);
     Class.forName(driverClass);
