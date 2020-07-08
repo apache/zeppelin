@@ -161,18 +161,63 @@ The Jdbc interpreter uses the connection pool technology, and supports users to 
 
 The Jdbc Interpreter supports the following database connection pool configurations:
 
-| Property Name | Default       | Description                                                                                                                                                                                                                                                                           |
-|----------------------------------------------------------------------------------------------------------------------------------------|---------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| testOnBorrow                                                                                                                           | false         | The indication of whether objects will be validated before being borrowed from the pool. If the object fails to validate, it will be dropped from the pool, and we will attempt to borrow another.                                                                                    |
-| testOnCreate                                                                                                                           | false         | The indication of whether objects will be validated after creation. If the object fails to validate, the borrow attempt that triggered the object creation will fail.                                                                                                                 |
-| testOnReturn                                                                                                                           | false         | The indication of whether objects will be validated before being returned to the pool.                                                                                                                                                                                                |
-| testWhileIdle                                                                                                                          | false         | The indication of whether objects will be validated by the idle object evictor (if any). If an object fails to validate, it will be dropped from the pool.                                                                                                                            |
-| timeBetweenEvictionRunsMillis                                                                                                          | -1L           | The number of milliseconds to sleep between runs of the idle object evictor thread. When non-positive, no idle object evictor thread will be run.                                                                                                                                     |
-| maxWaitMillis                                                                                                                          | -lL           | The maximum number of milliseconds that the pool will wait (when there are no available connections) for a connection to be returned before throwing an exception, or -1 to wait indefinitely.                                                                                        |
-| maxIdle                                                                                                                                | 8             | The maximum number of connections that can remain idle in the pool, without extra ones being released, or negative for no limit.                                                                                                                                                      |
-| minIdle                                                                                                                                | 0             | The minimum number of connections that can remain idle in the pool, without extra ones being created, or zero to create none.                                                                                                                                                         |
-| maxTotal                                                                                                                               | -1            | The maximum number of active connections that can be allocated from this pool at the same time, or negative for no limit.                                                                                                                                                             |
-| validationQuery                                                                                                                        | show database | The SQL query that will be used to validate connections from this pool before returning them to the caller. If specified, this query MUST be an SQL SELECT statement that returns at least one row. If not specified, connections will be validation by calling the isValid() method. |
+<table class="table-configuration">
+  <tr>
+    <th>Property Name</th>
+    <th>Default</th>
+    <th>Description</th>
+  </tr>
+  <tr>
+    <td>testOnBorrow</td>
+    <td>false</td>
+    <td>The indication of whether objects will be validated before being borrowed from the pool. If the object fails to validate, it will be dropped from the pool, and we will attempt to borrow another.</td>
+  </tr>
+  <tr>
+    <td>testOnCreate</td>
+    <td>false</td>
+    <td>The indication of whether objects will be validated after creation. If the object fails to validate, the borrow attempt that triggered the object creation will fail.</td>
+  </tr>
+  <tr>
+    <td>testOnReturn</td>
+    <td>false</td>
+    <td>The indication of whether objects will be validated before being returned to the pool.</td>
+  </tr>
+  <tr>
+    <td>testWhileIdle</td>
+    <td>false</td>
+    <td>The indication of whether objects will be validated by the idle object evictor (if any). If an object fails to validate, it will be dropped from the pool.</td>
+  </tr>
+  <tr>
+    <td>timeBetweenEvictionRunsMillis</td>
+    <td>-1L</td>
+    <td>The number of milliseconds to sleep between runs of the idle object evictor thread. When non-positive, no idle object evictor thread will be run.</td>
+  </tr>
+  <tr>
+    <td>maxWaitMillis</td>
+    <td>-1L</td>
+    <td>The maximum number of milliseconds that the pool will wait (when there are no available connections) for a connection to be returned before throwing an exception, or -1 to wait indefinitely.</td>
+  </tr>
+  <tr>
+    <td>maxIdle</td>
+    <td>8</td>
+    <td>The maximum number of connections that can remain idle in the pool, without extra ones being released, or negative for no limit.</td>
+  </tr>
+  <tr>
+    <td>minIdle</td>
+    <td>0</td>
+    <td>The minimum number of connections that can remain idle in the pool, without extra ones being created, or zero to create none.</td>
+  </tr>
+  <tr>
+    <td>maxTotal</td>
+    <td>-1</td>
+    <td>The maximum number of active connections that can be allocated from this pool at the same time, or negative for no limit.</td>
+  </tr>
+  <tr>
+    <td>validationQuery</td>
+    <td>show database</td>
+    <td>The SQL query that will be used to validate connections from this pool before returning them to the caller. If specified, this query MUST be an SQL SELECT statement that returns at least one row. If not specified, connections will be validation by calling the isValid() method.</td>
+  </tr>
+</table>
 
 
 ## More properties
