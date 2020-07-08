@@ -51,6 +51,21 @@ public class K8sSpecTemplateTest {
   }
 
   @Test
+  public void testRenderWithStrip() {
+    // given
+    K8sSpecTemplate template = new K8sSpecTemplate();
+    template.put("test", "test");
+      // when
+    String spec = template.render(
+          "  {% if test == \"test\" %}\n" +
+          "  After commit\n" +
+          "  {% endif %}\n");
+
+    // then
+    assertEquals("  After commit\n", spec);
+  }
+
+  @Test
   public void testIterate() {
     // given
     K8sSpecTemplate template = new K8sSpecTemplate();

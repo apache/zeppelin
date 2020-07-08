@@ -17,32 +17,34 @@
 
 package org.apache.zeppelin.interpreter.launcher;
 
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Properties;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import org.junit.Rule;
+import org.junit.Test;
+
+import io.fabric8.kubernetes.client.server.mock.KubernetesServer;
 
 public class K8sRemoteInterpreterProcessTest {
+
+  @Rule
+  public KubernetesServer server = new KubernetesServer(true, true);
 
   @Test
   public void testGetHostPort() {
     // given
-    Kubectl kubectl = mock(Kubectl.class);
-    when(kubectl.getNamespace()).thenReturn("default");
-
     Properties properties = new Properties();
     HashMap<String, String> envs = new HashMap<String, String>();
 
     K8sRemoteInterpreterProcess intp = new K8sRemoteInterpreterProcess(
-        kubectl,
+        server.getClient(),
+        "default",
         new File(".skip"),
         "interpreter-container:1.0",
         "shared_process",
@@ -58,21 +60,19 @@ public class K8sRemoteInterpreterProcessTest {
         false);
 
     // then
-    assertEquals(String.format("%s.%s.svc", intp.getPodName(), kubectl.getNamespace()), intp.getHost());
+    assertEquals(String.format("%s.%s.svc", intp.getPodName(), "default"), intp.getHost());
     assertEquals(12321, intp.getPort());
   }
 
   @Test
   public void testPredefinedPortNumbers() {
     // given
-    Kubectl kubectl = mock(Kubectl.class);
-    when(kubectl.getNamespace()).thenReturn("default");
-
     Properties properties = new Properties();
     HashMap<String, String> envs = new HashMap<String, String>();
 
     K8sRemoteInterpreterProcess intp = new K8sRemoteInterpreterProcess(
-        kubectl,
+        server.getClient(),
+        "default",
         new File(".skip"),
         "interpreter-container:1.0",
         "shared_process",
@@ -98,16 +98,14 @@ public class K8sRemoteInterpreterProcessTest {
   @Test
   public void testGetTemplateBindings() throws IOException {
     // given
-    Kubectl kubectl = mock(Kubectl.class);
-    when(kubectl.getNamespace()).thenReturn("default");
-
     Properties properties = new Properties();
     properties.put("my.key1", "v1");
     HashMap<String, String> envs = new HashMap<String, String>();
     envs.put("MY_ENV1", "V1");
 
     K8sRemoteInterpreterProcess intp = new K8sRemoteInterpreterProcess(
-        kubectl,
+        server.getClient(),
+        "default",
         new File(".skip"),
         "interpreter-container:1.0",
         "shared_process",
@@ -123,7 +121,7 @@ public class K8sRemoteInterpreterProcessTest {
         false);
 
     // when
-    Properties p = intp.getTemplateBindings();
+    Properties p = intp.getTemplateBindings(null);
 
     // then
     assertEquals("default", p.get("zeppelin.k8s.namespace"));
@@ -148,9 +146,6 @@ public class K8sRemoteInterpreterProcessTest {
   @Test
   public void testGetTemplateBindingsForSpark() throws IOException {
     // given
-    Kubectl kubectl = mock(Kubectl.class);
-    when(kubectl.getNamespace()).thenReturn("default");
-
     Properties properties = new Properties();
     properties.put("my.key1", "v1");
     properties.put("spark.master", "k8s://http://api");
@@ -160,7 +155,8 @@ public class K8sRemoteInterpreterProcessTest {
     envs.put("SERVICE_DOMAIN", "mydomain");
 
     K8sRemoteInterpreterProcess intp = new K8sRemoteInterpreterProcess(
-        kubectl,
+        server.getClient(),
+        "default",
         new File(".skip"),
         "interpreter-container:1.0",
         "shared_process",
@@ -176,8 +172,7 @@ public class K8sRemoteInterpreterProcessTest {
         false);
 
     // when
-    intp.start("mytestUser");
-    Properties p = intp.getTemplateBindings();
+    Properties p = intp.getTemplateBindings("mytestUser");
 
     // then
     assertEquals("spark-container:1.0", p.get("zeppelin.k8s.spark.container.image"));
@@ -188,7 +183,7 @@ public class K8sRemoteInterpreterProcessTest {
 
     String sparkSubmitOptions = envs.get("SPARK_SUBMIT_OPTIONS");
     assertTrue(sparkSubmitOptions.startsWith("my options "));
-    assertTrue(sparkSubmitOptions.contains("spark.kubernetes.namespace=" + kubectl.getNamespace()));
+    assertTrue(sparkSubmitOptions.contains("spark.kubernetes.namespace=default"));
     assertTrue(sparkSubmitOptions.contains("spark.kubernetes.driver.pod.name=" + intp.getPodName()));
     assertTrue(sparkSubmitOptions.contains("spark.kubernetes.container.image=spark-container:1.0"));
     assertTrue(sparkSubmitOptions.contains("spark.driver.host=" + intp.getHost()));
@@ -201,9 +196,6 @@ public class K8sRemoteInterpreterProcessTest {
   @Test
   public void testGetTemplateBindingsForSparkWithProxyUser() throws IOException {
     // given
-    Kubectl kubectl = mock(Kubectl.class);
-    when(kubectl.getNamespace()).thenReturn("default");
-
     Properties properties = new Properties();
     properties.put("my.key1", "v1");
     properties.put("spark.master", "k8s://http://api");
@@ -213,7 +205,8 @@ public class K8sRemoteInterpreterProcessTest {
     envs.put("SERVICE_DOMAIN", "mydomain");
 
     K8sRemoteInterpreterProcess intp = new K8sRemoteInterpreterProcess(
-        kubectl,
+        server.getClient(),
+        "default",
         new File(".skip"),
         "interpreter-container:1.0",
         "shared_process",
@@ -229,8 +222,7 @@ public class K8sRemoteInterpreterProcessTest {
         true);
 
     // when
-    intp.start("mytestUser");
-    Properties p = intp.getTemplateBindings();
+    Properties p = intp.getTemplateBindings("mytestUser");
     // then
     assertEquals("spark-container:1.0", p.get("zeppelin.k8s.spark.container.image"));
     assertEquals(String.format("//4040-%s.%s", intp.getPodName(), "mydomain"), p.get("zeppelin.spark.uiWebUrl"));
@@ -240,7 +232,7 @@ public class K8sRemoteInterpreterProcessTest {
 
     String sparkSubmitOptions = envs.get("SPARK_SUBMIT_OPTIONS");
     assertTrue(sparkSubmitOptions.startsWith("my options "));
-    assertTrue(sparkSubmitOptions.contains("spark.kubernetes.namespace=" + kubectl.getNamespace()));
+    assertTrue(sparkSubmitOptions.contains("spark.kubernetes.namespace=default"));
     assertTrue(sparkSubmitOptions.contains("spark.kubernetes.driver.pod.name=" + intp.getPodName()));
     assertTrue(sparkSubmitOptions.contains("spark.kubernetes.container.image=spark-container:1.0"));
     assertTrue(sparkSubmitOptions.contains("spark.driver.host=" + intp.getHost()));
@@ -253,9 +245,6 @@ public class K8sRemoteInterpreterProcessTest {
   @Test
   public void testGetTemplateBindingsForSparkWithProxyUserAnonymous() throws IOException {
     // given
-    Kubectl kubectl = mock(Kubectl.class);
-    when(kubectl.getNamespace()).thenReturn("default");
-
     Properties properties = new Properties();
     properties.put("my.key1", "v1");
     properties.put("spark.master", "k8s://http://api");
@@ -265,7 +254,8 @@ public class K8sRemoteInterpreterProcessTest {
     envs.put("SERVICE_DOMAIN", "mydomain");
 
     K8sRemoteInterpreterProcess intp = new K8sRemoteInterpreterProcess(
-        kubectl,
+        server.getClient(),
+        "default",
         new File(".skip"),
         "interpreter-container:1.0",
         "shared_process",
@@ -281,8 +271,7 @@ public class K8sRemoteInterpreterProcessTest {
         true);
 
     // when
-    intp.start("anonymous");
-    Properties p = intp.getTemplateBindings();
+    Properties p = intp.getTemplateBindings("anonymous");
     // then
     assertEquals("spark-container:1.0", p.get("zeppelin.k8s.spark.container.image"));
     assertEquals(String.format("//4040-%s.%s", intp.getPodName(), "mydomain"), p.get("zeppelin.spark.uiWebUrl"));
@@ -298,15 +287,13 @@ public class K8sRemoteInterpreterProcessTest {
   @Test
   public void testSparkUiWebUrlTemplate() {
     // given
-    Kubectl kubectl = mock(Kubectl.class);
-    when(kubectl.getNamespace()).thenReturn("default");
-
     Properties properties = new Properties();
     HashMap<String, String> envs = new HashMap<String, String>();
     envs.put("SERVICE_DOMAIN", "mydomain");
 
     K8sRemoteInterpreterProcess intp = new K8sRemoteInterpreterProcess(
-        kubectl,
+        server.getClient(),
+        "default",
         new File(".skip"),
         "interpreter-container:1.0",
         "shared_process",
@@ -341,9 +328,6 @@ public class K8sRemoteInterpreterProcessTest {
   @Test
   public void testSparkPodResources() {
     // given
-    Kubectl kubectl = mock(Kubectl.class);
-    when(kubectl.getNamespace()).thenReturn("default");
-
     Properties properties = new Properties();
     properties.put("spark.driver.memory", "1g");
     properties.put("spark.driver.cores", "1");
@@ -351,7 +335,8 @@ public class K8sRemoteInterpreterProcessTest {
     envs.put("SERVICE_DOMAIN", "mydomain");
 
     K8sRemoteInterpreterProcess intp = new K8sRemoteInterpreterProcess(
-        kubectl,
+        server.getClient(),
+        "default",
         new File(".skip"),
         "interpreter-container:1.0",
         "shared_process",
@@ -367,7 +352,7 @@ public class K8sRemoteInterpreterProcessTest {
         false);
 
     // when
-    Properties p = intp.getTemplateBindings();
+    Properties p = intp.getTemplateBindings(null);
 
     // then
     assertEquals("1", p.get("zeppelin.k8s.interpreter.cores"));
@@ -377,9 +362,6 @@ public class K8sRemoteInterpreterProcessTest {
   @Test
   public void testSparkPodResourcesMemoryOverhead() {
     // given
-    Kubectl kubectl = mock(Kubectl.class);
-    when(kubectl.getNamespace()).thenReturn("default");
-
     Properties properties = new Properties();
     properties.put("spark.driver.memory", "1g");
     properties.put("spark.driver.memoryOverhead", "256m");
@@ -388,7 +370,8 @@ public class K8sRemoteInterpreterProcessTest {
     envs.put("SERVICE_DOMAIN", "mydomain");
 
     K8sRemoteInterpreterProcess intp = new K8sRemoteInterpreterProcess(
-        kubectl,
+        server.getClient(),
+        "default",
         new File(".skip"),
         "interpreter-container:1.0",
         "shared_process",
@@ -404,7 +387,7 @@ public class K8sRemoteInterpreterProcessTest {
         false);
 
     // when
-    Properties p = intp.getTemplateBindings();
+    Properties p = intp.getTemplateBindings(null);
 
     // then
     assertEquals("5", p.get("zeppelin.k8s.interpreter.cores"));
