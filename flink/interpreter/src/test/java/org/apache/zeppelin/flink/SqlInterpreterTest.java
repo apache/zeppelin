@@ -94,6 +94,7 @@ public abstract class SqlInterpreterTest {
     Properties p = new Properties();
     p.setProperty("zeppelin.flink.enableHive", "true");
     p.setProperty("taskmanager.managed.memory.size", "32");
+    p.setProperty("taskmanager.memory.task.off-heap.size", "80mb");
     p.setProperty("zeppelin.flink.hive.version", "2.3.4");
     p.setProperty("zeppelin.pyflink.useIPython", "false");
     p.setProperty("local.number-taskmanager", "4");

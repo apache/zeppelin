@@ -71,3 +71,8 @@ class PySparkZeppelinContext(PyZeppelinContext):
 
 z = __zeppelin__ = PySparkZeppelinContext(intp.getZeppelinContext(), gateway)
 __zeppelin__._setup_matplotlib()
+
+# add jars to path
+import sys
+jarlist = map(lambda url: url.replace("file:/", "/"), (conf.get("spark.jars") or "").split(","))
+sys.path.extend(filter(lambda jar: jar not in sys.path, jarlist))
