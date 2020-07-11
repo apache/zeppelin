@@ -182,6 +182,9 @@ public class Flink110Shims extends FlinkShims {
   public Optional<SqlCommandParser.SqlCommandCall> parseSql(Object tableEnv, String stmt) {
     // parse
     for (SqlCommandParser.SqlCommand cmd : SqlCommandParser.SqlCommand.values()) {
+      if (cmd.pattern == null){
+        continue;
+      }
       final Matcher matcher = cmd.pattern.matcher(stmt);
       if (matcher.matches()) {
         final String[] groups = new String[matcher.groupCount()];
