@@ -18,7 +18,11 @@
 package org.apache.zeppelin.flink;
 
 
+import org.apache.zeppelin.flink.sql.SqlCommandParser;
 import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.jline.utils.AttributedString;
+import org.jline.utils.AttributedStringBuilder;
+import org.jline.utils.AttributedStyle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,6 +30,7 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.net.InetAddress;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 
 /**
@@ -75,6 +80,17 @@ public abstract class FlinkShims {
     return flinkShims;
   }
 
+  protected static AttributedString formatCommand(SqlCommandParser.SqlCommand cmd, String description) {
+    return new AttributedStringBuilder()
+            .style(AttributedStyle.DEFAULT.bold())
+            .append(cmd.toString())
+            .append("\t\t")
+            .style(AttributedStyle.DEFAULT)
+            .append(description)
+            .append('\n')
+            .toAttributedString();
+  }
+
   public abstract Object createCatalogManager(Object config);
 
   public abstract String getPyFlinkPythonPath(Properties properties) throws IOException;
@@ -104,6 +120,16 @@ public abstract class FlinkShims {
   public abstract void registerTableAggregateFunction(Object btenv, String name, Object tableAggregateFunction);
 
   public abstract void registerTableSink(Object stenv, String tableName, Object collectTableSink);
+
+  public abstract Optional<SqlCommandParser.SqlCommandCall> parseSql(Object tableEnv, String stmt);
+
+  public abstract void executeSql(Object tableEnv, String sql);
+
+  public abstract String sqlHelp();
+
+  public abstract void setCatalogManagerSchemaResolver(Object catalogManager,
+                                                       Object parser,
+                                                       Object environmentSetting);
 
   public abstract Object getCustomCli(Object cliFrontend, Object commandLine);
 }
