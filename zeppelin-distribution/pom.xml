@@ -378,7 +378,7 @@
                         <path>${deb.conf.path}</path>
                         <path>${deb.log.path}</path>
                         <path>${deb.pid.path}</path>
-                        <paht>${deb.notebook.path}</paht>
+                        <path>${deb.notebook.path}</path>
                       </paths>
                     </data>
                   </dataSet>

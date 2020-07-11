@@ -131,4 +131,5 @@ public abstract class FlinkShims {
                                                        Object parser,
                                                        Object environmentSetting);
 
+  public abstract Object getCustomCli(Object cliFrontend, Object commandLine);
 }
