@@ -107,7 +107,7 @@
         "envName": null,
         "propertyName": null,
         "defaultValue": "",
-        "description": "Flink udf jars (comma separated), Zeppelin will register udfs in this jar for user automatically",
+        "description": "Flink udf jars (comma separated), Zeppelin will register udfs in this jar for user automatically, these udf jars could be either local files or hdfs files if you have hadoop installed, the udf name is the class name",
         "type": "string"
       },
       "flink.udf.jars.packages": {
@@ -121,7 +121,7 @@
         "envName": null,
         "propertyName": null,
         "defaultValue": "",
-        "description": "Additional user jars (comma separated)",
+        "description": "Additional user jars (comma separated), these jars could be either local files or hdfs files if you have hadoop installed",
         "type": "string"
       },
       "flink.execution.packages": {

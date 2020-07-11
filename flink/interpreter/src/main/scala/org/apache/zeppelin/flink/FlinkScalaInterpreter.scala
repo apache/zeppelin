@@ -105,6 +105,7 @@ class FlinkScalaInterpreter(val properties: Properties) {
   private var defaultParallelism = 1
   private var defaultSqlParallelism = 1
   private var userJars: Seq[String] = _
+  private var userUdfJars: Seq[String] = _
 
   def open(): Unit = {
     val config = initFlinkConfig()
@@ -135,12 +136,7 @@ class FlinkScalaInterpreter(val properties: Properties) {
     }
 
     // load udf jar
-    val udfJars = properties.getProperty("flink.udf.jars", "")
-    if (!StringUtils.isBlank(udfJars)) {
-      udfJars.split(",").foreach(jar => {
-        loadUDFJar(jar)
-      })
-    }
+    this.userUdfJars.foreach(jar => loadUDFJar(jar))
   }
 
   private def initFlinkConfig(): Config = {
@@ -190,7 +186,8 @@ class FlinkScalaInterpreter(val properties: Properties) {
       Some(ensureYarnConfig(config)
         .copy(queue = Some(queue))))
 
-    this.userJars = getUserJars
+    this.userUdfJars = getUserUdfJars()
+    this.userJars = getUserJarsExceptUdfJars ++ this.userUdfJars
     LOGGER.info("UserJars: " + userJars.mkString(","))
     config = config.copy(externalJars = Some(userJars.toArray))
     LOGGER.info("Config: " + config)
@@ -473,7 +470,7 @@ class FlinkScalaInterpreter(val properties: Properties) {
 
     val udfPackages = properties.getProperty("flink.udf.jars.packages", "").split(",").toSet
     val urls = Array(new URL("jar:file:" + jar + "!/"))
-    val cl = new URLClassLoader(urls)
+    val cl = new URLClassLoader(urls, getFlinkScalaShellLoader)
 
     while (entries.hasMoreElements) {
       val je = entries.nextElement
@@ -761,17 +758,10 @@ class FlinkScalaInterpreter(val properties: Properties) {
 
   def getDefaultSqlParallelism = this.defaultSqlParallelism
 
-  def getUserJars: Seq[String] = {
+  private def getUserJarsExceptUdfJars: Seq[String] = {
     val flinkJars =
       if (!StringUtils.isBlank(properties.getProperty("flink.execution.jars", ""))) {
-        properties.getProperty("flink.execution.jars").split(",").toSeq
-      } else {
-        Seq.empty[String]
-      }
-
-    val flinkUDFJars =
-      if (!StringUtils.isBlank(properties.getProperty("flink.udf.jars", ""))) {
-        properties.getProperty("flink.udf.jars").split(",").toSeq
+        getOrDownloadJars(properties.getProperty("flink.execution.jars").split(",").toSeq)
       } else {
         Seq.empty[String]
       }
@@ -784,7 +774,19 @@ class FlinkScalaInterpreter(val properties: Properties) {
         Seq.empty[String]
       }
 
-    flinkJars ++ flinkPackageJars ++ flinkUDFJars
+    flinkJars ++ flinkPackageJars
+  }
+
+  private def getUserUdfJars(): Seq[String] = {
+    if (!StringUtils.isBlank(properties.getProperty("flink.udf.jars", ""))) {
+      getOrDownloadJars(properties.getProperty("flink.udf.jars").split(",").toSeq)
+    } else {
+      Seq.empty[String]
+    }
+  }
+
+  private def getOrDownloadJars(jars: Seq[String]): Seq[String] = {
+    jars.map(jar => if (jar.contains("://")) HadoopUtils.downloadJar(jar) else jar)
   }
 
   def getJobManager = this.jobManager
