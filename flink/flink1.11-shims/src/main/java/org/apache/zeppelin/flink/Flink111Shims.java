@@ -328,6 +328,102 @@ public class Flink111Shims extends FlinkShims {
       operands = new String[]{((DescribeTableOperation) operation).getSqlIdentifier().asSerializableString()};
     } else if (operation instanceof QueryOperation) {
       cmd = SqlCommand.SELECT;
+  /**
+   * Parse it via flink SqlParser first, then fallback to regular expression matching.
+   *
+   * @param tableEnv
+   * @param stmt
+   * @return
+   */
+  @Override
+  public Optional<SqlCommandParser.SqlCommandCall> parseSql(Object tableEnv, String stmt) {
+    Parser sqlParser = ((TableEnvironmentInternal) tableEnv).getParser();
+    SqlCommandCall sqlCommandCall = null;
+    try {
+      // parse statement via regex matching first
+      Optional<SqlCommandCall> callOpt = parseByRegexMatching(stmt);
+      if (callOpt.isPresent()) {
+        sqlCommandCall = callOpt.get();
+      } else {
+        sqlCommandCall = parseBySqlParser(sqlParser, stmt);
+      }
+    } catch (Exception e) {
+      return Optional.empty();
+    }
+    return Optional.of(sqlCommandCall);
+
+  }
+
+  private SqlCommandCall parseBySqlParser(Parser sqlParser, String stmt) throws Exception {
+    List<Operation> operations;
+    try {
+      operations = sqlParser.parse(stmt);
+    } catch (Throwable e) {
+      throw new Exception("Invalidate SQL statement.", e);
+    }
+    if (operations.size() != 1) {
+      throw new Exception("Only single statement is supported now.");
+    }
+
+    final SqlCommand cmd;
+    String[] operands = new String[]{stmt};
+    Operation operation = operations.get(0);
+    if (operation instanceof CatalogSinkModifyOperation) {
+      boolean overwrite = ((CatalogSinkModifyOperation) operation).isOverwrite();
+      cmd = overwrite ? SqlCommand.INSERT_OVERWRITE : SqlCommand.INSERT_INTO;
+    } else if (operation instanceof CreateTableOperation) {
+      cmd = SqlCommand.CREATE_TABLE;
+    } else if (operation instanceof DropTableOperation) {
+      cmd = SqlCommand.DROP_TABLE;
+    } else if (operation instanceof AlterTableOperation) {
+      cmd = SqlCommand.ALTER_TABLE;
+    } else if (operation instanceof CreateViewOperation) {
+      cmd = SqlCommand.CREATE_VIEW;
+    } else if (operation instanceof DropViewOperation) {
+      cmd = SqlCommand.DROP_VIEW;
+    } else if (operation instanceof CreateDatabaseOperation) {
+      cmd = SqlCommand.CREATE_DATABASE;
+    } else if (operation instanceof DropDatabaseOperation) {
+      cmd = SqlCommand.DROP_DATABASE;
+    } else if (operation instanceof AlterDatabaseOperation) {
+      cmd = SqlCommand.ALTER_DATABASE;
+    } else if (operation instanceof CreateCatalogOperation) {
+      cmd = SqlCommand.CREATE_CATALOG;
+    } else if (operation instanceof DropCatalogOperation) {
+      cmd = SqlCommand.DROP_CATALOG;
+    } else if (operation instanceof UseCatalogOperation) {
+      cmd = SqlCommand.USE_CATALOG;
+      operands = new String[]{((UseCatalogOperation) operation).getCatalogName()};
+    } else if (operation instanceof UseDatabaseOperation) {
+      cmd = SqlCommand.USE;
+      operands = new String[]{((UseDatabaseOperation) operation).getDatabaseName()};
+    } else if (operation instanceof ShowCatalogsOperation) {
+      cmd = SqlCommand.SHOW_CATALOGS;
+      operands = new String[0];
+    } else if (operation instanceof ShowDatabasesOperation) {
+      cmd = SqlCommand.SHOW_DATABASES;
+      operands = new String[0];
+    } else if (operation instanceof ShowTablesOperation) {
+      cmd = SqlCommand.SHOW_TABLES;
+      operands = new String[0];
+    } else if (operation instanceof ShowFunctionsOperation) {
+      cmd = SqlCommand.SHOW_FUNCTIONS;
+      operands = new String[0];
+    } else if (operation instanceof CreateCatalogFunctionOperation ||
+            operation instanceof CreateTempSystemFunctionOperation) {
+      cmd = SqlCommand.CREATE_FUNCTION;
+    } else if (operation instanceof DropCatalogFunctionOperation ||
+            operation instanceof DropTempSystemFunctionOperation) {
+      cmd = SqlCommand.DROP_FUNCTION;
+    } else if (operation instanceof AlterCatalogFunctionOperation) {
+      cmd = SqlCommand.ALTER_FUNCTION;
+    } else if (operation instanceof ExplainOperation) {
+      cmd = SqlCommand.EXPLAIN;
+    } else if (operation instanceof DescribeTableOperation) {
+      cmd = SqlCommand.DESCRIBE;
+      operands = new String[]{((DescribeTableOperation) operation).getSqlIdentifier().asSerializableString()};
+    } else if (operation instanceof QueryOperation) {
+      cmd = SqlCommand.SELECT;
     } else {
       throw new Exception("Unknown operation: " + operation.asSummaryString());
     }
@@ -386,6 +482,7 @@ public class Flink111Shims extends FlinkShims {
             new CatalogTableSchemaResolver((Parser)parserObject,
                     ((EnvironmentSettings)environmentSetting).isStreamingMode()));
   }
+      
   @Override
   public Object getCustomCli(Object cliFrontend, Object commandLine) {
     return ((CliFrontend)cliFrontend).validateAndGetActiveCommandLine((CommandLine) commandLine);

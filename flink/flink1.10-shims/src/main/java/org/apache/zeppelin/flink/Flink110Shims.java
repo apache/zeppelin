@@ -179,11 +179,6 @@ public class Flink110Shims extends FlinkShims {
   }
 
   @Override
-  public Object getCustomCli(Object cliFrontend, Object commandLine) {
-    return ((CliFrontend)cliFrontend).getActiveCustomCommandLine((CommandLine) commandLine);
-  }
-
-  @Override
   public Optional<SqlCommandParser.SqlCommandCall> parseSql(Object tableEnv, String stmt) {
     // parse
     for (SqlCommandParser.SqlCommand cmd : SqlCommandParser.SqlCommand.values()) {
@@ -216,5 +211,10 @@ public class Flink110Shims extends FlinkShims {
                                               Object parser,
                                               Object environmentSetting) {
     // do nothing for flink 1.10
+  }
+  
+  @Override
+  public Object getCustomCli(Object cliFrontend, Object commandLine) {
+    return ((CliFrontend)cliFrontend).getActiveCustomCommandLine((CommandLine) commandLine);
   }
 }
