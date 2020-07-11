@@ -18,9 +18,11 @@
 
 package org.apache.zeppelin.flink;
 
+import org.apache.commons.cli.CommandLine;
 import org.apache.flink.api.common.typeutils.TypeSerializer;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.scala.DataSet;
+import org.apache.flink.client.cli.CliFrontend;
 import org.apache.flink.python.util.ResourceUtil;
 import org.apache.flink.table.api.Table;
 import org.apache.flink.table.api.TableEnvironment;
@@ -174,6 +176,11 @@ public class Flink110Shims extends FlinkShims {
   @Override
   public void registerTableAggregateFunction(Object btenv, String name, Object tableAggregateFunction) {
     ((StreamTableEnvironmentImpl)(btenv)).registerFunction(name, (TableAggregateFunction) tableAggregateFunction);
+  }
+
+  @Override
+  public Object getCustomCli(Object cliFrontend, Object commandLine) {
+    return ((CliFrontend)cliFrontend).getActiveCustomCommandLine((CommandLine) commandLine);
   }
 
   @Override

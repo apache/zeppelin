@@ -18,11 +18,13 @@
 
 package org.apache.zeppelin.flink;
 
+import org.apache.commons.cli.CommandLine;
 import org.apache.commons.compress.utils.Lists;
 import org.apache.flink.api.common.JobStatus;
 import org.apache.flink.api.common.typeutils.TypeSerializer;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.scala.DataSet;
+import org.apache.flink.client.cli.CliFrontend;
 import org.apache.flink.configuration.ReadableConfig;
 import org.apache.flink.core.execution.JobClient;
 import org.apache.flink.table.api.EnvironmentSettings;
@@ -383,5 +385,9 @@ public class Flink111Shims extends FlinkShims {
     ((CatalogManager) catalogManager).setCatalogTableSchemaResolver(
             new CatalogTableSchemaResolver((Parser)parserObject,
                     ((EnvironmentSettings)environmentSetting).isStreamingMode()));
+  }
+  @Override
+  public Object getCustomCli(Object cliFrontend, Object commandLine) {
+    return ((CliFrontend)cliFrontend).validateAndGetActiveCommandLine((CommandLine) commandLine);
   }
 }
