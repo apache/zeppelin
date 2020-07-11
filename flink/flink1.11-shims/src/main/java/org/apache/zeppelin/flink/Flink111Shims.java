@@ -363,7 +363,7 @@ public class Flink111Shims extends FlinkShims {
 
   @Override
   public void executeSql(Object tableEnv, String sql) {
-    ((TableEnvironment) tableEnv).explainSql(sql);
+    ((TableEnvironment) tableEnv).executeSql(sql);
   }
 
   @Override
