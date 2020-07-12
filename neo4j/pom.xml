@@ -34,9 +34,7 @@
   <name>Zeppelin: Neo4j interpreter</name>
   
   <properties>
-  	<neo4j.driver.version>1.7.1</neo4j.driver.version>
-  	<test.neo4j.kernel.version>3.4.10</test.neo4j.kernel.version>
-  	<neo4j.version>3.4.10</neo4j.version>
+  	<neo4j.driver.version>4.1.1</neo4j.driver.version>
   	<jackson.version>2.10.3</jackson.version>
     <interpreter.name>neo4j</interpreter.name>
   </properties>
@@ -65,10 +63,8 @@
     </dependency>
 
     <dependency>
-      <groupId>org.neo4j.test</groupId>
-      <artifactId>neo4j-harness</artifactId>
-      <version>${neo4j.version}</version>
-      <scope>test</scope>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>neo4j</artifactId>
     </dependency>
   </dependencies>
 

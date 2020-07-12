@@ -198,6 +198,8 @@
     <plugin.surefire.version>2.17</plugin.surefire.version>
     <plugin.xml.version>1.0.2</plugin.xml.version>
 
+    <testcontainers.version>1.14.3</testcontainers.version>
+
     <plugin.gitcommitid.useNativeGit>false</plugin.gitcommitid.useNativeGit>
 
     <MaxMetaspace>512m</MaxMetaspace>
@@ -952,6 +954,20 @@
         <groupId>org.powermock</groupId>
         <artifactId>powermock-reflect</artifactId>
         <version>${powermock.version}</version>
+        <scope>test</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>testcontainers</artifactId>
+        <version>${testcontainers.version}</version>
+        <scope>test</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>neo4j</artifactId>
+        <version>${testcontainers.version}</version>
         <scope>test</scope>
       </dependency>
     </dependencies>
