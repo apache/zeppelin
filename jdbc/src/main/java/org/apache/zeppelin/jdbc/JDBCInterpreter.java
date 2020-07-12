@@ -425,7 +425,8 @@ public class JDBCInterpreter extends KerberosInterpreter {
     boolean testOnCreate = "true".equalsIgnoreCase(properties.getProperty("testOnCreate"));
     boolean testOnReturn = "true".equalsIgnoreCase(properties.getProperty("testOnReturn"));
     boolean testWhileIdle = "true".equalsIgnoreCase(properties.getProperty("testWhileIdle"));
-    long timeBetweenEvictionRunsMillis = PropertiesUtil.getLong(properties, "timeBetweenEvictionRunsMillis", -1L);
+    long timeBetweenEvictionRunsMillis = PropertiesUtil.getLong(
+        properties, "timeBetweenEvictionRunsMillis", -1L);
     long maxWaitMillis = PropertiesUtil.getLong(properties, "maxWaitMillis", -1L);
     int maxIdle = PropertiesUtil.getInt(properties, "maxIdle", 8);
     int minIdle = PropertiesUtil.getInt(properties, "minIdle", 0);
@@ -467,7 +468,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
     poolableConnectionFactory.setValidationQuery(
             PropertiesUtil.getString(properties, "validationQuery", "show databases"));
     ObjectPool connectionPool = new GenericObjectPool(poolableConnectionFactory);
-    this.configConnectionPool((GenericObjectPool)connectionPool, properties);
+    this.configConnectionPool((GenericObjectPool) connectionPool, properties);
 
     poolableConnectionFactory.setPool(connectionPool);
     Class.forName(driverClass);
