@@ -10,6 +10,18 @@
         "defaultValue": "bolt://localhost:7687",
         "description": "The Neo4j's BOLT url."
       },
+      "neo4j.database": {
+        "envName": null,
+        "propertyName": "neo4j.database",
+        "defaultValue": "",
+        "description": "The Neo4j target database, if empty use the dafault db."
+      },
+      "neo4j.multi.statement": {
+        "envName": null,
+        "propertyName": "neo4j.multi.statement",
+        "defaultValue": "true",
+        "description": "Enables the multi statement management, if true it computes multiple queries separated by semicolon."
+      },
       "neo4j.auth.type": {
         "envName": null,
         "propertyName": "neo4j.auth.type",
