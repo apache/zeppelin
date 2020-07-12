@@ -139,7 +139,7 @@
                 </a>
             </h4>
         </div>
-        <div id="${basicCommandsId}" class="panel-collapse collapse in" role="tabpanel">
+        <div id="${basicCommandsId}" class="panel-collapse collapse" role="tabpanel">
             <div class="panel-body">
 
                 <div class="panel panel-default">
@@ -150,7 +150,6 @@
                         <div class="row">
                             <div class="col-md-6 col-md-offset-3">
                                 <pre>
-
     INSERT INTO users(login,name) VALUES('jdoe','John DOE');
     SELECT * FROM users WHERE login='jdoe';
                                 </pre>
@@ -166,7 +165,6 @@
                         <div class="row">
                             <div class="col-md-8 col-md-offset-2">
                                 <pre>
-
     USE spark_demo;
 
     SELECT * FROM albums_by_country LIMIT 1; SELECT * FROM countries LIMIT 1;
@@ -185,7 +183,6 @@
                         <div class="row">
                             <div class="col-md-8 col-md-offset-2">
                                 <pre>
-
     BEGIN BATCH
         INSERT INTO users(login,name) VALUES('jdoe','John DOE');
         INSERT INTO users_preferences(login,account_type) VALUES('jdoe','BASIC');
@@ -206,7 +203,6 @@
                         <div class="row">
                             <div class="col-md-8 col-md-offset-2">
                                 <pre>
-
     INSERT INTO users(login,name) VALUES('jdoe','John DOE');
     Insert into users(login,name) vAlues('hsue','Helen SUE');
                                 </pre>
@@ -239,18 +235,10 @@
                                             </td>
                                         </tr>
                                         <tr>
-                                            <td><strong>2.1 & 2.0</strong></td>
+                                            <td><strong>2.1</strong></td>
                                             <td>
                                                 <a href="http://docs.datastax.com/en/cql/3.1/cql/cql_intro_c.html" target="_blank">
                                                     http://docs.datastax.com/en/cql/3.1/cql/cql_intro_c.html
-                                                </a>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td><strong>1.2</strong></td>
-                                            <td>
-                                                <a href="http://docs.datastax.com/en/cql/3.0/cql/aboutCQL.html" target="_blank">
-                                                    http://docs.datastax.com/en/cql/3.0/cql/aboutCQL.html
                                                 </a>
                                             </td>
                                         </tr>
@@ -272,7 +260,6 @@
                         <div class="row">
                             <div class="col-md-8 col-md-offset-2">
                                 <pre>
-
     # Single line comment style 1
     INSERT INTO users(login,name) VALUES('jdoe','John DOE');
 
@@ -530,7 +517,6 @@
                         <div class="row">
                             <div class="col-md-8 col-md-offset-2">
                                 <pre>
-
     CREATE TABLE IF NOT EXISTS spark_demo.ts(
         key int PRIMARY KEY,
         value text
@@ -722,7 +708,6 @@ select id, double, float, text, date, time, timestamp from zep.test_format;
                         <div class="row">
                             <div class="col-md-10 col-md-offset-1">
                                 <pre>
-
     @prepare[statement-name]=...
 
     @bind[statement-name]=’text’, 1223, ’2015-07-30 12:00:01’, null, true, [‘list_item1’, ’list_item2’]
@@ -759,7 +744,6 @@ select id, double, float, text, date, time, timestamp from zep.test_format;
                         <div class="row">
                             <div class="col-md-10 col-md-offset-1">
                                 <pre>
-
     @prepare[select]=SELECT * FROM spark_demo.albums LIMIT ?
 
     @prepare[select]=SELECT * FROM spark_demo.artists LIMIT ?
@@ -783,7 +767,6 @@ select id, double, float, text, date, time, timestamp from zep.test_format;
                         <div class="row">
                             <div class="col-md-10 col-md-offset-1">
                                 <pre>
-
     @bind[select_first]=10
                                 </pre>
                             </div>
@@ -881,7 +864,6 @@ select id, double, float, text, date, time, timestamp from zep.test_format;
                         <div class="row">
                             <div class="col-md-10 col-md-offset-1">
                                 <pre>
-
     #Secondary index on performer style
     SELECT name, country, performer
     FROM spark_demo.performers
@@ -978,11 +960,11 @@ select id, double, float, text, date, time, timestamp from zep.test_format;
                         </tr>
                         <tr>
                             <td>cassandra.pooling.core.connection.per.host.local</td>
-                            <td><strong>Protocol V2 and below: 2, V3 and above: 1</strong></td>
+                            <td><strong>V3 and above: 1</strong></td>
                         </tr>
                         <tr>
                             <td>cassandra.pooling.core.connection.per.host.remote</td>
-                            <td><strong>Protocol V2 and below: 1, V3 and above: 1</strong></td>
+                            <td><strong>V3 and above: 1</strong></td>
                         </tr>
                         <tr>
                             <td>cassandra.pooling.heartbeat.interval.seconds</td>
@@ -994,27 +976,27 @@ select id, double, float, text, date, time, timestamp from zep.test_format;
                         </tr>
                         <tr>
                             <td>cassandra.pooling.max.connection.per.host.local</td>
-                            <td><strong>Protocol V2 and below: 8, V3 and above: 1</strong></td>
+                            <td><strong>V3 and above: 1</strong></td>
                         </tr>
                         <tr>
                             <td>cassandra.pooling.max.connection.per.host.remote</td>
-                            <td><strong>Protocol V2 and below: 2, V3 and above: 1</strong></td>
+                            <td><strong>V3 and above: 1</strong></td>
                         </tr>
                         <tr>
                             <td>cassandra.pooling.max.request.per.connection.local</td>
-                            <td><strong>Protocol V2 and below: 128, V3 and above: 1024</strong></td>
+                            <td><strong>V3 and above: 1024</strong></td>
                         </tr>
                         <tr>
                             <td>cassandra.pooling.max.request.per.connection.remote</td>
-                            <td><strong>Protocol V2 and below: 128, V3 and above: 256</strong></td>
+                            <td><strong>V3 and above: 256</strong></td>
                         </tr>
                         <tr>
                             <td>cassandra.pooling.new.connection.threshold.local</td>
-                            <td><strong>Protocol V2 and below: 100, V3 and above: 800</strong></td>
+                            <td><strong>V3 and above: 800</strong></td>
                         </tr>
                         <tr>
                             <td>cassandra.pooling.new.connection.threshold.remote</td>
-                            <td><strong>Protocol V2 and below: 100, V3 and above: 200</strong></td>
+                            <td><strong>V3 and above: 200</strong></td>
                         </tr>
                         <tr>
                             <td>cassandra.pooling.pool.timeout.millisecs</td>
@@ -1122,7 +1104,7 @@ select id, double, float, text, date, time, timestamp from zep.test_format;
                 <strong>4.0</strong>&nbsp;:
                 <br/>
                 <ul>
-                    <li>Migrate to DataStax Java driver 4.x that supports both Cassandra and DSE.  This contains breaking changes, like, deprecation of <code>@retryPolicy</code></li>
+                    <li>Migrate to DataStax Java driver 4.x that supports both Cassandra and DSE.  This contains breaking changes, like, deprecation of <code>@retryPolicy</code>, dropped support for Cassandra 1.2/2.0</li>
                     <li>Fix schema disagreement that could arise when executing multiple DDL statements</li>
                     <li>Added support for <code>--</code> comment style</li>
                     <li>Added options for formatting of output (interpreter and cell level)</li>

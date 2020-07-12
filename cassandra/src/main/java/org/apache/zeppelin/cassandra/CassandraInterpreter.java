@@ -152,7 +152,7 @@ public class CassandraInterpreter extends Interpreter {
   public static final String DEFAULT_TCP_NO_DELAY = "true";
   public static final String DEFAULT_MAX_SCHEMA_AGREEMENT_WAIT_SECONDS = "12";
 
-  static final List NO_COMPLETION = new ArrayList<>();
+  static final List<InterpreterCompletion> NO_COMPLETION = new ArrayList<>();
   public static final String DATASTAX_JAVA_DRIVER_PREFIX = "datastax-java-driver.";
   public static final String MILLISECONDS_STR = " milliseconds";
   public static final String SECONDS_STR = " seconds";
