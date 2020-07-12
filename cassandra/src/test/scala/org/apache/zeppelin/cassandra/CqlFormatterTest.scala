@@ -18,13 +18,11 @@ package org.apache.zeppelin.cassandra
 
 import java.net.InetAddress
 import java.nio.ByteBuffer
-import java.time.{Instant, LocalDate, LocalTime, ZoneId}
+import java.time.{Instant, LocalDate, LocalTime}
 import java.util.Properties
 
-import com.datastax.oss.driver.api.core.`type`.{DataTypes, UserDefinedType}
+import com.datastax.oss.driver.api.core.`type`.DataTypes
 import com.datastax.oss.driver.api.core.`type`.codec.registry.CodecRegistry
-import com.datastax.oss.driver.api.core.detach.AttachmentPoint
-import io.netty.buffer.ByteBufUtil
 import org.scalatest.{BeforeAndAfterEach, FlatSpec, Matchers}
 
 import scala.collection.JavaConverters._

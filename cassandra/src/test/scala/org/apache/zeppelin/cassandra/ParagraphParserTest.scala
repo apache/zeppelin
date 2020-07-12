@@ -17,7 +17,7 @@
 package org.apache.zeppelin.cassandra
 
 import com.datastax.oss.driver.api.core.{ConsistencyLevel, CqlSession}
-import com.datastax.oss.driver.api.core.cql.{BatchStatement, BatchType, PreparedStatement}
+import com.datastax.oss.driver.api.core.cql.{BatchType, PreparedStatement}
 import org.apache.zeppelin.interpreter.InterpreterException
 import org.scalatest.mock.MockitoSugar
 import org.scalatest.{BeforeAndAfterEach, FlatSpec, Matchers}

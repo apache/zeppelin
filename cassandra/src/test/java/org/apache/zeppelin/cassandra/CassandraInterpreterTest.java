@@ -65,11 +65,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class CassandraInterpreterTest { //extends AbstractCassandraUnit4CQLTestCase {
   private static final String ARTISTS_TABLE = "zeppelin.artists";
-  private static final int DEFAULT_UNIT_TEST_PORT = 9142;
 
   private static volatile CassandraInterpreter interpreter;
 
-  private InterpreterContext intrContext = InterpreterContext.builder()
+  private final InterpreterContext intrContext = InterpreterContext.builder()
           .setParagraphTitle("Paragraph1")
           .build();
 
@@ -124,13 +123,13 @@ public class CassandraInterpreterTest { //extends AbstractCassandraUnit4CQLTestC
   }
 
   @Test
-  public void should_create_cluster_and_session_upon_call_to_open() throws Exception {
+  public void should_create_cluster_and_session_upon_call_to_open(){
     assertThat(interpreter.session).isNotNull();
     assertThat(interpreter.helper).isNotNull();
   }
 
   @Test
-  public void should_set_custom_option() throws Exception {
+  public void should_set_custom_option() {
     assertThat(interpreter.session).isNotNull();
     DriverExecutionProfile config = interpreter.session.getContext()
             .getConfig().getDefaultProfile();
@@ -139,7 +138,7 @@ public class CassandraInterpreterTest { //extends AbstractCassandraUnit4CQLTestC
   }
 
   @Test
-  public void should_interpret_simple_select() throws Exception {
+  public void should_interpret_simple_select() {
     //Given
 
     //When
@@ -168,7 +167,7 @@ public class CassandraInterpreterTest { //extends AbstractCassandraUnit4CQLTestC
   }
 
   @Test
-  public void should_interpret_select_statement() throws Exception {
+  public void should_interpret_select_statement() {
     //Given
 
     //When
@@ -186,7 +185,7 @@ public class CassandraInterpreterTest { //extends AbstractCassandraUnit4CQLTestC
   }
 
   @Test
-  public void should_interpret_select_statement_with_cql_format() throws Exception {
+  public void should_interpret_select_statement_with_cql_format() {
     //When
     intrContext.getLocalProperties().put("outputFormat", "cql");
     final InterpreterResult actual = interpreter.interpret(
@@ -204,7 +203,7 @@ public class CassandraInterpreterTest { //extends AbstractCassandraUnit4CQLTestC
   }
 
   @Test
-  public void should_interpret_select_statement_with_formatting_options() throws Exception {
+  public void should_interpret_select_statement_with_formatting_options() {
     //When
     Map<String, String> props = intrContext.getLocalProperties();
     props.put("outputFormat", "human");
@@ -265,7 +264,7 @@ public class CassandraInterpreterTest { //extends AbstractCassandraUnit4CQLTestC
   }
     
   @Test
-  public void should_throw_statement_not_having_semi_colon() throws Exception {
+  public void should_throw_statement_not_having_semi_colon() {
     //Given
     String statement = "SELECT * zeppelin.albums";
 
@@ -281,7 +280,7 @@ public class CassandraInterpreterTest { //extends AbstractCassandraUnit4CQLTestC
   }
 
   @Test
-  public void should_validate_statement() throws Exception {
+  public void should_validate_statement() {
     //Given
     String statement = "SELECT * zeppelin.albums;";
 
@@ -296,7 +295,7 @@ public class CassandraInterpreterTest { //extends AbstractCassandraUnit4CQLTestC
   }
 
   @Test
-  public void should_execute_statement_with_consistency_option() throws Exception {
+  public void should_execute_statement_with_consistency_option() {
     //Given
     String statement = "@consistency=THREE\n" +
             "SELECT * FROM zeppelin.artists LIMIT 1;";
@@ -312,7 +311,7 @@ public class CassandraInterpreterTest { //extends AbstractCassandraUnit4CQLTestC
   }
 
   @Test
-  public void should_execute_statement_with_serial_consistency_option() throws Exception {
+  public void should_execute_statement_with_serial_consistency_option() {
     //Given
     String statement = "@serialConsistency=SERIAL\n" +
             "SELECT * FROM zeppelin.artists LIMIT 1;";
@@ -354,7 +353,7 @@ public class CassandraInterpreterTest { //extends AbstractCassandraUnit4CQLTestC
   }
 
   @Test
-  public void should_execute_statement_with_request_timeout() throws Exception {
+  public void should_execute_statement_with_request_timeout() {
     //Given
     String statement = "@requestTimeOut=10000000\n" +
             "SELECT * FROM zeppelin.artists;";
@@ -367,7 +366,7 @@ public class CassandraInterpreterTest { //extends AbstractCassandraUnit4CQLTestC
   }
 
   @Test
-  public void should_execute_prepared_and_bound_statements() throws Exception {
+  public void should_execute_prepared_and_bound_statements() {
     //Given
     String queries = "@prepare[ps]=INSERT INTO zeppelin.prepared(key,val) VALUES(?,?)\n" +
             "@prepare[select]=SELECT * FROM zeppelin.prepared WHERE key=:key\n" +
@@ -384,7 +383,7 @@ public class CassandraInterpreterTest { //extends AbstractCassandraUnit4CQLTestC
   }
 
   @Test
-  public void should_execute_bound_statement() throws Exception {
+  public void should_execute_bound_statement() {
     //Given
     String queries = "@prepare[users_insert]=INSERT INTO zeppelin.users" +
             "(login,firstname,lastname,addresses,location)" +
@@ -414,7 +413,7 @@ public class CassandraInterpreterTest { //extends AbstractCassandraUnit4CQLTestC
   }
 
   @Test
-  public void should_exception_when_executing_unknown_bound_statement() throws Exception {
+  public void should_exception_when_executing_unknown_bound_statement() {
     //Given
     String queries = "@bind[select_users]='jdoe'";
 
@@ -429,7 +428,7 @@ public class CassandraInterpreterTest { //extends AbstractCassandraUnit4CQLTestC
   }
 
   @Test
-  public void should_extract_variable_from_statement() throws Exception {
+  public void should_extract_variable_from_statement() {
     //Given
     AngularObjectRegistry angularObjectRegistry = new AngularObjectRegistry("cassandra", null);
     GUI gui = new GUI();
@@ -455,7 +454,7 @@ public class CassandraInterpreterTest { //extends AbstractCassandraUnit4CQLTestC
   }
 
   @Test
-  public void should_just_prepare_statement() throws Exception {
+  public void should_just_prepare_statement() {
     //Given
     String queries = "@prepare[just_prepare]=SELECT name,country,styles " +
             "FROM zeppelin.artists LIMIT 3";
@@ -471,7 +470,7 @@ public class CassandraInterpreterTest { //extends AbstractCassandraUnit4CQLTestC
   }
 
   @Test
-  public void should_execute_bound_statement_with_no_bound_value() throws Exception {
+  public void should_execute_bound_statement_with_no_bound_value() {
     //Given
     String queries = "@prepare[select_no_bound_value]=SELECT name,country,styles " +
             "FROM zeppelin.artists LIMIT 3\n" +
@@ -489,7 +488,7 @@ public class CassandraInterpreterTest { //extends AbstractCassandraUnit4CQLTestC
   }
 
   @Test
-  public void should_parse_date_value() throws Exception {
+  public void should_parse_date_value() {
     //Given
     String queries = "@prepare[parse_date]=INSERT INTO zeppelin.users(login,last_update) " +
             "VALUES(?,?)\n" +
@@ -504,7 +503,7 @@ public class CassandraInterpreterTest { //extends AbstractCassandraUnit4CQLTestC
   }
 
   @Test
-  public void should_bind_null_value() throws Exception {
+  public void should_bind_null_value() {
     //Given
     String queries = "@prepare[bind_null]=INSERT INTO zeppelin.users(login,firstname,lastname) " +
             "VALUES(?,?,?)\n" +
@@ -520,7 +519,7 @@ public class CassandraInterpreterTest { //extends AbstractCassandraUnit4CQLTestC
   }
 
   @Test
-  public void should_bind_boolean_value() throws Exception {
+  public void should_bind_boolean_value() {
     //Given
     String queries = "@prepare[bind_boolean]=INSERT INTO zeppelin.users(login,deceased) " +
             "VALUES(?,?)\n" +
@@ -536,7 +535,7 @@ public class CassandraInterpreterTest { //extends AbstractCassandraUnit4CQLTestC
   }
 
   @Test
-  public void should_fail_when_executing_a_removed_prepared_statement() throws Exception {
+  public void should_fail_when_executing_a_removed_prepared_statement() {
     //Given
     String prepareFirst = "@prepare[to_be_removed]=INSERT INTO zeppelin.users(login,deceased) " +
             "VALUES(?,?)";
@@ -555,7 +554,7 @@ public class CassandraInterpreterTest { //extends AbstractCassandraUnit4CQLTestC
   }
 
   @Test
-  public void should_display_statistics_for_non_select_statement() throws Exception {
+  public void should_display_statistics_for_non_select_statement() {
     //Given
     String query = "USE zeppelin;\nCREATE TABLE IF NOT EXISTS no_select(id int PRIMARY KEY);";
     final String rawResult = reformatHtml(readTestResource(
@@ -574,7 +573,7 @@ public class CassandraInterpreterTest { //extends AbstractCassandraUnit4CQLTestC
   }
 
   @Test
-  public void should_error_and_display_stack_trace() throws Exception {
+  public void should_error_and_display_stack_trace() {
     //Given
     String query = "@consistency=THREE\n" +
             "SELECT * FROM zeppelin.users LIMIT 3;";
@@ -588,7 +587,7 @@ public class CassandraInterpreterTest { //extends AbstractCassandraUnit4CQLTestC
   }
 
   @Test
-  public void should_describe_cluster() throws Exception {
+  public void should_describe_cluster() {
     //Given
 
     String query = "DESCRIBE CLUSTER;";
@@ -604,7 +603,7 @@ public class CassandraInterpreterTest { //extends AbstractCassandraUnit4CQLTestC
   }
 
   @Test
-  public void should_describe_keyspaces() throws Exception {
+  public void should_describe_keyspaces() {
     //Given
     String query = "DESCRIBE KEYSPACES;";
     final String expected = reformatHtml(
@@ -619,7 +618,7 @@ public class CassandraInterpreterTest { //extends AbstractCassandraUnit4CQLTestC
   }
 
   @Test
-  public void should_describe_keyspace() throws Exception {
+  public void should_describe_keyspace() {
     //Given
     String query = "DESCRIBE KEYSPACE live_data;";
     final String expected = reformatHtml(
@@ -703,7 +702,7 @@ public class CassandraInterpreterTest { //extends AbstractCassandraUnit4CQLTestC
   }
 
   @Test
-  public void should_describe_table() throws Exception {
+  public void should_describe_table() {
     //Given
     String query = "DESCRIBE TABLE live_data.complex_table;";
     final String expected = reformatHtml(
@@ -718,7 +717,7 @@ public class CassandraInterpreterTest { //extends AbstractCassandraUnit4CQLTestC
   }
 
   @Test
-  public void should_describe_udt() throws Exception {
+  public void should_describe_udt() {
     //Given
     String query = "DESCRIBE TYPE live_data.address;";
     final String expected = reformatHtml(
@@ -733,7 +732,7 @@ public class CassandraInterpreterTest { //extends AbstractCassandraUnit4CQLTestC
   }
 
   @Test
-  public void should_describe_udt_withing_logged_in_keyspace() throws Exception {
+  public void should_describe_udt_withing_logged_in_keyspace() {
     //Given
     String query = "USE live_data;\n" +
             "DESCRIBE TYPE address;";
@@ -749,7 +748,7 @@ public class CassandraInterpreterTest { //extends AbstractCassandraUnit4CQLTestC
   }
 
   @Test
-  public void should_describe_all_tables() throws Exception {
+  public void should_describe_all_tables() {
     //Given
     String query = "DESCRIBE TABLES;";
     final String expected = reformatHtml(readTestResource(
@@ -764,7 +763,7 @@ public class CassandraInterpreterTest { //extends AbstractCassandraUnit4CQLTestC
   }
 
   @Test
-  public void should_describe_all_udts() throws Exception {
+  public void should_describe_all_udts() {
     //Given
     String query = "DESCRIBE TYPES;";
     final String expected = reformatHtml(readTestResource(
@@ -780,7 +779,7 @@ public class CassandraInterpreterTest { //extends AbstractCassandraUnit4CQLTestC
 
 
   @Test
-  public void should_error_describing_non_existing_table() throws Exception {
+  public void should_error_describing_non_existing_table() {
     //Given
     String query = "USE system;\n" +
             "DESCRIBE TABLE complex_table;";
@@ -795,7 +794,7 @@ public class CassandraInterpreterTest { //extends AbstractCassandraUnit4CQLTestC
   }
 
   @Test
-  public void should_error_describing_non_existing_udt() throws Exception {
+  public void should_error_describing_non_existing_udt() {
     //Given
     String query = "USE system;\n" +
             "DESCRIBE TYPE address;";
@@ -809,7 +808,7 @@ public class CassandraInterpreterTest { //extends AbstractCassandraUnit4CQLTestC
   }
 
   @Test
-  public void should_show_help() throws Exception {
+  public void should_show_help() {
     //Given
     String query = "HELP;";
     final String expected = reformatHtml(readTestResource("/scalate/Help.html"));
