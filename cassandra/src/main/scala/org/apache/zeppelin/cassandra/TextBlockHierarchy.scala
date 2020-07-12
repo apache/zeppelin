@@ -16,7 +16,6 @@
  */
 package org.apache.zeppelin.cassandra
 
-import com.datastax.driver.core._
 import com.datastax.oss.driver.api.core.ConsistencyLevel
 import com.datastax.oss.driver.api.core.cql.BatchType
 
@@ -171,6 +170,6 @@ object TextBlockHierarchy {
     }
   }
 
-  case class HelpCmd(val statement:String = "HELP;") extends QueryStatement(HelpStatementType)
+  case class HelpCmd(statement: String = "HELP;") extends QueryStatement(HelpStatementType)
 
 }
