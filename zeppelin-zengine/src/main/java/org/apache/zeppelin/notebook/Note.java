@@ -129,7 +129,7 @@ public class Note implements JsonSerializable {
   private transient ParagraphJobListener paragraphJobListener;
   private transient List<NoteEventListener> noteEventListeners = new ArrayList<>();
   private transient Credentials credentials;
-
+  private transient ZeppelinConfiguration zConf = ZeppelinConfiguration.create();
 
   public Note() {
     generateId();
@@ -148,7 +148,7 @@ public class Note implements JsonSerializable {
     this.version = Util.getVersion();
     generateId();
 
-    setCronSupported(ZeppelinConfiguration.create());
+    setCronSupported(zConf);
   }
 
   public Note(NoteInfo noteInfo) {
@@ -1130,6 +1130,9 @@ public class Note implements JsonSerializable {
       p.setAuthenticationInfo(AuthenticationInfo.ANONYMOUS);
 
       if (p.getStatus() == Status.PENDING) {
+        p.setStatus(Status.ABORT);
+      }
+      if (p.getStatus() == Status.RUNNING && !zConf.isRecoveryEnabled()) {
         p.setStatus(Status.ABORT);
       }
 
