@@ -201,7 +201,7 @@ You can also set other Spark properties which are not listed in the table. For a
   </tr>
   <td>spark.repl.target</td>
       <td>jvm-1.8</td>
-      <td>Manually specifying the Java version of Spark Interpreter Scala REPL,Available options:[jvm-1.5, jvm-1.6, jvm-1.7, jvm-1.8</td>
+      <td>Manually specifying the Java version of Spark Interpreter Scala REPL,Available options:[jvm-1.5, jvm-1.6, jvm-1.7, jvm-1.8] </td>
     </tr>
 </table>
 
