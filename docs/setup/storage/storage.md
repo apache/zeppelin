@@ -206,6 +206,27 @@ Or using the following setting in **zeppelin-site.xml**:
 
 </br>
 
+### S3 Object Permissions
+
+S3 allows writing objects into buckets owned by a different account than the requestor, when this happens S3 by default does not grant the bucket owner permissions to the written object. Setting the Canned ACL when communicating with S3 determines the permissions of notebooks saved in S3. Allowed values for Canned ACL are found [here](https://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/s3/model/CannedAccessControlList.html), the most frequent value is "BucketOwnerFullControl". Set the following environment variable in the file **zeppelin-env.sh**:
+
+
+```bash
+export ZEPPELIN_NOTEBOOK_S3_CANNED_ACL=BucketOwnerFullControl
+```
+
+Or using the following setting in **zeppelin-site.xml**:
+
+```xml
+<property>
+  <name>zeppelin.notebook.s3.cannedAcl</name>
+  <value>BucketOwnerFullControl</value>
+  <description>Saves notebooks in S3 with the given Canned Access Control List.</description>
+</property>
+```
+
+</br>
+
 ## Notebook Storage in Azure <a name="Azure"></a>
 
 Using `AzureNotebookRepo` you can connect your Zeppelin with your Azure account for notebook storage.

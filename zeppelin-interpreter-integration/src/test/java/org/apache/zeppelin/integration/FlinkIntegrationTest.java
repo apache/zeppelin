@@ -23,7 +23,7 @@ import org.apache.hadoop.yarn.api.protocolrecords.GetApplicationsResponse;
 import org.apache.hadoop.yarn.api.records.YarnApplicationState;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.apache.hadoop.yarn.exceptions.YarnException;
-import org.apache.zeppelin.interpreter.ExecutionContext;
+import org.apache.zeppelin.interpreter.ExecutionContextBuilder;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
@@ -50,7 +50,7 @@ import static org.junit.Assert.assertTrue;
 
 @RunWith(value = Parameterized.class)
 public class FlinkIntegrationTest {
-  private static Logger LOGGER = LoggerFactory.getLogger(SparkIntegrationTest.class);
+  private static Logger LOGGER = LoggerFactory.getLogger(FlinkIntegrationTest.class);
 
   private static MiniHadoopCluster hadoopCluster;
   private static MiniZeppelin zeppelin;
@@ -65,13 +65,14 @@ public class FlinkIntegrationTest {
     LOGGER.info("Testing FlinkVersion: " + flinkVersion);
     this.flinkVersion = flinkVersion;
     this.flinkHome = DownloadUtils.downloadFlink(flinkVersion);
-    this.hadoopHome = DownloadUtils.downloadHadoop("2.7.3");
+    this.hadoopHome = DownloadUtils.downloadHadoop("2.7.7");
   }
 
   @Parameterized.Parameters
   public static List<Object[]> data() {
     return Arrays.asList(new Object[][]{
-        {"1.9.0"}
+        {"1.10.1"},
+        {"1.11.0"}
     });
   }
 
@@ -100,7 +101,7 @@ public class FlinkIntegrationTest {
 
   private void testInterpreterBasics() throws IOException, InterpreterException {
     // test FlinkInterpreter
-    Interpreter flinkInterpreter = interpreterFactory.getInterpreter("flink", new ExecutionContext("user1", "note1", "flink"));
+    Interpreter flinkInterpreter = interpreterFactory.getInterpreter("flink", new ExecutionContextBuilder().setUser("user1").setNoteId("note1").setDefaultInterpreterGroup("flink").createExecutionContext());
 
     InterpreterContext context = new InterpreterContext.Builder().setNoteId("note1").setParagraphId("paragraph_1").build();
     InterpreterResult interpreterResult = flinkInterpreter.interpret("1+1", context);
@@ -110,6 +111,9 @@ public class FlinkIntegrationTest {
     interpreterResult = flinkInterpreter.interpret("val data = benv.fromElements(1, 2, 3)\ndata.collect()", context);
     assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
     assertTrue(interpreterResult.message().get(0).getData().contains("1, 2, 3"));
+
+    interpreterResult = flinkInterpreter.interpret("val data = senv.fromElements(1, 2, 3)\ndata.print()", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
   }
 
   @Test
@@ -117,6 +121,7 @@ public class FlinkIntegrationTest {
     InterpreterSetting flinkInterpreterSetting = interpreterSettingManager.getInterpreterSettingByName("flink");
     flinkInterpreterSetting.setProperty("FLINK_HOME", flinkHome);
     flinkInterpreterSetting.setProperty("ZEPPELIN_CONF_DIR", zeppelin.getZeppelinConfDir().getAbsolutePath());
+    flinkInterpreterSetting.setProperty("flink.execution.mode", "local");
 
     testInterpreterBasics();
 

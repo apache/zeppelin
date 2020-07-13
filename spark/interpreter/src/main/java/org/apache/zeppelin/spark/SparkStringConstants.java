@@ -14,34 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.zeppelin.rest.message;
 
-import com.google.gson.Gson;
+package org.apache.zeppelin.spark;
 
-import java.util.Map;
-
-import org.apache.zeppelin.common.JsonSerializable;
-
-/**
- * RunParagraphWithParametersRequest rest api request message.
- */
-public class RunParagraphWithParametersRequest implements JsonSerializable {
-  private static final Gson gson = new Gson();
-
-  Map<String, Object> params;
-
-  public RunParagraphWithParametersRequest() {
-  }
-
-  public Map<String, Object> getParams() {
-    return params;
-  }
-
-  public String toJson() {
-    return gson.toJson(this);
-  }
-
-  public static RunParagraphWithParametersRequest fromJson(String json) {
-    return gson.fromJson(json, RunParagraphWithParametersRequest.class);
-  }
+public class SparkStringConstants {
+    public static final String MASTER_PROP_NAME = "spark.master";
+    public static final String MASTER_ENV_NAME = "SPARK_MASTER";
+    public static final String SCHEDULER_MODE_PROP_NAME = "spark.scheduler.mode";
+    public static final String APP_NAME_PROP_NAME = "spark.app.name";
+    public static final String SUBMIT_DEPLOY_MODE_PROP_NAME = "spark.submit.deployMode";
+    public static final String DEFAULT_MASTER_VALUE = "local[*]";
 }

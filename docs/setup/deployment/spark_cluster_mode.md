@@ -130,14 +130,13 @@ You can also check each application web UI for HDFS on `http://<hostname>:50070/
 Set following configurations to `conf/zeppelin-env.sh`.
 
 ```bash
-export MASTER=yarn-client
 export HADOOP_CONF_DIR=[your_hadoop_conf_path]
 export SPARK_HOME=[your_spark_home_path]
 ```
 
 `HADOOP_CONF_DIR`(Hadoop configuration path) is defined in `/scripts/docker/spark-cluster-managers/spark_yarn_cluster/hdfs_conf`.
 
-Don't forget to set Spark `master` as `yarn-client` in Zeppelin **Interpreters** setting page like below.
+Don't forget to set Spark `spark.master` as `yarn-client` in Zeppelin **Interpreters** setting page like below.
 
 <img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/zeppelin_yarn_conf.png" />
 
@@ -193,13 +192,12 @@ You can also check each application web UI for Mesos on `http://<hostname>:5050/
 ### 4. Configure Spark interpreter in Zeppelin
 
 ```bash
-export MASTER=mesos://127.0.1.1:5050
 export MESOS_NATIVE_JAVA_LIBRARY=[PATH OF libmesos.so]
 export SPARK_HOME=[PATH OF SPARK HOME]
 ```
 
 
-Don't forget to set Spark `master` as `mesos://127.0.1.1:5050` in Zeppelin **Interpreters** setting page like below.
+Don't forget to set Spark `spark.master` as `mesos://127.0.1.1:5050` in Zeppelin **Interpreters** setting page like below.
 
 <img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/zeppelin_mesos_conf.png" />
 

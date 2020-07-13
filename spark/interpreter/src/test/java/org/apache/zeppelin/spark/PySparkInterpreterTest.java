@@ -46,8 +46,8 @@ public class PySparkInterpreterTest extends PythonInterpreterTest {
   @Override
   public void setUp() throws InterpreterException {
     Properties properties = new Properties();
-    properties.setProperty("spark.master", "local");
-    properties.setProperty("spark.app.name", "Zeppelin Test");
+    properties.setProperty(SparkStringConstants.MASTER_PROP_NAME, "local");
+    properties.setProperty(SparkStringConstants.APP_NAME_PROP_NAME, "Zeppelin Test");
     properties.setProperty("zeppelin.spark.useHiveContext", "false");
     properties.setProperty("zeppelin.spark.maxResult", "3");
     properties.setProperty("zeppelin.spark.importImplicit", "true");
@@ -104,7 +104,7 @@ public class PySparkInterpreterTest extends PythonInterpreterTest {
     intpGroup = new InterpreterGroup();
 
     Properties properties = new Properties();
-    properties.setProperty("spark.app.name", "Zeppelin Test");
+    properties.setProperty(SparkStringConstants.APP_NAME_PROP_NAME, "Zeppelin Test");
     properties.setProperty("spark.pyspark.python", "invalid_python");
     properties.setProperty("zeppelin.python.useIPython", "false");
     properties.setProperty("zeppelin.python.gatewayserver_address", "127.0.0.1");

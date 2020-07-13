@@ -55,6 +55,7 @@ import java.time.temporal.ChronoField;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Properties;
 
 import scala.Option;
 
@@ -82,7 +83,7 @@ public class InterpreterLogicTest {
   @Mock
   private CqlSession session;
 
-  final InterpreterLogic helper = new InterpreterLogic(session);
+  final InterpreterLogic helper = new InterpreterLogic(session, new Properties());
 
   @Captor
   ArgumentCaptor<ParamOption[]> optionsCaptor;

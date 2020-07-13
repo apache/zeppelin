@@ -48,8 +48,8 @@ public class SparkSqlInterpreterTest {
   @BeforeClass
   public static void setUp() throws Exception {
     Properties p = new Properties();
-    p.setProperty("spark.master", "local[4]");
-    p.setProperty("spark.app.name", "test");
+    p.setProperty(SparkStringConstants.MASTER_PROP_NAME, "local[4]");
+    p.setProperty(SparkStringConstants.APP_NAME_PROP_NAME, "test");
     p.setProperty("zeppelin.spark.maxResult", "10");
     p.setProperty("zeppelin.spark.concurrentSQL", "true");
     p.setProperty("zeppelin.spark.sql.stacktrace", "true");
@@ -171,6 +171,32 @@ public class SparkSqlInterpreterTest {
     assertEquals(InterpreterResult.Code.SUCCESS, ret.code());
     // the number of rows is 5+1, 1 is the head of table
     assertEquals(6, ret.message().get(0).getData().split("\n").length);
+  }
+
+  @Test
+  public void testSingleRowResult() throws InterpreterException {
+    sparkInterpreter.interpret("case class P(age:Int)", context);
+    sparkInterpreter.interpret(
+            "val gr = sc.parallelize(Seq(P(1),P(2),P(3),P(4),P(5),P(6),P(7),P(8),P(9),P(10)))",
+            context);
+    sparkInterpreter.interpret("gr.toDF.registerTempTable(\"gr\")", context);
+
+    context = InterpreterContext.builder()
+            .setNoteId("noteId")
+            .setParagraphId("paragraphId")
+            .setParagraphTitle("title")
+            .setAngularObjectRegistry(new AngularObjectRegistry(intpGroup.getId(), null))
+            .setResourcePool(new LocalResourcePool("id"))
+            .setInterpreterOut(new InterpreterOutput(null))
+            .setIntpEventClient(mock(RemoteInterpreterEventClient.class))
+            .build();
+    context.getLocalProperties().put("template", "Total count: <h1>{0}</h1>, Total age: <h1>{1}</h1>");
+
+    InterpreterResult ret = sqlInterpreter.interpret("select count(1), sum(age) from gr", context);
+    context.getLocalProperties().remove("template");
+    assertEquals(InterpreterResult.Code.SUCCESS, ret.code());
+    assertEquals(Type.HTML, ret.message().get(0).getType());
+    assertEquals("Total count: <h1>10</h1>, Total age: <h1>55</h1>", ret.message().get(0).getData());
   }
 
   @Test

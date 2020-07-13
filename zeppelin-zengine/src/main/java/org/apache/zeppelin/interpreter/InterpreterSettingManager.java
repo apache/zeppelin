@@ -26,6 +26,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -50,7 +51,6 @@ import org.apache.zeppelin.interpreter.recovery.RecoveryStorage;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
-import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService;
 import org.apache.zeppelin.notebook.ApplicationState;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteEventListener;
@@ -81,7 +81,6 @@ import java.lang.reflect.Type;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.nio.file.DirectoryStream.Filter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -142,6 +141,8 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
   private ConfigStorage configStorage;
   private RemoteInterpreterEventServer interpreterEventServer;
   private Map<String, String> jupyterKernelLanguageMap = new HashMap<>();
+  private List<String> includesInterpreters;
+  private List<String> excludesInterpreters;
 
   @Inject
   public InterpreterSettingManager(ZeppelinConfiguration zeppelinConfiguration,
@@ -244,13 +245,18 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
       for (InterpreterSetting interpreterSettingTemplate : interpreterSettingTemplates.values()) {
         InterpreterSetting interpreterSetting = new InterpreterSetting(interpreterSettingTemplate);
         initInterpreterSetting(interpreterSetting);
-        interpreterSettings.put(interpreterSetting.getId(), interpreterSetting);
+        if (shouldRegister(interpreterSetting.getGroup())) {
+          interpreterSettings.put(interpreterSetting.getId(), interpreterSetting);
+        }
       }
       return;
     }
 
     //TODO(zjffdu) still ugly (should move all to InterpreterInfoSaving)
     for (InterpreterSetting savedInterpreterSetting : infoSaving.interpreterSettings.values()) {
+      if (!shouldRegister(savedInterpreterSetting.getGroup())) {
+        break;
+      }
       savedInterpreterSetting.setProperties(InterpreterSetting.convertInterpreterProperties(
           savedInterpreterSetting.getProperties()
       ));
@@ -323,13 +329,42 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
   }
 
   private void init() throws IOException {
+    this.includesInterpreters =
+            Arrays.asList(conf.getString(ConfVars.ZEPPELIN_INTERPRETER_INCLUDES).split(","))
+                    .stream()
+                    .filter(t -> !t.isEmpty())
+                    .collect(Collectors.toList());
+    this.excludesInterpreters =
+            Arrays.asList(conf.getString(ConfVars.ZEPPELIN_INTERPRETER_EXCLUDES).split(","))
+                    .stream()
+                    .filter(t -> !t.isEmpty())
+                    .collect(Collectors.toList());
+    if (!includesInterpreters.isEmpty() && !excludesInterpreters.isEmpty()) {
+      throw new IOException(String.format("%s and %s can not be specified together, only one can be set.",
+              ConfVars.ZEPPELIN_INTERPRETER_INCLUDES.getVarName(),
+              ConfVars.ZEPPELIN_INTERPRETER_EXCLUDES.getVarName()));
+    }
     loadJupyterKernelLanguageMap();
     loadInterpreterSettingFromDefaultDir(true);
     loadFromFile();
     saveToFile();
 
-    // must init Recovery after init of InterpreterSettingManagaer
+    // must init Recovery after init of InterpreterSettingManager
     recoveryStorage.init();
+  }
+
+  /**
+   * We should only register interpreterSetting when
+   * 1. No setting in 'zeppelin.interpreter.include' and 'zeppelin.interpreter.exclude'
+   * 2. It is specified in 'zeppelin.interpreter.include'
+   * 3. It is not specified in 'zeppelin.interpreter.exclude'
+   * @param group
+   * @return
+   */
+  private boolean shouldRegister(String group) {
+    return (includesInterpreters.isEmpty() && excludesInterpreters.isEmpty()) ||
+    (!includesInterpreters.isEmpty() && includesInterpreters.contains(group)) ||
+            (!excludesInterpreters.isEmpty() && !excludesInterpreters.contains(group));
   }
 
   private void loadJupyterKernelLanguageMap() throws IOException {
@@ -352,12 +387,11 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
     ClassLoader cl = Thread.currentThread().getContextClassLoader();
     if (Files.exists(interpreterDirPath)) {
       for (Path interpreterDir : Files
-          .newDirectoryStream(interpreterDirPath, new Filter<Path>() {
-            @Override
-            public boolean accept(Path entry) throws IOException {
-              return Files.exists(entry) && Files.isDirectory(entry);
-            }
-          })) {
+          .newDirectoryStream(interpreterDirPath,
+                  entry -> Files.exists(entry)
+                          && Files.isDirectory(entry)
+                          && shouldRegister(entry.toFile().getName()))) {
+
         String interpreterDirString = interpreterDir.toString();
         /**
          * Register interpreter by the following ordering
@@ -380,6 +414,10 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
 
   public void setNotebook(Notebook notebook) {
     this.notebook = notebook;
+  }
+
+  public Notebook getNotebook() {
+    return notebook;
   }
 
   public RemoteInterpreterProcessListener getRemoteInterpreterProcessListener() {
@@ -689,7 +727,11 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
   }
 
   public void removeResourcesBelongsToNote(String noteId) {
-    removeResourcesBelongsToParagraph(noteId, null);
+    try {
+      removeResourcesBelongsToParagraph(noteId, null);
+    } catch (Exception e) {
+      LOGGER.warn("Fail to remove resources", e);
+    }
   }
 
   /**
@@ -875,7 +917,7 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
 
   // restart in note page
   public void restart(String settingId, String user, String noteId) throws InterpreterException {
-    restart(settingId, new ExecutionContext(user, noteId));
+    restart(settingId, new ExecutionContextBuilder().setUser(user).setNoteId(noteId).createExecutionContext());
   }
 
   // restart in note page
@@ -1026,10 +1068,24 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
 
   @Override
   public void onNoteRemove(Note note, AuthenticationInfo subject) throws IOException {
+    // stop all associated interpreters
+    for (Paragraph paragraph : note.getParagraphs()) {
+      try {
+        Interpreter interpreter = paragraph.getBindedInterpreter();
+        InterpreterSetting interpreterSetting =
+                ((ManagedInterpreterGroup) interpreter.getInterpreterGroup()).getInterpreterSetting();
+        restart(interpreterSetting.getId(), subject.getUser(), note.getId());
+      } catch (InterpreterNotFoundException e) {
+
+      } catch (InterpreterException e) {
+        LOGGER.warn("Fail to stop interpreter setting", e);
+      }
+    }
+
     // remove from all interpreter instance's angular object registry
     for (InterpreterSetting settings : interpreterSettings.values()) {
       InterpreterGroup interpreterGroup = settings.getInterpreterGroup(
-              new ExecutionContext(subject.getUser(), note.getId()));
+              new ExecutionContextBuilder().setUser(subject.getUser()).setNoteId(note.getId()).createExecutionContext());
       if (interpreterGroup != null) {
         AngularObjectRegistry registry = interpreterGroup.getAngularObjectRegistry();
         if (registry instanceof RemoteAngularObjectRegistry) {

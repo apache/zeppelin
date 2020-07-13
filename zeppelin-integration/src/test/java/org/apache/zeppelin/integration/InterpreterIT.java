@@ -63,7 +63,7 @@ public class InterpreterIT extends AbstractZeppelinIT {
       select.selectByVisibleText("spark");
 
       collector.checkThat("description of interpreter property is displayed",
-          driver.findElement(By.xpath("//tr/td[contains(text(), 'spark.app.name')]/following-sibling::td[3]")).getText(),
+          driver.findElement(By.xpath("//tr/td[contains(text(), 'spark.app.name')]/following-sibling::td[2]")).getText(),
           CoreMatchers.equalTo("The name of spark application."));
 
     } catch (Exception e) {

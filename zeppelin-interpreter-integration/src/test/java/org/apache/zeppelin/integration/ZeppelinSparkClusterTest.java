@@ -63,6 +63,7 @@ import static org.junit.Assert.assertTrue;
 public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ZeppelinSparkClusterTest.class);
+  public static final String SPARK_MASTER_PROPERTY_NAME = "spark.master";
 
   //This is for only run setupSparkInterpreter one time for each spark version, otherwise
   //each test method will run setupSparkInterpreter which will cost a long time and may cause travis
@@ -75,10 +76,10 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
   private String sparkHome;
   private AuthenticationInfo anonymous = new AuthenticationInfo("anonymous");
 
-  public ZeppelinSparkClusterTest(String sparkVersion) throws Exception {
+  public ZeppelinSparkClusterTest(String sparkVersion, String hadoopVersion) throws Exception {
     this.sparkVersion = sparkVersion;
     LOGGER.info("Testing SparkVersion: " + sparkVersion);
-    this.sparkHome = DownloadUtils.downloadSpark(sparkVersion);
+    this.sparkHome = DownloadUtils.downloadSpark(sparkVersion, hadoopVersion);
     if (!verifiedSparkVersions.contains(sparkVersion)) {
       verifiedSparkVersions.add(sparkVersion);
       setupSparkInterpreter(sparkHome);
@@ -93,14 +94,10 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
     Map<String, InterpreterProperty> sparkProperties =
         (Map<String, InterpreterProperty>) sparkIntpSetting.getProperties();
     LOG.info("SPARK HOME detected " + sparkHome);
-    if (System.getenv("SPARK_MASTER") != null) {
-      sparkProperties.put("master",
-          new InterpreterProperty("master", System.getenv("SPARK_MASTER")));
-    } else {
-      sparkProperties.put("master", new InterpreterProperty("master", "local[2]"));
-    }
+    String masterEnv = System.getenv("SPARK_MASTER");
+    sparkProperties.put(SPARK_MASTER_PROPERTY_NAME,
+        new InterpreterProperty(SPARK_MASTER_PROPERTY_NAME, masterEnv == null ? "local[2]" : masterEnv));
     sparkProperties.put("SPARK_HOME", new InterpreterProperty("SPARK_HOME", sparkHome));
-    sparkProperties.put("spark.master", new InterpreterProperty("spark.master", "local[2]"));
     sparkProperties.put("spark.cores.max",
         new InterpreterProperty("spark.cores.max", "2"));
     sparkProperties.put("zeppelin.spark.useHiveContext",
@@ -194,7 +191,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
       assertEquals(Status.ABORT, p.getStatus());
     } finally {
       if (null != note) {
-        TestUtils.getInstance(Notebook.class).removeNote(note.getId(), anonymous);
+        TestUtils.getInstance(Notebook.class).removeNote(note, anonymous);
       }
     }
   }
@@ -211,7 +208,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
       assertEquals("55", p.getReturn().message().get(0).getData());
     } finally {
       if (null != note) {
-        TestUtils.getInstance(Notebook.class).removeNote(note.getId(), anonymous);
+        TestUtils.getInstance(Notebook.class).removeNote(note, anonymous);
       }
     }
   }
@@ -227,14 +224,14 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
       IOUtils.copy(new StringReader("{\"metadata\": { \"key\": 84896, \"value\": 54 }}\n"),
               jsonFileWriter);
       jsonFileWriter.close();
-      if (isSpark2()) {
+      if (isSpark2() || isSpark3()) {
         p.setText("%spark spark.read.json(\"file://" + tmpJsonFile.getAbsolutePath() + "\")");
       } else {
         p.setText("%spark sqlContext.read.json(\"file://" + tmpJsonFile.getAbsolutePath() + "\")");
       }
       note.run(p.getId(), true);
       assertEquals(Status.FINISHED, p.getStatus());
-      if (isSpark2()) {
+      if (isSpark2() || isSpark3()) {
         assertTrue(p.getReturn().message().get(0).getData().contains(
                 "org.apache.spark.sql.DataFrame = [metadata: struct<key: bigint, value: bigint>]"));
       } else {
@@ -243,14 +240,14 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
       }
     } finally {
       if (null != note) {
-        TestUtils.getInstance(Notebook.class).removeNote(note.getId(), anonymous);
+        TestUtils.getInstance(Notebook.class).removeNote(note, anonymous);
       }
     }
   }
 
   @Test
   public void sparkReadCSVTest() throws IOException {
-    if (!isSpark2()) {
+    if (isSpark1()) {
       // csv if not supported in spark 1.x natively
       return;
     }
@@ -270,7 +267,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
               "org.apache.spark.sql.DataFrame = [_c0: string, _c1: string]\n"));
     } finally {
       if (null != note) {
-        TestUtils.getInstance(Notebook.class).removeNote(note.getId(), anonymous);
+        TestUtils.getInstance(Notebook.class).removeNote(note, anonymous);
       }
     }
   }
@@ -282,7 +279,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
       note = TestUtils.getInstance(Notebook.class).createNote("note1", anonymous);
       // test basic dataframe api
       Paragraph p = note.addNewParagraph(anonymous);
-      if (isSpark2()) {
+      if (isSpark2() || isSpark3()) {
         p.setText("%spark val df=spark.createDataFrame(Seq((\"hello\",20)))" +
                 ".toDF(\"name\", \"age\")\n" +
                 "df.collect()");
@@ -298,7 +295,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
 
       // test display DataFrame
       p = note.addNewParagraph(anonymous);
-      if (isSpark2()) {
+      if (isSpark2() || isSpark3()) {
         p.setText("%spark val df=spark.createDataFrame(Seq((\"hello\",20)))" +
                 ".toDF(\"name\", \"age\")\n" +
                 "df.createOrReplaceTempView(\"test_table\")\n" +
@@ -356,7 +353,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
               p.getReturn().message().get(0).getData().contains("name age\n1 hello  20"));
 
       // test display DataSet
-      if (isSpark2()) {
+      if (isSpark2() || isSpark3()) {
         p = note.addNewParagraph(anonymous);
         p.setText("%spark val ds=spark.createDataset(Seq((\"hello\",20)))\n" +
             "z.show(ds)");
@@ -367,7 +364,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
       }
     } finally {
       if (null != note) {
-        TestUtils.getInstance(Notebook.class).removeNote(note.getId(), anonymous);
+        TestUtils.getInstance(Notebook.class).removeNote(note, anonymous);
       }
     }
   }
@@ -377,22 +374,30 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
     Note note = null;
     try {
       note = TestUtils.getInstance(Notebook.class).createNote("note1", anonymous);
-
-      String sqlContextName = "sqlContext";
-      if (isSpark2()) {
-        sqlContextName = "spark";
-      }
       Paragraph p = note.addNewParagraph(anonymous);
-      p.setText("%spark.r localDF <- data.frame(name=c(\"a\", \"b\", \"c\"), age=c(19, 23, 18))\n" +
-          "df <- createDataFrame(" + sqlContextName + ", localDF)\n" +
-          "count(df)"
-      );
+
+      if (isSpark3()) {
+        p.setText("%spark.r localDF <- data.frame(name=c(\"a\", \"b\", \"c\"), age=c(19, 23, 18))\n" +
+                "df <- createDataFrame(localDF)\n" +
+                "count(df)"
+        );
+      } else {
+        String sqlContextName = "sqlContext";
+        if (isSpark2() || isSpark3()) {
+          sqlContextName = "spark";
+        }
+        p.setText("%spark.r localDF <- data.frame(name=c(\"a\", \"b\", \"c\"), age=c(19, 23, 18))\n" +
+                "df <- createDataFrame(" + sqlContextName + ", localDF)\n" +
+                "count(df)"
+        );
+      }
+
       note.run(p.getId(), true);
       assertEquals(Status.FINISHED, p.getStatus());
       assertEquals("[1] 3", p.getReturn().message().get(0).getData().trim());
     } finally {
       if (null != note) {
-        TestUtils.getInstance(Notebook.class).removeNote(note.getId(), anonymous);
+        TestUtils.getInstance(Notebook.class).removeNote(note, anonymous);
       }
     }
   }
@@ -418,7 +423,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
       assertEquals(Status.FINISHED, p.getStatus());
       assertEquals("name_abc\n", p.getReturn().message().get(0).getData());
 
-      if (!isSpark2()) {
+      if (isSpark1()) {
         // run sqlContext test
         p = note.addNewParagraph(anonymous);
         p.setText("%pyspark from pyspark.sql import Row\n" +
@@ -464,7 +469,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
             .contains("Fail to execute line 3: print(a2)"));
         assertTrue(p.getReturn().message().get(0).getData()
             .contains("name 'a2' is not defined"));
-      } else {
+      } else if (isSpark2()){
         // run SparkSession test
         p = note.addNewParagraph(anonymous);
         p.setText("%pyspark from pyspark.sql import Row\n" +
@@ -483,10 +488,29 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
         assertEquals(Status.FINISHED, p.getStatus());
         assertTrue("[Row(len=u'3')]\n".equals(p.getReturn().message().get(0).getData()) ||
             "[Row(len='3')]\n".equals(p.getReturn().message().get(0).getData()));
+      } else {
+        // run SparkSession test
+        p = note.addNewParagraph(anonymous);
+        p.setText("%pyspark from pyspark.sql import Row\n" +
+                "df=sqlContext.createDataFrame([Row(id=1, age=20)])\n" +
+                "df.collect()");
+        note.run(p.getId(), true);
+        assertEquals(Status.FINISHED, p.getStatus());
+        assertEquals("[Row(id=1, age=20)]\n", p.getReturn().message().get(0).getData());
+
+        // test udf
+        p = note.addNewParagraph(anonymous);
+        // use SQLContext to register UDF but use this UDF through SparkSession
+        p.setText("%pyspark sqlContext.udf.register(\"f1\", lambda x: len(x))\n" +
+                "spark.sql(\"select f1(\\\"abc\\\") as len\").collect()");
+        note.run(p.getId(), true);
+        assertEquals(Status.FINISHED, p.getStatus());
+        assertTrue("[Row(len=u'3')]\n".equals(p.getReturn().message().get(0).getData()) ||
+                "[Row(len='3')]\n".equals(p.getReturn().message().get(0).getData()));
       }
     } finally {
       if (null != note) {
-        TestUtils.getInstance(Notebook.class).removeNote(note.getId(), anonymous);
+        TestUtils.getInstance(Notebook.class).removeNote(note, anonymous);
       }
     }
   }
@@ -565,10 +589,10 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
       assertEquals("1", p21.getReturn().message().get(0).getData());
     } finally {
       if (null != note) {
-        TestUtils.getInstance(Notebook.class).removeNote(note.getId(), anonymous);
+        TestUtils.getInstance(Notebook.class).removeNote(note, anonymous);
       }
       if (null != note2) {
-        TestUtils.getInstance(Notebook.class).removeNote(note2.getId(), anonymous);
+        TestUtils.getInstance(Notebook.class).removeNote(note2, anonymous);
       }
     }
   }
@@ -613,7 +637,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
       assertEquals("hello world\n", p5.getReturn().message().get(0).getData());
     } finally {
       if (null != note) {
-        TestUtils.getInstance(Notebook.class).removeNote(note.getId(), anonymous);
+        TestUtils.getInstance(Notebook.class).removeNote(note, anonymous);
       }
     }
   }
@@ -650,10 +674,10 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
       assertEquals("1\n6\n2\n", p3.getReturn().message().get(0).getData());
     } finally {
       if (null != note) {
-        TestUtils.getInstance(Notebook.class).removeNote(note.getId(), anonymous);
+        TestUtils.getInstance(Notebook.class).removeNote(note, anonymous);
       }
       if (null != note2) {
-        TestUtils.getInstance(Notebook.class).removeNote(note2.getId(), anonymous);
+        TestUtils.getInstance(Notebook.class).removeNote(note2, anonymous);
       }
     }
   }
@@ -678,19 +702,21 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
               p.getReturn().message().get(0).getData().contains(sparkVersion));
     } finally {
       if (null != note) {
-        TestUtils.getInstance(Notebook.class).removeNote(note.getId(), anonymous);
+        TestUtils.getInstance(Notebook.class).removeNote(note, anonymous);
       }
     }
   }
 
-  private int toIntSparkVersion(String sparkVersion) {
-    String[] split = sparkVersion.split("\\.");
-    int version = Integer.parseInt(split[0]) * 10 + Integer.parseInt(split[1]);
-    return version;
+  private boolean isSpark1() {
+    return sparkVersion.startsWith("1.");
   }
 
   private boolean isSpark2() {
-    return toIntSparkVersion(sparkVersion) >= 20;
+    return sparkVersion.startsWith("2.");
+  }
+
+  private boolean isSpark3() {
+    return sparkVersion.startsWith("3.");
   }
 
   @Test
@@ -727,7 +753,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
       assertEquals("items: Seq[Any] = Buffer(2)", result[4]);
     } finally {
       if (null != note) {
-        TestUtils.getInstance(Notebook.class).removeNote(note.getId(), anonymous);
+        TestUtils.getInstance(Notebook.class).removeNote(note, anonymous);
       }
     }
   }
@@ -764,7 +790,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
       assertEquals("2", result[3]);
     } finally {
       if (null != note) {
-        TestUtils.getInstance(Notebook.class).removeNote(note.getId(), anonymous);
+        TestUtils.getInstance(Notebook.class).removeNote(note, anonymous);
       }
     }
   }
@@ -780,8 +806,15 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
       p1.setText("%spark z.angularBind(\"name\", \"world\")");
       note.run(p1.getId(), true);
       assertEquals(Status.FINISHED, p1.getStatus());
+      // angular object is saved to InterpreterGroup's AngularObjectRegistry
       List<AngularObject> angularObjects = p1.getBindedInterpreter().getInterpreterGroup()
               .getAngularObjectRegistry().getAll(note.getId(), null);
+      assertEquals(1, angularObjects.size());
+      assertEquals("name", angularObjects.get(0).getName());
+      assertEquals("world", angularObjects.get(0).get());
+
+      // angular object is saved to note as well.
+      angularObjects = note.getAngularObjects(p1.getBindedInterpreter().getInterpreterGroup().getId());
       assertEquals(1, angularObjects.size());
       assertEquals("name", angularObjects.get(0).getName());
       assertEquals("world", angularObjects.get(0).get());
@@ -795,6 +828,9 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
               .getAll(note.getId(), null);
       assertEquals(0, angularObjects.size());
 
+      angularObjects = note.getAngularObjects(p1.getBindedInterpreter().getInterpreterGroup().getId());
+      assertEquals(0, angularObjects.size());
+
       // add global angular object
       Paragraph p3 = note.addNewParagraph(anonymous);
       p3.setText("%spark z.angularBindGlobal(\"name2\", \"world2\")");
@@ -806,6 +842,10 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
       assertEquals("name2", globalAngularObjects.get(0).getName());
       assertEquals("world2", globalAngularObjects.get(0).get());
 
+      // global angular object is not saved to note
+      angularObjects = note.getAngularObjects(p1.getBindedInterpreter().getInterpreterGroup().getId());
+      assertEquals(0, angularObjects.size());
+
       // remove global angular object
       Paragraph p4 = note.addNewParagraph(anonymous);
       p4.setText("%spark z.angularUnbindGlobal(\"name2\")");
@@ -814,9 +854,13 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
       globalAngularObjects = p4.getBindedInterpreter().getInterpreterGroup()
               .getAngularObjectRegistry().getAll(note.getId(), null);
       assertEquals(0, globalAngularObjects.size());
+
+      // global angular object is not saved to note
+      angularObjects = note.getAngularObjects(p1.getBindedInterpreter().getInterpreterGroup().getId());
+      assertEquals(0, angularObjects.size());
     } finally {
       if (null != note) {
-        TestUtils.getInstance(Notebook.class).removeNote(note.getId(), anonymous);
+        TestUtils.getInstance(Notebook.class).removeNote(note, anonymous);
       }
     }
   }
@@ -880,7 +924,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
       assertTrue(p2.getReturn().toString(), p2.getReturn().toString().contains("hello java,scala"));
     } finally {
       if (null != note) {
-        TestUtils.getInstance(Notebook.class).removeNote(note.getId(), anonymous);
+        TestUtils.getInstance(Notebook.class).removeNote(note, anonymous);
       }
     }
   }
@@ -944,7 +988,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
       assertTrue(p2.getReturn().toString(), p2.getReturn().toString().contains("hello java,scala"));
     } finally {
       if (null != note) {
-        TestUtils.getInstance(Notebook.class).removeNote(note.getId(), anonymous);
+        TestUtils.getInstance(Notebook.class).removeNote(note, anonymous);
       }
     }
   }
@@ -974,7 +1018,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
       assertTrue(p2.getReturn().toString(), p2.getReturn().toString().contains("hello world"));
     } finally {
       if (null != note) {
-        TestUtils.getInstance(Notebook.class).removeNote(note.getId(), anonymous);
+        TestUtils.getInstance(Notebook.class).removeNote(note, anonymous);
       }
     }
   }
@@ -994,9 +1038,23 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
       p1.setText("%spark\nimport com.databricks.spark.csv._");
       note.run(p1.getId(), true);
       assertEquals(Status.FINISHED, p1.getStatus());
+
+      // test pyspark imports path
+      Paragraph p2 = note.addNewParagraph(anonymous);
+      p2.setText("%spark.pyspark\nimport sys\nsys.path");
+      note.run(p2.getId(), true);
+      assertEquals(Status.FINISHED, p2.getStatus());
+      assertTrue(p2.getReturn().toString().contains("databricks_spark"));
+
+      Paragraph p3 = note.addNewParagraph(anonymous);
+      p3.setText("%spark.ipyspark\nimport sys\nsys.path");
+      note.run(p3.getId(), true);
+      assertEquals(Status.FINISHED, p3.getStatus());
+      assertTrue(p3.getReturn().toString().contains("databricks_spark"));
+
     } finally {
       if (null != note) {
-        TestUtils.getInstance(Notebook.class).removeNote(note.getId(), anonymous);
+        TestUtils.getInstance(Notebook.class).removeNote(note, anonymous);
       }
     }
   }
@@ -1026,7 +1084,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
               p1.getReturn().message().get(0).getData().contains("No such file or directory"));
     } finally {
       if (null != note) {
-        TestUtils.getInstance(Notebook.class).removeNote(note.getId(), anonymous);
+        TestUtils.getInstance(Notebook.class).removeNote(note, anonymous);
       }
       // reset SPARK_HOME, otherwise it will cause the following test fail
       InterpreterSetting sparkIntpSetting = TestUtils.getInstance(Notebook.class).getInterpreterSettingManager()

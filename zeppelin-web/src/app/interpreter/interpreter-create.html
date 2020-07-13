@@ -270,33 +270,33 @@ limitations under the License.
           <h5>Properties</h5>
           <table class="table table-striped properties">
             <tr>
-              <th>name</th>
-              <th>value</th>
-              <th>action</th>
-              <th>description</th>
+              <th style="width:25%;text-align: left">Name</th>
+              <th style="width:30%;text-align: left">Value</th>
+              <th style="width:30%;text-align: left">Description</th>
+              <th style="width:15%;text-align: right">Action</th>
             </tr>
-            <tr ng-repeat="key in newInterpreterSetting.properties | sortByKey">
-              <td>{{key}}</td>
-              <td style="vertical-align: middle;">
-                <textarea ng-if="newInterpreterSetting.properties[key].type === 'textarea'"
-                          msd-elastic ng-model="newInterpreterSetting.properties[key].value"></textarea>
-                <input ng-if="newInterpreterSetting.properties[key].type === 'string'"
-                       type="text" msd-elastic ng-model="newInterpreterSetting.properties[key].value" />
-                <input ng-if="newInterpreterSetting.properties[key].type === 'number'"
-                       type="text" number-widget msd-elastic ng-model="newInterpreterSetting.properties[key].value" />
-                <input ng-if="newInterpreterSetting.properties[key].type === 'url'"
-                       type="text" msd-elastic ng-model="newInterpreterSetting.properties[key].value" />
-                <input ng-if="newInterpreterSetting.properties[key].type === 'password'"
-                       type="password" msd-elastic ng-model="newInterpreterSetting.properties[key].value" />
-                <input ng-if="newInterpreterSetting.properties[key].type === 'checkbox'"
-                       type="checkbox" msd-elastic ng-model="newInterpreterSetting.properties[key].value" />
+            <tr ng-repeat="(key, property) in newInterpreterSetting.properties">
+              <td style="vertical-align: middle;text-align: left;">{{key}}</td>
+              <td style="vertical-align: middle;text-align: left;">
+                <textarea ng-if="property.type === 'textarea'"
+                          msd-elastic ng-model="property.value"></textarea>
+                <input ng-if="property.type === 'string'"
+                       type="text" msd-elastic ng-model="property.value" />
+                <input ng-if="property.type === 'number'"
+                       type="text" number-widget msd-elastic ng-model="property.value" />
+                <input ng-if="property.type === 'url'"
+                       type="text" msd-elastic ng-model="property.value" />
+                <input ng-if="property.type === 'password'"
+                       type="password" msd-elastic ng-model="property.value" />
+                <input ng-if="property.type === 'checkbox'"
+                       type="checkbox" msd-elastic ng-model="property.value" />
+              </td>
+              <td style="vertical-align: middle; text-align: left">
+                {{property.description}}
               </td>
               <td style="vertical-align: middle;">
                 <button class="btn btn-default btn-sm fa fa-remove" ng-click="removeInterpreterProperty(key)">
                 </button>
-              </td>
-              <td style="vertical-align: middle;">
-                {{newInterpreterSetting.properties[key].description}}
               </td>
             </tr>
 
@@ -329,9 +329,9 @@ limitations under the License.
           <h5>Dependencies</h5>
           <table class="table table-striped properties">
             <tr>
-              <th>artifact</th>
-              <th>exclude</th>
-              <th>action</th>
+              <th style="width:40%;text-align: left">Artifact</th>
+              <th style="width:40%;text-align: left">Exclude</th>
+              <th style="width:20%">Action</th>
             </tr>
 
             <tr ng-repeat="dep in newInterpreterSetting.dependencies">

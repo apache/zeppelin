@@ -354,13 +354,14 @@ public class TableEnvFactory {
     Executor executor = lookupExecutor(executorProperties, senv.getJavaEnv());
 
     Map<String, String> plannerProperties = settings.toPlannerProperties();
-    ComponentFactoryService.find(PlannerFactory.class, plannerProperties)
+    Planner planner = ComponentFactoryService.find(PlannerFactory.class, plannerProperties)
             .create(
                     plannerProperties,
                     executor,
                     tblConfig,
                     blinkFunctionCatalog,
                     catalogManager);
+    this.flinkShims.setCatalogManagerSchemaResolver(catalogManager, planner.getParser(), settings);
   }
 
   private static Executor lookupExecutor(

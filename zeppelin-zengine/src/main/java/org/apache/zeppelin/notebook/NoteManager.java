@@ -30,9 +30,11 @@ import javax.inject.Singleton;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Manager class for note. It handle all the note related operations, such as get, create,
@@ -86,17 +88,22 @@ public class NoteManager {
     return notesInfo;
   }
 
-  //TODO(zjffdu) This is inefficient
-  public List<Note> getAllNotes() {
-    List<Note> notes = new ArrayList<>();
-    for (String notePath : notesInfo.values()) {
-      try {
-        notes.add(getNoteNode(notePath).getNote());
-      } catch (Exception e) {
-        LOGGER.warn("Fail to load note: " + notePath, e);
-      }
-    }
-    return notes;
+  /**
+   * Return java stream instead of List to save memory, otherwise OOM will happen
+   * when there's large amount of notes.
+   * @return
+   */
+  public Stream<Note> getNotesStream() {
+    return notesInfo.values().stream()
+            .map(notePath -> {
+              try {
+                return getNoteNode(notePath).getNote();
+              } catch (Exception e) {
+                LOGGER.warn("Fail to load note: " + notePath, e);
+                return null;
+              }
+            })
+            .filter(note -> note != null);
   }
 
   /**

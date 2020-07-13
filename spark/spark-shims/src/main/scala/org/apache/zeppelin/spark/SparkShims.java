@@ -99,7 +99,7 @@ public abstract class SparkShims {
                                           String sparkWebUrl,
                                           InterpreterContext context);
 
-  public abstract String showDataFrame(Object obj, int maxResult);
+  public abstract String showDataFrame(Object obj, int maxResult, InterpreterContext context);
 
   public abstract Object getAsDataFrame(String value);
 

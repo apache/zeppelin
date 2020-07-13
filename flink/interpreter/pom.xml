@@ -145,18 +145,6 @@
     </dependency>
 
     <dependency>
-      <groupId>org.jline</groupId>
-      <artifactId>jline-terminal</artifactId>
-      <version>3.9.0</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.jline</groupId>
-      <artifactId>jline-reader</artifactId>
-      <version>3.9.0</version>
-    </dependency>
-
-    <dependency>
       <groupId>org.apache.flink</groupId>
       <artifactId>flink-python_${scala.binary.version}</artifactId>
       <version>${flink.version}</version>
@@ -619,13 +607,6 @@
     </dependency>
 
     <dependency>
-      <groupId>net.jodah</groupId>
-      <artifactId>concurrentunit</artifactId>
-      <version>0.4.4</version>
-      <scope>test</scope>
-    </dependency>
-
-    <dependency>
       <groupId>org.scalatest</groupId>
       <artifactId>scalatest_2.11</artifactId>
       <version>3.0.8</version>
@@ -799,9 +780,6 @@
       </plugin>
       <plugin>
         <artifactId>maven-dependency-plugin</artifactId>
-      </plugin>
-      <plugin>
-        <artifactId>maven-resources-plugin</artifactId>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>

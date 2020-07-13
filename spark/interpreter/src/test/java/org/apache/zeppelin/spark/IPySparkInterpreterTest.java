@@ -55,10 +55,9 @@ public class IPySparkInterpreterTest extends IPythonInterpreterTest {
   @Override
   protected Properties initIntpProperties() {
     Properties p = new Properties();
-    p.setProperty("spark.master", "local[4]");
-    p.setProperty("master", "local[4]");
+    p.setProperty(SparkStringConstants.MASTER_PROP_NAME, "local[4]");
     p.setProperty("spark.submit.deployMode", "client");
-    p.setProperty("spark.app.name", "Zeppelin Test");
+    p.setProperty(SparkStringConstants.APP_NAME_PROP_NAME, "Zeppelin Test");
     p.setProperty("zeppelin.spark.useHiveContext", "false");
     p.setProperty("zeppelin.spark.maxResult", "3");
     p.setProperty("zeppelin.spark.importImplicit", "true");

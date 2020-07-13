@@ -21,16 +21,21 @@ import org.apache.commons.pool2.BasePooledObjectFactory;
 import org.apache.commons.pool2.PooledObject;
 import org.apache.commons.pool2.impl.DefaultPooledObject;
 import org.apache.thrift.TServiceClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Factory class for creating thrift socket client.
  */
 public class RemoteClientFactory<T extends TServiceClient> extends BasePooledObjectFactory<T>{
 
-  private Set<T> clientSockets = new HashSet<>();
+  private static final Logger LOGGER = LoggerFactory.getLogger(RemoteClientFactory.class);
+
+  private Set<T> clientSockets = ConcurrentHashMap.newKeySet();
   private SupplierWithIO<T> supplier;
 
   public RemoteClientFactory(SupplierWithIO<T> supplier) {

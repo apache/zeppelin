@@ -27,6 +27,7 @@ import org.apache.zeppelin.interpreter.InterpreterResultMessage;
 import org.junit.Test;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.List;
@@ -251,6 +252,89 @@ public class FlinkStreamSqlInterpreterTest extends SqlInterpreterTest {
     assertEquals(InterpreterResult.Type.TABLE, resultMessages.get(0).getType());
     assertTrue(resultMessages.toString(),
             resultMessages.get(0).getData().contains("url\tpv\n"));
+  }
+
+  // TODO(zjffdu) flaky test
+  //@Test
+  public void testResumeStreamSqlFromExistSavePointPath() throws IOException, InterpreterException, InterruptedException, TimeoutException {
+    String initStreamScalaScript = getInitStreamScript(2000);
+    InterpreterResult result = flinkInterpreter.interpret(initStreamScalaScript,
+            getInterpreterContext());
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+
+    File savePointDir = FileUtils.getTempDirectory();
+    final Waiter waiter = new Waiter();
+    Thread thread = new Thread(() -> {
+      try {
+        InterpreterContext context = getInterpreterContext();
+        context.getLocalProperties().put("type", "update");
+        context.getLocalProperties().put("savepointDir", savePointDir.getAbsolutePath());
+        context.getLocalProperties().put("parallelism", "1");
+        context.getLocalProperties().put("maxParallelism", "10");
+        InterpreterResult result2 = sqlInterpreter.interpret("select url, count(1) as pv from " +
+                "log group by url", context);
+        waiter.assertTrue(context.out.toString().contains("url\tpv\n"));
+        waiter.assertEquals(InterpreterResult.Code.SUCCESS, result2.code());
+      } catch (Exception e) {
+        e.printStackTrace();
+        waiter.fail("Should not fail here");
+      }
+      waiter.resume();
+    });
+    thread.start();
+
+    // the streaming job will run for 20 seconds. check init_stream.scala
+    // sleep 10 seconds to make sure the job is started but not finished
+    Thread.sleep(10 * 1000);
+
+    InterpreterContext context = getInterpreterContext();
+    context.getLocalProperties().put("type", "update");
+    context.getLocalProperties().put("savepointDir", savePointDir.getAbsolutePath());
+    context.getLocalProperties().put("parallelism", "2");
+    context.getLocalProperties().put("maxParallelism", "10");
+    sqlInterpreter.cancel(context);
+    waiter.await(10 * 1000);
+
+    // get exist savepoint path from tempDirectory
+    // if dir more than 1 then get first or throw error
+    String[] allSavepointPath = savePointDir.list((dir, name) -> name.startsWith("savepoint"));
+    assertTrue(allSavepointPath.length>0);
+
+    String savepointPath = savePointDir.getAbsolutePath().concat(File.separator).concat(allSavepointPath[0]);
+
+    // resume job from exist savepointPath
+    context.getLocalProperties().put("savepointPath",savepointPath);
+    sqlInterpreter.interpret("select url, count(1) as pv from " +
+            "log group by url", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    List<InterpreterResultMessage> resultMessages = context.out.toInterpreterResultMessage();
+    assertEquals(InterpreterResult.Type.TABLE, resultMessages.get(0).getType());
+    assertTrue(resultMessages.toString(),
+            resultMessages.get(0).getData().contains("url\tpv\n"));
+
+  }
+
+  @Test
+  public void testResumeStreamSqlFromInvalidSavePointPath() throws IOException, InterpreterException, InterruptedException, TimeoutException {
+    String initStreamScalaScript = getInitStreamScript(1000);
+    InterpreterResult result = flinkInterpreter.interpret(initStreamScalaScript,
+            getInterpreterContext());
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+
+    File savepointPath = FileUtils.getTempDirectory();
+    InterpreterContext context = getInterpreterContext();
+    context.getLocalProperties().put("type", "update");
+    context.getLocalProperties().put("savepointPath", savepointPath.getAbsolutePath());
+    context.getLocalProperties().put("parallelism", "1");
+    context.getLocalProperties().put("maxParallelism", "10");
+    InterpreterResult result2 = sqlInterpreter.interpret("select url, count(1) as pv from " +
+            "log group by url", context);
+
+    // due to invalid savepointPath, failed to submit job and throw exception
+    assertEquals(InterpreterResult.Code.ERROR, result2.code());
+    List<InterpreterResultMessage> resultMessages = context.out.toInterpreterResultMessage();
+    assertTrue(resultMessages.toString().contains("Failed to submit job."));
+
   }
 
   @Test

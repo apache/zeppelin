@@ -57,8 +57,8 @@ public class SparkIRInterpreterTest extends IRInterpreterTest {
   @Before
   public void setUp() throws InterpreterException {
     Properties properties = new Properties();
-    properties.setProperty("spark.master", "local");
-    properties.setProperty("spark.app.name", "test");
+    properties.setProperty(SparkStringConstants.MASTER_PROP_NAME, "local");
+    properties.setProperty(SparkStringConstants.APP_NAME_PROP_NAME, "test");
     properties.setProperty("zeppelin.spark.maxResult", "100");
     properties.setProperty("spark.r.backendConnectionTimeout", "10");
     properties.setProperty("zeppelin.spark.deprecatedMsg.show", "false");

@@ -28,6 +28,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 import javax.inject.Inject;
 
 import org.apache.lucene.analysis.Analyzer;
@@ -421,15 +422,21 @@ public class LuceneSearch extends SearchService {
   }
 
   @Override
-  public void startRebuildIndex(List<Note> notes) {
+  public void startRebuildIndex(Stream<Note> notes) {
     Thread thread = new Thread(() -> {
       logger.info("Starting rebuild index");
-      for (Note note:  notes) {
+      notes.forEach(note -> {
         addIndexDoc(note);
-      }
+        note.unLoad();
+      });
       logger.info("Finish rebuild index");
     });
     thread.setName("LuceneSearch-RebuildIndex-Thread");
     thread.start();
+    try {
+      thread.join();
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
   }
 }

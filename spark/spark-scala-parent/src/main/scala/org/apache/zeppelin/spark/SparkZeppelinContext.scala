@@ -67,7 +67,7 @@ class SparkZeppelinContext(val sc: SparkContext,
 
   override def getInterpreterClassMap: util.Map[String, String] = interpreterClassMap.asJava
 
-  override def showData(obj: Any, maxResult: Int): String = sparkShims.showDataFrame(obj, maxResult)
+  override def showData(obj: Any, maxResult: Int): String = sparkShims.showDataFrame(obj, maxResult, interpreterContext)
 
   /**
    * create paragraph level of dynamic form of Select with no item selected.
