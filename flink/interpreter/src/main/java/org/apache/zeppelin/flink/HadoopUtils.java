@@ -72,6 +72,9 @@ public class HadoopUtils {
     File tmpDir = Files.createTempDir();
     FileSystem fs = FileSystem.get(new Configuration());
     Path sourcePath = fs.makeQualified(new Path(jarOnHdfs));
+    if (!fs.exists(sourcePath)) {
+      throw new IOException("jar file: " + jarOnHdfs + " doesn't exist.");
+    }
     Path destPath = new Path(tmpDir.getAbsolutePath() + "/" + sourcePath.getName());
     fs.copyToLocalFile(sourcePath, destPath);
     return new File(destPath.toString()).getAbsolutePath();

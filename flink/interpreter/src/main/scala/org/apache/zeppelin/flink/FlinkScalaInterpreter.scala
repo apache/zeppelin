@@ -18,7 +18,7 @@
 
 package org.apache.zeppelin.flink
 
-import java.io.{BufferedReader, File}
+import java.io.{BufferedReader, File, IOException}
 import java.net.{URL, URLClassLoader}
 import java.nio.file.Files
 import java.util.Properties
@@ -786,7 +786,18 @@ class FlinkScalaInterpreter(val properties: Properties) {
   }
 
   private def getOrDownloadJars(jars: Seq[String]): Seq[String] = {
-    jars.map(jar => if (jar.contains("://")) HadoopUtils.downloadJar(jar) else jar)
+    jars.map(jar => {
+      if (jar.contains("://")) {
+        HadoopUtils.downloadJar(jar)
+      } else {
+        val jarFile = new File(jar)
+        if (!jarFile.exists() || !jarFile.isFile) {
+          throw new Exception(s"jar file: ${jar} doesn't exist")
+        } else {
+          jar
+        }
+      }
+    })
   }
 
   def getJobManager = this.jobManager
