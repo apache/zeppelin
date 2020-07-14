@@ -37,6 +37,7 @@
         ]
       },
       "apps": [],
+      "runtimeInfos": {},
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1579053946947_-1754951794",
       "id": "paragraph_1579053946947_-1754951794",
@@ -131,6 +132,7 @@
         ]
       },
       "apps": [],
+      "runtimeInfos": {},
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1578043926895_1558885985",
       "id": "paragraph_1578043926895_1558885985",
@@ -234,6 +236,7 @@
         ]
       },
       "apps": [],
+      "runtimeInfos": {},
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1578904010994_-1300955750",
       "id": "paragraph_1578904010994_-1300955750",
@@ -348,6 +351,7 @@
         ]
       },
       "apps": [],
+      "runtimeInfos": {},
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1578904047823_-1212655985",
       "id": "paragraph_1578904047823_-1212655985",
@@ -391,6 +395,7 @@
         ]
       },
       "apps": [],
+      "runtimeInfos": {},
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1578905208609_-1175158458",
       "id": "paragraph_1578905208609_-1175158458",
@@ -429,6 +434,7 @@
         "msg": []
       },
       "apps": [],
+      "runtimeInfos": {},
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1578905223714_1228156151",
       "id": "paragraph_1578905223714_1228156151",
@@ -478,6 +484,7 @@
         ]
       },
       "apps": [],
+      "runtimeInfos": {},
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1580872625746_1221957461",
       "id": "paragraph_1580872625746_1221957461",
@@ -572,6 +579,7 @@
         ]
       },
       "apps": [],
+      "runtimeInfos": {},
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1578905241045_-678553675",
       "id": "paragraph_1578905241045_-678553675",
@@ -679,6 +687,7 @@
         ]
       },
       "apps": [],
+      "runtimeInfos": {},
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1578905276271_782994324",
       "id": "paragraph_1578905276271_782994324",
@@ -697,6 +706,7 @@
         "forms": {}
       },
       "apps": [],
+      "runtimeInfos": {},
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1580890230317_-355710383",
       "id": "paragraph_1580890230317_-355710383",
@@ -704,7 +714,7 @@
       "status": "READY"
     }
   ],
-  "name": "7. Batch Exploratory Data Analytics",
+  "name": "7. Batch Data Analytics",
   "id": "2EZ9G3JJU",
   "defaultInterpreterGroup": "flink",
   "version": "0.9.0-SNAPSHOT",
