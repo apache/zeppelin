@@ -102,31 +102,7 @@ public abstract class FlinkSqlInterrpeter extends Interpreter {
     flinkInterpreter.getExecutionEnvironment().getJavaEnv().registerJobListener(jobListener);
     flinkInterpreter.getStreamExecutionEnvironment().getJavaEnv().registerJobListener(jobListener);
     this.defaultSqlParallelism = flinkInterpreter.getDefaultSqlParallelism();
-    this.tableConfigOptions = extractTableConfigOptions();
-  }
-
-  private Map<String, ConfigOption> extractTableConfigOptions() {
-    Map<String, ConfigOption> configOptions = new HashMap<>();
-    configOptions.putAll(extractConfigOptions(ExecutionConfigOptions.class));
-    configOptions.putAll(extractConfigOptions(OptimizerConfigOptions.class));
-    configOptions.putAll(extractConfigOptions(PythonOptions.class));
-    return configOptions;
-  }
-
-  private Map<String, ConfigOption> extractConfigOptions(Class clazz) {
-    Map<String, ConfigOption> configOptions = new HashMap();
-    Field[] fields = clazz.getDeclaredFields();
-    for (Field field : fields) {
-      if (field.getType().isAssignableFrom(ConfigOption.class)) {
-        try {
-          ConfigOption configOption = (ConfigOption) field.get(ConfigOption.class);
-          configOptions.put(configOption.key(), configOption);
-        } catch (Throwable e) {
-          LOGGER.warn("Fail to get ConfigOption", e);
-        }
-      }
-    }
-    return configOptions;
+    this.tableConfigOptions = flinkInterpreter.getFlinkShims().extractTableConfigOptions();
   }
 
   @Override

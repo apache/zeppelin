@@ -424,7 +424,7 @@ public abstract class SqlInterpreterTest {
   }
 
   @Test
-  public void testCatelog() throws IOException, InterpreterException{
+  public void testCatalog() throws IOException, InterpreterException{
     FlinkVersion flinkVersion = flinkInterpreter.getFlinkVersion();
 
     if (!flinkVersion.isFlink110()){
@@ -470,6 +470,25 @@ public abstract class SqlInterpreterTest {
       assertTrue(flinkVersion.isFlink110());
     }
 
+  }
+
+  @Test
+  public void testSetProperty() throws InterpreterException {
+    FlinkVersion flinkVersion = flinkInterpreter.getFlinkVersion();
+
+    if (!flinkVersion.isFlink110()){
+      InterpreterContext context = getInterpreterContext();
+      InterpreterResult result = sqlInterpreter.interpret(
+              "set table.sql-dialect=hive", context);
+      assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
+
+    } else {
+      // Flink1.10 doesn't support set table.sql-dialet which is introduced in flink 1.11
+      InterpreterContext context = getInterpreterContext();
+      InterpreterResult result = sqlInterpreter.interpret(
+              "set table.sql-dialect=hive", context);
+      assertEquals(context.out.toString(), Code.ERROR, result.code());
+    }
   }
 
   @Test
