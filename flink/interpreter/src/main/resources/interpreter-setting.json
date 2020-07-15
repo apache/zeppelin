@@ -101,7 +101,7 @@
         "propertyName": null,
         "defaultValue": "",
         "description": "Set this value only when your yarn address is mapped to some other address, e.g. some cloud vender will map `http://resource-manager:8088` to `https://xxx-yarn.yy.cn/gateway/kkk/yarn`",
-        "type": "checkbox"
+        "type": "string"
       },
       "flink.udf.jars": {
         "envName": null,
