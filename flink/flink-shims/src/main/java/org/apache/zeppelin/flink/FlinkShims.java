@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.net.InetAddress;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -132,4 +133,6 @@ public abstract class FlinkShims {
                                                        Object environmentSetting);
 
   public abstract Object getCustomCli(Object cliFrontend, Object commandLine);
+
+  public abstract Map extractTableConfigOptions();
 }
