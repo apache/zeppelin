@@ -1,7 +1,7 @@
 {
   "name": "zeppelin-tabledata",
   "description": "tabledata api",
-  "version": "0.9.0-preview2",
+  "version": "0.9.0-SNAPSHOT",
   "main": "tabledata",
   "dependencies": {
     "json3": "~3.3.1",
