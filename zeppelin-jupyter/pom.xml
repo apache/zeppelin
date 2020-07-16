@@ -24,13 +24,13 @@
   <parent>
     <artifactId>zeppelin</artifactId>
     <groupId>org.apache.zeppelin</groupId>
-    <version>0.9.0-SNAPSHOT</version>
+    <version>0.9.0-preview2</version>
     <relativePath>..</relativePath>
   </parent>
 
   <artifactId>zeppelin-jupyter</artifactId>
   <packaging>jar</packaging>
-  <version>0.9.0-SNAPSHOT</version>
+  <version>0.9.0-preview2</version>
   <name>Zeppelin: Jupyter Support</name>
   <description>Jupyter support for Apache Zeppelin</description>
 

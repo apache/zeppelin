@@ -18,14 +18,14 @@
   <parent>
     <artifactId>zeppelin</artifactId>
     <groupId>org.apache.zeppelin</groupId>
-    <version>0.9.0-SNAPSHOT</version>
+    <version>0.9.0-preview2</version>
     <relativePath>..</relativePath>
   </parent>
 
   <groupId>org.apache.zeppelin</groupId>
   <artifactId>zeppelin-web-angular</artifactId>
   <packaging>war</packaging>
-  <version>0.9.0-SNAPSHOT</version>
+  <version>0.9.0-preview2</version>
   <name>Zeppelin: web angular Application</name>
 
   <!-- See https://github.com/eirslett/frontend-maven-plugin/issues/229 -->
