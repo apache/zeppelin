@@ -35,65 +35,65 @@
             </a>
             <ul class="dropdown-menu">
                 <li>
-                    <a role="button">
-                        <i class="glyphicon glyphicon-dashboard text-muted" />&nbsp;Cluster
+                    <a href="#">
+                        <span class="glyphicon glyphicon-dashboard text-muted" aria-hidden="true" ></span>&nbsp;Cluster
                     </a>
                 </li>
                 <li>
-                    <a role="button">
-                        <i class="glyphicon glyphicon-folder-open text-danger" />&nbsp;&nbsp;Keyspace
+                    <a href="#">
+                        <span class="glyphicon glyphicon-folder-open text-danger" aria-hidden="true" ></span>&nbsp;&nbsp;Keyspace
                     </a>
                 </li>
                 <li>
-                    <a role="button">
-                        <i class="glyphicon glyphicon-copyright-mark text-warning" />&nbsp;&nbsp;UDT
+                    <a href="#">
+                        <span class="glyphicon glyphicon-copyright-mark text-warning" aria-hidden="true" ></span>&nbsp;&nbsp;UDT
                     </a>
                 </li>
                 <li>
-                    <a role="button">
-                        <i class="glyphicon glyphicon-th-list text-primary" />&nbsp;&nbsp;Table
+                    <a href="#">
+                        <span class="glyphicon glyphicon-th-list text-primary" aria-hidden="true" ></span>&nbsp;&nbsp;Table
                     </a>
                 </li>
                 <li>
-                    <a role="button">
-                        <i class="glyphicon glyphicon-eye-open text-primary" />&nbsp;&nbsp;Materialized View
+                    <a href="#">
+                        <span class="glyphicon glyphicon-eye-open text-primary" aria-hidden="true" ></span>&nbsp;&nbsp;Materialized View
                     </a>
                 </li>
                 <li>
-                    <a role="button">
-                        <i class="glyphicon glyphicon-random text-success" />&nbsp;&nbsp;Function
+                    <a href="#">
+                        <span class="glyphicon glyphicon-random text-success" aria-hidden="true" ></span>&nbsp;&nbsp;Function
                     </a>
                 </li>
                 <li>
-                    <a role="button">
-                        <i class="glyphicon glyphicon-retweet text-success" />&nbsp;&nbsp;Aggregate
+                    <a href="#">
+                        <span class="glyphicon glyphicon-retweet text-success" aria-hidden="true" ></span>&nbsp;&nbsp;Aggregate
                     </a>
                 </li>
                 <li role="separator" class="divider text-muted"></li>
                 <li class="dropdown-header"><span class="text-primary">Table icons</span></li>
                 <li class="bg-info">
-                    <a role="button">
-                        <i class="glyphicon glyphicon-fullscreen" />&nbsp;&nbsp;Partition Key
+                    <a href="#">
+                        <span class="glyphicon glyphicon-fullscreen" aria-hidden="true" ></span>&nbsp;&nbsp;Partition Key
                     </a>
                 </li>
                 <li class="bg-warning">
-                    <a role="button">
-                        <i class="glyphicon glyphicon-pushpin" />&nbsp;&nbsp;Static Column
+                    <a href="#">
+                        <span class="glyphicon glyphicon-pushpin" aria-hidden="true" ></span>&nbsp;&nbsp;Static Column
                     </a>
                 </li>
                 <li class="bg-success">
-                    <a role="button">
-                        <i class="glyphicon glyphicon-sort" />&nbsp;&nbsp;Clustering Column
+                    <a href="#">
+                        <span class="glyphicon glyphicon-sort" aria-hidden="true" ></span>&nbsp;&nbsp;Clustering Column
                     </a>
                 </li>
                 <li class="bg-success">
-                    <a role="button">
-                        <i class="glyphicon glyphicon-sort-by-attributes" />&nbsp;&nbsp;Clustering Order ASC
+                    <a href="#">
+                        <span class="glyphicon glyphicon-sort-by-attributes" aria-hidden="true" ></span>&nbsp;&nbsp;Clustering Order ASC
                     </a>
                 </li>
                 <li class="bg-success">
-                    <a role="button">
-                        <i class="glyphicon glyphicon-sort-by-attributes-alt" />&nbsp;&nbsp;Clustering Order DESC
+                    <a href="#">
+                        <span class="glyphicon glyphicon-sort-by-attributes-alt" aria-hidden="true" ></span>&nbsp;&nbsp;Clustering Order DESC
                     </a>
                 </li>
             </ul>

@@ -28,29 +28,27 @@
                 <div class="panel-heading" role="tab">
                     <h4 class="panel-title">
                         <a role="button" data-toggle="collapse" data-target="#${ksId}" aria-expanded="false">
-                            <span class="text-danger"><i class="glyphicon glyphicon-folder-open"/>&nbsp;&nbsp;${ksName}</span>
+                            <span class="text-danger"><span class="glyphicon glyphicon-folder-open"></span>&nbsp;&nbsp;${ksName}</span>
                         </a>
                     </h4>
                 </div>
                 <div id="${ksId}" class="panel-collapse collapse" role="tabpanel">
                     <div class="panel-body">
                         <div class="row">
-                            <div class="col-md-2"/>
+                            <div class="col-md-2"></div>
                             <div class="col-md-8 col-offset-md-2 table-responsive table-bordered">
                                 <table class="table">
                                     <thead>
-                                        <tr><th>UDT</th></tr>
+                                        <tr><th style="text-align:left">UDT</th></tr>
                                     </thead>
                                     <tbody>
                                         #for (udt <- udts)
-
-                                        <tr class="text-warning"><td>${udt}</td></tr>
+                                        <tr class="text-warning"><td style="text-align:left">${udt}</td></tr>
                                         #end
-
                                     </tbody>
                                 </table>
                             </div>
-                            <div class="col-md-2"/>
+                            <div class="col-md-2"></div>
                         </div>
                     </div>
                 </div>
