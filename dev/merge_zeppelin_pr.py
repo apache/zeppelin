@@ -250,9 +250,9 @@ def resolve_jira_issue(merge_branches, comment, default_jira_id=""):
 
     versions = asf_jira.project_versions("ZEPPELIN")
     versions = sorted(versions, key=lambda x: x.name, reverse=True)
-    versions = filter(lambda x: x.raw['released'] is False, versions)
+    versions = list(filter(lambda x: x.raw['released'] is False, versions))
     # Consider only x.y.z versions
-    versions = filter(lambda x: re.match('\d+\.\d+\.\d+', x.name), versions)
+    versions = list(filter(lambda x: re.match('\d+\.\d+\.\d+', x.name), versions))
 
     default_fix_versions = set(map(lambda x: fix_version_from_branch(x, versions).name, merge_branches))
     for v in default_fix_versions:
