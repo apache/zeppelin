@@ -32,13 +32,12 @@
     </table>
     <div class="row">
         <div class="panel-group" role="tablist" aria-multiselectable="true">
-
             #for ((id, name, keyspaceHTML) <- clusterContent.keyspaces)
             <div class="panel panel-default">
                 <div class="panel-heading" role="tab">
                     <h4 class="panel-title">
                         <a role="button" data-toggle="collapse" data-target="#${id}" aria-expanded="false">
-                            <span class="text-danger"><i class="glyphicon glyphicon-folder-open"/>&nbsp;&nbsp;${name}</span>
+                            <span class="text-danger"><span class="glyphicon glyphicon-folder-open"></span>&nbsp;&nbsp;${name}</span>
                         </a>
                     </h4>
                 </div>

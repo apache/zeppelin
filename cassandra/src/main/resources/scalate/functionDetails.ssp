@@ -20,42 +20,42 @@
 <%@ val sameNameFunctionDetails: SameNameFunctionDetails %>
 <%@ val withCaption: Boolean%>
 <div class="row">
-    <div class="col-md-2"/>
+    <div class="col-md-2"></div>
     <div class="col-md-8 col-offset-md-2">
         #for (function <- sameNameFunctionDetails.functions)    
         <div class="panel panel-default table-responsive table-bordered">
             <table class="table">
                 #if(withCaption)
-                <caption><h4 class="text-success"><i class="glyphicon glyphicon-random"/>&nbsp;${function.name}</h4></caption>
+                <caption><h4 class="text-success"><span class="glyphicon glyphicon-random"></span>&nbsp;${function.name}</h4></caption>
                 #end
                 <tbody>
                     <tr>
                         <td class="col-md-6"><strong>Keyspace</strong></td>
-                        <td class="col-md-6 text-danger">${function.keyspace}</td>
+                        <td class="col-md-6 text-danger" style="text-align:left">${function.keyspace}</td>
                     </tr>
                     <tr>
                         <td class="col-md-6"><strong>Arguments</strong></td>
-                        <td class="col-md-6">${function.arguments.toList.mkString(", ")}</td>
+                        <td class="col-md-6" style="text-align:left">${function.arguments.toList.mkString(", ")}</td>
                     </tr>
                     <tr>
                         <td class="col-md-6"><strong>Null Input</strong></td>
                         #if(function.calledOnNullInput)
-                        <td class="col-md-6">CALLED ON NULL INPUT</td>
+                        <td class="col-md-6" style="text-align:left">CALLED ON NULL INPUT</td>
                         #else
-                        <td class="col-md-6">RETURN NULL ON NULL INPUT</td>
+                        <td class="col-md-6" style="text-align:left">RETURN NULL ON NULL INPUT</td>
                         #end
                     </tr>                    
                     <tr>
                         <td class="col-md-6"><strong>Return type</strong></td>
-                        <td class="col-md-6">${function.returnType}</td>
+                        <td class="col-md-6" style="text-align:left">${function.returnType}</td>
                     </tr>                    
                     <tr>
                         <td class="col-md-6"><strong>Language</strong></td>
-                        <td class="col-md-6">${function.language}</td>
+                        <td class="col-md-6" style="text-align:left">${function.language}</td>
                     </tr>                    
                     <tr>
                         <td class="col-md-6"><strong>Body</strong></td>
-                        <td class="col-md-6">${escape(function.body)}</td>
+                        <td class="col-md-6" style="text-align:left">${escape(function.body)}</td>
                     </tr>                    
                 </tbody>
             </table>

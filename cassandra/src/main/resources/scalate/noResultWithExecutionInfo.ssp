@@ -42,26 +42,26 @@
           <table class="table">
             <thead>
               <tr>
-                <th>Info</th>
-                <th>Value</th>
+                <th>Information</th>
+                <th style="text-align:left">Value</th>
               </tr>
             </thead>
             <tbody>
               <tr>
                 <td>Statement</td>
-                <td>${query}</td>
+                <td style="text-align:left">${query}</td>
               </tr>
               <tr>
                 <td>Tried Hosts</td>
-                <td>${triedHosts}</td>
+                <td style="text-align:left">${triedHosts}</td>
               </tr>
               <tr>
                 <td>Queried Hosts</td>
-                <td>${queriedHosts}</td>
+                <td style="text-align:left">${queriedHosts}</td>
               </tr>
               <tr>
                 <td>Schema in Agreement</td>
-                <td>${schemaInAgreement}</td>
+                <td style="text-align:left">${schemaInAgreement}</td>
               </tr>
             </tbody>
           </table>
