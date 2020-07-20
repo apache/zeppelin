@@ -20,18 +20,18 @@
 <%@ val tableDetails: TableDetails %>
 <%@ val withCaption: Boolean%>
 <div class="row">
-    <div class="col-md-2"/>
+    <div class="col-md-2"></div>
     <div class="col-md-8 col-offset-md-2">
         <div class="panel panel-default table-responsive table-bordered">
             <table class="table">
                 #if(withCaption)
-                <caption><h4 class="text-primary"><i class="glyphicon glyphicon-th-list"/>&nbsp;${tableDetails.tableName}</h4></caption>
+                <caption><h4 class="text-primary"><span class="glyphicon glyphicon-th-list"></span>&nbsp;${tableDetails.tableName}</h4></caption>
                 #end
                 <thead>
                     <tr>
-                        <th class="col-md-4">Column Type</th>
+                        <th class="col-md-4" width="10%">Column Type</th>
                         <th class="col-md-4">Column Name</th>
-                        <th class="col-md-4">Data Type</th>
+                        <th class="col-md-4" style="text-align:left">Data Type</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -40,49 +40,48 @@
                         #case(PartitionKey)
 
                     <tr class="info">
-                        <td class="col-md-4">
-                            <i class="glyphicon glyphicon-fullscreen" title="Partition Key"/>
+                        <td class="col-md-4" width="10%">
+                            <span class="glyphicon glyphicon-fullscreen" title="Partition Key"></span>
                         </td>
                         <td class="col-md-4">${column.name}</td>
-                        <td class="col-md-4">${column.dataType.asCql(true,true)}</td>
+                        <td class="col-md-4" style="text-align:left">${column.dataType.asCql(true,true)}</td>
                     </tr>
                         #case(StaticColumn)
                     <tr class="warning">
-                        <td class="col-md-4">
-                            <i class="glyphicon glyphicon-pushpin" title="Static Column"/>
+                        <td class="col-md-4" width="10%">
+                            <span class="glyphicon glyphicon-pushpin" title="Static Column"></span>
                         </td>
                         <td class="col-md-4">${column.name}</td>
-                        <td class="col-md-4">${column.dataType.asCql(true,true)}</td>
+                        <td class="col-md-4" style="text-align:left">${column.dataType.asCql(true,true)}</td>
                     </tr>
                         #case(ClusteringColumn(ASC))
                     <tr class="success">
-                        <td class="col-md-4">
-                            <i class="glyphicon glyphicon-sort" title="Clustering Column"/>
+                        <td class="col-md-4" width="10%">
+                            <span class="glyphicon glyphicon-sort" title="Clustering Column"></span>
                             &nbsp;
-                            <i class="glyphicon glyphicon-sort-by-attributes" title="Sort ASC"/>
+                            <span class="glyphicon glyphicon-sort-by-attributes" title="Sort ASC"></span>
                         </td>
                         <td class="col-md-4">${column.name}</td>
-                        <td class="col-md-4">${column.dataType.asCql(true,true)}</td>
+                        <td class="col-md-4" style="text-align:left">${column.dataType.asCql(true,true)}</td>
                     </tr>
                         #case(ClusteringColumn(DESC))
                     <tr class="success">
-                        <td class="col-md-4">
-                            <i class="glyphicon glyphicon-sort" title="Clustering Column"/>
+                        <td class="col-md-4" width="10%">
+                            <span class="glyphicon glyphicon-sort" title="Clustering Column"></span>
                             &nbsp;
-                            <i class="glyphicon glyphicon-sort-by-attributes-alt" title="Sort DESC"/>
+                            <span class="glyphicon glyphicon-sort-by-attributes-alt" title="Sort DESC"></span>
                         </td>
                         <td class="col-md-4">${column.name}</td>
-                        <td class="col-md-4">${column.dataType.asCql(true,true)}</td>
+                        <td class="col-md-4" style="text-align:left">${column.dataType.asCql(true,true)}</td>
                     </tr>
                         #otherwise
                     <tr>
-                        <td class="col-md-4"></td>
+                        <td class="col-md-4" width="10%"></td>
                         <td class="col-md-4">${column.name}</td>
-                        <td class="col-md-4">${column.dataType.asCql(true,true)}</td>
+                        <td class="col-md-4" style="text-align:left">${column.dataType.asCql(true,true)}</td>
                     </tr>
                         #end
                     #end
-
                 </tbody>
             </table>
             <div class="panel-footer">
@@ -100,19 +99,19 @@
         <hr/>           
         <div class="panel panel-default table-responsive table-bordered">
             <table class="table">
-                <caption><h4 class="text-danger"><i class="glyphicon glyphicon-info-sign"/>&nbsp;${tableDetails.tableName}'s indices</h4>
+                <caption><h4 class="text-danger"><span class="glyphicon glyphicon-info-sign"></span>&nbsp;${tableDetails.tableName}'s indices</h4>
                 </caption>
                 <thead>
                     <tr>
                         <th class="col-md-6">Name</th>
-                        <th class="col-md-6">Target</th>
+                        <th class="col-md-6" style="text-align:left">Target</th>
                     </tr>
                 </thead>
                 <tbody>
                     #for (index <- tableDetails.indices)
                     <tr>
                         <td class="col-md-6">${index.name}</td>
-                        <td class="col-md-6">${index.target}</td>
+                        <td class="col-md-6" style="text-align:left">${index.target}</td>
                     </tr>
                     #end
                 </tbody>    

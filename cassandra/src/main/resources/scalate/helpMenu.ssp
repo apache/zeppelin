@@ -39,58 +39,58 @@
     <ul class="nav navbar-nav">
         <li role="presentation" class="dropdown">
             <a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
-                <span class="text-info"><i class="glyphicon glyphicon-book"/>&nbsp;<strong>Please select ...</strong></span>
+                <span class="text-info"><span class="glyphicon glyphicon-book"></span>&nbsp;<strong>Please select ...</strong></span>
                 <span class="text-info caret"></span>
                 <ul class="dropdown-menu">
                     <li class="dropdown-header"><span class="text-info">Topics</span></li>
                     <li>
                         <a role="button" data-toggle="collapse" data-target="#${basicCommandsId}">
-                            <span class="text-info"><i class="glyphicon glyphicon-bookmark"/>&nbsp;&nbsp;Basic Commands</span>
+                            <span class="text-info"><span class="glyphicon glyphicon-bookmark"></span>&nbsp;&nbsp;Basic Commands</span>
                         </a>
                     </li>
                     <li>
                         <a role="button" data-toggle="collapse" data-target="#${schemaDiscoveryId}">
-                            <span class="text-info"><i class="glyphicon glyphicon-bookmark"/>&nbsp;&nbsp;Schema Discovery</span>
+                            <span class="text-info"><span class="glyphicon glyphicon-bookmark"></span>&nbsp;&nbsp;Schema Discovery</span>
                         </a>
                     </li>
                     <li>
                         <a role="button" data-toggle="collapse" data-target="#${queryParamsId}">
-                            <span class="text-info"><i class="glyphicon glyphicon-bookmark"/>&nbsp;&nbsp;Query Parameters</span>
+                            <span class="text-info"><span class="glyphicon glyphicon-bookmark"></span>&nbsp;&nbsp;Query Parameters</span>
                         </a>
                     </li>
                     <li>
                         <a role="button" data-toggle="collapse" data-target="#${formatParamsId}">
-                            <span class="text-info"><i class="glyphicon glyphicon-bookmark"/>&nbsp;&nbsp;Formatting Parameters</span>
+                            <span class="text-info"><span class="glyphicon glyphicon-bookmark"></span>&nbsp;&nbsp;Formatting Parameters</span>
                         </a>
                     </li>
                     <li>
                         <a role="button" data-toggle="collapse" data-target="#${preparedStatementsId}">
-                            <span class="text-info"><i class="glyphicon glyphicon-bookmark"/>&nbsp;&nbsp;Prepared Statements</span>
+                            <span class="text-info"><span class="glyphicon glyphicon-bookmark"></span>&nbsp;&nbsp;Prepared Statements</span>
                         </a>
                     </li>
                     <li>
                         <a role="button" data-toggle="collapse" data-target="#${dynamicFormsId}">
-                            <span class="text-info"><i class="glyphicon glyphicon-bookmark"/>&nbsp;&nbsp;Dynamic Forms</span>
+                            <span class="text-info"><span class="glyphicon glyphicon-bookmark"></span>&nbsp;&nbsp;Dynamic Forms</span>
                         </a>
                     </li>
                     <li>
                         <a role="button" data-toggle="collapse" data-target="#${configurationId}">
-                            <span class="text-info"><i class="glyphicon glyphicon-bookmark"/>&nbsp;&nbsp;Interpreter Configuration</span>
+                            <span class="text-info"><span class="glyphicon glyphicon-bookmark"></span>&nbsp;&nbsp;Interpreter Configuration</span>
                         </a>
                     </li>                    
                     <li>
                         <a role="button" data-toggle="collapse" data-target="#${sharedStatesId}">
-                            <span class="text-info"><i class="glyphicon glyphicon-bookmark"/>&nbsp;&nbsp;Shared States</span>
+                            <span class="text-info"><span class="glyphicon glyphicon-bookmark"></span>&nbsp;&nbsp;Shared States</span>
                         </a>
                     </li>                    
                     <li>
                         <a role="button" data-toggle="collapse" data-target="#${changelogId}">
-                            <span class="text-info"><i class="glyphicon glyphicon-bookmark"/>&nbsp;&nbsp;Change Log</span>
+                            <span class="text-info"><span class="glyphicon glyphicon-bookmark"></span>&nbsp;&nbsp;Change Log</span>
                         </a>
                     </li>                     
                     <li>
                         <a role="button" data-toggle="collapse" data-target="#${contactsId}">
-                            <span class="text-info"><i class="glyphicon glyphicon-bookmark"/>&nbsp;&nbsp;Contacts &amp; Bugs</span>
+                            <span class="text-info"><span class="glyphicon glyphicon-bookmark"></span>&nbsp;&nbsp;Contacts &amp; Bugs</span>
                         </a>
                     </li>                      
                 </ul>
@@ -151,8 +151,7 @@
                             <div class="col-md-6 col-md-offset-3">
                                 <pre>
     INSERT INTO users(login,name) VALUES('jdoe','John DOE');
-    SELECT * FROM users WHERE login='jdoe';
-                                </pre>
+    SELECT * FROM users WHERE login='jdoe';</pre>
                             </div>
                         </div>
                         <br/>
@@ -171,8 +170,7 @@
 
     SELECT *
     FROM artists
-    WHERE login='jlennon';
-                                </pre>
+    WHERE login='jlennon';</pre>
                             </div>
                         </div>
                         <br/>
@@ -191,8 +189,7 @@
     CREATE TABLE IF NOT EXISTS test(
         key int PRIMARY KEY,
         value text
-    );
-                                </pre>
+    );</pre>
                             </div>
                         </div>
                         <br/>
@@ -204,8 +201,7 @@
                             <div class="col-md-8 col-md-offset-2">
                                 <pre>
     INSERT INTO users(login,name) VALUES('jdoe','John DOE');
-    Insert into users(login,name) vAlues('hsue','Helen SUE');
-                                </pre>
+    Insert into users(login,name) vAlues('hsue','Helen SUE');</pre>
                             </div>
                         </div>
                         <br/>
@@ -215,28 +211,30 @@
                             <div class="col-md-6 col-md-offset-3">
                                <table class="table table-bordered">
                                     <thead>
-                                        <tr><th>Cassandra version</th><th>Documentation</th></tr>
+                                        <tr>
+                                          <th style="text-align:left" width="20%">Cassandra version</th>
+                                          <th style="text-align:left">Documentation</th></tr>
                                     </thead>
                                     <tbody>
                                     <tr>
-                                        <td><strong>3.x</strong></td>
-                                        <td>
+                                        <td style="text-align:left"><strong>3.x</strong></td>
+                                        <td style="text-align:left">
                                             <a href="http://docs.datastax.com/en/cql/3.3/cql/cqlIntro.html" target="_blank">
                                             http://docs.datastax.com/en/cql/3.3/cql/cqlIntro.html
                                             </a>
                                         </td>
                                     </tr>
                                         <tr>
-                                            <td><strong>2.2</strong></td>
-                                            <td>
+                                            <td style="text-align:left"><strong>2.2</strong></td>
+                                            <td style="text-align:left">
                                                 <a href="http://docs.datastax.com/en/cql/3.3/cql/cqlIntro.html" target="_blank">
                                                     http://docs.datastax.com/en/cql/3.3/cql/cqlIntro.html
                                                 </a>
                                             </td>
                                         </tr>
                                         <tr>
-                                            <td><strong>2.1</strong></td>
-                                            <td>
+                                            <td style="text-align:left"><strong>2.1</strong></td>
+                                            <td style="text-align:left">
                                                 <a href="http://docs.datastax.com/en/cql/3.1/cql/cql_intro_c.html" target="_blank">
                                                     http://docs.datastax.com/en/cql/3.1/cql/cql_intro_c.html
                                                 </a>
@@ -271,8 +269,7 @@
      Multi line
      comments
      **/
-    Insert into users(login,name) vAlues('hsue','Helen SUE');
-                                </pre>
+    Insert into users(login,name) vAlues('hsue','Helen SUE');</pre>
                             </div>
                         </div>
                         <br/>
@@ -315,77 +312,80 @@
                         <br/><br/>
                         <table class="table table-bordered">
                             <thead>
-                                <tr><th>Command</th><th>Description</th></tr>
+                                <tr>
+                                  <th style="text-align:left" width="40%">Command</th>
+                                  <th style="text-align:left">Description</th>
+                                </tr>
                             </thead>
                             <tbody>
                                 <tr>
-                                    <td><strong>DESCRIBE CLUSTER;</strong></td>
-                                    <td>Show the current cluster name and its partitioner</td>
+                                    <td style="text-align:left"><strong>DESCRIBE CLUSTER;</strong></td>
+                                    <td style="text-align:left">Show the current cluster name and its partitioner</td>
                                 </tr>
                                 <tr>
-                                    <td><strong>DESCRIBE KEYSPACES;</strong></td>
-                                    <td>List all existing keyspaces in the cluster and their configuration
+                                    <td style="text-align:left"><strong>DESCRIBE KEYSPACES;</strong></td>
+                                    <td style="text-align:left">List all existing keyspaces in the cluster and their configuration
                                     (replication factor, durable write ...)</td>
                                 </tr>
                                 <tr>
-                                    <td><strong>DESCRIBE TABLES;</strong></td>
-                                    <td>List all existing keyspaces in the cluster and for each, all the tables name</td>
+                                    <td style="text-align:left"><strong>DESCRIBE TABLES;</strong></td>
+                                    <td style="text-align:left">List all existing keyspaces in the cluster and for each, all the tables name</td>
                                 </tr>
                                 <tr>
-                                    <td><strong>DESCRIBE TYPES;</strong></td>
-                                    <td>List all existing keyspaces in the cluster and for each, all the types name</td>
+                                    <td style="text-align:left"><strong>DESCRIBE TYPES;</strong></td>
+                                    <td style="text-align:left">List all existing keyspaces in the cluster and for each, all the types name</td>
                                 </tr>
                                 <tr>
-                                    <td><strong>DESCRIBE FUNCTIONS;</strong></td>
-                                    <td>List all existing keyspaces in the cluster and for each, all the functions name and arguments</td>
+                                    <td style="text-align:left"><strong>DESCRIBE FUNCTIONS;</strong></td>
+                                    <td style="text-align:left">List all existing keyspaces in the cluster and for each, all the functions name and arguments</td>
                                 </tr>
                                 <tr>
-                                    <td><strong>DESCRIBE AGGREGATES;</strong></td>
-                                    <td>List all existing keyspaces in the cluster and for each, all the aggregates name and arguments</td>
+                                    <td style="text-align:left"><strong>DESCRIBE AGGREGATES;</strong></td>
+                                    <td style="text-align:left">List all existing keyspaces in the cluster and for each, all the aggregates name and arguments</td>
                                 </tr>
                                 <tr>
-                                    <td><strong>DESCRIBE MATERIALIZED VIEWS;</strong></td>
-                                    <td>List all existing keyspaces in the cluster and for each, all the materialized view name</td>
+                                    <td style="text-align:left"><strong>DESCRIBE MATERIALIZED VIEWS;</strong></td>
+                                    <td style="text-align:left">List all existing keyspaces in the cluster and for each, all the materialized view name</td>
                                 </tr>
                                 <tr>
-                                    <td><strong>DESCRIBE KEYSPACE &lt;keyspace name&gt;;</strong></td>
-                                    <td>Describe the given keyspace configuration and all its table details (name, columns, ...)</td>
+                                    <td style="text-align:left"><strong>DESCRIBE KEYSPACE &lt;keyspace name&gt;;</strong></td>
+                                    <td style="text-align:left">Describe the given keyspace configuration and all its table details (name, columns, ...)</td>
                                 </tr>
                                 <tr>
-                                    <td><strong>DESCRIBE TABLE <em>(&lt;keyspace name&gt;).</em>&lt;table name&gt;;</strong></td>
-                                    <td>
+                                    <td style="text-align:left"><strong>DESCRIBE TABLE <em>(&lt;keyspace name&gt;).</em>&lt;table name&gt;;</strong></td>
+                                    <td style="text-align:left">
                                         Describe the given table. If the keyspace is not provided, the current
                                         <strong>logged in</strong> keyspace is used. If there is no logged in keyspace,
                                         the default <em>system</em> keyspace is used. If no table is found, an error message is raised
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td><strong>DESCRIBE TYPE <em>(&lt;keyspace name&gt;).</em>&lt;type name&gt;;</strong></td>
-                                    <td>
+                                    <td style="text-align:left"><strong>DESCRIBE TYPE <em>(&lt;keyspace name&gt;).</em>&lt;type name&gt;;</strong></td>
+                                    <td style="text-align:left">
                                         Describe the given type(UDT). If the keyspace is not provided, the current
                                         <strong>logged in</strong> keyspace is used. If there is no logged in keyspace,
                                         the default <em>system</em> keyspace is used. If no type is found, an error message is raised
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td><strong>DESCRIBE FUNCTION <em>(&lt;keyspace name&gt;).</em>&lt;function name&gt;;</strong></td>
-                                    <td>
+                                    <td style="text-align:left"><strong>DESCRIBE FUNCTION <em>(&lt;keyspace name&gt;).</em>&lt;function name&gt;;</strong></td>
+                                    <td style="text-align:left">
                                         Describe the given function. If the keyspace is not provided, the current
                                         <strong>logged in</strong> keyspace is used. If there is no logged in keyspace,
                                         the default <em>system</em> keyspace is used. If no function is found, an error message is raised
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td><strong>DESCRIBE AGGREGATE <em>(&lt;keyspace name&gt;).</em>&lt;aggregate name&gt;;</strong></td>
-                                    <td>
+                                    <td style="text-align:left"><strong>DESCRIBE AGGREGATE <em>(&lt;keyspace name&gt;).</em>&lt;aggregate name&gt;;</strong></td>
+                                    <td style="text-align:left">
                                         Describe the given aggregate. If the keyspace is not provided, the current
                                         <strong>logged in</strong> keyspace is used. If there is no logged in keyspace,
                                         the default <em>system</em> keyspace is used. If no aggregate is found, an error message is raised
                                     </td>
                                 </tr>        
                                 <tr>
-                                    <td><strong>DESCRIBE MATERIALIZED VIEW <em>(&lt;keyspace name&gt;).</em>&lt;view name&gt;;</strong></td>
-                                    <td>
+                                    <td style="text-align:left"><strong>DESCRIBE MATERIALIZED VIEW <em>(&lt;keyspace name&gt;).</em>&lt;view name&gt;;</strong></td>
+                                    <td style="text-align:left">
                                         Describe the given materialized view. If the keyspace is not provided, the current
                                         <strong>logged in</strong> keyspace is used. If there is no logged in keyspace,
                                         the default <em>system</em> keyspace is used. If no materialized view is found, an error message is raised
@@ -434,38 +434,38 @@
                             </caption>
                             <thead>
                                 <tr>
-                                    <th>Parameter</th>
-                                    <th>Syntax</th>
-                                    <th>Description</th>
+                                    <th style="text-align:left" width="20%">Parameter</th>
+                                    <th style="text-align:left" width="20%">Syntax</th>
+                                    <th style="text-align:left">Description</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr>
-                                    <td>Consistency Level</td>
-                                    <td><strong>@consistency=<em>value</em></strong></td>
-                                    <td>Apply the given consistency level to all queries in the paragraph</td>
+                                    <td style="text-align:left">Consistency Level</td>
+                                    <td style="text-align:left"><strong>@consistency=<em>value</em></strong></td>
+                                    <td style="text-align:left">Apply the given consistency level to all queries in the paragraph</td>
                                 </tr>
                                 <tr>
-                                    <td>Serial Consistency Level</td>
-                                    <td><strong>@serialConsistency=<em>value</em></strong></td>
-                                    <td>Apply the given serial consistency level to all queries in the paragraph</td>
+                                    <td style="text-align:left">Serial Consistency Level</td>
+                                    <td style="text-align:left"><strong>@serialConsistency=<em>value</em></strong></td>
+                                    <td style="text-align:left">Apply the given serial consistency level to all queries in the paragraph</td>
                                 </tr>
                                 <tr>
-                                    <td>Timestamp</td>
-                                    <td><strong>@timestamp=<em>long value</em></strong></td>
-                                    <td>Apply the given timestamp to all queries in the paragraph.<br/>
+                                    <td style="text-align:left">Timestamp</td>
+                                    <td style="text-align:left"><strong>@timestamp=<em>long value</em></strong></td>
+                                    <td style="text-align:left">Apply the given timestamp to all queries in the paragraph.<br/>
                                         Please note that timestamp value passed directly in CQL statement will override this value
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td>Fetch Size</td>
-                                    <td><strong>@fetchSize=<em>int value</em></strong></td>
-                                    <td>Apply the given fetch size to all queries in the paragraph</td>
+                                    <td style="text-align:left">Fetch Size</td>
+                                    <td style="text-align:left"><strong>@fetchSize=<em>int value</em></strong></td>
+                                    <td style="text-align:left">Apply the given fetch size to all queries in the paragraph</td>
                                 </tr>
                                     <tr>
-                                        <td>Request Timeout</td>
-                                        <td><strong>@requestTimeOut=<em>int value</em></strong></td>
-                                        <td>Apply the given request timeout <strong>in millisecs</strong> to all queries in the paragraph</td>
+                                        <td style="text-align:left">Request Timeout</td>
+                                        <td style="text-align:left"><strong>@requestTimeOut=<em>int value</em></strong></td>
+                                        <td style="text-align:left">Apply the given request timeout <strong>in millisecs</strong> to all queries in the paragraph</td>
                                     </tr>
                             </tbody>
                         </table>
@@ -479,30 +479,30 @@
                             </caption>
                             <thead>
                                 <tr>
-                                    <th>Parameter</th>
-                                    <th>Possible Values</th>
+                                    <th style="text-align:left" width="30%">Parameter</th>
+                                    <th style="text-align:left">Possible Values</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr>
-                                    <td>Consistency Level</td>
-                                    <td><strong>ALL, ANY, ONE, TWO, THREE, QUORUM, LOCAL_ONE, LOCAL_QUORUM, EACH_QUORUM</strong></td>
+                                    <td style="text-align:left">Consistency Level</td>
+                                    <td style="text-align:left"><strong>ALL, ANY, ONE, TWO, THREE, QUORUM, LOCAL_ONE, LOCAL_QUORUM, EACH_QUORUM</strong></td>
                                 </tr>
                                 <tr>
-                                    <td>Serial Consistency Level</td>
-                                    <td><strong>SERIAL, LOCAL_SERIAL</strong></td>
+                                    <td style="text-align:left">Serial Consistency Level</td>
+                                    <td style="text-align:left"><strong>SERIAL, LOCAL_SERIAL</strong></td>
                                 </tr>
                                 <tr>
-                                    <td>Timestamp</td>
-                                    <td>Any long value</td>
+                                    <td style="text-align:left">Timestamp</td>
+                                    <td style="text-align:left">Any long value</td>
                                 </tr>
                                 <tr>
-                                    <td>Fetch Size</td>
-                                    <td>Any integer value</td>
+                                    <td style="text-align:left">Fetch Size</td>
+                                    <td style="text-align:left">Any integer value</td>
                                 </tr>
                                 <tr>
-                                    <td>Request Timeout</td>
-                                    <td>Any integer value</td>
+                                    <td style="text-align:left">Request Timeout</td>
+                                    <td style="text-align:left">Any integer value</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -536,8 +536,7 @@
     INSERT INTO spark_demo.ts(key,value) VALUES(1,'second insert');
 
     // Check for the result. You should see 'first insert'
-    SELECT value FROM spark_demo.ts WHERE key=1;
-                                </pre>
+    SELECT value FROM spark_demo.ts WHERE key=1;</pre>
                             </div>
                         </div>
                         <br/>
@@ -591,64 +590,64 @@
                             </caption>
                             <thead>
                                 <tr>
-                                    <th>Parameter</th>
-                                    <th>Syntax</th>
-                                    <th>Description</th>
+                                    <th style="text-align:left" width="20%">Parameter</th>
+                                    <th style="text-align:left" width="20%">Syntax</th>
+                                    <th style="text-align:left">Description</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr>
-                                    <td>Output Format</td>
-                                    <td><strong>outputFormat=<em>cql|human</em></strong></td>
-                                    <td>Selects formatting of the results - as CQL
+                                    <td style="text-align:left">Output Format</td>
+                                    <td style="text-align:left"><strong>outputFormat=<em>cql|human</em></strong></td>
+                                    <td style="text-align:left">Selects formatting of the results - as CQL
                                     literals, or human-readable (default)</td>
                                 </tr>
                                 <tr>
-                                    <td>Locale</td>
-                                    <td><strong>locale=<em>value</em></strong></td>
-                                    <td>Name of the locale for formatting of results.
+                                    <td style="text-align:left">Locale</td>
+                                    <td style="text-align:left"><strong>locale=<em>value</em></strong></td>
+                                    <td style="text-align:left">Name of the locale for formatting of results.
                                     Should be a locale name supported by JVM.</td>
                                 </tr>
                                 <tr>
-                                    <td>Timezone</td>
-                                    <td><strong>timezone=<em>value</em></strong></td>
-                                    <td>Timezone string for formatting of values of
+                                    <td style="text-align:left">Timezone</td>
+                                    <td style="text-align:left"><strong>timezone=<em>value</em></strong></td>
+                                    <td style="text-align:left">Timezone string for formatting of values of
                                     time/date/timestamp type.  Should be a timezone
                                     supported by JVM.</td>
                                 </tr>
                                 <tr>
-                                    <td>Timestamp Format</td>
-                                    <td><strong>timestampFormat=<em>string</em></strong></td>
-                                    <td>Format string
+                                    <td style="text-align:left">Timestamp Format</td>
+                                    <td style="text-align:left"><strong>timestampFormat=<em>string</em></strong></td>
+                                    <td style="text-align:left">Format string
                                     for <a href="https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html">DateTimeFormatter</>
                                     that will be used for formatting of the values
                                     of <tt>timestamp</tt> type</td>
                                 </tr>
                                 <tr>
-                                    <td>Time Format</td>
-                                    <td><strong>timeFormat=<em>string</em></strong></td>
-                                    <td>Format string
+                                    <td style="text-align:left">Time Format</td>
+                                    <td style="text-align:left"><strong>timeFormat=<em>string</em></strong></td>
+                                    <td style="text-align:left">Format string
                                     for <a href="https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html">DateTimeFormatter</>
                                     that will be used for formatting of the values
                                     of <tt>time</tt> type</td>
                                 </tr>
                                 <tr>
-                                    <td>Date Format</td>
-                                    <td><strong>dateFormat=<em>string</em></strong></td>
-                                    <td>Format string
+                                    <td style="text-align:left">Date Format</td>
+                                    <td style="text-align:left"><strong>dateFormat=<em>string</em></strong></td>
+                                    <td style="text-align:left">Format string
                                     for <a href="https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html">DateTimeFormatter</>
                                     that will be used for formatting of the values
                                     of <tt>date</tt> type</td>
                                 </tr>
                                 <tr>
-                                  <td>Float Precision</td>
-                                  <td><strong>floatPrecision=<em>int value</em></strong></td>
-                                  <td>Precision when output values of <tt>float</tt> type</td>
+                                  <td style="text-align:left">Float Precision</td>
+                                  <td style="text-align:left"><strong>floatPrecision=<em>int value</em></strong></td>
+                                  <td style="text-align:left">Precision when output values of <tt>float</tt> type</td>
                                 </tr>
                                 <tr>
-                                  <td>Double Precision</td>
-                                  <td><strong>doublePrecision=<em>int value</em></strong></td>
-                                  <td>Precision when output values of <tt>double</tt> type</td>
+                                  <td style="text-align:left">Double Precision</td>
+                                  <td style="text-align:left"><strong>doublePrecision=<em>int value</em></strong></td>
+                                  <td style="text-align:left">Precision when output values of <tt>double</tt> type</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -659,15 +658,12 @@ corresponding settings on the interpreter level!
                         Some examples:
                         <br/><br/>
                         <div class="row">
-                            <div class="col-md-8 col-md-offset-2">
                               <pre>
 %cassandra(locale=de_DE, floatPrecision=2, doublePrecision=4, timeFormat=hh:mma, timestampFormat=MM/dd/yy HH:mm, dateFormat="E, d MMM yy", timezone=Etc/GMT+2)
 select date, time, timestamp, double, float, tuple, udt from zep.test_format;
                                 
 %cassandra(outputFormat=cql)
-select id, double, float, text, date, time, timestamp from zep.test_format;                                
-                              </pre>
-                            </div>
+select id, double, float, text, date, time, timestamp from zep.test_format;</pre>
                         </div>
                     </p>
                     </div>
@@ -714,9 +710,7 @@ select id, double, float, text, date, time, timestamp from zep.test_format;
 
     @bind[statement-name-with-no-bound-value]
 
-    @remove_prepare[statement-name]
-
-                                </pre>
+    @remove_prepare[statement-name]</pre>
                             </div>
                         </div>
                         <br/>
@@ -746,8 +740,7 @@ select id, double, float, text, date, time, timestamp from zep.test_format;
                                 <pre>
     @prepare[select]=SELECT * FROM spark_demo.albums LIMIT ?
 
-    @prepare[select]=SELECT * FROM spark_demo.artists LIMIT ?
-                                </pre>
+    @prepare[select]=SELECT * FROM spark_demo.artists LIMIT ?</pre>
                             </div>
                         </div>
                         <br/>
@@ -767,8 +760,7 @@ select id, double, float, text, date, time, timestamp from zep.test_format;
                         <div class="row">
                             <div class="col-md-10 col-md-offset-1">
                                 <pre>
-    @bind[select_first]=10
-                                </pre>
+    @bind[select_first]=10</pre>
                             </div>
                         </div>
                         <br/>
@@ -811,8 +803,7 @@ select id, double, float, text, date, time, timestamp from zep.test_format;
     BEGIN BATCH
         @bind[insert_user]='jdoe','John DOE'
         UPDATE users SET age = 27 WHERE login='hsue';
-    APPLY BATCH;
-                            </pre>
+    APPLY BATCH;</pre>
                         </div>
                         <br/>
                     </p>
@@ -868,9 +859,7 @@ select id, double, float, text, date, time, timestamp from zep.test_format;
     SELECT name, country, performer
     FROM spark_demo.performers
     WHERE name='\${performer=Sheryl Crow|Doof|Fanfarlo|Los Paranoia}'
-    AND styles CONTAINS '\${style=Rock}';
-
-                                </pre>
+    AND styles CONTAINS '\${style=Rock}';</pre>
                             </div>
                         </div>
                         <br/>
@@ -913,134 +902,134 @@ select id, double, float, text, date, time, timestamp from zep.test_format;
                     </caption>
                      <thead>
                         <tr>
-                            <th>Parameter</th>
-                            <th>Default Value</th>
+                            <th style="text-align:left">Parameter</th>
+                            <th style="text-align:left">Default Value</th>
                         </tr>
                      </thead>
                      <tbody>
                         <tr>
-                            <td>cassandra.cluster</td>
-                            <td><strong>Test Cluster</strong></td>
+                            <td style="text-align:left">cassandra.cluster</td>
+                            <td style="text-align:left"><strong>Test Cluster</strong></td>
                         </tr>
                         <tr>
-                            <td>cassandra.compression.protocol</td>
-                            <td><strong>NONE</strong>, possible values: LZ4, SNAPPY</td>
+                            <td style="text-align:left">cassandra.compression.protocol</td>
+                            <td style="text-align:left"><strong>NONE</strong>, possible values: LZ4, SNAPPY</td>
                         </tr>
                         <tr>
-                            <td>cassandra.credentials.password</td>
-                            <td><strong>none</strong></td>
+                            <td style="text-align:left">cassandra.credentials.password</td>
+                            <td style="text-align:left"><strong>none</strong></td>
                         </tr>
                         <tr>
-                            <td>cassandra.credentials.username</td>
-                            <td><strong>none</strong></td>
+                            <td style="text-align:left">cassandra.credentials.username</td>
+                            <td style="text-align:left"><strong>none</strong></td>
                         </tr>
                         <tr>
-                            <td>cassandra.hosts</td>
-                            <td><strong>localhost</strong></td>
+                            <td style="text-align:left">cassandra.hosts</td>
+                            <td style="text-align:left"><strong>localhost</strong></td>
                         </tr>
                         <tr>
-                            <td>cassandra.interpreter.parallelism</td>
-                            <td><strong>10</strong></td>
+                            <td style="text-align:left">cassandra.interpreter.parallelism</td>
+                            <td style="text-align:left"><strong>10</strong></td>
                         </tr>
                         <tr>
-                            <td>cassandra.keyspace</td>
-                            <td><strong>system</strong></td>
+                            <td style="text-align:left">cassandra.keyspace</td>
+                            <td style="text-align:left"><strong>system</strong></td>
                         </tr>
                         <tr>
-                            <td>cassandra.load.balancing.policy</td>
-                            <td><strong>DEFAULT</strong>, or a FQCN of a custom class</td>
+                            <td style="text-align:left">cassandra.load.balancing.policy</td>
+                            <td style="text-align:left"><strong>DEFAULT</strong>, or a FQCN of a custom class</td>
                         </tr>
                         <tr>
-                            <td>cassandra.max.schema.agreement.wait.second</td>
-                            <td><strong>10</strong></td>
+                            <td style="text-align:left">cassandra.max.schema.agreement.wait.second</td>
+                            <td style="text-align:left"><strong>10</strong></td>
                         </tr>
                         <tr>
-                            <td>cassandra.native.port</td>
-                            <td><strong>9042</strong></td>
+                            <td style="text-align:left">cassandra.native.port</td>
+                            <td style="text-align:left"><strong>9042</strong></td>
                         </tr>
                         <tr>
-                            <td>cassandra.pooling.core.connection.per.host.local</td>
-                            <td><strong>V3 and above: 1</strong></td>
+                            <td style="text-align:left">cassandra.pooling.core.connection.per.host.local</td>
+                            <td style="text-align:left"><strong>V3 and above: 1</strong></td>
                         </tr>
                         <tr>
-                            <td>cassandra.pooling.core.connection.per.host.remote</td>
-                            <td><strong>V3 and above: 1</strong></td>
+                            <td style="text-align:left">cassandra.pooling.core.connection.per.host.remote</td>
+                            <td style="text-align:left"><strong>V3 and above: 1</strong></td>
                         </tr>
                         <tr>
-                            <td>cassandra.pooling.heartbeat.interval.seconds</td>
-                            <td><strong>30</strong></td>
+                            <td style="text-align:left">cassandra.pooling.heartbeat.interval.seconds</td>
+                            <td style="text-align:left"><strong>30</strong></td>
                         </tr>
                         <tr>
-                            <td>cassandra.pooling.idle.timeout.seconds</td>
-                            <td><strong>Test Cluster</strong></td>
+                            <td style="text-align:left">cassandra.pooling.idle.timeout.seconds</td>
+                            <td style="text-align:left"><strong>Test Cluster</strong></td>
                         </tr>
                         <tr>
-                            <td>cassandra.pooling.max.connection.per.host.local</td>
-                            <td><strong>V3 and above: 1</strong></td>
+                            <td style="text-align:left">cassandra.pooling.max.connection.per.host.local</td>
+                            <td style="text-align:left"><strong>V3 and above: 1</strong></td>
                         </tr>
                         <tr>
-                            <td>cassandra.pooling.max.connection.per.host.remote</td>
-                            <td><strong>V3 and above: 1</strong></td>
+                            <td style="text-align:left">cassandra.pooling.max.connection.per.host.remote</td>
+                            <td style="text-align:left"><strong>V3 and above: 1</strong></td>
                         </tr>
                         <tr>
-                            <td>cassandra.pooling.max.request.per.connection.local</td>
-                            <td><strong>V3 and above: 1024</strong></td>
+                            <td style="text-align:left">cassandra.pooling.max.request.per.connection.local</td>
+                            <td style="text-align:left"><strong>V3 and above: 1024</strong></td>
                         </tr>
                         <tr>
-                            <td>cassandra.pooling.max.request.per.connection.remote</td>
-                            <td><strong>V3 and above: 256</strong></td>
+                            <td style="text-align:left">cassandra.pooling.max.request.per.connection.remote</td>
+                            <td style="text-align:left"><strong>V3 and above: 256</strong></td>
                         </tr>
                         <tr>
-                            <td>cassandra.pooling.new.connection.threshold.local</td>
-                            <td><strong>V3 and above: 800</strong></td>
+                            <td style="text-align:left">cassandra.pooling.new.connection.threshold.local</td>
+                            <td style="text-align:left"><strong>V3 and above: 800</strong></td>
                         </tr>
                         <tr>
-                            <td>cassandra.pooling.new.connection.threshold.remote</td>
-                            <td><strong>V3 and above: 200</strong></td>
+                            <td style="text-align:left">cassandra.pooling.new.connection.threshold.remote</td>
+                            <td style="text-align:left"><strong>V3 and above: 200</strong></td>
                         </tr>
                         <tr>
-                            <td>cassandra.pooling.pool.timeout.millisecs</td>
-                            <td><strong>5000</strong></td>
+                            <td style="text-align:left">cassandra.pooling.pool.timeout.millisecs</td>
+                            <td style="text-align:left"><strong>5000</strong></td>
                         </tr>
                         <tr>
-                            <td>cassandra.protocol.version</td>
-                            <td><strong>4</strong></td>
+                            <td style="text-align:left">cassandra.protocol.version</td>
+                            <td style="text-align:left"><strong>4</strong></td>
                         </tr>
                         <tr>
-                            <td>cassandra.query.default.consistency</td>
-                            <td><strong>ONE</strong></td>
+                            <td style="text-align:left">cassandra.query.default.consistency</td>
+                            <td style="text-align:left"><strong>ONE</strong></td>
                         </tr>
                         <tr>
-                            <td>cassandra.query.default.fetchSize</td>
-                            <td><strong>5000</strong></td>
+                            <td style="text-align:left">cassandra.query.default.fetchSize</td>
+                            <td style="text-align:left"><strong>5000</strong></td>
                         </tr>
                         <tr>
-                            <td>cassandra.query.default.serial.consistency</td>
-                            <td><strong>SERIAL</strong></td>
+                            <td style="text-align:left">cassandra.query.default.serial.consistency</td>
+                            <td style="text-align:left"><strong>SERIAL</strong></td>
                         </tr>
                         <tr>
-                            <td>cassandra.reconnection.policy</td>
-                            <td><strong>DEFAULT</strong>, or a FQCN of a custom class</td>
+                            <td style="text-align:left">cassandra.reconnection.policy</td>
+                            <td style="text-align:left"><strong>DEFAULT</strong>, or a FQCN of a custom class</td>
                         </tr>
                         <tr>
-                            <td>cassandra.retry.policy</td>
-                            <td><strong>DEFAULT</strong>, or a FQCN of a custom class</td>
+                            <td style="text-align:left">cassandra.retry.policy</td>
+                            <td style="text-align:left"><strong>DEFAULT</strong>, or a FQCN of a custom class</td>
                         </tr>
                         <tr>
-                            <td>cassandra.socket.connection.timeout.millisecs</td>
-                            <td><strong>500</strong></td>
+                            <td style="text-align:left">cassandra.socket.connection.timeout.millisecs</td>
+                            <td style="text-align:left"><strong>500</strong></td>
                         </tr>
                         <tr>
-                            <td>cassandra.socket.read.timeout.millisecs</td>
-                            <td><strong>12000</strong></td>
+                            <td style="text-align:left">cassandra.socket.read.timeout.millisecs</td>
+                            <td style="text-align:left"><strong>12000</strong></td>
                         </tr>
                         <tr>
-                            <td>cassandra.socket.tcp.no_delay</td>
-                            <td><strong>true</strong></td>
+                            <td style="text-align:left">cassandra.socket.tcp.no_delay</td>
+                            <td style="text-align:left"><strong>true</strong></td>
                         </tr>
                         <tr>
-                            <td>cassandra.speculative.execution.policy</td>
-                            <td><strong>DEFAULT</strong>, or a FQCN of a custom class</td>
+                            <td style="text-align:left">cassandra.speculative.execution.policy</td>
+                            <td style="text-align:left"><strong>DEFAULT</strong>, or a FQCN of a custom class</td>
                         </tr>
                      </tbody>
                  </table>

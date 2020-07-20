@@ -34,13 +34,12 @@
     <div class="row">
         <div class="panel-group" role="tablist" aria-multiselectable="true">
             #for((id,name,tableHTML) <- ksContent.tables)
-
             <div class="panel panel-default">
                 <div class="panel-heading" role="tab">
                     <h4 class="panel-title">
                         <a role="button" data-toggle="collapse" data-target="#${id}" aria-expanded="false">
                             <span class="text-primary">
-                                <i class="glyphicon glyphicon-th-list"/>&nbsp;${name}
+                                <span class="glyphicon glyphicon-th-list"></span>&nbsp;${name}
                             </span>
                         </a>
                     </h4>
@@ -72,7 +71,7 @@
                 <div class="panel-heading" role="tab">
                 <h4 class="panel-title">
                     <a role="button" data-toggle="collapse" data-target="#${id}" aria-expanded="false">
-                        <span class="text-primary"><i class="glyphicon glyphicon-eye-open"/>&nbsp;${name}</span>
+                        <span class="text-primary"><span class="glyphicon glyphicon-eye-open"></span>&nbsp;${name}</span>
                         </a>
                     </h4>
                 </div>
@@ -102,7 +101,7 @@
                 <div class="panel-heading" role="tab">
                     <h4 class="panel-title">
                         <a role="button" data-toggle="collapse" data-target="#${id}" aria-expanded="false">
-                            <span class="text-warning"><i class="glyphicon glyphicon-copyright-mark"/>&nbsp;${name}</span>
+                            <span class="text-warning"><span class="glyphicon glyphicon-copyright-mark"></span>&nbsp;${name}</span>
                         </a>
                     </h4>
                 </div>
@@ -133,7 +132,7 @@
                 <div class="panel-heading" role="tab">
                     <h4 class="panel-title">
                         <a role="button" data-toggle="collapse" data-target="#${id}" aria-expanded="false">
-                            <span class="text-success"><i class="glyphicon glyphicon-random"/>&nbsp;${name}</span>
+                            <span class="text-success"><span class="glyphicon glyphicon-random"></span>&nbsp;${name}</span>
                         </a>
                     </h4>
                 </div>
@@ -163,7 +162,7 @@
                 <div class="panel-heading" role="tab">
                     <h4 class="panel-title">
                         <a role="button" data-toggle="collapse" data-target="#${id}" aria-expanded="false">
-                            <span class="text-success"><i class="glyphicon glyphicon-retweet"/>&nbsp;${name}</span>
+                            <span class="text-success"><span class="glyphicon glyphicon-retweet"></span>&nbsp;${name}</span>
                         </a>
                     </h4>
                 </div>

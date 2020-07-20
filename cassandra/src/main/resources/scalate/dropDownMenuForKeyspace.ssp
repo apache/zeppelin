@@ -20,7 +20,7 @@
 <%@ val ksContent: KeyspaceContent %>
 <li role="presentation" class="dropdown">
     <a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
-        <span class="text-danger"><i class="glyphicon glyphicon-folder-open"/>&nbsp;&nbsp;<strong>${ksContent.keyspaceName}</strong></span>
+        <span class="text-danger"><span class="glyphicon glyphicon-folder-open"></span>&nbsp;&nbsp;<strong>${ksContent.keyspaceName}</strong></span>
         <span class="text-danger caret"></span>
         <ul class="dropdown-menu">
             #if(ksContent.tables.nonEmpty)
@@ -29,7 +29,7 @@
                 #for((id,name,_) <- ksContent.tables)
             <li>
                 <a role="button" data-toggle="collapse" data-target="#${id}">
-                    <span class="text-primary"><i class="glyphicon glyphicon-th-list"/>&nbsp;${name}</span>
+                    <span class="text-primary"><span class="glyphicon glyphicon-th-list"></span>&nbsp;${name}</span>
                 </a>
             </li>
                 #end
@@ -41,7 +41,7 @@
                 #for((id,name,_) <- ksContent.views)
                     <li>
                     <a role="button" data-toggle="collapse" data-target="#${id}">
-                    <span class="text-primary"><i class="glyphicon glyphicon-eye-open"/>&nbsp;${name}</span>
+                    <span class="text-primary"><span class="glyphicon glyphicon-eye-open"></span>&nbsp;${name}</span>
                     </a>
                     </li>
                 #end
@@ -53,7 +53,7 @@
                 #for((id,name,_) <- ksContent.udts)
             <li>
                 <a role="button" data-toggle="collapse" data-target="#${id}">
-                    <span class="text-warning"><i class="glyphicon glyphicon-copyright-mark"/>&nbsp;${name}</span>
+                    <span class="text-warning"><span class="glyphicon glyphicon-copyright-mark"></span>&nbsp;${name}</span>
                 </a>
             </li>
                 #end
@@ -65,7 +65,7 @@
                 #for((id,name,_) <- ksContent.functions)
                     <li>
                     <a role="button" data-toggle="collapse" data-target="#${id}">
-                    <span class="text-success"><i class="glyphicon glyphicon-random"/>&nbsp;${name}</span>
+                    <span class="text-success"><span class="glyphicon glyphicon-random"></span>&nbsp;${name}</span>
                     </a>
                     </li>
                 #end
@@ -77,7 +77,7 @@
                 #for((id,name,_) <- ksContent.aggregates)
                     <li>
                     <a role="button" data-toggle="collapse" data-target="#${id}">
-                    <span class="text-success"><i class="glyphicon glyphicon-retweet"/>&nbsp;${name}</span>
+                    <span class="text-success"><span class="glyphicon glyphicon-retweet"></span>&nbsp;${name}</span>
                     </a>
                     </li>
                 #end
