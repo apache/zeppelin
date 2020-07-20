@@ -116,7 +116,14 @@ public class NotebookService {
   public Note getNote(String noteId,
                       ServiceContext context,
                       ServiceCallback<Note> callback) throws IOException {
-    Note note = notebook.getNote(noteId);
+    return getNote(noteId, false, context, callback);
+  }
+
+  public Note getNote(String noteId,
+                      boolean reload,
+                      ServiceContext context,
+                      ServiceCallback<Note> callback) throws IOException {
+    Note note = notebook.getNote(noteId, reload);
     if (note == null) {
       callback.onFailure(new NoteNotFoundException(noteId), context);
       return null;
