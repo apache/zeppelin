@@ -280,6 +280,11 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
     websocketMsgSrv.convertNote($scope.note.id, $scope.note.name);
   };
 
+  // Export nbformat
+  $scope.reloadNote = function() {
+    websocketMsgSrv.reloadNote($scope.note.id);
+  };
+
   // Clone note
   $scope.cloneNote = function(noteId) {
     BootstrapDialog.confirm({
