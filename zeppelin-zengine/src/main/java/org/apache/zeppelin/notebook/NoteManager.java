@@ -282,13 +282,13 @@ public class NoteManager {
    * @return return null if not found on NotebookRepo.
    * @throws IOException
    */
-  public Note getNote(String noteId, boolean forceLoad) throws IOException {
+  public Note getNote(String noteId, boolean reload) throws IOException {
     String notePath = this.notesInfo.get(noteId);
     if (notePath == null) {
       return null;
     }
     NoteNode noteNode = getNoteNode(notePath);
-    return noteNode.getNote(forceLoad);
+    return noteNode.getNote(reload);
   }
 
   /**
@@ -535,7 +535,7 @@ public class NoteManager {
     }
 
     public synchronized Note getNote() throws IOException {
-        return getNote(true);
+        return getNote(false);
     }
 
     /**
@@ -544,8 +544,8 @@ public class NoteManager {
      * @return
      * @throws IOException
      */
-    public synchronized Note getNote(boolean forceLoad) throws IOException {
-      if (!note.isLoaded() && forceLoad) {
+    public synchronized Note getNote(boolean reload) throws IOException {
+      if (!note.isLoaded() || reload) {
         note = notebookRepo.get(note.getId(), note.getPath(), AuthenticationInfo.ANONYMOUS);
         if (parent.toString().equals("/")) {
           note.setPath("/" + note.getName());

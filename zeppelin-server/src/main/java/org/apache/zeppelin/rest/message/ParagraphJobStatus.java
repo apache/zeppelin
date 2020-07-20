@@ -17,11 +17,14 @@
 
 package org.apache.zeppelin.rest.message;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.notebook.Paragraph;
+import org.apache.zeppelin.scheduler.Job;
 
 public class ParagraphJobStatus {
   private String id;
   private String status;
+  private String errorMessage;
   private String started;
   private String finished;
   private String progress;
@@ -39,6 +42,13 @@ public class ParagraphJobStatus {
       this.progress = String.valueOf(p.progress());
     } else if (p.isTerminated()){
       this.progress = String.valueOf(100);
+      if (p.getStatus() == Job.Status.ERROR) {
+        if (!StringUtils.isBlank(p.getErrorMessage())) {
+          this.errorMessage = p.getErrorMessage();
+        } else {
+          this.errorMessage = p.getReturn().toString();
+        }
+      }
     } else {
       this.progress = String.valueOf(0);
     }
