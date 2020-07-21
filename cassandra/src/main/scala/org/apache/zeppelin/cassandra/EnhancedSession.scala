@@ -36,20 +36,20 @@ import scala.compat.java8.OptionConverters._
  * to describe schema
  */
 class EnhancedSession(val session: CqlSession) {
-  val clusterDisplay = DisplaySystem.ClusterDisplay
-  val keyspaceDisplay = DisplaySystem.KeyspaceDisplay
-  val tableDisplay = DisplaySystem.TableDisplay
-  val udtDisplay = DisplaySystem.UDTDisplay
-  val functionDisplay = DisplaySystem.FunctionDisplay
-  val aggregateDisplay = DisplaySystem.AggregateDisplay
-  val materializedViewDisplay = DisplaySystem.MaterializedViewDisplay
-  val helpDisplay = DisplaySystem.HelpDisplay
+  val clusterDisplay: DisplaySystem.ClusterDisplay.type = DisplaySystem.ClusterDisplay
+  val keyspaceDisplay: DisplaySystem.KeyspaceDisplay.type = DisplaySystem.KeyspaceDisplay
+  val tableDisplay: DisplaySystem.TableDisplay.type = DisplaySystem.TableDisplay
+  val udtDisplay: DisplaySystem.UDTDisplay.type = DisplaySystem.UDTDisplay
+  val functionDisplay: DisplaySystem.FunctionDisplay.type = DisplaySystem.FunctionDisplay
+  val aggregateDisplay: DisplaySystem.AggregateDisplay.type = DisplaySystem.AggregateDisplay
+  val materializedViewDisplay: DisplaySystem.MaterializedViewDisplay.type = DisplaySystem.MaterializedViewDisplay
+  val helpDisplay: DisplaySystem.HelpDisplay.type = DisplaySystem.HelpDisplay
+
   private val noResultDisplay = DisplaySystem.NoResultDisplay
   private val DEFAULT_CHECK_TIME: Int = 200
   private val MAX_SCHEMA_AGREEMENT_WAIT: Int = 120000 // 120 seconds
   private val defaultDDLTimeout: Duration = Duration.ofSeconds(MAX_SCHEMA_AGREEMENT_WAIT / 10000)
   private val LOGGER = LoggerFactory.getLogger(classOf[EnhancedSession])
-
 
   val HTML_MAGIC = "%html \n"
 
@@ -209,7 +209,7 @@ class EnhancedSession(val session: CqlSession) {
           try {
             Thread.sleep(DEFAULT_CHECK_TIME)
           } catch {
-            case x: InterruptedException => None
+            case _: InterruptedException => None
           }
           val sinceStart = (System.currentTimeMillis() - startTime) / 1000
           if (sinceStart > MAX_SCHEMA_AGREEMENT_WAIT) {
@@ -278,7 +278,7 @@ object EnhancedSession {
         else if (batchType == BatchType.UNLOGGED) "UNLOGGED "
         else ""
 
-        "BEGIN " +  batchTypeStr + "BATCH" + timestampStr + "\n"
+        "BEGIN " +  batchTypeStr + "BATCH" + timestampStr + "\n" +
           x.iterator().asScala.toSeq.map {
             case t: BoundStatement => t.getPreparedStatement.getQuery
             case t: SimpleStatement => t.getQuery

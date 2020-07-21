@@ -18,22 +18,24 @@
 package org.apache.zeppelin.interpreter.launcher;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
 
-import com.google.common.annotations.VisibleForTesting;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.recovery.RecoveryStorage;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import io.fabric8.kubernetes.client.Config;
+import io.fabric8.kubernetes.client.DefaultKubernetesClient;
+import io.fabric8.kubernetes.client.KubernetesClient;
 
 /**
  * Interpreter Launcher which use shell script to launch the interpreter process.
@@ -41,22 +43,13 @@ import java.util.Map;
 public class K8sStandardInterpreterLauncher extends InterpreterLauncher {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(K8sStandardInterpreterLauncher.class);
-  private final Kubectl kubectl;
   private InterpreterLaunchContext context;
-
+  private final KubernetesClient client;
 
   public K8sStandardInterpreterLauncher(ZeppelinConfiguration zConf, RecoveryStorage recoveryStorage) throws IOException {
     super(zConf, recoveryStorage);
-    kubectl = new Kubectl(zConf.getK8sKubectlCmd());
-    kubectl.setNamespace(getNamespace());
+    client = new DefaultKubernetesClient();
   }
-
-  @VisibleForTesting
-  K8sStandardInterpreterLauncher(ZeppelinConfiguration zConf, RecoveryStorage recoveryStorage, Kubectl kubectl) {
-    super(zConf, recoveryStorage);
-    this.kubectl = kubectl;
-  }
-
 
   /**
    * Check if i'm running inside of kubernetes or not.
@@ -79,9 +72,9 @@ public class K8sStandardInterpreterLauncher extends InterpreterLauncher {
    */
   String getNamespace() throws IOException {
     if (isRunningOnKubernetes()) {
-      return readFile("/var/run/secrets/kubernetes.io/serviceaccount/namespace", Charset.defaultCharset()).trim();
+      return readFile(Config.KUBERNETES_NAMESPACE_PATH, Charset.defaultCharset()).trim();
     } else {
-      return "default";
+      return zConf.getK8sNamepsace();
     }
   }
 
@@ -143,10 +136,10 @@ public class K8sStandardInterpreterLauncher extends InterpreterLauncher {
     LOGGER.info("Launching Interpreter: {}", context.getInterpreterSettingGroup());
     this.context = context;
     this.properties = context.getProperties();
-    int connectTimeout = getConnectTimeout();
 
     return new K8sRemoteInterpreterProcess(
-            kubectl,
+            client,
+            getNamespace(),
             new File(zConf.getK8sTemplatesDir(), "interpreter"),
             zConf.getK8sContainerImage(),
             context.getInterpreterGroupId(),
@@ -158,7 +151,7 @@ public class K8sStandardInterpreterLauncher extends InterpreterLauncher {
             getZeppelinServiceRpcPort(),
             zConf.getK8sPortForward(),
             zConf.getK8sSparkContainerImage(),
-            connectTimeout,
+            getConnectTimeout(),
             isUserImpersonateForSparkInterpreter(context));
   }
 

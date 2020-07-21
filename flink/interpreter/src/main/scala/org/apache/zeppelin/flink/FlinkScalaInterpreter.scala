@@ -18,18 +18,16 @@
 
 package org.apache.zeppelin.flink
 
-import java.io.{BufferedReader, File}
+import java.io.{BufferedReader, File, IOException}
 import java.net.{URL, URLClassLoader}
 import java.nio.file.Files
 import java.util.Properties
 import java.util.concurrent.TimeUnit
 import java.util.jar.JarFile
-import java.util.regex.Pattern
 
 import org.apache.commons.lang3.StringUtils
 import org.apache.commons.lang3.exception.ExceptionUtils
 import org.apache.flink.api.common.JobExecutionResult
-import org.apache.flink.api.scala.FlinkShell.{ExecutionMode, _}
 import org.apache.flink.api.scala.{ExecutionEnvironment, FlinkILoop}
 import org.apache.flink.client.program.ClusterClient
 import org.apache.flink.configuration._
@@ -48,8 +46,8 @@ import org.apache.flink.table.functions.{AggregateFunction, ScalarFunction, Tabl
 import org.apache.flink.table.module.ModuleManager
 import org.apache.flink.table.module.hive.HiveModule
 import org.apache.flink.yarn.cli.FlinkYarnSessionCli
-import org.apache.flink.yarn.executors.YarnSessionClusterExecutor
 import org.apache.zeppelin.flink.util.DependencyUtils
+import org.apache.zeppelin.flink.FlinkShell._
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion
 import org.apache.zeppelin.interpreter.util.InterpreterOutputStream
 import org.apache.zeppelin.interpreter.{InterpreterContext, InterpreterException, InterpreterHookRegistry, InterpreterResult}
@@ -107,6 +105,7 @@ class FlinkScalaInterpreter(val properties: Properties) {
   private var defaultParallelism = 1
   private var defaultSqlParallelism = 1
   private var userJars: Seq[String] = _
+  private var userUdfJars: Seq[String] = _
 
   def open(): Unit = {
     val config = initFlinkConfig()
@@ -137,12 +136,7 @@ class FlinkScalaInterpreter(val properties: Properties) {
     }
 
     // load udf jar
-    val udfJars = properties.getProperty("flink.udf.jars", "")
-    if (!StringUtils.isBlank(udfJars)) {
-      udfJars.split(",").foreach(jar => {
-        loadUDFJar(jar)
-      })
-    }
+    this.userUdfJars.foreach(jar => loadUDFJar(jar))
   }
 
   private def initFlinkConfig(): Config = {
@@ -192,7 +186,8 @@ class FlinkScalaInterpreter(val properties: Properties) {
       Some(ensureYarnConfig(config)
         .copy(queue = Some(queue))))
 
-    this.userJars = getUserJars
+    this.userUdfJars = getUserUdfJars()
+    this.userJars = getUserJarsExceptUdfJars ++ this.userUdfJars
     LOGGER.info("UserJars: " + userJars.mkString(","))
     config = config.copy(externalJars = Some(userJars.toArray))
     LOGGER.info("Config: " + config)
@@ -226,10 +221,6 @@ class FlinkScalaInterpreter(val properties: Properties) {
         .copy(port = Some(Integer.parseInt(port)))
     }
 
-    if (config.executionMode == ExecutionMode.YARN) {
-      // workaround for FLINK-17788, otherwise it won't work with flink 1.10.1 which has been released.
-      configuration.set(DeploymentOptions.TARGET, YarnSessionClusterExecutor.NAME)
-    }
     config
   }
 
@@ -254,7 +245,7 @@ class FlinkScalaInterpreter(val properties: Properties) {
         }
       }
 
-      val (effectiveConfig, cluster) = fetchConnectionInfo(config, configuration)
+      val (effectiveConfig, cluster) = fetchConnectionInfo(config, configuration, flinkShims)
       this.configuration = effectiveConfig
       cluster match {
         case Some(clusterClient) =>
@@ -479,7 +470,7 @@ class FlinkScalaInterpreter(val properties: Properties) {
 
     val udfPackages = properties.getProperty("flink.udf.jars.packages", "").split(",").toSet
     val urls = Array(new URL("jar:file:" + jar + "!/"))
-    val cl = new URLClassLoader(urls)
+    val cl = new URLClassLoader(urls, getFlinkScalaShellLoader)
 
     while (entries.hasMoreElements) {
       val je = entries.nextElement
@@ -767,17 +758,10 @@ class FlinkScalaInterpreter(val properties: Properties) {
 
   def getDefaultSqlParallelism = this.defaultSqlParallelism
 
-  def getUserJars: Seq[String] = {
+  private def getUserJarsExceptUdfJars: Seq[String] = {
     val flinkJars =
       if (!StringUtils.isBlank(properties.getProperty("flink.execution.jars", ""))) {
-        properties.getProperty("flink.execution.jars").split(",").toSeq
-      } else {
-        Seq.empty[String]
-      }
-
-    val flinkUDFJars =
-      if (!StringUtils.isBlank(properties.getProperty("flink.udf.jars", ""))) {
-        properties.getProperty("flink.udf.jars").split(",").toSeq
+        getOrDownloadJars(properties.getProperty("flink.execution.jars").split(",").toSeq)
       } else {
         Seq.empty[String]
       }
@@ -790,7 +774,30 @@ class FlinkScalaInterpreter(val properties: Properties) {
         Seq.empty[String]
       }
 
-    flinkJars ++ flinkPackageJars ++ flinkUDFJars
+    flinkJars ++ flinkPackageJars
+  }
+
+  private def getUserUdfJars(): Seq[String] = {
+    if (!StringUtils.isBlank(properties.getProperty("flink.udf.jars", ""))) {
+      getOrDownloadJars(properties.getProperty("flink.udf.jars").split(",").toSeq)
+    } else {
+      Seq.empty[String]
+    }
+  }
+
+  private def getOrDownloadJars(jars: Seq[String]): Seq[String] = {
+    jars.map(jar => {
+      if (jar.contains("://")) {
+        HadoopUtils.downloadJar(jar)
+      } else {
+        val jarFile = new File(jar)
+        if (!jarFile.exists() || !jarFile.isFile) {
+          throw new Exception(s"jar file: ${jar} doesn't exist")
+        } else {
+          jar
+        }
+      }
+    })
   }
 
   def getJobManager = this.jobManager

@@ -18,6 +18,7 @@
 
 package org.apache.zeppelin.flink;
 
+import com.google.common.io.Files;
 import org.apache.flink.client.program.ClusterClient;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -29,6 +30,7 @@ import org.apache.hadoop.yarn.exceptions.YarnException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.io.IOException;
 
 /**
@@ -64,5 +66,17 @@ public class HadoopUtils {
     } catch (IOException e){
         LOGGER.warn("Failed to cleanup staging dir", e);
     }
+  }
+
+  public static String downloadJar(String jarOnHdfs) throws IOException {
+    File tmpDir = Files.createTempDir();
+    FileSystem fs = FileSystem.get(new Configuration());
+    Path sourcePath = fs.makeQualified(new Path(jarOnHdfs));
+    if (!fs.exists(sourcePath)) {
+      throw new IOException("jar file: " + jarOnHdfs + " doesn't exist.");
+    }
+    Path destPath = new Path(tmpDir.getAbsolutePath() + "/" + sourcePath.getName());
+    fs.copyToLocalFile(sourcePath, destPath);
+    return new File(destPath.toString()).getAbsolutePath();
   }
 }

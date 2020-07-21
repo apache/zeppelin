@@ -20,14 +20,14 @@
 <%@ val clusterContent: ClusterContent %>
 <li role="presentation" class="dropdown">
     <a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
-        <span class="text-muted"><i class="glyphicon glyphicon-dashboard"/>&nbsp;<strong>${clusterContent.clusterName}</strong></span>
+        <span class="text-muted"><span class="glyphicon glyphicon-dashboard"></span>&nbsp;<strong>${clusterContent.clusterName}</strong></span>
         <span class="text-muted caret"></span>
         <ul class="dropdown-menu">
             <li class="dropdown-header"><span class="text-danger">Keyspaces</span></li>
             #for((id, name, _) <- clusterContent.keyspaces)
             <li>
                 <a role="button" data-toggle="collapse" data-target="#${id}">
-                    <span class="text-danger"><i class="glyphicon glyphicon-folder-open"/>&nbsp;&nbsp;${name}</span>
+                    <span class="text-danger"><span class="glyphicon glyphicon-folder-open"></span>&nbsp;&nbsp;${name}</span>
                 </a>
             </li>
             #end

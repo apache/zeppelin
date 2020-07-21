@@ -2,9 +2,9 @@
   "paragraphs": [
     {
       "title": "Introduction",
-      "text": "%md\n\n# Introduction\n\n[Apache Flink](https://flink.apache.org/) is a framework and distributed processing engine for stateful computations over unbounded and bounded data streams. This is Flink tutorial for runninb classical wordcount in both batch and streaming mode. \n\nThere\u0027re 3 things you need to do before using flink in zeppelin.\n\n* Download [Flink 1.10](https://flink.apache.org/downloads.html) for scala 2.11 (Only scala-2.11 is supported, scala-2.12 is not supported yet in Zeppelin), unpack it and set `FLINK_HOME` in flink interpreter setting to this location.\n* Copy flink-python_2.11–1.10.0.jar from flink opt folder to flink lib folder (it is used by pyflink which is supported in Zeppelin)\n* If you want to run yarn mode, you need to set `HADOOP_CONF_DIR` in flink interpreter setting. And make sure `hadoop` is in your `PATH`, because internally flink will call command `hadoop classpath` and load all the hadoop related jars in the flink interpreter process.\n\nThere\u0027re 6 sub interpreters in flink interpreter, each is used for different purpose. However they are in the the JVM and share the same ExecutionEnviroment/StremaExecutionEnvironment/BatchTableEnvironment/StreamTableEnvironment.\n\n\n* `%flink`\t- Creates ExecutionEnvironment/StreamExecutionEnvironment/BatchTableEnvironment/StreamTableEnvironment and provides a Scala environment \n* `%flink.pyflink`\t- Provides a python environment \n* `%flink.ipyflink`\t- Provides an ipython environment \n* `%flink.ssql`\t - Provides a stream sql environment \n* `%flink.bsql`\t- Provides a batch sql environment ",
+      "text": "%md\n\n# Introduction\n\n[Apache Flink](https://flink.apache.org/) is a framework and distributed processing engine for stateful computations over unbounded and bounded data streams. This is Flink tutorial for running classical wordcount in both batch and streaming mode. \n\nThere\u0027re 3 things you need to do before using flink in Zeppelin.\n\n* Download [Flink 1.10](https://flink.apache.org/downloads.html) for scala 2.11 (Only scala-2.11 is supported, scala-2.12 is not supported yet in Zeppelin), unpack it and set `FLINK_HOME` in flink interpreter setting to this location.\n* Copy flink-python_2.11–1.10.0.jar from flink opt folder to flink lib folder (it is used by pyflink which is supported in Zeppelin)\n* If you want to run yarn mode, you need to set `HADOOP_CONF_DIR` in flink interpreter setting. And make sure `hadoop` is in your `PATH`, because internally flink will call command `hadoop classpath` and put all the hadoop related jars in the classpath of flink interpreter process.\n\nThere\u0027re 6 sub interpreters in flink interpreter, each is used for different purpose. However they are in the the JVM and share the same ExecutionEnviroment/StremaExecutionEnvironment/BatchTableEnvironment/StreamTableEnvironment.\n\n\n* `%flink`\t- Creates ExecutionEnvironment/StreamExecutionEnvironment/BatchTableEnvironment/StreamTableEnvironment and provides a Scala environment \n* `%flink.pyflink`\t- Provides a python environment \n* `%flink.ipyflink`\t- Provides an ipython environment \n* `%flink.ssql`\t - Provides a stream sql environment \n* `%flink.bsql`\t- Provides a batch sql environment ",
       "user": "anonymous",
-      "dateUpdated": "2020-05-11 14:22:22.877",
+      "dateUpdated": "2020-07-14 22:20:39.929",
       "config": {
         "colWidth": 12.0,
         "fontSize": 9.0,
@@ -30,17 +30,18 @@
         "msg": [
           {
             "type": "HTML",
-            "data": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003ch1\u003eIntroduction\u003c/h1\u003e\n\u003cp\u003e\u003ca href\u003d\"https://flink.apache.org/\"\u003eApache Flink\u003c/a\u003e is a framework and distributed processing engine for stateful computations over unbounded and bounded data streams. This is Flink tutorial for runninb classical wordcount in both batch and streaming mode.\u003c/p\u003e\n\u003cp\u003eThere\u0026rsquo;re 3 things you need to do before using flink in zeppelin.\u003c/p\u003e\n\u003cul\u003e\n\u003cli\u003eDownload \u003ca href\u003d\"https://flink.apache.org/downloads.html\"\u003eFlink 1.10\u003c/a\u003e for scala 2.11 (Only scala-2.11 is supported, scala-2.12 is not supported yet in Zeppelin), unpack it and set \u003ccode\u003eFLINK_HOME\u003c/code\u003e in flink interpreter setting to this location.\u003c/li\u003e\n\u003cli\u003eCopy flink-python_2.11–1.10.0.jar from flink opt folder to flink lib folder (it is used by pyflink which is supported in Zeppelin)\u003c/li\u003e\n\u003cli\u003eIf you want to run yarn mode, you need to set \u003ccode\u003eHADOOP_CONF_DIR\u003c/code\u003e in flink interpreter setting. And make sure \u003ccode\u003ehadoop\u003c/code\u003e is in your \u003ccode\u003ePATH\u003c/code\u003e, because internally flink will call command \u003ccode\u003ehadoop classpath\u003c/code\u003e and load all the hadoop related jars in the flink interpreter process.\u003c/li\u003e\n\u003c/ul\u003e\n\u003cp\u003eThere\u0026rsquo;re 6 sub interpreters in flink interpreter, each is used for different purpose. However they are in the the JVM and share the same ExecutionEnviroment/StremaExecutionEnvironment/BatchTableEnvironment/StreamTableEnvironment.\u003c/p\u003e\n\u003cul\u003e\n\u003cli\u003e\u003ccode\u003e%flink\u003c/code\u003e\t- Creates ExecutionEnvironment/StreamExecutionEnvironment/BatchTableEnvironment/StreamTableEnvironment and provides a Scala environment\u003c/li\u003e\n\u003cli\u003e\u003ccode\u003e%flink.pyflink\u003c/code\u003e\t- Provides a python environment\u003c/li\u003e\n\u003cli\u003e\u003ccode\u003e%flink.ipyflink\u003c/code\u003e\t- Provides an ipython environment\u003c/li\u003e\n\u003cli\u003e\u003ccode\u003e%flink.ssql\u003c/code\u003e\t - Provides a stream sql environment\u003c/li\u003e\n\u003cli\u003e\u003ccode\u003e%flink.bsql\u003c/code\u003e\t- Provides a batch sql environment\u003c/li\u003e\n\u003c/ul\u003e\n\n\u003c/div\u003e"
+            "data": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003ch1\u003eIntroduction\u003c/h1\u003e\n\u003cp\u003e\u003ca href\u003d\"https://flink.apache.org/\"\u003eApache Flink\u003c/a\u003e is a framework and distributed processing engine for stateful computations over unbounded and bounded data streams. This is Flink tutorial for running classical wordcount in both batch and streaming mode.\u003c/p\u003e\n\u003cp\u003eThere\u0026rsquo;re 3 things you need to do before using flink in Zeppelin.\u003c/p\u003e\n\u003cul\u003e\n\u003cli\u003eDownload \u003ca href\u003d\"https://flink.apache.org/downloads.html\"\u003eFlink 1.10\u003c/a\u003e for scala 2.11 (Only scala-2.11 is supported, scala-2.12 is not supported yet in Zeppelin), unpack it and set \u003ccode\u003eFLINK_HOME\u003c/code\u003e in flink interpreter setting to this location.\u003c/li\u003e\n\u003cli\u003eCopy flink-python_2.11–1.10.0.jar from flink opt folder to flink lib folder (it is used by pyflink which is supported in Zeppelin)\u003c/li\u003e\n\u003cli\u003eIf you want to run yarn mode, you need to set \u003ccode\u003eHADOOP_CONF_DIR\u003c/code\u003e in flink interpreter setting. And make sure \u003ccode\u003ehadoop\u003c/code\u003e is in your \u003ccode\u003ePATH\u003c/code\u003e, because internally flink will call command \u003ccode\u003ehadoop classpath\u003c/code\u003e and put all the hadoop related jars in the classpath of flink interpreter process.\u003c/li\u003e\n\u003c/ul\u003e\n\u003cp\u003eThere\u0026rsquo;re 6 sub interpreters in flink interpreter, each is used for different purpose. However they are in the the JVM and share the same ExecutionEnviroment/StremaExecutionEnvironment/BatchTableEnvironment/StreamTableEnvironment.\u003c/p\u003e\n\u003cul\u003e\n\u003cli\u003e\u003ccode\u003e%flink\u003c/code\u003e\t- Creates ExecutionEnvironment/StreamExecutionEnvironment/BatchTableEnvironment/StreamTableEnvironment and provides a Scala environment\u003c/li\u003e\n\u003cli\u003e\u003ccode\u003e%flink.pyflink\u003c/code\u003e\t- Provides a python environment\u003c/li\u003e\n\u003cli\u003e\u003ccode\u003e%flink.ipyflink\u003c/code\u003e\t- Provides an ipython environment\u003c/li\u003e\n\u003cli\u003e\u003ccode\u003e%flink.ssql\u003c/code\u003e\t - Provides a stream sql environment\u003c/li\u003e\n\u003cli\u003e\u003ccode\u003e%flink.bsql\u003c/code\u003e\t- Provides a batch sql environment\u003c/li\u003e\n\u003c/ul\u003e\n\n\u003c/div\u003e"
           }
         ]
       },
       "apps": [],
+      "runtimeInfos": {},
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1580997898536_-1239502599",
       "id": "paragraph_1580997898536_-1239502599",
       "dateCreated": "2020-02-06 22:04:58.536",
-      "dateStarted": "2020-05-11 14:22:22.878",
-      "dateFinished": "2020-05-11 14:22:24.363",
+      "dateStarted": "2020-07-14 22:20:39.929",
+      "dateFinished": "2020-07-14 22:20:39.954",
       "status": "FINISHED"
     },
     {
@@ -76,6 +77,7 @@
         ]
       },
       "apps": [],
+      "runtimeInfos": {},
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1580998080340_1531975932",
       "id": "paragraph_1580998080340_1531975932",
@@ -117,6 +119,7 @@
         ]
       },
       "apps": [],
+      "runtimeInfos": {},
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1580998084555_-697674675",
       "id": "paragraph_1580998084555_-697674675",
@@ -162,6 +165,7 @@
         ]
       },
       "apps": [],
+      "runtimeInfos": {},
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1580998407443_936860398",
       "id": "paragraph_1580998407443_936860398",
@@ -180,6 +184,7 @@
         "forms": {}
       },
       "apps": [],
+      "runtimeInfos": {},
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1582600214095_1825730071",
       "id": "paragraph_1582600214095_1825730071",
@@ -189,7 +194,7 @@
   ],
   "name": "1. Flink Basics",
   "id": "2F2YS7PCE",
-  "defaultInterpreterGroup": "spark",
+  "defaultInterpreterGroup": "flink",
   "version": "0.9.0-SNAPSHOT",
   "noteParams": {},
   "noteForms": {},

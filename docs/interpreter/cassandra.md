@@ -179,20 +179,11 @@ The complete list of all CQL statements and versions can be found below:
      </td>
    </tr>
    <tr>
-     <td><strong>2.1 & 2.0</strong></td>
+     <td><strong>2.1</strong></td>
      <td>
         <a target="_blank"
           href="http://docs.datastax.com/en/cql/3.1/cql/cql_intro_c.html">
           http://docs.datastax.com/en/cql/3.1/cql/cql_intro_c.html
-        </a>
-     </td>
-   </tr>
-   <tr>
-     <td><strong>1.2</strong></td>
-     <td>
-        <a target="_blank"
-          href="https://docs.datastax.com/en/archived/cql/3.1/cql/cql_intro_c.html">
-          https://docs.datastax.com/en/archived/cql/3.1/cql/cql_intro_c.html
         </a>
      </td>
    </tr>
@@ -907,11 +898,13 @@ Besides these parameters, it's also possible to set other driver parameters by a
 
 **4.0** _(Zeppelin {{ site.ZEPPELIN_VERSION }})_ :
 
-* Refactor to use unified Java driver 4.5 ([ZEPPELIN-4378](https://issues.apache.org/jira/browse/ZEPPELIN-4378):
+* Refactor to use unified Java driver 4.7 ([ZEPPELIN-4378](https://issues.apache.org/jira/browse/ZEPPELIN-4378):
   * changes in configuration were necessary, as new driver has different architecture, and configuration options
   * interpreter got support for DSE-specific data types, and other extensions
   * support for `@retryPolicy` is removed, as only single retry policy is shipped with driver
-  * added support for formatting options, both interpreter & cell level
+  * allow to specify any configuration option of Java driver
+  * dropped support for Cassandra 1.2 & 2.0, that isn't supported by driver anymore
+* added support for formatting options, both interpreter & cell level
 
 **3.1** _(Zeppelin {{ site.ZEPPELIN_VERSION }})_ :
 

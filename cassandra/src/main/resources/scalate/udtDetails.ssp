@@ -25,13 +25,13 @@
         <div class="panel panel-default table-responsive table-bordered">
             <table class="table">
                 #if(withCaption)
-                <caption><h4 class="text-warning"><i class="glyphicon glyphicon-copyright-mark"/>&nbsp;${udtDetails.typeName}</h4></caption>
+                <caption><h4 class="text-warning"><span class="glyphicon glyphicon-copyright-mark"></span>&nbsp;${udtDetails.typeName}</h4></caption>
                 #end
 
                 <thead>
                     <tr>
                         <th class="col-md-6">Column Name</th>
-                        <th class="col-md-6">Data Type</th>
+                        <th class="col-md-6" style="text-align:left">Data Type</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -39,7 +39,7 @@
 
                 <tr>
                     <td class="col-md-6">${column.name}</td>
-                    <td class="col-md-6">${column.dataType.asCql(true,true)}</td>
+                    <td class="col-md-6" style="text-align:left">${column.dataType.asCql(true,true)}</td>
                 </tr>
                 #end
 

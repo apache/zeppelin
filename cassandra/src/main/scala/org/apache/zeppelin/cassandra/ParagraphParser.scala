@@ -47,10 +47,10 @@ object ParagraphParser {
   val REQUEST_TIMEOUT_PATTERN: Regex = """^\s*@requestTimeOut\s*=\s*([0-9]+)\s*$""".r
 
   val SIMPLE_STATEMENT_PATTERN: Regex = """([^;]+;)""".r
-  val PREPARE_STATEMENT_PATTERN: Regex = """^\s*@prepare\[([^]]+)\]\s*=\s*([^;]+)$""".r
-  val REMOVE_PREPARE_STATEMENT_PATTERN: Regex = """^\s*@remove_prepare\[([^]]+)\]\s*$""".r
+  val PREPARE_STATEMENT_PATTERN: Regex = """^\s*@prepare\[([^]]+)]\s*=\s*([^;]+)$""".r
+  val REMOVE_PREPARE_STATEMENT_PATTERN: Regex = """^\s*@remove_prepare\[([^]]+)]\s*$""".r
 
-  val BIND_PATTERN: Regex = """^\s*@bind\[([^]]+)\](?:=([^;]+))?""".r
+  val BIND_PATTERN: Regex = """^\s*@bind\[([^]]+)](?:=([^;]+))?""".r
   val BATCH_PATTERN: Regex = """^(?i)\s*BEGIN\s+(UNLOGGED|COUNTER)?\s*BATCH""".r
 
   /**

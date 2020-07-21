@@ -17,18 +17,16 @@
 
 package org.apache.zeppelin.interpreter.launcher;
 
-import org.apache.zeppelin.conf.ZeppelinConfiguration;
-import org.apache.zeppelin.interpreter.InterpreterOption;
-import org.junit.Before;
-import org.junit.Test;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.util.Properties;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.interpreter.InterpreterOption;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * In the future, test may use minikube on travis for end-to-end test
@@ -46,11 +44,8 @@ public class K8sStandardInterpreterLauncherTest {
   @Test
   public void testK8sLauncher() throws IOException {
     // given
-    Kubectl kubectl = mock(Kubectl.class);
-    when(kubectl.getNamespace()).thenReturn("default");
-
     ZeppelinConfiguration zConf = new ZeppelinConfiguration();
-    K8sStandardInterpreterLauncher launcher = new K8sStandardInterpreterLauncher(zConf, null, kubectl);
+    K8sStandardInterpreterLauncher launcher = new K8sStandardInterpreterLauncher(zConf, null);
     Properties properties = new Properties();
     properties.setProperty("ENV_1", "VALUE_1");
     properties.setProperty("property_1", "value_1");
@@ -78,11 +73,8 @@ public class K8sStandardInterpreterLauncherTest {
   @Test
   public void testK8sLauncherWithSparkAndUserImpersonate() throws IOException {
     // given
-    Kubectl kubectl = mock(Kubectl.class);
-    when(kubectl.getNamespace()).thenReturn("default");
-
     ZeppelinConfiguration zConf = new ZeppelinConfiguration();
-    K8sStandardInterpreterLauncher launcher = new K8sStandardInterpreterLauncher(zConf, null, kubectl);
+    K8sStandardInterpreterLauncher launcher = new K8sStandardInterpreterLauncher(zConf, null);
     Properties properties = new Properties();
     properties.setProperty("ENV_1", "VALUE_1");
     properties.setProperty("property_1", "value_1");
@@ -108,22 +100,14 @@ public class K8sStandardInterpreterLauncherTest {
     assertTrue(client instanceof K8sRemoteInterpreterProcess);
     K8sRemoteInterpreterProcess process = (K8sRemoteInterpreterProcess) client;
     assertTrue(process.isSpark());
-
-    // when
-    process.start(context.getUserName());
-
-    // then
-    assertTrue(process.buildSparkSubmitOptions().contains("--proxy-user user1"));
+    assertTrue(process.buildSparkSubmitOptions(context.getUserName()).contains("--proxy-user user1"));
   }
 
   @Test
   public void testK8sLauncherWithSparkAndWithoutUserImpersonate() throws IOException {
     // given
-    Kubectl kubectl = mock(Kubectl.class);
-    when(kubectl.getNamespace()).thenReturn("default");
-
     ZeppelinConfiguration zConf = new ZeppelinConfiguration();
-    K8sStandardInterpreterLauncher launcher = new K8sStandardInterpreterLauncher(zConf, null, kubectl);
+    K8sStandardInterpreterLauncher launcher = new K8sStandardInterpreterLauncher(zConf, null);
     Properties properties = new Properties();
     properties.setProperty("ENV_1", "VALUE_1");
     properties.setProperty("property_1", "value_1");
@@ -149,11 +133,6 @@ public class K8sStandardInterpreterLauncherTest {
     assertTrue(client instanceof K8sRemoteInterpreterProcess);
     K8sRemoteInterpreterProcess process = (K8sRemoteInterpreterProcess) client;
     assertTrue(process.isSpark());
-
-    // when
-    process.start(context.getUserName());
-
-    // then
-    assertFalse(process.buildSparkSubmitOptions().contains("--proxy-user user1"));
+    assertFalse(process.buildSparkSubmitOptions(context.getUserName()).contains("--proxy-user user1"));
   }
 }

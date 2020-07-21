@@ -148,7 +148,7 @@ You can also add and set other flink properties which are not listed in the tabl
   <tr>
     <td>flink.udf.jars</td>
     <td></td>
-    <td>Flink udf jars (comma separated), zeppelin will register udf in this jar automatically for user. The udf name is the class name.</td>
+    <td>Flink udf jars (comma separated), zeppelin will register udf in this jar automatically for user. These udf jars could be either local files or hdfs files if you have hadoop installed. The udf name is the class name.</td>
   </tr>
   <tr>
     <td>flink.udf.jars.packages</td>
@@ -158,7 +158,7 @@ You can also add and set other flink properties which are not listed in the tabl
   <tr>
     <td>flink.execution.jars</td>
     <td></td>
-    <td>Additional user jars (comma separated)</td>
+    <td>Additional user jars (comma separated), these jars could be either local files or hdfs files if you have hadoop installed.</td>
   </tr>
   <tr>
     <td>flink.execution.packages</td>

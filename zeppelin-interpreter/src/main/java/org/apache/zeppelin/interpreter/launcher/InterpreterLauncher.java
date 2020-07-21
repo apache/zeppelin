@@ -17,23 +17,21 @@
 
 package org.apache.zeppelin.interpreter.launcher;
 
+import java.io.IOException;
+import java.util.Properties;
+
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
-import org.apache.zeppelin.interpreter.InterpreterOption;
-import org.apache.zeppelin.interpreter.InterpreterRunner;
 import org.apache.zeppelin.interpreter.recovery.RecoveryStorage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.util.Properties;
 
 /**
  * Component to Launch interpreter process.
  */
 public abstract class InterpreterLauncher {
 
-  private static Logger LOGGER = LoggerFactory.getLogger(InterpreterLauncher.class);
-  private static String SPECIAL_CHARACTER="{}()<>&*‘|=?;[]$–#~!.\"%/\\:+,`";
+  private static final Logger LOGGER = LoggerFactory.getLogger(InterpreterLauncher.class);
+  private static final String SPECIAL_CHARACTER="{}()<>&*‘|=?;[]$–#~!.\"%/\\:+,`";
 
   protected ZeppelinConfiguration zConf;
   protected Properties properties;
@@ -89,14 +87,13 @@ public abstract class InterpreterLauncher {
               recoveryStorage.getInterpreterClient(context.getInterpreterGroupId());
       if (recoveredClient != null) {
         if (recoveredClient.isRunning()) {
-          LOGGER.info("Recover interpreter process running at {} of interpreter group: {}",
-                  recoveredClient.getHost() + ":" + recoveredClient.getPort(),
+          LOGGER.info("Recover interpreter process running at {}:{} of interpreter group: {}",
+                  recoveredClient.getHost(), recoveredClient.getPort(),
                   recoveredClient.getInterpreterGroupId());
           return recoveredClient;
         } else {
           recoveryStorage.removeInterpreterClient(context.getInterpreterGroupId());
-          LOGGER.warn("Unable to recover interpreter process: " + recoveredClient.getHost() + ":"
-                  + recoveredClient.getPort() + ", as it is already terminated.");
+          LOGGER.warn("Unable to recover interpreter process: {}:{}, as it is already terminated.", recoveredClient.getHost(), recoveredClient.getPort());
         }
       }
     }

@@ -64,16 +64,15 @@ case class CassandraQueryOptions(consistency: Option[ConsistencyLevel],
 object InterpreterLogic {
   
   val CHOICES_SEPARATOR : String = """\|"""
-  val VARIABLE_PATTERN: Regex = """\{\{[^}]+\}\}""".r
-  val SIMPLE_VARIABLE_DEFINITION_PATTERN: Regex = """\{\{([^=]+)=([^=]+)\}\}""".r
-  val MULTIPLE_CHOICES_VARIABLE_DEFINITION_PATTERN: Regex = """\{\{([^=]+)=((?:[^=]+\|)+[^|]+)\}\}""".r
+  val VARIABLE_PATTERN: Regex = """\{\{[^}]+}}""".r
+  val SIMPLE_VARIABLE_DEFINITION_PATTERN: Regex = """\{\{([^=]+)=([^=]+)}}""".r
+  val MULTIPLE_CHOICES_VARIABLE_DEFINITION_PATTERN: Regex = """\{\{([^=]+)=((?:[^=]+\|)+[^|]+)}}""".r
 
   val STANDARD_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss"
   val ACCURATE_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss.SSS"
   // TODO(alex): add more time formatters, like, ISO...
   val STANDARD_DATE_FORMATTER: DateTimeFormatter = DateTimeFormatter.ofPattern(STANDARD_DATE_FORMAT)
   val ACCURATE_DATE_FORMATTER: DateTimeFormatter = DateTimeFormatter.ofPattern(ACCURATE_DATE_FORMAT)
-
 
   val preparedStatements : mutable.Map[String, PreparedStatement] = new ConcurrentHashMap[String,PreparedStatement]().asScala
 
@@ -327,12 +326,14 @@ class InterpreterLogic(val session: CqlSession, val properties: Properties)  {
     applyQueryOptions(options, statement)
   }
 
-  def generateBoundStatement(session: CqlSession, st: BoundStm, options: CassandraQueryOptions,context: InterpreterContext): BoundStatement = {
+  def generateBoundStatement(session: CqlSession, st: BoundStm, options: CassandraQueryOptions,
+                             context: InterpreterContext): BoundStatement = {
     logger.debug(s"Generating bound statement with name : '${st.name}' and bound values : ${st.values}")
     preparedStatements.get(st.name) match {
       case Some(ps) =>
         val boundValues = maybeExtractVariables(st.values, context)
-        createBoundStatement(session.getContext.getCodecRegistry, st.name, ps, boundValues)
+        val statement = createBoundStatement(session.getContext.getCodecRegistry, st.name, ps, boundValues)
+        applyQueryOptions(options, statement)
 
       case None =>
         throw new InterpreterException(s"The statement '${st.name}' can not be bound to values. " +
@@ -361,9 +362,9 @@ class InterpreterLogic(val session: CqlSession, val properties: Properties)  {
 
     def extractVariableAndDefaultValue(statement: String, exp: String): String = exp match {
       case MULTIPLE_CHOICES_VARIABLE_DEFINITION_PATTERN(variable, choices) =>
-        val escapedExp: String = exp.replaceAll( """\{""", """\\{""").replaceAll( """\}""", """\\}""").replaceAll("""\|""","""\\|""")
+        val escapedExp: String = exp.replaceAll( """\{""", """\\{""").replaceAll( """}""", """\\}""").replaceAll("""\|""","""\\|""")
         findInAngularRepository(variable) match {
-          case Some(value) => statement.replaceAll(escapedExp,value.toString)
+          case Some(value) => statement.replaceAll(escapedExp, value.toString)
           case None =>
             val listChoices:List[String] = choices.trim.split(CHOICES_SEPARATOR).toList
             val paramOptions = listChoices.map(choice => new ParamOption(choice, choice))
@@ -371,13 +372,13 @@ class InterpreterLogic(val session: CqlSession, val properties: Properties)  {
             statement.replaceAll(escapedExp,selected.toString)
         }
 
-      case SIMPLE_VARIABLE_DEFINITION_PATTERN(variable,defaultVal) =>
-        val escapedExp: String = exp.replaceAll( """\{""", """\\{""").replaceAll( """\}""", """\\}""")
+      case SIMPLE_VARIABLE_DEFINITION_PATTERN(variable, defaultVal) =>
+        val escapedExp: String = exp.replaceAll( """\{""", """\\{""").replaceAll( """}""", """\\}""")
         findInAngularRepository(variable) match {
           case Some(value) => statement.replaceAll(escapedExp,value.toString)
           case None =>
-            val value = context.getGui.input(variable,defaultVal)
-            statement.replaceAll(escapedExp,value.toString)
+            val value = context.getGui.input(variable, defaultVal)
+            statement.replaceAll(escapedExp, value.toString)
         }
 
       case _ =>
@@ -453,7 +454,6 @@ class InterpreterLogic(val session: CqlSession, val properties: Properties)  {
       case _ => throw new InterpreterException(s"Cannot parse date '$dateString'. " +
         s"Accepted formats : $STANDARD_DATE_FORMAT OR $ACCURATE_DATE_FORMAT");
     }
-    // TODO(alex): check about timezone...
     LocalDateTime.parse(dateString, formatter).toInstant(ZoneOffset.UTC)
   }
 

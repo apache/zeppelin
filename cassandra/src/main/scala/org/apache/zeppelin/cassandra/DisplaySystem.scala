@@ -16,7 +16,6 @@
  */
 package org.apache.zeppelin.cassandra
 
-import java.io.InputStream
 import java.util.{Properties, UUID}
 
 import org.apache.zeppelin.cassandra.MetaDataHierarchy._
@@ -156,7 +155,7 @@ object DisplaySystem {
     private def formatCQLQuery(cql: String): String = {
       cql.replaceAll(""" WITH REPLICATION = \{""", " WITH REPLICATION = \\{")
         .replaceAll("('[^']+'\\s*:\\s+'[^']+',?)", "\n\t$1")
-        .replaceAll(""" \} AND DURABLE_WRITES = """, " \\}\nAND DURABLE_WRITES = ")
+        .replaceAll(""" } AND DURABLE_WRITES = """, " \\}\nAND DURABLE_WRITES = ")
     }
 
     protected[cassandra] def formatKeyspaceOnly(meta: KeyspaceMetadata, withCaption: Boolean): String = {
@@ -207,11 +206,7 @@ object DisplaySystem {
     }
   }
 
-  // cluster is explicitly passed because of the limitations of the driver.
-  // TODO(alex): remove it after driver is fixed
   object ClusterDisplay {
-
-
     def formatClusterOnly(statement: String, meta: Metadata,
                           withMenu: Boolean = true): String = {
       val partitioner: String = if (meta.getTokenMap.isPresent)
@@ -311,7 +306,7 @@ object DisplaySystem {
             .map(ks => {
               ((Uuids.timeBased(), ks.getName.asCql(true)),
                 ks.getFunctions.asScala
-                  .map { case (sig, meta) => MetaDataConverter.functionMetaToFunctionSummary(sig, meta) }
+                  .map { case (_, meta) => MetaDataConverter.functionMetaToFunctionSummary(meta) }
                   .toSeq
                   .sortBy(_.name))
             }).toMap
@@ -347,7 +342,7 @@ object DisplaySystem {
             }.toMap
 
         val keyspaceDetails: List[(UUID, String, String)] = allAggregates
-          .keySet.toList.sortBy { case (id, ksName) => ksName }
+          .keySet.toList.sortBy { case (_, ksName) => ksName }
           .map { case (id, ksName) => (id, ksName, "") }
 
         val clusterContent: ClusterContent = ClusterContent(clusterName(meta), "", keyspaceDetails)
@@ -494,7 +489,7 @@ object MetaDataConverter {
       function.describe(true))
   }
 
-  def functionMetaToFunctionSummary(signature: FunctionSignature, function: FunctionMetadata): FunctionSummary = {
+  def functionMetaToFunctionSummary(function: FunctionMetadata): FunctionSummary = {
     val signature = function.getSignature
     FunctionSummary(function.getKeyspace.asCql(true),
       signature.getName.asCql(true),

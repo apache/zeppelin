@@ -22,11 +22,10 @@ import java.text.DecimalFormat
 import java.text.NumberFormat
 import java.time.{Instant, LocalDate, LocalTime, ZoneId}
 import java.time.format.DateTimeFormatter
-import java.util.concurrent.ConcurrentHashMap
 import java.util.{Locale, Properties, TimeZone}
 
 import com.datastax.oss.driver.api.core.`type`.codec.TypeCodec
-import com.datastax.oss.driver.api.core.`type`.{DataType, DataTypes}
+import com.datastax.oss.driver.api.core.`type`.DataType
 import com.datastax.oss.driver.api.core.cql.Row
 import com.datastax.oss.driver.api.core.data.{TupleValue, UdtValue}
 import io.netty.buffer.ByteBufUtil
@@ -169,7 +168,7 @@ class CqlFormatter(val outputFormat: String = CqlFormatter.DEFAULT_FORMAT,
           (0 until u.size()).map(i => names.get(i).asInternal + ": " + formatHuman(u.getObject(i)))
             .mkString("{", ", ", "}")
 
-        case _ => obj.toString()
+        case _ => obj.toString
       }
     }
   }
@@ -191,7 +190,7 @@ class CqlFormatter(val outputFormat: String = CqlFormatter.DEFAULT_FORMAT,
     }
   }
 
-  override def toString = s"CqlFormatter(format=$outputFormat, fp=$floatPrecision, dp=$doublePrecision, " +
+  override def toString: String = s"CqlFormatter(format=$outputFormat, fp=$floatPrecision, dp=$doublePrecision, " +
     s"tsFormat=$timestampFormat, tmFormat=$timeFormat, dtFormat=$dateFormat, " +
     s"timeozone=$timeZoneId, locale=$localeStr)"
 }

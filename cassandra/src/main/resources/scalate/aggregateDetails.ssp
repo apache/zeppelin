@@ -20,46 +20,46 @@
 <%@ val sameNameAggregateDetails: SameNameAggregateDetails %>
 <%@ val withCaption: Boolean%>
 <div class="row">
-    <div class="col-md-2"/>
+    <div class="col-md-2"></div>
     <div class="col-md-8 col-offset-md-2">
         #for (aggregate <- sameNameAggregateDetails.aggregates)    
         <div class="panel panel-default table-responsive table-bordered">
             <table class="table">
                 #if(withCaption)
-                <caption><h4 class="text-success"><i class="glyphicon glyphicon-retweet"/>&nbsp;${aggregate.name}</h4></caption>
+                <caption><h4 class="text-success"><span class="glyphicon glyphicon-retweet"></span>&nbsp;${aggregate.name}</h4></caption>
                 #end
                 <tbody>
                     <tr>
                         <td class="col-md-6"><strong>Keyspace</strong></td>
-                        <td class="col-md-6 text-danger">${aggregate.keyspace}</td>
+                        <td class="col-md-6 text-danger" style="text-align:left">${aggregate.keyspace}</td>
                     </tr>
                     <tr>
                         <td class="col-md-6"><strong>Arguments</strong></td>
-                        <td class="col-md-6">${aggregate.arguments.toList.mkString(", ")}</td>
+                        <td class="col-md-6" style="text-align:left">${aggregate.arguments.toList.mkString(", ")}</td>
                     </tr>
                     <tr>
                         <td class="col-md-6"><strong>State Function</strong></td>                        
-                        <td class="col-md-6">${aggregate.sFunc}</td>
+                        <td class="col-md-6" style="text-align:left">${aggregate.sFunc}</td>
                     </tr>
                     <tr>
                         <td class="col-md-6"><strong>State Type</strong></td>                        
-                        <td class="col-md-6">${aggregate.sType}</td>
+                        <td class="col-md-6" style="text-align:left">${aggregate.sType}</td>
                     </tr>
                     #if(aggregate.finalFunc.isDefined)                                     
                     <tr>
                         <td class="col-md-6"><strong>Final Function</strong></td>                        
-                        <td class="col-md-6">${aggregate.finalFunc.get}</td>
+                        <td class="col-md-6" style="text-align:left">${aggregate.finalFunc.get}</td>
                     </tr>                       
                     #end
                     #if(aggregate.initCond.isDefined)
                     <tr>
                         <td class="col-md-6"><strong>Initial State</strong></td>                        
-                        <td class="col-md-6">${aggregate.initCond.get}</td>
+                        <td class="col-md-6" style="text-align:left">${aggregate.initCond.get}</td>
                     </tr>
                     #end
                     <tr>
                         <td class="col-md-6"><strong>Return type</strong></td>
-                        <td class="col-md-6">${aggregate.returnType}</td>
+                        <td class="col-md-6" style="text-align:left">${aggregate.returnType}</td>
                     </tr>                                     
                 </tbody>
             </table>

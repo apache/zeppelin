@@ -25,17 +25,17 @@
             <table class="table">
                 <caption>
                     <h4 class="text-muted">
-                        <i class="glyphicon glyphicon-dashboard"/>&nbsp;${clusterDetails.name}
+                        <span class="glyphicon glyphicon-dashboard"></span>&nbsp;${clusterDetails.name}
                     </h4>
                 </caption>
                 <thead>
                 <tr>
-                    <th>Partitioner</th>
+                    <th style="text-align:left">Partitioner</th>
                 </tr>
                 </thead>
                 <tbody>
                 <tr>
-                    <td>${clusterDetails.partitioner}</td>
+                    <td style="text-align:left">${clusterDetails.partitioner}</td>
                 </tr>
                 <tbody>
             </table>
