@@ -22,14 +22,14 @@
     <parent>
         <artifactId>flink-parent</artifactId>
         <groupId>org.apache.zeppelin</groupId>
-        <version>0.9.0-SNAPSHOT</version>
+        <version>0.9.0-preview2</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.apache.zeppelin</groupId>
     <artifactId>flink-shims</artifactId>
-    <version>0.9.0-SNAPSHOT</version>
+    <version>0.9.0-preview2</version>
     <packaging>jar</packaging>
     <name>Zeppelin: Flink Shims</name>
 

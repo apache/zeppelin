@@ -24,7 +24,7 @@
   <groupId>org.apache.zeppelin</groupId>
   <artifactId>zeppelin</artifactId>
   <packaging>pom</packaging>
-  <version>0.9.0-SNAPSHOT</version>
+  <version>0.9.0-preview2</version>
   <name>Zeppelin</name>
   <description>Zeppelin project</description>
   <url>https://zeppelin.apache.org</url>

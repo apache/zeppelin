@@ -20,14 +20,14 @@
   <parent>
     <groupId>org.apache.zeppelin</groupId>
     <artifactId>spark-scala-parent</artifactId>
-    <version>0.9.0-SNAPSHOT</version>
+    <version>0.9.0-preview2</version>
     <relativePath>../spark-scala-parent/pom.xml</relativePath>
   </parent>
 
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.apache.zeppelin</groupId>
   <artifactId>spark-scala-2.11</artifactId>
-  <version>0.9.0-SNAPSHOT</version>
+  <version>0.9.0-preview2</version>
   <packaging>jar</packaging>
   <name>Zeppelin: Spark Interpreter Scala_2.11</name>
 
