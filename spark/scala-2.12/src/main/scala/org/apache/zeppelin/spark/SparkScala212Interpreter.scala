@@ -60,15 +60,12 @@ class SparkScala212Interpreter(override val conf: SparkConf,
     LOGGER.info("Scala shell repl output dir: " + outputDir.getAbsolutePath)
     outputDir.deleteOnExit()
     conf.set("spark.repl.class.outputDir", outputDir.getAbsolutePath)
-    val target = conf.get("spark.repl.target", "jvm-1.8")
 
     val settings = new Settings()
     settings.processArguments(List("-Yrepl-class-based",
       "-Yrepl-outdir", s"${outputDir.getAbsolutePath}"), true)
     settings.embeddedDefaults(sparkInterpreterClassLoader)
     settings.usejavacp.value = true
-    settings.target.value = target
-
     this.userJars = getUserJars()
     LOGGER.info("UserJars: " + userJars.mkString(File.pathSeparator))
     settings.classpath.value = userJars.mkString(File.pathSeparator)
