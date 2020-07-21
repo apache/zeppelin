@@ -23,13 +23,13 @@
     <parent>
         <artifactId>zeppelin-interpreter-parent</artifactId>
         <groupId>org.apache.zeppelin</groupId>
-        <version>0.9.0-SNAPSHOT</version>
+        <version>0.9.0-preview2</version>
         <relativePath>../zeppelin-interpreter-parent/pom.xml</relativePath>
     </parent>
 
     <artifactId>zeppelin-influxdb</artifactId>
     <packaging>jar</packaging>
-    <version>0.9.0-SNAPSHOT</version>
+    <version>0.9.0-preview2</version>
     <name>Zeppelin: InfluxDB interpreter</name>
     <description>InfluxDB 2.0 timeseries database support</description>
 

@@ -24,14 +24,14 @@
     <parent>
         <artifactId>zengine-plugins-parent</artifactId>
         <groupId>org.apache.zeppelin</groupId>
-        <version>0.9.0-SNAPSHOT</version>
+        <version>0.9.0-preview2</version>
         <relativePath>../../../zeppelin-plugins</relativePath>
     </parent>
 
     <groupId>org.apache.zeppelin</groupId>
     <artifactId>launcher-k8s-standard</artifactId>
     <packaging>jar</packaging>
-    <version>0.9.0-SNAPSHOT</version>
+    <version>0.9.0-preview2</version>
     <name>Zeppelin: Plugin Kubernetes StandardLauncher</name>
     <description>Launcher implementation to run interpreters on Kubernetes</description>
 
