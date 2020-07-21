@@ -71,7 +71,9 @@ RUN set -ex && \
     # Cleanup based on https://github.com/ContinuumIO/docker-images/commit/cac3352bf21a26fa0b97925b578fb24a0fe8c383
     find /opt/conda/ -follow -type f -name '*.a' -delete && \
     find /opt/conda/ -follow -type f -name '*.js.map' -delete && \
-    conda clean -ay
+    conda clean -ay && \
+    # Allow to modify conda packages
+    chmod -R ug+rwX /opt/conda
 ENV PATH /opt/conda/bin:$PATH
 
 # Allow process to edit /etc/passwd, to create a user entry for zeppelin
