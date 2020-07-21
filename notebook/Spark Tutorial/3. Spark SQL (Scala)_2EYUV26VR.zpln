@@ -37,6 +37,7 @@
         ]
       },
       "apps": [],
+      "runtimeInfos": {},
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1579593308067_-799293654",
       "id": "20180530-101118_380906698",
@@ -82,6 +83,7 @@
         ]
       },
       "apps": [],
+      "runtimeInfos": {},
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1579593308068_1022597750",
       "id": "20180530-101515_948520659",
@@ -127,6 +129,7 @@
         ]
       },
       "apps": [],
+      "runtimeInfos": {},
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1579593308068_-974291943",
       "id": "20180530-110023_1756702033",
@@ -165,6 +168,7 @@
         "msg": []
       },
       "apps": [],
+      "runtimeInfos": {},
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1579593308069_-1239490192",
       "id": "20180530-110007_162886838",
@@ -177,7 +181,7 @@
       "title": "Create Dataset/DataFrame via SparkSession",
       "text": "%spark\n\n// create DataFrame from scala Seq. It can infer schema for you.\nval df1 \u003d spark.createDataFrame(Seq((1, \"andy\", 20, \"USA\"), (2, \"jeff\", 23, \"China\"), (3, \"james\", 18, \"USA\"))).toDF(\"id\", \"name\", \"age\", \"country\")\ndf1.printSchema\ndf1.show()\n\n// create DataFrame from scala case class\ncase class Person(id:Int, name:String, age:Int, country:String)\nval df2 \u003d spark.createDataFrame(Seq(Person(1, \"andy\", 20, \"USA\"), Person(2, \"jeff\", 23, \"China\"), Person(3, \"james\", 18, \"USA\")))\ndf2.printSchema\ndf2.show()\n\nimport spark.implicits._\n// you can also create Dataset from scala case class\nval df3 \u003d spark.createDataset(Seq(Person(1, \"andy\", 20, \"USA\"), Person(2, \"jeff\", 23, \"China\"), Person(3, \"james\", 18, \"USA\")))\ndf3.printSchema\ndf3.show()\n\n\n\n\n\n\n\n\n\n",
       "user": "anonymous",
-      "dateUpdated": "2020-03-11 13:28:18.980",
+      "dateUpdated": "2020-07-21 10:14:27.021",
       "config": {
         "editorSetting": {
           "language": "scala",
@@ -208,19 +212,20 @@
         ]
       },
       "apps": [],
+      "runtimeInfos": {},
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1579593308069_-1317689018",
       "id": "20180530-101750_1491737301",
       "dateCreated": "2020-01-21 15:55:08.069",
-      "dateStarted": "2020-03-11 13:28:18.987",
-      "dateFinished": "2020-03-11 13:28:22.868",
+      "dateStarted": "2020-07-21 10:14:27.416",
+      "dateFinished": "2020-07-21 10:14:48.752",
       "status": "FINISHED"
     },
     {
       "title": "Create Dataset/DataFrame via DataFrameReader",
-      "text": "%spark\n\n\nval SPARK_HOME \u003d System.getenv(\"SPARK_HOME\")\n// Read data from json file\n// link for this people.json (https://github.com/apache/spark/blob/master/examples/src/main/resources/people.json)\n// Use hdfs path if you are using hdfs\nval df1 \u003d spark.read.json(s\"file://$SPARK_HOME/examples/src/main/resources/people.json\")\ndf1.printSchema\ndf1.show()\n\n// Read data from csv file. You can customize it via spark.read.options. E.g. In the following example, we customize the sep and header\n// Add . at the end of this line to indidate this is not the end of this line of code.\nval df2 \u003d spark.read.options(Map(\"sep\"-\u003e\";\", \"header\"-\u003e \"true\")).\n                    csv(s\"file://$SPARK_HOME/examples/src/main/resource/people.csv\")\ndf2.printSchema\ndf2.show()\n\n// Specify schema for your csv file\nimport org.apache.spark.sql.types._\n\nval schema \u003d new StructType().\n                add(\"name\", StringType, true).\n                add(\"age\", IntegerType, true).\n                add(\"job\", StringType, true)\nval df3 \u003d spark.read.options(Map(\"sep\"-\u003e\";\", \"header\"-\u003e \"true\")).\n                schema(schema).\n                csv(s\"file://$SPARK_HOME/examples/src/main/resource/people.csv\")\ndf3.printSchema\ndf3.show()\n\n",
+      "text": "%spark\n\n\nval SPARK_HOME \u003d System.getenv(\"SPARK_HOME\")\n// Read data from json file\n// link for this people.json (https://github.com/apache/spark/blob/master/examples/src/main/resources/people.json)\n// Use hdfs path if you are using hdfs\nval df1 \u003d spark.read.json(s\"file://$SPARK_HOME/examples/src/main/resources/people.json\")\ndf1.printSchema\ndf1.show()\n\n// Read data from csv file. You can customize it via spark.read.options. E.g. In the following example, we customize the sep and header\n// Add . at the end of this line to indidate this is not the end of this line of code.\nval df2 \u003d spark.read.options(Map(\"sep\"-\u003e\";\", \"header\"-\u003e \"true\")).\n                    csv(s\"file://$SPARK_HOME/examples/src/main/resources/people.csv\")\ndf2.printSchema\ndf2.show()\n\n// Specify schema for your csv file\nimport org.apache.spark.sql.types._\n\nval schema \u003d new StructType().\n                add(\"name\", StringType, true).\n                add(\"age\", IntegerType, true).\n                add(\"job\", StringType, true)\nval df3 \u003d spark.read.options(Map(\"sep\"-\u003e\";\", \"header\"-\u003e \"true\")).\n                schema(schema).\n                csv(s\"file://$SPARK_HOME/examples/src/main/resources/people.csv\")\ndf3.printSchema\ndf3.show()\n\n",
       "user": "anonymous",
-      "dateUpdated": "2020-03-11 13:33:22.138",
+      "dateUpdated": "2020-07-21 10:15:00.606",
       "config": {
         "editorSetting": {
           "language": "scala",
@@ -242,22 +247,48 @@
         "forms": {}
       },
       "results": {
-        "code": "ERROR",
+        "code": "SUCCESS",
         "msg": [
           {
             "type": "TEXT",
-            "data": "root\n |-- age: long (nullable \u003d true)\n |-- name: string (nullable \u003d true)\n\n+----+-------+\n| age|   name|\n+----+-------+\n|null|Michael|\n|  30|   Andy|\n|  19| Justin|\n+----+-------+\n\norg.apache.spark.sql.AnalysisException: Path does not exist: file:/Users/jzhang/Java/lib/spark-2.4.3-bin-hadoop2.7/examples/src/main/resource/people.csv;\n  at org.apache.spark.sql.execution.datasources.DataSource$$anonfun$org$apache$spark$sql$execution$datasources$DataSource$$checkAndGlobPathIfNecessary$1.apply(DataSource.scala:558)\n  at org.apache.spark.sql.execution.datasources.DataSource$$anonfun$org$apache$spark$sql$execution$datasources$DataSource$$checkAndGlobPathIfNecessary$1.apply(DataSource.scala:545)\n  at scala.collection.TraversableLike$$anonfun$flatMap$1.apply(TraversableLike.scala:241)\n  at scala.collection.TraversableLike$$anonfun$flatMap$1.apply(TraversableLike.scala:241)\n  at scala.collection.immutable.List.foreach(List.scala:392)\n  at scala.collection.TraversableLike$class.flatMap(TraversableLike.scala:241)\n  at scala.collection.immutable.List.flatMap(List.scala:355)\n  at org.apache.spark.sql.execution.datasources.DataSource.org$apache$spark$sql$execution$datasources$DataSource$$checkAndGlobPathIfNecessary(DataSource.scala:545)\n  at org.apache.spark.sql.execution.datasources.DataSource.resolveRelation(DataSource.scala:359)\n  at org.apache.spark.sql.DataFrameReader.loadV1Source(DataFrameReader.scala:223)\n  at org.apache.spark.sql.DataFrameReader.load(DataFrameReader.scala:211)\n  at org.apache.spark.sql.DataFrameReader.csv(DataFrameReader.scala:615)\n  at org.apache.spark.sql.DataFrameReader.csv(DataFrameReader.scala:467)\n  ... 47 elided\n"
+            "data": "root\n |-- age: long (nullable \u003d true)\n |-- name: string (nullable \u003d true)\n\n+----+-------+\n| age|   name|\n+----+-------+\n|null|Michael|\n|  30|   Andy|\n|  19| Justin|\n+----+-------+\n\nroot\n |-- name: string (nullable \u003d true)\n |-- age: string (nullable \u003d true)\n |-- job: string (nullable \u003d true)\n\n+-----+---+---------+\n| name|age|      job|\n+-----+---+---------+\n|Jorge| 30|Developer|\n|  Bob| 32|Developer|\n+-----+---+---------+\n\nroot\n |-- name: string (nullable \u003d true)\n |-- age: integer (nullable \u003d true)\n |-- job: string (nullable \u003d true)\n\n+-----+---+---------+\n| name|age|      job|\n+-----+---+---------+\n|Jorge| 30|Developer|\n|  Bob| 32|Developer|\n+-----+---+---------+\n\n\u001b[1m\u001b[34mSPARK_HOME\u001b[0m: \u001b[1m\u001b[32mString\u001b[0m \u003d /Users/jzhang/Java/lib/spark-2.4.3-bin-hadoop2.7\n\u001b[1m\u001b[34mdf1\u001b[0m: \u001b[1m\u001b[32morg.apache.spark.sql.DataFrame\u001b[0m \u003d [age: bigint, name: string]\n\u001b[1m\u001b[34mdf2\u001b[0m: \u001b[1m\u001b[32morg.apache.spark.sql.DataFrame\u001b[0m \u003d [name: string, age: string ... 1 more field]\nimport org.apache.spark.sql.types._\n\u001b[1m\u001b[34mschema\u001b[0m: \u001b[1m\u001b[32morg.apache.spark.sql.types.StructType\u001b[0m \u003d StructType(StructField(name,StringType,true), StructField(age,IntegerType,true), StructField(job,StringType,true))\n\u001b[1m\u001b[34mdf3\u001b[0m: \u001b[1m\u001b[32morg.apache.spark.sql.DataFrame\u001b[0m \u003d [name: string, age: int ... 1 more field]\n"
           }
         ]
       },
       "apps": [],
+      "runtimeInfos": {
+        "jobUrl": {
+          "propertyName": "jobUrl",
+          "label": "SPARK JOB",
+          "tooltip": "View in Spark web UI",
+          "group": "spark",
+          "values": [
+            {
+              "jobUrl": "http://30.21.176.107:4040/jobs/job?id\u003d2"
+            },
+            {
+              "jobUrl": "http://30.21.176.107:4040/jobs/job?id\u003d3"
+            },
+            {
+              "jobUrl": "http://30.21.176.107:4040/jobs/job?id\u003d4"
+            },
+            {
+              "jobUrl": "http://30.21.176.107:4040/jobs/job?id\u003d5"
+            },
+            {
+              "jobUrl": "http://30.21.176.107:4040/jobs/job?id\u003d6"
+            }
+          ],
+          "interpreterSettingId": "spark"
+        }
+      },
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1579593308069_-1400272236",
       "id": "20180530-101930_1495479697",
       "dateCreated": "2020-01-21 15:55:08.069",
-      "dateStarted": "2020-03-11 13:33:22.143",
-      "dateFinished": "2020-03-11 13:33:24.362",
-      "status": "ERROR"
+      "dateStarted": "2020-07-21 10:15:00.612",
+      "dateFinished": "2020-07-21 10:15:03.008",
+      "status": "FINISHED"
     },
     {
       "title": "Add New Column",
@@ -294,6 +325,7 @@
         ]
       },
       "apps": [],
+      "runtimeInfos": {},
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1579593308069_-1399664813",
       "id": "20180530-105113_693855403",
@@ -337,6 +369,7 @@
         ]
       },
       "apps": [],
+      "runtimeInfos": {},
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1579593308070_-1089278693",
       "id": "20180530-112045_1274721210",
@@ -380,6 +413,7 @@
         ]
       },
       "apps": [],
+      "runtimeInfos": {},
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1579593308070_462807812",
       "id": "20180530-113042_1154914545",
@@ -423,6 +457,7 @@
         ]
       },
       "apps": [],
+      "runtimeInfos": {},
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1579593308070_-1931299693",
       "id": "20180530-113407_58454283",
@@ -466,6 +501,7 @@
         ]
       },
       "apps": [],
+      "runtimeInfos": {},
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1579593308070_2030518177",
       "id": "20180530-113720_1986531680",
@@ -509,6 +545,7 @@
         ]
       },
       "apps": [],
+      "runtimeInfos": {},
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1579593308070_839300878",
       "id": "20180530-114404_2076888937",
@@ -552,6 +589,7 @@
         ]
       },
       "apps": [],
+      "runtimeInfos": {},
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1579593308071_2037234671",
       "id": "20180530-130126_1642948432",
@@ -595,6 +633,7 @@
         ]
       },
       "apps": [],
+      "runtimeInfos": {},
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1579593308071_-1986687979",
       "id": "20180530-135600_354945835",
@@ -638,6 +677,7 @@
         ]
       },
       "apps": [],
+      "runtimeInfos": {},
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1579593308071_-1489550728",
       "id": "20180530-132023_995737505",
@@ -681,6 +721,7 @@
         ]
       },
       "apps": [],
+      "runtimeInfos": {},
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1579593308071_11859357",
       "id": "20180530-132128_2114955642",
@@ -805,6 +846,7 @@
         ]
       },
       "apps": [],
+      "runtimeInfos": {},
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1579593308072_-324341501",
       "id": "20180530-132634_1285621466",
@@ -848,6 +890,7 @@
         ]
       },
       "apps": [],
+      "runtimeInfos": {},
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1579593308072_-1114338291",
       "id": "20180530-132657_668624333",
@@ -990,6 +1033,7 @@
         ]
       },
       "apps": [],
+      "runtimeInfos": {},
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1579593308072_-1957405672",
       "id": "20180530-132823_944494152",
@@ -1009,6 +1053,7 @@
         "forms": {}
       },
       "apps": [],
+      "runtimeInfos": {},
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1579593308072_972780641",
       "id": "20180530-132849_1305166760",
@@ -1016,7 +1061,7 @@
       "status": "READY"
     }
   ],
-  "name": "Spark SQL (Scala)",
+  "name": "3. Spark SQL (Scala)",
   "id": "2EYUV26VR",
   "defaultInterpreterGroup": "spark",
   "version": "0.9.0-SNAPSHOT",
