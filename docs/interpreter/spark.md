@@ -195,9 +195,20 @@ You can also set other Spark properties which are not listed in the table. For a
       (ex: http://{{PORT}}-{{SERVICE_NAME}}.{{SERVICE_DOMAIN}})
      </td>
   </tr>
-  <td>spark.webui.yarn.useProxy</td>
+  <tr>
+    <td>spark.webui.yarn.useProxy</td>
     <td>false</td>
     <td>whether use yarn proxy url as spark weburl, e.g. http://localhost:8088/proxy/application_1583396598068_0004</td>
+  </tr>
+  <tr>
+    <td>spark.repl.target</td>
+    <td>jvm-1.6</td>
+    <td>
+      Manually specifying the Java version of Spark Interpreter Scala REPL,Available options:<br/> 
+      scala-compile v2.10.7 to v2.11.12 supports `jvm-1.5, jvm-1.6, jvm-1.7 and jvm-1.8`, and the default value is jvm-1.6.<br/> 
+      scala-compile v2.10.1 to v2.10.6 supports `jvm-1.5, jvm-1.6, jvm-1.7`, and the default value is jvm-1.6.<br/> 
+      scala-compile v2.12.x defaults to jvm-1.8, and only supports jvm-1.8.
+    </td>
   </tr>
 </table>
 
