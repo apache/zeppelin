@@ -67,13 +67,10 @@ class SparkScala210Interpreter(override val conf: SparkConf,
       sparkHttpServer = server
       conf.set("spark.repl.class.uri", uri)
     }
-    val target = conf.get("spark.repl.target", "jvm-1.8")
 
     val settings = new Settings()
     settings.embeddedDefaults(sparkInterpreterClassLoader)
     settings.usejavacp.value = true
-    settings.target.value = target
-
     this.userJars = getUserJars()
     LOGGER.info("UserJars: " + userJars.mkString(File.pathSeparator))
     settings.classpath.value = userJars.mkString(File.pathSeparator)
