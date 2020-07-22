@@ -395,27 +395,27 @@ class FlinkScalaInterpreter(val properties: Properties) {
 
       // blink planner
       var btEnvSetting = EnvironmentSettings.newInstance().inBatchMode().useBlinkPlanner().build()
-      this.btenv = tblEnvFactory.createJavaBlinkBatchTableEnvironment(btEnvSetting);
+      this.btenv = tblEnvFactory.createJavaBlinkBatchTableEnvironment(btEnvSetting, getFlinkClassLoader);
       flinkILoop.bind("btenv", btenv.getClass().getCanonicalName(), btenv, List("@transient"))
       this.java_btenv = this.btenv
 
       var stEnvSetting =
         EnvironmentSettings.newInstance().inStreamingMode().useBlinkPlanner().build()
-      this.stenv = tblEnvFactory.createScalaBlinkStreamTableEnvironment(stEnvSetting)
+      this.stenv = tblEnvFactory.createScalaBlinkStreamTableEnvironment(stEnvSetting, getFlinkClassLoader)
       flinkILoop.bind("stenv", stenv.getClass().getCanonicalName(), stenv, List("@transient"))
-      this.java_stenv = tblEnvFactory.createJavaBlinkStreamTableEnvironment(stEnvSetting)
+      this.java_stenv = tblEnvFactory.createJavaBlinkStreamTableEnvironment(stEnvSetting, getFlinkClassLoader)
 
       // flink planner
       this.btenv_2 = tblEnvFactory.createScalaFlinkBatchTableEnvironment()
       flinkILoop.bind("btenv_2", btenv_2.getClass().getCanonicalName(), btenv_2, List("@transient"))
       stEnvSetting =
         EnvironmentSettings.newInstance().inStreamingMode().useOldPlanner().build()
-      this.stenv_2 = tblEnvFactory.createScalaFlinkStreamTableEnvironment(stEnvSetting)
+      this.stenv_2 = tblEnvFactory.createScalaFlinkStreamTableEnvironment(stEnvSetting, getFlinkClassLoader)
       flinkILoop.bind("stenv_2", stenv_2.getClass().getCanonicalName(), stenv_2, List("@transient"))
 
       this.java_btenv_2 = tblEnvFactory.createJavaFlinkBatchTableEnvironment()
       btEnvSetting = EnvironmentSettings.newInstance.useOldPlanner.inStreamingMode.build
-      this.java_stenv_2 = tblEnvFactory.createJavaFlinkStreamTableEnvironment(btEnvSetting)
+      this.java_stenv_2 = tblEnvFactory.createJavaFlinkStreamTableEnvironment(btEnvSetting, getFlinkClassLoader)
     } finally {
       Thread.currentThread().setContextClassLoader(originalClassLoader)
     }
