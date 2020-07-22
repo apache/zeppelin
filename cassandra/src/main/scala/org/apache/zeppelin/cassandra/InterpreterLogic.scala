@@ -267,6 +267,8 @@ class InterpreterLogic(val session: CqlSession, val properties: Properties)  {
           formatter.floatPrecision.toString).toInt
         val doublePrecision: Int = props.getOrDefault("doublePrecision",
           formatter.doublePrecision.toString).toInt
+        val decimalPrecision: Int = props.getOrDefault("decimalPrecision",
+          formatter.decimalPrecision.toString).toInt
         val timestampFormat = props.getOrDefault("timestampFormat", formatter.timestampFormat)
         val timeFormat = props.getOrDefault("timeFormat", formatter.timeFormat)
         val dateFormat = props.getOrDefault("dateFormat", formatter.dateFormat)
@@ -275,6 +277,7 @@ class InterpreterLogic(val session: CqlSession, val properties: Properties)  {
           outputFormat = outputFormat,
           floatPrecision = floatPrecision,
           doublePrecision = doublePrecision,
+          decimalPrecision = decimalPrecision,
           timestampFormat = timestampFormat,
           timeFormat = timeFormat,
           dateFormat = dateFormat,
