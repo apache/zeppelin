@@ -95,15 +95,15 @@ jobs:
       dist: xenial
       env: PYTHON="3" R="true" SCALA_VER="2.10" TENSORFLOW="1.13.1" PROFILE="-Pscala-2.10" BUILD_FLAG="install -DskipTests -DskipRat -am" TEST_FLAG="test -DskipRat" MODULES="-pl $(echo .,zeppelin-interpreter,zeppelin-interpreter-shaded,${INTERPRETERS} | sed 's/!//g')" TEST_PROJECTS=""
 
-    # Test flink 1.10
+    # Test flink 1.10 & flink integration test
     - jdk: "openjdk8"
       dist: xenial
-      env: PYTHON="3" FLINK="1.10.1" PROFILE="-Pflink-1.10" BUILD_FLAG="install -DskipTests -DskipRat -am" TEST_FLAG="test -DskipRat" MODULES="-pl flink/interpreter" TEST_PROJECTS="-Dtest=org.apache.zeppelin.flink.*"
+      env: BUILD_PLUGINS="true" PYTHON="3" FLINK="1.10.1" PROFILE="-Pflink-1.10 -Pintegration" BUILD_FLAG="install -DskipTests -DskipRat -am" TEST_FLAG="test -DskipRat" MODULES="-pl flink/interpreter,zeppelin-interpreter-integration" TEST_PROJECTS="-Dtest=org.apache.zeppelin.flink.*,FlinkIntegrationTest110"
 
     # Test flink 1.11 & flink integration test
     - jdk: "openjdk8"
       dist: xenial
-      env: BUILD_PLUGINS="true" PYTHON="3" FLINK="1.11.0" PROFILE="-Pflink-1.11 -Pintegration" BUILD_FLAG="install -DskipTests -DskipRat -am" TEST_FLAG="test -DskipRat" MODULES="-pl flink/interpreter,zeppelin-interpreter-integration" TEST_PROJECTS="-Dtest=org.apache.zeppelin.flink.*,FlinkIntegrationTest"
+      env: BUILD_PLUGINS="true" PYTHON="3" FLINK="1.11.1" PROFILE="-Pflink-1.11 -Pintegration" BUILD_FLAG="install -DskipTests -DskipRat -am" TEST_FLAG="test -DskipRat" MODULES="-pl flink/interpreter,zeppelin-interpreter-integration" TEST_PROJECTS="-Dtest=org.apache.zeppelin.flink.*,FlinkIntegrationTest111"
 
     # Run Spark integration test and unit test
 
