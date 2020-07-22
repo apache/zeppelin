@@ -107,7 +107,7 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
 
   $scope.$on('setConnectedStatus', function(event, param) {
     if (connectedOnce && param) {
-      initNotebook();
+      websocketMsgSrv.refreshNote($routeParams.noteId);
     }
     connectedOnce = true;
   });

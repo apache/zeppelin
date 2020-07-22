@@ -308,6 +308,9 @@ public class NotebookServer extends WebSocketServlet
         case GET_NOTE:
           getNote(conn, messagereceived);
           break;
+        case REFRESH_NOTE_CONNECTION:
+          refreshNoteConnection(conn, messagereceived);
+          break;
         case NEW_NOTE:
           createNote(conn, messagereceived);
           break;
@@ -823,6 +826,21 @@ public class NotebookServer extends WebSocketServlet
             conn.send(serializeMessage(new Message(OP.NOTE).put("note", note)));
             updateAngularObjectRegistry(conn, note);
             sendAllAngularObjects(note, context.getAutheInfo().getUser(), conn);
+          }
+        });
+  }
+
+  private void refreshNoteConnection(NotebookSocket conn, Message fromMessage) throws IOException {
+    String noteId = (String) fromMessage.get("id");
+    if (noteId == null) {
+      return;
+    }
+    getNotebookService().getNote(noteId, getServiceContext(fromMessage),
+        new WebSocketServiceCallback<Note>(conn) {
+          @Override
+          public void onSuccess(Note note, ServiceContext context) throws IOException {
+            getConnectionManager().addNoteConnection(note.getId(), conn);
+            conn.send(serializeMessage(new Message(OP.NOTE).put("note", note)));
           }
         });
   }

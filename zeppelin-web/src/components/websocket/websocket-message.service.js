@@ -81,6 +81,10 @@ function WebsocketMessageService($rootScope, websocketEvents) {
       websocketEvents.sendNewEvent({op: 'GET_NOTE', data: {id: noteId}});
     },
 
+    refreshNote: function(noteId) {
+      websocketEvents.sendNewEvent({op: 'REFRESH_NOTE_CONNECTION', data: {id: noteId}});
+    },
+
     updateNote: function(noteId, noteName, noteConfig) {
       websocketEvents.sendNewEvent({op: 'NOTE_UPDATE', data: {id: noteId, name: noteName, config: noteConfig}});
     },

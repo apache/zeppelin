@@ -39,6 +39,9 @@ public class Message implements JsonSerializable {
     GET_NOTE,         // [c-s] client load note
                       // @param id note id
 
+    REFRESH_NOTE_CONNECTION,         // [c-s] client load note
+                      // @param id note id
+                  
     NOTE,             // [s-c] note info
                       // @param note serialized Note object
 
