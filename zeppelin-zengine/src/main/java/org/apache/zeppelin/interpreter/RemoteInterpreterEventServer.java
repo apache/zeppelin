@@ -340,8 +340,7 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
         }.getType());
     String noteId = paraInfos.get("noteId");
     String paraId = paraInfos.get("paraId");
-    String settingId = RemoteInterpreterUtils.
-        getInterpreterSettingId(interpreterGroup.getId());
+    String settingId = ((ManagedInterpreterGroup) interpreterGroup).getInterpreterSetting().getId();
     if (noteId != null && paraId != null && settingId != null) {
       listener.onParaInfosReceived(noteId, paraId, settingId, paraInfos);
     }

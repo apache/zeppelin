@@ -176,10 +176,10 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
       p.setText(text);
 
       post = httpPost("/notebook/run/" + note1.getId() + "/" + p.getId(), "");
-      assertEquals(500, post.getStatusCode());
+      assertEquals(200, post.getStatusCode());
       resp = gson.fromJson(post.getResponseBodyAsString(),
               new TypeToken<Map<String, Object>>() {}.getType());
-      assertEquals("INTERNAL_SERVER_ERROR", resp.get("status"));
+      assertEquals("OK", resp.get("status"));
       StringMap stringMap = (StringMap) resp.get("body");
       assertEquals("ERROR", stringMap.get("code"));
       List<StringMap> interpreterResults = (List<StringMap>) stringMap.get("msg");
@@ -470,12 +470,7 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
       p2.setText("%python user2='abc'\nprint(user2)");
 
       PostMethod post = httpPost("/notebook/job/" + note1.getId() + "?blocking=true", "");
-      assertThat(post, isExpectationFailed());
-      Map<String, Object> resp = gson.fromJson(post.getResponseBodyAsString(),
-              new TypeToken<Map<String, Object>>() {}.getType());
-      assertEquals(resp.get("status"), "EXPECTATION_FAILED");
-      assertTrue(resp.get("message").toString().contains("Fail to run note because paragraph"));
-      post.releaseConnection();
+      assertThat(post, isAllowed());
 
       assertEquals(Job.Status.ERROR, p1.getStatus());
       // p2 will be skipped because p1 is failed.

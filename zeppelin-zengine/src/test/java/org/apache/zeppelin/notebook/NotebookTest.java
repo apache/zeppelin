@@ -431,7 +431,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
 
     Thread.sleep(2 * 1000);
     assertEquals(p1.getStatus(), Status.FINISHED);
-    assertNull(p1.getDateStarted());
+    assertNotNull(p1.getDateStarted());
     notebook.removeNote(note, anonymous);
   }
 

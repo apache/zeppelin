@@ -59,6 +59,7 @@ import org.apache.zeppelin.rest.exception.ParagraphNotFoundException;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.bitbucket.cowwoc.diffmatchpatch.DiffMatchPatch;
+import org.eclipse.jgit.errors.MissingObjectException;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
@@ -136,8 +137,19 @@ public class NotebookService {
   }
 
 
+  /**
+   *
+   * @param notePath
+   * @param defaultInterpreterGroup
+   * @param addingEmptyParagraph
+   * @param context
+   * @param callback
+   * @return
+   * @throws IOException
+   */
   public Note createNote(String notePath,
                          String defaultInterpreterGroup,
+                         boolean addingEmptyParagraph,
                          ServiceContext context,
                          ServiceCallback<Note> callback) throws IOException {
 
@@ -150,7 +162,9 @@ public class NotebookService {
       Note note = notebook.createNote(normalizeNotePath(notePath), defaultInterpreterGroup,
           context.getAutheInfo(), false);
       // it's an empty note. so add one paragraph
-      note.addNewParagraph(context.getAutheInfo());
+      if (addingEmptyParagraph) {
+        note.addNewParagraph(context.getAutheInfo());
+      }
       notebook.saveNote(note, context.getAutheInfo());
       callback.onSuccess(note, context);
       return note;
@@ -304,6 +318,7 @@ public class NotebookService {
                               String text,
                               Map<String, Object> params,
                               Map<String, Object> config,
+                              String sessionId,
                               boolean failIfDisabled,
                               boolean blocking,
                               ServiceContext context,
@@ -353,7 +368,7 @@ public class NotebookService {
 
     try {
       notebook.saveNote(note, context.getAutheInfo());
-      note.run(p.getId(), blocking, context.getAutheInfo().getUser());
+      note.run(p.getId(), sessionId, blocking, context.getAutheInfo().getUser());
       callback.onSuccess(p, context);
       return true;
     } catch (Exception ex) {
@@ -409,7 +424,7 @@ public class NotebookService {
             Map<String, Object> params = (Map<String, Object>) raw.get("params");
             Map<String, Object> config = (Map<String, Object>) raw.get("config");
 
-            if (!runParagraph(noteId, paragraphId, title, text, params, config, false, true,
+            if (!runParagraph(noteId, paragraphId, title, text, params, config, null, false, true,
                     context, callback)) {
               // stop execution when one paragraph fails.
               return false;
@@ -617,6 +632,37 @@ public class NotebookService {
     }
     notebook.saveNote(note, context.getAutheInfo());
     callback.onSuccess(p, context);
+  }
+
+  public Paragraph getNextSessionParagraph(String noteId,
+                                        int maxParagraph,
+                                        ServiceContext context,
+                                        ServiceCallback<Paragraph> callback) throws IOException {
+    if (!checkPermission(noteId, Permission.WRITER, Message.OP.PARAGRAPH_CLEAR_OUTPUT, context,
+            callback)) {
+      throw new IOException("No privilege to access this note");
+    }
+    Note note = notebook.getNote(noteId);
+    if (note == null) {
+      callback.onFailure(new NoteNotFoundException(noteId), context);
+      throw new IOException("No such note");
+    }
+    if (note.getParagraphCount() < maxParagraph) {
+      return note.addNewParagraph(context.getAutheInfo());
+    } else {
+      boolean removed = false;
+      for (int i = 1; i< note.getParagraphCount(); ++i) {
+        if (note.getParagraph(i).getStatus().isCompleted()) {
+          note.removeParagraph(context.getAutheInfo().getUser(), note.getParagraph(i).getId());
+          removed = true;
+          break;
+        }
+      }
+      if (!removed) {
+        throw new IOException("All the paragraphs are not completed, unable to find available paragraph");
+      }
+      return note.addNewParagraph(context.getAutheInfo());
+    }
   }
 
   public void clearParagraphOutput(String noteId,

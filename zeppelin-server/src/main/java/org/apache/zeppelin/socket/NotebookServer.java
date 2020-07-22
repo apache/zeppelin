@@ -962,7 +962,7 @@ public class NotebookServer extends WebSocketServlet
     String noteName = (String) message.get("name");
     String defaultInterpreterGroup = (String) message.get("defaultInterpreterGroup");
 
-    getNotebookService().createNote(noteName, defaultInterpreterGroup, getServiceContext(message),
+    getNotebookService().createNote(noteName, defaultInterpreterGroup, true, getServiceContext(message),
         new WebSocketServiceCallback<Note>(conn) {
           @Override
           public void onSuccess(Note note, ServiceContext context) throws IOException {
@@ -1516,7 +1516,7 @@ public class NotebookServer extends WebSocketServlet
     String title = (String) fromMessage.get("title");
     Map<String, Object> params = (Map<String, Object>) fromMessage.get("params");
     Map<String, Object> config = (Map<String, Object>) fromMessage.get("config");
-    getNotebookService().runParagraph(noteId, paragraphId, title, text, params, config,
+    getNotebookService().runParagraph(noteId, paragraphId, title, text, params, config, null,
         false, false, getServiceContext(fromMessage),
         new WebSocketServiceCallback<Paragraph>(conn) {
           @Override

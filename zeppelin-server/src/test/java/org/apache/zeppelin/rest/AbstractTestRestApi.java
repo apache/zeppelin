@@ -186,6 +186,7 @@ public abstract class AbstractTestRestApi {
       zeppelinHome = new File("..");
       LOG.info("ZEPPELIN_HOME: " + zeppelinHome.getAbsolutePath());
       confDir = new File(zeppelinHome, "conf_" + testClassName);
+      FileUtils.deleteDirectory(confDir);
       LOG.info("ZEPPELIN_CONF_DIR: " + confDir.getAbsolutePath());
       confDir.mkdirs();
 

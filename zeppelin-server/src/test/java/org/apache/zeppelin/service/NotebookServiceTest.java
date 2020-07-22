@@ -155,14 +155,14 @@ public class NotebookServiceTest {
     verify(callback).onSuccess(homeNote, context);
 
     // create note
-    Note note1 = notebookService.createNote("/folder_1/note1", "test", context, callback);
+    Note note1 = notebookService.createNote("/folder_1/note1", "test", true, context, callback);
     assertEquals("note1", note1.getName());
     assertEquals(1, note1.getParagraphCount());
     verify(callback).onSuccess(note1, context);
 
     // create duplicated note
     reset(callback);
-    Note note2 = notebookService.createNote("/folder_1/note1", "test", context, callback);
+    Note note2 = notebookService.createNote("/folder_1/note1", "test", true, context, callback);
     assertNull(note2);
     ArgumentCaptor<Exception> exception = ArgumentCaptor.forClass(Exception.class);
     verify(callback).onFailure(exception.capture(), any(ServiceContext.class));
@@ -203,7 +203,7 @@ public class NotebookServiceTest {
     assertEquals("/folder_4/new_name", notesInfo.get(0).getPath());
 
     // create another note
-    note2 = notebookService.createNote("/note2", "test", context, callback);
+    note2 = notebookService.createNote("/note2", "test", true, context, callback);
     assertEquals("note2", note2.getName());
     verify(callback).onSuccess(note2, context);
 
@@ -334,18 +334,18 @@ public class NotebookServiceTest {
   @Test
   public void testParagraphOperations() throws IOException {
     // create note
-    Note note1 = notebookService.createNote("note1", "python", context, callback);
+    Note note1 = notebookService.createNote("note1", "python", false, context, callback);
     assertEquals("note1", note1.getName());
-    assertEquals(1, note1.getParagraphCount());
+    assertEquals(0, note1.getParagraphCount());
     verify(callback).onSuccess(note1, context);
 
     // add paragraph
     reset(callback);
-    Paragraph p = notebookService.insertParagraph(note1.getId(), 1, new HashMap<>(), context,
+    Paragraph p = notebookService.insertParagraph(note1.getId(), 0, new HashMap<>(), context,
         callback);
     assertNotNull(p);
     verify(callback).onSuccess(p, context);
-    assertEquals(2, note1.getParagraphCount());
+    assertEquals(1, note1.getParagraphCount());
 
     // update paragraph
     reset(callback);
@@ -365,7 +365,7 @@ public class NotebookServiceTest {
     p.getConfig().put("colWidth", "6.0");
     p.getConfig().put("title", true);
     boolean runStatus = notebookService.runParagraph(note1.getId(), p.getId(), "my_title", "1+1",
-        new HashMap<>(), new HashMap<>(), false, false, context, callback);
+        new HashMap<>(), new HashMap<>(), null, false, false, context, callback);
     assertTrue(runStatus);
     verify(callback).onSuccess(p, context);
     assertEquals(2, p.getConfig().size());
@@ -373,7 +373,7 @@ public class NotebookServiceTest {
     // run paragraph synchronously via correct code
     reset(callback);
     runStatus = notebookService.runParagraph(note1.getId(), p.getId(), "my_title", "1+1",
-        new HashMap<>(), new HashMap<>(), false, true, context, callback);
+        new HashMap<>(), new HashMap<>(), null, false, true, context, callback);
     assertTrue(runStatus);
     verify(callback).onSuccess(p, context);
     assertEquals(2, p.getConfig().size());
@@ -387,7 +387,7 @@ public class NotebookServiceTest {
 
     reset(callback);
     runStatus = notebookService.runParagraph(note1.getId(), p.getId(), "my_title", "invalid_code",
-        new HashMap<>(), new HashMap<>(), false, true, context, callback);
+        new HashMap<>(), new HashMap<>(), null, false, true, context, callback);
     assertTrue(runStatus);
     // TODO(zjffdu) Enable it after ZEPPELIN-3699
     // assertNotNull(p.getResult());

@@ -419,6 +419,10 @@ public class InterpreterSetting {
   }
 
   private String getInterpreterGroupId(ExecutionContext executionContext) {
+    if (!StringUtils.isBlank(executionContext.getInterpreterGroupId())) {
+      return executionContext.getInterpreterGroupId();
+    }
+
     if (executionContext.isInIsolatedMode()) {
       return name + "-isolated-" + executionContext.getNoteId() + "-" +
               executionContext.getStartTime();
@@ -529,6 +533,10 @@ public class InterpreterSetting {
 
   public void closeInterpreters(String user, String noteId) {
     closeInterpreters(new ExecutionContextBuilder().setUser(user).setNoteId(noteId).createExecutionContext());
+  }
+
+  public void closeInterpreters(String interpreterGroupId) {
+    closeInterpreters(new ExecutionContextBuilder().setInterpreterGroupId(interpreterGroupId).createExecutionContext());
   }
 
   public void closeInterpreters(ExecutionContext executionContext) {

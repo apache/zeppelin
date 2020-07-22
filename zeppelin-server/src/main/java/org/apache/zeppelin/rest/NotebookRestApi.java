@@ -37,6 +37,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import org.apache.commons.lang3.StringUtils;
@@ -126,15 +127,19 @@ public class NotebookRestApi extends AbstractRestApi {
   @Path("{noteId}/permissions")
   @ZeppelinApi
   public Response getNotePermissions(@PathParam("noteId") String noteId) throws IOException {
-    checkIfUserIsAnon(getBlockNotAuthenticatedUserErrorMsg());
-    checkIfUserCanRead(noteId,
-        "Insufficient privileges you cannot get the list of permissions for this note");
-    HashMap<String, Set<String>> permissionsMap = new HashMap<>();
-    permissionsMap.put("owners", authorizationService.getOwners(noteId));
-    permissionsMap.put("readers", authorizationService.getReaders(noteId));
-    permissionsMap.put("writers", authorizationService.getWriters(noteId));
-    permissionsMap.put("runners", authorizationService.getRunners(noteId));
-    return new JsonResponse<>(Status.OK, "", permissionsMap).build();
+    try {
+      checkIfUserIsAnon(getBlockNotAuthenticatedUserErrorMsg());
+      checkIfUserCanRead(noteId,
+              "Insufficient privileges you cannot get the list of permissions for this note");
+      HashMap<String, Set<String>> permissionsMap = new HashMap<>();
+      permissionsMap.put("owners", authorizationService.getOwners(noteId));
+      permissionsMap.put("readers", authorizationService.getReaders(noteId));
+      permissionsMap.put("writers", authorizationService.getWriters(noteId));
+      permissionsMap.put("runners", authorizationService.getRunners(noteId));
+      return new JsonResponse<>(Status.OK, "", permissionsMap).build();
+    } catch (Throwable e) {
+      return createResponseFromException(e);
+    }
   }
 
   private String ownerPermissionError(Set<String> current, Set<String> allowed) {
@@ -241,70 +246,74 @@ public class NotebookRestApi extends AbstractRestApi {
   @ZeppelinApi
   public Response putNotePermissions(@PathParam("noteId") String noteId, String req)
       throws IOException {
-    String principal = authenticationService.getPrincipal();
-    Set<String> roles = authenticationService.getAssociatedRoles();
-    HashSet<String> userAndRoles = new HashSet<>();
-    userAndRoles.add(principal);
-    userAndRoles.addAll(roles);
+    try {
+      String principal = authenticationService.getPrincipal();
+      Set<String> roles = authenticationService.getAssociatedRoles();
+      HashSet<String> userAndRoles = new HashSet<>();
+      userAndRoles.add(principal);
+      userAndRoles.addAll(roles);
 
-    checkIfUserIsAnon(getBlockNotAuthenticatedUserErrorMsg());
-    checkIfUserIsOwner(noteId,
-        ownerPermissionError(userAndRoles, authorizationService.getOwners(noteId)));
+      checkIfUserIsAnon(getBlockNotAuthenticatedUserErrorMsg());
+      checkIfUserIsOwner(noteId,
+              ownerPermissionError(userAndRoles, authorizationService.getOwners(noteId)));
 
-    HashMap<String, HashSet<String>> permMap =
-        GSON.fromJson(req, new TypeToken<HashMap<String, HashSet<String>>>() {
-        }.getType());
-    Note note = notebook.getNote(noteId);
-    checkIfNoteIsNotNull(note);
+      HashMap<String, HashSet<String>> permMap =
+              GSON.fromJson(req, new TypeToken<HashMap<String, HashSet<String>>>() {
+              }.getType());
+      Note note = notebook.getNote(noteId);
+      checkIfNoteIsNotNull(note);
 
-    HashSet<String> readers = permMap.get("readers");
-    HashSet<String> runners = permMap.get("runners");
-    HashSet<String> owners = permMap.get("owners");
-    HashSet<String> writers = permMap.get("writers");
+      HashSet<String> readers = permMap.get("readers");
+      HashSet<String> runners = permMap.get("runners");
+      HashSet<String> owners = permMap.get("owners");
+      HashSet<String> writers = permMap.get("writers");
 
-    LOGGER.info("Set permissions to note: {} with current user:{}, owners:{}, readers:{}, runners:{}, writers:{}",
-            noteId, principal, owners, readers, runners, writers);
+      LOGGER.info("Set permissions to note: {} with current user:{}, owners:{}, readers:{}, runners:{}, writers:{}",
+              noteId, principal, owners, readers, runners, writers);
 
-    // Set readers, if runners, writers and owners is empty -> set to user requesting the change
-    if (readers != null && !readers.isEmpty()) {
-      if (runners.isEmpty()) {
-        runners = Sets.newHashSet(authenticationService.getPrincipal());
+      // Set readers, if runners, writers and owners is empty -> set to user requesting the change
+      if (readers != null && !readers.isEmpty()) {
+        if (runners.isEmpty()) {
+          runners = Sets.newHashSet(authenticationService.getPrincipal());
+        }
+        if (writers.isEmpty()) {
+          writers = Sets.newHashSet(authenticationService.getPrincipal());
+        }
+        if (owners.isEmpty()) {
+          owners = Sets.newHashSet(authenticationService.getPrincipal());
+        }
       }
-      if (writers.isEmpty()) {
-        writers = Sets.newHashSet(authenticationService.getPrincipal());
+      // Set runners, if writers and owners is empty -> set to user requesting the change
+      if (runners != null && !runners.isEmpty()) {
+        if (writers.isEmpty()) {
+          writers = Sets.newHashSet(authenticationService.getPrincipal());
+        }
+        if (owners.isEmpty()) {
+          owners = Sets.newHashSet(authenticationService.getPrincipal());
+        }
       }
-      if (owners.isEmpty()) {
-        owners = Sets.newHashSet(authenticationService.getPrincipal());
+      // Set writers, if owners is empty -> set to user requesting the change
+      if (writers != null && !writers.isEmpty()) {
+        if (owners.isEmpty()) {
+          owners = Sets.newHashSet(authenticationService.getPrincipal());
+        }
       }
+
+      authorizationService.setReaders(noteId, readers);
+      authorizationService.setRunners(noteId, runners);
+      authorizationService.setWriters(noteId, writers);
+      authorizationService.setOwners(noteId, owners);
+      LOGGER.debug("After set permissions {} {} {} {}", authorizationService.getOwners(noteId),
+              authorizationService.getReaders(noteId), authorizationService.getRunners(noteId),
+              authorizationService.getWriters(noteId));
+      AuthenticationInfo subject = new AuthenticationInfo(authenticationService.getPrincipal());
+      authorizationService.saveNoteAuth(noteId, subject);
+      notebookServer.broadcastNote(note);
+      notebookServer.broadcastNoteList(subject, userAndRoles);
+      return new JsonResponse<>(Status.OK).build();
+    } catch (Throwable e) {
+      return createResponseFromException(e);
     }
-    // Set runners, if writers and owners is empty -> set to user requesting the change
-    if (runners != null && !runners.isEmpty()) {
-      if (writers.isEmpty()) {
-        writers = Sets.newHashSet(authenticationService.getPrincipal());
-      }
-      if (owners.isEmpty()) {
-        owners = Sets.newHashSet(authenticationService.getPrincipal());
-      }
-    }
-    // Set writers, if owners is empty -> set to user requesting the change
-    if (writers != null && !writers.isEmpty()) {
-      if (owners.isEmpty()) {
-        owners = Sets.newHashSet(authenticationService.getPrincipal());
-      }
-    }
-
-    authorizationService.setReaders(noteId, readers);
-    authorizationService.setRunners(noteId, runners);
-    authorizationService.setWriters(noteId, writers);
-    authorizationService.setOwners(noteId, owners);
-    LOGGER.debug("After set permissions {} {} {} {}", authorizationService.getOwners(noteId),
-            authorizationService.getReaders(noteId), authorizationService.getRunners(noteId),
-            authorizationService.getWriters(noteId));
-    AuthenticationInfo subject = new AuthenticationInfo(authenticationService.getPrincipal());
-    authorizationService.saveNoteAuth(noteId, subject);
-    notebookServer.broadcastNote(note);
-    notebookServer.broadcastNoteList(subject, userAndRoles);
-    return new JsonResponse<>(Status.OK).build();
   }
 
   /**
@@ -316,9 +325,13 @@ public class NotebookRestApi extends AbstractRestApi {
   @GET
   @ZeppelinApi
   public Response getNoteList() throws IOException {
-    List<NoteInfo> notesInfo = notebookService.listNotesInfo(false, getServiceContext(),
-        new RestServiceCallback<List<NoteInfo>>());
-    return new JsonResponse<>(Status.OK, "", notesInfo).build();
+    try {
+      List<NoteInfo> notesInfo = notebookService.listNotesInfo(false, getServiceContext(),
+              new RestServiceCallback<List<NoteInfo>>());
+      return new JsonResponse<>(Status.OK, "", notesInfo).build();
+    } catch (Throwable e) {
+      return createResponseFromException(e);
+    }
   }
 
   /**
@@ -332,9 +345,13 @@ public class NotebookRestApi extends AbstractRestApi {
   @Path("{noteId}")
   @ZeppelinApi
   public Response getNote(@PathParam("noteId") String noteId) throws IOException {
-    Note note =
-        notebookService.getNote(noteId, getServiceContext(), new RestServiceCallback());
-    return new JsonResponse<>(Status.OK, "", note).build();
+    try {
+      Note note =
+              notebookService.getNote(noteId, getServiceContext(), new RestServiceCallback());
+      return new JsonResponse<>(Status.OK, "", note).build();
+    } catch (Throwable e) {
+      return createResponseFromException(e);
+    }
   }
 
   /**
@@ -348,9 +365,13 @@ public class NotebookRestApi extends AbstractRestApi {
   @Path("export/{noteId}")
   @ZeppelinApi
   public Response exportNote(@PathParam("noteId") String noteId) throws IOException {
-    checkIfUserCanRead(noteId, "Insufficient privileges you cannot export this note");
-    String exportJson = notebook.exportNote(noteId);
-    return new JsonResponse<>(Status.OK, "", exportJson).build();
+    try {
+      checkIfUserCanRead(noteId, "Insufficient privileges you cannot export this note");
+      String exportJson = notebook.exportNote(noteId);
+      return new JsonResponse<>(Status.OK, "", exportJson).build();
+    } catch (Throwable e) {
+      return createResponseFromException(e);
+    }
   }
 
   /**
@@ -369,8 +390,8 @@ public class NotebookRestApi extends AbstractRestApi {
       Note note = notebookService.importNote(notePath, noteJson, getServiceContext(),
               new RestServiceCallback());
       return new JsonResponse<>(Status.OK, "", note.getId()).build();
-    } catch (IOException e) {
-      return new JsonResponse<>(Status.INTERNAL_SERVER_ERROR, e.getMessage()).build();
+    } catch (Throwable e) {
+      return createResponseFromException(e);
     }
   }
 
@@ -384,22 +405,27 @@ public class NotebookRestApi extends AbstractRestApi {
   @POST
   @ZeppelinApi
   public Response createNote(String message) throws IOException {
-    String user = authenticationService.getPrincipal();
-    LOGGER.info("Create new note by JSON {}", message);
-    NewNoteRequest request = NewNoteRequest.fromJson(message);
-    Note note = notebookService.createNote(
-        request.getName(),
-        zConf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_GROUP_DEFAULT),
-        getServiceContext(),
-        new RestServiceCallback<>());
-    AuthenticationInfo subject = new AuthenticationInfo(authenticationService.getPrincipal());
-    if (request.getParagraphs() != null) {
-      for (NewParagraphRequest paragraphRequest : request.getParagraphs()) {
-        Paragraph p = note.addNewParagraph(subject);
-        initParagraph(p, paragraphRequest, user);
+    try {
+      String user = authenticationService.getPrincipal();
+      LOGGER.info("Creating new note by JSON {}", message);
+      NewNoteRequest request = NewNoteRequest.fromJson(message);
+      Note note = notebookService.createNote(
+              request.getName(),
+              zConf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_GROUP_DEFAULT),
+              false,
+              getServiceContext(),
+              new RestServiceCallback<>());
+      AuthenticationInfo subject = new AuthenticationInfo(authenticationService.getPrincipal());
+      if (request.getParagraphs() != null) {
+        for (NewParagraphRequest paragraphRequest : request.getParagraphs()) {
+          Paragraph p = note.addNewParagraph(subject);
+          initParagraph(p, paragraphRequest, user);
+        }
       }
+      return new JsonResponse(Status.OK, "", note.getId()).build();
+    } catch (Throwable e) {
+      return createResponseFromException(e);
     }
-    return new JsonResponse<>(Status.OK, "", note.getId()).build();
   }
 
   /**
@@ -414,16 +440,20 @@ public class NotebookRestApi extends AbstractRestApi {
   @ZeppelinApi
   public Response deleteNote(@PathParam("noteId") String noteId) throws IOException {
     LOGGER.info("Delete note {} ", noteId);
-    notebookService.removeNote(noteId,
-        getServiceContext(),
-        new RestServiceCallback<String>() {
-          @Override
-          public void onSuccess(String message, ServiceContext context) {
-            notebookServer.broadcastNoteList(context.getAutheInfo(), context.getUserAndRoles());
-          }
-        });
+    try {
+      notebookService.removeNote(noteId,
+              getServiceContext(),
+              new RestServiceCallback<String>() {
+                @Override
+                public void onSuccess(String message, ServiceContext context) {
+                  notebookServer.broadcastNoteList(context.getAutheInfo(), context.getUserAndRoles());
+                }
+              });
 
-    return new JsonResponse<>(Status.OK, "").build();
+      return new JsonResponse<>(Status.OK, "").build();
+    } catch (Throwable e) {
+      return createResponseFromException(e);
+    }
   }
 
   /**
@@ -440,23 +470,27 @@ public class NotebookRestApi extends AbstractRestApi {
   @ZeppelinApi
   public Response cloneNote(@PathParam("noteId") String noteId, String message)
       throws IOException, IllegalArgumentException {
-    LOGGER.info("Clone note by JSON {}", message);
-    checkIfUserCanWrite(noteId, "Insufficient privileges you cannot clone this note");
-    NewNoteRequest request = NewNoteRequest.fromJson(message);
-    String newNoteName = null;
-    if (request != null) {
-      newNoteName = request.getName();
+    try {
+      LOGGER.info("Clone note by JSON {}", message);
+      checkIfUserCanWrite(noteId, "Insufficient privileges you cannot clone this note");
+      NewNoteRequest request = NewNoteRequest.fromJson(message);
+      String newNoteName = null;
+      if (request != null) {
+        newNoteName = request.getName();
+      }
+      AuthenticationInfo subject = new AuthenticationInfo(authenticationService.getPrincipal());
+      Note newNote = notebookService.cloneNote(noteId, newNoteName, getServiceContext(),
+              new RestServiceCallback<Note>() {
+                @Override
+                public void onSuccess(Note newNote, ServiceContext context) throws IOException {
+                  notebookServer.broadcastNote(newNote);
+                  notebookServer.broadcastNoteList(subject, context.getUserAndRoles());
+                }
+              });
+      return new JsonResponse<>(Status.OK, "", newNote.getId()).build();
+    } catch (Throwable e) {
+      return createResponseFromException(e);
     }
-    AuthenticationInfo subject = new AuthenticationInfo(authenticationService.getPrincipal());
-    Note newNote = notebookService.cloneNote(noteId, newNoteName, getServiceContext(),
-        new RestServiceCallback<Note>(){
-          @Override
-          public void onSuccess(Note newNote, ServiceContext context) throws IOException {
-            notebookServer.broadcastNote(newNote);
-            notebookServer.broadcastNoteList(subject, context.getUserAndRoles());
-          }
-        });
-    return new JsonResponse<>(Status.OK, "", newNote.getId()).build();
   }
 
   /**
@@ -471,22 +505,26 @@ public class NotebookRestApi extends AbstractRestApi {
   @ZeppelinApi
   public Response renameNote(@PathParam("noteId") String noteId,
                              String message) throws IOException {
-    LOGGER.info("Rename note by JSON {}", message);
-    RenameNoteRequest request = GSON.fromJson(message, RenameNoteRequest.class);
-    String newName = request.getName();
-    if (newName.isEmpty()) {
-      LOGGER.warn("Trying to rename notebook {} with empty name parameter", noteId);
-      throw new BadRequestException("name can not be empty");
+    try {
+      LOGGER.info("Rename note by JSON {}", message);
+      RenameNoteRequest request = GSON.fromJson(message, RenameNoteRequest.class);
+      String newName = request.getName();
+      if (newName.isEmpty()) {
+        LOGGER.warn("Trying to rename notebook {} with empty name parameter", noteId);
+        throw new BadRequestException("name can not be empty");
+      }
+      notebookService.renameNote(noteId, request.getName(), false, getServiceContext(),
+              new RestServiceCallback<Note>() {
+                @Override
+                public void onSuccess(Note note, ServiceContext context) throws IOException {
+                  notebookServer.broadcastNote(note);
+                  notebookServer.broadcastNoteList(context.getAutheInfo(), context.getUserAndRoles());
+                }
+              });
+      return new JsonResponse(Status.OK, "").build();
+    } catch (Throwable e) {
+      return createResponseFromException(e);
     }
-    notebookService.renameNote(noteId, request.getName(), false, getServiceContext(),
-        new RestServiceCallback<Note>(){
-          @Override
-          public void onSuccess(Note note, ServiceContext context) throws IOException {
-            notebookServer.broadcastNote(note);
-            notebookServer.broadcastNoteList(context.getAutheInfo(), context.getUserAndRoles());
-          }
-        });
-    return new JsonResponse(Status.OK, "").build();
   }
 
   /**
@@ -501,26 +539,30 @@ public class NotebookRestApi extends AbstractRestApi {
   @ZeppelinApi
   public Response insertParagraph(@PathParam("noteId") String noteId, String message)
       throws IOException {
-    String user = authenticationService.getPrincipal();
-    LOGGER.info("Insert paragraph {} {}", noteId, message);
+    try {
+      String user = authenticationService.getPrincipal();
+      LOGGER.info("Insert paragraph {} {}", noteId, message);
 
-    Note note = notebook.getNote(noteId);
-    checkIfNoteIsNotNull(note);
-    checkIfUserCanWrite(noteId, "Insufficient privileges you cannot add paragraph to this note");
+      Note note = notebook.getNote(noteId);
+      checkIfNoteIsNotNull(note);
+      checkIfUserCanWrite(noteId, "Insufficient privileges you cannot add paragraph to this note");
 
-    NewParagraphRequest request = NewParagraphRequest.fromJson(message);
-    AuthenticationInfo subject = new AuthenticationInfo(user);
-    Paragraph p;
-    Double indexDouble = request.getIndex();
-    if (indexDouble == null) {
-      p = note.addNewParagraph(subject);
-    } else {
-      p = note.insertNewParagraph(indexDouble.intValue(), subject);
+      NewParagraphRequest request = NewParagraphRequest.fromJson(message);
+      AuthenticationInfo subject = new AuthenticationInfo(user);
+      Paragraph p;
+      Double indexDouble = request.getIndex();
+      if (indexDouble == null) {
+        p = note.addNewParagraph(subject);
+      } else {
+        p = note.insertNewParagraph(indexDouble.intValue(), subject);
+      }
+      initParagraph(p, request, user);
+      notebook.saveNote(note, subject);
+      notebookServer.broadcastNote(note);
+      return new JsonResponse<>(Status.OK, "", p.getId()).build();
+    } catch (Throwable e) {
+      return createResponseFromException(e);
     }
-    initParagraph(p, request, user);
-    notebook.saveNote(note, subject);
-    notebookServer.broadcastNote(note);
-    return new JsonResponse<>(Status.OK, "", p.getId()).build();
   }
 
   /**
@@ -535,15 +577,19 @@ public class NotebookRestApi extends AbstractRestApi {
   @ZeppelinApi
   public Response getParagraph(@PathParam("noteId") String noteId,
                                @PathParam("paragraphId") String paragraphId) throws IOException {
-    LOGGER.info("Get paragraph {} {}", noteId, paragraphId);
+    try {
+      LOGGER.info("Get paragraph {} {}", noteId, paragraphId);
 
-    Note note = notebook.getNote(noteId);
-    checkIfNoteIsNotNull(note);
-    checkIfUserCanRead(noteId, "Insufficient privileges you cannot get this paragraph");
-    Paragraph p = note.getParagraph(paragraphId);
-    checkIfParagraphIsNotNull(p);
+      Note note = notebook.getNote(noteId);
+      checkIfNoteIsNotNull(note);
+      checkIfUserCanRead(noteId, "Insufficient privileges you cannot get this paragraph");
+      Paragraph p = note.getParagraph(paragraphId);
+      checkIfParagraphIsNotNull(p);
 
-    return new JsonResponse<>(Status.OK, "", p).build();
+      return new JsonResponse<>(Status.OK, "", p).build();
+    } catch (Throwable e) {
+      return createResponseFromException(e);
+    }
   }
 
   /**
@@ -558,26 +604,29 @@ public class NotebookRestApi extends AbstractRestApi {
   public Response updateParagraph(@PathParam("noteId") String noteId,
                                   @PathParam("paragraphId") String paragraphId,
                                   String message) throws IOException {
-    String user = authenticationService.getPrincipal();
-    LOGGER.info("{} will update paragraph {} {}", user, noteId, paragraphId);
+    try {
+      String user = authenticationService.getPrincipal();
+      LOGGER.info("{} will update paragraph {} {}", user, noteId, paragraphId);
+      Note note = notebook.getNote(noteId);
+      checkIfNoteIsNotNull(note);
+      checkIfUserCanWrite(noteId, "Insufficient privileges you cannot update this paragraph");
+      Paragraph p = note.getParagraph(paragraphId);
+      checkIfParagraphIsNotNull(p);
 
-    Note note = notebook.getNote(noteId);
-    checkIfNoteIsNotNull(note);
-    checkIfUserCanWrite(noteId, "Insufficient privileges you cannot update this paragraph");
-    Paragraph p = note.getParagraph(paragraphId);
-    checkIfParagraphIsNotNull(p);
+      UpdateParagraphRequest updatedParagraph = GSON.fromJson(message, UpdateParagraphRequest.class);
+      p.setText(updatedParagraph.getText());
 
-    UpdateParagraphRequest updatedParagraph = GSON.fromJson(message, UpdateParagraphRequest.class);
-    p.setText(updatedParagraph.getText());
+      if (updatedParagraph.getTitle() != null) {
+        p.setTitle(updatedParagraph.getTitle());
+      }
 
-    if (updatedParagraph.getTitle() != null) {
-      p.setTitle(updatedParagraph.getTitle());
+      AuthenticationInfo subject = new AuthenticationInfo(user);
+      notebook.saveNote(note, subject);
+      notebookServer.broadcastParagraph(note, p, MSG_ID_NOT_DEFINED);
+      return new JsonResponse<>(Status.OK, "").build();
+    } catch (Throwable e) {
+      return createResponseFromException(e);
     }
-
-    AuthenticationInfo subject = new AuthenticationInfo(user);
-    notebook.saveNote(note, subject);
-    notebookServer.broadcastParagraph(note, p, MSG_ID_NOT_DEFINED);
-    return new JsonResponse<>(Status.OK, "").build();
   }
 
   /**
@@ -595,20 +644,24 @@ public class NotebookRestApi extends AbstractRestApi {
   public Response updateParagraphConfig(@PathParam("noteId") String noteId,
                                         @PathParam("paragraphId") String paragraphId,
                                         String message) throws IOException {
-    String user = authenticationService.getPrincipal();
-    LOGGER.info("{} will update paragraph config {} {}", user, noteId, paragraphId);
+    try {
+      String user = authenticationService.getPrincipal();
+      LOGGER.info("{} will update paragraph config {} {}", user, noteId, paragraphId);
 
-    Note note = notebook.getNote(noteId);
-    checkIfNoteIsNotNull(note);
-    checkIfUserCanWrite(noteId, "Insufficient privileges you cannot update this paragraph config");
-    Paragraph p = note.getParagraph(paragraphId);
-    checkIfParagraphIsNotNull(p);
+      Note note = notebook.getNote(noteId);
+      checkIfNoteIsNotNull(note);
+      checkIfUserCanWrite(noteId, "Insufficient privileges you cannot update this paragraph config");
+      Paragraph p = note.getParagraph(paragraphId);
+      checkIfParagraphIsNotNull(p);
 
-    Map<String, Object> newConfig = GSON.fromJson(message, HashMap.class);
-    configureParagraph(p, newConfig, user);
-    AuthenticationInfo subject = new AuthenticationInfo(user);
-    notebook.saveNote(note, subject);
-    return new JsonResponse<>(Status.OK, "", p).build();
+      Map<String, Object> newConfig = GSON.fromJson(message, HashMap.class);
+      configureParagraph(p, newConfig, user);
+      AuthenticationInfo subject = new AuthenticationInfo(user);
+      notebook.saveNote(note, subject);
+      return new JsonResponse<>(Status.OK, "", p).build();
+    } catch (Throwable e) {
+      return createResponseFromException(e);
+    }
   }
 
   /**
@@ -625,17 +678,21 @@ public class NotebookRestApi extends AbstractRestApi {
                                 @PathParam("paragraphId") String paragraphId,
                                 @PathParam("newIndex") String newIndex)
       throws IOException {
-    LOGGER.info("Move paragraph {} {} {}", noteId, paragraphId, newIndex);
-    notebookService.moveParagraph(noteId, paragraphId, Integer.parseInt(newIndex),
-        getServiceContext(),
-        new RestServiceCallback<Paragraph>() {
-          @Override
-          public void onSuccess(Paragraph result, ServiceContext context) throws IOException {
-            notebookServer.broadcastNote(result.getNote());
-          }
-        });
-    return new JsonResponse(Status.OK, "").build();
 
+    try {
+      LOGGER.info("Move paragraph {} {} {}", noteId, paragraphId, newIndex);
+      notebookService.moveParagraph(noteId, paragraphId, Integer.parseInt(newIndex),
+              getServiceContext(),
+              new RestServiceCallback<Paragraph>() {
+                @Override
+                public void onSuccess(Paragraph result, ServiceContext context) throws IOException {
+                  notebookServer.broadcastNote(result.getNote());
+                }
+              });
+      return new JsonResponse(Status.OK, "").build();
+    } catch (Throwable e) {
+      return createResponseFromException(e);
+    }
   }
 
   /**
@@ -650,16 +707,34 @@ public class NotebookRestApi extends AbstractRestApi {
   @ZeppelinApi
   public Response deleteParagraph(@PathParam("noteId") String noteId,
                                   @PathParam("paragraphId") String paragraphId) throws IOException {
-    LOGGER.info("Delete paragraph {} {}", noteId, paragraphId);
-    notebookService.removeParagraph(noteId, paragraphId, getServiceContext(),
-        new RestServiceCallback<Paragraph>() {
-          @Override
-          public void onSuccess(Paragraph p, ServiceContext context) throws IOException {
-            notebookServer.broadcastNote(p.getNote());
-          }
-        });
+    try {
+      LOGGER.info("Delete paragraph {} {}", noteId, paragraphId);
+      notebookService.removeParagraph(noteId, paragraphId, getServiceContext(),
+              new RestServiceCallback<Paragraph>() {
+                @Override
+                public void onSuccess(Paragraph p, ServiceContext context) throws IOException {
+                  notebookServer.broadcastNote(p.getNote());
+                }
+              });
 
-    return new JsonResponse(Status.OK, "").build();
+      return new JsonResponse(Status.OK, "").build();
+    } catch (Throwable e) {
+      return createResponseFromException(e);
+    }
+  }
+
+  @POST
+  @Path("{noteId}/paragraph/next")
+  public Response nextSessionParagraph(@PathParam("noteId") String noteId,
+                                       @QueryParam("maxParagraph") int maxParagraph) {
+    try {
+      Paragraph p = notebookService.getNextSessionParagraph(noteId, maxParagraph,
+              getServiceContext(),
+              new RestServiceCallback<>());
+      return new JsonResponse(Status.OK, p.getId()).build();
+    } catch (Throwable e) {
+      return createResponseFromException(e);
+    }
   }
 
   /**
@@ -673,10 +748,14 @@ public class NotebookRestApi extends AbstractRestApi {
   @ZeppelinApi
   public Response clearAllParagraphOutput(@PathParam("noteId") String noteId)
       throws IOException {
-    LOGGER.info("Clear all paragraph output of note {}", noteId);
-    notebookService.clearAllParagraphOutput(noteId, getServiceContext(),
-        new RestServiceCallback<>());
-    return new JsonResponse(Status.OK, "").build();
+    try {
+      LOGGER.info("Clear all paragraph output of note {}", noteId);
+      notebookService.clearAllParagraphOutput(noteId, getServiceContext(),
+              new RestServiceCallback<>());
+      return new JsonResponse(Status.OK, "").build();
+    } catch (Throwable e) {
+      return createResponseFromException(e);
+    }
   }
 
   /**
@@ -698,33 +777,34 @@ public class NotebookRestApi extends AbstractRestApi {
                               @QueryParam("isolated") Boolean isolated,
                               String message)
       throws IOException, IllegalArgumentException {
-    if (blocking == null) {
-      blocking = false;
-    }
-    if (isolated == null) {
-      isolated = false;
-    }
-    Map<String, Object> params = new HashMap<>();
-    if (!StringUtils.isEmpty(message)) {
-      ParametersRequest request =
-              ParametersRequest.fromJson(message);
-      params = request.getParams();
-    }
 
-    LOGGER.info("Run note jobs, noteId: {}, blocking: {}, isolated: {}, params: {}", noteId, blocking, isolated, params);
-    Note note = notebook.getNote(noteId);
-    AuthenticationInfo subject = new AuthenticationInfo(authenticationService.getPrincipal());
-    subject.setRoles(new LinkedList<>(authenticationService.getAssociatedRoles()));
-    checkIfNoteIsNotNull(note);
-    checkIfUserCanRun(noteId, "Insufficient privileges you cannot run job for this note");
-
-    //TODO(zjffdu), can we run a note via rest api when cron is enabled ?
     try {
+      if (blocking == null) {
+        blocking = false;
+      }
+      if (isolated == null) {
+        isolated = false;
+      }
+      Map<String, Object> params = new HashMap<>();
+      if (!StringUtils.isEmpty(message)) {
+        ParametersRequest request =
+                ParametersRequest.fromJson(message);
+        params = request.getParams();
+      }
+
+      LOGGER.info("Run note jobs, noteId: {}, blocking: {}, isolated: {}, params: {}", noteId, blocking, isolated, params);
+      Note note = notebook.getNote(noteId);
+      AuthenticationInfo subject = new AuthenticationInfo(authenticationService.getPrincipal());
+      subject.setRoles(new LinkedList<>(authenticationService.getAssociatedRoles()));
+      checkIfNoteIsNotNull(note);
+      checkIfUserCanRun(noteId, "Insufficient privileges you cannot run job for this note");
+
+      //TODO(zjffdu), can we run a note via rest api when cron is enabled ?
       note.runAll(subject, blocking, isolated, params);
       return new JsonResponse<>(Status.OK).build();
-    } catch (Exception ex) {
-      LOGGER.error("Exception from run", ex);
-      return new JsonResponse<>(Status.EXPECTATION_FAILED, ex.getMessage()).build();
+    } catch (Throwable e) {
+      LOGGER.error("Exception from run", e);
+      return createResponseFromException(e);
     }
   }
 
@@ -741,17 +821,21 @@ public class NotebookRestApi extends AbstractRestApi {
   @ZeppelinApi
   public Response stopNoteJobs(@PathParam("noteId") String noteId)
       throws IOException, IllegalArgumentException {
-    LOGGER.info("Stop note jobs {} ", noteId);
-    Note note = notebook.getNote(noteId);
-    checkIfNoteIsNotNull(note);
-    checkIfUserCanRun(noteId, "Insufficient privileges you cannot stop this job for this note");
+    try {
+      LOGGER.info("Stop note jobs {} ", noteId);
+      Note note = notebook.getNote(noteId);
+      checkIfNoteIsNotNull(note);
+      checkIfUserCanRun(noteId, "Insufficient privileges you cannot stop this job for this note");
 
-    for (Paragraph p : note.getParagraphs()) {
-      if (!p.isTerminated()) {
-        p.abort();
+      for (Paragraph p : note.getParagraphs()) {
+        if (!p.isTerminated()) {
+          p.abort();
+        }
       }
+      return new JsonResponse<>(Status.OK).build();
+    } catch (Throwable e) {
+      return createResponseFromException(e);
     }
-    return new JsonResponse<>(Status.OK).build();
   }
 
   /**
@@ -767,12 +851,16 @@ public class NotebookRestApi extends AbstractRestApi {
   @ZeppelinApi
   public Response getNoteJobStatus(@PathParam("noteId") String noteId)
       throws IOException, IllegalArgumentException {
-    LOGGER.info("Get note job status.");
-    Note note = notebook.getNote(noteId);
-    checkIfNoteIsNotNull(note);
-    checkIfUserCanRead(noteId, "Insufficient privileges you cannot get job status");
+    try {
+      LOGGER.info("Get note job status.");
+      Note note = notebook.getNote(noteId);
+      checkIfNoteIsNotNull(note);
+      checkIfUserCanRead(noteId, "Insufficient privileges you cannot get job status");
 
-    return new JsonResponse<>(Status.OK, null, new NoteJobStatus(note)).build();
+      return new JsonResponse<>(Status.OK, null, new NoteJobStatus(note)).build();
+    } catch (Throwable e) {
+      return createResponseFromException(e);
+    }
   }
 
   /**
@@ -790,15 +878,19 @@ public class NotebookRestApi extends AbstractRestApi {
   public Response getNoteParagraphJobStatus(@PathParam("noteId") String noteId,
                                             @PathParam("paragraphId") String paragraphId)
       throws IOException, IllegalArgumentException {
-    LOGGER.info("Get note paragraph job status.");
-    Note note = notebook.getNote(noteId);
-    checkIfNoteIsNotNull(note);
-    checkIfUserCanRead(noteId, "Insufficient privileges you cannot get job status");
+    try {
+      LOGGER.info("Get note paragraph job status.");
+      Note note = notebook.getNote(noteId);
+      checkIfNoteIsNotNull(note);
+      checkIfUserCanRead(noteId, "Insufficient privileges you cannot get job status");
 
-    Paragraph paragraph = note.getParagraph(paragraphId);
-    checkIfParagraphIsNotNull(paragraph);
+      Paragraph paragraph = note.getParagraph(paragraphId);
+      checkIfParagraphIsNotNull(paragraph);
 
-    return new JsonResponse<>(Status.OK, null, new ParagraphJobStatus(paragraph)).build();
+      return new JsonResponse<>(Status.OK, null, new ParagraphJobStatus(paragraph)).build();
+    } catch (Throwable e) {
+      return createResponseFromException(e);
+    }
   }
 
   /**
@@ -814,25 +906,32 @@ public class NotebookRestApi extends AbstractRestApi {
   @Path("job/{noteId}/{paragraphId}")
   @ZeppelinApi
   public Response runParagraph(@PathParam("noteId") String noteId,
-                               @PathParam("paragraphId") String paragraphId, String message)
+                               @PathParam("paragraphId") String paragraphId,
+                               @QueryParam("sessionId") String sessionId,
+                               String message)
       throws IOException, IllegalArgumentException {
-    LOGGER.info("Run paragraph job asynchronously {} {} {}", noteId, paragraphId, message);
 
-    Note note = notebook.getNote(noteId);
-    checkIfNoteIsNotNull(note);
-    Paragraph paragraph = note.getParagraph(paragraphId);
-    checkIfParagraphIsNotNull(paragraph);
+    try {
+      LOGGER.info("Run paragraph job asynchronously {} {} {}", noteId, paragraphId, message);
 
-    Map<String, Object> params = new HashMap<>();
-    if (!StringUtils.isEmpty(message)) {
-      ParametersRequest request =
-          ParametersRequest.fromJson(message);
-      params = request.getParams();
+      Note note = notebook.getNote(noteId);
+      checkIfNoteIsNotNull(note);
+      Paragraph paragraph = note.getParagraph(paragraphId);
+      checkIfParagraphIsNotNull(paragraph);
+
+      Map<String, Object> params = new HashMap<>();
+      if (!StringUtils.isEmpty(message)) {
+        ParametersRequest request =
+                ParametersRequest.fromJson(message);
+        params = request.getParams();
+      }
+      notebookService.runParagraph(noteId, paragraphId, paragraph.getTitle(),
+              paragraph.getText(), params, new HashMap<>(), sessionId,
+              false, false, getServiceContext(), new RestServiceCallback<>());
+      return new JsonResponse<>(Status.OK).build();
+    } catch (Throwable e) {
+      return createResponseFromException(e);
     }
-    notebookService.runParagraph(noteId, paragraphId, paragraph.getTitle(),
-            paragraph.getText(), params, new HashMap<>(),
-            false, false, getServiceContext(), new RestServiceCallback<>());
-    return new JsonResponse<>(Status.OK).build();
   }
 
   /**
@@ -851,35 +950,36 @@ public class NotebookRestApi extends AbstractRestApi {
   @ZeppelinApi
   public Response runParagraphSynchronously(@PathParam("noteId") String noteId,
                                             @PathParam("paragraphId") String paragraphId,
+                                            @QueryParam("sessionId") String sessionId,
                                             String message)
       throws IOException, IllegalArgumentException {
     LOGGER.info("Run paragraph synchronously {} {} {}", noteId, paragraphId, message);
 
-    Note note = notebook.getNote(noteId);
-    checkIfNoteIsNotNull(note);
-    Paragraph paragraph = note.getParagraph(paragraphId);
-    checkIfParagraphIsNotNull(paragraph);
+    try {
+      Note note = notebook.getNote(noteId);
+      checkIfNoteIsNotNull(note);
+      Paragraph paragraph = note.getParagraph(paragraphId);
+      checkIfParagraphIsNotNull(paragraph);
 
-    Map<String, Object> params = new HashMap<>();
-    if (!StringUtils.isEmpty(message)) {
-      ParametersRequest request =
-          ParametersRequest.fromJson(message);
-      params = request.getParams();
-    }
+      Map<String, Object> params = new HashMap<>();
+      if (!StringUtils.isEmpty(message)) {
+        ParametersRequest request =
+                ParametersRequest.fromJson(message);
+        params = request.getParams();
+      }
 
-    if (notebookService.runParagraph(noteId, paragraphId, paragraph.getTitle(),
-        paragraph.getText(), params,
-        new HashMap<>(), false, true, getServiceContext(), new RestServiceCallback<>())) {
-      note = notebookService.getNote(noteId, getServiceContext(), new RestServiceCallback<>());
-      Paragraph p = note.getParagraph(paragraphId);
-      InterpreterResult result = p.getReturn();
-      if (result.code() == InterpreterResult.Code.SUCCESS) {
+      if (notebookService.runParagraph(noteId, paragraphId, paragraph.getTitle(),
+              paragraph.getText(), params,
+              new HashMap<>(), sessionId, false, true, getServiceContext(), new RestServiceCallback<>())) {
+        note = notebookService.getNote(noteId, getServiceContext(), new RestServiceCallback<>());
+        Paragraph p = note.getParagraph(paragraphId);
+        InterpreterResult result = p.getReturn();
         return new JsonResponse<>(Status.OK, result).build();
       } else {
-        return new JsonResponse<>(Status.INTERNAL_SERVER_ERROR, result).build();
+        return new JsonResponse<>(Status.INTERNAL_SERVER_ERROR, "Fail to run paragraph").build();
       }
-    } else {
-      return new JsonResponse<>(Status.INTERNAL_SERVER_ERROR, "Fail to run paragraph").build();
+    } catch (Throwable e) {
+      return createResponseFromException(e);
     }
   }
 
@@ -898,10 +998,14 @@ public class NotebookRestApi extends AbstractRestApi {
   public Response cancelParagraph(@PathParam("noteId") String noteId,
                                   @PathParam("paragraphId") String paragraphId)
       throws IOException, IllegalArgumentException {
-    LOGGER.info("stop paragraph job {} ", noteId);
-    notebookService.cancelParagraph(noteId, paragraphId, getServiceContext(),
-        new RestServiceCallback<Paragraph>());
-    return new JsonResponse<>(Status.OK).build();
+    try {
+      LOGGER.info("stop paragraph job {} ", noteId);
+      notebookService.cancelParagraph(noteId, paragraphId, getServiceContext(),
+              new RestServiceCallback<Paragraph>());
+      return new JsonResponse<>(Status.OK).build();
+    } catch (Throwable e) {
+      return createResponseFromException(e);
+    }
   }
 
   /**
@@ -917,26 +1021,31 @@ public class NotebookRestApi extends AbstractRestApi {
   @ZeppelinApi
   public Response registerCronJob(@PathParam("noteId") String noteId, String message)
       throws IOException, IllegalArgumentException {
-    LOGGER.info("Register cron job note={} request cron msg={}", noteId, message);
 
-    CronRequest request = CronRequest.fromJson(message);
+    try {
+      LOGGER.info("Register cron job note={} request cron msg={}", noteId, message);
 
-    Note note = notebook.getNote(noteId);
-    checkIfNoteIsNotNull(note);
-    checkIfUserCanRun(noteId, "Insufficient privileges you cannot set a cron job for this note");
-    checkIfNoteSupportsCron(note);
+      CronRequest request = CronRequest.fromJson(message);
 
-    if (!CronExpression.isValidExpression(request.getCronString())) {
-      return new JsonResponse<>(Status.BAD_REQUEST, "wrong cron expressions.").build();
+      Note note = notebook.getNote(noteId);
+      checkIfNoteIsNotNull(note);
+      checkIfUserCanRun(noteId, "Insufficient privileges you cannot set a cron job for this note");
+      checkIfNoteSupportsCron(note);
+
+      if (!CronExpression.isValidExpression(request.getCronString())) {
+        return new JsonResponse<>(Status.BAD_REQUEST, "wrong cron expressions.").build();
+      }
+
+      Map<String, Object> config = note.getConfig();
+      config.put("cron", request.getCronString());
+      config.put("releaseresource", request.getReleaseResource());
+      note.setConfig(config);
+      schedulerService.refreshCron(note.getId());
+
+      return new JsonResponse<>(Status.OK).build();
+    } catch (Throwable e) {
+      return createResponseFromException(e);
     }
-
-    Map<String, Object> config = note.getConfig();
-    config.put("cron", request.getCronString());
-    config.put("releaseresource", request.getReleaseResource());
-    note.setConfig(config);
-    schedulerService.refreshCron(note.getId());
-
-    return new JsonResponse<>(Status.OK).build();
   }
 
   /**
@@ -952,21 +1061,26 @@ public class NotebookRestApi extends AbstractRestApi {
   @ZeppelinApi
   public Response removeCronJob(@PathParam("noteId") String noteId)
       throws IOException, IllegalArgumentException {
-    LOGGER.info("Remove cron job note {}", noteId);
 
-    Note note = notebook.getNote(noteId);
-    checkIfNoteIsNotNull(note);
-    checkIfUserIsOwner(noteId,
-        "Insufficient privileges you cannot remove this cron job from this note");
-    checkIfNoteSupportsCron(note);
+    try {
+      LOGGER.info("Remove cron job note {}", noteId);
 
-    Map<String, Object> config = note.getConfig();
-    config.remove("cron");
-    config.remove("releaseresource");
-    note.setConfig(config);
-    schedulerService.refreshCron(note.getId());
+      Note note = notebook.getNote(noteId);
+      checkIfNoteIsNotNull(note);
+      checkIfUserIsOwner(noteId,
+              "Insufficient privileges you cannot remove this cron job from this note");
+      checkIfNoteSupportsCron(note);
 
-    return new JsonResponse<>(Status.OK).build();
+      Map<String, Object> config = note.getConfig();
+      config.remove("cron");
+      config.remove("releaseresource");
+      note.setConfig(config);
+      schedulerService.refreshCron(note.getId());
+
+      return new JsonResponse<>(Status.OK).build();
+    } catch (Throwable e) {
+      return createResponseFromException(e);
+    }
   }
 
   /**
@@ -982,17 +1096,22 @@ public class NotebookRestApi extends AbstractRestApi {
   @ZeppelinApi
   public Response getCronJob(@PathParam("noteId") String noteId)
       throws IOException, IllegalArgumentException {
-    LOGGER.info("Get cron job note {}", noteId);
 
-    Note note = notebook.getNote(noteId);
-    checkIfNoteIsNotNull(note);
-    checkIfUserCanRead(noteId, "Insufficient privileges you cannot get cron information");
-    checkIfNoteSupportsCron(note);
-    Map<String, Object> response = new HashMap<>();
-    response.put("cron", note.getConfig().get("cron"));
-    response.put("releaseResource", note.getConfig().get("releaseresource"));
+    try {
+      LOGGER.info("Get cron job note {}", noteId);
 
-    return new JsonResponse<>(Status.OK, response).build();
+      Note note = notebook.getNote(noteId);
+      checkIfNoteIsNotNull(note);
+      checkIfUserCanRead(noteId, "Insufficient privileges you cannot get cron information");
+      checkIfNoteSupportsCron(note);
+      Map<String, Object> response = new HashMap<>();
+      response.put("cron", note.getConfig().get("cron"));
+      response.put("releaseResource", note.getConfig().get("releaseresource"));
+
+      return new JsonResponse<>(Status.OK, response).build();
+    } catch (Throwable e) {
+      return createResponseFromException(e);
+    }
   }
 
   /**
@@ -1006,13 +1125,17 @@ public class NotebookRestApi extends AbstractRestApi {
   @Path("jobmanager/")
   @ZeppelinApi
   public Response getJobListforNote() throws IOException, IllegalArgumentException {
-    LOGGER.info("Get note jobs for job manager");
-    List<JobManagerService.NoteJobInfo> noteJobs = jobManagerService
-        .getNoteJobInfoByUnixTime(0, getServiceContext(), new RestServiceCallback<>());
-    Map<String, Object> response = new HashMap<>();
-    response.put("lastResponseUnixTime", System.currentTimeMillis());
-    response.put("jobs", noteJobs);
-    return new JsonResponse<>(Status.OK, response).build();
+    try {
+      LOGGER.info("Get note jobs for job manager");
+      List<JobManagerService.NoteJobInfo> noteJobs = jobManagerService
+              .getNoteJobInfoByUnixTime(0, getServiceContext(), new RestServiceCallback<>());
+      Map<String, Object> response = new HashMap<>();
+      response.put("lastResponseUnixTime", System.currentTimeMillis());
+      response.put("jobs", noteJobs);
+      return new JsonResponse<>(Status.OK, response).build();
+    } catch (Throwable e) {
+      return createResponseFromException(e);
+    }
   }
 
   /**
@@ -1029,14 +1152,18 @@ public class NotebookRestApi extends AbstractRestApi {
   @ZeppelinApi
   public Response getUpdatedJobListforNote(@PathParam("lastUpdateUnixtime") long lastUpdateUnixTime)
       throws IOException, IllegalArgumentException {
-    LOGGER.info("Get updated note jobs lastUpdateTime {}", lastUpdateUnixTime);
-    List<JobManagerService.NoteJobInfo> noteJobs =
-        jobManagerService.getNoteJobInfoByUnixTime(lastUpdateUnixTime, getServiceContext(),
-            new RestServiceCallback<>());
-    Map<String, Object> response = new HashMap<>();
-    response.put("lastResponseUnixTime", System.currentTimeMillis());
-    response.put("jobs", noteJobs);
-    return new JsonResponse<>(Status.OK, response).build();
+    try {
+      LOGGER.info("Get updated note jobs lastUpdateTime {}", lastUpdateUnixTime);
+      List<JobManagerService.NoteJobInfo> noteJobs =
+              jobManagerService.getNoteJobInfoByUnixTime(lastUpdateUnixTime, getServiceContext(),
+                      new RestServiceCallback<>());
+      Map<String, Object> response = new HashMap<>();
+      response.put("lastResponseUnixTime", System.currentTimeMillis());
+      response.put("jobs", noteJobs);
+      return new JsonResponse<>(Status.OK, response).build();
+    } catch (Throwable e) {
+      return createResponseFromException(e);
+    }
   }
 
   /**
@@ -1046,26 +1173,30 @@ public class NotebookRestApi extends AbstractRestApi {
   @Path("search")
   @ZeppelinApi
   public Response search(@QueryParam("q") String queryTerm) {
-    LOGGER.info("Searching notes for: {}", queryTerm);
-    String principal = authenticationService.getPrincipal();
-    Set<String> roles = authenticationService.getAssociatedRoles();
-    HashSet<String> userAndRoles = new HashSet<>();
-    userAndRoles.add(principal);
-    userAndRoles.addAll(roles);
-    List<Map<String, String>> notesFound = noteSearchService.query(queryTerm);
-    for (int i = 0; i < notesFound.size(); i++) {
-      String[] ids = notesFound.get(i).get("id").split("/", 2);
-      String noteId = ids[0];
-      if (!authorizationService.isOwner(noteId, userAndRoles) &&
-          !authorizationService.isReader(noteId, userAndRoles) &&
-          !authorizationService.isWriter(noteId, userAndRoles) &&
-          !authorizationService.isRunner(noteId, userAndRoles)) {
-        notesFound.remove(i);
-        i--;
+    try {
+      LOGGER.info("Searching notes for: {}", queryTerm);
+      String principal = authenticationService.getPrincipal();
+      Set<String> roles = authenticationService.getAssociatedRoles();
+      HashSet<String> userAndRoles = new HashSet<>();
+      userAndRoles.add(principal);
+      userAndRoles.addAll(roles);
+      List<Map<String, String>> notesFound = noteSearchService.query(queryTerm);
+      for (int i = 0; i < notesFound.size(); i++) {
+        String[] ids = notesFound.get(i).get("id").split("/", 2);
+        String noteId = ids[0];
+        if (!authorizationService.isOwner(noteId, userAndRoles) &&
+                !authorizationService.isReader(noteId, userAndRoles) &&
+                !authorizationService.isWriter(noteId, userAndRoles) &&
+                !authorizationService.isRunner(noteId, userAndRoles)) {
+          notesFound.remove(i);
+          i--;
+        }
       }
+      LOGGER.info("{} notes found", notesFound.size());
+      return new JsonResponse<>(Status.OK, notesFound).build();
+    } catch (Throwable e) {
+      return createResponseFromException(e);
     }
-    LOGGER.info("{} notes found", notesFound.size());
-    return new JsonResponse<>(Status.OK, notesFound).build();
   }
 
 
@@ -1108,5 +1239,13 @@ public class NotebookRestApi extends AbstractRestApi {
     }
 
     p.setConfig(origConfig);
+  }
+
+  private Response createResponseFromException(Throwable e) {
+    if (e instanceof WebApplicationException) {
+      return ((WebApplicationException) e).getResponse();
+    } else {
+      return new JsonResponse<>(Status.INTERNAL_SERVER_ERROR, ExceptionUtils.getStackTrace(e)).build();
+    }
   }
 }
