@@ -444,12 +444,17 @@ Sometimes you want to be able to format output of your statement. Cassandra inte
    <tr>
      <td nowrap>Float precision</td>
      <td><strong>floatPrecision=<em>value</em></strong></td>
-     <td>Precision when formatting <tt>float</tt> values. Any positive integer value</td>
+     <td>Precision when formatting <tt>float</tt> values. Any positive integer value, or `-1` to show everything</td>
    </tr>
    <tr>
      <td nowrap>Double precision</td>
      <td><strong>doublePrecision=<em>value</em></strong></td>
-     <td>Precision when formatting <tt>double</tt> values. Any positive integer value</td>
+     <td>Precision when formatting <tt>double</tt> values. Any positive integer value, or `-1` to show everything</td>
+   </tr>
+   <tr>
+     <td nowrap>Decimal precision</td>
+     <td><strong>decimalPrecision=<em>value</em></strong></td>
+     <td>Precision when formatting <tt>decimal</tt> values. Any positive integer value, or `-1` to show everything</td>
    </tr>
    <tr>
      <td nowrap>Timestamp Format</td>
@@ -889,6 +894,11 @@ Below are the configuration parameters supported by interpreter and their defaul
      <td>`cassandra.format.double_precision`</td>
      <td>Precision when formatting values of `double` type</td>
      <td>`12`</td>
+   </tr>
+   <tr>
+     <td>`cassandra.format.decimal_precision`</td>
+     <td>Precision when formatting values of `decimal` type</td>
+     <td>`-1` (show everything)</td>
    </tr>
  </table>
 

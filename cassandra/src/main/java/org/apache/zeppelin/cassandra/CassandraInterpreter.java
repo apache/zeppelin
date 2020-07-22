@@ -118,6 +118,8 @@ public class CassandraInterpreter extends Interpreter {
           "cassandra.format.float_precision";
   public static final String CASSANDRA_FORMAT_DOUBLE_PRECISION =
           "cassandra.format.double_precision";
+  public static final String CASSANDRA_FORMAT_DECIMAL_PRECISION =
+          "cassandra.format.decimal_precision";
   public static final String CASSANDRA_FORMAT_TIMESTAMP =
           "cassandra.format.timestamp";
   public static final String CASSANDRA_FORMAT_TIME =
