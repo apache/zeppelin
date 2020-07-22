@@ -37,8 +37,9 @@ import scala.collection.JavaConverters._
 object CqlFormatter {
   val DEFAULT_TIMEZONE = "UTC"
   val DEFAULT_FORMAT = "human"
-  val DEFAULT_FLOAT_PRECISION = 5
-  val DEFAULT_DOUBLE_PRECISION = 12
+  val DEFAULT_FLOAT_PRECISION: Int  = 5
+  val DEFAULT_DOUBLE_PRECISION: Int  = 12
+  val DEFAULT_DECIMAL_PRECISION: Int = -1
   val DEFAULT_TIMESTAMP_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX"
   val DEFAULT_TIME_FORMAT = "HH:mm:ss.SSS"
   val DEFAULT_DATE_FORMAT = "yyyy-MM-dd"
@@ -46,10 +47,14 @@ object CqlFormatter {
 
   val allAvailableTimezones: Set[String] = TimeZone.getAvailableIDs.toSet
 
-  def getNumberFormatter(locale: Locale, precision: Int): DecimalFormat = {
-    val df = NumberFormat.getNumberInstance(locale).asInstanceOf[DecimalFormat]
-    df.applyPattern("#." + "#" * precision)
-    df
+  def getNumberFormatter(locale: Locale, precision: Int): Option[DecimalFormat] = {
+    if (precision == -1)
+      None
+    else {
+      val df = NumberFormat.getNumberInstance(locale).asInstanceOf[DecimalFormat]
+      df.applyPattern("#." + "#" * precision)
+      Some(df)
+    }
   }
 
   def getDateTimeFormatter(locale: Locale, timeZone: ZoneId, format: String): DateTimeFormatter = {
@@ -83,6 +88,7 @@ object CqlFormatter {
 class CqlFormatter(val outputFormat: String = CqlFormatter.DEFAULT_FORMAT,
                    val floatPrecision: Int = CqlFormatter.DEFAULT_FLOAT_PRECISION,
                    val doublePrecision: Int = CqlFormatter.DEFAULT_DOUBLE_PRECISION,
+                   val decimalPrecision: Int = CqlFormatter.DEFAULT_DECIMAL_PRECISION,
                    val timestampFormat: String = CqlFormatter.DEFAULT_TIMESTAMP_FORMAT,
                    val timeFormat: String = CqlFormatter.DEFAULT_TIME_FORMAT,
                    val dateFormat: String = CqlFormatter.DEFAULT_DATE_FORMAT,
@@ -93,8 +99,9 @@ class CqlFormatter(val outputFormat: String = CqlFormatter.DEFAULT_FORMAT,
   val locale: Locale = CqlFormatter.getLocale(localeStr)
   val timeZone: ZoneId = CqlFormatter.getTimezone(timeZoneId)
 
-  val floatFormatter: DecimalFormat = CqlFormatter.getNumberFormatter(locale, floatPrecision)
-  val doubleFormatter: DecimalFormat = CqlFormatter.getNumberFormatter(locale, doublePrecision)
+  val floatFormatter: Option[DecimalFormat] = CqlFormatter.getNumberFormatter(locale, floatPrecision)
+  val doubleFormatter: Option[DecimalFormat] = CqlFormatter.getNumberFormatter(locale, doublePrecision)
+  val decimalFormatter: Option[DecimalFormat] = CqlFormatter.getNumberFormatter(locale, decimalPrecision)
 
   val timestampFormatter: DateTimeFormatter = CqlFormatter.getDateTimeFormatter(
     locale, timeZone, timestampFormat)
@@ -112,6 +119,9 @@ class CqlFormatter(val outputFormat: String = CqlFormatter.DEFAULT_FORMAT,
       properties.getProperty(
         CassandraInterpreter.CASSANDRA_FORMAT_DOUBLE_PRECISION,
         CqlFormatter.DEFAULT_DOUBLE_PRECISION.toString).toInt,
+      properties.getProperty(
+        CassandraInterpreter.CASSANDRA_FORMAT_DECIMAL_PRECISION,
+        CqlFormatter.DEFAULT_DECIMAL_PRECISION.toString).toInt,
       properties.getProperty(CassandraInterpreter.CASSANDRA_FORMAT_TIMESTAMP,
         CqlFormatter.DEFAULT_TIMESTAMP_FORMAT),
       properties.getProperty(CassandraInterpreter.CASSANDRA_FORMAT_TIME,
@@ -128,13 +138,14 @@ class CqlFormatter(val outputFormat: String = CqlFormatter.DEFAULT_FORMAT,
   def copy(outputFormat: String = this.outputFormat,
            floatPrecision: Int = this.floatPrecision,
            doublePrecision: Int = this.doublePrecision,
+           decimalPrecision: Int = this.decimalPrecision,
            timestampFormat: String = this.timestampFormat,
            timeFormat: String = this.timeFormat,
            dateFormat: String = this.dateFormat,
            timeZoneId: String = this.timeZoneId,
            localeStr: String = this.localeStr) =
-    new CqlFormatter(outputFormat, floatPrecision, doublePrecision, timestampFormat,
-      timeFormat, dateFormat, timeZoneId, localeStr)
+    new CqlFormatter(outputFormat, floatPrecision, doublePrecision, decimalPrecision,
+      timestampFormat, timeFormat, dateFormat, timeZoneId, localeStr)
 
   def formatHuman(obj: Object): String = {
     if (obj == null) {
@@ -142,9 +153,20 @@ class CqlFormatter(val outputFormat: String = CqlFormatter.DEFAULT_FORMAT,
     } else {
       obj match {
         case f: java.lang.Float =>
-          floatFormatter.format(f)
+          floatFormatter match {
+            case None => java.lang.Float.toString(f)
+            case Some(fmt) => fmt.format(f)
+          }
         case d: java.lang.Double =>
-          doubleFormatter.format(d)
+          doubleFormatter match {
+            case None => java.lang.Double.toString(d)
+            case Some(fmt) => fmt.format(d)
+          }
+        case dc: java.math.BigDecimal =>
+          decimalFormatter match {
+            case None => dc.toString
+            case Some(fmt) => fmt.format(dc)
+          }
         case m: java.util.Map[Object, Object] =>
           m.asScala.map{case(k,v) => formatHuman(k) + ": " + formatHuman(v)}.mkString("{", ", ", "}")
         case l: java.util.List[Object] =>
@@ -177,7 +199,7 @@ class CqlFormatter(val outputFormat: String = CqlFormatter.DEFAULT_FORMAT,
     if (isCqlFormat) {
       codec.format(obj)
     } else {
-      formatHuman(obj)
+      formatHuman(obj, codec)
     }
   }
 
@@ -191,6 +213,6 @@ class CqlFormatter(val outputFormat: String = CqlFormatter.DEFAULT_FORMAT,
   }
 
   override def toString: String = s"CqlFormatter(format=$outputFormat, fp=$floatPrecision, dp=$doublePrecision, " +
-    s"tsFormat=$timestampFormat, tmFormat=$timeFormat, dtFormat=$dateFormat, " +
+    s", dcp=$decimalPrecision, tsFormat=$timestampFormat, tmFormat=$timeFormat, dtFormat=$dateFormat, " +
     s"timeozone=$timeZoneId, locale=$localeStr)"
 }

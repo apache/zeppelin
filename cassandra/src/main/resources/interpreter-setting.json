@@ -246,14 +246,21 @@
         "envName": null,
         "propertyName": "cassandra.format.float_precision",
         "defaultValue": "5",
-        "description": "Precision for formatting of float columns",
+        "description": "Precision for formatting of float values",
         "type": "number"
       },
       "cassandra.format.double_precision": {
         "envName": null,
         "propertyName": "cassandra.format.double_precision",
         "defaultValue": "12",
-        "description": "Precision for formatting of double columns",
+        "description": "Precision for formatting of double values",
+        "type": "number"
+      },
+      "cassandra.format.decimal_precision": {
+        "envName": null,
+        "propertyName": "cassandra.format.decimal_precision",
+        "defaultValue": "-1",
+        "description": "Precision for formatting of decimal values (by default, show everything)",
         "type": "number"
       }
     },
