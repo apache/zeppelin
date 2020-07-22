@@ -499,7 +499,7 @@ class FlinkScalaInterpreter(val properties: Properties) {
             }
           }
         } catch {
-          case e : Exception =>
+          case e : Throwable =>
             LOGGER.info("Fail to inspect udf class: " + je.getName, e)
         }
       }
