@@ -48,8 +48,7 @@ import java.util.List;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-@RunWith(value = Parameterized.class)
-public class FlinkIntegrationTest {
+public abstract class FlinkIntegrationTest {
   private static Logger LOGGER = LoggerFactory.getLogger(FlinkIntegrationTest.class);
 
   private static MiniHadoopCluster hadoopCluster;
@@ -66,14 +65,6 @@ public class FlinkIntegrationTest {
     this.flinkVersion = flinkVersion;
     this.flinkHome = DownloadUtils.downloadFlink(flinkVersion);
     this.hadoopHome = DownloadUtils.downloadHadoop("2.7.7");
-  }
-
-  @Parameterized.Parameters
-  public static List<Object[]> data() {
-    return Arrays.asList(new Object[][]{
-        {"1.10.1"},
-        {"1.11.0"}
-    });
   }
 
   @BeforeClass

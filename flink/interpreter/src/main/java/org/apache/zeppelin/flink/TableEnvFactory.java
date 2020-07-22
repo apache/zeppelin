@@ -105,7 +105,7 @@ public class TableEnvFactory {
     }
   }
 
-  public TableEnvironment createScalaFlinkStreamTableEnvironment(EnvironmentSettings settings) {
+  public TableEnvironment createScalaFlinkStreamTableEnvironment(EnvironmentSettings settings, ClassLoader classLoader) {
     try {
       Map<String, String> executorProperties = settings.toExecutorProperties();
       Executor executor = lookupExecutor(executorProperties, senv.getJavaEnv());
@@ -127,24 +127,48 @@ public class TableEnvFactory {
         clazz = Class
                 .forName("org.apache.flink.table.api.bridge.scala.internal.StreamTableEnvironmentImpl");
       }
-      Constructor constructor = clazz
-              .getConstructor(
-                      CatalogManager.class,
-                      ModuleManager.class,
-                      FunctionCatalog.class,
-                      TableConfig.class,
-                      org.apache.flink.streaming.api.scala.StreamExecutionEnvironment.class,
-                      Planner.class,
-                      Executor.class,
-                      boolean.class);
-      return (TableEnvironment) constructor.newInstance(catalogManager,
-              moduleManager,
-              flinkFunctionCatalog,
-              tblConfig,
-              senv,
-              planner,
-              executor,
-              settings.isStreamingMode());
+      try {
+        Constructor constructor = clazz
+                .getConstructor(
+                        CatalogManager.class,
+                        ModuleManager.class,
+                        FunctionCatalog.class,
+                        TableConfig.class,
+                        org.apache.flink.streaming.api.scala.StreamExecutionEnvironment.class,
+                        Planner.class,
+                        Executor.class,
+                        boolean.class);
+        return (TableEnvironment) constructor.newInstance(catalogManager,
+                moduleManager,
+                flinkFunctionCatalog,
+                tblConfig,
+                senv,
+                planner,
+                executor,
+                settings.isStreamingMode());
+      } catch (NoSuchMethodException e) {
+        // Flink 1.11.1 change the constructor signature, FLINK-18419
+        Constructor constructor = clazz
+                .getConstructor(
+                        CatalogManager.class,
+                        ModuleManager.class,
+                        FunctionCatalog.class,
+                        TableConfig.class,
+                        org.apache.flink.streaming.api.scala.StreamExecutionEnvironment.class,
+                        Planner.class,
+                        Executor.class,
+                        boolean.class,
+                        ClassLoader.class);
+        return (TableEnvironment) constructor.newInstance(catalogManager,
+                moduleManager,
+                flinkFunctionCatalog,
+                tblConfig,
+                senv,
+                planner,
+                executor,
+                settings.isStreamingMode(),
+                classLoader);
+      }
 
     } catch (Exception e) {
       throw new TableException("Fail to createScalaFlinkStreamTableEnvironment", e);
@@ -177,7 +201,7 @@ public class TableEnvFactory {
     }
   }
 
-  public TableEnvironment createJavaFlinkStreamTableEnvironment(EnvironmentSettings settings) {
+  public TableEnvironment createJavaFlinkStreamTableEnvironment(EnvironmentSettings settings, ClassLoader classLoader) {
 
     try {
       Map<String, String> executorProperties = settings.toExecutorProperties();
@@ -195,31 +219,55 @@ public class TableEnvFactory {
         clazz = Class
                 .forName("org.apache.flink.table.api.bridge.java.internal.StreamTableEnvironmentImpl");
       }
-      Constructor constructor = clazz
-              .getConstructor(
-                      CatalogManager.class,
-                      ModuleManager.class,
-                      FunctionCatalog.class,
-                      TableConfig.class,
-                      org.apache.flink.streaming.api.environment.StreamExecutionEnvironment.class,
-                      Planner.class,
-                      Executor.class,
-                      boolean.class);
-      return (TableEnvironment) constructor.newInstance(catalogManager,
-              moduleManager,
-              flinkFunctionCatalog,
-              tblConfig,
-              senv.getJavaEnv(),
-              planner,
-              executor,
-              settings.isStreamingMode());
+      try {
+        Constructor constructor = clazz
+                .getConstructor(
+                        CatalogManager.class,
+                        ModuleManager.class,
+                        FunctionCatalog.class,
+                        TableConfig.class,
+                        org.apache.flink.streaming.api.environment.StreamExecutionEnvironment.class,
+                        Planner.class,
+                        Executor.class,
+                        boolean.class);
+        return (TableEnvironment) constructor.newInstance(catalogManager,
+                moduleManager,
+                flinkFunctionCatalog,
+                tblConfig,
+                senv.getJavaEnv(),
+                planner,
+                executor,
+                settings.isStreamingMode());
+      } catch (NoSuchMethodException e) {
+        // Flink 1.11.1 change the constructor signature, FLINK-18419
+        Constructor constructor = clazz
+                .getConstructor(
+                        CatalogManager.class,
+                        ModuleManager.class,
+                        FunctionCatalog.class,
+                        TableConfig.class,
+                        org.apache.flink.streaming.api.environment.StreamExecutionEnvironment.class,
+                        Planner.class,
+                        Executor.class,
+                        boolean.class,
+                        ClassLoader.class);
+        return (TableEnvironment) constructor.newInstance(catalogManager,
+                moduleManager,
+                flinkFunctionCatalog,
+                tblConfig,
+                senv.getJavaEnv(),
+                planner,
+                executor,
+                settings.isStreamingMode(),
+                classLoader);
+      }
 
     } catch (Exception e) {
       throw new TableException("Fail to createJavaFlinkStreamTableEnvironment", e);
     }
   }
 
-  public TableEnvironment createScalaBlinkStreamTableEnvironment(EnvironmentSettings settings) {
+  public TableEnvironment createScalaBlinkStreamTableEnvironment(EnvironmentSettings settings, ClassLoader classLoader) {
 
     try {
       Map<String, String> executorProperties = settings.toExecutorProperties();
@@ -243,30 +291,54 @@ public class TableEnvFactory {
         clazz = Class
                 .forName("org.apache.flink.table.api.bridge.scala.internal.StreamTableEnvironmentImpl");
       }
-      Constructor constructor = clazz
-              .getConstructor(
-                      CatalogManager.class,
-                      ModuleManager.class,
-                      FunctionCatalog.class,
-                      TableConfig.class,
-                      org.apache.flink.streaming.api.scala.StreamExecutionEnvironment.class,
-                      Planner.class,
-                      Executor.class,
-                      boolean.class);
-      return (TableEnvironment) constructor.newInstance(catalogManager,
-              moduleManager,
-              blinkFunctionCatalog,
-              tblConfig,
-              senv,
-              planner,
-              executor,
-              settings.isStreamingMode());
+      try {
+        Constructor constructor = clazz
+                .getConstructor(
+                        CatalogManager.class,
+                        ModuleManager.class,
+                        FunctionCatalog.class,
+                        TableConfig.class,
+                        org.apache.flink.streaming.api.scala.StreamExecutionEnvironment.class,
+                        Planner.class,
+                        Executor.class,
+                        boolean.class);
+        return (TableEnvironment) constructor.newInstance(catalogManager,
+                moduleManager,
+                blinkFunctionCatalog,
+                tblConfig,
+                senv,
+                planner,
+                executor,
+                settings.isStreamingMode());
+      } catch (NoSuchMethodException e) {
+        // Flink 1.11.1 change the constructor signature, FLINK-18419
+        Constructor constructor = clazz
+                .getConstructor(
+                        CatalogManager.class,
+                        ModuleManager.class,
+                        FunctionCatalog.class,
+                        TableConfig.class,
+                        org.apache.flink.streaming.api.scala.StreamExecutionEnvironment.class,
+                        Planner.class,
+                        Executor.class,
+                        boolean.class,
+                        ClassLoader.class);
+        return (TableEnvironment) constructor.newInstance(catalogManager,
+                moduleManager,
+                blinkFunctionCatalog,
+                tblConfig,
+                senv,
+                planner,
+                executor,
+                settings.isStreamingMode(),
+                classLoader);
+      }
     } catch (Exception e) {
       throw new TableException("Fail to createScalaBlinkStreamTableEnvironment", e);
     }
   }
 
-  public TableEnvironment createJavaBlinkStreamTableEnvironment(EnvironmentSettings settings) {
+  public TableEnvironment createJavaBlinkStreamTableEnvironment(EnvironmentSettings settings, ClassLoader classLoader) {
 
     try {
       Map<String, String> executorProperties = settings.toExecutorProperties();
@@ -284,31 +356,55 @@ public class TableEnvFactory {
         clazz = Class
                 .forName("org.apache.flink.table.api.bridge.java.internal.StreamTableEnvironmentImpl");
       }
-      Constructor constructor = clazz
-              .getConstructor(
-                      CatalogManager.class,
-                      ModuleManager.class,
-                      FunctionCatalog.class,
-                      TableConfig.class,
-                      org.apache.flink.streaming.api.environment.StreamExecutionEnvironment.class,
-                      Planner.class,
-                      Executor.class,
-                      boolean.class);
-      return (TableEnvironment) constructor.newInstance(catalogManager,
-              moduleManager,
-              blinkFunctionCatalog,
-              tblConfig,
-              senv.getJavaEnv(),
-              planner,
-              executor,
-              settings.isStreamingMode());
+      try {
+        Constructor constructor = clazz
+                .getConstructor(
+                        CatalogManager.class,
+                        ModuleManager.class,
+                        FunctionCatalog.class,
+                        TableConfig.class,
+                        org.apache.flink.streaming.api.environment.StreamExecutionEnvironment.class,
+                        Planner.class,
+                        Executor.class,
+                        boolean.class);
+        return (TableEnvironment) constructor.newInstance(catalogManager,
+                moduleManager,
+                blinkFunctionCatalog,
+                tblConfig,
+                senv.getJavaEnv(),
+                planner,
+                executor,
+                settings.isStreamingMode());
+      } catch (NoSuchMethodException e) {
+        // Flink 1.11.1 change the constructor signature, FLINK-18419
+        Constructor constructor = clazz
+                .getConstructor(
+                        CatalogManager.class,
+                        ModuleManager.class,
+                        FunctionCatalog.class,
+                        TableConfig.class,
+                        org.apache.flink.streaming.api.environment.StreamExecutionEnvironment.class,
+                        Planner.class,
+                        Executor.class,
+                        boolean.class,
+                        ClassLoader.class);
+        return (TableEnvironment) constructor.newInstance(catalogManager,
+                moduleManager,
+                blinkFunctionCatalog,
+                tblConfig,
+                senv.getJavaEnv(),
+                planner,
+                executor,
+                settings.isStreamingMode(),
+                classLoader);
+      }
     } catch (Exception e) {
       throw new TableException("Fail to createJavaBlinkStreamTableEnvironment", e);
     }
   }
 
   public TableEnvironment createJavaBlinkBatchTableEnvironment(
-          EnvironmentSettings settings) {
+          EnvironmentSettings settings, ClassLoader classLoader) {
     try {
       final Map<String, String> executorProperties = settings.toExecutorProperties();
       executor = lookupExecutor(executorProperties, senv.getJavaEnv());
@@ -324,24 +420,48 @@ public class TableEnvFactory {
         clazz = Class
                 .forName("org.apache.flink.table.api.bridge.java.internal.StreamTableEnvironmentImpl");
       }
-      Constructor constructor = clazz.getConstructor(
-                      CatalogManager.class,
-                      ModuleManager.class,
-                      FunctionCatalog.class,
-                      TableConfig.class,
-                      StreamExecutionEnvironment.class,
-                      Planner.class,
-                      Executor.class,
-                      boolean.class);
-      return (TableEnvironment) constructor.newInstance(
-              catalogManager,
-              moduleManager,
-              blinkFunctionCatalog,
-              tblConfig,
-              senv.getJavaEnv(),
-              planner,
-              executor,
-              settings.isStreamingMode());
+      try {
+        Constructor constructor = clazz.getConstructor(
+                CatalogManager.class,
+                ModuleManager.class,
+                FunctionCatalog.class,
+                TableConfig.class,
+                StreamExecutionEnvironment.class,
+                Planner.class,
+                Executor.class,
+                boolean.class);
+        return (TableEnvironment) constructor.newInstance(
+                catalogManager,
+                moduleManager,
+                blinkFunctionCatalog,
+                tblConfig,
+                senv.getJavaEnv(),
+                planner,
+                executor,
+                settings.isStreamingMode());
+      } catch (NoSuchMethodException e) {
+        // Flink 1.11.1 change the constructor signature, FLINK-18419
+        Constructor constructor = clazz.getConstructor(
+                CatalogManager.class,
+                ModuleManager.class,
+                FunctionCatalog.class,
+                TableConfig.class,
+                StreamExecutionEnvironment.class,
+                Planner.class,
+                Executor.class,
+                boolean.class,
+                ClassLoader.class);
+        return (TableEnvironment) constructor.newInstance(
+                catalogManager,
+                moduleManager,
+                blinkFunctionCatalog,
+                tblConfig,
+                senv.getJavaEnv(),
+                planner,
+                executor,
+                settings.isStreamingMode(),
+                classLoader);
+      }
     } catch (Exception e) {
       LOGGER.info(ExceptionUtils.getStackTrace(e));
       throw new TableException("Fail to createJavaBlinkBatchTableEnvironment", e);
