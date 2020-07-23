@@ -23,14 +23,14 @@
   <parent>
     <artifactId>zeppelin</artifactId>
     <groupId>org.apache.zeppelin</groupId>
-    <version>0.9.0-SNAPSHOT</version>
+    <version>0.9.0-preview2</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
   <groupId>org.apache.zeppelin</groupId>
   <artifactId>zeppelin-jupyter-interpreter-shaded</artifactId>
   <packaging>jar</packaging>
-  <version>0.9.0-SNAPSHOT</version>
+  <version>0.9.0-preview2</version>
   <name>Zeppelin: Jupyter Interpreter Shaded</name>
 
   <dependencies>
