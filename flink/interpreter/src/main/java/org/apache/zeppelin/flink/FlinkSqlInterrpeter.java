@@ -70,9 +70,6 @@ public abstract class FlinkSqlInterrpeter extends Interpreter {
   // all the available sql config options. see
   // https://ci.apache.org/projects/flink/flink-docs-release-1.10/dev/table/config.html
   private Map<String, ConfigOption> tableConfigOptions;
-  // represent paragraph's tableConfig
-  // paragraphId --> tableConfig
-  private Map<String, Map<String, String>> paragraphTableConfigMap = new HashMap<>();
 
   public FlinkSqlInterrpeter(Properties properties) {
     super(properties);
@@ -128,10 +125,6 @@ public abstract class FlinkSqlInterrpeter extends Interpreter {
   }
 
   private InterpreterResult runSqlList(String st, InterpreterContext context) {
-    // clear current paragraph's tableConfig before running any sql statements
-    Map<String, String> tableConfig = paragraphTableConfigMap.getOrDefault(context.getParagraphId(), new HashMap<>());
-    tableConfig.clear();
-    paragraphTableConfigMap.put(context.getParagraphId(), tableConfig);
 
     try {
       boolean runAsOne = Boolean.parseBoolean(context.getStringLocalProperty("runAsOne", "false"));
@@ -485,12 +478,6 @@ public abstract class FlinkSqlInterrpeter extends Interpreter {
   public void callSelect(String sql, InterpreterContext context) throws IOException {
     try {
       lock.lock();
-      // set table config from set statement until now.
-      Map<String, String> paragraphTableConfig = paragraphTableConfigMap.get(context.getParagraphId());
-      for (Map.Entry<String, String> entry : paragraphTableConfig.entrySet()) {
-        this.tbenv.getConfig().getConfiguration().setString(entry.getKey(), entry.getValue());
-      }
-
       callInnerSelect(sql, context);
     } finally {
       if (lock.isHeldByCurrentThread()) {
@@ -506,7 +493,7 @@ public abstract class FlinkSqlInterrpeter extends Interpreter {
       throw new IOException(key + " is not a valid table/sql config, please check link: " +
               "https://ci.apache.org/projects/flink/flink-docs-release-1.10/dev/table/config.html");
     }
-    paragraphTableConfigMap.get(context.getParagraphId()).put(key, value);
+    this.tbenv.getConfig().getConfiguration().setString(key, value);
   }
 
   public void callInsertInto(String sql,
@@ -516,13 +503,6 @@ public abstract class FlinkSqlInterrpeter extends Interpreter {
      }
      try {
        lock.lock();
-
-       // set table config from set statement until now.
-       Map<String, String> paragraphTableConfig = paragraphTableConfigMap.get(context.getParagraphId());
-       for (Map.Entry<String, String> entry : paragraphTableConfig.entrySet()) {
-         this.tbenv.getConfig().getConfiguration().setString(entry.getKey(), entry.getValue());
-       }
-
        boolean runAsOne = Boolean.parseBoolean(context.getStringLocalProperty("runAsOne", "false"));
        if (!runAsOne) {
          this.tbenv.sqlUpdate(sql);
