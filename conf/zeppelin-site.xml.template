@@ -401,6 +401,14 @@
   <description>Remote Yarn package installer url for Helium dependency loader</description>
 </property>
 
+<!--
+<property>
+  <name>zeppelin.helium.registry</name>
+  <value>helium,https://s3.amazonaws.com/helium-package/helium.json</value>
+  <description>Location of external Helium Registry</description>
+</property>
+-->
+
 <property>
   <name>zeppelin.interpreter.group.default</name>
   <value>spark</value>
