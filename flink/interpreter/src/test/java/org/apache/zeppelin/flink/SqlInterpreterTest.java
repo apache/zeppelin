@@ -482,6 +482,9 @@ public abstract class SqlInterpreterTest {
               "set table.sql-dialect=hive", context);
       assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
 
+      sqlInterpreter.interpret("create table test_hive_table(a string, b int)\n" +
+              "partitioned by (dt string)", context);
+      assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
     } else {
       // Flink1.10 doesn't support set table.sql-dialet which is introduced in flink 1.11
       InterpreterContext context = getInterpreterContext();
