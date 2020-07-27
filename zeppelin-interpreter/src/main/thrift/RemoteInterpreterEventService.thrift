@@ -26,6 +26,11 @@ struct RegisterInfo {
   3: string interpreterGroupId
 }
 
+struct WebUrlInfo {
+  1: string interpreterGroupId,
+  2: string weburl
+}
+
 struct OutputAppendEvent {
   1: string noteId,
   2: string paragraphId,
@@ -99,6 +104,7 @@ exception ServiceException{
 
 service RemoteInterpreterEventService {
   void registerInterpreterProcess(1: RegisterInfo registerInfo);
+
   void appendOutput(1: OutputAppendEvent event);
   void updateOutput(1: OutputUpdateEvent event);
   void updateAllOutput(1: OutputUpdateAllEvent event);
@@ -115,6 +121,7 @@ service RemoteInterpreterEventService {
   void updateAngularObject(1: string intpGroupId, 2: string json);
   void removeAngularObject(1: string intpGroupId, 2: string noteId, 3: string paragraphId, 4: string name);
 
+  void sendWebUrl(1: WebUrlInfo weburlInfo);
   void sendParagraphInfo(1: string intpGroupId, 2: string json);
 
   list<string> getAllResources(1: string intpGroupId);
