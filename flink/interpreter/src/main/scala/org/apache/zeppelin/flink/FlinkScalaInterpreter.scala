@@ -275,6 +275,9 @@ class FlinkScalaInterpreter(val properties: Properties) {
       }
 
       LOGGER.info(s"\nConnecting to Flink cluster: " + this.jmWebUrl)
+      if (InterpreterContext.get() != null) {
+        InterpreterContext.get().getIntpEventClient.sendWebUrlInfo(this.jmWebUrl)
+      }
       LOGGER.info("externalJars: " +
         config.externalJars.getOrElse(Array.empty[String]).mkString(":"))
       val classLoader = Thread.currentThread().getContextClassLoader

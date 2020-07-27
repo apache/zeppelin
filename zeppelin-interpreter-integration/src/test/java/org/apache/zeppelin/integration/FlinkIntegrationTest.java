@@ -46,6 +46,7 @@ import java.util.EnumSet;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 public abstract class FlinkIntegrationTest {
@@ -105,6 +106,11 @@ public abstract class FlinkIntegrationTest {
 
     interpreterResult = flinkInterpreter.interpret("val data = senv.fromElements(1, 2, 3)\ndata.print()", context);
     assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
+
+    // check spark weburl in zeppelin-server side
+    InterpreterSetting flinkInterpreterSetting = interpreterSettingManager.getByName("flink");
+    assertEquals(1, flinkInterpreterSetting.getAllInterpreterGroups().size());
+    assertNotNull(flinkInterpreterSetting.getAllInterpreterGroups().get(0).getWebUrl());
   }
 
   @Test

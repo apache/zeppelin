@@ -44,6 +44,7 @@ import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterResultMessage;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService;
 import org.apache.zeppelin.interpreter.thrift.RunParagraphsEvent;
 import org.apache.zeppelin.interpreter.thrift.ServiceException;
+import org.apache.zeppelin.interpreter.thrift.WebUrlInfo;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.resource.RemoteResource;
 import org.apache.zeppelin.resource.Resource;
@@ -170,6 +171,17 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
     LOGGER.info("Register interpreter process: {}:{}, {}",
             registerInfo.getHost(), registerInfo.getPort(), registerInfo.getInterpreterGroupId());
     interpreterProcess.processStarted(registerInfo.port, registerInfo.host);
+  }
+
+  @Override
+  public void sendWebUrl(WebUrlInfo weburlInfo) throws TException {
+    InterpreterGroup interpreterGroup =
+            interpreterSettingManager.getInterpreterGroupById(weburlInfo.getInterpreterGroupId());
+    if (interpreterGroup == null) {
+      LOGGER.warn("No such interpreterGroup: " + weburlInfo.getInterpreterGroupId());
+      return;
+    }
+    interpreterGroup.setWebUrl(weburlInfo.getWeburl());
   }
 
   @Override
