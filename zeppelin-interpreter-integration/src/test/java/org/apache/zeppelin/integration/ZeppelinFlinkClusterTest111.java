@@ -24,7 +24,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @RunWith(value = Parameterized.class)
-public class FlinkIntegrationTest111 extends FlinkIntegrationTest {
+public class ZeppelinFlinkClusterTest111 extends ZeppelinFlinkClusterTest {
 
   @Parameterized.Parameters
   public static List<Object[]> data() {
@@ -33,7 +33,7 @@ public class FlinkIntegrationTest111 extends FlinkIntegrationTest {
     });
   }
 
-  public FlinkIntegrationTest111(String flinkVersion) {
+  public ZeppelinFlinkClusterTest111(String flinkVersion) throws Exception {
     super(flinkVersion);
   }
 }

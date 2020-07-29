@@ -38,6 +38,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class JobManager {
 
   private static Logger LOGGER = LoggerFactory.getLogger(JobManager.class);
+  public static final String LATEST_CHECKPOINT_PATH = "latest_checkpoint_path";
+  public static final String SAVEPOINT_PATH = "savepoint_path";
+  public static final String RESUME_FROM_SAVEPOINT = "resumeFromSavePoint";
+  public static final String RESUME_FROM_CHECKPOINT = "resumeFromLatestCheckPoint";
+  public static final String SAVEPOINT_DIR = "savePointDir";
+
 
   private Map<String, JobClient> jobs = new HashMap<>();
   private ConcurrentHashMap<JobID, FlinkJobProgressPoller> jobProgressPollerMap =
@@ -129,15 +135,18 @@ public class JobManager {
 
     boolean cancelled = false;
     try {
-      String savepointDir = context.getLocalProperties().get("savepointDir");
-      if (StringUtils.isBlank(savepointDir)) {
+      String savePointDir = context.getLocalProperties().get(SAVEPOINT_DIR);
+      if (StringUtils.isBlank(savePointDir)) {
         LOGGER.info("Trying to cancel job of paragraph {}", context.getParagraphId());
         jobClient.cancel();
       } else {
         LOGGER.info("Trying to stop job of paragraph {} with save point dir: {}",
-                context.getParagraphId(), savepointDir);
-        String savePointPath = jobClient.stopWithSavepoint(true, savepointDir).get();
-        z.angularBind(context.getParagraphId() + "_savepointpath", savePointPath);
+                context.getParagraphId(), savePointDir);
+        String savePointPath = jobClient.stopWithSavepoint(true, savePointDir).get();
+        Map<String, String> config = new HashMap<>();
+        config.put(SAVEPOINT_PATH, savePointPath);
+        context.getIntpEventClient().updateParagraphConfig(
+                context.getNoteId(), context.getParagraphId(), config);
         LOGGER.info("Job {} of paragraph {} is stopped with save point path: {}",
                 jobClient.getJobID(), context.getParagraphId(), savePointPath);
       }
@@ -230,8 +239,28 @@ public class JobManager {
                     context.getNoteId(),
                     context.getParagraphId());
           }
+
+          // fetch checkpoints info and save the latest checkpoint into paragraph's config.
+          rootNode = Unirest.get(flinkWebUrl + "/jobs/" + jobId.toString() + "/checkpoints")
+                  .asJson().getBody();
+          if (rootNode.getObject().has("latest")) {
+            JSONObject latestObject = rootNode.getObject().getJSONObject("latest");
+            if (latestObject.has("completed") && latestObject.get("completed") instanceof JSONObject) {
+              JSONObject completedObject = latestObject.getJSONObject("completed");
+              if (completedObject.has("external_path")) {
+                String checkpointPath = completedObject.getString("external_path");
+                LOGGER.debug("Latest checkpoint path: {}", checkpointPath);
+                if (!StringUtils.isBlank(checkpointPath)) {
+                  Map<String, String> config = new HashMap<>();
+                  config.put(LATEST_CHECKPOINT_PATH, checkpointPath);
+                  context.getIntpEventClient().updateParagraphConfig(
+                          context.getNoteId(), context.getParagraphId(), config);
+                }
+              }
+            }
+          }
         } catch (Exception e) {
-          LOGGER.error("Fail to poll flink job progress via rest api, rest api: " + rootNode, e);
+          LOGGER.error("Fail to poll flink job progress via rest api", e);
         }
       }
     }

@@ -123,6 +123,7 @@ service RemoteInterpreterEventService {
 
   void sendWebUrl(1: WebUrlInfo weburlInfo);
   void sendParagraphInfo(1: string intpGroupId, 2: string json);
+  void updateParagraphConfig(1: string noteId, 2: string paragraphId, 3: map<string, string> config);
 
   list<string> getAllResources(1: string intpGroupId);
   binary getResource(1: string resourceIdJson);
