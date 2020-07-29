@@ -59,7 +59,6 @@ ENV LANG=en_US.UTF-8 \
     Z_HOME="/opt/zeppelin" \
     ZEPPELIN_ADDR="0.0.0.0" \
     ZEPPELIN_WAR_TEMPDIR="/tmp/webapps" \
-    ZEPPELIN_DEP_LOCALREPO="/tmp/local-repo"
 
 # Copy Zeppelin related files
 COPY --from=zeppelin-distribution /opt/zeppelin/zeppelin-web-${VERSION}.war ${Z_HOME}/
@@ -85,11 +84,11 @@ COPY --from=interpreter-settings /opt/zeppelin/interpreter ${Z_HOME}/interpreter
 COPY log4j.properties ${Z_HOME}/conf/
 COPY --from=downloader /sbin/tini /sbin/tini
 
-RUN mkdir -p "${Z_HOME}/logs" "${Z_HOME}/run" && \
+RUN mkdir -p "${Z_HOME}/logs" "${Z_HOME}/run" "${Z_HOME}/notebook" "${Z_HOME}/local-repo" && \
      # Allow process to edit /etc/passwd, to create a user entry for zeppelin
     chgrp root /etc/passwd && chmod ug+rw /etc/passwd && \
     # Give access to some specific folders
-    chmod -R 775 "${Z_HOME}/logs" "${Z_HOME}/run" "${Z_HOME}/notebook" "${Z_HOME}/conf"
+    chmod -R 775 "${Z_HOME}/logs" "${Z_HOME}/run" "${Z_HOME}/conf" "${Z_HOME}/notebook" "${Z_HOME}/local-repo"
 
 USER 1000
 
