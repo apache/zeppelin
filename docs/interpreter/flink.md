@@ -452,14 +452,19 @@ In this section, we will list and explain all the supported local properties in 
     <td>Used in %flink.ssql & %flink.bsql to specify the flink sql job max parallelism in case you want to change parallelism later. For more details, refer this [link](https://ci.apache.org/projects/flink/flink-docs-release-1.10/dev/parallel.html#setting-the-maximum-parallelism) </td>
   </tr>
   <tr>
-    <td>savepointDir</td>
+    <td>savePointDir</td>
     <td></td>
     <td>If you specify it, then when you cancel your flink job in Zeppelin, it would also do savepoint and store state in this directory. And when you resume your job, it would resume from this savepoint.</td>
   </tr>
   <tr>
-    <td>savepointPath</td>
+    <td>resumeFromSavePoint</td>
     <td></td>
-    <td>If you specify it, then when you resume your job, it would resume from this savepointPath .</td>
+    <td>Resume flink job from savepoint if you specify savePointDir.</td>
+  </tr>
+  <tr>
+    <td>resumeFromLatestCheckPoint</td>
+    <td></td>
+    <td>Resume flink job from latest checkpoint if you enable checkpoint.</td>
   </tr>
   <tr>
     <td>runAsOne</td>
