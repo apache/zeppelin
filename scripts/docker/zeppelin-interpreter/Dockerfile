@@ -46,8 +46,8 @@ COPY --from=zeppelin-distribution /opt/zeppelin/interpreter ${Z_HOME}/interprete
 
 
 # Decide: Install conda to manage python and R packages. Maybe adjust the packages in pip_packages.txt or conda_packages.txt
-ARG miniconda_version="py37_4.8.2"
-ARG miniconda_sha256="957d2f0f0701c3d1335e3b39f235d197837ad69a944fa6f5d8ad2c686b69df3b"
+ARG miniconda_version="py38_4.8.3"
+ARG miniconda_sha256="879457af6a0bf5b34b48c12de31d4df0ee2f06a8e68768e5758c3293b2daf688"
 # Install python and R packages via conda
 COPY conda_packages.txt /conda_packages.txt
 # Some python packages are not available via conda, so we are using pip
