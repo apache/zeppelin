@@ -58,7 +58,7 @@ ENV LANG=en_US.UTF-8 \
     VERSION="${version}" \
     Z_HOME="/opt/zeppelin" \
     ZEPPELIN_ADDR="0.0.0.0" \
-    ZEPPELIN_WAR_TEMPDIR="/tmp/webapps" \
+    ZEPPELIN_WAR_TEMPDIR="/tmp/webapps"
 
 # Copy Zeppelin related files
 COPY --from=zeppelin-distribution /opt/zeppelin/zeppelin-web-${VERSION}.war ${Z_HOME}/
