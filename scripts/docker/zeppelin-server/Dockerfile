@@ -15,21 +15,6 @@
 
 FROM zeppelin-distribution:latest AS zeppelin-distribution
 
-FROM alpine:3.11 AS downloader
-
-ENV TINI_VERSION=v0.19.0
-
-RUN set -ex && \
-    /sbin/apk add --no-cache wget gnupg
-    # Install tini
-RUN set -ex && \
-    /usr/bin/wget -q https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini-static-amd64 -O /sbin/tini && \
-    /usr/bin/wget -q https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini-static-amd64.asc -O /tmp/tini.asc && \
-    /usr/bin/gpg --batch --keyserver keyserver.ubuntu.com --recv-keys 595E85A6B1B4779EA4DAAEC70B588DFF0527A9B7 && \
-    /usr/bin/gpg --batch --verify /tmp/tini.asc /sbin/tini && \
-    /bin/chmod +x /sbin/tini && \
-    /bin/rm -v /tmp/tini.asc
-
 # Prepare all interpreter settings for Zeppelin server
 # This steps are not needed, if you you add only specific interpreters settings to your image
 FROM alpine:3.11 AS interpreter-settings
@@ -44,7 +29,7 @@ LABEL maintainer="Apache Software Foundation <dev@zeppelin.apache.org>"
 RUN set -ex && \
     apt-get -y update && \
     # Install language and other base packages
-    DEBIAN_FRONTEND=noninteractive apt-get install -y language-pack-en openjdk-8-jre-headless wget && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y language-pack-en openjdk-8-jre-headless tini wget && \
     # Cleanup
     rm -rf /var/lib/apt/lists/* && \
     apt-get autoclean && \
@@ -82,7 +67,6 @@ COPY --from=interpreter-settings /opt/zeppelin/interpreter ${Z_HOME}/interpreter
 # COPY --from=zeppelin-distribution /opt/zeppelin/interpreter/md/interpreter-setting.json ${Z_HOME}/interpreter/md/interpreter-setting.json
 
 COPY log4j.properties ${Z_HOME}/conf/
-COPY --from=downloader /sbin/tini /sbin/tini
 
 RUN mkdir -p "${Z_HOME}/logs" "${Z_HOME}/run" "${Z_HOME}/notebook" "${Z_HOME}/local-repo" && \
      # Allow process to edit /etc/passwd, to create a user entry for zeppelin
@@ -94,6 +78,6 @@ USER 1000
 
 EXPOSE 8080
 
-ENTRYPOINT [ "/sbin/tini", "--" ]
+ENTRYPOINT [ "/usr/bin/tini", "--" ]
 WORKDIR ${Z_HOME}
 CMD ["bin/zeppelin.sh"]
