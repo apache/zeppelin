@@ -45,15 +45,13 @@ COPY --from=zeppelin-distribution /opt/zeppelin/interpreter ${Z_HOME}/interprete
 ### COPY --from=zeppelin-distribution /opt/zeppelin/interpreter/${interpreter_name}  ${Z_HOME}/interpreter/${interpreter_name}
 
 
-# Decide: Install conda to manage python and R packages
+# Decide: Install conda to manage python and R packages. Maybe adjust the packages in pip_packages.txt or conda_packages.txt
 ARG miniconda_version="py37_4.8.2"
 ARG miniconda_sha256="957d2f0f0701c3d1335e3b39f235d197837ad69a944fa6f5d8ad2c686b69df3b"
-# Install python packages via conda
-COPY python_conda_packages.txt /python_conda_packages.txt
+# Install python and R packages via conda
+COPY conda_packages.txt /conda_packages.txt
 # Some python packages are not available via conda, so we are using pip
 COPY pip_packages.txt /pip_packages.txt
-# Install R packages via condo
-COPY r_conda_packages.txt /r_conda_packages.txt
 RUN set -ex && \
     wget -nv https://repo.anaconda.com/miniconda/Miniconda3-${miniconda_version}-Linux-x86_64.sh -O miniconda.sh && \
     echo "${miniconda_sha256} miniconda.sh" > anaconda.sha256 && \
@@ -63,9 +61,8 @@ RUN set -ex && \
     conda config --set always_yes yes --set changeps1 no && \
     conda info -a && \
     conda config --add channels conda-forge && \
-    conda install -y --quiet --file /python_conda_packages.txt && \
+    conda install -y --quiet --file /conda_packages.txt && \
     pip install -q -r /pip_packages.txt  && \
-    conda install -y --quiet --file /r_conda_packages.txt && \
     # Cleanup
     rm -v miniconda.sh anaconda.sha256  && \
     # Cleanup based on https://github.com/ContinuumIO/docker-images/commit/cac3352bf21a26fa0b97925b578fb24a0fe8c383

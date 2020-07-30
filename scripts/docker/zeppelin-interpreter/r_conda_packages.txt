@@ -1,6 +1,0 @@
-r-evaluate
-r-base64enc
-r-knitr
-r-ggplot2
-r-shiny
-r-googlevis
