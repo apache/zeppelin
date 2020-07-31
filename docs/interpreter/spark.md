@@ -115,6 +115,11 @@ You can also set other Spark properties which are not listed in the table. For a
     <td>Executor memory per worker instance. <br/> e.g. 512m, 32g</td>
   </tr>
   <tr>
+    <td>spark.executor.instances</td>
+    <td>2</td>
+    <td>The number of executors for static allocation</td>
+  </tr>
+  <tr>
     <td>spark.files</td>
     <td></td>
     <td>Comma-separated list of files to be placed in the working directory of each executor. Globs are allowed.</td>
