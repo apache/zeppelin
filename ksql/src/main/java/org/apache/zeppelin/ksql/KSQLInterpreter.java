@@ -142,10 +142,10 @@ public class KSQLInterpreter extends Interpreter {
 
   @Override
   public void cancel(InterpreterContext context) throws InterpreterException {
-    logger.info("Trying to cancel paragraphId {}", context.getParagraphId());
+    LOGGER.info("Trying to cancel paragraphId {}", context.getParagraphId());
     try {
       ksqlRestService.closeClient(context.getParagraphId());
-      logger.info("Removed");
+      LOGGER.info("Removed");
     } catch (IOException e) {
       throw new RuntimeException(e);
     }

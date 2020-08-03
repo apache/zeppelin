@@ -129,7 +129,7 @@ import static org.apache.zeppelin.cluster.meta.ClusterMetaType.INTP_PROCESS_META
  * 3. Cluster monitoring
  */
 public abstract class ClusterManager {
-  private static Logger LOGGER = LoggerFactory.getLogger(ClusterManager.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(ClusterManager.class);
 
   public ZeppelinConfiguration zConf;
 

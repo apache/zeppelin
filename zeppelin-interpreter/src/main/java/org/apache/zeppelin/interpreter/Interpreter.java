@@ -177,7 +177,7 @@ public abstract class Interpreter {
     return SchedulerFactory.singleton().createOrGetFIFOScheduler("interpreter_" + this.hashCode());
   }
 
-  public static Logger logger = LoggerFactory.getLogger(Interpreter.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(Interpreter.class);
   private InterpreterGroup interpreterGroup;
   private URL[] classloaderUrls;
   protected Properties properties;
@@ -202,14 +202,14 @@ public abstract class Interpreter {
 
   @ZeppelinApi
   public String getProperty(String key) {
-    logger.debug("key: {}, value: {}", key, getProperties().getProperty(key));
+    LOGGER.debug("key: {}, value: {}", key, getProperties().getProperty(key));
 
     return getProperties().getProperty(key);
   }
 
   @ZeppelinApi
   public String getProperty(String key, String defaultValue) {
-    logger.debug("key: {}, value: {}", key, getProperties().getProperty(key, defaultValue));
+    LOGGER.debug("key: {}, value: {}", key, getProperties().getProperty(key, defaultValue));
 
     return getProperties().getProperty(key, defaultValue);
   }
@@ -375,20 +375,20 @@ public abstract class Interpreter {
     if (interpreterContext != null) {
       String markerTemplate = "#\\{%s\\}";
       List<String> skipFields = Arrays.asList("paragraphTitle", "paragraphId", "paragraphText");
-      List typesToProcess = Arrays.asList(String.class, Double.class, Float.class, Short.class,
+      List<Class<?>> typesToProcess = Arrays.asList(String.class, Double.class, Float.class, Short.class,
           Byte.class, Character.class, Boolean.class, Integer.class, Long.class);
       for (String key : properties.stringPropertyNames()) {
         String p = properties.getProperty(key);
         if (StringUtils.isNotEmpty(p)) {
           for (Field field : InterpreterContext.class.getDeclaredFields()) {
-            Class clazz = field.getType();
+            Class<?> clazz = field.getType();
             if (!skipFields.contains(field.getName()) && (typesToProcess.contains(clazz)
                 || clazz.isPrimitive())) {
               Object value = null;
               try {
                 value = FieldUtils.readField(field, interpreterContext, true);
               } catch (Exception e) {
-                logger.error("Cannot read value of field {0}", field.getName());
+                LOGGER.error("Cannot read value of field {}", field.getName());
               }
               p = p.replaceAll(String.format(markerTemplate, field.getName()),
                   value != null ? value.toString() : StringUtils.EMPTY);
