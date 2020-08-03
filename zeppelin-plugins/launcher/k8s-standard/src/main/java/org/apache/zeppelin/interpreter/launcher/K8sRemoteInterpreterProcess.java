@@ -38,7 +38,7 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
   private final String interpreterGroupId;
   private final String interpreterGroupName;
   private final String interpreterSettingName;
-  private final File specTempaltes;
+  private final File specTemplates;
   private final String containerImage;
   private final Properties properties;
   private final Map<String, String> envs;
@@ -54,8 +54,8 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
   private AtomicBoolean started = new AtomicBoolean(false);
   private Random rand = new Random();
 
-  private static final String SPARK_DRIVER_MEMROY = "spark.driver.memory";
-  private static final String SPARK_DRIVER_MEMROY_OVERHEAD = "spark.driver.memoryOverhead";
+  private static final String SPARK_DRIVER_MEMORY = "spark.driver.memory";
+  private static final String SPARK_DRIVER_MEMORY_OVERHEAD = "spark.driver.memoryOverhead";
   private static final String SPARK_DRIVER_CORES = "spark.driver.cores";
   private static final String ENV_SERVICE_DOMAIN = "SERVICE_DOMAIN";
 
@@ -79,7 +79,7 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
     super(connectTimeout, intpEventServerHost, intpEventServerPort);
     this.client = client;
     this.namespace = namespace;
-    this.specTempaltes = specTemplates;
+    this.specTemplates = specTemplates;
     this.containerImage = containerImage;
     this.interpreterGroupId = interpreterGroupId;
     this.interpreterGroupName = interpreterGroupName;
@@ -124,7 +124,7 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
 
     Properties templateProperties = getTemplateBindings(userName);
     // create new pod
-    apply(specTempaltes, false, templateProperties);
+    apply(specTemplates, false, templateProperties);
 
     if (portForward) {
       podPort = RemoteInterpreterUtils.findRandomAvailablePortOnAllLocalInterfaces();
@@ -173,7 +173,7 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
     Properties templateProperties = getTemplateBindings(null);
     // delete pod
     try {
-      apply(specTempaltes, true, templateProperties);
+      apply(specTemplates, true, templateProperties);
     } catch (IOException e) {
       LOGGER.info("Error on removing interpreter pod", e);
     }
@@ -303,13 +303,13 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
               envs.get(ENV_SERVICE_DOMAIN)
           ));
       // Resources of Interpreter Pod
-      if (properties.containsKey(SPARK_DRIVER_MEMROY)) {
+      if (properties.containsKey(SPARK_DRIVER_MEMORY)) {
         String memory;
-        if (properties.containsKey(SPARK_DRIVER_MEMROY_OVERHEAD)) {
-          memory = K8sUtils.calculateSparkMemory(properties.getProperty(SPARK_DRIVER_MEMROY),
-                                                 properties.getProperty(SPARK_DRIVER_MEMROY_OVERHEAD));
+        if (properties.containsKey(SPARK_DRIVER_MEMORY_OVERHEAD)) {
+          memory = K8sUtils.calculateSparkMemory(properties.getProperty(SPARK_DRIVER_MEMORY),
+                                                 properties.getProperty(SPARK_DRIVER_MEMORY_OVERHEAD));
         } else {
-          memory = K8sUtils.calculateMemoryWithDefaultOverhead(properties.getProperty(SPARK_DRIVER_MEMROY));
+          memory = K8sUtils.calculateMemoryWithDefaultOverhead(properties.getProperty(SPARK_DRIVER_MEMORY));
         }
         k8sProperties.put("zeppelin.k8s.interpreter.memory", memory);
       }
@@ -359,8 +359,8 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
 
     options.append(" --master k8s://https://kubernetes.default.svc");
     options.append(" --deploy-mode client");
-    if (properties.containsKey(SPARK_DRIVER_MEMROY)) {
-      options.append(" --driver-memory " + properties.get(SPARK_DRIVER_MEMROY));
+    if (properties.containsKey(SPARK_DRIVER_MEMORY)) {
+      options.append(" --driver-memory " + properties.get(SPARK_DRIVER_MEMORY));
     }
     if (isUserImpersonatedForSpark && !StringUtils.containsIgnoreCase(userName, "anonymous") && isSpark()) {
       options.append(" --proxy-user " + userName);
