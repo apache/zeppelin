@@ -36,8 +36,8 @@ import java.util.List;
  */
 public class InterpreterOutput extends OutputStream {
   Logger logger = LoggerFactory.getLogger(InterpreterOutput.class);
-  private final int NEW_LINE_CHAR = '\n';
-  private final int LINE_FEED_CHAR = '\r';
+  private static final int NEW_LINE_CHAR = '\n';
+  private static final int LINE_FEED_CHAR = '\r';
 
   private List<InterpreterResultMessageOutput> resultMessageOutputs = new LinkedList<>();
   private InterpreterResultMessageOutput currentOut;

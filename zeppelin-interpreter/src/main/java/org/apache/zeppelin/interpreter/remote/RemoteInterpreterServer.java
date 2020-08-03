@@ -111,7 +111,7 @@ import static org.apache.zeppelin.cluster.meta.ClusterMetaType.INTP_PROCESS_META
 public class RemoteInterpreterServer extends Thread
     implements RemoteInterpreterService.Iface {
 
-  private static Logger LOGGER = LoggerFactory.getLogger(RemoteInterpreterServer.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(RemoteInterpreterServer.class);
 
   private String interpreterGroupId;
   private InterpreterGroup interpreterGroup;
@@ -135,7 +135,7 @@ public class RemoteInterpreterServer extends Thread
 
   private Map<String, Object> remoteWorksResponsePool;
 
-  private final long DEFAULT_SHUTDOWN_TIMEOUT = 2000;
+  private static final long DEFAULT_SHUTDOWN_TIMEOUT = 2000;
 
   // Hold information for manual progress update
   private ConcurrentMap<String, Integer> progressMap = new ConcurrentHashMap<>();
@@ -191,7 +191,7 @@ public class RemoteInterpreterServer extends Thread
       serverTransport = RemoteInterpreterUtils.createTServerSocket(portRange);
       this.port = serverTransport.getServerSocket().getLocalPort();
       this.host = RemoteInterpreterUtils.findAvailableHostAddress();
-      LOGGER.info("Launching ThriftServer at " + this.host + ":" + this.port);
+      LOGGER.info("Launching ThriftServer at {}:{}", this.host, this.port);
     }
     server = new TThreadPoolServer(
         new TThreadPoolServer.Args(serverTransport).processor(processor));
@@ -509,7 +509,7 @@ public class RemoteInterpreterServer extends Thread
 
   @Override
   public void open(String sessionId, String className) throws TException {
-    LOGGER.info(String.format("Open Interpreter %s for session %s ", className, sessionId));
+    LOGGER.info("Open Interpreter {} for session {}", className, sessionId);
     Interpreter intp = getInterpreter(sessionId, className);
     try {
       intp.open();
@@ -600,8 +600,8 @@ public class RemoteInterpreterServer extends Thread
     boolean isRecover = Boolean.parseBoolean(
             context.getLocalProperties().getOrDefault("isRecover", "false"));
     if (isRecover) {
-      LOGGER.info("Recovering paragraph: " + context.getParagraphId() + " of note: "
-              + context.getNoteId());
+      LOGGER.info("Recovering paragraph: {} of note: {}",
+              context.getParagraphId(), context.getNoteId());
       interpretJob = runningJobs.get(context.getParagraphId());
       if (interpretJob == null) {
         InterpreterResult result = new InterpreterResult(Code.ERROR, "Job is finished, unable to recover it");
@@ -772,7 +772,7 @@ public class RemoteInterpreterServer extends Thread
           //     global_post_hook
           processInterpreterHooks(context.getNoteId());
           processInterpreterHooks(null);
-          LOGGER.debug("Script after hooks: " + script);
+          LOGGER.debug("Script after hooks: {}", script);
           result = interpreter.interpret(script, context);
         }
 
@@ -792,7 +792,7 @@ public class RemoteInterpreterServer extends Thread
           if (msg.getType() == InterpreterResult.Type.IMG) {
             LOGGER.debug("InterpreterResultMessage: IMAGE_DATA");
           } else {
-            LOGGER.debug("InterpreterResultMessage: " + msg.toString());
+            LOGGER.debug("InterpreterResultMessage: {}", msg);
           }
           stringResult.add(msg.getData());
         }
@@ -847,7 +847,7 @@ public class RemoteInterpreterServer extends Thread
         try {
           intp.cancel(convert(interpreterContext, null));
         } catch (InterpreterException e) {
-          LOGGER.error("Fail to cancel paragraph: " + interpreterContext.getParagraphId());
+          LOGGER.error("Fail to cancel paragraph: {}", interpreterContext.getParagraphId());
         }
       });
       thread.start();
@@ -864,8 +864,7 @@ public class RemoteInterpreterServer extends Thread
     } else {
       Interpreter intp = getInterpreter(sessionId, className);
       if (intp == null) {
-        throw new TException("No interpreter {} existed for session {}".format(
-            className, sessionId));
+        throw new TException("No interpreter " + className + " existed for session " + sessionId);
       }
       try {
         return intp.getProgress(convert(interpreterContext, null));
@@ -1253,7 +1252,7 @@ public class RemoteInterpreterServer extends Thread
       String applicationInstanceId, String packageInfo, String noteId, String paragraphId)
       throws TException {
     if (runningApplications.containsKey(applicationInstanceId)) {
-      LOGGER.warn("Application instance {} is already running");
+      LOGGER.warn("Application instance {} is already running", applicationInstanceId);
       return new RemoteApplicationResult(true, "");
     }
     HeliumPackage pkgInfo = HeliumPackage.fromJson(packageInfo);

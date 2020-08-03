@@ -151,7 +151,7 @@ public class RInterpreter extends AbstractInterpreter {
         return new InterpreterResult(InterpreterResult.Code.SUCCESS, "");
       }
     } catch (Exception e) {
-      logger.error("Exception while connecting to R", e);
+      LOGGER.error("Exception while connecting to R", e);
       return new InterpreterResult(InterpreterResult.Code.ERROR, e.getMessage());
     }
   }

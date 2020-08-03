@@ -798,12 +798,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
   }
 
   public boolean isClusterMode() {
-    String clusterAddr = getString(ConfVars.ZEPPELIN_CLUSTER_ADDR);
-    if (StringUtils.isEmpty(clusterAddr)) {
-      return false;
-    }
-
-    return true;
+    return !StringUtils.isEmpty(getString(ConfVars.ZEPPELIN_CLUSTER_ADDR));
   }
 
   public int getClusterHeartbeatInterval() {
