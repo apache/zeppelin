@@ -20,12 +20,11 @@ package org.apache.zeppelin.interpreter.remote;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.yarn.api.records.FinalApplicationStatus;
 import org.apache.hadoop.yarn.client.api.AMRMClient;
+import org.apache.hadoop.yarn.client.api.AMRMClient.ContainerRequest;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.apache.hadoop.yarn.exceptions.YarnException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
 
 
 /**
@@ -38,7 +37,7 @@ public class YarnUtils {
 
   private static Logger LOGGER = LoggerFactory.getLogger(YarnUtils.class);
 
-  private static AMRMClient amClient = AMRMClient.createAMRMClient();
+  private static AMRMClient<ContainerRequest> amClient = AMRMClient.createAMRMClient();
   private static Configuration conf = new YarnConfiguration();
 
   static {

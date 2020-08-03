@@ -31,11 +31,8 @@ public class CachedCompleter {
   }
 
   public boolean isExpired() {
-    if (ttlInSeconds == -1 || (ttlInSeconds > 0 &&
-        (System.currentTimeMillis() - createdAt) / 1000 > ttlInSeconds)) {
-      return true;
-    }
-    return false;
+    return (ttlInSeconds == -1 || (ttlInSeconds > 0 &&
+        (System.currentTimeMillis() - createdAt) / 1000 > ttlInSeconds));
   }
 
   public Completer getCompleter() {
