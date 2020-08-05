@@ -225,8 +225,20 @@ public class Message implements JsonSerializable {
   public String principal = "anonymous";
   public String roles = "";
 
+  // Unique id generated from client side. to identify message.
+  // When message from server is response to the client request
+  // includes the msgId in response message, client can pair request and response message.
+  // When server send message that is not response to the client request, set null;
+  public String msgId = MSG_ID_NOT_DEFINED;
+  public static String MSG_ID_NOT_DEFINED = null;
+
   public Message(OP op) {
     this.op = op;
+  }
+
+  public Message withMsgId(String msgId) {
+    this.msgId = msgId;
+    return this;
   }
 
   public Message put(String k, Object v) {
