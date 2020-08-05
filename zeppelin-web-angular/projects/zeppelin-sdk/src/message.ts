@@ -156,6 +156,10 @@ export class Message {
     ) as Observable<Record<K, MessageReceiveDataTypeMap[K]>[K]>;
   }
 
+  shortCircuit(message: WebSocketMessage<keyof MessageReceiveDataTypeMap>) {
+    this.received$.next(this.interceptReceived(message));
+  }
+
   destroy(): void {
     this.ws.complete();
     this.ws = null;
@@ -352,6 +356,16 @@ export class Message {
     paragraphConfig: ParagraphConfig,
     paragraphParams: ParagraphParams
   ): void {
+    // short circuit update status without waiting for server response
+    this.shortCircuit({
+      op: OP.PARAGRAPH_STATUS,
+      data: {
+        id: paragraphId,
+        status: "PENDING"
+      }
+    })
+
+    // send message to server
     this.send<OP.RUN_PARAGRAPH>(OP.RUN_PARAGRAPH, {
       id: paragraphId,
       title: paragraphTitle,

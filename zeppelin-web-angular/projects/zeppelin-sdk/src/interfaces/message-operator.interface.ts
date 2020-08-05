@@ -51,6 +51,14 @@ export enum OP {
   PROGRESS = 'PROGRESS',
 
   /**
+   * [short circuit]
+   * paragraph status update
+   *  @param id paragraph id
+   *  @param progress percentage progress
+   */
+  PARAGRAPH_STATUS = 'PARAGRAPH_STATUS',
+
+  /**
    * [c-s]
    * create new notebook
    */
