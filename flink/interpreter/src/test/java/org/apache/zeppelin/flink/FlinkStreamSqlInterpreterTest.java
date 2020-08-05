@@ -325,8 +325,9 @@ public class FlinkStreamSqlInterpreterTest extends SqlInterpreterTest {
     context.getLocalProperties().put("type", "update");
     context.getLocalProperties().put("parallelism", "1");
     context.getLocalProperties().put("maxParallelism", "10");
+    context.getLocalProperties().put(JobManager.RESUME_FROM_SAVEPOINT, "true");
     context.getConfig().put(JobManager.SAVEPOINT_PATH, "/invalid_savepoint");
-
+    
     result = sqlInterpreter.interpret("select url, count(1) as pv from " +
             "log group by url", context);
 
