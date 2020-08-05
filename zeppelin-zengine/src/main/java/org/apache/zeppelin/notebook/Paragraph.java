@@ -338,7 +338,6 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
         setStatus(Job.Status.FINISHED);
         return true;
       }
-      setStatus(Status.READY);
 
       if (getConfig().get("enabled") == null || (Boolean) getConfig().get("enabled")) {
         setAuthenticationInfo(getAuthenticationInfo());
