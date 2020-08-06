@@ -69,6 +69,14 @@ export abstract class ParagraphBase extends MessageListenersManager {
     }
   }
 
+  @MessageListener(OP.PARAGRAPH_STATUS)
+  onParagraphStatus(data: MessageReceiveDataTypeMap[OP.PARAGRAPH_STATUS]) {
+    if (data.id === this.paragraph.id) {
+      this.paragraph.status = data.status;
+      this.cdr.markForCheck();
+    }
+  }
+
   @MessageListener(OP.NOTE_RUNNING_STATUS)
   noteRunningStatusChange(data: MessageReceiveDataTypeMap[OP.NOTE_RUNNING_STATUS]) {
     this.isEntireNoteRunning = data.status;

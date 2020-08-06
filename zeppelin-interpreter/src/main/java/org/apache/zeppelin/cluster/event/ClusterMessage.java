@@ -26,6 +26,7 @@ import java.util.Map;
 public class ClusterMessage {
   public ClusterEvent clusterEvent;
   private Map<String, String> data = new HashMap<>();
+  private String msgId;
 
   private static Gson gson = new GsonBuilder()
       .setDateFormat("yyyy-MM-dd'T'HH:mm:ssZ")
@@ -52,6 +53,14 @@ public class ClusterMessage {
 
   public Map<String, String> getData() {
     return data;
+  }
+
+  public String getMsgId() {
+    return msgId;
+  }
+
+  public void setMsgId(String msgId) {
+    this.msgId = msgId;
   }
 
   public static ClusterMessage deserializeMessage(String msg) {
