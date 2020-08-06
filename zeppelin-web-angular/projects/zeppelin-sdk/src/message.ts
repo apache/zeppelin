@@ -10,20 +10,20 @@
  * limitations under the License.
  */
 
-import { interval, Observable, Subject, Subscription } from 'rxjs';
-import { delay, filter, map, mergeMap, retryWhen, take } from 'rxjs/operators';
-import { webSocket, WebSocketSubject } from 'rxjs/webSocket';
+import {interval, Observable, Subject, Subscription} from 'rxjs';
+import {delay, filter, map, mergeMap, retryWhen, take} from 'rxjs/operators';
+import {webSocket, WebSocketSubject} from 'rxjs/webSocket';
 
-import { Ticket } from './interfaces/message-common.interface';
+import {Ticket} from './interfaces/message-common.interface';
 import {
   MessageReceiveDataTypeMap,
   MessageSendDataTypeMap,
   MixMessageDataTypeMap
 } from './interfaces/message-data-type-map.interface';
-import { NoteConfig, PersonalizedMode, SendNote } from './interfaces/message-notebook.interface';
-import { OP } from './interfaces/message-operator.interface';
-import { ParagraphConfig, ParagraphParams, SendParagraph } from './interfaces/message-paragraph.interface';
-import { WebSocketMessage } from './interfaces/websocket-message.interface';
+import {NoteConfig, PersonalizedMode, SendNote} from './interfaces/message-notebook.interface';
+import {OP} from './interfaces/message-operator.interface';
+import {ParagraphConfig, ParagraphParams, SendParagraph} from './interfaces/message-paragraph.interface';
+import {WebSocketMessage} from './interfaces/websocket-message.interface';
 
 export type ArgumentsType<T> = T extends (...args: infer U) => void ? U : never;
 
@@ -46,6 +46,8 @@ export class Message {
   private pingIntervalSubscription = new Subscription();
   private wsUrl: string;
   private ticket: Ticket;
+  private uniqueClientId = Math.random().toString(36).substring(2, 7);
+  private lastMsgIdSeqSent = 0;
 
   constructor() {
     this.open$.subscribe(() => {
@@ -140,6 +142,7 @@ export class Message {
     const [op, data] = args;
     const message: WebSocketMessage<K> = {
       op,
+      msgId: `${this.uniqueClientId}-${++this.lastMsgIdSeqSent}`,
       data: data as MixMessageDataTypeMap[K],
       ...this.ticket
     };
@@ -152,6 +155,29 @@ export class Message {
   receive<K extends keyof MessageReceiveDataTypeMap>(op: K): Observable<Record<K, MessageReceiveDataTypeMap[K]>[K]> {
     return this.received$.pipe(
       filter(message => message.op === op),
+      filter(message => {
+        if (!message.msgId) {
+          // when msgId is not specified, it is not response to client request.
+          // always process them
+          return true;
+        }
+        const uniqueClientId = message.msgId.split('-')[0];
+        const msgIdSeqReceived = parseInt(message.msgId.split('-')[1], 10);
+        const isResponseForRequestFromThisClient = uniqueClientId === this.uniqueClientId;
+
+        if (message.op === OP.PARAGRAPH) {
+          if (isResponseForRequestFromThisClient &&
+               this.lastMsgIdSeqSent > msgIdSeqReceived
+          ) {
+            console.log('PARAPGRAPH is already updated by shortcircuit');
+            return false;
+          } else {
+            return true;
+          }
+        } else {
+          return true;
+        }
+      }),
       map(message => message.data)
     ) as Observable<Record<K, MessageReceiveDataTypeMap[K]>[K]>;
   }
