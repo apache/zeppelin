@@ -144,7 +144,7 @@ public class RemoteInterpreterServer extends Thread
   private ScheduledExecutorService resultCleanService = Executors.newSingleThreadScheduledExecutor();
 
   private boolean isTest;
-  
+
   private ZeppelinConfiguration zConf;
   // cluster manager client
   private ClusterManagerClient clusterManagerClient;

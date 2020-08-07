@@ -20,8 +20,6 @@ package org.apache.zeppelin.service;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -37,7 +35,7 @@ import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.rest.message.InterpreterInstallationRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.sonatype.aether.RepositoryException;
+import org.eclipse.aether.RepositoryException;
 
 /**
  * This class handles all of business logic for {@link org.apache.zeppelin.rest.InterpreterRestApi}
@@ -74,18 +72,6 @@ public class InterpreterService {
     String localRepoPath = conf.getInterpreterLocalRepoPath();
 
     final DependencyResolver dependencyResolver = new DependencyResolver(localRepoPath);
-
-    String proxyUrl = conf.getZeppelinProxyUrl();
-    if (null != proxyUrl) {
-      String proxyUser = conf.getZeppelinProxyUser();
-      String proxyPassword = conf.getZeppelinProxyPassword();
-      try {
-        dependencyResolver.setProxy(new URL(proxyUrl), proxyUser, proxyPassword);
-      } catch (MalformedURLException e) {
-        // TODO(jl): Not sure if it's good to raise an exception
-        throw new Exception("Url is not valid format", e);
-      }
-    }
 
     // TODO(jl): Make a rule between an interpreter name and an installation directory
     List<String> possibleInterpreterDirectories = Lists.newArrayList();
