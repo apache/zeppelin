@@ -63,7 +63,7 @@ public class K8sStandardInterpreterLauncher extends InterpreterLauncher {
    * @return
    */
   boolean isRunningOnKubernetes() {
-    return new File("/var/run/secrets/kubernetes.io").exists();
+    return new File(Config.KUBERNETES_NAMESPACE_PATH).exists();
   }
 
   /**
