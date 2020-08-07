@@ -27,28 +27,29 @@ import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.eclipse.aether.RepositoryException;
+import org.eclipse.aether.artifact.Artifact;
+import org.eclipse.aether.artifact.DefaultArtifact;
+import org.eclipse.aether.collection.CollectRequest;
+import org.eclipse.aether.graph.Dependency;
+import org.eclipse.aether.graph.DependencyFilter;
+import org.eclipse.aether.repository.Proxy;
+import org.eclipse.aether.repository.RemoteRepository;
+import org.eclipse.aether.resolution.ArtifactResult;
+import org.eclipse.aether.resolution.DependencyRequest;
+import org.eclipse.aether.resolution.DependencyResolutionException;
+import org.eclipse.aether.util.artifact.JavaScopes;
+import org.eclipse.aether.util.filter.DependencyFilterUtils;
+import org.eclipse.aether.util.filter.PatternExclusionsDependencyFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.sonatype.aether.RepositoryException;
-import org.sonatype.aether.artifact.Artifact;
-import org.sonatype.aether.collection.CollectRequest;
-import org.sonatype.aether.graph.Dependency;
-import org.sonatype.aether.graph.DependencyFilter;
-import org.sonatype.aether.repository.RemoteRepository;
-import org.sonatype.aether.resolution.ArtifactResult;
-import org.sonatype.aether.resolution.DependencyRequest;
-import org.sonatype.aether.resolution.DependencyResolutionException;
-import org.sonatype.aether.util.artifact.DefaultArtifact;
-import org.sonatype.aether.util.artifact.JavaScopes;
-import org.sonatype.aether.util.filter.DependencyFilterUtils;
-import org.sonatype.aether.util.filter.PatternExclusionsDependencyFilter;
 
 /**
  * Deps resolver.
  * Add new dependencies from mvn repo (at runtime) to Zeppelin.
  */
 public class DependencyResolver extends AbstractDependencyResolver {
-  private Logger logger = LoggerFactory.getLogger(DependencyResolver.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(DependencyResolver.class);
 
   private final String[] exclusions = new String[] {"org.apache.zeppelin:zeppelin-zengine",
                                                     "org.apache.zeppelin:zeppelin-interpreter",
@@ -58,13 +59,17 @@ public class DependencyResolver extends AbstractDependencyResolver {
     super(localRepoPath);
   }
 
-  public List<File> load(String artifact)
-      throws RepositoryException, IOException {
-    return load(artifact, new LinkedList<String>());
+  public DependencyResolver(String localRepoPath, Proxy proxy) {
+    super(localRepoPath, proxy);
   }
-  
+
+  public List<File> load(String artifact)
+      throws RepositoryException {
+    return load(artifact, new LinkedList<>());
+  }
+
   public synchronized List<File> load(String artifact, Collection<String> excludes)
-      throws RepositoryException, IOException {
+      throws RepositoryException {
     if (StringUtils.isBlank(artifact)) {
       // Skip dependency loading if artifact is empty
       return new LinkedList<>();
@@ -82,7 +87,7 @@ public class DependencyResolver extends AbstractDependencyResolver {
   }
 
   public List<File> load(String artifact, File destPath) throws IOException, RepositoryException {
-    return load(artifact, new LinkedList<String>(), destPath);
+    return load(artifact, new LinkedList<>(), destPath);
   }
 
   public List<File> load(String artifact, Collection<String> excludes, File destPath)
@@ -96,7 +101,7 @@ public class DependencyResolver extends AbstractDependencyResolver {
         File destFile = new File(destPath, srcFile.getName());
         if (!destFile.exists() || !FileUtils.contentEquals(srcFile, destFile)) {
           FileUtils.copyFile(srcFile, destFile);
-          logger.debug("copy {} to {}", srcFile.getAbsolutePath(), destPath);
+          LOGGER.debug("copy {} to {}", srcFile.getAbsolutePath(), destPath);
         }
       }
     }
@@ -114,7 +119,7 @@ public class DependencyResolver extends AbstractDependencyResolver {
 
     if (!destFile.exists() || !FileUtils.contentEquals(srcFile, destFile)) {
       FileUtils.copyFile(srcFile, destFile);
-      logger.debug("copy {} to {}", srcFile.getAbsolutePath(), destPath);
+      LOGGER.debug("copy {} to {}", srcFile.getAbsolutePath(), destPath);
     }
   }
 
@@ -142,7 +147,7 @@ public class DependencyResolver extends AbstractDependencyResolver {
     List<File> files = new LinkedList<>();
     for (ArtifactResult artifactResult : listOfArtifact) {
       files.add(artifactResult.getArtifact().getFile());
-      logger.debug("load {}", artifactResult.getArtifact().getFile().getAbsolutePath());
+      LOGGER.debug("load {}", artifactResult.getArtifact().getFile().getAbsolutePath());
     }
 
     return files;

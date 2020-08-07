@@ -26,7 +26,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.zeppelin.common.JsonSerializable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.sonatype.aether.repository.RemoteRepository;
+import org.eclipse.aether.repository.RemoteRepository;
 
 import java.io.BufferedReader;
 import java.io.FileOutputStream;
