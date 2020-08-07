@@ -809,7 +809,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
   public RUN_MODE getRunMode() {
     String mode = getString(ConfVars.ZEPPELIN_RUN_MODE);
     if ("auto".equalsIgnoreCase(mode)) { // auto detect
-      if (new File("/var/run/secrets/kubernetes.io").exists()) {
+      if (new File("/var/run/secrets/kubernetes.io/serviceaccount/namespace").exists()) {
         return RUN_MODE.K8S;
       } else {
         return RUN_MODE.LOCAL;
