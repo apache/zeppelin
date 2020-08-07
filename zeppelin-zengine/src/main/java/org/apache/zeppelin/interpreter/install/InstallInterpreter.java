@@ -20,7 +20,10 @@ import org.apache.commons.io.FileUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.dep.DependencyResolver;
 import org.apache.zeppelin.util.Util;
-import org.sonatype.aether.RepositoryException;
+import org.eclipse.aether.repository.Authentication;
+import org.eclipse.aether.repository.Proxy;
+import org.eclipse.aether.util.repository.AuthenticationBuilder;
+import org.eclipse.aether.RepositoryException;
 
 import java.io.File;
 import java.io.IOException;
@@ -150,10 +153,12 @@ public class InstallInterpreter {
   }
 
   public void install(String name, String artifact) {
-    DependencyResolver depResolver = new DependencyResolver(localRepoDir);
+    Proxy proxy = null;
     if (proxyUrl != null) {
-      depResolver.setProxy(proxyUrl, proxyUser, proxyPassword);
+      Authentication auth = new AuthenticationBuilder().addUsername(proxyUser).addPassword(proxyPassword).build();
+      proxy = new Proxy(proxyUrl.getProtocol(), proxyUrl.getHost(), proxyUrl.getPort(), auth);
     }
+    DependencyResolver depResolver = new DependencyResolver(localRepoDir, proxy);
 
     File installDir = new File(interpreterBaseDir, name);
     if (installDir.exists()) {

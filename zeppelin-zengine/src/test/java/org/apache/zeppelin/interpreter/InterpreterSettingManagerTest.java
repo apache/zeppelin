@@ -24,8 +24,8 @@ import org.apache.zeppelin.display.AngularObjectRegistryListener;
 import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
 import org.junit.Test;
-import org.sonatype.aether.RepositoryException;
-import org.sonatype.aether.repository.RemoteRepository;
+import org.eclipse.aether.RepositoryException;
+import org.eclipse.aether.repository.RemoteRepository;
 
 import java.io.IOException;
 import java.util.ArrayList;

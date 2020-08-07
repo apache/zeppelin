@@ -47,7 +47,7 @@ import org.junit.Test;
 import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.sonatype.aether.RepositoryException;
+import org.eclipse.aether.RepositoryException;
 
 import java.io.File;
 import java.io.IOException;

@@ -134,10 +134,6 @@
           <groupId>com.google.guava</groupId>
           <artifactId>guava</artifactId>
         </exclusion>
-        <exclusion>
-          <groupId>org.jsoup</groupId>
-          <artifactId>jsoup</artifactId>
-        </exclusion>
       </exclusions>
     </dependency>
 
