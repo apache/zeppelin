@@ -40,9 +40,9 @@ public class JobManager {
   private static Logger LOGGER = LoggerFactory.getLogger(JobManager.class);
   public static final String LATEST_CHECKPOINT_PATH = "latest_checkpoint_path";
   public static final String SAVEPOINT_PATH = "savepoint_path";
-  public static final String RESUME_FROM_SAVEPOINT = "resumeFromSavePoint";
-  public static final String RESUME_FROM_CHECKPOINT = "resumeFromLatestCheckPoint";
-  public static final String SAVEPOINT_DIR = "savePointDir";
+  public static final String RESUME_FROM_SAVEPOINT = "resumeFromSavepoint";
+  public static final String RESUME_FROM_CHECKPOINT = "resumeFromLatestCheckpoint";
+  public static final String SAVEPOINT_DIR = "savepointDir";
 
 
   private Map<String, JobClient> jobs = new HashMap<>();
