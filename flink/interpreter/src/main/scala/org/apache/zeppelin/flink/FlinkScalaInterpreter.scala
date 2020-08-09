@@ -647,7 +647,7 @@ class FlinkScalaInterpreter(val properties: Properties) {
    */
   def setSavePointPathIfNecessary(context: InterpreterContext): Unit = {
     val savepointPath = context.getConfig.getOrDefault(JobManager.SAVEPOINT_PATH, "").toString
-    val resumeFromSavepoint = context.getBooleanLocalProperty(JobManager.RESUME_FROM_SAVEPOINT, true)
+    val resumeFromSavepoint = context.getBooleanLocalProperty(JobManager.RESUME_FROM_SAVEPOINT, false)
     if (!StringUtils.isBlank(savepointPath) && resumeFromSavepoint){
       LOGGER.info("Resume job from savepoint , savepointPath = {}", savepointPath)
       configuration.setString("execution.savepoint.path", savepointPath)
