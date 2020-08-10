@@ -18,14 +18,13 @@
 package org.apache.zeppelin.kotlin.script
 
 import java.util.HashMap
-import kotlin.reflect.KMutableProperty0
 
 /**
  * Kotlin REPL has built-in context for getting user-declared functions and variables
  * and setting invokeWrapper for additional side effects in evaluation.
  * It can be accessed inside REPL by name `kc`, e.g. kc.showVars()
  */
-class KotlinContext(private val shortenTypes: Boolean, private val wrapperProp: KMutableProperty0<InvokeWrapper?>) {
+class KotlinContext(private val shortenTypes: Boolean) {
     val vars: MutableMap<String, KotlinVariableInfo> = HashMap()
     val functions: MutableMap<String, KotlinFunctionInfo> = HashMap()
 
@@ -41,7 +40,5 @@ class KotlinContext(private val shortenTypes: Boolean, private val wrapperProp: 
         }
     }
 
-    var wrapper: InvokeWrapper?
-        set(value) = wrapperProp.set(value)
-        get() = wrapperProp.get()
+    var wrapper: InvokeWrapper? = null
 }

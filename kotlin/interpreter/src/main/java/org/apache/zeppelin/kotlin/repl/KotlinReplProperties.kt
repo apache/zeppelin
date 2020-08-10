@@ -85,11 +85,17 @@ class KotlinReplProperties {
     }
 
     fun getClasspath(): List<File> {
+        println("Current classpath in Kotlin interpreter:")
+        println(classpath.joinToString("\n"))
         return classpath.map { File(it) }
     }
 
     init {
         val javaClasspath = System.getProperty("java.class.path").split(File.pathSeparator).toTypedArray()
-        classpath.addAll(javaClasspath)
+        println("Initial Java classpath in Kotlin interpreter:")
+        println(javaClasspath.joinToString("\n"))
+
+        val isKotlinJar = Regex("kotlin-[a-z]+(-[a-z]+)*(-.*)?\\.jar")
+        classpath.addAll(javaClasspath) // .filter { !it.matches(isKotlinJar) }
     }
 }

@@ -42,12 +42,20 @@
             <id>KotlinDev</id>
             <url>https://dl.bintray.com/kotlin/kotlin-dev</url>
         </repository>
+        <repository>
+            <id>KotlinEap</id>
+            <url>https://dl.bintray.com/kotlin/kotlin-eap</url>
+        </repository>
     </repositories>
 
     <pluginRepositories>
         <pluginRepository>
             <id>KotlinDev</id>
             <url>https://dl.bintray.com/kotlin/kotlin-dev</url>
+        </pluginRepository>
+        <pluginRepository>
+            <id>KotlinEap</id>
+            <url>https://dl.bintray.com/kotlin/kotlin-eap</url>
         </pluginRepository>
     </pluginRepositories>
 
@@ -62,6 +70,21 @@
             <artifactId>kotlin-reflect</artifactId>
             <version>${kotlin.version}</version>
             <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-scripting-dependencies</artifactId>
+            <version>${kotlin.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-main-kts</artifactId>
+            <version>${kotlin.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-script-runtime</artifactId>
+            <version>${kotlin.version}</version>
         </dependency>
     </dependencies>
 

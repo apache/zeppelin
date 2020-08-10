@@ -21,37 +21,54 @@ import org.apache.zeppelin.interpreter.InterpreterResult
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion
 import org.apache.zeppelin.kotlin.reflect.ContextUpdater
 import org.apache.zeppelin.kotlin.script.BaseScriptClass
-import org.apache.zeppelin.kotlin.script.InvokeWrapper
+import org.apache.zeppelin.kotlin.script.DependsOn
 import org.apache.zeppelin.kotlin.script.KotlinContext
 import org.apache.zeppelin.kotlin.script.KotlinReflectUtil.SCRIPT_PREFIX
+import org.apache.zeppelin.kotlin.script.Repository
+import org.apache.zeppelin.kotlin.script.ResolverConfig
+import org.apache.zeppelin.kotlin.script.ZeppelinScriptDependenciesResolver
 import org.jetbrains.kotlin.scripting.ide_services.compiler.KJvmReplCompilerWithIdeServices
 import org.jetbrains.kotlin.scripting.resolve.skipExtensionsResolutionForImplicitsExceptInnermost
+import java.io.File
+import java.io.PrintWriter
+import java.io.StringWriter
+import java.net.URLClassLoader
 import java.util.*
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.stream.Collectors
+import kotlin.script.dependencies.ScriptContents
 import kotlin.script.experimental.api.KotlinType
 import kotlin.script.experimental.api.ResultValue
 import kotlin.script.experimental.api.ResultWithDiagnostics
+import kotlin.script.experimental.api.ScriptCollectedData
 import kotlin.script.experimental.api.ScriptCompilationConfiguration
+import kotlin.script.experimental.api.ScriptConfigurationRefinementContext
 import kotlin.script.experimental.api.ScriptEvaluationConfiguration
 import kotlin.script.experimental.api.SourceCode
+import kotlin.script.experimental.api.asDiagnostics
+import kotlin.script.experimental.api.asSuccess
 import kotlin.script.experimental.api.baseClass
 import kotlin.script.experimental.api.compilerOptions
 import kotlin.script.experimental.api.constructorArgs
 import kotlin.script.experimental.api.defaultImports
 import kotlin.script.experimental.api.fileExtension
+import kotlin.script.experimental.api.foundAnnotations
 import kotlin.script.experimental.api.hostConfiguration
 import kotlin.script.experimental.api.implicitReceivers
+import kotlin.script.experimental.api.onSuccess
+import kotlin.script.experimental.api.refineConfiguration
+import kotlin.script.experimental.dependencies.RepositoryCoordinates
 import kotlin.script.experimental.host.withDefaultsFrom
 import kotlin.script.experimental.jvm.BasicJvmReplEvaluator
 import kotlin.script.experimental.jvm.KJvmEvaluatedSnippet
+import kotlin.script.experimental.jvm.baseClassLoader
 import kotlin.script.experimental.jvm.defaultJvmScriptingHostConfiguration
 import kotlin.script.experimental.jvm.impl.KJvmCompiledScript
 import kotlin.script.experimental.jvm.jvm
 import kotlin.script.experimental.jvm.updateClasspath
 import kotlin.script.experimental.jvm.util.isIncomplete
-import kotlin.script.experimental.jvm.util.scriptCompilationClasspathFromContext
 import kotlin.script.experimental.jvm.util.toSourceCodePosition
+import kotlin.script.experimental.jvm.withUpdatedClasspath
 import kotlin.script.experimental.util.LinkedSnippet
 
 /**
@@ -62,18 +79,28 @@ class KotlinRepl(properties: KotlinReplProperties) {
     private val compiler: KJvmReplCompilerWithIdeServices = KJvmReplCompilerWithIdeServices()
     private val evaluator: BasicJvmReplEvaluator = BasicJvmReplEvaluator()
     private val counter: AtomicInteger = AtomicInteger(0)
+    private val resolver = ZeppelinScriptDependenciesResolver(
+            ResolverConfig(arrayOf(
+                    "https://jcenter.bintray.com/",
+                    "https://repo.maven.apache.org/maven2/",
+                    "https://jitpack.io",
+            ).map { RepositoryCoordinates(it) })
+    )
 
     private val maxResult = properties.maxResult
     private val shortenTypes = properties.shortenTypes
-    private var wrapper: InvokeWrapper? = null
 
-    val kotlinContext: KotlinContext = KotlinContext(shortenTypes, ::wrapper)
+    val kotlinContext: KotlinContext = KotlinContext(shortenTypes)
 
     private val compilationConfiguration = ScriptCompilationConfiguration {
         hostConfiguration.update { it.withDefaultsFrom(defaultJvmScriptingHostConfiguration) }
         baseClass.put(KotlinType(BaseScriptClass::class))
         fileExtension.put("$SCRIPT_PREFIX.kts")
-        defaultImports(BaseScriptClass::class)
+        defaultImports(DependsOn::class, Repository::class, BaseScriptClass::class)
+
+        refineConfiguration {
+            onAnnotations(DependsOn::class, Repository::class, handler = { configureMavenDepsOnAnnotations(it) })
+        }
 
         jvm {
             updateClasspath(properties.getClasspath())
@@ -83,12 +110,31 @@ class KotlinRepl(properties: KotlinReplProperties) {
         receiversTypes.addAll(properties.implicitReceivers.map { KotlinType(it::class) })
         implicitReceivers(receiversTypes)
         skipExtensionsResolutionForImplicitsExceptInnermost(receiversTypes)
-        compilerOptions(listOf("-jvm-target", "1.8"))
+        compilerOptions(listOf("-jvm-target", "1.8", "-no-stdlib"))
     }
 
     private val evaluationConfiguration = ScriptEvaluationConfiguration {
         implicitReceivers.invoke(v = properties.implicitReceivers)
         constructorArgs.invoke(kotlinContext)
+
+        jvm {
+            val filteringClassLoader = FilteringClassLoader(ClassLoader.getSystemClassLoader()) {
+                it.startsWith("org.apache.zeppelin.kotlin.script")  || it.startsWith("kotlin.") || it.startsWith("org.jetbrains.kotlin.")
+            }
+            val scriptClassloader = URLClassLoader(properties.getClasspath().map { it.toURI().toURL() }.toTypedArray(), filteringClassLoader)
+            baseClassLoader(scriptClassloader)
+        }
+    }
+
+    private class FilteringClassLoader(parent: ClassLoader, val includeFilter: (String) -> Boolean) : ClassLoader(parent) {
+        override fun loadClass(name: String?, resolve: Boolean): Class<*> {
+            val c = if (name != null && includeFilter(name))
+                parent.loadClass(name)
+            else parent.parent.loadClass(name)
+            if (resolve)
+                resolveClass(c)
+            return c
+        }
     }
 
     private val writer: ClassWriter = ClassWriter(properties.outputDir)
@@ -127,7 +173,7 @@ class KotlinRepl(properties: KotlinReplProperties) {
 
         writer.writeClasses(snippet, classes)
         val runnable = { runBlocking { evaluator.eval(classesList, evaluationConfiguration) } }
-        val evalResult = wrapper?.let { it(runnable) } ?: runnable()
+        val evalResult = kotlinContext.wrapper?.let { it(runnable) } ?: runnable()
 
         val interpreterResult = checkEvalError(evalResult)
         contextUpdater.update()
@@ -188,7 +234,13 @@ class KotlinRepl(properties: KotlinReplProperties) {
                             val cause = evalResult.reports.firstOrNull()?.exception
                             append("This snippet was not evaluated: ")
                             appendLine(cause.toString())
-                            cause?.stackTraceToString()?.let { appendLine(it) }
+                            cause?.let {
+                                val sw = StringWriter()
+                                val pw = PrintWriter(sw)
+                                it.printStackTrace(pw)
+                                pw.flush()
+                                sw.toString()
+                            }?.let { appendLine(it) }
                         })
                     }
                 }
@@ -210,5 +262,25 @@ class KotlinRepl(properties: KotlinReplProperties) {
                 .map { it.toString() }
                 .collect(Collectors.joining(",")) +
                 " ... " + (value.size - maxResult) + " more]"
+    }
+
+    private fun configureMavenDepsOnAnnotations(context: ScriptConfigurationRefinementContext): ResultWithDiagnostics<ScriptCompilationConfiguration> {
+        val annotations = context.collectedData?.get(ScriptCollectedData.foundAnnotations)?.takeIf { it.isNotEmpty() }
+                ?: return context.compilationConfiguration.asSuccess()
+        val scriptContents = object : ScriptContents {
+            override val annotations: Iterable<Annotation> = annotations
+            override val file: File? = null
+            override val text: CharSequence? = null
+        }
+        return try {
+            resolver.resolveFromAnnotations(scriptContents)
+                    .onSuccess { classpath ->
+                        context.compilationConfiguration
+                                .let { if (classpath.isEmpty()) it else it.withUpdatedClasspath(classpath) }
+                                .asSuccess()
+                    }
+        } catch (e: Throwable) {
+            ResultWithDiagnostics.Failure(e.asDiagnostics(path = context.script.locationId))
+        }
     }
 }

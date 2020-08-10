@@ -34,7 +34,7 @@
     <description>Zeppelin Kotlin Support</description>
 
     <properties>
-        <kotlin.version>1.4.20-dev-1121</kotlin.version>
+        <kotlin.version>1.4.0-rc</kotlin.version>
     </properties>
 
     <modules>
