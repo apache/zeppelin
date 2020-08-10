@@ -1182,6 +1182,30 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
     }
   });
 
+  $scope.scrollIntoView = function(paragraphId) {
+    let documentHeight = angular.element(document).height();
+    let columnPosition = angular.element('#' + paragraphId + '_paragraphColumn').offset();
+    let calculatedCursorPosition = columnPosition.top;
+    let scrollTargetPos = calculatedCursorPosition;
+
+    if (scrollTargetPos < 0) {
+      scrollTargetPos = 0;
+    }
+
+    if (scrollTargetPos > documentHeight) {
+      scrollTargetPos = documentHeight;
+    }
+
+    // cancel previous scroll animation
+    let bodyEl = angular.element('body');
+    bodyEl.stop();
+    bodyEl.finish();
+    // scroll to scrollTargetPos
+    if (Number.isFinite(scrollTargetPos)) {
+      bodyEl.scrollTo(calculatedCursorPosition, {axis: 'y', interrupt: true, duration: 100});
+    }
+  };
+
   /** scrollToCursor if it is necessary
    * when cursor touches scrollTriggerEdgeMargin from the top (or bottom) of the screen, it autoscroll to place cursor around 1/3 of screen height from the top (or bottom)
    * paragraphId : paragraph that has active cursor
@@ -1629,6 +1653,12 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
   $scope.$on('updateProgress', function(event, data) {
     if (data.id === $scope.paragraph.id) {
       $scope.currentProgress = data.progress;
+    }
+  });
+
+  $scope.$on('scrollIntoView', function(event, data) {
+    if (data.id === $scope.paragraph.id) {
+      $scope.scrollIntoView(data.id);
     }
   });
 
