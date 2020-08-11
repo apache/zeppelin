@@ -457,6 +457,11 @@ In this section, we will list and explain all the supported local properties in 
     <td>If you specify it, then when you cancel your flink job in Zeppelin, it would also do savepoint and store state in this directory. And when you resume your job, it would resume from this savepoint.</td>
   </tr>
   <tr>
+    <td>execution.savepoint.path</td>
+    <td></td>
+    <td>When you resume your job, it would resume from this savepoint path.</td>
+  </tr>
+  <tr>
     <td>resumeFromSavepoint</td>
     <td></td>
     <td>Resume flink job from savepoint if you specify savepointDir.</td>
