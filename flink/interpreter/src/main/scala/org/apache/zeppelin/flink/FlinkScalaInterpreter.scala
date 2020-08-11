@@ -641,16 +641,21 @@ class FlinkScalaInterpreter(val properties: Properties) {
   }
 
   /**
-   * Use savepoint first, if no savepoint, then use checkpoint.
+   * Set execution.savepoint.path in the following order:
+   *
+   * 1. Use savepoint path stored in paragraph config, this is recorded by zeppelin when paragraph is canceled,
+   * 2. Use checkpoint path stored in pararaph config, this is recorded by zeppelin in flink job progress poller.
+   * 3. Use local property 'execution.savepoint.path' if user set it.
+   * 4. Otherwise remove 'execution.savepoint.path' when user didn't specify it in %flink.conf
    *
    * @param context
    */
-  def setSavePointPathIfNecessary(context: InterpreterContext): Unit = {
+  def setSavepointPathIfNecessary(context: InterpreterContext): Unit = {
     val savepointPath = context.getConfig.getOrDefault(JobManager.SAVEPOINT_PATH, "").toString
     val resumeFromSavepoint = context.getBooleanLocalProperty(JobManager.RESUME_FROM_SAVEPOINT, false)
     if (!StringUtils.isBlank(savepointPath) && resumeFromSavepoint){
       LOGGER.info("Resume job from savepoint , savepointPath = {}", savepointPath)
-      configuration.setString("execution.savepoint.path", savepointPath)
+      configuration.setString(SavepointConfigOptions.SAVEPOINT_PATH.key(), savepointPath)
       return
     }
 
@@ -658,13 +663,23 @@ class FlinkScalaInterpreter(val properties: Properties) {
     val resumeFromLatestCheckpoint = context.getBooleanLocalProperty(JobManager.RESUME_FROM_CHECKPOINT, false)
     if (!StringUtils.isBlank(checkpointPath) && resumeFromLatestCheckpoint) {
       LOGGER.info("Resume job from checkpoint , checkpointPath = {}", checkpointPath)
-      configuration.setString("execution.savepoint.path", checkpointPath)
+      configuration.setString(SavepointConfigOptions.SAVEPOINT_PATH.key(), checkpointPath)
       return
     }
 
-    // remove the SAVEPOINT_PATH which may be set by last job.
-    LOGGER.info("Start flink job without any checkpoint and savepoint, remove execution.savepoint.path")
-    configuration.removeConfig(SavepointConfigOptions.SAVEPOINT_PATH)
+    val userSavepointPath = context.getLocalProperties.getOrDefault(
+      SavepointConfigOptions.SAVEPOINT_PATH.key(), "")
+    if (!StringUtils.isBlank(userSavepointPath)) {
+      LOGGER.info("Resume job from user set savepoint , savepointPath = {}", userSavepointPath)
+      configuration.setString(SavepointConfigOptions.SAVEPOINT_PATH.key(), checkpointPath)
+      return;
+    }
+
+    val userSettingSavepointPath = properties.getProperty(SavepointConfigOptions.SAVEPOINT_PATH.key())
+    if (StringUtils.isBlank(userSettingSavepointPath)) {
+      // remove SAVEPOINT_PATH when user didn't set it via %flink.conf
+      configuration.removeConfig(SavepointConfigOptions.SAVEPOINT_PATH)
+    }
   }
 
   def setParallelismIfNecessary(context: InterpreterContext): Unit = {

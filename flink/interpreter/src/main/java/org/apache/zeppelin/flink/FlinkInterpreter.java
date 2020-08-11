@@ -88,7 +88,7 @@ public class FlinkInterpreter extends Interpreter {
       Thread.currentThread().setContextClassLoader(getFlinkScalaShellLoader());
       createPlannerAgain();
       setParallelismIfNecessary(context);
-      setSavePointIfNecessary(context);
+      setSavepointIfNecessary(context);
       return innerIntp.interpret(st, context);
     } finally {
       Thread.currentThread().setContextClassLoader(originClassLoader);
@@ -181,8 +181,8 @@ public class FlinkInterpreter extends Interpreter {
     return this.innerIntp.getFlinkShims();
   }
 
-  public void setSavePointIfNecessary(InterpreterContext context) {
-    this.innerIntp.setSavePointPathIfNecessary(context);
+  public void setSavepointIfNecessary(InterpreterContext context) {
+    this.innerIntp.setSavepointPathIfNecessary(context);
   }
 
   public void setParallelismIfNecessary(InterpreterContext context) {
