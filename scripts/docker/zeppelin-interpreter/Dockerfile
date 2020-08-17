@@ -73,8 +73,11 @@ RUN set -ex && \
     # chmod -R ug+rwX /opt/conda
 ENV PATH /opt/conda/bin:$PATH
 
-# Allow process to edit /etc/passwd, to create a user entry for zeppelin
-RUN chgrp root /etc/passwd && chmod ug+rw /etc/passwd
+RUN mkdir -p "${Z_HOME}/logs" "${Z_HOME}/run" "${Z_HOME}/local-repo" && \
+     # Allow process to edit /etc/passwd, to create a user entry for zeppelin
+    chgrp root /etc/passwd && chmod ug+rw /etc/passwd && \
+    # Give access to some specific folders
+    chmod -R 775 "${Z_HOME}/logs" "${Z_HOME}/run" "${Z_HOME}/local-repo"
 
 USER 1000
 WORKDIR ${Z_HOME}
