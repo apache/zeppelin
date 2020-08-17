@@ -30,7 +30,7 @@ data:
   SERVICE_DOMAIN: local.zeppelin-project.org:8080
   ZEPPELIN_K8S_SPARK_CONTAINER_IMAGE: spark:2.4.5
   ZEPPELIN_K8S_CONTAINER_IMAGE: apache/zeppelin-interpreter:0.9.0-SNAPSHOT
-  ZEPPELIN_HOME: /zeppelin
+  ZEPPELIN_HOME: /opt/zeppelin
   ZEPPELIN_SERVER_RPC_PORTRANGE: 12320:12320
   # default value of 'master' property for spark interpreter.
   SPARK_MASTER: k8s://https://kubernetes.default.svc
