@@ -193,6 +193,13 @@
         "defaultValue": true,
         "description": "Whether cancel flink job when closing interpreter",
         "type": "checkbox"
+      },
+      "zeppelin.flink.job.check_interval": {
+        "envName": "zeppelin.flink.job.check_interval",
+        "propertyName": "zeppelin.flink.job.check_interval",
+        "defaultValue": "1000",
+        "description": "Check interval (in milliseconds) to check flink job progress",
+        "type": "number"
       }
     },
     "editor": {

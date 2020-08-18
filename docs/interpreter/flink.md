@@ -221,6 +221,11 @@ You can also add and set other flink properties which are not listed in the tabl
     <td>true</td>
     <td>Whether cancel flink job when closing interpreter</td>
   </tr>
+  <tr>
+    <td>`zeppelin.flink.job.check_interval`</td>
+    <td>1000</td>
+    <td>Check interval (in milliseconds) to check flink job progress</td>
+  </tr>
 </table>
 
 
