@@ -18,6 +18,7 @@ package org.apache.zeppelin.groovy;
 
 import groovy.lang.Closure;
 import groovy.xml.MarkupBuilder;
+import org.apache.thrift.TException;
 import org.apache.zeppelin.annotation.ZeppelinApi;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
@@ -239,7 +240,7 @@ public class GObject extends groovy.lang.GroovyObjectSupport {
   }
 
   @SuppressWarnings("unchecked")
-  public void angularBind(String name, Object o, String noteId) {
+  public void angularBind(String name, Object o, String noteId) throws TException {
     z.angularBind(name, o, noteId);
   }
 
@@ -250,7 +251,7 @@ public class GObject extends groovy.lang.GroovyObjectSupport {
    * @param name name of the variable
    * @param o value
    */
-  public void angularBind(String name, Object o) {
+  public void angularBind(String name, Object o) throws TException {
     angularBind(name, o, interpreterContext.getNoteId());
   }
 
