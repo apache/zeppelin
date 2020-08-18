@@ -140,7 +140,7 @@ export default class TableVisualization extends Visualization {
           sortingAlgorithm: function(a, b, row1, row2, sortType, gridCol) {
             const colType = gridCol.colDef.type.toLowerCase();
             if (colType === TableColumnType.NUMBER) {
-              return self.getSortedValue(a, b);
+              return self.getSortedValue(Number(a), Number(b));
             } else if (colType === TableColumnType.STRING) {
               return self.getSortedValue(a.toString(), b.toString());
             } else if (colType === TableColumnType.DATE) {
