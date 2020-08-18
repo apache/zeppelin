@@ -31,6 +31,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -51,19 +52,23 @@ public class JobManager {
   private FlinkZeppelinContext z;
   private String flinkWebUrl;
   private String replacedFlinkWebUrl;
+  private Properties properties;
 
   public JobManager(FlinkZeppelinContext z,
                     String flinkWebUrl,
-                    String replacedFlinkWebUrl) {
+                    String replacedFlinkWebUrl,
+                    Properties properties) {
     this.z = z;
     this.flinkWebUrl = flinkWebUrl;
     this.replacedFlinkWebUrl = replacedFlinkWebUrl;
+    this.properties = properties;
   }
 
   public void addJob(InterpreterContext context, JobClient jobClient) {
     String paragraphId = context.getParagraphId();
     JobClient previousJobClient = this.jobs.put(paragraphId, jobClient);
-    FlinkJobProgressPoller thread = new FlinkJobProgressPoller(flinkWebUrl, jobClient.getJobID(), context);
+    long checkInterval = Long.parseLong(properties.getProperty("zeppelin.flink.job.check_interval", "1000"));
+    FlinkJobProgressPoller thread = new FlinkJobProgressPoller(flinkWebUrl, jobClient.getJobID(), context, checkInterval);
     thread.setName("JobProgressPoller-Thread-" + paragraphId);
     thread.start();
     this.jobProgressPollerMap.put(jobClient.getJobID(), thread);
@@ -185,12 +190,14 @@ public class JobManager {
     private int progress;
     private AtomicBoolean running = new AtomicBoolean(true);
     private boolean isFirstPoll = true;
+    private long checkInterval;
 
-    FlinkJobProgressPoller(String flinkWebUrl, JobID jobId, InterpreterContext context) {
+    FlinkJobProgressPoller(String flinkWebUrl, JobID jobId, InterpreterContext context, long checkInterval) {
       this.flinkWebUrl = flinkWebUrl;
       this.jobId = jobId;
       this.context = context;
       this.isStreamingInsertInto = context.getLocalProperties().containsKey("flink.streaming.insert_into");
+      this.checkInterval = checkInterval;
     }
 
     @Override
@@ -199,7 +206,7 @@ public class JobManager {
         JsonNode rootNode = null;
         try {
           synchronized (running) {
-            running.wait(1000);
+            running.wait(checkInterval);
           }
           rootNode = Unirest.get(flinkWebUrl + "/jobs/" + jobId.toString())
                   .asJson().getBody();

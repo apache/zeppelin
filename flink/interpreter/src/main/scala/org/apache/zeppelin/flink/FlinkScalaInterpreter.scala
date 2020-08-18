@@ -120,7 +120,7 @@ class FlinkScalaInterpreter(val properties: Properties) {
     modifiers.add("@transient")
     this.bind("z", z.getClass().getCanonicalName(), z, modifiers);
 
-    this.jobManager = new JobManager(this.z, jmWebUrl, replacedJMWebUrl)
+    this.jobManager = new JobManager(this.z, jmWebUrl, replacedJMWebUrl, properties)
 
     // register JobListener
     val jobListener = new FlinkJobListener()
