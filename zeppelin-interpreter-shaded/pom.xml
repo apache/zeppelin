@@ -104,6 +104,8 @@
                 <exclude>org/apache/zeppelin/**/*</exclude>
                 <exclude>org/apache/hadoop/*</exclude>
                 <exclude>org/apache/hadoop/**</exclude>
+                <exclude>org/apache/thrift/*</exclude>
+                <exclude>org/apache/thrift/**/*</exclude>
                 <exclude>org/slf4j/*</exclude>
                 <exclude>org/slf4j/**/*</exclude>
                 <exclude>org/apache/commons/logging/*</exclude>
