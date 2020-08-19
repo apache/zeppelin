@@ -459,6 +459,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
     if (!paragraphText || $scope.isRunning($scope.paragraph)) {
       return;
     }
+
     const magic = SpellResult.extractMagic(paragraphText);
 
     if (heliumService.getSpellByMagic(magic)) {
@@ -1629,6 +1630,12 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
   $scope.$on('updateProgress', function(event, data) {
     if (data.id === $scope.paragraph.id) {
       $scope.currentProgress = data.progress;
+    }
+  });
+
+  $scope.$on('updateStatus', function(event, data) {
+    if (data.id === $scope.paragraph.id) {
+      $scope.paragraph.status = data.status;
     }
   });
 

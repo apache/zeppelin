@@ -210,17 +210,19 @@ public class CassandraInterpreterTest { //extends AbstractCassandraUnit4CQLTestC
     props.put("locale", "de_DE");
     props.put("floatPrecision", "2");
     props.put("doublePrecision", "4");
+    props.put("decimalPrecision", "5");
     props.put("timeFormat", "hh:mma");
     props.put("timestampFormat", "MM/dd/yy HH:mm");
     props.put("dateFormat", "E, d MMM yy");
     props.put("timezone", "Etc/GMT+2");
     String query =
-            "select date, time, timestamp, double, float, tuple, udt from zeppelin.test_format;";
+            "select date,time,timestamp,dec,double,float,tuple,udt from zeppelin.test_format;";
     final InterpreterResult actual = interpreter.interpret(query, intrContext);
     props.remove("outputFormat");
     props.remove("locale");
     props.remove("floatPrecision");
     props.remove("doublePrecision");
+    props.remove("decimalPrecision");
     props.remove("timeFormat");
     props.remove("timestampFormat");
     props.remove("dateFormat");
@@ -229,9 +231,9 @@ public class CassandraInterpreterTest { //extends AbstractCassandraUnit4CQLTestC
     //Then
     assertThat(actual).isNotNull();
     assertThat(actual.code()).isEqualTo(Code.SUCCESS);
-    String expected = "date\ttime\ttimestamp\tdouble\tfloat\ttuple\tudt\n" +
-            "Di, 29 Jan 19\t04:05AM\t06/16/20 21:59\t10,0153\t20,03\t(1, text, 10)\t" +
-            "{id: 1, t: text, lst: [1, 2, 3]}\n";
+    String expected = "date\ttime\ttimestamp\tdec\tdouble\tfloat\ttuple\tudt\n" +
+            "Di, 29 Jan 19\t04:05AM\t06/16/20 21:59\t123562352352,12346\t10,0153\t20,03\t" +
+            "(1, text, 10)\t{id: 1, t: text, lst: [1, 2, 3]}\n";
     assertThat(actual.message().get(0).getData()).isEqualTo(expected);
   }
 

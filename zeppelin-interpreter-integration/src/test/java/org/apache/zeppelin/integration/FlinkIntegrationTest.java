@@ -46,10 +46,10 @@ import java.util.EnumSet;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-@RunWith(value = Parameterized.class)
-public class FlinkIntegrationTest {
+public abstract class FlinkIntegrationTest {
   private static Logger LOGGER = LoggerFactory.getLogger(FlinkIntegrationTest.class);
 
   private static MiniHadoopCluster hadoopCluster;
@@ -66,14 +66,6 @@ public class FlinkIntegrationTest {
     this.flinkVersion = flinkVersion;
     this.flinkHome = DownloadUtils.downloadFlink(flinkVersion);
     this.hadoopHome = DownloadUtils.downloadHadoop("2.7.7");
-  }
-
-  @Parameterized.Parameters
-  public static List<Object[]> data() {
-    return Arrays.asList(new Object[][]{
-        {"1.10.1"},
-        {"1.11.0"}
-    });
   }
 
   @BeforeClass
@@ -114,6 +106,11 @@ public class FlinkIntegrationTest {
 
     interpreterResult = flinkInterpreter.interpret("val data = senv.fromElements(1, 2, 3)\ndata.print()", context);
     assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
+
+    // check spark weburl in zeppelin-server side
+    InterpreterSetting flinkInterpreterSetting = interpreterSettingManager.getByName("flink");
+    assertEquals(1, flinkInterpreterSetting.getAllInterpreterGroups().size());
+    assertNotNull(flinkInterpreterSetting.getAllInterpreterGroups().get(0).getWebUrl());
   }
 
   @Test

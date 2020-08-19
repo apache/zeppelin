@@ -594,7 +594,7 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
             if (interpreterSetting == null) {
               return DEFAULT_EDITOR;
             }
-            return interpreterSetting.getDefaultInterpreterInfo().getEditor();
+            return interpreterSetting.getInterpreterInfo(intpName).getEditor();
           } catch (Exception e) {
             LOGGER.warn(e.getMessage());
             return DEFAULT_EDITOR;

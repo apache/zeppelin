@@ -37,6 +37,7 @@ import org.apache.zeppelin.interpreter.thrift.RegisterInfo;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterEventService;
 import org.apache.zeppelin.interpreter.thrift.RunParagraphsEvent;
 import org.apache.zeppelin.interpreter.thrift.ServiceException;
+import org.apache.zeppelin.interpreter.thrift.WebUrlInfo;
 import org.apache.zeppelin.resource.RemoteResource;
 import org.apache.zeppelin.resource.Resource;
 import org.apache.zeppelin.resource.ResourceId;
@@ -87,6 +88,13 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector,
   public void registerInterpreterProcess(RegisterInfo registerInfo) {
     callRemoteFunction(client -> {
       client.registerInterpreterProcess(registerInfo);
+      return null;
+    });
+  }
+
+  public void sendWebUrlInfo(String webUrl) {
+    callRemoteFunction(client -> {
+      client.sendWebUrl(new WebUrlInfo(intpGroupId, webUrl));
       return null;
     });
   }
@@ -376,6 +384,17 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector,
       });
     } catch (Exception e) {
       LOGGER.warn("Fail to remove AngularObject", e);
+    }
+  }
+
+  public void updateParagraphConfig(String noteId, String paragraphId, Map<String, String> config) {
+    try {
+      callRemoteFunction(client -> {
+        client.updateParagraphConfig(noteId, paragraphId, config);
+        return null;
+      });
+    } catch (Exception e) {
+      LOGGER.warn("Fail to updateParagraphConfig", e);
     }
   }
 }

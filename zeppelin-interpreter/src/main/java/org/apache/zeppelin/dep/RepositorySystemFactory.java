@@ -21,6 +21,7 @@ import org.apache.maven.repository.internal.DefaultServiceLocator;
 import org.apache.maven.wagon.Wagon;
 import org.apache.maven.wagon.providers.http.HttpWagon;
 import org.apache.maven.wagon.providers.http.LightweightHttpWagon;
+import org.apache.maven.wagon.providers.http.LightweightHttpWagonAuthenticator;
 import org.sonatype.aether.RepositorySystem;
 import org.sonatype.aether.connector.file.FileRepositoryConnectorFactory;
 import org.sonatype.aether.connector.wagon.WagonProvider;
@@ -48,7 +49,9 @@ public class RepositorySystemFactory {
     @Override
     public Wagon lookup(String roleHint) throws Exception {
       if ("http".equals(roleHint)) {
-        return new LightweightHttpWagon();
+        LightweightHttpWagon lightweightHttpWagon = new LightweightHttpWagon();
+        lightweightHttpWagon.setAuthenticator(new LightweightHttpWagonAuthenticator());
+        return lightweightHttpWagon;
       }
 
       if ("https".equals(roleHint)) {

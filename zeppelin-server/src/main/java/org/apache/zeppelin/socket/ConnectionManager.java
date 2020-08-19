@@ -343,7 +343,7 @@ public class ConnectionManager {
     broadcastToWatchers(StringUtils.EMPTY, StringUtils.EMPTY, m);
   }
 
-  public void unicastParagraph(Note note, Paragraph p, String user) {
+  public void unicastParagraph(Note note, Paragraph p, String user, String msgId) {
     if (!note.isPersonalizedMode() || p == null || user == null) {
       return;
     }
@@ -354,7 +354,7 @@ public class ConnectionManager {
     }
 
     for (NotebookSocket conn : userSocketMap.get(user)) {
-      Message m = new Message(Message.OP.PARAGRAPH).put("paragraph", p);
+      Message m = new Message(Message.OP.PARAGRAPH).withMsgId(msgId).put("paragraph", p);
       unicast(m, conn);
     }
   }

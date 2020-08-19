@@ -40,6 +40,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.zeppelin.annotation.ZeppelinApi;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.InterpreterResult;
@@ -72,6 +73,8 @@ import org.apache.zeppelin.user.AuthenticationInfo;
 import org.quartz.CronExpression;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.apache.zeppelin.notebook.socket.Message.MSG_ID_NOT_DEFINED;
 
 /**
  * Rest api endpoint for the notebook.
@@ -361,10 +364,14 @@ public class NotebookRestApi extends AbstractRestApi {
   @POST
   @Path("import")
   @ZeppelinApi
-  public Response importNote(String noteJson) throws IOException {
-    Note note = notebookService.importNote(null, noteJson, getServiceContext(),
-        new RestServiceCallback());
-    return new JsonResponse<>(Status.OK, "", note.getId()).build();
+  public Response importNote(@QueryParam("notePath") String notePath, String noteJson) throws IOException {
+    try {
+      Note note = notebookService.importNote(notePath, noteJson, getServiceContext(),
+              new RestServiceCallback());
+      return new JsonResponse<>(Status.OK, "", note.getId()).build();
+    } catch (IOException e) {
+      return new JsonResponse<>(Status.INTERNAL_SERVER_ERROR, e.getMessage()).build();
+    }
   }
 
   /**
@@ -569,7 +576,7 @@ public class NotebookRestApi extends AbstractRestApi {
 
     AuthenticationInfo subject = new AuthenticationInfo(user);
     notebook.saveNote(note, subject);
-    notebookServer.broadcastParagraph(note, p);
+    notebookServer.broadcastParagraph(note, p, MSG_ID_NOT_DEFINED);
     return new JsonResponse<>(Status.OK, "").build();
   }
 

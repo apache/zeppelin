@@ -124,7 +124,7 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
     this.note = p2.note;
     this.settings.setParams(Maps.newHashMap(p2.settings.getParams()));
     this.settings.setForms(Maps.newLinkedHashMap(p2.settings.getForms()));
-    this.setConfig(Maps.newHashMap(p2.config));
+    this.setConfig(Maps.newHashMap(p2.getConfig()));
     this.setAuthenticationInfo(p2.getAuthenticationInfo());
     this.title = p2.title;
     this.text = p2.text;
@@ -338,7 +338,6 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
         setStatus(Job.Status.FINISHED);
         return true;
       }
-      setStatus(Status.READY);
 
       if (getConfig().get("enabled") == null || (Boolean) getConfig().get("enabled")) {
         setAuthenticationInfo(getAuthenticationInfo());
@@ -553,7 +552,7 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
   // NOTE: function setConfig(...) will overwrite all configuration
   // Merge configuration, you need to use function mergeConfig(...)
   public void setConfig(Map<String, Object> config) {
-    this.config = config;
+    this.config = Maps.newHashMap(config);
   }
 
   // [ZEPPELIN-3919] Paragraph config default value can be customized
@@ -568,6 +567,10 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
   //    Need to delete the existing configuration of this paragraph,
   //    update with the specified interpreter configuration
   public void mergeConfig(Map<String, Object> newConfig) {
+    this.config.putAll(newConfig);
+  }
+
+  public void updateConfig(Map<String, String> newConfig) {
     this.config.putAll(newConfig);
   }
 
@@ -696,6 +699,14 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
   public void waitUntilFinished() throws Exception {
     while(!isTerminated()) {
       LOGGER.debug("Wait for paragraph to be finished");
+      Thread.sleep(1000);
+    }
+  }
+
+  @VisibleForTesting
+  public void waitUntilRunning() throws Exception {
+    while(!isRunning()) {
+      LOGGER.debug("Wait for paragraph to be running");
       Thread.sleep(1000);
     }
   }

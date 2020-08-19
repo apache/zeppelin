@@ -47,6 +47,7 @@ public class InterpreterGroup {
   private static final Logger LOGGER = LoggerFactory.getLogger(InterpreterGroup.class);
 
   protected String id;
+  private String webUrl;
   // sessionId --> interpreters
   protected Map<String, List<Interpreter>> sessions = new ConcurrentHashMap();
   private AngularObjectRegistry angularObjectRegistry;
@@ -75,6 +76,14 @@ public class InterpreterGroup {
 
   public String getId() {
     return this.id;
+  }
+
+  public String getWebUrl() {
+    return webUrl;
+  }
+
+  public void setWebUrl(String webUrl) {
+    this.webUrl = webUrl;
   }
 
   //TODO(zjffdu) change it to getSession. For now just keep this method to reduce code change

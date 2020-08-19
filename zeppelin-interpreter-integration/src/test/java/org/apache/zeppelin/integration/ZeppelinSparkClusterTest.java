@@ -29,6 +29,7 @@ import org.apache.zeppelin.interpreter.InterpreterNotFoundException;
 import org.apache.zeppelin.interpreter.InterpreterProperty;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
+import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.interpreter.integration.DownloadUtils;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.notebook.Note;
@@ -55,6 +56,7 @@ import java.util.Map;
 import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -166,6 +168,12 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
           "import java.util.Date\n" +
           "import java.net.URL\n",
           p.getReturn().message().get(0).getData());
+
+      // check spark weburl in zeppelin-server side
+      InterpreterSettingManager interpreterSettingManager = TestUtils.getInstance(InterpreterSettingManager.class);
+      InterpreterSetting sparkInterpreterSetting = interpreterSettingManager.getByName("spark");
+      assertEquals(1, sparkInterpreterSetting.getAllInterpreterGroups().size());
+      assertNotNull(sparkInterpreterSetting.getAllInterpreterGroups().get(0).getWebUrl());
 
       p.setText("%spark invalid_code");
       note.run(p.getId(), true);

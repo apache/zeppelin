@@ -61,6 +61,13 @@
         "description": "Executor memory per worker instance. ex) 512m, 32g",
         "type": "string"
       },
+      "spark.executor.instances": {
+        "envName": null,
+        "propertyName": "spark.executor.instances",
+        "defaultValue": "2",
+        "description": "The number of executors for static allocation.",
+        "type": "number"
+      },
       "spark.files": {
         "envName": null,
         "propertyName": "spark.files",

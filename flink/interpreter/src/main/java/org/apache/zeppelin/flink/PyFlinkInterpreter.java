@@ -115,7 +115,7 @@ public class PyFlinkInterpreter extends PythonInterpreter {
                     result.toString());
           }
         }
-        flinkInterpreter.setSavePointIfNecessary(context);
+        flinkInterpreter.setSavepointIfNecessary(context);
         flinkInterpreter.setParallelismIfNecessary(context);
       }
       return super.interpret(st, context);

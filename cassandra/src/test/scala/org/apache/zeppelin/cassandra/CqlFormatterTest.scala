@@ -33,6 +33,7 @@ class CqlFormatterTest extends FlatSpec
 
   val longVal: java.lang.Long = java.lang.Long.valueOf(12345678901L)
   val floatVal: java.lang.Float = java.lang.Float.valueOf(123.456789f)
+  val decimalVal: java.math.BigDecimal = java.math.BigDecimal.valueOf(123.4567890123456789)
   val intVal: java.lang.Integer = Integer.valueOf(123456)
   val doubleVal: java.lang.Double = java.lang.Double.valueOf(123.4567890123456789)
   val dateVal: LocalDate = LocalDate.of(2020, 6, 16)
@@ -49,6 +50,7 @@ class CqlFormatterTest extends FlatSpec
     defaultFormatter.formatHuman(longVal) should be("12345678901")
     defaultFormatter.formatHuman(floatVal) should be("123.45679")
     defaultFormatter.formatHuman(doubleVal) should be("123.456789012346")
+    defaultFormatter.formatHuman(decimalVal) should be("123.45678901234568")
     defaultFormatter.formatHuman("just text") should be("just text")
     defaultFormatter.formatHuman(java.lang.Boolean.TRUE) should be("true")
     defaultFormatter.formatHuman(List(1,2,3).asJava) should be("[1, 2, 3]")
@@ -69,9 +71,11 @@ class CqlFormatterTest extends FlatSpec
   "CqlFormatter" should "format objects with copied settings" in {
     val copiedFormatter = new CqlFormatter()
       .copy(floatPrecision = 2, doublePrecision = 4, timeZoneId = "Etc/GMT+2",
-        timeFormat = "hh:mma", dateFormat = "E, d MMM yy", localeStr = "en_US")
+        timeFormat = "hh:mma", dateFormat = "E, d MMM yy", localeStr = "en_US",
+        decimalPrecision = 5)
     copiedFormatter.formatHuman(floatVal) should be("123.46")
     copiedFormatter.formatHuman(doubleVal) should be("123.4568")
+    copiedFormatter.formatHuman(decimalVal) should be("123.45679")
     copiedFormatter.formatHuman(timestampVal) should be("2020-06-16T21:59:59.123-02:00")
     copiedFormatter.formatHuman(timeVal) should be("11:59PM")
     copiedFormatter.formatHuman(dateVal) should be("Tue, 16 Jun 20")
@@ -81,6 +85,7 @@ class CqlFormatterTest extends FlatSpec
     val properties = new Properties()
     properties.setProperty(CassandraInterpreter.CASSANDRA_FORMAT_FLOAT_PRECISION, "2")
     properties.setProperty(CassandraInterpreter.CASSANDRA_FORMAT_DOUBLE_PRECISION, "4")
+    properties.setProperty(CassandraInterpreter.CASSANDRA_FORMAT_DECIMAL_PRECISION, "5")
     properties.setProperty(CassandraInterpreter.CASSANDRA_FORMAT_TIME, "hh:mma")
     properties.setProperty(CassandraInterpreter.CASSANDRA_FORMAT_DATE, "E, d MMM yy")
     properties.setProperty(CassandraInterpreter.CASSANDRA_FORMAT_TIMEZONE, "Etc/GMT+2")
@@ -88,6 +93,7 @@ class CqlFormatterTest extends FlatSpec
     val copiedFormatter = new CqlFormatter(properties)
     copiedFormatter.formatHuman(floatVal) should be("123.46")
     copiedFormatter.formatHuman(doubleVal) should be("123.4568")
+    copiedFormatter.formatHuman(decimalVal) should be("123.45679")
     copiedFormatter.formatHuman(timestampVal) should be("2020-06-16T21:59:59.123-02:00")
     copiedFormatter.formatHuman(timeVal) should be("11:59PM")
     copiedFormatter.formatHuman(dateVal) should be("Tue, 16 Jun 20")
@@ -111,6 +117,7 @@ class CqlFormatterTest extends FlatSpec
     cqlFormatter.format(longVal, codecRegistry.codecFor(DataTypes.BIGINT)) should be("12345678901")
     cqlFormatter.format(floatVal, codecRegistry.codecFor(DataTypes.FLOAT)) should be("123.45679")
     cqlFormatter.format(doubleVal, codecRegistry.codecFor(DataTypes.DOUBLE)) should be("123.45678901234568")
+    cqlFormatter.format(decimalVal, codecRegistry.codecFor(DataTypes.DECIMAL)) should be("123.45678901234568")
     cqlFormatter.format("just text", codecRegistry.codecFor(DataTypes.TEXT)) should be("'just text'")
     cqlFormatter.format(java.lang.Boolean.TRUE, codecRegistry.codecFor(DataTypes.BOOLEAN)) should be("true")
     cqlFormatter.format(dateVal,

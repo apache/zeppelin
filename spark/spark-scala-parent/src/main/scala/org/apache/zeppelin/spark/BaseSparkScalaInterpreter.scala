@@ -244,7 +244,7 @@ abstract class BaseSparkScalaInterpreter(val conf: SparkConf,
       case None =>
     }
 
-    initSparkWebUrl()
+    initAndSendSparkWebUrl()
 
     val hiveSiteExisted: Boolean =
       Thread.currentThread().getContextClassLoader.getResource("hive-site.xml") != null
@@ -316,7 +316,7 @@ abstract class BaseSparkScalaInterpreter(val conf: SparkConf,
       case None =>
     }
 
-    initSparkWebUrl()
+    initAndSendSparkWebUrl()
 
     bind("spark", sparkSession.getClass.getCanonicalName, sparkSession, List("""@transient"""))
     bind("sc", "org.apache.spark.SparkContext", sc, List("""@transient"""))
@@ -331,13 +331,14 @@ abstract class BaseSparkScalaInterpreter(val conf: SparkConf,
     scalaInterpret("print(\"\")")
   }
 
-  private def initSparkWebUrl(): Unit = {
+  private def initAndSendSparkWebUrl(): Unit = {
     val webUiUrl = properties.getProperty("zeppelin.spark.uiWebUrl");
     if (!StringUtils.isBlank(webUiUrl)) {
       this.sparkUrl = webUiUrl.replace("{{applicationId}}", sc.applicationId);
     } else {
       useYarnProxyURLIfNeeded()
     }
+    InterpreterContext.get.getIntpEventClient.sendWebUrlInfo(this.sparkUrl)
   }
 
   protected def createZeppelinContext(): Unit = {

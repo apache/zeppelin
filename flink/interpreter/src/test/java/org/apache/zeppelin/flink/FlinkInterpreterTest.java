@@ -357,7 +357,7 @@ public class FlinkInterpreterTest {
       try {
         InterpreterContext context = getInterpreterContext();
         context.getLocalProperties().put("type", "update");
-        context.getLocalProperties().put("savepointDir", savePointDir.getAbsolutePath());
+        context.getLocalProperties().put("savePointDir", savePointDir.getAbsolutePath());
         context.getLocalProperties().put("parallelism", "1");
         context.getLocalProperties().put("maxParallelism", "10");
         InterpreterResult result2 = interpreter.interpret(
@@ -381,7 +381,7 @@ public class FlinkInterpreterTest {
 
     InterpreterContext context = getInterpreterContext();
     context.getLocalProperties().put("type", "update");
-    context.getLocalProperties().put("savepointDir", savePointDir.getAbsolutePath());
+    context.getLocalProperties().put("savePointDir", savePointDir.getAbsolutePath());
     context.getLocalProperties().put("parallelism", "2");
     context.getLocalProperties().put("maxParallelism", "10");
     interpreter.cancel(context);

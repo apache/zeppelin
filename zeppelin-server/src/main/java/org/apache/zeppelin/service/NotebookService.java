@@ -335,7 +335,7 @@ public class NotebookService {
       p.settings.setParams(params);
     }
     if (config != null && !config.isEmpty()) {
-      p.setConfig(config);
+      p.mergeConfig(config);
     }
 
     if (note.isPersonalizedMode()) {
@@ -347,7 +347,7 @@ public class NotebookService {
         p.settings.setParams(params);
       }
       if (config != null && !config.isEmpty()) {
-        p.setConfig(config);
+        p.mergeConfig(config);
       }
     }
 
@@ -605,13 +605,13 @@ public class NotebookService {
     }
 
     p.settings.setParams(params);
-    p.setConfig(config);
+    p.mergeConfig(config);
     p.setTitle(title);
     p.setText(text);
     if (note.isPersonalizedMode()) {
       p = p.getUserParagraph(context.getAutheInfo().getUser());
       p.settings.setParams(params);
-      p.setConfig(config);
+      p.mergeConfig(config);
       p.setTitle(title);
       p.setText(text);
     }
