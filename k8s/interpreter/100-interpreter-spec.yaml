@@ -78,6 +78,21 @@ spec:
   - name: spark-home
     emptyDir: {}
   {% endif %}
+  {% if zeppelin.k8s.interpreter.group.name == "flink" %}
+    volumeMounts:
+    - name: flink-home
+      mountPath: /flink
+  initContainers:
+  - name: flink-home-init
+    image: {{zeppelin.k8s.flink.container.image}}
+    command: ["sh", "-c", "cp -r /opt/flink/* /flink/"]
+    volumeMounts:
+    - name: flink-home
+      mountPath: /flink
+  volumes:
+  - name: flink-home
+    emptyDir: {}
+  {% endif %}
 ---
 kind: Service
 apiVersion: v1

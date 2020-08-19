@@ -6,7 +6,7 @@
     "defaultInterpreter": true,
     "properties": {
       "FLINK_HOME": {
-        "envName": null,
+        "envName": "FLINK_HOME",
         "propertyName": null,
         "defaultValue": "",
         "description": "Location of flink distribution",

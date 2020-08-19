@@ -238,7 +238,7 @@ elif [[ "${INTERPRETER_ID}" == "pig" ]]; then
     echo "TEZ_CONF_DIR is not set, configuration might not be loaded"
   fi
 elif [[ "${INTERPRETER_ID}" == "flink" ]]; then
-  addEachJarInDirRecursiveForIntp "${FLINK_HOME}/lib"
+  addJarInDirRecursiveForIntpWithoutLog4j "${FLINK_HOME}/lib"
 
   FLINK_PYTHON_JAR=$(find "${FLINK_HOME}/opt" -name 'flink-python_*.jar')
   ZEPPELIN_INTP_CLASSPATH+=":${FLINK_PYTHON_JAR}"

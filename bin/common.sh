@@ -100,6 +100,16 @@ function addEachJarInDirRecursiveForIntp(){
   fi
 }
 
+function addJarInDirRecursiveForIntpWithoutLog4j(){
+  if [[ -d "${1}" ]]; then
+    for jar in ${1}/*.jar; do
+      if [ "$(echo $jar | grep log4j)" = "" ]; then
+        ZEPPELIN_INTP_CLASSPATH="$jar:${ZEPPELIN_INTP_CLASSPATH}"
+      fi
+    done
+  fi
+}
+
 function addJarInDir(){
   if [[ -d "${1}" ]]; then
     ZEPPELIN_CLASSPATH="${1}/*:${ZEPPELIN_CLASSPATH}"

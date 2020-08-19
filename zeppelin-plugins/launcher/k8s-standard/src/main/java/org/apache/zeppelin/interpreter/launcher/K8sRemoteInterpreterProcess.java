@@ -59,6 +59,9 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
   private static final String SPARK_DRIVER_CORES = "spark.driver.cores";
   private static final String ENV_SERVICE_DOMAIN = "SERVICE_DOMAIN";
 
+  private static final String ENV_FLINK_HOME = "FLINK_HOME";
+  private static final String ENV_FLINK_IMAGE = "ZEPPELIN_K8S_FLINK_CONTAINER_IMAGE";
+
   public K8sRemoteInterpreterProcess(
           KubernetesClient client,
           String namespace,
@@ -318,6 +321,11 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
       }
     }
 
+    if(isFlink()){
+      k8sProperties.put("zeppelin.k8s.flink.container.image", envs.getOrDefault(ENV_FLINK_IMAGE, System.getenv(ENV_FLINK_IMAGE)));
+      envs.put(ENV_FLINK_HOME, envs.getOrDefault(ENV_FLINK_HOME, System.getenv(ENV_FLINK_HOME)));
+    }
+
     k8sProperties.put("zeppelin.k8s.envs", envs);
 
     // interpreter properties overrides the values
@@ -346,6 +354,11 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
   @VisibleForTesting
   boolean isSpark() {
     return "spark".equalsIgnoreCase(interpreterGroupName);
+  }
+
+  @VisibleForTesting
+  boolean isFlink() {
+    return "flink".equalsIgnoreCase(interpreterGroupName);
   }
 
   boolean isSparkOnKubernetes(Properties interpreteProperties) {
