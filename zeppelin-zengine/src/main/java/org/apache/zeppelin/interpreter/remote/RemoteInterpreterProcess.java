@@ -41,6 +41,7 @@ public abstract class RemoteInterpreterProcess implements InterpreterClient {
   private PooledRemoteClient<Client> remoteClient;
 
   public RemoteInterpreterProcess(int connectTimeout,
+                                  int connectionPoolSize,
                                   String intpEventServerHost,
                                   int intpEventServerPort) {
     this.connectTimeout = connectTimeout;
@@ -55,7 +56,7 @@ public abstract class RemoteInterpreterProcess implements InterpreterClient {
       }
       TProtocol protocol = new  TBinaryProtocol(transport);
       return new Client(protocol);
-    });
+    }, connectionPoolSize);
   }
 
   public int getConnectTimeout() {

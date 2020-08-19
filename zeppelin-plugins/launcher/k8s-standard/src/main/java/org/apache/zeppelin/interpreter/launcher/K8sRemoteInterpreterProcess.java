@@ -75,9 +75,10 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
           boolean portForward,
           String sparkImage,
           int connectTimeout,
+          int connectionPoolSize,
           boolean isUserImpersonatedForSpark
   ) {
-    super(connectTimeout, intpEventServerHost, intpEventServerPort);
+    super(connectTimeout, connectionPoolSize, intpEventServerHost, intpEventServerPort);
     this.client = client;
     this.namespace = namespace;
     this.specTemplates = specTemplates;
