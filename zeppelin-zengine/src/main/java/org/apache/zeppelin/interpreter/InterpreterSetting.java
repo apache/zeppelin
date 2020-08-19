@@ -56,8 +56,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -72,7 +70,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
 
-import static org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_MAX_POOL_SIZE;
+import static org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_CONNECTION_POOL_SIZE;
 import static org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_OUTPUT_LIMIT;
 import static org.apache.zeppelin.util.IdHashes.generateId;
 
@@ -663,9 +661,9 @@ public class InterpreterSetting {
           conf.getInt(ZEPPELIN_INTERPRETER_OUTPUT_LIMIT) + "");
     }
 
-    if (!jProperties.containsKey("zeppelin.interpreter.max.poolsize")) {
-      jProperties.setProperty("zeppelin.interpreter.max.poolsize",
-          conf.getInt(ZEPPELIN_INTERPRETER_MAX_POOL_SIZE) + "");
+    if (!jProperties.containsKey(ZEPPELIN_INTERPRETER_CONNECTION_POOL_SIZE.getVarName())) {
+      jProperties.setProperty(ZEPPELIN_INTERPRETER_CONNECTION_POOL_SIZE.getVarName(),
+          conf.getInt(ZEPPELIN_INTERPRETER_CONNECTION_POOL_SIZE) + "");
     }
 
     String interpreterLocalRepoPath = conf.getInterpreterLocalRepoPath();

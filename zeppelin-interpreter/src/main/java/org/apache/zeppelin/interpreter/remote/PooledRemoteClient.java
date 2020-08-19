@@ -18,6 +18,7 @@
 package org.apache.zeppelin.interpreter.remote;
 
 import org.apache.commons.pool2.impl.GenericObjectPool;
+import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.apache.thrift.TException;
 import org.apache.thrift.TServiceClient;
 import org.slf4j.Logger;
@@ -36,13 +37,21 @@ public class PooledRemoteClient<T extends TServiceClient> {
   private GenericObjectPool<T> clientPool;
   private RemoteClientFactory<T> remoteClientFactory;
 
-  public PooledRemoteClient(SupplierWithIO<T> supplier) {
+  public PooledRemoteClient(SupplierWithIO<T> supplier, int connectionPoolSize) {
     this.remoteClientFactory = new RemoteClientFactory<>(supplier);
-    this.clientPool = new GenericObjectPool<>(remoteClientFactory);
+    GenericObjectPoolConfig poolConfig = new GenericObjectPoolConfig();
+    poolConfig.setMaxTotal(connectionPoolSize);
+    poolConfig.setMaxIdle(connectionPoolSize);
+    this.clientPool = new GenericObjectPool<>(remoteClientFactory, poolConfig);
+  }
+
+  public PooledRemoteClient(SupplierWithIO<T> supplier) {
+    this(supplier, 10);
   }
 
   public synchronized T getClient() throws Exception {
-    return clientPool.borrowObject(5_000);
+    T t = clientPool.borrowObject(5_000);
+    return t;
   }
 
   public void shutdown() {

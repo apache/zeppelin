@@ -57,6 +57,7 @@ public class K8sRemoteInterpreterProcessTest {
         false,
         "spark-container:1.0",
         10,
+        10,
         false);
 
     // then
@@ -84,6 +85,7 @@ public class K8sRemoteInterpreterProcessTest {
         12320,
         false,
         "spark-container:1.0",
+        10,
         10,
         false);
 
@@ -117,6 +119,7 @@ public class K8sRemoteInterpreterProcessTest {
         12320,
         false,
         "spark-container:1.0",
+        10,
         10,
         false);
 
@@ -169,6 +172,7 @@ public class K8sRemoteInterpreterProcessTest {
         false,
         "spark-container:1.0",
         10,
+        10,
         false);
 
     // when
@@ -219,6 +223,7 @@ public class K8sRemoteInterpreterProcessTest {
         false,
         "spark-container:1.0",
         10,
+        10,
         true);
 
     // when
@@ -268,6 +273,7 @@ public class K8sRemoteInterpreterProcessTest {
         false,
         "spark-container:1.0",
         10,
+        10,
         true);
 
     // when
@@ -305,6 +311,7 @@ public class K8sRemoteInterpreterProcessTest {
         12320,
         false,
         "spark-container:1.0",
+        10,
         10,
         false);
 
@@ -349,6 +356,7 @@ public class K8sRemoteInterpreterProcessTest {
         false,
         "spark-container:1.0",
         10,
+        10,
         false);
 
     // when
@@ -383,6 +391,7 @@ public class K8sRemoteInterpreterProcessTest {
         12320,
         false,
         "spark-container:1.0",
+        10,
         10,
         false);
 

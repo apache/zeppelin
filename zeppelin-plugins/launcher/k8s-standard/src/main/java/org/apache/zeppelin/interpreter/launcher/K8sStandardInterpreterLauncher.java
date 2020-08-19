@@ -152,6 +152,7 @@ public class K8sStandardInterpreterLauncher extends InterpreterLauncher {
             zConf.getK8sPortForward(),
             zConf.getK8sSparkContainerImage(),
             getConnectTimeout(),
+            getConnectPoolSize(),
             isUserImpersonateForSparkInterpreter(context));
   }
 

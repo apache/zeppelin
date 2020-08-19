@@ -25,6 +25,8 @@ import org.apache.zeppelin.interpreter.recovery.RecoveryStorage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_CONNECTION_POOL_SIZE;
+
 /**
  * Component to Launch interpreter process.
  */
@@ -60,6 +62,12 @@ public abstract class InterpreterLauncher {
           ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT.getVarName()));
     }
     return connectTimeout;
+  }
+
+  protected int getConnectPoolSize() {
+    return Integer.parseInt(properties.getProperty(
+            ZEPPELIN_INTERPRETER_CONNECTION_POOL_SIZE.getVarName(),
+            ZEPPELIN_INTERPRETER_CONNECTION_POOL_SIZE.getIntValue() + ""));
   }
 
   public static String escapeSpecialCharacter(String command) {

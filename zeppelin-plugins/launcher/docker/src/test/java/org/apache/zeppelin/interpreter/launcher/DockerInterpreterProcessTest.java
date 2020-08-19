@@ -91,7 +91,7 @@ public class DockerInterpreterProcessTest {
         envs,
         "zeppelin.server.hostname",
         12320,
-        5000);
+        5000, 10);
 
     assertEquals(intp.CONTAINER_SPARK_HOME, "my-spark-home");
     assertEquals(intp.uploadLocalLibToContainter, false);
@@ -117,7 +117,7 @@ public class DockerInterpreterProcessTest {
         envs,
         "zeppelin.server.hostname",
         12320,
-        5000);
+        5000, 10);
 
     Properties dockerProperties = intp.getTemplateBindings();
     assertEquals(dockerProperties.size(), 10);
