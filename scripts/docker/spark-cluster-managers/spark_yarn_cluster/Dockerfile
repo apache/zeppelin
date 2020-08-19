@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-FROM centos:centos7
+FROM centos:centos6
 
 ENV SPARK_PROFILE 2.4
 ENV SPARK_VERSION 2.4.0
@@ -34,8 +34,8 @@ yum clean all
 RUN yum remove java; yum remove jdk
 
 # install jdk7
-RUN yum install -y java-1.7.0-openjdk-devel
-ENV JAVA_HOME /usr/lib/jvm/java
+RUN yum install -y java-1.8.0-openjdk-devel
+ENV JAVA_HOME /usr/lib/jvm/jre-1.8.0-openjdk.x86_64
 ENV PATH $PATH:$JAVA_HOME/bin
 
 # install hadoop 
@@ -52,7 +52,7 @@ ENV HADOOP_MAPRED_HOME /usr/local/hadoop
 ENV HADOOP_YARN_HOME /usr/local/hadoop
 ENV HADOOP_CONF_DIR /usr/local/hadoop/etc/hadoop
 
-RUN sed -i '/^export JAVA_HOME/ s:.*:export JAVA_HOME=/usr/lib/jvm/jre-1.7.0-openjdk\nexport HADOOP_PREFIX=/usr/local/hadoop\nexport HADOOP_HOME=/usr/local/hadoop\n:' $HADOOP_PREFIX/etc/hadoop/hadoop-env.sh
+RUN sed -i '/^export JAVA_HOME/ s:.*:export JAVA_HOME=/usr/lib/jvm/jre-1.8.0-openjdk.x86_64\nexport HADOOP_PREFIX=/usr/local/hadoop\nexport HADOOP_HOME=/usr/local/hadoop\n:' $HADOOP_PREFIX/etc/hadoop/hadoop-env.sh
 RUN sed -i '/^export HADOOP_CONF_DIR/ s:.*:export HADOOP_CONF_DIR=/usr/local/hadoop/etc/hadoop/:' $HADOOP_PREFIX/etc/hadoop/hadoop-env.sh
 
 RUN mkdir $HADOOP_PREFIX/input
