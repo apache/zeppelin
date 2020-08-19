@@ -36,12 +36,13 @@ public class RemoteInterpreterRunningProcess extends RemoteInterpreterProcess {
       String interpreterSettingName,
       String interpreterGroupId,
       int connectTimeout,
+      int connectionPoolSize,
       String intpEventServerHost,
       int intpEventServerPort,
       String host,
       int port,
       boolean isRecovery) {
-    super(connectTimeout, intpEventServerHost, intpEventServerPort);
+    super(connectTimeout, connectionPoolSize, intpEventServerHost, intpEventServerPort);
     this.interpreterSettingName = interpreterSettingName;
     this.interpreterGroupId = interpreterGroupId;
     this.host = host;

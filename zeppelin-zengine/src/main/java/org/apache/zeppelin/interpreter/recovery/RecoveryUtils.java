@@ -33,6 +33,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
+
+import static org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_CONNECTION_POOL_SIZE;
 
 public class RecoveryUtils {
 
@@ -73,16 +76,23 @@ public class RecoveryUtils {
                                                                        InterpreterSettingManager interpreterSettingManager,
                                                                        ZeppelinConfiguration zConf) {
 
+    int connectTimeout =
+            zConf.getInt(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT);
+    Properties interpreterProperties =  interpreterSettingManager.getByName(interpreterSettingName).getJavaProperties();
+    int connectionPoolSize = Integer.parseInt(interpreterProperties.getProperty(
+            ZEPPELIN_INTERPRETER_CONNECTION_POOL_SIZE.getVarName(),
+            ZEPPELIN_INTERPRETER_CONNECTION_POOL_SIZE.getIntValue() + ""));
+
     Map<String, InterpreterClient> clients = new HashMap<>();
+
     if (!StringUtils.isBlank(recoveryData)) {
       for (String line : recoveryData.split(System.lineSeparator())) {
         String[] tokens = line.split("\t");
         String interpreterGroupId = tokens[0];
         String[] hostPort = tokens[1].split(":");
-        int connectTimeout =
-                zConf.getInt(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT);
+
         RemoteInterpreterRunningProcess client = new RemoteInterpreterRunningProcess(
-                interpreterSettingName, interpreterGroupId, connectTimeout,
+                interpreterSettingName, interpreterGroupId, connectTimeout, connectionPoolSize,
                 interpreterSettingManager.getInterpreterEventServer().getHost(),
                 interpreterSettingManager.getInterpreterEventServer().getPort(),
                 hostPort[0], Integer.parseInt(hostPort[1]), true);

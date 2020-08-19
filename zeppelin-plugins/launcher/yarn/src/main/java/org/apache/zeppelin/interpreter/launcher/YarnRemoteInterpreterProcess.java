@@ -99,8 +99,9 @@ public class YarnRemoteInterpreterProcess extends RemoteInterpreterProcess {
           InterpreterLaunchContext launchContext,
           Properties properties,
           Map<String, String> envs,
-          int connectTimeout) {
-    super(connectTimeout, launchContext.getIntpEventServerHost(), launchContext.getIntpEventServerPort());
+          int connectTimeout,
+          int connectionPoolSize) {
+    super(connectTimeout, connectionPoolSize, launchContext.getIntpEventServerHost(), launchContext.getIntpEventServerPort());
     this.zConf = ZeppelinConfiguration.create();
     this.launchContext = launchContext;
     this.properties = properties;
