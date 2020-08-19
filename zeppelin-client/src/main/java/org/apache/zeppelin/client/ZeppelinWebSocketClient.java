@@ -18,8 +18,6 @@
 package org.apache.zeppelin.client;
 
 import com.google.gson.Gson;
-import org.apache.zeppelin.notebook.repo.zeppelinhub.websocket.listener.ZeppelinhubWebsocket;
-import org.apache.zeppelin.notebook.socket.Message;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
@@ -38,7 +36,7 @@ import java.util.concurrent.TimeUnit;
 
 @WebSocket(maxTextMessageSize = 64 * 1024)
 public class ZeppelinWebSocketClient {
-  private static final Logger LOGGER = LoggerFactory.getLogger(ZeppelinhubWebsocket.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(ZeppelinWebSocketClient.class);
   private static final Gson GSON = new Gson();
 
   private CountDownLatch connectLatch = new CountDownLatch(1);
