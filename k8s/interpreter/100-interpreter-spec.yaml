@@ -81,7 +81,7 @@ spec:
   {% if zeppelin.k8s.interpreter.group.name == "flink" %}
     volumeMounts:
     - name: flink-home
-      mountPath: /flink
+      mountPath: /opt/flink
   initContainers:
   - name: flink-home-init
     image: {{zeppelin.k8s.flink.container.image}}

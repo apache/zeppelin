@@ -38,7 +38,7 @@ data:
   # default value of 'SPARK_HOME' property for spark interpreter.
   SPARK_HOME: /spark
   # default value of 'FLINK_HOME' property for flink interpreter.
-  FLINK_HOME: /flink
+  FLINK_HOME: /opt/flink
 ---
 apiVersion: v1
 kind: ConfigMap
