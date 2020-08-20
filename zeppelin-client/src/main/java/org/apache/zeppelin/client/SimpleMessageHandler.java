@@ -20,6 +20,9 @@ package org.apache.zeppelin.client;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Simple implementation of AbstractMessageHandler which only print output.
+ */
 public class SimpleMessageHandler extends AbstractMessageHandler {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SimpleMessageHandler.class);

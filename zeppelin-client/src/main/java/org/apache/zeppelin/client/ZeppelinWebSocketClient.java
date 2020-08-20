@@ -34,6 +34,11 @@ import java.net.URI;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+
+/**
+ * Represent websocket client.
+ *
+ */
 @WebSocket(maxTextMessageSize = 64 * 1024)
 public class ZeppelinWebSocketClient {
   private static final Logger LOGGER = LoggerFactory.getLogger(ZeppelinWebSocketClient.class);

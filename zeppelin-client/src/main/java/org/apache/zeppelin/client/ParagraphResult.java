@@ -25,6 +25,11 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.ArrayList;
 import java.util.List;
 
+
+/**
+ * Represent the paragraph execution result.
+ *
+ */
 public class ParagraphResult {
   private String paragraphId;
   private Status status;

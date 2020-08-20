@@ -18,6 +18,9 @@
 
 package org.apache.zeppelin.client;
 
+/**
+ * Interface of how to handle websocket message sent from ZeppelinServer.
+ */
 public interface MessageHandler {
 
   void onMessage(String msg);

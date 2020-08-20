@@ -35,6 +35,7 @@ public class ZSession {
   private ZeppelinClient zeppelinClient;
   private String interpreter;
   private Map<String, String> intpProperties;
+  // max number of retained statements, each statement represent one paragraph.
   private int maxStatement;
 
   private String sessionId;
@@ -58,14 +59,22 @@ public class ZSession {
     this.maxStatement = maxStatement;
   }
 
+  /**
+   * Start this ZSession, underneath it would create a note for this ZSession and
+   * start a dedicated interpreter group.
+   * This method won't establish websocket connection.
+   *
+   * @throws Exception
+   */
   public void start() throws Exception {
     start(null);
   }
 
   /**
    * Start this ZSession, underneath it would create a note for this ZSession and
-   * start a dedicated interpreter group.
+   * start a dedicated interpreter process.
    *
+   * @param messageHandler
    * @throws Exception
    */
   public void start(MessageHandler messageHandler) throws Exception {

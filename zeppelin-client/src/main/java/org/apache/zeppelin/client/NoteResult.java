@@ -20,6 +20,9 @@ package org.apache.zeppelin.client;
 
 import java.util.List;
 
+/**
+ *
+ */
 public class NoteResult {
   private String noteId;
   private boolean isRunning;

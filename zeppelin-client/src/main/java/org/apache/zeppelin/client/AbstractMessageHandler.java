@@ -21,6 +21,9 @@ import com.google.gson.Gson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Abstract class of MessageHandler.
+ */
 public abstract class AbstractMessageHandler implements MessageHandler {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AbstractMessageHandler.class);
@@ -37,11 +40,7 @@ public abstract class AbstractMessageHandler implements MessageHandler {
                 ", RECEIVE ROLES: " + messageReceived.roles +
                 ", RECEIVE DATA: " + messageReceived.data);
       }
-      if (LOGGER.isTraceEnabled()) {
-        LOGGER.trace("RECEIVE MSG = " + messageReceived);
-      }
 
-      // Lets be elegant here
       switch (messageReceived.op) {
         case PARAGRAPH_UPDATE_OUTPUT:
           String noteId = (String) messageReceived.data.get("noteId");
@@ -64,11 +63,25 @@ public abstract class AbstractMessageHandler implements MessageHandler {
     } catch (Exception e) {
       LOGGER.error("Can't handle message: " + msg, e);
     }
-
   }
 
+  /**
+   * Invoked when there's new statement output appended.
+   *
+   * @param statementId
+   * @param index
+   * @param output
+   */
   public abstract void onStatementAppendOutput(String statementId, int index, String output);
 
+  /**
+   * Invoked when statement's output is updated.
+   *
+   * @param statementId
+   * @param index
+   * @param type
+   * @param output
+   */
   public abstract void onStatementUpdateOutput(String statementId, int index, String type, String output);
 
 }

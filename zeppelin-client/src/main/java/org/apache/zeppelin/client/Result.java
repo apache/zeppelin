@@ -20,6 +20,10 @@ package org.apache.zeppelin.client;
 
 import kong.unirest.json.JSONObject;
 
+/**
+ * Represent one segment of result of paragraph. The result of paragraph could consists of
+ * multiple Results.
+ */
 public class Result {
   private String type;
   private String data;
