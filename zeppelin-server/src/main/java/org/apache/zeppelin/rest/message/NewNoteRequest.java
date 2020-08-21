@@ -29,6 +29,7 @@ public class NewNoteRequest implements JsonSerializable {
   private static final Gson gson = new Gson();
 
   String name;
+  String defaultInterpreterGroup;
   List<NewParagraphRequest> paragraphs;
 
   public NewNoteRequest (){
@@ -36,6 +37,10 @@ public class NewNoteRequest implements JsonSerializable {
 
   public String getName() {
     return name;
+  }
+
+  public String getDefaultInterpreterGroup() {
+    return defaultInterpreterGroup;
   }
 
   public List<NewParagraphRequest> getParagraphs() {

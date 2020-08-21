@@ -80,7 +80,7 @@ public class ZSession {
   public void start(MessageHandler messageHandler) throws Exception {
     this.sessionId = zeppelinClient.newSession(interpreter);
 
-    this.noteId = zeppelinClient.createNote("/_ZSession/" + interpreter + "/" + sessionId);
+    this.noteId = zeppelinClient.createNote("/_ZSession/" + interpreter + "/" + sessionId, interpreter);
     // inline configuration
     StringBuilder builder = new StringBuilder("%" + interpreter + ".conf\n");
     if (intpProperties != null) {
@@ -95,7 +95,8 @@ public class ZSession {
     }
 
     // start session
-    paragraphId = zeppelinClient.addParagraph(noteId, "Session Init", "%" + interpreter);
+    // add local properties (init) to avoid skip empty paragraph.
+    paragraphId = zeppelinClient.addParagraph(noteId, "Session Init", "%" + interpreter + "(init=true)");
     paragraphResult = zeppelinClient.executeParagraph(noteId, paragraphId, sessionId);
     if (paragraphResult.getStatus() != Status.FINISHED) {
       throw new Exception("Fail to init session, " + paragraphResult.getMessage());

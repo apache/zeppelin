@@ -409,9 +409,13 @@ public class NotebookRestApi extends AbstractRestApi {
       String user = authenticationService.getPrincipal();
       LOGGER.info("Creating new note by JSON {}", message);
       NewNoteRequest request = NewNoteRequest.fromJson(message);
+      String defaultInterpreterGroup = request.getDefaultInterpreterGroup();
+      if (StringUtils.isBlank(defaultInterpreterGroup)) {
+        defaultInterpreterGroup = zConf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_GROUP_DEFAULT);
+      }
       Note note = notebookService.createNote(
               request.getName(),
-              zConf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_GROUP_DEFAULT),
+              defaultInterpreterGroup,
               false,
               getServiceContext(),
               new RestServiceCallback<>());

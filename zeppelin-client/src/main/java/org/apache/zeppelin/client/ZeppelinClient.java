@@ -84,10 +84,10 @@ public class ZeppelinClient {
    */
   private void checkResponse(HttpResponse<JsonNode> response) throws Exception {
     if (response.getStatus() != 200) {
-      throw new Exception(String.format("Unable to call rest api, status: %s, statusText: %s, error: %s",
+      throw new Exception(String.format("Unable to call rest api, status: %s, statusText: %s, message: %s",
               response.getStatus(),
               response.getStatusText(),
-              response.getBody().toPrettyString()));
+              response.getBody().getObject().getString("message")));
     }
   }
 
@@ -211,16 +211,22 @@ public class ZeppelinClient {
     }
   }
 
+  public String createNote(String notePath) throws Exception {
+    return createNote(notePath, "");
+  }
+
   /**
-   * Create a new empty note with provided notePath.
+   * Create a new empty note with provided notePath and defaultInterpreterGroup
    *
    * @param notePath
+   * @param defaultInterpreterGroup
    * @return
    * @throws Exception
    */
-  public String createNote(String notePath) throws Exception {
+  public String createNote(String notePath, String defaultInterpreterGroup) throws Exception {
     JSONObject bodyObject = new JSONObject();
     bodyObject.put("name", notePath);
+    bodyObject.put("defaultInterpreterGroup", defaultInterpreterGroup);
     HttpResponse<JsonNode> response = Unirest
             .post("/notebook")
             .body(bodyObject.toString())
@@ -715,39 +721,4 @@ public class ZeppelinClient {
     }
   }
 
-  public void connectWS() {
-
-  }
-
-  public static void main(String[] args) throws Exception {
-//    ClientConfig clientConfig = new ClientConfig("https://localhost:8443/gateway/sandbox/zeppelin#", 1000, true);
-//    ZeppelinClient zeppelinClient = new ZeppelinClient(clientConfig);
-//    String noteId = zeppelinClient.createNote("/tmp/note6");
-//    System.out.println("created note: " + noteId);
-
-
-    SSLContext sslContext = new SSLContextBuilder().loadTrustMaterial(null, new TrustSelfSignedStrategy() {
-      public boolean isTrusted(X509Certificate[] chain, String authType) {
-        return true;
-      }
-    }).build();
-    HttpClient customHttpClient = HttpClients.custom().setSSLContext(sslContext)
-            .setSSLHostnameVerifier(new NoopHostnameVerifier()).build();
-    Unirest.config().httpClient(ApacheClient.builder(customHttpClient));
-
-    HttpResponse<String> response = Unirest.get("https://knox.c-4397d20c71f8ed65.cn-hangzhou.databricks.aliyuncs.com:8443/gateway/cluster-topo/zeppelin/")
-            .basicAuth("jianhan-test", "jianhan-test")
-            .asString();
-    System.out.println(response.getStatus() + ", " + response.getStatusText() + ", " + response.getBody());
-
-    HttpResponse<String> response2 = Unirest.get("https://knox.c-4397d20c71f8ed65.cn-hangzhou.databricks.aliyuncs.com:8443/gateway/cluster-topo/zeppelin/api/notebook")
-            .basicAuth("jianhan-test", "jianhan-test")
-            .asString();
-    System.out.println(response2.getStatus() + ", " + response2.getStatusText() + ", " + response2.getBody());
-
-    response = Unirest.post("https://knox.C-4397D20C71F8ED65.cn-hangzhou.databricks.aliyuncs.com:8443/gateway/knoxsso/api/v1/websso?originalUrl=")
-            .basicAuth("jianhan-test", "jianhan-test")
-            .asString();
-    System.out.println(response.getStatus() + ", " + response.getStatusText() + ", " + response.getBody());
-  }
 }

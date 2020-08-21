@@ -322,10 +322,10 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
 
   public boolean shouldSkipRunParagraph() {
     boolean checkEmptyConfig =
-            (Boolean) config.getOrDefault(InterpreterSetting.PARAGRAPH_CONFIG_CHECK_EMTPY, false);
+            (Boolean) config.getOrDefault(InterpreterSetting.PARAGRAPH_CONFIG_CHECK_EMTPY, true);
     // don't skip paragraph when local properties is not empty.
     // local properties can customize the behavior of interpreter. e.g. %r.shiny(type=run)
-    return checkEmptyConfig;
+    return checkEmptyConfig && Strings.isNullOrEmpty(scriptText) && localProperties.isEmpty();
   }
 
   public boolean execute(boolean blocking) {

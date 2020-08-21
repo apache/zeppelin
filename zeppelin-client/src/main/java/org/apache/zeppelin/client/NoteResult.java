@@ -45,4 +45,13 @@ public class NoteResult {
   public List<ParagraphResult> getParagraphResultList() {
     return paragraphResultList;
   }
+
+  @Override
+  public String toString() {
+    return "NoteResult{" +
+            "noteId='" + noteId + '\'' +
+            ", isRunning=" + isRunning +
+            ", paragraphResultList=" + paragraphResultList +
+            '}';
+  }
 }
