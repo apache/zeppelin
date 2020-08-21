@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
+ * Copied from zeppelin-zengine (TODO, zjffdu). Should resume the same piece of code instead of copying.
  * Zeppelin websocket massage template class.
  */
 public class Message implements JsonSerializable {

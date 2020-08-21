@@ -15,31 +15,30 @@
  * limitations under the License.
  */
 
-
 package org.apache.zeppelin.client;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+/**
+ * MessageHandler for each statement.
+ */
+public interface StatementMessageHandler {
 
-import java.util.HashMap;
-import java.util.Map;
+  /**
+   * Invoked when there's new statement output appended.
+   *
+   * @param statementId
+   * @param index
+   * @param output
+   */
+  void onStatementAppendOutput(String statementId, int index, String output);
 
-public class FlinkMessageHandler extends AbstractMessageHandler {
+  /**
+   * Invoked when statement's output is updated.
+   *
+   * @param statementId
+   * @param index
+   * @param type
+   * @param output
+   */
+  void onStatementUpdateOutput(String statementId, int index, String type, String output);
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(FlinkMessageHandler.class);
-
-  private Map<String, Result> resultMap = new HashMap<>();
-
-  @Override
-  public void onStatementAppendOutput(String statementId, int index, String output) {
-
-  }
-
-  @Override
-  public void onStatementUpdateOutput(String statementId, int index, String type, String output) {
-    if (resultMap.containsKey(statementId)) {
-//      LOGGER.info("result")
-    }
-    resultMap.put(statementId, new Result(type, output));
-  }
 }

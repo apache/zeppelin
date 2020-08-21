@@ -94,6 +94,7 @@
     <module>ksql</module>
     <module>sparql</module>
     <module>zeppelin-client</module>
+    <module>zeppelin-client-examples</module>
     <module>zeppelin-web</module>
     <module>zeppelin-server</module>
     <module>zeppelin-jupyter</module>

@@ -21,7 +21,6 @@ package org.apache.zeppelin.client;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * Execution result of each statement.
@@ -58,6 +57,10 @@ public class ExecuteResult {
 
   public List<String> getJobUrls() {
     return jobUrls;
+  }
+
+  public int getProgress() {
+    return progress;
   }
 
   @Override

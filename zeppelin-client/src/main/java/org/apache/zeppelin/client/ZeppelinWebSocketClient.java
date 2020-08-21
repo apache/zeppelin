@@ -49,20 +49,31 @@ public class ZeppelinWebSocketClient {
 
   private Session session;
   private MessageHandler messageHandler;
+  private WebSocketClient wsClient;
 
   public ZeppelinWebSocketClient(MessageHandler messageHandler) {
     this.messageHandler = messageHandler;
   }
 
   public void connect(String url) throws Exception {
-    WebSocketClient client = new WebSocketClient();
-    client.start();
+    this.wsClient = new WebSocketClient();
+    wsClient.start();
     URI echoUri = new URI(url);
     ClientUpgradeRequest request = new ClientUpgradeRequest();
     request.setHeader("Origin", "*");
-    client.connect(this, echoUri, request);
+    wsClient.connect(this, echoUri, request);
     connectLatch.await();
     LOGGER.info("WebSocket connect established");
+  }
+
+  public void addStatementMessageHandler(String statementId,
+                                         StatementMessageHandler statementMessageHandler) throws Exception {
+    if (messageHandler instanceof CompositeMessageHandler) {
+      ((CompositeMessageHandler) messageHandler).addStatementMessageHandler(statementId, statementMessageHandler);
+    } else {
+      throw new Exception("StatementMessageHandler is only supported by: "
+              + CompositeMessageHandler.class.getSimpleName());
+    }
   }
 
   public boolean awaitClose(int duration, TimeUnit unit) throws InterruptedException {
@@ -102,15 +113,13 @@ public class ZeppelinWebSocketClient {
     return connectLatch;
   }
 
-  public static void main(String[] args) throws Exception {
-//    ZeppelinWebSocket socket = new ZeppelinWebSocket();
-//    socket.connect("ws://localhost:18086/ws");
-//    Message msg = new Message(Message.OP.LIST_NOTES);
-//    socket.send(msg);
-//
-//    Thread.sleep(10 * 1000);
-//    socket.awaitClose(10, TimeUnit.SECONDS);
+  public void stop() throws Exception {
+    if (this.wsClient != null) {
+      this.wsClient.stop();
+    }
+  }
 
+  public static void main(String[] args) throws Exception {
     String dest = "ws://localhost:18086/ws";
     WebSocketClient client = new WebSocketClient();
     try {

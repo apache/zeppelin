@@ -21,7 +21,7 @@ package org.apache.zeppelin.client;
 import java.util.List;
 
 /**
- *
+ * Represent the note execution result.
  */
 public class NoteResult {
   private String noteId;

@@ -123,9 +123,13 @@ public class ZSession {
     if (sessionId != null) {
       zeppelinClient.stopSession(interpreter, sessionId);
     }
+    if (webSocketClient != null) {
+      webSocketClient.stop();
+    }
   }
 
   /**
+   * Run code in non-blocking way.
    *
    * @param code
    * @return
@@ -133,6 +137,18 @@ public class ZSession {
    */
   public ExecuteResult execute(String code) throws Exception {
     return execute("", code);
+  }
+
+  /**
+   * Run code in non-blocking way.
+   *
+   * @param code
+   * @param messageHandler
+   * @return
+   * @throws Exception
+   */
+  public ExecuteResult execute(String code, StatementMessageHandler messageHandler) throws Exception {
+    return execute("", code, messageHandler);
   }
 
   /**
@@ -149,12 +165,42 @@ public class ZSession {
   /**
    *
    * @param subInterpreter
+   * @param code
+   * @param messageHandler
+   * @return
+   * @throws Exception
+   */
+  public ExecuteResult execute(String subInterpreter, String code, StatementMessageHandler messageHandler) throws Exception {
+    return execute(subInterpreter, new HashMap<>(), code, messageHandler);
+  }
+
+  /**
+   *
+   * @param subInterpreter
    * @param localProperties
    * @param code
    * @return
    * @throws Exception
    */
-  public ExecuteResult execute(String subInterpreter, Map<String, String> localProperties, String code) throws Exception {
+  public ExecuteResult execute(String subInterpreter,
+                               Map<String, String> localProperties,
+                               String code) throws Exception {
+    return execute(subInterpreter, localProperties, code, null);
+  }
+
+  /**
+   *
+   * @param subInterpreter
+   * @param localProperties
+   * @param code
+   * @param messageHandler
+   * @return
+   * @throws Exception
+   */
+  public ExecuteResult execute(String subInterpreter,
+                               Map<String, String> localProperties,
+                               String code,
+                               StatementMessageHandler messageHandler) throws Exception {
     StringBuilder builder = new StringBuilder("%" + interpreter);
     if (!StringUtils.isBlank(subInterpreter)) {
       builder.append("." + subInterpreter);
@@ -172,6 +218,10 @@ public class ZSession {
 
     String nextParagraphId = zeppelinClient.nextSessionParagraph(noteId, maxStatement);
     zeppelinClient.updateParagraph(noteId, nextParagraphId, "", text);
+
+    if (messageHandler != null) {
+      webSocketClient.addStatementMessageHandler(nextParagraphId, messageHandler);
+    }
     ParagraphResult paragraphResult = zeppelinClient.executeParagraph(noteId, nextParagraphId, sessionId);
     return new ExecuteResult(paragraphResult);
   }
@@ -184,6 +234,17 @@ public class ZSession {
    */
   public ExecuteResult submit(String code) throws Exception {
     return submit("", code);
+  }
+
+  /**
+   *
+   * @param code
+   * @param messageHandler
+   * @return
+   * @throws Exception
+   */
+  public ExecuteResult submit(String code, StatementMessageHandler messageHandler) throws Exception {
+    return submit("", code, messageHandler);
   }
 
   /**
@@ -201,10 +262,37 @@ public class ZSession {
    *
    * @param subInterpreter
    * @param code
+   * @param messageHandler
+   * @return
+   * @throws Exception
+   */
+  public ExecuteResult submit(String subInterpreter, String code, StatementMessageHandler messageHandler) throws Exception {
+    return submit(subInterpreter, new HashMap<>(), code, messageHandler);
+  }
+
+  /**
+   *
+   * @param subInterpreter
+   * @param code
    * @return
    * @throws Exception
    */
   public ExecuteResult submit(String subInterpreter, Map<String, String> localProperties, String code) throws Exception {
+    return submit(subInterpreter, localProperties, code, null);
+  }
+
+  /**
+   *
+   * @param subInterpreter
+   * @param code
+   * @param messageHandler
+   * @return
+   * @throws Exception
+   */
+  public ExecuteResult submit(String subInterpreter,
+                              Map<String, String> localProperties,
+                              String code,
+                              StatementMessageHandler messageHandler) throws Exception {
     StringBuilder builder = new StringBuilder("%" + interpreter);
     if (!StringUtils.isBlank(subInterpreter)) {
       builder.append("." + subInterpreter);
@@ -221,6 +309,9 @@ public class ZSession {
     String text = builder.toString();
     String nextParagraphId = zeppelinClient.nextSessionParagraph(noteId, maxStatement);
     zeppelinClient.updateParagraph(noteId, nextParagraphId, "", text);
+    if (messageHandler != null) {
+      webSocketClient.addStatementMessageHandler(nextParagraphId, messageHandler);
+    }
     ParagraphResult paragraphResult = zeppelinClient.submitParagraph(noteId, nextParagraphId, sessionId);
     return new ExecuteResult(paragraphResult);
   }
@@ -232,6 +323,17 @@ public class ZSession {
    */
   public void cancel(String statementId) throws Exception {
     zeppelinClient.cancelParagraph(noteId, statementId);
+  }
+
+  /**
+   *
+   * @param statementId
+   * @return
+   * @throws Exception
+   */
+  public ExecuteResult queryStatement(String statementId) throws Exception {
+    ParagraphResult paragraphResult = zeppelinClient.queryParagraphResult(noteId, statementId);
+    return new ExecuteResult(paragraphResult);
   }
 
   /**

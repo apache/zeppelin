@@ -142,7 +142,7 @@
 
   <property>
     <name>zeppelin.server.allowed.origins</name>
-    <value>*</value>
+    <value>http://onehost:8080,http://otherhost.com,</value>
     <description>Allowed sources for REST and WebSocket requests.</description>
   </property>
 <!--
