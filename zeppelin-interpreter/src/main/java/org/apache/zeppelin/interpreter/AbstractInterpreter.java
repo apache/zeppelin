@@ -17,7 +17,6 @@
 
 package org.apache.zeppelin.interpreter;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 
 import java.util.ArrayList;

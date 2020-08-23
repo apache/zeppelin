@@ -42,17 +42,11 @@
 
   <dependencies>
 
-<!--    <dependency>-->
-<!--      <groupId>org.apache.zeppelin</groupId>-->
-<!--      <artifactId>zeppelin-zengine</artifactId>-->
-<!--      <version>${project.version}</version>-->
-<!--    </dependency>-->
     <dependency>
       <groupId>org.eclipse.jetty.websocket</groupId>
       <artifactId>websocket-client</artifactId>
       <version>${jetty.version}</version>
     </dependency>
-
 
     <dependency>
       <groupId>com.konghq</groupId>

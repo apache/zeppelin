@@ -22,8 +22,6 @@ package org.apache.zeppelin.service;
 import static org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_HOMESCREEN;
 
 import com.google.common.base.Strings;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -35,7 +33,6 @@ import java.util.Map;
 import java.util.Set;
 import javax.inject.Inject;
 
-import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.display.AngularObject;
@@ -59,7 +56,6 @@ import org.apache.zeppelin.rest.exception.ParagraphNotFoundException;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.bitbucket.cowwoc.diffmatchpatch.DiffMatchPatch;
-import org.eclipse.jgit.errors.MissingObjectException;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
