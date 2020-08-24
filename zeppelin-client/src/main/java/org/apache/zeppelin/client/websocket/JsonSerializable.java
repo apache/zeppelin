@@ -15,25 +15,12 @@
  * limitations under the License.
  */
 
-package org.apache.zeppelin.client;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+package org.apache.zeppelin.client.websocket;
 
 /**
- * Simple implementation of AbstractMessageHandler which only print output.
+ * Interface for class that can be serialized to json
  */
-public class SimpleMessageHandler extends AbstractMessageHandler {
+public interface JsonSerializable {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(SimpleMessageHandler.class);
-
-  @Override
-  public void onStatementAppendOutput(String statementId, int index, String output) {
-    LOGGER.info("Append output, data: {}", output);
-  }
-
-  @Override
-  public void onStatementUpdateOutput(String statementId, int index, String type, String output) {
-    LOGGER.info("Update output, type: {}, data: {}", type, output);
-  }
+  String toJson();
 }

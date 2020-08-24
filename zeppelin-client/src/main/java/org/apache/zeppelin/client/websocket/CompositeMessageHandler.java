@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.zeppelin.client;
+package org.apache.zeppelin.client.websocket;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

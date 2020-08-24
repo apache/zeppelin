@@ -15,12 +15,30 @@
  * limitations under the License.
  */
 
-package org.apache.zeppelin.client;
+package org.apache.zeppelin.client.websocket;
 
 /**
- * Interface for class that can be serialized to json
+ * MessageHandler for each statement.
  */
-public interface JsonSerializable {
+public interface StatementMessageHandler {
 
-  String toJson();
+  /**
+   * Invoked when there's new statement output appended.
+   *
+   * @param statementId
+   * @param index
+   * @param output
+   */
+  void onStatementAppendOutput(String statementId, int index, String output);
+
+  /**
+   * Invoked when statement's output is updated.
+   *
+   * @param statementId
+   * @param index
+   * @param type
+   * @param output
+   */
+  void onStatementUpdateOutput(String statementId, int index, String type, String output);
+
 }

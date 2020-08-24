@@ -19,7 +19,7 @@ package org.apache.zeppelin.client.examples;
 
 import org.apache.zeppelin.client.ClientConfig;
 import org.apache.zeppelin.client.ExecuteResult;
-import org.apache.zeppelin.client.SimpleMessageHandler;
+import org.apache.zeppelin.client.websocket.SimpleMessageHandler;
 import org.apache.zeppelin.client.ZSession;
 
 import java.util.HashMap;

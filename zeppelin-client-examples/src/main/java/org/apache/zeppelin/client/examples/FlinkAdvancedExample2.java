@@ -20,9 +20,9 @@ package org.apache.zeppelin.client.examples;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.zeppelin.client.ClientConfig;
-import org.apache.zeppelin.client.CompositeMessageHandler;
+import org.apache.zeppelin.client.websocket.CompositeMessageHandler;
 import org.apache.zeppelin.client.ExecuteResult;
-import org.apache.zeppelin.client.StatementMessageHandler;
+import org.apache.zeppelin.client.websocket.StatementMessageHandler;
 import org.apache.zeppelin.client.ZSession;
 
 import java.util.HashMap;

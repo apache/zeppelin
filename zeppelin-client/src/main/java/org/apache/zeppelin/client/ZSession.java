@@ -18,6 +18,10 @@
 package org.apache.zeppelin.client;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.zeppelin.client.websocket.Message;
+import org.apache.zeppelin.client.websocket.MessageHandler;
+import org.apache.zeppelin.client.websocket.StatementMessageHandler;
+import org.apache.zeppelin.client.websocket.ZeppelinWebSocketClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
