@@ -49,6 +49,7 @@ import org.apache.zeppelin.notebook.AuthorizationService;
 import org.apache.zeppelin.notebook.repo.NotebookRepoWithVersionControl;
 import org.apache.zeppelin.notebook.scheduler.SchedulerService;
 import org.apache.zeppelin.notebook.socket.Message;
+import org.apache.zeppelin.rest.SessionManager;
 import org.apache.zeppelin.rest.exception.BadRequestException;
 import org.apache.zeppelin.rest.exception.ForbiddenException;
 import org.apache.zeppelin.rest.exception.NoteNotFoundException;
@@ -82,6 +83,7 @@ public class NotebookService {
   private Notebook notebook;
   private AuthorizationService authorizationService;
   private SchedulerService schedulerService;
+  private SessionManager sessionManager;
 
   @Inject
   public NotebookService(

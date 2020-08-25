@@ -18,6 +18,7 @@
 
 package org.apache.zeppelin.client;
 
+import kong.unirest.GetRequest;
 import kong.unirest.HttpResponse;
 import kong.unirest.JsonNode;
 import kong.unirest.Unirest;
@@ -178,6 +179,38 @@ public class ZeppelinClient {
     } else {
       return null;
     }
+  }
+
+  /**
+   *
+   * @return
+   * @throws Exception
+   */
+  public List<SessionResult> listSessions() throws Exception {
+    return listSessions(null);
+  }
+
+  /**
+   *
+   * @param interpreter
+   * @return
+   * @throws Exception
+   */
+  public List<SessionResult> listSessions(String interpreter) throws Exception {
+    GetRequest getRequest = Unirest.get("/session");
+    if (interpreter != null) {
+      getRequest.queryString("interpreter", interpreter);
+    }
+    HttpResponse<JsonNode> response = getRequest.asJson();
+    checkResponse(response);
+    JsonNode jsonNode = response.getBody();
+    checkJsonNodeStatus(jsonNode);
+    JSONArray sessionJsonArray = jsonNode.getObject().getJSONArray("body");
+    List<SessionResult> sessionResults = new ArrayList<>();
+    for (int i = 0; i< sessionJsonArray.length();++i) {
+      sessionResults.add(new SessionResult(sessionJsonArray.getJSONObject(i)));
+    }
+    return sessionResults;
   }
 
   /**

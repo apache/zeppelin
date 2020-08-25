@@ -17,11 +17,13 @@
 
 package org.apache.zeppelin.rest;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.zeppelin.annotation.ZeppelinApi;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.notebook.Notebook;
+import org.apache.zeppelin.rest.message.Session;
 import org.apache.zeppelin.server.JsonResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,8 +36,10 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -56,7 +60,29 @@ public class SessionRestApi {
   public SessionRestApi(Notebook notebook, InterpreterSettingManager interpreterSettingManager) {
     this.notebook = notebook;
     this.interpreterSettingManager = interpreterSettingManager;
-    this.sessionManager = new SessionManager();
+    this.sessionManager = new SessionManager(interpreterSettingManager);
+  }
+
+  @GET
+  @Path("/")
+  public Response listSessions(@QueryParam("interpreter") String interpreter) {
+    if (StringUtils.isBlank(interpreter)) {
+      LOGGER.info("List all sessions");
+    } else {
+      LOGGER.info("List all sessions for interpreter: " + interpreter);
+    }
+    try {
+      List<Session> sessionList = null;
+      if (StringUtils.isBlank(interpreter)) {
+        sessionList = sessionManager.getAllSessionStatus();
+      } else {
+        sessionList = sessionManager.getAllSessionStatus(interpreter);
+      }
+      return new JsonResponse<>(Response.Status.OK, sessionList).build();
+    } catch (Exception e) {
+      return new JsonResponse<>(Response.Status.INTERNAL_SERVER_ERROR,
+              "Fail to list session", ExceptionUtils.getStackTrace(e)).build();
+    }
   }
 
   @POST
@@ -96,13 +122,10 @@ public class SessionRestApi {
   @ZeppelinApi
   public Response getSession(@PathParam("sessionId") String sessionId) {
     try {
-      InterpreterGroup intpGroup = interpreterSettingManager.getInterpreterGroupById(sessionId);
-      if (intpGroup == null) {
+      Session session = sessionManager.getSession(sessionId);
+      if (session == null) {
         return new JsonResponse<>(Response.Status.NOT_FOUND).build();
       } else {
-        Map<String, String> session = new HashMap<>();
-        session.put("id", sessionId);
-        session.put("weburl", intpGroup.getWebUrl());
         return new JsonResponse<>(Response.Status.OK, "", session).build();
       }
     } catch (Throwable e) {
