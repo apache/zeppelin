@@ -5,6 +5,7 @@ import kong.unirest.json.JSONObject;
 public class SessionResult {
 
   private String sessionId;
+  private String noteId;
   private String interpreter;
   private String state;
   private String weburl;
@@ -12,6 +13,7 @@ public class SessionResult {
 
   public SessionResult(JSONObject sessionJson) {
     this.sessionId = sessionJson.getString("sessionId");
+    this.noteId = sessionJson.getString("noteId");
     this.interpreter = sessionJson.getString("interpreter");
     this.state = sessionJson.getString("state");
     if (sessionJson.has("weburl")) {
@@ -28,6 +30,10 @@ public class SessionResult {
 
   public String getSessionId() {
     return sessionId;
+  }
+
+  public String getNoteId() {
+    return noteId;
   }
 
   public String getInterpreter() {

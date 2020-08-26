@@ -60,7 +60,7 @@ public class SessionRestApi {
   public SessionRestApi(Notebook notebook, InterpreterSettingManager interpreterSettingManager) {
     this.notebook = notebook;
     this.interpreterSettingManager = interpreterSettingManager;
-    this.sessionManager = new SessionManager(interpreterSettingManager);
+    this.sessionManager = new SessionManager(notebook, interpreterSettingManager);
   }
 
   @GET

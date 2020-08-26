@@ -63,6 +63,14 @@ public class ZSession {
     this.maxStatement = maxStatement;
   }
 
+  private ZSession(ClientConfig clientConfig,
+                  String interpreter,
+                  String sessionId) throws Exception {
+    this.zeppelinClient = new ZeppelinClient(clientConfig);
+    this.interpreter = interpreter;
+    this.sessionId = sessionId;
+  }
+
   /**
    * Start this ZSession, underneath it would create a note for this ZSession and
    * start a dedicated interpreter group.
@@ -130,6 +138,53 @@ public class ZSession {
     }
     if (webSocketClient != null) {
       webSocketClient.stop();
+    }
+  }
+
+  /**
+   * Session has been started in ZeppelinServer, this method is just to reconnect it.
+   * This method is used for connect to an existing session in ZeppelinServer, instead of
+   * start it from ZSession.
+   * @throws Exception
+   */
+  public static ZSession createFromExistingSession(ClientConfig clientConfig,
+                                                   String interpreter,
+                                                   String sessionId) throws Exception {
+    return createFromExistingSession(clientConfig, interpreter, sessionId, null);
+  }
+
+  /**
+   * Session has been started in ZeppelinServer, this method is just to reconnect it.
+   * This method is used for connect to an existing session in ZeppelinServer, instead of
+   * start it from ZSession.
+   * @throws Exception
+   */
+  public static ZSession createFromExistingSession(ClientConfig clientConfig,
+                                                   String interpreter,
+                                                   String sessionId,
+                                                   MessageHandler messageHandler) throws Exception {
+    ZSession session = new ZSession(clientConfig, interpreter, sessionId);
+    session.reconnect(messageHandler);
+    return session;
+  }
+
+  private void reconnect(MessageHandler messageHandler) throws Exception {
+    SessionResult sessionResult = this.zeppelinClient.getSession(sessionId);
+    this.noteId = sessionResult.getNoteId();
+    if (!sessionResult.getState().equalsIgnoreCase("Running")) {
+      throw new Exception("Session " + sessionId + " is not running, state: " + sessionResult.getState());
+    }
+    this.weburl = sessionResult.getWeburl();
+
+    if (messageHandler != null) {
+      this.webSocketClient = new ZeppelinWebSocketClient(messageHandler);
+      this.webSocketClient.connect(zeppelinClient.getClientConfig().getZeppelinRestUrl()
+              .replace("https", "ws").replace("http", "ws") + "/ws");
+
+      // call GET_NOTE to establish websocket connection between this session and zeppelin-server
+      Message msg = new Message(Message.OP.GET_NOTE);
+      msg.put("id", this.noteId);
+      this.webSocketClient.send(msg);
     }
   }
 
@@ -411,7 +466,7 @@ public class ZSession {
 
   public static void main(String[] args) throws Exception {
 
-    ClientConfig clientConfig = new ClientConfig("http://localhost:18086", 1000);
+    ClientConfig clientConfig = new ClientConfig("http://localhost:8080", 1000);
 //    ZSession hiveSession = new ZSession(clientConfig, "hive", new HashMap<>(), 100);
 //    hiveSession.start();
 //
@@ -423,8 +478,9 @@ public class ZSession {
 //    executeResult = hiveSession.waitUntilFinished(executeResult.getStatementId());
 //    System.out.println(executeResult.toString());
 
-    ZSession sparkSession = new ZSession(clientConfig, "sh", new HashMap<>(), 100);
-    sparkSession.start();
+    ZSession sparkSession = ZSession.createFromExistingSession(clientConfig, "hive", "hive_1598418780469");
+    ExecuteResult executeResult = sparkSession.execute("show databases");
+    System.out.println(executeResult);
 
 //    ExecuteResult executeResult = sparkSession.submit("sql", "show tables");
 //    executeResult = sparkSession.waitUntilFinished(executeResult.getStatementId());

@@ -158,6 +158,24 @@ public class ZeppelinClient {
   }
 
   /**
+   *
+   * @param sessionId
+   * @throws Exception
+   */
+  public SessionResult getSession(String sessionId) throws Exception {
+    HttpResponse<JsonNode> response = Unirest
+            .get("/session/{sessionId}")
+            .routeParam("sessionId", sessionId)
+            .asJson();
+    checkResponse(response);
+    JsonNode jsonNode = response.getBody();
+    checkJsonNodeStatus(jsonNode);
+
+    JSONObject bodyObject = jsonNode.getObject().getJSONObject("body");
+    return new SessionResult(bodyObject);
+  }
+
+  /**
    * Get the session weburl. It is spark ui url for spark interpreter,
    * or flink web ui for flink interpreter, or may be null for the interpreter that has no weburl.
    *

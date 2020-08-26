@@ -3,13 +3,15 @@ package org.apache.zeppelin.rest.message;
 public class Session {
 
   private String sessionId;
+  private String noteId;
   private String interpreter;
   private String state;
   private String weburl;
   private String startTime;
 
-  public Session(String sessionId, String interpreter, String state, String weburl, String startTime) {
+  public Session(String sessionId, String noteId, String interpreter, String state, String weburl, String startTime) {
     this.sessionId = sessionId;
+    this.noteId = noteId;
     this.interpreter = interpreter;
     this.state = state;
     this.weburl = weburl;
@@ -18,6 +20,10 @@ public class Session {
 
   public String getSessionId() {
     return sessionId;
+  }
+
+  public String getNoteId() {
+    return noteId;
   }
 
   public String getState() {

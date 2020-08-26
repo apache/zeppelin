@@ -22,6 +22,8 @@ import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.interpreter.ManagedInterpreterGroup;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
+import org.apache.zeppelin.notebook.NoteInfo;
+import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.rest.message.Session;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,6 +32,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class SessionManager {
 
@@ -38,8 +41,10 @@ public class SessionManager {
   private static final int RETRY = 3;
   private Set<String> sessions = new HashSet<>();
   private InterpreterSettingManager interpreterSettingManager;
+  private Notebook notebook;
 
-  public SessionManager(InterpreterSettingManager interpreterSettingManager) {
+  public SessionManager(Notebook notebook, InterpreterSettingManager interpreterSettingManager) {
+    this.notebook = notebook;
     this.interpreterSettingManager = interpreterSettingManager;
   }
 
@@ -83,8 +88,19 @@ public class SessionManager {
           state = "Stopped";
         }
       }
-      return new Session(sessionId,
-              ((ManagedInterpreterGroup) interpreterGroup).getInterpreterSetting().getName(),
+      String noteId = "";
+      String interpreter = ((ManagedInterpreterGroup) interpreterGroup).getInterpreterSetting().getName();
+      String notePath = "/_ZSession/" + interpreter + "/" + sessionId;
+      List<NoteInfo> notesInfo = notebook.getNotesInfo().stream()
+              .filter(e -> e.getPath().equals(notePath))
+              .collect(Collectors.toList());
+      if (notesInfo.size() != 0) {
+        noteId = notesInfo.get(0).getId();
+        if (notesInfo.size() > 1) {
+          LOGGER.warn("Found more than 1 notes with path: " + notePath);
+        }
+      }
+      return new Session(sessionId, noteId, interpreter,
               state, interpreterGroup.getWebUrl(), startTime);
     }
     LOGGER.warn("No such session: " + sessionId);
