@@ -430,6 +430,10 @@ public class ZSession {
     return sessionId;
   }
 
+  public String getInterpreter() {
+    return interpreter;
+  }
+
   public ZeppelinClient getZeppelinClient() {
     return zeppelinClient;
   }
