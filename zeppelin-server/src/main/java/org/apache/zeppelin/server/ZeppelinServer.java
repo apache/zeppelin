@@ -325,16 +325,14 @@ public class ZeppelinServer extends ResourceConfig {
     HttpConfiguration httpConfig = new HttpConfiguration();
     httpConfig.addCustomizer(new ForwardedRequestCustomizer());
     httpConfig.setSendServerVersion(conf.sendJettyName());
+    httpConfig.setRequestHeaderSize(conf.getJettyRequestHeaderSize());
     if (conf.useSsl()) {
       LOG.debug("Enabling SSL for Zeppelin Server on port {}", sslPort);
       httpConfig.setSecureScheme("https");
       httpConfig.setSecurePort(sslPort);
-      httpConfig.setOutputBufferSize(32768);
-      httpConfig.setResponseHeaderSize(8192);
 
       HttpConfiguration httpsConfig = new HttpConfiguration(httpConfig);
-      SecureRequestCustomizer src = new SecureRequestCustomizer();
-      httpsConfig.addCustomizer(src);
+      httpsConfig.addCustomizer(new SecureRequestCustomizer());
 
       connector =
               new ServerConnector(
@@ -346,7 +344,6 @@ public class ZeppelinServer extends ResourceConfig {
       connector = new ServerConnector(server, new HttpConnectionFactory(httpConfig));
       connector.setPort(port);
     }
-    configureRequestHeaderSize(conf, connector);
     // Set some timeout options to make debugging easier.
     int timeout = 1000 * 30;
     connector.setIdleTimeout(timeout);
@@ -393,14 +390,6 @@ public class ZeppelinServer extends ResourceConfig {
         System.exit(success ? 0 : 1);
       }
     }
-  }
-
-  private static void configureRequestHeaderSize(
-      ZeppelinConfiguration conf, ServerConnector connector) {
-    HttpConnectionFactory cf =
-        (HttpConnectionFactory) connector.getConnectionFactory(HttpVersion.HTTP_1_1.toString());
-    int requestHeaderSize = conf.getJettyRequestHeaderSize();
-    cf.getHttpConfiguration().setRequestHeaderSize(requestHeaderSize);
   }
 
   private static void setupNotebookServer(
