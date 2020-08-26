@@ -375,6 +375,10 @@ public class ZSession {
     return sessionId;
   }
 
+  public ZeppelinClient getZeppelinClient() {
+    return zeppelinClient;
+  }
+
   public static Builder builder() {
     return new Builder();
   }
