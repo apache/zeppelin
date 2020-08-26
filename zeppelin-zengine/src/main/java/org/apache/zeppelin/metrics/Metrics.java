@@ -49,6 +49,8 @@ public class Metrics {
     metricRegistry.register(MetricRegistry.name("jvm", "fd_usage"), new FileDescriptorRatioGauge());
     metricRegistry.register(MetricRegistry.name("jvm", "classes"), new ClassLoadingGaugeSet());
     metricRegistry.register("jvm", new JvmAttributeGaugeSet());
+    // Register reporters here.
+    MetricsReporters.startReporters(metricRegistry);
 
     healthcheckReadinessRegistry = new HealthCheckRegistry();
     healthcheckReadinessRegistry.register("dummy", new DummyHealthCheck());

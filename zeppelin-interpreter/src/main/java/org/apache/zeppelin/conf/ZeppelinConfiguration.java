@@ -884,6 +884,14 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getString(ConfVars.ZEPPELIN_DOCKER_CONTAINER_IMAGE);
   }
 
+  public String getMetricsGraphiteHost() {
+    return getString(ConfVars.ZEPPELIN_METRICS_GRAPHITE_HOST);
+  }
+
+  public int getMetricsGraphitePort() {
+    return getInt(ConfVars.ZEPPELIN_METRICS_GRAPHITE_PORT);
+  }
+
   public Map<String, String> dumpConfigurations(Predicate<String> predicate) {
     Map<String, String> properties = new HashMap<>();
 
@@ -1094,6 +1102,9 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_K8S_TIMEOUT_DURING_PENDING("zeppelin.k8s.timeout.during.pending", true),
 
     ZEPPELIN_DOCKER_CONTAINER_IMAGE("zeppelin.docker.container.image", "apache/zeppelin:" + Util.getVersion()),
+
+    ZEPPELIN_METRICS_GRAPHITE_HOST("zeppelin.metrics.graphite.host", null),
+    ZEPPELIN_METRICS_GRAPHITE_PORT("zeppelin.metrics.graphite.port", 2003),
 
     ZEPPELIN_IMPERSONATE_SPARK_PROXY_USER("zeppelin.impersonate.spark.proxy.user", true),
     ZEPPELIN_NOTEBOOK_GIT_REMOTE_URL("zeppelin.notebook.git.remote.url", ""),

@@ -161,6 +161,11 @@
         <artifactId>metrics-jvm</artifactId>
         <version>${dropwizard.version}</version>
     </dependency>
+    <dependency>
+        <groupId>io.dropwizard.metrics</groupId>
+        <artifactId>metrics-graphite</artifactId>
+        <version>${dropwizard.version}</version>
+    </dependency>
 
     <dependency>
       <groupId>com.google.code.gson</groupId>
