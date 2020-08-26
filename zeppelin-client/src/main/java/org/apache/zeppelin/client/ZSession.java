@@ -371,6 +371,10 @@ public class ZSession {
     return weburl;
   }
 
+  public String getSessionId() {
+    return sessionId;
+  }
+
   public static Builder builder() {
     return new Builder();
   }
