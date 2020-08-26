@@ -227,6 +227,7 @@ The following components are provided under Apache License.
     (Apache 2.0) Dropwizard Jackson Integration for Metrics (io.dropwizard.metrics:metrics-json:4.1.14) - https://github.com/dropwizard/metrics/blob/release/4.1.x/LICENSE
     (Apache 2.0) Dropwizard Metrics Health Checks (io.dropwizard.metrics:metrics-healthchecks:4.1.14) - https://github.com/dropwizard/metrics/blob/release/4.1.x/LICENSE
     (Apache 2.0) Dropwizard Graphite Integration for Metrics (io.dropwizard.metrics:metrics-graphite:4.1.14) - https://github.com/dropwizard/metrics/blob/release/4.1.x/LICENSE
+    (Apache 2.0) Dropwizard Metrics Integration for Jetty 9.3 and higher (io.dropwizard.metrics:metrics-jetty9:4.1.14) - https://github.com/dropwizard/metrics/blob/release/4.1.x/LICENSE
     (Apache 2.0) Prometheus Java Simpleclient Dropwizard (io.prometheus:simpleclient_dropwizard:0.9.0) - https://github.com/prometheus/client_java/blob/master/LICENSE
 
 ========================================================================

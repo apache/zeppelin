@@ -120,6 +120,18 @@
     </dependency>
 
     <dependency>
+        <groupId>io.dropwizard.metrics</groupId>
+        <artifactId>metrics-jetty9</artifactId>
+        <version>${dropwizard.version}</version>
+        <exclusions>
+            <exclusion>
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-server</artifactId>
+            </exclusion>
+        </exclusions>
+    </dependency>
+
+    <dependency>
         <groupId>io.prometheus</groupId>
         <artifactId>simpleclient_dropwizard</artifactId>
         <version>${prometheus.simpleclient.version}</version>

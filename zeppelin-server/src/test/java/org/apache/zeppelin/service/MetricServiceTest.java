@@ -102,6 +102,44 @@ public class MetricServiceTest extends AbstractTestRestApi {
     get.close();
   }
 
+  /**
+   * Tests that checks that HTTP calls are counted
+   * @throws IOException
+   */
+  @Test
+  public void testJettyMetrics() throws IOException {
+    CloseableHttpResponse get = getHttpClient().execute(new HttpGet(getUrlToTest() + "/metrics/json"));
+    assertEquals(200, get.getStatusLine().getStatusCode());
+
+    String response = EntityUtils.toString(get.getEntity());
+    get.close();
+
+    int jettyRequest = getJettyGetRequests(JsonParser.parseString(response).getAsJsonObject());
+    assertNotEquals(0, jettyRequest);
+
+    // second get request
+    get = getHttpClient().execute(new HttpGet(getUrlToTest() + "/metrics/json"));
+    assertEquals(200, get.getStatusLine().getStatusCode());
+
+    response = EntityUtils.toString(get.getEntity());
+    get.close();
+
+    assertTrue("jettyRequest counter is higher then before", jettyRequest < getJettyGetRequests(JsonParser.parseString(response).getAsJsonObject()));
+
+  }
+
+  private int getJettyGetRequests(JsonObject json) {
+    JsonElement timers = json.get("timers");
+    assertNotNull(timers);
+    assertTrue(timers.isJsonObject());
+
+    JsonElement getRequests = ((JsonObject) timers).get("jetty.http.get-requests");
+    assertNotNull(getRequests);
+    assertTrue(getRequests.isJsonObject());
+
+    return ((JsonObject)getRequests).get("count").getAsInt();
+  }
+
   protected static String getUrlToTest() {
     String url = "http://localhost:8080";
     if (System.getProperty("url") != null) {

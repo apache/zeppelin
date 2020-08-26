@@ -16,6 +16,11 @@
  */
 package org.apache.zeppelin.server;
 
+import com.codahale.metrics.MetricFilter;
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.jetty9.InstrumentedConnectionFactory;
+import com.codahale.metrics.jetty9.InstrumentedHttpChannelListener;
+import com.codahale.metrics.jetty9.InstrumentedQueuedThreadPool;
 import com.codahale.metrics.servlets.HealthCheckServlet;
 import com.codahale.metrics.servlets.MetricsServlet;
 import com.codahale.metrics.servlets.PingServlet;
@@ -82,6 +87,7 @@ import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
 import org.apache.zeppelin.util.ReflectionUtils;
 import org.apache.zeppelin.utils.PEMImporter;
+import org.eclipse.jetty.http.HttpScheme;
 import org.eclipse.jetty.http.HttpVersion;
 import org.eclipse.jetty.jmx.ConnectorServer;
 import org.eclipse.jetty.jmx.MBeanContainer;
@@ -99,8 +105,6 @@ import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.resource.Resource;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
-import org.eclipse.jetty.util.thread.QueuedThreadPool;
-import org.eclipse.jetty.util.thread.ThreadPool;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.eclipse.jetty.websocket.servlet.WebSocketServlet;
 import org.glassfish.hk2.api.Immediate;
@@ -117,6 +121,7 @@ import org.slf4j.LoggerFactory;
 public class ZeppelinServer extends ResourceConfig {
   private static final Logger LOG = LoggerFactory.getLogger(ZeppelinServer.class);
   private static final String WEB_APP_CONTEXT_NEXT = "/next";
+  private static final String METRICS_PREFIX_JETTY = "jetty";
 
   public static Server jettyWebServer;
   public static ServiceLocator sharedServiceLocator;
@@ -127,6 +132,7 @@ public class ZeppelinServer extends ResourceConfig {
     conf = null;
     jettyWebServer = null;
     sharedServiceLocator = null;
+    Metrics.getMetricRegistry().removeMatching(MetricFilter.startsWith(METRICS_PREFIX_JETTY));
   }
 
   @Inject
@@ -325,10 +331,12 @@ public class ZeppelinServer extends ResourceConfig {
   }
 
   private static Server setupJettyServer(ZeppelinConfiguration conf) {
-    ThreadPool threadPool =
-      new QueuedThreadPool(conf.getInt(ConfVars.ZEPPELIN_SERVER_JETTY_THREAD_POOL_MAX),
+    InstrumentedQueuedThreadPool threadPool =
+      new InstrumentedQueuedThreadPool(Metrics.getMetricRegistry(),
+                           conf.getInt(ConfVars.ZEPPELIN_SERVER_JETTY_THREAD_POOL_MAX),
                            conf.getInt(ConfVars.ZEPPELIN_SERVER_JETTY_THREAD_POOL_MIN),
                            conf.getInt(ConfVars.ZEPPELIN_SERVER_JETTY_THREAD_POOL_TIMEOUT));
+    threadPool.setPrefix(MetricRegistry.name(METRICS_PREFIX_JETTY, "threadpool"));
     final Server server = new Server(threadPool);
     initServerConnector(server, conf.getServerPort(), conf.getServerSslPort());
     return server;
@@ -336,32 +344,42 @@ public class ZeppelinServer extends ResourceConfig {
   private static void initServerConnector(Server server, int port, int sslPort) {
 
     ServerConnector connector;
+    InstrumentedHttpChannelListener channelListener;
     HttpConfiguration httpConfig = new HttpConfiguration();
     httpConfig.addCustomizer(new ForwardedRequestCustomizer());
     httpConfig.setSendServerVersion(conf.sendJettyName());
     httpConfig.setRequestHeaderSize(conf.getJettyRequestHeaderSize());
     if (conf.useSsl()) {
       LOG.debug("Enabling SSL for Zeppelin Server on port {}", sslPort);
-      httpConfig.setSecureScheme("https");
+      httpConfig.setSecureScheme(HttpScheme.HTTPS.asString());
       httpConfig.setSecurePort(sslPort);
 
       HttpConfiguration httpsConfig = new HttpConfiguration(httpConfig);
       httpsConfig.addCustomizer(new SecureRequestCustomizer());
 
+      SslConnectionFactory sslConnectionFactory = new SslConnectionFactory(getSslContextFactory(conf), HttpVersion.HTTP_1_1.asString());
+      HttpConnectionFactory httpsConnectionFactory = new HttpConnectionFactory(httpsConfig);
+      channelListener = new InstrumentedHttpChannelListener(Metrics.getMetricRegistry(), MetricRegistry.name(METRICS_PREFIX_JETTY, HttpScheme.HTTPS.asString()));
       connector =
               new ServerConnector(
                       server,
-                      new SslConnectionFactory(getSslContextFactory(conf), HttpVersion.HTTP_1_1.asString()),
-                      new HttpConnectionFactory(httpsConfig));
+                      sslConnectionFactory,
+                      new InstrumentedConnectionFactory(httpsConnectionFactory, Metrics.timer(METRICS_PREFIX_JETTY, HttpScheme.HTTPS.asString(), "connections"), Metrics.counter(HttpScheme.HTTPS.asString(), "active-connections")));
       connector.setPort(sslPort);
     } else {
-      connector = new ServerConnector(server, new HttpConnectionFactory(httpConfig));
+      HttpConnectionFactory httpConnectionFactory = new HttpConnectionFactory(httpConfig);
+      channelListener = new InstrumentedHttpChannelListener(Metrics.getMetricRegistry(), MetricRegistry.name(METRICS_PREFIX_JETTY, HttpScheme.HTTP.asString()));
+      connector =
+              new ServerConnector(
+                      server,
+                      new InstrumentedConnectionFactory(httpConnectionFactory, Metrics.timer(METRICS_PREFIX_JETTY, HttpScheme.HTTP.asString(), "connections"), Metrics.counter(HttpScheme.HTTP.asString(), "active-connections")));
       connector.setPort(port);
     }
     // Set some timeout options to make debugging easier.
     int timeout = 1000 * 30;
     connector.setIdleTimeout(timeout);
     connector.setHost(conf.getServerAddress());
+    connector.addBean(channelListener);
     server.addConnector(connector);
   }
 
