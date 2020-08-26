@@ -26,6 +26,26 @@ public class SessionResult {
     }
   }
 
+  public String getSessionId() {
+    return sessionId;
+  }
+
+  public String getInterpreter() {
+    return interpreter;
+  }
+
+  public String getState() {
+    return state;
+  }
+
+  public String getWeburl() {
+    return weburl;
+  }
+
+  public String getStartTime() {
+    return startTime;
+  }
+
   @Override
   public String toString() {
     return "SessionResult{" +
