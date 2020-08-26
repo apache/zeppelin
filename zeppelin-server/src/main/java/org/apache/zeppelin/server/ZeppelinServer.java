@@ -16,6 +16,9 @@
  */
 package org.apache.zeppelin.server;
 
+import com.codahale.metrics.servlets.HealthCheckServlet;
+import com.codahale.metrics.servlets.MetricsServlet;
+import com.codahale.metrics.servlets.PingServlet;
 import com.google.gson.Gson;
 
 import static org.apache.zeppelin.server.HtmlAddonResource.HTML_ADDON_IDENTIFIER;
@@ -54,6 +57,7 @@ import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.interpreter.recovery.RecoveryStorage;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
+import org.apache.zeppelin.metrics.Metrics;
 import org.apache.zeppelin.notebook.NoteEventListener;
 import org.apache.zeppelin.notebook.NoteManager;
 import org.apache.zeppelin.notebook.Notebook;
@@ -534,6 +538,13 @@ public class ZeppelinServer extends ResourceConfig {
     }
   }
 
+  private static void setupMetricsContextHandler(WebAppContext webapp) {
+    webapp.addServlet(new ServletHolder(new MetricsServlet(Metrics.getMetricRegistry())), "/metrics/json");
+    webapp.addServlet(new ServletHolder(new HealthCheckServlet(Metrics.getHealthCheckReadinessRegistry())), "/health/readiness");
+    webapp.addServlet(new ServletHolder(new HealthCheckServlet(Metrics.getHealthCheckLivenessRegistry())), "/health/liveness");
+    webapp.addServlet(new ServletHolder(new PingServlet()), "/ping");
+  }
+
   private static WebAppContext setupWebAppContext(
       ContextHandlerCollection contexts, ZeppelinConfiguration conf, String warPath, String contextPath) {
     WebAppContext webApp = new WebAppContext();
@@ -579,7 +590,7 @@ public class ZeppelinServer extends ResourceConfig {
     return new DefaultServlet() {
 
         private static final long serialVersionUID = 1L;
-        
+
         @Override
         public Resource getResource(String pathInContext) {
 
@@ -591,9 +602,9 @@ public class ZeppelinServer extends ResourceConfig {
             // create the altered 'index.html' resource and cache it via webapp attributes
             if (webApp.getAttribute(HTML_ADDON_IDENTIFIER) == null) {
                 webApp.setAttribute(
-                    HTML_ADDON_IDENTIFIER, 
+                    HTML_ADDON_IDENTIFIER,
                     new HtmlAddonResource(
-                        super.getResource(pathInContext), 
+                        super.getResource(pathInContext),
                         conf.getHtmlBodyAddon(),
                         conf.getHtmlHeadAddon()));
             }
@@ -620,6 +631,9 @@ public class ZeppelinServer extends ResourceConfig {
 
     // Create `ZeppelinServer` using reflection and setup REST Api
     setupRestApiContextHandler(webApp, conf);
+
+    // metric endpoint
+    setupMetricsContextHandler(webApp);
 
     // Notebook server
     setupNotebookServer(webApp, conf, sharedServiceLocator);

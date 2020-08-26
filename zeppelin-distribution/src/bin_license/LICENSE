@@ -221,6 +221,11 @@ The following components are provided under Apache License.
     (Apache 2.0) Neo4j Java Driver (https://github.com/neo4j/neo4j-java-driver) - https://github.com/neo4j/neo4j-java-driver/blob/1.4.3/LICENSE.txt
     (Apache 2.0) Hazelcast Jet (http://jet.hazelcast.org) - https://github.com/hazelcast/hazelcast-jet/blob/master/LICENSE
     (Apache 2.0) RxJava (io.reactivex.rxjava2:rxjava:2.2.17) - https://github.com/ReactiveX/RxJava/blob/2.x/LICENSE
+    (Apache 2.0) Dropwizard Metrics Core (io.dropwizard.metrics:metrics-core:4.1.14) - https://github.com/dropwizard/metrics/blob/release/4.1.x/LICENSE
+    (Apache 2.0) Dropwizard JVM Integration for Metrics (io.dropwizard.metrics:metrics-jvm:4.1.14) - https://github.com/dropwizard/metrics/blob/release/4.1.x/LICENSE
+    (Apache 2.0) Dropwizard Metrics Utility Servlets (io.dropwizard.metrics:metrics-servlets:4.1.14) - https://github.com/dropwizard/metrics/blob/release/4.1.x/LICENSE
+    (Apache 2.0) Dropwizard Jackson Integration for Metrics (io.dropwizard.metrics:metrics-json:4.1.14) - https://github.com/dropwizard/metrics/blob/release/4.1.x/LICENSE
+    (Apache 2.0) Dropwizard Metrics Health Checks (io.dropwizard.metrics:metrics-healthchecks:4.1.14) - https://github.com/dropwizard/metrics/blob/release/4.1.x/LICENSE
 
 ========================================================================
 MIT licenses
