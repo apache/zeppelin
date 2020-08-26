@@ -75,10 +75,10 @@ public class PooledRemoteClient<T extends TServiceClient> {
   }
 
   public <R> R callRemoteFunction(RemoteFunction<R, T> func) {
-    // retry if it is TException, e.g. socket is closed somehow.
+    boolean broken = false;
     for (int i = 0;i < RETRY_COUNT; ++ i) {
       T client = null;
-      boolean broken = false;
+      broken = false;
       try {
         client = getClient();
         if (client != null) {
@@ -86,7 +86,7 @@ public class PooledRemoteClient<T extends TServiceClient> {
         }
       } catch (TException e) {
         broken = true;
-        throw new RuntimeException(e);
+        continue;
       } catch (Exception e1) {
         throw new RuntimeException(e1);
       } finally {
@@ -94,6 +94,9 @@ public class PooledRemoteClient<T extends TServiceClient> {
           releaseClient(client, broken);
         }
       }
+    }
+    if (broken) {
+      throw new RuntimeException("Fail to callRemoteFunction, because connection is broken");
     }
     return null;
   }
