@@ -77,6 +77,19 @@ public class MetricServiceTest extends AbstractTestRestApi {
   }
 
   /**
+   * Simple test without parsing
+   * @throws IOException
+   */
+  @Test
+  public void testPrometheusMetricJVM() throws IOException {
+    CloseableHttpResponse get = getHttpClient().execute(new HttpGet(getUrlToTest() + "/metrics/json"));
+    assertEquals(200, get.getStatusLine().getStatusCode());
+    String response = EntityUtils.toString(get.getEntity());
+    assertTrue("Contains JVM metric", response.contains("jvm.memory"));
+    get.close();
+  }
+
+  /**
    * Simple healthcheck endpoint test
    */
   @Test

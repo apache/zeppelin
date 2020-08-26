@@ -22,6 +22,8 @@ import com.codahale.metrics.servlets.PingServlet;
 import com.google.gson.Gson;
 
 import static org.apache.zeppelin.server.HtmlAddonResource.HTML_ADDON_IDENTIFIER;
+import io.prometheus.client.CollectorRegistry;
+import io.prometheus.client.dropwizard.DropwizardExports;
 
 import java.io.File;
 import java.io.IOException;
@@ -197,6 +199,9 @@ public class ZeppelinServer extends ResourceConfig {
             }
           }
         });
+
+    // Map Dropwizard Registry to Prometheus Registry
+    CollectorRegistry.defaultRegistry.register(new DropwizardExports(Metrics.getMetricRegistry()));
 
     // Multiple Web UI
     final WebAppContext defaultWebApp = setupWebAppContext(contexts, conf, conf.getString(ConfVars.ZEPPELIN_WAR), conf.getServerContextPath());
@@ -540,6 +545,7 @@ public class ZeppelinServer extends ResourceConfig {
 
   private static void setupMetricsContextHandler(WebAppContext webapp) {
     webapp.addServlet(new ServletHolder(new MetricsServlet(Metrics.getMetricRegistry())), "/metrics/json");
+    webapp.addServlet(new ServletHolder(new io.prometheus.client.exporter.MetricsServlet()), "/metrics/prometheus");
     webapp.addServlet(new ServletHolder(new HealthCheckServlet(Metrics.getHealthCheckReadinessRegistry())), "/health/readiness");
     webapp.addServlet(new ServletHolder(new HealthCheckServlet(Metrics.getHealthCheckLivenessRegistry())), "/health/liveness");
     webapp.addServlet(new ServletHolder(new PingServlet()), "/ping");
