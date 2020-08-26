@@ -30,9 +30,13 @@ public class ExecuteResult {
 
   private String statementId;
   private Status status;
+  // each statement may return multiple results
   private List<Result> results;
+  // if there's any job in the statement, then it will also contain job urls.
+  // e.g. spark job url
   private List<String> jobUrls;
-  private List<Result> bufferedResults;
+  // if there's any job in the statement, then it will also contain a progress
+  // range from 0 to 100. e.g. spark job progress.
   private int progress;
 
   public ExecuteResult(ParagraphResult paragraphResult) {

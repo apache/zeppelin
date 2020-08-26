@@ -918,7 +918,7 @@ public class NotebookRestApi extends AbstractRestApi {
     try {
       LOGGER.info("Run paragraph job asynchronously {} {} {}", noteId, paragraphId, message);
 
-      Note note = notebook.getNote(noteId, true);
+      Note note = notebook.getNote(noteId);
       checkIfNoteIsNotNull(note);
       Paragraph paragraph = note.getParagraph(paragraphId);
       checkIfParagraphIsNotNull(paragraph);

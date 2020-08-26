@@ -20,10 +20,9 @@ package org.apache.zeppelin.rest;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.zeppelin.annotation.ZeppelinApi;
-import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.notebook.Notebook;
-import org.apache.zeppelin.rest.message.Session;
+import org.apache.zeppelin.rest.message.SessionInfo;
 import org.apache.zeppelin.server.JsonResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,9 +37,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Rest api endpoint for the ZSession.
@@ -72,11 +69,11 @@ public class SessionRestApi {
       LOGGER.info("List all sessions for interpreter: " + interpreter);
     }
     try {
-      List<Session> sessionList = null;
+      List<SessionInfo> sessionList = null;
       if (StringUtils.isBlank(interpreter)) {
-        sessionList = sessionManager.getAllSessionStatus();
+        sessionList = sessionManager.getAllSessions();
       } else {
-        sessionList = sessionManager.getAllSessionStatus(interpreter);
+        sessionList = sessionManager.getAllSessions(interpreter);
       }
       return new JsonResponse<>(Response.Status.OK, sessionList).build();
     } catch (Exception e) {
@@ -100,13 +97,11 @@ public class SessionRestApi {
   }
 
   @DELETE
-  @Path("{interpreter}/{sessionId}")
-  public Response stopSession(@PathParam("interpreter") String interpreter,
-                              @PathParam("sessionId") String sessionId) {
-    LOGGER.info("Stop session: {} for interpreter: {}", sessionId, interpreter);
+  @Path("{sessionId}")
+  public Response stopSession(@PathParam("sessionId") String sessionId) {
+    LOGGER.info("Stop session: {}", sessionId);
     try {
-      sessionManager.removeSession(interpreter);
-      notebook.getInterpreterSettingManager().get(interpreter).closeInterpreters(sessionId);
+      sessionManager.removeSession(sessionId);
       return new JsonResponse<>(Response.Status.OK, sessionId).build();
     } catch (Exception e) {
       return new JsonResponse<>(Response.Status.INTERNAL_SERVER_ERROR,
@@ -122,7 +117,7 @@ public class SessionRestApi {
   @ZeppelinApi
   public Response getSession(@PathParam("sessionId") String sessionId) {
     try {
-      Session session = sessionManager.getSession(sessionId);
+      SessionInfo session = sessionManager.getSession(sessionId);
       if (session == null) {
         return new JsonResponse<>(Response.Status.NOT_FOUND).build();
       } else {

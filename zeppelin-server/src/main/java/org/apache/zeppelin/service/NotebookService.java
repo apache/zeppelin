@@ -83,7 +83,6 @@ public class NotebookService {
   private Notebook notebook;
   private AuthorizationService authorizationService;
   private SchedulerService schedulerService;
-  private SessionManager sessionManager;
 
   @Inject
   public NotebookService(

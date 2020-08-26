@@ -119,33 +119,4 @@ public class ZeppelinWebSocketClient {
     }
   }
 
-  public static void main(String[] args) throws Exception {
-    String dest = "ws://localhost:18086/ws";
-    WebSocketClient client = new WebSocketClient();
-    try {
-      ZeppelinWebSocketClient socket = new ZeppelinWebSocketClient(new SimpleMessageHandler());
-      client.start();
-      URI echoUri = new URI(dest);
-      ClientUpgradeRequest request = new ClientUpgradeRequest();
-      client.connect(socket, echoUri, request);
-      socket.getConnectLatch().await();
-
-      Message msg = new Message(Message.OP.LIST_NOTES);
-      socket.send(msg);
-
-      // wait for closed socket connection.
-      socket.awaitClose(5, TimeUnit.SECONDS);
-    } catch (Throwable t) {
-      t.printStackTrace();
-    } finally {
-      try {
-        client.stop();
-      } catch (Exception e) {
-        e.printStackTrace();
-      }
-    }
-
-    Thread.sleep(10000 * 100);
-  }
-
 }

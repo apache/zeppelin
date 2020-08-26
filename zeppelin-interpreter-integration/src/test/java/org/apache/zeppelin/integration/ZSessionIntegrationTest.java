@@ -76,7 +76,7 @@ public class ZSessionIntegrationTest extends AbstractTestRestApi {
 
     try {
       session.start();
-      assertNull(session.getWeburl());
+      assertEquals("", session.getWeburl());
       assertNotNull(session.getNoteId());
 
       Note note = notebook.getNote(session.getNoteId());
@@ -113,7 +113,7 @@ public class ZSessionIntegrationTest extends AbstractTestRestApi {
 
     try {
       session.start();
-      assertNull(session.getWeburl());
+      assertEquals("", session.getWeburl());
       assertNotNull(session.getNoteId());
 
       Note note = notebook.getNote(session.getNoteId());
@@ -390,7 +390,7 @@ public class ZSessionIntegrationTest extends AbstractTestRestApi {
 
     try {
       session.start(new SimpleMessageHandler());
-      assertNull(session.getWeburl());
+      assertEquals("", session.getWeburl());
       assertNotNull(session.getNoteId());
 
       // python
@@ -427,7 +427,6 @@ public class ZSessionIntegrationTest extends AbstractTestRestApi {
     intpProperties.put("default.driver", "com.mysql.jdbc.Driver");
     intpProperties.put("default.url", "jdbc:mysql://localhost:3306/");
     intpProperties.put("default.user", "root");
-    intpProperties.put("default.password", "123456");
 
     ZSession session = ZSession.builder()
             .setClientConfig(clientConfig)
@@ -437,7 +436,7 @@ public class ZSessionIntegrationTest extends AbstractTestRestApi {
 
     try {
       session.start();
-      assertNull(session.getWeburl());
+      assertEquals("", session.getWeburl());
       assertNotNull(session.getNoteId());
 
       // show databases
@@ -466,7 +465,6 @@ public class ZSessionIntegrationTest extends AbstractTestRestApi {
     intpProperties.put("default.driver", "com.mysql.jdbc.Driver");
     intpProperties.put("default.url", "jdbc:mysql://localhost:3306/");
     intpProperties.put("default.user", "root");
-    intpProperties.put("default.password", "123456");
 
     ZSession session = ZSession.builder()
             .setClientConfig(clientConfig)
@@ -476,7 +474,7 @@ public class ZSessionIntegrationTest extends AbstractTestRestApi {
 
     try {
       session.start();
-      assertNull(session.getWeburl());
+      assertEquals("", session.getWeburl());
       assertNotNull(session.getNoteId());
 
       // show databases

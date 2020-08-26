@@ -24,7 +24,7 @@ import org.apache.zeppelin.interpreter.ManagedInterpreterGroup;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
 import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.Notebook;
-import org.apache.zeppelin.rest.message.Session;
+import org.apache.zeppelin.rest.message.SessionInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,9 +69,15 @@ public class SessionManager {
 
   public void removeSession(String sessionId) {
     this.sessions.remove(sessionId);
+    InterpreterGroup interpreterGroup = this.interpreterSettingManager.getInterpreterGroupById(sessionId);
+    if (interpreterGroup == null) {
+      LOGGER.info("No interpreterGroup for session: " + sessionId);
+      return;
+    }
+    ((ManagedInterpreterGroup) interpreterGroup).getInterpreterSetting().closeInterpreters(sessionId);
   }
 
-  public Session getSession(String sessionId) throws Exception {
+  public SessionInfo getSession(String sessionId) throws Exception {
     InterpreterGroup interpreterGroup = this.interpreterSettingManager.getInterpreterGroupById(sessionId);
     if (interpreterGroup != null) {
       RemoteInterpreterProcess remoteInterpreterProcess =
@@ -100,28 +106,28 @@ public class SessionManager {
           LOGGER.warn("Found more than 1 notes with path: " + notePath);
         }
       }
-      return new Session(sessionId, noteId, interpreter,
+      return new SessionInfo(sessionId, noteId, interpreter,
               state, interpreterGroup.getWebUrl(), startTime);
     }
     LOGGER.warn("No such session: " + sessionId);
     return null;
   }
 
-  public List<Session> getAllSessionStatus() throws Exception {
-    List<Session> sessionList = new ArrayList<>();
+  public List<SessionInfo> getAllSessions() throws Exception {
+    List<SessionInfo> sessionList = new ArrayList<>();
     for (String sessionId : sessions) {
-      Session status = getSession(sessionId);
-      if (status != null) {
-        sessionList.add(status);
+      SessionInfo session = getSession(sessionId);
+      if (session != null) {
+        sessionList.add(session);
       }
     }
     return sessionList;
   }
 
-  public List<Session> getAllSessionStatus(String interpreterGroup) throws Exception {
-    List<Session> sessionList = new ArrayList<>();
+  public List<SessionInfo> getAllSessions(String interpreterGroup) throws Exception {
+    List<SessionInfo> sessionList = new ArrayList<>();
     for (String sessionId : sessions) {
-      Session status = getSession(sessionId);
+      SessionInfo status = getSession(sessionId);
       if (status != null && interpreterGroup.equals(status.getInterpreter())) {
         sessionList.add(status);
       }

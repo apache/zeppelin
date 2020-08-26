@@ -24,7 +24,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * You can add StatementHandler for each statement.
+ * CompositeMessageHandler allos you to add StatementHandler for each statement.
  */
 public class CompositeMessageHandler extends AbstractMessageHandler {
 

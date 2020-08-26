@@ -46,10 +46,6 @@ public class Result {
     return data;
   }
 
-  public void appendData(String newData) {
-    this.data = this.data + newData;
-  }
-
   @Override
   public String toString() {
     return "Result{" +

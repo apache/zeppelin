@@ -73,7 +73,7 @@ public class ZeppelinClientWithAuthIntegrationTest extends AbstractTestRestApi {
       zeppelinClient.createNote("/note_1");
       fail("Should fail due to not login");
     } catch (Exception e) {
-      assertTrue(e.getMessage(), e.getMessage().contains("statusText: Found"));
+      assertTrue(e.getMessage(), e.getMessage().contains("login first"));
     }
   }
 

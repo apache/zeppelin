@@ -69,8 +69,6 @@ public class ZeppelinClient {
         throw new Exception("Fail to setup httpclient of Unirest", e);
       }
     }
-
-    Unirest.config().setDefaultHeader("Origin", "localhost");
   }
 
   public ClientConfig getClientConfig() {
@@ -78,12 +76,15 @@ public class ZeppelinClient {
   }
 
   /**
-   * Throw exception is the status code is not 200.
+   * Throw exception if the status code is not 200.
    *
    * @param response
    * @throws Exception
    */
   private void checkResponse(HttpResponse<JsonNode> response) throws Exception {
+    if (response.getStatus() == 302) {
+      throw new Exception("Please login first");
+    }
     if (response.getStatus() != 200) {
       throw new Exception(String.format("Unable to call rest api, status: %s, statusText: %s, message: %s",
               response.getStatus(),
@@ -122,7 +123,7 @@ public class ZeppelinClient {
 
   /**
    * Request a new session id. It doesn't create session (interpreter process) in zeppelin server side, but just
-   * create a unique session id.
+   * create an unique session id.
    *
    * @param interpreter
    * @return
@@ -140,16 +141,14 @@ public class ZeppelinClient {
   }
 
   /**
-   * Stop the session(interpreter process) in zeppelin server.
+   * Stop the session(interpreter process) in Zeppelin server.
    *
-   * @param interpreter
    * @param sessionId
    * @throws Exception
    */
-  public void stopSession(String interpreter, String sessionId) throws Exception {
+  public void stopSession(String sessionId) throws Exception {
     HttpResponse<JsonNode> response = Unirest
-            .delete("/session/{interpreter}/{sessionId}")
-            .routeParam("interpreter", interpreter)
+            .delete("/session/{sessionId}")
             .routeParam("sessionId", sessionId)
             .asJson();
     checkResponse(response);
@@ -158,11 +157,12 @@ public class ZeppelinClient {
   }
 
   /**
+   * Get session info for the provided sessionId.
    *
    * @param sessionId
    * @throws Exception
    */
-  public SessionResult getSession(String sessionId) throws Exception {
+  public SessionInfo getSession(String sessionId) throws Exception {
     HttpResponse<JsonNode> response = Unirest
             .get("/session/{sessionId}")
             .routeParam("sessionId", sessionId)
@@ -172,7 +172,7 @@ public class ZeppelinClient {
     checkJsonNodeStatus(jsonNode);
 
     JSONObject bodyObject = jsonNode.getObject().getJSONObject("body");
-    return new SessionResult(bodyObject);
+    return new SessionInfo(bodyObject);
   }
 
   /**
@@ -204,7 +204,7 @@ public class ZeppelinClient {
    * @return
    * @throws Exception
    */
-  public List<SessionResult> listSessions() throws Exception {
+  public List<SessionInfo> listSessions() throws Exception {
     return listSessions(null);
   }
 
@@ -214,7 +214,7 @@ public class ZeppelinClient {
    * @return
    * @throws Exception
    */
-  public List<SessionResult> listSessions(String interpreter) throws Exception {
+  public List<SessionInfo> listSessions(String interpreter) throws Exception {
     GetRequest getRequest = Unirest.get("/session");
     if (interpreter != null) {
       getRequest.queryString("interpreter", interpreter);
@@ -224,11 +224,11 @@ public class ZeppelinClient {
     JsonNode jsonNode = response.getBody();
     checkJsonNodeStatus(jsonNode);
     JSONArray sessionJsonArray = jsonNode.getObject().getJSONArray("body");
-    List<SessionResult> sessionResults = new ArrayList<>();
+    List<SessionInfo> sessionInfos = new ArrayList<>();
     for (int i = 0; i< sessionJsonArray.length();++i) {
-      sessionResults.add(new SessionResult(sessionJsonArray.getJSONObject(i)));
+      sessionInfos.add(new SessionInfo(sessionJsonArray.getJSONObject(i)));
     }
-    return sessionResults;
+    return sessionInfos;
   }
 
   /**

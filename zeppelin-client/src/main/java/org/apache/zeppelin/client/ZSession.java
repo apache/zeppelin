@@ -44,7 +44,7 @@ public class ZSession {
 
   private String sessionId;
   private String noteId;
-  private String weburl;
+  private SessionInfo sessionInfo;
 
   private ZeppelinWebSocketClient webSocketClient;
 
@@ -103,7 +103,7 @@ public class ZSession {
     String paragraphId = zeppelinClient.addParagraph(noteId, "Session Configuration", builder.toString());
     ParagraphResult paragraphResult = zeppelinClient.executeParagraph(noteId, paragraphId, sessionId);
     if (paragraphResult.getStatus() != Status.FINISHED) {
-      throw new Exception("Fail to configure session, " + paragraphResult.getMessage());
+      throw new Exception("Fail to configure session, " + paragraphResult.getResultInText());
     }
 
     // start session
@@ -111,9 +111,9 @@ public class ZSession {
     paragraphId = zeppelinClient.addParagraph(noteId, "Session Init", "%" + interpreter + "(init=true)");
     paragraphResult = zeppelinClient.executeParagraph(noteId, paragraphId, sessionId);
     if (paragraphResult.getStatus() != Status.FINISHED) {
-      throw new Exception("Fail to init session, " + paragraphResult.getMessage());
+      throw new Exception("Fail to init session, " + paragraphResult.getResultInText());
     }
-    this.weburl = zeppelinClient.getSessionWebUrl(sessionId);
+    this.sessionInfo = zeppelinClient.getSession(sessionId);
 
     if (messageHandler != null) {
       this.webSocketClient = new ZeppelinWebSocketClient(messageHandler);
@@ -134,7 +134,7 @@ public class ZSession {
    */
   public void stop() throws Exception {
     if (sessionId != null) {
-      zeppelinClient.stopSession(interpreter, sessionId);
+      zeppelinClient.stopSession(sessionId);
     }
     if (webSocketClient != null) {
       webSocketClient.stop();
@@ -169,12 +169,11 @@ public class ZSession {
   }
 
   private void reconnect(MessageHandler messageHandler) throws Exception {
-    SessionResult sessionResult = this.zeppelinClient.getSession(sessionId);
-    this.noteId = sessionResult.getNoteId();
-    if (!sessionResult.getState().equalsIgnoreCase("Running")) {
-      throw new Exception("Session " + sessionId + " is not running, state: " + sessionResult.getState());
+    this.sessionInfo = this.zeppelinClient.getSession(sessionId);
+    this.noteId = sessionInfo.getNoteId();
+    if (!sessionInfo.getState().equalsIgnoreCase("Running")) {
+      throw new Exception("Session " + sessionId + " is not running, state: " + sessionInfo.getState());
     }
-    this.weburl = sessionResult.getWeburl();
 
     if (messageHandler != null) {
       this.webSocketClient = new ZeppelinWebSocketClient(messageHandler);
@@ -423,7 +422,7 @@ public class ZSession {
   }
 
   public String getWeburl() {
-    return weburl;
+    return sessionInfo.getWeburl();
   }
 
   public String getSessionId() {

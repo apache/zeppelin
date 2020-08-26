@@ -215,6 +215,26 @@ jobs:
         - mvn test -DskipRat -pl $(echo .,zeppelin-interpreter,zeppelin-interpreter-shaded,${INTERPRETERS} | sed 's/!//g') -Pscala-2.10 -B
 
 
+    - name: "Test zeppelin-client integration test"
+      jdk: "openjdk8"
+      dist: xenial
+      before_install:
+        - export PYTHON=3
+        - echo "MAVEN_OPTS='-Xms1024M -Xmx2048M -XX:MaxMetaspaceSize=1024m -XX:-UseGCOverheadLimit -Dorg.slf4j.simpleLogger.defaultLogLevel=warn'" >> ~/.mavenrc
+        - bash -x ./testing/install_external_dependencies.sh
+        - source ~/.environ
+      install:
+        - mvn install -DskipTests -DskipRat -pl zeppelin-interpreter-integration,zeppelin-web,spark/spark-dependencies,markdown,flink/interpreter,jdbc,shell -am
+        - mvn clean package -T 2C -pl zeppelin-plugins -amd -B
+      before_script:
+        - echo "export ZEPPELIN_HELIUM_REGISTRY=helium" >> conf/zeppelin-env.sh
+        - echo "export SPARK_PRINT_LAUNCH_COMMAND=true" >> conf/zeppelin-env.sh
+        - export SPARK_PRINT_LAUNCH_COMMAND=true
+        - tail conf/zeppelin-env.sh
+      script:
+        - mvn test -DskipRat -pl zeppelin-interpreter-integration -Dtest=ZeppelinClientIntegrationTest,ZeppelinClientWithAuthIntegrationTest,ZSessionIntegrationTest
+
+
     - name: "Test flink 1.10 & flink integration test"
       jdk: "openjdk8"
       dist: xenial

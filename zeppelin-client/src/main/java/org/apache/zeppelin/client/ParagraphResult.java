@@ -33,8 +33,13 @@ import java.util.List;
 public class ParagraphResult {
   private String paragraphId;
   private Status status;
+  // if there's any job in the statement, then it will also contain a progress
+  // range from 0 to 100. e.g. spark job progress.
   private int progress;
+  // each paragraph may return multiple results
   private List<Result> results;
+  // if there's any job in the statement, then it will also contain job urls.
+  // e.g. spark job url
   private List<String> jobUrls;
 
   public ParagraphResult(JSONObject paragraphJson) {
@@ -90,10 +95,11 @@ public class ParagraphResult {
   }
 
   /**
+   * Get results in text format.
    *
    * @return
    */
-  public String getMessage() {
+  public String getResultInText() {
     StringBuilder builder = new StringBuilder();
     if (results != null) {
       for (Result result : results) {
