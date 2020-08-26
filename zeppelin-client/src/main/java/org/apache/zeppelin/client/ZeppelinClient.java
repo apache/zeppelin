@@ -512,27 +512,8 @@ public class ZeppelinClient {
                                           String paragraphId,
                                           String sessionId,
                                           Map<String, String> parameters) throws Exception {
-    JSONObject bodyObject = new JSONObject();
-    bodyObject.put("params", parameters);
-    HttpResponse<JsonNode> response = Unirest
-            .post("/notebook/run/{noteId}/{paragraphId}")
-            .routeParam("noteId", noteId)
-            .routeParam("paragraphId", paragraphId)
-            .queryString("sessionId", sessionId)
-            .body(bodyObject.toString())
-            .asJson();
-    checkResponse(response);
-    JsonNode jsonNode = response.getBody();
-    checkJsonNodeStatus(jsonNode);
-
-    jsonNode = Unirest.get(
-            clientConfig.getZeppelinRestUrl() + "/api/notebook/" + noteId + "/paragraph/" + paragraphId)
-            .asJson()
-            .getBody();
-    checkJsonNodeStatus(jsonNode);
-
-    JSONObject paragraphJson = jsonNode.getObject().getJSONObject("body");
-    return new ParagraphResult(paragraphJson);
+    submitParagraph(noteId, paragraphId, sessionId, parameters);
+    return waitUtilParagraphFinish(noteId, paragraphId);
   }
 
   /**
