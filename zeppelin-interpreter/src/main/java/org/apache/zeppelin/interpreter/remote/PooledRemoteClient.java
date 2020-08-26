@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
 public class PooledRemoteClient<T extends TServiceClient> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PooledRemoteClient.class);
+  private static final int RETRY_COUNT = 3;
 
   private GenericObjectPool<T> clientPool;
   private RemoteClientFactory<T> remoteClientFactory;
@@ -74,21 +75,24 @@ public class PooledRemoteClient<T extends TServiceClient> {
   }
 
   public <R> R callRemoteFunction(RemoteFunction<R, T> func) {
-    T client = null;
-    boolean broken = false;
-    try {
-      client = getClient();
-      if (client != null) {
-        return func.call(client);
-      }
-    } catch (TException e) {
-      broken = true;
-      throw new RuntimeException(e);
-    } catch (Exception e1) {
-      throw new RuntimeException(e1);
-    } finally {
-      if (client != null) {
-        releaseClient(client, broken);
+    // retry if it is TException, e.g. socket is closed somehow.
+    for (int i = 0;i < RETRY_COUNT; ++ i) {
+      T client = null;
+      boolean broken = false;
+      try {
+        client = getClient();
+        if (client != null) {
+          return func.call(client);
+        }
+      } catch (TException e) {
+        broken = true;
+        throw new RuntimeException(e);
+      } catch (Exception e1) {
+        throw new RuntimeException(e1);
+      } finally {
+        if (client != null) {
+          releaseClient(client, broken);
+        }
       }
     }
     return null;
