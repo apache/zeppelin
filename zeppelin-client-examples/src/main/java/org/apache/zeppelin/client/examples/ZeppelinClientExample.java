@@ -22,6 +22,10 @@ import org.apache.zeppelin.client.NoteResult;
 import org.apache.zeppelin.client.ParagraphResult;
 import org.apache.zeppelin.client.ZeppelinClient;
 
+
+/**
+ * Basic example of running zeppelin note/paragraph via ZeppelinClient (low level api)
+ */
 public class ZeppelinClientExample {
 
   public static void main(String[] args) throws Exception {

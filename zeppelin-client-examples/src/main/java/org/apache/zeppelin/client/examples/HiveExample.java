@@ -25,6 +25,10 @@ import org.apache.zeppelin.client.ZSession;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Basic example of run hive sql via session api.
+ * And you can capture the job progress info via SimpleMessageHandler.
+ */
 public class HiveExample {
 
   public static void main(String[] args) {

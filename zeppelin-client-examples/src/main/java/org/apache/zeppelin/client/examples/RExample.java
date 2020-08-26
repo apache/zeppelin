@@ -25,6 +25,10 @@ import org.apache.zeppelin.client.ZSession;
 import java.util.HashMap;
 import java.util.Map;
 
+
+/**
+ * Basic example of run r code via session api.
+ */
 public class RExample {
 
   public static void main(String[] args) {

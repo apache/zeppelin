@@ -25,6 +25,9 @@ import org.apache.zeppelin.client.ZSession;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Basic example of run python code via session api.
+ */
 public class PythonExample {
 
   public static void main(String[] args) {

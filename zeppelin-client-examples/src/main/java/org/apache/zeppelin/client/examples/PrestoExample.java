@@ -26,6 +26,10 @@ import org.apache.zeppelin.client.ZSession;
 import java.util.HashMap;
 import java.util.Map;
 
+
+/**
+ * Basic example of run presto sql via session api.
+ */
 public class PrestoExample {
 
   public static void main(String[] args) {

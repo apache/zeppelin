@@ -26,7 +26,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * This example use ZeppelinClient to run the spark tutorial note.
+ * Basic example of running existing note via ZeppelinClient (low level api)
  *
  */
 public class ZeppelinClientExample2 {

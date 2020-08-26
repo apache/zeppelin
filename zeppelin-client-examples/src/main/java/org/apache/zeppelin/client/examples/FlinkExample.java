@@ -25,6 +25,10 @@ import org.apache.zeppelin.client.ZSession;
 import java.util.HashMap;
 import java.util.Map;
 
+
+/**
+ * Basic example of run flink code (scala, sql, python) via session api.
+ */
 public class FlinkExample {
   public static void main(String[] args) {
 

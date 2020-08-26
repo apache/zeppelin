@@ -26,6 +26,10 @@ import org.apache.zeppelin.client.ZSession;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Advanced example of run flink streaming sql via session api.
+ * You can capture the streaming output via SimpleMessageHandler
+ */
 public class FlinkAdvancedExample {
   public static void main(String[] args) {
 

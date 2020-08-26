@@ -25,6 +25,10 @@ import org.apache.zeppelin.client.ZSession;
 import java.util.HashMap;
 import java.util.Map;
 
+
+/**
+ * Basic example of run spark code (scala, sql, python, r) via session api.
+ */
 public class SparkExample {
 
   public static void main(String[] args) {
