@@ -332,8 +332,7 @@ public class ZeppelinServer extends ResourceConfig {
       httpConfig.setSecurePort(sslPort);
 
       HttpConfiguration httpsConfig = new HttpConfiguration(httpConfig);
-      SecureRequestCustomizer src = new SecureRequestCustomizer();
-      httpsConfig.addCustomizer(src);
+      httpsConfig.addCustomizer(new SecureRequestCustomizer());
 
       connector =
               new ServerConnector(
