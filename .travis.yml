@@ -53,6 +53,8 @@ jobs:
       dist: xenial
       jdk: "openjdk8"
       env: CI="true" WEB_E2E="true" PYTHON="2" SCALA_VER="2.11" SPARK_VER="2.1.0" HADOOP_VER="2.6" PROFILE="-Phadoop2 -Pscala-2.11" BUILD_FLAG="install -DskipTests -DskipRat" TEST_FLAG="verify -DskipRat" MODULES="-pl ${INTERPRETERS}" TEST_MODULES="-pl zeppelin-web" TEST_PROJECTS="-Pweb-e2e"
+      services:
+        - xvfb
       addons:
         apt:
           packages:
@@ -63,6 +65,8 @@ jobs:
       dist: xenial
       jdk: "openjdk8"
       env: CI="true" BUILD_FLAG="clean -DskipTests -DskipRat" TEST_FLAG="package -DskipRat" MODULES="-pl ${INTERPRETERS}" TEST_MODULES="-pl zeppelin-web-angular -Pweb-angular"
+      services:
+        - xvfb
       addons:
         apt:
           packages:
@@ -85,6 +89,8 @@ jobs:
       addons:
         firefox: "31.0"
       env: BUILD_PLUGINS="true" CI="true" PYTHON="2" R="true" SCALA_VER="2.11" SPARK_VER="2.3.2" HADOOP_VER="2.6" PROFILE="-Pspark-2.3 -Phadoop2 -Phelium-dev -Pexamples -Pintegration -Pspark-scala-2.11" BUILD_FLAG="clean install -DskipTests -DskipRat -pl ${INTERPRETERS}" TEST_FLAG="verify -DskipRat" TEST_PROJECTS="-pl zeppelin-integration -DfailIfNoTests=false"
+      before_install:
+        - "/sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -ac -screen 0 1600x1024x16"
 
     - name: "Test interpreter modules"
       jdk: "openjdk8"
@@ -156,7 +162,6 @@ before_install:
   - bash -x ./testing/install_external_dependencies.sh
   - ls -la .spark-dist ${HOME}/.m2/repository/.cache/maven-download-plugin || true
   - ls .node_modules && cp -r .node_modules zeppelin-web/node_modules || echo "node_modules are not cached"
-  - "/sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -ac -screen 0 1600x1024x16"
   #- ./dev/change_scala_version.sh $SCALA_VER
   - source ~/.environ
 
@@ -176,8 +181,6 @@ before_script:
   - echo "export SPARK_PRINT_LAUNCH_COMMAND=true" >> conf/zeppelin-env.sh
   - export SPARK_PRINT_LAUNCH_COMMAND=true
   - tail conf/zeppelin-env.sh
-  # https://docs.travis-ci.com/user/gui-and-headless-browsers/#Using-xvfb-to-Run-Tests-That-Require-a-GUI
-  - if [[ -n $TEST_MODULES ]]; then export DISPLAY=:99.0; sh -e /etc/init.d/xvfb start; sleep 3; fi
   # display info log for debugging
   - if [[ -n $TEST_MODULES ]]; then echo "MAVEN_OPTS='-Xms1024M -Xmx2048M -XX:MaxMetaspaceSize=1024m -XX:-UseGCOverheadLimit -Dorg.slf4j.simpleLogger.defaultLogLevel=info'" > ~/.mavenrc; fi
 
