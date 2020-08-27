@@ -717,6 +717,14 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getString(ConfVars.ZEPPELIN_SERVER_STRICT_TRANSPORT);
   }
 
+  public String getHtmlHeadAddon() {
+    return getString(ConfVars.ZEPPELIN_SERVER_HTML_HEAD_ADDON);
+  }
+
+  public String getHtmlBodyAddon() {
+    return getString(ConfVars.ZEPPELIN_SERVER_HTML_BODY_ADDON);
+  }
+
   public String getLifecycleManagerClass() {
     return getString(ConfVars.ZEPPELIN_INTERPRETER_LIFECYCLE_MANAGER_CLASS);
   }
@@ -1004,6 +1012,9 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_SERVER_STRICT_TRANSPORT("zeppelin.server.strict.transport", "max-age=631138519"),
     ZEPPELIN_SERVER_X_XSS_PROTECTION("zeppelin.server.xxss.protection", "1; mode=block"),
     ZEPPELIN_SERVER_X_CONTENT_TYPE_OPTIONS("zeppelin.server.xcontent.type.options", "nosniff"),
+
+    ZEPPELIN_SERVER_HTML_HEAD_ADDON("zeppelin.server.html.head.addon", null),
+    ZEPPELIN_SERVER_HTML_BODY_ADDON("zeppelin.server.html.body.addon", null),
 
     ZEPPELIN_SERVER_KERBEROS_KEYTAB("zeppelin.server.kerberos.keytab", ""),
     ZEPPELIN_SERVER_KERBEROS_PRINCIPAL("zeppelin.server.kerberos.principal", ""),
