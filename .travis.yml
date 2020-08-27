@@ -72,16 +72,15 @@ jobs:
 
     # Test core modules (zeppelin-interpreter,zeppelin-zengine,zeppelin-server) on hadoop2
     # Several tests were excluded from this configuration due to the following issues:
-    # HeliumApplicationFactoryTest - https://issues.apache.org/jira/browse/ZEPPELIN-2470
     # After issues are fixed these tests need to be included back by removing them from the "-Dtests.to.exclude" property
     - jdk: "openjdk8"
       dist: xenial
-      env: BUILD_PLUGINS="true" PYTHON="3" R="true" PROFILE="-Phelium-dev -Pexamples -Phadoop2" BUILD_FLAG="install -Pbuild-distr -DskipRat -DskipTests" TEST_FLAG="verify -Pusing-packaged-distr -DskipRat" MODULES="-pl zeppelin-server,zeppelin-web,spark/spark-dependencies,markdown,angular,shell -am" TEST_PROJECTS="-Dtests.to.exclude=**/org/apache/zeppelin/spark/*,**/HeliumApplicationFactoryTest.java -DfailIfNoTests=false"
+      env: BUILD_PLUGINS="true" PYTHON="3" R="true" PROFILE="-Phelium-dev -Pexamples -Phadoop2" BUILD_FLAG="install -Pbuild-distr -DskipRat -DskipTests" TEST_FLAG="verify -Pusing-packaged-distr -DskipRat" MODULES="-pl zeppelin-server,zeppelin-web,spark/spark-dependencies,markdown,angular,shell -am" TEST_PROJECTS="-Dtests.to.exclude=**/org/apache/zeppelin/spark/* -DfailIfNoTests=false"
 
     # Test core modules (zeppelin-interpreter,zeppelin-zengine,zeppelin-server) on hadoop3
     - jdk: "openjdk8"
       dist: xenial
-      env: BUILD_PLUGINS="true" PYTHON="3" R="true" PROFILE="-Phelium-dev -Pexamples -Phadoop3" BUILD_FLAG="install -Pbuild-distr -DskipRat -DskipTests" TEST_FLAG="verify -Pusing-packaged-distr -DskipRat" MODULES="-pl zeppelin-server,zeppelin-web,spark/spark-dependencies,markdown,angular,shell -am" TEST_PROJECTS="-Dtests.to.exclude=**/org/apache/zeppelin/spark/*,**/HeliumApplicationFactoryTest.java -DfailIfNoTests=false"
+      env: BUILD_PLUGINS="true" PYTHON="3" R="true" PROFILE="-Phelium-dev -Pexamples -Phadoop3" BUILD_FLAG="install -Pbuild-distr -DskipRat -DskipTests" TEST_FLAG="verify -Pusing-packaged-distr -DskipRat" MODULES="-pl zeppelin-server,zeppelin-web,spark/spark-dependencies,markdown,angular,shell -am" TEST_PROJECTS="-Dtests.to.exclude=**/org/apache/zeppelin/spark/* -DfailIfNoTests=false"
 
     # Test selenium with spark module for spark 2.3
     - jdk: "openjdk8"
