@@ -264,7 +264,7 @@ public abstract class FlinkSqlInterrpeter extends Interpreter {
         callDropTable(cmdCall.operands[0], context);
         break;
       case CREATE_VIEW:
-        callCreateView(cmdCall.operands[0], cmdCall.operands[1], context);
+        callCreateView(cmdCall, context);
         break;
       case DROP_VIEW:
         callDropView(cmdCall.operands[0], context);
@@ -337,10 +337,14 @@ public abstract class FlinkSqlInterrpeter extends Interpreter {
     context.out.write("View has been dropped.\n");
   }
 
-  private void callCreateView(String name, String query, InterpreterContext context) throws IOException {
+  private void callCreateView(SqlCommandParser.SqlCommandCall sqlCommand, InterpreterContext context) throws IOException {
     try {
       lock.lock();
-      this.tbenv.createTemporaryView(name, tbenv.sqlQuery(query));
+      if (flinkInterpreter.getFlinkVersion().isFlink110()) {
+        this.tbenv.createTemporaryView(sqlCommand.operands[0], tbenv.sqlQuery(sqlCommand.operands[1]));
+      } else {
+        flinkInterpreter.getFlinkShims().executeSql(tbenv, sqlCommand.sql);
+      }
     } finally {
       if (lock.isHeldByCurrentThread()) {
         lock.unlock();
