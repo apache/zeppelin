@@ -17,6 +17,9 @@
 package org.apache.zeppelin.server;
 
 import com.google.gson.Gson;
+
+import static org.apache.zeppelin.server.HtmlAddonResource.HTML_ADDON_IDENTIFIER;
+
 import java.io.File;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
@@ -88,6 +91,7 @@ import org.eclipse.jetty.server.session.SessionHandler;
 import org.eclipse.jetty.servlet.DefaultServlet;
 import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.ServletHolder;
+import org.eclipse.jetty.util.resource.Resource;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.eclipse.jetty.util.thread.ThreadPool;
@@ -550,7 +554,7 @@ public class ZeppelinServer extends ResourceConfig {
       webApp.setTempDirectory(warTempDirectory);
     }
     // Explicit bind to root
-    webApp.addServlet(new ServletHolder(new DefaultServlet()), "/*");
+    webApp.addServlet(new ServletHolder(setupServlet(webApp, conf)), "/*");
     contexts.addHandler(webApp);
 
     webApp.addFilter(new FilterHolder(CorsFilter.class), "/*", EnumSet.allOf(DispatcherType.class));
@@ -559,6 +563,44 @@ public class ZeppelinServer extends ResourceConfig {
         "org.eclipse.jetty.servlet.Default.dirAllowed",
         Boolean.toString(conf.getBoolean(ConfVars.ZEPPELIN_SERVER_DEFAULT_DIR_ALLOWED)));
     return webApp;
+  }
+
+  private static DefaultServlet setupServlet(
+      WebAppContext webApp,
+      ZeppelinConfiguration conf) {
+
+    // provide DefaultServlet as is in case html addon is not used
+    if (conf.getHtmlBodyAddon()==null && conf.getHtmlHeadAddon()==null) {
+      return new DefaultServlet();
+    }
+
+    // override ResourceFactory interface part of DefaultServlet for intercepting the static index.html properly.
+    return new DefaultServlet() {
+
+        private static final long serialVersionUID = 1L;
+        
+        @Override
+        public Resource getResource(String pathInContext) {
+
+            // proceed for everything but '/index.html'
+            if (!HtmlAddonResource.INDEX_HTML_PATH.equals(pathInContext)) {
+                return super.getResource(pathInContext);
+            }
+
+            // create the altered 'index.html' resource and cache it via webapp attributes
+            if (webApp.getAttribute(HTML_ADDON_IDENTIFIER) == null) {
+                webApp.setAttribute(
+                    HTML_ADDON_IDENTIFIER, 
+                    new HtmlAddonResource(
+                        super.getResource(pathInContext), 
+                        conf.getHtmlBodyAddon(),
+                        conf.getHtmlHeadAddon()));
+            }
+
+            return (Resource) webApp.getAttribute(HTML_ADDON_IDENTIFIER);
+        }
+
+    };
   }
 
   private static void initWebApp(WebAppContext webApp) {

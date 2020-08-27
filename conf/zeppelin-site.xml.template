@@ -660,6 +660,21 @@
 
 <!--
 <property>
+  <name>zeppelin.server.html.body.addon</name>
+  <value><![CDATA[<script defer src="https://url/to/my/lib.min.js" /><script defer src="https://url/to/other/lib.min.js" />]]></value>
+  <description>Addon html code to be placed at the end of the html->body section in index.html delivered by zeppelin server.</description>
+</property>
+
+<property>
+  <name>zeppelin.server.html.head.addon</name>
+  <value></value>
+  <description>Addon html code to be placed at the end of the html->head section in index.html delivered by zeppelin server.</description>
+</property>
+-->
+
+
+<!--
+<property>
   <name>zeppelin.interpreter.callback.portRange</name>
   <value>10000:10010</value>
 </property>
