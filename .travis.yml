@@ -28,9 +28,6 @@ cache:
     -  zeppelin-web/node_modules
     -  zeppelin-web/bower_components
 
-services:
-  - mysql
-
 env:
   global:
     # Interpreters does not required by zeppelin-server integration tests
@@ -122,6 +119,8 @@ jobs:
       jdk: "openjdk8"
       dist: xenial
       env: BUILD_PLUGINS="true" PYTHON="3" SCALA_VER="2.11" PROFILE="-Pspark-2.4 -Pspark-scala-2.11 -Phadoop2 -Pintegration" R="true" BUILD_FLAG="install -DskipTests -DskipRat" TEST_FLAG="test -DskipRat" MODULES="-pl zeppelin-interpreter-integration,jdbc,zeppelin-web,spark/spark-dependencies,markdown -am" TEST_PROJECTS="-Dtest=JdbcIntegrationTest,org.apache.zeppelin.spark.*,org.apache.zeppelin.kotlin.* -DfailIfNoTests=false"
+      services:
+        - mysql
 
     - name: "Unit test of Spark 2.4 (Scala-2.12)"
       jdk: "openjdk8"
