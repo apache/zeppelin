@@ -690,7 +690,9 @@ public class InterpreterSetting {
 
   public void setDependencies(List<Dependency> dependencies) {
     this.dependencies = dependencies;
-    loadInterpreterDependencies();
+    if (!this.dependencies.isEmpty()) {
+      loadInterpreterDependencies();
+    }
   }
 
   public InterpreterOption getOption() {
@@ -719,7 +721,9 @@ public class InterpreterSetting {
         this.dependencies.add(dependency);
       }
     }
-    loadInterpreterDependencies();
+    if (!dependencies.isEmpty()) {
+      loadInterpreterDependencies();
+    }
   }
 
   void setInterpreterOption(InterpreterOption interpreterOption) {
@@ -1006,6 +1010,12 @@ public class InterpreterSetting {
               getGroup(), e.getLocalizedMessage()), e);
           setErrorReason(e.getLocalizedMessage());
           setStatus(Status.ERROR);
+        }
+
+        try {
+          interpreterSettingManager.saveToFile();
+        } catch (IOException e) {
+          LOGGER.error("Fail to save interpreter.json", e);
         }
       }
     };
