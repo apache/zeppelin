@@ -49,14 +49,10 @@ public class SessionRestApi {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SessionRestApi.class);
 
-  private Notebook notebook;
-  private InterpreterSettingManager interpreterSettingManager;
   private SessionManager sessionManager;
 
   @Inject
   public SessionRestApi(Notebook notebook, InterpreterSettingManager interpreterSettingManager) {
-    this.notebook = notebook;
-    this.interpreterSettingManager = interpreterSettingManager;
     this.sessionManager = new SessionManager(notebook, interpreterSettingManager);
   }
 
@@ -83,13 +79,12 @@ public class SessionRestApi {
   }
 
   @POST
-  @Path("{interpreter}")
-  public Response newSession(@PathParam("interpreter") String interpreter) {
-    LOGGER.info("New session for interpreter: {}", interpreter);
+  @Path("/")
+  public Response createSession(@QueryParam("interpreter") String interpreter) {
+    LOGGER.info("Create new session for interpreter: {}", interpreter);
     try {
-      String sessionId = sessionManager.newSession(interpreter);
-      LOGGER.info("Allocate new session id: " + sessionId);
-      return new JsonResponse<>(Response.Status.OK, sessionId).build();
+      SessionInfo sessionInfo = sessionManager.createSession(interpreter);
+      return new JsonResponse<>(Response.Status.OK, sessionInfo).build();
     } catch (Exception e) {
       return new JsonResponse<>(Response.Status.INTERNAL_SERVER_ERROR,
               "Fail to start session", ExceptionUtils.getStackTrace(e)).build();
@@ -110,7 +105,7 @@ public class SessionRestApi {
   }
 
   /**
-   * Get a session info.
+   * Get session info for provided sessionId.
    */
   @GET
   @Path("{sessionId}")

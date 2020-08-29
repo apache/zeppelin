@@ -17,6 +17,9 @@
 
 package org.apache.zeppelin.rest.message;
 
+/**
+ * (TODO) Move it to zeppelin-common, so that we don't need to have 2 copies.
+ */
 public class SessionInfo {
 
   private String sessionId;
@@ -25,6 +28,16 @@ public class SessionInfo {
   private String state;
   private String weburl;
   private String startTime;
+
+  public SessionInfo(String sessionId) {
+    this.sessionId = sessionId;
+  }
+
+  public SessionInfo(String sessionId, String noteId, String interpreter) {
+    this.sessionId = sessionId;
+    this.noteId = noteId;
+    this.interpreter = interpreter;
+  }
 
   public SessionInfo(String sessionId, String noteId, String interpreter, String state, String weburl, String startTime) {
     this.sessionId = sessionId;
@@ -57,5 +70,17 @@ public class SessionInfo {
 
   public String getStartTime() {
     return startTime;
+  }
+
+  public void setState(String state) {
+    this.state = state;
+  }
+
+  public void setStartTime(String startTime) {
+    this.startTime = startTime;
+  }
+
+  public void setWeburl(String weburl) {
+    this.weburl = weburl;
   }
 }

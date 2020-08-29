@@ -22,24 +22,32 @@ import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.interpreter.ManagedInterpreterGroup;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
+import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.rest.message.SessionInfo;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ *
+ * Backend manager of ZSessions
+ */
 public class SessionManager {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SessionManager.class);
 
   private static final int RETRY = 3;
-  private Set<String> sessions = new HashSet<>();
+  private Map<String, SessionInfo> sessions = new HashMap<>();
   private InterpreterSettingManager interpreterSettingManager;
   private Notebook notebook;
 
@@ -48,25 +56,44 @@ public class SessionManager {
     this.interpreterSettingManager = interpreterSettingManager;
   }
 
-  public synchronized String newSession(String interpreter) throws Exception {
+  /**
+   * Create a new session, including allocate new session Id and create dedicated note for this session.
+   *
+   * @param interpreter
+   * @return
+   * @throws Exception
+   */
+  public synchronized SessionInfo createSession(String interpreter) throws Exception {
+    String sessionId = null;
     int i = 0;
     while (i < RETRY) {
-       String sessionId = interpreter + "_" + System.currentTimeMillis();
-       if (sessions.contains(sessionId)) {
+      sessionId = interpreter + "_" + System.currentTimeMillis();
+       if (sessions.containsKey(sessionId)) {
          try {
            Thread.sleep(1);
          } catch (InterruptedException e) {
            e.printStackTrace();
          }
        } else {
-         sessions.add(sessionId);
-         return sessionId;
+         break;
        }
     }
 
-    throw new Exception("Unable to generate session id");
+    if (sessionId == null) {
+      throw new Exception("Unable to generate session id");
+    }
+
+    Note sessionNote = notebook.createNote("/_ZSession/" + sessionId, AuthenticationInfo.ANONYMOUS);
+    SessionInfo sessionInfo = new SessionInfo(sessionId, sessionNote.getId(), interpreter);
+    sessions.put(sessionId, sessionInfo);
+    return sessionInfo;
   }
 
+  /**
+   * Remove and stop this session.
+   *
+   * @param sessionId
+   */
   public void removeSession(String sessionId) {
     this.sessions.remove(sessionId);
     InterpreterGroup interpreterGroup = this.interpreterSettingManager.getInterpreterGroupById(sessionId);
@@ -77,45 +104,49 @@ public class SessionManager {
     ((ManagedInterpreterGroup) interpreterGroup).getInterpreterSetting().closeInterpreters(sessionId);
   }
 
+  /**
+   * Get the sessionInfo.
+   * It method will also update its state if these's associated interpreter process.
+   *
+   * @param sessionId
+   * @return
+   * @throws Exception
+   */
   public SessionInfo getSession(String sessionId) throws Exception {
+    SessionInfo sessionInfo = sessions.get(sessionId);
+    if (sessionInfo == null) {
+      LOGGER.warn("No such session: " + sessionId);
+      return null;
+    }
     InterpreterGroup interpreterGroup = this.interpreterSettingManager.getInterpreterGroupById(sessionId);
     if (interpreterGroup != null) {
       RemoteInterpreterProcess remoteInterpreterProcess =
               ((ManagedInterpreterGroup) interpreterGroup).getRemoteInterpreterProcess();
-      String state = "";
-      String startTime = "";
       if (remoteInterpreterProcess == null) {
-        state = "Ready";
+        sessionInfo.setState("Ready");
       } else if (remoteInterpreterProcess != null) {
-        startTime = remoteInterpreterProcess.getStartTime();
+        sessionInfo.setStartTime(remoteInterpreterProcess.getStartTime());
+        sessionInfo.setWeburl(interpreterGroup.getWebUrl());
         if (remoteInterpreterProcess.isRunning()) {
-          state = "Running";
+          sessionInfo.setState("Running");
         } else {
-          state = "Stopped";
+          sessionInfo.setState("Stopped");
         }
       }
-      String noteId = "";
-      String interpreter = ((ManagedInterpreterGroup) interpreterGroup).getInterpreterSetting().getName();
-      String notePath = "/_ZSession/" + interpreter + "/" + sessionId;
-      List<NoteInfo> notesInfo = notebook.getNotesInfo().stream()
-              .filter(e -> e.getPath().equals(notePath))
-              .collect(Collectors.toList());
-      if (notesInfo.size() != 0) {
-        noteId = notesInfo.get(0).getId();
-        if (notesInfo.size() > 1) {
-          LOGGER.warn("Found more than 1 notes with path: " + notePath);
-        }
-      }
-      return new SessionInfo(sessionId, noteId, interpreter,
-              state, interpreterGroup.getWebUrl(), startTime);
     }
-    LOGGER.warn("No such session: " + sessionId);
-    return null;
+
+    return sessionInfo;
   }
 
+  /**
+   * Get all sessions.
+   *
+   * @return
+   * @throws Exception
+   */
   public List<SessionInfo> getAllSessions() throws Exception {
     List<SessionInfo> sessionList = new ArrayList<>();
-    for (String sessionId : sessions) {
+    for (String sessionId : sessions.keySet()) {
       SessionInfo session = getSession(sessionId);
       if (session != null) {
         sessionList.add(session);
@@ -124,11 +155,18 @@ public class SessionManager {
     return sessionList;
   }
 
-  public List<SessionInfo> getAllSessions(String interpreterGroup) throws Exception {
+  /**
+   * Get all sessions for provided interpreter.
+   *
+   * @param interpreter
+   * @return
+   * @throws Exception
+   */
+  public List<SessionInfo> getAllSessions(String interpreter) throws Exception {
     List<SessionInfo> sessionList = new ArrayList<>();
-    for (String sessionId : sessions) {
+    for (String sessionId : sessions.keySet()) {
       SessionInfo status = getSession(sessionId);
-      if (status != null && interpreterGroup.equals(status.getInterpreter())) {
+      if (status != null && interpreter.equals(status.getInterpreter())) {
         sessionList.add(status);
       }
     }

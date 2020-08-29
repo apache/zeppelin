@@ -42,8 +42,6 @@ public class ZSession {
   // max number of retained statements, each statement represent one paragraph.
   private int maxStatement;
 
-  private String sessionId;
-  private String noteId;
   private SessionInfo sessionInfo;
 
   private ZeppelinWebSocketClient webSocketClient;
@@ -64,11 +62,11 @@ public class ZSession {
   }
 
   private ZSession(ClientConfig clientConfig,
-                  String interpreter,
-                  String sessionId) throws Exception {
+                   String interpreter,
+                   String sessionId) throws Exception {
     this.zeppelinClient = new ZeppelinClient(clientConfig);
     this.interpreter = interpreter;
-    this.sessionId = sessionId;
+    this.sessionInfo = new SessionInfo(sessionId);
   }
 
   /**
@@ -90,9 +88,8 @@ public class ZSession {
    * @throws Exception
    */
   public void start(MessageHandler messageHandler) throws Exception {
-    this.sessionId = zeppelinClient.newSession(interpreter);
+    this.sessionInfo = zeppelinClient.newSession(interpreter);
 
-    this.noteId = zeppelinClient.createNote("/_ZSession/" + interpreter + "/" + sessionId, interpreter);
     // inline configuration
     StringBuilder builder = new StringBuilder("%" + interpreter + ".conf\n");
     if (intpProperties != null) {
@@ -100,20 +97,20 @@ public class ZSession {
         builder.append(entry.getKey() + " " + entry.getValue() + "\n");
       }
     }
-    String paragraphId = zeppelinClient.addParagraph(noteId, "Session Configuration", builder.toString());
-    ParagraphResult paragraphResult = zeppelinClient.executeParagraph(noteId, paragraphId, sessionId);
+    String paragraphId = zeppelinClient.addParagraph(getNoteId(), "Session Configuration", builder.toString());
+    ParagraphResult paragraphResult = zeppelinClient.executeParagraph(getNoteId(), paragraphId, getSessionId());
     if (paragraphResult.getStatus() != Status.FINISHED) {
       throw new Exception("Fail to configure session, " + paragraphResult.getResultInText());
     }
 
     // start session
     // add local properties (init) to avoid skip empty paragraph.
-    paragraphId = zeppelinClient.addParagraph(noteId, "Session Init", "%" + interpreter + "(init=true)");
-    paragraphResult = zeppelinClient.executeParagraph(noteId, paragraphId, sessionId);
+    paragraphId = zeppelinClient.addParagraph(getNoteId(), "Session Init", "%" + interpreter + "(init=true)");
+    paragraphResult = zeppelinClient.executeParagraph(getNoteId(), paragraphId, getSessionId());
     if (paragraphResult.getStatus() != Status.FINISHED) {
       throw new Exception("Fail to init session, " + paragraphResult.getResultInText());
     }
-    this.sessionInfo = zeppelinClient.getSession(sessionId);
+    this.sessionInfo = zeppelinClient.getSession(getSessionId());
 
     if (messageHandler != null) {
       this.webSocketClient = new ZeppelinWebSocketClient(messageHandler);
@@ -122,7 +119,7 @@ public class ZSession {
 
       // call GET_NOTE to establish websocket connection between this session and zeppelin-server
       Message msg = new Message(Message.OP.GET_NOTE);
-      msg.put("id", this.noteId);
+      msg.put("id", getNoteId());
       this.webSocketClient.send(msg);
     }
   }
@@ -133,8 +130,8 @@ public class ZSession {
    * @throws Exception
    */
   public void stop() throws Exception {
-    if (sessionId != null) {
-      zeppelinClient.stopSession(sessionId);
+    if (getSessionId() != null) {
+      zeppelinClient.stopSession(getSessionId());
     }
     if (webSocketClient != null) {
       webSocketClient.stop();
@@ -169,10 +166,9 @@ public class ZSession {
   }
 
   private void reconnect(MessageHandler messageHandler) throws Exception {
-    this.sessionInfo = this.zeppelinClient.getSession(sessionId);
-    this.noteId = sessionInfo.getNoteId();
+    this.sessionInfo = this.zeppelinClient.getSession(getSessionId());
     if (!sessionInfo.getState().equalsIgnoreCase("Running")) {
-      throw new Exception("Session " + sessionId + " is not running, state: " + sessionInfo.getState());
+      throw new Exception("Session " + getSessionId() + " is not running, state: " + sessionInfo.getState());
     }
 
     if (messageHandler != null) {
@@ -182,7 +178,7 @@ public class ZSession {
 
       // call GET_NOTE to establish websocket connection between this session and zeppelin-server
       Message msg = new Message(Message.OP.GET_NOTE);
-      msg.put("id", this.noteId);
+      msg.put("id", getNoteId());
       this.webSocketClient.send(msg);
     }
   }
@@ -275,13 +271,13 @@ public class ZSession {
 
     String text = builder.toString();
 
-    String nextParagraphId = zeppelinClient.nextSessionParagraph(noteId, maxStatement);
-    zeppelinClient.updateParagraph(noteId, nextParagraphId, "", text);
+    String nextParagraphId = zeppelinClient.nextSessionParagraph(getNoteId(), maxStatement);
+    zeppelinClient.updateParagraph(getNoteId(), nextParagraphId, "", text);
 
     if (messageHandler != null) {
       webSocketClient.addStatementMessageHandler(nextParagraphId, messageHandler);
     }
-    ParagraphResult paragraphResult = zeppelinClient.executeParagraph(noteId, nextParagraphId, sessionId);
+    ParagraphResult paragraphResult = zeppelinClient.executeParagraph(getNoteId(), nextParagraphId, getSessionId());
     return new ExecuteResult(paragraphResult);
   }
 
@@ -366,12 +362,12 @@ public class ZSession {
     builder.append("\n" + code);
 
     String text = builder.toString();
-    String nextParagraphId = zeppelinClient.nextSessionParagraph(noteId, maxStatement);
-    zeppelinClient.updateParagraph(noteId, nextParagraphId, "", text);
+    String nextParagraphId = zeppelinClient.nextSessionParagraph(getNoteId(), maxStatement);
+    zeppelinClient.updateParagraph(getNoteId(), nextParagraphId, "", text);
     if (messageHandler != null) {
       webSocketClient.addStatementMessageHandler(nextParagraphId, messageHandler);
     }
-    ParagraphResult paragraphResult = zeppelinClient.submitParagraph(noteId, nextParagraphId, sessionId);
+    ParagraphResult paragraphResult = zeppelinClient.submitParagraph(getNoteId(), nextParagraphId, getSessionId());
     return new ExecuteResult(paragraphResult);
   }
 
@@ -381,7 +377,7 @@ public class ZSession {
    * @throws Exception
    */
   public void cancel(String statementId) throws Exception {
-    zeppelinClient.cancelParagraph(noteId, statementId);
+    zeppelinClient.cancelParagraph(getNoteId(), statementId);
   }
 
   /**
@@ -391,7 +387,7 @@ public class ZSession {
    * @throws Exception
    */
   public ExecuteResult queryStatement(String statementId) throws Exception {
-    ParagraphResult paragraphResult = zeppelinClient.queryParagraphResult(noteId, statementId);
+    ParagraphResult paragraphResult = zeppelinClient.queryParagraphResult(getNoteId(), statementId);
     return new ExecuteResult(paragraphResult);
   }
 
@@ -402,7 +398,7 @@ public class ZSession {
    * @throws Exception
    */
   public ExecuteResult waitUntilFinished(String statementId) throws Exception {
-    ParagraphResult paragraphResult = zeppelinClient.waitUtilParagraphFinish(noteId, statementId);
+    ParagraphResult paragraphResult = zeppelinClient.waitUtilParagraphFinish(getNoteId(), statementId);
     return new ExecuteResult(paragraphResult);
   }
 
@@ -413,20 +409,32 @@ public class ZSession {
    * @throws Exception
    */
   public ExecuteResult waitUntilRunning(String statementId) throws Exception {
-    ParagraphResult paragraphResult = zeppelinClient.waitUtilParagraphRunning(noteId, statementId);
+    ParagraphResult paragraphResult = zeppelinClient.waitUtilParagraphRunning(getNoteId(), statementId);
     return new ExecuteResult(paragraphResult);
   }
 
   public String getNoteId() {
-    return noteId;
+    if (this.sessionInfo != null) {
+      return this.sessionInfo.getNoteId();
+    } else {
+      return null;
+    }
   }
 
   public String getWeburl() {
-    return sessionInfo.getWeburl();
+    if (this.sessionInfo != null) {
+      return sessionInfo.getWeburl();
+    } else {
+      return null;
+    }
   }
 
   public String getSessionId() {
-    return sessionId;
+    if (this.sessionInfo != null) {
+      return this.sessionInfo.getSessionId();
+    } else {
+      return null;
+    }
   }
 
   public String getInterpreter() {

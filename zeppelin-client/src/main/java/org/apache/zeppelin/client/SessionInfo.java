@@ -33,20 +33,28 @@ public class SessionInfo {
   private String weburl;
   private String startTime;
 
+  public SessionInfo(String sessionId) {
+    this.sessionId = sessionId;
+  }
+
   public SessionInfo(JSONObject sessionJson) {
-    this.sessionId = sessionJson.getString("sessionId");
-    this.noteId = sessionJson.getString("noteId");
-    this.interpreter = sessionJson.getString("interpreter");
-    this.state = sessionJson.getString("state");
+    if (sessionJson.has("sessionId")) {
+      this.sessionId = sessionJson.getString("sessionId");
+    }
+    if (sessionJson.has("noteId")) {
+      this.noteId = sessionJson.getString("noteId");
+    }
+    if (sessionJson.has("interpreter")) {
+      this.interpreter = sessionJson.getString("interpreter");
+    }
+    if (sessionJson.has("state")) {
+      this.state = sessionJson.getString("state");
+    }
     if (sessionJson.has("weburl")) {
       this.weburl = sessionJson.getString("weburl");
-    } else {
-      this.weburl = "";
     }
     if (sessionJson.has("startTime")) {
       this.startTime = sessionJson.getString("startTime");
-    } else {
-      this.startTime = "";
     }
   }
 

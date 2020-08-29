@@ -49,6 +49,8 @@ public class ZeppelinClientWithAuthIntegrationTest extends AbstractTestRestApi {
   public static void setUp() throws Exception {
     System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HELIUM_REGISTRY.getVarName(),
             "helium");
+    System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_ALLOWED_ORIGINS.getVarName(), "*");
+
     AbstractTestRestApi.startUpWithAuthenticationEnable(ZeppelinClientWithAuthIntegrationTest.class.getSimpleName());
     notebook = TestUtils.getInstance(Notebook.class);
 

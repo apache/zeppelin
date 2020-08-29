@@ -48,6 +48,8 @@ public class ZeppelinClientIntegrationTest extends AbstractTestRestApi {
   public static void setUp() throws Exception {
     System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HELIUM_REGISTRY.getVarName(),
             "helium");
+    System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_ALLOWED_ORIGINS.getVarName(), "*");
+
     AbstractTestRestApi.startUp(ZeppelinClientIntegrationTest.class.getSimpleName());
     notebook = TestUtils.getInstance(Notebook.class);
 
@@ -228,14 +230,6 @@ public class ZeppelinClientIntegrationTest extends AbstractTestRestApi {
     } catch (Exception e) {
       assertTrue(e.getMessage(), e.getMessage().contains("No such paragraph"));
     }
-
-    // cancel paragraph
-    paragraphId = zeppelinClient.addParagraph(noteId, "run sh", "%sh sleep 10");
-    zeppelinClient.submitParagraph(noteId, paragraphId);
-    zeppelinClient.waitUtilParagraphRunning(noteId, paragraphId);
-    zeppelinClient.cancelParagraph(noteId, paragraphId);
-    paragraphResult = zeppelinClient.waitUtilParagraphFinish(noteId, paragraphId);
-    assertEquals(Status.ABORT, paragraphResult.getStatus());
   }
 
   @Test

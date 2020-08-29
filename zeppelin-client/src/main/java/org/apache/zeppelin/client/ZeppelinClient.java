@@ -129,15 +129,15 @@ public class ZeppelinClient {
    * @return
    * @throws Exception
    */
-  public String newSession(String interpreter) throws Exception {
+  public SessionInfo newSession(String interpreter) throws Exception {
     HttpResponse<JsonNode> response = Unirest
-            .post("/session/{interpreter}")
-            .routeParam("interpreter", interpreter)
+            .post("/session")
+            .queryString("interpreter", interpreter)
             .asJson();
     checkResponse(response);
     JsonNode jsonNode = response.getBody();
     checkJsonNodeStatus(jsonNode);
-    return jsonNode.getObject().getString("message");
+    return new SessionInfo(jsonNode.getObject().getJSONObject("body"));
   }
 
   /**
@@ -176,30 +176,7 @@ public class ZeppelinClient {
   }
 
   /**
-   * Get the session weburl. It is spark ui url for spark interpreter,
-   * or flink web ui for flink interpreter, or may be null for the interpreter that has no weburl.
-   *
-   * @param sessionId
-   * @throws Exception
-   */
-  public String getSessionWebUrl(String sessionId) throws Exception {
-    HttpResponse<JsonNode> response = Unirest
-            .get("/session/{sessionId}")
-            .routeParam("sessionId", sessionId)
-            .asJson();
-    checkResponse(response);
-    JsonNode jsonNode = response.getBody();
-    checkJsonNodeStatus(jsonNode);
-
-    JSONObject bodyObject = jsonNode.getObject().getJSONObject("body");
-    if (bodyObject.has("weburl")) {
-      return bodyObject.getString("weburl");
-    } else {
-      return null;
-    }
-  }
-
-  /**
+   * List all the sessions.
    *
    * @return
    * @throws Exception
@@ -209,6 +186,7 @@ public class ZeppelinClient {
   }
 
   /**
+   * List all the sessions for the provided interpreter.
    *
    * @param interpreter
    * @return
@@ -343,6 +321,7 @@ public class ZeppelinClient {
 
   /**
    * Execute note with provided noteId, return until note execution is completed.
+   * Interpreter process will be stopped after note execution.
    *
    * @param noteId
    * @return
@@ -354,6 +333,7 @@ public class ZeppelinClient {
 
   /**
    * Execute note with provided noteId and parameters, return until note execution is completed.
+   * Interpreter process will be stopped after note execution.
    *
    * @param noteId
    * @param parameters
@@ -361,23 +341,14 @@ public class ZeppelinClient {
    * @throws Exception
    */
   public NoteResult executeNote(String noteId, Map<String, String> parameters) throws Exception {
-    JSONObject bodyObject = new JSONObject();
-    bodyObject.put("params", parameters);
-    HttpResponse<JsonNode> response = Unirest
-            .post("/notebook/job/{noteId}?blocking=true&isolated=true")
-            .routeParam("noteId", noteId)
-            .body(bodyObject.toString())
-            .asJson();
-    checkResponse(response);
-    JsonNode jsonNode = response.getBody();
-    checkJsonNodeStatus(jsonNode);
-
-    return queryNoteResult(noteId);
+    submitNote(noteId, parameters);
+    return waitUntilNoteFinished(noteId);
   }
 
   /**
    * Submit note to execute with provided noteId, return at once the submission is completed.
    * You need to query {@link NoteResult} by yourself afterwards until note execution is completed.
+   * Interpreter process will be stopped after note execution.
    *
    * @param noteId
    * @return
@@ -390,6 +361,7 @@ public class ZeppelinClient {
   /**
    * Submit note to execute with provided noteId and parameters, return at once the submission is completed.
    * You need to query {@link NoteResult} by yourself afterwards until note execution is completed.
+   * Interpreter process will be stopped after note execution.
    *
    * @param noteId
    * @param parameters
@@ -401,13 +373,14 @@ public class ZeppelinClient {
     bodyObject.put("params", parameters);
     // run note in non-blocking and isolated way.
     HttpResponse<JsonNode> response = Unirest
-            .post("/notebook/job/{noteId}?blocking=false&isolated=true")
+            .post("/notebook/job/{noteId}")
             .routeParam("noteId", noteId)
+            .queryString("blocking", "false")
+            .queryString("isolated", "true")
             .body(bodyObject)
             .asJson();
     checkResponse(response);
     JsonNode jsonNode = response.getBody();
-    LOGGER.info("Start to run note: " + noteId);
     checkJsonNodeStatus(jsonNode);
     return queryNoteResult(noteId);
   }
@@ -753,4 +726,22 @@ public class ZeppelinClient {
     }
   }
 
+  /**
+   * This is equal to the restart operation in note page.
+   *
+   * @param noteId
+   * @param interpreter
+   */
+  public void stopInterpreter(String noteId, String interpreter) throws Exception {
+    JSONObject bodyObject = new JSONObject();
+    bodyObject.put("noteId", noteId);
+    HttpResponse<JsonNode> response = Unirest
+            .put("/interpreter/setting/restart/{interpreter}")
+            .routeParam("interpreter", interpreter)
+            .body(bodyObject.toString())
+            .asJson();
+    checkResponse(response);
+    JsonNode jsonNode = response.getBody();
+    checkJsonNodeStatus(jsonNode);
+  }
 }

@@ -18,8 +18,8 @@
 package org.apache.zeppelin.interpreter;
 
 /**
- * Context info about running interpreter. This is used for deciding which interpreter binding
- * mode to use.
+ * Context info about running interpreter. This is used for deciding bind to
+ * which interpreter progress(InterpreterGroup)
  */
 public class ExecutionContext {
 
