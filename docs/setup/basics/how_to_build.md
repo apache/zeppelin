@@ -41,8 +41,8 @@ If you want to build from source, you must first install the following dependenc
     <td>3.1.x or higher</td>
   </tr>
   <tr>
-    <td>JDK</td>
-    <td>1.7</td>
+    <td>OpenJDK or Oracle JDK</td>
+    <td>1.8 (151+)<br>(set JAVA_HOME)</td>
   </tr>
 </table>
 
