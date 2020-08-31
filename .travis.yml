@@ -38,6 +38,7 @@ jobs:
     - name: "Test License compliance using RAT tool"
       jdk: "openjdk8"
       dist: xenial
+      env: CACHE_NAME=rat
       before_install:
         - echo "MAVEN_OPTS='-Xms1024M -Xmx2048M -XX:MaxMetaspaceSize=1024m -XX:-UseGCOverheadLimit'" >> ~/.mavenrc
       install:
