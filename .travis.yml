@@ -22,7 +22,6 @@ cache:
   apt: true
   directories:
     - ${HOME}/.m2
-    - ${HOME}/R
     -  zeppelin-web/node
     -  zeppelin-web/node_modules
 
