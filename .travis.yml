@@ -17,6 +17,8 @@ language: java
 
 before_cache:
     - sudo chown -R travis:travis $HOME/.m2
+    # Ensure that jobs do not influence each other with installed Zeppelin Jars
+    - rm -rf $HOME/.m2/repository/org/apache/zeppelin/
 
 cache:
   apt: true
