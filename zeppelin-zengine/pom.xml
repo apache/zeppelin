@@ -303,7 +303,8 @@
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
-          <forkMode>always</forkMode>
+          <reuseForks>false</reuseForks>
+          <forkCount>1</forkCount>
           <systemProperties>
             <java.io.tmpdir>${project.build.directory}</java.io.tmpdir>
           </systemProperties>

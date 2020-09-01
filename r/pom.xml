@@ -189,7 +189,8 @@
           <junitxml>.</junitxml>
           <filereports>testoutput.txt</filereports>
           <parallel>false</parallel>
-          <forkMode>once</forkMode>
+          <forkCount>1</forkCount>
+          <reuseForks>true</reuseForks>
           <systemProperties>
             <scala.usejavacp>true</scala.usejavacp>
           </systemProperties>
