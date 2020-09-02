@@ -83,7 +83,7 @@ public class SessionManager {
       throw new Exception("Unable to generate session id");
     }
 
-    Note sessionNote = notebook.createNote("/_ZSession/" + sessionId, AuthenticationInfo.ANONYMOUS);
+    Note sessionNote = notebook.createNote("/_ZSession/" + interpreter + "/" + sessionId, AuthenticationInfo.ANONYMOUS);
     SessionInfo sessionInfo = new SessionInfo(sessionId, sessionNote.getId(), interpreter);
     sessions.put(sessionId, sessionInfo);
     return sessionInfo;

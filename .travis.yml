@@ -224,7 +224,7 @@ jobs:
         - bash -x ./testing/install_external_dependencies.sh
         - source ~/.environ
       install:
-        - mvn install -DskipTests -DskipRat -pl zeppelin-interpreter-integration,zeppelin-web,spark/spark-dependencies,markdown,flink/interpreter,jdbc,shell -am
+        - mvn install -DskipTests -DskipRat -Pintegration -pl zeppelin-interpreter-integration,zeppelin-web,spark/spark-dependencies,markdown,flink/interpreter,jdbc,shell -am
         - mvn clean package -T 2C -pl zeppelin-plugins -amd -B
       before_script:
         - echo "export ZEPPELIN_HELIUM_REGISTRY=helium" >> conf/zeppelin-env.sh
@@ -232,7 +232,7 @@ jobs:
         - export SPARK_PRINT_LAUNCH_COMMAND=true
         - tail conf/zeppelin-env.sh
       script:
-        - mvn test -DskipRat -pl zeppelin-interpreter-integration -Dtest=ZeppelinClientIntegrationTest,ZeppelinClientWithAuthIntegrationTest,ZSessionIntegrationTest
+        - mvn test -DskipRat -pl zeppelin-interpreter-integration -Pintegration -Dtest=ZeppelinClientIntegrationTest,ZeppelinClientWithAuthIntegrationTest,ZSessionIntegrationTest
 
 
     - name: "Test flink 1.10 & flink integration test"

@@ -58,50 +58,35 @@ public class SessionRestApi {
 
   @GET
   @Path("/")
-  public Response listSessions(@QueryParam("interpreter") String interpreter) {
+  public Response listSessions(@QueryParam("interpreter") String interpreter) throws Exception {
     if (StringUtils.isBlank(interpreter)) {
       LOGGER.info("List all sessions");
     } else {
       LOGGER.info("List all sessions for interpreter: " + interpreter);
     }
-    try {
-      List<SessionInfo> sessionList = null;
-      if (StringUtils.isBlank(interpreter)) {
-        sessionList = sessionManager.getAllSessions();
-      } else {
-        sessionList = sessionManager.getAllSessions(interpreter);
-      }
-      return new JsonResponse<>(Response.Status.OK, sessionList).build();
-    } catch (Exception e) {
-      return new JsonResponse<>(Response.Status.INTERNAL_SERVER_ERROR,
-              "Fail to list session", ExceptionUtils.getStackTrace(e)).build();
+    List<SessionInfo> sessionList = null;
+    if (StringUtils.isBlank(interpreter)) {
+      sessionList = sessionManager.getAllSessions();
+    } else {
+      sessionList = sessionManager.getAllSessions(interpreter);
     }
+    return new JsonResponse<>(Response.Status.OK, sessionList).build();
   }
 
   @POST
   @Path("/")
-  public Response createSession(@QueryParam("interpreter") String interpreter) {
+  public Response createSession(@QueryParam("interpreter") String interpreter) throws Exception {
     LOGGER.info("Create new session for interpreter: {}", interpreter);
-    try {
-      SessionInfo sessionInfo = sessionManager.createSession(interpreter);
-      return new JsonResponse<>(Response.Status.OK, sessionInfo).build();
-    } catch (Exception e) {
-      return new JsonResponse<>(Response.Status.INTERNAL_SERVER_ERROR,
-              "Fail to start session", ExceptionUtils.getStackTrace(e)).build();
-    }
+    SessionInfo sessionInfo = sessionManager.createSession(interpreter);
+    return new JsonResponse<>(Response.Status.OK, sessionInfo).build();
   }
 
   @DELETE
   @Path("{sessionId}")
   public Response stopSession(@PathParam("sessionId") String sessionId) {
     LOGGER.info("Stop session: {}", sessionId);
-    try {
-      sessionManager.removeSession(sessionId);
-      return new JsonResponse<>(Response.Status.OK, sessionId).build();
-    } catch (Exception e) {
-      return new JsonResponse<>(Response.Status.INTERNAL_SERVER_ERROR,
-              "Fail to stop session", ExceptionUtils.getStackTrace(e)).build();
-    }
+    sessionManager.removeSession(sessionId);
+    return new JsonResponse<>(Response.Status.OK, sessionId).build();
   }
 
   /**
@@ -110,18 +95,12 @@ public class SessionRestApi {
   @GET
   @Path("{sessionId}")
   @ZeppelinApi
-  public Response getSession(@PathParam("sessionId") String sessionId) {
-    try {
-      SessionInfo session = sessionManager.getSession(sessionId);
-      if (session == null) {
-        return new JsonResponse<>(Response.Status.NOT_FOUND).build();
-      } else {
-        return new JsonResponse<>(Response.Status.OK, "", session).build();
-      }
-    } catch (Throwable e) {
-      LOGGER.error("Exception in SessionRestApi while getSession ", e);
-      return new JsonResponse<>(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage(),
-              ExceptionUtils.getStackTrace(e)).build();
+  public Response getSession(@PathParam("sessionId") String sessionId) throws Exception {
+    SessionInfo session = sessionManager.getSession(sessionId);
+    if (session == null) {
+      return new JsonResponse<>(Response.Status.NOT_FOUND).build();
+    } else {
+      return new JsonResponse<>(Response.Status.OK, "", session).build();
     }
   }
 }

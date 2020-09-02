@@ -35,9 +35,17 @@ public class ClientConfig {
   }
 
   public ClientConfig(String zeppelinRestUrl, long queryInterval, boolean useKnox) {
-    this.zeppelinRestUrl = zeppelinRestUrl;
+    this.zeppelinRestUrl = removeTrailingSlash(zeppelinRestUrl);
     this.queryInterval = queryInterval;
     this.useKnox = useKnox;
+  }
+
+  private String removeTrailingSlash(String zeppelinRestUrl) {
+    if (zeppelinRestUrl.endsWith("/")) {
+      return zeppelinRestUrl.substring(0, zeppelinRestUrl.length() - 1);
+    } else {
+      return zeppelinRestUrl;
+    }
   }
 
   public String getZeppelinRestUrl() {
