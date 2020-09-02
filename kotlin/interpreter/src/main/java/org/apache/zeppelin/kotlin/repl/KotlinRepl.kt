@@ -118,10 +118,18 @@ class KotlinRepl(properties: KotlinReplProperties) {
         constructorArgs.invoke(kotlinContext)
 
         jvm {
-            val filteringClassLoader = FilteringClassLoader(ClassLoader.getSystemClassLoader()) {
-                it.startsWith("org.apache.zeppelin.kotlin.script")  || it.startsWith("kotlin.") || it.startsWith("org.jetbrains.kotlin.")
+            val filteringClassLoader = FilteringClassLoader(ClassLoader.getSystemClassLoader()) { fqn ->
+                listOf(
+                        "org.apache.zeppelin.kotlin.script",
+                        "kotlin.",
+                        "org.jetbrains.kotlin.",
+
+                ).any {
+                    fqn.startsWith(it)
+                }
             }
-            val scriptClassloader = URLClassLoader(properties.getClasspath().map { it.toURI().toURL() }.toTypedArray(), filteringClassLoader)
+            // val scriptClassloader = URLClassLoader(properties.getClasspath().map { it.toURI().toURL() }.toTypedArray(), filteringClassLoader)
+            val scriptClassloader = KotlinContext::class.java.classLoader
             baseClassLoader(scriptClassloader)
         }
     }

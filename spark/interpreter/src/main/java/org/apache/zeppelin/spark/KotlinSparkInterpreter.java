@@ -183,9 +183,9 @@ public class KotlinSparkInterpreter extends Interpreter {
           return new File(s.substring(p + 1));
         });
 
-    Stream<File> systemJars = Arrays.stream(
+    Stream<File> systemJars = Stream.empty();/*Arrays.stream(
         System.getProperty("java.class.path").split(File.pathSeparator))
-        .map(File::new);
+        .map(File::new);*/
 
     return Stream.concat(addedJars, systemJars)
         .map(file -> {

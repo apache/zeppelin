@@ -212,7 +212,7 @@ public class KotlinSparkInterpreterTest {
 
   @Test
   public void classWriteTest() throws Exception {
-    interpreter.interpret("val f = { x: Any -> println(x) }", context);
+    InterpreterResult r0 = interpreter.interpret("val f = { x: Any -> println(x) }", context);
     output = "";
     InterpreterResult result = interpreter.interpret("spark.range(5).foreach(f)", context);
     assertEquals(SUCCESS, result.code());

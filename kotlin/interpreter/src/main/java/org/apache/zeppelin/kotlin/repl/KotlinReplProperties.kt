@@ -16,7 +16,9 @@
  */
 package org.apache.zeppelin.kotlin.repl
 
+import org.apache.zeppelin.kotlin.script.DependsOn
 import java.io.File
+import kotlin.script.experimental.jvm.util.scriptCompilationClasspathFromContext
 
 /**
  * Class that holds properties for Kotlin REPL creation,
@@ -90,8 +92,35 @@ class KotlinReplProperties {
         return classpath.map { File(it) }
     }
 
+    private fun getTestClasspath(): List<String> {
+        val javaClasspath = System.getProperty("java.class.path").split(File.pathSeparator)
+        return javaClasspath.filter { s ->
+            val sep = File.separator
+            listOf(
+                    "spark${sep}interpreter",
+                    "kotlin${sep}script-dependencies",
+                    "zeppelin-interpreter${sep}",
+                    "org${sep}jetbrains${sep}kotlin${sep}kotlin",
+                    "org${sep}jetbrains${sep}annotations",
+                    "org${sep}apache${sep}spark${sep}spark-",
+                    "org${sep}scala-lang"
+            ).any {
+                s.contains(it)
+            }
+        }
+        /*
+        return scriptCompilationClasspathFromContext(
+                "spark-interpreter",
+                "kotlin-stdlib",
+                "kotlin-reflect",
+                "kotlin-script-runtime",
+                classLoader = DependsOn::class.java.classLoader
+        ).map { it.absolutePath }
+         */
+    }
+
     init {
-        val javaClasspath = System.getProperty("java.class.path").split(File.pathSeparator).toTypedArray()
+        val javaClasspath = getTestClasspath() // System.getProperty("java.class.path").split(File.pathSeparator).toTypedArray()
         println("Initial Java classpath in Kotlin interpreter:")
         println(javaClasspath.joinToString("\n"))
 
