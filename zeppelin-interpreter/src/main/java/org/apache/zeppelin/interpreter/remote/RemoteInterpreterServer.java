@@ -73,9 +73,6 @@ import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import sun.misc.Signal;
-import sun.misc.SignalHandler;
-
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -149,6 +146,8 @@ public class RemoteInterpreterServer extends Thread
   private ZeppelinConfiguration zConf;
   // cluster manager client
   private ClusterManagerClient clusterManagerClient;
+
+  private static Thread shutdownThread;
 
   public RemoteInterpreterServer(String intpEventServerHost,
                                  int intpEventServerPort,
@@ -245,62 +244,16 @@ public class RemoteInterpreterServer extends Thread
         LOGGER.error("Fail to unregister remote interpreter process", e);
       }
     }
-
-    Thread shutDownThread = new Thread(() -> {
-      LOGGER.info("Shutting down...");
-      // delete interpreter cluster meta
-      deleteClusterMeta();
-
-      if (interpreterGroup != null) {
-        synchronized (interpreterGroup) {
-          for (List<Interpreter> session : interpreterGroup.values()) {
-            for (Interpreter interpreter : session) {
-              try {
-                interpreter.close();
-              } catch (InterpreterException e) {
-                LOGGER.warn("Fail to close interpreter", e);
-              }
-            }
-          }
-        }
+    if (shutdownThread != null) {
+      // no need to call shutdownhook twice
+      if (Runtime.getRuntime().removeShutdownHook(shutdownThread)) {
+        LOGGER.debug("ShutdownHook removed, because of a regular shutdown");
+      } else {
+        LOGGER.warn("The ShutdownHook could not be removed");
       }
-      if (!isTest) {
-        SchedulerFactory.singleton().destroy();
-        ExecutorFactory.singleton().shutdownAll();
-      }
+    }
 
-      if ("yarn".equals(launcherEnv)) {
-        try {
-          YarnUtils.unregister(true, "");
-        } catch (Exception e) {
-          LOGGER.error("Fail to unregister yarn app", e);
-        }
-      }
-
-      server.stop();
-
-      // server.stop() does not always finish server.serve() loop
-      // sometimes server.serve() is hanging even after server.stop() call.
-      // this case, need to force kill the process
-
-      long startTime = System.currentTimeMillis();
-      while (System.currentTimeMillis() - startTime < DEFAULT_SHUTDOWN_TIMEOUT &&
-              server.isServing()) {
-        try {
-          Thread.sleep(300);
-        } catch (InterruptedException e) {
-          LOGGER.info("Exception in RemoteInterpreterServer while shutdown, Thread.sleep", e);
-        }
-      }
-
-      if (server.isServing()) {
-        LOGGER.info("Force shutting down");
-        System.exit(0);
-      }
-
-      LOGGER.info("Shutting down");
-    }, "Shutdown-Thread");
-
+    Thread shutDownThread = new ShutdownThread(ShutdownThread.CAUSE_SHUTDOWN_CALL);
     shutDownThread.start();
   }
 
@@ -349,18 +302,12 @@ public class RemoteInterpreterServer extends Thread
         new RemoteInterpreterServer(zeppelinServerHost, port, interpreterGroupId, portRange);
     remoteInterpreterServer.start();
 
-    // add signal handler
-    Signal.handle(new Signal("TERM"), new SignalHandler() {
-      @Override
-      public void handle(Signal signal) {
-        try {
-          LOGGER.info("Receive TERM Signal");
-          remoteInterpreterServer.shutdown();
-        } catch (TException e) {
-          LOGGER.error("Error on shutdown RemoteInterpreterServer", e);
-        }
-      }
-    });
+    /*
+     * Registration of a ShutdownHook in case of an unpredictable system call
+     * Examples: STRG+C, SIGTERM via kill
+     */
+    shutdownThread = remoteInterpreterServer.new ShutdownThread(ShutdownThread.CAUSE_SHUTDOWN_HOOK);
+    Runtime.getRuntime().addShutdownHook(shutdownThread);
 
     remoteInterpreterServer.join();
     LOGGER.info("RemoteInterpreterServer thread is finished");
@@ -385,20 +332,6 @@ public class RemoteInterpreterServer extends Thread
     meta.put(ClusterMeta.STATUS, ClusterMeta.ONLINE_STATUS);
 
     clusterManagerClient.putClusterMeta(INTP_PROCESS_META, interpreterGroupId, meta);
-  }
-
-  private void deleteClusterMeta() {
-    if (!zConf.isClusterMode()){
-      return;
-    }
-
-    try {
-      // delete interpreter cluster meta
-      clusterManagerClient.deleteClusterMeta(INTP_PROCESS_META, interpreterGroupId);
-      Thread.sleep(300);
-    } catch (InterruptedException e) {
-      LOGGER.error(e.getMessage(), e);
-    }
   }
 
   @Override
@@ -686,6 +619,100 @@ public class RemoteInterpreterServer extends Thread
         }
       }
       LOGGER.info("Registration finished");
+    }
+  }
+
+  class ShutdownThread extends Thread {
+    private final String cause;
+
+    public static final String CAUSE_SHUTDOWN_HOOK = "ShutdownHook";
+    public static final String CAUSE_SHUTDOWN_CALL = "ShutdownCall";
+
+    public ShutdownThread(String cause) {
+      super("ShutdownThread");
+      this.cause = cause;
+    }
+
+    @Override
+    public void run() {
+      LOGGER.info("Shutting down...");
+      LOGGER.info("Shutdown initialized by {}", cause);
+      // delete interpreter cluster meta
+      deleteClusterMeta();
+
+      if (interpreterGroup != null) {
+        synchronized (interpreterGroup) {
+          for (List<Interpreter> session : interpreterGroup.values()) {
+            for (Interpreter interpreter : session) {
+              try {
+                interpreter.close();
+              } catch (InterpreterException e) {
+                LOGGER.warn("Fail to close interpreter", e);
+              }
+            }
+          }
+        }
+      }
+      if (!isTest) {
+        SchedulerFactory.singleton().destroy();
+        ExecutorFactory.singleton().shutdownAll();
+      }
+
+      if ("yarn".equals(launcherEnv)) {
+        try {
+          YarnUtils.unregister(true, "");
+        } catch (Exception e) {
+          LOGGER.error("Fail to unregister yarn app", e);
+        }
+      }
+      // Try to unregister the interpreter process in case the interpreter process exit unpredictable via ShutdownHook
+      if (intpEventClient != null && CAUSE_SHUTDOWN_HOOK.equals(cause)) {
+        try {
+          LOGGER.info("Unregister interpreter process");
+          intpEventClient.unRegisterInterpreterProcess();
+        } catch (Exception e) {
+          LOGGER.error("Fail to unregister remote interpreter process", e);
+        }
+      }
+
+      server.stop();
+
+      // server.stop() does not always finish server.serve() loop
+      // sometimes server.serve() is hanging even after server.stop() call.
+      // this case, need to force kill the process
+
+      long startTime = System.currentTimeMillis();
+      while (System.currentTimeMillis() - startTime < DEFAULT_SHUTDOWN_TIMEOUT &&
+              server.isServing()) {
+        try {
+          Thread.sleep(300);
+        } catch (InterruptedException e) {
+          LOGGER.info("Exception in RemoteInterpreterServer while shutdown, Thread.sleep", e);
+          Thread.currentThread().interrupt();
+        }
+      }
+
+      if (server.isServing()) {
+        LOGGER.info("Force shutting down");
+        System.exit(0);
+      }
+
+      LOGGER.info("Shutting down");
+    }
+
+    private void deleteClusterMeta() {
+      if (zConf == null || !zConf.isClusterMode()){
+        return;
+      }
+
+      try {
+        // delete interpreter cluster meta
+        clusterManagerClient.deleteClusterMeta(INTP_PROCESS_META, interpreterGroupId);
+        Thread.sleep(300);
+      } catch (InterruptedException e) {
+        LOGGER.error(e.getMessage(), e);
+        Thread.currentThread().interrupt();
+      }
     }
   }
 
@@ -1391,6 +1418,4 @@ public class RemoteInterpreterServer extends Thread
       this.paragraphId = paragraphId;
     }
   }
-
-  ;
 }
