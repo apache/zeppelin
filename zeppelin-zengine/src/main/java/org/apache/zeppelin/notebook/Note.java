@@ -788,8 +788,7 @@ public class Note implements JsonSerializable {
           // Must run each paragraph in blocking way.
           if (!run(p.getId(), true)) {
             LOGGER.warn("Skip running the remain notes because paragraph {} fails", p.getId());
-            throw new Exception("Fail to run note because paragraph " + p.getId() + " is failed, result: " +
-                    p.getReturn());
+            return;
           }
         } catch (InterpreterNotFoundException e) {
           // ignore, because the following run method will fail if interpreter not found.
@@ -834,7 +833,7 @@ public class Note implements JsonSerializable {
    * @param blocking Whether run this paragraph in blocking way
    */
   public boolean run(String paragraphId, boolean blocking) {
-    return run(paragraphId, blocking, null);
+    return run(paragraphId, null, blocking, null);
   }
 
   /**
@@ -846,6 +845,7 @@ public class Note implements JsonSerializable {
    * @return
    */
   public boolean run(String paragraphId,
+                     String interpreterGroupId,
                      boolean blocking,
                      String ctxUser) {
     Paragraph p = getParagraph(paragraphId);
@@ -854,7 +854,7 @@ public class Note implements JsonSerializable {
       p = p.getUserParagraph(ctxUser);
 
     p.setListener(this.paragraphJobListener);
-    return p.execute(blocking);
+    return p.execute(interpreterGroupId, blocking);
   }
 
   /**
@@ -994,12 +994,10 @@ public class Note implements JsonSerializable {
   public List<InterpreterSetting> getUsedInterpreterSettings() {
     Set<InterpreterSetting> settings = new HashSet<>();
     for (Paragraph p : getParagraphs()) {
-      try {
-        Interpreter intp = p.getBindedInterpreter();
+      Interpreter intp = p.getInterpreter();
+      if (intp != null) {
         settings.add((
                 (ManagedInterpreterGroup) intp.getInterpreterGroup()).getInterpreterSetting());
-      } catch (InterpreterNotFoundException e) {
-        // ignore this
       }
     }
     return new ArrayList<>(settings);
