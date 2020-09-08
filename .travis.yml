@@ -220,6 +220,7 @@ jobs:
       dist: xenial
       before_install:
         - export PYTHON=3
+        - export R=true
         - echo "MAVEN_OPTS='-Xms1024M -Xmx2048M -XX:MaxMetaspaceSize=1024m -XX:-UseGCOverheadLimit -Dorg.slf4j.simpleLogger.defaultLogLevel=warn'" >> ~/.mavenrc
         - bash -x ./testing/install_external_dependencies.sh
         - source ~/.environ
