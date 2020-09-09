@@ -15,15 +15,8 @@
  * limitations under the License.
  */
 
+package org.apache.zeppelin.common;
 
-package org.apache.zeppelin.client;
-
-import kong.unirest.json.JSONObject;
-
-
-/**
- * Represent each ZSession info.
- */
 public class SessionInfo {
 
   private String sessionId;
@@ -33,29 +26,27 @@ public class SessionInfo {
   private String weburl;
   private String startTime;
 
+  public SessionInfo(){
+
+  }
+
   public SessionInfo(String sessionId) {
     this.sessionId = sessionId;
   }
 
-  public SessionInfo(JSONObject sessionJson) {
-    if (sessionJson.has("sessionId")) {
-      this.sessionId = sessionJson.getString("sessionId");
-    }
-    if (sessionJson.has("noteId")) {
-      this.noteId = sessionJson.getString("noteId");
-    }
-    if (sessionJson.has("interpreter")) {
-      this.interpreter = sessionJson.getString("interpreter");
-    }
-    if (sessionJson.has("state")) {
-      this.state = sessionJson.getString("state");
-    }
-    if (sessionJson.has("weburl")) {
-      this.weburl = sessionJson.getString("weburl");
-    }
-    if (sessionJson.has("startTime")) {
-      this.startTime = sessionJson.getString("startTime");
-    }
+  public SessionInfo(String sessionId, String noteId, String interpreter) {
+    this.sessionId = sessionId;
+    this.noteId = noteId;
+    this.interpreter = interpreter;
+  }
+
+  public SessionInfo(String sessionId, String noteId, String interpreter, String state, String weburl, String startTime) {
+    this.sessionId = sessionId;
+    this.noteId = noteId;
+    this.interpreter = interpreter;
+    this.state = state;
+    this.weburl = weburl;
+    this.startTime = startTime;
   }
 
   public String getSessionId() {
@@ -66,12 +57,12 @@ public class SessionInfo {
     return noteId;
   }
 
-  public String getInterpreter() {
-    return interpreter;
-  }
-
   public String getState() {
     return state;
+  }
+
+  public String getInterpreter() {
+    return interpreter;
   }
 
   public String getWeburl() {
@@ -82,14 +73,27 @@ public class SessionInfo {
     return startTime;
   }
 
-  @Override
-  public String toString() {
-    return "SessionResult{" +
-            "sessionId='" + sessionId + '\'' +
-            ", interpreter='" + interpreter + '\'' +
-            ", state='" + state + '\'' +
-            ", weburl='" + weburl + '\'' +
-            ", startTime='" + startTime + '\'' +
-            '}';
+  public void setState(String state) {
+    this.state = state;
+  }
+
+  public void setStartTime(String startTime) {
+    this.startTime = startTime;
+  }
+
+  public void setWeburl(String weburl) {
+    this.weburl = weburl;
+  }
+
+  public void setSessionId(String sessionId) {
+    this.sessionId = sessionId;
+  }
+
+  public void setNoteId(String noteId) {
+    this.noteId = noteId;
+  }
+
+  public void setInterpreter(String interpreter) {
+    this.interpreter = interpreter;
   }
 }

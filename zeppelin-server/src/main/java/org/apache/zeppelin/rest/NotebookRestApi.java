@@ -75,7 +75,7 @@ import org.quartz.CronExpression;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.apache.zeppelin.notebook.socket.Message.MSG_ID_NOT_DEFINED;
+import static org.apache.zeppelin.common.Message.MSG_ID_NOT_DEFINED;
 
 /**
  * Rest api endpoint for the notebook.
