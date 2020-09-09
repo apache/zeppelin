@@ -19,11 +19,12 @@ package org.apache.zeppelin.notebook.repo.zeppelinhub.websocket.utils;
 import java.util.HashMap;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.zeppelin.common.Message;
 import org.apache.zeppelin.notebook.repo.zeppelinhub.model.UserTokenContainer;
 import org.apache.zeppelin.notebook.repo.zeppelinhub.websocket.ZeppelinhubClient;
 import org.apache.zeppelin.notebook.repo.zeppelinhub.websocket.protocol.ZeppelinHubOp;
 import org.apache.zeppelin.notebook.repo.zeppelinhub.websocket.protocol.ZeppelinhubMessage;
-import org.apache.zeppelin.notebook.socket.Message;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
