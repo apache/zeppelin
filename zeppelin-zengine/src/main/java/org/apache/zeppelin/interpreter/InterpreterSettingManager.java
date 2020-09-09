@@ -255,7 +255,7 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
     //TODO(zjffdu) still ugly (should move all to InterpreterInfoSaving)
     for (InterpreterSetting savedInterpreterSetting : infoSaving.interpreterSettings.values()) {
       if (!shouldRegister(savedInterpreterSetting.getGroup())) {
-        break;
+        continue;
       }
       savedInterpreterSetting.setProperties(InterpreterSetting.convertInterpreterProperties(
           savedInterpreterSetting.getProperties()
@@ -292,7 +292,7 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
         }
       }
       savedInterpreterSetting.postProcessing();
-      LOGGER.info("Create Interpreter Setting {} from interpreter.json",
+      LOGGER.info("Create interpreter setting {} from interpreter.json",
           savedInterpreterSetting.getName());
       interpreterSettings.put(savedInterpreterSetting.getId(), savedInterpreterSetting);
     }
@@ -302,6 +302,7 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
       initInterpreterSetting(interpreterSetting);
       // add newly detected interpreter if it doesn't exist in interpreter.json
       if (!interpreterSettings.containsKey(interpreterSetting.getId())) {
+        LOGGER.info("Create interpreter setting: {} from interpreter setting template", interpreterSetting.getId());
         interpreterSettings.put(interpreterSetting.getId(), interpreterSetting);
       }
     }
