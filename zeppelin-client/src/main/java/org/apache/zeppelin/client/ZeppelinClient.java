@@ -29,6 +29,7 @@ import org.apache.commons.text.StringEscapeUtils;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 import org.apache.http.ssl.SSLContextBuilder;
+import org.apache.zeppelin.common.SessionInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import unirest.shaded.org.apache.http.client.HttpClient;
@@ -137,7 +138,7 @@ public class ZeppelinClient {
     checkResponse(response);
     JsonNode jsonNode = response.getBody();
     checkJsonNodeStatus(jsonNode);
-    return new SessionInfo(jsonNode.getObject().getJSONObject("body"));
+    return createSessionInfoFromJson(jsonNode.getObject().getJSONObject("body"));
   }
 
   /**
@@ -172,7 +173,7 @@ public class ZeppelinClient {
     checkJsonNodeStatus(jsonNode);
 
     JSONObject bodyObject = jsonNode.getObject().getJSONObject("body");
-    return new SessionInfo(bodyObject);
+    return createSessionInfoFromJson(bodyObject);
   }
 
   /**
@@ -204,9 +205,33 @@ public class ZeppelinClient {
     JSONArray sessionJsonArray = jsonNode.getObject().getJSONArray("body");
     List<SessionInfo> sessionInfos = new ArrayList<>();
     for (int i = 0; i< sessionJsonArray.length();++i) {
-      sessionInfos.add(new SessionInfo(sessionJsonArray.getJSONObject(i)));
+      sessionInfos.add(createSessionInfoFromJson(sessionJsonArray.getJSONObject(i)));
     }
     return sessionInfos;
+  }
+
+  private SessionInfo createSessionInfoFromJson(JSONObject sessionJson) {
+    SessionInfo sessionInfo = new SessionInfo();
+    if (sessionJson.has("sessionId")) {
+      sessionInfo.setSessionId(sessionJson.getString("sessionId"));
+    }
+    if (sessionJson.has("noteId")) {
+      sessionInfo.setNoteId(sessionJson.getString("noteId"));
+    }
+    if (sessionJson.has("interpreter")) {
+      sessionInfo.setInterpreter(sessionJson.getString("interpreter"));
+    }
+    if (sessionJson.has("state")) {
+      sessionInfo.setState(sessionJson.getString("state"));
+    }
+    if (sessionJson.has("weburl")) {
+      sessionInfo.setWeburl(sessionJson.getString("weburl"));
+    }
+    if (sessionJson.has("startTime")) {
+      sessionInfo.setStartTime(sessionJson.getString("startTime"));
+    }
+
+    return sessionInfo;
   }
 
   /**
