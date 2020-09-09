@@ -77,12 +77,6 @@
       <groupId>org.apache.zeppelin</groupId>
       <artifactId>zeppelin-server</artifactId>
       <version>${project.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>com.fasterxml.jackson.core</groupId>
-          <artifactId>jackson-annotations</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
 
     <dependency>
@@ -128,12 +122,6 @@
       <version>${project.version}</version>
       <classifier>tests</classifier>
       <scope>test</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>com.fasterxml.jackson.core</groupId>
-          <artifactId>jackson-annotations</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
 
     <dependency>
