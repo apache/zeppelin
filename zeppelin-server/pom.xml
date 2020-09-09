@@ -36,12 +36,13 @@
   <properties>
 
     <!--library versions-->
-    <jersey.version>2.27</jersey.version>
+    <jersey.version>2.30</jersey.version>
     <jersey.servlet.version>1.13</jersey.servlet.version>
     <javax.ws.rsapi.version>2.1</javax.ws.rsapi.version>
     <libpam4j.version>1.11</libpam4j.version>
     <jna.version>4.1.0</jna.version>
     <prometheus.simpleclient.version>0.9.0</prometheus.simpleclient.version>
+    <jackson.version>2.9.10.6</jackson.version>
 
     <!--test library versions-->
     <selenium.java.version>2.48.2</selenium.java.version>
@@ -176,17 +177,6 @@
           <groupId>com.fasterxml.jackson.core</groupId>
           <artifactId>jackson-databind</artifactId>
         </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-databind</artifactId>
-      <version>2.9.10.1</version>
-      <exclusions>
-        <exclusion>
-          <groupId>com.fasterxml.jackson.core</groupId>
-          <artifactId>jackson-annotations</artifactId>
-        </exclusion>
         <exclusion>
           <groupId>com.fasterxml.jackson.core</groupId>
           <artifactId>jackson-core</artifactId>
@@ -202,6 +192,12 @@
       <groupId>org.glassfish.jersey.core</groupId>
       <artifactId>jersey-server</artifactId>
       <version>${jersey.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <version>${jackson.version}</version>
     </dependency>
 
     <dependency>
@@ -264,13 +260,6 @@
       <groupId>net.java.dev.jna</groupId>
       <artifactId>jna</artifactId>
       <version>${jna.version}</version>
-    </dependency>
-
-    <!-- Needed for dependency conergence -->
-    <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-annotations</artifactId>
-      <version>2.9.9</version>
     </dependency>
 
     <dependency>
