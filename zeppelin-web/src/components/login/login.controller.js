@@ -44,6 +44,7 @@ function LoginCtrl($scope, $rootScope, $http, $httpParamSerializer, baseUrlSrv, 
           let redirectLocation = $location.search()['ref'];
           $location.$$search = {};
           $location.path(redirectLocation);
+          $scope.$apply();
         }, 100);
       }
     }, function errorCallback(errorResponse) {
