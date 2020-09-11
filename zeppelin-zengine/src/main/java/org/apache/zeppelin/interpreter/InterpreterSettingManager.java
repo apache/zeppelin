@@ -17,6 +17,9 @@
 
 package org.apache.zeppelin.interpreter;
 
+import com.codahale.metrics.Gauge;
+import com.codahale.metrics.MetricFilter;
+import com.codahale.metrics.MetricRegistry;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
@@ -51,6 +54,7 @@ import org.apache.zeppelin.interpreter.recovery.RecoveryStorage;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
+import org.apache.zeppelin.metrics.Metrics;
 import org.apache.zeppelin.notebook.ApplicationState;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteEventListener;
@@ -104,6 +108,8 @@ import static org.apache.zeppelin.cluster.ClusterManagerServer.CLUSTER_INTP_SETT
 public class InterpreterSettingManager implements NoteEventListener, ClusterEventListener {
 
   private static final Pattern VALID_INTERPRETER_NAME = Pattern.compile("^[-_a-zA-Z0-9]+$");
+  private static final String METRICS_PREFIX_INTERPRETER = "interpreter";
+  private static final String METRICS_PREFIX_GROUP = "group";
   private static final Logger LOGGER = LoggerFactory.getLogger(InterpreterSettingManager.class);
   private static final Map<String, Object> DEFAULT_EDITOR = ImmutableMap.of(
       "language", (Object) "text",
@@ -239,7 +245,7 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
         InterpreterSetting interpreterSetting = new InterpreterSetting(interpreterSettingTemplate);
         initInterpreterSetting(interpreterSetting);
         if (shouldRegister(interpreterSetting.getGroup())) {
-          interpreterSettings.put(interpreterSetting.getId(), interpreterSetting);
+          addInterpreterSetting(interpreterSetting);
         }
       }
       return;
@@ -280,13 +286,13 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
       // remove it first
       for (InterpreterSetting setting : interpreterSettings.values()) {
         if (setting.getName().equals(savedInterpreterSetting.getName())) {
-          interpreterSettings.remove(setting.getId());
+          removeInterpreterSetting(setting.getId());
         }
       }
       savedInterpreterSetting.postProcessing();
       LOGGER.info("Create interpreter setting {} from interpreter.json",
           savedInterpreterSetting.getName());
-      interpreterSettings.put(savedInterpreterSetting.getId(), savedInterpreterSetting);
+      addInterpreterSetting(savedInterpreterSetting);
     }
 
     for (InterpreterSetting interpreterSettingTemplate : interpreterSettingTemplates.values()) {
@@ -295,7 +301,7 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
       // add newly detected interpreter if it doesn't exist in interpreter.json
       if (!interpreterSettings.containsKey(interpreterSetting.getId())) {
         LOGGER.info("Create interpreter setting: {} from interpreter setting template", interpreterSetting.getId());
-        interpreterSettings.put(interpreterSetting.getId(), interpreterSetting);
+        addInterpreterSetting(interpreterSetting);
       }
     }
 
@@ -314,11 +320,51 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
     }
   }
 
+  private void addInterpreterSetting(InterpreterSetting interpreterSetting) {
+    interpreterSettings.put(interpreterSetting.getId(), interpreterSetting);
+    String metricNamePrefix = MetricRegistry.name(METRICS_PREFIX_INTERPRETER, METRICS_PREFIX_GROUP, interpreterSetting.getId());
+
+    String metricSize = MetricRegistry.name(metricNamePrefix, "size");
+    if (Metrics.getMetricRegistry().remove(metricSize)) {
+      LOGGER.warn("InterpreterSettings {} is overwritten, deleting the old metric before adding the new metric", interpreterSetting.getId());
+    }
+    LOGGER.debug("Adding metric {}", metricSize);
+    Metrics.getMetricRegistry().<Gauge<Integer>>register(metricSize,
+      () -> interpreterSetting.getAllInterpreterGroups().size());
+  }
+
+
+  private void removeInterpreterSetting(String id) {
+    // Add '.' as a delimiter, because interpreter names can be similar. Such as "spark" and "spark_small"
+    String metricName = MetricRegistry.name(METRICS_PREFIX_INTERPRETER, METRICS_PREFIX_GROUP, id) +  '.';
+    LOGGER.debug("Remove metric which starts with {}", metricName);
+    Metrics.getMetricRegistry().removeMatching(MetricFilter.startsWith(metricName));
+    interpreterSettings.remove(id);
+  }
+
   public void saveToFile() throws IOException {
     InterpreterInfoSaving info = new InterpreterInfoSaving();
     info.interpreterSettings = Maps.newHashMap(interpreterSettings);
     info.interpreterRepositories = interpreterRepositories;
     configStorage.save(info);
+  }
+
+  private void initMetrics() {
+    /*
+     * This class should be a singleton
+     * During tests we create more instances, so it's okay to reregister metrics
+     */
+    String metricInterpreterAmount = MetricRegistry.name(METRICS_PREFIX_INTERPRETER, "amount");
+    if (Metrics.getMetricRegistry().remove(metricInterpreterAmount)) {
+      LOGGER.warn("Reregister of Metric {}", metricInterpreterAmount);
+    }
+    Metrics.getMetricRegistry().<Gauge<Integer>>register(metricInterpreterAmount, interpreterSettings::size);
+
+    String metricInterpreterGroupSize = MetricRegistry.name(METRICS_PREFIX_INTERPRETER, METRICS_PREFIX_GROUP, "size");
+    if (Metrics.getMetricRegistry().remove(metricInterpreterGroupSize)) {
+      LOGGER.warn("Reregister of Metric {}", metricInterpreterGroupSize);
+    }
+    Metrics.getMetricRegistry().<Gauge<Integer>>register(metricInterpreterGroupSize, () -> getAllInterpreterGroup().size());
   }
 
   private void init() throws IOException {
@@ -341,6 +387,7 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
     loadInterpreterSettingFromDefaultDir(true);
     loadFromFile();
     saveToFile();
+    initMetrics();
 
     // must init Recovery after init of InterpreterSettingManager
     recoveryStorage.init();
@@ -826,7 +873,7 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
     setting.setInterpreterOption(option);
     setting.setProperties(properties);
     initInterpreterSetting(setting);
-    interpreterSettings.put(setting.getId(), setting);
+    addInterpreterSetting(setting);
     saveToFile();
 
     return setting;
@@ -976,7 +1023,7 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
     if (interpreterSettings.containsKey(id)) {
       InterpreterSetting intp = interpreterSettings.get(id);
       intp.close();
-      interpreterSettings.remove(id);
+      removeInterpreterSetting(id);
       if (initiator) {
         // Event initiator saves the file
         // Cluster event accepting nodes do not need to save files repeatedly
