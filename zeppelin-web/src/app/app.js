@@ -221,7 +221,8 @@ function bootstrapApplication() {
     $rootScope.$on('$routeChangeStart', function(event, next, current) {
       $rootScope.pageTitle = 'Zeppelin';
       if (!$rootScope.ticket && next.$$route && !next.$$route.publicAccess) {
-        $location.path('/');
+        const oldPath = ($location.search() && $location.search()['ref']) || $location.path();
+        $location.path('/').search('ref', oldPath);
       }
     });
   });
