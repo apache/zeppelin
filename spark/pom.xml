@@ -197,7 +197,7 @@
         <profile>
             <id>spark-3.0</id>
             <properties>
-                <spark.version>3.0.0</spark.version>
+                <spark.version>3.0.1</spark.version>
                 <protobuf.version>2.5.0</protobuf.version>
                 <py4j.version>0.10.9</py4j.version>
             </properties>
