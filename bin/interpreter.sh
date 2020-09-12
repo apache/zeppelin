@@ -94,9 +94,8 @@ fi
 
 check_java_version
 
-
 ZEPPELIN_INTERPRETER_API_JAR=$(find "${ZEPPELIN_HOME}/interpreter" -name 'zeppelin-interpreter-shaded-*.jar')
-ZEPPELIN_INTP_CLASSPATH="${CLASSPATH}:${ZEPPELIN_INTERPRETER_API_JAR}"
+ZEPPELIN_INTP_CLASSPATH+=":${CLASSPATH}:${ZEPPELIN_INTERPRETER_API_JAR}"
 
 # construct classpath
 if [[ -d "${ZEPPELIN_HOME}/zeppelin-interpreter/target/classes" ]]; then
