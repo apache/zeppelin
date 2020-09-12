@@ -20,9 +20,12 @@ package org.apache.zeppelin.integration;
 import org.apache.zeppelin.client.ClientConfig;
 import org.apache.zeppelin.client.NoteResult;
 import org.apache.zeppelin.client.ParagraphResult;
+
 import org.apache.zeppelin.client.Status;
 import org.apache.zeppelin.client.ZeppelinClient;
+
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.common.SessionInfo;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.rest.AbstractTestRestApi;
 import org.apache.zeppelin.utils.TestUtils;
@@ -35,6 +38,7 @@ import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -374,5 +378,13 @@ public class ZeppelinClientIntegrationTest extends AbstractTestRestApi {
     ParagraphResult p2 = noteResult.getParagraphResultList().get(2);
     assertEquals(Status.READY, p2.getStatus());
     assertEquals(0, p2.getResults().size());
+  }
+
+  @Test
+  public void testSession() throws Exception {
+    SessionInfo sessionInfo = zeppelinClient.getSession("invalid_session");
+    assertNull(sessionInfo);
+
+    zeppelinClient.stopSession("invalid_session");
   }
 }
