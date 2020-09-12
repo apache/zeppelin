@@ -19,6 +19,7 @@ package org.apache.zeppelin.dep;
 
 import org.apache.commons.lang3.Validate;
 import org.apache.maven.repository.internal.MavenRepositorySystemSession;
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonatype.aether.RepositorySystem;
@@ -74,7 +75,8 @@ public class Booter {
   public static RemoteRepository newCentralRepository() {
     String mvnRepo = System.getenv("ZEPPELIN_INTERPRETER_DEP_MVNREPO");
     if (mvnRepo == null) {
-      mvnRepo = System.getProperty("zeppelin.interpreter.dep.mvnRepo");
+      mvnRepo = ZeppelinConfiguration.create().getString(
+              ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_DEP_MVNREPO);
     }
     if (mvnRepo == null) {
       mvnRepo = "https://repo1.maven.org/maven2/";
