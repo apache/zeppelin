@@ -193,6 +193,25 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
     }
 
     env.put("PYSPARK_PIN_THREAD", "true");
+
+    // ZEPPELIN_INTP_CLASSPATH
+    String sparkConfDir = getEnv("SPARK_CONF_DIR");
+    if (StringUtils.isBlank(sparkConfDir)) {
+      String sparkHome = getEnv("SPARK_HOME");
+      sparkConfDir = sparkHome + "/conf";
+    }
+    Properties sparkDefaultProperties = new Properties();
+    File sparkDefaultFile = new File(sparkConfDir, "spark-defaults.conf");
+    if (sparkDefaultFile.exists()) {
+      sparkDefaultProperties.load(new FileInputStream(sparkDefaultFile));
+      String driverExtraClassPath = sparkDefaultProperties.getProperty("spark.driver.extraClassPath");
+      if (!StringUtils.isBlank(driverExtraClassPath)) {
+        env.put("ZEPPELIN_INTP_CLASSPATH", driverExtraClassPath);
+      }
+    } else {
+      LOGGER.warn("spark-defaults.conf doesn't exist: " + sparkDefaultFile.getAbsolutePath());
+    }
+
     LOGGER.debug("buildEnvFromProperties: " + env);
     return env;
 
