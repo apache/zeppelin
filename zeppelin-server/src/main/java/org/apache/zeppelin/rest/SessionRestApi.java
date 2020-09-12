@@ -23,6 +23,7 @@ import org.apache.zeppelin.annotation.ZeppelinApi;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.common.SessionInfo;
+import org.apache.zeppelin.rest.exception.SessionNoteFoundException;
 import org.apache.zeppelin.server.JsonResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -98,7 +99,7 @@ public class SessionRestApi {
   public Response getSession(@PathParam("sessionId") String sessionId) throws Exception {
     SessionInfo session = sessionManager.getSession(sessionId);
     if (session == null) {
-      return new JsonResponse<>(Response.Status.NOT_FOUND).build();
+      throw new SessionNoteFoundException(sessionId);
     } else {
       return new JsonResponse<>(Response.Status.OK, "", session).build();
     }

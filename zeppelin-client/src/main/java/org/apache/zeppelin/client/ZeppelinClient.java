@@ -87,10 +87,14 @@ public class ZeppelinClient {
       throw new Exception("Please login first");
     }
     if (response.getStatus() != 200) {
+      String message = response.getStatusText();
+      if (response.getBody().getObject().has("message")) {
+        message = response.getBody().getObject().getString("message");
+      }
       throw new Exception(String.format("Unable to call rest api, status: %s, statusText: %s, message: %s",
               response.getStatus(),
               response.getStatusText(),
-              response.getBody().getObject().getString("message")));
+              message));
     }
   }
 
@@ -159,6 +163,7 @@ public class ZeppelinClient {
 
   /**
    * Get session info for the provided sessionId.
+   * Return null if provided sessionId doesn't exist.
    *
    * @param sessionId
    * @throws Exception
@@ -168,6 +173,15 @@ public class ZeppelinClient {
             .get("/session/{sessionId}")
             .routeParam("sessionId", sessionId)
             .asJson();
+    if (response.getStatus() == 404) {
+      String statusText = response.getStatusText();
+      if (response.getBody().getObject().has("message")) {
+        statusText = response.getBody().getObject().getString("message");
+      }
+      if (statusText.contains("No such session")) {
+        return null;
+      }
+    }
     checkResponse(response);
     JsonNode jsonNode = response.getBody();
     checkJsonNodeStatus(jsonNode);
