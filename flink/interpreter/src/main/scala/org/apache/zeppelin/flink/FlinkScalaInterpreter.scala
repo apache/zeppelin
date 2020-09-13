@@ -18,7 +18,7 @@
 
 package org.apache.zeppelin.flink
 
-import java.io.{BufferedReader, File, IOException}
+import java.io.{BufferedReader, File}
 import java.net.{URL, URLClassLoader}
 import java.nio.file.Files
 import java.util.Properties
@@ -46,13 +46,14 @@ import org.apache.flink.table.functions.{AggregateFunction, ScalarFunction, Tabl
 import org.apache.flink.table.module.ModuleManager
 import org.apache.flink.table.module.hive.HiveModule
 import org.apache.flink.yarn.cli.FlinkYarnSessionCli
-import org.apache.zeppelin.flink.util.DependencyUtils
+import org.apache.zeppelin.dep.DependencyResolver
 import org.apache.zeppelin.flink.FlinkShell._
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion
 import org.apache.zeppelin.interpreter.util.InterpreterOutputStream
 import org.apache.zeppelin.interpreter.{InterpreterContext, InterpreterException, InterpreterHookRegistry, InterpreterResult}
 import org.slf4j.{Logger, LoggerFactory}
 
+import scala.collection.{JavaConversions, JavaConverters}
 import scala.collection.JavaConverters._
 import scala.tools.nsc.Settings
 import scala.tools.nsc.interpreter.Completion.ScalaCompleter
@@ -787,7 +788,11 @@ class FlinkScalaInterpreter(val properties: Properties) {
     val flinkPackageJars =
       if (!StringUtils.isBlank(properties.getProperty("flink.execution.packages", ""))) {
         val packages = properties.getProperty("flink.execution.packages")
-        DependencyUtils.resolveMavenDependencies(null, packages, null, null, None).split(":").toSeq
+        val dependencyDir = Files.createTempDirectory("zeppelin-flink-dep").toFile
+        val dependencyResolver = new DependencyResolver(dependencyDir.getAbsolutePath)
+        packages.split(",")
+          .flatMap(e => JavaConversions.asScalaBuffer(dependencyResolver.load(e, dependencyDir)))
+          .map(e => e.getAbsolutePath).toSeq
       } else {
         Seq.empty[String]
       }
