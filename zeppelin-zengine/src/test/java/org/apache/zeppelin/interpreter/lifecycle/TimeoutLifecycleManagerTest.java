@@ -27,6 +27,8 @@ import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
 import org.apache.zeppelin.scheduler.Job;
 import org.junit.Test;
 
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Map;
 
@@ -36,13 +38,23 @@ import static org.junit.Assert.assertTrue;
 
 public class TimeoutLifecycleManagerTest extends AbstractInterpreterTest {
 
+  private File zeppelinSiteFile = new File("zeppelin-site.xml");
+
   @Override
   public void setUp() throws Exception {
-    System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_LIFECYCLE_MANAGER_CLASS.getVarName(),
+    ZeppelinConfiguration zConf = ZeppelinConfiguration.create();
+    zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_LIFECYCLE_MANAGER_CLASS.getVarName(),
         TimeoutLifecycleManager.class.getName());
-    System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_LIFECYCLE_MANAGER_TIMEOUT_CHECK_INTERVAL.getVarName(), "1000");
-    System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_LIFECYCLE_MANAGER_TIMEOUT_THRESHOLD.getVarName(), "10000");
+    zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_LIFECYCLE_MANAGER_TIMEOUT_CHECK_INTERVAL.getVarName(), "1000");
+    zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_LIFECYCLE_MANAGER_TIMEOUT_THRESHOLD.getVarName(), "10000");
+
+    zConf.save(zeppelinSiteFile);
     super.setUp();
+  }
+
+  @Override
+  public void tearDown() {
+    zeppelinSiteFile.delete();
   }
 
   @Test
@@ -66,7 +78,6 @@ public class TimeoutLifecycleManagerTest extends AbstractInterpreterTest {
     Thread.sleep(15 * 1000);
     // interpreterGroup is timeout, so is removed.
     assertEquals(0, interpreterSetting.getAllInterpreterGroups().size());
-    assertFalse(remoteInterpreter.isOpened());
   }
 
   @Test
