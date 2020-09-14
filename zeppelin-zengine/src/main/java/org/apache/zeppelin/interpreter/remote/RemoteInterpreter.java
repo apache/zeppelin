@@ -65,21 +65,17 @@ public class RemoteInterpreter extends Interpreter {
   private volatile boolean isOpened = false;
   private volatile boolean isCreated = false;
 
-  private LifecycleManager lifecycleManager;
-
   /**
    * Remote interpreter and manage interpreter process
    */
   public RemoteInterpreter(Properties properties,
                            String sessionId,
                            String className,
-                           String userName,
-                           LifecycleManager lifecycleManager) {
+                           String userName) {
     super(properties);
     this.sessionId = sessionId;
     this.className = className;
     this.setUserName(userName);
-    this.lifecycleManager = lifecycleManager;
   }
 
   public boolean isOpened() {
@@ -147,7 +143,6 @@ public class RemoteInterpreter extends Interpreter {
           return null;
         });
         isOpened = true;
-        this.lifecycleManager.onInterpreterUse(this.getInterpreterGroup(), sessionId);
       }
     }
   }
@@ -186,7 +181,6 @@ public class RemoteInterpreter extends Interpreter {
         return null;
       });
       isOpened = false;
-      this.lifecycleManager.onInterpreterUse(this.getInterpreterGroup(), sessionId);
     } else {
       LOGGER.warn("close is called when RemoterInterpreter is not opened for " + className);
     }
@@ -210,7 +204,6 @@ public class RemoteInterpreter extends Interpreter {
       return new InterpreterResult(InterpreterResult.Code.ERROR,
               "Interpreter process is not running\n" + interpreterProcess.getErrorMessage());
     }
-    this.lifecycleManager.onInterpreterUse(this.getInterpreterGroup(), sessionId);
     return interpreterProcess.callRemoteFunction(client -> {
           RemoteInterpreterResult remoteResult = client.interpret(
               sessionId, className, st, convert(context));
@@ -260,7 +253,6 @@ public class RemoteInterpreter extends Interpreter {
     } catch (IOException e) {
       throw new InterpreterException(e);
     }
-    this.lifecycleManager.onInterpreterUse(this.getInterpreterGroup(), sessionId);
     interpreterProcess.callRemoteFunction(client -> {
       client.cancel(sessionId, className, convert(context));
       return null;
@@ -286,7 +278,6 @@ public class RemoteInterpreter extends Interpreter {
       throw new InterpreterException(e);
     }
 
-    this.lifecycleManager.onInterpreterUse(this.getInterpreterGroup(), sessionId);
     FormType type = interpreterProcess.callRemoteFunction(client -> {
           formType = FormType.valueOf(client.getFormType(sessionId, className));
           return formType;
@@ -307,7 +298,6 @@ public class RemoteInterpreter extends Interpreter {
     } catch (IOException e) {
       throw new InterpreterException(e);
     }
-    this.lifecycleManager.onInterpreterUse(this.getInterpreterGroup(), sessionId);
     return interpreterProcess.callRemoteFunction(client ->
             client.getProgress(sessionId, className, convert(context)));
   }
@@ -326,7 +316,6 @@ public class RemoteInterpreter extends Interpreter {
     } catch (IOException e) {
       throw new InterpreterException(e);
     }
-    this.lifecycleManager.onInterpreterUse(this.getInterpreterGroup(), sessionId);
     return interpreterProcess.callRemoteFunction(client ->
             client.completion(sessionId, className, buf, cursor, convert(interpreterContext)));
   }
@@ -342,7 +331,6 @@ public class RemoteInterpreter extends Interpreter {
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
-    this.lifecycleManager.onInterpreterUse(this.getInterpreterGroup(), sessionId);
     return interpreterProcess.callRemoteFunction(client -> {
       return client.getStatus(sessionId, jobId);
     });

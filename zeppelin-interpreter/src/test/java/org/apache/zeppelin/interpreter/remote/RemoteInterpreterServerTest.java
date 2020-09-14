@@ -41,7 +41,7 @@ import static org.mockito.Mockito.mock;
 public class RemoteInterpreterServerTest {
 
   @Test
-  public void testStartStop() throws InterruptedException, IOException, TException {
+  public void testStartStop() throws Exception {
     RemoteInterpreterServer server = new RemoteInterpreterServer("localhost",
         RemoteInterpreterUtils.findRandomAvailablePortOnAllLocalInterfaces(), ":", "groupId", true);
 
@@ -50,7 +50,7 @@ public class RemoteInterpreterServerTest {
   }
 
   @Test
-  public void testStartStopWithQueuedEvents() throws InterruptedException, IOException, TException {
+  public void testStartStopWithQueuedEvents() throws Exception {
     RemoteInterpreterServer server = new RemoteInterpreterServer("localhost",
         RemoteInterpreterUtils.findRandomAvailablePortOnAllLocalInterfaces(), ":", "groupId", true);
     server.intpEventClient = mock(RemoteInterpreterEventClient.class);
@@ -93,7 +93,7 @@ public class RemoteInterpreterServerTest {
   }
 
   @Test
-  public void testInterpreter() throws IOException, TException, InterruptedException {
+  public void testInterpreter() throws Exception {
     final RemoteInterpreterServer server = new RemoteInterpreterServer("localhost",
         RemoteInterpreterUtils.findRandomAvailablePortOnAllLocalInterfaces(), ":", "groupId", true);
     server.intpEventClient = mock(RemoteInterpreterEventClient.class);

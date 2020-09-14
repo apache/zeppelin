@@ -92,6 +92,13 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector,
     });
   }
 
+  public void unRegisterInterpreterProcess() {
+    callRemoteFunction(client -> {
+      client.unRegisterInterpreterProcess(intpGroupId);
+      return null;
+    });
+  }
+
   public void sendWebUrlInfo(String webUrl) {
     callRemoteFunction(client -> {
       client.sendWebUrl(new WebUrlInfo(intpGroupId, webUrl));

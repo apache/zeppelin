@@ -22,7 +22,6 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.dep.Dependency;
 import org.apache.zeppelin.display.AngularObjectRegistryListener;
 import org.apache.zeppelin.helium.ApplicationEventListener;
-import org.apache.zeppelin.interpreter.lifecycle.NullLifecycleManager;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
 import org.junit.Test;
 import org.sonatype.aether.RepositoryException;
@@ -50,7 +49,6 @@ public class InterpreterSettingManagerTest extends AbstractInterpreterTest {
     InterpreterSetting interpreterSetting = interpreterSettingManager.getByName("test");
     assertEquals("test", interpreterSetting.getName());
     assertEquals("test", interpreterSetting.getGroup());
-    assertTrue(interpreterSetting.getLifecycleManager() instanceof NullLifecycleManager);
     assertEquals(8, interpreterSetting.getInterpreterInfos().size());
     // 3 other builtin properties:
     //   * zeppelin.interpreter.output.limit

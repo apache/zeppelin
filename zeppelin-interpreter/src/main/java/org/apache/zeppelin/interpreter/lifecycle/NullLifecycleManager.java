@@ -16,17 +16,29 @@
  */
 
 
-package org.apache.zeppelin.interpreter;
+package org.apache.zeppelin.interpreter.lifecycle;
 
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.interpreter.LifecycleManager;
+import org.apache.zeppelin.interpreter.remote.RemoteInterpreterServer;
 
 /**
- * Interface for managing the lifecycle of interpreters
+ * Do nothing for the lifecycle of interpreter. User need to explicitly start/stop interpreter.
  */
-public interface LifecycleManager {
+public class NullLifecycleManager extends LifecycleManager {
 
-  void onInterpreterProcessStarted(ManagedInterpreterGroup interpreterGroup);
+  public NullLifecycleManager(ZeppelinConfiguration zConf,
+                              RemoteInterpreterServer remoteInterpreterServer) {
+    super(zConf, remoteInterpreterServer);
+  }
 
-  void onInterpreterUse(ManagedInterpreterGroup interpreterGroup,
-                        String sessionId);
+  @Override
+  public void onInterpreterProcessStarted(String interpreterGroupId) {
 
+  }
+
+  @Override
+  public void onInterpreterUse(String interpreterGroupId) {
+
+  }
 }

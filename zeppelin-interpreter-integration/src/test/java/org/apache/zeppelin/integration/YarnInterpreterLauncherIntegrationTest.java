@@ -64,7 +64,7 @@ public class YarnInterpreterLauncherIntegrationTest {
     hadoopCluster.start();
 
     zeppelin = new MiniZeppelin();
-    zeppelin.start();
+    zeppelin.start(YarnInterpreterLauncherIntegrationTest.class);
     interpreterFactory = zeppelin.getInterpreterFactory();
     interpreterSettingManager = zeppelin.getInterpreterSettingManager();
   }
