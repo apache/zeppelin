@@ -47,7 +47,7 @@ public class JdbcIntegrationTest {
   @BeforeClass
   public static void setUp() throws IOException {
     zeppelin = new MiniZeppelin();
-    zeppelin.start();
+    zeppelin.start(JdbcIntegrationTest.class);
     interpreterFactory = zeppelin.getInterpreterFactory();
     interpreterSettingManager = zeppelin.getInterpreterSettingManager();
   }

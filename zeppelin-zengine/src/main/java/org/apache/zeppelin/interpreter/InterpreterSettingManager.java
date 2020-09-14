@@ -136,7 +136,6 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
   private RemoteInterpreterProcessListener remoteInterpreterProcessListener;
   private ApplicationEventListener appEventListener;
   private DependencyResolver dependencyResolver;
-  private LifecycleManager lifecycleManager;
   private RecoveryStorage recoveryStorage;
   private ConfigStorage configStorage;
   private RemoteInterpreterEventServer interpreterEventServer;
@@ -187,13 +186,8 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
             conf.getRecoveryStorageClass(),
             new Class[] {ZeppelinConfiguration.class, InterpreterSettingManager.class},
             new Object[] {conf, this});
-    LOGGER.info("Using RecoveryStorage: {}", this.recoveryStorage.getClass().getName());
-    this.lifecycleManager =
-        ReflectionUtils.createClazzInstance(
-            conf.getLifecycleManagerClass(),
-            new Class[] {ZeppelinConfiguration.class},
-            new Object[] {conf});
-    LOGGER.info("Using LifecycleManager: {}", this.lifecycleManager.getClass().getName());
+
+    LOGGER.info("Using RecoveryStorage: " + this.recoveryStorage.getClass().getName());
 
     this.configStorage = configStorage;
     init();
@@ -227,7 +221,6 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
         .setRemoteInterpreterProcessListener(remoteInterpreterProcessListener)
         .setAppEventListener(appEventListener)
         .setDependencyResolver(dependencyResolver)
-        .setLifecycleManager(lifecycleManager)
         .setRecoveryStorage(recoveryStorage)
         .setInterpreterEventServer(interpreterEventServer)
         .postProcessing();
@@ -639,6 +632,13 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
       interpreterGroups.addAll(interpreterSetting.getAllInterpreterGroups());
     }
     return interpreterGroups;
+  }
+
+  // TODO(zjffdu) Current approach is not optimized. we have to iterate all interpreter settings.
+  public void removeInterpreterGroup(String intpGroupId) {
+    for (InterpreterSetting interpreterSetting : interpreterSettings.values()) {
+      interpreterSetting.removeInterpreterGroup(intpGroupId);
+    }
   }
 
   //TODO(zjffdu) move Resource related api to ResourceManager

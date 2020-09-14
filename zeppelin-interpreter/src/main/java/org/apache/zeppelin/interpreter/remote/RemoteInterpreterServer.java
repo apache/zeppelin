@@ -22,12 +22,8 @@ import com.google.gson.reflect.TypeToken;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.thrift.TException;
-import org.apache.thrift.protocol.TBinaryProtocol;
-import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.server.TThreadPoolServer;
 import org.apache.thrift.transport.TServerSocket;
-import org.apache.thrift.transport.TSocket;
-import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
 import org.apache.zeppelin.cluster.ClusterManagerClient;
 import org.apache.zeppelin.cluster.meta.ClusterMeta;
@@ -57,11 +53,11 @@ import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.InterpreterResultMessage;
 import org.apache.zeppelin.interpreter.InterpreterResultMessageOutput;
 import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
+import org.apache.zeppelin.interpreter.LifecycleManager;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.interpreter.thrift.RegisterInfo;
 import org.apache.zeppelin.interpreter.thrift.RemoteApplicationResult;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterContext;
-import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterEventService;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterResult;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterResultMessage;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService;
@@ -129,6 +125,7 @@ public class RemoteInterpreterServer extends Thread
   private TThreadPoolServer server;
   RemoteInterpreterEventClient intpEventClient;
   private DependencyResolver depLoader;
+  private LifecycleManager lifecycleManager;
 
   private final Map<String, RunningApplication> runningApplications =
       Collections.synchronizedMap(new HashMap<String, RunningApplication>());
@@ -150,14 +147,13 @@ public class RemoteInterpreterServer extends Thread
   private boolean isTest;
 
   // cluster manager client
-  private ZeppelinConfiguration zconf = ZeppelinConfiguration.create();
+  private ZeppelinConfiguration zConf = ZeppelinConfiguration.create();
   private ClusterManagerClient clusterManagerClient;
 
   public RemoteInterpreterServer(String intpEventServerHost,
                                  int intpEventServerPort,
                                  String interpreterGroupId,
-                                 String portRange)
-      throws IOException, TTransportException {
+                                 String portRange) throws Exception {
     this(intpEventServerHost, intpEventServerPort, portRange, interpreterGroupId, false);
   }
 
@@ -165,8 +161,7 @@ public class RemoteInterpreterServer extends Thread
                                  int intpEventServerPort,
                                  String portRange,
                                  String interpreterGroupId,
-                                 boolean isTest)
-      throws TTransportException, IOException {
+                                 boolean isTest) throws Exception {
     LOGGER.info("Starting remote interpreter server on port {}, intpEventServerAddress: {}:{}", port,
             intpEventServerHost, intpEventServerPort);
     if (null != intpEventServerHost) {
@@ -197,10 +192,12 @@ public class RemoteInterpreterServer extends Thread
         new TThreadPoolServer.Args(serverTransport).processor(processor));
     remoteWorksResponsePool = Collections.synchronizedMap(new HashMap<String, Object>());
 
-    if (zconf.isClusterMode()) {
-      clusterManagerClient = ClusterManagerClient.getInstance(zconf);
+    if (zConf.isClusterMode()) {
+      clusterManagerClient = ClusterManagerClient.getInstance(zConf);
       clusterManagerClient.start(interpreterGroupId);
     }
+
+    lifecycleManager = createLifecycleManager();
   }
 
   @Override
@@ -219,7 +216,7 @@ public class RemoteInterpreterServer extends Thread
             }
           }
 
-          if (zconf.isClusterMode()) {
+          if (zConf.isClusterMode()) {
             // Cluster mode, discovering interpreter processes through metadata registration
             // TODO (Xun): Unified use of cluster metadata for process discovery of all operating modes
             // 1. Can optimize the startup logic of the process
@@ -232,6 +229,7 @@ public class RemoteInterpreterServer extends Thread
                 LOGGER.info("Registering interpreter process");
                 intpEventClient.registerInterpreterProcess(registerInfo);
                 LOGGER.info("Registered interpreter process");
+                lifecycleManager.onInterpreterProcessStarted(interpreterGroupId);
               } catch (Exception e) {
                 LOGGER.error("Error while registering interpreter: {}", registerInfo, e);
                 try {
@@ -270,6 +268,20 @@ public class RemoteInterpreterServer extends Thread
 
   @Override
   public void shutdown() throws TException {
+
+    // unRegisterInterpreterProcess should be a sync operation (outside of shutdown thread),
+    // otherwise it would cause data mismatch between zeppelin server & interpreter process.
+    // e.g. zeppelin server start a new interpreter process, while previous interpreter process
+    // uniregister it with the same interpreter group id: flink-shared-process.
+    if (intpEventClient != null) {
+      try {
+        LOGGER.info("Unregister interpreter process");
+        intpEventClient.unRegisterInterpreterProcess();
+      } catch (Exception e) {
+        LOGGER.error("Fail to unregister remote interpreter process", e);
+      }
+    }
+
     Thread shutDownThread = new Thread(() -> {
       LOGGER.info("Shutting down...");
       // delete interpreter cluster meta
@@ -339,8 +351,15 @@ public class RemoteInterpreterServer extends Thread
     }
   }
 
-  public static void main(String[] args)
-      throws TTransportException, InterruptedException, IOException {
+  private LifecycleManager createLifecycleManager() throws Exception {
+    String lifecycleManagerClass = zConf.getLifecycleManagerClass();
+    Class clazz = Class.forName(lifecycleManagerClass);
+    LOGGER.info("Creating interpreter lifecycle manager: " + lifecycleManagerClass);
+    return (LifecycleManager) clazz.getConstructor(ZeppelinConfiguration.class, RemoteInterpreterServer.class)
+            .newInstance(zConf, this);
+  }
+
+  public static void main(String[] args) throws Exception {
     String zeppelinServerHost = null;
     int port = Constants.ZEPPELIN_INTERPRETER_DEFAUlT_PORT;
     String portRange = ":";
@@ -377,7 +396,7 @@ public class RemoteInterpreterServer extends Thread
 
   // Submit interpreter process metadata information to cluster metadata
   private void putClusterMeta() {
-    if (!zconf.isClusterMode()){
+    if (!zConf.isClusterMode()){
       return;
     }
     String nodeName = clusterManagerClient.getClusterNodeName();
@@ -396,7 +415,7 @@ public class RemoteInterpreterServer extends Thread
   }
 
   private void deleteClusterMeta() {
-    if (!zconf.isClusterMode()){
+    if (!zConf.isClusterMode()){
       return;
     }
 
@@ -592,6 +611,8 @@ public class RemoteInterpreterServer extends Thread
     if (LOGGER.isDebugEnabled()) {
       LOGGER.debug("st:\n{}", st);
     }
+    lifecycleManager.onInterpreterUse(interpreterGroupId);
+
     Interpreter intp = getInterpreter(sessionId, className);
     InterpreterContext context = convert(interpreterContext);
     context.setInterpreterClassName(intp.getClassName());
@@ -858,6 +879,8 @@ public class RemoteInterpreterServer extends Thread
   public int getProgress(String sessionId, String className,
                          RemoteInterpreterContext interpreterContext)
       throws TException {
+    lifecycleManager.onInterpreterUse(interpreterGroupId);
+
     Integer manuallyProvidedProgress = progressMap.get(interpreterContext.getParagraphId());
     if (manuallyProvidedProgress != null) {
       return manuallyProvidedProgress;
@@ -984,6 +1007,8 @@ public class RemoteInterpreterServer extends Thread
   @Override
   public String getStatus(String sessionId, String jobId)
       throws TException {
+
+    lifecycleManager.onInterpreterUse(interpreterGroupId);
     if (interpreterGroup == null) {
       return Status.UNKNOWN.name();
     }

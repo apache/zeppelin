@@ -20,6 +20,7 @@ package org.apache.zeppelin.conf;
 import com.google.common.annotations.VisibleForTesting;
 import java.io.File;
 import java.io.IOException;
+import java.io.Writer;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -33,6 +34,7 @@ import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.configuration.tree.ConfigurationNode;
 import org.apache.commons.exec.environment.EnvironmentUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.zeppelin.interpreter.lifecycle.NullLifecycleManager;
 import org.apache.zeppelin.util.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -184,6 +186,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 
   public static void reset() {
     conf = null;
+  }
+
+  public void setProperty(String name, String value) {
+    this.properties.put(name, value);
   }
 
   private String getStringValue(String name, String d) {
@@ -886,6 +892,24 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return properties;
   }
 
+  @Override
+  public void save(Writer writer) throws ConfigurationException {
+    try {
+      writer.write("<configuration>\n");
+      for (Map.Entry<String, String> entry : properties.entrySet()) {
+        writer.write("<property>\n");
+        writer.write("<name>" + entry.getKey() + "</name>\n");
+        writer.write("<value>" + entry.getValue() + "</value>\n");
+        writer.write("</property>\n");
+      }
+      writer.write("</configuration>");
+      writer.close();
+    } catch (IOException e) {
+      throw new ConfigurationException(e);
+    }
+
+  }
+
   /**
    * Wrapper class.
    */
@@ -1018,9 +1042,9 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_INTERPRETER_RPC_PORTRANGE("zeppelin.interpreter.rpc.portRange", ":"),
 
     ZEPPELIN_INTERPRETER_LIFECYCLE_MANAGER_CLASS("zeppelin.interpreter.lifecyclemanager.class",
-        "org.apache.zeppelin.interpreter.lifecycle.NullLifecycleManager"),
+            NullLifecycleManager.class.getName()),
     ZEPPELIN_INTERPRETER_LIFECYCLE_MANAGER_TIMEOUT_CHECK_INTERVAL(
-        "zeppelin.interpreter.lifecyclemanager.timeout.checkinterval", 6000L),
+        "zeppelin.interpreter.lifecyclemanager.timeout.checkinterval", 60000L),
     ZEPPELIN_INTERPRETER_LIFECYCLE_MANAGER_TIMEOUT_THRESHOLD(
         "zeppelin.interpreter.lifecyclemanager.timeout.threshold", 3600000L),
 
