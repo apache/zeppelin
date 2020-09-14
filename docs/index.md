@@ -84,7 +84,10 @@ limitations under the License.
   * [Configuration API](./usage/rest_api/configuration.html)
   * [Credential API](./usage/rest_api/credential.html)
   * [Helium API](./usage/rest_api/helium.html)
-
+* Zeppelin SDK: Java API of Zeppelin Client
+  * [Client API](./usage/zeppelin_sdk/client_api.html)
+  * [Session API](./usage/zeppelin_sdk/session_api.html)
+  
 #### Setup 
 * Basics 
   * [How to Build Zeppelin](./setup/basics/how_to_build.html)
