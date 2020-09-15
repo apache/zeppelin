@@ -58,6 +58,13 @@
        <groupId>com.vladsch.flexmark</groupId>
        <artifactId>flexmark-all</artifactId>
        <version>${flexmark.all.version}</version>
+       <exclusions>
+            <!-- jcl-over-slf4j is provided by zeppelin-interprerter -->
+            <exclusion>
+                <groupId>commons-logging</groupId>
+                <artifactId>commons-logging</artifactId>
+            </exclusion>
+        </exclusions>
     </dependency>
 
     <dependency>
