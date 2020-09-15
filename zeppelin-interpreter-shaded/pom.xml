@@ -61,8 +61,7 @@
               <!-- Leave slf4j unshaded so downstream users can configure logging. -->
               <exclude>org.slf4j:slf4j-api</exclude>
               <exclude>org.slf4j:slf4j-log4j12</exclude>
-              <!-- Leave commons-logging unshaded so downstream users can configure logging. -->
-              <exclude>commons-logging:commons-logging</exclude>
+              <exclude>org.slf4j:jcl-over-slf4j</exclude>
               <!-- Leave log4j unshaded so downstream users can configure logging. -->
               <exclude>log4j:log4j</exclude>
             </excludes>
