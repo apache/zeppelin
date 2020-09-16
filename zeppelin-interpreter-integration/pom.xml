@@ -169,13 +169,6 @@
       <scope>test</scope>
     </dependency>
 
-    <dependency>
-      <groupId>org.apache.hadoop</groupId>
-      <artifactId>hadoop-yarn-server-tests</artifactId>
-      <classifier>tests</classifier>
-      <scope>test</scope>
-    </dependency>
-
   </dependencies>
 
   <build>
