@@ -29,7 +29,7 @@ public class ZeppelinFlinkClusterTest111 extends ZeppelinFlinkClusterTest {
   @Parameterized.Parameters
   public static List<Object[]> data() {
     return Arrays.asList(new Object[][]{
-            {"1.11.1"}
+            {"1.11.2"}
     });
   }
 
