@@ -324,6 +324,7 @@ public class ZSessionIntegrationTest extends AbstractTestRestApi {
       assertEquals(result.toString(), Status.FINISHED, result.getStatus());
       Map<String, String> localProperties = new HashMap<>();
       localProperties.put("type", "update");
+      localProperties.put("parallelism", "2");
       result = session.execute("ssql", localProperties, "select url, count(1) as pv from log group by url");
       assertEquals(result.toString(), Status.FINISHED, result.getStatus());
 
