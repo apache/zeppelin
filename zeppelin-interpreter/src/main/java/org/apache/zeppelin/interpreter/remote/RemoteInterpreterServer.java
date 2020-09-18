@@ -198,46 +198,9 @@ public class RemoteInterpreterServer extends Thread
   @Override
   public void run() {
     if (null != intpEventServerHost && !isTest) {
-      new Thread(new Runnable() {
-        boolean interrupted = false;
-
-        @Override
-        public void run() {
-          while (!interrupted && !server.isServing()) {
-            try {
-              Thread.sleep(1000);
-            } catch (InterruptedException e) {
-              interrupted = true;
-            }
-          }
-          if (!interrupted) {
-            RegisterInfo registerInfo = new RegisterInfo(host, port, interpreterGroupId);
-            try {
-              LOGGER.info("Registering interpreter process");
-              intpEventClient.registerInterpreterProcess(registerInfo);
-              LOGGER.info("Registered interpreter process");
-            } catch (Exception e) {
-              LOGGER.error("Error while registering interpreter: {}, cause: {}", registerInfo, e);
-              try {
-                shutdown();
-              } catch (TException e1) {
-                LOGGER.warn("Exception occurs while shutting down", e1);
-              }
-            }
-          }
-
-          if (launcherEnv != null && "yarn".endsWith(launcherEnv)) {
-            try {
-              YarnUtils.register(host, port);
-              ScheduledExecutorService yarnHeartbeat = ExecutorFactory.singleton()
-                .createOrGetScheduled("RM-Heartbeat", 1);
-              yarnHeartbeat.scheduleAtFixedRate(YarnUtils::heartbeat, 0, 1, TimeUnit.MINUTES);
-            } catch (Exception e) {
-              LOGGER.error("Fail to register yarn app", e);
-            }
-          }
-        }
-      }).start();
+      Thread registerThread = new Thread(new RegisterRunnable());
+      registerThread.setName("RegisterThread");
+      registerThread.start();
     }
     server.serve();
   }
@@ -270,7 +233,6 @@ public class RemoteInterpreterServer extends Thread
 
   @Override
   public void shutdown() throws TException {
-
     // unRegisterInterpreterProcess should be a sync operation (outside of shutdown thread),
     // otherwise it would cause data mismatch between zeppelin server & interpreter process.
     // e.g. zeppelin server start a new interpreter process, while previous interpreter process
@@ -681,6 +643,50 @@ public class RemoteInterpreterServer extends Thread
             context.getConfig(),
             context.getGui(),
             context.getNoteGui());
+  }
+
+  class RegisterRunnable implements Runnable {
+
+    @Override
+    public void run() {
+      LOGGER.info("Start registration");
+      // wait till the server is serving
+      while (!Thread.currentThread().isInterrupted() && !server.isServing()) {
+        try {
+          Thread.sleep(1000);
+        } catch (InterruptedException e) {
+          LOGGER.info("InterruptedException received", e);
+          Thread.currentThread().interrupt();
+        }
+      }
+      if (!Thread.currentThread().isInterrupted()) {
+        RegisterInfo registerInfo = new RegisterInfo(host, port, interpreterGroupId);
+        try {
+          LOGGER.info("Registering interpreter process");
+          intpEventClient.registerInterpreterProcess(registerInfo);
+          LOGGER.info("Registered interpreter process");
+        } catch (Exception e) {
+          LOGGER.error("Error while registering interpreter: {}, cause: {}", registerInfo, e);
+          try {
+            shutdown();
+          } catch (TException e1) {
+            LOGGER.warn("Exception occurs while shutting down", e1);
+          }
+        }
+      }
+
+      if (launcherEnv != null && "yarn".endsWith(launcherEnv)) {
+        try {
+          YarnUtils.register(host, port);
+          ScheduledExecutorService yarnHeartbeat = ExecutorFactory.singleton()
+            .createOrGetScheduled("RM-Heartbeat", 1);
+          yarnHeartbeat.scheduleAtFixedRate(YarnUtils::heartbeat, 0, 1, TimeUnit.MINUTES);
+        } catch (Exception e) {
+          LOGGER.error("Fail to register yarn app", e);
+        }
+      }
+      LOGGER.info("Registration finished");
+    }
   }
 
   class InterpretJobListener implements JobListener {
