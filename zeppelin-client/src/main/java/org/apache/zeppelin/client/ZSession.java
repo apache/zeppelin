@@ -27,7 +27,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Each ZSession represent one interpreter process, you can start/stop it, and execute/submit/cancel code.
@@ -263,9 +265,10 @@ public class ZSession {
     }
     if (localProperties != null && !localProperties.isEmpty()) {
       builder.append("(");
-      for (Map.Entry<String, String> entry : localProperties.entrySet()) {
-        builder.append(entry.getKey() + "=\"" + entry.getValue() + "\"");
-      }
+      List<String> propertyString = localProperties.entrySet().stream()
+              .map(entry -> (entry.getKey() + "=\"" + entry.getValue() + "\""))
+              .collect(Collectors.toList());
+      builder.append(StringUtils.join(propertyString, ","));
       builder.append(")");
     }
     builder.append("\n" + code);
