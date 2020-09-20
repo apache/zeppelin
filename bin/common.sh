@@ -140,11 +140,17 @@ if [[ ( -z "${ZEPPELIN_INTP_MEM}" ) && ( "${ZEPPELIN_INTERPRETER_LAUNCHER}" != "
 fi
 
 JAVA_OPTS+=" ${ZEPPELIN_JAVA_OPTS} -Dfile.encoding=${ZEPPELIN_ENCODING} ${ZEPPELIN_MEM}"
-JAVA_OPTS+=" -Dlog4j.configuration=file://${ZEPPELIN_CONF_DIR}/log4j.properties"
+if [[ -n "${ZEPPELIN_IN_DOCKER}" ]]; then
+    JAVA_OPTS+=" -Dlog4j.configuration=file://${ZEPPELIN_CONF_DIR}/log4j_docker.properties"
+else
+    JAVA_OPTS+=" -Dlog4j.configuration=file://${ZEPPELIN_CONF_DIR}/log4j.properties"
+fi
 export JAVA_OPTS
 
 JAVA_INTP_OPTS="${ZEPPELIN_INTP_JAVA_OPTS} -Dfile.encoding=${ZEPPELIN_ENCODING}"
-if [[ -z "${ZEPPELIN_SPARK_YARN_CLUSTER}" ]]; then
+if [[ -n "${ZEPPELIN_IN_DOCKER}" ]]; then
+    JAVA_INTP_OPTS+=" -Dlog4j.configuration='file://${ZEPPELIN_CONF_DIR}/log4j_docker.properties' -Dlog4j.configurationFile='file://${ZEPPELIN_CONF_DIR}/log4j2_docker.properties'"
+elif [[ -z "${ZEPPELIN_SPARK_YARN_CLUSTER}" ]]; then
     JAVA_INTP_OPTS+=" -Dlog4j.configuration='file://${ZEPPELIN_CONF_DIR}/log4j.properties' -Dlog4j.configurationFile='file://${ZEPPELIN_CONF_DIR}/log4j2.properties'"
 else
     JAVA_INTP_OPTS+=" -Dlog4j.configuration=log4j_yarn_cluster.properties"
