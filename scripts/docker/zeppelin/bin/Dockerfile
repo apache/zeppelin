@@ -16,7 +16,7 @@
 FROM ubuntu:16.04
 MAINTAINER Apache Software Foundation <dev@zeppelin.apache.org>
 
-ENV Z_VERSION="0.9.0-preview1"
+ENV Z_VERSION="0.9.0-preview2"
 
 ENV LOG_TAG="[ZEPPELIN_${Z_VERSION}]:" \
     Z_HOME="/zeppelin" \
@@ -117,6 +117,7 @@ RUN echo "$LOG_TAG Download Zeppelin binary" && \
     chmod 775 ${Z_HOME}
 
 COPY log4j.properties ${Z_HOME}/conf/
+COPY log4j_docker.properties ${Z_HOME}/conf/
 
 USER 1000
 
