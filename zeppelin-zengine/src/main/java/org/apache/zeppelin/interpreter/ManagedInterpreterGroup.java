@@ -18,6 +18,7 @@
 
 package org.apache.zeppelin.interpreter;
 
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Scheduler;
@@ -65,6 +66,7 @@ public class ManagedInterpreterGroup extends InterpreterGroup {
         remoteInterpreterProcess = interpreterSetting.createInterpreterProcess(id, userName,
                 properties);
         remoteInterpreterProcess.start(userName);
+        remoteInterpreterProcess.init(ZeppelinConfiguration.create());
         getInterpreterSetting().getRecoveryStorage()
                 .onInterpreterClientStart(remoteInterpreterProcess);
       }

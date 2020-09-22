@@ -72,6 +72,7 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
   private String portRange;
   private int port;
   private String host;
+  private ZeppelinConfiguration zConf;
   private TThreadPoolServer thriftServer;
   private InterpreterSettingManager interpreterSettingManager;
 
@@ -85,6 +86,7 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
 
   public RemoteInterpreterEventServer(ZeppelinConfiguration zConf,
                                       InterpreterSettingManager interpreterSettingManager) {
+    this.zConf = zConf;
     this.portRange = zConf.getZeppelinServerRPCPortRange();
     this.interpreterSettingManager = interpreterSettingManager;
     this.listener = interpreterSettingManager.getRemoteInterpreterProcessListener();

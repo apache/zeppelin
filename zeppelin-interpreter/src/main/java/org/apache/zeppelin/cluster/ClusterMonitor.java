@@ -71,7 +71,7 @@ public class ClusterMonitor {
   public ClusterMonitor(ClusterManager clusterManagerServer) {
     this.clusterManager = clusterManagerServer;
 
-    ZeppelinConfiguration zconf = new ZeppelinConfiguration();
+    ZeppelinConfiguration zconf = ZeppelinConfiguration.create();
     heartbeatInterval = zconf.getClusterHeartbeatInterval();
     heartbeatTimeout = zconf.getClusterHeartbeatTimeout();
 

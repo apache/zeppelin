@@ -197,7 +197,6 @@ public class YarnRemoteInterpreterProcess extends RemoteInterpreterProcess {
                 + ", diagnostics=" + appReport.getDiagnostics());
       }
       isYarnAppRunning.set(true);
-
     } catch (Exception e) {
       LOGGER.error("Fail to launch yarn interpreter process", e);
       throw new IOException(e);

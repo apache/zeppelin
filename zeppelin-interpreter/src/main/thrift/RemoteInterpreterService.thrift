@@ -91,6 +91,7 @@ struct InterpreterCompletion {
 service RemoteInterpreterService {
 
   void createInterpreter(1: string intpGroupId, 2: string sessionId, 3: string className, 4: map<string, string> properties, 5: string userName);
+  void init(1: map<string, string> properties);
   void open(1: string sessionId, 2: string className);
   void close(1: string sessionId, 2: string className);
   void reconnect(1: string host, 2: i32 port);
