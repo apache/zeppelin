@@ -170,7 +170,7 @@
     <plugin.compiler.version>3.8.1</plugin.compiler.version>
     <plugin.dependency.version>3.1.2</plugin.dependency.version>
     <plugin.deploy.version>2.8.2</plugin.deploy.version>
-    <plugin.download.version>1.3.0</plugin.download.version>
+    <plugin.download.version>1.6.0</plugin.download.version>
     <plugin.eclipse.version>2.8</plugin.eclipse.version>
     <plugin.enforcer.version>3.0.0-M3</plugin.enforcer.version>
     <plugin.exec.version>1.6.0</plugin.exec.version>
