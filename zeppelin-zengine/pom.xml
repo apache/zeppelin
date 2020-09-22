@@ -170,20 +170,12 @@
 
     <dependency>
       <groupId>com.github.eirslett</groupId>
-      <artifactId>frontend-maven-plugin</artifactId>
+      <artifactId>frontend-plugin-core</artifactId>
       <version>${frontend.maven.plugin.version}</version>
       <exclusions>
         <exclusion>
           <groupId>org.codehaus.plexus</groupId>
           <artifactId>plexus-utils</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.apache.maven</groupId>
-          <artifactId>maven-plugin-api</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.apache.maven</groupId>
-          <artifactId>maven-artifact</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
