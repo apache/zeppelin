@@ -106,6 +106,8 @@ public class RemoteInterpreterServer extends Thread
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RemoteInterpreterServer.class);
 
+  private static final int DEFAULT_SHUTDOWN_TIMEOUT = 2000;
+
   private String interpreterGroupId;
   private InterpreterGroup interpreterGroup;
   private AngularObjectRegistry angularObjectRegistry;
@@ -128,8 +130,6 @@ public class RemoteInterpreterServer extends Thread
       Collections.synchronizedMap(new HashMap<String, RunningApplication>());
 
   private Map<String, Object> remoteWorksResponsePool;
-
-  private static final long DEFAULT_SHUTDOWN_TIMEOUT = 2000;
 
   // Hold information for manual progress update
   private ConcurrentMap<String, Integer> progressMap = new ConcurrentHashMap<>();
@@ -188,8 +188,12 @@ public class RemoteInterpreterServer extends Thread
       this.host = RemoteInterpreterUtils.findAvailableHostAddress();
       LOGGER.info("Launching ThriftServer at {}:{}", this.host, this.port);
     }
+
     server = new TThreadPoolServer(
-        new TThreadPoolServer.Args(serverTransport).processor(processor));
+      new TThreadPoolServer.Args(serverTransport)
+        .stopTimeoutVal(DEFAULT_SHUTDOWN_TIMEOUT)
+        .stopTimeoutUnit(TimeUnit.MILLISECONDS)
+        .processor(processor));
     remoteWorksResponsePool = Collections.synchronizedMap(new HashMap<String, Object>());
 
   }
@@ -682,7 +686,7 @@ public class RemoteInterpreterServer extends Thread
       // this case, need to force kill the process
 
       long startTime = System.currentTimeMillis();
-      while (System.currentTimeMillis() - startTime < DEFAULT_SHUTDOWN_TIMEOUT &&
+      while (System.currentTimeMillis() - startTime < (DEFAULT_SHUTDOWN_TIMEOUT + 100) &&
               server.isServing()) {
         try {
           Thread.sleep(300);
