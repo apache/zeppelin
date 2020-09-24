@@ -698,7 +698,7 @@ public class RemoteInterpreterServer extends Thread
 
       if (server.isServing()) {
         LOGGER.info("Force shutting down");
-        System.exit(0);
+        System.exit(1);
       }
 
       LOGGER.info("Shutting down");
