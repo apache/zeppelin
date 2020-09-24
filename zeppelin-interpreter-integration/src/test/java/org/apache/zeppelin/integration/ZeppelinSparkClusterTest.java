@@ -582,7 +582,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
       p21.setText("%spark print(a)");
 
       // run p20 of note2 via paragraph in note1
-      p0.setText(String.format("%%spark z.run(\"%s\", \"%s\")", note2.getId(), p20.getId()));
+      p0.setText(String.format("%%spark.pyspark z.run(\"%s\", \"%s\")", note2.getId(), p20.getId()));
       note.run(p0.getId(), true);
       waitForFinish(p20);
       assertEquals(Status.FINISHED, p20.getStatus());
