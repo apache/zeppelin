@@ -51,6 +51,7 @@ public class PySparkInterpreter extends PythonInterpreter {
   private static Logger LOGGER = LoggerFactory.getLogger(PySparkInterpreter.class);
 
   private SparkInterpreter sparkInterpreter;
+  private InterpreterContext curIntpContext;
 
   public PySparkInterpreter(Properties property) {
     super(property);
@@ -127,6 +128,7 @@ public class PySparkInterpreter extends PythonInterpreter {
   @Override
   public InterpreterResult interpret(String st, InterpreterContext context)
       throws InterpreterException {
+    curIntpContext = context;
     // redirect java stdout/stdout to interpreter output. Because pyspark may call java code.
     PrintStream originalStdout = System.out;
     PrintStream originalStderr = System.err;
@@ -134,6 +136,7 @@ public class PySparkInterpreter extends PythonInterpreter {
       System.setOut(new PrintStream(context.out));
       System.setErr(new PrintStream(context.out));
       Utils.printDeprecateMessage(sparkInterpreter.getSparkVersion(), context, properties);
+
       return super.interpret(st, context);
     } finally {
       System.setOut(originalStdout);
@@ -155,6 +158,14 @@ public class PySparkInterpreter extends PythonInterpreter {
     }
     String setPoolStmt = "if 'sc' in locals():\n\tsc.setLocalProperty('spark.scheduler.pool', " + pool + ")";
     callPython(new PythonInterpretRequest(setPoolStmt, false, false));
+
+    callPython(new PythonInterpretRequest("intp.setInterpreterContextInPython()", false, false));
+  }
+
+  // Python side will call InterpreterContext.get() too, but it is in a different thread other than the
+  // java interpreter thread. So we should call this method in python side as well.
+  public void setInterpreterContextInPython() {
+    InterpreterContext.set(curIntpContext);
   }
 
   // Run python shell
