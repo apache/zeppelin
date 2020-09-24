@@ -41,6 +41,7 @@ public class IPySparkInterpreter extends IPythonInterpreter {
 
   private SparkInterpreter sparkInterpreter;
   private boolean opened = false;
+  private InterpreterContext curIntpContext;
 
   public IPySparkInterpreter(Properties property) {
     super(property);
@@ -116,11 +117,25 @@ public class IPySparkInterpreter extends IPythonInterpreter {
       if (result.code().equals(InterpreterResult.Code.ERROR)) {
         return new InterpreterResult(InterpreterResult.Code.ERROR, "Fail to setPool");
       }
+
+      this.curIntpContext = context;
+      String setInptContextStmt = "intp.setInterpreterContextInPython()";
+      result = super.interpret(setInptContextStmt, context);
+      if (result.code().equals(InterpreterResult.Code.ERROR)) {
+        return new InterpreterResult(InterpreterResult.Code.ERROR, "Fail to setCurIntpContext");
+      }
+
       return super.interpret(st, context);
     } finally {
       System.setOut(originalStdout);
       System.setErr(originalStderr);
     }
+  }
+
+  // Python side will call InterpreterContext.get() too, but it is in a different thread other than the
+  // java interpreter thread. So we should call this method in python side as well.
+  public void setInterpreterContextInPython() {
+    InterpreterContext.set(curIntpContext);
   }
 
   @Override
