@@ -260,7 +260,7 @@ public class YarnRemoteInterpreterProcess extends RemoteInterpreterProcess {
       FileUtils.forceDelete(flinkZip);
 
       String hiveConfDir = launchContext.getProperties().getProperty("HIVE_CONF_DIR");
-      if (org.apache.commons.lang3.StringUtils.isBlank(hiveConfDir)) {
+      if (!org.apache.commons.lang3.StringUtils.isBlank(hiveConfDir)) {
         srcPath = localFs.makeQualified(new Path(new File(hiveConfDir).toURI()));
         destPath = copyFileToRemote(stagingDir, srcPath, (short) 1);
         addResource(fs, destPath, localResources, LocalResourceType.ARCHIVE, "hive_conf");
