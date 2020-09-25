@@ -26,7 +26,7 @@ ENV VERSION="${version}" \
 
 RUN set -ex && \
     apt-get -y update && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y openjdk-8-jre-headless wget && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y openjdk-8-jre-headless wget tini && \
     # Cleanup
     rm -rf /var/lib/apt/lists/* && \
     apt-get autoclean && \
@@ -80,4 +80,5 @@ RUN mkdir -p "${Z_HOME}/logs" "${Z_HOME}/run" "${Z_HOME}/local-repo" && \
     chmod -R 775 "${Z_HOME}/logs" "${Z_HOME}/run" "${Z_HOME}/local-repo"
 
 USER 1000
+ENTRYPOINT [ "/usr/bin/tini", "--" ]
 WORKDIR ${Z_HOME}
