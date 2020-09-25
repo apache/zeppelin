@@ -136,7 +136,7 @@ else
 fi
 
 
-if [[ ! -z "$ZEPPELIN_IMPERSONATE_USER" ]]; then
+if [[ -n "$ZEPPELIN_IMPERSONATE_USER" ]]; then
     ZEPPELIN_LOGFILE+="${ZEPPELIN_IMPERSONATE_USER}-"
 fi
 ZEPPELIN_LOGFILE+="${ZEPPELIN_IDENT_STRING}-${HOSTNAME}.log"
@@ -244,7 +244,7 @@ elif [[ "${INTERPRETER_ID}" == "flink" ]]; then
     ZEPPELIN_INTP_CLASSPATH+=":${HADOOP_CONF_DIR}"
     # Don't use `hadoop classpath` if flink-hadoop-shaded in in lib folder
     flink_hadoop_shaded_jar=$(find "${FLINK_HOME}/lib" -name 'flink-shaded-hadoop-*.jar')
-    if [[ ! -z "$flink_hadoop_shaded_jar" ]]; then
+    if [[ -n "$flink_hadoop_shaded_jar" ]]; then
       echo ""
     else
       if [[ ! ( -x "$(command -v hadoop)" ) && ( "${ZEPPELIN_INTERPRETER_LAUNCHER}" != "yarn" ) ]]; then
@@ -269,7 +269,7 @@ fi
 
 addJarInDirForIntp "${LOCAL_INTERPRETER_REPO}"
 
-if [[ ! -z "$ZEPPELIN_IMPERSONATE_USER" ]]; then
+if [[ -n "$ZEPPELIN_IMPERSONATE_USER" ]]; then
   if [[ "${INTERPRETER_ID}" != "spark" || "$ZEPPELIN_IMPERSONATE_SPARK_PROXY_USER" == "false" ]]; then
     suid="$(id -u ${ZEPPELIN_IMPERSONATE_USER})"
     if [[ -n  "${suid}" || -z "${SPARK_SUBMIT}" ]]; then
