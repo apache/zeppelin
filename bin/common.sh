@@ -73,7 +73,7 @@ function check_java_version() {
         JVM_VERSION=$(echo "$jvmver"|sed -e 's|^1\.\([0-9][0-9]*\)\..*$|\1|')
     fi
 
-    if [ "$JVM_VERSION" -lt 8 ] || ([ "$JVM_VERSION" -eq 8 ] && [ "${jvmver#*_}" -lt 151 ]) ; then
+    if [ "$JVM_VERSION" -lt 8 ] || { [ "$JVM_VERSION" -eq 8 ] && [ "${jvmver#*_}" -lt 151 ]; } ; then
         echo "Apache Zeppelin requires either Java 8 update 151 or newer"
         exit 1;
     fi
