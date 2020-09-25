@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.socket;
 
+
 import com.google.common.collect.Queues;
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
@@ -51,7 +52,6 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.function.Function;
 
 /**
  * Manager class for managing websocket connections
