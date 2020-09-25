@@ -25,7 +25,8 @@ fi
 if [[ -z "${ZEPPELIN_HOME}" ]]; then
   # Make ZEPPELIN_HOME look cleaner in logs by getting rid of the
   # extra ../
-  export ZEPPELIN_HOME="$(cd "${FWDIR}/.."; pwd)"
+  ZEPPELIN_HOME="$(cd "${FWDIR}/.." || exit; pwd)"
+  export ZEPPELIN_HOME
 fi
 
 if [[ -z "${ZEPPELIN_CONF_DIR}" ]]; then
@@ -44,7 +45,8 @@ if [[ -z "${ZEPPELIN_WAR}" ]]; then
   if [[ -d "${ZEPPELIN_HOME}/zeppelin-web/dist" ]]; then
     export ZEPPELIN_WAR="${ZEPPELIN_HOME}/zeppelin-web/dist"
   else
-    export ZEPPELIN_WAR=$(find -L "${ZEPPELIN_HOME}" -name "zeppelin-web-[0-9]*.war")
+    ZEPPELIN_WAR=$(find -L "${ZEPPELIN_HOME}" -name "zeppelin-web-[0-9]*.war")
+    export ZEPPELIN_WAR
   fi
 fi
 
@@ -52,7 +54,8 @@ if [[ -z "${ZEPPELIN_ANGULAR_WAR}" ]]; then
   if [[ -d "${ZEPPELIN_HOME}/zeppelin-web/dist" ]]; then
     export ZEPPELIN_ANGULAR_WAR="${ZEPPELIN_HOME}/zeppelin-web-angular/dist/zeppelin"
   else
-    export ZEPPELIN_ANGULAR_WAR=$(find -L "${ZEPPELIN_HOME}" -name "zeppelin-web-angular*.war")
+    ZEPPELIN_ANGULAR_WAR=$(find -L "${ZEPPELIN_HOME}" -name "zeppelin-web-angular*.war")
+    export ZEPPELIN_ANGULAR_WAR
   fi
 fi
 
