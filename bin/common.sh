@@ -16,8 +16,8 @@
 # limitations under the License.
 #
 
-if [ -L ${BASH_SOURCE-$0} ]; then
-  FWDIR=$(dirname $(readlink "${BASH_SOURCE-$0}"))
+if [ -L "${BASH_SOURCE-$0}" ]; then
+  FWDIR=$(dirname "$(readlink "${BASH_SOURCE-$0}")")
 else
   FWDIR=$(dirname "${BASH_SOURCE-$0}")
 fi
@@ -94,7 +94,7 @@ function addEachJarInDirRecursive(){
 
 function addEachJarInDirRecursiveForIntp(){
   if [[ -d "${1}" ]]; then
-    for jar in ${1}/*.jar; do
+    for jar in "${1}"/*.jar; do
       ZEPPELIN_INTP_CLASSPATH="$jar:${ZEPPELIN_INTP_CLASSPATH}"
     done
   fi
@@ -120,7 +120,7 @@ function getZeppelinVersion(){
     fi
     addJarInDir "${ZEPPELIN_HOME}/zeppelin-server/target/lib"
     CLASSPATH+=":${ZEPPELIN_CLASSPATH}"
-    $ZEPPELIN_RUNNER -cp $CLASSPATH $ZEPPELIN_COMMANDLINE_MAIN -v
+    $ZEPPELIN_RUNNER -cp "${CLASSPATH}" "${ZEPPELIN_COMMANDLINE_MAIN}" -v
     exit 0
 }
 
