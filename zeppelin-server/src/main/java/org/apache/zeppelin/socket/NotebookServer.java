@@ -641,11 +641,11 @@ public class NotebookServer extends WebSocketServlet
   }
 
   public void broadcastNoteListUpdate() {
+    AuthorizationService authorizationService = getNotebookAuthorizationService();
+
     getConnectionManager().forAllUsers(new UserIterator() {
       @Override
       public void handleUser(String user, Set<String> userAndRoles) {
-        AuthorizationService authorizationService = getNotebookAuthorizationService();
-
         List<NoteInfo> notesInfo = getNotebook().getNotesInfo(
             noteId -> authorizationService.isReader(noteId, userAndRoles));
 
