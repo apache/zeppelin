@@ -96,7 +96,7 @@ public abstract class ProcessLauncher implements ExecuteResultHandler {
       LOGGER.info("Process is launched: {}", commandLine);
     } catch (IOException e) {
       this.processOutput.stopCatchLaunchOutput();
-      LOGGER.error("Fail to launch process: " + commandLine, e);
+      LOGGER.error("Fail to launch process: {}", commandLine, e);
       transition(State.TERMINATED);
       errorMessage = e.getMessage();
     }
@@ -106,7 +106,7 @@ public abstract class ProcessLauncher implements ExecuteResultHandler {
 
   public void transition(State state) {
     this.state = state;
-    LOGGER.info("Process state is transitioned to " + state);
+    LOGGER.info("Process state is transitioned to {}", state);
   }
 
   public void onTimeout() {
@@ -121,7 +121,7 @@ public abstract class ProcessLauncher implements ExecuteResultHandler {
 
   @Override
   public void onProcessComplete(int exitValue) {
-    LOGGER.warn("Process is exited with exit value " + exitValue);
+    LOGGER.warn("Process is exited with exit value {}", exitValue);
     if (exitValue == 0) {
       transition(State.COMPLETED);
     } else {
@@ -131,7 +131,8 @@ public abstract class ProcessLauncher implements ExecuteResultHandler {
 
   @Override
   public void onProcessFailed(ExecuteException e) {
-    LOGGER.warn("Process is failed due to " + e);
+    LOGGER.warn("Process with cmd {} is failed due to", commandLine, e);
+
     errorMessage = ExceptionUtils.getStackTrace(e);
     transition(State.TERMINATED);
   }
@@ -187,7 +188,7 @@ public abstract class ProcessLauncher implements ExecuteResultHandler {
       if (s.startsWith("Interpreter launch command")) {
         LOGGER.info(s);
       } else {
-        LOGGER.debug("Process Output: " + s);
+        LOGGER.debug("Process Output: {}", s);
       }
       if (catchLaunchOutput) {
         launchOutput.append(s + "\n");

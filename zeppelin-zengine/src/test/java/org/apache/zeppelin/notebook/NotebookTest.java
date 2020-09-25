@@ -85,6 +85,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
   private StatusChangedListener afterStatusChangedListener;
   private QuartzSchedulerService schedulerService;
 
+  @Override
   @Before
   public void setUp() throws Exception {
     System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_PUBLIC.getVarName(), "true");
@@ -105,6 +106,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     schedulerService.waitForFinishInit();
   }
 
+  @Override
   @After
   public void tearDown() throws Exception {
     super.tearDown();

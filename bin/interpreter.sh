@@ -35,7 +35,7 @@ if [ -f /proc/self/cgroup ] && [ -n "$(command -v getent)" ]; then
         set +e
         uidentry="$(getent passwd "$myuid")"
         set -e
-        
+
         # If there is no passwd entry for the container UID, attempt to create one
         if [ -z "$uidentry" ] ; then
             if [ -w /etc/passwd ] ; then

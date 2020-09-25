@@ -129,8 +129,6 @@ public class RemoteInterpreterServer extends Thread
   private final Map<String, RunningApplication> runningApplications =
       Collections.synchronizedMap(new HashMap<String, RunningApplication>());
 
-  private Map<String, Object> remoteWorksResponsePool;
-
   // Hold information for manual progress update
   private ConcurrentMap<String, Integer> progressMap = new ConcurrentHashMap<>();
 
@@ -194,7 +192,6 @@ public class RemoteInterpreterServer extends Thread
         .stopTimeoutVal(DEFAULT_SHUTDOWN_TIMEOUT)
         .stopTimeoutUnit(TimeUnit.MILLISECONDS)
         .processor(processor));
-    remoteWorksResponsePool = Collections.synchronizedMap(new HashMap<String, Object>());
 
   }
 
