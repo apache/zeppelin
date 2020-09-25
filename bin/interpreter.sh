@@ -129,7 +129,7 @@ ZEPPELIN_LOGFILE="${ZEPPELIN_LOG_DIR}/zeppelin-interpreter-${INTERPRETER_GROUP_I
 
 if [[ -z "$ZEPPELIN_IMPERSONATE_CMD" ]]; then
     if [[ "${INTERPRETER_ID}" != "spark" || "$ZEPPELIN_IMPERSONATE_SPARK_PROXY_USER" == "false" ]]; then
-        ZEPPELIN_IMPERSONATE_RUN_CMD=`echo "ssh ${ZEPPELIN_IMPERSONATE_USER}@localhost" `
+        ZEPPELIN_IMPERSONATE_RUN_CMD="ssh ${ZEPPELIN_IMPERSONATE_USER}@localhost"
     fi
 else
     ZEPPELIN_IMPERSONATE_RUN_CMD=$(eval "echo ${ZEPPELIN_IMPERSONATE_CMD} ")
@@ -144,7 +144,7 @@ JAVA_INTP_OPTS+=" -Dzeppelin.log.file='${ZEPPELIN_LOGFILE}'"
 
 if [[ ! -d "${ZEPPELIN_LOG_DIR}" ]]; then
   echo "Log dir doesn't exist, create ${ZEPPELIN_LOG_DIR}"
-  $(mkdir -p "${ZEPPELIN_LOG_DIR}")
+  mkdir -p "${ZEPPELIN_LOG_DIR}"
 fi
 
 # set spark related env variables
@@ -251,7 +251,7 @@ elif [[ "${INTERPRETER_ID}" == "flink" ]]; then
         echo 'Error: hadoop is not in PATH when HADOOP_CONF_DIR is specified and no flink-shaded-hadoop jar '
         exit 1
       fi
-      ZEPPELIN_INTP_CLASSPATH+=":`hadoop classpath`"
+      ZEPPELIN_INTP_CLASSPATH+=":$(hadoop classpath)"
     fi
     export HADOOP_CONF_DIR=${HADOOP_CONF_DIR}
   else
