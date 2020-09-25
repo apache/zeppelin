@@ -81,7 +81,7 @@ function check_java_version() {
 
 function addEachJarInDir(){
   if [[ -d "${1}" ]]; then
-    for jar in $(find -L "${1}" -maxdepth 1 -name '*jar'); do
+    for jar in "${1}"/*.jar ; do
       ZEPPELIN_CLASSPATH="$jar:$ZEPPELIN_CLASSPATH"
     done
   fi
@@ -89,7 +89,7 @@ function addEachJarInDir(){
 
 function addEachJarInDirRecursive(){
   if [[ -d "${1}" ]]; then
-    for jar in $(find -L "${1}" -type f -name '*jar'); do
+    for jar in "${1}"/**/*.jar ; do
       ZEPPELIN_CLASSPATH="$jar:$ZEPPELIN_CLASSPATH"
     done
   fi
