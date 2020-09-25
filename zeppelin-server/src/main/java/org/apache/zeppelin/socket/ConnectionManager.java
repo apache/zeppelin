@@ -17,7 +17,6 @@
 
 package org.apache.zeppelin.socket;
 
-
 import com.google.common.collect.Queues;
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
@@ -52,6 +51,7 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.function.Function;
 
 /**
  * Manager class for managing websocket connections
@@ -356,6 +356,19 @@ public class ConnectionManager {
     for (NotebookSocket conn : userSocketMap.get(user)) {
       Message m = new Message(Message.OP.PARAGRAPH).withMsgId(msgId).put("paragraph", p);
       unicast(m, conn);
+    }
+  }
+
+  public static abstract class UserIterator {
+    public abstract void handleUser(String user, Set<String> userAndRoles);
+  }
+
+  public void forAllUsers(UserIterator iterator) {
+    Set<String> userAndRoles;
+    for (String user : userSocketMap.keySet()) {
+      userAndRoles = authorizationService.getRoles(user);
+      userAndRoles.add(user);
+      iterator.handleUser(user, userAndRoles);
     }
   }
 
