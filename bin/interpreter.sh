@@ -160,8 +160,7 @@ if [[ "${INTERPRETER_ID}" == "spark" ]]; then
     # This will evantually passes SPARK_APP_JAR to classpath of SparkIMain
     ZEPPELIN_INTP_CLASSPATH+=":${SPARK_APP_JAR}"
 
-    pattern="$SPARK_HOME/python/lib/py4j-*-src.zip"
-    py4j=($pattern)
+    py4j=("${SPARK_HOME}"/python/lib/py4j-*-src.zip)
     # pick the first match py4j zip - there should only be one
     export PYTHONPATH="$SPARK_HOME/python/:$PYTHONPATH"
     export PYTHONPATH="${py4j[0]}:$PYTHONPATH"
@@ -178,8 +177,7 @@ if [[ "${INTERPRETER_ID}" == "spark" ]]; then
 
     addJarInDirForIntp "${INTERPRETER_DIR}/dep"
 
-    pattern="${ZEPPELIN_HOME}/interpreter/spark/pyspark/py4j-*-src.zip"
-    py4j=($pattern)
+    py4j=("${ZEPPELIN_HOME}"/interpreter/spark/pyspark/py4j-*-src.zip)
     # pick the first match py4j zip - there should only be one
     PYSPARKPATH="${ZEPPELIN_HOME}/interpreter/spark/pyspark/pyspark.zip:${py4j[0]}"
 
