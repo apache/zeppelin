@@ -129,7 +129,7 @@ ZEPPELIN_LOGFILE="${ZEPPELIN_LOG_DIR}/zeppelin-interpreter-${INTERPRETER_GROUP_I
 
 if [[ -z "$ZEPPELIN_IMPERSONATE_CMD" ]]; then
     if [[ "${INTERPRETER_ID}" != "spark" || "$ZEPPELIN_IMPERSONATE_SPARK_PROXY_USER" == "false" ]]; then
-        ZEPPELIN_IMPERSONATE_RUN_CMD="ssh ${ZEPPELIN_IMPERSONATE_USER}@localhost"
+        ZEPPELIN_IMPERSONATE_RUN_CMD=("ssh" "${ZEPPELIN_IMPERSONATE_USER}@localhost")
     fi
 else
     ZEPPELIN_IMPERSONATE_RUN_CMD=$(eval "echo ${ZEPPELIN_IMPERSONATE_CMD} ")
@@ -273,55 +273,22 @@ if [[ -n "$ZEPPELIN_IMPERSONATE_USER" ]]; then
   if [[ "${INTERPRETER_ID}" != "spark" || "$ZEPPELIN_IMPERSONATE_SPARK_PROXY_USER" == "false" ]]; then
     suid="$(id -u "${ZEPPELIN_IMPERSONATE_USER}")"
     if [[ -n  "${suid}" || -z "${SPARK_SUBMIT}" ]]; then
-       INTERPRETER_RUN_COMMAND=${ZEPPELIN_IMPERSONATE_RUN_CMD}" '"
+       INTERPRETER_RUN_COMMAND+=("${ZEPPELIN_IMPERSONATE_RUN_CMD[@]}")
        if [[ -f "${ZEPPELIN_CONF_DIR}/zeppelin-env.sh" ]]; then
-           INTERPRETER_RUN_COMMAND+=" source "${ZEPPELIN_CONF_DIR}'/zeppelin-env.sh;'
+           INTERPRETER_RUN_COMMAND+=("source" "${ZEPPELIN_CONF_DIR}/zeppelin-env.sh;")
        fi
     fi
   fi
 fi
 
 if [[ -n "${SPARK_SUBMIT}" ]]; then
-    INTERPRETER_RUN_COMMAND+=' '` echo ${SPARK_SUBMIT} --class ${ZEPPELIN_SERVER} --driver-class-path \"${ZEPPELIN_INTP_CLASSPATH_OVERRIDES}:${ZEPPELIN_INTP_CLASSPATH}\" --driver-java-options \"${JAVA_INTP_OPTS}\" ${SPARK_SUBMIT_OPTIONS} ${ZEPPELIN_SPARK_CONF} ${SPARK_APP_JAR} ${CALLBACK_HOST} ${PORT} \"${INTP_GROUP_ID}\" ${INTP_PORT}`
+  IFS=' ' read -r -a SPARK_SUBMIT_OPTIONS_ARRAY <<< "${SPARK_SUBMIT_OPTIONS}"
+  IFS=' ' read -r -a ZEPPELIN_SPARK_CONF_ARRAY <<< "${ZEPPELIN_SPARK_CONF}"
+  INTERPRETER_RUN_COMMAND+=("${SPARK_SUBMIT}" "--class" "${ZEPPELIN_SERVER}" "--driver-class-path" "${ZEPPELIN_INTP_CLASSPATH_OVERRIDES}:${ZEPPELIN_INTP_CLASSPATH}" "--driver-java-options" "${JAVA_INTP_OPTS}" "${SPARK_SUBMIT_OPTIONS_ARRAY[@]}" "${ZEPPELIN_SPARK_CONF_ARRAY[@]}" "${SPARK_APP_JAR}" "${CALLBACK_HOST}" "${PORT}" "${INTP_GROUP_ID}" "${INTP_PORT}")
 else
-    INTERPRETER_RUN_COMMAND+=' '` echo ${ZEPPELIN_RUNNER} ${JAVA_INTP_OPTS} ${ZEPPELIN_INTP_MEM} -cp \"${ZEPPELIN_INTP_CLASSPATH_OVERRIDES}:${ZEPPELIN_INTP_CLASSPATH}\" ${ZEPPELIN_SERVER} ${CALLBACK_HOST} ${PORT} \"${INTP_GROUP_ID}\" ${INTP_PORT}`
+  IFS=' ' read -r -a JAVA_INTP_OPTS_ARRAY <<< "${JAVA_INTP_OPTS}"
+  IFS=' ' read -r -a ZEPPELIN_INTP_MEM_ARRAY <<< "${ZEPPELIN_INTP_MEM}"
+  INTERPRETER_RUN_COMMAND+=("${ZEPPELIN_RUNNER}" "${JAVA_INTP_OPTS_ARRAY[@]}" "${ZEPPELIN_INTP_MEM_ARRAY[@]}" "-cp" "${ZEPPELIN_INTP_CLASSPATH_OVERRIDES}:${ZEPPELIN_INTP_CLASSPATH}" "${ZEPPELIN_SERVER}" "${CALLBACK_HOST}" "${PORT}" "${INTP_GROUP_ID}" "${INTP_PORT}")
 fi
 
-
-if [[ ! -z "$ZEPPELIN_IMPERSONATE_USER" ]] && [[ -n "${suid}" || -z "${SPARK_SUBMIT}" ]]; then
-    INTERPRETER_RUN_COMMAND+="'"
-fi
-
-echo "Interpreter launch command: $INTERPRETER_RUN_COMMAND"
-eval $INTERPRETER_RUN_COMMAND &
-pid=$!
-
-if [[ -z "${pid}" ]]; then
-  exit 1;
-else
-  echo ${pid} > "${ZEPPELIN_PID}"
-fi
-
-
-trap 'shutdown_hook;' SIGTERM SIGINT SIGQUIT
-function shutdown_hook() {
-  local count
-  count=0
-  echo "trying to shutdown..."
-  while [[ "${count}" -lt 10 ]]; do
-    $(kill ${pid} > /dev/null 2> /dev/null)
-    if kill -0 ${pid} > /dev/null 2>&1; then
-      sleep 3
-      let "count+=1"
-    else
-      break
-    fi
-  if [[ "${count}" == "5" ]]; then
-    $(kill -9 ${pid} > /dev/null 2> /dev/null)
-  fi
-  done
-}
-
-wait
-
-rm -f "${ZEPPELIN_PID}" > /dev/null 2> /dev/null
+exec "${INTERPRETER_RUN_COMMAND[@]}"
