@@ -40,16 +40,16 @@ Apache Zeppelin officially supports and is tested on the following environments:
   </tr>
   <tr>
     <td>OS</td>
-    <td>Mac OSX <br /> Ubuntu 16.X</td>
+    <td>Mac OSX <br/>Ubuntu 16.X <br/> Ubuntu 18.X <br/> Ubuntu 20.X</td>
   </tr>
 </table>
 
 ### Downloading Binary Package
 
-Two binary packages are available on the [download page](http://zeppelin.apache.org/download.html). Only difference between these two binaries is interpreters are included in the package file.
+Two binary packages are available on the [download page](http://zeppelin.apache.org/download.html). Only difference between these two binaries is whether all the interpreters are included in the package file.
 
 - **all interpreter package**: unpack it in a directory of your choice and you're ready to go.
-- **net-install interpreter package**: unpack and follow [install additional interpreters](../usage/interpreter/installation.html) to install interpreters. If you're unsure, just run `./bin/install-interpreter.sh --all` and install all interpreters.
+- **net-install interpreter package**: only spark, python, markdown and shell interpreter included. Unpack and follow [install additional interpreters](../usage/interpreter/installation.html) to install other interpreters. If you're unsure, just run `./bin/install-interpreter.sh --all` and install all interpreters.
   
 ### Building Zeppelin from source
 
@@ -67,11 +67,34 @@ bin/zeppelin-daemon.sh start
 
 After Zeppelin has started successfully, go to [http://localhost:8080](http://localhost:8080) with your web browser.
 
+By default Zeppelin is listening at `127.0.0.1:8080`, so you can't access it when it is deployed in another remote machine.
+To access a remote Zeppelin, you need to change `zeppelin.server.addr` to `0.0.0.0` in `conf/zeppelin-site.xml`.
+
 #### Stopping Zeppelin
 
 ```
 bin/zeppelin-daemon.sh stop
 ```
+
+
+## Using the official docker image
+
+Make sure that [docker](https://www.docker.com/community-edition) is installed in your local machine.  
+
+Use this command to launch Apache Zeppelin in a container.
+
+```bash
+docker run -p 8080:8080 --rm --name zeppelin apache/zeppelin:0.9.0
+
+```
+To persist `logs` and `notebook` directories, use the [volume](https://docs.docker.com/engine/reference/commandline/run/#mount-volume--v-read-only) option for docker container.
+
+```bash
+docker run -p 8080:8080 --rm -v $PWD/logs:/logs -v $PWD/notebook:/notebook -e ZEPPELIN_LOG_DIR='/logs' -e ZEPPELIN_NOTEBOOK_DIR='/notebook' --name zeppelin apache/zeppelin:0.9.0
+```
+
+If you have trouble accessing `localhost:8080` in the browser, Please clear browser cache.
+
 
 ## Start Apache Zeppelin with a service manager
 
@@ -117,7 +140,7 @@ exec bin/zeppelin-daemon.sh upstart
 
 ## Next Steps
 
-Congratulations, you have successfully installed Apache Zeppelin! Here are few steps you might find useful:
+Congratulations, you have successfully installed Apache Zeppelin! Here are a few steps you might find useful:
 
 #### New to Apache Zeppelin...
  * For an in-depth overview, head to [Explore Zeppelin UI](../quickstart/explore_ui.html).

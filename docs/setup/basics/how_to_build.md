@@ -38,7 +38,7 @@ If you want to build from source, you must first install the following dependenc
   </tr>
   <tr>
     <td>Maven</td>
-    <td>3.1.x or higher</td>
+    <td>3.6.3 or higher</td>
   </tr>
   <tr>
     <td>OpenJDK or Oracle JDK</td>
@@ -64,32 +64,40 @@ You can build Zeppelin with following maven command:
 mvn clean package -DskipTests [Options]
 ```
 
-If you're unsure about the options, use the same commands that creates official binary package.
-
-```bash
-# update all pom.xml to use scala 2.11
-./dev/change_scala_version.sh 2.11
-# build zeppelin with all interpreters and include latest version of Apache spark support for local mode.
-mvn clean package -DskipTests -Pspark-2.3 -Phadoop-2.6 -Pscala-2.11
-```
-
-#### 3. Done
-You can directly start Zeppelin by running after successful build:
-
-```bash
-./bin/zeppelin-daemon.sh start
-```
-
 Check [build-profiles](#build-profiles) section for further build options.
 If you are behind proxy, follow instructions in [Proxy setting](#proxy-setting-optional) section.
 
 If you're interested in contribution, please check [Contributing to Apache Zeppelin (Code)](../../development/contribution/how_to_contribute_code.html) and [Contributing to Apache Zeppelin (Website)](../../development/contribution/how_to_contribute_website.html).
 
+
+#### 3. Done
+You can directly start Zeppelin by running the following command after successful build:
+
+```bash
+./bin/zeppelin-daemon.sh start
+```
+
 ### Build profiles
+
+
+#### Scala profile
+
+To be noticed, this scala profile affect the modules (e.g. cassandra, scalding) that use scala except Spark interpreter (Spark interpreter use other profiles to control its scala version, see the doc below).
+
+Set scala version (default 2.10). Available profiles are
+
+```
+-Pscala-2.10
+-Pscala-2.11
+```
 
 #### Spark Interpreter
 
-To build with a specific Spark version, Hadoop version or specific features, define one or more of the following profiles and options:
+To be noticed, the spark profiles here only affect the embedded mode (no need to specify `SPARK_HOME`) of spark interpreter. 
+Zeppelin doesn't require you to build with different spark to make different versions of spark work in Zeppelin.
+You can run different versions of Spark in Zeppelin as long as you specify `SPARK_HOME`. Actually Zeppelin supports all the versions of Spark from 1.6 to 3.0.
+
+To build with a specific Spark version or scala versions, define one or more of the following profiles and options:
 
 ##### `-Pspark-[version]`
 
@@ -98,6 +106,8 @@ Set spark major version
 Available profiles are
 
 ```
+-Pspark-3.0
+-Pspark-2.4
 -Pspark-2.3
 -Pspark-2.2
 -Pspark-2.1
@@ -107,11 +117,28 @@ Available profiles are
 
 minor version can be adjusted by `-Dspark.version=x.x.x`
 
+##### `-Pspark-scala-[version] (optional)`
 
-##### `-Phadoop[version]`
+To be noticed, these profiles also only affect the embedded mode (no need to specify `SPARK_HOME`) of Spark interpreter. 
+Actually Zeppelin supports all the versions of scala (2.10, 2.11, 2.12) in Spark interpreter as long as you specify `SPARK_HOME`.
 
-set hadoop major version (default hadoop2)
+Available profiles are
 
+```
+-Pspark-scala-2.10
+-Pspark-scala-2.11
+-Pspark-scala-2.12
+```
+
+If you want to use Spark 3.x in the embedded mode, then you have to specify both profile `spark-3.0` and `spark-scala-2.12`,
+because Spark 3.x doesn't support scala 2.10 and 2.11.
+ 
+#### Build hadoop with Zeppelin (`-Phadoop[version]`)
+ 
+To be noticed, hadoop profiles only affect Zeppelin server, it doesn't affect any interpreter. 
+Zeppelin server use hadoop in some cases, such as using hdfs as notebook storage. You can check this [page](./hadoop_integration.html) for more details about how to configure hadoop in Zeppelin.
+
+Set hadoop major version (default hadoop2).
 Available profiles are
 
 ```
@@ -120,16 +147,6 @@ Available profiles are
 ```
 
 minor version can be adjusted by `-Dhadoop.version=x.x.x`
-
-##### `-Pscala-[version] (optional)`
-
-set scala version (default 2.10)
-Available profiles are
-
-```
--Pscala-2.10
--Pscala-2.11
-```
 
 
 ##### `-Pvendor-repo` (optional)
@@ -146,19 +163,17 @@ Build examples under zeppelin-examples directory
 Here are some examples with several options:
 
 ```bash
-# build with spark-2.1, scala-2.11
-./dev/change_scala_version.sh 2.11
-mvn clean package -Pspark-2.1 -Pscala-2.11 -DskipTests
+# build with spark-3.0, spark-scala-2.12
+mvn clean package -Pspark-3.0 -Pspark-scala-2.12 -DskipTests
 
-# build with spark-2.0, scala-2.11
-./dev/change_scala_version.sh 2.11
-mvn clean package -Pspark-2.0 -Pscala-2.11 -DskipTests
+# build with spark-2.4, spark-scala-2.11
+mvn clean package -Pspark-2.4 -Pspark-scala-2.11 -DskipTests
 
-# build with spark-1.6, scala-2.10
-mvn clean package -Pspark-1.6 -DskipTests
+# build with spark-1.6, spark-scala-2.10
+mvn clean package -Pspark-1.6 -Pspark-scala-2.10 -DskipTests
 
-# with CDH
-mvn clean package -Pspark-1.6 -Dhadoop.version=2.6.0-cdh5.5.0 -Pvendor-repo -DskipTests
+# build with CDH
+mvn clean package -Pspark-1.6 -Pspark-scala-2.10 -Dhadoop.version=2.6.0-cdh5.5.0 -Pvendor-repo -DskipTests
 ```
 
 Ignite Interpreter
@@ -217,7 +232,7 @@ If you don't have requirements prepared, install it.
 ```bash
 sudo apt-get update
 sudo apt-get install git
-sudo apt-get install openjdk-7-jdk
+sudo apt-get install openjdk-8-jdk
 sudo apt-get install npm
 sudo apt-get install libfontconfig
 sudo apt-get install r-base-dev
@@ -229,14 +244,14 @@ sudo apt-get install r-cran-evaluate
 ### Install maven
 
 ```bash
-wget http://www.eu.apache.org/dist/maven/maven-3/3.3.9/binaries/apache-maven-3.3.9-bin.tar.gz
-sudo tar -zxf apache-maven-3.3.9-bin.tar.gz -C /usr/local/
-sudo ln -s /usr/local/apache-maven-3.3.9/bin/mvn /usr/local/bin/mvn
+wget http://www.eu.apache.org/dist/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.tar.gz
+sudo tar -zxf apache-maven-3.6.3-bin.tar.gz -C /usr/local/
+sudo ln -s /usr/local/apache-maven-3.6.3/bin/mvn /usr/local/bin/mvn
 ```
 
 _Notes:_
  - Ensure node is installed by running `node --version`  
- - Ensure maven is running version 3.1.x or higher with `mvn -version`
+ - Ensure maven is running version 3.6.3 or higher with `mvn -version`
  - Configure maven to use more memory than usual by `export MAVEN_OPTS="-Xmx2g -XX:MaxMetaspaceSize=512m"`
 
 
@@ -316,10 +331,10 @@ mvn clean package -Pbuild-distr
 To build a distribution with specific profiles, run:
 
 ```sh
-mvn clean package -Pbuild-distr -Pspark-2.3 -Phadoop-2.4
+mvn clean package -Pbuild-distr -Pspark-2.4
 ```
 
-The profiles `-Pspark-2.3 -Phadoop-2.4` can be adjusted if you wish to build to a specific spark versions.  
+The profiles `-Pspark-2.4` can be adjusted if you wish to build to a specific spark versions.  
 
 The archive is generated under _`zeppelin-distribution/target`_ directory
 
