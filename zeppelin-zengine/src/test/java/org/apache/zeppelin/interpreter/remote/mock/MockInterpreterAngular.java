@@ -24,12 +24,16 @@ import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class MockInterpreterAngular extends Interpreter {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(MockInterpreterAngular.class);
 
   AtomicInteger numWatch = new AtomicInteger(0);
 
@@ -82,7 +86,7 @@ public class MockInterpreterAngular extends Interpreter {
     try {
       Thread.sleep(500); // wait for watcher executed
     } catch (InterruptedException e) {
-      logger.error("Exception in MockInterpreterAngular while interpret Thread.sleep", e);
+      LOGGER.error("Exception in MockInterpreterAngular while interpret Thread.sleep", e);
     }
 
     String msg = registry.getAll(context.getNoteId(), null).size() + " " + Integer.toString(numWatch

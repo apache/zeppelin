@@ -17,6 +17,9 @@
 package org.apache.zeppelin.server;
 
 import com.google.gson.Gson;
+
+import static org.apache.zeppelin.server.HtmlAddonResource.HTML_ADDON_IDENTIFIER;
+
 import java.io.File;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
@@ -88,6 +91,7 @@ import org.eclipse.jetty.server.session.SessionHandler;
 import org.eclipse.jetty.servlet.DefaultServlet;
 import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.ServletHolder;
+import org.eclipse.jetty.util.resource.Resource;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.eclipse.jetty.util.thread.ThreadPool;
@@ -267,7 +271,8 @@ public class ZeppelinServer extends ResourceConfig {
     // Try to get Notebook from ServiceLocator, because Notebook instantiation is lazy, it is
     // created when user open zeppelin in browser if we don't get it explicitly here.
     // Lazy loading will cause paragraph recovery and cron job initialization is delayed.
-    Notebook notebook = sharedServiceLocator.getService(Notebook.class);
+    Notebook notebook = ServiceLocatorUtilities.getService(
+            sharedServiceLocator, Notebook.class.getName());
     // Try to recover here, don't do it in constructor of Notebook, because it would cause deadlock.
     notebook.recoveryIfNecessary();
 
@@ -325,16 +330,14 @@ public class ZeppelinServer extends ResourceConfig {
     HttpConfiguration httpConfig = new HttpConfiguration();
     httpConfig.addCustomizer(new ForwardedRequestCustomizer());
     httpConfig.setSendServerVersion(conf.sendJettyName());
+    httpConfig.setRequestHeaderSize(conf.getJettyRequestHeaderSize());
     if (conf.useSsl()) {
       LOG.debug("Enabling SSL for Zeppelin Server on port {}", sslPort);
       httpConfig.setSecureScheme("https");
       httpConfig.setSecurePort(sslPort);
-      httpConfig.setOutputBufferSize(32768);
-      httpConfig.setResponseHeaderSize(8192);
 
       HttpConfiguration httpsConfig = new HttpConfiguration(httpConfig);
-      SecureRequestCustomizer src = new SecureRequestCustomizer();
-      httpsConfig.addCustomizer(src);
+      httpsConfig.addCustomizer(new SecureRequestCustomizer());
 
       connector =
               new ServerConnector(
@@ -346,7 +349,6 @@ public class ZeppelinServer extends ResourceConfig {
       connector = new ServerConnector(server, new HttpConnectionFactory(httpConfig));
       connector.setPort(port);
     }
-    configureRequestHeaderSize(conf, connector);
     // Set some timeout options to make debugging easier.
     int timeout = 1000 * 30;
     connector.setIdleTimeout(timeout);
@@ -393,14 +395,6 @@ public class ZeppelinServer extends ResourceConfig {
         System.exit(success ? 0 : 1);
       }
     }
-  }
-
-  private static void configureRequestHeaderSize(
-      ZeppelinConfiguration conf, ServerConnector connector) {
-    HttpConnectionFactory cf =
-        (HttpConnectionFactory) connector.getConnectionFactory(HttpVersion.HTTP_1_1.toString());
-    int requestHeaderSize = conf.getJettyRequestHeaderSize();
-    cf.getHttpConfiguration().setRequestHeaderSize(requestHeaderSize);
   }
 
   private static void setupNotebookServer(
@@ -561,7 +555,7 @@ public class ZeppelinServer extends ResourceConfig {
       webApp.setTempDirectory(warTempDirectory);
     }
     // Explicit bind to root
-    webApp.addServlet(new ServletHolder(new DefaultServlet()), "/*");
+    webApp.addServlet(new ServletHolder(setupServlet(webApp, conf)), "/*");
     contexts.addHandler(webApp);
 
     webApp.addFilter(new FilterHolder(CorsFilter.class), "/*", EnumSet.allOf(DispatcherType.class));
@@ -570,6 +564,44 @@ public class ZeppelinServer extends ResourceConfig {
         "org.eclipse.jetty.servlet.Default.dirAllowed",
         Boolean.toString(conf.getBoolean(ConfVars.ZEPPELIN_SERVER_DEFAULT_DIR_ALLOWED)));
     return webApp;
+  }
+
+  private static DefaultServlet setupServlet(
+      WebAppContext webApp,
+      ZeppelinConfiguration conf) {
+
+    // provide DefaultServlet as is in case html addon is not used
+    if (conf.getHtmlBodyAddon()==null && conf.getHtmlHeadAddon()==null) {
+      return new DefaultServlet();
+    }
+
+    // override ResourceFactory interface part of DefaultServlet for intercepting the static index.html properly.
+    return new DefaultServlet() {
+
+        private static final long serialVersionUID = 1L;
+        
+        @Override
+        public Resource getResource(String pathInContext) {
+
+            // proceed for everything but '/index.html'
+            if (!HtmlAddonResource.INDEX_HTML_PATH.equals(pathInContext)) {
+                return super.getResource(pathInContext);
+            }
+
+            // create the altered 'index.html' resource and cache it via webapp attributes
+            if (webApp.getAttribute(HTML_ADDON_IDENTIFIER) == null) {
+                webApp.setAttribute(
+                    HTML_ADDON_IDENTIFIER, 
+                    new HtmlAddonResource(
+                        super.getResource(pathInContext), 
+                        conf.getHtmlBodyAddon(),
+                        conf.getHtmlHeadAddon()));
+            }
+
+            return (Resource) webApp.getAttribute(HTML_ADDON_IDENTIFIER);
+        }
+
+    };
   }
 
   private static void initWebApp(WebAppContext webApp) {

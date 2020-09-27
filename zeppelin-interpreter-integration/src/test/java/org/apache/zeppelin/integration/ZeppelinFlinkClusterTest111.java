@@ -23,13 +23,13 @@ import org.junit.runners.Parameterized;
 import java.util.Arrays;
 import java.util.List;
 
-@RunWith(value = Parameterized.class)
+//@RunWith(value = Parameterized.class)
 public class ZeppelinFlinkClusterTest111 extends ZeppelinFlinkClusterTest {
 
   @Parameterized.Parameters
   public static List<Object[]> data() {
     return Arrays.asList(new Object[][]{
-            {"1.11.1"}
+            {"1.11.2"}
     });
   }
 

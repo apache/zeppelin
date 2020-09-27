@@ -93,6 +93,9 @@
     <module>geode</module>
     <module>ksql</module>
     <module>sparql</module>
+    <module>zeppelin-common</module>
+    <module>zeppelin-client</module>
+    <module>zeppelin-client-examples</module>
     <module>zeppelin-web</module>
     <module>zeppelin-server</module>
     <module>zeppelin-jupyter</module>
@@ -121,7 +124,7 @@
     <libthrift.version>0.13.0</libthrift.version>
     <gson.version>2.2</gson.version>
     <gson-extras.version>0.2.1</gson-extras.version>
-    <jetty.version>9.4.27.v20200227</jetty.version>
+    <jetty.version>9.4.31.v20200723</jetty.version>
     <httpcomponents.core.version>4.4.1</httpcomponents.core.version>
     <httpcomponents.client.version>4.5.1</httpcomponents.client.version>
     <httpcomponents.asyncclient.version>4.0.2</httpcomponents.asyncclient.version>
@@ -132,7 +135,6 @@
     <commons.codec.version>1.14</commons.codec.version>
     <commons.io.version>2.6</commons.io.version>
     <commons.collections.version>3.2.2</commons.collections.version>
-    <commons.logging.version>1.1.1</commons.logging.version>
     <commons.cli.version>1.4</commons.cli.version>
     <shiro.version>1.4.2</shiro.version>
     <joda.version>2.9.9</joda.version>
@@ -218,6 +220,13 @@
         <version>${slf4j.version}</version>
       </dependency>
 
+      <!--  Use jcl-over-slf4j instead of commons-logging -->
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>jcl-over-slf4j</artifactId>
+        <version>${slf4j.version}</version>
+      </dependency>
+
       <dependency>
         <groupId>log4j</groupId>
         <artifactId>log4j</artifactId>
@@ -246,12 +255,26 @@
         <groupId>org.apache.httpcomponents</groupId>
         <artifactId>httpclient</artifactId>
         <version>${httpcomponents.client.version}</version>
+        <exclusions>
+          <!-- using jcl-over-slf4j instead -->
+          <exclusion>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
 
       <dependency>
         <groupId>org.apache.httpcomponents</groupId>
         <artifactId>httpasyncclient</artifactId>
         <version>${httpcomponents.asyncclient.version}</version>
+        <exclusions>
+          <!-- using jcl-over-slf4j instead -->
+          <exclusion>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
 
       <dependency>
@@ -300,12 +323,6 @@
         <groupId>commons-collections</groupId>
         <artifactId>commons-collections</artifactId>
         <version>${commons.collections.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>commons-logging</groupId>
-        <artifactId>commons-logging</artifactId>
-        <version>${commons.logging.version}</version>
       </dependency>
 
       <dependency>
@@ -477,6 +494,11 @@
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
           </exclusion>
+           <!-- using jcl-over-slf4j instead -->
+          <exclusion>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+          </exclusion>
         </exclusions>
       </dependency>
 
@@ -545,6 +567,11 @@
           <exclusion>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-math3</artifactId>
+          </exclusion>
+          <!-- using jcl-over-slf4j instead -->
+          <exclusion>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
           </exclusion>
         </exclusions>
       </dependency>
@@ -619,6 +646,11 @@
           <exclusion>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
+          </exclusion>
+          <!-- using jcl-over-slf4j instead -->
+          <exclusion>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
           </exclusion>
         </exclusions>
       </dependency>
@@ -742,6 +774,11 @@
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
           </exclusion>
+          <!-- using jcl-over-slf4j instead -->
+          <exclusion>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+          </exclusion>
         </exclusions>
       </dependency>
 
@@ -851,6 +888,11 @@
           <exclusion>
             <groupId>com.fasterxml.jackson.module</groupId>
             <artifactId>jackson-module-jaxb-annotations</artifactId>
+          </exclusion>
+          <!-- using jcl-over-slf4j instead -->
+          <exclusion>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
           </exclusion>
 <!--          <exclusion>-->
 <!--            <groupId>com.google.inject.extensions</groupId>-->

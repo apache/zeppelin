@@ -72,8 +72,8 @@ import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.notebook.ParagraphJobListener;
 import org.apache.zeppelin.notebook.AuthorizationService;
 import org.apache.zeppelin.notebook.repo.NotebookRepoWithVersionControl.Revision;
-import org.apache.zeppelin.notebook.socket.Message;
-import org.apache.zeppelin.notebook.socket.Message.OP;
+import org.apache.zeppelin.common.Message;
+import org.apache.zeppelin.common.Message.OP;
 import org.apache.zeppelin.rest.exception.ForbiddenException;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.service.ConfigurationService;
@@ -96,7 +96,7 @@ import org.glassfish.hk2.api.ServiceLocator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.apache.zeppelin.notebook.socket.Message.MSG_ID_NOT_DEFINED;
+import static org.apache.zeppelin.common.Message.MSG_ID_NOT_DEFINED;
 
 /**
  * Zeppelin websocket service. This class used setter injection because all servlet should have
@@ -962,7 +962,7 @@ public class NotebookServer extends WebSocketServlet
     String noteName = (String) message.get("name");
     String defaultInterpreterGroup = (String) message.get("defaultInterpreterGroup");
 
-    getNotebookService().createNote(noteName, defaultInterpreterGroup, getServiceContext(message),
+    getNotebookService().createNote(noteName, defaultInterpreterGroup, true, getServiceContext(message),
         new WebSocketServiceCallback<Note>(conn) {
           @Override
           public void onSuccess(Note note, ServiceContext context) throws IOException {
@@ -1516,7 +1516,7 @@ public class NotebookServer extends WebSocketServlet
     String title = (String) fromMessage.get("title");
     Map<String, Object> params = (Map<String, Object>) fromMessage.get("params");
     Map<String, Object> config = (Map<String, Object>) fromMessage.get("config");
-    getNotebookService().runParagraph(noteId, paragraphId, title, text, params, config,
+    getNotebookService().runParagraph(noteId, paragraphId, title, text, params, config, null,
         false, false, getServiceContext(fromMessage),
         new WebSocketServiceCallback<Paragraph>(conn) {
           @Override

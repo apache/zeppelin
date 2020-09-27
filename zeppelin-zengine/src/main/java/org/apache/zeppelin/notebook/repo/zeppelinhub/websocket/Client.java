@@ -16,8 +16,8 @@
  */
 package org.apache.zeppelin.notebook.repo.zeppelinhub.websocket;
 
+import org.apache.zeppelin.common.Message;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
-import org.apache.zeppelin.notebook.socket.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

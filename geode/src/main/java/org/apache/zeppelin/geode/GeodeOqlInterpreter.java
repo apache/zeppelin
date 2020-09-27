@@ -83,7 +83,7 @@ import java.util.Properties;
  */
 public class GeodeOqlInterpreter extends Interpreter {
 
-  private Logger logger = LoggerFactory.getLogger(GeodeOqlInterpreter.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(GeodeOqlInterpreter.class);
 
   private static final char NEWLINE = '\n';
   private static final char TAB = '\t';
@@ -113,7 +113,7 @@ public class GeodeOqlInterpreter extends Interpreter {
 
   @Override
   public void open() {
-    logger.info("Geode open connection called!");
+    LOGGER.info("Geode open connection called!");
 
     // Close the previous open connections.
     close();
@@ -125,9 +125,9 @@ public class GeodeOqlInterpreter extends Interpreter {
       queryService = clientCache.getQueryService();
 
       exceptionOnConnect = null;
-      logger.info("Successfully created Geode connection");
+      LOGGER.info("Successfully created Geode connection");
     } catch (Exception e) {
-      logger.error("Cannot open connection", e);
+      LOGGER.error("Cannot open connection", e);
       exceptionOnConnect = e;
     }
   }
@@ -144,7 +144,7 @@ public class GeodeOqlInterpreter extends Interpreter {
       }
 
     } catch (Exception e) {
-      logger.error("Cannot close connection", e);
+      LOGGER.error("Cannot close connection", e);
     } finally {
       clientCache = null;
       queryService = null;
@@ -191,7 +191,7 @@ public class GeodeOqlInterpreter extends Interpreter {
       return new InterpreterResult(Code.SUCCESS, msg.toString());
 
     } catch (Exception ex) {
-      logger.error("Cannot run " + oql, ex);
+      LOGGER.error("Cannot run " + oql, ex);
       return new InterpreterResult(Code.ERROR, ex.getMessage());
     }
   }
@@ -242,7 +242,7 @@ public class GeodeOqlInterpreter extends Interpreter {
     if (!isHeaderSet) {
       msg.append("Result").append(NEWLINE);
     }
-    msg.append((Number) entry);
+    msg.append(entry);
   }
 
   private void handleUnsupportedTypeEntry(boolean isHeaderSet, Object entry, StringBuilder msg) {
@@ -255,7 +255,7 @@ public class GeodeOqlInterpreter extends Interpreter {
 
   @Override
   public InterpreterResult interpret(String cmd, InterpreterContext contextInterpreter) {
-    logger.info("Run OQL command '{}'", cmd);
+    LOGGER.info("Run OQL command '{}'", cmd);
     return executeOql(cmd);
   }
 

@@ -15,29 +15,30 @@
  * limitations under the License.
  */
 
-
-package org.apache.zeppelin.interpreter.lifecycle;
-
-import org.apache.zeppelin.conf.ZeppelinConfiguration;
-import org.apache.zeppelin.interpreter.LifecycleManager;
-import org.apache.zeppelin.interpreter.ManagedInterpreterGroup;
+package org.apache.zeppelin.client.websocket;
 
 /**
- * Do nothing for the lifecycle of interpreter. User need to explicitly start/stop interpreter.
+ * MessageHandler for each statement.
  */
-public class NullLifecycleManager implements LifecycleManager {
+public interface StatementMessageHandler {
 
-  public NullLifecycleManager(ZeppelinConfiguration zConf) {
+  /**
+   * Invoked when there's new statement output appended.
+   *
+   * @param statementId
+   * @param index
+   * @param output
+   */
+  void onStatementAppendOutput(String statementId, int index, String output);
 
-  }
+  /**
+   * Invoked when statement's output is updated.
+   *
+   * @param statementId
+   * @param index
+   * @param type
+   * @param output
+   */
+  void onStatementUpdateOutput(String statementId, int index, String type, String output);
 
-  @Override
-  public void onInterpreterProcessStarted(ManagedInterpreterGroup interpreterGroup) {
-
-  }
-
-  @Override
-  public void onInterpreterUse(ManagedInterpreterGroup interpreterGroup, String sessionId) {
-
-  }
 }

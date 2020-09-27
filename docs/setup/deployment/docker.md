@@ -31,10 +31,10 @@ This document contains instructions about making docker containers for Zeppelin.
 ### Installing Docker
 You need to [install docker](https://docs.docker.com/engine/installation/) on your machine.
 
-### Running docker image
+### Running docker image for Zeppelin distribution
 
 ```bash
-docker run -p 8080:8080 --rm --name zeppelin apache/zeppelin:<release-version> 
+docker run -p 8080:8080 --rm --name zeppelin apache/zeppelin-server:<release-version>
 ```
 
 * Zeppelin will run at `http://localhost:8080`.
@@ -47,7 +47,7 @@ docker run -p 8080:8080 --rm \
 -v $PWD/notebook:/notebook \
 -e ZEPPELIN_LOG_DIR='/logs' \
 -e ZEPPELIN_NOTEBOOK_DIR='/notebook' \
---name zeppelin apache/zeppelin:<release-version> # e.g '0.7.1'
+--name zeppelin apache/zeppelin-server:<release-version> # e.g '0.9.0'
 ```
 
 ### Building dockerfile locally
@@ -57,5 +57,29 @@ cd $ZEPPELIN_HOME
 cd scripts/docker/zeppelin/bin
 
 docker build -t my-zeppelin:my-tag ./
+```
+
+### Build docker image for Zeppelin server & interpreters
+
+Starting from 0.9, Zeppelin support to run in k8s or docker. So we add the capability to
+build docker images for Zeppelin server & interpreter.
+Recommendation: Edit the Docker files yourself to adapt them to your needs and reduce the image size.
+
+At first your need to build a zeppelin-distribution docker image.
+```bash
+cd $ZEPPELIN_HOME
+docker build -t zeppelin-distribution .
+```
+
+Build docker image for zeppelin server.
+```bash
+cd $ZEPPELIN_HOME/scripts/docker/zeppelin-server
+docker build -t zeppelin-server .
+```
+
+Build base docker image for zeppelin interpreter.
+```bash
+cd $ZEPPELIN_HOME/scripts/docker/zeppelin-interpreter
+docker build -t zeppelin-interpreter-base  .
 ```
 

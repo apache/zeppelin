@@ -15,19 +15,21 @@
  * limitations under the License.
  */
 
-package org.apache.zeppelin.notebook.socket;
+package org.apache.zeppelin.common;
 
 import com.google.gson.Gson;
+import org.slf4j.Logger;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import org.apache.zeppelin.common.JsonSerializable;
-import org.slf4j.Logger;
+
 /**
- * Zeppelin websocket massage template class.
+ * Copied from zeppelin-zengine (TODO, zjffdu). Should resume the same piece of code instead of copying.
+ * Zeppelin websocket message template class.
  */
 public class Message implements JsonSerializable {
   /**
@@ -216,7 +218,7 @@ public class Message implements JsonSerializable {
           OP.DEL_NOTE,
           OP.PATCH_PARAGRAPH)));
 
-  private static final Gson gson = new Gson();
+  private static final Gson GSON = new Gson();
   public static final Message EMPTY = new Message(null);
   
   public OP op;
@@ -277,10 +279,10 @@ public class Message implements JsonSerializable {
   }
 
   public String toJson() {
-    return gson.toJson(this);
+    return GSON.toJson(this);
   }
 
   public static Message fromJson(String json) {
-    return gson.fromJson(json, Message.class);
+    return GSON.fromJson(json, Message.class);
   }
 }

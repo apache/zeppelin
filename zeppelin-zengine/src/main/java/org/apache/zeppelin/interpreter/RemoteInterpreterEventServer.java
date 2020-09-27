@@ -160,18 +160,33 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
     InterpreterGroup interpreterGroup =
         interpreterSettingManager.getInterpreterGroupById(registerInfo.getInterpreterGroupId());
     if (interpreterGroup == null) {
-      LOGGER.warn("No such interpreterGroup: " + registerInfo.getInterpreterGroupId());
+      LOGGER.warn("Unable to register interpreter process, because no such interpreterGroup: {}",
+              registerInfo.getInterpreterGroupId());
       return;
     }
     RemoteInterpreterProcess interpreterProcess =
         ((ManagedInterpreterGroup) interpreterGroup).getInterpreterProcess();
     if (interpreterProcess == null) {
-      LOGGER.warn("Interpreter process does not existed yet for InterpreterGroup: " +
-          registerInfo.getInterpreterGroupId());
+      LOGGER.warn("Unable to register interpreter process, because no interpreter process associated with " +
+              "interpreterGroup: {}", registerInfo.getInterpreterGroupId());
+      return;
     }
-    LOGGER.info("Register interpreter process: {}:{}, {}",
+    LOGGER.info("Register interpreter process: {}:{}, interpreterGroup: {}",
             registerInfo.getHost(), registerInfo.getPort(), registerInfo.getInterpreterGroupId());
     interpreterProcess.processStarted(registerInfo.port, registerInfo.host);
+  }
+
+  @Override
+  public void unRegisterInterpreterProcess(String intpGroupId) throws TException {
+    LOGGER.info("Unregister interpreter process: {}", intpGroupId);
+    InterpreterGroup interpreterGroup =
+            interpreterSettingManager.getInterpreterGroupById(intpGroupId);
+    if (interpreterGroup == null) {
+      LOGGER.warn("Unable to unregister interpreter process because no such interpreterGroup: {}",
+              intpGroupId);
+      return;
+    }
+    interpreterSettingManager.removeInterpreterGroup(intpGroupId);
   }
 
   @Override
@@ -179,7 +194,8 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
     InterpreterGroup interpreterGroup =
             interpreterSettingManager.getInterpreterGroupById(weburlInfo.getInterpreterGroupId());
     if (interpreterGroup == null) {
-      LOGGER.warn("No such interpreterGroup: " + weburlInfo.getInterpreterGroupId());
+      LOGGER.warn("Unable to sendWebUrl, because no such interpreterGroup: {}",
+              weburlInfo.getInterpreterGroupId());
       return;
     }
     interpreterGroup.setWebUrl(weburlInfo.getWeburl());
@@ -340,8 +356,7 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
         }.getType());
     String noteId = paraInfos.get("noteId");
     String paraId = paraInfos.get("paraId");
-    String settingId = RemoteInterpreterUtils.
-        getInterpreterSettingId(interpreterGroup.getId());
+    String settingId = ((ManagedInterpreterGroup) interpreterGroup).getInterpreterSetting().getId();
     if (noteId != null && paraId != null && settingId != null) {
       listener.onParaInfosReceived(noteId, paraId, settingId, paraInfos);
     }

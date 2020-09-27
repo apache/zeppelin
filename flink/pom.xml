@@ -42,8 +42,8 @@
     </modules>
 
     <properties>
-        <flink1.10.version>1.10.1</flink1.10.version>
-        <flink1.11.version>1.11.1</flink1.11.version>
+        <flink1.10.version>1.10.2</flink1.10.version>
+        <flink1.11.version>1.11.2</flink1.11.version>
     </properties>
 
     <dependencies>
@@ -51,16 +51,6 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
         </dependency>
 
         <dependency>

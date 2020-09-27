@@ -73,7 +73,7 @@ public class DockerInterpreterLauncher extends InterpreterLauncher {
         env,
         context.getIntpEventServerHost(),
         context.getIntpEventServerPort(),
-        connectTimeout);
+        connectTimeout, 10);
   }
 
   boolean isSpark() {

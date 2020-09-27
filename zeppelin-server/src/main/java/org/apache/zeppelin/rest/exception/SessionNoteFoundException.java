@@ -15,18 +15,17 @@
  * limitations under the License.
  */
 
+package org.apache.zeppelin.rest.exception;
 
-package org.apache.zeppelin.interpreter;
+import org.apache.zeppelin.utils.ExceptionUtils;
 
+import javax.ws.rs.WebApplicationException;
 
-/**
- * Interface for managing the lifecycle of interpreters
- */
-public interface LifecycleManager {
+import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 
-  void onInterpreterProcessStarted(ManagedInterpreterGroup interpreterGroup);
+public class SessionNoteFoundException extends WebApplicationException {
 
-  void onInterpreterUse(ManagedInterpreterGroup interpreterGroup,
-                        String sessionId);
-
+  public SessionNoteFoundException(String sessionId) {
+    super(ExceptionUtils.jsonResponseContent(NOT_FOUND, "No such session: " + sessionId));
+  }
 }

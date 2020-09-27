@@ -53,7 +53,7 @@ public class InterpreterInfoSaving implements JsonSerializable {
   public List<RemoteRepository> interpreterRepositories = new ArrayList<>();
 
   public static InterpreterInfoSaving loadFromFile(Path file) throws IOException {
-    LOGGER.info("Load interpreter setting from file: " + file);
+    LOGGER.info("Load interpreter setting from file: {}", file);
     InterpreterInfoSaving infoSaving = null;
     try (BufferedReader json = Files.newBufferedReader(file, StandardCharsets.UTF_8)) {
       JsonParser jsonParser = new JsonParser();
@@ -80,12 +80,13 @@ public class InterpreterInfoSaving implements JsonSerializable {
       } catch (UnsupportedOperationException e) {
         // File system does not support Posix file permissions (likely windows) - continue anyway.
         LOGGER.warn("unable to setPosixFilePermissions on '{}'.", file);
-      };
+      }
     }
-    LOGGER.info("Save Interpreter Settings to " + file);
-    IOUtils.write(this.toJson(), new FileOutputStream(file.toFile()));
+    LOGGER.info("Save Interpreter Settings to {}", file);
+    IOUtils.write(this.toJson(), new FileOutputStream(file.toFile()), StandardCharsets.UTF_8);
   }
 
+  @Override
   public String toJson() {
     return gson.toJson(this);
   }

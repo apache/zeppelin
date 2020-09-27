@@ -320,7 +320,7 @@ If both are defined, then the **environment variables** will take priority.
   <tr>
     <td><h6 class="properties">ZEPPELIN_INTERPRETER_DEP_MVNREPO</h6></td>
     <td><h6 class="properties">zeppelin.interpreter.dep.mvnRepo</h6></td>
-    <td>http://repo1.maven.org/maven2/</td>
+    <td>https://repo1.maven.org/maven2/</td>
     <td>Remote principal repository for interpreter's additional dependency loading</td>
   </tr>
   <tr>

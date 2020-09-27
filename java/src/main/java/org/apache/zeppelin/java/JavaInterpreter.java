@@ -36,7 +36,7 @@ import org.slf4j.LoggerFactory;
  */
 public class JavaInterpreter extends Interpreter {
 
-  private static final Logger logger = LoggerFactory.getLogger(JavaInterpreter.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(JavaInterpreter.class);
 
   public JavaInterpreter(Properties property) {
     super(property);
@@ -65,7 +65,7 @@ public class JavaInterpreter extends Interpreter {
       String res = StaticRepl.execute(generatedClassName, code);
       return new InterpreterResult(InterpreterResult.Code.SUCCESS, res);
     } catch (Exception e) {
-      logger.error("Exception in Interpreter while interpret", e);
+      LOGGER.error("Exception in Interpreter while interpret", e);
       return new InterpreterResult(InterpreterResult.Code.ERROR, e.getMessage());
 
     }

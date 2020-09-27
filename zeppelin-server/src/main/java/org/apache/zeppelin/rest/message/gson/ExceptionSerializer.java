@@ -21,6 +21,8 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+
 import java.lang.reflect.Type;
 import javax.ws.rs.WebApplicationException;
 
@@ -32,6 +34,7 @@ public class ExceptionSerializer implements JsonSerializer<Exception> {
     JsonObject jsonObject = new JsonObject();
     jsonObject.addProperty("exception", e.getClass().getSimpleName());
     jsonObject.addProperty("message", e.getMessage());
+    jsonObject.addProperty("stacktrace", ExceptionUtils.getStackTrace(e));
 
     if (e instanceof WebApplicationException) {
       jsonObject.addProperty("status", ((WebApplicationException) e).getResponse().getStatus());

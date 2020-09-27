@@ -104,6 +104,7 @@ exception ServiceException{
 
 service RemoteInterpreterEventService {
   void registerInterpreterProcess(1: RegisterInfo registerInfo);
+  void unRegisterInterpreterProcess(1: string intpGroupId);
 
   void appendOutput(1: OutputAppendEvent event);
   void updateOutput(1: OutputUpdateEvent event);

@@ -52,6 +52,12 @@
 
   <dependencies>
     <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>zeppelin-common</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
       <groupId>io.atomix</groupId>
       <artifactId>atomix</artifactId>
       <version>${atomix.version}</version>
@@ -93,6 +99,13 @@
     <dependency>
       <groupId>org.apache.thrift</groupId>
       <artifactId>libthrift</artifactId>
+      <exclusions>
+        <!-- using jcl-over-slf4j instead -->
+        <exclusion>
+          <groupId>commons-logging</groupId>
+          <artifactId>commons-logging</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <dependency>
@@ -108,6 +121,13 @@
     <dependency>
       <groupId>commons-configuration</groupId>
       <artifactId>commons-configuration</artifactId>
+      <exclusions>
+        <!-- using jcl-over-slf4j instead -->
+        <exclusion>
+          <groupId>commons-logging</groupId>
+          <artifactId>commons-logging</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <dependency>
@@ -123,12 +143,12 @@
 
     <dependency>
       <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-api</artifactId>
+      <artifactId>slf4j-log4j12</artifactId>
     </dependency>
 
     <dependency>
       <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-log4j12</artifactId>
+      <artifactId>jcl-over-slf4j</artifactId>
     </dependency>
 
     <!-- Aether :: maven dependency resolution -->
@@ -225,6 +245,13 @@
       <groupId>commons-httpclient</groupId>
       <artifactId>commons-httpclient</artifactId>
       <version>3.1</version>
+      <exclusions>
+        <!-- using jcl-over-slf4j instead -->
+        <exclusion>
+          <groupId>commons-logging</groupId>
+          <artifactId>commons-logging</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <dependency>
@@ -255,6 +282,13 @@
       <groupId>org.apache.maven.wagon</groupId>
       <artifactId>wagon-http</artifactId>
       <version>${wagon.version}</version>
+      <exclusions>
+        <!-- using jcl-over-slf4j instead -->
+        <exclusion>
+          <groupId>commons-logging</groupId>
+          <artifactId>commons-logging</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <dependency>

@@ -45,6 +45,13 @@
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk-s3</artifactId>
             <version>${aws.sdk.s3.version}</version>
+            <exclusions>
+                <!-- jcl-over-slf4j is provided by zeppelin-interprerter -->
+                <exclusion>
+                    <groupId>commons-logging</groupId>
+                    <artifactId>commons-logging</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>

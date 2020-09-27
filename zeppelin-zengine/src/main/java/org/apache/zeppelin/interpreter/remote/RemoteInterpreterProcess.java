@@ -27,6 +27,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  * Abstract class for interpreter process
@@ -34,18 +36,23 @@ import java.io.IOException;
 public abstract class RemoteInterpreterProcess implements InterpreterClient {
   private static final Logger LOGGER = LoggerFactory.getLogger(RemoteInterpreterProcess.class);
   private static final Gson GSON = new Gson();
+  private static final SimpleDateFormat START_TIME_FORMATTER =
+          new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
   private int connectTimeout;
   protected String intpEventServerHost;
   protected int intpEventServerPort;
   private PooledRemoteClient<Client> remoteClient;
+  private String startTime;
 
   public RemoteInterpreterProcess(int connectTimeout,
+                                  int connectionPoolSize,
                                   String intpEventServerHost,
                                   int intpEventServerPort) {
     this.connectTimeout = connectTimeout;
     this.intpEventServerHost = intpEventServerHost;
     this.intpEventServerPort = intpEventServerPort;
+    this.startTime = START_TIME_FORMATTER.format(new Date());
     this.remoteClient = new PooledRemoteClient<Client>(() -> {
       TSocket transport = new TSocket(getHost(), getPort());
       try {
@@ -55,11 +62,15 @@ public abstract class RemoteInterpreterProcess implements InterpreterClient {
       }
       TProtocol protocol = new  TBinaryProtocol(transport);
       return new Client(protocol);
-    });
+    }, connectionPoolSize);
   }
 
   public int getConnectTimeout() {
     return connectTimeout;
+  }
+
+  public String getStartTime() {
+    return startTime;
   }
 
   public void shutdown() {

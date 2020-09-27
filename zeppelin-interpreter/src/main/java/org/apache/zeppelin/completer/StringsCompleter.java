@@ -28,7 +28,7 @@ import jline.internal.Preconditions;
  * Case-insensitive completer for a set of strings.
  */
 public class StringsCompleter implements Completer {
-  private final SortedSet<String> strings = new TreeSet<String>(new Comparator<String>() {
+  private final SortedSet<String> strings = new TreeSet<>(new Comparator<String>() {
     @Override
     public int compare(String o1, String o2) {
       return o1.compareToIgnoreCase(o2);

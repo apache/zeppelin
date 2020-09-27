@@ -18,6 +18,7 @@
 package org.apache.zeppelin.interpreter.remote;
 
 import org.apache.commons.pool2.impl.GenericObjectPool;
+import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.apache.thrift.TException;
 import org.apache.thrift.TServiceClient;
 import org.slf4j.Logger;
@@ -32,17 +33,26 @@ import org.slf4j.LoggerFactory;
 public class PooledRemoteClient<T extends TServiceClient> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PooledRemoteClient.class);
+  private static final int RETRY_COUNT = 3;
 
   private GenericObjectPool<T> clientPool;
   private RemoteClientFactory<T> remoteClientFactory;
 
-  public PooledRemoteClient(SupplierWithIO<T> supplier) {
+  public PooledRemoteClient(SupplierWithIO<T> supplier, int connectionPoolSize) {
     this.remoteClientFactory = new RemoteClientFactory<>(supplier);
-    this.clientPool = new GenericObjectPool<>(remoteClientFactory);
+    GenericObjectPoolConfig poolConfig = new GenericObjectPoolConfig();
+    poolConfig.setMaxTotal(connectionPoolSize);
+    poolConfig.setMaxIdle(connectionPoolSize);
+    this.clientPool = new GenericObjectPool<>(remoteClientFactory, poolConfig);
+  }
+
+  public PooledRemoteClient(SupplierWithIO<T> supplier) {
+    this(supplier, 10);
   }
 
   public synchronized T getClient() throws Exception {
-    return clientPool.borrowObject(5_000);
+    T t = clientPool.borrowObject(5_000);
+    return t;
   }
 
   public void shutdown() {
@@ -74,22 +84,28 @@ public class PooledRemoteClient<T extends TServiceClient> {
   }
 
   public <R> R callRemoteFunction(RemoteFunction<R, T> func) {
-    T client = null;
     boolean broken = false;
-    try {
-      client = getClient();
-      if (client != null) {
-        return func.call(client);
+    for (int i = 0;i < RETRY_COUNT; ++ i) {
+      T client = null;
+      broken = false;
+      try {
+        client = getClient();
+        if (client != null) {
+          return func.call(client);
+        }
+      } catch (TException e) {
+        broken = true;
+        continue;
+      } catch (Exception e1) {
+        throw new RuntimeException(e1);
+      } finally {
+        if (client != null) {
+          releaseClient(client, broken);
+        }
       }
-    } catch (TException e) {
-      broken = true;
-      throw new RuntimeException(e);
-    } catch (Exception e1) {
-      throw new RuntimeException(e1);
-    } finally {
-      if (client != null) {
-        releaseClient(client, broken);
-      }
+    }
+    if (broken) {
+      throw new RuntimeException("Fail to callRemoteFunction, because connection is broken");
     }
     return null;
   }

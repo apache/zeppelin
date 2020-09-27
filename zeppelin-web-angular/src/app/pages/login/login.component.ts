@@ -11,7 +11,7 @@
  */
 
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
 import { TicketService } from '@zeppelin/services';
 
@@ -25,6 +25,7 @@ export class LoginComponent implements OnInit {
   userName: string;
   password: string;
   loading = false;
+  private returnUrl: string | undefined;
 
   login() {
     this.loading = true;
@@ -32,7 +33,7 @@ export class LoginComponent implements OnInit {
       () => {
         this.loading = false;
         this.cdr.markForCheck();
-        this.router.navigate(['/']).then();
+        this.router.navigateByUrl(this.returnUrl || '/');
       },
       () => {
         this.loading = false;
@@ -41,7 +42,16 @@ export class LoginComponent implements OnInit {
     );
   }
 
-  constructor(private ticketService: TicketService, private cdr: ChangeDetectorRef, private router: Router) {}
+  constructor(
+    private ticketService: TicketService,
+    private cdr: ChangeDetectorRef,
+    private router: Router,
+    private route: ActivatedRoute
+  ) {
+    route.queryParams.subscribe(params => {
+      this.returnUrl = params.returnUrl;
+    });
+  }
 
   ngOnInit() {}
 }

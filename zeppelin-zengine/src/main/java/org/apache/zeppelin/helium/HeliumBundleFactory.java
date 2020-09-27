@@ -109,7 +109,7 @@ public class HeliumBundleFactory {
   @Inject
   public HeliumBundleFactory(ZeppelinConfiguration conf) {
     this.heliumLocalRepoDirectory =
-        new File(conf.getRelativeDir(ConfVars.ZEPPELIN_DEP_LOCALREPO), HELIUM_LOCAL_REPO);
+        new File(conf.getRelativeDir(ConfVars.ZEPPELIN_DEP_LOCALREPO), HELIUM_LOCAL_REPO).getAbsoluteFile();
     this.heliumBundleDirectory = new File(heliumLocalRepoDirectory, HELIUM_BUNDLES_DIR);
     this.heliumLocalModuleDirectory = new File(heliumLocalRepoDirectory, HELIUM_LOCAL_MODULE_DIR);
     this.yarnCacheDir = new File(heliumLocalRepoDirectory, YARN_CACHE_DIR);

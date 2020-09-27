@@ -30,7 +30,7 @@ export class WorkspaceGuard implements CanActivate {
     return this.ticketService.getTicket().pipe(
       mapTo(true),
       tap(() => this.messageService.bootstrap()),
-      catchError(() => of(this.router.createUrlTree(['/login'])))
+      catchError(() => of(this.router.createUrlTree(['/login'], { queryParams: { returnUrl: state.url } })))
     );
   }
 }

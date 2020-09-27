@@ -58,7 +58,7 @@ public class NotebookSecurityRestApiTest extends AbstractTestRestApi {
   
   @Test
   public void testThatUserCanCreateAndRemoveNote() throws IOException {
-    String noteId = createNoteForUser("test", "admin", "password1");
+    String noteId = createNoteForUser("test_1", "admin", "password1");
     assertNotNull(noteId);
     String id = getNoteIdForUser(noteId, "admin", "password1");
     assertThat(id, is(noteId));
@@ -67,7 +67,7 @@ public class NotebookSecurityRestApiTest extends AbstractTestRestApi {
   
   @Test
   public void testThatOtherUserCanAccessNoteIfPermissionNotSet() throws IOException {
-    String noteId = createNoteForUser("test", "admin", "password1");
+    String noteId = createNoteForUser("test_2", "admin", "password1");
     
     userTryGetNote(noteId, "user1", "password2", isAllowed());
     
@@ -76,7 +76,7 @@ public class NotebookSecurityRestApiTest extends AbstractTestRestApi {
   
   @Test
   public void testThatOtherUserCannotAccessNoteIfPermissionSet() throws IOException {
-    String noteId = createNoteForUser("test", "admin", "password1");
+    String noteId = createNoteForUser("test_3", "admin", "password1");
     
     //set permission
     String payload = "{ \"owners\": [\"admin\"], \"readers\": [\"user2\"], " +
@@ -94,7 +94,7 @@ public class NotebookSecurityRestApiTest extends AbstractTestRestApi {
   
   @Test
   public void testThatWriterCannotRemoveNote() throws IOException {
-    String noteId = createNoteForUser("test", "admin", "password1");
+    String noteId = createNoteForUser("test_4", "admin", "password1");
     
     //set permission
     String payload = "{ \"owners\": [\"admin\", \"user1\"], \"readers\": [\"user2\"], " +

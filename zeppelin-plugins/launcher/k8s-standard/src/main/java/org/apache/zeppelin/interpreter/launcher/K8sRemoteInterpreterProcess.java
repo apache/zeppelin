@@ -58,6 +58,7 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
   private static final String SPARK_DRIVER_MEMORY_OVERHEAD = "spark.driver.memoryOverhead";
   private static final String SPARK_DRIVER_CORES = "spark.driver.cores";
   private static final String ENV_SERVICE_DOMAIN = "SERVICE_DOMAIN";
+  private static final String ENV_ZEPPELIN_HOME = "ZEPPELIN_HOME";
 
   public K8sRemoteInterpreterProcess(
           KubernetesClient client,
@@ -74,9 +75,10 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
           boolean portForward,
           String sparkImage,
           int connectTimeout,
+          int connectionPoolSize,
           boolean isUserImpersonatedForSpark
   ) {
-    super(connectTimeout, intpEventServerHost, intpEventServerPort);
+    super(connectTimeout, connectionPoolSize, intpEventServerHost, intpEventServerPort);
     this.client = client;
     this.namespace = namespace;
     this.specTemplates = specTemplates;
@@ -280,7 +282,7 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
 
     // environment variables
     envs.put(ENV_SERVICE_DOMAIN, envs.getOrDefault(ENV_SERVICE_DOMAIN, System.getenv(ENV_SERVICE_DOMAIN)));
-    envs.put("ZEPPELIN_HOME", envs.getOrDefault("ZEPPELIN_HOME", "/zeppelin"));
+    envs.put(ENV_ZEPPELIN_HOME, envs.getOrDefault(ENV_ZEPPELIN_HOME, System.getenv(ENV_ZEPPELIN_HOME)));
 
     if (isSpark()) {
       int webUiPort = 4040;

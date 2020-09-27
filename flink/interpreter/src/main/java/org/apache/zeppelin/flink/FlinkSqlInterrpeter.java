@@ -32,10 +32,12 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.table.api.config.ExecutionConfigOptions;
 import org.apache.zeppelin.flink.sql.SqlCommandParser;
 import org.apache.zeppelin.flink.sql.SqlCommandParser.SqlCommand;
+import org.apache.zeppelin.interpreter.AbstractInterpreter;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.ZeppelinContext;
 import org.apache.zeppelin.interpreter.util.SqlSplitter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,7 +52,7 @@ import java.util.Properties;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
 
-public abstract class FlinkSqlInterrpeter extends Interpreter {
+public abstract class FlinkSqlInterrpeter extends AbstractInterpreter {
 
   protected static final Logger LOGGER = LoggerFactory.getLogger(FlinkSqlInterrpeter.class);
 
@@ -96,13 +98,8 @@ public abstract class FlinkSqlInterrpeter extends Interpreter {
   }
 
   @Override
-  public InterpreterResult interpret(String st,
-                                     InterpreterContext context) throws InterpreterException {
+  protected InterpreterResult internalInterpret(String st, InterpreterContext context) throws InterpreterException {
     LOGGER.debug("Interpret code: " + st);
-    flinkInterpreter.getZeppelinContext().setInterpreterContext(context);
-    flinkInterpreter.getZeppelinContext().setNoteGui(context.getNoteGui());
-    flinkInterpreter.getZeppelinContext().setGui(context.getGui());
-
     // set ClassLoader of current Thread to be the ClassLoader of Flink scala-shell,
     // otherwise codegen will fail to find classes defined in scala-shell
     ClassLoader originClassLoader = Thread.currentThread().getContextClassLoader();
@@ -114,6 +111,15 @@ public abstract class FlinkSqlInterrpeter extends Interpreter {
       return runSqlList(st, context);
     } finally {
       Thread.currentThread().setContextClassLoader(originClassLoader);
+    }
+  }
+
+  @Override
+  public ZeppelinContext getZeppelinContext() {
+    if (flinkInterpreter != null) {
+      return flinkInterpreter.getZeppelinContext();
+    } else {
+      return null;
     }
   }
 
@@ -264,7 +270,7 @@ public abstract class FlinkSqlInterrpeter extends Interpreter {
         callDropTable(cmdCall.operands[0], context);
         break;
       case CREATE_VIEW:
-        callCreateView(cmdCall.operands[0], cmdCall.operands[1], context);
+        callCreateView(cmdCall, context);
         break;
       case DROP_VIEW:
         callDropView(cmdCall.operands[0], context);
@@ -337,10 +343,14 @@ public abstract class FlinkSqlInterrpeter extends Interpreter {
     context.out.write("View has been dropped.\n");
   }
 
-  private void callCreateView(String name, String query, InterpreterContext context) throws IOException {
+  private void callCreateView(SqlCommandParser.SqlCommandCall sqlCommand, InterpreterContext context) throws IOException {
     try {
       lock.lock();
-      this.tbenv.createTemporaryView(name, tbenv.sqlQuery(query));
+      if (flinkInterpreter.getFlinkVersion().isFlink110()) {
+        this.tbenv.createTemporaryView(sqlCommand.operands[0], tbenv.sqlQuery(sqlCommand.operands[1]));
+      } else {
+        flinkInterpreter.getFlinkShims().executeSql(tbenv, sqlCommand.sql);
+      }
     } finally {
       if (lock.isHeldByCurrentThread()) {
         lock.unlock();

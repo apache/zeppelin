@@ -53,12 +53,14 @@ public class StandardInterpreterLauncher extends InterpreterLauncher {
     String groupName = context.getInterpreterSettingGroup();
     String name = context.getInterpreterSettingName();
     int connectTimeout = getConnectTimeout();
+    int connectionPoolSize = getConnectPoolSize();
 
     if (option.isExistingProcess()) {
       return new RemoteInterpreterRunningProcess(
           context.getInterpreterSettingName(),
           context.getInterpreterGroupId(),
           connectTimeout,
+          connectionPoolSize,
           context.getIntpEventServerHost(),
           context.getIntpEventServerPort(),
           option.getHost(),
@@ -72,7 +74,7 @@ public class StandardInterpreterLauncher extends InterpreterLauncher {
           runner != null ? runner.getPath() : zConf.getInterpreterRemoteRunnerPath(),
           context.getIntpEventServerPort(), context.getIntpEventServerHost(), zConf.getInterpreterPortRange(),
           zConf.getInterpreterDir() + "/" + groupName, localRepoPath,
-          buildEnvFromProperties(context), connectTimeout, name,
+          buildEnvFromProperties(context), connectTimeout, connectionPoolSize, name,
           context.getInterpreterGroupId(), option.isUserImpersonate());
     }
   }

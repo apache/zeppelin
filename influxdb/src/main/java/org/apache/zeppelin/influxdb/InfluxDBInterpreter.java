@@ -26,6 +26,8 @@ import com.influxdb.client.InfluxDBClientOptions;
 import com.influxdb.client.QueryApi;
 import org.apache.zeppelin.interpreter.AbstractInterpreter;
 import org.apache.zeppelin.interpreter.ZeppelinContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
@@ -48,6 +50,8 @@ import org.apache.zeppelin.interpreter.InterpreterResult;
  * </p>
  */
 public class InfluxDBInterpreter extends AbstractInterpreter {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(InfluxDBInterpreter.class);
 
   private static final String INFLUXDB_API_URL_PROPERTY = "influxdb.url";
   private static final String INFLUXDB_TOKEN_PROPERTY = "influxdb.token";
@@ -76,7 +80,7 @@ public class InfluxDBInterpreter extends AbstractInterpreter {
   protected InterpreterResult internalInterpret(String query, InterpreterContext context)
       throws InterpreterException {
 
-    logger.debug("Run Flux command '{}'", query);
+    LOGGER.debug("Run Flux command '{}'", query);
     query = query.trim();
 
     QueryApi queryService = getInfluxDBClient(context);
@@ -119,7 +123,7 @@ public class InfluxDBInterpreter extends AbstractInterpreter {
 
         throwable -> {
 
-          logger.error(throwable.getMessage(), throwable);
+          LOGGER.error(throwable.getMessage(), throwable);
           resultRef.set(new InterpreterResult(InterpreterResult.Code.ERROR,
               throwable.getMessage()));
 

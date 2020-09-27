@@ -18,8 +18,8 @@ package org.apache.zeppelin.notebook.repo.zeppelinhub.websocket.listener;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.notebook.repo.zeppelinhub.websocket.ZeppelinClient;
-import org.apache.zeppelin.notebook.socket.Message;
-import org.apache.zeppelin.notebook.socket.Message.OP;
+import org.apache.zeppelin.common.Message;
+import org.apache.zeppelin.common.Message.OP;
 import org.apache.zeppelin.notebook.socket.WatcherMessage;
 import org.apache.zeppelin.ticket.TicketContainer;
 import org.eclipse.jetty.websocket.api.Session;

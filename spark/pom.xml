@@ -42,6 +42,8 @@
 
         <!-- spark versions -->
         <spark.version>2.4.5</spark.version>
+        <protobuf.version>2.5.0</protobuf.version>
+        <py4j.version>0.10.7</py4j.version>
         <spark.scala.version>2.11.12</spark.scala.version>
         <spark.scala.binary.version>2.11</spark.scala.binary.version>
 
@@ -72,16 +74,6 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
         </dependency>
 
         <dependency>
@@ -195,7 +187,7 @@
         <profile>
             <id>spark-3.0</id>
             <properties>
-                <spark.version>3.0.0</spark.version>
+                <spark.version>3.0.1</spark.version>
                 <protobuf.version>2.5.0</protobuf.version>
                 <py4j.version>0.10.9</py4j.version>
             </properties>
