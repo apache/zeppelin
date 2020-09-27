@@ -30,6 +30,7 @@ limitations under the License.
     <ul style="list-style-type: none; padding-left:10px; margin-top: 30px;" >
       <li style="font-weight: 300; font-size:18px; margin: 5px;"><span class="glyphicon glyphicon-import" style="margin-right:10px"></span> Data Ingestion</li>
       <li style="font-weight: 300; font-size:18px; margin: 5px;"><span class="glyphicon glyphicon-eye-open" style="margin-right:10px"></span> Data Discovery</li>
+      <li style="font-weight: 300; font-size:18px; margin: 5px;"><span class="glyphicon glyphicon-filter" style="margin-right:10px"></span> Data Transformation</li>
       <li style="font-weight: 300; font-size:18px; margin: 5px;"><span class="glyphicon glyphicon-wrench" style="margin-right:10px"></span> Data Analytics</li>
       <li style="font-weight: 300; font-size:18px; margin: 5px;"><span class="glyphicon glyphicon-dashboard" style="margin-right:10px"></span> Data Visualization & Collaboration</li>
     </ul>
