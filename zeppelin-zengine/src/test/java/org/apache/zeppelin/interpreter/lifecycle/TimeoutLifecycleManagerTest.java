@@ -48,7 +48,6 @@ public class TimeoutLifecycleManagerTest extends AbstractInterpreterTest {
     zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_LIFECYCLE_MANAGER_TIMEOUT_CHECK_INTERVAL.getVarName(), "1000");
     zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_LIFECYCLE_MANAGER_TIMEOUT_THRESHOLD.getVarName(), "10000");
 
-    zConf.save(zeppelinSiteFile);
     super.setUp();
   }
 

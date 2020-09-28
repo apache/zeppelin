@@ -63,7 +63,7 @@ public class MongoNotebookRepoTest {
     mongodExecutable.start();
 
     System.setProperty(ZEPPELIN_NOTEBOOK_MONGO_URI.getVarName(), "mongodb://" + bindIp + ":" + port);
-    zConf = new ZeppelinConfiguration();
+    zConf = ZeppelinConfiguration.create();
     notebookRepo = new MongoNotebookRepo();
     notebookRepo.init(zConf);
   }

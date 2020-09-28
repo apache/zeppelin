@@ -21,6 +21,7 @@ import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransportException;
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.launcher.InterpreterClient;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService.Client;
 import org.slf4j.Logger;
@@ -97,6 +98,13 @@ public abstract class RemoteInterpreterProcess implements InterpreterClient {
 
   public <R> R callRemoteFunction(PooledRemoteClient.RemoteFunction<R, Client> func) {
     return remoteClient.callRemoteFunction(func);
+  }
+
+  public void init(ZeppelinConfiguration zConf) {
+    callRemoteFunction(client -> {
+      client.init(zConf.getProperties());
+      return null;
+    });
   }
 
   @Override
