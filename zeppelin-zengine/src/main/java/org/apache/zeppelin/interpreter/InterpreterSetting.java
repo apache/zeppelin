@@ -134,7 +134,7 @@ public class InterpreterSetting {
   private transient ApplicationEventListener appEventListener;
   private transient DependencyResolver dependencyResolver;
 
-  private transient ZeppelinConfiguration conf = new ZeppelinConfiguration();
+  private transient ZeppelinConfiguration conf = ZeppelinConfiguration.create();
 
   private transient RecoveryStorage recoveryStorage;
   private transient RemoteInterpreterEventServer interpreterEventServer;

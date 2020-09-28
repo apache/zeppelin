@@ -76,17 +76,22 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     for (ConfigurationNode p : nodes) {
       String name = (String) p.getChildren("name").get(0).getValue();
       String value = (String) p.getChildren("value").get(0).getValue();
-      if (!StringUtils.isEmpty(name)) {
+      if (StringUtils.isNotBlank(name) && StringUtils.isNotBlank(value)) {
         properties.put(name, value);
       }
     }
   }
 
 
-  public ZeppelinConfiguration() {
+  // private constructor, so that it is singleton.
+  private ZeppelinConfiguration() {
     ConfVars[] vars = ConfVars.values();
     for (ConfVars v : vars) {
-      if (v.getType() == ConfVars.VarType.BOOLEAN) {
+      // set property if env is set, so that the configuration can be passed to
+      // interpreter process properly.
+      if (StringUtils.isNotBlank(System.getenv(v.name()))) {
+        this.setProperty(v.getVarName(), System.getenv(v.name()));
+      } else if (v.getType() == ConfVars.VarType.BOOLEAN) {
         this.setProperty(v.getVarName(), v.getBooleanValue());
       } else if (v.getType() == ConfVars.VarType.LONG) {
         this.setProperty(v.getVarName(), v.getLongValue());
@@ -184,12 +189,18 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return conf;
   }
 
+  public Map<String, String> getProperties() {
+    return this.properties;
+  }
+
   public static void reset() {
     conf = null;
   }
 
   public void setProperty(String name, String value) {
-    this.properties.put(name, value);
+    if (StringUtils.isNotBlank(name) && StringUtils.isNotBlank(value)) {
+      this.properties.put(name, value);
+    }
   }
 
   private String getStringValue(String name, String d) {
