@@ -19,6 +19,8 @@ package org.apache.zeppelin;
 
 
 import com.google.common.base.Function;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.*;
@@ -94,8 +96,8 @@ abstract public class AbstractZeppelinIT {
 
   protected WebElement pollingWait(final By locator, final long timeWait) {
     Wait<WebDriver> wait = new FluentWait<>(driver)
-        .withTimeout(timeWait, TimeUnit.SECONDS)
-        .pollingEvery(1, TimeUnit.SECONDS)
+        .withTimeout(Duration.of(timeWait, ChronoUnit.SECONDS))
+        .pollingEvery(Duration.of(1, ChronoUnit.SECONDS))
         .ignoring(NoSuchElementException.class);
 
     return wait.until(new Function<WebDriver, WebElement>() {

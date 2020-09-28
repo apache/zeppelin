@@ -476,8 +476,7 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
       element = (new WebDriverWait(driver, MAX_BROWSER_TIMEOUT_SEC))
           .until(ExpectedConditions.visibilityOfElementLocated(locator));
       if (element.isDisplayed()) {
-        pollingWait(By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + user2noteId + "')]"),
-            MAX_BROWSER_TIMEOUT_SEC).click();
+        clickAndWait(By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + user2noteId + "')]"));
       }
       clickAndWait(By.xpath("//*[@id='actionbar']//span[contains(@uib-tooltip, 'Interpreter binding')]"));
       clickAndWait(By.xpath("//div[@data-ng-repeat='item in interpreterBindings' and contains(., 'python')]//a"));
@@ -755,8 +754,7 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
       element = (new WebDriverWait(driver, MAX_BROWSER_TIMEOUT_SEC))
           .until(ExpectedConditions.visibilityOfElementLocated(locator));
       if (element.isDisplayed()) {
-        pollingWait(By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + user2noteId + "')]"),
-            MAX_BROWSER_TIMEOUT_SEC).click();
+        clickAndWait(By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + user2noteId + "')]"));
       }
       clickAndWait(By.xpath("//*[@id='actionbar']//span[contains(@uib-tooltip, 'Interpreter binding')]"));
       clickAndWait(By.xpath("//div[@data-ng-repeat='item in interpreterBindings' and contains(., 'python')]//a"));

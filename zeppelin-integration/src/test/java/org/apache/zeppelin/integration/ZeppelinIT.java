@@ -31,6 +31,7 @@ import org.openqa.selenium.Keys;
 import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.interactions.Actions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -304,8 +305,10 @@ public class ZeppelinIT extends AbstractZeppelinIT {
       setTextOfParagraph(2, "%sh echo NEW_VALUE");
 
       // Click on 1 paragraph to trigger z.runParagraph() function
-      driver.findElement(By.xpath(
-              getParagraphXPath(1) + "//div[@id=\"angularRunParagraph\"]")).click();
+      Actions action = new Actions(driver);
+      WebElement angularRunParagraph = driver.findElement(By.xpath(
+          getParagraphXPath(1) + "//div[@id=\"angularRunParagraph\"]"));
+      action.moveToElement(angularRunParagraph).click().build().perform();
 
       waitForParagraph(2, "FINISHED");
 
