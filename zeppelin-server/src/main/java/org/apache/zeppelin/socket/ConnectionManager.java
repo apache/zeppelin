@@ -359,14 +359,13 @@ public class ConnectionManager {
     }
   }
 
-  public static abstract class UserIterator {
-    public abstract void handleUser(String user, Set<String> userAndRoles);
+  public interface UserIterator {
+    public void handleUser(String user, Set<String> userAndRoles);
   }
 
   public void forAllUsers(UserIterator iterator) {
-    Set<String> userAndRoles;
     for (String user : userSocketMap.keySet()) {
-      userAndRoles = authorizationService.getRoles(user);
+      Set<String> userAndRoles = authorizationService.getRoles(user);
       userAndRoles.add(user);
       iterator.handleUser(user, userAndRoles);
     }
