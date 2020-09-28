@@ -25,6 +25,7 @@ import java.time.temporal.ChronoUnit;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.By;
+import org.openqa.selenium.ElementClickInterceptedException;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.NoSuchElementException;
@@ -49,7 +50,6 @@ abstract public class AbstractZeppelinIT {
   protected static final long MAX_IMPLICIT_WAIT = 30;
   protected static final long MAX_BROWSER_TIMEOUT_SEC = 30;
   protected static final long MAX_PARAGRAPH_TIMEOUT_SEC = 120;
-  Actions action = new Actions(driver);
 
   protected void setTextOfParagraph(int paragraphNo, String text) {
     String editorId = pollingWait(
@@ -144,8 +144,15 @@ abstract public class AbstractZeppelinIT {
 
   protected void clickAndWait(final By locator) {
     WebElement element = pollingWait(locator, MAX_IMPLICIT_WAIT);
-    action.moveToElement(element).click().build().perform();
-    ZeppelinITUtils.sleep(1000, false);
+    try {
+      element.click();
+      ZeppelinITUtils.sleep(1000, false);
+    } catch (ElementClickInterceptedException e) {
+      // if the previous click did not happened mean the element is behind another clickable element
+      Actions action = new Actions(driver);
+      action.moveToElement(element).click().build().perform();
+      ZeppelinITUtils.sleep(1500, false);
+    }
   }
 
   protected void handleException(String message, Exception e) throws Exception {
