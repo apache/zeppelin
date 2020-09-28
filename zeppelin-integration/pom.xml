@@ -42,7 +42,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
     <!--test library versions-->
-    <selenium.java.version>3.8.1</selenium.java.version>
+    <selenium.java.version>3.141.59</selenium.java.version>
     <commons.lang3.version>3.7</commons.lang3.version>
 
     <!--plugin library versions-->
@@ -68,6 +68,10 @@
         <exclusion>
           <groupId>com.google.code.gson</groupId>
           <artifactId>gson</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.google.guava</groupId>
+          <artifactId>guava</artifactId>
         </exclusion>
       </exclusions>
       <scope>test</scope>

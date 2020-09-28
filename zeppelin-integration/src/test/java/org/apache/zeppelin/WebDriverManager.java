@@ -19,6 +19,7 @@ package org.apache.zeppelin;
 
 import static org.junit.Assert.fail;
 
+import com.google.common.collect.ImmutableMap;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -50,18 +51,13 @@ public class WebDriverManager {
 
   private static String downLoadsDir = "";
 
-  private static String GECKODRIVER_VERSION = "0.19.1";
+  private static String GECKODRIVER_VERSION = "0.27.0";
 
   public static WebDriver getWebDriver() {
     WebDriver driver = null;
 
     if (driver == null) {
       try {
-        FirefoxBinary ffox = new FirefoxBinary();
-        if ("true".equals(System.getenv("TRAVIS"))) {
-          ffox.setEnvironmentProperty("DISPLAY", ":99"); // xvfb is supposed to
-          // run with DISPLAY 99
-        }
         int firefoxVersion = WebDriverManager.getFirefoxVersion();
         LOG.info("Firefox version " + firefoxVersion + " detected");
 
@@ -86,13 +82,16 @@ public class WebDriverManager {
             "application/x-ustar,application/octet-stream,application/zip,text/csv,text/plain");
         profile.setPreference("network.proxy.type", 0);
 
-        System.setProperty(GeckoDriverService.GECKO_DRIVER_EXE_PROPERTY, tempPath + "geckodriver");
-        System.setProperty(SystemProperty.DRIVER_USE_MARIONETTE, "false");
-
         FirefoxOptions firefoxOptions = new FirefoxOptions();
-        firefoxOptions.setBinary(ffox);
         firefoxOptions.setProfile(profile);
-        driver = new FirefoxDriver(firefoxOptions);
+
+        driver = new FirefoxDriver(
+               new GeckoDriverService.Builder()
+                 .usingDriverExecutable(new File(tempPath + "geckodriver"))
+                  // Run with DISPLAY 99 for TRAVIS or other build machine
+                 .withEnvironment(ImmutableMap.of("DISPLAY", ":99"))
+                 .build(), firefoxOptions);
+
       } catch (Exception e) {
         LOG.error("Exception in WebDriverManager while FireFox Driver ", e);
       }
