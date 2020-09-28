@@ -87,7 +87,11 @@ public class ZeppelinConfiguration extends XMLConfiguration {
   private ZeppelinConfiguration() {
     ConfVars[] vars = ConfVars.values();
     for (ConfVars v : vars) {
-      if (v.getType() == ConfVars.VarType.BOOLEAN) {
+      // set property if env is set, so that the configuration can be passed to
+      // interpreter process properly.
+      if (StringUtils.isNotBlank(System.getenv(v.name()))) {
+        this.setProperty(v.getVarName(), System.getenv(v.name()));
+      } else if (v.getType() == ConfVars.VarType.BOOLEAN) {
         this.setProperty(v.getVarName(), v.getBooleanValue());
       } else if (v.getType() == ConfVars.VarType.LONG) {
         this.setProperty(v.getVarName(), v.getLongValue());
