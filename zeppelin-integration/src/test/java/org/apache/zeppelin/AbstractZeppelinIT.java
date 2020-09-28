@@ -58,8 +58,7 @@ abstract public class AbstractZeppelinIT {
 
   protected void runParagraph(int paragraphNo) {
     By by = By.xpath(getParagraphXPath(paragraphNo) + "//span[@class='icon-control-play']");
-    pollingWait(by, 5);
-    driver.findElement(by).click();
+    clickAndWait(by);
   }
 
 

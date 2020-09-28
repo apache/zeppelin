@@ -115,8 +115,8 @@ public class ZeppelinIT extends AbstractZeppelinIT {
       /*
        * Click element
        */
-      driver.findElement(By.xpath(
-              getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]")).click();
+      clickAndWait(By.xpath(
+              getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]"));
 
       // check expected text
       waitForText("BindingTest_2_", By.xpath(
@@ -136,8 +136,8 @@ public class ZeppelinIT extends AbstractZeppelinIT {
       /*
        * Click element, again and see watcher works
        */
-      driver.findElement(By.xpath(
-              getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]")).click();
+      clickAndWait(By.xpath(
+              getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]"));
 
       // check expected text
       waitForText("BindingTest_3_", By.xpath(
@@ -152,8 +152,8 @@ public class ZeppelinIT extends AbstractZeppelinIT {
       /*
        * Click element, again and see watcher still works
        */
-      driver.findElement(By.xpath(
-          getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]")).click();
+      clickAndWait(By.xpath(
+          getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]"));
       // check expected text
       waitForText("BindingTest_4_", By.xpath(
           getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]"));
@@ -188,8 +188,8 @@ public class ZeppelinIT extends AbstractZeppelinIT {
       driver.findElement(By.xpath(".//*[@id='main']//button[@ng-click='moveNoteToTrash(note.id)']"))
           .sendKeys(Keys.ENTER);
       ZeppelinITUtils.sleep(1000, false);
-      driver.findElement(By.xpath("//div[@class='modal-dialog'][contains(.,'This note will be moved to trash')]" +
-          "//div[@class='modal-footer']//button[contains(.,'OK')]")).click();
+      clickAndWait(By.xpath("//div[@class='modal-dialog'][contains(.,'This note will be moved to trash')]" +
+          "//div[@class='modal-footer']//button[contains(.,'OK')]"));
       ZeppelinITUtils.sleep(100, false);
 
       LOG.info("testCreateNotebook Test executed");
