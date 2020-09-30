@@ -38,9 +38,6 @@
     <!--library versions-->
     <hadoop.version>${hadoop2.6.version}</hadoop.version>
     <scalding.version>0.16.1-RC1</scalding.version>
-
-    <!--plugin versions-->
-    <plugin.scala.version>2.15.2</plugin.scala.version>
   </properties>
 
   <repositories>

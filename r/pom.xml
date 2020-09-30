@@ -44,10 +44,6 @@
     <datanucleus.rdbms.version>3.2.9</datanucleus.rdbms.version>
     <datanucleus.apijdo.version>3.2.6</datanucleus.apijdo.version>
     <datanucleus.core.version>3.2.10</datanucleus.core.version>
-
-    <!--plugin versions-->
-    <plugin.shade.version>2.3</plugin.shade.version>
-    <plugin.scalatest.version>1.0</plugin.scalatest.version>
   </properties>
 
   <dependencies>
