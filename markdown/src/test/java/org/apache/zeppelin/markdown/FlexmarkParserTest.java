@@ -36,7 +36,7 @@ import static org.junit.Assert.assertThat;
 
 public class FlexmarkParserTest {
 
-  Logger logger = LoggerFactory.getLogger(FlexmarkParserTest.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(FlexmarkParserTest.class);
   Markdown md;
 
   @Rule
@@ -60,12 +60,13 @@ public class FlexmarkParserTest {
     ArrayList<Thread> arrThreads = new ArrayList<Thread>();
     for (int i = 0; i < 10; i++) {
       Thread t = new Thread() {
+        @Override
         public void run() {
           String r1 = null;
           try {
             r1 = md.interpret("# H1", null).code().name();
           } catch (Exception e) {
-            logger.error("testTestMultipleThread failed to interpret", e);
+            LOGGER.error("testTestMultipleThread failed to interpret", e);
           }
           collector.checkThat("SUCCESS",
               CoreMatchers.containsString(r1));
@@ -79,7 +80,7 @@ public class FlexmarkParserTest {
       try {
         arrThreads.get(i).join();
       } catch (InterruptedException e) {
-        logger.error("testTestMultipleThread failed to join threads", e);
+        LOGGER.error("testTestMultipleThread failed to join threads", e);
       }
     }
   }
@@ -212,14 +213,15 @@ public class FlexmarkParserTest {
             .toString();
 
     InterpreterResult result = md.interpret(input, null);
-    
-    System.err.println(result.message().get(0).getData());
-    if (!result.message().get(0).getData().contains(
-        "<img src=\"http://www.websequencediagrams.com/?png=")) {
-      logger.error("Expected {} but found {}",
-          "<img src=\"http://www.websequencediagrams.com/?png=", result.message().get(0).getData());
-    }
-  }
 
+    final String expected = "<img src=\"https://www.websequencediagrams.com/?png=";
+    boolean containsImg = result.message().get(0).getData().contains(expected);
+    if (!containsImg) {
+      LOGGER.error("Expected {} but found {}",
+          expected, result.message().get(0).getData());
+    }
+    // Do not activate, because this test depends on www.websequencediagrams.com
+    //assertTrue(containsImg);
+  }
 }
 
