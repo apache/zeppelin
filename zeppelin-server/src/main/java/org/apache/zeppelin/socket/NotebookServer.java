@@ -1488,8 +1488,15 @@ public class NotebookServer extends WebSocketServlet
             new TypeToken<List<Map<String, Object>>>() {
             }.getType());
 
-    getNotebookService().runAllParagraphs(noteId, paragraphs, getServiceContext(fromMessage),
-        new WebSocketServiceCallback<Paragraph>(conn));
+    if (!getNotebookService().runAllParagraphs(noteId, paragraphs, getServiceContext(fromMessage),
+        new WebSocketServiceCallback<Paragraph>(conn))) {
+      Note note = getNotebookService().getNote(noteId, getServiceContext(fromMessage), new SimpleServiceCallback());
+      if (note != null) {
+        for (Paragraph p : note.getParagraphs()) {
+          broadcastParagraph(note, p, null);
+        }
+      }
+    }
   }
 
   private void broadcastSpellExecution(NotebookSocket conn,
