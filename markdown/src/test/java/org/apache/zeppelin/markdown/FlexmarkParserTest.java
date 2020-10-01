@@ -214,13 +214,14 @@ public class FlexmarkParserTest {
 
     InterpreterResult result = md.interpret(input, null);
 
-    System.err.println(result.message().get(0).getData());
-    if (!result.message().get(0).getData().contains(
-        "<img src=\"http://www.websequencediagrams.com/?png=")) {
+    final String expected = "<img src=\"https://www.websequencediagrams.com/?png=";
+    boolean containsImg = result.message().get(0).getData().contains(expected);
+    if (!containsImg) {
       LOGGER.error("Expected {} but found {}",
-          "<img src=\"http://www.websequencediagrams.com/?png=", result.message().get(0).getData());
+          expected, result.message().get(0).getData());
     }
+    // Do not activate, because this test depends on www.websequencediagrams.com
+    //assertTrue(containsImg);
   }
-
 }
 
