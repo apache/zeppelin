@@ -33,15 +33,29 @@ if not defined ZEPPELIN_PID_DIR (
     set ZEPPELIN_PID_DIR=%ZEPPELIN_HOME%\run
 )
 
+REM no easy way to separate zeppelin-web-nnn and zeppelin-web-angular-mmm
 if not defined ZEPPELIN_WAR (
     if exist "%ZEPPELIN_HOME%\zeppelin-web\dist" (
         set ZEPPELIN_WAR=%ZEPPELIN_HOME%\zeppelin-web\dist
     ) else (
-        for %%d in ("%ZEPPELIN_HOME%\zeppelin-web*.war") do (
-            set ZEPPELIN_WAR=%%d
+        
+        for /F "delims=" %%d in ('dir /B %ZEPPELIN_HOME%\zeppelin-web*.war ^| findstr zeppelin-web-[0-9].*') do (
+           set ZEPPELIN_WAR=%ZEPPELIN_HOME%\%%d
+        )
+        
+    )
+)
+
+if not defined ZEPPELIN_ANGULAR_WAR (
+    if exist "%ZEPPELIN_HOME%\zeppelin-web\dist" (
+        set ZEPPELIN_ANGULAR_WAR=%ZEPPELIN_HOME%\zeppelin-web-angular\dist\zeppelin
+    ) else (
+        for %%d in ("%ZEPPELIN_HOME%\zeppelin-web-angular*.war") do (
+            set ZEPPELIN_ANGULAR_WAR=%%d
         )
     )
 )
+
 
 if exist "%ZEPPELIN_CONF_DIR%\zeppelin-env.cmd" (
     call "%ZEPPELIN_CONF_DIR%\zeppelin-env.cmd"
@@ -77,8 +91,15 @@ if not defined JAVA_OPTS (
     set JAVA_OPTS=%JAVA_OPTS% %ZEPPELIN_JAVA_OPTS%
 )
 
+set ZEPPELIN_CONF_DIRW=%ZEPPELIN_CONF_DIR:\=/%
+set JAVA_OPTS=%JAVA_OPTS% -Dlog4j.configuration=file:/!ZEPPELIN_CONF_DIRW!/log4j.properties
 
 set JAVA_INTP_OPTS=%ZEPPELIN_INTP_JAVA_OPTS% -Dfile.encoding=%ZEPPELIN_ENCODING%
+if not defined ZEPPELIN_SPARK_YARN_CLUSTER  (
+    set JAVA_INTP_OPTS=%JAVA_INTP_OPTS% -Dlog4j.configuration=file:/!ZEPPELIN_CONF_DIRW!/log4j.properties -Dlog4j.configurationFile=file:/!ZEPPELIN_CONF_DIRW!/log4j2.properties
+) else (
+    set JAVA_INTP_OPTS=%JAVA_INTP_OPTS% -Dlog4j.configuration=log4j_yarn_cluster.properties
+)
 
 if not defined JAVA_HOME (
     set ZEPPELIN_RUNNER=java
@@ -93,5 +114,6 @@ if not defined ZEPPELIN_IDENT_STRING (
 if not defined ZEPPELIN_INTERPRETER_REMOTE_RUNNER (
     set ZEPPELIN_INTERPRETER_REMOTE_RUNNER=bin\interpreter.cmd
 )
-
+echo Env: (common)
+set
 exit /b

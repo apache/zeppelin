@@ -29,6 +29,9 @@ if /I "%~1"=="-d" (
 if /I "%~1"=="-p" set PORT=%~2
 if /I "%~1"=="-c" set CALLBACK_HOST=%~2
 if /I "%~1"=="-l" set LOCAL_INTERPRETER_REPO=%~2
+if /I "%~1"=="-i" set INTP_GROUP_ID=%~2
+if /I "%~1"=="-r" set INTP_PORT=%~2
+if /I "%~1"=="-g" set INTERPRETER_SETTING_NAME=%~2
 shift
 goto loop
 :cont
@@ -63,14 +66,17 @@ if not exist "%ZEPPELIN_LOG_DIR%" (
     echo Log dir doesn't exist, create %ZEPPELIN_LOG_DIR%
     mkdir "%ZEPPELIN_LOG_DIR%"
 )
-
+for %%d in ("%ZEPPELIN_HOME%\interpreter\zeppelin-interpreter-shaded-*.jar") do (
+    set ZEPPELIN_INTP_CLASSPATH="%%d"
+)
+        
 if /I "%INTERPRETER_ID%"=="spark" (
     if defined SPARK_HOME (
         set SPARK_SUBMIT=%SPARK_HOME%\bin\spark-submit.cmd
-        for %%d in ("%ZEPPELIN_HOME%\interpreter\spark\zeppelin-spark*.jar") do (
+        for %%d in ("%ZEPPELIN_HOME%\interpreter\spark\spark*.jar") do (
             set SPARK_APP_JAR=%%d
         )
-        set ZEPPELIN_CLASSPATH="!SPARK_APP_JAR!"
+		set ZEPPELIN_CLASSPATH="!SPARK_APP_JAR!"
         
         for %%d in ("%SPARK_HOME%\python\lib\py4j-*-src.zip") do (
             set py4j=%%d
@@ -127,8 +133,8 @@ if not defined ZEPPELIN_CLASSPATH_OVERRIDES (
 
 if defined SPARK_SUBMIT (
     set JAVA_INTP_OPTS=%JAVA_INTP_OPTS% -Dzeppelin.log.file='%ZEPPELIN_LOGFILE%'
-
-    "%SPARK_SUBMIT%" --class %ZEPPELIN_SERVER% --jars %CLASSPATH% --driver-java-options "!JAVA_INTP_OPTS!" %SPARK_SUBMIT_OPTIONS% "%SPARK_APP_JAR%" "%CALLBACK_HOST%" %PORT%
+    set ZEPPELIN_SPARK_CONFW=%ZEPPELIN_SPARK_CONF:\=^%
+    "%SPARK_SUBMIT%" --class %ZEPPELIN_SERVER% --jars %CLASSPATH% --driver-class-path !ZEPPELIN_INTP_CLASSPATH!;!ZEPPELIN_CLASSPATH! --driver-java-options "!JAVA_INTP_OPTS!" %SPARK_SUBMIT_OPTIONS% !ZEPPELIN_SPARK_CONFW! "%SPARK_APP_JAR%" "%CALLBACK_HOST%" %PORT% "!INTP_GROUP_ID!" !INTP_PORT!
 ) else (
     set JAVA_INTP_OPTS=%JAVA_INTP_OPTS% -Dzeppelin.log.file="%ZEPPELIN_LOGFILE%"
 
@@ -138,4 +144,4 @@ if defined SPARK_SUBMIT (
 exit /b
 
 :usage
-echo Usage: %~n0 -p ^<port^> -d ^<interpreter dir to load^> -l ^<local interpreter repo dir to load^>
+echo Usage: %~n0 -p ^<port^> -r ^<intp_port^> -d ^<interpreter dir to load^> -l ^<local interpreter repo dir to load^> -g ^<interpreter group name^>

@@ -35,4 +35,9 @@ exit /b
 if exist "%~2" (
     set ZEPPELIN_CLASSPATH="%~2\*";%ZEPPELIN_CLASSPATH%
 )
+
+:ADDJARINDIRFORINTP
+if exist "%~2" (
+    set ZEPPELIN_INTP_CLASSPATH="%~2\*";%ZEPPELIN_INTP_CLASSPATH%
+)
 exit /b

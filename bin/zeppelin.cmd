@@ -61,17 +61,14 @@ call "%bin%\functions.cmd" ADDJARINDIR "%ZEPPELIN_HOME%\zeppelin-interpreter\tar
 call "%bin%\functions.cmd" ADDJARINDIR "%ZEPPELIN_HOME%\zeppelin-zengine\target\lib"
 call "%bin%\functions.cmd" ADDJARINDIR "%ZEPPELIN_HOME%\zeppelin-server\target\lib"
 call "%bin%\functions.cmd" ADDJARINDIR "%ZEPPELIN_HOME%\zeppelin-web\target\lib"
+call "%bin%\functions.cmd" ADDJARINDIR "%ZEPPELIN_HOME%\zeppelin-web-angular\target\lib"
 
-if not defined CLASSPATH (
-    set CLASSPATH=%ZEPPELIN_CLASSPATH%
-) else (
-    set CLASSPATH=%CLASSPATH%;%ZEPPELIN_CLASSPATH%
+if defined CLASSPATH (
+    set ZEPPELIN_CLASSPATH=%CLASSPATH%;%ZEPPELIN_CLASSPATH%
 )
 
-if not defined ZEPPELIN_CLASSPATH_OVERRIDES (
-    set CLASSPATH=%ZEPPELIN_CLASSPATH%
-) else (
-    set CLASSPATH=%ZEPPELIN_CLASSPATH_OVERRIDES%;%ZEPPELIN_CLASSPATH%
+if defined HADOOP_CONF_DIR (
+    set ZEPPELIN_CLASSPATH=%ZEPPELIN_CLASSPATH%;%HADOOP_CONF_DIR%
 )
 
 if not exist %ZEPPELIN_LOG_DIR% (
@@ -84,4 +81,4 @@ if not exist %ZEPPELIN_PID_DIR% (
     mkdir "%ZEPPELIN_PID_DIR%"
 )
 
-"%ZEPPELIN_RUNNER%" %JAVA_OPTS% -cp %CLASSPATH% %ZEPPELIN_SERVER% "%*"
+"%ZEPPELIN_RUNNER%" %JAVA_OPTS% -cp %ZEPPELIN_CLASSPATH_OVERRIDES%;!ZEPPELIN_CLASSPATH!  %ZEPPELIN_SERVER% "%*"
