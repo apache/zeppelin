@@ -23,12 +23,14 @@ import com.google.common.collect.Iterators;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
-import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.util.EntityUtils;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 public class ConfigurationsRestApiTest extends AbstractTestRestApi {
@@ -46,8 +48,8 @@ public class ConfigurationsRestApiTest extends AbstractTestRestApi {
 
   @Test
   public void testGetAll() throws IOException {
-    GetMethod get = httpGet("/configurations/all");
-    Map<String, Object> resp = gson.fromJson(get.getResponseBodyAsString(),
+    CloseableHttpResponse get = httpGet("/configurations/all");
+    Map<String, Object> resp = gson.fromJson(EntityUtils.toString(get.getEntity(), StandardCharsets.UTF_8),
         new TypeToken<Map<String, Object>>(){}.getType());
     Map<String, String> body = (Map<String, String>) resp.get("body");
     assertTrue(body.size() > 0);
@@ -59,13 +61,14 @@ public class ConfigurationsRestApiTest extends AbstractTestRestApi {
         }
       }
     ));
+    get.close();
   }
 
   @Test
   public void testGetViaPrefix() throws IOException {
     final String prefix = "zeppelin.server";
-    GetMethod get = httpGet("/configurations/prefix/" + prefix);
-    Map<String, Object> resp = gson.fromJson(get.getResponseBodyAsString(),
+    CloseableHttpResponse get = httpGet("/configurations/prefix/" + prefix);
+    Map<String, Object> resp = gson.fromJson(EntityUtils.toString(get.getEntity(), StandardCharsets.UTF_8),
         new TypeToken<Map<String, Object>>(){}.getType());
     Map<String, String> body = (Map<String, String>) resp.get("body");
     assertTrue(body.size() > 0);
@@ -76,5 +79,6 @@ public class ConfigurationsRestApiTest extends AbstractTestRestApi {
           }
         }
     ));
+    get.close();
   }
 }

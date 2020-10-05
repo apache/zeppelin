@@ -16,15 +16,17 @@
  */
 package org.apache.zeppelin.security;
 
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.httpclient.methods.GetMethod;
 import org.junit.Test;
-
+import org.apache.http.HttpStatus;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.util.EntityUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.rest.AbstractTestRestApi;
 
 import static org.junit.Assert.assertEquals;
+
+import java.nio.charset.StandardCharsets;
 
 public class DirAccessTest extends AbstractTestRestApi {
   @Test
@@ -34,12 +36,10 @@ public class DirAccessTest extends AbstractTestRestApi {
         System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_SERVER_DEFAULT_DIR_ALLOWED
                 .getVarName(), "false");
         AbstractTestRestApi.startUp(DirAccessTest.class.getSimpleName());
-        HttpClient httpClient = new HttpClient();
-        GetMethod getMethod = new GetMethod(getUrlToTest() + "/app/");
-        LOG.info("Invoke getMethod");
-        httpClient.executeMethod(getMethod);
-        assertEquals(getMethod.getResponseBodyAsString(),
-                HttpStatus.SC_FORBIDDEN, getMethod.getStatusCode());
+        CloseableHttpResponse getMethod = getHttpClient().execute(new HttpGet(getUrlToTest() + "/app/"));
+        LOG.info("Invoke getMethod - " + EntityUtils.toString(getMethod.getEntity(), StandardCharsets.UTF_8));
+
+        assertEquals(HttpStatus.SC_FORBIDDEN, getMethod.getStatusLine().getStatusCode());
       } finally {
         AbstractTestRestApi.shutDown();
       }
@@ -53,12 +53,9 @@ public class DirAccessTest extends AbstractTestRestApi {
         System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_SERVER_DEFAULT_DIR_ALLOWED
                 .getVarName(), "true");
         AbstractTestRestApi.startUp(DirAccessTest.class.getSimpleName());
-        HttpClient httpClient = new HttpClient();
-        GetMethod getMethod = new GetMethod(getUrlToTest() + "/app/");
-        LOG.info("Invoke getMethod");
-        httpClient.executeMethod(getMethod);
-        assertEquals(getMethod.getResponseBodyAsString(),
-                HttpStatus.SC_OK, getMethod.getStatusCode());
+        CloseableHttpResponse getMethod = getHttpClient().execute(new HttpGet(getUrlToTest() + "/app/"));
+        LOG.info("Invoke getMethod - " + EntityUtils.toString(getMethod.getEntity(), StandardCharsets.UTF_8));
+        assertEquals(HttpStatus.SC_OK, getMethod.getStatusLine().getStatusCode());
       } finally {
         AbstractTestRestApi.shutDown();
       }

@@ -23,18 +23,25 @@ import com.google.gson.JsonParser;
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.PumpStreamHandler;
-import org.apache.commons.httpclient.Header;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpMethodBase;
-import org.apache.commons.httpclient.cookie.CookiePolicy;
-import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
-import org.apache.commons.httpclient.methods.DeleteMethod;
-import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.commons.httpclient.methods.PutMethod;
-import org.apache.commons.httpclient.methods.RequestEntity;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.Header;
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.config.CookieSpecs;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpDelete;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPut;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.message.BasicNameValuePair;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.plugin.PluginManager;
 import org.apache.zeppelin.utils.TestUtils;
@@ -49,6 +56,8 @@ import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -61,7 +70,7 @@ import org.apache.zeppelin.server.ZeppelinServer;
 public abstract class AbstractTestRestApi {
   protected static final Logger LOG = LoggerFactory.getLogger(AbstractTestRestApi.class);
 
-  static final String REST_API_URL = "/api";
+  public static final String REST_API_URL = "/api";
   static final String URL = getUrlToTest();
   protected static final boolean WAS_RUNNING = checkIfServerIsRunning();
   static boolean isRunningWithAuth = false;
@@ -89,10 +98,7 @@ public abstract class AbstractTestRestApi {
           "/** = authc";
 
   private static String zeppelinShiroKnox =
-      "[users]\n" +
-          "admin = password1, admin\n" +
-          "user1 = password2, role1, role2\n" +
-          "[main]\n" +
+           "[main]\n" +
           "knoxJwtRealm = org.apache.zeppelin.realm.jwt.KnoxJwtRealm\n" +
           "knoxJwtRealm.providerUrl = https://domain.example.com/\n" +
           "knoxJwtRealm.login = gateway/knoxsso/knoxauth/login.html\n" +
@@ -134,6 +140,15 @@ public abstract class AbstractTestRestApi {
   protected static File zeppelinHome;
   protected static File confDir;
   protected static File notebookDir;
+
+  private static CloseableHttpClient httpClient;
+
+  public static CloseableHttpClient getHttpClient() {
+    if (httpClient == null) {
+      httpClient = HttpClients.createDefault();
+    }
+    return httpClient;
+  }
 
   private String getUrl(String path) {
     String url;
@@ -201,7 +216,7 @@ public abstract class AbstractTestRestApi {
       System.setProperty(
           ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_GROUP_DEFAULT.getVarName(),
           "spark");
-      
+
       notebookDir = new File(zeppelinHome.getAbsolutePath() + "/notebook_" + testClassName);
       if (cleanData) {
         FileUtils.deleteDirectory(notebookDir);
@@ -230,14 +245,15 @@ public abstract class AbstractTestRestApi {
         }
         if (withKnox) {
           FileUtils.writeStringToFile(shiroIni,
-              zeppelinShiroKnox.replaceAll("knox-sso.pem", confDir + "/knox-sso.pem"));
+              zeppelinShiroKnox.replaceAll("knox-sso.pem", confDir + "/knox-sso.pem"),
+              StandardCharsets.UTF_8);
           knoxSsoPem = new File(confDir, "knox-sso.pem");
           if (!knoxSsoPem.exists()) {
             knoxSsoPem.createNewFile();
           }
-          FileUtils.writeStringToFile(knoxSsoPem, knoxSsoPemCertificate);
+          FileUtils.writeStringToFile(knoxSsoPem, knoxSsoPemCertificate, StandardCharsets.UTF_8);
         } else {
-          FileUtils.writeStringToFile(shiroIni, zeppelinShiro);
+          FileUtils.writeStringToFile(shiroIni, zeppelinShiro, StandardCharsets.UTF_8);
         }
 
       }
@@ -345,158 +361,147 @@ public abstract class AbstractTestRestApi {
     }
   }
 
-  protected static boolean checkIfServerIsRunning() {
-    GetMethod request = null;
+  public static boolean checkIfServerIsRunning() {
     boolean isRunning;
-    try {
-      request = httpGet("/version");
-      isRunning = request.getStatusCode() == 200;
+    try (CloseableHttpResponse response = httpGet("/version")) {
+      isRunning = response.getStatusLine().getStatusCode() == 200;
     } catch (IOException e) {
       LOG.error("AbstractTestRestApi.checkIfServerIsRunning() fails .. ZeppelinServer is not " +
-              "running");
+          "running");
       isRunning = false;
-    } finally {
-      if (request != null) {
-        request.releaseConnection();
-      }
     }
     return isRunning;
   }
 
-  protected static GetMethod httpGet(String path) throws IOException {
+  public static CloseableHttpResponse httpGet(String path) throws IOException {
     return httpGet(path, StringUtils.EMPTY, StringUtils.EMPTY);
   }
 
-  protected static GetMethod httpGet(String path, String user, String pwd) throws IOException {
+  public static CloseableHttpResponse httpGet(String path, String user, String pwd) throws IOException {
     return httpGet(path, user, pwd, StringUtils.EMPTY);
   }
 
-  protected static GetMethod httpGet(String path, String user, String pwd, String cookies)
-          throws IOException {
+  public static CloseableHttpResponse httpGet(String path, String user, String pwd, String cookies)
+    throws IOException {
     LOG.info("Connecting to {}", URL + path);
-    HttpClient httpClient = new HttpClient();
-    GetMethod getMethod = new GetMethod(URL + path);
-    getMethod.addRequestHeader("Origin", URL);
+    HttpGet httpGet = new HttpGet(URL + path);
+    httpGet.addHeader("Origin", URL);
     if (userAndPasswordAreNotBlank(user, pwd)) {
-      getMethod.setRequestHeader("Cookie", "JSESSIONID=" + getCookie(user, pwd));
+      httpGet.setHeader("Cookie", "JSESSIONID=" + getCookie(user, pwd));
     }
     if (!StringUtils.isBlank(cookies)) {
-      getMethod.setRequestHeader("Cookie", getMethod.getResponseHeader("Cookie") + ";" + cookies);
+      httpGet.setHeader("Cookie", httpGet.getFirstHeader("Cookie") + ";" + cookies);
     }
-    httpClient.executeMethod(getMethod);
-    LOG.info("{} - {}", getMethod.getStatusCode(), getMethod.getStatusText());
-    return getMethod;
+    CloseableHttpResponse response = getHttpClient().execute(httpGet);
+    LOG.info("{} - {}", response.getStatusLine().getStatusCode(), response.getStatusLine().getReasonPhrase());
+    return response;
   }
 
-  protected static DeleteMethod httpDelete(String path) throws IOException {
+  public static CloseableHttpResponse httpDelete(String path) throws IOException {
     return httpDelete(path, StringUtils.EMPTY, StringUtils.EMPTY);
   }
 
-  protected static DeleteMethod httpDelete(String path, String user, String pwd)
-          throws IOException {
+  public static CloseableHttpResponse httpDelete(String path, String user, String pwd)
+      throws IOException {
     LOG.info("Connecting to {}", URL + path);
-    HttpClient httpClient = new HttpClient();
-    DeleteMethod deleteMethod = new DeleteMethod(URL + path);
-    deleteMethod.addRequestHeader("Origin", URL);
+    HttpDelete httpDelete = new HttpDelete(URL + path);
+    httpDelete.addHeader("Origin", URL);
     if (userAndPasswordAreNotBlank(user, pwd)) {
-      deleteMethod.setRequestHeader("Cookie", "JSESSIONID=" + getCookie(user, pwd));
+      httpDelete.setHeader("Cookie", "JSESSIONID=" + getCookie(user, pwd));
     }
-    httpClient.executeMethod(deleteMethod);
-    LOG.info("{} - {}", deleteMethod.getStatusCode(), deleteMethod.getStatusText());
-    return deleteMethod;
+    CloseableHttpResponse response = getHttpClient().execute(httpDelete);
+    LOG.info("{} - {}", response.getStatusLine().getStatusCode(), response.getStatusLine().getReasonPhrase());
+    return response;
   }
 
-  protected static PostMethod httpPost(String path, String body) throws IOException {
+  public static CloseableHttpResponse httpPost(String path, String body) throws IOException {
     return httpPost(path, body, StringUtils.EMPTY, StringUtils.EMPTY);
   }
 
-  protected static PostMethod httpPost(String path, String request, String user, String pwd)
-          throws IOException {
+  public static CloseableHttpResponse httpPost(String path, String request, String user, String pwd)
+      throws IOException {
     LOG.info("Connecting to {}", URL + path);
-    HttpClient httpClient = new HttpClient();
-    PostMethod postMethod = new PostMethod(URL + path);
-    postMethod.setRequestBody(request);
-    postMethod.getParams().setCookiePolicy(CookiePolicy.IGNORE_COOKIES);
+    RequestConfig localConfig = RequestConfig.custom()
+      .setCookieSpec(CookieSpecs.IGNORE_COOKIES)
+      .build();
+
+    HttpPost httpPost = new HttpPost(URL + path);
+    httpPost.setConfig(localConfig);
+    httpPost.setEntity(new StringEntity(request, ContentType.APPLICATION_JSON));
     if (userAndPasswordAreNotBlank(user, pwd)) {
-      postMethod.setRequestHeader("Cookie", "JSESSIONID=" + getCookie(user, pwd));
+      httpPost.setHeader("Cookie", "JSESSIONID=" + getCookie(user, pwd));
     }
-    httpClient.executeMethod(postMethod);
-    LOG.info("{} - {}", postMethod.getStatusCode(), postMethod.getStatusText());
-    return postMethod;
+    CloseableHttpResponse response = getHttpClient().execute(httpPost);
+    LOG.info("{} - {}", response.getStatusLine().getStatusCode(), response.getStatusLine().getReasonPhrase());
+    return response;
   }
 
-  protected static PutMethod httpPut(String path, String body) throws IOException {
+  public static CloseableHttpResponse httpPut(String path, String body) throws IOException {
     return httpPut(path, body, StringUtils.EMPTY, StringUtils.EMPTY);
   }
 
-  protected static PutMethod httpPut(String path, String body, String user, String pwd)
-          throws IOException {
+  public static CloseableHttpResponse httpPut(String path, String body, String user, String pwd)
+      throws IOException {
     LOG.info("Connecting to {}", URL + path);
-    HttpClient httpClient = new HttpClient();
-    PutMethod putMethod = new PutMethod(URL + path);
-    putMethod.addRequestHeader("Origin", URL);
-    RequestEntity entity = new ByteArrayRequestEntity(body.getBytes("UTF-8"));
-    putMethod.setRequestEntity(entity);
+    HttpPut httpPut = new HttpPut(URL + path);
+    httpPut.addHeader("Origin", URL);
+    httpPut.setEntity(new StringEntity(body, ContentType.TEXT_PLAIN));
     if (userAndPasswordAreNotBlank(user, pwd)) {
-      putMethod.setRequestHeader("Cookie", "JSESSIONID=" + getCookie(user, pwd));
+      httpPut.setHeader("Cookie", "JSESSIONID=" + getCookie(user, pwd));
     }
-    httpClient.executeMethod(putMethod);
-    LOG.info("{} - {}", putMethod.getStatusCode(), putMethod.getStatusText());
-    return putMethod;
+    CloseableHttpResponse response = getHttpClient().execute(httpPut);
+    LOG.info("{} - {}", response.getStatusLine().getStatusCode(), response.getStatusLine().getReasonPhrase());
+    return response;
   }
 
   private static String getCookie(String user, String password) throws IOException {
-    HttpClient httpClient = new HttpClient();
-    PostMethod postMethod = new PostMethod(URL + "/login");
-    postMethod.addRequestHeader("Origin", URL);
-    postMethod.setParameter("password", password);
-    postMethod.setParameter("userName", user);
-    httpClient.executeMethod(postMethod);
-    LOG.info("{} - {}", postMethod.getStatusCode(), postMethod.getStatusText());
-    Pattern pattern = Pattern.compile("JSESSIONID=([a-zA-Z0-9-]*)");
-    Header[] setCookieHeaders = postMethod.getResponseHeaders("Set-Cookie");
-    String jsessionId = null;
-    for (Header setCookie : setCookieHeaders) {
-      java.util.regex.Matcher matcher = pattern.matcher(setCookie.toString());
-      if (matcher.find()) {
-        jsessionId = matcher.group(1);
+    HttpPost httpPost = new HttpPost(URL + "/login");
+    httpPost.addHeader("Origin", URL);
+    ArrayList<NameValuePair> postParameters = new ArrayList<NameValuePair>();
+    postParameters.add(new BasicNameValuePair("password", password));
+    postParameters.add(new BasicNameValuePair("userName", user));
+    httpPost.setEntity(new UrlEncodedFormEntity(postParameters, StandardCharsets.UTF_8));
+    try (CloseableHttpResponse response = getHttpClient().execute(httpPost)) {
+      LOG.info("{} - {}", response.getStatusLine().getStatusCode(), response.getStatusLine().getReasonPhrase());
+      Pattern pattern = Pattern.compile("JSESSIONID=([a-zA-Z0-9-]*)");
+      Header[] setCookieHeaders = response.getHeaders("Set-Cookie");
+      String jsessionId = null;
+      for (Header setCookie : setCookieHeaders) {
+        java.util.regex.Matcher matcher = pattern.matcher(setCookie.toString());
+        if (matcher.find()) {
+          jsessionId = matcher.group(1);
+        }
       }
-    }
-
-    if (jsessionId != null) {
-      return jsessionId;
-    } else {
-      return StringUtils.EMPTY;
+      if (jsessionId != null) {
+        return jsessionId;
+      } else {
+        return StringUtils.EMPTY;
+      }
     }
   }
 
   protected static boolean userAndPasswordAreNotBlank(String user, String pwd) {
-    if (StringUtils.isBlank(user) && StringUtils.isBlank(pwd)) {
-      return false;
-    }
-    return true;
+    return StringUtils.isNoneBlank(user, pwd);
   }
 
-  protected Matcher<HttpMethodBase> responsesWith(final int expectedStatusCode) {
-    return new TypeSafeMatcher<HttpMethodBase>() {
-      WeakReference<HttpMethodBase> method;
+  protected static Matcher<HttpResponse> responsesWith(final int expectedStatusCode) {
+    return new TypeSafeMatcher<HttpResponse>() {
+      WeakReference<HttpResponse> response;
 
       @Override
-      public boolean matchesSafely(HttpMethodBase httpMethodBase) {
-        method = (method == null) ? new WeakReference<>(httpMethodBase) : method;
-        return httpMethodBase.getStatusCode() == expectedStatusCode;
+      public boolean matchesSafely(HttpResponse httpResponse) {
+        response = (response == null) ? new WeakReference<>(httpResponse) : response;
+        return httpResponse.getStatusLine().getStatusCode() == expectedStatusCode;
       }
 
       @Override
       public void describeTo(Description description) {
-        description.appendText("HTTP response ").appendValue(expectedStatusCode)
-            .appendText(" from ").appendText(method.get().getPath());
+        description.appendText("HTTP response ").appendValue(expectedStatusCode);
       }
 
       @Override
-      protected void describeMismatchSafely(HttpMethodBase item, Description description) {
-        description.appendText("got ").appendValue(item.getStatusCode()).appendText(" ")
-            .appendText(item.getStatusText());
+      protected void describeMismatchSafely(HttpResponse item, Description description) {
+        description.appendText("got ").appendValue(item.getStatusLine().getStatusCode());
       }
     };
   }
@@ -584,31 +589,31 @@ public abstract class AbstractTestRestApi {
   /**
    * Status code matcher.
    */
-  protected Matcher<? super HttpMethodBase> isForbidden() {
-    return responsesWith(403);
+  public static Matcher<? super HttpResponse> isForbidden() {
+    return responsesWith(HttpStatus.SC_FORBIDDEN);
   }
 
-  protected Matcher<? super HttpMethodBase> isAllowed() {
-    return responsesWith(200);
+  public static Matcher<? super HttpResponse> isAllowed() {
+    return responsesWith(HttpStatus.SC_OK);
   }
 
-  protected Matcher<? super HttpMethodBase> isCreated() {
-    return responsesWith(201);
+  public static Matcher<? super HttpResponse> isCreated() {
+    return responsesWith(HttpStatus.SC_CREATED);
   }
 
-  protected Matcher<? super HttpMethodBase> isBadRequest() {
-    return responsesWith(400);
+  public static Matcher<? super HttpResponse> isBadRequest() {
+    return responsesWith(HttpStatus.SC_BAD_REQUEST);
   }
 
-  protected Matcher<? super HttpMethodBase> isNotFound() {
-    return responsesWith(404);
+  public static Matcher<? super HttpResponse> isNotFound() {
+    return responsesWith(HttpStatus.SC_NOT_FOUND);
   }
 
-  protected Matcher<? super HttpMethodBase> isNotAllowed() {
-    return responsesWith(405);
+  public static Matcher<? super HttpResponse> isNotAllowed() {
+    return responsesWith(HttpStatus.SC_METHOD_NOT_ALLOWED);
   }
 
-  protected Matcher<? super HttpMethodBase> isExpectationFailed() {
-    return responsesWith(417);
+  public static Matcher<? super HttpResponse> isExpectationFailed() {
+    return responsesWith(HttpStatus.SC_EXPECTATION_FAILED);
   }
 }

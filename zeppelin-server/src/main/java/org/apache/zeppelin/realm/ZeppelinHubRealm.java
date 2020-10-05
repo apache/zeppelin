@@ -23,13 +23,18 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.httpclient.methods.PutMethod;
-import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.HttpStatus;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPut;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 import org.apache.shiro.authc.AccountException;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationInfo;
@@ -55,12 +60,10 @@ public class ZeppelinHubRealm extends AuthorizingRealm {
   private static final Logger LOG = LoggerFactory.getLogger(ZeppelinHubRealm.class);
   private static final String DEFAULT_ZEPPELINHUB_URL = "https://www.zeppelinhub.com";
   private static final String USER_LOGIN_API_ENDPOINT = "api/v1/users/login";
-  private static final String JSON_CONTENT_TYPE = "application/json";
-  private static final String UTF_8_ENCODING = "UTF-8";
   private static final String USER_SESSION_HEADER = "X-session";
   private static final AtomicInteger INSTANCE_COUNT = new AtomicInteger();
 
-  private final HttpClient httpClient;
+  private final CloseableHttpClient httpClient;
 
   private String zeppelinhubUrl;
   private String name;
@@ -70,7 +73,7 @@ public class ZeppelinHubRealm extends AuthorizingRealm {
     LOG.debug("Init ZeppelinhubRealm");
     //TODO(anthonyc): think about more setting for this HTTP client.
     //                eg: if user uses proxy etcetc...
-    httpClient = new HttpClient();
+    httpClient = HttpClients.createDefault();
     name = getClass().getName() + "_" + INSTANCE_COUNT.getAndIncrement();
   }
 
@@ -93,6 +96,7 @@ public class ZeppelinHubRealm extends AuthorizingRealm {
     return null;
   }
 
+  @Override
   protected void onInit() {
     super.onInit();
   }
@@ -125,33 +129,29 @@ public class ZeppelinHubRealm extends AuthorizingRealm {
    * @throws AuthenticationException if fail to login.
    */
   protected User authenticateUser(String requestBody) {
-    PutMethod put = new PutMethod(Joiner.on("/").join(zeppelinhubUrl, USER_LOGIN_API_ENDPOINT));
     String responseBody;
     String userSession;
-    try {
-      put.setRequestEntity(new StringRequestEntity(requestBody, JSON_CONTENT_TYPE, UTF_8_ENCODING));
-      int statusCode = httpClient.executeMethod(put);
-      if (statusCode != HttpStatus.SC_OK) {
-        LOG.error("Cannot login user, HTTP status code is {} instead on 200 (OK)", statusCode);
+    HttpPut put = new HttpPut(Joiner.on("/").join(zeppelinhubUrl, USER_LOGIN_API_ENDPOINT));
+    put.setEntity(new StringEntity(requestBody, ContentType.APPLICATION_JSON));
+    try (CloseableHttpResponse response = httpClient.execute(put)){
+      if (HttpStatus.SC_OK != response.getStatusLine().getStatusCode()) {
+        LOG.error("Cannot login user, HTTP status code is {} instead on 200 (OK)", response.getStatusLine().getStatusCode());
         put.releaseConnection();
         throw new AuthenticationException("Couldnt login to ZeppelinHub. "
             + "Login or password incorrect");
       }
-      responseBody = put.getResponseBodyAsString();
-      userSession = put.getResponseHeader(USER_SESSION_HEADER).getValue();
+      responseBody = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
+      userSession = response.getFirstHeader(USER_SESSION_HEADER).getValue();
       put.releaseConnection();
-
     } catch (IOException e) {
-      LOG.error("Cannot login user", e);
-      throw new AuthenticationException(e.getMessage());
+      throw new AuthenticationException("Cannot login user", e);
     }
 
     User account;
     try {
       account = User.fromJson(responseBody);
     } catch (JsonParseException e) {
-      LOG.error("Cannot fromJson ZeppelinHub response to User instance", e);
-      throw new AuthenticationException("Cannot login to ZeppelinHub");
+      throw new AuthenticationException("Cannot login to ZeppelinHub", e);
     }
 
     onLoginSuccess(account.login, userSession);
@@ -207,6 +207,7 @@ public class ZeppelinHubRealm extends AuthorizingRealm {
     public String email;
     public String name;
 
+    @Override
     public String toJson() {
       return gson.toJson(this);
     }

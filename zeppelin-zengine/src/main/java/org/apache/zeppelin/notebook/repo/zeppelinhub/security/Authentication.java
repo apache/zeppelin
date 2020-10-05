@@ -1,10 +1,11 @@
 package org.apache.zeppelin.notebook.repo.zeppelinhub.security;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.Key;
 import java.security.SecureRandom;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Map;
 
@@ -15,16 +16,18 @@ import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
-import org.apache.commons.httpclient.NameValuePair;
-import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.HttpStatus;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.util.EntityUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
-import org.apache.zeppelin.common.Message;
-import org.apache.zeppelin.common.Message.OP;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,13 +44,13 @@ public class Authentication implements Runnable {
   private String ticket = "anonymous";
   private String roles = StringUtils.EMPTY;
 
-  private final HttpClient client;
+  private final CloseableHttpClient client;
   private String loginEndpoint;
 
   // Cipher is an AES in CBC mode
   private static final String CIPHER_ALGORITHM = "AES";
   private static final String CIPHER_MODE = "AES/CBC/PKCS5PADDING";
-  private static final int ivSize = 16;
+  private static final int IV_SIZE = 16;
 
   private static final String ZEPPELINHUB_USER_KEY = "zeppelinhub.user.key";
   private String token;
@@ -70,8 +73,11 @@ public class Authentication implements Runnable {
   }
 
   private Authentication(String token, ZeppelinConfiguration conf) {
-    MultiThreadedHttpConnectionManager connectionManager = new MultiThreadedHttpConnectionManager();
-    client = new HttpClient(connectionManager);
+    PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();
+    client = HttpClients.custom()
+    .setConnectionManager(cm)
+    .build();
+
     this.token = token;
 
     authEnabled = !conf.isAnonymousAllowed();
@@ -106,8 +112,7 @@ public class Authentication implements Runnable {
     if (conf.useSsl()) {
       scheme = "https";
     }
-    String endpoint = scheme + "://localhost:" + port + "/api/login";
-    return endpoint;
+    return scheme + "://localhost:" + port + "/api/login";
   }
 
   public boolean authenticate() {
@@ -140,7 +145,7 @@ public class Authentication implements Runnable {
     }
     //use hashed token as a salt
     String hashedToken = Integer.toString(token.hashCode());
-    return decrypt(userKey, hashedToken); 
+    return decrypt(userKey, hashedToken);
   }
 
   private String decrypt(String value, String initVector) {
@@ -155,7 +160,7 @@ public class Authentication implements Runnable {
       Cipher cipher = Cipher.getInstance(CIPHER_MODE);
       cipher.init(Cipher.DECRYPT_MODE, key, iv);
 
-      byte[] decryptedString = Base64.decodeBase64(toBytes(value));
+      byte[] decryptedString = Base64.decodeBase64(value.getBytes(StandardCharsets.UTF_8));
       decryptedString = cipher.doFinal(decryptedString);
       return new String(decryptedString);
     } catch (GeneralSecurityException e) {
@@ -170,20 +175,22 @@ public class Authentication implements Runnable {
     if (credentials.length != 2) {
       return Collections.emptyMap();
     }
-    PostMethod post = new PostMethod(endpoint);
-    post.addRequestHeader("Origin", "http://localhost");
-    post.addParameter(new NameValuePair("userName", credentials[0]));
-    post.addParameter(new NameValuePair("password", credentials[1]));
-    try {
-      int code = client.executeMethod(post);
-      if (code == HttpStatus.SC_OK) {
-        String content = post.getResponseBodyAsString();
-        Map<String, Object> resp = gson.fromJson(content, 
+    HttpPost post = new HttpPost(endpoint);
+    ArrayList<NameValuePair> postParameters = new ArrayList<>();
+    postParameters.add(new BasicNameValuePair("userName", credentials[0]));
+    postParameters.add(new BasicNameValuePair("password", credentials[1]));
+    post.setEntity(new UrlEncodedFormEntity(postParameters, StandardCharsets.UTF_8));
+    post.addHeader("Origin", "http://localhost");
+
+    try (CloseableHttpResponse postResponse = client.execute(post)) {
+      if (postResponse.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
+        String content = EntityUtils.toString(postResponse.getEntity(), StandardCharsets.UTF_8);
+        Map<String, Object> resp = gson.fromJson(content,
             new TypeToken<Map<String, Object>>() {}.getType());
-        LOG.info("Received from Zeppelin LoginRestApi : " + content);
+        LOG.info("Received from Zeppelin LoginRestApi : {}", content);
         return (Map<String, String>) resp.get("body");
       } else {
-        LOG.error("Failed Zeppelin login {}, status code {}", endpoint, code);
+        LOG.error("Failed Zeppelin login {}, status code {}", endpoint, postResponse);
         return Collections.emptyMap();
       }
     } catch (IOException e) {
@@ -205,21 +212,11 @@ public class Authentication implements Runnable {
     return null;
   }
 
-  private byte[] toBytes(String value) {
-    byte[] bytes;
-    try {
-      bytes = value.getBytes("UTF-8");
-    } catch (UnsupportedEncodingException e) {
-      LOG.warn("UTF-8 isn't supported ", e);
-      bytes = value.getBytes();
-    }
-    return bytes;
-  }
 
   private IvParameterSpec generateIV(String ivString) {
-    byte[] ivFromBytes = toBytes(ivString);
-    byte[] iv16ToBytes = new byte[ivSize];
-    System.arraycopy(ivFromBytes, 0, iv16ToBytes, 0, Math.min(ivFromBytes.length, ivSize));
+    byte[] ivFromBytes = ivString.getBytes(StandardCharsets.UTF_8);
+    byte[] iv16ToBytes = new byte[IV_SIZE];
+    System.arraycopy(ivFromBytes, 0, iv16ToBytes, 0, Math.min(ivFromBytes.length, IV_SIZE));
     return new IvParameterSpec(iv16ToBytes);
   }
 
