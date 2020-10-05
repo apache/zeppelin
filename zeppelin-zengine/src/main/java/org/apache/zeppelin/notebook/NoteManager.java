@@ -44,7 +44,7 @@ import java.util.stream.Stream;
  * 1. Mapping from noteId to note name
  * 2. The tree structure of notebook folder
  *
- * Note will be loaded lazily. Initially only noteId nad note name is loaded,
+ * Note will be loaded lazily. Initially only noteId and note name are loaded,
  * other note content is loaded until getNote is called.
  *
  * TODO(zjffdu) implement the lifecycle manager of Note
@@ -94,12 +94,12 @@ public class NoteManager {
    * @return
    */
   public Stream<Note> getNotesStream() {
-    return notesInfo.values().stream()
-            .map(notePath -> {
+    return notesInfo.keySet().stream()
+            .map(noteId -> {
               try {
-                return getNoteNode(notePath).getNote();
+                return getNoteNode(noteId).getNote();
               } catch (Exception e) {
-                LOGGER.warn("Fail to load note: " + notePath, e);
+                LOGGER.warn("Fail to load note: " + noteId, e);
                 return null;
               }
             })
@@ -125,11 +125,11 @@ public class NoteManager {
         curFolder = curFolder.getOrCreateFolder(tokens[i]);
       }
     }
-    if (checkDuplicates && curFolder.containsNote(tokens[tokens.length - 1])) {
-      throw new IOException("Note '" + note.getPath() + "' existed");
+    if (checkDuplicates && curFolder.containsNote(note.getId())) {
+      throw new IOException("Note '" + note.getId() + "' existed");
     }
-    curFolder.addNote(tokens[tokens.length -1], note);
-    this.notesInfo.put(note.getId(), note.getPath());
+    curFolder.addNote(note);
+    this.notesInfo.put(note.getId(), notePath);
   }
 
   private void addOrUpdateNoteNode(Note note) throws IOException {
@@ -142,13 +142,8 @@ public class NoteManager {
    * @param notePath
    * @return
    */
-  public boolean containsNote(String notePath) {
-    try {
-      getNoteNode(notePath);
-      return true;
-    } catch (IOException e) {
-      return false;
-    }
+  public boolean containsNote(String noteId) {
+    return notesInfo.containsKey(noteId);
   }
 
   /**
@@ -217,7 +212,7 @@ public class NoteManager {
     }
 
     // move the old NoteNode from notePath to newNotePath
-    NoteNode noteNode = getNoteNode(notePath);
+    NoteNode noteNode = getNoteNode(noteId);
     noteNode.getParent().removeNote(getNoteName(notePath));
     noteNode.setNotePath(newNotePath);
     String newParent = getFolderName(newNotePath);
@@ -285,9 +280,9 @@ public class NoteManager {
   public Note getNote(String noteId, boolean reload) throws IOException {
     String notePath = this.notesInfo.get(noteId);
     if (notePath == null) {
-      return null;
+       return null;
     }
-    NoteNode noteNode = getNoteNode(notePath);
+    NoteNode noteNode = getNoteNode(noteId);
     return noteNode.getNote(reload);
   }
 
@@ -303,7 +298,7 @@ public class NoteManager {
     if (notePath == null) {
       return null;
     }
-    NoteNode noteNode = getNoteNode(notePath);
+    NoteNode noteNode = getNoteNode(noteId);
     return noteNode.getNote();
   }
 
@@ -323,7 +318,8 @@ public class NoteManager {
     return curFolder;
   }
 
-  private NoteNode getNoteNode(String notePath) throws IOException {
+  private NoteNode getNoteNode(String noteId) throws IOException {
+    String notePath = this.notesInfo.get(noteId);
     String[] tokens = notePath.split("/");
     Folder curFolder = root;
     for (int i = 0; i < tokens.length - 1; ++i) {
@@ -334,7 +330,7 @@ public class NoteManager {
         }
       }
     }
-    NoteNode noteNode = curFolder.getNote(tokens[tokens.length - 1]);
+    NoteNode noteNode = curFolder.getNote(noteId);
     if (noteNode == null) {
       throw new IOException("Can not find note: " + notePath);
     }
@@ -378,7 +374,7 @@ public class NoteManager {
     private Folder parent;
     private NotebookRepo notebookRepo;
 
-    // noteName -> NoteNode
+    // noteId -> NoteNode
     private Map<String, NoteNode> notes = new HashMap<>();
     // folderName -> Folder
     private Map<String, Folder> subFolders = new HashMap<>();
@@ -427,12 +423,12 @@ public class NoteManager {
       return subFolders;
     }
 
-    public NoteNode getNote(String noteName) {
-      return this.notes.get(noteName);
+    public NoteNode getNote(String noteId) {
+      return this.notes.get(noteId);
     }
 
-    public void addNote(String noteName, Note note) {
-      notes.put(noteName, new NoteNode(note, this, notebookRepo));
+    public void addNote(Note note) {
+      notes.put(note.getId(), new NoteNode(note, this, notebookRepo));
     }
 
     /**
@@ -448,8 +444,8 @@ public class NoteManager {
       }
     }
 
-    public boolean containsNote(String noteName) {
-      return notes.containsKey(noteName);
+    public boolean containsNote(String noteId) {
+      return notes.containsKey(noteId);
     }
 
     /**
@@ -457,12 +453,12 @@ public class NoteManager {
      * @param noteNode
      */
     public void addNoteNode(NoteNode noteNode) {
-      this.notes.put(noteNode.getNoteName(), noteNode);
+      this.notes.put(noteNode.getNoteId(), noteNode);
       noteNode.setParent(this);
     }
 
-    public void removeNote(String noteName) {
-      this.notes.remove(noteName);
+    public void removeNote(String noteId) {
+      this.notes.remove(noteId);
     }
 
     public List<Note> removeFolder(String folderName,
