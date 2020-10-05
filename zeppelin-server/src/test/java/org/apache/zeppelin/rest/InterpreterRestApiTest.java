@@ -21,11 +21,9 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
-import org.apache.commons.httpclient.methods.DeleteMethod;
-import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.util.EntityUtils;
 import org.apache.zeppelin.interpreter.InterpreterOption;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.notebook.Note;
@@ -43,12 +41,14 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * Zeppelin interpreter rest api tests.
@@ -76,36 +76,37 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
   @Test
   public void getAvailableInterpreters() throws IOException {
     // when
-    GetMethod get = httpGet("/interpreter");
-    JsonObject body = getBodyFieldFromResponse(get.getResponseBodyAsString());
+    CloseableHttpResponse get = httpGet("/interpreter");
+    JsonObject body = getBodyFieldFromResponse(EntityUtils.toString(get.getEntity(), StandardCharsets.UTF_8));
 
     // then
     assertThat(get, isAllowed());
     assertEquals(TestUtils.getInstance(Notebook.class).getInterpreterSettingManager()
                     .getInterpreterSettingTemplates().size(), body.entrySet().size());
-    get.releaseConnection();
+    get.close();
   }
 
   @Test
   public void getSettings() throws IOException {
     // when
-    GetMethod get = httpGet("/interpreter/setting");
+    CloseableHttpResponse get = httpGet("/interpreter/setting");
     // then
     assertThat(get, isAllowed());
     // DO NOT REMOVE: implies that body is properly parsed as an array
-    JsonArray body = getArrayBodyFieldFromResponse(get.getResponseBodyAsString());
-    get.releaseConnection();
+    JsonArray body = getArrayBodyFieldFromResponse(EntityUtils.toString(get.getEntity(), StandardCharsets.UTF_8));
+    assertNotNull(body);
+    get.close();
   }
 
   @Test
   public void testGetNonExistInterpreterSetting() throws IOException {
     // when
     String nonExistInterpreterSettingId = "apache_.zeppelin_1s_.aw3some$";
-    GetMethod get = httpGet("/interpreter/setting/" + nonExistInterpreterSettingId);
+    CloseableHttpResponse get = httpGet("/interpreter/setting/" + nonExistInterpreterSettingId);
 
     // then
     assertThat("Test get method:", get, isNotFound());
-    get.releaseConnection();
+    get.close();
   }
 
   @Test
@@ -118,24 +119,24 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
             "\"name\":\"md\"}],\"dependencies\":[]," +
             "\"option\": { \"remote\": true, \"session\": false }}";
     JsonObject jsonRequest = gson.fromJson(rawRequest, JsonElement.class).getAsJsonObject();
-    PostMethod post = httpPost("/interpreter/setting/", jsonRequest.toString());
-    String postResponse = post.getResponseBodyAsString();
-    LOG.info("testSettingCRUD create response\n" + post.getResponseBodyAsString());
+    CloseableHttpResponse post = httpPost("/interpreter/setting/", jsonRequest.toString());
+    String postResponse = EntityUtils.toString(post.getEntity(), StandardCharsets.UTF_8);
+    LOG.info("testSettingCRUD create response\n" + postResponse);
     InterpreterSetting created = convertResponseToInterpreterSetting(postResponse);
     String newSettingId = created.getId();
     // then : call create setting API
     assertThat("test create method:", post, isAllowed());
-    post.releaseConnection();
+    post.close();
 
     // when: call read setting API
-    GetMethod get = httpGet("/interpreter/setting/" + newSettingId);
-    String getResponse = get.getResponseBodyAsString();
+    CloseableHttpResponse get = httpGet("/interpreter/setting/" + newSettingId);
+    String getResponse = EntityUtils.toString(get.getEntity(), StandardCharsets.UTF_8);
     LOG.info("testSettingCRUD get response\n" + getResponse);
     InterpreterSetting previouslyCreated = convertResponseToInterpreterSetting(getResponse);
     // then : read Setting API
     assertThat("Test get method:", get, isAllowed());
     assertEquals(newSettingId, previouslyCreated.getId());
-    get.releaseConnection();
+    get.close();
 
     // when: call update setting API
     JsonObject jsonObject = new JsonObject();
@@ -143,18 +144,18 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
     jsonObject.addProperty("value", "this is new prop");
     jsonObject.addProperty("type", "textarea");
     jsonRequest.getAsJsonObject("properties").add("propname2", jsonObject);
-    PutMethod put = httpPut("/interpreter/setting/" + newSettingId, jsonRequest.toString());
-    LOG.info("testSettingCRUD update response\n" + put.getResponseBodyAsString());
+    CloseableHttpResponse put = httpPut("/interpreter/setting/" + newSettingId, jsonRequest.toString());
+    LOG.info("testSettingCRUD update response\n" + EntityUtils.toString(put.getEntity(), StandardCharsets.UTF_8));
     // then: call update setting API
     assertThat("test update method:", put, isAllowed());
-    put.releaseConnection();
+    put.close();
 
     // when: call delete setting API
-    DeleteMethod delete = httpDelete("/interpreter/setting/" + newSettingId);
-    LOG.info("testSettingCRUD delete response\n" + delete.getResponseBodyAsString());
+    CloseableHttpResponse delete = httpDelete("/interpreter/setting/" + newSettingId);
+    LOG.info("testSettingCRUD delete response\n" +  EntityUtils.toString(delete.getEntity(), StandardCharsets.UTF_8));
     // then: call delete setting API
     assertThat("Test delete method:", delete, isAllowed());
-    delete.releaseConnection();
+    delete.close();
   }
 
   @Test
@@ -176,9 +177,9 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
             "      \"exclusions\":[]\n" +
             "    }]," +
             "\"option\": { \"remote\": true, \"session\": false }}";
-    PostMethod post = httpPost("/interpreter/setting", reqBody1);
+    CloseableHttpResponse post = httpPost("/interpreter/setting", reqBody1);
     assertThat("test create method:", post, isAllowed());
-    post.releaseConnection();
+    post.close();
 
     String reqBody2 = "{\"name\":\"" + md2Name + "\",\"group\":\"md\"," +
             "\"properties\": {\"propname\": {\"value\": \"propvalue\", \"name\": \"propname\", " +
@@ -192,12 +193,12 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
             "\"option\": { \"remote\": true, \"session\": false }}";
     post = httpPost("/interpreter/setting", reqBody2);
     assertThat("test create method:", post, isAllowed());
-    post.releaseConnection();
+    post.close();
 
     // 1. Call settings API
-    GetMethod get = httpGet("/interpreter/setting");
-    String rawResponse = get.getResponseBodyAsString();
-    get.releaseConnection();
+    CloseableHttpResponse get = httpGet("/interpreter/setting");
+    String rawResponse = EntityUtils.toString(get.getEntity(), StandardCharsets.UTF_8);
+    get.close();
 
     // 2. Parsing to List<InterpreterSettings>
     JsonObject responseJson = gson.fromJson(rawResponse, JsonElement.class).getAsJsonObject();
@@ -229,10 +230,10 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
   @Test
   public void testSettingsCreateWithEmptyJson() throws IOException {
     // Call Create Setting REST API
-    PostMethod post = httpPost("/interpreter/setting/", "");
-    LOG.info("testSettingCRUD create response\n" + post.getResponseBodyAsString());
+    CloseableHttpResponse post = httpPost("/interpreter/setting/", "");
+    LOG.info("testSettingCRUD create response\n" + EntityUtils.toString(post.getEntity(), StandardCharsets.UTF_8));
     assertThat("test create method:", post, isBadRequest());
-    post.releaseConnection();
+    post.close();
   }
 
   @Test
@@ -260,34 +261,34 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
         + "}"
         + "}";
     JsonObject jsonRequest = gson.fromJson(StringUtils.replace(reqBody, "mdName", "mdValidName"), JsonElement.class).getAsJsonObject();
-    PostMethod post = httpPost("/interpreter/setting/", jsonRequest.toString());
-    String postResponse = post.getResponseBodyAsString();
-    LOG.info("testSetting with valid name\n" + post.getResponseBodyAsString());
+    CloseableHttpResponse post = httpPost("/interpreter/setting/", jsonRequest.toString());
+    String postResponse = EntityUtils.toString(post.getEntity(), StandardCharsets.UTF_8);
+    LOG.info("testSetting with valid name\n" + postResponse);
     InterpreterSetting created = convertResponseToInterpreterSetting(postResponse);
     String newSettingId = created.getId();
     // then : call create setting API
     assertThat("test create method:", post, isAllowed());
-    post.releaseConnection();
+    post.close();
 
     // when: call delete setting API
-    DeleteMethod delete = httpDelete("/interpreter/setting/" + newSettingId);
-    LOG.info("testSetting delete response\n" + delete.getResponseBodyAsString());
+    CloseableHttpResponse delete = httpDelete("/interpreter/setting/" + newSettingId);
+    LOG.info("testSetting delete response\n" + EntityUtils.toString(delete.getEntity(), StandardCharsets.UTF_8));
     // then: call delete setting API
     assertThat("Test delete method:", delete, isAllowed());
-    delete.releaseConnection();
+    delete.close();
 
 
     JsonObject jsonRequest2 = gson.fromJson(StringUtils.replace(reqBody, "mdName", "name space"), JsonElement.class).getAsJsonObject();
-    PostMethod post2 = httpPost("/interpreter/setting/", jsonRequest2.toString());
-    LOG.info("testSetting with name with space\n" + post2.getResponseBodyAsString());
+    CloseableHttpResponse post2 = httpPost("/interpreter/setting/", jsonRequest2.toString());
+    LOG.info("testSetting with name with space\n" + EntityUtils.toString(post2.getEntity(), StandardCharsets.UTF_8));
     assertThat("test create method with space:", post2, isNotFound());
-    post2.releaseConnection();
+    post2.close();
 
     JsonObject jsonRequest3 = gson.fromJson(StringUtils.replace(reqBody, "mdName", ""), JsonElement.class).getAsJsonObject();
-    PostMethod post3 = httpPost("/interpreter/setting/", jsonRequest3.toString());
-    LOG.info("testSetting with empty name\n" + post3.getResponseBodyAsString());
+    CloseableHttpResponse post3 = httpPost("/interpreter/setting/", jsonRequest3.toString());
+    LOG.info("testSetting with empty name\n" + EntityUtils.toString(post3.getEntity(), StandardCharsets.UTF_8));
     assertThat("test create method with empty name:", post3, isNotFound());
-    post3.releaseConnection();
+    post3.close();
 
   }
 
@@ -315,9 +316,9 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
       for (InterpreterSetting setting : note.getBindedInterpreterSettings(new ArrayList<>())) {
         if (setting.getName().equals("md")) {
           // call restart interpreter API
-          PutMethod put = httpPut("/interpreter/setting/restart/" + setting.getId(), "");
+          CloseableHttpResponse put = httpPut("/interpreter/setting/restart/" + setting.getId(), "");
           assertThat("test interpreter restart:", put, isAllowed());
-          put.releaseConnection();
+          put.close();
           break;
         }
       }
@@ -376,21 +377,21 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
 
       // Restart isolated mode of Interpreter for note.
       mdIntpSetting.getOption().setPerNote(InterpreterOption.ISOLATED);
-      PutMethod put = httpPut("/interpreter/setting/restart/" + mdIntpSetting.getId(), jsonRequest);
+      CloseableHttpResponse put = httpPut("/interpreter/setting/restart/" + mdIntpSetting.getId(), jsonRequest);
       assertThat("isolated interpreter restart:", put, isAllowed());
-      put.releaseConnection();
+      put.close();
 
       // Restart scoped mode of Interpreter for note.
       mdIntpSetting.getOption().setPerNote(InterpreterOption.SCOPED);
       put = httpPut("/interpreter/setting/restart/" + mdIntpSetting.getId(), jsonRequest);
       assertThat("scoped interpreter restart:", put, isAllowed());
-      put.releaseConnection();
+      put.close();
 
       // Restart shared mode of Interpreter for note.
       mdIntpSetting.getOption().setPerNote(InterpreterOption.SHARED);
       put = httpPut("/interpreter/setting/restart/" + mdIntpSetting.getId(), jsonRequest);
       assertThat("shared interpreter restart:", put, isAllowed());
-      put.releaseConnection();
+      put.close();
 
     } finally {
       if (null != note) {
@@ -401,9 +402,9 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
 
   @Test
   public void testListRepository() throws IOException {
-    GetMethod get = httpGet("/interpreter/repository");
+    CloseableHttpResponse get = httpGet("/interpreter/repository");
     assertThat(get, isAllowed());
-    get.releaseConnection();
+    get.close();
   }
 
   @Test
@@ -413,14 +414,14 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
     String jsonRequest = "{\"id\":\"" + repoId +
         "\",\"url\":\"https://repo1.maven.org/maven2\",\"snapshot\":\"false\"}";
 
-    PostMethod post = httpPost("/interpreter/repository/", jsonRequest);
+    CloseableHttpResponse post = httpPost("/interpreter/repository/", jsonRequest);
     assertThat("Test create method:", post, isAllowed());
-    post.releaseConnection();
+    post.close();
 
     // Call delete repository API
-    DeleteMethod delete = httpDelete("/interpreter/repository/" + repoId);
+    CloseableHttpResponse delete = httpDelete("/interpreter/repository/" + repoId);
     assertThat("Test delete method:", delete, isAllowed());
-    delete.releaseConnection();
+    delete.close();
   }
 
   private JsonObject getBodyFieldFromResponse(String rawResponse) {

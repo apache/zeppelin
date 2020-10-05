@@ -19,8 +19,9 @@ package org.apache.zeppelin.recovery;
 import com.google.common.io.Files;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.io.FileUtils;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.util.EntityUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
@@ -40,6 +41,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
@@ -85,12 +87,12 @@ public class RecoveryTest extends AbstractTestRestApi {
       // run python interpreter and create new variable `user`
       Paragraph p1 = note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
       p1.setText("%python user='abc'");
-      PostMethod post = httpPost("/notebook/job/" + note1.getId() +"?blocking=true", "");
+      CloseableHttpResponse post = httpPost("/notebook/job/" + note1.getId() +"?blocking=true", "");
       assertThat(post, isAllowed());
-      Map<String, Object> resp = gson.fromJson(post.getResponseBodyAsString(),
+      Map<String, Object> resp = gson.fromJson(EntityUtils.toString(post.getEntity(), StandardCharsets.UTF_8),
               new TypeToken<Map<String, Object>>() {}.getType());
-      assertEquals(resp.get("status"), "OK");
-      post.releaseConnection();
+      assertEquals("OK", resp.get("status"));
+      post.close();
       assertEquals(Job.Status.FINISHED, p1.getStatus());
       TestUtils.getInstance(Notebook.class).saveNote(note1, anonymous);
 
@@ -105,8 +107,8 @@ public class RecoveryTest extends AbstractTestRestApi {
       p1 = note1.getParagraph(p1.getId());
       p1.setText("%python print(user)");
       post = httpPost("/notebook/job/" + note1.getId() + "?blocking=true", "");
-      assertEquals(resp.get("status"), "OK");
-      post.releaseConnection();
+      assertEquals("OK", resp.get("status"));
+      post.close();
       assertEquals(Job.Status.FINISHED, p1.getStatus());
       assertEquals("abc\n", p1.getReturn().message().get(0).getData());
     } catch (Exception e) {
@@ -129,12 +131,12 @@ public class RecoveryTest extends AbstractTestRestApi {
       // run python interpreter and create new variable `user`
       Paragraph p1 = note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
       p1.setText("%python user='abc'");
-      PostMethod post = httpPost("/notebook/job/" + note1.getId() + "?blocking=true", "");
+      CloseableHttpResponse post = httpPost("/notebook/job/" + note1.getId() + "?blocking=true", "");
       assertThat(post, isAllowed());
-      Map<String, Object> resp = gson.fromJson(post.getResponseBodyAsString(),
+      Map<String, Object> resp = gson.fromJson(EntityUtils.toString(post.getEntity(), StandardCharsets.UTF_8),
               new TypeToken<Map<String, Object>>() {}.getType());
-      assertEquals(resp.get("status"), "OK");
-      post.releaseConnection();
+      assertEquals("OK", resp.get("status"));
+      post.close();
       assertEquals(Job.Status.FINISHED, p1.getStatus());
       TestUtils.getInstance(Notebook.class).saveNote(note1, AuthenticationInfo.ANONYMOUS);
       // restart the python interpreter
@@ -154,8 +156,8 @@ public class RecoveryTest extends AbstractTestRestApi {
       p1 = note1.getParagraph(p1.getId());
       p1.setText("%python print(user)");
       post = httpPost("/notebook/job/" + note1.getId() + "?blocking=true", "");
-      assertEquals(resp.get("status"), "OK");
-      post.releaseConnection();
+      assertEquals("OK", resp.get("status"));
+      post.close();
       assertEquals(Job.Status.ERROR, p1.getStatus());
     } catch (Exception e) {
       LOG.error(e.toString(), e);
@@ -177,12 +179,12 @@ public class RecoveryTest extends AbstractTestRestApi {
       // run python interpreter and create new variable `user`
       Paragraph p1 = note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
       p1.setText("%python user='abc'");
-      PostMethod post = httpPost("/notebook/job/" + note1.getId() + "?blocking=true", "");
+      CloseableHttpResponse post = httpPost("/notebook/job/" + note1.getId() + "?blocking=true", "");
       assertThat(post, isAllowed());
-      Map<String, Object> resp = gson.fromJson(post.getResponseBodyAsString(),
+      Map<String, Object> resp = gson.fromJson(EntityUtils.toString(post.getEntity(), StandardCharsets.UTF_8),
               new TypeToken<Map<String, Object>>() {}.getType());
-      assertEquals(resp.get("status"), "OK");
-      post.releaseConnection();
+      assertEquals("OK", resp.get("status"));
+      post.close();
       assertEquals(Job.Status.FINISHED, p1.getStatus());
       TestUtils.getInstance(Notebook.class).saveNote(note1, AuthenticationInfo.ANONYMOUS);
 
@@ -199,8 +201,8 @@ public class RecoveryTest extends AbstractTestRestApi {
       p1 = note1.getParagraph(p1.getId());
       p1.setText("%python print(user)");
       post = httpPost("/notebook/job/" + note1.getId() + "?blocking=true", "");
-      assertEquals(resp.get("status"), "OK");
-      post.releaseConnection();
+      assertEquals("OK", resp.get("status"));
+      post.close();
       assertEquals(Job.Status.ERROR, p1.getStatus());
     } catch (Exception e ) {
       LOG.error(e.toString(), e);
@@ -222,9 +224,9 @@ public class RecoveryTest extends AbstractTestRestApi {
       // run sh paragraph async, print 'hello' after 10 seconds
       Paragraph p1 = note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
       p1.setText("%sh sleep 10\necho 'hello'");
-      PostMethod post = httpPost("/notebook/job/" + note1.getId() + "/" + p1.getId(), "");
+      CloseableHttpResponse post = httpPost("/notebook/job/" + note1.getId() + "/" + p1.getId(), "");
       assertThat(post, isAllowed());
-      post.releaseConnection();
+      post.close();
       long start = System.currentTimeMillis();
       // wait until paragraph is RUNNING
       while((System.currentTimeMillis() - start) < 10 * 1000) {
@@ -281,9 +283,9 @@ public class RecoveryTest extends AbstractTestRestApi {
               "for i in range(1, 10):\n" +
               "    time.sleep(1)\n" +
               "    print(i)");
-      PostMethod post = httpPost("/notebook/job/" + note1.getId() + "/" + p1.getId(), "");
+      CloseableHttpResponse post = httpPost("/notebook/job/" + note1.getId() + "/" + p1.getId(), "");
       assertThat(post, isAllowed());
-      post.releaseConnection();
+      post.close();
 
       // wait until paragraph is running
       while(p1.getStatus() != Job.Status.RUNNING) {
