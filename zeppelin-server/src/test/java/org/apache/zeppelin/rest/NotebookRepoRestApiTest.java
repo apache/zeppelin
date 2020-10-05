@@ -24,9 +24,9 @@ import static org.junit.Assert.assertThat;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
-import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.util.EntityUtils;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -35,6 +35,7 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 
@@ -57,27 +58,27 @@ public class NotebookRepoRestApiTest extends AbstractTestRestApi {
   public static void destroy() throws Exception {
     AbstractTestRestApi.shutDown();
   }
-  
+
   @Before
   public void setUp() {
     anonymous = new AuthenticationInfo("anonymous");
   }
-  
+
   private List<Map<String, Object>> getListOfReposotiry() throws IOException {
-    GetMethod get = httpGet("/notebook-repositories");
-    Map<String, Object> responce = gson.fromJson(get.getResponseBodyAsString(),
+    CloseableHttpResponse get = httpGet("/notebook-repositories");
+    Map<String, Object> responce = gson.fromJson(EntityUtils.toString(get.getEntity(), StandardCharsets.UTF_8),
             new TypeToken<Map<String, Object>>() {}.getType());
-    get.releaseConnection();
+    get.close();
     return (List<Map<String, Object>>) responce.get("body");
   }
-  
+
   private void updateNotebookRepoWithNewSetting(String payload) throws IOException {
-    PutMethod put = httpPut("/notebook-repositories", payload);
-    int status = put.getStatusCode();
-    put.releaseConnection();
+    CloseableHttpResponse put = httpPut("/notebook-repositories", payload);
+    int status = put.getStatusLine().getStatusCode();
+    put.close();
     assertThat(status, is(200));
   }
-  
+
   @Test
   public void thatCanGetNotebookRepositoiesSettings() throws IOException {
     List<Map<String, Object>> listOfRepositories = getListOfReposotiry();
@@ -86,12 +87,12 @@ public class NotebookRepoRestApiTest extends AbstractTestRestApi {
 
   @Test
   public void reloadRepositories() throws IOException {
-    GetMethod get = httpGet("/notebook-repositories/reload");
-    int status = get.getStatusCode();
-    get.releaseConnection();
-    assertThat(status, is(200)); 
+    CloseableHttpResponse get = httpGet("/notebook-repositories/reload");
+    int status = get.getStatusLine().getStatusCode();
+    get.close();
+    assertThat(status, is(200));
   }
-  
+
   @Test
   public void setNewDirectoryForLocalDirectory() throws IOException {
     List<Map<String, Object>> listOfRepositories = getListOfReposotiry();
@@ -116,7 +117,7 @@ public class NotebookRepoRestApiTest extends AbstractTestRestApi {
     String payload = "{ \"name\": \"" + className + "\", \"settings\" : " +
             "{ \"Notebook Path\" : \"/tmp/newDir\" } }";
     updateNotebookRepoWithNewSetting(payload);
-    
+
     // Verify
     listOfRepositories = getListOfReposotiry();
     String updatedPath = StringUtils.EMPTY;
@@ -129,7 +130,7 @@ public class NotebookRepoRestApiTest extends AbstractTestRestApi {
       }
     }
     assertThat(updatedPath, anyOf(is("/tmp/newDir"), is("/tmp/newDir/")));
-    
+
     // go back to normal
     payload = "{ \"name\": \"" + className + "\", \"settings\" : { \"Notebook Path\" : \"" +
             localVfs + "\" } }";

@@ -19,7 +19,8 @@ package org.apache.zeppelin.rest;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
-import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.util.EntityUtils;
 import org.hamcrest.CoreMatchers;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -28,6 +29,7 @@ import org.junit.Test;
 import org.junit.rules.ErrorCollector;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 
@@ -49,51 +51,48 @@ public class SecurityRestApiTest extends AbstractTestRestApi {
 
   @Test
   public void testTicket() throws IOException {
-    GetMethod get = httpGet("/security/ticket", "admin", "password1");
-    get.addRequestHeader("Origin", "http://localhost");
-    Map<String, Object> resp = gson.fromJson(get.getResponseBodyAsString(),
+    CloseableHttpResponse get = httpGet("/security/ticket", "admin", "password1");
+    Map<String, Object> resp = gson.fromJson(EntityUtils.toString(get.getEntity(), StandardCharsets.UTF_8),
         new TypeToken<Map<String, Object>>(){}.getType());
     Map<String, String> body = (Map<String, String>) resp.get("body");
     collector.checkThat("Paramater principal", body.get("principal"),
         CoreMatchers.equalTo("admin"));
     collector.checkThat("Paramater ticket", body.get("ticket"),
         CoreMatchers.not("anonymous"));
-    get.releaseConnection();
+    get.close();
   }
 
   @Test
   public void testGetUserList() throws IOException {
-    GetMethod get = httpGet("/security/userlist/admi", "admin", "password1");
-    get.addRequestHeader("Origin", "http://localhost");
-    Map<String, Object> resp = gson.fromJson(get.getResponseBodyAsString(),
+    CloseableHttpResponse get = httpGet("/security/userlist/admi", "admin", "password1");
+    Map<String, Object> resp = gson.fromJson(EntityUtils.toString(get.getEntity(), StandardCharsets.UTF_8),
         new TypeToken<Map<String, Object>>(){}.getType());
     List<String> userList = (List) ((Map) resp.get("body")).get("users");
     collector.checkThat("Search result size", userList.size(),
         CoreMatchers.equalTo(1));
     collector.checkThat("Search result contains admin", userList.contains("admin"),
         CoreMatchers.equalTo(true));
-    get.releaseConnection();
+    get.close();
 
-    GetMethod notUser = httpGet("/security/userlist/randomString", "admin", "password1");
-    notUser.addRequestHeader("Origin", "http://localhost");
-    Map<String, Object> notUserResp = gson.fromJson(notUser.getResponseBodyAsString(),
+    CloseableHttpResponse notUser = httpGet("/security/userlist/randomString", "admin", "password1");
+    Map<String, Object> notUserResp = gson.fromJson(EntityUtils.toString(notUser.getEntity(), StandardCharsets.UTF_8),
         new TypeToken<Map<String, Object>>(){}.getType());
     List<String> emptyUserList = (List) ((Map) notUserResp.get("body")).get("users");
     collector.checkThat("Search result size", emptyUserList.size(),
         CoreMatchers.equalTo(0));
 
-    notUser.releaseConnection();
+    notUser.close();
   }
 
   @Test
   public void testRolesEscaped() throws IOException {
-    GetMethod get = httpGet("/security/ticket", "admin", "password1");
-    Map<String, Object> resp = gson.fromJson(get.getResponseBodyAsString(),
+    CloseableHttpResponse get = httpGet("/security/ticket", "admin", "password1");
+    Map<String, Object> resp = gson.fromJson(EntityUtils.toString(get.getEntity(), StandardCharsets.UTF_8),
             new TypeToken<Map<String, Object>>(){}.getType());
     String roles = (String) ((Map) resp.get("body")).get("roles");
     collector.checkThat("Paramater roles", roles,
             CoreMatchers.equalTo("[\"admin\"]"));
-    get.releaseConnection();
+    get.close();
   }
 
 }

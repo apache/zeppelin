@@ -19,10 +19,12 @@ package org.apache.zeppelin.configuration;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.eclipse.jetty.http.HttpStatus;
+import org.apache.http.HttpStatus;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -48,18 +50,20 @@ public class RequestHeaderSizeTest extends AbstractTestRestApi {
   @Test
   public void increased_request_header_size_do_not_cause_431_when_request_size_is_over_8K()
       throws Exception {
-    HttpClient httpClient = new HttpClient();
-
-    GetMethod getMethod = new GetMethod(getUrlToTest() + "/version");
+    CloseableHttpClient client = HttpClients.createDefault();
+    HttpGet httpGet = new HttpGet(getUrlToTest() + "/version");
     String headerValue = RandomStringUtils.randomAlphanumeric(REQUEST_HEADER_MAX_SIZE - 2000);
-    getMethod.setRequestHeader("not_too_large_header", headerValue);
-    int httpCode = httpClient.executeMethod(getMethod);
-    assertThat(httpCode, is(HttpStatus.OK_200));
+    httpGet.setHeader("not_too_large_header", headerValue);
+    CloseableHttpResponse response = client.execute(httpGet);
+    assertThat(response.getStatusLine().getStatusCode(), is(HttpStatus.SC_OK));
+    response.close();
 
-    getMethod = new GetMethod(getUrlToTest() + "/version");
+    httpGet = new HttpGet(getUrlToTest() + "/version");
     headerValue = RandomStringUtils.randomAlphanumeric(REQUEST_HEADER_MAX_SIZE + 2000);
-    getMethod.setRequestHeader("too_large_header", headerValue);
-    httpCode = httpClient.executeMethod(getMethod);
-    assertThat(httpCode, is(HttpStatus.REQUEST_HEADER_FIELDS_TOO_LARGE_431));
+    httpGet.setHeader("too_large_header", headerValue);
+    response = client.execute(httpGet);
+    assertThat(response.getStatusLine().getStatusCode(), is(431));
+    response.close();
+    client.close();
   }
 }

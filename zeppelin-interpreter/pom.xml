@@ -44,7 +44,6 @@
     <wagon.version>2.7</wagon.version>
     <jline.version>2.14.3</jline.version>
     <atomix.version>3.0.0-rc4</atomix.version>
-    <commons-math3.version>3.1.1</commons-math3.version>
 
     <!--plugin versions-->
     <plugin.shade.version>2.3</plugin.shade.version>
@@ -64,10 +63,6 @@
       <exclusions>
         <exclusion>
           <groupId>org.apache.commons</groupId>
-          <artifactId>commons-math3</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.apache.commons</groupId>
           <artifactId>commons-lang3</artifactId>
         </exclusion>
       </exclusions>
@@ -83,12 +78,6 @@
       <groupId>io.atomix</groupId>
       <artifactId>atomix-primary-backup</artifactId>
       <version>${atomix.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.commons</groupId>
-      <artifactId>commons-math3</artifactId>
-      <version>${commons-math3.version}</version>
     </dependency>
 
     <dependency>
@@ -111,11 +100,6 @@
     <dependency>
       <groupId>com.google.code.gson</groupId>
       <artifactId>gson</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.danilopianini</groupId>
-      <artifactId>gson-extras</artifactId>
     </dependency>
 
     <dependency>
@@ -191,11 +175,6 @@
     </dependency>
 
     <dependency>
-      <groupId>org.bouncycastle</groupId>
-      <artifactId>bcpkix-jdk15on</artifactId>
-    </dependency>
-
-    <dependency>
       <groupId>org.apache.maven</groupId>
       <artifactId>maven-aether-provider</artifactId>
       <version>${maven.aeither.provider.version}</version>
@@ -237,19 +216,6 @@
         <exclusion>
           <groupId>org.apache.maven.wagon</groupId>
           <artifactId>wagon-provider-api</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-
-    <dependency>
-      <groupId>commons-httpclient</groupId>
-      <artifactId>commons-httpclient</artifactId>
-      <version>3.1</version>
-      <exclusions>
-        <!-- using jcl-over-slf4j instead -->
-        <exclusion>
-          <groupId>commons-logging</groupId>
-          <artifactId>commons-logging</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
