@@ -84,7 +84,7 @@ class SparkScala212Interpreter(override val conf: SparkConf,
 
     sparkILoop.in = reader
     sparkILoop.initializeSynchronous()
-    sparkILoop.in.postInit()
+    SparkScala212Interpreter.loopPostInit(this)
     this.scalaCompletion = reader.completion
 
     createSparkContext()
@@ -123,4 +123,72 @@ class SparkScala212Interpreter(override val conf: SparkConf,
     sparkILoop.classLoader
   }
 
+}
+
+private object SparkScala212Interpreter {
+  /**
+   * This is a hack to call `loopPostInit` at `ILoop`. At higher version of Scala such
+   * as 2.11.12, `loopPostInit` became a nested function which is inaccessible. Here,
+   * we redefine `loopPostInit` at Scala's 2.11.8 side and ignore `loadInitFiles` being called at
+   * Scala 2.11.12 since here we do not have to load files.
+   *
+   * Both methods `loopPostInit` and `unleashAndSetPhase` are redefined, and `phaseCommand` and
+   * `asyncMessage` are being called via reflection since both exist in Scala 2.11.8 and 2.11.12.
+   *
+   * Please see the codes below:
+   * https://github.com/scala/scala/blob/v2.11.8/src/repl/scala/tools/nsc/interpreter/ILoop.scala
+   * https://github.com/scala/scala/blob/v2.11.12/src/repl/scala/tools/nsc/interpreter/ILoop.scala
+   *
+   * See also ZEPPELIN-3810.
+   */
+  private def loopPostInit(interpreter: SparkScala212Interpreter): Unit = {
+    import StdReplTags._
+    import scala.reflect.classTag
+    import scala.reflect.io
+
+    val sparkILoop = interpreter.sparkILoop
+    val intp = sparkILoop.intp
+    val power = sparkILoop.power
+    val in = sparkILoop.in
+
+    def loopPostInit() {
+      // Bind intp somewhere out of the regular namespace where
+      // we can get at it in generated code.
+      intp.quietBind(NamedParam[IMain]("$intp", intp)(tagOfIMain, classTag[IMain]))
+      // Auto-run code via some setting.
+      (replProps.replAutorunCode.option
+        flatMap (f => io.File(f).safeSlurp())
+        foreach (intp quietRun _)
+        )
+      // classloader and power mode setup
+      intp.setContextClassLoader()
+      if (isReplPower) {
+        replProps.power setValue true
+        unleashAndSetPhase()
+        asyncMessage(power.banner)
+      }
+      // SI-7418 Now, and only now, can we enable TAB completion.
+      in.postInit()
+    }
+
+    def unleashAndSetPhase() = if (isReplPower) {
+      power.unleash()
+      intp beSilentDuring phaseCommand("typer") // Set the phase to "typer"
+    }
+
+    def phaseCommand(name: String): Results.Result = {
+      interpreter.callMethod(
+        sparkILoop,
+        "scala$tools$nsc$interpreter$ILoop$$phaseCommand",
+        Array(classOf[String]),
+        Array(name)).asInstanceOf[Results.Result]
+    }
+
+    def asyncMessage(msg: String): Unit = {
+      interpreter.callMethod(
+        sparkILoop, "asyncMessage", Array(classOf[String]), Array(msg))
+    }
+
+    loopPostInit()
+  }
 }
