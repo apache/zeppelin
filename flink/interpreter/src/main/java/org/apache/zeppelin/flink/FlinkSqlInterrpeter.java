@@ -469,8 +469,7 @@ public abstract class FlinkSqlInterrpeter extends AbstractInterpreter {
   private void callExplain(String sql, InterpreterContext context) throws IOException {
     try {
       lock.lock();
-      Table table = this.tbenv.sqlQuery(sql);
-      context.out.write(this.tbenv.explain(table) + "\n");
+      context.out.write(this.flinkInterpreter.getFlinkShims().explain(tbenv, sql) + "\n");
     } finally {
       if (lock.isHeldByCurrentThread()) {
         lock.unlock();
