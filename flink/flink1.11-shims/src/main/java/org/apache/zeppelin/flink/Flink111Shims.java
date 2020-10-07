@@ -33,6 +33,7 @@ import org.apache.flink.table.api.EnvironmentSettings;
 import org.apache.flink.table.api.StatementSet;
 import org.apache.flink.table.api.Table;
 import org.apache.flink.table.api.TableEnvironment;
+import org.apache.flink.table.api.TableResult;
 import org.apache.flink.table.api.bridge.java.internal.StreamTableEnvironmentImpl;
 import org.apache.flink.table.api.bridge.scala.BatchTableEnvironment;
 import org.apache.flink.table.api.config.ExecutionConfigOptions;
@@ -371,6 +372,12 @@ public class Flink111Shims extends FlinkShims {
   @Override
   public void executeSql(Object tableEnv, String sql) {
     ((TableEnvironment) tableEnv).executeSql(sql);
+  }
+
+  @Override
+  public String explain(Object tableEnv, String sql) {
+    TableResult tableResult = ((TableEnvironment) tableEnv).executeSql(sql);
+    return tableResult.collect().next().getField(0).toString();
   }
 
   @Override

@@ -366,6 +366,37 @@ public abstract class SqlInterpreterTest {
   }
 
   @Test
+  public void testExplain() throws InterpreterException, IOException {
+    // create table
+    InterpreterContext context = getInterpreterContext();
+    InterpreterResult result = sqlInterpreter.interpret(
+            "CREATE TABLE source_table (int_col INT, double_col double, " +
+                    "varchar_col varchar, bool_col boolean)" +
+                    " WITH (\n" +
+                    "'format.field-delimiter'='\\n',\n" +
+                    "'connector.type'='filesystem',\n" +
+                    "'format.derive-schema'='true',\n" +
+                    "'connector.path'='hdfs:///tmp/bank.csv',\n" +
+                    "'format.type'='csv'\n" +
+                    ");",
+            context);
+    assertEquals(Code.SUCCESS, result.code());
+    List<InterpreterResultMessage> resultMessages = context.out.toInterpreterResultMessage();
+    assertEquals(1, resultMessages.size());
+    assertEquals(Type.TEXT, resultMessages.get(0).getType());
+    assertEquals("Table has been created.\n", resultMessages.get(0).getData());
+
+    // explain select statement.
+    context = getInterpreterContext();
+    result = sqlInterpreter.interpret("explain select * from source_table", context);
+    assertEquals(Code.SUCCESS, result.code());
+    resultMessages = context.out.toInterpreterResultMessage();
+    assertEquals(1, resultMessages.size());
+    assertEquals(Type.TEXT, resultMessages.get(0).getType());
+    assertTrue(resultMessages.get(0).getData(), resultMessages.get(0).getData().contains("Physical Execution Plan"));
+  }
+
+  @Test
   public void testInvalidSql() throws InterpreterException, IOException {
 
     InterpreterContext context = getInterpreterContext();
