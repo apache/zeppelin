@@ -22,6 +22,7 @@ import com.google.gson.reflect.TypeToken;
 import org.apache.thrift.TException;
 import org.apache.thrift.server.TThreadPoolServer;
 import org.apache.thrift.transport.TServerSocket;
+import org.apache.thrift.transport.TTransportException;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.helium.ApplicationEventListener;
@@ -97,21 +98,19 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
     Thread startingThread = new Thread() {
       @Override
       public void run() {
-        TServerSocket tSocket = null;
-        try {
-          tSocket = RemoteInterpreterUtils.createTServerSocket(portRange);
+        try (TServerSocket tSocket = new TServerSocket(RemoteInterpreterUtils.findAvailablePort(portRange))){
           port = tSocket.getServerSocket().getLocalPort();
           host = RemoteInterpreterUtils.findAvailableHostAddress();
-        } catch (IOException e1) {
-          throw new RuntimeException(e1);
+          LOGGER.info("InterpreterEventServer is starting at {}:{}", host, port);
+          RemoteInterpreterEventService.Processor<RemoteInterpreterEventServer> processor =
+              new RemoteInterpreterEventService.Processor<>(RemoteInterpreterEventServer.this);
+          thriftServer = new TThreadPoolServer(
+              new TThreadPoolServer.Args(tSocket).processor(processor));
+          thriftServer.serve();
+        } catch (IOException | TTransportException e ) {
+          throw new RuntimeException("Fail to create TServerSocket", e);
         }
-
-        LOGGER.info("InterpreterEventServer is starting at {}:{}", host, port);
-        RemoteInterpreterEventService.Processor processor =
-            new RemoteInterpreterEventService.Processor(RemoteInterpreterEventServer.this);
-        thriftServer = new TThreadPoolServer(
-            new TThreadPoolServer.Args(tSocket).processor(processor));
-        thriftServer.serve();
+        LOGGER.info("ThriftServer-Thread finished");
       }
     };
     startingThread.start();

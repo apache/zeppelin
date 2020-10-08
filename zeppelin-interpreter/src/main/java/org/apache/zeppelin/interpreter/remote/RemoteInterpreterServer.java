@@ -24,6 +24,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.thrift.TException;
 import org.apache.thrift.server.TThreadPoolServer;
 import org.apache.thrift.transport.TServerSocket;
+import org.apache.thrift.transport.TTransportException;
 import org.apache.zeppelin.cluster.ClusterManagerClient;
 import org.apache.zeppelin.cluster.meta.ClusterMeta;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
@@ -163,6 +164,8 @@ public class RemoteInterpreterServer extends Thread
     if (null != intpEventServerHost) {
       this.intpEventServerHost = intpEventServerHost;
       this.intpEventServerPort = intpEventServerPort;
+      this.port = RemoteInterpreterUtils.findAvailablePort(portRange);
+      this.host = RemoteInterpreterUtils.findAvailableHostAddress();
       if (!isTest) {
         LOGGER.info("Starting remote interpreter server on port {}, intpEventServerAddress: {}:{}", port,
           intpEventServerHost, intpEventServerPort);
@@ -174,35 +177,30 @@ public class RemoteInterpreterServer extends Thread
     }
     this.isTest = isTest;
     this.interpreterGroupId = interpreterGroupId;
-    RemoteInterpreterService.Processor<RemoteInterpreterServer> processor =
-        new RemoteInterpreterService.Processor<>(this);
-    TServerSocket serverTransport;
-    if (null == intpEventServerHost) {
-      // Dev Interpreter
-      serverTransport = new TServerSocket(intpEventServerPort);
-    } else {
-      serverTransport = RemoteInterpreterUtils.createTServerSocket(portRange);
-      this.port = serverTransport.getServerSocket().getLocalPort();
-      this.host = RemoteInterpreterUtils.findAvailableHostAddress();
-      LOGGER.info("Launching ThriftServer at {}:{}", this.host, this.port);
-    }
-
-    server = new TThreadPoolServer(
-      new TThreadPoolServer.Args(serverTransport)
-        .stopTimeoutVal(DEFAULT_SHUTDOWN_TIMEOUT)
-        .stopTimeoutUnit(TimeUnit.MILLISECONDS)
-        .processor(processor));
-
   }
 
   @Override
   public void run() {
-    if (null != intpEventServerHost && !isTest) {
-      Thread registerThread = new Thread(new RegisterRunnable());
-      registerThread.setName("RegisterThread");
-      registerThread.start();
+    RemoteInterpreterService.Processor<RemoteInterpreterServer> processor =
+      new RemoteInterpreterService.Processor<>(this);
+    try (TServerSocket tSocket = new TServerSocket(port)){
+      server = new TThreadPoolServer(
+      new TThreadPoolServer.Args(tSocket)
+        .stopTimeoutVal(DEFAULT_SHUTDOWN_TIMEOUT)
+        .stopTimeoutUnit(TimeUnit.MILLISECONDS)
+        .processor(processor));
+
+      if (null != intpEventServerHost && !isTest) {
+        Thread registerThread = new Thread(new RegisterRunnable());
+        registerThread.setName("RegisterThread");
+        registerThread.start();
+      }
+      LOGGER.info("Launching ThriftServer at {}:{}", this.host, this.port);
+      server.serve();
+    } catch (TTransportException e) {
+      LOGGER.error("Failure in TTransport", e);
     }
-    server.serve();
+    LOGGER.info("RemoteInterpreterServer-Thread finished");
   }
 
   @Override
@@ -312,6 +310,12 @@ public class RemoteInterpreterServer extends Thread
 
     remoteInterpreterServer.join();
     LOGGER.info("RemoteInterpreterServer thread is finished");
+
+    /* TODO(pdallig): Remove System.exit(0) if the thrift server can be shut down successfully.
+     * https://github.com/apache/thrift/commit/9cb1c794cd39cfb276771f8e52f0306eb8d462fd
+     * should be part of the next release and solve the problem.
+     * We may have other threads that are not terminated successfully.
+     */
     System.exit(0);
   }
 
@@ -585,7 +589,7 @@ public class RemoteInterpreterServer extends Thread
     public void run() {
       LOGGER.info("Start registration");
       // wait till the server is serving
-      while (!Thread.currentThread().isInterrupted() && !server.isServing()) {
+      while (!Thread.currentThread().isInterrupted() && server != null && !server.isServing()) {
         try {
           Thread.sleep(1000);
         } catch (InterruptedException e) {
