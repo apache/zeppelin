@@ -17,22 +17,24 @@
 
 package org.apache.zeppelin.scheduler;
 
+import static org.junit.Assert.assertEquals;
 
-import junit.framework.TestCase;
 import org.apache.zeppelin.scheduler.Job.Status;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class ParallelSchedulerTest extends TestCase {
+public class ParallelSchedulerTest {
 
-  private SchedulerFactory schedulerSvc;
+  private static SchedulerFactory schedulerSvc;
 
-  @Override
-  public void setUp() throws Exception {
+  @BeforeClass
+  public static void setUp() {
     schedulerSvc = new SchedulerFactory();
   }
 
-  @Override
-  public void tearDown() {
+  @AfterClass
+  public static void tearDown() {
     schedulerSvc.destroy();
   }
 

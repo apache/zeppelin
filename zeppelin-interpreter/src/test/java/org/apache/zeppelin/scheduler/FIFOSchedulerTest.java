@@ -17,20 +17,24 @@
 
 package org.apache.zeppelin.scheduler;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import org.apache.zeppelin.scheduler.Job.Status;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
-public class FIFOSchedulerTest extends TestCase {
+public class FIFOSchedulerTest {
 
   private SchedulerFactory schedulerSvc;
 
-  @Override
-  public void setUp() throws Exception {
+  @Before
+  public void setUp() {
     schedulerSvc = new SchedulerFactory();
   }
 
-  @Override
+  @After
   public void tearDown() {
     schedulerSvc.destroy();
   }
@@ -53,7 +57,6 @@ public class FIFOSchedulerTest extends TestCase {
     assertEquals(Status.FINISHED, job1.getStatus());
     assertEquals(Status.RUNNING, job2.getStatus());
     assertTrue((500 < (Long) job1.getReturn()));
-    s.stop();
   }
 
   @Test
@@ -78,6 +81,5 @@ public class FIFOSchedulerTest extends TestCase {
 
     assertTrue((500 > (Long) job1.getReturn()));
     assertEquals(null, job2.getReturn());
-    s.stop();
   }
 }

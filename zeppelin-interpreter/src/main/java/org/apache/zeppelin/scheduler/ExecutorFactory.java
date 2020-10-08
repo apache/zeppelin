@@ -25,8 +25,6 @@ import java.util.concurrent.Executors;
  * Factory class for Executor
  */
 public class ExecutorFactory {
-  private static ExecutorFactory instance;
-  private static Long _executorLock = new Long(0);
 
   private Map<String, ExecutorService> executors = new HashMap<>();
 
@@ -34,15 +32,13 @@ public class ExecutorFactory {
 
   }
 
+  //Using the Initialization-on-demand holder idiom (https://en.wikipedia.org/wiki/Initialization-on-demand_holder_idiom)
+  private static final class InstanceHolder {
+    private static final ExecutorFactory INSTANCE = new ExecutorFactory();
+  }
+
   public static ExecutorFactory singleton() {
-    if (instance == null) {
-      synchronized (_executorLock) {
-        if (instance == null) {
-          instance = new ExecutorFactory();
-        }
-      }
-    }
-    return instance;
+    return InstanceHolder.INSTANCE;
   }
 
   public ExecutorService createOrGet(String name, int numThread) {

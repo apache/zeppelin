@@ -52,7 +52,7 @@ public class RemoteSchedulerTest extends AbstractInterpreterTest
   @Before
   public void setUp() throws Exception {
     super.setUp();
-    schedulerSvc = new SchedulerFactory();
+    schedulerSvc = SchedulerFactory.singleton();
     interpreterSetting = interpreterSettingManager.getInterpreterSettingByName("test");
   }
 

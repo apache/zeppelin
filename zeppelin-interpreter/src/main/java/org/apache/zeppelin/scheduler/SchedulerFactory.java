@@ -21,6 +21,8 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -37,29 +39,21 @@ public class SchedulerFactory {
   protected ExecutorService executor;
   protected Map<String, Scheduler> schedulers = new HashMap<>();
 
-  private static SchedulerFactory singleton;
-  private static Long singletonLock = new Long(0);
-
-  public static SchedulerFactory singleton() {
-    if (singleton == null) {
-      synchronized (singletonLock) {
-        if (singleton == null) {
-          try {
-            singleton = new SchedulerFactory();
-          } catch (Exception e) {
-            LOGGER.error(e.toString(), e);
-          }
-        }
-      }
-    }
-    return singleton;
+  // Using the Initialization-on-demand holder idiom (https://en.wikipedia.org/wiki/Initialization-on-demand_holder_idiom)
+  private static final class InstanceHolder {
+    private static final SchedulerFactory INSTANCE = new SchedulerFactory();
   }
 
+  public static SchedulerFactory singleton() {
+    return InstanceHolder.INSTANCE;
+  }
+
+  @VisibleForTesting
   SchedulerFactory() {
     ZeppelinConfiguration zConf = ZeppelinConfiguration.create();
     int threadPoolSize =
         zConf.getInt(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_SCHEDULER_POOL_SIZE);
-    LOGGER.info("Scheduler Thread Pool Size: " + threadPoolSize);
+    LOGGER.info("Scheduler Thread Pool Size: {}", threadPoolSize);
     executor = ExecutorFactory.singleton().createOrGet(SCHEDULER_EXECUTOR_NAME, threadPoolSize);
   }
 
@@ -68,7 +62,6 @@ public class SchedulerFactory {
     ExecutorFactory.singleton().shutdown(SCHEDULER_EXECUTOR_NAME);
     this.executor.shutdownNow();
     this.executor = null;
-    singleton = null;
   }
 
   public Scheduler createOrGetFIFOScheduler(String name) {
@@ -93,7 +86,7 @@ public class SchedulerFactory {
     }
   }
 
-  
+
   public Scheduler createOrGetScheduler(Scheduler scheduler) {
     synchronized (schedulers) {
       if (!schedulers.containsKey(scheduler.getName())) {
