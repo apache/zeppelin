@@ -26,7 +26,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 
@@ -79,4 +78,5 @@ public class TimeoutLifecycleManager extends LifecycleManager {
     LOGGER.debug("Interpreter process: {} is used", interpreterGroupId);
     lastBusyTimeInMillis = System.currentTimeMillis();
   }
+
 }

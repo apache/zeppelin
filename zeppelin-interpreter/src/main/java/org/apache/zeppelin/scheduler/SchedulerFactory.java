@@ -18,6 +18,7 @@
 package org.apache.zeppelin.scheduler;
 
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.util.ExecutorUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,6 +28,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Factory class for creating schedulers except RemoteScheduler as RemoteScheduler runs in
@@ -61,8 +63,6 @@ public class SchedulerFactory {
   public void destroy() {
     LOGGER.info("Destroy all executors");
     ExecutorFactory.singleton().shutdown(SCHEDULER_EXECUTOR_NAME);
-    this.executor.shutdownNow();
-    this.executor = null;
     synchronized (schedulers) {
       // stop all child thread of schedulers
       for (Entry<String, Scheduler> scheduler : schedulers.entrySet()) {
@@ -71,6 +71,7 @@ public class SchedulerFactory {
       }
       schedulers.clear();
     }
+    ExecutorUtil.softShutdown("SchedulerFactoryExecutor", executor, 60, TimeUnit.SECONDS);
   }
 
   public Scheduler createOrGetFIFOScheduler(String name) {

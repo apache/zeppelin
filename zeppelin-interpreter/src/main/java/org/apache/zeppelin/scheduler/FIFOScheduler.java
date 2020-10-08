@@ -19,6 +19,9 @@ package org.apache.zeppelin.scheduler;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
+import org.apache.zeppelin.util.ExecutorUtil;
 
 /**
  * FIFOScheduler runs submitted job sequentially
@@ -29,7 +32,7 @@ public class FIFOScheduler extends AbstractScheduler {
 
   FIFOScheduler(String name) {
     super(name);
-    executor = Executors.newSingleThreadExecutor(
+    this.executor = Executors.newSingleThreadExecutor(
         new SchedulerThreadFactory("FIFOScheduler-" + name + "-Worker-"));
   }
 
@@ -41,7 +44,12 @@ public class FIFOScheduler extends AbstractScheduler {
 
   @Override
   public void stop() {
+    stop(2, TimeUnit.MINUTES);
+  }
+
+  @Override
+  public void stop(int stopTimeoutVal, TimeUnit stopTimeoutUnit) {
     super.stop();
-    executor.shutdownNow();
+    ExecutorUtil.softShutdown(name, executor, stopTimeoutVal, stopTimeoutUnit);
   }
 }

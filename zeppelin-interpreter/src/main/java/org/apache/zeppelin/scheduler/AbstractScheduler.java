@@ -67,6 +67,7 @@ public abstract class AbstractScheduler implements Scheduler {
     try {
       queue.put(job);
     } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
       throw new RuntimeException(String.format("Unable to submit job %s", job.getId()), e);
     }
     jobs.put(job.getId(), job);
