@@ -25,6 +25,7 @@ import com.google.common.annotations.VisibleForTesting;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.ExecutorService;
 
 /**
@@ -62,6 +63,14 @@ public class SchedulerFactory {
     ExecutorFactory.singleton().shutdown(SCHEDULER_EXECUTOR_NAME);
     this.executor.shutdownNow();
     this.executor = null;
+    synchronized (schedulers) {
+      // stop all child thread of schedulers
+      for (Entry<String, Scheduler> scheduler : schedulers.entrySet()) {
+        LOGGER.info("Stopping Scheduler {}", scheduler.getKey());
+        scheduler.getValue().stop();
+      }
+      schedulers.clear();
+    }
   }
 
   public Scheduler createOrGetFIFOScheduler(String name) {
