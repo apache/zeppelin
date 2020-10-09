@@ -48,6 +48,7 @@ public class RemoteSchedulerTest extends AbstractInterpreterTest
   private static final int TICK_WAIT = 100;
   private static final int MAX_WAIT_CYCLES = 100;
 
+  @Override
   @Before
   public void setUp() throws Exception {
     super.setUp();
@@ -55,6 +56,7 @@ public class RemoteSchedulerTest extends AbstractInterpreterTest
     interpreterSetting = interpreterSettingManager.getInterpreterSettingByName("test");
   }
 
+  @Override
   @After
   public void tearDown() {
     interpreterSetting.close();

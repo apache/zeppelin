@@ -161,12 +161,13 @@ public class RemoteInterpreterServer extends Thread
                                  String portRange,
                                  String interpreterGroupId,
                                  boolean isTest) throws Exception {
-    LOGGER.info("Starting remote interpreter server on port {}, intpEventServerAddress: {}:{}", port,
-            intpEventServerHost, intpEventServerPort);
+    super("RemoteInterpreterServer-Thread");
     if (null != intpEventServerHost) {
       this.intpEventServerHost = intpEventServerHost;
       this.intpEventServerPort = intpEventServerPort;
       if (!isTest) {
+        LOGGER.info("Starting remote interpreter server on port {}, intpEventServerAddress: {}:{}", port,
+          intpEventServerHost, intpEventServerPort);
         intpEventClient = new RemoteInterpreterEventClient(intpEventServerHost, intpEventServerPort);
       }
     } else {
