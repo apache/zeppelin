@@ -78,6 +78,12 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
       }
     }
 
+    // set spark.app.name if it is not set or empty
+    if (!sparkProperties.containsKey("spark.app.name") ||
+            StringUtils.isBlank(sparkProperties.getProperty("spark.app.name"))) {
+      sparkProperties.setProperty("spark.app.name", context.getInterpreterGroupId());
+    }
+
     setupPropertiesForPySpark(sparkProperties);
     setupPropertiesForSparkR(sparkProperties);
     if (isYarnMode() && getDeployMode().equals("cluster")) {
