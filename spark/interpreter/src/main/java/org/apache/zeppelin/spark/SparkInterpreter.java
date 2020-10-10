@@ -254,7 +254,11 @@ public class SparkInterpreter extends AbstractInterpreter {
   }
 
   public boolean isScala212() throws InterpreterException {
-    return extractScalaVersion().contains("2.12");
+    return extractScalaVersion().equals("2.12");
+  }
+
+  public boolean isScala210() throws InterpreterException {
+    return extractScalaVersion().equals("2.10");
   }
 
   private List<String> getDependencyFiles() throws InterpreterException {
