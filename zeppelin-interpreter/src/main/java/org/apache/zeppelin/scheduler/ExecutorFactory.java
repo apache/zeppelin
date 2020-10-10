@@ -18,8 +18,13 @@ package org.apache.zeppelin.scheduler;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
+import org.apache.zeppelin.util.ExecutorUtil;
 
 /**
  * Factory class for Executor
@@ -27,6 +32,7 @@ import java.util.concurrent.Executors;
 public class ExecutorFactory {
 
   private Map<String, ExecutorService> executors = new HashMap<>();
+  private Map<String, ScheduledExecutorService> scheduledExecutors = new HashMap<>();
 
   private ExecutorFactory() {
 
@@ -44,10 +50,22 @@ public class ExecutorFactory {
   public ExecutorService createOrGet(String name, int numThread) {
     synchronized (executors) {
       if (!executors.containsKey(name)) {
-        executors.put(name, Executors.newScheduledThreadPool(numThread,
+        executors.put(name, Executors.newScheduledThreadPool(
+            numThread,
             new SchedulerThreadFactory(name)));
       }
       return executors.get(name);
+    }
+  }
+
+  public ScheduledExecutorService createOrGetScheduled(String name, int numThread) {
+    synchronized (scheduledExecutors) {
+      if (!scheduledExecutors.containsKey(name)) {
+        scheduledExecutors.put(name, Executors.newScheduledThreadPool(
+            numThread,
+            new SchedulerThreadFactory(name)));
+      }
+      return scheduledExecutors.get(name);
     }
   }
 
@@ -64,18 +82,31 @@ public class ExecutorFactory {
     synchronized (executors) {
       if (executors.containsKey(name)) {
         ExecutorService e = executors.get(name);
-        e.shutdown();
+        ExecutorUtil.softShutdown(name, e, 1, TimeUnit.MINUTES);
         executors.remove(name);
+      }
+    }
+    synchronized (scheduledExecutors) {
+      if (scheduledExecutors.containsKey(name)) {
+        ExecutorService e = scheduledExecutors.get(name);
+        ExecutorUtil.softShutdown(name, e, 1, TimeUnit.MINUTES);
+        scheduledExecutors.remove(name);
       }
     }
   }
 
-
   public void shutdownAll() {
     synchronized (executors) {
-      for (String name : executors.keySet()) {
-        shutdown(name);
+      for (Entry<String, ExecutorService> executor : executors.entrySet()) {
+        ExecutorUtil.softShutdown(executor.getKey(), executor.getValue(), 1, TimeUnit.MINUTES);
       }
+      executors.clear();
+    }
+    synchronized (scheduledExecutors) {
+      for (Entry<String, ScheduledExecutorService> scheduledExecutor : scheduledExecutors.entrySet()) {
+        ExecutorUtil.softShutdown(scheduledExecutor.getKey(), scheduledExecutor.getValue(), 1, TimeUnit.MINUTES);
+      }
+      scheduledExecutors.clear();
     }
   }
 }

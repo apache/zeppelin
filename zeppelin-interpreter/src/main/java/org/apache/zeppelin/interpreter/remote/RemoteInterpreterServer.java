@@ -64,6 +64,7 @@ import org.apache.zeppelin.resource.DistributedResourcePool;
 import org.apache.zeppelin.resource.Resource;
 import org.apache.zeppelin.resource.ResourcePool;
 import org.apache.zeppelin.resource.ResourceSet;
+import org.apache.zeppelin.scheduler.ExecutorFactory;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.scheduler.JobListener;
@@ -312,6 +313,7 @@ public class RemoteInterpreterServer extends Thread
       }
       if (!isTest) {
         SchedulerFactory.singleton().destroy();
+        ExecutorFactory.singleton().shutdownAll();
       }
 
       if ("yarn".equals(launcherEnv)) {
