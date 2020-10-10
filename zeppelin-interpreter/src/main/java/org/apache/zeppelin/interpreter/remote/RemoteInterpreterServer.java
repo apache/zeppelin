@@ -145,7 +145,7 @@ public class RemoteInterpreterServer extends Thread
   private ScheduledExecutorService resultCleanService = Executors.newSingleThreadScheduledExecutor();
 
   private boolean isTest;
-  
+
   private ZeppelinConfiguration zConf;
   // cluster manager client
   private ClusterManagerClient clusterManagerClient;
@@ -373,8 +373,8 @@ public class RemoteInterpreterServer extends Thread
 
   private LifecycleManager createLifecycleManager() throws Exception {
     String lifecycleManagerClass = zConf.getLifecycleManagerClass();
-    Class clazz = Class.forName(lifecycleManagerClass);
-    LOGGER.info("Creating interpreter lifecycle manager: " + lifecycleManagerClass);
+    Class<?> clazz = Class.forName(lifecycleManagerClass);
+    LOGGER.info("Creating interpreter lifecycle manager: {}", lifecycleManagerClass);
     return (LifecycleManager) clazz.getConstructor(ZeppelinConfiguration.class, RemoteInterpreterServer.class)
             .newInstance(zConf, this);
   }

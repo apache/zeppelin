@@ -21,10 +21,10 @@ import org.apache.thrift.TException;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.LifecycleManager;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterServer;
+import org.apache.zeppelin.scheduler.ExecutorFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
@@ -50,7 +50,8 @@ public class TimeoutLifecycleManager extends LifecycleManager {
             .ZEPPELIN_INTERPRETER_LIFECYCLE_MANAGER_TIMEOUT_CHECK_INTERVAL);
     long timeoutThreshold = zConf.getLong(
         ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_LIFECYCLE_MANAGER_TIMEOUT_THRESHOLD);
-    ScheduledExecutorService checkScheduler = Executors.newScheduledThreadPool(1);
+    ScheduledExecutorService checkScheduler = ExecutorFactory.singleton()
+        .createOrGetScheduled("TimeoutLifecycleManager", 1);
     checkScheduler.scheduleAtFixedRate(() -> {
       if ((System.currentTimeMillis() - lastBusyTimeInMillis) > timeoutThreshold) {
         LOGGER.info("Interpreter process idle time exceed threshold, try to stop it");
@@ -63,8 +64,8 @@ public class TimeoutLifecycleManager extends LifecycleManager {
         LOGGER.debug("Check idle time of interpreter");
       }
     }, checkInterval, checkInterval, MILLISECONDS);
-    LOGGER.info("TimeoutLifecycleManager is started with checkInterval: " + checkInterval
-        + ", timeoutThreshold: " + timeoutThreshold);
+    LOGGER.info("TimeoutLifecycleManager is started with checkInterval: {}, timeoutThreshold: ¸{}", checkInterval,
+        timeoutThreshold);
   }
 
   @Override
