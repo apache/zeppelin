@@ -788,10 +788,9 @@ class FlinkScalaInterpreter(val properties: Properties) {
     val flinkPackageJars =
       if (!StringUtils.isBlank(properties.getProperty("flink.execution.packages", ""))) {
         val packages = properties.getProperty("flink.execution.packages")
-        val dependencyDir = Files.createTempDirectory("zeppelin-flink-dep").toFile
-        val dependencyResolver = new DependencyResolver(dependencyDir.getAbsolutePath)
+        val dependencyResolver = new DependencyResolver(System.getProperty("user.home") + "/.m2/repository")
         packages.split(",")
-          .flatMap(e => JavaConversions.asScalaBuffer(dependencyResolver.load(e, dependencyDir)))
+          .flatMap(e => JavaConversions.asScalaBuffer(dependencyResolver.load(e)))
           .map(e => e.getAbsolutePath).toSeq
       } else {
         Seq.empty[String]
