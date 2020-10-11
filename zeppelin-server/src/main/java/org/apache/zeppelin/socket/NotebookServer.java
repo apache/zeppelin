@@ -1490,6 +1490,8 @@ public class NotebookServer extends WebSocketServlet
 
     if (!getNotebookService().runAllParagraphs(noteId, paragraphs, getServiceContext(fromMessage),
         new WebSocketServiceCallback<Paragraph>(conn))) {
+      // If one paragraph fails, we need to broadcast paragraph states to the client,
+      // or paragraphs not run will stay in PENDING state.
       Note note = getNotebookService().getNote(noteId, getServiceContext(fromMessage), new SimpleServiceCallback());
       if (note != null) {
         for (Paragraph p : note.getParagraphs()) {
