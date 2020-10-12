@@ -21,10 +21,14 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.apache.zeppelin.jupyter.JupyterUtil;
 import org.apache.zeppelin.jupyter.zformat.Note;
@@ -97,5 +101,17 @@ public class JupyterUtilTest {
     assertEquals("HTML", results.get(0).getType());
   }
 
+  @Test
+  public void testgetNbformat() {
+    InputStream resource = getClass().getResourceAsStream("/spark_example_notebook.zpln");
+    String text = new BufferedReader(
+      new InputStreamReader(resource, StandardCharsets.UTF_8))
+        .lines()
+        .collect(Collectors.joining("\n"));
+    JupyterUtil util = new JupyterUtil();
+    Nbformat nbformat = util.getNbformat(new StringReader(util.getNbformat(text)));
+    assertEquals(7 , nbformat.getCells().size());
+    assertEquals(3 , nbformat.getCells().stream().filter(c -> c instanceof MarkdownCell).count());
+    assertEquals(4 , nbformat.getCells().stream().filter(c -> c instanceof CodeCell).count());
   }
 }
