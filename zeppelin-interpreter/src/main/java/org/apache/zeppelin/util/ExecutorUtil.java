@@ -37,6 +37,7 @@ public class ExecutorUtil {
     try {
       // Wait a while for existing tasks to terminate
       if (!executor.awaitTermination(stopTimeoutVal, stopTimeoutUnit)) {
+        LOGGER.warn("{} was not shut down in the given time {} {} - interrupting now", name, stopTimeoutVal, stopTimeoutUnit);
         executor.shutdownNow(); // Cancel currently executing tasks
         // Wait a while for tasks to respond to being cancelled
         if (!executor.awaitTermination(stopTimeoutVal, stopTimeoutUnit)) {

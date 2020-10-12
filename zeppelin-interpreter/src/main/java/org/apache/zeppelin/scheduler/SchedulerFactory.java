@@ -22,8 +22,6 @@ import org.apache.zeppelin.util.ExecutorUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.annotations.VisibleForTesting;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -51,8 +49,7 @@ public class SchedulerFactory {
     return InstanceHolder.INSTANCE;
   }
 
-  @VisibleForTesting
-  SchedulerFactory() {
+  private SchedulerFactory() {
     ZeppelinConfiguration zConf = ZeppelinConfiguration.create();
     int threadPoolSize =
         zConf.getInt(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_SCHEDULER_POOL_SIZE);
@@ -62,7 +59,6 @@ public class SchedulerFactory {
 
   public void destroy() {
     LOGGER.info("Destroy all executors");
-    ExecutorFactory.singleton().shutdown(SCHEDULER_EXECUTOR_NAME);
     synchronized (schedulers) {
       // stop all child thread of schedulers
       for (Entry<String, Scheduler> scheduler : schedulers.entrySet()) {
