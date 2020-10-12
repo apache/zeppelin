@@ -16,14 +16,20 @@
  */
 package org.apache.zeppelin.jupyter.nbformat;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
-import com.google.gson.Gson;
 import org.apache.zeppelin.jupyter.JupyterUtil;
 import org.apache.zeppelin.jupyter.zformat.Note;
 import org.apache.zeppelin.jupyter.zformat.Paragraph;
@@ -49,6 +55,7 @@ public class JupyterUtilTest {
   public void getNote() throws Exception {
     InputStream resource = getClass().getResourceAsStream("/examples.ipynb");
     Note n = new JupyterUtil().getNote(new InputStreamReader(resource), "", "%python", "%md");
+    assertNotNull(n);
   }
 
   @Test
@@ -56,44 +63,55 @@ public class JupyterUtilTest {
     String noteName = "Note converted from Jupyter";
     InputStream resource = getClass().getResourceAsStream("/basic.ipynb");
     Note n = new JupyterUtil().getNote(new InputStreamReader(resource), "", "%python", "%md");
-    Gson gson = new Gson();
-    System.out.println(gson.toJson(n));
-    System.out.println(n.getParagraphs().size());
-    assertTrue(n.getParagraphs().size() == 8);
+    assertEquals(8, n.getParagraphs().size());
     assertTrue(n.getName().startsWith(noteName));
 
     Paragraph firstParagraph = n.getParagraphs().get(0);
-    assertTrue(firstParagraph.getText().equals("%python\nimport numpy as np"));
-    assertTrue(firstParagraph.getStatus().equals("FINISHED"));
+    assertEquals("%python\nimport numpy as np", firstParagraph.getText());
+    assertEquals("FINISHED", firstParagraph.getStatus());
     Map<String, Object> config = firstParagraph.getConfig();
 
-    assertTrue(((String) config.get("editorMode")).equals("ace/mode/python"));
-    assertTrue(((boolean) config.get("editorHide")) == false);
+    assertEquals("ace/mode/python", config.get("editorMode"));
+    assertFalse((boolean) config.get("editorHide"));
 
     Paragraph markdownParagraph = n.getParagraphs().get(6);
 
-    assertTrue(markdownParagraph.getText().equals("%md\n" +
+    assertEquals("%md\n" +
             "<div class=\"alert\" style=\"border: 1px solid #aaa; background: radial-gradient(ellipse at center, #ffffff 50%, #eee 100%);\">\n" +
             "<div class=\"row\">\n" +
             "    <div class=\"col-sm-1\"><img src=\"https://knowledgeanyhow.org/static/images/favicon_32x32.png\" style=\"margin-top: -6px\"/></div>\n" +
             "    <div class=\"col-sm-11\">This notebook was created using <a href=\"https://knowledgeanyhow.org\">IBM Knowledge Anyhow Workbench</a>.  To learn more, visit us at <a href=\"https://knowledgeanyhow.org\">https://knowledgeanyhow.org</a>.</div>\n" +
             "    </div>\n" +
-            "</div>"));
-    assertTrue(markdownParagraph.getStatus().equals("FINISHED"));
+            "</div>", markdownParagraph.getText());
+    assertEquals("FINISHED", markdownParagraph.getStatus());
 
     Map<String, Object> markdownConfig = markdownParagraph.getConfig();
-    assertTrue(((String) markdownConfig.get("editorMode")).equals("ace/mode/markdown"));
-    assertTrue(((boolean) markdownConfig.get("editorHide")) == true);
-    assertTrue(markdownParagraph.getResults().getCode().equals("SUCCESS"));
+    assertEquals("ace/mode/markdown", markdownConfig.get("editorMode"));
+    assertTrue((boolean) markdownConfig.get("editorHide"));
+    assertEquals("SUCCESS", markdownParagraph.getResults().getCode());
     List<TypeData> results = markdownParagraph.getResults().getMsg();
-    assertTrue(results.get(0).getData().equals("<div class=\"markdown-body\">\n" +
+    assertEquals("<div class=\"markdown-body\">\n" +
             "<div class=\"alert\" style=\"border: 1px solid #aaa; background: radial-gradient(ellipse at center, #ffffff 50%, #eee 100%);\">\n" +
             "<div class=\"row\">\n" +
             "    <div class=\"col-sm-1\"><img src=\"https://knowledgeanyhow.org/static/images/favicon_32x32.png\" style=\"margin-top: -6px\"/></div>\n" +
             "    <div class=\"col-sm-11\">This notebook was created using <a href=\"https://knowledgeanyhow.org\">IBM Knowledge Anyhow Workbench</a>.  To learn more, visit us at <a href=\"https://knowledgeanyhow.org\">https://knowledgeanyhow.org</a>.</div>\n" +
             "    </div>\n" +
             "</div>\n" +
-            "</div>"));
-    assertTrue(results.get(0).getType().equals("HTML"));
+            "</div>" , results.get(0).getData());
+    assertEquals("HTML", results.get(0).getType());
+  }
+
+  @Test
+  public void testgetNbformat() {
+    InputStream resource = getClass().getResourceAsStream("/spark_example_notebook.zpln");
+    String text = new BufferedReader(
+      new InputStreamReader(resource, StandardCharsets.UTF_8))
+        .lines()
+        .collect(Collectors.joining("\n"));
+    JupyterUtil util = new JupyterUtil();
+    Nbformat nbformat = util.getNbformat(new StringReader(util.getNbformat(text)));
+    assertEquals(7 , nbformat.getCells().size());
+    assertEquals(3 , nbformat.getCells().stream().filter(c -> c instanceof MarkdownCell).count());
+    assertEquals(4 , nbformat.getCells().stream().filter(c -> c instanceof CodeCell).count());
   }
 }
