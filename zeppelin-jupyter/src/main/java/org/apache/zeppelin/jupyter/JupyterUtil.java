@@ -21,7 +21,6 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.typeadapters.RuntimeTypeAdapterFactory;
-import com.sun.org.apache.xerces.internal.impl.xpath.regex.RegularExpression;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
@@ -57,13 +56,14 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  *
  */
 public class JupyterUtil {
 
-  private static Gson Pretty_Gson = new GsonBuilder().setPrettyPrinting().create();
+  private static final Gson PRETTY_GSON = new GsonBuilder().setPrettyPrinting().create();
 
   private final RuntimeTypeAdapterFactory<Cell> cellTypeFactory;
   private final RuntimeTypeAdapterFactory<Output> outputTypeFactory;
@@ -106,7 +106,7 @@ public class JupyterUtil {
       name = "Note converted from Jupyter_" + id;
     }
     note.setName(name);
-    
+
     String lineSeparator = System.lineSeparator();
     Paragraph paragraph;
     List<Paragraph> paragraphs = new ArrayList<>();
@@ -180,11 +180,11 @@ public class JupyterUtil {
     JsonObject nbformat = new JsonObject();
     JsonArray cells = new JsonArray();
 
-    RegularExpression MD = new RegularExpression("%md\\s");
-    RegularExpression SQL = new RegularExpression("%sql\\s");
-    RegularExpression UNKNOWN_MAGIC = new RegularExpression("%\\w+\\s");
-    RegularExpression HTML = new RegularExpression("%html\\s");
-    RegularExpression SPARK = new RegularExpression("%spark\\s");
+    Pattern mdPattern = Pattern.compile("%md\\s.*", Pattern.DOTALL);
+    Pattern sqlPattern = Pattern.compile("%sql\\s", Pattern.DOTALL);
+    Pattern unknownMagicPattern = Pattern.compile("%\\w+\\s", Pattern.DOTALL);
+    Pattern htmlPattern = Pattern.compile("%html\\s", Pattern.DOTALL);
+    Pattern sparkPattern = Pattern.compile("%spark\\s", Pattern.DOTALL);
 
     int index = 0;
     for (Paragraph paragraph : noteFormat.getParagraphs()) {
@@ -193,20 +193,19 @@ public class JupyterUtil {
 
       if (code == null || code.trim().isEmpty())
         continue;
-
-      if (MD.matches(code)) {
+      if (mdPattern.matcher(code).matches()) {
         codeJson.addProperty("cell_type", "markdown");
         codeJson.add("metadata", new JsonObject());
         codeJson.addProperty("source",
                 StringUtils.stripStart(StringUtils.stripStart(code, "%md"),
                         "\n"));  // remove '%md'
-      } else if (SQL.matches(code) || HTML.matches(code)) {
+      } else if (sqlPattern.matcher(code).matches() || htmlPattern.matcher(code).matches()) {
         codeJson.addProperty("cell_type", "code");
         codeJson.addProperty("execution_count", index);
         codeJson.add("metadata", new JsonObject());
         codeJson.add("outputs", new JsonArray());
         codeJson.addProperty("source", "%" + code);  // add % to convert to cell magic
-      } else if (SPARK.matches(code)) {
+      } else if (sparkPattern.matcher(code).matches()) {
         codeJson.addProperty("cell_type", "code");
         codeJson.addProperty("execution_count", index);
         JsonObject metadataJson = new JsonObject();
@@ -214,7 +213,7 @@ public class JupyterUtil {
         codeJson.add("metadata", metadataJson);
         codeJson.add("outputs", new JsonArray());
         codeJson.addProperty("source", code);
-      } else if (UNKNOWN_MAGIC.matches(code)) {
+      } else if (unknownMagicPattern.matcher(code).matches()) {
         // use raw cells for unknown magic
         codeJson.addProperty("cell_type", "raw");
         JsonObject metadataJson = new JsonObject();
@@ -257,7 +256,7 @@ public class JupyterUtil {
     nbformat.addProperty("nbformat", 4);
     nbformat.addProperty("nbformat_minor", 2);
     nbformat.add("cells", cells);
-    return Pretty_Gson.toJson(nbformat);
+    return PRETTY_GSON.toJson(nbformat);
   }
 
   public static void main(String[] args) throws ParseException, IOException {
