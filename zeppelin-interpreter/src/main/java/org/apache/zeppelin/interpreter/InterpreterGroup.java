@@ -49,7 +49,7 @@ public class InterpreterGroup {
   protected String id;
   private String webUrl;
   // sessionId --> interpreters
-  protected Map<String, List<Interpreter>> sessions = new ConcurrentHashMap();
+  protected Map<String, List<Interpreter>> sessions = new ConcurrentHashMap<>();
   private AngularObjectRegistry angularObjectRegistry;
   private InterpreterHookRegistry hookRegistry;
   private ResourcePool resourcePool;
@@ -115,15 +115,15 @@ public class InterpreterGroup {
   public AngularObjectRegistry getAngularObjectRegistry() {
     return angularObjectRegistry;
   }
-  
+
   public void setAngularObjectRegistry(AngularObjectRegistry angularObjectRegistry) {
     this.angularObjectRegistry = angularObjectRegistry;
   }
-  
+
   public InterpreterHookRegistry getInterpreterHookRegistry() {
     return hookRegistry;
   }
-  
+
   public void setInterpreterHookRegistry(InterpreterHookRegistry hookRegistry) {
     this.hookRegistry = hookRegistry;
   }
@@ -178,7 +178,7 @@ public class InterpreterGroup {
           interpreter.close();
           interpreter.getScheduler().stop();
         } catch (InterpreterException e) {
-          LOGGER.warn("Fail to close interpreter: " + interpreter.getClassName(), e);
+          LOGGER.warn("Fail to close interpreter: {}", interpreter.getClassName(), e);
         }
       }
     }
