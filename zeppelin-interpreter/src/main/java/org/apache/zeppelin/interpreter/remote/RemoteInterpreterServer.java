@@ -64,6 +64,7 @@ import org.apache.zeppelin.resource.DistributedResourcePool;
 import org.apache.zeppelin.resource.Resource;
 import org.apache.zeppelin.resource.ResourcePool;
 import org.apache.zeppelin.resource.ResourceSet;
+import org.apache.zeppelin.scheduler.ExecutorFactory;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.scheduler.JobListener;
@@ -161,12 +162,13 @@ public class RemoteInterpreterServer extends Thread
                                  String portRange,
                                  String interpreterGroupId,
                                  boolean isTest) throws Exception {
-    LOGGER.info("Starting remote interpreter server on port {}, intpEventServerAddress: {}:{}", port,
-            intpEventServerHost, intpEventServerPort);
+    super("RemoteInterpreterServer-Thread");
     if (null != intpEventServerHost) {
       this.intpEventServerHost = intpEventServerHost;
       this.intpEventServerPort = intpEventServerPort;
       if (!isTest) {
+        LOGGER.info("Starting remote interpreter server on port {}, intpEventServerAddress: {}:{}", port,
+          intpEventServerHost, intpEventServerPort);
         intpEventClient = new RemoteInterpreterEventClient(intpEventServerHost, intpEventServerPort);
       }
     } else {
@@ -227,18 +229,9 @@ public class RemoteInterpreterServer extends Thread
           if (launcherEnv != null && "yarn".endsWith(launcherEnv)) {
             try {
               YarnUtils.register(host, port);
-              Thread thread = new Thread(() -> {
-                while(!Thread.interrupted() && server.isServing()) {
-                  YarnUtils.heartbeat();
-                  try {
-                    Thread.sleep(60 * 1000);
-                  } catch (InterruptedException e) {
-                    LOGGER.warn(e.getMessage(), e);
-                  }
-                }
-              });
-              thread.setName("RM-Heartbeat-Thread");
-              thread.start();
+              ScheduledExecutorService yarnHeartbeat = ExecutorFactory.singleton()
+                .createOrGetScheduled("RM-Heartbeat", 1);
+              yarnHeartbeat.scheduleAtFixedRate(YarnUtils::heartbeat, 0, 1, TimeUnit.MINUTES);
             } catch (Exception e) {
               LOGGER.error("Fail to register yarn app", e);
             }
@@ -311,6 +304,7 @@ public class RemoteInterpreterServer extends Thread
       }
       if (!isTest) {
         SchedulerFactory.singleton().destroy();
+        ExecutorFactory.singleton().shutdownAll();
       }
 
       if ("yarn".equals(launcherEnv)) {
@@ -370,8 +364,8 @@ public class RemoteInterpreterServer extends Thread
 
   private LifecycleManager createLifecycleManager() throws Exception {
     String lifecycleManagerClass = zConf.getLifecycleManagerClass();
-    Class clazz = Class.forName(lifecycleManagerClass);
-    LOGGER.info("Creating interpreter lifecycle manager: " + lifecycleManagerClass);
+    Class<?> clazz = Class.forName(lifecycleManagerClass);
+    LOGGER.info("Creating interpreter lifecycle manager: {}", lifecycleManagerClass);
     return (LifecycleManager) clazz.getConstructor(ZeppelinConfiguration.class, RemoteInterpreterServer.class)
             .newInstance(zConf, this);
   }

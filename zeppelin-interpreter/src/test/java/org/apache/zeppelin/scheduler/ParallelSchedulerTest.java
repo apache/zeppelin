@@ -17,32 +17,28 @@
 
 package org.apache.zeppelin.scheduler;
 
+import static org.junit.Assert.assertEquals;
 
-import junit.framework.TestCase;
 import org.apache.zeppelin.scheduler.Job.Status;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class ParallelSchedulerTest extends TestCase {
+public class ParallelSchedulerTest {
 
-  private SchedulerFactory schedulerSvc;
+  private static SchedulerFactory schedulerSvc;
 
-  @Override
-  public void setUp() throws Exception {
-    schedulerSvc = new SchedulerFactory();
-  }
-
-  @Override
-  public void tearDown() {
-    schedulerSvc.destroy();
+  @BeforeClass
+  public static void setUp() {
+    schedulerSvc = SchedulerFactory.singleton();
   }
 
   @Test
   public void testRun() throws InterruptedException {
     Scheduler s = schedulerSvc.createOrGetParallelScheduler("test", 2);
 
-    Job job1 = new SleepingJob("job1", null, 500);
-    Job job2 = new SleepingJob("job2", null, 500);
-    Job job3 = new SleepingJob("job3", null, 500);
+    Job<?> job1 = new SleepingJob("job1", null, 500);
+    Job<?> job2 = new SleepingJob("job2", null, 500);
+    Job<?> job3 = new SleepingJob("job3", null, 500);
 
     s.submit(job1);
     s.submit(job2);
@@ -58,6 +54,6 @@ public class ParallelSchedulerTest extends TestCase {
     assertEquals(Status.FINISHED, job1.getStatus());
     assertEquals(Status.FINISHED, job2.getStatus());
     assertEquals(Status.RUNNING, job3.getStatus());
+    schedulerSvc.removeScheduler(s.getName());
   }
-
 }
