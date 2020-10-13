@@ -229,18 +229,9 @@ public class RemoteInterpreterServer extends Thread
           if (launcherEnv != null && "yarn".endsWith(launcherEnv)) {
             try {
               YarnUtils.register(host, port);
-              Thread thread = new Thread(() -> {
-                while(!Thread.interrupted() && server.isServing()) {
-                  YarnUtils.heartbeat();
-                  try {
-                    Thread.sleep(60 * 1000);
-                  } catch (InterruptedException e) {
-                    LOGGER.warn(e.getMessage(), e);
-                  }
-                }
-              });
-              thread.setName("RM-Heartbeat-Thread");
-              thread.start();
+              ScheduledExecutorService yarnHeartbeat = ExecutorFactory.singleton()
+                .createOrGetScheduled("RM-Heartbeat", 1);
+              yarnHeartbeat.scheduleAtFixedRate(YarnUtils::heartbeat, 0, 1, TimeUnit.MINUTES);
             } catch (Exception e) {
               LOGGER.error("Fail to register yarn app", e);
             }
