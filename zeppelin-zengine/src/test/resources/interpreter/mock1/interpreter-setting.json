@@ -5,6 +5,10 @@
     "className": "org.apache.zeppelin.interpreter.mock.MockInterpreter1",
     "properties": {
     },
+    "editor": {
+      "language": "python",
+      "editOnDblClick": false
+    },
     "option": {
       "remote": true,
       "port": -1,
