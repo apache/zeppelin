@@ -51,6 +51,7 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
   private String errorMessage;
 
   private final boolean isUserImpersonatedForSpark;
+  private final boolean timeoutDuringPending;
 
   private AtomicBoolean started = new AtomicBoolean(false);
   private Random rand = new Random();
@@ -77,7 +78,8 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
           String sparkImage,
           int connectTimeout,
           int connectionPoolSize,
-          boolean isUserImpersonatedForSpark
+          boolean isUserImpersonatedForSpark,
+          boolean timeoutDuringPending
   ) {
     super(connectTimeout, connectionPoolSize, intpEventServerHost, intpEventServerPort);
     this.client = client;
@@ -93,6 +95,7 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
     this.sparkImage = sparkImage;
     this.podName = interpreterGroupName.toLowerCase() + "-" + getRandomString(6);
     this.isUserImpersonatedForSpark = isUserImpersonatedForSpark;
+    this.timeoutDuringPending = timeoutDuringPending;
   }
 
 
@@ -132,6 +135,20 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
     if (portForward) {
       podPort = RemoteInterpreterUtils.findRandomAvailablePortOnAllLocalInterfaces();
       localPortForward = client.pods().inNamespace(namespace).withName(podName).portForward(K8S_INTERPRETER_SERVICE_PORT, podPort);
+    }
+
+    // special handling if we doesn't want timeout the process during lifecycle phase pending
+    if (!timeoutDuringPending) {
+      while ("pending".equalsIgnoreCase(getPodPhase()) && !Thread.currentThread().isInterrupted()) {
+        try {
+          Thread.sleep(1000);
+        } catch (InterruptedException e) {
+          LOGGER.error("Interrupt received during pending phase. Try to stop the interpreter and interrupt the current thread.", e);
+          errorMessage = "Start process was interrupted during the pending phase";
+          stop();
+          Thread.currentThread().interrupt();
+        }
+      }
     }
 
     long startTime = System.currentTimeMillis();
