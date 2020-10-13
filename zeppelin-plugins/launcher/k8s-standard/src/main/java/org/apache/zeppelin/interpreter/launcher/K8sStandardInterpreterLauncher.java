@@ -153,7 +153,8 @@ public class K8sStandardInterpreterLauncher extends InterpreterLauncher {
             zConf.getK8sSparkContainerImage(),
             getConnectTimeout(),
             getConnectPoolSize(),
-            isUserImpersonateForSparkInterpreter(context));
+            isUserImpersonateForSparkInterpreter(context),
+            zConf.getK8sTimeoutDuringPending());
   }
 
   protected Map<String, String> buildEnvFromProperties(InterpreterLaunchContext context) {
@@ -173,7 +174,7 @@ public class K8sStandardInterpreterLauncher extends InterpreterLauncher {
     return env;
   }
 
-  String readFile(String path, Charset encoding) throws IOException {
+  private String readFile(String path, Charset encoding) throws IOException {
     byte[] encoded = Files.readAllBytes(Paths.get(path));
     return new String(encoded, encoding);
   }
