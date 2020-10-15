@@ -77,14 +77,6 @@ public class InterpreterServiceTest {
   }
 
   @Test(expected = Exception.class)
-  public void invalidProxyUrl() throws Exception {
-    when(mockZeppelinConfiguration.getZeppelinProxyUrl()).thenReturn("invalidProxyPath");
-
-    interpreterService.installInterpreter(
-        new InterpreterInstallationRequest("name", "artifact"), null);
-  }
-
-  @Test(expected = Exception.class)
   public void interpreterAlreadyExist() throws Exception {
     String alreadyExistName = "aen";
     Path specificInterpreterDir =

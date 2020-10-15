@@ -44,6 +44,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -67,9 +68,9 @@ public class ConnectionManager {
 
   final Queue<NotebookSocket> connectedSockets = new ConcurrentLinkedQueue<>();
   // noteId -> connection
-  final Map<String, List<NotebookSocket>> noteSocketMap = new ConcurrentHashMap<>();
+  final Map<String, List<NotebookSocket>> noteSocketMap = new HashMap<>();
   // user -> connection
-  final Map<String, Queue<NotebookSocket>> userSocketMap = new ConcurrentHashMap<>();
+  final Map<String, Queue<NotebookSocket>> userSocketMap = new HashMap<>();
 
   /**
    * This is a special endpoint in the notebook websoket, Every connection in this Queue

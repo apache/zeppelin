@@ -347,16 +347,23 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
               = interpreterSetting.getConfig(interpreter.getClassName());
       mergeConfig(config);
 
+      setStatus(Status.PENDING);
+
       if (shouldSkipRunParagraph()) {
         LOGGER.info("Skip to run blank paragraph. {}", getId());
         setStatus(Job.Status.FINISHED);
         return true;
       }
 
-      if (getConfig().get("enabled") == null || (Boolean) getConfig().get("enabled")) {
+      if (isEnabled()) {
         setAuthenticationInfo(getAuthenticationInfo());
         interpreter.getScheduler().submit(this);
+       } else {
+        LOGGER.info("Skip disabled paragraph. {}", getId());
+        setStatus(Job.Status.FINISHED);
+        return true;
       }
+
 
       if (blocking) {
         while (!getStatus().isCompleted()) {

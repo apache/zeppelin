@@ -134,7 +134,7 @@ public class InterpreterSetting {
   private transient ApplicationEventListener appEventListener;
   private transient DependencyResolver dependencyResolver;
 
-  private transient ZeppelinConfiguration conf = new ZeppelinConfiguration();
+  private transient ZeppelinConfiguration conf = ZeppelinConfiguration.create();
 
   private transient RecoveryStorage recoveryStorage;
   private transient RemoteInterpreterEventServer interpreterEventServer;
@@ -975,7 +975,7 @@ public class InterpreterSetting {
             LOGGER.info("Start to download dependencies for interpreter: {}", name);
             for (Dependency d : deps) {
               File destDir = new File(
-                  conf.getRelativeDir(ZeppelinConfiguration.ConfVars.ZEPPELIN_DEP_LOCALREPO));
+                  conf.getAbsoluteDir(ZeppelinConfiguration.ConfVars.ZEPPELIN_DEP_LOCALREPO));
 
               if (d.getExclusions() != null) {
                 dependencyResolver.load(d.getGroupArtifactVersion(), d.getExclusions(),

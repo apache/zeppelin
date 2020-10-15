@@ -21,7 +21,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.sonatype.aether.RepositoryException;
+import org.eclipse.aether.RepositoryException;
 
 import java.io.IOException;
 import java.util.ArrayList;

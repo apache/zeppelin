@@ -39,7 +39,7 @@ public class StandardInterpreterLauncherTest {
 
   @Test
   public void testLauncher() throws IOException {
-    ZeppelinConfiguration zConf = new ZeppelinConfiguration();
+    ZeppelinConfiguration zConf = ZeppelinConfiguration.create();
     StandardInterpreterLauncher launcher = new StandardInterpreterLauncher(zConf, null);
     Properties properties = new Properties();
     properties.setProperty("ENV_1", "VALUE_1");
@@ -64,7 +64,7 @@ public class StandardInterpreterLauncherTest {
 
   @Test
   public void testConnectTimeOut() throws IOException {
-    ZeppelinConfiguration zConf = new ZeppelinConfiguration();
+    ZeppelinConfiguration zConf = ZeppelinConfiguration.create();
     StandardInterpreterLauncher launcher = new StandardInterpreterLauncher(zConf, null);
     Properties properties = new Properties();
     properties.setProperty(

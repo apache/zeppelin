@@ -24,8 +24,8 @@ import org.apache.zeppelin.display.AngularObjectRegistryListener;
 import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
 import org.junit.Test;
-import org.sonatype.aether.RepositoryException;
-import org.sonatype.aether.repository.RemoteRepository;
+import org.eclipse.aether.RepositoryException;
+import org.eclipse.aether.repository.RemoteRepository;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -182,7 +182,7 @@ public class InterpreterSettingManagerTest extends AbstractInterpreterTest {
     assertEquals(6, interpreterSettingManager.get().size());
 
     // load it again
-    InterpreterSettingManager interpreterSettingManager3 = new InterpreterSettingManager(new ZeppelinConfiguration(),
+    InterpreterSettingManager interpreterSettingManager3 = new InterpreterSettingManager(ZeppelinConfiguration.create(),
         mock(AngularObjectRegistryListener.class), mock(RemoteInterpreterProcessListener.class), mock(ApplicationEventListener.class));
     assertEquals(6, interpreterSettingManager3.get().size());
 

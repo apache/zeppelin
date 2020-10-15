@@ -36,7 +36,6 @@
   <properties>
 
     <!--library versions-->
-    <commons.httpclient.version>4.3.6</commons.httpclient.version>
     <jersey.version>2.27</jersey.version>
     <jersey.servlet.version>1.13</jersey.servlet.version>
     <javax.ws.rsapi.version>2.1</javax.ws.rsapi.version>
@@ -91,6 +90,11 @@
           <artifactId>jcl-over-slf4j</artifactId>
         </exclusion>
       </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.httpcomponents</groupId>
+      <artifactId>httpclient</artifactId>
     </dependency>
 
     <dependency>

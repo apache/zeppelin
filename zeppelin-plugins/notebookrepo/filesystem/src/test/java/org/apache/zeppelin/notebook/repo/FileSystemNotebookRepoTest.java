@@ -51,7 +51,7 @@ public class FileSystemNotebookRepoTest {
   @Before
   public void setUp() throws IOException {
     notebookDir = Files.createTempDirectory("FileSystemNotebookRepoTest").toFile().getAbsolutePath();
-    zConf = new ZeppelinConfiguration();
+    zConf = ZeppelinConfiguration.create();
     System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_DIR.getVarName(), notebookDir);
     hadoopConf = new Configuration();
     fs = FileSystem.get(hadoopConf);

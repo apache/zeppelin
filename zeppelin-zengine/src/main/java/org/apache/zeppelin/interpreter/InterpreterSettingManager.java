@@ -68,9 +68,9 @@ import org.eclipse.jetty.util.annotation.ManagedAttribute;
 import org.eclipse.jetty.util.annotation.ManagedObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.sonatype.aether.repository.Proxy;
-import org.sonatype.aether.repository.RemoteRepository;
-import org.sonatype.aether.repository.Authentication;
+import org.eclipse.aether.repository.Proxy;
+import org.eclipse.aether.repository.RemoteRepository;
+import org.eclipse.aether.repository.Authentication;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -745,7 +745,7 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
         LOGGER.info("Start to copy dependencies for interpreter: {}", setting.getName());
         for (Dependency d : deps) {
           File destDir = new File(
-              conf.getRelativeDir(ConfVars.ZEPPELIN_DEP_LOCALREPO));
+              conf.getAbsoluteDir(ConfVars.ZEPPELIN_DEP_LOCALREPO));
 
           int numSplits = d.getGroupArtifactVersion().split(":").length;
           if (!(numSplits >= 3 && numSplits <= 6)) {

@@ -86,7 +86,7 @@ public class GCSNotebookRepoTest {
     this.storage = LocalStorageHelper.getOptions().getService();
 
     System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_GCS_STORAGE_DIR.getVarName(), uriPath);
-    this.notebookRepo = new GCSNotebookRepo(new ZeppelinConfiguration(), storage);
+    this.notebookRepo = new GCSNotebookRepo(ZeppelinConfiguration.create(), storage);
   }
 
   private static Note makeRunningNote() {
@@ -229,7 +229,7 @@ public class GCSNotebookRepoTest {
   public void testInitialization_pathNotSet() throws Exception {
     try {
       System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_GCS_STORAGE_DIR.getVarName(), "");
-      new GCSNotebookRepo(new ZeppelinConfiguration(), storage);
+      new GCSNotebookRepo(ZeppelinConfiguration.create(), storage);
       fail();
     } catch (IOException e) {}
   }
@@ -238,7 +238,7 @@ public class GCSNotebookRepoTest {
   public void testInitialization_malformedPath() throws Exception {
     try {
       System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_GCS_STORAGE_DIR.getVarName(), "foo");
-      new GCSNotebookRepo(new ZeppelinConfiguration(), storage);
+      new GCSNotebookRepo(ZeppelinConfiguration.create(), storage);
       fail();
     } catch (IOException e) {}
   }

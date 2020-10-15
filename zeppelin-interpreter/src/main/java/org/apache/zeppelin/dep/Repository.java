@@ -18,10 +18,12 @@
 package org.apache.zeppelin.dep;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
+
 import com.google.gson.Gson;
 import org.apache.zeppelin.common.JsonSerializable;
-import org.sonatype.aether.repository.Authentication;
-import org.sonatype.aether.repository.Proxy;
+import org.eclipse.aether.repository.Authentication;
+import org.eclipse.aether.repository.Proxy;
+import org.eclipse.aether.util.repository.AuthenticationBuilder;
 
 /**
  *
@@ -86,7 +88,7 @@ public class Repository implements JsonSerializable {
   public Authentication getAuthentication() {
     Authentication auth = null;
     if (this.username != null && this.password != null) {
-      auth = new Authentication(this.username, this.password);
+      auth = new AuthenticationBuilder().addUsername(this.username).addPassword(this.password).build();
     }
     return auth;
   }
@@ -95,7 +97,7 @@ public class Repository implements JsonSerializable {
     if (isNotBlank(proxyHost) && proxyPort != null) {
       if (isNotBlank(proxyLogin)) {
         return new Proxy(proxyProtocol, proxyHost, proxyPort,
-                new Authentication(proxyLogin, proxyPassword));
+                new AuthenticationBuilder().addUsername(proxyLogin).addPassword(proxyPassword).build());
       } else {
         return new Proxy(proxyProtocol, proxyHost, proxyPort, null);
       }

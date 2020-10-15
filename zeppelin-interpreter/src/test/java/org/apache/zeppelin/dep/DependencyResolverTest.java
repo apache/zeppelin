@@ -23,7 +23,7 @@ import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.sonatype.aether.RepositoryException;
+import org.eclipse.aether.RepositoryException;
 
 import java.io.File;
 import java.io.FileNotFoundException;

@@ -43,7 +43,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.List;
 
 import static org.junit.Assert.assertTrue;
 
@@ -82,8 +81,8 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
     try {
       System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HOME.getVarName(), new File("../").getAbsolutePath());
       ZeppelinConfiguration conf = ZeppelinConfiguration.create();
-      shiroPath = conf.getRelativeDir(String.format("%s/shiro.ini", conf.getConfDir()));
-      interpreterOptionPath = conf.getRelativeDir(String.format("%s/interpreter.json", conf.getConfDir()));
+      shiroPath = conf.getAbsoluteDir(String.format("%s/shiro.ini", conf.getConfDir()));
+      interpreterOptionPath = conf.getAbsoluteDir(String.format("%s/interpreter.json", conf.getConfDir()));
       File shiroFile = new File(shiroPath);
       if (shiroFile.exists()) {
         originalShiro = StringUtils.join(FileUtils.readLines(shiroFile, "UTF-8"), "\n");

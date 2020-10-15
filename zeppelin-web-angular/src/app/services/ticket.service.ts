@@ -10,7 +10,7 @@
  * limitations under the License.
  */
 
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { forkJoin, BehaviorSubject, Subject } from 'rxjs';
@@ -84,21 +84,18 @@ export class TicketService {
   }
 
   login(userName: string, password: string) {
-    return this.httpClient
-      .post<ITicket>(`${this.baseUrlService.getRestApiBase()}/login`, `password=${password}&userName=${userName}`, {
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
-      })
-      .pipe(
-        tap(
-          data => {
-            this.nzMessageService.success('Login Success');
-            this.setTicket(data);
-          },
-          () => {
-            this.nzMessageService.warning("The username and password that you entered don't match.");
-          }
-        )
-      );
+    const payload = new HttpParams().set('userName', userName).set('password', password);
+    return this.httpClient.post<ITicket>(`${this.baseUrlService.getRestApiBase()}/login`, payload).pipe(
+      tap(
+        data => {
+          this.nzMessageService.success('Login Success');
+          this.setTicket(data);
+        },
+        () => {
+          this.nzMessageService.warning("The username and password that you entered don't match.");
+        }
+      )
+    );
   }
 
   getZeppelinVersion() {

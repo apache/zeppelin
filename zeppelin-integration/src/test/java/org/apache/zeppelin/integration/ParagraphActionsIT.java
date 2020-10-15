@@ -223,7 +223,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       ZeppelinITUtils.sleep(2000, false);
 
       collector.checkThat("Paragraph status is ",
-          getParagraphStatus(1), CoreMatchers.equalTo("PENDING")
+          getParagraphStatus(1), CoreMatchers.equalTo("FINISHED")
       );
 
       driver.navigate().refresh();

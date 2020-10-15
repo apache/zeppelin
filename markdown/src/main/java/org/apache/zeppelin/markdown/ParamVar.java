@@ -31,7 +31,7 @@ import java.util.Map;
 public class ParamVar<K, V> extends Var<Map<K, V>> {
 
   public ParamVar() {
-    super(new HashMap<K, V>());
+    super(new HashMap<>());
   }
 
   public boolean put(K key, V value) {
