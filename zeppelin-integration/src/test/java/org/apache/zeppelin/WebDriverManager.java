@@ -88,6 +88,9 @@ public class WebDriverManager {
         displayImmutable = ImmutableMap.of("DISPLAY", ":99");
       }
 
+      System.setProperty(FirefoxDriver.SystemProperty.BROWSER_LOGFILE, "/dev/null");
+      System.setProperty(FirefoxDriver.SystemProperty.DRIVER_USE_MARIONETTE,"true");
+
       driver = new FirefoxDriver(
              new GeckoDriverService.Builder()
                .usingDriverExecutable(new File(tempPath + "geckodriver"))
