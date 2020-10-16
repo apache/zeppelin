@@ -238,6 +238,47 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
     }
   }
 
+  @Test
+  public void testRunAllUserCodeFail() throws Exception {
+    try {
+      createNewNote();
+      waitForParagraph(1, "READY");
+      setTextOfParagraph(1, "syntax error");
+      driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@class='icon-settings']")).click();
+      driver.findElement(By.xpath(getParagraphXPath(1) + "//ul/li/a[@ng-click=\"insertNew('below')\"]"))
+              .click();
+      waitForParagraph(2, "READY");
+      setTextOfParagraph(2, "println (\"abcd\")");
+
+
+      driver.findElement(By.xpath(".//*[@id='main']//button[contains(@ng-click, 'runAllParagraphs')]")).sendKeys(Keys.ENTER);
+      ZeppelinITUtils.sleep(1000, false);
+      driver.findElement(By.xpath("//div[@class='modal-dialog'][contains(.,'Run all paragraphs?')]" +
+              "//div[@class='modal-footer']//button[contains(.,'OK')]")).click();
+      ZeppelinITUtils.sleep(2000, false);
+
+
+      collector.checkThat("First paragraph status is ",
+              getParagraphStatus(1), CoreMatchers.equalTo("ERROR")
+      );
+      collector.checkThat("Second paragraph status is ",
+              getParagraphStatus(2), CoreMatchers.equalTo("READY")
+      );
+
+      String xpathToOutputField = getParagraphXPath(2) + "//div[contains(@id,\"_text\")]";
+      collector.checkThat("Second paragraph output is ",
+              driver.findElements(By.xpath(xpathToOutputField)).size(),
+              CoreMatchers.equalTo(0));
+
+
+      driver.navigate().refresh();
+      ZeppelinITUtils.sleep(3000, false);
+      deleteTestNotebook(driver);
+    } catch (Exception e) {
+      handleException("Exception in ParagraphActionsIT while testRunAllUserCodeFail ", e);
+    }
+  }
+
 //  @Test
   public void testRunOnSelectionChange() throws Exception {
     try {
