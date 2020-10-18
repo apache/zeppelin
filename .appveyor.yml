@@ -26,8 +26,61 @@ build: off
 os:
   - Visual Studio 2015
 
+environment:
+  INTERPRETERS: '!beam,!hbase,!pig,!jdbc,!file,!flink,!ignite,!kylin,!lens,!cassandra,!elasticsearch,!bigquery,!alluxio,!scio,!livy,!groovy,!sap,!java,!geode,!neo4j,!hazelcastjet,!submarine,!sparql,!mongodb'
+  matrix:
+    - BUILD_FLAG: install -DskipTests -DskipRat -pl !beam,!hbase,!pig,!jdbc,!file,!flink,!ignite,!kylin,!lens,!cassandra,!elasticsearch,!bigquery,!alluxio,!scio,!livy,!groovy,!sap,!java,!geode,!neo4j,!hazelcastjet,!submarine,!sparql,!mongodb -Phadoop2 -Pscala-2.11
+      TEST_FLAG: verify -DskipRat -pl zeppelin-web -Phadoop2 -Pscala-2.11 -Pweb-e2e-win
+
+init:
+  - git config --global core.autocrlf true
+  - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+
+cache:
+  - C:\Users\appveyor\.m2\repository\org\apache
+  - C:\Users\appveyor\.m2\repository\org\codehaus
+  - C:\Users\appveyor\.m2\repository\com
+  - zeppelin-common\target
+  - zeppelin-distribution\target
+  - zeppelin-interpreter\target
+  - zeppelin-interpreter-shaded\target
+  - zeppelin-interpreter-parent\target
+  - zeppelin-interpreter-integration\target
+  - zeppelin-jupyter\target
+  - zeppelin-jupyter-interpreter\target
+  - zeppelin-jupyter-interpreter-shaded\target
+  - zeppelin-web\target
+  - zeppelin-web-angular\target
+  - zeppelin-web\node
+  - zeppelin-web\node_modules
+
 install:
   - echo "Install"
-
+  - cmd: echo %M2_HOME%
+  - echo "%~nx0"
+  - echo %CD%
+  - cmd: mvn --version
+  - cmd: java -version
+  - ps: |     
+      if (Test-Path env:SPARK_VER) {
+        $SPARK_VERSION = $env:SPARK_VER
+        $HADOOP_VERSION = $env:HADOOP_VER
+        $SPARK_ARCHIVE = "spark-$SPARK_VERSION-bin-hadoop$HADOOP_VERSION"
+        (new-object System.Net.WebClient).DownloadFile(
+          $('http://archive.apache.org/dist/spark/spark-' + $SPARK_VERSION + '/' + $SPARK_ARCHIVE + '.tgz'),
+          $($SPARK_ARCHIVE + '.tgz')
+        )
+        $cont=true
+        7z x $($SPARK_ARCHIVE+'.tgz') 
+        7z x $($SPARK_ARCHIVE+'.tar')
+      }
+      
 build_script:
-  - echo "Build"
+  - echo "Build  mvn %BUILD_FLAG% %MODULES% %PROFILE% -B"
+  - cmd: mvn %BUILD_FLAG% %MODULES% %PROFILE% -B
+  - echo "script-build-finished MARK"
+  - ps: echo "Size of caches (bytes):"
+  - ps: Get-ChildItem -Recurse 'C:\Users\appveyor\.m2\repository\org\apache' | Measure-Object -Property Length -Sum
+test_script:
+  - echo "Test mvn %TEST_FLAG% %TEST_MODULES% %PROFILE% -B %TEST_PROJECTS%"
+  - cmd: mvn %TEST_FLAG% %TEST_MODULES% %PROFILE% -B %TEST_PROJECTS%

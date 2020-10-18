@@ -35,6 +35,8 @@
 
   <properties>
     <web.e2e.disabled>true</web.e2e.disabled>
+    <web.e2e.win.disabled>true</web.e2e.win.disabled>
+    <web.e2e.lin.disabled>true</web.e2e.lin.disabled>
     <web.e2e.enabled>false</web.e2e.enabled>
     <zeppelin.daemon.package.base>../bin</zeppelin.daemon.package.base>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -130,10 +132,27 @@
         <artifactId>maven-antrun-plugin</artifactId>
         <executions>
           <execution>
+            <id>start-zeppelin-win</id>
+            <phase>pre-integration-test</phase>
+            <configuration>
+              <skip>${web.e2e.win.disabled}</skip>
+              <target unless="skipTests">
+                <exec executable="cmd" dir="${zeppelin.daemon.package.base}" spawn="false">
+                  <arg value="/c"/>
+                  <arg value="zeppelin-daemon.cmd"/>
+                  <arg value="start" />
+                </exec>
+              </target>
+            </configuration>
+            <goals>
+              <goal>run</goal>
+            </goals>
+          </execution>
+          <execution>
             <id>start-zeppelin</id>
             <phase>pre-integration-test</phase>
             <configuration>
-              <skip>${web.e2e.disabled}</skip>
+              <skip>${web.e2e.lin.disabled}</skip>
               <target unless="skipTests">
                 <exec executable="./zeppelin-daemon.sh" dir="${zeppelin.daemon.package.base}" spawn="false">
                   <arg value="start" />
@@ -144,12 +163,28 @@
               <goal>run</goal>
             </goals>
           </execution>
-
+          <execution>
+            <id>stop-zeppelin-win</id>
+            <phase>post-integration-test</phase>
+            <configuration>
+              <skip>${web.e2e.win.disabled}</skip>
+              <target unless="skipTests">
+                <exec executable="cmd" dir="${zeppelin.daemon.package.base}" spawn="false">
+   	              <arg value="/c"/>
+                  <arg value="zeppelin-daemon.cmd"/>
+                  <arg value="stop" />
+                </exec>
+              </target>
+            </configuration>
+            <goals>
+              <goal>run</goal>
+            </goals>
+          </execution>
           <execution>
             <id>stop-zeppelin</id>
             <phase>post-integration-test</phase>
             <configuration>
-              <skip>${web.e2e.disabled}</skip>
+              <skip>${web.e2e.lin.disabled}</skip>
               <target unless="skipTests">
                 <exec executable="./zeppelin-daemon.sh" dir="${zeppelin.daemon.package.base}" spawn="false">
                   <arg value="stop" />
@@ -233,6 +268,17 @@
       <properties>
         <web.e2e.disabled>false</web.e2e.disabled>
         <web.e2e.enabled>true</web.e2e.enabled>
+        <web.e2e.win.disabled>true</web.e2e.win.disabled>
+        <web.e2e.lin.disabled>false</web.e2e.lin.disabled>
+      </properties>
+    </profile>
+    <profile>
+      <id>web-e2e-win</id>
+      <properties>
+        <web.e2e.disabled>false</web.e2e.disabled>
+        <web.e2e.enabled>true</web.e2e.enabled>
+        <web.e2e.win.disabled>false</web.e2e.win.disabled>
+        <web.e2e.lin.disabled>true</web.e2e.lin.disabled>
       </properties>
     </profile>
   </profiles>
