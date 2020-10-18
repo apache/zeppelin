@@ -22,6 +22,7 @@ import com.google.common.base.Function;
 import java.io.File;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
+import java.util.concurrent.TimeUnit;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.By;
@@ -43,6 +44,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 abstract public class AbstractZeppelinIT {
+
   protected static WebDriver driver;
 
   protected final static Logger LOG = LoggerFactory.getLogger(AbstractZeppelinIT.class);
@@ -52,8 +54,18 @@ abstract public class AbstractZeppelinIT {
   protected static final long MAX_PARAGRAPH_TIMEOUT_SEC = 120;
 
   protected void setTextOfParagraph(int paragraphNo, String text) {
-    String editorId = pollingWait(
-        By.xpath(getParagraphXPath(paragraphNo) + "//div[contains(@class, 'editor')]"),
+    String paragraphXpath = getParagraphXPath(paragraphNo);
+
+    try {
+      driver.manage().timeouts().implicitlyWait(100, TimeUnit.MILLISECONDS);
+      // make sure ace code is visible, if not click on show editor icon to make it visible
+      driver.findElement(By.xpath(paragraphXpath + "//span[@class='icon-size-fullscreen']")).click();
+    } catch (NoSuchElementException e) {
+      // ignore
+    } finally {
+      driver.manage().timeouts().implicitlyWait(AbstractZeppelinIT.MAX_BROWSER_TIMEOUT_SEC, TimeUnit.SECONDS);
+    }
+    String editorId = pollingWait(By.xpath(paragraphXpath + "//div[contains(@class, 'editor')]"),
         MIN_IMPLICIT_WAIT).getAttribute("id");
     if (driver instanceof JavascriptExecutor) {
       ((JavascriptExecutor) driver).executeScript("ace.edit('" + editorId + "'). setValue('" + text + "')");
