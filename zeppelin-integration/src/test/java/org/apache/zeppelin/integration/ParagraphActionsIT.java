@@ -57,7 +57,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
   public void testCreateNewButton() throws Exception {
     try {
       createNewNote();
-      Actions action = new Actions(driver);
+
       waitForParagraph(1, "READY");
       Integer oldNosOfParas = driver.findElements(By.xpath("//div[@ng-controller=\"ParagraphCtrl\"]")).size();
       collector.checkThat("Before Insert New : the number of  paragraph ",
@@ -80,9 +80,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
 
       setTextOfParagraph(1, " original paragraph ");
 
-      WebElement newPara = driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class,'new-paragraph')][1]"));
-      action.moveToElement(newPara).click().build().perform();
-      ZeppelinITUtils.sleep(1000, false);
+      clickAndWait(By.xpath(getParagraphXPath(1) + "//div[contains(@class,'new-paragraph')][1]"));
       waitForParagraph(1, "READY");
 
       collector.checkThat("Paragraph is created above",
@@ -90,8 +88,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
           CoreMatchers.equalTo(StringUtils.EMPTY));
       setTextOfParagraph(1, " this is above ");
 
-      newPara = driver.findElement(By.xpath(getParagraphXPath(2) + "//div[contains(@class,'new-paragraph')][2]"));
-      action.moveToElement(newPara).click().build().perform();
+      clickAndWait(By.xpath(getParagraphXPath(2) + "//div[contains(@class,'new-paragraph')][2]"));
 
       waitForParagraph(3, "READY");
 
