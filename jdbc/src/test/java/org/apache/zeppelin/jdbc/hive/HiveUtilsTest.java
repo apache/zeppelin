@@ -28,7 +28,7 @@ public class HiveUtilsTest {
 
   @Test
   public void testJobURL() {
-    Optional<String> jobURL = HiveUtils.extractJobURL(
+    Optional<String> jobURL = HiveUtils.extractMRJobURL(
             "INFO  : The url to track the job: " +
             "http://localhost:8088/proxy/application_1591195707498_0064/\n" +
             "INFO  : Starting Job = job_1591195707498_0064, " +

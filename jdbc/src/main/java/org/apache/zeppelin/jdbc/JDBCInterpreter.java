@@ -125,6 +125,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
   private static final char TAB = '\t';
   private static final String TABLE_MAGIC_TAG = "%table ";
   private static final String EXPLAIN_PREDICATE = "EXPLAIN ";
+  private static final String CANCEL_REASON = "cancel_reason";
 
   static final String COMMON_MAX_LINE = COMMON_KEY + DOT + MAX_LINE_KEY;
 
@@ -160,7 +161,6 @@ public class JDBCInterpreter extends KerberosInterpreter {
 
   private int maxLineResults;
   private int maxRows;
-
   private SqlSplitter sqlSplitter;
 
   private Map<String, ScheduledExecutorService> refreshExecutorServices = new HashMap<>();
@@ -735,7 +735,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
           String jdbcURL = getJDBCConfiguration(user).getPropertyMap(dbPrefix).getProperty(URL_KEY);
           if (jdbcURL != null && jdbcURL.startsWith("jdbc:hive2://")) {
             HiveUtils.startHiveMonitorThread(statement, context,
-                    Boolean.parseBoolean(getProperty("hive.log.display", "true")));
+                    Boolean.parseBoolean(getProperty("hive.log.display", "true")), this);
           }
           boolean isResultSetAvailable = statement.execute(sqlToExecute);
           getJDBCConfiguration(user).setConnectionInDBDriverPoolSuccessful(dbPrefix);
@@ -932,8 +932,21 @@ public class JDBCInterpreter extends KerberosInterpreter {
     } catch (SQLException e) {
       LOGGER.error("Error while cancelling...", e);
     }
+
+    String cancelReason = context.getLocalProperties().get(CANCEL_REASON);
+    if (StringUtils.isNotBlank(cancelReason)) {
+      try {
+        context.out.write(cancelReason);
+      } catch (IOException e) {
+        LOGGER.error("Fail to write cancel reason");
+      }
+    }
   }
 
+  public void cancel(InterpreterContext context, String errorMessage) {
+    context.getLocalProperties().put(CANCEL_REASON, errorMessage);
+    cancel(context);
+  }
   /**
    *
    *
