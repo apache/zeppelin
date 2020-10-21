@@ -144,7 +144,7 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
                         && jar.toFile().getName().endsWith(".jar"))
                 .map(jar -> jar.toAbsolutePath().toString())
                 .collect(Collectors.toList());
-        if (interpreterJars.size() == 0) {
+        if (interpreterJars.isEmpty()) {
           throw new IOException("zeppelin-interpreter-shaded jar is not found");
         } else if (interpreterJars.size() > 1) {
           throw new IOException("more than 1 zeppelin-interpreter-shaded jars are found: "
@@ -171,7 +171,7 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
       sparkConfBuilder.append(" --proxy-user " + context.getUserName());
     }
 
-    env.put("ZEPPELIN_SPARK_CONF", escapeSpecialCharacter(sparkConfBuilder.toString()));
+    env.put("ZEPPELIN_SPARK_CONF", sparkConfBuilder.toString());
 
     // set these env in the order of
     // 1. interpreter-setting
@@ -215,10 +215,10 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
         env.put("ZEPPELIN_INTP_CLASSPATH", driverExtraClassPath);
       }
     } else {
-      LOGGER.warn("spark-defaults.conf doesn't exist: " + sparkDefaultFile.getAbsolutePath());
+      LOGGER.warn("spark-defaults.conf doesn't exist: {}", sparkDefaultFile.getAbsolutePath());
     }
 
-    LOGGER.debug("buildEnvFromProperties: " + env);
+    LOGGER.debug("buildEnvFromProperties: {}", env);
     return env;
 
   }

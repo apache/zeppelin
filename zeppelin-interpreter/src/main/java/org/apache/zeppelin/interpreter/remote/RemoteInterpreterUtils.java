@@ -18,8 +18,6 @@
 package org.apache.zeppelin.interpreter.remote;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.thrift.transport.TServerSocket;
-import org.apache.thrift.transport.TTransportException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,31 +44,18 @@ public class RemoteInterpreterUtils {
   }
 
   public static int findRandomAvailablePortOnAllLocalInterfaces() throws IOException {
-    int port;
-    try (ServerSocket socket = new ServerSocket(0);) {
-      port = socket.getLocalPort();
+    try (ServerSocket socket = new ServerSocket(0)) {
+      return socket.getLocalPort();
     }
-    return port;
   }
 
-  /**
-   * start:end
-   *
-   * @param portRange
-   * @return
-   * @throws IOException
-   */
-  public static TServerSocket createTServerSocket(String portRange)
-      throws IOException {
-
-    TServerSocket tSocket = null;
+  public static int findAvailablePort(String portRange) throws IOException {
     // ':' is the default value which means no constraints on the portRange
     if (StringUtils.isBlank(portRange) || portRange.equals(":")) {
-      try {
-        tSocket = new TServerSocket(0);
-        return tSocket;
-      } catch (TTransportException e) {
-        throw new IOException("Fail to create TServerSocket", e);
+      try (ServerSocket socket = new ServerSocket(0)) {
+        return socket.getLocalPort();
+      } catch (IOException e) {
+        throw new IOException("Failed to allocate a automatic port", e);
       }
     }
     // valid user registered port https://en.wikipedia.org/wiki/Registered_port
@@ -84,10 +69,9 @@ public class RemoteInterpreterUtils {
       end = Integer.parseInt(ports[1]);
     }
     for (int i = start; i <= end; ++i) {
-      try {
-        tSocket = new TServerSocket(i);
-        return tSocket;
-      } catch (Exception e) {
+      try (ServerSocket socket = new ServerSocket(i)) {
+        return socket.getLocalPort();
+      } catch (IOException e) {
         // ignore this
       }
     }
