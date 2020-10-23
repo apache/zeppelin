@@ -706,18 +706,17 @@ public class JDBCInterpreter extends KerberosInterpreter {
     try {
       connection = getConnection(dbPrefix, context);
     } catch (Exception e) {
-      String errorMsg = ExceptionUtils.getStackTrace(e);
+      LOGGER.error("Fail to getConnection", e);
       try {
         closeDBPool(user, dbPrefix);
       } catch (SQLException e1) {
         LOGGER.error("Cannot close DBPool for user, dbPrefix: " + user + dbPrefix, e1);
       }
-      try {
-        context.out.write(errorMsg);
-      } catch (IOException ex) {
-        throw new InterpreterException("Fail to write output", ex);
+      if (e instanceof SQLException) {
+        return new InterpreterResult(Code.ERROR, e.getMessage());
+      } else {
+        return new InterpreterResult(Code.ERROR, ExceptionUtils.getStackTrace(e));
       }
-      return new InterpreterResult(Code.ERROR);
     }
     if (connection == null) {
       return new InterpreterResult(Code.ERROR, "Prefix not found.");
@@ -806,7 +805,11 @@ public class JDBCInterpreter extends KerberosInterpreter {
       }
     } catch (Throwable e) {
       LOGGER.error("Cannot run " + sql, e);
-      return new InterpreterResult(Code.ERROR,  ExceptionUtils.getStackTrace(e));
+      if (e instanceof SQLException) {
+        return new InterpreterResult(Code.ERROR,  e.getMessage());
+      } else {
+        return new InterpreterResult(Code.ERROR, ExceptionUtils.getStackTrace(e));
+      }
     } finally {
       //In case user ran an insert/update/upsert statement
       if (connection != null) {

@@ -298,7 +298,7 @@ public class IPythonInterpreterTest extends BasePythonInterpreterTest {
     assertEquals(context.out.toInterpreterResultMessage().get(0).getData(),
             InterpreterResult.Code.SUCCESS, result.code());
     interpreterResultMessages = context.out.toInterpreterResultMessage();
-
+    
     assertEquals(context.out.toString(), 5, interpreterResultMessages.size());
     // the first message is the warning text message.
     assertEquals(InterpreterResult.Type.HTML, interpreterResultMessages.get(1).getType());
