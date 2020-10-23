@@ -206,7 +206,7 @@ public class ZSessionIntegrationTest extends AbstractTestRestApi {
       assertEquals(Status.ERROR, result.getStatus());
       assertEquals(1, result.getResults().size());
       assertEquals("TEXT", result.getResults().get(0).getType());
-      assertTrue(result.getResults().get(0).getData(), result.getResults().get(0).getData().contains("NoSuchTableException"));
+      assertTrue(result.getResults().get(0).getData(), result.getResults().get(0).getData().contains("Table or view not found"));
       assertEquals(0, result.getJobUrls().size());
 
     } finally {
@@ -279,7 +279,7 @@ public class ZSessionIntegrationTest extends AbstractTestRestApi {
       assertEquals(Status.ERROR, result.getStatus());
       assertEquals(1, result.getResults().size());
       assertEquals("TEXT", result.getResults().get(0).getType());
-      assertTrue(result.getResults().get(0).getData(), result.getResults().get(0).getData().contains("NoSuchTableException"));
+      assertTrue(result.getResults().get(0).getData(), result.getResults().get(0).getData().contains("Table or view not found"));
       assertEquals(0, result.getJobUrls().size());
 
       // cancel
