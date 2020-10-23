@@ -195,6 +195,15 @@
 </property>
 -->
 
+<!-- Path style access for S3 bucket -->
+<!--
+<property>
+  <name>zeppelin.notebook.s3.pathStyleAccess</name>
+  <value>true</value>
+  <description>Path style access for S3 bucket</description>
+</property>
+-->
+
 <!-- S3 Object Permissions (Canned ACL) for notebooks -->
 <!--
 <property>

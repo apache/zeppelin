@@ -227,6 +227,26 @@ Or using the following setting in **zeppelin-site.xml**:
 
 </br>
 
+#### S3 Enable Path Style Access
+
+To request path style s3 bucket access, set the following environment variable in the file **zeppelin-env.sh**:
+
+```bash
+export ZEPPELIN_NOTEBOOK_S3_PATH_STYLE_ACCESS=true
+```
+
+Or using the following setting in **zeppelin-site.xml**:
+
+```xml
+<property>
+  <name>zeppelin.notebook.s3.pathStyleAccess</name>
+  <value>true</value>
+  <description>Path Style S3 bucket access enabled for notebook repo</description>
+</property>
+```
+
+</br>
+
 ## Notebook Storage in Azure <a name="Azure"></a>
 
 Using `AzureNotebookRepo` you can connect your Zeppelin with your Azure account for notebook storage.
