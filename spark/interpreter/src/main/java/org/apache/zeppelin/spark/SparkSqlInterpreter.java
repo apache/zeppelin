@@ -19,6 +19,7 @@ package org.apache.zeppelin.spark;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.spark.SparkContext;
+import org.apache.spark.sql.AnalysisException;
 import org.apache.zeppelin.interpreter.AbstractInterpreter;
 import org.apache.zeppelin.interpreter.ZeppelinContext;
 import org.apache.zeppelin.interpreter.InterpreterContext;
@@ -32,6 +33,7 @@ import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Properties;
@@ -84,7 +86,6 @@ public class SparkSqlInterpreter extends AbstractInterpreter {
     Object sqlContext = sparkInterpreter.getSQLContext();
     SparkContext sc = sparkInterpreter.getSparkContext();
 
-    StringBuilder builder = new StringBuilder();
     List<String> sqls = sqlSplitter.splitSql(st);
     int maxResult = Integer.parseInt(context.getLocalProperties().getOrDefault("limit",
             "" + sparkInterpreter.getZeppelinContext().getMaxResult()));
@@ -103,19 +104,33 @@ public class SparkSqlInterpreter extends AbstractInterpreter {
         curSql = sql;
         String result = sparkInterpreter.getZeppelinContext()
                 .showData(method.invoke(sqlContext, sql), maxResult);
-        builder.append(result);
+        context.out.write(result);
       }
+      context.out.flush();
     } catch (Exception e) {
-      builder.append("\n%text Error happens in sql: " + curSql + "\n");
-      if (Boolean.parseBoolean(getProperty("zeppelin.spark.sql.stacktrace", "false"))) {
-        builder.append(ExceptionUtils.getStackTrace(e));
-      } else {
-        LOGGER.error("Invocation target exception", e);
-        String msg = e.getMessage()
-                + "\nset zeppelin.spark.sql.stacktrace = true to see full stacktrace";
-        builder.append(msg);
+      try {
+        if (e.getCause() instanceof AnalysisException) {
+          // just return the error message from spark if it is AnalysisException
+          context.out.write(e.getCause().getMessage());
+          context.out.flush();
+          return new InterpreterResult(Code.ERROR);
+        } else {
+          context.out.write("\nError happens in sql: " + curSql + "\n");
+          if (Boolean.parseBoolean(getProperty("zeppelin.spark.sql.stacktrace", "false"))) {
+            context.out.write(ExceptionUtils.getStackTrace(e.getCause()));
+          } else {
+            LOGGER.error("Invocation target exception", e);
+            String msg = e.getCause().getMessage()
+                    + "\nset zeppelin.spark.sql.stacktrace = true to see full stacktrace";
+            context.out.write(msg);
+          }
+          context.out.flush();
+          return new InterpreterResult(Code.ERROR);
+        }
+      } catch (IOException ex) {
+        LOGGER.error("Fail to write output", ex);
+        return new InterpreterResult(Code.ERROR);
       }
-      return new InterpreterResult(Code.ERROR, builder.toString());
     } finally {
       sc.clearJobGroup();
       if (!sparkInterpreter.isScala212()) {
@@ -123,7 +138,7 @@ public class SparkSqlInterpreter extends AbstractInterpreter {
       }
     }
 
-    return new InterpreterResult(Code.SUCCESS, builder.toString());
+    return new InterpreterResult(Code.SUCCESS);
   }
 
   @Override
