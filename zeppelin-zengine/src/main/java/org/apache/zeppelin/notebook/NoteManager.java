@@ -191,7 +191,11 @@ public class NoteManager {
    * @throws IOException
    */
   public void saveNote(Note note) throws IOException {
-    saveNote(note, AuthenticationInfo.ANONYMOUS);
+    if (note.isLoaded()) {
+      saveNote(note, AuthenticationInfo.ANONYMOUS);
+    } else {
+      LOGGER.warn("Try to save note: {} when it is unloaded", note.getId());
+    }
   }
 
   /**
