@@ -174,9 +174,13 @@ public class NoteManager {
    * @throws IOException
    */
   public void saveNote(Note note, AuthenticationInfo subject) throws IOException {
-    addOrUpdateNoteNode(note);
-    this.notebookRepo.save(note, subject);
-    note.setLoaded(true);
+    if (note.isLoaded()) {
+      addOrUpdateNoteNode(note);
+      this.notebookRepo.save(note, subject);
+      note.setLoaded(true);
+    } else {
+      LOGGER.warn("Try to save note: {} when it is unloaded", note.getId());
+    }
   }
 
   public void addNote(Note note, AuthenticationInfo subject) throws IOException {
@@ -191,11 +195,7 @@ public class NoteManager {
    * @throws IOException
    */
   public void saveNote(Note note) throws IOException {
-    if (note.isLoaded()) {
-      saveNote(note, AuthenticationInfo.ANONYMOUS);
-    } else {
-      LOGGER.warn("Try to save note: {} when it is unloaded", note.getId());
-    }
+    saveNote(note, AuthenticationInfo.ANONYMOUS);
   }
 
   /**
