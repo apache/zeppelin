@@ -191,13 +191,28 @@ public class Note implements JsonSerializable {
    * Release note memory
    */
   public void unLoad() {
-    this.setLoaded(false);
-    this.paragraphs = null;
-    this.config = null;
-    this.info = null;
-    this.noteForms = null;
-    this.noteParams = null;
-    this.angularObjects = null;
+    if (isRunning() || isParagraphRunning()) {
+      LOGGER.warn("Unable to unload note because it is in RUNNING");
+    } else {
+      this.setLoaded(false);
+      this.paragraphs = null;
+      this.config = null;
+      this.info = null;
+      this.noteForms = null;
+      this.noteParams = null;
+      this.angularObjects = null;
+    }
+  }
+
+  public boolean isParagraphRunning() {
+    if (paragraphs != null) {
+      for (Paragraph p : paragraphs) {
+        if (p.isRunning()) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   public boolean isPersonalizedMode() {
@@ -1084,6 +1099,10 @@ public class Note implements JsonSerializable {
     info.remove("startTime");
   }
 
+  /**
+   * Is note running
+   * @return
+   */
   public boolean isRunning() {
     return (boolean) getInfo().getOrDefault("isRunning", false);
   }
