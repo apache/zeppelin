@@ -433,7 +433,7 @@ public class NotebookService {
               return false;
             }
           } catch (Exception e) {
-            throw new IOException("Fail to run paragraph json: " + raw);
+            throw new IOException("Fail to run paragraph json: " + raw, e);
           }
         }
       } finally {

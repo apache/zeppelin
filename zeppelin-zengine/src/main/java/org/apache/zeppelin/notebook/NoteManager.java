@@ -168,15 +168,22 @@ public class NoteManager {
 
   /**
    * Save note to NoteManager, it won't check duplicates, this is used when updating note.
+   * Only save note in 2 cases:
+   *  1. Note is new created, isSaved is false
+   *  2. Note is in loaded state. Unload state means its content is empty.
    *
    * @param note
    * @param subject
    * @throws IOException
    */
   public void saveNote(Note note, AuthenticationInfo subject) throws IOException {
-    addOrUpdateNoteNode(note);
-    this.notebookRepo.save(note, subject);
-    note.setLoaded(true);
+    if (note.isLoaded() || !note.isSaved()) {
+      addOrUpdateNoteNode(note);
+      this.notebookRepo.save(note, subject);
+      note.setSaved(true);
+    } else {
+      LOGGER.warn("Try to save note: {} when it is unloaded", note.getId());
+    }
   }
 
   public void addNote(Note note, AuthenticationInfo subject) throws IOException {
