@@ -124,6 +124,7 @@ public class Note implements JsonSerializable {
 
   /********************************** transient fields ******************************************/
   private transient boolean loaded = false;
+  private transient boolean saved = false;
   private transient InterpreterFactory interpreterFactory;
   private transient InterpreterSettingManager interpreterSettingManager;
   private transient ParagraphJobListener paragraphJobListener;
@@ -1199,5 +1200,13 @@ public class Note implements JsonSerializable {
 
   public void setNoteEventListeners(List<NoteEventListener> noteEventListeners) {
     this.noteEventListeners = noteEventListeners;
+  }
+
+  public void setSaved(boolean saved) {
+    this.saved = saved;
+  }
+
+  public boolean isSaved() {
+    return saved;
   }
 }
