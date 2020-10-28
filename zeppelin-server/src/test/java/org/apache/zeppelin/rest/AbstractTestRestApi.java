@@ -180,7 +180,7 @@ public abstract class AbstractTestRestApi {
       try {
         TestUtils.clearInstances();
         ZeppelinServer.main(new String[]{""});
-      } catch (Exception e) {
+      } catch (Throwable e) {
         LOG.error("Exception in WebDriverManager while getWebDriver ", e);
         throw new RuntimeException(e);
       }
