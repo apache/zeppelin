@@ -125,7 +125,7 @@ public class ZeppelinClient {
     checkJsonNodeStatus(jsonNode);
     return jsonNode.getObject().getJSONObject("body").getString("version");
   }
-
+  
   /**
    * Request a new session id. It doesn't create session (interpreter process) in zeppelin server side, but just
    * create an unique session id.
@@ -257,20 +257,20 @@ public class ZeppelinClient {
    */
   public void login(String userName, String password) throws Exception {
     if (clientConfig.isUseKnox()) {
-      HttpResponse<String> response = Unirest.get("/")
+      HttpResponse<String> response = Unirest.get(clientConfig.getKnoxSSOUrl() +
+              "?originalUrl=" + clientConfig.getZeppelinRestUrl())
               .basicAuth(userName, password)
               .asString();
       if (response.getStatus() != 200) {
-        throw new Exception(String.format("Login failed, status: %s, statusText: %s",
+        throw new Exception(String.format("Knox SSO login failed, status: %s, statusText: %s",
                 response.getStatus(),
                 response.getStatusText()));
       }
     } else {
-      HttpResponse<JsonNode> response = Unirest
-              .post("/login")
-              .field("userName", userName)
-              .field("password", password)
-              .asJson();
+      HttpResponse<String> response = Unirest
+              .get("/")
+              .basicAuth(userName, password)
+              .asString();
       if (response.getStatus() != 200) {
         throw new Exception(String.format("Login failed, status: %s, statusText: %s",
                 response.getStatus(),
