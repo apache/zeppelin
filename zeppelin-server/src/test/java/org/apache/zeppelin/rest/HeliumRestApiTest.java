@@ -21,7 +21,6 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.google.gson.Gson;
-import com.google.gson.internal.StringMap;
 import com.google.gson.reflect.TypeToken;
 
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -36,6 +35,7 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -114,7 +114,7 @@ public class HeliumRestApiTest extends AbstractTestRestApi {
     assertThat(get1, isAllowed());
     Map<String, Object> resp1 = gson.fromJson(EntityUtils.toString(get1.getEntity(), StandardCharsets.UTF_8),
                 new TypeToken<Map<String, Object>>() { }.getType());
-    List<StringMap<Object>> body1 = (List<StringMap<Object>>) resp1.get("body");
+    List<Map> body1 = (List<Map>) resp1.get("body");
     assertEquals(0, body1.size());
 
     // Enable "name1" package
@@ -124,10 +124,10 @@ public class HeliumRestApiTest extends AbstractTestRestApi {
     assertThat(get2, isAllowed());
     Map<String, Object> resp2 = gson.fromJson(EntityUtils.toString(get2.getEntity(), StandardCharsets.UTF_8),
             new TypeToken<Map<String, Object>>() { }.getType());
-    List<StringMap<Object>> body2 = (List<StringMap<Object>>) resp2.get("body");
+    List<Map> body2 = (List<Map>) resp2.get("body");
 
     assertEquals(1, body2.size());
-    StringMap<Object> pkg = (StringMap<Object>) body2.get(0).get("pkg");
+    Map pkg = (Map) body2.get(0).get("pkg");
     assertEquals("name1", pkg.get("name"));
     get1.close();
     get2.close();
@@ -140,10 +140,10 @@ public class HeliumRestApiTest extends AbstractTestRestApi {
     assertThat(get, isAllowed());
     Map<String, Object> resp = gson.fromJson(EntityUtils.toString(get.getEntity(), StandardCharsets.UTF_8),
             new TypeToken<Map<String, Object>>() { }.getType());
-    List<StringMap<Object>> body = (List<StringMap<Object>>) resp.get("body");
+    List<Map> body = (List<Map>) resp.get("body");
 
     assertEquals(1, body.size());
-    StringMap<Object> pkg = (StringMap<Object>) body.get(0).get("pkg");
+    Map pkg = (Map) body.get(0).get("pkg");
     assertEquals("name1", pkg.get("name"));
     get.close();
   }
@@ -154,7 +154,7 @@ public class HeliumRestApiTest extends AbstractTestRestApi {
     assertThat(get, isAllowed());
     Map<String, Object> resp = gson.fromJson(EntityUtils.toString(get.getEntity(), StandardCharsets.UTF_8),
             new TypeToken<Map<String, Object>>() { }.getType());
-    StringMap<Object> body = (StringMap<Object>) resp.get("body");
+    Map body = (Map) resp.get("body");
     // ToDo: Apply config with POST command and check update
     assertEquals(0, body.size());
     get.close();
@@ -168,7 +168,7 @@ public class HeliumRestApiTest extends AbstractTestRestApi {
     assertThat(get, isAllowed());
     Map<String, Object> resp = gson.fromJson(EntityUtils.toString(get.getEntity(), StandardCharsets.UTF_8),
             new TypeToken<Map<String, Object>>() { }.getType());
-    StringMap<Object> body = (StringMap<Object>) resp.get("body");
+    Map body = (Map) resp.get("body");
     assertTrue(body.containsKey("confPersisted"));
     get.close();
   }
@@ -183,7 +183,7 @@ public class HeliumRestApiTest extends AbstractTestRestApi {
     CloseableHttpResponse get1 = httpGet("/helium/package/" + packageName);
     Map<String, Object> resp1 = gson.fromJson(EntityUtils.toString(get1.getEntity(), StandardCharsets.UTF_8),
             new TypeToken<Map<String, Object>>() { }.getType());
-    List<StringMap<Object>> body1 = (List<StringMap<Object>>) resp1.get("body");
+    List<Map> body1 = (List<Map>) resp1.get("body");
     assertEquals(true, body1.get(0).get("enabled"));
     get1.close();
 
@@ -194,7 +194,7 @@ public class HeliumRestApiTest extends AbstractTestRestApi {
     CloseableHttpResponse get2 = httpGet("/helium/package/" + packageName);
     Map<String, Object> resp2 = gson.fromJson(EntityUtils.toString(get2.getEntity(), StandardCharsets.UTF_8),
             new TypeToken<Map<String, Object>>() { }.getType());
-    List<StringMap<Object>> body2 = (List<StringMap<Object>>) resp2.get("body");
+    List<Map> body2 = (List<Map>) resp2.get("body");
     assertEquals(false, body2.get(0).get("enabled"));
     get2.close();
   }
