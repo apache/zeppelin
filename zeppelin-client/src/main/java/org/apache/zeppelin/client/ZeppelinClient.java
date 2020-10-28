@@ -424,6 +424,28 @@ public class ZeppelinClient {
     return queryNoteResult(noteId);
   }
 
+
+  /**
+   * Import note with given note json content to the specified notePath.
+   * 
+   * @param notePath
+   * @param noteContent
+   * @return
+   * @throws Exception
+   */
+  public String importNote(String notePath, String noteContent) throws Exception {
+    JSONObject bodyObject = new JSONObject(noteContent);
+    HttpResponse<JsonNode> response = Unirest
+            .post("/notebook/import")
+            .queryString("notePath", notePath)
+            .body(bodyObject)
+            .asJson();
+    checkResponse(response);
+    JsonNode jsonNode = response.getBody();
+    checkJsonNodeStatus(jsonNode);
+    return jsonNode.getObject().getString("body");
+  }
+
   /**
    * Block there until note execution is completed.
    *
