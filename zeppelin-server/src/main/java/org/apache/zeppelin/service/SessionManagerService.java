@@ -16,44 +16,72 @@
  */
 
 
-package org.apache.zeppelin.rest;
+package org.apache.zeppelin.service;
 
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.interpreter.ManagedInterpreterGroup;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
 import org.apache.zeppelin.notebook.Note;
-import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.common.SessionInfo;
+import org.apache.zeppelin.scheduler.ExecutorFactory;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  *
- * Backend manager of ZSessions
+ * Service class of SessionManager.
  */
-public class SessionManager {
+public class SessionManagerService {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(SessionManager.class);
-
+  private static final Logger LOGGER = LoggerFactory.getLogger(SessionManagerService.class);
   private static final int RETRY = 3;
-  private Map<String, SessionInfo> sessions = new HashMap<>();
+
+  private Map<String, SessionInfo> sessions = new ConcurrentHashMap<>();
   private InterpreterSettingManager interpreterSettingManager;
   private Notebook notebook;
+  private ScheduledExecutorService sessionCheckerExecutor;
 
-  public SessionManager(Notebook notebook, InterpreterSettingManager interpreterSettingManager) {
+  public SessionManagerService(Notebook notebook, InterpreterSettingManager interpreterSettingManager) {
     this.notebook = notebook;
     this.interpreterSettingManager = interpreterSettingManager;
+    this.sessionCheckerExecutor = ExecutorFactory.singleton().createOrGetScheduled("Session-Checker-Executor", 1);
+    int sessionCheckerInterval = ZeppelinConfiguration.create()
+            .getInt(ZeppelinConfiguration.ConfVars.ZEPPELIN_SESSION_CHECK_INTERVAL);
+    this.sessionCheckerExecutor.scheduleAtFixedRate(() -> {
+      LOGGER.info("Start session checker task");
+      Iterator<Map.Entry<String, SessionInfo>> iter = sessions.entrySet().iterator();
+      while(iter.hasNext()) {
+        Map.Entry<String, SessionInfo> entry = iter.next();
+        SessionInfo sessionInfo = null;
+        try {
+          sessionInfo = getSessionInfo(entry.getKey());
+          if (sessionInfo.getState().equalsIgnoreCase("Stopped")) {
+            LOGGER.info("Session {} has been stopped, remove it and its associated note", entry.getKey());
+            try {
+              notebook.removeNote(sessionInfo.getNoteId(), AuthenticationInfo.ANONYMOUS);
+            } catch (IOException e) {
+              LOGGER.warn("Fail to remove session note: " + sessionInfo.getNoteId(), e);
+            }
+            iter.remove();
+          }
+        } catch (Exception e) {
+          LOGGER.warn("Fail to check session for session: " + entry.getKey(), e);
+        }
+      }
+    }, sessionCheckerInterval, sessionCheckerInterval, TimeUnit.SECONDS);
   }
 
   /**
@@ -72,7 +100,7 @@ public class SessionManager {
          try {
            Thread.sleep(1);
          } catch (InterruptedException e) {
-           e.printStackTrace();
+           LOGGER.error("Interrupted", e);
          }
        } else {
          break;
@@ -83,54 +111,67 @@ public class SessionManager {
       throw new Exception("Unable to generate session id");
     }
 
-    Note sessionNote = notebook.createNote("/_ZSession/" + interpreter + "/" + sessionId, AuthenticationInfo.ANONYMOUS);
+    Note sessionNote = notebook.createNote(buildNotePath(interpreter, sessionId), AuthenticationInfo.ANONYMOUS);
     SessionInfo sessionInfo = new SessionInfo(sessionId, sessionNote.getId(), interpreter);
     sessions.put(sessionId, sessionInfo);
     return sessionInfo;
   }
 
+  private String buildNotePath(String interpreter, String sessionId) {
+    return "/_ZSession/" + interpreter + "/" + sessionId;
+  }
+
   /**
    * Remove and stop this session.
+   * 1. Stop associated interpreter process (InterpreterGroup)
+   * 2. Remove associated session note
    *
    * @param sessionId
    */
-  public void removeSession(String sessionId) {
-    this.sessions.remove(sessionId);
+  public void stopSession(String sessionId) throws Exception {
+    SessionInfo sessionInfo = this.sessions.remove(sessionId);
+    if (sessionInfo == null) {
+      throw new Exception("No such session: " + sessionId);
+    }
+    // stop the associated interpreter process
     InterpreterGroup interpreterGroup = this.interpreterSettingManager.getInterpreterGroupById(sessionId);
     if (interpreterGroup == null) {
-      LOGGER.info("No interpreterGroup for session: " + sessionId);
+      LOGGER.info("No interpreterGroup for session: {}", sessionId);
       return;
     }
     ((ManagedInterpreterGroup) interpreterGroup).getInterpreterSetting().closeInterpreters(sessionId);
+
+    // remove associated session note
+    notebook.removeNote(sessionInfo.getNoteId(), AuthenticationInfo.ANONYMOUS);
   }
 
   /**
    * Get the sessionInfo.
-   * It method will also update its state if these's associated interpreter process.
+   * It method will also update its state if there's an associated interpreter process.
    *
    * @param sessionId
    * @return
    * @throws Exception
    */
-  public SessionInfo getSession(String sessionId) throws Exception {
+  public SessionInfo getSessionInfo(String sessionId) throws Exception {
     SessionInfo sessionInfo = sessions.get(sessionId);
     if (sessionInfo == null) {
       LOGGER.warn("No such session: " + sessionId);
-      return null;
+      throw new Exception("No such session: " + sessionId);
     }
     InterpreterGroup interpreterGroup = this.interpreterSettingManager.getInterpreterGroupById(sessionId);
     if (interpreterGroup != null) {
       RemoteInterpreterProcess remoteInterpreterProcess =
               ((ManagedInterpreterGroup) interpreterGroup).getRemoteInterpreterProcess();
       if (remoteInterpreterProcess == null) {
-        sessionInfo.setState("Ready");
+        sessionInfo.setState(SessionState.READY.name());
       } else if (remoteInterpreterProcess != null) {
         sessionInfo.setStartTime(remoteInterpreterProcess.getStartTime());
         sessionInfo.setWeburl(interpreterGroup.getWebUrl());
         if (remoteInterpreterProcess.isRunning()) {
-          sessionInfo.setState("Running");
+          sessionInfo.setState(SessionState.RUNNING.name());
         } else {
-          sessionInfo.setState("Stopped");
+          sessionInfo.setState(SessionState.STOPPED.name());
         }
       }
     }
@@ -144,10 +185,15 @@ public class SessionManager {
    * @return
    * @throws Exception
    */
-  public List<SessionInfo> getAllSessions() throws Exception {
+  public List<SessionInfo> listSessions() {
     List<SessionInfo> sessionList = new ArrayList<>();
     for (String sessionId : sessions.keySet()) {
-      SessionInfo session = getSession(sessionId);
+      SessionInfo session = null;
+      try {
+        session = getSessionInfo(sessionId);
+      } catch (Exception e) {
+        LOGGER.warn("Fail to get sessionInfo for session: " + sessionId, e);
+      }
       if (session != null) {
         sessionList.add(session);
       }
@@ -162,14 +208,25 @@ public class SessionManager {
    * @return
    * @throws Exception
    */
-  public List<SessionInfo> getAllSessions(String interpreter) throws Exception {
+  public List<SessionInfo> listSessions(String interpreter) {
     List<SessionInfo> sessionList = new ArrayList<>();
     for (String sessionId : sessions.keySet()) {
-      SessionInfo status = getSession(sessionId);
+      SessionInfo status = null;
+      try {
+        status = getSessionInfo(sessionId);
+      } catch (Exception e) {
+        LOGGER.warn("Fail to get sessionInfo for session: " + sessionId, e);
+      }
       if (status != null && interpreter.equals(status.getInterpreter())) {
         sessionList.add(status);
       }
     }
     return sessionList;
+  }
+
+  enum SessionState {
+    READY,
+    RUNNING,
+    STOPPED
   }
 }

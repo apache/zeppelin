@@ -335,6 +335,11 @@ public class Notebook {
     fireNoteRemoveEvent(note, subject);
   }
 
+  public void removeNote(String noteId, AuthenticationInfo subject) throws IOException {
+    Note note = getNote(noteId);
+    removeNote(note, subject);
+  }
+
   /**
    * Get note from NotebookRepo and also initialize it with other properties that is not
    * persistent in NotebookRepo, such as paragraphJobListener.
