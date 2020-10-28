@@ -19,9 +19,6 @@ package org.apache.zeppelin.integration;
 
 
 import org.apache.zeppelin.client.ClientConfig;
-import org.apache.zeppelin.client.NoteResult;
-import org.apache.zeppelin.client.ParagraphResult;
-import org.apache.zeppelin.client.Status;
 import org.apache.zeppelin.client.ZeppelinClient;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.Notebook;
@@ -31,11 +28,6 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 

@@ -21,7 +21,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.google.gson.internal.StringMap;
 import org.apache.commons.io.IOUtils;
 import org.apache.zeppelin.common.JsonSerializable;
 import org.slf4j.Logger;
@@ -31,7 +30,6 @@ import org.eclipse.aether.repository.RemoteRepository;
 import java.io.BufferedReader;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -47,7 +45,7 @@ import static java.nio.file.attribute.PosixFilePermission.OWNER_WRITE;
 public class InterpreterInfoSaving implements JsonSerializable {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(InterpreterInfoSaving.class);
-  private static final Gson gson =  new GsonBuilder().setPrettyPrinting().create();
+  private static final Gson GSON =  new GsonBuilder().setPrettyPrinting().create();
 
   public Map<String, InterpreterSetting> interpreterSettings = new HashMap<>();
   public List<RemoteRepository> interpreterRepositories = new ArrayList<>();
@@ -88,10 +86,10 @@ public class InterpreterInfoSaving implements JsonSerializable {
 
   @Override
   public String toJson() {
-    return gson.toJson(this);
+    return GSON.toJson(this);
   }
 
   public static InterpreterInfoSaving fromJson(String json) {
-    return gson.fromJson(json, InterpreterInfoSaving.class);
+    return GSON.fromJson(json, InterpreterInfoSaving.class);
   }
 }
