@@ -288,7 +288,10 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
     if (this.scriptText.isEmpty()) {
       return 0;
     }
-    int countCharactersBeforeScript = buffer.indexOf(this.scriptText);
+    // Try to find the right cursor from this startPos, otherwise you may get the wrong cursor.
+    // e.g.  %spark.pyspark  spark.
+    int startPos = this.intpText == null ? 0 : this.intpText.length();
+    int countCharactersBeforeScript = buffer.indexOf(this.scriptText, startPos);
     if (countCharactersBeforeScript > 0) {
       cursor -= countCharactersBeforeScript;
     }
