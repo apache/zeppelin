@@ -17,7 +17,6 @@
 package org.apache.zeppelin.jupyter.nbformat;
 
 import com.google.gson.annotations.SerializedName;
-import org.apache.zeppelin.jupyter.types.JupyterOutputType;
 import org.apache.zeppelin.jupyter.types.ZeppelinOutputType;
 import org.apache.zeppelin.jupyter.zformat.TypeData;
 

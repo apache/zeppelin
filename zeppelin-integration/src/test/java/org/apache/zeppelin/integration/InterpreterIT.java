@@ -51,13 +51,14 @@ public class InterpreterIT extends AbstractZeppelinIT {
   public void testShowDescriptionOnInterpreterCreate() throws Exception {
     try {
       // navigate to interpreter page
-      WebElement settingButton = driver.findElement(By.xpath("//button[@class='nav-btn dropdown-toggle ng-scope']"));
-      settingButton.click();
-      WebElement interpreterLink = driver.findElement(By.xpath("//a[@href='#/interpreter']"));
-      interpreterLink.click();
+      // setting button
+      clickAndWait(By.xpath("//button[@class='nav-btn dropdown-toggle ng-scope']"));
 
-      WebElement createButton = driver.findElement(By.xpath("//button[contains(., 'Create')]"));
-      createButton.click();
+      // interpreter link
+      clickAndWait(By.xpath("//a[@href='#/interpreter']"));
+
+      // create button
+      clickAndWait(By.xpath("//button[contains(., 'Create')]"));
 
       Select select = new Select(driver.findElement(By.xpath("//select[@ng-change='newInterpreterGroupChange()']")));
       select.selectByVisibleText("spark");

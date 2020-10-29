@@ -360,6 +360,18 @@ public class ConnectionManager {
     }
   }
 
+  public interface UserIterator {
+    public void handleUser(String user, Set<String> userAndRoles);
+  }
+
+  public void forAllUsers(UserIterator iterator) {
+    for (String user : userSocketMap.keySet()) {
+      Set<String> userAndRoles = authorizationService.getRoles(user);
+      userAndRoles.add(user);
+      iterator.handleUser(user, userAndRoles);
+    }
+  }
+
   public void broadcastNoteListExcept(List<NoteInfo> notesInfo,
                                       AuthenticationInfo subject) {
     Set<String> userAndRoles;

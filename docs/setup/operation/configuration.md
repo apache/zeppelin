@@ -431,6 +431,12 @@ If both are defined, then the **environment variables** will take priority.
     <td>zeppelin-server</td>
     <td>Name of the Zeppelin server service resources</td>
   </tr>
+  <tr>
+    <td><h6 class="properties">ZEPPELIN_K8S_TIMEOUT_DURING_PENDING</h6></td>
+    <td><h6 class="properties">zeppelin.k8s.timeout.during.pending</h6></td>
+    <td>true</td>
+    <td>Value to enable/disable timeout handling when starting Interpreter Pods. Caution: This can lead to an infinity loop</td>
+  </tr>
 </table>
 
 

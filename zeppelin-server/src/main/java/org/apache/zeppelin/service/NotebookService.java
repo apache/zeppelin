@@ -20,6 +20,7 @@ package org.apache.zeppelin.service;
 
 
 import static org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_HOMESCREEN;
+import static org.apache.zeppelin.interpreter.InterpreterResult.Code.ERROR;
 
 import com.google.common.base.Strings;
 import java.io.IOException;
@@ -49,7 +50,6 @@ import org.apache.zeppelin.notebook.AuthorizationService;
 import org.apache.zeppelin.notebook.repo.NotebookRepoWithVersionControl;
 import org.apache.zeppelin.notebook.scheduler.SchedulerService;
 import org.apache.zeppelin.common.Message;
-import org.apache.zeppelin.rest.SessionManager;
 import org.apache.zeppelin.rest.exception.BadRequestException;
 import org.apache.zeppelin.rest.exception.ForbiddenException;
 import org.apache.zeppelin.rest.exception.NoteNotFoundException;
@@ -424,6 +424,12 @@ public class NotebookService {
             if (!runParagraph(noteId, paragraphId, title, text, params, config, null, false, true,
                     context, callback)) {
               // stop execution when one paragraph fails.
+              return false;
+            }
+            // also stop execution when user code in a paragraph fails
+            Paragraph p = note.getParagraph(paragraphId);
+            InterpreterResult result = p.getReturn();
+            if (result.code() == ERROR) {
               return false;
             }
           } catch (Exception e) {

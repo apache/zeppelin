@@ -169,7 +169,7 @@ jobs:
       jdk: "openjdk8"
       dist: xenial
       addons:
-        firefox: "31.0"
+        firefox: "81.0"
       before_install:
         - export PYTHON=2
         - export R=true

@@ -81,6 +81,7 @@ import org.apache.zeppelin.service.JobManagerService;
 import org.apache.zeppelin.service.NotebookService;
 import org.apache.zeppelin.service.ServiceContext;
 import org.apache.zeppelin.service.SimpleServiceCallback;
+import org.apache.zeppelin.socket.ConnectionManager.UserIterator;
 import org.apache.zeppelin.ticket.TicketContainer;
 import org.apache.zeppelin.types.InterpreterSettingsList;
 import org.apache.zeppelin.user.AuthenticationInfo;
@@ -636,17 +637,22 @@ public class NotebookServer extends WebSocketServlet
   }
 
   public void inlineBroadcastNoteList(AuthenticationInfo subject, Set<String> userAndRoles) {
-    if (subject == null) {
-      subject = new AuthenticationInfo(StringUtils.EMPTY);
-    }
-    //send first to requesting user
+    broadcastNoteListUpdate();
+  }
+
+  public void broadcastNoteListUpdate() {
     AuthorizationService authorizationService = getNotebookAuthorizationService();
-    List<NoteInfo> notesInfo = getNotebook().getNotesInfo(
-        noteId -> authorizationService.isReader(noteId, userAndRoles));
-    Message message = new Message(OP.NOTES_INFO).put("notes", notesInfo);
-    getConnectionManager().multicastToUser(subject.getUser(), message);
-    //to others afterwards
-    getConnectionManager().broadcastNoteListExcept(notesInfo, subject);
+
+    getConnectionManager().forAllUsers(new UserIterator() {
+      @Override
+      public void handleUser(String user, Set<String> userAndRoles) {
+        List<NoteInfo> notesInfo = getNotebook().getNotesInfo(
+            noteId -> authorizationService.isReader(noteId, userAndRoles));
+
+        getConnectionManager().multicastToUser(user,
+          new Message(OP.NOTES_INFO).put("notes", notesInfo));
+      }
+    });
   }
 
   public void broadcastNoteList(AuthenticationInfo subject, Set<String> userAndRoles) {
@@ -772,18 +778,7 @@ public class NotebookServer extends WebSocketServlet
 
   public void broadcastReloadedNoteList(NotebookSocket conn, ServiceContext context)
       throws IOException {
-    getNotebookService().listNotesInfo(true, context,
-        new WebSocketServiceCallback<List<NoteInfo>>(conn) {
-          @Override
-          public void onSuccess(List<NoteInfo> notesInfo,
-                                ServiceContext context) throws IOException {
-            super.onSuccess(notesInfo, context);
-            getConnectionManager().multicastToUser(context.getAutheInfo().getUser(),
-                new Message(OP.NOTES_INFO).put("notes", notesInfo));
-            //to others afterwards
-            getConnectionManager().broadcastNoteListExcept(notesInfo, context.getAutheInfo());
-          }
-        });
+    broadcastNoteListUpdate();
   }
 
   void permissionError(NotebookSocket conn, String op, String userName, Set<String> userAndRoles,
@@ -1488,8 +1483,17 @@ public class NotebookServer extends WebSocketServlet
             new TypeToken<List<Map<String, Object>>>() {
             }.getType());
 
-    getNotebookService().runAllParagraphs(noteId, paragraphs, getServiceContext(fromMessage),
-        new WebSocketServiceCallback<Paragraph>(conn));
+    if (!getNotebookService().runAllParagraphs(noteId, paragraphs, getServiceContext(fromMessage),
+        new WebSocketServiceCallback<Paragraph>(conn))) {
+      // If one paragraph fails, we need to broadcast paragraph states to the client,
+      // or paragraphs not run will stay in PENDING state.
+      Note note = getNotebookService().getNote(noteId, getServiceContext(fromMessage), new SimpleServiceCallback());
+      if (note != null) {
+        for (Paragraph p : note.getParagraphs()) {
+          broadcastParagraph(note, p, null);
+        }
+      }
+    }
   }
 
   private void broadcastSpellExecution(NotebookSocket conn,

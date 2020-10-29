@@ -353,6 +353,14 @@ public abstract class SqlInterpreterTest {
     assertEquals(1, resultMessages.size());
     assertEquals("View has been dropped.\n", resultMessages.get(0).getData());
 
+    // show tables again
+    context = getInterpreterContext();
+    result = sqlInterpreter.interpret("show tables", context);
+    assertEquals(Code.SUCCESS, result.code());
+    resultMessages = context.out.toInterpreterResultMessage();
+    assertEquals(Type.TABLE, resultMessages.get(0).getType());
+    assertEquals("table\nsource_table\n", resultMessages.get(0).getData());
+
     // create temporary view
     if (!flinkInterpreter.getFlinkVersion().isFlink110()) {
       context = getInterpreterContext();
