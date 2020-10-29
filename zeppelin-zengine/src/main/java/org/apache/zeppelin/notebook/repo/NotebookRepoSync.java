@@ -116,6 +116,7 @@ public class NotebookRepoSync implements NotebookRepoWithVersionControl {
       LOGGER.info("Convert old note file to new style, note count: " + oldNotesInfo.size());
       LOGGER.info("Delete old note: " + deleteOld);
       for (OldNoteInfo oldNoteInfo : oldNotesInfo) {
+        LOGGER.info("Converting note, id: {}", oldNoteInfo.getId());
         Note note = oldNotebookRepo.get(oldNoteInfo.getId(), AuthenticationInfo.ANONYMOUS);
         note.setPath(note.getName());
         note.setVersion(Util.getVersion());
