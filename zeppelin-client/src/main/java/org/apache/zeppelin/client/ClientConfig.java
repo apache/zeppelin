@@ -17,6 +17,8 @@
 
 package org.apache.zeppelin.client;
 
+import org.apache.commons.lang3.StringUtils;
+
 /**
  * Configuration of Zeppelin client, such as zeppelin server rest url and
  * query interval of polling note/paragraph result.
@@ -24,20 +26,20 @@ package org.apache.zeppelin.client;
 public class ClientConfig {
   private String zeppelinRestUrl;
   private long queryInterval ;
-  private boolean useKnox = false;
+  private String knoxSSOUrl;
 
   public ClientConfig(String zeppelinRestUrl) {
     this(zeppelinRestUrl, 1000);
   }
 
   public ClientConfig(String zeppelinRestUrl, long queryInterval) {
-    this(zeppelinRestUrl, queryInterval, false);
+    this(zeppelinRestUrl, queryInterval, null);
   }
 
-  public ClientConfig(String zeppelinRestUrl, long queryInterval, boolean useKnox) {
+  public ClientConfig(String zeppelinRestUrl, long queryInterval, String knoxSSOUrl) {
     this.zeppelinRestUrl = removeTrailingSlash(zeppelinRestUrl);
     this.queryInterval = queryInterval;
-    this.useKnox = useKnox;
+    this.knoxSSOUrl = knoxSSOUrl;
   }
 
   private String removeTrailingSlash(String zeppelinRestUrl) {
@@ -57,6 +59,10 @@ public class ClientConfig {
   }
 
   public boolean isUseKnox() {
-    return useKnox;
+    return StringUtils.isNotBlank(knoxSSOUrl);
+  }
+
+  public String getKnoxSSOUrl() {
+    return knoxSSOUrl;
   }
 }
