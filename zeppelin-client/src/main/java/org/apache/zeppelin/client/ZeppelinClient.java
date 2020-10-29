@@ -266,11 +266,19 @@ public class ZeppelinClient {
                 response.getStatus(),
                 response.getStatusText()));
       }
-    } else {
-      HttpResponse<String> response = Unirest
-              .get("/")
-              .basicAuth(userName, password)
+      response = Unirest.get("/security/ticket")
               .asString();
+      if (response.getStatus() != 200) {
+        throw new Exception(String.format("Fail to get ticket after Knox SSO, status: %s, statusText: %s",
+                response.getStatus(),
+                response.getStatusText()));
+      }
+    } else {
+      HttpResponse<JsonNode> response = Unirest
+              .post("/login")
+              .field("userName", userName)
+              .field("password", password)
+              .asJson();
       if (response.getStatus() != 200) {
         throw new Exception(String.format("Login failed, status: %s, statusText: %s",
                 response.getStatus(),
