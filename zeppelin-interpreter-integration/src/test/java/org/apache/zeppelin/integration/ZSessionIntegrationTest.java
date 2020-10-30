@@ -25,6 +25,7 @@ import org.apache.zeppelin.client.Status;
 import org.apache.zeppelin.client.ZSession;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.integration.DownloadUtils;
+import org.apache.zeppelin.interpreter.lifecycle.TimeoutLifecycleManager;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.rest.AbstractTestRestApi;
@@ -42,6 +43,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 public class ZSessionIntegrationTest extends AbstractTestRestApi {
 
@@ -57,8 +59,14 @@ public class ZSessionIntegrationTest extends AbstractTestRestApi {
     System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HELIUM_REGISTRY.getVarName(),
             "helium");
     System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_ALLOWED_ORIGINS.getVarName(), "*");
+    System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_SESSION_CHECK_INTERVAL.getVarName(), "5000");
 
     AbstractTestRestApi.startUp(ZSessionIntegrationTest.class.getSimpleName());
+    ZeppelinConfiguration zConf = ZeppelinConfiguration.create();
+    zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_LIFECYCLE_MANAGER_CLASS.getVarName(), TimeoutLifecycleManager.class.getName());
+    zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_LIFECYCLE_MANAGER_TIMEOUT_CHECK_INTERVAL.getVarName(), "5000");
+    zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_LIFECYCLE_MANAGER_TIMEOUT_THRESHOLD.getVarName(), "10000");
+
     notebook = TestUtils.getInstance(Notebook.class);
     sparkHome = DownloadUtils.downloadSpark("2.4.4", "2.7");
     flinkHome = DownloadUtils.downloadFlink("1.10.1");
@@ -420,6 +428,43 @@ public class ZSessionIntegrationTest extends AbstractTestRestApi {
       assertEquals("TEXT", result.getResults().get(0).getType());
     } finally {
       session.stop();
+    }
+  }
+
+  @Test
+  public void testZSessionCleanup() throws Exception {
+    Map<String, String> intpProperties = new HashMap<>();
+
+    ZSession session = ZSession.builder()
+            .setClientConfig(clientConfig)
+            .setInterpreter("python")
+            .setIntpProperties(intpProperties)
+            .build();
+
+    try {
+      session.start(new SimpleMessageHandler());
+      assertNull(session.getWeburl());
+      assertNotNull(session.getNoteId());
+
+      assertTrue(notebook.getAllNotes().size() > 0);
+
+      Thread.sleep(30 * 1000);
+      assertEquals(0, notebook.getAllNotes().size());
+
+      try {
+        session.execute("1/0");
+        fail("Should fail to execute code after session is stopped");
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+    } finally {
+      try {
+        session.stop();
+        fail("Should fail to stop session after it is stopped");
+      } catch (Exception e) {
+        e.printStackTrace();
+        assertTrue(e.getMessage().contains("No such session"));
+      }
     }
   }
 

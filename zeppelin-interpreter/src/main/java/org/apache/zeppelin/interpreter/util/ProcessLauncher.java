@@ -53,7 +53,7 @@ public abstract class ProcessLauncher implements ExecuteResultHandler {
   private ExecuteWatchdog watchdog;
   private ProcessLogOutputStream processOutput;
   protected String errorMessage = null;
-  protected State state = State.NEW;
+  protected volatile State state = State.NEW;
   private boolean launchTimeout = false;
 
   public ProcessLauncher(CommandLine commandLine,

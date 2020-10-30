@@ -385,6 +385,12 @@ public class ZeppelinClientIntegrationTest extends AbstractTestRestApi {
     SessionInfo sessionInfo = zeppelinClient.getSession("invalid_session");
     assertNull(sessionInfo);
 
-    zeppelinClient.stopSession("invalid_session");
+    try {
+      zeppelinClient.stopSession("invalid_session");
+      fail("Should fail to stop session after it is stopped");
+    } catch (Exception e) {
+      e.printStackTrace();
+      assertTrue(e.getMessage().contains("No such session"));
+    }
   }
 }

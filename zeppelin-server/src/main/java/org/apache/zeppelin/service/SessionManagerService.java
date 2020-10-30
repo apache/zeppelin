@@ -61,14 +61,14 @@ public class SessionManagerService {
     int sessionCheckerInterval = ZeppelinConfiguration.create()
             .getInt(ZeppelinConfiguration.ConfVars.ZEPPELIN_SESSION_CHECK_INTERVAL);
     this.sessionCheckerExecutor.scheduleAtFixedRate(() -> {
-      LOGGER.info("Start session checker task");
+      LOGGER.info("Start session check task");
       Iterator<Map.Entry<String, SessionInfo>> iter = sessions.entrySet().iterator();
       while(iter.hasNext()) {
         Map.Entry<String, SessionInfo> entry = iter.next();
         SessionInfo sessionInfo = null;
         try {
           sessionInfo = getSessionInfo(entry.getKey());
-          if (sessionInfo.getState().equalsIgnoreCase("Stopped")) {
+          if (sessionInfo != null && sessionInfo.getState().equalsIgnoreCase("Stopped")) {
             LOGGER.info("Session {} has been stopped, remove it and its associated note", entry.getKey());
             try {
               notebook.removeNote(sessionInfo.getNoteId(), AuthenticationInfo.ANONYMOUS);
@@ -81,7 +81,7 @@ public class SessionManagerService {
           LOGGER.warn("Fail to check session for session: " + entry.getKey(), e);
         }
       }
-    }, sessionCheckerInterval, sessionCheckerInterval, TimeUnit.SECONDS);
+    }, sessionCheckerInterval, sessionCheckerInterval, TimeUnit.MILLISECONDS);
   }
 
   /**
@@ -157,7 +157,7 @@ public class SessionManagerService {
     SessionInfo sessionInfo = sessions.get(sessionId);
     if (sessionInfo == null) {
       LOGGER.warn("No such session: " + sessionId);
-      throw new Exception("No such session: " + sessionId);
+      return null;
     }
     InterpreterGroup interpreterGroup = this.interpreterSettingManager.getInterpreterGroupById(sessionId);
     if (interpreterGroup != null) {
@@ -173,6 +173,12 @@ public class SessionManagerService {
         } else {
           sessionInfo.setState(SessionState.STOPPED.name());
         }
+      }
+    } else {
+      if (sessionInfo.getState().equals(SessionState.RUNNING.name())) {
+        // if it is running before, but interpreterGroup is null now, that means the session is stopped.
+        // e.g. InterpreterProcess is killed if it exceed idle timeout threshold.
+        sessionInfo.setState(SessionState.STOPPED.name());
       }
     }
 
