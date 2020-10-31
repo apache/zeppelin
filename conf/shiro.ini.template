@@ -70,6 +70,20 @@ user3 = password4, role2
 #knoxJwtRealm.principalMapping = principal.mapping
 #authc = org.apache.zeppelin.realm.jwt.KnoxAuthenticationFilter
 
+### A sample for configuring Kerberos Realm
+# krbRealm = org.apache.zeppelin.realm.kerberos.KerberosRealm
+# krbRealm.principal = HTTP/zeppelin.fqdn.domain.com@EXAMPLE.COM
+# krbRealm.keytab = /etc/security/keytabs/spnego.service.keytab
+# krbRealm.nameRules = DEFAULT
+# krbRealm.signatureSecretFile = /etc/security/http_secret
+# krbRealm.tokenValidity = 36000
+# krbRealm.cookieDomain = domain.com
+# krbRealm.cookiePath = /
+# krbRealm.logout = /logout
+# krbRealm.providerUrl = https://domain.example.com/
+# krbRealm.redirectParam = originalUrl
+# authc = org.apache.zeppelin.realm.kerberos.KerberosAuthenticationFilter
+
 sessionManager = org.apache.shiro.web.session.mgt.DefaultWebSessionManager
 
 ### If caching of user is required then uncomment below lines
