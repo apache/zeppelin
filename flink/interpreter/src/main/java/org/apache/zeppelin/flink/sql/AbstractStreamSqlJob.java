@@ -249,7 +249,7 @@ public abstract class AbstractStreamSqlJob {
           if (!enableToRefresh) {
             resultLock.wait();
           }
-          LOGGER.info("Refresh result of paragraph: " + context.getParagraphId());
+          LOGGER.debug("Refresh result of paragraph: " + context.getParagraphId());
           refresh(context);
         }
       } catch (Exception e) {
