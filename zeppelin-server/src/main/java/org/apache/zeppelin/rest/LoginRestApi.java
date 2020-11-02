@@ -99,9 +99,9 @@ public class LoginRestApi {
       }
       if (response == null) {
         Map<String, String> data = new HashMap<>();
-        String redirect = knoxJwtRealm.getRedirectParam();
-        StringBuilder redirectURL = new StringBuilder(knoxJwtRealm.getProviderUrl());
-        data.put("redirectURL", constructUrl(redirectURL, redirect, knoxJwtRealm.getLogin()));
+        data.put("redirectURL",
+            constructUrl(knoxJwtRealm.getProviderUrl(), knoxJwtRealm.getRedirectParam(),
+                knoxJwtRealm.getLogin()));
         response = new JsonResponse(Status.OK, "", data);
       }
       return response.build();
@@ -265,27 +265,28 @@ public class LoginRestApi {
     }
     if (isKnoxSSOEnabled()) {
       KnoxJwtRealm knoxJwtRealm = getJTWRealm();
-      StringBuilder redirectURL = new StringBuilder(knoxJwtRealm.getProviderUrl());
-      String redirect = knoxJwtRealm.getRedirectParam();
-      data.put("redirectURL", constructUrl(redirectURL, redirect,
-          knoxJwtRealm.getLogout()));
+      data.put("redirectURL",
+          constructUrl(knoxJwtRealm.getProviderUrl(), knoxJwtRealm.getRedirectParam(),
+              knoxJwtRealm.getLogout()));
       data.put("isLogoutAPI", knoxJwtRealm.getLogoutAPI().toString());
     } else if (isKerberosRealmEnabled()) {
       KerberosRealm kerberosRealm = getKerberosRealm();
-      StringBuilder redirectURL = new StringBuilder(kerberosRealm.getProviderUrl());
-      String redirect = kerberosRealm.getRedirectParam();
-      data.put("redirectURL", constructUrl(redirectURL, redirect, kerberosRealm.getLogout()));
+      data.put("redirectURL",
+          constructUrl(kerberosRealm.getProviderUrl(), kerberosRealm.getRedirectParam(),
+              kerberosRealm.getLogout()));
+      data.put("isLogoutAPI", kerberosRealm.getLogoutAPI().toString());
     }
     JsonResponse<Map<String, String>> response = new JsonResponse<>(status, "", data);
     LOG.info(response.toString());
     return response.build();
   }
 
-  private String constructUrl(StringBuilder redirectURL, String redirect,
+  private String constructUrl(String providerURL, String redirectParam,
       String path) {
+    StringBuilder redirectURL = new StringBuilder(providerURL);
     redirectURL.append(path);
-    if (redirect != null) {
-      redirectURL.append("?").append(redirect).append("=");
+    if (redirectParam != null) {
+      redirectURL.append("?").append(redirectParam).append("=");
     }
     return redirectURL.toString();
   }

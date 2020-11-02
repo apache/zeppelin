@@ -80,6 +80,7 @@ user3 = password4, role2
 # krbRealm.cookieDomain = domain.com
 # krbRealm.cookiePath = /
 # krbRealm.logout = /logout
+# krbRealm.logoutAPI = true
 # krbRealm.providerUrl = https://domain.example.com/
 # krbRealm.redirectParam = originalUrl
 # authc = org.apache.zeppelin.realm.kerberos.KerberosAuthenticationFilter

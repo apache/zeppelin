@@ -67,14 +67,15 @@ import java.util.regex.Pattern;
  * The Shiro configuration section should be configured as:
  * [main]
  * krbRealm = org.apache.zeppelin.realm.kerberos.KerberosRealm
- * krbRealm.principal=HTTP/zeppelin.fqdn.domain.com@EXAMPLE.COM
- * krbRealm.keytab=/etc/security/keytabs/spnego.service.keytab
- * krbRealm.nameRules=DEFAULT
- * krbRealm.signatureSecretFile=/etc/security/http_secret
- * krbRealm.tokenValidity=36000
- * krbRealm.cookieDomain=domain.com
- * krbRealm.cookiePath=/
- * krbRealm.logout=/logout
+ * krbRealm.principal = HTTP/zeppelin.fqdn.domain.com@EXAMPLE.COM
+ * krbRealm.keytab = /etc/security/keytabs/spnego.service.keytab
+ * krbRealm.nameRules = DEFAULT
+ * krbRealm.signatureSecretFile = /etc/security/http_secret
+ * krbRealm.tokenValidity = 36000
+ * krbRealm.cookieDomain = domain.com
+ * krbRealm.cookiePath = /
+ * krbRealm.logout = logout
+ * krbRealm.logoutAPI = true
  * krbRealm.providerUrl = https://domain.example.com/
  * krbRealm.redirectParam = originalUrl
  * authc = org.apache.zeppelin.realm.kerberos.KerberosAuthenticationFilter
@@ -94,7 +95,8 @@ public class KerberosRealm extends AuthorizingRealm {
   private boolean isCookiePersistent = false;
   private String signatureSecretFile = null;
   private String signatureSecretProvider = "file";
-  private String logout = "/logout";
+  private String logout = "logout";
+  private Boolean logoutAPI = true;
   private String providerUrl = "https://domain.example.com/";
   private String redirectParam = "originalUrl";
 
@@ -1000,6 +1002,14 @@ public class KerberosRealm extends AuthorizingRealm {
 
   public void setLogout(String logout) {
     this.logout = logout;
+  }
+
+  public Boolean getLogoutAPI() {
+    return logoutAPI;
+  }
+
+  public void setLogoutAPI(Boolean logoutAPI) {
+    this.logoutAPI = logoutAPI;
   }
 
   public String getProviderUrl() {
