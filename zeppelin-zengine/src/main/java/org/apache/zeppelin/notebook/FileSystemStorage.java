@@ -15,7 +15,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.FilePermission;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -33,7 +32,7 @@ import java.util.Set;
  */
 public class FileSystemStorage {
 
-  private static Logger LOGGER = LoggerFactory.getLogger(FileSystemStorage.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(FileSystemStorage.class);
   private static final String S3A = "s3a";
   private static final String FS_DEFAULTFS = "fs.defaultFS";
 
@@ -129,9 +128,9 @@ public class FileSystemStorage {
       public Void call() throws IOException {
         if (!fs.exists(dir)) {
           fs.mkdirs(dir);
-          LOGGER.info("Create dir {} in hdfs", dir.toString());
+          LOGGER.info("Create dir {} in hdfs", dir);
         }
-        if (fs.isFile(dir)) {
+        if (fs.getFileStatus(dir).isFile()) {
           throw new IOException(dir.toString() + " is file instead of directory, please remove " +
               "it or specify another directory");
         }
@@ -174,7 +173,7 @@ public class FileSystemStorage {
             if (path.getPath().getName().endsWith(".zpln")) {
               noteFiles.add(path.getPath());
             } else {
-              LOGGER.warn("Unknown file: " + path.getPath());
+              LOGGER.warn("Unknown file: {}", path.getPath());
             }
           }
         }
@@ -195,7 +194,7 @@ public class FileSystemStorage {
     return callHdfsOperation(new HdfsOperation<String>() {
       @Override
       public String call() throws IOException {
-        LOGGER.debug("Read from file: " + file);
+        LOGGER.debug("Read from file: {}", file);
         ByteArrayOutputStream noteBytes = new ByteArrayOutputStream();
         IOUtils.copyBytes(fs.open(file), noteBytes, hadoopConf);
         return new String(noteBytes.toString(
