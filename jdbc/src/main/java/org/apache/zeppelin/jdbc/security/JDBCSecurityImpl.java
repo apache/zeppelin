@@ -53,9 +53,10 @@ public class JDBCSecurityImpl {
           if (!UserGroupInformation.isSecurityEnabled()
               || UserGroupInformation.getCurrentUser().getAuthenticationMethod() != KERBEROS
               || !UserGroupInformation.isLoginKeytabBased()) {
-            UserGroupInformation.loginUserFromKeytab(
-                properties.getProperty("zeppelin.jdbc.principal"),
-                properties.getProperty("zeppelin.jdbc.keytab.location"));
+            String keytab = properties.getProperty("zeppelin.jdbc.keytab.location");
+            String principal = properties.getProperty("zeppelin.jdbc.principal");
+            UserGroupInformation.loginUserFromKeytab(principal, keytab);
+            LOGGER.info("Login successfully via keytab: {} and principal: {}", keytab, principal);
           } else {
             LOGGER.info("The user has already logged in using Keytab and principal, " +
                 "no action required");
@@ -67,7 +68,7 @@ public class JDBCSecurityImpl {
     }
   }
 
-  public static AuthenticationMethod getAuthtype(Properties properties) {
+  public static AuthenticationMethod getAuthType(Properties properties) {
     AuthenticationMethod authType;
     try {
       authType = AuthenticationMethod.valueOf(properties.getProperty("zeppelin.jdbc.auth.type")
