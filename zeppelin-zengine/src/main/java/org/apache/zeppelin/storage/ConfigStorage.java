@@ -24,6 +24,7 @@ import com.google.gson.JsonParser;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.InterpreterInfoSaving;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
+import org.apache.zeppelin.metrics.Metrics;
 import org.apache.zeppelin.notebook.NotebookAuthorizationInfoSaving;
 import org.apache.zeppelin.util.ReflectionUtils;
 
@@ -39,6 +40,8 @@ import java.io.IOException;
  *
  */
 public abstract class ConfigStorage {
+
+  protected static final String STORAGE_HEALTHCHECK_NAME = "ConfigStorage";
 
   private static ConfigStorage instance;
 
@@ -97,6 +100,7 @@ public abstract class ConfigStorage {
 
   @VisibleForTesting
   public static void reset() {
+    Metrics.getHealthCheckLivenessRegistry().unregister(STORAGE_HEALTHCHECK_NAME);
     instance = null;
   }
 }
