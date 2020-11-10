@@ -26,8 +26,13 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
+import io.micrometer.core.instrument.Gauge;
+import io.micrometer.core.instrument.Meter;
+import io.micrometer.core.instrument.Metrics;
+import io.micrometer.core.instrument.Tags;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -124,8 +129,9 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
    * id --> InterpreterSetting
    * TODO(zjffdu) change it to name --> InterpreterSetting
    */
-  private final Map<String, InterpreterSetting> interpreterSettings =
-      Maps.newConcurrentMap();
+  private final Map<String, InterpreterSetting> interpreterSettings = Metrics.gaugeMapSize("interpreter.amount", Tags.empty(),
+      Maps.newConcurrentMap());
+  private final Map<String, List<Meter>> interpreterSettingsMeters = Maps.newConcurrentMap();
 
   private final List<RemoteRepository> interpreterRepositories;
   private InterpreterOption defaultOption;
@@ -240,7 +246,7 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
         InterpreterSetting interpreterSetting = new InterpreterSetting(interpreterSettingTemplate);
         initInterpreterSetting(interpreterSetting);
         if (shouldRegister(interpreterSetting.getGroup())) {
-          interpreterSettings.put(interpreterSetting.getId(), interpreterSetting);
+          addInterpreterSetting(interpreterSetting);
         }
       }
       return;
@@ -281,13 +287,13 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
       // remove it first
       for (InterpreterSetting setting : interpreterSettings.values()) {
         if (setting.getName().equals(savedInterpreterSetting.getName())) {
-          interpreterSettings.remove(setting.getId());
+          removeInterpreterSetting(setting.getId());
         }
       }
       savedInterpreterSetting.postProcessing();
       LOGGER.info("Create interpreter setting {} from interpreter.json",
           savedInterpreterSetting.getName());
-      interpreterSettings.put(savedInterpreterSetting.getId(), savedInterpreterSetting);
+      addInterpreterSetting(savedInterpreterSetting);
     }
 
     for (InterpreterSetting interpreterSettingTemplate : interpreterSettingTemplates.values()) {
@@ -296,7 +302,7 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
       // add newly detected interpreter if it doesn't exist in interpreter.json
       if (!interpreterSettings.containsKey(interpreterSetting.getId())) {
         LOGGER.info("Create interpreter setting: {} from interpreter setting template", interpreterSetting.getId());
-        interpreterSettings.put(interpreterSetting.getId(), interpreterSetting);
+        addInterpreterSetting(interpreterSetting);
       }
     }
 
@@ -315,11 +321,41 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
     }
   }
 
+  private void addInterpreterSetting(InterpreterSetting interpreterSetting) {
+    interpreterSettings.put(interpreterSetting.getId(), interpreterSetting);
+    List<Meter> meters = new LinkedList<>();
+    Gauge size = Gauge
+      .builder("interpreter.group.size", () -> interpreterSetting.getAllInterpreterGroups().size())
+      .description("Size of all interpreter groups")
+      .tags(Tags.of("name", interpreterSetting.getId()))
+      .tags(Tags.of("group", interpreterSetting.getGroup()))
+      .register(Metrics.globalRegistry);
+    meters.add(size);
+    interpreterSettingsMeters.put(interpreterSetting.getId(), meters);
+  }
+
+
+  private void removeInterpreterSetting(String id) {
+    interpreterSettings.remove(id);
+    List<Meter> meters = interpreterSettingsMeters.remove(id);
+    for (Meter meter : meters) {
+      Metrics.globalRegistry.remove(meter);
+    }
+  }
+
   public void saveToFile() throws IOException {
     InterpreterInfoSaving info = new InterpreterInfoSaving();
     info.interpreterSettings = Maps.newHashMap(interpreterSettings);
     info.interpreterRepositories = interpreterRepositories;
     configStorage.save(info);
+  }
+
+  private void initMetrics() {
+    Gauge
+      .builder("interpreter.group.size.total", () -> getAllInterpreterGroup().size())
+      .description("Size of all interpreter groups")
+      .tags()
+      .register(Metrics.globalRegistry);
   }
 
   private void init() throws IOException {
@@ -342,6 +378,7 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
     loadInterpreterSettingFromDefaultDir(true);
     loadFromFile();
     saveToFile();
+    initMetrics();
 
     // must init Recovery after init of InterpreterSettingManager
     recoveryStorage.init();
@@ -827,7 +864,7 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
     setting.setInterpreterOption(option);
     setting.setProperties(properties);
     initInterpreterSetting(setting);
-    interpreterSettings.put(setting.getId(), setting);
+    addInterpreterSetting(setting);
     saveToFile();
 
     return setting;
@@ -977,7 +1014,7 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
     if (interpreterSettings.containsKey(id)) {
       InterpreterSetting intp = interpreterSettings.get(id);
       intp.close();
-      interpreterSettings.remove(id);
+      removeInterpreterSetting(id);
       if (initiator) {
         // Event initiator saves the file
         // Cluster event accepting nodes do not need to save files repeatedly
