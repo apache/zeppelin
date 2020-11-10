@@ -20,6 +20,16 @@ import com.google.gson.Gson;
 
 import static org.apache.zeppelin.server.HtmlAddonResource.HTML_ADDON_IDENTIFIER;
 
+import io.micrometer.core.instrument.Metrics;
+import io.micrometer.core.instrument.binder.jvm.ClassLoaderMetrics;
+import io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics;
+import io.micrometer.core.instrument.binder.jvm.JvmThreadMetrics;
+import io.micrometer.core.instrument.binder.system.FileDescriptorMetrics;
+import io.micrometer.core.instrument.binder.system.ProcessorMetrics;
+import io.micrometer.core.instrument.binder.system.UptimeMetrics;
+import io.micrometer.prometheus.PrometheusConfig;
+import io.micrometer.prometheus.PrometheusMeterRegistry;
+
 import java.io.File;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
@@ -54,6 +64,8 @@ import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.interpreter.recovery.RecoveryStorage;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
+import org.apache.zeppelin.metric.JVMInfoBinder;
+import org.apache.zeppelin.metric.PrometheusServlet;
 import org.apache.zeppelin.notebook.NoteEventListener;
 import org.apache.zeppelin.notebook.NoteManager;
 import org.apache.zeppelin.notebook.Notebook;
@@ -116,6 +128,7 @@ public class ZeppelinServer extends ResourceConfig {
   public static ServiceLocator sharedServiceLocator;
 
   private static ZeppelinConfiguration conf;
+  private static PrometheusMeterRegistry promMetricRegistry;
 
   public static void reset() {
     conf = null;
@@ -135,6 +148,7 @@ public class ZeppelinServer extends ResourceConfig {
     conf.setProperty("args", args);
 
     jettyWebServer = setupJettyServer(conf);
+    initMetrics(conf);
 
     ContextHandlerCollection contexts = new ContextHandlerCollection();
     jettyWebServer.setHandler(contexts);
@@ -291,6 +305,20 @@ public class ZeppelinServer extends ResourceConfig {
     if (!conf.isRecoveryEnabled()) {
       sharedServiceLocator.getService(InterpreterSettingManager.class).close();
     }
+  }
+
+  private static void initMetrics(ZeppelinConfiguration conf) {
+    if (conf.isPrometheusMetricEnabled()) {
+      promMetricRegistry = new PrometheusMeterRegistry(PrometheusConfig.DEFAULT);
+      Metrics.addRegistry(promMetricRegistry);
+    }
+    new ClassLoaderMetrics().bindTo(Metrics.globalRegistry);
+    new JvmMemoryMetrics().bindTo(Metrics.globalRegistry);
+    new JvmThreadMetrics().bindTo(Metrics.globalRegistry);
+    new FileDescriptorMetrics().bindTo(Metrics.globalRegistry);
+    new ProcessorMetrics().bindTo(Metrics.globalRegistry);
+    new UptimeMetrics().bindTo(Metrics.globalRegistry);
+    new JVMInfoBinder().bindTo(Metrics.globalRegistry);
   }
 
   private static Thread shutdown(ZeppelinConfiguration conf) {
@@ -534,6 +562,10 @@ public class ZeppelinServer extends ResourceConfig {
     }
   }
 
+  private static void setupPrometheusContextHandler(WebAppContext webapp) {
+    webapp.addServlet(new ServletHolder(new PrometheusServlet(promMetricRegistry)), "/metrics");
+  }
+
   private static WebAppContext setupWebAppContext(
       ContextHandlerCollection contexts, ZeppelinConfiguration conf, String warPath, String contextPath) {
     WebAppContext webApp = new WebAppContext();
@@ -621,6 +653,8 @@ public class ZeppelinServer extends ResourceConfig {
     // Create `ZeppelinServer` using reflection and setup REST Api
     setupRestApiContextHandler(webApp, conf);
 
+    // prometheus endpoint
+    setupPrometheusContextHandler(webApp);
     // Notebook server
     setupNotebookServer(webApp, conf, sharedServiceLocator);
   }

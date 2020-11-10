@@ -508,7 +508,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
   public String getS3SignerOverride() {
     return getString(ConfVars.ZEPPELIN_NOTEBOOK_S3_SIGNEROVERRIDE);
   }
-  
+
   public boolean isS3PathStyleAccess() {
     return getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_S3_PATH_STYLE_ACCESS);
   }
@@ -884,6 +884,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getString(ConfVars.ZEPPELIN_DOCKER_CONTAINER_IMAGE);
   }
 
+  public boolean isPrometheusMetricEnabled() {
+    return getBoolean(ConfVars.ZEPPELIN_METRIC_ENABLE_PROMETHEUS);
+  }
+
   public Map<String, String> dumpConfigurations(Predicate<String> predicate) {
     Map<String, String> properties = new HashMap<>();
 
@@ -1094,6 +1098,8 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_K8S_TIMEOUT_DURING_PENDING("zeppelin.k8s.timeout.during.pending", true),
 
     ZEPPELIN_DOCKER_CONTAINER_IMAGE("zeppelin.docker.container.image", "apache/zeppelin:" + Util.getVersion()),
+
+    ZEPPELIN_METRIC_ENABLE_PROMETHEUS("zeppelin.metric.enable.prometheus", false),
 
     ZEPPELIN_IMPERSONATE_SPARK_PROXY_USER("zeppelin.impersonate.spark.proxy.user", true),
     ZEPPELIN_NOTEBOOK_GIT_REMOTE_URL("zeppelin.notebook.git.remote.url", ""),

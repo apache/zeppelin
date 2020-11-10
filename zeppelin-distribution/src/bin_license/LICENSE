@@ -221,6 +221,10 @@ The following components are provided under Apache License.
     (Apache 2.0) Neo4j Java Driver (https://github.com/neo4j/neo4j-java-driver) - https://github.com/neo4j/neo4j-java-driver/blob/1.4.3/LICENSE.txt
     (Apache 2.0) Hazelcast Jet (http://jet.hazelcast.org) - https://github.com/hazelcast/hazelcast-jet/blob/master/LICENSE
     (Apache 2.0) RxJava (io.reactivex.rxjava2:rxjava:2.2.17) - https://github.com/ReactiveX/RxJava/blob/2.x/LICENSE
+    (Apache 2.0) Application monitoring instrumentation facade (io.micrometer:micrometer-core:1.6.0) - https://github.com/micrometer-metrics/micrometer/blob/master/LICENSE
+    (Apache 2.0) Application monitoring instrumentation facade (io.micrometer:micrometer-registry-prometheus:1.6.0) - https://github.com/micrometer-metrics/micrometer/blob/master/LICENSE
+    (Apache 2.0) Prometheus Java Simpleclient Common (io.prometheus:simpleclient_common:0.9.0) - https://github.com/prometheus/client_java/blob/master/LICENSE
+    (Apache 2.0) Prometheus Java Simpleclient (io.prometheus:simpleclient:0.9.0) - https://github.com/prometheus/client_java/blob/master/LICENSE
 
 ========================================================================
 MIT licenses
@@ -420,3 +424,4 @@ Creative Commons CC0 (http://creativecommons.org/publicdomain/zero/1.0/)
 Multiple licenses
 ========================================================================
   (LGPLv2) (GPLv2) (MPL 1.1) Jtransforms (com.github.rwl:jtransforms:2.4.0 - https://sourceforge.net/projects/jtransforms/)
+  (CC0 1.0) (BSD-2) HdrHistogram (org.hdrhistogram:HdrHistogram:2.1.12 - http://hdrhistogram.github.io/HdrHistogram/)

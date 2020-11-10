@@ -443,6 +443,12 @@ If both are defined, then the **environment variables** will take priority.
     <td>true</td>
     <td>Value to enable/disable timeout handling when starting Interpreter Pods. Caution: This can lead to an infinity loop</td>
   </tr>
+  <tr>
+    <td><h6 class="properties">ZEPPELIN_METRIC_ENABLE_PROMETHEUS</h6></td>
+    <td><h6 class="properties">zeppelin.metric.enable.prometheus</h6></td>
+    <td>false</td>
+    <td>Value to enable/disable Prometheus metric endpoint on /metric</td>
+  </tr>
 </table>
 
 

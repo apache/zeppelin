@@ -112,6 +112,7 @@ limitations under the License.
   * [MongoDB Storage](./setup/storage/storage.html#notebook-storage-in-mongodb)
 * Operation 
   * [Configuration](./setup/operation/configuration.html): lists for Apache Zeppelin
+  * [Monitoring](./setup/operation/monitoring.html): monitoring instructions for Apache Zeppelin
   * [Proxy Setting](./setup/operation/proxy_setting.html)
   * [Upgrading](./setup/operation/upgrading.html): a manual procedure of upgrading Apache Zeppelin version
   * [Trouble Shooting](./setup/operation/trouble_shooting.html)
