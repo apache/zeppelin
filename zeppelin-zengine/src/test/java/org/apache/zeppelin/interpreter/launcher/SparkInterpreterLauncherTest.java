@@ -253,14 +253,13 @@ public class SparkInterpreterLauncherTest {
             zeppelinHome + "/interpreter/zeppelin-interpreter-shaded-" + Util.getVersion() + ".jar";
     String sparkrZip = sparkHome + "/R/lib/sparkr.zip#sparkr";
     String sparkFiles = "file_1," + zeppelinHome + "/conf/log4j_yarn_cluster.properties";
-    assertEquals(" --conf spark.yarn.dist.archives=" + sparkrZip +
+    assertEquals(" --proxy-user user1 --conf spark.yarn.dist.archives=" + sparkrZip +
             " --conf spark.yarn.isPython=true --conf spark.app.name=intpGroupId" +
             " --conf spark.yarn.maxAppAttempts=1" +
             " --conf spark.master=yarn" +
             " --conf spark.files=" + sparkFiles + " --conf spark.jars=" + sparkJars +
             " --conf spark.submit.deployMode=cluster" +
-            " --conf spark.yarn.submit.waitAppCompletion=false" +
-            " --proxy-user user1",
+            " --conf spark.yarn.submit.waitAppCompletion=false",
             interpreterProcess.getEnv().get("ZEPPELIN_SPARK_CONF"));
     Files.deleteIfExists(Paths.get(localRepoPath.toAbsolutePath().toString(), "test.jar"));
     FileUtils.deleteDirectory(localRepoPath.toFile());
@@ -302,15 +301,14 @@ public class SparkInterpreterLauncherTest {
     String sparkrZip = sparkHome + "/R/lib/sparkr.zip#sparkr";
     // escape special characters
     String sparkFiles = "{}," + zeppelinHome + "/conf/log4j_yarn_cluster.properties";
-    assertEquals(" --conf spark.yarn.dist.archives=" + sparkrZip +
+    assertEquals(" --proxy-user user1 --conf spark.yarn.dist.archives=" + sparkrZip +
                     " --conf spark.yarn.isPython=true" +
                     " --conf spark.app.name=intpGroupId" +
                     " --conf spark.yarn.maxAppAttempts=1" +
                     " --conf spark.master=yarn" +
                     " --conf spark.files=" + sparkFiles + " --conf spark.jars=" + sparkJars +
                     " --conf spark.submit.deployMode=cluster" +
-                    " --conf spark.yarn.submit.waitAppCompletion=false" +
-                    " --proxy-user user1",
+                    " --conf spark.yarn.submit.waitAppCompletion=false",
             interpreterProcess.getEnv().get("ZEPPELIN_SPARK_CONF"));
     FileUtils.deleteDirectory(localRepoPath.toFile());
   }
