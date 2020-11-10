@@ -23,6 +23,11 @@ import com.google.gson.Gson;
 import static org.apache.zeppelin.server.HtmlAddonResource.HTML_ADDON_IDENTIFIER;
 
 import io.micrometer.core.instrument.Metrics;
+import io.micrometer.core.instrument.Tags;
+import io.micrometer.core.instrument.binder.jetty.InstrumentedQueuedThreadPool;
+import io.micrometer.core.instrument.binder.jetty.JettyConnectionMetrics;
+import io.micrometer.core.instrument.binder.jetty.JettySslHandshakeMetrics;
+import io.micrometer.core.instrument.binder.jetty.TimedHandler;
 import io.micrometer.core.instrument.binder.jvm.ClassLoaderMetrics;
 import io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics;
 import io.micrometer.core.instrument.binder.jvm.JvmThreadMetrics;
@@ -91,6 +96,7 @@ import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
 import org.apache.zeppelin.util.ReflectionUtils;
 import org.apache.zeppelin.utils.PEMImporter;
+import org.eclipse.jetty.http.HttpScheme;
 import org.eclipse.jetty.http.HttpVersion;
 import org.eclipse.jetty.jmx.ConnectorServer;
 import org.eclipse.jetty.jmx.MBeanContainer;
@@ -108,8 +114,6 @@ import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.resource.Resource;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
-import org.eclipse.jetty.util.thread.QueuedThreadPool;
-import org.eclipse.jetty.util.thread.ThreadPool;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.eclipse.jetty.websocket.servlet.WebSocketServlet;
 import org.glassfish.hk2.api.Immediate;
@@ -153,8 +157,11 @@ public class ZeppelinServer extends ResourceConfig {
     jettyWebServer = setupJettyServer(conf);
     initMetrics(conf);
 
+    TimedHandler timedHandler = new TimedHandler(Metrics.globalRegistry, Tags.empty());
+    jettyWebServer.setHandler(timedHandler);
+
     ContextHandlerCollection contexts = new ContextHandlerCollection();
-    jettyWebServer.setHandler(contexts);
+    timedHandler.setHandler(contexts);
 
     sharedServiceLocator = ServiceLocatorFactory.getInstance().create("shared-locator");
     ServiceLocatorUtilities.enableImmediateScope(sharedServiceLocator);
@@ -347,8 +354,9 @@ public class ZeppelinServer extends ResourceConfig {
   }
 
   private static Server setupJettyServer(ZeppelinConfiguration conf) {
-    ThreadPool threadPool =
-      new QueuedThreadPool(conf.getInt(ConfVars.ZEPPELIN_SERVER_JETTY_THREAD_POOL_MAX),
+    InstrumentedQueuedThreadPool threadPool =
+      new InstrumentedQueuedThreadPool(Metrics.globalRegistry, Tags.empty(),
+                           conf.getInt(ConfVars.ZEPPELIN_SERVER_JETTY_THREAD_POOL_MAX),
                            conf.getInt(ConfVars.ZEPPELIN_SERVER_JETTY_THREAD_POOL_MIN),
                            conf.getInt(ConfVars.ZEPPELIN_SERVER_JETTY_THREAD_POOL_TIMEOUT));
     final Server server = new Server(threadPool);
@@ -364,26 +372,34 @@ public class ZeppelinServer extends ResourceConfig {
     httpConfig.setRequestHeaderSize(conf.getJettyRequestHeaderSize());
     if (conf.useSsl()) {
       LOG.debug("Enabling SSL for Zeppelin Server on port {}", sslPort);
-      httpConfig.setSecureScheme("https");
+      httpConfig.setSecureScheme(HttpScheme.HTTPS.asString());
       httpConfig.setSecurePort(sslPort);
 
       HttpConfiguration httpsConfig = new HttpConfiguration(httpConfig);
       httpsConfig.addCustomizer(new SecureRequestCustomizer());
 
+      SslConnectionFactory sslConnectionFactory = new SslConnectionFactory(getSslContextFactory(conf), HttpVersion.HTTP_1_1.asString());
+      HttpConnectionFactory httpsConnectionFactory = new HttpConnectionFactory(httpsConfig);
       connector =
               new ServerConnector(
                       server,
-                      new SslConnectionFactory(getSslContextFactory(conf), HttpVersion.HTTP_1_1.asString()),
-                      new HttpConnectionFactory(httpsConfig));
+                      sslConnectionFactory,
+                      httpsConnectionFactory);
       connector.setPort(sslPort);
+      connector.addBean(new JettySslHandshakeMetrics(Metrics.globalRegistry, Tags.empty()));
     } else {
-      connector = new ServerConnector(server, new HttpConnectionFactory(httpConfig));
+      HttpConnectionFactory httpConnectionFactory = new HttpConnectionFactory(httpConfig);
+      connector =
+              new ServerConnector(
+                      server,
+                      httpConnectionFactory);
       connector.setPort(port);
     }
     // Set some timeout options to make debugging easier.
     int timeout = 1000 * 30;
     connector.setIdleTimeout(timeout);
     connector.setHost(conf.getServerAddress());
+    connector.addBean(new JettyConnectionMetrics(Metrics.globalRegistry, Tags.empty()));
     server.addConnector(connector);
   }
 
