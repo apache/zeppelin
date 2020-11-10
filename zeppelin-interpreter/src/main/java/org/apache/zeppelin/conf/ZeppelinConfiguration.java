@@ -428,6 +428,14 @@ public class ZeppelinConfiguration extends XMLConfiguration {
       return getString(ConfVars.ZEPPELIN_SSL_PEM_CA);
   }
 
+  public boolean isJMXEnabled() {
+    return getBoolean(ConfVars.ZEPPELIN_JMX_ENABLE);
+  }
+
+  public int getJMXPort() {
+    return getInt(ConfVars.ZEPPELIN_JMX_PORT);
+  }
+
   public String getNotebookDir() {
     return getAbsoluteDir(ConfVars.ZEPPELIN_NOTEBOOK_DIR);
   }
@@ -962,6 +970,8 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_WAR("zeppelin.war", "zeppelin-web/dist"),
     ZEPPELIN_ANGULAR_WAR("zeppelin.angular.war", "zeppelin-web-angular/dist"),
     ZEPPELIN_WAR_TEMPDIR("zeppelin.war.tempdir", "webapps"),
+    ZEPPELIN_JMX_ENABLE("zeppelin.jmx.enable", false),
+    ZEPPELIN_JMX_PORT("zeppelin.jmx.port", 9996),
 
     ZEPPELIN_INTERPRETER_JSON("zeppelin.interpreter.setting", "interpreter-setting.json"),
     ZEPPELIN_INTERPRETER_DIR("zeppelin.interpreter.dir", "interpreter"),

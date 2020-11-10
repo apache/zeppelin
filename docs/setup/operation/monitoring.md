@@ -28,6 +28,10 @@ Apache Zeppelin is using [Micrometer](https://micrometer.io/) - a vendor-neutral
 
 [Prometheus](https://prometheus.io/) is the leading monitoring solution for [Kubernetes](https://kubernetes.io/). The Prometheus endpoint can be activated with the configuration property `zeppelin.metric.enable.prometheus`. The metrics are accessible via the unauthenticated endpoint `/metrics`.
 
+### JMX Monitoring
+
+[JMX](https://en.wikipedia.org/wiki/Java_Management_Extensions) is a general solution for monitoring Java applications. JMX can be activated with the configuration property `zeppelin.jmx.enable`. The default port 9996 can be changed with the configuration property `zeppelin.jmx.port`.
+
 ## Healthcheck Probe
 
 Apache Zeppelin has two healthcheck related unauthenticated endpoints (`/health/readiness`, `/health/liveness`) that could be used for proxy and/or cloud setups.

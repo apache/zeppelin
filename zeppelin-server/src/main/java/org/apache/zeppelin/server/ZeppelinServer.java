@@ -22,6 +22,7 @@ import com.google.gson.Gson;
 
 import static org.apache.zeppelin.server.HtmlAddonResource.HTML_ADDON_IDENTIFIER;
 
+import io.micrometer.core.instrument.Clock;
 import io.micrometer.core.instrument.Metrics;
 import io.micrometer.core.instrument.Tags;
 import io.micrometer.core.instrument.binder.jetty.InstrumentedQueuedThreadPool;
@@ -34,6 +35,8 @@ import io.micrometer.core.instrument.binder.jvm.JvmThreadMetrics;
 import io.micrometer.core.instrument.binder.system.FileDescriptorMetrics;
 import io.micrometer.core.instrument.binder.system.ProcessorMetrics;
 import io.micrometer.core.instrument.binder.system.UptimeMetrics;
+import io.micrometer.jmx.JmxConfig;
+import io.micrometer.jmx.JmxMeterRegistry;
 import io.micrometer.prometheus.PrometheusConfig;
 import io.micrometer.prometheus.PrometheusMeterRegistry;
 
@@ -228,49 +231,20 @@ public class ZeppelinServer extends ResourceConfig {
     setupClusterManagerServer(sharedServiceLocator);
 
     // JMX Enable
-    Stream.of("ZEPPELIN_JMX_ENABLE")
-        .map(System::getenv)
-        .map(Boolean::parseBoolean)
-        .filter(Boolean::booleanValue)
-        .map(jmxEnabled -> "ZEPPELIN_JMX_PORT")
-        .map(System::getenv)
-        .map(
-            portString -> {
-              try {
-                return Integer.parseInt(portString);
-              } catch (Exception e) {
-                return null;
-              }
-            })
-        .filter(Objects::nonNull)
-        .forEach(
-            port -> {
-              try {
-                MBeanContainer mbeanContainer =
-                    new MBeanContainer(ManagementFactory.getPlatformMBeanServer());
-                jettyWebServer.addEventListener(mbeanContainer);
-                jettyWebServer.addBean(mbeanContainer);
-
-                JMXServiceURL jmxURL =
-                    new JMXServiceURL(
-                        String.format(
-                            "service:jmx:rmi://0.0.0.0:%d/jndi/rmi://0.0.0.0:%d/jmxrmi",
-                            port, port));
-                ConnectorServer jmxServer =
-                    new ConnectorServer(jmxURL, "org.eclipse.jetty.jmx:name=rmiconnectorserver");
-                jettyWebServer.addBean(jmxServer);
-
-                // Add JMX Beans
-                // TODO(jl): Need to investigate more about injection and jmx
-                jettyWebServer.addBean(
-                    sharedServiceLocator.getService(InterpreterSettingManager.class));
-                jettyWebServer.addBean(sharedServiceLocator.getService(NotebookServer.class));
-
-                LOG.info("JMX Enabled with port: {}", port);
-              } catch (Exception e) {
-                LOG.warn("Error while setting JMX", e);
-              }
-            });
+    if (conf.isJMXEnabled()) {
+      int port = conf.getJMXPort();
+      // Setup JMX
+      MBeanContainer mbeanContainer = new MBeanContainer(ManagementFactory.getPlatformMBeanServer());
+      jettyWebServer.addBean(mbeanContainer);
+      JMXServiceURL jmxURL =
+        new JMXServiceURL(
+            String.format(
+                "service:jmx:rmi://0.0.0.0:%d/jndi/rmi://0.0.0.0:%d/jmxrmi",
+                port, port));
+      ConnectorServer jmxServer = new ConnectorServer(jmxURL, "org.eclipse.jetty.jmx:name=rmiconnectorserver");
+      jettyWebServer.addBean(jmxServer);
+      LOG.info("JMX Enabled with port: {}", port);
+    }
 
     LOG.info("Starting zeppelin server");
     try {
@@ -321,6 +295,9 @@ public class ZeppelinServer extends ResourceConfig {
     if (conf.isPrometheusMetricEnabled()) {
       promMetricRegistry = new PrometheusMeterRegistry(PrometheusConfig.DEFAULT);
       Metrics.addRegistry(promMetricRegistry);
+    }
+    if (conf.isJMXEnabled()) {
+      Metrics.addRegistry(new JmxMeterRegistry(JmxConfig.DEFAULT, Clock.SYSTEM));
     }
     new ClassLoaderMetrics().bindTo(Metrics.globalRegistry);
     new JvmMemoryMetrics().bindTo(Metrics.globalRegistry);

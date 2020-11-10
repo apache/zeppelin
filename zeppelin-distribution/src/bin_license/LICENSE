@@ -223,12 +223,14 @@ The following components are provided under Apache License.
     (Apache 2.0) RxJava (io.reactivex.rxjava2:rxjava:2.2.17) - https://github.com/ReactiveX/RxJava/blob/2.x/LICENSE
     (Apache 2.0) Application monitoring instrumentation facade (io.micrometer:micrometer-core:1.6.0) - https://github.com/micrometer-metrics/micrometer/blob/master/LICENSE
     (Apache 2.0) Application monitoring instrumentation facade (io.micrometer:micrometer-registry-prometheus:1.6.0) - https://github.com/micrometer-metrics/micrometer/blob/master/LICENSE
+    (Apache 2.0) Application monitoring instrumentation facade (io.micrometer:micrometer-registry-jmx:1.6.0) - https://github.com/micrometer-metrics/micrometer/blob/master/LICENSE
     (Apache 2.0) Prometheus Java Simpleclient Common (io.prometheus:simpleclient_common:0.9.0) - https://github.com/prometheus/client_java/blob/master/LICENSE
     (Apache 2.0) Prometheus Java Simpleclient (io.prometheus:simpleclient:0.9.0) - https://github.com/prometheus/client_java/blob/master/LICENSE
     (Apache 2.0) Dropwizard Metrics Core (io.dropwizard.metrics:metrics-core:4.1.14) - https://github.com/dropwizard/metrics/blob/release/4.1.x/LICENSE
     (Apache 2.0) Dropwizard Metrics Utility Servlets (io.dropwizard.metrics:metrics-servlets:4.1.14) - https://github.com/dropwizard/metrics/blob/release/4.1.x/LICENSE
     (Apache 2.0) Dropwizard Jackson Integration for Metrics (io.dropwizard.metrics:metrics-json:4.1.14) - https://github.com/dropwizard/metrics/blob/release/4.1.x/LICENSE
     (Apache 2.0) Dropwizard Metrics Health Checks (io.dropwizard.metrics:metrics-healthchecks:4.1.14) - https://github.com/dropwizard/metrics/blob/release/4.1.x/LICENSE
+    (Apache 2.0) Dropwizard Metrics Integration with JMX (io.dropwizard.metrics:metrics-jmx:4.1.14) - https://github.com/dropwizard/metrics/blob/release/4.1.x/LICENSE
 
 ========================================================================
 MIT licenses

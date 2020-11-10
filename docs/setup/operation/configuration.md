@@ -61,13 +61,13 @@ If both are defined, then the **environment variables** will take priority.
   </tr>
   <tr>
     <td><h6 class="properties">ZEPPELIN_JMX_ENABLE</h6></td>
-    <td><h6 class="properties">N/A</h6></td>
-    <td></td>
+    <td><h6 class="properties">zeppelin.jmx.enable</h6></td>
+    <td>false</td>
     <td>Enable JMX by defining "true"</td>
   </tr>
   <tr>
     <td><h6 class="properties">ZEPPELIN_JMX_PORT</h6></td>
-    <td><h6 class="properties">N/A</h6></td>
+    <td><h6 class="properties">zeppelin.jmx.port</h6></td>
     <td>9996</td>
     <td>Port number which JMX uses</td>
   </tr>
