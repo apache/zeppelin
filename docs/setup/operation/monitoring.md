@@ -27,3 +27,7 @@ Apache Zeppelin is using [Micrometer](https://micrometer.io/) - a vendor-neutral
 ### Prometheus Monitoring
 
 [Prometheus](https://prometheus.io/) is the leading monitoring solution for [Kubernetes](https://kubernetes.io/). The Prometheus endpoint can be activated with the configuration property `zeppelin.metric.enable.prometheus`. The metrics are accessible via the unauthenticated endpoint `/metrics`.
+
+## Healthcheck Probe
+
+Apache Zeppelin has two healthcheck related unauthenticated endpoints (`/health/readiness`, `/health/liveness`) that could be used for proxy and/or cloud setups.

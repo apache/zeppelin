@@ -16,6 +16,8 @@
  */
 package org.apache.zeppelin.server;
 
+import com.codahale.metrics.servlets.HealthCheckServlet;
+import com.codahale.metrics.servlets.PingServlet;
 import com.google.gson.Gson;
 
 import static org.apache.zeppelin.server.HtmlAddonResource.HTML_ADDON_IDENTIFIER;
@@ -54,6 +56,7 @@ import org.apache.zeppelin.cluster.ClusterManagerServer;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.display.AngularObjectRegistryListener;
+import org.apache.zeppelin.healthcheck.HealthChecks;
 import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.helium.Helium;
 import org.apache.zeppelin.helium.HeliumApplicationFactory;
@@ -566,6 +569,12 @@ public class ZeppelinServer extends ResourceConfig {
     webapp.addServlet(new ServletHolder(new PrometheusServlet(promMetricRegistry)), "/metrics");
   }
 
+  private static void setupHealthCheckContextHandler(WebAppContext webapp) {
+    webapp.addServlet(new ServletHolder(new HealthCheckServlet(HealthChecks.getHealthCheckReadinessRegistry())), "/health/readiness");
+    webapp.addServlet(new ServletHolder(new HealthCheckServlet(HealthChecks.getHealthCheckLivenessRegistry())), "/health/liveness");
+    webapp.addServlet(new ServletHolder(new PingServlet()), "/ping");
+  }
+
   private static WebAppContext setupWebAppContext(
       ContextHandlerCollection contexts, ZeppelinConfiguration conf, String warPath, String contextPath) {
     WebAppContext webApp = new WebAppContext();
@@ -655,6 +664,9 @@ public class ZeppelinServer extends ResourceConfig {
 
     // prometheus endpoint
     setupPrometheusContextHandler(webApp);
+    // health endpoints
+    setupHealthCheckContextHandler(webApp);
+
     // Notebook server
     setupNotebookServer(webApp, conf, sharedServiceLocator);
   }
