@@ -503,11 +503,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
 
     final Properties properties = jdbcUserConfigurations.getPropertyMap(dbPrefix);
     String url = properties.getProperty(URL_KEY);
-    String principal = getProperty("zeppelin.jdbc.principal");
-    if (!StringUtils.isBlank(principal) && !url.contains("principal=")) {
-      url = url + ";principal=" + principal;
-    }
-
+    
     if (isEmpty(getProperty("zeppelin.jdbc.auth.type"))) {
       connection = getConnectionFromPool(url, user, dbPrefix, properties);
     } else {
