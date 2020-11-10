@@ -163,12 +163,14 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
       }
     }
 
-    for (String name : sparkProperties.stringPropertyNames()) {
-      sparkConfBuilder.append(" --conf " + name + "=" + sparkProperties.getProperty(name));
-    }
-
     if (context.getOption().isUserImpersonate() && zConf.getZeppelinImpersonateSparkProxyUser()) {
       sparkConfBuilder.append(" --proxy-user " + context.getUserName());
+      sparkProperties.remove("spark.yarn.keytab");
+      sparkProperties.remove("spark.yarn.principal");
+    }
+
+    for (String name : sparkProperties.stringPropertyNames()) {
+      sparkConfBuilder.append(" --conf " + name + "=" + sparkProperties.getProperty(name));
     }
 
     env.put("ZEPPELIN_SPARK_CONF", sparkConfBuilder.toString());
@@ -185,9 +187,10 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
       }
     }
 
-    String keytab = zConf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_SERVER_KERBEROS_KEYTAB);
-    String principal =
-        zConf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_SERVER_KERBEROS_PRINCIPAL);
+    String keytab = properties.getProperty("spark.yarn.keytab",
+            zConf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_SERVER_KERBEROS_KEYTAB));
+    String principal = properties.getProperty("spark.yarn.principal",
+            zConf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_SERVER_KERBEROS_PRINCIPAL));
 
     if (!StringUtils.isBlank(keytab) && !StringUtils.isBlank(principal)) {
       env.put("ZEPPELIN_SERVER_KERBEROS_KEYTAB", keytab);

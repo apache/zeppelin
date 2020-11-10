@@ -456,6 +456,20 @@ e.g.
 Zeppelin automatically injects `ZeppelinContext` as variable `z` in your Scala/Python environment. `ZeppelinContext` provides some additional functions and utilities.
 See [Zeppelin-Context](../usage/other_features/zeppelin_context.html) for more details.
 
+## Setting up Zeppelin with Kerberos
+Logical setup with Zeppelin, Kerberos Key Distribution Center (KDC), and Spark on YARN:
+
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/kdc_zeppelin.png">
+
+There're several ways to make spark work with kerberos enabled hadoop cluster in Zeppelin. 
+
+1. Share one single hadoop cluster.
+In this case you just need to specify `zeppelin.server.kerberos.keytab` and `zeppelin.server.kerberos.principal` in zeppelin-site.xml, Spark interpreter will use these setting by default.
+
+2. Work with multiple hadoop clusters.
+In this case you can specify `spark.yarn.keytab` and `spark.yarn.principal` to override `zeppelin.server.kerberos.keytab` and `zeppelin.server.kerberos.principal`.
+
+
 ## User Impersonation
 
 In yarn mode, the user who launch the zeppelin server will be used to launch the spark yarn application. This is not a good practise.
@@ -482,10 +496,6 @@ you need to enable user impersonation for more security control. In order the en
 impersonate in `zeppelin-site.xml`.
 
 
-## Setting up Zeppelin with Kerberos
-Logical setup with Zeppelin, Kerberos Key Distribution Center (KDC), and Spark on YARN:
-
-<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/kdc_zeppelin.png">
 
 ## Deprecate Spark 2.2 and earlier versions
 Starting from 0.9, Zeppelin deprecate Spark 2.2 and earlier versions. So you will see a warning message when you use Spark 2.2 and earlier.
