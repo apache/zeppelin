@@ -41,11 +41,11 @@ public class AngularObject<T> implements JsonSerializable {
 
   private String name;
   private T object;
-  
+
   private transient AngularObjectListener listener;
   private transient List<AngularObjectWatcher> watchers = new LinkedList<>();
-  
-  private String noteId;   // noteId belonging to. null for global scope 
+
+  private String noteId;   // noteId belonging to. null for global scope
   private String paragraphId; // paragraphId belongs to. null for notebook scope
 
   /**
@@ -177,7 +177,7 @@ public class AngularObject<T> implements JsonSerializable {
     if (emit) {
       emit();
     }
-    LOGGER.debug("Update angular object: " + name + " with value: " + o);
+    LOGGER.debug("Update angular object: {} with value: {}", name, o);
     final Logger logger = LoggerFactory.getLogger(AngularObject.class);
     List<AngularObjectWatcher> ws = new LinkedList<>();
     synchronized (watchers) {
@@ -257,11 +257,12 @@ public class AngularObject<T> implements JsonSerializable {
     return sb.toString();
   }
 
+  @Override
   public String toJson() {
     return GSON.toJson(this);
   }
 
-  public static AngularObject fromJson(String json) {
+  public static AngularObject<?> fromJson(String json) {
     return GSON.fromJson(json, AngularObject.class);
   }
 }

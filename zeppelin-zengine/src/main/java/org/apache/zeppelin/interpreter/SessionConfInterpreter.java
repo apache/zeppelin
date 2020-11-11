@@ -47,7 +47,7 @@ public class SessionConfInterpreter extends ConfInterpreter {
       Properties updatedProperties = new Properties();
       updatedProperties.load(new StringReader(st));
       finalProperties.putAll(updatedProperties);
-      LOGGER.debug("Properties for Session: " + sessionId + ": " + finalProperties);
+      LOGGER.debug("Properties for Session: {}:{}", sessionId, finalProperties);
 
       List<Interpreter> interpreters =
           interpreterSetting.getInterpreterGroup(interpreterGroupId).get(sessionId);

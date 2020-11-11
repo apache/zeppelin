@@ -28,7 +28,6 @@ import org.apache.zeppelin.scheduler.Job;
 import org.junit.Test;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Map;
 
@@ -85,7 +84,7 @@ public class TimeoutLifecycleManagerTest extends AbstractInterpreterTest {
     final RemoteInterpreter remoteInterpreter = (RemoteInterpreter) interpreterFactory.getInterpreter("test.sleep", new ExecutionContextBuilder().setUser("user1").setNoteId("note1").setDefaultInterpreterGroup("test").createExecutionContext());
 
     // simulate how zeppelin submit paragraph
-    remoteInterpreter.getScheduler().submit(new Job("test-job", null) {
+    remoteInterpreter.getScheduler().submit(new Job<Object>("test-job", null) {
       @Override
       public Object getReturn() {
         return null;

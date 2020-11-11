@@ -22,8 +22,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.common.JsonSerializable;
 import org.apache.zeppelin.common.Message;
 import org.apache.zeppelin.common.Message.OP;
-import org.apache.zeppelin.notebook.repo.zeppelinhub.websocket.Client;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,24 +35,24 @@ import com.google.gson.JsonSyntaxException;
  */
 public class ZeppelinhubMessage implements JsonSerializable {
   private static final Gson gson = new Gson();
-  private static final Logger LOG = LoggerFactory.getLogger(Client.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(ZeppelinhubMessage.class);
   public static final ZeppelinhubMessage EMPTY = new ZeppelinhubMessage();
 
   public Object op;
   public Object data;
   public Map<String, String> meta = Maps.newHashMap();
-  
+
   private ZeppelinhubMessage() {
     this.op = OP.LIST_NOTES;
     this.data = null;
   }
-  
+
   private ZeppelinhubMessage(Object op, Object data, Map<String, String> meta) {
     this.op = op;
     this.data = data;
     this.meta = meta;
   }
-  
+
   public static ZeppelinhubMessage newMessage(Object op, Object data, Map<String, String> meta) {
     return new ZeppelinhubMessage(op, data, meta);
   }
@@ -66,6 +64,7 @@ public class ZeppelinhubMessage implements JsonSerializable {
     return new ZeppelinhubMessage(zeppelinMsg.op, zeppelinMsg.data, meta);
   }
 
+  @Override
   public String toJson() {
     return gson.toJson(this, ZeppelinhubMessage.class);
   }
@@ -78,10 +77,10 @@ public class ZeppelinhubMessage implements JsonSerializable {
     try {
       msg = gson.fromJson(zeppelinhubMessage, ZeppelinhubMessage.class);
     } catch (JsonSyntaxException ex) {
-      LOG.error("Cannot fromJson zeppelinhub message", ex);
+      LOGGER.error("Cannot fromJson zeppelinhub message", ex);
       msg = EMPTY;
     }
     return msg;
   }
-  
+
 }

@@ -25,7 +25,7 @@ import org.slf4j.LoggerFactory;
  * Zeppelinhub session.
  */
 public class ZeppelinhubSession {
-  private static final Logger LOG = LoggerFactory.getLogger(ZeppelinhubSession.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(ZeppelinhubSession.class);
   private Session session;
   private final String token;
   
@@ -52,12 +52,12 @@ public class ZeppelinhubSession {
   
   public void sendByFuture(String msg) {
     if (StringUtils.isBlank(msg)) {
-      LOG.error("Cannot send event to Zeppelinhub, msg is empty");
+      LOGGER.error("Cannot send event to Zeppelinhub, msg is empty");
     }
     if (isSessionOpen()) {
       session.getRemote().sendStringByFuture(msg);
     } else {
-      LOG.error("Cannot send event to Zeppelinhub, session is close");
+      LOGGER.error("Cannot send event to Zeppelinhub, session is close");
     }
   }
 }

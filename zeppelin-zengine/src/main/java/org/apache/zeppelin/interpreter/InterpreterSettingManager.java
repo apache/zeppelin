@@ -81,6 +81,7 @@ import java.lang.reflect.Type;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -187,7 +188,7 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
             new Class[] {ZeppelinConfiguration.class, InterpreterSettingManager.class},
             new Object[] {conf, this});
 
-    LOGGER.info("Using RecoveryStorage: " + this.recoveryStorage.getClass().getName());
+    LOGGER.info("Using RecoveryStorage: {}", this.recoveryStorage.getClass().getName());
 
     this.configStorage = configStorage;
     init();
@@ -379,24 +380,24 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
     String interpreterJson = conf.getInterpreterJson();
     ClassLoader cl = Thread.currentThread().getContextClassLoader();
     if (Files.exists(interpreterDirPath)) {
-      for (Path interpreterDir : Files
-          .newDirectoryStream(interpreterDirPath,
-                  entry -> Files.exists(entry)
-                          && Files.isDirectory(entry)
-                          && shouldRegister(entry.toFile().getName()))) {
+      try (DirectoryStream<Path> directoryPaths = Files
+        .newDirectoryStream(interpreterDirPath,
+          entry -> Files.exists(entry)
+                  && Files.isDirectory(entry)
+                  && shouldRegister(entry.toFile().getName()))) {
+        for (Path interpreterDir : directoryPaths) {
 
-        String interpreterDirString = interpreterDir.toString();
-        /**
-         * Register interpreter by the following ordering
-         * 1. Register it from path {ZEPPELIN_HOME}/interpreter/{interpreter_name}/
-         *    interpreter-setting.json
-         * 2. Register it from interpreter-setting.json in classpath
-         *    {ZEPPELIN_HOME}/interpreter/{interpreter_name}
-         */
-        if (!registerInterpreterFromPath(interpreterDirString, interpreterJson, override)) {
-          if (!registerInterpreterFromResource(cl, interpreterDirString, interpreterJson,
-              override)) {
-            LOGGER.warn("No interpreter-setting.json found in " + interpreterDirString);
+          String interpreterDirString = interpreterDir.toString();
+          /**
+           * Register interpreter by the following ordering
+           * 1. Register it from path {ZEPPELIN_HOME}/interpreter/{interpreter_name}/
+           *    interpreter-setting.json
+           * 2. Register it from interpreter-setting.json in classpath
+           *    {ZEPPELIN_HOME}/interpreter/{interpreter_name}
+           */
+          if (!registerInterpreterFromPath(interpreterDirString, interpreterJson, override) &&
+            !registerInterpreterFromResource(cl, interpreterDirString, interpreterJson, override)) {
+            LOGGER.warn("No interpreter-setting.json found in {}", interpreterDirString);
           }
         }
       }
@@ -1163,7 +1164,6 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
     }
 
     try {
-      Gson gson = new Gson();
       ClusterMessage message = ClusterMessage.deserializeMessage(msg);
       String jsonIntpSetting = message.get("intpSetting");
       InterpreterSetting intpSetting = InterpreterSetting.fromJson(jsonIntpSetting);

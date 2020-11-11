@@ -28,7 +28,6 @@ import org.apache.zeppelin.scheduler.SchedulerThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -82,11 +81,11 @@ public class YarnAppMonitor {
                       String yarnDiagnostics = appReport.getDiagnostics();
                       interpreterManagedProcess.processStopped("Yarn diagnostics: " + yarnDiagnostics);
                       iter.remove();
-                      LOGGER.info("Remove " + appId + " from YarnAppMonitor, because its state is " +
+                      LOGGER.info("Remove {} from YarnAppMonitor, because its state is {}", appId ,
                               appReport.getYarnApplicationState());
                     } else if (appReport.getYarnApplicationState() == YarnApplicationState.FINISHED) {
                       iter.remove();
-                      LOGGER.info("Remove " + appId + " from YarnAppMonitor, because its state is " +
+                      LOGGER.info("Remove {} from YarnAppMonitor, because its state is ", appId,
                               appReport.getYarnApplicationState());
                     }
                   }
@@ -105,7 +104,7 @@ public class YarnAppMonitor {
   }
 
   public void addYarnApp(ApplicationId appId, RemoteInterpreterManagedProcess interpreterManagedProcess) {
-    LOGGER.info("Add " + appId + " to YarnAppMonitor");
+    LOGGER.info("Add {} to YarnAppMonitor", appId);
     this.apps.put(appId, interpreterManagedProcess);
   }
 }

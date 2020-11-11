@@ -72,8 +72,8 @@ import com.google.common.collect.Maps;
 public class Paragraph extends JobWithProgressPoller<InterpreterResult> implements Cloneable,
     JsonSerializable {
 
-  private static Logger LOGGER = LoggerFactory.getLogger(Paragraph.class);
-  private static Pattern REPL_PATTERN =
+  private static final Logger LOGGER = LoggerFactory.getLogger(Paragraph.class);
+  private static final Pattern REPL_PATTERN =
       Pattern.compile("(\\s*)%([\\w\\.]+)(\\(.*?\\))?.*", Pattern.DOTALL);
 
   private String title;

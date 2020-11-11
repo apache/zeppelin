@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -35,7 +36,7 @@ import java.util.concurrent.LinkedBlockingQueue;
  */
 public class AppendOutputRunner implements Runnable {
 
-  private static final Logger logger =
+  private static final Logger LOGGER =
       LoggerFactory.getLogger(AppendOutputRunner.class);
   public static final Long BUFFER_TIME_MS = new Long(100);
   private static final Long SAFE_PROCESSING_TIME = new Long(10);
@@ -65,7 +66,7 @@ public class AppendOutputRunner implements Runnable {
     try {
       list.add(queue.take());
     } catch (InterruptedException e) {
-      logger.error("Wait for OutputBuffer queue interrupted: " + e.getMessage());
+      LOGGER.error("Wait for OutputBuffer queue interrupted: {}", e.getMessage());
     }
     Long processingStartTime = System.currentTimeMillis();
     queue.drainTo(list);
@@ -85,27 +86,24 @@ public class AppendOutputRunner implements Runnable {
     Long processingTime = System.currentTimeMillis() - processingStartTime;
 
     if (processingTime > SAFE_PROCESSING_TIME) {
-      logger.warn("Processing time for buffered append-output is high: " +
-          processingTime + " milliseconds.");
+      LOGGER.warn("Processing time for buffered append-output is high: {} milliseconds.", processingTime);
     } else {
-      logger.debug("Processing time for append-output took "
-          + processingTime + " milliseconds");
+      LOGGER.debug("Processing time for append-output took {} milliseconds", processingTime);
     }
 
     Long sizeProcessed = new Long(0);
-    for (String stringBufferKey : stringBufferMap.keySet()) {
-      StringBuilder buffer = stringBufferMap.get(stringBufferKey);
+    for (Entry<String, StringBuilder> stringBufferMapEntry : stringBufferMap.entrySet()) {
+      String stringBufferKey = stringBufferMapEntry.getKey();
+      StringBuilder buffer = stringBufferMapEntry.getValue();
       sizeProcessed += buffer.length();
       String[] keys = stringBufferKey.split(":");
       listener.onOutputAppend(keys[0], keys[1], Integer.parseInt(keys[2]), buffer.toString());
     }
 
     if (sizeProcessed > SAFE_PROCESSING_STRING_SIZE) {
-      logger.warn("Processing size for buffered append-output is high: " +
-          sizeProcessed + " characters.");
+      LOGGER.warn("Processing size for buffered append-output is high: {} characters.", sizeProcessed);
     } else {
-      logger.debug("Processing size for append-output is " +
-          sizeProcessed + " characters");
+      LOGGER.debug("Processing size for append-output is {} characters", sizeProcessed);
     }
   }
 

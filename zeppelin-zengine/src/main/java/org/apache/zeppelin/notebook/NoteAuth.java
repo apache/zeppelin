@@ -116,7 +116,7 @@ public class NoteAuth {
    */
   private Set<String> checkCaseAndConvert(Set<String> entities) {
     if (ZeppelinConfiguration.create().isUsernameForceLowerCase()) {
-      Set<String> set2 = new HashSet<String>();
+      Set<String> set2 = new HashSet<>();
       for (String name : entities) {
         set2.add(name.toLowerCase());
       }
