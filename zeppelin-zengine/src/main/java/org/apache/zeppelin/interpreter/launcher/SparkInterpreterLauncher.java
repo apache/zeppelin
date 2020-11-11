@@ -22,6 +22,8 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -110,16 +112,16 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
     if (isYarnMode()
         && getDeployMode().equals("cluster")) {
       try {
-        List<String> additionalJars = new ArrayList();
+        List<String> additionalJars = new ArrayList<>();
         Path localRepoPath =
                 Paths.get(zConf.getInterpreterLocalRepoPath(), context.getInterpreterSettingId());
         if (Files.exists(localRepoPath) && Files.isDirectory(localRepoPath)) {
-          List<String> localRepoJars = StreamSupport.stream(
-                  Files.newDirectoryStream(localRepoPath, entry -> Files.isRegularFile(entry))
-                          .spliterator(),
+          try (DirectoryStream<Path> localRepoStream = Files.newDirectoryStream(localRepoPath, Files::isRegularFile)) {
+            List<String> localRepoJars = StreamSupport.stream(localRepoStream.spliterator(),
                   false)
                   .map(jar -> jar.toAbsolutePath().toString()).collect(Collectors.toList());
-          additionalJars.addAll(localRepoJars);
+            additionalJars.addAll(localRepoJars);
+          }
         }
 
         String scalaVersion = detectSparkScalaVersion(properties.getProperty("SPARK_HOME"));
@@ -127,30 +129,29 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
         if (!scalaFolder.toFile().exists()) {
           throw new IOException("spark scala folder " + scalaFolder.toFile() + " doesn't exist");
         }
-        List<String> scalaJars = StreamSupport.stream(
-                Files.newDirectoryStream(scalaFolder, entry -> Files.isRegularFile(entry))
-                        .spliterator(),
+        try (DirectoryStream<Path> scalaStream = Files.newDirectoryStream(scalaFolder, Files::isRegularFile)) {
+          List<String> scalaJars = StreamSupport.stream(scalaStream.spliterator(),
                 false)
                 .map(jar -> jar.toAbsolutePath().toString()).collect(Collectors.toList());
-        additionalJars.addAll(scalaJars);
-
+          additionalJars.addAll(scalaJars);
+        }
         // add zeppelin-interpreter-shaded
         Path interpreterFolder = Paths.get(zConf.getZeppelinHome(), "/interpreter");
-        List<String> interpreterJars = StreamSupport.stream(
-                Files.newDirectoryStream(interpreterFolder, entry -> Files.isRegularFile(entry))
-                        .spliterator(),
+        try (DirectoryStream<Path> interpreterStream = Files.newDirectoryStream(interpreterFolder, Files::isRegularFile)) {
+          List<String> interpreterJars = StreamSupport.stream(interpreterStream.spliterator(),
                 false)
                 .filter(jar -> jar.toFile().getName().startsWith("zeppelin-interpreter-shaded")
                         && jar.toFile().getName().endsWith(".jar"))
                 .map(jar -> jar.toAbsolutePath().toString())
                 .collect(Collectors.toList());
-        if (interpreterJars.isEmpty()) {
-          throw new IOException("zeppelin-interpreter-shaded jar is not found");
-        } else if (interpreterJars.size() > 1) {
-          throw new IOException("more than 1 zeppelin-interpreter-shaded jars are found: "
-                  + StringUtils.join(interpreterJars, ","));
+          if (interpreterJars.isEmpty()) {
+            throw new IOException("zeppelin-interpreter-shaded jar is not found");
+          } else if (interpreterJars.size() > 1) {
+            throw new IOException("more than 1 zeppelin-interpreter-shaded jars are found: "
+                    + StringUtils.join(interpreterJars, ","));
+          }
+          additionalJars.addAll(interpreterJars);
         }
-        additionalJars.addAll(interpreterJars);
 
         if (sparkProperties.containsKey("spark.jars")) {
           sparkProperties.put("spark.jars", sparkProperties.getProperty("spark.jars") + "," +
@@ -195,8 +196,7 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
     if (!StringUtils.isBlank(keytab) && !StringUtils.isBlank(principal)) {
       env.put("ZEPPELIN_SERVER_KERBEROS_KEYTAB", keytab);
       env.put("ZEPPELIN_SERVER_KERBEROS_PRINCIPAL", principal);
-      LOGGER.info("Run Spark under secure mode with keytab: " + keytab +
-          ", principal: " + principal);
+      LOGGER.info("Run Spark under secure mode with keytab: {}, principal: {}",keytab, principal);
     } else {
       LOGGER.info("Run Spark under non-secure mode as no keytab and principal is specified");
     }
@@ -232,7 +232,7 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
     builder.redirectError(processOutputFile);
     Process process = builder.start();
     process.waitFor();
-    String processOutput = IOUtils.toString(new FileInputStream(processOutputFile));
+    String processOutput = IOUtils.toString(new FileInputStream(processOutputFile), StandardCharsets.UTF_8);
     Pattern pattern = Pattern.compile(".*Using Scala version (.*),.*");
     Matcher matcher = pattern.matcher(processOutput);
     if (matcher.find()) {
@@ -267,8 +267,7 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
       if (sparkAssemblyJars.length > 1) {
         throw new Exception("Multiple spark assembly file found in SPARK_HOME: " + sparkHome);
       }
-      URLClassLoader urlClassLoader = new URLClassLoader(new URL[]{sparkAssemblyJars[0].toURI().toURL()});
-      try {
+      try (URLClassLoader urlClassLoader = new URLClassLoader(new URL[]{sparkAssemblyJars[0].toURI().toURL()});){
         urlClassLoader.loadClass("org.apache.spark.repl.SparkCommandLine");
         return "2.10";
       } catch (ClassNotFoundException e) {

@@ -25,20 +25,20 @@ import org.slf4j.LoggerFactory;
  *
  */
 public class ZeppelinHeartbeat implements Runnable {
-  private static final Logger LOG = LoggerFactory.getLogger(ZeppelinHubHeartbeat.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(ZeppelinHeartbeat.class);
   private ZeppelinClient client;
-  
+
   public static ZeppelinHeartbeat newInstance(ZeppelinClient client) {
     return new ZeppelinHeartbeat(client);
   }
-  
+
   private ZeppelinHeartbeat(ZeppelinClient client) {
     this.client = client;
   }
 
   @Override
   public void run() {
-    LOG.debug("Sending PING to Zeppelin Websocket Server");
+    LOGGER.debug("Sending PING to Zeppelin Websocket Server");
     client.ping();
   }
 }

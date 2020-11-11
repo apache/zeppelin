@@ -223,7 +223,7 @@ public class AuthorizationService implements ClusterEventListener {
   public Set<String> getOwners(String noteId) {
     NoteAuth noteAuth = notesAuth.get(noteId);
     if (noteAuth == null) {
-      LOGGER.warn("No noteAuth found for noteId: " + noteId);
+      LOGGER.warn("No noteAuth found for noteId: {}", noteId);
       return EMPTY_SET;
     }
     return noteAuth.getOwners();
@@ -232,7 +232,7 @@ public class AuthorizationService implements ClusterEventListener {
   public Set<String> getReaders(String noteId) {
     NoteAuth noteAuth = notesAuth.get(noteId);
     if (noteAuth == null) {
-      LOGGER.warn("No noteAuth found for noteId: " + noteId);
+      LOGGER.warn("No noteAuth found for noteId: {}", noteId);
       return EMPTY_SET;
     }
     return noteAuth.getReaders();
@@ -241,7 +241,7 @@ public class AuthorizationService implements ClusterEventListener {
   public Set<String> getRunners(String noteId) {
     NoteAuth noteAuth = notesAuth.get(noteId);
     if (noteAuth == null) {
-      LOGGER.warn("No noteAuth found for noteId: " + noteId);
+      LOGGER.warn("No noteAuth found for noteId: {}", noteId);
       return EMPTY_SET;
     }
     return noteAuth.getRunners();
@@ -250,7 +250,7 @@ public class AuthorizationService implements ClusterEventListener {
   public Set<String> getWriters(String noteId) {
     NoteAuth noteAuth = notesAuth.get(noteId);
     if (noteAuth == null) {
-      LOGGER.warn("No noteAuth found for noteId: " + noteId);
+      LOGGER.warn("No noteAuth found for noteId: {}", noteId);
       return EMPTY_SET;
     }
     return noteAuth.getWriters();

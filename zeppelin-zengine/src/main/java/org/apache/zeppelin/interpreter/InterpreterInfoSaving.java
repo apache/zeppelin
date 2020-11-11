@@ -66,8 +66,7 @@ public class InterpreterInfoSaving implements JsonSerializable {
     LOGGER.info("Load interpreter setting from file: {}", file);
     InterpreterInfoSaving infoSaving = null;
     try (BufferedReader json = Files.newBufferedReader(file, StandardCharsets.UTF_8)) {
-      JsonParser jsonParser = new JsonParser();
-      JsonObject jsonObject = jsonParser.parse(json).getAsJsonObject();
+      JsonObject jsonObject = JsonParser.parseReader(json).getAsJsonObject();
       infoSaving = InterpreterInfoSaving.fromJson(jsonObject.toString());
 
       if (infoSaving != null && infoSaving.interpreterSettings != null) {
@@ -106,6 +105,7 @@ public class InterpreterInfoSaving implements JsonSerializable {
   }
 
   static class InterfaceAdapter<T> implements JsonSerializer<T>, JsonDeserializer<T> {
+    @Override
     public JsonElement serialize(T object, Type interfaceType, JsonSerializationContext context) {
       final JsonObject wrapper = new JsonObject();
       wrapper.addProperty("type", object.getClass().getName());
@@ -113,6 +113,7 @@ public class InterpreterInfoSaving implements JsonSerializable {
       return wrapper;
     }
 
+    @Override
     public T deserialize(JsonElement elem,
                          Type interfaceType,
                          JsonDeserializationContext context) throws JsonParseException {

@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
@@ -32,6 +33,10 @@ import java.nio.file.attribute.PosixFilePermission;
 import java.util.Set;
 
 public class FileUtils {
+
+  private FileUtils() {
+    throw new IllegalStateException("Utility class");
+  }
 
   public static void atomicWriteToFile(String content, File file, Set<PosixFilePermission> permissions) throws IOException {
     FileSystem defaultFileSystem = FileSystems.getDefault();
@@ -43,7 +48,7 @@ public class FileUtils {
       Files.setPosixFilePermissions(tempFile.toPath(), permissions);
     }
     try (FileOutputStream out = new FileOutputStream(tempFile)) {
-      IOUtils.write(content, out);
+      IOUtils.write(content, out, StandardCharsets.UTF_8);
     } catch (IOException iox) {
       if (!tempFile.delete()) {
         tempFile.deleteOnExit();
@@ -68,7 +73,7 @@ public class FileUtils {
 
   public static String readFromFile(File file) throws IOException {
     try (FileInputStream is = new FileInputStream(file)) {
-      return IOUtils.toString(is);
+      return IOUtils.toString(is, StandardCharsets.UTF_8);
     }
   }
 }
