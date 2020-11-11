@@ -67,7 +67,7 @@ public class ParagraphTextParser {
     }
   }
 
-  private static Pattern REPL_PATTERN = Pattern.compile("^(\\s*)%(\\w+(?:\\.\\w+)*)");
+  private static final Pattern REPL_PATTERN = Pattern.compile("^(\\s*)%(\\w+(?:\\.\\w+)*)");
 
   private static int parseLocalProperties(
           final String text, int startPos,

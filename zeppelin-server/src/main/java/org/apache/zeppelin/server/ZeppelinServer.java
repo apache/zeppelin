@@ -579,7 +579,7 @@ public class ZeppelinServer extends ResourceConfig {
     return new DefaultServlet() {
 
         private static final long serialVersionUID = 1L;
-        
+
         @Override
         public Resource getResource(String pathInContext) {
 
@@ -591,9 +591,9 @@ public class ZeppelinServer extends ResourceConfig {
             // create the altered 'index.html' resource and cache it via webapp attributes
             if (webApp.getAttribute(HTML_ADDON_IDENTIFIER) == null) {
                 webApp.setAttribute(
-                    HTML_ADDON_IDENTIFIER, 
+                    HTML_ADDON_IDENTIFIER,
                     new HtmlAddonResource(
-                        super.getResource(pathInContext), 
+                        super.getResource(pathInContext),
                         conf.getHtmlBodyAddon(),
                         conf.getHtmlHeadAddon()));
             }

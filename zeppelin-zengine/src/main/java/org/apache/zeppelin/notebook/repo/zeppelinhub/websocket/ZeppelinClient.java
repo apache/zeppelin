@@ -67,7 +67,7 @@ public class ZeppelinClient {
   private static final int MIN = 60;
   private static final String ORIGIN = "Origin";
 
-  private static final Set<String> actionable = new  HashSet<String>(Arrays.asList(
+  private static final Set<String> actionable = new  HashSet<>(Arrays.asList(
       // running events
       "ANGULAR_OBJECT_UPDATE",
       "PROGRESS",

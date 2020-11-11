@@ -19,8 +19,6 @@ package org.apache.zeppelin.interpreter;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.eclipse.aether.RepositoryException;
 
 import java.io.IOException;
@@ -32,8 +30,6 @@ import static org.junit.Assert.assertEquals;
 
 
 public class ManagedInterpreterGroupTest {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(ManagedInterpreterGroupTest.class);
 
   private InterpreterSetting interpreterSetting;
 

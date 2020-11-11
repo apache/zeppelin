@@ -28,6 +28,7 @@ import org.eclipse.aether.RepositoryException;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
@@ -82,7 +83,7 @@ public class InstallInterpreter {
       System.err.println("Can't find interpreter list " + interpreterListFile.getAbsolutePath());
       return;
     }
-    String text = FileUtils.readFileToString(interpreterListFile);
+    String text = FileUtils.readFileToString(interpreterListFile, StandardCharsets.UTF_8);
     String[] lines = text.split("\n");
 
     Pattern pattern = Pattern.compile("(\\S+)\\s+(\\S+)\\s+(.*)");

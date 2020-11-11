@@ -20,7 +20,6 @@ import com.google.gson.Gson;
 import org.apache.zeppelin.interpreter.AbstractInterpreterTest;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
-import org.apache.zeppelin.interpreter.InterpreterOption;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
@@ -42,6 +41,7 @@ public class DistributedResourcePoolTest extends AbstractInterpreterTest {
   private InterpreterContext context;
 
 
+  @Override
   @Before
   public void setUp() throws Exception {
     super.setUp();
@@ -59,6 +59,7 @@ public class DistributedResourcePoolTest extends AbstractInterpreterTest {
     intp2.open();
   }
 
+  @Override
   @After
   public void tearDown() throws Exception {
     interpreterSettingManager.close();
@@ -96,7 +97,6 @@ public class DistributedResourcePoolTest extends AbstractInterpreterTest {
         set.addAll(pool3.getAll());
 
         ResourceSet remoteSet = new ResourceSet();
-        Gson gson = new Gson();
         for (Resource s : set) {
           RemoteResource remoteResource = RemoteResource.fromJson(s.toJson());
           remoteResource.setResourcePoolConnector(this);
@@ -150,7 +150,6 @@ public class DistributedResourcePoolTest extends AbstractInterpreterTest {
   @Test
   public void testResourcePoolUtils() throws InterpreterException {
     Gson gson = new Gson();
-    InterpreterResult ret;
 
     // when create some resources
     intp1.interpret("put note1:paragraph1:key1 value1", context);

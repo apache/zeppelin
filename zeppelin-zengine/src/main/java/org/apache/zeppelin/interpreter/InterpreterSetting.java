@@ -480,7 +480,7 @@ public class InterpreterSetting {
       interpreterGroupReadLock.lock();
       return interpreterGroups.get(groupId);
     } finally {
-      interpreterGroupReadLock.unlock();;
+      interpreterGroupReadLock.unlock();
     }
   }
 
@@ -731,7 +731,7 @@ public class InterpreterSetting {
   }
 
   public void setStatus(Status status) {
-    LOGGER.info("Set interpreter {} status to{}", name, status.name());
+    LOGGER.info("Set interpreter {} status to {}", name, status);
     this.status = status;
   }
 

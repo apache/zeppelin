@@ -23,8 +23,6 @@ import org.slf4j.LoggerFactory;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Type;
-import java.net.URI;
-import java.net.URISyntaxException;
 
 /**
  * HeliumRegistrySerializer (and deserializer) for gson
@@ -48,8 +46,7 @@ public class HeliumRegistrySerializer
       Class<HeliumRegistry> cls =
           (Class<HeliumRegistry>) getClass().getClassLoader().loadClass(className);
       Constructor<HeliumRegistry> constructor = cls.getConstructor(String.class, String.class);
-      HeliumRegistry registry = constructor.newInstance(name, uri);
-      return registry;
+      return constructor.newInstance(name, uri);
     } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException |
         InstantiationException | InvocationTargetException e) {
       logger.error(e.getMessage(), e);

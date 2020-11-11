@@ -18,9 +18,6 @@
 package org.apache.zeppelin.notebook.scheduler;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.zeppelin.interpreter.ExecutionContext;
-import org.apache.zeppelin.interpreter.ExecutionContextBuilder;
-import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.quartz.JobDataMap;
@@ -38,7 +35,7 @@ public class CronJob implements org.quartz.Job {
   public void execute(JobExecutionContext context) {
     JobDataMap jobDataMap = context.getJobDetail().getJobDataMap();
     Note note = (Note) jobDataMap.get("note");
-    LOGGER.info("Start cron job of note: " + note.getId());
+    LOGGER.info("Start cron job of note: {}", note.getId());
     if (note.haveRunningOrPendingParagraphs()) {
       LOGGER.warn(
           "execution of the cron job is skipped because there is a running or pending "
@@ -60,7 +57,7 @@ public class CronJob implements org.quartz.Job {
     try {
       note.runAll(authenticationInfo, true, true, new HashMap<>());
     } catch (Exception e) {
-      LOGGER.warn("Fail to run note: " + note.getName(), e);
+      LOGGER.warn("Fail to run note: {}", note.getName(), e);
     }
   }
 }

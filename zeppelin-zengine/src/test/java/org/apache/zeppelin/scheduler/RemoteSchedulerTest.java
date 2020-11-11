@@ -70,7 +70,7 @@ public class RemoteSchedulerTest extends AbstractInterpreterTest
 
     Scheduler scheduler = intpA.getScheduler();
 
-    Job job = new Job("jobId", "jobName", null) {
+    Job<Object> job = new Job<Object>("jobId", "jobName", null) {
       Object results;
 
       @Override
@@ -139,7 +139,7 @@ public class RemoteSchedulerTest extends AbstractInterpreterTest
 
     Scheduler scheduler = intpA.getScheduler();
 
-    Job job1 = new Job("jobId1", "jobName1", null) {
+    Job<Object> job1 = new Job<Object>("jobId1", "jobName1", null) {
       Object results;
       InterpreterContext context = InterpreterContext.builder()
           .setNoteId("noteId")
@@ -186,7 +186,7 @@ public class RemoteSchedulerTest extends AbstractInterpreterTest
       }
     };
 
-    Job job2 = new Job("jobId2", "jobName2", null) {
+    Job<Object> job2 = new Job<Object>("jobId2", "jobName2", null) {
       public Object results;
       InterpreterContext context = InterpreterContext.builder()
           .setNoteId("noteId")
@@ -245,7 +245,7 @@ public class RemoteSchedulerTest extends AbstractInterpreterTest
       cycles++;
     }
     assertTrue(job1.isRunning());
-    assertTrue(job2.getStatus() == Status.PENDING);
+    assertEquals(Status.PENDING, job2.getStatus());
 
     job2.abort();
 

@@ -377,7 +377,7 @@ public class RemoteInterpreterTest extends AbstractInterpreterTest {
         new OptionInput.ParamOption("value1", "param1"),
         new OptionInput.ParamOption("value2", "param2")
     };
-    List<Object> defaultValues = new ArrayList();
+    List<Object> defaultValues = new ArrayList<>();
     defaultValues.add("default1");
     defaultValues.add("default2");
     gui.checkbox("checkbox_id", paramOptions, defaultValues);

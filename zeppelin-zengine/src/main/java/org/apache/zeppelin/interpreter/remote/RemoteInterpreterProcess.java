@@ -37,8 +37,6 @@ import java.util.Date;
 public abstract class RemoteInterpreterProcess implements InterpreterClient {
   private static final Logger LOGGER = LoggerFactory.getLogger(RemoteInterpreterProcess.class);
   private static final Gson GSON = new Gson();
-  private static final SimpleDateFormat START_TIME_FORMATTER =
-          new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
   private int connectTimeout;
   protected String intpEventServerHost;
@@ -53,8 +51,8 @@ public abstract class RemoteInterpreterProcess implements InterpreterClient {
     this.connectTimeout = connectTimeout;
     this.intpEventServerHost = intpEventServerHost;
     this.intpEventServerPort = intpEventServerPort;
-    this.startTime = START_TIME_FORMATTER.format(new Date());
-    this.remoteClient = new PooledRemoteClient<Client>(() -> {
+    this.startTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
+    this.remoteClient = new PooledRemoteClient<>(() -> {
       TSocket transport = new TSocket(getHost(), getPort());
       try {
         transport.open();
@@ -90,7 +88,7 @@ public abstract class RemoteInterpreterProcess implements InterpreterClient {
                                         String noteId,
                                         String paragraphId,
                                         Object o) {
-    remoteClient.callRemoteFunction((PooledRemoteClient.RemoteFunction<Void, Client>) client -> {
+    remoteClient.callRemoteFunction(client -> {
        client.angularObjectUpdate(name, noteId, paragraphId, GSON.toJson(o));
        return null;
     });

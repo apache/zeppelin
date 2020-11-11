@@ -25,7 +25,6 @@ import com.github.eirslett.maven.plugins.frontend.lib.ProxyConfig;
 import com.github.eirslett.maven.plugins.frontend.lib.TaskRunnerException;
 import com.github.eirslett.maven.plugins.frontend.lib.YarnInstaller;
 import com.github.eirslett.maven.plugins.frontend.lib.YarnRunner;
-import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -42,6 +41,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringReader;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -69,7 +69,7 @@ import org.slf4j.LoggerFactory;
  * Load helium visualization & spell
  */
 public class HeliumBundleFactory {
-  private Logger logger = LoggerFactory.getLogger(HeliumBundleFactory.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(HeliumBundleFactory.class);
   private static final String NODE_VERSION = "v6.9.1";
   private static final String NPM_VERSION = "3.10.8";
   private static final String YARN_VERSION = "v0.21.3";
@@ -165,7 +165,7 @@ public class HeliumBundleFactory {
       configureLogger();
       nodeAndNpmInstalled = true;
     } catch (InstallationException e) {
-      logger.error(e.getMessage(), e);
+      LOGGER.error(e.getMessage(), e);
     }
   }
 
@@ -184,7 +184,7 @@ public class HeliumBundleFactory {
       else if (!isSecure && StringUtils.isNotBlank(httpProxy))
         proxies.add(generateProxy("insecure", new URI(httpProxy)));
     } catch (Exception ex) {
-      logger.error(ex.getMessage(), ex);
+      LOGGER.error(ex.getMessage(), ex);
     }
     return new ProxyConfig(proxies);
   }
@@ -195,7 +195,8 @@ public class HeliumBundleFactory {
     String host = uri.getHost();
     int port = uri.getPort() <= 0 ? 80 : uri.getPort();
 
-    String username = null, password = null;
+    String username = null;
+    String password = null;
     if (uri.getUserInfo() != null) {
       String[] authority = uri.getUserInfo().split(":");
       if (authority.length == 2) {
@@ -294,7 +295,7 @@ public class HeliumBundleFactory {
       File extracted = new File(heliumBundleDirectory, "package");
       FileUtils.deleteDirectory(extracted);
       List<String> entries = unTgz(tgz, heliumBundleDirectory);
-      for (String entry: entries) logger.debug("Extracted " + entry);
+      for (String entry: entries) LOGGER.debug("Extracted " + entry);
       tgz.delete();
       FileUtils.copyDirectory(extracted, bundleDir);
       FileUtils.deleteDirectory(extracted);
@@ -331,10 +332,10 @@ public class HeliumBundleFactory {
     templatePackageJson = templatePackageJson.replaceFirst("PACKAGE_NAME", pkg.getName());
     templatePackageJson = templatePackageJson.replaceFirst("MAIN_FILE", mainFileName);
     templatePackageJson = templatePackageJson.replaceFirst("DEPENDENCIES", dependencies.toString());
-    FileUtils.write(new File(bundleDir, PACKAGE_JSON), templatePackageJson);
+    FileUtils.write(new File(bundleDir, PACKAGE_JSON), templatePackageJson, StandardCharsets.UTF_8);
 
     // 2. setup webpack.config
-    FileUtils.write(new File(bundleDir, "webpack.config.js"), templateWebpackConfig);
+    FileUtils.write(new File(bundleDir, "webpack.config.js"), templateWebpackConfig, StandardCharsets.UTF_8);
 
     return mainFileName;
   }
@@ -366,7 +367,7 @@ public class HeliumBundleFactory {
     File srcDir = getHeliumPackageSourceDirectory(pkg.getName());
     FileUtils.forceMkdir(srcDir);
     FileUtils.write(new File(srcDir, HELIUM_BUNDLES_SRC),
-            loadJsImport.append(loadJsRegister).toString());
+            loadJsImport.append(loadJsRegister).toString(), StandardCharsets.UTF_8);
   }
 
   private synchronized void installNodeModules(FrontendPluginFactory fpf) throws IOException {
@@ -376,9 +377,9 @@ public class HeliumBundleFactory {
               String.format("install --fetch-retries=%d --fetch-retry-factor=%d " +
                               "--fetch-retry-mintimeout=%d",
                       FETCH_RETRY_COUNT, FETCH_RETRY_FACTOR_COUNT, FETCH_RETRY_MIN_TIMEOUT);
-      logger.info("Installing required node modules");
+      LOGGER.info("Installing required node modules");
       yarnCommand(fpf, commandForNpmInstall);
-      logger.info("Installed required node modules");
+      LOGGER.info("Installed required node modules");
     } catch (TaskRunnerException e) {
       throw new IOException(e);
     }
@@ -388,9 +389,9 @@ public class HeliumBundleFactory {
                                                File bundleDir) throws IOException {
     try {
       out.reset();
-      logger.info("Bundling helium packages");
+      LOGGER.info("Bundling helium packages");
       yarnCommand(fpf, "run bundle");
-      logger.info("Bundled helium packages");
+      LOGGER.info("Bundled helium packages");
     } catch (TaskRunnerException e) {
       throw new IOException(new String(out.toByteArray()));
     }
@@ -420,7 +421,7 @@ public class HeliumBundleFactory {
 
     String[] moduleNameVersion = getNpmModuleNameAndVersion(pkg);
     if (moduleNameVersion == null) {
-      logger.warn("Can't get module name and version of package " + pkg.getName());
+      LOGGER.warn("Can't get module name and version of package {}", pkg.getName());
       return null;
     }
 
@@ -449,9 +450,9 @@ public class HeliumBundleFactory {
 
     // resources: webpack.js, package.json
     String templateWebpackConfig = Resources.toString(
-        Resources.getResource("helium/webpack.config.js"), Charsets.UTF_8);
+        Resources.getResource("helium/webpack.config.js"), StandardCharsets.UTF_8);
     String templatePackageJson = Resources.toString(
-        Resources.getResource("helium/" + PACKAGE_JSON), Charsets.UTF_8);
+        Resources.getResource("helium/" + PACKAGE_JSON), StandardCharsets.UTF_8);
 
     // 2. download helium package using `npm pack`
     String mainFileName = null;
@@ -480,7 +481,7 @@ public class HeliumBundleFactory {
   private synchronized void buildAllPackages(List<HeliumPackage> pkgs, boolean rebuild)
       throws IOException {
 
-    if (pkgs == null || pkgs.size() == 0) {
+    if (pkgs == null || pkgs.isEmpty()) {
       return;
     }
 
@@ -491,7 +492,7 @@ public class HeliumBundleFactory {
       try {
         buildPackage(pkg, rebuild, recopyLocalModules);
       } catch (IOException e) {
-        logger.error("Failed to build helium package: " + pkg.getArtifact(), e);
+        LOGGER.error("Failed to build helium package: {}", pkg.getArtifact(), e);
       }
     }
   }
@@ -578,7 +579,7 @@ public class HeliumBundleFactory {
 
     boolean webpackRunDetected = false;
     boolean resultJsonDetected = false;
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     try {
       String next, line = reader.readLine();
       for (boolean last = (line == null); !last; line = next) {
@@ -609,7 +610,7 @@ public class HeliumBundleFactory {
       }
       return WebpackResult.fromJson(sb.toString());
     } catch (IOException e) {
-      logger.error(e.getMessage(), e);
+      LOGGER.error(e.getMessage(), e);
       return new WebpackResult();
     }
   }
@@ -628,14 +629,14 @@ public class HeliumBundleFactory {
       }
       try {
         NpmPackage npmPackage = NpmPackage.fromJson(
-            FileUtils.readFileToString(packageJson));
+            FileUtils.readFileToString(packageJson, StandardCharsets.UTF_8));
 
         String[] nameVersion = new String[2];
         nameVersion[0] = npmPackage.name;
         nameVersion[1] = npmPackage.version;
         return nameVersion;
       } catch (IOException e) {
-        logger.error(e.getMessage(), e);
+        LOGGER.error(e.getMessage(), e);
         return null;
       }
     } else {
@@ -667,7 +668,7 @@ public class HeliumBundleFactory {
   }
 
   private void npmCommand(String args) throws TaskRunnerException {
-    npmCommand(args, new HashMap<String, String>());
+    npmCommand(args, new HashMap<>());
   }
 
   private void npmCommand(String args, Map<String, String> env) throws TaskRunnerException {
@@ -677,11 +678,11 @@ public class HeliumBundleFactory {
   }
 
   private void npmCommand(FrontendPluginFactory fpf, String args) throws TaskRunnerException {
-    npmCommand(args, new HashMap<String, String>());
+    npmCommand(args, new HashMap<>());
   }
 
   private void yarnCommand(FrontendPluginFactory fpf, String args) throws TaskRunnerException {
-    yarnCommand(fpf, args, new HashMap<String, String>());
+    yarnCommand(fpf, args, new HashMap<>());
   }
 
   private void yarnCommand(FrontendPluginFactory fpf,

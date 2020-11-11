@@ -679,8 +679,8 @@ public class ZeppelinConfiguration extends XMLConfiguration {
   public String getConfigFSDir(boolean absolute) {
     String fsConfigDir = getString(ConfVars.ZEPPELIN_CONFIG_FS_DIR);
     if (StringUtils.isBlank(fsConfigDir)) {
-      LOG.warn(ConfVars.ZEPPELIN_CONFIG_FS_DIR.varName + " is not specified, fall back to local " +
-          "conf directory " + ConfVars.ZEPPELIN_CONF_DIR.varName);
+      LOG.warn("{} is not specified, fall back to local conf directory {}",
+        ConfVars.ZEPPELIN_CONFIG_FS_DIR.varName,  ConfVars.ZEPPELIN_CONF_DIR.varName);
       if (absolute) {
         return getConfDir();
       } else {

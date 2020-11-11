@@ -26,13 +26,13 @@ public class ApplicationState {
   /**
    * Status of Application
    */
-  public static enum Status {
+  public enum Status {
     LOADING,
     LOADED,
     UNLOADING,
     UNLOADED,
     ERROR
-  };
+  }
 
   Status status = Status.UNLOADED;
 
@@ -59,11 +59,10 @@ public class ApplicationState {
 
   @Override
   public boolean equals(Object o) {
-    String compareName;
     if (o instanceof ApplicationState) {
       return pkg.equals(((ApplicationState) o).getHeliumPackage());
     } else if (o instanceof HeliumPackage) {
-      return pkg.equals((HeliumPackage) o);
+      return pkg.equals(o);
     } else {
       return false;
     }
