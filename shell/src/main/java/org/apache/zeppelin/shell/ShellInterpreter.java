@@ -27,11 +27,8 @@ import org.apache.zeppelin.interpreter.ZeppelinContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -40,7 +37,6 @@ import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.KerberosInterpreter;
-import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 
@@ -51,9 +47,9 @@ public class ShellInterpreter extends KerberosInterpreter {
   private static final Logger LOGGER = LoggerFactory.getLogger(ShellInterpreter.class);
 
   private static final String TIMEOUT_PROPERTY = "shell.command.timeout.millisecs";
-  private String defaultTimeoutProperty = "60000";
-
+  private static final String DEFAULT_TIMEOUT = "60000";
   private static final String DIRECTORY_USER_HOME = "shell.working.directory.user.home";
+
   private final boolean isWindows = System.getProperty("os.name").startsWith("Windows");
   private final String shell = isWindows ? "cmd /c" : "bash -c";
   ConcurrentHashMap<String, DefaultExecutor> executors;
@@ -96,9 +92,8 @@ public class ShellInterpreter extends KerberosInterpreter {
 
   @Override
   public InterpreterResult internalInterpret(String cmd,
-                                             InterpreterContext contextInterpreter) {
+                                             InterpreterContext context) {
     LOGGER.debug("Run shell command '" + cmd + "'");
-    OutputStream outStream = new ByteArrayOutputStream();
 
     CommandLine cmdLine = CommandLine.parse(shell);
     // the Windows CMD shell doesn't handle multiline statements,
@@ -112,37 +107,40 @@ public class ShellInterpreter extends KerberosInterpreter {
     try {
       DefaultExecutor executor = new DefaultExecutor();
       executor.setStreamHandler(new PumpStreamHandler(
-          contextInterpreter.out, contextInterpreter.out));
+          context.out, context.out));
 
       executor.setWatchdog(new ExecuteWatchdog(
-          Long.valueOf(getProperty(TIMEOUT_PROPERTY, defaultTimeoutProperty))));
-      executors.put(contextInterpreter.getParagraphId(), executor);
+          Long.valueOf(getProperty(TIMEOUT_PROPERTY, DEFAULT_TIMEOUT))));
+      executors.put(context.getParagraphId(), executor);
       if (Boolean.valueOf(getProperty(DIRECTORY_USER_HOME))) {
         executor.setWorkingDirectory(new File(System.getProperty("user.home")));
       }
 
       int exitVal = executor.execute(cmdLine);
-      LOGGER.info("Paragraph " + contextInterpreter.getParagraphId()
-          + " return with exit value: " + exitVal);
-      return new InterpreterResult(Code.SUCCESS, outStream.toString());
+      LOGGER.info("Paragraph " + context.getParagraphId() + " return with exit value: " + exitVal);
+      if (exitVal == 0) {
+        return new InterpreterResult(Code.SUCCESS);
+      } else {
+        return new InterpreterResult(Code.ERROR);
+      }
     } catch (ExecuteException e) {
       int exitValue = e.getExitValue();
-      LOGGER.error("Can not run " + cmd, e);
+      LOGGER.error("Can not run command: " + cmd, e);
       Code code = Code.ERROR;
-      String message = outStream.toString();
+      StringBuilder messageBuilder = new StringBuilder();
       if (exitValue == 143) {
         code = Code.INCOMPLETE;
-        message += "Paragraph received a SIGTERM\n";
-        LOGGER.info("The paragraph " + contextInterpreter.getParagraphId()
-            + " stopped executing: " + message);
+        messageBuilder.append("Paragraph received a SIGTERM\n");
+        LOGGER.info("The paragraph " + context.getParagraphId()
+            + " stopped executing: " + messageBuilder.toString());
       }
-      message += "ExitValue: " + exitValue;
-      return new InterpreterResult(code, message);
+      messageBuilder.append("ExitValue: " + exitValue);
+      return new InterpreterResult(code, messageBuilder.toString());
     } catch (IOException e) {
-      LOGGER.error("Can not run " + cmd, e);
+      LOGGER.error("Can not run command: " + cmd, e);
       return new InterpreterResult(Code.ERROR, e.getMessage());
     } finally {
-      executors.remove(contextInterpreter.getParagraphId());
+      executors.remove(context.getParagraphId());
     }
   }
 
@@ -172,12 +170,6 @@ public class ShellInterpreter extends KerberosInterpreter {
   public Scheduler getScheduler() {
     return SchedulerFactory.singleton().createOrGetParallelScheduler(
         ShellInterpreter.class.getName() + this.hashCode(), 10);
-  }
-
-  @Override
-  public List<InterpreterCompletion> completion(String buf, int cursor,
-                                                InterpreterContext interpreterContext) {
-    return null;
   }
 
   @Override
