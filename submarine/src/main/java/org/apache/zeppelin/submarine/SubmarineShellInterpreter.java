@@ -50,8 +50,8 @@ public class SubmarineShellInterpreter extends ShellInterpreter {
   }
 
   @Override
-  public InterpreterResult internalInterpret(String cmd, InterpreterContext intpContext) {
-    setParagraphConfig(intpContext);
+  public InterpreterResult internalInterpret(String cmd, InterpreterContext context) {
+    setParagraphConfig(context);
 
     // algorithm path & checkpoint path support replaces ${username} with real user name
     String algorithmPath = properties.getProperty(SUBMARINE_ALGORITHM_HDFS_PATH, "");
@@ -66,7 +66,7 @@ public class SubmarineShellInterpreter extends ShellInterpreter {
       properties.setProperty(TF_CHECKPOINT_PATH, checkpointPath);
     }
 
-    return super.internalInterpret(cmd, intpContext);
+    return super.internalInterpret(cmd, context);
   }
 
   private void setParagraphConfig(InterpreterContext context) {
