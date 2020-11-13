@@ -93,7 +93,7 @@ public class ShellInterpreter extends KerberosInterpreter {
   @Override
   public InterpreterResult internalInterpret(String cmd,
                                              InterpreterContext context) {
-    LOGGER.debug("Run shell command '" + cmd + "'");
+    LOGGER.debug("Run shell command '{}'", cmd);
 
     CommandLine cmdLine = CommandLine.parse(shell);
     // the Windows CMD shell doesn't handle multiline statements,
@@ -117,7 +117,7 @@ public class ShellInterpreter extends KerberosInterpreter {
       }
 
       int exitVal = executor.execute(cmdLine);
-      LOGGER.info("Paragraph " + context.getParagraphId() + " return with exit value: " + exitVal);
+      LOGGER.info("Paragraph {} return with exit value: {}", context.getParagraphId(), exitVal);
       if (exitVal == 0) {
         return new InterpreterResult(Code.SUCCESS);
       } else {
@@ -131,8 +131,8 @@ public class ShellInterpreter extends KerberosInterpreter {
       if (exitValue == 143) {
         code = Code.INCOMPLETE;
         messageBuilder.append("Paragraph received a SIGTERM\n");
-        LOGGER.info("The paragraph " + context.getParagraphId()
-            + " stopped executing: " + messageBuilder.toString());
+        LOGGER.info("The paragraph {} stopped executing: {}",
+                context.getParagraphId(), messageBuilder.toString());
       }
       messageBuilder.append("ExitValue: " + exitValue);
       return new InterpreterResult(code, messageBuilder.toString());
