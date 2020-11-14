@@ -87,8 +87,8 @@ install:
           $SPARK_ABSPATH1
         )
         $cont=true
-        7z x $($SPARK_ABSPATH+'.tgz') 
-        7z x $($SPARK_ABSPATH+'.tar')
+        7z x $($SPARK_ABSPATH1) 
+        7z x $($SPARK_ABSPATH2)
       }
       
 build_script:
