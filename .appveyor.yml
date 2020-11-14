@@ -29,12 +29,12 @@ os:
 environment:
   INTERPRETERS: '!beam,!hbase,!pig,!jdbc,!file,!flink,!ignite,!kylin,!lens,!cassandra,!elasticsearch,!bigquery,!alluxio,!scio,!livy,!groovy,!sap,!java,!geode,!neo4j,!hazelcastjet,!submarine,!sparql,!mongodb'
   matrix:
-    - BUILD_NAME: "Run e2e tests in zeppelin-web"
-      BUILD_FLAG: install -DskipTests -DskipRat -pl !beam,!hbase,!pig,!jdbc,!file,!flink,!ignite,!kylin,!lens,!cassandra,!elasticsearch,!bigquery,!alluxio,!scio,!livy,!groovy,!sap,!java,!geode,!neo4j,!hazelcastjet,!submarine,!sparql,!mongodb -Phadoop2 -Pscala-2.11
-      TEST_FLAG: verify -DskipRat -pl zeppelin-web -Phadoop2 -Pscala-2.11 -Pweb-e2e-win
-    - BUILD_NAME: "Run tests in zeppelin-web-angular"
-      BUILD_FLAG: clean -DskipTests -DskipRat -pl "!beam,!hbase,!pig,!jdbc,!file,!flink,!ignite,!kylin,!lens,!cassandra,!elasticsearch,!bigquery,!alluxio,!scio,!livy,!groovy,!sap,!java,!geode,!neo4j,!hazelcastjet,!submarine,!sparql,!mongodb" -Phadoop2 -Pscala-2.11
-      TEST_FLAG: package -DskipRat -pl zeppelin-web-angular -Pweb-angular -Phadoop2 -Pscala-2.11
+#    - BUILD_NAME: "Run e2e tests in zeppelin-web"
+#      BUILD_FLAG: install -DskipTests -DskipRat -pl !beam,!hbase,!pig,!jdbc,!file,!flink,!ignite,!kylin,!lens,!cassandra,!elasticsearch,!bigquery,!alluxio,!scio,!livy,!groovy,!sap,!java,!geode,!neo4j,!hazelcastjet,!submarine,!sparql,!mongodb -Phadoop2 -Pscala-2.11
+#      TEST_FLAG: verify -DskipRat -pl zeppelin-web -Phadoop2 -Pscala-2.11 -Pweb-e2e-win
+#    - BUILD_NAME: "Run tests in zeppelin-web-angular"
+#      BUILD_FLAG: clean -DskipTests -DskipRat -pl "!beam,!hbase,!pig,!jdbc,!file,!flink,!ignite,!kylin,!lens,!cassandra,!elasticsearch,!bigquery,!alluxio,!scio,!livy,!groovy,!sap,!java,!geode,!neo4j,!hazelcastjet,!submarine,!sparql,!mongodb" -Phadoop2 -Pscala-2.11
+#      TEST_FLAG: package -DskipRat -pl zeppelin-web-angular -Pweb-angular -Phadoop2 -Pscala-2.11
     - BUILD_NAME: "Test core modules (zeppelin-interpreter,zeppelin-zengine,zeppelin-server) on hadoop2"
       BUILD_FLAG: install -Pbuild-distr -DskipRat -DskipTests -pl zeppelin-server,zeppelin-web,spark/spark-dependencies,markdown,angular,shell -am -Phelium-dev -Pexamples -Phadoop2 -B
       TEST_FLAG: verify -Pusing-packaged-distr -DskipRat -pl zeppelin-server,zeppelin-web,spark/spark-dependencies,markdown,angular,shell -am -Phelium-dev -Pexamples -Phadoop2 -B -Dtests.to.exclude='**/org/apache/zeppelin/spark/*' -DfailIfNoTests=false
@@ -94,3 +94,5 @@ build_script:
 test_script:
   - echo "Test mvn %TEST_FLAG% %TEST_MODULES% %PROFILE% -B %TEST_PROJECTS%"
   - cmd: mvn %TEST_FLAG% %TEST_MODULES% %PROFILE% -B %TEST_PROJECTS%
+on_finish:
+  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
