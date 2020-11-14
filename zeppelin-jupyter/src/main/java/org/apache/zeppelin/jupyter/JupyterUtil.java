@@ -108,6 +108,7 @@ public class JupyterUtil {
     note.setName(name);
 
     String lineSeparator = System.lineSeparator();
+    if (lineSeparator.equals("\r\n")) lineSeparator = "\n"; // Windows line separator shall not be used
     Paragraph paragraph;
     List<Paragraph> paragraphs = new ArrayList<>();
     String interpreterName;
