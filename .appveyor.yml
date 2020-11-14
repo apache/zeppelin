@@ -76,11 +76,15 @@ install:
         $SPARK_VERSION = $env:SPARK_VER
         $HADOOP_VERSION = $env:HADOOP_VER
         $SPARK_ARCHIVE = "spark-$SPARK_VERSION-bin-hadoop$HADOOP_VERSION"
-        $SPARK_ABSPATH = $("C:\project\" + $env:APPVEYOR_PROJECT_NAME + "\" + $SPARK_ARCHIVE)
-        Write-Output "Spark archive absolute path: $SPARK_ABSPATH" 
+        $SPARK_DL_URL = $('http://archive.apache.org/dist/spark/spark-' + $SPARK_VERSION + '/' + $SPARK_ARCHIVE + '.tgz')
+        $SPARK_ABSPATH1 = $("C:\project\" + $env:APPVEYOR_PROJECT_NAME + "\" + $SPARK_ARCHIVE + ".tgz")
+        $SPARK_ABSPATH2 = $("C:\project\" + $env:APPVEYOR_PROJECT_NAME + "\" + $SPARK_ARCHIVE + ".tar")
+        Write-Output "Spark archive absolute path 1 : $SPARK_ABSPATH1" 
+        Write-Output "Spark archive absolute path 2 : $SPARK_ABSPATH2" 
+        Write-Output "Spark download url : $SPARK_DL_URL" 
         (new-object System.Net.WebClient).DownloadFile(
-          $('http://archive.apache.org/dist/spark/spark-' + $SPARK_VERSION + '/' + $SPARK_ARCHIVE + '.tgz'),
-          $($SPARK_ABSPATH + '.tgz')
+          $SPARK_DL_URL,
+          $SPARK_ABSPATH1
         )
         $cont=true
         7z x $($SPARK_ABSPATH+'.tgz') 
