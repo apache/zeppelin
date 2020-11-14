@@ -39,6 +39,8 @@ environment:
       BUILD_FLAG: install -Pbuild-distr -DskipRat -DskipTests -pl zeppelin-server,zeppelin-web,spark/spark-dependencies,markdown,angular,shell -am -Phelium-dev -Pexamples -Phadoop2 -B
       TEST_FLAG: verify -Pusing-packaged-distr -DskipRat -pl zeppelin-server,zeppelin-web,spark/spark-dependencies,markdown,angular,shell -am -Phelium-dev -Pexamples -Phadoop2 -B -Dtests.to.exclude='**/org/apache/zeppelin/spark/*' -DfailIfNoTests=false
       SPARK_PRINT_LAUNCH_COMMAND: true
+      SPARK_VER: 2.1.0
+      HADOOP_VER: 2.6
      
 init:
   - git config --global core.autocrlf true
