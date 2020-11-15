@@ -30,6 +30,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class StandardInterpreterLauncherTest {
+  String fs = java.io.File.separator;
   @Before
   public void setUp() {
     for (final ZeppelinConfiguration.ConfVars confVar : ZeppelinConfiguration.ConfVars.values()) {
@@ -51,8 +52,8 @@ public class StandardInterpreterLauncherTest {
     assertTrue( client instanceof RemoteInterpreterManagedProcess);
     RemoteInterpreterManagedProcess interpreterProcess = (RemoteInterpreterManagedProcess) client;
     assertEquals("name", interpreterProcess.getInterpreterSettingName());
-    assertEquals(".//interpreter/groupName", interpreterProcess.getInterpreterDir());
-    assertEquals(".//local-repo/groupId", interpreterProcess.getLocalRepoDir());
+    assertEquals("./" + fs + "interpreter/groupName", interpreterProcess.getInterpreterDir());
+    assertEquals("./" + fs + "local-repo/groupId", interpreterProcess.getLocalRepoDir());
     assertEquals(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT.getIntValue(),
         interpreterProcess.getConnectTimeout());
     assertEquals(zConf.getInterpreterRemoteRunnerPath(), interpreterProcess.getInterpreterRunner());
@@ -76,8 +77,8 @@ public class StandardInterpreterLauncherTest {
     assertTrue( client instanceof RemoteInterpreterManagedProcess);
     RemoteInterpreterManagedProcess interpreterProcess = (RemoteInterpreterManagedProcess) client;
     assertEquals("name", interpreterProcess.getInterpreterSettingName());
-    assertEquals(".//interpreter/groupName", interpreterProcess.getInterpreterDir());
-    assertEquals(".//local-repo/groupId", interpreterProcess.getLocalRepoDir());
+    assertEquals("./" + fs + "interpreter/groupName", interpreterProcess.getInterpreterDir());
+    assertEquals("./" + fs + "local-repo/groupId", interpreterProcess.getLocalRepoDir());
     assertEquals(10000, interpreterProcess.getConnectTimeout());
     assertEquals(zConf.getInterpreterRemoteRunnerPath(), interpreterProcess.getInterpreterRunner());
     assertTrue(interpreterProcess.getEnv().size() >= 1);

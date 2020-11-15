@@ -45,7 +45,7 @@ public class SparkInterpreterLauncherTest {
 
   private String sparkHome;
   private String zeppelinHome;
-
+  private String fs = File.separator;
   @Before
   public void setUp() {
     for (final ZeppelinConfiguration.ConfVars confVar : ZeppelinConfiguration.ConfVars.values()) {
@@ -74,9 +74,9 @@ public class SparkInterpreterLauncherTest {
     InterpreterClient client = launcher.launch(context);
     assertTrue( client instanceof RemoteInterpreterManagedProcess);
     RemoteInterpreterManagedProcess interpreterProcess = (RemoteInterpreterManagedProcess) client;
-    assertEquals("name", interpreterProcess.getInterpreterSettingName());
-    assertEquals(zeppelinHome + "/interpreter/groupName", interpreterProcess.getInterpreterDir());
-    assertEquals(zeppelinHome + "/local-repo/groupId", interpreterProcess.getLocalRepoDir());
+    assertEquals("name", interpreterProcess.getInterpreterSettingName());    
+    assertEquals(zeppelinHome + fs + "interpreter/groupName", interpreterProcess.getInterpreterDir());
+    assertEquals(zeppelinHome + fs + "local-repo/groupId", interpreterProcess.getLocalRepoDir());
     assertEquals(10000, interpreterProcess.getConnectTimeout());
     assertEquals(zConf.getInterpreterRemoteRunnerPath(), interpreterProcess.getInterpreterRunner());
     assertTrue(interpreterProcess.getEnv().size() >= 2);
@@ -101,8 +101,9 @@ public class SparkInterpreterLauncherTest {
     assertTrue( client instanceof RemoteInterpreterManagedProcess);
     RemoteInterpreterManagedProcess interpreterProcess = (RemoteInterpreterManagedProcess) client;
     assertEquals("spark", interpreterProcess.getInterpreterSettingName());
-    assertTrue(interpreterProcess.getInterpreterDir().endsWith("/interpreter/spark"));
-    assertTrue(interpreterProcess.getLocalRepoDir().endsWith("/local-repo/groupId"));
+    
+    assertTrue(interpreterProcess.getInterpreterDir().endsWith(fs + "interpreter/spark"));
+    assertTrue(interpreterProcess.getLocalRepoDir().endsWith(fs + "local-repo/groupId"));
     assertEquals(zConf.getInterpreterRemoteRunnerPath(), interpreterProcess.getInterpreterRunner());
     assertTrue(interpreterProcess.getEnv().size() >= 2);
     assertEquals(sparkHome, interpreterProcess.getEnv().get("SPARK_HOME"));
@@ -129,14 +130,15 @@ public class SparkInterpreterLauncherTest {
     assertTrue( client instanceof RemoteInterpreterManagedProcess);
     RemoteInterpreterManagedProcess interpreterProcess = (RemoteInterpreterManagedProcess) client;
     assertEquals("spark", interpreterProcess.getInterpreterSettingName());
-    assertTrue(interpreterProcess.getInterpreterDir().endsWith("/interpreter/spark"));
-    assertTrue(interpreterProcess.getLocalRepoDir().endsWith("/local-repo/groupId"));
+    
+    assertTrue(interpreterProcess.getInterpreterDir().endsWith(fs + "interpreter/spark"));
+    assertTrue(interpreterProcess.getLocalRepoDir().endsWith(fs + "local-repo/groupId"));
     assertEquals(zConf.getInterpreterRemoteRunnerPath(), interpreterProcess.getInterpreterRunner());
     assertTrue(interpreterProcess.getEnv().size() >= 2);
     assertEquals(sparkHome, interpreterProcess.getEnv().get("SPARK_HOME"));
 
     String sparkJars = "jar_1";
-    String sparkrZip = sparkHome + "/R/lib/sparkr.zip#sparkr";
+    String sparkrZip = sparkHome + fs + "R" + fs + "lib" + fs + "sparkr.zip#sparkr";
     String sparkFiles = "file_1";
     assertEquals(InterpreterLauncher.escapeSpecialCharacter(" --conf spark.yarn.dist.archives=" + sparkrZip +
                     " --conf spark.files=" + sparkFiles + " --conf spark.jars=" + sparkJars +
@@ -162,14 +164,14 @@ public class SparkInterpreterLauncherTest {
     assertTrue( client instanceof RemoteInterpreterManagedProcess);
     RemoteInterpreterManagedProcess interpreterProcess = (RemoteInterpreterManagedProcess) client;
     assertEquals("spark", interpreterProcess.getInterpreterSettingName());
-    assertTrue(interpreterProcess.getInterpreterDir().endsWith("/interpreter/spark"));
-    assertTrue(interpreterProcess.getLocalRepoDir().endsWith("/local-repo/groupId"));
+    assertTrue(interpreterProcess.getInterpreterDir().endsWith(fs + "interpreter/spark"));
+    assertTrue(interpreterProcess.getLocalRepoDir().endsWith(fs + "local-repo/groupId"));
     assertEquals(zConf.getInterpreterRemoteRunnerPath(), interpreterProcess.getInterpreterRunner());
     assertTrue(interpreterProcess.getEnv().size() >= 2);
     assertEquals(sparkHome, interpreterProcess.getEnv().get("SPARK_HOME"));
 
     String sparkJars = "jar_1";
-    String sparkrZip = sparkHome + "/R/lib/sparkr.zip#sparkr";
+    String sparkrZip = sparkHome + fs + "R" + fs + "lib" + fs + "sparkr.zip#sparkr";
     String sparkFiles = "file_1";
     assertEquals(InterpreterLauncher.escapeSpecialCharacter(" --conf spark.yarn.dist.archives=" + sparkrZip +
                     " --conf spark.files=" + sparkFiles + " --conf spark.jars=" + sparkJars +
@@ -195,18 +197,19 @@ public class SparkInterpreterLauncherTest {
     assertTrue( client instanceof RemoteInterpreterManagedProcess);
     RemoteInterpreterManagedProcess interpreterProcess = (RemoteInterpreterManagedProcess) client;
     assertEquals("spark", interpreterProcess.getInterpreterSettingName());
-    assertTrue(interpreterProcess.getInterpreterDir().endsWith("/interpreter/spark"));
-    assertTrue(interpreterProcess.getLocalRepoDir().endsWith("/local-repo/groupId"));
+    
+    assertTrue(interpreterProcess.getInterpreterDir().endsWith(fs + "interpreter/spark"));
+    assertTrue(interpreterProcess.getLocalRepoDir().endsWith(fs + "local-repo/groupId"));
     assertEquals(zConf.getInterpreterRemoteRunnerPath(), interpreterProcess.getInterpreterRunner());
     assertTrue(interpreterProcess.getEnv().size() >= 3);
     assertEquals(sparkHome, interpreterProcess.getEnv().get("SPARK_HOME"));
 
     assertEquals("true", interpreterProcess.getEnv().get("ZEPPELIN_SPARK_YARN_CLUSTER"));
     String sparkJars = "jar_1," +
-            zeppelinHome + "/interpreter/spark/scala-2.11/spark-scala-2.11-" + Util.getVersion() + ".jar," +
-            zeppelinHome + "/interpreter/zeppelin-interpreter-shaded-" + Util.getVersion() + ".jar";
-    String sparkrZip = sparkHome + "/R/lib/sparkr.zip#sparkr";
-    String sparkFiles = "file_1," + zeppelinHome + "/conf/log4j_yarn_cluster.properties";
+            zeppelinHome + "" + fs + "interpreter" + fs + "spark" + fs + "scala-2.11" + fs + "spark-scala-2.11-" + Util.getVersion() + ".jar," +
+            zeppelinHome + "" + fs + "interpreter" + fs + "zeppelin-interpreter-shaded-" + Util.getVersion() + ".jar";
+    String sparkrZip = sparkHome + fs + "R" + fs + "lib" + fs + "sparkr.zip#sparkr";
+    String sparkFiles = "file_1," + zeppelinHome + "" + fs + "conf/log4j_yarn_cluster.properties";
     assertEquals(InterpreterLauncher.escapeSpecialCharacter(" --conf spark.yarn.dist.archives=" + sparkrZip +
                     " --conf spark.yarn.maxAppAttempts=1" +
                     " --conf spark.files=" + sparkFiles + " --conf spark.jars=" + sparkJars +
@@ -241,18 +244,19 @@ public class SparkInterpreterLauncherTest {
     assertTrue( client instanceof RemoteInterpreterManagedProcess);
     RemoteInterpreterManagedProcess interpreterProcess = (RemoteInterpreterManagedProcess) client;
     assertEquals("spark", interpreterProcess.getInterpreterSettingName());
-    assertTrue(interpreterProcess.getInterpreterDir().endsWith("/interpreter/spark"));
-    assertTrue(interpreterProcess.getLocalRepoDir().endsWith("/local-repo/groupId"));
+    
+    assertTrue(interpreterProcess.getInterpreterDir().endsWith(fs + "interpreter/spark"));
+    assertTrue(interpreterProcess.getLocalRepoDir().endsWith(fs + "local-repo/groupId"));
     assertEquals(zConf.getInterpreterRemoteRunnerPath(), interpreterProcess.getInterpreterRunner());
     assertTrue(interpreterProcess.getEnv().size() >= 3);
     assertEquals(sparkHome, interpreterProcess.getEnv().get("SPARK_HOME"));
     assertEquals("true", interpreterProcess.getEnv().get("ZEPPELIN_SPARK_YARN_CLUSTER"));
     String sparkJars = "jar_1," +
             Paths.get(localRepoPath.toAbsolutePath().toString(), "test.jar").toString() + "," +
-            zeppelinHome + "/interpreter/spark/scala-2.11/spark-scala-2.11-" + Util.getVersion() + ".jar," +
-            zeppelinHome + "/interpreter/zeppelin-interpreter-shaded-" + Util.getVersion() + ".jar";
-    String sparkrZip = sparkHome + "/R/lib/sparkr.zip#sparkr";
-    String sparkFiles = "file_1," + zeppelinHome + "/conf/log4j_yarn_cluster.properties";
+            zeppelinHome + "" + fs + "interpreter" + fs + "spark" + fs + "scala-2.11" + fs + "spark-scala-2.11-" + Util.getVersion() + ".jar," +
+            zeppelinHome + "" + fs + "interpreter" + fs + "zeppelin-interpreter-shaded-" + Util.getVersion() + ".jar";
+    String sparkrZip = sparkHome + fs + "R" + fs + "lib" + fs + "sparkr.zip#sparkr";
+    String sparkFiles = "file_1," + zeppelinHome + "" + fs + "conf/log4j_yarn_cluster.properties";
     assertEquals(InterpreterLauncher.escapeSpecialCharacter(" --conf spark.yarn.dist.archives=" + sparkrZip +
             " --conf spark.yarn.isPython=true --conf spark.app.name=intpGroupId" +
             " --conf spark.yarn.maxAppAttempts=1" +
@@ -289,19 +293,20 @@ public class SparkInterpreterLauncherTest {
     assertTrue( client instanceof RemoteInterpreterManagedProcess);
     RemoteInterpreterManagedProcess interpreterProcess = (RemoteInterpreterManagedProcess) client;
     assertEquals("spark", interpreterProcess.getInterpreterSettingName());
-    assertTrue(interpreterProcess.getInterpreterDir().endsWith("/interpreter/spark"));
-    assertTrue(interpreterProcess.getLocalRepoDir().endsWith("/local-repo/groupId"));
+    
+    assertTrue(interpreterProcess.getInterpreterDir().endsWith(fs + "interpreter/spark"));
+    assertTrue(interpreterProcess.getLocalRepoDir().endsWith(fs + "local-repo/groupId"));
     assertEquals(zConf.getInterpreterRemoteRunnerPath(), interpreterProcess.getInterpreterRunner());
     assertTrue(interpreterProcess.getEnv().size() >= 3);
     assertEquals(sparkHome, interpreterProcess.getEnv().get("SPARK_HOME"));
     assertEquals("true", interpreterProcess.getEnv().get("ZEPPELIN_SPARK_YARN_CLUSTER"));
 
     String sparkJars = "jar_1," +
-            zeppelinHome + "/interpreter/spark/scala-2.11/spark-scala-2.11-" + Util.getVersion() + ".jar," +
-            zeppelinHome + "/interpreter/zeppelin-interpreter-shaded-" + Util.getVersion() + ".jar";
-    String sparkrZip = sparkHome + "/R/lib/sparkr.zip#sparkr";
+            zeppelinHome + "" + fs + "interpreter" + fs + "spark" + fs + "scala-2.11" + fs + "spark-scala-2.11-" + Util.getVersion() + ".jar," +
+            zeppelinHome + "" + fs + "interpreter" + fs + "zeppelin-interpreter-shaded-" + Util.getVersion() + ".jar";
+    String sparkrZip = sparkHome + fs + "R" + fs + "lib" + fs + "sparkr.zip#sparkr";
     // escape special characters
-    String sparkFiles = "{}," + zeppelinHome + "/conf/log4j_yarn_cluster.properties";
+    String sparkFiles = "{}," + zeppelinHome + "" + fs + "conf/log4j_yarn_cluster.properties";
     assertEquals(InterpreterLauncher.escapeSpecialCharacter(" --conf spark.yarn.dist.archives=" + sparkrZip +
                     " --conf spark.yarn.isPython=true" +
                     " --conf spark.app.name=intpGroupId" +
