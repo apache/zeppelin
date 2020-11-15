@@ -105,13 +105,23 @@ public class DownloadUtils {
     String projectDownloadFolder = downloadFolder + "/" + project;
     try {
       String preferredMirror = IOUtils.toString(new URL("https://www.apache.org/dyn/closer.lua?preferred=true"));
-      File downloadFile = new File(projectDownloadFolder + "/" + project + "-" + version + postFix);
+      String filePath = projectDownloadFolder + "/" + project + "-" + version + postFix;
+      
       String downloadURL = preferredMirror + "/" + projectPath + "/" + project + "-" + version + "/" + project + "-" + version + postFix;
-      runShellCommand(new String[]{"wget", downloadURL, "-P", projectDownloadFolder});
+      if (File.separator.equals("\\"))
+      {
+        String[] args1 = new String[]{"powershell","wget", downloadURL, "-OutFile", filePath}; 
+        LOGGER.info("download exec: "+String.join(" ",args1));
+        runShellCommand(args1);
+      }
+      else
+        runShellCommand(new String[]{"wget", downloadURL, "-P", projectDownloadFolder});
+      File downloadFile = new File(filePath);
       runShellCommand(new String[]{"tar", "-xvf", downloadFile.getAbsolutePath(), "-C", projectDownloadFolder});
     } catch (Exception e) {
       LOGGER.warn("Failed to download " + project + " from mirror site, fallback to use apache archive", e);
-      File downloadFile = new File(projectDownloadFolder + "/" + project + "-" + version + postFix);
+      String filePath = projectDownloadFolder + "/" + project + "-" + version + postFix;
+      File downloadFile = new File(filePath);
       String downloadURL =
               "https://archive.apache.org/dist/" + projectPath + "/" + project +"-"
                       + version
@@ -119,7 +129,14 @@ public class DownloadUtils {
                       + version
                       + postFix;
       try {
-        runShellCommand(new String[]{"wget", downloadURL, "-P", projectDownloadFolder});
+        if (File.separator.equals("\\"))
+        {
+          String[] args1 = new String[]{"powershell","wget", downloadURL, "-OutFile", filePath}; 
+          LOGGER.info("download exec: "+String.join(" ",args1));
+          runShellCommand(args1);
+        }
+        else
+          runShellCommand(new String[]{"wget", downloadURL, "-P", projectDownloadFolder});
         runShellCommand(
                 new String[]{"tar", "-xvf", downloadFile.getAbsolutePath(), "-C", projectDownloadFolder});
       } catch (Exception ex) {
