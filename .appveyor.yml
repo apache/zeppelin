@@ -90,8 +90,8 @@ install:
           $SPARK_ABSPATH1
         )
         $cont=true
-        7z x $($SPARK_ABSPATH1) 
-        7z x $($SPARK_ABSPATH2)
+        7z x $($SPARK_ABSPATH1) -oC:\Users\appveyor\.cache\spark\
+        7z x $($SPARK_ABSPATH2) -oC:\Users\appveyor\.cache\spark\
       }
       
 build_script:
