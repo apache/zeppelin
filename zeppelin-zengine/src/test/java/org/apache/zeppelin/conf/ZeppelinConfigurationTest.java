@@ -118,15 +118,16 @@ public class ZeppelinConfigurationTest {
     assertTrue(isIt);
   }
 
+  String fs = java.io.File.separator;
+  String usrlibzeppelin = 
+      fs + "usr" + fs + "lib" + 
+      fs + "zeppelin";
+  String usrlibzeppelinconf = 
+      fs + "usr" + fs + "lib" + 
+      fs + "zeppelin" + fs + "conf";
+    
   @Test
   public void getPathTest() throws ConfigurationException {
-    String fs = java.io.File.separator;
-    String usrlibzeppelin = 
-      fs + "usr" + fs + "lib" + 
-      fs + zeppelin;
-    String usrlibzeppelinconf = 
-      fs + "usr" + fs + "lib" + 
-      fs + zeppelin + fs + conf;
     System.setProperty(ConfVars.ZEPPELIN_HOME.getVarName(), usrlibzeppelin);
     ZeppelinConfiguration conf = new ZeppelinConfiguration(this.getClass().getResource("/zeppelin-test-site.xml"));
     Assert.assertEquals(usrlibzeppelin, conf.getZeppelinHome());
@@ -135,13 +136,6 @@ public class ZeppelinConfigurationTest {
 
   @Test
   public void getConfigFSPath() throws ConfigurationException {
-    String fs = java.io.File.separator;
-    String usrlibzeppelin = 
-      fs + "usr" + fs + "lib" + 
-      fs + zeppelin;
-    String usrlibzeppelinconf = 
-      fs + "usr" + fs + "lib" + 
-      fs + zeppelin + fs + conf;
     System.setProperty(ConfVars.ZEPPELIN_HOME.getVarName(), usrlibzeppelin);
     System.setProperty(ConfVars.ZEPPELIN_CONFIG_FS_DIR.getVarName(), "conf");
     ZeppelinConfiguration conf = new ZeppelinConfiguration(this.getClass().getResource("/zeppelin-test-site.xml"));

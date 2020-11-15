@@ -35,11 +35,14 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class HeliumBundleFactoryTest {
   private HeliumBundleFactory hbf;
   private File nodeInstallationDir;
   private String zeppelinHomePath;
+  private static Logger LOGGER = LoggerFactory.getLogger(HeliumBundleFactoryTest.class);
 
   @Before
   public void setUp() throws InstallationException, TaskRunnerException, IOException {
@@ -64,9 +67,10 @@ public class HeliumBundleFactoryTest {
 
   @Test
   public void testInstallNpm() throws InstallationException {
-    System.out.println("Node installation Dir XXXX ="+nodeInstallationDir.getAbsolutePath());
     assertTrue(new File(nodeInstallationDir, "/node/npm").isFile());
-    assertTrue(new File(nodeInstallationDir, "/node/node").isFile());
+    File file = new File(nodeInstallationDir, "/node/node");
+    File windowsFile = new File(nodeInstallationDir, "/node/node.exe");
+    assertTrue(file.isFile() || windowsFile.isFile());
     assertTrue(new File(nodeInstallationDir, "/node/yarn/dist/bin/yarn").isFile());
   }
 
@@ -112,8 +116,9 @@ public class HeliumBundleFactoryTest {
   public void bundleLocalPackage() throws IOException, TaskRunnerException {
     URL res = Resources.getResource("helium/webpack.config.js");
     String resDir = new File(res.getFile()).getParent();
+    LOGGER.info("hbfTest resDir YYYY="+ resDir);
     String localPkg = resDir + "/../../../src/test/resources/helium/vis1";
-
+    LOGGER.info("hbfTest localPkg YYYY="+ localPkg);
     HeliumPackage pkg =
         new HeliumPackage(
             HeliumType.VISUALIZATION,

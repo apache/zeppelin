@@ -615,7 +615,9 @@ public class HeliumBundleFactory {
   }
 
   private boolean isLocalPackage(HeliumPackage pkg) {
-    return (pkg.getArtifact().startsWith(".") || pkg.getArtifact().startsWith("/"));
+    boolean isValidWinPath = pkg.getArtifact().substring(1,3).startsWith(":\\") &&
+      Character.isLetter(pkg.getArtifact().charAt(0));
+    return (pkg.getArtifact().startsWith(".") || pkg.getArtifact().startsWith("/") || isValidWinPath);
   }
 
   private String[] getNpmModuleNameAndVersion(HeliumPackage pkg) {
