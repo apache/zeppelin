@@ -34,8 +34,11 @@ You need to [install docker](https://docs.docker.com/engine/installation/) on yo
 ### Running docker image for Zeppelin distribution
 
 ```bash
-docker run -p 8080:8080 --rm --name zeppelin apache/zeppelin-server:<release-version>
+docker run -p 8080:8080 -e ZEPPELIN_IN_DOCKER=true --rm --name zeppelin apache/zeppelin-server:<release-version>
 ```
+
+Notice, please specify environment variable `ZEPPELIN_IN_DOCKER` when starting zeppelin in docker, 
+otherwise you can not see the interpreter log.
 
 * Zeppelin will run at `http://localhost:8080`.
 
@@ -47,6 +50,7 @@ docker run -p 8080:8080 --rm \
 -v $PWD/notebook:/notebook \
 -e ZEPPELIN_LOG_DIR='/logs' \
 -e ZEPPELIN_NOTEBOOK_DIR='/notebook' \
+-e ZEPPELIN_IN_DOCKER=true \
 --name zeppelin apache/zeppelin-server:<release-version> # e.g '0.9.0'
 ```
 

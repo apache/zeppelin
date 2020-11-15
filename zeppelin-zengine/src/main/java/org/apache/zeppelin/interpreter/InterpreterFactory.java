@@ -19,8 +19,6 @@ package org.apache.zeppelin.interpreter;
 
 import javax.inject.Inject;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * //TODO(zjffdu) considering to move to InterpreterSettingManager
@@ -29,7 +27,6 @@ import org.slf4j.LoggerFactory;
  *
  */
 public class InterpreterFactory implements InterpreterFactoryInterface {
-  private static final Logger LOGGER = LoggerFactory.getLogger(InterpreterFactory.class);
 
   private final InterpreterSettingManager interpreterSettingManager;
 

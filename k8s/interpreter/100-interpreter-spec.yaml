@@ -43,12 +43,22 @@ spec:
   containers:
   - name: {{zeppelin.k8s.interpreter.container.name}}
     image: {{zeppelin.k8s.interpreter.container.image}}
-    command: ["sh", "-c", "$(ZEPPELIN_HOME)/bin/interpreter.sh -d $(ZEPPELIN_HOME)/interpreter/{{zeppelin.k8s.interpreter.group.name}} -r {{zeppelin.k8s.interpreter.rpc.portRange}} -c {{zeppelin.k8s.server.rpc.service}} -p {{zeppelin.k8s.server.rpc.portRange}} -i {{zeppelin.k8s.interpreter.group.id}} -l {{zeppelin.k8s.interpreter.localRepo}} -g {{zeppelin.k8s.interpreter.setting.name}}"]
-    lifecycle:
-      preStop:
-        exec:
-          # SIGTERM triggers a quick exit; gracefully terminate instead
-          command: ["sh", "-c", "ps -ef | grep org.apache.zeppelin.interpreter.remote.RemoteInterpreterServer | grep -v grep | awk '{print $2}' | xargs kill"]
+    args:
+      - "$(ZEPPELIN_HOME)/bin/interpreter.sh"
+      - "-d"
+      - "$(ZEPPELIN_HOME)/interpreter/{{zeppelin.k8s.interpreter.group.name}}"
+      - "-r"
+      - "{{zeppelin.k8s.interpreter.rpc.portRange}}"
+      - "-c"
+      - "{{zeppelin.k8s.server.rpc.service}}"
+      - "-p"
+      - "{{zeppelin.k8s.server.rpc.portRange}}"
+      - "-i"
+      - "{{zeppelin.k8s.interpreter.group.id}}"
+      - "-l"
+      - "{{zeppelin.k8s.interpreter.localRepo}}/{{zeppelin.k8s.interpreter.setting.name}}"
+      - "-g"
+      - "{{zeppelin.k8s.interpreter.setting.name}}"
     env:
   {% for key, value in zeppelin.k8s.envs.items() %}
     - name: {{key}}

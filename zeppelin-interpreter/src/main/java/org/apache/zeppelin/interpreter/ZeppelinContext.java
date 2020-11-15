@@ -17,7 +17,6 @@
 
 package org.apache.zeppelin.interpreter;
 
-import org.apache.thrift.TException;
 import org.apache.zeppelin.annotation.Experimental;
 import org.apache.zeppelin.annotation.ZeppelinApi;
 import org.apache.zeppelin.display.AngularObject;
@@ -673,10 +672,9 @@ public abstract class ZeppelinContext {
    *
    * @param name name of the variable
    * @param o    value
-   * @throws TException
    */
   @ZeppelinApi
-  public void angularBind(String name, Object o) throws TException {
+  public void angularBind(String name, Object o) {
     angularBind(name, o, interpreterContext.getNoteId());
   }
 
@@ -688,7 +686,7 @@ public abstract class ZeppelinContext {
    * @param o    value
    */
   @Deprecated
-  public void angularBindGlobal(String name, Object o) throws TException {
+  public void angularBindGlobal(String name, Object o) {
     angularBind(name, o, (String) null);
   }
 
@@ -701,7 +699,7 @@ public abstract class ZeppelinContext {
    * @param watcher watcher of the variable
    */
   @ZeppelinApi
-  public void angularBind(String name, Object o, AngularObjectWatcher watcher) throws TException {
+  public void angularBind(String name, Object o, AngularObjectWatcher watcher) {
     angularBind(name, o, interpreterContext.getNoteId(), watcher);
   }
 
@@ -714,8 +712,7 @@ public abstract class ZeppelinContext {
    * @param watcher watcher of the variable
    */
   @Deprecated
-  public void angularBindGlobal(String name, Object o, AngularObjectWatcher watcher)
-      throws TException {
+  public void angularBindGlobal(String name, Object o, AngularObjectWatcher watcher) {
     angularBind(name, o, null, watcher);
   }
 
@@ -791,7 +788,7 @@ public abstract class ZeppelinContext {
    * @param name
    */
   @ZeppelinApi
-  public void angularUnbind(String name) throws TException {
+  public void angularUnbind(String name) {
     String noteId = interpreterContext.getNoteId();
     angularUnbind(name, noteId);
   }
@@ -802,7 +799,7 @@ public abstract class ZeppelinContext {
    * @param name
    */
   @Deprecated
-  public void angularUnbindGlobal(String name) throws TException {
+  public void angularUnbindGlobal(String name) {
     angularUnbind(name, null);
   }
 
@@ -814,7 +811,7 @@ public abstract class ZeppelinContext {
    * @param o    value
    * @param noteId
    */
-  public void angularBind(String name, Object o, String noteId) throws TException {
+  public void angularBind(String name, Object o, String noteId) {
     AngularObjectRegistry registry = interpreterContext.getAngularObjectRegistry();
 
     if (registry.get(name, noteId, null) == null) {
@@ -833,7 +830,7 @@ public abstract class ZeppelinContext {
    * @param noteId
    * @param paragraphId
    */
-  public void angularBind(String name, Object o, String noteId, String paragraphId) throws TException {
+  public void angularBind(String name, Object o, String noteId, String paragraphId) {
     AngularObjectRegistry registry = interpreterContext.getAngularObjectRegistry();
 
     if (registry.get(name, noteId, paragraphId) == null) {
@@ -852,8 +849,7 @@ public abstract class ZeppelinContext {
    * @param o       value
    * @param watcher watcher of the variable
    */
-  private void angularBind(String name, Object o, String noteId, AngularObjectWatcher watcher)
-      throws TException {
+  private void angularBind(String name, Object o, String noteId, AngularObjectWatcher watcher) {
     AngularObjectRegistry registry = interpreterContext.getAngularObjectRegistry();
 
     if (registry.get(name, noteId, null) == null) {
@@ -908,7 +904,7 @@ public abstract class ZeppelinContext {
    *
    * @param name
    */
-  private void angularUnbind(String name, String noteId) throws TException {
+  private void angularUnbind(String name, String noteId) {
     AngularObjectRegistry registry = interpreterContext.getAngularObjectRegistry();
     registry.remove(name, noteId, null);
   }

@@ -18,14 +18,16 @@
 package org.apache.zeppelin.dep;
 
 import org.apache.commons.lang3.Validate;
-import org.apache.maven.repository.internal.MavenRepositorySystemSession;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.maven.repository.internal.MavenRepositorySystemUtils;
+import org.eclipse.aether.DefaultRepositorySystemSession;
+import org.eclipse.aether.RepositorySystem;
+import org.eclipse.aether.RepositorySystemSession;
+import org.eclipse.aether.repository.LocalRepository;
+import org.eclipse.aether.repository.Proxy;
+import org.eclipse.aether.repository.RemoteRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.sonatype.aether.RepositorySystem;
-import org.sonatype.aether.RepositorySystemSession;
-import org.sonatype.aether.repository.LocalRepository;
-import org.sonatype.aether.repository.RemoteRepository;
 
 import java.nio.file.Paths;
 
@@ -33,7 +35,11 @@ import java.nio.file.Paths;
  * Manage mvn repository.
  */
 public class Booter {
-  private static Logger logger = LoggerFactory.getLogger(Booter.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(Booter.class);
+
+  private Booter() {
+    // only a helper
+  }
 
   public static RepositorySystem newRepositorySystem() {
     return RepositorySystemFactory.newRepositorySystem();
@@ -43,12 +49,12 @@ public class Booter {
       RepositorySystem system, String localRepoPath) {
     Validate.notNull(localRepoPath, "localRepoPath should have a value");
 
-    MavenRepositorySystemSession session = new MavenRepositorySystemSession();
+    DefaultRepositorySystemSession session = MavenRepositorySystemUtils.newSession();
 
     LocalRepository localRepo = new LocalRepository(resolveLocalRepoPath(localRepoPath));
-    session.setLocalRepositoryManager(system.newLocalRepositoryManager(localRepo));
+    session.setLocalRepositoryManager(system.newLocalRepositoryManager(session, localRepo));
 
-    if (logger.isDebugEnabled()) {
+    if (LOGGER.isDebugEnabled()) {
       session.setTransferListener(new TransferListener());
       session.setRepositoryListener(new RepositoryListener());
     }
@@ -72,7 +78,7 @@ public class Booter {
     return Paths.get(home).resolve(localRepoPath).toAbsolutePath().toString();
   }
 
-  public static RemoteRepository newCentralRepository() {
+  public static RemoteRepository newCentralRepository(Proxy proxy) {
     String mvnRepo = System.getenv("ZEPPELIN_INTERPRETER_DEP_MVNREPO");
     if (mvnRepo == null) {
       mvnRepo = ZeppelinConfiguration.create().getString(
@@ -81,12 +87,15 @@ public class Booter {
     if (mvnRepo == null) {
       mvnRepo = "https://repo1.maven.org/maven2/";
     }
-
-    return new RemoteRepository("central", "default", mvnRepo);
+    RemoteRepository.Builder centralBuilder = new RemoteRepository.Builder("central", "default", mvnRepo);
+    if (proxy != null) {
+      centralBuilder.setProxy(proxy);
+    }
+    return centralBuilder.build();
   }
 
   public static RemoteRepository newLocalRepository() {
-    return new RemoteRepository("local",
-        "default", "file://" + System.getProperty("user.home") + "/.m2/repository");
+    return new RemoteRepository.Builder("local",
+        "default", "file://" + System.getProperty("user.home") + "/.m2/repository").build();
   }
 }

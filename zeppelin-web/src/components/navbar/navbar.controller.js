@@ -107,8 +107,7 @@ function NavCtrl($scope, $rootScope, $http, $routeParams, $location,
         let res = angular.fromJson(response.data).body;
         if (res['redirectURL']) {
           if (res['isLogoutAPI'] === 'true') {
-            $http.get(res['redirectURL']).then(function() {
-            }, function() {
+            $http.get(res['redirectURL']).finally(function() {
               window.location = baseUrlSrv.getBase();
             });
           } else {

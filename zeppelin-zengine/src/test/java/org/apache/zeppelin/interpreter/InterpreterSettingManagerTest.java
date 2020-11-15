@@ -24,8 +24,8 @@ import org.apache.zeppelin.display.AngularObjectRegistryListener;
 import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
 import org.junit.Test;
-import org.sonatype.aether.RepositoryException;
-import org.sonatype.aether.repository.RemoteRepository;
+import org.eclipse.aether.RepositoryException;
+import org.eclipse.aether.repository.RemoteRepository;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -35,7 +35,6 @@ import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
@@ -182,23 +181,20 @@ public class InterpreterSettingManagerTest extends AbstractInterpreterTest {
     assertEquals(6, interpreterSettingManager.get().size());
 
     // load it again
-    InterpreterSettingManager interpreterSettingManager3 = new InterpreterSettingManager(new ZeppelinConfiguration(),
+    InterpreterSettingManager interpreterSettingManager3 = new InterpreterSettingManager(ZeppelinConfiguration.create(),
         mock(AngularObjectRegistryListener.class), mock(RemoteInterpreterProcessListener.class), mock(ApplicationEventListener.class));
     assertEquals(6, interpreterSettingManager3.get().size());
 
   }
 
-  //@Test
-  public void testGetEditor() throws IOException, InterpreterNotFoundException {
-    Interpreter echoInterpreter = interpreterFactory.getInterpreter("test.echo", new ExecutionContextBuilder().setUser("user1").setNoteId("note1").setDefaultInterpreterGroup("test").createExecutionContext());
+  @Test
+  public void testGetEditor() {
     // get editor setting from interpreter-setting.json
-    Map<String, Object> editor = interpreterSettingManager.getEditorSetting("test.echo", "note1");
+    Map<String, Object> editor = interpreterSettingManager.getEditorSetting("%test.echo", "note1");
     assertEquals("java", editor.get("language"));
 
-    // when editor setting doesn't exit, return the default editor
-    Interpreter mock1Interpreter = interpreterFactory.getInterpreter("mock1", new ExecutionContextBuilder().setUser("user1").setNoteId("note1").setDefaultInterpreterGroup("test").createExecutionContext());
-    editor = interpreterSettingManager.getEditorSetting("mock1", "note1");
-    assertEquals("text", editor.get("language"));
+    editor = interpreterSettingManager.getEditorSetting("%mock1", "note1");
+    assertEquals("python", editor.get("language"));
   }
 
   @Test

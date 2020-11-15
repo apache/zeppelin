@@ -76,17 +76,22 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     for (ConfigurationNode p : nodes) {
       String name = (String) p.getChildren("name").get(0).getValue();
       String value = (String) p.getChildren("value").get(0).getValue();
-      if (!StringUtils.isEmpty(name)) {
+      if (StringUtils.isNotBlank(name) && StringUtils.isNotBlank(value)) {
         properties.put(name, value);
       }
     }
   }
 
 
-  public ZeppelinConfiguration() {
+  // private constructor, so that it is singleton.
+  private ZeppelinConfiguration() {
     ConfVars[] vars = ConfVars.values();
     for (ConfVars v : vars) {
-      if (v.getType() == ConfVars.VarType.BOOLEAN) {
+      // set property if env is set, so that the configuration can be passed to
+      // interpreter process properly.
+      if (StringUtils.isNotBlank(System.getenv(v.name()))) {
+        this.setProperty(v.getVarName(), System.getenv(v.name()));
+      } else if (v.getType() == ConfVars.VarType.BOOLEAN) {
         this.setProperty(v.getVarName(), v.getBooleanValue());
       } else if (v.getType() == ConfVars.VarType.LONG) {
         this.setProperty(v.getVarName(), v.getLongValue());
@@ -184,12 +189,18 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return conf;
   }
 
+  public Map<String, String> getProperties() {
+    return this.properties;
+  }
+
   public static void reset() {
     conf = null;
   }
 
   public void setProperty(String name, String value) {
-    this.properties.put(name, value);
+    if (StringUtils.isNotBlank(name) && StringUtils.isNotBlank(value)) {
+      this.properties.put(name, value);
+    }
   }
 
   private String getStringValue(String name, String d) {
@@ -344,7 +355,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     if (path != null && path.startsWith("/") || isWindowsPath(path)) {
       return path;
     } else {
-      return getRelativeDir(
+      return getAbsoluteDir(
           String.format("%s/%s",
               getConfDir(),
               path));
@@ -376,7 +387,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     if (path != null && path.startsWith("/") || isWindowsPath(path)) {
       return path;
     } else {
-      return getRelativeDir(
+      return getAbsoluteDir(
           String.format("%s/%s",
               getConfDir(),
               path));
@@ -418,7 +429,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
   }
 
   public String getNotebookDir() {
-    return getRelativeDir(ConfVars.ZEPPELIN_NOTEBOOK_DIR);
+    return getAbsoluteDir(ConfVars.ZEPPELIN_NOTEBOOK_DIR);
   }
 
   public String getNotebookRunId() {
@@ -438,11 +449,11 @@ public class ZeppelinConfiguration extends XMLConfiguration {
   }
 
   public String getPluginsDir() {
-    return getRelativeDir(getString(ConfVars.ZEPPELIN_PLUGINS_DIR));
+    return getAbsoluteDir(getString(ConfVars.ZEPPELIN_PLUGINS_DIR));
   }
 
   public String getRecoveryDir() {
-    return getRelativeDir(ConfVars.ZEPPELIN_RECOVERY_DIR);
+    return getAbsoluteDir(ConfVars.ZEPPELIN_RECOVERY_DIR);
   }
 
   public String getNotebookStorageClass() {
@@ -497,6 +508,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
   public String getS3SignerOverride() {
     return getString(ConfVars.ZEPPELIN_NOTEBOOK_S3_SIGNEROVERRIDE);
   }
+  
+  public boolean isS3PathStyleAccess() {
+    return getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_S3_PATH_STYLE_ACCESS);
+  }
 
   public String getS3CannedAcl() {
       return getString(ConfVars.ZEPPELIN_NOTEBOOK_S3_CANNED_ACL);
@@ -538,27 +553,27 @@ public class ZeppelinConfiguration extends XMLConfiguration {
   }
 
   public String getInterpreterListPath() {
-    return getRelativeDir(String.format("%s/interpreter-list", getConfDir()));
+    return getAbsoluteDir(String.format("%s/interpreter-list", getConfDir()));
   }
 
   public String getInterpreterDir() {
-    return getRelativeDir(ConfVars.ZEPPELIN_INTERPRETER_DIR);
+    return getAbsoluteDir(ConfVars.ZEPPELIN_INTERPRETER_DIR);
   }
 
   public String getInterpreterJson() {
     return getString(ConfVars.ZEPPELIN_INTERPRETER_JSON);
   }
 
-  public String getInterpreterSettingPath() {
-    return getConfigFSDir() + "/interpreter.json";
+  public String getInterpreterSettingPath(boolean absolute) {
+    return getConfigFSDir(absolute) + "/interpreter.json";
   }
 
   public String getHeliumConfPath() {
-    return getRelativeDir(String.format("%s/helium.json", getConfDir()));
+    return getAbsoluteDir(String.format("%s/helium.json", getConfDir()));
   }
 
   public String getHeliumRegistry() {
-    return getRelativeDir(ConfVars.ZEPPELIN_HELIUM_REGISTRY);
+    return getAbsoluteDir(ConfVars.ZEPPELIN_HELIUM_REGISTRY);
   }
 
   public String getHeliumNodeInstallerUrl() {
@@ -573,8 +588,8 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getString(ConfVars.ZEPPELIN_HELIUM_YARNPKG_INSTALLER_URL);
   }
 
-  public String getNotebookAuthorizationPath() {
-    return getConfigFSDir() + "/notebook-authorization.json";
+  public String getNotebookAuthorizationPath(boolean absolute) {
+    return getConfigFSDir(absolute) + "/notebook-authorization.json";
   }
 
   public Boolean credentialsPersist() {
@@ -585,32 +600,32 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getString(ConfVars.ZEPPELIN_CREDENTIALS_ENCRYPT_KEY);
   }
 
-  public String getCredentialsPath() {
-    return getConfigFSDir() + "/credentials.json";
+  public String getCredentialsPath(boolean absolute) {
+    return getConfigFSDir(absolute) + "/credentials.json";
   }
 
   public String getShiroPath() {
-    String shiroPath = getRelativeDir(String.format("%s/shiro.ini", getConfDir()));
+    String shiroPath = getAbsoluteDir(String.format("%s/shiro.ini", getConfDir()));
     return new File(shiroPath).exists() ? shiroPath : StringUtils.EMPTY;
   }
 
   public String getInterpreterRemoteRunnerPath() {
-    return getRelativeDir(ConfVars.ZEPPELIN_INTERPRETER_REMOTE_RUNNER);
+    return getAbsoluteDir(ConfVars.ZEPPELIN_INTERPRETER_REMOTE_RUNNER);
   }
 
   public String getInterpreterLocalRepoPath() {
-    return getRelativeDir(ConfVars.ZEPPELIN_INTERPRETER_LOCALREPO);
+    return getAbsoluteDir(ConfVars.ZEPPELIN_INTERPRETER_LOCALREPO);
   }
 
   public String getInterpreterMvnRepoPath() {
     return getString(ConfVars.ZEPPELIN_INTERPRETER_DEP_MVNREPO);
   }
 
-  public String getRelativeDir(ConfVars c) {
-    return getRelativeDir(getString(c));
+  public String getAbsoluteDir(ConfVars c) {
+    return getAbsoluteDir(getString(c));
   }
 
-  public String getRelativeDir(String path) {
+  public String getAbsoluteDir(String path) {
     if (path != null && (path.startsWith(File.separator) || isWindowsPath(path) || isPathWithScheme(path))) {
       return path;
     } else {
@@ -658,20 +673,24 @@ public class ZeppelinConfiguration extends XMLConfiguration {
   }
 
   public String getConfDir() {
-    return getRelativeDir(ConfVars.ZEPPELIN_CONF_DIR);
+    return getAbsoluteDir(ConfVars.ZEPPELIN_CONF_DIR);
   }
 
-  public String getConfigFSDir() {
+  public String getConfigFSDir(boolean absolute) {
     String fsConfigDir = getString(ConfVars.ZEPPELIN_CONFIG_FS_DIR);
     if (StringUtils.isBlank(fsConfigDir)) {
-      LOG.warn(ConfVars.ZEPPELIN_CONFIG_FS_DIR.varName + " is not specified, fall back to local " +
-          "conf directory " + ConfVars.ZEPPELIN_CONF_DIR.varName);
-      return getConfDir();
+      LOG.warn("{} is not specified, fall back to local conf directory {}",
+        ConfVars.ZEPPELIN_CONFIG_FS_DIR.varName,  ConfVars.ZEPPELIN_CONF_DIR.varName);
+      if (absolute) {
+        return getConfDir();
+      } else {
+        return getString(ConfVars.ZEPPELIN_CONF_DIR);
+      }
     }
     if (getString(ConfVars.ZEPPELIN_CONFIG_STORAGE_CLASS)
                 .equals("org.apache.zeppelin.storage.LocalConfigStorage")) {
       // only apply getRelativeDir when it is LocalConfigStorage
-      return getRelativeDir(fsConfigDir);
+      return getAbsoluteDir(fsConfigDir);
     } else {
       return fsConfigDir;
     }
@@ -788,7 +807,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
   }
 
   public String getZeppelinSearchIndexPath() {
-    return getRelativeDir(ConfVars.ZEPPELIN_SEARCH_INDEX_PATH);
+    return getAbsoluteDir(ConfVars.ZEPPELIN_SEARCH_INDEX_PATH);
   }
 
   public Boolean isOnlyYarnCluster() {
@@ -850,11 +869,15 @@ public class ZeppelinConfiguration extends XMLConfiguration {
   }
 
   public String getK8sTemplatesDir() {
-    return getRelativeDir(ConfVars.ZEPPELIN_K8S_TEMPLATE_DIR);
+    return getAbsoluteDir(ConfVars.ZEPPELIN_K8S_TEMPLATE_DIR);
   }
 
   public String getK8sServiceName() {
     return getString(ConfVars.ZEPPELIN_K8S_SERVICE_NAME);
+  }
+
+  public boolean getK8sTimeoutDuringPending() {
+    return getBoolean(ConfVars.ZEPPELIN_K8S_TIMEOUT_DURING_PENDING);
   }
 
   public String getDockerContainerImage() {
@@ -969,6 +992,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_NOTEBOOK_GCS_STORAGE_DIR("zeppelin.notebook.gcs.dir", ""),
     ZEPPELIN_NOTEBOOK_GCS_CREDENTIALS_FILE("zeppelin.notebook.google.credentialsJsonFilePath", null),
     ZEPPELIN_NOTEBOOK_S3_BUCKET("zeppelin.notebook.s3.bucket", "zeppelin"),
+    ZEPPELIN_NOTEBOOK_S3_PATH_STYLE_ACCESS("zeppelin.notebook.s3.pathStyleAccess", false),
     ZEPPELIN_NOTEBOOK_S3_ENDPOINT("zeppelin.notebook.s3.endpoint", "s3.amazonaws.com"),
     ZEPPELIN_NOTEBOOK_S3_TIMEOUT("zeppelin.notebook.s3.timeout", "120000"),
     ZEPPELIN_NOTEBOOK_S3_USER("zeppelin.notebook.s3.user", "user"),
@@ -1067,6 +1091,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_K8S_SPARK_CONTAINER_IMAGE("zeppelin.k8s.spark.container.image", "apache/spark:latest"),
     ZEPPELIN_K8S_TEMPLATE_DIR("zeppelin.k8s.template.dir", "k8s"),
     ZEPPELIN_K8S_SERVICE_NAME("zeppelin.k8s.service.name", "zeppelin-server"),
+    ZEPPELIN_K8S_TIMEOUT_DURING_PENDING("zeppelin.k8s.timeout.during.pending", true),
 
     ZEPPELIN_DOCKER_CONTAINER_IMAGE("zeppelin.docker.container.image", "apache/zeppelin:" + Util.getVersion()),
 
@@ -1086,7 +1111,8 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_SEARCH_USE_DISK("zeppelin.search.use.disk", true),
     ZEPPELIN_SEARCH_INDEX_PATH("zeppelin.search.index.path", "/tmp/zeppelin-index"),
     ZEPPELIN_JOBMANAGER_ENABLE("zeppelin.jobmanager.enable", false),
-    ZEPPELIN_SPARK_ONLY_YARN_CLUSTER("zeppelin.spark.only_yarn_cluster", false);
+    ZEPPELIN_SPARK_ONLY_YARN_CLUSTER("zeppelin.spark.only_yarn_cluster", false),
+    ZEPPELIN_SESSION_CHECK_INTERVAL("zeppelin.session.check_interval", 60 * 10 * 1000);
 
     private String varName;
     @SuppressWarnings("rawtypes")

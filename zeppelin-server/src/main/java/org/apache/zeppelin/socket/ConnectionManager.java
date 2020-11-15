@@ -44,6 +44,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -67,9 +68,9 @@ public class ConnectionManager {
 
   final Queue<NotebookSocket> connectedSockets = new ConcurrentLinkedQueue<>();
   // noteId -> connection
-  final Map<String, List<NotebookSocket>> noteSocketMap = new ConcurrentHashMap<>();
+  final Map<String, List<NotebookSocket>> noteSocketMap = new HashMap<>();
   // user -> connection
-  final Map<String, Queue<NotebookSocket>> userSocketMap = new ConcurrentHashMap<>();
+  final Map<String, Queue<NotebookSocket>> userSocketMap = new HashMap<>();
 
   /**
    * This is a special endpoint in the notebook websoket, Every connection in this Queue
@@ -356,6 +357,18 @@ public class ConnectionManager {
     for (NotebookSocket conn : userSocketMap.get(user)) {
       Message m = new Message(Message.OP.PARAGRAPH).withMsgId(msgId).put("paragraph", p);
       unicast(m, conn);
+    }
+  }
+
+  public interface UserIterator {
+    public void handleUser(String user, Set<String> userAndRoles);
+  }
+
+  public void forAllUsers(UserIterator iterator) {
+    for (String user : userSocketMap.keySet()) {
+      Set<String> userAndRoles = authorizationService.getRoles(user);
+      userAndRoles.add(user);
+      iterator.handleUser(user, userAndRoles);
     }
   }
 

@@ -22,16 +22,12 @@ import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.AngularObjectRegistryListener;
 import org.apache.zeppelin.interpreter.ManagedInterpreterGroup;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.List;
 
 /**
  * Proxy for AngularObjectRegistry that exists in remote interpreter process
  */
 public class RemoteAngularObjectRegistry extends AngularObjectRegistry {
-  private static final Logger LOGGER = LoggerFactory.getLogger(RemoteAngularObjectRegistry.class);
   private static final Gson GSON = new Gson();
 
   private ManagedInterpreterGroup interpreterGroup;
@@ -96,7 +92,7 @@ public class RemoteAngularObjectRegistry extends AngularObjectRegistry {
 
     return super.remove(name, noteId, paragraphId);
   }
-  
+
   public void removeAllAndNotifyRemoteProcess(String noteId, String paragraphId) {
     List<AngularObject> all = getAll(noteId, paragraphId);
     for (AngularObject ao : all) {

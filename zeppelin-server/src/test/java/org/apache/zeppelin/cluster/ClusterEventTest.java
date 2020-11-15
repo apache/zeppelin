@@ -22,10 +22,8 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
-import org.apache.commons.httpclient.methods.DeleteMethod;
-import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.commons.httpclient.methods.PutMethod;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.util.EntityUtils;
 import org.apache.thrift.TException;
 import org.apache.zeppelin.cluster.meta.ClusterMetaType;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
@@ -39,7 +37,7 @@ import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.notebook.scheduler.QuartzSchedulerService;
-import org.apache.zeppelin.notebook.scheduler.SchedulerService;
+import org.apache.zeppelin.rest.AbstractTestRestApi;
 import org.apache.zeppelin.rest.message.NewParagraphRequest;
 import org.apache.zeppelin.service.ConfigurationService;
 import org.apache.zeppelin.service.NotebookService;
@@ -58,6 +56,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -261,7 +260,6 @@ public class ClusterEventTest extends ZeppelinServerMock {
   }
 
   static boolean clusterIsStartup() {
-    boolean foundLeader = false;
     for (ClusterManagerServer clusterServer : clusterServers) {
       if (!clusterServer.raftInitialized()) {
         LOGGER.warn("clusterServer not Initialized!");
@@ -302,9 +300,9 @@ public class ClusterEventTest extends ZeppelinServerMock {
       final String newName = "testName";
       String jsonRequest = "{\"name\": " + newName + "}";
 
-      PutMethod put = httpPut("/notebook/" + noteId + "/rename/", jsonRequest);
-      assertThat("test testRenameNote:", put, isAllowed());
-      put.releaseConnection();
+      CloseableHttpResponse put = AbstractTestRestApi.httpPut("/notebook/" + noteId + "/rename/", jsonRequest);
+      assertThat("test testRenameNote:", put, AbstractTestRestApi.isAllowed());
+      put.close();
 
       assertEquals(note.getName(), newName);
 
@@ -329,22 +327,23 @@ public class ClusterEventTest extends ZeppelinServerMock {
       note1 = TestUtils.getInstance(Notebook.class).createNote("note1", anonymous);
       Thread.sleep(1000);
 
-      PostMethod post = httpPost("/notebook/" + note1.getId(), "");
-      LOG.info("testCloneNote response\n" + post.getResponseBodyAsString());
-      assertThat(post, isAllowed());
-      Map<String, Object> resp = gson.fromJson(post.getResponseBodyAsString(),
+      CloseableHttpResponse post = AbstractTestRestApi.httpPost("/notebook/" + note1.getId(), "");
+      LOG.info("testCloneNote response\n" + post.getStatusLine().getReasonPhrase());
+      assertThat(post, AbstractTestRestApi.isAllowed());
+
+      Map<String, Object> resp = gson.fromJson(EntityUtils.toString(post.getEntity(), StandardCharsets.UTF_8),
           new TypeToken<Map<String, Object>>() {}.getType());
       clonedNoteId = (String) resp.get("body");
-      post.releaseConnection();
+      post.close();
       Thread.sleep(1000);
 
-      GetMethod get = httpGet("/notebook/" + clonedNoteId);
-      assertThat(get, isAllowed());
-      Map<String, Object> resp2 = gson.fromJson(get.getResponseBodyAsString(),
+      CloseableHttpResponse get = AbstractTestRestApi.httpGet("/notebook/" + clonedNoteId);
+      assertThat(get, AbstractTestRestApi.isAllowed());
+      Map<String, Object> resp2 = gson.fromJson(EntityUtils.toString(get.getEntity(), StandardCharsets.UTF_8),
           new TypeToken<Map<String, Object>>() {}.getType());
       Map<String, Object> resp2Body = (Map<String, Object>) resp2.get("body");
 
-      get.releaseConnection();
+      get.close();
 
       // wait cluster sync event
       Thread.sleep(1000);
@@ -377,10 +376,10 @@ public class ClusterEventTest extends ZeppelinServerMock {
       // insert new paragraph
       NewParagraphRequest newParagraphRequest = new NewParagraphRequest();
 
-      PostMethod post = httpPost("/notebook/" + note.getId() + "/paragraph", newParagraphRequest.toJson());
-      LOG.info("test clear paragraph output response\n" + post.getResponseBodyAsString());
-      assertThat(post, isAllowed());
-      post.releaseConnection();
+      CloseableHttpResponse post = AbstractTestRestApi.httpPost("/notebook/" + note.getId() + "/paragraph", newParagraphRequest.toJson());
+      LOG.info("test clear paragraph output response\n" + EntityUtils.toString(post.getEntity(), StandardCharsets.UTF_8));
+      assertThat(post, AbstractTestRestApi.isAllowed());
+      post.close();
 
       // wait cluster sync event
       Thread.sleep(1000);
@@ -478,17 +477,17 @@ public class ClusterEventTest extends ZeppelinServerMock {
         "      \"exclusions\":[]\n" +
         "    }]," +
         "\"option\": { \"remote\": true, \"session\": false }}";
-    PostMethod post = httpPost("/interpreter/setting", reqBody1);
-    String postResponse = post.getResponseBodyAsString();
-    LOG.info("testCreatedInterpreterDependencies create response\n" + post.getResponseBodyAsString());
+    CloseableHttpResponse post = AbstractTestRestApi.httpPost("/interpreter/setting", reqBody1);
+    String postResponse = EntityUtils.toString(post.getEntity(), StandardCharsets.UTF_8);
+    LOG.info("testCreatedInterpreterDependencies create response\n" + postResponse);
     InterpreterSetting created = convertResponseToInterpreterSetting(postResponse);
-    MatcherAssert.assertThat("test create method:", post, isAllowed());
-    post.releaseConnection();
+    MatcherAssert.assertThat("test create method:", post, AbstractTestRestApi.isAllowed());
+    post.close();
 
     // 1. Call settings API
-    GetMethod get = httpGet("/interpreter/setting");
-    String rawResponse = get.getResponseBodyAsString();
-    get.releaseConnection();
+    CloseableHttpResponse get = AbstractTestRestApi.httpGet("/interpreter/setting");
+    String rawResponse = EntityUtils.toString(get.getEntity(), StandardCharsets.UTF_8);
+    get.close();
 
     // 2. Parsing to List<InterpreterSettings>
     JsonObject responseJson = gson.fromJson(rawResponse, JsonElement.class).getAsJsonObject();
@@ -528,20 +527,20 @@ public class ClusterEventTest extends ZeppelinServerMock {
     jsonObject.addProperty("value", "this is new prop");
     jsonObject.addProperty("type", "textarea");
     jsonRequest.getAsJsonObject("properties").add("propname2", jsonObject);
-    PutMethod put = httpPut("/interpreter/setting/" + created.getId(), jsonRequest.toString());
-    LOG.info("testSettingCRUD update response\n" + put.getResponseBodyAsString());
+    CloseableHttpResponse put = AbstractTestRestApi.httpPut("/interpreter/setting/" + created.getId(), jsonRequest.toString());
+    LOG.info("testSettingCRUD update response\n" + EntityUtils.toString(put.getEntity(), StandardCharsets.UTF_8));
     // then: call update setting API
-    MatcherAssert.assertThat("test update method:", put, isAllowed());
-    put.releaseConnection();
+    MatcherAssert.assertThat("test update method:", put, AbstractTestRestApi.isAllowed());
+    put.close();
     Thread.sleep(1000);
     checkClusterIntpSettingEventListener();
 
     // 3: call delete setting API
-    DeleteMethod delete = httpDelete("/interpreter/setting/" + created.getId());
-    LOG.info("testSettingCRUD delete response\n" + delete.getResponseBodyAsString());
+    CloseableHttpResponse delete = AbstractTestRestApi.httpDelete("/interpreter/setting/" + created.getId());
+    LOG.info("testSettingCRUD delete response\n" + EntityUtils.toString(delete.getEntity(), StandardCharsets.UTF_8));
     // then: call delete setting API
-    MatcherAssert.assertThat("Test delete method:", delete, isAllowed());
-    delete.releaseConnection();
+    MatcherAssert.assertThat("Test delete method:", delete, AbstractTestRestApi.isAllowed());
+    delete.close();
     Thread.sleep(1000);
     checkClusterIntpSettingEventListener();
   }

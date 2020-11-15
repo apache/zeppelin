@@ -28,7 +28,7 @@ import java.util.jar.JarFile
 import org.apache.commons.lang3.StringUtils
 import org.apache.commons.lang3.exception.ExceptionUtils
 import org.apache.flink.api.common.JobExecutionResult
-import org.apache.flink.api.scala.{ExecutionEnvironment, FlinkILoop}
+import org.apache.flink.api.scala.ExecutionEnvironment
 import org.apache.flink.client.program.ClusterClient
 import org.apache.flink.configuration._
 import org.apache.flink.core.execution.{JobClient, JobListener}
@@ -788,10 +788,9 @@ class FlinkScalaInterpreter(val properties: Properties) {
     val flinkPackageJars =
       if (!StringUtils.isBlank(properties.getProperty("flink.execution.packages", ""))) {
         val packages = properties.getProperty("flink.execution.packages")
-        val dependencyDir = Files.createTempDirectory("zeppelin-flink-dep").toFile
-        val dependencyResolver = new DependencyResolver(dependencyDir.getAbsolutePath)
+        val dependencyResolver = new DependencyResolver(System.getProperty("user.home") + "/.m2/repository")
         packages.split(",")
-          .flatMap(e => JavaConversions.asScalaBuffer(dependencyResolver.load(e, dependencyDir)))
+          .flatMap(e => JavaConversions.asScalaBuffer(dependencyResolver.load(e)))
           .map(e => e.getAbsolutePath).toSeq
       } else {
         Seq.empty[String]

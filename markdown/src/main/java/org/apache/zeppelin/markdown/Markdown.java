@@ -76,7 +76,7 @@ public class Markdown extends Interpreter {
   }
 
   public static MarkdownParser createMarkdownParser(String parserType) {
-    LOGGER.debug("Creating " + parserType + " markdown interpreter");
+    LOGGER.debug("Creating {} markdown interpreter", parserType);
 
     if (MarkdownParserType.PEGDOWN.toString().equals(parserType)) {
       return new PegdownParser();

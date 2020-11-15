@@ -33,7 +33,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
@@ -158,7 +158,7 @@ public class AppendOutputRunnerTest {
 
     String loggerString = "Processing size for buffered append-output is high: " +
         (data.length() * numEvents) + " characters.";
-    assertTrue(loggerString.equals(sizeWarnLogEntry.getMessage()));
+    assertEquals(loggerString, sizeWarnLogEntry.getMessage());
   }
 
   private class BombardEvents implements Runnable {

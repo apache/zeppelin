@@ -68,9 +68,9 @@ import org.eclipse.jetty.util.annotation.ManagedAttribute;
 import org.eclipse.jetty.util.annotation.ManagedObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.sonatype.aether.repository.Proxy;
-import org.sonatype.aether.repository.RemoteRepository;
-import org.sonatype.aether.repository.Authentication;
+import org.eclipse.aether.repository.Proxy;
+import org.eclipse.aether.repository.RemoteRepository;
+import org.eclipse.aether.repository.Authentication;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -81,6 +81,7 @@ import java.lang.reflect.Type;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -187,7 +188,7 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
             new Class[] {ZeppelinConfiguration.class, InterpreterSettingManager.class},
             new Object[] {conf, this});
 
-    LOGGER.info("Using RecoveryStorage: " + this.recoveryStorage.getClass().getName());
+    LOGGER.info("Using RecoveryStorage: {}", this.recoveryStorage.getClass().getName());
 
     this.configStorage = configStorage;
     init();
@@ -379,24 +380,24 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
     String interpreterJson = conf.getInterpreterJson();
     ClassLoader cl = Thread.currentThread().getContextClassLoader();
     if (Files.exists(interpreterDirPath)) {
-      for (Path interpreterDir : Files
-          .newDirectoryStream(interpreterDirPath,
-                  entry -> Files.exists(entry)
-                          && Files.isDirectory(entry)
-                          && shouldRegister(entry.toFile().getName()))) {
+      try (DirectoryStream<Path> directoryPaths = Files
+        .newDirectoryStream(interpreterDirPath,
+          entry -> Files.exists(entry)
+                  && Files.isDirectory(entry)
+                  && shouldRegister(entry.toFile().getName()))) {
+        for (Path interpreterDir : directoryPaths) {
 
-        String interpreterDirString = interpreterDir.toString();
-        /**
-         * Register interpreter by the following ordering
-         * 1. Register it from path {ZEPPELIN_HOME}/interpreter/{interpreter_name}/
-         *    interpreter-setting.json
-         * 2. Register it from interpreter-setting.json in classpath
-         *    {ZEPPELIN_HOME}/interpreter/{interpreter_name}
-         */
-        if (!registerInterpreterFromPath(interpreterDirString, interpreterJson, override)) {
-          if (!registerInterpreterFromResource(cl, interpreterDirString, interpreterJson,
-              override)) {
-            LOGGER.warn("No interpreter-setting.json found in " + interpreterDirString);
+          String interpreterDirString = interpreterDir.toString();
+          /**
+           * Register interpreter by the following ordering
+           * 1. Register it from path {ZEPPELIN_HOME}/interpreter/{interpreter_name}/
+           *    interpreter-setting.json
+           * 2. Register it from interpreter-setting.json in classpath
+           *    {ZEPPELIN_HOME}/interpreter/{interpreter_name}
+           */
+          if (!registerInterpreterFromPath(interpreterDirString, interpreterJson, override) &&
+            !registerInterpreterFromResource(cl, interpreterDirString, interpreterJson, override)) {
+            LOGGER.warn("No interpreter-setting.json found in {}", interpreterDirString);
           }
         }
       }
@@ -587,7 +588,7 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
             if (interpreterSetting == null) {
               return DEFAULT_EDITOR;
             }
-            return interpreterSetting.getInterpreterInfo(intpName).getEditor();
+            return interpreterSetting.getDefaultInterpreterInfo().getEditor();
           } catch (Exception e) {
             LOGGER.warn(e.getMessage());
             return DEFAULT_EDITOR;
@@ -745,7 +746,7 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
         LOGGER.info("Start to copy dependencies for interpreter: {}", setting.getName());
         for (Dependency d : deps) {
           File destDir = new File(
-              conf.getRelativeDir(ConfVars.ZEPPELIN_DEP_LOCALREPO));
+              conf.getAbsoluteDir(ConfVars.ZEPPELIN_DEP_LOCALREPO));
 
           int numSplits = d.getGroupArtifactVersion().split(":").length;
           if (!(numSplits >= 3 && numSplits <= 6)) {
@@ -1163,7 +1164,6 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
     }
 
     try {
-      Gson gson = new Gson();
       ClusterMessage message = ClusterMessage.deserializeMessage(msg);
       String jsonIntpSetting = message.get("intpSetting");
       InterpreterSetting intpSetting = InterpreterSetting.fromJson(jsonIntpSetting);

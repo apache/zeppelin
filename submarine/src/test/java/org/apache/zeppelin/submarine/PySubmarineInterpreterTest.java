@@ -68,7 +68,7 @@ public class PySubmarineInterpreterTest extends BaseInterpreterTest {
     InterpreterResult intpResult = pySubmarineIntp.interpret(callTensorflowFunc, intpContext);
 
     // Check if the SubmarineInterpreter performs the tensorlfow function whether successfully.
-    assertEquals(intpResult.code(), InterpreterResult.Code.SUCCESS);
+    assertEquals(InterpreterResult.Code.SUCCESS, intpResult.code());
 
     // Successfully execute tensorflow to get the version function,
     // otherwise it will trigger an exception.

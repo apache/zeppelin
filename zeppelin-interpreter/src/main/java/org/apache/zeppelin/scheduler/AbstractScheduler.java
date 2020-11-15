@@ -46,6 +46,7 @@ public abstract class AbstractScheduler implements Scheduler {
     this.name = name;
   }
 
+  @Override
   public String getName() {
     return this.name;
   }
@@ -66,6 +67,7 @@ public abstract class AbstractScheduler implements Scheduler {
     try {
       queue.put(job);
     } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
       throw new RuntimeException(String.format("Unable to submit job %s", job.getId()), e);
     }
     jobs.put(job.getId(), job);
@@ -122,7 +124,7 @@ public abstract class AbstractScheduler implements Scheduler {
       return;
     }
 
-    LOGGER.info("Job " + runningJob.getId() + " started by scheduler " + name);
+    LOGGER.info("Job {} started by scheduler {}",runningJob.getId(), name);
     // Don't set RUNNING status when it is RemoteScheduler, update it via JobStatusPoller
     if (!getClass().getSimpleName().equals("RemoteScheduler")) {
       runningJob.setStatus(Job.Status.RUNNING);
@@ -149,7 +151,7 @@ public abstract class AbstractScheduler implements Scheduler {
         runningJob.setStatus(Job.Status.FINISHED);
       }
     }
-    LOGGER.info("Job " + runningJob.getId() + " finished by scheduler " + name);
+    LOGGER.info("Job {} finished by scheduler {} with status {}", runningJob.getId(), name, runningJob.getStatus());
     // reset aborted flag to allow retry
     runningJob.aborted = false;
     jobs.remove(runningJob.getId());

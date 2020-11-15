@@ -27,8 +27,12 @@ import java.lang.reflect.InvocationTargetException;
  */
 public class ReflectionUtils {
 
+  private ReflectionUtils() {
+    throw new IllegalStateException("Utility class");
+  }
+
   public static Class<?> getClazz(String className) throws IOException {
-    Class clazz = null;
+    Class<?> clazz = null;
     try {
       clazz = Class.forName(className, true, Thread.currentThread().getContextClassLoader());
     } catch (ClassNotFoundException e) {
@@ -42,10 +46,7 @@ public class ReflectionUtils {
     T instance;
     try {
       instance = clazz.newInstance();
-    } catch (InstantiationException e) {
-      throw new IOException(
-          "Unable to instantiate class with 0 arguments: " + clazz.getName(), e);
-    } catch (IllegalAccessException e) {
+    } catch (InstantiationException | IllegalAccessException e) {
       throw new IOException(
           "Unable to instantiate class with 0 arguments: " + clazz.getName(), e);
     }
@@ -60,19 +61,7 @@ public class ReflectionUtils {
     try {
       Constructor<T> constructor = clazz.getConstructor(parameterTypes);
       instance = constructor.newInstance(parameters);
-    } catch (InstantiationException e) {
-      throw new IOException(
-          "Unable to instantiate class with " + parameters.length + " arguments: " +
-              clazz.getName(), e);
-    } catch (IllegalAccessException e) {
-      throw new IOException(
-          "Unable to instantiate class with " + parameters.length + " arguments: " +
-              clazz.getName(), e);
-    } catch (NoSuchMethodException e) {
-      throw new IOException(
-          "Unable to instantiate class with " + parameters.length + " arguments: " +
-              clazz.getName(), e);
-    } catch (InvocationTargetException e) {
+    } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
       throw new IOException(
           "Unable to instantiate class with " + parameters.length + " arguments: " +
               clazz.getName(), e);

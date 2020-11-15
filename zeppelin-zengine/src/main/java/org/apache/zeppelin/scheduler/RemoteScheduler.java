@@ -19,10 +19,12 @@ package org.apache.zeppelin.scheduler;
 
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
 import org.apache.zeppelin.scheduler.Job.Status;
+import org.apache.zeppelin.util.ExecutorUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * RemoteScheduler runs in ZeppelinServer and proxies Scheduler running on RemoteInterpreter.
@@ -219,4 +221,10 @@ public class RemoteScheduler extends AbstractScheduler {
       }
     }
   }
+
+  @Override
+  public void stop(int stopTimeoutVal, TimeUnit stopTimeoutUnit) {
+    super.stop();
+  }
+
 }

@@ -18,17 +18,21 @@ package org.apache.zeppelin.rest;
 
 import com.google.gson.Gson;
 
-import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.util.EntityUtils;
 import org.hamcrest.CoreMatchers;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Rule;
+import org.junit.Test;
 import org.junit.rules.ErrorCollector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 public class KnoxRestApiTest extends AbstractTestRestApi {
@@ -58,22 +62,18 @@ public class KnoxRestApiTest extends AbstractTestRestApi {
   public void setUp() {
   }
 
-  //  @Test
+  @Test
+  @Ignore
   public void testThatOtherUserCanAccessNoteIfPermissionNotSet() throws IOException {
-    GetMethod loginWithoutCookie = httpGet("/api/security/ticket");
-    Map result = gson.fromJson(loginWithoutCookie.getResponseBodyAsString(), Map.class);
-    collector.checkThat("Path is redirected to /login", loginWithoutCookie.getPath(),
-        CoreMatchers.containsString("login"));
-
-    collector.checkThat("Path is redirected to /login", loginWithoutCookie.getPath(),
-        CoreMatchers.containsString("login"));
+    CloseableHttpResponse loginWithoutCookie = httpGet("/api/security/ticket");
+    Map result = gson.fromJson(EntityUtils.toString(loginWithoutCookie.getEntity(), StandardCharsets.UTF_8), Map.class);
 
     collector.checkThat("response contains redirect URL",
         ((Map) result.get("body")).get("redirectURL").toString(), CoreMatchers.equalTo(
             "https://domain.example.com/gateway/knoxsso/knoxauth/login.html?originalUrl="));
 
-    GetMethod loginWithCookie = httpGet("/api/security/ticket", "", "", knoxCookie);
-    result = gson.fromJson(loginWithCookie.getResponseBodyAsString(), Map.class);
+    CloseableHttpResponse loginWithCookie = httpGet("/api/security/ticket", "", "", knoxCookie);
+    result = gson.fromJson(EntityUtils.toString(loginWithCookie.getEntity(), StandardCharsets.UTF_8), Map.class);
 
     collector.checkThat("User logged in as admin",
         ((Map) result.get("body")).get("principal").toString(), CoreMatchers.equalTo("admin"));

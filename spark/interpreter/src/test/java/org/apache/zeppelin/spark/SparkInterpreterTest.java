@@ -136,6 +136,11 @@ public class SparkInterpreterTest {
     result = interpreter.interpret("/*line 1 \n line 2*/print(\"hello world\")", getInterpreterContext());
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
 
+    // test $intp, only works for scala after 2.11
+    if (!interpreter.isScala210()) {
+      result = interpreter.interpret("$intp", getInterpreterContext());
+      assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    }
 
     // Companion object with case class
     result = interpreter.interpret("import scala.math._\n" +

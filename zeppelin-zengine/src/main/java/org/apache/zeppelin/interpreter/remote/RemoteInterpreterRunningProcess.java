@@ -16,7 +16,6 @@
  */
 package org.apache.zeppelin.interpreter.remote;
 
-import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

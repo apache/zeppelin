@@ -79,8 +79,7 @@ public abstract class ConfigStorage {
 
   protected InterpreterInfoSaving buildInterpreterInfoSaving(String json) {
     //TODO(zjffdu) This kind of post processing is ugly.
-    JsonParser jsonParser = new JsonParser();
-    JsonObject jsonObject = jsonParser.parse(json).getAsJsonObject();
+    JsonObject jsonObject = JsonParser.parseString(json).getAsJsonObject();
     InterpreterInfoSaving infoSaving = InterpreterInfoSaving.fromJson(json);
     for (InterpreterSetting interpreterSetting : infoSaving.interpreterSettings.values()) {
       // Always use separate interpreter process

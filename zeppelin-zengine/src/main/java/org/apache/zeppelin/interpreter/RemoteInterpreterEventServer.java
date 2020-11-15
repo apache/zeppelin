@@ -22,6 +22,7 @@ import com.google.gson.reflect.TypeToken;
 import org.apache.thrift.TException;
 import org.apache.thrift.server.TThreadPoolServer;
 import org.apache.thrift.transport.TServerSocket;
+import org.apache.thrift.transport.TTransportException;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.helium.ApplicationEventListener;
@@ -56,6 +57,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -72,6 +74,7 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
   private String portRange;
   private int port;
   private String host;
+  private ZeppelinConfiguration zConf;
   private TThreadPoolServer thriftServer;
   private InterpreterSettingManager interpreterSettingManager;
 
@@ -85,6 +88,7 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
 
   public RemoteInterpreterEventServer(ZeppelinConfiguration zConf,
                                       InterpreterSettingManager interpreterSettingManager) {
+    this.zConf = zConf;
     this.portRange = zConf.getZeppelinServerRPCPortRange();
     this.interpreterSettingManager = interpreterSettingManager;
     this.listener = interpreterSettingManager.getRemoteInterpreterProcessListener();
@@ -95,21 +99,19 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
     Thread startingThread = new Thread() {
       @Override
       public void run() {
-        TServerSocket tSocket = null;
-        try {
-          tSocket = RemoteInterpreterUtils.createTServerSocket(portRange);
+        try (TServerSocket tSocket = new TServerSocket(RemoteInterpreterUtils.findAvailablePort(portRange))){
           port = tSocket.getServerSocket().getLocalPort();
           host = RemoteInterpreterUtils.findAvailableHostAddress();
-        } catch (IOException e1) {
-          throw new RuntimeException(e1);
+          LOGGER.info("InterpreterEventServer is starting at {}:{}", host, port);
+          RemoteInterpreterEventService.Processor<RemoteInterpreterEventServer> processor =
+              new RemoteInterpreterEventService.Processor<>(RemoteInterpreterEventServer.this);
+          thriftServer = new TThreadPoolServer(
+              new TThreadPoolServer.Args(tSocket).processor(processor));
+          thriftServer.serve();
+        } catch (IOException | TTransportException e ) {
+          throw new RuntimeException("Fail to create TServerSocket", e);
         }
-
-        LOGGER.info("InterpreterEventServer is starting at {}:{}", host, port);
-        RemoteInterpreterEventService.Processor processor =
-            new RemoteInterpreterEventService.Processor(RemoteInterpreterEventServer.this);
-        thriftServer = new TThreadPoolServer(
-            new TThreadPoolServer.Args(tSocket).processor(processor));
-        thriftServer.serve();
+        LOGGER.info("ThriftServer-Thread finished");
       }
     };
     startingThread.start();
@@ -261,10 +263,9 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
       listener.runParagraphs(event.getNoteId(), event.getParagraphIndices(),
           event.getParagraphIds(), event.getCurParagraphId());
       if (InterpreterContext.get() != null) {
-        LOGGER.info("complete runParagraphs." + InterpreterContext.get().getParagraphId() + " "
-          + event);
+        LOGGER.info("complete runParagraphs.{} {}", InterpreterContext.get().getParagraphId(), event);
       } else {
-        LOGGER.info("complete runParagraphs." + event);
+        LOGGER.info("complete runParagraphs.{}", event);
       }
     } catch (IOException e) {
       throw new TException(e);
@@ -273,29 +274,33 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
 
   @Override
   public void addAngularObject(String intpGroupId, String json) throws TException {
-    LOGGER.debug("Add AngularObject, interpreterGroupId: " + intpGroupId + ", json: " + json);
-    AngularObject angularObject = AngularObject.fromJson(json);
+    LOGGER.debug("Add AngularObject, interpreterGroupId: {}, json: {}", intpGroupId, json);
+    AngularObject<?> angularObject = AngularObject.fromJson(json);
     InterpreterGroup interpreterGroup =
         interpreterSettingManager.getInterpreterGroupById(intpGroupId);
     if (interpreterGroup == null) {
-      LOGGER.warn("Invalid InterpreterGroupId: " + intpGroupId);
+      LOGGER.warn("Invalid InterpreterGroupId: {}", intpGroupId);
       return;
     }
     interpreterGroup.getAngularObjectRegistry().add(angularObject.getName(),
         angularObject.get(), angularObject.getNoteId(), angularObject.getParagraphId());
+
     if (angularObject.getNoteId() != null) {
       try {
         Note note = interpreterSettingManager.getNotebook().getNote(angularObject.getNoteId());
-        note.addOrUpdateAngularObject(intpGroupId, angularObject);
+        if (note != null) {
+          note.addOrUpdateAngularObject(intpGroupId, angularObject);
+          interpreterSettingManager.getNotebook().saveNote(note, AuthenticationInfo.ANONYMOUS);
+        }
       } catch (IOException e) {
-        LOGGER.warn("Fail to get note: " + angularObject.getNoteId(), e);
+        LOGGER.error("Fail to get note: {}", angularObject.getNoteId());
       }
     }
   }
 
   @Override
   public void updateAngularObject(String intpGroupId, String json) throws TException {
-    AngularObject angularObject = AngularObject.fromJson(json);
+    AngularObject<?> angularObject = AngularObject.fromJson(json);
     InterpreterGroup interpreterGroup =
         interpreterSettingManager.getInterpreterGroupById(intpGroupId);
     if (interpreterGroup == null) {
@@ -314,9 +319,12 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
     if (angularObject.getNoteId() != null) {
       try {
         Note note = interpreterSettingManager.getNotebook().getNote(angularObject.getNoteId());
-        note.addOrUpdateAngularObject(intpGroupId, angularObject);
+        if (note != null) {
+          note.addOrUpdateAngularObject(intpGroupId, angularObject);
+          interpreterSettingManager.getNotebook().saveNote(note, AuthenticationInfo.ANONYMOUS);
+        }
       } catch (IOException e) {
-        LOGGER.warn("Fail to get note: " + angularObject.getNoteId(), e);
+        LOGGER.error("Fail to get note: {}", angularObject.getNoteId());
       }
     }
   }
@@ -338,7 +346,7 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
         Note note = interpreterSettingManager.getNotebook().getNote(noteId);
         note.deleteAngularObject(intpGroupId, noteId, paragraphId, name);
       } catch (IOException e) {
-        LOGGER.warn("Fail to get note: " + noteId, e);
+        LOGGER.warn("Fail to get note: {}", noteId, e);
       }
     }
   }
@@ -417,8 +425,7 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
   @Override
   public List<ParagraphInfo> getParagraphList(String user, String noteId)
       throws TException, ServiceException {
-    LOGGER.info("get paragraph list from remote interpreter noteId: " + noteId
-        + ", user = " + user);
+    LOGGER.info("get paragraph list from remote interpreter noteId: {}, user = {}",noteId, user);
 
     if (user != null && noteId != null) {
       List<ParagraphInfo> paragraphInfos = null;
@@ -430,7 +437,7 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
       return paragraphInfos;
     } else {
       LOGGER.error("user or noteId is null!");
-      return null;
+      return Collections.emptyList();
     }
   }
 
@@ -500,8 +507,7 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
                 resourceId.getName()));
 
     try {
-      Object o = Resource.deserializeObject(buffer);
-      return o;
+      return Resource.deserializeObject(buffer);
     } catch (Exception e) {
       LOGGER.error(e.getMessage(), e);
     }

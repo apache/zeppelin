@@ -57,7 +57,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
   public void testCreateNewButton() throws Exception {
     try {
       createNewNote();
-      Actions action = new Actions(driver);
+
       waitForParagraph(1, "READY");
       Integer oldNosOfParas = driver.findElements(By.xpath("//div[@ng-controller=\"ParagraphCtrl\"]")).size();
       collector.checkThat("Before Insert New : the number of  paragraph ",
@@ -80,9 +80,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
 
       setTextOfParagraph(1, " original paragraph ");
 
-      WebElement newPara = driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class,'new-paragraph')][1]"));
-      action.moveToElement(newPara).click().build().perform();
-      ZeppelinITUtils.sleep(1000, false);
+      clickAndWait(By.xpath(getParagraphXPath(1) + "//div[contains(@class,'new-paragraph')][1]"));
       waitForParagraph(1, "READY");
 
       collector.checkThat("Paragraph is created above",
@@ -90,8 +88,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
           CoreMatchers.equalTo(StringUtils.EMPTY));
       setTextOfParagraph(1, " this is above ");
 
-      newPara = driver.findElement(By.xpath(getParagraphXPath(2) + "//div[contains(@class,'new-paragraph')][2]"));
-      action.moveToElement(newPara).click().build().perform();
+      clickAndWait(By.xpath(getParagraphXPath(2) + "//div[contains(@class,'new-paragraph')][2]"));
 
       waitForParagraph(3, "READY");
 
@@ -226,7 +223,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       ZeppelinITUtils.sleep(2000, false);
 
       collector.checkThat("Paragraph status is ",
-          getParagraphStatus(1), CoreMatchers.equalTo("PENDING")
+          getParagraphStatus(1), CoreMatchers.equalTo("FINISHED")
       );
 
       driver.navigate().refresh();
@@ -235,6 +232,47 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
 
     } catch (Exception e) {
       handleException("Exception in ParagraphActionsIT while testDisableParagraphRunButton ", e);
+    }
+  }
+
+  @Test
+  public void testRunAllUserCodeFail() throws Exception {
+    try {
+      createNewNote();
+      waitForParagraph(1, "READY");
+      setTextOfParagraph(1, "syntax error");
+      driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@class='icon-settings']")).click();
+      driver.findElement(By.xpath(getParagraphXPath(1) + "//ul/li/a[@ng-click=\"insertNew('below')\"]"))
+              .click();
+      waitForParagraph(2, "READY");
+      setTextOfParagraph(2, "println (\"abcd\")");
+
+
+      driver.findElement(By.xpath(".//*[@id='main']//button[contains(@ng-click, 'runAllParagraphs')]")).sendKeys(Keys.ENTER);
+      ZeppelinITUtils.sleep(1000, false);
+      driver.findElement(By.xpath("//div[@class='modal-dialog'][contains(.,'Run all paragraphs?')]" +
+              "//div[@class='modal-footer']//button[contains(.,'OK')]")).click();
+      ZeppelinITUtils.sleep(2000, false);
+
+
+      collector.checkThat("First paragraph status is ",
+              getParagraphStatus(1), CoreMatchers.equalTo("ERROR")
+      );
+      collector.checkThat("Second paragraph status is ",
+              getParagraphStatus(2), CoreMatchers.equalTo("READY")
+      );
+
+      String xpathToOutputField = getParagraphXPath(2) + "//div[contains(@id,\"_text\")]";
+      collector.checkThat("Second paragraph output is ",
+              driver.findElements(By.xpath(xpathToOutputField)).size(),
+              CoreMatchers.equalTo(0));
+
+
+      driver.navigate().refresh();
+      ZeppelinITUtils.sleep(3000, false);
+      deleteTestNotebook(driver);
+    } catch (Exception e) {
+      handleException("Exception in ParagraphActionsIT while testRunAllUserCodeFail ", e);
     }
   }
 

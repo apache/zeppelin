@@ -18,7 +18,7 @@ import java.util.Map;
  */
 public class StopInterpreter {
 
-  private static Logger LOGGER = LoggerFactory.getLogger(StopInterpreter.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(StopInterpreter.class);
 
   public static void main(String[] args) throws IOException {
     ZeppelinConfiguration zConf = ZeppelinConfiguration.create();
@@ -29,11 +29,11 @@ public class StopInterpreter {
         new Class[] {ZeppelinConfiguration.class, InterpreterSettingManager.class},
         new Object[] {zConf, interpreterSettingManager});
 
-    LOGGER.info("Using RecoveryStorage: " + recoveryStorage.getClass().getName());
+    LOGGER.info("Using RecoveryStorage: {}", recoveryStorage.getClass().getName());
     Map<String, InterpreterClient> restoredClients = recoveryStorage.restore();
     if (restoredClients != null) {
       for (InterpreterClient client : restoredClients.values()) {
-        LOGGER.info("Stop Interpreter Process: " + client.getHost() + ":" + client.getPort());
+        LOGGER.info("Stop Interpreter Process: {}:{}", client.getHost(), client.getPort());
         client.stop();
       }
     }

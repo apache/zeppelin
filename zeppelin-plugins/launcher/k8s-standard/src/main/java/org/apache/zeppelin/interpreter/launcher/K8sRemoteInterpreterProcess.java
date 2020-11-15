@@ -48,8 +48,10 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
   private final String sparkImage;
   private LocalPortForward localPortForward;
   private int podPort = K8S_INTERPRETER_SERVICE_PORT;
+  private String errorMessage;
 
   private final boolean isUserImpersonatedForSpark;
+  private final boolean timeoutDuringPending;
 
   private AtomicBoolean started = new AtomicBoolean(false);
   private Random rand = new Random();
@@ -76,7 +78,8 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
           String sparkImage,
           int connectTimeout,
           int connectionPoolSize,
-          boolean isUserImpersonatedForSpark
+          boolean isUserImpersonatedForSpark,
+          boolean timeoutDuringPending
   ) {
     super(connectTimeout, connectionPoolSize, intpEventServerHost, intpEventServerPort);
     this.client = client;
@@ -92,6 +95,7 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
     this.sparkImage = sparkImage;
     this.podName = interpreterGroupName.toLowerCase() + "-" + getRandomString(6);
     this.isUserImpersonatedForSpark = isUserImpersonatedForSpark;
+    this.timeoutDuringPending = timeoutDuringPending;
   }
 
 
@@ -133,21 +137,37 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
       localPortForward = client.pods().inNamespace(namespace).withName(podName).portForward(K8S_INTERPRETER_SERVICE_PORT, podPort);
     }
 
+    // special handling if we doesn't want timeout the process during lifecycle phase pending
+    if (!timeoutDuringPending) {
+      while ("pending".equalsIgnoreCase(getPodPhase()) && !Thread.currentThread().isInterrupted()) {
+        try {
+          Thread.sleep(1000);
+        } catch (InterruptedException e) {
+          LOGGER.error("Interrupt received during pending phase. Try to stop the interpreter and interrupt the current thread.", e);
+          errorMessage = "Start process was interrupted during the pending phase";
+          stop();
+          Thread.currentThread().interrupt();
+        }
+      }
+    }
+
     long startTime = System.currentTimeMillis();
     long timeoutTime = startTime + getConnectTimeout();
 
     // wait until interpreter send started message through thrift rpc
     synchronized (started) {
-      while (!started.get()) {
+      while (!started.get() && !Thread.currentThread().isInterrupted()) {
         long timetoTimeout = timeoutTime - System.currentTimeMillis();
         if (timetoTimeout <= 0) {
+          errorMessage = "The start process was aborted while waiting for the interpreter to start. PodPhase before stop: " + getPodPhase();
           stop();
           throw new IOException("Launching zeppelin interpreter on kubernetes is time out, kill it now");
         }
         try {
           started.wait(timetoTimeout);
         } catch (InterruptedException e) {
-          LOGGER.error("Interrupt received. Try to stop the interpreter and interrupt the current thread.", e);
+          LOGGER.error("Interrupt received during started wait. Try to stop the interpreter and interrupt the current thread.", e);
+          errorMessage = "The start process was interrupted while waiting for the interpreter to start. PodPhase before stop: " + getPodPhase();
           stop();
           Thread.currentThread().interrupt();
         }
@@ -155,15 +175,17 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
     }
 
     // waits for interpreter thrift rpc server ready
-    while (!RemoteInterpreterUtils.checkIfRemoteEndpointAccessible(getHost(), getPort())) {
+    while (!RemoteInterpreterUtils.checkIfRemoteEndpointAccessible(getHost(), getPort()) && !Thread.currentThread().isInterrupted()) {
       if (System.currentTimeMillis() - timeoutTime > 0) {
+        errorMessage = "The start process was aborted while waiting for the accessibility check of the remote end point. PodPhase before stop: " + getPodPhase();
         stop();
         throw new IOException("Launching zeppelin interpreter on kubernetes is time out, kill it now");
       }
       try {
         Thread.sleep(1000);
       } catch (InterruptedException e) {
-        LOGGER.error("Interrupt received. Try to stop the interpreter and interrupt the current thread.", e);
+        LOGGER.error("Interrupt received during remote endpoint accessible check. Try to stop the interpreter and interrupt the current thread.", e);
+        errorMessage = "The start process was interrupted while waiting for the accessibility check of the remote end point. PodPhase before stop: " + getPodPhase();
         stop();
         Thread.currentThread().interrupt();
       }
@@ -223,6 +245,13 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
     return false;
   }
 
+  public String getPodPhase() {
+    Pod pod = client.pods().inNamespace(namespace).withName(podName).get();
+    if (pod != null) {
+      return pod.getStatus().getPhase();
+    }
+    return "Unknown";
+  }
   /**
    * Apply spec file(s) in the path.
    * @param path
@@ -438,6 +467,6 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
 
   @Override
   public String getErrorMessage() {
-    return null;
+    return String.format("%s%ncurrent PodPhase: %s", errorMessage, getPodPhase());
   }
 }

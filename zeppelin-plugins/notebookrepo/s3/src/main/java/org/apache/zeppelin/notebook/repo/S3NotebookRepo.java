@@ -46,6 +46,7 @@ import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.S3ClientOptions;
 import com.amazonaws.services.s3.AmazonS3EncryptionClient;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.CryptoConfiguration;
@@ -130,6 +131,7 @@ public class S3NotebookRepo implements NotebookRepo {
       // regular S3
       this.s3client = new AmazonS3Client(credentialsProvider, cliConf);
     }
+    s3client.setS3ClientOptions(S3ClientOptions.builder().setPathStyleAccess(conf.isS3PathStyleAccess()).build());
 
     // set S3 endpoint to use
     s3client.setEndpoint(conf.getS3Endpoint());

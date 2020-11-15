@@ -72,8 +72,8 @@ import com.google.common.collect.Maps;
 public class Paragraph extends JobWithProgressPoller<InterpreterResult> implements Cloneable,
     JsonSerializable {
 
-  private static Logger LOGGER = LoggerFactory.getLogger(Paragraph.class);
-  private static Pattern REPL_PATTERN =
+  private static final Logger LOGGER = LoggerFactory.getLogger(Paragraph.class);
+  private static final Pattern REPL_PATTERN =
       Pattern.compile("(\\s*)%([\\w\\.]+)(\\(.*?\\))?.*", Pattern.DOTALL);
 
   private String title;
@@ -288,7 +288,10 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
     if (this.scriptText.isEmpty()) {
       return 0;
     }
-    int countCharactersBeforeScript = buffer.indexOf(this.scriptText);
+    // Try to find the right cursor from this startPos, otherwise you may get the wrong cursor.
+    // e.g.  %spark.pyspark  spark.
+    int startPos = this.intpText == null ? 0 : this.intpText.length();
+    int countCharactersBeforeScript = buffer.indexOf(this.scriptText, startPos);
     if (countCharactersBeforeScript > 0) {
       cursor -= countCharactersBeforeScript;
     }
@@ -347,16 +350,23 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
               = interpreterSetting.getConfig(interpreter.getClassName());
       mergeConfig(config);
 
+      setStatus(Status.PENDING);
+
       if (shouldSkipRunParagraph()) {
         LOGGER.info("Skip to run blank paragraph. {}", getId());
         setStatus(Job.Status.FINISHED);
         return true;
       }
 
-      if (getConfig().get("enabled") == null || (Boolean) getConfig().get("enabled")) {
+      if (isEnabled()) {
         setAuthenticationInfo(getAuthenticationInfo());
         interpreter.getScheduler().submit(this);
+       } else {
+        LOGGER.info("Skip disabled paragraph. {}", getId());
+        setStatus(Job.Status.FINISHED);
+        return true;
       }
+
 
       if (blocking) {
         while (!getStatus().isCompleted()) {

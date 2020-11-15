@@ -29,7 +29,6 @@ import org.apache.commons.vfs2.VFS;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.notebook.Note;
-import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.OldNoteInfo;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
@@ -65,7 +64,7 @@ public class OldVFSNotebookRepo implements OldNotebookRepo {
 
   protected void setNotebookDirectory(String notebookDirPath) throws IOException {
     try {
-      LOG.info("Using notebookDir: " + notebookDirPath);
+      LOG.info("Using notebookDir: {}", notebookDirPath);
       if (conf.isWindowsPath(notebookDirPath)) {
         filesystemRoot = new File(notebookDirPath).toURI();
       } else {
@@ -76,7 +75,7 @@ public class OldVFSNotebookRepo implements OldNotebookRepo {
     }
 
     if (filesystemRoot.getScheme() == null) { // it is local path
-      File f = new File(conf.getRelativeDir(filesystemRoot.getPath()));
+      File f = new File(conf.getAbsoluteDir(filesystemRoot.getPath()));
       this.filesystemRoot = f.toURI();
     }
 
@@ -89,7 +88,7 @@ public class OldVFSNotebookRepo implements OldNotebookRepo {
   }
 
   private String getNotebookDirPath() {
-    return filesystemRoot.getPath().toString();
+    return filesystemRoot.getPath();
   }
 
   private String getPath(String path) {
@@ -104,12 +103,10 @@ public class OldVFSNotebookRepo implements OldNotebookRepo {
   }
 
   private boolean isDirectory(FileObject fo) throws IOException {
-    if (fo == null) return false;
-    if (fo.getType() == FileType.FOLDER) {
-      return true;
-    } else {
+    if (fo == null) {
       return false;
     }
+    return fo.getType() == FileType.FOLDER;
   }
 
   @Override
@@ -143,7 +140,7 @@ public class OldVFSNotebookRepo implements OldNotebookRepo {
           infos.add(info);
         }
       } catch (Exception e) {
-        LOG.error("Can't read note " + f.getName().toString());
+        LOG.error("Can't read note {}", f.getName());
       }
     }
 
@@ -159,7 +156,7 @@ public class OldVFSNotebookRepo implements OldNotebookRepo {
     if (!noteJson.exists()) {
       throw new IOException(noteJson.getName().toString() + " not found");
     }
-    
+
     FileContent content = noteJson.getContent();
     InputStream ins = content.getInputStream();
     String json = IOUtils.toString(ins, conf.getString(ConfVars.ZEPPELIN_ENCODING));
@@ -197,7 +194,7 @@ public class OldVFSNotebookRepo implements OldNotebookRepo {
 
   @Override
   public synchronized void save(Note note, AuthenticationInfo subject) throws IOException {
-    LOG.info("Saving note:" + note.getId());
+    LOG.info("Saving note: {}", note.getId());
     String json = note.toJson();
 
     FileObject rootDir = getRootDir();
@@ -239,7 +236,7 @@ public class OldVFSNotebookRepo implements OldNotebookRepo {
 
   @Override
   public void close() {
-    //no-op    
+    //no-op
   }
 
   @Override

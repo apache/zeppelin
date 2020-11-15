@@ -36,7 +36,6 @@
   <properties>
 
     <!--library versions-->
-    <commons.httpclient.version>4.3.6</commons.httpclient.version>
     <jersey.version>2.27</jersey.version>
     <jersey.servlet.version>1.13</jersey.servlet.version>
     <javax.ws.rsapi.version>2.1</javax.ws.rsapi.version>
@@ -46,8 +45,6 @@
     <!--test library versions-->
     <selenium.java.version>2.48.2</selenium.java.version>
     <xml.apis.version>1.4.01</xml.apis.version>
-    <powermock.version>1.6.6</powermock.version>
-
   </properties>
 
   <dependencies>
@@ -91,6 +88,11 @@
           <artifactId>jcl-over-slf4j</artifactId>
         </exclusion>
       </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.httpcomponents</groupId>
+      <artifactId>httpclient</artifactId>
     </dependency>
 
     <dependency>
@@ -349,7 +351,6 @@
       <dependency>
         <groupId>org.powermock</groupId>
         <artifactId>powermock-module-junit4</artifactId>
-        <version>${powermock.version}</version>
         <scope>test</scope>
         <exclusions>
           <exclusion>
@@ -361,7 +362,6 @@
       <dependency>
         <groupId>org.powermock</groupId>
         <artifactId>powermock-api-mockito</artifactId>
-        <version>${powermock.version}</version>
         <scope>test</scope>
         <exclusions>
           <exclusion>

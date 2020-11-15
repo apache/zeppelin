@@ -43,6 +43,7 @@
 # export ZEPPELIN_NOTEBOOK_S3_KMS_KEY_ID        # AWS KMS key ID
 # export ZEPPELIN_NOTEBOOK_S3_KMS_KEY_REGION    # AWS KMS key region
 # export ZEPPELIN_NOTEBOOK_S3_SSE               # Server-side encryption enabled for notebooks
+# export ZEPPELIN_NOTEBOOK_S3_PATH_STYLE_ACCESS # Path style access for S3 bucket
 
 # export ZEPPELIN_NOTEBOOK_GCS_STORAGE_DIR      # GCS "directory" (prefix) under which notebooks are saved. E.g. gs://example-bucket/path/to/dir
 # export GOOGLE_APPLICATION_CREDENTIALS         # Provide a service account key file for GCS and BigQuery API calls (overrides application default credentials)

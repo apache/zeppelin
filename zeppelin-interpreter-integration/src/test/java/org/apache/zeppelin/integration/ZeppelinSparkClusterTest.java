@@ -431,6 +431,11 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
       assertEquals(Status.FINISHED, p.getStatus());
       assertEquals("name_abc\n", p.getReturn().message().get(0).getData());
 
+      // test code completion
+      String code = "%spark.pyspark spark.";
+      List<InterpreterCompletion> completions = note.completion(p.getId(), code, code.length(), AuthenticationInfo.ANONYMOUS);
+      assertTrue(completions.size() > 0);
+
       if (isSpark1()) {
         // run sqlContext test
         p = note.addNewParagraph(anonymous);
@@ -582,7 +587,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
       p21.setText("%spark print(a)");
 
       // run p20 of note2 via paragraph in note1
-      p0.setText(String.format("%%spark z.run(\"%s\", \"%s\")", note2.getId(), p20.getId()));
+      p0.setText(String.format("%%spark.pyspark z.run(\"%s\", \"%s\")", note2.getId(), p20.getId()));
       note.run(p0.getId(), true);
       waitForFinish(p20);
       assertEquals(Status.FINISHED, p20.getStatus());

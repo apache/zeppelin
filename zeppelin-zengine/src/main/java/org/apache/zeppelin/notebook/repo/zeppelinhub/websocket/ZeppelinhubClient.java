@@ -55,7 +55,7 @@ import com.google.gson.reflect.TypeToken;
  * Manage a zeppelinhub websocket connection.
  */
 public class ZeppelinhubClient {
-  private static final Logger LOG = LoggerFactory.getLogger(ZeppelinhubClient.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(ZeppelinhubClient.class);
 
   private final WebSocketClient client;
   private final URI zeppelinhubWebsocketUrl;
@@ -64,11 +64,11 @@ public class ZeppelinhubClient {
   private static final String TOKEN_HEADER = "X-Zeppelin-Token";
   private static final long CONNECTION_IDLE_TIME = TimeUnit.SECONDS.toMillis(30);
   private static ZeppelinhubClient instance = null;
-  private static Gson gson;
-  
+  private static final Gson gson = new Gson();
+
   private SchedulerService schedulerService;
-  private Map<String, ZeppelinhubSession> sessionMap = 
-      new ConcurrentHashMap<String, ZeppelinhubSession>();
+  private Map<String, ZeppelinhubSession> sessionMap =
+      new ConcurrentHashMap<>();
 
   public static ZeppelinhubClient initialize(String zeppelinhubUrl, String token) {
     if (instance == null) {
@@ -86,8 +86,7 @@ public class ZeppelinhubClient {
     client = createNewWebsocketClient();
     zeppelinhubToken = token;
     schedulerService = SchedulerService.create(10);
-    gson = new Gson();
-    LOG.info("Initialized ZeppelinHub websocket client on {}", zeppelinhubWebsocketUrl);
+    LOGGER.info("Initialized ZeppelinHub websocket client on {}", zeppelinhubWebsocketUrl);
   }
 
   public void start() {
@@ -95,21 +94,21 @@ public class ZeppelinhubClient {
       client.start();
       addRoutines();
     } catch (Exception e) {
-      LOG.error("Cannot connect to zeppelinhub via websocket", e);
+      LOGGER.error("Cannot connect to zeppelinhub via websocket", e);
     }
   }
-  
+
   public void initUser(String token) {
-    
+
   }
 
   public void stop() {
-    LOG.info("Stopping Zeppelinhub websocket client");
+    LOGGER.info("Stopping Zeppelinhub websocket client");
     try {
       schedulerService.close();
       client.stop();
     } catch (Exception e) {
-      LOG.error("Cannot stop zeppelinhub websocket client", e);
+      LOGGER.error("Cannot stop zeppelinhub websocket client", e);
     }
   }
 
@@ -120,27 +119,27 @@ public class ZeppelinhubClient {
   public String getToken() {
     return this.zeppelinhubToken;
   }
-  
+
   public void send(String msg, String token) {
     ZeppelinhubSession zeppelinhubSession = getSession(token);
     if (!isConnectedToZeppelinhub(zeppelinhubSession)) {
-      LOG.info("Zeppelinhub connection is not open, opening it");
+      LOGGER.info("Zeppelinhub connection is not open, opening it");
       zeppelinhubSession = connect(token);
       if (zeppelinhubSession == ZeppelinhubSession.EMPTY) {
-        LOG.warn("While connecting to ZeppelinHub received empty session, cannot send the message");
+        LOGGER.warn("While connecting to ZeppelinHub received empty session, cannot send the message");
         return;
       }
     }
     zeppelinhubSession.sendByFuture(msg);
   }
-  
+
   private boolean isConnectedToZeppelinhub(ZeppelinhubSession zeppelinhubSession) {
     return (zeppelinhubSession != null && zeppelinhubSession.isSessionOpen());
   }
 
   private ZeppelinhubSession connect(String token) {
     if (StringUtils.isBlank(token)) {
-      LOG.debug("Can't connect with empty token");
+      LOGGER.debug("Can't connect with empty token");
       return ZeppelinhubSession.EMPTY;
     }
     ZeppelinhubSession zeppelinhubSession;
@@ -152,7 +151,7 @@ public class ZeppelinhubClient {
       zeppelinhubSession = ZeppelinhubSession.createInstance(session, token);
       setSession(token, zeppelinhubSession);
     } catch (IOException | InterruptedException | ExecutionException e) {
-      LOG.info("Couldnt connect to zeppelinhub", e);
+      LOGGER.info("Couldnt connect to zeppelinhub", e);
       zeppelinhubSession = ZeppelinhubSession.EMPTY;
     }
     return zeppelinhubSession;
@@ -180,7 +179,7 @@ public class ZeppelinhubClient {
     request.setCookies(Lists.newArrayList(new HttpCookie(TOKEN_HEADER, token)));
     return request;
   }
-  
+
   private WebSocketClient createNewWebsocketClient() {
     SslContextFactory sslContextFactory = new SslContextFactory();
     WebSocketClient client = new WebSocketClient(sslContextFactory);
@@ -189,7 +188,7 @@ public class ZeppelinhubClient {
     client.setMaxIdleTimeout(CONNECTION_IDLE_TIME);
     return client;
   }
-  
+
   private void addRoutines() {
     schedulerService.add(ZeppelinHubHeartbeat.newInstance(this), 10, 23);
   }
@@ -197,14 +196,14 @@ public class ZeppelinhubClient {
   public void handleMsgFromZeppelinHub(String message) {
     ZeppelinhubMessage hubMsg = ZeppelinhubMessage.fromJson(message);
     if (hubMsg.equals(ZeppelinhubMessage.EMPTY)) {
-      LOG.error("Cannot handle ZeppelinHub message is empty");
+      LOGGER.error("Cannot handle ZeppelinHub message is empty");
       return;
     }
     String op = StringUtils.EMPTY;
     if (hubMsg.op instanceof String) {
       op = (String) hubMsg.op;
     } else {
-      LOG.error("Message OP from ZeppelinHub isn't string {}", hubMsg.op);
+      LOGGER.error("Message OP from ZeppelinHub isn't string {}", hubMsg.op);
       return;
     }
     if (ZeppelinhubUtils.isZeppelinHubOp(op)) {
@@ -216,7 +215,7 @@ public class ZeppelinhubClient {
 
   private void handleZeppelinHubOpMsg(ZeppelinHubOp op, ZeppelinhubMessage hubMsg, String msg) {
     if (op == null || msg.equals(ZeppelinhubMessage.EMPTY)) {
-      LOG.error("Cannot handle empty op or msg");
+      LOGGER.error("Cannot handle empty op or msg");
       return;
     }
     switch (op) {
@@ -224,7 +223,7 @@ public class ZeppelinhubClient {
         runAllParagraph(hubMsg.meta.get("noteId"), msg);
         break;
       default:
-        LOG.debug("Received {} from ZeppelinHub, not handled", op);
+        LOGGER.debug("Received {} from ZeppelinHub, not handled", op);
         break;
     }
   }
@@ -233,7 +232,7 @@ public class ZeppelinhubClient {
   private void forwardToZeppelin(Message.OP op, ZeppelinhubMessage hubMsg) {
     Message zeppelinMsg = new Message(op);
     if (!(hubMsg.data instanceof Map)) {
-      LOG.error("Data field of message from ZeppelinHub isn't in correct Map format");
+      LOGGER.error("Data field of message from ZeppelinHub isn't in correct Map format");
       return;
     }
     zeppelinMsg.data = (Map<String, Object>) hubMsg.data;
@@ -241,23 +240,23 @@ public class ZeppelinhubClient {
     zeppelinMsg.ticket = TicketContainer.instance.getTicket(zeppelinMsg.principal);
     Client client = Client.getInstance();
     if (client == null) {
-      LOG.warn("Base client isn't initialized, returning");
+      LOGGER.warn("Base client isn't initialized, returning");
       return;
     }
     client.relayToZeppelin(zeppelinMsg, hubMsg.meta.get("noteId"));
   }
 
   boolean runAllParagraph(String noteId, String hubMsg) {
-    LOG.info("Running paragraph with noteId {}", noteId);
+    LOGGER.info("Running paragraph with noteId {}", noteId);
     try {
       JSONObject data = new JSONObject(hubMsg);
       if (data.equals(JSONObject.NULL) || !(data.get("data") instanceof JSONArray)) {
-        LOG.error("Wrong \"data\" format for RUN_NOTEBOOK");
+        LOGGER.error("Wrong \"data\" format for RUN_NOTEBOOK");
         return false;
       }
       Client client = Client.getInstance();
       if (client == null) {
-        LOG.warn("Base client isn't initialized, returning");
+        LOGGER.warn("Base client isn't initialized, returning");
         return false;
       }
       Message zeppelinMsg = new Message(OP.RUN_PARAGRAPH);
@@ -266,18 +265,18 @@ public class ZeppelinhubClient {
       String principal = data.getJSONObject("meta").getString("owner");
       for (int i = 0; i < paragraphs.length(); i++) {
         if (!(paragraphs.get(i) instanceof JSONObject)) {
-          LOG.warn("Wrong \"paragraph\" format for RUN_NOTEBOOK");
+          LOGGER.warn("Wrong \"paragraph\" format for RUN_NOTEBOOK");
           continue;
         }
-        zeppelinMsg.data = gson.fromJson(paragraphs.getString(i), 
+        zeppelinMsg.data = gson.fromJson(paragraphs.getString(i),
             new TypeToken<Map<String, Object>>(){}.getType());
         zeppelinMsg.principal = principal;
         zeppelinMsg.ticket = TicketContainer.instance.getTicket(principal);
         client.relayToZeppelin(zeppelinMsg, noteId);
-        LOG.info("\nSending RUN_PARAGRAPH message to Zeppelin ");
+        LOGGER.info("\nSending RUN_PARAGRAPH message to Zeppelin ");
       }
     } catch (JSONException e) {
-      LOG.error("Failed to parse RUN_NOTEBOOK message from ZeppelinHub ", e);
+      LOGGER.error("Failed to parse RUN_NOTEBOOK message from ZeppelinHub ", e);
       return false;
     }
     return true;

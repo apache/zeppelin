@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory;
  *
  */
 public class ZeppelinHubHeartbeat implements Runnable {
-  private static final Logger LOG = LoggerFactory.getLogger(ZeppelinHubHeartbeat.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(ZeppelinHubHeartbeat.class);
   private ZeppelinhubClient client;
   
   public static ZeppelinHubHeartbeat newInstance(ZeppelinhubClient client) {
@@ -40,7 +40,7 @@ public class ZeppelinHubHeartbeat implements Runnable {
   
   @Override
   public void run() {
-    LOG.debug("Sending PING to zeppelinhub token");
+    LOGGER.debug("Sending PING to zeppelinhub token");
     for (String token: UserTokenContainer.getInstance().getAllTokens()) {
       client.send(ZeppelinhubUtils.pingMessage(token), token);
     }

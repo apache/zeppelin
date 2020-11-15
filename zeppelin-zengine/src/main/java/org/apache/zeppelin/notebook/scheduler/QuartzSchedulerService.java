@@ -108,7 +108,7 @@ public class QuartzSchedulerService implements SchedulerService {
     try {
       note = notebook.getNote(noteId);
     } catch (IOException e) {
-      LOGGER.warn("Skip refresh cron of note: " + noteId + " because fail to get it", e);
+      LOGGER.warn("Skip refresh cron of note: {} because fail to get it", noteId, e);
       return false;
     }
     if (note == null) {
@@ -157,7 +157,7 @@ public class QuartzSchedulerService implements SchedulerService {
               .forJob(noteId, "note")
               .build();
     } catch (Exception e) {
-      LOGGER.error("Fail to create cron trigger for note: " + note.getName(), e);
+      LOGGER.error("Fail to create cron trigger for note: {}", note.getName(), e);
       info.put("cron", e.getMessage());
       return false;
     }
@@ -167,7 +167,7 @@ public class QuartzSchedulerService implements SchedulerService {
       scheduler.scheduleJob(newJob, trigger);
       return true;
     } catch (SchedulerException e) {
-      LOGGER.error("Fail to schedule cron job for note: " + note.getName(), e);
+      LOGGER.error("Fail to schedule cron job for note: {}", note.getName(), e);
       info.put("cron", "Scheduler Exception");
       return false;
     }
@@ -187,7 +187,7 @@ public class QuartzSchedulerService implements SchedulerService {
     try {
       scheduler.deleteJob(new JobKey(id, "note"));
     } catch (SchedulerException e) {
-      LOGGER.error("Can't remove quertz " + id, e);
+      LOGGER.error("Can't remove quertz {}", id, e);
     }
   }
 }

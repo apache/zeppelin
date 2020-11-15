@@ -18,6 +18,7 @@
 package org.apache.zeppelin.scheduler;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Interface for scheduler. Scheduler is used for manage the lifecycle of job.
@@ -39,5 +40,7 @@ public interface Scheduler extends Runnable {
   Job cancel(String jobId);
 
   void stop();
+
+  void stop(int stopTimeoutVal, TimeUnit stopTimeoutUnit);
 
 }

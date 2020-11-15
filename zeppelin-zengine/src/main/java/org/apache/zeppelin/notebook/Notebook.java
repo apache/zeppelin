@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -135,14 +136,14 @@ public class Notebook {
             note.unLoad();
           }
         } catch (Exception e) {
-          LOGGER.warn("Fail to recovery note: " + note.getPath(), e);
+          LOGGER.warn("Fail to recovery note: {}", note.getPath(), e);
         }
       });
     });
     thread.setName("Recovering-Thread");
     thread.start();
     LOGGER.info("Start paragraph recovering thread");
-    
+
     try {
       thread.join();
     } catch (InterruptedException e) {
@@ -335,6 +336,11 @@ public class Notebook {
     fireNoteRemoveEvent(note, subject);
   }
 
+  public void removeNote(String noteId, AuthenticationInfo subject) throws IOException {
+    Note note = getNote(noteId);
+    removeNote(note, subject);
+  }
+
   /**
    * Get note from NotebookRepo and also initialize it with other properties that is not
    * persistent in NotebookRepo, such as paragraphJobListener.
@@ -383,17 +389,17 @@ public class Notebook {
   }
 
   public void moveNote(String noteId, String newNotePath, AuthenticationInfo subject) throws IOException {
-    LOGGER.info("Move note " + noteId + " to " + newNotePath);
+    LOGGER.info("Move note {} to {}", noteId, newNotePath);
     noteManager.moveNote(noteId, newNotePath, subject);
   }
 
   public void moveFolder(String folderPath, String newFolderPath, AuthenticationInfo subject) throws IOException {
-    LOGGER.info("Move folder from " + folderPath + " to " + newFolderPath);
+    LOGGER.info("Move folder from {} to {}", folderPath, newFolderPath);
     noteManager.moveFolder(folderPath, newFolderPath, subject);
   }
 
   public void removeFolder(String folderPath, AuthenticationInfo subject) throws IOException {
-    LOGGER.info("Remove folder " + folderPath);
+    LOGGER.info("Remove folder {}", folderPath);
     // TODO(zjffdu) NotebookRepo.remove is called twice here
     List<Note> notes = noteManager.removeFolder(folderPath, subject);
     for (Note note : notes) {
@@ -472,7 +478,7 @@ public class Notebook {
     try {
       note = noteManager.getNote(id);
     } catch (IOException e) {
-      LOGGER.error("Fail to get note: " + id, e);
+      LOGGER.error("Fail to get note: {}", id, e);
       return null;
     }
     if (note == null) {
@@ -506,8 +512,9 @@ public class Notebook {
     Map<String, List<AngularObject>> savedObjects = note.getAngularObjects();
 
     if (savedObjects != null) {
-      for (String intpGroupName : savedObjects.keySet()) {
-        List<AngularObject> objectList = savedObjects.get(intpGroupName);
+      for (Entry<String, List<AngularObject>> intpGroupNameEntry : savedObjects.entrySet()) {
+        String intpGroupName = intpGroupNameEntry.getKey();
+        List<AngularObject> objectList = intpGroupNameEntry.getValue();
 
         for (AngularObject object : objectList) {
           SnapshotAngularObject snapshot = angularObjectSnapshot.get(object.getName());
@@ -521,8 +528,9 @@ public class Notebook {
 
     note.setNoteEventListeners(this.noteEventListeners);
 
-    for (String name : angularObjectSnapshot.keySet()) {
-      SnapshotAngularObject snapshot = angularObjectSnapshot.get(name);
+    for (Entry<String, SnapshotAngularObject> angularObjectSnapshotEntry : angularObjectSnapshot.entrySet()) {
+      String name = angularObjectSnapshotEntry.getKey();
+      SnapshotAngularObject snapshot = angularObjectSnapshotEntry.getValue();
       List<InterpreterSetting> settings = interpreterSettingManager.get();
       for (InterpreterSetting setting : settings) {
         InterpreterGroup intpGroup = setting.getInterpreterGroup(

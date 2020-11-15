@@ -25,6 +25,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -42,7 +43,7 @@ public class LocalConfigStorageTest {
         try {
             FileUtils.atomicWriteToFile(TEST_STRING, destinationFile);
             try (InputStream is = Files.newInputStream(destination)) {
-                String read = IOUtils.toString(is);
+                String read = IOUtils.toString(is, StandardCharsets.UTF_8);
                 assertEquals(TEST_STRING, read);
             }
         } finally {
@@ -59,7 +60,7 @@ public class LocalConfigStorageTest {
         try {
             FileUtils.atomicWriteToFile(TEST_STRING, destinationFile);
             try (InputStream is = Files.newInputStream(destination)) {
-                String read = IOUtils.toString(is);
+                String read = IOUtils.toString(is, StandardCharsets.UTF_8);
                 assertEquals(TEST_STRING, read);
             }
         } finally {

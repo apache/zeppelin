@@ -197,7 +197,6 @@ public class YarnRemoteInterpreterProcess extends RemoteInterpreterProcess {
                 + ", diagnostics=" + appReport.getDiagnostics());
       }
       isYarnAppRunning.set(true);
-
     } catch (Exception e) {
       LOGGER.error("Fail to launch yarn interpreter process", e);
       throw new IOException(e);
@@ -261,7 +260,8 @@ public class YarnRemoteInterpreterProcess extends RemoteInterpreterProcess {
 
       String hiveConfDir = launchContext.getProperties().getProperty("HIVE_CONF_DIR");
       if (!org.apache.commons.lang3.StringUtils.isBlank(hiveConfDir)) {
-        srcPath = localFs.makeQualified(new Path(new File(hiveConfDir).toURI()));
+        File hiveConfZipFile = createHiveConfZip(new File(hiveConfDir));
+        srcPath = localFs.makeQualified(new Path(hiveConfZipFile.toURI()));
         destPath = copyFileToRemote(stagingDir, srcPath, (short) 1);
         addResource(fs, destPath, localResources, LocalResourceType.ARCHIVE, "hive_conf");
       }
@@ -333,6 +333,9 @@ public class YarnRemoteInterpreterProcess extends RemoteInterpreterProcess {
       }
       envs.put(ApplicationConstants.Environment.CLASSPATH.name(), newValue);
     }
+    // set HADOOP_MAPRED_HOME explicitly, otherwise it won't work for hadoop3
+    // see https://stackoverflow.com/questions/50719585/unable-to-run-mapreduce-wordcount
+    this.envs.put("HADOOP_MAPRED_HOME", "${HADOOP_HOME}");
   }
 
   private String[] getYarnAppClasspath() {
@@ -489,6 +492,23 @@ public class YarnRemoteInterpreterProcess extends RemoteInterpreterProcess {
     flinkZipStream.flush();
     flinkZipStream.close();
     return flinkArchive;
+  }
+
+  private File createHiveConfZip(File hiveConfDir) throws IOException {
+    File hiveConfArchive = File.createTempFile("hive_conf", ".zip", Files.createTempDir());
+    ZipOutputStream hiveConfZipStream = new ZipOutputStream(new FileOutputStream(hiveConfArchive));
+    hiveConfZipStream.setLevel(0);
+
+    if (!hiveConfDir.exists()) {
+      throw new IOException("HIVE_CONF_DIR " + hiveConfDir.getAbsolutePath() + " doesn't exist");
+    }
+    for (File file : hiveConfDir.listFiles()) {
+      addFileToZipStream(hiveConfZipStream, file, null);
+    }
+
+    hiveConfZipStream.flush();
+    hiveConfZipStream.close();
+    return hiveConfArchive;
   }
 
   private Path copyFileToRemote(

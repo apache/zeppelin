@@ -35,7 +35,7 @@ import org.slf4j.LoggerFactory;
  */
 public class YarnUtils {
 
-  private static Logger LOGGER = LoggerFactory.getLogger(YarnUtils.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(YarnUtils.class);
 
   private static AMRMClient<ContainerRequest> amClient = AMRMClient.createAMRMClient();
   private static Configuration conf = new YarnConfiguration();
@@ -46,7 +46,7 @@ public class YarnUtils {
   }
 
   public static void register(String host, int port) throws Exception {
-    LOGGER.info("Registering yarn app at " + host + ":" + port);
+    LOGGER.info("Registering yarn app at {}:{}", host, port);
     try {
       amClient.registerApplicationMaster(host, port, null);
     } catch (YarnException e) {

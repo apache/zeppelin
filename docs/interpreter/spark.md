@@ -200,9 +200,20 @@ You can also set other Spark properties which are not listed in the table. For a
       (ex: http://{{PORT}}-{{SERVICE_NAME}}.{{SERVICE_DOMAIN}})
      </td>
   </tr>
-  <td>spark.webui.yarn.useProxy</td>
+  <tr>
+    <td>spark.webui.yarn.useProxy</td>
     <td>false</td>
     <td>whether use yarn proxy url as spark weburl, e.g. http://localhost:8088/proxy/application_1583396598068_0004</td>
+  </tr>
+  <tr>
+    <td>spark.repl.target</td>
+    <td>jvm-1.6</td>
+    <td>
+      Manually specifying the Java version of Spark Interpreter Scala REPL,Available options:<br/> 
+      scala-compile v2.10.7 to v2.11.12 supports "jvm-1.5, jvm-1.6, jvm-1.7 and jvm-1.8", and the default value is jvm-1.6.<br/> 
+      scala-compile v2.10.1 to v2.10.6 supports "jvm-1.5, jvm-1.6, jvm-1.7", and the default value is jvm-1.6.<br/> 
+      scala-compile v2.12.x defaults to jvm-1.8, and only supports jvm-1.8.
+    </td>
   </tr>
 </table>
 
@@ -445,6 +456,20 @@ e.g.
 Zeppelin automatically injects `ZeppelinContext` as variable `z` in your Scala/Python environment. `ZeppelinContext` provides some additional functions and utilities.
 See [Zeppelin-Context](../usage/other_features/zeppelin_context.html) for more details.
 
+## Setting up Zeppelin with Kerberos
+Logical setup with Zeppelin, Kerberos Key Distribution Center (KDC), and Spark on YARN:
+
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/kdc_zeppelin.png">
+
+There're several ways to make spark work with kerberos enabled hadoop cluster in Zeppelin. 
+
+1. Share one single hadoop cluster.
+In this case you just need to specify `zeppelin.server.kerberos.keytab` and `zeppelin.server.kerberos.principal` in zeppelin-site.xml, Spark interpreter will use these setting by default.
+
+2. Work with multiple hadoop clusters.
+In this case you can specify `spark.yarn.keytab` and `spark.yarn.principal` to override `zeppelin.server.kerberos.keytab` and `zeppelin.server.kerberos.principal`.
+
+
 ## User Impersonation
 
 In yarn mode, the user who launch the zeppelin server will be used to launch the spark yarn application. This is not a good practise.
@@ -471,10 +496,6 @@ you need to enable user impersonation for more security control. In order the en
 impersonate in `zeppelin-site.xml`.
 
 
-## Setting up Zeppelin with Kerberos
-Logical setup with Zeppelin, Kerberos Key Distribution Center (KDC), and Spark on YARN:
-
-<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/kdc_zeppelin.png">
 
 ## Deprecate Spark 2.2 and earlier versions
 Starting from 0.9, Zeppelin deprecate Spark 2.2 and earlier versions. So you will see a warning message when you use Spark 2.2 and earlier.

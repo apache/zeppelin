@@ -71,7 +71,7 @@ import org.slf4j.LoggerFactory;
  * thread-safe.
  */
 public class LuceneSearch extends SearchService {
-  private static final Logger logger = LoggerFactory.getLogger(LuceneSearch.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(LuceneSearch.class);
 
   private static final String SEARCH_FIELD_TEXT = "contents";
   private static final String SEARCH_FIELD_TITLE = "header";
@@ -92,7 +92,7 @@ public class LuceneSearch extends SearchService {
       try {
         this.indexPath = Paths.get(conf.getZeppelinSearchIndexPath());
         this.indexDirectory = FSDirectory.open(indexPath);
-        logger.info("Use {} for storing lucene search index", this.indexPath);
+        LOGGER.info("Use {} for storing lucene search index", this.indexPath);
       } catch (IOException e) {
         throw new RuntimeException(
             "Failed to create index directory for search service. Use memory instead", e);
@@ -105,7 +105,7 @@ public class LuceneSearch extends SearchService {
     try {
       this.indexWriter = new IndexWriter(indexDirectory, indexWriterConfig);
     } catch (IOException e) {
-      logger.error("Failed to create new IndexWriter", e);
+      LOGGER.error("Failed to create new IndexWriter", e);
     }
   }
 
@@ -126,16 +126,16 @@ public class LuceneSearch extends SearchService {
           new MultiFieldQueryParser(new String[] {SEARCH_FIELD_TEXT, SEARCH_FIELD_TITLE}, analyzer);
 
       Query query = parser.parse(queryStr);
-      logger.debug("Searching for: " + query.toString(SEARCH_FIELD_TEXT));
+      LOGGER.debug("Searching for: {}", query.toString(SEARCH_FIELD_TEXT));
 
       SimpleHTMLFormatter htmlFormatter = new SimpleHTMLFormatter();
       Highlighter highlighter = new Highlighter(htmlFormatter, new QueryScorer(query));
 
       result = doSearch(indexSearcher, query, analyzer, highlighter);
     } catch (IOException e) {
-      logger.error("Failed to open index dir {}, make sure indexing finished OK", indexDirectory, e);
+      LOGGER.error("Failed to open index dir {}, make sure indexing finished OK", indexDirectory, e);
     } catch (ParseException e) {
-      logger.error("Failed to parse query " + queryStr, e);
+      LOGGER.error("Failed to parse query {}", queryStr, e);
     }
     return result;
   }
@@ -147,16 +147,16 @@ public class LuceneSearch extends SearchService {
     try {
       hits = searcher.search(query, 20).scoreDocs;
       for (int i = 0; i < hits.length; i++) {
-        logger.debug("doc={} score={}", hits[i].doc, hits[i].score);
+        LOGGER.debug("doc={} score={}", hits[i].doc, hits[i].score);
 
         int id = hits[i].doc;
         Document doc = searcher.doc(id);
         String path = doc.get(ID_FIELD);
         if (path != null) {
-          logger.debug((i + 1) + ". " + path);
+          LOGGER.debug( "{}. {}", (i + 1), path);
           String title = doc.get("title");
           if (title != null) {
-            logger.debug("   Title: {}", doc.get("title"));
+            LOGGER.debug("   Title: {}", doc.get("title"));
           }
 
           String text = doc.get(SEARCH_FIELD_TEXT);
@@ -168,10 +168,10 @@ public class LuceneSearch extends SearchService {
                 TokenSources.getTokenStream(
                     searcher.getIndexReader(), id, SEARCH_FIELD_TEXT, analyzer);
             TextFragment[] frag = highlighter.getBestTextFragments(tokenStream, text, true, 3);
-            logger.debug("    {} fragments found for query '{}'", frag.length, query);
+            LOGGER.debug("    {} fragments found for query '{}'", frag.length, query);
             for (int j = 0; j < frag.length; j++) {
               if ((frag[j] != null) && (frag[j].getScore() > 0)) {
-                logger.debug("    Fragment: {}", frag[j].toString());
+                LOGGER.debug("    Fragment: {}", frag[j].toString());
               }
             }
             fragment = (frag != null && frag.length > 0) ? frag[0].toString() : "";
@@ -191,11 +191,11 @@ public class LuceneSearch extends SearchService {
                   "id", path, // <noteId>/paragraph/<paragraphId>
                   "name", title, "snippet", fragment, "text", text, "header", header));
         } else {
-          logger.info("{}. No {} for this document", i + 1, ID_FIELD);
+          LOGGER.info("{}. No {} for this document", i + 1, ID_FIELD);
         }
       }
     } catch (IOException | InvalidTokenOffsetsException e) {
-      logger.error("Exception on searching for {}", query, e);
+      LOGGER.error("Exception on searching for {}", query, e);
     }
     return matchingParagraphs;
   }
@@ -214,9 +214,9 @@ public class LuceneSearch extends SearchService {
   private void updateIndexNoteName(Note note) throws IOException {
     String noteName = note.getName();
     String noteId = note.getId();
-    logger.debug("Indexing Notebook {}, '{}'", noteId, noteName);
+    LOGGER.debug("Indexing Notebook {}, '{}'", noteId, noteName);
     if (null == noteName || noteName.isEmpty()) {
-      logger.debug("Skipping empty notebook name");
+      LOGGER.debug("Skipping empty notebook name");
       return;
     }
     updateDoc(noteId, noteName, null);
@@ -224,7 +224,7 @@ public class LuceneSearch extends SearchService {
 
   private void updateIndexParagraph(Note note, Paragraph p) throws IOException {
     if (p.getText() == null) {
-      logger.debug("Skipping empty paragraph");
+      LOGGER.debug("Skipping empty paragraph");
       return;
     }
     updateDoc(note.getId(), note.getName(), p);
@@ -246,7 +246,7 @@ public class LuceneSearch extends SearchService {
       indexWriter.updateDocument(new Term(ID_FIELD, id), doc);
       indexWriter.commit();
     } catch (IOException e) {
-      logger.error("Failed to update index of notebook {}", noteId, e);
+      LOGGER.error("Failed to update index of notebook {}", noteId, e);
     }
   }
 
@@ -313,15 +313,15 @@ public class LuceneSearch extends SearchService {
         docsIndexed++;
       }
     } catch (IOException e) {
-      logger.error("Failed to index all Notebooks", e);
+      LOGGER.error("Failed to index all Notebooks", e);
     } finally {
       try { // save what's been indexed, even if not full collection
         indexWriter.commit();
       } catch (IOException e) {
-        logger.error("Failed to save index", e);
+        LOGGER.error("Failed to save index", e);
       }
       long end = System.nanoTime();
-      logger.info(
+      LOGGER.info(
           "Indexing {} notebooks took {}ms",
           docsIndexed,
           TimeUnit.NANOSECONDS.toMillis(end - start));
@@ -337,7 +337,7 @@ public class LuceneSearch extends SearchService {
       addIndexDocAsync(note);
       indexWriter.commit();
     } catch (IOException e) {
-      logger.error("Failed to add note {} to index", note, e);
+      LOGGER.error("Failed to add note {} to index", note, e);
     }
   }
 
@@ -351,7 +351,7 @@ public class LuceneSearch extends SearchService {
     indexNoteName(indexWriter, note.getId(), note.getName());
     for (Paragraph doc : note.getParagraphs()) {
       if (doc.getText() == null) {
-        logger.debug("Skipping empty paragraph");
+        LOGGER.debug("Skipping empty paragraph");
         continue;
       }
       indexDoc(indexWriter, note.getId(), note.getName(), doc);
@@ -377,14 +377,14 @@ public class LuceneSearch extends SearchService {
 
   private void deleteDoc(String noteId, Paragraph p) {
     String fullNoteOrJustParagraph = formatDeleteId(noteId, p);
-    logger.debug("Deleting note {}, out of: {}", noteId, indexWriter.numDocs());
+    LOGGER.debug("Deleting note {}, out of: {}", noteId, indexWriter.numDocs());
     try {
       indexWriter.deleteDocuments(new WildcardQuery(new Term(ID_FIELD, fullNoteOrJustParagraph)));
       indexWriter.commit();
     } catch (IOException e) {
-      logger.error("Failed to delete {} from index by '{}'", noteId, fullNoteOrJustParagraph, e);
+      LOGGER.error("Failed to delete {} from index by '{}'", noteId, fullNoteOrJustParagraph, e);
     }
-    logger.debug("Done, index contains {} docs now" + indexWriter.numDocs());
+    LOGGER.debug("Done, index contains {} docs now {}", indexWriter.numDocs());
   }
 
   /* (non-Javadoc)
@@ -395,7 +395,7 @@ public class LuceneSearch extends SearchService {
     try {
       indexWriter.close();
     } catch (IOException e) {
-      logger.error("Failed to .close() the notebook index", e);
+      LOGGER.error("Failed to .close() the notebook index", e);
     }
   }
 
@@ -405,9 +405,9 @@ public class LuceneSearch extends SearchService {
    * @throws IOException
    */
   private void indexNoteName(IndexWriter w, String noteId, String noteName) throws IOException {
-    logger.debug("Indexing Notebook {}, '{}'", noteId, noteName);
+    LOGGER.debug("Indexing Notebook {}, '{}'", noteId, noteName);
     if (null == noteName || noteName.isEmpty()) {
-      logger.debug("Skipping empty notebook name");
+      LOGGER.debug("Skipping empty notebook name");
       return;
     }
     indexDoc(w, noteId, noteName, null);
@@ -424,12 +424,12 @@ public class LuceneSearch extends SearchService {
   @Override
   public void startRebuildIndex(Stream<Note> notes) {
     Thread thread = new Thread(() -> {
-      logger.info("Starting rebuild index");
+      LOGGER.info("Starting rebuild index");
       notes.forEach(note -> {
         addIndexDoc(note);
         note.unLoad();
       });
-      logger.info("Finish rebuild index");
+      LOGGER.info("Finish rebuild index");
     });
     thread.setName("LuceneSearch-RebuildIndex-Thread");
     thread.start();

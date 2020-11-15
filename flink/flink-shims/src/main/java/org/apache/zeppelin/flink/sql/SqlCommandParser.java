@@ -112,8 +112,10 @@ public final class SqlCommandParser {
             SINGLE_OPERAND),
 
     EXPLAIN(
-            "EXPLAIN\\s+(.*)",
-            SINGLE_OPERAND),
+            "EXPLAIN\\s+(SELECT|INSERT)\\s+(.*)",
+            (operands) -> {
+              return Optional.of(new String[] { operands[0], operands[1] });
+            }),
 
     CREATE_DATABASE(
             "(CREATE\\s+DATABASE\\s+.*)",

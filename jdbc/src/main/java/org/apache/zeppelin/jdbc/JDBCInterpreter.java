@@ -100,7 +100,6 @@ import org.apache.zeppelin.user.UsernamePassword;
 public class JDBCInterpreter extends KerberosInterpreter {
   private static final Logger LOGGER = LoggerFactory.getLogger(JDBCInterpreter.class);
 
-  static final String INTERPRETER_NAME = "jdbc";
   static final String COMMON_KEY = "common";
   static final String MAX_LINE_KEY = "max_count";
   static final int MAX_LINE_DEFAULT = 1000;
@@ -243,7 +242,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
 
   protected boolean isKerboseEnabled() {
     if (!isEmpty(getProperty("zeppelin.jdbc.auth.type"))) {
-      UserGroupInformation.AuthenticationMethod authType = JDBCSecurityImpl.getAuthtype(properties);
+      UserGroupInformation.AuthenticationMethod authType = JDBCSecurityImpl.getAuthType(properties);
       if (authType.equals(KERBEROS)) {
         return true;
       }
@@ -427,6 +426,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
     boolean testWhileIdle = "true".equalsIgnoreCase(properties.getProperty("testWhileIdle"));
     long timeBetweenEvictionRunsMillis = PropertiesUtil.getLong(
         properties, "timeBetweenEvictionRunsMillis", -1L);
+
     long maxWaitMillis = PropertiesUtil.getLong(properties, "maxWaitMillis", -1L);
     int maxIdle = PropertiesUtil.getInt(properties, "maxIdle", 8);
     int minIdle = PropertiesUtil.getInt(properties, "minIdle", 0);
@@ -445,6 +445,9 @@ public class JDBCInterpreter extends KerberosInterpreter {
 
   private void createConnectionPool(String url, String user, String dbPrefix,
       Properties properties) throws SQLException, ClassNotFoundException {
+
+    LOGGER.info("Creating connection pool for url: {}, user: {}, dbPrefix: {}, properties: {}",
+            url, user, dbPrefix, properties);
 
     String driverClass = properties.getProperty(DRIVER_KEY);
     if (driverClass != null && (driverClass.equals("com.facebook.presto.jdbc.PrestoDriver")
@@ -499,53 +502,37 @@ public class JDBCInterpreter extends KerberosInterpreter {
     setUserProperty(dbPrefix, context);
 
     final Properties properties = jdbcUserConfigurations.getPropertyMap(dbPrefix);
-    final String url = properties.getProperty(URL_KEY);
-
+    String url = properties.getProperty(URL_KEY);
+    
     if (isEmpty(getProperty("zeppelin.jdbc.auth.type"))) {
       connection = getConnectionFromPool(url, user, dbPrefix, properties);
     } else {
       UserGroupInformation.AuthenticationMethod authType =
-          JDBCSecurityImpl.getAuthtype(getProperties());
+          JDBCSecurityImpl.getAuthType(getProperties());
 
       final String connectionUrl = appendProxyUserToURL(url, user, dbPrefix);
-
       JDBCSecurityImpl.createSecureConfiguration(getProperties(), authType);
-      switch (authType) {
-        case KERBEROS:
-          if (user == null || "false".equalsIgnoreCase(
-              getProperty("zeppelin.jdbc.auth.kerberos.proxy.enable"))) {
-            connection = getConnectionFromPool(connectionUrl, user, dbPrefix, properties);
-          } else {
-            if (basePropertiesMap.get(dbPrefix).containsKey("proxy.user.property")) {
-              connection = getConnectionFromPool(connectionUrl, user, dbPrefix, properties);
-            } else {
-              UserGroupInformation ugi = null;
-              try {
-                ugi = UserGroupInformation.createProxyUser(
-                    user, UserGroupInformation.getCurrentUser());
-              } catch (Exception e) {
-                LOGGER.error("Error in getCurrentUser", e);
-                throw new InterpreterException("Error in getCurrentUser", e);
-              }
 
-              final String poolKey = dbPrefix;
-              try {
-                connection = ugi.doAs(new PrivilegedExceptionAction<Connection>() {
-                  @Override
-                  public Connection run() throws Exception {
-                    return getConnectionFromPool(connectionUrl, user, poolKey, properties);
-                  }
-                });
-              } catch (Exception e) {
-                LOGGER.error("Error in doAs", e);
-                throw new InterpreterException("Error in doAs", e);
-              }
-            }
-          }
-          break;
+      if (basePropertiesMap.get(dbPrefix).containsKey("proxy.user.property")) {
+        connection = getConnectionFromPool(connectionUrl, user, dbPrefix, properties);
+      } else {
+        UserGroupInformation ugi = null;
+        try {
+          ugi = UserGroupInformation.createProxyUser(
+                  user, UserGroupInformation.getCurrentUser());
+        } catch (Exception e) {
+          LOGGER.error("Error in getCurrentUser", e);
+          throw new InterpreterException("Error in getCurrentUser", e);
+        }
 
-        default:
-          connection = getConnectionFromPool(connectionUrl, user, dbPrefix, properties);
+        final String poolKey = dbPrefix;
+        try {
+          connection = ugi.doAs((PrivilegedExceptionAction<Connection>) () ->
+                  getConnectionFromPool(connectionUrl, user, poolKey, properties));
+        } catch (Exception e) {
+          LOGGER.error("Error in doAs", e);
+          throw new InterpreterException("Error in doAs", e);
+        }
       }
     }
 
@@ -705,18 +692,17 @@ public class JDBCInterpreter extends KerberosInterpreter {
     try {
       connection = getConnection(dbPrefix, context);
     } catch (Exception e) {
-      String errorMsg = ExceptionUtils.getStackTrace(e);
+      LOGGER.error("Fail to getConnection", e);
       try {
         closeDBPool(user, dbPrefix);
       } catch (SQLException e1) {
         LOGGER.error("Cannot close DBPool for user, dbPrefix: " + user + dbPrefix, e1);
       }
-      try {
-        context.out.write(errorMsg);
-      } catch (IOException ex) {
-        throw new InterpreterException("Fail to write output", ex);
+      if (e instanceof SQLException) {
+        return new InterpreterResult(Code.ERROR, e.getMessage());
+      } else {
+        return new InterpreterResult(Code.ERROR, ExceptionUtils.getStackTrace(e));
       }
-      return new InterpreterResult(Code.ERROR);
     }
     if (connection == null) {
       return new InterpreterResult(Code.ERROR, "Prefix not found.");
@@ -746,8 +732,8 @@ public class JDBCInterpreter extends KerberosInterpreter {
           }
 
           // start hive monitor thread if it is hive jdbc
-          if (getJDBCConfiguration(user).getPropertyMap(dbPrefix).getProperty(URL_KEY)
-                  .startsWith("jdbc:hive2://")) {
+          String jdbcURL = getJDBCConfiguration(user).getPropertyMap(dbPrefix).getProperty(URL_KEY);
+          if (jdbcURL != null && jdbcURL.startsWith("jdbc:hive2://")) {
             HiveUtils.startHiveMonitorThread(statement, context,
                     Boolean.parseBoolean(getProperty("hive.log.display", "true")));
           }
@@ -805,7 +791,11 @@ public class JDBCInterpreter extends KerberosInterpreter {
       }
     } catch (Throwable e) {
       LOGGER.error("Cannot run " + sql, e);
-      return new InterpreterResult(Code.ERROR,  ExceptionUtils.getStackTrace(e));
+      if (e instanceof SQLException) {
+        return new InterpreterResult(Code.ERROR,  e.getMessage());
+      } else {
+        return new InterpreterResult(Code.ERROR, ExceptionUtils.getStackTrace(e));
+      }
     } finally {
       //In case user ran an insert/update/upsert statement
       if (connection != null) {

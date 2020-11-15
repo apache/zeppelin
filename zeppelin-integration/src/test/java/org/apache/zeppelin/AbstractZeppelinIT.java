@@ -19,12 +19,23 @@ package org.apache.zeppelin;
 
 
 import com.google.common.base.Function;
+import java.io.File;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
+import java.util.concurrent.TimeUnit;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;
-import org.openqa.selenium.*;
-import org.openqa.selenium.logging.LogEntries;
-import org.openqa.selenium.logging.LogEntry;
-import org.openqa.selenium.logging.LogType;
+import org.openqa.selenium.By;
+import org.openqa.selenium.ElementClickInterceptedException;
+import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.Keys;
+import org.openqa.selenium.NoSuchElementException;
+import org.openqa.selenium.OutputType;
+import org.openqa.selenium.TakesScreenshot;
+import org.openqa.selenium.TimeoutException;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.FluentWait;
 import org.openqa.selenium.support.ui.Wait;
@@ -32,11 +43,8 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.util.Date;
-import java.util.concurrent.TimeUnit;
-
 abstract public class AbstractZeppelinIT {
+
   protected static WebDriver driver;
 
   protected final static Logger LOG = LoggerFactory.getLogger(AbstractZeppelinIT.class);
@@ -46,7 +54,19 @@ abstract public class AbstractZeppelinIT {
   protected static final long MAX_PARAGRAPH_TIMEOUT_SEC = 120;
 
   protected void setTextOfParagraph(int paragraphNo, String text) {
-    String editorId = driver.findElement(By.xpath(getParagraphXPath(paragraphNo) + "//div[contains(@class, 'editor')]")).getAttribute("id");
+    String paragraphXpath = getParagraphXPath(paragraphNo);
+
+    try {
+      driver.manage().timeouts().implicitlyWait(100, TimeUnit.MILLISECONDS);
+      // make sure ace code is visible, if not click on show editor icon to make it visible
+      driver.findElement(By.xpath(paragraphXpath + "//span[@class='icon-size-fullscreen']")).click();
+    } catch (NoSuchElementException e) {
+      // ignore
+    } finally {
+      driver.manage().timeouts().implicitlyWait(AbstractZeppelinIT.MAX_BROWSER_TIMEOUT_SEC, TimeUnit.SECONDS);
+    }
+    String editorId = pollingWait(By.xpath(paragraphXpath + "//div[contains(@class, 'editor')]"),
+        MIN_IMPLICIT_WAIT).getAttribute("id");
     if (driver instanceof JavascriptExecutor) {
       ((JavascriptExecutor) driver).executeScript("ace.edit('" + editorId + "'). setValue('" + text + "')");
     } else {
@@ -56,8 +76,7 @@ abstract public class AbstractZeppelinIT {
 
   protected void runParagraph(int paragraphNo) {
     By by = By.xpath(getParagraphXPath(paragraphNo) + "//span[@class='icon-control-play']");
-    pollingWait(by, 5);
-    driver.findElement(by).click();
+    clickAndWait(by);
   }
 
 
@@ -94,8 +113,8 @@ abstract public class AbstractZeppelinIT {
 
   protected WebElement pollingWait(final By locator, final long timeWait) {
     Wait<WebDriver> wait = new FluentWait<>(driver)
-        .withTimeout(timeWait, TimeUnit.SECONDS)
-        .pollingEvery(1, TimeUnit.SECONDS)
+        .withTimeout(Duration.of(timeWait, ChronoUnit.SECONDS))
+        .pollingEvery(Duration.of(1, ChronoUnit.SECONDS))
         .ignoring(NoSuchElementException.class);
 
     return wait.until(new Function<WebDriver, WebElement>() {
@@ -136,8 +155,16 @@ abstract public class AbstractZeppelinIT {
   }
 
   protected void clickAndWait(final By locator) {
-    pollingWait(locator, MAX_IMPLICIT_WAIT).click();
-    ZeppelinITUtils.sleep(1000, false);
+    WebElement element = pollingWait(locator, MAX_IMPLICIT_WAIT);
+    try {
+      element.click();
+      ZeppelinITUtils.sleep(1000, false);
+    } catch (ElementClickInterceptedException e) {
+      // if the previous click did not happened mean the element is behind another clickable element
+      Actions action = new Actions(driver);
+      action.moveToElement(element).click().build().perform();
+      ZeppelinITUtils.sleep(1500, false);
+    }
   }
 
   protected void handleException(String message, Exception e) throws Exception {

@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.integration;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.zeppelin.client.ClientConfig;
 import org.apache.zeppelin.client.NoteResult;
 import org.apache.zeppelin.client.ParagraphResult;
@@ -37,6 +38,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -70,6 +72,38 @@ public class ZeppelinClientIntegrationTest extends AbstractTestRestApi {
   public void testZeppelinVersion() throws Exception {
     String version = zeppelinClient.getVersion();
     LOG.info("Zeppelin version: " + version);
+  }
+
+  @Test
+  public void testImportNote() throws Exception {
+    String noteContent = IOUtils.toString(ZeppelinClientIntegrationTest.class.getResource("/Test_Note.zpln"));
+    String noteId = zeppelinClient.importNote("/imported_notes/note_1", noteContent);
+    assertNotNull("Import note failed because returned noteId is null", noteId);
+
+    NoteResult noteResult = zeppelinClient.queryNoteResult(noteId);
+    assertFalse(noteResult.isRunning());
+    assertEquals(2, noteResult.getParagraphResultList().size());
+    assertEquals(1, noteResult.getParagraphResultList().get(0).getResults().size());
+    assertEquals("TEXT", noteResult.getParagraphResultList().get(0).getResults().get(0).getType());
+    assertEquals("Hello World\n", noteResult.getParagraphResultList().get(0).getResults().get(0).getData());
+
+    // import to the same notePath again
+    try {
+      zeppelinClient.importNote("/imported_notes/note_1", noteContent);
+      fail("Should fail to import note to the same notePath");
+    } catch (Exception e) {
+      e.printStackTrace();
+      assertTrue(e.getMessage(), e.getMessage().contains("Note '/imported_notes/note_1' existed"));
+    }
+
+    // import invalid noteContent
+    try {
+      zeppelinClient.importNote("/imported_notes/note_1", "Invalid_content");
+      fail("Should fail to import note with invalid note content");
+    } catch (Exception e) {
+      e.printStackTrace();
+      assertTrue(e.getMessage(), e.getMessage().contains("Invalid JSON"));
+    }
   }
 
   @Test
@@ -385,6 +419,12 @@ public class ZeppelinClientIntegrationTest extends AbstractTestRestApi {
     SessionInfo sessionInfo = zeppelinClient.getSession("invalid_session");
     assertNull(sessionInfo);
 
-    zeppelinClient.stopSession("invalid_session");
+    try {
+      zeppelinClient.stopSession("invalid_session");
+      fail("Should fail to stop session after it is stopped");
+    } catch (Exception e) {
+      e.printStackTrace();
+      assertTrue(e.getMessage().contains("No such session"));
+    }
   }
 }

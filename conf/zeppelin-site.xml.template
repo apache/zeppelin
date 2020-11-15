@@ -20,12 +20,6 @@
 <configuration>
 
 <property>
-  <name>zeppelin.cluster.addr</name>
-  <value></value>
-  <description>Server cluster address, eg. 127.0.0.1:6000,127.0.0.2:6000,127.0.0.3:6000</description>
-</property>
-
-<property>
   <name>zeppelin.server.addr</name>
   <value>127.0.0.1</value>
   <description>Server binding address</description>
@@ -35,6 +29,12 @@
   <name>zeppelin.server.port</name>
   <value>8080</value>
   <description>Server port.</description>
+</property>
+
+<property>
+  <name>zeppelin.cluster.addr</name>
+  <value></value>
+  <description>Server cluster address, eg. 127.0.0.1:6000,127.0.0.2:6000,127.0.0.3:6000</description>
 </property>
 
 <property>
@@ -192,6 +192,15 @@
   <name>zeppelin.notebook.s3.sse</name>
   <value>true</value>
   <description>Server-side encryption enabled for notebooks</description>
+</property>
+-->
+
+<!-- Path style access for S3 bucket -->
+<!--
+<property>
+  <name>zeppelin.notebook.s3.pathStyleAccess</name>
+  <value>true</value>
+  <description>Path style access for S3 bucket</description>
 </property>
 -->
 
