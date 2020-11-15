@@ -161,7 +161,7 @@
               <target>
                 <echo>ANT TASK - copying files....</echo>
                 <copy todir="${project.basedir}/../interpreter" overwrite="true" flatten="true">
-                  <fileset dir="${project.build.directory}" includes="zeppelin-interpreter-shaded-*.jar" >
+                  <fileset dir="${project.build.directory}" includes="zeppelin-interpreter-shaded-${project.version}.jar" >
                   </fileset>
                 </copy>
               </target>
