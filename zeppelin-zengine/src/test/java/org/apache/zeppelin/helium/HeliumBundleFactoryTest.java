@@ -64,6 +64,7 @@ public class HeliumBundleFactoryTest {
 
   @Test
   public void testInstallNpm() throws InstallationException {
+    System.out.println("Node installation Dir XXXX ="+nodeInstallationDir.getAbsolutePath());
     assertTrue(new File(nodeInstallationDir, "/node/npm").isFile());
     assertTrue(new File(nodeInstallationDir, "/node/node").isFile());
     assertTrue(new File(nodeInstallationDir, "/node/yarn/dist/bin/yarn").isFile());
