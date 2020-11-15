@@ -110,6 +110,8 @@ public class DownloadUtils {
       String downloadURL = preferredMirror + "/" + projectPath + "/" + project + "-" + version + "/" + project + "-" + version + postFix;
       if (File.separator.equals("\\"))
       {
+        File folder = new File(projectDownloadFolder);
+        folder.mkdirs();
         String[] args1 = new String[]{"powershell","wget", downloadURL, "-OutFile", filePath}; 
         LOGGER.info("download exec: "+String.join(" ",args1));
         runShellCommand(args1);
