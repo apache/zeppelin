@@ -224,7 +224,10 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
   }
 
   private String detectSparkScalaVersion(String sparkHome) throws Exception {
-    ProcessBuilder builder = new ProcessBuilder(sparkHome + "/bin/spark-submit", "--version");
+    String sparkSubmitExecutable = sparkHome + "/bin/spark-submit";
+    if (File.separator.equals("\\"))
+      sparkSubmitExecutable = sparkHome + "\\bin\\spark-submit.cmd";
+    ProcessBuilder builder = new ProcessBuilder(sparkSubmitExecutable, "--version");
     File processOutputFile = File.createTempFile("zeppelin-spark", ".out");
     builder.redirectError(processOutputFile);
     Process process = builder.start();
