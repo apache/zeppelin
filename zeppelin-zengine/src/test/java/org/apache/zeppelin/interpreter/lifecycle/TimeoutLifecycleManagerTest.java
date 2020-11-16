@@ -120,11 +120,14 @@ public class TimeoutLifecycleManagerTest extends AbstractInterpreterTest {
       }
     });
 
+    int maxWait = 120; // 2 minute
     while(!remoteInterpreter.isOpened()) {
       Thread.sleep(1000);
       LOGGER.info("Wait for interpreter to be started");
+      if (--maxWait==0) break;
     }
 
+    assertTrue("Timedout waiting for interpreter to be started",remoteInterpreter.isOpened());
     InterpreterSetting interpreterSetting = interpreterSettingManager.getInterpreterSettingByName("test");
     assertEquals(1, interpreterSetting.getAllInterpreterGroups().size());
 
