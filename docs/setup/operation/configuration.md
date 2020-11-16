@@ -449,6 +449,18 @@ If both are defined, then the **environment variables** will take priority.
     <td>false</td>
     <td>Value to enable/disable Prometheus metric endpoint on /metric</td>
   </tr>
+  <tr>
+    <td><h6 class="properties">ZEPPELIN_NOTEBOOK_CRON_ENABLE</h6></td>
+    <td><h6 class="properties">zeppelin.notebook.cron.enable</h6></td>
+    <td>false</td>
+    <td>Value to enable/disable Cron support in Notes</td>
+  </tr>
+  <tr>
+    <td><h6 class="properties">ZEPPELIN_NOTEBOOK_CRON_FOLDERS</h6></td>
+    <td><h6 class="properties">zeppelin.notebook.cron.folders</h6></td>
+    <td></td>
+    <td>comma-separated list of folder, where cron is allowed</td>
+  </tr>
 </table>
 
 
