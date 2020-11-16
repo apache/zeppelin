@@ -66,7 +66,6 @@ public class SessionRestApi {
    * @throws Exception
    */
   @GET
-  @Path("/")
   public Response listSessions(@QueryParam("interpreter") String interpreter) throws Exception {
     if (StringUtils.isBlank(interpreter)) {
       LOGGER.info("List all sessions of all interpreters");
@@ -90,7 +89,6 @@ public class SessionRestApi {
    * @throws Exception
    */
   @POST
-  @Path("/")
   public Response createSession(@QueryParam("interpreter") String interpreter) throws Exception {
     LOGGER.info("Create new session for interpreter: {}", interpreter);
     SessionInfo sessionInfo = sessionManagerService.createSession(interpreter);
