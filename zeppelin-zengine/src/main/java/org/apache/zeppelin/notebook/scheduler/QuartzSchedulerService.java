@@ -56,6 +56,7 @@ public class QuartzSchedulerService implements SchedulerService {
     this.zeppelinConfiguration = zeppelinConfiguration;
     this.notebook = notebook;
     this.scheduler = getScheduler();
+    this.scheduler.getListenerManager().addJobListener(new CronJobListener());
     this.scheduler.start();
 
     // Do in a separated thread because there may be many notes,
