@@ -8,6 +8,7 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -52,7 +53,7 @@ public class InstallInterpreterTest {
     interpreterList += "intp1   org.apache.commons:commons-csv:1.1   test interpreter 1\n";
     interpreterList += "intp2   org.apache.commons:commons-math3:3.6.1 test interpreter 2\n";
 
-    FileUtils.writeStringToFile(new File(tmpDir, "conf/interpreter-list"), interpreterList);
+    FileUtils.writeStringToFile(new File(tmpDir, "conf/interpreter-list"), interpreterList, StandardCharsets.UTF_8);
 
     installer = new InstallInterpreter(interpreterListFile, interpreterBaseDir, localRepoDir
         .getAbsolutePath());

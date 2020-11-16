@@ -118,6 +118,7 @@ export interface ConfigurationsInfo {
     'zeppelin.notebook.collaborative.mode.enable': string;
     'zeppelin.search.use.disk': string;
     'zeppelin.notebook.s3.cannedAcl': string;
+    'zeppelin.notebook.s3.pathStyleAccess': string;
   };
 }
 

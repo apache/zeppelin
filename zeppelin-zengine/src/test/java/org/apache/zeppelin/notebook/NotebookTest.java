@@ -85,6 +85,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
   private StatusChangedListener afterStatusChangedListener;
   private QuartzSchedulerService schedulerService;
 
+  @Override
   @Before
   public void setUp() throws Exception {
     System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_PUBLIC.getVarName(), "true");
@@ -105,6 +106,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     schedulerService.waitForFinishInit();
   }
 
+  @Override
   @After
   public void tearDown() throws Exception {
     super.tearDown();
@@ -275,7 +277,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     Note note = notebook.createNote("note1", anonymous);
     // run with default repl
     Paragraph p1 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
-    Map config = p1.getConfig();
+    Map<String, Object> config = p1.getConfig();
     config.put("enabled", true);
     p1.setConfig(config);
     p1.setText("%mock1 hello world");
@@ -328,7 +330,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     Note copiedNote = notebookRepo.get(note2.getId(), note2.getPath(), anonymous);
     notebook.reloadAllNotes(anonymous);
     List<Note> notes = notebook.getAllNotes();
-    assertEquals(notes.size(), 2);
+    assertEquals(2 , notes.size());
     assertEquals(notes.get(0).getId(), copiedNote.getId());
     assertEquals(notes.get(0).getName(), copiedNote.getName());
     // format has make some changes due to
@@ -345,7 +347,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     // delete notebook from notebook list when reloadAllNotes() is called
     notebook.reloadAllNotes(anonymous);
     notes = notebook.getAllNotes();
-    assertEquals(notes.size(), 2);
+    assertEquals(2, notes.size());
   }
 
   @Test
@@ -355,7 +357,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
       assertEquals(0, notebook.getAllNotes().size());
       note = notebook.createNote("note1", anonymous);
       Paragraph p1 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
-      Map config = p1.getConfig();
+      Map<String, Object> config = p1.getConfig();
       config.put("enabled", true);
       p1.setConfig(config);
       p1.setText("hello world");
@@ -373,7 +375,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
 
     // run with default repl
     Paragraph p1 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
-    Map config = p1.getConfig();
+    Map<String, Object> config = p1.getConfig();
     config.put("enabled", true);
     p1.setConfig(config);
     p1.setText("hello world");
@@ -405,7 +407,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
   public void testClearParagraphOutput() throws IOException, SchedulerException {
     Note note = notebook.createNote("note1", anonymous);
     Paragraph p1 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
-    Map config = p1.getConfig();
+    Map<String, Object> config = p1.getConfig();
     config.put("enabled", true);
     p1.setConfig(config);
     p1.setText("%mock1 hello world");
@@ -430,7 +432,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     note.run(p1.getId());
 
     Thread.sleep(2 * 1000);
-    assertEquals(p1.getStatus(), Status.FINISHED);
+    assertEquals(Status.FINISHED, p1.getStatus());
     assertNull(p1.getDateStarted());
     notebook.removeNote(note, anonymous);
   }
@@ -443,7 +445,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
       Note note = notebook.createNote("note1", anonymous);
       int mock1ProcessNum = interpreterSettingManager.getByName("mock1").getAllInterpreterGroups().size();
       Paragraph p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
-      Map config = new HashMap<>();
+      Map<String, Object> config = new HashMap<>();
       p.setConfig(config);
       p.setText("%mock1 sleep 100000");
       p.execute(false);
@@ -477,7 +479,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     note.run(p1.getId());
 
     Thread.sleep(2 * 1000);
-    assertEquals(p1.getStatus(), Status.ERROR);
+    assertEquals(Status.ERROR, p1.getStatus());
     InterpreterResult result = p1.getReturn();
     assertEquals(InterpreterResult.Code.ERROR, result.code());
     assertEquals("Interpreter invalid not found", result.message().get(0).getData());
@@ -491,14 +493,14 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
 
     // p1
     Paragraph p1 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
-    Map config1 = p1.getConfig();
+    Map<String, Object> config1 = p1.getConfig();
     config1.put("enabled", true);
     p1.setConfig(config1);
     p1.setText("%mock1 p1");
 
     // p2
     Paragraph p2 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
-    Map config2 = p2.getConfig();
+    Map<String, Object> config2 = p2.getConfig();
     config2.put("enabled", false);
     p2.setConfig(config2);
     p2.setText("%mock1 p2");
@@ -522,7 +524,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     // create a note and a paragraph
     Note note = notebook.createNote("note1", anonymous);
     Paragraph p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
-    Map config = new HashMap<>();
+    Map<String, Object> config = new HashMap<>();
     p.setConfig(config);
     p.setText("p1");
     Date dateFinished = p.getDateFinished();
@@ -555,7 +557,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     // append running and pending paragraphs to the note
     for (Status status : new Status[]{Status.RUNNING, Status.PENDING}) {
       Paragraph p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
-      Map config = new HashMap<>();
+      Map<String, Object> config = new HashMap<>();
       p.setConfig(config);
       p.setText("p");
       p.setStatus(status);
@@ -563,7 +565,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     }
 
     // set cron scheduler, once a second
-    Map config = note.getConfig();
+    Map<String, Object> config = note.getConfig();
     config.put("enabled", true);
     config.put("cron", "* * * * * ?");
     note.setConfig(config);
@@ -595,7 +597,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     executeNewParagraphByCron(note, everySecondCron);
     afterStatusChangedListener = new StatusChangedListener() {
       @Override
-      public void onStatusChanged(Job job, Status before, Status after) {
+      public void onStatusChanged(Job<?> job, Status before, Status after) {
         if (after == Status.FINISHED) {
           jobsToExecuteCount.countDown();
         }
@@ -631,7 +633,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
       executeNewParagraphByCron(note, everySecondCron);
       afterStatusChangedListener = new StatusChangedListener() {
         @Override
-        public void onStatusChanged(Job job, Status before, Status after) {
+        public void onStatusChanged(Job<?> job, Status before, Status after) {
           if (after == Status.FINISHED) {
             jobsToExecuteCount.countDown();
           }
@@ -661,7 +663,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
       executeNewParagraphByCron(note, everySecondCron);
       afterStatusChangedListener = new StatusChangedListener() {
         @Override
-        public void onStatusChanged(Job job, Status before, Status after) {
+        public void onStatusChanged(Job<?> job, Status before, Status after) {
           if (after == Status.FINISHED) {
             jobsToExecuteCount.countDown();
           }
@@ -680,7 +682,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
       executeNewParagraphByCron(noteNameSystem, everySecondCron);
       afterStatusChangedListener = new StatusChangedListener() {
         @Override
-        public void onStatusChanged(Job job, Status before, Status after) {
+        public void onStatusChanged(Job<?> job, Status before, Status after) {
           if (after == Status.FINISHED) {
             jobsToExecuteCountNameSystem.countDown();
           }
@@ -710,7 +712,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     Note note = notebook.createNote("note1", anonymous);
 
     Paragraph p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
-    Map config = new HashMap<>();
+    Map<String, Object> config = new HashMap<>();
     p.setConfig(config);
     p.setText("%mock1 sleep 1000");
 
@@ -757,24 +759,19 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
       throws IOException, InterruptedException, InterpreterNotFoundException {
     // create a cron scheduled note.
     Note cronNote = notebook.createNote("note1", anonymous);
-
-    cronNote.setConfig(new HashMap() {
-      {
-        put("cron", "1/5 * * * * ?");
-        put("cronExecutingUser", anonymous.getUser());
-        put("releaseresource", true);
-      }
-    });
+    Map<String, Object> config = new HashMap<>();
+    config.put("cron", "1/5 * * * * ?");
+    config.put("cronExecutingUser", anonymous.getUser());
+    config.put("releaseresource", true);
+    cronNote.setConfig(config);
     RemoteInterpreter cronNoteInterpreter =
         (RemoteInterpreter) interpreterFactory.getInterpreter("mock1", new ExecutionContextBuilder().setUser(anonymous.getUser()).setNoteId(cronNote.getId()).setDefaultInterpreterGroup("test").createExecutionContext());
 
     // create a paragraph of the cron scheduled note.
     Paragraph cronNoteParagraph = cronNote.addNewParagraph(AuthenticationInfo.ANONYMOUS);
-    cronNoteParagraph.setConfig(new HashMap() {
-      {
-        put("enabled", true);
-      }
-    });
+    config = new HashMap<>();
+    config.put("enabled", true);
+    cronNoteParagraph.setConfig(config);
     cronNoteParagraph.setText("%mock1 sleep 1000");
 
     // create another note
@@ -785,11 +782,9 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
 
     // create a paragraph of another note
     Paragraph anotherNoteParagraph = anotherNote.addNewParagraph(AuthenticationInfo.ANONYMOUS);
-    anotherNoteParagraph.setConfig(new HashMap() {
-      {
-        put("enabled", true);
-      }
-    });
+    config = new HashMap<>();
+    config.put("enabled", true);
+    anotherNoteParagraph.setConfig(config);
     anotherNoteParagraph.setText("%mock2 echo 1");
 
     // run the paragraph of another note
@@ -819,13 +814,11 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     assertTrue(anotherNoteInterpreter.isOpened());
 
     // remove cron scheduler
-    cronNote.setConfig(new HashMap() {
-      {
-        put("cron", null);
-        put("cronExecutingUser", null);
-        put("releaseresource", null);
-      }
-    });
+    config = new HashMap<>();
+    config.put("cron", null);
+    config.put("cronExecutingUser", null);
+    config.put("releaseresource", null);
+    cronNote.setConfig(config);
     schedulerService.refreshCron(cronNote.getId());
 
     // remove notebooks
@@ -899,7 +892,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     p.setStatus(Status.RUNNING);
     Note cloneNote = notebook.cloneNote(note.getId(), "clone note", anonymous);
     Paragraph cp = cloneNote.getParagraph(0);
-    assertEquals(cp.getStatus(), Status.READY);
+    assertEquals(Status.READY, cp.getStatus());
 
     // Keep same ParagraphId
     assertEquals(cp.getId(), p.getId());
@@ -1037,14 +1030,14 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     // create a note and a paragraph
     Note note = notebook.createNote("note1", anonymous);
     // empty owners, readers or writers means note is public
-    assertEquals(authorizationService.isOwner(note.getId(),
-        new HashSet<>(Arrays.asList("user2"))), true);
-    assertEquals(authorizationService.isReader(note.getId(),
-        new HashSet<>(Arrays.asList("user2"))), true);
-    assertEquals(authorizationService.isRunner(note.getId(),
-        new HashSet<>(Arrays.asList("user2"))), true);
-    assertEquals(authorizationService.isWriter(note.getId(),
-        new HashSet<>(Arrays.asList("user2"))), true);
+    assertTrue(authorizationService.isOwner(note.getId(),
+        new HashSet<>(Arrays.asList("user2"))));
+    assertTrue(authorizationService.isReader(note.getId(),
+        new HashSet<>(Arrays.asList("user2"))));
+    assertTrue(authorizationService.isRunner(note.getId(),
+        new HashSet<>(Arrays.asList("user2"))));
+    assertTrue(authorizationService.isWriter(note.getId(),
+        new HashSet<>(Arrays.asList("user2"))));
 
     authorizationService.setOwners(note.getId(),
         new HashSet<>(Arrays.asList("user1")));
@@ -1055,32 +1048,32 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     authorizationService.setWriters(note.getId(),
         new HashSet<>(Arrays.asList("user1")));
 
-    assertEquals(authorizationService.isOwner(note.getId(),
-        new HashSet<>(Arrays.asList("user2"))), false);
-    assertEquals(authorizationService.isOwner(note.getId(),
-        new HashSet<>(Arrays.asList("user1"))), true);
+    assertFalse(authorizationService.isOwner(note.getId(),
+        new HashSet<>(Arrays.asList("user2"))));
+    assertTrue(authorizationService.isOwner(note.getId(),
+        new HashSet<>(Arrays.asList("user1"))));
 
-    assertEquals(authorizationService.isReader(note.getId(),
-        new HashSet<>(Arrays.asList("user4"))), false);
-    assertEquals(authorizationService.isReader(note.getId(),
-        new HashSet<>(Arrays.asList("user2"))), true);
+    assertFalse(authorizationService.isReader(note.getId(),
+        new HashSet<>(Arrays.asList("user4"))));
+    assertTrue(authorizationService.isReader(note.getId(),
+        new HashSet<>(Arrays.asList("user2"))));
 
-    assertEquals(authorizationService.isRunner(note.getId(),
-        new HashSet<>(Arrays.asList("user3"))), true);
-    assertEquals(authorizationService.isRunner(note.getId(),
-        new HashSet<>(Arrays.asList("user2"))), false);
+    assertTrue(authorizationService.isRunner(note.getId(),
+        new HashSet<>(Arrays.asList("user3"))));
+    assertFalse(authorizationService.isRunner(note.getId(),
+        new HashSet<>(Arrays.asList("user2"))));
 
-    assertEquals(authorizationService.isWriter(note.getId(),
-        new HashSet<>(Arrays.asList("user2"))), false);
-    assertEquals(authorizationService.isWriter(note.getId(),
-        new HashSet<>(Arrays.asList("user1"))), true);
+    assertFalse(authorizationService.isWriter(note.getId(),
+        new HashSet<>(Arrays.asList("user2"))));
+    assertTrue(authorizationService.isWriter(note.getId(),
+        new HashSet<>(Arrays.asList("user1"))));
 
     // Test clearing of permissions
     authorizationService.setReaders(note.getId(), Sets.<String>newHashSet());
-    assertEquals(authorizationService.isReader(note.getId(),
-        new HashSet<>(Arrays.asList("user2"))), true);
-    assertEquals(authorizationService.isReader(note.getId(),
-        new HashSet<>(Arrays.asList("user4"))), true);
+    assertTrue(authorizationService.isReader(note.getId(),
+        new HashSet<>(Arrays.asList("user2"))));
+    assertTrue(authorizationService.isReader(note.getId(),
+        new HashSet<>(Arrays.asList("user4"))));
 
     notebook.removeNote(note, anonymous);
   }
@@ -1097,37 +1090,37 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     Note note = notebook.createNote("note1", new AuthenticationInfo(user1));
 
     // check that user1 is owner, reader, runner and writer
-    assertEquals(authorizationService.isOwner(note.getId(),
-        Sets.newHashSet(user1)), true);
-    assertEquals(authorizationService.isReader(note.getId(),
-        Sets.newHashSet(user1)), true);
-    assertEquals(authorizationService.isRunner(note.getId(),
-        Sets.newHashSet(user2)), true);
-    assertEquals(authorizationService.isWriter(note.getId(),
-        Sets.newHashSet(user1)), true);
+    assertTrue(authorizationService.isOwner(note.getId(),
+        Sets.newHashSet(user1)));
+    assertTrue(authorizationService.isReader(note.getId(),
+        Sets.newHashSet(user1)));
+    assertTrue(authorizationService.isRunner(note.getId(),
+        Sets.newHashSet(user2)));
+    assertTrue(authorizationService.isWriter(note.getId(),
+        Sets.newHashSet(user1)));
 
     // since user1 and user2 both have admin role, user2 will be reader and writer as well
-    assertEquals(authorizationService.isOwner(note.getId(),
-        Sets.newHashSet(user2)), false);
-    assertEquals(authorizationService.isReader(note.getId(),
-        Sets.newHashSet(user2)), true);
-    assertEquals(authorizationService.isRunner(note.getId(),
-        Sets.newHashSet(user2)), true);
-    assertEquals(authorizationService.isWriter(note.getId(),
-        Sets.newHashSet(user2)), true);
+    assertFalse(authorizationService.isOwner(note.getId(),
+        Sets.newHashSet(user2)));
+    assertTrue(authorizationService.isReader(note.getId(),
+        Sets.newHashSet(user2)));
+    assertTrue(authorizationService.isRunner(note.getId(),
+        Sets.newHashSet(user2)));
+    assertTrue(authorizationService.isWriter(note.getId(),
+        Sets.newHashSet(user2)));
 
     // check that user1 has note listed in his workbench
     Set<String> user1AndRoles = authorizationService.getRoles(user1);
     user1AndRoles.add(user1);
     List<NoteInfo> user1Notes = notebook.getNotesInfo(noteId -> authorizationService.isReader(noteId, user1AndRoles));
-    assertEquals(user1Notes.size(), 1);
+    assertEquals(1, user1Notes.size());
     assertEquals(user1Notes.get(0).getId(), note.getId());
 
     // check that user2 has note listed in his workbench because of admin role
     Set<String> user2AndRoles = authorizationService.getRoles(user2);
     user2AndRoles.add(user2);
     List<NoteInfo> user2Notes = notebook.getNotesInfo(noteId -> authorizationService.isReader(noteId, user2AndRoles));
-    assertEquals(user2Notes.size(), 1);
+    assertEquals(1, user2Notes.size());
     assertEquals(user2Notes.get(0).getId(), note.getId());
   }
 
@@ -1143,9 +1136,9 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     assertTrue(config.containsKey(InterpreterSetting.PARAGRAPH_CONFIG_RUNONSELECTIONCHANGE));
     assertTrue(config.containsKey(InterpreterSetting.PARAGRAPH_CONFIG_TITLE));
     assertTrue(config.containsKey(InterpreterSetting.PARAGRAPH_CONFIG_CHECK_EMTPY));
-    assertEquals(config.get(InterpreterSetting.PARAGRAPH_CONFIG_RUNONSELECTIONCHANGE), false);
-    assertEquals(config.get(InterpreterSetting.PARAGRAPH_CONFIG_TITLE), true);
-    assertEquals(config.get(InterpreterSetting.PARAGRAPH_CONFIG_CHECK_EMTPY), false);
+    assertEquals(false, config.get(InterpreterSetting.PARAGRAPH_CONFIG_RUNONSELECTIONCHANGE));
+    assertEquals(true, config.get(InterpreterSetting.PARAGRAPH_CONFIG_TITLE));
+    assertEquals(false, config.get(InterpreterSetting.PARAGRAPH_CONFIG_CHECK_EMTPY));
 
     // The config_test interpreter sets the default parameters
     // in interpreter/config_test/interpreter-setting.json
@@ -1159,9 +1152,9 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
 
     // Check if the config_test interpreter default parameter takes effect
     LOGGER.info("p1.getConfig() =  " + p1.getConfig());
-    assertEquals(config.get(InterpreterSetting.PARAGRAPH_CONFIG_RUNONSELECTIONCHANGE), false);
-    assertEquals(config.get(InterpreterSetting.PARAGRAPH_CONFIG_TITLE), true);
-    assertEquals(config.get(InterpreterSetting.PARAGRAPH_CONFIG_CHECK_EMTPY), false);
+    assertEquals(false, config.get(InterpreterSetting.PARAGRAPH_CONFIG_RUNONSELECTIONCHANGE));
+    assertEquals(true, config.get(InterpreterSetting.PARAGRAPH_CONFIG_TITLE));
+    assertEquals(false, config.get(InterpreterSetting.PARAGRAPH_CONFIG_CHECK_EMTPY));
 
     // The mock1 interpreter does not set default parameters
     p1.setText("%mock1 sleep 1000");
@@ -1169,9 +1162,9 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
 
     // mock1 has no config setting in interpreter-setting.json, so keep the previous config
     LOGGER.info("changed intp p1.getConfig() =  " + p1.getConfig());
-    assertEquals(config.get(InterpreterSetting.PARAGRAPH_CONFIG_RUNONSELECTIONCHANGE), false);
-    assertEquals(config.get(InterpreterSetting.PARAGRAPH_CONFIG_TITLE), true);
-    assertEquals(config.get(InterpreterSetting.PARAGRAPH_CONFIG_CHECK_EMTPY), false);
+    assertEquals(false, config.get(InterpreterSetting.PARAGRAPH_CONFIG_RUNONSELECTIONCHANGE));
+    assertEquals(true, config.get(InterpreterSetting.PARAGRAPH_CONFIG_TITLE));
+    assertEquals(false, config.get(InterpreterSetting.PARAGRAPH_CONFIG_CHECK_EMTPY));
 
     // user manually change config
     p1.getConfig().put(InterpreterSetting.PARAGRAPH_CONFIG_RUNONSELECTIONCHANGE, true);
@@ -1181,9 +1174,9 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
 
     // manually config change take effect after execution
     LOGGER.info("changed intp p1.getConfig() =  " + p1.getConfig());
-    assertEquals(config.get(InterpreterSetting.PARAGRAPH_CONFIG_RUNONSELECTIONCHANGE), true);
-    assertEquals(config.get(InterpreterSetting.PARAGRAPH_CONFIG_TITLE), false);
-    assertEquals(config.get(InterpreterSetting.PARAGRAPH_CONFIG_CHECK_EMTPY), false);
+    assertEquals(true, config.get(InterpreterSetting.PARAGRAPH_CONFIG_RUNONSELECTIONCHANGE));
+    assertEquals(false, config.get(InterpreterSetting.PARAGRAPH_CONFIG_TITLE));
+    assertEquals(false, config.get(InterpreterSetting.PARAGRAPH_CONFIG_CHECK_EMTPY));
   }
 
   @Test
@@ -1229,7 +1222,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
 
     // restart interpreter with per user session enabled
     for (InterpreterSetting setting : note1.getBindedInterpreterSettings(new ArrayList<>())) {
-      setting.getOption().setPerNote(setting.getOption().SCOPED);
+      setting.getOption().setPerNote(InterpreterOption.SCOPED);
       notebook.getInterpreterSettingManager().restart(setting.getId());
     }
 
@@ -1288,7 +1281,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     while (p1.getStatus() != Status.FINISHED) Thread.yield();
     while (p2.getStatus() != Status.FINISHED) Thread.yield();
 
-    assertNotEquals(p1.getReturn().message(), p2.getReturn().message().get(0).getData());
+    assertNotEquals(p1.getReturn().message().get(0).getData(), p2.getReturn().message().get(0).getData());
 
     notebook.removeNote(note1, anonymous);
     notebook.removeNote(note2, anonymous);
@@ -1454,8 +1447,8 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
   public void testGetAllNotesWithDifferentPermissions() throws IOException {
     List<Note> notes1 = notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), Sets.newHashSet("user1")));
     List<Note> notes2 = notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), Sets.newHashSet("user2")));
-    assertEquals(notes1.size(), 0);
-    assertEquals(notes2.size(), 0);
+    assertEquals(0, notes1.size());
+    assertEquals(0, notes2.size());
 
     //creates note and sets user1 owner
     Note note1 = notebook.createNote("note1", new AuthenticationInfo("user1"));
@@ -1463,27 +1456,27 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     // note is public since readers and writers empty
     notes1 = notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), Sets.newHashSet("user1")));
     notes2 = notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), Sets.newHashSet("user2")));
-    assertEquals(notes1.size(), 1);
-    assertEquals(notes2.size(), 1);
+    assertEquals(1, notes1.size());
+    assertEquals(1, notes2.size());
 
     authorizationService.setReaders(note1.getId(), Sets.newHashSet("user1"));
     //note is public since writers empty
     notes1 = notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), Sets.newHashSet("user1")));
     notes2 = notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), Sets.newHashSet("user2")));
-    assertEquals(notes1.size(), 1);
-    assertEquals(notes2.size(), 1);
+    assertEquals(1, notes1.size());
+    assertEquals(1, notes2.size());
 
     authorizationService.setRunners(note1.getId(), Sets.newHashSet("user1"));
     notes1 = notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), Sets.newHashSet("user1")));
     notes2 = notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), Sets.newHashSet("user2")));
-    assertEquals(notes1.size(), 1);
-    assertEquals(notes2.size(), 1);
+    assertEquals(1, notes1.size());
+    assertEquals(1, notes2.size());
 
     authorizationService.setWriters(note1.getId(), Sets.newHashSet("user1"));
     notes1 = notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), Sets.newHashSet("user1")));
     notes2 = notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), Sets.newHashSet("user2")));
-    assertEquals(notes1.size(), 1);
-    assertEquals(notes2.size(), 0);
+    assertEquals(1, notes1.size());
+    assertEquals(0, notes2.size());
   }
 
   @Test
@@ -1494,8 +1487,8 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
 
     List<Note> notes1 = notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), Sets.newHashSet("user1")));
     List<Note> notes2 = notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), Sets.newHashSet("user2")));
-    assertEquals(notes1.size(), 0);
-    assertEquals(notes2.size(), 0);
+    assertEquals(0, notes1.size());
+    assertEquals(0, notes2.size());
 
     // user1 creates note
     Note notePublic = notebook.createNote("note1", new AuthenticationInfo("user1"));
@@ -1503,16 +1496,16 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     // both users have note
     notes1 = notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), Sets.newHashSet("user1")));
     notes2 = notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), Sets.newHashSet("user2")));
-    assertEquals(notes1.size(), 1);
-    assertEquals(notes2.size(), 1);
+    assertEquals(1, notes1.size());
+    assertEquals(1, notes2.size());
     assertEquals(notes1.get(0).getId(), notePublic.getId());
     assertEquals(notes2.get(0).getId(), notePublic.getId());
 
     // user1 is only owner
-    assertEquals(authorizationService.getOwners(notePublic.getId()).size(), 1);
-    assertEquals(authorizationService.getReaders(notePublic.getId()).size(), 0);
-    assertEquals(authorizationService.getRunners(notePublic.getId()).size(), 0);
-    assertEquals(authorizationService.getWriters(notePublic.getId()).size(), 0);
+    assertEquals(1, authorizationService.getOwners(notePublic.getId()).size());
+    assertEquals(0, authorizationService.getReaders(notePublic.getId()).size());
+    assertEquals(0, authorizationService.getRunners(notePublic.getId()).size());
+    assertEquals(0, authorizationService.getWriters(notePublic.getId()).size());
 
     // case of private note
     System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_PUBLIC.getVarName(), "false");
@@ -1524,8 +1517,8 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     // check that still 1 note per user
     notes1 = notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), Sets.newHashSet("user1")));
     notes2 = notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), Sets.newHashSet("user2")));
-    assertEquals(notes1.size(), 1);
-    assertEquals(notes2.size(), 1);
+    assertEquals(1, notes1.size());
+    assertEquals(1, notes2.size());
 
     // create private note
     Note notePrivate = notebook.createNote("note2", new AuthenticationInfo("user1"));
@@ -1533,15 +1526,15 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     // only user1 have notePrivate right after creation
     notes1 = notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), Sets.newHashSet("user1")));
     notes2 = notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), Sets.newHashSet("user2")));
-    assertEquals(notes1.size(), 2);
-    assertEquals(notes2.size(), 1);
+    assertEquals(2, notes1.size());
+    assertEquals(1, notes2.size());
     assertEquals(true, notes1.contains(notePrivate));
 
     // user1 have all rights
-    assertEquals(authorizationService.getOwners(notePrivate.getId()).size(), 1);
-    assertEquals(authorizationService.getReaders(notePrivate.getId()).size(), 1);
-    assertEquals(authorizationService.getRunners(notePrivate.getId()).size(), 1);
-    assertEquals(authorizationService.getWriters(notePrivate.getId()).size(), 1);
+    assertEquals(1, authorizationService.getOwners(notePrivate.getId()).size());
+    assertEquals(1, authorizationService.getReaders(notePrivate.getId()).size());
+    assertEquals(1, authorizationService.getRunners(notePrivate.getId()).size());
+    assertEquals(1, authorizationService.getWriters(notePrivate.getId()).size());
 
     //set back public to true
     System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_PUBLIC.getVarName(), "true");
@@ -1601,7 +1594,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
 
 
   private interface StatusChangedListener {
-    void onStatusChanged(Job job, Status before, Status after);
+    void onStatusChanged(Job<?> job, Status before, Status after);
   }
 
 

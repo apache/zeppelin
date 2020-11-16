@@ -67,13 +67,17 @@ import java.util.regex.Pattern;
  * The Shiro configuration section should be configured as:
  * [main]
  * krbRealm = org.apache.zeppelin.realm.kerberos.KerberosRealm
- * krbRealm.principal=HTTP/zeppelin.fqdn.domain.com@EXAMPLE.COM
- * krbRealm.keytab=/etc/security/keytabs/spnego.service.keytab
- * krbRealm.nameRules=DEFAULT
- * krbRealm.signatureSecretFile=/etc/security/http_secret
- * krbRealm.tokenValidity=36000
- * krbRealm.cookieDomain=domain.com
- * krbRealm.cookiePath=/
+ * krbRealm.principal = HTTP/zeppelin.fqdn.domain.com@EXAMPLE.COM
+ * krbRealm.keytab = /etc/security/keytabs/spnego.service.keytab
+ * krbRealm.nameRules = DEFAULT
+ * krbRealm.signatureSecretFile = /etc/security/http_secret
+ * krbRealm.tokenValidity = 36000
+ * krbRealm.cookieDomain = domain.com
+ * krbRealm.cookiePath = /
+ * krbRealm.logout = logout
+ * krbRealm.logoutAPI = true
+ * krbRealm.providerUrl = https://domain.example.com/
+ * krbRealm.redirectParam = originalUrl
  * authc = org.apache.zeppelin.realm.kerberos.KerberosAuthenticationFilter
  *
  */
@@ -91,6 +95,10 @@ public class KerberosRealm extends AuthorizingRealm {
   private boolean isCookiePersistent = false;
   private String signatureSecretFile = null;
   private String signatureSecretProvider = "file";
+  private String logout = "logout";
+  private Boolean logoutAPI = true;
+  private String providerUrl = "https://domain.example.com/";
+  private String redirectParam = "originalUrl";
 
   /**
    * Constant for the property that specifies the authentication handler to use.
@@ -167,6 +175,11 @@ public class KerberosRealm extends AuthorizingRealm {
    * implementation will be used.
    */
   private static final String SIGNER_SECRET_PROVIDER = "signer.secret.provider";
+  /**
+   * Constant for the configuration property that indicates the path to use to logout
+   */
+  private static final String LOGOUT = "logout";
+
 
   private static Signer signer = null;
   private SignerSecretProvider secretProvider = null;
@@ -878,6 +891,7 @@ public class KerberosRealm extends AuthorizingRealm {
     props.put(PRINCIPAL, principal);
     props.put(KEYTAB, keytab);
     props.put(NAME_RULES, nameRules);
+    props.put(LOGOUT, logout);
     return props;
   }
 
@@ -980,6 +994,38 @@ public class KerberosRealm extends AuthorizingRealm {
 
   public void setSignatureSecretProvider(String signatureSecretProvider) {
     this.signatureSecretProvider = signatureSecretProvider;
+  }
+
+  public String getLogout() {
+    return logout;
+  }
+
+  public void setLogout(String logout) {
+    this.logout = logout;
+  }
+
+  public Boolean getLogoutAPI() {
+    return logoutAPI;
+  }
+
+  public void setLogoutAPI(Boolean logoutAPI) {
+    this.logoutAPI = logoutAPI;
+  }
+
+  public String getProviderUrl() {
+    return providerUrl;
+  }
+
+  public void setProviderUrl(String providerUrl) {
+    this.providerUrl = providerUrl;
+  }
+
+  public String getRedirectParam() {
+    return redirectParam;
+  }
+
+  public void setRedirectParam(String redirectParam) {
+    this.redirectParam = redirectParam;
   }
 
   /**

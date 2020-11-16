@@ -35,7 +35,7 @@ if [ -f /proc/self/cgroup ] && [ -n "$(command -v getent)" ]; then
         set +e
         uidentry="$(getent passwd "$myuid")"
         set -e
-        
+
         # If there is no passwd entry for the container UID, attempt to create one
         if [ -z "$uidentry" ] ; then
             if [ -w /etc/passwd ] ; then
@@ -129,22 +129,22 @@ ZEPPELIN_LOGFILE="${ZEPPELIN_LOG_DIR}/zeppelin-interpreter-${INTERPRETER_GROUP_I
 
 if [[ -z "$ZEPPELIN_IMPERSONATE_CMD" ]]; then
     if [[ "${INTERPRETER_ID}" != "spark" || "$ZEPPELIN_IMPERSONATE_SPARK_PROXY_USER" == "false" ]]; then
-        ZEPPELIN_IMPERSONATE_RUN_CMD=`echo "ssh ${ZEPPELIN_IMPERSONATE_USER}@localhost" `
+        ZEPPELIN_IMPERSONATE_RUN_CMD=("ssh" "${ZEPPELIN_IMPERSONATE_USER}@localhost")
     fi
 else
     ZEPPELIN_IMPERSONATE_RUN_CMD=$(eval "echo ${ZEPPELIN_IMPERSONATE_CMD} ")
 fi
 
 
-if [[ ! -z "$ZEPPELIN_IMPERSONATE_USER" ]]; then
+if [[ -n "$ZEPPELIN_IMPERSONATE_USER" ]]; then
     ZEPPELIN_LOGFILE+="${ZEPPELIN_IMPERSONATE_USER}-"
 fi
 ZEPPELIN_LOGFILE+="${ZEPPELIN_IDENT_STRING}-${HOSTNAME}.log"
-JAVA_INTP_OPTS+=" -Dzeppelin.log.file='${ZEPPELIN_LOGFILE}'"
+JAVA_INTP_OPTS+=" -Dzeppelin.log.file=${ZEPPELIN_LOGFILE}"
 
 if [[ ! -d "${ZEPPELIN_LOG_DIR}" ]]; then
   echo "Log dir doesn't exist, create ${ZEPPELIN_LOG_DIR}"
-  $(mkdir -p "${ZEPPELIN_LOG_DIR}")
+  mkdir -p "${ZEPPELIN_LOG_DIR}"
 fi
 
 # set spark related env variables
@@ -152,16 +152,15 @@ if [[ "${INTERPRETER_ID}" == "spark" ]]; then
 
   # run kinit
   if [[ -n "${ZEPPELIN_SERVER_KERBEROS_KEYTAB}" ]] && [[ -n "${ZEPPELIN_SERVER_KERBEROS_PRINCIPAL}" ]]; then
-    kinit -kt ${ZEPPELIN_SERVER_KERBEROS_KEYTAB} ${ZEPPELIN_SERVER_KERBEROS_PRINCIPAL}
+    kinit -kt "${ZEPPELIN_SERVER_KERBEROS_KEYTAB}" "${ZEPPELIN_SERVER_KERBEROS_PRINCIPAL}"
   fi
   if [[ -n "${SPARK_HOME}" ]]; then
     export SPARK_SUBMIT="${SPARK_HOME}/bin/spark-submit"
-    SPARK_APP_JAR="$(ls ${ZEPPELIN_HOME}/interpreter/spark/spark-interpreter*.jar)"
+    SPARK_APP_JAR="$(ls "${ZEPPELIN_HOME}"/interpreter/spark/spark-interpreter*.jar)"
     # This will evantually passes SPARK_APP_JAR to classpath of SparkIMain
     ZEPPELIN_INTP_CLASSPATH+=":${SPARK_APP_JAR}"
 
-    pattern="$SPARK_HOME/python/lib/py4j-*-src.zip"
-    py4j=($pattern)
+    py4j=("${SPARK_HOME}"/python/lib/py4j-*-src.zip)
     # pick the first match py4j zip - there should only be one
     export PYTHONPATH="$SPARK_HOME/python/:$PYTHONPATH"
     export PYTHONPATH="${py4j[0]}:$PYTHONPATH"
@@ -178,8 +177,7 @@ if [[ "${INTERPRETER_ID}" == "spark" ]]; then
 
     addJarInDirForIntp "${INTERPRETER_DIR}/dep"
 
-    pattern="${ZEPPELIN_HOME}/interpreter/spark/pyspark/py4j-*-src.zip"
-    py4j=($pattern)
+    py4j=("${ZEPPELIN_HOME}"/interpreter/spark/pyspark/py4j-*-src.zip)
     # pick the first match py4j zip - there should only be one
     PYSPARKPATH="${ZEPPELIN_HOME}/interpreter/spark/pyspark/pyspark.zip:${py4j[0]}"
 
@@ -246,14 +244,14 @@ elif [[ "${INTERPRETER_ID}" == "flink" ]]; then
     ZEPPELIN_INTP_CLASSPATH+=":${HADOOP_CONF_DIR}"
     # Don't use `hadoop classpath` if flink-hadoop-shaded in in lib folder
     flink_hadoop_shaded_jar=$(find "${FLINK_HOME}/lib" -name 'flink-shaded-hadoop-*.jar')
-    if [[ ! -z "$flink_hadoop_shaded_jar" ]]; then
+    if [[ -n "$flink_hadoop_shaded_jar" ]]; then
       echo ""
     else
       if [[ ! ( -x "$(command -v hadoop)" ) && ( "${ZEPPELIN_INTERPRETER_LAUNCHER}" != "yarn" ) ]]; then
         echo 'Error: hadoop is not in PATH when HADOOP_CONF_DIR is specified and no flink-shaded-hadoop jar '
         exit 1
       fi
-      ZEPPELIN_INTP_CLASSPATH+=":`hadoop classpath`"
+      ZEPPELIN_INTP_CLASSPATH+=":$(hadoop classpath)"
     fi
     export HADOOP_CONF_DIR=${HADOOP_CONF_DIR}
   else
@@ -271,59 +269,26 @@ fi
 
 addJarInDirForIntp "${LOCAL_INTERPRETER_REPO}"
 
-if [[ ! -z "$ZEPPELIN_IMPERSONATE_USER" ]]; then
+if [[ -n "$ZEPPELIN_IMPERSONATE_USER" ]]; then
   if [[ "${INTERPRETER_ID}" != "spark" || "$ZEPPELIN_IMPERSONATE_SPARK_PROXY_USER" == "false" ]]; then
-    suid="$(id -u ${ZEPPELIN_IMPERSONATE_USER})"
+    suid="$(id -u "${ZEPPELIN_IMPERSONATE_USER}")"
     if [[ -n  "${suid}" || -z "${SPARK_SUBMIT}" ]]; then
-       INTERPRETER_RUN_COMMAND=${ZEPPELIN_IMPERSONATE_RUN_CMD}" '"
+       INTERPRETER_RUN_COMMAND+=("${ZEPPELIN_IMPERSONATE_RUN_CMD[@]}")
        if [[ -f "${ZEPPELIN_CONF_DIR}/zeppelin-env.sh" ]]; then
-           INTERPRETER_RUN_COMMAND+=" source "${ZEPPELIN_CONF_DIR}'/zeppelin-env.sh;'
+           INTERPRETER_RUN_COMMAND+=("source" "${ZEPPELIN_CONF_DIR}/zeppelin-env.sh;")
        fi
     fi
   fi
 fi
 
 if [[ -n "${SPARK_SUBMIT}" ]]; then
-    INTERPRETER_RUN_COMMAND+=' '` echo ${SPARK_SUBMIT} --class ${ZEPPELIN_SERVER} --driver-class-path \"${ZEPPELIN_INTP_CLASSPATH_OVERRIDES}:${ZEPPELIN_INTP_CLASSPATH}\" --driver-java-options \"${JAVA_INTP_OPTS}\" ${SPARK_SUBMIT_OPTIONS} ${ZEPPELIN_SPARK_CONF} ${SPARK_APP_JAR} ${CALLBACK_HOST} ${PORT} \"${INTP_GROUP_ID}\" ${INTP_PORT}`
+  IFS=' ' read -r -a SPARK_SUBMIT_OPTIONS_ARRAY <<< "${SPARK_SUBMIT_OPTIONS}"
+  IFS=' ' read -r -a ZEPPELIN_SPARK_CONF_ARRAY <<< "${ZEPPELIN_SPARK_CONF}"
+  INTERPRETER_RUN_COMMAND+=("${SPARK_SUBMIT}" "--class" "${ZEPPELIN_SERVER}" "--driver-class-path" "${ZEPPELIN_INTP_CLASSPATH_OVERRIDES}:${ZEPPELIN_INTP_CLASSPATH}" "--driver-java-options" "${JAVA_INTP_OPTS}" "${SPARK_SUBMIT_OPTIONS_ARRAY[@]}" "${ZEPPELIN_SPARK_CONF_ARRAY[@]}" "${SPARK_APP_JAR}" "${CALLBACK_HOST}" "${PORT}" "${INTP_GROUP_ID}" "${INTP_PORT}")
 else
-    INTERPRETER_RUN_COMMAND+=' '` echo ${ZEPPELIN_RUNNER} ${JAVA_INTP_OPTS} ${ZEPPELIN_INTP_MEM} -cp \"${ZEPPELIN_INTP_CLASSPATH_OVERRIDES}:${ZEPPELIN_INTP_CLASSPATH}\" ${ZEPPELIN_SERVER} ${CALLBACK_HOST} ${PORT} \"${INTP_GROUP_ID}\" ${INTP_PORT}`
+  IFS=' ' read -r -a JAVA_INTP_OPTS_ARRAY <<< "${JAVA_INTP_OPTS}"
+  IFS=' ' read -r -a ZEPPELIN_INTP_MEM_ARRAY <<< "${ZEPPELIN_INTP_MEM}"
+  INTERPRETER_RUN_COMMAND+=("${ZEPPELIN_RUNNER}" "${JAVA_INTP_OPTS_ARRAY[@]}" "${ZEPPELIN_INTP_MEM_ARRAY[@]}" "-cp" "${ZEPPELIN_INTP_CLASSPATH_OVERRIDES}:${ZEPPELIN_INTP_CLASSPATH}" "${ZEPPELIN_SERVER}" "${CALLBACK_HOST}" "${PORT}" "${INTP_GROUP_ID}" "${INTP_PORT}")
 fi
 
-
-if [[ ! -z "$ZEPPELIN_IMPERSONATE_USER" ]] && [[ -n "${suid}" || -z "${SPARK_SUBMIT}" ]]; then
-    INTERPRETER_RUN_COMMAND+="'"
-fi
-
-echo "Interpreter launch command: $INTERPRETER_RUN_COMMAND"
-eval $INTERPRETER_RUN_COMMAND &
-pid=$!
-
-if [[ -z "${pid}" ]]; then
-  exit 1;
-else
-  echo ${pid} > "${ZEPPELIN_PID}"
-fi
-
-
-trap 'shutdown_hook;' SIGTERM SIGINT SIGQUIT
-function shutdown_hook() {
-  local count
-  count=0
-  echo "trying to shutdown..."
-  while [[ "${count}" -lt 10 ]]; do
-    $(kill ${pid} > /dev/null 2> /dev/null)
-    if kill -0 ${pid} > /dev/null 2>&1; then
-      sleep 3
-      let "count+=1"
-    else
-      break
-    fi
-  if [[ "${count}" == "5" ]]; then
-    $(kill -9 ${pid} > /dev/null 2> /dev/null)
-  fi
-  done
-}
-
-wait
-
-rm -f "${ZEPPELIN_PID}" > /dev/null 2> /dev/null
+exec "${INTERPRETER_RUN_COMMAND[@]}"

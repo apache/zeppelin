@@ -24,7 +24,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 
 import com.google.gson.Gson;
-import com.google.gson.internal.StringMap;
 import com.google.gson.reflect.TypeToken;
 
 import org.apache.zeppelin.interpreter.InterpreterSetting;
@@ -43,6 +42,7 @@ import org.junit.runners.MethodSorters;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -183,9 +183,9 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
       resp = gson.fromJson(EntityUtils.toString(post.getEntity(), StandardCharsets.UTF_8),
               new TypeToken<Map<String, Object>>() {}.getType());
       assertEquals("OK", resp.get("status"));
-      StringMap stringMap = (StringMap) resp.get("body");
+      Map stringMap = (Map) resp.get("body");
       assertEquals("ERROR", stringMap.get("code"));
-      List<StringMap> interpreterResults = (List<StringMap>) stringMap.get("msg");
+      List<Map> interpreterResults = (List<Map>) stringMap.get("msg");
       assertTrue(interpreterResults.get(0).toString(),
               interpreterResults.get(0).get("data").toString().contains("invalid_cmd: command not found"));
       post.close();

@@ -221,9 +221,8 @@ public class HeliumApplicationFactoryTest extends AbstractInterpreterTest {
     p1.setText("%fake ");
 
     // make sure that p1's repl is null
-    Interpreter intp = null;
     try {
-      intp = p1.getBindedInterpreter();
+      p1.getBindedInterpreter();
       fail("Should throw InterpreterNotFoundException");
     } catch (InterpreterNotFoundException e) {
 

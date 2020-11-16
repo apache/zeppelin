@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -32,14 +33,12 @@ import java.util.List;
  * Simple Helium registry on local filesystem
  */
 public class HeliumLocalRegistry extends HeliumRegistry {
-  private Logger logger = LoggerFactory.getLogger(HeliumLocalRegistry.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(HeliumLocalRegistry.class);
 
-  private final Gson gson;
+  private static final Gson gson = new Gson();
 
   public HeliumLocalRegistry(String name, String uri) {
     super(name, uri);
-    gson = new Gson();
-
   }
 
   @Override
@@ -67,12 +66,12 @@ public class HeliumLocalRegistry extends HeliumRegistry {
 
   private HeliumPackage readPackageInfo(File f) {
     try {
-      JsonReader reader = new JsonReader(new StringReader(FileUtils.readFileToString(f)));
+      JsonReader reader = new JsonReader(new StringReader(FileUtils.readFileToString(f, StandardCharsets.UTF_8)));
       reader.setLenient(true);
 
       return gson.fromJson(reader, HeliumPackage.class);
     } catch (IOException e) {
-      logger.error(e.getMessage(), e);
+      LOGGER.error(e.getMessage(), e);
       return null;
     }
   }

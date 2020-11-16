@@ -18,13 +18,13 @@
 package org.apache.zeppelin.rest;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.zeppelin.annotation.ZeppelinApi;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.common.SessionInfo;
 import org.apache.zeppelin.rest.exception.SessionNoteFoundException;
 import org.apache.zeppelin.server.JsonResponse;
+import org.apache.zeppelin.service.SessionManagerService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,7 +41,7 @@ import javax.ws.rs.core.Response;
 import java.util.List;
 
 /**
- * Rest api endpoint for the ZSession.
+ * Rest api endpoint for ZSession operations.
  */
 @Path("/session")
 @Produces("application/json")
@@ -50,44 +50,69 @@ public class SessionRestApi {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SessionRestApi.class);
 
-  private SessionManager sessionManager;
+  private SessionManagerService sessionManagerService;
 
   @Inject
   public SessionRestApi(Notebook notebook, InterpreterSettingManager interpreterSettingManager) {
-    this.sessionManager = new SessionManager(notebook, interpreterSettingManager);
+    this.sessionManagerService = new SessionManagerService(notebook, interpreterSettingManager);
   }
 
+  /**
+   * List all sessions when interpreter is not provided, otherwise only list all the sessions
+   * of this provided interpreter.
+   *
+   * @param interpreter
+   * @return
+   * @throws Exception
+   */
   @GET
   @Path("/")
   public Response listSessions(@QueryParam("interpreter") String interpreter) throws Exception {
     if (StringUtils.isBlank(interpreter)) {
-      LOGGER.info("List all sessions");
+      LOGGER.info("List all sessions of all interpreters");
     } else {
       LOGGER.info("List all sessions for interpreter: " + interpreter);
     }
     List<SessionInfo> sessionList = null;
     if (StringUtils.isBlank(interpreter)) {
-      sessionList = sessionManager.getAllSessions();
+      sessionList = sessionManagerService.listSessions();
     } else {
-      sessionList = sessionManager.getAllSessions(interpreter);
+      sessionList = sessionManagerService.listSessions(interpreter);
     }
     return new JsonResponse<>(Response.Status.OK, sessionList).build();
   }
 
+  /**
+   * Create a session for this provided interpreter.
+   *
+   * @param interpreter
+   * @return
+   * @throws Exception
+   */
   @POST
   @Path("/")
   public Response createSession(@QueryParam("interpreter") String interpreter) throws Exception {
     LOGGER.info("Create new session for interpreter: {}", interpreter);
-    SessionInfo sessionInfo = sessionManager.createSession(interpreter);
+    SessionInfo sessionInfo = sessionManagerService.createSession(interpreter);
     return new JsonResponse<>(Response.Status.OK, sessionInfo).build();
   }
 
+  /**
+   * Stop the session of the provided sessionId.
+   *
+   * @param sessionId
+   * @return
+   */
   @DELETE
   @Path("{sessionId}")
   public Response stopSession(@PathParam("sessionId") String sessionId) {
     LOGGER.info("Stop session: {}", sessionId);
-    sessionManager.removeSession(sessionId);
-    return new JsonResponse<>(Response.Status.OK, sessionId).build();
+    try {
+      sessionManagerService.stopSession(sessionId);
+      return new JsonResponse<>(Response.Status.OK, sessionId).build();
+    } catch (Exception e) {
+      return new JsonResponse<>(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage()).build();
+    }
   }
 
   /**
@@ -97,11 +122,11 @@ public class SessionRestApi {
   @Path("{sessionId}")
   @ZeppelinApi
   public Response getSession(@PathParam("sessionId") String sessionId) throws Exception {
-    SessionInfo session = sessionManager.getSession(sessionId);
-    if (session == null) {
+    SessionInfo sessionInfo = sessionManagerService.getSessionInfo(sessionId);
+    if (sessionInfo == null) {
       throw new SessionNoteFoundException(sessionId);
     } else {
-      return new JsonResponse<>(Response.Status.OK, "", session).build();
+      return new JsonResponse<>(Response.Status.OK, "", sessionInfo).build();
     }
   }
 }

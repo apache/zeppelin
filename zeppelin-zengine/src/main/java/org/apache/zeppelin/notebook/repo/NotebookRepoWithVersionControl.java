@@ -20,12 +20,10 @@ package org.apache.zeppelin.notebook.repo;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.annotation.ZeppelinApi;
 import org.apache.zeppelin.notebook.Note;
-import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.user.AuthenticationInfo;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Notebook repository (persistence layer) abstraction
@@ -47,7 +45,7 @@ public interface NotebookRepoWithVersionControl extends NotebookRepo {
 
   /**
    * Get particular revision of the Notebook.
-   * 
+   *
    * @param noteId Id of the note
    * @param notePath path of the note
    * @param revId revision of the Notebook
@@ -59,7 +57,7 @@ public interface NotebookRepoWithVersionControl extends NotebookRepo {
 
   /**
    * List of revisions of the given Notebook.
-   * 
+   *
    * @param noteId id of the note
    * @param notePath path of the note
    * @param subject
@@ -71,7 +69,7 @@ public interface NotebookRepoWithVersionControl extends NotebookRepo {
 
   /**
    * Set note to particular revision.
-   * 
+   *
    * @param noteId Id of the Notebook
    * @param notePath path of the note
    * @param revId revision of the Notebook
@@ -86,11 +84,11 @@ public interface NotebookRepoWithVersionControl extends NotebookRepo {
    */
   class Revision {
     public static final Revision EMPTY = new Revision(StringUtils.EMPTY, StringUtils.EMPTY, 0);
-    
+
     public String id;
     public String message;
     public int time;
-    
+
     public Revision(String revId, String message, int time) {
       this.id = revId;
       this.message = message;

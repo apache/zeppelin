@@ -24,7 +24,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -63,9 +62,6 @@ import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-
-import java.util.HashMap;
-import java.util.Map;
 
 import org.mockito.Mockito;
 
@@ -228,10 +224,10 @@ public class ParagraphTest extends AbstractInterpreterTest {
     final Paragraph paragraph = new Paragraph(note, null);
     final String paragraphId = paragraph.getId();
 
-    final AngularObject nameAO = AngularObjectBuilder.build("name", "DuyHai DOAN", noteId,
+    final AngularObject<String> nameAO = AngularObjectBuilder.build("name", "DuyHai DOAN", noteId,
             paragraphId);
 
-    final AngularObject ageAO = AngularObjectBuilder.build("age", 34, noteId, null);
+    final AngularObject<Integer> ageAO = AngularObjectBuilder.build("age", 34, noteId, null);
 
     when(note.getId()).thenReturn(noteId);
     when(registry.get("name", noteId, paragraphId)).thenReturn(nameAO);
@@ -390,14 +386,14 @@ public class ParagraphTest extends AbstractInterpreterTest {
 
     AuthenticationInfo user1 = new AuthenticationInfo("user1");
     spyParagraph.setAuthenticationInfo(user1);
-    
+
     spyParagraph.setText("val x = \"usr={user.ent}&pass={password.ent}\"");
-    
+
     // Credentials should only be injected when it is enabled for an interpreter or when specified in a local property
     when(mockInterpreter.getProperty(Constants.INJECT_CREDENTIALS, "false")).thenReturn("false");
     spyParagraph.jobRun();
     verify(mockInterpreter).interpret(eq("val x = \"usr={user.ent}&pass={password.ent}\""), any(InterpreterContext.class));
-   
+
     when(mockInterpreter.getProperty(Constants.INJECT_CREDENTIALS, "false")).thenReturn("true");
     mockInterpreter.setProperty(Constants.INJECT_CREDENTIALS, "true");
     spyParagraph.jobRun();
@@ -408,6 +404,6 @@ public class ParagraphTest extends AbstractInterpreterTest {
     spyParagraph.getLocalProperties().put(Constants.INJECT_CREDENTIALS, "true");
     spyParagraph.jobRun();
     verify(mockInterpreter).interpret(eq("val x = \"usr=user&pass=pwd\""), any(InterpreterContext.class));
-    
+
   }
 }

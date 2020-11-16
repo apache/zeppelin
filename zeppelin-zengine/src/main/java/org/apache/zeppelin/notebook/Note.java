@@ -124,6 +124,7 @@ public class Note implements JsonSerializable {
 
   /********************************** transient fields ******************************************/
   private transient boolean loaded = false;
+  private transient boolean saved = false;
   private transient InterpreterFactory interpreterFactory;
   private transient InterpreterSettingManager interpreterSettingManager;
   private transient ParagraphJobListener paragraphJobListener;
@@ -190,13 +191,28 @@ public class Note implements JsonSerializable {
    * Release note memory
    */
   public void unLoad() {
-    this.setLoaded(false);
-    this.paragraphs = null;
-    this.config = null;
-    this.info = null;
-    this.noteForms = null;
-    this.noteParams = null;
-    this.angularObjects = null;
+    if (isRunning() || isParagraphRunning()) {
+      LOGGER.warn("Unable to unload note because it is in RUNNING");
+    } else {
+      this.setLoaded(false);
+      this.paragraphs = null;
+      this.config = null;
+      this.info = null;
+      this.noteForms = null;
+      this.noteParams = null;
+      this.angularObjects = null;
+    }
+  }
+
+  public boolean isParagraphRunning() {
+    if (paragraphs != null) {
+      for (Paragraph p : paragraphs) {
+        if (p.isRunning()) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   public boolean isPersonalizedMode() {
@@ -205,8 +221,8 @@ public class Note implements JsonSerializable {
   }
 
   public void setPersonalizedMode(Boolean value) {
-    String valueString = StringUtils.EMPTY;
-    if (value) {
+    String valueString;
+    if (value.booleanValue()) {
       valueString = "true";
     } else {
       valueString = "false";
@@ -365,7 +381,9 @@ public class Note implements JsonSerializable {
       // Delete existing AngularObject
       Iterator<AngularObject> iter = angularObjectList.iterator();
       while(iter.hasNext()){
-        String noteId = "", paragraphId = "", name = "";
+        String noteId = "";
+        String paragraphId = "";
+        String name = "";
         Object object = iter.next();
         if (object instanceof AngularObject) {
           AngularObject ao = (AngularObject)object;
@@ -396,9 +414,7 @@ public class Note implements JsonSerializable {
    */
   public void deleteAngularObject(String intpGroupId, String noteId, String paragraphId, String name) {
     List<AngularObject> angularObjectList;
-    if (!angularObjects.containsKey(intpGroupId)) {
-      return;
-    } else {
+    if (angularObjects.containsKey(intpGroupId)) {
       angularObjectList = angularObjects.get(intpGroupId);
 
       // Delete existing AngularObject
@@ -451,7 +467,7 @@ public class Note implements JsonSerializable {
     Map<String, Object> param = srcParagraph.settings.getParams();
     Map<String, Input> form = srcParagraph.settings.getForms();
 
-    LOGGER.debug("srcParagraph user: " + srcParagraph.getUser());
+    LOGGER.debug("srcParagraph user: {}", srcParagraph.getUser());
 
     newParagraph.setAuthenticationInfo(subject);
     newParagraph.setConfig(config);
@@ -460,7 +476,7 @@ public class Note implements JsonSerializable {
     newParagraph.setText(srcParagraph.getText());
     newParagraph.setTitle(srcParagraph.getTitle());
 
-    LOGGER.debug("newParagraph user: " + newParagraph.getUser());
+    LOGGER.debug("newParagraph user: {}", newParagraph.getUser());
 
     try {
       String resultJson = GSON.toJson(srcParagraph.getReturn());
@@ -468,8 +484,7 @@ public class Note implements JsonSerializable {
       newParagraph.setReturn(result, null);
     } catch (Exception e) {
       // 'result' part of Note consists of exception, instead of actual interpreter results
-      LOGGER.warn(
-          "Paragraph " + srcParagraph.getId() + " has a result with exception. " + e.getMessage());
+      LOGGER.warn("Paragraph {} has a result with exception. {}", srcParagraph.getId(), e.getMessage());
     }
 
     synchronized (paragraphs) {
@@ -704,7 +719,7 @@ public class Note implements JsonSerializable {
   }
 
   private void setParagraphMagic(Paragraph p, int index) {
-    if (paragraphs.size() > 0) {
+    if (!paragraphs.isEmpty()) {
       String replName;
       if (index == 0) {
         replName = paragraphs.get(0).getIntpText();
@@ -750,7 +765,7 @@ public class Note implements JsonSerializable {
         try {
           runAllSync(authInfo, isolated, params);
         } catch (Exception e) {
-          LOGGER.warn("Fail to run note: " + id, e);
+          LOGGER.warn("Fail to run note: {}", id, e);
         } finally {
           setRunning(false);
           setIsolatedMode(false);
@@ -913,7 +928,7 @@ public class Note implements JsonSerializable {
     angularObjects = new HashMap<>();
 
     List<InterpreterSetting> settings = getBindedInterpreterSettings(Lists.newArrayList(user));
-    if (settings == null || settings.size() == 0) {
+    if (settings == null || settings.isEmpty()) {
       return;
     }
 
@@ -1083,6 +1098,10 @@ public class Note implements JsonSerializable {
     info.remove("startTime");
   }
 
+  /**
+   * Is note running
+   * @return
+   */
   public boolean isRunning() {
     return (boolean) getInfo().getOrDefault("isRunning", false);
   }
@@ -1116,7 +1135,7 @@ public class Note implements JsonSerializable {
       note.postProcessParagraphs();
       return note;
     } catch (Exception e) {
-      LOGGER.error("Fail to parse note json: " + e.toString());
+      LOGGER.error("Fail to parse note json: {}", e.toString());
       throw new IOException("Fail to parse note json: " + json, e);
     }
   }
@@ -1199,5 +1218,13 @@ public class Note implements JsonSerializable {
 
   public void setNoteEventListeners(List<NoteEventListener> noteEventListeners) {
     this.noteEventListeners = noteEventListeners;
+  }
+
+  public void setSaved(boolean saved) {
+    this.saved = saved;
+  }
+
+  public boolean isSaved() {
+    return saved;
   }
 }

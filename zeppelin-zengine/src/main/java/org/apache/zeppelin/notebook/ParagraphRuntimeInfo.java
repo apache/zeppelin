@@ -18,7 +18,7 @@ public class ParagraphRuntimeInfo {
 
   // runtimeInfos job url or dropdown-menu key in
   // zeppelin-web/src/app/notebook/paragraph/paragraph-control.html
-  private List<Map<String, String>> values;  // values for the key-value pair property
+  private List<Object> values;  // values for the key-value pair property
   private String interpreterSettingId;
   
   public ParagraphRuntimeInfo(String propertyName, String label, 
@@ -39,7 +39,7 @@ public class ParagraphRuntimeInfo {
   }
 
   @VisibleForTesting
-  public List<Map<String, String>> getValue() {
+  public List<Object> getValue() {
     return values;
   }
   

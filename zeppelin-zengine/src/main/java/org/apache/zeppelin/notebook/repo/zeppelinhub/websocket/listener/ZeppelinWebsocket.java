@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory;
  *
  */
 public class ZeppelinWebsocket implements WebSocketListener {
-  private static final Logger LOG = LoggerFactory.getLogger(ZeppelinWebsocket.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(ZeppelinWebsocket.class);
   public Session connection;
   public String noteId;
 
@@ -42,25 +42,25 @@ public class ZeppelinWebsocket implements WebSocketListener {
 
   @Override
   public void onWebSocketClose(int code, String message) {
-    LOG.info("Zeppelin connection closed with code: {}, message: {}", code, message);
+    LOGGER.info("Zeppelin connection closed with code: {}, message: {}", code, message);
     ZeppelinClient.getInstance().removeNoteConnection(noteId);
   }
 
   @Override
   public void onWebSocketConnect(Session session) {
-    LOG.info("Zeppelin connection opened");
+    LOGGER.info("Zeppelin connection opened");
     this.connection = session;
   }
 
   @Override
   public void onWebSocketError(Throwable e) {
-    LOG.warn("Zeppelin socket connection error ", e);
+    LOGGER.warn("Zeppelin socket connection error ", e);
     ZeppelinClient.getInstance().removeNoteConnection(noteId);
   }
 
   @Override
   public void onWebSocketText(String data) {
-    LOG.debug("Zeppelin client received Message: " + data);
+    LOGGER.debug("Zeppelin client received Message: {}", data);
     // propagate to ZeppelinHub
     try {
       ZeppelinClient zeppelinClient = ZeppelinClient.getInstance();
@@ -68,7 +68,7 @@ public class ZeppelinWebsocket implements WebSocketListener {
         zeppelinClient.handleMsgFromZeppelin(data, noteId);
       }
     } catch (Exception e) {
-      LOG.error("Failed to send message to ZeppelinHub: {}", e.toString());
+      LOGGER.error("Failed to send message to ZeppelinHub: {}", e.toString());
     }
   }
 

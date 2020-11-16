@@ -125,7 +125,7 @@ public class ZeppelinClient {
     checkJsonNodeStatus(jsonNode);
     return jsonNode.getObject().getJSONObject("body").getString("version");
   }
-
+  
   /**
    * Request a new session id. It doesn't create session (interpreter process) in zeppelin server side, but just
    * create an unique session id.
@@ -257,11 +257,19 @@ public class ZeppelinClient {
    */
   public void login(String userName, String password) throws Exception {
     if (clientConfig.isUseKnox()) {
-      HttpResponse<String> response = Unirest.get("/")
+      HttpResponse<String> response = Unirest.get(clientConfig.getKnoxSSOUrl() +
+              "?originalUrl=" + clientConfig.getZeppelinRestUrl())
               .basicAuth(userName, password)
               .asString();
       if (response.getStatus() != 200) {
-        throw new Exception(String.format("Login failed, status: %s, statusText: %s",
+        throw new Exception(String.format("Knox SSO login failed, status: %s, statusText: %s",
+                response.getStatus(),
+                response.getStatusText()));
+      }
+      response = Unirest.get("/security/ticket")
+              .asString();
+      if (response.getStatus() != 200) {
+        throw new Exception(String.format("Fail to get ticket after Knox SSO, status: %s, statusText: %s",
                 response.getStatus(),
                 response.getStatusText()));
       }
@@ -422,6 +430,28 @@ public class ZeppelinClient {
     JsonNode jsonNode = response.getBody();
     checkJsonNodeStatus(jsonNode);
     return queryNoteResult(noteId);
+  }
+
+
+  /**
+   * Import note with given note json content to the specified notePath.
+   * 
+   * @param notePath
+   * @param noteContent
+   * @return
+   * @throws Exception
+   */
+  public String importNote(String notePath, String noteContent) throws Exception {
+    JSONObject bodyObject = new JSONObject(noteContent);
+    HttpResponse<JsonNode> response = Unirest
+            .post("/notebook/import")
+            .queryString("notePath", notePath)
+            .body(bodyObject)
+            .asJson();
+    checkResponse(response);
+    JsonNode jsonNode = response.getBody();
+    checkJsonNodeStatus(jsonNode);
+    return jsonNode.getObject().getString("body");
   }
 
   /**

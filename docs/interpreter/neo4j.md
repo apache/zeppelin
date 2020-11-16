@@ -45,6 +45,16 @@ The Neo4j Interpreter supports all Neo4j versions since v3 via the official [Neo
     <td>The Neo4j's BOLT url.</td>
   </tr>
   <tr>
+    <td>neo4j.database</td>
+    <td></td>
+    <td>The neo4j target database, if empty use the dafault db.</td>
+  </tr>
+  <tr>
+    <td>neo4j.multi.statement</td>
+    <td>true</td>
+    <td>Enables the multi statement management, if true it computes multiple queries separated by semicolon.</td>
+  </tr>
+  <tr>
     <td>neo4j.auth.type</td>
     <td>BASIC</td>
     <td>The Neo4j's authentication type (NONE, BASIC).</td>

@@ -30,9 +30,9 @@ import javax.inject.Singleton;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -53,7 +53,7 @@ import java.util.stream.Stream;
 @Singleton
 public class NoteManager {
   private static final Logger LOGGER = LoggerFactory.getLogger(NoteManager.class);
-  public static String TRASH_FOLDER = "~Trash";
+  public static final String TRASH_FOLDER = "~Trash";
   private Folder root;
   private Folder trash;
 
@@ -72,7 +72,7 @@ public class NoteManager {
   // build the tree structure of notes
   private void init() throws IOException {
     this.notesInfo = notebookRepo.list(AuthenticationInfo.ANONYMOUS).values().stream()
-        .collect(Collectors.toMap(noteInfo -> noteInfo.getId(), notesInfo -> notesInfo.getPath()));
+        .collect(Collectors.toMap(NoteInfo::getId, NoteInfo::getPath));
     this.notesInfo.entrySet().stream()
         .forEach(entry ->
         {
@@ -99,11 +99,11 @@ public class NoteManager {
               try {
                 return getNoteNode(notePath).getNote();
               } catch (Exception e) {
-                LOGGER.warn("Fail to load note: " + notePath, e);
+                LOGGER.warn("Fail to load note: {}", notePath, e);
                 return null;
               }
             })
-            .filter(note -> note != null);
+            .filter(Objects::nonNull);
   }
 
   /**
@@ -168,15 +168,22 @@ public class NoteManager {
 
   /**
    * Save note to NoteManager, it won't check duplicates, this is used when updating note.
+   * Only save note in 2 cases:
+   *  1. Note is new created, isSaved is false
+   *  2. Note is in loaded state. Unload state means its content is empty.
    *
    * @param note
    * @param subject
    * @throws IOException
    */
   public void saveNote(Note note, AuthenticationInfo subject) throws IOException {
-    addOrUpdateNoteNode(note);
-    this.notebookRepo.save(note, subject);
-    note.setLoaded(true);
+    if (note.isLoaded() || !note.isSaved()) {
+      addOrUpdateNoteNode(note);
+      this.notebookRepo.save(note, subject);
+      note.setSaved(true);
+    } else {
+      LOGGER.warn("Try to save note: {} when it is unloaded", note.getId());
+    }
   }
 
   public void addNote(Note note, AuthenticationInfo subject) throws IOException {
@@ -483,12 +490,12 @@ public class NoteManager {
     }
 
     public List<NoteNode> getNoteNodeRecursively() {
-      List<NoteNode> notes = new ArrayList<>();
-      notes.addAll(this.notes.values());
+      List<NoteNode> noteNodeRecursively = new ArrayList<>();
+      noteNodeRecursively.addAll(this.notes.values());
       for (Folder folder : subFolders.values()) {
-        notes.addAll(folder.getNoteNodeRecursively());
+        noteNodeRecursively.addAll(folder.getNoteNodeRecursively());
       }
-      return notes;
+      return noteNodeRecursively;
     }
 
     public Map<String, NoteNode> getNotes() {

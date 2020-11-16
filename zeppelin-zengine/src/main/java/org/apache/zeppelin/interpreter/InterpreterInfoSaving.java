@@ -19,11 +19,17 @@ package org.apache.zeppelin.interpreter;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
-import com.google.gson.internal.StringMap;
+import com.google.gson.JsonSerializationContext;
+import com.google.gson.JsonSerializer;
 import org.apache.commons.io.IOUtils;
 import org.apache.zeppelin.common.JsonSerializable;
+import org.eclipse.aether.repository.Authentication;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.eclipse.aether.repository.RemoteRepository;
@@ -31,7 +37,7 @@ import org.eclipse.aether.repository.RemoteRepository;
 import java.io.BufferedReader;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
+import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -47,7 +53,11 @@ import static java.nio.file.attribute.PosixFilePermission.OWNER_WRITE;
 public class InterpreterInfoSaving implements JsonSerializable {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(InterpreterInfoSaving.class);
-  private static final Gson gson =  new GsonBuilder().setPrettyPrinting().create();
+
+  // Authentication is an interface so that we need to create an InterfaceAdapter for that.
+  private static final Gson GSON =  new GsonBuilder().setPrettyPrinting()
+          .registerTypeAdapter(Authentication.class, new InterfaceAdapter<Authentication>())
+          .create();
 
   public Map<String, InterpreterSetting> interpreterSettings = new HashMap<>();
   public List<RemoteRepository> interpreterRepositories = new ArrayList<>();
@@ -56,15 +66,14 @@ public class InterpreterInfoSaving implements JsonSerializable {
     LOGGER.info("Load interpreter setting from file: {}", file);
     InterpreterInfoSaving infoSaving = null;
     try (BufferedReader json = Files.newBufferedReader(file, StandardCharsets.UTF_8)) {
-      JsonParser jsonParser = new JsonParser();
-      JsonObject jsonObject = jsonParser.parse(json).getAsJsonObject();
+      JsonObject jsonObject = JsonParser.parseReader(json).getAsJsonObject();
       infoSaving = InterpreterInfoSaving.fromJson(jsonObject.toString());
 
       if (infoSaving != null && infoSaving.interpreterSettings != null) {
         for (InterpreterSetting interpreterSetting : infoSaving.interpreterSettings.values()) {
           interpreterSetting.convertPermissionsFromUsersToOwners(
-              jsonObject.getAsJsonObject("interpreterSettings")
-                  .getAsJsonObject(interpreterSetting.getId()));
+                  jsonObject.getAsJsonObject("interpreterSettings")
+                          .getAsJsonObject(interpreterSetting.getId()));
         }
       }
     }
@@ -88,10 +97,47 @@ public class InterpreterInfoSaving implements JsonSerializable {
 
   @Override
   public String toJson() {
-    return gson.toJson(this);
+    return GSON.toJson(this);
   }
 
   public static InterpreterInfoSaving fromJson(String json) {
-    return gson.fromJson(json, InterpreterInfoSaving.class);
+    return GSON.fromJson(json, InterpreterInfoSaving.class);
+  }
+
+  static class InterfaceAdapter<T> implements JsonSerializer<T>, JsonDeserializer<T> {
+    @Override
+    public JsonElement serialize(T object, Type interfaceType, JsonSerializationContext context) {
+      final JsonObject wrapper = new JsonObject();
+      wrapper.addProperty("type", object.getClass().getName());
+      wrapper.add("data", context.serialize(object));
+      return wrapper;
+    }
+
+    @Override
+    public T deserialize(JsonElement elem,
+                         Type interfaceType,
+                         JsonDeserializationContext context) throws JsonParseException {
+      final JsonObject wrapper = (JsonObject) elem;
+      final JsonElement typeName = get(wrapper, "type");
+      final JsonElement data = get(wrapper, "data");
+      final Type actualType = typeForName(typeName);
+      return context.deserialize(data, actualType);
+    }
+
+    private Type typeForName(final JsonElement typeElem) {
+      try {
+        return Class.forName(typeElem.getAsString());
+      } catch (ClassNotFoundException e) {
+        throw new JsonParseException(e);
+      }
+    }
+
+    private JsonElement get(final JsonObject wrapper, String memberName) {
+      final JsonElement elem = wrapper.get(memberName);
+      if (elem == null)
+        throw new JsonParseException("no '" + memberName +
+                "' member found in what was expected to be an interface wrapper");
+      return elem;
+    }
   }
 }

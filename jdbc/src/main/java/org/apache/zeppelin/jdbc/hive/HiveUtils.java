@@ -97,12 +97,12 @@ public class HiveUtils {
           LOGGER.warn("Fail to write output", e);
         }
       }
-      LOGGER.debug("Hive monitor thread is finished");
+      LOGGER.info("HiveMonitor-Thread is finished");
     });
     thread.setName("HiveMonitor-Thread");
     thread.setDaemon(true);
     thread.start();
-    LOGGER.info("Start HiveMonitor-Thread for sql: " + stmt);
+    LOGGER.info("Start HiveMonitor-Thread for sql: " + hiveStmt);
 
     if (progressBar != null) {
       hiveStmt.setInPlaceUpdateStream(progressBar.getInPlaceUpdateStream(context.out));
