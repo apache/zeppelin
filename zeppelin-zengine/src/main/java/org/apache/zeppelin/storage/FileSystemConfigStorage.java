@@ -20,6 +20,8 @@ package org.apache.zeppelin.storage;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.healthcheck.HdfsHealthCheck;
+import org.apache.zeppelin.healthcheck.HealthChecks;
 import org.apache.zeppelin.interpreter.InterpreterInfoSaving;
 import org.apache.zeppelin.notebook.FileSystemStorage;
 import org.apache.zeppelin.notebook.NotebookAuthorizationInfoSaving;
@@ -56,6 +58,7 @@ public class FileSystemConfigStorage extends ConfigStorage {
     this.interpreterSettingPath = fs.makeQualified(new Path(zConf.getInterpreterSettingPath(false)));
     this.authorizationPath = fs.makeQualified(new Path(zConf.getNotebookAuthorizationPath(false)));
     this.credentialPath = fs.makeQualified(new Path(zConf.getCredentialsPath(false)));
+    HealthChecks.getHealthCheckLivenessRegistry().register(STORAGE_HEALTHCHECK_NAME, new HdfsHealthCheck(this.fs, configPath));
   }
 
   @Override

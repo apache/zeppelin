@@ -428,6 +428,14 @@ public class ZeppelinConfiguration extends XMLConfiguration {
       return getString(ConfVars.ZEPPELIN_SSL_PEM_CA);
   }
 
+  public boolean isJMXEnabled() {
+    return getBoolean(ConfVars.ZEPPELIN_JMX_ENABLE);
+  }
+
+  public int getJMXPort() {
+    return getInt(ConfVars.ZEPPELIN_JMX_PORT);
+  }
+
   public String getNotebookDir() {
     return getAbsoluteDir(ConfVars.ZEPPELIN_NOTEBOOK_DIR);
   }
@@ -508,7 +516,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
   public String getS3SignerOverride() {
     return getString(ConfVars.ZEPPELIN_NOTEBOOK_S3_SIGNEROVERRIDE);
   }
-  
+
   public boolean isS3PathStyleAccess() {
     return getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_S3_PATH_STYLE_ACCESS);
   }
@@ -884,6 +892,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getString(ConfVars.ZEPPELIN_DOCKER_CONTAINER_IMAGE);
   }
 
+  public boolean isPrometheusMetricEnabled() {
+    return getBoolean(ConfVars.ZEPPELIN_METRIC_ENABLE_PROMETHEUS);
+  }
+
   public Map<String, String> dumpConfigurations(Predicate<String> predicate) {
     Map<String, String> properties = new HashMap<>();
 
@@ -958,6 +970,8 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_WAR("zeppelin.war", "zeppelin-web/dist"),
     ZEPPELIN_ANGULAR_WAR("zeppelin.angular.war", "zeppelin-web-angular/dist"),
     ZEPPELIN_WAR_TEMPDIR("zeppelin.war.tempdir", "webapps"),
+    ZEPPELIN_JMX_ENABLE("zeppelin.jmx.enable", false),
+    ZEPPELIN_JMX_PORT("zeppelin.jmx.port", 9996),
 
     ZEPPELIN_INTERPRETER_JSON("zeppelin.interpreter.setting", "interpreter-setting.json"),
     ZEPPELIN_INTERPRETER_DIR("zeppelin.interpreter.dir", "interpreter"),
@@ -1094,6 +1108,8 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_K8S_TIMEOUT_DURING_PENDING("zeppelin.k8s.timeout.during.pending", true),
 
     ZEPPELIN_DOCKER_CONTAINER_IMAGE("zeppelin.docker.container.image", "apache/zeppelin:" + Util.getVersion()),
+
+    ZEPPELIN_METRIC_ENABLE_PROMETHEUS("zeppelin.metric.enable.prometheus", false),
 
     ZEPPELIN_IMPERSONATE_SPARK_PROXY_USER("zeppelin.impersonate.spark.proxy.user", true),
     ZEPPELIN_NOTEBOOK_GIT_REMOTE_URL("zeppelin.notebook.git.remote.url", ""),
