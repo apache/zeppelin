@@ -171,23 +171,23 @@ public class ParagraphTest extends AbstractInterpreterTest {
     Paragraph paragraph = new Paragraph(note, null);
     paragraph.setText("%test\r\n###Hello");
     assertEquals("test", paragraph.getIntpText());
-    assertEquals("###Hello", paragraph.getScriptText());
+    assertEquals("\r\n###Hello", paragraph.getScriptText());
 
     paragraph.setText("%test\t###Hello");
     assertEquals("test", paragraph.getIntpText());
-    assertEquals("###Hello", paragraph.getScriptText());
+    assertEquals("\t###Hello", paragraph.getScriptText());
 
     paragraph.setText("%test\u000b###Hello");
     assertEquals("test", paragraph.getIntpText());
-    assertEquals("###Hello", paragraph.getScriptText());
+    assertEquals("\u000b###Hello", paragraph.getScriptText());
 
     paragraph.setText("%test\f###Hello");
     assertEquals("test", paragraph.getIntpText());
-    assertEquals("###Hello", paragraph.getScriptText());
+    assertEquals("\f###Hello", paragraph.getScriptText());
 
     paragraph.setText("%test\n###Hello");
     assertEquals("test", paragraph.getIntpText());
-    assertEquals("###Hello", paragraph.getScriptText());
+    assertEquals("\n###Hello", paragraph.getScriptText());
 
     paragraph.setText("%test ###Hello");
     assertEquals("test", paragraph.getIntpText());
@@ -334,15 +334,15 @@ public class ParagraphTest extends AbstractInterpreterTest {
         Triple.of("  %jdbc schema.tab\n\n", 18, 10),
         Triple.of("  \n%jdbc schema.\n \n", 16, 7),
         Triple.of("  \n%jdbc schema.\n \n", 16, 7),
-        Triple.of("  \n%jdbc\n\n schema\n \n", 17, 6),
-        Triple.of("%another\n\n schema.", 18, 7),
-        Triple.of("\n\n schema.", 10, 7),
+        Triple.of("  \n%jdbc\n\n schema\n \n", 17, 9),
+        Triple.of("%another\n\n schema.", 18, 10),
+        Triple.of("\n\n schema.", 10, 10),
         Triple.of("schema.", 7, 7),
         Triple.of("schema. \n", 7, 7),
         Triple.of("  \n   %jdbc", 11, 0),
         Triple.of("\n   %jdbc", 9, 0),
-        Triple.of("%jdbc  \n  schema", 16, 6),
-        Triple.of("%jdbc  \n  \n   schema", 20, 6)
+        Triple.of("%jdbc  \n  schema", 16, 9),
+        Triple.of("%jdbc  \n  \n   schema", 20, 13)
     );
 
     for (Triple<String, Integer, Integer> data : dataSet) {

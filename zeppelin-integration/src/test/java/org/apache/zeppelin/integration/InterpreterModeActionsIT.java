@@ -155,7 +155,7 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
   }
 
   private void setPythonParagraph(int num, String text) {
-    setTextOfParagraph(num, "%python\\n " + text);
+    setTextOfParagraph(num, "%python\\n" + text);
     runParagraph(num);
     try {
       waitForParagraph(num, "FINISHED");

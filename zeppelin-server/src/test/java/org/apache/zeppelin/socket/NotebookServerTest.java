@@ -472,7 +472,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
       assertTrue(notebook.getNote(note.getId()).getName(),
               notebook.getNote(note.getId()).getName().startsWith("Note converted from Jupyter_"));
       assertEquals("md", notebook.getNote(note.getId()).getParagraphs().get(0).getIntpText());
-      assertEquals("# matplotlib - 2D and 3D plotting in Python",
+      assertEquals("\n# matplotlib - 2D and 3D plotting in Python",
               notebook.getNote(note.getId()).getParagraphs().get(0).getScriptText());
     } finally {
       if (note != null) {
