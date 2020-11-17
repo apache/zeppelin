@@ -50,7 +50,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -109,7 +108,6 @@ public class JDBCInterpreter extends KerberosInterpreter {
   static final String DRIVER_KEY = "driver";
   static final String URL_KEY = "url";
   static final String USER_KEY = "user";
-  static final String SPLIT_QURIES_KEY = "splitQueries";
   static final String PASSWORD_KEY = "password";
   static final String PRECODE_KEY = "precode";
   static final String STATEMENT_PRECODE_KEY = "statementPrecode";
@@ -716,16 +714,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
     }
 
     try {
-      boolean splitSql = Boolean.parseBoolean(getJDBCConfiguration(user)
-              .getPropertyMap(dbPrefix)
-              .getProperty(SPLIT_QURIES_KEY, "true"));
-      List<String> sqlArray = null;
-      if (splitSql) {
-        sqlArray = sqlSplitter.splitSql(sql);
-      } else {
-        sqlArray = Collections.singletonList(sql);
-      }
-
+      List<String>  sqlArray = sqlSplitter.splitSql(sql);
       for (String sqlToExecute : sqlArray) {
         statement = connection.createStatement();
 
@@ -884,10 +873,9 @@ public class JDBCInterpreter extends KerberosInterpreter {
     String dbPrefix = getDBPrefix(context);
     LOGGER.debug("DBPrefix: {}, SQL command: '{}'", dbPrefix, cmd);
     if (!isRefreshMode(context)) {
-      return executeSql(dbPrefix, cmd.trim(), context);
+      return executeSql(dbPrefix, cmd, context);
     } else {
       int refreshInterval = Integer.parseInt(context.getLocalProperties().get("refreshInterval"));
-      final String code = cmd.trim();
       paragraphCancelMap.put(context.getParagraphId(), false);
       ScheduledExecutorService refreshExecutor = Executors.newSingleThreadScheduledExecutor();
       refreshExecutorServices.put(context.getParagraphId(), refreshExecutor);
@@ -896,7 +884,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
       refreshExecutor.scheduleAtFixedRate(() -> {
         context.out.clear(false);
         try {
-          InterpreterResult result = executeSql(dbPrefix, code, context);
+          InterpreterResult result = executeSql(dbPrefix, cmd, context);
           context.out.flush();
           interpreterResultRef.set(result);
           if (result.code() != Code.SUCCESS) {

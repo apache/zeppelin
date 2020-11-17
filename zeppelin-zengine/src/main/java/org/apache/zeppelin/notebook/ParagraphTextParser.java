@@ -176,13 +176,31 @@ public class ParagraphTextParser {
       if (startPos < text.length() && text.charAt(startPos) == '(') {
         startPos = parseLocalProperties(text, startPos, localProperties);
       }
-      scriptText = text.substring(startPos).trim();
+      scriptText = text.substring(startPos);
     } else {
       intpText = "";
-      scriptText = text.trim();
+      scriptText = text;
     }
 
-    return new ParseResult(intpText, scriptText, localProperties);
+    return new ParseResult(intpText, removeLeadingWhiteSpaces(scriptText), localProperties);
   }
 
+  /**
+   * Strip the leading white spaces but not line separator.
+   *
+   * @param text
+   * @return
+   */
+  private static String removeLeadingWhiteSpaces(String text) {
+    int startPos = 0;
+    for (int i = 0; i < text.length(); ++i) {
+      if (text.charAt(i) == ' ') {
+        continue;
+      } else {
+        startPos = i;
+        break;
+      }
+    }
+    return text.substring(startPos);
+  }
 }
