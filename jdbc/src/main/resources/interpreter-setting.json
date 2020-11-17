@@ -32,6 +32,13 @@
         "description": "JDBC Driver Name",
         "type": "string"
       },
+      "default.splitQueries": {
+        "envName": null,
+        "propertyName": "default.splitQueries",
+        "defaultValue": "true",
+        "description": "Whether split the whole text into multiple sql statements",
+        "type": "checkbox"
+      },
       "default.completer.ttlInSeconds": {
         "envName": null,
         "propertyName": "default.completer.ttlInSeconds",

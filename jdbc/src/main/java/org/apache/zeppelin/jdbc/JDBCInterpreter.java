@@ -19,6 +19,7 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 import static org.apache.hadoop.security.UserGroupInformation.AuthenticationMethod.KERBEROS;
 
+import com.beust.jcommander.internal.Lists;
 import org.apache.commons.dbcp2.ConnectionFactory;
 import org.apache.commons.dbcp2.DriverManagerConnectionFactory;
 import org.apache.commons.dbcp2.PoolableConnectionFactory;
@@ -108,6 +109,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
   static final String DRIVER_KEY = "driver";
   static final String URL_KEY = "url";
   static final String USER_KEY = "user";
+  static final String SPLIT_QURIES_KEY = "splitQueries";
   static final String PASSWORD_KEY = "password";
   static final String PRECODE_KEY = "precode";
   static final String STATEMENT_PRECODE_KEY = "statementPrecode";
@@ -709,7 +711,15 @@ public class JDBCInterpreter extends KerberosInterpreter {
     }
 
     try {
-      List<String> sqlArray = sqlSplitter.splitSql(sql);
+      boolean splitSql = Boolean.parseBoolean(
+              getJDBCConfiguration(user).getPropertyMap(dbPrefix).getProperty(SPLIT_QURIES_KEY, "true"));
+      List<String> sqlArray = null;
+      if (splitSql) {
+        sqlArray = sqlSplitter.splitSql(sql);
+      } else {
+        sqlArray = Lists.newArrayList(sql);
+      }
+
       for (String sqlToExecute : sqlArray) {
         statement = connection.createStatement();
 
