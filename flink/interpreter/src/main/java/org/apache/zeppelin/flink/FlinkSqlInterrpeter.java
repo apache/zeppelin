@@ -127,7 +127,7 @@ public abstract class FlinkSqlInterrpeter extends AbstractInterpreter {
 
     try {
       boolean runAsOne = Boolean.parseBoolean(context.getStringLocalProperty("runAsOne", "false"));
-      List<String> sqls = sqlSplitter.splitSql(st);
+      List<String> sqls = sqlSplitter.splitSql(st).stream().map(String::trim).collect(Collectors.toList());
       boolean isFirstInsert = true;
       for (String sql : sqls) {
         Optional<SqlCommandParser.SqlCommandCall> sqlCommand = sqlCommandParser.parse(sql);

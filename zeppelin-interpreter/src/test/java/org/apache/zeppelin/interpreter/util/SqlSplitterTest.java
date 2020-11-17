@@ -41,15 +41,24 @@ public class SqlSplitterTest {
     assertEquals(1, sqls.size());
     assertEquals("show tables", sqls.get(0));
 
+    sqls = sqlSplitter.splitSql("\nshow tables;");
+    assertEquals(1, sqls.size());
+    assertEquals("\nshow tables", sqls.get(0));
+
     sqls = sqlSplitter.splitSql("show tables;\nselect * from table_1");
     assertEquals(2, sqls.size());
     assertEquals("show tables", sqls.get(0));
-    assertEquals("select * from table_1", sqls.get(1));
+    assertEquals("\nselect * from table_1", sqls.get(1));
+
+    sqls = sqlSplitter.splitSql("show tables;\n\nselect * from table_1");
+    assertEquals(2, sqls.size());
+    assertEquals("show tables", sqls.get(0));
+    assertEquals("\n\nselect * from table_1", sqls.get(1));
 
     sqls = sqlSplitter.splitSql("show\ntables;\nselect * \nfrom table_1");
     assertEquals(2, sqls.size());
     assertEquals("show\ntables", sqls.get(0));
-    assertEquals("select * \nfrom table_1", sqls.get(1));
+    assertEquals("\n\nselect * \nfrom table_1", sqls.get(1));
 
   }
 
@@ -74,26 +83,26 @@ public class SqlSplitterTest {
 
     sqls = sqlSplitter.splitSql("--comment_1;\nshow tables");
     assertEquals(1, sqls.size());
-    assertEquals("show tables", sqls.get(0));
+    assertEquals("\nshow tables", sqls.get(0));
 
     sqls = sqlSplitter.splitSql("--comment_1;\nshow tables;\n--comment_2");
     assertEquals(1, sqls.size());
-    assertEquals("show tables", sqls.get(0));
+    assertEquals("\nshow tables", sqls.get(0));
 
     sqls = sqlSplitter.splitSql("show tables;\ndescribe table_1");
     assertEquals(2, sqls.size());
     assertEquals("show tables", sqls.get(0));
-    assertEquals("describe table_1", sqls.get(1));
+    assertEquals("\ndescribe table_1", sqls.get(1));
 
     sqls = sqlSplitter.splitSql("show tables;\n--comment_1;\ndescribe table_1");
     assertEquals(2, sqls.size());
     assertEquals("show tables", sqls.get(0));
-    assertEquals("describe table_1", sqls.get(1));
+    assertEquals("\n\ndescribe table_1", sqls.get(1));
 
     sqls = sqlSplitter.splitSql("select a\nfrom table_1;\ndescribe table_1;--comment_1");
     assertEquals(2, sqls.size());
     assertEquals("select a\nfrom table_1", sqls.get(0));
-    assertEquals("describe table_1", sqls.get(1));
+    assertEquals("\n\ndescribe table_1", sqls.get(1));
 
     sqls = sqlSplitter.splitSql("--comment_1;\n--comment_2\n");
     assertEquals(0, sqls.size());
@@ -104,12 +113,12 @@ public class SqlSplitterTest {
 
     sqls = sqlSplitter.splitSql("--comment 1\nselect a from table_1\n--comment 2");
     assertEquals(1, sqls.size());
-    assertEquals("select a from table_1", sqls.get(0));
+    assertEquals("\nselect a from table_1\n", sqls.get(0));
 
     sqls = sqlSplitter.splitSql("--comment 1\nselect a from table_1;\n--comment 2\nselect b from table_1");
     assertEquals(2, sqls.size());
-    assertEquals("select a from table_1", sqls.get(0));
-    assertEquals("select b from table_1", sqls.get(1));
+    assertEquals("\nselect a from table_1", sqls.get(0));
+    assertEquals("\n\n\nselect b from table_1", sqls.get(1));
   }
 
   @Test
@@ -133,21 +142,21 @@ public class SqlSplitterTest {
 
     sqls = sqlSplitter.splitSql("/*comment_1;*/\nshow tables");
     assertEquals(1, sqls.size());
-    assertEquals("show tables", sqls.get(0));
+    assertEquals("\nshow tables", sqls.get(0));
 
     sqls = sqlSplitter.splitSql("/*comment_1*;*/\nshow tables;\n/*--comment_2*/");
     assertEquals(1, sqls.size());
-    assertEquals("show tables", sqls.get(0));
+    assertEquals("\nshow tables", sqls.get(0));
 
     sqls = sqlSplitter.splitSql("show tables;\n/*comment_1;*/\ndescribe table_1");
     assertEquals(2, sqls.size());
     assertEquals("show tables", sqls.get(0));
-    assertEquals("describe table_1", sqls.get(1));
+    assertEquals("\n\ndescribe table_1", sqls.get(1));
 
     sqls = sqlSplitter.splitSql("select a\nfrom table_1;\ndescribe table_1;/*comment_1*/");
     assertEquals(2, sqls.size());
     assertEquals("select a\nfrom table_1", sqls.get(0));
-    assertEquals("describe table_1", sqls.get(1));
+    assertEquals("\n\ndescribe table_1", sqls.get(1));
 
     sqls = sqlSplitter.splitSql("/*comment_1;*/\n/*comment_2*/\n");
     assertEquals(0, sqls.size());
@@ -158,17 +167,17 @@ public class SqlSplitterTest {
 
     sqls = sqlSplitter.splitSql("/*comment 1*/\nselect a from table_1\n/*comment 2*/");
     assertEquals(1, sqls.size());
-    assertEquals("select a from table_1", sqls.get(0));
+    assertEquals("\nselect a from table_1\n", sqls.get(0));
 
     sqls = sqlSplitter.splitSql("/*comment 1*/\nselect a from table_1;\n/*comment 2*/select b from table_1");
     assertEquals(2, sqls.size());
-    assertEquals("select a from table_1", sqls.get(0));
-    assertEquals("select b from table_1", sqls.get(1));
+    assertEquals("\nselect a from table_1", sqls.get(0));
+    assertEquals("\n\nselect b from table_1", sqls.get(1));
 
     sqls = sqlSplitter.splitSql("/*comment 1*/\nselect a /*+ hint*/ from table_1;\n/*comment 2*/select b from table_1");
     assertEquals(2, sqls.size());
-    assertEquals("select a /*+ hint*/ from table_1", sqls.get(0));
-    assertEquals("select b from table_1", sqls.get(1));
+    assertEquals("\nselect a /*+ hint*/ from table_1", sqls.get(0));
+    assertEquals("\n\nselect b from table_1", sqls.get(1));
   }
 
   @Test
@@ -180,7 +189,7 @@ public class SqlSplitterTest {
 
     sqls = sqlSplitter.splitSql("--comment_1;\nselect a from table_1 where a=' and b=1");
     assertEquals(1, sqls.size());
-    assertEquals("select a from table_1 where a=' and b=1", sqls.get(0));
+    assertEquals("\nselect a from table_1 where a=' and b=1", sqls.get(0));
 
     sqls = sqlSplitter.splitSql("select a from table_1 where a=' and b=1;\n--comment_1");
     assertEquals(1, sqls.size());
@@ -193,7 +202,7 @@ public class SqlSplitterTest {
     String text = "/* ; */\n" +
             "-- /* comment\n" +
             "--select * from test_table\n" +
-            "select * from test_table; /* some comment ; */\n" +
+            "select * from test_table;/* some comment ; */\n" +
             "/*\n" +
             "select * from test_table;\n" +
             "*/\n" +
@@ -202,9 +211,24 @@ public class SqlSplitterTest {
             "select * from test_table WHERE ID = '/*'; -- test";
     List<String> sqls = sqlSplitter.splitSql(text);
     assertEquals(3, sqls.size());
-    assertEquals("select * from test_table", sqls.get(0));
-    assertEquals("select * from test_table WHERE ID = ';--'", sqls.get(1));
-    assertEquals("select * from test_table WHERE ID = '/*'", sqls.get(2));
+    assertEquals("\n\n\nselect * from test_table", sqls.get(0));
+    assertEquals("\n\n\n\n\n\n\n\nselect * from test_table WHERE ID = ';--'", sqls.get(1));
+    assertEquals("\n\n\n\n\n\n\n\n\nselect * from test_table WHERE ID = '/*'", sqls.get(2));
+
+    text = "\n" +
+            "\n" +
+            "-- comment 1;\n" +
+            "-- comment 2;\n" +
+            "show databases;\n" +
+            "\n" +
+            "-- another comment\n" +
+            "-- another comment2\n" +
+            "show \n" +
+            "table\n";
+    sqls = sqlSplitter.splitSql(text);
+    assertEquals(2, sqls.size());
+    assertEquals("\n\n\n\nshow databases", sqls.get(0));
+    assertEquals("\n\n\n\n\n\n\n\nshow \ntable\n", sqls.get(1));
   }
 
   @Test
@@ -228,26 +252,26 @@ public class SqlSplitterTest {
 
     sqls = sqlSplitter.splitSql("//comment_1;\nshow tables");
     assertEquals(1, sqls.size());
-    assertEquals("show tables", sqls.get(0));
+    assertEquals("\nshow tables", sqls.get(0));
 
     sqls = sqlSplitter.splitSql("//comment_1;\nshow tables;\n//comment_2");
     assertEquals(1, sqls.size());
-    assertEquals("show tables", sqls.get(0));
+    assertEquals("\nshow tables", sqls.get(0));
 
     sqls = sqlSplitter.splitSql("show tables;\ndescribe table_1");
     assertEquals(2, sqls.size());
     assertEquals("show tables", sqls.get(0));
-    assertEquals("describe table_1", sqls.get(1));
+    assertEquals("\ndescribe table_1", sqls.get(1));
 
     sqls = sqlSplitter.splitSql("show tables;\n//comment_1;\ndescribe table_1");
     assertEquals(2, sqls.size());
     assertEquals("show tables", sqls.get(0));
-    assertEquals("describe table_1", sqls.get(1));
+    assertEquals("\n\ndescribe table_1", sqls.get(1));
 
     sqls = sqlSplitter.splitSql("select a\nfrom table_1;\ndescribe table_1;//comment_1");
     assertEquals(2, sqls.size());
     assertEquals("select a\nfrom table_1", sqls.get(0));
-    assertEquals("describe table_1", sqls.get(1));
+    assertEquals("\n\ndescribe table_1", sqls.get(1));
 
     sqls = sqlSplitter.splitSql("//comment_1;\n//comment_2\n");
     assertEquals(0, sqls.size());
@@ -278,26 +302,26 @@ public class SqlSplitterTest {
 
     sqls = sqlSplitter.splitSql("#comment_1;\nshow tables");
     assertEquals(1, sqls.size());
-    assertEquals("show tables", sqls.get(0));
+    assertEquals("\nshow tables", sqls.get(0));
 
     sqls = sqlSplitter.splitSql("#comment_1;\nshow tables;\n#comment_2");
     assertEquals(1, sqls.size());
-    assertEquals("show tables", sqls.get(0));
+    assertEquals("\nshow tables", sqls.get(0));
 
     sqls = sqlSplitter.splitSql("show tables;\ndescribe table_1");
     assertEquals(2, sqls.size());
     assertEquals("show tables", sqls.get(0));
-    assertEquals("describe table_1", sqls.get(1));
+    assertEquals("\ndescribe table_1", sqls.get(1));
 
     sqls = sqlSplitter.splitSql("show tables;\n#comment_1;\ndescribe table_1");
     assertEquals(2, sqls.size());
     assertEquals("show tables", sqls.get(0));
-    assertEquals("describe table_1", sqls.get(1));
+    assertEquals("\n\ndescribe table_1", sqls.get(1));
 
     sqls = sqlSplitter.splitSql("select a\nfrom table_1;\ndescribe table_1;#comment_1");
     assertEquals(2, sqls.size());
     assertEquals("select a\nfrom table_1", sqls.get(0));
-    assertEquals("describe table_1", sqls.get(1));
+    assertEquals("\n\ndescribe table_1", sqls.get(1));
 
     sqls = sqlSplitter.splitSql("#comment_1;\n#comment_2\n");
     assertEquals(0, sqls.size());

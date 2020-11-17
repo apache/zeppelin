@@ -271,7 +271,7 @@ public class ZSession {
       builder.append(StringUtils.join(propertyString, ","));
       builder.append(")");
     }
-    builder.append("\n" + code);
+    builder.append(" " + code);
 
     String text = builder.toString();
 
@@ -363,7 +363,7 @@ public class ZSession {
       }
       builder.append(")");
     }
-    builder.append("\n" + code);
+    builder.append(" " + code);
 
     String text = builder.toString();
     String nextParagraphId = zeppelinClient.nextSessionParagraph(getNoteId(), maxStatement);
