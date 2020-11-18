@@ -19,7 +19,6 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 import static org.apache.hadoop.security.UserGroupInformation.AuthenticationMethod.KERBEROS;
 
-import com.beust.jcommander.internal.Lists;
 import org.apache.commons.dbcp2.ConnectionFactory;
 import org.apache.commons.dbcp2.DriverManagerConnectionFactory;
 import org.apache.commons.dbcp2.PoolableConnectionFactory;
@@ -51,6 +50,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -711,13 +711,14 @@ public class JDBCInterpreter extends KerberosInterpreter {
     }
 
     try {
-      boolean splitSql = Boolean.parseBoolean(
-              getJDBCConfiguration(user).getPropertyMap(dbPrefix).getProperty(SPLIT_QURIES_KEY, "true"));
+      boolean splitSql = Boolean.parseBoolean(getJDBCConfiguration(user)
+              .getPropertyMap(dbPrefix)
+              .getProperty(SPLIT_QURIES_KEY, "true"));
       List<String> sqlArray = null;
       if (splitSql) {
         sqlArray = sqlSplitter.splitSql(sql);
       } else {
-        sqlArray = Lists.newArrayList(sql);
+        sqlArray = Collections.singletonList(sql);
       }
 
       for (String sqlToExecute : sqlArray) {

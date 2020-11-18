@@ -852,7 +852,8 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     resultMessages = context.out.toInterpreterResultMessage();
     assertEquals(1, resultMessages.size());
     assertEquals(InterpreterResult.Type.TABLE, resultMessages.get(0).getType());
-    assertTrue(resultMessages.get(0).getData(), resultMessages.get(0).getData().startsWith("ID\tNAME"));
+    assertTrue(resultMessages.get(0).getData(),
+            resultMessages.get(0).getData().startsWith("ID\tNAME"));
   }
   private InterpreterContext getInterpreterContext() {
     return InterpreterContext.builder()
