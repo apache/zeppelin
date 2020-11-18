@@ -19,20 +19,30 @@ package org.apache.zeppelin.conf;
 
 import com.google.common.annotations.VisibleForTesting;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.io.Writer;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
-import org.apache.commons.configuration.ConfigurationException;
-import org.apache.commons.configuration.XMLConfiguration;
-import org.apache.commons.configuration.tree.ConfigurationNode;
-import org.apache.commons.exec.environment.EnvironmentUtils;
+import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
+
+import org.apache.commons.configuration2.EnvironmentConfiguration;
+import org.apache.commons.configuration2.SystemConfiguration;
+import org.apache.commons.configuration2.XMLConfiguration;
+import org.apache.commons.configuration2.builder.FileBasedConfigurationBuilder;
+import org.apache.commons.configuration2.builder.fluent.Parameters;
+import org.apache.commons.configuration2.ex.ConfigurationException;
+import org.apache.commons.configuration2.io.ClasspathLocationStrategy;
+import org.apache.commons.configuration2.io.CombinedLocationStrategy;
+import org.apache.commons.configuration2.io.FileLocationStrategy;
+import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.interpreter.lifecycle.NullLifecycleManager;
 import org.apache.zeppelin.util.Util;
@@ -42,19 +52,24 @@ import org.slf4j.LoggerFactory;
 /**
  * Zeppelin configuration.
  *
+ * Sources descending by priority:
+ *   - system properties
+ *   - environment variables
+ *   - configuration file
  */
-public class ZeppelinConfiguration extends XMLConfiguration {
+public class ZeppelinConfiguration {
+
   private static final String ZEPPELIN_SITE_XML = "zeppelin-site.xml";
-  private static final long serialVersionUID = 4749305895693848035L;
-  private static final Logger LOG = LoggerFactory.getLogger(ZeppelinConfiguration.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(ZeppelinConfiguration.class);
 
   private Boolean anonymousAllowed;
 
-  private static final String HELIUM_PACKAGE_DEFAULT_URL =
-      "https://s3.amazonaws.com/helium-package/helium.json";
   private static ZeppelinConfiguration conf;
 
-  private Map<String, String> properties = new HashMap<>();
+  private static final EnvironmentConfiguration envConfig = new EnvironmentConfiguration();
+  private static final SystemConfiguration sysConfig = new SystemConfiguration();
+
+  private final Map<String, String> properties = new HashMap<>();
 
   public enum RUN_MODE {
     LOCAL,
@@ -62,135 +77,70 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     DOCKER
   }
 
-  public ZeppelinConfiguration(URL url) throws ConfigurationException {
-    setDelimiterParsingDisabled(true);
-    load(url);
-    initProperties();
-  }
-
-  private void initProperties() {
-    List<ConfigurationNode> nodes = getRootNode().getChildren();
-    if (nodes == null || nodes.isEmpty()) {
-      return;
-    }
-    for (ConfigurationNode p : nodes) {
-      String name = (String) p.getChildren("name").get(0).getValue();
-      String value = (String) p.getChildren("value").get(0).getValue();
-      if (StringUtils.isNotBlank(name) && StringUtils.isNotBlank(value)) {
-        properties.put(name, value);
-      }
-    }
-  }
-
-
   // private constructor, so that it is singleton.
-  private ZeppelinConfiguration() {
-    ConfVars[] vars = ConfVars.values();
-    for (ConfVars v : vars) {
-      // set property if env is set, so that the configuration can be passed to
-      // interpreter process properly.
-      if (StringUtils.isNotBlank(System.getenv(v.name()))) {
-        this.setProperty(v.getVarName(), System.getenv(v.name()));
-      } else if (v.getType() == ConfVars.VarType.BOOLEAN) {
-        this.setProperty(v.getVarName(), v.getBooleanValue());
-      } else if (v.getType() == ConfVars.VarType.LONG) {
-        this.setProperty(v.getVarName(), v.getLongValue());
-      } else if (v.getType() == ConfVars.VarType.INT) {
-        this.setProperty(v.getVarName(), v.getIntValue());
-      } else if (v.getType() == ConfVars.VarType.FLOAT) {
-        this.setProperty(v.getVarName(), v.getFloatValue());
-      } else if (v.getType() == ConfVars.VarType.STRING) {
-        this.setProperty(v.getVarName(), v.getStringValue());
-      } else {
-        throw new RuntimeException("Unsupported VarType");
-      }
+  private ZeppelinConfiguration(@Nullable String filename) {
+     try {
+      loadXMLConfig(filename);
+    } catch (ConfigurationException e) {
+      LOGGER.warn("Failed to load configuration, proceeding with a default", e);
     }
-
   }
 
+  private void loadXMLConfig(@Nullable String filename) throws ConfigurationException {
+    if (StringUtils.isBlank(filename)) {
+      filename = ZEPPELIN_SITE_XML;
+    }
+    List<FileLocationStrategy> subs = Arrays.asList(
+      new ZeppelinLocationStrategy(),
+      new ClasspathLocationStrategy());
+    FileLocationStrategy strategy = new CombinedLocationStrategy(subs);
+    Parameters params = new Parameters();
+    FileBasedConfigurationBuilder<XMLConfiguration> xmlbuilder =
+      new FileBasedConfigurationBuilder<XMLConfiguration>(XMLConfiguration.class)
+      .configure(params.xml()
+        .setLocationStrategy(strategy)
+        .setFileName(filename)
+        .setBasePath(File.separator + "conf" + File.separator));
+    XMLConfiguration xmlConfig = xmlbuilder.getConfiguration();
+    List<ImmutableNode> nodes = xmlConfig.getNodeModel().getRootNode().getChildren();
+    if (nodes != null && !nodes.isEmpty()) {
+      for (ImmutableNode p : nodes) {
+        String name = String.valueOf(p.getChildren("name").get(0).getValue());
+        String value = String.valueOf(p.getChildren("value").get(0).getValue());
+        if (StringUtils.isNotBlank(name) && StringUtils.isNotBlank(value)) {
+          setProperty(name, value);
+        }
+      }
+    }
+  }
 
+  public static ZeppelinConfiguration create() {
+    if (conf != null) {
+      return conf;
+    }
+    return ZeppelinConfiguration.create(null);
+  }
   /**
-   * Load from resource.
-   *url = ZeppelinConfiguration.class.getResource(ZEPPELIN_SITE_XML);
-   * @throws ConfigurationException
+   * Load from via filename.
    */
-  public static synchronized ZeppelinConfiguration create() {
+  public static synchronized ZeppelinConfiguration create(@Nullable String filename) {
     if (conf != null) {
       return conf;
     }
 
-    ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-    URL url;
+    conf = new ZeppelinConfiguration(filename);
 
-    url = ZeppelinConfiguration.class.getResource(ZEPPELIN_SITE_XML);
-    if (url == null) {
-      ClassLoader cl = ZeppelinConfiguration.class.getClassLoader();
-      if (cl != null) {
-        url = cl.getResource(ZEPPELIN_SITE_XML);
-      }
-    }
-    if (url == null) {
-      url = classLoader.getResource(ZEPPELIN_SITE_XML);
-    }
 
-    if (url == null) {
-      try {
-        Map procEnv = EnvironmentUtils.getProcEnvironment();
-        if (procEnv.containsKey("ZEPPELIN_HOME")) {
-          String zconfDir = (String) procEnv.get("ZEPPELIN_HOME");
-          File file = new File(zconfDir + File.separator
-              + "conf" + File.separator + ZEPPELIN_SITE_XML);
-          if (file.exists()) {
-            url = file.toURL();
-          }
-        }
-      } catch (IOException e) {
-        LOG.error(e.getMessage(), e);
-      }
-    }
-
-    if (url == null) {
-      try {
-        Map procEnv = EnvironmentUtils.getProcEnvironment();
-        if (procEnv.containsKey("ZEPPELIN_CONF_DIR")) {
-          String zconfDir = (String) procEnv.get("ZEPPELIN_CONF_DIR");
-          File file = new File(zconfDir + File.separator + ZEPPELIN_SITE_XML);
-          if (file.exists()) {
-            url = file.toURL();
-          }
-        }
-      } catch (IOException e) {
-        LOG.error(e.getMessage(), e);
-      }
-    }
-
-    if (url == null) {
-      LOG.warn("Failed to load configuration, proceeding with a default");
-      conf = new ZeppelinConfiguration();
+    LOGGER.info("Server Host: {}", conf.getServerAddress());
+    if (conf.useSsl()) {
+      LOGGER.info("Server SSL Port: {}", conf.getServerSslPort());
     } else {
-      try {
-        LOG.info("Load configuration from " + url);
-        conf = new ZeppelinConfiguration(url);
-      } catch (ConfigurationException e) {
-        LOG.warn("Failed to load configuration from " + url + " proceeding with a default", e);
-        conf = new ZeppelinConfiguration();
-      }
+      LOGGER.info("Server Port: {}", conf.getServerPort());
     }
-
-    LOG.info("Server Host: " + conf.getServerAddress());
-    if (conf.useSsl() == false) {
-      LOG.info("Server Port: " + conf.getServerPort());
-    } else {
-      LOG.info("Server SSL Port: " + conf.getServerSslPort());
-    }
-    LOG.info("Context Path: " + conf.getServerContextPath());
-    LOG.info("Zeppelin Version: " + Util.getVersion());
+    LOGGER.info("Context Path: {}", conf.getServerContextPath());
+    LOGGER.info("Zeppelin Version: {}", Util.getVersion());
 
     return conf;
-  }
-
-  public Map<String, String> getProperties() {
-    return this.properties;
   }
 
   public static void reset() {
@@ -198,7 +148,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
   }
 
   public void setProperty(String name, String value) {
-    if (StringUtils.isNotBlank(name) && StringUtils.isNotBlank(value)) {
+    if (StringUtils.isNoneBlank(name, value)) {
       this.properties.put(name, value);
     }
   }
@@ -214,7 +164,11 @@ public class ZeppelinConfiguration extends XMLConfiguration {
   private int getIntValue(String name, int d) {
     String value = this.properties.get(name);
     if (value != null) {
-      return Integer.parseInt(value);
+      try {
+        return Integer.parseInt(value);
+      } catch (NumberFormatException e) {
+        LOGGER.warn("Can not parse the property {} with the value \"{}\" to an int value", name, value, e);
+      }
     }
     return d;
   }
@@ -222,7 +176,11 @@ public class ZeppelinConfiguration extends XMLConfiguration {
   private long getLongValue(String name, long d) {
     String value = this.properties.get(name);
     if (value != null) {
-      return Long.parseLong(value);
+      try {
+        return Long.parseLong(value);
+      } catch (NumberFormatException e) {
+        LOGGER.warn("Can not parse the property {} with the value \"{}\" to a long value", name, value, e);
+      }
     }
     return d;
   }
@@ -230,7 +188,11 @@ public class ZeppelinConfiguration extends XMLConfiguration {
   private float getFloatValue(String name, float d) {
     String value = this.properties.get(name);
     if (value != null) {
-      return Float.parseFloat(value);
+      try {
+        return Float.parseFloat(value);
+      } catch (NumberFormatException e) {
+        LOGGER.warn("Can not parse the property {} with the value \"{}\" to a float value", name, value, e);
+      }
     }
     return d;
   }
@@ -248,13 +210,12 @@ public class ZeppelinConfiguration extends XMLConfiguration {
   }
 
   public String getString(String envName, String propertyName, String defaultValue) {
-    if (System.getenv(envName) != null) {
-      return System.getenv(envName);
+    if (envConfig.containsKey(envName)) {
+      return envConfig.getString(envName);
     }
-    if (System.getProperty(propertyName) != null) {
-      return System.getProperty(propertyName);
+    if (sysConfig.containsKey(propertyName)) {
+      return sysConfig.getString(propertyName);
     }
-
     return getStringValue(propertyName, defaultValue);
   }
 
@@ -263,12 +224,11 @@ public class ZeppelinConfiguration extends XMLConfiguration {
   }
 
   public int getInt(String envName, String propertyName, int defaultValue) {
-    if (System.getenv(envName) != null) {
-      return Integer.parseInt(System.getenv(envName));
+    if (envConfig.containsKey(envName)) {
+      return envConfig.getInt(envName);
     }
-
-    if (System.getProperty(propertyName) != null) {
-      return Integer.parseInt(System.getProperty(propertyName));
+    if (sysConfig.containsKey(propertyName)) {
+      return sysConfig.getInt(propertyName);
     }
     return getIntValue(propertyName, defaultValue);
   }
@@ -278,12 +238,11 @@ public class ZeppelinConfiguration extends XMLConfiguration {
   }
 
   public long getLong(String envName, String propertyName, long defaultValue) {
-    if (System.getenv(envName) != null) {
-      return Long.parseLong(System.getenv(envName));
+    if (envConfig.containsKey(envName)) {
+      return envConfig.getLong(envName);
     }
-
-    if (System.getProperty(propertyName) != null) {
-      return Long.parseLong(System.getProperty(propertyName));
+    if (sysConfig.containsKey(propertyName)) {
+      return sysConfig.getLong(propertyName);
     }
     return getLongValue(propertyName, defaultValue);
   }
@@ -293,11 +252,11 @@ public class ZeppelinConfiguration extends XMLConfiguration {
   }
 
   public float getFloat(String envName, String propertyName, float defaultValue) {
-    if (System.getenv(envName) != null) {
-      return Float.parseFloat(System.getenv(envName));
+    if (envConfig.containsKey(envName)) {
+      return envConfig.getFloat(envName);
     }
-    if (System.getProperty(propertyName) != null) {
-      return Float.parseFloat(System.getProperty(propertyName));
+    if (sysConfig.containsKey(propertyName)) {
+      return sysConfig.getFloat(propertyName);
     }
     return getFloatValue(propertyName, defaultValue);
   }
@@ -307,12 +266,11 @@ public class ZeppelinConfiguration extends XMLConfiguration {
   }
 
   public boolean getBoolean(String envName, String propertyName, boolean defaultValue) {
-    if (System.getenv(envName) != null) {
-      return Boolean.parseBoolean(System.getenv(envName));
+    if (envConfig.containsKey(envName)) {
+      return envConfig.getBoolean(envName);
     }
-
-    if (System.getProperty(propertyName) != null) {
-      return Boolean.parseBoolean(System.getProperty(propertyName));
+    if (sysConfig.containsKey(propertyName)) {
+      return sysConfig.getBoolean(propertyName);
     }
     return getBooleanValue(propertyName, defaultValue);
   }
@@ -691,7 +649,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
   public String getConfigFSDir(boolean absolute) {
     String fsConfigDir = getString(ConfVars.ZEPPELIN_CONFIG_FS_DIR);
     if (StringUtils.isBlank(fsConfigDir)) {
-      LOG.warn("{} is not specified, fall back to local conf directory {}",
+      LOGGER.warn("{} is not specified, fall back to local conf directory {}",
         ConfVars.ZEPPELIN_CONFIG_FS_DIR.varName,  ConfVars.ZEPPELIN_CONF_DIR.varName);
       if (absolute) {
         return getConfDir();
@@ -900,40 +858,31 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getBoolean(ConfVars.ZEPPELIN_METRIC_ENABLE_PROMETHEUS);
   }
 
-  public Map<String, String> dumpConfigurations(Predicate<String> predicate) {
-    Map<String, String> properties = new HashMap<>();
-
-    for (ConfVars v : ConfVars.values()) {
-      String key = v.getVarName();
-
-      if (!predicate.test(key)) {
-        continue;
-      }
-
-      ConfVars.VarType type = v.getType();
-      Object value = null;
-      if (type == ConfVars.VarType.BOOLEAN) {
-        value = getBoolean(v);
-      } else if (type == ConfVars.VarType.LONG) {
-        value = getLong(v);
-      } else if (type == ConfVars.VarType.INT) {
-        value = getInt(v);
-      } else if (type == ConfVars.VarType.FLOAT) {
-        value = getFloat(v);
-      } else if (type == ConfVars.VarType.STRING) {
-        value = getString(v);
-      }
-
-      if (value != null) {
-        properties.put(key, value.toString());
+  /**
+   * This method return the complete configuration map
+   * @return
+   */
+  public Map<String, String> getCompleteConfiguration() {
+    Map<String, String> completeConfiguration = new HashMap<>(properties);
+    // Is it possible that we overwrite properties
+    for (ConfVars c : ConfVars.values()) {
+      if (sysConfig.containsKey(c.getVarName())) {
+        completeConfiguration.put(c.getVarName(), sysConfig.getString(c.getVarName()));
+      } else if (envConfig.containsKey(c.name())) {
+        completeConfiguration.put(c.getVarName(), envConfig.getString(c.name()));
       }
     }
-    return properties;
+    return completeConfiguration;
   }
 
-  @Override
-  public void save(Writer writer) throws ConfigurationException {
-    try {
+  public Map<String, String> dumpConfigurations(Predicate<String> predicate) {
+    return getCompleteConfiguration().entrySet().stream()
+      .filter(e -> predicate.test(e.getKey()))
+      .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+  }
+
+  public void save(String location) throws ConfigurationException {
+    try (FileWriter writer = new FileWriter(location)){
       writer.write("<configuration>\n");
       for (Map.Entry<String, String> entry : properties.entrySet()) {
         writer.write("<property>\n");
@@ -942,11 +891,9 @@ public class ZeppelinConfiguration extends XMLConfiguration {
         writer.write("</property>\n");
       }
       writer.write("</configuration>");
-      writer.close();
     } catch (IOException e) {
       throw new ConfigurationException(e);
     }
-
   }
 
   /**
@@ -1115,6 +1062,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_DOCKER_CONTAINER_IMAGE("zeppelin.docker.container.image", "apache/zeppelin:" + Util.getVersion()),
 
     ZEPPELIN_METRIC_ENABLE_PROMETHEUS("zeppelin.metric.enable.prometheus", false),
+    ZEPPELINHUB_USER_KEY("zeppelinhub.user.key",""),
 
     ZEPPELIN_IMPERSONATE_SPARK_PROXY_USER("zeppelin.impersonate.spark.proxy.user", true),
     ZEPPELIN_NOTEBOOK_GIT_REMOTE_URL("zeppelin.notebook.git.remote.url", ""),
@@ -1138,10 +1086,8 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_NOTE_FILE_EXCLUDE_FIELDS("zeppelin.note.file.exclude.fields", "");
 
     private String varName;
-    @SuppressWarnings("rawtypes")
-    private Class varClass;
+    private Class<?> varClass;
     private String stringValue;
-    private VarType type;
     private int intValue;
     private float floatValue;
     private boolean booleanValue;
@@ -1156,7 +1102,6 @@ public class ZeppelinConfiguration extends XMLConfiguration {
       this.floatValue = -1;
       this.longValue = -1;
       this.booleanValue = false;
-      this.type = VarType.STRING;
     }
 
     ConfVars(String varName, int intValue) {
@@ -1167,7 +1112,6 @@ public class ZeppelinConfiguration extends XMLConfiguration {
       this.floatValue = -1;
       this.longValue = -1;
       this.booleanValue = false;
-      this.type = VarType.INT;
     }
 
     ConfVars(String varName, long longValue) {
@@ -1178,7 +1122,6 @@ public class ZeppelinConfiguration extends XMLConfiguration {
       this.floatValue = -1;
       this.longValue = longValue;
       this.booleanValue = false;
-      this.type = VarType.LONG;
     }
 
     ConfVars(String varName, float floatValue) {
@@ -1189,7 +1132,6 @@ public class ZeppelinConfiguration extends XMLConfiguration {
       this.longValue = -1;
       this.floatValue = floatValue;
       this.booleanValue = false;
-      this.type = VarType.FLOAT;
     }
 
     ConfVars(String varName, boolean booleanValue) {
@@ -1200,15 +1142,13 @@ public class ZeppelinConfiguration extends XMLConfiguration {
       this.longValue = -1;
       this.floatValue = -1;
       this.booleanValue = booleanValue;
-      this.type = VarType.BOOLEAN;
     }
 
     public String getVarName() {
       return varName;
     }
 
-    @SuppressWarnings("rawtypes")
-    public Class getVarClass() {
+    public Class<?> getVarClass() {
       return varClass;
     }
 
@@ -1230,57 +1170,6 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 
     public boolean getBooleanValue() {
       return booleanValue;
-    }
-
-    public VarType getType() {
-      return type;
-    }
-
-    enum VarType {
-      STRING {
-        @Override
-        void checkType(String value) throws Exception {}
-      },
-      INT {
-        @Override
-        void checkType(String value) throws Exception {
-          Integer.valueOf(value);
-        }
-      },
-      LONG {
-        @Override
-        void checkType(String value) throws Exception {
-          Long.valueOf(value);
-        }
-      },
-      FLOAT {
-        @Override
-        void checkType(String value) throws Exception {
-          Float.valueOf(value);
-        }
-      },
-      BOOLEAN {
-        @Override
-        void checkType(String value) throws Exception {
-          Boolean.valueOf(value);
-        }
-      };
-
-      boolean isType(String value) {
-        try {
-          checkType(value);
-        } catch (Exception e) {
-          LOG.error("Exception in ZeppelinConfiguration while isType", e);
-          return false;
-        }
-        return true;
-      }
-
-      String typeString() {
-        return name().toUpperCase();
-      }
-
-      abstract void checkType(String value) throws Exception;
     }
   }
 }

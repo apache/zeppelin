@@ -24,12 +24,14 @@ limitations under the License.
 <div id="toc"></div>
 
 ## Zeppelin Properties
-There are two locations you can configure Apache Zeppelin.
 
-* **Environment variables** can be defined `conf/zeppelin-env.sh`(`conf\zeppelin-env.cmd` for Windows).
-* **Java properties** can be defined in `conf/zeppelin-site.xml`.
+Zeppelin can be configured via several sources.
 
-If both are defined, then the **environment variables** will take priority.
+Sources descending by priority:
+ - environment variables can be defined `conf/zeppelin-env.sh`(`conf\zeppelin-env.cmd` for Windows).
+ - system properties
+ - configuration file can be defined in `conf/zeppelin-site.xml`
+
 > Mouse hover on each property and click <i class="fa fa-link fa-flip-horizontal"></i> then you can get a link for that.
 
 <table class="table-configuration">
