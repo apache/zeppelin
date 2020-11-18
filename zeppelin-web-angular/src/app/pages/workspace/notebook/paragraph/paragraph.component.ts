@@ -185,6 +185,10 @@ export class NotebookParagraphComponent extends ParagraphBase implements OnInit,
     }
   }
 
+  clearParagraph() {
+    console.log('CLEAR PARAGRAPH HERE');
+  }
+
   runAllAbove() {
     const index = this.note.paragraphs.findIndex(p => p.id === this.paragraph.id);
     const toRunParagraphs = this.note.paragraphs.filter((p, i) => i < index);
