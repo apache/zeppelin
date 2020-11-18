@@ -50,6 +50,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -108,6 +109,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
   static final String DRIVER_KEY = "driver";
   static final String URL_KEY = "url";
   static final String USER_KEY = "user";
+  static final String SPLIT_QURIES_KEY = "splitQueries";
   static final String PASSWORD_KEY = "password";
   static final String PRECODE_KEY = "precode";
   static final String STATEMENT_PRECODE_KEY = "statementPrecode";
@@ -709,7 +711,16 @@ public class JDBCInterpreter extends KerberosInterpreter {
     }
 
     try {
-      List<String> sqlArray = sqlSplitter.splitSql(sql);
+      boolean splitSql = Boolean.parseBoolean(getJDBCConfiguration(user)
+              .getPropertyMap(dbPrefix)
+              .getProperty(SPLIT_QURIES_KEY, "true"));
+      List<String> sqlArray = null;
+      if (splitSql) {
+        sqlArray = sqlSplitter.splitSql(sql);
+      } else {
+        sqlArray = Collections.singletonList(sql);
+      }
+
       for (String sqlToExecute : sqlArray) {
         statement = connection.createStatement();
 
