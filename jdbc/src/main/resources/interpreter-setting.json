@@ -81,6 +81,13 @@
         "description": "If auth type is needed, Example: KERBEROS",
         "type": "string"
       },
+      "zeppelin.jdbc.auth.kerberos.proxy.enable": {
+        "envName": null,
+        "propertyName": "zeppelin.jdbc.auth.kerberos.proxy.enable",
+        "defaultValue": "true",
+        "description": "When auth type is Kerberos, enable/disable Kerberos proxy with the login user to get the connection. Default value is true.",
+        "type": "checkbox"
+      },
       "zeppelin.jdbc.concurrent.use": {
         "envName": null,
         "propertyName": "zeppelin.jdbc.concurrent.use",
