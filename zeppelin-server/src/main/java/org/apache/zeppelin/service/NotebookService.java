@@ -429,7 +429,7 @@ public class NotebookService {
             // also stop execution when user code in a paragraph fails
             Paragraph p = note.getParagraph(paragraphId);
             InterpreterResult result = p.getReturn();
-            if (result.code() == ERROR) {
+            if (result != null && result.code() == ERROR) {
               return false;
             }
           } catch (Exception e) {

@@ -818,6 +818,43 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     assertEquals(3, resultMessages.size());
   }
 
+  @Test
+  public void testSqlWithoutSplit() throws IOException,
+          InterpreterException {
+    Properties properties = new Properties();
+    properties.setProperty("common.max_count", "1000");
+    properties.setProperty("common.max_retry", "3");
+    properties.setProperty("default.driver", "org.h2.Driver");
+    properties.setProperty("default.url", getJdbcConnection());
+    properties.setProperty("default.user", "");
+    properties.setProperty("default.password", "");
+    properties.setProperty("default.splitQueries", "false");
+    JDBCInterpreter t = new JDBCInterpreter(properties);
+    t.open();
+
+    String sqlQuery = "-- comment\n" +
+            "--select * from test_table\n" +
+            "select * from test_table;";
+
+    InterpreterResult interpreterResult = t.interpret(sqlQuery, context);
+    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
+    List<InterpreterResultMessage> resultMessages = context.out.toInterpreterResultMessage();
+    assertEquals(1, resultMessages.size());
+    assertEquals(InterpreterResult.Type.TABLE, resultMessages.get(0).getType());
+
+
+    // the second sql is skipped.
+    context = getInterpreterContext();
+    sqlQuery = "select * from test_table;" +
+            "select name from test_table";
+    interpreterResult = t.interpret(sqlQuery, context);
+    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
+    resultMessages = context.out.toInterpreterResultMessage();
+    assertEquals(1, resultMessages.size());
+    assertEquals(InterpreterResult.Type.TABLE, resultMessages.get(0).getType());
+    assertTrue(resultMessages.get(0).getData(),
+            resultMessages.get(0).getData().startsWith("ID\tNAME"));
+  }
   private InterpreterContext getInterpreterContext() {
     return InterpreterContext.builder()
             .setAuthenticationInfo(new AuthenticationInfo("testUser"))

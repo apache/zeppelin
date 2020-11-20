@@ -50,6 +50,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -108,6 +109,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
   static final String DRIVER_KEY = "driver";
   static final String URL_KEY = "url";
   static final String USER_KEY = "user";
+  static final String SPLIT_QURIES_KEY = "splitQueries";
   static final String PASSWORD_KEY = "password";
   static final String PRECODE_KEY = "precode";
   static final String STATEMENT_PRECODE_KEY = "statementPrecode";
@@ -125,6 +127,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
   private static final char TAB = '\t';
   private static final String TABLE_MAGIC_TAG = "%table ";
   private static final String EXPLAIN_PREDICATE = "EXPLAIN ";
+  private static final String CANCEL_REASON = "cancel_reason";
 
   static final String COMMON_MAX_LINE = COMMON_KEY + DOT + MAX_LINE_KEY;
 
@@ -160,7 +163,6 @@ public class JDBCInterpreter extends KerberosInterpreter {
 
   private int maxLineResults;
   private int maxRows;
-
   private SqlSplitter sqlSplitter;
 
   private Map<String, ScheduledExecutorService> refreshExecutorServices = new HashMap<>();
@@ -709,7 +711,16 @@ public class JDBCInterpreter extends KerberosInterpreter {
     }
 
     try {
-      List<String> sqlArray = sqlSplitter.splitSql(sql);
+      boolean splitSql = Boolean.parseBoolean(getJDBCConfiguration(user)
+              .getPropertyMap(dbPrefix)
+              .getProperty(SPLIT_QURIES_KEY, "true"));
+      List<String> sqlArray = null;
+      if (splitSql) {
+        sqlArray = sqlSplitter.splitSql(sql);
+      } else {
+        sqlArray = Collections.singletonList(sql);
+      }
+
       for (String sqlToExecute : sqlArray) {
         statement = connection.createStatement();
 
@@ -735,7 +746,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
           String jdbcURL = getJDBCConfiguration(user).getPropertyMap(dbPrefix).getProperty(URL_KEY);
           if (jdbcURL != null && jdbcURL.startsWith("jdbc:hive2://")) {
             HiveUtils.startHiveMonitorThread(statement, context,
-                    Boolean.parseBoolean(getProperty("hive.log.display", "true")));
+                    Boolean.parseBoolean(getProperty("hive.log.display", "true")), this);
           }
           boolean isResultSetAvailable = statement.execute(sqlToExecute);
           getJDBCConfiguration(user).setConnectionInDBDriverPoolSuccessful(dbPrefix);
@@ -932,8 +943,21 @@ public class JDBCInterpreter extends KerberosInterpreter {
     } catch (SQLException e) {
       LOGGER.error("Error while cancelling...", e);
     }
+
+    String cancelReason = context.getLocalProperties().get(CANCEL_REASON);
+    if (StringUtils.isNotBlank(cancelReason)) {
+      try {
+        context.out.write(cancelReason);
+      } catch (IOException e) {
+        LOGGER.error("Fail to write cancel reason");
+      }
+    }
   }
 
+  public void cancel(InterpreterContext context, String errorMessage) {
+    context.getLocalProperties().put(CANCEL_REASON, errorMessage);
+    cancel(context);
+  }
   /**
    *
    *

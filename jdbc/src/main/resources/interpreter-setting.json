@@ -32,6 +32,13 @@
         "description": "JDBC Driver Name",
         "type": "string"
       },
+      "default.splitQueries": {
+        "envName": null,
+        "propertyName": "default.splitQueries",
+        "defaultValue": "true",
+        "description": "Whether split the whole text into multiple sql statements",
+        "type": "checkbox"
+      },
       "default.completer.ttlInSeconds": {
         "envName": null,
         "propertyName": "default.completer.ttlInSeconds",
@@ -121,6 +128,13 @@
         "propertyName": "zeppelin.jdbc.maxRows",
         "defaultValue": "1000",
         "description": "Maximum number of rows fetched from the query.",
+        "type": "number"
+      },
+      "zeppelin.jdbc.hive.timeout.threshold": {
+        "envName": null,
+        "propertyName": "zeppelin.jdbc.hive.timeout.threshold",
+        "defaultValue": "60000",
+        "description": "Timeout for hive job timeout",
         "type": "number"
       }
     },
