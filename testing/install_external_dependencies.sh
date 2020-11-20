@@ -59,7 +59,7 @@ fi
 
 # Install R dependencies if R is true
 if [[ "$R" == "true" ]] ; then
-  conda install -y --quiet r-base r-evaluate r-base64enc r-knitr r-ggplot2 r-irkernel r-shiny r-googlevis
+  conda install -y --quiet r-base=3 r-evaluate r-base64enc r-knitr r-ggplot2 r-irkernel r-shiny r-googlevis
   R -e "IRkernel::installspec()"
   echo "R_LIBS=~/miniconda/lib/R/library" > ~/.Renviron
   echo "export R_LIBS=~/miniconda/lib/R/library" >> ~/.environ
