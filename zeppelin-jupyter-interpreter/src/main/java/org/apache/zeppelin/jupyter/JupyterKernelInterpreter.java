@@ -49,6 +49,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
@@ -110,7 +111,7 @@ public class JupyterKernelInterpreter extends AbstractInterpreter {
         return;
       }
       pythonExecutable = getProperty("zeppelin.python", "python");
-      LOGGER.info("Python Exec: " + pythonExecutable);
+      LOGGER.info("Python Exec: {}", pythonExecutable);
       String checkPrerequisiteResult = checkKernelPrerequisite(pythonExecutable);
       if (!StringUtils.isEmpty(checkPrerequisiteResult)) {
         throw new InterpreterException("Kernel prerequisite is not meet: " +
@@ -120,11 +121,11 @@ public class JupyterKernelInterpreter extends AbstractInterpreter {
               getProperty("zeppelin.jupyter.kernel.launch.timeout", "30000"));
       this.z = buildZeppelinContext();
       int kernelPort = RemoteInterpreterUtils.findRandomAvailablePortOnAllLocalInterfaces();
-      int message_size = Integer.parseInt(getProperty("zeppelin.jupyter.kernel.grpc.message_size",
+      int messageSize = Integer.parseInt(getProperty("zeppelin.jupyter.kernel.grpc.message_size",
               32 * 1024 * 1024 + ""));
 
       jupyterKernelClient = new JupyterKernelClient(ManagedChannelBuilder.forAddress("127.0.0.1",
-              kernelPort).usePlaintext(true).maxInboundMessageSize(message_size),
+              kernelPort).usePlaintext(true).maxInboundMessageSize(messageSize),
               getProperties(), kernel);
       launchJupyterKernel(kernelPort);
     } catch (Exception e) {
@@ -153,17 +154,17 @@ public class JupyterKernelInterpreter extends AbstractInterpreter {
       int ret = proc.waitFor();
       if (ret != 0) {
         try (FileInputStream in = new FileInputStream(stderrFile)) {
-          return "Fail to run pip freeze.\n" + IOUtils.toString(in);
+          return "Fail to run pip freeze.\n" + IOUtils.toString(in, StandardCharsets.UTF_8);
         }
       }
       try (FileInputStream in = new FileInputStream(stdoutFile)) {
-        String freezeOutput = IOUtils.toString(in);
+        String freezeOutput = IOUtils.toString(in, StandardCharsets.UTF_8);
         for (String packageName : getRequiredPackages()) {
           if (!freezeOutput.contains(packageName + "=")) {
             return packageName + " is not installed.";
           }
         }
-        LOGGER.info("Prerequisite for kernel " + getKernelName() + " is met");
+        LOGGER.info("Prerequisite for kernel {} is met", getKernelName());
       }
     } catch (Exception e) {
       LOGGER.warn("Fail to checkKernelPrerequisite", e);
@@ -177,7 +178,7 @@ public class JupyterKernelInterpreter extends AbstractInterpreter {
 
   private void launchJupyterKernel(int kernelPort)
           throws IOException {
-    LOGGER.info("Launching Jupyter Kernel at port: " + kernelPort);
+    LOGGER.info("Launching Jupyter Kernel at port: {}", kernelPort);
     // copy the python scripts to a temp directory, then launch jupyter kernel in that folder
     this.kernelWorkDir = Files.createTempDirectory(
             "zeppelin_jupyter_kernel_" + getKernelName()).toFile();
@@ -191,7 +192,7 @@ public class JupyterKernelInterpreter extends AbstractInterpreter {
     CommandLine cmd = CommandLine.parse(pythonExecutable);
     cmd.addArgument(kernelWorkDir.getAbsolutePath() + "/kernel_server.py");
     cmd.addArgument(getKernelName());
-    cmd.addArgument(kernelPort + "");
+    cmd.addArgument(String.valueOf(kernelPort));
 
     Map<String, String> envs = setupKernelEnv();
     jupyterKernelProcessLauncher = new JupyterKernelProcessLauncher(cmd, envs);
@@ -289,7 +290,7 @@ public class JupyterKernelInterpreter extends AbstractInterpreter {
   @Override
   public List<InterpreterCompletion> completion(String buf, int cursor,
                                                 InterpreterContext interpreterContext) {
-    LOGGER.debug("Call completion for: " + buf + ", cursor: " + cursor);
+    LOGGER.debug("Call completion for: {}, cursor: {}", buf, cursor);
     List<InterpreterCompletion> completions = new ArrayList<>();
     CompletionResponse response =
             jupyterKernelClient.complete(
@@ -301,12 +302,13 @@ public class JupyterKernelInterpreter extends AbstractInterpreter {
       if (lastIndexOfDot != -1) {
         match = match.substring(lastIndexOfDot + 1);
       }
-      LOGGER.debug("Candidate completion: " + match);
+      LOGGER.debug("Candidate completion: {}", match);
       completions.add(new InterpreterCompletion(match, match, ""));
     }
     return completions;
   }
 
+  @Override
   public ZeppelinContext getZeppelinContext() {
     return z;
   }
