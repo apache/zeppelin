@@ -160,7 +160,14 @@ public class JupyterKernelInterpreter extends AbstractInterpreter {
       try (FileInputStream in = new FileInputStream(stdoutFile)) {
         String freezeOutput = IOUtils.toString(in, StandardCharsets.UTF_8);
         for (String packageName : getRequiredPackages()) {
-          if (!freezeOutput.contains(packageName + "=")) {
+          /**
+           * Example line, if the Python package is installed with pip:
+           *  grpcio==1.18.0
+           * Example line, if the Python package is installed with conda:
+           *  grpcio @ file:///home/conda/feedstock_root/build_artifacts/grpcio_1604365513151/work
+           */
+          if (!freezeOutput.contains(packageName + "=") &&
+              !freezeOutput.contains(packageName + " ")) {
             return packageName + " is not installed.";
           }
         }
