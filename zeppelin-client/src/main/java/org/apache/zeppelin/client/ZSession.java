@@ -72,6 +72,10 @@ public class ZSession {
     this.sessionInfo = new SessionInfo(sessionId);
   }
 
+  public void login(String userName, String password) throws Exception {
+    this.zeppelinClient.login(userName, password);
+  }
+
   /**
    * Start this ZSession, underneath it would create a note for this ZSession and
    * start a dedicated interpreter group.
