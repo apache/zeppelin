@@ -55,7 +55,7 @@ public class JupyterKernelClient {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JupyterKernelClient.class.getName());
   // used for matching shiny url
-  private static Pattern ShinyListeningPattern =
+  private static final Pattern SHINY_LISTENING_PATTERN =
           Pattern.compile(".*Listening on (http:\\S*).*", Pattern.DOTALL);
 
   private final ManagedChannel channel;
@@ -112,10 +112,10 @@ public class JupyterKernelClient {
     if (intpClassName != null &&
             (intpClassName.equals("org.apache.zeppelin.r.ShinyInterpreter") ||
                     intpClassName.equals("org.apache.zeppelin.spark.SparkShinyInterpreter"))) {
-      Matcher matcher = ShinyListeningPattern.matcher(response);
+      Matcher matcher = SHINY_LISTENING_PATTERN.matcher(response);
       if (matcher.matches()) {
         String url = matcher.group(1);
-        LOGGER.info("Matching shiny app url: " + url);
+        LOGGER.info("Matching shiny app url: {}", url);
         context.out.clear();
         String defaultHeight = properties.getProperty("zeppelin.R.shiny.iframe_height", "500px");
         String height = context.getLocalProperties().getOrDefault("height", defaultHeight);

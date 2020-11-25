@@ -132,9 +132,10 @@ class KernelServer(kernel_pb2_grpc.JupyterKernelServicer):
                                                   output="Ipython kernel has been stopped. Please check logs. It might be because of an out of memory issue.")
         if payload_reply:
             result = []
-            for payload in payload_reply[0]['content']['payload']:
-                if payload['data']['text/plain']:
-                    result.append(payload['data']['text/plain'])
+            if 'payload' in payload_reply[0]['content']:
+                for payload in payload_reply[0]['content']['payload']:
+                    if payload['data']['text/plain']:
+                        result.append(payload['data']['text/plain'])
             if result:
                 yield kernel_pb2.ExecuteResponse(status=kernel_pb2.SUCCESS,
                                                   type=kernel_pb2.TEXT,
