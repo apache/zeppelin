@@ -495,7 +495,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
   public Connection getConnection(String dbPrefix, InterpreterContext context)
       throws ClassNotFoundException, SQLException, InterpreterException, IOException {
     final String user =  context.getAuthenticationInfo().getUser();
-    Connection connection;
+    Connection connection = null;
     if (dbPrefix == null || basePropertiesMap.get(dbPrefix) == null) {
       return null;
     }
@@ -505,37 +505,42 @@ public class JDBCInterpreter extends KerberosInterpreter {
 
     final Properties properties = jdbcUserConfigurations.getPropertyMap(dbPrefix);
     String url = properties.getProperty(URL_KEY);
-    
-    if (isEmpty(getProperty("zeppelin.jdbc.auth.type"))) {
-      connection = getConnectionFromPool(url, user, dbPrefix, properties);
-    } else {
-      UserGroupInformation.AuthenticationMethod authType =
-          JDBCSecurityImpl.getAuthType(getProperties());
+    String connectionUrl = appendProxyUserToURL(url, user, dbPrefix);
 
-      final String connectionUrl = appendProxyUserToURL(url, user, dbPrefix);
-      JDBCSecurityImpl.createSecureConfiguration(getProperties(), authType);
-
-      if (basePropertiesMap.get(dbPrefix).containsKey("proxy.user.property")) {
+    String authType = properties.getProperty("zeppelin.jdbc.auth.type", "SIMPLE")
+            .trim().toUpperCase();
+    switch (authType) {
+      case "SIMPLE":
         connection = getConnectionFromPool(connectionUrl, user, dbPrefix, properties);
-      } else {
-        UserGroupInformation ugi = null;
-        try {
-          ugi = UserGroupInformation.createProxyUser(
-                  user, UserGroupInformation.getCurrentUser());
-        } catch (Exception e) {
-          LOGGER.error("Error in getCurrentUser", e);
-          throw new InterpreterException("Error in getCurrentUser", e);
-        }
+        break;
+      case "KERBEROS":
+        JDBCSecurityImpl.createSecureConfiguration(getProperties(),
+                UserGroupInformation.AuthenticationMethod.KERBEROS);
+        boolean isProxyEnabled = Boolean.parseBoolean(
+                getProperty("zeppelin.jdbc.auth.kerberos.proxy.enable", "true"));
+        if (basePropertiesMap.get(dbPrefix).containsKey("proxy.user.property")
+                || !isProxyEnabled) {
+          connection = getConnectionFromPool(connectionUrl, user, dbPrefix, properties);
+        } else {
+          UserGroupInformation ugi = null;
+          try {
+            ugi = UserGroupInformation.createProxyUser(
+                    user, UserGroupInformation.getCurrentUser());
+          } catch (Exception e) {
+            LOGGER.error("Error in getCurrentUser", e);
+            throw new InterpreterException("Error in getCurrentUser", e);
+          }
 
-        final String poolKey = dbPrefix;
-        try {
-          connection = ugi.doAs((PrivilegedExceptionAction<Connection>) () ->
-                  getConnectionFromPool(connectionUrl, user, poolKey, properties));
-        } catch (Exception e) {
-          LOGGER.error("Error in doAs", e);
-          throw new InterpreterException("Error in doAs", e);
+          final String poolKey = dbPrefix;
+          try {
+            connection = ugi.doAs((PrivilegedExceptionAction<Connection>) () ->
+                    getConnectionFromPool(connectionUrl, user, poolKey, properties));
+          } catch (Exception e) {
+            LOGGER.error("Error in doAs", e);
+            throw new InterpreterException("Error in doAs", e);
+          }
         }
-      }
+        break;
     }
 
     return connection;

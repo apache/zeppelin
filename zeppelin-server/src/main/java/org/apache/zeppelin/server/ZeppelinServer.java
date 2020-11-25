@@ -16,9 +16,29 @@
  */
 package org.apache.zeppelin.server;
 
+import com.codahale.metrics.servlets.HealthCheckServlet;
+import com.codahale.metrics.servlets.PingServlet;
 import com.google.gson.Gson;
 
 import static org.apache.zeppelin.server.HtmlAddonResource.HTML_ADDON_IDENTIFIER;
+
+import io.micrometer.core.instrument.Clock;
+import io.micrometer.core.instrument.Metrics;
+import io.micrometer.core.instrument.Tags;
+import io.micrometer.core.instrument.binder.jetty.InstrumentedQueuedThreadPool;
+import io.micrometer.core.instrument.binder.jetty.JettyConnectionMetrics;
+import io.micrometer.core.instrument.binder.jetty.JettySslHandshakeMetrics;
+import io.micrometer.core.instrument.binder.jetty.TimedHandler;
+import io.micrometer.core.instrument.binder.jvm.ClassLoaderMetrics;
+import io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics;
+import io.micrometer.core.instrument.binder.jvm.JvmThreadMetrics;
+import io.micrometer.core.instrument.binder.system.FileDescriptorMetrics;
+import io.micrometer.core.instrument.binder.system.ProcessorMetrics;
+import io.micrometer.core.instrument.binder.system.UptimeMetrics;
+import io.micrometer.jmx.JmxConfig;
+import io.micrometer.jmx.JmxMeterRegistry;
+import io.micrometer.prometheus.PrometheusConfig;
+import io.micrometer.prometheus.PrometheusMeterRegistry;
 
 import java.io.File;
 import java.io.IOException;
@@ -44,6 +64,7 @@ import org.apache.zeppelin.cluster.ClusterManagerServer;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.display.AngularObjectRegistryListener;
+import org.apache.zeppelin.healthcheck.HealthChecks;
 import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.helium.Helium;
 import org.apache.zeppelin.helium.HeliumApplicationFactory;
@@ -54,6 +75,8 @@ import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.interpreter.recovery.RecoveryStorage;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
+import org.apache.zeppelin.metric.JVMInfoBinder;
+import org.apache.zeppelin.metric.PrometheusServlet;
 import org.apache.zeppelin.notebook.NoteEventListener;
 import org.apache.zeppelin.notebook.NoteManager;
 import org.apache.zeppelin.notebook.Notebook;
@@ -76,6 +99,7 @@ import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
 import org.apache.zeppelin.util.ReflectionUtils;
 import org.apache.zeppelin.utils.PEMImporter;
+import org.eclipse.jetty.http.HttpScheme;
 import org.eclipse.jetty.http.HttpVersion;
 import org.eclipse.jetty.jmx.ConnectorServer;
 import org.eclipse.jetty.jmx.MBeanContainer;
@@ -93,8 +117,6 @@ import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.resource.Resource;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
-import org.eclipse.jetty.util.thread.QueuedThreadPool;
-import org.eclipse.jetty.util.thread.ThreadPool;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.eclipse.jetty.websocket.servlet.WebSocketServlet;
 import org.glassfish.hk2.api.Immediate;
@@ -116,6 +138,7 @@ public class ZeppelinServer extends ResourceConfig {
   public static ServiceLocator sharedServiceLocator;
 
   private static ZeppelinConfiguration conf;
+  private static PrometheusMeterRegistry promMetricRegistry;
 
   public static void reset() {
     conf = null;
@@ -135,9 +158,13 @@ public class ZeppelinServer extends ResourceConfig {
     conf.setProperty("args", args);
 
     jettyWebServer = setupJettyServer(conf);
+    initMetrics(conf);
+
+    TimedHandler timedHandler = new TimedHandler(Metrics.globalRegistry, Tags.empty());
+    jettyWebServer.setHandler(timedHandler);
 
     ContextHandlerCollection contexts = new ContextHandlerCollection();
-    jettyWebServer.setHandler(contexts);
+    timedHandler.setHandler(contexts);
 
     sharedServiceLocator = ServiceLocatorFactory.getInstance().create("shared-locator");
     ServiceLocatorUtilities.enableImmediateScope(sharedServiceLocator);
@@ -204,49 +231,20 @@ public class ZeppelinServer extends ResourceConfig {
     setupClusterManagerServer(sharedServiceLocator);
 
     // JMX Enable
-    Stream.of("ZEPPELIN_JMX_ENABLE")
-        .map(System::getenv)
-        .map(Boolean::parseBoolean)
-        .filter(Boolean::booleanValue)
-        .map(jmxEnabled -> "ZEPPELIN_JMX_PORT")
-        .map(System::getenv)
-        .map(
-            portString -> {
-              try {
-                return Integer.parseInt(portString);
-              } catch (Exception e) {
-                return null;
-              }
-            })
-        .filter(Objects::nonNull)
-        .forEach(
-            port -> {
-              try {
-                MBeanContainer mbeanContainer =
-                    new MBeanContainer(ManagementFactory.getPlatformMBeanServer());
-                jettyWebServer.addEventListener(mbeanContainer);
-                jettyWebServer.addBean(mbeanContainer);
-
-                JMXServiceURL jmxURL =
-                    new JMXServiceURL(
-                        String.format(
-                            "service:jmx:rmi://0.0.0.0:%d/jndi/rmi://0.0.0.0:%d/jmxrmi",
-                            port, port));
-                ConnectorServer jmxServer =
-                    new ConnectorServer(jmxURL, "org.eclipse.jetty.jmx:name=rmiconnectorserver");
-                jettyWebServer.addBean(jmxServer);
-
-                // Add JMX Beans
-                // TODO(jl): Need to investigate more about injection and jmx
-                jettyWebServer.addBean(
-                    sharedServiceLocator.getService(InterpreterSettingManager.class));
-                jettyWebServer.addBean(sharedServiceLocator.getService(NotebookServer.class));
-
-                LOG.info("JMX Enabled with port: {}", port);
-              } catch (Exception e) {
-                LOG.warn("Error while setting JMX", e);
-              }
-            });
+    if (conf.isJMXEnabled()) {
+      int port = conf.getJMXPort();
+      // Setup JMX
+      MBeanContainer mbeanContainer = new MBeanContainer(ManagementFactory.getPlatformMBeanServer());
+      jettyWebServer.addBean(mbeanContainer);
+      JMXServiceURL jmxURL =
+        new JMXServiceURL(
+            String.format(
+                "service:jmx:rmi://0.0.0.0:%d/jndi/rmi://0.0.0.0:%d/jmxrmi",
+                port, port));
+      ConnectorServer jmxServer = new ConnectorServer(jmxURL, "org.eclipse.jetty.jmx:name=rmiconnectorserver");
+      jettyWebServer.addBean(jmxServer);
+      LOG.info("JMX Enabled with port: {}", port);
+    }
 
     LOG.info("Starting zeppelin server");
     try {
@@ -293,6 +291,23 @@ public class ZeppelinServer extends ResourceConfig {
     }
   }
 
+  private static void initMetrics(ZeppelinConfiguration conf) {
+    if (conf.isPrometheusMetricEnabled()) {
+      promMetricRegistry = new PrometheusMeterRegistry(PrometheusConfig.DEFAULT);
+      Metrics.addRegistry(promMetricRegistry);
+    }
+    if (conf.isJMXEnabled()) {
+      Metrics.addRegistry(new JmxMeterRegistry(JmxConfig.DEFAULT, Clock.SYSTEM));
+    }
+    new ClassLoaderMetrics().bindTo(Metrics.globalRegistry);
+    new JvmMemoryMetrics().bindTo(Metrics.globalRegistry);
+    new JvmThreadMetrics().bindTo(Metrics.globalRegistry);
+    new FileDescriptorMetrics().bindTo(Metrics.globalRegistry);
+    new ProcessorMetrics().bindTo(Metrics.globalRegistry);
+    new UptimeMetrics().bindTo(Metrics.globalRegistry);
+    new JVMInfoBinder().bindTo(Metrics.globalRegistry);
+  }
+
   private static Thread shutdown(ZeppelinConfiguration conf) {
     return new Thread(
             () -> {
@@ -316,8 +331,9 @@ public class ZeppelinServer extends ResourceConfig {
   }
 
   private static Server setupJettyServer(ZeppelinConfiguration conf) {
-    ThreadPool threadPool =
-      new QueuedThreadPool(conf.getInt(ConfVars.ZEPPELIN_SERVER_JETTY_THREAD_POOL_MAX),
+    InstrumentedQueuedThreadPool threadPool =
+      new InstrumentedQueuedThreadPool(Metrics.globalRegistry, Tags.empty(),
+                           conf.getInt(ConfVars.ZEPPELIN_SERVER_JETTY_THREAD_POOL_MAX),
                            conf.getInt(ConfVars.ZEPPELIN_SERVER_JETTY_THREAD_POOL_MIN),
                            conf.getInt(ConfVars.ZEPPELIN_SERVER_JETTY_THREAD_POOL_TIMEOUT));
     final Server server = new Server(threadPool);
@@ -333,26 +349,34 @@ public class ZeppelinServer extends ResourceConfig {
     httpConfig.setRequestHeaderSize(conf.getJettyRequestHeaderSize());
     if (conf.useSsl()) {
       LOG.debug("Enabling SSL for Zeppelin Server on port {}", sslPort);
-      httpConfig.setSecureScheme("https");
+      httpConfig.setSecureScheme(HttpScheme.HTTPS.asString());
       httpConfig.setSecurePort(sslPort);
 
       HttpConfiguration httpsConfig = new HttpConfiguration(httpConfig);
       httpsConfig.addCustomizer(new SecureRequestCustomizer());
 
+      SslConnectionFactory sslConnectionFactory = new SslConnectionFactory(getSslContextFactory(conf), HttpVersion.HTTP_1_1.asString());
+      HttpConnectionFactory httpsConnectionFactory = new HttpConnectionFactory(httpsConfig);
       connector =
               new ServerConnector(
                       server,
-                      new SslConnectionFactory(getSslContextFactory(conf), HttpVersion.HTTP_1_1.asString()),
-                      new HttpConnectionFactory(httpsConfig));
+                      sslConnectionFactory,
+                      httpsConnectionFactory);
       connector.setPort(sslPort);
+      connector.addBean(new JettySslHandshakeMetrics(Metrics.globalRegistry, Tags.empty()));
     } else {
-      connector = new ServerConnector(server, new HttpConnectionFactory(httpConfig));
+      HttpConnectionFactory httpConnectionFactory = new HttpConnectionFactory(httpConfig);
+      connector =
+              new ServerConnector(
+                      server,
+                      httpConnectionFactory);
       connector.setPort(port);
     }
     // Set some timeout options to make debugging easier.
     int timeout = 1000 * 30;
     connector.setIdleTimeout(timeout);
     connector.setHost(conf.getServerAddress());
+    connector.addBean(new JettyConnectionMetrics(Metrics.globalRegistry, Tags.empty()));
     server.addConnector(connector);
   }
 
@@ -534,6 +558,16 @@ public class ZeppelinServer extends ResourceConfig {
     }
   }
 
+  private static void setupPrometheusContextHandler(WebAppContext webapp) {
+    webapp.addServlet(new ServletHolder(new PrometheusServlet(promMetricRegistry)), "/metrics");
+  }
+
+  private static void setupHealthCheckContextHandler(WebAppContext webapp) {
+    webapp.addServlet(new ServletHolder(new HealthCheckServlet(HealthChecks.getHealthCheckReadinessRegistry())), "/health/readiness");
+    webapp.addServlet(new ServletHolder(new HealthCheckServlet(HealthChecks.getHealthCheckLivenessRegistry())), "/health/liveness");
+    webapp.addServlet(new ServletHolder(new PingServlet()), "/ping");
+  }
+
   private static WebAppContext setupWebAppContext(
       ContextHandlerCollection contexts, ZeppelinConfiguration conf, String warPath, String contextPath) {
     WebAppContext webApp = new WebAppContext();
@@ -620,6 +654,11 @@ public class ZeppelinServer extends ResourceConfig {
 
     // Create `ZeppelinServer` using reflection and setup REST Api
     setupRestApiContextHandler(webApp, conf);
+
+    // prometheus endpoint
+    setupPrometheusContextHandler(webApp);
+    // health endpoints
+    setupHealthCheckContextHandler(webApp);
 
     // Notebook server
     setupNotebookServer(webApp, conf, sharedServiceLocator);

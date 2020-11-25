@@ -61,13 +61,13 @@ If both are defined, then the **environment variables** will take priority.
   </tr>
   <tr>
     <td><h6 class="properties">ZEPPELIN_JMX_ENABLE</h6></td>
-    <td><h6 class="properties">N/A</h6></td>
-    <td></td>
+    <td><h6 class="properties">zeppelin.jmx.enable</h6></td>
+    <td>false</td>
     <td>Enable JMX by defining "true"</td>
   </tr>
   <tr>
     <td><h6 class="properties">ZEPPELIN_JMX_PORT</h6></td>
-    <td><h6 class="properties">N/A</h6></td>
+    <td><h6 class="properties">zeppelin.jmx.port</h6></td>
     <td>9996</td>
     <td>Port number which JMX uses</td>
   </tr>
@@ -442,6 +442,24 @@ If both are defined, then the **environment variables** will take priority.
     <td><h6 class="properties">zeppelin.k8s.timeout.during.pending</h6></td>
     <td>true</td>
     <td>Value to enable/disable timeout handling when starting Interpreter Pods. Caution: This can lead to an infinity loop</td>
+  </tr>
+  <tr>
+    <td><h6 class="properties">ZEPPELIN_METRIC_ENABLE_PROMETHEUS</h6></td>
+    <td><h6 class="properties">zeppelin.metric.enable.prometheus</h6></td>
+    <td>false</td>
+    <td>Value to enable/disable Prometheus metric endpoint on /metric</td>
+  </tr>
+  <tr>
+    <td><h6 class="properties">ZEPPELIN_NOTEBOOK_CRON_ENABLE</h6></td>
+    <td><h6 class="properties">zeppelin.notebook.cron.enable</h6></td>
+    <td>false</td>
+    <td>Value to enable/disable Cron support in Notes</td>
+  </tr>
+  <tr>
+    <td><h6 class="properties">ZEPPELIN_NOTEBOOK_CRON_FOLDERS</h6></td>
+    <td><h6 class="properties">zeppelin.notebook.cron.folders</h6></td>
+    <td></td>
+    <td>comma-separated list of folder, where cron is allowed</td>
   </tr>
 </table>
 

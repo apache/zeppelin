@@ -31,16 +31,20 @@ import java.util.HashMap;
 public class CronJob implements org.quartz.Job {
   private static final Logger LOGGER = LoggerFactory.getLogger(CronJob.class);
 
+  private static final String RESULT_SUCCEEDED = "succeeded";
+  private static final String RESULT_FAILED = "failed";
+  private static final String RESULT_SKIPPED = "skipped";
+
   @Override
   public void execute(JobExecutionContext context) {
     JobDataMap jobDataMap = context.getJobDetail().getJobDataMap();
     Note note = (Note) jobDataMap.get("note");
-    LOGGER.info("Start cron job of note: {}", note.getId());
     if (note.haveRunningOrPendingParagraphs()) {
       LOGGER.warn(
           "execution of the cron job is skipped because there is a running or pending "
               + "paragraph (note id: {})",
           note.getId());
+      context.setResult(RESULT_SKIPPED);
       return;
     }
 
@@ -56,7 +60,9 @@ public class CronJob implements org.quartz.Job {
                     null);
     try {
       note.runAll(authenticationInfo, true, true, new HashMap<>());
+      context.setResult(RESULT_SUCCEEDED);
     } catch (Exception e) {
+      context.setResult(RESULT_FAILED);
       LOGGER.warn("Fail to run note: {}", note.getName(), e);
     }
   }
