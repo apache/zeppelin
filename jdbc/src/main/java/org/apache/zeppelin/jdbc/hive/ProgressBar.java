@@ -16,6 +16,7 @@
 
 package org.apache.zeppelin.jdbc.hive;
 
+import org.apache.hive.jdbc.HiveStatement;
 import org.apache.hive.jdbc.logs.InPlaceUpdateStream;
 
 import java.io.OutputStream;
@@ -40,5 +41,9 @@ public class ProgressBar {
             new PrintStream(out),
             eventNotifier
     );
+  }
+
+  public void setInPlaceUpdateStream(HiveStatement hiveStmt, OutputStream out){
+    hiveStmt.setInPlaceUpdateStream(this.getInPlaceUpdateStream(out));
   }
 }
