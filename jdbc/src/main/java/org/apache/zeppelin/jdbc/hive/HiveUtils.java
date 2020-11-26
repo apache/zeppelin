@@ -24,6 +24,7 @@ import org.apache.zeppelin.jdbc.JDBCInterpreter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
 import java.util.List;
@@ -118,6 +119,17 @@ public class HiveUtils {
           Thread.sleep(DEFAULT_QUERY_PROGRESS_INTERVAL);
         } catch (Exception e) {
           LOGGER.warn("Fail to write output", e);
+        } finally {
+          try {
+            // Sometimes, maybe hiveStmt was closed unnormally, hiveStmt.hasMoreLogs() will be true,
+            // this loop cannot jump out, and exceptions thrown.
+            // Add the below codes in case.
+            if(hiveStmt.isClosed()){
+              break;
+            }
+          } catch (SQLException e) {
+            LOGGER.warn("hiveStmt closed unnormally", e);
+          }
         }
       }
       LOGGER.info("HiveMonitor-Thread is finished");
@@ -128,7 +140,10 @@ public class HiveUtils {
     LOGGER.info("Start HiveMonitor-Thread for sql: " + hiveStmt);
 
     if (progressBar != null) {
-      hiveStmt.setInPlaceUpdateStream(progressBar.getInPlaceUpdateStream(context.out));
+      // old: hiveStmt.setInPlaceUpdateStream(progressBar.getInPlaceUpdateStream(context.out));
+      // Move codes into ProgressBar to delay NoClassDefFoundError of InPlaceUpdateStream until ProgressBar instanced.
+      // When hive < 2.3, ProgressBar will not be instanced, so it works well.
+      progressBar.setInPlaceUpdateStream(hiveStmt, context.out);
     }
   }
 
