@@ -106,8 +106,10 @@ public class HiveUtils {
             if (StringUtils.isNotBlank(logsOutput)) {
               jobLastActiveTime = System.currentTimeMillis();
             } else if (progressBar.getBeelineInPlaceUpdateStream() != null &&
-                      progressBar.getBeelineInPlaceUpdateStream().getLastUpdateTimestamp() > jobLastActiveTime) {
-              jobLastActiveTime = progressBar.getBeelineInPlaceUpdateStream().getLastUpdateTimestamp();
+                    progressBar.getBeelineInPlaceUpdateStream().getLastUpdateTimestamp()
+                            > jobLastActiveTime) {
+              jobLastActiveTime = progressBar.getBeelineInPlaceUpdateStream()
+                      .getLastUpdateTimestamp();
             }
 
             if (((System.currentTimeMillis() - jobLastActiveTime) > timeoutThreshold)) {
