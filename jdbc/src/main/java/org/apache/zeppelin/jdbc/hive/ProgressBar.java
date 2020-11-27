@@ -26,6 +26,7 @@ import java.io.PrintStream;
  */
 public class ProgressBar {
   private InPlaceUpdateStream.EventNotifier eventNotifier;
+  private BeelineInPlaceUpdateStream beelineInPlaceUpdateStream;
 
   public ProgressBar() {
     this.eventNotifier = new InPlaceUpdateStream.EventNotifier();
@@ -36,9 +37,14 @@ public class ProgressBar {
   }
 
   public BeelineInPlaceUpdateStream getInPlaceUpdateStream(OutputStream out) {
-    return new BeelineInPlaceUpdateStream(
+    beelineInPlaceUpdateStream = new BeelineInPlaceUpdateStream(
             new PrintStream(out),
             eventNotifier
     );
+    return beelineInPlaceUpdateStream;
+  }
+
+  public BeelineInPlaceUpdateStream getBeelineInPlaceUpdateStream() {
+    return beelineInPlaceUpdateStream;
   }
 }
