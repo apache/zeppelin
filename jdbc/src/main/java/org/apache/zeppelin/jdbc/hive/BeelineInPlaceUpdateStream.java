@@ -35,6 +35,7 @@ public class BeelineInPlaceUpdateStream implements InPlaceUpdateStream {
 
   private InPlaceUpdate inPlaceUpdate;
   private EventNotifier notifier;
+  private long lastUpdateTimestamp;
 
   public BeelineInPlaceUpdateStream(PrintStream out,
                                     InPlaceUpdateStream.EventNotifier notifier) {
@@ -59,9 +60,14 @@ public class BeelineInPlaceUpdateStream implements InPlaceUpdateStream {
         etc. have to remove these notifiers when the operation logs get merged into
         GetOperationStatus
       */
+      lastUpdateTimestamp = System.currentTimeMillis();
       LOGGER.info("update progress: " + response.getProgressedPercentage());
       inPlaceUpdate.render(new ProgressMonitorWrapper(response));
     }
+  }
+
+  public long getLastUpdateTimestamp() {
+    return lastUpdateTimestamp;
   }
 
   @Override

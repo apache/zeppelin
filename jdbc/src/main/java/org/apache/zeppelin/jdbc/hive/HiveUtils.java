@@ -102,17 +102,24 @@ public class HiveUtils {
           }
 
           if (jobLaunched) {
+            // Step 1. update jobLastActiveTime first
+            // Step 2. Check whether it is timeout.
             if (StringUtils.isNotBlank(logsOutput)) {
               jobLastActiveTime = System.currentTimeMillis();
-            } else {
-              if (((System.currentTimeMillis() - jobLastActiveTime) > timeoutThreshold)) {
-                String errorMessage = "Cancel this job as no more log is produced in the " +
-                        "last " + timeoutThreshold / 1000 + " seconds, " +
-                        "maybe it is because no yarn resources";
-                LOGGER.warn(errorMessage);
-                jdbcInterpreter.cancel(context, errorMessage);
-                break;
-              }
+            } else if (progressBar.getBeelineInPlaceUpdateStream() != null &&
+                    progressBar.getBeelineInPlaceUpdateStream().getLastUpdateTimestamp()
+                            > jobLastActiveTime) {
+              jobLastActiveTime = progressBar.getBeelineInPlaceUpdateStream()
+                      .getLastUpdateTimestamp();
+            }
+
+            if (((System.currentTimeMillis() - jobLastActiveTime) > timeoutThreshold)) {
+              String errorMessage = "Cancel this job as no more log is produced in the " +
+                      "last " + timeoutThreshold / 1000 + " seconds, " +
+                      "maybe it is because no yarn resources";
+              LOGGER.warn(errorMessage);
+              jdbcInterpreter.cancel(context, errorMessage);
+              break;
             }
           }
           // refresh logs every 1 second.
