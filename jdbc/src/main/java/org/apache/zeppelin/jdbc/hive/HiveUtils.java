@@ -131,7 +131,7 @@ public class HiveUtils {
             // Sometimes, maybe hiveStmt was closed unnormally, hiveStmt.hasMoreLogs() will be true,
             // this loop cannot jump out, and exceptions thrown.
             // Add the below codes in case.
-            if(hiveStmt.isClosed()){
+            if (hiveStmt.isClosed()){
               break;
             }
           } catch (SQLException e) {
@@ -148,7 +148,8 @@ public class HiveUtils {
 
     if (progressBar != null) {
       // old: hiveStmt.setInPlaceUpdateStream(progressBar.getInPlaceUpdateStream(context.out));
-      // Move codes into ProgressBar to delay NoClassDefFoundError of InPlaceUpdateStream until ProgressBar instanced.
+      // Move codes into ProgressBar to delay NoClassDefFoundError of InPlaceUpdateStream
+      // until ProgressBar instanced.
       // When hive < 2.3, ProgressBar will not be instanced, so it works well.
       progressBar.setInPlaceUpdateStream(hiveStmt, context.out);
     }
