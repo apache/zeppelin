@@ -215,9 +215,9 @@ public class NotebookRestApi extends AbstractRestApi {
     }
   }
 
-  private void checkIfNoteIsNotNull(Note note) {
+  private void checkIfNoteIsNotNull(Note note, String noteId) {
     if (note == null) {
-      throw new NoteNotFoundException("note not found");
+      throw new NoteNotFoundException(noteId);
     }
   }
 
@@ -228,9 +228,9 @@ public class NotebookRestApi extends AbstractRestApi {
     }
   }
 
-  private void checkIfParagraphIsNotNull(Paragraph paragraph) {
+  private void checkIfParagraphIsNotNull(Paragraph paragraph, String paragraphId) {
     if (paragraph == null) {
-      throw new ParagraphNotFoundException("paragraph not found");
+      throw new ParagraphNotFoundException(paragraphId);
     }
   }
 
@@ -257,7 +257,7 @@ public class NotebookRestApi extends AbstractRestApi {
             GSON.fromJson(req, new TypeToken<HashMap<String, HashSet<String>>>() {
             }.getType());
     Note note = notebook.getNote(noteId);
-    checkIfNoteIsNotNull(note);
+    checkIfNoteIsNotNull(note, noteId);
 
     HashSet<String> readers = permMap.get("readers");
     HashSet<String> runners = permMap.get("runners");
@@ -511,7 +511,7 @@ public class NotebookRestApi extends AbstractRestApi {
     LOGGER.info("Insert paragraph {} {}", noteId, message);
 
     Note note = notebook.getNote(noteId);
-    checkIfNoteIsNotNull(note);
+    checkIfNoteIsNotNull(note, noteId);
     checkIfUserCanWrite(noteId, "Insufficient privileges you cannot add paragraph to this note");
 
     NewParagraphRequest request = NewParagraphRequest.fromJson(message);
@@ -545,10 +545,10 @@ public class NotebookRestApi extends AbstractRestApi {
     LOGGER.info("Get paragraph {} {}", noteId, paragraphId);
 
     Note note = notebook.getNote(noteId);
-    checkIfNoteIsNotNull(note);
+    checkIfNoteIsNotNull(note, noteId);
     checkIfUserCanRead(noteId, "Insufficient privileges you cannot get this paragraph");
     Paragraph p = note.getParagraph(paragraphId);
-    checkIfParagraphIsNotNull(p);
+    checkIfParagraphIsNotNull(p, paragraphId);
     return new JsonResponse<>(Status.OK, "", p).build();
   }
 
@@ -568,10 +568,10 @@ public class NotebookRestApi extends AbstractRestApi {
     String user = authenticationService.getPrincipal();
     LOGGER.info("{} will update paragraph {} {}", user, noteId, paragraphId);
     Note note = notebook.getNote(noteId);
-    checkIfNoteIsNotNull(note);
+    checkIfNoteIsNotNull(note, noteId);
     checkIfUserCanWrite(noteId, "Insufficient privileges you cannot update this paragraph");
     Paragraph p = note.getParagraph(paragraphId);
-    checkIfParagraphIsNotNull(p);
+    checkIfParagraphIsNotNull(p, paragraphId);
 
     UpdateParagraphRequest updatedParagraph = GSON.fromJson(message, UpdateParagraphRequest.class);
     p.setText(updatedParagraph.getText());
@@ -606,10 +606,10 @@ public class NotebookRestApi extends AbstractRestApi {
     LOGGER.info("{} will update paragraph config {} {}", user, noteId, paragraphId);
 
     Note note = notebook.getNote(noteId);
-    checkIfNoteIsNotNull(note);
+    checkIfNoteIsNotNull(note, noteId);
     checkIfUserCanWrite(noteId, "Insufficient privileges you cannot update this paragraph config");
     Paragraph p = note.getParagraph(paragraphId);
-    checkIfParagraphIsNotNull(p);
+    checkIfParagraphIsNotNull(p, paragraphId);
 
     Map<String, Object> newConfig = GSON.fromJson(message, HashMap.class);
     configureParagraph(p, newConfig, user);
@@ -735,7 +735,7 @@ public class NotebookRestApi extends AbstractRestApi {
     Note note = notebook.getNote(noteId);
     AuthenticationInfo subject = new AuthenticationInfo(authenticationService.getPrincipal());
     subject.setRoles(new LinkedList<>(authenticationService.getAssociatedRoles()));
-    checkIfNoteIsNotNull(note);
+    checkIfNoteIsNotNull(note, noteId);
     checkIfUserCanRun(noteId, "Insufficient privileges you cannot run job for this note");
 
     //TODO(zjffdu), can we run a note via rest api when cron is enabled ?
@@ -759,7 +759,7 @@ public class NotebookRestApi extends AbstractRestApi {
 
     LOGGER.info("Stop note jobs {} ", noteId);
     Note note = notebook.getNote(noteId);
-    checkIfNoteIsNotNull(note);
+    checkIfNoteIsNotNull(note, noteId);
     checkIfUserCanRun(noteId, "Insufficient privileges you cannot stop this job for this note");
 
     for (Paragraph p : note.getParagraphs()) {
@@ -786,7 +786,7 @@ public class NotebookRestApi extends AbstractRestApi {
 
     LOGGER.info("Get note job status.");
     Note note = notebook.getNote(noteId);
-    checkIfNoteIsNotNull(note);
+    checkIfNoteIsNotNull(note, noteId);
     checkIfUserCanRead(noteId, "Insufficient privileges you cannot get job status");
 
     return new JsonResponse<>(Status.OK, null, new NoteJobStatus(note)).build();
@@ -810,11 +810,11 @@ public class NotebookRestApi extends AbstractRestApi {
 
     LOGGER.info("Get note paragraph job status.");
     Note note = notebook.getNote(noteId);
-    checkIfNoteIsNotNull(note);
+    checkIfNoteIsNotNull(note, noteId);
     checkIfUserCanRead(noteId, "Insufficient privileges you cannot get job status");
 
     Paragraph paragraph = note.getParagraph(paragraphId);
-    checkIfParagraphIsNotNull(paragraph);
+    checkIfParagraphIsNotNull(paragraph, paragraphId);
 
     return new JsonResponse<>(Status.OK, null, new ParagraphJobStatus(paragraph)).build();
   }
@@ -840,9 +840,9 @@ public class NotebookRestApi extends AbstractRestApi {
     LOGGER.info("Run paragraph job asynchronously {} {} {}", noteId, paragraphId, message);
 
     Note note = notebook.getNote(noteId);
-    checkIfNoteIsNotNull(note);
+    checkIfNoteIsNotNull(note, noteId);
     Paragraph paragraph = note.getParagraph(paragraphId);
-    checkIfParagraphIsNotNull(paragraph);
+    checkIfParagraphIsNotNull(paragraph, paragraphId);
 
     Map<String, Object> params = new HashMap<>();
     if (!StringUtils.isEmpty(message)) {
@@ -878,9 +878,9 @@ public class NotebookRestApi extends AbstractRestApi {
     LOGGER.info("Run paragraph synchronously {} {} {}", noteId, paragraphId, message);
 
     Note note = notebook.getNote(noteId);
-    checkIfNoteIsNotNull(note);
+    checkIfNoteIsNotNull(note, noteId);
     Paragraph paragraph = note.getParagraph(paragraphId);
-    checkIfParagraphIsNotNull(paragraph);
+    checkIfParagraphIsNotNull(paragraph, paragraphId);
 
     Map<String, Object> params = new HashMap<>();
     if (!StringUtils.isEmpty(message)) {
@@ -941,7 +941,7 @@ public class NotebookRestApi extends AbstractRestApi {
     CronRequest request = CronRequest.fromJson(message);
 
     Note note = notebook.getNote(noteId);
-    checkIfNoteIsNotNull(note);
+    checkIfNoteIsNotNull(note, noteId);
     checkIfUserCanRun(noteId, "Insufficient privileges you cannot set a cron job for this note");
     checkIfNoteSupportsCron(note);
 
@@ -975,7 +975,7 @@ public class NotebookRestApi extends AbstractRestApi {
     LOGGER.info("Remove cron job note {}", noteId);
 
     Note note = notebook.getNote(noteId);
-    checkIfNoteIsNotNull(note);
+    checkIfNoteIsNotNull(note, noteId);
     checkIfUserIsOwner(noteId,
             "Insufficient privileges you cannot remove this cron job from this note");
     checkIfNoteSupportsCron(note);
@@ -1006,7 +1006,7 @@ public class NotebookRestApi extends AbstractRestApi {
     LOGGER.info("Get cron job note {}", noteId);
 
     Note note = notebook.getNote(noteId);
-    checkIfNoteIsNotNull(note);
+    checkIfNoteIsNotNull(note, noteId);
     checkIfUserCanRead(noteId, "Insufficient privileges you cannot get cron information");
     checkIfNoteSupportsCron(note);
     Map<String, Object> response = new HashMap<>();
@@ -1107,7 +1107,7 @@ public class NotebookRestApi extends AbstractRestApi {
 
   private void initParagraph(Paragraph p, NewParagraphRequest request, String user) {
     LOGGER.info("Init Paragraph for user {}", user);
-    checkIfParagraphIsNotNull(p);
+    checkIfParagraphIsNotNull(p, "");
     p.setTitle(request.getTitle());
     p.setText(request.getText());
     Map<String, Object> config = request.getConfig();
