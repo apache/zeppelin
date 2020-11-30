@@ -478,6 +478,11 @@ public class ZSession {
       return this;
     }
 
+    public Builder setMaxStatement(int maxStatement) {
+      this.maxStatement = maxStatement;
+      return this;
+    }
+
     public ZSession build() throws Exception {
       return new ZSession(clientConfig, interpreter, intpProperties, maxStatement);
     }
