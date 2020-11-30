@@ -650,21 +650,23 @@ public class NotebookService {
       callback.onFailure(new NoteNotFoundException(noteId), context);
       throw new IOException("No such note");
     }
-    if (note.getParagraphCount() < maxParagraph) {
-      return note.addNewParagraph(context.getAutheInfo());
-    } else {
-      boolean removed = false;
-      for (int i = 1; i< note.getParagraphCount(); ++i) {
-        if (note.getParagraph(i).getStatus().isCompleted()) {
-          note.removeParagraph(context.getAutheInfo().getUser(), note.getParagraph(i).getId());
-          removed = true;
-          break;
+    synchronized (this) {
+      if (note.getParagraphCount() < maxParagraph) {
+        return note.addNewParagraph(context.getAutheInfo());
+      } else {
+        boolean removed = false;
+        for (int i = 1; i < note.getParagraphCount(); ++i) {
+          if (note.getParagraph(i).getStatus().isCompleted()) {
+            note.removeParagraph(context.getAutheInfo().getUser(), note.getParagraph(i).getId());
+            removed = true;
+            break;
+          }
         }
+        if (!removed) {
+          throw new IOException("All the paragraphs are not completed, unable to find available paragraph");
+        }
+        return note.addNewParagraph(context.getAutheInfo());
       }
-      if (!removed) {
-        throw new IOException("All the paragraphs are not completed, unable to find available paragraph");
-      }
-      return note.addNewParagraph(context.getAutheInfo());
     }
   }
 

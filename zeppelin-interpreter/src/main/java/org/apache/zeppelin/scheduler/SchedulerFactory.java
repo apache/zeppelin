@@ -52,7 +52,7 @@ public class SchedulerFactory {
   private SchedulerFactory() {
     ZeppelinConfiguration zConf = ZeppelinConfiguration.create();
     int threadPoolSize =
-        zConf.getInt(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_SCHEDULER_POOL_SIZE);
+            zConf.getInt(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_SCHEDULER_POOL_SIZE);
     LOGGER.info("Scheduler Thread Pool Size: {}", threadPoolSize);
     executor = ExecutorFactory.singleton().createOrGet(SCHEDULER_EXECUTOR_NAME, threadPoolSize);
   }
@@ -73,6 +73,7 @@ public class SchedulerFactory {
   public Scheduler createOrGetFIFOScheduler(String name) {
     synchronized (schedulers) {
       if (!schedulers.containsKey(name)) {
+        LOGGER.info("Create FIFOScheduler: {}", name);
         FIFOScheduler s = new FIFOScheduler(name);
         schedulers.put(name, s);
         executor.execute(s);
@@ -84,6 +85,7 @@ public class SchedulerFactory {
   public Scheduler createOrGetParallelScheduler(String name, int maxConcurrency) {
     synchronized (schedulers) {
       if (!schedulers.containsKey(name)) {
+        LOGGER.info("Create ParallelScheduler: {} with maxConcurrency: {}", name, maxConcurrency);
         ParallelScheduler s = new ParallelScheduler(name, maxConcurrency);
         schedulers.put(name, s);
         executor.execute(s);
@@ -105,6 +107,7 @@ public class SchedulerFactory {
 
   public void removeScheduler(String name) {
     synchronized (schedulers) {
+      LOGGER.info("Remove scheduler: {}", name);
       Scheduler s = schedulers.remove(name);
       if (s != null) {
         s.stop();

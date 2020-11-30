@@ -541,9 +541,6 @@ public class NotebookRestApi extends AbstractRestApi {
   @ZeppelinApi
   public Response getParagraph(@PathParam("noteId") String noteId,
                                @PathParam("paragraphId") String paragraphId) throws IOException {
-
-    LOGGER.info("Get paragraph {} {}", noteId, paragraphId);
-
     Note note = notebook.getNote(noteId);
     checkIfNoteIsNotNull(note, noteId);
     checkIfUserCanRead(noteId, "Insufficient privileges you cannot get this paragraph");
