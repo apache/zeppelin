@@ -25,15 +25,19 @@ import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 
 import org.apache.zeppelin.rest.message.gson.ExceptionSerializer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Provider
 public class WebApplicationExceptionMapper implements ExceptionMapper<Throwable> {
+  private static final Logger LOGGER = LoggerFactory.getLogger(WebApplicationException.class);
+
   private final Gson gson;
 
   public WebApplicationExceptionMapper() {
     GsonBuilder gsonBuilder = new GsonBuilder().enableComplexMapKeySerialization();
     gsonBuilder.registerTypeHierarchyAdapter(
-        Exception.class, new ExceptionSerializer());
+            Exception.class, new ExceptionSerializer());
     this.gson = gsonBuilder.create();
   }
 
@@ -42,6 +46,7 @@ public class WebApplicationExceptionMapper implements ExceptionMapper<Throwable>
     if (exception instanceof WebApplicationException) {
       return ((WebApplicationException) exception).getResponse();
     } else {
+      LOGGER.error("Error response", exception);
       return Response.status(500).entity(gson.toJson(exception)).build();
     }
   }

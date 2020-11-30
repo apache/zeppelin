@@ -779,7 +779,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
             int updateCount = statement.getUpdateCount();
             context.out.write("\n%text " +
                 "Query executed successfully. Affected rows : " +
-                    updateCount);
+                    updateCount + "\n");
           }
         } finally {
           if (resultSet != null) {
@@ -1028,6 +1028,8 @@ public class JDBCInterpreter extends KerberosInterpreter {
     try {
       return Integer.valueOf(getProperty(CONCURRENT_EXECUTION_COUNT));
     } catch (Exception e) {
+      LOGGER.error("Fail to parse {} with value: {}", CONCURRENT_EXECUTION_COUNT,
+              getProperty(CONCURRENT_EXECUTION_COUNT));
       return 10;
     }
   }
