@@ -206,7 +206,7 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
       waitForParagraph(1, "READY");
       interpreterModeActionsIT.setPythonParagraph(1, "user=\"user1\"");
       waitForParagraph(2, "READY");
-      interpreterModeActionsIT.setPythonParagraph(2, "print user");
+      interpreterModeActionsIT.setPythonParagraph(2, "print(user)");
       collector.checkThat("The output field paragraph contains",
           driver.findElement(By.xpath(
               getParagraphXPath(2) + "//div[contains(@class, 'text plainTextContent')]")).getText(),
@@ -237,7 +237,7 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
       waitForParagraph(1, "READY");
       interpreterModeActionsIT.setPythonParagraph(1, "user=\"user2\"");
       waitForParagraph(2, "READY");
-      interpreterModeActionsIT.setPythonParagraph(2, "print user");
+      interpreterModeActionsIT.setPythonParagraph(2, "print(user)");
       collector.checkThat("The output field paragraph contains",
           driver.findElement(By.xpath(
               getParagraphXPath(2) + "//div[contains(@class, 'text plainTextContent')]")).getText(),
@@ -363,7 +363,7 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
       waitForParagraph(1, "READY");
       interpreterModeActionsIT.setPythonParagraph(1, "user=\"user1\"");
       waitForParagraph(2, "READY");
-      interpreterModeActionsIT.setPythonParagraph(2, "print user");
+      interpreterModeActionsIT.setPythonParagraph(2, "print(user)");
 
       collector.checkThat("The output field paragraph contains",
           driver.findElement(By.xpath(
@@ -396,7 +396,7 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
       waitForParagraph(1, "READY");
       interpreterModeActionsIT.setPythonParagraph(1, "user=\"user2\"");
       waitForParagraph(2, "READY");
-      interpreterModeActionsIT.setPythonParagraph(2, "print user");
+      interpreterModeActionsIT.setPythonParagraph(2, "print(user)");
       collector.checkThat("The output field paragraph contains",
           driver.findElement(By.xpath(
               getParagraphXPath(2) + "//div[contains(@class, 'text plainTextContent')]")).getText(),
@@ -640,7 +640,7 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
       waitForParagraph(1, "READY");
       interpreterModeActionsIT.setPythonParagraph(1, "user=\"user1\"");
       waitForParagraph(2, "READY");
-      interpreterModeActionsIT.setPythonParagraph(2, "print user");
+      interpreterModeActionsIT.setPythonParagraph(2, "print(user)");
 
       collector.checkThat("The output field paragraph contains",
           driver.findElement(By.xpath(
@@ -673,7 +673,7 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
       waitForParagraph(1, "READY");
       interpreterModeActionsIT.setPythonParagraph(1, "user=\"user2\"");
       waitForParagraph(2, "READY");
-      interpreterModeActionsIT.setPythonParagraph(2, "print user");
+      interpreterModeActionsIT.setPythonParagraph(2, "print(user)");
 
       collector.checkThat("The output field paragraph contains",
           driver.findElement(By.xpath(

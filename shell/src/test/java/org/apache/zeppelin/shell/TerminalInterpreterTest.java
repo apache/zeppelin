@@ -74,13 +74,13 @@ public class TerminalInterpreterTest extends BaseInterpreterTest {
     try {
       // mock connect terminal
       boolean running = terminal.terminalThreadIsRunning();
-      assertEquals(running, true);
+      assertTrue(running);
 
       URI uri = URI.create("ws://localhost:" + terminal.getTerminalPort() + "/terminal/");
       webSocketContainer = ContainerProvider.getWebSocketContainer();
 
       // Attempt Connect
-      session = (Session) webSocketContainer.connectToServer(TerminalSocketTest.class, uri);
+      session = webSocketContainer.connectToServer(TerminalSocketTest.class, uri);
 
       // Send Start terminal service message
       String terminalReadyCmd = String.format("{\"type\":\"TERMINAL_READY\"," +
@@ -154,13 +154,13 @@ public class TerminalInterpreterTest extends BaseInterpreterTest {
     try {
       // mock connect terminal
       boolean running = terminal.terminalThreadIsRunning();
-      assertEquals(running, true);
+      assertTrue(running);
 
       URI uri = URI.create("ws://localhost:" + terminal.getTerminalPort() + "/terminal/");
       webSocketContainer = ContainerProvider.getWebSocketContainer();
 
       // Attempt Connect
-      session = (Session) webSocketContainer.connectToServer(TerminalSocketTest.class, uri);
+      session = webSocketContainer.connectToServer(TerminalSocketTest.class, uri);
 
       // Send Start terminal service message
       String terminalReadyCmd = String.format("{\"type\":\"TERMINAL_READY\"," +
