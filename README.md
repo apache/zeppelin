@@ -2,7 +2,7 @@
 
 **Documentation:** [User Guide](https://zeppelin.apache.org/docs/latest/index.html)<br/>
 **Mailing Lists:** [User and Dev mailing list](https://zeppelin.apache.org/community.html)<br/>
-**Continuous Integration:** [![Build Status](https://travis-ci.org/apache/zeppelin.svg?branch=master)](https://travis-ci.org/apache/zeppelin) <br/>
+**Continuous Integration:** ![core](https://github.com/apache/zeppelin/workflows/core/badge.svg) ![frontend](https://github.com/apache/zeppelin/workflows/frontend/badge.svg) ![rat](https://github.com/apache/zeppelin/workflows/rat/badge.svg) <br/>
 **Contributing:** [Contribution Guide](https://zeppelin.apache.org/contribution/contributions.html)<br/>
 **Issue Tracker:** [Jira](https://issues.apache.org/jira/browse/ZEPPELIN)<br/>
 **License:** [Apache 2.0](https://github.com/apache/zeppelin/blob/master/LICENSE)
@@ -25,5 +25,3 @@ Please go to [install](https://zeppelin.apache.org/docs/latest/quickstart/instal
 
 ### Build from source
 Please check [Build from source](https://zeppelin.apache.org/docs/latest/setup/basics/how_to_build.html) to build Zeppelin from source.
-
-

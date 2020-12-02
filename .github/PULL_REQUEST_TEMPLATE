@@ -14,7 +14,6 @@ First time? Check out the contributing guide - https://zeppelin.apache.org/contr
 * Put link here, and add [ZEPPELIN-*Jira number*] in PR title, eg. [ZEPPELIN-533]
 
 ### How should this be tested?
-* First time? Setup Travis CI as described on https://zeppelin.apache.org/contribution/contributions.html#continuous-integration
 * Strongly recommended: add automated unit tests for any new or changed behavior
 * Outline any manual steps to test the PR here.
 

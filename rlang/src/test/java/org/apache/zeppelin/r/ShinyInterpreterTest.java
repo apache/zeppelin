@@ -34,6 +34,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
@@ -78,12 +79,12 @@ public class ShinyInterpreterTest {
     InterpreterContext context = getInterpreterContext();
     context.getLocalProperties().put("type", "ui");
     InterpreterResult result =
-            interpreter.interpret(IOUtils.toString(getClass().getResource("/ui.R")), context);
+            interpreter.interpret(IOUtils.toString(getClass().getResource("/ui.R"), StandardCharsets.UTF_8), context);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
 
     context = getInterpreterContext();
     context.getLocalProperties().put("type", "server");
-    result = interpreter.interpret(IOUtils.toString(getClass().getResource("/server.R")), context);
+    result = interpreter.interpret(IOUtils.toString(getClass().getResource("/server.R"), StandardCharsets.UTF_8), context);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
 
     final InterpreterContext context2 = getInterpreterContext();
@@ -121,13 +122,13 @@ public class ShinyInterpreterTest {
     context.getLocalProperties().put("type", "ui");
     context.getLocalProperties().put("app", "app2");
     result =
-            interpreter.interpret(IOUtils.toString(getClass().getResource("/ui.R")), context);
+            interpreter.interpret(IOUtils.toString(getClass().getResource("/ui.R"), StandardCharsets.UTF_8), context);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
 
     context = getInterpreterContext();
     context.getLocalProperties().put("type", "server");
     context.getLocalProperties().put("app", "app2");
-    result = interpreter.interpret(IOUtils.toString(getClass().getResource("/server.R")), context);
+    result = interpreter.interpret(IOUtils.toString(getClass().getResource("/server.R"), StandardCharsets.UTF_8), context);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
 
     final InterpreterContext context3 = getInterpreterContext();
@@ -183,12 +184,12 @@ public class ShinyInterpreterTest {
     InterpreterContext context = getInterpreterContext();
     context.getLocalProperties().put("type", "ui");
     InterpreterResult result =
-            interpreter.interpret(IOUtils.toString(getClass().getResource("/invalid_ui.R")), context);
+            interpreter.interpret(IOUtils.toString(getClass().getResource("/invalid_ui.R"), StandardCharsets.UTF_8), context);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
 
     context = getInterpreterContext();
     context.getLocalProperties().put("type", "server");
-    result = interpreter.interpret(IOUtils.toString(getClass().getResource("/server.R")), context);
+    result = interpreter.interpret(IOUtils.toString(getClass().getResource("/server.R"), StandardCharsets.UTF_8), context);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
 
     final InterpreterContext context2 = getInterpreterContext();
