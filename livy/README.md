@@ -5,9 +5,7 @@ Livy interpreter for Apache Zeppelin
 You can follow the instructions at [Livy Quick Start](http://livy.io/quickstart.html) to set up livy.
 
 # Run Integration Tests
-You can add integration test to [LivyInterpreter.java](https://github.com/apache/zeppelin/blob/master/livy/src/test/java/org/apache/zeppelin/livy/LivyInterpreterIT.java)
-Either you can run the integration test on travis where enviroment will be setup or you can run it in local. You need to download livy-0.2 and spark-1.5.2 to local, then use the following
-script to run the integration test.
+You can add integration test to [LivyInterpreter.java](https://github.com/apache/zeppelin/blob/master/livy/src/test/java/org/apache/zeppelin/livy/LivyInterpreterIT.java) and run the integration test either via the CI environment or locally. You need to download livy-0.2 and spark-1.5.2 to local, then use the following script to run the integration test.
 
 ```bash
 #!/usr/bin/env bash
