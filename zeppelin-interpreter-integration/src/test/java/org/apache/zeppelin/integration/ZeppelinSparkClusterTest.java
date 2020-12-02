@@ -68,7 +68,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
   public static final String SPARK_MASTER_PROPERTY_NAME = "spark.master";
 
   //This is for only run setupSparkInterpreter one time for each spark version, otherwise
-  //each test method will run setupSparkInterpreter which will cost a long time and may cause travis
+  //each test method will run setupSparkInterpreter which will cost a long time and may cause a
   //ci timeout.
   //TODO(zjffdu) remove this after we upgrade it to junit 4.13 (ZEPPELIN-3341)
   private static Set<String> verifiedSparkVersions = new HashSet<>();

@@ -29,9 +29,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- * In the future, test may use minikube on travis for end-to-end test
- * https://github.com/LiliC/travis-minikube
- * https://blog.travis-ci.com/2017-10-26-running-kubernetes-on-travis-ci-with-minikube
+ * In the future, test may use minikube for end-to-end test
  */
 public class K8sStandardInterpreterLauncherTest {
   @Before
