@@ -643,7 +643,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     List<InterpreterResultMessage> resultMessages = context.out.toInterpreterResultMessage();
     assertEquals(3, resultMessages.size());
     assertEquals(InterpreterResult.Type.TEXT, resultMessages.get(0).getType());
-    assertEquals("Query executed successfully. Affected rows : 0\n",
+    assertEquals("Query executed successfully. Affected rows : 0\n\n",
             resultMessages.get(0).getData());
     assertEquals(InterpreterResult.Type.TEXT, resultMessages.get(1).getType());
     assertEquals("Query executed successfully. Affected rows : 1\n",
@@ -704,7 +704,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
 
     assertEquals(3, resultMessages.size());
     assertEquals(InterpreterResult.Type.TEXT, resultMessages.get(0).getType());
-    assertEquals("Query executed successfully. Affected rows : 0\n",
+    assertEquals("Query executed successfully. Affected rows : 0\n\n",
             resultMessages.get(0).getData());
     assertEquals(InterpreterResult.Type.TEXT, resultMessages.get(1).getType());
     assertEquals("Query executed successfully. Affected rows : 1\n",
