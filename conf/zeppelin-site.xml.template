@@ -815,4 +815,10 @@
   <description>Whether only allow yarn cluster mode</description>
 </property>
 
+<property>
+  <name>zeppelin.note.file.exclude.fields</name>
+  <value></value>
+  <description>fields to be excluded from being saved in note files, with Paragraph prefix mean the fields in Paragraph, e.g. Paragraph.results</description>
+</property>
+
 </configuration>
