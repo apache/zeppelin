@@ -50,6 +50,7 @@ public abstract class JobWithProgressPoller<T> extends Job<T> {
     super.onJobEnded();
     if (this.progressPoller != null) {
       this.progressPoller.interrupt();
+      this.progressPoller = null;
     }
   }
 }
