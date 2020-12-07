@@ -255,7 +255,7 @@ public class ParagraphTest extends AbstractInterpreterTest {
     assertEquals(defaultValue, newUserParagraph.getReturn().message().get(0).getData());
   }
 
-  @Test
+  @Ignore
   public void returnUnchangedResultsWithDifferentUser() throws Throwable {
     Note mockNote = mock(Note.class);
     when(mockNote.getCredentials()).thenReturn(mock(Credentials.class));
