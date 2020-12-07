@@ -1107,16 +1107,18 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
   @Override
   public void onNoteRemove(Note note, AuthenticationInfo subject) throws IOException {
     // stop all associated interpreters
-    for (Paragraph paragraph : note.getParagraphs()) {
-      try {
-        Interpreter interpreter = paragraph.getBindedInterpreter();
-        InterpreterSetting interpreterSetting =
-                ((ManagedInterpreterGroup) interpreter.getInterpreterGroup()).getInterpreterSetting();
-        restart(interpreterSetting.getId(), subject.getUser(), note.getId());
-      } catch (InterpreterNotFoundException e) {
+    if (note.getParagraphs() != null) {
+      for (Paragraph paragraph : note.getParagraphs()) {
+        try {
+          Interpreter interpreter = paragraph.getBindedInterpreter();
+          InterpreterSetting interpreterSetting =
+                  ((ManagedInterpreterGroup) interpreter.getInterpreterGroup()).getInterpreterSetting();
+          restart(interpreterSetting.getId(), subject.getUser(), note.getId());
+        } catch (InterpreterNotFoundException e) {
 
-      } catch (InterpreterException e) {
-        LOGGER.warn("Fail to stop interpreter setting", e);
+        } catch (InterpreterException e) {
+          LOGGER.warn("Fail to stop interpreter setting", e);
+        }
       }
     }
 
