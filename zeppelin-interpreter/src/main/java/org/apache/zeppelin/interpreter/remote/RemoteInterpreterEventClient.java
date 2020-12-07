@@ -64,7 +64,7 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector,
   private PooledRemoteClient<RemoteInterpreterEventService.Client> remoteClient;
   private String intpGroupId;
 
-  public RemoteInterpreterEventClient(String intpEventHost, int intpEventPort) {
+  public RemoteInterpreterEventClient(String intpEventHost, int intpEventPort, int connectionPoolSize) {
     this.remoteClient = new PooledRemoteClient<>(() -> {
       TSocket transport = new TSocket(intpEventHost, intpEventPort);
       try {
@@ -74,7 +74,7 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector,
       }
       TProtocol protocol = new TBinaryProtocol(transport);
       return new RemoteInterpreterEventService.Client(protocol);
-    });
+    }, connectionPoolSize);
   }
 
   public <R> R callRemoteFunction(PooledRemoteClient.RemoteFunction<R, RemoteInterpreterEventService.Client> func) {
