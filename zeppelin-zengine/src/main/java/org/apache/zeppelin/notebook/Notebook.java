@@ -377,6 +377,10 @@ public class Notebook {
 
   public void saveNote(Note note, AuthenticationInfo subject) throws IOException {
     noteManager.saveNote(note, subject);
+  }
+
+  public void updateNote(Note note, AuthenticationInfo subject) throws IOException {
+    noteManager.saveNote(note, subject);
     fireNoteUpdateEvent(note, subject);
   }
 
