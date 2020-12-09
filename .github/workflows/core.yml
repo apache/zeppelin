@@ -126,8 +126,9 @@ jobs:
   test-flink-and-flink-integration-test:
     runs-on: ubuntu-18.04
     strategy:
+      fail-fast: false
       matrix:
-        flink: [ flink_1_10, flink_1_11]
+        flink: [ 110, 111, 112]
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -148,15 +149,15 @@ jobs:
         uses: conda-incubator/setup-miniconda@v2
         with:
           activate-environment: python_3_with_flink
-          environment-file: testing/env_python_3 with_${{ matrix.flink }}.yml
+          environment-file: testing/env_python_3_with_flink_${{ matrix.flink }}.yml
           python-version: 3.7
           auto-activate-base: false
       - name: install environment
         run: |
-          mvn install -DskipTests -DskipRat -am -pl flink/interpreter,zeppelin-interpreter-integration -Pflink-1.10 -Pintegration -B
+          mvn install -DskipTests -DskipRat -am -pl flink/interpreter,zeppelin-interpreter-integration -Pflink-${{ matrix.flink }} -Pintegration -B
           mvn clean package -T 2C -pl zeppelin-plugins -amd -DskipTests -B
       - name: run tests
-        run: mvn test -DskipRat -pl flink/interpreter,zeppelin-interpreter-integration -Pflink-1.10 -Pintegration -B -Dtest=org.apache.zeppelin.flink.*,FlinkIntegrationTest110,ZeppelinFlinkClusterTest110
+        run: mvn test -DskipRat -pl flink/interpreter,zeppelin-interpreter-integration -Pflink-${{ matrix.flink }} -Pintegration -B -Dtest=org.apache.zeppelin.flink.*,FlinkIntegrationTest${{ matrix.flink }},ZeppelinFlinkClusterTest${{ matrix.flink }}
   run-spark-intergration-test:
     runs-on: ubuntu-18.04
     steps:

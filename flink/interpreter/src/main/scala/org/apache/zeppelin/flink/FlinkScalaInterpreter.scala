@@ -445,8 +445,7 @@ class FlinkScalaInterpreter(val properties: Properties) {
 
     if (java.lang.Boolean.parseBoolean(
       properties.getProperty("zeppelin.flink.disableSysoutLogging", "true"))) {
-      this.benv.getConfig.disableSysoutLogging()
-      this.senv.getConfig.disableSysoutLogging()
+      flinkShims.disableSysoutLogging(this.benv.getConfig, this.senv.getConfig);
     }
   }
 
@@ -511,9 +510,7 @@ class FlinkScalaInterpreter(val properties: Properties) {
   }
 
   private def setAsContext(): Unit = {
-    val streamFactory = new StreamExecutionEnvironmentFactory() {
-      override def createExecutionEnvironment = senv.getJavaEnv
-    }
+    val streamFactory = flinkShims.createStreamExecutionEnvironmentFactory(this.senv.getJavaEnv)
     //StreamExecutionEnvironment
     var method = classOf[JStreamExecutionEnvironment].getDeclaredMethod("initializeContextEnvironment",
       classOf[StreamExecutionEnvironmentFactory])

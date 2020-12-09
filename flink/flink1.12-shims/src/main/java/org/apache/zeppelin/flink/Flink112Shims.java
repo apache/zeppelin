@@ -28,6 +28,7 @@ import org.apache.flink.api.scala.DataSet;
 import org.apache.flink.client.cli.CliFrontend;
 import org.apache.flink.client.cli.CustomCommandLine;
 import org.apache.flink.configuration.ConfigOption;
+import org.apache.flink.configuration.Configuration;
 import org.apache.flink.configuration.ReadableConfig;
 import org.apache.flink.core.execution.JobClient;
 import org.apache.flink.python.PythonOptions;
@@ -82,7 +83,7 @@ import org.apache.flink.types.Row;
 import org.apache.flink.types.RowKind;
 import org.apache.flink.util.FlinkException;
 import org.apache.zeppelin.flink.shims111.CollectStreamTableSink;
-import org.apache.zeppelin.flink.shims111.Flink111ScalaShims;
+import org.apache.zeppelin.flink.shims112.Flink112ScalaShims;
 import org.apache.zeppelin.flink.sql.SqlCommandParser;
 import org.apache.zeppelin.flink.sql.SqlCommandParser.SqlCommand;
 import org.apache.zeppelin.flink.sql.SqlCommandParser.SqlCommandCall;
@@ -108,11 +109,11 @@ import java.util.regex.Matcher;
 
 
 /**
- * Shims for flink 1.11
+ * Shims for flink 1.12
  */
-public class Flink111Shims extends FlinkShims {
+public class Flink112Shims extends FlinkShims {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(Flink111Shims.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(Flink112Shims.class);
   public static final AttributedString MESSAGE_HELP = new AttributedStringBuilder()
           .append("The following commands are available:\n\n")
           .append(formatCommand(SqlCommand.CREATE_TABLE, "Create table under current catalog and database."))
@@ -139,21 +140,21 @@ public class Flink111Shims extends FlinkShims {
 
   private Map<String, StatementSet> statementSetMap = new ConcurrentHashMap<>();
 
-  public Flink111Shims(Properties properties) {
+  public Flink112Shims(Properties properties) {
     super(properties);
   }
 
   @Override
   public void disableSysoutLogging(Object batchConfig, Object streamConfig) {
-    ((ExecutionConfig) batchConfig).disableSysoutLogging();
-    ((ExecutionConfig) streamConfig).disableSysoutLogging();
+    // do nothing
   }
+
 
   @Override
   public Object createStreamExecutionEnvironmentFactory(Object streamExecutionEnvironment) {
     return new StreamExecutionEnvironmentFactory() {
       @Override
-      public StreamExecutionEnvironment createExecutionEnvironment() {
+      public StreamExecutionEnvironment createExecutionEnvironment(Configuration configuration) {
         return (StreamExecutionEnvironment) streamExecutionEnvironment;
       }
     };
@@ -232,12 +233,12 @@ public class Flink111Shims extends FlinkShims {
 
   @Override
   public Object fromDataSet(Object btenv, Object ds) {
-    return Flink111ScalaShims.fromDataSet((BatchTableEnvironment) btenv, (DataSet) ds);
+    return Flink112ScalaShims.fromDataSet((BatchTableEnvironment) btenv, (DataSet) ds);
   }
 
   @Override
   public Object toDataSet(Object btenv, Object table) {
-    return Flink111ScalaShims.toDataSet((BatchTableEnvironment) btenv, (Table) table);
+    return Flink112ScalaShims.toDataSet((BatchTableEnvironment) btenv, (Table) table);
   }
 
   @Override
@@ -426,9 +427,10 @@ public class Flink111Shims extends FlinkShims {
   public Object updateEffectiveConfig(Object cliFrontend, Object commandLine, Object effectiveConfig) {
     CustomCommandLine customCommandLine = ((CliFrontend)cliFrontend).validateAndGetActiveCommandLine((CommandLine) commandLine);
     try {
-      return customCommandLine.applyCommandLineOptionsToConfiguration((CommandLine) commandLine);
+       ((Configuration) effectiveConfig).addAll(customCommandLine.toConfiguration((CommandLine) commandLine));
+       return effectiveConfig;
     } catch (FlinkException e) {
-      throw new RuntimeException("Fail to call applyCommandLineOptionsToConfiguration", e);
+      throw new RuntimeException("Fail to call addAll", e);
     }
   }
 
