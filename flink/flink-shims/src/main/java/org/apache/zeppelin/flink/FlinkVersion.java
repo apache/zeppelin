@@ -26,6 +26,7 @@ public class FlinkVersion {
   private int majorVersion;
   private int minorVersion;
   private int patchVersion;
+  private int version;
   private String versionString;
 
   FlinkVersion(String versionString) {
@@ -46,6 +47,8 @@ public class FlinkVersion {
         this.patchVersion = Integer.parseInt(versions[2]);
       }
 
+      this.version = Integer.parseInt(String.format("%d%02d%02d",
+              majorVersion, minorVersion, patchVersion));
     } catch (Exception e) {
       logger.error("Can not recognize Flink version " + versionString +
           ". Assume it's a future release", e);
@@ -54,6 +57,10 @@ public class FlinkVersion {
 
   public int getMajorVersion() {
     return majorVersion;
+  }
+
+  public boolean olderThan(FlinkVersion versionToCompare) {
+    return this.version < versionToCompare.version;
   }
 
   public int getMinorVersion() {

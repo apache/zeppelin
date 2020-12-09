@@ -39,11 +39,13 @@
         <module>flink-shims</module>
         <module>flink1.10-shims</module>
         <module>flink1.11-shims</module>
+        <module>flink1.12-shims</module>
     </modules>
 
     <properties>
         <flink1.10.version>1.10.2</flink1.10.version>
         <flink1.11.version>1.11.2</flink1.11.version>
+        <flink1.12.version>1.12.0</flink1.12.version>
     </properties>
 
     <dependencies>
