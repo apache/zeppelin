@@ -56,9 +56,12 @@ public abstract class FlinkShims {
     if (flinkVersion.getMajorVersion() == 1 && flinkVersion.getMinorVersion() == 10) {
       LOGGER.info("Initializing shims for Flink 1.10");
       flinkShimsClass = Class.forName("org.apache.zeppelin.flink.Flink110Shims");
-    } else if (flinkVersion.getMajorVersion() == 1 && flinkVersion.getMinorVersion() >= 11) {
+    } else if (flinkVersion.getMajorVersion() == 1 && flinkVersion.getMinorVersion() == 11) {
       LOGGER.info("Initializing shims for Flink 1.11");
       flinkShimsClass = Class.forName("org.apache.zeppelin.flink.Flink111Shims");
+    } else if (flinkVersion.getMajorVersion() == 1 && flinkVersion.getMinorVersion() == 12) {
+      LOGGER.info("Initializing shims for Flink 1.12");
+      flinkShimsClass = Class.forName("org.apache.zeppelin.flink.Flink112Shims");
     } else {
       throw new Exception("Flink version: '" + flinkVersion + "' is not supported yet");
     }
@@ -91,6 +94,10 @@ public abstract class FlinkShims {
             .append('\n')
             .toAttributedString();
   }
+
+  public abstract void disableSysoutLogging(Object batchConfig, Object streamConfig);
+
+  public abstract Object createStreamExecutionEnvironmentFactory(Object streamExecutionEnvironment);
 
   public abstract Object createCatalogManager(Object config);
 
@@ -134,7 +141,7 @@ public abstract class FlinkShims {
                                                        Object parser,
                                                        Object environmentSetting);
 
-  public abstract Object getCustomCli(Object cliFrontend, Object commandLine);
+  public abstract Object updateEffectiveConfig(Object cliFrontend, Object commandLine, Object executorConfig);
 
   public abstract Map extractTableConfigOptions();
 }

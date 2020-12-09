@@ -109,7 +109,7 @@ object FlinkShell {
   }
 
   private def deployNewYarnCluster(config: Config, flinkConfig: Configuration, flinkShims: FlinkShims) = {
-    val effectiveConfig = new Configuration(flinkConfig)
+    var effectiveConfig = new Configuration(flinkConfig)
     val args = parseArgList(config, "yarn-cluster")
 
     val configurationDirectory = getConfigDir(config)
@@ -123,24 +123,25 @@ object FlinkShell {
       frontend.getCustomCommandLineOptions)
     val commandLine = CliFrontendParser.parse(commandLineOptions, args, true)
 
-    val customCLI = flinkShims.getCustomCli(frontend, commandLine).asInstanceOf[CustomCommandLine]
-    val executorConfig = customCLI.applyCommandLineOptionsToConfiguration(commandLine)
+    effectiveConfig = flinkShims
+      .updateEffectiveConfig(frontend, commandLine, effectiveConfig)
+      .asInstanceOf[Configuration]
 
     val serviceLoader = new DefaultClusterClientServiceLoader
-    val clientFactory = serviceLoader.getClusterClientFactory(executorConfig)
-    val clusterDescriptor = clientFactory.createClusterDescriptor(executorConfig)
-    val clusterSpecification = clientFactory.getClusterSpecification(executorConfig)
+    val clientFactory = serviceLoader.getClusterClientFactory(effectiveConfig)
+    val clusterDescriptor = clientFactory.createClusterDescriptor(effectiveConfig)
+    val clusterSpecification = clientFactory.getClusterSpecification(effectiveConfig)
 
     val clusterClient = try {
       clusterDescriptor
         .deploySessionCluster(clusterSpecification)
         .getClusterClient
     } finally {
-      executorConfig.set(DeploymentOptions.TARGET, "yarn-session")
+      effectiveConfig.set(DeploymentOptions.TARGET, "yarn-session")
       clusterDescriptor.close()
     }
 
-    (executorConfig, Some(clusterClient))
+    (effectiveConfig, Some(clusterClient))
   }
 
   private def fetchDeployedYarnClusterInfo(
@@ -149,7 +150,7 @@ object FlinkShell {
       mode: String,
       flinkShims: FlinkShims) = {
 
-    val effectiveConfig = new Configuration(flinkConfig)
+    var effectiveConfig = new Configuration(flinkConfig)
     val args = parseArgList(config, mode)
 
     val configurationDirectory = getConfigDir(config)
@@ -163,10 +164,11 @@ object FlinkShell {
       frontend.getCustomCommandLineOptions)
     val commandLine = CliFrontendParser.parse(commandLineOptions, args, true)
 
-    val customCLI = flinkShims.getCustomCli(frontend, commandLine).asInstanceOf[CustomCommandLine]
-    val executorConfig = customCLI.applyCommandLineOptionsToConfiguration(commandLine);
+    effectiveConfig = flinkShims
+      .updateEffectiveConfig(frontend, commandLine, effectiveConfig)
+      .asInstanceOf[Configuration]
 
-    (executorConfig, None)
+    (effectiveConfig, None)
   }
 
   def parseArgList(config: Config, mode: String): Array[String] = {

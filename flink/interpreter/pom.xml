@@ -77,6 +77,12 @@
 
     <dependency>
       <groupId>org.apache.zeppelin</groupId>
+      <artifactId>flink1.12-shims</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.zeppelin</groupId>
       <artifactId>zeppelin-python</artifactId>
       <version>${project.version}</version>
       <exclusions>
@@ -689,9 +695,9 @@
           <!-- set sun.zip.disableMemoryMapping=true because of
           https://blogs.oracle.com/poonam/crashes-in-zipgetentry
           https://bugs.java.com/bugdatabase/view_bug.do?bug_id=8191484 -->
-          <argLine>-Xmx4096m -XX:MaxMetaspaceSize=512m -Dsun.zip.disableMemoryMapping=true</argLine>
+          <argLine>-Xmx5120m -XX:MaxMetaspaceSize=512m -Dsun.zip.disableMemoryMapping=true</argLine>
 <!--          <argLine>-Xmx4096m -XX:MaxMetaspaceSize=512m -Dsun.zip.disableMemoryMapping=true -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=6006</argLine>-->
-
+o
           <environmentVariables>
 <!--            <FLINK_HOME>/Users/jzhang/github/flink/build-target</FLINK_HOME>-->
             <FLINK_HOME>${project.build.directory}/flink-${flink.version}</FLINK_HOME>
@@ -853,16 +859,23 @@
   <profiles>
 
     <profile>
-      <id>flink-1.10</id>
+      <id>flink-110</id>
       <properties>
         <flink.version>${flink1.10.version}</flink.version>
       </properties>
     </profile>
 
     <profile>
-      <id>flink-1.11</id>
+      <id>flink-111</id>
       <properties>
         <flink.version>${flink1.11.version}</flink.version>
+      </properties>
+    </profile>
+
+    <profile>
+      <id>flink-112</id>
+      <properties>
+        <flink.version>${flink1.12.version}</flink.version>
       </properties>
     </profile>
 

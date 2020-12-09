@@ -331,8 +331,13 @@ public class FlinkStreamSqlInterpreterTest extends SqlInterpreterTest {
     result = sqlInterpreter.interpret("select url, count(1) as pv from " +
             "log group by url", context);
 
-    assertEquals(InterpreterResult.Code.ERROR, result.code());
-    assertTrue(context.out.toString(), context.out.toString().contains("Cannot find checkpoint or savepoint"));
+    if (flinkInterpreter.getFlinkVersion().olderThan(FlinkVersion.fromVersionString("1.12.0"))) {
+      assertEquals(InterpreterResult.Code.ERROR, result.code());
+      assertTrue(context.out.toString(), context.out.toString().contains("Cannot find checkpoint or savepoint"));
+    } else {
+      // flink 1.12 would start from scratch if save point is not found.
+      assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    }
   }
 
   @Test
