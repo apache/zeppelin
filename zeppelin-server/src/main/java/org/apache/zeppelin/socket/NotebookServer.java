@@ -142,6 +142,8 @@ public class NotebookServer extends WebSocketServlet
   private static AtomicReference<NotebookServer> self = new AtomicReference<>();
 
   private ExecutorService executorService = Executors.newFixedThreadPool(10);
+  private boolean sendParagraphStatusToFrontend = ZeppelinConfiguration.create().getBoolean(
+          ZeppelinConfiguration.ConfVars.ZEPPELIN_WEBSOCKET_PARAGRAPH_STATUS_PROGRESS);
 
   private Provider<Notebook> notebookProvider;
   private Provider<NotebookService> notebookServiceProvider;
@@ -1658,6 +1660,9 @@ public class NotebookServer extends WebSocketServlet
    */
   @Override
   public void onOutputAppend(String noteId, String paragraphId, int index, String output) {
+    if (!sendParagraphStatusToFrontend) {
+      return;
+    }
     Message msg = new Message(OP.PARAGRAPH_APPEND_OUTPUT).put("noteId", noteId)
         .put("paragraphId", paragraphId).put("index", index).put("data", output);
     getConnectionManager().broadcast(noteId, msg);
@@ -1671,6 +1676,9 @@ public class NotebookServer extends WebSocketServlet
   @Override
   public void onOutputUpdated(String noteId, String paragraphId, int index,
                               InterpreterResult.Type type, String output) {
+    if (!sendParagraphStatusToFrontend) {
+      return;
+    }
     Message msg = new Message(OP.PARAGRAPH_UPDATE_OUTPUT).put("noteId", noteId)
         .put("paragraphId", paragraphId).put("index", index).put("type", type).put("data", output);
     try {
@@ -1699,6 +1707,10 @@ public class NotebookServer extends WebSocketServlet
    */
   @Override
   public void onOutputClear(String noteId, String paragraphId) {
+    if (!sendParagraphStatusToFrontend) {
+      return;
+    }
+
     try {
       final Note note = getNotebook().getNote(noteId);
       if (note == null) {
@@ -1894,6 +1906,9 @@ public class NotebookServer extends WebSocketServlet
 
   @Override
   public void onProgressUpdate(Paragraph p, int progress) {
+    if (!sendParagraphStatusToFrontend) {
+      return;
+    }
     getConnectionManager().broadcast(p.getNote().getId(),
         new Message(OP.PROGRESS).put("id", p.getId()).put("progress", progress));
   }
