@@ -24,7 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
@@ -62,7 +62,7 @@ public class ZeppelinHubRepo implements NotebookRepoWithVersionControl {
 
   private String token;
   private ZeppelinhubRestApiHandler restApiClient;
-  
+
   private ZeppelinConfiguration conf;
 
   public ZeppelinHubRepo() {
@@ -74,6 +74,7 @@ public class ZeppelinHubRepo implements NotebookRepoWithVersionControl {
     init(conf);
   }
 
+  @Override
   public void init(ZeppelinConfiguration conf) {
     this.conf = conf;
     String zeppelinHubUrl = getZeppelinHubUrl(conf);
@@ -173,7 +174,7 @@ public class ZeppelinHubRepo implements NotebookRepoWithVersionControl {
     }
     return (subject.isAnonymous() && !conf.isAnonymousAllowed()) ? false : true;
   }
-  
+
   @Override
   public Map<String, NoteInfo> list(AuthenticationInfo subject) throws IOException {
     if (!isSubjectValid(subject)) {
@@ -258,7 +259,7 @@ public class ZeppelinHubRepo implements NotebookRepoWithVersionControl {
     }
     String endpoint = Joiner.on("/").join(noteId, "checkpoint");
     String content = GSON.toJson(ImmutableMap.of("message", checkpointMsg));
-    
+
     String token = getUserToken(subject.getUser());
     String response = restApiClient.putWithResponseBody(token, endpoint, content);
 
@@ -298,7 +299,7 @@ public class ZeppelinHubRepo implements NotebookRepoWithVersionControl {
     }
     return history;
   }
-  
+
   private String getUserToken(String user) {
     return tokenManager.getUserToken(user);
   }
@@ -325,7 +326,7 @@ public class ZeppelinHubRepo implements NotebookRepoWithVersionControl {
       //TODO(xxx): handle this case.
       instances = Collections.emptyList();
     }
-    
+
     NotebookRepoSettingsInfo repoSetting = NotebookRepoSettingsInfo.newInstance();
     repoSetting.type = NotebookRepoSettingsInfo.Type.DROPDOWN;
     for (Instance instance : instances) {
