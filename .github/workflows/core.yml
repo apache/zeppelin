@@ -44,323 +44,412 @@ jobs:
           activate-environment: python_3_with_R
           environment-file: testing/env_python_3_with_R.yml
           python-version: 3.7
-          auto-activate-base: false
+          auto-activate-base: true
           channel-priority: strict
+        run: which python
       - name: Make IRkernel available to Jupyter
         run: |
           R -e "IRkernel::installspec()"
           conda list
           conda info
       - name: install plugins and interpreter
-        run: |
-          mvn install -Pbuild-distr -DskipRat -DskipTests -pl zeppelin-server,zeppelin-web,spark/spark-dependencies,markdown,angular,shell -am -Phelium-dev -Pexamples -P${{ matrix.hadoop }} -B
-          mvn package -DskipRat -T 2C -pl zeppelin-plugins -amd -DskipTests -B
+        uses: nick-invision/retry@v2
+        with:
+          timeout_minutes: 10
+          max_attempts: 3
+          retry_on: error
+          command: |
+            mvn install -Pbuild-distr -DskipRat -DskipTests -pl zeppelin-server,zeppelin-web,spark/spark-dependencies,markdown,angular,shell -am -Phelium-dev -Pexamples -P${{ matrix.hadoop }} -B
+            mvn package -DskipRat -T 2C -pl zeppelin-plugins -amd -DskipTests -B
       - name: run tests with ${{ matrix.hadoop }}
         run: mvn verify -Pusing-packaged-distr -DskipRat -pl zeppelin-server,zeppelin-web,spark/spark-dependencies,markdown,angular,shell -am -Phelium-dev -Pexamples -P${{ matrix.hadoop }} -Dtests.to.exclude=**/org/apache/zeppelin/spark/* -DfailIfNoTests=false
-  test-interpreter-modules:
-    runs-on: ubuntu-18.04
-    env:
-      INTERPRETERS: 'beam,hbase,pig,jdbc,file,flink,ignite,kylin,lens,cassandra,elasticsearch,bigquery,alluxio,scio,livy,groovy,sap,java,geode,neo4j,hazelcastjet,submarine,sparql,mongodb'
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Set up JDK 8
-        uses: actions/setup-java@v1
-        with:
-          java-version: 8
-      - name: Cache local Maven repository
-        uses: actions/cache@v2
-        with:
-          path: |
-            ~/.m2/repository
-            !~/.m2/repository/org/apache/zeppelin/
-          key: ${{ runner.os }}-zeppelin-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-zeppelin-
-      - name: Setup conda environment with python 3.7 and R
-        uses: conda-incubator/setup-miniconda@v2
-        with:
-          activate-environment: python_3_with_R_and_tensorflow
-          environment-file: testing/env_python_3_with_R_and_tensorflow.yml
-          python-version: 3.7
-          auto-activate-base: false
-      - name: Make IRkernel available to Jupyter
-        run: |
-          R -e "IRkernel::installspec()"
-      - name: verify interpreter
-        run: mvn verify -DskipRat -am -pl .,zeppelin-interpreter,zeppelin-interpreter-shaded,${INTERPRETERS} -Pscala-2.10 -B
-  test-zeppelin-client-integration-test:
-    runs-on: ubuntu-18.04
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Set up JDK 8
-        uses: actions/setup-java@v1
-        with:
-          java-version: 8
-      - name: Cache local Maven repository
-        uses: actions/cache@v2
-        with:
-          path: |
-            ~/.m2/repository
-            !~/.m2/repository/org/apache/zeppelin/
-          key: ${{ runner.os }}-zeppelin-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-zeppelin-
-      - name: Setup conda environment with python 3.7 and R
-        uses: conda-incubator/setup-miniconda@v2
-        with:
-          activate-environment: python_3_with_R
-          environment-file: testing/env_python_3_with_R.yml
-          python-version: 3.7
-          auto-activate-base: false
-      - name: Make IRkernel available to Jupyter
-        run: |
-          R -e "IRkernel::installspec()"
-      - name: install environment
-        run: |
-          mvn install -DskipTests -DskipRat -Pintegration -pl zeppelin-interpreter-integration,zeppelin-web,spark/spark-dependencies,markdown,flink/interpreter,jdbc,shell -am
-          mvn package -DskipRat -T 2C -pl zeppelin-plugins -amd -DskipTests -B
-      - name: run tests
-        run: mvn test -DskipRat -pl zeppelin-interpreter-integration -Pintegration -Dtest=ZeppelinClientIntegrationTest,ZeppelinClientWithAuthIntegrationTest,ZSessionIntegrationTest
-  test-flink-and-flink-integration-test:
-    runs-on: ubuntu-18.04
-    strategy:
-      matrix:
-        flink: [ flink_1_10, flink_1_11]
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Set up JDK 8
-        uses: actions/setup-java@v1
-        with:
-          java-version: 8
-      - name: Cache local Maven repository
-        uses: actions/cache@v2
-        with:
-          path: |
-            ~/.m2/repository
-            !~/.m2/repository/org/apache/zeppelin/
-          key: ${{ runner.os }}-zeppelin-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-zeppelin-
-      - name: Setup conda environment with python 3.7 and
-        uses: conda-incubator/setup-miniconda@v2
-        with:
-          activate-environment: python_3_with_flink
-          environment-file: testing/env_python_3 with_${{ matrix.flink }}.yml
-          python-version: 3.7
-          auto-activate-base: false
-      - name: install environment
-        run: |
-          mvn install -DskipTests -DskipRat -am -pl flink/interpreter,zeppelin-interpreter-integration -Pflink-1.10 -Pintegration -B
-          mvn clean package -T 2C -pl zeppelin-plugins -amd -DskipTests -B
-      - name: run tests
-        run: mvn test -DskipRat -pl flink/interpreter,zeppelin-interpreter-integration -Pflink-1.10 -Pintegration -B -Dtest=org.apache.zeppelin.flink.*,FlinkIntegrationTest110,ZeppelinFlinkClusterTest110
-  run-spark-intergration-test:
-    runs-on: ubuntu-18.04
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Set up JDK 8
-        uses: actions/setup-java@v1
-        with:
-          java-version: 8
-      - name: Cache local Maven repository
-        uses: actions/cache@v2
-        with:
-          path: |
-            ~/.m2/repository
-            !~/.m2/repository/org/apache/zeppelin/
-          key: ${{ runner.os }}-zeppelin-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-zeppelin-
-      - name: Setup conda environment with python 3.7 and R
-        uses: conda-incubator/setup-miniconda@v2
-        with:
-          activate-environment: python_3_with_R
-          environment-file: testing/env_python_3_with_R.yml
-          python-version: 3.7
-          auto-activate-base: false
-      - name: Make IRkernel available to Jupyter
-        run: |
-          R -e "IRkernel::installspec()"
-      - name: install environment
-        run: |
-          mvn install -DskipTests -DskipRat -pl zeppelin-interpreter-integration,zeppelin-web,spark/spark-dependencies,markdown -am -Phadoop2 -Pintegration -B
-          mvn clean package -T 2C -pl zeppelin-plugins -amd -DskipTests -B
-      - name: run tests
-        run: mvn test -DskipRat -pl zeppelin-interpreter-integration,zeppelin-web,spark/spark-dependencies,markdown -am -Phadoop2 -Pintegration -B -Dtest=ZeppelinSparkClusterTest24,SparkIntegrationTest24,ZeppelinSparkClusterTest23,SparkIntegrationTest23,ZeppelinSparkClusterTest22,SparkIntegrationTest22,ZeppelinSparkClusterTest30,SparkIntegrationTest30 -DfailIfNoTests=false
-  jdbcIntegrationTest-and-unit-test-of-Spark-2-4-with-Scala-2-11:
-    runs-on: ubuntu-18.04
-    steps:
-      # user/password => root/root
-      - name: Start mysql
-        run: sudo systemctl start mysql.service
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Set up JDK 8
-        uses: actions/setup-java@v1
-        with:
-          java-version: 8
-      - name: Cache local Maven repository
-        uses: actions/cache@v2
-        with:
-          path: |
-            ~/.m2/repository
-            !~/.m2/repository/org/apache/zeppelin/
-          key: ${{ runner.os }}-zeppelin-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-zeppelin-
-      - name: Setup conda environment with python 3.7 and R
-        uses: conda-incubator/setup-miniconda@v2
-        with:
-          activate-environment: python_3_with_R
-          environment-file: testing/env_python_3_with_R.yml
-          python-version: 3.7
-          auto-activate-base: false
-      - name: Make IRkernel available to Jupyter
-        run: |
-          R -e "IRkernel::installspec()"
-      - name: install environment
-        run: |
-          mvn install -DskipTests -DskipRat -pl zeppelin-interpreter-integration,jdbc,zeppelin-web,spark/spark-dependencies,markdown -am -Pspark-2.4 -Pspark-scala-2.11 -Phadoop2 -Pintegration -B
-          mvn clean package -T 2C -pl zeppelin-plugins -amd -DskipTests -B
-      - name: run tests
-        run: mvn test -DskipRat -pl zeppelin-interpreter-integration,jdbc,zeppelin-web,spark/spark-dependencies,markdown -am -Pspark-2.4 -Pspark-scala-2.11 -Phadoop2 -Pintegration -B -Dtest=JdbcIntegrationTest,org.apache.zeppelin.spark.*,org.apache.zeppelin.kotlin.* -DfailIfNoTests=false
-
-  spark-2-4-and-scale-2-12:
-    runs-on: ubuntu-18.04
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Set up JDK 8
-        uses: actions/setup-java@v1
-        with:
-          java-version: 8
-      - name: Cache local Maven repository
-        uses: actions/cache@v2
-        with:
-          path: |
-            ~/.m2/repository
-            !~/.m2/repository/org/apache/zeppelin/
-          key: ${{ runner.os }}-zeppelin-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-zeppelin-
-      - name: Setup conda environment with python 3.7 and R
-        uses: conda-incubator/setup-miniconda@v2
-        with:
-          activate-environment: python_3_with_R
-          environment-file: testing/env_python_3_with_R.yml
-          python-version: 3.7
-          auto-activate-base: false
-      - name: Make IRkernel available to Jupyter
-        run: |
-          R -e "IRkernel::installspec()"
-      - name: install environment
-        run: |
-          mvn install -DskipTests -DskipRat -pl spark/spark-dependencies -am -Pspark-2.4 -Pspark-scala-2.12 -Phadoop2 -B
-      - name: run tests
-        run: mvn test -DskipRat -pl spark/spark-dependencies -am -Pspark-2.4 -Pspark-scala-2.12 -Phadoop2 -B -Dtest=org.apache.zeppelin.spark.*,org.apache.zeppelin.kotlin.* -DfailIfNoTests=false
-
-  spark-2-3-and-scale-2-11-and-other-interpreter:
-    runs-on: ubuntu-18.04
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Set up JDK 8
-        uses: actions/setup-java@v1
-        with:
-          java-version: 8
-      - name: Cache local Maven repository
-        uses: actions/cache@v2
-        with:
-          path: |
-            ~/.m2/repository
-            !~/.m2/repository/org/apache/zeppelin/
-          key: ${{ runner.os }}-zeppelin-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-zeppelin-
-      - name: Setup conda environment with python 3.7 and R
-        uses: conda-incubator/setup-miniconda@v2
-        with:
-          activate-environment: python_3_with_R
-          environment-file: testing/env_python_3_with_R.yml
-          python-version: 3.7
-          auto-activate-base: false
-      - name: Make IRkernel available to Jupyter
-        run: |
-          R -e "IRkernel::installspec()"
-      - name: install environment
-        run: |
-          mvn install -DskipTests -DskipRat -pl spark/spark-dependencies -am -Pspark-2.3 -Pspark-scala-2.11 -Phadoop2 -B
-      - name: run tests
-        run: mvn test -DskipRat -pl spark/spark-dependencies -am -Pspark-2.3 -Pspark-scala-2.11 -Phadoop2 -B -Dtest=org.apache.zeppelin.spark.*,apache.zeppelin.python.*,apache.zeppelin.jupyter.*,apache.zeppelin.r.* -DfailIfNoTests=false
-
-  spark-2-2-and-scale-2-10-and-other-interpreter:
-    runs-on: ubuntu-18.04
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Set up JDK 8
-        uses: actions/setup-java@v1
-        with:
-          java-version: 8
-      - name: Cache local Maven repository
-        uses: actions/cache@v2
-        with:
-          path: |
-            ~/.m2/repository
-            !~/.m2/repository/org/apache/zeppelin/
-          key: ${{ runner.os }}-zeppelin-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-zeppelin-
-      - name: Setup conda environment with python 3.7 and R
-        uses: conda-incubator/setup-miniconda@v2
-        with:
-          activate-environment: python_3_with_R
-          environment-file: testing/env_python_3_with_R.yml
-          python-version: 3.7
-          auto-activate-base: false
-      - name: Make IRkernel available to Jupyter
-        run: |
-          R -e "IRkernel::installspec()"
-      - name: install environment
-        run: mvn install -DskipTests -DskipRat -pl spark/spark-dependencies -am -Pspark-2.2 -Pspark-scala-2.10 -Phadoop2 -B
-      - name: run tests
-        run: mvn test -DskipRat -pl spark/spark-dependencies -am -Pspark-2.2 -Pspark-scala-2.10 -Phadoop2 -B -Dtest=org.apache.zeppelin.spark.*,apache.zeppelin.python.*,apache.zeppelin.jupyter.*,apache.zeppelin.r.* -DfailIfNoTests=false
-  test-livy-0-5-with-spark-2-2-0-under-python3:
-    runs-on: ubuntu-18.04
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Set up JDK 8
-        uses: actions/setup-java@v1
-        with:
-          java-version: 8
-      - name: Cache local Maven repository
-        uses: actions/cache@v2
-        with:
-          path: |
-            ~/.m2/repository
-            !~/.m2/repository/org/apache/zeppelin/
-          key: ${{ runner.os }}-zeppelin-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-zeppelin-
-      - name: Setup conda environment with python 3.7 and R
-        uses: conda-incubator/setup-miniconda@v2
-        with:
-          activate-environment: python_3_with_R
-          environment-file: testing/env_python_3_with_R.yml
-          python-version: 3.7
-          auto-activate-base: false
-      - name: Make IRkernel available to Jupyter
-        run: |
-          R -e "IRkernel::installspec()"
-      - name: install environment
-        run: |
-          mvn install -DskipTests -DskipRat -pl livy -am  -B
-          ./testing/downloadSpark.sh "2.2.0" "2.6"
-          ./testing/downloadLivy.sh "0.5.0-incubating"
-      - name: run tests
-        run: mvn verify -DskipRat -pl livy -am  -B
+#  test-interpreter-modules:
+#    runs-on: ubuntu-18.04
+#    env:
+#      INTERPRETERS: 'beam,hbase,pig,jdbc,file,flink,ignite,kylin,lens,cassandra,elasticsearch,bigquery,alluxio,scio,livy,groovy,sap,java,geode,neo4j,hazelcastjet,submarine,sparql,mongodb'
+#    steps:
+#      - name: Checkout
+#        uses: actions/checkout@v2
+#      - name: Set up JDK 8
+#        uses: actions/setup-java@v1
+#        with:
+#          java-version: 8
+#      - name: Cache local Maven repository
+#        uses: actions/cache@v2
+#        with:
+#          path: |
+#            ~/.m2/repository
+#            !~/.m2/repository/org/apache/zeppelin/
+#          key: ${{ runner.os }}-zeppelin-${{ hashFiles('**/pom.xml') }}
+#          restore-keys: |
+#            ${{ runner.os }}-zeppelin-
+#      - name: Setup conda environment with python 3.7 and R
+#        uses: conda-incubator/setup-miniconda@v2
+#        with:
+#          activate-environment: python_3_with_R_and_tensorflow
+#          environment-file: testing/env_python_3_with_R_and_tensorflow.yml
+#          python-version: 3.7
+#          auto-activate-base: false
+#      - name: Make IRkernel available to Jupyter
+#        run: |
+#          R -e "IRkernel::installspec()"
+#      - name: verify interpreter
+#        uses: nick-invision/retry@v2
+#        with:
+#          timeout_minutes: 10
+#          max_attempts: 3
+#          retry_on: error
+#          command: mvn verify -DskipRat -am -pl .,zeppelin-interpreter,zeppelin-interpreter-shaded,${INTERPRETERS} -Pscala-2.10 -B
+#  test-zeppelin-client-integration-test:
+#    runs-on: ubuntu-18.04
+#    steps:
+#      - name: Checkout
+#        uses: actions/checkout@v2
+#      - name: Set up JDK 8
+#        uses: actions/setup-java@v1
+#        with:
+#          java-version: 8
+#      - name: Cache local Maven repository
+#        uses: actions/cache@v2
+#        with:
+#          path: |
+#            ~/.m2/repository
+#            !~/.m2/repository/org/apache/zeppelin/
+#          key: ${{ runner.os }}-zeppelin-${{ hashFiles('**/pom.xml') }}
+#          restore-keys: |
+#            ${{ runner.os }}-zeppelin-
+#      - name: Setup conda environment with python 3.7 and R
+#        uses: conda-incubator/setup-miniconda@v2
+#        with:
+#          activate-environment: python_3_with_R
+#          environment-file: testing/env_python_3_with_R.yml
+#          python-version: 3.7
+#          auto-activate-base: false
+#      - name: Make IRkernel available to Jupyter
+#        run: |
+#          R -e "IRkernel::installspec()"
+#      - name: install environment
+#        uses: nick-invision/retry@v2
+#        with:
+#          timeout_minutes: 10
+#          max_attempts: 3
+#          retry_on: error
+#          command: |
+#            mvn install -DskipTests -DskipRat -Pintegration -pl zeppelin-interpreter-integration,zeppelin-web,spark/spark-dependencies,markdown,flink/interpreter,jdbc,shell -am -B
+#            mvn package -DskipRat -T 2C -pl zeppelin-plugins -amd -DskipTests -B
+#      - name: run tests
+#        uses: nick-invision/retry@v2
+#        with:
+#          timeout_minutes: 10
+#          max_attempts: 3
+#          retry_on: error
+#          command: mvn test -DskipRat -pl zeppelin-interpreter-integration -Pintegration -Dtest=ZeppelinClientIntegrationTest,ZeppelinClientWithAuthIntegrationTest,ZSessionIntegrationTest
+#  test-flink-and-flink-integration-test:
+#    runs-on: ubuntu-18.04
+#    strategy:
+#      matrix:
+#        flink: [ flink_1_10, flink_1_11]
+#    steps:
+#      - name: Checkout
+#        uses: actions/checkout@v2
+#      - name: Set up JDK 8
+#        uses: actions/setup-java@v1
+#        with:
+#          java-version: 8
+#      - name: Cache local Maven repository
+#        uses: actions/cache@v2
+#        with:
+#          path: |
+#            ~/.m2/repository
+#            !~/.m2/repository/org/apache/zeppelin/
+#          key: ${{ runner.os }}-zeppelin-${{ hashFiles('**/pom.xml') }}
+#          restore-keys: |
+#            ${{ runner.os }}-zeppelin-
+#      - name: Setup conda environment with python 3.7 and
+#        uses: conda-incubator/setup-miniconda@v2
+#        with:
+#          activate-environment: python_3_with_flink
+#          environment-file: testing/env_python_3 with_${{ matrix.flink }}.yml
+#          python-version: 3.7
+#          auto-activate-base: false
+#      - name: install environment
+#        uses: nick-invision/retry@v2
+#        with:
+#          timeout_minutes: 10
+#          max_attempts: 3
+#          retry_on: error
+#          command: |
+#            mvn install -DskipTests -DskipRat -am -pl flink/interpreter,zeppelin-interpreter-integration -Pflink-1.10 -Pintegration -B
+#            mvn clean package -T 2C -pl zeppelin-plugins -amd -DskipTests -B
+#      - name: run tests
+#        uses: nick-invision/retry@v2
+#        with:
+#          timeout_minutes: 10
+#          max_attempts: 3
+#          retry_on: error
+#          command: mvn test -DskipRat -pl flink/interpreter,zeppelin-interpreter-integration -Pflink-1.10 -Pintegration -B -Dtest=org.apache.zeppelin.flink.*,FlinkIntegrationTest110,ZeppelinFlinkClusterTest110
+#  run-spark-intergration-test:
+#    runs-on: ubuntu-18.04
+#    steps:
+#      - name: Checkout
+#        uses: actions/checkout@v2
+#      - name: Set up JDK 8
+#        uses: actions/setup-java@v1
+#        with:
+#          java-version: 8
+#      - name: Cache local Maven repository
+#        uses: actions/cache@v2
+#        with:
+#          path: |
+#            ~/.m2/repository
+#            !~/.m2/repository/org/apache/zeppelin/
+#          key: ${{ runner.os }}-zeppelin-${{ hashFiles('**/pom.xml') }}
+#          restore-keys: |
+#            ${{ runner.os }}-zeppelin-
+#      - name: Setup conda environment with python 3.7 and R
+#        uses: conda-incubator/setup-miniconda@v2
+#        with:
+#          activate-environment: python_3_with_R
+#          environment-file: testing/env_python_3_with_R.yml
+#          python-version: 3.7
+#          auto-activate-base: false
+#      - name: Make IRkernel available to Jupyter
+#        run: |
+#          R -e "IRkernel::installspec()"
+#      - name: install environment
+#        uses: nick-invision/retry@v2
+#        with:
+#          timeout_minutes: 10
+#          max_attempts: 3
+#          retry_on: error
+#          command: |
+#            mvn install -DskipTests -DskipRat -pl zeppelin-interpreter-integration,zeppelin-web,spark/spark-dependencies,markdown -am -Phadoop2 -Pintegration -B
+#            mvn clean package -T 2C -pl zeppelin-plugins -amd -DskipTests -B
+#      - name: run tests
+#        uses: nick-invision/retry@v2
+#        with:
+#          timeout_minutes: 10
+#          max_attempts: 3
+#          retry_on: error
+#          command: mvn test -DskipRat -pl zeppelin-interpreter-integration,zeppelin-web,spark/spark-dependencies,markdown -am -Phadoop2 -Pintegration -B -Dtest=ZeppelinSparkClusterTest24,SparkIntegrationTest24,ZeppelinSparkClusterTest23,SparkIntegrationTest23,ZeppelinSparkClusterTest22,SparkIntegrationTest22,ZeppelinSparkClusterTest30,SparkIntegrationTest30 -DfailIfNoTests=false
+#  jdbcIntegrationTest-and-unit-test-of-Spark-2-4-with-Scala-2-11:
+#    runs-on: ubuntu-18.04
+#    steps:
+#      # user/password => root/root
+#      - name: Start mysql
+#        run: sudo systemctl start mysql.service
+#      - name: Checkout
+#        uses: actions/checkout@v2
+#      - name: Set up JDK 8
+#        uses: actions/setup-java@v1
+#        with:
+#          java-version: 8
+#      - name: Cache local Maven repository
+#        uses: actions/cache@v2
+#        with:
+#          path: |
+#            ~/.m2/repository
+#            !~/.m2/repository/org/apache/zeppelin/
+#          key: ${{ runner.os }}-zeppelin-${{ hashFiles('**/pom.xml') }}
+#          restore-keys: |
+#            ${{ runner.os }}-zeppelin-
+#      - name: Setup conda environment with python 3.7 and R
+#        uses: conda-incubator/setup-miniconda@v2
+#        with:
+#          activate-environment: python_3_with_R
+#          environment-file: testing/env_python_3_with_R.yml
+#          python-version: 3.7
+#          auto-activate-base: false
+#      - name: Make IRkernel available to Jupyter
+#        run: |
+#          R -e "IRkernel::installspec()"
+#      - name: install environment
+#        uses: nick-invision/retry@v2
+#        with:
+#          timeout_minutes: 10
+#          max_attempts: 3
+#          retry_on: error
+#          command: |
+#            mvn install -DskipTests -DskipRat -pl zeppelin-interpreter-integration,jdbc,zeppelin-web,spark/spark-dependencies,markdown -am -Pspark-2.4 -Pspark-scala-2.11 -Phadoop2 -Pintegration -B
+#            mvn clean package -T 2C -pl zeppelin-plugins -amd -DskipTests -B
+#      - name: run tests
+#        uses: nick-invision/retry@v2
+#        with:
+#          timeout_minutes: 10
+#          max_attempts: 3
+#          retry_on: error
+#          command: mvn test -DskipRat -pl zeppelin-interpreter-integration,jdbc,zeppelin-web,spark/spark-dependencies,markdown -am -Pspark-2.4 -Pspark-scala-2.11 -Phadoop2 -Pintegration -B -Dtest=JdbcIntegrationTest,org.apache.zeppelin.spark.*,org.apache.zeppelin.kotlin.* -DfailIfNoTests=false
+#
+#  spark-2-4-and-scale-2-12:
+#    runs-on: ubuntu-18.04
+#    steps:
+#      - name: Checkout
+#        uses: actions/checkout@v2
+#      - name: Set up JDK 8
+#        uses: actions/setup-java@v1
+#        with:
+#          java-version: 8
+#      - name: Cache local Maven repository
+#        uses: actions/cache@v2
+#        with:
+#          path: |
+#            ~/.m2/repository
+#            !~/.m2/repository/org/apache/zeppelin/
+#          key: ${{ runner.os }}-zeppelin-${{ hashFiles('**/pom.xml') }}
+#          restore-keys: |
+#            ${{ runner.os }}-zeppelin-
+#      - name: Setup conda environment with python 3.7 and R
+#        uses: conda-incubator/setup-miniconda@v2
+#        with:
+#          activate-environment: python_3_with_R
+#          environment-file: testing/env_python_3_with_R.yml
+#          python-version: 3.7
+#          auto-activate-base: false
+#      - name: Make IRkernel available to Jupyter
+#        run: |
+#          R -e "IRkernel::installspec()"
+#      - name: install environment
+#        uses: nick-invision/retry@v2
+#        with:
+#          timeout_minutes: 10
+#          max_attempts: 3
+#          retry_on: error
+#          command: mvn install -DskipTests -DskipRat -pl spark/spark-dependencies -am -Pspark-2.4 -Pspark-scala-2.12 -Phadoop2 -B
+#      - name: run tests
+#        uses: nick-invision/retry@v2
+#        with:
+#          timeout_minutes: 10
+#          max_attempts: 3
+#          retry_on: error
+#          command: mvn test -DskipRat -pl spark/spark-dependencies -am -Pspark-2.4 -Pspark-scala-2.12 -Phadoop2 -B -Dtest=org.apache.zeppelin.spark.*,org.apache.zeppelin.kotlin.* -DfailIfNoTests=false
+#
+#  spark-2-3-and-scale-2-11-and-other-interpreter:
+#    runs-on: ubuntu-18.04
+#    steps:
+#      - name: Checkout
+#        uses: actions/checkout@v2
+#      - name: Set up JDK 8
+#        uses: actions/setup-java@v1
+#        with:
+#          java-version: 8
+#      - name: Cache local Maven repository
+#        uses: actions/cache@v2
+#        with:
+#          path: |
+#            ~/.m2/repository
+#            !~/.m2/repository/org/apache/zeppelin/
+#          key: ${{ runner.os }}-zeppelin-${{ hashFiles('**/pom.xml') }}
+#          restore-keys: |
+#            ${{ runner.os }}-zeppelin-
+#      - name: Setup conda environment with python 3.7 and R
+#        uses: conda-incubator/setup-miniconda@v2
+#        with:
+#          activate-environment: python_3_with_R
+#          environment-file: testing/env_python_3_with_R.yml
+#          python-version: 3.7
+#          auto-activate-base: false
+#      - name: Make IRkernel available to Jupyter
+#        run: |
+#          R -e "IRkernel::installspec()"
+#      - name: install environment
+#        uses: nick-invision/retry@v2
+#        with:
+#          timeout_minutes: 10
+#          max_attempts: 3
+#          retry_on: error
+#          command: mvn install -DskipTests -DskipRat -pl spark/spark-dependencies -am -Pspark-2.3 -Pspark-scala-2.11 -Phadoop2 -B
+#      - name: run tests
+#        uses: nick-invision/retry@v2
+#        with:
+#          timeout_minutes: 10
+#          max_attempts: 3
+#          retry_on: error
+#          command: mvn test -DskipRat -pl spark/spark-dependencies -am -Pspark-2.3 -Pspark-scala-2.11 -Phadoop2 -B -Dtest=org.apache.zeppelin.spark.*,apache.zeppelin.python.*,apache.zeppelin.jupyter.*,apache.zeppelin.r.* -DfailIfNoTests=false
+#
+#  spark-2-2-and-scale-2-10-and-other-interpreter:
+#    runs-on: ubuntu-18.04
+#    steps:
+#      - name: Checkout
+#        uses: actions/checkout@v2
+#      - name: Set up JDK 8
+#        uses: actions/setup-java@v1
+#        with:
+#          java-version: 8
+#      - name: Cache local Maven repository
+#        uses: actions/cache@v2
+#        with:
+#          path: |
+#            ~/.m2/repository
+#            !~/.m2/repository/org/apache/zeppelin/
+#          key: ${{ runner.os }}-zeppelin-${{ hashFiles('**/pom.xml') }}
+#          restore-keys: |
+#            ${{ runner.os }}-zeppelin-
+#      - name: Setup conda environment with python 3.7 and R
+#        uses: conda-incubator/setup-miniconda@v2
+#        with:
+#          activate-environment: python_3_with_R
+#          environment-file: testing/env_python_3_with_R.yml
+#          python-version: 3.7
+#          auto-activate-base: false
+#      - name: Make IRkernel available to Jupyter
+#        run: |
+#          R -e "IRkernel::installspec()"
+#      - name: install environment
+#        uses: nick-invision/retry@v2
+#        with:
+#          timeout_minutes: 10
+#          max_attempts: 3
+#          retry_on: error
+#          command: mvn install -DskipTests -DskipRat -pl spark/spark-dependencies -am -Pspark-2.2 -Pspark-scala-2.10 -Phadoop2 -B
+#      - name: run tests
+#        uses: nick-invision/retry@v2
+#        with:
+#          timeout_minutes: 10
+#          max_attempts: 3
+#          retry_on: error
+#          command: mvn test -DskipRat -pl spark/spark-dependencies -am -Pspark-2.2 -Pspark-scala-2.10 -Phadoop2 -B -Dtest=org.apache.zeppelin.spark.*,apache.zeppelin.python.*,apache.zeppelin.jupyter.*,apache.zeppelin.r.* -DfailIfNoTests=false
+#  test-livy-0-5-with-spark-2-2-0-under-python3:
+#    runs-on: ubuntu-18.04
+#    steps:
+#      - name: Checkout
+#        uses: actions/checkout@v2
+#      - name: Set up JDK 8
+#        uses: actions/setup-java@v1
+#        with:
+#          java-version: 8
+#      - name: Cache local Maven repository
+#        uses: actions/cache@v2
+#        with:
+#          path: |
+#            ~/.m2/repository
+#            !~/.m2/repository/org/apache/zeppelin/
+#          key: ${{ runner.os }}-zeppelin-${{ hashFiles('**/pom.xml') }}
+#          restore-keys: |
+#            ${{ runner.os }}-zeppelin-
+#      - name: Setup conda environment with python 3.7 and R
+#        uses: conda-incubator/setup-miniconda@v2
+#        with:
+#          activate-environment: python_3_with_R
+#          environment-file: testing/env_python_3_with_R.yml
+#          python-version: 3.7
+#          auto-activate-base: false
+#      - name: Make IRkernel available to Jupyter
+#        run: |
+#          R -e "IRkernel::installspec()"
+#      - name: install environment
+#        uses: nick-invision/retry@v2
+#        with:
+#          timeout_minutes: 10
+#          max_attempts: 3
+#          retry_on: error
+#          command: |
+#            mvn install -DskipTests -DskipRat -pl livy -am  -B
+#            ./testing/downloadSpark.sh "2.2.0" "2.6"
+#            ./testing/downloadLivy.sh "0.5.0-incubating"
+#      - name: run tests
+#        uses: nick-invision/retry@v2
+#        with:
+#          timeout_minutes: 10
+#          max_attempts: 3
+#          retry_on: error
+#          command: mvn verify -DskipRat -pl livy -am  -B

@@ -36,62 +36,62 @@ jobs:
         run: mvn -B install -DskipTests -DskipRat -pl ${INTERPRETERS} -Phadoop2 -Pscala-2.11
       - name: Run headless test
         run: xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" mvn verify -DskipRat -pl zeppelin-web -Phadoop2 -Pscala-2.11 -Pweb-e2e -B
-  run-tests-in-zeppelin-web-angular:
-    runs-on: ubuntu-18.04
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Set up JDK 8
-        uses: actions/setup-java@v1
-        with:
-          java-version: 8
-      - name: Cache local Maven repository
-        uses: actions/cache@v2
-        with:
-          path: |
-            ~/.m2/repository
-            !~/.m2/repository/org/apache/zeppelin/
-          key: ${{ runner.os }}-zeppelin-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-zeppelin-
-      - name: Run headless test
-        run: xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" mvn package -DskipRat -pl zeppelin-web-angular -Pweb-angular -B
-
-  test-selenium-with-spark-module-for-spark-2-3:
-    runs-on: ubuntu-18.04
-    defaults:
-      run:
-        shell: bash -l {0}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Set up JDK 8
-        uses: actions/setup-java@v1
-        with:
-          java-version: 8
-      - name: Cache local Maven repository
-        uses: actions/cache@v2
-        with:
-          path: |
-            ~/.m2/repository
-            !~/.m2/repository/org/apache/zeppelin/
-          key: ${{ runner.os }}-zeppelin-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-zeppelin-
-      - name: Setup conda environment with python 3.7 and R
-        uses: conda-incubator/setup-miniconda@v2
-        with:
-          activate-environment: python_3_with_R
-          environment-file: testing/env_python_3_with_R.yml
-          python-version: 3.7
-          auto-activate-base: false
-      - name: Make IRkernel available to Jupyter
-        run: |
-          R -e "IRkernel::installspec()"
-      - name: install environment
-        run: |
-          mvn clean install -DskipTests -DskipRat -pl ${INTERPRETERS} -Pspark-2.3 -Phadoop2 -Phelium-dev -Pexamples -Pintegration -Pspark-scala-2.11 -B
-          mvn clean package -T 2C -pl zeppelin-plugins -amd -B
-          ./testing/downloadSpark.sh "2.3.2" "2.6"
-      - name: run tests
-        run: xvfb-run --auto-servernum --server-args="-screen 0 1600x1024x16" mvn verify -DskipRat -Pspark-2.3 -Phadoop2 -Phelium-dev -Pexamples -Pintegration -Pspark-scala-2.11 -B -pl zeppelin-integration -DfailIfNoTests=false
+#  run-tests-in-zeppelin-web-angular:
+#    runs-on: ubuntu-18.04
+#    steps:
+#      - name: Checkout
+#        uses: actions/checkout@v2
+#      - name: Set up JDK 8
+#        uses: actions/setup-java@v1
+#        with:
+#          java-version: 8
+#      - name: Cache local Maven repository
+#        uses: actions/cache@v2
+#        with:
+#          path: |
+#            ~/.m2/repository
+#            !~/.m2/repository/org/apache/zeppelin/
+#          key: ${{ runner.os }}-zeppelin-${{ hashFiles('**/pom.xml') }}
+#          restore-keys: |
+#            ${{ runner.os }}-zeppelin-
+#      - name: Run headless test
+#        run: xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" mvn package -DskipRat -pl zeppelin-web-angular -Pweb-angular -B
+#
+#  test-selenium-with-spark-module-for-spark-2-3:
+#    runs-on: ubuntu-18.04
+#    defaults:
+#      run:
+#        shell: bash -l {0}
+#    steps:
+#      - name: Checkout
+#        uses: actions/checkout@v2
+#      - name: Set up JDK 8
+#        uses: actions/setup-java@v1
+#        with:
+#          java-version: 8
+#      - name: Cache local Maven repository
+#        uses: actions/cache@v2
+#        with:
+#          path: |
+#            ~/.m2/repository
+#            !~/.m2/repository/org/apache/zeppelin/
+#          key: ${{ runner.os }}-zeppelin-${{ hashFiles('**/pom.xml') }}
+#          restore-keys: |
+#            ${{ runner.os }}-zeppelin-
+#      - name: Setup conda environment with python 3.7 and R
+#        uses: conda-incubator/setup-miniconda@v2
+#        with:
+#          activate-environment: python_3_with_R
+#          environment-file: testing/env_python_3_with_R.yml
+#          python-version: 3.7
+#          auto-activate-base: false
+#      - name: Make IRkernel available to Jupyter
+#        run: |
+#          R -e "IRkernel::installspec()"
+#      - name: install environment
+#        run: |
+#          mvn clean install -DskipTests -DskipRat -pl ${INTERPRETERS} -Pspark-2.3 -Phadoop2 -Phelium-dev -Pexamples -Pintegration -Pspark-scala-2.11 -B
+#          mvn clean package -T 2C -pl zeppelin-plugins -amd -B
+#          ./testing/downloadSpark.sh "2.3.2" "2.6"
+#      - name: run tests
+#        run: xvfb-run --auto-servernum --server-args="-screen 0 1600x1024x16" mvn verify -DskipRat -Pspark-2.3 -Phadoop2 -Phelium-dev -Pexamples -Pintegration -Pspark-scala-2.11 -B -pl zeppelin-integration -DfailIfNoTests=false
