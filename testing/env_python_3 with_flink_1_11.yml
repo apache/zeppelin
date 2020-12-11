@@ -3,23 +3,22 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  - pycodestyle
-  - numpy=1
-  - pandas=0.25
-  - scipy=1
-  - grpcio
-  - hvplot
-  - protobuf=3
-  - pandasql=0.7.3
-  - ipython=7
-  - matplotlib=3
-  - ipykernel=5
-  - jupyter_client=5
-  - bokeh=1.3.4
-  - panel
-  - holoviews
-  - pyyaml=3
   - pip
   - pip:
     - bkzep==0.6.1
     - apache-flink==1.11.1
+    - numpy==1.17.3
+    - pandas==0.25.0
+    - scipy==1.3.1
+    - grpcio==1.19.0
+    - hvplot==0.5.2
+    - protobuf==3.10.0
+    - pandasql==0.7.3
+    - ipython==7.8.0
+    - matplotlib==3.0.3
+    - ipykernel==5.1.2
+    - jupyter_client==5.3.4
+    - bokeh==1.3.4
+    - panel==0.6.0
+    - holoviews==1.12.3
+    - pycodestyle==2.5.0
