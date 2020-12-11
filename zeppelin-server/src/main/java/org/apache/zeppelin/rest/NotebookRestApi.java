@@ -402,7 +402,7 @@ public class NotebookRestApi extends AbstractRestApi {
         initParagraph(p, paragraphRequest, user);
       }
     }
-    return new JsonResponse(Status.OK, "", note.getId()).build();
+    return new JsonResponse<>(Status.OK, "", note.getId()).build();
   }
 
   /**
@@ -491,7 +491,7 @@ public class NotebookRestApi extends AbstractRestApi {
                 notebookServer.broadcastNoteList(context.getAutheInfo(), context.getUserAndRoles());
               }
             });
-    return new JsonResponse(Status.OK, "").build();
+    return new JsonResponse<>(Status.OK, "").build();
   }
 
   /**
@@ -639,7 +639,7 @@ public class NotebookRestApi extends AbstractRestApi {
                 notebookServer.broadcastNote(result.getNote());
               }
             });
-    return new JsonResponse(Status.OK, "").build();
+    return new JsonResponse<>(Status.OK, "").build();
   }
 
   /**
@@ -664,7 +664,7 @@ public class NotebookRestApi extends AbstractRestApi {
               }
             });
 
-    return new JsonResponse(Status.OK, "").build();
+    return new JsonResponse<>(Status.OK, "").build();
   }
 
   @POST
@@ -675,7 +675,7 @@ public class NotebookRestApi extends AbstractRestApi {
     Paragraph p = notebookService.getNextSessionParagraph(noteId, maxParagraph,
             getServiceContext(),
             new RestServiceCallback<>());
-    return new JsonResponse(Status.OK, p.getId()).build();
+    return new JsonResponse<>(Status.OK, p.getId()).build();
   }
 
   /**
@@ -692,7 +692,7 @@ public class NotebookRestApi extends AbstractRestApi {
     LOGGER.info("Clear all paragraph output of note {}", noteId);
     notebookService.clearAllParagraphOutput(noteId, getServiceContext(),
             new RestServiceCallback<>());
-    return new JsonResponse(Status.OK, "").build();
+    return new JsonResponse<>(Status.OK, "").build();
   }
 
   /**

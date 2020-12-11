@@ -35,7 +35,7 @@ public class Message implements JsonSerializable {
   /**
    * Representation of event type.
    */
-  public static enum OP {
+  public enum OP {
     GET_HOME_NOTE,    // [c-s] load note for home screen
 
     GET_NOTE,         // [c-s] client load note
@@ -138,7 +138,7 @@ public class Message implements JsonSerializable {
 
     ANGULAR_OBJECT_UPDATE,        // [s-c] add/update angular object
     ANGULAR_OBJECT_REMOVE,        // [s-c] add angular object del
-    
+
     ANGULAR_OBJECT_UPDATED,       // [c-s] angular object value updated,
 
     ANGULAR_OBJECT_CLIENT_BIND,   // [c-s] angular object updated from AngularJS z object
@@ -220,7 +220,7 @@ public class Message implements JsonSerializable {
 
   private static final Gson GSON = new Gson();
   public static final Message EMPTY = new Message(null);
-  
+
   public OP op;
   public Map<String, Object> data = new HashMap<>();
   public String ticket = "anonymous";
@@ -260,11 +260,11 @@ public class Message implements JsonSerializable {
     return (T) data.get(key);
   }
 
-  public <T> T getType(String key, Logger LOG) {
+  public <T> T getType(String key, Logger log) {
     try {
       return getType(key);
     } catch (ClassCastException e) {
-      LOG.error("Failed to get " + key + " from message (Invalid type). " , e);
+      log.error("Failed to get {} from message (Invalid type). ", key , e);
       return null;
     }
   }
@@ -278,6 +278,7 @@ public class Message implements JsonSerializable {
     return sb.toString();
   }
 
+  @Override
   public String toJson() {
     return GSON.toJson(this);
   }

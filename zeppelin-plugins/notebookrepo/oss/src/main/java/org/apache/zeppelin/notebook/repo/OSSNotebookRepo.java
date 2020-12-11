@@ -37,6 +37,7 @@ import org.slf4j.LoggerFactory;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -57,6 +58,7 @@ public class OSSNotebookRepo implements NotebookRepo {
   public OSSNotebookRepo() {
   }
 
+  @Override
   public void init(ZeppelinConfiguration conf) throws IOException {
     String endpoint = conf.getOSSEndpoint();
     bucketName = conf.getOSSBucketName();
@@ -93,7 +95,7 @@ public class OSSNotebookRepo implements NotebookRepo {
             LOGGER.warn(e.getMessage());
           }
         } else {
-          LOGGER.debug("Skip invalid note file: " + s.getKey());
+          LOGGER.debug("Skip invalid note file: {}", s.getKey());
         }
       }
       nextMarker = objectListing.getNextMarker();
@@ -109,7 +111,7 @@ public class OSSNotebookRepo implements NotebookRepo {
     InputStream in = null;
     try {
       in = ossObject.getObjectContent();
-      return Note.fromJson(IOUtils.toString(in));
+      return Note.fromJson(IOUtils.toString(in, StandardCharsets.UTF_8));
     } finally {
       if (in != null) {
         in.close();
@@ -160,7 +162,7 @@ public class OSSNotebookRepo implements NotebookRepo {
             LOGGER.warn(e.getMessage());
           }
         } else {
-          LOGGER.debug("Skip invalid note file: " + s.getKey());
+          LOGGER.debug("Skip invalid note file: {}", s.getKey());
         }
       }
       nextMarker = objectListing.getNextMarker();
@@ -183,8 +185,8 @@ public class OSSNotebookRepo implements NotebookRepo {
               .withPrefix(rootFolder + folderPath + "/")
               .withMarker(nextMarker);
       objectListing = ossClient.listObjects(listObjectsRequest);
-      if (objectListing.getObjectSummaries().size() > 0) {
-        List<String> keys = new ArrayList();
+      if (!objectListing.getObjectSummaries().isEmpty()) {
+        List<String> keys = new ArrayList<>();
         for (OSSObjectSummary s : objectListing.getObjectSummaries()) {
           keys.add(s.getKey());
         }

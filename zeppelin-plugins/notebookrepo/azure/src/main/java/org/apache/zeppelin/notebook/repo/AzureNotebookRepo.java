@@ -33,7 +33,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
@@ -56,6 +56,7 @@ public class AzureNotebookRepo implements NotebookRepo {
 
   }
 
+  @Override
   public void init(ZeppelinConfiguration conf) throws IOException {
     this.conf = conf;
     user = conf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_AZURE_USER);
@@ -102,7 +103,7 @@ public class AzureNotebookRepo implements NotebookRepo {
             LOGGER.warn(e.getMessage());
           }
         } else {
-          LOGGER.debug("Skip invalid note file: " + file.getUri().getPath());
+          LOGGER.debug("Skip invalid note file: {}", file.getUri().getPath());
         }
       }
     }

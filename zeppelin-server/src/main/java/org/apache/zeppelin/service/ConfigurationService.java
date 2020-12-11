@@ -20,14 +20,10 @@ package org.apache.zeppelin.service;
 
 import javax.inject.Inject;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.util.Map;
 
 public class ConfigurationService {
-  private static final Logger LOGGER = LoggerFactory.getLogger(ConfigurationService.class);
 
   private ZeppelinConfiguration zConf;
 

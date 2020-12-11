@@ -32,7 +32,7 @@ import org.apache.zeppelin.rest.message.LoggerRequest;
 public class AdminService {
 
   public List<org.apache.log4j.Logger> getLoggers() {
-    Enumeration loggers = LogManager.getCurrentLoggers();
+    Enumeration<?> loggers = LogManager.getCurrentLoggers();
     return StreamSupport.stream(
             Spliterators.spliteratorUnknownSize(
                 new Iterator<org.apache.log4j.Logger>() {
