@@ -102,7 +102,7 @@ public class LoginRestApi {
         data.put("redirectURL",
             constructUrl(knoxJwtRealm.getProviderUrl(), knoxJwtRealm.getRedirectParam(),
                 knoxJwtRealm.getLogin()));
-        response = new JsonResponse(Status.OK, "", data);
+        response = new JsonResponse<>(Status.OK, "", data);
       }
       return response.build();
     }

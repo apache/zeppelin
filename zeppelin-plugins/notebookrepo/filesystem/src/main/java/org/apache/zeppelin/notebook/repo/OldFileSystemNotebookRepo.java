@@ -4,7 +4,6 @@ import org.apache.hadoop.fs.Path;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.FileSystemStorage;
 import org.apache.zeppelin.notebook.Note;
-import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.OldNoteInfo;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
@@ -34,11 +33,11 @@ public class OldFileSystemNotebookRepo implements OldNotebookRepo {
 
   }
 
+  @Override
   public void init(ZeppelinConfiguration zConf) throws IOException {
     this.fs = new FileSystemStorage(zConf,
             zConf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_DIR));
-    LOGGER.info("Creating FileSystem: " + this.fs.getFs().getClass().getName() +
-        " for Zeppelin Notebook.");
+    LOGGER.info("Creating FileSystem: {} for Zeppelin Notebook.", this.fs.getFs().getClass().getName());
     this.notebookDir = this.fs.makeQualified(new Path(zConf.getNotebookDir()));
     LOGGER.info("Using folder {} to store notebook", notebookDir);
     this.fs.tryMkDir(notebookDir);
