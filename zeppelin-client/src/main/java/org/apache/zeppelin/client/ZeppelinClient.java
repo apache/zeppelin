@@ -331,6 +331,29 @@ public class ZeppelinClient {
   }
 
   /**
+   * Clone a note to a specified notePath.
+   *
+   * @param noteId
+   * @param destPath
+   * @return
+   * @throws Exception
+   */
+  public String cloneNote(String noteId, String destPath) throws Exception {
+    JSONObject bodyObject = new JSONObject();
+    bodyObject.put("name", destPath);
+    HttpResponse<JsonNode> response = Unirest
+            .post("/notebook/{noteId}")
+            .routeParam("noteId", noteId)
+            .body(bodyObject.toString())
+            .asJson();
+    checkResponse(response);
+    JsonNode jsonNode = response.getBody();
+    checkJsonNodeStatus(jsonNode);
+
+    return jsonNode.getObject().getString("body");
+  }
+
+  /**
    * Query {@link NoteResult} with provided noteId.
    *
    * @param noteId

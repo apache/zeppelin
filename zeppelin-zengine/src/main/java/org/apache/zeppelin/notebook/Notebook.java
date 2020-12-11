@@ -325,6 +325,14 @@ public class Notebook {
     for (Paragraph p : paragraphs) {
       newNote.addCloneParagraph(p, subject);
     }
+
+    newNote.setConfig(new HashMap<>(sourceNote.getConfig()));
+    newNote.setInfo(new HashMap<>(sourceNote.getInfo()));
+    newNote.setDefaultInterpreterGroup(sourceNote.getDefaultInterpreterGroup());
+    newNote.setNoteForms(new HashMap<>(sourceNote.getNoteForms()));
+    newNote.setNoteParams(new HashMap<>(sourceNote.getNoteParams()));
+    newNote.setRunning(false);
+
     saveNote(newNote, subject);
     authorizationService.cloneNoteMeta(newNote.getId(), sourceNoteId, subject);
     return newNote;
