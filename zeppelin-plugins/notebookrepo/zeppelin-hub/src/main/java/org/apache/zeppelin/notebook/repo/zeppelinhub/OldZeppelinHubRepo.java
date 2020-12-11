@@ -21,13 +21,11 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.Note;
-import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.OldNoteInfo;
 import org.apache.zeppelin.notebook.repo.NotebookRepoSettingsInfo;
-import org.apache.zeppelin.notebook.repo.NotebookRepoWithVersionControl;
 import org.apache.zeppelin.notebook.repo.OldNotebookRepoWithVersionControl;
 import org.apache.zeppelin.notebook.repo.zeppelinhub.model.Instance;
 import org.apache.zeppelin.notebook.repo.zeppelinhub.model.UserSessionContainer;
@@ -74,6 +72,7 @@ public class OldZeppelinHubRepo implements OldNotebookRepoWithVersionControl {
     init(conf);
   }
 
+  @Override
   public void init(ZeppelinConfiguration conf) {
     this.conf = conf;
     String zeppelinHubUrl = getZeppelinHubUrl(conf);
@@ -173,7 +172,7 @@ public class OldZeppelinHubRepo implements OldNotebookRepoWithVersionControl {
     }
     return (subject.isAnonymous() && !conf.isAnonymousAllowed()) ? false : true;
   }
-  
+
   @Override
   public List<OldNoteInfo> list(AuthenticationInfo subject) throws IOException {
     if (!isSubjectValid(subject)) {
@@ -239,7 +238,7 @@ public class OldZeppelinHubRepo implements OldNotebookRepoWithVersionControl {
     }
     String endpoint = Joiner.on("/").join(noteId, "checkpoint");
     String content = GSON.toJson(ImmutableMap.of("message", checkpointMsg));
-    
+
     String token = getUserToken(subject.getUser());
     String response = restApiClient.putWithResponseBody(token, endpoint, content);
 
@@ -279,7 +278,7 @@ public class OldZeppelinHubRepo implements OldNotebookRepoWithVersionControl {
     }
     return history;
   }
-  
+
   private String getUserToken(String user) {
     return tokenManager.getUserToken(user);
   }
@@ -306,7 +305,7 @@ public class OldZeppelinHubRepo implements OldNotebookRepoWithVersionControl {
       //TODO(xxx): handle this case.
       instances = Collections.emptyList();
     }
-    
+
     NotebookRepoSettingsInfo repoSetting = NotebookRepoSettingsInfo.newInstance();
     repoSetting.type = NotebookRepoSettingsInfo.Type.DROPDOWN;
     for (Instance instance : instances) {
