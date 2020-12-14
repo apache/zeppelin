@@ -33,6 +33,7 @@ import org.apache.zeppelin.interpreter.remote.RemoteInterpreterEventClient;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -354,7 +355,7 @@ public abstract class BasePythonInterpreterTest extends ConcurrentTestCase {
     assertEquals("%text world\n", context.out.getCurrentOutput().toString());
   }
 
-  //@Test
+  @Ignore("Flaky test, need to investigate why it fails")
   public void testRedefinitionZeppelinContext() throws InterpreterException {
     String redefinitionCode = "z = 1\n";
     String restoreCode = "z = __zeppelin__\n";
