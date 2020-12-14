@@ -168,7 +168,7 @@ public class JupyterKernelInterpreter extends AbstractInterpreter {
            */
           if (!freezeOutput.contains(packageName + "=") &&
               !freezeOutput.contains(packageName + " ")) {
-            return packageName + " is not installed.";
+            return packageName + " is not installed, installed packages:\n" + freezeOutput;
           }
         }
         LOGGER.info("Prerequisite for kernel {} is met", getKernelName());
