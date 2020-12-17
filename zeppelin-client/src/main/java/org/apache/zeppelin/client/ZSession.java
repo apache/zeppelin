@@ -72,6 +72,10 @@ public class ZSession {
     this.sessionInfo = new SessionInfo(sessionId);
   }
 
+  public void login(String userName, String password) throws Exception {
+    this.zeppelinClient.login(userName, password);
+  }
+
   /**
    * Start this ZSession, underneath it would create a note for this ZSession and
    * start a dedicated interpreter group.
@@ -271,7 +275,7 @@ public class ZSession {
       builder.append(StringUtils.join(propertyString, ","));
       builder.append(")");
     }
-    builder.append("\n" + code);
+    builder.append(" " + code);
 
     String text = builder.toString();
 
@@ -358,12 +362,13 @@ public class ZSession {
     }
     if (localProperties != null && !localProperties.isEmpty()) {
       builder.append("(");
-      for (Map.Entry<String, String> entry : localProperties.entrySet()) {
-        builder.append(entry.getKey() + "=\"" + entry.getValue() + "\"");
-      }
+      List<String> propertyString = localProperties.entrySet().stream()
+              .map(entry -> (entry.getKey() + "=\"" + entry.getValue() + "\""))
+              .collect(Collectors.toList());
+      builder.append(StringUtils.join(propertyString, ","));
       builder.append(")");
     }
-    builder.append("\n" + code);
+    builder.append(" " + code);
 
     String text = builder.toString();
     String nextParagraphId = zeppelinClient.nextSessionParagraph(getNoteId(), maxStatement);
@@ -471,6 +476,11 @@ public class ZSession {
 
     public Builder setIntpProperties(Map<String, String> intpProperties) {
       this.intpProperties = intpProperties;
+      return this;
+    }
+
+    public Builder setMaxStatement(int maxStatement) {
+      this.maxStatement = maxStatement;
       return this;
     }
 

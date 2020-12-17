@@ -66,7 +66,7 @@ public class MockInterpreter1 extends Interpreter {
 	@Override
 	public InterpreterResult interpret(String st, InterpreterContext context) {
 		InterpreterResult result;
-
+		st = st.trim();
 		if ("getId".equals(st)) {
 			// get unique id of this interpreter instance
 			result = new InterpreterResult(InterpreterResult.Code.SUCCESS, "" + this.object_id + "-" + this.pid);

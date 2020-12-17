@@ -298,7 +298,7 @@ public class IPythonInterpreterTest extends BasePythonInterpreterTest {
     assertEquals(context.out.toInterpreterResultMessage().get(0).getData(),
             InterpreterResult.Code.SUCCESS, result.code());
     interpreterResultMessages = context.out.toInterpreterResultMessage();
-    
+
     assertEquals(context.out.toString(), 5, interpreterResultMessages.size());
     // the first message is the warning text message.
     assertEquals(InterpreterResult.Type.HTML, interpreterResultMessages.get(1).getType());
@@ -377,7 +377,7 @@ public class IPythonInterpreterTest extends BasePythonInterpreterTest {
     // We ensure that running and auto completion are not hanging.
     InterpreterResult res = interpretFuture.get(20000, TimeUnit.MILLISECONDS);
     List<InterpreterCompletion> autoRes = completionFuture.get(3000, TimeUnit.MILLISECONDS);
-    assertTrue(res.code().name().equals("SUCCESS"));
+    assertEquals("SUCCESS", res.code().name());
     assertTrue(autoRes.size() > 0);
   }
 

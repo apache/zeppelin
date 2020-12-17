@@ -188,6 +188,10 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
               intpGroupId);
       return;
     }
+    // Close RemoteInterpreter when RemoteInterpreterServer already timeout.
+    // Otherwise the ProgressBar will be missing when rerun after the RemoteInterpreterServer timeout
+    // and old RemoteInterpreterGroups will always alive after GC.
+    interpreterGroup.close();
     interpreterSettingManager.removeInterpreterGroup(intpGroupId);
   }
 

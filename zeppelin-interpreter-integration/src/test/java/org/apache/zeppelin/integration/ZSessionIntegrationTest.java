@@ -107,7 +107,7 @@ public class ZSessionIntegrationTest extends AbstractTestRestApi {
       assertTrue(result.getResults().get(1).getData(), result.getResults().get(1).getData().contains("ExitValue"));
 
       assertEquals(4, note.getParagraphCount());
-      assertEquals("%sh\ninvalid_command", note.getParagraph(3).getText());
+      assertEquals("%sh invalid_command", note.getParagraph(3).getText());
 
     } finally {
       session.stop();
@@ -147,7 +147,7 @@ public class ZSessionIntegrationTest extends AbstractTestRestApi {
       assertTrue(result.getResults().get(1).getData(), result.getResults().get(1).getData().contains("ExitValue"));
 
       assertEquals(4, note.getParagraphCount());
-      assertEquals("%sh\ninvalid_command", note.getParagraph(3).getText());
+      assertEquals("%sh invalid_command", note.getParagraph(3).getText());
 
     } finally {
       session.stop();

@@ -69,7 +69,7 @@ public class ShinyInterpreter extends AbstractInterpreter {
   @Override
   public void close() throws InterpreterException {
     for (Map.Entry<String,IRInterpreter> entry : shinyIRInterpreters.entrySet()) {
-      LOGGER.info("Closing IRInterpreter: " + entry.getKey());
+      LOGGER.info("Closing IRInterpreter: {}", entry.getKey());
       // Stop shiny app first otherwise the R process can not be terminated.
       entry.getValue().cancel(InterpreterContext.get());
       entry.getValue().close();

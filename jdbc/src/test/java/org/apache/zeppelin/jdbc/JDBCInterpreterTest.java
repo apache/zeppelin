@@ -305,11 +305,11 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     assertEquals("select * from test_table WHERE ID = \";'\"", multipleSqlArray.get(2));
     assertEquals("select * from test_table WHERE ID = ';'", multipleSqlArray.get(3));
     assertEquals("select '\n', ';'", multipleSqlArray.get(4));
-    assertEquals("select replace('A\\;B', '\\', 'text')", multipleSqlArray.get(5));
-    assertEquals("select '\\', ';'", multipleSqlArray.get(6));
-    assertEquals("select '''', ';'", multipleSqlArray.get(7));
-    assertEquals("select /*+ scan */ * from test_table", multipleSqlArray.get(8));
-    assertEquals("select * from test_table", multipleSqlArray.get(9));
+    assertEquals("\nselect replace('A\\;B', '\\', 'text')", multipleSqlArray.get(5));
+    assertEquals("\nselect '\\', ';'", multipleSqlArray.get(6));
+    assertEquals("\nselect '''', ';'", multipleSqlArray.get(7));
+    assertEquals("\nselect /*+ scan */ * from test_table", multipleSqlArray.get(8));
+    assertEquals("\n\nselect * from test_table", multipleSqlArray.get(9));
   }
 
   @Test
@@ -643,7 +643,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     List<InterpreterResultMessage> resultMessages = context.out.toInterpreterResultMessage();
     assertEquals(3, resultMessages.size());
     assertEquals(InterpreterResult.Type.TEXT, resultMessages.get(0).getType());
-    assertEquals("Query executed successfully. Affected rows : 0\n",
+    assertEquals("Query executed successfully. Affected rows : 0\n\n",
             resultMessages.get(0).getData());
     assertEquals(InterpreterResult.Type.TEXT, resultMessages.get(1).getType());
     assertEquals("Query executed successfully. Affected rows : 1\n",
@@ -704,7 +704,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
 
     assertEquals(3, resultMessages.size());
     assertEquals(InterpreterResult.Type.TEXT, resultMessages.get(0).getType());
-    assertEquals("Query executed successfully. Affected rows : 0\n",
+    assertEquals("Query executed successfully. Affected rows : 0\n\n",
             resultMessages.get(0).getData());
     assertEquals(InterpreterResult.Type.TEXT, resultMessages.get(1).getType());
     assertEquals("Query executed successfully. Affected rows : 1\n",
@@ -818,43 +818,6 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     assertEquals(3, resultMessages.size());
   }
 
-  @Test
-  public void testSqlWithoutSplit() throws IOException,
-          InterpreterException {
-    Properties properties = new Properties();
-    properties.setProperty("common.max_count", "1000");
-    properties.setProperty("common.max_retry", "3");
-    properties.setProperty("default.driver", "org.h2.Driver");
-    properties.setProperty("default.url", getJdbcConnection());
-    properties.setProperty("default.user", "");
-    properties.setProperty("default.password", "");
-    properties.setProperty("default.splitQueries", "false");
-    JDBCInterpreter t = new JDBCInterpreter(properties);
-    t.open();
-
-    String sqlQuery = "-- comment\n" +
-            "--select * from test_table\n" +
-            "select * from test_table;";
-
-    InterpreterResult interpreterResult = t.interpret(sqlQuery, context);
-    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
-    List<InterpreterResultMessage> resultMessages = context.out.toInterpreterResultMessage();
-    assertEquals(1, resultMessages.size());
-    assertEquals(InterpreterResult.Type.TABLE, resultMessages.get(0).getType());
-
-
-    // the second sql is skipped.
-    context = getInterpreterContext();
-    sqlQuery = "select * from test_table;" +
-            "select name from test_table";
-    interpreterResult = t.interpret(sqlQuery, context);
-    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
-    resultMessages = context.out.toInterpreterResultMessage();
-    assertEquals(1, resultMessages.size());
-    assertEquals(InterpreterResult.Type.TABLE, resultMessages.get(0).getType());
-    assertTrue(resultMessages.get(0).getData(),
-            resultMessages.get(0).getData().startsWith("ID\tNAME"));
-  }
   private InterpreterContext getInterpreterContext() {
     return InterpreterContext.builder()
             .setAuthenticationInfo(new AuthenticationInfo("testUser"))

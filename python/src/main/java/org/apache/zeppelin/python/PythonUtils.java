@@ -70,8 +70,8 @@ public class PythonUtils {
   }
 
   public static String getLocalIP(Properties properties) {
-    // zeppelin.python.gatewayserver_address is only for unit test on travis.
-    // Because the FQDN would fail unit test on travis ci.
+    // zeppelin.python.gatewayserver_address is only for unit test.
+    // Because the FQDN would fail unit test.
     String gatewayserver_address =
         properties.getProperty("zeppelin.python.gatewayserver_address");
     if (gatewayserver_address != null) {

@@ -110,7 +110,7 @@ public class SparkParagraphIT extends AbstractZeppelinIT {
     try {
       setTextOfParagraph(1, "%pyspark\\n" +
           "for x in range(0, 3):\\n" +
-          "    print \"test loop %d\" % (x)");
+          "    print(\"test loop %d\" % (x))");
 
       runParagraph(1);
 

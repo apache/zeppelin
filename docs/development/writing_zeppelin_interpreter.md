@@ -309,7 +309,7 @@ We welcome contribution to a new interpreter. Please follow these few steps:
  - First, check out the general contribution guide [here](https://zeppelin.apache.org/contribution/contributions.html).
  - Follow the steps in [Make your own Interpreter](#make-your-own-interpreter) section and [Editor setting for Interpreter](#editor-setting-for-interpreter) above.
  - Add your interpreter as in the [Configure your interpreter](#configure-your-interpreter) section above; also add it to the example template [zeppelin-site.xml.template](https://github.com/apache/zeppelin/blob/master/conf/zeppelin-site.xml.template).
- - Add tests! They are run by [Travis](https://travis-ci.org/apache/zeppelin) for all changes and it is important that they are self-contained.
+ - Add tests! They are run for all changes and it is important that they are self-contained.
  - Include your interpreter as a module in [`pom.xml`](https://github.com/apache/zeppelin/blob/master/pom.xml).
  - Add documentation on how to use your interpreter under `docs/interpreter/`. Follow the Markdown style as this [example](https://github.com/apache/zeppelin/blob/master/docs/interpreter/elasticsearch.md). Make sure you list config settings and provide working examples on using your interpreter in code boxes in Markdown. Link to images as appropriate (images should go to `docs/assets/themes/zeppelin/img/docs-img/`). And add a link to your documentation in the navigation menu (`docs/_includes/themes/zeppelin/_navigation.html`).
  - Most importantly, ensure licenses of the transitive closure of all dependencies are list in [license file](https://github.com/apache/zeppelin/blob/master/zeppelin-distribution/src/bin_license/LICENSE).

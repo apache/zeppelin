@@ -34,6 +34,7 @@ import py4j.GatewayServer;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -127,7 +128,7 @@ public class IPythonInterpreter extends JupyterKernelInterpreter {
   private void initPythonInterpreter(String gatewayHost, int gatewayPort) throws IOException {
     InputStream input =
             getClass().getClassLoader().getResourceAsStream("python/zeppelin_ipython.py");
-    List<String> lines = IOUtils.readLines(input);
+    List<String> lines = IOUtils.readLines(input, StandardCharsets.UTF_8);
     ExecuteResponse response = jupyterKernelClient.block_execute(ExecuteRequest.newBuilder()
             .setCode(StringUtils.join(lines, System.lineSeparator())
                     .replace("${JVM_GATEWAY_PORT}", gatewayPort + "")
@@ -138,7 +139,7 @@ public class IPythonInterpreter extends JupyterKernelInterpreter {
 
     input =
             getClass().getClassLoader().getResourceAsStream("python/zeppelin_context.py");
-    lines = IOUtils.readLines(input);
+    lines = IOUtils.readLines(input, StandardCharsets.UTF_8);
     response = jupyterKernelClient.block_execute(ExecuteRequest.newBuilder()
             .setCode(StringUtils.join(lines, System.lineSeparator())).build());
     if (response.getStatus() != ExecuteStatus.SUCCESS) {
@@ -154,13 +155,13 @@ public class IPythonInterpreter extends JupyterKernelInterpreter {
 
     if (additionalPythonInitFile != null) {
       input = getClass().getClassLoader().getResourceAsStream(additionalPythonInitFile);
-      lines = IOUtils.readLines(input);
+      lines = IOUtils.readLines(input, StandardCharsets.UTF_8);
       response = jupyterKernelClient.block_execute(ExecuteRequest.newBuilder()
               .setCode(StringUtils.join(lines, System.lineSeparator())
                       .replace("${JVM_GATEWAY_PORT}", gatewayPort + "")
                       .replace("${JVM_GATEWAY_ADDRESS}", gatewayHost)).build());
       if (response.getStatus() != ExecuteStatus.SUCCESS) {
-        LOGGER.error("Fail to run additional Python init file\n" + response.getOutput());
+        LOGGER.error("Fail to run additional Python init file\n{}", response.getOutput());
         throw new IOException("Fail to run additional Python init file: "
                 + additionalPythonInitFile + "\n" + response.getOutput());
       }
@@ -196,7 +197,7 @@ public class IPythonInterpreter extends JupyterKernelInterpreter {
     if (usePy4JAuth) {
       envs.put("PY4J_GATEWAY_SECRET", this.py4jGatewaySecret);
     }
-    LOGGER.info("PYTHONPATH:" + envs.get("PYTHONPATH"));
+    LOGGER.info("PYTHONPATH: {}", envs.get("PYTHONPATH"));
     return envs;
   }
 

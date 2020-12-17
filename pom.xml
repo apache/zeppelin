@@ -1705,7 +1705,7 @@
               <exclude>**/.idea/</exclude>
               <exclude>**/*.iml</exclude>
               <exclude>.git/</exclude>
-              <exclude>.github/*</exclude>
+              <exclude>.github/</exclude>
               <exclude>.gitignore</exclude>
               <exclude>git.properties</exclude>
               <exclude>.repository/</exclude>

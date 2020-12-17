@@ -409,7 +409,7 @@ public class IPyFlinkInterpreterTest extends IPythonInterpreterTest {
             "log group by url')\nz.show(table, stream_type='update')", context);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
     List<InterpreterResultMessage> resultMessages = context.out.toInterpreterResultMessage();
-    assertEquals(InterpreterResult.Type.TABLE, resultMessages.get(0).getType());
+    assertEquals(context.out.toString(), InterpreterResult.Type.TABLE, resultMessages.get(0).getType());
     TestCase.assertTrue(resultMessages.toString(),
             resultMessages.get(0).getData().contains("url\tpv\n"));
   }
