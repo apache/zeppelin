@@ -331,6 +331,9 @@ public class LuceneSearch extends SearchService {
    */
   @Override
   public void deleteNoteIndex(Note note) {
+    if (note == null) {
+      return;
+    }
     deleteDoc(note.getId(), null);
     for (Paragraph paragraph : note.getParagraphs()) {
       deleteParagraphIndex(note.getId(), paragraph);

@@ -174,7 +174,7 @@ public class LuceneSearchTest {
     assertThat(results).isNotEmpty();
   }
 
-  //@Test
+  @Test
   public void canDeleteNull() throws IOException {
     // give
     // looks like a bug in web UI: it tries to delete a note twice (after it has just been deleted)
