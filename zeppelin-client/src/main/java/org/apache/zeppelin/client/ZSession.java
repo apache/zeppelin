@@ -362,9 +362,10 @@ public class ZSession {
     }
     if (localProperties != null && !localProperties.isEmpty()) {
       builder.append("(");
-      for (Map.Entry<String, String> entry : localProperties.entrySet()) {
-        builder.append(entry.getKey() + "=\"" + entry.getValue() + "\"");
-      }
+      List<String> propertyString = localProperties.entrySet().stream()
+              .map(entry -> (entry.getKey() + "=\"" + entry.getValue() + "\""))
+              .collect(Collectors.toList());
+      builder.append(StringUtils.join(propertyString, ","));
       builder.append(")");
     }
     builder.append(" " + code);
