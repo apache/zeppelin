@@ -746,7 +746,7 @@ public class NotebookService {
       schedulerService.refreshCron(note.getId());
     }
 
-    notebook.saveNote(note, context.getAutheInfo());
+    notebook.updateNote(note, context.getAutheInfo());
     callback.onSuccess(note, context);
   }
 
