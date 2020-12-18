@@ -221,7 +221,7 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
       LOGGER.warn("spark-defaults.conf doesn't exist: {}", sparkDefaultFile.getAbsolutePath());
     }
 
-    LOGGER.debug("buildEnvFromProperties: {}", env);
+    LOGGER.info("buildEnvFromProperties: {}", env);
     return env;
 
   }

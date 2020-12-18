@@ -716,6 +716,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
     try {
       List<String>  sqlArray = sqlSplitter.splitSql(sql);
       for (String sqlToExecute : sqlArray) {
+        LOGGER.info("Execute sql: " + sqlToExecute);
         statement = connection.createStatement();
 
         // fetch n+1 rows in order to indicate there's more rows available (for large selects)
