@@ -24,14 +24,14 @@
     <parent>
         <artifactId>zengine-plugins-parent</artifactId>
         <groupId>org.apache.zeppelin</groupId>
-        <version>0.9.0</version>
+        <version>0.9.1-SNAPSHOT</version>
         <relativePath>../../../zeppelin-plugins</relativePath>
     </parent>
 
     <groupId>org.apache.zeppelin</groupId>
     <artifactId>notebookrepo-zeppelin-hub</artifactId>
     <packaging>jar</packaging>
-    <version>0.9.0</version>
+    <version>0.9.1-SNAPSHOT</version>
     <name>Zeppelin: Plugin ZeppelinHubRepo</name>
     <description>NotebookRepo implementation based on Zeppelin Hub</description>
 

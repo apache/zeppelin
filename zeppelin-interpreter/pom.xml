@@ -24,14 +24,14 @@
   <parent>
     <artifactId>zeppelin</artifactId>
     <groupId>org.apache.zeppelin</groupId>
-    <version>0.9.0</version>
+    <version>0.9.1-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
   <groupId>org.apache.zeppelin</groupId>
   <artifactId>zeppelin-interpreter</artifactId>
   <packaging>jar</packaging>
-  <version>0.9.0</version>
+  <version>0.9.1-SNAPSHOT</version>
   <name>Zeppelin: Interpreter</name>
   <description>Zeppelin Interpreter</description>
 

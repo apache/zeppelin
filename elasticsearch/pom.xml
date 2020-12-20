@@ -23,13 +23,13 @@
   <parent>
     <artifactId>zeppelin-interpreter-parent</artifactId>
     <groupId>org.apache.zeppelin</groupId>
-    <version>0.9.0</version>
+    <version>0.9.1-SNAPSHOT</version>
     <relativePath>../zeppelin-interpreter-parent/pom.xml</relativePath>
   </parent>
 
   <artifactId>zeppelin-elasticsearch</artifactId>
   <packaging>jar</packaging>
-  <version>0.9.0</version>
+  <version>0.9.1-SNAPSHOT</version>
   <name>Zeppelin: Elasticsearch interpreter</name>
 
   <properties>
