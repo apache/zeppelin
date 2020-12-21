@@ -780,6 +780,7 @@ public class NotebookServer extends WebSocketServlet
 
   public void broadcastReloadedNoteList(NotebookSocket conn, ServiceContext context)
       throws IOException {
+    getNotebook().reloadAllNotes(context.getAutheInfo());
     broadcastNoteListUpdate();
   }
 
