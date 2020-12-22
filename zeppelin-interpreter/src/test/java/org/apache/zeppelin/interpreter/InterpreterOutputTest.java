@@ -166,7 +166,7 @@ public class InterpreterOutputTest implements InterpreterOutputListener {
   @Test
   public void testTruncate() throws IOException {
     // output is truncated after the new line
-    InterpreterOutput.limit = 3;
+    InterpreterOutput.LIMIT = 3;
     out = new InterpreterOutput(this);
 
     // truncate text
@@ -189,7 +189,7 @@ public class InterpreterOutputTest implements InterpreterOutputListener {
     assertEquals("hello\nworld\n", new String(out.getOutputAt(0).toByteArray()));
 
     // restore default
-    InterpreterOutput.limit = Constants.ZEPPELIN_INTERPRETER_OUTPUT_LIMIT;
+    InterpreterOutput.LIMIT = Constants.ZEPPELIN_INTERPRETER_OUTPUT_LIMIT;
   }
 
 
