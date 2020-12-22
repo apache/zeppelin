@@ -202,7 +202,7 @@ public class ShellInterpreter extends KerberosInterpreter {
 
   @Override
   protected boolean isKerboseEnabled() {
-    if (!StringUtils.isAnyEmpty(getProperty("zeppelin.shell.auth.type")) && getProperty(
+    if (StringUtils.isNotBlank(getProperty("zeppelin.shell.auth.type")) && getProperty(
         "zeppelin.shell.auth.type").equalsIgnoreCase("kerberos")) {
       return true;
     }
