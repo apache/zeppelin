@@ -11,7 +11,7 @@ jobs:
   license-check:
     runs-on: ubuntu-18.04
     env:
-      MAVEN_OPTS: "-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"
+      MAVEN_OPTS: "-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn -Dmaven.wagon.httpconnectionManager.ttlSeconds=240 -Dmaven.wagon.http.retryHandler.count=3"
     steps:
       - name: Checkout
         uses: actions/checkout@v2
