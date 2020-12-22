@@ -1128,6 +1128,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_PROXY_URL("zeppelin.proxy.url", null),
     ZEPPELIN_PROXY_USER("zeppelin.proxy.user", null),
     ZEPPELIN_PROXY_PASSWORD("zeppelin.proxy.password", null),
+    ZEPPELIN_SEARCH_ENABLE("zeppelin.search.enable", true),
     ZEPPELIN_SEARCH_INDEX_REBUILD("zeppelin.search.index.rebuild", false),
     ZEPPELIN_SEARCH_USE_DISK("zeppelin.search.use.disk", true),
     ZEPPELIN_SEARCH_INDEX_PATH("zeppelin.search.index.path", "/tmp/zeppelin-index"),
