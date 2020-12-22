@@ -23,6 +23,7 @@ import org.apache.zeppelin.notebook.Paragraph;
 
 import javax.inject.Inject;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -30,13 +31,13 @@ import java.util.stream.Stream;
 public class NoSearchService extends SearchService {
 
   @Inject
-  public NoSearchService(ZeppelinConfiguration conf) {
+  public NoSearchService() {
     super("NoSearchService-Thread");
   }
 
   @Override
   public List<Map<String, String>> query(String queryStr) {
-    return null;
+    return Collections.emptyList();
   }
 
   @Override
