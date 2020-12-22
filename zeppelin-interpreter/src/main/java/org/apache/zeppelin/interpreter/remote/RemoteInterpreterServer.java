@@ -359,7 +359,7 @@ public class RemoteInterpreterServer extends Thread
 
         String localRepoPath = properties.get("zeppelin.interpreter.localRepo");
         if (properties.containsKey("zeppelin.interpreter.output.limit")) {
-          InterpreterOutput.limit = Integer.parseInt(
+          InterpreterOutput.LIMIT = Integer.parseInt(
                   properties.get("zeppelin.interpreter.output.limit"));
         }
 

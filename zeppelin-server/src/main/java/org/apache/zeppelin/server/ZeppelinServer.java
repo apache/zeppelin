@@ -49,8 +49,6 @@ import java.util.Base64;
 import java.util.HashSet;
 import java.util.List;
 import java.util.EnumSet;
-import java.util.Objects;
-import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.management.remote.JMXServiceURL;
@@ -149,7 +147,7 @@ public class ZeppelinServer extends ResourceConfig {
 
   @Inject
   public ZeppelinServer() {
-    InterpreterOutput.limit = conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_OUTPUT_LIMIT);
+    InterpreterOutput.LIMIT = conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_OUTPUT_LIMIT);
 
     packages("org.apache.zeppelin.rest");
   }
