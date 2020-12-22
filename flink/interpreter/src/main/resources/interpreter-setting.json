@@ -276,5 +276,17 @@
       "completionKey": "TAB",
       "completionSupport": true
     }
+  },
+  {
+    "group": "flink",
+    "name": "cmd",
+    "className": "org.apache.zeppelin.flink.FlinkCmdInterpreter",
+    "properties": {
+    },
+    "editor": {
+      "language": "sh",
+      "editOnDblClick": false,
+      "completionSupport": false
+    }
   }
 ]
