@@ -717,6 +717,11 @@ public class JDBCInterpreter extends KerberosInterpreter {
       List<String>  sqlArray = sqlSplitter.splitSql(sql);
       for (String sqlToExecute : sqlArray) {
         LOGGER.info("Execute sql: " + sqlToExecute);
+        if (sqlToExecute.trim().toLowerCase().startsWith("set ")) {
+          // some version of hive doesn't work with set statement with empty line ahead.
+          // so we need to trim it first in this case.
+          sqlToExecute = sqlToExecute.trim();
+        }
         statement = connection.createStatement();
 
         // fetch n+1 rows in order to indicate there's more rows available (for large selects)
