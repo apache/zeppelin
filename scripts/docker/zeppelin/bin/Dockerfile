@@ -16,7 +16,7 @@
 FROM ubuntu:16.04
 MAINTAINER Apache Software Foundation <dev@zeppelin.apache.org>
 
-ENV Z_VERSION="0.9.0-preview2"
+ENV Z_VERSION="0.9.0"
 
 ENV LOG_TAG="[ZEPPELIN_${Z_VERSION}]:" \
     Z_HOME="/zeppelin" \
