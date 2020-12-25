@@ -1,0 +1,237 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] ----------------< org.apache.zeppelin:notebookrepo-s3 >-----------------
+[INFO] Building Zeppelin: Plugin S3NotebookRepo 0.9.0-SNAPSHOT
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- maven-dependency-plugin:3.1.2:tree (default-cli) @ notebookrepo-s3 ---
+[INFO] org.apache.zeppelin:notebookrepo-s3:jar:0.9.0-SNAPSHOT
+[INFO] +- com.amazonaws:aws-java-sdk-s3:jar:1.11.736:compile
+[INFO] |  +- com.amazonaws:aws-java-sdk-kms:jar:1.11.736:compile
+[INFO] |  +- com.amazonaws:aws-java-sdk-core:jar:1.11.736:compile
+[INFO] |  |  +- software.amazon.ion:ion-java:jar:1.0.2:compile
+[INFO] |  |  +- com.fasterxml.jackson.core:jackson-databind:jar:2.6.7.3:compile
+[INFO] |  |  |  +- com.fasterxml.jackson.core:jackson-annotations:jar:2.6.0:compile
+[INFO] |  |  |  \- com.fasterxml.jackson.core:jackson-core:jar:2.6.7:compile
+[INFO] |  |  \- com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:jar:2.6.7:compile
+[INFO] |  \- com.amazonaws:jmespath-java:jar:1.11.736:compile
+[INFO] +- org.gaul:s3proxy:jar:1.6.1:test
+[INFO] |  +- args4j:args4j:jar:2.33:test
+[INFO] |  +- ch.qos.logback:logback-classic:jar:1.2.3:test
+[INFO] |  |  \- ch.qos.logback:logback-core:jar:1.2.3:test
+[INFO] |  +- com.fasterxml.jackson.dataformat:jackson-dataformat-xml:jar:2.9.4:test
+[INFO] |  |  +- com.fasterxml.jackson.module:jackson-module-jaxb-annotations:jar:2.9.4:test
+[INFO] |  |  +- org.codehaus.woodstox:stax2-api:jar:3.1.4:test
+[INFO] |  |  \- com.fasterxml.woodstox:woodstox-core:jar:5.0.3:test
+[INFO] |  +- commons-fileupload:commons-fileupload:jar:1.3.3:test
+[INFO] |  +- org.apache.jclouds:jclouds-allblobstore:jar:2.1.2:test
+[INFO] |  |  +- org.apache.jclouds.api:s3:jar:2.1.2:test
+[INFO] |  |  |  +- com.jamesmurty.utils:java-xmlbuilder:jar:1.1:test
+[INFO] |  |  |  |  \- net.iharder:base64:jar:2.3.8:test
+[INFO] |  |  |  \- org.apache.jclouds.api:sts:jar:2.1.2:test
+[INFO] |  |  +- org.apache.jclouds.provider:aws-s3:jar:2.1.2:test
+[INFO] |  |  +- org.apache.jclouds.provider:azureblob:jar:2.1.2:test
+[INFO] |  |  +- org.apache.jclouds.api:atmos:jar:2.1.2:test
+[INFO] |  |  +- org.apache.jclouds.provider:b2:jar:2.1.2:test
+[INFO] |  |  +- org.apache.jclouds.provider:google-cloud-storage:jar:2.1.2:test
+[INFO] |  |  |  \- org.apache.jclouds.common:googlecloud:jar:2.1.2:test
+[INFO] |  |  |     \- org.apache.jclouds.api:oauth:jar:2.1.2:test
+[INFO] |  |  +- org.apache.jclouds.api:openstack-swift:jar:2.1.2:test
+[INFO] |  |  |  \- org.apache.jclouds.api:openstack-keystone:jar:2.1.2:test
+[INFO] |  |  |     \- com.google.inject.extensions:guice-multibindings:jar:3.0:test
+[INFO] |  |  +- org.apache.jclouds.provider:rackspace-cloudfiles-us:jar:2.1.2:test
+[INFO] |  |  |  +- org.apache.jclouds.api:rackspace-cloudfiles:jar:2.1.2:test
+[INFO] |  |  |  \- org.apache.jclouds.api:rackspace-cloudidentity:jar:2.1.2:test
+[INFO] |  |  \- org.apache.jclouds.provider:rackspace-cloudfiles-uk:jar:2.1.2:test
+[INFO] |  +- org.apache.jclouds.api:filesystem:jar:2.1.2:test
+[INFO] |  |  \- org.apache.jclouds:jclouds-blobstore:jar:2.1.2:test
+[INFO] |  +- org.apache.jclouds.driver:jclouds-slf4j:jar:2.1.2:test
+[INFO] |  |  \- org.apache.jclouds:jclouds-core:jar:2.1.2:test
+[INFO] |  |     +- javax.ws.rs:javax.ws.rs-api:jar:2.0.1:test
+[INFO] |  |     +- com.google.inject.extensions:guice-assistedinject:jar:3.0:test
+[INFO] |  |     +- com.google.inject:guice:jar:3.0:test
+[INFO] |  |     |  \- aopalliance:aopalliance:jar:1.0:test
+[INFO] |  |     +- javax.inject:javax.inject:jar:1:provided
+[INFO] |  |     \- javax.annotation:jsr250-api:jar:1.0:provided
+[INFO] |  +- org.eclipse.jetty:jetty-servlet:jar:9.2.24.v20180105:test
+[INFO] |  |  \- org.eclipse.jetty:jetty-security:jar:9.2.24.v20180105:test
+[INFO] |  |     \- org.eclipse.jetty:jetty-server:jar:9.2.24.v20180105:test
+[INFO] |  |        \- javax.servlet:javax.servlet-api:jar:3.1.0:test
+[INFO] |  \- org.slf4j:slf4j-api:jar:1.7.30:provided
+[INFO] +- org.apache.zeppelin:zeppelin-zengine:jar:0.9.0-SNAPSHOT:provided
+[INFO] |  +- org.apache.zeppelin:zeppelin-common:jar:0.9.0-SNAPSHOT:provided
+[INFO] |  +- org.apache.zeppelin:zeppelin-interpreter:jar:0.9.0-SNAPSHOT:provided
+[INFO] |  |  +- io.atomix:atomix:jar:3.0.0-rc4:provided
+[INFO] |  |  |  +- io.atomix:atomix-cluster:jar:3.0.0-rc4:provided
+[INFO] |  |  |  |  +- io.netty:netty-transport:jar:4.1.27.Final:provided
+[INFO] |  |  |  |  |  +- io.netty:netty-buffer:jar:4.1.27.Final:provided
+[INFO] |  |  |  |  |  \- io.netty:netty-resolver:jar:4.1.27.Final:provided
+[INFO] |  |  |  |  +- io.netty:netty-codec:jar:4.1.27.Final:provided
+[INFO] |  |  |  |  +- io.netty:netty-handler:jar:4.1.27.Final:provided
+[INFO] |  |  |  |  \- io.netty:netty-transport-native-epoll:jar:linux-x86_64:4.1.27.Final:provided
+[INFO] |  |  |  |     +- io.netty:netty-common:jar:4.1.27.Final:provided
+[INFO] |  |  |  |     \- io.netty:netty-transport-native-unix-common:jar:4.1.27.Final:provided
+[INFO] |  |  |  +- io.atomix:atomix-primitive:jar:3.0.0-rc4:provided
+[INFO] |  |  |  |  \- io.atomix:atomix-storage:jar:3.0.0-rc4:provided
+[INFO] |  |  |  +- io.atomix:atomix-utils:jar:3.0.0-rc4:provided
+[INFO] |  |  |  |  +- com.google.guava:guava:jar:22.0:provided
+[INFO] |  |  |  |  |  +- com.google.code.findbugs:jsr305:jar:1.3.9:provided
+[INFO] |  |  |  |  |  +- com.google.errorprone:error_prone_annotations:jar:2.0.18:provided
+[INFO] |  |  |  |  |  +- com.google.j2objc:j2objc-annotations:jar:1.1:provided
+[INFO] |  |  |  |  |  \- org.codehaus.mojo:animal-sniffer-annotations:jar:1.14:provided
+[INFO] |  |  |  |  +- org.apache.commons:commons-math3:jar:3.6.1:provided
+[INFO] |  |  |  |  +- com.esotericsoftware:kryo:jar:4.0.2:provided
+[INFO] |  |  |  |  |  +- com.esotericsoftware:reflectasm:jar:1.11.3:provided
+[INFO] |  |  |  |  |  |  \- org.ow2.asm:asm:jar:5.0.4:provided
+[INFO] |  |  |  |  |  +- com.esotericsoftware:minlog:jar:1.3.0:provided
+[INFO] |  |  |  |  |  \- org.objenesis:objenesis:jar:2.5.1:provided
+[INFO] |  |  |  |  +- com.typesafe:config:jar:1.3.2:provided
+[INFO] |  |  |  |  \- io.github.lukehutch:fast-classpath-scanner:jar:2.21:provided
+[INFO] |  |  |  \- org.hamcrest:hamcrest-all:jar:1.3:provided
+[INFO] |  |  +- io.atomix:atomix-raft:jar:3.0.0-rc4:provided
+[INFO] |  |  +- io.atomix:atomix-primary-backup:jar:3.0.0-rc4:provided
+[INFO] |  |  +- org.apache.thrift:libthrift:jar:0.13.0:provided
+[INFO] |  |  +- commons-configuration:commons-configuration:jar:1.9:provided
+[INFO] |  |  |  \- commons-lang:commons-lang:jar:2.6:provided
+[INFO] |  |  +- org.apache.commons:commons-exec:jar:1.3:provided
+[INFO] |  |  +- org.apache.commons:commons-pool2:jar:2.3:provided
+[INFO] |  |  +- org.slf4j:slf4j-log4j12:jar:1.7.30:provided
+[INFO] |  |  |  \- log4j:log4j:jar:1.2.17:provided
+[INFO] |  |  +- org.slf4j:jcl-over-slf4j:jar:1.7.30:provided
+[INFO] |  |  +- org.apache.maven:maven-plugin-api:jar:3.6.3:provided
+[INFO] |  |  |  +- org.apache.maven:maven-model:jar:3.6.3:provided
+[INFO] |  |  |  +- org.apache.maven:maven-artifact:jar:3.6.3:provided
+[INFO] |  |  |  +- org.codehaus.plexus:plexus-utils:jar:3.2.1:provided
+[INFO] |  |  |  \- org.codehaus.plexus:plexus-classworlds:jar:2.6.0:provided
+[INFO] |  |  +- org.eclipse.sisu:org.eclipse.sisu.plexus:jar:0.3.4:provided
+[INFO] |  |  |  +- javax.enterprise:cdi-api:jar:1.0:provided
+[INFO] |  |  |  +- org.eclipse.sisu:org.eclipse.sisu.inject:jar:0.3.4:provided
+[INFO] |  |  |  \- org.codehaus.plexus:plexus-component-annotations:jar:1.5.5:provided
+[INFO] |  |  +- org.apache.maven:maven-resolver-provider:jar:3.6.3:provided
+[INFO] |  |  |  +- org.apache.maven:maven-model-builder:jar:3.6.3:provided
+[INFO] |  |  |  |  +- org.codehaus.plexus:plexus-interpolation:jar:1.25:provided
+[INFO] |  |  |  |  \- org.apache.maven:maven-builder-support:jar:3.6.3:provided
+[INFO] |  |  |  +- org.apache.maven:maven-repository-metadata:jar:3.6.3:provided
+[INFO] |  |  |  +- org.apache.maven.resolver:maven-resolver-api:jar:1.4.1:provided
+[INFO] |  |  |  +- org.apache.maven.resolver:maven-resolver-spi:jar:1.4.1:provided
+[INFO] |  |  |  +- org.apache.maven.resolver:maven-resolver-util:jar:1.4.1:provided
+[INFO] |  |  |  \- org.apache.maven.resolver:maven-resolver-impl:jar:1.4.1:provided
+[INFO] |  |  +- org.apache.maven.resolver:maven-resolver-connector-basic:jar:1.4.1:provided
+[INFO] |  |  +- org.apache.maven.resolver:maven-resolver-transport-file:jar:1.4.1:provided
+[INFO] |  |  +- org.apache.maven.resolver:maven-resolver-transport-http:jar:1.4.1:provided
+[INFO] |  |  \- jline:jline:jar:2.14.3:provided
+[INFO] |  +- org.apache.zeppelin:zeppelin-jupyter:jar:0.9.0-SNAPSHOT:provided
+[INFO] |  |  +- org.danilopianini:gson-extras:jar:0.2.2:provided
+[INFO] |  |  \- org.apache.zeppelin:zeppelin-markdown:jar:0.9.0-SNAPSHOT:provided
+[INFO] |  |     +- org.commonjava.googlecode.markdown4j:markdown4j:jar:2.2-cj-1.0:provided
+[INFO] |  |     +- org.pegdown:pegdown:jar:1.6.0:provided
+[INFO] |  |     |  \- org.parboiled:parboiled-java:jar:1.1.7:provided
+[INFO] |  |     |     +- org.parboiled:parboiled-core:jar:1.1.7:provided
+[INFO] |  |     |     +- org.ow2.asm:asm-tree:jar:5.0.3:provided
+[INFO] |  |     |     +- org.ow2.asm:asm-analysis:jar:5.0.3:provided
+[INFO] |  |     |     \- org.ow2.asm:asm-util:jar:5.0.3:provided
+[INFO] |  |     \- com.vladsch.flexmark:flexmark-all:jar:0.50.40:provided
+[INFO] |  |        +- com.vladsch.flexmark:flexmark:jar:0.50.40:provided
+[INFO] |  |        +- com.vladsch.flexmark:flexmark-ext-abbreviation:jar:0.50.40:provided
+[INFO] |  |        +- com.vladsch.flexmark:flexmark-ext-admonition:jar:0.50.40:provided
+[INFO] |  |        +- com.vladsch.flexmark:flexmark-ext-anchorlink:jar:0.50.40:provided
+[INFO] |  |        +- com.vladsch.flexmark:flexmark-ext-aside:jar:0.50.40:provided
+[INFO] |  |        +- com.vladsch.flexmark:flexmark-ext-attributes:jar:0.50.40:provided
+[INFO] |  |        +- com.vladsch.flexmark:flexmark-ext-autolink:jar:0.50.40:provided
+[INFO] |  |        |  \- org.nibor.autolink:autolink:jar:0.6.0:provided
+[INFO] |  |        +- com.vladsch.flexmark:flexmark-ext-definition:jar:0.50.40:provided
+[INFO] |  |        +- com.vladsch.flexmark:flexmark-ext-emoji:jar:0.50.40:provided
+[INFO] |  |        +- com.vladsch.flexmark:flexmark-ext-enumerated-reference:jar:0.50.40:provided
+[INFO] |  |        +- com.vladsch.flexmark:flexmark-ext-escaped-character:jar:0.50.40:provided
+[INFO] |  |        +- com.vladsch.flexmark:flexmark-ext-footnotes:jar:0.50.40:provided
+[INFO] |  |        +- com.vladsch.flexmark:flexmark-ext-gfm-issues:jar:0.50.40:provided
+[INFO] |  |        +- com.vladsch.flexmark:flexmark-ext-gfm-strikethrough:jar:0.50.40:provided
+[INFO] |  |        +- com.vladsch.flexmark:flexmark-ext-gfm-tables:jar:0.50.40:provided
+[INFO] |  |        +- com.vladsch.flexmark:flexmark-ext-gfm-tasklist:jar:0.50.40:provided
+[INFO] |  |        +- com.vladsch.flexmark:flexmark-ext-gfm-users:jar:0.50.40:provided
+[INFO] |  |        +- com.vladsch.flexmark:flexmark-ext-gitlab:jar:0.50.40:provided
+[INFO] |  |        +- com.vladsch.flexmark:flexmark-ext-jekyll-front-matter:jar:0.50.40:provided
+[INFO] |  |        +- com.vladsch.flexmark:flexmark-ext-jekyll-tag:jar:0.50.40:provided
+[INFO] |  |        +- com.vladsch.flexmark:flexmark-ext-media-tags:jar:0.50.40:provided
+[INFO] |  |        +- com.vladsch.flexmark:flexmark-ext-macros:jar:0.50.40:provided
+[INFO] |  |        +- com.vladsch.flexmark:flexmark-ext-ins:jar:0.50.40:provided
+[INFO] |  |        +- com.vladsch.flexmark:flexmark-ext-xwiki-macros:jar:0.50.40:provided
+[INFO] |  |        +- com.vladsch.flexmark:flexmark-ext-superscript:jar:0.50.40:provided
+[INFO] |  |        +- com.vladsch.flexmark:flexmark-ext-tables:jar:0.50.40:provided
+[INFO] |  |        +- com.vladsch.flexmark:flexmark-ext-toc:jar:0.50.40:provided
+[INFO] |  |        +- com.vladsch.flexmark:flexmark-ext-typographic:jar:0.50.40:provided
+[INFO] |  |        +- com.vladsch.flexmark:flexmark-ext-wikilink:jar:0.50.40:provided
+[INFO] |  |        +- com.vladsch.flexmark:flexmark-ext-yaml-front-matter:jar:0.50.40:provided
+[INFO] |  |        +- com.vladsch.flexmark:flexmark-ext-youtube-embedded:jar:0.50.40:provided
+[INFO] |  |        +- com.vladsch.flexmark:flexmark-formatter:jar:0.50.40:provided
+[INFO] |  |        +- com.vladsch.flexmark:flexmark-html-parser:jar:0.50.40:provided
+[INFO] |  |        +- com.vladsch.flexmark:flexmark-html2md-converter:jar:0.50.40:provided
+[INFO] |  |        +- com.vladsch.flexmark:flexmark-jira-converter:jar:0.50.40:provided
+[INFO] |  |        +- com.vladsch.flexmark:flexmark-pdf-converter:jar:0.50.40:provided
+[INFO] |  |        |  +- com.openhtmltopdf:openhtmltopdf-core:jar:1.0.0:provided
+[INFO] |  |        |  +- com.openhtmltopdf:openhtmltopdf-pdfbox:jar:1.0.0:provided
+[INFO] |  |        |  |  +- org.apache.pdfbox:pdfbox:jar:2.0.16:provided
+[INFO] |  |        |  |  |  \- org.apache.pdfbox:fontbox:jar:2.0.16:provided
+[INFO] |  |        |  |  +- org.apache.pdfbox:xmpbox:jar:2.0.16:provided
+[INFO] |  |        |  |  \- de.rototor.pdfbox:graphics2d:jar:0.24:provided
+[INFO] |  |        |  +- com.openhtmltopdf:openhtmltopdf-rtl-support:jar:1.0.0:provided
+[INFO] |  |        |  |  \- com.ibm.icu:icu4j:jar:59.1:provided
+[INFO] |  |        |  \- com.openhtmltopdf:openhtmltopdf-jsoup-dom-converter:jar:1.0.0:provided
+[INFO] |  |        +- com.vladsch.flexmark:flexmark-profile-pegdown:jar:0.50.40:provided
+[INFO] |  |        +- com.vladsch.flexmark:flexmark-util:jar:0.50.40:provided
+[INFO] |  |        \- com.vladsch.flexmark:flexmark-youtrack-converter:jar:0.50.40:provided
+[INFO] |  +- commons-io:commons-io:jar:2.6:provided
+[INFO] |  +- commons-cli:commons-cli:jar:1.4:provided
+[INFO] |  +- joda-time:joda-time:jar:2.9.9:compile
+[INFO] |  +- org.bouncycastle:bcpkix-jdk15on:jar:1.60:provided
+[INFO] |  |  \- org.bouncycastle:bcprov-jdk15on:jar:1.60:provided
+[INFO] |  +- org.apache.jackrabbit:jackrabbit-webdav:jar:1.5.2:provided
+[INFO] |  |  \- org.apache.jackrabbit:jackrabbit-jcr-commons:jar:1.5.2:provided
+[INFO] |  +- org.apache.httpcomponents:httpclient:jar:4.5.1:compile
+[INFO] |  |  +- org.apache.httpcomponents:httpcore:jar:4.4.1:compile
+[INFO] |  |  \- commons-codec:commons-codec:jar:1.14:compile
+[INFO] |  +- org.apache.httpcomponents:httpasyncclient:jar:4.0.2:provided
+[INFO] |  |  \- org.apache.httpcomponents:httpcore-nio:jar:4.3.2:provided
+[INFO] |  +- org.eclipse.jetty:jetty-client:jar:9.4.31.v20200723:provided
+[INFO] |  |  +- org.eclipse.jetty:jetty-http:jar:9.4.31.v20200723:provided
+[INFO] |  |  \- org.eclipse.jetty:jetty-io:jar:9.4.31.v20200723:provided
+[INFO] |  +- org.eclipse.jetty.websocket:websocket-client:jar:9.4.31.v20200723:provided
+[INFO] |  |  +- org.eclipse.jetty:jetty-xml:jar:9.4.31.v20200723:provided
+[INFO] |  |  +- org.eclipse.jetty:jetty-util:jar:9.4.31.v20200723:provided
+[INFO] |  |  \- org.eclipse.jetty.websocket:websocket-common:jar:9.4.31.v20200723:provided
+[INFO] |  |     \- org.eclipse.jetty.websocket:websocket-api:jar:9.4.31.v20200723:provided
+[INFO] |  +- org.quartz-scheduler:quartz:jar:2.3.2:provided
+[INFO] |  |  +- com.mchange:c3p0:jar:0.9.5.4:provided
+[INFO] |  |  +- com.mchange:mchange-commons-java:jar:0.2.15:provided
+[INFO] |  |  \- com.zaxxer:HikariCP-java7:jar:2.4.13:provided
+[INFO] |  +- com.google.code.gson:gson:jar:2.8.6:provided
+[INFO] |  +- org.apache.lucene:lucene-core:jar:5.3.1:provided
+[INFO] |  +- org.apache.lucene:lucene-analyzers-common:jar:5.3.1:provided
+[INFO] |  +- org.apache.lucene:lucene-queryparser:jar:5.3.1:provided
+[INFO] |  |  +- org.apache.lucene:lucene-queries:jar:5.3.1:provided
+[INFO] |  |  \- org.apache.lucene:lucene-sandbox:jar:5.3.1:provided
+[INFO] |  +- org.apache.lucene:lucene-highlighter:jar:5.3.1:provided
+[INFO] |  |  +- org.apache.lucene:lucene-join:jar:5.3.1:provided
+[INFO] |  |  \- org.apache.lucene:lucene-memory:jar:5.3.1:provided
+[INFO] |  +- com.github.eirslett:frontend-plugin-core:jar:1.3:provided
+[INFO] |  |  +- org.codehaus.jackson:jackson-mapper-asl:jar:1.9.13:provided
+[INFO] |  |  \- org.codehaus.jackson:jackson-core-asl:jar:1.9.13:provided
+[INFO] |  +- org.apache.commons:commons-vfs2:jar:2.2:provided
+[INFO] |  +- org.apache.commons:commons-configuration2:jar:2.2:provided
+[INFO] |  +- org.eclipse.jgit:org.eclipse.jgit:jar:4.5.4.201711221230-r:provided
+[INFO] |  |  +- com.jcraft:jsch:jar:0.1.53:provided
+[INFO] |  |  \- com.googlecode.javaewah:JavaEWAH:jar:0.7.9:provided
+[INFO] |  +- org.codehaus.jettison:jettison:jar:1.4.0:provided
+[INFO] |  +- org.apache.commons:commons-lang3:jar:3.10:provided
+[INFO] |  \- org.apache.commons:commons-compress:jar:1.5:provided
+[INFO] |     \- org.tukaani:xz:jar:1.2:provided
+[INFO] +- org.apache.zeppelin:zeppelin-zengine:jar:tests:0.9.0-SNAPSHOT:test
+[INFO] +- junit:junit:jar:4.12:test
+[INFO] |  \- org.hamcrest:hamcrest-core:jar:1.3:test
+[INFO] \- org.mockito:mockito-all:jar:1.10.19:test
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  7.468 s
+[INFO] Finished at: 2020-10-30T13:48:44+08:00
+[INFO] ------------------------------------------------------------------------
