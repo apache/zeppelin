@@ -75,15 +75,19 @@ public class RecoveryUtils {
                                                                        String interpreterSettingName,
                                                                        InterpreterSettingManager interpreterSettingManager,
                                                                        ZeppelinConfiguration zConf) {
-
+    Map<String, InterpreterClient> clients = new HashMap<>();
     int connectTimeout =
             zConf.getInt(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT);
-    Properties interpreterProperties =  interpreterSettingManager.getByName(interpreterSettingName).getJavaProperties();
+    InterpreterSetting interpreterSetting =  interpreterSettingManager.getByName(interpreterSettingName);
+    if (interpreterSetting == null) {
+      LOGGER.warn("Unable to recover interpreter process of " + interpreterSettingName +
+              ", because there's no such interpreter setting, maybe it is removed");
+      return clients;
+    }
+    Properties interpreterProperties = interpreterSetting.getJavaProperties();
     int connectionPoolSize = Integer.parseInt(interpreterProperties.getProperty(
             ZEPPELIN_INTERPRETER_CONNECTION_POOL_SIZE.getVarName(),
             ZEPPELIN_INTERPRETER_CONNECTION_POOL_SIZE.getIntValue() + ""));
-
-    Map<String, InterpreterClient> clients = new HashMap<>();
 
     if (!StringUtils.isBlank(recoveryData)) {
       for (String line : recoveryData.split(System.lineSeparator())) {
