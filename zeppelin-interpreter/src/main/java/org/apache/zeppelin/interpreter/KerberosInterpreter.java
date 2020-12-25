@@ -146,7 +146,8 @@ public abstract class KerberosInterpreter extends AbstractInterpreter {
             logger.error("runKerberosLogin failed for  max attempts, calling close interpreter.");
             close();
           } else {
-            scheduledExecutorService.submit(this);
+            // wait for 1 second before calling runKerberosLogin() again
+            scheduledExecutorService.schedule(this, 1, TimeUnit.SECONDS);
           }
         }
         return null;

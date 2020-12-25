@@ -182,6 +182,10 @@ public class JDBCInterpreter extends KerberosInterpreter {
 
   @Override
   protected boolean runKerberosLogin() {
+    // Initialize UGI before using
+    Configuration conf = new org.apache.hadoop.conf.Configuration();
+    conf.set("hadoop.security.authentication", KERBEROS.toString());
+    UserGroupInformation.setConfiguration(conf);
     try {
       if (UserGroupInformation.isLoginKeytabBased()) {
         UserGroupInformation.getLoginUser().reloginFromKeytab();
