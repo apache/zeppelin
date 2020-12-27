@@ -136,6 +136,8 @@ public abstract class KerberosInterpreter extends AbstractInterpreter {
           logger.info("Ran runKerberosLogin command successfully.");
           kinitFailCount = 0;
           // schedule another kinit run with a fixed delay.
+          logger.info("Scheduling Kerberos ticket refresh thread with interval " +
+            getKerberosRefreshInterval() + " ms");
           scheduledExecutorService
               .schedule(this, getKerberosRefreshInterval(), TimeUnit.MILLISECONDS);
         } else {
