@@ -60,7 +60,9 @@ RUN echo "$LOG_TAG Install miniconda3 related packages" && \
 ENV PATH /opt/conda/bin:$PATH
 
 RUN echo "$LOG_TAG Install python related packages" && \
-    apt-get -y update && \
+    sudo apt-get -y install software-properties-common && \
+    sudo apt-add-repository universe && \
+    sudo apt-get -y update && \
     apt-get install -y python-dev python-pip && \
     apt-get install -y gfortran && \
     # numerical/algebra packages
