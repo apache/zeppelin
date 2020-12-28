@@ -540,7 +540,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
 
     JDBCInterpreter jdbc = new JDBCInterpreter(properties);
     AuthenticationInfo user1Credential = getUserAuth("user1", null, null, null);
-    AuthenticationInfo user2Credential = getUserAuth("user2", "hive", "user2Id", "user2Pw");
+    AuthenticationInfo user2Credential = getUserAuth("user2", "jdbc.hive", "user2Id", "user2Pw");
     jdbc.open();
 
     // user1 runs default
@@ -574,7 +574,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
             .setAuthenticationInfo(user2Credential)
             .setInterpreterOut(new InterpreterOutput(null))
             .setLocalProperties(localProperties)
-            .setReplName("jdbc")
+            .setReplName("hive")
             .build();
     jdbc.interpret("", context);
 
@@ -591,8 +591,8 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     // user2 %hive  select from default db
     Properties properties = getDBProperty("default", "", "");
     JDBCInterpreter jdbc = new JDBCInterpreter(properties);
-    AuthenticationInfo user1Credential = getUserAuth("user1", "hive", "user1Id", "user1Pw");
-    AuthenticationInfo user2Credential = getUserAuth("user2", "hive", "user2Id", "user2Pw");
+    AuthenticationInfo user1Credential = getUserAuth("user1", "jdbc.hive", "user1Id", "user1Pw");
+    AuthenticationInfo user2Credential = getUserAuth("user2", "jdbc.hive", "user2Id", "user2Pw");
     jdbc.open();
 
     // user1 runs default

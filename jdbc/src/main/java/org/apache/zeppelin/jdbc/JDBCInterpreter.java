@@ -100,6 +100,7 @@ import org.apache.zeppelin.user.UsernamePassword;
 public class JDBCInterpreter extends KerberosInterpreter {
   private static final Logger LOGGER = LoggerFactory.getLogger(JDBCInterpreter.class);
 
+  static final String INTERPRETER_NAME = "jdbc";
   static final String COMMON_KEY = "common";
   static final String MAX_LINE_KEY = "max_count";
   static final int MAX_LINE_DEFAULT = 1000;
@@ -343,10 +344,10 @@ public class JDBCInterpreter extends KerberosInterpreter {
   }
 
   private String getEntityName(String replName, String propertyKey) {
-    if ("jdbc".equals(replName)) {
-      return propertyKey;
+    if (INTERPRETER_NAME.equals(replName)) {
+      return INTERPRETER_NAME + "." + propertyKey;
     } else {
-      return replName;
+      return INTERPRETER_NAME + "." + replName;
     }
   }
 
