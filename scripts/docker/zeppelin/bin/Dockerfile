@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM ubuntu:20.04
+FROM ubuntu:18.04
 MAINTAINER Apache Software Foundation <dev@zeppelin.apache.org>
 
 ENV Z_VERSION="0.9.0"
@@ -59,14 +59,16 @@ RUN echo "$LOG_TAG Install miniconda3 related packages" && \
 
 ENV PATH /opt/conda/bin:$PATH
 
+RUN DEBIAN_FRONTEND="noninteractive" apt-get -y install tzdata
+
 RUN echo "$LOG_TAG Install python related packages" && \
-    sudo apt-get -y install software-properties-common && \
-    sudo apt-add-repository universe && \
-    sudo apt-get -y update && \
+    apt-get -y install software-properties-common && \
+    apt-add-repository universe && \
+    apt-get -y update && \
     apt-get install -y python-dev python-pip && \
     apt-get install -y gfortran && \
     # numerical/algebra packages
-    apt-get install -y libblas-dev libatlas-dev liblapack-dev && \
+    apt-get install -y libblas-dev libatlas-base-dev  liblapack-dev && \
     # font, image
     apt-get install -y libpng-dev libfreetype6-dev libxft-dev && \
     # for tkinter
@@ -82,8 +84,8 @@ RUN echo "$LOG_TAG Install python related packages" && \
 RUN echo "$LOG_TAG Install R related packages" && \
     echo "PATH: $PATH" && \
     ls /opt/conda/bin && \
-    echo "deb http://cran.rstudio.com/bin/linux/ubuntu xenial/" | tee -a /etc/apt/sources.list && \
-    apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 51716619E084DAB9 && \
+    apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E298A3A825C0D65DFD57CBB651716619E084DAB9 && \
+    add-apt-repository 'deb https://cloud.r-project.org/bin/linux/ubuntu bionic-cran35/' && \
     apt-get -y update && \
     apt-get -y --allow-unauthenticated install r-base r-base-dev && \
     R -e "install.packages('evaluate', repos = 'https://cloud.r-project.org')" && \
@@ -92,9 +94,11 @@ RUN echo "$LOG_TAG Install R related packages" && \
     R -e "install.packages('googleVis', repos='http://cran.us.r-project.org')" && \
     R -e "install.packages('data.table', repos='http://cran.us.r-project.org')" && \
     R -e "install.packages('IRkernel', repos = 'https://cloud.r-project.org');IRkernel::installspec()" && \
-    R -e "install.packages('shiny', repos = 'https://cloud.r-project.org')" && \
+    R -e "install.packages('shiny', repos = 'https://cloud.r-project.org')"
+
+RUN echo "$LOG_TAG Install R related packages2" && \
     # for devtools, Rcpp
-    apt-get -y install libcurl4-gnutls-dev libssl-dev && \
+    apt-get -y install libcurl4-openssl-dev libssl-dev && \
     R -e "install.packages('devtools', repos='http://cran.us.r-project.org')" && \
     R -e "install.packages('Rcpp', repos='http://cran.us.r-project.org')" && \
     Rscript -e "library('devtools'); library('Rcpp'); install_github('ramnathv/rCharts')"
