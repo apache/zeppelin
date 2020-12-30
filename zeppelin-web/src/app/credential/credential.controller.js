@@ -96,7 +96,7 @@ function CredentialController($scope, $rootScope, $http, baseUrlSrv, ngToast) {
       .success(function(data, status, headers, config) {
         for (let setting = 0; setting < data.body.length; setting++) {
           $scope.availableInterpreters.push(
-            data.body[setting].group + '.' + data.body[setting].name);
+            data.body[setting].name);
         }
         angular.element('#entityname').autocomplete({
           source: $scope.availableInterpreters,
