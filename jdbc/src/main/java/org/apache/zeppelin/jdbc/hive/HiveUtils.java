@@ -125,6 +125,9 @@ public class HiveUtils {
               break;
             }
           }
+        } catch (InterruptedException e) {
+          LOGGER.warn("Hive monitor thread is interrupted", e);
+          break;
         } catch (Exception e) {
           LOGGER.warn("Fail to monitor hive statement", e);
           break;
