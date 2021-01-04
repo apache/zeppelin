@@ -298,7 +298,7 @@ public class KotlinInterpreterTest {
   private static InterpreterContext getInterpreterContext() {
     output = "";
     InterpreterContext context = InterpreterContext.builder()
-        .setInterpreterOut(new InterpreterOutput(null))
+        .setInterpreterOut(new InterpreterOutput())
         .build();
     context.out = new InterpreterOutput(
         new InterpreterOutputListener() {

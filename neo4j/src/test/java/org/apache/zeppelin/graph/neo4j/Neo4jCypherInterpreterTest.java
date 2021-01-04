@@ -92,7 +92,7 @@ public class Neo4jCypherInterpreterTest {
     p.setProperty(Neo4jCypherInterpreter.NEO4J_MULTI_STATEMENT, "false");
     interpreter = new Neo4jCypherInterpreter(p);
     context = InterpreterContext.builder()
-        .setInterpreterOut(new InterpreterOutput(null))
+        .setInterpreterOut(new InterpreterOutput())
         .build();
   }
 
@@ -334,7 +334,7 @@ public class Neo4jCypherInterpreterTest {
     p.setProperty(Neo4jCypherInterpreter.NEO4J_MULTI_STATEMENT, "true");
     Neo4jCypherInterpreter multiLineInterpreter = new Neo4jCypherInterpreter(p);
     context = InterpreterContext.builder()
-            .setInterpreterOut(new InterpreterOutput(null))
+            .setInterpreterOut(new InterpreterOutput())
             .build();
     InterpreterResult result = multiLineInterpreter.interpret("CREATE (n:Node{name: ';'});" +
             "\nRETURN 1 AS val;", context);

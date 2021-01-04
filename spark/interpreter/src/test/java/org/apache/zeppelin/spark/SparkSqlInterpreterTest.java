@@ -73,7 +73,7 @@ public class SparkSqlInterpreterTest {
         .setParagraphTitle("title")
         .setAngularObjectRegistry(new AngularObjectRegistry(intpGroup.getId(), null))
         .setResourcePool(new LocalResourcePool("id"))
-        .setInterpreterOut(new InterpreterOutput(null))
+        .setInterpreterOut(new InterpreterOutput())
         .setIntpEventClient(mock(RemoteInterpreterEventClient.class))
         .build();
     InterpreterContext.set(context);
@@ -188,7 +188,7 @@ public class SparkSqlInterpreterTest {
             .setParagraphTitle("title")
             .setAngularObjectRegistry(new AngularObjectRegistry(intpGroup.getId(), null))
             .setResourcePool(new LocalResourcePool("id"))
-            .setInterpreterOut(new InterpreterOutput(null))
+            .setInterpreterOut(new InterpreterOutput())
             .setIntpEventClient(mock(RemoteInterpreterEventClient.class))
             .build();
     context.getLocalProperties().put("template", "Total count: <h1>{0}</h1>, Total age: <h1>{1}</h1>");
@@ -224,7 +224,7 @@ public class SparkSqlInterpreterTest {
     if (!sparkInterpreter.getSparkVersion().isSpark1()) {
       assertTrue(context.out.toString(), context.out.toInterpreterResultMessage().get(1).getData().contains("mismatched input"));
     }
-    
+
     // One correct sql + One invalid sql + One valid sql (skipped)
     ret = sqlInterpreter.interpret("select * from gr;invalid_sql; select count(1) from gr", context);
     assertEquals(InterpreterResult.Code.ERROR, ret.code());

@@ -137,7 +137,7 @@ public class RInterpreterTest {
     InterpreterContext context = InterpreterContext.builder()
             .setNoteId("note_1")
             .setParagraphId("paragraph_1")
-            .setInterpreterOut(new InterpreterOutput(null))
+            .setInterpreterOut(new InterpreterOutput())
             .setLocalProperties(new HashMap<>())
             .build();
     return context;

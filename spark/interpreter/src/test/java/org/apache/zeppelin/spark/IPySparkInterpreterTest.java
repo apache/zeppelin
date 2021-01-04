@@ -272,7 +272,7 @@ public class IPySparkInterpreterTest extends IPythonInterpreterTest {
         .setNoteId("noteId")
         .setParagraphId("paragraphId")
         .setIntpEventClient(mockRemoteEventClient)
-        .setInterpreterOut(new InterpreterOutput(null))
+        .setInterpreterOut(new InterpreterOutput())
         .build();
   }
 }
