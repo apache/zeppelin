@@ -92,7 +92,7 @@ public class ApplicationLoaderTest {
         paragraphId,
         appInstanceId,
         null,
-        new InterpreterOutput(null));
+        new InterpreterOutput());
     return context1;
   }
 }

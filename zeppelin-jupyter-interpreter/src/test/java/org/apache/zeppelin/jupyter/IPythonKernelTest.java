@@ -300,7 +300,7 @@ public class IPythonKernelTest {
     return InterpreterContext.builder()
             .setNoteId("noteId")
             .setParagraphId("paragraphId")
-            .setInterpreterOut(new InterpreterOutput(null))
+            .setInterpreterOut(new InterpreterOutput())
             .setIntpEventClient(mock(RemoteInterpreterEventClient.class))
             .setLocalProperties(localProperties)
             .setResourcePool(resourcePool)

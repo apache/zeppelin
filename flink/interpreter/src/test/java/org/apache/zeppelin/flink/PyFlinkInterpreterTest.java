@@ -133,7 +133,7 @@ public class PyFlinkInterpreterTest extends PythonInterpreterTest {
     InterpreterContext context = InterpreterContext.builder()
             .setNoteId("noteId")
             .setParagraphId("paragraphId")
-            .setInterpreterOut(new InterpreterOutput(null))
+            .setInterpreterOut(new InterpreterOutput())
             .setAngularObjectRegistry(IPyFlinkInterpreterTest.angularObjectRegistry)
             .setIntpEventClient(mock(RemoteInterpreterEventClient.class))
             .build();

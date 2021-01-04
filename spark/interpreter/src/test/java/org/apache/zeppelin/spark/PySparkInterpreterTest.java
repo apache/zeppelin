@@ -62,7 +62,7 @@ public class PySparkInterpreterTest extends PythonInterpreterTest {
     intpGroup.put("note", new LinkedList<Interpreter>());
 
     InterpreterContext context = InterpreterContext.builder()
-        .setInterpreterOut(new InterpreterOutput(null))
+        .setInterpreterOut(new InterpreterOutput())
         .setIntpEventClient(mockRemoteEventClient)
         .build();
     InterpreterContext.set(context);

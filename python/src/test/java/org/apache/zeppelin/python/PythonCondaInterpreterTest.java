@@ -134,7 +134,7 @@ public class PythonCondaInterpreterTest {
 
   private InterpreterContext getInterpreterContext() {
     return InterpreterContext.builder()
-        .setInterpreterOut(new InterpreterOutput(null))
+        .setInterpreterOut(new InterpreterOutput())
         .build();
   }
 

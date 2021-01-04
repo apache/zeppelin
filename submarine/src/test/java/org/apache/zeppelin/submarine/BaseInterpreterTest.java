@@ -74,7 +74,7 @@ public abstract class BaseInterpreterTest {
         .setParagraphId("paragraphId")
         .setAuthenticationInfo(authenticationInfo)
         .setAngularObjectRegistry(registry)
-        .setInterpreterOut(new InterpreterOutput(null))
+        .setInterpreterOut(new InterpreterOutput())
         .setIntpEventClient(mock(RemoteInterpreterEventClient.class))
         .build();
   }

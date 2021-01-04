@@ -103,7 +103,7 @@ public class KotlinSparkInterpreterTest {
         .setParagraphTitle("title")
         .setAngularObjectRegistry(new AngularObjectRegistry(intpGroup.getId(), null))
         .setResourcePool(new LocalResourcePool("id"))
-        .setInterpreterOut(new InterpreterOutput(null))
+        .setInterpreterOut(new InterpreterOutput())
         .setIntpEventClient(mock(RemoteInterpreterEventClient.class))
         .build();
     context.out = new InterpreterOutput(

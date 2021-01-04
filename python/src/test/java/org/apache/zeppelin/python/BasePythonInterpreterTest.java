@@ -403,7 +403,7 @@ public abstract class BasePythonInterpreterTest extends ConcurrentTestCase {
     return InterpreterContext.builder()
         .setNoteId("noteId")
         .setParagraphId("paragraphId")
-        .setInterpreterOut(new InterpreterOutput(null))
+        .setInterpreterOut(new InterpreterOutput())
         .setIntpEventClient(mock(RemoteInterpreterEventClient.class))
         .build();
   }
