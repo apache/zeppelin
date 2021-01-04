@@ -106,7 +106,7 @@ public abstract class KerberosInterpreter extends AbstractInterpreter {
 
   private Long getTimeAsMs(String time) {
     if (time == null) {
-      LOGGER.error("Cannot convert to time value.", time);
+      LOGGER.error("Cannot convert null to a time value. Defaulting to 1d");
       time = "1d";
     }
 
@@ -136,13 +136,13 @@ public abstract class KerberosInterpreter extends AbstractInterpreter {
           LOGGER.info("Ran runKerberosLogin command successfully.");
           kinitFailCount = 0;
           // schedule another kinit run with a fixed delay.
-          LOGGER.info("Scheduling Kerberos ticket refresh thread with interval " +
-            getKerberosRefreshInterval() + " ms");
+          LOGGER.info("Scheduling Kerberos ticket refresh thread with interval {} ms",
+            getKerberosRefreshInterval());
           scheduledExecutorService
               .schedule(this, getKerberosRefreshInterval(), TimeUnit.MILLISECONDS);
         } else {
           kinitFailCount++;
-          LOGGER.info("runKerberosLogin failed for " + kinitFailCount + " time(s).");
+          LOGGER.info("runKerberosLogin failed for {} time(s).", kinitFailCount);
           // schedule another retry at once or close the interpreter if too many times kinit fails
           if (kinitFailCount >= kinitFailThreshold()) {
             LOGGER.error("runKerberosLogin failed for  max attempts, calling close interpreter.");
