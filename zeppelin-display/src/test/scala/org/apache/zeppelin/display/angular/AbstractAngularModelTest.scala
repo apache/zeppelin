@@ -32,7 +32,7 @@ with BeforeAndAfter with BeforeAndAfterEach with Eventually with Matchers {
     val context = InterpreterContext.builder
       .setNoteId("noteId")
       .setAngularObjectRegistry(new AngularObjectRegistry(intpGroup.getId(), null))
-      .setInterpreterOut(new InterpreterOutput(null))
+      .setInterpreterOut(new InterpreterOutput())
       .build()
 
     InterpreterContext.set(context)

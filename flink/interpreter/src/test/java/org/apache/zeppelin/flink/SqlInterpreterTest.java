@@ -567,10 +567,9 @@ public abstract class SqlInterpreterTest {
   protected InterpreterContext getInterpreterContext() {
     InterpreterContext context = InterpreterContext.builder()
             .setParagraphId("paragraphId")
-            .setInterpreterOut(new InterpreterOutput(null))
+            .setInterpreterOut(new InterpreterOutput())
             .setAngularObjectRegistry(angularObjectRegistry)
             .setIntpEventClient(mock(RemoteInterpreterEventClient.class))
-            .setInterpreterOut(new InterpreterOutput(null))
             .build();
     InterpreterContext.set(context);
     return context;
