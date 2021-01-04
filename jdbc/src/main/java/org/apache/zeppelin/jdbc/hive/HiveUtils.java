@@ -76,8 +76,8 @@ public class HiveUtils {
     Thread thread = new Thread(() -> {
       boolean jobLaunched = false;
       long jobLastActiveTime = System.currentTimeMillis();
-      while (hiveStmt.hasMoreLogs() && !Thread.interrupted()) {
-        try {
+      try {
+        while (hiveStmt.hasMoreLogs() && !Thread.interrupted()) {
           Thread.sleep(queryInterval);
           List<String> logs = hiveStmt.getQueryLog();
           String logsOutput = StringUtils.join(logs, System.lineSeparator());
@@ -125,25 +125,14 @@ public class HiveUtils {
               break;
             }
           }
-        } catch (InterruptedException e) {
-          LOGGER.warn("Hive monitor thread is interrupted", e);
-          break;
-        } catch (Exception e) {
-          LOGGER.warn("Fail to monitor hive statement", e);
-          break;
-        } finally {
-          try {
-            // Sometimes, maybe hiveStmt was closed unnormally, hiveStmt.hasMoreLogs() will be true,
-            // this loop cannot jump out, and exceptions thrown.
-            // Add the below codes in case.
-            if (hiveStmt.isClosed()){
-              break;
-            }
-          } catch (SQLException e) {
-            LOGGER.warn("hiveStmt closed unnormally", e);
-          }
         }
+      } catch (InterruptedException e) {
+        LOGGER.warn("Hive monitor thread is interrupted", e);
+        Thread.currentThread().interrupt();
+      } catch (Exception e) {
+        LOGGER.warn("Fail to monitor hive statement", e);
       }
+
       LOGGER.info("HiveMonitor-Thread is finished");
     });
     thread.setName("HiveMonitor-Thread");
