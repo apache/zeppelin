@@ -367,12 +367,12 @@ public class NoteManager {
   }
 
   private String getFolderName(String notePath) {
-    int pos = notePath.lastIndexOf("/");
+    int pos = notePath.lastIndexOf('/');
     return notePath.substring(0, pos);
   }
 
   private String getNoteName(String notePath) {
-    int pos = notePath.lastIndexOf("/");
+    int pos = notePath.lastIndexOf('/');
     return notePath.substring(pos + 1);
   }
 

@@ -42,7 +42,6 @@ import org.junit.runners.MethodSorters;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -136,7 +135,7 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
       assertEquals("OK", resp.get("status"));
       post.close();
       p.waitUntilFinished();
-      assertNotEquals(p.getStatus(), Job.Status.FINISHED);
+      assertNotEquals(Job.Status.FINISHED, p.getStatus());
     } finally {
       // cleanup
       if (null != note1) {
@@ -167,7 +166,7 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
           new TypeToken<Map<String, Object>>() {}.getType());
       assertEquals("OK", resp.get("status"));
       post.close();
-      assertNotEquals(p.getStatus(), Job.Status.READY);
+      assertNotEquals(Job.Status.READY, p.getStatus());
 
       // Check if the paragraph is emptied
       assertEquals(title, p.getTitle());
@@ -189,7 +188,7 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
       assertTrue(interpreterResults.get(0).toString(),
               interpreterResults.get(0).get("data").toString().contains("invalid_cmd: command not found"));
       post.close();
-      assertNotEquals(p.getStatus(), Job.Status.READY);
+      assertNotEquals(Job.Status.READY, p.getStatus());
 
       // Check if the paragraph is emptied
       assertEquals(title, p.getTitle());
