@@ -151,6 +151,7 @@ public class Note implements JsonSerializable {
   /********************************** transient fields ******************************************/
   private transient boolean loaded = false;
   private transient boolean saved = false;
+  private transient boolean removed = false;
   private transient InterpreterFactory interpreterFactory;
   private transient InterpreterSettingManager interpreterSettingManager;
   private transient ParagraphJobListener paragraphJobListener;
@@ -188,7 +189,7 @@ public class Note implements JsonSerializable {
   }
 
   public String getParentPath() {
-    int pos = path.lastIndexOf("/");
+    int pos = path.lastIndexOf('/');
     if (pos == 0) {
       return "/";
     } else {
@@ -197,7 +198,7 @@ public class Note implements JsonSerializable {
   }
 
   private String getName(String path) {
-    int pos = path.lastIndexOf("/");
+    int pos = path.lastIndexOf('/');
     return path.substring(pos + 1);
   }
 
@@ -329,7 +330,7 @@ public class Note implements JsonSerializable {
         this.path = "/" + name;
       }
     } else {
-      int pos = this.path.lastIndexOf("/");
+      int pos = this.path.lastIndexOf('/');
       this.path = this.path.substring(0, pos + 1) + this.name;
     }
   }
@@ -1227,5 +1228,13 @@ public class Note implements JsonSerializable {
 
   public boolean isSaved() {
     return saved;
+  }
+
+  public void setRemoved(boolean removed) {
+    this.removed = removed;
+  }
+
+  public boolean isRemoved() {
+    return removed;
   }
 }
