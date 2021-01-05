@@ -97,7 +97,7 @@ jobs:
       - name: install environment
         run: |
           mvn clean install -DskipTests -DskipRat -pl ${INTERPRETERS} -Pspark-2.3 -Phadoop2 -Phelium-dev -Pexamples -Pintegration -Pspark-scala-2.11 -B
-          mvn clean package -T 2C -pl zeppelin-plugins -amd -B
+          mvn clean package -pl zeppelin-plugins -amd -B
           ./testing/downloadSpark.sh "2.3.2" "2.6"
       - name: run tests
         run: xvfb-run --auto-servernum --server-args="-screen 0 1600x1024x16" mvn verify -DskipRat -Pspark-2.3 -Phadoop2 -Phelium-dev -Pexamples -Pintegration -Pspark-scala-2.11 -B -pl zeppelin-integration -DfailIfNoTests=false
