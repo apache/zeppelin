@@ -151,6 +151,7 @@ public class Note implements JsonSerializable {
   /********************************** transient fields ******************************************/
   private transient boolean loaded = false;
   private transient boolean saved = false;
+  private transient boolean removed = false;
   private transient InterpreterFactory interpreterFactory;
   private transient InterpreterSettingManager interpreterSettingManager;
   private transient ParagraphJobListener paragraphJobListener;
@@ -1227,5 +1228,13 @@ public class Note implements JsonSerializable {
 
   public boolean isSaved() {
     return saved;
+  }
+
+  public void setRemoved(boolean removed) {
+    this.removed = removed;
+  }
+
+  public boolean isRemoved() {
+    return removed;
   }
 }
