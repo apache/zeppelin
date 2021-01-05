@@ -332,6 +332,8 @@ public class Notebook {
 
   public void removeNote(Note note, AuthenticationInfo subject) throws IOException {
     LOGGER.info("Remove note: {}", note.getId());
+    // Set Remove to true to cancel saving this note
+    note.setRemoved(true);
     noteManager.removeNote(note.getId(), subject);
     fireNoteRemoveEvent(note, subject);
   }
