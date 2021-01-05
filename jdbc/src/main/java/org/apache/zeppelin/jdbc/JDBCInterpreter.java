@@ -200,7 +200,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
       LOGGER.error("Unable to run kinit for zeppelin", e);
     }
     LOGGER.debug("Neither Keytab nor ticket based login. " +
-      "runKerberosLogin() returning false");
+        "runKerberosLogin() returning false");
     return false;
   }
 
@@ -521,7 +521,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
         break;
       case "KERBEROS":
         LOGGER.debug("Calling createSecureConfiguration(); this will do " +
-          "loginUserFromKeytab() if required");
+            "loginUserFromKeytab() if required");
         JDBCSecurityImpl.createSecureConfiguration(getProperties(),
                 UserGroupInformation.AuthenticationMethod.KERBEROS);
         LOGGER.debug("createSecureConfiguration() returned");
