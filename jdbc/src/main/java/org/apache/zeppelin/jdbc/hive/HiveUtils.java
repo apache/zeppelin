@@ -77,7 +77,7 @@ public class HiveUtils {
       boolean jobLaunched = false;
       long jobLastActiveTime = System.currentTimeMillis();
       try {
-        while (hiveStmt.hasMoreLogs() && !Thread.interrupted()) {
+        while (hiveStmt.hasMoreLogs() && !hiveStmt.isClosed() && !Thread.interrupted()) {
           Thread.sleep(queryInterval);
           List<String> logs = hiveStmt.getQueryLog();
           String logsOutput = StringUtils.join(logs, System.lineSeparator());
