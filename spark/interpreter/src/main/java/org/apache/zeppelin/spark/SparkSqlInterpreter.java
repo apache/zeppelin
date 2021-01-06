@@ -115,7 +115,7 @@ public class SparkSqlInterpreter extends AbstractInterpreter {
           context.out.flush();
           return new InterpreterResult(Code.ERROR);
         } else {
-          LOGGER.error("Error happens in sql: " + curSql, e);
+          LOGGER.error("Error happens in sql: {}", curSql, e);
           context.out.write("\nError happens in sql: " + curSql + "\n");
           if (Boolean.parseBoolean(getProperty("zeppelin.spark.sql.stacktrace", "false"))) {
             if (e.getCause() != null) {
