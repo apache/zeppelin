@@ -22,12 +22,10 @@ import com.google.common.collect.Lists;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 import javax.inject.Inject;
 
@@ -204,17 +202,14 @@ public class LuceneSearch extends SearchService {
    * @see org.apache.zeppelin.search.Search#updateIndexDoc(org.apache.zeppelin.notebook.Note)
    */
   @Override
-  public void updateIndexDoc(Note note) throws IOException {
+  public void updateNoteIndex(Note note) throws IOException {
     updateIndexNoteName(note);
-    for (Paragraph p : note.getParagraphs()) {
-      updateIndexParagraph(note, p);
-    }
   }
 
   private void updateIndexNoteName(Note note) throws IOException {
     String noteName = note.getName();
     String noteId = note.getId();
-    LOGGER.debug("Indexing Notebook {}, '{}'", noteId, noteName);
+    LOGGER.debug("Update note index: {}, '{}'", noteId, noteName);
     if (null == noteName || noteName.isEmpty()) {
       LOGGER.debug("Skipping empty notebook name");
       return;
@@ -222,12 +217,10 @@ public class LuceneSearch extends SearchService {
     updateDoc(noteId, noteName, null);
   }
 
-  private void updateIndexParagraph(Note note, Paragraph p) throws IOException {
-    if (p.getText() == null) {
-      LOGGER.debug("Skipping empty paragraph");
-      return;
-    }
-    updateDoc(note.getId(), note.getName(), p);
+  @Override
+  public void updateParagraphIndex(Paragraph p) throws IOException {
+    LOGGER.debug("Update paragraph index: {}", p.getId());
+    updateDoc(p.getNote().getId(), p.getNote().getName(), p);
   }
 
   /**
@@ -288,7 +281,9 @@ public class LuceneSearch extends SearchService {
     doc.add(new StringField("title", noteName, Field.Store.YES));
 
     if (null != p) {
-      doc.add(new TextField(SEARCH_FIELD_TEXT, p.getText(), Field.Store.YES));
+      if (p.getText() != null) {
+        doc.add(new TextField(SEARCH_FIELD_TEXT, p.getText(), Field.Store.YES));
+      }
       if (p.getTitle() != null) {
         doc.add(new TextField(SEARCH_FIELD_TITLE, p.getTitle(), Field.Store.YES));
       }
@@ -301,44 +296,21 @@ public class LuceneSearch extends SearchService {
   }
 
   /* (non-Javadoc)
-   * @see org.apache.zeppelin.search.Search#addIndexDocs(java.util.Collection)
-   */
-  @Override
-  public void addIndexDocs(Collection<Note> collection) {
-    int docsIndexed = 0;
-    long start = System.nanoTime();
-    try {
-      for (Note note : collection) {
-        addIndexDocAsync(note);
-        docsIndexed++;
-      }
-    } catch (IOException e) {
-      LOGGER.error("Failed to index all Notebooks", e);
-    } finally {
-      try { // save what's been indexed, even if not full collection
-        indexWriter.commit();
-      } catch (IOException e) {
-        LOGGER.error("Failed to save index", e);
-      }
-      long end = System.nanoTime();
-      LOGGER.info(
-          "Indexing {} notebooks took {}ms",
-          docsIndexed,
-          TimeUnit.NANOSECONDS.toMillis(end - start));
-    }
-  }
-
-  /* (non-Javadoc)
    * @see org.apache.zeppelin.search.Search#addIndexDoc(org.apache.zeppelin.notebook.Note)
    */
   @Override
-  public void addIndexDoc(Note note) {
+  public void addNoteIndex(Note note) {
     try {
       addIndexDocAsync(note);
       indexWriter.commit();
     } catch (IOException e) {
       LOGGER.error("Failed to add note {} to index", note, e);
     }
+  }
+
+  @Override
+  public void addParagraphIndex(Paragraph pararaph) throws IOException {
+    updateDoc(pararaph.getNote().getId(), pararaph.getNote().getName(), pararaph);
   }
 
   /**
@@ -349,12 +321,8 @@ public class LuceneSearch extends SearchService {
    */
   private void addIndexDocAsync(Note note) throws IOException {
     indexNoteName(indexWriter, note.getId(), note.getName());
-    for (Paragraph doc : note.getParagraphs()) {
-      if (doc.getText() == null) {
-        LOGGER.debug("Skipping empty paragraph");
-        continue;
-      }
-      indexDoc(indexWriter, note.getId(), note.getName(), doc);
+    for (Paragraph paragraph : note.getParagraphs()) {
+      updateDoc(note.getId(), note.getName(), paragraph);
     }
   }
 
@@ -362,8 +330,14 @@ public class LuceneSearch extends SearchService {
    * @see org.apache.zeppelin.search.Search#deleteIndexDocs(org.apache.zeppelin.notebook.Note)
    */
   @Override
-  public void deleteIndexDocs(String noteId) {
-    deleteDoc(noteId, null);
+  public void deleteNoteIndex(Note note) {
+    if (note == null) {
+      return;
+    }
+    deleteDoc(note.getId(), null);
+    for (Paragraph paragraph : note.getParagraphs()) {
+      deleteParagraphIndex(note.getId(), paragraph);
+    }
   }
 
   /* (non-Javadoc)
@@ -371,10 +345,16 @@ public class LuceneSearch extends SearchService {
    *  #deleteIndexDoc(org.apache.zeppelin.notebook.Note, org.apache.zeppelin.notebook.Paragraph)
    */
   @Override
-  public void deleteIndexDoc(String noteId, Paragraph p) {
+  public void deleteParagraphIndex(String noteId, Paragraph p) {
     deleteDoc(noteId, p);
   }
 
+  /**
+   * Delete note index of paragraph index (when p is not null).
+   *
+   * @param noteId
+   * @param p
+   */
   private void deleteDoc(String noteId, Paragraph p) {
     String fullNoteOrJustParagraph = formatDeleteId(noteId, p);
     LOGGER.debug("Deleting note {}, out of: {}", noteId, indexWriter.numDocs());
@@ -410,15 +390,7 @@ public class LuceneSearch extends SearchService {
       LOGGER.debug("Skipping empty notebook name");
       return;
     }
-    indexDoc(w, noteId, noteName, null);
-  }
-
-  /** Indexes a single document: - code of the paragraph (if non-null) - or just a note name */
-  private void indexDoc(IndexWriter w, String noteId, String noteName, Paragraph p)
-      throws IOException {
-    String id = formatId(noteId, p);
-    Document doc = newDocument(id, noteName, p);
-    w.addDocument(doc);
+    updateDoc(noteId, noteName, null);
   }
 
   @Override
@@ -426,7 +398,7 @@ public class LuceneSearch extends SearchService {
     Thread thread = new Thread(() -> {
       LOGGER.info("Starting rebuild index");
       notes.forEach(note -> {
-        addIndexDoc(note);
+        addNoteIndex(note);
         note.unLoad();
       });
       LOGGER.info("Finish rebuild index");

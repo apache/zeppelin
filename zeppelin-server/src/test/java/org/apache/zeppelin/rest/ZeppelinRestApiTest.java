@@ -944,7 +944,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
               "\"text\": \"ThisIsToTestSearchMethodWithTitle \"}";
       CloseableHttpResponse postNoteText = httpPost("/notebook/" + note.getId() + "/paragraph", jsonRequest);
       postNoteText.close();
-      Thread.sleep(1000);
+      Thread.sleep(3000);
 
       CloseableHttpResponse searchNote = httpGet("/notebook/search?q='testTitleSearchOfParagraph'");
       Map<String, Object> respSearchResult = gson.fromJson(EntityUtils.toString(searchNote.getEntity(), StandardCharsets.UTF_8),

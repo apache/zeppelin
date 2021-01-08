@@ -36,6 +36,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -81,7 +82,7 @@ public class ClusterRestApi {
   @Path("/nodes")
   @ZeppelinApi
   public Response getClusterNodes(){
-    ArrayList<HashMap<String, Object>> nodes = new ArrayList<HashMap<String, Object>>();
+    List<Map<String, Object>> nodes = new ArrayList<>();
 
     Map<String, HashMap<String, Object>> clusterMeta = null;
     Map<String, HashMap<String, Object>> intpMeta = null;
@@ -95,7 +96,7 @@ public class ClusterRestApi {
       }
       String serverNodeName = (String) serverMetaEntity.getValue().get(ClusterMeta.NODE_NAME);
 
-      ArrayList<String> arrIntpProcess = new ArrayList<>();
+      List<String> arrIntpProcess = new ArrayList<>();
       int intpProcCount = 0;
       for (Map.Entry<String, HashMap<String, Object>> intpMetaEntity : intpMeta.entrySet()) {
         if (!intpMetaEntity.getValue().containsKey(ClusterMeta.NODE_NAME)
@@ -170,20 +171,19 @@ public class ClusterRestApi {
         sortProperties.put(ClusterMeta.INTP_PROCESS_LIST, properties.get(ClusterMeta.INTP_PROCESS_LIST));
       }
 
-      HashMap<String, Object> node = new HashMap<String, Object>();
+      Map<String, Object> node = new HashMap<>();
       node.put(ClusterMeta.NODE_NAME, nodeName);
       node.put(PROPERTIES, sortProperties);
 
       nodes.add(node);
     }
 
-    return new JsonResponse(Response.Status.OK, "", nodes).build();
+    return new JsonResponse<>(Response.Status.OK, "", nodes).build();
   }
 
   private String formatLocalDateTime(LocalDateTime localDateTime) {
     DateTimeFormatter dtf = DateTimeFormatter.ISO_DATE_TIME;
-    String strDate = localDateTime.format(dtf);
-    return strDate;
+    return localDateTime.format(dtf);
   }
 
   /**
@@ -194,7 +194,7 @@ public class ClusterRestApi {
   @ZeppelinApi
   public Response getClusterNode(@PathParam("nodeName") String nodeName,
                                  @PathParam("intpName") String intpName){
-    ArrayList<HashMap<String, Object>> intpProcesses = new ArrayList<HashMap<String, Object>>();
+    List<Map<String, Object>> intpProcesses = new ArrayList<>();
 
     Map<String, HashMap<String, Object>> intpMeta = null;
     intpMeta = clusterManagerServer.getClusterMeta(ClusterMetaType.INTP_PROCESS_META, "");
@@ -204,12 +204,12 @@ public class ClusterRestApi {
       String intpNodeName = (String) intpMetaEntity.getValue().get(ClusterMeta.NODE_NAME);
 
       if (null != intpNodeName && intpNodeName.equals(nodeName)) {
-        HashMap<String, Object> node = new HashMap<String, Object>();
+        Map<String, Object> node = new HashMap<>();
         node.put(ClusterMeta.NODE_NAME, intpNodeName);
         node.put(PROPERTIES, intpMetaEntity.getValue());
 
         // format LocalDateTime
-        HashMap<String, Object> properties = intpMetaEntity.getValue();
+        Map<String, Object> properties = intpMetaEntity.getValue();
         if (properties.containsKey(ClusterMeta.INTP_START_TIME)) {
           Object intpStartTime = properties.get(ClusterMeta.INTP_START_TIME);
           if (intpStartTime instanceof LocalDateTime) {
@@ -235,6 +235,6 @@ public class ClusterRestApi {
       }
     }
 
-    return new JsonResponse(Response.Status.OK, "", intpProcesses).build();
+    return new JsonResponse<>(Response.Status.OK, "", intpProcesses).build();
   }
 }

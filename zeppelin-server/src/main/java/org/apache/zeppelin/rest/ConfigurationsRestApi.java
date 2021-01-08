@@ -53,9 +53,9 @@ public class ConfigurationsRestApi extends AbstractRestApi {
     try {
       Map<String, String> properties =
           configurationService.getAllProperties(getServiceContext(), new RestServiceCallback<>());
-      return new JsonResponse(Status.OK, "", properties).build();
+      return new JsonResponse<>(Status.OK, "", properties).build();
     } catch (IOException e) {
-      return new JsonResponse(Status.INTERNAL_SERVER_ERROR, "Fail to get configuration", e).build();
+      return new JsonResponse<>(Status.INTERNAL_SERVER_ERROR, "Fail to get configuration", e).build();
     }
   }
 
@@ -67,9 +67,9 @@ public class ConfigurationsRestApi extends AbstractRestApi {
       Map<String, String> properties =
           configurationService.getPropertiesWithPrefix(
               prefix, getServiceContext(), new RestServiceCallback<>());
-      return new JsonResponse(Status.OK, "", properties).build();
+      return new JsonResponse<>(Status.OK, "", properties).build();
     } catch (IOException e) {
-      return new JsonResponse(Status.INTERNAL_SERVER_ERROR, "Fail to get configuration", e).build();
+      return new JsonResponse<>(Status.INTERNAL_SERVER_ERROR, "Fail to get configuration", e).build();
     }
   }
 }

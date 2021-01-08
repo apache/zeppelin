@@ -61,7 +61,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -74,24 +73,50 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class Note implements JsonSerializable {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(Note.class);
+
   // serialize Paragraph#runtimeInfos and Note#path to frontend but not to note file
-  private static final ExclusionStrategy strategy = new ExclusionStrategy() {
-    @Override
-    public boolean shouldSkipField(FieldAttributes f) {
-      return f.getName().equals("path");
+  private static final ExclusionStrategy NOTE_GSON_EXCLUSION_STRATEGY =
+          new NoteJsonExclusionStrategy(ZeppelinConfiguration.create());
+
+  private static class NoteJsonExclusionStrategy implements ExclusionStrategy {
+    private Set<String> noteExcludeFields = new HashSet<>();
+    private Set<String> paragraphExcludeFields = new HashSet<>();
+
+    public NoteJsonExclusionStrategy(ZeppelinConfiguration zConf) {
+      String[] excludeFields = zConf.getNoteFileExcludedFields();
+      for (String field : excludeFields) {
+        if (field.startsWith("Paragraph")) {
+          paragraphExcludeFields.add(field.substring(10));
+        } else {
+          noteExcludeFields.add(field);
+        }
+      }
     }
 
     @Override
-    public boolean shouldSkipClass(Class<?> clazz) {
+    public boolean shouldSkipField(FieldAttributes field) {
+      if(field.getName().equals("path")) {
+        return true;
+      }
+      if (field.getDeclaringClass().equals(Paragraph.class)) {
+        return paragraphExcludeFields.contains(field.getName());
+      } else {
+        return noteExcludeFields.contains(field.getName());
+      }
+    }
+
+    @Override
+    public boolean shouldSkipClass(Class<?> aClass) {
       return false;
     }
-  };
+  }
+
   private static final Gson GSON = new GsonBuilder()
           .setPrettyPrinting()
           .setDateFormat("yyyy-MM-dd HH:mm:ss.SSS")
           .registerTypeAdapter(Date.class, new NotebookImportDeserializer())
           .registerTypeAdapterFactory(Input.TypeAdapterFactory)
-          .setExclusionStrategies(strategy)
+          .setExclusionStrategies(NOTE_GSON_EXCLUSION_STRATEGY)
           .create();
   private static final DateTimeFormatter DATE_TIME_FORMATTER =
           DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss");

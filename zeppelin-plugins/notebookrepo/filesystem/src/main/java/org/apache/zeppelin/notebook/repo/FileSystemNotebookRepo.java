@@ -45,9 +45,10 @@ public class FileSystemNotebookRepo implements NotebookRepo {
 
   }
 
+  @Override
   public void init(ZeppelinConfiguration zConf) throws IOException {
     this.fs = new FileSystemStorage(zConf, zConf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_DIR));
-    LOGGER.info("Creating FileSystem: " + this.fs.getFs().getClass().getName());
+    LOGGER.info("Creating FileSystem: {}", this.fs.getFs().getClass().getName());
     this.notebookDir = this.fs.makeQualified(new Path(zConf.getNotebookDir()));
     LOGGER.info("Using folder {} to store notebook", notebookDir);
     this.fs.tryMkDir(notebookDir);
@@ -63,7 +64,7 @@ public class FileSystemNotebookRepo implements NotebookRepo {
             getNotePath(notebookDir.toString(), path.toString()));
         noteInfos.put(noteInfo.getId(), noteInfo);
       } catch (IOException e) {
-        LOGGER.warn("Fail to get NoteInfo for note: " + path.getName(), e);
+        LOGGER.warn("Fail to get NoteInfo for note: {}", path.getName(), e);
       }
     }
     return noteInfos;
@@ -108,14 +109,14 @@ public class FileSystemNotebookRepo implements NotebookRepo {
   public void remove(String noteId, String notePath, AuthenticationInfo subject)
       throws IOException {
     if (!this.fs.delete(new Path(notebookDir.toString(), buildNoteFileName(noteId, notePath)))) {
-      LOGGER.warn("Fail to move note, noteId: " + notePath + ", notePath: " + notePath);
+      LOGGER.warn("Fail to move note, noteId: {}, notePath: {}", notePath, notePath);
     }
   }
 
   @Override
   public void remove(String folderPath, AuthenticationInfo subject) throws IOException {
     if (!this.fs.delete(new Path(notebookDir, folderPath.substring(1)))) {
-      LOGGER.warn("Fail to remove folder: " + folderPath);
+      LOGGER.warn("Fail to remove folder: {}", folderPath);
     }
   }
 

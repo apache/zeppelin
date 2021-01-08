@@ -400,7 +400,7 @@ public class FlinkInterpreterTest {
   private InterpreterContext getInterpreterContext() {
     InterpreterContext context = InterpreterContext.builder()
             .setParagraphId("paragraphId")
-            .setInterpreterOut(new InterpreterOutput(null))
+            .setInterpreterOut(new InterpreterOutput())
             .setAngularObjectRegistry(angularObjectRegistry)
             .setIntpEventClient(mock(RemoteInterpreterEventClient.class))
             .build();

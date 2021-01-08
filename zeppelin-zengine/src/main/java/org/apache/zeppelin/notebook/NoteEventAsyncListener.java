@@ -19,6 +19,8 @@ package org.apache.zeppelin.notebook;
 
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.user.AuthenticationInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -27,6 +29,8 @@ import java.util.concurrent.LinkedBlockingQueue;
  * An special NoteEventListener which handle events asynchronously
  */
 public abstract class NoteEventAsyncListener implements NoteEventListener {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(NoteEventAsyncListener.class);
 
   private BlockingQueue<NoteEvent> eventsQueue = new LinkedBlockingQueue<>();
 
@@ -38,17 +42,17 @@ public abstract class NoteEventAsyncListener implements NoteEventListener {
     this.eventHandlerThread.start();
   }
 
-  public abstract void handleNoteCreateEvent(NoteCreateEvent noteCreateEvent);
+  public abstract void handleNoteCreateEvent(NoteCreateEvent noteCreateEvent) throws Exception;
 
-  public abstract void handleNoteRemoveEvent(NoteRemoveEvent noteRemoveEvent);
+  public abstract void handleNoteRemoveEvent(NoteRemoveEvent noteRemoveEvent) throws Exception;
 
-  public abstract void handleNoteUpdateEvent(NoteUpdateEvent noteUpdateEvent);
+  public abstract void handleNoteUpdateEvent(NoteUpdateEvent noteUpdateEvent) throws Exception;
 
-  public abstract void handleParagraphCreateEvent(ParagraphCreateEvent paragraphCreateEvent);
+  public abstract void handleParagraphCreateEvent(ParagraphCreateEvent paragraphCreateEvent) throws Exception;
 
-  public abstract void handleParagraphRemoveEvent(ParagraphRemoveEvent paragraphRemoveEvent);
+  public abstract void handleParagraphRemoveEvent(ParagraphRemoveEvent paragraphRemoveEvent) throws Exception;
 
-  public abstract void handleParagraphUpdateEvent(ParagraphUpdateEvent paragraphUpdateEvent);
+  public abstract void handleParagraphUpdateEvent(ParagraphUpdateEvent paragraphUpdateEvent) throws Exception;
 
 
   public void close() {
@@ -112,8 +116,8 @@ public abstract class NoteEventAsyncListener implements NoteEventListener {
           } else {
             throw new RuntimeException("Unknown event: " + event.getClass().getSimpleName());
           }
-        } catch (InterruptedException e) {
-          e.printStackTrace();
+        } catch (Exception e) {
+          LOGGER.error("Fail to handle NoteEvent", e);
         }
       }
     }

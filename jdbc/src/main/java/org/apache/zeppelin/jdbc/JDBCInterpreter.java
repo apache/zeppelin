@@ -182,17 +182,25 @@ public class JDBCInterpreter extends KerberosInterpreter {
 
   @Override
   protected boolean runKerberosLogin() {
+    // Initialize UGI before using
+    Configuration conf = new org.apache.hadoop.conf.Configuration();
+    conf.set("hadoop.security.authentication", KERBEROS.toString());
+    UserGroupInformation.setConfiguration(conf);
     try {
       if (UserGroupInformation.isLoginKeytabBased()) {
+        LOGGER.debug("Trying relogin from keytab");
         UserGroupInformation.getLoginUser().reloginFromKeytab();
         return true;
       } else if (UserGroupInformation.isLoginTicketBased()) {
+        LOGGER.debug("Trying relogin from ticket cache");
         UserGroupInformation.getLoginUser().reloginFromTicketCache();
         return true;
       }
     } catch (Exception e) {
       LOGGER.error("Unable to run kinit for zeppelin", e);
     }
+    LOGGER.debug("Neither Keytab nor ticket based login. " +
+        "runKerberosLogin() returning false");
     return false;
   }
 
@@ -512,8 +520,11 @@ public class JDBCInterpreter extends KerberosInterpreter {
         connection = getConnectionFromPool(connectionUrl, user, dbPrefix, properties);
         break;
       case "KERBEROS":
+        LOGGER.debug("Calling createSecureConfiguration(); this will do " +
+            "loginUserFromKeytab() if required");
         JDBCSecurityImpl.createSecureConfiguration(getProperties(),
                 UserGroupInformation.AuthenticationMethod.KERBEROS);
+        LOGGER.debug("createSecureConfiguration() returned");
         boolean isProxyEnabled = Boolean.parseBoolean(
                 getProperty("zeppelin.jdbc.auth.kerberos.proxy.enable", "true"));
         if (basePropertiesMap.get(dbPrefix).containsKey("proxy.user.property")
@@ -716,6 +727,12 @@ public class JDBCInterpreter extends KerberosInterpreter {
     try {
       List<String>  sqlArray = sqlSplitter.splitSql(sql);
       for (String sqlToExecute : sqlArray) {
+        LOGGER.info("Execute sql: " + sqlToExecute);
+        if (sqlToExecute.trim().toLowerCase().startsWith("set ")) {
+          // some version of hive doesn't work with set statement with empty line ahead.
+          // so we need to trim it first in this case.
+          sqlToExecute = sqlToExecute.trim();
+        }
         statement = connection.createStatement();
 
         // fetch n+1 rows in order to indicate there's more rows available (for large selects)

@@ -170,7 +170,6 @@ public class InterpreterContext {
     }
 
     public InterpreterContext build() {
-      InterpreterContext.set(context);
       return context;
     }
   }

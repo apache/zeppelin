@@ -32,7 +32,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.annotation.ZeppelinApi;
-import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.server.JsonResponse;
 import org.apache.zeppelin.service.AuthenticationService;
 import org.apache.zeppelin.ticket.TicketContainer;
@@ -68,10 +67,8 @@ public class SecurityRestApi {
   @Path("ticket")
   @ZeppelinApi
   public Response ticket() {
-    ZeppelinConfiguration conf = ZeppelinConfiguration.create();
     String principal = authenticationService.getPrincipal();
     Set<String> roles = authenticationService.getAssociatedRoles();
-    JsonResponse response;
     // ticket set to anonymous for anonymous user. Simplify testing.
     String ticket;
     if ("anonymous".equals(principal)) {
@@ -85,8 +82,8 @@ public class SecurityRestApi {
     data.put("roles", gson.toJson(roles));
     data.put("ticket", ticket);
 
-    response = new JsonResponse(Response.Status.OK, "", data);
-    LOG.warn(response.toString());
+    JsonResponse<Map<String, String>> response = new JsonResponse<>(Response.Status.OK, "", data);
+    LOG.warn("{}", response);
     return response.build();
   }
 
@@ -136,7 +133,7 @@ public class SecurityRestApi {
       }
     }
 
-    Map<String, List> returnListMap = new HashMap<>();
+    Map<String, List<String>> returnListMap = new HashMap<>();
     returnListMap.put("users", autoSuggestUserList);
     returnListMap.put("roles", autoSuggestRoleList);
 

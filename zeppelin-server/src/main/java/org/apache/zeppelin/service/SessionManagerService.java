@@ -173,13 +173,13 @@ public class SessionManagerService {
         } else {
           // if it is running before, but interpreterGroup is not running now, that means the session is stopped.
           // e.g. InterpreterProcess is terminated for whatever unexpected reason.
-          if (sessionInfo.getState().equals(SessionState.RUNNING.name())) {
+          if (SessionState.RUNNING.name().equalsIgnoreCase(sessionInfo.getState())) {
             sessionInfo.setState(SessionState.STOPPED.name());
           }
         }
       }
     } else {
-      if (sessionInfo.getState().equals(SessionState.RUNNING.name())) {
+      if (SessionState.RUNNING.name().equalsIgnoreCase(sessionInfo.getState())) {
         // if it is running before, but interpreterGroup is null now, that means the session is stopped.
         // e.g. InterpreterProcess is killed if it exceed idle timeout threshold.
         sessionInfo.setState(SessionState.STOPPED.name());

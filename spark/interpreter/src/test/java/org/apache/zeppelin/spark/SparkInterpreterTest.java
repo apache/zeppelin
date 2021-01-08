@@ -78,7 +78,7 @@ public class SparkInterpreterTest {
     properties.setProperty("zeppelin.spark.deprecatedMsg.show", "false");
 
     InterpreterContext context = InterpreterContext.builder()
-        .setInterpreterOut(new InterpreterOutput(null))
+        .setInterpreterOut(new InterpreterOutput())
         .setIntpEventClient(mockRemoteEventClient)
         .setAngularObjectRegistry(new AngularObjectRegistry("spark", null))
         .build();
@@ -596,7 +596,7 @@ public class SparkInterpreterTest {
   private InterpreterContext getInterpreterContext() {
     output = "";
     InterpreterContext context = InterpreterContext.builder()
-        .setInterpreterOut(new InterpreterOutput(null))
+        .setInterpreterOut(new InterpreterOutput())
         .setIntpEventClient(mockRemoteEventClient)
         .setAngularObjectRegistry(new AngularObjectRegistry("spark", null))
         .build();

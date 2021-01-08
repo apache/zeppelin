@@ -145,6 +145,13 @@ public abstract class SparkIntegrationTest {
     assertEquals(interpreterResult.toString(), InterpreterResult.Code.SUCCESS, interpreterResult.code());
     assertEquals(interpreterResult.toString(), InterpreterResult.Type.TEXT, interpreterResult.message().get(0).getType());
     assertTrue(interpreterResult.toString(), interpreterResult.message().get(0).getData().contains("eruptions waiting"));
+
+    // test SparkSubmitInterpreter
+    context = new InterpreterContext.Builder().setNoteId("note1").setParagraphId("paragraph_1").build();
+    Interpreter sparkSubmitInterpreter = interpreterFactory.getInterpreter("spark.submit", new ExecutionContextBuilder().setUser("user1").setNoteId("note1").setDefaultInterpreterGroup("test").createExecutionContext());
+    interpreterResult = sparkSubmitInterpreter.interpret("--class org.apache.spark.examples.SparkPi " + sparkHome + "/examples/jars/spark-examples*.jar ", context);
+
+    assertEquals(interpreterResult.toString(), InterpreterResult.Code.SUCCESS, interpreterResult.code());
   }
 
   @Test

@@ -49,8 +49,6 @@ import java.util.Base64;
 import java.util.HashSet;
 import java.util.List;
 import java.util.EnumSet;
-import java.util.Objects;
-import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.management.remote.JMXServiceURL;
@@ -90,6 +88,7 @@ import org.apache.zeppelin.notebook.scheduler.SchedulerService;
 import org.apache.zeppelin.plugin.PluginManager;
 import org.apache.zeppelin.rest.exception.WebApplicationExceptionMapper;
 import org.apache.zeppelin.search.LuceneSearch;
+import org.apache.zeppelin.search.NoSearchService;
 import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.service.*;
 import org.apache.zeppelin.service.AuthenticationService;
@@ -148,7 +147,7 @@ public class ZeppelinServer extends ResourceConfig {
 
   @Inject
   public ZeppelinServer() {
-    InterpreterOutput.limit = conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_OUTPUT_LIMIT);
+    InterpreterOutput.LIMIT = conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_OUTPUT_LIMIT);
 
     packages("org.apache.zeppelin.rest");
   }
@@ -181,7 +180,6 @@ public class ZeppelinServer extends ResourceConfig {
             Credentials credentials = new Credentials(conf);
             bindAsContract(InterpreterFactory.class).in(Singleton.class);
             bindAsContract(NotebookRepoSync.class).to(NotebookRepo.class).in(Immediate.class);
-            bind(LuceneSearch.class).to(SearchService.class).in(Singleton.class);
             bindAsContract(Helium.class).in(Singleton.class);
             bind(conf).to(ZeppelinConfiguration.class);
             bindAsContract(InterpreterSettingManager.class).in(Singleton.class);
@@ -217,6 +215,11 @@ public class ZeppelinServer extends ResourceConfig {
               bind(QuartzSchedulerService.class).to(SchedulerService.class).in(Singleton.class);
             } else {
               bind(NoSchedulerService.class).to(SchedulerService.class).in(Singleton.class);
+            }
+            if (conf.getBoolean(ConfVars.ZEPPELIN_SEARCH_ENABLE)) {
+              bind(LuceneSearch.class).to(SearchService.class).in(Singleton.class);
+            } else {
+              bind(NoSearchService.class).to(SearchService.class).in(Singleton.class);
             }
           }
         });
