@@ -61,7 +61,7 @@ import org.slf4j.LoggerFactory;
  */
 public class ShiroAuthenticationService implements AuthenticationService {
 
-  private final Logger LOGGER = LoggerFactory.getLogger(ShiroAuthenticationService.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(ShiroAuthenticationService.class);
 
   private final ZeppelinConfiguration conf;
 
@@ -107,8 +107,9 @@ public class ShiroAuthenticationService implements AuthenticationService {
     if (subject.isAuthenticated()) {
       principal = extractPrincipal(subject);
       if (conf.isUsernameForceLowerCase()) {
-        LOGGER.debug("Converting principal name " + principal
-            + " to lower case:" + principal.toLowerCase());
+        if (LOGGER.isDebugEnabled()) {
+          LOGGER.debug("Converting principal name {} to lower case: {}", principal, principal.toLowerCase());
+        }
         principal = principal.toLowerCase();
       }
     } else {
@@ -157,7 +158,7 @@ public class ShiroAuthenticationService implements AuthenticationService {
       if (realmsList != null) {
         for (Realm realm : realmsList) {
           String realClassName = realm.getClass().getName();
-          LOGGER.debug("RealmClass.getName: " + realClassName);
+          LOGGER.debug("RealmClass.getName: {}", realClassName);
           if (realClassName.equals("org.apache.shiro.realm.text.IniRealm")) {
             usersList.addAll(getUserList((IniRealm) realm));
           } else if (realClassName.equals("org.apache.zeppelin.realm.LdapGroupRealm")) {
@@ -191,7 +192,7 @@ public class ShiroAuthenticationService implements AuthenticationService {
       if (realmsList != null) {
         for (Realm realm : realmsList) {
           String name = realm.getClass().getName();
-          LOGGER.debug("RealmClass.getName: " + name);
+          LOGGER.debug("RealmClass.getName: {}", name);
           if (name.equals("org.apache.shiro.realm.text.IniRealm")) {
             rolesList.addAll(getRolesList((IniRealm) realm));
           } else if (name.equals("org.apache.zeppelin.realm.LdapRealm")) {
@@ -316,14 +317,14 @@ public class ShiroAuthenticationService implements AuthenticationService {
     } catch (Exception e) {
       LOGGER.error("Error retrieving User list from Ldap Realm", e);
     }
-    LOGGER.info("UserList: " + userList);
+    LOGGER.info("UserList: {}", userList);
     return userList;
   }
 
   /** Function to extract users from Zeppelin LdapRealm. */
   private List<String> getUserList(LdapRealm r, String searchText, int numUsersToFetch) {
     List<String> userList = new ArrayList<>();
-    LOGGER.debug("SearchText: " + searchText);
+    LOGGER.debug("SearchText: {}", searchText);
     String userAttribute = r.getUserSearchAttributeName();
     String userSearchRealm = r.getUserSearchBase();
     String userObjectClass = r.getUserObjectClass();
@@ -357,7 +358,7 @@ public class ShiroAuthenticationService implements AuthenticationService {
             LOGGER.debug("userLowerCase false");
             currentUser = (String) attrs.get(userAttribute).get();
           }
-          LOGGER.debug("CurrentUser: " + currentUser);
+          LOGGER.debug("CurrentUser: {}", currentUser);
           userList.add(currentUser.trim());
         }
       }
@@ -380,8 +381,8 @@ public class ShiroAuthenticationService implements AuthenticationService {
       Iterator it = roles.entrySet().iterator();
       while (it.hasNext()) {
         Map.Entry pair = (Map.Entry) it.next();
-        LOGGER.debug("RoleKeyValue: " + pair.getKey() + " = " + pair.getValue());
         roleList.add((String) pair.getKey());
+        LOGGER.debug("RoleKeyValue: {} = {}", pair.getKey(), pair.getValue());
       }
     }
     return roleList;

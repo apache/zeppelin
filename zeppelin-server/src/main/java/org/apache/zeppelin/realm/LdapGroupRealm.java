@@ -40,7 +40,7 @@ import javax.naming.ldap.LdapContext;
  * Created for org.apache.zeppelin.server.
  */
 public class LdapGroupRealm extends JndiLdapRealm {
-  private static final Logger LOG = LoggerFactory.getLogger(LdapGroupRealm.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(LdapGroupRealm.class);
 
   public AuthorizationInfo queryForAuthorizationInfo(PrincipalCollection principals,
           LdapContextFactory ldapContextFactory) throws NamingException {
@@ -83,7 +83,7 @@ public class LdapGroupRealm extends JndiLdapRealm {
       return roleNames;
 
     } catch (Exception e) {
-      LOG.error("Error", e);
+      LOGGER.error("Error", e);
     }
 
     return new HashSet<>();

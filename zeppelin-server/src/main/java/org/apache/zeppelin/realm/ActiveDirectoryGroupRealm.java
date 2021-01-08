@@ -61,7 +61,7 @@ import javax.naming.ldap.LdapContext;
  * @since 0.1
  */
 public class ActiveDirectoryGroupRealm extends AbstractLdapRealm {
-  private static final Logger log = LoggerFactory.getLogger(ActiveDirectoryGroupRealm.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(ActiveDirectoryGroupRealm.class);
 
   private static final String ROLE_NAMES_DELIMETER = ",";
 
@@ -104,10 +104,7 @@ public class ActiveDirectoryGroupRealm extends AbstractLdapRealm {
 
   public LdapContextFactory getLdapContextFactory() {
     if (this.ldapContextFactory == null) {
-      if (log.isDebugEnabled()) {
-        log.debug("No LdapContextFactory specified - creating a default instance.");
-      }
-
+      LOGGER.debug("No LdapContextFactory specified - creating a default instance.");
       DefaultLdapContextFactory defaultFactory = new DefaultLdapContextFactory();
       defaultFactory.setPrincipalSuffix(this.principalSuffix);
       defaultFactory.setSearchBase(this.searchBase);
@@ -269,9 +266,7 @@ public class ActiveDirectoryGroupRealm extends AbstractLdapRealm {
     while (answer.hasMoreElements()) {
       SearchResult sr = (SearchResult) answer.next();
 
-      if (log.isDebugEnabled()) {
-        log.debug("Retrieving userprincipalname names for user [" + sr.getName() + "]");
-      }
+      LOGGER.debug("Retrieving userprincipalname names for user [{}]", sr.getName());
 
       Attributes attrs = sr.getAttributes();
       if (attrs != null) {
@@ -317,9 +312,7 @@ public class ActiveDirectoryGroupRealm extends AbstractLdapRealm {
     while (answer.hasMoreElements()) {
       SearchResult sr = (SearchResult) answer.next();
 
-      if (log.isDebugEnabled()) {
-        log.debug("Retrieving group names for user [" + sr.getName() + "]");
-      }
+      LOGGER.debug("Retrieving group names for user [{}]", sr.getName());
 
       Attributes attrs = sr.getAttributes();
 
@@ -331,10 +324,8 @@ public class ActiveDirectoryGroupRealm extends AbstractLdapRealm {
           if (attr.getID().equals("memberOf")) {
 
             Collection<String> groupNames = LdapUtils.getAllAttributeValues(attr);
+            LOGGER.debug("Groups found for user [{}]: {}", username, groupNames);
 
-            if (log.isDebugEnabled()) {
-              log.debug("Groups found for user [" + username + "]: " + groupNames);
-            }
 
             Collection<String> rolesForGroups = getRoleNamesForGroups(groupNames);
             roleNames.addAll(rolesForGroups);
@@ -361,14 +352,8 @@ public class ActiveDirectoryGroupRealm extends AbstractLdapRealm {
         String strRoleNames = groupRolesMap.get(groupName);
         if (strRoleNames != null) {
           for (String roleName : strRoleNames.split(ROLE_NAMES_DELIMETER)) {
-
-            if (log.isDebugEnabled()) {
-              log.debug("User is member of group [" + groupName + "] so adding role [" +
-                  roleName + "]");
-            }
-
+            LOGGER.debug("User is member of group [{}] so adding role [{}]", groupName, roleName);
             roleNames.add(roleName);
-
           }
         }
       }
