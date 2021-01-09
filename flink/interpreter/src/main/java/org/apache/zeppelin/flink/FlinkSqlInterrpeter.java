@@ -468,7 +468,7 @@ public abstract class FlinkSqlInterrpeter extends AbstractInterpreter {
   }
 
   private void callDescribe(String name, InterpreterContext context) throws IOException {
-    TableSchema schema = tbenv.scan(name).getSchema();
+    TableSchema schema = tbenv.scan(name.split(".")).getSchema();
     StringBuilder builder = new StringBuilder();
     builder.append("Column\tType\n");
     for (int i = 0; i < schema.getFieldCount(); ++i) {
