@@ -61,38 +61,38 @@
     <module>zeppelin-jupyter-interpreter</module>
     <module>zeppelin-jupyter-interpreter-shaded</module>
     <module>kotlin</module>
-    <module>groovy</module>
+    <!-- <module>groovy</module> -->
     <module>spark</module>
-    <module>submarine</module>
+    <!-- <module>submarine</module> -->
     <module>markdown</module>
-    <module>mongodb</module>
+    <!-- <module>mongodb</module> -->
     <module>angular</module>
     <module>shell</module>
     <module>livy</module>
-    <module>hbase</module>
-    <module>pig</module>
+    <!-- <module>hbase</module> -->
+    <!-- <module>pig</module> -->
     <module>jdbc</module>
     <module>file</module>
     <module>flink</module>
-    <module>ignite</module>
-    <module>influxdb</module>
-    <module>kylin</module>
+    <!-- <module>ignite</module> -->
+    <!-- <module>influxdb</module> -->
+    <!-- <module>kylin</module> -->
     <module>python</module>
-    <module>lens</module>
-    <module>cassandra</module>
+    <!-- <module>lens</module> -->
+    <!-- <module>cassandra</module> -->
     <module>elasticsearch</module>
-    <module>bigquery</module>
-    <module>alluxio</module>
-    <module>scio</module>
-    <module>neo4j</module>
-    <module>sap</module>
-    <module>scalding</module>
+    <!-- <module>bigquery</module> -->
+    <!-- <module>alluxio</module> -->
+    <!-- <module>scio</module> -->
+    <!-- <module>neo4j</module> -->
+    <!-- <module>sap</module> -->
+    <!-- <module>scalding</module> -->
     <module>java</module>
-    <module>beam</module>
-    <module>hazelcastjet</module>
-    <module>geode</module>
-    <module>ksql</module>
-    <module>sparql</module>
+    <!-- <module>beam</module> -->
+    <!-- <module>hazelcastjet</module> -->
+    <!-- <module>geode</module> -->
+    <!-- <module>ksql</module> -->
+    <!-- <module>sparql</module> -->
     <module>zeppelin-common</module>
     <module>zeppelin-client</module>
     <module>zeppelin-client-examples</module>
