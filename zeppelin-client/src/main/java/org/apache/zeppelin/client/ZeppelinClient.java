@@ -432,6 +432,25 @@ public class ZeppelinClient {
     return queryNoteResult(noteId);
   }
 
+  /**
+   * Request note to stop execution with provided noteId.
+   * Interpreter process will be stopped after note stop;
+   *
+   * @param noteId
+   * @return
+   * @throws Exception
+   */
+  public NoteResult stopNote(String noteId) throws Exception {
+    HttpResponse<JsonNode> response = Unirest
+            .delete("/notebook/job/{noteId}")
+            .routeParam("noteId", noteId)
+            .asJson();
+    checkResponse(response);
+    JsonNode jsonNode = response.getBody();
+    checkJsonNodeStatus(jsonNode);
+    return queryNoteResult(noteId);
+  }
+
 
   /**
    * Import note with given note json content to the specified notePath.
