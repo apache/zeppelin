@@ -82,7 +82,7 @@ import org.apache.flink.table.sinks.TableSink;
 import org.apache.flink.types.Row;
 import org.apache.flink.types.RowKind;
 import org.apache.flink.util.FlinkException;
-import org.apache.zeppelin.flink.shims111.CollectStreamTableSink;
+import org.apache.zeppelin.flink.shims112.CollectStreamTableSink;
 import org.apache.zeppelin.flink.shims112.Flink112ScalaShims;
 import org.apache.zeppelin.flink.sql.SqlCommandParser;
 import org.apache.zeppelin.flink.sql.SqlCommandParser.SqlCommand;
