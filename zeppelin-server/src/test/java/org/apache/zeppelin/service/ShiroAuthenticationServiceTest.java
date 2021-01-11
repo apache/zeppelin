@@ -24,6 +24,7 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.security.Principal;
 
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
@@ -36,7 +37,6 @@ import org.mockito.Mockito;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
-import sun.security.acl.PrincipalImpl;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(org.apache.shiro.SecurityUtils.class)
@@ -75,7 +75,7 @@ public class ShiroAuthenticationServiceTest {
     PowerMockito.mockStatic(org.apache.shiro.SecurityUtils.class);
     when(org.apache.shiro.SecurityUtils.getSubject()).thenReturn(subject);
     when(subject.isAuthenticated()).thenReturn(true);
-    when(subject.getPrincipal()).thenReturn(new PrincipalImpl(expectedName));
+    when(subject.getPrincipal()).thenReturn(new TestPrincipal(expectedName));
 
     Notebook notebook = Mockito.mock(Notebook.class);
     try {
@@ -94,6 +94,21 @@ public class ShiroAuthenticationServiceTest {
     modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
     field.set(null, newValue);
   }
+  public class TestPrincipal implements Principal {
 
+    private String username;
 
+    public TestPrincipal(String username) {
+      this.username = username;
+    }
+
+    public String getUsername() {
+      return username;
+    }
+
+    @Override
+    public String getName() {
+      return String.valueOf(username);
+    }
+  }
 }
