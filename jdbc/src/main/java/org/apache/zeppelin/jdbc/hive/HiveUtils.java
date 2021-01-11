@@ -24,7 +24,6 @@ import org.apache.zeppelin.jdbc.JDBCInterpreter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
 import java.util.List;
@@ -62,16 +61,17 @@ public class HiveUtils {
     String hiveVersion = HiveVersionInfo.getVersion();
     ProgressBar progressBarTemp = null;
     if (isProgressBarSupported(hiveVersion)) {
-      LOGGER.debug("ProgressBar is supported for hive version: " + hiveVersion);
+      LOGGER.debug("ProgressBar is supported for hive version: {}", hiveVersion);
       progressBarTemp = new ProgressBar();
     } else {
-      LOGGER.debug("ProgressBar is not supported for hive version: " + hiveVersion);
+      LOGGER.debug("ProgressBar is not supported for hive version: {}", hiveVersion);
     }
     // need to use final variable progressBar in thread, so need progressBarTemp here.
     final ProgressBar progressBar = progressBarTemp;
     final long timeoutThreshold = Long.parseLong(
             jdbcInterpreter.getProperty("zeppelin.jdbc.hive.timeout.threshold", "" + 60 * 1000));
-    final long queryInterval = Long.parseLong(jdbcInterpreter.getProperty("zeppelin.jdbc.hive.monitor.query_interval",
+    final long queryInterval = Long.parseLong(
+        jdbcInterpreter.getProperty("zeppelin.jdbc.hive.monitor.query_interval",
             DEFAULT_QUERY_PROGRESS_INTERVAL + ""));
     Thread thread = new Thread(() -> {
       boolean jobLaunched = false;
@@ -81,7 +81,7 @@ public class HiveUtils {
           Thread.sleep(queryInterval);
           List<String> logs = hiveStmt.getQueryLog();
           String logsOutput = StringUtils.join(logs, System.lineSeparator());
-          LOGGER.debug("Hive job output: " + logsOutput);
+          LOGGER.debug("Hive job output: {}", logsOutput);
           boolean displayLogProperty = context.getBooleanLocalProperty("displayLog", displayLog);
           if (!StringUtils.isBlank(logsOutput) && displayLogProperty) {
             context.out.write(logsOutput + "\n");
@@ -138,7 +138,7 @@ public class HiveUtils {
     thread.setName("HiveMonitor-Thread");
     thread.setDaemon(true);
     thread.start();
-    LOGGER.info("Start HiveMonitor-Thread for sql: " + hiveStmt);
+    LOGGER.info("Start HiveMonitor-Thread for sql: {}", hiveStmt);
 
     if (progressBar != null) {
       // old: hiveStmt.setInPlaceUpdateStream(progressBar.getInPlaceUpdateStream(context.out));
