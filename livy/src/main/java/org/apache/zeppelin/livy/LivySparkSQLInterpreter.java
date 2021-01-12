@@ -229,7 +229,7 @@ public class LivySparkSQLInterpreter extends BaseLivyInterpreter {
       if (sparkInterpreter != null) {
         return sparkInterpreter.getScheduler();
       } else {
-        return null;
+        return super.getScheduler();
       }
     }
   }
