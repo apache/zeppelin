@@ -257,20 +257,21 @@ public class ActiveDirectoryGroupRealm extends AbstractLdapRealm {
 
     Object[] searchArguments = new Object[]{containString};
 
-    NamingEnumeration answer = ldapContext.search(searchBase, searchFilter, searchArguments,
+    NamingEnumeration<SearchResult> answer = ldapContext.search(searchBase, searchFilter,
+        searchArguments,
         searchCtls);
 
     while (answer.hasMoreElements()) {
-      SearchResult sr = (SearchResult) answer.next();
+      SearchResult sr = answer.next();
 
       LOGGER.debug("Retrieving userprincipalname names for user [{}]", sr.getName());
 
       Attributes attrs = sr.getAttributes();
       if (attrs != null) {
-        NamingEnumeration ae = attrs.getAll();
+        NamingEnumeration<? extends Attribute> ae = attrs.getAll();
         while (ae.hasMore()) {
-          Attribute attr = (Attribute) ae.next();
-          if (attr.getID().toLowerCase().equals(this.getUserSearchAttributeName().toLowerCase())) {
+          Attribute attr = ae.next();
+          if (attr.getID().equalsIgnoreCase(this.getUserSearchAttributeName())) {
             userNameList.addAll(LdapUtils.getAllAttributeValues(attr));
           }
         }
@@ -301,29 +302,25 @@ public class ActiveDirectoryGroupRealm extends AbstractLdapRealm {
     String searchFilter = String.format("(&(objectClass=*)(%s=%s))", this.getUserSearchAttributeName(), userPrincipalName);
     Object[] searchArguments = new Object[]{userPrincipalName};
 
-    NamingEnumeration answer = ldapContext.search(searchBase, searchFilter, searchArguments,
+    NamingEnumeration<SearchResult> answer = ldapContext.search(searchBase, searchFilter, searchArguments,
         searchCtls);
 
     while (answer.hasMoreElements()) {
-      SearchResult sr = (SearchResult) answer.next();
+      SearchResult sr = answer.next();
 
       LOGGER.debug("Retrieving group names for user [{}]", sr.getName());
 
       Attributes attrs = sr.getAttributes();
 
       if (attrs != null) {
-        NamingEnumeration ae = attrs.getAll();
+        NamingEnumeration<? extends Attribute> ae = attrs.getAll();
         while (ae.hasMore()) {
-          Attribute attr = (Attribute) ae.next();
+          Attribute attr = ae.next();
 
           if (attr.getID().equals("memberOf")) {
-
             Collection<String> groupNames = LdapUtils.getAllAttributeValues(attr);
             LOGGER.debug("Groups found for user [{}]: {}", username, groupNames);
-
-
-            Collection<String> rolesForGroups = getRoleNamesForGroups(groupNames);
-            roleNames.addAll(rolesForGroups);
+            roleNames.addAll(getRoleNamesForGroups(groupNames));
           }
         }
       }

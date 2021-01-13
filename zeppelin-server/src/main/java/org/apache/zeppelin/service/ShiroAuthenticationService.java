@@ -215,7 +215,7 @@ public class ShiroAuthenticationService implements AuthenticationService {
   public Set<String> getAssociatedRoles() {
     Subject subject = org.apache.shiro.SecurityUtils.getSubject();
     HashSet<String> roles = new HashSet<>();
-    Map allRoles = null;
+    Map<String, String> allRoles = null;
 
     if (subject.isAuthenticated()) {
       Collection<Realm> realmsList = getRealmsList();
@@ -298,10 +298,10 @@ public class ShiroAuthenticationService implements AuthenticationService {
       constraints.setSearchScope(SearchControls.SUBTREE_SCOPE);
       String[] attrIDs = {userDnPrefix};
       constraints.setReturningAttributes(attrIDs);
-      NamingEnumeration result =
+      NamingEnumeration<SearchResult> result =
           ctx.search(userDnSuffix, "(" + userDnPrefix + "=*" + searchText + "*)", constraints);
       while (result.hasMore()) {
-        Attributes attrs = ((SearchResult) result.next()).getAttributes();
+        Attributes attrs = result.next().getAttributes();
         if (attrs.get(userDnPrefix) != null) {
           String currentUser = attrs.get(userDnPrefix).toString();
           userList.add(currentUser.split(":")[1].trim());
@@ -329,7 +329,7 @@ public class ShiroAuthenticationService implements AuthenticationService {
       constraints.setCountLimit(numUsersToFetch);
       String[] attrIDs = {userAttribute};
       constraints.setReturningAttributes(attrIDs);
-      NamingEnumeration result =
+      NamingEnumeration<SearchResult> result =
           ctx.search(
               userSearchRealm,
               "(&(objectclass="
@@ -341,7 +341,7 @@ public class ShiroAuthenticationService implements AuthenticationService {
                   + "*))",
               constraints);
       while (result.hasMore()) {
-        Attributes attrs = ((SearchResult) result.next()).getAttributes();
+        Attributes attrs = result.next().getAttributes();
         if (attrs.get(userAttribute) != null) {
           String currentUser;
           if (r.getUserLowerCase()) {
