@@ -62,6 +62,12 @@ public class ShiroAuthenticationService implements AuthenticationService {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ShiroAuthenticationService.class);
 
+  private static final String INI_REALM = "org.apache.shiro.realm.text.IniRealm";
+  private static final String LDAP_REALM = "org.apache.zeppelin.realm.LdapRealm";
+  private static final String LDAP_GROUP_REALM = "org.apache.zeppelin.realm.LdapGroupRealm";
+  private static final String ACTIVE_DIRECTORY_GROUP_REALM = "org.apache.zeppelin.realm.ActiveDirectoryGroupRealm";
+  private static final String JDBC_REALM = "org.apache.shiro.realm.jdbc.JdbcRealm";
+
   private final ZeppelinConfiguration conf;
 
   @Inject
@@ -158,16 +164,16 @@ public class ShiroAuthenticationService implements AuthenticationService {
         for (Realm realm : realmsList) {
           String realClassName = realm.getClass().getName();
           LOGGER.debug("RealmClass.getName: {}", realClassName);
-          if (realClassName.equals("org.apache.shiro.realm.text.IniRealm")) {
+          if (INI_REALM.equals(realClassName)) {
             usersList.addAll(getUserList((IniRealm) realm));
-          } else if (realClassName.equals("org.apache.zeppelin.realm.LdapGroupRealm")) {
+          } else if (LDAP_GROUP_REALM.equals(realClassName)) {
             usersList.addAll(getUserList((JndiLdapRealm) realm, searchText, numUsersToFetch));
-          } else if (realClassName.equals("org.apache.zeppelin.realm.LdapRealm")) {
+          } else if (LDAP_REALM.equals(realClassName)) {
             usersList.addAll(getUserList((LdapRealm) realm, searchText, numUsersToFetch));
-          } else if (realClassName.equals("org.apache.zeppelin.realm.ActiveDirectoryGroupRealm")) {
+          } else if (ACTIVE_DIRECTORY_GROUP_REALM.equals(realClassName)) {
             usersList.addAll(
                 getUserList((ActiveDirectoryGroupRealm) realm, searchText, numUsersToFetch));
-          } else if (realClassName.equals("org.apache.shiro.realm.jdbc.JdbcRealm")) {
+          } else if (JDBC_REALM.equals(realClassName)) {
             usersList.addAll(getUserList((JdbcRealm) realm));
           }
         }
@@ -192,9 +198,9 @@ public class ShiroAuthenticationService implements AuthenticationService {
         for (Realm realm : realmsList) {
           String name = realm.getClass().getName();
           LOGGER.debug("RealmClass.getName: {}", name);
-          if (name.equals("org.apache.shiro.realm.text.IniRealm")) {
+          if (INI_REALM.equals(name)) {
             rolesList.addAll(getRolesList((IniRealm) realm));
-          } else if (name.equals("org.apache.zeppelin.realm.LdapRealm")) {
+          } else if (LDAP_REALM.equals(name)) {
             rolesList.addAll(getRolesList((LdapRealm) realm));
           }
         }
@@ -221,10 +227,10 @@ public class ShiroAuthenticationService implements AuthenticationService {
       Collection<Realm> realmsList = getRealmsList();
       for (Realm realm : realmsList) {
         String name = realm.getClass().getName();
-        if (name.equals("org.apache.shiro.realm.text.IniRealm")) {
+        if (INI_REALM.equals(name)) {
           allRoles = ((IniRealm) realm).getIni().get("roles");
           break;
-        } else if (name.equals("org.apache.zeppelin.realm.LdapRealm")) {
+        } else if (LDAP_REALM.equals(name)) {
           try {
             AuthorizationInfo auth =
                 ((LdapRealm) realm)
@@ -238,7 +244,7 @@ public class ShiroAuthenticationService implements AuthenticationService {
             LOGGER.error("Can't fetch roles", e);
           }
           break;
-        } else if (name.equals("org.apache.zeppelin.realm.ActiveDirectoryGroupRealm")) {
+        } else if (ACTIVE_DIRECTORY_GROUP_REALM.equals(name)) {
           allRoles = ((ActiveDirectoryGroupRealm) realm).getListRoles();
           break;
         }
