@@ -38,7 +38,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -284,10 +283,8 @@ public class ActiveDirectoryGroupRealm extends AbstractLdapRealm {
 
   public Map<String, String> getListRoles() {
     Map<String, String> roles = new HashMap<>();
-    Iterator it = this.groupRolesMap.entrySet().iterator();
-    while (it.hasNext()) {
-      Map.Entry pair = (Map.Entry) it.next();
-      roles.put((String) pair.getValue(), "*");
+    for (Map.Entry<String, String> pair : groupRolesMap.entrySet()) {
+      roles.put(pair.getValue(), "*");
     }
     return roles;
   }

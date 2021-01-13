@@ -24,7 +24,6 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -245,11 +244,9 @@ public class ShiroAuthenticationService implements AuthenticationService {
         }
       }
       if (allRoles != null) {
-        Iterator it = allRoles.entrySet().iterator();
-        while (it.hasNext()) {
-          Map.Entry pair = (Map.Entry) it.next();
-          if (subject.hasRole((String) pair.getKey())) {
-            roles.add((String) pair.getKey());
+        for (Map.Entry<String, String> pair : allRoles.entrySet()) {
+          if (subject.hasRole(pair.getKey())) {
+            roles.add(pair.getKey());
           }
         }
       }
@@ -260,12 +257,10 @@ public class ShiroAuthenticationService implements AuthenticationService {
   /** Function to extract users from shiro.ini. */
   private List<String> getUserList(IniRealm r) {
     List<String> userList = new ArrayList<>();
-    Map getIniUser = r.getIni().get("users");
+    Map<String, String> getIniUser = r.getIni().get(IniRealm.USERS_SECTION_NAME);
     if (getIniUser != null) {
-      Iterator it = getIniUser.entrySet().iterator();
-      while (it.hasNext()) {
-        Map.Entry pair = (Map.Entry) it.next();
-        userList.add(pair.getKey().toString().trim());
+      for (Map.Entry<String, String> pair : getIniUser.entrySet()) {
+        userList.add(pair.getKey().trim());
       }
     }
     return userList;
@@ -279,12 +274,10 @@ public class ShiroAuthenticationService implements AuthenticationService {
    */
   private List<String> getRolesList(IniRealm r) {
     List<String> roleList = new ArrayList<>();
-    Map getIniRoles = r.getIni().get("roles");
+    Map<String, String> getIniRoles = r.getIni().get(IniRealm.ROLES_SECTION_NAME);
     if (getIniRoles != null) {
-      Iterator it = getIniRoles.entrySet().iterator();
-      while (it.hasNext()) {
-        Map.Entry pair = (Map.Entry) it.next();
-        roleList.add(pair.getKey().toString().trim());
+      for (Map.Entry<String, String> pair : getIniRoles.entrySet()) {
+        roleList.add(pair.getKey().trim());
       }
     }
     return roleList;
@@ -378,11 +371,9 @@ public class ShiroAuthenticationService implements AuthenticationService {
     List<String> roleList = new ArrayList<>();
     Map<String, String> roles = r.getListRoles();
     if (roles != null) {
-      Iterator it = roles.entrySet().iterator();
-      while (it.hasNext()) {
-        Map.Entry pair = (Map.Entry) it.next();
-        roleList.add((String) pair.getKey());
+      for (Map.Entry<String, String> pair : roles.entrySet()) {
         LOGGER.debug("RoleKeyValue: {} = {}", pair.getKey(), pair.getValue());
+        roleList.add(pair.getKey());
       }
     }
     return roleList;
