@@ -1678,6 +1678,9 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-javadoc-plugin</artifactId>
+            <configuration>
+              <notimestamp>true</notimestamp>
+            </configuration>
             <executions>
               <execution>
                 <id>attach-javadocs</id>
