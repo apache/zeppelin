@@ -699,7 +699,7 @@ public class LdapRealm extends JndiLdapRealm {
       return false;
     }
 
-    String searchBaseString = tokens[0].substring(tokens[0].lastIndexOf("/") + 1);
+    String searchBaseString = tokens[0].substring(tokens[0].lastIndexOf('/') + 1);
     String searchScope = tokens[2];
     String searchFilter = tokens[3];
 

@@ -119,9 +119,8 @@ public class ActiveDirectoryGroupRealm extends AbstractLdapRealm {
   protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token)
           throws AuthenticationException {
     try {
-      AuthenticationInfo info = this.queryForAuthenticationInfo(token,
+      return this.queryForAuthenticationInfo(token,
           this.getLdapContextFactory());
-      return info;
     } catch (javax.naming.AuthenticationException var5) {
       throw new AuthenticationException("LDAP authentication failed.", var5);
     } catch (NamingException var6) {
@@ -132,9 +131,8 @@ public class ActiveDirectoryGroupRealm extends AbstractLdapRealm {
 
   protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals) {
     try {
-      AuthorizationInfo info = this.queryForAuthorizationInfo(principals,
+      return this.queryForAuthorizationInfo(principals,
           this.getLdapContextFactory());
-      return info;
     } catch (NamingException var5) {
       String msg = "LDAP naming error while attempting to " +
           "retrieve authorization for user [" + principals + "].";
@@ -187,7 +185,7 @@ public class ActiveDirectoryGroupRealm extends AbstractLdapRealm {
     return buildAuthenticationInfo(upToken.getUsername(), upToken.getPassword());
   }
 
-  private Boolean isValidPrincipalName(String userPrincipalName) {
+  private boolean isValidPrincipalName(String userPrincipalName) {
     if (userPrincipalName != null) {
       if (StringUtils.isNotEmpty(userPrincipalName) && userPrincipalName.contains("@")) {
         String userPrincipalWithoutDomain = userPrincipalName.split("@")[0].trim();

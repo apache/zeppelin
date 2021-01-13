@@ -74,7 +74,7 @@ public class ShiroAuthenticationService implements AuthenticationService {
             ((DefaultWebSecurityManager) org.apache.shiro.SecurityUtils.getSecurityManager())
                 .getRealms();
         if (realms.size() > 1) {
-          Boolean isIniRealmEnabled = false;
+          boolean isIniRealmEnabled = false;
           for (Realm realm : realms) {
             if (realm instanceof IniRealm && ((IniRealm) realm).getIni().get("users") != null) {
               isIniRealmEnabled = true;
@@ -287,7 +287,7 @@ public class ShiroAuthenticationService implements AuthenticationService {
   private List<String> getUserList(JndiLdapRealm r, String searchText, int numUsersToFetch) {
     List<String> userList = new ArrayList<>();
     String userDnTemplate = r.getUserDnTemplate();
-    String userDn[] = userDnTemplate.split(",", 2);
+    String[] userDn = userDnTemplate.split(",", 2);
     String userDnPrefix = userDn[0].split("=")[0];
     String userDnSuffix = userDn[1];
     JndiLdapContextFactory cf = (JndiLdapContextFactory) r.getContextFactory();
@@ -399,7 +399,7 @@ public class ShiroAuthenticationService implements AuthenticationService {
     ResultSet rs = null;
     DataSource dataSource = null;
     String authQuery = "";
-    String retval[];
+    String[] retval;
     String tablename = "";
     String username = "";
     String userquery;
