@@ -64,7 +64,7 @@ public class ActiveDirectoryGroupRealm extends AbstractLdapRealm {
 
   private static final String ROLE_NAMES_DELIMETER = ",";
 
-  final String keystorePass = "activeDirectoryRealm.systemPassword";
+  private static final String KEYSTORE_PASS = "activeDirectoryRealm.systemPassword";
 
   private String userSearchAttributeName = "sAMAccountName";
 
@@ -145,7 +145,7 @@ public class ActiveDirectoryGroupRealm extends AbstractLdapRealm {
     if (StringUtils.isEmpty(this.hadoopSecurityCredentialPath)) {
       password = this.systemPassword;
     } else {
-      password = LdapRealm.getSystemPassword(hadoopSecurityCredentialPath, keystorePass);
+      password = LdapRealm.getSystemPassword(hadoopSecurityCredentialPath, KEYSTORE_PASS);
     }
     return password;
   }

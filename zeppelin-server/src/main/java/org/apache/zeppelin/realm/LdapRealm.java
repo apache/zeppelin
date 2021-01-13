@@ -183,7 +183,7 @@ public class LdapRealm extends JndiLdapRealm {
   private final Map<String, List<String>> permissionsByRole = new LinkedHashMap<>();
 
   private String hadoopSecurityCredentialPath;
-  final String keystorePass = "ldapRealm.systemPassword";
+  private static final String KEYSTORE_PASS = "ldapRealm.systemPassword";
 
   private boolean authorizationEnabled;
 
@@ -218,7 +218,7 @@ public class LdapRealm extends JndiLdapRealm {
     if (!org.apache.commons.lang3.StringUtils.isEmpty(this.hadoopSecurityCredentialPath)
         && getContextFactory() != null) {
       ((JndiLdapContextFactory) getContextFactory()).setSystemPassword(
-          getSystemPassword(this.hadoopSecurityCredentialPath, keystorePass));
+          getSystemPassword(this.hadoopSecurityCredentialPath, KEYSTORE_PASS));
     }
   }
 
