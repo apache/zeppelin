@@ -59,8 +59,8 @@ import org.apache.shiro.crypto.hash.DefaultHashService;
 import org.apache.shiro.crypto.hash.Hash;
 import org.apache.shiro.crypto.hash.HashRequest;
 import org.apache.shiro.crypto.hash.HashService;
+import org.apache.shiro.realm.ldap.DefaultLdapRealm;
 import org.apache.shiro.realm.ldap.JndiLdapContextFactory;
-import org.apache.shiro.realm.ldap.JndiLdapRealm;
 import org.apache.shiro.realm.ldap.LdapContextFactory;
 import org.apache.shiro.realm.ldap.LdapUtils;
 import org.apache.shiro.session.Session;
@@ -125,7 +125,7 @@ import org.slf4j.LoggerFactory;
  * <p>
  *   securityManager.realms = $ldapRealm
  */
-public class LdapRealm extends JndiLdapRealm {
+public class LdapRealm extends DefaultLdapRealm {
 
   private static final SearchControls SUBTREE_SCOPE = new SearchControls();
   private static final SearchControls ONELEVEL_SCOPE = new SearchControls();
@@ -141,11 +141,10 @@ public class LdapRealm extends JndiLdapRealm {
   private static final String MATCHING_RULE_IN_CHAIN_FORMAT =
       "(&(objectClass=%s)(%s:1.2.840.113556.1.4.1941:=%s))";
 
-  private static final Pattern TEMPLATE_PATTERN = Pattern.compile("\\{(\\d+?)\\}");
   private static final String DEFAULT_PRINCIPAL_REGEX = "(.*)";
   private static final String MEMBER_SUBSTITUTION_TOKEN = "{0}";
   private static final String HASHING_ALGORITHM = "SHA-1";
-  private static final Logger log = LoggerFactory.getLogger(LdapRealm.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(LdapRealm.class);
 
   static {
     SUBTREE_SCOPE.setSearchScope(SearchControls.SUBTREE_SCOPE);
@@ -184,7 +183,7 @@ public class LdapRealm extends JndiLdapRealm {
   private final Map<String, List<String>> permissionsByRole = new LinkedHashMap<>();
 
   private String hadoopSecurityCredentialPath;
-  final String keystorePass = "ldapRealm.systemPassword";
+  private static final String KEYSTORE_PASS = "ldapRealm.systemPassword";
 
   private boolean authorizationEnabled;
 
@@ -214,12 +213,13 @@ public class LdapRealm extends JndiLdapRealm {
     }
   }
 
+  @Override
   protected void onInit() {
     super.onInit();
     if (!org.apache.commons.lang3.StringUtils.isEmpty(this.hadoopSecurityCredentialPath)
         && getContextFactory() != null) {
       ((JndiLdapContextFactory) getContextFactory()).setSystemPassword(
-          getSystemPassword(this.hadoopSecurityCredentialPath, keystorePass));
+          getSystemPassword(this.hadoopSecurityCredentialPath, KEYSTORE_PASS));
     }
   }
 
@@ -287,9 +287,7 @@ public class LdapRealm extends JndiLdapRealm {
       return null;
     }
     final Set<String> roleNames = getRoles(principals, ldapContextFactory);
-    if (log.isDebugEnabled()) {
-      log.debug("RolesNames Authorization: " + roleNames);
-    }
+    LOGGER.debug("RolesNames Authorization: {}", roleNames);
     SimpleAuthorizationInfo simpleAuthorizationInfo = new SimpleAuthorizationInfo(roleNames);
     Set<String> stringPermissions = permsFor(roleNames);
     simpleAuthorizationInfo.setStringPermissions(stringPermissions);
@@ -303,7 +301,7 @@ public class LdapRealm extends JndiLdapRealm {
       Set<String> roles = getRoles(principals, ldapContextFactory);
       for (String allowedRole : allowedRolesForAuthentication) {
         if (roles.contains(allowedRole)) {
-          log.debug("Allowed role for user [" + allowedRole + "] found.");
+          LOGGER.debug("Allowed role for user [{}] found.", allowedRole);
           allowed = true;
           break;
         }
@@ -322,7 +320,7 @@ public class LdapRealm extends JndiLdapRealm {
       return rolesFor(principals, username, systemLdapCtx,
         ldapContextFactory, SecurityUtils.getSubject().getSession());
     } catch (Throwable t) {
-      log.warn("Failed to get roles in current context for " + username, t);
+      LOGGER.warn("Failed to get roles in current context for " + username, t);
       return Collections.emptySet();
     } finally {
       LdapUtils.closeContext(systemLdapCtx);
@@ -336,27 +334,25 @@ public class LdapRealm extends JndiLdapRealm {
     final Set<String> groupNames = new HashSet<>();
     final String userName;
     if (getUserLowerCase()) {
-      log.debug("userLowerCase true");
+      LOGGER.debug("userLowerCase true");
       userName = userNameIn.toLowerCase();
     } else {
       userName = userNameIn;
     }
-    
+
     String userDn = getUserDnForSearch(userName);
 
     // Activate paged results
     int pageSize = getPagingSize();
-    if (log.isDebugEnabled()) {
-      log.debug("Ldap PagingSize: " + pageSize);
-    }
+    LOGGER.debug("Ldap PagingSize: {}", pageSize);
     int numResults = 0;
     byte[] cookie = null;
     try {
       ldapCtx.addToEnvironment(Context.REFERRAL, "ignore");
-      
+
       ldapCtx.setRequestControls(new Control[]{new PagedResultsControl(pageSize,
             Control.NONCRITICAL)});
-        
+
       do {
         // ldapsearch -h localhost -p 33389 -D
         // uid=guest,ou=people,dc=hadoop,dc=apache,dc=org -w guest-password
@@ -377,7 +373,7 @@ public class LdapRealm extends JndiLdapRealm {
 
               Attribute attribute = group.getAttributes().get(getGroupIdAttribute());
               String groupName = attribute.get().toString();
-              
+
               String roleName = roleNameFor(groupName);
               if (roleName != null) {
                 roleNames.add(roleName);
@@ -394,10 +390,8 @@ public class LdapRealm extends JndiLdapRealm {
               searchFilter = expandTemplate(groupSearchFilter, userName);
               //searchFilter = String.format("%1$s", groupSearchFilter);
             }
-            if (log.isDebugEnabled()) {
-              log.debug("Group SearchBase|SearchFilter|GroupSearchScope: " + getGroupSearchBase()
-                    + "|" + searchFilter + "|" + groupSearchScope);
-            }
+            LOGGER.debug("Group SearchBase|SearchFilter|GroupSearchScope: " + "{}|{}|{}",
+                getGroupSearchBase(), searchFilter, groupSearchScope);
             searchResultEnum = ldapCtx.search(
                 getGroupSearchBase(),
                 searchFilter,
@@ -410,7 +404,7 @@ public class LdapRealm extends JndiLdapRealm {
             }
           }
         } catch (PartialResultException e) {
-          log.debug("Ignoring PartitalResultException");
+          LOGGER.debug("Ignoring PartitalResultException");
         } finally {
           if (searchResultEnum != null) {
             searchResultEnum.close();
@@ -421,10 +415,9 @@ public class LdapRealm extends JndiLdapRealm {
             cookie, Control.CRITICAL)});
       } while (cookie != null);
     } catch (SizeLimitExceededException e) {
-      log.info("Only retrieved first " + numResults +
-          " groups due to SizeLimitExceededException.");
+      LOGGER.info("Only retrieved first {} groups due to SizeLimitExceededException.", numResults);
     } catch (IOException e) {
-      log.error("Unabled to setup paged results");
+      LOGGER.error("Unabled to setup paged results");
     }
     // save role names and group names in session so that they can be
     // easily looked up outside of this object
@@ -433,9 +426,7 @@ public class LdapRealm extends JndiLdapRealm {
     if (!groupNames.isEmpty() && (principals instanceof MutablePrincipalCollection)) {
       ((MutablePrincipalCollection) principals).addAll(groupNames, getName());
     }
-    if (log.isDebugEnabled()) {
-      log.debug("User RoleNames: " + userName + "::" + roleNames);
-    }
+    LOGGER.debug("User RoleNames: {}::{}", userName, roleNames);
     return roleNames;
   }
 
@@ -532,10 +523,8 @@ public class LdapRealm extends JndiLdapRealm {
     Set<String> perms = new LinkedHashSet<>(); // preserve order
     for (String role : roleNames) {
       List<String> permsForRole = permissionsByRole.get(role);
-      if (log.isDebugEnabled()) {
-        log.debug("PermsForRole: " + role);
-        log.debug("PermByRole: " + permsForRole);
-      }
+      LOGGER.debug("PermsForRole: {}", role);
+      LOGGER.debug("PermByRole: {}", permsForRole);
       if (permsForRole != null) {
         perms.addAll(permsForRole);
       }
@@ -678,7 +667,7 @@ public class LdapRealm extends JndiLdapRealm {
   }
 
   private Map<String, List<String>> parsePermissionByRoleString(String permissionsByRoleStr) {
-    Map<String, List<String>> perms = new HashMap<String, List<String>>();
+    Map<String, List<String>> perms = new HashMap<>();
 
     // split by semicolon ; then by eq = then by comma ,
     StringTokenizer stSem = new StringTokenizer(permissionsByRoleStr, ";");
@@ -691,7 +680,7 @@ public class LdapRealm extends JndiLdapRealm {
       String role = stEq.nextToken().trim();
       String perm = stEq.nextToken().trim();
       StringTokenizer stCom = new StringTokenizer(perm, ",");
-      List<String> permList = new ArrayList<String>();
+      List<String> permList = new ArrayList<>();
       while (stCom.hasMoreTokens()) {
         permList.add(stCom.nextToken().trim());
       }
@@ -711,7 +700,7 @@ public class LdapRealm extends JndiLdapRealm {
       return false;
     }
 
-    String searchBaseString = tokens[0].substring(tokens[0].lastIndexOf("/") + 1);
+    String searchBaseString = tokens[0].substring(tokens[0].lastIndexOf('/') + 1);
     String searchScope = tokens[2];
     String searchFilter = tokens[3];
 
@@ -719,14 +708,14 @@ public class LdapRealm extends JndiLdapRealm {
 
     // do scope test
     if ("base".equalsIgnoreCase(searchScope)) {
-      log.debug("DynamicGroup SearchScope base");
+      LOGGER.debug("DynamicGroup SearchScope base");
       return false;
     }
     if (!userLdapDn.toString().endsWith(searchBaseDn.toString())) {
       return false;
     }
     if ("one".equalsIgnoreCase(searchScope) && (userLdapDn.size() != searchBaseDn.size() - 1)) {
-      log.debug("DynamicGroup SearchScope one");
+      LOGGER.debug("DynamicGroup SearchScope one");
       return false;
     }
     // search for the filter, substituting base with userDn
@@ -902,9 +891,7 @@ public class LdapRealm extends JndiLdapRealm {
     if ((userSearchBase == null || userSearchBase.isEmpty()) || (userSearchAttributeName == null
         && userSearchFilter == null && !"object".equalsIgnoreCase(userSearchScope))) {
       userDn = expandTemplate(userDnTemplate, matchedPrincipal);
-      if (log.isDebugEnabled()) {
-        log.debug("LDAP UserDN and Principal: " + userDn + "," + principal);
-      }
+      LOGGER.debug("LDAP UserDN and Principal: {},{}", userDn, principal);
       return userDn;
     }
 
@@ -929,24 +916,19 @@ public class LdapRealm extends JndiLdapRealm {
     NamingEnumeration<SearchResult> searchResultEnum = null;
     try {
       systemLdapCtx = getContextFactory().getSystemLdapContext();
-      if (log.isDebugEnabled()) {
-        log.debug("SearchBase,SearchFilter,UserSearchScope: " + searchBase
-            + "," + searchFilter + "," + userSearchScope);
-      }
+      LOGGER.debug("SearchBase,SearchFilter,UserSearchScope: {},{},{}", searchBase, searchFilter, userSearchScope);
       searchResultEnum = systemLdapCtx.search(searchBase, searchFilter, searchControls);
       // SearchResults contains all the entries in search scope
       if (searchResultEnum.hasMore()) {
         SearchResult searchResult = searchResultEnum.next();
         userDn = searchResult.getNameInNamespace();
-        if (log.isDebugEnabled()) {
-          log.debug("UserDN Returned,Principal: " + userDn + "," + principal);
-        }
+        LOGGER.debug("UserDN Returned,Principal: {},{}", userDn, principal);
         return userDn;
       } else {
         throw new IllegalArgumentException("Illegal principal name: " + principal);
       }
     } catch (AuthenticationException ne) {
-      ne.printStackTrace();
+      LOGGER.error("AuthenticationException in getUserDn", ne);
       throw new IllegalArgumentException("Illegal principal name: " + principal);
     } catch (NamingException ne) {
       throw new IllegalArgumentException("Hit NamingException: " + ne.getMessage());

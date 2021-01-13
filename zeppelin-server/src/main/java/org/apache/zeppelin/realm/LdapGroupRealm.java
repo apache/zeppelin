@@ -18,7 +18,7 @@ package org.apache.zeppelin.realm;
 
 import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.authz.SimpleAuthorizationInfo;
-import org.apache.shiro.realm.ldap.JndiLdapRealm;
+import org.apache.shiro.realm.ldap.DefaultLdapRealm;
 import org.apache.shiro.realm.ldap.LdapContextFactory;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.slf4j.Logger;
@@ -39,9 +39,10 @@ import javax.naming.ldap.LdapContext;
 /**
  * Created for org.apache.zeppelin.server.
  */
-public class LdapGroupRealm extends JndiLdapRealm {
-  private static final Logger LOG = LoggerFactory.getLogger(LdapGroupRealm.class);
+public class LdapGroupRealm extends DefaultLdapRealm {
+  private static final Logger LOGGER = LoggerFactory.getLogger(LdapGroupRealm.class);
 
+  @Override
   public AuthorizationInfo queryForAuthorizationInfo(PrincipalCollection principals,
           LdapContextFactory ldapContextFactory) throws NamingException {
     String username = (String) getAvailablePrincipal(principals);
@@ -83,7 +84,7 @@ public class LdapGroupRealm extends JndiLdapRealm {
       return roleNames;
 
     } catch (Exception e) {
-      LOG.error("Error", e);
+      LOGGER.error("Error", e);
     }
 
     return new HashSet<>();

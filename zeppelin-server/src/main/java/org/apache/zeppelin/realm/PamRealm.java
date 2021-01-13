@@ -28,9 +28,6 @@ import org.apache.shiro.subject.PrincipalCollection;
 import org.jvnet.libpam.PAM;
 import org.jvnet.libpam.PAMException;
 import org.jvnet.libpam.UnixUser;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -38,7 +35,6 @@ import java.util.Set;
  * An {@code AuthorizingRealm} based on libpam4j.
  */
 public class PamRealm extends AuthorizingRealm {
-  private static final Logger LOG = LoggerFactory.getLogger(PamRealm.class);
 
   private String service;
 

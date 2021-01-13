@@ -17,13 +17,9 @@
 package org.apache.zeppelin.service;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.security.Principal;
 
 import org.apache.commons.configuration.ConfigurationException;
@@ -86,14 +82,6 @@ public class ShiroAuthenticationServiceTest {
     }
   }
 
-  private void setFinalStatic(Field field, Object newValue)
-      throws NoSuchFieldException, IllegalAccessException {
-    field.setAccessible(true);
-    Field modifiersField = Field.class.getDeclaredField("modifiers");
-    modifiersField.setAccessible(true);
-    modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
-    field.set(null, newValue);
-  }
   public class TestPrincipal implements Principal {
 
     private String username;
