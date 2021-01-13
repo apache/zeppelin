@@ -141,7 +141,6 @@ public class LdapRealm extends JndiLdapRealm {
   private static final String MATCHING_RULE_IN_CHAIN_FORMAT =
       "(&(objectClass=%s)(%s:1.2.840.113556.1.4.1941:=%s))";
 
-  private static final Pattern TEMPLATE_PATTERN = Pattern.compile("\\{(\\d+?)\\}");
   private static final String DEFAULT_PRINCIPAL_REGEX = "(.*)";
   private static final String MEMBER_SUBSTITUTION_TOKEN = "{0}";
   private static final String HASHING_ALGORITHM = "SHA-1";
