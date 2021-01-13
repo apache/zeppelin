@@ -96,6 +96,7 @@ public class ActiveDirectoryGroupRealm extends AbstractLdapRealm {
 
   LdapContextFactory ldapContextFactory;
 
+  @Override
   protected void onInit() {
     super.onInit();
     this.getLdapContextFactory();
@@ -116,6 +117,7 @@ public class ActiveDirectoryGroupRealm extends AbstractLdapRealm {
     return this.ldapContextFactory;
   }
 
+  @Override
   protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token)
           throws AuthenticationException {
     try {
@@ -129,6 +131,7 @@ public class ActiveDirectoryGroupRealm extends AbstractLdapRealm {
     }
   }
 
+  @Override
   protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals) {
     try {
       return this.queryForAuthorizationInfo(principals,
@@ -162,6 +165,7 @@ public class ActiveDirectoryGroupRealm extends AbstractLdapRealm {
    * @return an {@link AuthenticationInfo} instance containing information retrieved from LDAP.
    * @throws NamingException if any LDAP errors occur during the search.
    */
+  @Override
   protected AuthenticationInfo queryForAuthenticationInfo(AuthenticationToken token,
           LdapContextFactory ldapContextFactory) throws NamingException {
     UsernamePasswordToken upToken = (UsernamePasswordToken) token;
@@ -222,6 +226,7 @@ public class ActiveDirectoryGroupRealm extends AbstractLdapRealm {
    * @return the AuthorizationInfo for the given Subject principal.
    * @throws NamingException if an error occurs when searching the LDAP server.
    */
+  @Override
   protected AuthorizationInfo queryForAuthorizationInfo(PrincipalCollection principals,
           LdapContextFactory ldapContextFactory) throws NamingException {
     String username = (String) getAvailablePrincipal(principals);

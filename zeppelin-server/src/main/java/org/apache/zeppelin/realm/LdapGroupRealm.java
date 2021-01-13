@@ -42,6 +42,7 @@ import javax.naming.ldap.LdapContext;
 public class LdapGroupRealm extends JndiLdapRealm {
   private static final Logger LOGGER = LoggerFactory.getLogger(LdapGroupRealm.class);
 
+  @Override
   public AuthorizationInfo queryForAuthorizationInfo(PrincipalCollection principals,
           LdapContextFactory ldapContextFactory) throws NamingException {
     String username = (String) getAvailablePrincipal(principals);

@@ -213,6 +213,7 @@ public class LdapRealm extends JndiLdapRealm {
     }
   }
 
+  @Override
   protected void onInit() {
     super.onInit();
     if (!org.apache.commons.lang3.StringUtils.isEmpty(this.hadoopSecurityCredentialPath)
