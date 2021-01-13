@@ -59,8 +59,8 @@ import org.apache.shiro.crypto.hash.DefaultHashService;
 import org.apache.shiro.crypto.hash.Hash;
 import org.apache.shiro.crypto.hash.HashRequest;
 import org.apache.shiro.crypto.hash.HashService;
+import org.apache.shiro.realm.ldap.DefaultLdapRealm;
 import org.apache.shiro.realm.ldap.JndiLdapContextFactory;
-import org.apache.shiro.realm.ldap.JndiLdapRealm;
 import org.apache.shiro.realm.ldap.LdapContextFactory;
 import org.apache.shiro.realm.ldap.LdapUtils;
 import org.apache.shiro.session.Session;
@@ -125,7 +125,7 @@ import org.slf4j.LoggerFactory;
  * <p>
  *   securityManager.realms = $ldapRealm
  */
-public class LdapRealm extends JndiLdapRealm {
+public class LdapRealm extends DefaultLdapRealm {
 
   private static final SearchControls SUBTREE_SCOPE = new SearchControls();
   private static final SearchControls ONELEVEL_SCOPE = new SearchControls();

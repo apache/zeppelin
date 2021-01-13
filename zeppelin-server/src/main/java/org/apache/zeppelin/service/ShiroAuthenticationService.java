@@ -41,8 +41,8 @@ import org.apache.shiro.UnavailableSecurityManagerException;
 import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.realm.Realm;
 import org.apache.shiro.realm.jdbc.JdbcRealm;
+import org.apache.shiro.realm.ldap.DefaultLdapRealm;
 import org.apache.shiro.realm.ldap.JndiLdapContextFactory;
-import org.apache.shiro.realm.ldap.JndiLdapRealm;
 import org.apache.shiro.realm.text.IniRealm;
 import org.apache.shiro.subject.SimplePrincipalCollection;
 import org.apache.shiro.subject.Subject;
@@ -167,7 +167,7 @@ public class ShiroAuthenticationService implements AuthenticationService {
           if (INI_REALM.equals(realClassName)) {
             usersList.addAll(getUserList((IniRealm) realm));
           } else if (LDAP_GROUP_REALM.equals(realClassName)) {
-            usersList.addAll(getUserList((JndiLdapRealm) realm, searchText, numUsersToFetch));
+            usersList.addAll(getUserList((DefaultLdapRealm) realm, searchText, numUsersToFetch));
           } else if (LDAP_REALM.equals(realClassName)) {
             usersList.addAll(getUserList((LdapRealm) realm, searchText, numUsersToFetch));
           } else if (ACTIVE_DIRECTORY_GROUP_REALM.equals(realClassName)) {
@@ -290,7 +290,7 @@ public class ShiroAuthenticationService implements AuthenticationService {
   }
 
   /** Function to extract users from LDAP. */
-  private List<String> getUserList(JndiLdapRealm r, String searchText, int numUsersToFetch) {
+  private List<String> getUserList(DefaultLdapRealm r, String searchText, int numUsersToFetch) {
     List<String> userList = new ArrayList<>();
     String userDnTemplate = r.getUserDnTemplate();
     String[] userDn = userDnTemplate.split(",", 2);
