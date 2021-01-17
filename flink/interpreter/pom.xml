@@ -85,6 +85,16 @@
       <groupId>org.apache.zeppelin</groupId>
       <artifactId>zeppelin-shell</artifactId>
       <version>${project.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId> org.eclipse.jetty</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.google.guava</groupId>
+          <artifactId>guava</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <dependency>
