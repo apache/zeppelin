@@ -129,6 +129,7 @@ public abstract class FlinkSqlInterrpeter extends AbstractInterpreter {
       boolean runAsOne = Boolean.parseBoolean(context.getStringLocalProperty("runAsOne", "false"));
       List<String> sqls = sqlSplitter.splitSql(st).stream().map(String::trim).collect(Collectors.toList());
       boolean isFirstInsert = true;
+      boolean hasInsert = false;
       for (String sql : sqls) {
         Optional<SqlCommandParser.SqlCommandCall> sqlCommand = sqlCommandParser.parse(sql);
         if (!sqlCommand.isPresent()) {
@@ -143,6 +144,7 @@ public abstract class FlinkSqlInterrpeter extends AbstractInterpreter {
         try {
           if (sqlCommand.get().command == SqlCommand.INSERT_INTO ||
                   sqlCommand.get().command == SqlCommand.INSERT_OVERWRITE) {
+            hasInsert = true;
             if (isFirstInsert && runAsOne) {
               flinkInterpreter.getFlinkShims().startMultipleInsert(tbenv, context);
               isFirstInsert = false;
@@ -164,7 +166,7 @@ public abstract class FlinkSqlInterrpeter extends AbstractInterpreter {
         }
       }
 
-      if (runAsOne) {
+      if (runAsOne && hasInsert) {
         try {
           lock.lock();
           String jobName = context.getStringLocalProperty("jobName", st);
