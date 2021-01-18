@@ -443,6 +443,15 @@ public class FlinkStreamSqlInterpreterTest extends SqlInterpreterTest {
             context);
 
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+
+    // runAsOne won't affect the select statement.
+    context = getInterpreterContext();
+    context.getLocalProperties().put("runAsOne", "true");
+    context.getLocalProperties().put("type", "update");
+    result = sqlInterpreter.interpret(
+            "select 1",
+            context);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
   }
 
   @Test
