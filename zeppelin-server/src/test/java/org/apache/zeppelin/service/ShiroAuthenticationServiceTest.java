@@ -22,7 +22,6 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 import java.security.Principal;
 
-import org.apache.commons.configuration.ConfigurationException;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.Notebook;
 import org.junit.Before;
@@ -74,12 +73,9 @@ public class ShiroAuthenticationServiceTest {
     when(subject.getPrincipal()).thenReturn(new TestPrincipal(expectedName));
 
     Notebook notebook = Mockito.mock(Notebook.class);
-    try {
-      when(notebook.getConf())
-          .thenReturn(new ZeppelinConfiguration(this.getClass().getResource("/zeppelin-site.xml")));
-    } catch (ConfigurationException e) {
-      e.printStackTrace();
-    }
+    when(notebook.getConf())
+        .thenReturn(ZeppelinConfiguration.create("zeppelin-site.xml"));
+
   }
 
   public class TestPrincipal implements Principal {

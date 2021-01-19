@@ -44,7 +44,6 @@
     <frontend.maven.plugin.version>1.3</frontend.maven.plugin.version>
     <commons.vfs2.version>2.2</commons.vfs2.version>
     <eclipse.jgit.version>4.5.4.201711221230-r</eclipse.jgit.version>
-    <commons.configuration2.version>2.2</commons.configuration2.version>
     <!--test library versions-->
     <google.truth.version>0.27</google.truth.version>
     <google.testing.nio.version>0.32.0-alpha</google.testing.nio.version>
@@ -207,19 +206,6 @@
         <exclusion>
           <groupId>org.codehaus.plexus</groupId>
           <artifactId>plexus-utils</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-
-    <!-- Needed for string interpolation in shiro.ini -->
-    <dependency>
-      <groupId>org.apache.commons</groupId>
-      <artifactId>commons-configuration2</artifactId>
-      <version>${commons.configuration2.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.apache.commons</groupId>
-          <artifactId>commons-lang3</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
