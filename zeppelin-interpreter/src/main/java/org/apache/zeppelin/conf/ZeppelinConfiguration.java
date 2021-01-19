@@ -558,7 +558,7 @@ public class ZeppelinConfiguration {
     return getConfigFSDir(absolute) + "/notebook-authorization.json";
   }
 
-  public Boolean credentialsPersist() {
+  public boolean credentialsPersist() {
     return getBoolean(ConfVars.ZEPPELIN_CREDENTIALS_PERSIST);
   }
 
@@ -691,7 +691,7 @@ public class ZeppelinConfiguration {
     return getInt(ConfVars.ZEPPELIN_SERVER_JETTY_REQUEST_HEADER_SIZE);
   }
 
-  public Boolean isAuthorizationHeaderClear() {
+  public boolean isAuthorizationHeaderClear() {
     return getBoolean(ConfVars.ZEPPELIN_SERVER_AUTHORIZATION_HEADER_CLEAR);
   }
 
@@ -744,7 +744,7 @@ public class ZeppelinConfiguration {
     return getString(ConfVars.ZEPPELIN_NOTEBOOK_GIT_REMOTE_ORIGIN);
   }
 
-  public Boolean isZeppelinNotebookCronEnable() {
+  public boolean isZeppelinNotebookCronEnable() {
     return getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_CRON_ENABLE);
   }
 
@@ -768,11 +768,11 @@ public class ZeppelinConfiguration {
     return getString(ConfVars.ZEPPELIN_PROXY_PASSWORD);
   }
 
-  public Boolean isIndexRebuild() {
+  public boolean isIndexRebuild() {
     return getBoolean(ConfVars.ZEPPELIN_SEARCH_INDEX_REBUILD);
   }
 
-  public Boolean isZeppelinSearchUseDisk() {
+  public boolean isZeppelinSearchUseDisk() {
     return getBoolean(ConfVars.ZEPPELIN_SEARCH_USE_DISK);
   }
 
@@ -780,7 +780,7 @@ public class ZeppelinConfiguration {
     return getAbsoluteDir(ConfVars.ZEPPELIN_SEARCH_INDEX_PATH);
   }
 
-  public Boolean isOnlyYarnCluster() {
+  public boolean isOnlyYarnCluster() {
     return getBoolean(ConfVars.ZEPPELIN_SPARK_ONLY_YARN_CLUSTER);
   }
 
