@@ -669,7 +669,7 @@ public class ZeppelinConfiguration {
   public List<String> getAllowedOrigins()
   {
     if (getString(ConfVars.ZEPPELIN_ALLOWED_ORIGINS).isEmpty()) {
-      return Arrays.asList(new String[0]);
+      return Collections.emptyList();
     }
 
     return Arrays.asList(getString(ConfVars.ZEPPELIN_ALLOWED_ORIGINS).toLowerCase().split(","));
