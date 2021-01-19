@@ -23,6 +23,7 @@ import org.apache.hadoop.yarn.api.records.YarnApplicationState;
 import org.apache.hadoop.yarn.client.api.YarnClient;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterManagedProcess;
 import org.apache.zeppelin.scheduler.SchedulerThreadFactory;
 import org.slf4j.Logger;
@@ -93,8 +94,8 @@ public class YarnAppMonitor {
                   LOGGER.warn("Fail to check yarn app status", e);
                 }
               },
-              conf.getInt("zeppelin.interpreter.yarn.monitor.interval_secs", 10),
-              conf.getInt("zeppelin.interpreter.yarn.monitor.interval_secs", 10),
+              conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_YARN_MONITOR_INTERVAL_SECS),
+              conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_YARN_MONITOR_INTERVAL_SECS),
               TimeUnit.SECONDS);
 
       LOGGER.info("YarnAppMonitor is started");

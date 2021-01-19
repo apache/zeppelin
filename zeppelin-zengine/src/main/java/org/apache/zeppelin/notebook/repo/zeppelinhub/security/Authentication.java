@@ -28,6 +28,7 @@ import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,7 +53,6 @@ public class Authentication implements Runnable {
   private static final String CIPHER_MODE = "AES/CBC/PKCS5PADDING";
   private static final int IV_SIZE = 16;
 
-  private static final String ZEPPELINHUB_USER_KEY = "zeppelinhub.user.key";
   private String token;
   private boolean authEnabled;
   private boolean authenticated;
@@ -82,8 +82,7 @@ public class Authentication implements Runnable {
 
     authEnabled = !conf.isAnonymousAllowed();
 
-    userKey = conf.getString("ZEPPELINHUB_USER_KEY",
-        ZEPPELINHUB_USER_KEY, "");
+    userKey = conf.getString(ConfVars.ZEPPELINHUB_USER_KEY);
 
     loginEndpoint = getLoginEndpoint(conf);
   }
@@ -104,7 +103,7 @@ public class Authentication implements Runnable {
     return authenticated;
   }
   private String getLoginEndpoint(ZeppelinConfiguration conf) {
-    int port = conf.getInt("ZEPPELIN_PORT", "zeppelin.server.port" , 8080);
+    int port = conf.getInt(ConfVars.ZEPPELIN_PORT);
     if (port <= 0) {
       port = 8080;
     }
