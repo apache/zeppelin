@@ -513,7 +513,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
     String url = properties.getProperty(URL_KEY);
     String connectionUrl = appendProxyUserToURL(url, user, dbPrefix);
 
-    String authType = getProperty("zeppelin.jdbc.auth.type", "SIMPLE")
+    String authType = StringUtils.defaultIfEmpty(getProperty("zeppelin.jdbc.auth.type"), "SIMPLE")
             .trim().toUpperCase();
     switch (authType) {
       case "SIMPLE":
