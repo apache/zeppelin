@@ -34,7 +34,7 @@ RUN echo "$LOG_TAG install basic packages" && \
     apt-get autoclean && \
     apt-get clean
 
-# Decide: Install conda to manage python and R packages. Maybe adjust the packages in pip_packages.txt or conda_packages.txt
+# Install conda to manage python and R packages
 ARG miniconda_version="py38_4.8.3"
 ARG miniconda_sha256="879457af6a0bf5b34b48c12de31d4df0ee2f06a8e68768e5758c3293b2daf688"
 # Install python and R packages via conda
