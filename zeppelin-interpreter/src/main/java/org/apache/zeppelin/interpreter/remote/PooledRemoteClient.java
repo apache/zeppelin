@@ -19,9 +19,9 @@ package org.apache.zeppelin.interpreter.remote;
 
 import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
-import org.apache.thrift.TApplicationException;
 import org.apache.thrift.TException;
 import org.apache.thrift.TServiceClient;
+import org.apache.zeppelin.interpreter.thrift.InterpreterRPCException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -95,12 +95,15 @@ public class PooledRemoteClient<T extends TServiceClient> {
         if (client != null) {
           return func.call(client);
         }
-      } catch (TApplicationException e) {
+      } catch (InterpreterRPCException e) {
+        // zeppelin side exception, no need to retry
         broken = true;
-        errorCause = e.getMessage();
-        continue;
+        errorCause = e.getErrorMessage();
+        break;
       } catch (Exception e1) {
-        throw new RuntimeException(e1);
+        // thrift framework exception (maybe due to network issue), need to retry
+        broken = true;
+        continue;
       } finally {
         if (client != null) {
           releaseClient(client, broken);
@@ -115,6 +118,6 @@ public class PooledRemoteClient<T extends TServiceClient> {
 
 
   public interface RemoteFunction<R, T> {
-    R call(T client) throws Exception;
+    R call(T client) throws InterpreterRPCException, TException;
   }
 }

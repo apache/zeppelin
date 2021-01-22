@@ -86,40 +86,42 @@ struct InterpreterCompletion {
   3: string meta
 }
 
-
+exception InterpreterRPCException {
+  1: string errorMessage,
+}
 
 service RemoteInterpreterService {
 
-  void createInterpreter(1: string intpGroupId, 2: string sessionId, 3: string className, 4: map<string, string> properties, 5: string userName);
-  void init(1: map<string, string> properties);
-  void open(1: string sessionId, 2: string className);
-  void close(1: string sessionId, 2: string className);
-  void reconnect(1: string host, 2: i32 port);
-  RemoteInterpreterResult interpret(1: string sessionId, 2: string className, 3: string st, 4: RemoteInterpreterContext interpreterContext);
-  void cancel(1: string sessionId, 2: string className, 3: RemoteInterpreterContext interpreterContext);
-  i32 getProgress(1: string sessionId, 2: string className, 3: RemoteInterpreterContext interpreterContext);
-  string getFormType(1: string sessionId, 2: string className);
-  list<InterpreterCompletion> completion(1: string sessionId, 2: string className, 3: string buf, 4: i32 cursor, 5: RemoteInterpreterContext interpreterContext);
+  void createInterpreter(1: string intpGroupId, 2: string sessionId, 3: string className, 4: map<string, string> properties, 5: string userName) throws (1: InterpreterRPCException ex);
+  void init(1: map<string, string> properties) throws (1: InterpreterRPCException ex);
+  void open(1: string sessionId, 2: string className) throws (1: InterpreterRPCException ex);
+  void close(1: string sessionId, 2: string className) throws (1: InterpreterRPCException ex);
+  void reconnect(1: string host, 2: i32 port) throws (1: InterpreterRPCException ex);
+  RemoteInterpreterResult interpret(1: string sessionId, 2: string className, 3: string st, 4: RemoteInterpreterContext interpreterContext) throws (1: InterpreterRPCException ex);
+  void cancel(1: string sessionId, 2: string className, 3: RemoteInterpreterContext interpreterContext) throws (1: InterpreterRPCException ex);
+  i32 getProgress(1: string sessionId, 2: string className, 3: RemoteInterpreterContext interpreterContext) throws (1: InterpreterRPCException ex);
+  string getFormType(1: string sessionId, 2: string className) throws (1: InterpreterRPCException ex);
+  list<InterpreterCompletion> completion(1: string sessionId, 2: string className, 3: string buf, 4: i32 cursor, 5: RemoteInterpreterContext interpreterContext) throws (1: InterpreterRPCException ex);
   void shutdown();
 
-  string getStatus(1: string sessionId, 2:string jobId);
+  string getStatus(1: string sessionId, 2:string jobId) throws (1: InterpreterRPCException ex);
 
-  list<string> resourcePoolGetAll();
+  list<string> resourcePoolGetAll() throws (1: InterpreterRPCException ex);
   // get value of resource
-  binary resourceGet(1: string sessionId, 2: string paragraphId, 3: string resourceName);
+  binary resourceGet(1: string sessionId, 2: string paragraphId, 3: string resourceName) throws (1: InterpreterRPCException ex);
   // remove resource
-  bool resourceRemove(1: string sessionId, 2: string paragraphId, 3:string resourceName);
+  bool resourceRemove(1: string sessionId, 2: string paragraphId, 3:string resourceName) throws (1: InterpreterRPCException ex);
   // invoke method on resource
-  binary resourceInvokeMethod(1: string sessionId, 2: string paragraphId, 3:string resourceName, 4:string invokeMessage);
+  binary resourceInvokeMethod(1: string sessionId, 2: string paragraphId, 3:string resourceName, 4:string invokeMessage) throws (1: InterpreterRPCException ex);
 
-  void angularObjectUpdate(1: string name, 2: string sessionId, 3: string paragraphId, 4: string object);
-  void angularObjectAdd(1: string name, 2: string sessionId, 3: string paragraphId, 4: string object);
-  void angularObjectRemove(1: string name, 2: string sessionId, 3: string paragraphId);
-  void angularRegistryPush(1: string registry);
+  void angularObjectUpdate(1: string name, 2: string sessionId, 3: string paragraphId, 4: string object) throws (1: InterpreterRPCException ex);
+  void angularObjectAdd(1: string name, 2: string sessionId, 3: string paragraphId, 4: string object) throws (1: InterpreterRPCException ex);
+  void angularObjectRemove(1: string name, 2: string sessionId, 3: string paragraphId) throws (1: InterpreterRPCException ex);
+  void angularRegistryPush(1: string registry) throws (1: InterpreterRPCException ex);
 
-  RemoteApplicationResult loadApplication(1: string applicationInstanceId, 2: string packageInfo, 3: string sessionId, 4: string paragraphId);
-  RemoteApplicationResult unloadApplication(1: string applicationInstanceId);
-  RemoteApplicationResult runApplication(1: string applicationInstanceId);
+  RemoteApplicationResult loadApplication(1: string applicationInstanceId, 2: string packageInfo, 3: string sessionId, 4: string paragraphId) throws (1: InterpreterRPCException ex);
+  RemoteApplicationResult unloadApplication(1: string applicationInstanceId) throws (1: InterpreterRPCException ex);
+  RemoteApplicationResult runApplication(1: string applicationInstanceId) throws (1: InterpreterRPCException ex);
 
 }
 

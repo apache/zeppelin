@@ -21,7 +21,7 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.thrift.TApplicationException;
+import org.apache.thrift.TException;
 import org.apache.thrift.server.TThreadPoolServer;
 import org.apache.thrift.transport.TServerSocket;
 import org.apache.thrift.transport.TTransportException;
@@ -55,6 +55,7 @@ import org.apache.zeppelin.interpreter.InterpreterResultMessageOutput;
 import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
 import org.apache.zeppelin.interpreter.LifecycleManager;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
+import org.apache.zeppelin.interpreter.thrift.InterpreterRPCException;
 import org.apache.zeppelin.interpreter.thrift.RegisterInfo;
 import org.apache.zeppelin.interpreter.thrift.RemoteApplicationResult;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterContext;
@@ -199,7 +200,7 @@ public class RemoteInterpreterServer extends Thread
   }
 
   @Override
-  public void init(Map<String, String> properties) throws TApplicationException {
+  public void init(Map<String, String> properties) throws InterpreterRPCException, TException {
     this.zConf = ZeppelinConfiguration.create();
     for (Map.Entry<String, String> entry : properties.entrySet()) {
       this.zConf.setProperty(entry.getKey(), entry.getValue());
@@ -220,7 +221,7 @@ public class RemoteInterpreterServer extends Thread
       lifecycleManager = createLifecycleManager();
       lifecycleManager.onInterpreterProcessStarted(interpreterGroupId);
     } catch (Exception e) {
-      throw new TApplicationException("Fail to create LifecycleManager, cause: " + e.toString());
+      throw new InterpreterRPCException("Fail to create LifecycleManager, cause: " + e.toString());
     }
 
     if (!isTest) {
@@ -234,7 +235,7 @@ public class RemoteInterpreterServer extends Thread
   }
 
   @Override
-  public void shutdown() throws TApplicationException {
+  public void shutdown() throws InterpreterRPCException, TException {
     // unRegisterInterpreterProcess should be a sync operation (outside of shutdown thread),
     // otherwise it would cause data mismatch between zeppelin server & interpreter process.
     // e.g. zeppelin server start a new interpreter process, while previous interpreter process
@@ -345,7 +346,7 @@ public class RemoteInterpreterServer extends Thread
 
   @Override
   public void createInterpreter(String interpreterGroupId, String sessionId, String
-      className, Map<String, String> properties, String userName) throws TApplicationException {
+      className, Map<String, String> properties, String userName) throws InterpreterRPCException, TException {
     try {
       if (interpreterGroup == null) {
         interpreterGroup = new InterpreterGroup(interpreterGroupId);
@@ -386,7 +387,7 @@ public class RemoteInterpreterServer extends Thread
       interpreterGroup.addInterpreterToSession(new LazyOpenInterpreter(interpreter), sessionId);
     } catch (Exception e) {
       LOGGER.error(e.getMessage(), e);
-      throw new TApplicationException("Fail to create interpreter, cause: " + e.toString());
+      throw new InterpreterRPCException("Fail to create interpreter, cause: " + e.toString());
     }
   }
 
@@ -413,14 +414,15 @@ public class RemoteInterpreterServer extends Thread
     }
   }
 
-  protected Interpreter getInterpreter(String sessionId, String className) throws TApplicationException {
+  protected Interpreter getInterpreter(String sessionId, String className)
+          throws InterpreterRPCException, TException {
     if (interpreterGroup == null) {
-      throw new TApplicationException("Interpreter instance " + className + " not created");
+      throw new InterpreterRPCException("Interpreter instance " + className + " not created");
     }
     synchronized (interpreterGroup) {
       List<Interpreter> interpreters = interpreterGroup.get(sessionId);
       if (interpreters == null) {
-        throw new TApplicationException("Interpreter " + className + " not initialized");
+        throw new InterpreterRPCException("Interpreter " + className + " not initialized");
       }
       for (Interpreter inp : interpreters) {
         if (inp.getClassName().equals(className)) {
@@ -428,22 +430,22 @@ public class RemoteInterpreterServer extends Thread
         }
       }
     }
-    throw new TApplicationException("Interpreter instance " + className + " not found");
+    throw new InterpreterRPCException("Interpreter instance " + className + " not found");
   }
 
   @Override
-  public void open(String sessionId, String className) throws TApplicationException {
+  public void open(String sessionId, String className) throws InterpreterRPCException, TException {
     LOGGER.info("Open Interpreter {} for session {}", className, sessionId);
     Interpreter intp = getInterpreter(sessionId, className);
     try {
       intp.open();
     } catch (InterpreterException e) {
-      throw new TApplicationException(e.toString());
+      throw new InterpreterRPCException(e.toString());
     }
   }
 
   @Override
-  public void close(String sessionId, String className) throws TApplicationException {
+  public void close(String sessionId, String className) throws InterpreterRPCException, TException {
     // unload all applications
     for (String appId : runningApplications.keySet()) {
       RunningApplication appInfo = runningApplications.get(appId);
@@ -485,7 +487,7 @@ public class RemoteInterpreterServer extends Thread
   }
 
   @Override
-  public void reconnect(String host, int port) throws TApplicationException {
+  public void reconnect(String host, int port) throws InterpreterRPCException, TException {
     try {
       LOGGER.info("Reconnect to this interpreter process from {}:{}", host, port);
       this.intpEventServerHost = host;
@@ -504,7 +506,7 @@ public class RemoteInterpreterServer extends Thread
         context.setResourcePool(resourcePool);
       }
     } catch (Exception e) {
-      throw new TApplicationException(e.toString());
+      throw new InterpreterRPCException(e.toString());
     }
   }
 
@@ -513,7 +515,7 @@ public class RemoteInterpreterServer extends Thread
                                            String className,
                                            String st,
                                            RemoteInterpreterContext interpreterContext)
-      throws TApplicationException {
+          throws InterpreterRPCException, TException {
     try {
       if (LOGGER.isDebugEnabled()) {
         LOGGER.debug("st:\n{}", st);
@@ -579,7 +581,7 @@ public class RemoteInterpreterServer extends Thread
               context.getNoteGui());
     } catch (Exception e) {
       LOGGER.error("Internal error when interpret code", e);
-      throw new TApplicationException(e.toString());
+      throw new InterpreterRPCException(e.toString());
     }
   }
 
@@ -608,7 +610,7 @@ public class RemoteInterpreterServer extends Thread
           LOGGER.error("Error while registering interpreter: {}, cause: {}", registerInfo, e);
           try {
             shutdown();
-          } catch (TApplicationException e1) {
+          } catch (Exception e1) {
             LOGGER.warn("Exception occurs while shutting down", e1);
           }
         }
@@ -905,7 +907,8 @@ public class RemoteInterpreterServer extends Thread
   @Override
   public void cancel(String sessionId,
                      String className,
-                     RemoteInterpreterContext interpreterContext) throws TApplicationException {
+                     RemoteInterpreterContext interpreterContext)
+          throws InterpreterRPCException, TException {
     LOGGER.info("cancel {} {}", className, interpreterContext.getParagraphId());
     Interpreter intp = getInterpreter(sessionId, className);
     String jobId = interpreterContext.getParagraphId();
@@ -928,7 +931,7 @@ public class RemoteInterpreterServer extends Thread
   @Override
   public int getProgress(String sessionId, String className,
                          RemoteInterpreterContext interpreterContext)
-      throws TApplicationException {
+          throws InterpreterRPCException, TException {
     lifecycleManager.onInterpreterUse(interpreterGroupId);
 
     Integer manuallyProvidedProgress = progressMap.get(interpreterContext.getParagraphId());
@@ -937,24 +940,25 @@ public class RemoteInterpreterServer extends Thread
     } else {
       Interpreter intp = getInterpreter(sessionId, className);
       if (intp == null) {
-        throw new TApplicationException("No interpreter " + className + " existed for session " + sessionId);
+        throw new InterpreterRPCException("No interpreter " + className + " existed for session " + sessionId);
       }
       try {
         return intp.getProgress(convert(interpreterContext, null));
       } catch (InterpreterException e) {
-        throw new TApplicationException(e.toString());
+        throw new InterpreterRPCException(e.toString());
       }
     }
   }
 
 
   @Override
-  public String getFormType(String sessionId, String className) throws TApplicationException {
+  public String getFormType(String sessionId, String className)
+          throws InterpreterRPCException, TException{
     Interpreter intp = getInterpreter(sessionId, className);
     try {
       return intp.getFormType().toString();
     } catch (InterpreterException e) {
-      throw new TApplicationException(e.toString());
+      throw new InterpreterRPCException(e.toString());
     }
   }
 
@@ -964,12 +968,12 @@ public class RemoteInterpreterServer extends Thread
                                                 String buf,
                                                 int cursor,
                                                 RemoteInterpreterContext remoteInterpreterContext)
-      throws TApplicationException {
+          throws InterpreterRPCException, TException{
     Interpreter intp = getInterpreter(sessionId, className);
     try {
       return intp.completion(buf, cursor, convert(remoteInterpreterContext, null));
     } catch (InterpreterException e) {
-      throw new TApplicationException("Fail to get completion, cause: " + e.getMessage());
+      throw new InterpreterRPCException("Fail to get completion, cause: " + e.getMessage());
     }
   }
 
@@ -1056,7 +1060,7 @@ public class RemoteInterpreterServer extends Thread
 
   @Override
   public String getStatus(String sessionId, String jobId)
-      throws TApplicationException {
+          throws InterpreterRPCException, TException{
 
     lifecycleManager.onInterpreterUse(interpreterGroupId);
     if (interpreterGroup == null) {
@@ -1089,11 +1093,11 @@ public class RemoteInterpreterServer extends Thread
    * @param noteId      noteId where the update issues
    * @param paragraphId paragraphId where the update issues
    * @param object
-   * @throws TApplicationException
+   * @throws InterpreterRPCException, TException
    */
   @Override
   public void angularObjectUpdate(String name, String noteId, String paragraphId, String object)
-      throws TApplicationException {
+          throws InterpreterRPCException, TException{
     AngularObjectRegistry registry = interpreterGroup.getAngularObjectRegistry();
     // first try local objects
     AngularObject ao = registry.get(name, noteId, paragraphId);
@@ -1146,7 +1150,7 @@ public class RemoteInterpreterServer extends Thread
    */
   @Override
   public void angularObjectAdd(String name, String noteId, String paragraphId, String object)
-      throws TApplicationException {
+          throws InterpreterRPCException, TException{
     AngularObjectRegistry registry = interpreterGroup.getAngularObjectRegistry();
     // first try local objects
     AngularObject ao = registry.get(name, noteId, paragraphId);
@@ -1175,14 +1179,14 @@ public class RemoteInterpreterServer extends Thread
   }
 
   @Override
-  public void angularObjectRemove(String name, String noteId, String paragraphId) throws
-          TApplicationException {
+  public void angularObjectRemove(String name, String noteId, String paragraphId)
+          throws InterpreterRPCException, TException{
     AngularObjectRegistry registry = interpreterGroup.getAngularObjectRegistry();
     registry.remove(name, noteId, paragraphId, false);
   }
 
   @Override
-  public List<String> resourcePoolGetAll() throws TApplicationException {
+  public List<String> resourcePoolGetAll() throws InterpreterRPCException, TException{
     LOGGER.debug("Request resourcePoolGetAll from ZeppelinServer");
     List<String> result = new LinkedList<>();
 
@@ -1199,14 +1203,14 @@ public class RemoteInterpreterServer extends Thread
 
   @Override
   public boolean resourceRemove(String noteId, String paragraphId, String resourceName)
-      throws TApplicationException {
+          throws InterpreterRPCException, TException{
     Resource resource = resourcePool.remove(noteId, paragraphId, resourceName);
     return resource != null;
   }
 
   @Override
   public ByteBuffer resourceGet(String noteId, String paragraphId, String resourceName)
-      throws TApplicationException {
+          throws InterpreterRPCException, TException {
     LOGGER.debug("Request resourceGet {} from ZeppelinServer", resourceName);
     Resource resource = resourcePool.get(noteId, paragraphId, resourceName, false);
 
@@ -1272,7 +1276,7 @@ public class RemoteInterpreterServer extends Thread
   }
 
   @Override
-  public void angularRegistryPush(String registryAsString) throws TApplicationException {
+  public void angularRegistryPush(String registryAsString) throws InterpreterRPCException, TException {
     try {
       Map<String, Map<String, AngularObject>> deserializedRegistry = gson
           .fromJson(registryAsString,
@@ -1325,7 +1329,7 @@ public class RemoteInterpreterServer extends Thread
   @Override
   public RemoteApplicationResult loadApplication(
       String applicationInstanceId, String packageInfo, String noteId, String paragraphId)
-      throws TApplicationException {
+          throws InterpreterRPCException, TException{
     if (runningApplications.containsKey(applicationInstanceId)) {
       LOGGER.warn("Application instance {} is already running", applicationInstanceId);
       return new RemoteApplicationResult(true, "");
@@ -1356,7 +1360,7 @@ public class RemoteInterpreterServer extends Thread
 
   @Override
   public RemoteApplicationResult unloadApplication(String applicationInstanceId)
-      throws TApplicationException {
+          throws InterpreterRPCException, TException{
     RunningApplication runningApplication = runningApplications.remove(applicationInstanceId);
     if (runningApplication != null) {
       try {
@@ -1372,7 +1376,7 @@ public class RemoteInterpreterServer extends Thread
 
   @Override
   public RemoteApplicationResult runApplication(String applicationInstanceId)
-      throws TApplicationException {
+          throws InterpreterRPCException, TException{
     LOGGER.info("run application {}", applicationInstanceId);
 
     RunningApplication runningApp = runningApplications.get(applicationInstanceId);
