@@ -627,7 +627,7 @@ public class InterpreterSetting {
     Properties jProperties = new Properties();
     Map<String, InterpreterProperty> iProperties = (Map<String, InterpreterProperty>) properties;
     for (Map.Entry<String, InterpreterProperty> entry : iProperties.entrySet()) {
-      if (entry.getValue().getValue() != null) {
+      if (entry.getValue().getValue() != null && StringUtils.isNotBlank(entry.getValue().getValue().toString())) {
         jProperties.setProperty(entry.getKey().trim(),
             entry.getValue().getValue().toString().trim());
       }
