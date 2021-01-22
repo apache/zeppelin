@@ -63,6 +63,7 @@
     <module>kotlin</module>
     <module>groovy</module>
     <module>spark</module>
+    <module>spark-submit</module>
     <module>submarine</module>
     <module>markdown</module>
     <module>mongodb</module>
