@@ -1,0 +1,21 @@
+[
+  {
+    "group": "flink-cmd",
+    "name": "cmd",
+    "className": "org.apache.zeppelin.flink.cmd.FlinkCmdInterpreter",
+    "properties": {
+      "FLINK_HOME": {
+        "envName": null,
+        "propertyName": null,
+        "defaultValue": "",
+        "description": "Location of flink distribution",
+        "type": "string"
+      }
+    },
+    "editor": {
+      "language": "sh",
+      "editOnDblClick": false,
+      "completionSupport": false
+    }
+  }
+]
