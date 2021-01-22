@@ -59,10 +59,10 @@ jobs:
           conda info
       - name: install plugins and interpreter
         run: |
-          mvn install -Pbuild-distr -DskipRat -DskipTests -pl zeppelin-server,zeppelin-web,spark/spark-dependencies,markdown,angular,shell -am -Phelium-dev -Pexamples -P${{ matrix.hadoop }} -B
+          mvn install -Pbuild-distr -DskipRat -DskipTests -pl zeppelin-server,zeppelin-web,spark-submit,spark/spark-dependencies,markdown,angular,shell -am -Phelium-dev -Pexamples -P${{ matrix.hadoop }} -B
           mvn package -DskipRat -pl zeppelin-plugins -amd -DskipTests -B
       - name: run tests with ${{ matrix.hadoop }}
-        run: mvn verify -Pusing-packaged-distr -DskipRat -pl zeppelin-server,zeppelin-web,spark/spark-dependencies,markdown,angular,shell -am -Phelium-dev -Pexamples -P${{ matrix.hadoop }} -Dtests.to.exclude=**/org/apache/zeppelin/spark/* -DfailIfNoTests=false
+        run: mvn verify -Pusing-packaged-distr -DskipRat -pl zeppelin-server,zeppelin-web,spark-submit,spark/spark-dependencies,markdown,angular,shell -am -Phelium-dev -Pexamples -P${{ matrix.hadoop }} -Dtests.to.exclude=**/org/apache/zeppelin/spark/* -DfailIfNoTests=false
   test-interpreter-modules:
     runs-on: ubuntu-18.04
     env:
@@ -125,7 +125,7 @@ jobs:
           R -e "IRkernel::installspec()"
       - name: install environment
         run: |
-          mvn install -DskipTests -DskipRat -Pintegration -pl zeppelin-interpreter-integration,zeppelin-web,spark/spark-dependencies,markdown,flink/interpreter,jdbc,shell -am
+          mvn install -DskipTests -DskipRat -Pintegration -pl zeppelin-interpreter-integration,zeppelin-web,spark-submit,spark/spark-dependencies,markdown,flink/interpreter,jdbc,shell -am
           mvn package -DskipRat -pl zeppelin-plugins -amd -DskipTests -B
       - name: run tests
         run: mvn test -DskipRat -pl zeppelin-interpreter-integration -Pintegration -Dtest=ZeppelinClientIntegrationTest,ZeppelinClientWithAuthIntegrationTest,ZSessionIntegrationTest
@@ -194,10 +194,10 @@ jobs:
           R -e "IRkernel::installspec()"
       - name: install environment
         run: |
-          mvn install -DskipTests -DskipRat -pl zeppelin-interpreter-integration,zeppelin-web,spark/spark-dependencies,markdown -am -Phadoop2 -Pintegration -B
+          mvn install -DskipTests -DskipRat -pl zeppelin-interpreter-integration,zeppelin-web,spark-submit,spark/spark-dependencies,markdown -am -Phadoop2 -Pintegration -B
           mvn clean package -pl zeppelin-plugins -amd -DskipTests -B
       - name: run tests
-        run: mvn test -DskipRat -pl zeppelin-interpreter-integration,zeppelin-web,spark/spark-dependencies,markdown -am -Phadoop2 -Pintegration -B -Dtest=ZeppelinSparkClusterTest24,SparkIntegrationTest24,ZeppelinSparkClusterTest23,SparkIntegrationTest23,ZeppelinSparkClusterTest22,SparkIntegrationTest22,ZeppelinSparkClusterTest30,SparkIntegrationTest30 -DfailIfNoTests=false
+        run: mvn test -DskipRat -pl zeppelin-interpreter-integration,zeppelin-web,spark-submit,spark/spark-dependencies,markdown -am -Phadoop2 -Pintegration -B -Dtest=ZeppelinSparkClusterTest24,SparkIntegrationTest24,ZeppelinSparkClusterTest23,SparkIntegrationTest23,ZeppelinSparkClusterTest22,SparkIntegrationTest22,ZeppelinSparkClusterTest30,SparkIntegrationTest30 -DfailIfNoTests=false
   jdbcIntegrationTest-and-unit-test-of-Spark-2-4-with-Scala-2-11:
     runs-on: ubuntu-18.04
     steps:
@@ -231,10 +231,10 @@ jobs:
           R -e "IRkernel::installspec()"
       - name: install environment
         run: |
-          mvn install -DskipTests -DskipRat -pl zeppelin-interpreter-integration,jdbc,zeppelin-web,spark/spark-dependencies,markdown -am -Pspark-2.4 -Pspark-scala-2.11 -Phadoop2 -Pintegration -B
+          mvn install -DskipTests -DskipRat -pl zeppelin-interpreter-integration,jdbc,zeppelin-web,spark-submit,spark/spark-dependencies,markdown -am -Pspark-2.4 -Pspark-scala-2.11 -Phadoop2 -Pintegration -B
           mvn clean package -pl zeppelin-plugins -amd -DskipTests -B
       - name: run tests
-        run: mvn test -DskipRat -pl zeppelin-interpreter-integration,jdbc,zeppelin-web,spark/spark-dependencies,markdown -am -Pspark-2.4 -Pspark-scala-2.11 -Phadoop2 -Pintegration -B -Dtest=JdbcIntegrationTest,org.apache.zeppelin.spark.*,org.apache.zeppelin.kotlin.* -DfailIfNoTests=false
+        run: mvn test -DskipRat -pl zeppelin-interpreter-integration,jdbc,zeppelin-web,spark-submit,spark/spark-dependencies,markdown -am -Pspark-2.4 -Pspark-scala-2.11 -Phadoop2 -Pintegration -B -Dtest=JdbcIntegrationTest,org.apache.zeppelin.spark.*,org.apache.zeppelin.kotlin.* -DfailIfNoTests=false
 
   spark-2-4-and-scale-2-12:
     runs-on: ubuntu-18.04
@@ -266,9 +266,9 @@ jobs:
           R -e "IRkernel::installspec()"
       - name: install environment
         run: |
-          mvn install -DskipTests -DskipRat -pl spark/spark-dependencies -am -Pspark-2.4 -Pspark-scala-2.12 -Phadoop2 -B
+          mvn install -DskipTests -DskipRat -pl spark-submit,spark/spark-dependencies -am -Pspark-2.4 -Pspark-scala-2.12 -Phadoop2 -B
       - name: run tests
-        run: mvn test -DskipRat -pl spark/spark-dependencies -am -Pspark-2.4 -Pspark-scala-2.12 -Phadoop2 -B -Dtest=org.apache.zeppelin.spark.*,org.apache.zeppelin.kotlin.* -DfailIfNoTests=false
+        run: mvn test -DskipRat -pl spark-submit,spark/spark-dependencies -am -Pspark-2.4 -Pspark-scala-2.12 -Phadoop2 -B -Dtest=org.apache.zeppelin.spark.*,org.apache.zeppelin.kotlin.* -DfailIfNoTests=false
 
   spark-2-3-and-scale-2-11-and-other-interpreter:
     runs-on: ubuntu-18.04
@@ -300,9 +300,9 @@ jobs:
           R -e "IRkernel::installspec()"
       - name: install environment
         run: |
-          mvn install -DskipTests -DskipRat -pl spark/spark-dependencies -am -Pspark-2.3 -Pspark-scala-2.11 -Phadoop2 -B
+          mvn install -DskipTests -DskipRat -pl spark-submit,spark/spark-dependencies -am -Pspark-2.3 -Pspark-scala-2.11 -Phadoop2 -B
       - name: run tests
-        run: mvn test -DskipRat -pl spark/spark-dependencies -am -Pspark-2.3 -Pspark-scala-2.11 -Phadoop2 -B -Dtest=org.apache.zeppelin.spark.*,apache.zeppelin.python.*,apache.zeppelin.jupyter.*,apache.zeppelin.r.* -DfailIfNoTests=false
+        run: mvn test -DskipRat -pl spark-submit,spark/spark-dependencies -am -Pspark-2.3 -Pspark-scala-2.11 -Phadoop2 -B -Dtest=org.apache.zeppelin.spark.*,apache.zeppelin.python.*,apache.zeppelin.jupyter.*,apache.zeppelin.r.* -DfailIfNoTests=false
 
   spark-2-2-and-scale-2-10-and-other-interpreter:
     runs-on: ubuntu-18.04
@@ -333,9 +333,9 @@ jobs:
         run: |
           R -e "IRkernel::installspec()"
       - name: install environment
-        run: mvn install -DskipTests -DskipRat -pl spark/spark-dependencies -am -Pspark-2.2 -Pspark-scala-2.10 -Phadoop2 -B
+        run: mvn install -DskipTests -DskipRat -pl spark-submit,spark/spark-dependencies -am -Pspark-2.2 -Pspark-scala-2.10 -Phadoop2 -B
       - name: run tests
-        run: mvn test -DskipRat -pl spark/spark-dependencies -am -Pspark-2.2 -Pspark-scala-2.10 -Phadoop2 -B -Dtest=org.apache.zeppelin.spark.*,apache.zeppelin.python.*,apache.zeppelin.jupyter.*,apache.zeppelin.r.* -DfailIfNoTests=false
+        run: mvn test -DskipRat -pl spark-submit,spark/spark-dependencies -am -Pspark-2.2 -Pspark-scala-2.10 -Phadoop2 -B -Dtest=org.apache.zeppelin.spark.*,apache.zeppelin.python.*,apache.zeppelin.jupyter.*,apache.zeppelin.r.* -DfailIfNoTests=false
   test-livy-0-5-with-spark-2-2-0-under-python3:
     runs-on: ubuntu-18.04
     steps:

@@ -349,18 +349,5 @@
       "completionKey": "TAB",
       "completionSupport": false
     }
-  },
-
-  {
-    "group": "spark",
-    "name": "submit",
-    "className": "org.apache.zeppelin.spark.SparkSubmitInterpreter",
-    "properties": {
-    },
-    "editor": {
-      "language": "sh",
-      "editOnDblClick": false,
-      "completionSupport": false
-    }
   }
 ]
