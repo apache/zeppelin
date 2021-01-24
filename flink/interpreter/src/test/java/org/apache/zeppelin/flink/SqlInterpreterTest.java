@@ -262,6 +262,20 @@ public abstract class SqlInterpreterTest {
             "bool_col\tBOOLEAN\n"
             , resultMessages.get(0).getData());
 
+    // describe table with database
+    context = getInterpreterContext();
+    result = sqlInterpreter.interpret("describe default.source_table", context);
+    assertEquals(Code.SUCCESS, result.code());
+    assertEquals(1, resultMessages.size());
+    resultMessages = context.out.toInterpreterResultMessage();
+    assertEquals(Type.TABLE, resultMessages.get(0).getType());
+    assertEquals("Column\tType\n" +
+                    "int_col\tINT\n" +
+                    "double_col\tDOUBLE\n" +
+                    "varchar_col\tSTRING\n" +
+                    "bool_col\tBOOLEAN\n"
+            , resultMessages.get(0).getData());
+
     // describe unknown table
     context = getInterpreterContext();
     result = sqlInterpreter.interpret("describe unknown_table", context);
@@ -270,6 +284,15 @@ public abstract class SqlInterpreterTest {
     assertEquals(1, resultMessages.size());
     assertTrue(resultMessages.toString(),
             resultMessages.get(0).getData().contains("Table `unknown_table` was not found."));
+
+    // describe unknown table with database
+    context = getInterpreterContext();
+    result = sqlInterpreter.interpret("describe default.unknown_table", context);
+    assertEquals(Code.ERROR, result.code());
+    resultMessages = context.out.toInterpreterResultMessage();
+    assertEquals(1, resultMessages.size());
+    assertTrue(resultMessages.toString(),
+            resultMessages.get(0).getData().contains("Table `default.unknown_table` was not found."));
 
     // drop unknown table
     context = getInterpreterContext();
