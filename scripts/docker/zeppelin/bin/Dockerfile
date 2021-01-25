@@ -35,9 +35,9 @@ RUN echo "$LOG_TAG install basic packages" && \
     apt-get clean
 
 # Install conda to manage python and R packages
-ARG miniconda_version="py37_4.8.3"
+ARG miniconda_version="py37_4.9.2"
 # Hashes via https://docs.conda.io/en/latest/miniconda_hashes.html
-ARG miniconda_sha256="bb2e3cedd2e78a8bb6872ab3ab5b1266a90f8c7004a22d8dc2ea5effeb6a439a"
+ARG miniconda_sha256="79510c6e7bd9e012856e25dcb21b3e093aa4ac8113d9aa7e82a86987eabe1c31"
 # Install python and R packages via conda
 COPY env_python_3_with_R.yml /env_python_3_with_R.yml
 RUN set -ex && \
