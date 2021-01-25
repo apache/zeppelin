@@ -4,7 +4,8 @@
       "title": "Introduction",
       "text": "%md\n\n# Introduction\n\n\nTypically there\u0027re 3 essential steps for building one flink job. And each step has its favorite tools.\n\n* Define source/sink (SQL DDL)\n* Define data flow (Table Api / SQL)\n* Implement business logic (UDF)\n\nThis tutorial demonstrates how to build one typical flinkjob  via these 3 steps and their favorite tools.\nIn this demo, we will do real time analysis of cdn access data. First we read cdn access log from kafka queue and do some processing and aggregation, then write the result to mysql database. We use this [docker](https://zeppelin-kafka-connect-datagen.readthedocs.io/en/latest/) to create kafka cluster and source data. You need to prepare mysql database by yourself. \n\n* Make sure you add the following ip host name mapping to your hosts file, otherwise you may not be able to connect to the kafka cluster in docker\n\n```\n127.0.0.1   broker\n```\n\nUse the following command to generate the sample data.\n\n```\ncurl -X POST http://localhost:8083/connectors \\\n-H \u0027Content-Type:application/json\u0027 \\\n-H \u0027Accept:application/json\u0027 \\\n-d @cdn.source.datagen.json\n```",
       "user": "anonymous",
-      "dateUpdated": "2020-07-14 22:22:38.673",
+      "dateUpdated": "2021-01-25 14:25:27.359",
+      "progress": 0,
       "config": {
         "colWidth": 12.0,
         "fontSize": 9.0,
@@ -25,23 +26,14 @@
         "params": {},
         "forms": {}
       },
-      "results": {
-        "code": "SUCCESS",
-        "msg": [
-          {
-            "type": "HTML",
-            "data": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003ch1\u003eIntroduction\u003c/h1\u003e\n\u003cp\u003eTypically there\u0026rsquo;re 3 essential steps for building one flink job. And each step has its favorite tools.\u003c/p\u003e\n\u003cul\u003e\n\u003cli\u003eDefine source/sink (SQL DDL)\u003c/li\u003e\n\u003cli\u003eDefine data flow (Table Api / SQL)\u003c/li\u003e\n\u003cli\u003eImplement business logic (UDF)\u003c/li\u003e\n\u003c/ul\u003e\n\u003cp\u003eThis tutorial demonstrates how to build one typical flinkjob  via these 3 steps and their favorite tools.\u003cbr /\u003e\nIn this demo, we will do real time analysis of cdn access data. First we read cdn access log from kafka queue and do some processing and aggregation, then write the result to mysql database. We use this \u003ca href\u003d\"https://zeppelin-kafka-connect-datagen.readthedocs.io/en/latest/\"\u003edocker\u003c/a\u003e to create kafka cluster and source data. You need to prepare mysql database by yourself.\u003c/p\u003e\n\u003cul\u003e\n\u003cli\u003eMake sure you add the following ip host name mapping to your hosts file, otherwise you may not be able to connect to the kafka cluster in docker\u003c/li\u003e\n\u003c/ul\u003e\n\u003cpre\u003e\u003ccode\u003e127.0.0.1   broker\n\u003c/code\u003e\u003c/pre\u003e\n\u003cp\u003eUse the following command to generate the sample data.\u003c/p\u003e\n\u003cpre\u003e\u003ccode\u003ecurl -X POST http://localhost:8083/connectors \\\n-H \u0027Content-Type:application/json\u0027 \\\n-H \u0027Accept:application/json\u0027 \\\n-d @cdn.source.datagen.json\n\u003c/code\u003e\u003c/pre\u003e\n\n\u003c/div\u003e"
-          }
-        ]
-      },
       "apps": [],
       "runtimeInfos": {},
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1587965294481_785664297",
       "id": "paragraph_1587965294481_785664297",
       "dateCreated": "2020-04-27 13:28:14.481",
-      "dateStarted": "2020-07-14 22:22:38.673",
-      "dateFinished": "2020-07-14 22:22:38.688",
+      "dateStarted": "2021-01-25 14:25:27.360",
+      "dateFinished": "2021-01-25 14:25:30.018",
       "status": "FINISHED"
     },
     {
@@ -49,6 +41,7 @@
       "text": "%flink.conf\n\n# This example use kafka as source and mysql as sink, so you need to specify flink kafka connector and flink jdbc connector first.\n\nflink.execution.packages\torg.apache.flink:flink-connector-kafka_2.11:1.10.0,org.apache.flink:flink-connector-kafka-base_2.11:1.10.0,org.apache.flink:flink-json:1.10.0,org.apache.flink:flink-jdbc_2.11:1.10.0,mysql:mysql-connector-java:5.1.38\n\n# Set taskmanager.memory.segment-size to be the smallest value just for this demo, otherwise you will see the result change after a long time due to the buffer in upstream vertex.\ntaskmanager.memory.segment-size 4k\n\n",
       "user": "anonymous",
       "dateUpdated": "2020-04-29 15:07:01.902",
+      "progress": 0,
       "config": {
         "colWidth": 12.0,
         "fontSize": 9.0,
@@ -67,10 +60,6 @@
         "params": {},
         "forms": {}
       },
-      "results": {
-        "code": "SUCCESS",
-        "msg": []
-      },
       "apps": [],
       "runtimeInfos": {},
       "progressUpdateIntervalMs": 500,
@@ -86,6 +75,7 @@
       "text": "%flink.ssql\n\nDROP table if exists cdn_access_log;\n\nCREATE TABLE cdn_access_log (\n uuid VARCHAR,\n client_ip VARCHAR,\n request_time BIGINT,\n response_size BIGINT,\n uri VARCHAR,\n event_ts BIGINT\n) WITH (\n \u0027connector.type\u0027 \u003d \u0027kafka\u0027,\n \u0027connector.version\u0027 \u003d \u0027universal\u0027,\n \u0027connector.topic\u0027 \u003d \u0027cdn_events\u0027,\n \u0027connector.properties.zookeeper.connect\u0027 \u003d \u0027localhost:2181\u0027,\n \u0027connector.properties.bootstrap.servers\u0027 \u003d \u0027localhost:9092\u0027,\n \u0027connector.properties.group.id\u0027 \u003d \u0027testGroup\u0027,\n \u0027format.type\u0027 \u003d \u0027json\u0027,\n \u0027connector.startup-mode\u0027 \u003d \u0027earliest-offset\u0027,\n \u0027update-mode\u0027 \u003d \u0027append\u0027\n)",
       "user": "anonymous",
       "dateUpdated": "2020-04-29 15:07:03.989",
+      "progress": 0,
       "config": {
         "colWidth": 6.0,
         "fontSize": 9.0,
@@ -103,15 +93,6 @@
       "settings": {
         "params": {},
         "forms": {}
-      },
-      "results": {
-        "code": "SUCCESS",
-        "msg": [
-          {
-            "type": "TEXT",
-            "data": "Table has been dropped.\nTable has been created.\n"
-          }
-        ]
       },
       "apps": [],
       "runtimeInfos": {},
@@ -128,6 +109,7 @@
       "text": "%flink.ssql\n\nDROP table if exists cdn_access_statistic;\n\n-- Please create this mysql table first in your mysql instance. Flink won\u0027t create mysql table for you.\n\nCREATE TABLE cdn_access_statistic (\n province VARCHAR,\n access_count BIGINT,\n total_download BIGINT,\n download_speed DOUBLE\n) WITH (\n \u0027connector.type\u0027 \u003d \u0027jdbc\u0027,\n \u0027connector.url\u0027 \u003d \u0027jdbc:mysql://localhost:3306/flink_cdn\u0027,\n \u0027connector.table\u0027 \u003d \u0027cdn_access_statistic\u0027,\n \u0027connector.username\u0027 \u003d \u0027root\u0027,\n \u0027connector.password\u0027 \u003d \u0027123456\u0027,\n \u0027connector.write.flush.interval\u0027 \u003d \u00271s\u0027\n)",
       "user": "anonymous",
       "dateUpdated": "2020-04-29 15:07:05.522",
+      "progress": 0,
       "config": {
         "colWidth": 6.0,
         "fontSize": 9.0,
@@ -146,15 +128,6 @@
         "params": {},
         "forms": {}
       },
-      "results": {
-        "code": "SUCCESS",
-        "msg": [
-          {
-            "type": "TEXT",
-            "data": "Table has been dropped.\nTable has been created.\n"
-          }
-        ]
-      },
       "apps": [],
       "runtimeInfos": {},
       "progressUpdateIntervalMs": 500,
@@ -170,6 +143,7 @@
       "text": "%flink.ipyflink\n\nimport re\nimport json\nfrom pyflink.table import DataTypes\nfrom pyflink.table.udf import udf\nfrom urllib.parse import quote_plus\nfrom urllib.request import urlopen\n\n# This UDF is to convert ip address to country. Here we simply the logic just for demo purpose.\n\n@udf(input_types\u003d[DataTypes.STRING()], result_type\u003dDataTypes.STRING())\ndef ip_to_country(ip):\n\n    countries \u003d [\u0027USA\u0027, \u0027China\u0027, \u0027Japan\u0027, \u0027South Korea\u0027, \u0027France\u0027, \u0027Germany\u0027, \u0027Italy\u0027, \u0027Russia\u0027, \u0027Canada\u0027]\n    last_dot \u003d ip.rfind(\u0027.\u0027)\n    country_index \u003d int(ip[(last_dot+1) :]) % len(countries)\n    return countries[country_index]\n\n\nst_env.register_function(\"ip_to_country\", ip_to_country)",
       "user": "anonymous",
       "dateUpdated": "2020-04-29 15:07:24.842",
+      "progress": 0,
       "config": {
         "colWidth": 12.0,
         "fontSize": 9.0,
@@ -188,10 +162,6 @@
         "params": {},
         "forms": {}
       },
-      "results": {
-        "code": "SUCCESS",
-        "msg": []
-      },
       "apps": [],
       "runtimeInfos": {},
       "progressUpdateIntervalMs": 500,
@@ -207,6 +177,7 @@
       "text": "%flink.bsql\n\nselect ip_to_country(\u00272.10.01.1\u0027)",
       "user": "anonymous",
       "dateUpdated": "2020-04-29 14:17:35.942",
+      "progress": 0,
       "config": {
         "colWidth": 12.0,
         "fontSize": 9.0,
@@ -253,15 +224,6 @@
         "params": {},
         "forms": {}
       },
-      "results": {
-        "code": "SUCCESS",
-        "msg": [
-          {
-            "type": "TABLE",
-            "data": "EXPR$0\nChina\n"
-          }
-        ]
-      },
       "apps": [],
       "runtimeInfos": {},
       "progressUpdateIntervalMs": 500,
@@ -277,6 +239,7 @@
       "text": "%flink.ipyflink\n\nt \u003d st_env.from_path(\"cdn_access_log\")\\\n   .select(\"uuid, \"\n           \"ip_to_country(client_ip) as country, \" \n           \"response_size, request_time\")\\\n  .group_by(\"country\")\\\n  .select(\n          \"country, count(uuid) as access_count, \" \n          \"sum(response_size) as total_download,  \" \n          \"sum(response_size) * 1.0 / sum(request_time) as download_speed\")\n   #.insert_into(\"cdn_access_statistic\")\n\n# z.show will display the result in zeppelin front end in table format, you can uncomment the above insert statement and the below st_env.execute in order to write the data to mysql table.    \nz.show(t, stream_type\u003d\"update\")\n#st_env.execute(\"pyflink_cdn_access_job\")\n",
       "user": "anonymous",
       "dateUpdated": "2020-04-29 14:19:00.530",
+      "progress": 0,
       "config": {
         "colWidth": 12.0,
         "fontSize": 9.0,
@@ -367,6 +330,7 @@
       "text": "%flink\n\nval t \u003d stenv.from(\"cdn_access_log\")\n   .select(\"uuid, ip_to_country(client_ip) as country, response_size, request_time\")\n   .groupBy(\"country\")\n   .select( \"country, count(uuid) as access_count, sum(response_size) as total_download,  sum(response_size) * 1.0 / sum(request_time) as download_speed\")\n   //.insertInto(\"cdn_access_statistic\")\n\n// z.show will display the result in zeppelin front end in table format, you can uncomment the above insert statement and the below st_env.execute in order to write the data to mysql table.\nz.show(t, streamType\u003d\"update\")\n//stenv.execute(\"cdn_access_job\")\n",
       "user": "anonymous",
       "dateUpdated": "2020-04-29 15:14:29.646",
+      "progress": 0,
       "config": {
         "colWidth": 12.0,
         "fontSize": 9.0,
@@ -456,6 +420,7 @@
       "text": "%flink.ssql\n\ninsert into cdn_access_statistic\nselect ip_to_country(client_ip) as country, \n       count(uuid) as access_count, \n       sum(response_size) as total_download ,\n       sum(response_size) * 1.0 / sum(request_time) as download_speed\nfrom cdn_access_log\n  group by ip_to_country(client_ip)\n",
       "user": "anonymous",
       "dateUpdated": "2020-04-29 15:12:26.431",
+      "progress": 0,
       "config": {
         "colWidth": 12.0,
         "fontSize": 9.0,
@@ -489,7 +454,8 @@
     {
       "text": "%md\n\n# Query sink table via jdbc interpreter\n\nYou can also query the sink table (mysql) directly via jdbc interpreter. Here I will create a jdbc interpreter named `mysql` and use it to query the sink table. Regarding how to connect mysql in Zeppelin, refer this [link](http://zeppelin.apache.org/docs/0.9.0-preview1/interpreter/jdbc.html#mysql)",
       "user": "anonymous",
-      "dateUpdated": "2020-07-14 22:23:28.657",
+      "dateUpdated": "2021-01-25 14:25:41.163",
+      "progress": 0,
       "config": {
         "colWidth": 12.0,
         "fontSize": 9.0,
@@ -509,23 +475,14 @@
         "params": {},
         "forms": {}
       },
-      "results": {
-        "code": "SUCCESS",
-        "msg": [
-          {
-            "type": "HTML",
-            "data": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003ch1\u003eQuery sink table via jdbc interpreter\u003c/h1\u003e\n\u003cp\u003eYou can also query the sink table (mysql) directly via jdbc interpreter. Here I will create a jdbc interpreter named \u003ccode\u003emysql\u003c/code\u003e and use it to query the sink table. Regarding how to connect mysql in Zeppelin, refer this \u003ca href\u003d\"http://zeppelin.apache.org/docs/0.9.0-preview1/interpreter/jdbc.html#mysql\"\u003elink\u003c/a\u003e\u003c/p\u003e\n\n\u003c/div\u003e"
-          }
-        ]
-      },
       "apps": [],
       "runtimeInfos": {},
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1587976725546_2073084823",
       "id": "paragraph_1587976725546_2073084823",
       "dateCreated": "2020-04-27 16:38:45.548",
-      "dateStarted": "2020-07-14 22:23:28.657",
-      "dateFinished": "2020-07-14 22:23:28.670",
+      "dateStarted": "2021-01-25 14:25:41.162",
+      "dateFinished": "2021-01-25 14:25:41.175",
       "status": "FINISHED"
     },
     {
@@ -533,6 +490,7 @@
       "text": "%mysql\n\nselect * from flink_cdn.cdn_access_statistic",
       "user": "anonymous",
       "dateUpdated": "2020-04-29 15:22:13.333",
+      "progress": 0,
       "config": {
         "colWidth": 12.0,
         "fontSize": 9.0,
@@ -630,6 +588,7 @@
       "text": "%flink.ipyflink\n",
       "user": "anonymous",
       "dateUpdated": "2020-04-27 16:38:45.464",
+      "progress": 0,
       "config": {
         "colWidth": 12.0,
         "fontSize": 9.0,
