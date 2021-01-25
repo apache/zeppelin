@@ -4,7 +4,8 @@
       "title": "Introduction",
       "text": "%md\n\n# Introduction\n\nThis tutorial is to demonstrate how to do job control in flink (job submission/cancel/resume).\n2 steps:\n1. Create custom data stream and register it as flink table. The custom data stream is a simulated web access logs. \n2. Query this flink table (pv for each page type), you can cancel it and then resume it again w/o savepoint.\n",
       "user": "anonymous",
-      "dateUpdated": "2020-07-14 22:24:11.629",
+      "dateUpdated": "2021-01-25 14:25:48.903",
+      "progress": 0,
       "config": {
         "colWidth": 12.0,
         "fontSize": 9.0,
@@ -25,23 +26,14 @@
         "params": {},
         "forms": {}
       },
-      "results": {
-        "code": "SUCCESS",
-        "msg": [
-          {
-            "type": "HTML",
-            "data": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003ch1\u003eIntroduction\u003c/h1\u003e\n\u003cp\u003eThis tutorial is to demonstrate how to do job control in flink (job submission/cancel/resume).\u003cbr /\u003e\n2 steps:\u003c/p\u003e\n\u003col\u003e\n\u003cli\u003eCreate custom data stream and register it as flink table. The custom data stream is a simulated web access logs.\u003c/li\u003e\n\u003cli\u003eQuery this flink table (pv for each page type), you can cancel it and then resume it again w/o savepoint.\u003c/li\u003e\n\u003c/ol\u003e\n\n\u003c/div\u003e"
-          }
-        ]
-      },
       "apps": [],
       "runtimeInfos": {},
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1587964310955_443124874",
       "id": "paragraph_1587964310955_443124874",
       "dateCreated": "2020-04-27 13:11:50.955",
-      "dateStarted": "2020-07-14 22:24:11.630",
-      "dateFinished": "2020-07-14 22:24:11.642",
+      "dateStarted": "2021-01-25 14:25:48.903",
+      "dateFinished": "2021-01-25 14:25:48.916",
       "status": "FINISHED"
     },
     {
@@ -49,6 +41,7 @@
       "text": "%flink \n\nimport org.apache.flink.streaming.api.functions.source.SourceFunction\nimport org.apache.flink.table.api.TableEnvironment\nimport org.apache.flink.streaming.api.TimeCharacteristic\nimport org.apache.flink.streaming.api.checkpoint.ListCheckpointed\nimport java.util.Collections\nimport scala.collection.JavaConversions._\n\nsenv.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)\nsenv.enableCheckpointing(1000)\n\nval data \u003d senv.addSource(new SourceFunction[(Long, String)] with ListCheckpointed[java.lang.Long] {\n\n  val pages \u003d Seq(\"home\", \"search\", \"search\", \"product\", \"product\", \"product\")\n  var count: Long \u003d 0\n  var running : Boolean \u003d true\n  // startTime is 2020/1/1\n  var startTime: Long \u003d new java.util.Date(2020 - 1900,0,1).getTime\n  var sleepInterval \u003d 100\n\n  override def run(ctx: SourceFunction.SourceContext[(Long, String)]): Unit \u003d {\n    val lock \u003d ctx.getCheckpointLock\n\n    while (count \u003c 3000 \u0026\u0026 running) {\n      lock.synchronized({\n        ctx.collect((startTime + count * sleepInterval, pages(count.toInt % pages.size)))\n        count +\u003d 1\n        Thread.sleep(sleepInterval)\n      })\n    }\n  }\n\n  override def cancel(): Unit \u003d {\n    running \u003d false\n  }\n\n  override def snapshotState(checkpointId: Long, timestamp: Long): java.util.List[java.lang.Long] \u003d {\n    Collections.singletonList(count)\n  }\n\n  override def restoreState(state: java.util.List[java.lang.Long]): Unit \u003d {\n    state.foreach(s \u003d\u003e count \u003d s)\n  }\n\n}).assignAscendingTimestamps(_._1)\n\nstenv.registerDataStream(\"log\", data, \u0027time, \u0027url, \u0027rowtime.rowtime)\n",
       "user": "anonymous",
       "dateUpdated": "2020-04-29 14:21:46.802",
+      "progress": 0,
       "config": {
         "colWidth": 12.0,
         "fontSize": 9.0,
@@ -67,15 +60,6 @@
         "params": {},
         "forms": {}
       },
-      "results": {
-        "code": "SUCCESS",
-        "msg": [
-          {
-            "type": "TEXT",
-            "data": "import org.apache.flink.streaming.api.functions.source.SourceFunction\nimport org.apache.flink.table.api.TableEnvironment\nimport org.apache.flink.streaming.api.TimeCharacteristic\nimport org.apache.flink.streaming.api.checkpoint.ListCheckpointed\nimport java.util.Collections\nimport scala.collection.JavaConversions._\n\u001b[1m\u001b[34mres1\u001b[0m: \u001b[1m\u001b[32morg.apache.flink.streaming.api.scala.StreamExecutionEnvironment\u001b[0m \u003d org.apache.flink.streaming.api.scala.StreamExecutionEnvironment@696c8019\n\u001b[33mwarning: \u001b[0mthere was one deprecation warning; re-run with -deprecation for details\n\u001b[1m\u001b[34mdata\u001b[0m: \u001b[1m\u001b[32morg.apache.flink.streaming.api.scala.DataStream[(Long, String)]\u001b[0m \u003d org.apache.flink.streaming.api.scala.DataStream@6210ca04\n\u001b[33mwarning: \u001b[0mthere was one deprecation warning; re-run with -deprecation for details\n"
-          }
-        ]
-      },
       "apps": [],
       "runtimeInfos": {},
       "progressUpdateIntervalMs": 500,
@@ -91,6 +75,7 @@
       "text": "%flink.ssql(type\u003dupdate)\n\nselect url, count(1) as c from log group by url",
       "user": "anonymous",
       "dateUpdated": "2020-04-29 14:22:40.594",
+      "progress": 0,
       "config": {
         "colWidth": 12.0,
         "fontSize": 9.0,
@@ -176,6 +161,7 @@
       "text": "%flink.ssql(type\u003dupdate,parallelism\u003d2,maxParallelism\u003d10,savepointDir\u003d/tmp/flink_a)\n\nselect url, count(1) as pv from log group by url",
       "user": "anonymous",
       "dateUpdated": "2020-04-29 14:24:26.768",
+      "progress": 0,
       "config": {
         "colWidth": 12.0,
         "fontSize": 9.0,
@@ -229,15 +215,6 @@
         "params": {},
         "forms": {}
       },
-      "results": {
-        "code": "SUCCESS",
-        "msg": [
-          {
-            "type": "TABLE",
-            "data": "url\tpv\nhome\t500\nproduct\t1500\nsearch\t1000\n"
-          }
-        ]
-      },
       "apps": [],
       "runtimeInfos": {},
       "progressUpdateIntervalMs": 500,
@@ -253,6 +230,7 @@
       "text": "%flink(parallelism\u003d1,maxParallelism\u003d10,savepointDir\u003d/tmp/flink_b)\n\nval table \u003d stenv.sqlQuery(\"select url, count(1) as pv from log group by url\")\n\nz.show(table, streamType\u003d\"update\")\n",
       "user": "anonymous",
       "dateUpdated": "2020-04-15 16:11:54.114",
+      "progress": 0,
       "config": {
         "colWidth": 12.0,
         "fontSize": 9.0,
@@ -304,15 +282,6 @@
         "params": {},
         "forms": {}
       },
-      "results": {
-        "code": "SUCCESS",
-        "msg": [
-          {
-            "type": "TABLE",
-            "data": "url\tpv\nhome\t34\nproduct\t100\nsearch\t68\n"
-          }
-        ]
-      },
       "apps": [],
       "runtimeInfos": {},
       "progressUpdateIntervalMs": 500,
@@ -328,6 +297,7 @@
       "text": "%flink.ipyflink(parallelism\u003d1,maxParallelism\u003d10,savepointDir\u003d/tmp/flink_c)\n\ntable \u003d st_env.sql_query(\"select url, count(1) as pv from log group by url\")\n\nz.show(table, stream_type\u003d\"update\")",
       "user": "anonymous",
       "dateUpdated": "2020-04-27 14:45:28.045",
+      "progress": 0,
       "config": {
         "colWidth": 12.0,
         "fontSize": 9.0,
@@ -378,15 +348,6 @@
         "params": {},
         "forms": {}
       },
-      "results": {
-        "code": "SUCCESS",
-        "msg": [
-          {
-            "type": "TABLE",
-            "data": "url\tpv\nhome\t17\nproduct\t49\nsearch\t34\n"
-          }
-        ]
-      },
       "apps": [],
       "runtimeInfos": {},
       "progressUpdateIntervalMs": 500,
@@ -401,6 +362,7 @@
       "text": "%flink.ssql\n",
       "user": "anonymous",
       "dateUpdated": "2020-04-18 19:04:17.969",
+      "progress": 0,
       "config": {},
       "settings": {
         "params": {},
