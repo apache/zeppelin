@@ -25,7 +25,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.io.IOUtils;
@@ -72,7 +71,6 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
   private final boolean timeoutDuringPending;
 
   private AtomicBoolean started = new AtomicBoolean(false);
-  private Random rand = new Random();
 
   private static final String SPARK_DRIVER_MEMORY = "spark.driver.memory";
   private static final String SPARK_DRIVER_MEMORY_OVERHEAD = "spark.driver.memoryOverhead";
@@ -111,7 +109,7 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
     this.envs = new HashMap<>(envs);
     this.portForward = portForward;
     this.sparkImage = sparkImage;
-    this.podName = interpreterGroupName.toLowerCase() + "-" + getRandomString(6);
+    this.podName = interpreterGroupName.toLowerCase() + "-" + K8sUtils.getRandomPodSuffix(6);
     this.isUserImpersonatedForSpark = isUserImpersonatedForSpark;
     this.timeoutDuringPending = timeoutDuringPending;
   }
@@ -461,17 +459,6 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
 
   private String ownerName() {
     return System.getenv("POD_NAME");
-  }
-
-  private String getRandomString(int length) {
-    char[] chars = "abcdefghijklmnopqrstuvwxyz".toCharArray();
-
-    StringBuilder sb = new StringBuilder();
-    for (int i = 0; i < length; i++) {
-      char c = chars[rand.nextInt(chars.length)];
-      sb.append(c);
-    }
-    return sb.toString();
   }
 
   @Override
