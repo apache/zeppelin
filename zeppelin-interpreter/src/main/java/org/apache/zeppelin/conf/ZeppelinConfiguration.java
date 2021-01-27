@@ -82,7 +82,8 @@ public class ZeppelinConfiguration {
      try {
       loadXMLConfig(filename);
     } catch (ConfigurationException e) {
-      LOGGER.warn("Failed to load configuration, proceeding with a default", e);
+      LOGGER.warn("Failed to load XML configuration, proceeding with a default,for a stacktrace activate the debug log");
+      LOGGER.debug("Failed to load XML configuration", e);
     }
   }
 
