@@ -234,27 +234,21 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterManagedProcess
 
   @Override
   public boolean isRunning() {
+    return RemoteInterpreterUtils.checkIfRemoteEndpointAccessible(getHost(), getPort())
+        && "Running".equalsIgnoreCase(getPodPhase()) && started.get();
+  }
+
+  public String getPodPhase() {
     try {
-      if (RemoteInterpreterUtils.checkIfRemoteEndpointAccessible(getHost(), getPort())) {
-        return true;
-      }
       Pod pod = client.pods().inNamespace(namespace).withName(podName).get();
       if (pod != null) {
         PodStatus status = pod.getStatus();
         if (status != null) {
-          return "Running".equals(status.getPhase()) && started.get();
+          return status.getPhase();
         }
       }
     } catch (Exception e) {
-      LOGGER.error("Can't get pod status", e);
-    }
-    return false;
-  }
-
-  public String getPodPhase() {
-    Pod pod = client.pods().inNamespace(namespace).withName(podName).get();
-    if (pod != null) {
-      return pod.getStatus().getPhase();
+      LOGGER.error("Can't get pod phase", e);
     }
     return "Unknown";
   }
