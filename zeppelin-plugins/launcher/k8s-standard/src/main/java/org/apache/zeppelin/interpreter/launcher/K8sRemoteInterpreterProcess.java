@@ -25,6 +25,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.io.IOUtils;
@@ -32,6 +33,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterManagedProcess;
+import org.apache.zeppelin.interpreter.remote.RemoteInterpreterServer;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,6 +48,7 @@ import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.PodStatus;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.LocalPortForward;
+import io.fabric8.kubernetes.client.Watch;
 import io.fabric8.kubernetes.client.dsl.ParameterNamespaceListVisitFromServerGetDeleteRecreateWaitApplicable;
 
 public class K8sRemoteInterpreterProcess extends RemoteInterpreterManagedProcess {
@@ -143,16 +146,16 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterManagedProcess
 
     // special handling if we doesn't want timeout the process during lifecycle phase pending
     if (!timeoutDuringPending) {
-      while (!StringUtils.equalsAnyIgnoreCase(getPodPhase(), "Succeeded", "Failed", "Running")
-          && !Thread.currentThread().isInterrupted()) {
-        try {
-          Thread.sleep(1000);
-        } catch (InterruptedException e) {
-          LOGGER.error("Interrupt received during pending phase. Try to stop the interpreter and interrupt the current thread.", e);
-          processStopped("Start process was interrupted during the pending phase");
-          stop();
-          Thread.currentThread().interrupt();
-        }
+      // WATCH
+      PodPhaseWatcher podWatcher = new PodPhaseWatcher(
+          phase -> StringUtils.equalsAnyIgnoreCase(phase, "Succeeded", "Failed", "Running"));
+      try (Watch watch = client.pods().inNamespace(namespace).withName(podName).watch(podWatcher)) {
+        podWatcher.getCountDownLatch().await();
+      } catch (InterruptedException e) {
+        LOGGER.error("Interrupt received during waiting for Running phase. Try to stop the interpreter and interrupt the current thread.", e);
+        processStopped("Start process was interrupted during waiting for Running phase");
+        stop();
+        Thread.currentThread().interrupt();
       }
     }
 
@@ -183,6 +186,18 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterManagedProcess
   @Override
   public void stop() {
     super.stop();
+    // WATCH for soft shutdown
+    PodPhaseWatcher podWatcher = new PodPhaseWatcher(phase -> StringUtils.equalsAny(phase, "Succeeded", "Failed"));
+    try (Watch watch = client.pods().inNamespace(namespace).withName(podName).watch(podWatcher)) {
+      if (!podWatcher.getCountDownLatch().await(RemoteInterpreterServer.DEFAULT_SHUTDOWN_TIMEOUT + 500,
+          TimeUnit.MILLISECONDS)) {
+        LOGGER.warn("Pod {} doesn't terminate in time", podName);
+      }
+    } catch (InterruptedException e) {
+      LOGGER.error("Interruption received while waiting for stop.", e);
+      processStopped("Stop process was interrupted during termination");
+      Thread.currentThread().interrupt();
+    }
     Properties templateProperties = getTemplateBindings(null);
     // delete pod
     try {
