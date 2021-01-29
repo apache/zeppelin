@@ -207,7 +207,7 @@ public class SparkInterpreter extends AbstractInterpreter {
 
   public ZeppelinContext getZeppelinContext() {
     if (this.innerInterpreter == null) {
-      LOGGER.error("innerInterpreter is null!");
+      throw new RuntimeException("innerInterpreterContext is null");
     }
     return this.innerInterpreter.getZeppelinContext();
   }

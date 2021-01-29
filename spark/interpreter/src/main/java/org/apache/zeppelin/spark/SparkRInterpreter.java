@@ -123,10 +123,6 @@ public class SparkRInterpreter extends RInterpreter {
   @Override
   public void close() throws InterpreterException {
     super.close();
-    if (this.sparkInterpreter != null) {
-      this.sparkInterpreter.close();
-      this.sparkInterpreter = null;
-    }
   }
 
   @Override

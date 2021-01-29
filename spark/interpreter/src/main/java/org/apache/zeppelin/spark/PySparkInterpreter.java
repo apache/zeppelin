@@ -109,10 +109,8 @@ public class PySparkInterpreter extends PythonInterpreter {
 
   @Override
   public void close() throws InterpreterException {
+    LOGGER.info("Close PySparkInterpreter");
     super.close();
-    if (sparkInterpreter != null) {
-      sparkInterpreter.close();
-    }
   }
 
   @Override

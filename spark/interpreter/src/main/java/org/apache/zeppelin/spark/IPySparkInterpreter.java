@@ -148,9 +148,6 @@ public class IPySparkInterpreter extends IPythonInterpreter {
   public void close() throws InterpreterException {
     LOGGER.info("Close IPySparkInterpreter");
     super.close();
-    if (sparkInterpreter != null) {
-      sparkInterpreter.close();
-    }
   }
 
   @Override
