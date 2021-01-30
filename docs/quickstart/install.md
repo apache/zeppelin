@@ -40,7 +40,7 @@ Apache Zeppelin officially supports and is tested on the following environments:
   </tr>
   <tr>
     <td>OS</td>
-    <td>Mac OSX <br/>Ubuntu 16.X <br/> Ubuntu 18.X <br/> Ubuntu 20.X</td>
+    <td>Mac OSX <br/> Ubuntu 18.04 <br/> Ubuntu 20.04</td>
   </tr>
 </table>
 
