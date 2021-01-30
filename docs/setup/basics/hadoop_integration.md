@@ -32,7 +32,7 @@ Hadoop is an optional component of zeppelin unless you need the following featur
 
 ## Requirements
 
-In Zeppelin 0.9 doesn't ship with hadoop dependencies, you need to include hadoop jars by yourself via the following steps
+Zeppelin 0.9 doesn't ship with hadoop dependencies, you need to include hadoop jars by yourself via the following steps
 
 * Hadoop client (both 2.x and 3.x are supported) is installed.
 * `$HADOOP_HOME/bin` is put in `PATH`. Because internally zeppelin will run command `hadoop classpath` to get all the hadoop jars and put them in the classpath of Zeppelin.
