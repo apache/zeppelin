@@ -591,7 +591,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
   public void testSchedulePoolUsage() throws InterruptedException, IOException {
     final int timeout = 30;
     final String everySecondCron = "* * * * * ?";
-    final CountDownLatch jobsToExecuteCount = new CountDownLatch(13);
+    final CountDownLatch jobsToExecuteCount = new CountDownLatch(8);
     final Note note = notebook.createNote("note1", anonymous);
 
     executeNewParagraphByCron(note, everySecondCron);
@@ -655,7 +655,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
 
     System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_CRON_FOLDERS.getVarName(), "/System");
     try {
-      final int timeout = 10;
+      final int timeout = 20;
       final String everySecondCron = "* * * * * ?";
       final CountDownLatch jobsToExecuteCount = new CountDownLatch(5);
       final Note note = notebook.createNote("note1", anonymous);
