@@ -106,6 +106,10 @@ public class ShellInterpreter extends KerberosInterpreter {
         }
       }
     }
+
+    if (shellOutputCheckExecutor != null) {
+      shellOutputCheckExecutor.shutdownNow();
+    }
   }
 
   @Override
