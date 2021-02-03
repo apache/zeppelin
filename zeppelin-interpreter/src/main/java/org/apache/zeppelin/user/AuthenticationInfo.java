@@ -20,8 +20,11 @@ package org.apache.zeppelin.user;
 
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
+import com.google.common.collect.Sets;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.common.JsonSerializable;
 import org.slf4j.Logger;
@@ -34,13 +37,13 @@ import com.google.gson.Gson;
  */
 public class AuthenticationInfo implements JsonSerializable {
   private static final Logger LOG = LoggerFactory.getLogger(AuthenticationInfo.class);
-  private static final Gson gson = new Gson();
+  private static final Gson GSON = new Gson();
 
   String user;
-  List<String> roles;
+  Set<String> roles;
   String ticket;
   UserCredentials userCredentials;
-  public static final AuthenticationInfo ANONYMOUS = new AuthenticationInfo("anonymous", null,
+  public static final AuthenticationInfo ANONYMOUS = new AuthenticationInfo("anonymous", Sets.newHashSet(),
       "anonymous");
 
   public AuthenticationInfo() {}
@@ -54,10 +57,21 @@ public class AuthenticationInfo implements JsonSerializable {
    * @param user
    * @param ticket
    */
+  public AuthenticationInfo(String user, Set<String> roles, String ticket) {
+    this.user = user;
+    this.ticket = ticket;
+    this.roles = roles;
+  }
+
   public AuthenticationInfo(String user, String roles, String ticket) {
     this.user = user;
     this.ticket = ticket;
-    this.roles = gson.fromJson(roles, ArrayList.class);
+    List<String> rolesList = GSON.fromJson(roles, ArrayList.class);
+    if (roles == null) {
+      this.roles = new HashSet<>();
+    } else {
+      this.roles = new HashSet<>(rolesList);
+    }
   }
 
   public String getUser() {
@@ -68,16 +82,12 @@ public class AuthenticationInfo implements JsonSerializable {
     this.user = user;
   }
 
-  public List<String> getRoles() {
+  public Set<String> getRoles() {
     return roles;
   }
 
-  public void setRoles(List<String> roles) {
+  public void setRoles(Set<String> roles) {
     this.roles = roles;
-  }
-
-  public void setRoles(String roles) {
-    this.roles = gson.fromJson(roles, ArrayList.class);
   }
 
   public List<String> getUsersAndRoles() {
@@ -124,10 +134,10 @@ public class AuthenticationInfo implements JsonSerializable {
 
   @Override
   public String toJson() {
-    return gson.toJson(this);
+    return GSON.toJson(this);
   }
 
   public static AuthenticationInfo fromJson(String json) {
-    return gson.fromJson(json, AuthenticationInfo.class);
+    return GSON.fromJson(json, AuthenticationInfo.class);
   }
 }

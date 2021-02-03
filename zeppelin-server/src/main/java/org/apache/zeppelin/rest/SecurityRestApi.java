@@ -70,17 +70,17 @@ public class SecurityRestApi {
     String principal = authenticationService.getPrincipal();
     Set<String> roles = authenticationService.getAssociatedRoles();
     // ticket set to anonymous for anonymous user. Simplify testing.
-    String ticket;
+    TicketContainer.Entry ticketEntry;
     if ("anonymous".equals(principal)) {
-      ticket = "anonymous";
+      ticketEntry = TicketContainer.ANONYMOUS_ENTRY;
     } else {
-      ticket = TicketContainer.instance.getTicket(principal);
+      ticketEntry = TicketContainer.instance.getTicketEntry(principal, roles);
     }
 
     Map<String, String> data = new HashMap<>();
-    data.put("principal", principal);
-    data.put("roles", gson.toJson(roles));
-    data.put("ticket", ticket);
+    data.put("principal", ticketEntry.getPrincipal());
+    data.put("roles", gson.toJson(ticketEntry.getRoles()));
+    data.put("ticket", ticketEntry.getTicket());
 
     JsonResponse<Map<String, String>> response = new JsonResponse<>(Response.Status.OK, "", data);
     LOG.warn("{}", response);
