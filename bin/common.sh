@@ -138,11 +138,11 @@ if [[ -z "${ZEPPELIN_ENCODING}" ]]; then
 fi
 
 if [[ -z "${ZEPPELIN_MEM}" ]]; then
-  export ZEPPELIN_MEM="-Xms1024m -Xmx1024m"
+  export ZEPPELIN_MEM="-Xmx1024m"
 fi
 
 if [[ ( -z "${ZEPPELIN_INTP_MEM}" ) && ( "${ZEPPELIN_INTERPRETER_LAUNCHER}" != "yarn" ) ]]; then
-  export ZEPPELIN_INTP_MEM="-Xms1024m -Xmx2048m"
+  export ZEPPELIN_INTP_MEM="-Xmx1024m"
 fi
 
 JAVA_OPTS+=" ${ZEPPELIN_JAVA_OPTS} -Dfile.encoding=${ZEPPELIN_ENCODING} ${ZEPPELIN_MEM}"
