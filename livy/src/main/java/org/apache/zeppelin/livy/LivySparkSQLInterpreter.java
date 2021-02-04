@@ -176,7 +176,7 @@ public class LivySparkSQLInterpreter extends BaseLivyInterpreter {
   protected List<String> parseSQLJsonOutput(String output) {
     List<String> rows = new ArrayList<>();
 
-    String[] rowsOutput = output.split("\n");
+    String[] rowsOutput = output.split("(?<!\\\\)\\n");
     String[] header = rowsOutput[1].split("\t");
     List<String> cells = new ArrayList<>(Arrays.asList(header));
     rows.add(StringUtils.join(cells, "\t"));
@@ -188,7 +188,9 @@ public class LivySparkSQLInterpreter extends BaseLivyInterpreter {
       );
       cells = new ArrayList<>();
       for (String s : header) {
-        cells.add(retMap.getOrDefault(s, "null"));
+        cells.add(retMap.getOrDefault(s, "null")
+            .replace("\n", "\\n")
+            .replace("\t", "\\t"));
       }
       rows.add(StringUtils.join(cells, "\t"));
     }

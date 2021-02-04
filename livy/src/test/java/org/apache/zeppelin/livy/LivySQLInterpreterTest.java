@@ -171,4 +171,108 @@ public class LivySQLInterpreterTest {
     assertEquals("1\t\\ta", rows.get(1));
     assertEquals("2\t2b", rows.get(2));
   }
+
+  @Test
+  public void parseSQLJsonOutput() {
+    // Empty sql output
+    //    id	name
+    List<String> rows = sqlInterpreter.parseSQLJsonOutput("\nid\tname\n");
+    assertEquals(1, rows.size());
+    assertEquals("id\tname", rows.get(0));
+
+
+    //  sql output with 2 rows
+    // id	name
+    // {"id":1,"name":"1a"}
+    // {"id":2,"name":"2a"}
+    rows = sqlInterpreter.parseSQLJsonOutput("\nid\tname\n"
+        + "{\"id\":1,\"name\":\"1a\"}\n"
+        + "{\"id\":2,\"name\":\"2a\"}");
+    assertEquals(3, rows.size());
+    assertEquals("id\tname", rows.get(0));
+    assertEquals("1\t1a", rows.get(1));
+    assertEquals("2\t2a", rows.get(2));
+
+
+    //  sql output with 3 rows and showing "only showing top 3 rows"
+    // id	name
+    // {"id":1,"name":"1a"}
+    // {"id":2,"name":"2a"}
+    // {"id":3,"name":"3a"}
+    //    only showing top 3 rows
+    rows = sqlInterpreter.parseSQLJsonOutput("\nid\tname\n"
+        + "{\"id\":1,\"name\":\"1a\"}\n"
+        + "{\"id\":2,\"name\":\"2a\"}\n"
+        + "{\"id\":3,\"name\":\"3a\"}");
+    assertEquals(4, rows.size());
+    assertEquals("id\tname", rows.get(0));
+    assertEquals("1\t1a", rows.get(1));
+    assertEquals("2\t2a", rows.get(2));
+    assertEquals("3\t3a", rows.get(3));
+
+
+    //  sql output with 1 rows and showing "only showing top 1 rows"
+    // id
+    // {"id":1}
+    // {"id":2}
+    // {"id":3}
+    //    only showing top 1 rows
+    rows = sqlInterpreter.parseSQLJsonOutput("\nid\n"
+        + "{\"id\":1}");
+    assertEquals(2, rows.size());
+    assertEquals("id", rows.get(0));
+    assertEquals("1", rows.get(1));
+
+
+
+    //  sql output with 3 rows, 3 columns, showing "only showing top 3 rows" with a line break in
+    //  the data
+    //    id	name	destination
+    //    {"id":1,"name":"1a","destination":"1b"}
+    //    {"id":2,"name":"2\na","destination":"2b"}
+    //    {"id":3,"name":"3a","destination":"3b"}
+    //    only showing top 3 rows
+    rows = sqlInterpreter.parseSQLJsonOutput("\nid\tname\tdestination\n"
+        + "{\"id\":1,\"name\":\"1a\",\"destination\":\"1b\"}\n"
+        + "{\"id\":2,\"name\":\"2\\na\",\"destination\":\"2b\"}\n"
+        + "{\"id\":3,\"name\":\"3a\",\"destination\":\"3b\"}");
+    assertEquals(4, rows.size());
+    assertEquals("id\tname\tdestination", rows.get(0));
+    assertEquals("1\t1a\t1b", rows.get(1));
+    assertEquals("2\t2\\na\t2b", rows.get(2));
+    assertEquals("3\t3a\t3b", rows.get(3));
+
+
+    //  sql output with 3 rows and one containing a tab
+    // id	name
+    // {"id":1,"name":"1a"}
+    // {"id":2,"name":"2\ta"}
+    // {"id":3,"name":"3a"}
+    //    only showing top 3 rows
+    rows = sqlInterpreter.parseSQLJsonOutput("\nid\tname\n"
+        + "{\"id\":1,\"name\":\"1a\"}\n"
+        + "{\"id\":2,\"name\":\"2\ta\"}\n"
+        + "{\"id\":3,\"name\":\"3a\"}");
+    assertEquals(4, rows.size());
+    assertEquals("id\tname", rows.get(0));
+    assertEquals("1\t1a", rows.get(1));
+    assertEquals("2\t2\\ta", rows.get(2));
+    assertEquals("3\t3a", rows.get(3));
+
+    //  sql output with 3 rows and one containing a Japanese characters
+    // id	name
+    // {"id":1,"name":"1a"}
+    // {"id":2,"name":"みんく"}
+    // {"id":3,"name":"3a"}
+    //    only showing top 3 rows
+    rows = sqlInterpreter.parseSQLJsonOutput("\nid\tname\n"
+        + "{\"id\":1,\"name\":\"1a\"}\n"
+        + "{\"id\":2,\"name\":\"みんく\"}\n"
+        + "{\"id\":3,\"name\":\"3a\"}");
+    assertEquals(4, rows.size());
+    assertEquals("id\tname", rows.get(0));
+    assertEquals("1\t1a", rows.get(1));
+    assertEquals("2\tみんく", rows.get(2));
+    assertEquals("3\t3a", rows.get(3));
+  }
 }
