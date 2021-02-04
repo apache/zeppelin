@@ -174,17 +174,17 @@ public class LivySQLInterpreterTest {
 
   @Test
   public void parseSQLJsonOutput() {
-    // Empty sql output
-    //    id	name
+    //  Empty sql output
+    //  id name
     List<String> rows = sqlInterpreter.parseSQLJsonOutput("\nid\tname\n");
     assertEquals(1, rows.size());
     assertEquals("id\tname", rows.get(0));
 
 
     //  sql output with 2 rows
-    // id	name
-    // {"id":1,"name":"1a"}
-    // {"id":2,"name":"2a"}
+    //  id name
+    //  {"id":1,"name":"1a"}
+    //  {"id":2,"name":"2a"}
     rows = sqlInterpreter.parseSQLJsonOutput("\nid\tname\n"
         + "{\"id\":1,\"name\":\"1a\"}\n"
         + "{\"id\":2,\"name\":\"2a\"}");
@@ -195,11 +195,11 @@ public class LivySQLInterpreterTest {
 
 
     //  sql output with 3 rows and showing "only showing top 3 rows"
-    // id	name
-    // {"id":1,"name":"1a"}
-    // {"id":2,"name":"2a"}
-    // {"id":3,"name":"3a"}
-    //    only showing top 3 rows
+    //  id\tname
+    //  {"id":1,"name":"1a"}
+    //  {"id":2,"name":"2a"}
+    //  {"id":3,"name":"3a"}
+    //  only showing top 3 rows
     rows = sqlInterpreter.parseSQLJsonOutput("\nid\tname\n"
         + "{\"id\":1,\"name\":\"1a\"}\n"
         + "{\"id\":2,\"name\":\"2a\"}\n"
@@ -212,11 +212,11 @@ public class LivySQLInterpreterTest {
 
 
     //  sql output with 1 rows and showing "only showing top 1 rows"
-    // id
-    // {"id":1}
-    // {"id":2}
-    // {"id":3}
-    //    only showing top 1 rows
+    //  id
+    //  {"id":1}
+    //  {"id":2}
+    //  {"id":3}
+    //  only showing top 1 rows
     rows = sqlInterpreter.parseSQLJsonOutput("\nid\n"
         + "{\"id\":1}");
     assertEquals(2, rows.size());
@@ -227,11 +227,11 @@ public class LivySQLInterpreterTest {
 
     //  sql output with 3 rows, 3 columns, showing "only showing top 3 rows" with a line break in
     //  the data
-    //    id	name	destination
-    //    {"id":1,"name":"1a","destination":"1b"}
-    //    {"id":2,"name":"2\na","destination":"2b"}
-    //    {"id":3,"name":"3a","destination":"3b"}
-    //    only showing top 3 rows
+    //  id name destination
+    //  {"id":1,"name":"1a","destination":"1b"}
+    //  {"id":2,"name":"2\na","destination":"2b"}
+    //  {"id":3,"name":"3a","destination":"3b"}
+    //  only showing top 3 rows
     rows = sqlInterpreter.parseSQLJsonOutput("\nid\tname\tdestination\n"
         + "{\"id\":1,\"name\":\"1a\",\"destination\":\"1b\"}\n"
         + "{\"id\":2,\"name\":\"2\\na\",\"destination\":\"2b\"}\n"
@@ -244,11 +244,11 @@ public class LivySQLInterpreterTest {
 
 
     //  sql output with 3 rows and one containing a tab
-    // id	name
-    // {"id":1,"name":"1a"}
-    // {"id":2,"name":"2\ta"}
-    // {"id":3,"name":"3a"}
-    //    only showing top 3 rows
+    //  id name
+    //  {"id":1,"name":"1a"}
+    //  {"id":2,"name":"2\ta"}
+    //  {"id":3,"name":"3a"}
+    //  only showing top 3 rows
     rows = sqlInterpreter.parseSQLJsonOutput("\nid\tname\n"
         + "{\"id\":1,\"name\":\"1a\"}\n"
         + "{\"id\":2,\"name\":\"2\ta\"}\n"
@@ -260,11 +260,11 @@ public class LivySQLInterpreterTest {
     assertEquals("3\t3a", rows.get(3));
 
     //  sql output with 3 rows and one containing a Japanese characters
-    // id	name
-    // {"id":1,"name":"1a"}
-    // {"id":2,"name":"みんく"}
-    // {"id":3,"name":"3a"}
-    //    only showing top 3 rows
+    //  id name
+    //  {"id":1,"name":"1a"}
+    //  {"id":2,"name":"みんく"}
+    //  {"id":3,"name":"3a"}
+    //  only showing top 3 rows
     rows = sqlInterpreter.parseSQLJsonOutput("\nid\tname\n"
         + "{\"id\":1,\"name\":\"1a\"}\n"
         + "{\"id\":2,\"name\":\"みんく\"}\n"
