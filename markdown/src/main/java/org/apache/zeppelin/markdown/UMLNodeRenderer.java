@@ -18,12 +18,12 @@
 package org.apache.zeppelin.markdown;
 
 import com.vladsch.flexmark.ext.gitlab.internal.GitLabOptions;
-import com.vladsch.flexmark.html.CustomNodeRenderer;
 import com.vladsch.flexmark.html.HtmlWriter;
 import com.vladsch.flexmark.html.renderer.NodeRenderer;
 import com.vladsch.flexmark.html.renderer.NodeRendererFactory;
 import com.vladsch.flexmark.html.renderer.NodeRendererContext;
 import com.vladsch.flexmark.html.renderer.NodeRenderingHandler;
+import com.vladsch.flexmark.html.renderer.NodeRenderingHandler.CustomNodeRenderer;
 import com.vladsch.flexmark.util.data.DataHolder;
 
 import org.slf4j.Logger;
