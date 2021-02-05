@@ -71,8 +71,9 @@ public class NoteManager {
 
   // build the tree structure of notes
   private void init() throws IOException {
+    // use ConcurrentMap because it may be used in multiple threads.
     this.notesInfo = notebookRepo.list(AuthenticationInfo.ANONYMOUS).values().stream()
-        .collect(Collectors.toMap(NoteInfo::getId, NoteInfo::getPath));
+        .collect(Collectors.toConcurrentMap(NoteInfo::getId, NoteInfo::getPath));
     this.notesInfo.entrySet().stream()
         .forEach(entry ->
         {
