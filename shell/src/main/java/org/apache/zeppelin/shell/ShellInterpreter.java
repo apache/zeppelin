@@ -24,6 +24,7 @@ import org.apache.commons.exec.ExecuteWatchdog;
 import org.apache.commons.exec.PumpStreamHandler;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.interpreter.ZeppelinContext;
+import org.apache.zeppelin.util.ExecutorUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,7 +52,8 @@ public class ShellInterpreter extends KerberosInterpreter {
   private static final Logger LOGGER = LoggerFactory.getLogger(ShellInterpreter.class);
 
   private static final String TIMEOUT_PROPERTY = "shell.command.timeout.millisecs";
-  private static final String TIMEOUT_CHECK_INTERVAL_PROPERTY = "shell.command.timeout.check.interval";
+  private static final String TIMEOUT_CHECK_INTERVAL_PROPERTY =
+          "shell.command.timeout.check.interval";
   private static final String DEFAULT_TIMEOUT = "60000";
   private static final String DEFAULT_CHECK_INTERVAL = "10000";
   private static final String DIRECTORY_USER_HOME = "shell.working.directory.user.home";
@@ -60,7 +62,8 @@ public class ShellInterpreter extends KerberosInterpreter {
   private final String shell = isWindows ? "cmd /c" : "bash -c";
   private ConcurrentHashMap<String, DefaultExecutor> executorMap;
   private ConcurrentHashMap<String, InterpreterContext> contextMap;
-  private ScheduledExecutorService shellOutputCheckExecutor = Executors.newSingleThreadScheduledExecutor();
+  private ScheduledExecutorService shellOutputCheckExecutor =
+          Executors.newSingleThreadScheduledExecutor();
 
   public ShellInterpreter(Properties property) {
     super(property);
@@ -70,7 +73,8 @@ public class ShellInterpreter extends KerberosInterpreter {
   public void open() {
     super.open();
     long timeoutThreshold = Long.parseLong(getProperty(TIMEOUT_PROPERTY, DEFAULT_TIMEOUT));
-    long timeoutCheckInterval = Long.parseLong(getProperty(TIMEOUT_CHECK_INTERVAL_PROPERTY, DEFAULT_CHECK_INTERVAL));
+    long timeoutCheckInterval = Long.parseLong(
+            getProperty(TIMEOUT_CHECK_INTERVAL_PROPERTY, DEFAULT_CHECK_INTERVAL));
     LOGGER.info("Command timeout property: {}", timeoutThreshold);
     executorMap = new ConcurrentHashMap<>();
     contextMap = new ConcurrentHashMap<>();
@@ -84,7 +88,8 @@ public class ShellInterpreter extends KerberosInterpreter {
           LOGGER.warn("No InterpreterContext associated with paragraph: {}", paragraphId);
           continue;
         }
-        if ((System.currentTimeMillis() - context.out.getLastWriteTimestamp()) > timeoutThreshold) {
+        if ((System.currentTimeMillis() - context.out.getLastWriteTimestamp()) >
+                timeoutThreshold) {
           LOGGER.info("No output for paragraph {} for the last {} milli-seconds, so kill it",
                   paragraphId, timeoutThreshold);
           executor.getWatchdog().stop();
@@ -108,7 +113,8 @@ public class ShellInterpreter extends KerberosInterpreter {
     }
 
     if (shellOutputCheckExecutor != null) {
-      shellOutputCheckExecutor.shutdownNow();
+      ExecutorUtil.softShutdown("ShellOutputCheckExecutor", shellOutputCheckExecutor,
+              5, TimeUnit.SECONDS);
     }
   }
 
