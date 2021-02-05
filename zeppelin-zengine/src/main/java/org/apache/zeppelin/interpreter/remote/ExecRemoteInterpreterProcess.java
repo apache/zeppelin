@@ -158,7 +158,7 @@ public class ExecRemoteInterpreterProcess extends RemoteInterpreterManagedProces
         while (state == State.RUNNING && !Thread.currentThread().isInterrupted()) {
           long timetoTimeout = timeoutTime - System.currentTimeMillis();
           if (timetoTimeout <= 0) {
-            LOGGER.warn("Timeout reached");
+            LOGGER.warn("Shutdown timeout reached");
             break;
           }
           try {
@@ -179,7 +179,7 @@ public class ExecRemoteInterpreterProcess extends RemoteInterpreterManagedProces
         while (state != State.RUNNING && !Thread.currentThread().isInterrupted()) {
           long timetoTimeout = timeoutTime - System.currentTimeMillis();
           if (timetoTimeout <= 0) {
-            LOGGER.warn("Timeout reached");
+            LOGGER.warn("Ready timeout reached");
             break;
           }
           try {
