@@ -37,7 +37,7 @@
     <interpreter.name>md</interpreter.name>
     <markdown4j.version>2.2-cj-1.0</markdown4j.version>
     <pegdown.version>1.6.0</pegdown.version>
-    <flexmark.all.version>0.50.40</flexmark.all.version>
+    <flexmark.all.version>0.62.2</flexmark.all.version>
   </properties>
 
   <dependencies>

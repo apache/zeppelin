@@ -20,7 +20,7 @@ package org.apache.zeppelin.markdown;
 import com.vladsch.flexmark.html.HtmlRenderer;
 import com.vladsch.flexmark.parser.Parser;
 import com.vladsch.flexmark.util.data.MutableDataHolder;
-import com.vladsch.flexmark.util.builder.Extension;
+import com.vladsch.flexmark.util.misc.Extension;
 
 
 /**

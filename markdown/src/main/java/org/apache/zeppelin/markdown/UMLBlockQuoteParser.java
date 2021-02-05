@@ -129,13 +129,14 @@ public class UMLBlockQuoteParser extends AbstractBlockParser {
    * Generic Factory
    */
   public static class Factory implements CustomBlockParserFactory {
+
     @Override
-    public Set<Class<? extends CustomBlockParserFactory>> getAfterDependents() {
+    public Set<Class<?>> getAfterDependents() {
       return null;
     }
 
     @Override
-    public Set<Class<? extends CustomBlockParserFactory>> getBeforeDependents() {
+    public Set<Class<?>> getBeforeDependents() {
       return null;
     }
 
