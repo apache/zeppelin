@@ -107,7 +107,7 @@ public class RemoteInterpreterServer extends Thread
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RemoteInterpreterServer.class);
 
-  private static final int DEFAULT_SHUTDOWN_TIMEOUT = 2000;
+  public static final int DEFAULT_SHUTDOWN_TIMEOUT = 2000;
 
   private String interpreterGroupId;
   private InterpreterGroup interpreterGroup;
