@@ -116,7 +116,7 @@ public class Markdown extends Interpreter {
     return new InterpreterResult(Code.SUCCESS, "%html " + html);
   }
 
-  private String sanitizeInput(String input) {
+  public String sanitizeInput(String input) {
     if (input != null) {
       for (String unsafeTag : unsafeTags) {
         String unsafeRegex = "<" + unsafeTag + ">(.*)</" + unsafeTag + ">";
