@@ -80,20 +80,24 @@ public class ShellInterpreter extends KerberosInterpreter {
     contextMap = new ConcurrentHashMap<>();
 
     shellOutputCheckExecutor.scheduleAtFixedRate(() -> {
-      for (Map.Entry<String, DefaultExecutor> entry : executorMap.entrySet()) {
-        String paragraphId = entry.getKey();
-        DefaultExecutor executor = entry.getValue();
-        InterpreterContext context = contextMap.get(paragraphId);
-        if (context == null) {
-          LOGGER.warn("No InterpreterContext associated with paragraph: {}", paragraphId);
-          continue;
+      try {
+        for (Map.Entry<String, DefaultExecutor> entry : executorMap.entrySet()) {
+          String paragraphId = entry.getKey();
+          DefaultExecutor executor = entry.getValue();
+          InterpreterContext context = contextMap.get(paragraphId);
+          if (context == null) {
+            LOGGER.warn("No InterpreterContext associated with paragraph: {}", paragraphId);
+            continue;
+          }
+          if ((System.currentTimeMillis() - context.out.getLastWriteTimestamp()) >
+                  timeoutThreshold) {
+            LOGGER.info("No output for paragraph {} for the last {} milli-seconds, so kill it",
+                    paragraphId, timeoutThreshold);
+            executor.getWatchdog().destroyProcess();
+          }
         }
-        if ((System.currentTimeMillis() - context.out.getLastWriteTimestamp()) >
-                timeoutThreshold) {
-          LOGGER.info("No output for paragraph {} for the last {} milli-seconds, so kill it",
-                  paragraphId, timeoutThreshold);
-          executor.getWatchdog().stop();
-        }
+      } catch (Exception e) {
+        LOGGER.error("Error when checking shell command timeout", e);
       }
     }, timeoutCheckInterval, timeoutCheckInterval, TimeUnit.MILLISECONDS);
   }

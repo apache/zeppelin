@@ -44,7 +44,9 @@ public class ShellInterpreterTest {
     p.setProperty("shell.command.timeout.millisecs", "5000");
     p.setProperty("shell.command.timeout.check.interval", "1000");
     shell = new ShellInterpreter(p);
-    context = InterpreterContext.builder().setParagraphId("paragraphId").build();
+    context = InterpreterContext.builder()
+            .setInterpreterOut(new InterpreterOutput())
+            .setParagraphId("paragraphId").build();
     shell.open();
   }
 
@@ -93,7 +95,7 @@ public class ShellInterpreterTest {
   public void testShellTimeout2() throws InterpreterException {
     context = InterpreterContext.builder()
             .setParagraphId("paragraphId")
-            .setInterpreterOut(new InterpreterOutput(null))
+            .setInterpreterOut(new InterpreterOutput())
             .build();
     result = shell.interpret("for i in {1..10}\ndo\n\tsleep 1\n\techo $i\ndone", context);
     // won't exit shell because the continues output is produced
