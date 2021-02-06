@@ -36,7 +36,13 @@ import java.util.List;
  * in addition to InterpreterResult which used to return from Interpreter.interpret().
  */
 public class InterpreterOutput extends OutputStream {
-  Logger logger = LoggerFactory.getLogger(InterpreterOutput.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(InterpreterOutput.class);
+
+  // change static var to set interpreter output limit
+  // limit will be applied to all InterpreterOutput object.
+  // so we can expect the consistent behavior
+  public static int LIMIT = Constants.ZEPPELIN_INTERPRETER_OUTPUT_LIMIT;
+
   private static final int NEW_LINE_CHAR = '\n';
   private static final int LINE_FEED_CHAR = '\r';
 
@@ -56,10 +62,7 @@ public class InterpreterOutput extends OutputStream {
   // so just refresh all output for streaming application, such as flink streaming sql output.
   private boolean enableTableAppend = false;
 
-  // change static var to set interpreter output limit
-  // limit will be applied to all InterpreterOutput object.
-  // so we can expect the consistent behavior
-  public static int LIMIT = Constants.ZEPPELIN_INTERPRETER_OUTPUT_LIMIT;
+  private long lastWriteTimestamp = System.currentTimeMillis();
 
   public InterpreterOutput() {
     changeListener = null;
@@ -177,7 +180,7 @@ public class InterpreterOutput extends OutputStream {
         try {
           out.close();
         } catch (IOException e) {
-          logger.error(e.getMessage(), e);
+          LOGGER.error(e.getMessage(), e);
         }
       }
 
@@ -212,6 +215,7 @@ public class InterpreterOutput extends OutputStream {
       return;
     }
 
+    this.lastWriteTimestamp = System.currentTimeMillis();
     synchronized (resultMessageOutputs) {
       currentOut = getCurrentOutput();
 
@@ -406,5 +410,9 @@ public class InterpreterOutput extends OutputStream {
         out.close();
       }
     }
+  }
+
+  public long getLastWriteTimestamp() {
+    return lastWriteTimestamp;
   }
 }

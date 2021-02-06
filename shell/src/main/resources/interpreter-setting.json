@@ -12,6 +12,13 @@
         "description": "Shell command time out in millisecs. Default = 60000",
         "type": "number"
       },
+      "shell.command.timeout.check.interval": {
+        "envName": "",
+        "propertyName": "shell.command.timeout.check.interval",
+        "defaultValue": "60000",
+        "description": "Shell command output check interval in millisecs. Default = 10000",
+        "type": "number"
+      },
       "shell.working.directory.user.home": {
         "envName": "SHELL_WORKING_DIRECTORY_USER_HOME",
         "propertyName": "shell.working.directory.user.home",
