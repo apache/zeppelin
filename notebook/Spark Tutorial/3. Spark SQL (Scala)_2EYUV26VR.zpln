@@ -2,7 +2,7 @@
   "paragraphs": [
     {
       "title": "Introduction",
-      "text": "%md\n\nThis is a tutorial for Spark SQL in scala (based on Spark 2.x).  First we need to clarifiy serveral basic concepts of Spark SQL\n\n* **SparkSession**   - This is the entry point of Spark SQL, you need use `SparkSession` to create DataFrame/Dataset, register UDF, query table and etc.\n* **Dataset**        - Dataset is the core abstraction of Spark SQL. Underneath Dataset is RDD, but Dataset know more about your data, specifically its structure, so that Dataset could do more optimization for you. It is recommended to use Spark SQL intead of RDD api.\n* **DataFrame**      - DataFrame is just an alias of Dataset[Row]\n",
+      "text": "%md\n\nThis is a tutorial for Spark SQL in scala (based on Spark 2.x).  First we need to clarify several basic concepts of Spark SQL\n\n* **SparkSession**   - This is the entry point of Spark SQL, you need use `SparkSession` to create DataFrame/Dataset, register UDF, query table and etc.\n* **Dataset**        - Dataset is the core abstraction of Spark SQL. Underneath Dataset is RDD, but Dataset know more about your data, specifically its structure, so that Dataset could do more optimization for you. It is recommended to use Spark SQL instead of RDD api.\n* **DataFrame**      - DataFrame is just an alias of Dataset[Row]\n",
       "user": "anonymous",
       "dateUpdated": "2020-03-11 13:26:59.236",
       "config": {
@@ -32,7 +32,7 @@
         "msg": [
           {
             "type": "HTML",
-            "data": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003cp\u003eThis is a tutorial for Spark SQL in scala (based on Spark 2.x).  First we need to clarifiy serveral basic concepts of Spark SQL\u003c/p\u003e\n\u003cul\u003e\n\u003cli\u003e\u003cstrong\u003eSparkSession\u003c/strong\u003e   - This is the entry point of Spark SQL, you need use \u003ccode\u003eSparkSession\u003c/code\u003e to create DataFrame/Dataset, register UDF, query table and etc.\u003c/li\u003e\n\u003cli\u003e\u003cstrong\u003eDataset\u003c/strong\u003e        - Dataset is the core abstraction of Spark SQL. Underneath Dataset is RDD, but Dataset know more about your data, specifically its structure, so that Dataset could do more optimization for you. It is recommended to use Spark SQL intead of RDD api.\u003c/li\u003e\n\u003cli\u003e\u003cstrong\u003eDataFrame\u003c/strong\u003e      - DataFrame is just an alias of Dataset[Row]\u003c/li\u003e\n\u003c/ul\u003e\n\n\u003c/div\u003e"
+            "data": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003cp\u003eThis is a tutorial for Spark SQL in scala (based on Spark 2.x).  First we need to clarify several basic concepts of Spark SQL\u003c/p\u003e\n\u003cul\u003e\n\u003cli\u003e\u003cstrong\u003eSparkSession\u003c/strong\u003e   - This is the entry point of Spark SQL, you need use \u003ccode\u003eSparkSession\u003c/code\u003e to create DataFrame/Dataset, register UDF, query table and etc.\u003c/li\u003e\n\u003cli\u003e\u003cstrong\u003eDataset\u003c/strong\u003e        - Dataset is the core abstraction of Spark SQL. Underneath Dataset is RDD, but Dataset know more about your data, specifically its structure, so that Dataset could do more optimization for you. It is recommended to use Spark SQL instead of RDD api.\u003c/li\u003e\n\u003cli\u003e\u003cstrong\u003eDataFrame\u003c/strong\u003e      - DataFrame is just an alias of Dataset[Row]\u003c/li\u003e\n\u003c/ul\u003e\n\n\u003c/div\u003e"
           }
         ]
       },
@@ -140,7 +140,7 @@
     },
     {
       "title": "",
-      "text": "%spark.conf\n\n# It is strongly recommended to set SPARK_HOME explictly instead of using the embedded spark of Zeppelin. As the function of embedded spark of Zeppelin is limited and can only run in local mode.\n# SPARK_HOME \u003cyour_spark_dist_path\u003e\n\n# Uncomment the following line if you want to use yarn-cluster mode (It is recommended to use yarn-cluster mode after Zeppelin 0.8, as the driver will run on the remote host of yarn cluster which can mitigate memory pressure of zeppelin server)\n# master yarn-cluster\n\n# Uncomment the following line if you want to use yarn-client mode (It is not recommended to use it after 0.8. Because it would launch the driver in the same host of zeppelin server which will increase memory pressure of zeppelin server)\n# master yarn-client\n\n# Uncomment the following line to enable HiveContext, and also put hive-site.xml under SPARK_CONF_DIR\n# zeppelin.spark.useHiveContext true\n\n",
+      "text": "%spark.conf\n\n# It is strongly recommended to set SPARK_HOME explicitly instead of using the embedded spark of Zeppelin. As the function of embedded spark of Zeppelin is limited and can only run in local mode.\n# SPARK_HOME \u003cyour_spark_dist_path\u003e\n\n# Uncomment the following line if you want to use yarn-cluster mode (It is recommended to use yarn-cluster mode after Zeppelin 0.8, as the driver will run on the remote host of yarn cluster which can mitigate memory pressure of zeppelin server)\n# master yarn-cluster\n\n# Uncomment the following line if you want to use yarn-client mode (It is not recommended to use it after 0.8. Because it would launch the driver in the same host of zeppelin server which will increase memory pressure of zeppelin server)\n# master yarn-client\n\n# Uncomment the following line to enable HiveContext, and also put hive-site.xml under SPARK_CONF_DIR\n# zeppelin.spark.useHiveContext true\n\n",
       "user": "anonymous",
       "dateUpdated": "2020-03-11 13:28:13.784",
       "config": {
@@ -556,7 +556,7 @@
     },
     {
       "title": "Join on Single Field",
-      "text": "%spark\n\nval df1 \u003d spark.createDataFrame(Seq((1, \"andy\", 20, 1), (2, \"jeff\", 23, 2), (3, \"james\", 18, 3))).toDF(\"id\", \"name\", \"age\", \"c_id\")\ndf1.show()\n\nval df2 \u003d spark.createDataFrame(Seq((1, \"USA\"), (2, \"China\"))).toDF(\"c_id\", \"c_name\")\ndf2.show()\n\n// You can just specify the key name if join on the same key\nval df3 \u003d df1.join(df2, \"c_id\")\ndf3.show()\n\n// Or you can specify the join condition expclitly in case the key is different between tables\nval df4 \u003d df1.join(df2, df1(\"c_id\") \u003d\u003d\u003d df2(\"c_id\"))\ndf4.show()\n\n// You can specify the join type afte the join condition, by default it is inner join\nval df5 \u003d df1.join(df2, df1(\"c_id\") \u003d\u003d\u003d df2(\"c_id\"), \"left_outer\")\ndf5.show()",
+      "text": "%spark\n\nval df1 \u003d spark.createDataFrame(Seq((1, \"andy\", 20, 1), (2, \"jeff\", 23, 2), (3, \"james\", 18, 3))).toDF(\"id\", \"name\", \"age\", \"c_id\")\ndf1.show()\n\nval df2 \u003d spark.createDataFrame(Seq((1, \"USA\"), (2, \"China\"))).toDF(\"c_id\", \"c_name\")\ndf2.show()\n\n// You can just specify the key name if join on the same key\nval df3 \u003d df1.join(df2, \"c_id\")\ndf3.show()\n\n// Or you can specify the join condition explicitly in case the key is different between tables\nval df4 \u003d df1.join(df2, df1(\"c_id\") \u003d\u003d\u003d df2(\"c_id\"))\ndf4.show()\n\n// You can specify the join type after the join condition, by default it is inner join\nval df5 \u003d df1.join(df2, df1(\"c_id\") \u003d\u003d\u003d df2(\"c_id\"), \"left_outer\")\ndf5.show()",
       "user": "anonymous",
       "dateUpdated": "2020-03-11 13:34:11.058",
       "config": {
@@ -600,7 +600,7 @@
     },
     {
       "title": "Join on Multiple Fields",
-      "text": "%spark\n\nval df1 \u003d spark.createDataFrame(Seq((\"andy\", 20, 1, 1), (\"jeff\", 23, 1, 2), (\"james\", 12, 2, 2))).toDF(\"name\", \"age\", \"key_1\", \"key_2\")\ndf1.show()\n\nval df2 \u003d spark.createDataFrame(Seq((1, 1, \"USA\"), (2, 2, \"China\"))).toDF(\"key_1\", \"key_2\", \"country\")\ndf2.show()\n\n// Join on 2 fields: key_1, key_2\n\n// You can pass a list of field name if the join field names are the same in both tables\nval df3 \u003d df1.join(df2, Seq(\"key_1\", \"key_2\"))\ndf3.show()\n\n// Or you can specify the join condition expclitly in case when the join fields name is differetnt in the two tables\nval df4 \u003d df1.join(df2, df1(\"key_1\") \u003d\u003d\u003d df2(\"key_1\") \u0026\u0026 df1(\"key_2\") \u003d\u003d\u003d df2(\"key_2\"))\ndf4.show()\n\n",
+      "text": "%spark\n\nval df1 \u003d spark.createDataFrame(Seq((\"andy\", 20, 1, 1), (\"jeff\", 23, 1, 2), (\"james\", 12, 2, 2))).toDF(\"name\", \"age\", \"key_1\", \"key_2\")\ndf1.show()\n\nval df2 \u003d spark.createDataFrame(Seq((1, 1, \"USA\"), (2, 2, \"China\"))).toDF(\"key_1\", \"key_2\", \"country\")\ndf2.show()\n\n// Join on 2 fields: key_1, key_2\n\n// You can pass a list of field name if the join field names are the same in both tables\nval df3 \u003d df1.join(df2, Seq(\"key_1\", \"key_2\"))\ndf3.show()\n\n// Or you can specify the join condition explicitly in case when the join fields name is differetnt in the two tables\nval df4 \u003d df1.join(df2, df1(\"key_1\") \u003d\u003d\u003d df2(\"key_1\") \u0026\u0026 df1(\"key_2\") \u003d\u003d\u003d df2(\"key_2\"))\ndf4.show()\n\n",
       "user": "anonymous",
       "dateUpdated": "2020-03-11 13:34:12.577",
       "config": {
@@ -688,7 +688,7 @@
     },
     {
       "title": "Visualize DataFrame/Dataset",
-      "text": "%md\n\nThere\u0027s 2 approaches to visuliaze DataFrame/Dataset in Zeppelin\n\n* Use SparkSQLInterpreter via `%spark.sql`\n* Use ZeppelinContext via `z.show`\n\n",
+      "text": "%md\n\nThere\u0027s 2 approaches to visualize DataFrame/Dataset in Zeppelin\n\n* Use SparkSQLInterpreter via `%spark.sql`\n* Use ZeppelinContext via `z.show`\n\n",
       "user": "anonymous",
       "dateUpdated": "2020-01-21 15:55:08.071",
       "config": {
@@ -716,7 +716,7 @@
         "msg": [
           {
             "type": "HTML",
-            "data": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003cp\u003eThere\u0026rsquo;s 2 approaches to visuliaze DataFrame/Dataset in Zeppelin\u003c/p\u003e\n\u003cul\u003e\n  \u003cli\u003eUse SparkSQLInterpreter via \u003ccode\u003e%spark.sql\u003c/code\u003e\u003c/li\u003e\n  \u003cli\u003eUse ZeppelinContext via \u003ccode\u003ez.show\u003c/code\u003e\u003c/li\u003e\n\u003c/ul\u003e\n\u003c/div\u003e"
+            "data": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003cp\u003eThere\u0026rsquo;s 2 approaches to visualize DataFrame/Dataset in Zeppelin\u003c/p\u003e\n\u003cul\u003e\n  \u003cli\u003eUse SparkSQLInterpreter via \u003ccode\u003e%spark.sql\u003c/code\u003e\u003c/li\u003e\n  \u003cli\u003eUse ZeppelinContext via \u003ccode\u003ez.show\u003c/code\u003e\u003c/li\u003e\n\u003c/ul\u003e\n\u003c/div\u003e"
           }
         ]
       },
