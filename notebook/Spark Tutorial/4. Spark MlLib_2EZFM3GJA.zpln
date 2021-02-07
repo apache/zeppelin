@@ -2,7 +2,7 @@
   "paragraphs": [
     {
       "title": "Introduction",
-      "text": "%md\n\nThis is a tutorial of how to use Spark MLlib in Zeppelin, we have 2 examples in this note:\n\n* Linear regression, we generate some random data and use a linear regression to fit this data. We use bokeh here to visualize the data and the fitted model.  Besides training, we also visualize the loss value over iteration.\n* Logstic regression, we use the offical `sample_binary_classification_data` of spark as the training data. Besides training, we also visualize the loss value over iteration.\n",
+      "text": "%md\n\nThis is a tutorial of how to use Spark MLlib in Zeppelin, we have 2 examples in this note:\n\n* Linear regression, we generate some random data and use a linear regression to fit this data. We use bokeh here to visualize the data and the fitted model.  Besides training, we also visualize the loss value over iteration.\n* Logstic regression, we use the official `sample_binary_classification_data` of spark as the training data. Besides training, we also visualize the loss value over iteration.\n",
       "user": "anonymous",
       "dateUpdated": "2020-03-11 14:08:34.165",
       "config": {
