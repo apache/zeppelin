@@ -238,7 +238,7 @@ public class Neo4jCypherInterpreter extends Interpreter {
         try {
           value = Neo4jConversionUtils.JSON_MAPPER.writer().writeValueAsString(value);
         } catch (Exception e) {
-          LOGGER.debug("ignored exception: " + e.getMessage());
+          LOGGER.debug("ignored exception: {}", e.getMessage());
         }
       }
     }
