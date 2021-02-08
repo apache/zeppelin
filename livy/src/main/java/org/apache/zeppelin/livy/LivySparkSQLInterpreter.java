@@ -17,6 +17,11 @@
 
 package org.apache.zeppelin.livy;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
@@ -38,6 +43,7 @@ import static org.apache.commons.lang3.StringEscapeUtils.escapeEcmaScript;
  * Livy SparkSQL Interpreter for Zeppelin.
  */
 public class LivySparkSQLInterpreter extends BaseLivyInterpreter {
+
   public static final String ZEPPELIN_LIVY_SPARK_SQL_FIELD_TRUNCATE =
       "zeppelin.livy.spark.sql.field.truncate";
 
@@ -113,8 +119,17 @@ public class LivySparkSQLInterpreter extends BaseLivyInterpreter {
       // use triple quote so that we don't need to do string escape.
       String sqlQuery = null;
       if (isSpark2) {
-        sqlQuery = "spark.sql(\"\"\"" + line + "\"\"\").show(" + maxResult + ", " +
-            truncate + ")";
+        if (tableWithUTFCharacter()) {
+          sqlQuery = "val df = spark.sql(\"\"\"" + line + "\"\"\")\n"
+              + "for ( col <- df.columns ) {\n"
+              + "    print(col+\"\\t\")\n"
+              + "}\n"
+              + "println\n"
+              + "df.toJSON.take(" + maxResult + ").foreach(println)";
+        } else {
+          sqlQuery = "spark.sql(\"\"\"" + line + "\"\"\").show(" + maxResult + ", " +
+              truncate + ")";
+        }
       } else {
         sqlQuery = "sqlContext.sql(\"\"\"" + line + "\"\"\").show(" + maxResult + ", " +
             truncate + ")";
@@ -127,7 +142,12 @@ public class LivySparkSQLInterpreter extends BaseLivyInterpreter {
           // assumption is correct for now. Ideally livy should return table type. We may do it in
           // the future release of livy.
           if (message.getType() == InterpreterResult.Type.TEXT) {
-            List<String> rows = parseSQLOutput(message.getData());
+            List<String> rows;
+            if (tableWithUTFCharacter()) {
+              rows = parseSQLJsonOutput(message.getData());
+            } else {
+              rows = parseSQLOutput(message.getData());
+            }
             result2.add(InterpreterResult.Type.TABLE, StringUtils.join(rows, "\n"));
             if (rows.size() >= (maxResult + 1)) {
               result2.add(ResultMessages.getExceedsLimitRowsMessage(maxResult,
@@ -151,6 +171,30 @@ public class LivySparkSQLInterpreter extends BaseLivyInterpreter {
   @Override
   public FormType getFormType() {
     return FormType.SIMPLE;
+  }
+
+  protected List<String> parseSQLJsonOutput(String output) {
+    List<String> rows = new ArrayList<>();
+
+    String[] rowsOutput = output.split("(?<!\\\\)\\n");
+    String[] header = rowsOutput[1].split("\t");
+    List<String> cells = new ArrayList<>(Arrays.asList(header));
+    rows.add(StringUtils.join(cells, "\t"));
+
+    for (int i = 2; i < rowsOutput.length; i++) {
+      Map<String, String> retMap = new Gson().fromJson(
+          rowsOutput[i], new TypeToken<HashMap<String, String>>() {
+          }.getType()
+      );
+      cells = new ArrayList<>();
+      for (String s : header) {
+        cells.add(retMap.getOrDefault(s, "null")
+            .replace("\n", "\\n")
+            .replace("\t", "\\t"));
+      }
+      rows.add(StringUtils.join(cells, "\t"));
+    }
+    return rows;
   }
 
   protected List<String> parseSQLOutput(String output) {
@@ -206,6 +250,7 @@ public class LivySparkSQLInterpreter extends BaseLivyInterpreter {
    * Represent the start and end index of each cell.
    */
   private static class Pair {
+
     private int start;
     private int end;
 
@@ -217,6 +262,10 @@ public class LivySparkSQLInterpreter extends BaseLivyInterpreter {
 
   public boolean concurrentSQL() {
     return Boolean.parseBoolean(getProperty("zeppelin.livy.concurrentSQL"));
+  }
+
+  public boolean tableWithUTFCharacter() {
+    return Boolean.parseBoolean(getProperty("zeppelin.livy.tableWithUTFCharacter"));
   }
 
   @Override
