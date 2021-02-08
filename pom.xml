@@ -203,7 +203,7 @@
     <plugin.surefire.version>2.17</plugin.surefire.version>
     <plugin.xml.version>1.0.2</plugin.xml.version>
 
-    <testcontainers.version>1.14.3</testcontainers.version>
+    <testcontainers.version>1.15.1</testcontainers.version>
 
     <plugin.gitcommitid.useNativeGit>false</plugin.gitcommitid.useNativeGit>
 
