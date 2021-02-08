@@ -1748,7 +1748,7 @@
               <exclude>**/metastore_db/</exclude>
               <exclude>**/logs/**</exclude>
               <exclude>**/run/**</exclude>
-              <exclude>**/interpreter/**</exclude>
+              <exclude>interpreter/**</exclude>
               <exclude>**/local-repo/**</exclude>
               <exclude>**/null/**</exclude>
               <exclude>**/notebook/**</exclude>
