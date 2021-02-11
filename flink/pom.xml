@@ -43,7 +43,7 @@
     </modules>
 
     <properties>
-        <flink1.10.version>1.10.2</flink1.10.version>
+        <flink1.10.version>1.10.3</flink1.10.version>
         <flink1.11.version>1.11.3</flink1.11.version>
         <flink1.12.version>1.12.0</flink1.12.version>
     </properties>
