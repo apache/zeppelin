@@ -26,7 +26,7 @@ xcode-select --install
 ```
 
 ## Run website locally
-If you don't want to encounter uglily rendered pages, run the documentation site in your local first.
+If you don't want to encounter ugly rendered pages, run the documentation site in your local environment first.
 
 In `$ZEPPELIN_HOME/docs`,
 
