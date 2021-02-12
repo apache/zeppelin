@@ -29,7 +29,6 @@ xcode-select --install
 
 Local docker environments are also supported and have been tested using: 
 * [Docker version 20.10.2](https://docs.docker.com/get-docker/)   
-* [docker-compose version 1.27.4](https://docs.docker.com/compose/install)
 
 ## Run website locally
 If you don't want to encounter uglily rendered pages, run the documentation site in your local first.
@@ -43,7 +42,12 @@ bundle exec jekyll serve --watch
 
 **Run locally using docker**
 ```
-docker-compose up
+docker run --rm -it \                                                  
+       -v $PWD:/docs \
+       -w /docs \
+       -p '4000:4000' \
+       ruby:2.0.0 \
+       bash -c "bundle install && bundle exec jekyll serve --watch"
 ```
 
 Using the above command, Jekyll will start a web server at `http://localhost:4000` and watch the `/docs` directory for updates.
