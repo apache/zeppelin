@@ -19,6 +19,7 @@ package org.apache.zeppelin.integration;
 
 
 import org.apache.zeppelin.AbstractZeppelinIT;
+import org.apache.zeppelin.ZeppelinITUtils;
 import org.apache.zeppelin.WebDriverManager;
 import org.hamcrest.CoreMatchers;
 import org.junit.After;
@@ -29,6 +30,7 @@ import org.junit.rules.ErrorCollector;
 import org.openqa.selenium.By;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.Keys;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -150,6 +152,43 @@ public class SparkParagraphIT extends AbstractZeppelinIT {
 
     } catch (Exception e) {
       handleException("Exception in SparkParagraphIT while testPySpark", e);
+    }
+  }
+
+  @Test
+  public void testCancelPyspark() throws Exception {
+    try {
+      setTextOfParagraph(1, "%pyspark\\nimport time\\nfor i in range(0, 30):\\n\\ttime.sleep(1)");
+      driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@class='icon-settings']")).click();
+      driver.findElement(By.xpath(getParagraphXPath(1) + "//ul/li/a[@ng-click=\"insertNew('below')\"]"))
+              .click();
+      waitForParagraph(2, "READY");
+      setTextOfParagraph(2, "%pyspark\\nprint(\"Hello World!\")");
+
+
+      driver.findElement(By.xpath(".//*[@id='main']//button[contains(@ng-click, 'runAllParagraphs')]")).sendKeys(Keys.ENTER);
+      ZeppelinITUtils.sleep(1000, false);
+      driver.findElement(By.xpath("//div[@class='modal-dialog'][contains(.,'Run all paragraphs?')]" +
+              "//div[@class='modal-footer']//button[contains(.,'OK')]")).click();
+      waitForParagraph(1, "RUNNING");
+
+      ZeppelinITUtils.sleep(2000, false);
+      cancelParagraph(1);
+      waitForParagraph(1, "ABORT");
+
+      collector.checkThat("First paragraph status is ",
+              getParagraphStatus(1), CoreMatchers.equalTo("ABORT")
+      );
+      collector.checkThat("Second paragraph status is ",
+              getParagraphStatus(2), CoreMatchers.equalTo("READY")
+      );
+
+
+      driver.navigate().refresh();
+      ZeppelinITUtils.sleep(3000, false);
+
+    } catch (Exception e) {
+      handleException("Exception in SparkParagraphIT while testCancelPyspark", e);
     }
   }
 
