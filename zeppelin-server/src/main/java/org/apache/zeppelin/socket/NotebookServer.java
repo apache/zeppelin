@@ -1486,17 +1486,23 @@ public class NotebookServer extends WebSocketServlet
             new TypeToken<List<Map<String, Object>>>() {
             }.getType());
 
-    if (!getNotebookService().runAllParagraphs(noteId, paragraphs, getServiceContext(fromMessage),
-        new WebSocketServiceCallback<Paragraph>(conn))) {
-      // If one paragraph fails, we need to broadcast paragraph states to the client,
-      // or paragraphs not run will stay in PENDING state.
-      Note note = getNotebookService().getNote(noteId, getServiceContext(fromMessage), new SimpleServiceCallback());
-      if (note != null) {
-        for (Paragraph p : note.getParagraphs()) {
-          broadcastParagraph(note, p, null);
+    executorService.submit(() -> {
+      try {
+        if (!getNotebookService().runAllParagraphs(noteId, paragraphs, getServiceContext(fromMessage),
+                new WebSocketServiceCallback<Paragraph>(conn))) {
+          // If one paragraph fails, we need to broadcast paragraph states to the client,
+          // or paragraphs not run will stay in PENDING state.
+          Note note = getNotebookService().getNote(noteId, getServiceContext(fromMessage), new SimpleServiceCallback());
+          if (note != null) {
+            for (Paragraph p : note.getParagraphs()) {
+              broadcastParagraph(note, p, null);
+            }
+          }
         }
+      } catch (Throwable t) {
+        NotebookServer.LOG.error("Error in running all paragraphs", t);
       }
-    }
+    });
   }
 
   private void broadcastSpellExecution(NotebookSocket conn,

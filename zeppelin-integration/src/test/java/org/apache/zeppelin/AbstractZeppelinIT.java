@@ -60,6 +60,10 @@ abstract public class AbstractZeppelinIT {
     driver.findElement(by).click();
   }
 
+  protected void cancelParagraph(int paragraphNo) {
+    By by = By.xpath(getParagraphXPath(paragraphNo) + "//span[@class='icon-control-pause']");
+    clickAndWait(by);
+  }
 
   protected String getParagraphXPath(int paragraphNo) {
     return "(//div[@ng-controller=\"ParagraphCtrl\"])[" + paragraphNo + "]";
