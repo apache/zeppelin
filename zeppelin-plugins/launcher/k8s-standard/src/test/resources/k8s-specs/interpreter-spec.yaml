@@ -1,0 +1,162 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+kind: Pod
+apiVersion: v1
+metadata:
+  namespace: {{zeppelin.k8s.namespace}}
+  name: {{zeppelin.k8s.interpreter.pod.name}}
+  labels:
+    app: {{zeppelin.k8s.interpreter.pod.name}}
+    interpreterGroupId: {{zeppelin.k8s.interpreter.group.id}}
+    interpreterSettingName: {{zeppelin.k8s.interpreter.setting.name}}
+  {% if zeppelin.k8s.server.uid is defined %}
+  ownerReferences:
+  - apiVersion: v1
+    controller: false
+    blockOwnerDeletion: false
+    kind: Pod
+    name: {{zeppelin.k8s.server.pod.name}}
+    uid: {{zeppelin.k8s.server.uid}}
+  {% endif %}
+spec:
+  {% if zeppelin.k8s.interpreter.group.name == "spark" %}
+  automountServiceAccountToken: true
+  {% else %}
+  automountServiceAccountToken: false
+  {% endif %}
+  restartPolicy: Never
+  terminationGracePeriodSeconds: 30
+  containers:
+  - name: {{zeppelin.k8s.interpreter.container.name}}
+    image: {{zeppelin.k8s.interpreter.container.image}}
+    args:
+      - "$(ZEPPELIN_HOME)/bin/interpreter.sh"
+      - "-d"
+      - "$(ZEPPELIN_HOME)/interpreter/{{zeppelin.k8s.interpreter.group.name}}"
+      - "-r"
+      - "{{zeppelin.k8s.interpreter.rpc.portRange}}"
+      - "-c"
+      - "{{zeppelin.k8s.server.rpc.service}}"
+      - "-p"
+      - "{{zeppelin.k8s.server.rpc.portRange}}"
+      - "-i"
+      - "{{zeppelin.k8s.interpreter.group.id}}"
+      - "-l"
+      - "{{zeppelin.k8s.interpreter.localRepo}}/{{zeppelin.k8s.interpreter.setting.name}}"
+      - "-g"
+      - "{{zeppelin.k8s.interpreter.setting.name}}"
+    env:
+  {% for key, value in zeppelin.k8s.envs.items() %}
+    - name: {{key}}
+      value: {{value}}
+  {% endfor %}
+  {% if zeppelin.k8s.interpreter.cores is defined and zeppelin.k8s.interpreter.memory is defined %}
+    resources:
+      requests:
+        memory: "{{zeppelin.k8s.interpreter.memory}}"
+        cpu: "{{zeppelin.k8s.interpreter.cores}}"
+{# limits.memory is not set because of a potential OOM-Killer. https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#requests-and-limits #}
+      limits:
+        cpu: "{{zeppelin.k8s.interpreter.cores}}"
+  {% endif %}
+  {% if zeppelin.k8s.interpreter.group.name == "spark" %}
+    volumeMounts:
+    - name: spark-home
+      mountPath: /spark
+  initContainers:
+  - name: spark-home-init
+    image: {{zeppelin.k8s.spark.container.image}}
+    command: ["sh", "-c", "cp -r /opt/spark/* /spark/"]
+    volumeMounts:
+    - name: spark-home
+      mountPath: /spark
+  volumes:
+  - name: spark-home
+    emptyDir: {}
+  {% endif %}
+---
+kind: Service
+apiVersion: v1
+metadata:
+  namespace: {{zeppelin.k8s.namespace}}
+  name: {{zeppelin.k8s.interpreter.pod.name}}             # keep Service name the same to Pod name.
+  {% if zeppelin.k8s.server.uid is defined %}
+  ownerReferences:
+  - apiVersion: v1
+    controller: false
+    blockOwnerDeletion: false
+    kind: Pod
+    name: {{zeppelin.k8s.server.pod.name}}
+    uid: {{zeppelin.k8s.server.uid}}
+  {% endif %}
+spec:
+  clusterIP: None
+  ports:
+    - name: intp
+      port: 12321
+    {% if zeppelin.k8s.interpreter.group.name == "spark" %}
+    - name: spark-driver
+      port: 22321
+    - name: spark-blockmanager
+      port: 22322
+    - name: spark-ui
+      port: 4040
+    {% endif %}
+  selector:
+    app: {{zeppelin.k8s.interpreter.pod.name}}
+{% if zeppelin.k8s.interpreter.group.name == "spark" %}
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: {{zeppelin.k8s.interpreter.pod.name}}
+  namespace: {{zeppelin.k8s.namespace}}
+  {% if zeppelin.k8s.server.uid is defined %}
+  ownerReferences:
+  - apiVersion: v1
+    controller: false
+    blockOwnerDeletion: false
+    kind: Pod
+    name: {{zeppelin.k8s.server.pod.name}}
+    uid: {{zeppelin.k8s.server.uid}}
+  {% endif %}
+rules:
+- apiGroups: [""]
+  resources: ["pods", "services"]
+  verbs: ["create", "get", "update", "list", "delete", "watch" ]
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: {{zeppelin.k8s.interpreter.pod.name}}
+  {% if zeppelin.k8s.server.uid is defined %}
+  ownerReferences:
+  - apiVersion: v1
+    controller: false
+    blockOwnerDeletion: false
+    kind: Pod
+    name: {{zeppelin.k8s.server.pod.name}}
+    uid: {{zeppelin.k8s.server.uid}}
+  {% endif %}
+subjects:
+- kind: ServiceAccount
+  name: default
+roleRef:
+  kind: Role
+  name: {{zeppelin.k8s.interpreter.pod.name}}
+  apiGroup: rbac.authorization.k8s.io
+{% endif %}
