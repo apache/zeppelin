@@ -53,7 +53,7 @@ limitations under the License.
     <span class="icon-control-pause" style="cursor:pointer;color:#CD5C5C"
           tooltip-placement="top" uib-tooltip="Cancel (Ctrl+{{ (isMac ? 'Option' : 'Alt') }}+C)"
           ng-click="cancelParagraph(paragraph)"
-          ng-class="{'item-disable' : isNoteRunning}"
+          ng-class="{'item-disable' : paragraph.status!='RUNNING'}"
           ng-show="paragraph.status=='RUNNING' || paragraph.status=='PENDING'"></span>
     <span class="{{paragraph.config.editorHide ? 'icon-size-fullscreen' : 'icon-size-actual'}}" style="cursor:pointer" tooltip-placement="top"
           uib-tooltip="{{(paragraph.config.editorHide ? 'Show' : 'Hide')}} editor (Ctrl+{{ (isMac ? 'Option' : 'Alt') }}+E)"

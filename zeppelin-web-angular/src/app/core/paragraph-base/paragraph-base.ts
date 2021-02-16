@@ -316,8 +316,6 @@ export abstract class ParagraphBase extends MessageListenersManager {
   }
 
   cancelParagraph() {
-    if (!this.isEntireNoteRunning) {
-      this.messageService.cancelParagraph(this.paragraph.id);
-    }
+    this.messageService.cancelParagraph(this.paragraph.id);
   }
 }
