@@ -65,11 +65,6 @@ public class KnoxJwtRealm extends AuthorizingRealm {
   private String logout;
   private Boolean logoutAPI;
 
-  private String principalMapping;
-  private String groupPrincipalMapping;
-
-  private SimplePrincipalMapper mapper = new SimplePrincipalMapper();
-
   /**
    * Configuration object needed by for Hadoop classes.
    */
@@ -83,14 +78,6 @@ public class KnoxJwtRealm extends AuthorizingRealm {
   @Override
   protected void onInit() {
     super.onInit();
-    if (principalMapping != null && !principalMapping.isEmpty()
-        || groupPrincipalMapping != null && !groupPrincipalMapping.isEmpty()) {
-      try {
-        mapper.loadMappingTable(principalMapping, groupPrincipalMapping);
-      } catch (PrincipalMappingException e) {
-        LOGGER.error("PrincipalMappingException in onInit", e);
-      }
-    }
 
     try {
       hadoopConfig = new Configuration();
@@ -241,7 +228,6 @@ public class KnoxJwtRealm extends AuthorizingRealm {
     /* return the groups as seen by Hadoop */
     Set<String> groups = null;
     try {
-      hadoopGroups.refresh();
       final List<String> groupList = hadoopGroups
           .getGroups(mappedPrincipalName);
 
@@ -261,7 +247,7 @@ public class KnoxJwtRealm extends AuthorizingRealm {
         /* Log the error and return empty group */
         LOGGER.info(String.format("errorGettingUserGroups for %s", mappedPrincipalName));
       }
-      groups = new HashSet();
+      groups = new HashSet<String>();
     }
     return groups;
   }
@@ -320,21 +306,5 @@ public class KnoxJwtRealm extends AuthorizingRealm {
 
   public void setLogoutAPI(Boolean logoutAPI) {
     this.logoutAPI = logoutAPI;
-  }
-
-  public String getPrincipalMapping() {
-    return principalMapping;
-  }
-
-  public void setPrincipalMapping(String principalMapping) {
-    this.principalMapping = principalMapping;
-  }
-
-  public String getGroupPrincipalMapping() {
-    return groupPrincipalMapping;
-  }
-
-  public void setGroupPrincipalMapping(String groupPrincipalMapping) {
-    this.groupPrincipalMapping = groupPrincipalMapping;
   }
 }
