@@ -19,52 +19,33 @@ package org.apache.zeppelin.interpreter.launcher;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Properties;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
+import org.apache.zeppelin.interpreter.remote.RemoteInterpreterManagedProcess;
 import org.junit.Rule;
 import org.junit.Test;
-
+import io.fabric8.kubernetes.api.model.Pod;
+import io.fabric8.kubernetes.api.model.PodStatus;
+import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.server.mock.KubernetesServer;
 
 public class K8sRemoteInterpreterProcessTest {
 
   @Rule
   public KubernetesServer server = new KubernetesServer(true, true);
-
-  @Test
-  public void testGetHostPort() {
-    // given
-    Properties properties = new Properties();
-    HashMap<String, String> envs = new HashMap<String, String>();
-
-    K8sRemoteInterpreterProcess intp = new K8sRemoteInterpreterProcess(
-        server.getClient(),
-        "default",
-        new File(".skip"),
-        "interpreter-container:1.0",
-        "shared_process",
-        "sh",
-        "shell",
-        properties,
-        envs,
-        "zeppelin.server.hostname",
-        12320,
-        false,
-        "spark-container:1.0",
-        10,
-        10,
-        false,
-        false);
-
-    // then
-    assertEquals(String.format("%s.%s.svc", intp.getPodName(), "default"), intp.getHost());
-    assertEquals(12321, intp.getPort());
-  }
 
   @Test
   public void testPredefinedPortNumbers() {
@@ -94,7 +75,7 @@ public class K8sRemoteInterpreterProcessTest {
 
     // following values are hardcoded in k8s/interpreter/100-interpreter.yaml.
     // when change those values, update the yaml file as well.
-    assertEquals(12321, intp.getPort());
+    assertEquals("12321:12321", intp.getInterpreterPortRange());
     assertEquals(22321, intp.getSparkDriverPort());
     assertEquals(22322, intp.getSparkBlockmanagerPort());
   }
@@ -194,7 +175,7 @@ public class K8sRemoteInterpreterProcessTest {
     assertTrue(sparkSubmitOptions.contains("spark.kubernetes.namespace=default"));
     assertTrue(sparkSubmitOptions.contains("spark.kubernetes.driver.pod.name=" + intp.getPodName()));
     assertTrue(sparkSubmitOptions.contains("spark.kubernetes.container.image=spark-container:1.0"));
-    assertTrue(sparkSubmitOptions.contains("spark.driver.host=" + intp.getHost()));
+    assertTrue(sparkSubmitOptions.contains("spark.driver.host=" + intp.getPodName() + ".default.svc"));
     assertTrue(sparkSubmitOptions.contains("spark.driver.port=" + intp.getSparkDriverPort()));
     assertTrue(sparkSubmitOptions.contains("spark.blockManager.port=" + intp.getSparkBlockmanagerPort()));
     assertFalse(sparkSubmitOptions.contains("--proxy-user"));
@@ -245,7 +226,7 @@ public class K8sRemoteInterpreterProcessTest {
     assertTrue(sparkSubmitOptions.contains("spark.kubernetes.namespace=default"));
     assertTrue(sparkSubmitOptions.contains("spark.kubernetes.driver.pod.name=" + intp.getPodName()));
     assertTrue(sparkSubmitOptions.contains("spark.kubernetes.container.image=spark-container:1.0"));
-    assertTrue(sparkSubmitOptions.contains("spark.driver.host=" + intp.getHost()));
+    assertTrue(sparkSubmitOptions.contains("spark.driver.host=" + intp.getPodName() + ".default.svc"));
     assertTrue(sparkSubmitOptions.contains("spark.driver.port=" + intp.getSparkDriverPort()));
     assertTrue(sparkSubmitOptions.contains("spark.blockManager.port=" + intp.getSparkBlockmanagerPort()));
     assertTrue(sparkSubmitOptions.contains("--proxy-user mytestUser"));
@@ -412,4 +393,204 @@ public class K8sRemoteInterpreterProcessTest {
     assertEquals("1280Mi", p.get("zeppelin.k8s.interpreter.memory"));
   }
 
+  @Test
+  public void testK8sStartSuccessful() throws IOException, InterruptedException {
+    // given
+    Properties properties = new Properties();
+    HashMap<String, String> envs = new HashMap<String, String>();
+    envs.put("SERVICE_DOMAIN", "mydomain");
+    URL url = Thread.currentThread().getContextClassLoader()
+        .getResource("k8s-specs/interpreter-spec.yaml");
+    File file = new File(url.getPath());
+
+    K8sRemoteInterpreterProcess intp = new K8sRemoteInterpreterProcess(
+        server.getClient(),
+        "default",
+        file,
+        "interpreter-container:1.0",
+        "shared_process",
+        "spark",
+        "myspark",
+        properties,
+        envs,
+        "zeppelin.server.service",
+        12320,
+        false,
+        "spark-container:1.0",
+        10000,
+        10,
+        false,
+        true);
+    ExecutorService service = Executors.newFixedThreadPool(1);
+    service
+        .submit(new PodStatusSimulator(server.getClient(), intp.getNamespace(), intp.getPodName(), intp));
+    intp.start("TestUser");
+    // then
+    assertEquals("Running", intp.getPodPhase());
+  }
+
+  @Test
+  public void testK8sStartFailed() throws IOException, InterruptedException {
+    // given
+    Properties properties = new Properties();
+    HashMap<String, String> envs = new HashMap<String, String>();
+    envs.put("SERVICE_DOMAIN", "mydomain");
+    URL url = Thread.currentThread().getContextClassLoader()
+        .getResource("k8s-specs/interpreter-spec.yaml");
+    File file = new File(url.getPath());
+
+    K8sRemoteInterpreterProcess intp = new K8sRemoteInterpreterProcess(
+        server.getClient(),
+        "default",
+        file,
+        "interpreter-container:1.0",
+        "shared_process",
+        "spark",
+        "myspark",
+        properties,
+        envs,
+        "zeppelin.server.service",
+        12320,
+        false,
+        "spark-container:1.0",
+        3000,
+        10,
+        false,
+        true);
+    PodStatusSimulator podStatusSimulator = new PodStatusSimulator(server.getClient(), intp.getNamespace(), intp.getPodName(), intp);
+    podStatusSimulator.setSecondPhase("Failed");
+    podStatusSimulator.setSuccessfullStart(false);
+    ExecutorService service = Executors.newFixedThreadPool(1);
+    service
+        .submit(podStatusSimulator);
+    // should throw an IOException
+    try {
+      intp.start("TestUser");
+      fail("We excepting an IOException");
+    } catch (IOException e) {
+      assertNotNull(e);
+      // Check that the Pod is deleted
+      assertNull(
+          server.getClient().pods().inNamespace(intp.getNamespace()).withName(intp.getPodName())
+              .get());
+    }
+  }
+
+  @Test
+  public void testK8sStartTimeoutPending() throws IOException, InterruptedException {
+    // given
+    Properties properties = new Properties();
+    HashMap<String, String> envs = new HashMap<String, String>();
+    envs.put("SERVICE_DOMAIN", "mydomain");
+    URL url = Thread.currentThread().getContextClassLoader()
+        .getResource("k8s-specs/interpreter-spec.yaml");
+    File file = new File(url.getPath());
+
+    K8sRemoteInterpreterProcess intp = new K8sRemoteInterpreterProcess(
+        server.getClient(),
+        "default",
+        file,
+        "interpreter-container:1.0",
+        "shared_process",
+        "spark",
+        "myspark",
+        properties,
+        envs,
+        "zeppelin.server.service",
+        12320,
+        false,
+        "spark-container:1.0",
+        3000,
+        10,
+        false,
+        true);
+    PodStatusSimulator podStatusSimulator = new PodStatusSimulator(server.getClient(), intp.getNamespace(), intp.getPodName(), intp);
+    podStatusSimulator.setFirstPhase("Pending");
+    podStatusSimulator.setSecondPhase("Pending");
+    podStatusSimulator.setSuccessfullStart(false);
+    ExecutorService service = Executors.newFixedThreadPool(2);
+    service
+        .submit(podStatusSimulator);
+    service.submit(() -> {
+      try {
+        intp.start("TestUser");
+        fail("We interrupt, this line of code should not be executed.");
+      } catch (IOException e) {
+        fail("We interrupt, this line of code should not be executed.");
+      }
+    });
+    // wait a little bit
+    TimeUnit.SECONDS.sleep(5);
+    service.shutdownNow();
+    // wait for a shutdown
+    service.awaitTermination(10, TimeUnit.SECONDS);
+    // Check that the Pod is deleted
+    assertNull(server.getClient().pods().inNamespace(intp.getNamespace())
+        .withName(intp.getPodName()).get());
+
+  }
+
+  class PodStatusSimulator implements Runnable {
+
+    private final KubernetesClient client;
+    private final String namespace;
+    private final String podName;
+    private final RemoteInterpreterManagedProcess process;
+
+    private String firstPhase = "Pending";
+    private String secondPhase = "Running";
+    private boolean successfulStart = true;
+
+    public PodStatusSimulator(
+        KubernetesClient client,
+        String namespace,
+        String podName,
+        RemoteInterpreterManagedProcess process) {
+      this.client = client;
+      this.namespace = namespace;
+      this.podName = podName;
+      this.process = process;
+    }
+
+    public void setFirstPhase(String phase) {
+      this.firstPhase = phase;
+    }
+    public void setSecondPhase(String phase) {
+      this.secondPhase = phase;
+    }
+    public void setSuccessfullStart(boolean successful) {
+      this.successfulStart = successful;
+    }
+
+    @Override
+    public void run() {
+      try {
+        Instant timeoutTime = Instant.now().plusSeconds(10);
+        while (timeoutTime.isAfter(Instant.now())) {
+          Pod pod = client.pods().inNamespace(namespace).withName(podName).get();
+          if (pod != null) {
+            TimeUnit.SECONDS.sleep(1);
+            // Update Pod to "pending" phase
+            pod.setStatus(new PodStatus(null, null, null, null, null, null, null, firstPhase,
+                null,
+                null, null, null, null));
+            client.pods().inNamespace(namespace).updateStatus(pod);
+            // Update Pod to "Running" phase
+            pod.setStatus(new PodStatus(null, null, null, null, null, null, null, secondPhase,
+                null,
+                null, null, null, null));
+            client.pods().inNamespace(namespace).updateStatus(pod);
+            TimeUnit.SECONDS.sleep(1);
+            if (successfulStart) {
+              process.processStarted(12320, "testing");
+            }
+            break;
+          } else {
+            TimeUnit.MILLISECONDS.sleep(100);
+          }
+        }
+      } catch (InterruptedException e) {
+      }
+    }
+  }
 }

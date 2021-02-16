@@ -43,7 +43,6 @@ import io.fabric8.kubernetes.client.KubernetesClient;
 public class K8sStandardInterpreterLauncher extends InterpreterLauncher {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(K8sStandardInterpreterLauncher.class);
-  private InterpreterLaunchContext context;
   private final KubernetesClient client;
 
   public K8sStandardInterpreterLauncher(ZeppelinConfiguration zConf, RecoveryStorage recoveryStorage) throws IOException {
@@ -95,7 +94,7 @@ public class K8sStandardInterpreterLauncher extends InterpreterLauncher {
    * return <service-name>.<namespace>.svc
    * @throws IOException
    */
-  private String getZeppelinService() throws IOException {
+  private String getZeppelinService(InterpreterLaunchContext context) throws IOException {
     if (isRunningOnKubernetes()) {
       return String.format("%s.%s.svc",
               zConf.getK8sServiceName(),
@@ -109,7 +108,7 @@ public class K8sStandardInterpreterLauncher extends InterpreterLauncher {
    * get Zeppelin server rpc port
    * Read env variable "<HOSTNAME>_SERVICE_PORT_RPC"
    */
-  private int getZeppelinServiceRpcPort() {
+  private int getZeppelinServiceRpcPort(InterpreterLaunchContext context) {
     String envServicePort = System.getenv(
             String.format("%s_SERVICE_PORT_RPC", getHostname().replaceAll("[-.]", "_").toUpperCase()));
     if (envServicePort != null) {
@@ -134,7 +133,6 @@ public class K8sStandardInterpreterLauncher extends InterpreterLauncher {
   @Override
   public InterpreterClient launchDirectly(InterpreterLaunchContext context) throws IOException {
     LOGGER.info("Launching Interpreter: {}", context.getInterpreterSettingGroup());
-    this.context = context;
     this.properties = context.getProperties();
 
     return new K8sRemoteInterpreterProcess(
@@ -147,8 +145,8 @@ public class K8sStandardInterpreterLauncher extends InterpreterLauncher {
             context.getInterpreterSettingName(),
             properties,
             buildEnvFromProperties(context),
-            getZeppelinService(),
-            getZeppelinServiceRpcPort(),
+            getZeppelinService(context),
+            getZeppelinServiceRpcPort(context),
             zConf.getK8sPortForward(),
             zConf.getK8sSparkContainerImage(),
             getConnectTimeout(),
