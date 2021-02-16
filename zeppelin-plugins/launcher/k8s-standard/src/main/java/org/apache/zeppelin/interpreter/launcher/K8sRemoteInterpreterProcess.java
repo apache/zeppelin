@@ -58,10 +58,11 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterManagedProcess
   private final Properties properties;
 
   private final String podName;
-  private final boolean portForward;
   private final String sparkImage;
+
+  // Pod Forward
+  private final boolean portForward;
   private LocalPortForward localPortForward;
-  private int podPort = K8S_INTERPRETER_SERVICE_PORT;
 
   private final boolean timeoutDuringPending;
 
@@ -115,7 +116,6 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterManagedProcess
     this.timeoutDuringPending = timeoutDuringPending;
   }
 
-
   /**
    * Get interpreter pod name
    * @return
@@ -138,11 +138,6 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterManagedProcess
     Properties templateProperties = getTemplateBindings(userName);
     // create new pod
     apply(specTemplates, false, templateProperties);
-
-    if (portForward) {
-      podPort = RemoteInterpreterUtils.findRandomAvailablePortOnAllLocalInterfaces();
-      localPortForward = client.pods().inNamespace(namespace).withName(podName).portForward(K8S_INTERPRETER_SERVICE_PORT, podPort);
-    }
 
     // special handling if we doesn't want timeout the process during lifecycle phase pending
     if (!timeoutDuringPending) {
@@ -209,27 +204,14 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterManagedProcess
     } catch (IOException e) {
       LOGGER.info("Error on removing interpreter pod", e);
     }
-    if (portForward) {
-        try {
-            localPortForward.close();
-        } catch (IOException e) {
-            LOGGER.info("Error on closing portforwarder", e);
-        }
+    if (portForward && localPortForward != null) {
+      LOGGER.info("Stopping Port Forwarding");
+      try {
+        localPortForward.close();
+      } catch (IOException e) {
+        LOGGER.info("Error on closing portforwarder", e);
+      }
     }
-  }
-
-  @Override
-  public String getHost() {
-    if (portForward) {
-      return "localhost";
-    } else {
-      return getInterpreterPodDnsName();
-    }
-  }
-
-  @Override
-  public int getPort() {
-    return podPort;
   }
 
   @Override
@@ -448,7 +430,20 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterManagedProcess
 
   @Override
   public void processStarted(int port, String host) {
-    LOGGER.info("Interpreter pod created {}:{}", host, port);
+    if (portForward) {
+      LOGGER.info("Starting Port Forwarding");
+      try {
+        int localforwardedPodPort = RemoteInterpreterUtils.findRandomAvailablePortOnAllLocalInterfaces();
+        localPortForward = client.pods().inNamespace(namespace).withName(podName)
+            .portForward(K8S_INTERPRETER_SERVICE_PORT, localforwardedPodPort);
+        super.processStarted(localforwardedPodPort, "localhost");
+      } catch (IOException e) {
+        LOGGER.error("Unable to create a PortForward", e);
+      }
+    } else {
+      super.processStarted(port, getInterpreterPodDnsName());
+    }
+    LOGGER.info("Interpreter pod created {}:{}", getHost(), getPort());
     synchronized (started) {
       started.set(true);
       started.notifyAll();

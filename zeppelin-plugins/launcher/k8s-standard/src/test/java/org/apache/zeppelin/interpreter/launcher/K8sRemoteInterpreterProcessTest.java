@@ -37,36 +37,6 @@ public class K8sRemoteInterpreterProcessTest {
   public KubernetesServer server = new KubernetesServer(true, true);
 
   @Test
-  public void testGetHostPort() {
-    // given
-    Properties properties = new Properties();
-    HashMap<String, String> envs = new HashMap<String, String>();
-
-    K8sRemoteInterpreterProcess intp = new K8sRemoteInterpreterProcess(
-        server.getClient(),
-        "default",
-        new File(".skip"),
-        "interpreter-container:1.0",
-        "shared_process",
-        "sh",
-        "shell",
-        properties,
-        envs,
-        "zeppelin.server.hostname",
-        12320,
-        false,
-        "spark-container:1.0",
-        10,
-        10,
-        false,
-        false);
-
-    // then
-    assertEquals(String.format("%s.%s.svc", intp.getPodName(), "default"), intp.getHost());
-    assertEquals(12321, intp.getPort());
-  }
-
-  @Test
   public void testPredefinedPortNumbers() {
     // given
     Properties properties = new Properties();
@@ -94,7 +64,7 @@ public class K8sRemoteInterpreterProcessTest {
 
     // following values are hardcoded in k8s/interpreter/100-interpreter.yaml.
     // when change those values, update the yaml file as well.
-    assertEquals(12321, intp.getPort());
+    assertEquals("12321:12321", intp.getInterpreterPortRange());
     assertEquals(22321, intp.getSparkDriverPort());
     assertEquals(22322, intp.getSparkBlockmanagerPort());
   }
@@ -194,7 +164,7 @@ public class K8sRemoteInterpreterProcessTest {
     assertTrue(sparkSubmitOptions.contains("spark.kubernetes.namespace=default"));
     assertTrue(sparkSubmitOptions.contains("spark.kubernetes.driver.pod.name=" + intp.getPodName()));
     assertTrue(sparkSubmitOptions.contains("spark.kubernetes.container.image=spark-container:1.0"));
-    assertTrue(sparkSubmitOptions.contains("spark.driver.host=" + intp.getHost()));
+    assertTrue(sparkSubmitOptions.contains("spark.driver.host=" + intp.getPodName() + ".default.svc"));
     assertTrue(sparkSubmitOptions.contains("spark.driver.port=" + intp.getSparkDriverPort()));
     assertTrue(sparkSubmitOptions.contains("spark.blockManager.port=" + intp.getSparkBlockmanagerPort()));
     assertFalse(sparkSubmitOptions.contains("--proxy-user"));
@@ -245,7 +215,7 @@ public class K8sRemoteInterpreterProcessTest {
     assertTrue(sparkSubmitOptions.contains("spark.kubernetes.namespace=default"));
     assertTrue(sparkSubmitOptions.contains("spark.kubernetes.driver.pod.name=" + intp.getPodName()));
     assertTrue(sparkSubmitOptions.contains("spark.kubernetes.container.image=spark-container:1.0"));
-    assertTrue(sparkSubmitOptions.contains("spark.driver.host=" + intp.getHost()));
+    assertTrue(sparkSubmitOptions.contains("spark.driver.host=" + intp.getPodName() + ".default.svc"));
     assertTrue(sparkSubmitOptions.contains("spark.driver.port=" + intp.getSparkDriverPort()));
     assertTrue(sparkSubmitOptions.contains("spark.blockManager.port=" + intp.getSparkBlockmanagerPort()));
     assertTrue(sparkSubmitOptions.contains("--proxy-user mytestUser"));
