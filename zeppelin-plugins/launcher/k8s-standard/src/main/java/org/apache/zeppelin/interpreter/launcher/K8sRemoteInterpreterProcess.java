@@ -140,8 +140,9 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterManagedProcess
     apply(specTemplates, false, templateProperties);
 
     // special handling if we doesn't want timeout the process during lifecycle phase pending
-    if (!timeoutDuringPending) {
-      while ("pending".equalsIgnoreCase(getPodPhase()) && !Thread.currentThread().isInterrupted()) {
+    if (timeoutDuringPending) {
+      while (!StringUtils.equalsAnyIgnoreCase(getPodPhase(), "Succeeded", "Failed", "Running")
+          && !Thread.currentThread().isInterrupted()) {
         try {
           Thread.sleep(1000);
         } catch (InterruptedException e) {
@@ -175,23 +176,6 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterManagedProcess
         }
       }
     }
-
-    // waits for interpreter thrift rpc server ready
-    while (!RemoteInterpreterUtils.checkIfRemoteEndpointAccessible(getHost(), getPort()) && !Thread.currentThread().isInterrupted()) {
-      if (System.currentTimeMillis() - timeoutTime > 0) {
-        processStopped("The start process was aborted while waiting for the accessibility check of the remote end point. PodPhase before stop: " + getPodPhase());
-        stop();
-        throw new IOException("Launching zeppelin interpreter on kubernetes is time out, kill it now");
-      }
-      try {
-        Thread.sleep(1000);
-      } catch (InterruptedException e) {
-        LOGGER.error("Interrupt received during remote endpoint accessible check. Try to stop the interpreter and interrupt the current thread.", e);
-        processStopped("The start process was interrupted while waiting for the accessibility check of the remote end point. PodPhase before stop: " + getPodPhase());
-        stop();
-        Thread.currentThread().interrupt();
-      }
-    }
   }
 
   @Override
@@ -216,8 +200,7 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterManagedProcess
 
   @Override
   public boolean isRunning() {
-    return RemoteInterpreterUtils.checkIfRemoteEndpointAccessible(getHost(), getPort())
-        && "Running".equalsIgnoreCase(getPodPhase()) && started.get();
+    return "Running".equalsIgnoreCase(getPodPhase()) && started.get();
   }
 
   public String getPodPhase() {
