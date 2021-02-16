@@ -66,8 +66,6 @@ user3 = password4, role2
 #knoxJwtRealm.cookieName = hadoop-jwt
 #knoxJwtRealm.publicKeyPath = /etc/zeppelin/conf/knox-sso.pem
 #
-#knoxJwtRealm.groupPrincipalMapping = group.principal.mapping
-#knoxJwtRealm.principalMapping = principal.mapping
 #authc = org.apache.zeppelin.realm.jwt.KnoxAuthenticationFilter
 
 sessionManager = org.apache.shiro.web.session.mgt.DefaultWebSessionManager

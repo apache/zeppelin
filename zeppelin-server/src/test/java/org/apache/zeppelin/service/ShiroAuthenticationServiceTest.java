@@ -18,12 +18,20 @@ package org.apache.zeppelin.service;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.spy;
 
 import java.io.IOException;
 import java.security.Principal;
+import java.util.HashSet;
+import java.util.Set;
 
+import org.apache.shiro.mgt.DefaultSecurityManager;
+import org.apache.shiro.subject.SimplePrincipalCollection;
+import org.apache.shiro.util.LifecycleUtils;
+import org.apache.shiro.util.ThreadContext;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.Notebook;
+import org.apache.zeppelin.realm.jwt.KnoxJwtRealm;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -49,7 +57,7 @@ public class ShiroAuthenticationServiceTest {
   }
 
   @Test
-  public void canGetPrincipalName()  {
+  public void canGetPrincipalName() {
     String expectedName = "java.security.Principal.getName()";
     setupPrincipalName(expectedName);
     assertEquals(expectedName, shiroSecurityService.getPrincipal());
@@ -64,6 +72,25 @@ public class ShiroAuthenticationServiceTest {
     assertEquals(expectedName.toLowerCase(), shiroSecurityService.getPrincipal());
     System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_USERNAME_FORCE_LOWERCASE
         .getVarName(), String.valueOf(false));
+  }
+
+  @Test
+  public void testKnoxGetRoles() {
+    setupPrincipalName("test");
+
+    KnoxJwtRealm realm = spy(new KnoxJwtRealm());
+    LifecycleUtils.init(realm);
+    Set<String> testRoles = new HashSet<String>(){{
+        add("role1");
+        add("role2");
+    }};
+    when(realm.mapGroupPrincipals("test")).thenReturn(testRoles);
+    
+    DefaultSecurityManager securityManager = new DefaultSecurityManager(realm);
+    ThreadContext.bind(securityManager);
+    
+    Set<String> roles = shiroSecurityService.getAssociatedRoles();
+    assertEquals(testRoles, roles);
   }
 
   private void setupPrincipalName(String expectedName) {
