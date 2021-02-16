@@ -276,9 +276,6 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
   };
 
   $scope.cancelParagraph = function(paragraph) {
-    if ($scope.isNoteRunning) {
-      return;
-    }
     console.log('Cancel %o', paragraph.id);
     websocketMsgSrv.cancelParagraphRun(paragraph.id);
   };
