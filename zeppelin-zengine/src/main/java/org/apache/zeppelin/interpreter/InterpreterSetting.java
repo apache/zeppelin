@@ -522,6 +522,9 @@ public class InterpreterSetting {
     if (interpreterGroup != null) {
       String sessionId = getInterpreterSessionId(executionContext);
       interpreterGroup.close(sessionId);
+      if (interpreterGroup.isEmpty()) {
+        interpreterGroups.remove(interpreterGroup.getId());
+      }
     }
   }
 

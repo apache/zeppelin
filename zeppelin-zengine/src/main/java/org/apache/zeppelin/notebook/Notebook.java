@@ -343,6 +343,7 @@ public class Notebook {
     // Set Remove to true to cancel saving this note
     note.setRemoved(true);
     noteManager.removeNote(note.getId(), subject);
+    authorizationService.removeNoteAuth(note.getId());
     fireNoteRemoveEvent(note, subject);
   }
 
