@@ -124,6 +124,8 @@ public class ExecRemoteInterpreterProcess extends RemoteInterpreterManagedProces
       this.interpreterProcessLauncher = null;
       LOGGER.info("Remote exec process of interpreter group: {} is terminated", getInterpreterGroupId());
     } else {
+      // Shutdown connection
+      shutdown();
       LOGGER.warn("Try to stop a not running interpreter process of interpreter group: {}", getInterpreterGroupId());
     }
   }

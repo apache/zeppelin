@@ -183,4 +183,7 @@ public class ManagedInterpreterGroup extends InterpreterGroup {
     }
   }
 
+  public boolean isEmpty() {
+    return this.sessions.isEmpty();
+  }
 }

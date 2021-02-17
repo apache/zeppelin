@@ -831,6 +831,9 @@ public class Note implements JsonSerializable {
                   .setStartTime(getStartTime())
                   .createExecutionContext();
           setting.closeInterpreters(executionContext);
+          for (Paragraph p : paragraphs) {
+            p.setInterpreter(null);
+          }
         }
       }
     }

@@ -75,6 +75,7 @@ public abstract class RemoteInterpreterProcess implements InterpreterClient {
   public void shutdown() {
     if (remoteClient != null) {
       remoteClient.shutdown();
+      remoteClient = null;
     }
   }
 
