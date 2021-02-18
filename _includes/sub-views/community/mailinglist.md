@@ -12,7 +12,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-## Mailing list
+## Mailing list & Slack channel
+
+
+We have 2 places to discuss varies things of Zeppelin.
+
+### Mailing list
 
 Get help using Apache Zeppelin or contribute to the project on our mailing lists:
 
@@ -25,3 +30,9 @@ for people wanting to contribute to the project.
 * __[Commits](https://lists.apache.org/list.html?commits@zeppelin.apache.org) :__ [subscribe](mailto:commits-subscribe@zeppelin.apache.org?subject=send this email to subscribe), [unsubscribe](mailto:commits-unsubscribe@zeppelin.apache.org?subject=send this email to unsubscribe), [archives](https://lists.apache.org/list.html?commits@zeppelin.apache.org)
 <br/>
 for commit messages and patches.
+
+
+### Slack channel
+
+We also have an asf slack channel for Zeppelin, but it is not public, you can send email to the above user mail list to ask for invitation.
+

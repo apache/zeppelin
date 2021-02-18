@@ -16,10 +16,10 @@ limitations under the License.
 <div class="new">
   <div class="container">
     <h2>What's new in</h2>
-    <span class="newZeppelin center-block">Apache Zeppelin 0.8</span>
+    <span class="newZeppelin center-block">Apache Zeppelin 0.9</span>
     <div class="border row">
       <div class="border col-md-4 col-sm-4">
-        <h4>Python, improved</h4>
+        <h4>Spark interpreter improved</h4>
         <div>
           <p>
             IPython interpreter provides comparable user experience like Jupyter Notebook. For the details, click <a href="./docs/latest/interpreter/python.html#ipython-support">here</a>.
