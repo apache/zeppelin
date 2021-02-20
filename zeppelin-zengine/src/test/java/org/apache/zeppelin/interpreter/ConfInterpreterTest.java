@@ -18,6 +18,7 @@
 package org.apache.zeppelin.interpreter;
 
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
+import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -25,11 +26,8 @@ import static org.junit.Assert.assertTrue;
 
 public class ConfInterpreterTest extends AbstractInterpreterTest {
 
-  private ExecutionContext executionContext = new ExecutionContextBuilder()
-          .setUser("user1")
-          .setNoteId("note1")
-          .setDefaultInterpreterGroup("test")
-          .createExecutionContext();
+  private ExecutionContext executionContext = new ExecutionContext("user1", "note1", "test");
+
 
   @Test
   public void testCorrectConf() throws InterpreterException {

@@ -23,7 +23,6 @@ import javax.inject.Singleton;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.zeppelin.annotation.ZeppelinApi;
 import org.apache.zeppelin.dep.Repository;
-import org.apache.zeppelin.interpreter.ExecutionContextBuilder;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterPropertyType;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
@@ -213,11 +212,7 @@ public class InterpreterRestApi {
         if (authorizationService.hasRunPermission(entities, noteId) ||
                 authorizationService.hasWritePermission(entities, noteId) ||
                 authorizationService.isOwner(entities, noteId)) {
-          interpreterSettingManager.restart(settingId,
-                  new ExecutionContextBuilder()
-                          .setUser(authenticationService.getPrincipal())
-                          .setNoteId(noteId)
-                          .createExecutionContext());
+          interpreterSettingManager.restart(settingId, authenticationService.getPrincipal(), noteId);
         } else {
           return new JsonResponse<>(Status.FORBIDDEN, "No privilege to restart interpreter")
                   .build();

@@ -28,6 +28,8 @@ import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterOption;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
+import org.apache.zeppelin.notebook.Note;
+import org.apache.zeppelin.notebook.NoteInfo;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -36,6 +38,7 @@ import java.io.File;
 import java.io.IOException;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.when;
 
 public class LocalRecoveryStorageTest extends AbstractInterpreterTest {
   private File recoveryDir = null;
@@ -47,6 +50,11 @@ public class LocalRecoveryStorageTest extends AbstractInterpreterTest {
     recoveryDir = Files.createTempDir();
     System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_RECOVERY_DIR.getVarName(), recoveryDir.getAbsolutePath());
     super.setUp();
+
+    Note note1 = new Note(new NoteInfo("note1", "/note_1"));
+    Note note2 = new Note(new NoteInfo("note2", "/note_2"));
+    when(mockNotebook.getNote("note1")).thenReturn(note1);
+    when(mockNotebook.getNote("note2")).thenReturn(note2);
   }
 
   @After
