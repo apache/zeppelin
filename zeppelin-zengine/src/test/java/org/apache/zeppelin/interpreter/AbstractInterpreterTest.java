@@ -24,6 +24,7 @@ import org.apache.zeppelin.display.AngularObjectRegistryListener;
 import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
 import org.apache.zeppelin.notebook.Note;
+import org.apache.zeppelin.notebook.Notebook;
 import org.junit.After;
 import org.junit.Before;
 import org.slf4j.Logger;
@@ -32,6 +33,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * This class will load configuration files under
@@ -46,6 +48,7 @@ public abstract class AbstractInterpreterTest {
 
   protected InterpreterSettingManager interpreterSettingManager;
   protected InterpreterFactory interpreterFactory;
+  protected Notebook mockNotebook;
   protected File zeppelinHome;
   protected File interpreterDir;
   protected File confDir;
@@ -79,6 +82,9 @@ public abstract class AbstractInterpreterTest {
     interpreterSettingManager = new InterpreterSettingManager(conf,
         mock(AngularObjectRegistryListener.class), mock(RemoteInterpreterProcessListener.class), mock(ApplicationEventListener.class));
     interpreterFactory = new InterpreterFactory(interpreterSettingManager);
+
+    mockNotebook = mock(Notebook.class);
+    interpreterSettingManager.setNotebook(mockNotebook);
   }
 
   @After

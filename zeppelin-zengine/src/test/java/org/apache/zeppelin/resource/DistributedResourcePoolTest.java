@@ -23,6 +23,8 @@ import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
+import org.apache.zeppelin.notebook.Note;
+import org.apache.zeppelin.notebook.NoteInfo;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -30,6 +32,7 @@ import org.junit.Test;
 import static org.apache.zeppelin.interpreter.InterpreterOption.ISOLATED;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.when;
 
 /**
  * Unittest for DistributedResourcePool
@@ -45,6 +48,11 @@ public class DistributedResourcePoolTest extends AbstractInterpreterTest {
   @Before
   public void setUp() throws Exception {
     super.setUp();
+    Note note1 = new Note(new NoteInfo("note1", "/note_1"));
+    Note note2 = new Note(new NoteInfo("note2", "/note_2"));
+    when(mockNotebook.getNote("note1")).thenReturn(note1);
+    when(mockNotebook.getNote("note2")).thenReturn(note2);
+
     InterpreterSetting interpreterSetting = interpreterSettingManager.getByName("mock_resource_pool");
     interpreterSetting.getOption().setPerNote(ISOLATED);
     intp1 = (RemoteInterpreter) interpreterSetting.getInterpreter("user1", "note1", "mock_resource_pool");

@@ -22,7 +22,7 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.interpreter.AbstractInterpreterTest;
-import org.apache.zeppelin.interpreter.ExecutionContextBuilder;
+import org.apache.zeppelin.interpreter.ExecutionContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterNotFoundException;
@@ -728,10 +728,10 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     note.setConfig(config);
     schedulerService.refreshCron(note.getId());
 
+    ExecutionContext executionContext = new ExecutionContext(anonymous.getUser(), note.getId(), "test");
+    RemoteInterpreter mock1 = (RemoteInterpreter) interpreterFactory.getInterpreter("mock1", executionContext);
 
-    RemoteInterpreter mock1 = (RemoteInterpreter) interpreterFactory.getInterpreter("mock1", new ExecutionContextBuilder().setUser(anonymous.getUser()).setNoteId(note.getId()).setDefaultInterpreterGroup("test").createExecutionContext());
-
-    RemoteInterpreter mock2 = (RemoteInterpreter) interpreterFactory.getInterpreter("mock2", new ExecutionContextBuilder().setUser(anonymous.getUser()).setNoteId(note.getId()).setDefaultInterpreterGroup("test").createExecutionContext());
+    RemoteInterpreter mock2 = (RemoteInterpreter) interpreterFactory.getInterpreter("mock2", executionContext);
 
     // wait until interpreters are started
     while (!mock1.isOpened() || !mock2.isOpened()) {
@@ -764,8 +764,9 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     config.put("cronExecutingUser", anonymous.getUser());
     config.put("releaseresource", true);
     cronNote.setConfig(config);
+
     RemoteInterpreter cronNoteInterpreter =
-        (RemoteInterpreter) interpreterFactory.getInterpreter("mock1", new ExecutionContextBuilder().setUser(anonymous.getUser()).setNoteId(cronNote.getId()).setDefaultInterpreterGroup("test").createExecutionContext());
+        (RemoteInterpreter) interpreterFactory.getInterpreter("mock1", new ExecutionContext(anonymous.getUser(), cronNote.getId(), "test"));
 
     // create a paragraph of the cron scheduled note.
     Paragraph cronNoteParagraph = cronNote.addNewParagraph(AuthenticationInfo.ANONYMOUS);
@@ -778,7 +779,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     Note anotherNote = notebook.createNote("note1", anonymous);
 
     RemoteInterpreter anotherNoteInterpreter =
-        (RemoteInterpreter) interpreterFactory.getInterpreter("mock2", new ExecutionContextBuilder().setUser(anonymous.getUser()).setNoteId(anotherNote.getId()).setDefaultInterpreterGroup("test").createExecutionContext());
+        (RemoteInterpreter) interpreterFactory.getInterpreter("mock2", new ExecutionContext(anonymous.getUser(), anotherNote.getId(), "test"));
 
     // create a paragraph of another note
     Paragraph anotherNoteParagraph = anotherNote.addNewParagraph(AuthenticationInfo.ANONYMOUS);
@@ -942,7 +943,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     // create a note and a paragraph
     Note note = notebook.createNote("note1", anonymous);
 
-    AngularObjectRegistry registry = note.getBindedInterpreterSettings(new ArrayList<>()).get(0).getOrCreateInterpreterGroup(anonymous.getUser(), "sharedProcess")
+    AngularObjectRegistry registry = note.getBindedInterpreterSettings(new ArrayList<>()).get(0).getOrCreateInterpreterGroup(anonymous.getUser(), note.getId())
         .getAngularObjectRegistry();
 
     Paragraph p1 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
@@ -973,7 +974,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     // create a note and a paragraph
     Note note = notebook.createNote("note1", anonymous);
 
-    AngularObjectRegistry registry = note.getBindedInterpreterSettings(new ArrayList<>()).get(0).getOrCreateInterpreterGroup(anonymous.getUser(), "sharedProcess")
+    AngularObjectRegistry registry = note.getBindedInterpreterSettings(new ArrayList<>()).get(0).getOrCreateInterpreterGroup(anonymous.getUser(), note.getId())
         .getAngularObjectRegistry();
 
     Paragraph p1 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
@@ -1005,7 +1006,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     // create a note and a paragraph
     Note note = notebook.createNote("note1", anonymous);
 
-    AngularObjectRegistry registry = note.getBindedInterpreterSettings(new ArrayList<>()).get(0).getOrCreateInterpreterGroup(anonymous.getUser(), "sharedProcess")
+    AngularObjectRegistry registry = note.getBindedInterpreterSettings(new ArrayList<>()).get(0).getOrCreateInterpreterGroup(anonymous.getUser(), note.getId())
         .getAngularObjectRegistry();
 
     // add local scope object
@@ -1016,7 +1017,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     // restart interpreter
     interpreterSettingManager.restart(note.getBindedInterpreterSettings(new ArrayList<>()).get(0).getId());
     registry = note.getBindedInterpreterSettings(new ArrayList<>()).get(0)
-        .getOrCreateInterpreterGroup(anonymous.getUser(), "sharedProcess")
+        .getOrCreateInterpreterGroup(anonymous.getUser(), note.getId())
         .getAngularObjectRegistry();
 
     // New InterpreterGroup will be created and its AngularObjectRegistry will be created

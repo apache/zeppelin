@@ -19,7 +19,7 @@ package org.apache.zeppelin.integration;
 
 import com.google.common.collect.Lists;
 import org.apache.zeppelin.dep.Dependency;
-import org.apache.zeppelin.interpreter.ExecutionContextBuilder;
+import org.apache.zeppelin.interpreter.ExecutionContext;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
@@ -71,7 +71,7 @@ public class JdbcIntegrationTest {
     interpreterSetting.setDependencies(Lists.newArrayList(dependency));
     interpreterSettingManager.restart(interpreterSetting.getId());
     interpreterSetting.waitForReady(60 * 1000);
-    Interpreter jdbcInterpreter = interpreterFactory.getInterpreter("jdbc", new ExecutionContextBuilder().setUser("user1").setNoteId("note1").setDefaultInterpreterGroup("test").createExecutionContext());
+    Interpreter jdbcInterpreter = interpreterFactory.getInterpreter("jdbc", new ExecutionContext("user1", "note1", "test"));
     assertNotNull("JdbcInterpreter is null", jdbcInterpreter);
 
     InterpreterContext context = new InterpreterContext.Builder()
@@ -90,7 +90,7 @@ public class JdbcIntegrationTest {
     assertEquals("c1\tc2\n1\t2\n", interpreterResult.message().get(0).getData());
 
     // read table_1 from python interpreter
-    Interpreter pythonInterpreter = interpreterFactory.getInterpreter("python", new ExecutionContextBuilder().setUser("user1").setNoteId("note1").setDefaultInterpreterGroup("test").createExecutionContext());
+    Interpreter pythonInterpreter = interpreterFactory.getInterpreter("python", new ExecutionContext("user1", "note1", "test"));
     assertNotNull("PythonInterpreter is null", pythonInterpreter);
 
     context = new InterpreterContext.Builder()

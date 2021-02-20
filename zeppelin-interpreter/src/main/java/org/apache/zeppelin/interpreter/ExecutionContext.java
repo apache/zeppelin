@@ -23,46 +23,70 @@ package org.apache.zeppelin.interpreter;
  */
 public class ExecutionContext {
 
-  private final String user;
-  private final String noteId;
-  private final String interpreterGroupId;
-  private final String defaultInterpreterGroup;
-  private final boolean inIsolatedMode;
+  private String user;
+  private String noteId;
+  private String interpreterGroupId;
+  private String defaultInterpreterGroup;
+  private boolean inIsolatedMode;
   // When is the execution triggered, e.g. when the cron job is triggered or when the rest api is triggered.
-  private final String startTime;
+  private String startTime;
 
-  public ExecutionContext(String user, String noteId, String interpreterGroupId, String defaultInterpreterGroup,
-                          boolean inIsolatedMode, String startTime) {
+  public ExecutionContext(){
+
+  }
+
+  public ExecutionContext(String user, String noteId, String defaultInterpreterGroup) {
     this.user = user;
     this.noteId = noteId;
-    this.interpreterGroupId = interpreterGroupId;
     this.defaultInterpreterGroup = defaultInterpreterGroup;
-    this.inIsolatedMode = inIsolatedMode;
-    this.startTime = startTime;
   }
 
   public String getUser() {
     return user;
   }
 
+  public void setUser(String user) {
+    this.user = user;
+  }
+
   public String getNoteId() {
     return noteId;
+  }
+
+  public void setNoteId(String noteId) {
+    this.noteId = noteId;
   }
 
   public String getInterpreterGroupId() {
     return interpreterGroupId;
   }
 
+  public void setInterpreterGroupId(String interpreterGroupId) {
+    this.interpreterGroupId = interpreterGroupId;
+  }
+
   public String getDefaultInterpreterGroup() {
     return defaultInterpreterGroup;
+  }
+
+  public void setDefaultInterpreterGroup(String defaultInterpreterGroup) {
+    this.defaultInterpreterGroup = defaultInterpreterGroup;
   }
 
   public boolean isInIsolatedMode() {
     return inIsolatedMode;
   }
 
+  public void setInIsolatedMode(boolean inIsolatedMode) {
+    this.inIsolatedMode = inIsolatedMode;
+  }
+
   public String getStartTime() {
     return startTime;
+  }
+
+  public void setStartTime(String startTime) {
+    this.startTime = startTime;
   }
 
   @Override
