@@ -32,6 +32,8 @@ import org.apache.zeppelin.interpreter.InterpreterOption;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
+import org.apache.zeppelin.notebook.Note;
+import org.apache.zeppelin.notebook.NoteInfo;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -49,6 +51,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.when;
 
 public class RemoteInterpreterTest extends AbstractInterpreterTest {
 
@@ -59,6 +62,8 @@ public class RemoteInterpreterTest extends AbstractInterpreterTest {
   public void setUp() throws Exception {
     super.setUp();
     interpreterSetting = interpreterSettingManager.getInterpreterSettingByName("test");
+    Note note1 = new Note(new NoteInfo("note1", "/note_1"));
+    when(mockNotebook.getNote("note1")).thenReturn(note1);
   }
 
   @Override

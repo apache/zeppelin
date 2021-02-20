@@ -196,7 +196,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
       List<InterpreterSetting> settings = notebook.getInterpreterSettingManager().get();
       for (InterpreterSetting setting : settings) {
         if (setting.getName().equals("md")) {
-          interpreterGroup = setting.getOrCreateInterpreterGroup("anonymous", "sharedProcess");
+          interpreterGroup = setting.getOrCreateInterpreterGroup("anonymous", note1.getId());
           break;
         }
       }
@@ -269,7 +269,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
       List<InterpreterSetting> settings = note1.getBindedInterpreterSettings(new ArrayList<>());
       for (InterpreterSetting setting : settings) {
         if (setting.getName().equals("angular")) {
-          interpreterGroup = setting.getOrCreateInterpreterGroup("anonymous", "sharedProcess");
+          interpreterGroup = setting.getOrCreateInterpreterGroup("anonymous", note1.getId());
           break;
         }
       }
@@ -373,7 +373,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
       List<InterpreterSetting> settings = notebook.getInterpreterSettingManager().get();
       for (InterpreterSetting setting : settings) {
         if (setting.getName().equals("angular")) {
-          interpreterGroup = setting.getOrCreateInterpreterGroup("anonymous", "sharedProcess");
+          interpreterGroup = setting.getOrCreateInterpreterGroup("anonymous", note1.getId());
           break;
         }
       }

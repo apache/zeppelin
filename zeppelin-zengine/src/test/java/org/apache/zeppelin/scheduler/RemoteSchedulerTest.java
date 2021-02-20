@@ -25,6 +25,8 @@ import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
 import org.apache.zeppelin.interpreter.thrift.ParagraphInfo;
+import org.apache.zeppelin.notebook.Note;
+import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.resource.LocalResourcePool;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.junit.After;
@@ -39,6 +41,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.when;
 
 public class RemoteSchedulerTest extends AbstractInterpreterTest
     implements RemoteInterpreterProcessListener {
@@ -52,6 +55,9 @@ public class RemoteSchedulerTest extends AbstractInterpreterTest
   @Before
   public void setUp() throws Exception {
     super.setUp();
+    Note note1 = new Note(new NoteInfo("note1", "/note_1"));
+    when(mockNotebook.getNote("note1")).thenReturn(note1);
+
     schedulerSvc = SchedulerFactory.singleton();
     interpreterSetting = interpreterSettingManager.getInterpreterSettingByName("test");
   }

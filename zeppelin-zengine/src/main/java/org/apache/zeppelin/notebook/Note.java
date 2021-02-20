@@ -30,7 +30,6 @@ import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.Input;
 import org.apache.zeppelin.interpreter.ExecutionContext;
-import org.apache.zeppelin.interpreter.ExecutionContextBuilder;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
@@ -823,14 +822,7 @@ public class Note implements JsonSerializable {
       if (isolated) {
         LOGGER.info("Releasing interpreters used by this note: {}", id);
         for (InterpreterSetting setting : getUsedInterpreterSettings()) {
-          ExecutionContext executionContext = new ExecutionContextBuilder()
-                  .setUser(authInfo.getUser())
-                  .setNoteId(id)
-                  .setDefaultInterpreterGroup(defaultInterpreterGroup)
-                  .setInIsolatedMode(isolated)
-                  .setStartTime(getStartTime())
-                  .createExecutionContext();
-          setting.closeInterpreters(executionContext);
+          setting.closeInterpreters(getExecutionContext());
           for (Paragraph p : paragraphs) {
             p.setInterpreter(null);
           }
@@ -921,7 +913,7 @@ public class Note implements JsonSerializable {
     }
 
     for (InterpreterSetting setting : settings) {
-      InterpreterGroup intpGroup = setting.getInterpreterGroup(new ExecutionContextBuilder().setUser(user).setNoteId(id).createExecutionContext());
+      InterpreterGroup intpGroup = setting.getInterpreterGroup(getExecutionContext());
       if (intpGroup != null) {
         AngularObjectRegistry registry = intpGroup.getAngularObjectRegistry();
         angularObjects.put(intpGroup.getId(), registry.getAllWithGlobal(id));
@@ -938,10 +930,10 @@ public class Note implements JsonSerializable {
     }
 
     for (InterpreterSetting setting : settings) {
-      if (setting.getInterpreterGroup(new ExecutionContextBuilder().setUser(user).setNoteId(id).createExecutionContext()) == null) {
+      if (setting.getInterpreterGroup(getExecutionContext()) == null) {
         continue;
       }
-      InterpreterGroup intpGroup = setting.getInterpreterGroup(new ExecutionContextBuilder().setUser(user).setNoteId(id).createExecutionContext());
+      InterpreterGroup intpGroup = setting.getInterpreterGroup(getExecutionContext());
       AngularObjectRegistry registry = intpGroup.getAngularObjectRegistry();
 
       if (registry instanceof RemoteAngularObjectRegistry) {
@@ -1087,8 +1079,12 @@ public class Note implements JsonSerializable {
   }
 
   public boolean isIsolatedMode() {
-    return Boolean.parseBoolean(
-            info.getOrDefault("inIsolatedMode", "false").toString());
+    if (info == null) {
+      return false;
+    } else {
+      return Boolean.parseBoolean(
+              info.getOrDefault("inIsolatedMode", "false").toString());
+    }
   }
 
   public void setStartTime(String startTime) {
@@ -1096,7 +1092,11 @@ public class Note implements JsonSerializable {
   }
 
   public String getStartTime() {
-    return info.getOrDefault("startTime", "").toString();
+    if (info == null) {
+      return null;
+    } else {
+      return info.getOrDefault("startTime", "").toString();
+    }
   }
 
   public void clearStartTime() {
@@ -1239,5 +1239,14 @@ public class Note implements JsonSerializable {
 
   public boolean isRemoved() {
     return removed;
+  }
+
+  public ExecutionContext getExecutionContext() {
+    ExecutionContext executionContext = new ExecutionContext();
+    executionContext.setNoteId(id);
+    executionContext.setDefaultInterpreterGroup(defaultInterpreterGroup);
+    executionContext.setInIsolatedMode(isIsolatedMode());
+    executionContext.setStartTime(getStartTime());
+    return executionContext;
   }
 }
