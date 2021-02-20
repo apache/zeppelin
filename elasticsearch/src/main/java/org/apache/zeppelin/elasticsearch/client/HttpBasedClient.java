@@ -24,6 +24,7 @@ import com.google.gson.JsonParseException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.UnsupportedEncodingException;
@@ -286,8 +287,7 @@ public class HttpBasedClient implements ElasticsearchClient {
       final JSONObject body = result.getBody() != null ? result.getBody().getObject() : null;
 
       if (isSucceeded(result)) {
-        final long total = getFieldAsLong(result, "hits/total");
-
+        final long total = getTotal(result);
         response = new ActionResponse()
             .succeeded(true)
             .totalHits(total);
@@ -342,6 +342,34 @@ public class HttpBasedClient implements ElasticsearchClient {
     return result.getBody() != null &&
         (result.getBody().getObject().has("aggregations") ||
             result.getBody().getObject().has("aggs"));
+  }
+
+  /**
+   * Returns total hits returned by Elasticsearch.
+   *
+   * The implementation constists of two ways to retrieve total.
+   *
+   * The first one, happy path, it trying to get it from an object
+   * "total" which has a field called "value".
+   *
+   * The second one is trying to get that number directly from hits
+   * object under "total" value as it is not an object.
+   *
+   * The first way seems to be present in all new versions
+   * in ES (for sure e.g. 7.x). By this way we also
+   * support backward compatibility with older ES version
+   * when it was not providing "total" as object yet.
+   *
+   * @param result result from search
+   * @return number of total hits
+   */
+  private long getTotal(HttpResponse<JsonNode> result) {
+    final JSONObject hitsObject = result.getBody().getObject().getJSONObject("hits");
+    try {
+      return hitsObject.getJSONObject("total").getLong("value");
+    } catch (final JSONException ex) {
+      return hitsObject.getLong("total");
+    }
   }
 
   @Override
