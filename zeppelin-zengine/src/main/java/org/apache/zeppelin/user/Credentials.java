@@ -137,7 +137,7 @@ public class Credentials {
   private void loadFromFile() throws IOException {
     try {
       String json = storage.loadCredentials();
-      if (encryptor != null) {
+      if (json != null && encryptor != null) {
         json = encryptor.decrypt(json);
       }
 
