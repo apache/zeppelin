@@ -353,6 +353,21 @@ public class ZeppelinClient {
     return jsonNode.getObject().getString("body");
   }
 
+  public void renameNote(String noteId, String newNotePath) throws Exception {
+    JSONObject bodyObject = new JSONObject();
+    bodyObject.put("name", newNotePath);
+
+    HttpResponse<JsonNode> response = Unirest
+            .put("/notebook/{noteId}/rename")
+            .routeParam("noteId", noteId)
+            .body(bodyObject.toString())
+            .asJson();
+
+    checkResponse(response);
+    JsonNode jsonNode = response.getBody();
+    checkJsonNodeStatus(jsonNode);
+  }
+
   /**
    * Query {@link NoteResult} with provided noteId.
    *
@@ -378,6 +393,11 @@ public class ZeppelinClient {
       }
     }
 
+    String notePath = null;
+    if (noteJsonObject.has("path")) {
+      notePath = noteJsonObject.getString("path");
+    }
+
     List<ParagraphResult> paragraphResultList = new ArrayList<>();
     if (noteJsonObject.has("paragraphs")) {
       JSONArray paragraphJsonArray = noteJsonObject.getJSONArray("paragraphs");
@@ -386,7 +406,7 @@ public class ZeppelinClient {
       }
     }
 
-    return new NoteResult(noteId, isRunning, paragraphResultList);
+    return new NoteResult(noteId, notePath, isRunning, paragraphResultList);
   }
 
   /**
