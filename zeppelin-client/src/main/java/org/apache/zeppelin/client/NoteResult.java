@@ -25,17 +25,23 @@ import java.util.List;
  */
 public class NoteResult {
   private String noteId;
+  private String notePath;
   private boolean isRunning;
   private List<ParagraphResult> paragraphResultList;
 
-  public NoteResult(String noteId, boolean isRunning, List<ParagraphResult> paragraphResultList) {
+  public NoteResult(String noteId, String notePath, boolean isRunning, List<ParagraphResult> paragraphResultList) {
     this.noteId = noteId;
+    this.notePath = notePath;
     this.isRunning = isRunning;
     this.paragraphResultList = paragraphResultList;
   }
 
   public String getNoteId() {
     return noteId;
+  }
+
+  public String getNotePath() {
+    return notePath;
   }
 
   public boolean isRunning() {

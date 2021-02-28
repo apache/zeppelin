@@ -41,6 +41,12 @@ public class ZeppelinClientExample {
       noteId = zClient.createNote(notePath);
       System.out.println("Created note: " + noteId);
 
+      String newNotePath = notePath + "_rename";
+      zClient.renameNote(noteId, newNotePath);
+
+      NoteResult renamedNoteResult = zClient.queryNoteResult(noteId);
+      System.out.println("Rename note: " + noteId + " name to " + renamedNoteResult.getNotePath());
+
       String paragraphId = zClient.addParagraph(noteId, "the first paragraph", "%python print('hello world')");
       ParagraphResult paragraphResult = zClient.executeParagraph(noteId, paragraphId);
       System.out.println("Added new paragraph and execute it.");
