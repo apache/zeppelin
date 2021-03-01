@@ -503,7 +503,7 @@ public class K8sRemoteInterpreterProcessTest {
         3000,
         10,
         false,
-        true);
+        false);
     PodStatusSimulator podStatusSimulator = new PodStatusSimulator(server.getClient(), intp.getNamespace(), intp.getPodName(), intp);
     podStatusSimulator.setFirstPhase("Pending");
     podStatusSimulator.setSecondPhase("Pending");
