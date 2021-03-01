@@ -140,7 +140,7 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterManagedProcess
     apply(specTemplates, false, templateProperties);
 
     // special handling if we doesn't want timeout the process during lifecycle phase pending
-    if (timeoutDuringPending) {
+    if (!timeoutDuringPending) {
       while (!StringUtils.equalsAnyIgnoreCase(getPodPhase(), "Succeeded", "Failed", "Running")
           && !Thread.currentThread().isInterrupted()) {
         try {
