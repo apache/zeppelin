@@ -19,6 +19,9 @@ package org.apache.zeppelin.interpreter;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.thrift.TException;
 import org.apache.thrift.server.TThreadPoolServer;
 import org.apache.thrift.transport.TServerSocket;
@@ -36,6 +39,7 @@ import org.apache.zeppelin.interpreter.thrift.AppOutputAppendEvent;
 import org.apache.zeppelin.interpreter.thrift.AppOutputUpdateEvent;
 import org.apache.zeppelin.interpreter.thrift.AppStatusUpdateEvent;
 import org.apache.zeppelin.interpreter.thrift.InterpreterRPCException;
+import org.apache.zeppelin.interpreter.thrift.LibraryMetadata;
 import org.apache.zeppelin.interpreter.thrift.ParagraphInfo;
 import org.apache.zeppelin.interpreter.thrift.RegisterInfo;
 import org.apache.zeppelin.interpreter.thrift.OutputAppendEvent;
@@ -44,7 +48,6 @@ import org.apache.zeppelin.interpreter.thrift.OutputUpdateEvent;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterEventService;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterResultMessage;
 import org.apache.zeppelin.interpreter.thrift.RunParagraphsEvent;
-import org.apache.zeppelin.interpreter.thrift.ServiceException;
 import org.apache.zeppelin.interpreter.thrift.WebUrlInfo;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.resource.RemoteResource;
@@ -56,8 +59,11 @@ import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -557,4 +563,58 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
       LOGGER.error("Fail to updateParagraphConfig", e);
     }
   }
+
+  @Override
+  public List<LibraryMetadata> getAllLibraryMetadatas(String interpreter) throws TException {
+    if (StringUtils.isBlank(interpreter)) {
+      LOGGER.warn("Interpreter is blank");
+      return Collections.emptyList();
+    }
+    File interpreterLocalRepo = new File(
+        zConf.getAbsoluteDir(ZeppelinConfiguration.ConfVars.ZEPPELIN_DEP_LOCALREPO)
+            + File.separator
+            + interpreter);
+    if (!interpreterLocalRepo.exists()) {
+      LOGGER.warn("Local interpreter repository {} for interpreter {} doesn't exists", interpreterLocalRepo,
+          interpreter);
+      return Collections.emptyList();
+    }
+    if (!interpreterLocalRepo.isDirectory()) {
+      LOGGER.warn("Local interpreter repository {} is no folder", interpreterLocalRepo);
+      return Collections.emptyList();
+    }
+    Collection<File> files = FileUtils.listFiles(interpreterLocalRepo, new String[] { "jar" }, false);
+    List<LibraryMetadata> metaDatas = new ArrayList<>(files.size());
+    for (File file : files) {
+      try {
+        metaDatas.add(new LibraryMetadata(file.getName(), FileUtils.checksumCRC32(file)));
+      } catch (IOException e) {
+        LOGGER.warn(e.getMessage(), e);
+      }
+    }
+    return metaDatas;
+  }
+
+
+  @Override
+  public ByteBuffer getLibrary(String interpreter, String libraryName) throws TException {
+    if (StringUtils.isAnyBlank(interpreter, libraryName)) {
+      LOGGER.warn("Interpreter \"{}\" or libraryName \"{}\" is blank", interpreter, libraryName);
+      return null;
+    }
+    File library = new File(zConf.getAbsoluteDir(ZeppelinConfiguration.ConfVars.ZEPPELIN_DEP_LOCALREPO)
+        + File.separator + interpreter + File.separator + libraryName);
+    if (!library.exists()) {
+      LOGGER.warn("Library {} doesn't exists", library);
+      return null;
+    }
+
+    try {
+      return ByteBuffer.wrap(FileUtils.readFileToByteArray(library));
+    } catch (IOException e) {
+      LOGGER.error("Unable to read library {}", library, e);
+    }
+    return null;
+  }
+
 }
