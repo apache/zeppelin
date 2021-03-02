@@ -50,6 +50,7 @@ import org.apache.flink.table.catalog.CatalogManager;
 import org.apache.flink.table.catalog.GenericInMemoryCatalog;
 import org.apache.flink.table.delegation.Parser;
 import org.apache.flink.table.functions.AggregateFunction;
+import org.apache.flink.table.functions.ScalarFunction;
 import org.apache.flink.table.functions.TableAggregateFunction;
 import org.apache.flink.table.functions.TableFunction;
 import org.apache.flink.table.operations.CatalogSinkModifyOperation;
@@ -245,6 +246,11 @@ public class Flink112Shims extends FlinkShims {
   public void registerTableSink(Object stenv, String tableName, Object collectTableSink) {
     ((org.apache.flink.table.api.internal.TableEnvironmentInternal) stenv)
             .registerTableSinkInternal(tableName, (TableSink) collectTableSink);
+  }
+
+  @Override
+  public void registerScalarFunction(Object btenv, String name, Object scalarFunction) {
+    ((StreamTableEnvironmentImpl)(btenv)).createTemporarySystemFunction(name, (ScalarFunction) scalarFunction);
   }
 
   @Override

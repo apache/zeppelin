@@ -401,4 +401,38 @@ public class FlinkBatchSqlInterpreterTest extends SqlInterpreterTest {
     resultMessages = context.out.toInterpreterResultMessage();
     assertEquals("id\tname\n1\ta\n2\tb\n", resultMessages.get(0).getData());
   }
+
+  @Test
+  public void testFunctionHintRowType() throws InterpreterException, IOException {
+    if (flinkInterpreter.getFlinkVersion().isFlink110()) {
+      // Row Type hint is not supported in flink 1.10
+      return;
+    }
+    // define table function with TableHint of Row return type
+    InterpreterContext context = getInterpreterContext();
+    InterpreterResult result = flinkInterpreter.interpret(
+            "import org.apache.flink.table.annotation.FunctionHint\n" +
+                    "import org.apache.flink.table.functions.TableFunction\n" +
+                    "import org.apache.flink.types.Row\n" +
+                    "import org.apache.flink.api.scala._\n" +
+                    "import org.apache.flink.table.annotation.DataTypeHint\n" +
+                    "\n" +
+                    "@FunctionHint(output = new DataTypeHint(\"ROW<sum STRING, result INT>\"))\n" +
+                    "class OverloadedFunction extends TableFunction[Row] {\n" +
+                    "  def eval(a: Int, b: Int): Unit = {\n" +
+                    "    collect(Row.of(\"Sum\", Int.box(a + b)))\n" +
+                    "  }\n" +
+                    "}\n" +
+                    "\n" +
+                    "btenv.createTemporarySystemFunction(\"SumUdf\", new OverloadedFunction())", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+
+    context = getInterpreterContext();
+    result = sqlInterpreter.interpret(
+            "select * FROM LATERAL TABLE(SumUdf(1,2));", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    List<InterpreterResultMessage> resultMessages = context.out.toInterpreterResultMessage();
+    assertEquals(InterpreterResult.Type.TABLE, resultMessages.get(0).getType());
+    assertEquals("sum\tresult\nSum\t3\n", resultMessages.get(0).getData());
+  }
 }
