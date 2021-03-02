@@ -487,7 +487,7 @@ class FlinkScalaInterpreter(val properties: Properties) {
             val udf = c.newInstance()
             if (udf.isInstanceOf[ScalarFunction]) {
               val scalarUDF = udf.asInstanceOf[ScalarFunction]
-              btenv.registerFunction(c.getSimpleName, scalarUDF)
+              flinkShims.registerScalarFunction(btenv, c.getSimpleName, scalarUDF)
             } else if (udf.isInstanceOf[TableFunction[_]]) {
               val tableUDF = udf.asInstanceOf[TableFunction[_]]
               flinkShims.registerTableFunction(btenv, c.getSimpleName, tableUDF)

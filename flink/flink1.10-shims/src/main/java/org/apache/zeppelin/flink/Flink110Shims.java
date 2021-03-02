@@ -41,8 +41,10 @@ import org.apache.flink.table.api.scala.BatchTableEnvironment;
 import org.apache.flink.table.catalog.CatalogManager;
 import org.apache.flink.table.catalog.GenericInMemoryCatalog;
 import org.apache.flink.table.functions.AggregateFunction;
+import org.apache.flink.table.functions.ScalarFunction;
 import org.apache.flink.table.functions.TableAggregateFunction;
 import org.apache.flink.table.functions.TableFunction;
+import org.apache.flink.table.functions.UserDefinedFunction;
 import org.apache.flink.table.sinks.TableSink;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.FlinkException;
@@ -192,6 +194,11 @@ public class Flink110Shims extends FlinkShims {
   @Override
   public void registerTableSink(Object stenv, String tableName, Object collectTableSink) {
     ((TableEnvironment) stenv).registerTableSink(tableName, (TableSink) collectTableSink);
+  }
+
+  @Override
+  public void registerScalarFunction(Object btenv, String name, Object scalarFunction) {
+    ((StreamTableEnvironmentImpl)(btenv)).registerFunction(name, (ScalarFunction) scalarFunction);
   }
 
   @Override
