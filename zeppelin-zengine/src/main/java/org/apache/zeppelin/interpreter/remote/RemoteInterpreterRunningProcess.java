@@ -91,7 +91,7 @@ public class RemoteInterpreterRunningProcess extends RemoteInterpreterProcess {
         }
 
         // Shutdown connection
-        shutdown();
+        super.close();
         LOGGER.info("Remote process of interpreter group: {} is terminated.", getInterpreterGroupId());
       }
     }
