@@ -33,7 +33,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class InterpreterContext {
   private static final ThreadLocal<InterpreterContext> threadIC = new ThreadLocal<>();
-  private static final ConcurrentHashMap<Thread, InterpreterContext> allContexts = new ConcurrentHashMap();
+  private static final ConcurrentHashMap<Thread, InterpreterContext> allContexts = new ConcurrentHashMap<>();
 
   public InterpreterOutput out;
 
