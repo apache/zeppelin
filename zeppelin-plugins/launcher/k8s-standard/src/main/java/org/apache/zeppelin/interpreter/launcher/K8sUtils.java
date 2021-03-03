@@ -18,7 +18,6 @@
 
 package org.apache.zeppelin.interpreter.launcher;
 
-import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -31,8 +30,6 @@ public class K8sUtils {
   private static final long G = M * K;
   private static final long T = G * K;
   private static final long MINIMUM_OVERHEAD = 384;
-
-  private static final Random rand = new Random();
 
   private K8sUtils() {
     // do nothing
@@ -76,16 +73,5 @@ public class K8sUtils {
       throw new NumberFormatException("Conversion of " + memory + " exceeds Long.MAX_VALUE");
     }
     return memoryAmountBytes;
-  }
-
-  public static String getRandomPodSuffix(int length) {
-    char[] chars = "abcdefghijklmnopqrstuvwxyz".toCharArray();
-
-    StringBuilder sb = new StringBuilder();
-    for (int i = 0; i < length; i++) {
-      char c = chars[rand.nextInt(chars.length)];
-      sb.append(c);
-    }
-    return sb.toString();
   }
 }
