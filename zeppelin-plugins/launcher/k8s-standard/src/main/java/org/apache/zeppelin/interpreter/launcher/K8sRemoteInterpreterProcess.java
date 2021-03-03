@@ -29,6 +29,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterManagedProcess;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterUtils;
@@ -112,7 +113,8 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterManagedProcess
     this.properties = properties;
     this.portForward = portForward;
     this.sparkImage = sparkImage;
-    this.podName = interpreterGroupName.toLowerCase() + "-" + K8sUtils.getRandomPodSuffix(6);
+    this.podName = interpreterGroupName.toLowerCase() + "-"
+        + RandomStringUtils.randomAlphabetic(6).toLowerCase();
     this.timeoutDuringPending = timeoutDuringPending;
   }
 
