@@ -39,7 +39,7 @@ public class DockerInterpreterLauncher extends InterpreterLauncher {
 
   @Override
   public InterpreterClient launchDirectly(InterpreterLaunchContext context) throws IOException {
-    LOGGER.info("Launching Interpreter: " + context.getInterpreterSettingGroup());
+    LOGGER.info("Launching Interpreter: {}", context.getInterpreterSettingGroup());
     this.context = context;
     this.properties = context.getProperties();
     int connectTimeout = getConnectTimeout();

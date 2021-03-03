@@ -17,7 +17,6 @@
 package org.apache.zeppelin.interpreter.remote;
 
 import com.google.gson.Gson;
-import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.transport.TSocket;
@@ -36,7 +35,6 @@ import org.apache.zeppelin.interpreter.thrift.ParagraphInfo;
 import org.apache.zeppelin.interpreter.thrift.RegisterInfo;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterEventService;
 import org.apache.zeppelin.interpreter.thrift.RunParagraphsEvent;
-import org.apache.zeppelin.interpreter.thrift.ServiceException;
 import org.apache.zeppelin.interpreter.thrift.WebUrlInfo;
 import org.apache.zeppelin.resource.RemoteResource;
 import org.apache.zeppelin.resource.Resource;
@@ -58,8 +56,8 @@ import java.util.Map;
  */
 public class RemoteInterpreterEventClient implements ResourcePoolConnector,
     AngularObjectRegistryListener {
-  private final static Logger LOGGER = LoggerFactory.getLogger(RemoteInterpreterEventClient.class);
-  private final static Gson GSON = new Gson();
+  private static final Logger LOGGER = LoggerFactory.getLogger(RemoteInterpreterEventClient.class);
+  private static final Gson GSON = new Gson();
 
   private PooledRemoteClient<RemoteInterpreterEventService.Client> remoteClient;
   private String intpGroupId;
@@ -114,9 +112,7 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector,
   @Override
   public ResourceSet getAllResources() {
     try {
-      List<String> resources = callRemoteFunction(client -> {
-        return client.getAllResources(intpGroupId);
-      });
+      List<String> resources = callRemoteFunction(client -> client.getAllResources(intpGroupId));
       ResourceSet resourceSet = new ResourceSet();
       for (String res : resources) {
         RemoteResource resource = RemoteResource.fromJson(res);
@@ -131,16 +127,14 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector,
   }
 
   public List<ParagraphInfo> getParagraphList(String user, String noteId) {
-    List<ParagraphInfo> paragraphList = callRemoteFunction(client -> client.getParagraphList(user, noteId));
-    return paragraphList;
+    return callRemoteFunction(client -> client.getParagraphList(user, noteId));
   }
 
   @Override
   public Object readResource(ResourceId resourceId) {
     try {
       ByteBuffer buffer = callRemoteFunction(client -> client.getResource(resourceId.toJson()));
-      Object o = Resource.deserializeObject(buffer);
-      return o;
+      return Resource.deserializeObject(buffer);
     } catch (IOException | ClassNotFoundException e) {
       LOGGER.warn("Fail to readResource: " + resourceId, e);
       return null;
@@ -172,8 +166,7 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector,
             null);
     try {
       ByteBuffer buffer = callRemoteFunction(client -> client.invokeMethod(intpGroupId, invokeMethod.toJson()));
-      Object o = Resource.deserializeObject(buffer);
-      return o;
+      return Resource.deserializeObject(buffer);
     } catch (IOException | ClassNotFoundException e) {
       LOGGER.error("Failed to invoke method", e);
       return null;
