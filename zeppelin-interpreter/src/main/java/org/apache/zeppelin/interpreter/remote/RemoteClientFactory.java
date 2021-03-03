@@ -28,7 +28,8 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Factory class for creating thrift socket client.
  */
-public class RemoteClientFactory<T extends TServiceClient> extends BasePooledObjectFactory<T>{
+public class RemoteClientFactory<T extends TServiceClient> extends BasePooledObjectFactory<T>
+    implements AutoCloseable {
 
 
   private Set<T> clientSockets = ConcurrentHashMap.newKeySet();
@@ -38,6 +39,7 @@ public class RemoteClientFactory<T extends TServiceClient> extends BasePooledObj
     this.supplier = supplier;
   }
 
+  @Override
   public void close() {
     for (T clientSocket: clientSockets) {
       clientSocket.getInputProtocol().getTransport().close();

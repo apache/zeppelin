@@ -610,7 +610,7 @@ public class YarnRemoteInterpreterProcess extends RemoteInterpreterProcess {
       }
 
       // Shutdown connection
-      shutdown();
+      super.close();
     }
 
     yarnClient.stop();

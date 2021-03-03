@@ -84,7 +84,7 @@ public abstract class RemoteInterpreterManagedProcess extends RemoteInterpreterP
         return null;
       });
       // Shutdown connection
-      shutdown();
+      super.close();
     } catch (Exception e) {
       LOGGER.warn("ignore the exception when shutting down", e);
     }
