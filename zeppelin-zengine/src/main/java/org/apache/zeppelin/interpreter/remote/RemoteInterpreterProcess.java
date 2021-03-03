@@ -34,7 +34,7 @@ import java.util.Date;
 /**
  * Abstract class for interpreter process
  */
-public abstract class RemoteInterpreterProcess implements InterpreterClient {
+public abstract class RemoteInterpreterProcess implements InterpreterClient, AutoCloseable {
   private static final Logger LOGGER = LoggerFactory.getLogger(RemoteInterpreterProcess.class);
   private static final Gson GSON = new Gson();
 
@@ -72,9 +72,10 @@ public abstract class RemoteInterpreterProcess implements InterpreterClient {
     return startTime;
   }
 
-  public void shutdown() {
+  @Override
+  public void close() {
     if (remoteClient != null) {
-      remoteClient.shutdown();
+      remoteClient.close();
       remoteClient = null;
     }
   }

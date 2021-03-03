@@ -56,7 +56,7 @@ import java.util.Map;
  * All the methods are synchronized because thrift client is not thread safe.
  */
 public class RemoteInterpreterEventClient implements ResourcePoolConnector,
-    AngularObjectRegistryListener {
+    AngularObjectRegistryListener, AutoCloseable {
   private static final Logger LOGGER = LoggerFactory.getLogger(RemoteInterpreterEventClient.class);
   private static final Gson GSON = new Gson();
 
@@ -145,7 +145,7 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector,
       ByteBuffer buffer = callRemoteFunction(client -> client.getResource(resourceId.toJson()));
       return Resource.deserializeObject(buffer);
     } catch (IOException | ClassNotFoundException e) {
-      LOGGER.warn("Fail to readResource: " + resourceId, e);
+      LOGGER.warn("Fail to readResource: {}", resourceId, e);
       return null;
     }
   }
@@ -287,7 +287,7 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector,
         return null;
       });
     } catch (Exception e) {
-      LOGGER.warn("Fail to runParagraphs: " + event, e);
+      LOGGER.warn("Fail to runParagraphs: {}", event, e);
     }
   }
 
@@ -298,8 +298,8 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector,
         return null;
       });
     } catch (Exception e) {
-      LOGGER.warn("Fail to checkpointOutput of paragraph: " +
-              paragraphId + " of note: " + noteId, e);
+      LOGGER.warn("Fail to checkpointOutput of paragraph: {} of note: {}",
+              paragraphId, noteId, e);
     }
   }
 
@@ -313,7 +313,7 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector,
         return null;
       });
     } catch (Exception e) {
-      LOGGER.warn("Fail to appendAppOutput: " + event, e);
+      LOGGER.warn("Fail to appendAppOutput: {}", event, e);
     }
   }
 
@@ -329,7 +329,7 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector,
         return null;
       });
     } catch (Exception e) {
-      LOGGER.warn("Fail to updateAppOutput: " + event, e);
+      LOGGER.warn("Fail to updateAppOutput: {}", event, e);
     }
   }
 
@@ -342,7 +342,7 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector,
         return null;
       });
     } catch (Exception e) {
-      LOGGER.warn("Fail to updateAppStatus: " + event, e);
+      LOGGER.warn("Fail to updateAppStatus: {}", event, e);
     }
   }
 
@@ -353,7 +353,7 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector,
         return null;
       });
     } catch (Exception e) {
-      LOGGER.warn("Fail to onParaInfosReceived: " + infos, e);
+      LOGGER.warn("Fail to onParaInfosReceived: {}", infos, e);
     }
   }
 
@@ -365,7 +365,7 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector,
         return null;
       });
     } catch (Exception e) {
-      LOGGER.warn("Fail to add AngularObject: " + angularObject, e);
+      LOGGER.warn("Fail to add AngularObject: {}", angularObject, e);
     }
   }
 
@@ -377,7 +377,7 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector,
         return null;
       });
     } catch (Exception e) {
-      LOGGER.warn("Fail to update AngularObject: " + angularObject, e);
+      LOGGER.warn("Fail to update AngularObject: {}", angularObject, e);
     }
   }
 
@@ -405,5 +405,10 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector,
     } catch (Exception e) {
       LOGGER.warn("Fail to updateParagraphConfig", e);
     }
+  }
+
+  @Override
+  public void close() {
+    remoteClient.close();
   }
 }
