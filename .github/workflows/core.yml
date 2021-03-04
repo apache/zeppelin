@@ -57,10 +57,10 @@ jobs:
           R -e "IRkernel::installspec()"
           conda list
           conda info
-      - name: install plugins and interpreter
-        run: |
-          mvn install -Pbuild-distr -DskipRat -DskipTests -pl zeppelin-server,zeppelin-web,spark-submit,spark/spark-dependencies,markdown,angular,shell -am -Phelium-dev -Pexamples -P${{ matrix.hadoop }} -B
-          mvn package -DskipRat -pl zeppelin-plugins -amd -DskipTests -B
+      - name: install application with some interpreter
+        run: mvn install -Pbuild-distr -DskipRat -DskipTests -pl zeppelin-server,zeppelin-web,spark-submit,spark/spark-dependencies,markdown,angular,shell -am -Phelium-dev -Pexamples -P${{ matrix.hadoop }} -B
+      - name: install and test plugins
+        run: mvn package -DskipRat -pl zeppelin-plugins -amd -B
       - name: run tests with ${{ matrix.hadoop }}
         run: mvn verify -Pusing-packaged-distr -DskipRat -pl zeppelin-server,zeppelin-web,spark-submit,spark/spark-dependencies,markdown,angular,shell -am -Phelium-dev -Pexamples -P${{ matrix.hadoop }} -Dtests.to.exclude=**/org/apache/zeppelin/spark/* -DfailIfNoTests=false
   test-interpreter-modules:
