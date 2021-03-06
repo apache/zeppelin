@@ -35,7 +35,10 @@ public class FlinkInterpreterLauncher extends StandardInterpreterLauncher {
   public Map<String, String> buildEnvFromProperties(InterpreterLaunchContext context)
           throws IOException {
     Map<String, String> envs = super.buildEnvFromProperties(context);
-    String flinkHome = context.getProperties().getProperty("FLINK_HOME", envs.get("FLINK_HOME"));
+    String flinkHome = context.getProperties().getProperty("FLINK_HOME");
+    if (StringUtils.isBlank(flinkHome)) {
+      flinkHome = System.getenv("FLINK_HOME");
+    }
     if (StringUtils.isBlank(flinkHome)) {
       throw new IOException("FLINK_HOME is not specified");
     }
