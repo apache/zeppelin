@@ -56,10 +56,7 @@ public class FlinkStreamSqlInterpreter extends FlinkSqlInterrpeter {
 
   @Override
   public void callInnerSelect(String sql, InterpreterContext context) throws IOException {
-    String streamType = context.getLocalProperties().get("type");
-    if (streamType == null) {
-      throw new IOException("type must be specified for stream sql");
-    }
+    String streamType = context.getLocalProperties().getOrDefault("type", "update");
     if (streamType.equalsIgnoreCase("single")) {
       SingleRowStreamSqlJob streamJob = new SingleRowStreamSqlJob(
               flinkInterpreter.getStreamExecutionEnvironment(),

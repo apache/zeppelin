@@ -309,7 +309,6 @@ public class FlinkInterpreterTest {
     Thread thread = new Thread(() -> {
       try {
         InterpreterContext context = getInterpreterContext();
-        context.getLocalProperties().put("type", "update");
         InterpreterResult result2 = interpreter.interpret(
                 "val table = stenv.sqlQuery(\"select url, count(1) as pv from " +
                 "log group by url\")\nz.show(table, streamType=\"update\")", context);
@@ -330,7 +329,6 @@ public class FlinkInterpreterTest {
     Thread.sleep(20 * 1000);
 
     InterpreterContext context = getInterpreterContext();
-    context.getLocalProperties().put("type", "update");
     interpreter.cancel(context);
     waiter.await(10 * 1000);
     // resume job
@@ -356,7 +354,6 @@ public class FlinkInterpreterTest {
     Thread thread = new Thread(() -> {
       try {
         InterpreterContext context = getInterpreterContext();
-        context.getLocalProperties().put("type", "update");
         context.getLocalProperties().put("savePointDir", savePointDir.getAbsolutePath());
         context.getLocalProperties().put("parallelism", "1");
         context.getLocalProperties().put("maxParallelism", "10");
@@ -380,7 +377,6 @@ public class FlinkInterpreterTest {
     Thread.sleep(20 * 1000);
 
     InterpreterContext context = getInterpreterContext();
-    context.getLocalProperties().put("type", "update");
     context.getLocalProperties().put("savePointDir", savePointDir.getAbsolutePath());
     context.getLocalProperties().put("parallelism", "2");
     context.getLocalProperties().put("maxParallelism", "10");
