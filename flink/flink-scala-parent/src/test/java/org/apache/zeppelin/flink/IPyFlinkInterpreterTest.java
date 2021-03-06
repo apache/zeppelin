@@ -382,7 +382,6 @@ public class IPyFlinkInterpreterTest extends IPythonInterpreterTest {
     Thread thread = new Thread(() -> {
       try {
         InterpreterContext context = createInterpreterContext();
-        context.getLocalProperties().put("type", "update");
         InterpreterResult result2 = interpreter.interpret(
                 "table = st_env.sql_query('select url, count(1) as pv from " +
                         "log group by url')\nz.show(table, stream_type='update')", context);
@@ -402,7 +401,6 @@ public class IPyFlinkInterpreterTest extends IPythonInterpreterTest {
     Thread.sleep(20 * 1000);
 
     InterpreterContext context = createInterpreterContext();
-    context.getLocalProperties().put("type", "update");
     interpreter.cancel(context);
     waiter.await(10 * 1000);
     // resume job
@@ -426,7 +424,6 @@ public class IPyFlinkInterpreterTest extends IPythonInterpreterTest {
     Thread thread = new Thread(() -> {
       try {
         InterpreterContext context = createInterpreterContext();
-        context.getLocalProperties().put("type", "update");
         context.getLocalProperties().put("savePointDir", savePointDir.getAbsolutePath());
         context.getLocalProperties().put("parallelism", "1");
         context.getLocalProperties().put("maxParallelism", "10");
@@ -449,7 +446,6 @@ public class IPyFlinkInterpreterTest extends IPythonInterpreterTest {
     Thread.sleep(20 * 1000);
 
     InterpreterContext context = createInterpreterContext();
-    context.getLocalProperties().put("type", "update");
     context.getLocalProperties().put("savePointDir", savePointDir.getAbsolutePath());
     context.getLocalProperties().put("parallelism", "2");
     context.getLocalProperties().put("maxParallelism", "10");
