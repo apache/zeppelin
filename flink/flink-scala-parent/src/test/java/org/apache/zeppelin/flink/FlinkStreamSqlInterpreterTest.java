@@ -95,7 +95,6 @@ public class FlinkStreamSqlInterpreterTest extends SqlInterpreterTest {
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
 
     InterpreterContext context = getInterpreterContext();
-    context.getLocalProperties().put("type", "update");
     result = sqlInterpreter.interpret("select url, count(1) as pv from " +
             "log group by url", context);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
@@ -171,7 +170,6 @@ public class FlinkStreamSqlInterpreterTest extends SqlInterpreterTest {
     Thread thread = new Thread(() -> {
       try {
         InterpreterContext context = getInterpreterContext();
-        context.getLocalProperties().put("type", "update");
         InterpreterResult result2 = sqlInterpreter.interpret("select url, count(1) as pv from " +
                 "log group by url", context);
         waiter.assertTrue(context.out.toString().contains("Job was cancelled"));
@@ -189,7 +187,6 @@ public class FlinkStreamSqlInterpreterTest extends SqlInterpreterTest {
     Thread.sleep(10 * 1000);
 
     InterpreterContext context = getInterpreterContext();
-    context.getLocalProperties().put("type", "update");
     sqlInterpreter.cancel(context);
     waiter.await(10 * 1000);
     // resume job
@@ -215,7 +212,6 @@ public class FlinkStreamSqlInterpreterTest extends SqlInterpreterTest {
     Thread thread = new Thread(() -> {
       try {
         InterpreterContext context = getInterpreterContext();
-        context.getLocalProperties().put("type", "update");
         context.getLocalProperties().put("savePointDir", savePointDir.getAbsolutePath());
         context.getLocalProperties().put("parallelism", "1");
         context.getLocalProperties().put("maxParallelism", "10");
@@ -238,7 +234,6 @@ public class FlinkStreamSqlInterpreterTest extends SqlInterpreterTest {
     Thread.sleep(10 * 1000);
 
     InterpreterContext context = getInterpreterContext();
-    context.getLocalProperties().put("type", "update");
     context.getLocalProperties().put("savePointDir", savePointDir.getAbsolutePath());
     context.getLocalProperties().put("parallelism", "2");
     context.getLocalProperties().put("maxParallelism", "10");
@@ -267,7 +262,6 @@ public class FlinkStreamSqlInterpreterTest extends SqlInterpreterTest {
     Thread thread = new Thread(() -> {
       try {
         InterpreterContext context = getInterpreterContext();
-        context.getLocalProperties().put("type", "update");
         context.getLocalProperties().put("savePointDir", savePointDir.getAbsolutePath());
         context.getLocalProperties().put("parallelism", "1");
         context.getLocalProperties().put("maxParallelism", "10");
@@ -288,7 +282,6 @@ public class FlinkStreamSqlInterpreterTest extends SqlInterpreterTest {
     Thread.sleep(10 * 1000);
 
     InterpreterContext context = getInterpreterContext();
-    context.getLocalProperties().put("type", "update");
     context.getLocalProperties().put("savePointDir", savePointDir.getAbsolutePath());
     context.getLocalProperties().put("parallelism", "2");
     context.getLocalProperties().put("maxParallelism", "10");
@@ -322,7 +315,6 @@ public class FlinkStreamSqlInterpreterTest extends SqlInterpreterTest {
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
 
     InterpreterContext context = getInterpreterContext();
-    context.getLocalProperties().put("type", "update");
     context.getLocalProperties().put("parallelism", "1");
     context.getLocalProperties().put("maxParallelism", "10");
     context.getLocalProperties().put(JobManager.RESUME_FROM_SAVEPOINT, "true");
@@ -349,7 +341,6 @@ public class FlinkStreamSqlInterpreterTest extends SqlInterpreterTest {
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
 
     InterpreterContext context = getInterpreterContext();
-    context.getLocalProperties().put("type", "update");
     result = sqlInterpreter.interpret("select myupper(url), count(1) as pv from " +
             "log group by url", context);
     assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
@@ -442,7 +433,6 @@ public class FlinkStreamSqlInterpreterTest extends SqlInterpreterTest {
     // runAsOne won't affect the select statement.
     context = getInterpreterContext();
     context.getLocalProperties().put("runAsOne", "true");
-    context.getLocalProperties().put("type", "update");
     result = sqlInterpreter.interpret(
             "select 1",
             context);
