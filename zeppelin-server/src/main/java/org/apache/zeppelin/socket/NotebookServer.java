@@ -315,7 +315,7 @@ public class NotebookServer extends WebSocketServlet
           getNote(conn, context, messagereceived);
           break;
         case RELOAD_NOTE:
-          reloadNote(conn, messagereceived);
+          reloadNote(conn, context, messagereceived);
           break;
         case NEW_NOTE:
           createNote(conn, context, messagereceived);
@@ -835,12 +835,12 @@ public class NotebookServer extends WebSocketServlet
         });
   }
 
-  private void reloadNote(NotebookSocket conn, Message fromMessage) throws IOException {
+  private void reloadNote(NotebookSocket conn, ServiceContext context, Message fromMessage) throws IOException {
     String noteId = (String) fromMessage.get("id");
     if (noteId == null) {
       return;
     }
-    getNotebookService().getNote(noteId, true, getServiceContext(fromMessage),
+    getNotebookService().getNote(noteId, true, context,
             new WebSocketServiceCallback<Note>(conn) {
               @Override
               public void onSuccess(Note note, ServiceContext context) throws IOException {
