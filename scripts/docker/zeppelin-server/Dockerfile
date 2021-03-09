@@ -41,6 +41,7 @@ ENV LANG=en_US.UTF-8 \
     LC_ALL=en_US.UTF-8 \
     JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64 \
     VERSION="${version}" \
+    HOME="/opt/zeppelin" \
     ZEPPELIN_HOME="/opt/zeppelin" \
     ZEPPELIN_ADDR="0.0.0.0" \
     ZEPPELIN_WAR_TEMPDIR="/tmp/webapps"
