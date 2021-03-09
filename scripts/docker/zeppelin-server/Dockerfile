@@ -41,43 +41,44 @@ ENV LANG=en_US.UTF-8 \
     LC_ALL=en_US.UTF-8 \
     JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64 \
     VERSION="${version}" \
-    Z_HOME="/opt/zeppelin" \
+    HOME="/opt/zeppelin" \
+    ZEPPELIN_HOME="/opt/zeppelin" \
     ZEPPELIN_ADDR="0.0.0.0" \
     ZEPPELIN_WAR_TEMPDIR="/tmp/webapps"
 
 # Copy Zeppelin related files
-COPY --from=zeppelin-distribution /opt/zeppelin/zeppelin-web-${VERSION}.war ${Z_HOME}/
-COPY --from=zeppelin-distribution /opt/zeppelin/zeppelin-web-angular-${VERSION}.war ${Z_HOME}/
-COPY --from=zeppelin-distribution /opt/zeppelin/conf ${Z_HOME}/conf
-COPY --from=zeppelin-distribution /opt/zeppelin/bin ${Z_HOME}/bin
-COPY --from=zeppelin-distribution /opt/zeppelin/lib ${Z_HOME}/lib
-COPY --from=zeppelin-distribution /opt/zeppelin/plugins ${Z_HOME}/plugins
-COPY --from=zeppelin-distribution /opt/zeppelin/interpreter/zeppelin-interpreter-shaded-${VERSION}.jar ${Z_HOME}/interpreter/zeppelin-interpreter-shaded-${VERSION}.jar
+COPY --from=zeppelin-distribution /opt/zeppelin/zeppelin-web-${VERSION}.war ${ZEPPELIN_HOME}/
+COPY --from=zeppelin-distribution /opt/zeppelin/zeppelin-web-angular-${VERSION}.war ${ZEPPELIN_HOME}/
+COPY --from=zeppelin-distribution /opt/zeppelin/conf ${ZEPPELIN_HOME}/conf
+COPY --from=zeppelin-distribution /opt/zeppelin/bin ${ZEPPELIN_HOME}/bin
+COPY --from=zeppelin-distribution /opt/zeppelin/lib ${ZEPPELIN_HOME}/lib
+COPY --from=zeppelin-distribution /opt/zeppelin/plugins ${ZEPPELIN_HOME}/plugins
+COPY --from=zeppelin-distribution /opt/zeppelin/interpreter/zeppelin-interpreter-shaded-${VERSION}.jar ${ZEPPELIN_HOME}/interpreter/zeppelin-interpreter-shaded-${VERSION}.jar
 # copy example notebooks
-COPY --from=zeppelin-distribution /opt/zeppelin/notebook ${Z_HOME}/notebook
+COPY --from=zeppelin-distribution /opt/zeppelin/notebook ${ZEPPELIN_HOME}/notebook
 # copy k8s files
-COPY --from=zeppelin-distribution /opt/zeppelin/k8s ${Z_HOME}/k8s
+COPY --from=zeppelin-distribution /opt/zeppelin/k8s ${ZEPPELIN_HOME}/k8s
 
 # Decide
 ## 1) Copy and activate all interpreters (default)
-COPY --from=interpreter-settings /opt/zeppelin/interpreter ${Z_HOME}/interpreter
+COPY --from=interpreter-settings /opt/zeppelin/interpreter ${ZEPPELIN_HOME}/interpreter
 ## 2) Copy and activate only a specific set of interpreter
-# COPY --from=zeppelin-distribution /opt/zeppelin/interpreter/spark/interpreter-setting.json ${Z_HOME}/interpreter/spark/interpreter-setting.json
-# COPY --from=zeppelin-distribution /opt/zeppelin/interpreter/jdbc/interpreter-setting.json ${Z_HOME}/interpreter/jdbc/interpreter-setting.json
-# COPY --from=zeppelin-distribution /opt/zeppelin/interpreter/md/interpreter-setting.json ${Z_HOME}/interpreter/md/interpreter-setting.json
+# COPY --from=zeppelin-distribution /opt/zeppelin/interpreter/spark/interpreter-setting.json ${ZEPPELIN_HOME}/interpreter/spark/interpreter-setting.json
+# COPY --from=zeppelin-distribution /opt/zeppelin/interpreter/jdbc/interpreter-setting.json ${ZEPPELIN_HOME}/interpreter/jdbc/interpreter-setting.json
+# COPY --from=zeppelin-distribution /opt/zeppelin/interpreter/md/interpreter-setting.json ${ZEPPELIN_HOME}/interpreter/md/interpreter-setting.json
 
-COPY log4j.properties ${Z_HOME}/conf/
+COPY log4j.properties ${ZEPPELIN_HOME}/conf/
 
-RUN mkdir -p "${Z_HOME}/logs" "${Z_HOME}/run" "${Z_HOME}/notebook" "${Z_HOME}/local-repo" && \
+RUN mkdir -p "${ZEPPELIN_HOME}/logs" "${ZEPPELIN_HOME}/run" "${ZEPPELIN_HOME}/notebook" "${ZEPPELIN_HOME}/local-repo" && \
      # Allow process to edit /etc/passwd, to create a user entry for zeppelin
     chgrp root /etc/passwd && chmod ug+rw /etc/passwd && \
     # Give access to some specific folders
-    chmod -R 775 "${Z_HOME}/logs" "${Z_HOME}/run" "${Z_HOME}/conf" "${Z_HOME}/notebook" "${Z_HOME}/local-repo"
+    chmod -R 775 "${ZEPPELIN_HOME}/logs" "${ZEPPELIN_HOME}/run" "${ZEPPELIN_HOME}/conf" "${ZEPPELIN_HOME}/notebook" "${ZEPPELIN_HOME}/local-repo"
 
 USER 1000
 
 EXPOSE 8080
 
 ENTRYPOINT [ "/usr/bin/tini", "--" ]
-WORKDIR ${Z_HOME}
+WORKDIR ${ZEPPELIN_HOME}
 CMD ["bin/zeppelin.sh"]
