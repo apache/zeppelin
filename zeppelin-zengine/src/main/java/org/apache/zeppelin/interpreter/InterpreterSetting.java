@@ -590,19 +590,13 @@ public class InterpreterSetting {
           int i1 = sortedKeys.indexOf(o1);
           int i2 = sortedKeys.indexOf(o2);
           if (i1 != -1 && i2 != -1) {
-            if (i1 < i2) {
-              return -1;
-            } else if (i1 > i2) {
-              return 1;
-            } else {
-              return 0;
-            }
+            // If both are present in the template, use natural order of indexes
+            return (i1 - i2);
           } else {
-            if (i1 == -1) {
-              return 1;
-            } else {
-              return -1;
-            }
+            // If one, or both are not in the template, use reverse order, so that missing
+            // elements are placed at the end. Note that if both are missing, we return 0
+            // to full the contract of comparison function.
+            return (i2 - i1);
           }
         });
 
