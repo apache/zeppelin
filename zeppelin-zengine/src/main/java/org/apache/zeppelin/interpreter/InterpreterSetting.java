@@ -591,8 +591,8 @@ public class InterpreterSetting {
             return (i1 - i2);
           } else {
             // If one, or both are not in the template, use reverse order, so that missing
-	    // elements are placedare at the end
-            // Note that if both are missing, we return 0.
+            // elements are placed at the end. Note that if both are missing, we return 0
+            // to full the contract of comparison function..
             return (i2 - i1);
           }
         });
