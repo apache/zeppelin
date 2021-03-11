@@ -202,6 +202,38 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
   }
 
   @Test
+  public void testCreateNote() throws Exception {
+    LOG.info("Running testCreateNote");
+    String message1 = "{\n\t\"name\" : \"test1\",\n\t\"addingEmptyParagraph\" : true\n}";
+    CloseableHttpResponse post1 = httpPost("/notebook/", message1);
+    assertThat(post1, isAllowed());
+
+    Map<String, Object> resp1 = gson.fromJson(EntityUtils.toString(post1.getEntity(), StandardCharsets.UTF_8),
+            new TypeToken<Map<String, Object>>() {}.getType());
+    assertEquals("OK", resp1.get("status"));
+
+    String noteId1 = (String) resp1.get("body");
+    Note note1 = TestUtils.getInstance(Notebook.class).getNote(noteId1);
+    assertEquals("test1", note1.getName());
+    assertEquals(1, note1.getParagraphCount());
+    assertNull(note1.getParagraph(0).getText());
+    assertNull(note1.getParagraph(0).getTitle());
+
+    String message2 = "{\n\t\"name\" : \"test2\"\n}";
+    CloseableHttpResponse post2 = httpPost("/notebook/", message2);
+    assertThat(post2, isAllowed());
+
+    Map<String, Object> resp2 = gson.fromJson(EntityUtils.toString(post2.getEntity(), StandardCharsets.UTF_8),
+            new TypeToken<Map<String, Object>>() {}.getType());
+    assertEquals("OK", resp2.get("status"));
+
+    String noteId2 = (String) resp2.get("body");
+    Note note2 = TestUtils.getInstance(Notebook.class).getNote(noteId2);
+    assertEquals("test2", note2.getName());
+    assertEquals(0, note2.getParagraphCount());
+  }
+
+  @Test
   public void testRunNoteBlocking() throws IOException {
     LOG.info("Running testRunNoteBlocking");
     Note note1 = null;
