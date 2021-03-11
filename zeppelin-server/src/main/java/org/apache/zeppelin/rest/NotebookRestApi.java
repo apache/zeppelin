@@ -392,7 +392,7 @@ public class NotebookRestApi extends AbstractRestApi {
     Note note = notebookService.createNote(
             request.getName(),
             defaultInterpreterGroup,
-            false,
+            request.getAddingEmptyParagraph(),
             getServiceContext(),
             new RestServiceCallback<>());
     AuthenticationInfo subject = new AuthenticationInfo(authenticationService.getPrincipal());

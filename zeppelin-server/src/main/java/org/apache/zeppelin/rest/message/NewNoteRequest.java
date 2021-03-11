@@ -31,9 +31,14 @@ public class NewNoteRequest implements JsonSerializable {
   //TODO(zjffdu) rename it to be notePath instead of name
   private String name;
   private String defaultInterpreterGroup;
+  private boolean addingEmptyParagraph = false;
   private List<NewParagraphRequest> paragraphs;
 
   public NewNoteRequest (){
+  }
+
+  public boolean getAddingEmptyParagraph() {
+    return addingEmptyParagraph;
   }
 
   public String getName() {
