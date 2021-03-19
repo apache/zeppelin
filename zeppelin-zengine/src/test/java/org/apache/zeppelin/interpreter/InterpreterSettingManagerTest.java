@@ -23,6 +23,9 @@ import org.apache.zeppelin.dep.Dependency;
 import org.apache.zeppelin.display.AngularObjectRegistryListener;
 import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
+import org.apache.zeppelin.notebook.Note;
+import org.apache.zeppelin.notebook.NoteInfo;
+import org.junit.Before;
 import org.junit.Test;
 import org.eclipse.aether.RepositoryException;
 import org.eclipse.aether.repository.RemoteRepository;
@@ -38,9 +41,22 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 
 public class InterpreterSettingManagerTest extends AbstractInterpreterTest {
+
+  @Before
+  public void setUp() throws Exception {
+    super.setUp();
+
+    Note note1 = new Note(new NoteInfo("note1", "/note_1"));
+    Note note2 = new Note(new NoteInfo("note2", "/note_2"));
+    Note note3 = new Note(new NoteInfo("note3", "/note_3"));
+    when(mockNotebook.getNote("note1")).thenReturn(note1);
+    when(mockNotebook.getNote("note2")).thenReturn(note2);
+    when(mockNotebook.getNote("note3")).thenReturn(note3);
+  }
 
   @Test
   public void testInitInterpreterSettingManager() throws IOException, RepositoryException {

@@ -47,6 +47,14 @@ public class ParagraphTextParserTest {
   }
 
   @Test
+  public void testSparkSubmit() {
+    ParagraphTextParser.ParseResult parseResult = ParagraphTextParser.parse(
+            "%spark-submit --class A a.jar");
+    assertEquals("spark-submit", parseResult.getIntpText());
+    assertEquals("--class A a.jar", parseResult.getScriptText());
+  }
+
+  @Test
   public void testParagraphTextLocalPropertiesAndText() {
     ParagraphTextParser.ParseResult parseResult = ParagraphTextParser.parse("%spark.pyspark(pool=pool_1) sc.version");
     assertEquals("spark.pyspark", parseResult.getIntpText());

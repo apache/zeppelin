@@ -87,6 +87,15 @@ limitations under the License.
       </button>
 
       <button type="button"
+              class="btn btn-default btn-xs"
+              ng-hide="viewOnly"
+              ng-click="reloadNote()"
+              tooltip-placement="bottom" uib-tooltip="Reload from note file"
+              ng-disabled="revisionView">
+        <i class="fa fa-refresh"></i>
+      </button>
+
+      <button type="button"
               class="btn btn-primary btn-xs"
               ng-class="isNoteRunning() ? 'disabled' : ''"
               ng-if="ticket.principal && ticket.principal !== 'anonymous'"

@@ -19,7 +19,6 @@ package org.apache.zeppelin.spark;
 
 import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.spark.sql.SQLContext;
 import org.apache.zeppelin.interpreter.ZeppelinContext;
 
 /**

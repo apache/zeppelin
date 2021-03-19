@@ -15,28 +15,14 @@
  * limitations under the License.
  */
 
-package org.apache.zeppelin.user;
-
-import static org.junit.Assert.assertEquals;
-
-import java.util.ArrayList;
-import java.util.Arrays;
+package org.apache.zeppelin.flink.cmd;
 
 import org.junit.Test;
 
-public class AuthenticationInfoTest {
+public class FlinkCmdInterpreterTest {
 
   @Test
-  public void testRoles() {
-    final String roles = "[\"role1\", \"role2\", \"role with space\"]";
-
-    final AuthenticationInfo authenticationInfo = new AuthenticationInfo("foo",
-        roles, "bar");
-
-    assertEquals(
-        new ArrayList<>(Arrays.asList("role1", "role2", "role with space")),
-        authenticationInfo.getRoles());
+  public void test() {
 
   }
-
 }

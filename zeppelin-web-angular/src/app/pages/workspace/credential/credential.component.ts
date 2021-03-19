@@ -156,7 +156,7 @@ export class CredentialComponent implements OnInit {
 
   getInterpreterNames() {
     this.interpreterService.getInterpretersSetting().subscribe(data => {
-      this.interpreterNames = data.map(e => `${e.group}.${e.name}`);
+      this.interpreterNames = data.map(e => `${e.name}`);
       this.interpreterFilteredNames = this.interpreterNames.slice(0, 10);
       this.cdr.markForCheck();
     });

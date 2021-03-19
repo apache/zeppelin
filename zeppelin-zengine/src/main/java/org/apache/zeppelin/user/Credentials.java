@@ -52,7 +52,7 @@ public class Credentials {
    */
   public Credentials(ZeppelinConfiguration conf) {
     credentialsMap = new HashMap<>();
-    if (conf.credentialsPersist().booleanValue()) {
+    if (conf.credentialsPersist()) {
       String encryptKey = conf.getCredentialsEncryptKey();
       if (StringUtils.isNotBlank(encryptKey)) {
         this.encryptor = new Encryptor(encryptKey);
@@ -137,7 +137,7 @@ public class Credentials {
   private void loadFromFile() throws IOException {
     try {
       String json = storage.loadCredentials();
-      if (encryptor != null) {
+      if (json != null && encryptor != null) {
         json = encryptor.decrypt(json);
       }
 

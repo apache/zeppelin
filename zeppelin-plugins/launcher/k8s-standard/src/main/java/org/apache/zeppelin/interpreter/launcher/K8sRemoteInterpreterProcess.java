@@ -1,3 +1,21 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.apache.zeppelin.interpreter.launcher;
 
 import java.io.File;
@@ -7,13 +25,15 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Random;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
+import org.apache.zeppelin.interpreter.remote.RemoteInterpreterManagedProcess;
+import org.apache.zeppelin.interpreter.remote.RemoteInterpreterServer;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,33 +48,29 @@ import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.PodStatus;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.LocalPortForward;
+import io.fabric8.kubernetes.client.Watch;
 import io.fabric8.kubernetes.client.dsl.ParameterNamespaceListVisitFromServerGetDeleteRecreateWaitApplicable;
 
-public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
+public class K8sRemoteInterpreterProcess extends RemoteInterpreterManagedProcess {
   private static final Logger LOGGER = LoggerFactory.getLogger(K8sRemoteInterpreterProcess.class);
   private static final int K8S_INTERPRETER_SERVICE_PORT = 12321;
   private final KubernetesClient client;
   private final String namespace;
-  private final String interpreterGroupId;
   private final String interpreterGroupName;
-  private final String interpreterSettingName;
   private final File specTemplates;
   private final String containerImage;
   private final Properties properties;
-  private final Map<String, String> envs;
 
   private final String podName;
-  private final boolean portForward;
   private final String sparkImage;
-  private LocalPortForward localPortForward;
-  private int podPort = K8S_INTERPRETER_SERVICE_PORT;
-  private String errorMessage;
 
-  private final boolean isUserImpersonatedForSpark;
+  // Pod Forward
+  private final boolean portForward;
+  private LocalPortForward localPortForward;
+
   private final boolean timeoutDuringPending;
 
   private AtomicBoolean started = new AtomicBoolean(false);
-  private Random rand = new Random();
 
   private static final String SPARK_DRIVER_MEMORY = "spark.driver.memory";
   private static final String SPARK_DRIVER_MEMORY_OVERHEAD = "spark.driver.memoryOverhead";
@@ -81,23 +97,29 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
           boolean isUserImpersonatedForSpark,
           boolean timeoutDuringPending
   ) {
-    super(connectTimeout, connectionPoolSize, intpEventServerHost, intpEventServerPort);
+    super(intpEventServerPort,
+          intpEventServerHost,
+          String.format("%d:%d", K8S_INTERPRETER_SERVICE_PORT, K8S_INTERPRETER_SERVICE_PORT),
+          "${ZEPPELIN_HOME}/interpreter/" + interpreterGroupName,
+          "/tmp/local-repo",
+          envs,
+          connectTimeout,
+          connectionPoolSize,
+          interpreterSettingName,
+          interpreterGroupId,
+          isUserImpersonatedForSpark);
     this.client = client;
     this.namespace = namespace;
     this.specTemplates = specTemplates;
     this.containerImage = containerImage;
-    this.interpreterGroupId = interpreterGroupId;
     this.interpreterGroupName = interpreterGroupName;
-    this.interpreterSettingName = interpreterSettingName;
     this.properties = properties;
-    this.envs = new HashMap<>(envs);
     this.portForward = portForward;
     this.sparkImage = sparkImage;
-    this.podName = interpreterGroupName.toLowerCase() + "-" + getRandomString(6);
-    this.isUserImpersonatedForSpark = isUserImpersonatedForSpark;
+    this.podName = interpreterGroupName.toLowerCase() + "-"
+        + RandomStringUtils.randomAlphabetic(6).toLowerCase();
     this.timeoutDuringPending = timeoutDuringPending;
   }
-
 
   /**
    * Get interpreter pod name
@@ -116,38 +138,24 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
   }
 
   @Override
-  public String getInterpreterGroupId() {
-    return interpreterGroupId;
-  }
-
-  @Override
-  public String getInterpreterSettingName() {
-    return interpreterSettingName;
-  }
-
-  @Override
   public void start(String userName) throws IOException {
 
     Properties templateProperties = getTemplateBindings(userName);
     // create new pod
     apply(specTemplates, false, templateProperties);
 
-    if (portForward) {
-      podPort = RemoteInterpreterUtils.findRandomAvailablePortOnAllLocalInterfaces();
-      localPortForward = client.pods().inNamespace(namespace).withName(podName).portForward(K8S_INTERPRETER_SERVICE_PORT, podPort);
-    }
-
     // special handling if we doesn't want timeout the process during lifecycle phase pending
     if (!timeoutDuringPending) {
-      while ("pending".equalsIgnoreCase(getPodPhase()) && !Thread.currentThread().isInterrupted()) {
-        try {
-          Thread.sleep(1000);
-        } catch (InterruptedException e) {
-          LOGGER.error("Interrupt received during pending phase. Try to stop the interpreter and interrupt the current thread.", e);
-          errorMessage = "Start process was interrupted during the pending phase";
-          stop();
-          Thread.currentThread().interrupt();
-        }
+      // WATCH
+      PodPhaseWatcher podWatcher = new PodPhaseWatcher(
+          phase -> StringUtils.equalsAnyIgnoreCase(phase, "Succeeded", "Failed", "Running"));
+      try (Watch watch = client.pods().inNamespace(namespace).withName(podName).watch(podWatcher)) {
+        podWatcher.getCountDownLatch().await();
+      } catch (InterruptedException e) {
+        LOGGER.error("Interrupt received during waiting for Running phase. Try to stop the interpreter and interrupt the current thread.", e);
+        processStopped("Start process was interrupted during waiting for Running phase");
+        stop();
+        Thread.currentThread().interrupt();
       }
     }
 
@@ -159,7 +167,7 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
       while (!started.get() && !Thread.currentThread().isInterrupted()) {
         long timetoTimeout = timeoutTime - System.currentTimeMillis();
         if (timetoTimeout <= 0) {
-          errorMessage = "The start process was aborted while waiting for the interpreter to start. PodPhase before stop: " + getPodPhase();
+          processStopped("The start process was aborted while waiting for the interpreter to start. PodPhase before stop: " + getPodPhase());
           stop();
           throw new IOException("Launching zeppelin interpreter on kubernetes is time out, kill it now");
         }
@@ -167,33 +175,29 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
           started.wait(timetoTimeout);
         } catch (InterruptedException e) {
           LOGGER.error("Interrupt received during started wait. Try to stop the interpreter and interrupt the current thread.", e);
-          errorMessage = "The start process was interrupted while waiting for the interpreter to start. PodPhase before stop: " + getPodPhase();
+          processStopped("The start process was interrupted while waiting for the interpreter to start. PodPhase before stop: " + getPodPhase());
           stop();
           Thread.currentThread().interrupt();
         }
-      }
-    }
-
-    // waits for interpreter thrift rpc server ready
-    while (!RemoteInterpreterUtils.checkIfRemoteEndpointAccessible(getHost(), getPort()) && !Thread.currentThread().isInterrupted()) {
-      if (System.currentTimeMillis() - timeoutTime > 0) {
-        errorMessage = "The start process was aborted while waiting for the accessibility check of the remote end point. PodPhase before stop: " + getPodPhase();
-        stop();
-        throw new IOException("Launching zeppelin interpreter on kubernetes is time out, kill it now");
-      }
-      try {
-        Thread.sleep(1000);
-      } catch (InterruptedException e) {
-        LOGGER.error("Interrupt received during remote endpoint accessible check. Try to stop the interpreter and interrupt the current thread.", e);
-        errorMessage = "The start process was interrupted while waiting for the accessibility check of the remote end point. PodPhase before stop: " + getPodPhase();
-        stop();
-        Thread.currentThread().interrupt();
       }
     }
   }
 
   @Override
   public void stop() {
+    super.stop();
+    // WATCH for soft shutdown
+    PodPhaseWatcher podWatcher = new PodPhaseWatcher(phase -> StringUtils.equalsAny(phase, "Succeeded", "Failed"));
+    try (Watch watch = client.pods().inNamespace(namespace).withName(podName).watch(podWatcher)) {
+      if (!podWatcher.getCountDownLatch().await(RemoteInterpreterServer.DEFAULT_SHUTDOWN_TIMEOUT + 500,
+          TimeUnit.MILLISECONDS)) {
+        LOGGER.warn("Pod {} doesn't terminate in time", podName);
+      }
+    } catch (InterruptedException e) {
+      LOGGER.error("Interruption received while waiting for stop.", e);
+      processStopped("Stop process was interrupted during termination");
+      Thread.currentThread().interrupt();
+    }
     Properties templateProperties = getTemplateBindings(null);
     // delete pod
     try {
@@ -201,54 +205,32 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
     } catch (IOException e) {
       LOGGER.info("Error on removing interpreter pod", e);
     }
-    if (portForward) {
-        try {
-            localPortForward.close();
-        } catch (IOException e) {
-            LOGGER.info("Error on closing portforwarder", e);
-        }
+    if (portForward && localPortForward != null) {
+      LOGGER.info("Stopping Port Forwarding");
+      try {
+        localPortForward.close();
+      } catch (IOException e) {
+        LOGGER.info("Error on closing portforwarder", e);
+      }
     }
-    // Shutdown connection
-    shutdown();
-  }
-
-  @Override
-  public String getHost() {
-    if (portForward) {
-      return "localhost";
-    } else {
-      return getInterpreterPodDnsName();
-    }
-  }
-
-  @Override
-  public int getPort() {
-    return podPort;
   }
 
   @Override
   public boolean isRunning() {
+    return "Running".equalsIgnoreCase(getPodPhase()) && started.get();
+  }
+
+  public String getPodPhase() {
     try {
-      if (RemoteInterpreterUtils.checkIfRemoteEndpointAccessible(getHost(), getPort())) {
-        return true;
-      }
       Pod pod = client.pods().inNamespace(namespace).withName(podName).get();
       if (pod != null) {
         PodStatus status = pod.getStatus();
         if (status != null) {
-          return "Running".equals(status.getPhase()) && started.get();
+          return status.getPhase();
         }
       }
     } catch (Exception e) {
-      LOGGER.error("Can't get pod status", e);
-    }
-    return false;
-  }
-
-  public String getPodPhase() {
-    Pod pod = client.pods().inNamespace(namespace).withName(podName).get();
-    if (pod != null) {
-      return pod.getStatus().getPhase();
+      LOGGER.error("Can't get pod phase", e);
     }
     return "Unknown";
   }
@@ -297,29 +279,30 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
     k8sProperties.put("zeppelin.k8s.interpreter.pod.name", getPodName());
     k8sProperties.put("zeppelin.k8s.interpreter.container.name", interpreterGroupName.toLowerCase());
     k8sProperties.put("zeppelin.k8s.interpreter.container.image", containerImage);
-    k8sProperties.put("zeppelin.k8s.interpreter.group.id", interpreterGroupId);
+    k8sProperties.put("zeppelin.k8s.interpreter.group.id", getInterpreterGroupId());
     k8sProperties.put("zeppelin.k8s.interpreter.group.name", interpreterGroupName);
-    k8sProperties.put("zeppelin.k8s.interpreter.setting.name", interpreterSettingName);
-    k8sProperties.put("zeppelin.k8s.interpreter.localRepo", "/tmp/local-repo");
-    k8sProperties.put("zeppelin.k8s.interpreter.rpc.portRange", String.format("%d:%d", getPort(), getPort()));
+    k8sProperties.put("zeppelin.k8s.interpreter.setting.name", getInterpreterSettingName());
+    k8sProperties.put("zeppelin.k8s.interpreter.localRepo", getLocalRepoDir());
+    k8sProperties.put("zeppelin.k8s.interpreter.rpc.portRange", getInterpreterPortRange());
     k8sProperties.put("zeppelin.k8s.server.rpc.service", intpEventServerHost);
     k8sProperties.put("zeppelin.k8s.server.rpc.portRange", intpEventServerPort);
     if (ownerUID() != null && ownerName() != null) {
       k8sProperties.put("zeppelin.k8s.server.uid", ownerUID());
       k8sProperties.put("zeppelin.k8s.server.pod.name", ownerName());
     }
-
+    Map<String, String> k8sEnv = new HashMap<>(getEnv());
     // environment variables
-    envs.put(ENV_SERVICE_DOMAIN, envs.getOrDefault(ENV_SERVICE_DOMAIN, System.getenv(ENV_SERVICE_DOMAIN)));
-    envs.put(ENV_ZEPPELIN_HOME, envs.getOrDefault(ENV_ZEPPELIN_HOME, System.getenv(ENV_ZEPPELIN_HOME)));
+    k8sEnv.put(ENV_SERVICE_DOMAIN, getEnv().getOrDefault(ENV_SERVICE_DOMAIN, System.getenv(ENV_SERVICE_DOMAIN)));
+    k8sEnv.put(ENV_ZEPPELIN_HOME, getEnv().getOrDefault(ENV_ZEPPELIN_HOME, System.getenv(ENV_ZEPPELIN_HOME)));
 
     if (isSpark()) {
       int webUiPort = 4040;
       k8sProperties.put("zeppelin.k8s.spark.container.image", sparkImage);
       if (isSparkOnKubernetes(properties)) {
-        envs.put("SPARK_SUBMIT_OPTIONS", envs.getOrDefault("SPARK_SUBMIT_OPTIONS", "") + buildSparkSubmitOptions(userName));
+        k8sEnv.put("SPARK_SUBMIT_OPTIONS",
+            getEnv().getOrDefault("SPARK_SUBMIT_OPTIONS", "") + buildSparkSubmitOptions(userName));
       }
-      envs.put("SPARK_HOME", envs.getOrDefault("SPARK_HOME", "/spark"));
+      k8sEnv.put("SPARK_HOME", getEnv().getOrDefault("SPARK_HOME", "/spark"));
 
       // configure interpreter property "zeppelin.spark.uiWebUrl" if not defined, to enable spark ui through reverse proxy
       String webUrl = (String) properties.get("zeppelin.spark.uiWebUrl");
@@ -331,7 +314,7 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
               webUrl,
               webUiPort,
               getPodName(),
-              envs.get(ENV_SERVICE_DOMAIN)
+              k8sEnv.get(ENV_SERVICE_DOMAIN)
           ));
       // Resources of Interpreter Pod
       if (properties.containsKey(SPARK_DRIVER_MEMORY)) {
@@ -349,7 +332,7 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
       }
     }
 
-    k8sProperties.put("zeppelin.k8s.envs", envs);
+    k8sProperties.put("zeppelin.k8s.envs", k8sEnv);
 
     // interpreter properties overrides the values
     k8sProperties.putAll(Maps.fromProperties(properties));
@@ -393,7 +376,7 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
     if (properties.containsKey(SPARK_DRIVER_MEMORY)) {
       options.append(" --driver-memory " + properties.get(SPARK_DRIVER_MEMORY));
     }
-    if (isUserImpersonatedForSpark && !StringUtils.containsIgnoreCase(userName, "anonymous") && isSpark()) {
+    if (isUserImpersonated() && !StringUtils.containsIgnoreCase(userName, "anonymous")) {
       options.append(" --proxy-user " + userName);
     }
     options.append(" --conf spark.kubernetes.namespace=" + getNamespace());
@@ -445,20 +428,22 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
     return System.getenv("POD_NAME");
   }
 
-  private String getRandomString(int length) {
-    char[] chars = "abcdefghijklmnopqrstuvwxyz".toCharArray();
-
-    StringBuilder sb = new StringBuilder();
-    for (int i = 0; i < length; i++) {
-      char c = chars[rand.nextInt(chars.length)];
-      sb.append(c);
-    }
-    return sb.toString();
-  }
-
   @Override
   public void processStarted(int port, String host) {
-    LOGGER.info("Interpreter pod created {}:{}", host, port);
+    if (portForward) {
+      LOGGER.info("Starting Port Forwarding");
+      try {
+        int localforwardedPodPort = RemoteInterpreterUtils.findRandomAvailablePortOnAllLocalInterfaces();
+        localPortForward = client.pods().inNamespace(namespace).withName(podName)
+            .portForward(K8S_INTERPRETER_SERVICE_PORT, localforwardedPodPort);
+        super.processStarted(localforwardedPodPort, "localhost");
+      } catch (IOException e) {
+        LOGGER.error("Unable to create a PortForward", e);
+      }
+    } else {
+      super.processStarted(port, getInterpreterPodDnsName());
+    }
+    LOGGER.info("Interpreter pod created {}:{}", getHost(), getPort());
     synchronized (started) {
       started.set(true);
       started.notifyAll();
@@ -467,6 +452,6 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
 
   @Override
   public String getErrorMessage() {
-    return String.format("%s%ncurrent PodPhase: %s", errorMessage, getPodPhase());
+    return String.format("%s%ncurrent PodPhase: %s", super.getErrorMessage(), getPodPhase());
   }
 }

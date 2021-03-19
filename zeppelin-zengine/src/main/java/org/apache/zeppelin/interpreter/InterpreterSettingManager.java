@@ -737,18 +737,19 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
               r.getResourceId().getName());
         }
       } else if (remoteInterpreterProcess.isRunning()) {
-        List<String> resourceList = remoteInterpreterProcess.callRemoteFunction(client -> client.resourcePoolGetAll());
-        for (String res : resourceList) {
-          resourceSet.add(Resource.fromJson(res));
-        }
+        try {
+          List<String> resourceList = remoteInterpreterProcess.callRemoteFunction(client -> client.resourcePoolGetAll());
+          for (String res : resourceList) {
+            resourceSet.add(Resource.fromJson(res));
+          }
 
-        if (noteId != null) {
-          resourceSet = resourceSet.filterByNoteId(noteId);
-        }
-        if (paragraphId != null) {
-          resourceSet = resourceSet.filterByParagraphId(paragraphId);
-        }
-        try{
+          if (noteId != null) {
+            resourceSet = resourceSet.filterByNoteId(noteId);
+          }
+          if (paragraphId != null) {
+            resourceSet = resourceSet.filterByParagraphId(paragraphId);
+          }
+
           for (final Resource r : resourceSet) {
             remoteInterpreterProcess.callRemoteFunction(client -> {
               client.resourceRemove(r.getResourceId().getNoteId(),
@@ -757,7 +758,7 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
               return null;
             });
           }
-        }catch (Exception e){
+        } catch (Exception e){
           LOGGER.error(e.getMessage());
         }
       }
@@ -955,7 +956,17 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
 
   // restart in note page
   public void restart(String settingId, String user, String noteId) throws InterpreterException {
-    restart(settingId, new ExecutionContextBuilder().setUser(user).setNoteId(noteId).createExecutionContext());
+    try {
+      Note note = notebook.getNote(noteId);
+      if (note == null) {
+        throw new InterpreterException("No such note: " + noteId);
+      }
+      ExecutionContext executionContext = note.getExecutionContext();
+      executionContext.setUser(user);
+      restart(settingId, executionContext);
+    } catch (IOException e) {
+      LOGGER.warn("Fail to restart interpreter", e);
+    }
   }
 
   // restart in note page
@@ -1110,10 +1121,14 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
     if (note.getParagraphs() != null) {
       for (Paragraph paragraph : note.getParagraphs()) {
         try {
-          Interpreter interpreter = paragraph.getBindedInterpreter();
-          InterpreterSetting interpreterSetting =
-                  ((ManagedInterpreterGroup) interpreter.getInterpreterGroup()).getInterpreterSetting();
-          restart(interpreterSetting.getId(), subject.getUser(), note.getId());
+          Interpreter interpreter = paragraph.getInterpreter();
+          if (interpreter != null) {
+            InterpreterSetting interpreterSetting =
+                    ((ManagedInterpreterGroup) interpreter.getInterpreterGroup()).getInterpreterSetting();
+            ExecutionContext executionContext = note.getExecutionContext();
+            executionContext.setUser(subject.getUser());
+            restart(interpreterSetting.getId(), executionContext);
+          }
         } catch (InterpreterNotFoundException e) {
 
         } catch (InterpreterException e) {
@@ -1124,8 +1139,7 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
 
     // remove from all interpreter instance's angular object registry
     for (InterpreterSetting settings : interpreterSettings.values()) {
-      InterpreterGroup interpreterGroup = settings.getInterpreterGroup(
-              new ExecutionContextBuilder().setUser(subject.getUser()).setNoteId(note.getId()).createExecutionContext());
+      InterpreterGroup interpreterGroup = settings.getInterpreterGroup(note.getExecutionContext());
       if (interpreterGroup != null) {
         AngularObjectRegistry registry = interpreterGroup.getAngularObjectRegistry();
         if (registry instanceof RemoteAngularObjectRegistry) {
@@ -1250,5 +1264,4 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
     ClusterManagerServer.getInstance(conf).broadcastClusterEvent(
         CLUSTER_INTP_SETTING_EVENT_TOPIC, msg);
   }
-
 }

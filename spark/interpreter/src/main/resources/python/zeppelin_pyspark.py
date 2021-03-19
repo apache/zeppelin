@@ -34,9 +34,12 @@ java_import(gateway.jvm, "org.apache.spark.SparkEnv")
 java_import(gateway.jvm, "org.apache.spark.SparkConf")
 java_import(gateway.jvm, "org.apache.spark.api.java.*")
 java_import(gateway.jvm, "org.apache.spark.api.python.*")
+java_import(gateway.jvm, "org.apache.spark.ml.python.*")
 java_import(gateway.jvm, "org.apache.spark.mllib.api.python.*")
+java_import(gateway.jvm, "org.apache.spark.resource.*")
 
 java_import(gateway.jvm, "org.apache.spark.sql.*")
+java_import(gateway.jvm, "org.apache.spark.sql.api.python.*")
 java_import(gateway.jvm, "org.apache.spark.sql.hive.*")
 
 java_import(gateway.jvm, "scala.Tuple2")

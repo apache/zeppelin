@@ -4,7 +4,8 @@
       "title": "Overview",
       "text": "%md\n\nThis tutorial demonstrate how to use Flink do streaming processing via its streaming sql + udf. In this tutorial, we read data from kafka queue and do some simple processing (just filtering here) and then write it back to another kafka queue. We use this [docker](https://zeppelin-kafka-connect-datagen.readthedocs.io/en/latest/) to create kafka cluster and source data \n\n* Make sure you add the following ip host name mapping to your hosts file, otherwise you may not be able to connect to the kafka cluster in docker\n\n```\n127.0.0.1   broker\n```\n\nUse the following command to generate the sample data.\n\n```\ncurl -X POST http://localhost:8083/connectors \\\n-H \u0027Content-Type:application/json\u0027 \\\n-H \u0027Accept:application/json\u0027 \\\n-d @connect.source.datagen.json\n```",
       "user": "anonymous",
-      "dateUpdated": "2020-04-27 13:44:26.806",
+      "dateUpdated": "2021-01-25 14:26:04.106",
+      "progress": 0,
       "config": {
         "runOnSelectionChange": true,
         "title": true,
@@ -27,23 +28,14 @@
         "params": {},
         "forms": {}
       },
-      "results": {
-        "code": "SUCCESS",
-        "msg": [
-          {
-            "type": "HTML",
-            "data": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003cp\u003eThis tutorial demonstrate how to use Flink do streaming processing via its streaming sql + udf. In this tutorial, we read data from kafka queue and do some simple processing (just filtering here) and then write it back to another kafka queue. We use this \u003ca href\u003d\"https://zeppelin-kafka-connect-datagen.readthedocs.io/en/latest/\"\u003edocker\u003c/a\u003e to create kafka cluster and source data\u003c/p\u003e\n\u003cul\u003e\n\u003cli\u003eMake sure you add the following ip host name mapping to your hosts file, otherwise you may not be able to connect to the kafka cluster in docker\u003c/li\u003e\n\u003c/ul\u003e\n\u003cpre\u003e\u003ccode\u003e127.0.0.1   broker\n\u003c/code\u003e\u003c/pre\u003e\n\u003cp\u003eUse the following command to generate the sample data.\u003c/p\u003e\n\u003cpre\u003e\u003ccode\u003ecurl -X POST http://localhost:8083/connectors \\\n-H \u0027Content-Type:application/json\u0027 \\\n-H \u0027Accept:application/json\u0027 \\\n-d @connect.source.datagen.json\n\u003c/code\u003e\u003c/pre\u003e\n\n\u003c/div\u003e"
-          }
-        ]
-      },
       "apps": [],
       "runtimeInfos": {},
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1579054287919_-61477360",
       "id": "paragraph_1579054287919_-61477360",
       "dateCreated": "2020-01-15 10:11:27.919",
-      "dateStarted": "2020-04-27 11:49:46.116",
-      "dateFinished": "2020-04-27 11:49:46.128",
+      "dateStarted": "2021-01-25 14:26:04.106",
+      "dateFinished": "2021-01-25 14:26:04.118",
       "status": "FINISHED"
     },
     {
@@ -51,6 +43,7 @@
       "text": "%flink.conf\n\n# You need to run this paragraph first before running any flink code.\n\nflink.execution.packages\torg.apache.flink:flink-connector-kafka_2.11:1.10.0,org.apache.flink:flink-connector-kafka-base_2.11:1.10.0,org.apache.flink:flink-json:1.10.0",
       "user": "anonymous",
       "dateUpdated": "2020-04-29 15:45:27.361",
+      "progress": 0,
       "config": {
         "colWidth": 12.0,
         "fontSize": 9.0,
@@ -69,10 +62,6 @@
         "params": {},
         "forms": {}
       },
-      "results": {
-        "code": "SUCCESS",
-        "msg": []
-      },
       "apps": [],
       "runtimeInfos": {},
       "progressUpdateIntervalMs": 500,
@@ -88,6 +77,7 @@
       "text": "%flink.ssql\n\nDROP TABLE IF EXISTS source_kafka;\n\nCREATE TABLE source_kafka (\n    status  STRING,\n    direction STRING,\n    event_ts BIGINT\n) WITH (\n  \u0027connector.type\u0027 \u003d \u0027kafka\u0027,       \n  \u0027connector.version\u0027 \u003d \u0027universal\u0027,\n  \u0027connector.topic\u0027 \u003d \u0027generated.events\u0027,\n  \u0027connector.startup-mode\u0027 \u003d \u0027earliest-offset\u0027,\n  \u0027connector.properties.zookeeper.connect\u0027 \u003d \u0027localhost:2181\u0027,\n  \u0027connector.properties.bootstrap.servers\u0027 \u003d \u0027localhost:9092\u0027,\n  \u0027connector.properties.group.id\u0027 \u003d \u0027testGroup\u0027,\n  \u0027connector.startup-mode\u0027 \u003d \u0027earliest-offset\u0027,\n  \u0027format.type\u0027\u003d\u0027json\u0027,\n  \u0027update-mode\u0027 \u003d \u0027append\u0027\n);",
       "user": "anonymous",
       "dateUpdated": "2020-04-29 15:45:29.234",
+      "progress": 0,
       "config": {
         "colWidth": 6.0,
         "fontSize": 9.0,
@@ -108,15 +98,6 @@
         "params": {},
         "forms": {}
       },
-      "results": {
-        "code": "SUCCESS",
-        "msg": [
-          {
-            "type": "TEXT",
-            "data": "Table has been dropped.\nTable has been created.\n"
-          }
-        ]
-      },
       "apps": [],
       "runtimeInfos": {},
       "progressUpdateIntervalMs": 500,
@@ -132,6 +113,7 @@
       "text": "%flink.ssql\n\nDROP TABLE IF EXISTS sink_kafka;\n\nCREATE TABLE sink_kafka (\n    status  STRING,\n    direction STRING,\n    event_ts TIMESTAMP(3),\n    WATERMARK FOR event_ts AS event_ts - INTERVAL \u00275\u0027 SECOND\n) WITH (\n  \u0027connector.type\u0027 \u003d \u0027kafka\u0027,       \n  \u0027connector.version\u0027 \u003d \u0027universal\u0027,    \n  \u0027connector.topic\u0027 \u003d \u0027generated.events2\u0027,\n  \u0027connector.properties.zookeeper.connect\u0027 \u003d \u0027localhost:2181\u0027,\n  \u0027connector.properties.bootstrap.servers\u0027 \u003d \u0027localhost:9092\u0027,\n  \u0027connector.properties.group.id\u0027 \u003d \u0027testGroup\u0027,\n  \u0027format.type\u0027\u003d\u0027json\u0027,\n  \u0027update-mode\u0027 \u003d \u0027append\u0027\n)\n\n",
       "user": "anonymous",
       "dateUpdated": "2020-04-29 15:45:30.663",
+      "progress": 0,
       "config": {
         "runOnSelectionChange": true,
         "title": true,
@@ -152,15 +134,6 @@
         "params": {},
         "forms": {}
       },
-      "results": {
-        "code": "SUCCESS",
-        "msg": [
-          {
-            "type": "TEXT",
-            "data": "Table has been dropped.\nTable has been created.\n"
-          }
-        ]
-      },
       "apps": [],
       "runtimeInfos": {},
       "progressUpdateIntervalMs": 500,
@@ -176,6 +149,7 @@
       "text": "%flink.ssql\n\ninsert into sink_kafka select status, direction, cast(event_ts/1000000000 as timestamp(3)) from source_kafka where status \u003c\u003e \u0027foo\u0027\n",
       "user": "anonymous",
       "dateUpdated": "2020-04-29 15:45:43.388",
+      "progress": 0,
       "config": {
         "runOnSelectionChange": true,
         "title": true,
@@ -212,6 +186,7 @@
       "text": "%flink.ssql(type\u003dupdate)\n\nselect * from sink_kafka order by event_ts desc limit 10;",
       "user": "anonymous",
       "dateUpdated": "2020-04-29 15:28:01.122",
+      "progress": 0,
       "config": {
         "runOnSelectionChange": true,
         "title": true,
@@ -325,6 +300,7 @@
       "text": "%flink.ssql\n",
       "user": "anonymous",
       "dateUpdated": "2020-04-29 15:27:31.430",
+      "progress": 0,
       "config": {
         "colWidth": 12.0,
         "fontSize": 9.0,

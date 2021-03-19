@@ -143,7 +143,7 @@ $ mv zeppelin-distribution/target/zeppelin-*.tar.gz scripts/docker/zeppelin/bin/
 #    wget -O /tmp/zeppelin-${Z_VERSION}-bin-all.tgz http://archive.apache.org/dist/zeppelin/zeppelin-${Z_VERSION}/zeppelin-${Z_VERSION}-bin-all.tgz && \
 #    tar -zxvf /tmp/zeppelin-${Z_VERSION}-bin-all.tgz && \
 #    rm -rf /tmp/zeppelin-${Z_VERSION}-bin-all.tgz && \
-#    mv /zeppelin-${Z_VERSION}-bin-all ${Z_HOME}
+#    mv /zeppelin-${Z_VERSION}-bin-all ${ZEPPELIN_HOME}
 
 # Add following lines right after the commented line above
 ADD zeppelin-${Z_VERSION}.tar.gz /
@@ -260,10 +260,10 @@ Zeppelin can run locally (such as inside your IDE in debug mode) and able to run
 
 | Environment variable | Value | Description |
 | ----- | ----- | ----- |
-| ZEPPELIN_RUN_MODE | k8s | Make Zeppelin run interpreter on Kubernetes |
-| ZEPPELIN_K8S_PORTFORWARD | true | Enable port forwarding from local Zeppelin instance to Interpreters running on Kubernetes |
-| ZEPPELIN_K8S_CONTAINER_IMAGE | <image>:<version> | Zeppelin interpreter docker image to use |
-| ZEPPELIN_K8S_SPARK_CONTAINER_IMAGE | <image>:<version> | Spark docker image to use |
-| ZEPPELIN_K8S_NAMESPACE | <k8s namespace> | Kubernetes namespace  to use |
-| KUBERNETES_AUTH_TOKEN | <token> | Kubernetes auth token to create resources |
+| `ZEPPELIN_RUN_MODE` | `k8s` | Make Zeppelin run interpreter on Kubernetes |
+| `ZEPPELIN_K8S_PORTFORWARD` | `true` | Enable port forwarding from local Zeppelin instance to Interpreters running on Kubernetes |
+| `ZEPPELIN_K8S_CONTAINER_IMAGE` | `<image>:<version>` | Zeppelin interpreter docker image to use |
+| `ZEPPELIN_K8S_SPARK_CONTAINER_IMAGE` | `<image>:<version>` | Spark docker image to use |
+| `ZEPPELIN_K8S_NAMESPACE` | `<k8s namespace>` | Kubernetes namespace  to use |
+| `KUBERNETES_AUTH_TOKEN` | `<token>` | Kubernetes auth token to create resources |
 

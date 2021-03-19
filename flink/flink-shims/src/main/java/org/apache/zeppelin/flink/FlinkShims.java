@@ -121,6 +121,8 @@ public abstract class FlinkShims {
 
   public abstract Object toDataSet(Object btenv, Object table);
 
+  public abstract void registerScalarFunction(Object btenv, String name, Object scalarFunction);
+
   public abstract void registerTableFunction(Object btenv, String name, Object tableFunction);
 
   public abstract void registerAggregateFunction(Object btenv, String name, Object aggregateFunction);

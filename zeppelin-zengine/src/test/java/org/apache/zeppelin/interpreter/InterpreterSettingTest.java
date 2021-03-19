@@ -17,8 +17,13 @@
 
 package org.apache.zeppelin.interpreter;
 
+import org.apache.zeppelin.notebook.Note;
+import org.apache.zeppelin.notebook.NoteInfo;
+import org.apache.zeppelin.notebook.Notebook;
+import org.junit.Before;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -28,8 +33,28 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class InterpreterSettingTest {
+
+  private InterpreterSettingManager interpreterSettingManager;
+  private Notebook notebook;
+  private Note note1;
+  private Note note2;
+
+
+  @Before
+  public void setUp() throws IOException {
+    interpreterSettingManager = mock(InterpreterSettingManager.class);
+    notebook = mock(Notebook.class);
+    when(interpreterSettingManager.getNotebook()).thenReturn(notebook);
+
+    note1 = new Note(new NoteInfo("note1", "/note_1"));
+    note2 = new Note(new NoteInfo("note2", "/note_2"));
+    when(notebook.getNote("note1")).thenReturn(note1);
+    when(notebook.getNote("note2")).thenReturn(note2);
+  }
 
   @Test
   public void testCreateInterpreters() {
@@ -43,12 +68,14 @@ public class InterpreterSettingTest {
     List<InterpreterInfo> interpreterInfos = new ArrayList<>();
     interpreterInfos.add(interpreterInfo1);
     interpreterInfos.add(interpreterInfo2);
+
     InterpreterSetting interpreterSetting = new InterpreterSetting.Builder()
         .setId("id")
         .setName("test")
         .setGroup("test")
         .setInterpreterInfos(interpreterInfos)
         .setOption(interpreterOption)
+        .setIntepreterSettingManager(interpreterSettingManager)
         .create();
 
     // create default interpreter for user1 and note1
@@ -82,6 +109,7 @@ public class InterpreterSettingTest {
         .setGroup("test")
         .setInterpreterInfos(interpreterInfos)
         .setOption(interpreterOption)
+        .setIntepreterSettingManager(interpreterSettingManager)
         .create();
 
     // create default interpreter for user1 and note1
@@ -100,7 +128,7 @@ public class InterpreterSettingTest {
     // only 1 session is created, this session is shared across users and notes
     assertEquals(1, interpreterSetting.getAllInterpreterGroups().get(0).getSessionNum());
 
-    interpreterSetting.closeInterpreters("note1", "user1");
+    interpreterSetting.closeInterpreters("user1", "note1");
     assertEquals(0, interpreterSetting.getAllInterpreterGroups().size());
   }
 
@@ -121,6 +149,7 @@ public class InterpreterSettingTest {
         .setGroup("test")
         .setInterpreterInfos(interpreterInfos)
         .setOption(interpreterOption)
+        .setIntepreterSettingManager(interpreterSettingManager)
         .create();
 
     // create interpreter for user1 and note1
@@ -160,6 +189,7 @@ public class InterpreterSettingTest {
         .setGroup("test")
         .setInterpreterInfos(interpreterInfos)
         .setOption(interpreterOption)
+        .setIntepreterSettingManager(interpreterSettingManager)
         .create();
 
     // create interpreter for user1 and note1
@@ -199,6 +229,7 @@ public class InterpreterSettingTest {
         .setGroup("test")
         .setInterpreterInfos(interpreterInfos)
         .setOption(interpreterOption)
+        .setIntepreterSettingManager(interpreterSettingManager)
         .create();
 
     // create interpreter for user1 and note1
@@ -239,6 +270,7 @@ public class InterpreterSettingTest {
         .setGroup("test")
         .setInterpreterInfos(interpreterInfos)
         .setOption(interpreterOption)
+        .setIntepreterSettingManager(interpreterSettingManager)
         .create();
 
     // create interpreter for user1 and note1
@@ -280,6 +312,7 @@ public class InterpreterSettingTest {
         .setGroup("test")
         .setInterpreterInfos(interpreterInfos)
         .setOption(interpreterOption)
+        .setIntepreterSettingManager(interpreterSettingManager)
         .create();
 
     // create interpreter for user1 and note1
@@ -335,6 +368,7 @@ public class InterpreterSettingTest {
         .setGroup("test")
         .setInterpreterInfos(interpreterInfos)
         .setOption(interpreterOption)
+        .setIntepreterSettingManager(interpreterSettingManager)
         .create();
 
     // create interpreter for user1 and note1
@@ -396,6 +430,7 @@ public class InterpreterSettingTest {
         .setGroup("test")
         .setInterpreterInfos(interpreterInfos)
         .setOption(interpreterOption)
+        .setIntepreterSettingManager(interpreterSettingManager)
         .create();
 
     // create interpreter for user1 and note1

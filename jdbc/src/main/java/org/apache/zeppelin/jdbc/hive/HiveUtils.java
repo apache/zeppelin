@@ -24,7 +24,6 @@ import org.apache.zeppelin.jdbc.JDBCInterpreter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
 import java.util.List;
@@ -62,23 +61,27 @@ public class HiveUtils {
     String hiveVersion = HiveVersionInfo.getVersion();
     ProgressBar progressBarTemp = null;
     if (isProgressBarSupported(hiveVersion)) {
-      LOGGER.debug("ProgressBar is supported for hive version: " + hiveVersion);
+      LOGGER.debug("ProgressBar is supported for hive version: {}", hiveVersion);
       progressBarTemp = new ProgressBar();
     } else {
-      LOGGER.debug("ProgressBar is not supported for hive version: " + hiveVersion);
+      LOGGER.debug("ProgressBar is not supported for hive version: {}", hiveVersion);
     }
     // need to use final variable progressBar in thread, so need progressBarTemp here.
     final ProgressBar progressBar = progressBarTemp;
     final long timeoutThreshold = Long.parseLong(
             jdbcInterpreter.getProperty("zeppelin.jdbc.hive.timeout.threshold", "" + 60 * 1000));
+    final long queryInterval = Long.parseLong(
+        jdbcInterpreter.getProperty("zeppelin.jdbc.hive.monitor.query_interval",
+            DEFAULT_QUERY_PROGRESS_INTERVAL + ""));
     Thread thread = new Thread(() -> {
       boolean jobLaunched = false;
       long jobLastActiveTime = System.currentTimeMillis();
-      while (hiveStmt.hasMoreLogs() && !Thread.interrupted()) {
-        try {
+      try {
+        while (hiveStmt.hasMoreLogs() && !hiveStmt.isClosed() && !Thread.interrupted()) {
+          Thread.sleep(queryInterval);
           List<String> logs = hiveStmt.getQueryLog();
           String logsOutput = StringUtils.join(logs, System.lineSeparator());
-          LOGGER.debug("Hive job output: " + logsOutput);
+          LOGGER.debug("Hive job output: {}", logsOutput);
           boolean displayLogProperty = context.getBooleanLocalProperty("displayLog", displayLog);
           if (!StringUtils.isBlank(logsOutput) && displayLogProperty) {
             context.out.write(logsOutput + "\n");
@@ -122,29 +125,20 @@ public class HiveUtils {
               break;
             }
           }
-          // refresh logs every 1 second.
-          Thread.sleep(DEFAULT_QUERY_PROGRESS_INTERVAL);
-        } catch (Exception e) {
-          LOGGER.warn("Fail to write output", e);
-        } finally {
-          try {
-            // Sometimes, maybe hiveStmt was closed unnormally, hiveStmt.hasMoreLogs() will be true,
-            // this loop cannot jump out, and exceptions thrown.
-            // Add the below codes in case.
-            if (hiveStmt.isClosed()){
-              break;
-            }
-          } catch (SQLException e) {
-            LOGGER.warn("hiveStmt closed unnormally", e);
-          }
         }
+      } catch (InterruptedException e) {
+        LOGGER.warn("Hive monitor thread is interrupted", e);
+        Thread.currentThread().interrupt();
+      } catch (Exception e) {
+        LOGGER.warn("Fail to monitor hive statement", e);
       }
+
       LOGGER.info("HiveMonitor-Thread is finished");
     });
     thread.setName("HiveMonitor-Thread");
     thread.setDaemon(true);
     thread.start();
-    LOGGER.info("Start HiveMonitor-Thread for sql: " + hiveStmt);
+    LOGGER.info("Start HiveMonitor-Thread for sql: {}", hiveStmt);
 
     if (progressBar != null) {
       // old: hiveStmt.setInPlaceUpdateStream(progressBar.getInPlaceUpdateStream(context.out));

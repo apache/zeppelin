@@ -21,6 +21,7 @@ package org.apache.zeppelin.service;
 
 import static org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_HOMESCREEN;
 import static org.apache.zeppelin.interpreter.InterpreterResult.Code.ERROR;
+import static org.apache.zeppelin.scheduler.Job.Status.ABORT;
 
 import com.google.common.base.Strings;
 import java.io.IOException;
@@ -116,7 +117,14 @@ public class NotebookService {
   public Note getNote(String noteId,
                       ServiceContext context,
                       ServiceCallback<Note> callback) throws IOException {
-    Note note = notebook.getNote(noteId);
+    return getNote(noteId, false, context, callback);
+  }
+
+  public Note getNote(String noteId,
+                      boolean reload,
+                      ServiceContext context,
+                      ServiceCallback<Note> callback) throws IOException {
+    Note note = notebook.getNote(noteId, reload);
     if (note == null) {
       callback.onFailure(new NoteNotFoundException(noteId), context);
       return null;
@@ -430,6 +438,9 @@ public class NotebookService {
             Paragraph p = note.getParagraph(paragraphId);
             InterpreterResult result = p.getReturn();
             if (result != null && result.code() == ERROR) {
+              return false;
+            }
+            if (p.getStatus() == ABORT || p.isAborted()) {
               return false;
             }
           } catch (Exception e) {

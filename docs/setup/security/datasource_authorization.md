@@ -37,8 +37,7 @@ You can add new credentials in the dropdown menu for your data source which can 
 
 <img class="img-responsive" src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/credential_tab.png" width="180px"/>
 
-**Entity** can be the key that distinguishes each credential sets.(We suggest that the convention of the **Entity** is `[Interpreter Group].[Interpreter Name]`.)
-Please see [what is interpreter group](../../usage/interpreter/overview.html#what-is-interpreter-group) for the detailed information.
+**Entity** can be the key that distinguishes each credential sets.(We suggest that the convention of the **Entity** is `Interpreter Name`.)
 
 Type **Username & Password** for your own credentials. ex) Mysql user & password of the JDBC Interpreter.
 

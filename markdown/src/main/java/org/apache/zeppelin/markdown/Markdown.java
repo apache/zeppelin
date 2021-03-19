@@ -17,11 +17,10 @@
 
 package org.apache.zeppelin.markdown;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.Properties;
-
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterResult;
@@ -30,6 +29,8 @@ import org.apache.zeppelin.interpreter.InterpreterUtils;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * MarkdownInterpreter interpreter for Zeppelin.
@@ -38,6 +39,8 @@ public class Markdown extends Interpreter {
   private static final Logger LOGGER = LoggerFactory.getLogger(Markdown.class);
 
   private MarkdownParser parser;
+
+  private final String[] unsafeTags = new String[]{"script", "object", "iframe", "embed"};
 
   /**
    * Markdown Parser Type.
@@ -103,6 +106,7 @@ public class Markdown extends Interpreter {
     String html;
 
     try {
+      markdownText = sanitizeInput(markdownText);
       html = parser.render(markdownText);
     } catch (RuntimeException e) {
       LOGGER.error("Exception in MarkdownInterpreter while interpret ", e);
@@ -110,6 +114,27 @@ public class Markdown extends Interpreter {
     }
 
     return new InterpreterResult(Code.SUCCESS, "%html " + html);
+  }
+
+  public String sanitizeInput(String input) {
+    if (input != null) {
+      for (String unsafeTag : unsafeTags) {
+        String unsafeRegex = "<" + unsafeTag + ">(.*)</" + unsafeTag + ">";
+        Pattern pattern = Pattern.compile(unsafeRegex);
+        Matcher matcher = pattern.matcher(input);
+        if (matcher.find()) {
+          input = matcher.replaceAll("");
+        }
+      }
+
+      String onclickRegex = "onclick=[\"'](.*)[\"']";
+      Pattern pattern = Pattern.compile(onclickRegex);
+      Matcher matcher = pattern.matcher(input);
+      if (matcher.find()) {
+        input = matcher.replaceAll("");
+      }
+    }
+    return input;
   }
 
   @Override

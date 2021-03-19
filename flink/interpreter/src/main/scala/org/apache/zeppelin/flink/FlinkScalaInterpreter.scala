@@ -487,7 +487,7 @@ class FlinkScalaInterpreter(val properties: Properties) {
             val udf = c.newInstance()
             if (udf.isInstanceOf[ScalarFunction]) {
               val scalarUDF = udf.asInstanceOf[ScalarFunction]
-              btenv.registerFunction(c.getSimpleName, scalarUDF)
+              flinkShims.registerScalarFunction(btenv, c.getSimpleName, scalarUDF)
             } else if (udf.isInstanceOf[TableFunction[_]]) {
               val tableUDF = udf.asInstanceOf[TableFunction[_]]
               flinkShims.registerTableFunction(btenv, c.getSimpleName, tableUDF)
@@ -651,9 +651,12 @@ class FlinkScalaInterpreter(val properties: Properties) {
   def setSavepointPathIfNecessary(context: InterpreterContext): Unit = {
     val savepointPath = context.getConfig.getOrDefault(JobManager.SAVEPOINT_PATH, "").toString
     val resumeFromSavepoint = context.getBooleanLocalProperty(JobManager.RESUME_FROM_SAVEPOINT, false)
+    // flink 1.12 use copied version of configuration, so in order to update configuration we have to
+    // get the internal configuration of StreamExecutionEnvironment.
+    val internalConfiguration = getConfigurationOfStreamExecutionEnv()
     if (!StringUtils.isBlank(savepointPath) && resumeFromSavepoint){
       LOGGER.info("Resume job from savepoint , savepointPath = {}", savepointPath)
-      configuration.setString(SavepointConfigOptions.SAVEPOINT_PATH.key(), savepointPath)
+      internalConfiguration.setString(SavepointConfigOptions.SAVEPOINT_PATH.key(), savepointPath);
       return
     }
 
@@ -661,7 +664,7 @@ class FlinkScalaInterpreter(val properties: Properties) {
     val resumeFromLatestCheckpoint = context.getBooleanLocalProperty(JobManager.RESUME_FROM_CHECKPOINT, false)
     if (!StringUtils.isBlank(checkpointPath) && resumeFromLatestCheckpoint) {
       LOGGER.info("Resume job from checkpoint , checkpointPath = {}", checkpointPath)
-      configuration.setString(SavepointConfigOptions.SAVEPOINT_PATH.key(), checkpointPath)
+      internalConfiguration.setString(SavepointConfigOptions.SAVEPOINT_PATH.key(), checkpointPath);
       return
     }
 
@@ -669,14 +672,14 @@ class FlinkScalaInterpreter(val properties: Properties) {
       SavepointConfigOptions.SAVEPOINT_PATH.key(), "")
     if (!StringUtils.isBlank(userSavepointPath)) {
       LOGGER.info("Resume job from user set savepoint , savepointPath = {}", userSavepointPath)
-      configuration.setString(SavepointConfigOptions.SAVEPOINT_PATH.key(), checkpointPath)
+      internalConfiguration.setString(SavepointConfigOptions.SAVEPOINT_PATH.key(), checkpointPath)
       return;
     }
 
     val userSettingSavepointPath = properties.getProperty(SavepointConfigOptions.SAVEPOINT_PATH.key())
     if (StringUtils.isBlank(userSettingSavepointPath)) {
       // remove SAVEPOINT_PATH when user didn't set it via %flink.conf
-      configuration.removeConfig(SavepointConfigOptions.SAVEPOINT_PATH)
+      internalConfiguration.removeConfig(SavepointConfigOptions.SAVEPOINT_PATH)
     }
   }
 
@@ -886,6 +889,12 @@ class FlinkScalaInterpreter(val properties: Properties) {
     val pattern = "(https?://.*:\\d+)(.*)".r
     val pattern(prefix, remaining) = webURL
     yarnAddress + remaining
+  }
+
+  private def getConfigurationOfStreamExecutionEnv(): Configuration = {
+    val getConfigurationMethod = classOf[JStreamExecutionEnvironment].getDeclaredMethod("getConfiguration")
+    getConfigurationMethod.setAccessible(true)
+    getConfigurationMethod.invoke(this.senv.getJavaEnv).asInstanceOf[Configuration]
   }
 }
 

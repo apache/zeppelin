@@ -21,7 +21,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.InterpreterOption;
 import org.apache.zeppelin.interpreter.integration.DownloadUtils;
-import org.apache.zeppelin.interpreter.remote.RemoteInterpreterManagedProcess;
+import org.apache.zeppelin.interpreter.remote.ExecRemoteInterpreterProcess;
 import org.apache.zeppelin.util.Util;
 import org.junit.Before;
 import org.junit.Test;
@@ -72,8 +72,8 @@ public class SparkInterpreterLauncherTest {
     option.setUserImpersonate(true);
     InterpreterLaunchContext context = new InterpreterLaunchContext(properties, option, null, "user1", "intpGroupId", "groupId", "groupName", "name", 0, "host");
     InterpreterClient client = launcher.launch(context);
-    assertTrue( client instanceof RemoteInterpreterManagedProcess);
-    RemoteInterpreterManagedProcess interpreterProcess = (RemoteInterpreterManagedProcess) client;
+    assertTrue(client instanceof ExecRemoteInterpreterProcess);
+    ExecRemoteInterpreterProcess interpreterProcess = (ExecRemoteInterpreterProcess) client;
     assertEquals("name", interpreterProcess.getInterpreterSettingName());
     assertEquals(zeppelinHome + "/interpreter/groupName", interpreterProcess.getInterpreterDir());
     assertEquals(zeppelinHome + "/local-repo/groupId", interpreterProcess.getLocalRepoDir());
@@ -98,8 +98,8 @@ public class SparkInterpreterLauncherTest {
     InterpreterOption option = new InterpreterOption();
     InterpreterLaunchContext context = new InterpreterLaunchContext(properties, option, null, "user1", "intpGroupId", "groupId", "spark", "spark", 0, "host");
     InterpreterClient client = launcher.launch(context);
-    assertTrue( client instanceof RemoteInterpreterManagedProcess);
-    RemoteInterpreterManagedProcess interpreterProcess = (RemoteInterpreterManagedProcess) client;
+    assertTrue( client instanceof ExecRemoteInterpreterProcess);
+    ExecRemoteInterpreterProcess interpreterProcess = (ExecRemoteInterpreterProcess) client;
     assertEquals("spark", interpreterProcess.getInterpreterSettingName());
     assertTrue(interpreterProcess.getInterpreterDir().endsWith("/interpreter/spark"));
     assertTrue(interpreterProcess.getLocalRepoDir().endsWith("/local-repo/groupId"));
@@ -126,8 +126,8 @@ public class SparkInterpreterLauncherTest {
     InterpreterOption option = new InterpreterOption();
     InterpreterLaunchContext context = new InterpreterLaunchContext(properties, option, null, "user1", "intpGroupId", "groupId", "spark", "spark", 0, "host");
     InterpreterClient client = launcher.launch(context);
-    assertTrue( client instanceof RemoteInterpreterManagedProcess);
-    RemoteInterpreterManagedProcess interpreterProcess = (RemoteInterpreterManagedProcess) client;
+    assertTrue( client instanceof ExecRemoteInterpreterProcess);
+    ExecRemoteInterpreterProcess interpreterProcess = (ExecRemoteInterpreterProcess) client;
     assertEquals("spark", interpreterProcess.getInterpreterSettingName());
     assertTrue(interpreterProcess.getInterpreterDir().endsWith("/interpreter/spark"));
     assertTrue(interpreterProcess.getLocalRepoDir().endsWith("/local-repo/groupId"));
@@ -159,8 +159,8 @@ public class SparkInterpreterLauncherTest {
     InterpreterOption option = new InterpreterOption();
     InterpreterLaunchContext context = new InterpreterLaunchContext(properties, option, null, "user1", "intpGroupId", "groupId", "spark", "spark", 0, "host");
     InterpreterClient client = launcher.launch(context);
-    assertTrue( client instanceof RemoteInterpreterManagedProcess);
-    RemoteInterpreterManagedProcess interpreterProcess = (RemoteInterpreterManagedProcess) client;
+    assertTrue( client instanceof ExecRemoteInterpreterProcess);
+    ExecRemoteInterpreterProcess interpreterProcess = (ExecRemoteInterpreterProcess) client;
     assertEquals("spark", interpreterProcess.getInterpreterSettingName());
     assertTrue(interpreterProcess.getInterpreterDir().endsWith("/interpreter/spark"));
     assertTrue(interpreterProcess.getLocalRepoDir().endsWith("/local-repo/groupId"));
@@ -192,8 +192,8 @@ public class SparkInterpreterLauncherTest {
     InterpreterOption option = new InterpreterOption();
     InterpreterLaunchContext context = new InterpreterLaunchContext(properties, option, null, "user1", "intpGroupId", "groupId", "spark", "spark", 0, "host");
     InterpreterClient client = launcher.launch(context);
-    assertTrue( client instanceof RemoteInterpreterManagedProcess);
-    RemoteInterpreterManagedProcess interpreterProcess = (RemoteInterpreterManagedProcess) client;
+    assertTrue( client instanceof ExecRemoteInterpreterProcess);
+    ExecRemoteInterpreterProcess interpreterProcess = (ExecRemoteInterpreterProcess) client;
     assertEquals("spark", interpreterProcess.getInterpreterSettingName());
     assertTrue(interpreterProcess.getInterpreterDir().endsWith("/interpreter/spark"));
     assertTrue(interpreterProcess.getLocalRepoDir().endsWith("/local-repo/groupId"));
@@ -238,8 +238,8 @@ public class SparkInterpreterLauncherTest {
     Files.createFile(Paths.get(localRepoPath.toAbsolutePath().toString(), "test.jar"));
 
     InterpreterClient client = launcher.launch(context);
-    assertTrue( client instanceof RemoteInterpreterManagedProcess);
-    RemoteInterpreterManagedProcess interpreterProcess = (RemoteInterpreterManagedProcess) client;
+    assertTrue(client instanceof ExecRemoteInterpreterProcess);
+    ExecRemoteInterpreterProcess interpreterProcess = (ExecRemoteInterpreterProcess) client;
     assertEquals("spark", interpreterProcess.getInterpreterSettingName());
     assertTrue(interpreterProcess.getInterpreterDir().endsWith("/interpreter/spark"));
     assertTrue(interpreterProcess.getLocalRepoDir().endsWith("/local-repo/groupId"));
@@ -285,8 +285,8 @@ public class SparkInterpreterLauncherTest {
     Files.createDirectories(localRepoPath);
 
     InterpreterClient client = launcher.launch(context);
-    assertTrue( client instanceof RemoteInterpreterManagedProcess);
-    RemoteInterpreterManagedProcess interpreterProcess = (RemoteInterpreterManagedProcess) client;
+    assertTrue(client instanceof ExecRemoteInterpreterProcess);
+    ExecRemoteInterpreterProcess interpreterProcess = (ExecRemoteInterpreterProcess) client;
     assertEquals("spark", interpreterProcess.getInterpreterSettingName());
     assertTrue(interpreterProcess.getInterpreterDir().endsWith("/interpreter/spark"));
     assertTrue(interpreterProcess.getLocalRepoDir().endsWith("/local-repo/groupId"));

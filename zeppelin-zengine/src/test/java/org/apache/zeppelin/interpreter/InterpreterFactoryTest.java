@@ -29,32 +29,32 @@ public class InterpreterFactoryTest extends AbstractInterpreterTest {
   @Test
   public void testGetFactory() throws InterpreterException {
 
-    assertTrue(interpreterFactory.getInterpreter("", new ExecutionContextBuilder().setUser("user1").setNoteId("note1").setDefaultInterpreterGroup("test").createExecutionContext()) instanceof RemoteInterpreter);
-    RemoteInterpreter remoteInterpreter = (RemoteInterpreter) interpreterFactory.getInterpreter("", new ExecutionContextBuilder().setUser("user1").setNoteId("note1").setDefaultInterpreterGroup("test").createExecutionContext());
+    assertTrue(interpreterFactory.getInterpreter("", new ExecutionContext("user1", "note1", "test")) instanceof RemoteInterpreter);
+    RemoteInterpreter remoteInterpreter = (RemoteInterpreter) interpreterFactory.getInterpreter("", new ExecutionContext("user1", "note1", "test"));
     // EchoInterpreter is the default interpreter because test is the default interpreter group
     assertEquals(EchoInterpreter.class.getName(), remoteInterpreter.getClassName());
 
-    assertTrue(interpreterFactory.getInterpreter("double_echo", new ExecutionContextBuilder().setUser("user1").setNoteId("note1").setDefaultInterpreterGroup("test").createExecutionContext()) instanceof RemoteInterpreter);
-    remoteInterpreter = (RemoteInterpreter) interpreterFactory.getInterpreter("double_echo", new ExecutionContextBuilder().setUser("user1").setNoteId("note1").setDefaultInterpreterGroup("test").createExecutionContext());
+    assertTrue(interpreterFactory.getInterpreter("double_echo", new ExecutionContext("user1", "note1", "test")) instanceof RemoteInterpreter);
+    remoteInterpreter = (RemoteInterpreter) interpreterFactory.getInterpreter("double_echo", new ExecutionContext("user1", "note1", "test"));
     assertEquals(DoubleEchoInterpreter.class.getName(), remoteInterpreter.getClassName());
 
-    assertTrue(interpreterFactory.getInterpreter("test", new ExecutionContextBuilder().setUser("user1").setNoteId("note1").setDefaultInterpreterGroup("test").createExecutionContext()) instanceof RemoteInterpreter);
-    remoteInterpreter = (RemoteInterpreter) interpreterFactory.getInterpreter("test", new ExecutionContextBuilder().setUser("user1").setNoteId("note1").setDefaultInterpreterGroup("test").createExecutionContext());
+    assertTrue(interpreterFactory.getInterpreter("test", new ExecutionContext("user1", "note1", "test")) instanceof RemoteInterpreter);
+    remoteInterpreter = (RemoteInterpreter) interpreterFactory.getInterpreter("test", new ExecutionContext("user1", "note1", "test"));
     assertEquals(EchoInterpreter.class.getName(), remoteInterpreter.getClassName());
 
-    assertTrue(interpreterFactory.getInterpreter("test2", new ExecutionContextBuilder().setUser("user1").setNoteId("note1").setDefaultInterpreterGroup("test").createExecutionContext()) instanceof RemoteInterpreter);
-    remoteInterpreter = (RemoteInterpreter) interpreterFactory.getInterpreter("test2", new ExecutionContextBuilder().setUser("user1").setNoteId("note1").setDefaultInterpreterGroup("test").createExecutionContext());
+    assertTrue(interpreterFactory.getInterpreter("test2", new ExecutionContext("user1", "note1", "test")) instanceof RemoteInterpreter);
+    remoteInterpreter = (RemoteInterpreter) interpreterFactory.getInterpreter("test2", new ExecutionContext("user1", "note1", "test"));
     assertEquals(EchoInterpreter.class.getName(), remoteInterpreter.getClassName());
 
-    assertTrue(interpreterFactory.getInterpreter("test2.double_echo", new ExecutionContextBuilder().setUser("user1").setNoteId("note1").setDefaultInterpreterGroup("test").createExecutionContext()) instanceof RemoteInterpreter);
-    remoteInterpreter = (RemoteInterpreter) interpreterFactory.getInterpreter("test2.double_echo", new ExecutionContextBuilder().setUser("user1").setNoteId("note1").setDefaultInterpreterGroup("test").createExecutionContext());
+    assertTrue(interpreterFactory.getInterpreter("test2.double_echo", new ExecutionContext("user1", "note1", "test")) instanceof RemoteInterpreter);
+    remoteInterpreter = (RemoteInterpreter) interpreterFactory.getInterpreter("test2.double_echo", new ExecutionContext("user1", "note1", "test"));
     assertEquals(DoubleEchoInterpreter.class.getName(), remoteInterpreter.getClassName());
   }
 
   @Test
   public void testUnknownRepl1() {
     try {
-      interpreterFactory.getInterpreter("test.unknown_repl", new ExecutionContextBuilder().setUser("user1").setNoteId("note1").setDefaultInterpreterGroup("test").createExecutionContext());
+      interpreterFactory.getInterpreter("test.unknown_repl", new ExecutionContext("user1", "note1", "test"));
       fail("should fail due to no such interpreter");
     } catch (InterpreterNotFoundException e) {
       assertEquals("No such interpreter: test.unknown_repl", e.getMessage());
@@ -64,7 +64,7 @@ public class InterpreterFactoryTest extends AbstractInterpreterTest {
   @Test
   public void testUnknownRepl2() {
     try {
-      interpreterFactory.getInterpreter("unknown_repl", new ExecutionContextBuilder().setUser("user1").setNoteId("note1").setDefaultInterpreterGroup("test").createExecutionContext());
+      interpreterFactory.getInterpreter("unknown_repl", new ExecutionContext("user1", "note1", "test"));
       fail("should fail due to no such interpreter");
     } catch (InterpreterNotFoundException e) {
       assertEquals("No such interpreter: unknown_repl", e.getMessage());

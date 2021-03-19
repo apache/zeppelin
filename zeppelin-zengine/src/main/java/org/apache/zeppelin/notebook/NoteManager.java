@@ -177,7 +177,9 @@ public class NoteManager {
    * @throws IOException
    */
   public void saveNote(Note note, AuthenticationInfo subject) throws IOException {
-    if (note.isLoaded() || !note.isSaved()) {
+    if (note.isRemoved()) {
+      LOGGER.warn("Try to save note: {} when it is removed", note.getId());
+    } else if (note.isLoaded() || !note.isSaved()) {
       addOrUpdateNoteNode(note);
       this.notebookRepo.save(note, subject);
       note.setSaved(true);
@@ -367,12 +369,12 @@ public class NoteManager {
   }
 
   private String getFolderName(String notePath) {
-    int pos = notePath.lastIndexOf("/");
+    int pos = notePath.lastIndexOf('/');
     return notePath.substring(0, pos);
   }
 
   private String getNoteName(String notePath) {
-    int pos = notePath.lastIndexOf("/");
+    int pos = notePath.lastIndexOf('/');
     return notePath.substring(pos + 1);
   }
 

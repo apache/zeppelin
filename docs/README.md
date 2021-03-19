@@ -25,16 +25,32 @@ On OS X 10.9, you may need to do
 xcode-select --install
 ```
 
+**Docker** 
+
+Local docker environments are also supported and have been tested using: 
+* [Docker version 20.10.2](https://docs.docker.com/get-docker/)   
+
 ## Run website locally
-If you don't want to encounter uglily rendered pages, run the documentation site in your local first.
+If you don't want to encounter ugly rendered pages, run the documentation site in your local environment first.
 
-In `$ZEPPELIN_HOME/docs`,
+In `$ZEPPELIN_HOME/docs`, run one of the desired commands:
 
+**Run locally**
 ```
 bundle exec jekyll serve --watch
 ```
 
-Using the above command, Jekyll will start a web server at `http://localhost:4000` and watch the `/docs` directory to update.
+**Run locally using docker**
+```
+docker run --rm -it \                                                  
+       -v $PWD:/docs \
+       -w /docs \
+       -p '4000:4000' \
+       ruby:2.0.0 \
+       bash -c "bundle install && bundle exec jekyll serve --watch"
+```
+
+Using the above command, Jekyll will start a web server at `http://localhost:4000` and watch the `/docs` directory for updates.
 
 
 

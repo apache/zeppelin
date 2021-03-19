@@ -2,7 +2,7 @@
   "paragraphs": [
     {
       "title": "Introduction",
-      "text": "%md\n\nThis is a tutorial for Spark SQL in PySpark (based on Spark 2.x).  First we need to clarifiy serveral concetps of Spark SQL\n\n* **SparkSession**   - This is the entry point of Spark SQL, you need use `SparkSession` to create DataFrame/Dataset, register UDF, query table and etc.\n* **DataFrame**      - There\u0027s no Dataset in PySpark, but only DataFrame. The DataFrame of PySpark is very similar with DataFrame concept of Pandas, but is distributed. \n",
+      "text": "%md\n\nThis is a tutorial for Spark SQL in PySpark (based on Spark 2.x).  First we need to clarify several concepts of Spark SQL\n\n* **SparkSession**   - This is the entry point of Spark SQL, you need use `SparkSession` to create DataFrame/Dataset, register UDF, query table and etc.\n* **DataFrame**      - There\u0027s no Dataset in PySpark, but only DataFrame. The DataFrame of PySpark is very similar with DataFrame concept of Pandas, but is distributed. \n",
       "user": "anonymous",
       "dateUpdated": "2020-03-11 11:16:37.393",
       "config": {
@@ -32,7 +32,7 @@
         "msg": [
           {
             "type": "HTML",
-            "data": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003cp\u003eThis is a tutorial for Spark SQL in PySpark (based on Spark 2.x).  First we need to clarifiy serveral concetps of Spark SQL\u003c/p\u003e\n\u003cul\u003e\n\u003cli\u003e\u003cstrong\u003eSparkSession\u003c/strong\u003e   - This is the entry point of Spark SQL, you need use \u003ccode\u003eSparkSession\u003c/code\u003e to create DataFrame/Dataset, register UDF, query table and etc.\u003c/li\u003e\n\u003cli\u003e\u003cstrong\u003eDataFrame\u003c/strong\u003e      - There\u0026rsquo;s no Dataset in PySpark, but only DataFrame. The DataFrame of PySpark is very similar with DataFrame concept of Pandas, but is distributed.\u003c/li\u003e\n\u003c/ul\u003e\n\n\u003c/div\u003e"
+            "data": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003cp\u003eThis is a tutorial for Spark SQL in PySpark (based on Spark 2.x).  First we need to clarify several concepts of Spark SQL\u003c/p\u003e\n\u003cul\u003e\n\u003cli\u003e\u003cstrong\u003eSparkSession\u003c/strong\u003e   - This is the entry point of Spark SQL, you need use \u003ccode\u003eSparkSession\u003c/code\u003e to create DataFrame/Dataset, register UDF, query table and etc.\u003c/li\u003e\n\u003cli\u003e\u003cstrong\u003eDataFrame\u003c/strong\u003e      - There\u0026rsquo;s no Dataset in PySpark, but only DataFrame. The DataFrame of PySpark is very similar with DataFrame concept of Pandas, but is distributed.\u003c/li\u003e\n\u003c/ul\u003e\n\n\u003c/div\u003e"
           }
         ]
       },
@@ -137,7 +137,7 @@
     },
     {
       "title": "Spark Configuration",
-      "text": "%spark.conf\n\n# It is strongly recommended to set SPARK_HOME explictly instead of using the embedded spark of Zeppelin. As the function of embedded spark of Zeppelin is limited and can only run in local mode.\n# SPARK_HOME \u003cyour_spark_dist_path\u003e\n\n# Uncomment the following line if you want to use yarn-cluster mode (It is recommended to use yarn-cluster mode from Zeppelin 0.8, as the driver will run on the remote host of yarn cluster which can mitigate memory pressure of zeppelin server)\n# master yarn-cluster\n\n# Uncomment the following line if you want to use yarn-client mode (It is not recommended to use yarn-client after 0.8. Because it would launch the driver in the same host of zeppelin server which will increase memory pressure of zeppelin server)\n# master yarn-client\n\n# Uncomment the following line to enable HiveContext, and also put hive-site.xml under SPARK_CONF_DIR\n# zeppelin.spark.useHiveContext true\n",
+      "text": "%spark.conf\n\n# It is strongly recommended to set SPARK_HOME explicitly instead of using the embedded spark of Zeppelin. As the function of embedded spark of Zeppelin is limited and can only run in local mode.\n# SPARK_HOME \u003cyour_spark_dist_path\u003e\n\n# Uncomment the following line if you want to use yarn-cluster mode (It is recommended to use yarn-cluster mode from Zeppelin 0.8, as the driver will run on the remote host of yarn cluster which can mitigate memory pressure of zeppelin server)\n# master yarn-cluster\n\n# Uncomment the following line if you want to use yarn-client mode (It is not recommended to use yarn-client after 0.8. Because it would launch the driver in the same host of zeppelin server which will increase memory pressure of zeppelin server)\n# master yarn-client\n\n# Uncomment the following line to enable HiveContext, and also put hive-site.xml under SPARK_CONF_DIR\n# zeppelin.spark.useHiveContext true\n",
       "user": "anonymous",
       "dateUpdated": "2020-03-11 13:26:01.470",
       "config": {
@@ -713,7 +713,7 @@
     },
     {
       "title": "Visualize DataFrame/Dataset",
-      "text": "%md\n\nThere\u0027s 2 approaches to visuliaze DataFrame/Dataset in Zeppelin\n\n* Use SparkSQLInterpreter via `%spark.sql`\n* Use ZeppelinContext via `z.show`\n\n",
+      "text": "%md\n\nThere\u0027s 2 approaches to visualize DataFrame/Dataset in Zeppelin\n\n* Use SparkSQLInterpreter via `%spark.sql`\n* Use ZeppelinContext via `z.show`\n\n",
       "user": "anonymous",
       "dateUpdated": "2020-01-21 15:47:18.301",
       "config": {
@@ -743,7 +743,7 @@
         "msg": [
           {
             "type": "HTML",
-            "data": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003cp\u003eThere\u0026rsquo;s 2 approaches to visuliaze DataFrame/Dataset in Zeppelin\u003c/p\u003e\n\u003cul\u003e\n\u003cli\u003eUse SparkSQLInterpreter via \u003ccode\u003e%spark.sql\u003c/code\u003e\u003c/li\u003e\n\u003cli\u003eUse ZeppelinContext via \u003ccode\u003ez.show\u003c/code\u003e\u003c/li\u003e\n\u003c/ul\u003e\n\n\u003c/div\u003e"
+            "data": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003cp\u003eThere\u0026rsquo;s 2 approaches to visualize DataFrame/Dataset in Zeppelin\u003c/p\u003e\n\u003cul\u003e\n\u003cli\u003eUse SparkSQLInterpreter via \u003ccode\u003e%spark.sql\u003c/code\u003e\u003c/li\u003e\n\u003cli\u003eUse ZeppelinContext via \u003ccode\u003ez.show\u003c/code\u003e\u003c/li\u003e\n\u003c/ul\u003e\n\n\u003c/div\u003e"
           }
         ]
       },

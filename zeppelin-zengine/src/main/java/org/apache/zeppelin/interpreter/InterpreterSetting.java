@@ -45,6 +45,7 @@ import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
+import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.plugin.PluginManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -442,7 +443,7 @@ public class InterpreterSetting {
   }
 
   public ManagedInterpreterGroup getOrCreateInterpreterGroup(String user, String noteId) {
-    return getOrCreateInterpreterGroup(new ExecutionContextBuilder().setUser(user).setNoteId(noteId).createExecutionContext());
+    return getOrCreateInterpreterGroup(getExecutionContext(user, noteId));
   }
 
   public ManagedInterpreterGroup getOrCreateInterpreterGroup(ExecutionContext executionContext) {
@@ -471,7 +472,7 @@ public class InterpreterSetting {
   }
 
   public ManagedInterpreterGroup getInterpreterGroup(String user, String noteId) {
-    return getInterpreterGroup(new ExecutionContextBuilder().setUser(user).setNoteId(noteId).createExecutionContext());
+    return getInterpreterGroup(getExecutionContext(user, noteId));
   }
 
   public ManagedInterpreterGroup getInterpreterGroup(ExecutionContext executionContext) {
@@ -510,11 +511,13 @@ public class InterpreterSetting {
   }
 
   public void closeInterpreters(String user, String noteId) {
-    closeInterpreters(new ExecutionContextBuilder().setUser(user).setNoteId(noteId).createExecutionContext());
+    closeInterpreters(getExecutionContext(user, noteId));
   }
 
   public void closeInterpreters(String interpreterGroupId) {
-    closeInterpreters(new ExecutionContextBuilder().setInterpreterGroupId(interpreterGroupId).createExecutionContext());
+    ExecutionContext executionContext = new ExecutionContext();
+    executionContext.setInterpreterGroupId(interpreterGroupId);
+    closeInterpreters(executionContext);
   }
 
   public void closeInterpreters(ExecutionContext executionContext) {
@@ -522,6 +525,9 @@ public class InterpreterSetting {
     if (interpreterGroup != null) {
       String sessionId = getInterpreterSessionId(executionContext);
       interpreterGroup.close(sessionId);
+      if (interpreterGroup.isEmpty()) {
+        interpreterGroups.remove(interpreterGroup.getId());
+      }
     }
   }
 
@@ -587,19 +593,13 @@ public class InterpreterSetting {
           int i1 = sortedKeys.indexOf(o1);
           int i2 = sortedKeys.indexOf(o2);
           if (i1 != -1 && i2 != -1) {
-            if (i1 < i2) {
-              return -1;
-            } else if (i1 > i2) {
-              return 1;
-            } else {
-              return 0;
-            }
+            // If both are present in the template, use natural order of indexes
+            return (i1 - i2);
           } else {
-            if (i1 == -1) {
-              return 1;
-            } else {
-              return -1;
-            }
+            // If one, or both are not in the template, use reverse order, so that missing
+            // elements are placed at the end. Note that if both are missing, we return 0
+            // to full the contract of comparison function.
+            return (i2 - i1);
           }
         });
 
@@ -627,7 +627,7 @@ public class InterpreterSetting {
     Properties jProperties = new Properties();
     Map<String, InterpreterProperty> iProperties = (Map<String, InterpreterProperty>) properties;
     for (Map.Entry<String, InterpreterProperty> entry : iProperties.entrySet()) {
-      if (entry.getValue().getValue() != null) {
+      if (entry.getValue().getValue() != null && StringUtils.isNotBlank(entry.getValue().getValue().toString())) {
         jProperties.setProperty(entry.getKey().trim(),
             entry.getValue().getValue().toString().trim());
       }
@@ -850,7 +850,7 @@ public class InterpreterSetting {
   }
 
   List<Interpreter> getOrCreateSession(String user, String noteId) {
-    return getOrCreateSession(new ExecutionContextBuilder().setUser(user).setNoteId(noteId).createExecutionContext());
+    return getOrCreateSession(getExecutionContext(user, noteId));
   }
 
   List<Interpreter> getOrCreateSession(ExecutionContext executionContext) {
@@ -861,7 +861,7 @@ public class InterpreterSetting {
   }
 
   public Interpreter getDefaultInterpreter(String user, String noteId) {
-    return getOrCreateSession(new ExecutionContextBuilder().setUser(user).setNoteId(noteId).createExecutionContext()).get(0);
+    return getOrCreateSession(getExecutionContext(user, noteId)).get(0);
   }
 
   public Interpreter getDefaultInterpreter(ExecutionContext executionContext) {
@@ -869,7 +869,7 @@ public class InterpreterSetting {
   }
 
   public Interpreter getInterpreter(String user, String noteId, String replName) {
-    return getInterpreter(new ExecutionContextBuilder().setUser(user).setNoteId(noteId).createExecutionContext(), replName);
+    return getInterpreter(getExecutionContext(user, noteId), replName);
   }
 
   public Interpreter getInterpreter(ExecutionContext executionContext, String replName) {
@@ -1193,5 +1193,20 @@ public class InterpreterSetting {
     }
 
     return intpSetting;
+  }
+
+  private ExecutionContext getExecutionContext(String user, String noteId) {
+    try {
+      Note note = getInterpreterSettingManager().getNotebook().getNote(noteId);
+      if (note == null) {
+        throw new RuntimeException("No such note: " + noteId);
+      } else {
+        ExecutionContext context = note.getExecutionContext();
+        context.setUser(user);
+        return context;
+      }
+    } catch (IOException e) {
+      throw new RuntimeException("Fail to getExecutionContext", e);
+    }
   }
 }

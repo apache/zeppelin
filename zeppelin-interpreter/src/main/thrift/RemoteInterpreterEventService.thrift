@@ -103,32 +103,32 @@ exception ServiceException{
 }
 
 service RemoteInterpreterEventService {
-  void registerInterpreterProcess(1: RegisterInfo registerInfo);
-  void unRegisterInterpreterProcess(1: string intpGroupId);
+  void registerInterpreterProcess(1: RegisterInfo registerInfo) throws (1: RemoteInterpreterService.InterpreterRPCException ex);
+  void unRegisterInterpreterProcess(1: string intpGroupId) throws (1: RemoteInterpreterService.InterpreterRPCException ex);
 
-  void appendOutput(1: OutputAppendEvent event);
-  void updateOutput(1: OutputUpdateEvent event);
-  void updateAllOutput(1: OutputUpdateAllEvent event);
+  void appendOutput(1: OutputAppendEvent event) throws (1: RemoteInterpreterService.InterpreterRPCException ex);
+  void updateOutput(1: OutputUpdateEvent event) throws (1: RemoteInterpreterService.InterpreterRPCException ex);
+  void updateAllOutput(1: OutputUpdateAllEvent event) throws (1: RemoteInterpreterService.InterpreterRPCException ex);
 
-  void appendAppOutput(1: AppOutputAppendEvent event);
-  void updateAppOutput(1: AppOutputUpdateEvent event);
-  void updateAppStatus(1: AppStatusUpdateEvent event);
+  void appendAppOutput(1: AppOutputAppendEvent event) throws (1: RemoteInterpreterService.InterpreterRPCException ex);
+  void updateAppOutput(1: AppOutputUpdateEvent event) throws (1: RemoteInterpreterService.InterpreterRPCException ex);
+  void updateAppStatus(1: AppStatusUpdateEvent event) throws (1: RemoteInterpreterService.InterpreterRPCException ex);
 
-  void checkpointOutput(1: string noteId, 2: string paragraphId);
+  void checkpointOutput(1: string noteId, 2: string paragraphId) throws (1: RemoteInterpreterService.InterpreterRPCException ex);
 
-  void runParagraphs(1: RunParagraphsEvent event);
+  void runParagraphs(1: RunParagraphsEvent event) throws (1: RemoteInterpreterService.InterpreterRPCException ex);
 
-  void addAngularObject(1: string intpGroupId, 2: string json);
-  void updateAngularObject(1: string intpGroupId, 2: string json);
-  void removeAngularObject(1: string intpGroupId, 2: string noteId, 3: string paragraphId, 4: string name);
+  void addAngularObject(1: string intpGroupId, 2: string json) throws (1: RemoteInterpreterService.InterpreterRPCException ex);
+  void updateAngularObject(1: string intpGroupId, 2: string json) throws (1: RemoteInterpreterService.InterpreterRPCException ex);
+  void removeAngularObject(1: string intpGroupId, 2: string noteId, 3: string paragraphId, 4: string name) throws (1: RemoteInterpreterService.InterpreterRPCException ex);
 
-  void sendWebUrl(1: WebUrlInfo weburlInfo);
-  void sendParagraphInfo(1: string intpGroupId, 2: string json);
-  void updateParagraphConfig(1: string noteId, 2: string paragraphId, 3: map<string, string> config);
+  void sendWebUrl(1: WebUrlInfo weburlInfo) throws (1: RemoteInterpreterService.InterpreterRPCException ex);
+  void sendParagraphInfo(1: string intpGroupId, 2: string json) throws (1: RemoteInterpreterService.InterpreterRPCException ex);
+  void updateParagraphConfig(1: string noteId, 2: string paragraphId, 3: map<string, string> config) throws (1: RemoteInterpreterService.InterpreterRPCException ex);
 
-  list<string> getAllResources(1: string intpGroupId);
-  binary getResource(1: string resourceIdJson);
-  binary invokeMethod(1: string intpGroupId, 2: string invokeMethodJson);
+  list<string> getAllResources(1: string intpGroupId) throws (1: RemoteInterpreterService.InterpreterRPCException ex);
+  binary getResource(1: string resourceIdJson) throws (1: RemoteInterpreterService.InterpreterRPCException ex);
+  binary invokeMethod(1: string intpGroupId, 2: string invokeMethodJson) throws (1: RemoteInterpreterService.InterpreterRPCException ex);
 
-  list<ParagraphInfo> getParagraphList(1: string user, 2: string noteId) throws (1: ServiceException e);
+  list<ParagraphInfo> getParagraphList(1: string user, 2: string noteId) throws (1: RemoteInterpreterService.InterpreterRPCException ex);
 }

@@ -66,6 +66,9 @@ fi
 ZEPPELIN_CLASSPATH+=":${ZEPPELIN_CONF_DIR}"
 
 function check_java_version() {
+    if [[ -n "${JAVA_HOME+x}" ]]; then
+        JAVA="$JAVA_HOME/bin/java"
+    fi
     java_ver_output=$("${JAVA:-java}" -version 2>&1)
     jvmver=$(echo "$java_ver_output" | grep '[openjdk|java] version' | awk -F'"' 'NR==1 {print $2}' | cut -d\- -f1)
     JVM_VERSION=$(echo "$jvmver"|sed -e 's|^\([0-9][0-9]*\)\..*$|\1|')
@@ -135,11 +138,11 @@ if [[ -z "${ZEPPELIN_ENCODING}" ]]; then
 fi
 
 if [[ -z "${ZEPPELIN_MEM}" ]]; then
-  export ZEPPELIN_MEM="-Xms1024m -Xmx1024m"
+  export ZEPPELIN_MEM="-Xmx1024m"
 fi
 
 if [[ ( -z "${ZEPPELIN_INTP_MEM}" ) && ( "${ZEPPELIN_INTERPRETER_LAUNCHER}" != "yarn" ) ]]; then
-  export ZEPPELIN_INTP_MEM="-Xms1024m -Xmx2048m"
+  export ZEPPELIN_INTP_MEM="-Xmx1024m"
 fi
 
 JAVA_OPTS+=" ${ZEPPELIN_JAVA_OPTS} -Dfile.encoding=${ZEPPELIN_ENCODING} ${ZEPPELIN_MEM}"

@@ -110,6 +110,10 @@ public class AuthorizationService implements ClusterEventListener {
     configStorage.save(new NotebookAuthorizationInfoSaving(this.notesAuth));
   }
 
+  public void removeNoteAuth(String noteId) throws IOException {
+    this.notesAuth.remove(noteId);
+  }
+
   // skip empty user and remove the white space around user name.
   private Set<String> normalizeUsers(Set<String> users) {
     Set<String> returnUser = new HashSet<>();

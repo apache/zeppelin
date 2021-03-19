@@ -175,6 +175,11 @@ Example: `spark.driver.memory` to `livy.spark.driver.memory`
     <td>key_1: value_1; key_2: value_2</td>
     <td>custom http headers when calling livy rest api. Each http header is separated by `;`, and each header is one key value pair where key value is separated by `:`</td>
   </tr>
+  <tr>
+    <td>zeppelin.livy.tableWithUTFCharacters</td>
+    <td>false</td>
+    <td>If database contains UTF characters then set this as true.</td>
+  </tr>
 </table>
 
 **We remove livy.spark.master in zeppelin-0.7. Because we sugguest user to use livy 0.3 in zeppelin-0.7. And livy 0.3 don't allow to specify livy.spark.master, it enfornce yarn-cluster mode.**

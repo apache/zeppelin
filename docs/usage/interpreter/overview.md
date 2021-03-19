@@ -140,7 +140,7 @@ Snippet of code (language of interpreter) that executes after initialization of 
 Credentials from the credential manager can be injected into Notebooks. Credential injection works by replacing the following patterns in Notebooks with matching credentials for the Credential Manager: `{CREDENTIAL_ENTITY.user}` and `{CREDENTIAL_ENTITY.password}`. However, credential injection must be enabled per Interpreter, by adding a boolean `injectCredentials` setting in the Interpreters configuration. Injected passwords are removed from Notebook output to prevent accidentally leaking passwords.
 
 **Credential Injection Setting**
-<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/screenshots/credential_injection_setting.png" width="500px">
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/screenshots/credential_setting_injection.png" width="620px">
 
 **Credential Entry Example**
 <img src="{{BASE_PATH}}/assets/themes/zeppelin/img/screenshots/credential_entry.png" width="500px">

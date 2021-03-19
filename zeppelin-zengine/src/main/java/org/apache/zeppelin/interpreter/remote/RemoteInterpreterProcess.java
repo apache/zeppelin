@@ -75,6 +75,7 @@ public abstract class RemoteInterpreterProcess implements InterpreterClient {
   public void shutdown() {
     if (remoteClient != null) {
       remoteClient.shutdown();
+      remoteClient = null;
     }
   }
 
@@ -100,7 +101,7 @@ public abstract class RemoteInterpreterProcess implements InterpreterClient {
 
   public void init(ZeppelinConfiguration zConf) {
     callRemoteFunction(client -> {
-      client.init(zConf.getProperties());
+      client.init(zConf.getCompleteConfiguration());
       return null;
     });
   }

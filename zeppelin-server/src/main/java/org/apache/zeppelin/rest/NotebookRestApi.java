@@ -392,7 +392,7 @@ public class NotebookRestApi extends AbstractRestApi {
     Note note = notebookService.createNote(
             request.getName(),
             defaultInterpreterGroup,
-            false,
+            request.getAddingEmptyParagraph(),
             getServiceContext(),
             new RestServiceCallback<>());
     AuthenticationInfo subject = new AuthenticationInfo(authenticationService.getPrincipal());
@@ -731,7 +731,7 @@ public class NotebookRestApi extends AbstractRestApi {
     LOGGER.info("Run note jobs, noteId: {}, blocking: {}, isolated: {}, params: {}", noteId, blocking, isolated, params);
     Note note = notebook.getNote(noteId);
     AuthenticationInfo subject = new AuthenticationInfo(authenticationService.getPrincipal());
-    subject.setRoles(new LinkedList<>(authenticationService.getAssociatedRoles()));
+    subject.setRoles(authenticationService.getAssociatedRoles());
     checkIfNoteIsNotNull(note, noteId);
     checkIfUserCanRun(noteId, "Insufficient privileges you cannot run job for this note");
 

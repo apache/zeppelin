@@ -17,17 +17,21 @@
 package org.apache.zeppelin.service;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.spy;
 
 import java.io.IOException;
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
+import java.security.Principal;
+import java.util.HashSet;
+import java.util.Set;
 
-import org.apache.commons.configuration.ConfigurationException;
+import org.apache.shiro.mgt.DefaultSecurityManager;
+import org.apache.shiro.subject.SimplePrincipalCollection;
+import org.apache.shiro.util.LifecycleUtils;
+import org.apache.shiro.util.ThreadContext;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.Notebook;
+import org.apache.zeppelin.realm.jwt.KnoxJwtRealm;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -36,7 +40,6 @@ import org.mockito.Mockito;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
-import sun.security.acl.PrincipalImpl;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(org.apache.shiro.SecurityUtils.class)
@@ -54,7 +57,7 @@ public class ShiroAuthenticationServiceTest {
   }
 
   @Test
-  public void canGetPrincipalName()  {
+  public void canGetPrincipalName() {
     String expectedName = "java.security.Principal.getName()";
     setupPrincipalName(expectedName);
     assertEquals(expectedName, shiroSecurityService.getPrincipal());
@@ -71,29 +74,52 @@ public class ShiroAuthenticationServiceTest {
         .getVarName(), String.valueOf(false));
   }
 
+  @Test
+  public void testKnoxGetRoles() {
+    setupPrincipalName("test");
+
+    KnoxJwtRealm realm = spy(new KnoxJwtRealm());
+    LifecycleUtils.init(realm);
+    Set<String> testRoles = new HashSet<String>(){{
+        add("role1");
+        add("role2");
+    }};
+    when(realm.mapGroupPrincipals("test")).thenReturn(testRoles);
+    
+    DefaultSecurityManager securityManager = new DefaultSecurityManager(realm);
+    ThreadContext.bind(securityManager);
+    
+    Set<String> roles = shiroSecurityService.getAssociatedRoles();
+    assertEquals(testRoles, roles);
+  }
+
   private void setupPrincipalName(String expectedName) {
     PowerMockito.mockStatic(org.apache.shiro.SecurityUtils.class);
     when(org.apache.shiro.SecurityUtils.getSubject()).thenReturn(subject);
     when(subject.isAuthenticated()).thenReturn(true);
-    when(subject.getPrincipal()).thenReturn(new PrincipalImpl(expectedName));
+    when(subject.getPrincipal()).thenReturn(new TestPrincipal(expectedName));
 
     Notebook notebook = Mockito.mock(Notebook.class);
-    try {
-      when(notebook.getConf())
-          .thenReturn(new ZeppelinConfiguration(this.getClass().getResource("/zeppelin-site.xml")));
-    } catch (ConfigurationException e) {
-      e.printStackTrace();
+    when(notebook.getConf())
+        .thenReturn(ZeppelinConfiguration.create("zeppelin-site.xml"));
+
+  }
+
+  public class TestPrincipal implements Principal {
+
+    private String username;
+
+    public TestPrincipal(String username) {
+      this.username = username;
+    }
+
+    public String getUsername() {
+      return username;
+    }
+
+    @Override
+    public String getName() {
+      return String.valueOf(username);
     }
   }
-
-  private void setFinalStatic(Field field, Object newValue)
-      throws NoSuchFieldException, IllegalAccessException {
-    field.setAccessible(true);
-    Field modifiersField = Field.class.getDeclaredField("modifiers");
-    modifiersField.setAccessible(true);
-    modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
-    field.set(null, newValue);
-  }
-
-
 }

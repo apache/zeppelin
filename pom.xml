@@ -63,6 +63,7 @@
     <module>kotlin</module>
     <module>groovy</module>
     <module>spark</module>
+    <module>spark-submit</module>
     <module>submarine</module>
     <module>markdown</module>
     <module>mongodb</module>
@@ -74,6 +75,7 @@
     <module>jdbc</module>
     <module>file</module>
     <module>flink</module>
+    <module>flink-cmd</module>
     <module>ignite</module>
     <module>influxdb</module>
     <module>kylin</module>
@@ -130,7 +132,8 @@
     <httpcomponents.asyncclient.version>4.0.2</httpcomponents.asyncclient.version>
     <commons.compress.version>1.20</commons.compress.version>
     <commons.lang3.version>3.10</commons.lang3.version>
-    <commons.configuration.version>1.9</commons.configuration.version>
+    <commons.text.version>1.8</commons.text.version>
+    <commons.configuration2.version>2.7</commons.configuration2.version>
     <commons.exec.version>1.3</commons.exec.version>
     <commons.codec.version>1.14</commons.codec.version>
     <commons.io.version>2.6</commons.io.version>
@@ -200,7 +203,7 @@
     <plugin.surefire.version>2.17</plugin.surefire.version>
     <plugin.xml.version>1.0.2</plugin.xml.version>
 
-    <testcontainers.version>1.14.3</testcontainers.version>
+    <testcontainers.version>1.15.1</testcontainers.version>
 
     <plugin.gitcommitid.useNativeGit>false</plugin.gitcommitid.useNativeGit>
 
@@ -290,6 +293,12 @@
 
       <dependency>
         <groupId>org.apache.commons</groupId>
+        <artifactId>commons-text</artifactId>
+        <version>${commons.text.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.commons</groupId>
         <artifactId>commons-exec</artifactId>
         <version>${commons.exec.version}</version>
       </dependency>
@@ -307,9 +316,17 @@
       </dependency>
 
       <dependency>
-        <groupId>commons-configuration</groupId>
-        <artifactId>commons-configuration</artifactId>
-        <version>${commons.configuration.version}</version>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-configuration2</artifactId>
+        <version>${commons.configuration2.version}</version>
+      </dependency>
+
+      <!-- force the latest commons-lang version
+           hadoop 2.7 has an older version as transitive dependency -->
+      <dependency>
+        <groupId>commons-lang</groupId>
+        <artifactId>commons-lang</artifactId>
+        <version>2.6</version>
       </dependency>
 
       <dependency>
@@ -363,12 +380,6 @@
         <groupId>org.bouncycastle</groupId>
         <artifactId>bcpkix-jdk15on</artifactId>
         <version>${bouncycastle.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>com.amazonaws</groupId>
-        <artifactId>aws-java-sdk-s3</artifactId>
-        <version>${aws.sdk.s3.version}</version>
       </dependency>
 
       <dependency>
@@ -482,6 +493,10 @@
           <exclusion>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-configuration2</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>commons-beanutils</groupId>
+            <artifactId>commons-beanutils-core</artifactId>
           </exclusion>
           <exclusion>
             <groupId>org.eclipse.jetty</groupId>
@@ -1727,7 +1742,7 @@
               <exclude>**/metastore_db/</exclude>
               <exclude>**/logs/**</exclude>
               <exclude>**/run/**</exclude>
-              <exclude>**/interpreter/**</exclude>
+              <exclude>interpreter/**</exclude>
               <exclude>**/local-repo/**</exclude>
               <exclude>**/null/**</exclude>
               <exclude>**/notebook/**</exclude>

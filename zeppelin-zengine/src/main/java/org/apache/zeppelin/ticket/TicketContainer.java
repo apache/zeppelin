@@ -18,9 +18,13 @@
 package org.apache.zeppelin.ticket;
 
 import java.util.Calendar;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+
+import com.google.common.collect.Sets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,14 +39,33 @@ public class TicketContainer {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(TicketContainer.class);
 
-  private static class Entry {
-    public final String ticket;
+  public static final Entry ANONYMOUS_ENTRY = new Entry("anonymous", "anonymous", Sets.newHashSet());
+
+  public static class Entry {
+    private final String ticket;
+    private final String principal;
+    private final Set<String> roles;
+
     // lastAccessTime still unused
     public final long lastAccessTime;
 
-    Entry(String ticket) {
+    Entry(String ticket, String principal, Set<String> roles) {
       this.ticket = ticket;
+      this.principal = principal;
+      this.roles = roles;
       this.lastAccessTime = Calendar.getInstance().getTimeInMillis();
+    }
+
+    public String getTicket() {
+      return ticket;
+    }
+
+    public String getPrincipal() {
+      return principal;
+    }
+
+    public Set<String> getRoles() {
+      return roles;
     }
   }
 
@@ -69,7 +92,22 @@ public class TicketContainer {
    * @param principal
    * @return
    */
-  public synchronized String getTicket(String principal) {
+  public synchronized Entry getTicketEntry(String principal, Set<String> roles) {
+    Entry entry = sessions.get(principal);
+    if (entry == null) {
+      String ticket;
+      if (principal.equals("anonymous")) {
+        ticket = "anonymous";
+      } else {
+        ticket = UUID.randomUUID().toString();
+      }
+      entry = new Entry(ticket, principal, roles);
+      sessions.put(principal, entry);
+    }
+    return entry;
+  }
+
+  public synchronized String getTicket(String principal, Set<String> roles) {
     Entry entry = sessions.get(principal);
     String ticket;
     if (entry == null) {
@@ -80,9 +118,16 @@ public class TicketContainer {
     } else {
       ticket = entry.ticket;
     }
-    entry = new Entry(ticket);
+    entry = new Entry(ticket, principal, roles);
     sessions.put(principal, entry);
     return ticket;
+  }
+
+  public Entry getTicketEntry(String ticket) {
+    if ("anonymous".equals(ticket)) {
+      return ANONYMOUS_ENTRY;
+    }
+    return sessions.get(ticket);
   }
 
   /**

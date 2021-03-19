@@ -26,8 +26,8 @@ limitations under the License.
 ## Overview
 [Apache Flink](https://flink.apache.org) is an open source platform for distributed stream and batch data processing. Flink’s core is a streaming dataflow engine that provides data distribution, communication, and fault tolerance for distributed computations over data streams. Flink also builds batch processing on top of the streaming engine, overlaying native iteration support, managed memory, and program optimization.
 
-In Zeppelin 0.9, we refactor the Flink interpreter in Zeppelin to support the latest version of Flink. **Only Flink 1.10+ is supported, old version of flink won't work.**
-Apache Flink is supported in Zeppelin with Flink interpreter group which consists of below five interpreters.
+In Zeppelin 0.9, we refactor the Flink interpreter in Zeppelin to support the latest version of Flink. **Only Flink 1.10+ is supported, old versions of flink won't work.**
+Apache Flink is supported in Zeppelin with the Flink interpreter group which consists of the five interpreters listed below.
 
 <table class="table-configuration">
   <tr>
@@ -251,7 +251,7 @@ And will create 6 variables as pyflink (`%flink.pyflink` or `%flink.ipyflink`) e
 
 ## Blink/Flink Planner
 
-There're 2 planners supported by Flink's table api: `flink` & `blink`.
+There are 2 planners supported by Flink's table api: `flink` & `blink`.
 
 * If you want to use DataSet api, and convert it to flink table then please use flink planner (`btenv_2` and `stenv_2`).
 * In other cases, we would always recommend you to use `blink` planner. This is also what flink batch/streaming sql interpreter use (`%flink.bsql` & `%flink.ssql`)
@@ -275,7 +275,7 @@ because by default it is only 4 TM with 1 Slots which may not be enough for some
 
 ### Run Flink in Remote Mode
 
-Running Flink in remote mode will connect to a existing flink cluster which could be standalone cluster or yarn session cluster. Besides specifying `flink.execution.mode` to be `remote`. You also need to specify
+Running Flink in remote mode will connect to an existing flink cluster which could be standalone cluster or yarn session cluster. Besides specifying `flink.execution.mode` to be `remote`. You also need to specify
 `flink.execution.remote.host` and `flink.execution.remote.port` to point to flink job manager.
 
 ### Run Flink in Yarn Mode
@@ -377,8 +377,8 @@ bt_env.register_function("python_upper", udf(PythonUpper(), DataTypes.STRING(), 
 
 ```
 
-Zeppelin only supports scala and python for flink interpreter, if you want to write java udf or the udf is pretty complicated which make it not suitable to write in Zeppelin,
-then you can write the udf in IDE and build a udf jar.
+Zeppelin only supports scala and python for flink interpreter, if you want to write a java udf or the udf is pretty complicated which make it not suitable to write in Zeppelin,
+then you can write the udf in IDE and build an udf jar.
 In Zeppelin you just need to specify `flink.udf.jars` to this jar, and flink
 interpreter will detect all the udfs in this jar and register all the udfs to TableEnvironment, the udf name is the class name.
 
@@ -485,7 +485,7 @@ In this section, we will list and explain all the supported local properties in 
 
 ## Tutorial Notes
 
-Zeppelin is shipped with several Flink tutorial notes which may be helpful for you. You check more features in the tutorial notes.
+Zeppelin is shipped with several Flink tutorial notes which may be helpful for you. You can check for more features in the tutorial notes.
 
 
 

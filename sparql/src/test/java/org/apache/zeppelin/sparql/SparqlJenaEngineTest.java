@@ -172,7 +172,8 @@ public class SparqlJenaEngineTest {
     final InterpreterResult result = interpreter.interpret(query, null);
     assertEquals(Code.SUCCESS, result.code());
 
-    final String expected = "?athlete\n<http://dbpedia.org/resource/Cristiano_Ronaldo>\n";
+    final String expected =
+            "?athlete\n<http://dbpedia.org/resource/Category:Cristiano_Ronaldo>\n";
     assertEquals(expected, result.message().get(0).getData());
   }
 

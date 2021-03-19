@@ -38,7 +38,6 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
-import org.apache.zeppelin.interpreter.ExecutionContextBuilder;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
@@ -325,6 +324,14 @@ public class Notebook {
     for (Paragraph p : paragraphs) {
       newNote.addCloneParagraph(p, subject);
     }
+
+    newNote.setConfig(new HashMap<>(sourceNote.getConfig()));
+    newNote.setInfo(new HashMap<>(sourceNote.getInfo()));
+    newNote.setDefaultInterpreterGroup(sourceNote.getDefaultInterpreterGroup());
+    newNote.setNoteForms(new HashMap<>(sourceNote.getNoteForms()));
+    newNote.setNoteParams(new HashMap<>(sourceNote.getNoteParams()));
+    newNote.setRunning(false);
+
     saveNote(newNote, subject);
     authorizationService.cloneNoteMeta(newNote.getId(), sourceNoteId, subject);
     return newNote;
@@ -332,7 +339,10 @@ public class Notebook {
 
   public void removeNote(Note note, AuthenticationInfo subject) throws IOException {
     LOGGER.info("Remove note: {}", note.getId());
+    // Set Remove to true to cancel saving this note
+    note.setRemoved(true);
     noteManager.removeNote(note.getId(), subject);
+    authorizationService.removeNoteAuth(note.getId());
     fireNoteRemoveEvent(note, subject);
   }
 
@@ -537,8 +547,7 @@ public class Notebook {
       SnapshotAngularObject snapshot = angularObjectSnapshotEntry.getValue();
       List<InterpreterSetting> settings = interpreterSettingManager.get();
       for (InterpreterSetting setting : settings) {
-        InterpreterGroup intpGroup = setting.getInterpreterGroup(
-                new ExecutionContextBuilder().setUser(subject.getUser()).setNoteId(note.getId()).createExecutionContext());
+        InterpreterGroup intpGroup = setting.getInterpreterGroup(note.getExecutionContext());
         if (intpGroup != null && intpGroup.getId().equals(snapshot.getIntpGroupId())) {
           AngularObjectRegistry registry = intpGroup.getAngularObjectRegistry();
           String noteId = snapshot.getAngularObject().getNoteId();

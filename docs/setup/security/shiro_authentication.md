@@ -241,8 +241,6 @@ knoxJwtRealm.logout = gateway/knoxssout/api/v1/webssout
 knoxJwtRealm.redirectParam = originalUrl
 knoxJwtRealm.cookieName = hadoop-jwt
 knoxJwtRealm.publicKeyPath = /etc/zeppelin/conf/knox-sso.pem
-knoxJwtRealm.groupPrincipalMapping = group.principal.mapping
-knoxJwtRealm.principalMapping = principal.mapping
 # This is required if KNOX SSO is enabled, to check if "knoxJwtRealm.cookieName" cookie was expired/deleted.  
 authc = org.apache.zeppelin.realm.jwt.KnoxAuthenticationFilter
 ```

@@ -42,7 +42,6 @@ import org.junit.runners.MethodSorters;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -136,7 +135,7 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
       assertEquals("OK", resp.get("status"));
       post.close();
       p.waitUntilFinished();
-      assertNotEquals(p.getStatus(), Job.Status.FINISHED);
+      assertNotEquals(Job.Status.FINISHED, p.getStatus());
     } finally {
       // cleanup
       if (null != note1) {
@@ -167,7 +166,7 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
           new TypeToken<Map<String, Object>>() {}.getType());
       assertEquals("OK", resp.get("status"));
       post.close();
-      assertNotEquals(p.getStatus(), Job.Status.READY);
+      assertNotEquals(Job.Status.READY, p.getStatus());
 
       // Check if the paragraph is emptied
       assertEquals(title, p.getTitle());
@@ -189,7 +188,7 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
       assertTrue(interpreterResults.get(0).toString(),
               interpreterResults.get(0).get("data").toString().contains("invalid_cmd: command not found"));
       post.close();
-      assertNotEquals(p.getStatus(), Job.Status.READY);
+      assertNotEquals(Job.Status.READY, p.getStatus());
 
       // Check if the paragraph is emptied
       assertEquals(title, p.getTitle());
@@ -200,6 +199,38 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
         TestUtils.getInstance(Notebook.class).removeNote(note1, anonymous);
       }
     }
+  }
+
+  @Test
+  public void testCreateNote() throws Exception {
+    LOG.info("Running testCreateNote");
+    String message1 = "{\n\t\"name\" : \"test1\",\n\t\"addingEmptyParagraph\" : true\n}";
+    CloseableHttpResponse post1 = httpPost("/notebook/", message1);
+    assertThat(post1, isAllowed());
+
+    Map<String, Object> resp1 = gson.fromJson(EntityUtils.toString(post1.getEntity(), StandardCharsets.UTF_8),
+            new TypeToken<Map<String, Object>>() {}.getType());
+    assertEquals("OK", resp1.get("status"));
+
+    String noteId1 = (String) resp1.get("body");
+    Note note1 = TestUtils.getInstance(Notebook.class).getNote(noteId1);
+    assertEquals("test1", note1.getName());
+    assertEquals(1, note1.getParagraphCount());
+    assertNull(note1.getParagraph(0).getText());
+    assertNull(note1.getParagraph(0).getTitle());
+
+    String message2 = "{\n\t\"name\" : \"test2\"\n}";
+    CloseableHttpResponse post2 = httpPost("/notebook/", message2);
+    assertThat(post2, isAllowed());
+
+    Map<String, Object> resp2 = gson.fromJson(EntityUtils.toString(post2.getEntity(), StandardCharsets.UTF_8),
+            new TypeToken<Map<String, Object>>() {}.getType());
+    assertEquals("OK", resp2.get("status"));
+
+    String noteId2 = (String) resp2.get("body");
+    Note note2 = TestUtils.getInstance(Notebook.class).getNote(noteId2);
+    assertEquals("test2", note2.getName());
+    assertEquals(0, note2.getParagraphCount());
   }
 
   @Test

@@ -1,0 +1,22 @@
+[
+  {
+    "group": "spark-submit",
+    "name": "submit",
+    "className": "org.apache.zeppelin.spark.submit.SparkSubmitInterpreter",
+    "defaultInterpreter": true,
+    "properties": {
+      "SPARK_HOME": {
+        "envName": "SPARK_HOME",
+        "propertyName": "SPARK_HOME",
+        "defaultValue": "",
+        "description": "Location of spark distribution",
+        "type": "string"
+      }
+    },
+    "editor": {
+      "language": "sh",
+      "editOnDblClick": false,
+      "completionSupport": false
+    }
+  }
+]

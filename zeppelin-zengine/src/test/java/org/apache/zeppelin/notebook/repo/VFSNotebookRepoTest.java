@@ -31,6 +31,7 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 
@@ -124,6 +125,6 @@ public class VFSNotebookRepoTest {
 
   private void createNewNote(String content, String noteId, String noteName) throws IOException {
     FileUtils.writeStringToFile(
-        new File(notebookDir + "/" + noteName + "_" + noteId + ".zpln"), content);
+        new File(notebookDir + "/" + noteName + "_" + noteId + ".zpln"), content, StandardCharsets.UTF_8);
   }
 }
