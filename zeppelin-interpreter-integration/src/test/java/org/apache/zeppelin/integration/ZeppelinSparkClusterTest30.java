@@ -33,8 +33,8 @@ public class ZeppelinSparkClusterTest30 extends ZeppelinSparkClusterTest {
   @Parameterized.Parameters
   public static List<Object[]> data() {
     return Arrays.asList(new Object[][]{
-            {"3.0.1", "2.7"},
-            {"3.0.1", "3.2"}
+            {"3.0.2", "2.7"},
+            {"3.0.2", "3.2"}
     });
   }
 }
