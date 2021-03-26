@@ -149,6 +149,8 @@ public class ExecRemoteInterpreterProcess extends RemoteInterpreterManagedProces
 
   private class InterpreterProcessLauncher extends ProcessLauncher {
 
+    private Thread waitForThread;
+
     public InterpreterProcessLauncher(CommandLine commandLine, Map<String, String> envs) {
       super(commandLine, envs);
     }
@@ -175,6 +177,7 @@ public class ExecRemoteInterpreterProcess extends RemoteInterpreterManagedProces
 
     @Override
     public void waitForReady(int timeout) {
+      this.waitForThread = Thread.currentThread();
       synchronized (this) {
         long startTime = System.currentTimeMillis();
         long timeoutTime = startTime + timeout;
@@ -247,6 +250,11 @@ public class ExecRemoteInterpreterProcess extends RemoteInterpreterManagedProces
       super.onProcessFailed(e);
       synchronized (this) {
         notifyAll();
+      }
+      // stop the waitForReady when launch process fails
+      if (waitForThread != null) {
+        LOGGER.info("Interpreter process fails, interrupt the waitForThread");
+        waitForThread.interrupt();
       }
     }
   }
