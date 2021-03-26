@@ -93,6 +93,10 @@ public class SqlSplitter {
       if (singleLineComment && (character == '\n')) {
         singleLineComment = false;
         query.append(character);
+        if (index == (text.length() - 1) && !query.toString().trim().isEmpty()) {
+          // add query when it is the end of sql.
+          queries.add(query.toString());
+        }
         continue;
       }
 
