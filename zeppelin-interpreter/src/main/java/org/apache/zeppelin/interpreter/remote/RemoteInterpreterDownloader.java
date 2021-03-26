@@ -35,6 +35,8 @@ import org.slf4j.LoggerFactory;
 public class RemoteInterpreterDownloader {
   private static final Logger LOGGER = LoggerFactory.getLogger(RemoteInterpreterDownloader.class);
 
+  private static final int MAX_LIBRARY_DOWNLOAD_ATTEMPTS = 3;
+
   private final RemoteInterpreterEventClient client;
   private final String interpreter;
   private final File localRepoDir;
@@ -118,16 +120,22 @@ public class RemoteInterpreterDownloader {
     LOGGER.debug("Trying to download library {} to {}", metadata.getName(), library);
     try {
       if (library.createNewFile()) {
-        int tries = 0;
-        while (tries < 3) {
+        int attempt = 0;
+        while (attempt < MAX_LIBRARY_DOWNLOAD_ATTEMPTS) {
           ByteBuffer bytes = client.getLibrary(interpreter, metadata.getName());
-          FileUtils.writeByteArrayToFile(library, bytes.array());
-          if (FileUtils.checksumCRC32(library) == metadata.getChecksum()) {
-            LOGGER.info("Library {} successfully transfered", library.getName());
-            break;
+          if (bytes == null) {
+            LOGGER.error("ByteBuffer of library {} is null."
+                + " For a detailed message take a look into Zeppelin-Server log. Attempt {} of {}",
+                metadata.getName(), ++attempt, MAX_LIBRARY_DOWNLOAD_ATTEMPTS);
           } else {
-            LOGGER.error("Library Checksum didn't match. Next try");
-            ++tries;
+            FileUtils.writeByteArrayToFile(library, bytes.array());
+            if (FileUtils.checksumCRC32(library) == metadata.getChecksum()) {
+              LOGGER.info("Library {} successfully transfered", library.getName());
+              break;
+            } else {
+              LOGGER.error("Library Checksum didn't match. Attempt {} of {}", ++attempt,
+                  MAX_LIBRARY_DOWNLOAD_ATTEMPTS);
+            }
           }
         }
       } else {
