@@ -189,7 +189,11 @@ public class ExecRemoteInterpreterProcess extends RemoteInterpreterManagedProces
       synchronized (this) {
         long startTime = System.currentTimeMillis();
         long timeoutTime = startTime + timeout;
-        while (state != State.RUNNING && !Thread.currentThread().isInterrupted()) {
+        // RUNNING means interpreter process notify zeppelin-server (onProcessRunning is called)
+        // it is in RUNNING state.
+        // TERMINATED means the launcher fail to launch interpreter process.
+        while (state != State.RUNNING && state != State.TERMINATED
+                && !Thread.currentThread().isInterrupted()) {
           long timetoTimeout = timeoutTime - System.currentTimeMillis();
           if (timetoTimeout <= 0) {
             LOGGER.warn("Ready timeout reached");
@@ -199,7 +203,7 @@ public class ExecRemoteInterpreterProcess extends RemoteInterpreterManagedProces
             wait(timetoTimeout);
           } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            LOGGER.error("waitForReady interrupted", e);
+            LOGGER.warn("waitForReady interrupted", e);
           }
         }
       }
