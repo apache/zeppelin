@@ -34,7 +34,6 @@ public class CronJob implements org.quartz.Job {
 
   private static final String RESULT_SUCCEEDED = "succeeded";
   private static final String RESULT_FAILED = "failed";
-  private static final String RESULT_SKIPPED = "skipped";
 
   @Override
   public void execute(JobExecutionContext context) {
@@ -47,14 +46,6 @@ public class CronJob implements org.quartz.Job {
         if (note == null) {
           LOGGER.warn("Failed to run CronJob of note: {} because there's no such note", noteId);
           context.setResult(RESULT_FAILED);
-          return null;
-        }
-        if (note.haveRunningOrPendingParagraphs()) {
-          LOGGER.warn(
-              "execution of the cron job is skipped because there is a running or pending "
-                  + "paragraph (note id: {})",
-              note.getId());
-          context.setResult(RESULT_SKIPPED);
           return null;
         }
         String cronExecutingUser = (String) note.getConfig().get("cronExecutingUser");

@@ -35,12 +35,12 @@ import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.Tags;
 import io.micrometer.core.instrument.Timer;
 
-public class CronJobListener implements JobListener {
+public class MetricCronJobListener implements JobListener {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(CronJobListener.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(MetricCronJobListener.class);
 
   // JobExecutionContext -> Timer.Sample
-  private Map<JobExecutionContext, Timer.Sample> cronJobTimerSamples = new HashMap<>();
+  private final Map<JobExecutionContext, Timer.Sample> cronJobTimerSamples = new HashMap<>();
 
   @Override
   public String getName() {
@@ -57,9 +57,7 @@ public class CronJobListener implements JobListener {
 
   @Override
   public void jobExecutionVetoed(JobExecutionContext context) {
-    JobDataMap jobDataMap = context.getJobDetail().getJobDataMap();
-    String noteId = jobDataMap.getString("noteId");
-    LOGGER.info("vetoed cron job of note: {}", noteId);
+    // do nothing
   }
 
   @Override
