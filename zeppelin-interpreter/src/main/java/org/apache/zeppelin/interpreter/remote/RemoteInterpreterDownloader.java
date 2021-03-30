@@ -64,6 +64,8 @@ public class RemoteInterpreterDownloader {
     } else {
       LOGGER.error(
           "Wrong amount of Arguments. Expected: [ZeppelinHostname] [ZeppelinPort] [InterpreterName] [LocalRepoPath]");
+      // based on sysexits.h, 64 indicated a command line usage error
+      System.exit(64);
     }
   }
 
