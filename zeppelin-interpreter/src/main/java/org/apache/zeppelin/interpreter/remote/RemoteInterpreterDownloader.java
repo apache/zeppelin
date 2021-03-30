@@ -27,7 +27,6 @@ import java.util.Set;
 
 
 import org.apache.commons.io.FileUtils;
-import org.apache.zeppelin.interpreter.Constants;
 import org.apache.zeppelin.interpreter.thrift.LibraryMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,22 +50,21 @@ public class RemoteInterpreterDownloader {
   }
 
   public static void main(String[] args) {
-    String zeppelinServerHost = null;
-    int port = Constants.ZEPPELIN_INTERPRETER_DEFAUlT_PORT;
-    String interpreter = null;
-    String localRepoPath = null;
-    if (args.length > 0) {
-      zeppelinServerHost = args[0];
-      port = Integer.parseInt(args[1]);
-      interpreter = args[2];
-      localRepoPath = args[3];
-    }
-    RemoteInterpreterEventClient intpEventClient = new RemoteInterpreterEventClient(
-        zeppelinServerHost, port, 3);
+    if (args.length == 4) {
+      String zeppelinServerHost = args[0];
+      int port = Integer.parseInt(args[1]);
+      String interpreter = args[2];
+      String localRepoPath = args[3];
+      RemoteInterpreterEventClient intpEventClient = new RemoteInterpreterEventClient(
+          zeppelinServerHost, port, 3);
 
-    RemoteInterpreterDownloader downloader = new RemoteInterpreterDownloader(interpreter,
-        intpEventClient, new File(localRepoPath));
-    downloader.syncAllLibraries();
+      RemoteInterpreterDownloader downloader = new RemoteInterpreterDownloader(interpreter,
+          intpEventClient, new File(localRepoPath));
+      downloader.syncAllLibraries();
+    } else {
+      LOGGER.error(
+          "Wrong amount of Arguments. Expected: [ZeppelinHostname] [ZeppelinPort] [InterpreterName] [LocalRepoPath]");
+    }
   }
 
   private void syncAllLibraries() {
