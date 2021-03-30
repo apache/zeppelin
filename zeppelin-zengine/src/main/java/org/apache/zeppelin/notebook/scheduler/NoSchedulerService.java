@@ -17,9 +17,6 @@
 
 package org.apache.zeppelin.notebook.scheduler;
 
-import java.util.Collections;
-import java.util.Set;
-
 public class NoSchedulerService implements SchedulerService {
   @Override
   public boolean refreshCron(String noteId) {
@@ -27,7 +24,7 @@ public class NoSchedulerService implements SchedulerService {
   }
 
   @Override
-  public Set<?> getJobs() {
-    return Collections.emptySet();
+  public int getJobsSize() {
+    return 0;
   }
 }

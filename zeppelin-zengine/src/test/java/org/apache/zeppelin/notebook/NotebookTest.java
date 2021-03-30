@@ -991,9 +991,9 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
         note.setConfig(config);
         return null;
       });
-    final int jobsBeforeRefresh = schedulerService.getJobs().size();
+    final int jobsBeforeRefresh = schedulerService.getJobsSize();
     schedulerService.refreshCron(noteId);
-    final int jobsAfterRefresh = schedulerService.getJobs().size();
+    final int jobsAfterRefresh = schedulerService.getJobsSize();
 
     assertEquals(jobsBeforeRefresh, jobsAfterRefresh);
 

@@ -18,10 +18,7 @@
 package org.apache.zeppelin.notebook.scheduler;
 
 import java.io.IOException;
-import java.util.Collections;
 import java.util.Map;
-import java.util.Set;
-
 import javax.inject.Inject;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -162,12 +159,12 @@ public class QuartzSchedulerService implements SchedulerService {
   }
 
   @Override
-  public Set<?> getJobs() {
+  public int getJobsSize() {
     try {
-      return scheduler.getJobKeys(GroupMatcher.anyGroup());
+      return scheduler.getJobKeys(GroupMatcher.anyGroup()).size();
     } catch (SchedulerException e) {
       LOGGER.error("Error while getting jobKeys", e);
-      return Collections.emptySet();
+      return 0;
     }
   }
 

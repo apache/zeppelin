@@ -17,10 +17,16 @@
 
 package org.apache.zeppelin.notebook.scheduler;
 
-import java.io.IOException;
-import java.util.Set;
-
 public interface SchedulerService {
-  boolean refreshCron(String noteId) throws IOException;
-  Set<?> getJobs();
+
+  /**
+   * @param noteId
+   * @return return true if the cron refresh was successfull
+   */
+  boolean refreshCron(String noteId);
+
+  /**
+   * @return size of queued jobs
+   */
+  int getJobsSize();
 }
