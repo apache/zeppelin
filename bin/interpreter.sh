@@ -24,6 +24,15 @@ function usage() {
     echo "usage) $0 -p <port> -r <intp_port> -d <interpreter dir to load> -l <local interpreter repo dir to load> -g <interpreter group name>"
 }
 
+function downloadInterpreterLibraries() {
+    mkdir -p ${LOCAL_INTERPRETER_REPO}
+    IFS=' ' read -r -a JAVA_INTP_OPTS_ARRAY <<< "${JAVA_INTP_OPTS}"
+    ZEPPELIN_DOWNLOADER="org.apache.zeppelin.interpreter.remote.RemoteInterpreterDownloader"
+    INTERPRETER_DOWNLOAD_COMMAND+=("${ZEPPELIN_RUNNER}" "${JAVA_INTP_OPTS_ARRAY[@]}" "-cp" "${ZEPPELIN_INTP_CLASSPATH_OVERRIDES}:${ZEPPELIN_INTP_CLASSPATH}" "${ZEPPELIN_DOWNLOADER}" "${CALLBACK_HOST}" "${PORT}" "${INTERPRETER_SETTING_NAME}" "${LOCAL_INTERPRETER_REPO}")
+    echo "Interpreter download command: ${INTERPRETER_DOWNLOAD_COMMAND[@]}"
+    eval "${INTERPRETER_DOWNLOAD_COMMAND[@]}"
+}
+
 # pre-requisites for checking that we're running in container
 if [ -f /proc/self/cgroup ] && [ -n "$(command -v getent)" ]; then
     # checks if we're running in container...
@@ -267,6 +276,7 @@ elif [[ "${INTERPRETER_ID}" == "flink" ]]; then
 
 fi
 
+downloadInterpreterLibraries
 addJarInDirForIntp "${LOCAL_INTERPRETER_REPO}"
 
 if [[ -n "$ZEPPELIN_IMPERSONATE_USER" ]]; then

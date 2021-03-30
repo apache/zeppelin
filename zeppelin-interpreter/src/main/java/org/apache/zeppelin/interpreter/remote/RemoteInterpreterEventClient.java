@@ -28,6 +28,7 @@ import org.apache.zeppelin.interpreter.InterpreterResultMessage;
 import org.apache.zeppelin.interpreter.thrift.AppOutputAppendEvent;
 import org.apache.zeppelin.interpreter.thrift.AppOutputUpdateEvent;
 import org.apache.zeppelin.interpreter.thrift.AppStatusUpdateEvent;
+import org.apache.zeppelin.interpreter.thrift.LibraryMetadata;
 import org.apache.zeppelin.interpreter.thrift.OutputAppendEvent;
 import org.apache.zeppelin.interpreter.thrift.OutputUpdateAllEvent;
 import org.apache.zeppelin.interpreter.thrift.OutputUpdateEvent;
@@ -128,6 +129,14 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector,
 
   public List<ParagraphInfo> getParagraphList(String user, String noteId) {
     return callRemoteFunction(client -> client.getParagraphList(user, noteId));
+  }
+
+  public List<LibraryMetadata> getAllLibraryMetadatas(String interpreter) {
+    return callRemoteFunction(client -> client.getAllLibraryMetadatas(interpreter));
+  }
+
+  public ByteBuffer getLibrary(String interpreter, String libraryName) {
+    return callRemoteFunction(client -> client.getLibrary(interpreter, libraryName));
   }
 
   @Override
