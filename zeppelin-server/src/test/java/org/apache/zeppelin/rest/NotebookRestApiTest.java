@@ -79,6 +79,39 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
   }
 
   @Test
+  public void testGetReloadNote() throws IOException {
+    LOG.info("Running testGetNote");
+    Note note1 = null;
+    try {
+      note1 = TestUtils.getInstance(Notebook.class).createNote("note1", anonymous);
+      note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
+      TestUtils.getInstance(Notebook.class).saveNote(note1, anonymous);
+      CloseableHttpResponse get = httpGet("/notebook/" + note1.getId());
+      assertThat(get, isAllowed());
+      Map<String, Object> resp = gson.fromJson(EntityUtils.toString(get.getEntity(), StandardCharsets.UTF_8),
+              new TypeToken<Map<String, Object>>() {}.getType());
+      Map<String, Object> noteObject = (Map<String, Object>) resp.get("body");
+      assertEquals(1, ((List)noteObject.get("paragraphs")).size());
+
+      // add one new paragraph, but don't save it and reload it again
+      note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
+
+      get = httpGet("/notebook/" + note1.getId() + "?reload=true");
+      assertThat(get, isAllowed());
+      resp = gson.fromJson(EntityUtils.toString(get.getEntity(), StandardCharsets.UTF_8),
+              new TypeToken<Map<String, Object>>() {}.getType());
+      noteObject = (Map<String, Object>) resp.get("body");
+      assertEquals(1, ((List)noteObject.get("paragraphs")).size());
+      get.close();
+    } finally {
+      // cleanup
+      if (null != note1) {
+        TestUtils.getInstance(Notebook.class).removeNote(note1, anonymous);
+      }
+    }
+  }
+
+  @Test
   public void testGetNoteParagraphJobStatus() throws IOException {
     LOG.info("Running testGetNoteParagraphJobStatus");
     Note note1 = null;
