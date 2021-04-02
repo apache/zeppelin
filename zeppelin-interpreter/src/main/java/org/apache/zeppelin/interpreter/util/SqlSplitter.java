@@ -102,7 +102,7 @@ public class SqlSplitter {
         multiLineComment = false;
       }
 
-      if (character == '\'') {
+      if (character == '\'' && !(singleLineComment || multiLineComment)) {
         if (singleQuoteString) {
           singleQuoteString = false;
         } else if (!doubleQuoteString) {
@@ -110,7 +110,7 @@ public class SqlSplitter {
         }
       }
 
-      if (character == '"') {
+      if (character == '"' && !(singleLineComment || multiLineComment)) {
         if (doubleQuoteString && index > 0) {
           doubleQuoteString = false;
         } else if (!singleQuoteString) {
