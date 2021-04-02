@@ -96,7 +96,7 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
       // add one new paragraph, but don't save it and reload it again
       note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
 
-      get = httpGet("/notebook/reload/" + note1.getId());
+      get = httpGet("/notebook/" + note1.getId() + "?reload=true");
       assertThat(get, isAllowed());
       resp = gson.fromJson(EntityUtils.toString(get.getEntity(), StandardCharsets.UTF_8),
               new TypeToken<Map<String, Object>>() {}.getType());
