@@ -327,15 +327,17 @@ public class NotebookRestApi extends AbstractRestApi {
    * Get note of this specified noteId.
    *
    * @param noteId
+   * @param reload
    * @return
    * @throws IOException
    */
   @GET
   @Path("{noteId}")
   @ZeppelinApi
-  public Response getNote(@PathParam("noteId") String noteId) throws IOException {
+  public Response getNote(@PathParam("noteId") String noteId,
+                          @QueryParam("reload") boolean reload) throws IOException {
     Note note =
-            notebookService.getNote(noteId, getServiceContext(), new RestServiceCallback());
+            notebookService.getNote(noteId, reload, getServiceContext(), new RestServiceCallback());
     return new JsonResponse<>(Status.OK, "", note).build();
   }
 
