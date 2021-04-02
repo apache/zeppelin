@@ -330,4 +330,28 @@ public class SqlSplitterTest {
     assertEquals(1, sqls.size());
     assertEquals("select a \n from table_1", sqls.get(0));
   }
+
+  @Test
+  public void testQuoteInComment() {
+    SqlSplitter sqlSplitter = new SqlSplitter();
+    List<String> sqls = sqlSplitter.splitSql("show tables;-- comment_1'\ndescribe table_1");
+    assertEquals(2, sqls.size());
+    assertEquals("show tables", sqls.get(0));
+    assertEquals("\ndescribe table_1", sqls.get(1));
+
+    sqls = sqlSplitter.splitSql("show tables;-- comment_1\"\ndescribe table_1");
+    assertEquals(2, sqls.size());
+    assertEquals("show tables", sqls.get(0));
+    assertEquals("\ndescribe table_1", sqls.get(1));
+
+    sqls = sqlSplitter.splitSql("show tables;/* comment_1' */\ndescribe table_1");
+    assertEquals(2, sqls.size());
+    assertEquals("show tables", sqls.get(0));
+    assertEquals("\ndescribe table_1", sqls.get(1));
+
+    sqls = sqlSplitter.splitSql("show tables;/* comment_1\" */\ndescribe table_1");
+    assertEquals(2, sqls.size());
+    assertEquals("show tables", sqls.get(0));
+    assertEquals("\ndescribe table_1", sqls.get(1));
+  }
 }
