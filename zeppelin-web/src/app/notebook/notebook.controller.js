@@ -266,12 +266,12 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
         message: 'Do you still want to export this note?',
         callback: function(result) {
           if (result) {
-            saveAsService.saveAs(jsonContent, $scope.note.name, 'zpln');
+            saveAsService.saveAs(jsonContent, $scope.note.name + '_' + $scope.note.id, 'zpln');
           }
         },
       });
     } else {
-      saveAsService.saveAs(jsonContent, $scope.note.name, 'zpln');
+      saveAsService.saveAs(jsonContent, $scope.note.name + '_' + $scope.note.id, 'zpln');
     }
   };
 
