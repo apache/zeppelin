@@ -26,6 +26,7 @@ jobs:
   test-core-modules:
     runs-on: ubuntu-18.04
     strategy:
+      fail-fast: false
       matrix:
         hadoop: [hadoop2, hadoop3]
     steps:
