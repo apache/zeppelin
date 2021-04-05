@@ -61,6 +61,8 @@ import org.apache.zeppelin.notebook.NoteEventListener;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.notebook.ParagraphTextParser;
+import org.apache.zeppelin.plugin.IPluginManager;
+import org.apache.zeppelin.plugin.ZPluginManager;
 import org.apache.zeppelin.resource.Resource;
 import org.apache.zeppelin.resource.ResourcePool;
 import org.apache.zeppelin.resource.ResourceSet;
@@ -116,6 +118,7 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
       "editOnDblClick", false);
 
   private final ZeppelinConfiguration conf;
+  private final IPluginManager pluginManager;
   private final Path interpreterDirPath;
 
   /**
@@ -155,13 +158,15 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
                                    AngularObjectRegistryListener angularObjectRegistryListener,
                                    RemoteInterpreterProcessListener
                                        remoteInterpreterProcessListener,
-                                   ApplicationEventListener appEventListener)
+                                   ApplicationEventListener appEventListener,
+                                   IPluginManager pluginManager)
       throws IOException {
     this(zeppelinConfiguration, new InterpreterOption(),
         angularObjectRegistryListener,
         remoteInterpreterProcessListener,
         appEventListener,
-        ConfigStorage.getInstance(zeppelinConfiguration));
+        ConfigStorage.getInstance(zeppelinConfiguration),
+        pluginManager);
   }
 
   public InterpreterSettingManager(ZeppelinConfiguration conf,
@@ -169,9 +174,11 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
       AngularObjectRegistryListener angularObjectRegistryListener,
       RemoteInterpreterProcessListener remoteInterpreterProcessListener,
       ApplicationEventListener appEventListener,
-      ConfigStorage configStorage)
+      ConfigStorage configStorage,
+      IPluginManager pluginManager)
       throws IOException {
     this.conf = conf;
+    this.pluginManager = pluginManager;
     this.defaultOption = defaultOption;
     this.interpreterDirPath = Paths.get(conf.getInterpreterDir());
     LOGGER.debug("InterpreterRootPath: {}", interpreterDirPath);
@@ -230,6 +237,7 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
         .setDependencyResolver(dependencyResolver)
         .setRecoveryStorage(recoveryStorage)
         .setInterpreterEventServer(interpreterEventServer)
+        .setPluginManager(pluginManager)
         .postProcessing();
   }
 
@@ -532,6 +540,7 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
         .setInterpreterDir(interpreterDir)
         .setRunner(runner)
         .setConf(conf)
+        .setPluginManager(pluginManager)
         .setIntepreterSettingManager(this)
         .create();
 

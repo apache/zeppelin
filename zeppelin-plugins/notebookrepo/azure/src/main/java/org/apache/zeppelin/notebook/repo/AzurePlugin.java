@@ -14,25 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.zeppelin.notebook.repo.mock;
 
-import org.apache.zeppelin.conf.ZeppelinConfiguration;
-import org.apache.zeppelin.notebook.repo.NotebookRepo;
-import org.apache.zeppelin.notebook.repo.VFSNotebookRepo;
-import org.pf4j.Extension;
+package org.apache.zeppelin.notebook.repo;
 
-import java.io.IOException;
+import org.pf4j.Plugin;
+import org.pf4j.PluginWrapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-@Extension(points = NotebookRepo.class)
-public class VFSNotebookRepoMock extends VFSNotebookRepo {
+public class AzurePlugin extends Plugin {
+  private static final Logger LOGGER = LoggerFactory.getLogger(AzurePlugin.class);
 
-  public VFSNotebookRepoMock() {
+  public AzurePlugin(PluginWrapper wrapper) {
+    super(wrapper);
   }
 
   @Override
-  public void init(ZeppelinConfiguration conf) throws IOException {
-    this.conf = conf;
-    setNotebookDirectory(conf.getNotebookDir() + "_secondary");
+  public void start() {
+    LOGGER.info("AzurePlugin started");
   }
 
+  @Override
+  public void stop() {
+    LOGGER.info("AzurePlugin stopped");
+  }
 }

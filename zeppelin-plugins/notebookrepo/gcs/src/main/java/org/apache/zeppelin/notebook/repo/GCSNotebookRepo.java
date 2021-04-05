@@ -48,6 +48,7 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.user.AuthenticationInfo;
+import org.pf4j.Extension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,6 +66,7 @@ import org.slf4j.LoggerFactory;
  * @see <a href="https://github.com/google/google-auth-library-java">
  *   google-auth-library-java</a>.
  */
+@Extension
 public class GCSNotebookRepo implements NotebookRepo {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(GCSNotebookRepo.class);

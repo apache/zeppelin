@@ -32,6 +32,7 @@ import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.treewalk.filter.PathFilter;
+import org.pf4j.Extension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,6 +52,7 @@ import java.util.List;
  *
  *   TODO(bzz): add default .gitignore
  */
+@Extension
 public class GitNotebookRepo extends VFSNotebookRepo implements NotebookRepoWithVersionControl {
   private static final Logger LOGGER = LoggerFactory.getLogger(GitNotebookRepo.class);
 

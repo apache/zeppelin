@@ -29,6 +29,8 @@ import org.apache.zeppelin.notebook.NoteManager;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.repo.InMemoryNotebookRepo;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
+import org.apache.zeppelin.plugin.IPluginManager;
+import org.apache.zeppelin.plugin.ZPluginManager;
 import org.apache.zeppelin.search.LuceneSearch;
 import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.user.Credentials;
@@ -61,6 +63,7 @@ public abstract class AbstractInterpreterTest {
   protected File confDir;
   protected File notebookDir;
   protected ZeppelinConfiguration conf;
+  protected IPluginManager pluginManager;
 
   @Before
   public void setUp() throws Exception {
@@ -86,11 +89,13 @@ public abstract class AbstractInterpreterTest {
     System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_GROUP_DEFAULT.getVarName(), "test");
 
     conf = ZeppelinConfiguration.create();
+    pluginManager = new ZPluginManager(conf);
+    pluginManager.loadAndStartPlugins();
     NotebookRepo notebookRepo = new InMemoryNotebookRepo();
     NoteManager noteManager = new NoteManager(notebookRepo, conf);
     AuthorizationService authorizationService = new AuthorizationService(noteManager, conf);
     interpreterSettingManager = new InterpreterSettingManager(conf,
-        mock(AngularObjectRegistryListener.class), mock(RemoteInterpreterProcessListener.class), mock(ApplicationEventListener.class));
+      mock(AngularObjectRegistryListener.class), mock(RemoteInterpreterProcessListener.class), mock(ApplicationEventListener.class), pluginManager);
     interpreterFactory = new InterpreterFactory(interpreterSettingManager);
     Credentials credentials = new Credentials(conf);
     notebook = new Notebook(conf, authorizationService, notebookRepo, noteManager, interpreterFactory, interpreterSettingManager, credentials);

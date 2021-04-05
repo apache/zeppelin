@@ -25,6 +25,8 @@ import java.util.Properties;
 
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.InterpreterOption;
+import org.apache.zeppelin.plugin.IPluginManager;
+import org.apache.zeppelin.plugin.ZPluginManager;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -32,18 +34,22 @@ import org.junit.Test;
  * In the future, test may use minikube for end-to-end test
  */
 public class K8sStandardInterpreterLauncherTest {
+
+  private IPluginManager pluginManager;
   @Before
   public void setUp() {
     for (final ZeppelinConfiguration.ConfVars confVar : ZeppelinConfiguration.ConfVars.values()) {
       System.clearProperty(confVar.getVarName());
     }
+    pluginManager = new ZPluginManager(ZeppelinConfiguration.create());
+    pluginManager.loadAndStartPlugins();
   }
 
   @Test
   public void testK8sLauncher() throws IOException {
     // given
-    ZeppelinConfiguration zConf = ZeppelinConfiguration.create();
-    K8sStandardInterpreterLauncher launcher = new K8sStandardInterpreterLauncher(zConf, null);
+    K8sStandardInterpreterLauncher launcher
+      = (K8sStandardInterpreterLauncher) pluginManager.createInterpreterLauncher("K8sStandardInterpreterLauncher", null);
     Properties properties = new Properties();
     properties.setProperty("ENV_1", "VALUE_1");
     properties.setProperty("property_1", "value_1");
@@ -71,8 +77,8 @@ public class K8sStandardInterpreterLauncherTest {
   @Test
   public void testK8sLauncherWithSparkAndUserImpersonate() throws IOException {
     // given
-    ZeppelinConfiguration zConf = ZeppelinConfiguration.create();
-    K8sStandardInterpreterLauncher launcher = new K8sStandardInterpreterLauncher(zConf, null);
+    K8sStandardInterpreterLauncher launcher
+      = (K8sStandardInterpreterLauncher) pluginManager.createInterpreterLauncher("K8sStandardInterpreterLauncher", null);
     Properties properties = new Properties();
     properties.setProperty("ENV_1", "VALUE_1");
     properties.setProperty("property_1", "value_1");
@@ -104,8 +110,8 @@ public class K8sStandardInterpreterLauncherTest {
   @Test
   public void testK8sLauncherWithSparkAndWithoutUserImpersonate() throws IOException {
     // given
-    ZeppelinConfiguration zConf = ZeppelinConfiguration.create();
-    K8sStandardInterpreterLauncher launcher = new K8sStandardInterpreterLauncher(zConf, null);
+    K8sStandardInterpreterLauncher launcher
+      = (K8sStandardInterpreterLauncher) pluginManager.createInterpreterLauncher("K8sStandardInterpreterLauncher", null);;
     Properties properties = new Properties();
     properties.setProperty("ENV_1", "VALUE_1");
     properties.setProperty("property_1", "value_1");

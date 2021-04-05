@@ -22,6 +22,8 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.InterpreterOption;
 import org.apache.zeppelin.interpreter.integration.DownloadUtils;
 import org.apache.zeppelin.interpreter.remote.ExecRemoteInterpreterProcess;
+import org.apache.zeppelin.plugin.IPluginManager;
+import org.apache.zeppelin.plugin.ZPluginManager;
 import org.apache.zeppelin.util.Util;
 import org.junit.Before;
 import org.junit.Test;
@@ -45,9 +47,13 @@ public class SparkInterpreterLauncherTest {
 
   private String sparkHome;
   private String zeppelinHome;
+  private ZeppelinConfiguration zConf;
+  private IPluginManager pluginManager;
 
   @Before
   public void setUp() {
+    zConf = ZeppelinConfiguration.create();
+    pluginManager = new ZPluginManager(zConf);
     for (final ZeppelinConfiguration.ConfVars confVar : ZeppelinConfiguration.ConfVars.values()) {
       System.clearProperty(confVar.getVarName());
     }
@@ -62,8 +68,7 @@ public class SparkInterpreterLauncherTest {
 
   @Test
   public void testConnectTimeOut() throws IOException {
-    ZeppelinConfiguration zConf = ZeppelinConfiguration.create();
-    SparkInterpreterLauncher launcher = new SparkInterpreterLauncher(zConf, null);
+    InterpreterLauncher launcher = pluginManager.createInterpreterLauncher("SparkInterpreterLauncher", null);
     Properties properties = new Properties();
     properties.setProperty("SPARK_HOME", sparkHome);
     properties.setProperty(
@@ -85,8 +90,7 @@ public class SparkInterpreterLauncherTest {
 
   @Test
   public void testLocalMode() throws IOException {
-    ZeppelinConfiguration zConf = ZeppelinConfiguration.create();
-    SparkInterpreterLauncher launcher = new SparkInterpreterLauncher(zConf, null);
+    InterpreterLauncher launcher = pluginManager.createInterpreterLauncher("SparkInterpreterLauncher", null);
     Properties properties = new Properties();
     properties.setProperty("SPARK_HOME", sparkHome);
     properties.setProperty("ENV_1", "");
@@ -114,8 +118,7 @@ public class SparkInterpreterLauncherTest {
 
   @Test
   public void testYarnClientMode_1() throws IOException {
-    ZeppelinConfiguration zConf = ZeppelinConfiguration.create();
-    SparkInterpreterLauncher launcher = new SparkInterpreterLauncher(zConf, null);
+    InterpreterLauncher launcher = pluginManager.createInterpreterLauncher("SparkInterpreterLauncher", null);
     Properties properties = new Properties();
     properties.setProperty("SPARK_HOME", sparkHome);
     properties.setProperty("property_1", "value_1");
@@ -146,8 +149,7 @@ public class SparkInterpreterLauncherTest {
 
   @Test
   public void testYarnClientMode_2() throws IOException {
-    ZeppelinConfiguration zConf = ZeppelinConfiguration.create();
-    SparkInterpreterLauncher launcher = new SparkInterpreterLauncher(zConf, null);
+    InterpreterLauncher launcher = pluginManager.createInterpreterLauncher("SparkInterpreterLauncher", null);
     Properties properties = new Properties();
     properties.setProperty("SPARK_HOME", sparkHome);
     properties.setProperty("property_1", "value_1");
@@ -180,8 +182,7 @@ public class SparkInterpreterLauncherTest {
 
   @Test
   public void testYarnClusterMode_1() throws IOException {
-    ZeppelinConfiguration zConf = ZeppelinConfiguration.create();
-    SparkInterpreterLauncher launcher = new SparkInterpreterLauncher(zConf, null);
+    InterpreterLauncher launcher = pluginManager.createInterpreterLauncher("SparkInterpreterLauncher", null);
     Properties properties = new Properties();
     properties.setProperty("SPARK_HOME", sparkHome);
     properties.setProperty("property_1", "value_1");
@@ -220,8 +221,7 @@ public class SparkInterpreterLauncherTest {
 
   @Test
   public void testYarnClusterMode_2() throws IOException {
-    ZeppelinConfiguration zConf = ZeppelinConfiguration.create();
-    SparkInterpreterLauncher launcher = new SparkInterpreterLauncher(zConf, null);
+    InterpreterLauncher launcher = pluginManager.createInterpreterLauncher("SparkInterpreterLauncher", null);
     Properties properties = new Properties();
     properties.setProperty("SPARK_HOME", sparkHome);
     properties.setProperty("property_1", "value_1");
@@ -268,8 +268,7 @@ public class SparkInterpreterLauncherTest {
 
   @Test
   public void testYarnClusterMode_3() throws IOException {
-    ZeppelinConfiguration zConf = ZeppelinConfiguration.create();
-    SparkInterpreterLauncher launcher = new SparkInterpreterLauncher(zConf, null);
+    InterpreterLauncher launcher = pluginManager.createInterpreterLauncher("SparkInterpreterLauncher", null);
     Properties properties = new Properties();
     properties.setProperty("SPARK_HOME", sparkHome);
     properties.setProperty("property_1", "value_1");

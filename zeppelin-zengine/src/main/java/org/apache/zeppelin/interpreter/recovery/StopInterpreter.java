@@ -21,6 +21,8 @@ package org.apache.zeppelin.interpreter.recovery;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.interpreter.launcher.InterpreterClient;
+import org.apache.zeppelin.plugin.IPluginManager;
+import org.apache.zeppelin.plugin.ZPluginManager;
 import org.apache.zeppelin.util.ReflectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,8 +42,10 @@ public class StopInterpreter {
 
   public static void main(String[] args) throws IOException {
     ZeppelinConfiguration zConf = ZeppelinConfiguration.create();
+    IPluginManager pluginManager = new ZPluginManager(zConf);
+    pluginManager.loadAndStartPlugins();
     InterpreterSettingManager interpreterSettingManager =
-            new InterpreterSettingManager(zConf, null, null, null);
+            new InterpreterSettingManager(zConf, null, null, null, pluginManager);
 
     RecoveryStorage recoveryStorage  = ReflectionUtils.createClazzInstance(zConf.getRecoveryStorageClass(),
         new Class[] {ZeppelinConfiguration.class, InterpreterSettingManager.class},

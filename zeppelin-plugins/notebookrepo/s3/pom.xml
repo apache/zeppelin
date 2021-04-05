@@ -36,6 +36,7 @@
     <properties>
         <aws.sdk.version>1.12.261</aws.sdk.version>
         <plugin.name>NotebookRepo/S3NotebookRepo</plugin.name>
+        <plugin.class>org.apache.zeppelin.notebook.repo.AWSPlugin</plugin.class>
     </properties>
 
     <dependencyManagement>
@@ -140,12 +141,4 @@
             </exclusions>
         </dependency>
     </dependencies>
-
-    <build>
-        <plugins>
-            <plugin>
-                <artifactId>maven-dependency-plugin</artifactId>
-            </plugin>
-        </plugins>
-    </build>
 </project>

@@ -20,6 +20,8 @@ package org.apache.zeppelin.interpreter.launcher;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.InterpreterOption;
 import org.apache.zeppelin.interpreter.remote.ExecRemoteInterpreterProcess;
+import org.apache.zeppelin.plugin.IPluginManager;
+import org.apache.zeppelin.plugin.ZPluginManager;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -30,8 +32,14 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class StandardInterpreterLauncherTest {
+
+  private ZeppelinConfiguration zConf;
+  private IPluginManager pluginManager;
+
   @Before
   public void setUp() {
+    zConf = ZeppelinConfiguration.create();
+    pluginManager = new ZPluginManager(zConf);
     for (final ZeppelinConfiguration.ConfVars confVar : ZeppelinConfiguration.ConfVars.values()) {
       System.clearProperty(confVar.getVarName());
     }
@@ -39,8 +47,7 @@ public class StandardInterpreterLauncherTest {
 
   @Test
   public void testLauncher() throws IOException {
-    ZeppelinConfiguration zConf = ZeppelinConfiguration.create();
-    StandardInterpreterLauncher launcher = new StandardInterpreterLauncher(zConf, null);
+    InterpreterLauncher launcher = pluginManager.createInterpreterLauncher("StandardInterpreterLauncher", null);
     Properties properties = new Properties();
     properties.setProperty("ENV_1", "VALUE_1");
     properties.setProperty("property_1", "value_1");
@@ -64,8 +71,7 @@ public class StandardInterpreterLauncherTest {
 
   @Test
   public void testConnectTimeOut() throws IOException {
-    ZeppelinConfiguration zConf = ZeppelinConfiguration.create();
-    StandardInterpreterLauncher launcher = new StandardInterpreterLauncher(zConf, null);
+    InterpreterLauncher launcher = pluginManager.createInterpreterLauncher("StandardInterpreterLauncher", null);
     Properties properties = new Properties();
     properties.setProperty(
         ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT.getVarName(), "10000");

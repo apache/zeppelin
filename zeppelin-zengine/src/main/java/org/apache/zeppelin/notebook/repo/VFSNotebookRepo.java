@@ -39,12 +39,14 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.user.AuthenticationInfo;
+import org.pf4j.Extension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
 * NotebookRepo implementation based on apache vfs
 */
+@Extension
 public class VFSNotebookRepo implements NotebookRepo {
   private static final Logger LOGGER = LoggerFactory.getLogger(VFSNotebookRepo.class);
 

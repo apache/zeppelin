@@ -14,25 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.zeppelin.notebook.repo.mock;
 
-import org.apache.zeppelin.conf.ZeppelinConfiguration;
-import org.apache.zeppelin.notebook.repo.NotebookRepo;
-import org.apache.zeppelin.notebook.repo.VFSNotebookRepo;
-import org.pf4j.Extension;
+package org.apache.zeppelin.plugin;
 
 import java.io.IOException;
 
-@Extension(points = NotebookRepo.class)
-public class VFSNotebookRepoMock extends VFSNotebookRepo {
+import org.apache.zeppelin.interpreter.launcher.InterpreterLauncher;
+import org.apache.zeppelin.interpreter.recovery.RecoveryStorage;
+import org.apache.zeppelin.notebook.repo.NotebookRepo;
 
-  public VFSNotebookRepoMock() {
-  }
+/**
+ *
+ * Interface a PluginManager
+ *
+ * For test use the default {@link ZPluginManager}
+ *
+ */
+public interface IPluginManager {
+  public void loadAndStartPlugins();
+  public NotebookRepo createNotebookRepo(String notebookRepoClassName) throws IOException;
 
-  @Override
-  public void init(ZeppelinConfiguration conf) throws IOException {
-    this.conf = conf;
-    setNotebookDirectory(conf.getNotebookDir() + "_secondary");
-  }
-
+  public InterpreterLauncher createInterpreterLauncher(String launcherPlugin,
+    RecoveryStorage recoveryStorage) throws IOException;
 }

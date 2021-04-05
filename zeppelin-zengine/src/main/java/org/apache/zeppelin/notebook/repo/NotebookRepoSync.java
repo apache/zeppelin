@@ -21,11 +21,9 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
-import org.apache.zeppelin.notebook.OldNoteInfo;
 import org.apache.zeppelin.notebook.Paragraph;
-import org.apache.zeppelin.plugin.PluginManager;
+import org.apache.zeppelin.plugin.IPluginManager;
 import org.apache.zeppelin.user.AuthenticationInfo;
-import org.apache.zeppelin.util.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,12 +51,15 @@ public class NotebookRepoSync implements NotebookRepoWithVersionControl {
   private List<NotebookRepo> repos = new ArrayList<>();
   private boolean oneWaySync;
 
+  private final IPluginManager pluginManager;
+
   /**
    * @param conf
    */
   @SuppressWarnings("static-access")
   @Inject
-  public NotebookRepoSync(ZeppelinConfiguration conf) throws IOException {
+  public NotebookRepoSync(ZeppelinConfiguration conf, IPluginManager pluginManager) throws IOException {
+    this.pluginManager = pluginManager;
     init(conf);
   }
 
@@ -79,7 +80,7 @@ public class NotebookRepoSync implements NotebookRepoWithVersionControl {
 
     // init the underlying NotebookRepo
     for (int i = 0; i < Math.min(storageClassNames.length, getMaxRepoNum()); i++) {
-      NotebookRepo notebookRepo = PluginManager.get().loadNotebookRepo(storageClassNames[i].trim());
+      NotebookRepo notebookRepo = pluginManager.createNotebookRepo(storageClassNames[i].trim());
       notebookRepo.init(conf);
       repos.add(notebookRepo);
     }
@@ -87,7 +88,7 @@ public class NotebookRepoSync implements NotebookRepoWithVersionControl {
     // couldn't initialize any storage, use default
     if (getRepoCount() == 0) {
       LOGGER.info("No storage could be initialized, using default {} storage", DEFAULT_STORAGE);
-      NotebookRepo defaultNotebookRepo = PluginManager.get().loadNotebookRepo(DEFAULT_STORAGE);
+      NotebookRepo defaultNotebookRepo = pluginManager.createNotebookRepo(DEFAULT_STORAGE);
       defaultNotebookRepo.init(conf);
       repos.add(defaultNotebookRepo);
     }

@@ -21,7 +21,7 @@ import com.google.common.base.CharMatcher;
 import com.google.common.collect.Sets;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
-import org.apache.zeppelin.interpreter.recovery.RecoveryStorage;
+import org.pf4j.Extension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,15 +36,12 @@ import java.util.StringJoiner;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+@Extension
 public class FlinkInterpreterLauncher extends StandardInterpreterLauncher {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(FlinkInterpreterLauncher.class);
   private static final Set<String> FLINK_EXECUTION_MODES = Sets.newHashSet(
           "local", "remote", "yarn", "yarn-application", "kubernetes-application");
-
-  public FlinkInterpreterLauncher(ZeppelinConfiguration zConf, RecoveryStorage recoveryStorage) {
-    super(zConf, recoveryStorage);
-  }
 
   @Override
   public Map<String, String> buildEnvFromProperties(InterpreterLaunchContext context)

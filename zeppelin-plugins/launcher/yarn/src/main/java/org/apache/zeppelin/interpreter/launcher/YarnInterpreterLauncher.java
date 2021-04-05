@@ -17,9 +17,8 @@
 
 package org.apache.zeppelin.interpreter.launcher;
 
-import org.apache.zeppelin.conf.ZeppelinConfiguration;
-import org.apache.zeppelin.interpreter.recovery.RecoveryStorage;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterUtils;
+import org.pf4j.Extension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,13 +29,10 @@ import java.util.Map;
 /**
  * Launcher for running interpreter in yarn container.
  */
+@Extension
 public class YarnInterpreterLauncher extends InterpreterLauncher {
 
-  private static Logger LOGGER = LoggerFactory.getLogger(YarnInterpreterLauncher.class);
-
-  public YarnInterpreterLauncher(ZeppelinConfiguration zConf, RecoveryStorage recoveryStorage) {
-    super(zConf, recoveryStorage);
-  }
+  private static final Logger LOGGER = LoggerFactory.getLogger(YarnInterpreterLauncher.class);
 
   @Override
   public InterpreterClient launchDirectly(InterpreterLaunchContext context) throws IOException {

@@ -22,6 +22,7 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.user.AuthenticationInfo;
+import org.pf4j.Extension;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -29,6 +30,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Extension
 public class InMemoryNotebookRepo implements NotebookRepo {
 
   private Map<String, Note> notes = new HashMap<>();

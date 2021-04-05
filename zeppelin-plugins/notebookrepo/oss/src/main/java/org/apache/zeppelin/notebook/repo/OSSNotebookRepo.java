@@ -23,6 +23,7 @@ import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.repo.storage.OSSOperator;
 import org.apache.zeppelin.notebook.repo.storage.RemoteStorageOperator;
 import org.apache.zeppelin.user.AuthenticationInfo;
+import org.pf4j.Extension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,6 +36,7 @@ import java.util.*;
 /**
  * NotebookRepo for Aliyun OSS (https://cn.aliyun.com/product/oss)
  */
+@Extension
 public class OSSNotebookRepo implements NotebookRepoWithVersionControl {
   private static final Logger LOGGER = LoggerFactory.getLogger(OSSNotebookRepo.class);
 

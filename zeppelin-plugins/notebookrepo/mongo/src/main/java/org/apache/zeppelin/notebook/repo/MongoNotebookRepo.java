@@ -24,6 +24,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
+import org.pf4j.Extension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.IOException;
@@ -50,6 +51,7 @@ import org.apache.zeppelin.user.AuthenticationInfo;
 /**
  * Backend for storing Notebook on MongoDB.
  */
+@Extension
 public class MongoNotebookRepo implements NotebookRepo {
 
   private static final Logger LOG = LoggerFactory.getLogger(MongoNotebookRepo.class);

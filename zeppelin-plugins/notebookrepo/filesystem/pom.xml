@@ -36,18 +36,10 @@
     <properties>
         <adl.sdk.version>2.1.4</adl.sdk.version>
         <plugin.name>NotebookRepo/FileSystemNotebookRepo</plugin.name>
+        <plugin.class>org.apache.zeppelin.notebook.repo.FileSystemPlugin</plugin.class>
     </properties>
 
-    <build>
-        <plugins>
-            <plugin>
-                <artifactId>maven-dependency-plugin</artifactId>
-            </plugin>
-        </plugins>
-    </build>
-
     <profiles>
-
         <profile>
             <id>hadoop2</id>
             <activation>

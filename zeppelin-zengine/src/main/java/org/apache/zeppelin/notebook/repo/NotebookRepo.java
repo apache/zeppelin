@@ -22,6 +22,7 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.user.AuthenticationInfo;
+import org.pf4j.ExtensionPoint;
 
 import java.io.IOException;
 import java.util.List;
@@ -30,7 +31,7 @@ import java.util.Map;
 /**
  * Notebook repository (persistence layer) abstraction.
  */
-public interface NotebookRepo {
+public interface NotebookRepo extends ExtensionPoint {
 
   void init(ZeppelinConfiguration zConf) throws IOException;
 

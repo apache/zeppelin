@@ -78,6 +78,7 @@ public class InterpreterSettingTest extends AbstractInterpreterTest{
         .setInterpreterInfos(interpreterInfos)
         .setOption(interpreterOption)
         .setIntepreterSettingManager(interpreterSettingManager)
+        .setConf(conf)
         .create();
 
     // create default interpreter for user1 and note1
@@ -112,6 +113,7 @@ public class InterpreterSettingTest extends AbstractInterpreterTest{
         .setInterpreterInfos(interpreterInfos)
         .setOption(interpreterOption)
         .setIntepreterSettingManager(interpreterSettingManager)
+        .setConf(conf)
         .create();
 
     // create default interpreter for user1 and note1
@@ -152,6 +154,7 @@ public class InterpreterSettingTest extends AbstractInterpreterTest{
         .setInterpreterInfos(interpreterInfos)
         .setOption(interpreterOption)
         .setIntepreterSettingManager(interpreterSettingManager)
+        .setConf(conf)
         .create();
 
     // create interpreter for user1 and note1
@@ -192,6 +195,7 @@ public class InterpreterSettingTest extends AbstractInterpreterTest{
         .setInterpreterInfos(interpreterInfos)
         .setOption(interpreterOption)
         .setIntepreterSettingManager(interpreterSettingManager)
+        .setConf(conf)
         .create();
 
     // create interpreter for user1 and note1
@@ -232,6 +236,7 @@ public class InterpreterSettingTest extends AbstractInterpreterTest{
         .setInterpreterInfos(interpreterInfos)
         .setOption(interpreterOption)
         .setIntepreterSettingManager(interpreterSettingManager)
+        .setConf(conf)
         .create();
 
     // create interpreter for user1 and note1
@@ -273,6 +278,7 @@ public class InterpreterSettingTest extends AbstractInterpreterTest{
         .setInterpreterInfos(interpreterInfos)
         .setOption(interpreterOption)
         .setIntepreterSettingManager(interpreterSettingManager)
+        .setConf(conf)
         .create();
 
     // create interpreter for user1 and note1
@@ -315,6 +321,7 @@ public class InterpreterSettingTest extends AbstractInterpreterTest{
         .setInterpreterInfos(interpreterInfos)
         .setOption(interpreterOption)
         .setIntepreterSettingManager(interpreterSettingManager)
+        .setConf(conf)
         .create();
 
     // create interpreter for user1 and note1
@@ -371,6 +378,7 @@ public class InterpreterSettingTest extends AbstractInterpreterTest{
         .setInterpreterInfos(interpreterInfos)
         .setOption(interpreterOption)
         .setIntepreterSettingManager(interpreterSettingManager)
+        .setConf(conf)
         .create();
 
     // create interpreter for user1 and note1
@@ -433,6 +441,7 @@ public class InterpreterSettingTest extends AbstractInterpreterTest{
         .setInterpreterInfos(interpreterInfos)
         .setOption(interpreterOption)
         .setIntepreterSettingManager(interpreterSettingManager)
+        .setConf(conf)
         .create();
 
     // create interpreter for user1 and note1
@@ -491,6 +500,7 @@ public class InterpreterSettingTest extends AbstractInterpreterTest{
         .setGroup("group")
         .setInterpreterInfos(interpreterInfos)
         .setOption(interpreterOption)
+        .setConf(conf)
         .create();
 
     String json = InterpreterSetting.toJson(interpreterSetting);
@@ -525,6 +535,7 @@ public class InterpreterSettingTest extends AbstractInterpreterTest{
           .setName("id")
           .setGroup("group")
           .setOption(interpreterOption)
+          .setConf(conf)
           .create();
       assertTrue(interpreterSetting.isUserAuthorized(userAndRoles));
 
@@ -539,6 +550,7 @@ public class InterpreterSettingTest extends AbstractInterpreterTest{
           .setName("id")
           .setGroup("group")
           .setOption(interpreterOption)
+          .setConf(conf)
           .create();
       assertFalse(interpreterSetting.isUserAuthorized(userAndRoles));
 
@@ -552,6 +564,7 @@ public class InterpreterSettingTest extends AbstractInterpreterTest{
           .setName("id")
           .setGroup("group")
           .setOption(interpreterOption)
+          .setConf(conf)
           .create();
       assertTrue(interpreterSetting.isUserAuthorized(userAndRoles));
   }
@@ -567,6 +580,7 @@ public class InterpreterSettingTest extends AbstractInterpreterTest{
             .setOption(interpreterOption)
             .setIntepreterSettingManager(interpreterSettingManager)
             .setDependencyResolver(new DependencyResolver("/tmp"))
+            .setConf(conf)
             .create();
 
     // set invalid dependency

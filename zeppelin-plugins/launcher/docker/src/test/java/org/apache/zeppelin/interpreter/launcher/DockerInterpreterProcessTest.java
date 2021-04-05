@@ -18,6 +18,8 @@ package org.apache.zeppelin.interpreter.launcher;
 
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.InterpreterOption;
+import org.apache.zeppelin.plugin.ZPluginManager;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.powermock.api.mockito.PowerMockito;
@@ -43,12 +45,20 @@ import static org.junit.Assert.assertTrue;
 public class DockerInterpreterProcessTest {
   private static final Logger LOGGER = LoggerFactory.getLogger(DockerInterpreterProcessTest.class);
 
-  protected static ZeppelinConfiguration zconf = ZeppelinConfiguration.create();
+  private ZeppelinConfiguration zconf;
+  private ZPluginManager pluginManager;
+
+  @Before
+  public void setUp() {
+    zconf = ZeppelinConfiguration.create();
+    pluginManager = new ZPluginManager(zconf);
+  }
 
   @Test
   public void testCreateIntpProcess() throws IOException {
     DockerInterpreterLauncher launcher
-        = new DockerInterpreterLauncher(zconf, null);
+        = (DockerInterpreterLauncher) pluginManager.createInterpreterLauncher("DockerInterpreterLauncher", null);
+    launcher.setPluginManager(pluginManager);
     Properties properties = new Properties();
     properties.setProperty(
         ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT.getVarName(), "5000");
