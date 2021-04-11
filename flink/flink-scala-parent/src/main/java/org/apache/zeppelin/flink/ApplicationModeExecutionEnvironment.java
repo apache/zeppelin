@@ -37,15 +37,15 @@ import static org.apache.flink.util.Preconditions.checkState;
 
 
 /**
- * ExecutionEnvironment used for yarn application mode.
+ * ExecutionEnvironment used for application mode.
  * Need to add jars of scala shell before submitting jobs.
  */
-public class YarnApplicationExecutionEnvironment extends ExecutionEnvironment {
+public class ApplicationModeExecutionEnvironment extends ExecutionEnvironment {
 
   private FlinkILoop flinkILoop;
   private FlinkScalaInterpreter flinkScalaInterpreter;
 
-  public YarnApplicationExecutionEnvironment(PipelineExecutorServiceLoader executorServiceLoader,
+  public ApplicationModeExecutionEnvironment(PipelineExecutorServiceLoader executorServiceLoader,
                                              Configuration configuration,
                                              ClassLoader userClassloader,
                                              FlinkILoop flinkILoop,

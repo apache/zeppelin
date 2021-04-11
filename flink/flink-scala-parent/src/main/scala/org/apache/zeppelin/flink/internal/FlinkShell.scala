@@ -18,7 +18,7 @@
 
 package org.apache.zeppelin.flink.internal
 
-import java.io.BufferedReader
+import java.io._
 
 import org.apache.flink.annotation.Internal
 import org.apache.flink.client.cli.{CliFrontend, CliFrontendParser}
@@ -30,6 +30,7 @@ import org.apache.flink.runtime.minicluster.{MiniCluster, MiniClusterConfigurati
 import org.apache.flink.yarn.executors.YarnSessionClusterExecutor
 import org.apache.zeppelin.flink.FlinkShims
 
+
 import scala.collection.mutable.ArrayBuffer
 
 /**
@@ -39,7 +40,19 @@ import scala.collection.mutable.ArrayBuffer
 object FlinkShell {
 
   object ExecutionMode extends Enumeration {
-    val UNDEFINED, LOCAL, REMOTE, YARN, YARN_APPLICATION = Value
+    val UNDEFINED, LOCAL, REMOTE, YARN, YARN_APPLICATION, KUBERNETES_APPLICATION = Value
+
+    def isYarnAppicationMode(mode: ExecutionMode.Value): Boolean = {
+      mode == ExecutionMode.YARN_APPLICATION
+    }
+
+    def isK8sApplicationMode(mode: ExecutionMode.Value): Boolean = {
+      mode == ExecutionMode.KUBERNETES_APPLICATION
+    }
+
+    def isApplicationMode(mode: ExecutionMode.Value): Boolean = {
+      isYarnAppicationMode(mode) || isK8sApplicationMode(mode)
+    }
   }
 
   /** Configuration object */
@@ -84,9 +97,10 @@ object FlinkShell {
       case ExecutionMode.REMOTE => createRemoteConfig(config, flinkConfig)
       case ExecutionMode.YARN => createYarnClusterIfNeededAndGetConfig(config, flinkConfig, flinkShims)
       case ExecutionMode.YARN_APPLICATION => (flinkConfig, None)
+      case ExecutionMode.KUBERNETES_APPLICATION => (flinkConfig, None)
       case ExecutionMode.UNDEFINED => // Wrong input
         throw new IllegalArgumentException("please specify execution mode:\n" +
-          "[local | remote <host> <port> | yarn | yarn-application ]")
+          "[local | remote <host> <port> | yarn | yarn-application | kubernetes-application]")
     }
   }
 

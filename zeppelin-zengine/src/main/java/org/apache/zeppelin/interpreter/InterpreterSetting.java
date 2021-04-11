@@ -762,6 +762,10 @@ public class InterpreterSetting {
 
   public String getLauncherPlugin(Properties properties) {
     if (isRunningOnKubernetes()) {
+      if (group.equals("flink")) {
+        // Flink has its own implementation of k8s mode.
+        return "FlinkInterpreterLauncher";
+      }
       return "K8sStandardInterpreterLauncher";
     } else if (isRunningOnCluster()) {
       return InterpreterSetting.CLUSTER_INTERPRETER_LAUNCHER_NAME;
