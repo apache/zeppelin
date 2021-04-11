@@ -215,6 +215,14 @@ public class ExecRemoteInterpreterProcess extends RemoteInterpreterManagedProces
           notifyAll();
         }
       }
+      if (getEnv().getOrDefault("ZEPPELIN_FLINK_YARN_APPLICATION", "false").equalsIgnoreCase("true")
+              && exitValue == 0) {
+        // Don't update transition state when flink launcher process exist in yarn application mode.
+        synchronized (this) {
+          notifyAll();
+        }
+        return;
+      }
       // For yarn-cluster mode, client process will exit with exit value 0
       // after submitting spark app. So don't move to TERMINATED state when exitValue
       // is 0.

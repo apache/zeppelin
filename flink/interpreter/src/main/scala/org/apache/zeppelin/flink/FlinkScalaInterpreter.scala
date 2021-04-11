@@ -45,6 +45,7 @@ import org.apache.flink.table.catalog.hive.HiveCatalog
 import org.apache.flink.table.functions.{AggregateFunction, ScalarFunction, TableAggregateFunction, TableFunction}
 import org.apache.flink.table.module.ModuleManager
 import org.apache.flink.table.module.hive.HiveModule
+import org.apache.flink.util.Preconditions.checkState
 import org.apache.flink.yarn.cli.FlinkYarnSessionCli
 import org.apache.zeppelin.dep.DependencyResolver
 import org.apache.zeppelin.flink.FlinkShell._
@@ -100,13 +101,16 @@ class FlinkScalaInterpreter(val properties: Properties) {
   private var z: FlinkZeppelinContext = _
   private var flinkVersion: FlinkVersion = _
   private var flinkShims: FlinkShims = _
+  // used for call jm rest api
   private var jmWebUrl: String = _
-  private var replacedJMWebUrl: String = _
+  // used for display on zeppelin ui
+  private var displayedJMWebUrl: String = _
   private var jobManager: JobManager = _
   private var defaultParallelism = 1
   private var defaultSqlParallelism = 1
   private var userJars: Seq[String] = _
   private var userUdfJars: Seq[String] = _
+
 
   def open(): Unit = {
     val config = initFlinkConfig()
@@ -120,8 +124,7 @@ class FlinkScalaInterpreter(val properties: Properties) {
     val modifiers = new java.util.ArrayList[String]()
     modifiers.add("@transient")
     this.bind("z", z.getClass().getCanonicalName(), z, modifiers);
-
-    this.jobManager = new JobManager(this.z, jmWebUrl, replacedJMWebUrl, properties)
+    this.jobManager = new JobManager(this.z, jmWebUrl, displayedJMWebUrl, properties)
 
     // register JobListener
     val jobListener = new FlinkJobListener()
@@ -138,14 +141,44 @@ class FlinkScalaInterpreter(val properties: Properties) {
 
     // load udf jar
     this.userUdfJars.foreach(jar => loadUDFJar(jar))
+
+    if (mode == ExecutionMode.YARN_APPLICATION) {
+      // have to call senv.execute method before running any user code, otherwise yarn application mode
+      // will cause ClassNotFound issue. Needs to do more investigation. TODO(zjffdu)
+      val initCode =
+        """
+          |val data = senv.fromElements("hello world", "hello flink", "hello hadoop")
+          |data.flatMap(line => line.split("\\s"))
+          |  .map(w => (w, 1))
+          |  .keyBy(0)
+          |  .sum(1)
+          |  .print
+          |
+          |senv.execute()
+          |""".stripMargin
+
+      interpret(initCode, InterpreterContext.get())
+      InterpreterContext.get().out.clear()
+    }
   }
 
   private def initFlinkConfig(): Config = {
-    val flinkHome = sys.env.getOrElse("FLINK_HOME", "")
-    val flinkConfDir = sys.env.getOrElse("FLINK_CONF_DIR", "")
+
+    var flinkHome = sys.env.getOrElse("FLINK_HOME", "")
+    var flinkConfDir = sys.env.getOrElse("FLINK_CONF_DIR", "")
     val hadoopConfDir = sys.env.getOrElse("HADOOP_CONF_DIR", "")
     val yarnConfDir = sys.env.getOrElse("YARN_CONF_DIR", "")
-    val hiveConfDir = sys.env.getOrElse("HIVE_CONF_DIR", "")
+    var hiveConfDir = sys.env.getOrElse("HIVE_CONF_DIR", "")
+
+    mode = ExecutionMode.withName(
+      properties.getProperty("flink.execution.mode", "LOCAL").toUpperCase)
+    if (mode == ExecutionMode.YARN_APPLICATION) {
+      // use current yarn container working directory as FLINK_HOME and FLINK_CONF_DIR
+      val workingDirectory = new File(".").getAbsolutePath
+      flinkHome = workingDirectory
+      flinkConfDir = workingDirectory
+      hiveConfDir = workingDirectory
+    }
     LOGGER.info("FLINK_HOME: " + flinkHome)
     LOGGER.info("FLINK_CONF_DIR: " + flinkConfDir)
     LOGGER.info("HADOOP_CONF_DIR: " + hadoopConfDir)
@@ -157,9 +190,6 @@ class FlinkScalaInterpreter(val properties: Properties) {
     this.flinkShims = FlinkShims.getInstance(flinkVersion, properties)
 
     this.configuration = GlobalConfiguration.loadConfiguration(flinkConfDir)
-
-    mode = ExecutionMode.withName(
-      properties.getProperty("flink.execution.mode", "LOCAL").toUpperCase)
     var config = Config(executionMode = mode)
     val jmMemory = properties.getProperty("flink.jm.memory", "1024")
     config = config.copy(yarnConfig =
@@ -261,7 +291,7 @@ class FlinkScalaInterpreter(val properties: Properties) {
               // for some cloud vender, the yarn address may be mapped to some other address.
               val yarnAddress = properties.getProperty("flink.webui.yarn.address")
               if (!StringUtils.isBlank(yarnAddress)) {
-                this.replacedJMWebUrl = replaceYarnAddress(this.jmWebUrl, yarnAddress)
+                this.displayedJMWebUrl = replaceYarnAddress(this.jmWebUrl, yarnAddress)
               }
             } else {
               this.jmWebUrl = clusterClient.getWebInterfaceURL
@@ -271,8 +301,20 @@ class FlinkScalaInterpreter(val properties: Properties) {
           }
         case None =>
           // remote mode
-          LOGGER.info("Use FlinkCluster in remote mode")
-          this.jmWebUrl = "http://" + config.host.get + ":" + config.port.get
+          if (mode == ExecutionMode.YARN_APPLICATION) {
+            val yarnAppId = System.getenv("_APP_ID");
+            LOGGER.info("Use FlinkCluster in yarn application mode, appId: {}", yarnAppId)
+            this.jmWebUrl = "http://localhost:" + HadoopUtils.getFlinkRestPort(yarnAppId)
+            this.displayedJMWebUrl = HadoopUtils.getYarnAppTrackingUrl(yarnAppId)
+          } else {
+            LOGGER.info("Use FlinkCluster in remote mode")
+            this.jmWebUrl = "http://" + config.host.get + ":" + config.port.get
+          }
+      }
+
+      if (this.displayedJMWebUrl != null) {
+        // use jmWebUrl as displayedJMWebUrl if it is not set
+        this.displayedJMWebUrl = this.jmWebUrl
       }
 
       LOGGER.info(s"\nConnecting to Flink cluster: " + this.jmWebUrl)
@@ -286,7 +328,9 @@ class FlinkScalaInterpreter(val properties: Properties) {
         // use FlinkClassLoader to initialize FlinkILoop, otherwise TableFactoryService could not find
         // the TableFactory properly
         Thread.currentThread().setContextClassLoader(getFlinkClassLoader)
-        val repl = new FlinkILoop(configuration, config.externalJars, None, replOut)
+        val repl = new FlinkILoop(configuration, config.externalJars, None, replOut, mode,
+          JExecutionEnvironment.getExecutionEnvironment,
+          JStreamExecutionEnvironment.getExecutionEnvironment)
         (repl, cluster)
       } catch {
         case e: Exception =>
@@ -566,7 +610,6 @@ class FlinkScalaInterpreter(val properties: Properties) {
     method.invoke(obj, parameters: _ *)
   }
 
-
   protected def getField(obj: Object, name: String): Object = {
     val field = obj.getClass.getField(name)
     field.setAccessible(true)
@@ -825,7 +868,7 @@ class FlinkScalaInterpreter(val properties: Properties) {
   def getJobManager = this.jobManager
 
   def getFlinkScalaShellLoader: ClassLoader = {
-    val userCodeJarFile = this.flinkILoop.writeFilesToDisk();
+    val userCodeJarFile = this.flinkILoop.writeFilesToDisk()
     new URLClassLoader(Array(userCodeJarFile.toURL) ++ userJars.map(e => new File(e).toURL))
   }
 

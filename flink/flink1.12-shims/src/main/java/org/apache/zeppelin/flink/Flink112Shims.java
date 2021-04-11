@@ -173,13 +173,26 @@ public class Flink112Shims extends FlinkShims {
 
   @Override
   public String getPyFlinkPythonPath(Properties properties) throws IOException {
+    if ("yarn_application".equalsIgnoreCase(properties.getProperty("flink.execution.mode"))) {
+      // for yarn application mode, FLINK_HOME is container working directory
+      String flinkHome = new File(".").getAbsolutePath();
+      List<File> depFiles = null;
+      depFiles = Arrays.asList(new File(flinkHome + "/lib/python").listFiles());
+      StringBuilder builder = new StringBuilder();
+      for (File file : depFiles) {
+        LOGGER.info("Adding extracted file {} to PYTHONPATH", file.getAbsolutePath());
+        builder.append(file.getAbsolutePath() + ":");
+      }
+      return builder.toString();
+    }
+
     String flinkHome = System.getenv("FLINK_HOME");
     if (flinkHome != null) {
       List<File> depFiles = null;
       depFiles = Arrays.asList(new File(flinkHome + "/opt/python").listFiles());
       StringBuilder builder = new StringBuilder();
       for (File file : depFiles) {
-        LOGGER.info("Adding extracted file to PYTHONPATH: " + file.getAbsolutePath());
+        LOGGER.info("Adding extracted file {} to PYTHONPATH", file.getAbsolutePath());
         builder.append(file.getAbsolutePath() + ":");
       }
       return builder.toString();

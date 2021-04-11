@@ -27,6 +27,7 @@ import org.apache.hadoop.yarn.api.records.ApplicationId;
 import org.apache.hadoop.yarn.client.api.YarnClient;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.apache.hadoop.yarn.exceptions.YarnException;
+import org.apache.hadoop.yarn.util.ConverterUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,8 +36,8 @@ import java.io.IOException;
 
 /**
  * Move the hadoop related operation (depends on hadoop api) out of FlinkScalaInterpreter to this
- * class is because in this way we don't need to load hadoop class for non-yarn mode. Otherwise
- * even in non-yarn mode, user still need hadoop shaded jar which doesnt' make sense.
+ * class. The reason is in this way we don't need to load hadoop class for non-yarn mode. Otherwise
+ * even in non-yarn mode, user still need hadoop shaded jar which doesn't make sense.
  */
 public class HadoopUtils {
 
@@ -44,6 +45,15 @@ public class HadoopUtils {
 
   public static String getYarnAppTrackingUrl(ClusterClient clusterClient) throws IOException, YarnException {
     ApplicationId yarnAppId = (ApplicationId) clusterClient.getClusterId();
+    return getYarnAppTrackingUrl(yarnAppId);
+  }
+
+  public static String getYarnAppTrackingUrl(String yarnAppIdStr) throws IOException, YarnException {
+    ApplicationId yarnAppId = ConverterUtils.toApplicationId(yarnAppIdStr);
+    return getYarnAppTrackingUrl(yarnAppId);
+  }
+
+  public static String getYarnAppTrackingUrl(ApplicationId yarnAppId) throws IOException, YarnException {
     YarnClient yarnClient = YarnClient.createYarnClient();
     YarnConfiguration yarnConf = new YarnConfiguration();
     // disable timeline service as we only query yarn app here.
@@ -53,6 +63,18 @@ public class HadoopUtils {
     yarnClient.init(yarnConf);
     yarnClient.start();
     return yarnClient.getApplicationReport(yarnAppId).getTrackingUrl();
+  }
+
+  public static int getFlinkRestPort(String yarnAppId) throws IOException, YarnException {
+    YarnClient yarnClient = YarnClient.createYarnClient();
+    YarnConfiguration yarnConf = new YarnConfiguration();
+    // disable timeline service as we only query yarn app here.
+    // Otherwise we may hit this kind of ERROR:
+    // java.lang.ClassNotFoundException: com.sun.jersey.api.client.config.ClientConfig
+    yarnConf.set("yarn.timeline-service.enabled", "false");
+    yarnClient.init(yarnConf);
+    yarnClient.start();
+    return yarnClient.getApplicationReport(ConverterUtils.toApplicationId(yarnAppId)).getRpcPort();
   }
 
   public static void cleanupStagingDirInternal(ClusterClient clusterClient) {
