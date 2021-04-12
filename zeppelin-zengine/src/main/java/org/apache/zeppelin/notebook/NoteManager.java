@@ -118,6 +118,11 @@ public class NoteManager {
 
   private void addOrUpdateNoteNode(Note note, boolean checkDuplicates) throws IOException {
     String notePath = note.getPath();
+
+    if (checkDuplicates) {
+      validateNotePathDoesNotExist(notePath);
+    }
+
     String[] tokens = notePath.split("/");
     Folder curFolder = root;
     for (int i = 0; i < tokens.length - 1; ++i) {
@@ -125,9 +130,7 @@ public class NoteManager {
         curFolder = curFolder.getOrCreateFolder(tokens[i]);
       }
     }
-    if (checkDuplicates && curFolder.containsNote(tokens[tokens.length - 1])) {
-      throw new IOException("Note '" + note.getPath() + "' existed");
-    }
+
     curFolder.addNote(tokens[tokens.length -1], note);
     this.notesInfo.put(note.getId(), note.getPath());
   }
@@ -224,6 +227,8 @@ public class NoteManager {
     if (noteId == null) {
       throw new IOException("No metadata found for this note: " + noteId);
     }
+
+    validateNotePathDoesNotExist(newNotePath);
 
     // move the old NoteNode from notePath to newNotePath
     NoteNode noteNode = getNoteNode(notePath);
@@ -376,6 +381,22 @@ public class NoteManager {
   private String getNoteName(String notePath) {
     int pos = notePath.lastIndexOf('/');
     return notePath.substring(pos + 1);
+  }
+
+  private void validateNotePathDoesNotExist(String notePath) throws IOException {
+    String[] tokens = notePath.split("/");
+    Folder curFolder = root;
+    for (int i = 0; i < tokens.length - 1; ++i) {
+      if (!StringUtils.isBlank(tokens[i])) {
+        curFolder = curFolder.getFolder(tokens[i]);
+        if (curFolder == null) {
+          return;
+        }
+      }
+    }
+    if (curFolder.containsNote(tokens[tokens.length - 1])) {
+      throw new IOException("Note '" + notePath + "' existed");
+    }
   }
 
   /**

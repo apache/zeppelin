@@ -137,4 +137,28 @@ describe('Controller: NotebookCtrl', function() {
     expect(websocketMsgSrvMock.getNote.calls.count()).toEqual(0);
     expect(websocketMsgSrvMock.listRevisionHistory.calls.count()).toEqual(0);
   });
+
+  it('should revert note name when updateNoteName() fails', function() {
+    let expectedOldName = noteMock.name;
+
+    scope.updateNoteName('updated');
+    expect(scope.note.name).toEqual('updated');
+    expect(scope.note.oldName).toEqual(expectedOldName);
+    scope.$broadcast('errorInfo');
+
+    expect(scope.note.name).toEqual(expectedOldName);
+    expect(scope.note.oldName).toBeUndefined();
+  });
+
+  it('should remove oldName name when updateNoteName() succeeds', function() {
+    let expectedOldName = noteMock.name;
+
+    scope.updateNoteName('updated');
+    expect(scope.note.name).toEqual('updated');
+    expect(scope.note.oldName).toEqual(expectedOldName);
+    scope.$broadcast('setNoteMenu');
+
+    expect(scope.note.name).toEqual('updated');
+    expect(scope.note.oldName).toBeUndefined();
+  });
 });

@@ -539,10 +539,22 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
   $scope.updateNoteName = function(newName) {
     const trimmedNewName = newName.trim();
     if (trimmedNewName.length > 0 && $scope.note.name !== trimmedNewName) {
+      $scope.note.oldName = $scope.note.name;
       $scope.note.name = trimmedNewName;
       websocketMsgSrv.renameNote($scope.note.id, $scope.note.name, true);
     }
   };
+
+  $scope.$on('setNoteMenu', function(event, notes) {
+    $scope.note.oldName = undefined;
+  });
+
+  $scope.$on('errorInfo', function(event, notes) {
+    if ($scope.note.oldName !== undefined) {
+      $scope.note.name = $scope.note.oldName;
+      $scope.note.oldName = undefined;
+    }
+  });
 
   const initializeLookAndFeel = function() {
     if (!$scope.note.config.looknfeel) {

@@ -167,6 +167,7 @@ function WebsocketEventFactory($rootScope, $websocket, $location, baseUrlSrv, sa
     } else if (op === 'SAVE_NOTE_FORMS') {
       $rootScope.$broadcast('saveNoteForms', data);
     } else if (op === 'ERROR_INFO') {
+      $rootScope.$broadcast('errorInfo', data);
       BootstrapDialog.show({
         closable: false,
         closeByBackdrop: false,
