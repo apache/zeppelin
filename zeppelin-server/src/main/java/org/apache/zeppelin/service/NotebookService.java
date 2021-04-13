@@ -48,6 +48,7 @@ import org.apache.zeppelin.notebook.NoteManager;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.notebook.AuthorizationService;
+import org.apache.zeppelin.notebook.exception.NotePathAlreadyExistsException;
 import org.apache.zeppelin.notebook.repo.NotebookRepoWithVersionControl;
 import org.apache.zeppelin.notebook.scheduler.SchedulerService;
 import org.apache.zeppelin.common.Message;
@@ -256,8 +257,12 @@ public class NotebookService {
           newNotePath = "/" + newNotePath;
         }
       }
-      notebook.moveNote(noteId, newNotePath, context.getAutheInfo());
-      callback.onSuccess(note, context);
+      try {
+        notebook.moveNote(noteId, newNotePath, context.getAutheInfo());
+        callback.onSuccess(note, context);
+      } catch (NotePathAlreadyExistsException e) {
+        callback.onFailure(e, context);
+      }
     } else {
       callback.onFailure(new NoteNotFoundException(noteId), context);
     }
