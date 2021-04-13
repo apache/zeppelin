@@ -120,7 +120,7 @@ public class NoteManager {
   private void addOrUpdateNoteNode(Note note, boolean checkDuplicates) throws IOException {
     String notePath = note.getPath();
 
-    if (checkDuplicates && !validateNotePathDoesNotExist(notePath)) {
+    if (checkDuplicates && !isNotePathAvailable(notePath)) {
       throw new NotePathAlreadyExistsException("Note '" + notePath + "' existed");
     }
 
@@ -229,7 +229,7 @@ public class NoteManager {
       throw new IOException("No metadata found for this note: " + noteId);
     }
 
-    if (!validateNotePathDoesNotExist(newNotePath)) {
+    if (!isNotePathAvailable(newNotePath)) {
       throw new NotePathAlreadyExistsException("Note '" + newNotePath + "' existed");
     }
 
@@ -386,7 +386,7 @@ public class NoteManager {
     return notePath.substring(pos + 1);
   }
 
-  private boolean validateNotePathDoesNotExist(String notePath) {
+  private boolean isNotePathAvailable(String notePath) {
     String[] tokens = notePath.split("/");
     Folder curFolder = root;
     for (int i = 0; i < tokens.length - 1; ++i) {
