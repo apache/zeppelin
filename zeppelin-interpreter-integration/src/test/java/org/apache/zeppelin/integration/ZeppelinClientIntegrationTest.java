@@ -180,6 +180,19 @@ public class ZeppelinClientIntegrationTest extends AbstractTestRestApi {
   }
 
   @Test
+  public void testDeleteParagraph() throws Exception {
+    String noteId = zeppelinClient.createNote("/test/note_1");
+    Note note = notebook.getNote(noteId);
+    assertNotNull(note);
+
+    String paragraphId = zeppelinClient.addParagraph(noteId, "title_1", "text_1");
+    assertEquals(1, note.getParagraphCount());
+
+    zeppelinClient.deleteParagraph(noteId, paragraphId);
+    assertEquals(0, note.getParagraphCount());
+  }
+
+  @Test
   public void testExecuteParagraph() throws Exception {
     // run paragraph succeed
     String noteId = zeppelinClient.createNote("/test/note_1");

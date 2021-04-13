@@ -560,6 +560,24 @@ public class ZeppelinClient {
   }
 
   /**
+   * delete paragraph with noteId and paragraphID
+   *
+   * @param noteId
+   * @param paragraphId
+   * @throws Exception
+   */
+  public void deleteParagraph(String noteId, String paragraphId) throws Exception {
+    HttpResponse<JsonNode> response = Unirest.delete("/notebook/{noteId}/paragraph/{paragraphId}")
+            .routeParam("noteId", noteId)
+            .routeParam("paragraphId", paragraphId)
+            .asJson();
+
+    checkResponse(response);
+    JsonNode jsonNode = response.getBody();
+    checkJsonNodeStatus(jsonNode);
+  }
+
+  /**
    * Update paragraph with specified title and text.
    *
    * @param noteId
