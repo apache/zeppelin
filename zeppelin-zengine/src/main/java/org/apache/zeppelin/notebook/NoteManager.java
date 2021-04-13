@@ -20,6 +20,7 @@ package org.apache.zeppelin.notebook;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.notebook.exception.NotePathAlreadyExistsException;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
@@ -119,8 +120,8 @@ public class NoteManager {
   private void addOrUpdateNoteNode(Note note, boolean checkDuplicates) throws IOException {
     String notePath = note.getPath();
 
-    if (checkDuplicates) {
-      validateNotePathDoesNotExist(notePath);
+    if (checkDuplicates && !validateNotePathDoesNotExist(notePath)) {
+      throw new NotePathAlreadyExistsException("Note '" + notePath + "' existed");
     }
 
     String[] tokens = notePath.split("/");
@@ -228,7 +229,9 @@ public class NoteManager {
       throw new IOException("No metadata found for this note: " + noteId);
     }
 
-    validateNotePathDoesNotExist(newNotePath);
+    if (!validateNotePathDoesNotExist(newNotePath)) {
+      throw new NotePathAlreadyExistsException("Note '" + newNotePath + "' existed");
+    }
 
     // move the old NoteNode from notePath to newNotePath
     NoteNode noteNode = getNoteNode(notePath);
@@ -383,20 +386,22 @@ public class NoteManager {
     return notePath.substring(pos + 1);
   }
 
-  private void validateNotePathDoesNotExist(String notePath) throws IOException {
+  private boolean validateNotePathDoesNotExist(String notePath) {
     String[] tokens = notePath.split("/");
     Folder curFolder = root;
     for (int i = 0; i < tokens.length - 1; ++i) {
       if (!StringUtils.isBlank(tokens[i])) {
         curFolder = curFolder.getFolder(tokens[i]);
         if (curFolder == null) {
-          return;
+          return true;
         }
       }
     }
     if (curFolder.containsNote(tokens[tokens.length - 1])) {
-      throw new IOException("Note '" + notePath + "' existed");
+      return false;
     }
+
+    return true;
   }
 
   /**

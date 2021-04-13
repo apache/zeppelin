@@ -1,5 +1,6 @@
 package org.apache.zeppelin.notebook;
 
+import org.apache.zeppelin.notebook.exception.NotePathAlreadyExistsException;
 import org.apache.zeppelin.notebook.repo.InMemoryNotebookRepo;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.Before;
@@ -67,7 +68,7 @@ public class NoteManagerTest {
 
   @Test
   public void testAddNoteRejectsDuplicatePath() throws IOException {
-    thrown.expect(IOException.class);
+    thrown.expect(NotePathAlreadyExistsException.class);
     thrown.expectMessage("Note '/prod/note' existed");
 
     Note note1 = createNote("/prod/note");
@@ -79,7 +80,7 @@ public class NoteManagerTest {
 
   @Test
   public void testMoveNoteRejectsDuplicatePath() throws IOException {
-    thrown.expect(IOException.class);
+    thrown.expect(NotePathAlreadyExistsException.class);
     thrown.expectMessage("Note '/prod/note-1' existed");
 
     Note note1 = createNote("/prod/note-1");
