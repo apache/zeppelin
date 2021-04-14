@@ -392,6 +392,7 @@ public class ZSessionIntegrationTest extends AbstractTestRestApi {
   @Test
   public void testZSession_Python() throws Exception {
     Map<String, String> intpProperties = new HashMap<>();
+    intpProperties.put("zeppelin.python.gatewayserver_address", "127.0.0.1");
 
     ZSession session = ZSession.builder()
             .setClientConfig(clientConfig)
@@ -434,6 +435,7 @@ public class ZSessionIntegrationTest extends AbstractTestRestApi {
   @Test
   public void testZSessionCleanup() throws Exception {
     Map<String, String> intpProperties = new HashMap<>();
+    intpProperties.put("zeppelin.python.gatewayserver_address", "127.0.0.1");
 
     ZSession session = ZSession.builder()
             .setClientConfig(clientConfig)

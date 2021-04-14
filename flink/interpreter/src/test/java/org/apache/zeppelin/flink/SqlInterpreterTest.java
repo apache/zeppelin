@@ -98,6 +98,8 @@ public abstract class SqlInterpreterTest {
     p.setProperty("zeppelin.flink.hive.version", "2.3.4");
     p.setProperty("zeppelin.pyflink.useIPython", "false");
     p.setProperty("local.number-taskmanager", "4");
+    p.setProperty("zeppelin.python.gatewayserver_address", "127.0.0.1");
+
     File hiveConfDir = Files.createTempDir();
     hiveShell.getHiveConf().writeXml(new FileWriter(new File(hiveConfDir, "hive-site.xml")));
     p.setProperty("HIVE_CONF_DIR", hiveConfDir.getAbsolutePath());
