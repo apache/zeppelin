@@ -19,6 +19,8 @@ package org.apache.zeppelin.jupyter;
 
 import io.grpc.ManagedChannelBuilder;
 import org.apache.commons.exec.CommandLine;
+import org.apache.commons.exec.DefaultExecutor;
+import org.apache.commons.exec.PumpStreamHandler;
 import org.apache.commons.exec.environment.EnvironmentUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -45,8 +47,10 @@ import org.apache.zeppelin.interpreter.util.ProcessLauncher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -183,8 +187,43 @@ public class JupyterKernelInterpreter extends AbstractInterpreter {
     return "";
   }
 
+  private void activateCondaEnv() {
+    String envName = getProperty("zeppelin.interpreter.conda.env.name", "environment");
+    LOGGER.info("Activating conda env: {}", envName);
+    ByteArrayOutputStream stdout = new ByteArrayOutputStream();
+    PumpStreamHandler psh = new PumpStreamHandler(stdout);
+    try {
+      if (!new File(envName).exists()) {
+        LOGGER.info("Skip activating conda env because no environment folder: {}", envName);
+        return;
+      }
+      File scriptFile = Files.createTempFile("zeppelin_jupyter_kernel_", ".sh").toFile();
+      try (FileWriter writer = new FileWriter(scriptFile)) {
+        IOUtils.write(String.format("chmod 777 -R %s\nsource %s/bin/activate\nconda-unpack",
+                envName, envName),
+                writer);
+      }
+      scriptFile.setExecutable(true, false);
+      scriptFile.setReadable(true, false);
+      CommandLine cmd = new CommandLine(scriptFile.getAbsolutePath());
+      DefaultExecutor executor = new DefaultExecutor();
+      executor.setStreamHandler(psh);
+      int exitCode = executor.execute(cmd);
+      if (exitCode != 0) {
+        LOGGER.warn("Fail to activate conda env, {}", stdout.toString());
+      } else {
+        LOGGER.info("Activate conda env successfully");
+      }
+    } catch (Exception e) {
+      LOGGER.warn("Fail to activate conda env: {}, exception: {}", stdout.toString(), e);
+    }
+  }
+
   private void launchJupyterKernel(int kernelPort)
           throws IOException {
+
+    activateCondaEnv();
+
     LOGGER.info("Launching Jupyter Kernel at port: {}", kernelPort);
     // copy the python scripts to a temp directory, then launch jupyter kernel in that folder
     this.kernelWorkDir = Files.createTempDirectory(

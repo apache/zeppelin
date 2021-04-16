@@ -77,6 +77,16 @@ Zeppelin supports python language which is very popular in data analytics and ma
     IPython is only used in <code>%python.ipython</code>.
     </td>
   </tr>
+  <tr>
+    <td>zeppelin.yarn.dist.archives</td>
+    <td></td>
+    <td>You can specify conda pack archive files via this property</td>
+  </tr>
+  <tr>
+    <td>zeppelin.interpreter.conda.env.name</td>
+    <td>environment</td>
+    <td>conda environment name</td>
+  </tr>
 </table>
 
 
@@ -347,7 +357,85 @@ Python interpreter create a variable `z` which represent `ZeppelinContext` for y
   </tr>
 </table>
 
-## Python environments
+## Run Python in yarn cluster
+
+Zeppelin supports to run python interpreter in yarn cluster which means the python interpreter runs in the yarn container.
+This can achieve better multi-tenant for python interpreter especially when you already have a hadoop yarn cluster.
+
+In order to run python in yarn cluster. You need to do the following steps
+
+### Step 1 (Optional, but recommended)
+We would suggest you to use conda pack to create archives of conda environments, and ship it to yarn container. Otherwise python interpreter
+will use the python executable in PATH of yarn container.
+
+Here's one example of yml file which could be used to generate a conda environment with python 3 and some useful python libraries.
+
+* Create yml file for conda environment, write the following into file `env_python_3.yml`
+
+```text
+name: python_3
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.7
+  - pycodestyle=2.5.0
+  - numpy=1.17.3
+  - pandas=0.25.0
+  - scipy=1.3.1
+  - grpcio=1.22.0
+  - hvplot=0.5.2
+  - protobuf=3.10.0
+  - pandasql=0.7.3
+  - ipython=7.8.0
+  - matplotlib=3.0.3
+  - ipykernel=5.1.2
+  - jupyter_client=5.3.4
+  - bokeh=1.3.4
+  - panel=0.6.0
+  - holoviews=1.12.3
+  - pip
+  - pip:
+    - bkzep==0.6.1
+
+```
+
+* Create conda environment via this yml file
+
+
+```bash
+
+conda env create -f env_python_3.yml
+```
+
+
+* Pack the conda environment
+
+```bash
+
+conda pack -n python_3
+```
+
+### Step 2
+
+Specify the following properties to enable yarn mode for python interpreter, and specify the correct python.
+
+```
+zeppelin.interpreter.launcher yarn
+zeppelin.yarn.dist.archives /home/hadoop/python_3.tar.gz#environment
+zeppelin.python ./environment/bin/python
+```
+
+`zeppelin.yarn.dist.archives` is the python conda environment tar which is created in step 1.
+This tar will be shipped to yarn container and untar in the working directory of yarn container.
+`environment` is the folder after untar. And you need to specify `zeppelin.python` as  `./environment/bin/python` which is the 
+python path of the conda environment in yarn container.
+
+
+After these setting, when you run python interpreter, Zeppelin will launch the python interpreter in a yarn container.
+
+
+## Python environments (used for non-yarn mode)
 
 ### Default
 By default, PythonInterpreter will use python command defined in `zeppelin.python` property to run python process.

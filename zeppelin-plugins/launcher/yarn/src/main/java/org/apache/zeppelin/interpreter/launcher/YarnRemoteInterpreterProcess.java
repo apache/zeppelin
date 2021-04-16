@@ -57,6 +57,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -101,15 +103,15 @@ public class YarnRemoteInterpreterProcess extends RemoteInterpreterProcess {
           Map<String, String> envs,
           int connectTimeout,
           int connectionPoolSize) {
-    super(connectTimeout, connectionPoolSize, launchContext.getIntpEventServerHost(), launchContext.getIntpEventServerPort());
+    super(connectTimeout,
+            connectionPoolSize,
+            launchContext.getIntpEventServerHost(),
+            launchContext.getIntpEventServerPort());
     this.zConf = ZeppelinConfiguration.create();
     this.launchContext = launchContext;
     this.properties = properties;
     this.envs = envs;
-
-    yarnClient = YarnClient.createYarnClient();
     this.hadoopConf = new YarnConfiguration();
-
     // Add core-site.xml and yarn-site.xml. This is for integration test where using MiniHadoopCluster.
     if (properties.containsKey("HADOOP_CONF_DIR") &&
             !org.apache.commons.lang3.StringUtils.isBlank(properties.getProperty("HADOOP_CONF_DIR"))) {
@@ -117,12 +119,14 @@ public class YarnRemoteInterpreterProcess extends RemoteInterpreterProcess {
       if (hadoopConfDir.exists() && hadoopConfDir.isDirectory()) {
         File coreSite = new File(hadoopConfDir, "core-site.xml");
         try {
+          LOGGER.info("Adding resource: {}", coreSite.getAbsolutePath());
           this.hadoopConf.addResource(coreSite.toURI().toURL());
         } catch (MalformedURLException e) {
           LOGGER.warn("Fail to add core-site.xml: " + coreSite.getAbsolutePath(), e);
         }
         File yarnSite = new File(hadoopConfDir, "yarn-site.xml");
         try {
+          LOGGER.info("Adding resource: {}", yarnSite.getAbsolutePath());
           this.hadoopConf.addResource(yarnSite.toURI().toURL());
         } catch (MalformedURLException e) {
           LOGGER.warn("Fail to add yarn-site.xml: " + yarnSite.getAbsolutePath(), e);
@@ -133,6 +137,7 @@ public class YarnRemoteInterpreterProcess extends RemoteInterpreterProcess {
       }
     }
 
+    yarnClient = YarnClient.createYarnClient();
     yarnClient.init(this.hadoopConf);
     yarnClient.start();
     try {
@@ -228,7 +233,7 @@ public class YarnRemoteInterpreterProcess extends RemoteInterpreterProcess {
     setQueue(appContext);
     appContext.setApplicationId(appId);
     setApplicationName(appContext);
-    appContext.setApplicationType("ZEPPELIN INTERPRETER");
+    appContext.setApplicationType("Zeppelin Interpreter");
     appContext.setMaxAppAttempts(1);
 
     ContainerLaunchContext amContainer = setUpAMLaunchContext();
@@ -242,12 +247,14 @@ public class YarnRemoteInterpreterProcess extends RemoteInterpreterProcess {
 
     // Set the resources to localize
     this.stagingDir = new Path(fs.getHomeDirectory() + "/.zeppelinStaging", appId.toString());
+    LOGGER.info("Use staging directory: {}", this.stagingDir);
     Map<String, LocalResource> localResources = new HashMap<>();
 
     File interpreterZip = createInterpreterZip();
     Path srcPath = localFs.makeQualified(new Path(interpreterZip.toURI()));
     Path destPath = copyFileToRemote(stagingDir, srcPath, (short) 1);
     addResource(fs, destPath, localResources, LocalResourceType.ARCHIVE, "zeppelin");
+    LOGGER.info("Add zeppelin archive: {}", destPath);
     FileUtils.forceDelete(interpreterZip);
 
     // TODO(zjffdu) Should not add interpreter specific logic here.
@@ -266,6 +273,30 @@ public class YarnRemoteInterpreterProcess extends RemoteInterpreterProcess {
         addResource(fs, destPath, localResources, LocalResourceType.ARCHIVE, "hive_conf");
       }
     }
+
+    String yarnDistArchives = launchContext.getProperties().getProperty("zeppelin.yarn.dist.archives");
+    if (org.apache.commons.lang3.StringUtils.isNotBlank(yarnDistArchives)) {
+      for (String localArchive : yarnDistArchives.split(",")) {
+        URI localURI = resolveURI(localArchive);
+        srcPath = localFs.makeQualified(new Path(localURI));
+        destPath = copyFileToRemote(stagingDir, srcPath, (short) 1);
+        String linkName = srcPath.getName();
+        if (localURI.getFragment() != null) {
+          linkName = localURI.getFragment();
+        }
+        addResource(fs, destPath, localResources, LocalResourceType.ARCHIVE, linkName);
+      }
+    }
+    String yarnDistFiles = launchContext.getProperties().getProperty("zeppelin.yarn.dist.files");
+    if (org.apache.commons.lang3.StringUtils.isNotBlank(yarnDistFiles)) {
+      for (String localFile : yarnDistFiles.split(",")) {
+        srcPath = localFs.makeQualified(new Path(localFile));
+        destPath = copyFileToRemote(stagingDir, srcPath, (short) 1);
+        addResource(fs, destPath, localResources, LocalResourceType.FILE, srcPath.getName());
+        LOGGER.info("Add dist file: {}", destPath);
+      }
+    }
+
     amContainer.setLocalResources(localResources);
 
     // Setup the command to run the AM
@@ -314,6 +345,25 @@ public class YarnRemoteInterpreterProcess extends RemoteInterpreterProcess {
     amContainer.setEnvironment(this.envs);
 
     return amContainer;
+  }
+
+  private URI resolveURI(String path) {
+    try {
+      URI uri = new URI(path);
+      if (uri.getScheme() != null) {
+        return uri;
+      }
+      // make sure to handle if the path has a fragment (applies to yarn
+      // distributed cache)
+      if (uri.getFragment() != null) {
+        URI absoluteURI = new File(uri.getPath()).getAbsoluteFile().toURI();
+        return new URI(absoluteURI.getScheme(), absoluteURI.getHost(), absoluteURI.getPath(),
+                uri.getFragment());
+      }
+    } catch (URISyntaxException e) {
+      LOGGER.warn("Exception when resolveURI: {}, cause : {}", path, e);
+    }
+    return new File(path).getAbsoluteFile().toURI();
   }
 
   /**
@@ -534,6 +584,7 @@ public class YarnRemoteInterpreterProcess extends RemoteInterpreterProcess {
           LocalResourceType resourceType,
           String link) throws IOException {
 
+    LOGGER.info("Add resource: {}, type: {}, link: {}", destPath, resourceType, link);
     FileStatus destStatus = fs.getFileStatus(destPath);
     LocalResource amJarRsrc = Records.newRecord(LocalResource.class);
     amJarRsrc.setType(resourceType);
