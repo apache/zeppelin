@@ -24,6 +24,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
+import org.apache.hadoop.yarn.api.records.ApplicationReport;
 import org.apache.hadoop.yarn.client.api.YarnClient;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.apache.hadoop.yarn.exceptions.YarnException;
@@ -54,18 +55,15 @@ public class HadoopUtils {
   }
 
   public static String getYarnAppTrackingUrl(ApplicationId yarnAppId) throws IOException, YarnException {
-    YarnClient yarnClient = YarnClient.createYarnClient();
-    YarnConfiguration yarnConf = new YarnConfiguration();
-    // disable timeline service as we only query yarn app here.
-    // Otherwise we may hit this kind of ERROR:
-    // java.lang.ClassNotFoundException: com.sun.jersey.api.client.config.ClientConfig
-    yarnConf.set("yarn.timeline-service.enabled", "false");
-    yarnClient.init(yarnConf);
-    yarnClient.start();
-    return yarnClient.getApplicationReport(yarnAppId).getTrackingUrl();
+    return getYarnApplicationReport(yarnAppId).getTrackingUrl();
   }
 
   public static int getFlinkRestPort(String yarnAppId) throws IOException, YarnException {
+    return getYarnApplicationReport(ConverterUtils.toApplicationId(yarnAppId)).getRpcPort();
+  }
+
+  private static ApplicationReport getYarnApplicationReport(ApplicationId yarnAppId)
+          throws IOException, YarnException {
     YarnClient yarnClient = YarnClient.createYarnClient();
     YarnConfiguration yarnConf = new YarnConfiguration();
     // disable timeline service as we only query yarn app here.
@@ -74,7 +72,7 @@ public class HadoopUtils {
     yarnConf.set("yarn.timeline-service.enabled", "false");
     yarnClient.init(yarnConf);
     yarnClient.start();
-    return yarnClient.getApplicationReport(ConverterUtils.toApplicationId(yarnAppId)).getRpcPort();
+    return yarnClient.getApplicationReport(yarnAppId);
   }
 
   public static void cleanupStagingDirInternal(ClusterClient clusterClient) {

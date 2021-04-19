@@ -176,29 +176,25 @@ public class Flink112Shims extends FlinkShims {
     if ("yarn_application".equalsIgnoreCase(properties.getProperty("flink.execution.mode"))) {
       // for yarn application mode, FLINK_HOME is container working directory
       String flinkHome = new File(".").getAbsolutePath();
-      List<File> depFiles = null;
-      depFiles = Arrays.asList(new File(flinkHome + "/lib/python").listFiles());
-      StringBuilder builder = new StringBuilder();
-      for (File file : depFiles) {
-        LOGGER.info("Adding extracted file {} to PYTHONPATH", file.getAbsolutePath());
-        builder.append(file.getAbsolutePath() + ":");
-      }
-      return builder.toString();
+      return getPyFlinkPythonPath(flinkHome + "/lib/python");
     }
 
     String flinkHome = System.getenv("FLINK_HOME");
     if (flinkHome != null) {
-      List<File> depFiles = null;
-      depFiles = Arrays.asList(new File(flinkHome + "/opt/python").listFiles());
-      StringBuilder builder = new StringBuilder();
-      for (File file : depFiles) {
-        LOGGER.info("Adding extracted file {} to PYTHONPATH", file.getAbsolutePath());
-        builder.append(file.getAbsolutePath() + ":");
-      }
-      return builder.toString();
+      return getPyFlinkPythonPath(flinkHome + "/opt/python");
     } else {
       throw new IOException("No FLINK_HOME is specified");
     }
+  }
+
+  private String getPyFlinkPythonPath(String pyFlinkFolder) {
+    List<File> depFiles = Arrays.asList(new File(pyFlinkFolder).listFiles());
+    StringBuilder builder = new StringBuilder();
+    for (File file : depFiles) {
+      LOGGER.info("Adding extracted file {} to PYTHONPATH", file.getAbsolutePath());
+      builder.append(file.getAbsolutePath() + ":");
+    }
+    return builder.toString();
   }
 
   @Override
