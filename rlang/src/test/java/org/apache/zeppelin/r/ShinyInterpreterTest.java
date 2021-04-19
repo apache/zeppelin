@@ -101,7 +101,7 @@ public class ShinyInterpreterTest {
     Thread.sleep(5 * 1000);
     // extract shiny url
     List<InterpreterResultMessage> resultMessages = context2.out.toInterpreterResultMessage();
-    assertEquals(1, resultMessages.size());
+    assertEquals(resultMessages.toString(), 1, resultMessages.size());
     assertEquals(InterpreterResult.Type.HTML, resultMessages.get(0).getType());
     String resultMessageData = resultMessages.get(0).getData();
     assertTrue(resultMessageData, resultMessageData.contains("<iframe"));
@@ -205,7 +205,7 @@ public class ShinyInterpreterTest {
     // wait for the shiny app start
     Thread.sleep(5 * 1000);
     List<InterpreterResultMessage> resultMessages = context2.out.toInterpreterResultMessage();
-    assertEquals(1, resultMessages.size());
+    assertEquals(resultMessages.toString(), 1, resultMessages.size());
     assertEquals(InterpreterResult.Type.HTML, resultMessages.get(0).getType());
     String resultMessageData = resultMessages.get(0).getData();
     assertTrue(resultMessageData, resultMessageData.contains("<iframe"));
