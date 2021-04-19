@@ -98,6 +98,8 @@ public abstract class SparkIntegrationTest {
     InterpreterSetting sparkInterpreterSetting = interpreterSettingManager.getInterpreterSettingByName("spark");
     sparkInterpreterSetting.setProperty("spark.jars.packages", "com.maxmind.geoip2:geoip2:2.5.0");
     sparkInterpreterSetting.setProperty("SPARK_PRINT_LAUNCH_COMMAND", "true");
+    sparkInterpreterSetting.setProperty("zeppelin.python.gatewayserver_address", "127.0.0.1");
+
     MavenXpp3Reader reader = new MavenXpp3Reader();
     Model model = reader.read(new FileReader("pom.xml"));
     sparkInterpreterSetting.setProperty("spark.jars", new File("target/zeppelin-interpreter-integration-" + model.getVersion() + ".jar").getAbsolutePath());

@@ -17,6 +17,9 @@ env:
       -Dmaven.wagon.http.retryHandler.count=3
   ZEPPELIN_HELIUM_REGISTRY: helium
   SPARK_PRINT_LAUNCH_COMMAND: "true"
+  SPARK_LOCAL_IP: 127.0.0.1
+  ZEPPELIN_LOCAL_IP: 127.0.0.1
+
 # Use the bash login, because we are using miniconda
 defaults:
   run:
@@ -32,6 +35,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+      - name: Tune Runner VM
+        uses: ./.github/actions/tune-runner-vm
       - name: Set up JDK 8
         uses: actions/setup-java@v1
         with:
@@ -71,6 +76,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+      - name: Tune Runner VM
+        uses: ./.github/actions/tune-runner-vm
       - name: Set up JDK 8
         uses: actions/setup-java@v1
         with:
@@ -101,6 +108,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+      - name: Tune Runner VM
+        uses: ./.github/actions/tune-runner-vm
       - name: Set up JDK 8
         uses: actions/setup-java@v1
         with:
@@ -139,6 +148,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+      - name: Tune Runner VM
+        uses: ./.github/actions/tune-runner-vm
       - name: Set up JDK 8
         uses: actions/setup-java@v1
         with:
@@ -170,6 +181,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+      - name: Tune Runner VM
+        uses: ./.github/actions/tune-runner-vm
       - name: Set up JDK 8
         uses: actions/setup-java@v1
         with:
@@ -207,6 +220,8 @@ jobs:
         run: sudo systemctl start mysql.service
       - name: Checkout
         uses: actions/checkout@v2
+      - name: Tune Runner VM
+        uses: ./.github/actions/tune-runner-vm
       - name: Set up JDK 8
         uses: actions/setup-java@v1
         with:
@@ -242,6 +257,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+      - name: Tune Runner VM
+        uses: ./.github/actions/tune-runner-vm
       - name: Set up JDK 8
         uses: actions/setup-java@v1
         with:
@@ -276,6 +293,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+      - name: Tune Runner VM
+        uses: ./.github/actions/tune-runner-vm
       - name: Set up JDK 8
         uses: actions/setup-java@v1
         with:
@@ -310,6 +329,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+      - name: Tune Runner VM
+        uses: ./.github/actions/tune-runner-vm
       - name: Set up JDK 8
         uses: actions/setup-java@v1
         with:
@@ -342,6 +363,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+      - name: Tune Runner VM
+        uses: ./.github/actions/tune-runner-vm
       - name: Set up JDK 8
         uses: actions/setup-java@v1
         with:
