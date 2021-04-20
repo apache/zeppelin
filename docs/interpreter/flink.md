@@ -259,13 +259,14 @@ There are 2 planners supported by Flink's table api: `flink` & `blink`.
 Check this [page](https://ci.apache.org/projects/flink/flink-docs-release-1.10/dev/table/common.html#main-differences-between-the-two-planners) for the difference between flink planner and blink planner.
 
 
-## Execution mode (Local/Remote/Yarn)
+## Execution mode (Local/Remote/Yarn/Yarn Application)
 
-Flink in Zeppelin supports 3 execution modes (`flink.execution.mode`):
+Flink in Zeppelin supports 4 execution modes (`flink.execution.mode`):
 
 * Local
 * Remote
 * Yarn
+* Yarn Application
 
 ### Run Flink in Local Mode
 
@@ -283,6 +284,16 @@ Running Flink in remote mode will connect to an existing flink cluster which cou
 In order to run flink in Yarn mode, you need to make the following settings:
 
 * Set `flink.execution.mode` to `yarn`
+* Set `HADOOP_CONF_DIR` in flink's interpreter setting.
+* Make sure `hadoop` command is on your PATH. Because internally flink will call command `hadoop classpath` and load all the hadoop related jars in the flink interpreter process
+
+### Run Flink in Yarn Application Mode
+
+In yarn mode, there will be a separated flink interpreter process. This may cause resource consumption issue when there're many interpreter processes.
+So if you are using flink 1.11 or afterwards, it is recommended to use yarn application mode. In this mode the interpreter runs in the JobManager which is in yarn container.
+In order to run flink in yarn application mode, you need to make the following settings:
+
+* Set `flink.execution.mode` to `yarn_application`
 * Set `HADOOP_CONF_DIR` in flink's interpreter setting.
 * Make sure `hadoop` command is on your PATH. Because internally flink will call command `hadoop classpath` and load all the hadoop related jars in the flink interpreter process
 

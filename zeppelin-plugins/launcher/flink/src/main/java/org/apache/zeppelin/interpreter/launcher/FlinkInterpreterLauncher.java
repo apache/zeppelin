@@ -79,11 +79,43 @@ public class FlinkInterpreterLauncher extends StandardInterpreterLauncher {
     envs.put("ZEPPELIN_FLINK_YARN_APPLICATION", "true");
 
     StringBuilder flinkYarnApplicationConfBuilder = new StringBuilder();
+    // set yarn.ship-files
+    List<String> yarnShipFiles = getYarnShipFiles(context);
+    if (!yarnShipFiles.isEmpty()) {
+      flinkYarnApplicationConfBuilder.append(
+              " -D yarn.ship-files=" + yarnShipFiles.stream().collect(Collectors.joining(",")));
+    }
 
+    // set yarn.application.name
+    String yarnAppName = context.getProperties().getProperty("flink.yarn.appName");
+    if (StringUtils.isNotBlank(yarnAppName)) {
+      // flink run command can not contains whitespace, so replace it with _
+      flinkYarnApplicationConfBuilder.append(
+              " -D yarn.application.name=" + yarnAppName.replaceAll(" ", "_") + "");
+    }
+
+    // add other yarn and python configuration.
+    for (Map.Entry<Object, Object> entry : context.getProperties().entrySet()) {
+      String key = entry.getKey().toString();
+      String value = entry.getValue().toString();
+      if (!key.equalsIgnoreCase("yarn.ship-files") &&
+              !key.equalsIgnoreCase("flink.yarn.appName")) {
+        if (CharMatcher.whitespace().matchesAnyOf(value)) {
+          LOGGER.warn("flink configuration key {} is skipped because it contains white space",
+                  key);
+        } else {
+          flinkYarnApplicationConfBuilder.append(" -D " + key + "=" + value);
+        }
+      }
+    }
+    envs.put("ZEPPELIN_FLINK_YANR_APPLICATION_CONF", flinkYarnApplicationConfBuilder.toString());
+  }
+
+  private List<String> getYarnShipFiles(InterpreterLaunchContext context) {
     // Extract yarn.ship-files, add hive-site.xml automatically if hive is enabled
     // and HIVE_CONF_DIR is specified
-    String hiveConfDirProperty = context.getProperties().getProperty("HIVE_CONF_DIR");
     List<String> yarnShipFiles = new ArrayList<>();
+    String hiveConfDirProperty = context.getProperties().getProperty("HIVE_CONF_DIR");
     if (StringUtils.isNotBlank(hiveConfDirProperty) &&
             Boolean.parseBoolean(context.getProperties()
                     .getProperty("zeppelin.flink.enableHive", "false"))) {
@@ -97,32 +129,7 @@ public class FlinkInterpreterLauncher extends StandardInterpreterLauncher {
     if (context.getProperties().containsKey("yarn.ship-files")) {
       yarnShipFiles.add(context.getProperties().getProperty("yarn.ship-files"));
     }
-    if (!yarnShipFiles.isEmpty()) {
-      flinkYarnApplicationConfBuilder.append(
-              " -D yarn.ship-files=" + yarnShipFiles.stream().collect(Collectors.joining(",")));
-    }
 
-    // specify yarn.application.name
-    String yarnAppName = context.getProperties().getProperty("flink.yarn.appName");
-    if (StringUtils.isNotBlank(yarnAppName)) {
-      // flink run command can not contains whitespace, so replace it with _
-      flinkYarnApplicationConfBuilder.append(
-              " -D yarn.application.name=" + yarnAppName.replaceAll(" ", "_") + "");
-    }
-
-    // add other yarn and python configuration.
-    for (Map.Entry<Object, Object> entry : context.getProperties().entrySet()) {
-      if (!entry.getKey().toString().equalsIgnoreCase("yarn.ship-files") &&
-              !entry.getKey().toString().equalsIgnoreCase("flink.yarn.appName")) {
-        if (CharMatcher.whitespace().matchesAnyOf(entry.getValue().toString())) {
-          LOGGER.warn("flink configuration key {} is skipped because it contains white space",
-                  entry.getValue().toString());
-        } else {
-          flinkYarnApplicationConfBuilder.append(
-                  " -D " + entry.getKey().toString() + "=" + entry.getValue().toString() + "");
-        }
-      }
-    }
-    envs.put("ZEPPELIN_FLINK_YANR_APPLICATION_CONF", flinkYarnApplicationConfBuilder.toString());
+    return yarnShipFiles;
   }
 }
