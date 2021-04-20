@@ -19,6 +19,7 @@ package org.apache.zeppelin.interpreter.launcher;
 
 import com.google.common.collect.Lists;
 import com.google.common.io.Files;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.io.FileUtils;
 
 import org.apache.hadoop.conf.Configuration;
@@ -28,7 +29,6 @@ import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.mapreduce.MRJobConfig;
-import org.apache.hadoop.util.StringUtils;
 import org.apache.hadoop.yarn.api.ApplicationConstants;
 import org.apache.hadoop.yarn.api.protocolrecords.GetNewApplicationResponse;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
@@ -114,7 +114,7 @@ public class YarnRemoteInterpreterProcess extends RemoteInterpreterProcess {
     this.hadoopConf = new YarnConfiguration();
     // Add core-site.xml and yarn-site.xml. This is for integration test where using MiniHadoopCluster.
     if (properties.containsKey("HADOOP_CONF_DIR") &&
-            !org.apache.commons.lang3.StringUtils.isBlank(properties.getProperty("HADOOP_CONF_DIR"))) {
+            !StringUtils.isBlank(properties.getProperty("HADOOP_CONF_DIR"))) {
       File hadoopConfDir = new File(properties.getProperty("HADOOP_CONF_DIR"));
       if (hadoopConfDir.exists() && hadoopConfDir.isDirectory()) {
         File coreSite = new File(hadoopConfDir, "core-site.xml");
@@ -266,7 +266,7 @@ public class YarnRemoteInterpreterProcess extends RemoteInterpreterProcess {
       FileUtils.forceDelete(flinkZip);
 
       String hiveConfDir = launchContext.getProperties().getProperty("HIVE_CONF_DIR");
-      if (!org.apache.commons.lang3.StringUtils.isBlank(hiveConfDir)) {
+      if (!StringUtils.isBlank(hiveConfDir)) {
         File hiveConfZipFile = createHiveConfZip(new File(hiveConfDir));
         srcPath = localFs.makeQualified(new Path(hiveConfZipFile.toURI()));
         destPath = copyFileToRemote(stagingDir, srcPath, (short) 1);
@@ -275,7 +275,7 @@ public class YarnRemoteInterpreterProcess extends RemoteInterpreterProcess {
     }
 
     String yarnDistArchives = launchContext.getProperties().getProperty("zeppelin.yarn.dist.archives");
-    if (org.apache.commons.lang3.StringUtils.isNotBlank(yarnDistArchives)) {
+    if (StringUtils.isNotBlank(yarnDistArchives)) {
       for (String localArchive : yarnDistArchives.split(",")) {
         URI localURI = resolveURI(localArchive);
         srcPath = localFs.makeQualified(new Path(localURI));
@@ -288,7 +288,7 @@ public class YarnRemoteInterpreterProcess extends RemoteInterpreterProcess {
       }
     }
     String yarnDistFiles = launchContext.getProperties().getProperty("zeppelin.yarn.dist.files");
-    if (org.apache.commons.lang3.StringUtils.isNotBlank(yarnDistFiles)) {
+    if (StringUtils.isNotBlank(yarnDistFiles)) {
       for (String localFile : yarnDistFiles.split(",")) {
         srcPath = localFs.makeQualified(new Path(localFile));
         destPath = copyFileToRemote(stagingDir, srcPath, (short) 1);
@@ -374,7 +374,7 @@ public class YarnRemoteInterpreterProcess extends RemoteInterpreterProcess {
     List<String> yarnClassPath = Lists.newArrayList(getYarnAppClasspath());
     List<String> mrClassPath = Lists.newArrayList(getMRAppClasspath());
     yarnClassPath.addAll(mrClassPath);
-    LOGGER.info("Adding hadoop classpath: " + org.apache.commons.lang3.StringUtils.join(yarnClassPath, ":"));
+    LOGGER.info("Adding hadoop classpath: {}", StringUtils.join(yarnClassPath, ":"));
     for (String path : yarnClassPath) {
       String newValue = path;
       if (envs.containsKey(ApplicationConstants.Environment.CLASSPATH.name())) {
@@ -411,7 +411,7 @@ public class YarnRemoteInterpreterProcess extends RemoteInterpreterProcess {
   }
 
   private String[] getDefaultMRApplicationClasspath() {
-    return StringUtils.getStrings(MRJobConfig.DEFAULT_MAPREDUCE_APPLICATION_CLASSPATH);
+    return org.apache.hadoop.util.StringUtils.getStrings(MRJobConfig.DEFAULT_MAPREDUCE_APPLICATION_CLASSPATH);
   }
 
   private void setResources(ApplicationSubmissionContext appContext) {
