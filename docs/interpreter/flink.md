@@ -151,19 +151,14 @@ You can also add and set other flink properties which are not listed in the tabl
     <td>Flink udf jars (comma separated), zeppelin will register udf in this jar automatically for user. These udf jars could be either local files or hdfs files if you have hadoop installed. The udf name is the class name.</td>
   </tr>
   <tr>
-    <td>flink.udf.jars.packages</td>
-    <td></td>
-    <td>Packages (comma separated) that would be searched for the udf defined in `flink.udf.jars`.</td>
-  </tr>
-  <tr>
     <td>flink.udf.packages</td>
     <td></td>
-    <td>Flink udf packages (comma separated), zeppelin will register udf in this jar automatically for user. These udf packages could be found in the maven central or private repository. The udf name is the class name. e.g. org.apache.flink:flink-udfs-demo0:1.10.0,org.apache.flink:flink-udfs-demo1:1.10.0</td>
+    <td>Flink udf packages (comma separated), zeppelin will register udf in this jar automatically for user. These udf packages could be found in the maven central or private repository. The udf name is the class name. e.g. org.apache.flink:flink-udf:1.10.0,org.apache.zeppelin:zeppelin-flink-udf:1.10.0</td>
   </tr>
   <tr>
-    <td>flink.udf.packages.packages</td>
+    <td>flink.udf.search.packages</td>
     <td></td>
-    <td>Packages (comma separated) that would be searched for the udf defined in `flink.udf.packages`.</td>
+    <td>Packages (comma separated) that would be searched for the udf defined in `flink.udf.jars` and `flink.udf.search.packages`.</td>
   </tr>
   <tr>
     <td>flink.execution.jars</td>

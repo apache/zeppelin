@@ -107,7 +107,6 @@ class FlinkScalaInterpreter(val properties: Properties) {
   private var defaultSqlParallelism = 1
   private var userJars: Seq[String] = _
   private var userUdfJars: Seq[String] = _
-  private var userUdfPackageJars: Seq[String] = _
 
   def open(): Unit = {
     val config = initFlinkConfig()
@@ -138,12 +137,7 @@ class FlinkScalaInterpreter(val properties: Properties) {
     }
 
     // load udf jar
-    this.userUdfJars.foreach(jar => loadUDFJar(jar,
-      properties.getProperty("flink.udf.jars.packages", "").split(",").toSet))
-
-    // load udf package
-    this.userUdfPackageJars.foreach(jar => loadUDFJar(jar,
-      properties.getProperty("flink.udf.packages.packages", "").split(",").toSet))
+    this.userUdfJars.foreach(jar => loadUDFJar(jar))
   }
 
   private def initFlinkConfig(): Config = {
@@ -194,8 +188,7 @@ class FlinkScalaInterpreter(val properties: Properties) {
         .copy(queue = Some(queue))))
 
     this.userUdfJars = getUserUdfJars()
-    this.userUdfPackageJars = getUserUdfPackageJars()
-    this.userJars = getUserJarsExceptUdfJars ++ this.userUdfJars ++ this.userUdfPackageJars
+    this.userJars = getUserJarsExceptUdfJars ++ this.userUdfJars
     LOGGER.info("UserJars: " + userJars.mkString(","))
     config = config.copy(externalJars = Some(userJars.toArray))
     LOGGER.info("Config: " + config)
@@ -473,12 +466,13 @@ class FlinkScalaInterpreter(val properties: Properties) {
     }
   }
 
-  private def loadUDFJar(jarPath: String, jarPackages: Set[String]): Unit = {
-    LOGGER.info("Loading UDF Jar: " + jarPath)
-    val jarFile = new JarFile(jarPath)
+  private def loadUDFJar(jar: String): Unit = {
+    LOGGER.info("Loading UDF Jar: " + jar)
+    val jarFile = new JarFile(jar)
     val entries = jarFile.entries
 
-    val urls = Array(new URL("jar:file:" + jarPath + "!/"))
+    val udfPackages = properties.getProperty("flink.udf.search.packages", "").split(",").toSet
+    val urls = Array(new URL("jar:file:" + jar + "!/"))
     val cl = new URLClassLoader(urls, getFlinkScalaShellLoader)
 
     while (entries.hasMoreElements) {
@@ -488,7 +482,7 @@ class FlinkScalaInterpreter(val properties: Properties) {
           // -6 because of .class
           var className = je.getName.substring(0, je.getName.length - 6)
           className = className.replace('/', '.')
-          if (jarPackages.isEmpty || jarPackages.exists( p => className.startsWith(p))) {
+          if (udfPackages.isEmpty || udfPackages.exists( p => className.startsWith(p))) {
             val c = cl.loadClass(className)
             val udf = c.newInstance()
             if (udf.isInstanceOf[ScalarFunction]) {
@@ -802,19 +796,21 @@ class FlinkScalaInterpreter(val properties: Properties) {
   }
 
   private def getUserUdfJars(): Seq[String] = {
-    if (!StringUtils.isBlank(properties.getProperty("flink.udf.jars", ""))) {
-      getOrDownloadJars(properties.getProperty("flink.udf.jars").split(",").toSeq)
-    } else {
-      Seq.empty[String]
-    }
-  }
+    val flinkUdfJars =
+      if (!StringUtils.isBlank(properties.getProperty("flink.udf.jars", ""))) {
+        getOrDownloadJars(properties.getProperty("flink.udf.jars").split(",").toSeq)
+      } else {
+        Seq.empty[String]
+      }
 
-  private def getUserUdfPackageJars(): Seq[String] = {
-    if (!StringUtils.isBlank(properties.getProperty("flink.udf.packages", ""))) {
-      getDependentJars(properties.getProperty("flink.udf.packages").split(",").toSeq)
-    } else {
-      Seq.empty[String]
-    }
+    val flinkUdfPackageJars =
+      if (!StringUtils.isBlank(properties.getProperty("flink.udf.packages", ""))) {
+        getDependentJars(properties.getProperty("flink.udf.packages").split(",").toSeq)
+      } else {
+        Seq.empty[String]
+      }
+
+    flinkUdfJars ++ flinkUdfPackageJars
   }
 
   private def getOrDownloadJars(jars: Seq[String]): Seq[String] = {
