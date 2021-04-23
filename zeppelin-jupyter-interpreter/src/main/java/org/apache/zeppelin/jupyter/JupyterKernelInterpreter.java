@@ -78,6 +78,7 @@ public class JupyterKernelInterpreter extends AbstractInterpreter {
   protected File kernelWorkDir;
   // python executable file for launching the jupyter kernel
   private String pythonExecutable;
+  private String condaEnv;
   private int kernelLaunchTimeout;
 
   private InterpreterOutputStream interpreterOutput = new InterpreterOutputStream(LOGGER);
@@ -213,6 +214,7 @@ public class JupyterKernelInterpreter extends AbstractInterpreter {
         LOGGER.warn("Fail to activate conda env, {}", stdout.toString());
       } else {
         LOGGER.info("Activate conda env successfully");
+        this.condaEnv = envName;
       }
     } catch (Exception e) {
       LOGGER.warn("Fail to activate conda env: {}, exception: {}", stdout.toString(), e);
@@ -235,11 +237,8 @@ public class JupyterKernelInterpreter extends AbstractInterpreter {
       FileUtils.copyURLToFile(url, new File(kernelWorkDir, kernelScript));
     }
 
-    CommandLine cmd = CommandLine.parse(pythonExecutable);
-    cmd.addArgument(kernelWorkDir.getAbsolutePath() + "/kernel_server.py");
-    cmd.addArgument(getKernelName());
-    cmd.addArgument(String.valueOf(kernelPort));
-
+    File bootstrapScriptFile = buildBootstrapScriptFile(kernelPort);
+    CommandLine cmd = CommandLine.parse(bootstrapScriptFile.getAbsolutePath());
     Map<String, String> envs = setupKernelEnv();
     jupyterKernelProcessLauncher = new JupyterKernelProcessLauncher(cmd, envs);
     jupyterKernelProcessLauncher.launch();
@@ -253,6 +252,20 @@ public class JupyterKernelInterpreter extends AbstractInterpreter {
       throw new IOException("Fail to launch Jupyter Kernel as the python process is failed.\n"
               + jupyterKernelProcessLauncher.getErrorMessage());
     }
+  }
+
+  private File buildBootstrapScriptFile(int kernelPort) throws IOException {
+    StringBuilder builder = new StringBuilder();
+    builder.append(pythonExecutable);
+    builder.append(" " + kernelWorkDir.getAbsolutePath() + "/kernel_server.py");
+    builder.append(" " + getKernelName());
+    builder.append(" " + kernelPort);
+    File scriptFile = Files.createTempFile("zeppelin_jupyter_", ".sh").toFile();
+    try (FileWriter out = new FileWriter(scriptFile)) {
+      IOUtils.write(builder.toString(), out);
+    }
+    scriptFile.setExecutable(true);
+    return scriptFile;
   }
 
   protected Map<String, String> setupKernelEnv() throws IOException {
