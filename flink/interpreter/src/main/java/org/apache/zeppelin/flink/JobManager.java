@@ -62,7 +62,8 @@ public class JobManager {
     this.flinkWebUrl = flinkWebUrl;
     this.displayedFlinkWebUrl = displayedFlinkWebUrl;
     this.properties = properties;
-    LOGGER.info("Creating JobManager at flinkWebUrl: {}", flinkWebUrl);
+    LOGGER.info("Creating JobManager at flinkWebUrl: {}, displayedFlinkWebUrl: {}",
+            flinkWebUrl, displayedFlinkWebUrl);
   }
 
   public void addJob(InterpreterContext context, JobClient jobClient) {
@@ -96,12 +97,7 @@ public class JobManager {
   public void sendFlinkJobUrl(InterpreterContext context) {
     JobClient jobClient = jobs.get(context.getParagraphId());
     if (jobClient != null) {
-      String jobUrl = null;
-      if (displayedFlinkWebUrl != null) {
-        jobUrl = displayedFlinkWebUrl + "#/job/" + jobClient.getJobID();
-      } else {
-        jobUrl = flinkWebUrl + "#/job/" + jobClient.getJobID();
-      }
+      String jobUrl = displayedFlinkWebUrl + "#/job/" + jobClient.getJobID();
       Map<String, String> infos = new HashMap<>();
       infos.put("jobUrl", jobUrl);
       infos.put("label", "FLINK JOB");

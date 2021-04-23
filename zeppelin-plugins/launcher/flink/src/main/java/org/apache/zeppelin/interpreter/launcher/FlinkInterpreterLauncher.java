@@ -44,6 +44,26 @@ public class FlinkInterpreterLauncher extends StandardInterpreterLauncher {
   public Map<String, String> buildEnvFromProperties(InterpreterLaunchContext context)
           throws IOException {
     Map<String, String> envs = super.buildEnvFromProperties(context);
+
+    String flinkHome = updateEnvsForFlinkHome(envs, context);
+
+    if (!envs.containsKey("FLINK_CONF_DIR")) {
+      envs.put("FLINK_CONF_DIR", flinkHome + "/conf");
+    }
+    envs.put("FLINK_LIB_DIR", flinkHome + "/lib");
+    envs.put("FLINK_PLUGINS_DIR", flinkHome + "/plugins");
+
+    // yarn application mode specific logic
+    if ("yarn_application".equalsIgnoreCase(
+            context.getProperties().getProperty("flink.execution.mode"))) {
+      updateEnvsForYarnApplicationMode(envs, context);
+    }
+
+    return envs;
+  }
+
+  private String updateEnvsForFlinkHome(Map<String, String> envs,
+                                      InterpreterLaunchContext context) throws IOException {
     String flinkHome = context.getProperties().getProperty("FLINK_HOME");
     if (StringUtils.isBlank(flinkHome)) {
       flinkHome = System.getenv("FLINK_HOME");
@@ -59,19 +79,7 @@ public class FlinkInterpreterLauncher extends StandardInterpreterLauncher {
       throw new IOException(String.format("FLINK_HOME '%s' is a file, but should be directory",
               flinkHome));
     }
-    if (!envs.containsKey("FLINK_CONF_DIR")) {
-      envs.put("FLINK_CONF_DIR", flinkHome + "/conf");
-    }
-    envs.put("FLINK_LIB_DIR", flinkHome + "/lib");
-    envs.put("FLINK_PLUGINS_DIR", flinkHome + "/plugins");
-
-    // yarn application mode specific logic
-    if (context.getProperties().getProperty("flink.execution.mode")
-            .equalsIgnoreCase("yarn_application")) {
-      updateEnvsForYarnApplicationMode(envs, context);
-    }
-
-    return envs;
+    return flinkHome;
   }
 
   private void updateEnvsForYarnApplicationMode(Map<String, String> envs,
@@ -108,7 +116,7 @@ public class FlinkInterpreterLauncher extends StandardInterpreterLauncher {
         }
       }
     }
-    envs.put("ZEPPELIN_FLINK_YANR_APPLICATION_CONF", flinkYarnApplicationConfBuilder.toString());
+    envs.put("ZEPPELIN_FLINK_YARN_APPLICATION_CONF", flinkYarnApplicationConfBuilder.toString());
   }
 
   private List<String> getYarnShipFiles(InterpreterLaunchContext context) {

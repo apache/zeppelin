@@ -45,7 +45,6 @@ import org.apache.flink.table.catalog.hive.HiveCatalog
 import org.apache.flink.table.functions.{AggregateFunction, ScalarFunction, TableAggregateFunction, TableFunction}
 import org.apache.flink.table.module.ModuleManager
 import org.apache.flink.table.module.hive.HiveModule
-import org.apache.flink.util.Preconditions.checkState
 import org.apache.flink.yarn.cli.FlinkYarnSessionCli
 import org.apache.zeppelin.dep.DependencyResolver
 import org.apache.zeppelin.flink.FlinkShell._
@@ -54,7 +53,7 @@ import org.apache.zeppelin.interpreter.util.InterpreterOutputStream
 import org.apache.zeppelin.interpreter.{InterpreterContext, InterpreterException, InterpreterHookRegistry, InterpreterResult}
 import org.slf4j.{Logger, LoggerFactory}
 
-import scala.collection.{JavaConversions, JavaConverters}
+import scala.collection.JavaConversions
 import scala.collection.JavaConverters._
 import scala.tools.nsc.Settings
 import scala.tools.nsc.interpreter.Completion.ScalaCompleter
@@ -92,23 +91,28 @@ class FlinkScalaInterpreter(val properties: Properties) {
 
   // PyFlink depends on java version of TableEnvironment,
   // so need to create java version of TableEnvironment
+  // java version of blink TableEnvironment
   private var java_btenv: TableEnvironment = _
   private var java_stenv: TableEnvironment = _
 
+  // java version of flink TableEnvironment
   private var java_btenv_2: TableEnvironment = _
   private var java_stenv_2: TableEnvironment = _
 
   private var z: FlinkZeppelinContext = _
   private var flinkVersion: FlinkVersion = _
   private var flinkShims: FlinkShims = _
-  // used for call jm rest api
+  // used for calling jm rest api
   private var jmWebUrl: String = _
-  // used for display on zeppelin ui
+  // used for displaying on zeppelin ui
   private var displayedJMWebUrl: String = _
   private var jobManager: JobManager = _
   private var defaultParallelism = 1
   private var defaultSqlParallelism = 1
+
+  // flink.execution.jars + flink.execution.jars + flink.udf.jars
   private var userJars: Seq[String] = _
+  // flink.udf.jars
   private var userUdfJars: Seq[String] = _
 
 
@@ -164,6 +168,10 @@ class FlinkScalaInterpreter(val properties: Properties) {
 
   private def initFlinkConfig(): Config = {
 
+    this.flinkVersion = new FlinkVersion(EnvironmentInformation.getVersion)
+    LOGGER.info("Using flink: " + flinkVersion)
+    this.flinkShims = FlinkShims.getInstance(flinkVersion, properties)
+
     var flinkHome = sys.env.getOrElse("FLINK_HOME", "")
     var flinkConfDir = sys.env.getOrElse("FLINK_CONF_DIR", "")
     val hadoopConfDir = sys.env.getOrElse("HADOOP_CONF_DIR", "")
@@ -173,7 +181,10 @@ class FlinkScalaInterpreter(val properties: Properties) {
     mode = ExecutionMode.withName(
       properties.getProperty("flink.execution.mode", "LOCAL").toUpperCase)
     if (mode == ExecutionMode.YARN_APPLICATION) {
-      // use current yarn container working directory as FLINK_HOME and FLINK_CONF_DIR
+      if (flinkVersion.isFlink110) {
+        throw new Exception("yarn_application mode is only supported after Flink 1.11")
+      }
+      // use current yarn container working directory as FLINK_HOME, FLINK_CONF_DIR and HIVE_CONF_DIR
       val workingDirectory = new File(".").getAbsolutePath
       flinkHome = workingDirectory
       flinkConfDir = workingDirectory
@@ -184,10 +195,6 @@ class FlinkScalaInterpreter(val properties: Properties) {
     LOGGER.info("HADOOP_CONF_DIR: " + hadoopConfDir)
     LOGGER.info("YARN_CONF_DIR: " + yarnConfDir)
     LOGGER.info("HIVE_CONF_DIR: " + hiveConfDir)
-
-    this.flinkVersion = new FlinkVersion(EnvironmentInformation.getVersion)
-    LOGGER.info("Using flink: " + flinkVersion)
-    this.flinkShims = FlinkShims.getInstance(flinkVersion, properties)
 
     this.configuration = GlobalConfiguration.loadConfiguration(flinkConfDir)
     var config = Config(executionMode = mode)
@@ -595,7 +602,7 @@ class FlinkScalaInterpreter(val properties: Properties) {
                            context: InterpreterContext): java.util.List[InterpreterCompletion] = {
     val completions = scalaCompleter.complete(buf.substring(0, cursor), cursor).candidates
       .map(e => new InterpreterCompletion(e, e, null))
-    scala.collection.JavaConversions.seqAsJavaList(completions)
+    JavaConversions.seqAsJavaList(completions)
   }
 
   protected def callMethod(obj: Object, name: String): Object = {

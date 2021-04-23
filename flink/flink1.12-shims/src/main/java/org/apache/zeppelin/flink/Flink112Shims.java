@@ -20,6 +20,7 @@ package org.apache.zeppelin.flink;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.compress.utils.Lists;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.flink.api.common.ExecutionConfig;
 import org.apache.flink.api.common.JobStatus;
 import org.apache.flink.api.common.typeutils.TypeSerializer;
@@ -173,14 +174,15 @@ public class Flink112Shims extends FlinkShims {
 
   @Override
   public String getPyFlinkPythonPath(Properties properties) throws IOException {
-    if ("yarn_application".equalsIgnoreCase(properties.getProperty("flink.execution.mode"))) {
+    String mode = properties.getProperty("flink.execution.mode");
+    if ("yarn_application".equalsIgnoreCase(mode)) {
       // for yarn application mode, FLINK_HOME is container working directory
       String flinkHome = new File(".").getAbsolutePath();
       return getPyFlinkPythonPath(flinkHome + "/lib/python");
     }
 
     String flinkHome = System.getenv("FLINK_HOME");
-    if (flinkHome != null) {
+    if (StringUtils.isNotBlank(flinkHome)) {
       return getPyFlinkPythonPath(flinkHome + "/opt/python");
     } else {
       throw new IOException("No FLINK_HOME is specified");
@@ -188,6 +190,7 @@ public class Flink112Shims extends FlinkShims {
   }
 
   private String getPyFlinkPythonPath(String pyFlinkFolder) {
+    LOGGER.info("Getting pyflink lib from {}", pyFlinkFolder);
     List<File> depFiles = Arrays.asList(new File(pyFlinkFolder).listFiles());
     StringBuilder builder = new StringBuilder();
     for (File file : depFiles) {

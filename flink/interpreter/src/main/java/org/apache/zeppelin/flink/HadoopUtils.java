@@ -97,6 +97,7 @@ public class HadoopUtils {
     }
     Path destPath = new Path(tmpDir.getAbsolutePath() + "/" + sourcePath.getName());
     fs.copyToLocalFile(sourcePath, destPath);
+    LOGGER.info("Downloaded jar from {} to {}", jarOnHdfs, destPath);
     return new File(destPath.toString()).getAbsolutePath();
   }
 }
