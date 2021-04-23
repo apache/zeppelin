@@ -83,7 +83,7 @@ Make sure that [docker](https://www.docker.com/community-edition) is installed i
 
 Use this command to launch Apache Zeppelin in a container.
 
-```
+```bash
 docker run -p 8080:8080 --rm --name zeppelin apache/zeppelin:0.9.0
 
 ```
