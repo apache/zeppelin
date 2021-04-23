@@ -90,7 +90,9 @@ docker run -p 8080:8080 --rm --name zeppelin apache/zeppelin:0.9.0
 To persist `logs` and `notebook` directories, use the [volume](https://docs.docker.com/engine/reference/commandline/run/#mount-volume--v-read-only) option for docker container.
 
 ```bash
-docker run -p 8080:8080 --rm -v $PWD/logs:/logs -v $PWD/notebook:/notebook -e ZEPPELIN_LOG_DIR='/logs' -e ZEPPELIN_NOTEBOOK_DIR='/notebook' --name zeppelin apache/zeppelin:0.9.0
+docker run -p 8080:8080 --rm -v $PWD/logs:/logs -v $PWD/notebook:/notebook \
+           -e ZEPPELIN_LOG_DIR='/logs' -e ZEPPELIN_NOTEBOOK_DIR='/notebook' \
+           --name zeppelin apache/zeppelin:0.9.0
 ```
 
 If you have trouble accessing `localhost:8080` in the browser, Please clear browser cache.
@@ -119,7 +121,7 @@ bin/zeppelin-daemon.sh upstart
 
 **zeppelin.conf**
 
-```
+```aconf
 description "zeppelin"
 
 start on (local-filesystems and net-device-up IFACE!=lo)

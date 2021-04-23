@@ -76,8 +76,8 @@ So, each note has an absolutely isolated session. (But it is still possible to s
 Mode | Each notebook...	| Benefits | Disadvantages | Sharing objects
 --- | --- | --- | --- | ---
 **shared** |  Shares a single session in a single interpreter process (JVM) |  Low resource utilization and it's easy to share data between notebooks |  All notebooks are affected if the interpreter process dies | Can share directly
-**scoped** | Has its own session in the same interpreter process (JVM) | Less resource utilization than isolated mode |  All notebooks are affected if the interpreter process dies | Can't share directly, but it's possible to share objects via [ResourcePool](../../interpreter/spark.html#object-exchange)) 
-**isolated** | Has its own Interpreter Process | One notebook is not affected directly by other notebooks (**per note**) | Can't share data between notebooks easily (**per note**) | Can't share directly, but it's possible to share objects via [ResourcePool](../../interpreter/spark.html#object-exchange)) 
+**scoped** | Has its own session in the same interpreter process (JVM) | Less resource utilization than isolated mode |  All notebooks are affected if the interpreter process dies | Can't share directly, but it's possible to share objects via [ResourcePool](../../interpreter/spark.html#object-exchange)
+**isolated** | Has its own Interpreter Process | One notebook is not affected directly by other notebooks (**per note**) | Can't share data between notebooks easily (**per note**) | Can't share directly, but it's possible to share objects via [ResourcePool](../../interpreter/spark.html#object-exchange)
 
 In the case of the **per user** scope (available in a multi-user environment), Zeppelin manages interpreter sessions on a per user basis rather than a per note basis. For example:
  

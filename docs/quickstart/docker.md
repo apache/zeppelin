@@ -46,7 +46,7 @@ By default, docker provides an interface as a sock file, so you need to modify t
 
 vi `/etc/docker/daemon.json`, Add `tcp://0.0.0.0:2375` to the `hosts` configuration item.
 
-```
+```json
 {
     ...
     "hosts": ["tcp://0.0.0.0:2375","unix:///var/run/docker.sock"]
@@ -60,27 +60,27 @@ vi `/etc/docker/daemon.json`, Add `tcp://0.0.0.0:2375` to the `hosts` configurat
 
 1. Modify these 2 configuration items in `zeppelin-site.xml`.
 
-```
-<property>
-  <name>zeppelin.run.mode</name>
-  <value>docker</value>
-  <description>'auto|local|k8s|docker'</description>
-</property>
+ ```xml
+ <property>
+   <name>zeppelin.run.mode</name>
+   <value>docker</value>
+   <description>'auto|local|k8s|docker'</description>
+ </property>
 
-<property>
-  <name>zeppelin.docker.container.image</name>
-  <value>apache/zeppelin</value>
-  <description>Docker image for interpreters</description>
-</property>
+ <property>
+   <name>zeppelin.docker.container.image</name>
+   <value>apache/zeppelin</value>
+   <description>Docker image for interpreters</description>
+ </property>
 ```
 
 2. set timezone in zeppelin-env.sh
 
-Set to the same time zone as the zeppelin server, keeping the time zone in the interpreter docker container the same as the server. E.g, `"America/New_York"` or `"Asia/Shanghai"`
+ Set to the same time zone as the zeppelin server, keeping the time zone in the interpreter docker container the same as the server. E.g, `"America/New_York"` or `"Asia/Shanghai"`
 
-```
-export DOCKER_TIME_ZONE="America/New_York"
-```
+ ```bash
+ export DOCKER_TIME_ZONE="America/New_York"
+ ```
 
 
 ## Build Zeppelin image manually
