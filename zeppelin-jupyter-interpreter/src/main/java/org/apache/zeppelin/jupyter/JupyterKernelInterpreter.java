@@ -238,6 +238,7 @@ public class JupyterKernelInterpreter extends AbstractInterpreter {
     }
 
     File bootstrapScriptFile = buildBootstrapScriptFile(kernelPort);
+    LOGGER.info("Bootstrap script file: " + bootstrapScriptFile.getAbsolutePath());
     CommandLine cmd = CommandLine.parse(bootstrapScriptFile.getAbsolutePath());
     Map<String, String> envs = setupKernelEnv();
     jupyterKernelProcessLauncher = new JupyterKernelProcessLauncher(cmd, envs);
@@ -256,6 +257,9 @@ public class JupyterKernelInterpreter extends AbstractInterpreter {
 
   private File buildBootstrapScriptFile(int kernelPort) throws IOException {
     StringBuilder builder = new StringBuilder();
+    if (condaEnv != null) {
+      builder.append("source activate " + condaEnv + "/bin/activate\n");
+    }
     builder.append(pythonExecutable);
     builder.append(" " + kernelWorkDir.getAbsolutePath() + "/kernel_server.py");
     builder.append(" " + getKernelName());
