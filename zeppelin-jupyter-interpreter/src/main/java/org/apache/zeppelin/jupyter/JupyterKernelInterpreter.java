@@ -77,8 +77,8 @@ public class JupyterKernelInterpreter extends AbstractInterpreter {
   // working directory of jupyter kernel
   protected File kernelWorkDir;
   // python executable file for launching the jupyter kernel
-  private String pythonExecutable;
-  private String condaEnv;
+  protected String pythonExecutable;
+  protected String condaEnv;
   private int kernelLaunchTimeout;
 
   private InterpreterOutputStream interpreterOutput = new InterpreterOutputStream(LOGGER);
@@ -115,7 +115,14 @@ public class JupyterKernelInterpreter extends AbstractInterpreter {
         // JupyterKernelInterpreter might already been opened
         return;
       }
-      pythonExecutable = getProperty("zeppelin.python", "python");
+
+      String envName = getProperty("zeppelin.interpreter.conda.env.name");
+      if (StringUtils.isNotBlank(envName)) {
+        activateCondaEnv(envName);
+      } else {
+        pythonExecutable = getProperty("zeppelin.python", "python");
+      }
+
       LOGGER.info("Python Exec: {}", pythonExecutable);
       String checkPrerequisiteResult = checkKernelPrerequisite(pythonExecutable);
       if (!StringUtils.isEmpty(checkPrerequisiteResult)) {
@@ -188,19 +195,18 @@ public class JupyterKernelInterpreter extends AbstractInterpreter {
     return "";
   }
 
-  private void activateCondaEnv() {
-    String envName = getProperty("zeppelin.interpreter.conda.env.name", "environment");
+  private void activateCondaEnv(String envName) throws IOException {
     LOGGER.info("Activating conda env: {}", envName);
     ByteArrayOutputStream stdout = new ByteArrayOutputStream();
     PumpStreamHandler psh = new PumpStreamHandler(stdout);
     try {
       if (!new File(envName).exists()) {
-        LOGGER.info("Skip activating conda env because no environment folder: {}", envName);
-        return;
+        throw new IOException("Fail to activating conda env because no environment folder: " +
+                envName);
       }
       File scriptFile = Files.createTempFile("zeppelin_jupyter_kernel_", ".sh").toFile();
       try (FileWriter writer = new FileWriter(scriptFile)) {
-        IOUtils.write(String.format("chmod 777 -R %s\nsource %s/bin/activate\nconda-unpack",
+        IOUtils.write(String.format("chmod 777 -R %s \nsource %s/bin/activate \nconda-unpack",
                 envName, envName),
                 writer);
       }
@@ -211,20 +217,20 @@ public class JupyterKernelInterpreter extends AbstractInterpreter {
       executor.setStreamHandler(psh);
       int exitCode = executor.execute(cmd);
       if (exitCode != 0) {
-        LOGGER.warn("Fail to activate conda env, {}", stdout.toString());
+        throw new IOException("Fail to activate conda env, " + stdout.toString());
       } else {
         LOGGER.info("Activate conda env successfully");
         this.condaEnv = envName;
+        this.pythonExecutable = envName + "/bin/python";
       }
     } catch (Exception e) {
-      LOGGER.warn("Fail to activate conda env: {}, exception: {}", stdout.toString(), e);
+      throw new IOException("Fail to activate conda env: " + envName +
+              " exception: " + stdout.toString());
     }
   }
 
   private void launchJupyterKernel(int kernelPort)
           throws IOException {
-
-    activateCondaEnv();
 
     LOGGER.info("Launching Jupyter Kernel at port: {}", kernelPort);
     // copy the python scripts to a temp directory, then launch jupyter kernel in that folder
@@ -258,7 +264,7 @@ public class JupyterKernelInterpreter extends AbstractInterpreter {
   private File buildBootstrapScriptFile(int kernelPort) throws IOException {
     StringBuilder builder = new StringBuilder();
     if (condaEnv != null) {
-      builder.append("source activate " + condaEnv + "/bin/activate\n");
+      builder.append("source " + condaEnv + "/bin/activate\n");
     }
     builder.append(pythonExecutable);
     builder.append(" " + kernelWorkDir.getAbsolutePath() + "/kernel_server.py");

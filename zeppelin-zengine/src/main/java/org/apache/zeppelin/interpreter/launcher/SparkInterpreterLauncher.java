@@ -88,6 +88,15 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
 
     setupPropertiesForPySpark(sparkProperties);
     setupPropertiesForSparkR(sparkProperties);
+
+    String condaEnvName = context.getProperties().getProperty("zeppelin.interpreter.conda.env.name");
+    if (StringUtils.isNotBlank(condaEnvName)) {
+      if (!isYarnCluster()) {
+        throw new IOException("zeppelin.interpreter.conda.env.name only works for yarn-cluster mode");
+      }
+      sparkProperties.setProperty("spark.pyspark.python", condaEnvName + "/bin/python");
+    }
+
     if (isYarnMode() && getDeployMode().equals("cluster")) {
       env.put("ZEPPELIN_SPARK_YARN_CLUSTER", "true");
       sparkProperties.setProperty("spark.yarn.submit.waitAppCompletion", "false");
@@ -397,4 +406,11 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
     return getSparkMaster().startsWith("yarn");
   }
 
+  private boolean isYarnCluster() {
+    return isYarnMode() && "cluster".equalsIgnoreCase(getDeployMode());
+  }
+
+  private boolean isYarnClient() {
+    return isYarnMode() && "client".equalsIgnoreCase(getDeployMode());
+  }
 }
