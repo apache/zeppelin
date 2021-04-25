@@ -337,7 +337,8 @@ class FlinkScalaInterpreter(val properties: Properties) {
         Thread.currentThread().setContextClassLoader(getFlinkClassLoader)
         val repl = new FlinkILoop(configuration, config.externalJars, None, replOut, mode,
           JExecutionEnvironment.getExecutionEnvironment,
-          JStreamExecutionEnvironment.getExecutionEnvironment)
+          JStreamExecutionEnvironment.getExecutionEnvironment,
+          this)
         (repl, cluster)
       } catch {
         case e: Exception =>
@@ -940,6 +941,8 @@ class FlinkScalaInterpreter(val properties: Properties) {
     val pattern(prefix, remaining) = webURL
     yarnAddress + remaining
   }
+
+  def getUserJars:java.util.List[String] = userJars
 
   private def getConfigurationOfStreamExecutionEnv(): Configuration = {
     val getConfigurationMethod = classOf[JStreamExecutionEnvironment].getDeclaredMethod("getConfiguration")

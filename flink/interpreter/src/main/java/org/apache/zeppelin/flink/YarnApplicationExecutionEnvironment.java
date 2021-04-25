@@ -26,6 +26,7 @@ import org.apache.flink.configuration.PipelineOptions;
 import org.apache.flink.core.execution.JobClient;
 import org.apache.flink.core.execution.PipelineExecutorServiceLoader;
 
+import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -41,13 +42,16 @@ import static org.apache.flink.util.Preconditions.checkState;
 public class YarnApplicationExecutionEnvironment extends ExecutionEnvironment {
 
   private FlinkILoop flinkILoop;
+  private FlinkScalaInterpreter flinkScalaInterpreter;
 
   public YarnApplicationExecutionEnvironment(PipelineExecutorServiceLoader executorServiceLoader,
                                              Configuration configuration,
                                              ClassLoader userClassloader,
-                                             FlinkILoop flinkILoop) {
+                                             FlinkILoop flinkILoop,
+                                             FlinkScalaInterpreter flinkScalaInterpreter) {
     super(executorServiceLoader,configuration,userClassloader);
     this.flinkILoop = flinkILoop;
+    this.flinkScalaInterpreter = flinkScalaInterpreter;
   }
 
   @Override
@@ -77,6 +81,9 @@ public class YarnApplicationExecutionEnvironment extends ExecutionEnvironment {
     final URL jarUrl = flinkILoop.writeFilesToDisk().getAbsoluteFile().toURI().toURL();
     final List<URL> allJarFiles = new ArrayList<>();
     allJarFiles.add(jarUrl);
+    for (String jar : flinkScalaInterpreter.getUserJars()) {
+      allJarFiles.add(new File(jar).toURI().toURL());
+    }
     return allJarFiles;
   }
 }

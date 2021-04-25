@@ -38,7 +38,8 @@ class FlinkILoop(
     out0: JPrintWriter,
     mode: ExecutionMode.Value,
     jenv: JExecutionEnvironment,
-    jsenv: JStreamExecutionEnvironment) extends org.apache.flink.api.scala.FlinkILoop(flinkConfig, externalJars, in0, out0) {
+    jsenv: JStreamExecutionEnvironment,
+    flinkScalaInterpreter: FlinkScalaInterpreter) extends org.apache.flink.api.scala.FlinkILoop(flinkConfig, externalJars, in0, out0) {
 
 
   override def writeFilesToDisk(): File = {
@@ -76,13 +77,15 @@ class FlinkILoop(
         getExecutionEnvironmentField(jenv, "executorServiceLoader").asInstanceOf[PipelineExecutorServiceLoader],
         getExecutionEnvironmentField(jenv, "configuration").asInstanceOf[Configuration],
         getExecutionEnvironmentField(jenv, "userClassloader").asInstanceOf[ClassLoader],
-        this
+        this,
+        flinkScalaInterpreter
       ))
       val scalaSenv = new StreamExecutionEnvironment(new YarnApplicationStreamEnvironment(
         getStreamExecutionEnvironmentField(jsenv, "executorServiceLoader").asInstanceOf[PipelineExecutorServiceLoader],
         getStreamExecutionEnvironmentField(jsenv, "configuration").asInstanceOf[Configuration],
         getStreamExecutionEnvironmentField(jsenv, "userClassloader").asInstanceOf[ClassLoader],
-        this
+        this,
+        flinkScalaInterpreter
       ))
       (scalaBenv, scalaSenv)
     } else {

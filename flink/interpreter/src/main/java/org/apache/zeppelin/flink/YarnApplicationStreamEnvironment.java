@@ -28,6 +28,7 @@ import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -45,13 +46,16 @@ public class YarnApplicationStreamEnvironment extends StreamExecutionEnvironment
   private static final Logger LOGGER = LoggerFactory.getLogger(YarnApplicationStreamEnvironment.class);
 
   private FlinkILoop flinkILoop;
+  private FlinkScalaInterpreter flinkScalaInterpreter;
 
   public YarnApplicationStreamEnvironment(PipelineExecutorServiceLoader executorServiceLoader,
                                           Configuration configuration,
                                           ClassLoader userClassloader,
-                                          FlinkILoop flinkILoop) {
+                                          FlinkILoop flinkILoop,
+                                          FlinkScalaInterpreter flinkScalaInterpreter) {
     super(executorServiceLoader,configuration,userClassloader);
     this.flinkILoop = flinkILoop;
+    this.flinkScalaInterpreter = flinkScalaInterpreter;
   }
 
   @Override
@@ -81,6 +85,9 @@ public class YarnApplicationStreamEnvironment extends StreamExecutionEnvironment
     final URL jarUrl = flinkILoop.writeFilesToDisk().getAbsoluteFile().toURI().toURL();
     final List<URL> allJarFiles = new ArrayList<>();
     allJarFiles.add(jarUrl);
+    for (String jar : flinkScalaInterpreter.getUserJars()) {
+      allJarFiles.add(new File(jar).toURI().toURL());
+    }
     return allJarFiles;
   }
 }
