@@ -942,7 +942,7 @@ class FlinkScalaInterpreter(val properties: Properties) {
     yarnAddress + remaining
   }
 
-  def getUserJars:java.util.List[String] = userJars
+  def getUserJars:java.util.List[String] = JavaConversions.seqAsJavaList(userJars)
 
   private def getConfigurationOfStreamExecutionEnv(): Configuration = {
     val getConfigurationMethod = classOf[JStreamExecutionEnvironment].getDeclaredMethod("getConfiguration")
