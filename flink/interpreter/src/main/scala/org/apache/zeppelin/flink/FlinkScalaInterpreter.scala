@@ -179,7 +179,9 @@ class FlinkScalaInterpreter(val properties: Properties) {
     var hiveConfDir = sys.env.getOrElse("HIVE_CONF_DIR", "")
 
     mode = ExecutionMode.withName(
-      properties.getProperty("flink.execution.mode", "LOCAL").toUpperCase)
+      properties.getProperty("flink.execution.mode", "LOCAL")
+        .replace("-", "_")
+        .toUpperCase)
     if (mode == ExecutionMode.YARN_APPLICATION) {
       if (flinkVersion.isFlink110) {
         throw new Exception("yarn_application mode is only supported after Flink 1.11")

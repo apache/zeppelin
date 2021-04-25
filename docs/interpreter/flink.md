@@ -293,7 +293,7 @@ In the above yarn mode, there will be a separated flink interpreter process. Thi
 So it is recommended to use yarn application mode if you are using flink 1.11 or afterwards (yarn application mode is only supported after flink 1.11). In this mode flink interpreter runs in the JobManager which is in yarn container.
 In order to run flink in yarn application mode, you need to make the following settings:
 
-* Set `flink.execution.mode` to `yarn_application`
+* Set `flink.execution.mode` to `yarn-application`
 * Set `HADOOP_CONF_DIR` in flink's interpreter setting or `zeppelin-env.sh`.
 * Make sure `hadoop` command is on your PATH. Because internally flink will call command `hadoop classpath` and load all the hadoop related jars in the flink interpreter process
 
