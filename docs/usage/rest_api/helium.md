@@ -55,7 +55,8 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     <tr>
       <td>Sample JSON response</td>
       <td>
-        <pre>
+
+```json
 {
   "status": "OK",
   "message": "",
@@ -67,7 +68,8 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
           "type": "APPLICATION",
           "name": "zeppelin.clock",
           "description": "Clock (example)",
-          "artifact": "zeppelin-examples\/zeppelin-example-clock\/target\/zeppelin-example-clock-0.7.0-SNAPSHOT.jar",
+          "artifact": "zeppelin-examples\/zeppelin-example-clock\/target\/zeppelin-example
+-clock-0.7.0-SNAPSHOT.jar",
           "className": "org.apache.zeppelin.example.app.clock.Clock",
           "resources": [
             [
@@ -81,8 +83,8 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     ]
   }
 }
-        </pre>
-      </td>
+```
+</td>
     </tr>
   </table>
 <br/>
@@ -110,7 +112,8 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     <tr>
       <td>Sample JSON response</td>
       <td>
-        <pre>
+
+```json
 {
   "status": "OK",
   "message": "",
@@ -122,7 +125,8 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
           "type": "APPLICATION",
           "name": "zeppelin.clock",
           "description": "Clock (example)",
-          "artifact": "zeppelin-examples\/zeppelin-example-clock\/target\/zeppelin-example-clock-0.7.0-SNAPSHOT.jar",
+          "artifact": "zeppelin-examples\/zeppelin-example-clock\/target\/zeppelin-example
+-clock-0.7.0-SNAPSHOT.jar",
           "className": "org.apache.zeppelin.example.app.clock.Clock",
           "resources": [
             [
@@ -136,8 +140,8 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     ]
   }
 }
-        </pre>
-      </td>
+```
+</td>
     </tr>
   </table>
 <br/>
@@ -165,7 +169,8 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     <tr>
       <td>Sample JSON response</td>
       <td>
-        <pre>
+
+```json
 {
   "status": "OK",
   "message": "",
@@ -177,7 +182,8 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
           "type": "APPLICATION",
           "name": "zeppelin.clock",
           "description": "Clock (example)",
-          "artifact": "zeppelin-examples\/zeppelin-example-clock\/target\/zeppelin-example-clock-0.7.0-SNAPSHOT.jar",
+          "artifact": "zeppelin-examples\/zeppelin-example-clock\/target\/zeppelin-example
+-clock-0.7.0-SNAPSHOT.jar",
           "className": "org.apache.zeppelin.example.app.clock.Clock",
           "resources": [
             [
@@ -191,8 +197,8 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     ]
   }
 }
-        </pre>
-      </td>
+```
+</td>
     </tr>
   </table>
 <br/>
@@ -223,7 +229,8 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     <tr>
       <td>Sample JSON response</td>
       <td>
-        <pre>
+
+```json
 {
   "status": "OK",
   "message": "",
@@ -235,7 +242,8 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
           "type": "APPLICATION",
           "name": "zeppelin.clock",
           "description": "Clock (example)",
-          "artifact": "zeppelin-examples\/zeppelin-example-clock\/target\/zeppelin-example-clock-0.7.0-SNAPSHOT.jar",
+          "artifact": "zeppelin-examples\/zeppelin-example-clock\/target\/zeppelin-example
+-clock-0.7.0-SNAPSHOT.jar",
           "className": "org.apache.zeppelin.example.app.clock.Clock",
           "resources": [
             [
@@ -249,8 +257,8 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     ]
   }
 }
-        </pre>
-      </td>
+```
+</td>
     </tr>
   </table>
 <br/>
@@ -281,14 +289,15 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     <tr>
       <td>Sample JSON response</td>
       <td>
-        <pre>
+
+```json
 {
   "status": "OK",
   "message": "",
   "body": "app_2C5FYRZ1E-20170108-040449_2068241472zeppelin_clock"
 }
-        </pre>
-      </td>
+```
+</td>
     </tr>
   </table>
 <br/>
@@ -348,10 +357,11 @@ zeppelin-examples/zeppelin-example-clock/target/zeppelin-example-clock-0.7.0-SNA
     <tr>
       <td>Sample JSON response</td>
       <td>
-        <pre>
+
+```json
 {"status":"OK"}
-        </pre>
-      </td>
+```
+</td>
     </tr>
   </table>
 <br/>
@@ -379,8 +389,11 @@ zeppelin-examples/zeppelin-example-clock/target/zeppelin-example-clock-0.7.0-SNA
     <tr>
       <td>Sample JSON response</td>
       <td>
-        <code>{"status":"OK"}</code>
-      </td>
+        
+```json
+{"status":"OK"}
+```
+</td>
     </tr>
   </table>
 <br/>
@@ -408,8 +421,11 @@ zeppelin-examples/zeppelin-example-clock/target/zeppelin-example-clock-0.7.0-SNA
     <tr>
       <td>Sample JSON response</td>
       <td>
-        <code>{"status":"OK","body":["zeppelin_horizontalbar","zeppelin-bubblechart"]}</code>
-      </td>
+        
+```json
+{"status":"OK","body":["zeppelin_horizontalbar","zeppelin-bubblechart"]}
+```
+</td>
     </tr>
   </table>
 <br/>
@@ -437,14 +453,20 @@ zeppelin-examples/zeppelin-example-clock/target/zeppelin-example-clock-0.7.0-SNA
     <tr>
       <td>Sample JSON input</td>
       <td>
-        <code>["zeppelin-bubblechart", "zeppelin_horizontalbar"]</code>
-      </td>
+        
+```json
+["zeppelin-bubblechart", "zeppelin_horizontalbar"]
+```
+</td>
     </tr>
     <tr>
       <td>Sample JSON response</td>
       <td>
-        <code>{"status":"OK"}</code>
-      </td>
+        
+```json
+{"status":"OK"}
+```
+</td>
     </tr>
   </table>
 <br/>

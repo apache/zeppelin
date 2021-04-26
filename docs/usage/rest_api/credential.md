@@ -56,7 +56,8 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
       <td> sample JSON response
       </td>
       <td>
-        <pre>
+
+```json
 {
   "status": "OK",
   "message": "",
@@ -72,7 +73,9 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
       }
     }
   }
-}</pre></td>
+}
+```
+</td>
     </tr>
   </table>
 
@@ -99,24 +102,26 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     <tr>
       <td>Sample JSON input</td>
       <td>
-        <pre>
+
+```json
 {
   "entity": "e1",
   "username": "user",
   "password": "password"
 }
-        </pre>
-      </td>
+```
+</td>
     </tr>
     <tr>
       <td>Sample JSON response</td>
       <td>
-        <pre>
+
+```json
 {
   "status": "OK"
 }
-        </pre>
-      </td>
+```
+</td>
     </tr>
   </table>
 
@@ -145,8 +150,11 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     <tr>
       <td>Sample JSON response</td>
       <td>
-        <code>{"status":"OK"}</code>
-      </td>
+
+```json
+{"status":"OK"}
+```
+</td>
     </tr>
   </table>
 
@@ -175,8 +183,11 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     <tr>
       <td>Sample JSON response</td>
       <td>
-        <code>{"status":"OK"}</code>
-      </td>
+        
+```json
+{"status":"OK"}
+```
+</td>
     </tr>
   </table>
 
