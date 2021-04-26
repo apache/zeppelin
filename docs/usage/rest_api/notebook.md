@@ -55,7 +55,9 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     </tr>
     <tr>
       <td> sample JSON response </td>
-      <td><pre>
+      <td>
+
+```json
 {
   "status": "OK",
   "message": "",
@@ -69,7 +71,9 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
       "id":"2A94M5J1Z"
     }
   ]
-}</pre></td>
+}
+```
+</td>
     </tr>
   </table>
 
@@ -97,11 +101,18 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     </tr>
     <tr>
       <td> sample JSON input (without paragraphs) </td>
-      <td><pre>{"name": "name of new note"}</pre></td>
+      <td>
+
+```json
+{"name": "name of new note"}
+```
+</td>
     </tr>
     <tr>
       <td> sample JSON input (with initial paragraphs) </td>
-      <td><pre>
+      <td>
+
+```json
 {
   "name": "name of new note",
   "paragraphs": [
@@ -126,16 +137,22 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
       }
     }
   ]
-}</pre></td>
+}
+```
+</td>
     </tr>
     <tr>
       <td> sample JSON response </td>
-      <td><pre>
+      <td>
+
+```json
 {
   "status": "OK",
   "message": "",
   "body": "2AZPHY918"
-}</pre></td>
+}
+```
+</td>
     </tr>
   </table>
 
@@ -163,7 +180,9 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     </tr>
     <tr>
       <td> sample JSON response </td>
-      <td><pre>
+      <td>
+
+```json
 {
   "status": "OK",
   "body": [
@@ -181,7 +200,9 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
       "started":"Tue Nov 24 14:21:40 KST 2015"
     }
   ]
-}</pre></td>
+}
+```
+</td>
     </tr>
   </table>
 
@@ -209,14 +230,17 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     </tr>
     <tr>
       <td> sample JSON response </td>
-      <td><pre>
+      <td>
+
+```json
 {
   "status": "OK",
   "message": "",
   "body": {
     "paragraphs": [
       {
-        "text": "%sql \nselect age, count(1) value\nfrom bank \nwhere age < 30 \ngroup by age \norder by age",
+        "text": "%sql \nselect age, count(1) value\nfrom bank \nwhere age < 30 \ngroup by
+ age \norder by age",
         "config": {
           "colWidth": 4,
           "graph": {
@@ -263,7 +287,8 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
           "msg": [
             {
               "type": "TABLE",
-              "data": "age\tvalue\n19\t4\n20\t3\n21\t7\n22\t9\n23\t20\n24\t24\n25\t44\n26\t77\n27\t94\n28\t103\n29\t97\n"
+              "data": "age\tvalue\n19\t4\n20\t3\n21\t7\n22\t9\n23\t20\n24\t24\n25\t44\n26
+\t77\n27\t94\n28\t103\n29\t97\n"
             }
           ]
         },
@@ -282,7 +307,9 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     },
     "info": {}
   }
-}</pre></td>
+}
+```
+</td>
     </tr>
   </table>
 
@@ -309,7 +336,12 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     </tr>
     <tr>
       <td> sample JSON response </td>
-      <td><pre>{"status": "OK","message": ""}</pre></td>
+      <td>
+
+```json
+{"status": "OK","message": ""}
+```
+</td>
     </tr>
   </table>
 
@@ -338,16 +370,25 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     </tr>
     <tr>
       <td> sample JSON input </td>
-      <td><pre>{"name": "name of new note"}</pre></td>
+      <td>
+
+```json
+{"name": "name of new note"}
+```
+</td>
     </tr>
     <tr>
       <td> sample JSON response </td>
-      <td><pre>
+      <td>
+
+```json
 {
   "status": "OK",
   "message": "",
   "body": "2AZPHY918"
-}</pre></td>
+}
+```
+</td>
     </tr>
   </table>
 
@@ -378,11 +419,21 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     </tr>
     <tr>
       <td> sample JSON input </td>
-      <td><pre>{"name": "new name of a note"}</pre></td>
+      <td>
+
+```json
+{"name": "new name of a note"}
+```
+</td>
     </tr>
     <tr>
       <td> sample JSON response </td>
-      <td><pre>{"status":"OK"}</pre></td>
+      <td>
+
+```json
+{"status":"OK"}
+```
+</td>
     </tr>
   </table>
 
@@ -409,7 +460,10 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
       <td> 500 </td>
     </tr>
     <td> sample JSON response </td>
-      <td><pre>{
+      <td>
+
+```json
+{
   "paragraphs": [
     {
       "text": "%md This is my new paragraph in my new note",
@@ -433,7 +487,9 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
   "angularObjects": {},
   "config": {},
   "info": {}
-}</pre></td>
+}
+```
+</td>
     </tr>
   </table>
 
@@ -460,7 +516,10 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     </tr>
     <tr>
       <td>sample JSON input</td>
-      <td><pre>
+      <td>
+
+
+```json
 {
   "paragraphs": [
     {
@@ -485,16 +544,22 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
   "angularObjects": {},
   "config": {},
   "info": {}
-}</pre></td>
+}
+```
+</td>
     </tr>
     <tr>
       <td>sample JSON response</td>
-      <td><pre>
+      <td>
+
+```json
 {
   "status": "OK",
   "message": "",
   "body": "2AZPHY918"
-}</pre></td>
+}
+```
+</td>
     </tr>
   </table>
 
@@ -523,24 +588,33 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     </tr>
     <tr>
       <td> sample JSON response </td>
-      <td><pre>{"status": "OK"}</pre></td>
+      <td>
+
+```json
+{"status": "OK"}
+```
+</td>
     </tr>
     <tr>
        <td> sample JSON error response </td>
        <td>
-         <pre>
-           {
-             "status": "NOT_FOUND",
-             "message": "note not found."
-           }
-         </pre><br />
-         <pre>
-           {
-             "status": "PRECONDITION_FAILED",
-             "message": "paragraph_1469771130099_-278315611 Not selected or Invalid Interpreter bind"
-           }
-         </pre>
-       </td>
+
+```json
+{
+  "status": "NOT_FOUND",
+  "message": "note not found."
+}
+```
+<br />
+
+```json
+{
+  "status": "PRECONDITION_FAILED",
+  "message": "paragraph_1469771130099_-278315611 Not selected or Invalid Interpreter
+ bind"
+}
+```
+</td>
     </tr>
   </table>
 
@@ -567,7 +641,12 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     </tr>
     <tr>
       <td> sample JSON response </td>
-      <td><pre>{"status":"OK"}</pre></td>
+      <td>
+
+```json
+{"status":"OK"}
+```
+</td>
     </tr>
   </table>
 
@@ -602,7 +681,12 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     </tr>
     <tr>
       <td>sample JSON response</td>
-      <td><pre>{"status": "OK"}</pre></td>
+      <td>
+
+```json
+{"status": "OK"}
+```
+</td>
     </tr>
     </tr>
   </table>
@@ -633,24 +717,34 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     </tr>
     <tr>
       <td> sample JSON input (add to the last) </td>
-      <td><pre>
+      <td>
+
+```json
 {
   "title": "Paragraph insert revised",
   "text": "%spark\nprintln(\"Paragraph insert revised\")"
-}</pre></td>
+}
+```
+</td>
     </tr>
     <tr>
       <td> sample JSON input (add to specific index) </td>
-      <td><pre>
+      <td>
+
+```json
 {
   "title": "Paragraph insert revised",
   "text": "%spark\nprintln(\"Paragraph insert revised\")",
   "index": 0
-}</pre></td>
+}
+```
+</td>
     </tr>
     <tr>
       <td> sample JSON input (providing paragraph config) </td>
-      <td><pre>
+      <td>
+
+```json
 {
   "title": "paragraph title2",
   "text": "paragraph text2",
@@ -666,16 +760,22 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
       }
     ]
   }
-}</pre></td>
+}
+```
+</td>
     </tr>
     <tr>
       <td> sample JSON response </td>
-      <td><pre>
+      <td>
+
+```json
 {
   "status": "OK",
   "message": "",
   "body": "20151218-100330\_1754029574"
-}</pre></td>
+}
+```
+</td>
     </tr>
   </table>
 
@@ -703,7 +803,9 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     </tr>
     <tr>
       <td> sample JSON response </td>
-      <td><pre>
+      <td>
+
+```json
 {
   "status": "OK",
   "message": "",
@@ -747,7 +849,9 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     "status": "FINISHED",
     "progressUpdateIntervalMs": 500
   }
-}</pre></td>
+}
+```
+</td>
     </tr>
   </table>
 
@@ -775,7 +879,9 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     </tr>
     <tr>
       <td> sample JSON response </td>
-      <td><pre>
+      <td>
+
+```json
 {
   "status": "OK",
   "body": {
@@ -784,7 +890,9 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
       "finished":"Tue Nov 24 14:21:40 KST 2015",
       "started":"Tue Nov 24 14:21:39 KST 2015"
     }
-}</pre></td>
+}
+```
+</td>
     </tr>
   </table>
 
@@ -824,20 +932,27 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     </tr>
     <tr>
       <td>sample JSON input</td>
-      <td><pre>
+      <td>
+
+```json
 {
   "title": "Hello world",
   "text": "println(\"hello world\")"
-}</pre></td>
+}
+```
+</td>
     </tr>
     <tr>
       <td>sample JSON response</td>
-      <td><pre>
+      <td>
+
+```json
 {
   "status": "OK",
   "message": ""
-  }
-}</pre></td>
+}
+```
+</td>
     </tr>
   </table>
 
@@ -876,7 +991,9 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     </tr>
     <tr>
       <td>sample JSON input</td>
-      <td><pre>
+      <td>
+
+```json
 {
   "colWidth": 6.0,
   "graph": {
@@ -903,16 +1020,21 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
   "editorHide": true,
   "editorMode": "ace/mode/markdown",
   "tableHide": false
-}</pre></td>
+}
+```
+</td>
     </tr>
     <tr>
       <td>sample JSON response</td>
-      <td><pre>
+      <td>
+
+```json
 {
   "status":"OK",
   "message":"",
   "body":{
-    "text":"%sql \nselect age, count(1) value\nfrom bank \nwhere age \u003c 30 \ngroup by age \norder by age",
+    "text":"%sql \nselect age, count(1) value\nfrom bank \nwhere age \u003c 30 \ngroup by
+ age \norder by age",
     "config":{
       "colWidth":6.0,
       "graph":{
@@ -952,7 +1074,8 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
       "msg": [
         {
           "type":"TABLE",
-          "data":"age\tvalue\n19\t4\n20\t3\n21\t7\n22\t9\n23\t20\n24\t24\n25\t44\n26\t77\n27\t94\n28\t103\n29\t97\n"
+          "data":"age\tvalue\n19\t4\n20\t3\n21\t7\n22\t9\n23\t20\n24\t24\n25\t44\n26\t77
+\n27\t94\n28\t103\n29\t97\n"
         }
       ]
     },
@@ -962,7 +1085,9 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     "status":"FINISHED",
     "progressUpdateIntervalMs":500
   }
-}</pre></td>
+}
+```
+</td>
     </tr>
   </table>
 
@@ -989,7 +1114,12 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     </tr>
     <tr>
       <td> sample JSON response </td>
-      <td><pre>{"status": "OK","message": ""}</pre></td>
+      <td>
+
+```json
+{"status": "OK","message": ""}
+```
+</td>
     </tr>
   </table>
 
@@ -1016,18 +1146,27 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     </tr>
     <tr>
       <td> sample JSON input (optional, only needed when if you want to update dynamic form's value) </td>
-      <td><pre>
+      <td>
+
+```json
 {
   "name": "name of new note",
   "params": {
     "formLabel1": "value1",
     "formLabel2": "value2"
   }
-}</pre></td>
+}
+```
+</td>
     </tr>
     <tr>
       <td> sample JSON response </td>
-      <td><pre>{"status": "OK"}</pre></td>
+      <td>
+
+```json
+{"status": "OK"}
+```
+</td>
     </tr>
   </table>
 
@@ -1054,30 +1193,44 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     </tr>
     <tr>
       <td> sample JSON input (optional, only needed when if you want to update dynamic form's value) </td>
-      <td><pre>
+      <td>
+
+```json
 {
   "name": "name of new note",
   "params": {
     "formLabel1": "value1",
     "formLabel2": "value2"
   }
-}</pre></td>
+}
+```
+</td>
     </tr>
     <tr>
       <td> sample JSON response </td>
-      <td><pre>{"status": "OK"}</pre></td>
+      <td>
+
+```json
+{"status": "OK"}
+```
+</td>
     </tr>    
     <tr>
       <td> sample JSON error </td>
-      <td><pre>
+      <td>
+
+```json
 {
    "status": "INTERNAL\_SERVER\_ERROR",
    "body": {
        "code": "ERROR",
        "type": "TEXT",
-       "msg": "bash: -c: line 0: unexpected EOF while looking for matching ``'\nbash: -c: line 1: syntax error: unexpected end of file\nExitValue: 2"
+       "msg": "bash: -c: line 0: unexpected EOF while looking for matching ``'\nbash: -c:
+ line 1: syntax error: unexpected end of file\nExitValue: 2"
    }
-}</pre></td>
+}
+```
+</td>
     </tr>
   </table>
 
@@ -1104,7 +1257,12 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     </tr>
     <tr>
       <td> sample JSON response </td>
-      <td><pre>{"status": "OK"}</pre></td>
+      <td>
+
+```json
+{"status": "OK"}
+```
+</td>
     </tr>
   </table>
 
@@ -1131,7 +1289,12 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     </tr>
     <tr>
       <td> sample JSON response </td>
-      <td><pre>{"status": "OK","message": ""}</pre></td>
+      <td>
+
+```json
+{"status": "OK","message": ""}
+```
+</td>
     </tr>
   </table>
 
@@ -1158,7 +1321,9 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     </tr>
     <tr>
       <td>Sample JSON response </td>
-      <td><pre>
+      <td>
+
+```json
 {
   "status": "OK",
   "body": [
@@ -1169,7 +1334,9 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
       "text":""
     }
   ]
-}</pre></td>
+}
+```
+</td>
     </tr>
   </table>
 
@@ -1198,11 +1365,21 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     </tr>
     <tr>
       <td> sample JSON input </td>
-      <td><pre>{"cron": "cron expression of note", "releaseResource": "false"}</pre></td>
+      <td>
+
+```json
+{"cron": "cron expression of note", "releaseResource": "false"}
+```
+</td>
     </tr>
     <tr>
       <td> sample JSON response </td>
-      <td><pre>{"status": "OK"}</pre></td>
+      <td>
+
+```json
+{"status": "OK"}
+```
+</td>
     </tr>
   </table>
 
@@ -1230,7 +1407,12 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     </tr>
     <tr>
       <td> sample JSON response </td>
-      <td><pre>{"status": "OK"}</pre></td>
+      <td>
+
+```json
+{"status": "OK"}
+```
+</td>
     </tr>
   </table>
 
@@ -1259,14 +1441,18 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     </tr>
     <tr>
       <td> sample JSON response </td>
-      <td><pre>
+      <td>
+
+```json
 {
    "status": "OK", 
    "body": {
       "cron": "0 0/1 * * * ?", 
       "releaseResource": true
    }
-}</pre></td>
+}
+```
+</td>
     </tr>
   </table>
 
@@ -1301,7 +1487,9 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     </tr>
     <tr>
       <td> sample JSON response </td>
-      <td><pre>
+      <td>
+
+```json
 {  
    "status":"OK",
    "message":"",
@@ -1320,7 +1508,8 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
       ]
    }
 }
-      </pre></td>
+```
+</td>
     </tr>
   </table>
 
@@ -1351,7 +1540,9 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     </tr>
     <tr>
       <td> sample JSON input </td>
-      <td><pre>
+      <td>
+
+```json
 {
   "readers": [
     "user1"
@@ -1366,14 +1557,19 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     "user1"
   ]
 }
-</pre></td>
+```
+</td>
     </tr>
     <tr>
       <td> sample JSON response </td>
-      <td><pre>
+      <td>
+
+```json
 {
   "status": "OK"
-}</pre></td>
+}
+```
+</td>
     </tr>
   </table>
 
