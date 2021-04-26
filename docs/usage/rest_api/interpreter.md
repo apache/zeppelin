@@ -57,7 +57,8 @@ The role of registered interpreters, settings and interpreters group are describ
     <tr>
       <td>Sample JSON response</td>
       <td>
-        <pre>
+
+```json
 {
   "status": "OK",
   "message": "",
@@ -104,8 +105,8 @@ The role of registered interpreters, settings and interpreters group are describ
     }
   }
 }
-        </pre>
-      </td>
+```
+</td>
     </tr>
   </table>
 
@@ -133,7 +134,8 @@ The role of registered interpreters, settings and interpreters group are describ
     <tr>
       <td>Sample JSON response</td>
       <td>
-        <pre>
+
+```json
 {
   "status": "OK",
   "message": "",
@@ -187,8 +189,8 @@ The role of registered interpreters, settings and interpreters group are describ
     }
   ]
 }
-        </pre>
-      </td>
+```
+</td>
     </tr>
   </table>
   
@@ -219,7 +221,8 @@ The role of registered interpreters, settings and interpreters group are describ
     <tr>
       <td>Sample JSON response</td>
       <td>
-        <pre>
+
+```json
 {
   "status": "OK",
   "message": "",
@@ -250,8 +253,8 @@ The role of registered interpreters, settings and interpreters group are describ
     ]
   }
 }
-        </pre>
-      </td>
+```
+</td>
     </tr>
   </table>
 
@@ -282,7 +285,8 @@ The role of registered interpreters, settings and interpreters group are describ
     <tr>
       <td>Sample JSON input</td>
       <td>
-        <pre>
+
+```json
 {
   "name": "Markdown setting name",
   "group": "md",
@@ -307,13 +311,14 @@ The role of registered interpreters, settings and interpreters group are describ
     }
   ]
 }
-        </pre>
-      </td>
+```
+</td>
     </tr>
     <tr>
       <td>Sample JSON response</td>
       <td>
-        <pre>
+
+```json
 {
   "status": "OK",
   "message": "",
@@ -343,8 +348,8 @@ The role of registered interpreters, settings and interpreters group are describ
     ]
   }
 }
-        </pre>
-      </td>
+```
+</td>
     </tr>
   </table>
 
@@ -371,7 +376,8 @@ The role of registered interpreters, settings and interpreters group are describ
     <tr>
       <td>Sample JSON input</td>
       <td>
-        <pre>
+
+```json
 {
   "name": "Markdown setting name",
   "group": "md",
@@ -396,13 +402,14 @@ The role of registered interpreters, settings and interpreters group are describ
     }
   ]
 }
-        </pre>
-      </td>
+```
+</td>
     </tr>
     <tr>
       <td>Sample JSON response</td>
       <td>
-        <pre>
+
+```json
 {
   "status": "OK",
   "message": "",
@@ -432,8 +439,8 @@ The role of registered interpreters, settings and interpreters group are describ
     ]
   }
 }
-        </pre>
-      </td>
+```
+</td>
     </tr>
   </table>
 
@@ -461,8 +468,11 @@ The role of registered interpreters, settings and interpreters group are describ
     <tr>
       <td>Sample JSON response</td>
       <td>
-        <code>{"status":"OK"}</code>
-      </td>
+
+```json
+{"status":"OK"}
+```
+</td>
     </tr>
   </table>
 
@@ -491,18 +501,22 @@ The role of registered interpreters, settings and interpreters group are describ
     <tr>
       <td>Sample JSON input (Optional)</td>
       <td>
-        <pre>
+
+```json
 {
   "noteId": "2AVQJVC8N"
 }
-        </pre>
-      </td>
+```
+</td>
     </tr>
     <tr>
       <td>Sample JSON response</td>
       <td>
-        <code>{"status":"OK"}</code>
-      </td>
+
+```json
+{"status":"OK"}
+```
+</td>
     </tr>
   </table>
 
@@ -530,20 +544,24 @@ The role of registered interpreters, settings and interpreters group are describ
     <tr>
       <td>Sample JSON input</td>
       <td>
-        <pre>
+
+```json
 {
   "id": "securecentral",
   "url": "https://repo1.maven.org/maven2",
   "snapshot": false
 }
-        </pre>
-      </td>
+```
+</td>
     </tr>
     <tr>
       <td>Sample JSON response</td>
       <td>
-        <code>{"status":"OK"}</code>
-      </td>
+
+```json
+{"status":"OK"}
+```
+</td>
     </tr>
   </table>
 
@@ -593,14 +611,15 @@ The role of registered interpreters, settings and interpreters group are describ
     <tr>
       <td>Sample JSON response</td>
         <td>
-          <pre>
+
+```json
 {
   "status": "OK",
   "body": [ "textarea", "string", ...
   ]
 }            
-          </pre>
-        </td>
+```
+</td>
     </td>        
   </table>  
   

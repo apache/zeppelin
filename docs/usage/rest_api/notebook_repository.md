@@ -55,7 +55,8 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     <tr>
       <td>Sample JSON response</td>
       <td>
-        <pre>
+
+```json
 {
   "status": "OK",
   "message": "",
@@ -74,8 +75,8 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     }
   ]
 }
-        </pre>
-      </td>
+```
+</td>
     </tr>
   </table>
 
@@ -104,13 +105,14 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     <tr>
       <td>Sample JSON response</td>
       <td>
-        <pre>
+
+```json
 {
   "status": "OK",
   "message": ""
 }
-        </pre>
-      </td>
+```
+</td>
     </tr>
   </table>
 
@@ -143,20 +145,22 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     <tr>
       <td>Sample JSON input</td>
       <td>
-        <pre>
+
+```json
 {
   "name":"org.apache.zeppelin.notebook.repo.GitNotebookRepo",
   "settings":{
     "Notebook Path":"/tmp/notebook/"
   }
 }
-        </pre>
-      </td>
+```
+</td>
     </tr>
     <tr>
       <td>Sample JSON response</td>
       <td>
-        <pre>
+
+```json
 {
   "status": "OK",
   "message": "",
@@ -173,7 +177,7 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     ]
   }
 }
-        </pre>
-      </td>
+```
+</td>
     </tr>
   </table>
