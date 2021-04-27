@@ -184,7 +184,7 @@ class FlinkScalaInterpreter(val properties: Properties) {
         .toUpperCase)
     if (mode == ExecutionMode.YARN_APPLICATION) {
       if (flinkVersion.isFlink110) {
-        throw new Exception("yarn_application mode is only supported after Flink 1.11")
+        throw new Exception("yarn-application mode is only supported after Flink 1.11")
       }
       // use current yarn container working directory as FLINK_HOME, FLINK_CONF_DIR and HIVE_CONF_DIR
       val workingDirectory = new File(".").getAbsolutePath

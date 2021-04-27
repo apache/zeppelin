@@ -175,7 +175,7 @@ public class Flink112Shims extends FlinkShims {
   @Override
   public String getPyFlinkPythonPath(Properties properties) throws IOException {
     String mode = properties.getProperty("flink.execution.mode");
-    if ("yarn_application".equalsIgnoreCase(mode)) {
+    if ("yarn-application".equalsIgnoreCase(mode)) {
       // for yarn application mode, FLINK_HOME is container working directory
       String flinkHome = new File(".").getAbsolutePath();
       return getPyFlinkPythonPath(flinkHome + "/lib/python");

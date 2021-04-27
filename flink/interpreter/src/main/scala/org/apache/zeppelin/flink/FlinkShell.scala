@@ -85,7 +85,7 @@ object FlinkShell {
       case ExecutionMode.YARN_APPLICATION => (flinkConfig, None)
       case ExecutionMode.UNDEFINED => // Wrong input
         throw new IllegalArgumentException("please specify execution mode:\n" +
-          "[local | remote <host> <port> | yarn | yarn_application ]")
+          "[local | remote <host> <port> | yarn | yarn-application ]")
     }
   }
 

@@ -54,7 +54,7 @@ public class FlinkInterpreterLauncher extends StandardInterpreterLauncher {
     envs.put("FLINK_PLUGINS_DIR", flinkHome + "/plugins");
 
     // yarn application mode specific logic
-    if ("yarn_application".equalsIgnoreCase(
+    if ("yarn-application".equalsIgnoreCase(
             context.getProperties().getProperty("flink.execution.mode"))) {
       updateEnvsForYarnApplicationMode(envs, context);
     }
