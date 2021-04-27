@@ -457,7 +457,11 @@ public class Flink112Shims extends FlinkShims {
     Map<String, ConfigOption> configOptions = new HashMap<>();
     configOptions.putAll(extractConfigOptions(ExecutionConfigOptions.class));
     configOptions.putAll(extractConfigOptions(OptimizerConfigOptions.class));
-    configOptions.putAll(extractConfigOptions(PythonOptions.class));
+    try {
+      configOptions.putAll(extractConfigOptions(PythonOptions.class));
+    } catch (NoClassDefFoundError e) {
+      LOGGER.warn("No pyflink jars found");
+    }
     configOptions.putAll(extractConfigOptions(TableConfigOptions.class));
     return configOptions;
   }
