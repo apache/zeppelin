@@ -44,7 +44,6 @@ fi
 
 function usage() {
     echo "Usage: bin/zeppelin.sh [--config <conf-dir>] [--run <noteId>]"
-    exit 0
 }
 
 POSITIONAL=()
@@ -62,11 +61,14 @@ do
     shift # past argument
     shift # past value
     ;;
-    --help)
+    -h|--help)
         usage
+        exit 0
         ;;
-    -h)
+    *)
+        echo "Unsupported argument."
         usage
+        exit 1
         ;;
   esac
 done
