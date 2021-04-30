@@ -118,5 +118,5 @@ public ParagraphResult waitUtilParagraphFinish(String noteId, String paragraphId
 
 For more detailed usage of zeppelin client api, you can check the examples in module `zeppelin-client-examples`
 
-* [ZeppelinClientExample](https://github.com/apache/zeppelin/blob/master/zeppelin-client-examples/src/main/java/org/apache/zeppelin/client/examples/ZeppelinClientExample.java)]
-* [ZeppelinClientExample2](https://github.com/apache/zeppelin/blob/master/zeppelin-client-examples/src/main/java/org/apache/zeppelin/client/examples/ZeppelinClientExample2.java)]
+* [ZeppelinClientExample](https://github.com/apache/zeppelin/blob/master/zeppelin-client-examples/src/main/java/org/apache/zeppelin/client/examples/ZeppelinClientExample.java)
+* [ZeppelinClientExample2](https://github.com/apache/zeppelin/blob/master/zeppelin-client-examples/src/main/java/org/apache/zeppelin/client/examples/ZeppelinClientExample2.java)
