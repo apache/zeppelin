@@ -40,7 +40,8 @@ class SparkScala212Interpreter(override val conf: SparkConf,
                                override val depFiles: java.util.List[String],
                                override val properties: Properties,
                                override val interpreterGroup: InterpreterGroup,
-                               override val sparkInterpreterClassLoader: URLClassLoader)
+                               override val sparkInterpreterClassLoader: URLClassLoader,
+                               val outputDir: File)
   extends BaseSparkScalaInterpreter(conf, depFiles, properties, interpreterGroup, sparkInterpreterClassLoader) {
 
   lazy override val LOGGER: Logger = LoggerFactory.getLogger(getClass)
@@ -54,11 +55,8 @@ class SparkScala212Interpreter(override val conf: SparkConf,
     if (sparkMaster == "yarn-client") {
       System.setProperty("SPARK_YARN_MODE", "true")
     }
-    // Only Spark1 requires to create http server, Spark2 removes HttpServer class.
-    val rootDir = conf.get("spark.repl.classdir", System.getProperty("java.io.tmpdir"))
-    this.outputDir = Files.createTempDirectory(Paths.get(rootDir), "spark").toFile
+
     LOGGER.info("Scala shell repl output dir: " + outputDir.getAbsolutePath)
-    outputDir.deleteOnExit()
     conf.set("spark.repl.class.outputDir", outputDir.getAbsolutePath)
 
     val settings = new Settings()

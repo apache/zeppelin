@@ -30,6 +30,7 @@ import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.interpreter.InterpreterNotFoundException;
+import org.apache.zeppelin.interpreter.InterpreterOption;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
@@ -47,6 +48,7 @@ import java.io.IOException;
 import java.util.EnumSet;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 
@@ -253,14 +255,57 @@ public abstract class SparkIntegrationTest {
 
   @Test
   public void testSparkSubmit() throws InterpreterException {
-    InterpreterSetting sparkSubmitInterpreterSetting = interpreterSettingManager.getInterpreterSettingByName("spark-submit");
-    sparkSubmitInterpreterSetting.setProperty("SPARK_HOME", sparkHome);
-    // test SparkSubmitInterpreter
-    InterpreterContext context = new InterpreterContext.Builder().setNoteId("note1").setParagraphId("paragraph_1").build();
-    Interpreter sparkSubmitInterpreter = interpreterFactory.getInterpreter("spark-submit", new ExecutionContext("user1", "note1", "test"));
-    InterpreterResult interpreterResult = sparkSubmitInterpreter.interpret("--class org.apache.spark.examples.SparkPi " + sparkHome + "/examples/jars/spark-examples*.jar ", context);
+    try {
+      InterpreterSetting sparkSubmitInterpreterSetting = interpreterSettingManager.getInterpreterSettingByName("spark-submit");
+      sparkSubmitInterpreterSetting.setProperty("SPARK_HOME", sparkHome);
+      // test SparkSubmitInterpreter
+      InterpreterContext context = new InterpreterContext.Builder().setNoteId("note1").setParagraphId("paragraph_1").build();
+      Interpreter sparkSubmitInterpreter = interpreterFactory.getInterpreter("spark-submit", new ExecutionContext("user1", "note1", "test"));
+      InterpreterResult interpreterResult = sparkSubmitInterpreter.interpret("--class org.apache.spark.examples.SparkPi " + sparkHome + "/examples/jars/spark-examples*.jar ", context);
 
-    assertEquals(interpreterResult.toString(), InterpreterResult.Code.SUCCESS, interpreterResult.code());
+      assertEquals(interpreterResult.toString(), InterpreterResult.Code.SUCCESS, interpreterResult.code());
+    } finally {
+      interpreterSettingManager.close();
+    }
+  }
+
+  @Test
+  public void testScopedMode() throws InterpreterException {
+    InterpreterSetting sparkInterpreterSetting = interpreterSettingManager.getInterpreterSettingByName("spark");
+    try {
+      sparkInterpreterSetting.setProperty("spark.master", "local[*]");
+      sparkInterpreterSetting.setProperty("spark.submit.deployMode", "client");
+      sparkInterpreterSetting.setProperty("SPARK_HOME", sparkHome);
+      sparkInterpreterSetting.setProperty("ZEPPELIN_CONF_DIR", zeppelin.getZeppelinConfDir().getAbsolutePath());
+      sparkInterpreterSetting.setProperty("zeppelin.spark.useHiveContext", "false");
+      sparkInterpreterSetting.setProperty("zeppelin.pyspark.useIPython", "false");
+      sparkInterpreterSetting.setProperty("zeppelin.spark.scala.color", "false");
+      sparkInterpreterSetting.setProperty("zeppelin.spark.deprecatedMsg.show", "false");
+      sparkInterpreterSetting.getOption().setPerNote(InterpreterOption.SCOPED);
+
+
+      Interpreter sparkInterpreter1 = interpreterFactory.getInterpreter("spark.spark", new ExecutionContext("user1", "note1", "test"));
+
+      InterpreterContext context = new InterpreterContext.Builder().setNoteId("note1").setParagraphId("paragraph_1").build();
+      InterpreterResult interpreterResult = sparkInterpreter1.interpret("sc.range(1,10).map(e=>e+1).sum()", context);
+      assertEquals(interpreterResult.toString(), InterpreterResult.Code.SUCCESS, interpreterResult.code());
+      assertTrue(interpreterResult.toString(), interpreterResult.message().get(0).getData().contains("54"));
+
+      Interpreter sparkInterpreter2 = interpreterFactory.getInterpreter("spark.spark", new ExecutionContext("user1", "note2", "test"));
+      assertNotEquals(sparkInterpreter1, sparkInterpreter2);
+
+      context = new InterpreterContext.Builder().setNoteId("note2").setParagraphId("paragraph_1").build();
+      interpreterResult = sparkInterpreter2.interpret("sc.range(1,10).map(e=>e+1).sum()", context);
+      assertEquals(interpreterResult.toString(), InterpreterResult.Code.SUCCESS, interpreterResult.code());
+      assertTrue(interpreterResult.toString(), interpreterResult.message().get(0).getData().contains("54"));
+    } finally {
+      interpreterSettingManager.close();
+
+      if (sparkInterpreterSetting != null) {
+        // reset InterpreterOption so that it won't affect other tests.
+        sparkInterpreterSetting.getOption().setPerNote(InterpreterOption.SHARED);
+      }
+    }
   }
 
   private boolean isSpark2() {
