@@ -33,8 +33,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -49,6 +52,18 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class SparkInterpreter extends AbstractInterpreter {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SparkInterpreter.class);
+  private static File scalaShellOutputDir;
+
+  static {
+    try {
+      // scala shell output will be shared between multiple spark scala shell, so use static field
+      scalaShellOutputDir = Files.createTempDirectory(Paths.get(System.getProperty("java.io.tmpdir")), "spark")
+              .toFile();
+      scalaShellOutputDir.deleteOnExit();
+    } catch (IOException e) {
+      throw new RuntimeException("Fail to create scala shell output dir", e);
+    }
+  }
 
   private static AtomicInteger SESSION_NUM = new AtomicInteger(0);
   private AbstractSparkScalaInterpreter innerInterpreter;
@@ -158,8 +173,8 @@ public class SparkInterpreter extends AbstractInterpreter {
     String innerIntpClassName = innerInterpreterClassMap.get(scalaVersion);
     Class clazz = scalaInterpreterClassLoader.loadClass(innerIntpClassName);
     return (AbstractSparkScalaInterpreter)
-            clazz.getConstructor(SparkConf.class, List.class, Properties.class, InterpreterGroup.class, URLClassLoader.class)
-                    .newInstance(conf, getDependencyFiles(), getProperties(), getInterpreterGroup(), scalaInterpreterClassLoader);
+            clazz.getConstructor(SparkConf.class, List.class, Properties.class, InterpreterGroup.class, URLClassLoader.class, File.class)
+                    .newInstance(conf, getDependencyFiles(), getProperties(), getInterpreterGroup(), scalaInterpreterClassLoader, scalaShellOutputDir);
   }
 
   @Override
