@@ -26,8 +26,8 @@ import org.slf4j.LoggerFactory;
 
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.PodStatus;
-import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.fabric8.kubernetes.client.Watcher;
+import io.fabric8.kubernetes.client.WatcherException;
 
 public class PodPhaseWatcher implements Watcher<Pod> {
   private static final Logger LOGGER = LoggerFactory.getLogger(PodPhaseWatcher.class);
@@ -49,10 +49,16 @@ public class PodPhaseWatcher implements Watcher<Pod> {
   }
 
   @Override
-  public void onClose(KubernetesClientException cause) {
+  public void onClose(WatcherException cause) {
     if (cause != null) {
       LOGGER.error("PodWatcher exits abnormally", cause);
     }
+    // always count down, so threads that are waiting will continue
+    countDownLatch.countDown();
+  }
+
+  @Override
+  public void onClose() {
     // always count down, so threads that are waiting will continue
     countDownLatch.countDown();
   }
