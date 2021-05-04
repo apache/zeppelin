@@ -116,6 +116,9 @@ public abstract class NoteEventAsyncListener implements NoteEventListener {
           } else {
             throw new RuntimeException("Unknown event: " + event.getClass().getSimpleName());
           }
+        } catch (InterruptedException e) {
+          LOGGER.info("Shutting down {}" , this.getName());
+          Thread.currentThread().interrupt();
         } catch (Exception e) {
           LOGGER.error("Fail to handle NoteEvent", e);
         }

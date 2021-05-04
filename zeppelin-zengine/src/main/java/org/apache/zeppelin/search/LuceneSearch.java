@@ -27,6 +27,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
+import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 
 import org.apache.lucene.analysis.Analyzer;
@@ -371,8 +372,12 @@ public class LuceneSearch extends SearchService {
    * @see org.apache.zeppelin.search.Search#close()
    */
   @Override
+  @PreDestroy
   public void close() {
+    // First interrupt the LuceneSearch-Thread
+    super.close();
     try {
+      // Second close the indexWriter
       indexWriter.close();
     } catch (IOException e) {
       LOGGER.error("Failed to .close() the notebook index", e);
