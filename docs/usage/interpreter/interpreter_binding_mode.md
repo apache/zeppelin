@@ -35,7 +35,7 @@ Each interpreter process has a single interpreter group, and this interpreter gr
 (See [here](../../development/writing_zeppelin_interpreter.html) to understand more about its internal structure.) 
 
 Zeppelin provides 3 different modes to run interpreter process: **shared**, **scoped** and **isolated**.   
-Also, the user can specify the scope of these modes: **per** user or **per note**.
+Also, the user can specify the scope of these modes: **per user** or **per note**.
 These 3 modes give flexibility to fit Zeppelin into any type of use cases.
 
 In this documentation, we mainly discuss the **per note** scope in combination with the **shared**, **scoped** and **isolated** modes.
@@ -56,7 +56,7 @@ In **Shared** mode, single JVM process and a single session serves all notes. As
 </div>
 <br/>
 
-In **Scoped** mode, Zeppelin still runs a single interpreter JVM process but, in the case of per note scope, each note runs in its own dedicated session. 
+In **Scoped** mode, Zeppelin still runs a single interpreter JVM process but, in the case of **per note** scope, each note runs in its own dedicated session.
 (Note it is still possible to share objects between these notes via [ResourcePool](../../interpreter/spark.html#object-exchange)) 
 
 ## Isolated Mode
@@ -98,7 +98,7 @@ SparkInterpreter instance embeds Scala REPL for interactive Spark API execution.
 </div>
 <br/>
 
-In Shared mode, a SparkContext and a Scala REPL is being shared among all interpreters in the group. 
+In **Shared** mode, a SparkContext and a Scala REPL is being shared among all interpreters in the group.
 So every note will be sharing single SparkContext and single Scala REPL. 
 In this mode, if `Note A` defines variable ‘a’ then `Note B` not only able to read variable ‘a’ but also able to override the variable.
 
@@ -107,13 +107,13 @@ In this mode, if `Note A` defines variable ‘a’ then `Note B` not only able t
 </div>
 <br/>
 
-In Scoped mode, each note has its own Scala REPL. 
+In **Scoped** mode, each note has its own Scala REPL.
 So variable defined in a note can not be read or overridden in another note. 
 However, a single SparkContext still serves all the sessions.
 And all the jobs are submitted to this SparkContext and the fair scheduler schedules the jobs.
 This could be useful when user does not want to share Scala session, but want to keep single Spark application and leverage its fair scheduler.
 
-In Isolated mode, each note has its own SparkContext and Scala REPL.
+In **Isolated** mode, each note has its own SparkContext and Scala REPL.
 
 <div class="text-center">
     <img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/interpreter_binding_mode-example-spark-isolated.png">
