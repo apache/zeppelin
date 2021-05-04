@@ -38,7 +38,7 @@ import io.fabric8.kubernetes.client.server.mock.KubernetesServer;
 public class PodPhaseWatcherTest {
 
   @Rule
-  public KubernetesServer server = new KubernetesServer(true, true);
+  public KubernetesServer server = new KubernetesServer(false, true);
 
   @Test
   public void testPhase() throws InterruptedException {

@@ -591,7 +591,8 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
   public void testSchedulePoolUsage() throws InterruptedException, IOException {
     final int timeout = 30;
     final String everySecondCron = "* * * * * ?";
-    final CountDownLatch jobsToExecuteCount = new CountDownLatch(8);
+    // each run starts a new JVM and the job takes about ~5 seconds
+    final CountDownLatch jobsToExecuteCount = new CountDownLatch(5);
     final Note note = notebook.createNote("note1", anonymous);
 
     executeNewParagraphByCron(note, everySecondCron);
@@ -655,8 +656,9 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
 
     System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_CRON_FOLDERS.getVarName(), "/System");
     try {
-      final int timeout = 20;
+      final int timeout = 30;
       final String everySecondCron = "* * * * * ?";
+      // each run starts a new JVM and the job takes about ~5 seconds
       final CountDownLatch jobsToExecuteCount = new CountDownLatch(5);
       final Note note = notebook.createNote("note1", anonymous);
 
@@ -964,7 +966,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     assertNull(registry.get("o1", note.getId(), null));
     assertNull(registry.get("o2", note.getId(), p1.getId()));
 
-    // global object sould be remained
+    // global object should be remained
     assertNotNull(registry.get("o3", null, null));
   }
 

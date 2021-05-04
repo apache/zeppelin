@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.time.Instant;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -45,13 +46,13 @@ import io.fabric8.kubernetes.client.server.mock.KubernetesServer;
 public class K8sRemoteInterpreterProcessTest {
 
   @Rule
-  public KubernetesServer server = new KubernetesServer(true, true);
+  public KubernetesServer server = new KubernetesServer(false, true);
 
   @Test
   public void testPredefinedPortNumbers() {
     // given
     Properties properties = new Properties();
-    HashMap<String, String> envs = new HashMap<String, String>();
+    Map<String, String> envs = new HashMap<>();
 
     K8sRemoteInterpreterProcess intp = new K8sRemoteInterpreterProcess(
         server.getClient(),
@@ -81,11 +82,11 @@ public class K8sRemoteInterpreterProcessTest {
   }
 
   @Test
-  public void testGetTemplateBindings() throws IOException {
+  public void testGetTemplateBindings() {
     // given
     Properties properties = new Properties();
     properties.put("my.key1", "v1");
-    HashMap<String, String> envs = new HashMap<String, String>();
+    Map<String, String> envs = new HashMap<>();
     envs.put("MY_ENV1", "V1");
 
     K8sRemoteInterpreterProcess intp = new K8sRemoteInterpreterProcess(
@@ -118,7 +119,7 @@ public class K8sRemoteInterpreterProcessTest {
     assertEquals("shared_process", p.get("zeppelin.k8s.interpreter.group.id"));
     assertEquals("sh", p.get("zeppelin.k8s.interpreter.group.name"));
     assertEquals("shell", p.get("zeppelin.k8s.interpreter.setting.name"));
-    assertEquals(true , p.containsKey("zeppelin.k8s.interpreter.localRepo"));
+    assertTrue(p.containsKey("zeppelin.k8s.interpreter.localRepo"));
     assertEquals("12321:12321" , p.get("zeppelin.k8s.interpreter.rpc.portRange"));
     assertEquals("zeppelin.server.service" , p.get("zeppelin.k8s.server.rpc.service"));
     assertEquals(12320 , p.get("zeppelin.k8s.server.rpc.portRange"));
@@ -131,12 +132,12 @@ public class K8sRemoteInterpreterProcessTest {
   }
 
   @Test
-  public void testGetTemplateBindingsForSpark() throws IOException {
+  public void testGetTemplateBindingsForSpark() {
     // given
     Properties properties = new Properties();
     properties.put("my.key1", "v1");
     properties.put("spark.master", "k8s://http://api");
-    HashMap<String, String> envs = new HashMap<String, String>();
+    Map<String, String> envs = new HashMap<>();
     envs.put("MY_ENV1", "V1");
     envs.put("SPARK_SUBMIT_OPTIONS", "my options");
     envs.put("SERVICE_DOMAIN", "mydomain");
@@ -183,12 +184,12 @@ public class K8sRemoteInterpreterProcessTest {
   }
 
   @Test
-  public void testGetTemplateBindingsForSparkWithProxyUser() throws IOException {
+  public void testGetTemplateBindingsForSparkWithProxyUser() {
     // given
     Properties properties = new Properties();
     properties.put("my.key1", "v1");
     properties.put("spark.master", "k8s://http://api");
-    HashMap<String, String> envs = new HashMap<String, String>();
+    Map<String, String> envs = new HashMap<>();
     envs.put("MY_ENV1", "V1");
     envs.put("SPARK_SUBMIT_OPTIONS", "my options");
     envs.put("SERVICE_DOMAIN", "mydomain");
@@ -234,12 +235,12 @@ public class K8sRemoteInterpreterProcessTest {
   }
 
   @Test
-  public void testGetTemplateBindingsForSparkWithProxyUserAnonymous() throws IOException {
+  public void testGetTemplateBindingsForSparkWithProxyUserAnonymous() {
     // given
     Properties properties = new Properties();
     properties.put("my.key1", "v1");
     properties.put("spark.master", "k8s://http://api");
-    HashMap<String, String> envs = new HashMap<String, String>();
+    Map<String, String> envs = new HashMap<>();
     envs.put("MY_ENV1", "V1");
     envs.put("SPARK_SUBMIT_OPTIONS", "my options");
     envs.put("SERVICE_DOMAIN", "mydomain");
@@ -281,7 +282,7 @@ public class K8sRemoteInterpreterProcessTest {
   public void testSparkUiWebUrlTemplate() {
     // given
     Properties properties = new Properties();
-    HashMap<String, String> envs = new HashMap<String, String>();
+    Map<String, String> envs = new HashMap<>();
     envs.put("SERVICE_DOMAIN", "mydomain");
 
     K8sRemoteInterpreterProcess intp = new K8sRemoteInterpreterProcess(
@@ -326,7 +327,7 @@ public class K8sRemoteInterpreterProcessTest {
     Properties properties = new Properties();
     properties.put("spark.driver.memory", "1g");
     properties.put("spark.driver.cores", "1");
-    HashMap<String, String> envs = new HashMap<String, String>();
+    Map<String, String> envs = new HashMap<>();
     envs.put("SERVICE_DOMAIN", "mydomain");
 
     K8sRemoteInterpreterProcess intp = new K8sRemoteInterpreterProcess(
@@ -363,7 +364,7 @@ public class K8sRemoteInterpreterProcessTest {
     properties.put("spark.driver.memory", "1g");
     properties.put("spark.driver.memoryOverhead", "256m");
     properties.put("spark.driver.cores", "5");
-    HashMap<String, String> envs = new HashMap<String, String>();
+    Map<String, String> envs = new HashMap<>();
     envs.put("SERVICE_DOMAIN", "mydomain");
 
     K8sRemoteInterpreterProcess intp = new K8sRemoteInterpreterProcess(
@@ -394,10 +395,10 @@ public class K8sRemoteInterpreterProcessTest {
   }
 
   @Test
-  public void testK8sStartSuccessful() throws IOException, InterruptedException {
+  public void testK8sStartSuccessful() throws IOException {
     // given
     Properties properties = new Properties();
-    HashMap<String, String> envs = new HashMap<String, String>();
+    Map<String, String> envs = new HashMap<>();
     envs.put("SERVICE_DOMAIN", "mydomain");
     URL url = Thread.currentThread().getContextClassLoader()
         .getResource("k8s-specs/interpreter-spec.yaml");
@@ -430,10 +431,10 @@ public class K8sRemoteInterpreterProcessTest {
   }
 
   @Test
-  public void testK8sStartFailed() throws IOException, InterruptedException {
+  public void testK8sStartFailed() {
     // given
     Properties properties = new Properties();
-    HashMap<String, String> envs = new HashMap<String, String>();
+    Map<String, String> envs = new HashMap<>();
     envs.put("SERVICE_DOMAIN", "mydomain");
     URL url = Thread.currentThread().getContextClassLoader()
         .getResource("k8s-specs/interpreter-spec.yaml");
@@ -459,7 +460,7 @@ public class K8sRemoteInterpreterProcessTest {
         true);
     PodStatusSimulator podStatusSimulator = new PodStatusSimulator(server.getClient(), intp.getNamespace(), intp.getPodName(), intp);
     podStatusSimulator.setSecondPhase("Failed");
-    podStatusSimulator.setSuccessfullStart(false);
+    podStatusSimulator.setSuccessfulStart(false);
     ExecutorService service = Executors.newFixedThreadPool(1);
     service
         .submit(podStatusSimulator);
@@ -477,10 +478,10 @@ public class K8sRemoteInterpreterProcessTest {
   }
 
   @Test
-  public void testK8sStartTimeoutPending() throws IOException, InterruptedException {
+  public void testK8sStartTimeoutPending() throws InterruptedException {
     // given
     Properties properties = new Properties();
-    HashMap<String, String> envs = new HashMap<String, String>();
+    Map<String, String> envs = new HashMap<>();
     envs.put("SERVICE_DOMAIN", "mydomain");
     URL url = Thread.currentThread().getContextClassLoader()
         .getResource("k8s-specs/interpreter-spec.yaml");
@@ -507,7 +508,7 @@ public class K8sRemoteInterpreterProcessTest {
     PodStatusSimulator podStatusSimulator = new PodStatusSimulator(server.getClient(), intp.getNamespace(), intp.getPodName(), intp);
     podStatusSimulator.setFirstPhase("Pending");
     podStatusSimulator.setSecondPhase("Pending");
-    podStatusSimulator.setSuccessfullStart(false);
+    podStatusSimulator.setSuccessfulStart(false);
     ExecutorService service = Executors.newFixedThreadPool(2);
     service
         .submit(podStatusSimulator);
@@ -558,7 +559,7 @@ public class K8sRemoteInterpreterProcessTest {
     public void setSecondPhase(String phase) {
       this.secondPhase = phase;
     }
-    public void setSuccessfullStart(boolean successful) {
+    public void setSuccessfulStart(boolean successful) {
       this.successfulStart = successful;
     }
 
@@ -590,6 +591,7 @@ public class K8sRemoteInterpreterProcessTest {
           }
         }
       } catch (InterruptedException e) {
+        // Do nothing
       }
     }
   }
