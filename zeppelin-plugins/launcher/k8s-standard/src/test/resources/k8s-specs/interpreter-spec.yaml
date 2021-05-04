@@ -73,21 +73,6 @@ spec:
       limits:
         cpu: "{{zeppelin.k8s.interpreter.cores}}"
   {% endif %}
-  {% if zeppelin.k8s.interpreter.group.name == "spark" %}
-    volumeMounts:
-    - name: spark-home
-      mountPath: /spark
-  initContainers:
-  - name: spark-home-init
-    image: {{zeppelin.k8s.spark.container.image}}
-    command: ["sh", "-c", "cp -r /opt/spark/* /spark/"]
-    volumeMounts:
-    - name: spark-home
-      mountPath: /spark
-  volumes:
-  - name: spark-home
-    emptyDir: {}
-  {% endif %}
 ---
 kind: Service
 apiVersion: v1
