@@ -55,7 +55,9 @@ public class TableEnvFactory {
   private Executor executor;
   private org.apache.flink.api.scala.ExecutionEnvironment benv;
   private org.apache.flink.streaming.api.scala.StreamExecutionEnvironment senv;
-  private TableConfig tblConfig;
+  private TableConfig sTableConfig;
+  private TableConfig bTableConfig;
+
   private CatalogManager catalogManager;
   private ModuleManager moduleManager;
   private FunctionCatalog flinkFunctionCatalog;
@@ -65,7 +67,8 @@ public class TableEnvFactory {
                          FlinkShims flinkShims,
                          org.apache.flink.api.scala.ExecutionEnvironment env,
                          org.apache.flink.streaming.api.scala.StreamExecutionEnvironment senv,
-                         TableConfig tblConfig,
+                         TableConfig sTableConfig,
+                         TableConfig bTableConfig,
                          CatalogManager catalogManager,
                          ModuleManager moduleManager,
                          FunctionCatalog flinkFunctionCatalog,
@@ -74,7 +77,8 @@ public class TableEnvFactory {
     this.flinkShims = flinkShims;
     this.benv = env;
     this.senv = senv;
-    this.tblConfig = tblConfig;
+    this.sTableConfig = sTableConfig;
+    this.bTableConfig = bTableConfig;
     this.catalogManager = catalogManager;
     this.moduleManager = moduleManager;
     this.flinkFunctionCatalog = flinkFunctionCatalog;
@@ -99,7 +103,7 @@ public class TableEnvFactory {
                       ModuleManager.class);
 
       return (TableEnvironment)
-              constructor.newInstance(benv, tblConfig, catalogManager, moduleManager);
+              constructor.newInstance(benv, bTableConfig, catalogManager, moduleManager);
     } catch (Exception e) {
       throw new TableException("Fail to createScalaFlinkBatchTableEnvironment", e);
     }
@@ -115,7 +119,7 @@ public class TableEnvFactory {
               .create(
                       plannerProperties,
                       executor,
-                      tblConfig,
+                      sTableConfig,
                       flinkFunctionCatalog,
                       catalogManager);
 
@@ -141,7 +145,7 @@ public class TableEnvFactory {
         return (TableEnvironment) constructor.newInstance(catalogManager,
                 moduleManager,
                 flinkFunctionCatalog,
-                tblConfig,
+                sTableConfig,
                 senv,
                 planner,
                 executor,
@@ -162,7 +166,7 @@ public class TableEnvFactory {
         return (TableEnvironment) constructor.newInstance(catalogManager,
                 moduleManager,
                 flinkFunctionCatalog,
-                tblConfig,
+                sTableConfig,
                 senv,
                 planner,
                 executor,
@@ -193,7 +197,7 @@ public class TableEnvFactory {
               ModuleManager.class);
       return (TableEnvironment) con.newInstance(
               benv.getJavaEnv(),
-              tblConfig,
+              bTableConfig,
               catalogManager,
               moduleManager);
     } catch (Throwable t) {
@@ -209,7 +213,7 @@ public class TableEnvFactory {
 
       Map<String, String> plannerProperties = settings.toPlannerProperties();
       Planner planner = ComponentFactoryService.find(PlannerFactory.class, plannerProperties)
-              .create(plannerProperties, executor, tblConfig, flinkFunctionCatalog, catalogManager);
+              .create(plannerProperties, executor, sTableConfig, flinkFunctionCatalog, catalogManager);
 
       Class clazz = null;
       if (flinkVersion.isFlink110()) {
@@ -233,7 +237,7 @@ public class TableEnvFactory {
         return (TableEnvironment) constructor.newInstance(catalogManager,
                 moduleManager,
                 flinkFunctionCatalog,
-                tblConfig,
+                sTableConfig,
                 senv.getJavaEnv(),
                 planner,
                 executor,
@@ -254,7 +258,7 @@ public class TableEnvFactory {
         return (TableEnvironment) constructor.newInstance(catalogManager,
                 moduleManager,
                 flinkFunctionCatalog,
-                tblConfig,
+                sTableConfig,
                 senv.getJavaEnv(),
                 planner,
                 executor,
@@ -278,7 +282,7 @@ public class TableEnvFactory {
               .create(
                       plannerProperties,
                       executor,
-                      tblConfig,
+                      sTableConfig,
                       blinkFunctionCatalog,
                       catalogManager);
 
@@ -305,7 +309,7 @@ public class TableEnvFactory {
         return (TableEnvironment) constructor.newInstance(catalogManager,
                 moduleManager,
                 blinkFunctionCatalog,
-                tblConfig,
+                sTableConfig,
                 senv,
                 planner,
                 executor,
@@ -326,7 +330,7 @@ public class TableEnvFactory {
         return (TableEnvironment) constructor.newInstance(catalogManager,
                 moduleManager,
                 blinkFunctionCatalog,
-                tblConfig,
+                sTableConfig,
                 senv,
                 planner,
                 executor,
@@ -346,7 +350,7 @@ public class TableEnvFactory {
 
       Map<String, String> plannerProperties = settings.toPlannerProperties();
       Planner planner = ComponentFactoryService.find(PlannerFactory.class, plannerProperties)
-              .create(plannerProperties, executor, tblConfig, blinkFunctionCatalog, catalogManager);
+              .create(plannerProperties, executor, sTableConfig, blinkFunctionCatalog, catalogManager);
 
       Class clazz = null;
       if (flinkVersion.isFlink110()) {
@@ -370,7 +374,7 @@ public class TableEnvFactory {
         return (TableEnvironment) constructor.newInstance(catalogManager,
                 moduleManager,
                 blinkFunctionCatalog,
-                tblConfig,
+                sTableConfig,
                 senv.getJavaEnv(),
                 planner,
                 executor,
@@ -391,7 +395,7 @@ public class TableEnvFactory {
         return (TableEnvironment) constructor.newInstance(catalogManager,
                 moduleManager,
                 blinkFunctionCatalog,
-                tblConfig,
+                sTableConfig,
                 senv.getJavaEnv(),
                 planner,
                 executor,
@@ -410,7 +414,7 @@ public class TableEnvFactory {
       executor = lookupExecutor(executorProperties, senv.getJavaEnv());
       final Map<String, String> plannerProperties = settings.toPlannerProperties();
       final Planner planner = ComponentFactoryService.find(PlannerFactory.class, plannerProperties)
-              .create(plannerProperties, executor, tblConfig, blinkFunctionCatalog, catalogManager);
+              .create(plannerProperties, executor, bTableConfig, blinkFunctionCatalog, catalogManager);
 
       Class clazz = null;
       if (flinkVersion.isFlink110()) {
@@ -434,7 +438,7 @@ public class TableEnvFactory {
                 catalogManager,
                 moduleManager,
                 blinkFunctionCatalog,
-                tblConfig,
+                bTableConfig,
                 senv.getJavaEnv(),
                 planner,
                 executor,
@@ -455,7 +459,7 @@ public class TableEnvFactory {
                 catalogManager,
                 moduleManager,
                 blinkFunctionCatalog,
-                tblConfig,
+                bTableConfig,
                 senv.getJavaEnv(),
                 planner,
                 executor,
@@ -469,7 +473,7 @@ public class TableEnvFactory {
   }
 
 
-  public void createPlanner(EnvironmentSettings settings) {
+  public void createStreamPlanner(EnvironmentSettings settings) {
     Map<String, String> executorProperties = settings.toExecutorProperties();
     Executor executor = lookupExecutor(executorProperties, senv.getJavaEnv());
 
@@ -478,7 +482,7 @@ public class TableEnvFactory {
             .create(
                     plannerProperties,
                     executor,
-                    tblConfig,
+                    sTableConfig,
                     blinkFunctionCatalog,
                     catalogManager);
     this.flinkShims.setCatalogManagerSchemaResolver(catalogManager, planner.getParser(), settings);

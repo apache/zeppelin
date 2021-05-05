@@ -435,18 +435,22 @@ class FlinkScalaInterpreter(val properties: Properties) {
     val originalClassLoader = Thread.currentThread().getContextClassLoader
     try {
       Thread.currentThread().setContextClassLoader(getFlinkClassLoader)
-      val tblConfig = new TableConfig
-      tblConfig.getConfiguration.addAll(configuration)
+      // create TableConfig for Streaming and Batch seprately, otherwise it will cause conflict in flink 1.13
+      val sTableConfig = new TableConfig
+      val bTableConfig = new TableConfig
+      sTableConfig.getConfiguration.addAll(configuration)
+      bTableConfig.getConfiguration.addAll(configuration)
+
       // Step 1.1 Initialize the CatalogManager if required.
-      val catalogManager = flinkShims.createCatalogManager(tblConfig.getConfiguration).asInstanceOf[CatalogManager]
+      val catalogManager = flinkShims.createCatalogManager(sTableConfig.getConfiguration).asInstanceOf[CatalogManager]
       // Step 1.2 Initialize the ModuleManager if required.
       val moduleManager = new ModuleManager();
       // Step 1.3 Initialize the FunctionCatalog if required.
-      val flinkFunctionCatalog = new FunctionCatalog(tblConfig, catalogManager, moduleManager);
-      val blinkFunctionCatalog = new FunctionCatalog(tblConfig, catalogManager, moduleManager);
+      val flinkFunctionCatalog = new FunctionCatalog(sTableConfig, catalogManager, moduleManager);
+      val blinkFunctionCatalog = new FunctionCatalog(sTableConfig, catalogManager, moduleManager);
 
-      this.tblEnvFactory = new TableEnvFactory(this.flinkVersion, this.flinkShims, this.benv, this.senv, tblConfig,
-        catalogManager, moduleManager, flinkFunctionCatalog, blinkFunctionCatalog)
+      this.tblEnvFactory = new TableEnvFactory(this.flinkVersion, this.flinkShims, this.benv, this.senv, sTableConfig,
+        bTableConfig, catalogManager, moduleManager, flinkFunctionCatalog, blinkFunctionCatalog)
 
       val modifiers = new java.util.ArrayList[String]()
       modifiers.add("@transient")
@@ -635,7 +639,7 @@ class FlinkScalaInterpreter(val properties: Properties) {
       Thread.currentThread().setContextClassLoader(getFlinkClassLoader)
       val stEnvSetting =
         EnvironmentSettings.newInstance().inStreamingMode().useBlinkPlanner().build()
-      this.tblEnvFactory.createPlanner(stEnvSetting)
+      this.tblEnvFactory.createStreamPlanner(stEnvSetting)
     } finally {
       Thread.currentThread().setContextClassLoader(originalClassLoader)
     }

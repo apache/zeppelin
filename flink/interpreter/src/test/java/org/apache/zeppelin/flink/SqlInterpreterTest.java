@@ -189,7 +189,7 @@ public abstract class SqlInterpreterTest {
     assertEquals("table\n", resultMessages.get(0).getData());
 
     context = getInterpreterContext();
-    result = sqlInterpreter.interpret("CREATE TABLE source (msg INT)", context);
+    result = sqlInterpreter.interpret("CREATE TABLE source (msg INT) with ('connector'='print')", context);
     assertEquals(Code.SUCCESS, result.code());
 
     context = getInterpreterContext();
@@ -242,7 +242,7 @@ public abstract class SqlInterpreterTest {
     InterpreterContext context = getInterpreterContext();
     InterpreterResult result = sqlInterpreter.interpret(
             "CREATE TABLE source_table (int_col INT, double_col double, " +
-                    "varchar_col varchar, bool_col boolean)",
+                    "varchar_col varchar, bool_col boolean) with ('connector'='print')",
             context);
     assertEquals(Code.SUCCESS, result.code());
     List<InterpreterResultMessage> resultMessages = context.out.toInterpreterResultMessage();
