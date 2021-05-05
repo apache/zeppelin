@@ -45,7 +45,6 @@ import org.apache.flink.table.api.config.ExecutionConfigOptions;
 import org.apache.flink.table.api.config.OptimizerConfigOptions;
 import org.apache.flink.table.api.config.TableConfigOptions;
 import org.apache.flink.table.api.internal.TableEnvironmentInternal;
-import org.apache.flink.table.api.internal.CatalogTableSchemaResolver;
 import org.apache.flink.table.catalog.CatalogManager;
 import org.apache.flink.table.catalog.GenericInMemoryCatalog;
 import org.apache.flink.table.delegation.Parser;
@@ -110,11 +109,11 @@ import java.util.regex.Matcher;
 
 
 /**
- * Shims for flink 1.12
+ * Shims for flink 1.13
  */
-public class Flink112Shims extends FlinkShims {
+public class Flink113Shims extends FlinkShims {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(Flink112Shims.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(Flink113Shims.class);
   public static final AttributedString MESSAGE_HELP = new AttributedStringBuilder()
           .append("The following commands are available:\n\n")
           .append(formatCommand(SqlCommand.CREATE_TABLE, "Create table under current catalog and database."))
@@ -141,7 +140,7 @@ public class Flink112Shims extends FlinkShims {
 
   private Map<String, StatementSet> statementSetMap = new ConcurrentHashMap<>();
 
-  public Flink112Shims(Properties properties) {
+  public Flink113Shims(Properties properties) {
     super(properties);
   }
 
@@ -435,9 +434,7 @@ public class Flink112Shims extends FlinkShims {
   public void setCatalogManagerSchemaResolver(Object catalogManager,
                                               Object parserObject,
                                               Object environmentSetting) {
-    ((CatalogManager) catalogManager).setCatalogTableSchemaResolver(
-            new CatalogTableSchemaResolver((Parser)parserObject,
-                    ((EnvironmentSettings)environmentSetting).isStreamingMode()));
+
   }
 
   @Override

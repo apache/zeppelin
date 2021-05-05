@@ -91,6 +91,12 @@
 
     <dependency>
       <groupId>org.apache.zeppelin</groupId>
+      <artifactId>flink1.13-shims</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.zeppelin</groupId>
       <artifactId>zeppelin-python</artifactId>
       <version>${project.version}</version>
       <exclusions>
@@ -884,6 +890,13 @@ o
       <id>flink-112</id>
       <properties>
         <flink.version>${flink1.12.version}</flink.version>
+      </properties>
+    </profile>
+
+    <profile>
+      <id>flink-113</id>
+      <properties>
+        <flink.version>${flink1.13.version}</flink.version>
       </properties>
     </profile>
 

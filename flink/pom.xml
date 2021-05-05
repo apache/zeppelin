@@ -40,12 +40,14 @@
         <module>flink1.10-shims</module>
         <module>flink1.11-shims</module>
         <module>flink1.12-shims</module>
+        <module>flink1.13-shims</module>
     </modules>
 
     <properties>
         <flink1.10.version>1.10.3</flink1.10.version>
         <flink1.11.version>1.11.3</flink1.11.version>
         <flink1.12.version>1.12.0</flink1.12.version>
+        <flink1.13.version>1.13.0</flink1.13.version>
     </properties>
 
     <dependencies>

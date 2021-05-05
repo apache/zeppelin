@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.zeppelin.flink.shims112
+package org.apache.zeppelin.flink.shims113
 
 import org.apache.flink.api.scala.DataSet
 import org.apache.flink.streaming.api.scala._
