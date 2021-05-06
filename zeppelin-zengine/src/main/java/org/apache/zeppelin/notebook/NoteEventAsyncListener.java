@@ -18,28 +18,32 @@
 package org.apache.zeppelin.notebook;
 
 import org.apache.zeppelin.scheduler.Job;
+import org.apache.zeppelin.scheduler.SchedulerThreadFactory;
 import org.apache.zeppelin.user.AuthenticationInfo;
+import org.apache.zeppelin.util.ExecutorUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.concurrent.BlockingQueue;
+import java.io.Closeable;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+
 
 /**
  * An special NoteEventListener which handle events asynchronously
  */
-public abstract class NoteEventAsyncListener implements NoteEventListener {
+public abstract class NoteEventAsyncListener implements NoteEventListener, Closeable {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(NoteEventAsyncListener.class);
 
-  private BlockingQueue<NoteEvent> eventsQueue = new LinkedBlockingQueue<>();
+  private final ThreadPoolExecutor executor;
+  private final String name;
 
-  private Thread eventHandlerThread;
-
-  public NoteEventAsyncListener(String name) {
-    this.eventHandlerThread = new EventHandlingThread();
-    this.eventHandlerThread.setName(name);
-    this.eventHandlerThread.start();
+  protected NoteEventAsyncListener(String name) {
+    this.name = name;
+    executor = new ThreadPoolExecutor(0, 1, 1, TimeUnit.MINUTES,
+            new LinkedBlockingQueue<>(), new SchedulerThreadFactory(name));
   }
 
   public abstract void handleNoteCreateEvent(NoteCreateEvent noteCreateEvent) throws Exception;
@@ -55,87 +59,79 @@ public abstract class NoteEventAsyncListener implements NoteEventListener {
   public abstract void handleParagraphUpdateEvent(ParagraphUpdateEvent paragraphUpdateEvent) throws Exception;
 
 
+  @Override
   public void close() {
-    this.eventHandlerThread.interrupt();
+    ExecutorUtil.softShutdown(name, executor, 2, TimeUnit.SECONDS);
   }
 
   @Override
   public void onNoteCreate(Note note, AuthenticationInfo subject) {
-    eventsQueue.add(new NoteCreateEvent(note, subject));
+    executor.execute(new EventHandling(new NoteCreateEvent(note)));
   }
 
   @Override
   public void onNoteRemove(Note note, AuthenticationInfo subject) {
-    eventsQueue.add(new NoteRemoveEvent(note, subject));
+    executor.execute(new EventHandling(new NoteRemoveEvent(note)));
   }
 
   @Override
   public void onNoteUpdate(Note note, AuthenticationInfo subject) {
-    eventsQueue.add(new NoteUpdateEvent(note, subject));
+    executor.execute(new EventHandling(new NoteUpdateEvent(note)));
   }
 
   @Override
   public void onParagraphCreate(Paragraph p) {
-    eventsQueue.add(new ParagraphCreateEvent(p));
+    executor.execute(new EventHandling(new ParagraphCreateEvent(p)));
   }
 
   @Override
   public void onParagraphRemove(Paragraph p) {
-    eventsQueue.add(new ParagraphRemoveEvent(p));
+    executor.execute(new EventHandling(new ParagraphRemoveEvent(p)));
   }
 
   @Override
   public void onParagraphUpdate(Paragraph p) {
-    eventsQueue.add(new ParagraphUpdateEvent(p));
+    executor.execute(new EventHandling(new ParagraphUpdateEvent(p)));
   }
 
   @Override
   public void onParagraphStatusChange(Paragraph p, Job.Status status) {
-    eventsQueue.add(new ParagraphStatusChangeEvent(p));
+    executor.execute(new EventHandling(new ParagraphStatusChangeEvent(p)));
   }
 
-  class EventHandlingThread extends Thread {
+  class EventHandling implements Runnable {
+
+    private final NoteEvent event;
+    public EventHandling(NoteEvent event) {
+      this.event = event;
+    }
 
     @Override
     public void run() {
-      while(!Thread.interrupted()) {
-        try {
-          NoteEvent event = eventsQueue.take();
-          if (event instanceof NoteCreateEvent) {
-            handleNoteCreateEvent((NoteCreateEvent) event);
-          } else if (event instanceof NoteRemoveEvent) {
-            handleNoteRemoveEvent((NoteRemoveEvent) event);
-          } else if (event instanceof NoteUpdateEvent) {
-            handleNoteUpdateEvent((NoteUpdateEvent) event);
-          } else if (event instanceof ParagraphCreateEvent) {
-            handleParagraphCreateEvent((ParagraphCreateEvent) event);
-          } else if (event instanceof ParagraphRemoveEvent) {
-            handleParagraphRemoveEvent((ParagraphRemoveEvent) event);
-          } else if (event instanceof ParagraphUpdateEvent) {
-            handleParagraphUpdateEvent((ParagraphUpdateEvent) event);
-          } else {
-            throw new RuntimeException("Unknown event: " + event.getClass().getSimpleName());
-          }
-        } catch (InterruptedException e) {
-          LOGGER.info("Shutting down {}" , this.getName());
-          Thread.currentThread().interrupt();
-        } catch (Exception e) {
-          LOGGER.error("Fail to handle NoteEvent", e);
+      try {
+        if (event instanceof NoteCreateEvent) {
+          handleNoteCreateEvent((NoteCreateEvent) event);
+        } else if (event instanceof NoteRemoveEvent) {
+          handleNoteRemoveEvent((NoteRemoveEvent) event);
+        } else if (event instanceof NoteUpdateEvent) {
+          handleNoteUpdateEvent((NoteUpdateEvent) event);
+        } else if (event instanceof ParagraphCreateEvent) {
+          handleParagraphCreateEvent((ParagraphCreateEvent) event);
+        } else if (event instanceof ParagraphRemoveEvent) {
+          handleParagraphRemoveEvent((ParagraphRemoveEvent) event);
+        } else if (event instanceof ParagraphUpdateEvent) {
+          handleParagraphUpdateEvent((ParagraphUpdateEvent) event);
+        } else {
+          throw new RuntimeException("Unknown event: " + event.getClass().getSimpleName());
         }
+      } catch (Exception e) {
+        LOGGER.error("Fail to handle NoteEvent", e);
       }
     }
   }
 
-  /**
-   * Used for testing
-   *
-   * @throws InterruptedException
-   */
-  public void drainEvents() throws InterruptedException {
-    while(!eventsQueue.isEmpty()) {
-      Thread.sleep(1000);
-    }
-    Thread.sleep(5000);
+  public boolean isEventQueueEmpty() {
+    return executor.getQueue().isEmpty();
   }
 
   interface NoteEvent {
@@ -143,12 +139,10 @@ public abstract class NoteEventAsyncListener implements NoteEventListener {
   }
 
   public static class NoteCreateEvent implements NoteEvent {
-    private Note note;
-    private AuthenticationInfo subject;
+    private final Note note;
 
-    public NoteCreateEvent(Note note, AuthenticationInfo subject) {
+    public NoteCreateEvent(Note note) {
       this.note = note;
-      this.subject = subject;
     }
 
     public Note getNote() {
@@ -157,12 +151,10 @@ public abstract class NoteEventAsyncListener implements NoteEventListener {
   }
 
   public static class NoteUpdateEvent implements NoteEvent {
-    private Note note;
-    private AuthenticationInfo subject;
+    private final Note note;
 
-    public NoteUpdateEvent(Note note, AuthenticationInfo subject) {
+    public NoteUpdateEvent(Note note) {
       this.note = note;
-      this.subject = subject;
     }
 
     public Note getNote() {
@@ -172,12 +164,10 @@ public abstract class NoteEventAsyncListener implements NoteEventListener {
 
 
   public static class NoteRemoveEvent implements NoteEvent {
-    private Note note;
-    private AuthenticationInfo subject;
+    private final Note note;
 
-    public NoteRemoveEvent(Note note, AuthenticationInfo subject) {
+    public NoteRemoveEvent(Note note) {
       this.note = note;
-      this.subject = subject;
     }
 
     public Note getNote() {
@@ -186,7 +176,7 @@ public abstract class NoteEventAsyncListener implements NoteEventListener {
   }
 
   public static class ParagraphCreateEvent implements NoteEvent {
-    private Paragraph p;
+    private final Paragraph p;
 
     public ParagraphCreateEvent(Paragraph p) {
       this.p = p;
@@ -198,7 +188,7 @@ public abstract class NoteEventAsyncListener implements NoteEventListener {
   }
 
   public static class ParagraphUpdateEvent implements NoteEvent {
-    private Paragraph p;
+    private final Paragraph p;
 
     public ParagraphUpdateEvent(Paragraph p) {
       this.p = p;
@@ -210,7 +200,7 @@ public abstract class NoteEventAsyncListener implements NoteEventListener {
   }
 
   public static class ParagraphRemoveEvent implements NoteEvent {
-    private Paragraph p;
+    private final Paragraph p;
 
     public ParagraphRemoveEvent(Paragraph p) {
       this.p = p;
@@ -222,7 +212,7 @@ public abstract class NoteEventAsyncListener implements NoteEventListener {
   }
 
   public static class ParagraphStatusChangeEvent implements NoteEvent {
-    private Paragraph p;
+    private final Paragraph p;
 
     public ParagraphStatusChangeEvent(Paragraph p) {
       this.p = p;

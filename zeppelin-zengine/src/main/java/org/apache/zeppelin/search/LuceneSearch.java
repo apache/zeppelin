@@ -85,7 +85,7 @@ public class LuceneSearch extends SearchService {
 
   @Inject
   public LuceneSearch(ZeppelinConfiguration conf) {
-    super("LuceneSearch-Thread");
+    super("LuceneSearch");
 
     if (conf.isZeppelinSearchUseDisk()) {
       try {
@@ -310,8 +310,8 @@ public class LuceneSearch extends SearchService {
   }
 
   @Override
-  public void addParagraphIndex(Paragraph pararaph) throws IOException {
-    updateDoc(pararaph.getNote().getId(), pararaph.getNote().getName(), pararaph);
+  public void addParagraphIndex(Paragraph paragraph) throws IOException {
+    updateDoc(paragraph.getNote().getId(), paragraph.getNote().getName(), paragraph);
   }
 
   /**
@@ -365,7 +365,7 @@ public class LuceneSearch extends SearchService {
     } catch (IOException e) {
       LOGGER.error("Failed to delete {} from index by '{}'", noteId, fullNoteOrJustParagraph, e);
     }
-    LOGGER.debug("Done, index contains {} docs now {}", indexWriter.numDocs());
+    LOGGER.debug("Done, index contains {} docs now", indexWriter.numDocs());
   }
 
   /* (non-Javadoc)
