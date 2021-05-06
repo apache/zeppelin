@@ -40,7 +40,7 @@ import org.apache.flink.runtime.util.EnvironmentInformation
 import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment
 import org.apache.flink.table.api.config.ExecutionConfigOptions
 import org.apache.flink.table.api.{EnvironmentSettings, TableConfig, TableEnvironment}
-import org.apache.flink.table.catalog.{CatalogManager, FunctionCatalog}
+import org.apache.flink.table.catalog.CatalogManager
 import org.apache.flink.table.catalog.hive.HiveCatalog
 import org.apache.flink.table.functions.{AggregateFunction, ScalarFunction, TableAggregateFunction, TableFunction}
 import org.apache.flink.table.module.ModuleManager
@@ -435,22 +435,11 @@ class FlinkScalaInterpreter(val properties: Properties) {
     val originalClassLoader = Thread.currentThread().getContextClassLoader
     try {
       Thread.currentThread().setContextClassLoader(getFlinkClassLoader)
-      // create TableConfig for Streaming and Batch seprately, otherwise it will cause conflict in flink 1.13
-      val sTableConfig = new TableConfig
-      val bTableConfig = new TableConfig
-      sTableConfig.getConfiguration.addAll(configuration)
-      bTableConfig.getConfiguration.addAll(configuration)
+      val tableConfig = new TableConfig
+      tableConfig.getConfiguration.addAll(configuration)
 
-      // Step 1.1 Initialize the CatalogManager if required.
-      val catalogManager = flinkShims.createCatalogManager(sTableConfig.getConfiguration).asInstanceOf[CatalogManager]
-      // Step 1.2 Initialize the ModuleManager if required.
-      val moduleManager = new ModuleManager();
-      // Step 1.3 Initialize the FunctionCatalog if required.
-      val flinkFunctionCatalog = new FunctionCatalog(sTableConfig, catalogManager, moduleManager);
-      val blinkFunctionCatalog = new FunctionCatalog(sTableConfig, catalogManager, moduleManager);
-
-      this.tblEnvFactory = new TableEnvFactory(this.flinkVersion, this.flinkShims, this.benv, this.senv, sTableConfig,
-        bTableConfig, catalogManager, moduleManager, flinkFunctionCatalog, blinkFunctionCatalog)
+      this.tblEnvFactory = new TableEnvFactory(this.flinkVersion, this.flinkShims,
+        this.benv, this.senv, tableConfig)
 
       val modifiers = new java.util.ArrayList[String]()
       modifiers.add("@transient")

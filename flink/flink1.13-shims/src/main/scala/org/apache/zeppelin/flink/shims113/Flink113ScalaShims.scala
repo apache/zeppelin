@@ -24,7 +24,7 @@ import org.apache.flink.table.api.Table
 import org.apache.flink.table.api.bridge.scala.BatchTableEnvironment
 import org.apache.flink.types.Row
 
-object Flink112ScalaShims {
+object Flink113ScalaShims {
 
   def fromDataSet(btenv: BatchTableEnvironment, ds: DataSet[_]): Table = {
     btenv.fromDataSet(ds)

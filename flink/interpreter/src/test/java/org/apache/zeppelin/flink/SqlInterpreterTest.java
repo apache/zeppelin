@@ -72,11 +72,6 @@ import static org.mockito.Mockito.mock;
 public abstract class SqlInterpreterTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SqlInterpreterTest.class);
-  protected static final String[][] INPUT_DATA = {
-          {"1", "1.1", "hello world", "true"},
-          {"2", "2.3", "hello flink", "true"},
-          {"3", "3.2", "hello hadoop", "false"},
-  };
 
 
   protected FlinkInterpreter flinkInterpreter;
@@ -403,7 +398,11 @@ public abstract class SqlInterpreterTest {
     resultMessages = context.out.toInterpreterResultMessage();
     assertEquals(1, resultMessages.size());
     assertEquals(Type.TEXT, resultMessages.get(0).getType());
-    assertTrue(resultMessages.get(0).getData(), resultMessages.get(0).getData().contains("Physical Execution Plan"));
+    if (flinkInterpreter.getFlinkVersion().olderThan(FlinkVersion.fromVersionString("1.13.0"))) {
+      assertTrue(resultMessages.get(0).getData(), resultMessages.get(0).getData().contains("Physical Execution Plan"));
+    } else {
+      assertTrue(resultMessages.get(0).getData(), resultMessages.get(0).getData().contains("Optimized Execution Plan"));
+    }
   }
 
   @Test

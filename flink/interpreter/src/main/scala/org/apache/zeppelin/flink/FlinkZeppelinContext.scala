@@ -135,7 +135,6 @@ class FlinkZeppelinContext(val flinkInterpreter: FlinkScalaInterpreter,
   }
 
   def show(table: Table, streamType: String, configs: Map[String, String] = Map.empty): Unit = {
-    val stenv = flinkInterpreter.getJavaStreamTableEnvironment("blink")
     val context = InterpreterContext.get()
     configs.foreach(e => context.getLocalProperties.put(e._1, e._2))
     val tableName = "UnnamedTable_" + context.getParagraphId.replace("-", "_") + "_" + SQL_INDEX.getAndIncrement()

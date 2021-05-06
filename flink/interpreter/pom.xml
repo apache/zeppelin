@@ -711,9 +711,8 @@
           https://bugs.java.com/bugdatabase/view_bug.do?bug_id=8191484 -->
           <argLine>-Xmx5120m -XX:MaxMetaspaceSize=512m -Dsun.zip.disableMemoryMapping=true</argLine>
 <!--          <argLine>-Xmx4096m -XX:MaxMetaspaceSize=512m -Dsun.zip.disableMemoryMapping=true -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=6006</argLine>-->
-o
+
           <environmentVariables>
-<!--            <FLINK_HOME>/Users/jzhang/github/flink/build-target</FLINK_HOME>-->
             <FLINK_HOME>${project.build.directory}/flink-${flink.version}</FLINK_HOME>
             <FLINK_CONF_DIR>${project.build.directory}/test-classes</FLINK_CONF_DIR>
           </environmentVariables>

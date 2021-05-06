@@ -149,4 +149,12 @@ public abstract class FlinkShims {
   public abstract Object updateEffectiveConfig(Object cliFrontend, Object commandLine, Object executorConfig);
 
   public abstract Map extractTableConfigOptions();
+
+  public void setBatchRuntimeMode(Object tableConfig) {
+    // only needed after flink 1.13
+  }
+
+  public void setOldPlanner(Object tableConfig) {
+    // only needed after flink 1.13
+  }
 }
