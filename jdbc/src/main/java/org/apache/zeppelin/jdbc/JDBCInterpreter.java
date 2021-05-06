@@ -313,7 +313,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
     return completer;
   }
 
-  private void initStatementMap() {
+  private void clearStatementMap() {
     for (JDBCUserConfigurations configurations : jdbcUserConfigurationsMap.values()) {
       try {
         configurations.initStatementMap();
@@ -323,7 +323,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
     }
   }
 
-  private void initConnectionPoolMap() {
+  private void clearConnectionPoolMap() {
     for (String key : jdbcUserConfigurationsMap.keySet()) {
       try {
         closeDBPool(key, DEFAULT_KEY);
@@ -343,8 +343,8 @@ public class JDBCInterpreter extends KerberosInterpreter {
   public void close() {
     super.close();
     try {
-      initStatementMap();
-      initConnectionPoolMap();
+      clearStatementMap();
+      clearConnectionPoolMap();
     } catch (Exception e) {
       LOGGER.error("Error while closing...", e);
     }
