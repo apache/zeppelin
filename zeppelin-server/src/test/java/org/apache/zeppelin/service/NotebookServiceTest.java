@@ -82,6 +82,7 @@ public class NotebookServiceTest {
   private static NotebookService notebookService;
 
   private File notebookDir;
+  private SearchService searchService;
   private ServiceContext context =
       new ServiceContext(AuthenticationInfo.ANONYMOUS, new HashSet<>());
 
@@ -116,7 +117,7 @@ public class NotebookServiceTest {
     when(mockInterpreterSetting.isUserAuthorized(any())).thenReturn(true);
     when(mockInterpreterGroup.getInterpreterSetting()).thenReturn(mockInterpreterSetting);
     when(mockInterpreterSetting.getStatus()).thenReturn(InterpreterSetting.Status.READY);
-    SearchService searchService = new LuceneSearch(zeppelinConfiguration);
+    searchService = new LuceneSearch(zeppelinConfiguration);
     Credentials credentials = new Credentials();
     NoteManager noteManager = new NoteManager(notebookRepo);
     AuthorizationService authorizationService = new AuthorizationService(noteManager, zeppelinConfiguration);
@@ -147,6 +148,7 @@ public class NotebookServiceTest {
   @After
   public void tearDown() {
     notebookDir.delete();
+    searchService.close();
   }
 
   @Test
