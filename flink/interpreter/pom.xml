@@ -50,6 +50,14 @@
     <flink.bin.download.url>https://archive.apache.org/dist/flink/flink-${flink.version}/flink-${flink.version}-bin-scala_${scala.binary.version}.tgz</flink.bin.download.url>
   </properties>
 
+  <repositories>
+    <repository>
+      <id>conjars repo</id>
+      <name>conjars repo</name>
+      <url>https://conjars.org/repo/</url>
+    </repository>
+  </repositories>
+  
   <dependencies>
 
     <dependency>
