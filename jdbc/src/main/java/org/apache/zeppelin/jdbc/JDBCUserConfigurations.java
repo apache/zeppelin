@@ -43,14 +43,14 @@ public class JDBCUserConfigurations {
     isSuccessful = new HashMap<>();
   }
 
-  public void initStatementMap() throws SQLException {
+  public void clearStatementMap() throws SQLException {
     for (Statement statement : paragraphIdStatementMap.values()) {
       statement.close();
     }
     paragraphIdStatementMap.clear();
   }
 
-  public void initConnectionPoolMap() throws SQLException {
+  public void clearConnectionPoolMap() throws SQLException {
     poolingDriverMap.clear();
     isSuccessful.clear();
   }

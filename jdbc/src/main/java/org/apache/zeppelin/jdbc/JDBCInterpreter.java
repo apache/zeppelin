@@ -316,7 +316,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
   private void clearStatementMap() {
     for (JDBCUserConfigurations configurations : jdbcUserConfigurationsMap.values()) {
       try {
-        configurations.initStatementMap();
+        configurations.clearStatementMap();
       } catch (Exception e) {
         LOGGER.error("Error while closing paragraphIdStatementMap statement...", e);
       }
@@ -332,9 +332,9 @@ public class JDBCInterpreter extends KerberosInterpreter {
       }
       try {
         JDBCUserConfigurations configurations = jdbcUserConfigurationsMap.get(key);
-        configurations.initConnectionPoolMap();
+        configurations.clearConnectionPoolMap();
       } catch (SQLException e) {
-        LOGGER.error("Error while closing initConnectionPoolMap.", e);
+        LOGGER.error("Error while clearing connection pool map.", e);
       }
     }
   }
