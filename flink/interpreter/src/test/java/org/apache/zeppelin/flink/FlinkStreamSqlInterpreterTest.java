@@ -470,7 +470,7 @@ public class FlinkStreamSqlInterpreterTest extends SqlInterpreterTest {
                     "  'update-mode' = 'append'\n" +
                     ")\n",
             context);
-    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
     List<InterpreterResultMessage> resultMessages = context.out.toInterpreterResultMessage();
     assertEquals(1, resultMessages.size());
     assertEquals(InterpreterResult.Type.TEXT, resultMessages.get(0).getType());

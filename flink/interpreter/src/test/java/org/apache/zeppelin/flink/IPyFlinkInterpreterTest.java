@@ -176,7 +176,7 @@ public class IPyFlinkInterpreterTest extends IPythonInterpreterTest {
         "t.select(\"a + 1, b, c\").insert_into(\"batch_sink\")\n" +
         "bt_env.execute(\"batch_job\")"
             , context);
-    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    assertEquals(result.toString(), InterpreterResult.Code.SUCCESS, result.code());
 
     // use group by
     context = createInterpreterContext();

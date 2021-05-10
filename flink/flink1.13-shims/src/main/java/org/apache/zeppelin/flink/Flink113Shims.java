@@ -22,6 +22,7 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.flink.api.common.JobStatus;
+import org.apache.flink.api.common.RuntimeExecutionMode;
 import org.apache.flink.api.common.typeutils.TypeSerializer;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.scala.DataSet;
@@ -29,14 +30,16 @@ import org.apache.flink.client.cli.CliFrontend;
 import org.apache.flink.client.cli.CustomCommandLine;
 import org.apache.flink.configuration.ConfigOption;
 import org.apache.flink.configuration.Configuration;
+import org.apache.flink.configuration.ExecutionOptions;
 import org.apache.flink.configuration.ReadableConfig;
 import org.apache.flink.core.execution.JobClient;
 import org.apache.flink.python.PythonOptions;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironmentFactory;
-import org.apache.flink.table.api.EnvironmentSettings;
+import org.apache.flink.table.api.PlannerType;
 import org.apache.flink.table.api.StatementSet;
 import org.apache.flink.table.api.Table;
+import org.apache.flink.table.api.TableConfig;
 import org.apache.flink.table.api.TableEnvironment;
 import org.apache.flink.table.api.TableResult;
 import org.apache.flink.table.api.bridge.java.internal.StreamTableEnvironmentImpl;
@@ -45,7 +48,6 @@ import org.apache.flink.table.api.config.ExecutionConfigOptions;
 import org.apache.flink.table.api.config.OptimizerConfigOptions;
 import org.apache.flink.table.api.config.TableConfigOptions;
 import org.apache.flink.table.api.internal.TableEnvironmentInternal;
-import org.apache.flink.table.api.internal.CatalogTableSchemaResolver;
 import org.apache.flink.table.catalog.CatalogManager;
 import org.apache.flink.table.catalog.GenericInMemoryCatalog;
 import org.apache.flink.table.delegation.Parser;
@@ -83,8 +85,8 @@ import org.apache.flink.table.sinks.TableSink;
 import org.apache.flink.types.Row;
 import org.apache.flink.types.RowKind;
 import org.apache.flink.util.FlinkException;
-import org.apache.zeppelin.flink.shims112.CollectStreamTableSink;
-import org.apache.zeppelin.flink.shims112.Flink112ScalaShims;
+import org.apache.zeppelin.flink.shims113.CollectStreamTableSink;
+import org.apache.zeppelin.flink.shims113.Flink113ScalaShims;
 import org.apache.zeppelin.flink.sql.SqlCommandParser;
 import org.apache.zeppelin.flink.sql.SqlCommandParser.SqlCommand;
 import org.apache.zeppelin.flink.sql.SqlCommandParser.SqlCommandCall;
@@ -110,11 +112,11 @@ import java.util.regex.Matcher;
 
 
 /**
- * Shims for flink 1.12
+ * Shims for flink 1.13
  */
-public class Flink112Shims extends FlinkShims {
+public class Flink113Shims extends FlinkShims {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(Flink112Shims.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(Flink113Shims.class);
   public static final AttributedString MESSAGE_HELP = new AttributedStringBuilder()
           .append("The following commands are available:\n\n")
           .append(formatCommand(SqlCommand.CREATE_TABLE, "Create table under current catalog and database."))
@@ -141,7 +143,7 @@ public class Flink112Shims extends FlinkShims {
 
   private Map<String, StatementSet> statementSetMap = new ConcurrentHashMap<>();
 
-  public Flink112Shims(Properties properties) {
+  public Flink113Shims(Properties properties) {
     super(properties);
   }
 
@@ -245,12 +247,12 @@ public class Flink112Shims extends FlinkShims {
 
   @Override
   public Object fromDataSet(Object btenv, Object ds) {
-    return Flink112ScalaShims.fromDataSet((BatchTableEnvironment) btenv, (DataSet) ds);
+    return Flink113ScalaShims.fromDataSet((BatchTableEnvironment) btenv, (DataSet) ds);
   }
 
   @Override
   public Object toDataSet(Object btenv, Object table) {
-    return Flink112ScalaShims.toDataSet((BatchTableEnvironment) btenv, (Table) table);
+    return Flink113ScalaShims.toDataSet((BatchTableEnvironment) btenv, (Table) table);
   }
 
   @Override
@@ -435,9 +437,7 @@ public class Flink112Shims extends FlinkShims {
   public void setCatalogManagerSchemaResolver(Object catalogManager,
                                               Object parserObject,
                                               Object environmentSetting) {
-    ((CatalogManager) catalogManager).setCatalogTableSchemaResolver(
-            new CatalogTableSchemaResolver((Parser)parserObject,
-                    ((EnvironmentSettings)environmentSetting).isStreamingMode()));
+
   }
 
   @Override
@@ -479,5 +479,17 @@ public class Flink112Shims extends FlinkShims {
       }
     }
     return configOptions;
+  }
+
+  @Override
+  public void setBatchRuntimeMode(Object tableConfig) {
+    ((TableConfig) tableConfig).getConfiguration()
+            .set(ExecutionOptions.RUNTIME_MODE, RuntimeExecutionMode.BATCH);
+  }
+
+  @Override
+  public void setOldPlanner(Object tableConfig) {
+    ((TableConfig) tableConfig).getConfiguration()
+            .set(TableConfigOptions.TABLE_PLANNER, PlannerType.OLD);
   }
 }
