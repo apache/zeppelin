@@ -321,7 +321,7 @@ class FlinkScalaInterpreter(val properties: Properties) {
           }
       }
 
-      if (this.displayedJMWebUrl != null) {
+      if (this.displayedJMWebUrl == null) {
         // use jmWebUrl as displayedJMWebUrl if it is not set
         this.displayedJMWebUrl = this.jmWebUrl
       }
