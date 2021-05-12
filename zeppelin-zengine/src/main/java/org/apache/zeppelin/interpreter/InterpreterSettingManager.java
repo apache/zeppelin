@@ -343,7 +343,7 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
     }
   }
 
-  public void saveToFile() throws IOException {
+  public synchronized void saveToFile() throws IOException {
     InterpreterInfoSaving info = new InterpreterInfoSaving();
     info.interpreterSettings = Maps.newHashMap(interpreterSettings);
     info.interpreterRepositories = interpreterRepositories;
