@@ -43,9 +43,6 @@
     <sisu.plexus.version>0.3.4</sisu.plexus.version>
     <jline.version>2.14.3</jline.version>
     <atomix.version>3.0.0-rc4</atomix.version>
-
-    <!--plugin versions-->
-    <plugin.shade.version>2.3</plugin.shade.version>
   </properties>
 
   <dependencies>
@@ -233,12 +230,6 @@
         <filtering>true</filtering>
       </resource>
     </resources>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-dependency-plugin</artifactId>
-      </plugin>
-    </plugins>
   </build>
 
 </project>

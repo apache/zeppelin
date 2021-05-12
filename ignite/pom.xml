@@ -36,9 +36,6 @@
     <interpreter.name>ignite</interpreter.name>
     <ignite.version>2.7.6</ignite.version>
     <ignite.scala.version>${scala.2.11.version}</ignite.scala.version>
-
-    <!--plugin versions-->
-    <plugin.scala.version>2.15.2</plugin.scala.version>
   </properties>
 
   <dependencies>
@@ -120,9 +117,6 @@
       </plugin>
       <plugin>
         <artifactId>maven-enforcer-plugin</artifactId>
-      </plugin>
-      <plugin>
-        <artifactId>maven-dependency-plugin</artifactId>
       </plugin>
       <plugin>
         <artifactId>maven-resources-plugin</artifactId>
