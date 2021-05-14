@@ -27,7 +27,6 @@
         <relativePath>../zeppelin-interpreter-parent/pom.xml</relativePath>
     </parent>
 
-    <groupId>org.apache.zeppelin</groupId>
     <artifactId>spark-parent</artifactId>
     <packaging>pom</packaging>
     <version>0.10.0-SNAPSHOT</version>
@@ -68,20 +67,6 @@
         <module>spark2-shims</module>
         <module>spark3-shims</module>
     </modules>
-
-    <dependencies>
-
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
 
     <build>
         <plugins>
