@@ -310,5 +310,7 @@ else
 fi
 
 # Don't remove this echo, it is for diagnose, this line of output will be redirected to java log4j output.
-echo "Interpreter launch command: ${INTERPRETER_RUN_COMMAND[@]}"
+# Output that starts with `[INFO]` will be redirected to log4j INFO output. Other outputs from interpreter.sh
+# will be redirected to log4j DEBUG output.
+echo "[INFO] Interpreter launch command: ${INTERPRETER_RUN_COMMAND[@]}"
 exec "${INTERPRETER_RUN_COMMAND[@]}"
