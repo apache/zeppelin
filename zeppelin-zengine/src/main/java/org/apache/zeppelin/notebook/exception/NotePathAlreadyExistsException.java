@@ -15,26 +15,15 @@
  * limitations under the License.
  */
 
-package org.apache.zeppelin.integration;
+package org.apache.zeppelin.notebook.exception;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import java.io.IOException;
 
-import java.util.Arrays;
-import java.util.List;
+public class NotePathAlreadyExistsException extends IOException {
+    private static final long serialVersionUID = -9004313429043423507L;
 
-@RunWith(value = Parameterized.class)
-public class ZeppelinSparkClusterTest23 extends ZeppelinSparkClusterTest {
+    public NotePathAlreadyExistsException(final String message) {
+        super(message);
+    }
 
-  public ZeppelinSparkClusterTest23(String sparkVersion, String hadoopVersion) throws Exception {
-    super(sparkVersion, hadoopVersion);
-  }
-
-
-  @Parameterized.Parameters
-  public static List<Object[]> data() {
-    return Arrays.asList(new Object[][]{
-            {"2.3.2", "2.7"}
-    });
-  }
 }

@@ -96,8 +96,7 @@ Available the nested conditions (using braces "()"). "and" operator have more pr
 
 If generated query contains promtps, then promtps will appear as dynamic form after paragraph submitting.
 
-Example query
-
+#### Example query
 ```sql
 %sap
 
@@ -125,7 +124,7 @@ where
 ### `distinct` keyword
 You can write keyword `distinct` after keyword `select` to return only distinct (different) values.
 
-Example query
+#### Example query
 ```sql
 %sap
 universe [Universe Name];
@@ -139,7 +138,7 @@ where
 ### `limit` keyword
 You can write keyword `limit` and limit value in the end of query to limit the number of records returned based on a limit value.
 
-Example query
+#### Example query
 ```sql
 %sap
 universe [Universe Name];

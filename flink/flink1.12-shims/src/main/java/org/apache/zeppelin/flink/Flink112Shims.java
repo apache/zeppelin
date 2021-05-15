@@ -20,7 +20,7 @@ package org.apache.zeppelin.flink;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.compress.utils.Lists;
-import org.apache.flink.api.common.ExecutionConfig;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.flink.api.common.JobStatus;
 import org.apache.flink.api.common.typeutils.TypeSerializer;
 import org.apache.flink.api.java.tuple.Tuple2;
@@ -173,19 +173,30 @@ public class Flink112Shims extends FlinkShims {
 
   @Override
   public String getPyFlinkPythonPath(Properties properties) throws IOException {
+    String mode = properties.getProperty("flink.execution.mode");
+    if ("yarn-application".equalsIgnoreCase(mode)) {
+      // for yarn application mode, FLINK_HOME is container working directory
+      String flinkHome = new File(".").getAbsolutePath();
+      return getPyFlinkPythonPath(flinkHome + "/lib/python");
+    }
+
     String flinkHome = System.getenv("FLINK_HOME");
-    if (flinkHome != null) {
-      List<File> depFiles = null;
-      depFiles = Arrays.asList(new File(flinkHome + "/opt/python").listFiles());
-      StringBuilder builder = new StringBuilder();
-      for (File file : depFiles) {
-        LOGGER.info("Adding extracted file to PYTHONPATH: " + file.getAbsolutePath());
-        builder.append(file.getAbsolutePath() + ":");
-      }
-      return builder.toString();
+    if (StringUtils.isNotBlank(flinkHome)) {
+      return getPyFlinkPythonPath(flinkHome + "/opt/python");
     } else {
       throw new IOException("No FLINK_HOME is specified");
     }
+  }
+
+  private String getPyFlinkPythonPath(String pyFlinkFolder) {
+    LOGGER.info("Getting pyflink lib from {}", pyFlinkFolder);
+    List<File> depFiles = Arrays.asList(new File(pyFlinkFolder).listFiles());
+    StringBuilder builder = new StringBuilder();
+    for (File file : depFiles) {
+      LOGGER.info("Adding extracted file {} to PYTHONPATH", file.getAbsolutePath());
+      builder.append(file.getAbsolutePath() + ":");
+    }
+    return builder.toString();
   }
 
   @Override
@@ -445,7 +456,11 @@ public class Flink112Shims extends FlinkShims {
     Map<String, ConfigOption> configOptions = new HashMap<>();
     configOptions.putAll(extractConfigOptions(ExecutionConfigOptions.class));
     configOptions.putAll(extractConfigOptions(OptimizerConfigOptions.class));
-    configOptions.putAll(extractConfigOptions(PythonOptions.class));
+    try {
+      configOptions.putAll(extractConfigOptions(PythonOptions.class));
+    } catch (NoClassDefFoundError e) {
+      LOGGER.warn("No pyflink jars found");
+    }
     configOptions.putAll(extractConfigOptions(TableConfigOptions.class));
     return configOptions;
   }

@@ -55,7 +55,8 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     <tr>
       <td>sample JSON response</td>
       <td>
-        <pre>
+
+```json
 {
   "status": "OK",
   "message": "Zeppelin version",
@@ -67,8 +68,8 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     }
   ]
 }
-        </pre>
-      </td>
+```
+</td>
     </tr>
   </table>
 
@@ -94,22 +95,24 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     <tr>
       <td>sample JSON response</td>
       <td>
-        <pre>
+
+```json
 {
   "status": "OK"
 }
-        </pre>
-      </td>
+```
+</td>
     </tr>
     <tr>
       <td>sample error JSON response</td>
       <td>
-        <pre>
+
+```json
 {
   "status":"NOT_ACCEPTABLE",
   "message":"Please check LOG level specified. Valid values: DEBUG, ERROR, FATAL, INFO, TRACE, WARN"
 }
-        </pre>
-      </td>
+```
+</td>
     </tr>
   </table>

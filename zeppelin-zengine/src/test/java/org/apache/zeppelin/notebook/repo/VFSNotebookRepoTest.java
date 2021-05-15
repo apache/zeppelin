@@ -106,6 +106,21 @@ public class VFSNotebookRepoTest {
   }
 
   @Test
+  public void testNoteNameWithColon() throws IOException {
+    assertEquals(0, notebookRepo.list(AuthenticationInfo.ANONYMOUS).size());
+
+    // create note with colon in name
+    Note note1 = new Note();
+    note1.setPath("/my_project/my:note1");
+    Paragraph p1 = note1.insertNewParagraph(0, AuthenticationInfo.ANONYMOUS);
+    p1.setText("%md hello world");
+    p1.setTitle("my title");
+    notebookRepo.save(note1, AuthenticationInfo.ANONYMOUS);
+    Map<String, NoteInfo> noteInfos = notebookRepo.list(AuthenticationInfo.ANONYMOUS);
+    assertEquals(1, noteInfos.size());
+  }
+
+  @Test
   public void testUpdateSettings() throws IOException {
     List<NotebookRepoSettingsInfo> repoSettings = notebookRepo.getSettings(AuthenticationInfo.ANONYMOUS);
     assertEquals(1, repoSettings.size());

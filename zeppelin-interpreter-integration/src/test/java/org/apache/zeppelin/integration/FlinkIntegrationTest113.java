@@ -24,17 +24,16 @@ import java.util.Arrays;
 import java.util.List;
 
 @RunWith(value = Parameterized.class)
-public class ZeppelinSparkClusterTest16 extends ZeppelinSparkClusterTest {
-
-  public ZeppelinSparkClusterTest16(String sparkVersion, String hadoopVersion) throws Exception {
-    super(sparkVersion, hadoopVersion);
-  }
-
+public class FlinkIntegrationTest113 extends FlinkIntegrationTest {
 
   @Parameterized.Parameters
   public static List<Object[]> data() {
     return Arrays.asList(new Object[][]{
-            {"1.6.3", "2.6"}
+            {"1.13.0"}
     });
+  }
+
+  public FlinkIntegrationTest113(String flinkVersion) {
+    super(flinkVersion);
   }
 }

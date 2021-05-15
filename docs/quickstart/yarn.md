@@ -51,6 +51,7 @@ Besides that, you can also specify other properties as following table.
   </tr>
   <tr>
     <td>zeppelin.interpreter.yarn.resource.memoryOverhead</td>
+    <td>384</td>
     <td>Amount of non-heap memory to be allocated per interpreter process in yarn interpreter mode, in MiB unless otherwise specified. This is memory that accounts for things like VM overheads, interned strings, other native overheads, etc.</td>
   </tr>
   <tr>

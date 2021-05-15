@@ -46,7 +46,7 @@ By default, docker provides an interface as a sock file, so you need to modify t
 
 vi `/etc/docker/daemon.json`, Add `tcp://0.0.0.0:2375` to the `hosts` configuration item.
 
-```
+```json
 {
     ...
     "hosts": ["tcp://0.0.0.0:2375","unix:///var/run/docker.sock"]
@@ -60,27 +60,27 @@ vi `/etc/docker/daemon.json`, Add `tcp://0.0.0.0:2375` to the `hosts` configurat
 
 1. Modify these 2 configuration items in `zeppelin-site.xml`.
 
-```
-<property>
-  <name>zeppelin.run.mode</name>
-  <value>docker</value>
-  <description>'auto|local|k8s|docker'</description>
-</property>
+ ```xml
+ <property>
+   <name>zeppelin.run.mode</name>
+   <value>docker</value>
+   <description>'auto|local|k8s|docker'</description>
+ </property>
 
-<property>
-  <name>zeppelin.docker.container.image</name>
-  <value>apache/zeppelin</value>
-  <description>Docker image for interpreters</description>
-</property>
+ <property>
+   <name>zeppelin.docker.container.image</name>
+   <value>apache/zeppelin</value>
+   <description>Docker image for interpreters</description>
+ </property>
 ```
 
 2. set timezone in zeppelin-env.sh
 
-Set to the same time zone as the zeppelin server, keeping the time zone in the interpreter docker container the same as the server. E.g, `"America/New_York"` or `"Asia/Shanghai"`
+ Set to the same time zone as the zeppelin server, keeping the time zone in the interpreter docker container the same as the server. E.g, `"America/New_York"` or `"Asia/Shanghai"`
 
-```
-export DOCKER_TIME_ZONE="America/New_York"
-```
+ ```bash
+ export DOCKER_TIME_ZONE="America/New_York"
+ ```
 
 
 ## Build Zeppelin image manually
@@ -133,9 +133,9 @@ Zeppelin service runs on local server, it auto configure itself to use `DockerIn
  - ${ZEPPELIN_HOME}/interpreter/${interpreterGroupName}
  - ${ZEPPELIN_HOME}/conf/zeppelin-site.xml
  - ${ZEPPELIN_HOME}/conf/log4j.properties
- - ${ZEPPELIN_HOME}/conf/log4j_yarn_cluster.properties
- - HADOOP_CONF_DIR
- - SPARK_CONF_DIR
+ - ${ZEPPELIN\_HOME}/conf/log4j\_yarn_cluster.properties
+ - HADOOP\_CONF_DIR
+ - SPARK\_CONF_DIR
  - /etc/krb5.conf
  - Keytab file configured in the interpreter properties
    - zeppelin.shell.keytab.location
@@ -151,12 +151,12 @@ All file paths uploaded to the container, Keep the same path as the local one. T
 When interpreter group is `spark`, Zeppelin sets necessary spark configuration automatically to use Spark on Docker.
 Supports all running modes of `local[*]`, `yarn-client`, and `yarn-cluster` of zeppelin spark interpreter.
 
-#### SPARK_CONF_DIR
+#### SPARK\_CONF_DIR
 
 1. Configuring in the zeppelin-env.sh
 
   Because there are only spark binary files in the interpreter image, no spark conf files are included.
-  The configuration file in the `spark-<version>/conf/` local to the zeppelin service needs to be uploaded to the ``/spark/conf/` directory in the spark interpreter container.
+  The configuration file in the `spark-<version>/conf/` local to the zeppelin service needs to be uploaded to the `/spark/conf/` directory in the spark interpreter container.
   So you need to setting `export SPARK_CONF_DIR=/spark-<version>-path/conf/` in the `zeppelin-env.sh` file.
 
 2. Configuring in the spark Properties
@@ -165,10 +165,10 @@ Supports all running modes of `local[*]`, `yarn-client`, and `yarn-cluster` of z
 
   | properties name | Value | Description |
   | ----- | ----- | ----- |
-  | SPARK_CONF_DIR | /spark-<version>-path.../conf/ | Spark-<version>-path/conf/ path local on the zeppelin service |
+  | SPARK\_CONF_DIR | /spark-<version>-path.../conf/ | Spark-<version>-path/conf/ path local on the zeppelin service |
 
 
-#### HADOOP_CONF_DIR
+#### HADOOP\_CONF_DIR
 
 1. Configuring in the zeppelin-env.sh
 
@@ -182,7 +182,7 @@ Supports all running modes of `local[*]`, `yarn-client`, and `yarn-cluster` of z
 
   | properties name | Value | Description |
   | ----- | ----- | ----- |
-  | HADOOP_CONF_DIR | hadoop-<version>-path/etc/hadoop | hadoop-<version>-path/etc/hadoop path local on the zeppelin service |
+  | HADOOP\_CONF_DIR | hadoop-<version>-path/etc/hadoop | hadoop-<version>-path/etc/hadoop path local on the zeppelin service |
 
 
 #### Accessing Spark UI (or Service running in interpreter container)

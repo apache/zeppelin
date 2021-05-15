@@ -52,6 +52,7 @@ public class PythonInterpreterMatplotlibTest implements InterpreterOutputListene
     p.setProperty("zeppelin.python", "python");
     p.setProperty("zeppelin.python.maxResult", "100");
     p.setProperty("zeppelin.python.useIPython", "false");
+    p.setProperty("zeppelin.python.gatewayserver_address", "127.0.0.1");
 
     intpGroup = new InterpreterGroup();
 

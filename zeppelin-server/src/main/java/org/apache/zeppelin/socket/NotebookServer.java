@@ -962,6 +962,14 @@ public class NotebookServer extends WebSocketServlet
             broadcastNote(note);
             broadcastNoteList(context.getAutheInfo(), context.getUserAndRoles());
           }
+
+          @Override
+          public void onFailure(Exception ex, ServiceContext context) throws IOException {
+            super.onFailure(ex, context);
+
+            // If there was a failure, then resend the latest notebook information to update stale UI
+            broadcastNote(getNotebook().getNote(noteId));
+          }
         });
   }
 

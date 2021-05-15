@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.integration;
 
+import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
@@ -24,17 +25,33 @@ import java.util.Arrays;
 import java.util.List;
 
 @RunWith(value = Parameterized.class)
-public class SparkIntegrationTest16 extends SparkIntegrationTest{
+public class SparkIntegrationTest31 extends SparkIntegrationTest {
 
-  public SparkIntegrationTest16(String sparkVersion, String hadoopVersion) {
+  public SparkIntegrationTest31(String sparkVersion, String hadoopVersion) {
     super(sparkVersion, hadoopVersion);
   }
 
   @Parameterized.Parameters
   public static List<Object[]> data() {
     return Arrays.asList(new Object[][]{
-            {"1.6.3", "2.6"}
+        {"3.1.1", "2.7"},
+        {"3.1.1", "3.2"}
     });
   }
 
+  @Override
+  protected void setUpSparkInterpreterSetting(InterpreterSetting interpreterSetting) {
+    // spark3 doesn't support yarn-client and yarn-cluster any more, use
+    // spark.master and spark.submit.deployMode instead
+    String sparkMaster = interpreterSetting.getJavaProperties().getProperty("spark.master");
+    if (sparkMaster.equals("yarn-client")) {
+      interpreterSetting.setProperty("spark.master", "yarn");
+      interpreterSetting.setProperty("spark.submit.deployMode", "client");
+    } else if (sparkMaster.equals("yarn-cluster")){
+      interpreterSetting.setProperty("spark.master", "yarn");
+      interpreterSetting.setProperty("spark.submit.deployMode", "cluster");
+    } else if (sparkMaster.startsWith("local")) {
+      interpreterSetting.setProperty("spark.submit.deployMode", "client");
+    }
+  }
 }

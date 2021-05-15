@@ -28,6 +28,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -58,6 +59,7 @@ import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.NoteManager;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.Paragraph;
+import org.apache.zeppelin.notebook.exception.NotePathAlreadyExistsException;
 import org.apache.zeppelin.notebook.repo.InMemoryNotebookRepo;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.notebook.repo.VFSNotebookRepo;
@@ -80,6 +82,7 @@ public class NotebookServiceTest {
   private static NotebookService notebookService;
 
   private File notebookDir;
+  private SearchService searchService;
   private ServiceContext context =
       new ServiceContext(AuthenticationInfo.ANONYMOUS, new HashSet<>());
 
@@ -114,7 +117,7 @@ public class NotebookServiceTest {
     when(mockInterpreterSetting.isUserAuthorized(any())).thenReturn(true);
     when(mockInterpreterGroup.getInterpreterSetting()).thenReturn(mockInterpreterSetting);
     when(mockInterpreterSetting.getStatus()).thenReturn(InterpreterSetting.Status.READY);
-    SearchService searchService = new LuceneSearch(zeppelinConfiguration);
+    searchService = new LuceneSearch(zeppelinConfiguration);
     Credentials credentials = new Credentials();
     NoteManager noteManager = new NoteManager(notebookRepo);
     AuthorizationService authorizationService = new AuthorizationService(noteManager, zeppelinConfiguration);
@@ -145,6 +148,7 @@ public class NotebookServiceTest {
   @After
   public void tearDown() {
     notebookDir.delete();
+    searchService.close();
   }
 
   @Test
@@ -330,6 +334,26 @@ public class NotebookServiceTest {
     notesInfo = notebookService.listNotesInfo(false, context, callback);
     assertEquals(0, notesInfo.size());
   }
+
+  @Test
+  public void testRenameNoteRejectsDuplicate() throws IOException {
+    Note note1 = notebookService.createNote("/folder/note1", "test", true, context, callback);
+    assertEquals("note1", note1.getName());
+    verify(callback).onSuccess(note1, context);
+
+    reset(callback);
+    Note note2 = notebookService.createNote("/folder/note2", "test", true, context, callback);
+    assertEquals("note2", note2.getName());
+    verify(callback).onSuccess(note2, context);
+
+    reset(callback);
+    ArgumentCaptor<NotePathAlreadyExistsException> exception = ArgumentCaptor.forClass(NotePathAlreadyExistsException.class);
+    notebookService.renameNote(note1.getId(), "/folder/note2", false, context, callback);
+    verify(callback).onFailure(exception.capture(), any(ServiceContext.class));
+    assertEquals("Note '/folder/note2' existed", exception.getValue().getMessage());
+    verify(callback, never()).onSuccess(any(), any());
+  }
+
 
   @Test
   public void testParagraphOperations() throws IOException {

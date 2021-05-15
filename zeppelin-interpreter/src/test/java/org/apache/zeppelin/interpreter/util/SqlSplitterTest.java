@@ -330,4 +330,43 @@ public class SqlSplitterTest {
     assertEquals(1, sqls.size());
     assertEquals("select a \n from table_1", sqls.get(0));
   }
+
+  @Test
+  public void testQuoteInComment() {
+    SqlSplitter sqlSplitter = new SqlSplitter();
+    List<String> sqls = sqlSplitter.splitSql("show tables;-- comment_1'\ndescribe table_1");
+    assertEquals(2, sqls.size());
+    assertEquals("show tables", sqls.get(0));
+    assertEquals("\ndescribe table_1", sqls.get(1));
+
+    sqls = sqlSplitter.splitSql("show tables;-- comment_1\"\ndescribe table_1");
+    assertEquals(2, sqls.size());
+    assertEquals("show tables", sqls.get(0));
+    assertEquals("\ndescribe table_1", sqls.get(1));
+
+    sqls = sqlSplitter.splitSql("show tables;/* comment_1' */\ndescribe table_1");
+    assertEquals(2, sqls.size());
+    assertEquals("show tables", sqls.get(0));
+    assertEquals("\ndescribe table_1", sqls.get(1));
+
+    sqls = sqlSplitter.splitSql("show tables;/* comment_1\" */\ndescribe table_1");
+    assertEquals(2, sqls.size());
+    assertEquals("show tables", sqls.get(0));
+    assertEquals("\ndescribe table_1", sqls.get(1));
+  }
+
+  @Test
+  public void testCommentAtEnd() {
+    String sql = "\n" +
+            "select\n" +
+            "  'one'\n" +
+            "  , 'two' -- comment\n";
+    SqlSplitter sqlSplitter = new SqlSplitter();
+    List<String> sqls = sqlSplitter.splitSql(sql);
+    assertEquals(1, sqls.size());
+    assertEquals("\n" +
+            "select\n" +
+            "  'one'\n" +
+            "  , 'two' \n", sqls.get(0));
+  }
 }

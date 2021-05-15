@@ -90,6 +90,9 @@ public class JdbcIntegrationTest {
     assertEquals("c1\tc2\n1\t2\n", interpreterResult.message().get(0).getData());
 
     // read table_1 from python interpreter
+    InterpreterSetting pythonInterpreterSetting = interpreterSettingManager.getInterpreterSettingByName("python");
+    pythonInterpreterSetting.setProperty("zeppelin.python.gatewayserver_address", "127.0.0.1");
+
     Interpreter pythonInterpreter = interpreterFactory.getInterpreter("python", new ExecutionContext("user1", "note1", "test"));
     assertNotNull("PythonInterpreter is null", pythonInterpreter);
 

@@ -64,7 +64,7 @@ So you can put some objects using Scala (in an Apache Spark cell) and read it fr
 // Put/Get object from scala
 %spark
 
-val myObject = "hello'
+val myObject = "hello"
 z.put("objName", myObject)
 z.get("objName")
 

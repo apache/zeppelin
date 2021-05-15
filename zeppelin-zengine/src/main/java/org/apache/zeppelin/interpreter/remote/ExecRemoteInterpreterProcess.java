@@ -209,11 +209,18 @@ public class ExecRemoteInterpreterProcess extends RemoteInterpreterManagedProces
     @Override
     public void onProcessComplete(int exitValue) {
       LOGGER.warn("Process is exited with exit value {}", exitValue);
-      if (getEnv().getOrDefault("ZEPPELIN_SPARK_YARN_CLUSTER", "false").equals("false")) {
+      if (isSparkYarnClusterMode()) {
         // don't call notify in yarn-cluster mode
         synchronized (this) {
           notifyAll();
         }
+      } else if (isFlinkYarnApplicationMode() && exitValue == 0) {
+        // Don't update transition state when flink launcher process exist
+        // in yarn application mode.
+        synchronized (this) {
+          notifyAll();
+        }
+        return;
       }
       // For yarn-cluster mode, client process will exit with exit value 0
       // after submitting spark app. So don't move to TERMINATED state when exitValue
@@ -223,6 +230,16 @@ public class ExecRemoteInterpreterProcess extends RemoteInterpreterManagedProces
       } else {
         transition(State.COMPLETED);
       }
+    }
+
+    private boolean isSparkYarnClusterMode() {
+      return Boolean.parseBoolean(
+              getEnv().getOrDefault("ZEPPELIN_SPARK_YARN_CLUSTER", "false"));
+    }
+
+    private boolean isFlinkYarnApplicationMode() {
+      return Boolean.parseBoolean(
+              getEnv().getOrDefault("ZEPPELIN_FLINK_YARN_APPLICATION", "false"));
     }
 
     @Override

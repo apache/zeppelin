@@ -32,7 +32,7 @@ public class NoSearchService extends SearchService {
 
   @Inject
   public NoSearchService() {
-    super("NoSearchService-Thread");
+    super("NoSearchService");
   }
 
   @Override

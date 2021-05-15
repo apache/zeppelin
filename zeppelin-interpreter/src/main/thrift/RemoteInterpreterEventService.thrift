@@ -98,6 +98,12 @@ struct ParagraphInfo {
   4: string paragraphText
 }
 
+// The metadata of a file
+struct LibraryMetadata {
+   1: required string name;
+   2: required i64 checksum;
+}
+
 exception ServiceException{
   1: required string message;
 }
@@ -131,4 +137,7 @@ service RemoteInterpreterEventService {
   binary invokeMethod(1: string intpGroupId, 2: string invokeMethodJson) throws (1: RemoteInterpreterService.InterpreterRPCException ex);
 
   list<ParagraphInfo> getParagraphList(1: string user, 2: string noteId) throws (1: RemoteInterpreterService.InterpreterRPCException ex);
+
+  list<LibraryMetadata> getAllLibraryMetadatas(1: string intpSettingName);
+  binary getLibrary(1: string intpSettingName, 2: string libraryName);
 }

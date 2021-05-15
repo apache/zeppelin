@@ -32,7 +32,7 @@ The following guides explain how to use Apache Zeppelin that enables you to writ
   * [MySQL](../interpreter/jdbc.html#mysql) 
   * [MariaDB](../interpreter/jdbc.html#mariadb)
   * [AWS Redshift](../interpreter/jdbc.html#redshift) 
-  * [Apache Hive](../interpreter/jdbc.html#hive)
+  * [Apache Hive](../interpreter/jdbc.html#apache-hive)
   * [Apache Phoenix](../interpreter/jdbc.html#apache-phoenix) 
   * [Apache Drill](../interpreter/jdbc.html#apache-drill)
   * [Apache Tajo](../interpreter/jdbc.html#apache-tajo)

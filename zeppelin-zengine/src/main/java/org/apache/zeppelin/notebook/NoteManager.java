@@ -20,6 +20,7 @@ package org.apache.zeppelin.notebook;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.notebook.exception.NotePathAlreadyExistsException;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
@@ -118,6 +119,11 @@ public class NoteManager {
 
   private void addOrUpdateNoteNode(Note note, boolean checkDuplicates) throws IOException {
     String notePath = note.getPath();
+
+    if (checkDuplicates && !isNotePathAvailable(notePath)) {
+      throw new NotePathAlreadyExistsException("Note '" + notePath + "' existed");
+    }
+
     String[] tokens = notePath.split("/");
     Folder curFolder = root;
     for (int i = 0; i < tokens.length - 1; ++i) {
@@ -125,9 +131,7 @@ public class NoteManager {
         curFolder = curFolder.getOrCreateFolder(tokens[i]);
       }
     }
-    if (checkDuplicates && curFolder.containsNote(tokens[tokens.length - 1])) {
-      throw new IOException("Note '" + note.getPath() + "' existed");
-    }
+
     curFolder.addNote(tokens[tokens.length -1], note);
     this.notesInfo.put(note.getId(), note.getPath());
   }
@@ -223,6 +227,10 @@ public class NoteManager {
     String notePath = this.notesInfo.get(noteId);
     if (noteId == null) {
       throw new IOException("No metadata found for this note: " + noteId);
+    }
+
+    if (!isNotePathAvailable(newNotePath)) {
+      throw new NotePathAlreadyExistsException("Note '" + newNotePath + "' existed");
     }
 
     // move the old NoteNode from notePath to newNotePath
@@ -376,6 +384,24 @@ public class NoteManager {
   private String getNoteName(String notePath) {
     int pos = notePath.lastIndexOf('/');
     return notePath.substring(pos + 1);
+  }
+
+  private boolean isNotePathAvailable(String notePath) {
+    String[] tokens = notePath.split("/");
+    Folder curFolder = root;
+    for (int i = 0; i < tokens.length - 1; ++i) {
+      if (!StringUtils.isBlank(tokens[i])) {
+        curFolder = curFolder.getFolder(tokens[i]);
+        if (curFolder == null) {
+          return true;
+        }
+      }
+    }
+    if (curFolder.containsNote(tokens[tokens.length - 1])) {
+      return false;
+    }
+
+    return true;
   }
 
   /**
