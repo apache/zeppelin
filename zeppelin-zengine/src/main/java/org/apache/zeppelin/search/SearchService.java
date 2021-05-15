@@ -25,6 +25,8 @@ import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteEventAsyncListener;
 import org.apache.zeppelin.notebook.Paragraph;
 
+import javax.annotation.PreDestroy;
+
 /**
  * Search (both, indexing and query) the notes.
  * 
@@ -96,6 +98,7 @@ public abstract class SearchService extends NoteEventAsyncListener {
   /**
    * Frees the recourses used by index
    */
+  @PreDestroy
   public void close() {
     super.close();
   }

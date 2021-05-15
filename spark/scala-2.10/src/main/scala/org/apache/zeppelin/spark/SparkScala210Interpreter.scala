@@ -40,7 +40,8 @@ class SparkScala210Interpreter(override val conf: SparkConf,
                                override val depFiles: java.util.List[String],
                                override val properties: Properties,
                                override val interpreterGroup: InterpreterGroup,
-                               override val sparkInterpreterClassLoader: URLClassLoader)
+                               override val sparkInterpreterClassLoader: URLClassLoader,
+                               val outputDir: File)
   extends BaseSparkScalaInterpreter(conf, depFiles, properties, interpreterGroup, sparkInterpreterClassLoader) {
 
   lazy override val LOGGER: Logger = LoggerFactory.getLogger(getClass)
@@ -57,9 +58,7 @@ class SparkScala210Interpreter(override val conf: SparkConf,
     if (InterpreterContext.get() != null) {
       interpreterOutput.setInterpreterOutput(InterpreterContext.get().out)
     }
-    val rootDir = conf.get("spark.repl.classdir", System.getProperty("java.io.tmpdir"))
-    this.outputDir = Files.createTempDirectory(Paths.get(rootDir), "spark").toFile
-    outputDir.deleteOnExit()
+
     LOGGER.info("Scala shell repl output dir: " + outputDir.getAbsolutePath)
     conf.set("spark.repl.class.outputDir", outputDir.getAbsolutePath)
     // Only Spark1 requires to create http server, Spark2 removes HttpServer class.

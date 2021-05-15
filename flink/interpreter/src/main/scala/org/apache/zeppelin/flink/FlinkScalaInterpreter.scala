@@ -40,7 +40,7 @@ import org.apache.flink.runtime.util.EnvironmentInformation
 import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment
 import org.apache.flink.table.api.config.ExecutionConfigOptions
 import org.apache.flink.table.api.{EnvironmentSettings, TableConfig, TableEnvironment}
-import org.apache.flink.table.catalog.{CatalogManager, FunctionCatalog}
+import org.apache.flink.table.catalog.CatalogManager
 import org.apache.flink.table.catalog.hive.HiveCatalog
 import org.apache.flink.table.functions.{AggregateFunction, ScalarFunction, TableAggregateFunction, TableFunction}
 import org.apache.flink.table.module.ModuleManager
@@ -321,7 +321,7 @@ class FlinkScalaInterpreter(val properties: Properties) {
           }
       }
 
-      if (this.displayedJMWebUrl != null) {
+      if (this.displayedJMWebUrl == null) {
         // use jmWebUrl as displayedJMWebUrl if it is not set
         this.displayedJMWebUrl = this.jmWebUrl
       }
@@ -435,18 +435,11 @@ class FlinkScalaInterpreter(val properties: Properties) {
     val originalClassLoader = Thread.currentThread().getContextClassLoader
     try {
       Thread.currentThread().setContextClassLoader(getFlinkClassLoader)
-      val tblConfig = new TableConfig
-      tblConfig.getConfiguration.addAll(configuration)
-      // Step 1.1 Initialize the CatalogManager if required.
-      val catalogManager = flinkShims.createCatalogManager(tblConfig.getConfiguration).asInstanceOf[CatalogManager]
-      // Step 1.2 Initialize the ModuleManager if required.
-      val moduleManager = new ModuleManager();
-      // Step 1.3 Initialize the FunctionCatalog if required.
-      val flinkFunctionCatalog = new FunctionCatalog(tblConfig, catalogManager, moduleManager);
-      val blinkFunctionCatalog = new FunctionCatalog(tblConfig, catalogManager, moduleManager);
+      val tableConfig = new TableConfig
+      tableConfig.getConfiguration.addAll(configuration)
 
-      this.tblEnvFactory = new TableEnvFactory(this.flinkVersion, this.flinkShims, this.benv, this.senv, tblConfig,
-        catalogManager, moduleManager, flinkFunctionCatalog, blinkFunctionCatalog)
+      this.tblEnvFactory = new TableEnvFactory(this.flinkVersion, this.flinkShims,
+        this.benv, this.senv, tableConfig)
 
       val modifiers = new java.util.ArrayList[String]()
       modifiers.add("@transient")
@@ -635,7 +628,7 @@ class FlinkScalaInterpreter(val properties: Properties) {
       Thread.currentThread().setContextClassLoader(getFlinkClassLoader)
       val stEnvSetting =
         EnvironmentSettings.newInstance().inStreamingMode().useBlinkPlanner().build()
-      this.tblEnvFactory.createPlanner(stEnvSetting)
+      this.tblEnvFactory.createStreamPlanner(stEnvSetting)
     } finally {
       Thread.currentThread().setContextClassLoader(originalClassLoader)
     }

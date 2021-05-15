@@ -63,8 +63,6 @@ abstract class BaseSparkScalaInterpreter(val conf: SparkConf,
 
   protected var sparkSession: Object = _
 
-  protected var outputDir: File = _
-
   protected var userJars: Seq[String] = _
 
   protected var sparkHttpServer: Object = _

@@ -72,8 +72,6 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
     JsonSerializable {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(Paragraph.class);
-  private static final Pattern REPL_PATTERN =
-      Pattern.compile("(\\s*)%([\\w\\.]+)(\\(.*?\\))?.*", Pattern.DOTALL);
 
   private String title;
   // text is composed of intpText and scriptText.
