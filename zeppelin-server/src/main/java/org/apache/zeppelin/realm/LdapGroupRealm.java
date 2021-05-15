@@ -20,6 +20,7 @@ import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.authz.SimpleAuthorizationInfo;
 import org.apache.shiro.realm.ldap.DefaultLdapRealm;
 import org.apache.shiro.realm.ldap.LdapContextFactory;
+import org.apache.shiro.realm.ldap.LdapUtils;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,9 +47,14 @@ public class LdapGroupRealm extends DefaultLdapRealm {
   public AuthorizationInfo queryForAuthorizationInfo(PrincipalCollection principals,
           LdapContextFactory ldapContextFactory) throws NamingException {
     String username = (String) getAvailablePrincipal(principals);
-    LdapContext ldapContext = ldapContextFactory.getSystemLdapContext();
-    Set<String> roleNames = getRoleNamesForUser(username, ldapContext, getUserDnTemplate());
-    return new SimpleAuthorizationInfo(roleNames);
+    LdapContext ldapContext = null;
+    try {
+      ldapContext = ldapContextFactory.getSystemLdapContext();
+      Set<String> roleNames = getRoleNamesForUser(username, ldapContext, getUserDnTemplate());
+      return new SimpleAuthorizationInfo(roleNames);
+    } finally {
+      LdapUtils.closeContext(ldapContext);
+    }
   }
 
   public Set<String> getRoleNamesForUser(String username, LdapContext ldapContext,
