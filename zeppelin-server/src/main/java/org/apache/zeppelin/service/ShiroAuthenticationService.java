@@ -407,8 +407,8 @@ public class ShiroAuthenticationService implements AuthenticationService {
     Connection con = null;
     PreparedStatement ps = null;
     ResultSet rs = null;
-    DataSource dataSource = null;
-    String authQuery = "";
+    DataSource dataSource;
+    String authQuery;
     String[] retval;
     String tablename = "";
     String username = "";

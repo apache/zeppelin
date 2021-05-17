@@ -25,7 +25,7 @@ import java.util.Map;
 
 public class ConfigurationService {
 
-  private ZeppelinConfiguration zConf;
+  private final ZeppelinConfiguration zConf;
 
   @Inject
   public ConfigurationService(ZeppelinConfiguration zConf) {

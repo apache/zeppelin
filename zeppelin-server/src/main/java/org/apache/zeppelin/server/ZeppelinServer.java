@@ -386,7 +386,7 @@ public class ZeppelinServer extends ResourceConfig {
     String noteIdToRun = conf.getNotebookRunId();
     if (!StringUtils.isEmpty(noteIdToRun)) {
       LOG.info("Running note {} on start", noteIdToRun);
-      NotebookService notebookService = (NotebookService) ServiceLocatorUtilities.getService(
+      NotebookService notebookService = ServiceLocatorUtilities.getService(
               sharedServiceLocator, NotebookService.class.getName());
 
       ServiceContext serviceContext;
