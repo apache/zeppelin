@@ -188,6 +188,7 @@ public class JobManager {
     private AtomicBoolean running = new AtomicBoolean(true);
     private boolean isFirstPoll = true;
     private long checkInterval;
+    private String latestCheckpointPath;
 
     FlinkJobProgressPoller(String flinkWebUrl, JobID jobId, InterpreterContext context, long checkInterval) {
       this.flinkWebUrl = flinkWebUrl;
@@ -254,11 +255,12 @@ public class JobManager {
               if (completedObject.has("external_path")) {
                 String checkpointPath = completedObject.getString("external_path");
                 LOGGER.debug("Latest checkpoint path: {}", checkpointPath);
-                if (!StringUtils.isBlank(checkpointPath)) {
+                if (!StringUtils.isBlank(checkpointPath) && !checkpointPath.equals(latestCheckpointPath)) {
                   Map<String, String> config = new HashMap<>();
                   config.put(LATEST_CHECKPOINT_PATH, checkpointPath);
                   context.getIntpEventClient().updateParagraphConfig(
                           context.getNoteId(), context.getParagraphId(), config);
+                  latestCheckpointPath = checkpointPath;
                 }
               }
             }
