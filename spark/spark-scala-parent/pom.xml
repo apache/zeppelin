@@ -48,6 +48,12 @@
         </dependency>
 
         <dependency>
+            <groupId>org.apache.zeppelin</groupId>
+            <artifactId>zeppelin-interpreter-shaded</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-repl_${spark.scala.binary.version}</artifactId>
             <version>${spark.version}</version>
