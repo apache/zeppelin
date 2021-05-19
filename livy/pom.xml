@@ -29,7 +29,6 @@
 
     <artifactId>zeppelin-livy</artifactId>
     <packaging>jar</packaging>
-    <version>0.10.0-SNAPSHOT</version>
     <name>Zeppelin: Livy interpreter</name>
 
     <properties>

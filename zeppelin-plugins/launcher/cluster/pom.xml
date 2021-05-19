@@ -31,7 +31,6 @@
 
   <artifactId>launcher-cluster</artifactId>
   <packaging>jar</packaging>
-  <version>0.10.0-SNAPSHOT</version>
   <name>Zeppelin: Plugin Cluster Launcher</name>
   <description>Launcher implementation to run interpreters on cluster</description>
 

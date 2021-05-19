@@ -30,7 +30,6 @@
 
   <artifactId>zeppelin-client-examples</artifactId>
   <packaging>jar</packaging>
-  <version>0.10.0-SNAPSHOT</version>
   <name>Zeppelin: Client Examples</name>
   <description>Zeppelin Client Examples</description>
 

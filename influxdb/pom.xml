@@ -29,7 +29,6 @@
 
     <artifactId>zeppelin-influxdb</artifactId>
     <packaging>jar</packaging>
-    <version>0.10.0-SNAPSHOT</version>
     <name>Zeppelin: InfluxDB interpreter</name>
     <description>InfluxDB 2.0 timeseries database support</description>
 

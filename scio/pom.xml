@@ -29,7 +29,6 @@
 
   <artifactId>zeppelin-scio</artifactId>
   <packaging>jar</packaging>
-  <version>0.10.0-SNAPSHOT</version>
   <name>Zeppelin: Scio</name>
   <description>Zeppelin Scio support</description>
 

@@ -29,7 +29,6 @@
 
   <artifactId>zeppelin-scalding_2.10</artifactId>
   <packaging>jar</packaging>
-  <version>0.10.0-SNAPSHOT</version>
   <name>Zeppelin: Scalding interpreter</name>
 
   <properties>

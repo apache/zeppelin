@@ -30,7 +30,6 @@
 
     <artifactId>notebookrepo-filesystem</artifactId>
     <packaging>jar</packaging>
-    <version>0.10.0-SNAPSHOT</version>
     <name>Zeppelin: Plugin FileSystemNotebookRepo</name>
     <description>NotebookRepo implementation based on Hadoop FileSystem</description>
 

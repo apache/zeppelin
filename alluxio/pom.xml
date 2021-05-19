@@ -29,7 +29,6 @@
 
     <artifactId>zeppelin-alluxio</artifactId>
     <packaging>jar</packaging>
-    <version>0.10.0-SNAPSHOT</version>
     <name>Zeppelin: Alluxio interpreter</name>
 
     <properties>

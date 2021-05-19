@@ -30,7 +30,6 @@
 
     <artifactId>notebookrepo-zeppelin-hub</artifactId>
     <packaging>jar</packaging>
-    <version>0.10.0-SNAPSHOT</version>
     <name>Zeppelin: Plugin ZeppelinHubRepo</name>
     <description>NotebookRepo implementation based on Zeppelin Hub</description>
 

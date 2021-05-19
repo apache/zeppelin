@@ -29,7 +29,6 @@
 
     <artifactId>zeppelin-pig</artifactId>
     <packaging>jar</packaging>
-    <version>0.10.0-SNAPSHOT</version>
     <name>Zeppelin: Apache Pig Interpreter</name>
     <description>Zeppelin interpreter for Apache Pig</description>
     <url>https://zeppelin.apache.org</url>

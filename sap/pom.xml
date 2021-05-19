@@ -29,7 +29,6 @@
 
     <artifactId>sap</artifactId>
     <packaging>jar</packaging>
-    <version>0.10.0-SNAPSHOT</version>
     <name>Zeppelin: Sap</name>
     <description>Zeppelin SAP support</description>
 

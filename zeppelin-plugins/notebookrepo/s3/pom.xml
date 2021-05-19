@@ -30,7 +30,6 @@
 
     <artifactId>notebookrepo-s3</artifactId>
     <packaging>jar</packaging>
-    <version>0.10.0-SNAPSHOT</version>
     <name>Zeppelin: Plugin S3NotebookRepo</name>
     <description>NotebookRepo implementation based on S3</description>
 

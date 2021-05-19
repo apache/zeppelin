@@ -30,7 +30,6 @@
 
   <artifactId>zeppelin-common</artifactId>
   <packaging>jar</packaging>
-  <version>0.10.0-SNAPSHOT</version>
   <name>Zeppelin: Common</name>
   <description>Zeppelin Common</description>
 

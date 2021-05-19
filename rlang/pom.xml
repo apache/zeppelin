@@ -29,7 +29,6 @@
 
     <artifactId>r</artifactId>
     <packaging>jar</packaging>
-    <version>0.10.0-SNAPSHOT</version>
     <name>Zeppelin: R</name>
     <description>Zeppelin R support</description>
 

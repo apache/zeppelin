@@ -28,7 +28,6 @@
   </parent>
 
   <artifactId>helium-dev</artifactId>
-  <version>0.10.0-SNAPSHOT</version>
   <name>Zeppelin: Helium development interpreter</name>
 
   <properties>

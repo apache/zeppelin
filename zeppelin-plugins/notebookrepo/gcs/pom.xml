@@ -30,7 +30,6 @@
 
     <artifactId>notebookrepo-gcs</artifactId>
     <packaging>jar</packaging>
-    <version>0.10.0-SNAPSHOT</version>
     <name>Zeppelin: Plugin GCSNotebookRepo</name>
     <description>NotebookRepo implementation based on Google Cloud Storage</description>
 

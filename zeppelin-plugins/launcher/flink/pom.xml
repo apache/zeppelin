@@ -31,7 +31,6 @@
 
   <artifactId>launcher-flink</artifactId>
   <packaging>jar</packaging>
-  <version>0.10.0-SNAPSHOT</version>
   <name>Zeppelin: Plugin Flink Launcher</name>
   <description>Launcher implementation to run flink</description>
 

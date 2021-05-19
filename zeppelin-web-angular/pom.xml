@@ -23,7 +23,6 @@
 
   <artifactId>zeppelin-web-angular</artifactId>
   <packaging>war</packaging>
-  <version>0.10.0-SNAPSHOT</version>
   <name>Zeppelin: web angular Application</name>
 
   <!-- See https://github.com/eirslett/frontend-maven-plugin/issues/229 -->

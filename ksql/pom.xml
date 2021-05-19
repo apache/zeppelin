@@ -29,7 +29,6 @@
 
   <artifactId>zeppelin-ksql</artifactId>
   <packaging>jar</packaging>
-  <version>0.10.0-SNAPSHOT</version>
   <name>Zeppelin: Kafka SQL interpreter</name>
 
   <properties>

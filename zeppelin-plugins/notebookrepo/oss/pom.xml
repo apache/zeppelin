@@ -30,7 +30,6 @@
 
     <artifactId>notebookrepo-oss</artifactId>
     <packaging>jar</packaging>
-    <version>0.10.0-SNAPSHOT</version>
     <name>Zeppelin: Plugin OSSNotebookRepo</name>
     <description>NotebookRepo implementation based on Aliyun OSS</description>
 

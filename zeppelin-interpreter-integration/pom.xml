@@ -29,7 +29,6 @@
 
   <artifactId>zeppelin-interpreter-integration</artifactId>
   <packaging>jar</packaging>
-  <version>0.10.0-SNAPSHOT</version>
   <name>Zeppelin: Interpreter Integration Test</name>
 
   <!-- See https://github.com/eirslett/frontend-maven-plugin/issues/229 -->

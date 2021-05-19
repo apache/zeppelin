@@ -29,7 +29,6 @@
 
     <artifactId>zengine-plugins-parent</artifactId>
     <packaging>pom</packaging>
-    <version>0.10.0-SNAPSHOT</version>
     <name>Zeppelin: Plugins Parent</name>
     <description>Zeppelin Plugins Parent</description>
     <properties>
