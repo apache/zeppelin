@@ -1852,21 +1852,6 @@
               <!-- package.json -->
               <exclude>**/package.json</exclude>
 
-              <!-- compiled R packages (binaries) -->
-              <exclude>**/R/lib/**</exclude>
-              <exclude>**/lib/rzeppelin/**</exclude>
-
-              <!--R-related files with alternative licenses-->
-
-              <exclude>**/R/rzeppelin/R/*.R</exclude>
-              <exclude>**/src/main/scala/scala/Console.scala</exclude>
-              <exclude>**/src/main/scala/org/apache/zeppelin/rinterpreter/rscala/Package.scala</exclude>
-              <exclude>**/src/main/scala/org/apache/zeppelin/rinterpreter/rscala/RClient.scala</exclude>
-
-               <!--The following files are mechanical-->
-              <exclude>**/R/rzeppelin/DESCRIPTION</exclude>
-              <exclude>**/R/rzeppelin/NAMESPACE</exclude>
-              
               <exclude>zeppelin-jupyter-interpreter/src/main/resources/grpc/jupyter/*.py</exclude>
             </excludes>
           </configuration>
