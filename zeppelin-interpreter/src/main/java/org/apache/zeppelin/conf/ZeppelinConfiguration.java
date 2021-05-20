@@ -871,6 +871,10 @@ public class ZeppelinConfiguration {
         completeConfiguration.put(c.getVarName(), sysConfig.getString(c.getVarName()));
       } else if (envConfig.containsKey(c.name())) {
         completeConfiguration.put(c.getVarName(), envConfig.getString(c.name()));
+      }else {
+        if (getString(c)!=null){
+          completeConfiguration.put(c.getVarName(),getString(c));
+        }
       }
     }
     return completeConfiguration;
