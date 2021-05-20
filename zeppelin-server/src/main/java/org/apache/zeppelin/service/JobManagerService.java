@@ -41,9 +41,9 @@ public class JobManagerService {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JobManagerService.class);
 
-  private Notebook notebook;
-  private AuthorizationService authorizationService;
-  private ZeppelinConfiguration conf;
+  private final Notebook notebook;
+  private final AuthorizationService authorizationService;
+  private final ZeppelinConfiguration conf;
 
   @Inject
   public JobManagerService(Notebook notebook,
@@ -65,9 +65,10 @@ public class JobManagerService {
     Note jobNote = notebook.getNote(noteId);
     if (jobNote == null) {
       callback.onFailure(new IOException("Note " + noteId + " not found"), context);
+    } else {
+      notesJobInfo.add(new NoteJobInfo(jobNote));
+      callback.onSuccess(notesJobInfo, context);
     }
-    notesJobInfo.add(new NoteJobInfo(jobNote));
-    callback.onSuccess(notesJobInfo, context);
     return notesJobInfo;
   }
 
@@ -84,7 +85,7 @@ public class JobManagerService {
 
     List<NoteJobInfo> notesJobInfo = notebook.getNoteStream()
             .filter(note -> authorizationService.isOwner(context.getUserAndRoles(), note.getId()))
-            .map(note -> new NoteJobInfo(note))
+            .map(NoteJobInfo::new)
             .filter(noteJobInfo -> noteJobInfo.unixTimeLastRun > lastUpdateServerUnixTime)
             .collect(Collectors.toList());
 

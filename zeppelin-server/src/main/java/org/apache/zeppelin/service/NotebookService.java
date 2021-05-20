@@ -80,10 +80,10 @@ public class NotebookService {
   private static final DateTimeFormatter TRASH_CONFLICT_TIMESTAMP_FORMATTER =
           DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-  private ZeppelinConfiguration zConf;
-  private Notebook notebook;
-  private AuthorizationService authorizationService;
-  private SchedulerService schedulerService;
+  private final ZeppelinConfiguration zConf;
+  private final Notebook notebook;
+  private final AuthorizationService authorizationService;
+  private final SchedulerService schedulerService;
 
   @Inject
   public NotebookService(
@@ -666,9 +666,7 @@ public class NotebookService {
       throw new IOException("No such note");
     }
     synchronized (this) {
-      if (note.getParagraphCount() < maxParagraph) {
-        return note.addNewParagraph(context.getAutheInfo());
-      } else {
+      if (note.getParagraphCount() >= maxParagraph) {
         boolean removed = false;
         for (int i = 1; i < note.getParagraphCount(); ++i) {
           if (note.getParagraph(i).getStatus().isCompleted()) {
@@ -680,8 +678,8 @@ public class NotebookService {
         if (!removed) {
           throw new IOException("All the paragraphs are not completed, unable to find available paragraph");
         }
-        return note.addNewParagraph(context.getAutheInfo());
       }
+      return note.addNewParagraph(context.getAutheInfo());
     }
   }
 
@@ -703,7 +701,7 @@ public class NotebookService {
       callback.onFailure(new ParagraphNotFoundException(paragraphId), context);
       return;
     }
-    Paragraph returnedParagraph = null;
+    Paragraph returnedParagraph;
     if (note.isPersonalizedMode()) {
       returnedParagraph = note.clearPersonalizedParagraphOutput(paragraphId,
           context.getAutheInfo().getUser());
@@ -771,8 +769,6 @@ public class NotebookService {
     if (configA.get("cron") != null && configB.get("cron") != null && configA.get("cron")
         .equals(configB.get("cron"))) {
       cronUpdated = true;
-    } else if (configA.get("cron") == null && configB.get("cron") == null) {
-      cronUpdated = false;
     } else if (configA.get("cron") != null || configB.get("cron") != null) {
       cronUpdated = true;
     }
@@ -929,7 +925,7 @@ public class NotebookService {
         callback)) {
       return;
     }
-    Note revisionNote = null;
+    Note revisionNote;
     if (revisionId.equals("Head")) {
       revisionNote = note;
     } else {
