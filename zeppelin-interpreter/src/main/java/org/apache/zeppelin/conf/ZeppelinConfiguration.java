@@ -53,8 +53,8 @@ import org.slf4j.LoggerFactory;
  * Zeppelin configuration.
  *
  * Sources descending by priority:
- *   - system properties
  *   - environment variables
+ *   - system properties
  *   - configuration file
  */
 public class ZeppelinConfiguration {
