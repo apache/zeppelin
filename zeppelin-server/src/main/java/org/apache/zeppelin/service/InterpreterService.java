@@ -99,12 +99,7 @@ public class InterpreterService {
 
     // It might take time to finish it
     EXECUTOR_SERVICE.execute(
-        new Runnable() {
-          @Override
-          public void run() {
-            downloadInterpreter(request, dependencyResolver, interpreterDir, serviceCallback);
-          }
-        });
+            () -> downloadInterpreter(request, dependencyResolver, interpreterDir, serviceCallback));
   }
 
   void downloadInterpreter(

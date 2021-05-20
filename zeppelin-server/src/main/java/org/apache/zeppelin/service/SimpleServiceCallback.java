@@ -29,7 +29,7 @@ import java.io.IOException;
  */
 public class SimpleServiceCallback<T> implements ServiceCallback<T> {
 
-  private static Logger LOGGER = LoggerFactory.getLogger(SimpleServiceCallback.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(SimpleServiceCallback.class);
 
   @Override
   public void onStart(String message, ServiceContext context) throws IOException {

@@ -28,8 +28,8 @@ import java.util.List;
  */
 @Singleton
 public class ImmediateErrorHandlerImpl implements ImmediateErrorHandler {
-  private final List<ErrorData> constructionErrors = new LinkedList<ErrorData>();
-  private final List<ErrorData> destructionErrors = new LinkedList<ErrorData>();
+  private final List<ErrorData> constructionErrors = new LinkedList<>();
+  private final List<ErrorData> destructionErrors = new LinkedList<>();
 
   @Override
   public void postConstructFailed(ActiveDescriptor<?> immediateService, Throwable exception) {
@@ -55,7 +55,7 @@ public class ImmediateErrorHandlerImpl implements ImmediateErrorHandler {
         long elapsedTime = System.currentTimeMillis() - currentTime;
         waitTime -= elapsedTime;
       }
-      return new LinkedList<ErrorData>(constructionErrors);
+      return new LinkedList<>(constructionErrors);
     }
   }
 

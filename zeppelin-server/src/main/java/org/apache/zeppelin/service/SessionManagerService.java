@@ -49,10 +49,10 @@ public class SessionManagerService {
   private static final Logger LOGGER = LoggerFactory.getLogger(SessionManagerService.class);
   private static final int RETRY = 3;
 
-  private Map<String, SessionInfo> sessions = new ConcurrentHashMap<>();
-  private InterpreterSettingManager interpreterSettingManager;
-  private Notebook notebook;
-  private ScheduledExecutorService sessionCheckerExecutor;
+  private final Map<String, SessionInfo> sessions = new ConcurrentHashMap<>();
+  private final InterpreterSettingManager interpreterSettingManager;
+  private final Notebook notebook;
+  private final ScheduledExecutorService sessionCheckerExecutor;
 
   public SessionManagerService(Notebook notebook, InterpreterSettingManager interpreterSettingManager) {
     this.notebook = notebook;
@@ -134,12 +134,12 @@ public class SessionManagerService {
       throw new Exception("No such session: " + sessionId);
     }
     // stop the associated interpreter process
-    InterpreterGroup interpreterGroup = this.interpreterSettingManager.getInterpreterGroupById(sessionId);
+    ManagedInterpreterGroup interpreterGroup = this.interpreterSettingManager.getInterpreterGroupById(sessionId);
     if (interpreterGroup == null) {
       LOGGER.info("No interpreterGroup for session: {}", sessionId);
       return;
     }
-    ((ManagedInterpreterGroup) interpreterGroup).getInterpreterSetting().closeInterpreters(sessionId);
+    interpreterGroup.getInterpreterSetting().closeInterpreters(sessionId);
 
     // remove associated session note
     notebook.removeNote(sessionInfo.getNoteId(), AuthenticationInfo.ANONYMOUS);
@@ -159,13 +159,13 @@ public class SessionManagerService {
       LOGGER.warn("No such session: " + sessionId);
       return null;
     }
-    InterpreterGroup interpreterGroup = this.interpreterSettingManager.getInterpreterGroupById(sessionId);
+    ManagedInterpreterGroup interpreterGroup = this.interpreterSettingManager.getInterpreterGroupById(sessionId);
     if (interpreterGroup != null) {
       RemoteInterpreterProcess remoteInterpreterProcess =
-              ((ManagedInterpreterGroup) interpreterGroup).getRemoteInterpreterProcess();
+              interpreterGroup.getRemoteInterpreterProcess();
       if (remoteInterpreterProcess == null) {
         sessionInfo.setState(SessionState.READY.name());
-      } else if (remoteInterpreterProcess != null) {
+      } else {
         sessionInfo.setStartTime(remoteInterpreterProcess.getStartTime());
         sessionInfo.setWeburl(interpreterGroup.getWebUrl());
         if (remoteInterpreterProcess.isRunning()) {
