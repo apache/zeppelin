@@ -30,12 +30,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class NoAuthenticationService implements AuthenticationService {
-  private static final Logger logger = LoggerFactory.getLogger(NoAuthenticationService.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(NoAuthenticationService.class);
   private final String ANONYMOUS = "anonymous";
 
   @Inject
   public NoAuthenticationService() {
-    logger.info("NoAuthenticationService is initialized");
+    LOGGER.info("NoAuthenticationService is initialized");
   }
 
   @Override
