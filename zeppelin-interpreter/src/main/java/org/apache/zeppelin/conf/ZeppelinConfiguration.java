@@ -864,13 +864,10 @@ public class ZeppelinConfiguration {
    * @return
    */
   public Map<String, String> getCompleteConfiguration() {
-    Map<String, String> completeConfiguration = new HashMap<>(properties);
-    // Is it possible that we overwrite properties
+    Map<String, String> completeConfiguration = new HashMap<>();
     for (ConfVars c : ConfVars.values()) {
-      if (sysConfig.containsKey(c.getVarName())) {
-        completeConfiguration.put(c.getVarName(), sysConfig.getString(c.getVarName()));
-      } else if (envConfig.containsKey(c.name())) {
-        completeConfiguration.put(c.getVarName(), envConfig.getString(c.name()));
+      if (getString(c) != null){
+        completeConfiguration.put(c.getVarName(), getString(c));
       }
     }
     return completeConfiguration;
