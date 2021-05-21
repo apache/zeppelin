@@ -93,6 +93,9 @@
       <directory>../k8s</directory>
     </fileSet>
     <fileSet>
+      <directory>../scripts</directory>
+    </fileSet>
+    <fileSet>
       <outputDirectory>/lib/node_modules/zeppelin-vis</outputDirectory>
       <directory>../zeppelin-web/src/app/visualization</directory>
     </fileSet>
