@@ -16,6 +16,8 @@
  */
 package org.apache.zeppelin.realm.jwt;
 
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -66,11 +68,6 @@ public class KnoxJwtRealm extends AuthorizingRealm {
   private Boolean logoutAPI;
 
   /**
-   * Configuration object needed by for Hadoop classes.
-   */
-  private Configuration hadoopConfig;
-
-  /**
    * Hadoop Groups implementation.
    */
   private Groups hadoopGroups;
@@ -80,7 +77,7 @@ public class KnoxJwtRealm extends AuthorizingRealm {
     super.onInit();
 
     try {
-      hadoopConfig = new Configuration();
+      Configuration hadoopConfig = new Configuration();
       hadoopGroups = new Groups(hadoopConfig);
     } catch (final Exception e) {
       LOGGER.error("Exception in onInit", e);
@@ -89,7 +86,7 @@ public class KnoxJwtRealm extends AuthorizingRealm {
 
   @Override
   public boolean supports(AuthenticationToken token) {
-    return token != null && token instanceof JWTAuthenticationToken;
+    return token instanceof JWTAuthenticationToken;
   }
 
   @Override
@@ -110,8 +107,7 @@ public class KnoxJwtRealm extends AuthorizingRealm {
 
   public String getName(JWTAuthenticationToken upToken) throws ParseException {
     SignedJWT signed = SignedJWT.parse(upToken.getToken());
-    String userName = signed.getJWTClaimsSet().getSubject();
-    return userName;
+    return signed.getJWTClaimsSet().getSubject();
   }
 
   protected boolean validateToken(String token) {
@@ -132,10 +128,7 @@ public class KnoxJwtRealm extends AuthorizingRealm {
         return true;
       }
       String cookieUser = signed.getJWTClaimsSet().getSubject();
-      if (!cookieUser.equals(currentUser)) {
-        return false;
-      }
-      return true;
+      return cookieUser.equals(currentUser);
     } catch (ParseException ex) {
       LOGGER.info("ParseException in validateToken", ex);
       return false;
@@ -144,17 +137,15 @@ public class KnoxJwtRealm extends AuthorizingRealm {
 
   public static RSAPublicKey parseRSAPublicKey(String pem) throws IOException, ServletException {
     final String pemHeader = "-----BEGIN CERTIFICATE-----\n";
-    final String pemFooter = "\n-----END CERTIFICATE-----";
-    String fullPem = pemHeader + pem + pemFooter;
-    PublicKey key = null;
+    PublicKey key;
     try {
       CertificateFactory fact = CertificateFactory.getInstance("X.509");
       ByteArrayInputStream is = new ByteArrayInputStream(
-          FileUtils.readFileToString(new File(pem)).getBytes("UTF8"));
+          FileUtils.readFileToString(new File(pem), Charset.defaultCharset()).getBytes(StandardCharsets.UTF_8));
       X509Certificate cer = (X509Certificate) fact.generateCertificate(is);
       key = cer.getPublicKey();
     } catch (CertificateException ce) {
-      String message = null;
+      String message;
       if (pem.startsWith(pemHeader)) {
         message = "CertificateException - be sure not to include PEM header "
             + "and footer in the PEM configuration element.";
@@ -177,7 +168,7 @@ public class KnoxJwtRealm extends AuthorizingRealm {
         try {
           RSAPublicKey publicKey = parseRSAPublicKey(publicKeyPath);
           JWSVerifier verifier = new RSASSAVerifier(publicKey);
-          if (verifier != null && jwtToken.verify(verifier)) {
+          if (jwtToken.verify(verifier)) {
             valid = true;
           }
         } catch (Exception e) {
@@ -226,7 +217,7 @@ public class KnoxJwtRealm extends AuthorizingRealm {
    */
   public Set<String> mapGroupPrincipals(final String mappedPrincipalName) {
     /* return the groups as seen by Hadoop */
-    Set<String> groups = null;
+    Set<String> groups;
     try {
       final List<String> groupList = hadoopGroups
           .getGroups(mappedPrincipalName);
@@ -247,7 +238,7 @@ public class KnoxJwtRealm extends AuthorizingRealm {
         /* Log the error and return empty group */
         LOGGER.info(String.format("errorGettingUserGroups for %s", mappedPrincipalName));
       }
-      groups = new HashSet<String>();
+      groups = new HashSet<>();
     }
     return groups;
   }

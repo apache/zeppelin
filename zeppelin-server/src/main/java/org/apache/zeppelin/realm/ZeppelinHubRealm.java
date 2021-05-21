@@ -65,7 +65,7 @@ public class ZeppelinHubRealm extends AuthorizingRealm {
   private final CloseableHttpClient httpClient;
 
   private String zeppelinhubUrl;
-  private String name;
+  private final String name;
 
   public ZeppelinHubRealm() {
     super();

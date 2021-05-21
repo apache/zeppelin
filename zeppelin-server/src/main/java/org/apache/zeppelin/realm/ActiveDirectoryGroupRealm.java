@@ -88,7 +88,7 @@ public class ActiveDirectoryGroupRealm extends AbstractLdapRealm {
    * group names (e.g. CN=Group,OU=Company,DC=MyDomain,DC=local)
    * as returned by the active directory LDAP server to role names.
    */
-  private Map<String, String> groupRolesMap = new LinkedHashMap<>();
+  private final Map<String, String> groupRolesMap = new LinkedHashMap<>();
 
   public void setGroupRolesMap(Map<String, String> groupRolesMap) {
     this.groupRolesMap.putAll(groupRolesMap);
@@ -144,7 +144,7 @@ public class ActiveDirectoryGroupRealm extends AbstractLdapRealm {
   }
 
   private String getSystemPassword() {
-    String password = "";
+    String password;
     if (StringUtils.isEmpty(this.hadoopSecurityCredentialPath)) {
       password = this.systemPassword;
     } else {
@@ -190,17 +190,14 @@ public class ActiveDirectoryGroupRealm extends AbstractLdapRealm {
   }
 
   private boolean isValidPrincipalName(String userPrincipalName) {
-    if (userPrincipalName != null) {
-      if (StringUtils.isNotEmpty(userPrincipalName) && userPrincipalName.contains("@")) {
-        String userPrincipalWithoutDomain = userPrincipalName.split("@")[0].trim();
-        if (StringUtils.isNotEmpty(userPrincipalWithoutDomain)) {
-          return true;
-        }
-      } else if (StringUtils.isNotEmpty(userPrincipalName)) {
-        return true;
-      }
+    if (StringUtils.isEmpty(userPrincipalName)) {
+      return false;
     }
-    return false;
+    if (userPrincipalName.contains("@")) {
+      String userPrincipalWithoutDomain = userPrincipalName.split("@")[0].trim();
+      return StringUtils.isNotEmpty(userPrincipalWithoutDomain);
+    }
+    return true;
   }
 
   protected AuthenticationInfo buildAuthenticationInfo(String username, char[] password) {
@@ -344,14 +341,12 @@ public class ActiveDirectoryGroupRealm extends AbstractLdapRealm {
   protected Collection<String> getRoleNamesForGroups(Collection<String> groupNames) {
     Set<String> roleNames = new HashSet<>(groupNames.size());
 
-    if (groupRolesMap != null) {
-      for (String groupName : groupNames) {
-        String strRoleNames = groupRolesMap.get(groupName);
-        if (strRoleNames != null) {
-          for (String roleName : strRoleNames.split(ROLE_NAMES_DELIMETER)) {
-            LOGGER.debug("User is member of group [{}] so adding role [{}]", groupName, roleName);
-            roleNames.add(roleName);
-          }
+    for (String groupName : groupNames) {
+      String strRoleNames = groupRolesMap.get(groupName);
+      if (strRoleNames != null) {
+        for (String roleName : strRoleNames.split(ROLE_NAMES_DELIMETER)) {
+          LOGGER.debug("User is member of group [{}] so adding role [{}]", groupName, roleName);
+          roleNames.add(roleName);
         }
       }
     }

@@ -260,12 +260,7 @@ public class KerberosRealm extends AuthorizingRealm {
       if (null == gssManager) {
         try {
           gssManager = Subject.doAs(serverSubject,
-              new PrivilegedExceptionAction<GSSManager>() {
-                @Override
-                public GSSManager run() {
-                  return GSSManager.getInstance();
-                }
-              });
+                  (PrivilegedExceptionAction<GSSManager>) GSSManager::getInstance);
           LOG.trace("SPNEGO gssManager initialized.");
         } catch (PrivilegedActionException ex) {
           throw ex.getException();
@@ -286,7 +281,7 @@ public class KerberosRealm extends AuthorizingRealm {
 
   private void initializeSecretProvider() throws ServletException {
     try {
-      secretProvider = constructSecretProvider(true);
+      secretProvider = constructSecretProvider();
       destroySecretProvider = true;
       signer = new Signer(secretProvider);
     } catch (Exception ex) {
@@ -294,13 +289,11 @@ public class KerberosRealm extends AuthorizingRealm {
     }
   }
 
-  private SignerSecretProvider constructSecretProvider(
-      boolean fallbackToRandomSecretProvider) throws Exception {
+  private SignerSecretProvider constructSecretProvider() throws Exception {
     SignerSecretProvider provider;
     String secretProvider = config.getProperty(SIGNER_SECRET_PROVIDER);
 
-    if (fallbackToRandomSecretProvider
-        && config.getProperty(SIGNATURE_SECRET_FILE) == null) {
+    if (config.getProperty(SIGNATURE_SECRET_FILE) == null) {
       secretProvider = "random";
     }
 
@@ -310,16 +303,11 @@ public class KerberosRealm extends AuthorizingRealm {
         provider.init(config, null, tokenValidity);
         LOG.info("File based secret signer initialized.");
       } catch (Exception e) {
-        if (fallbackToRandomSecretProvider) {
-          LOG.info("Unable to initialize FileSignerSecretProvider, " +
-              "falling back to use random secrets.");
-          provider = new RandomSignerSecretProvider();
-          provider.init(config, null, tokenValidity);
-          LOG.info("Random secret signer initialized.");
-        } else {
-          throw new RuntimeException("Can't initialize File based secret signer. Reason: "
-          + e);
-        }
+        LOG.info("Unable to initialize FileSignerSecretProvider, " +
+            "falling back to use random secrets.");
+        provider = new RandomSignerSecretProvider();
+        provider.init(config, null, tokenValidity);
+        LOG.info("Random secret signer initialized.");
       }
     } else if ("random".equals(secretProvider)) {
       provider = new RandomSignerSecretProvider();
@@ -340,8 +328,6 @@ public class KerberosRealm extends AuthorizingRealm {
    * @param response the HTTP client response.
    *
    * @return <code>TRUE</code>
-   * @throws IOException it is never thrown.
-   * @throws AuthenticationException it is never thrown.
    */
   public boolean managementOperation(AuthenticationToken token,
                                      HttpServletRequest request,
@@ -369,7 +355,7 @@ public class KerberosRealm extends AuthorizingRealm {
   public Set<String> mapGroupPrincipals(final String mappedPrincipalName)
       throws AuthorizationException {
     /* return the groups as seen by Hadoop */
-    Set<String> groups = null;
+    Set<String> groups;
     try {
       hadoopGroups.refresh();
       final List<String> groupList = hadoopGroups.getGroups(mappedPrincipalName);
@@ -388,7 +374,7 @@ public class KerberosRealm extends AuthorizingRealm {
         LOG.info(String.format("errorGettingUserGroups for %s", mappedPrincipalName));
         throw new AuthorizationException(e);
       }
-      groups = new HashSet();
+      groups = new HashSet<>();
     }
     return groups;
   }
@@ -603,13 +589,8 @@ public class KerberosRealm extends AuthorizingRealm {
                   "decoded from client request");
         }
         token = Subject.doAs(serverSubject,
-            new PrivilegedExceptionAction<AuthenticationToken>() {
-              @Override
-              public AuthenticationToken run() throws Exception {
-                return runWithPrincipal(serverPrincipal, clientToken,
-                    base64, response);
-              }
-            });
+                (PrivilegedExceptionAction<AuthenticationToken>) () -> runWithPrincipal(serverPrincipal, clientToken,
+                    base64, response));
       } catch (PrivilegedActionException ex) {
         if (ex.getException() instanceof IOException) {
           throw (IOException) ex.getException();
@@ -701,7 +682,6 @@ public class KerberosRealm extends AuthorizingRealm {
    *
    * @param request request object.
    * @return the Authentication token if the request is authenticated, <code>null</code> otherwise.
-   * @throws IOException             thrown if an IO error occurred.
    * @throws AuthenticationException thrown if the token is invalid or if it has expired.
    */
   private AuthenticationToken getToken(HttpServletRequest request)

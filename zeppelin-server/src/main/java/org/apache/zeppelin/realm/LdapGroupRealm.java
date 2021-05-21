@@ -52,7 +52,7 @@ public class LdapGroupRealm extends DefaultLdapRealm {
   }
 
   public Set<String> getRoleNamesForUser(String username, LdapContext ldapContext,
-          String userDnTemplate) throws NamingException {
+          String userDnTemplate) {
     try {
       Set<String> roleNames = new LinkedHashSet<>();
 
