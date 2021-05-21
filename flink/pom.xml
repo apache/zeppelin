@@ -35,7 +35,9 @@
     <description>Zeppelin Flink Support</description>
 
     <modules>
-        <module>interpreter</module>
+        <module>flink-scala-parent</module>
+        <module>flink-scala-2.11</module>
+        <module>flink-scala-2.12</module>
         <module>flink-shims</module>
         <module>flink1.10-shims</module>
         <module>flink1.11-shims</module>
@@ -48,6 +50,9 @@
         <flink1.11.version>1.11.3</flink1.11.version>
         <flink1.12.version>1.12.0</flink1.12.version>
         <flink1.13.version>1.13.0</flink1.13.version>
+
+        <flink.scala.version>2.11.12</flink.scala.version>
+        <flink.scala.binary.version>2.11</flink.scala.binary.version>
     </properties>
 
     <dependencies>
