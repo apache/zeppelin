@@ -190,7 +190,7 @@ public class LdapRealm extends DefaultLdapRealm {
   private String userSearchAttributeName;
   private String userObjectClass = "person";
 
-  private HashService hashService = new DefaultHashService();
+  private final HashService hashService = new DefaultHashService();
 
 
 
@@ -206,11 +206,7 @@ public class LdapRealm extends DefaultLdapRealm {
   @Override
   protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token)
       throws org.apache.shiro.authc.AuthenticationException {
-    try {
-      return super.doGetAuthenticationInfo(token);
-    } catch (org.apache.shiro.authc.AuthenticationException ae) {
-      throw ae;
-    }
+    return super.doGetAuthenticationInfo(token);
   }
 
   @Override
@@ -295,7 +291,7 @@ public class LdapRealm extends DefaultLdapRealm {
   }
 
   private boolean hasAllowedAuthenticationRules(PrincipalCollection principals,
-          final LdapContextFactory ldapContextFactory) throws NamingException {
+          final LdapContextFactory ldapContextFactory) {
     boolean allowed = allowedRolesForAuthentication.isEmpty();
     if (!allowed) {
       Set<String> roles = getRoles(principals, ldapContextFactory);
@@ -311,7 +307,7 @@ public class LdapRealm extends DefaultLdapRealm {
   }
 
   private Set<String> getRoles(PrincipalCollection principals,
-          final LdapContextFactory ldapContextFactory) throws NamingException {
+          final LdapContextFactory ldapContextFactory) {
     final String username = (String) getAvailablePrincipal(principals);
 
     LdapContext systemLdapCtx = null;
@@ -346,74 +342,71 @@ public class LdapRealm extends DefaultLdapRealm {
     int pageSize = getPagingSize();
     LOGGER.debug("Ldap PagingSize: {}", pageSize);
     int numResults = 0;
-    byte[] cookie = null;
     try {
       ldapCtx.addToEnvironment(Context.REFERRAL, "ignore");
 
       ldapCtx.setRequestControls(new Control[]{new PagedResultsControl(pageSize,
             Control.NONCRITICAL)});
 
-      do {
-        // ldapsearch -h localhost -p 33389 -D
-        // uid=guest,ou=people,dc=hadoop,dc=apache,dc=org -w guest-password
-        // -b dc=hadoop,dc=apache,dc=org -s sub '(objectclass=*)'
-        NamingEnumeration<SearchResult> searchResultEnum = null;
-        SearchControls searchControls = getGroupSearchControls();
-        try {
-          if (groupSearchEnableMatchingRuleInChain) {
-            searchResultEnum = ldapCtx.search(
-                getGroupSearchBase(),
-                String.format(
-                    MATCHING_RULE_IN_CHAIN_FORMAT, groupObjectClass, memberAttribute, userDn),
-                searchControls);
-            while (searchResultEnum != null && searchResultEnum.hasMore()) {
-              // searchResults contains all the groups in search scope
-              numResults++;
-              final SearchResult group = searchResultEnum.next();
+      // ldapsearch -h localhost -p 33389 -D
+      // uid=guest,ou=people,dc=hadoop,dc=apache,dc=org -w guest-password
+      // -b dc=hadoop,dc=apache,dc=org -s sub '(objectclass=*)'
+      NamingEnumeration<SearchResult> searchResultEnum = null;
+      SearchControls searchControls = getGroupSearchControls();
+      try {
+        if (groupSearchEnableMatchingRuleInChain) {
+          searchResultEnum = ldapCtx.search(
+              getGroupSearchBase(),
+              String.format(
+                  MATCHING_RULE_IN_CHAIN_FORMAT, groupObjectClass, memberAttribute, userDn),
+              searchControls);
+          while (searchResultEnum != null && searchResultEnum.hasMore()) {
+            // searchResults contains all the groups in search scope
+            numResults++;
+            final SearchResult group = searchResultEnum.next();
 
-              Attribute attribute = group.getAttributes().get(getGroupIdAttribute());
-              String groupName = attribute.get().toString();
+            Attribute attribute = group.getAttributes().get(getGroupIdAttribute());
+            String groupName = attribute.get().toString();
 
-              String roleName = roleNameFor(groupName);
-              if (roleName != null) {
-                roleNames.add(roleName);
-              } else {
-                roleNames.add(groupName);
-              }
-            }
-          } else {
-            // Default group search filter
-            String searchFilter = String.format("(objectclass=%1$s)", groupObjectClass);
-
-            // If group search filter is defined in Shiro config, then use it
-            if (groupSearchFilter != null) {
-              searchFilter = expandTemplate(groupSearchFilter, userName);
-              //searchFilter = String.format("%1$s", groupSearchFilter);
-            }
-            LOGGER.debug("Group SearchBase|SearchFilter|GroupSearchScope: " + "{}|{}|{}",
-                getGroupSearchBase(), searchFilter, groupSearchScope);
-            searchResultEnum = ldapCtx.search(
-                getGroupSearchBase(),
-                searchFilter,
-                searchControls);
-            while (searchResultEnum != null && searchResultEnum.hasMore()) {
-              // searchResults contains all the groups in search scope
-              numResults++;
-              final SearchResult group = searchResultEnum.next();
-              addRoleIfMember(userDn, group, roleNames, groupNames, ldapContextFactory);
+            String roleName = roleNameFor(groupName);
+            if (roleName != null) {
+              roleNames.add(roleName);
+            } else {
+              roleNames.add(groupName);
             }
           }
-        } catch (PartialResultException e) {
-          LOGGER.debug("Ignoring PartitalResultException");
-        } finally {
-          if (searchResultEnum != null) {
-            searchResultEnum.close();
+        } else {
+          // Default group search filter
+          String searchFilter = String.format("(objectclass=%1$s)", groupObjectClass);
+
+          // If group search filter is defined in Shiro config, then use it
+          if (groupSearchFilter != null) {
+            searchFilter = expandTemplate(groupSearchFilter, userName);
+            //searchFilter = String.format("%1$s", groupSearchFilter);
+          }
+          LOGGER.debug("Group SearchBase|SearchFilter|GroupSearchScope: " + "{}|{}|{}",
+              getGroupSearchBase(), searchFilter, groupSearchScope);
+          searchResultEnum = ldapCtx.search(
+              getGroupSearchBase(),
+              searchFilter,
+              searchControls);
+          while (searchResultEnum != null && searchResultEnum.hasMore()) {
+            // searchResults contains all the groups in search scope
+            numResults++;
+            final SearchResult group = searchResultEnum.next();
+            addRoleIfMember(userDn, group, roleNames, groupNames, ldapContextFactory);
           }
         }
-        // Re-activate paged results
-        ldapCtx.setRequestControls(new Control[]{new PagedResultsControl(pageSize,
-            cookie, Control.CRITICAL)});
-      } while (cookie != null);
+      } catch (PartialResultException e) {
+        LOGGER.debug("Ignoring PartitalResultException");
+      } finally {
+        if (searchResultEnum != null) {
+          searchResultEnum.close();
+        }
+      }
+      // Re-activate paged results
+      ldapCtx.setRequestControls(new Control[]{new PagedResultsControl(pageSize,
+              null, Control.CRITICAL)});
     } catch (SizeLimitExceededException e) {
       LOGGER.info("Only retrieved first {} groups due to SizeLimitExceededException.", numResults);
     } catch (IOException e) {
@@ -720,9 +713,8 @@ public class LdapRealm extends DefaultLdapRealm {
     }
     // search for the filter, substituting base with userDn
     // search for base_dn=userDn, scope=base, filter=filter
-    LdapContext systemLdapCtx = null;
+    LdapContext systemLdapCtx;
     systemLdapCtx = ldapContextFactory.getSystemLdapContext();
-    boolean member = false;
     NamingEnumeration<SearchResult> searchResultEnum = null;
     try {
       searchResultEnum = systemLdapCtx.search(userLdapDn, searchFilter,
@@ -739,7 +731,7 @@ public class LdapRealm extends DefaultLdapRealm {
         LdapUtils.closeContext(systemLdapCtx);
       }
     }
-    return member;
+    return false;
   }
 
   public String getPrincipalRegex() {
@@ -758,8 +750,7 @@ public class LdapRealm extends DefaultLdapRealm {
       principalRegex = DEFAULT_PRINCIPAL_REGEX;
     } else {
       regex = regex.trim();
-      Pattern pattern = Pattern.compile(regex);
-      principalPattern = pattern;
+      principalPattern = Pattern.compile(regex);
       principalRegex = regex;
     }
   }
@@ -897,7 +888,7 @@ public class LdapRealm extends DefaultLdapRealm {
 
     // Create the searchBase and searchFilter from config.
     String searchBase = expandTemplate(getUserSearchBase(), matchedPrincipal);
-    String searchFilter = null;
+    String searchFilter;
     if (userSearchFilter == null) {
       if (userSearchAttributeName == null) {
         searchFilter = String.format("(objectclass=%1$s)", getUserObjectClass());
