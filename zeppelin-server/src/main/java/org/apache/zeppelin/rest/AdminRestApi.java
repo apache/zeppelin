@@ -39,7 +39,7 @@ import org.slf4j.LoggerFactory;
 public class AdminRestApi {
   private static final Logger logger = LoggerFactory.getLogger(AdminRestApi.class);
 
-  private AdminService adminService;
+  private final AdminService adminService;
 
   @Inject
   public AdminRestApi(AdminService adminService) {

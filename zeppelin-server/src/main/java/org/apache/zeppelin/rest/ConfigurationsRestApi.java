@@ -37,7 +37,7 @@ import org.apache.zeppelin.service.AuthenticationService;
 @Singleton
 public class ConfigurationsRestApi extends AbstractRestApi {
 
-  private ConfigurationService configurationService;
+  private final ConfigurationService configurationService;
 
   @Inject
   public ConfigurationsRestApi(
