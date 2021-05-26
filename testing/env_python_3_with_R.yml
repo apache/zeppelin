@@ -7,8 +7,8 @@ dependencies:
   - numpy=1
   - pandas=0.25
   - scipy=1
-  - grpcio
-  - hvplot
+  - grpcio=1.22.0
+  - hvplot=0.5.2
   - protobuf=3
   - pandasql=0.7.3
   - ipython=7
@@ -16,8 +16,8 @@ dependencies:
   - ipykernel=5
   - jupyter_client=5
   - bokeh=1.3.4
-  - panel
-  - holoviews
+  - panel=0.6.0
+  - holoviews=1.12.3
   - pyyaml=3
   - pip
   - pip:
