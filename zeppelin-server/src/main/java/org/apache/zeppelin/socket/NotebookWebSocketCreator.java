@@ -30,7 +30,7 @@ import static org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars.ZEPPELIN_A
 public class NotebookWebSocketCreator implements WebSocketCreator {
 
   private static final Logger LOG = LoggerFactory.getLogger(NotebookWebSocketCreator.class);
-  private NotebookServer notebookServer;
+  private final NotebookServer notebookServer;
 
   public NotebookWebSocketCreator(NotebookServer notebookServer) {
     this.notebookServer = notebookServer;
