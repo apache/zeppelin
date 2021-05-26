@@ -58,9 +58,9 @@ import org.apache.zeppelin.user.AuthenticationInfo;
 public class NotebookRepoRestApi {
   private static final Logger LOG = LoggerFactory.getLogger(NotebookRepoRestApi.class);
 
-  private NotebookRepoSync noteRepos;
-  private NotebookServer notebookWsServer;
-  private AuthenticationService authenticationService;
+  private final NotebookRepoSync noteRepos;
+  private final NotebookServer notebookWsServer;
+  private final AuthenticationService authenticationService;
 
   @Inject
   public NotebookRepoRestApi(NotebookRepoSync noteRepos, NotebookServer notebookWsServer,
@@ -92,7 +92,7 @@ public class NotebookRepoRestApi {
     AuthenticationInfo subject = new AuthenticationInfo(authenticationService.getPrincipal());
     LOG.info("Reloading notebook repository for user {}", subject.getUser());
     try {
-      notebookWsServer.broadcastReloadedNoteList(null, getServiceContext());
+      notebookWsServer.broadcastReloadedNoteList(getServiceContext());
     } catch (IOException e) {
       LOG.error("Fail to refresh repo", e);
     }
@@ -140,7 +140,7 @@ public class NotebookRepoRestApi {
     if (!updatedSettings.isEmpty()) {
       LOG.info("Broadcasting note list to user {}", subject.getUser());
       try {
-        notebookWsServer.broadcastReloadedNoteList(null, getServiceContext());
+        notebookWsServer.broadcastReloadedNoteList(getServiceContext());
       } catch (IOException e) {
         LOG.error("Fail to refresh repo.", e);
       }

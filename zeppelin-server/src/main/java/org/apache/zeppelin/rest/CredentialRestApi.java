@@ -46,9 +46,9 @@ import org.slf4j.LoggerFactory;
 @Singleton
 public class CredentialRestApi {
   private static final Logger LOGGER = LoggerFactory.getLogger(CredentialRestApi.class);
-  private Credentials credentials;
-  private AuthenticationService authenticationService;
-  private Gson gson = new Gson();
+  private final Credentials credentials;
+  private final AuthenticationService authenticationService;
+  private final Gson gson = new Gson();
 
   @Inject
   public CredentialRestApi(Credentials credentials, AuthenticationService authenticationService) {

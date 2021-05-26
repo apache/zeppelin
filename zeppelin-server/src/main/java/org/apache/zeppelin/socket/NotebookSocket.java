@@ -29,9 +29,9 @@ import javax.servlet.http.HttpServletRequest;
  */
 public class NotebookSocket extends WebSocketAdapter {
   private Session connection;
-  private NotebookSocketListener listener;
-  private HttpServletRequest request;
-  private String protocol;
+  private final NotebookSocketListener listener;
+  private final HttpServletRequest request;
+  private final String protocol;
   private String user;
 
   public NotebookSocket(HttpServletRequest req, String protocol,
