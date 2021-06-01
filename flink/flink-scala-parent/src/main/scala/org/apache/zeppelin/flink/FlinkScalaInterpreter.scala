@@ -126,8 +126,6 @@ abstract class FlinkScalaInterpreter(val properties: Properties,
     // init ZeppelinContext
     this.z = new FlinkZeppelinContext(this, new InterpreterHookRegistry(),
       Integer.parseInt(properties.getProperty("zeppelin.flink.maxResult", "1000")))
-    val modifiers = new java.util.ArrayList[String]()
-    modifiers.add("@transient")
     this.bind("z", z.getClass().getCanonicalName(), z, List("@transient"))
     this.jobManager = new JobManager(jmWebUrl, displayedJMWebUrl, properties)
 

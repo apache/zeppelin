@@ -17,8 +17,7 @@
 
 package org.apache.zeppelin.flink;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
+
 import org.apache.flink.api.scala.ExecutionEnvironment;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment;
@@ -32,10 +31,7 @@ import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -86,7 +82,7 @@ public class FlinkInterpreter extends Interpreter {
   /**
    * Load FlinkScalaInterpreter based on the runtime scala version.
    *
-   * @return AbstractSparkScalaInterpreter
+   * @return FlinkScalaInterpreter
    * @throws Exception
    */
   private FlinkScalaInterpreter loadFlinkScalaInterpreter() throws Exception {

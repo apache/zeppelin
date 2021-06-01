@@ -28,6 +28,7 @@ import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion
 import scala.tools.nsc.Settings
 import scala.tools.nsc.interpreter.{IMain, JPrintWriter}
 
+
 class FlinkScala211Interpreter(override val properties: Properties,
                                override val flinkScalaClassLoader: URLClassLoader)
   extends FlinkScalaInterpreter(properties, flinkScalaClassLoader) {

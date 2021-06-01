@@ -60,11 +60,13 @@ public class FlinkInterpreterLauncher extends StandardInterpreterLauncher {
       updateEnvsForYarnApplicationMode(envs, context);
     }
 
-    selectFlinkAppJar(flinkHome, envs);
+    String flinkAppJar = chooseFlinkAppJar(flinkHome);
+    LOGGER.info("Choose FLINK_APP_JAR: {}", flinkAppJar);
+    envs.put("FLINK_APP_JAR", flinkAppJar);
     return envs;
   }
 
-  private void selectFlinkAppJar(String flinkHome, Map<String, String> envs) throws IOException {
+  private String chooseFlinkAppJar(String flinkHome) throws IOException {
     File flinkLibFolder = new File(flinkHome, "lib");
     List<File> flinkDistFiles =
             Arrays.stream(flinkLibFolder.listFiles(file -> file.getName().contains("flink-dist_")))
@@ -93,8 +95,8 @@ public class FlinkInterpreterLauncher extends StandardInterpreterLauncher {
                       .map(file -> file.getAbsolutePath())
                       .collect(Collectors.joining(",")));
     }
-    LOGGER.info("Choose FLINK_APP_JAR: {}", flinkScalaJars.get(0).getAbsolutePath());
-    envs.put("FLINK_APP_JAR", flinkScalaJars.get(0).getAbsolutePath());
+
+    return flinkScalaJars.get(0).getAbsolutePath();
   }
 
   private String updateEnvsForFlinkHome(Map<String, String> envs,
