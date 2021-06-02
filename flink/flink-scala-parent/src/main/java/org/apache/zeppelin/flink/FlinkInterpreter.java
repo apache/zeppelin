@@ -74,6 +74,8 @@ public class FlinkInterpreter extends Interpreter {
       this.innerIntp = loadFlinkScalaInterpreter();
       this.innerIntp.open();
       this.z = this.innerIntp.getZeppelinContext();
+    } catch (InterpreterException e) {
+      throw e;
     } catch (Exception e) {
       throw new InterpreterException("Fail to open FlinkInterpreter", e);
     }
