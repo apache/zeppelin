@@ -24,9 +24,9 @@ import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-public class URIUtil {
+public class YarnLauncherUtil {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(URIUtil.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(YarnLauncherUtil.class);
 
   public static URI resolveURI(String path) {
     try {

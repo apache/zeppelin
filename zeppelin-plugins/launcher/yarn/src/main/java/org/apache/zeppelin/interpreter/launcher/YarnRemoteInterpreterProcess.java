@@ -277,7 +277,7 @@ public class YarnRemoteInterpreterProcess extends RemoteInterpreterProcess {
     String yarnDistArchives = launchContext.getProperties().getProperty("zeppelin.yarn.dist.archives");
     if (StringUtils.isNotBlank(yarnDistArchives)) {
       for (String localArchive : yarnDistArchives.split(",")) {
-        URI localURI = resolveURI(localArchive);
+        URI localURI = YarnLauncherUtil.resolveURI(localArchive);
         srcPath = localFs.makeQualified(new Path(localURI));
         destPath = copyFileToRemote(stagingDir, srcPath, (short) 1);
         String linkName = srcPath.getName();
@@ -345,25 +345,6 @@ public class YarnRemoteInterpreterProcess extends RemoteInterpreterProcess {
     amContainer.setEnvironment(this.envs);
 
     return amContainer;
-  }
-
-  private URI resolveURI(String path) {
-    try {
-      URI uri = new URI(path);
-      if (uri.getScheme() != null) {
-        return uri;
-      }
-      // make sure to handle if the path has a fragment (applies to yarn
-      // distributed cache)
-      if (uri.getFragment() != null) {
-        URI absoluteURI = new File(uri.getPath()).getAbsoluteFile().toURI();
-        return new URI(absoluteURI.getScheme(), absoluteURI.getHost(), absoluteURI.getPath(),
-                uri.getFragment());
-      }
-    } catch (URISyntaxException e) {
-      LOGGER.warn("Exception when resolveURI: {}, cause : {}", path, e);
-    }
-    return new File(path).getAbsoluteFile().toURI();
   }
 
   /**

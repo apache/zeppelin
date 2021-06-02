@@ -199,33 +199,29 @@ public class JupyterKernelInterpreter extends AbstractInterpreter {
     LOGGER.info("Activating conda env: {}", envName);
     ByteArrayOutputStream stdout = new ByteArrayOutputStream();
     PumpStreamHandler psh = new PumpStreamHandler(stdout);
-    try {
-      if (!new File(envName).exists()) {
-        throw new IOException("Fail to activating conda env because no environment folder: " +
-                envName);
-      }
-      File scriptFile = Files.createTempFile("zeppelin_jupyter_kernel_", ".sh").toFile();
-      try (FileWriter writer = new FileWriter(scriptFile)) {
-        IOUtils.write(String.format("chmod 777 -R %s \nsource %s/bin/activate \nconda-unpack",
-                envName, envName),
-                writer);
-      }
-      scriptFile.setExecutable(true, false);
-      scriptFile.setReadable(true, false);
-      CommandLine cmd = new CommandLine(scriptFile.getAbsolutePath());
-      DefaultExecutor executor = new DefaultExecutor();
-      executor.setStreamHandler(psh);
-      int exitCode = executor.execute(cmd);
-      if (exitCode != 0) {
-        throw new IOException("Fail to activate conda env, " + stdout.toString());
-      } else {
-        LOGGER.info("Activate conda env successfully");
-        this.condaEnv = envName;
-        this.pythonExecutable = envName + "/bin/python";
-      }
-    } catch (Exception e) {
-      throw new IOException("Fail to activate conda env: " + envName +
-              " exception: " + stdout.toString());
+
+    if (!new File(envName).exists()) {
+      throw new IOException("Fail to activating conda env because no environment folder: " +
+              envName);
+    }
+    File scriptFile = Files.createTempFile("zeppelin_jupyter_kernel_", ".sh").toFile();
+    try (FileWriter writer = new FileWriter(scriptFile)) {
+      IOUtils.write(String.format("chmod 777 -R %s \nsource %s/bin/activate \nconda-unpack",
+              envName, envName),
+              writer);
+    }
+    scriptFile.setExecutable(true, false);
+    scriptFile.setReadable(true, false);
+    CommandLine cmd = new CommandLine(scriptFile.getAbsolutePath());
+    DefaultExecutor executor = new DefaultExecutor();
+    executor.setStreamHandler(psh);
+    int exitCode = executor.execute(cmd);
+    if (exitCode != 0) {
+      throw new IOException("Fail to activate conda env, " + stdout.toString());
+    } else {
+      LOGGER.info("Activate conda env successfully");
+      this.condaEnv = envName;
+      this.pythonExecutable = envName + "/bin/python";
     }
   }
 
