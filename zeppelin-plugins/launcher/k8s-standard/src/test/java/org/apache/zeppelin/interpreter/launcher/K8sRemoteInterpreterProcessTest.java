@@ -78,7 +78,7 @@ public class K8sRemoteInterpreterProcessTest {
     // when change those values, update the yaml file as well.
     assertEquals("12321:12321", intp.getInterpreterPortRange());
     assertEquals(22321, intp.getSparkDriverPort());
-    assertEquals(22322, intp.getSparkBlockmanagerPort());
+    assertEquals(22322, intp.getSparkBlockManagerPort());
   }
 
   @Test
@@ -178,7 +178,7 @@ public class K8sRemoteInterpreterProcessTest {
     assertTrue(sparkSubmitOptions.contains("spark.kubernetes.container.image=spark-container:1.0"));
     assertTrue(sparkSubmitOptions.contains("spark.driver.host=" + intp.getPodName() + ".default.svc"));
     assertTrue(sparkSubmitOptions.contains("spark.driver.port=" + intp.getSparkDriverPort()));
-    assertTrue(sparkSubmitOptions.contains("spark.blockManager.port=" + intp.getSparkBlockmanagerPort()));
+    assertTrue(sparkSubmitOptions.contains("spark.blockManager.port=" + intp.getSparkBlockManagerPort()));
     assertFalse(sparkSubmitOptions.contains("--proxy-user"));
     assertTrue(intp.isSpark());
   }
@@ -229,7 +229,7 @@ public class K8sRemoteInterpreterProcessTest {
     assertTrue(sparkSubmitOptions.contains("spark.kubernetes.container.image=spark-container:1.0"));
     assertTrue(sparkSubmitOptions.contains("spark.driver.host=" + intp.getPodName() + ".default.svc"));
     assertTrue(sparkSubmitOptions.contains("spark.driver.port=" + intp.getSparkDriverPort()));
-    assertTrue(sparkSubmitOptions.contains("spark.blockManager.port=" + intp.getSparkBlockmanagerPort()));
+    assertTrue(sparkSubmitOptions.contains("spark.blockManager.port=" + intp.getSparkBlockManagerPort()));
     assertTrue(sparkSubmitOptions.contains("--proxy-user mytestUser"));
     assertTrue(intp.isSpark());
   }
