@@ -118,12 +118,17 @@ if [[ -d "${ZEPPELIN_HOME}/zeppelin-zengine/target/test-classes" ]]; then
 fi
 
 addJarInDirForIntp "${ZEPPELIN_HOME}/zeppelin-interpreter-shaded/target"
-addJarInDirForIntp "${INTERPRETER_DIR}"
 
 HOSTNAME=$(hostname)
 ZEPPELIN_SERVER=org.apache.zeppelin.interpreter.remote.RemoteInterpreterServer
 
 INTERPRETER_ID=$(basename "${INTERPRETER_DIR}")
+if [[ "${INTERPRETER_ID}" != "flink" ]]; then
+  # don't add interpreter jar for flink, FlinkInterpreterLauncher will choose the right interpreter jar based
+  # on scala version of current FLINK_HOME.
+  addJarInDirForIntp "${INTERPRETER_DIR}"
+fi
+
 ZEPPELIN_PID="${ZEPPELIN_PID_DIR}/zeppelin-interpreter-${INTP_GROUP_ID}-${ZEPPELIN_IDENT_STRING}-${HOSTNAME}-${PORT}.pid"
 
 if [[ "${ZEPPELIN_INTERPRETER_LAUNCHER}" == "yarn" ]]; then
@@ -247,8 +252,7 @@ elif [[ "${INTERPRETER_ID}" == "flink" ]]; then
   addEachJarInDirRecursiveForIntp "${FLINK_HOME}/lib"
 
   FLINK_PYTHON_JAR=$(find "${FLINK_HOME}/opt" -name 'flink-python_*.jar')
-  ZEPPELIN_INTP_CLASSPATH+=":${FLINK_PYTHON_JAR}"
-  FLINK_APP_JAR="$(ls "${ZEPPELIN_HOME}"/interpreter/flink/zeppelin-flink-*.jar)"
+  ZEPPELIN_INTP_CLASSPATH+=":${FLINK_PYTHON_JAR}:${FLINK_APP_JAR}"
 
   if [[ -n "${HADOOP_CONF_DIR}" ]] && [[ -d "${HADOOP_CONF_DIR}" ]]; then
     ZEPPELIN_INTP_CLASSPATH+=":${HADOOP_CONF_DIR}"

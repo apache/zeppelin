@@ -59,23 +59,23 @@ public class DownloadUtils {
     return targetSparkHomeFolder.getAbsolutePath();
   }
 
-  public static String downloadFlink(String version) {
+  public static String downloadFlink(String flinkVersion, String scalaVersion) {
     String flinkDownloadFolder = downloadFolder + "/flink";
-    File targetFlinkHomeFolder = new File(flinkDownloadFolder + "/flink-" + version);
+    File targetFlinkHomeFolder = new File(flinkDownloadFolder + "/flink-" + flinkVersion);
     if (targetFlinkHomeFolder.exists()) {
       LOGGER.info("Skip to download flink as it is already downloaded.");
       return targetFlinkHomeFolder.getAbsolutePath();
     }
-    download("flink", version, "-bin-scala_2.11.tgz");
+    download("flink", flinkVersion, "-bin-scala_" + scalaVersion + ".tgz");
     // download other dependencies for running flink with yarn and hive
     try {
       runShellCommand(new String[]{"wget",
-              "https://repo1.maven.org/maven2/org/apache/flink/flink-connector-hive_2.11/"
-                      + version + "/flink-connector-hive_2.11-" + version + ".jar",
+              "https://repo1.maven.org/maven2/org/apache/flink/flink-connector-hive_" + scalaVersion + "/"
+                      + flinkVersion + "/flink-connector-hive_" + scalaVersion + "-" + flinkVersion + ".jar",
               "-P", targetFlinkHomeFolder + "/lib"});
       runShellCommand(new String[]{"wget",
-              "https://repo1.maven.org/maven2/org/apache/flink/flink-hadoop-compatibility_2.11/"
-                      + version + "/flink-hadoop-compatibility_2.11-" + version + ".jar",
+              "https://repo1.maven.org/maven2/org/apache/flink/flink-hadoop-compatibility_" + scalaVersion + "/"
+                      + flinkVersion + "/flink-hadoop-compatibility_" + scalaVersion + "-" + flinkVersion + ".jar",
               "-P", targetFlinkHomeFolder + "/lib"});
       runShellCommand(new String[]{"wget",
               "https://repo1.maven.org/maven2/org/apache/hive/hive-exec/2.3.4/hive-exec-2.3.4.jar",

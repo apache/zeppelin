@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -59,7 +60,43 @@ public class FlinkInterpreterLauncher extends StandardInterpreterLauncher {
       updateEnvsForYarnApplicationMode(envs, context);
     }
 
+    String flinkAppJar = chooseFlinkAppJar(flinkHome);
+    LOGGER.info("Choose FLINK_APP_JAR: {}", flinkAppJar);
+    envs.put("FLINK_APP_JAR", flinkAppJar);
     return envs;
+  }
+
+  private String chooseFlinkAppJar(String flinkHome) throws IOException {
+    File flinkLibFolder = new File(flinkHome, "lib");
+    List<File> flinkDistFiles =
+            Arrays.stream(flinkLibFolder.listFiles(file -> file.getName().contains("flink-dist_")))
+                    .collect(Collectors.toList());
+    if (flinkDistFiles.size() > 1) {
+      throw new IOException("More than 1 flink-dist files: " +
+              flinkDistFiles.stream()
+                      .map(file -> file.getAbsolutePath())
+                      .collect(Collectors.joining(",")));
+    }
+    String scalaVersion = "2.11";
+    if (flinkDistFiles.get(0).getName().contains("2.12")) {
+      scalaVersion = "2.12";
+    }
+    final String flinkScalaVersion = scalaVersion;
+    File flinkInterpreterFolder =
+            new File(ZeppelinConfiguration.create().getInterpreterDir(), "flink");
+    List<File> flinkScalaJars =
+            Arrays.stream(flinkInterpreterFolder
+                    .listFiles(file -> file.getName().endsWith(".jar")))
+            .filter(file -> file.getName().contains(flinkScalaVersion))
+            .collect(Collectors.toList());
+    if (flinkScalaJars.size() > 1) {
+      throw new IOException("More than 1 flink scala files: " +
+              flinkScalaJars.stream()
+                      .map(file -> file.getAbsolutePath())
+                      .collect(Collectors.joining(",")));
+    }
+
+    return flinkScalaJars.get(0).getAbsolutePath();
   }
 
   private String updateEnvsForFlinkHome(Map<String, String> envs,
@@ -83,7 +120,9 @@ public class FlinkInterpreterLauncher extends StandardInterpreterLauncher {
   }
 
   private void updateEnvsForYarnApplicationMode(Map<String, String> envs,
-                                                InterpreterLaunchContext context) {
+                                                InterpreterLaunchContext context)
+          throws IOException {
+
     envs.put("ZEPPELIN_FLINK_YARN_APPLICATION", "true");
 
     StringBuilder flinkYarnApplicationConfBuilder = new StringBuilder();
@@ -91,7 +130,7 @@ public class FlinkInterpreterLauncher extends StandardInterpreterLauncher {
     List<String> yarnShipFiles = getYarnShipFiles(context);
     if (!yarnShipFiles.isEmpty()) {
       flinkYarnApplicationConfBuilder.append(
-              " -D yarn.ship-files=" + yarnShipFiles.stream().collect(Collectors.joining(",")));
+              " -D yarn.ship-files=" + yarnShipFiles.stream().collect(Collectors.joining(";")));
     }
 
     // set yarn.application.name
@@ -119,7 +158,7 @@ public class FlinkInterpreterLauncher extends StandardInterpreterLauncher {
     envs.put("ZEPPELIN_FLINK_YARN_APPLICATION_CONF", flinkYarnApplicationConfBuilder.toString());
   }
 
-  private List<String> getYarnShipFiles(InterpreterLaunchContext context) {
+  private List<String> getYarnShipFiles(InterpreterLaunchContext context) throws IOException {
     // Extract yarn.ship-files, add hive-site.xml automatically if hive is enabled
     // and HIVE_CONF_DIR is specified
     List<String> yarnShipFiles = new ArrayList<>();

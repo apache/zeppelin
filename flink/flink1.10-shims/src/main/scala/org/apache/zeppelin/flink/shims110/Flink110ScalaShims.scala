@@ -18,12 +18,12 @@
 
 package org.apache.zeppelin.flink.shims110
 
-import org.apache.flink.api.scala.{DataSet, FlinkILoop}
+import org.apache.flink.api.scala.DataSet
 import org.apache.flink.table.api.Table
 import org.apache.flink.table.api.scala.BatchTableEnvironment
 import org.apache.flink.types.Row
 import org.apache.flink.streaming.api.scala._
-import org.apache.flink.table.api.scala.internal.{BatchTableEnvironmentImpl, StreamTableEnvironmentImpl}
+
 
 object Flink110ScalaShims {
 

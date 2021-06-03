@@ -181,6 +181,9 @@
           <forkCount>1</forkCount>
           <reuseForks>false</reuseForks>
           <argLine>-Xmx3072m</argLine>
+          <environmentVariables>
+            <ZEPPELIN_HOME>${basedir}/../</ZEPPELIN_HOME>
+          </environmentVariables>
         </configuration>
       </plugin>
       <plugin>
