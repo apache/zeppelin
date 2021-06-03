@@ -29,11 +29,12 @@ public class FlinkIntegrationTest113 extends FlinkIntegrationTest {
   @Parameterized.Parameters
   public static List<Object[]> data() {
     return Arrays.asList(new Object[][]{
-            {"1.13.0"}
+            {"1.13.0", "2.11"},
+            {"1.13.0", "2.12"}
     });
   }
 
-  public FlinkIntegrationTest113(String flinkVersion) {
-    super(flinkVersion);
+  public FlinkIntegrationTest113(String flinkVersion, String scalaVersion) {
+    super(flinkVersion, scalaVersion);
   }
 }

@@ -59,13 +59,16 @@ public abstract class FlinkIntegrationTest {
   private static InterpreterSettingManager interpreterSettingManager;
 
   private String flinkVersion;
+  private String scalaVersion;
   private String hadoopHome;
   private String flinkHome;
 
-  public FlinkIntegrationTest(String flinkVersion) {
+  public FlinkIntegrationTest(String flinkVersion, String scalaVersion) {
     LOGGER.info("Testing FlinkVersion: " + flinkVersion);
+    LOGGER.info("Testing ScalaVersion: " + scalaVersion);
     this.flinkVersion = flinkVersion;
-    this.flinkHome = DownloadUtils.downloadFlink(flinkVersion);
+    this.scalaVersion = scalaVersion;
+    this.flinkHome = DownloadUtils.downloadFlink(flinkVersion, scalaVersion);
     this.hadoopHome = DownloadUtils.downloadHadoop("2.7.7");
   }
 

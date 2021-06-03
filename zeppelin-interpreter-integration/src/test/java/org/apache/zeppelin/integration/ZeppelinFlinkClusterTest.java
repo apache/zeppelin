@@ -48,7 +48,7 @@ public abstract class ZeppelinFlinkClusterTest extends AbstractTestRestApi {
   public ZeppelinFlinkClusterTest(String flinkVersion) throws Exception {
     this.flinkVersion = flinkVersion;
     LOGGER.info("Testing FlinkVersion: " + flinkVersion);
-    this.flinkHome = DownloadUtils.downloadFlink(flinkVersion);
+    this.flinkHome = DownloadUtils.downloadFlink(flinkVersion, "2.11");
   }
 
   @BeforeClass

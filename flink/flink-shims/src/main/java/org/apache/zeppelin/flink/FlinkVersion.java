@@ -29,7 +29,7 @@ public class FlinkVersion {
   private int version;
   private String versionString;
 
-  FlinkVersion(String versionString) {
+  public FlinkVersion(String versionString) {
     this.versionString = versionString;
 
     try {
