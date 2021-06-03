@@ -118,7 +118,7 @@ public class JupyterKernelInterpreter extends AbstractInterpreter {
 
       String envName = getProperty("zeppelin.interpreter.conda.env.name");
       if (StringUtils.isNotBlank(envName)) {
-        activateCondaEnv(envName);
+        pythonExecutable = activateCondaEnv(envName);
       } else {
         pythonExecutable = getProperty("zeppelin.python", "python");
       }
@@ -195,7 +195,7 @@ public class JupyterKernelInterpreter extends AbstractInterpreter {
     return "";
   }
 
-  private void activateCondaEnv(String envName) throws IOException {
+  private String activateCondaEnv(String envName) throws IOException {
     LOGGER.info("Activating conda env: {}", envName);
     ByteArrayOutputStream stdout = new ByteArrayOutputStream();
     PumpStreamHandler psh = new PumpStreamHandler(stdout);
@@ -221,7 +221,7 @@ public class JupyterKernelInterpreter extends AbstractInterpreter {
     } else {
       LOGGER.info("Activate conda env successfully");
       this.condaEnv = envName;
-      this.pythonExecutable = envName + "/bin/python";
+      return envName + "/bin/python";
     }
   }
 
@@ -239,9 +239,11 @@ public class JupyterKernelInterpreter extends AbstractInterpreter {
       FileUtils.copyURLToFile(url, new File(kernelWorkDir, kernelScript));
     }
 
-    File bootstrapScriptFile = buildBootstrapScriptFile(kernelPort);
-    LOGGER.info("Bootstrap script file: " + bootstrapScriptFile.getAbsolutePath());
-    CommandLine cmd = CommandLine.parse(bootstrapScriptFile.getAbsolutePath());
+    CommandLine cmd = CommandLine.parse(pythonExecutable);
+    cmd.addArgument(kernelWorkDir.getAbsolutePath() + "/kernel_server.py");
+    cmd.addArgument(getKernelName());
+    cmd.addArgument(kernelPort + "");
+
     Map<String, String> envs = setupKernelEnv();
     jupyterKernelProcessLauncher = new JupyterKernelProcessLauncher(cmd, envs);
     jupyterKernelProcessLauncher.launch();
