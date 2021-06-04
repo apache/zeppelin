@@ -18,10 +18,14 @@
 package org.apache.zeppelin.interpreter;
 
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
+import org.apache.zeppelin.resource.Resource;
+import org.apache.zeppelin.resource.ResourcePool;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public abstract class AbstractInterpreter extends Interpreter {
 
@@ -45,6 +49,35 @@ public abstract class AbstractInterpreter extends Interpreter {
       st = interpolate(st, context.getResourcePool());
     }
     return internalInterpret(st, context);
+  }
+
+  static String interpolate(String cmd, ResourcePool resourcePool) {
+    Pattern zVariablePattern = Pattern.compile("([^{}]*)([{]+[^{}]*[}]+)(.*)", Pattern.DOTALL);
+    StringBuilder sb = new StringBuilder();
+    Matcher m;
+    String st = cmd;
+    while ((m = zVariablePattern.matcher(st)).matches()) {
+      sb.append(m.group(1));
+      String varPat = m.group(2);
+      if (varPat.matches("[{][^{}]+[}]")) {
+        // substitute {variable} only if 'variable' has a value ...
+        Resource resource = resourcePool.get(varPat.substring(1, varPat.length() - 1));
+        Object variableValue = resource == null ? null : resource.get();
+        if (variableValue != null)
+          sb.append(variableValue);
+        else
+          return cmd;
+      } else if (varPat.matches("[{]{2}[^{}]+[}]{2}")) {
+        // escape {{text}} ...
+        sb.append("{").append(varPat, 2, varPat.length() - 2).append("}");
+      } else {
+        // mismatched {{ }} or more than 2 braces ...
+        return cmd;
+      }
+      st = m.group(3);
+    }
+    sb.append(st);
+    return sb.toString();
   }
 
   public abstract ZeppelinContext getZeppelinContext();
