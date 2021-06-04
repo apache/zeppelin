@@ -46,7 +46,7 @@ import io.fabric8.kubernetes.client.server.mock.KubernetesServer;
 public class K8sRemoteInterpreterProcessTest {
 
   @Rule
-  public KubernetesServer server = new KubernetesServer(false, true);
+  public KubernetesServer server = new KubernetesServer(true, true);
 
   @Test
   public void testPredefinedPortNumbers() {
