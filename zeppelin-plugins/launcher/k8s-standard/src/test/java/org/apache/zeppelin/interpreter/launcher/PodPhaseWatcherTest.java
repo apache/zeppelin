@@ -26,7 +26,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.StringUtils;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import io.fabric8.kubernetes.api.model.Pod;
@@ -44,7 +43,6 @@ class PodPhaseWatcherTest {
   KubernetesClient client;
 
   @Test
-  @Disabled("Reamer - ZEPPELIN-5403")
   void testPhase() throws InterruptedException {
     // CREATE
     client.pods().inNamespace("ns1")
@@ -57,24 +55,25 @@ class PodPhaseWatcherTest {
     // WATCH
     PodPhaseWatcher podWatcher = new PodPhaseWatcher(
         phase -> StringUtils.equalsAnyIgnoreCase(phase, "Succeeded", "Failed", "Running"));
-    Watch watch = client.pods().inNamespace("ns1").withName("pod1").watch(podWatcher);
+    try (Watch watch = client.pods().inNamespace("ns1").withName("pod1").watch(podWatcher)) {
 
-    // Update Pod to "pending" phase
-    pod.setStatus(new PodStatus(null, null, null, null, null, null, null, "Pending", null, null,
-        null, null, null));
-    client.pods().inNamespace("ns1").updateStatus(pod);
+      // Update Pod to "pending" phase
+      pod.setStatus(new PodStatus(null, null, null, null, null, null, null, "Pending", null, null,
+              null, null, null));
+      pod = client.pods().inNamespace("ns1").updateStatus(pod);
 
-    // Update Pod to "Running" phase
-    pod.setStatus(new PodStatusBuilder(new PodStatus(null, null, null, null, null, null, null,
-        "Running", null, null, null, null, null)).build());
-    client.pods().inNamespace("ns1").updateStatus(pod);
+      // Wait a little bit, till update is applied
+      Thread.sleep(1000);
+      // Update Pod to "Running" phase
+      pod.setStatus(new PodStatusBuilder(new PodStatus(null, null, null, null, null, null, null,
+              "Running", null, null, null, null, null)).build());
+      client.pods().inNamespace("ns1").updateStatus(pod);
 
-    assertTrue(podWatcher.getCountDownLatch().await(1, TimeUnit.SECONDS));
-    watch.close();
+      assertTrue(podWatcher.getCountDownLatch().await(1, TimeUnit.SECONDS));
+    }
   }
 
   @Test
-  @Disabled("Reamer - ZEPPELIN-5403")
   void testPhaseWithError() throws InterruptedException {
     // CREATE
     client.pods().inNamespace("ns1")
