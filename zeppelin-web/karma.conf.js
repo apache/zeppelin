@@ -67,6 +67,7 @@ module.exports = function(config) {
       'bower_components/ace-builds/src-noconflict/keybinding-emacs.js',
       'bower_components/ace-builds/src-noconflict/ext-language_tools.js',
       'bower_components/ace-builds/src-noconflict/theme-chrome.js',
+      'bower_components/ace-builds/src-noconflict/mode-javascript.js',
       'bower_components/angular-ui-ace/ui-ace.js',
       'bower_components/jquery.scrollTo/jquery.scrollTo.js',
       'bower_components/d3/d3.js',
