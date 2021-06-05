@@ -518,7 +518,7 @@ class FlinkScalaInterpreter(val properties: Properties) {
     val jarFile = new JarFile(jar)
     val entries = jarFile.entries
 
-    val udfPackages = properties.getProperty("flink.udf.jars.packages", "").split(",").toSet
+    val udfPackages = properties.getProperty("flink.udf.search.packages", "").split(",").toSet
     val urls = Array(new URL("jar:file:" + jar + "!/"))
     val cl = new URLClassLoader(urls, getFlinkScalaShellLoader)
 
@@ -833,11 +833,7 @@ class FlinkScalaInterpreter(val properties: Properties) {
 
     val flinkPackageJars =
       if (!StringUtils.isBlank(properties.getProperty("flink.execution.packages", ""))) {
-        val packages = properties.getProperty("flink.execution.packages")
-        val dependencyResolver = new DependencyResolver(System.getProperty("user.home") + "/.m2/repository")
-        packages.split(",")
-          .flatMap(e => JavaConversions.asScalaBuffer(dependencyResolver.load(e)))
-          .map(e => e.getAbsolutePath).toSeq
+        getDependentJars(properties.getProperty("flink.execution.packages").split(",").toSeq)
       } else {
         Seq.empty[String]
       }
@@ -846,11 +842,21 @@ class FlinkScalaInterpreter(val properties: Properties) {
   }
 
   private def getUserUdfJars(): Seq[String] = {
-    if (!StringUtils.isBlank(properties.getProperty("flink.udf.jars", ""))) {
-      getOrDownloadJars(properties.getProperty("flink.udf.jars").split(",").toSeq)
-    } else {
-      Seq.empty[String]
-    }
+    val flinkUdfJars =
+      if (!StringUtils.isBlank(properties.getProperty("flink.udf.jars", ""))) {
+        getOrDownloadJars(properties.getProperty("flink.udf.jars").split(",").toSeq)
+      } else {
+        Seq.empty[String]
+      }
+
+    val flinkUdfPackageJars =
+      if (!StringUtils.isBlank(properties.getProperty("flink.udf.packages", ""))) {
+        getDependentJars(properties.getProperty("flink.udf.packages").split(",").toSeq)
+      } else {
+        Seq.empty[String]
+      }
+
+    flinkUdfJars ++ flinkUdfPackageJars
   }
 
   private def getOrDownloadJars(jars: Seq[String]): Seq[String] = {
@@ -866,6 +872,12 @@ class FlinkScalaInterpreter(val properties: Properties) {
         }
       }
     })
+  }
+
+  private def getDependentJars(packages: Seq[String]): Seq[String] = {
+    val dependencyResolver = new DependencyResolver(System.getProperty("user.home") + "/.m2/repository")
+    packages.flatMap(e => JavaConversions.asScalaBuffer(dependencyResolver.load(e)))
+      .map(e => e.getAbsolutePath)
   }
 
   def getJobManager = this.jobManager
