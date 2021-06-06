@@ -42,6 +42,7 @@ import org.apache.flink.table.api.Table;
 import org.apache.flink.table.api.TableConfig;
 import org.apache.flink.table.api.TableEnvironment;
 import org.apache.flink.table.api.TableResult;
+import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.table.api.bridge.java.internal.StreamTableEnvironmentImpl;
 import org.apache.flink.table.api.bridge.scala.BatchTableEnvironment;
 import org.apache.flink.table.api.config.ExecutionConfigOptions;
@@ -50,6 +51,7 @@ import org.apache.flink.table.api.config.TableConfigOptions;
 import org.apache.flink.table.api.internal.TableEnvironmentInternal;
 import org.apache.flink.table.catalog.CatalogManager;
 import org.apache.flink.table.catalog.GenericInMemoryCatalog;
+import org.apache.flink.table.catalog.ResolvedSchema;
 import org.apache.flink.table.delegation.Parser;
 import org.apache.flink.table.functions.AggregateFunction;
 import org.apache.flink.table.functions.ScalarFunction;
@@ -82,6 +84,7 @@ import org.apache.flink.table.operations.ddl.DropTableOperation;
 import org.apache.flink.table.operations.ddl.DropTempSystemFunctionOperation;
 import org.apache.flink.table.operations.ddl.DropViewOperation;
 import org.apache.flink.table.sinks.TableSink;
+import org.apache.flink.table.utils.PrintUtils;
 import org.apache.flink.types.Row;
 import org.apache.flink.types.RowKind;
 import org.apache.flink.util.FlinkException;
@@ -101,6 +104,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.InetAddress;
+import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -491,5 +495,17 @@ public class Flink113Shims extends FlinkShims {
   public void setOldPlanner(Object tableConfig) {
     ((TableConfig) tableConfig).getConfiguration()
             .set(TableConfigOptions.TABLE_PLANNER, PlannerType.OLD);
+  }
+
+  @Override
+  public String[] row2String(Object row, Object table, Object tableConfig) {
+    final String zone = ((TableConfig) tableConfig).getConfiguration()
+            .get(TableConfigOptions.LOCAL_TIME_ZONE);
+    ZoneId zoneId = TableConfigOptions.LOCAL_TIME_ZONE.defaultValue().equals(zone)
+            ? ZoneId.systemDefault()
+            : ZoneId.of(zone);
+
+    ResolvedSchema resolvedSchema = ((Table) table).getResolvedSchema();
+    return PrintUtils.rowToString((Row) row, resolvedSchema, zoneId);
   }
 }

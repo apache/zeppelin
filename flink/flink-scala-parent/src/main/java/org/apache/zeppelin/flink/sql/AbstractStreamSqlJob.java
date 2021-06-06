@@ -36,14 +36,18 @@ import org.apache.zeppelin.flink.FlinkShims;
 import org.apache.zeppelin.flink.JobManager;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterUtils;
+import org.apache.zeppelin.tabledata.TableDataUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
@@ -57,6 +61,7 @@ public abstract class AbstractStreamSqlJob {
   private static AtomicInteger SQL_INDEX = new AtomicInteger(0);
   protected StreamExecutionEnvironment senv;
   protected TableEnvironment stenv;
+  private Table table;
   protected JobManager jobManager;
   protected InterpreterContext context;
   protected TableSchema schema;
@@ -99,9 +104,8 @@ public abstract class AbstractStreamSqlJob {
   protected abstract String getType();
 
   public String run(String st) throws IOException {
-    Table table = stenv.sqlQuery(st);
-    String tableName = "UnnamedTable_" +
-            "_" + SQL_INDEX.getAndIncrement();
+    this.table = stenv.sqlQuery(st);
+    String tableName = "UnnamedTable_" + SQL_INDEX.getAndIncrement();
     return run(table, tableName);
   }
 
@@ -196,6 +200,18 @@ public abstract class AbstractStreamSqlJob {
   protected abstract void processDelete(Row row);
 
   protected abstract String buildResult();
+
+  protected String table2String(List<Row> rows) {
+    StringBuilder builder = new StringBuilder();
+    for (Row row : rows) {
+      String[] fields = flinkShims.row2String(row, table, stenv.getConfig());
+      String rowString =
+              Arrays.stream(fields).map(TableDataUtils::normalizeColumn).collect(Collectors.joining("\t"));
+      builder.append(rowString);
+      builder.append("\n");
+    }
+    return builder.toString();
+  }
 
   private class ResultRetrievalThread extends Thread {
 

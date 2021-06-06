@@ -157,4 +157,6 @@ public abstract class FlinkShims {
   public void setOldPlanner(Object tableConfig) {
     // only needed after flink 1.13
   }
+
+  public abstract String[] row2String(Object row, Object tableSchema, Object tableConfig);
 }

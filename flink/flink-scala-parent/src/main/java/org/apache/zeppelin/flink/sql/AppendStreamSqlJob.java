@@ -107,16 +107,7 @@ public class AppendStreamSqlJob extends AbstractStreamSqlJob {
                       maxTimestamp - tsWindowThreshold)
               .collect(Collectors.toList());
 
-      for (Row row : materializedTable) {
-        for (int i = 0; i < row.getArity(); ++i) {
-          Object field = row.getField(i);
-          builder.append(TableDataUtils.normalizeColumn(StringUtils.arrayAwareToString(field)));
-          if (i != (row.getArity() - 1)) {
-            builder.append("\t");
-          }
-        }
-        builder.append("\n");
-      }
+      builder.append(table2String(materializedTable));
     }
     builder.append("\n%text ");
     return builder.toString();
