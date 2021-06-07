@@ -19,6 +19,7 @@ package org.apache.zeppelin.markdown;
 
 
 import com.vladsch.flexmark.ext.autolink.AutolinkExtension;
+import com.vladsch.flexmark.ext.emoji.EmojiExtension;
 import com.vladsch.flexmark.ext.gfm.strikethrough.StrikethroughExtension;
 import com.vladsch.flexmark.ext.tables.TablesExtension;
 import com.vladsch.flexmark.ext.typographic.TypographicExtension;
@@ -32,6 +33,8 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 
+import static com.vladsch.flexmark.ext.emoji.EmojiImageType.UNICODE_ONLY;
+
 /**
  * Flexmark Parser
  */
@@ -43,12 +46,14 @@ public class FlexmarkParser implements MarkdownParser {
   public FlexmarkParser() {
     MutableDataSet options = new MutableDataSet();
     options.set(Parser.EXTENSIONS, Arrays.asList(StrikethroughExtension.create(),
-        TablesExtension.create(),
-        UMLExtension.create(),
-        AutolinkExtension.create(),
-        WikiLinkExtension.create(),
-        TypographicExtension.create()));
+            TablesExtension.create(),
+            UMLExtension.create(),
+            AutolinkExtension.create(),
+            WikiLinkExtension.create(),
+            TypographicExtension.create(),
+            EmojiExtension.create()));
     options.set(HtmlRenderer.SOFT_BREAK, "<br />\n");
+    options.set(EmojiExtension.USE_IMAGE_TYPE, UNICODE_ONLY);
     parser = Parser.builder(options).build();
     renderer = HtmlRenderer.builder(options).build();
   }
