@@ -33,6 +33,8 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 
+import static com.vladsch.flexmark.ext.emoji.EmojiImageType.UNICODE_ONLY;
+
 /**
  * Flexmark Parser
  */
@@ -51,7 +53,7 @@ public class FlexmarkParser implements MarkdownParser {
             TypographicExtension.create(),
             EmojiExtension.create()));
     options.set(HtmlRenderer.SOFT_BREAK, "<br />\n");
-    options.set(EmojiExtension.ROOT_IMAGE_PATH, "/assets/images/emojis/");
+    options.set(EmojiExtension.USE_IMAGE_TYPE, UNICODE_ONLY);
     parser = Parser.builder(options).build();
     renderer = HtmlRenderer.builder(options).build();
   }
