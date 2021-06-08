@@ -70,7 +70,7 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterManagedProcess
 
   private final boolean timeoutDuringPending;
 
-  private AtomicBoolean started = new AtomicBoolean(false);
+  private final AtomicBoolean started = new AtomicBoolean(false);
 
   private static final String SPARK_DRIVER_MEMORY = "spark.driver.memory";
   private static final String SPARK_DRIVER_MEMORY_OVERHEAD = "spark.driver.memoryOverhead";
@@ -122,16 +122,14 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterManagedProcess
   }
 
   /**
-   * Get interpreter pod name
-   * @return
+   * @return Get interpreter pod name
    */
   public String getPodName() {
     return podName;
   }
 
   /**
-   * Get namespace
-   * @return
+   * @return Get namespace
    */
   public String getNamespace() {
     return namespace;
@@ -165,14 +163,14 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterManagedProcess
     // wait until interpreter send started message through thrift rpc
     synchronized (started) {
       while (!started.get() && !Thread.currentThread().isInterrupted()) {
-        long timetoTimeout = timeoutTime - System.currentTimeMillis();
-        if (timetoTimeout <= 0) {
+        long timeToTimeout = timeoutTime - System.currentTimeMillis();
+        if (timeToTimeout <= 0) {
           processStopped("The start process was aborted while waiting for the interpreter to start. PodPhase before stop: " + getPodPhase());
           stop();
           throw new IOException("Launching zeppelin interpreter on kubernetes is time out, kill it now");
         }
         try {
-          started.wait(timetoTimeout);
+          started.wait(timeToTimeout);
         } catch (InterruptedException e) {
           LOGGER.error("Interrupt received during started wait. Try to stop the interpreter and interrupt the current thread.", e);
           processStopped("The start process was interrupted while waiting for the interpreter to start. PodPhase before stop: " + getPodPhase());
@@ -189,7 +187,7 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterManagedProcess
     // WATCH for soft shutdown
     PodPhaseWatcher podWatcher = new PodPhaseWatcher(phase -> StringUtils.equalsAny(phase, "Succeeded", "Failed"));
     try (Watch watch = client.pods().inNamespace(namespace).withName(podName).watch(podWatcher)) {
-      if (!podWatcher.getCountDownLatch().await(RemoteInterpreterServer.DEFAULT_SHUTDOWN_TIMEOUT + 500,
+      if (!podWatcher.getCountDownLatch().await(RemoteInterpreterServer.DEFAULT_SHUTDOWN_TIMEOUT + 500L,
           TimeUnit.MILLISECONDS)) {
         LOGGER.warn("Pod {} doesn't terminate in time", podName);
       }
@@ -210,7 +208,7 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterManagedProcess
       try {
         localPortForward.close();
       } catch (IOException e) {
-        LOGGER.info("Error on closing portforwarder", e);
+        LOGGER.info("Error on closing Port Forwarding", e);
       }
     }
   }
@@ -236,7 +234,9 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterManagedProcess
   }
   /**
    * Apply spec file(s) in the path.
-   * @param path
+   * @param path Path to the K8s resources
+   * @param delete set to true, the K8s resources are deleted
+   * @param templateProperties properties to enrich the template
    */
   void apply(File path, boolean delete, Properties templateProperties) throws IOException {
     if (path.getName().startsWith(".") || path.isHidden() || path.getName().endsWith("~")) {
@@ -362,8 +362,8 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterManagedProcess
     return "spark".equalsIgnoreCase(interpreterGroupName);
   }
 
-  boolean isSparkOnKubernetes(Properties interpreteProperties) {
-    String propertySparkMaster = (String) interpreteProperties.getOrDefault("spark.master", "");
+  boolean isSparkOnKubernetes(Properties interpreterProperties) {
+    String propertySparkMaster = (String) interpreterProperties.getOrDefault("spark.master", "");
     return propertySparkMaster.startsWith("k8s://");
   }
 
@@ -374,19 +374,19 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterManagedProcess
     options.append(" --master k8s://https://kubernetes.default.svc");
     options.append(" --deploy-mode client");
     if (properties.containsKey(SPARK_DRIVER_MEMORY)) {
-      options.append(" --driver-memory " + properties.get(SPARK_DRIVER_MEMORY));
+      options.append(" --driver-memory ").append(properties.get(SPARK_DRIVER_MEMORY));
     }
     if (isUserImpersonated() && !StringUtils.containsIgnoreCase(userName, "anonymous")) {
-      options.append(" --proxy-user " + userName);
+      options.append(" --proxy-user ").append(userName);
     }
-    options.append(" --conf spark.kubernetes.namespace=" + getNamespace());
+    options.append(" --conf spark.kubernetes.namespace=").append(getNamespace());
     options.append(" --conf spark.executor.instances=1");
-    options.append(" --conf spark.kubernetes.driver.pod.name=" + getPodName());
-    options.append(" --conf spark.kubernetes.container.image=" + sparkImage);
+    options.append(" --conf spark.kubernetes.driver.pod.name=").append(getPodName());
+    options.append(" --conf spark.kubernetes.container.image=").append(sparkImage);
     options.append(" --conf spark.driver.bindAddress=0.0.0.0");
-    options.append(" --conf spark.driver.host=" + getInterpreterPodDnsName());
-    options.append(" --conf spark.driver.port=" + String.format("%d", getSparkDriverPort()));
-    options.append(" --conf spark.blockManager.port=" + String.format("%d", getSparkBlockmanagerPort()));
+    options.append(" --conf spark.driver.host=").append(getInterpreterPodDnsName());
+    options.append(" --conf spark.driver.port=").append(getSparkDriverPort());
+    options.append(" --conf spark.blockManager.port=").append(getSparkBlockManagerPort());
 
     return options.toString();
   }
@@ -399,7 +399,7 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterManagedProcess
 
   /**
    * See xxx-interpreter-pod.yaml
-   * @return
+   * @return SparkDriverPort
    */
   @VisibleForTesting
   int getSparkDriverPort() {
@@ -408,10 +408,10 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterManagedProcess
 
   /**
    * See xxx-interpreter-pod.yaml
-   * @return
+   * @return Spark block manager port
    */
   @VisibleForTesting
-  int getSparkBlockmanagerPort() {
+  int getSparkBlockManagerPort() {
     return 22322;
   }
 
@@ -433,10 +433,10 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterManagedProcess
     if (portForward) {
       LOGGER.info("Starting Port Forwarding");
       try {
-        int localforwardedPodPort = RemoteInterpreterUtils.findRandomAvailablePortOnAllLocalInterfaces();
+        int localForwardedPodPort = RemoteInterpreterUtils.findRandomAvailablePortOnAllLocalInterfaces();
         localPortForward = client.pods().inNamespace(namespace).withName(podName)
-            .portForward(K8S_INTERPRETER_SERVICE_PORT, localforwardedPodPort);
-        super.processStarted(localforwardedPodPort, "localhost");
+            .portForward(K8S_INTERPRETER_SERVICE_PORT, localForwardedPodPort);
+        super.processStarted(localForwardedPodPort, "localhost");
       } catch (IOException e) {
         LOGGER.error("Unable to create a PortForward", e);
       }
@@ -452,6 +452,6 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterManagedProcess
 
   @Override
   public String getErrorMessage() {
-    return String.format("%s%ncurrent PodPhase: %s", super.getErrorMessage(), getPodPhase());
+    return String.format("%s%n current PodPhase: %s", super.getErrorMessage(), getPodPhase());
   }
 }
