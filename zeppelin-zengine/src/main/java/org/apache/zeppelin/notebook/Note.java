@@ -18,10 +18,10 @@
 package org.apache.zeppelin.notebook;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.gson.ExclusionStrategy;
-import com.google.gson.FieldAttributes;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import shaded.com.google.gson.ExclusionStrategy;
+import shaded.com.google.gson.FieldAttributes;
+import shaded.com.google.gson.Gson;
+import shaded.com.google.gson.GsonBuilder;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.common.JsonSerializable;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;

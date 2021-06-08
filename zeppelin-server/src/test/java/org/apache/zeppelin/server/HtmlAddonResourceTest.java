@@ -16,8 +16,7 @@
  */
 package org.apache.zeppelin.server;
 
-import static org.hamcrest.Matchers.containsString;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
@@ -42,9 +41,8 @@ public class HtmlAddonResourceTest {
 
         final String content = IOUtils.toString(addonResource.getInputStream(), StandardCharsets.UTF_8);
 
-        assertThat(content, containsString(TEST_BODY_ADDON));
-        assertThat(content, containsString(TEST_HEAD_ADDON));
-
+        assertTrue(content.contains(TEST_BODY_ADDON));
+        assertTrue(content.contains(TEST_HEAD_ADDON));
     }
 
     @Test
@@ -54,8 +52,8 @@ public class HtmlAddonResourceTest {
 
         final String content = IOUtils.toString(addonResource.getInputStream(), StandardCharsets.UTF_8);
 
-        assertThat(content, containsString(TEST_BODY_ADDON));
-        assertThat(content, containsString(TEST_HEAD_ADDON));
+        assertTrue(content.contains(TEST_BODY_ADDON));
+        assertTrue(content.contains(TEST_HEAD_ADDON));
 
     }
 

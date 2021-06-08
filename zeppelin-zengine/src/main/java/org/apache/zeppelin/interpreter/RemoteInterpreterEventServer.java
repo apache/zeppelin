@@ -22,10 +22,10 @@ import com.google.gson.reflect.TypeToken;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.thrift.TException;
-import org.apache.thrift.server.TThreadPoolServer;
-import org.apache.thrift.transport.TServerSocket;
-import org.apache.thrift.transport.TTransportException;
+import shaded.org.apache.thrift.TException;
+import shaded.org.apache.thrift.server.TThreadPoolServer;
+import shaded.org.apache.thrift.transport.TServerSocket;
+import shaded.org.apache.thrift.transport.TTransportException;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.helium.ApplicationEventListener;

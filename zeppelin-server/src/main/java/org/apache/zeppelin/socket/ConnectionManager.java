@@ -18,8 +18,8 @@
 package org.apache.zeppelin.socket;
 
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import shaded.com.google.gson.Gson;
+import shaded.com.google.gson.GsonBuilder;
 
 import io.micrometer.core.instrument.Metrics;
 import io.micrometer.core.instrument.Tags;

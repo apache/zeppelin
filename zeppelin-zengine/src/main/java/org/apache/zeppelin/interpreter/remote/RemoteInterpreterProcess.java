@@ -17,10 +17,10 @@
 package org.apache.zeppelin.interpreter.remote;
 
 import com.google.gson.Gson;
-import org.apache.thrift.protocol.TBinaryProtocol;
-import org.apache.thrift.protocol.TProtocol;
-import org.apache.thrift.transport.TSocket;
-import org.apache.thrift.transport.TTransportException;
+import shaded.org.apache.thrift.protocol.TBinaryProtocol;
+import shaded.org.apache.thrift.protocol.TProtocol;
+import shaded.org.apache.thrift.transport.TSocket;
+import shaded.org.apache.thrift.transport.TTransportException;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.launcher.InterpreterClient;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService.Client;

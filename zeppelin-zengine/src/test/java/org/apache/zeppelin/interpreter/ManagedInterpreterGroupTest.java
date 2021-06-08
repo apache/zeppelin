@@ -19,7 +19,7 @@ package org.apache.zeppelin.interpreter;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.eclipse.aether.RepositoryException;
+import shaded.org.eclipse.aether.RepositoryException;
 
 import java.io.IOException;
 import java.util.ArrayList;

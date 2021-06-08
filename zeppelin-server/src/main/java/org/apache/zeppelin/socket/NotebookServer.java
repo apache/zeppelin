@@ -16,9 +16,9 @@
  */
 package org.apache.zeppelin.socket;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.reflect.TypeToken;
+import shaded.com.google.gson.Gson;
+import shaded.com.google.gson.GsonBuilder;
+import shaded.com.google.gson.reflect.TypeToken;
 
 import io.micrometer.core.instrument.Metrics;
 import io.micrometer.core.instrument.Tags;
@@ -52,7 +52,7 @@ import javax.websocket.Session;
 import javax.websocket.server.ServerEndpoint;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.apache.thrift.TException;
+import shaded.org.apache.thrift.TException;
 import org.apache.zeppelin.cluster.ClusterManagerServer;
 import org.apache.zeppelin.cluster.event.ClusterEvent;
 import org.apache.zeppelin.cluster.event.ClusterEventListener;

@@ -43,6 +43,18 @@
             <plugin>
                 <artifactId>maven-dependency-plugin</artifactId>
             </plugin>
+            <!-- Skip Enforcer plugin until the version is bigger then > 3.0.0
+                 Reason: 3.0.0-M3 uses an old dependency:tree, which was fixed with https://github.com/apache/maven-enforcer/commit/ca40308fd58c45e638a35768b3966b5680d4c60e 
+                         3.0.0 indroduced a new bug: https://issues.apache.org/jira/browse/MENFORCER-394-->
+            <plugin>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>enforce</id>
+                        <phase>none</phase>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 

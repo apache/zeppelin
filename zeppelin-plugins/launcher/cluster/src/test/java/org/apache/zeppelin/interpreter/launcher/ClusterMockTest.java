@@ -16,8 +16,8 @@
  */
 package org.apache.zeppelin.interpreter.launcher;
 
-import org.apache.thrift.transport.TServerSocket;
-import org.apache.thrift.transport.TTransportException;
+import shaded.org.apache.thrift.transport.TServerSocket;
+import shaded.org.apache.thrift.transport.TTransportException;
 import org.apache.zeppelin.cluster.ClusterManagerClient;
 import org.apache.zeppelin.cluster.ClusterManagerServer;
 import org.apache.zeppelin.cluster.meta.ClusterMeta;

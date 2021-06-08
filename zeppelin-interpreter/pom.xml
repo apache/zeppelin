@@ -41,6 +41,7 @@
     <sisu.plexus.version>0.3.4</sisu.plexus.version>
     <jline.version>2.14.3</jline.version>
     <atomix.version>3.0.0-rc4</atomix.version>
+    <shaded.dependency.prefix>shaded</shaded.dependency.prefix>
   </properties>
 
   <dependencies>
@@ -145,6 +146,10 @@
       <groupId>org.slf4j</groupId>
       <artifactId>jcl-over-slf4j</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+    </dependency>
 
     <!-- maven dependency resolution -->
     <dependency>
@@ -221,6 +226,12 @@
   </dependencies>
 
   <build>
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+        <filtering>true</filtering>
+      </resource>
+    </resources>
     <plugins>
       <plugin>
         <groupId>pl.project13.maven</groupId>
@@ -242,14 +253,133 @@
           <dateFormat>yyyy-MM-dd HH:mm:ss</dateFormat>
         </configuration>
       </plugin>
-    </plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <configuration>
+          <createSourcesJar>true</createSourcesJar>
+          <shadeSourcesContent>true</shadeSourcesContent>
+          <shadedArtifactAttached>true</shadedArtifactAttached>
+          <createDependencyReducedPom>true</createDependencyReducedPom>
+          <useDependencyReducedPomInJar>true</useDependencyReducedPomInJar>
+          <artifactSet>
+            <excludes>
+              <!-- Leave slf4j unshaded so downstream users can configure logging. -->
+              <exclude>org.slf4j:slf4j-api</exclude>
+              <exclude>org.slf4j:slf4j-log4j12</exclude>
+              <exclude>org.slf4j:jcl-over-slf4j</exclude>
+              <!-- Leave log4j unshaded so downstream users can configure logging. -->
+              <exclude>log4j:log4j</exclude>
+            </excludes>
+          </artifactSet>
+          <filters>
+            <filter>
+              <artifact>*:*</artifact>
+              <excludes>
+                <exclude>META-INF/*.SF</exclude>
+                <exclude>META-INF/*.DSA</exclude>
+                <exclude>META-INF/*.RSA</exclude>
+                <exclude>module-info.class</exclude>
+                <exclude>module-info.java</exclude>
+              </excludes>
+            </filter>
+          </filters>
+          <transformers>
+            <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
+            <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+              <resource>reference.conf</resource>
+            </transformer>
+            <transformer implementation="org.apache.maven.plugins.shade.resource.ApacheLicenseResourceTransformer"/>
+            <transformer implementation="org.apache.maven.plugins.shade.resource.DontIncludeResourceTransformer">
+              <resource>NOTICE.txt</resource>
+            </transformer>
+            <transformer implementation="org.apache.maven.plugins.shade.resource.IncludeResourceTransformer">
+              <resource>META-INF/LICENSE.txt</resource>
+              <file>${basedir}/../../LICENSE.txt</file>
+            </transformer>
+            <transformer implementation="org.apache.maven.plugins.shade.resource.IncludeResourceTransformer">
+              <resource>META-INF/NOTICE.txt</resource>
+              <file>${basedir}/../../NOTICE.txt</file>
+            </transformer>
+          </transformers>
+          <relocations>
+            <relocation>
+              <pattern>org</pattern>
+              <shadedPattern>${shaded.dependency.prefix}.org</shadedPattern>
+              <excludes>
+                <exclude>org.apache.zeppelin.**</exclude>
+                <exclude>org.apache.zeppelin</exclude>
+                <exclude>org.apache.hadoop.**</exclude>
+                <exclude>org.apache.hadoop</exclude>
+                <exclude>org.slf4j.**</exclude>
+                <exclude>org.slf4j</exclude>
+                <exclude>org.apache.commons.logging.**</exclude>
+                <exclude>org.apache.commons.logging</exclude>
+                <exclude>org.apache.commons.exec.**</exclude>
+                <exclude>org.apache.commons.exec</exclude>
+                <exclude>org.apache.log4j.**</exclude>
+                <exclude>org.apache.log4j</exclude>
+                <exclude>org.sonatype.**</exclude>
+                <exclude>org.sonatype</exclude>
 
-    <resources>
-      <resource>
-        <directory>src/main/resources</directory>
-        <filtering>true</filtering>
-      </resource>
-    </resources>
+                <!-- Not the org packages that are a part of the jdk
+                     https://docs.oracle.com/javase/8/docs/api/index.html -->
+                <exclude>org.ietf.jgss.**</exclude>
+                <exclude>org.ietf.jgss</exclude>
+                <exclude>org.omg.**</exclude>
+                <exclude>org.omg</exclude>
+                <exclude>org.w3c.dom.**</exclude>
+                <exclude>org.w3c.dom</exclude>
+                <exclude>org.xml.sax.**</exclude>
+                <exclude>org.xml.sax</exclude>
+              </excludes>
+            </relocation>
+            <relocation>
+              <pattern>com.google</pattern>
+              <shadedPattern>${shaded.dependency.prefix}.com.google</shadedPattern>
+            </relocation>
+            <relocation>
+              <pattern>io</pattern>
+              <shadedPattern>${shaded.dependency.prefix}.io</shadedPattern>
+            </relocation>
+            <relocation>
+              <pattern>com.esotericsoftware</pattern>
+              <shadedPattern>${shaded.dependency.prefix}.com.esotericsoftware</shadedPattern>
+            </relocation>
+          </relocations>
+        </configuration>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>copy-to-interpreter</id>
+            <phase>package</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <target>
+                <echo>ANT TASK - copying files....</echo>
+                <copy todir="${project.basedir}/../interpreter" overwrite="true" flatten="true">
+                  <fileset dir="${project.build.directory}" includes="zeppelin-interpreter-${project.version}-shaded.jar" >
+                  </fileset>
+                </copy>
+              </target>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
   </build>
 
   <profiles>

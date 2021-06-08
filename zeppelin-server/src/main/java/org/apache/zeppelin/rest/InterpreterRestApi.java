@@ -42,7 +42,7 @@ import org.apache.zeppelin.service.SimpleServiceCallback;
 import org.apache.zeppelin.socket.NotebookServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.eclipse.aether.repository.RemoteRepository;
+import shaded.org.eclipse.aether.repository.RemoteRepository;
 
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.DELETE;

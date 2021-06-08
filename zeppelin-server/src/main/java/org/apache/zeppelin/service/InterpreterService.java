@@ -35,7 +35,7 @@ import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.rest.message.InterpreterInstallationRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.eclipse.aether.RepositoryException;
+import shaded.org.eclipse.aether.RepositoryException;
 
 /**
  * This class handles all of business logic for {@link org.apache.zeppelin.rest.InterpreterRestApi}

@@ -55,7 +55,6 @@
     <module>build-tools</module>
     <module>zeppelin-interpreter-parent</module>
     <module>zeppelin-interpreter</module>
-    <module>zeppelin-interpreter-shaded</module>
     <module>zeppelin-zengine</module>
     <module>zeppelin-display</module>
     <module>rlang</module>
@@ -195,7 +194,7 @@
     <plugin.scalate.version>1.7.1</plugin.scalate.version>
     <plugin.scalatest.version>2.0.0</plugin.scalatest.version>
     <plugin.scm.version>1.11.2</plugin.scm.version>
-    <plugin.shade.version>3.2.2</plugin.shade.version>
+    <plugin.shade.version>3.4.1</plugin.shade.version>
     <plugin.source.version>3.2.1</plugin.source.version>
     <plugin.surefire.version>2.22.2</plugin.surefire.version>
 
@@ -431,14 +430,6 @@
           <exclusion>
             <groupId>org.apache.jackrabbit</groupId>
             <artifactId>jackrabbit-webdav</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>io.netty</groupId>
-            <artifactId>netty</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>io.netty</groupId>
-            <artifactId>netty-all</artifactId>
           </exclusion>
           <exclusion>
             <groupId>commons-httpclient</groupId>
@@ -1405,6 +1396,19 @@
           <source>${java.version}</source>
           <target>${java.version}</target>
         </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-source-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>attach-sources</id>
+            <goals>
+              <goal>jar-no-fork</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
 
       <!-- (TODO zjffdu disable it temporary to make CI pass)Test coverage plugin -->

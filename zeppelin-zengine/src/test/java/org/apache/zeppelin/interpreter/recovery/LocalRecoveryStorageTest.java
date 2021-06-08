@@ -18,7 +18,6 @@
 
 package org.apache.zeppelin.interpreter.recovery;
 
-import com.google.common.io.Files;
 import org.apache.commons.io.FileUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.AbstractInterpreterTest;
@@ -35,6 +34,7 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 
 import static org.junit.Assert.assertEquals;
 
@@ -48,7 +48,7 @@ public class LocalRecoveryStorageTest extends AbstractInterpreterTest {
   public void setUp() throws Exception {
     System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_RECOVERY_STORAGE_CLASS.getVarName(),
             LocalRecoveryStorage.class.getName());
-    recoveryDir = Files.createTempDir();
+    recoveryDir = Files.createTempDirectory("LocalRecoveryStorageTest").toFile();
     System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_RECOVERY_DIR.getVarName(), recoveryDir.getAbsolutePath());
     super.setUp();
 

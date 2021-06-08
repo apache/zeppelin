@@ -23,7 +23,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.util.EntityUtils;
-import org.apache.thrift.TException;
+import shaded.org.apache.thrift.TException;
 import org.apache.zeppelin.cluster.meta.ClusterMetaType;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.InterpreterResult;

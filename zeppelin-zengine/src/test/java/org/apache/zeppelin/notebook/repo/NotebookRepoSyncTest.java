@@ -21,9 +21,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
-import com.google.common.io.Files;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -51,6 +51,7 @@ import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+
 public class NotebookRepoSyncTest {
 
   private File ZEPPELIN_HOME;
@@ -70,7 +71,7 @@ public class NotebookRepoSyncTest {
   @Before
   public void setUp() throws Exception {
     System.setProperty("zeppelin.isTest", "true");
-    ZEPPELIN_HOME = Files.createTempDir();
+    ZEPPELIN_HOME = Files.createTempDirectory("NotebookRepoSyncTest").toFile();
     new File(ZEPPELIN_HOME, "conf").mkdirs();
     String mainNotePath = ZEPPELIN_HOME.getAbsolutePath() + "/notebook";
     String secNotePath = ZEPPELIN_HOME.getAbsolutePath() + "/notebook_secondary";

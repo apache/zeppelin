@@ -20,10 +20,10 @@ import org.apache.commons.io.FileUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.dep.DependencyResolver;
 import org.apache.zeppelin.util.Util;
-import org.eclipse.aether.repository.Authentication;
-import org.eclipse.aether.repository.Proxy;
-import org.eclipse.aether.util.repository.AuthenticationBuilder;
-import org.eclipse.aether.RepositoryException;
+import shaded.org.eclipse.aether.repository.Authentication;
+import shaded.org.eclipse.aether.repository.Proxy;
+import shaded.org.eclipse.aether.util.repository.AuthenticationBuilder;
+import shaded.org.eclipse.aether.RepositoryException;
 
 import java.io.File;
 import java.io.IOException;

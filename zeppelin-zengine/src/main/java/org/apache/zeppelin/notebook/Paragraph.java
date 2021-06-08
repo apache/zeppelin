@@ -55,13 +55,12 @@ import org.apache.zeppelin.resource.ResourcePool;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.JobListener;
 import org.apache.zeppelin.scheduler.JobWithProgressPoller;
+import shaded.com.google.common.annotations.VisibleForTesting;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
 import org.apache.zeppelin.user.UserCredentials;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.annotations.VisibleForTesting;
 
 /**
  * Paragraph is a representation of an execution unit.

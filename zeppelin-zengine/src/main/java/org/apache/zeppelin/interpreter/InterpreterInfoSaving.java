@@ -29,10 +29,10 @@ import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 import org.apache.commons.io.IOUtils;
 import org.apache.zeppelin.common.JsonSerializable;
-import org.eclipse.aether.repository.Authentication;
+import shaded.org.eclipse.aether.repository.Authentication;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.eclipse.aether.repository.RemoteRepository;
+import shaded.org.eclipse.aether.repository.RemoteRepository;
 
 import java.io.BufferedReader;
 import java.io.FileOutputStream;

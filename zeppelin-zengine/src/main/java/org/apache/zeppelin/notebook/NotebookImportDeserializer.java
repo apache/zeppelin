@@ -17,10 +17,10 @@
 
 package org.apache.zeppelin.notebook;
 
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonDeserializer;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParseException;
+import shaded.com.google.gson.JsonDeserializationContext;
+import shaded.com.google.gson.JsonDeserializer;
+import shaded.com.google.gson.JsonElement;
+import shaded.com.google.gson.JsonParseException;
 
 import java.lang.reflect.Type;
 import java.text.ParseException;

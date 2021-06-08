@@ -20,8 +20,6 @@ package org.apache.zeppelin.service;
 
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.rest.AbstractTestRestApi;
-import org.apache.zeppelin.server.ZeppelinServer;
-import org.apache.zeppelin.socket.NotebookServer;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.utils.TestUtils;
 import org.junit.AfterClass;

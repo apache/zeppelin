@@ -16,7 +16,7 @@
  */
 package org.apache.zeppelin.interpreter.remote;
 
-import org.apache.thrift.TException;
+import shaded.org.apache.thrift.TException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.thrift.ParagraphInfo;
 
