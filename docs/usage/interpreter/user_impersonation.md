@@ -2,7 +2,7 @@
 layout: page
 title: "Impersonation"
 description: "Set up zeppelin interpreter process as web front end user."
-group: usage/interpreter 
+group: usage/interpreter
 ---
 <!--
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,6 +24,8 @@ limitations under the License.
 User impersonation enables to run zeppelin interpreter process as a web frontend user
 
 ## Setup
+
+### Linux User
 
 #### 1. Enable Shiro auth in `conf/shiro.ini`
 
@@ -59,7 +61,7 @@ bin/zeppelin-daemon restart
 bin\zeppelin.cmd
 ```
 
-#### 5. Configure impersonation for interpreter 
+#### 5. Configure impersonation for interpreter
 
 <div class="row">
   <div class="col-md-12" >
@@ -82,3 +84,58 @@ whoami
 ```
 
 Note that usage of "User Impersonate" option will enable Spark interpreter to use `--proxy-user` option with current user by default. If you want to disable `--proxy-user` option, then refer to `ZEPPELIN_IMPERSONATE_SPARK_PROXY_USER` variable in `conf/zeppelin-env.sh`
+
+
+### LDAP User with kerberized HDFS
+
+#### 1. Set the user(zeppelin) to be enable to set proxyuser in `core-site.xml`
+```bash
+<property>
+  <name>hadoop.proxyuser.zeppelin.groups</name>
+  <value>*</value>
+</property>
+<property>
+  <name>hadoop.proxyuser.zeppelin.users</name>
+  <value>*</value>
+</property>
+<property>
+  <name>hadoop.proxyuser.zeppelin.hosts</name>
+  <value>*</value>
+</property>
+```
+#### 2. Set the group to be enable to connect Hive metastore in 'core-site.xml'
+```bash
+<property>
+  <name>hadoop.proxyuser.hive.groups</name>
+  <value>zeppelin</value>
+</property>
+```
+
+#### 3. Enable Kerberos setting in `zeppelin-site.xml`
+```bash
+<property>
+  <name>zeppelin.server.kerberos.keytab</name>
+  <value>zeppelin.keytab</value>
+</property>
+
+<property>
+  <name>zeppelin.server.kerberos.principal</name>
+  <value>zeppelin@principal</value>
+</property>
+```
+#### 4. Restart zeppelin server.
+
+```bash
+# for OSX, linux
+bin/zeppelin-daemon restart
+
+# for windows
+bin\zeppelin.cmd
+```
+
+#### 5. Configure impersonation for interpreter
+Option
+
+The interpreter will be instantiated *Per User* in *isolated* process
+
+*User impersonate*
