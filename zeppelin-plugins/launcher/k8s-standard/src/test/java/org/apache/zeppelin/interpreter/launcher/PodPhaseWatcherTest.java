@@ -23,6 +23,7 @@ import static org.junit.Assert.*;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.StringUtils;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -41,6 +42,7 @@ public class PodPhaseWatcherTest {
   public KubernetesServer server = new KubernetesServer(false, true);
 
   @Test
+  @Ignore("Reamer - ZEPPELIN-5403")
   public void testPhase() throws InterruptedException {
     KubernetesClient client = server.getClient();
     // CREATE
@@ -71,6 +73,7 @@ public class PodPhaseWatcherTest {
   }
 
   @Test
+  @Ignore("Reamer - ZEPPELIN-5403")
   public void testPhaseWithError() throws InterruptedException {
     KubernetesClient client = server.getClient();
     // CREATE
