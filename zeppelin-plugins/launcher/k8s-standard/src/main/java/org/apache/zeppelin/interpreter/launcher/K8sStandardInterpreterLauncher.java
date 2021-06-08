@@ -45,7 +45,7 @@ public class K8sStandardInterpreterLauncher extends InterpreterLauncher {
   private static final Logger LOGGER = LoggerFactory.getLogger(K8sStandardInterpreterLauncher.class);
   private final KubernetesClient client;
 
-  public K8sStandardInterpreterLauncher(ZeppelinConfiguration zConf, RecoveryStorage recoveryStorage) throws IOException {
+  public K8sStandardInterpreterLauncher(ZeppelinConfiguration zConf, RecoveryStorage recoveryStorage) {
     super(zConf, recoveryStorage);
     client = new DefaultKubernetesClient();
   }
@@ -59,7 +59,7 @@ public class K8sStandardInterpreterLauncher extends InterpreterLauncher {
    * to use K8sStandardInterpreterLauncher. This is useful for development. It allows Zeppelin server running on your
    * IDE and creates your interpreters in Kubernetes. So any code changes on Zeppelin server or kubernetes yaml spec
    * can be applied without re-building docker image.
-   * @return
+   * @return true, if running on K8s
    */
   boolean isRunningOnKubernetes() {
     return new File("/var/run/secrets/kubernetes.io").exists();
@@ -67,7 +67,7 @@ public class K8sStandardInterpreterLauncher extends InterpreterLauncher {
 
   /**
    * Get current namespace
-   * @throws IOException
+   * @throws IOException if namespace file could not be read
    */
   String getNamespace() throws IOException {
     if (isRunningOnKubernetes()) {
@@ -78,8 +78,8 @@ public class K8sStandardInterpreterLauncher extends InterpreterLauncher {
   }
 
   /**
-   * Get hostname. It should be the same to Service name (and Pod name) of the Kubernetes
-   * @return
+   * @return Get hostname. It should be the same to Service name (and Pod name) of the Kubernetes or
+   * localhost in case of an UnknownHostException
    */
   String getHostname() {
     try {
@@ -90,9 +90,8 @@ public class K8sStandardInterpreterLauncher extends InterpreterLauncher {
   }
 
   /**
-   * get Zeppelin service.
-   * return <service-name>.<namespace>.svc
-   * @throws IOException
+   * @return get Zeppelin service. <service-name>.<namespace>.svc
+   * @throws IOException if the Zeppelin service cannot be generated
    */
   private String getZeppelinService(InterpreterLaunchContext context) throws IOException {
     if (isRunningOnKubernetes()) {
@@ -122,7 +121,7 @@ public class K8sStandardInterpreterLauncher extends InterpreterLauncher {
    * Interpreter Process will run in K8s. There is no point in changing the user after starting the container.
    * Switching to an other user (non-privileged) should be done during the image creation process.
    *
-   * Only if a spark interpreter process is running, userImpersonatation should be possible for --proxy-user
+   * Only if a spark interpreter process is running, user impersonation should be possible for --proxy-user
    */
   private boolean isUserImpersonateForSparkInterpreter(InterpreterLaunchContext context) {
       return zConf.getZeppelinImpersonateSparkProxyUser() &&
