@@ -37,6 +37,7 @@ import java.util.Map;
 import java.util.Set;
 import javax.inject.Inject;
 
+import com.google.gson.JsonSyntaxException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.display.AngularObject;
@@ -1007,7 +1008,28 @@ public class NotebookService {
   public void moveNoteToTrash(String noteId,
                               ServiceContext context,
                               ServiceCallback<Note> callback) throws IOException {
-    Note note = notebook.getNote(noteId);
+    Note note = null;
+    try {
+       note = notebook.getNote(noteId);
+    } catch (Exception e) {
+        if ((e.getMessage() != null) && (e.getMessage().contains("Fail to parse note json"))) {
+          if (!checkPermission(noteId, Permission.OWNER, Message.OP.MOVE_NOTE_TO_TRASH, context,
+                  callback)) {
+            return;
+          }
+          String destNotePath = "/" + NoteManager.TRASH_FOLDER + notebook.getNoteManager().getNotesInfo().get(noteId);
+          if (notebook.containsNote(destNotePath)) {
+            destNotePath = destNotePath + " " + TRASH_CONFLICT_TIMESTAMP_FORMATTER.print(new DateTime());
+          }
+          LOGGER.info("Move corrupted note to trash");
+          notebook.moveNote(noteId, destNotePath, context.getAutheInfo());
+          return;
+        }
+        else {
+          throw e;
+        }
+    }
+
     if (note == null) {
       callback.onFailure(new NoteNotFoundException(noteId), context);
       return;
@@ -1018,6 +1040,7 @@ public class NotebookService {
       return;
     }
     String destNotePath = "/" + NoteManager.TRASH_FOLDER + note.getPath();
+
     if (notebook.containsNote(destNotePath)) {
       destNotePath = destNotePath + " " + TRASH_CONFLICT_TIMESTAMP_FORMATTER.format(Instant.now());
     }
