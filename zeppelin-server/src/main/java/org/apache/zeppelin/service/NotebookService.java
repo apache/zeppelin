@@ -37,7 +37,6 @@ import java.util.Map;
 import java.util.Set;
 import javax.inject.Inject;
 
-import com.google.gson.JsonSyntaxException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.display.AngularObject;
@@ -1040,7 +1039,6 @@ public class NotebookService {
       return;
     }
     String destNotePath = "/" + NoteManager.TRASH_FOLDER + note.getPath();
-
     if (notebook.containsNote(destNotePath)) {
       destNotePath = destNotePath + " " + TRASH_CONFLICT_TIMESTAMP_FORMATTER.format(Instant.now());
     }
