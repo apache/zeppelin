@@ -277,7 +277,12 @@ public class YarnRemoteInterpreterProcess extends RemoteInterpreterProcess {
     String yarnDistArchives = launchContext.getProperties().getProperty("zeppelin.yarn.dist.archives");
     if (StringUtils.isNotBlank(yarnDistArchives)) {
       for (String localArchive : yarnDistArchives.split(",")) {
-        URI localURI = YarnLauncherUtil.resolveURI(localArchive);
+        URI localURI = null;
+        try {
+          localURI = new URI(localArchive);
+        } catch (URISyntaxException e) {
+          throw new IOException("Invalid uri: " + localArchive, e);
+        }
         srcPath = localFs.makeQualified(new Path(localURI));
         destPath = copyFileToRemote(stagingDir, srcPath, (short) 1);
         String linkName = srcPath.getName();
