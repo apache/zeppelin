@@ -37,7 +37,6 @@
 
   <properties>
     <!--library versions-->
-    <jackrabbit.webdav.version>1.5.2</jackrabbit.webdav.version>
     <lucene.version>5.3.1</lucene.version>
     <org.reflections.version>0.9.8</org.reflections.version>
     <xml.apis.version>1.4.01</xml.apis.version>
@@ -103,11 +102,10 @@
       <artifactId>bcpkix-jdk15on</artifactId>
     </dependency>
 
-
     <dependency>
-      <groupId>org.apache.jackrabbit</groupId>
-      <artifactId>jackrabbit-webdav</artifactId>
-      <version>${jackrabbit.webdav.version}</version>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-vfs2-jackrabbit1</artifactId>
+      <version>${commons.vfs2.version}</version>
       <exclusions>
         <exclusion>
           <groupId>commons-httpclient</groupId>
