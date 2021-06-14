@@ -195,6 +195,15 @@ public abstract class SqlInterpreterTest {
     assertEquals("table\nsource\n", resultMessages.get(0).getData());
 
     context = getInterpreterContext();
+    result = sqlInterpreter.interpret("describe db1.source", context);
+    assertEquals(Code.SUCCESS, result.code());
+    resultMessages = context.out.toInterpreterResultMessage();
+    assertEquals(Type.TABLE, resultMessages.get(0).getType());
+    assertEquals("Column\tType\n" +
+                    "msg\tINT\n"
+            , resultMessages.get(0).getData());
+
+    context = getInterpreterContext();
     result = sqlInterpreter.interpret("use default", context);
     assertEquals(Code.SUCCESS, result.code());
 
