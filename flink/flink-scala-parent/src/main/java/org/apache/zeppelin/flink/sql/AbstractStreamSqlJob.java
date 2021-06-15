@@ -105,7 +105,8 @@ public abstract class AbstractStreamSqlJob {
 
   public String run(String st) throws IOException {
     this.table = stenv.sqlQuery(st);
-    String tableName = "UnnamedTable_" + SQL_INDEX.getAndIncrement();
+    String tableName = "UnnamedTable_" +
+            "_" + SQL_INDEX.getAndIncrement();
     return run(table, tableName);
   }
 
@@ -201,12 +202,13 @@ public abstract class AbstractStreamSqlJob {
 
   protected abstract String buildResult();
 
-  protected String table2String(List<Row> rows) {
+  protected String tableToString(List<Row> rows) {
     StringBuilder builder = new StringBuilder();
     for (Row row : rows) {
-      String[] fields = flinkShims.row2String(row, table, stenv.getConfig());
-      String rowString =
-              Arrays.stream(fields).map(TableDataUtils::normalizeColumn).collect(Collectors.joining("\t"));
+      String[] fields = flinkShims.rowToString(row, table, stenv.getConfig());
+      String rowString = Arrays.stream(fields)
+              .map(TableDataUtils::normalizeColumn)
+              .collect(Collectors.joining("\t"));
       builder.append(rowString);
       builder.append("\n");
     }

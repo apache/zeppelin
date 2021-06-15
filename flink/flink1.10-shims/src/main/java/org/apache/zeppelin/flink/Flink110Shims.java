@@ -321,7 +321,7 @@ public class Flink110Shims extends FlinkShims {
   }
 
   @Override
-  public String[] row2String(Object row, Object table, Object tableConfig) {
+  public String[] rowToString(Object row, Object table, Object tableConfig) {
     return rowToString((Row) row);
   }
 

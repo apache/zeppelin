@@ -498,7 +498,7 @@ public class Flink113Shims extends FlinkShims {
   }
 
   @Override
-  public String[] row2String(Object row, Object table, Object tableConfig) {
+  public String[] rowToString(Object row, Object table, Object tableConfig) {
     final String zone = ((TableConfig) tableConfig).getConfiguration()
             .get(TableConfigOptions.LOCAL_TIME_ZONE);
     ZoneId zoneId = TableConfigOptions.LOCAL_TIME_ZONE.defaultValue().equals(zone)

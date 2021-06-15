@@ -91,7 +91,7 @@ public class UpdateStreamSqlJob extends AbstractStreamSqlJob {
       String f2 = TableDataUtils.normalizeColumn(StringUtils.arrayAwareToString(r2.getField(0)));
       return f1.compareTo(f2);
     });
-    builder.append(table2String(materializedTable));
+    builder.append(tableToString(materializedTable));
     builder.append("\n%text\n");
     return builder.toString();
   }

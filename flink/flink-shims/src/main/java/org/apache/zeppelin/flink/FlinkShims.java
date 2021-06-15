@@ -158,5 +158,5 @@ public abstract class FlinkShims {
     // only needed after flink 1.13
   }
 
-  public abstract String[] row2String(Object row, Object tableSchema, Object tableConfig);
+  public abstract String[] rowToString(Object row, Object table, Object tableConfig);
 }
