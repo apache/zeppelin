@@ -100,9 +100,20 @@ public class ExecRemoteInterpreterProcess extends RemoteInterpreterManagedProces
       Matcher m = YARN_APP_PATTER.matcher(launchOutput);
       if (m.find()) {
         String appId = m.group(1);
-        LOGGER.info("Detected yarn app: {}, add it to YarnAppMonitor", appId);
-        YarnAppMonitor.get().addYarnApp(ConverterUtils.toApplicationId(appId), this);
+        if (isHadoopClientAvailable()) {
+          LOGGER.info("Detected yarn app: {}, add it to YarnAppMonitor", appId);
+          YarnAppMonitor.get().addYarnApp(ConverterUtils.toApplicationId(appId), this);
+        }
       }
+    }
+  }
+
+  private boolean isHadoopClientAvailable() {
+    try {
+      Class.forName("org.apache.hadoop.yarn.conf.YarnConfiguration");
+      return true;
+    } catch (ClassNotFoundException e) {
+      return false;
     }
   }
 
