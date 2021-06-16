@@ -373,7 +373,7 @@ public class Input<T> implements Serializable {
         }
       } else {
         // single-selection
-        expanded = value.toString();
+        expanded = StringUtils.defaultString((String) value, "");
       }
       replaced = match.replaceFirst(expanded);
       match = pattern.matcher(replaced);
