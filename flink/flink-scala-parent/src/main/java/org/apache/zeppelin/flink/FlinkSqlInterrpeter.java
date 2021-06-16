@@ -503,10 +503,16 @@ public abstract class FlinkSqlInterrpeter extends AbstractInterpreter {
   public abstract void callInnerSelect(String sql, InterpreterContext context) throws IOException;
 
   public void callSet(String key, String value, InterpreterContext context) throws IOException {
+    if (key.equals("execution.runtime-mode")) {
+      throw new IOException("execution.runtime-mode is not supported to set, " +
+              "you can use %flink.ssql & %flink.bsql to switch between streaming mode and batch mode");
+    }
+
     if (!tableConfigOptions.containsKey(key)) {
       throw new IOException(key + " is not a valid table/sql config, please check link: " +
               "https://ci.apache.org/projects/flink/flink-docs-release-1.10/dev/table/config.html");
     }
+
     LOGGER.info("Set table config: {}={}", key, value);
     this.tbenv.getConfig().getConfiguration().setString(key, value);
   }
