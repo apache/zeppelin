@@ -143,6 +143,12 @@ public class InputTest {
     replaced = Input.getSimpleQuery(params, script, false);
     assertEquals("INPUT=some_inputSELECTED=s_op2\nCHECKED=c_op1\n" +
         "NEW_CHECKED=nc_a and nc_c", replaced);
+
+    // textbox without param value provided
+    script = "INPUT='${input_form}'";
+    params = new HashMap<>();
+    replaced = Input.getSimpleQuery(params, script, false);
+    assertEquals("INPUT=''", replaced);
   }
 
 }
