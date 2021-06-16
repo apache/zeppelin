@@ -141,13 +141,19 @@ public class JobManager {
       } else {
         LOGGER.info("Trying to stop job of paragraph {} with save point dir: {}",
                 context.getParagraphId(), savePointDir);
-        String savePointPath = jobClient.stopWithSavepoint(true, savePointDir).get();
-        Map<String, String> config = new HashMap<>();
-        config.put(SAVEPOINT_PATH, savePointPath);
-        context.getIntpEventClient().updateParagraphConfig(
-                context.getNoteId(), context.getParagraphId(), config);
-        LOGGER.info("Job {} of paragraph {} is stopped with save point path: {}",
-                jobClient.getJobID(), context.getParagraphId(), savePointPath);
+        try {
+          String savePointPath = jobClient.stopWithSavepoint(true, savePointDir).get();
+          Map<String, String> config = new HashMap<>();
+          config.put(SAVEPOINT_PATH, savePointPath);
+          context.getIntpEventClient().updateParagraphConfig(
+                  context.getNoteId(), context.getParagraphId(), config);
+          LOGGER.info("Job {} of paragraph {} is stopped with save point path: {}",
+                  jobClient.getJobID(), context.getParagraphId(), savePointPath);
+        } catch (Exception e) {
+          LOGGER.warn("Fail to cancel job of paragraph {} with savepoint, try to cancel it without savepoint",
+                  context.getParagraphId(), e);
+          jobClient.cancel();
+        }
       }
       cancelled = true;
     } catch (Exception e) {
