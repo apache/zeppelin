@@ -151,7 +151,7 @@ public class JobManager {
                   jobClient.getJobID(), context.getParagraphId(), savePointPath);
         } catch (Exception e) {
           LOGGER.warn("Fail to cancel job of paragraph {} with savepoint, try to cancel it without savepoint",
-                  context.getParagraphId());
+                  context.getParagraphId(), e);
           jobClient.cancel();
         }
       }
