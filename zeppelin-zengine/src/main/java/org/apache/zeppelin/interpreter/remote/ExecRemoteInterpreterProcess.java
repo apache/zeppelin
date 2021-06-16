@@ -95,7 +95,9 @@ public class ExecRemoteInterpreterProcess extends RemoteInterpreterManagedProces
 
     if (!interpreterProcessLauncher.isRunning()) {
       throw new IOException("Fail to launch interpreter process:\n" + interpreterProcessLauncher.getErrorMessage());
-    } else {
+    }
+
+    if (isHadoopClientAvailable()) {
       String launchOutput = interpreterProcessLauncher.getProcessLaunchOutput();
       Matcher m = YARN_APP_PATTER.matcher(launchOutput);
       if (m.find()) {
@@ -103,6 +105,15 @@ public class ExecRemoteInterpreterProcess extends RemoteInterpreterManagedProces
         LOGGER.info("Detected yarn app: {}, add it to YarnAppMonitor", appId);
         YarnAppMonitor.get().addYarnApp(ConverterUtils.toApplicationId(appId), this);
       }
+    }
+  }
+
+  private boolean isHadoopClientAvailable() {
+    try {
+      Class.forName("org.apache.hadoop.yarn.conf.YarnConfiguration");
+      return true;
+    } catch (ClassNotFoundException e) {
+      return false;
     }
   }
 
