@@ -276,18 +276,24 @@ public class YarnRemoteInterpreterProcess extends RemoteInterpreterProcess {
 
     String yarnDistArchives = launchContext.getProperties().getProperty("zeppelin.yarn.dist.archives");
     if (StringUtils.isNotBlank(yarnDistArchives)) {
-      for (String localArchive : yarnDistArchives.split(",")) {
-        URI localURI = null;
+      for (String distArchive : yarnDistArchives.split(",")) {
+        URI distArchiveURI = null;
         try {
-          localURI = new URI(localArchive);
+          distArchiveURI = new URI(distArchive);
         } catch (URISyntaxException e) {
-          throw new IOException("Invalid uri: " + localArchive, e);
+          throw new IOException("Invalid uri: " + distArchive, e);
         }
-        srcPath = localFs.makeQualified(new Path(localURI));
-        destPath = copyFileToRemote(stagingDir, srcPath, (short) 1);
+        if (distArchiveURI.getScheme() == null || "file".equals(distArchiveURI.getScheme())) {
+          // zeppelin.yarn.dist.archives is local file
+          srcPath = localFs.makeQualified(new Path(distArchiveURI));
+          destPath = copyFileToRemote(stagingDir, srcPath, (short) 1);
+        } else {
+          // zeppelin.yarn.dist.archives is files on any hadoop compatible file system
+          destPath = new Path(removeLink(distArchive));
+        }
         String linkName = srcPath.getName();
-        if (localURI.getFragment() != null) {
-          linkName = localURI.getFragment();
+        if (distArchiveURI.getFragment() != null) {
+          linkName = distArchiveURI.getFragment();
         }
         addResource(fs, destPath, localResources, LocalResourceType.ARCHIVE, linkName);
       }
@@ -350,6 +356,15 @@ public class YarnRemoteInterpreterProcess extends RemoteInterpreterProcess {
     amContainer.setEnvironment(this.envs);
 
     return amContainer;
+  }
+
+  private String removeLink(String path) {
+    int pos = path.lastIndexOf("#");
+    if (pos != -1) {
+      return path.substring(0, pos);
+    } else {
+      return path;
+    }
   }
 
   /**

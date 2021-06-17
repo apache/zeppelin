@@ -242,7 +242,7 @@ public class JupyterKernelInterpreter extends AbstractInterpreter {
     CommandLine cmd = CommandLine.parse(pythonExecutable);
     cmd.addArgument(kernelWorkDir.getAbsolutePath() + "/kernel_server.py");
     cmd.addArgument(getKernelName());
-    cmd.addArgument(kernelPort + "");
+    cmd.addArgument(String.valueOf(kernelPort));
 
     Map<String, String> envs = setupKernelEnv();
     jupyterKernelProcessLauncher = new JupyterKernelProcessLauncher(cmd, envs);

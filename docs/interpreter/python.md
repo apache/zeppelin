@@ -80,11 +80,11 @@ Zeppelin supports python language which is very popular in data analytics and ma
   <tr>
     <td>zeppelin.yarn.dist.archives</td>
     <td></td>
-    <td>Comma separated list of archives to be extracted into the working directory of interpreter. e.g. You can specify conda pack archive files via this property in python's yarn mode</td>
+    <td>Comma separated list of archives to be extracted into the working directory of interpreter. e.g. You can specify conda pack archive files via this property in python's yarn mode. It could be either files in local filesystem or files on hadoop compatible file systems</td>
   </tr>
   <tr>
     <td>zeppelin.interpreter.conda.env.name</td>
-    <td>environment</td>
+    <td></td>
     <td>conda environment name, aka the folder name in the working directory of interpreter</td>
   </tr>
 </table>
@@ -377,41 +377,50 @@ Here's one example of yml file which could be used to generate a conda environme
 * Create yml file for conda environment, write the following content into file `env_python_3.yml`
 
 ```text
-name: python_3
+name: python_3_env
 channels:
   - conda-forge
   - defaults
 dependencies:
-  - python=3.7
-  - pycodestyle=2.5.0
-  - numpy=1.17.3
-  - pandas=0.25.0
-  - scipy=1.3.1
-  - grpcio=1.22.0
-  - hvplot=0.5.2
-  - protobuf=3.10.0
-  - pandasql=0.7.3
-  - ipython=7.8.0
-  - matplotlib=3.0.3
-  - ipykernel=5.1.2
-  - jupyter_client=5.3.4
-  - bokeh=1.3.4
-  - panel=0.6.0
-  - holoviews=1.12.3
-  - pip
-  - pip:
-    - bkzep==0.6.1
+  - python=3.7 
+  - pycodestyle
+  - numpy
+  - pandas
+  - scipy
+  - grpcio
+  - protobuf
+  - pandasql
+  - ipython
+  - ipykernel
+  - jupyter_client
+  - panel
+  - pyyaml
+  - seaborn
+  - plotnine
+  - hvplot
+  - intake
+  - intake-parquet
+  - intake-xarray
+  - altair
+  - vega_datasets
+  - pyarrow
 
 ```
 
-* Create conda environment via this yml file
+* Create conda environment via this yml file using either `conda` or `mamba`
 
 ```bash
 
 conda env create -f env_python_3.yml
 ```
 
-* Pack the conda environment
+```bash
+
+mamba env create -f python_3_env
+```
+
+
+* Pack the conda environment using either `conda`
 
 ```bash
 
@@ -426,14 +435,11 @@ Specify the following properties to enable yarn mode for python interpreter, and
 zeppelin.interpreter.launcher yarn
 zeppelin.yarn.dist.archives /home/hadoop/python_3.tar.gz#environment
 zeppelin.interpreter.conda.env.name environment
-zeppelin.python ./environment/bin/python
 ```
 
 `zeppelin.yarn.dist.archives` is the python conda environment tar which is created in step 1.
 This tar will be shipped to yarn container and untar in the working directory of yarn container.
-`environment` is the folder name after untar.  Also you need to specify `zeppelin.python` as `./environment/bin/python` which is the 
-python path of the conda environment in yarn container.
-
+`environment` in `/home/hadoop/python_3.tar.gz#environment` is the folder name after untar. This folder name should be the same as `zeppelin.interpreter.conda.env.name`.
 
 ## Python environments (used for non-yarn mode)
 
