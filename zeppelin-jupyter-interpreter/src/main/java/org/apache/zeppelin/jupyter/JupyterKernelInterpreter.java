@@ -259,23 +259,6 @@ public class JupyterKernelInterpreter extends AbstractInterpreter {
     }
   }
 
-  private File buildBootstrapScriptFile(int kernelPort) throws IOException {
-    StringBuilder builder = new StringBuilder();
-    if (condaEnv != null) {
-      builder.append("source " + condaEnv + "/bin/activate\n");
-    }
-    builder.append(pythonExecutable);
-    builder.append(" " + kernelWorkDir.getAbsolutePath() + "/kernel_server.py");
-    builder.append(" " + getKernelName());
-    builder.append(" " + kernelPort);
-    File scriptFile = Files.createTempFile("zeppelin_jupyter_", ".sh").toFile();
-    try (FileWriter out = new FileWriter(scriptFile)) {
-      IOUtils.write(builder.toString(), out);
-    }
-    scriptFile.setExecutable(true);
-    return scriptFile;
-  }
-
   protected Map<String, String> setupKernelEnv() throws IOException {
     return EnvironmentUtils.getProcEnvironment();
   }
