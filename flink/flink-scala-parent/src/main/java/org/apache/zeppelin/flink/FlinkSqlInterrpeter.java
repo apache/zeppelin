@@ -502,9 +502,9 @@ public abstract class FlinkSqlInterrpeter extends AbstractInterpreter {
 
   public abstract void callInnerSelect(String sql, InterpreterContext context) throws IOException;
 
-  public void callSet(String key, String value, InterpreterContext context) throws IOException {
+  public void callSet(String key, String value, InterpreterContext context) throws Exception {
     if (key.equals("execution.runtime-mode")) {
-      throw new IOException("execution.runtime-mode is not supported to set, " +
+      throw new UnsupportedOperationException("execution.runtime-mode is not supported to set, " +
               "you can use %flink.ssql & %flink.bsql to switch between streaming mode and batch mode");
     }
 
