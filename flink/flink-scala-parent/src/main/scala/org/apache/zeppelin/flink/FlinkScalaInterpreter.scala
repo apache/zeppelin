@@ -318,6 +318,12 @@ abstract class FlinkScalaInterpreter(val properties: Properties,
             LOGGER.info("Use FlinkCluster in yarn application mode, appId: {}", yarnAppId)
             this.jmWebUrl = "http://localhost:" + HadoopUtils.getFlinkRestPort(yarnAppId)
             this.displayedJMWebUrl = HadoopUtils.getYarnAppTrackingUrl(yarnAppId)
+            if (properties.getProperty("flink.webui.yarn.useProxy", "false").toBoolean) {
+              val yarnAddress = properties.getProperty("flink.webui.yarn.address")
+              if (!StringUtils.isBlank(yarnAddress)) {
+                this.displayedJMWebUrl = FlinkScalaInterpreter.replaceYarnAddress(this.displayedJMWebUrl, yarnAddress)
+              }
+            }
           } else {
             LOGGER.info("Use FlinkCluster in remote mode")
             this.jmWebUrl = "http://" + config.host.get + ":" + config.port.get
