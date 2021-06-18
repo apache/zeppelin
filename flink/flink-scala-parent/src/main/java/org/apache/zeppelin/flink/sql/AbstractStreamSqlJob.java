@@ -112,6 +112,7 @@ public abstract class AbstractStreamSqlJob {
 
   public String run(Table table, String tableName) throws IOException {
     try {
+      this.table = table;
       int parallelism = Integer.parseInt(context.getLocalProperties()
               .getOrDefault("parallelism", defaultParallelism + ""));
       this.schema = removeTimeAttributes(table.getSchema());
