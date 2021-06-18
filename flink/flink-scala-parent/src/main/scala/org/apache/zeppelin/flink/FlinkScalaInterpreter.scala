@@ -298,13 +298,9 @@ abstract class FlinkScalaInterpreter(val properties: Properties,
             this.jmWebUrl = clusterClient.getWebInterfaceURL
           } else if (mode == ExecutionMode.YARN) {
             LOGGER.info("Starting FlinkCluster in yarn mode")
-            if (properties.getProperty("flink.webui.yarn.useProxy", "false").toBoolean) {
+            if (isYarnUseProxy()) {
               this.jmWebUrl = HadoopUtils.getYarnAppTrackingUrl(clusterClient)
-              // for some cloud vender, the yarn address may be mapped to some other address.
-              val yarnAddress = properties.getProperty("flink.webui.yarn.address")
-              if (!StringUtils.isBlank(yarnAddress)) {
-                this.displayedJMWebUrl = FlinkScalaInterpreter.replaceYarnAddress(this.jmWebUrl, yarnAddress)
-              }
+              this.displayedJMWebUrl = getJmWebUrlUnderProxy()
             } else {
               this.jmWebUrl = clusterClient.getWebInterfaceURL
             }
@@ -314,15 +310,13 @@ abstract class FlinkScalaInterpreter(val properties: Properties,
         case None =>
           // remote mode
           if (mode == ExecutionMode.YARN_APPLICATION) {
-            val yarnAppId = System.getenv("_APP_ID");
+            val yarnAppId = System.getenv("_APP_ID")
             LOGGER.info("Use FlinkCluster in yarn application mode, appId: {}", yarnAppId)
-            this.jmWebUrl = "http://localhost:" + HadoopUtils.getFlinkRestPort(yarnAppId)
-            this.displayedJMWebUrl = HadoopUtils.getYarnAppTrackingUrl(yarnAppId)
-            if (properties.getProperty("flink.webui.yarn.useProxy", "false").toBoolean) {
-              val yarnAddress = properties.getProperty("flink.webui.yarn.address")
-              if (!StringUtils.isBlank(yarnAddress)) {
-                this.displayedJMWebUrl = FlinkScalaInterpreter.replaceYarnAddress(this.displayedJMWebUrl, yarnAddress)
-              }
+            if (isYarnUseProxy()) {
+              this.jmWebUrl = HadoopUtils.getYarnAppTrackingUrl(yarnAppId)
+              this.displayedJMWebUrl = getJmWebUrlUnderProxy()
+            } else {
+              this.jmWebUrl = "http://localhost:" + HadoopUtils.getFlinkRestPort(yarnAppId)
             }
           } else {
             LOGGER.info("Use FlinkCluster in remote mode")
@@ -847,6 +841,18 @@ abstract class FlinkScalaInterpreter(val properties: Properties,
         }
       }
     })
+  }
+
+  private def isYarnUseProxy(): Boolean = {
+    properties.getProperty("flink.webui.yarn.useProxy", "false").toBoolean
+  }
+
+  private def getJmWebUrlUnderProxy(): String = {
+    // for some cloud vender, the yarn address may be mapped to some other address.
+    val yarnAddress = properties.getProperty("flink.webui.yarn.address")
+    if (StringUtils.isNotBlank(yarnAddress)) {
+      FlinkScalaInterpreter.replaceYarnAddress(this.jmWebUrl, yarnAddress)
+    }
   }
 
   def getJobManager = this.jobManager
