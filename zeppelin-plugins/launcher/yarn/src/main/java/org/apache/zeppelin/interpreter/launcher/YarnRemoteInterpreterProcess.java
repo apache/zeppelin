@@ -283,13 +283,13 @@ public class YarnRemoteInterpreterProcess extends RemoteInterpreterProcess {
         } catch (URISyntaxException e) {
           throw new IOException("Invalid uri: " + distArchive, e);
         }
-        if (distArchiveURI.getScheme() == null || "file".equals(distArchiveURI.getScheme())) {
+        if ("file".equals(distArchiveURI.getScheme())) {
           // zeppelin.yarn.dist.archives is local file
           srcPath = localFs.makeQualified(new Path(distArchiveURI));
           destPath = copyFileToRemote(stagingDir, srcPath, (short) 1);
         } else {
           // zeppelin.yarn.dist.archives is files on any hadoop compatible file system
-          destPath = new Path(removeLink(distArchive));
+          destPath = new Path(removeFragment(distArchive));
         }
         String linkName = srcPath.getName();
         if (distArchiveURI.getFragment() != null) {
@@ -358,7 +358,7 @@ public class YarnRemoteInterpreterProcess extends RemoteInterpreterProcess {
     return amContainer;
   }
 
-  private String removeLink(String path) {
+  private String removeFragment(String path) {
     int pos = path.lastIndexOf("#");
     if (pos != -1) {
       return path.substring(0, pos);
