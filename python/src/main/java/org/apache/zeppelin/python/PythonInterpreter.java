@@ -223,9 +223,12 @@ public class PythonInterpreter extends Interpreter {
 
   // Run python script
   // Choose python in the order of
-  // condaPythonExec > zeppelin.python
+  // {conda.env.name}/bin/python > condaPythonExec > zeppelin.python
   protected String getPythonExec() {
-    if (condaPythonExec != null) {
+    String condaEnv = getProperty("zeppelin.interpreter.conda.env.name");
+    if (StringUtils.isNotBlank(condaEnv)) {
+      return condaEnv + "/bin/python";
+    } else if (condaPythonExec != null) {
       return condaPythonExec;
     } else {
       return getProperty("zeppelin.python", "python");
