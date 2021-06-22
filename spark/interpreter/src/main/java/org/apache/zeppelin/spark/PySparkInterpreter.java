@@ -171,11 +171,12 @@ public class PySparkInterpreter extends PythonInterpreter {
   // spark.pyspark.driver.python > spark.pyspark.python > PYSPARK_DRIVER_PYTHON > PYSPARK_PYTHON
   @Override
   protected String getPythonExec() {
-    if (!StringUtils.isBlank(getProperty("spark.pyspark.driver.python", ""))) {
-      return properties.getProperty("spark.pyspark.driver.python");
+    SparkConf sparkConf = getSparkConf();
+    if (StringUtils.isNotBlank(sparkConf.get("spark.pyspark.driver.python", ""))) {
+      return sparkConf.get("spark.pyspark.driver.python");
     }
-    if (!StringUtils.isBlank(getProperty("spark.pyspark.python", ""))) {
-      return properties.getProperty("spark.pyspark.python");
+    if (StringUtils.isNotBlank(sparkConf.get("spark.pyspark.python", ""))) {
+      return sparkConf.get("spark.pyspark.python");
     }
     if (System.getenv("PYSPARK_PYTHON") != null) {
       return System.getenv("PYSPARK_PYTHON");
