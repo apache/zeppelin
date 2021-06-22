@@ -28,5 +28,5 @@ RUN echo "unsafe-perm=true" > ~/.npmrc && \
     rm -rf ~/.m2 && \
     rm -rf /workspace/zeppelin/*
 
-FROM ubuntu:18.04
+FROM ubuntu:20.04
 COPY --from=builder /opt/zeppelin /opt/zeppelin
