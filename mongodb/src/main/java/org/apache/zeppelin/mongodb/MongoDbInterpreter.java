@@ -67,14 +67,13 @@ public class MongoDbInterpreter extends Interpreter {
 
   @Override
   public void open() {
-    shellExtension = new Scanner(MongoDbInterpreter.class.getResourceAsStream("/shell_extension.js"), "UTF-8")
-            .useDelimiter("\\A").next();
-
+    try (final Scanner scanner = new Scanner(MongoDbInterpreter.class.getResourceAsStream("/shell_extension.js"),
+            "UTF-8").useDelimiter("\\A")) {
+        shellExtension = scanner.next();
+    }
     commandTimeout = Long.parseLong(getProperty("mongo.shell.command.timeout"));
     maxConcurrency = Integer.parseInt(getProperty("mongo.interpreter.concurrency.max"));
-
     dbAddress = getProperty("mongo.server.host") + ":" + getProperty("mongo.server.port");
-
     prepareShellExtension();
   }
 
@@ -150,7 +149,6 @@ public class MongoDbInterpreter extends Interpreter {
       FileUtils.deleteQuietly(scriptFile);
       stopProcess(paragraphId);
     }
-
     return result;
   }
 
