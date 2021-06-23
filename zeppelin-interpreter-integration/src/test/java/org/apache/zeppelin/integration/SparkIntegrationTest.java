@@ -118,6 +118,10 @@ public abstract class SparkIntegrationTest {
     assertEquals(interpreterResult.toString(), InterpreterResult.Code.SUCCESS, interpreterResult.code());
     assertTrue(interpreterResult.toString(), interpreterResult.message().get(0).getData().contains("45"));
 
+    interpreterResult = sparkInterpreter.interpret("sc.getConf.get(\"spark.user.name\")", context);
+    assertEquals(interpreterResult.toString(), InterpreterResult.Code.SUCCESS, interpreterResult.code());
+    assertTrue(interpreterResult.toString(), interpreterResult.message().get(0).getData().contains("user1"));
+
     // test jars & packages can be loaded correctly
     interpreterResult = sparkInterpreter.interpret("import org.apache.zeppelin.interpreter.integration.DummyClass\n" +
             "import com.maxmind.geoip2._", context);
@@ -162,6 +166,7 @@ public abstract class SparkIntegrationTest {
     sparkInterpreterSetting.setProperty("zeppelin.pyspark.useIPython", "false");
     sparkInterpreterSetting.setProperty("zeppelin.spark.scala.color", "false");
     sparkInterpreterSetting.setProperty("zeppelin.spark.deprecatedMsg.show", "false");
+    sparkInterpreterSetting.setProperty("spark.user.name", "#{user}");
 
     try {
       setUpSparkInterpreterSetting(sparkInterpreterSetting);
@@ -189,6 +194,7 @@ public abstract class SparkIntegrationTest {
     sparkInterpreterSetting.setProperty("spark.driver.memory", "512m");
     sparkInterpreterSetting.setProperty("zeppelin.spark.scala.color", "false");
     sparkInterpreterSetting.setProperty("zeppelin.spark.deprecatedMsg.show", "false");
+    sparkInterpreterSetting.setProperty("spark.user.name", "#{user}");
 
     try {
       setUpSparkInterpreterSetting(sparkInterpreterSetting);
@@ -237,6 +243,7 @@ public abstract class SparkIntegrationTest {
     sparkInterpreterSetting.setProperty("spark.driver.memory", "512m");
     sparkInterpreterSetting.setProperty("zeppelin.spark.scala.color", "false");
     sparkInterpreterSetting.setProperty("zeppelin.spark.deprecatedMsg.show", "false");
+    sparkInterpreterSetting.setProperty("spark.user.name", "#{user}");
 
     try {
       setUpSparkInterpreterSetting(sparkInterpreterSetting);
