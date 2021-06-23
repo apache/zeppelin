@@ -50,7 +50,7 @@ public class SessionRestApi {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SessionRestApi.class);
 
-  private SessionManagerService sessionManagerService;
+  private final SessionManagerService sessionManagerService;
 
   @Inject
   public SessionRestApi(Notebook notebook, InterpreterSettingManager interpreterSettingManager) {

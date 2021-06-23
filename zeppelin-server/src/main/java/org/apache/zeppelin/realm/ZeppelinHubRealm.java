@@ -226,7 +226,7 @@ public class ZeppelinHubRealm extends AuthorizingRealm {
         new org.apache.zeppelin.user.AuthenticationInfo(username), userAndRoles);
     try {
       // This can failed to get NotebookServer instance with very rare cases
-      NotebookServer.getInstance().broadcastReloadedNoteList(null, context);
+      NotebookServer.getInstance().broadcastReloadedNoteList(context);
     } catch (IOException e) {
       LOG.error("Fail to broadcastReloadedNoteList", e);
     }

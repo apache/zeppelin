@@ -23,7 +23,6 @@ import com.google.gson.Gson;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -37,11 +36,9 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.zeppelin.annotation.ZeppelinApi;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.InterpreterResult;
@@ -87,15 +84,15 @@ public class NotebookRestApi extends AbstractRestApi {
   private static final Logger LOGGER = LoggerFactory.getLogger(NotebookRestApi.class);
   private static final Gson GSON = new Gson();
 
-  private ZeppelinConfiguration zConf;
-  private Notebook notebook;
-  private NotebookServer notebookServer;
-  private SearchService noteSearchService;
-  private AuthorizationService authorizationService;
-  private NotebookService notebookService;
-  private JobManagerService jobManagerService;
-  private AuthenticationService authenticationService;
-  private SchedulerService schedulerService;
+  private final ZeppelinConfiguration zConf;
+  private final Notebook notebook;
+  private final NotebookServer notebookServer;
+  private final SearchService noteSearchService;
+  private final AuthorizationService authorizationService;
+  private final NotebookService notebookService;
+  private final JobManagerService jobManagerService;
+  private final AuthenticationService authenticationService;
+  private final SchedulerService schedulerService;
 
   @Inject
   public NotebookRestApi(
@@ -126,7 +123,7 @@ public class NotebookRestApi extends AbstractRestApi {
   @GET
   @Path("{noteId}/permissions")
   @ZeppelinApi
-  public Response getNotePermissions(@PathParam("noteId") String noteId) throws IOException {
+  public Response getNotePermissions(@PathParam("noteId") String noteId) {
     checkIfUserIsAnon(getBlockNotAuthenticatedUserErrorMsg());
     checkIfUserCanRead(noteId,
             "Insufficient privileges you cannot get the list of permissions for this note");
@@ -319,7 +316,7 @@ public class NotebookRestApi extends AbstractRestApi {
   @ZeppelinApi
   public Response getNoteList() throws IOException {
     List<NoteInfo> notesInfo = notebookService.listNotesInfo(false, getServiceContext(),
-            new RestServiceCallback<List<NoteInfo>>());
+            new RestServiceCallback<>());
     return new JsonResponse<>(Status.OK, "", notesInfo).build();
   }
 
@@ -337,7 +334,7 @@ public class NotebookRestApi extends AbstractRestApi {
   public Response getNote(@PathParam("noteId") String noteId,
                           @QueryParam("reload") boolean reload) throws IOException {
     Note note =
-            notebookService.getNote(noteId, reload, getServiceContext(), new RestServiceCallback());
+            notebookService.getNote(noteId, reload, getServiceContext(), new RestServiceCallback<>());
     return new JsonResponse<>(Status.OK, "", note).build();
   }
 
@@ -370,7 +367,7 @@ public class NotebookRestApi extends AbstractRestApi {
   @ZeppelinApi
   public Response importNote(@QueryParam("notePath") String notePath, String noteJson) throws IOException {
     Note note = notebookService.importNote(notePath, noteJson, getServiceContext(),
-            new RestServiceCallback());
+            new RestServiceCallback<>());
     return new JsonResponse<>(Status.OK, "", note.getId()).build();
   }
 

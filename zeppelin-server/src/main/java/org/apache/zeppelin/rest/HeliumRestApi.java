@@ -59,9 +59,9 @@ import org.apache.zeppelin.server.JsonResponse;
 public class HeliumRestApi {
   Logger logger = LoggerFactory.getLogger(HeliumRestApi.class);
 
-  private Helium helium;
-  private Notebook notebook;
-  private Gson gson = new Gson();
+  private final Helium helium;
+  private final Notebook notebook;
+  private final Gson gson = new Gson();
 
   @Inject
   public HeliumRestApi(Helium helium, Notebook notebook) {
@@ -121,7 +121,7 @@ public class HeliumRestApi {
   @Path("suggest/{noteId}/{paragraphId}")
   public Response suggest(@PathParam("noteId") String noteId,
           @PathParam("paragraphId") String paragraphId) {
-    Note note = null;
+    Note note;
     try {
       note = notebook.getNote(noteId);
     } catch (IOException e) {
@@ -150,7 +150,7 @@ public class HeliumRestApi {
   @Path("load/{noteId}/{paragraphId}")
   public Response load(@PathParam("noteId") String noteId,
           @PathParam("paragraphId") String paragraphId, String heliumPackage) {
-    Note note = null;
+    Note note;
     try {
       note = notebook.getNote(noteId);
     } catch (IOException e) {

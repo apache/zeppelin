@@ -51,7 +51,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
@@ -60,7 +59,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 public class ConnectionManager {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ConnectionManager.class);
-  private static Gson gson = new GsonBuilder()
+  private static final Gson gson = new GsonBuilder()
       .setDateFormat("yyyy-MM-dd'T'HH:mm:ssZ")
       .registerTypeAdapter(Date.class, new NotebookImportDeserializer())
       .setPrettyPrinting()
@@ -80,13 +79,13 @@ public class ConnectionManager {
    */
   final Queue<NotebookSocket> watcherSockets = Queues.newConcurrentLinkedQueue();
 
-  private HashSet<String> collaborativeModeList = new HashSet<>();
-  private Boolean collaborativeModeEnable = ZeppelinConfiguration
+  private final HashSet<String> collaborativeModeList = new HashSet<>();
+  private final Boolean collaborativeModeEnable = ZeppelinConfiguration
       .create()
       .isZeppelinNotebookCollaborativeModeEnable();
 
 
-  private AuthorizationService authorizationService;
+  private final AuthorizationService authorizationService;
 
   @Inject
   public ConnectionManager(AuthorizationService authorizationService) {
@@ -106,11 +105,7 @@ public class ConnectionManager {
     synchronized (noteSocketMap) {
       // make sure a socket relates only an single note.
       removeConnectionFromAllNote(socket);
-      List<NotebookSocket> socketList = noteSocketMap.get(noteId);
-      if (socketList == null) {
-        socketList = new LinkedList<>();
-        noteSocketMap.put(noteId, socketList);
-      }
+      List<NotebookSocket> socketList = noteSocketMap.computeIfAbsent(noteId, k -> new LinkedList<>());
       if (!socketList.contains(socket)) {
         socketList.add(socket);
       }
@@ -361,7 +356,7 @@ public class ConnectionManager {
   }
 
   public interface UserIterator {
-    public void handleUser(String user, Set<String> userAndRoles);
+    void handleUser(String user, Set<String> userAndRoles);
   }
 
   public void forAllUsers(UserIterator iterator) {
@@ -396,14 +391,13 @@ public class ConnectionManager {
     broadcastNoteForms(note);
 
     if (note.isPersonalizedMode()) {
-      broadcastParagraphs(p.getUserParagraphMap(), p);
+      broadcastParagraphs(p.getUserParagraphMap());
     } else {
       broadcast(note.getId(), new Message(Message.OP.PARAGRAPH).put("paragraph", p));
     }
   }
 
-  public void broadcastParagraphs(Map<String, Paragraph> userParagraphMap,
-                                  Paragraph defaultParagraph) {
+  public void broadcastParagraphs(Map<String, Paragraph> userParagraphMap) {
     if (null != userParagraphMap) {
       for (String user : userParagraphMap.keySet()) {
         multicastToUser(user,
@@ -448,7 +442,7 @@ public class ConnectionManager {
     LOGGER.info("Going to add {} to watcher socket", conn);
     // add the connection to the watcher.
     if (watcherSockets.contains(conn)) {
-      LOGGER.info("connection alrerady present in the watcher");
+      LOGGER.info("connection already present in the watcher");
       return;
     }
     watcherSockets.add(conn);

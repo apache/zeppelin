@@ -91,16 +91,7 @@ public class UpdateStreamSqlJob extends AbstractStreamSqlJob {
       String f2 = TableDataUtils.normalizeColumn(StringUtils.arrayAwareToString(r2.getField(0)));
       return f1.compareTo(f2);
     });
-    for (Row row : materializedTable) {
-      for (int i = 0; i < row.getArity(); ++i) {
-        Object field = row.getField(i);
-        builder.append(TableDataUtils.normalizeColumn(StringUtils.arrayAwareToString(field)));
-        if (i != (row.getArity() - 1)) {
-          builder.append("\t");
-        }
-      }
-      builder.append("\n");
-    }
+    builder.append(tableToString(materializedTable));
     builder.append("\n%text\n");
     return builder.toString();
   }

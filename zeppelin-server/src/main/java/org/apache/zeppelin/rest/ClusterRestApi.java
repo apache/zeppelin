@@ -84,8 +84,8 @@ public class ClusterRestApi {
   public Response getClusterNodes(){
     List<Map<String, Object>> nodes = new ArrayList<>();
 
-    Map<String, HashMap<String, Object>> clusterMeta = null;
-    Map<String, HashMap<String, Object>> intpMeta = null;
+    Map<String, HashMap<String, Object>> clusterMeta;
+    Map<String, HashMap<String, Object>> intpMeta;
     clusterMeta = clusterManagerServer.getClusterMeta(ClusterMetaType.SERVER_META, "");
     intpMeta = clusterManagerServer.getClusterMeta(ClusterMetaType.INTP_PROCESS_META, "");
 
@@ -196,8 +196,8 @@ public class ClusterRestApi {
                                  @PathParam("intpName") String intpName){
     List<Map<String, Object>> intpProcesses = new ArrayList<>();
 
-    Map<String, HashMap<String, Object>> intpMeta = null;
-    intpMeta = clusterManagerServer.getClusterMeta(ClusterMetaType.INTP_PROCESS_META, "");
+    Map<String, HashMap<String, Object>> intpMeta = clusterManagerServer.getClusterMeta(
+            ClusterMetaType.INTP_PROCESS_META, "");
 
     // Number of calculation processes
     for (Map.Entry<String, HashMap<String, Object>> intpMetaEntity : intpMeta.entrySet()) {
