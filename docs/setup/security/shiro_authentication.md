@@ -195,6 +195,7 @@ Add the following line in the `shiro.ini` file:
 ``` 
 ldapRealm.hadoopSecurityCredentialPath = jceks://file/user/zeppelin/conf/zeppelin.jceks
 ```
+**Caution** due to a bug in LDAPRealm only ```ldapRealm.pagingSize``` results will be fetched from LDAP. In big directory Trees this may cause missing Roles. Try limiting the search Scope using ```ldapRealm.groupSearchBase``` or narrow down the required Groups using ```ldapRealm.groupSearchFilter```
 
 ### PAM
 [PAM](https://en.wikipedia.org/wiki/Pluggable_authentication_module) authentication support allows the reuse of existing authentication
