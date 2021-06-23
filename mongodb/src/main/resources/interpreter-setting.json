@@ -5,70 +5,70 @@
     "className": "org.apache.zeppelin.mongodb.MongoDbInterpreter",
     "properties": {
       "mongo.shell.path": {
-        "envName": null,
+        "envName": "MONGO_SHELL_PATH",
         "propertyName": "mongo.shell.path",
         "defaultValue": "mongo",
         "description": "MongoDB shell local path",
         "type": "string"
       },
       "mongo.shell.command.table.limit": {
-        "envName": null,
+        "envName": "MONGO_SHELL_COMMAND_TABLE_LIMIT",
         "propertyName": "mongo.shell.command.table.limit",
         "defaultValue": "1000",
         "description": "Limit of documents displayed in a table",
         "type": "number"
       },
       "mongo.shell.command.timeout": {
-        "envName": null,
+        "envName": "MONGO_SHELL_COMMAND_TIMEOUT",
         "propertyName": "mongo.shell.command.timeout",
         "defaultValue": "60000",
         "description": "MongoDB shell command timeout",
         "type": "number"
       },
       "mongo.server.host": {
-        "envName": null,
+        "envName": "MONGO_SERVER_HOST",
         "propertyName": "mongo.server.host",
         "defaultValue": "localhost",
         "description": "MongoDB server host to connect to",
         "type": "string"
       },
       "mongo.server.port": {
-        "envName": null,
+        "envName": "MONGO_SERVER_PORT",
         "propertyName": "mongo.server.port",
         "defaultValue": "27017",
         "description": "MongoDB server port to connect to",
         "type": "number"
       },
       "mongo.server.database": {
-        "envName": null,
+        "envName": "MONGO_SERVER_DATABASE",
         "propertyName": "mongo.server.database",
         "defaultValue": "test",
         "description": "MongoDB database name",
         "type": "string"
       },
       "mongo.server.authenticationDatabase": {
-        "envName": null,
+        "envName": "MONGO_SERVER_AUTHENTICATION_DATABASE",
         "propertyName": "mongo.server.authenticationDatabase",
         "defaultValue": "",
         "description": "MongoDB database name for authentication",
         "type": "string"
       },
       "mongo.server.username": {
-        "envName": null,
+        "envName": "MONGO_SERVER_USERNAME",
         "propertyName": "mongo.server.username",
         "defaultValue": "",
         "description": "Username for authentication",
         "type": "string"
       },
       "mongo.server.password": {
-        "envName": null,
+        "envName": "MONGO_SERVER_PASSWORD",
         "propertyName": "mongo.server.password",
         "defaultValue": "",
         "description": "Password for authentication",
         "type": "password"
       },
       "mongo.interpreter.concurrency.max": {
-        "envName": null,
+        "envName": "MONGO_INTERPRETER_CONCURRENCY_MAX",
         "propertyName": "mongo.interpreter.concurrency.max",
         "defaultValue": "10",
         "description": "Max count of scheduler concurrency",
