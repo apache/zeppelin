@@ -97,14 +97,15 @@ function printTable(dbquery, fields, flattenArray) {
     });
 }
 
-DBQuery.prototype.table = function (fields, flattenArray) {
+(DBQuery.prototype || DBQuery).table = function (fields, flattenArray) {
     if (this._limit > tableLimit) {
         this.limit(tableLimit);
     }
     printTable(this, fields, flattenArray);
 };
 
-DBCommandCursor.prototype.table = DBQuery.prototype.table;
+if (globalThis.DBCommandCursor)
+    (DBCommandCursor.prototype || DBCommandCursor).table = (DBQuery.prototype || DBQuery).table;
 
 var userName = "USER_NAME_PLACEHOLDER";
 var password = "PASSWORD_PLACEHOLDER";
