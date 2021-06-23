@@ -427,6 +427,14 @@ public class ZSessionIntegrationTest extends AbstractTestRestApi {
       assertEquals(result.toString(), Status.FINISHED, result.getStatus());
       assertEquals(1, result.getResults().size());
       assertEquals("TEXT", result.getResults().get(0).getType());
+
+      Map<String, String> localProperties = new HashMap<>();
+      localProperties.put("key 1", "hello world"); // contains whitespace
+      localProperties.put("key,2", "a,b"); // contains comma
+      result = session.execute("1+1", localProperties);
+      assertEquals(result.toString(), Status.FINISHED, result.getStatus());
+      assertEquals(1, result.getResults().size());
+      assertEquals("TEXT", result.getResults().get(0).getType());
     } finally {
       session.stop();
     }

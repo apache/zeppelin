@@ -205,6 +205,18 @@ public class ZSession {
    * Run code in non-blocking way.
    *
    * @param code
+   * @param localProperties
+   * @return
+   * @throws Exception
+   */
+  public ExecuteResult execute(String code, Map<String, String> localProperties) throws Exception {
+    return execute("", localProperties, code);
+  }
+
+  /**
+   * Run code in non-blocking way.
+   *
+   * @param code
    * @param messageHandler
    * @return
    * @throws Exception
@@ -270,7 +282,7 @@ public class ZSession {
     if (localProperties != null && !localProperties.isEmpty()) {
       builder.append("(");
       List<String> propertyString = localProperties.entrySet().stream()
-              .map(entry -> (entry.getKey() + "=\"" + entry.getValue() + "\""))
+              .map(entry -> ("\"" + entry.getKey() + "\"=\"" + entry.getValue() + "\""))
               .collect(Collectors.toList());
       builder.append(StringUtils.join(propertyString, ","));
       builder.append(")");
