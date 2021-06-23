@@ -159,7 +159,7 @@ public class RemoteInterpreter extends Interpreter {
         interpreterProcess.callRemoteFunction(client -> {
           LOGGER.info("Create RemoteInterpreter {}", getClassName());
           client.createInterpreter(getInterpreterGroup().getId(), sessionId,
-              className, (Map) getProperties(), getUserName());
+              className, (Map) properties, getUserName());
           return null;
         });
         isCreated = true;
