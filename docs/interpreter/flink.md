@@ -106,17 +106,17 @@ You can also add and set other flink properties which are not listed in the tabl
     <td>Port of running JobManager. Only used for remote mode</td>
   </tr>
   <tr>
-    <td>flink.jm.memory</td>
+    <td>jobmanager.memory.process.size</td>
     <td>1024</td>
-    <td>Total number of memory(mb) of JobManager</td>
+    <td>Total number of memory of JobManager, default unit: MB</td>
   </tr>
   <tr>
-    <td>flink.tm.memory</td>
+    <td>taskmanager.memory.process.size</td>
     <td>1024</td>
-    <td>Total number of memory(mb) of TaskManager</td>
+    <td>Total number of memory of TaskManager, default unit: MB</td>
   </tr>
   <tr>
-    <td>flink.tm.slot</td>
+    <td>taskmanager.numberOfTaskSlots</td>
     <td>1</td>
     <td>Number of slot per TaskManager</td>
   </tr>
@@ -126,12 +126,12 @@ You can also add and set other flink properties which are not listed in the tabl
     <td>Total number of TaskManagers in local mode</td>
   </tr>
   <tr>
-    <td>flink.yarn.appName</td>
+    <td>yarn.application.name</td>
     <td>Zeppelin Flink Session</td>
     <td>Yarn app name</td>
   </tr>
   <tr>
-    <td>flink.yarn.queue</td>
+    <td>yarn.application.queue</td>
     <td>default</td>
     <td>queue name of yarn app</td>
   </tr>
