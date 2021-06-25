@@ -25,10 +25,8 @@
         <relativePath>../zeppelin-interpreter-parent/pom.xml</relativePath>
     </parent>
 
-    <groupId>org.apache.zeppelin</groupId>
     <artifactId>zeppelin-cassandra</artifactId>
     <packaging>jar</packaging>
-    <version>0.10.0-SNAPSHOT</version>
     <name>Zeppelin: Apache Cassandra interpreter</name>
     <description>Zeppelin cassandra support</description>
 
@@ -118,11 +116,6 @@
             <groupId>org.scalatra.scalate</groupId>
             <artifactId>scalate-core_${scala.binary.version}</artifactId>
             <version>${scalate.version}</version>
-        </dependency>
-        
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
         </dependency>
 
         <!-- test libraries -->

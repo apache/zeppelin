@@ -27,10 +27,8 @@
         <relativePath>../zeppelin-interpreter-parent/pom.xml</relativePath>
     </parent>
 
-    <groupId>org.apache.zeppelin</groupId>
     <artifactId>flink-parent</artifactId>
     <packaging>pom</packaging>
-    <version>0.10.0-SNAPSHOT</version>
     <name>Zeppelin: Flink Parent</name>
     <description>Zeppelin Flink Support</description>
 
@@ -54,19 +52,5 @@
         <flink.scala.version>2.11.12</flink.scala.version>
         <flink.scala.binary.version>2.11</flink.scala.binary.version>
     </properties>
-
-    <dependencies>
-
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
 
 </project>
