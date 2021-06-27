@@ -17,7 +17,7 @@ FROM ubuntu:20.04
 
 LABEL maintainer="Apache Software Foundation <dev@zeppelin.apache.org>"
 
-ENV Z_VERSION="0.9.0"
+ENV Z_VERSION="0.10.0-SNAPSHOT"
 
 ENV LOG_TAG="[ZEPPELIN_${Z_VERSION}]:" \
     Z_HOME="/opt/zeppelin" \
@@ -58,7 +58,7 @@ RUN set -ex && \
     mamba clean -ay
     # Allow to modify conda packages. This allows malicious code to be injected into other interpreter sessions, therefore it is disabled by default
     # chmod -R ug+rwX /opt/conda
-ENV PATH /opt/conda/bin:$PATH
+ENV PATH /opt/conda/envs/python_3_with_R/bin:/opt/conda/bin:$PATH
 
 RUN echo "$LOG_TAG Download Zeppelin binary" && \
     mkdir -p ${Z_HOME} && \
@@ -74,8 +74,10 @@ RUN echo "$LOG_TAG Download Zeppelin binary" && \
     # Allow process to create new folders (e.g. webapps)
     chmod 775 ${Z_HOME}
 
-COPY log4j.properties ${Z_HOME}/conf/
-COPY log4j_docker.properties ${Z_HOME}/conf/
+COPY log4j.properties ${ZEPPELIN_HOME}/conf/
+COPY log4j_docker.properties ${ZEPPELIN_HOME}/conf/
+COPY log4j2.properties ${ZEPPELIN_HOME}/conf/
+COPY log4j2_docker.properties ${ZEPPELIN_HOME}/conf/
 
 USER 1000
 
