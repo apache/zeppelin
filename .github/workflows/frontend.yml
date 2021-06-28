@@ -23,7 +23,7 @@ env:
 
 jobs:
   run-e2e-tests-in-zeppelin-web:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -48,7 +48,7 @@ jobs:
       - name: Run headless test
         run: xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" mvn verify -DskipRat -pl zeppelin-web -Phadoop2 -Pscala-2.11 -Pweb-e2e -B
   run-tests-in-zeppelin-web-angular:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -72,7 +72,7 @@ jobs:
         run: xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" mvn package -DskipRat -pl zeppelin-web-angular -Pweb-angular -B
 
   test-selenium-with-spark-module-for-spark-2-3:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     defaults:
       run:
         shell: bash -l {0}
