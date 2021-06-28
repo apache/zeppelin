@@ -80,9 +80,9 @@ public class FlinkInterpreterLauncher extends StandardInterpreterLauncher {
   }
 
   /**
-   * flink.jm.memory and flink.tm.memory only support int value and the unit is mb.
-   * And you can specify unit for jobmanager.memory.process.size and taskmanager.memory.process.size,
-   * the default unit is mb.
+   * flink.jm.memory and flink.tm.memory only support int value and the unit is mb. (e.g. 1024)
+   * And you need to specify unit for jobmanager.memory.process.size and
+   * taskmanager.memory.process.size, e.g. 1024 mb.
    * @param properties
    * @param oldKey
    * @param newKey
