@@ -9,7 +9,7 @@ on:
 
 jobs:
   license-check:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     env:
       # Disable keepAlive and pool
       # https://github.com/actions/virtual-environments/issues/1499#issuecomment-689467080
