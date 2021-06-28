@@ -27,7 +27,7 @@ defaults:
 
 jobs:
   test-core-modules:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     strategy:
       fail-fast: false
       matrix:
@@ -71,7 +71,7 @@ jobs:
       - name: run tests with ${{ matrix.hadoop }}
         run: mvn verify -Pusing-packaged-distr -DskipRat -pl zeppelin-server,zeppelin-web,spark-submit,spark/spark-dependencies,markdown,angular,shell -am -Phelium-dev -Pexamples -P${{ matrix.hadoop }} -Dtests.to.exclude=**/org/apache/zeppelin/spark/* -DfailIfNoTests=false
   test-interpreter-modules:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     env:
       INTERPRETERS: 'beam,hbase,pig,jdbc,file,flink,flink-cmd,ignite,kylin,lens,cassandra,elasticsearch,bigquery,alluxio,scio,livy,groovy,sap,java,geode,neo4j,hazelcastjet,submarine,sparql,mongodb'
     steps:
@@ -106,7 +106,7 @@ jobs:
       - name: verify interpreter
         run: mvn verify -DskipRat -am -pl .,zeppelin-interpreter,zeppelin-interpreter-shaded,${INTERPRETERS} -Pscala-2.10 -B
   test-zeppelin-client-integration-test:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -143,7 +143,7 @@ jobs:
       - name: run tests
         run: mvn test -DskipRat -pl zeppelin-interpreter-integration -Pintegration -DfailIfNoTests=false -Dtest=ZeppelinClientIntegrationTest,ZeppelinClientWithAuthIntegrationTest,ZSessionIntegrationTest
   test-flink-and-flink-integration-test:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     strategy:
       fail-fast: false
       matrix:
@@ -181,7 +181,7 @@ jobs:
       - name: run tests
         run: mvn test -DskipRat -pl flink/flink-scala-2.11,flink/flink-scala-2.12,flink-cmd,zeppelin-interpreter-integration -Pflink-${{ matrix.flink }} -Pintegration -DfailIfNoTests=false -B -Dtest=org.apache.zeppelin.flink.*,FlinkIntegrationTest${{ matrix.flink }},ZeppelinFlinkClusterTest${{ matrix.flink }}
   run-spark-intergration-test:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -218,7 +218,7 @@ jobs:
       - name: run tests
         run: mvn test -DskipRat -pl zeppelin-interpreter-integration,zeppelin-web,spark-submit,spark/spark-dependencies,markdown -am -Phadoop2 -Pintegration -B -Dtest=ZeppelinSparkClusterTest24,SparkIntegrationTest24,ZeppelinSparkClusterTest23,SparkIntegrationTest23,ZeppelinSparkClusterTest22,SparkIntegrationTest22,ZeppelinSparkClusterTest30,SparkIntegrationTest30 -DfailIfNoTests=false
   jdbcIntegrationTest-and-unit-test-of-Spark-2-4-with-Scala-2-11:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
       # user/password => root/root
       - name: Start mysql
@@ -259,7 +259,7 @@ jobs:
         run: mvn test -DskipRat -pl zeppelin-interpreter-integration,jdbc,zeppelin-web,spark-submit,spark/spark-dependencies,markdown -am -Pspark-2.4 -Pspark-scala-2.11 -Phadoop2 -Pintegration -B -Dtest=JdbcIntegrationTest,org.apache.zeppelin.spark.*,org.apache.zeppelin.kotlin.* -DfailIfNoTests=false
 
   spark-2-4-and-scale-2-12:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -296,7 +296,7 @@ jobs:
         run: mvn test -DskipRat -pl spark-submit,spark/spark-dependencies -am -Pspark-2.4 -Pspark-scala-2.12 -Phadoop2 -B -Dtest=org.apache.zeppelin.spark.*,org.apache.zeppelin.kotlin.* -DfailIfNoTests=false
 
   spark-2-3-and-scale-2-11-and-other-interpreter:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -333,7 +333,7 @@ jobs:
         run: mvn test -DskipRat -pl spark-submit,spark/spark-dependencies -am -Pspark-2.3 -Pspark-scala-2.11 -Phadoop2 -B -Dtest=org.apache.zeppelin.spark.*,apache.zeppelin.python.*,apache.zeppelin.jupyter.*,apache.zeppelin.r.* -DfailIfNoTests=false
 
   spark-2-2-and-scale-2-10-and-other-interpreter:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -368,7 +368,7 @@ jobs:
       - name: run tests
         run: mvn test -DskipRat -pl spark-submit,spark/spark-dependencies -am -Pspark-2.2 -Pspark-scala-2.10 -Phadoop2 -B -Dtest=org.apache.zeppelin.spark.*,apache.zeppelin.python.*,apache.zeppelin.jupyter.*,apache.zeppelin.r.* -DfailIfNoTests=false
   test-livy-0-5-with-spark-2-2-0-under-python3:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
       - name: Checkout
         uses: actions/checkout@v2
