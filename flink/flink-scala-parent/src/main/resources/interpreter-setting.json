@@ -50,15 +50,15 @@
       "jobmanager.memory.process.size": {
         "envName": null,
         "propertyName": null,
-        "defaultValue": "1024",
-        "description": "Memory for JobManager (default unit: MB)",
+        "defaultValue": "1024m",
+        "description": "Memory for JobManager, e.g. 1024m",
         "type": "number"
       },
       "taskmanager.memory.process.size": {
         "envName": null,
         "propertyName": null,
-        "defaultValue": "1024",
-        "description": "Memory for TaskManager (default unit: MB)",
+        "defaultValue": "1024m",
+        "description": "Memory for TaskManager, e.g. 1024m",
         "type": "number"
       },
       "taskmanager.numberOfTaskSlots": {
