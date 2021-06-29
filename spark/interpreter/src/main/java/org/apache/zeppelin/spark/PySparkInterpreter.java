@@ -178,12 +178,13 @@ public class PySparkInterpreter extends PythonInterpreter {
     if (StringUtils.isNotBlank(sparkConf.get("spark.pyspark.python", ""))) {
       return sparkConf.get("spark.pyspark.python");
     }
-    if (System.getenv("PYSPARK_PYTHON") != null) {
-      return System.getenv("PYSPARK_PYTHON");
-    }
     if (System.getenv("PYSPARK_DRIVER_PYTHON") != null) {
       return System.getenv("PYSPARK_DRIVER_PYTHON");
     }
+    if (System.getenv("PYSPARK_PYTHON") != null) {
+      return System.getenv("PYSPARK_PYTHON");
+    }
+
     return "python";
   }
 
