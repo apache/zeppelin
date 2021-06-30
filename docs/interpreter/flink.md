@@ -107,12 +107,12 @@ You can also add and set other flink properties which are not listed in the tabl
   </tr>
   <tr>
     <td>jobmanager.memory.process.size</td>
-    <td>1024</td>
+    <td>1024m</td>
     <td>Total number of memory of JobManager, e.g. 1024m. It is official [flink property](https://ci.apache.org/projects/flink/flink-docs-release-1.13/docs/deployment/config/)</td>
   </tr>
   <tr>
     <td>taskmanager.memory.process.size</td>
-    <td>1024</td>
+    <td>1024m</td>
     <td>Total number of memory of TaskManager, e.g. 1024m. It is official [flink property](https://ci.apache.org/projects/flink/flink-docs-release-1.13/docs/deployment/config/)</td>
   </tr>
   <tr>
