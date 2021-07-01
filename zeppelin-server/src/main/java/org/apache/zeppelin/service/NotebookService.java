@@ -50,6 +50,7 @@ import org.apache.zeppelin.notebook.NoteManager;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.notebook.AuthorizationService;
+import org.apache.zeppelin.notebook.exception.CorruptedNoteException;
 import org.apache.zeppelin.notebook.exception.NotePathAlreadyExistsException;
 import org.apache.zeppelin.notebook.repo.NotebookRepoWithVersionControl;
 import org.apache.zeppelin.notebook.scheduler.SchedulerService;
@@ -212,18 +213,13 @@ public class NotebookService {
     Note note = null;
     try {
       note = notebook.getNote(noteId);
-    } catch (IOException e) {
-      if ((e.getMessage() != null) && (e.getMessage().contains("Fail to parse note json"))) {
-        if (!checkPermission(noteId, Permission.OWNER, Message.OP.DEL_NOTE, context, callback)) {
-          return;
-        }
-        notebook.removeCorruptedNote(noteId, context.getAutheInfo());
-        callback.onSuccess("Delete note successfully", context);
+    } catch (CorruptedNoteException e) {
+      if (!checkPermission(noteId, Permission.OWNER, Message.OP.DEL_NOTE, context, callback)) {
         return;
       }
-      else {
-        throw e;
-      }
+      notebook.removeCorruptedNote(noteId, context.getAutheInfo());
+      callback.onSuccess("Delete note successfully", context);
+      return;
     }
 
     if (note != null) {
@@ -1026,24 +1022,19 @@ public class NotebookService {
     Note note = null;
     try {
        note = notebook.getNote(noteId);
-    } catch (IOException e) {
-        if ((e.getMessage() != null) && (e.getMessage().contains("Fail to parse note json"))) {
-          if (!checkPermission(noteId, Permission.OWNER, Message.OP.MOVE_NOTE_TO_TRASH, context,
-                  callback)) {
-            return;
-          }
-          String destNotePath = "/" + NoteManager.TRASH_FOLDER + notebook.getNoteManager().getNotesInfo().get(noteId);
-          if (notebook.containsNote(destNotePath)) {
-            destNotePath = destNotePath + " " + TRASH_CONFLICT_TIMESTAMP_FORMATTER.print(new DateTime());
-          }
-          LOGGER.info("Move corrupted note to trash");
-          notebook.moveNote(noteId, destNotePath, context.getAutheInfo());
+    } catch (CorruptedNoteException e) {
+        if (!checkPermission(noteId, Permission.OWNER, Message.OP.MOVE_NOTE_TO_TRASH, context, callback)) {
           return;
         }
-        else {
-          throw e;
+        String destNotePath = "/" + NoteManager.TRASH_FOLDER + notebook.getNoteManager().getNotesInfo().get(noteId);
+        if (notebook.containsNote(destNotePath)) {
+          destNotePath = destNotePath + " " + TRASH_CONFLICT_TIMESTAMP_FORMATTER.print(new DateTime());
         }
+        LOGGER.info("Move corrupted note to trash");
+        notebook.moveNote(noteId, destNotePath, context.getAutheInfo());
+        return;
     }
+
 
     if (note == null) {
       callback.onFailure(new NoteNotFoundException(noteId), context);

@@ -41,6 +41,7 @@ import org.apache.zeppelin.interpreter.ManagedInterpreterGroup;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObject;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
+import org.apache.zeppelin.notebook.exception.CorruptedNoteException;
 import org.apache.zeppelin.notebook.utility.IdHashes;
 import org.apache.zeppelin.scheduler.ExecutorFactory;
 import org.apache.zeppelin.scheduler.Job.Status;
@@ -1141,7 +1142,7 @@ public class Note implements JsonSerializable {
       return note;
     } catch (Exception e) {
       LOGGER.error("Fail to parse note json: {}", e.toString());
-      throw new IOException("Fail to parse note json: " + json, e);
+      throw new CorruptedNoteException("Fail to parse note json: " + json, e);
     }
   }
 
