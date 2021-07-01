@@ -195,6 +195,7 @@ public abstract class SparkIntegrationTest {
     sparkInterpreterSetting.setProperty("zeppelin.spark.scala.color", "false");
     sparkInterpreterSetting.setProperty("zeppelin.spark.deprecatedMsg.show", "false");
     sparkInterpreterSetting.setProperty("spark.user.name", "#{user}");
+    sparkInterpreterSetting.setProperty("zeppelin.spark.run.asLoginUser", "false");
 
     try {
       setUpSparkInterpreterSetting(sparkInterpreterSetting);
@@ -244,6 +245,7 @@ public abstract class SparkIntegrationTest {
     sparkInterpreterSetting.setProperty("zeppelin.spark.scala.color", "false");
     sparkInterpreterSetting.setProperty("zeppelin.spark.deprecatedMsg.show", "false");
     sparkInterpreterSetting.setProperty("spark.user.name", "#{user}");
+    sparkInterpreterSetting.setProperty("zeppelin.spark.run.asLoginUser", "false");
 
     try {
       setUpSparkInterpreterSetting(sparkInterpreterSetting);
