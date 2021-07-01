@@ -38,4 +38,16 @@ public class HiveUtilsTest {
     assertTrue(jobURL.isPresent());
     assertEquals("http://localhost:8088/proxy/application_1591195707498_0064/", jobURL.get());
   }
+
+  @Test
+  public void testTezAppId() {
+    Optional<String> appId = HiveUtils.extractTezAppId(
+            "Query ID = hadoop_20210514105011_6f620c39-f557-4fc6-a899-ecd892be2652\n" +
+                    "Total jobs = 1\n" +
+                    "Launching Job 1 out of 1\n" +
+                    "Status: Running " +
+                    "(Executing on YARN cluster with App id application_1612885840821_260263)");
+    assertTrue(appId.isPresent());
+    assertEquals("application_1612885840821_260263", appId.get());
+  }
 }
