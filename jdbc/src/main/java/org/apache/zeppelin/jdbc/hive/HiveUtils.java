@@ -45,6 +45,9 @@ public class HiveUtils {
   private static final Pattern JOBURL_PATTERN =
           Pattern.compile(".*Tracking URL = (\\S*).*", Pattern.DOTALL);
 
+  private static final Pattern APPID_PATTERN =
+          Pattern.compile(".*with App id (\\S*)\\).*", Pattern.DOTALL);
+
   /**
    * Display hive job execution info, and progress info for hive >= 2.3
    *
@@ -68,14 +71,13 @@ public class HiveUtils {
     }
     // need to use final variable progressBar in thread, so need progressBarTemp here.
     final ProgressBar progressBar = progressBarTemp;
-    final long timeoutThreshold = Long.parseLong(
-            jdbcInterpreter.getProperty("zeppelin.jdbc.hive.timeout.threshold", "" + 60 * 1000));
     final long queryInterval = Long.parseLong(
-        jdbcInterpreter.getProperty("zeppelin.jdbc.hive.monitor.query_interval",
-            DEFAULT_QUERY_PROGRESS_INTERVAL + ""));
+            jdbcInterpreter.getProperty("zeppelin.jdbc.hive.monitor.query_interval",
+                    DEFAULT_QUERY_PROGRESS_INTERVAL + ""));
     Thread thread = new Thread(() -> {
-      boolean jobLaunched = false;
-      long jobLastActiveTime = System.currentTimeMillis();
+      String jobUrlTemplate = jdbcInterpreter.getProperty("zeppelin.jdbc.hive.jobUrl.template");
+      boolean jobUrlExtracted = false;
+
       try {
         while (hiveStmt.hasMoreLogs() && !hiveStmt.isClosed() && !Thread.interrupted()) {
           Thread.sleep(queryInterval);
@@ -90,40 +92,9 @@ public class HiveUtils {
           if (!StringUtils.isBlank(logsOutput) && progressBar != null && displayLogProperty) {
             progressBar.operationLogShowedToUser();
           }
-          Optional<String> jobURL = extractMRJobURL(logsOutput);
-          if (jobURL.isPresent()) {
-            Map<String, String> infos = new HashMap<>();
-            infos.put("jobUrl", jobURL.get());
-            infos.put("label", "HIVE JOB");
-            infos.put("tooltip", "View in YARN WEB UI");
-            infos.put("noteId", context.getNoteId());
-            infos.put("paraId", context.getParagraphId());
-            context.getIntpEventClient().onParaInfosReceived(infos);
-          }
-          if (logsOutput.contains("Launching Job")) {
-            jobLaunched = true;
-          }
 
-          if (jobLaunched) {
-            // Step 1. update jobLastActiveTime first
-            // Step 2. Check whether it is timeout.
-            if (StringUtils.isNotBlank(logsOutput)) {
-              jobLastActiveTime = System.currentTimeMillis();
-            } else if (progressBar.getBeelineInPlaceUpdateStream() != null &&
-                    progressBar.getBeelineInPlaceUpdateStream().getLastUpdateTimestamp()
-                            > jobLastActiveTime) {
-              jobLastActiveTime = progressBar.getBeelineInPlaceUpdateStream()
-                      .getLastUpdateTimestamp();
-            }
-
-            if (((System.currentTimeMillis() - jobLastActiveTime) > timeoutThreshold)) {
-              String errorMessage = "Cancel this job as no more log is produced in the " +
-                      "last " + timeoutThreshold / 1000 + " seconds, " +
-                      "maybe it is because no yarn resources";
-              LOGGER.warn(errorMessage);
-              jdbcInterpreter.cancel(context, errorMessage);
-              break;
-            }
+          if (!jobUrlExtracted) {
+            jobUrlExtracted = extractJobURL(logsOutput, jobUrlTemplate, context);
           }
         }
       } catch (InterruptedException e) {
@@ -149,6 +120,83 @@ public class HiveUtils {
     }
   }
 
+  /**
+   * Extract hive job url in the following order:
+   * 1. Extract job url from hive logs when hive use mr engine
+   * 2. Extract job url from hive logs when hive use tez engine
+   * 3. Extract job url via yarn tags when the above 2 methods doesn't work
+   * @param logsOutput
+   * @param jobUrlTemplate
+   * @param context
+   * @return
+   */
+  private static boolean extractJobURL(String logsOutput,
+                                       String jobUrlTemplate,
+                                       InterpreterContext context) {
+    String jobUrl = null;
+    Optional<String> mrJobURLOption = extractMRJobURL(logsOutput);
+    Optional<String> tezAppIdOption = extractTezAppId(logsOutput);
+    if (mrJobURLOption.isPresent()) {
+      jobUrl = mrJobURLOption.get();
+      LOGGER.info("Extract MR jobUrl: {} from logs", mrJobURLOption.get());
+      if (StringUtils.isNotBlank(jobUrlTemplate)) {
+        Optional<String> yarnAppId = extractYarnAppId(jobUrl);
+        if (yarnAppId.isPresent()) {
+          LOGGER.info("Extract yarn app id: {} from MR jobUrl", yarnAppId);
+          jobUrl = jobUrlTemplate.replace("{{applicationId}}", yarnAppId.get());
+        } else {
+          LOGGER.warn("Unable to extract yarn App Id from jobURL: {}", jobUrl);
+        }
+      }
+    } else if (tezAppIdOption.isPresent()) {
+      String yarnAppId = tezAppIdOption.get();
+      LOGGER.info("Extract Tez job yarn appId: {} from logs", yarnAppId);
+      if (StringUtils.isNotBlank(jobUrlTemplate)) {
+        jobUrl = jobUrlTemplate.replace("{{applicationId}}", yarnAppId);
+      } else {
+        LOGGER.warn("Unable to set JobUrl because zeppelin.jdbc.hive.jobUrl.template is not set");
+        jobUrl = yarnAppId;
+      }
+    } else {
+      if (isHadoopJarAvailable()) {
+        String yarnAppId = YarnUtil.getYarnAppIdByTag(context.getParagraphId());
+        if (StringUtils.isNotBlank(yarnAppId)) {
+          LOGGER.info("Extract yarn appId: {} by tag", yarnAppId);
+          if (StringUtils.isNotBlank(jobUrlTemplate)) {
+            jobUrl = jobUrlTemplate.replace("{{applicationId}}", yarnAppId);
+          } else {
+            jobUrl = yarnAppId;
+          }
+        }
+      } else {
+        LOGGER.warn("Hadoop jar is not available, unable to use tags to fetch yarn app url");
+      }
+    }
+
+    if (jobUrl != null) {
+      LOGGER.info("Detected hive jobUrl: {}", jobUrl);
+      Map<String, String> infos = new HashMap<>();
+      infos.put("jobUrl", jobUrl);
+      infos.put("label", "HIVE JOB");
+      infos.put("tooltip", "View in YARN WEB UI");
+      infos.put("noteId", context.getNoteId());
+      infos.put("paraId", context.getParagraphId());
+      context.getIntpEventClient().onParaInfosReceived(infos);
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  private static boolean isHadoopJarAvailable() {
+    try {
+      Class.forName("org.apache.hadoop.conf.Configuration");
+      return true;
+    } catch (ClassNotFoundException e) {
+      return false;
+    }
+  }
+
   // Hive progress bar is supported from hive 2.3 (HIVE-16045)
   private static boolean isProgressBarSupported(String hiveVersion) {
     String[] tokens = hiveVersion.split("\\.");
@@ -163,6 +211,25 @@ public class HiveUtils {
     if (matcher.matches()) {
       String jobURL = matcher.group(1);
       return Optional.of(jobURL);
+    }
+    return Optional.empty();
+  }
+
+  // extract yarn appId from logs, it only works for Tez engine.
+  static Optional<String> extractTezAppId(String log) {
+    Matcher matcher = APPID_PATTERN.matcher(log);
+    if (matcher.matches()) {
+      String appId = matcher.group(1);
+      return Optional.of(appId);
+    }
+    return Optional.empty();
+  }
+
+  // extract yarn appId from jobURL
+  static Optional<String> extractYarnAppId(String jobURL) {
+    int pos = jobURL.indexOf("application_");
+    if (pos != -1) {
+      return Optional.of(jobURL.substring(pos));
     }
     return Optional.empty();
   }

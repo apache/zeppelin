@@ -529,7 +529,8 @@ public class JDBCInterpreter extends KerberosInterpreter {
 
     final Properties properties = jdbcUserConfigurations.getPropertyMap(dbPrefix);
     String url = properties.getProperty(URL_KEY);
-    String connectionUrl = appendProxyUserToURL(url, user, dbPrefix);
+    url = appendProxyUserToURL(url, user, dbPrefix);
+    String connectionUrl = appendTagsToURL(url, context);
 
     String authType = getProperty("zeppelin.jdbc.auth.type", "SIMPLE")
             .trim().toUpperCase();
@@ -559,9 +560,10 @@ public class JDBCInterpreter extends KerberosInterpreter {
           }
 
           final String poolKey = dbPrefix;
+          final String finalUser = user;
           try {
             connection = ugi.doAs((PrivilegedExceptionAction<Connection>) () ->
-                    getConnectionFromPool(connectionUrl, user, poolKey, properties));
+                    getConnectionFromPool(connectionUrl, finalUser, poolKey, properties));
           } catch (Exception e) {
             LOGGER.error("Error in doAs", e);
             throw new InterpreterException("Error in doAs", e);
@@ -595,6 +597,24 @@ public class JDBCInterpreter extends KerberosInterpreter {
 
     return connectionUrl.toString();
   }
+
+  // only add tags for hive jdbc
+  private String appendTagsToURL(String url, InterpreterContext context) {
+    StringBuilder builder = new StringBuilder(url);
+    if (url.startsWith("jdbc:hive2:")) {
+      Integer lastIndexOfQMark = builder.indexOf("?");
+      if (lastIndexOfQMark == -1) {
+        builder.append("?");
+        lastIndexOfQMark = builder.length();
+      } else {
+        lastIndexOfQMark++;
+      }
+      builder.insert(lastIndexOfQMark, "mapreduce.job.tags=" + context.getParagraphId() + ";");
+      builder.insert(lastIndexOfQMark, "tez.application.tags=" + context.getParagraphId() + ";");
+    }
+    return builder.toString();
+  }
+
 
   private String getPassword(Properties properties) throws IOException, InterpreterException {
     if (isNotEmpty(properties.getProperty(PASSWORD_KEY))) {
