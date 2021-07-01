@@ -209,7 +209,23 @@ public class NotebookService {
   public void removeNote(String noteId,
                          ServiceContext context,
                          ServiceCallback<String> callback) throws IOException {
-    Note note = notebook.getNote(noteId);
+    Note note = null;
+    try {
+      note = notebook.getNote(noteId);
+    } catch (IOException e) {
+      if ((e.getMessage() != null) && (e.getMessage().contains("Fail to parse note json"))) {
+        if (!checkPermission(noteId, Permission.OWNER, Message.OP.DEL_NOTE, context, callback)) {
+          return;
+        }
+        notebook.removeCorruptedNote(noteId, context.getAutheInfo());
+        callback.onSuccess("Delete note successfully", context);
+        return;
+      }
+      else {
+        throw e;
+      }
+    }
+
     if (note != null) {
       if (!checkPermission(note.getId(), Permission.OWNER, Message.OP.DEL_NOTE, context, callback)) {
         return;
@@ -1010,7 +1026,7 @@ public class NotebookService {
     Note note = null;
     try {
        note = notebook.getNote(noteId);
-    } catch (Exception e) {
+    } catch (IOException e) {
         if ((e.getMessage() != null) && (e.getMessage().contains("Fail to parse note json"))) {
           if (!checkPermission(noteId, Permission.OWNER, Message.OP.MOVE_NOTE_TO_TRASH, context,
                   callback)) {

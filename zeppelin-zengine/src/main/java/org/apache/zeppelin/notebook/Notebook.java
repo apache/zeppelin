@@ -346,6 +346,15 @@ public class Notebook {
     fireNoteRemoveEvent(note, subject);
   }
 
+  public void removeCorruptedNote(String noteId, AuthenticationInfo subject) throws IOException {
+    LOGGER.info("Remove corrupted note: {}", noteId);
+    // Set Remove to true to cancel saving this note
+//    note.setRemoved(true);
+    noteManager.removeNote(noteId, subject);
+    authorizationService.removeNoteAuth(noteId);
+//    fireNoteRemoveEvent(note, subject);
+  }
+
   public void removeNote(String noteId, AuthenticationInfo subject) throws IOException {
     Note note = getNote(noteId);
     removeNote(note, subject);
