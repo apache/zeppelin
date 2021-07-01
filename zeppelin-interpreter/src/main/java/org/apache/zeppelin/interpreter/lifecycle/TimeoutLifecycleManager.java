@@ -19,12 +19,16 @@ package org.apache.zeppelin.interpreter.lifecycle;
 
 import org.apache.thrift.TException;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.interpreter.Interpreter;
+import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.LifecycleManager;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterServer;
 import org.apache.zeppelin.scheduler.ExecutorFactory;
+import org.apache.zeppelin.scheduler.Job;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
@@ -53,7 +57,8 @@ public class TimeoutLifecycleManager extends LifecycleManager {
     ScheduledExecutorService checkScheduler = ExecutorFactory.singleton()
         .createOrGetScheduled("TimeoutLifecycleManager", 1);
     checkScheduler.scheduleAtFixedRate(() -> {
-      if ((System.currentTimeMillis() - lastBusyTimeInMillis) > timeoutThreshold) {
+      if ((System.currentTimeMillis() - lastBusyTimeInMillis) > timeoutThreshold &&
+              noJobsRunning()) {
         LOGGER.info("Interpreter process idle time exceed threshold, try to stop it");
         try {
           remoteInterpreterServer.shutdown();
@@ -68,6 +73,24 @@ public class TimeoutLifecycleManager extends LifecycleManager {
         timeoutThreshold);
   }
 
+  private boolean noJobsRunning() {
+    InterpreterGroup interpreterGroup = this.remoteInterpreterServer.getInterpreterGroup();
+    if (interpreterGroup == null) {
+      return true;
+    } else {
+      for (List<Interpreter> session : interpreterGroup.values()) {
+        for (Interpreter intp : session) {
+          for (Job job : intp.getScheduler().getAllJobs()) {
+            if (job.isRunning()) {
+              return false;
+            }
+          }
+        }
+      }
+      return true;
+    }
+  }
+
   @Override
   public void onInterpreterProcessStarted(String interpreterGroupId) {
     LOGGER.info("Interpreter process: {} is started", interpreterGroupId);
@@ -79,5 +102,4 @@ public class TimeoutLifecycleManager extends LifecycleManager {
     LOGGER.debug("Interpreter process: {} is used", interpreterGroupId);
     lastBusyTimeInMillis = System.currentTimeMillis();
   }
-
 }
