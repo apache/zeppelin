@@ -29,6 +29,10 @@ import java.util.regex.Pattern;
 
 public abstract class AbstractInterpreter extends Interpreter {
 
+  private static final Pattern VARIABLES = Pattern.compile("([^{}]*)([{]+[^{}]*[}]+)(.*)", Pattern.DOTALL);
+  private static final Pattern VARIABLE_IN_BRACES = Pattern.compile("[{][^{}]+[}]");
+  private static final Pattern VARIABLE_IN_DOUBLE_BRACES = Pattern.compile("[{]{2}[^{}]+[}]{2}");
+
   public AbstractInterpreter(Properties properties) {
     super(properties);
   }
@@ -52,14 +56,14 @@ public abstract class AbstractInterpreter extends Interpreter {
   }
 
   static String interpolate(String cmd, ResourcePool resourcePool) {
-    Pattern zVariablePattern = Pattern.compile("([^{}]*)([{]+[^{}]*[}]+)(.*)", Pattern.DOTALL);
+
     StringBuilder sb = new StringBuilder();
     Matcher m;
     String st = cmd;
-    while ((m = zVariablePattern.matcher(st)).matches()) {
+    while ((m = VARIABLES.matcher(st)).matches()) {
       sb.append(m.group(1));
       String varPat = m.group(2);
-      if (varPat.matches("[{][^{}]+[}]")) {
+      if (VARIABLE_IN_BRACES.matcher(varPat).matches()) {
         // substitute {variable} only if 'variable' has a value ...
         Resource resource = resourcePool.get(varPat.substring(1, varPat.length() - 1));
         Object variableValue = resource == null ? null : resource.get();
@@ -67,7 +71,7 @@ public abstract class AbstractInterpreter extends Interpreter {
           sb.append(variableValue);
         else
           return cmd;
-      } else if (varPat.matches("[{]{2}[^{}]+[}]{2}")) {
+      } else if (VARIABLE_IN_DOUBLE_BRACES.matcher(varPat).matches()) {
         // escape {{text}} ...
         sb.append("{").append(varPat, 2, varPat.length() - 2).append("}");
       } else {
