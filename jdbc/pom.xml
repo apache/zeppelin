@@ -37,7 +37,7 @@
     <!--library versions-->
     <interpreter.name>jdbc</interpreter.name>
     <postgresql.version>9.4-1201-jdbc41</postgresql.version>
-    <hadoop.common.version>${hadoop2.7.version}</hadoop.common.version>
+    <hadoop.version>${hadoop2.7.version}</hadoop.version>
     <h2.version>1.4.190</h2.version>
     <commons.dbcp2.version>2.0.1</commons.dbcp2.version>
     <hive2.version>2.3.4</hive2.version>
@@ -87,8 +87,15 @@
 
     <dependency>
       <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-client</artifactId>
+      <version>${hadoop.version}</version>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-common</artifactId>
-      <version>${hadoop.common.version}</version>
+      <version>${hadoop.version}</version>
       <scope>provided</scope>
       <exclusions>
         <exclusion>
