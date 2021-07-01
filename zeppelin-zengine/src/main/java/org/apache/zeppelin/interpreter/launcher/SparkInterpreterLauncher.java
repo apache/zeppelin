@@ -230,6 +230,15 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
       LOGGER.warn("spark-defaults.conf doesn't exist: {}", sparkDefaultFile.getAbsolutePath());
     }
 
+    if (isYarnMode()) {
+      boolean runAsLoginUser = Boolean.parseBoolean(context
+              .getProperties()
+              .getProperty("zeppelin.spark.run.asLoginUser", "true"));
+      String userName = context.getUserName();
+      if (runAsLoginUser && !"anonymous".equals(userName)) {
+        env.put("HADOOP_USER_NAME", userName);
+      }
+    }
     LOGGER.info("buildEnvFromProperties: {}", env);
     return env;
 

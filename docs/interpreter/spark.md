@@ -172,6 +172,11 @@ You can also set other Spark properties which are not listed in the table. For a
     <td>Max number rows of Spark SQL result to display.</td>
   </tr>
   <tr>
+    <td>zeppelin.spark.run.asLoginUser</td>
+    <td>true</td>
+    <td>Whether run spark job as the zeppelin login user, it is only applied when running spark job in hadoop yarn cluster and shiro is enabled.</td>
+  </tr>
+  <tr>
     <td>zeppelin.spark.printREPLOutput</td>
     <td>true</td>
     <td>Print scala REPL output</td>
