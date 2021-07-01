@@ -97,6 +97,14 @@
         "type": "checkbox"
       },
 
+      "zeppelin.spark.run.asLoginUser": {
+        "envName": null,
+        "propertyName": "zeppelin.spark.run.asLoginUser",
+        "defaultValue": true,
+        "description": "Whether run spark job as the zeppelin login user, it is only applied when running spark job in hadoop yarn cluster and shiro is enabled",
+        "type": "checkbox"
+      },
+
       "zeppelin.spark.printREPLOutput": {
         "envName": null,
         "propertyName": "zeppelin.spark.printREPLOutput",
