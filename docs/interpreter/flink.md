@@ -146,6 +146,11 @@ You can also add and set other flink properties which are not listed in the tabl
     <td>Set this value only when your yarn address is mapped to some other address, e.g. some cloud vender will map `http://resource-manager:8088` to `https://xxx-yarn.yy.cn/gateway/kkk/yarn`</td>
   </tr>
   <tr>
+    <td>zeppelin.flink.run.asLoginUser</td>
+    <td>true</td>
+    <td>Whether run flink job as the zeppelin login user, it is only applied when running flink job in hadoop yarn cluster and shiro is enabled</td>
+  </tr> 
+  <tr>
     <td>flink.udf.jars</td>
     <td></td>
     <td>Flink udf jars (comma separated), zeppelin will register udf in this jar automatically for user. These udf jars could be either local files or hdfs files if you have hadoop installed. The udf name is the class name.</td>

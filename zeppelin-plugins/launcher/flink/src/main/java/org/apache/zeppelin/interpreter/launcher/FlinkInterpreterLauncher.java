@@ -57,15 +57,27 @@ public class FlinkInterpreterLauncher extends StandardInterpreterLauncher {
 
     normalizeConfiguration(context);
 
+    String flinkExecutionMode = context.getProperties().getProperty("flink.execution.mode");
     // yarn application mode specific logic
-    if ("yarn-application".equalsIgnoreCase(
-            context.getProperties().getProperty("flink.execution.mode"))) {
+    if ("yarn-application".equalsIgnoreCase(flinkExecutionMode)) {
       updateEnvsForYarnApplicationMode(envs, context);
     }
 
     String flinkAppJar = chooseFlinkAppJar(flinkHome);
     LOGGER.info("Choose FLINK_APP_JAR: {}", flinkAppJar);
     envs.put("FLINK_APP_JAR", flinkAppJar);
+
+    if ("yarn".equalsIgnoreCase(flinkExecutionMode) ||
+            "yarn-application".equalsIgnoreCase(flinkExecutionMode)) {
+      boolean runAsLoginUser = Boolean.parseBoolean(context
+              .getProperties()
+              .getProperty("zeppelin.flink.run.asLoginUser", "true"));
+      String userName = context.getUserName();
+      if (runAsLoginUser && !"anonymous".equals(userName)) {
+        envs.put("HADOOP_USER_NAME", userName);
+      }
+    }
+
     return envs;
   }
 
