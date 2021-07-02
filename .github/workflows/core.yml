@@ -216,7 +216,8 @@ jobs:
           mvn install -DskipTests -DskipRat -pl zeppelin-interpreter-integration,zeppelin-web,spark-submit,spark/spark-dependencies,markdown -am -Phadoop2 -Pintegration -B
           mvn clean package -pl zeppelin-plugins -amd -DskipTests -B
       - name: run tests
-        run: mvn test -DskipRat -pl zeppelin-interpreter-integration,zeppelin-web,spark-submit,spark/spark-dependencies,markdown -am -Phadoop2 -Pintegration -B -Dtest=ZeppelinSparkClusterTest24,SparkSubmitIntegrationTest,SparkIntegrationTest24,ZeppelinSparkClusterTest23,SparkIntegrationTest23,ZeppelinSparkClusterTest22,SparkIntegrationTest22,ZeppelinSparkClusterTest30,SparkIntegrationTest30 -DfailIfNoTests=false
+        run: mvn test -DskipRat -pl zeppelin-interpreter-integration,zeppelin-web,spark-submit,spark/spark-dependencies,markdown -am -Phadoop2 -Pintegration -B -Dtest=ZeppelinSparkClusterTest24,SparkSubmitIntegrationTest,SparkIntegrationTest24,ZeppelinSparkClusterTest23,SparkIntegrationTest23,ZeppelinSparkClusterTest22,SparkIntegrationTest22,ZeppelinSparkClusterTest30,ZeppelinSparkClusterTest31,SparkIntegrationTest30,SparkIntegrationTest31 -DfailIfNoTests=false
+
   jdbcIntegrationTest-and-unit-test-of-Spark-2-4-with-Scala-2-11:
     runs-on: ubuntu-20.04
     steps:
@@ -258,7 +259,7 @@ jobs:
       - name: run tests
         run: mvn test -DskipRat -pl zeppelin-interpreter-integration,jdbc,zeppelin-web,spark-submit,spark/spark-dependencies,markdown -am -Pspark-2.4 -Pspark-scala-2.11 -Phadoop2 -Pintegration -B -Dtest=JdbcIntegrationTest,org.apache.zeppelin.spark.*,org.apache.zeppelin.kotlin.* -DfailIfNoTests=false
 
-  spark-2-4-and-scale-2-12:
+  spark-2-4-and-scala-2-12:
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout
@@ -295,7 +296,7 @@ jobs:
       - name: run tests
         run: mvn test -DskipRat -pl spark-submit,spark/spark-dependencies -am -Pspark-2.4 -Pspark-scala-2.12 -Phadoop2 -B -Dtest=org.apache.zeppelin.spark.*,org.apache.zeppelin.kotlin.* -DfailIfNoTests=false
 
-  spark-2-3-and-scale-2-11-and-other-interpreter:
+  spark-3-0-and-scala-2-12-and-other-interpreter:
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout
@@ -328,11 +329,11 @@ jobs:
           R -e "IRkernel::installspec()"
       - name: install environment
         run: |
-          mvn install -DskipTests -DskipRat -pl spark-submit,spark/spark-dependencies -am -Pspark-2.3 -Pspark-scala-2.11 -Phadoop2 -B
+          mvn install -DskipTests -DskipRat -pl spark-submit,spark/spark-dependencies -am -Pspark-3.0 -Pspark-scala-2.12 -Phadoop2 -B
       - name: run tests
-        run: mvn test -DskipRat -pl spark-submit,spark/spark-dependencies -am -Pspark-2.3 -Pspark-scala-2.11 -Phadoop2 -B -Dtest=org.apache.zeppelin.spark.*,apache.zeppelin.python.*,apache.zeppelin.jupyter.*,apache.zeppelin.r.* -DfailIfNoTests=false
+        run: mvn test -DskipRat -pl spark-submit,spark/spark-dependencies -am -Pspark-3.0 -Pspark-scala-2.12 -Phadoop2 -B -Dtest=org.apache.zeppelin.spark.*,apache.zeppelin.python.*,apache.zeppelin.jupyter.*,apache.zeppelin.r.* -DfailIfNoTests=false
 
-  spark-2-2-and-scale-2-10-and-other-interpreter:
+  spark-3-1-and-scala-2-12-and-other-interpreter:
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout
@@ -364,9 +365,9 @@ jobs:
         run: |
           R -e "IRkernel::installspec()"
       - name: install environment
-        run: mvn install -DskipTests -DskipRat -pl spark-submit,spark/spark-dependencies -am -Pspark-2.2 -Pspark-scala-2.10 -Phadoop2 -B
+        run: mvn install -DskipTests -DskipRat -pl spark-submit,spark/spark-dependencies -am -Pspark-3.1 -Pspark-scala-2.12 -Phadoop2 -B
       - name: run tests
-        run: mvn test -DskipRat -pl spark-submit,spark/spark-dependencies -am -Pspark-2.2 -Pspark-scala-2.10 -Phadoop2 -B -Dtest=org.apache.zeppelin.spark.*,apache.zeppelin.python.*,apache.zeppelin.jupyter.*,apache.zeppelin.r.* -DfailIfNoTests=false
+        run: mvn test -DskipRat -pl spark-submit,spark/spark-dependencies -am -Pspark-3.1 -Pspark-scala-2.12 -Phadoop2 -B -Dtest=org.apache.zeppelin.spark.*,apache.zeppelin.python.*,apache.zeppelin.jupyter.*,apache.zeppelin.r.* -DfailIfNoTests=false
   test-livy-0-5-with-spark-2-2-0-under-python3:
     runs-on: ubuntu-20.04
     steps:
