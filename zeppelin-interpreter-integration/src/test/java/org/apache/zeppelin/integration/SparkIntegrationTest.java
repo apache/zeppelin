@@ -58,7 +58,7 @@ public abstract class SparkIntegrationTest {
   private static MiniHadoopCluster hadoopCluster;
   private static MiniZeppelin zeppelin;
   private static InterpreterFactory interpreterFactory;
-  private static InterpreterSettingManager interpreterSettingManager;
+  protected static InterpreterSettingManager interpreterSettingManager;
 
   private String sparkVersion;
   private String sparkHome;

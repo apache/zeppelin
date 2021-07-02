@@ -67,19 +67,23 @@ public class SparkSqlInterpreterTest {
     intpGroup.get("session_1").add(sparkInterpreter);
     intpGroup.get("session_1").add(sqlInterpreter);
 
-    context = InterpreterContext.builder()
-        .setNoteId("noteId")
-        .setParagraphId("paragraphId")
-        .setParagraphTitle("title")
-        .setAngularObjectRegistry(new AngularObjectRegistry(intpGroup.getId(), null))
-        .setResourcePool(new LocalResourcePool("id"))
-        .setInterpreterOut(new InterpreterOutput())
-        .setIntpEventClient(mock(RemoteInterpreterEventClient.class))
-        .build();
+    context = getInterpreterContext();
     InterpreterContext.set(context);
 
     sparkInterpreter.open();
     sqlInterpreter.open();
+  }
+
+  private static InterpreterContext getInterpreterContext() {
+    return InterpreterContext.builder()
+            .setNoteId("noteId")
+            .setParagraphId("paragraphId")
+            .setParagraphTitle("title")
+            .setAngularObjectRegistry(new AngularObjectRegistry(intpGroup.getId(), null))
+            .setResourcePool(new LocalResourcePool("id"))
+            .setInterpreterOut(new InterpreterOutput())
+            .setIntpEventClient(mock(RemoteInterpreterEventClient.class))
+            .build();
   }
 
   @AfterClass
@@ -287,8 +291,9 @@ public class SparkSqlInterpreterTest {
 
   @Test
   public void testDDL() throws InterpreterException, IOException {
+    InterpreterContext context = getInterpreterContext();
     InterpreterResult ret = sqlInterpreter.interpret("create table t1(id int, name string)", context);
-    assertEquals(InterpreterResult.Code.SUCCESS, ret.code());
+    assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, ret.code());
     // spark 1.x will still return DataFrame with non-empty columns.
     // org.apache.spark.sql.DataFrame = [result: string]
     if (!sparkInterpreter.getSparkContext().version().startsWith("1.")) {

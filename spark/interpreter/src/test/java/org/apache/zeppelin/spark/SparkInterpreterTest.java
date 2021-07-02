@@ -225,7 +225,7 @@ public class SparkInterpreterTest {
               "|  1|   a|\n" +
               "|  2|null|\n" +
               "+---+----+"));
-    } else if (version.contains("String = 2.")) {
+    } else {
       // create dataset from case class
       context = getInterpreterContext();
       result = interpreter.interpret("case class Person(id:Int, name:String, age:Int, country:String)\n" +
@@ -252,8 +252,9 @@ public class SparkInterpreterTest {
     }
 
     // ZeppelinContext
-    result = interpreter.interpret("z.show(df)", getInterpreterContext());
-    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    context = getInterpreterContext();
+    result = interpreter.interpret("z.show(df)", context);
+    assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
     assertEquals(InterpreterResult.Type.TABLE, messageOutput.getType());
     messageOutput.flush();
     assertEquals("_1\t_2\n1\ta\n2\tnull\n", messageOutput.toInterpreterResultMessage().getData());
