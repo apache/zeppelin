@@ -289,6 +289,13 @@
         "defaultValue": "out.format = 'html', comment = NA, echo = FALSE, results = 'asis', message = F, warning = F, fig.retina = 2",
         "description": "",
         "type": "textarea"
+      },
+      "zeppelin.R.shiny.portRange": {
+        "envName": "",
+        "propertyName": "zeppelin.R.shiny.portRange",
+        "defaultValue": ":",
+        "description": "Shiny app would launch a web app at some port, this property is to specify the portRange via format '<start>:<end>', e.g. '5000:5001'. By default it is ':' which means any port",
+        "type": "string"
       }
     },
     "editor": {
