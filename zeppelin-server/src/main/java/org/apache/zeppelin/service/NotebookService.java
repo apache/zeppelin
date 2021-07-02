@@ -210,22 +210,20 @@ public class NotebookService {
   public void removeNote(String noteId,
                          ServiceContext context,
                          ServiceCallback<String> callback) throws IOException {
+    if (!checkPermission(noteId, Permission.OWNER, Message.OP.DEL_NOTE, context, callback)) {
+      return;
+    }
+
     Note note = null;
     try {
       note = notebook.getNote(noteId);
     } catch (CorruptedNoteException e) {
-      if (!checkPermission(noteId, Permission.OWNER, Message.OP.DEL_NOTE, context, callback)) {
-        return;
-      }
       notebook.removeCorruptedNote(noteId, context.getAutheInfo());
       callback.onSuccess("Delete note successfully", context);
       return;
     }
 
     if (note != null) {
-      if (!checkPermission(note.getId(), Permission.OWNER, Message.OP.DEL_NOTE, context, callback)) {
-        return;
-      }
       notebook.removeNote(note, context.getAutheInfo());
       callback.onSuccess("Delete note successfully", context);
     } else {
@@ -1019,36 +1017,29 @@ public class NotebookService {
   public void moveNoteToTrash(String noteId,
                               ServiceContext context,
                               ServiceCallback<Note> callback) throws IOException {
+    if (!checkPermission(noteId, Permission.OWNER, Message.OP.MOVE_NOTE_TO_TRASH, context, callback)) {
+      return;
+    }
+
+    String destNotePath = "/" + NoteManager.TRASH_FOLDER + notebook.getNoteManager().getNotesInfo().get(noteId);
+    if (notebook.containsNote(destNotePath)) {
+      destNotePath = destNotePath + " " + TRASH_CONFLICT_TIMESTAMP_FORMATTER.print(new DateTime());
+    }
+
     Note note = null;
     try {
        note = notebook.getNote(noteId);
     } catch (CorruptedNoteException e) {
-        if (!checkPermission(noteId, Permission.OWNER, Message.OP.MOVE_NOTE_TO_TRASH, context, callback)) {
-          return;
-        }
-        String destNotePath = "/" + NoteManager.TRASH_FOLDER + notebook.getNoteManager().getNotesInfo().get(noteId);
-        if (notebook.containsNote(destNotePath)) {
-          destNotePath = destNotePath + " " + TRASH_CONFLICT_TIMESTAMP_FORMATTER.print(new DateTime());
-        }
         LOGGER.info("Move corrupted note to trash");
         notebook.moveNote(noteId, destNotePath, context.getAutheInfo());
         return;
     }
-
 
     if (note == null) {
       callback.onFailure(new NoteNotFoundException(noteId), context);
       return;
     }
 
-    if (!checkPermission(noteId, Permission.OWNER, Message.OP.MOVE_NOTE_TO_TRASH, context,
-        callback)) {
-      return;
-    }
-    String destNotePath = "/" + NoteManager.TRASH_FOLDER + note.getPath();
-    if (notebook.containsNote(destNotePath)) {
-      destNotePath = destNotePath + " " + TRASH_CONFLICT_TIMESTAMP_FORMATTER.format(Instant.now());
-    }
     notebook.moveNote(noteId, destNotePath, context.getAutheInfo());
     callback.onSuccess(note, context);
   }
