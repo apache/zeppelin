@@ -17,9 +17,14 @@
 
 package org.apache.zeppelin.integration;
 
+import org.apache.hadoop.yarn.exceptions.YarnException;
+import org.apache.zeppelin.interpreter.InterpreterException;
+import org.apache.zeppelin.interpreter.InterpreterSetting;
+import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -37,4 +42,10 @@ public class SparkIntegrationTest24 extends SparkIntegrationTest{
     });
   }
 
+  @Override
+  public void testYarnClusterMode() throws IOException, YarnException, InterruptedException, InterpreterException, XmlPullParserException {
+    InterpreterSetting sparkInterpreterSetting = interpreterSettingManager.getInterpreterSettingByName("spark");
+    sparkInterpreterSetting.setProperty("spark.sql.execution.arrow.sparkr.enabled", "false");
+    super.testYarnClusterMode();
+  }
 }

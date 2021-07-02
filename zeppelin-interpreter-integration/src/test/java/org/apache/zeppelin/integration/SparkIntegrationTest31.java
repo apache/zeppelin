@@ -34,8 +34,8 @@ public class SparkIntegrationTest31 extends SparkIntegrationTest {
   @Parameterized.Parameters
   public static List<Object[]> data() {
     return Arrays.asList(new Object[][]{
-        {"3.1.1", "2.7"},
-        {"3.1.1", "3.2"}
+        {"3.1.2", "2.7"},
+        {"3.1.2", "3.2"}
     });
   }
 

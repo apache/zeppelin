@@ -40,10 +40,6 @@
     <maven.aeither.provider.version>3.0.3</maven.aeither.provider.version>
     <wagon.version>2.7</wagon.version>
 
-    <datanucleus.rdbms.version>3.2.9</datanucleus.rdbms.version>
-    <datanucleus.apijdo.version>3.2.6</datanucleus.apijdo.version>
-    <datanucleus.core.version>3.2.10</datanucleus.core.version>
-
     <scala.compile.version>${spark.scala.version}</scala.compile.version>
     <!-- settings -->
     <pyspark.test.exclude>**/PySparkInterpreterMatplotlibTest.java</pyspark.test.exclude>
