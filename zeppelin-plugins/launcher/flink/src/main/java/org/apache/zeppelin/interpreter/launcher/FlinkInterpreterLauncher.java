@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.stream.Collectors;
 
 public class FlinkInterpreterLauncher extends StandardInterpreterLauncher {
@@ -54,6 +55,8 @@ public class FlinkInterpreterLauncher extends StandardInterpreterLauncher {
     envs.put("FLINK_LIB_DIR", flinkHome + "/lib");
     envs.put("FLINK_PLUGINS_DIR", flinkHome + "/plugins");
 
+    normalizeConfiguration(context);
+
     // yarn application mode specific logic
     if ("yarn-application".equalsIgnoreCase(
             context.getProperties().getProperty("flink.execution.mode"))) {
@@ -64,6 +67,39 @@ public class FlinkInterpreterLauncher extends StandardInterpreterLauncher {
     LOGGER.info("Choose FLINK_APP_JAR: {}", flinkAppJar);
     envs.put("FLINK_APP_JAR", flinkAppJar);
     return envs;
+  }
+
+  // do mapping between configuration of different execution modes.
+  private void normalizeConfiguration(InterpreterLaunchContext context) {
+    Properties intpProperties = context.getProperties();
+    setNewProperty(intpProperties, "flink.jm.memory", "jobmanager.memory.process.size", true);
+    setNewProperty(intpProperties, "flink.tm.memory", "taskmanager.memory.process.size", true);
+    setNewProperty(intpProperties, "flink.tm.slot", "taskmanager.numberOfTaskSlots", false);
+    setNewProperty(intpProperties, "flink.yarn.appName", "yarn.application.name", false);
+    setNewProperty(intpProperties, "flink.yarn.queue", "yarn.application.queue", false);
+  }
+
+  /**
+   * flink.jm.memory and flink.tm.memory only support int value and the unit is mb. (e.g. 1024)
+   * And you need to specify unit for jobmanager.memory.process.size and
+   * taskmanager.memory.process.size, e.g. 1024 mb.
+   * @param properties
+   * @param oldKey
+   * @param newKey
+   * @param isMemoryProperty
+   */
+  private void setNewProperty(Properties properties,
+                              String oldKey,
+                              String newKey,
+                              boolean isMemoryProperty) {
+    String value = properties.getProperty(oldKey);
+    if (StringUtils.isNotBlank(value) && !properties.containsKey(newKey)) {
+      if (isMemoryProperty) {
+        properties.put(newKey, value + "mb");
+      } else {
+        properties.put(newKey, value);
+      }
+    }
   }
 
   private String chooseFlinkAppJar(String flinkHome) throws IOException {

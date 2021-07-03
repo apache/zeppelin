@@ -47,21 +47,21 @@
         "description": "Port of running JobManager. Only used for remote mode",
         "type": "number"
       },
-      "flink.jm.memory": {
+      "jobmanager.memory.process.size": {
         "envName": null,
         "propertyName": null,
-        "defaultValue": "1024",
-        "description": "Memory for JobManager (mb)",
+        "defaultValue": "1024m",
+        "description": "Memory for JobManager, e.g. 1024m",
         "type": "number"
       },
-      "flink.tm.memory": {
+      "taskmanager.memory.process.size": {
         "envName": null,
         "propertyName": null,
-        "defaultValue": "1024",
-        "description": "Memory for TaskManager (mb)",
+        "defaultValue": "1024m",
+        "description": "Memory for TaskManager, e.g. 1024m",
         "type": "number"
       },
-      "flink.tm.slot": {
+      "taskmanager.numberOfTaskSlots": {
         "envName": null,
         "propertyName": null,
         "defaultValue": "1",
@@ -75,14 +75,14 @@
         "description": "Number of TaskManager in local mode",
         "type": "number"
       },
-      "flink.yarn.appName": {
+      "yarn.application.name": {
         "envName": null,
         "propertyName": null,
         "defaultValue": "Zeppelin Flink Session",
         "description": "Yarn app name",
         "type": "string"
       },
-      "flink.yarn.queue": {
+      "yarn.application.queue": {
         "envName": null,
         "propertyName": null,
         "defaultValue": "default",
