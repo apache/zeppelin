@@ -203,28 +203,32 @@ abstract class FlinkScalaInterpreter(val properties: Properties,
 
     this.configuration = GlobalConfiguration.loadConfiguration(flinkConfDir)
     var config = Config(executionMode = mode)
-    val jmMemory = properties.getProperty("flink.jm.memory", "1024")
+    val jmMemory = properties.getProperty("jobmanager.memory.process.size",
+      properties.getProperty("flink.jm.memory", "1024"))
     config = config.copy(yarnConfig =
       Some(ensureYarnConfig(config)
         .copy(jobManagerMemory = Some(jmMemory))))
 
-    val tmMemory = properties.getProperty("flink.tm.memory", "1024")
+    val tmMemory = properties.getProperty("taskmanager.memory.process.size",
+      properties.getProperty("flink.tm.memory", "1024"))
     config = config.copy(yarnConfig =
       Some(ensureYarnConfig(config)
         .copy(taskManagerMemory = Some(tmMemory))))
 
-    val appName = properties.getProperty("flink.yarn.appName", "Flink Yarn App Name")
+    val appName = properties.getProperty("yarn.application.name",
+      properties.getProperty("flink.yarn.appName", "Flink Yarn App Name"))
     config = config.copy(yarnConfig =
       Some(ensureYarnConfig(config)
         .copy(name = Some(appName))))
 
-    val slotNum = Integer.parseInt(properties.getProperty("flink.tm.slot", "1"))
+    val slotNum =  Integer.parseInt(properties.getProperty("taskmanager.numberOfTaskSlots",
+     properties.getProperty("flink.tm.slot", "1")))
     config = config.copy(yarnConfig =
       Some(ensureYarnConfig(config)
         .copy(slots = Some(slotNum))))
-    this.configuration.setInteger("taskmanager.numberOfTaskSlots", slotNum)
 
-    val queue = (properties.getProperty("flink.yarn.queue", "default"))
+    val queue = properties.getProperty("yarn.application.queue",
+      properties.getProperty("flink.yarn.queue", "default"))
     config = config.copy(yarnConfig =
       Some(ensureYarnConfig(config)
         .copy(queue = Some(queue))))
