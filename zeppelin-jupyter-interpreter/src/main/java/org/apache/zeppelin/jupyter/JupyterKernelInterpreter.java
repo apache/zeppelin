@@ -153,6 +153,7 @@ public class JupyterKernelInterpreter extends AbstractInterpreter {
    * @return check result of checking kernel prerequisite.
    */
   public String checkKernelPrerequisite(String pythonExec) {
+    LOGGER.info("checkKernelPrerequisite using python executable: {}", pythonExec);
     ProcessBuilder processBuilder = new ProcessBuilder(pythonExec, "-m", "pip", "freeze");
     File stderrFile = null;
     File stdoutFile = null;

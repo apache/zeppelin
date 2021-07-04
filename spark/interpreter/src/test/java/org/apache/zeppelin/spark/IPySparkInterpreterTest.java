@@ -90,6 +90,7 @@ public class IPySparkInterpreterTest extends IPythonInterpreterTest {
     intpGroup.get("session_1").add(interpreter);
     interpreter.setInterpreterGroup(intpGroup);
 
+    pySparkInterpreter.open();
     interpreter.open();
   }
 

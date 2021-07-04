@@ -80,16 +80,24 @@ public class PythonInterpreter extends Interpreter {
   public void open() throws InterpreterException {
     // try IPythonInterpreter first
     iPythonInterpreter = getIPythonInterpreter();
-    if (getProperty("zeppelin.python.useIPython", "true").equals("true") &&
-        StringUtils.isEmpty(
-            iPythonInterpreter.checkKernelPrerequisite(getPythonExec()))) {
-      try {
-        iPythonInterpreter.open();
-        LOGGER.info("IPython is available, Use IPythonInterpreter to replace PythonInterpreter");
-        return;
-      } catch (Exception e) {
-        iPythonInterpreter = null;
-        LOGGER.warn("Fail to open IPythonInterpreter", e);
+    boolean useIPython = Boolean.parseBoolean(getProperty("zeppelin.python.useIPython", "true"));
+
+    LOGGER.info("zeppelin.python.useIPython: {}", useIPython);
+    if (useIPython) {
+      String checkKernelPrerequisiteResult = iPythonInterpreter.checkKernelPrerequisite(
+              getPythonExec());
+      if (StringUtils.isEmpty(checkKernelPrerequisiteResult)) {
+        try {
+          iPythonInterpreter.open();
+          LOGGER.info("IPython is available, Use IPythonInterpreter to replace PythonInterpreter");
+          return;
+        } catch (Exception e) {
+          iPythonInterpreter = null;
+          LOGGER.warn("Fail to open IPythonInterpreter", e);
+        }
+      } else {
+        LOGGER.info("IPython requirement is not met, checkKernelPrerequisiteResult: {}",
+                checkKernelPrerequisiteResult);
       }
     }
 
