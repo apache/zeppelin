@@ -64,7 +64,7 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
 
   @Override
   public Map<String, String> buildEnvFromProperties(InterpreterLaunchContext context) throws IOException {
-    Map<String, String> env = super.buildEnvFromProperties(context);
+    Map<String, String> envs = super.buildEnvFromProperties(context);
     Properties sparkProperties = new Properties();
     String spMaster = getSparkMaster();
     if (spMaster != null) {
@@ -73,7 +73,7 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
     for (String key : properties.stringPropertyNames()) {
       String propValue = properties.getProperty(key);
       if (RemoteInterpreterUtils.isEnvString(key) && !StringUtils.isBlank(propValue)) {
-        env.put(key, propValue);
+        envs.put(key, propValue);
       }
       if (isSparkConf(key, propValue)) {
         sparkProperties.setProperty(key, propValue);
@@ -98,7 +98,7 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
     }
 
     if (isYarnMode() && getDeployMode().equals("cluster")) {
-      env.put("ZEPPELIN_SPARK_YARN_CLUSTER", "true");
+      envs.put("ZEPPELIN_SPARK_YARN_CLUSTER", "true");
       sparkProperties.setProperty("spark.yarn.submit.waitAppCompletion", "false");
     } else if (zConf.isOnlyYarnCluster()){
       throw new IOException("Only yarn-cluster mode is allowed, please set " +
@@ -133,7 +133,7 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
           }
         }
 
-        String scalaVersion = detectSparkScalaVersion(getEnv("SPARK_HOME"));
+        String scalaVersion = detectSparkScalaVersion(getEnv("SPARK_HOME"), envs);
         Path scalaFolder =  Paths.get(zConf.getZeppelinHome(), "/interpreter/spark/scala-" + scalaVersion);
         if (!scalaFolder.toFile().exists()) {
           throw new IOException("spark scala folder " + scalaFolder.toFile() + " doesn't exist");
@@ -183,7 +183,7 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
       sparkConfBuilder.append(" --conf " + name + "=" + sparkProperties.getProperty(name));
     }
 
-    env.put("ZEPPELIN_SPARK_CONF", sparkConfBuilder.toString());
+    envs.put("ZEPPELIN_SPARK_CONF", sparkConfBuilder.toString());
 
     // set these env in the order of
     // 1. interpreter-setting
@@ -193,7 +193,7 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
     for (String envName : new String[]{"SPARK_HOME", "SPARK_CONF_DIR", "HADOOP_CONF_DIR"})  {
       String envValue = getEnv(envName);
       if (!StringUtils.isBlank(envValue)) {
-        env.put(envName, envValue);
+        envs.put(envName, envValue);
       }
     }
 
@@ -203,14 +203,14 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
             zConf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_SERVER_KERBEROS_PRINCIPAL));
 
     if (!StringUtils.isBlank(keytab) && !StringUtils.isBlank(principal)) {
-      env.put("ZEPPELIN_SERVER_KERBEROS_KEYTAB", keytab);
-      env.put("ZEPPELIN_SERVER_KERBEROS_PRINCIPAL", principal);
+      envs.put("ZEPPELIN_SERVER_KERBEROS_KEYTAB", keytab);
+      envs.put("ZEPPELIN_SERVER_KERBEROS_PRINCIPAL", principal);
       LOGGER.info("Run Spark under secure mode with keytab: {}, principal: {}",keytab, principal);
     } else {
       LOGGER.info("Run Spark under non-secure mode as no keytab and principal is specified");
     }
 
-    env.put("PYSPARK_PIN_THREAD", "true");
+    envs.put("PYSPARK_PIN_THREAD", "true");
 
     // ZEPPELIN_INTP_CLASSPATH
     String sparkConfDir = getEnv("SPARK_CONF_DIR");
@@ -224,7 +224,7 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
       sparkDefaultProperties.load(new FileInputStream(sparkDefaultFile));
       String driverExtraClassPath = sparkDefaultProperties.getProperty("spark.driver.extraClassPath");
       if (!StringUtils.isBlank(driverExtraClassPath)) {
-        env.put("ZEPPELIN_INTP_CLASSPATH", driverExtraClassPath);
+        envs.put("ZEPPELIN_INTP_CLASSPATH", driverExtraClassPath);
       }
     } else {
       LOGGER.warn("spark-defaults.conf doesn't exist: {}", sparkDefaultFile.getAbsolutePath());
@@ -236,16 +236,17 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
               .getProperty("zeppelin.spark.run.asLoginUser", "true"));
       String userName = context.getUserName();
       if (runAsLoginUser && !"anonymous".equals(userName)) {
-        env.put("HADOOP_USER_NAME", userName);
+        envs.put("HADOOP_USER_NAME", userName);
       }
     }
-    LOGGER.info("buildEnvFromProperties: {}", env);
-    return env;
-
+    LOGGER.info("buildEnvFromProperties: {}", envs);
+    return envs;
   }
 
-  private String detectSparkScalaVersion(String sparkHome) throws Exception {
+  private String detectSparkScalaVersion(String sparkHome, Map<String, String> envs) throws Exception {
+    LOGGER.info("Detect scala version from SPARK_HOME: {}", sparkHome);
     ProcessBuilder builder = new ProcessBuilder(sparkHome + "/bin/spark-submit", "--version");
+    builder.environment().putAll(envs);
     File processOutputFile = File.createTempFile("zeppelin-spark", ".out");
     builder.redirectError(processOutputFile);
     Process process = builder.start();
