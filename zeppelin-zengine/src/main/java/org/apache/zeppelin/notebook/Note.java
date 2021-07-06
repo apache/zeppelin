@@ -1133,7 +1133,7 @@ public class Note implements JsonSerializable {
    * @return Note
    * @throws IOException if fail to parse note json (note file may be corrupted)
    */
-  public static Note fromJson(String json) throws IOException {
+  public static Note fromJson(String noteId, String json) throws IOException {
     try {
       Note note = GSON.fromJson(json, Note.class);
       convertOldInput(note);
@@ -1142,7 +1142,7 @@ public class Note implements JsonSerializable {
       return note;
     } catch (Exception e) {
       LOGGER.error("Fail to parse note json: {}", e.toString());
-      throw new CorruptedNoteException("Fail to parse note json: " + json, e);
+      throw new CorruptedNoteException(noteId, "Fail to parse note json: " + json, e);
     }
   }
 

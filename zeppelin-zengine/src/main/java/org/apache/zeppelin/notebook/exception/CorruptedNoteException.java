@@ -20,7 +20,7 @@ package org.apache.zeppelin.notebook.exception;
 import java.io.IOException;
 
 public class CorruptedNoteException extends IOException {
-    public CorruptedNoteException(final String message, Exception e) {
-        super(message, e);
+    public CorruptedNoteException(final String noteId, final String message, Exception e) {
+        super(String.format("noteId: %s", noteId) + message, e);
     }
 }

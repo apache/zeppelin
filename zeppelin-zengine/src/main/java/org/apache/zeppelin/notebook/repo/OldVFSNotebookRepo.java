@@ -162,7 +162,7 @@ public class OldVFSNotebookRepo implements OldNotebookRepo {
     String json = IOUtils.toString(ins, conf.getString(ConfVars.ZEPPELIN_ENCODING));
     ins.close();
 
-    return Note.fromJson(json);
+    return Note.fromJson(null, json);
   }
 
   private OldNoteInfo getNoteInfo(FileObject noteDir) throws IOException {

@@ -57,7 +57,7 @@ public class ClusterNoteEventListenerTest implements ClusterEventListener {
         LOGGER.debug(authenticationInfo.toJson());
       } else if (key.equals("Note")) {
         try {
-          note = Note.fromJson(json);
+          note = Note.fromJson(null, json);
         } catch (IOException e) {
           LOGGER.warn("Fail to parse note json", e);
         }

@@ -216,7 +216,7 @@ public class OldS3NotebookRepo implements OldNotebookRepo {
 
     try (InputStream ins = s3object.getObjectContent()) {
       String json = IOUtils.toString(ins, conf.getString(ConfVars.ZEPPELIN_ENCODING));
-      return Note.fromJson(json);
+      return Note.fromJson(null, json);
     }
   }
 

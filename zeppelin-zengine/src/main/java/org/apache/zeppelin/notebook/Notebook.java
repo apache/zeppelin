@@ -292,7 +292,7 @@ public class Notebook {
    */
   public Note importNote(String sourceJson, String notePath, AuthenticationInfo subject)
       throws IOException {
-    Note oldNote = Note.fromJson(sourceJson);
+    Note oldNote = Note.fromJson(null, sourceJson);
     if (notePath == null) {
       notePath = oldNote.getName();
     }

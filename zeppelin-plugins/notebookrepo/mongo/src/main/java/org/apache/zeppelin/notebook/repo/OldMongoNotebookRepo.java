@@ -129,7 +129,7 @@ public class OldMongoNotebookRepo implements OldNotebookRepo {
 
     while (cursor.hasNext()) {
       Document doc = cursor.next();
-      Note note = documentToNote(doc);
+      Note note = documentToNote(null, doc);
       OldNoteInfo info = new OldNoteInfo(note);
       infos.add(info);
     }
@@ -174,11 +174,11 @@ public class OldMongoNotebookRepo implements OldNotebookRepo {
   /**
    * Convert document to note
    */
-  private Note documentToNote(Document doc) throws IOException {
+  private Note documentToNote(String noteId, Document doc) throws IOException {
     // document to JSON
     String json = doc.toJson();
     // JSON to note
-    return Note.fromJson(json);
+    return Note.fromJson(noteId, json);
   }
 
   /**
@@ -202,7 +202,7 @@ public class OldMongoNotebookRepo implements OldNotebookRepo {
       throw new IOException("Note " + noteId + "not found");
     }
 
-    return documentToNote(doc);
+    return documentToNote(noteId, doc);
   }
 
   @Override

@@ -720,7 +720,7 @@ public class NotebookServer extends WebSocketServlet
         authenticationInfo = AuthenticationInfo.fromJson(json);
       } else if (StringUtils.equals(key, "Note")) {
         try {
-          note = Note.fromJson(json);
+          note = Note.fromJson(null, json);
         } catch (IOException e) {
           LOG.warn("Fail to parse note json", e);
         }

@@ -74,7 +74,7 @@ public class FileSystemNotebookRepo implements NotebookRepo {
   public Note get(String noteId, String notePath, AuthenticationInfo subject) throws IOException {
     String content = this.fs.readFile(
         new Path(notebookDir, buildNoteFileName(noteId, notePath)));
-    return Note.fromJson(content);
+    return Note.fromJson(noteId, content);
   }
 
   @Override
