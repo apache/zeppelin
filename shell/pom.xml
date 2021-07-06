@@ -46,9 +46,9 @@
   <!-- pty4j library not in maven central repository (http://repo.maven.apache.org/maven2) -->
   <repositories>
     <repository>
-      <id>jetbrains-pty4j</id>
+      <id>jetbrains-intellij-dependencies</id>
       <name>JetBrains Pty4j Repository</name>
-      <url>https://dl.bintray.com/jetbrains/pty4j/</url>
+      <url>https://packages.jetbrains.team/maven/p/ij/intellij-dependencies</url>
     </repository>
   </repositories>
 
