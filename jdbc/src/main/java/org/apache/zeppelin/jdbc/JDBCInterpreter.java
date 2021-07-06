@@ -350,6 +350,23 @@ public class JDBCInterpreter extends KerberosInterpreter {
     }
   }
 
+  /* Get user of this sql.
+   * 1. If shiro is enabled, use the login user
+   * 2. Otherwise try to get it from interpreter setting, e.g. default.user
+   */
+  private String getUser(InterpreterContext context) {
+    String user = context.getAuthenticationInfo().getUser();
+    String dbPrefix = getDBPrefix(context);
+
+    if ("anonymous".equalsIgnoreCase(user) && basePropertiesMap.containsKey(dbPrefix)) {
+      String userInProperty = basePropertiesMap.get(dbPrefix).getProperty(USER_KEY);
+      if (StringUtils.isNotBlank(userInProperty)) {
+        user = userInProperty;
+      }
+    }
+    return user;
+  }
+
   private String getEntityName(String replName, String propertyKey) {
     if ("jdbc".equals(replName)) {
       return propertyKey;
@@ -402,8 +419,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
   private void setUserProperty(String dbPrefix, InterpreterContext context)
       throws SQLException, IOException, InterpreterException {
 
-    String user = context.getAuthenticationInfo().getUser();
-
+    String user = getUser(context);
     JDBCUserConfigurations jdbcUserConfigurations = getJDBCConfiguration(user);
     if (basePropertiesMap.get(dbPrefix).containsKey(USER_KEY) &&
         !basePropertiesMap.get(dbPrefix).getProperty(USER_KEY).isEmpty()) {
@@ -416,11 +432,11 @@ public class JDBCInterpreter extends KerberosInterpreter {
     if (existAccountInBaseProperty(dbPrefix)) {
       return;
     }
-    jdbcUserConfigurations.cleanUserProperty(dbPrefix);
 
     UsernamePassword usernamePassword = getUsernamePassword(context,
             getEntityName(context.getReplName(), dbPrefix));
     if (usernamePassword != null) {
+      jdbcUserConfigurations.cleanUserProperty(dbPrefix);
       jdbcUserConfigurations.setUserProperty(dbPrefix, usernamePassword);
     } else {
       closeDBPool(user, dbPrefix);
@@ -500,12 +516,14 @@ public class JDBCInterpreter extends KerberosInterpreter {
 
   public Connection getConnection(String dbPrefix, InterpreterContext context)
       throws ClassNotFoundException, SQLException, InterpreterException, IOException {
-    final String user =  context.getAuthenticationInfo().getUser();
-    Connection connection = null;
+
     if (dbPrefix == null || basePropertiesMap.get(dbPrefix) == null) {
+      LOGGER.warn("No such dbPrefix: {}", dbPrefix);
       return null;
     }
 
+    Connection connection = null;
+    String user = getUser(context);
     JDBCUserConfigurations jdbcUserConfigurations = getJDBCConfiguration(user);
     setUserProperty(dbPrefix, context);
 
@@ -703,7 +721,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
     Statement statement;
     ResultSet resultSet = null;
     String paragraphId = context.getParagraphId();
-    String user = context.getAuthenticationInfo().getUser();
+    String user = getUser(context);
 
     try {
       connection = getConnection(dbPrefix, context);
@@ -950,8 +968,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
 
     LOGGER.info("Cancel current query statement.");
     String paragraphId = context.getParagraphId();
-    JDBCUserConfigurations jdbcUserConfigurations =
-            getJDBCConfiguration(context.getAuthenticationInfo().getUser());
+    JDBCUserConfigurations jdbcUserConfigurations = getJDBCConfiguration(getUser(context));
     try {
       jdbcUserConfigurations.cancelStatement(paragraphId);
     } catch (SQLException e) {
@@ -1014,17 +1031,17 @@ public class JDBCInterpreter extends KerberosInterpreter {
 
   @Override
   public List<InterpreterCompletion> completion(String buf, int cursor,
-      InterpreterContext interpreterContext) throws InterpreterException {
+      InterpreterContext context) throws InterpreterException {
     List<InterpreterCompletion> candidates = new ArrayList<>();
-    String propertyKey = getDBPrefix(interpreterContext);
+    String propertyKey = getDBPrefix(context);
     String sqlCompleterKey =
-        String.format("%s.%s", interpreterContext.getAuthenticationInfo().getUser(), propertyKey);
+        String.format("%s.%s", getUser(context), propertyKey);
     SqlCompleter sqlCompleter = sqlCompletersMap.get(sqlCompleterKey);
 
     Connection connection = null;
     try {
-      if (interpreterContext != null) {
-        connection = getConnection(propertyKey, interpreterContext);
+      if (context != null) {
+        connection = getConnection(propertyKey, context);
       }
     } catch (ClassNotFoundException | SQLException | IOException e) {
       LOGGER.warn("SQLCompleter will created without use connection");
