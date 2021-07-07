@@ -88,7 +88,9 @@ public class ZeppelinClient {
     }
     if (response.getStatus() != 200) {
       String message = response.getStatusText();
-      if (response.getBody().getObject().has("message")) {
+      if (response.getBody() != null &&
+              response.getBody().getObject() != null &&
+              response.getBody().getObject().has("message")) {
         message = response.getBody().getObject().getString("message");
       }
       throw new Exception(String.format("Unable to call rest api, status: %s, statusText: %s, message: %s",
