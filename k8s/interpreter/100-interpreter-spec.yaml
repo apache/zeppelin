@@ -72,6 +72,15 @@ spec:
 {# limits.memory is not set because of a potential OOM-Killer. https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#requests-and-limits #}
       limits:
         cpu: "{{zeppelin.k8s.interpreter.cores}}"
+        {% if zeppelin.k8s.interpreter.gpu.type is defined and zeppelin.k8s.interpreter.gpu.nums is defined %}
+        {{zeppelin.k8s.interpreter.gpu.type}}: "{{zeppelin.k8s.interpreter.gpu.nums}}"
+        {% endif %}
+  {% else %}
+  {% if zeppelin.k8s.interpreter.gpu.type is defined and zeppelin.k8s.interpreter.gpu.nums is defined %}
+    resources:
+      limits:  
+        {{zeppelin.k8s.interpreter.gpu.type}}: "{{zeppelin.k8s.interpreter.gpu.nums}}"
+  {% endif %}
   {% endif %}
   {% if zeppelin.k8s.interpreter.group.name == "spark" %}
     volumeMounts:
