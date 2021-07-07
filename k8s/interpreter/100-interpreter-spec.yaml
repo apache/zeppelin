@@ -136,7 +136,7 @@ metadata:
   {% endif %}
 rules:
 - apiGroups: [""]
-  resources: ["pods", "services"]
+  resources: ["pods", "services", "configmaps"]
   verbs: ["create", "get", "update", "list", "delete", "watch" ]
 ---
 kind: RoleBinding
