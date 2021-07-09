@@ -198,6 +198,12 @@ public class SparkSqlInterpreterTest {
     assertEquals(InterpreterResult.Code.SUCCESS, ret.code());
     assertEquals(Type.HTML, context.out.toInterpreterResultMessage().get(0).getType());
     assertEquals("Total count: <h1>10</h1>, Total age: <h1>55</h1>", context.out.toInterpreterResultMessage().get(0).getData());
+
+    // test Explain statement
+    ret = sqlInterpreter.interpret("explain select count(1), sum(age) from gr", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, ret.code());
+    assertEquals(Type.TEXT, context.out.toInterpreterResultMessage().get(0).getType());
+    assertTrue(context.out.toString(), context.out.toInterpreterResultMessage().get(0).getData().contains("Physical Plan"));
   }
 
   @Test
