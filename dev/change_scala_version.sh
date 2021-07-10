@@ -19,7 +19,7 @@
 
 set -e
 
-VALID_VERSIONS=( 2.10 2.11 )
+VALID_VERSIONS=( 2.10 2.11 2.12 )
 
 usage() {
   echo "Usage: $(basename $0) [-h|--help] <version>
@@ -44,12 +44,22 @@ check_scala_version() {
 
 check_scala_version "${TO_VERSION}"
 
-if [ "${TO_VERSION}" = "2.11" ]; then
-  FROM_VERSION="2.10"
-  SCALA_LIB_VERSION="2.11.7"
+BASEDIR=$(dirname $0)/..
+
+CURRENT_SCALA_VERSION_FILE=$BASEDIR/dev/current_scala_version
+if [ -s "$CURRENT_SCALA_VERSION_FILE" ]
+then
+   FROM_VERSION=$(cat $CURRENT_SCALA_VERSION_FILE)
 else
-  FROM_VERSION="2.11"
+   FROM_VERSION="2.10"
+fi
+
+if [ "${TO_VERSION}" = "2.11" ]; then
+  SCALA_LIB_VERSION="2.11.7"
+elif [ "${TO_VERSION}" = "2.10" ]; then
   SCALA_LIB_VERSION="2.10.5"
+else
+  SCALA_LIB_VERSION="2.12.10"
 fi
 
 sed_i() {
@@ -58,7 +68,6 @@ sed_i() {
 
 export -f sed_i
 
-BASEDIR=$(dirname $0)/..
 find "${BASEDIR}" -name 'pom.xml' -not -path '*target*' -print \
   -exec bash -c "sed_i 's/\(artifactId.*\)_'${FROM_VERSION}'/\1_'${TO_VERSION}'/g' {}" \;
 
@@ -73,3 +82,5 @@ sed_i '1,/<scala\.binary\.version>[0-9]*\.[0-9]*</s/<scala\.binary\.version>[0-9
 # and use default defined properties to create flatten pom.
 sed_i '1,/<scala\.version>[0-9]*\.[0-9]*\.[0-9]*</s/<scala\.version>[0-9]*\.[0-9]*\.[0-9]*</<scala.version>'${SCALA_LIB_VERSION}'</' \
   "${BASEDIR}/pom.xml"
+
+echo $TO_VERSION > $CURRENT_SCALA_VERSION_FILE

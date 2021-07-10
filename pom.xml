@@ -99,6 +99,7 @@
     <module>zeppelin-client</module>
     <module>zeppelin-client-examples</module>
     <module>zeppelin-web</module>
+    <module>zeppelin-web-angular</module>
     <module>zeppelin-server</module>
     <module>zeppelin-jupyter</module>
     <module>zeppelin-plugins</module>
@@ -112,6 +113,7 @@
     <scala.version>${scala.2.10.version}</scala.version>
     <scala.binary.version>2.10</scala.binary.version>
     <scala.2.11.version>2.11.8</scala.2.11.version>
+    <scala.2.12.version>2.12.10</scala.2.12.version>
     <scalatest.version>3.0.7</scalatest.version>
     <scalacheck.version>1.12.5</scalacheck.version>
 
@@ -1540,6 +1542,13 @@
       <properties>
         <scala.version>${scala.2.11.version}</scala.version>
         <scala.binary.version>2.11</scala.binary.version>
+      </properties>
+    </profile>
+    <profile>
+      <id>scala-2.12</id>
+      <properties>
+          <scala.version>${scala.2.12.version}</scala.version>
+          <scala.binary.version>2.12</scala.binary.version>
       </properties>
     </profile>
 
