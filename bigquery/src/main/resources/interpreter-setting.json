@@ -31,6 +31,13 @@
         "defaultValue": "",
         "description": "BigQuery SQL dialect (standardSQL or legacySQL). If empty, query prefix like '#standardSQL' can be used.",
         "type": "string"
+      },
+      "zeppelin.bigquery.interpolation": {
+        "envName": null,
+        "propertyName": "zeppelin.bigquery.interpolation",
+        "defaultValue": false,
+        "description": "Enable ZeppelinContext variable interpolation into paragraph text",
+        "type": "checkbox"
       }
     },
     "editor": {
