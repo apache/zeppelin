@@ -46,7 +46,7 @@
     "bower": "^1.8.0",
     "copy-webpack-plugin": "^4.0.1",
     "css-loader": "^0.26.1",
-    "eslint": "^3.19.0",
+    "eslint": "^4.18.2",
     "eslint-config-google": "^0.7.1",
     "eslint-config-standard": "^10.2.1",
     "eslint-plugin-import": "^2.2.0",
