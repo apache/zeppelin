@@ -249,7 +249,9 @@ export class NotebookParagraphControlComponent implements OnInit, OnChanges {
   clearParagraphOutput() {
     console.log('힝', this.isEntireNoteRunning);
     if (!this.isEntireNoteRunning) {
+      console.log('붕');
       this.messageService.paragraphClearOutput(this.pid);
+      console.log('붕2');
       this.clearParagraph.emit();
     }
   }
