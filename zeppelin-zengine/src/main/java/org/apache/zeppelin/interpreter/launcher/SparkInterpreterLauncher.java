@@ -133,7 +133,7 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
           }
         }
 
-        String scalaVersion = detectSparkScalaVersion(getEnv("SPARK_HOME"));
+        String scalaVersion = detectSparkScalaVersion(getEnv("SPARK_HOME"), env);
         Path scalaFolder =  Paths.get(zConf.getZeppelinHome(), "/interpreter/spark/scala-" + scalaVersion);
         if (!scalaFolder.toFile().exists()) {
           throw new IOException("spark scala folder " + scalaFolder.toFile() + " doesn't exist");
@@ -241,11 +241,12 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
     }
     LOGGER.info("buildEnvFromProperties: {}", env);
     return env;
-
   }
 
-  private String detectSparkScalaVersion(String sparkHome) throws Exception {
+  private String detectSparkScalaVersion(String sparkHome, Map<String, String> env) throws Exception {
+    LOGGER.info("Detect scala version from SPARK_HOME: {}", sparkHome);
     ProcessBuilder builder = new ProcessBuilder(sparkHome + "/bin/spark-submit", "--version");
+    builder.environment().putAll(env);
     File processOutputFile = File.createTempFile("zeppelin-spark", ".out");
     builder.redirectError(processOutputFile);
     Process process = builder.start();
