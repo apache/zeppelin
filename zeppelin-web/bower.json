@@ -50,6 +50,7 @@
         "src-noconflict/mode-kotlin.js",
         "src-noconflict/mode-python.js",
         "src-noconflict/mode-sql.js",
+        "src-noconflict/mode-sparql.js",
         "src-noconflict/mode-markdown.js",
         "src-noconflict/mode-pig.js",
         "src-noconflict/mode-sh.js",
