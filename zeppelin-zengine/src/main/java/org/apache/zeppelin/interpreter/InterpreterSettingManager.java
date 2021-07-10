@@ -381,7 +381,11 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
     initMetrics();
 
     // must init Recovery after init of InterpreterSettingManager
-    recoveryStorage.init();
+    try {
+      recoveryStorage.init();
+    } catch (Throwable e) {
+      LOGGER.error("Fail to init RecoveryStorage, you can not recover the previous interpreter processes", e);
+    }
   }
 
   /**
