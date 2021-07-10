@@ -20,6 +20,7 @@ package org.apache.zeppelin.notebook.repo;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.user.AuthenticationInfo;
@@ -39,6 +40,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.List;
 
@@ -56,6 +59,7 @@ public class GitNotebookRepo extends VFSNotebookRepo implements NotebookRepoWith
   private static final Logger LOGGER = LoggerFactory.getLogger(GitNotebookRepo.class);
 
   private Git git;
+  protected String gitRepoDir;
 
   public GitNotebookRepo() {
     super();
@@ -73,10 +77,11 @@ public class GitNotebookRepo extends VFSNotebookRepo implements NotebookRepoWith
     //AbstractMethodError
     this.conf = conf;
     setNotebookDirectory(conf.getNotebookDir());
+    setGitRepoDir(conf.getGitRepoDir());
 
-    LOGGER.info("Opening a git repo at '{}'", this.rootNotebookFolder);
+    LOGGER.info("Opening a git repo at '{}'", this.gitRepoDir);
     Repository localRepo = new FileRepository(Joiner.on(File.separator)
-        .join(this.rootNotebookFolder, ".git"));
+        .join(this.gitRepoDir, ".git"));
     if (!localRepo.getDirectory().exists()) {
       LOGGER.info("Git repo {} does not exist, creating a new one", localRepo.getDirectory());
       localRepo.create();
@@ -90,8 +95,8 @@ public class GitNotebookRepo extends VFSNotebookRepo implements NotebookRepoWith
                    String newNotePath,
                    AuthenticationInfo subject) throws IOException {
     super.move(noteId, notePath, newNotePath, subject);
-    String noteFileName = buildNoteFileName(noteId, notePath);
-    String newNoteFileName = buildNoteFileName(noteId, newNotePath);
+    String noteFileName = buildNoteFileNameForGitRepo(noteId, notePath);
+    String newNoteFileName = buildNoteFileNameForGitRepo(noteId, newNotePath);
     git.rm().addFilepattern(noteFileName);
     git.add().addFilepattern(newNoteFileName);
     try {
@@ -127,7 +132,7 @@ public class GitNotebookRepo extends VFSNotebookRepo implements NotebookRepoWith
                              String notePath,
                              String commitMessage,
                              AuthenticationInfo subject) throws IOException {
-    String noteFileName = buildNoteFileName(noteId, notePath);
+    String noteFileName = buildNoteFileNameForGitRepo(noteId, notePath);
     Revision revision = Revision.EMPTY;
     try {
       List<DiffEntry> gitDiff = git.diff().call();
@@ -161,7 +166,7 @@ public class GitNotebookRepo extends VFSNotebookRepo implements NotebookRepoWith
                                AuthenticationInfo subject) throws IOException {
     Note note = null;
     RevCommit stash = null;
-    String noteFileName = buildNoteFileName(noteId, notePath);
+    String noteFileName = buildNoteFileNameForGitRepo(noteId, notePath);
     try {
       List<DiffEntry> gitDiff = git.diff().setPathFilter(PathFilter.create(noteFileName)).call();
       boolean modified = !gitDiff.isEmpty();
@@ -197,7 +202,7 @@ public class GitNotebookRepo extends VFSNotebookRepo implements NotebookRepoWith
                                         String notePath,
                                         AuthenticationInfo subject) throws IOException {
     List<Revision> history = Lists.newArrayList();
-    String noteFileName = buildNoteFileName(noteId, notePath);
+    String noteFileName = buildNoteFileNameForGitRepo(noteId, notePath);
     LOGGER.debug("Listing history for {}:", noteFileName);
     try {
       Iterable<RevCommit> logs = git.log().addPath(noteFileName).call();
@@ -237,6 +242,31 @@ public class GitNotebookRepo extends VFSNotebookRepo implements NotebookRepoWith
 
   void setGit(Git git) {
     this.git = git;
+  }
+
+  protected void setGitRepoDir(String gitRepoDir) {
+    if (StringUtils.isEmpty(gitRepoDir)) {
+      this.gitRepoDir = rootNotebookFolder;
+    } else {
+      this.gitRepoDir = gitRepoDir;
+    }
+    if (!isChild(rootNotebookFolder, this.gitRepoDir)) {
+      throw new IllegalArgumentException("Notebook directory (" + rootNotebookFolder + ")" +
+              " must be nested within Git Repo (" + gitRepoDir + ")");
+    }
+  }
+
+  private Boolean isChild(String childText, String parentText) {
+    Path child = Paths.get(childText.replaceAll("^/*", "")).toAbsolutePath();
+    Path parent = Paths.get(parentText.replaceAll("^/*", "")).toAbsolutePath();
+    return child.startsWith(parent);
+  }
+
+  protected String buildNoteFileNameForGitRepo(String noteId, String notePath) throws IOException {
+    Path child = Paths.get(rootNotebookFolder.replaceAll("^/*", "")).toAbsolutePath();
+    Path parent = Paths.get(gitRepoDir.replaceAll("^/*", "")).toAbsolutePath();
+    String notepathPrefix = "/" + parent.relativize(child).toString().replace("\\","/");
+    return buildNoteFileName(noteId, notepathPrefix + notePath);
   }
 
 }
