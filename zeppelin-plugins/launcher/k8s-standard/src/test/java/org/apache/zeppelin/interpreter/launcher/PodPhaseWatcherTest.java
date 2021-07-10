@@ -23,7 +23,6 @@ import static org.junit.Assert.*;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.StringUtils;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -39,10 +38,9 @@ import io.fabric8.kubernetes.client.server.mock.KubernetesServer;
 public class PodPhaseWatcherTest {
 
   @Rule
-  public KubernetesServer server = new KubernetesServer(false, true);
+  public KubernetesServer server = new KubernetesServer(true, true);
 
   @Test
-  @Ignore("Reamer - ZEPPELIN-5403")
   public void testPhase() throws InterruptedException {
     KubernetesClient client = server.getClient();
     // CREATE
@@ -56,24 +54,25 @@ public class PodPhaseWatcherTest {
     // WATCH
     PodPhaseWatcher podWatcher = new PodPhaseWatcher(
         phase -> StringUtils.equalsAnyIgnoreCase(phase, "Succeeded", "Failed", "Running"));
-    Watch watch = client.pods().inNamespace("ns1").withName("pod1").watch(podWatcher);
+    try (Watch watch = client.pods().inNamespace("ns1").withName("pod1").watch(podWatcher)) {
 
-    // Update Pod to "pending" phase
-    pod.setStatus(new PodStatus(null, null, null, null, null, null, null, "Pending", null, null,
-        null, null, null));
-    client.pods().inNamespace("ns1").updateStatus(pod);
+      // Update Pod to "pending" phase
+      pod.setStatus(new PodStatus(null, null, null, null, null, null, null, "Pending", null, null,
+              null, null, null));
+      pod = client.pods().inNamespace("ns1").updateStatus(pod);
 
-    // Update Pod to "Running" phase
-    pod.setStatus(new PodStatusBuilder(new PodStatus(null, null, null, null, null, null, null,
-        "Running", null, null, null, null, null)).build());
-    client.pods().inNamespace("ns1").updateStatus(pod);
+      // Wait a little bit, till update is applied
+      Thread.sleep(1000);
+      // Update Pod to "Running" phase
+      pod.setStatus(new PodStatusBuilder(new PodStatus(null, null, null, null, null, null, null,
+              "Running", null, null, null, null, null)).build());
+      client.pods().inNamespace("ns1").updateStatus(pod);
 
-    assertTrue(podWatcher.getCountDownLatch().await(1, TimeUnit.SECONDS));
-    watch.close();
+      assertTrue(podWatcher.getCountDownLatch().await(1, TimeUnit.SECONDS));
+    }
   }
 
   @Test
-  @Ignore("Reamer - ZEPPELIN-5403")
   public void testPhaseWithError() throws InterruptedException {
     KubernetesClient client = server.getClient();
     // CREATE
