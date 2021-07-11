@@ -106,7 +106,7 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
               " to false if you want to use other modes.");
     }
 
-    StringBuilder sparkConfBuilder = new StringBuilder();
+    List<String> sparkConfList = new ArrayList<>();
     if (isYarnMode() && getDeployMode().equals("cluster")) {
       if (sparkProperties.containsKey("spark.files")) {
         sparkProperties.put("spark.files", sparkProperties.getProperty("spark.files") + "," +
@@ -174,21 +174,24 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
     }
 
     if (context.getOption().isUserImpersonate() && zConf.getZeppelinImpersonateSparkProxyUser()) {
-      sparkConfBuilder.append(" --proxy-user " + context.getUserName());
+      sparkConfList.add("--proxy-user");
+      sparkConfList.add(context.getUserName());
       sparkProperties.remove("spark.yarn.keytab");
       sparkProperties.remove("spark.yarn.principal");
     }
 
     for (String name : sparkProperties.stringPropertyNames()) {
-      sparkConfBuilder.append(" --conf " + name + "=" + sparkProperties.getProperty(name));
+      sparkConfList.add("--conf");
+      sparkConfList.add(name + "=" + sparkProperties.getProperty(name) + "");
     }
 
-    env.put("ZEPPELIN_SPARK_CONF", sparkConfBuilder.toString());
+    String sparkConfString = StringUtils.join(sparkConfList, "|");
+    env.put("ZEPPELIN_SPARK_CONF", sparkConfString);
 
     // set these env in the order of
     // 1. interpreter-setting
     // 2. zeppelin-env.sh
-    // It is encouraged to set env in interpreter setting, but just for backward compatability,
+    // It is encouraged to set env in interpreter setting, but just for backward compatibility,
     // we also fallback to zeppelin-env.sh if it is not specified in interpreter setting.
     for (String envName : new String[]{"SPARK_HOME", "SPARK_CONF_DIR", "HADOOP_CONF_DIR"})  {
       String envValue = getEnv(envName);
