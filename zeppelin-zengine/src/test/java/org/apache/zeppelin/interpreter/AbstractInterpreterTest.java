@@ -89,10 +89,21 @@ public abstract class AbstractInterpreterTest {
 
   @After
   public void tearDown() throws Exception {
-    interpreterSettingManager.close();
-    FileUtils.deleteDirectory(interpreterDir);
-    FileUtils.deleteDirectory(confDir);
-    FileUtils.deleteDirectory(notebookDir);
+    if (interpreterSettingManager != null) {
+      interpreterSettingManager.close();
+    }
+    if (interpreterDir != null) {
+      LOGGER.info("Delete interpreterDir: {}", interpreterDir);
+      FileUtils.deleteDirectory(interpreterDir);
+    }
+    if (confDir != null) {
+      LOGGER.info("Delete confDir: {}", confDir);
+      FileUtils.deleteDirectory(confDir);
+    }
+    if (notebookDir != null) {
+      LOGGER.info("Delete notebookDir: {}", notebookDir);
+      FileUtils.deleteDirectory(notebookDir);
+    }
   }
 
   protected Note createNote() {

@@ -52,7 +52,9 @@ public class ClusterInterpreterLauncherTest extends ClusterMockTest {
     }
   }
 
-  @Test
+  // TODO(zjffdu) disable this test because this is not a correct unit test,
+  // Actually the interpreter process here never start before ZEPPELIN-5300.
+  // @Test
   public void testConnectExistOnlineIntpProcess() throws IOException {
     mockIntpProcessMeta("intpGroupId", true);
 
