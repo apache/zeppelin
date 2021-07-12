@@ -201,7 +201,7 @@ kind: ServiceAccount
 metadata:
   name: zeppelin-server
 ---
-kind: Role
+kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: zeppelin-server-role
@@ -217,10 +217,11 @@ kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: zeppelin-server-role-binding
+  namespace: default
 subjects:
 - kind: ServiceAccount
   name: zeppelin-server
 roleRef:
-  kind: Role
+  kind: ClusterRole
   name: zeppelin-server-role
   apiGroup: rbac.authorization.k8s.io

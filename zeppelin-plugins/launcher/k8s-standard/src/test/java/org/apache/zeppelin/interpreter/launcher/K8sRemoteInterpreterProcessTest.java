@@ -112,7 +112,7 @@ public class K8sRemoteInterpreterProcessTest {
     Properties p = intp.getTemplateBindings(null);
 
     // then
-    assertEquals("default", p.get("zeppelin.k8s.namespace"));
+    assertEquals("default", p.get("zeppelin.k8s.interpreter.namespace"));
     assertEquals(intp.getPodName(), p.get("zeppelin.k8s.interpreter.pod.name"));
     assertEquals("sh", p.get("zeppelin.k8s.interpreter.container.name"));
     assertEquals("interpreter-container:1.0", p.get("zeppelin.k8s.interpreter.container.image"));
@@ -424,7 +424,7 @@ public class K8sRemoteInterpreterProcessTest {
         true);
     ExecutorService service = Executors.newFixedThreadPool(1);
     service
-        .submit(new PodStatusSimulator(server.getClient(), intp.getNamespace(), intp.getPodName(), intp));
+        .submit(new PodStatusSimulator(server.getClient(), intp.getInterpreterNamespace(), intp.getPodName(), intp));
     intp.start("TestUser");
     // then
     assertEquals("Running", intp.getPodPhase());
@@ -458,7 +458,7 @@ public class K8sRemoteInterpreterProcessTest {
         10,
         false,
         true);
-    PodStatusSimulator podStatusSimulator = new PodStatusSimulator(server.getClient(), intp.getNamespace(), intp.getPodName(), intp);
+    PodStatusSimulator podStatusSimulator = new PodStatusSimulator(server.getClient(), intp.getInterpreterNamespace(), intp.getPodName(), intp);
     podStatusSimulator.setSecondPhase("Failed");
     podStatusSimulator.setSuccessfulStart(false);
     ExecutorService service = Executors.newFixedThreadPool(1);
@@ -472,7 +472,7 @@ public class K8sRemoteInterpreterProcessTest {
       assertNotNull(e);
       // Check that the Pod is deleted
       assertNull(
-          server.getClient().pods().inNamespace(intp.getNamespace()).withName(intp.getPodName())
+          server.getClient().pods().inNamespace(intp.getInterpreterNamespace()).withName(intp.getPodName())
               .get());
     }
   }
@@ -505,7 +505,7 @@ public class K8sRemoteInterpreterProcessTest {
         10,
         false,
         false);
-    PodStatusSimulator podStatusSimulator = new PodStatusSimulator(server.getClient(), intp.getNamespace(), intp.getPodName(), intp);
+    PodStatusSimulator podStatusSimulator = new PodStatusSimulator(server.getClient(), intp.getInterpreterNamespace(), intp.getPodName(), intp);
     podStatusSimulator.setFirstPhase("Pending");
     podStatusSimulator.setSecondPhase("Pending");
     podStatusSimulator.setSuccessfulStart(false);
@@ -526,7 +526,7 @@ public class K8sRemoteInterpreterProcessTest {
     // wait for a shutdown
     service.awaitTermination(10, TimeUnit.SECONDS);
     // Check that the Pod is deleted
-    assertNull(server.getClient().pods().inNamespace(intp.getNamespace())
+    assertNull(server.getClient().pods().inNamespace(intp.getInterpreterNamespace())
         .withName(intp.getPodName()).get());
 
   }

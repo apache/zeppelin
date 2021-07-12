@@ -21,9 +21,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -33,7 +30,6 @@ import org.apache.zeppelin.interpreter.remote.RemoteInterpreterUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.fabric8.kubernetes.client.Config;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
 
@@ -50,32 +46,6 @@ public class K8sStandardInterpreterLauncher extends InterpreterLauncher {
     client = new DefaultKubernetesClient();
   }
 
-  /**
-   * Check if i'm running inside of kubernetes or not.
-   * It should return truth regardless of ZeppelinConfiguration.getRunMode().
-   *
-   * Normally, unless Zeppelin is running on Kubernetes, K8sStandardInterpreterLauncher shouldn't even have initialized.
-   * However, when ZeppelinConfiguration.getRunMode() is force 'k8s', InterpreterSetting.getLauncherPlugin() will try
-   * to use K8sStandardInterpreterLauncher. This is useful for development. It allows Zeppelin server running on your
-   * IDE and creates your interpreters in Kubernetes. So any code changes on Zeppelin server or kubernetes yaml spec
-   * can be applied without re-building docker image.
-   * @return true, if running on K8s
-   */
-  boolean isRunningOnKubernetes() {
-    return new File(Config.KUBERNETES_NAMESPACE_PATH).exists();
-  }
-
-  /**
-   * Get current namespace
-   * @throws IOException if namespace file could not be read
-   */
-  String getNamespace() throws IOException {
-    if (isRunningOnKubernetes()) {
-      return readFile(Config.KUBERNETES_NAMESPACE_PATH, Charset.defaultCharset()).trim();
-    } else {
-      return zConf.getK8sNamepsace();
-    }
-  }
 
   /**
    * @return Get hostname. It should be the same to Service name (and Pod name) of the Kubernetes or
@@ -94,10 +64,12 @@ public class K8sStandardInterpreterLauncher extends InterpreterLauncher {
    * @throws IOException if the Zeppelin service cannot be generated
    */
   private String getZeppelinService(InterpreterLaunchContext context) throws IOException {
-    if (isRunningOnKubernetes()) {
+    if (K8sUtils.isRunningOnKubernetes()) {
+      //The namespace of zeppelin server can only be read from Config.KUBERNETES_NAMESPACE_PATH while it runs in k8s cluster, it may be different from the namespace of interpreter
+      String serverNamespace = K8sUtils.getCurrentK8sNamespace();
       return String.format("%s.%s.svc",
               zConf.getK8sServiceName(),
-              getNamespace());
+              serverNamespace);
     } else {
       return context.getIntpEventServerHost();
     }
@@ -136,7 +108,7 @@ public class K8sStandardInterpreterLauncher extends InterpreterLauncher {
 
     return new K8sRemoteInterpreterProcess(
             client,
-            getNamespace(),
+            K8sUtils.getInterpreterNamespace(properties, zConf),
             new File(zConf.getK8sTemplatesDir(), "interpreter"),
             zConf.getK8sContainerImage(),
             context.getInterpreterGroupId(),
@@ -171,8 +143,4 @@ public class K8sStandardInterpreterLauncher extends InterpreterLauncher {
     return env;
   }
 
-  private String readFile(String path, Charset encoding) throws IOException {
-    byte[] encoded = Files.readAllBytes(Paths.get(path));
-    return new String(encoded, encoding);
-  }
 }
