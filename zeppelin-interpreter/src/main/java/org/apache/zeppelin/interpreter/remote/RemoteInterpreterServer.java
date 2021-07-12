@@ -391,7 +391,7 @@ public class RemoteInterpreterServer extends Thread
     }
   }
 
-  protected InterpreterGroup getInterpreterGroup() {
+  public InterpreterGroup getInterpreterGroup() {
     return interpreterGroup;
   }
 
