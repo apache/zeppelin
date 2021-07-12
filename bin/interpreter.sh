@@ -293,8 +293,10 @@ if [[ -n "$ZEPPELIN_IMPERSONATE_USER" ]]; then
 fi
 
 if [[ -n "${SPARK_SUBMIT}" ]]; then
-  IFS='' read -r -a SPARK_SUBMIT_OPTIONS_ARRAY <<< "${SPARK_SUBMIT_OPTIONS}"
-  IFS=' ' read -r -a ZEPPELIN_SPARK_CONF_ARRAY <<< "${ZEPPELIN_SPARK_CONF}"
+  readarray -td ''  SPARK_SUBMIT_OPTIONS_ARRAY < <(awk '{ gsub(/--conf/,"\0--conf"); print; }' <<<"${SPARK_SUBMIT_OPTIONS}--conf"); unset 'SPARK_SUBMIT_OPTIONS_ARRAY[-1]'
+  declare -p SPARK_SUBMIT_OPTIONS_ARRAY
+  readarray -td ''  ZEPPELIN_SPARK_CONF_ARRAY < <(awk '{ gsub(/--conf/,"\0--conf"); print; }' <<<"${ZEPPELIN_SPARK_CONF}--conf"); unset 'ZEPPELIN_SPARK_CONF_ARRAY[-1]'
+  declare -p ZEPPELIN_SPARK_CONF_ARRAY
   if [[ "${ZEPPELIN_SPARK_YARN_CLUSTER}" == "true"  ]]; then
     INTERPRETER_RUN_COMMAND+=("${SPARK_SUBMIT}" "--class" "${ZEPPELIN_SERVER}" "--driver-java-options" "${JAVA_INTP_OPTS}" "${SPARK_SUBMIT_OPTIONS_ARRAY[@]}" "${ZEPPELIN_SPARK_CONF_ARRAY[@]}" "${SPARK_APP_JAR}" "${CALLBACK_HOST}" "${PORT}" "${INTP_GROUP_ID}" "${INTP_PORT}")
   else
