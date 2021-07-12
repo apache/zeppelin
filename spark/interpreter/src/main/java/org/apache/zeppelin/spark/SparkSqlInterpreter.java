@@ -102,6 +102,9 @@ public class SparkSqlInterpreter extends AbstractInterpreter {
       Method method = sqlContext.getClass().getMethod("sql", String.class);
       for (String sql : sqls) {
         curSql = sql;
+        // Put sql into InterpreterContext's local properties, so that ZeppelinContext#show
+        // can use this context info
+        context.getLocalProperties().put("sql", curSql);
         String result = sparkInterpreter.getZeppelinContext()
                 .showData(method.invoke(sqlContext, sql), maxResult);
         context.out.write(result);

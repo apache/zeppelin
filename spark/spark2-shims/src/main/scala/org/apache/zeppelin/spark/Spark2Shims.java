@@ -28,6 +28,7 @@ import org.apache.spark.sql.SparkSession;
 import org.apache.spark.sql.catalyst.expressions.GenericRow;
 import org.apache.spark.sql.types.StructType;
 import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.ResultMessages;
 import org.apache.zeppelin.interpreter.SingleRowInterpreterResult;
 import org.apache.zeppelin.tabledata.TableDataUtils;
@@ -81,9 +82,16 @@ public class Spark2Shims extends SparkShims {
         }
       }
 
+      InterpreterResult.Type outputType = InterpreterResult.Type.TABLE;
+      String sql = context.getLocalProperties().get("sql");
+      if (StringUtils.isNotBlank(sql) && sql.trim().toLowerCase().startsWith("explain")) {
+        outputType = InterpreterResult.Type.TEXT;
+      }
+
       StringBuilder msg = new StringBuilder();
-      msg.append("\n%table ");
+      msg.append("\n%" + outputType.toString().toLowerCase() + " ");
       msg.append(StringUtils.join(TableDataUtils.normalizeColumns(columns), "\t"));
+
       msg.append("\n");
       boolean isLargerThanMaxResult = rows.size() > maxResult;
       if (isLargerThanMaxResult) {
@@ -91,7 +99,11 @@ public class Spark2Shims extends SparkShims {
       }
       for (Row row : rows) {
         for (int i = 0; i < row.size(); ++i) {
-          msg.append(TableDataUtils.normalizeColumn(row.get(i)));
+          if (outputType == InterpreterResult.Type.TABLE) {
+            msg.append(TableDataUtils.normalizeColumn(row.get(i)));
+          } else {
+            msg.append(row.get(i));
+          }
           if (i != row.size() -1) {
             msg.append("\t");
           }
