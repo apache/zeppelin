@@ -17,7 +17,7 @@
 kind: Pod
 apiVersion: v1
 metadata:
-  namespace: {{zeppelin.k8s.namespace}}
+  namespace: {{zeppelin.k8s.interpreter.namespace}}
   name: {{zeppelin.k8s.interpreter.pod.name}}
   labels:
     app: {{zeppelin.k8s.interpreter.pod.name}}
@@ -114,7 +114,7 @@ spec:
 kind: Service
 apiVersion: v1
 metadata:
-  namespace: {{zeppelin.k8s.namespace}}
+  namespace: {{zeppelin.k8s.interpreter.namespace}}
   name: {{zeppelin.k8s.interpreter.pod.name}}             # keep Service name the same to Pod name.
   {% if zeppelin.k8s.server.uid is defined %}
   ownerReferences:
@@ -146,7 +146,7 @@ kind: Role
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: {{zeppelin.k8s.interpreter.pod.name}}
-  namespace: {{zeppelin.k8s.namespace}}
+  namespace: {{zeppelin.k8s.interpreter.namespace}}
   {% if zeppelin.k8s.server.uid is defined %}
   ownerReferences:
   - apiVersion: v1
