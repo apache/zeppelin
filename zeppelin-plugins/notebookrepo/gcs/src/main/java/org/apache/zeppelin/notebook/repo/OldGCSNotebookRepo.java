@@ -175,7 +175,7 @@ public class OldGCSNotebookRepo implements OldNotebookRepo {
     }
 
     try {
-      return Note.fromJson(new String(contents, encoding));
+      return Note.fromJson(noteId, new String(contents, encoding));
     } catch (JsonParseException jpe) {
       throw new IOException(
           "Could note parse as json " + blobId.toString() + jpe.getMessage(), jpe);

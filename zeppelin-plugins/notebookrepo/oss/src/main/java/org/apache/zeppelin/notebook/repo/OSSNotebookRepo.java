@@ -111,7 +111,7 @@ public class OSSNotebookRepo implements NotebookRepo {
     InputStream in = null;
     try {
       in = ossObject.getObjectContent();
-      return Note.fromJson(IOUtils.toString(in, StandardCharsets.UTF_8));
+      return Note.fromJson(noteId, IOUtils.toString(in, StandardCharsets.UTF_8));
     } finally {
       if (in != null) {
         in.close();

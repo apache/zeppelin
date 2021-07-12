@@ -50,6 +50,7 @@ import org.slf4j.LoggerFactory;
 import org.eclipse.aether.RepositoryException;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -465,6 +466,29 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
       assertEquals(mock1ProcessNum, interpreterSettingManager.getByName("mock1").getAllInterpreterGroups().size());
 
       LOGGER.info("--------------- Finish Test testRemoveNote ---------------");
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+  }
+
+  @Test
+  public void testRemoveCorruptedNote() throws IOException, InterruptedException {
+    try {
+      LOGGER.info("--------------- Test testRemoveCorruptedNote ---------------");
+      // create a note and a paragraph
+      Note corruptedNote = notebook.createNote("note1", anonymous);
+      String corruptedNotePath = notebookDir.getAbsolutePath() + corruptedNote.getPath() + "_" + corruptedNote.getId() + ".zpln";
+      // corrupt note
+      try (FileWriter myWriter = new FileWriter(corruptedNotePath)) {
+        myWriter.write("{{{I'm corrupted;;;");
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+      LOGGER.info("--------------- Finish Test testRemoveCorruptedNote ---------------");
+      int numberOfNotes = notebook.getAllNotes().size();
+      notebook.removeNote(corruptedNote, anonymous);
+      assertEquals(numberOfNotes - 1, notebook.getAllNotes().size());
+      LOGGER.info("--------------- Finish Test testRemoveCorruptedNote ---------------");
     } catch (Exception e) {
       e.printStackTrace();
     }

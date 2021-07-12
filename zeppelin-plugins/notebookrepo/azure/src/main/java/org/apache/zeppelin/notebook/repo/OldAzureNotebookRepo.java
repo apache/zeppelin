@@ -132,7 +132,7 @@ public class OldAzureNotebookRepo implements OldNotebookRepo {
     String json = IOUtils.toString(ins,
         conf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_ENCODING));
     ins.close();
-    return Note.fromJson(json);
+    return Note.fromJson(noteId, json);
   }
 
   @Override

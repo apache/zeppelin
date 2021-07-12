@@ -58,7 +58,7 @@ public class OldFileSystemNotebookRepo implements OldNotebookRepo {
   public Note get(final String noteId, AuthenticationInfo subject) throws IOException {
     String content = this.fs.readFile(
         new Path(notebookDir.toString() + "/" + noteId + "/note.json"));
-    return Note.fromJson(content);
+    return Note.fromJson(noteId, content);
   }
 
   @Override

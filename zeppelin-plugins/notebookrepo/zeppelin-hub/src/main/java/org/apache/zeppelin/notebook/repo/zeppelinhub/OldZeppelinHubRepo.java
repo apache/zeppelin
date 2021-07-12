@@ -195,7 +195,7 @@ public class OldZeppelinHubRepo implements OldNotebookRepoWithVersionControl {
     }
     String token = getUserToken(subject.getUser());
     String response = restApiClient.get(token, noteId);
-    Note note = Note.fromJson(response);
+    Note note = Note.fromJson(noteId, response);
     if (note == null) {
       return EMPTY_NOTE;
     }
@@ -254,7 +254,7 @@ public class OldZeppelinHubRepo implements OldNotebookRepoWithVersionControl {
     String token = getUserToken(subject.getUser());
     String response = restApiClient.get(token, endpoint);
 
-    Note note = Note.fromJson(response);
+    Note note = Note.fromJson(noteId, response);
     if (note == null) {
       return EMPTY_NOTE;
     }

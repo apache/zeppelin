@@ -125,7 +125,7 @@ public class AzureNotebookRepo implements NotebookRepo {
     String json = IOUtils.toString(ins,
         conf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_ENCODING));
     ins.close();
-    return Note.fromJson(json);
+    return Note.fromJson(noteId, json);
   }
 
   @Override
