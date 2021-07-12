@@ -178,6 +178,8 @@ public abstract class FlinkIntegrationTest {
     flinkInterpreterSetting.setProperty("PATH", hadoopHome + "/bin:" + System.getenv("PATH"));
     flinkInterpreterSetting.setProperty("ZEPPELIN_CONF_DIR", zeppelin.getZeppelinConfDir().getAbsolutePath());
     flinkInterpreterSetting.setProperty("flink.execution.mode", "yarn-application");
+    // parameters with whitespace
+    flinkInterpreterSetting.setProperty("flink.yarn.appName", "hello flink");
     flinkInterpreterSetting.setProperty("zeppelin.flink.run.asLoginUser", "false");
 
     testInterpreterBasics();
@@ -186,6 +188,7 @@ public abstract class FlinkIntegrationTest {
     GetApplicationsRequest request = GetApplicationsRequest.newInstance(EnumSet.of(YarnApplicationState.RUNNING));
     GetApplicationsResponse response = hadoopCluster.getYarnCluster().getResourceManager().getClientRMService().getApplications(request);
     assertEquals(1, response.getApplicationList().size());
+    assertEquals("hello flink", response.getApplicationList().get(0).getName());
 
     interpreterSettingManager.close();
   }
