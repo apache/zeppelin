@@ -135,6 +135,19 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterManagedProcess
     return namespace;
   }
 
+  /**
+   * Get the service account. If user does not set the service account from the interpreter settings, return default.
+   * @return the service account
+   */
+  public String getServiceAccount(){
+    if(properties.containsKey("zeppelin.k8s.interpreter.serviceAccount")){
+      return properties.getProperty("zeppelin.k8s.interpreter.serviceAccount");
+    }
+    else{
+      return "default";
+    }
+  }
+
   @Override
   public void start(String userName) throws IOException {
 
@@ -277,6 +290,7 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterManagedProcess
     // k8s template properties
     k8sProperties.put("zeppelin.k8s.namespace", getNamespace());
     k8sProperties.put("zeppelin.k8s.interpreter.pod.name", getPodName());
+    k8sProperties.put("zeppelin.k8s.interpreter.serviceAccount", getServiceAccount());
     k8sProperties.put("zeppelin.k8s.interpreter.container.name", interpreterGroupName.toLowerCase());
     k8sProperties.put("zeppelin.k8s.interpreter.container.image", containerImage);
     k8sProperties.put("zeppelin.k8s.interpreter.group.id", getInterpreterGroupId());
