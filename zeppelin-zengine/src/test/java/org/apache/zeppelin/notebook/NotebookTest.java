@@ -478,21 +478,6 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
       // create a note and a paragraph
       Note corruptedNote = notebook.createNote("note1", anonymous);
       String corruptedNotePath = notebookDir.getAbsolutePath() + corruptedNote.getPath() + "_" + corruptedNote.getId() + ".zpln";
-      int mock1ProcessNum = interpreterSettingManager.getByName("mock1").getAllInterpreterGroups().size();
-      Paragraph p = corruptedNote.addNewParagraph(AuthenticationInfo.ANONYMOUS);
-      Map<String, Object> config = new HashMap<>();
-      p.setConfig(config);
-      p.setText("%mock1 sleep 100000");
-      p.execute(false);
-      // wait until it is running
-      while (!p.isRunning()) {
-        try {
-          Thread.sleep(1000);
-        } catch (InterruptedException e) {
-          e.printStackTrace();
-        }
-      }
-      assertEquals(mock1ProcessNum + 1, interpreterSettingManager.getByName("mock1").getAllInterpreterGroups().size());
       // corrupt note
       try (FileWriter myWriter = new FileWriter(corruptedNotePath)) {
         myWriter.write("{{{I'm corrupted;;;");
@@ -500,12 +485,10 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
         e.printStackTrace();
       }
       LOGGER.info("--------------- Finish Test testRemoveCorruptedNote ---------------");
+      int numberOfNotes = notebook.getAllNotes().size();
       notebook.removeNote(corruptedNote, anonymous);
-      // stop interpreter process is async, so we wait for 5 seconds here.
-      Thread.sleep(5 * 1000);
-      assertEquals(mock1ProcessNum, interpreterSettingManager.getByName("mock1").getAllInterpreterGroups().size());
-
-      LOGGER.info("--------------- Finish Test testRemoveNote ---------------");
+      assertEquals(numberOfNotes - 1, notebook.getAllNotes().size());
+      LOGGER.info("--------------- Finish Test testRemoveCorruptedNote ---------------");
     } catch (Exception e) {
       e.printStackTrace();
     }
