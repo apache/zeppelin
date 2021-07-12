@@ -73,6 +73,11 @@ public class K8sStandardInterpreterLauncher extends InterpreterLauncher {
     if (isRunningOnKubernetes()) {
       return readFile(Config.KUBERNETES_NAMESPACE_PATH, Charset.defaultCharset()).trim();
     } else {
+      //namespace may be set from the interpreter properties
+      if(properties.containsKey("zeppelin.k8s.interpreter.namespace")){
+        return properties.getProperty("zeppelin.k8s.interpreter.namespace");
+      }
+      
       return zConf.getK8sNamepsace();
     }
   }

@@ -275,7 +275,7 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterManagedProcess
     Properties k8sProperties = new Properties();
 
     // k8s template properties
-    k8sProperties.put("zeppelin.k8s.namespace", getNamespace());
+    k8sProperties.put("zeppelin.k8s.interpreter.namespace", getNamespace());
     k8sProperties.put("zeppelin.k8s.interpreter.pod.name", getPodName());
     k8sProperties.put("zeppelin.k8s.interpreter.container.name", interpreterGroupName.toLowerCase());
     k8sProperties.put("zeppelin.k8s.interpreter.container.image", containerImage);
