@@ -315,13 +315,6 @@ public class RemoteInterpreterServer extends Thread
 
     remoteInterpreterServer.join();
     LOGGER.info("RemoteInterpreterServer thread is finished");
-
-    /* TODO(pdallig): Remove System.exit(0) if the thrift server can be shut down successfully.
-     * https://github.com/apache/thrift/commit/9cb1c794cd39cfb276771f8e52f0306eb8d462fd
-     * should be part of the next release and solve the problem.
-     * We may have other threads that are not terminated successfully.
-     */
-    System.exit(0);
   }
 
   // Submit interpreter process metadata information to cluster metadata
