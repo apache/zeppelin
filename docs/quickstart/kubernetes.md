@@ -244,6 +244,17 @@ to customize,
   3. Apply modified `k8s/zeppelin-server.yaml`.
   4. Run a paragraph will create an interpreter using modified yaml files.
 
+The interpreter pod can also be customized through the interpreter settings. Here are some of the properties:
+| Property Name | Default Value | Description |
+| ----- | ----- | ----- |
+| `zeppelin.k8s.namespace` | `default` | The Kubernetes namespace to use. |
+| `zeppelin.k8s.interpreter.container.image` | `apache/zeppelin:<ZEPPELIN_VERSION>` | The interpreter image to use. |
+| `zeppelin.k8s.interpreter.cores` | (optional)  | The number of cpu cores to use. |
+| `zeppelin.k8s.interpreter.memory` | (optional) | The memory to use, e.g., `1g`. |
+| `zeppelin.k8s.interpreter.gpu.type` | (optional) | Set the type of gpu to request when the interpreter pod is required to schedule gpu resources, e.g., `nvidia.com/gpu`. |
+| `zeppelin.k8s.interpreter.gpu.nums` | (optional) | Tne number of gpu to use. |
+| `zeppelin.k8s.interpreter.imagePullSecrets` | (optional) | Set the comma-separated list of Kubernetes secrets while pulling images, e.g., `mysecret1,mysecret2` |
+
 
 ## Future work
 

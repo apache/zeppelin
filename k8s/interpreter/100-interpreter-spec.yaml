@@ -93,6 +93,12 @@ spec:
     volumeMounts:
     - name: spark-home
       mountPath: /spark
+  {% if zeppelin.k8s.interpreter.imagePullSecrets is defined %}
+  imagePullSecrets:
+  {% for secret in zeppelin.k8s.interpreter.imagePullSecrets.split(',') %}
+  - name: {{secret}}
+  {% endfor %}
+  {% endif %}
   volumes:
   - name: spark-home
     emptyDir: {}
