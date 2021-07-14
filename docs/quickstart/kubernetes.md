@@ -248,6 +248,7 @@ The interpreter pod can also be customized through the interpreter settings. Her
 | Property Name | Default Value | Description |
 | ----- | ----- | ----- |
 | `zeppelin.k8s.namespace` | `default` | The Kubernetes namespace to use. |
+| `zeppelin.k8s.interpreter.serviceAccount` | `default` | The Kubernetes service account to use. |
 | `zeppelin.k8s.interpreter.container.image` | `apache/zeppelin:<ZEPPELIN_VERSION>` | The interpreter image to use. |
 | `zeppelin.k8s.interpreter.cores` | (optional)  | The number of cpu cores to use. |
 | `zeppelin.k8s.interpreter.memory` | (optional) | The memory to use, e.g., `1g`. |
