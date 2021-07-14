@@ -57,6 +57,9 @@ public class TimeoutLifecycleManager extends LifecycleManager {
     ScheduledExecutorService checkScheduler = ExecutorFactory.singleton()
         .createOrGetScheduled("TimeoutLifecycleManager", 1);
     checkScheduler.scheduleAtFixedRate(() -> {
+      // check both lastBusyTimeInMillis & noJobsRunnings
+      // In one corner case, lastBusyTimeInMilli won't be updated, that is when zeppelin server is dead
+      // then RemoteInterpreterServer#getProgress and RemoteInterpreterServer#getStatus won't be called.
       if ((System.currentTimeMillis() - lastBusyTimeInMillis) > timeoutThreshold &&
               noJobsRunning()) {
         LOGGER.info("Interpreter process idle time exceed threshold, try to stop it");
