@@ -40,6 +40,8 @@
     <flink.hadoop.version>2.6.5</flink.hadoop.version>
     <hive.version>2.3.4</hive.version>
     <hiverunner.version>4.0.0</hiverunner.version>
+    <!-- TODO: upgrade/remove hive thrift version once hive.version is upgraded to 3.x-->
+    <hive.thrift.version>0.13.0</hive.thrift.version>
     <grpc.version>1.15.0</grpc.version>
 
     <flink.bin.download.url>https://archive.apache.org/dist/flink/flink-${flink.version}/flink-${flink.version}-bin-scala_${flink.scala.binary.version}.tgz</flink.bin.download.url>
@@ -596,6 +598,12 @@
           <artifactId>pentaho-aggdesigner-algorithm</artifactId>
         </exclusion>
       </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.thrift</groupId>
+      <artifactId>libthrift</artifactId>
+      <version>${hive.thrift.version}</version>
     </dependency>
 
     <dependency>
