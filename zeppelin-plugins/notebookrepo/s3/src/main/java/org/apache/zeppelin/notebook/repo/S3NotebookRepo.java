@@ -224,7 +224,7 @@ public class S3NotebookRepo implements NotebookRepo {
     }
     try (InputStream ins = s3object.getObjectContent()) {
       String json = IOUtils.toString(ins, conf.getString(ConfVars.ZEPPELIN_ENCODING));
-      return Note.fromJson(json);
+      return Note.fromJson(noteId, json);
     }
   }
 

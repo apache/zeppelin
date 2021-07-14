@@ -205,7 +205,7 @@ public class NoteTest {
     assertEquals(p2, p);
 
     // test Note Json
-    Note note2 = Note.fromJson(note.toJson());
+    Note note2 = Note.fromJson(null, note.toJson());
     assertEquals(note2, note);
   }
 }

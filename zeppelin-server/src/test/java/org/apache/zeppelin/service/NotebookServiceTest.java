@@ -35,6 +35,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -262,6 +263,20 @@ public class NotebookServiceTest {
     notesInfo = notebookService.listNotesInfo(false, context, callback);
     assertEquals(2, notesInfo.size());
     verify(callback).onSuccess(notesInfo, context);
+
+    // test moving corrupted note to trash
+    Note corruptedNote = notebookService.createNote("/folder_1/corruptedNote", "test", true, context, callback);
+    String corruptedNotePath = notebookDir.getAbsolutePath() + corruptedNote.getPath() + "_" + corruptedNote.getId() + ".zpln";
+    // corrupt note
+    FileWriter myWriter = new FileWriter(corruptedNotePath);
+    myWriter.write("{{{I'm corrupted;;;");
+    myWriter.close();
+    notebookService.moveNoteToTrash(corruptedNote.getId(), context, callback);
+    reset(callback);
+    notesInfo = notebookService.listNotesInfo(false, context, callback);
+    assertEquals(3, notesInfo.size());
+    verify(callback).onSuccess(notesInfo, context);
+    notebookService.removeNote(corruptedNote.getId(), context, callback);
 
     // move note to Trash
     notebookService.moveNoteToTrash(importedNote.getId(), context, callback);

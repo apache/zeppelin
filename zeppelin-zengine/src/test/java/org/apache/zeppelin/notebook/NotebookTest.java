@@ -50,6 +50,7 @@ import org.slf4j.LoggerFactory;
 import org.eclipse.aether.RepositoryException;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -468,6 +469,23 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     } catch (Exception e) {
       e.printStackTrace();
     }
+  }
+
+  @Test
+  public void testRemoveCorruptedNote() throws IOException{
+      LOGGER.info("--------------- Test testRemoveCorruptedNote ---------------");
+      // create a note and a paragraph
+      Note corruptedNote = notebook.createNote("note1", anonymous);
+      String corruptedNotePath = notebookDir.getAbsolutePath() + corruptedNote.getPath() + "_" + corruptedNote.getId() + ".zpln";
+      // corrupt note
+      FileWriter myWriter = new FileWriter(corruptedNotePath);
+      myWriter.write("{{{I'm corrupted;;;");
+      myWriter.close();
+      LOGGER.info("--------------- Finish Test testRemoveCorruptedNote ---------------");
+      int numberOfNotes = notebook.getAllNotes().size();
+      notebook.removeNote(corruptedNote, anonymous);
+      assertEquals(numberOfNotes - 1, notebook.getAllNotes().size());
+      LOGGER.info("--------------- Finish Test testRemoveCorruptedNote ---------------");
   }
 
   @Test

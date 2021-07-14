@@ -292,7 +292,7 @@ public class Notebook {
    */
   public Note importNote(String sourceJson, String notePath, AuthenticationInfo subject)
       throws IOException {
-    Note oldNote = Note.fromJson(sourceJson);
+    Note oldNote = Note.fromJson(null, sourceJson);
     if (notePath == null) {
       notePath = oldNote.getName();
     }
@@ -344,6 +344,12 @@ public class Notebook {
     noteManager.removeNote(note.getId(), subject);
     authorizationService.removeNoteAuth(note.getId());
     fireNoteRemoveEvent(note, subject);
+  }
+
+  public void removeCorruptedNote(String noteId, AuthenticationInfo subject) throws IOException {
+    LOGGER.info("Remove corrupted note: {}", noteId);
+    noteManager.removeNote(noteId, subject);
+    authorizationService.removeNoteAuth(noteId);
   }
 
   public void removeNote(String noteId, AuthenticationInfo subject) throws IOException {

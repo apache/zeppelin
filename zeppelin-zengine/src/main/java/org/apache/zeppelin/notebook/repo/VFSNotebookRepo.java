@@ -133,7 +133,7 @@ public class VFSNotebookRepo implements NotebookRepo {
         NameScope.DESCENDENT);
     String json = IOUtils.toString(noteFile.getContent().getInputStream(),
         conf.getString(ConfVars.ZEPPELIN_ENCODING));
-    Note note = Note.fromJson(json);
+    Note note = Note.fromJson(noteId, json);
     // setPath here just for testing, because actually NoteManager will setPath
     note.setPath(notePath);
     return note;
