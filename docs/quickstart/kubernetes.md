@@ -254,7 +254,8 @@ The interpreter pod can also be customized through the interpreter settings. Her
 | `zeppelin.k8s.interpreter.gpu.type` | (optional) | Set the type of gpu to request when the interpreter pod is required to schedule gpu resources, e.g., `nvidia.com/gpu`. |
 | `zeppelin.k8s.interpreter.gpu.nums` | (optional) | Tne number of gpu to use. |
 | `zeppelin.k8s.interpreter.imagePullSecrets` | (optional) | Set the comma-separated list of Kubernetes secrets while pulling images, e.g., `mysecret1,mysecret2` |
-
+| `zeppelin.k8s.interpreter.container.imagePullPolicy` | (optional) | Set the pull policy of the interpreter image, e.g., `Always` |
+| `zeppelin.k8s.spark.container.imagePullPolicy` | (optional) | Set the pull policy of the spark image, e.g., `Always` |
 
 ## Future work
 

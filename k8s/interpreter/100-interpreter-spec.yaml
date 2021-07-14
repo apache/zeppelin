@@ -43,6 +43,9 @@ spec:
   containers:
   - name: {{zeppelin.k8s.interpreter.container.name}}
     image: {{zeppelin.k8s.interpreter.container.image}}
+    {% if zeppelin.k8s.interpreter.container.imagePullPolicy is defined %}
+    imagePullPolicy: {{zeppelin.k8s.interpreter.container.imagePullPolicy}}
+    {% endif %}
     args:
       - "$(ZEPPELIN_HOME)/bin/interpreter.sh"
       - "-d"
@@ -89,6 +92,9 @@ spec:
   initContainers:
   - name: spark-home-init
     image: {{zeppelin.k8s.spark.container.image}}
+    {% if zeppelin.k8s.spark.container.imagePullPolicy is defined %}
+    imagePullPolicy: {{zeppelin.k8s.spark.container.imagePullPolicy}}
+    {% endif %}
     command: ["sh", "-c", "cp -r /opt/spark/* /spark/"]
     volumeMounts:
     - name: spark-home
