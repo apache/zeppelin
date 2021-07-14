@@ -815,7 +815,7 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
   };
 
   const commitVizConfigChange = function(config, vizId) {
-    if ([ParagraphStatus.RUNNING, ParagraphStatus.PENDING].indexOf(paragraph.status) < 0) {
+    if (ParagraphStatus.PENDING !== paragraph.status) {
       let newConfig = angular.copy($scope.config);
       if (!newConfig.graph) {
         newConfig.graph = {};
