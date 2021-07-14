@@ -268,11 +268,9 @@ public class NotebookServiceTest {
     Note corruptedNote = notebookService.createNote("/folder_1/corruptedNote", "test", true, context, callback);
     String corruptedNotePath = notebookDir.getAbsolutePath() + corruptedNote.getPath() + "_" + corruptedNote.getId() + ".zpln";
     // corrupt note
-    try (FileWriter myWriter = new FileWriter(corruptedNotePath)) {
-      myWriter.write("{{{I'm corrupted;;;");
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
+    FileWriter myWriter = new FileWriter(corruptedNotePath);
+    myWriter.write("{{{I'm corrupted;;;");
+    myWriter.close();
     notebookService.moveNoteToTrash(corruptedNote.getId(), context, callback);
     reset(callback);
     notesInfo = notebookService.listNotesInfo(false, context, callback);

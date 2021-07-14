@@ -472,26 +472,20 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
   }
 
   @Test
-  public void testRemoveCorruptedNote() throws IOException, InterruptedException {
-    try {
+  public void testRemoveCorruptedNote() throws IOException{
       LOGGER.info("--------------- Test testRemoveCorruptedNote ---------------");
       // create a note and a paragraph
       Note corruptedNote = notebook.createNote("note1", anonymous);
       String corruptedNotePath = notebookDir.getAbsolutePath() + corruptedNote.getPath() + "_" + corruptedNote.getId() + ".zpln";
       // corrupt note
-      try (FileWriter myWriter = new FileWriter(corruptedNotePath)) {
-        myWriter.write("{{{I'm corrupted;;;");
-      } catch (IOException e) {
-        e.printStackTrace();
-      }
+      FileWriter myWriter = new FileWriter(corruptedNotePath);
+      myWriter.write("{{{I'm corrupted;;;");
+      myWriter.close();
       LOGGER.info("--------------- Finish Test testRemoveCorruptedNote ---------------");
       int numberOfNotes = notebook.getAllNotes().size();
       notebook.removeNote(corruptedNote, anonymous);
       assertEquals(numberOfNotes - 1, notebook.getAllNotes().size());
       LOGGER.info("--------------- Finish Test testRemoveCorruptedNote ---------------");
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
   }
 
   @Test

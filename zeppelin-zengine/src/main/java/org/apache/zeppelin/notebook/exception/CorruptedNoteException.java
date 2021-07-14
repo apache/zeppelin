@@ -21,6 +21,6 @@ import java.io.IOException;
 
 public class CorruptedNoteException extends IOException {
     public CorruptedNoteException(final String noteId, final String message, Exception e) {
-        super(String.format("noteId: %s", noteId) + message, e);
+        super(String.format("noteId: %s - ", noteId) + message, e);
     }
 }
