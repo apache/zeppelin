@@ -33,6 +33,7 @@ metadata:
     uid: {{zeppelin.k8s.server.uid}}
   {% endif %}
 spec:
+  serviceAccountName: {{zeppelin.k8s.interpreter.serviceAccount}}
   {% if zeppelin.k8s.interpreter.group.name == "spark" %}
   automountServiceAccountToken: true
   {% else %}
@@ -175,7 +176,7 @@ metadata:
   {% endif %}
 subjects:
 - kind: ServiceAccount
-  name: default
+  name: {{zeppelin.k8s.interpreter.serviceAccount}}
 roleRef:
   kind: Role
   name: {{zeppelin.k8s.interpreter.pod.name}}
