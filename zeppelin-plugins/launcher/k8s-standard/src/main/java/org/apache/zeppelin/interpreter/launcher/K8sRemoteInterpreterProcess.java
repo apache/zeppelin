@@ -241,6 +241,7 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterManagedProcess
   void apply(File path, boolean delete, Properties templateProperties) throws IOException {
     if (path.getName().startsWith(".") || path.isHidden() || path.getName().endsWith("~")) {
       LOGGER.info("Skip {}", path.getAbsolutePath());
+      return;
     }
 
     if (path.isDirectory()) {
