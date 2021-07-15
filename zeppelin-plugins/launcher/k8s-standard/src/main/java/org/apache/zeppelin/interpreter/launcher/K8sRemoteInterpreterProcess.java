@@ -317,6 +317,20 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterManagedProcess
               getPodName(),
               k8sEnv.get(ENV_SERVICE_DOMAIN)
           ));
+
+      // configure interpreter property "zeppelin.k8s.spark.ingress.host" if not defined, to enable spark ui through ingress
+      String ingressHost = (String) properties.get("zeppelin.k8s.spark.ingress.host");
+      if (StringUtils.isBlank(ingressHost)) {
+        ingressHost = "{{PORT}}-{{SERVICE_NAME}}.{{SERVICE_DOMAIN}}";
+      }
+      properties.put("zeppelin.k8s.spark.ingress.host",
+          sparkUiWebUrlFromTemplate(
+              ingressHost,
+              webUiPort,
+              getPodName(),
+              k8sEnv.get(ENV_SERVICE_DOMAIN)
+          ));
+      
       // Resources of Interpreter Pod
       if (properties.containsKey(SPARK_DRIVER_MEMORY)) {
         String memory;
