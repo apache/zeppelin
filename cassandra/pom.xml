@@ -31,6 +31,7 @@
     <description>Zeppelin cassandra support</description>
 
     <properties>
+        <!-- TODO: remove thrift dependency after cassandra upgrade. -->
         <cassandra.driver.version>4.8.0</cassandra.driver.version>
         <snappy.version>1.1.7.3</snappy.version>
         <lz4.version>1.6.0</lz4.version>
@@ -62,6 +63,12 @@
             <groupId>com.datastax.oss</groupId>
             <artifactId>java-driver-core</artifactId>
             <version>${cassandra.driver.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.thrift</groupId>
+            <artifactId>libthrift</artifactId>
+            <version>0.13.0</version>
         </dependency>
 
         <!-- Compression libraries for the cassandra-driver protocol. -->

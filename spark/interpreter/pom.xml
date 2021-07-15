@@ -219,7 +219,13 @@
       <version>${spark.version}</version>
       <scope>provided</scope>
     </dependency>
-      
+
+    <dependency>
+      <groupId>org.apache.thrift</groupId>
+      <artifactId>libthrift</artifactId>
+      <version>0.13.0</version>
+    </dependency>
+
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-exec</artifactId>

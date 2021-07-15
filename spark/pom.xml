@@ -183,6 +183,7 @@
                 <activeByDefault>true</activeByDefault>
             </activation>
             <properties>
+                <!-- TODO: remove thrift dependency after spark.version upgrade-->
                 <spark.version>2.4.5</spark.version>
                 <protobuf.version>2.5.0</protobuf.version>
                 <py4j.version>0.10.7</py4j.version>

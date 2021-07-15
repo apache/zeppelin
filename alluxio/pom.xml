@@ -31,6 +31,7 @@
     <packaging>jar</packaging>
     <name>Zeppelin: Alluxio interpreter</name>
 
+    <!-- TODO: remove thrift dependency after alluxio upgrade. -->
     <properties>
         <alluxio.version>1.0.0</alluxio.version>
         <interpreter.name>alluxio</interpreter.name>
@@ -99,6 +100,12 @@
             <artifactId>alluxio-underfs-local</artifactId>
             <version>${alluxio.version}</version>
             <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.thrift</groupId>
+            <artifactId>libthrift</artifactId>
+            <version>0.13.0</version>
         </dependency>
     </dependencies>
 
