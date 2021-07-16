@@ -19,9 +19,18 @@ package org.apache.zeppelin.livy;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import java.util.Arrays;
+
+import java.io.IOException;
+import java.io.StringWriter;
+import java.io.Writer;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Properties;
+import java.util.Arrays;
 import java.util.Map;
+import java.util.Locale;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
@@ -33,11 +42,6 @@ import org.apache.zeppelin.interpreter.ResultMessages;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-
-import static org.apache.commons.lang3.StringEscapeUtils.escapeEcmaScript;
 
 /**
  * Livy SparkSQL Interpreter for Zeppelin.
@@ -51,7 +55,6 @@ public class LivySparkSQLInterpreter extends BaseLivyInterpreter {
       "zeppelin.livy.spark.sql.maxResult";
 
   private LivySparkInterpreter sparkInterpreter;
-  private String codeType = null;
 
   private boolean isSpark2 = false;
   private int maxResult = 1000;
@@ -197,7 +200,18 @@ public class LivySparkSQLInterpreter extends BaseLivyInterpreter {
     return rows;
   }
 
-  protected List<String> parseSQLOutput(String output) {
+  protected List<String> parseSQLOutput(String str) {
+    String fullWidthRegex = "([" +
+            "\u1100-\u115F" +
+            "\u2E80-\uA4CF" +
+            "\uAC00-\uD7A3" +
+            "\uF900-\uFAFF" +
+            "\uFE10-\uFE19" +
+            "\uFE30-\uFE6F" +
+            "\uFF00-\uFF60" +
+            "\uFFE0-\uFFE6" +
+            "])";
+    String output = str.replaceAll(fullWidthRegex, "$1\u0001");
     List<String> rows = new ArrayList<>();
     // Get first line by breaking on \n. We can guarantee
     // that \n marks the end of the first line, but not for
@@ -235,7 +249,8 @@ public class LivySparkSQLInterpreter extends BaseLivyInterpreter {
         List<String> cells = new ArrayList<>();
         for (Pair pair : pairs) {
           // strip the blank space around the cell and escape the string
-          cells.add(escapeEcmaScript(line.substring(pair.start, pair.end)).trim());
+          cells.add(escapeJavaStyleString(line.substring(pair.start, pair.end)
+                          .replaceAll("\u0001", "")).trim());
         }
         rows.add(StringUtils.join(cells, "\t"));
       }
@@ -244,6 +259,101 @@ public class LivySparkSQLInterpreter extends BaseLivyInterpreter {
       lineEnd = lineStart + firstLine.length();
     }
     return rows;
+  }
+
+  private static String escapeJavaStyleString(String str) {
+    if (str == null) {
+      return null;
+    }
+    try {
+      StringWriter writer = new StringWriter(str.length() * 2);
+      escapeJavaStyleString(writer, str);
+      return writer.toString();
+    } catch (IOException ioe) {
+      // this should never ever happen while writing to a StringWriter
+      throw new RuntimeException(ioe);
+    }
+  }
+
+  private static void escapeJavaStyleString(Writer out, String str) throws IOException {
+    if (out == null) {
+      throw new IllegalArgumentException("The Writer must not be null");
+    }
+    if (str == null) {
+      return;
+    }
+    int sz;
+    sz = str.length();
+    for (int i = 0; i < sz; i++) {
+      char ch = str.charAt(i);
+
+      // handle unicode 4e00-\u9fa5
+      if (ch > 0xfff) {
+        if (ch >= 0x4e00 && ch < 0x9fa5) {
+          out.write(ch);
+        } else {
+          out.write("\\u" + hex(ch));
+        }
+      } else if (ch > 0xff) {
+        out.write("\\u0" + hex(ch));
+      } else if (ch > 0x7f) {
+        out.write("\\u00" + hex(ch));
+      } else if (ch < 32) {
+        switch (ch) {
+          case '\b' :
+            out.write('\\');
+            out.write('b');
+            break;
+          case '\n' :
+            out.write('\\');
+            out.write('n');
+            break;
+          case '\t' :
+            out.write('\\');
+            out.write('t');
+            break;
+          case '\f' :
+            out.write('\\');
+            out.write('f');
+            break;
+          case '\r' :
+            out.write('\\');
+            out.write('r');
+            break;
+          default :
+            if (ch > 0xf) {
+              out.write("\\u00" + hex(ch));
+            } else {
+              out.write("\\u000" + hex(ch));
+            }
+            break;
+        }
+      } else {
+        switch (ch) {
+          case '\'' :
+            out.write('\\');
+            break;
+          case '"' :
+            out.write('\\');
+            out.write('"');
+            break;
+          case '\\' :
+            out.write('\\');
+            out.write('\\');
+            break;
+          case '/' :
+            out.write('\\');
+            break;
+          default :
+            out.write(ch);
+            break;
+        }
+      }
+    }
+  }
+
+  private static String hex(char ch) {
+    return Integer.toHexString(ch).toUpperCase(Locale.ENGLISH);
   }
 
   /**

@@ -76,12 +76,12 @@ public class LivySQLInterpreterTest {
     rows = sqlInterpreter.parseSQLOutput("+---+---+\n" +
         "|  a|  b|\n" +
         "+---+---+\n" +
-        "|  1| 1a|\n" +
+        "|  1| 你|\n" +
         "|  2| 2b|\n" +
         "+---+---+");
     assertEquals(3, rows.size());
     assertEquals("a\tb", rows.get(0));
-    assertEquals("1\t1a", rows.get(1));
+    assertEquals("1\t你", rows.get(1));
     assertEquals("2\t2b", rows.get(2));
 
 
