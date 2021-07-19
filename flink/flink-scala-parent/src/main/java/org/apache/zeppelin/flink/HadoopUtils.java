@@ -58,6 +58,10 @@ public class HadoopUtils {
     return getYarnApplicationReport(yarnAppId).getTrackingUrl();
   }
 
+  public static String getYarnAppId(ClusterClient clusterClient) {
+    return ((ApplicationId) clusterClient.getClusterId()).toString();
+  }
+
   public static int getFlinkRestPort(String yarnAppId) throws IOException, YarnException {
     return getYarnApplicationReport(ConverterUtils.toApplicationId(yarnAppId)).getRpcPort();
   }
