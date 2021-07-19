@@ -179,10 +179,11 @@ public class SparkParagraphIT extends AbstractZeppelinIT {
       collector.checkThat("First paragraph status is ",
               getParagraphStatus(1), CoreMatchers.equalTo("ABORT")
       );
-      collector.checkThat("Second paragraph status is ",
-              getParagraphStatus(2), CoreMatchers.equalTo("READY")
-      );
 
+      collector.checkThat("Second paragraph status is ",
+              getParagraphStatus(2), CoreMatchers.either(CoreMatchers.equalTo("PENDING"))
+                      .or(CoreMatchers.equalTo("READY"))
+      );
 
       driver.navigate().refresh();
       ZeppelinITUtils.sleep(3000, false);

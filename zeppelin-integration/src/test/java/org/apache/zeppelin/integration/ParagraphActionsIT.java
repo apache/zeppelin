@@ -391,6 +391,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@class='icon-settings']")).click();
       clickAndWait(By.xpath(getParagraphXPath(1) +
           "//ul/li/a[@ng-click='clearParagraphOutput(paragraph)']"));
+      ZeppelinITUtils.sleep(1000, false);
       collector.checkThat("After Clear  Output field contains ",
           driver.findElements(By.xpath(xpathToOutputField)).size(),
           CoreMatchers.equalTo(0));
@@ -696,6 +697,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
 
       WebElement firstCheckbox = driver.findElement(By.xpath("(" + getParagraphXPath(1) + "//input[@type='checkbox'])[1]"));
       firstCheckbox.click();
+      ZeppelinITUtils.sleep(2000, false);
       collector.checkThat("After unchecking one of the boxes, we can see the newly updated output without the option we unchecked",
               driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'text plainTextContent')]")).getText(),
               CoreMatchers.containsString("Greetings leia and luke"));
@@ -705,6 +707,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
 
       WebElement secondCheckbox = driver.findElement(By.xpath("(" + getParagraphXPath(1) + "//input[@type='checkbox'])[2]"));
       secondCheckbox.click();
+      ZeppelinITUtils.sleep(2000, false);
       collector.checkThat("After 'Run on selection change' checkbox is unchecked, the paragraph should not run if check box state is modified",
               driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'text plainTextContent')]")).getText(),
               CoreMatchers.containsString("Greetings leia and luke"));
@@ -864,6 +867,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       runParagraph(1);
       waitForParagraph(1, "FINISHED");
 
+      ZeppelinITUtils.sleep(1000, false);
       collector.checkThat("After run paragraph again, we can see the newly updated output",
           driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'text plainTextContent')]")).getText(),
           CoreMatchers.containsString("Greetings leia and luke"));

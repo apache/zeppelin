@@ -74,7 +74,7 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
 
   static String cmdPsPython = "ps aux | grep 'kernel_server.py' | grep -v 'grep' | wc -l";
   static String cmdPsInterpreter = "ps aux | grep 'zeppelin/interpreter/python/*' |" +
-      " sed -E '/grep|local-repo/d' | wc -l";
+          " sed -E '/grep/d' | wc -l";
 
   @BeforeClass
   public static void startUp() {
