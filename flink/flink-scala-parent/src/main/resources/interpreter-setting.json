@@ -89,18 +89,11 @@
         "description": "Yarn queue name",
         "type": "string"
       },
-      "flink.webui.yarn.useProxy": {
+      "zeppelin.flink.uiWebUrl": {
         "envName": null,
         "propertyName": null,
         "defaultValue": false,
-        "description": "Whether use yarn proxy url as flink weburl, e.g. http://localhost:8088/proxy/application_1583396598068_0004",
-        "type": "checkbox"
-      },
-      "flink.webui.yarn.address": {
-        "envName": null,
-        "propertyName": null,
-        "defaultValue": "",
-        "description": "Set this value only when your yarn address is mapped to some other address, e.g. some cloud vender will map `http://resource-manager:8088` to `https://xxx-yarn.yy.cn/gateway/kkk/yarn`",
+        "description": "User specified Flink JobManager url, it could be used in remote mode where Flink cluster is already started, or could be used as url template, e.g. https://knox-server:8443/gateway/cluster-topo/yarn/proxy/{{applicationId}}/ where {{applicationId}} would be replaced with yarn app id",
         "type": "string"
       },
       "zeppelin.flink.run.asLoginUser": {

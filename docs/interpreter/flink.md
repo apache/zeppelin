@@ -136,14 +136,9 @@ You can also add and set other flink properties which are not listed in the tabl
     <td>queue name of yarn app</td>
   </tr>
   <tr>
-    <td>flink.webui.yarn.useProxy</td>
-    <td>false</td>
-    <td>whether use yarn proxy url as flink weburl, e.g. http://resource-manager:8088/proxy/application_1583396598068_0004</td>
-  </tr>
-  <tr>
-    <td>flink.webui.yarn.address</td>
+    <td>zeppelin.flink.uiWebUrl</td>
     <td></td>
-    <td>Set this value only when your yarn address is mapped to some other address, e.g. some cloud vender will map `http://resource-manager:8088` to `https://xxx-yarn.yy.cn/gateway/kkk/yarn`</td>
+    <td>User specified Flink JobManager url, it could be used in remote mode where Flink cluster is already started, or could be used as url template, e.g. https://knox-server:8443/gateway/cluster-topo/yarn/proxy/{{applicationId}}/ where {{applicationId}} would be replaced with yarn app id</td>
   </tr>
   <tr>
     <td>zeppelin.flink.run.asLoginUser</td>
