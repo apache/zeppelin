@@ -201,6 +201,10 @@ public class LivySparkSQLInterpreter extends BaseLivyInterpreter {
   }
 
   protected List<String> parseSQLOutput(String str) {
+    // the regex is referred to org.apache.spark.util.Utils#fullWidthRegex
+    // for spark every chinese character has two placeholder(one placeholder is one char)
+    // for zeppelin it has only one placeholder.
+    // insert a special character (/u0001) which never use after every chinese character
     String fullWidthRegex = "([" +
             "\u1100-\u115F" +
             "\u2E80-\uA4CF" +
@@ -249,6 +253,10 @@ public class LivySparkSQLInterpreter extends BaseLivyInterpreter {
         List<String> cells = new ArrayList<>();
         for (Pair pair : pairs) {
           // strip the blank space around the cell and escape the string
+          // replace /u0001 with empty string just because we insert it before
+          // escapeJavaStyleString is referred to
+          // org.apache.commons.lang3.StringEscapeUtils.escapeEcmaScript
+          // but make a little change that avoid chinese character is escaped
           cells.add(escapeJavaStyleString(line.substring(pair.start, pair.end)
                           .replaceAll("\u0001", "")).trim());
         }
@@ -287,13 +295,9 @@ public class LivySparkSQLInterpreter extends BaseLivyInterpreter {
     for (int i = 0; i < sz; i++) {
       char ch = str.charAt(i);
 
-      // handle unicode 4e00-\u9fa5
+      // handle unicode
       if (ch > 0xfff) {
-        if (ch >= 0x4e00 && ch < 0x9fa5) {
-          out.write(ch);
-        } else {
-          out.write("\\u" + hex(ch));
-        }
+        out.write(ch);
       } else if (ch > 0xff) {
         out.write("\\u0" + hex(ch));
       } else if (ch > 0x7f) {
