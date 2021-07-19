@@ -300,37 +300,28 @@ abstract class FlinkScalaInterpreter(val properties: Properties,
           if (mode == ExecutionMode.LOCAL) {
             LOGGER.info("Starting FlinkCluster in local mode")
             this.jmWebUrl = clusterClient.getWebInterfaceURL
+            this.displayedJMWebUrl = this.jmWebUrl
           } else if (mode == ExecutionMode.YARN) {
             LOGGER.info("Starting FlinkCluster in yarn mode")
-            if (isYarnUseProxy()) {
-              this.jmWebUrl = HadoopUtils.getYarnAppTrackingUrl(clusterClient)
-              this.displayedJMWebUrl = getJmWebUrlUnderProxy().getOrElse(this.jmWebUrl)
-            } else {
-              this.jmWebUrl = clusterClient.getWebInterfaceURL
-            }
+            this.jmWebUrl = clusterClient.getWebInterfaceURL
+            val yarnAppId = HadoopUtils.getYarnAppId(clusterClient)
+            this.displayedJMWebUrl = getDisplayedJMWebUrl(yarnAppId)
           } else {
             throw new Exception("Starting FlinkCluster in invalid mode: " + mode)
           }
         case None =>
-          // remote mode
+          // yarn-application mode
           if (mode == ExecutionMode.YARN_APPLICATION) {
+            // get yarnAppId from env `_APP_ID`
             val yarnAppId = System.getenv("_APP_ID")
             LOGGER.info("Use FlinkCluster in yarn application mode, appId: {}", yarnAppId)
-            if (isYarnUseProxy()) {
-              this.jmWebUrl = HadoopUtils.getYarnAppTrackingUrl(yarnAppId)
-              this.displayedJMWebUrl = getJmWebUrlUnderProxy().getOrElse(this.jmWebUrl)
-            } else {
-              this.jmWebUrl = "http://localhost:" + HadoopUtils.getFlinkRestPort(yarnAppId)
-            }
+            this.jmWebUrl = "http://localhost:" + HadoopUtils.getFlinkRestPort(yarnAppId)
+            this.displayedJMWebUrl = getDisplayedJMWebUrl(yarnAppId)
           } else {
             LOGGER.info("Use FlinkCluster in remote mode")
             this.jmWebUrl = "http://" + config.host.get + ":" + config.port.get
+            this.displayedJMWebUrl = getDisplayedJMWebUrl("")
           }
-      }
-
-      if (this.displayedJMWebUrl == null) {
-        // use jmWebUrl as displayedJMWebUrl if it is not set
-        this.displayedJMWebUrl = this.jmWebUrl
       }
 
       LOGGER.info(s"\nConnecting to Flink cluster: " + this.jmWebUrl)
@@ -847,17 +838,14 @@ abstract class FlinkScalaInterpreter(val properties: Properties,
     })
   }
 
-  private def isYarnUseProxy(): Boolean = {
-    properties.getProperty("flink.webui.yarn.useProxy", "false").toBoolean
-  }
-
-  private def getJmWebUrlUnderProxy(): Option[String] = {
-    // for some cloud vender, the yarn address may be mapped to some other address.
-    val yarnAddress = properties.getProperty("flink.webui.yarn.address")
-    if (StringUtils.isNotBlank(yarnAddress)) {
-      Some(FlinkScalaInterpreter.replaceYarnAddress(this.jmWebUrl, yarnAddress))
+  private def getDisplayedJMWebUrl(yarnAppId: String): String = {
+    // `zeppelin.flink.uiWebUrl` is flink jm url template, {{applicationId}} will be replaced
+    // with real yarn app id.
+    val flinkUIWebUrl = properties.getProperty("zeppelin.flink.uiWebUrl")
+    if (StringUtils.isNotBlank(flinkUIWebUrl)) {
+      flinkUIWebUrl.replace("{{applicationId}}", yarnAppId)
     } else {
-      None
+      this.jmWebUrl
     }
   }
 
@@ -936,13 +924,3 @@ abstract class FlinkScalaInterpreter(val properties: Properties,
     getConfigurationMethod.invoke(this.senv.getJavaEnv).asInstanceOf[Configuration]
   }
 }
-
-object FlinkScalaInterpreter {
-  def replaceYarnAddress(webURL: String, yarnAddress: String): String = {
-    val pattern = "(https?://.*:\\d+)(.*)".r
-    val pattern(prefix, remaining) = webURL
-    yarnAddress + remaining
-  }
-}
-
-
