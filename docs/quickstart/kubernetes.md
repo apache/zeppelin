@@ -245,6 +245,7 @@ to customize,
   4. Run a paragraph will create an interpreter using modified yaml files.
 
 The interpreter pod can also be customized through the interpreter settings. Here are some of the properties:
+
 | Property Name | Default Value | Description |
 | ----- | ----- | ----- |
 | `zeppelin.k8s.namespace` | `default` | The Kubernetes namespace to use. |
@@ -256,6 +257,9 @@ The interpreter pod can also be customized through the interpreter settings. Her
 | `zeppelin.k8s.interpreter.imagePullSecrets` | (optional) | Set the comma-separated list of Kubernetes secrets while pulling images, e.g., `mysecret1,mysecret2` |
 | `zeppelin.k8s.interpreter.container.imagePullPolicy` | (optional) | Set the pull policy of the interpreter image, e.g., `Always` |
 | `zeppelin.k8s.spark.container.imagePullPolicy` | (optional) | Set the pull policy of the spark image, e.g., `Always` |
+| `zeppelin.spark.uiWebUrl` | `//{{PORT}}-{{SERVICE_NAME}}.{{SERVICE_DOMAIN}}` | The URL for user to access Spark UI. The default value is a [jinjava](https://github.com/HubSpot/jinjava) template that contains three variables. |
+| `zeppelin.k8s.spark.useIngress` | (optional) | If true, the [Ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/) will be created when creating the spark interpreter. So users can access the Spark UI through Ingress. |
+| `zeppelin.k8s.spark.ingress.host` | `{{PORT}}-{{SERVICE_NAME}}.{{SERVICE_DOMAIN}}` | If `zeppelin.k8s.spark.useIngress` is `true`, it configures the `host` value of the Ingress. The default value is a [jinjava](https://github.com/HubSpot/jinjava) template that contains three variables. Users can access the Spark UI through a customized `zeppelin.k8s.spark.ingress.host`. |
 
 ## Future work
 

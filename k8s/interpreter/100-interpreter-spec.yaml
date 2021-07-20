@@ -180,4 +180,34 @@ roleRef:
   kind: Role
   name: {{zeppelin.k8s.interpreter.pod.name}}
   apiGroup: rbac.authorization.k8s.io
+{% if zeppelin.k8s.spark.useIngress is defined and zeppelin.k8s.spark.useIngress == "true" %}
+---
+# create ingress of spark UI
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: spark-ui-{{zeppelin.k8s.interpreter.pod.name}}
+  namespace: {{zeppelin.k8s.namespace}}
+  {% if zeppelin.k8s.server.uid is defined %}
+  ownerReferences:
+  - apiVersion: v1
+    controller: false
+    blockOwnerDeletion: false
+    kind: Pod
+    name: {{zeppelin.k8s.server.pod.name}}
+    uid: {{zeppelin.k8s.server.uid}}
+  {% endif %}
+spec:
+  rules:
+  - host: {{zeppelin.k8s.spark.ingress.host}}
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: {{zeppelin.k8s.interpreter.pod.name}}
+            port:
+              number: 4040
+{% endif %} 
 {% endif %}
