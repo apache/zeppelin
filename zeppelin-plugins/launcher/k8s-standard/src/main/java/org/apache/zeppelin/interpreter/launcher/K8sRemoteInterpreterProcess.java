@@ -293,7 +293,7 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterManagedProcess
     }
     Map<String, String> k8sEnv = new HashMap<>(getEnv());
     // environment variables
-    k8sEnv.put(ENV_SERVICE_DOMAIN, getEnv().getOrDefault(ENV_SERVICE_DOMAIN, System.getenv(ENV_SERVICE_DOMAIN)));
+    k8sEnv.put(ENV_SERVICE_DOMAIN, getEnv().getOrDefault(ENV_SERVICE_DOMAIN, System.getenv(ENV_SERVICE_DOMAIN) == null ? "local.zeppelin-project.org" : System.getenv(ENV_SERVICE_DOMAIN)));
     k8sEnv.put(ENV_ZEPPELIN_HOME, getEnv().getOrDefault(ENV_ZEPPELIN_HOME, System.getenv(ENV_ZEPPELIN_HOME)));
 
     if (isSpark()) {
