@@ -47,6 +47,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.util.Map;
 import java.util.Properties;
+import java.util.StringJoiner;
 
 /**
  * Spark specific launcher.
@@ -106,7 +107,7 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
               " to false if you want to use other modes.");
     }
 
-    StringBuilder sparkConfBuilder = new StringBuilder();
+    StringJoiner sparkConf = new StringJoiner(" ");
     if (isYarnMode() && getDeployMode().equals("cluster")) {
       if (sparkProperties.containsKey("spark.files")) {
         sparkProperties.put("spark.files", sparkProperties.getProperty("spark.files") + "," +
@@ -174,16 +175,16 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
     }
 
     if (context.getOption().isUserImpersonate() && zConf.getZeppelinImpersonateSparkProxyUser()) {
-      sparkConfBuilder.append(" --proxy-user " + context.getUserName());
+      sparkConf.add("--proxy-user " + context.getUserName());
       sparkProperties.remove("spark.yarn.keytab");
       sparkProperties.remove("spark.yarn.principal");
     }
 
     for (String name : sparkProperties.stringPropertyNames()) {
-      sparkConfBuilder.append(" --conf " + name + "=" + sparkProperties.getProperty(name));
+      sparkConf.add("--conf " + name + "=" + sparkProperties.getProperty(name));
     }
 
-    env.put("ZEPPELIN_SPARK_CONF", sparkConfBuilder.toString());
+    env.put("ZEPPELIN_SPARK_CONF", sparkConf.toString());
 
     // set these env in the order of
     // 1. interpreter-setting
