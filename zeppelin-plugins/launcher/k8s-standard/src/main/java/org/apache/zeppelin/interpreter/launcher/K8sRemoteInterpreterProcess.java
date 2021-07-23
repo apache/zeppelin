@@ -75,6 +75,7 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterManagedProcess
   private static final String SPARK_DRIVER_MEMORY = "spark.driver.memory";
   private static final String SPARK_DRIVER_MEMORY_OVERHEAD = "spark.driver.memoryOverhead";
   private static final String SPARK_DRIVER_CORES = "spark.driver.cores";
+  private static final String SPARK_CONTAINER_IMAGE = "zeppelin.k8s.spark.container.image";
   private static final String ENV_SERVICE_DOMAIN = "SERVICE_DOMAIN";
   private static final String ENV_ZEPPELIN_HOME = "ZEPPELIN_HOME";
 
@@ -383,7 +384,8 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterManagedProcess
     options.append(" --conf spark.kubernetes.namespace=").append(getNamespace());
     options.append(" --conf spark.executor.instances=1");
     options.append(" --conf spark.kubernetes.driver.pod.name=").append(getPodName());
-    options.append(" --conf spark.kubernetes.container.image=").append(sparkImage);
+    String sparkContainerImage = properties.containsKey(SPARK_CONTAINER_IMAGE) ? properties.getProperty(SPARK_CONTAINER_IMAGE) : sparkImage;
+    options.append(" --conf spark.kubernetes.container.image=").append(sparkContainerImage);
     options.append(" --conf spark.driver.bindAddress=0.0.0.0");
     options.append(" --conf spark.driver.host=").append(getInterpreterPodDnsName());
     options.append(" --conf spark.driver.port=").append(getSparkDriverPort());
