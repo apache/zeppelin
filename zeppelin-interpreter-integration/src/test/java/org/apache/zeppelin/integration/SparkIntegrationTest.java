@@ -263,6 +263,39 @@ public abstract class SparkIntegrationTest {
   }
 
   @Test
+  public void testProxyUser() throws IOException, YarnException, InterruptedException, InterpreterException, XmlPullParserException {
+    InterpreterSetting sparkInterpreterSetting = interpreterSettingManager.getInterpreterSettingByName("spark");
+    sparkInterpreterSetting.getOption().setUserImpersonate(true);
+
+    sparkInterpreterSetting.setProperty("spark.master", "yarn-cluster");
+    sparkInterpreterSetting.setProperty("HADOOP_CONF_DIR", hadoopCluster.getConfigPath());
+    sparkInterpreterSetting.setProperty("SPARK_HOME", sparkHome);
+    sparkInterpreterSetting.setProperty("ZEPPELIN_CONF_DIR", zeppelin.getZeppelinConfDir().getAbsolutePath());
+    sparkInterpreterSetting.setProperty("zeppelin.spark.useHiveContext", "false");
+    sparkInterpreterSetting.setProperty("zeppelin.pyspark.useIPython", "false");
+    sparkInterpreterSetting.setProperty("PYSPARK_PYTHON", getPythonExec());
+    sparkInterpreterSetting.setProperty("spark.driver.memory", "512m");
+    sparkInterpreterSetting.setProperty("zeppelin.spark.scala.color", "false");
+    sparkInterpreterSetting.setProperty("zeppelin.spark.deprecatedMsg.show", "false");
+    sparkInterpreterSetting.setProperty("spark.user.name", "#{user}");
+    sparkInterpreterSetting.setProperty("zeppelin.spark.run.asLoginUser", "false");
+
+    try {
+      setUpSparkInterpreterSetting(sparkInterpreterSetting);
+      testInterpreterBasics();
+
+      // 1 yarn application launched
+      GetApplicationsRequest request = GetApplicationsRequest.newInstance(EnumSet.of(YarnApplicationState.RUNNING));
+      GetApplicationsResponse response = hadoopCluster.getYarnCluster().getResourceManager().getClientRMService().getApplications(request);
+      assertEquals(1, response.getApplicationList().size());
+      assertEquals("user1", response.getApplicationList().get(0).getUser());
+    } finally {
+      interpreterSettingManager.close();
+      waitForYarnAppCompleted(30 * 1000);
+    }
+  }
+
+  @Test
   public void testSparkSubmit() throws InterpreterException {
     try {
       InterpreterSetting sparkSubmitInterpreterSetting = interpreterSettingManager.getInterpreterSettingByName("spark-submit");
