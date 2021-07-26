@@ -61,6 +61,10 @@ public class IPyFlinkInterpreter extends IPythonInterpreter {
     opened = true;
   }
 
+  public boolean isAfterFlink114() {
+    return flinkInterpreter.getFlinkVersion().isAfterFlink114();
+  }
+
   @Override
   public ZeppelinContext buildZeppelinContext() {
     return flinkInterpreter.getZeppelinContext();

@@ -96,11 +96,15 @@ class FlinkZeppelinContext(val flinkInterpreter: FlinkScalaInterpreter,
   override def showData(obj: Any, maxResult: Int): String = {
     if (obj.isInstanceOf[DataSet[_]]) {
       val ds = obj.asInstanceOf[DataSet[_]]
-      val btenv = flinkInterpreter.getBatchTableEnvironment("flink")
-      val table =  flinkInterpreter.getFlinkShims.fromDataSet(btenv, ds).asInstanceOf[Table]
-      val columnNames: Array[String] = table.getSchema.getFieldNames
-      val dsRows: DataSet[Row] = flinkInterpreter.getFlinkShims.toDataSet(btenv, table).asInstanceOf[DataSet[Row]]
-      showTable(columnNames, dsRows.first(maxResult + 1).collect())
+      if (flinkInterpreter.getFlinkVersion.isAfterFlink114) {
+        "z.show(DataSet) is not supported after Flink 1.14"
+      } else {
+        val btenv = flinkInterpreter.getBatchTableEnvironment("flink")
+        val table = flinkInterpreter.getFlinkShims.fromDataSet(btenv, ds).asInstanceOf[Table]
+        val columnNames: Array[String] = table.getSchema.getFieldNames
+        val dsRows: DataSet[Row] = flinkInterpreter.getFlinkShims.toDataSet(btenv, table).asInstanceOf[DataSet[Row]]
+        showTable(columnNames, dsRows.first(maxResult + 1).collect())
+      }
     } else if (obj.isInstanceOf[Table]) {
       val rows = JavaConversions.asScalaBuffer(
         flinkInterpreter.getFlinkShims.collectToList(obj.asInstanceOf[TableImpl]).asInstanceOf[java.util.List[Row]]).toSeq

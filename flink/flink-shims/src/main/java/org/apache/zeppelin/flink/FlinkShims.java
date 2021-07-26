@@ -18,6 +18,7 @@
 package org.apache.zeppelin.flink;
 
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.zeppelin.flink.sql.SqlCommandParser;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.jline.utils.AttributedString;
@@ -45,8 +46,10 @@ public abstract class FlinkShims {
   private static FlinkShims flinkShims;
 
   protected Properties properties;
+  protected FlinkVersion flinkVersion;
 
-  public FlinkShims(Properties properties) {
+  public FlinkShims(FlinkVersion flinkVersion, Properties properties) {
+    this.flinkVersion = flinkVersion;
     this.properties = properties;
   }
 
@@ -65,12 +68,15 @@ public abstract class FlinkShims {
     } else if (flinkVersion.getMajorVersion() == 1 && flinkVersion.getMinorVersion() == 13) {
       LOGGER.info("Initializing shims for Flink 1.13");
       flinkShimsClass = Class.forName("org.apache.zeppelin.flink.Flink113Shims");
+    } else if (flinkVersion.getMajorVersion() == 1 && flinkVersion.getMinorVersion() == 14) {
+      LOGGER.info("Initializing shims for Flink 1.14");
+      flinkShimsClass = Class.forName("org.apache.zeppelin.flink.Flink114Shims");
     } else {
       throw new Exception("Flink version: '" + flinkVersion + "' is not supported yet");
     }
 
-    Constructor c = flinkShimsClass.getConstructor(Properties.class);
-    return (FlinkShims) c.newInstance(properties);
+    Constructor c = flinkShimsClass.getConstructor(FlinkVersion.class, Properties.class);
+    return (FlinkShims) c.newInstance(flinkVersion, properties);
   }
 
   /**
@@ -96,6 +102,10 @@ public abstract class FlinkShims {
             .append(description)
             .append('\n')
             .toAttributedString();
+  }
+
+  public FlinkVersion getFlinkVersion() {
+    return flinkVersion;
   }
 
   public abstract void disableSysoutLogging(Object batchConfig, Object streamConfig);
@@ -159,4 +169,10 @@ public abstract class FlinkShims {
   }
 
   public abstract String[] rowToString(Object row, Object table, Object tableConfig);
+
+  public abstract boolean isTimeIndicatorType(Object type);
+
+  public abstract ImmutablePair<Object, Object> createPlannerAndExecutor(
+          ClassLoader classLoader, Object environmentSettings, Object sEnv,
+          Object tableConfig, Object functionCatalog, Object catalogManager);
 }

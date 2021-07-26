@@ -18,6 +18,7 @@
 package org.apache.zeppelin.flink;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.flink.api.java.ExecutionEnvironment;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.table.api.EnvironmentSettings;
@@ -27,17 +28,12 @@ import org.apache.flink.table.api.TableException;
 import org.apache.flink.table.catalog.CatalogManager;
 import org.apache.flink.table.catalog.FunctionCatalog;
 import org.apache.flink.table.delegation.Executor;
-import org.apache.flink.table.delegation.ExecutorFactory;
 import org.apache.flink.table.delegation.Planner;
-import org.apache.flink.table.delegation.PlannerFactory;
-import org.apache.flink.table.factories.ComponentFactoryService;
 import org.apache.flink.table.module.ModuleManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
-import java.util.Map;
 
 /**
  * Factory class for creating flink table env for different purpose:
@@ -52,7 +48,6 @@ public class TableEnvFactory {
 
   private FlinkVersion flinkVersion;
   private FlinkShims flinkShims;
-  private Executor executor;
   private org.apache.flink.api.scala.ExecutionEnvironment benv;
   private org.apache.flink.streaming.api.scala.StreamExecutionEnvironment senv;
 
@@ -133,17 +128,11 @@ public class TableEnvFactory {
 
   public TableEnvironment createScalaFlinkStreamTableEnvironment(EnvironmentSettings settings, ClassLoader classLoader) {
     try {
-      Map<String, String> executorProperties = settings.toExecutorProperties();
-      Executor executor = lookupExecutor(executorProperties, senv.getJavaEnv());
-
-      Map<String, String> plannerProperties = settings.toPlannerProperties();
-      Planner planner = ComponentFactoryService.find(PlannerFactory.class, plannerProperties)
-              .create(
-                      plannerProperties,
-                      executor,
-                      streamTableConfig,
-                      oldPlannerFunctionCatalog,
-                      catalogManager);
+      ImmutablePair<Object, Object> pair = flinkShims.createPlannerAndExecutor(
+              classLoader, settings, senv.getJavaEnv(),
+              oldPlannerStreamTableConfig, functionCatalog, catalogManager);
+      Planner planner = (Planner) pair.left;
+      Executor executor = (Executor) pair.right;
 
       Class clazz = null;
       if (flinkVersion.isFlink110()) {
@@ -231,15 +220,14 @@ public class TableEnvFactory {
     }
   }
 
-  public TableEnvironment createJavaFlinkStreamTableEnvironment(EnvironmentSettings settings, ClassLoader classLoader) {
-
+  public TableEnvironment createJavaFlinkStreamTableEnvironment(EnvironmentSettings settings,
+                                                                ClassLoader classLoader) {
     try {
-      Map<String, String> executorProperties = settings.toExecutorProperties();
-      Executor executor = lookupExecutor(executorProperties, senv.getJavaEnv());
-
-      Map<String, String> plannerProperties = settings.toPlannerProperties();
-      Planner planner = ComponentFactoryService.find(PlannerFactory.class, plannerProperties)
-              .create(plannerProperties, executor, streamTableConfig, oldPlannerFunctionCatalog, catalogManager);
+      ImmutablePair<Object, Object> pair = flinkShims.createPlannerAndExecutor(
+              classLoader, settings, senv.getJavaEnv(),
+              oldPlannerBatchTableConfig, functionCatalog, catalogManager);
+      Planner planner = (Planner) pair.left;
+      Executor executor = (Executor) pair.right;
 
       Class clazz = null;
       if (flinkVersion.isFlink110()) {
@@ -303,18 +291,11 @@ public class TableEnvFactory {
   public TableEnvironment createScalaBlinkStreamTableEnvironment(EnvironmentSettings settings, ClassLoader classLoader) {
 
     try {
-      Map<String, String> executorProperties = settings.toExecutorProperties();
-      Executor executor = lookupExecutor(executorProperties, senv.getJavaEnv());
-
-      Map<String, String> plannerProperties = settings.toPlannerProperties();
-      Planner planner = ComponentFactoryService.find(PlannerFactory.class, plannerProperties)
-              .create(
-                      plannerProperties,
-                      executor,
-                      streamTableConfig,
-                      functionCatalog,
-                      catalogManager);
-
+      ImmutablePair<Object, Object> pair = flinkShims.createPlannerAndExecutor(
+              classLoader, settings, senv.getJavaEnv(),
+              streamTableConfig, functionCatalog, catalogManager);
+      Planner planner = (Planner) pair.left;
+      Executor executor = (Executor) pair.right;
 
       Class clazz = null;
       if (flinkVersion.isFlink110()) {
@@ -372,14 +353,12 @@ public class TableEnvFactory {
   }
 
   public TableEnvironment createJavaBlinkStreamTableEnvironment(EnvironmentSettings settings, ClassLoader classLoader) {
-
     try {
-      Map<String, String> executorProperties = settings.toExecutorProperties();
-      Executor executor = lookupExecutor(executorProperties, senv.getJavaEnv());
-
-      Map<String, String> plannerProperties = settings.toPlannerProperties();
-      Planner planner = ComponentFactoryService.find(PlannerFactory.class, plannerProperties)
-              .create(plannerProperties, executor, streamTableConfig, functionCatalog, catalogManager);
+      ImmutablePair<Object, Object> pair = flinkShims.createPlannerAndExecutor(
+              classLoader, settings, senv.getJavaEnv(),
+              streamTableConfig, functionCatalog, catalogManager);
+      Planner planner = (Planner) pair.left;
+      Executor executor = (Executor) pair.right;
 
       Class clazz = null;
       if (flinkVersion.isFlink110()) {
@@ -439,11 +418,11 @@ public class TableEnvFactory {
   public TableEnvironment createJavaBlinkBatchTableEnvironment(
           EnvironmentSettings settings, ClassLoader classLoader) {
     try {
-      final Map<String, String> executorProperties = settings.toExecutorProperties();
-      executor = lookupExecutor(executorProperties, senv.getJavaEnv());
-      final Map<String, String> plannerProperties = settings.toPlannerProperties();
-      final Planner planner = ComponentFactoryService.find(PlannerFactory.class, plannerProperties)
-              .create(plannerProperties, executor, batchTableConfig, functionCatalog, catalogManager);
+      ImmutablePair<Object, Object> pair = flinkShims.createPlannerAndExecutor(
+              classLoader, settings, senv.getJavaEnv(),
+              batchTableConfig, functionCatalog, catalogManager);
+      Planner planner = (Planner) pair.left;
+      Executor executor = (Executor) pair.right;
 
       Class clazz = null;
       if (flinkVersion.isFlink110()) {
@@ -501,38 +480,11 @@ public class TableEnvFactory {
     }
   }
 
-
   public void createStreamPlanner(EnvironmentSettings settings) {
-    Map<String, String> executorProperties = settings.toExecutorProperties();
-    Executor executor = lookupExecutor(executorProperties, senv.getJavaEnv());
-
-    Map<String, String> plannerProperties = settings.toPlannerProperties();
-    Planner planner = ComponentFactoryService.find(PlannerFactory.class, plannerProperties)
-            .create(
-                    plannerProperties,
-                    executor,
-                    streamTableConfig,
-                    functionCatalog,
-                    catalogManager);
+    ImmutablePair<Object, Object> pair = flinkShims.createPlannerAndExecutor(
+            Thread.currentThread().getContextClassLoader(), settings, senv.getJavaEnv(),
+            streamTableConfig, functionCatalog, catalogManager);
+    Planner planner = (Planner) pair.left;
     this.flinkShims.setCatalogManagerSchemaResolver(catalogManager, planner.getParser(), settings);
-  }
-
-  private static Executor lookupExecutor(
-          Map<String, String> executorProperties,
-          StreamExecutionEnvironment executionEnvironment) {
-    try {
-      ExecutorFactory executorFactory = ComponentFactoryService.find(ExecutorFactory.class, executorProperties);
-      Method createMethod = executorFactory.getClass()
-              .getMethod("create", Map.class, StreamExecutionEnvironment.class);
-
-      return (Executor) createMethod.invoke(
-              executorFactory,
-              executorProperties,
-              executionEnvironment);
-    } catch (Exception e) {
-      throw new TableException(
-              "Could not instantiate the executor. Make sure a planner module is on the classpath",
-              e);
-    }
   }
 }

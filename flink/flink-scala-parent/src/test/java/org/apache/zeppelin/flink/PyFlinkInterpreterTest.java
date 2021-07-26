@@ -40,9 +40,10 @@ import static org.mockito.Mockito.mock;
 
 public class PyFlinkInterpreterTest extends PythonInterpreterTest {
 
-  private Interpreter flinkScalaInterpreter;
-  private Interpreter streamSqlInterpreter;
-  private Interpreter batchSqlInterpreter;
+  private FlinkInterpreter flinkInnerInterpreter;
+  private LazyOpenInterpreter flinkScalaInterpreter;
+  private LazyOpenInterpreter streamSqlInterpreter;
+  private LazyOpenInterpreter batchSqlInterpreter;
 
 
   @Override
@@ -63,7 +64,8 @@ public class PyFlinkInterpreterTest extends PythonInterpreterTest {
     IPyFlinkInterpreterTest.angularObjectRegistry = new AngularObjectRegistry("flink", null);
     InterpreterContext context = getInterpreterContext();
     InterpreterContext.set(context);
-    flinkScalaInterpreter = new LazyOpenInterpreter(new FlinkInterpreter(properties));
+    this.flinkInnerInterpreter = new FlinkInterpreter(properties);
+    flinkScalaInterpreter = new LazyOpenInterpreter(flinkInnerInterpreter);
     intpGroup.get("session_1").add(flinkScalaInterpreter);
     flinkScalaInterpreter.setInterpreterGroup(intpGroup);
 
@@ -95,12 +97,16 @@ public class PyFlinkInterpreterTest extends PythonInterpreterTest {
 
   @Test
   public void testBatchPyFlink() throws InterpreterException, IOException {
-    IPyFlinkInterpreterTest.testBatchPyFlink(interpreter, flinkScalaInterpreter);
+    if (!flinkInnerInterpreter.getFlinkVersion().isAfterFlink114()){
+      IPyFlinkInterpreterTest.testBatchPyFlink(interpreter, flinkScalaInterpreter);
+    }
   }
 
   @Test
   public void testStreamIPyFlink() throws InterpreterException, IOException {
-    IPyFlinkInterpreterTest.testStreamPyFlink(interpreter, flinkScalaInterpreter);
+    if (!flinkInnerInterpreter.getFlinkVersion().isAfterFlink114()) {
+      IPyFlinkInterpreterTest.testStreamPyFlink(interpreter, flinkScalaInterpreter);
+    }
   }
 
   @Test

@@ -71,14 +71,16 @@ public class FlinkBatchSqlInterpreterTest extends SqlInterpreterTest {
     assertEquals("id\tname\n1\ta\n2\tb\n", resultMessages.get(0).getData());
 
     // z.show
-    context = getInterpreterContext();
-    result =
-            flinkInterpreter.interpret("z.show(btenv.sqlQuery(\"select * from source_table\"))", context);
-    resultMessages = context.out.toInterpreterResultMessage();
-    assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
-    assertEquals(1, resultMessages.size());
-    assertEquals(InterpreterResult.Type.TABLE, resultMessages.get(0).getType());
-    assertEquals("id\tname\n1\ta\n2\tb\n", resultMessages.get(0).getData());
+    if (!flinkInterpreter.getFlinkVersion().isAfterFlink114()) {
+      context = getInterpreterContext();
+      result =
+              flinkInterpreter.interpret("z.show(btenv.sqlQuery(\"select * from source_table\"))", context);
+      resultMessages = context.out.toInterpreterResultMessage();
+      assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
+      assertEquals(1, resultMessages.size());
+      assertEquals(InterpreterResult.Type.TABLE, resultMessages.get(0).getType());
+      assertEquals("id\tname\n1\ta\n2\tb\n", resultMessages.get(0).getData());
+    }
 
     // define scala udf
     result = flinkInterpreter.interpret(
@@ -87,7 +89,7 @@ public class FlinkBatchSqlInterpreterTest extends SqlInterpreterTest {
                     "}", getInterpreterContext());
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
 
-    result = flinkInterpreter.interpret("btenv.registerFunction(\"addOne\", new AddOne())",
+    result = flinkInterpreter.interpret("stenv.registerFunction(\"addOne\", new AddOne())",
             getInterpreterContext());
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
 
@@ -108,7 +110,7 @@ public class FlinkBatchSqlInterpreterTest extends SqlInterpreterTest {
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
 
     context = getInterpreterContext();
-    result = pyFlinkInterpreter.interpret("bt_env.register_function(\"python_upper\", " +
+    result = pyFlinkInterpreter.interpret("st_env.register_function(\"python_upper\", " +
                     "udf(PythonUpper(), DataTypes.STRING(), DataTypes.STRING()))",
             context);
     assertEquals(result.toString(), InterpreterResult.Code.SUCCESS, result.code());
@@ -133,7 +135,7 @@ public class FlinkBatchSqlInterpreterTest extends SqlInterpreterTest {
                     "    return s.upper()", getInterpreterContext());
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
 
-    result = iPyFlinkInterpreter.interpret("bt_env.register_function(\"ipython_upper\", " +
+    result = iPyFlinkInterpreter.interpret("st_env.register_function(\"ipython_upper\", " +
                     "udf(IPythonUpper(), DataTypes.STRING(), DataTypes.STRING()))",
             getInterpreterContext());
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());

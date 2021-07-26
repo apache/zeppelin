@@ -29,7 +29,6 @@ import org.apache.flink.streaming.experimental.SocketStreamIterator;
 import org.apache.flink.table.api.Table;
 import org.apache.flink.table.api.TableEnvironment;
 import org.apache.flink.table.api.TableSchema;
-import org.apache.flink.table.calcite.FlinkTypeFactory;
 import org.apache.flink.table.sinks.RetractStreamTableSink;
 import org.apache.flink.types.Row;
 import org.apache.zeppelin.flink.FlinkShims;
@@ -86,12 +85,12 @@ public abstract class AbstractStreamSqlJob {
     this.flinkShims = flinkShims;
   }
 
-  private static TableSchema removeTimeAttributes(TableSchema schema) {
+  private static TableSchema removeTimeAttributes(FlinkShims flinkShims, TableSchema schema) {
     final TableSchema.Builder builder = TableSchema.builder();
     for (int i = 0; i < schema.getFieldCount(); i++) {
       final TypeInformation<?> type = schema.getFieldTypes()[i];
       final TypeInformation<?> convertedType;
-      if (FlinkTypeFactory.isTimeIndicatorType(type)) {
+      if (flinkShims.isTimeIndicatorType(type)) {
         convertedType = Types.SQL_TIMESTAMP;
       } else {
         convertedType = type;
@@ -115,7 +114,7 @@ public abstract class AbstractStreamSqlJob {
       this.table = table;
       int parallelism = Integer.parseInt(context.getLocalProperties()
               .getOrDefault("parallelism", defaultParallelism + ""));
-      this.schema = removeTimeAttributes(table.getSchema());
+      this.schema = removeTimeAttributes(flinkShims, table.getSchema());
       checkTableSchema(schema);
 
       LOGGER.info("ResultTable Schema: " + this.schema);

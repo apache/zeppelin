@@ -231,8 +231,13 @@ public class FlinkInterpreterTest {
     result = interpreter.interpret("z.show(data)", context);
     assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
     List<InterpreterResultMessage> resultMessages = context.out.toInterpreterResultMessage();
-    assertEquals(InterpreterResult.Type.TABLE, resultMessages.get(0).getType());
-    assertEquals("_1\t_2\n1\tjeff\n2\tandy\n3\tjames\n", resultMessages.get(0).getData());
+    if (interpreter.getFlinkVersion().isAfterFlink114()) {
+      assertEquals(InterpreterResult.Type.TEXT, resultMessages.get(0).getType());
+      assertEquals("z.show(DataSet) is not supported after Flink 1.14", resultMessages.get(0).getData());
+    } else {
+      assertEquals(InterpreterResult.Type.TABLE, resultMessages.get(0).getType());
+      assertEquals("_1\t_2\n1\tjeff\n2\tandy\n3\tjames\n", resultMessages.get(0).getData());
+    }
   }
 
   @Test
@@ -263,7 +268,7 @@ public class FlinkInterpreterTest {
             "  .groupBy(0)\n" +
             "  .sum(1)\n" +
             "  .print()", context);
-    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
 
     String[] expectedCounts = {"(hello,3)", "(world,1)", "(flink,1)", "(hadoop,1)"};
     Arrays.sort(expectedCounts);

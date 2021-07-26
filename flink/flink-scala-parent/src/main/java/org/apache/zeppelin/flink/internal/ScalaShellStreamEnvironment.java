@@ -19,24 +19,22 @@
 package org.apache.zeppelin.flink.internal;
 
 
-import org.apache.flink.api.common.InvalidProgramException;
-import org.apache.flink.api.java.ExecutionEnvironment;
 import org.apache.flink.configuration.ConfigUtils;
 import org.apache.flink.configuration.Configuration;
-import org.apache.flink.configuration.DeploymentOptions;
 import org.apache.flink.configuration.PipelineOptions;
 import org.apache.flink.core.execution.JobClient;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.graph.StreamGraph;
 import org.apache.flink.util.JarUtils;
+import org.apache.zeppelin.flink.FlinkVersion;
 
+import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.apache.flink.util.Preconditions.checkNotNull;
-import static org.apache.flink.util.Preconditions.checkState;
 
 /**
  * This class is copied from flink project, the reason is that flink scala shell only supports
@@ -54,12 +52,17 @@ public class ScalaShellStreamEnvironment extends StreamExecutionEnvironment {
    */
   private final FlinkILoop flinkILoop;
 
+  private final FlinkVersion flinkVersion;
+
+
   public ScalaShellStreamEnvironment(
           final Configuration configuration,
           final FlinkILoop flinkILoop,
+          final FlinkVersion flinkVersion,
           final String... jarFiles) {
     super(configuration);
     this.flinkILoop = checkNotNull(flinkILoop);
+    this.flinkVersion = checkNotNull(flinkVersion);
     this.jarFiles = checkNotNull(JarUtils.getJarFiles(jarFiles));
   }
 
@@ -70,15 +73,27 @@ public class ScalaShellStreamEnvironment extends StreamExecutionEnvironment {
   }
 
   private void updateDependencies() throws Exception {
-    final Configuration configuration = getConfiguration();
     final List<URL> updatedJarFiles = getUpdatedJarFiles();
     ConfigUtils.encodeCollectionToConfig(
-            configuration, PipelineOptions.JARS, updatedJarFiles, URL::toString);
+            (Configuration) getFlinkConfiguration(), PipelineOptions.JARS, updatedJarFiles, URL::toString);
   }
 
-  public Configuration getClientConfiguration() {
-    return getConfiguration();
+  public Object getFlinkConfiguration() {
+    if (flinkVersion.isAfterFlink114()) {
+      // starting from Flink 1.14, getConfiguration() return the readonly copy of internal
+      // configuration, so we need to get the internal configuration object via reflection.
+      try {
+        Field configurationField = StreamExecutionEnvironment.class.getDeclaredField("configuration");
+        configurationField.setAccessible(true);
+        return configurationField.get(this);
+      } catch (Exception e) {
+        throw new RuntimeException("Fail to get configuration from StreamExecutionEnvironment", e);
+      }
+    } else {
+      return super.getConfiguration();
+    }
   }
+
 
   private List<URL> getUpdatedJarFiles() throws MalformedURLException {
     final URL jarUrl = flinkILoop.writeFilesToDisk().getAbsoluteFile().toURI().toURL();

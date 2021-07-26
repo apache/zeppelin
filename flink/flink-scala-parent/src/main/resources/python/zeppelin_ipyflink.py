@@ -19,7 +19,6 @@
 from py4j.java_gateway import java_import, JavaGateway, GatewayClient
 
 from pyflink.common import *
-from pyflink.dataset import *
 from pyflink.datastream import *
 from pyflink.table import *
 from pyflink.table.catalog import *
@@ -45,19 +44,24 @@ pyflink.java_gateway._gateway = gateway
 pyflink.java_gateway.import_flink_view(gateway)
 pyflink.java_gateway.install_exception_handler()
 
-b_env = pyflink.dataset.ExecutionEnvironment(intp.getJavaExecutionEnvironment())
 s_env = StreamExecutionEnvironment(intp.getJavaStreamExecutionEnvironment())
 
 if intp.isFlink110():
+    from pyflink.dataset import *
+    b_env = pyflink.dataset.ExecutionEnvironment(intp.getJavaExecutionEnvironment())
     bt_env = BatchTableEnvironment(intp.getJavaBatchTableEnvironment("blink"), True)
     bt_env_2 = BatchTableEnvironment(intp.getJavaBatchTableEnvironment("flink"), False)
     st_env = StreamTableEnvironment(intp.getJavaStreamTableEnvironment("blink"), True)
     st_env_2 = StreamTableEnvironment(intp.getJavaStreamTableEnvironment("flink"), False)
-else:
+elif not intp.isAfterFlink114():
+    from pyflink.dataset import *
+    b_env = pyflink.dataset.ExecutionEnvironment(intp.getJavaExecutionEnvironment())
     bt_env = BatchTableEnvironment(intp.getJavaBatchTableEnvironment("blink"))
-    bt_env_2 = BatchTableEnvironment(intp.getJavaBatchTableEnvironment("flink"))
     st_env = StreamTableEnvironment(intp.getJavaStreamTableEnvironment("blink"))
+    bt_env_2 = BatchTableEnvironment(intp.getJavaBatchTableEnvironment("flink"))
     st_env_2 = StreamTableEnvironment(intp.getJavaStreamTableEnvironment("flink"))
+else:
+    st_env = StreamTableEnvironment(intp.getJavaStreamTableEnvironment("blink"))
 
 class IPyFlinkZeppelinContext(PyZeppelinContext):
 
