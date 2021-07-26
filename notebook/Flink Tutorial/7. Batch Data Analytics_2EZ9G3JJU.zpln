@@ -4,7 +4,7 @@
       "title": "Overview",
       "text": "%md\n\nThis tutorial demonstrates how to use Flink do data exploration analytics via its.\n\n* batch sql \n* udf (scala, python \u0026 hive) \n* Zeppelin\u0027s dynamic forms and builtin visualization\n\nWe use the bank data registered in another tutorial note. You can also use any existed hive table. \n",
       "user": "anonymous",
-      "dateUpdated": "2021-01-25 14:30:29.848",
+      "dateUpdated": "2021-07-26 05:46:51.500",
       "progress": 0,
       "config": {
         "runOnSelectionChange": true,
@@ -28,22 +28,74 @@
         "params": {},
         "forms": {}
       },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003cp\u003eThis tutorial demonstrates how to use Flink do data exploration analytics via its.\u003c/p\u003e\n\u003cul\u003e\n\u003cli\u003ebatch sql\u003c/li\u003e\n\u003cli\u003eudf (scala, python \u0026amp; hive)\u003c/li\u003e\n\u003cli\u003eZeppelin\u0026rsquo;s dynamic forms and builtin visualization\u003c/li\u003e\n\u003c/ul\u003e\n\u003cp\u003eWe use the bank data registered in another tutorial note. You can also use any existed hive table.\u003c/p\u003e\n\n\u003c/div\u003e"
+          }
+        ]
+      },
       "apps": [],
       "runtimeInfos": {},
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1579053946947_-1754951794",
       "id": "paragraph_1579053946947_-1754951794",
       "dateCreated": "2020-01-15 10:05:46.947",
-      "dateStarted": "2021-01-25 14:30:29.848",
-      "dateFinished": "2021-01-25 14:30:29.873",
+      "dateStarted": "2021-07-26 05:46:51.502",
+      "dateFinished": "2021-07-26 05:46:51.520",
+      "status": "FINISHED"
+    },
+    {
+      "title": "Install PyFlink",
+      "text": "%sh\n\npip install apache-flink\u003d\u003d1.12.2\n",
+      "user": "anonymous",
+      "dateUpdated": "2021-07-26 05:49:30.831",
+      "progress": 0,
+      "config": {
+        "editorSetting": {
+          "language": "sh",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": false
+        },
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/sh",
+        "fontSize": 9.0,
+        "title": true,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "Collecting apache-flink\u003d\u003d1.12.2\n  Downloading apache_flink-1.12.2-cp37-cp37m-manylinux1_x86_64.whl (219.0 MB)\nCollecting python-dateutil\u003d\u003d2.8.0\n  Downloading python_dateutil-2.8.0-py2.py3-none-any.whl (226 kB)\nCollecting pyarrow\u003c0.18.0,\u003e\u003d0.15.1\n  Downloading pyarrow-0.17.1-cp37-cp37m-manylinux2014_x86_64.whl (63.8 MB)\nCollecting apache-beam\u003d\u003d2.23.0\n  Downloading apache_beam-2.23.0-cp37-cp37m-manylinux2010_x86_64.whl (8.3 MB)\nCollecting py4j\u003d\u003d0.10.8.1\n  Downloading py4j-0.10.8.1-py2.py3-none-any.whl (196 kB)\nCollecting jsonpickle\u003d\u003d1.2\n  Downloading jsonpickle-1.2-py2.py3-none-any.whl (32 kB)\nRequirement already satisfied: pytz\u003e\u003d2018.3 in /opt/conda/envs/python_3_with_R/lib/python3.7/site-packages (from apache-flink\u003d\u003d1.12.2) (2021.1)\nRequirement already satisfied: numpy\u003c1.20,\u003e\u003d1.14.3 in /opt/conda/envs/python_3_with_R/lib/python3.7/site-packages (from apache-flink\u003d\u003d1.12.2) (1.19.5)\nCollecting cloudpickle\u003d\u003d1.2.2\n  Downloading cloudpickle-1.2.2-py2.py3-none-any.whl (25 kB)\nCollecting pandas\u003c1,\u003e\u003d0.25.2\n  Downloading pandas-0.25.3-cp37-cp37m-manylinux1_x86_64.whl (10.4 MB)\nCollecting avro-python3\u003c\u003d1.9.1,\u003e\u003d1.8.1\n  Downloading avro-python3-1.9.1.tar.gz (36 kB)\nCollecting fastavro\u003c0.24,\u003e\u003d0.21.4\n  Downloading fastavro-0.23.6-cp37-cp37m-manylinux2010_x86_64.whl (1.4 MB)\nRequirement already satisfied: protobuf\u003c4,\u003e\u003d3.5.0.post1 in /opt/conda/envs/python_3_with_R/lib/python3.7/site-packages (from apache-beam\u003d\u003d2.23.0-\u003eapache-flink\u003d\u003d1.12.2) (3.16.0)\nCollecting oauth2client\u003c4,\u003e\u003d2.0.1\n  Downloading oauth2client-3.0.0.tar.gz (77 kB)\nCollecting hdfs\u003c3.0.0,\u003e\u003d2.1.0\n  Downloading hdfs-2.6.0-py3-none-any.whl (33 kB)\nRequirement already satisfied: grpcio\u003c2,\u003e\u003d1.29.0 in /opt/conda/envs/python_3_with_R/lib/python3.7/site-packages (from apache-beam\u003d\u003d2.23.0-\u003eapache-flink\u003d\u003d1.12.2) (1.38.1)\nCollecting dill\u003c0.3.2,\u003e\u003d0.3.1.1\n  Downloading dill-0.3.1.1.tar.gz (151 kB)\nCollecting typing-extensions\u003c3.8.0,\u003e\u003d3.7.0\n  Downloading typing_extensions-3.7.4.3-py3-none-any.whl (22 kB)\nCollecting crcmod\u003c2.0,\u003e\u003d1.7\n  Downloading crcmod-1.7.tar.gz (89 kB)\nCollecting httplib2\u003c0.18.0,\u003e\u003d0.8\n  Downloading httplib2-0.17.4-py3-none-any.whl (95 kB)\nCollecting future\u003c1.0.0,\u003e\u003d0.18.2\n  Downloading future-0.18.2.tar.gz (829 kB)\nCollecting pymongo\u003c4.0.0,\u003e\u003d3.8.0\n  Downloading pymongo-3.12.0-cp37-cp37m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (526 kB)\nCollecting mock\u003c3.0.0,\u003e\u003d1.0.1\n  Downloading mock-2.0.0-py2.py3-none-any.whl (56 kB)\nCollecting pydot\u003c2,\u003e\u003d1.2.0\n  Downloading pydot-1.4.2-py2.py3-none-any.whl (21 kB)\nRequirement already satisfied: six\u003e\u003d1.5 in /opt/conda/envs/python_3_with_R/lib/python3.7/site-packages (from python-dateutil\u003d\u003d2.8.0-\u003eapache-flink\u003d\u003d1.12.2) (1.16.0)\nCollecting docopt\n  Downloading docopt-0.6.2.tar.gz (25 kB)\nRequirement already satisfied: requests\u003e\u003d2.7.0 in /opt/conda/envs/python_3_with_R/lib/python3.7/site-packages (from hdfs\u003c3.0.0,\u003e\u003d2.1.0-\u003eapache-beam\u003d\u003d2.23.0-\u003eapache-flink\u003d\u003d1.12.2) (2.26.0)\nCollecting pbr\u003e\u003d0.11\n  Downloading pbr-5.6.0-py2.py3-none-any.whl (111 kB)\nCollecting pyasn1\u003e\u003d0.1.7\n  Downloading pyasn1-0.4.8-py2.py3-none-any.whl (77 kB)\nCollecting pyasn1-modules\u003e\u003d0.0.5\n  Downloading pyasn1_modules-0.2.8-py2.py3-none-any.whl (155 kB)\nCollecting rsa\u003e\u003d3.1.4\n  Downloading rsa-4.7.2-py3-none-any.whl (34 kB)\nRequirement already satisfied: pyparsing\u003e\u003d2.1.4 in /opt/conda/envs/python_3_with_R/lib/python3.7/site-packages (from pydot\u003c2,\u003e\u003d1.2.0-\u003eapache-beam\u003d\u003d2.23.0-\u003eapache-flink\u003d\u003d1.12.2) (2.4.7)\nRequirement already satisfied: idna\u003c4,\u003e\u003d2.5 in /opt/conda/envs/python_3_with_R/lib/python3.7/site-packages (from requests\u003e\u003d2.7.0-\u003ehdfs\u003c3.0.0,\u003e\u003d2.1.0-\u003eapache-beam\u003d\u003d2.23.0-\u003eapache-flink\u003d\u003d1.12.2) (3.1)\nRequirement already satisfied: charset-normalizer~\u003d2.0.0 in /opt/conda/envs/python_3_with_R/lib/python3.7/site-packages (from requests\u003e\u003d2.7.0-\u003ehdfs\u003c3.0.0,\u003e\u003d2.1.0-\u003eapache-beam\u003d\u003d2.23.0-\u003eapache-flink\u003d\u003d1.12.2) (2.0.0)\nRequirement already satisfied: urllib3\u003c1.27,\u003e\u003d1.21.1 in /opt/conda/envs/python_3_with_R/lib/python3.7/site-packages (from requests\u003e\u003d2.7.0-\u003ehdfs\u003c3.0.0,\u003e\u003d2.1.0-\u003eapache-beam\u003d\u003d2.23.0-\u003eapache-flink\u003d\u003d1.12.2) (1.26.6)\nRequirement already satisfied: certifi\u003e\u003d2017.4.17 in /opt/conda/envs/python_3_with_R/lib/python3.7/site-packages (from requests\u003e\u003d2.7.0-\u003ehdfs\u003c3.0.0,\u003e\u003d2.1.0-\u003eapache-beam\u003d\u003d2.23.0-\u003eapache-flink\u003d\u003d1.12.2) (2021.5.30)\nBuilding wheels for collected packages: avro-python3, crcmod, dill, future, oauth2client, docopt\n  Building wheel for avro-python3 (setup.py): started\n  Building wheel for avro-python3 (setup.py): finished with status \u0027done\u0027\n  Created wheel for avro-python3: filename\u003davro_python3-1.9.1-py3-none-any.whl size\u003d43197 sha256\u003d4648bfaa23616fce52e5b50f4762209a47917e96049258af11d38bc51c7d90db\n  Stored in directory: /opt/zeppelin/.cache/pip/wheels/4e/8d/91/77b0b802e4cf8a342359b48d5f1a836b4dbc8a8f6f8c309957\n  Building wheel for crcmod (setup.py): started\n  Building wheel for crcmod (setup.py): finished with status \u0027done\u0027\n  Created wheel for crcmod: filename\u003dcrcmod-1.7-py3-none-any.whl size\u003d18838 sha256\u003d46f668a24bf6403542bf9c77a023a2f60a21664afef2bad68fb664e21547e075\n  Stored in directory: /opt/zeppelin/.cache/pip/wheels/dc/9a/e9/49e627353476cec8484343c4ab656f1e0d783ee77b9dde2d1f\n  Building wheel for dill (setup.py): started\n  Building wheel for dill (setup.py): finished with status \u0027done\u0027\n  Created wheel for dill: filename\u003ddill-0.3.1.1-py3-none-any.whl size\u003d78532 sha256\u003d4ddb7c826c13cc2792f6fb48e1dd631896d69b4befcded4cb8e8d2b061a246c8\n  Stored in directory: /opt/zeppelin/.cache/pip/wheels/a4/61/fd/c57e374e580aa78a45ed78d5859b3a44436af17e22ca53284f\n  Building wheel for future (setup.py): started\n  Building wheel for future (setup.py): finished with status \u0027done\u0027\n  Created wheel for future: filename\u003dfuture-0.18.2-py3-none-any.whl size\u003d491059 sha256\u003da73c9d4468aa71b33a7714aa5f5961dc1363a3ead3b66e5753dd92dd427630ea\n  Stored in directory: /opt/zeppelin/.cache/pip/wheels/56/b0/fe/4410d17b32f1f0c3cf54cdfb2bc04d7b4b8f4ae377e2229ba0\n  Building wheel for oauth2client (setup.py): started\n  Building wheel for oauth2client (setup.py): finished with status \u0027done\u0027\n  Created wheel for oauth2client: filename\u003doauth2client-3.0.0-py3-none-any.whl size\u003d106381 sha256\u003d5ff73e661db0cb27341eeea75f6b714eca79f91e8ca8ce0767c4f1fe6990f86d\n  Stored in directory: /opt/zeppelin/.cache/pip/wheels/86/73/7a/3b3f76a2142176605ff38fbca574327962c71e25a43197a4c1\n  Building wheel for docopt (setup.py): started\n  Building wheel for docopt (setup.py): finished with status \u0027done\u0027\n  Created wheel for docopt: filename\u003ddocopt-0.6.2-py2.py3-none-any.whl size\u003d13705 sha256\u003db6103e8b60395e3ee8e4dad09972ddcc2c5b9071850b799ca197a9a76101a38b\n  Stored in directory: /opt/zeppelin/.cache/pip/wheels/72/b0/3f/1d95f96ff986c7dfffe46ce2be4062f38ebd04b506c77c81b9\nSuccessfully built avro-python3 crcmod dill future oauth2client docopt\nInstalling collected packages: pyasn1, rsa, pyasn1-modules, pbr, httplib2, docopt, typing-extensions, python-dateutil, pymongo, pydot, pyarrow, oauth2client, mock, hdfs, future, fastavro, dill, crcmod, avro-python3, py4j, pandas, jsonpickle, cloudpickle, apache-beam, apache-flink\n  Attempting uninstall: typing-extensions\n    Found existing installation: typing-extensions 3.10.0.0\n    Uninstalling typing-extensions-3.10.0.0:\n      Successfully uninstalled typing-extensions-3.10.0.0\n  Attempting uninstall: python-dateutil\n    Found existing installation: python-dateutil 2.8.2\n    Uninstalling python-dateutil-2.8.2:\n      Successfully uninstalled python-dateutil-2.8.2\n  Attempting uninstall: pyarrow\n    Found existing installation: pyarrow 4.0.1\n    Uninstalling pyarrow-4.0.1:\n      Successfully uninstalled pyarrow-4.0.1\n  Attempting uninstall: pandas\n    Found existing installation: pandas 1.3.1\n    Uninstalling pandas-1.3.1:\n      Successfully uninstalled pandas-1.3.1\n  Attempting uninstall: cloudpickle\n    Found existing installation: cloudpickle 1.6.0\n    Uninstalling cloudpickle-1.6.0:\n      Successfully uninstalled cloudpickle-1.6.0\nERROR: pip\u0027s dependency resolSver does not cuurrently take cicntessfully insot accounat all the packalges thatl are installeedd. Thi as behaviour is the source of the following dependpency confache-beam-2.23.0 aplaiccts.\nxarray 0.19.0 requihre-flink-1.12.2 avro-python3-1.9.1 cloudpickle-1.2.2 crcmod-1.7 dill-0.3.1.1 docopt-0.6.2 fastavro-0.e2s pand3a.6 s\u003e\u003d1.f0, but you huave pandas 0.25.3 which tis incompatibulre-0.18.2 hdfs-e.2.6.0 httplib2-0.17.4\nplotnine 0.8.0  rjsonpickle-1.e2 quires pamndas\u003e\u003d1.1o.ck-2.0.0 oauth2client-3.0.0 pandas-0.25.3 pbr-5.6.0 0,py4j-0. 1b0.8.1 pyarrow-0.17.1 pyasn1-0.4.8 pyasn1-moduules-0.2.8 pydott-1.4.2 py mongo-3.12.0 pytyhon-dateutil-2.8.0 rsa-4.7.2 tyoping-uexten sions-3.7.4.3\nhave pandas 0.25.3 which is incompatible.\nmizani 0.7.3 requires pandas\u003e\u003d1.1.0, but you have pandas 0.25.3 which is incompatible.\nfastparquet 0.7.0 requires pandas\u003e\u003d1.1.0, but you have pandas 0.25.3 which is incompatible.\ndistributed 2021.7.1 requires cloudpickle\u003e\u003d1.5.0, but you have cloudpickle 1.2.2 which is incompatible.\n"
+          }
+        ]
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1627278504552_1564309602",
+      "id": "paragraph_1627278504552_1564309602",
+      "dateCreated": "2021-07-26 05:48:24.552",
+      "dateStarted": "2021-07-26 05:48:46.339",
+      "dateFinished": "2021-07-26 05:49:34.714",
       "status": "FINISHED"
     },
     {
       "title": "Common group by",
       "text": "%flink.bsql\n\nselect age, count(1) as aval\nfrom bank \nwhere age \u003c 30 \ngroup by age \norder by age\n",
       "user": "anonymous",
-      "dateUpdated": "2020-04-27 11:41:22.697",
-      "progress": 0,
+      "dateUpdated": "2021-07-26 05:46:53.667",
+      "progress": 100,
       "config": {
         "runOnSelectionChange": true,
         "title": true,
@@ -115,21 +167,43 @@
         "params": {},
         "forms": {}
       },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TABLE",
+            "data": "age\taval\n19\t4\n20\t3\n21\t7\n22\t9\n23\t20\n24\t24\n25\t44\n26\t77\n27\t94\n28\t103\n29\t97\n"
+          }
+        ]
+      },
       "apps": [],
-      "runtimeInfos": {},
+      "runtimeInfos": {
+        "jobUrl": {
+          "propertyName": "jobUrl",
+          "label": "FLINK JOB",
+          "tooltip": "View in Flink web UI",
+          "group": "flink",
+          "values": [
+            {
+              "jobUrl": "http://localhost:8083#/job/00e4f9b3bcd78847f8e8afd13ec89da1"
+            }
+          ],
+          "interpreterSettingId": "flink"
+        }
+      },
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1578043926895_1558885985",
       "id": "paragraph_1578043926895_1558885985",
       "dateCreated": "2020-01-03 17:32:06.895",
-      "dateStarted": "2020-04-27 11:41:22.702",
-      "dateFinished": "2020-04-27 11:41:24.871",
+      "dateStarted": "2021-07-26 05:46:53.670",
+      "dateFinished": "2021-07-26 05:46:58.234",
       "status": "FINISHED"
     },
     {
       "title": "Textbox dynamic form",
       "text": "%flink.bsql\n\nselect age, count(1) as val \nfrom bank \nwhere age \u003c ${maxAge\u003d30} \ngroup by age \norder by age",
       "user": "anonymous",
-      "dateUpdated": "2020-04-27 11:41:24.988",
+      "dateUpdated": "2021-07-26 05:46:59.466",
       "progress": 0,
       "config": {
         "runOnSelectionChange": true,
@@ -206,26 +280,49 @@
           "maxAge": {
             "type": "TextBox",
             "name": "maxAge",
+            "displayName": "maxAge",
             "defaultValue": "30",
             "hidden": false
           }
         }
       },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TABLE",
+            "data": "age\tval\n19\t4\n20\t3\n21\t7\n22\t9\n23\t20\n24\t24\n25\t44\n26\t77\n27\t94\n28\t103\n29\t97\n30\t150\n31\t199\n32\t224\n33\t186\n34\t231\n35\t180\n36\t188\n37\t161\n38\t159\n39\t130\n40\t142\n41\t135\n42\t141\n43\t115\n44\t105\n45\t112\n46\t119\n47\t108\n48\t114\n49\t112\n"
+          }
+        ]
+      },
       "apps": [],
-      "runtimeInfos": {},
+      "runtimeInfos": {
+        "jobUrl": {
+          "propertyName": "jobUrl",
+          "label": "FLINK JOB",
+          "tooltip": "View in Flink web UI",
+          "group": "flink",
+          "values": [
+            {
+              "jobUrl": "http://localhost:8083#/job/3f6276817478f7a462a6318b4ff5ad02"
+            }
+          ],
+          "interpreterSettingId": "flink"
+        }
+      },
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1578904010994_-1300955750",
       "id": "paragraph_1578904010994_-1300955750",
       "dateCreated": "2020-01-13 16:26:50.994",
-      "dateStarted": "2020-04-27 11:41:24.995",
-      "dateFinished": "2020-04-27 11:41:26.433",
+      "dateStarted": "2021-07-26 05:46:59.469",
+      "dateFinished": "2021-07-26 05:47:03.466",
       "status": "FINISHED"
     },
     {
       "title": "Select dynamic form",
       "text": "%flink.bsql\n\nselect age, count(1) as val \nfrom bank \nwhere marital\u003d\u0027${marital\u003dsingle,single|divorced|married}\u0027 \ngroup by age \norder by age",
       "user": "anonymous",
-      "dateUpdated": "2020-04-27 11:41:26.761",
+      "dateUpdated": "2021-07-26 05:47:06.107",
       "progress": 0,
       "config": {
         "runOnSelectionChange": true,
@@ -313,26 +410,49 @@
               }
             ],
             "name": "marital",
+            "displayName": "marital",
             "defaultValue": "single",
             "hidden": false
           }
         }
       },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TABLE",
+            "data": "age\tval\n23\t3\n24\t11\n25\t11\n26\t18\n27\t26\n28\t23\n29\t37\n30\t56\n31\t104\n32\t105\n33\t103\n34\t142\n35\t109\n36\t117\n37\t100\n38\t99\n39\t88\n40\t105\n41\t97\n42\t91\n43\t79\n44\t68\n45\t76\n46\t82\n47\t78\n48\t91\n49\t87\n50\t74\n51\t63\n52\t66\n53\t75\n54\t56\n55\t68\n56\t50\n57\t78\n58\t67\n59\t56\n60\t36\n61\t15\n62\t5\n63\t7\n64\t6\n65\t4\n66\t7\n67\t5\n68\t1\n69\t5\n70\t5\n71\t5\n72\t4\n73\t6\n74\t2\n75\t3\n76\t1\n77\t5\n78\t2\n79\t3\n80\t6\n81\t1\n83\t2\n86\t1\n87\t1\n"
+          }
+        ]
+      },
       "apps": [],
-      "runtimeInfos": {},
+      "runtimeInfos": {
+        "jobUrl": {
+          "propertyName": "jobUrl",
+          "label": "FLINK JOB",
+          "tooltip": "View in Flink web UI",
+          "group": "flink",
+          "values": [
+            {
+              "jobUrl": "http://localhost:8083#/job/af44dd58ef9c6ae8129a283cedb361fc"
+            }
+          ],
+          "interpreterSettingId": "flink"
+        }
+      },
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1578904047823_-1212655985",
       "id": "paragraph_1578904047823_-1212655985",
       "dateCreated": "2020-01-13 16:27:27.823",
-      "dateStarted": "2020-04-27 11:41:26.765",
-      "dateFinished": "2020-04-27 11:41:27.951",
+      "dateStarted": "2021-07-26 05:47:06.110",
+      "dateFinished": "2021-07-26 05:47:10.040",
       "status": "FINISHED"
     },
     {
       "title": "Scala UDF",
       "text": "%flink\n\n\nclass ScalaUpper extends ScalarFunction {\n  def eval(str: String) \u003d str.toUpperCase\n}\n\nbtenv.registerFunction(\"scala_upper\", new ScalaUpper())\n",
       "user": "anonymous",
-      "dateUpdated": "2020-04-27 11:41:30.878",
+      "dateUpdated": "2021-07-26 05:47:10.475",
       "progress": 0,
       "config": {
         "runOnSelectionChange": true,
@@ -354,21 +474,30 @@
         "params": {},
         "forms": {}
       },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "defined class ScalaUpper\n"
+          }
+        ]
+      },
       "apps": [],
       "runtimeInfos": {},
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1578905208609_-1175158458",
       "id": "paragraph_1578905208609_-1175158458",
       "dateCreated": "2020-01-13 16:46:48.612",
-      "dateStarted": "2020-04-27 11:41:30.882",
-      "dateFinished": "2020-04-27 11:41:31.641",
+      "dateStarted": "2021-07-26 05:47:10.478",
+      "dateFinished": "2021-07-26 05:47:11.330",
       "status": "FINISHED"
     },
     {
       "title": "Python UDF",
       "text": "%flink.pyflink\n\nclass PythonUpper(ScalarFunction):\n  def eval(self, s):\n    return s.upper()\n\nbt_env.register_function(\"python_upper\", udf(PythonUpper(), DataTypes.STRING(), DataTypes.STRING()))\n\n\n\n\n",
       "user": "anonymous",
-      "dateUpdated": "2020-04-27 11:41:33.020",
+      "dateUpdated": "2021-07-26 05:49:39.696",
       "progress": 0,
       "config": {
         "runOnSelectionChange": true,
@@ -390,14 +519,18 @@
         "params": {},
         "forms": {}
       },
+      "results": {
+        "code": "SUCCESS",
+        "msg": []
+      },
       "apps": [],
       "runtimeInfos": {},
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1578905223714_1228156151",
       "id": "paragraph_1578905223714_1228156151",
       "dateCreated": "2020-01-13 16:47:03.714",
-      "dateStarted": "2020-04-27 11:41:33.024",
-      "dateFinished": "2020-04-27 11:41:39.562",
+      "dateStarted": "2021-07-26 05:49:39.698",
+      "dateFinished": "2021-07-26 05:49:40.673",
       "status": "FINISHED"
     },
     {
@@ -446,7 +579,7 @@
       "title": "Use scala udf in sql",
       "text": "%flink.bsql\n\nselect scala_upper(education), count(1) from bank group by education\n",
       "user": "anonymous",
-      "dateUpdated": "2020-04-27 11:41:42.397",
+      "dateUpdated": "2021-07-26 05:47:15.008",
       "progress": 0,
       "config": {
         "runOnSelectionChange": true,
@@ -519,22 +652,44 @@
         "params": {},
         "forms": {}
       },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TABLE",
+            "data": "EXPR$0\tEXPR$1\nPRIMARY\t678\nSECONDARY\t2306\nTERTIARY\t1350\nUNKNOWN\t187\n"
+          }
+        ]
+      },
       "apps": [],
-      "runtimeInfos": {},
+      "runtimeInfos": {
+        "jobUrl": {
+          "propertyName": "jobUrl",
+          "label": "FLINK JOB",
+          "tooltip": "View in Flink web UI",
+          "group": "flink",
+          "values": [
+            {
+              "jobUrl": "http://localhost:8083#/job/e9fb50b5322b5f2c9bb2671f9aa8fb69"
+            }
+          ],
+          "interpreterSettingId": "flink"
+        }
+      },
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1578905241045_-678553675",
       "id": "paragraph_1578905241045_-678553675",
       "dateCreated": "2020-01-13 16:47:21.045",
-      "dateStarted": "2020-04-27 11:41:42.402",
-      "dateFinished": "2020-04-27 11:41:43.547",
+      "dateStarted": "2021-07-26 05:47:15.012",
+      "dateFinished": "2021-07-26 05:47:18.862",
       "status": "FINISHED"
     },
     {
       "title": "Use python udf in sql",
       "text": "%flink.bsql\n\nselect python_upper(education) as edu, count(1) as c from bank group by education\n\n",
       "user": "anonymous",
-      "dateUpdated": "2020-04-27 11:41:44.032",
-      "progress": 0,
+      "dateUpdated": "2021-07-26 05:49:43.084",
+      "progress": 66,
       "config": {
         "runOnSelectionChange": true,
         "title": true,
@@ -619,14 +774,36 @@
         "params": {},
         "forms": {}
       },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TABLE",
+            "data": "edu\tc\nPRIMARY\t678\nSECONDARY\t2306\nTERTIARY\t1350\nUNKNOWN\t187\n"
+          }
+        ]
+      },
       "apps": [],
-      "runtimeInfos": {},
+      "runtimeInfos": {
+        "jobUrl": {
+          "propertyName": "jobUrl",
+          "label": "FLINK JOB",
+          "tooltip": "View in Flink web UI",
+          "group": "flink",
+          "values": [
+            {
+              "jobUrl": "http://localhost:8083#/job/f40a15afd2629bfca8c6dc79fa4dce23"
+            }
+          ],
+          "interpreterSettingId": "flink"
+        }
+      },
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1578905276271_782994324",
       "id": "paragraph_1578905276271_782994324",
       "dateCreated": "2020-01-13 16:47:56.271",
-      "dateStarted": "2020-04-27 11:41:44.034",
-      "dateFinished": "2020-04-27 11:41:51.537",
+      "dateStarted": "2021-07-26 05:49:43.087",
+      "dateFinished": "2021-07-26 05:49:50.543",
       "status": "FINISHED"
     },
     {

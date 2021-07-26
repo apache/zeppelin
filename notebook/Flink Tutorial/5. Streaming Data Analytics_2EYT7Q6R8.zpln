@@ -2,9 +2,9 @@
   "paragraphs": [
     {
       "title": "Overview",
-      "text": "%md\n\nThis tutorial demonstrate how to use Flink do streaming analytics via its streaming sql + udf. Zeppelin now support 3 kinds of streaming visualization.\n\n* Single  - Single mode is for the case when the result of sql statement is always one row, such as the following example\n* Update  - Update mode is suitable for the case when the output is more than one rows, and always will be updated continuously. \n* Append  - Append mode is suitable for the scenario where output data is always appended\n\n",
+      "text": "%md\n\nThis tutorial demonstrate how to use Flink do streaming analytics via its streaming sql + udf. Zeppelin now support 3 kinds of streaming visualization.\n\n* Single  - Single mode is for the case when the result of sql statement is always one row.\n* Update  - Update mode is suitable for the case when the output is more than one rows, and always will be updated continuously. \n* Append  - Append mode is suitable for the scenario where output data is always appended\n\n",
       "user": "anonymous",
-      "dateUpdated": "2021-01-25 14:26:13.376",
+      "dateUpdated": "2021-07-26 04:43:24.025",
       "progress": 0,
       "config": {
         "runOnSelectionChange": true,
@@ -28,20 +28,29 @@
         "params": {},
         "forms": {}
       },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003cp\u003eThis tutorial demonstrate how to use Flink do streaming analytics via its streaming sql + udf. Zeppelin now support 3 kinds of streaming visualization.\u003c/p\u003e\n\u003cul\u003e\n\u003cli\u003eSingle  - Single mode is for the case when the result of sql statement is always one row.\u003c/li\u003e\n\u003cli\u003eUpdate  - Update mode is suitable for the case when the output is more than one rows, and always will be updated continuously.\u003c/li\u003e\n\u003cli\u003eAppend  - Append mode is suitable for the scenario where output data is always appended\u003c/li\u003e\n\u003c/ul\u003e\n\n\u003c/div\u003e"
+          }
+        ]
+      },
       "apps": [],
       "runtimeInfos": {},
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1579054784565_2122156822",
       "id": "paragraph_1579054784565_2122156822",
       "dateCreated": "2020-01-15 10:19:44.565",
-      "dateStarted": "2021-01-25 14:26:13.376",
-      "dateFinished": "2021-01-25 14:26:13.394",
+      "dateStarted": "2021-07-26 04:43:24.025",
+      "dateFinished": "2021-07-26 04:43:24.034",
       "status": "FINISHED"
     },
     {
-      "text": "%flink \n\nimport org.apache.flink.streaming.api.functions.source.SourceFunction\nimport org.apache.flink.table.api.TableEnvironment\nimport org.apache.flink.streaming.api.TimeCharacteristic\nimport org.apache.flink.streaming.api.checkpoint.ListCheckpointed\nimport java.util.Collections\nimport scala.collection.JavaConversions._\n\nsenv.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)\nsenv.enableCheckpointing(1000)\n\nval data \u003d senv.addSource(new SourceFunction[(Long, String)] with ListCheckpointed[java.lang.Long] {\n\n  val pages \u003d Seq(\"home\", \"search\", \"search\", \"product\", \"product\", \"product\")\n  var count: Long \u003d 0\n  var running : Boolean \u003d true\n  // startTime is 2020/1/1\n  var startTime: Long \u003d new java.util.Date(2020 - 1900,0,1).getTime\n  var sleepInterval \u003d 100\n\n  override def run(ctx: SourceFunction.SourceContext[(Long, String)]): Unit \u003d {\n    val lock \u003d ctx.getCheckpointLock\n\n    while (count \u003c 3000 \u0026\u0026 running) {\n      lock.synchronized({\n        ctx.collect((startTime + count * sleepInterval, pages(count.toInt % pages.size)))\n        count +\u003d 1\n        Thread.sleep(sleepInterval)\n      })\n    }\n  }\n\n  override def cancel(): Unit \u003d {\n    running \u003d false\n  }\n\n  override def snapshotState(checkpointId: Long, timestamp: Long): java.util.List[java.lang.Long] \u003d {\n    Collections.singletonList(count)\n  }\n\n  override def restoreState(state: java.util.List[java.lang.Long]): Unit \u003d {\n    state.foreach(s \u003d\u003e count \u003d s)\n  }\n\n}).assignAscendingTimestamps(_._1)\n\nstenv.registerDataStream(\"log\", data, \u0027time, \u0027url, \u0027rowtime.rowtime)\n",
+      "text": "%flink \n\nimport org.apache.flink.streaming.api.functions.source.SourceFunction\nimport org.apache.flink.table.api.TableEnvironment\nimport org.apache.flink.streaming.api.TimeCharacteristic\nimport org.apache.flink.streaming.api.checkpoint.ListCheckpointed\nimport java.util.Collections\nimport scala.collection.JavaConversions._\n\nsenv.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)\nsenv.enableCheckpointing(1000)\n\nval data \u003d senv.addSource(new SourceFunction[(Long, String)] with ListCheckpointed[java.lang.Long] {\n\n  val pages \u003d Seq(\"home\", \"search\", \"search\", \"product\", \"product\", \"product\")\n  var count: Long \u003d 0\n  var running : Boolean \u003d true\n  // startTime is 2020/1/1\n  var startTime: Long \u003d new java.util.Date(2020 - 1900,0,1).getTime\n  var sleepInterval \u003d 100\n\n  override def run(ctx: SourceFunction.SourceContext[(Long, String)]): Unit \u003d {\n    val lock \u003d ctx.getCheckpointLock\n\n    while (count \u003c 300000 \u0026\u0026 running) {\n      lock.synchronized({\n        ctx.collect((startTime + count * sleepInterval, pages(count.toInt % pages.size)))\n        count +\u003d 1\n        Thread.sleep(sleepInterval)\n      })\n    }\n  }\n\n  override def cancel(): Unit \u003d {\n    running \u003d false\n  }\n\n  override def snapshotState(checkpointId: Long, timestamp: Long): java.util.List[java.lang.Long] \u003d {\n    Collections.singletonList(count)\n  }\n\n  override def restoreState(state: java.util.List[java.lang.Long]): Unit \u003d {\n    state.foreach(s \u003d\u003e count \u003d s)\n  }\n\n}).assignAscendingTimestamps(_._1)\n\nstenv.registerDataStream(\"log\", data, \u0027time, \u0027url, \u0027rowtime.rowtime)\n",
       "user": "anonymous",
-      "dateUpdated": "2021-01-25 14:27:02.042",
+      "dateUpdated": "2021-07-26 05:19:24.659",
       "progress": 0,
       "config": {
         "editorSetting": {
@@ -60,21 +69,30 @@
         "params": {},
         "forms": {}
       },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "import org.apache.flink.streaming.api.functions.source.SourceFunction\nimport org.apache.flink.table.api.TableEnvironment\nimport org.apache.flink.streaming.api.TimeCharacteristic\nimport org.apache.flink.streaming.api.checkpoint.ListCheckpointed\nimport java.util.Collections\nimport scala.collection.JavaConversions._\n\u001b[33mwarning: \u001b[0mthere was one deprecation warning; re-run with -deprecation for details\n\u001b[1m\u001b[34mres1\u001b[0m: \u001b[1m\u001b[32morg.apache.flink.streaming.api.scala.StreamExecutionEnvironment\u001b[0m \u003d org.apache.flink.streaming.api.scala.StreamExecutionEnvironment@7bfce85\n\u001b[33mwarning: \u001b[0mthere were two deprecation warnings; re-run with -deprecation for details\n\u001b[1m\u001b[34mdata\u001b[0m: \u001b[1m\u001b[32morg.apache.flink.streaming.api.scala.DataStream[(Long, String)]\u001b[0m \u003d org.apache.flink.streaming.api.scala.DataStream@1a38d116\n"
+          }
+        ]
+      },
       "apps": [],
       "runtimeInfos": {},
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1611556011274_1848600588",
       "id": "paragraph_1611556011274_1848600588",
       "dateCreated": "2021-01-25 14:26:51.274",
-      "dateStarted": "2021-01-25 14:27:02.045",
-      "dateFinished": "2021-01-25 14:27:36.849",
+      "dateStarted": "2021-07-26 05:19:24.685",
+      "dateFinished": "2021-07-26 05:19:43.196",
       "status": "FINISHED"
     },
     {
       "title": "Single row mode of Output",
       "text": "%flink.ssql(type\u003dsingle,parallelism\u003d1,refreshInterval\u003d1000,template\u003d\u003ch1\u003e{1}\u003c/h1\u003e until \u003ch2\u003e{0}\u003c/h2\u003e)\n\nselect max(rowtime),count(1) from log\n",
       "user": "anonymous",
-      "dateUpdated": "2021-01-25 14:28:01.427",
+      "dateUpdated": "2021-07-26 05:19:44.486",
       "progress": 0,
       "config": {
         "runOnSelectionChange": true,
@@ -101,6 +119,15 @@
         "params": {},
         "forms": {}
       },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "ANGULAR",
+            "data": "\u003ch1\u003e{{value_1}}\u003c/h1\u003e until \u003ch2\u003e{{value_0}}\u003c/h2\u003e"
+          }
+        ]
+      },
       "apps": [],
       "runtimeInfos": {
         "jobUrl": {
@@ -110,7 +137,7 @@
           "group": "flink",
           "values": [
             {
-              "jobUrl": "http://localhost:8081#/job/1086e2a18ab8e8402b8969412c9b0e8e"
+              "jobUrl": "http://localhost:8083#/job/7fb3fd251e490c3447e1793b776b1535"
             }
           ],
           "interpreterSettingId": "flink"
@@ -120,15 +147,15 @@
       "jobName": "paragraph_1578909960516_-1812187661",
       "id": "paragraph_1578909960516_-1812187661",
       "dateCreated": "2020-01-13 18:06:00.516",
-      "dateStarted": "2021-01-25 14:28:01.430",
-      "dateFinished": "2021-01-25 14:30:03.648",
+      "dateStarted": "2021-07-26 05:19:44.490",
+      "dateFinished": "2021-07-26 04:44:25.285",
       "status": "ABORT"
     },
     {
       "title": "Update mode of Output",
-      "text": "%flink.ssql(type\u003dupdate,parallelism\u003d1,refreshInterval\u003d2000)\n\nselect url,count(1) as pv from log group by url\n",
+      "text": "%flink.ssql(type\u003dupdate,parallelism\u003d1,refreshInterval\u003d1000)\n\nselect url,count(1) as pv from log group by url\n",
       "user": "anonymous",
-      "dateUpdated": "2021-01-25 14:28:48.633",
+      "dateUpdated": "2021-07-26 05:25:22.905",
       "progress": 0,
       "config": {
         "runOnSelectionChange": true,
@@ -149,6 +176,24 @@
                   "rotate": {
                     "degree": "-45"
                   }
+                },
+                "table": {
+                  "tableGridState": {},
+                  "tableColumnTypeState": {
+                    "names": {
+                      "url": "string",
+                      "pv": "string"
+                    },
+                    "updated": false
+                  },
+                  "tableOptionSpecHash": "[{\"name\":\"useFilter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable filter for columns\"},{\"name\":\"showPagination\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable pagination for better navigation\"},{\"name\":\"showAggregationFooter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable a footer for displaying aggregated values\"}]",
+                  "tableOptionValue": {
+                    "useFilter": false,
+                    "showPagination": false,
+                    "showAggregationFooter": false
+                  },
+                  "updated": false,
+                  "initialized": false
                 }
               },
               "commonSetting": {},
@@ -198,7 +243,7 @@
           "group": "flink",
           "values": [
             {
-              "jobUrl": "http://localhost:8081#/job/026f68085b98b16a9a677c2b1ba47bb3"
+              "jobUrl": "http://localhost:8083#/job/e0a0636052b9cb6780c72320fe749700"
             }
           ],
           "interpreterSettingId": "flink"
@@ -208,15 +253,15 @@
       "jobName": "paragraph_1578910004762_-286113604",
       "id": "paragraph_1578910004762_-286113604",
       "dateCreated": "2020-01-13 18:06:44.762",
-      "dateStarted": "2021-01-25 14:28:48.637",
-      "dateFinished": "2021-01-25 14:30:01.879",
+      "dateStarted": "2021-07-26 05:20:22.128",
+      "dateFinished": "2021-07-26 05:20:20.018",
       "status": "ABORT"
     },
     {
       "title": "Append mode of Output",
       "text": "%flink.ssql(type\u003dappend,parallelism\u003d1,refreshInterval\u003d2000,threshold\u003d60000)\n\nselect TUMBLE_START(rowtime,INTERVAL \u00275\u0027 SECOND) start_time,url,count(1) as pv from log\ngroup by TUMBLE(rowtime,INTERVAL \u00275\u0027 SECOND),url\n",
       "user": "anonymous",
-      "dateUpdated": "2021-01-25 14:29:33.485",
+      "dateUpdated": "2021-07-26 05:25:37.664",
       "progress": 0,
       "config": {
         "runOnSelectionChange": true,
@@ -237,6 +282,31 @@
                   "rotate": {
                     "degree": "-45"
                   }
+                },
+                "table": {
+                  "tableGridState": {},
+                  "tableColumnTypeState": {
+                    "names": {
+                      "start_time": "string",
+                      "url": "string",
+                      "pv": "string"
+                    },
+                    "updated": false
+                  },
+                  "tableOptionSpecHash": "[{\"name\":\"useFilter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable filter for columns\"},{\"name\":\"showPagination\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable pagination for better navigation\"},{\"name\":\"showAggregationFooter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable a footer for displaying aggregated values\"}]",
+                  "tableOptionValue": {
+                    "useFilter": false,
+                    "showPagination": false,
+                    "showAggregationFooter": false
+                  },
+                  "updated": false,
+                  "initialized": false
+                },
+                "stackedAreaChart": {
+                  "rotate": {
+                    "degree": "-45"
+                  },
+                  "xLabelStatus": "default"
                 }
               },
               "commonSetting": {},
@@ -284,13 +354,26 @@
         "forms": {}
       },
       "apps": [],
-      "runtimeInfos": {},
+      "runtimeInfos": {
+        "jobUrl": {
+          "propertyName": "jobUrl",
+          "label": "FLINK JOB",
+          "tooltip": "View in Flink web UI",
+          "group": "flink",
+          "values": [
+            {
+              "jobUrl": "http://localhost:8083#/job/3051db0415e197bf781d3c718879ecaa"
+            }
+          ],
+          "interpreterSettingId": "flink"
+        }
+      },
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1578910016872_1942851900",
       "id": "paragraph_1578910016872_1942851900",
       "dateCreated": "2020-01-13 18:06:56.872",
-      "dateStarted": "2021-01-25 14:29:17.122",
-      "dateFinished": "2021-01-25 14:29:53.805",
+      "dateStarted": "2021-07-26 05:24:18.512",
+      "dateFinished": "2021-07-26 05:24:17.140",
       "status": "ABORT"
     },
     {
@@ -322,13 +405,13 @@
     "flink-shared_process": [
       {
         "name": "value_0",
-        "object": "2019-12-31 16:01:44.1",
+        "object": "2020-01-01 00:06:51.2",
         "noteId": "2EYT7Q6R8",
         "paragraphId": "paragraph_1578909960516_-1812187661"
       },
       {
         "name": "value_1",
-        "object": "1042",
+        "object": "4113",
         "noteId": "2EYT7Q6R8",
         "paragraphId": "paragraph_1578909960516_-1812187661"
       }

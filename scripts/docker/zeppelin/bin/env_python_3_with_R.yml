@@ -3,16 +3,17 @@ channels:
   - conda-forge
   - defaults
 dependencies:
+  - python=3.7
   - pycodestyle
   - scipy
+  - numpy=1.19.5
   - grpcio
-  - protobuf=3
-  - pandasql=0.7.3
+  - protobuf
+  - pandasql
   - ipython
   - ipykernel
   - jupyter_client
   - hvplot
-  - pyyaml=3
   - plotnine
   - seaborn
   - intake

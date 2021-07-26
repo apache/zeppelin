@@ -29,7 +29,7 @@ ENV LOG_TAG="[ZEPPELIN_${Z_VERSION}]:" \
 
 RUN echo "$LOG_TAG install basic packages" && \
     apt-get -y update && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y locales language-pack-en tini openjdk-8-jre-headless wget && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y locales language-pack-en tini openjdk-8-jre-headless wget unzip && \
     # Cleanup
     rm -rf /var/lib/apt/lists/* && \
     apt-get autoclean && \
@@ -41,6 +41,7 @@ ARG miniconda_version="py37_4.9.2"
 ARG miniconda_sha256="79510c6e7bd9e012856e25dcb21b3e093aa4ac8113d9aa7e82a86987eabe1c31"
 # Install python and R packages via conda
 COPY env_python_3_with_R.yml /env_python_3_with_R.yml
+
 RUN set -ex && \
     wget -nv https://repo.anaconda.com/miniconda/Miniconda3-${miniconda_version}-Linux-x86_64.sh -O miniconda.sh && \
     echo "${miniconda_sha256} miniconda.sh" > anaconda.sha256 && \
@@ -73,7 +74,8 @@ RUN echo "$LOG_TAG Download Zeppelin binary" && \
     # Give access to some specific folders
     chmod -R 775 "${ZEPPELIN_HOME}/logs" "${ZEPPELIN_HOME}/run" "${ZEPPELIN_HOME}/notebook" "${ZEPPELIN_HOME}/conf" && \
     # Allow process to create new folders (e.g. webapps)
-    chmod 775 ${ZEPPELIN_HOME}
+    chmod 775 ${ZEPPELIN_HOME} && \
+    chmod -R 775 /opt/conda
 
 COPY log4j.properties ${ZEPPELIN_HOME}/conf/
 COPY log4j_docker.properties ${ZEPPELIN_HOME}/conf/

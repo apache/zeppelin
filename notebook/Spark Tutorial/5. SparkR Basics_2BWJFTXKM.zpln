@@ -4,7 +4,8 @@
       "title": "Overview",
       "text": "%md\n\nRegarding using R in Zeppelin, you can refer the R tutorial. This tutorial is for using SparkR in Zeppelin, where you not only be able to use all the R features, but also can use Spark.\n",
       "user": "anonymous",
-      "dateUpdated": "2020-03-11 14:02:40.487",
+      "dateUpdated": "2021-07-26 04:33:09.925",
+      "progress": 0,
       "config": {
         "colWidth": 12.0,
         "fontSize": 9.0,
@@ -34,19 +35,21 @@
         ]
       },
       "apps": [],
+      "runtimeInfos": {},
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1581045239881_1714679133",
       "id": "paragraph_1581045239881_1714679133",
       "dateCreated": "2020-02-07 11:13:59.881",
-      "dateStarted": "2020-03-11 14:02:40.527",
-      "dateFinished": "2020-03-11 14:02:40.733",
+      "dateStarted": "2021-07-26 04:33:09.934",
+      "dateFinished": "2021-07-26 04:33:09.944",
       "status": "FINISHED"
     },
     {
       "title": "Hello R",
       "text": "%spark.r\n\nfoo \u003c- TRUE\nprint(foo)\nbare \u003c- c(1, 2.5, 4)\nprint(bare)\ndouble \u003c- 15.0\nprint(double)",
       "user": "anonymous",
-      "dateUpdated": "2020-03-11 14:02:40.831",
+      "dateUpdated": "2021-07-26 04:33:10.034",
+      "progress": 0,
       "config": {
         "colWidth": 12.0,
         "editorMode": "ace/mode/r",
@@ -89,19 +92,21 @@
         ]
       },
       "apps": [],
+      "runtimeInfos": {},
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1429882946244_-381648689",
       "id": "20150424-154226_261270952",
       "dateCreated": "2015-04-24 03:42:26.000",
-      "dateStarted": "2020-03-11 14:02:40.840",
-      "dateFinished": "2020-03-11 14:02:43.146",
+      "dateStarted": "2021-07-26 04:33:10.041",
+      "dateFinished": "2021-07-26 04:33:11.267",
       "status": "FINISHED"
     },
     {
       "title": "Load R Librairies",
       "text": "%spark.r\n\nlibrary(data.table)\ndt \u003c- data.table(1:3)\nprint(dt)\nfor (i in 1:5) {\n  print(i*2)\n}\nprint(1:50)",
       "user": "anonymous",
-      "dateUpdated": "2020-03-11 14:02:43.218",
+      "dateUpdated": "2021-07-26 04:33:11.341",
+      "progress": 0,
       "config": {
         "colWidth": 12.0,
         "editorMode": "ace/mode/r",
@@ -137,24 +142,26 @@
         "msg": [
           {
             "type": "TEXT",
-            "data": "\nV1\n1:  1\n2:  2\n3:  3\n[1] 2\n[1] 4\n[1] 6\n[1] 8\n[1] 10\n [1]  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23\n[24] 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46\n[47] 47 48 49 50\n\n\n\n"
+            "data": "\nV1\n1:  1\n2:  2\n3:  3\n[1] 2\n[1] 4\n[1] 6\n[1] 8\n[1] 10\n [1]  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25\n[26] 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50\n\n\n\n"
           }
         ]
       },
       "apps": [],
+      "runtimeInfos": {},
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1429882976611_1352445253",
       "id": "20150424-154256_645296307",
       "dateCreated": "2015-04-24 03:42:56.000",
-      "dateStarted": "2020-03-11 14:02:43.230",
-      "dateFinished": "2020-03-11 14:02:43.480",
+      "dateStarted": "2021-07-26 04:33:11.348",
+      "dateFinished": "2021-07-26 04:33:11.537",
       "status": "FINISHED"
     },
     {
       "title": "Load Iris Dataset",
       "text": "%spark.r\n\ncolnames(iris)\niris$Petal.Length\niris$Sepal.Length",
       "user": "anonymous",
-      "dateUpdated": "2020-03-11 14:02:43.538",
+      "dateUpdated": "2021-07-26 04:33:11.548",
+      "progress": 0,
       "config": {
         "colWidth": 12.0,
         "enabled": true,
@@ -190,24 +197,26 @@
         "msg": [
           {
             "type": "TEXT",
-            "data": "\n[1] “Sepal.Length” “Sepal.Width”  “Petal.Length” “Petal.Width” \n[5] “Species”\n  [1] 1.4 1.4 1.3 1.5 1.4 1.7 1.4 1.5 1.4 1.5 1.5 1.6 1.4 1.1 1.2 1.5 1.3\n [18] 1.4 1.7 1.5 1.7 1.5 1.0 1.7 1.9 1.6 1.6 1.5 1.4 1.6 1.6 1.5 1.5 1.4\n [35] 1.5 1.2 1.3 1.4 1.3 1.5 1.3 1.3 1.3 1.6 1.9 1.4 1.6 1.4 1.5 1.4 4.7\n [52] 4.5 4.9 4.0 4.6 4.5 4.7 3.3 4.6 3.9 3.5 4.2 4.0 4.7 3.6 4.4 4.5 4.1\n [69] 4.5 3.9 4.8 4.0 4.9 4.7 4.3 4.4 4.8 5.0 4.5 3.5 3.8 3.7 3.9 5.1 4.5\n [86] 4.5 4.7 4.4 4.1 4.0 4.4 4.6 4.0 3.3 4.2 4.2 4.2 4.3 3.0 4.1 6.0 5.1\n[103] 5.9 5.6 5.8 6.6 4.5 6.3 5.8 6.1 5.1 5.3 5.5 5.0 5.1 5.3 5.5 6.7 6.9\n[120] 5.0 5.7 4.9 6.7 4.9 5.7 6.0 4.8 4.9 5.6 5.8 6.1 6.4 5.6 5.1 5.6 6.1\n[137] 5.6 5.5 4.8 5.4 5.6 5.1 5.1 5.9 5.7 5.2 5.0 5.2 5.4 5.1\n  [1] 5.1 4.9 4.7 4.6 5.0 5.4 4.6 5.0 4.4 4.9 5.4 4.8 4.8 4.3 5.8 5.7 5.4\n [18] 5.1 5.7 5.1 5.4 5.1 4.6 5.1 4.8 5.0 5.0 5.2 5.2 4.7 4.8 5.4 5.2 5.5\n [35] 4.9 5.0 5.5 4.9 4.4 5.1 5.0 4.5 4.4 5.0 5.1 4.8 5.1 4.6 5.3 5.0 7.0\n [52] 6.4 6.9 5.5 6.5 5.7 6.3 4.9 6.6 5.2 5.0 5.9 6.0 6.1 5.6 6.7 5.6 5.8\n [69] 6.2 5.6 5.9 6.1 6.3 6.1 6.4 6.6 6.8 6.7 6.0 5.7 5.5 5.5 5.8 6.0 5.4\n [86] 6.0 6.7 6.3 5.6 5.5 5.5 6.1 5.8 5.0 5.6 5.7 5.7 6.2 5.1 5.7 6.3 5.8\n[103] 7.1 6.3 6.5 7.6 4.9 7.3 6.7 7.2 6.5 6.4 6.8 5.7 5.8 6.4 6.5 7.7 7.7\n[120] 6.0 6.9 5.6 7.7 6.3 6.7 7.2 6.2 6.1 6.4 7.2 7.4 7.9 6.4 6.3 6.1 7.7\n[137] 6.3 6.4 6.0 6.9 6.7 6.9 5.8 6.8 6.7 6.7 6.3 6.5 6.2 5.9\n\n\n\n"
+            "data": "\n[1] “Sepal.Length” “Sepal.Width”  “Petal.Length” “Petal.Width”  “Species”\n  [1] 1.4 1.4 1.3 1.5 1.4 1.7 1.4 1.5 1.4 1.5 1.5 1.6 1.4 1.1 1.2 1.5 1.3 1.4\n [19] 1.7 1.5 1.7 1.5 1.0 1.7 1.9 1.6 1.6 1.5 1.4 1.6 1.6 1.5 1.5 1.4 1.5 1.2\n [37] 1.3 1.4 1.3 1.5 1.3 1.3 1.3 1.6 1.9 1.4 1.6 1.4 1.5 1.4 4.7 4.5 4.9 4.0\n [55] 4.6 4.5 4.7 3.3 4.6 3.9 3.5 4.2 4.0 4.7 3.6 4.4 4.5 4.1 4.5 3.9 4.8 4.0\n [73] 4.9 4.7 4.3 4.4 4.8 5.0 4.5 3.5 3.8 3.7 3.9 5.1 4.5 4.5 4.7 4.4 4.1 4.0\n [91] 4.4 4.6 4.0 3.3 4.2 4.2 4.2 4.3 3.0 4.1 6.0 5.1 5.9 5.6 5.8 6.6 4.5 6.3\n[109] 5.8 6.1 5.1 5.3 5.5 5.0 5.1 5.3 5.5 6.7 6.9 5.0 5.7 4.9 6.7 4.9 5.7 6.0\n[127] 4.8 4.9 5.6 5.8 6.1 6.4 5.6 5.1 5.6 6.1 5.6 5.5 4.8 5.4 5.6 5.1 5.1 5.9\n[145] 5.7 5.2 5.0 5.2 5.4 5.1\n  [1] 5.1 4.9 4.7 4.6 5.0 5.4 4.6 5.0 4.4 4.9 5.4 4.8 4.8 4.3 5.8 5.7 5.4 5.1\n [19] 5.7 5.1 5.4 5.1 4.6 5.1 4.8 5.0 5.0 5.2 5.2 4.7 4.8 5.4 5.2 5.5 4.9 5.0\n [37] 5.5 4.9 4.4 5.1 5.0 4.5 4.4 5.0 5.1 4.8 5.1 4.6 5.3 5.0 7.0 6.4 6.9 5.5\n [55] 6.5 5.7 6.3 4.9 6.6 5.2 5.0 5.9 6.0 6.1 5.6 6.7 5.6 5.8 6.2 5.6 5.9 6.1\n [73] 6.3 6.1 6.4 6.6 6.8 6.7 6.0 5.7 5.5 5.5 5.8 6.0 5.4 6.0 6.7 6.3 5.6 5.5\n [91] 5.5 6.1 5.8 5.0 5.6 5.7 5.7 6.2 5.1 5.7 6.3 5.8 7.1 6.3 6.5 7.6 4.9 7.3\n[109] 6.7 7.2 6.5 6.4 6.8 5.7 5.8 6.4 6.5 7.7 7.7 6.0 6.9 5.6 7.7 6.3 6.7 7.2\n[127] 6.2 6.1 6.4 7.2 7.4 7.9 6.4 6.3 6.1 7.7 6.3 6.4 6.0 6.9 6.7 6.9 5.8 6.8\n[145] 6.7 6.7 6.3 6.5 6.2 5.9\n\n\n\n"
           }
         ]
       },
       "apps": [],
+      "runtimeInfos": {},
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1455138077044_161383897",
       "id": "20160210-220117_115873183",
       "dateCreated": "2016-02-10 10:01:17.000",
-      "dateStarted": "2020-03-11 14:02:43.551",
-      "dateFinished": "2020-03-11 14:02:43.648",
+      "dateStarted": "2021-07-26 04:33:11.559",
+      "dateFinished": "2021-07-26 04:33:11.653",
       "status": "FINISHED"
     },
     {
       "title": "Create a Spark Dataframe",
       "text": "%spark\n\nimport org.apache.commons.io.IOUtils\nimport java.net.URL\nimport java.nio.charset.Charset\n\nval bankText \u003d sc.parallelize(\n    IOUtils.toString(\n        new URL(\"https://s3.amazonaws.com/apache-zeppelin/tutorial/bank/bank.csv\"),\n        Charset.forName(\"utf8\")).split(\"\\n\"))\n\ncase class Bank(age: Integer, job: String, marital: String, education: String, balance: Integer)\n\nval bank \u003d bankText.map(s \u003d\u003e s.split(\";\")).filter(s \u003d\u003e s(0) !\u003d \"\\\"age\\\"\").map(\n    s \u003d\u003e Bank(s(0).toInt, \n            s(1).replaceAll(\"\\\"\", \"\"),\n            s(2).replaceAll(\"\\\"\", \"\"),\n            s(3).replaceAll(\"\\\"\", \"\"),\n            s(5).replaceAll(\"\\\"\", \"\").toInt\n        )\n).toDF()\nbank.registerTempTable(\"bank\")",
       "user": "anonymous",
-      "dateUpdated": "2020-03-11 14:02:43.649",
+      "dateUpdated": "2021-07-26 04:33:11.657",
+      "progress": 0,
       "config": {
         "colWidth": 6.0,
         "enabled": true,
@@ -246,24 +255,26 @@
         "msg": [
           {
             "type": "TEXT",
-            "data": "\u001b[33mwarning: \u001b[0mthere was one deprecation warning; re-run with -deprecation for details\nimport sqlContext.implicits._\nimport org.apache.commons.io.IOUtils\nimport java.net.URL\nimport java.nio.charset.Charset\n\u001b[1m\u001b[34mbankText\u001b[0m: \u001b[1m\u001b[32morg.apache.spark.rdd.RDD[String]\u001b[0m \u003d ParallelCollectionRDD[438] at parallelize at \u003cconsole\u003e:20\ndefined class Bank\n\u001b[1m\u001b[34mbank\u001b[0m: \u001b[1m\u001b[32morg.apache.spark.sql.DataFrame\u001b[0m \u003d [age: int, job: string ... 3 more fields]\n"
+            "data": "\u001b[33mwarning: \u001b[0mthere was one deprecation warning (since 2.0.0); for details, enable `:setting -deprecation\u0027 or `:replay -deprecation\u0027\nimport sqlContext.implicits._\nimport org.apache.commons.io.IOUtils\nimport java.net.URL\nimport java.nio.charset.Charset\n\u001b[1m\u001b[34mbankText\u001b[0m: \u001b[1m\u001b[32morg.apache.spark.rdd.RDD[String]\u001b[0m \u003d ParallelCollectionRDD[173] at parallelize at \u003cconsole\u003e:22\ndefined class Bank\n\u001b[1m\u001b[34mbank\u001b[0m: \u001b[1m\u001b[32morg.apache.spark.sql.DataFrame\u001b[0m \u003d [age: int, job: string ... 3 more fields]\n"
           }
         ]
       },
       "apps": [],
+      "runtimeInfos": {},
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1455142039343_-233762796",
       "id": "20160210-230719_2111095838",
       "dateCreated": "2016-02-10 11:07:19.000",
-      "dateStarted": "2020-03-11 14:02:43.757",
-      "dateFinished": "2020-03-11 14:02:50.086",
+      "dateStarted": "2021-07-26 04:33:11.758",
+      "dateFinished": "2021-07-26 04:33:16.643",
       "status": "FINISHED"
     },
     {
       "title": "Read the Spark Dataframe from R",
       "text": "%spark.r\n\ndf \u003c- sql(sqlContext, \"select count(*) from bank\")\nprintSchema(df)\nSparkR::head(df)",
       "user": "anonymous",
-      "dateUpdated": "2020-03-11 14:02:50.092",
+      "dateUpdated": "2021-07-26 04:33:16.679",
+      "progress": 0,
       "config": {
         "colWidth": 6.0,
         "enabled": true,
@@ -300,24 +311,26 @@
         "msg": [
           {
             "type": "TEXT",
-            "data": "\nroot\n |– count(1): long (nullable \u003d false)\n  count(1)\n1     4521\n\n\n\n"
+            "data": "\nError in sql(sqlContext, \"select count(*) from bank\"): unused argument (\"select count(*) from bank\")\n\n\nError in (function (classes, fdef, mtable) : unable to find an inherited method for function \u0027printSchema\u0027 for signature \u0027\"function\"\u0027\n\n\n1 function (x, df1, df2, ncp, log \u003d FALSE)\n2 {\n3     if (missing(ncp))\n4         .Call(C_df, x, df1, df2, log)\n5     else .Call(C_dnf, x, df1, df2, ncp, log)\n6 }                                           \n\n\n\n"
           }
         ]
       },
       "apps": [],
+      "runtimeInfos": {},
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1455142043062_1598026718",
       "id": "20160210-230723_1811469598",
       "dateCreated": "2016-02-10 11:07:23.000",
-      "dateStarted": "2020-03-11 14:02:50.116",
-      "dateFinished": "2020-03-11 14:02:51.469",
+      "dateStarted": "2021-07-26 04:33:16.714",
+      "dateFinished": "2021-07-26 04:33:17.009",
       "status": "FINISHED"
     },
     {
       "title": "Create a R Dataframe",
       "text": "%spark.r \n\nlocalNames \u003c- data.frame(name\u003dc(\"John\", \"Smith\", \"Sarah\"), budget\u003dc(19, 53, 18))\nnames \u003c- createDataFrame(sqlContext, localNames)\nprintSchema(names)\nregisterTempTable(names, \"names\")\n\n# SparkR::head(names)",
       "user": "anonymous",
-      "dateUpdated": "2020-03-11 14:02:51.553",
+      "dateUpdated": "2021-07-26 04:33:17.107",
+      "progress": 0,
       "config": {
         "colWidth": 12.0,
         "enabled": true,
@@ -353,25 +366,27 @@
         "code": "SUCCESS",
         "msg": [
           {
-            "type": "TEXT",
-            "data": "\nroot\n |– name: string (nullable \u003d true)\n |– budget: double (nullable \u003d true)\n\n\n\n"
+            "type": "HTML",
+            "data": "\n\u003cpre\u003e\u003ccode\u003eError in createDataFrame(sqlContext, localNames): unexpected type: jobj\n\u003c/code\u003e\u003c/pre\u003e\n\n\u003cpre\u003e\u003ccode\u003eError in (function (classes, fdef, mtable) : unable to find an inherited method for function \u0027printSchema\u0027 for signature \u0027\"function\"\u0027\n\u003c/code\u003e\u003c/pre\u003e\n\n\u003cpre\u003e\u003ccode\u003eError in (function (classes, fdef, mtable) : unable to find an inherited method for function \u0027registerTempTable\u0027 for signature \u0027\"function\", \"character\"\u0027\n\u003c/code\u003e\u003c/pre\u003e\n\n\n\n"
           }
         ]
       },
       "apps": [],
+      "runtimeInfos": {},
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1455142112413_519883679",
       "id": "20160210-230832_1847721959",
       "dateCreated": "2016-02-10 11:08:32.000",
-      "dateStarted": "2020-03-11 14:02:51.568",
-      "dateFinished": "2020-03-11 14:02:51.870",
+      "dateStarted": "2021-07-26 04:33:17.116",
+      "dateFinished": "2021-07-26 04:33:17.228",
       "status": "FINISHED"
     },
     {
       "title": "Read the R Dataframe from Spark",
       "text": "%spark\n\nsqlContext.sql(\"select * from names\").head",
       "user": "anonymous",
-      "dateUpdated": "2020-03-11 14:02:51.874",
+      "dateUpdated": "2021-07-26 04:33:17.316",
+      "progress": 0,
       "config": {
         "colWidth": 12.0,
         "enabled": true,
@@ -405,28 +420,30 @@
         "forms": {}
       },
       "results": {
-        "code": "SUCCESS",
+        "code": "ERROR",
         "msg": [
           {
             "type": "TEXT",
-            "data": "\u001b[1m\u001b[34mres17\u001b[0m: \u001b[1m\u001b[32morg.apache.spark.sql.Row\u001b[0m \u003d [John,19.0]\n"
+            "data": "org.apache.spark.sql.AnalysisException: Table or view not found: names; line 1 pos 14;\n\u0027Project [*]\n+- \u0027UnresolvedRelation [names], [], false\n\n  at org.apache.spark.sql.catalyst.analysis.package$AnalysisErrorAt.failAnalysis(package.scala:42)\n  at org.apache.spark.sql.catalyst.analysis.CheckAnalysis.$anonfun$checkAnalysis$1(CheckAnalysis.scala:113)\n  at org.apache.spark.sql.catalyst.analysis.CheckAnalysis.$anonfun$checkAnalysis$1$adapted(CheckAnalysis.scala:93)\n  at org.apache.spark.sql.catalyst.trees.TreeNode.foreachUp(TreeNode.scala:184)\n  at org.apache.spark.sql.catalyst.trees.TreeNode.$anonfun$foreachUp$1(TreeNode.scala:183)\n  at org.apache.spark.sql.catalyst.trees.TreeNode.$anonfun$foreachUp$1$adapted(TreeNode.scala:183)\n  at scala.collection.immutable.List.foreach(List.scala:392)\n  at org.apache.spark.sql.catalyst.trees.TreeNode.foreachUp(TreeNode.scala:183)\n  at org.apache.spark.sql.catalyst.analysis.CheckAnalysis.checkAnalysis(CheckAnalysis.scala:93)\n  at org.apache.spark.sql.catalyst.analysis.CheckAnalysis.checkAnalysis$(CheckAnalysis.scala:90)\n  at org.apache.spark.sql.catalyst.analysis.Analyzer.checkAnalysis(Analyzer.scala:155)\n  at org.apache.spark.sql.catalyst.analysis.Analyzer.$anonfun$executeAndCheck$1(Analyzer.scala:176)\n  at org.apache.spark.sql.catalyst.plans.logical.AnalysisHelper$.markInAnalyzer(AnalysisHelper.scala:228)\n  at org.apache.spark.sql.catalyst.analysis.Analyzer.executeAndCheck(Analyzer.scala:173)\n  at org.apache.spark.sql.execution.QueryExecution.$anonfun$analyzed$1(QueryExecution.scala:73)\n  at org.apache.spark.sql.catalyst.QueryPlanningTracker.measurePhase(QueryPlanningTracker.scala:111)\n  at org.apache.spark.sql.execution.QueryExecution.$anonfun$executePhase$1(QueryExecution.scala:143)\n  at org.apache.spark.sql.SparkSession.withActive(SparkSession.scala:775)\n  at org.apache.spark.sql.execution.QueryExecution.executePhase(QueryExecution.scala:143)\n  at org.apache.spark.sql.execution.QueryExecution.analyzed$lzycompute(QueryExecution.scala:73)\n  at org.apache.spark.sql.execution.QueryExecution.analyzed(QueryExecution.scala:71)\n  at org.apache.spark.sql.execution.QueryExecution.assertAnalyzed(QueryExecution.scala:63)\n  at org.apache.spark.sql.Dataset$.$anonfun$ofRows$2(Dataset.scala:98)\n  at org.apache.spark.sql.SparkSession.withActive(SparkSession.scala:775)\n  at org.apache.spark.sql.Dataset$.ofRows(Dataset.scala:96)\n  at org.apache.spark.sql.SparkSession.$anonfun$sql$1(SparkSession.scala:618)\n  at org.apache.spark.sql.SparkSession.withActive(SparkSession.scala:775)\n  at org.apache.spark.sql.SparkSession.sql(SparkSession.scala:613)\n  at org.apache.spark.sql.SQLContext.sql(SQLContext.scala:650)\n  ... 46 elided\n"
           }
         ]
       },
       "apps": [],
+      "runtimeInfos": {},
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1455188357108_95477841",
       "id": "20160211-115917_445850505",
       "dateCreated": "2016-02-11 11:59:17.000",
-      "dateStarted": "2020-03-11 14:02:51.896",
-      "dateFinished": "2020-03-11 14:02:53.256",
-      "status": "FINISHED"
+      "dateStarted": "2021-07-26 04:33:17.328",
+      "dateFinished": "2021-07-26 04:33:18.121",
+      "status": "ERROR"
     },
     {
       "title": "Query the R Datafame with SQL",
       "text": "%spark.sql\n\nselect * from names\n",
       "user": "anonymous",
       "dateUpdated": "2020-03-11 14:02:53.325",
+      "progress": 0,
       "config": {
         "colWidth": 12.0,
         "enabled": true,
@@ -490,6 +507,7 @@
         ]
       },
       "apps": [],
+      "runtimeInfos": {},
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1455142115582_-1840950897",
       "id": "20160210-230835_19876971",
@@ -503,6 +521,7 @@
       "text": "%spark.r\n\npairs(iris)",
       "user": "anonymous",
       "dateUpdated": "2020-03-11 14:04:31.335",
+      "progress": 0,
       "config": {
         "colWidth": 4.0,
         "enabled": true,
@@ -543,6 +562,7 @@
         ]
       },
       "apps": [],
+      "runtimeInfos": {},
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1455137735427_-1023869289",
       "id": "20160210-215535_1815168219",
@@ -556,6 +576,7 @@
       "text": "%spark.r\n\nplot(iris, col \u003d heat.colors(3))",
       "user": "anonymous",
       "dateUpdated": "2020-03-11 14:04:39.471",
+      "progress": 0,
       "config": {
         "colWidth": 4.0,
         "enabled": true,
@@ -596,6 +617,7 @@
         ]
       },
       "apps": [],
+      "runtimeInfos": {},
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1455137737773_-549089146",
       "id": "20160210-215537_582262164",
@@ -609,6 +631,7 @@
       "text": "%spark.r\n\nlibrary(ggplot2)\npres_rating \u003c- data.frame(\n  rating \u003d as.numeric(presidents),\n  year \u003d as.numeric(floor(time(presidents))),\n  quarter \u003d as.numeric(cycle(presidents))\n)\np \u003c- ggplot(pres_rating, aes(x\u003dyear, y\u003dquarter, fill\u003drating))\np + geom_raster()",
       "user": "anonymous",
       "dateUpdated": "2020-03-11 14:04:47.733",
+      "progress": 0,
       "config": {
         "colWidth": 4.0,
         "enabled": true,
@@ -650,6 +673,7 @@
         ]
       },
       "apps": [],
+      "runtimeInfos": {},
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1438930880648_-1572054429",
       "id": "20150807-090120_1060568667",
@@ -663,6 +687,7 @@
       "text": "%spark.r\n\nlibrary(googleVis)\ndf\u003ddata.frame(country\u003dc(\"US\", \"GB\", \"BR\"), \n              val1\u003dc(10,13,14), \n              val2\u003dc(23,12,32))\nBar \u003c- gvisBarChart(df)\nprint(Bar, tag \u003d \u0027chart\u0027)\n",
       "user": "anonymous",
       "dateUpdated": "2020-03-11 14:02:53.544",
+      "progress": 0,
       "config": {
         "colWidth": 4.0,
         "enabled": true,
@@ -701,6 +726,7 @@
         ]
       },
       "apps": [],
+      "runtimeInfos": {},
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1485626417184_-1153542135",
       "id": "20170129-030017_426747323",
@@ -714,6 +740,7 @@
       "text": "%spark.r\n\nlibrary(googleVis)\n\nCandle \u003c- gvisCandlestickChart(OpenClose, \n                               options\u003dlist(legend\u003d\u0027none\u0027))\n\nprint(Candle, tag \u003d \u0027chart\u0027)",
       "user": "anonymous",
       "dateUpdated": "2020-03-11 14:02:53.759",
+      "progress": 0,
       "config": {
         "colWidth": 4.0,
         "enabled": true,
@@ -752,6 +779,7 @@
         ]
       },
       "apps": [],
+      "runtimeInfos": {},
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1485627113560_-130863711",
       "id": "20170129-031153_758721410",
@@ -765,6 +793,7 @@
       "text": "%spark.r\n\nlibrary(googleVis)\ndf\u003ddata.frame(country\u003dc(\"US\", \"GB\", \"BR\"), \n              val1\u003dc(10,13,14), \n              val2\u003dc(23,12,32))\n\nLine \u003c- gvisLineChart(df)\n\nprint(Line, tag \u003d \u0027chart\u0027)\n",
       "user": "anonymous",
       "dateUpdated": "2020-03-11 14:02:53.879",
+      "progress": 0,
       "config": {
         "colWidth": 4.0,
         "enabled": true,
@@ -803,6 +832,7 @@
         ]
       },
       "apps": [],
+      "runtimeInfos": {},
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1455138857313_92355963",
       "id": "20160210-221417_1400405266",
@@ -816,6 +846,7 @@
       "text": "%spark.r\n\nlibrary(googleVis)\nbubble \u003c- gvisBubbleChart(Fruits, idvar\u003d\"Fruit\", \n                          xvar\u003d\"Sales\", yvar\u003d\"Expenses\",\n                          colorvar\u003d\"Year\", sizevar\u003d\"Profit\",\n                          options\u003dlist(\n                            hAxis\u003d\u0027{minValue:75, maxValue:125}\u0027))\nprint(bubble, tag \u003d \u0027chart\u0027)",
       "user": "anonymous",
       "dateUpdated": "2020-03-11 14:02:56.910",
+      "progress": 0,
       "config": {
         "colWidth": 6.0,
         "enabled": true,
@@ -857,6 +888,7 @@
         ]
       },
       "apps": [],
+      "runtimeInfos": {},
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1455141578555_-1713165000",
       "id": "20160210-225938_1538591791",
@@ -870,6 +902,7 @@
       "text": "%spark.r\n\nlibrary(googleVis)\ngeo \u003d gvisGeoChart(Exports, locationvar \u003d \"Country\", colorvar\u003d\"Profit\", options\u003dlist(Projection \u003d \"kavrayskiy-vii\"))\nprint(geo, tag \u003d \u0027chart\u0027)",
       "user": "anonymous",
       "dateUpdated": "2020-03-11 14:02:57.020",
+      "progress": 0,
       "config": {
         "colWidth": 6.0,
         "enabled": true,
@@ -911,6 +944,7 @@
         ]
       },
       "apps": [],
+      "runtimeInfos": {},
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1455140544963_1486338978",
       "id": "20160210-224224_735421242",
@@ -923,6 +957,7 @@
       "text": "%md\n\n## Congratulations, it\u0027s done.\n### You can create your own notebook in \u0027Notebook\u0027 menu. Good luck!",
       "user": "anonymous",
       "dateUpdated": "2020-03-11 14:02:57.131",
+      "progress": 0,
       "config": {
         "colWidth": 12.0,
         "enabled": true,
@@ -950,6 +985,7 @@
         ]
       },
       "apps": [],
+      "runtimeInfos": {},
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1485626988585_-946362813",
       "id": "20170129-030948_1379298104",
@@ -959,7 +995,7 @@
       "status": "FINISHED"
     }
   ],
-  "name": "SparkR Basics",
+  "name": "5. SparkR Basics",
   "id": "2BWJFTXKM",
   "defaultInterpreterGroup": "spark",
   "noteParams": {},
@@ -970,6 +1006,6 @@
     "isZeppelinNotebookCronEnable": false
   },
   "info": {
-    "isRunning": false
+    "isRunning": true
   }
 }

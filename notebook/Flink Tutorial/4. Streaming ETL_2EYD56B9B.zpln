@@ -4,7 +4,7 @@
       "title": "Overview",
       "text": "%md\n\nThis tutorial demonstrate how to use Flink do streaming processing via its streaming sql + udf. In this tutorial, we read data from kafka queue and do some simple processing (just filtering here) and then write it back to another kafka queue. We use this [docker](https://zeppelin-kafka-connect-datagen.readthedocs.io/en/latest/) to create kafka cluster and source data \n\n* Make sure you add the following ip host name mapping to your hosts file, otherwise you may not be able to connect to the kafka cluster in docker\n\n```\n127.0.0.1   broker\n```\n\nUse the following command to generate the sample data.\n\n```\ncurl -X POST http://localhost:8083/connectors \\\n-H \u0027Content-Type:application/json\u0027 \\\n-H \u0027Accept:application/json\u0027 \\\n-d @connect.source.datagen.json\n```",
       "user": "anonymous",
-      "dateUpdated": "2021-01-25 14:26:04.106",
+      "dateUpdated": "2021-07-26 05:50:06.144",
       "progress": 0,
       "config": {
         "runOnSelectionChange": true,
@@ -28,14 +28,23 @@
         "params": {},
         "forms": {}
       },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003cp\u003eThis tutorial demonstrate how to use Flink do streaming processing via its streaming sql + udf. In this tutorial, we read data from kafka queue and do some simple processing (just filtering here) and then write it back to another kafka queue. We use this \u003ca href\u003d\"https://zeppelin-kafka-connect-datagen.readthedocs.io/en/latest/\"\u003edocker\u003c/a\u003e to create kafka cluster and source data\u003c/p\u003e\n\u003cul\u003e\n\u003cli\u003eMake sure you add the following ip host name mapping to your hosts file, otherwise you may not be able to connect to the kafka cluster in docker\u003c/li\u003e\n\u003c/ul\u003e\n\u003cpre\u003e\u003ccode\u003e127.0.0.1   broker\n\u003c/code\u003e\u003c/pre\u003e\n\u003cp\u003eUse the following command to generate the sample data.\u003c/p\u003e\n\u003cpre\u003e\u003ccode\u003ecurl -X POST http://localhost:8083/connectors \\\n-H \u0027Content-Type:application/json\u0027 \\\n-H \u0027Accept:application/json\u0027 \\\n-d @connect.source.datagen.json\n\u003c/code\u003e\u003c/pre\u003e\n\n\u003c/div\u003e"
+          }
+        ]
+      },
       "apps": [],
       "runtimeInfos": {},
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1579054287919_-61477360",
       "id": "paragraph_1579054287919_-61477360",
       "dateCreated": "2020-01-15 10:11:27.919",
-      "dateStarted": "2021-01-25 14:26:04.106",
-      "dateFinished": "2021-01-25 14:26:04.118",
+      "dateStarted": "2021-07-26 05:50:06.145",
+      "dateFinished": "2021-07-26 05:50:06.153",
       "status": "FINISHED"
     },
     {

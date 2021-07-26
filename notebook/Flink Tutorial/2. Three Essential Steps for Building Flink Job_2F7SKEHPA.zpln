@@ -4,7 +4,7 @@
       "title": "Introduction",
       "text": "%md\n\n# Introduction\n\n\nTypically there\u0027re 3 essential steps for building one flink job. And each step has its favorite tools.\n\n* Define source/sink (SQL DDL)\n* Define data flow (Table Api / SQL)\n* Implement business logic (UDF)\n\nThis tutorial demonstrates how to build one typical flinkjob  via these 3 steps and their favorite tools.\nIn this demo, we will do real time analysis of cdn access data. First we read cdn access log from kafka queue and do some processing and aggregation, then write the result to mysql database. We use this [docker](https://zeppelin-kafka-connect-datagen.readthedocs.io/en/latest/) to create kafka cluster and source data. You need to prepare mysql database by yourself. \n\n* Make sure you add the following ip host name mapping to your hosts file, otherwise you may not be able to connect to the kafka cluster in docker\n\n```\n127.0.0.1   broker\n```\n\nUse the following command to generate the sample data.\n\n```\ncurl -X POST http://localhost:8083/connectors \\\n-H \u0027Content-Type:application/json\u0027 \\\n-H \u0027Accept:application/json\u0027 \\\n-d @cdn.source.datagen.json\n```",
       "user": "anonymous",
-      "dateUpdated": "2021-01-25 14:25:27.359",
+      "dateUpdated": "2021-07-26 04:42:10.375",
       "progress": 0,
       "config": {
         "colWidth": 12.0,
@@ -26,14 +26,23 @@
         "params": {},
         "forms": {}
       },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003ch1\u003eIntroduction\u003c/h1\u003e\n\u003cp\u003eTypically there\u0026rsquo;re 3 essential steps for building one flink job. And each step has its favorite tools.\u003c/p\u003e\n\u003cul\u003e\n\u003cli\u003eDefine source/sink (SQL DDL)\u003c/li\u003e\n\u003cli\u003eDefine data flow (Table Api / SQL)\u003c/li\u003e\n\u003cli\u003eImplement business logic (UDF)\u003c/li\u003e\n\u003c/ul\u003e\n\u003cp\u003eThis tutorial demonstrates how to build one typical flinkjob  via these 3 steps and their favorite tools.\u003cbr /\u003e\nIn this demo, we will do real time analysis of cdn access data. First we read cdn access log from kafka queue and do some processing and aggregation, then write the result to mysql database. We use this \u003ca href\u003d\"https://zeppelin-kafka-connect-datagen.readthedocs.io/en/latest/\"\u003edocker\u003c/a\u003e to create kafka cluster and source data. You need to prepare mysql database by yourself.\u003c/p\u003e\n\u003cul\u003e\n\u003cli\u003eMake sure you add the following ip host name mapping to your hosts file, otherwise you may not be able to connect to the kafka cluster in docker\u003c/li\u003e\n\u003c/ul\u003e\n\u003cpre\u003e\u003ccode\u003e127.0.0.1   broker\n\u003c/code\u003e\u003c/pre\u003e\n\u003cp\u003eUse the following command to generate the sample data.\u003c/p\u003e\n\u003cpre\u003e\u003ccode\u003ecurl -X POST http://localhost:8083/connectors \\\n-H \u0027Content-Type:application/json\u0027 \\\n-H \u0027Accept:application/json\u0027 \\\n-d @cdn.source.datagen.json\n\u003c/code\u003e\u003c/pre\u003e\n\n\u003c/div\u003e"
+          }
+        ]
+      },
       "apps": [],
       "runtimeInfos": {},
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1587965294481_785664297",
       "id": "paragraph_1587965294481_785664297",
       "dateCreated": "2020-04-27 13:28:14.481",
-      "dateStarted": "2021-01-25 14:25:27.360",
-      "dateFinished": "2021-01-25 14:25:30.018",
+      "dateStarted": "2021-07-26 04:42:10.375",
+      "dateFinished": "2021-07-26 04:42:10.388",
       "status": "FINISHED"
     },
     {
@@ -454,7 +463,7 @@
     {
       "text": "%md\n\n# Query sink table via jdbc interpreter\n\nYou can also query the sink table (mysql) directly via jdbc interpreter. Here I will create a jdbc interpreter named `mysql` and use it to query the sink table. Regarding how to connect mysql in Zeppelin, refer this [link](http://zeppelin.apache.org/docs/0.9.0-preview1/interpreter/jdbc.html#mysql)",
       "user": "anonymous",
-      "dateUpdated": "2021-01-25 14:25:41.163",
+      "dateUpdated": "2021-07-26 04:42:20.433",
       "progress": 0,
       "config": {
         "colWidth": 12.0,
@@ -475,14 +484,23 @@
         "params": {},
         "forms": {}
       },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003ch1\u003eQuery sink table via jdbc interpreter\u003c/h1\u003e\n\u003cp\u003eYou can also query the sink table (mysql) directly via jdbc interpreter. Here I will create a jdbc interpreter named \u003ccode\u003emysql\u003c/code\u003e and use it to query the sink table. Regarding how to connect mysql in Zeppelin, refer this \u003ca href\u003d\"http://zeppelin.apache.org/docs/0.9.0-preview1/interpreter/jdbc.html#mysql\"\u003elink\u003c/a\u003e\u003c/p\u003e\n\n\u003c/div\u003e"
+          }
+        ]
+      },
       "apps": [],
       "runtimeInfos": {},
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1587976725546_2073084823",
       "id": "paragraph_1587976725546_2073084823",
       "dateCreated": "2020-04-27 16:38:45.548",
-      "dateStarted": "2021-01-25 14:25:41.162",
-      "dateFinished": "2021-01-25 14:25:41.175",
+      "dateStarted": "2021-07-26 04:42:20.433",
+      "dateFinished": "2021-07-26 04:42:20.442",
       "status": "FINISHED"
     },
     {

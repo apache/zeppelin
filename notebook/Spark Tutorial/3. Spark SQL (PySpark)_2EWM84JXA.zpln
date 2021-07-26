@@ -4,7 +4,8 @@
       "title": "Introduction",
       "text": "%md\n\nThis is a tutorial for Spark SQL in PySpark (based on Spark 2.x).  First we need to clarify several concepts of Spark SQL\n\n* **SparkSession**   - This is the entry point of Spark SQL, you need use `SparkSession` to create DataFrame/Dataset, register UDF, query table and etc.\n* **DataFrame**      - There\u0027s no Dataset in PySpark, but only DataFrame. The DataFrame of PySpark is very similar with DataFrame concept of Pandas, but is distributed. \n",
       "user": "anonymous",
-      "dateUpdated": "2020-03-11 11:16:37.393",
+      "dateUpdated": "2021-07-26 04:33:49.926",
+      "progress": 0,
       "config": {
         "tableHide": false,
         "editorSetting": {
@@ -37,19 +38,21 @@
         ]
       },
       "apps": [],
+      "runtimeInfos": {},
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1578387700849_2035279674",
       "id": "20180530-101118_380906698",
       "dateCreated": "2020-01-07 17:01:40.849",
-      "dateStarted": "2020-03-11 11:16:34.341",
-      "dateFinished": "2020-03-11 11:16:35.545",
+      "dateStarted": "2021-07-26 04:33:49.929",
+      "dateFinished": "2021-07-26 04:33:49.938",
       "status": "FINISHED"
     },
     {
       "title": "Create DataFrame",
-      "text": "%md\n\nThere\u0027s 2 ways to create DataFrame\n\n* Use SparkSession to create DataFrame directly. You can either create DataFrame from RDD, List type objects and etc.\n* Use DataFrameReader to create Dataset/DataFrame from many kinds of storages that is supported by spark, such as HDFS, jdbc and etc.",
+      "text": "%md\n\nThere\u0027re 2 ways to create DataFrame\n\n* Use SparkSession to create DataFrame directly. You can either create DataFrame from RDD, List type objects and etc.\n* Use DataFrameReader to create Dataset/DataFrame from many kinds of storages that are supported by spark, such as HDFS, jdbc and etc.",
       "user": "anonymous",
-      "dateUpdated": "2020-01-21 15:46:35.190",
+      "dateUpdated": "2021-07-26 04:34:40.824",
+      "progress": 0,
       "config": {
         "tableHide": false,
         "editorSetting": {
@@ -77,24 +80,26 @@
         "msg": [
           {
             "type": "HTML",
-            "data": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003cp\u003eThere\u0026rsquo;s 2 ways to create DataFrame\u003c/p\u003e\n\u003cul\u003e\n\u003cli\u003eUse SparkSession to create DataFrame directly. You can either create DataFrame from RDD, List type objects and etc.\u003c/li\u003e\n\u003cli\u003eUse DataFrameReader to create Dataset/DataFrame from many kinds of storages that is supported by spark, such as HDFS, jdbc and etc.\u003c/li\u003e\n\u003c/ul\u003e\n\n\u003c/div\u003e"
+            "data": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003cp\u003eThere\u0026rsquo;re 2 ways to create DataFrame\u003c/p\u003e\n\u003cul\u003e\n\u003cli\u003eUse SparkSession to create DataFrame directly. You can either create DataFrame from RDD, List type objects and etc.\u003c/li\u003e\n\u003cli\u003eUse DataFrameReader to create Dataset/DataFrame from many kinds of storages that are supported by spark, such as HDFS, jdbc and etc.\u003c/li\u003e\n\u003c/ul\u003e\n\n\u003c/div\u003e"
           }
         ]
       },
       "apps": [],
+      "runtimeInfos": {},
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1578387700850_-1934281275",
       "id": "20180530-101515_948520659",
       "dateCreated": "2020-01-07 17:01:40.850",
-      "dateStarted": "2020-01-21 15:46:35.204",
-      "dateFinished": "2020-01-21 15:46:35.222",
+      "dateStarted": "2021-07-26 04:34:40.824",
+      "dateFinished": "2021-07-26 04:34:40.832",
       "status": "FINISHED"
     },
     {
       "title": "Prerequisites",
       "text": "%md\n\n\n\n**It is strongly recommended to run the following %spark.conf paragraph first to make sure correct configuration is used.**",
       "user": "anonymous",
-      "dateUpdated": "2020-01-21 15:46:35.304",
+      "dateUpdated": "2021-07-26 04:33:50.131",
+      "progress": 0,
       "config": {
         "tableHide": false,
         "editorSetting": {
@@ -127,19 +132,21 @@
         ]
       },
       "apps": [],
+      "runtimeInfos": {},
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1578387700850_-1709355244",
       "id": "20180530-110023_1756702033",
       "dateCreated": "2020-01-07 17:01:40.850",
-      "dateStarted": "2020-01-21 15:46:35.314",
-      "dateFinished": "2020-01-21 15:46:35.326",
+      "dateStarted": "2021-07-26 04:33:50.134",
+      "dateFinished": "2021-07-26 04:33:50.142",
       "status": "FINISHED"
     },
     {
       "title": "Spark Configuration",
       "text": "%spark.conf\n\n# It is strongly recommended to set SPARK_HOME explicitly instead of using the embedded spark of Zeppelin. As the function of embedded spark of Zeppelin is limited and can only run in local mode.\n# SPARK_HOME \u003cyour_spark_dist_path\u003e\n\n# Uncomment the following line if you want to use yarn-cluster mode (It is recommended to use yarn-cluster mode from Zeppelin 0.8, as the driver will run on the remote host of yarn cluster which can mitigate memory pressure of zeppelin server)\n# master yarn-cluster\n\n# Uncomment the following line if you want to use yarn-client mode (It is not recommended to use yarn-client after 0.8. Because it would launch the driver in the same host of zeppelin server which will increase memory pressure of zeppelin server)\n# master yarn-client\n\n# Uncomment the following line to enable HiveContext, and also put hive-site.xml under SPARK_CONF_DIR\n# zeppelin.spark.useHiveContext true\n",
       "user": "anonymous",
-      "dateUpdated": "2020-03-11 13:26:01.470",
+      "dateUpdated": "2021-07-26 04:33:50.234",
+      "progress": 0,
       "config": {
         "editorSetting": {
           "language": "text",
@@ -165,19 +172,21 @@
         "msg": []
       },
       "apps": [],
+      "runtimeInfos": {},
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1578387700850_-1532509261",
       "id": "20180530-110007_162886838",
       "dateCreated": "2020-01-07 17:01:40.850",
-      "dateStarted": "2020-03-11 11:18:41.548",
-      "dateFinished": "2020-03-11 11:18:41.575",
+      "dateStarted": "2021-07-26 04:33:50.240",
+      "dateFinished": "2021-07-26 04:33:50.246",
       "status": "FINISHED"
     },
     {
       "title": "Create Dataset/DataFrame via SparkSession",
       "text": "%spark.pyspark\n\n# create DataFrame from python list. It can infer schema for you.\ndf1 \u003d spark.createDataFrame([(1, \"andy\", 20, \"USA\"), (2, \"jeff\", 23, \"China\"), (3, \"james\", 18, \"USA\")]).toDF(\"id\", \"name\", \"age\", \"country\")\ndf1.printSchema()\ndf1.show()\n\n# create DataFrame from pandas dataframe\ndf2 \u003d spark.createDataFrame(df1.toPandas())\ndf2.printSchema()\ndf2.show()\n\n\n\n\n\n\n\n\n\n\n\n\n",
       "user": "anonymous",
-      "dateUpdated": "2020-03-11 11:19:32.923",
+      "dateUpdated": "2021-07-26 04:33:50.339",
+      "progress": 0,
       "config": {
         "editorSetting": {
           "language": "python",
@@ -208,19 +217,46 @@
         ]
       },
       "apps": [],
+      "runtimeInfos": {
+        "jobUrl": {
+          "propertyName": "jobUrl",
+          "label": "SPARK JOB",
+          "tooltip": "View in Spark web UI",
+          "group": "spark",
+          "values": [
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d61"
+            },
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d62"
+            },
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d63"
+            },
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d64"
+            },
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d65"
+            }
+          ],
+          "interpreterSettingId": "spark"
+        }
+      },
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1578387700850_1345292725",
       "id": "20180530-101750_1491737301",
       "dateCreated": "2020-01-07 17:01:40.850",
-      "dateStarted": "2020-03-11 11:19:32.929",
-      "dateFinished": "2020-03-11 11:19:33.544",
+      "dateStarted": "2021-07-26 04:33:50.341",
+      "dateFinished": "2021-07-26 04:33:51.158",
       "status": "FINISHED"
     },
     {
       "title": "Create DataFrame via DataFrameReader",
       "text": "%spark.pyspark\n\nSPARK_HOME \u003d os.getenv(\u0027SPARK_HOME\u0027)\n\n# Read data from json file\n# link for this people.json (https://github.com/apache/spark/blob/master/examples/src/main/resources/people.json)\n# Use hdfs path if you are using hdfs\ndf1 \u003d spark.read.json(\"file://\" + SPARK_HOME + \"/examples/src/main/resources/people.json\")\ndf1.printSchema()\ndf1.show()\n\n# Read data from csv file. You can customize it via spark.read.options. E.g. In the following example, we customize the sep and header\ndf2 \u003d spark.read.options(sep\u003d\";\", header\u003dTrue).csv(\"file://\"  + SPARK_HOME + \"/examples/src/main/resources/people.csv\")\ndf2.printSchema()\ndf2.show()\n\n# Specify schema for your csv file\nfrom pyspark.sql.types import StructType, StringType, IntegerType\n\nschema \u003d StructType().add(\"name\", StringType(), True) \\\n    .add(\"age\", IntegerType(), True) \\\n    .add(\"job\", StringType(), True)\n    \ndf3 \u003d spark.read.options(sep\u003d\";\", header\u003dTrue) \\\n    .schema(schema) \\\n    .csv(\"file://\" + SPARK_HOME + \"/examples/src/main/resources/people.csv\") \ndf3.printSchema()\ndf3.show()\n\n",
       "user": "anonymous",
-      "dateUpdated": "2020-03-11 13:32:31.553",
+      "dateUpdated": "2021-07-26 04:33:51.241",
+      "progress": 100,
       "config": {
         "lineNumbers": false,
         "editorSetting": {
@@ -252,19 +288,46 @@
         ]
       },
       "apps": [],
+      "runtimeInfos": {
+        "jobUrl": {
+          "propertyName": "jobUrl",
+          "label": "SPARK JOB",
+          "tooltip": "View in Spark web UI",
+          "group": "spark",
+          "values": [
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d66"
+            },
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d67"
+            },
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d68"
+            },
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d69"
+            },
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d70"
+            }
+          ],
+          "interpreterSettingId": "spark"
+        }
+      },
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1578387700850_581443636",
       "id": "20180530-101930_1495479697",
       "dateCreated": "2020-01-07 17:01:40.850",
-      "dateStarted": "2020-03-11 11:28:43.699",
-      "dateFinished": "2020-03-11 11:28:53.117",
+      "dateStarted": "2021-07-26 04:33:51.244",
+      "dateFinished": "2021-07-26 04:33:52.120",
       "status": "FINISHED"
     },
     {
       "title": "Add New Column",
       "text": "%spark.pyspark\n\n# withColumn could be used to add new Column\ndf1 \u003d spark.createDataFrame([(1, \"andy\", 20, \"USA\"), (2, \"jeff\", 23, \"China\"), (3, \"james\", 18, \"USA\")]).toDF(\"id\", \"name\", \"age\", \"country\")\n\ndf2 \u003d df1.withColumn(\"age2\", df1[\"age\"] + 1)\ndf2.show()\n\n# the new column could replace the existing the column if the new column name is the same as the old column\ndf3 \u003d df1.withColumn(\"age\", df1[\"age\"] + 1)\ndf3.show()\n\n# Besides using expression to create new column, you could also use udf to create new column\n# Use F.upper instead of upper, because the builtin udf of spark may conclifct with that of python, such as max\nimport pyspark.sql.functions as F\ndf4 \u003d df1.withColumn(\"name\", F.upper(df1[\"name\"]))\ndf4.show()",
       "user": "anonymous",
-      "dateUpdated": "2020-03-11 11:37:52.839",
+      "dateUpdated": "2021-07-26 04:33:52.144",
+      "progress": 0,
       "config": {
         "editorSetting": {
           "language": "python",
@@ -295,19 +358,49 @@
         ]
       },
       "apps": [],
+      "runtimeInfos": {
+        "jobUrl": {
+          "propertyName": "jobUrl",
+          "label": "SPARK JOB",
+          "tooltip": "View in Spark web UI",
+          "group": "spark",
+          "values": [
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d71"
+            },
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d72"
+            },
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d73"
+            },
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d74"
+            },
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d75"
+            },
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d76"
+            }
+          ],
+          "interpreterSettingId": "spark"
+        }
+      },
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1578387700850_-775755394",
       "id": "20180530-105113_693855403",
       "dateCreated": "2020-01-07 17:01:40.850",
-      "dateStarted": "2020-03-11 11:37:52.905",
-      "dateFinished": "2020-03-11 11:37:54.953",
+      "dateStarted": "2021-07-26 04:33:52.146",
+      "dateFinished": "2021-07-26 04:33:52.914",
       "status": "FINISHED"
     },
     {
       "title": "Remove Column",
       "text": "%spark.pyspark\n\n\ndf1 \u003d spark.createDataFrame([(1, \"andy\", 20, \"USA\"), (2, \"jeff\", 23, \"China\"), (3, \"james\", 18, \"USA\")]).toDF(\"id\", \"name\", \"age\", \"country\")\n# drop could be used to remove Column\ndf2 \u003d df1.drop(\"id\")\ndf2.show()\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n",
       "user": "anonymous",
-      "dateUpdated": "2020-03-11 11:37:56.819",
+      "dateUpdated": "2021-07-26 04:33:52.947",
+      "progress": 0,
       "config": {
         "editorSetting": {
           "language": "python",
@@ -338,19 +431,37 @@
         ]
       },
       "apps": [],
+      "runtimeInfos": {
+        "jobUrl": {
+          "propertyName": "jobUrl",
+          "label": "SPARK JOB",
+          "tooltip": "View in Spark web UI",
+          "group": "spark",
+          "values": [
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d77"
+            },
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d78"
+            }
+          ],
+          "interpreterSettingId": "spark"
+        }
+      },
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1578387700850_-886487025",
       "id": "20180530-112045_1274721210",
       "dateCreated": "2020-01-07 17:01:40.850",
-      "dateStarted": "2020-03-11 11:37:56.829",
-      "dateFinished": "2020-03-11 11:37:57.411",
+      "dateStarted": "2021-07-26 04:33:52.949",
+      "dateFinished": "2021-07-26 04:33:53.319",
       "status": "FINISHED"
     },
     {
       "title": "Select Subset of Columns",
       "text": "%spark.pyspark\n\ndf1 \u003d spark.createDataFrame([(1, \"andy\", 20, \"USA\"), (2, \"jeff\", 23, \"China\"), (3, \"james\", 18, \"USA\")]).toDF(\"id\", \"name\", \"age\", \"country\")\n# select can accept a list of string of the column names\ndf2 \u003d df1.select(\"id\", \"name\")\ndf2.show()\n\n# select can also accept a list of Column. You can create column via $ or udf\nimport pyspark.sql.functions as F\ndf3 \u003d df1.select(df1[\"id\"], F.upper(df1[\"name\"]), df1[\"age\"] + 1)\ndf3.show()\n\n\n",
       "user": "anonymous",
-      "dateUpdated": "2020-03-11 11:38:05.490",
+      "dateUpdated": "2021-07-26 04:33:53.349",
+      "progress": 0,
       "config": {
         "editorSetting": {
           "language": "python",
@@ -381,19 +492,43 @@
         ]
       },
       "apps": [],
+      "runtimeInfos": {
+        "jobUrl": {
+          "propertyName": "jobUrl",
+          "label": "SPARK JOB",
+          "tooltip": "View in Spark web UI",
+          "group": "spark",
+          "values": [
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d79"
+            },
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d80"
+            },
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d81"
+            },
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d82"
+            }
+          ],
+          "interpreterSettingId": "spark"
+        }
+      },
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1578387700850_2124268380",
       "id": "20180530-113042_1154914545",
       "dateCreated": "2020-01-07 17:01:40.850",
-      "dateStarted": "2020-03-11 11:38:05.497",
-      "dateFinished": "2020-03-11 11:38:05.941",
+      "dateStarted": "2021-07-26 04:33:53.352",
+      "dateFinished": "2021-07-26 04:33:53.931",
       "status": "FINISHED"
     },
     {
       "title": "Filter Rows",
       "text": "%spark.pyspark\n\ndf1 \u003d spark.createDataFrame([(1, \"andy\", 20, \"USA\"), (2, \"jeff\", 23, \"China\"), (3, \"james\", 18, \"USA\")]).toDF(\"id\", \"name\", \"age\", \"country\")\n\n# filter accept a Column \ndf2 \u003d df1.filter(df1[\"age\"] \u003e\u003d 20)\ndf2.show()\n\n# To be noticed, you need to use \"\u0026\" instead of \"\u0026\u0026\" or \"AND\" \ndf3 \u003d df1.filter((df1[\"age\"] \u003e\u003d 20) \u0026 (df1[\"country\"] \u003d\u003d \"China\"))\ndf3.show()\n\n\n\n\n\n\n",
       "user": "anonymous",
-      "dateUpdated": "2020-03-11 11:38:08.030",
+      "dateUpdated": "2021-07-26 04:33:53.952",
+      "progress": 0,
       "config": {
         "editorSetting": {
           "language": "python",
@@ -424,19 +559,43 @@
         ]
       },
       "apps": [],
+      "runtimeInfos": {
+        "jobUrl": {
+          "propertyName": "jobUrl",
+          "label": "SPARK JOB",
+          "tooltip": "View in Spark web UI",
+          "group": "spark",
+          "values": [
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d83"
+            },
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d84"
+            },
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d85"
+            },
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d86"
+            }
+          ],
+          "interpreterSettingId": "spark"
+        }
+      },
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1578387700850_1501705200",
       "id": "20180530-113407_58454283",
       "dateCreated": "2020-01-07 17:01:40.850",
-      "dateStarted": "2020-03-11 11:38:08.067",
-      "dateFinished": "2020-03-11 11:38:08.577",
+      "dateStarted": "2021-07-26 04:33:53.954",
+      "dateFinished": "2021-07-26 04:33:54.575",
       "status": "FINISHED"
     },
     {
       "title": "Create UDF",
       "text": "%spark.pyspark\n\ndf1 \u003d spark.createDataFrame([(1, \"andy\", 20, \"USA\"), (2, \"jeff\", 23, \"China\"), (3, \"james\", 18, \"USA\")]) \\\n            .toDF(\"id\", \"name\", \"age\", \"country\")\n\n# Create udf create python lambda\nfrom pyspark.sql.functions import udf\nudf1 \u003d udf(lambda e: e.upper())\ndf2 \u003d df1.select(udf1(df1[\"name\"]))\ndf2.show()\n\n# UDF could also be used in filter, in this case the return type must be Boolean\n# We can also use annotation to create udf\nfrom pyspark.sql.types import *\n@udf(returnType\u003dBooleanType())\ndef udf2(e):\n    if e \u003e\u003d 20:\n        return True;\n    else:\n        return False\n\ndf3 \u003d df1.filter(udf2(df1[\"age\"]))\ndf3.show()\n\n# UDF could also accept more than 1 argument.\nudf3 \u003d udf(lambda e1, e2: e1 + \"_\" + e2)\ndf4 \u003d df1.select(udf3(df1[\"name\"], df1[\"country\"]).alias(\"name_country\"))\ndf4.show()\n",
       "user": "anonymous",
-      "dateUpdated": "2020-03-11 11:38:10.873",
+      "dateUpdated": "2021-07-26 04:33:54.655",
+      "progress": 0,
       "config": {
         "editorSetting": {
           "language": "python",
@@ -467,19 +626,49 @@
         ]
       },
       "apps": [],
+      "runtimeInfos": {
+        "jobUrl": {
+          "propertyName": "jobUrl",
+          "label": "SPARK JOB",
+          "tooltip": "View in Spark web UI",
+          "group": "spark",
+          "values": [
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d87"
+            },
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d88"
+            },
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d89"
+            },
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d90"
+            },
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d91"
+            },
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d92"
+            }
+          ],
+          "interpreterSettingId": "spark"
+        }
+      },
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1578387700850_574730063",
       "id": "20180530-113720_1986531680",
       "dateCreated": "2020-01-07 17:01:40.850",
-      "dateStarted": "2020-03-11 11:38:10.878",
-      "dateFinished": "2020-03-11 11:38:12.133",
+      "dateStarted": "2021-07-26 04:33:54.658",
+      "dateFinished": "2021-07-26 04:33:55.479",
       "status": "FINISHED"
     },
     {
       "title": "GroupBy",
       "text": "%spark.pyspark\n\ndf1 \u003d spark.createDataFrame([(1, \"andy\", 20, \"USA\"), (2, \"jeff\", 23, \"China\"), (3, \"james\", 18, \"USA\")]) \\\n           .toDF(\"id\", \"name\", \"age\", \"country\")\n\n# You can call agg function after groupBy directly, such as count/min/max/avg/sum\ndf2 \u003d df1.groupBy(\"country\").count()\ndf2.show()\n\n# Pass a Map if you want to do multiple aggregation\ndf3 \u003d df1.groupBy(\"country\").agg({\"age\": \"avg\", \"id\": \"count\"})\ndf3.show()\n\nimport pyspark.sql.functions as F\n# Or you can pass a list of agg function\ndf4 \u003d df1.groupBy(\"country\").agg(F.avg(df1[\"age\"]).alias(\"avg_age\"), F.count(df1[\"id\"]).alias(\"count\"))\ndf4.show()\n\n# You can not pass Map if you want to do multiple aggregation on the same column as the key of Map should be unique. So in this case\n# you have to pass a list of agg functions\ndf5 \u003d df1.groupBy(\"country\").agg(F.avg(df1[\"age\"]).alias(\"avg_age\"), F.max(df1[\"age\"]).alias(\"max_age\"))\ndf5.show()\n\n\n\n\n\n\n",
       "user": "anonymous",
-      "dateUpdated": "2020-03-11 11:38:14.569",
+      "dateUpdated": "2021-07-26 04:33:55.558",
+      "progress": 0,
       "config": {
         "editorSetting": {
           "language": "python",
@@ -510,19 +699,91 @@
         ]
       },
       "apps": [],
+      "runtimeInfos": {
+        "jobUrl": {
+          "propertyName": "jobUrl",
+          "label": "SPARK JOB",
+          "tooltip": "View in Spark web UI",
+          "group": "spark",
+          "values": [
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d93"
+            },
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d94"
+            },
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d95"
+            },
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d96"
+            },
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d97"
+            },
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d98"
+            },
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d99"
+            },
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d100"
+            },
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d101"
+            },
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d102"
+            },
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d103"
+            },
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d104"
+            },
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d105"
+            },
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d106"
+            },
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d107"
+            },
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d108"
+            },
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d109"
+            },
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d110"
+            },
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d111"
+            },
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d112"
+            }
+          ],
+          "interpreterSettingId": "spark"
+        }
+      },
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1578387700850_1233271138",
       "id": "20180530-114404_2076888937",
       "dateCreated": "2020-01-07 17:01:40.850",
-      "dateStarted": "2020-03-11 11:38:14.574",
-      "dateFinished": "2020-03-11 11:38:18.059",
+      "dateStarted": "2021-07-26 04:33:55.560",
+      "dateFinished": "2021-07-26 04:33:59.547",
       "status": "FINISHED"
     },
     {
       "title": "Join on Single Field",
       "text": "%spark.pyspark\n\ndf1 \u003d spark.createDataFrame([(1, \"andy\", 20, 1), (2, \"jeff\", 23, 2), (3, \"james\", 18, 3)]).toDF(\"id\", \"name\", \"age\", \"c_id\")\ndf1.show()\n\ndf2 \u003d spark.createDataFrame([(1, \"USA\"), (2, \"China\")]).toDF(\"c_id\", \"c_name\")\ndf2.show()\n\n# You can just specify the key name if join on the same key\ndf3 \u003d df1.join(df2, \"c_id\")\ndf3.show()\n\n# Or you can specify the join condition expclitly in case the key is different between tables\ndf4 \u003d df1.join(df2, df1[\"c_id\"] \u003d\u003d df2[\"c_id\"])\ndf4.show()\n\n# You can specify the join type afte the join condition, by default it is inner join\ndf5 \u003d df1.join(df2, df1[\"c_id\"] \u003d\u003d df2[\"c_id\"], \"left_outer\")\ndf5.show()",
       "user": "anonymous",
-      "dateUpdated": "2020-03-11 11:38:21.059",
+      "dateUpdated": "2021-07-26 04:33:59.563",
+      "progress": 25,
       "config": {
         "editorSetting": {
           "language": "python",
@@ -553,19 +814,88 @@
         ]
       },
       "apps": [],
+      "runtimeInfos": {
+        "jobUrl": {
+          "propertyName": "jobUrl",
+          "label": "SPARK JOB",
+          "tooltip": "View in Spark web UI",
+          "group": "spark",
+          "values": [
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d113"
+            },
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d114"
+            },
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d115"
+            },
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d116"
+            },
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d117"
+            },
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d118"
+            },
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d119"
+            },
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d120"
+            },
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d121"
+            },
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d122"
+            },
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d123"
+            },
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d124"
+            },
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d125"
+            },
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d126"
+            },
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d127"
+            },
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d128"
+            },
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d129"
+            },
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d130"
+            },
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d131"
+            }
+          ],
+          "interpreterSettingId": "spark"
+        }
+      },
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1578387700851_-770209064",
       "id": "20180530-130126_1642948432",
       "dateCreated": "2020-01-07 17:01:40.851",
-      "dateStarted": "2020-03-11 11:38:21.067",
-      "dateFinished": "2020-03-11 11:38:24.204",
+      "dateStarted": "2021-07-26 04:33:59.566",
+      "dateFinished": "2021-07-26 04:34:03.252",
       "status": "FINISHED"
     },
     {
       "title": "Join on Multiple Fields",
       "text": "%spark.pyspark\n\ndf1 \u003d spark.createDataFrame([(\"andy\", 20, 1, 1), (\"jeff\", 23, 1, 2), (\"james\", 12, 2, 2)]).toDF(\"name\", \"age\", \"key_1\", \"key_2\")\ndf1.show()\n\ndf2 \u003d spark.createDataFrame([(1, 1, \"USA\"), (2, 2, \"China\")]).toDF(\"key_1\", \"key_2\", \"country\")\ndf2.show()\n\n# Join on 2 fields: key_1, key_2\n\n# You can pass a list of field name if the join field names are the same in both tables\ndf3 \u003d df1.join(df2, [\"key_1\", \"key_2\"])\ndf3.show()\n\n# Or you can specify the join condition expclitly in case when the join fields name is differetnt in the two tables\ndf4 \u003d df1.join(df2, (df1[\"key_1\"] \u003d\u003d df2[\"key_1\"]) \u0026 (df1[\"key_2\"] \u003d\u003d df2[\"key_2\"]))\ndf4.show()\n\n",
       "user": "anonymous",
-      "dateUpdated": "2020-03-11 11:38:23.541",
+      "dateUpdated": "2021-07-26 04:34:03.269",
+      "progress": 27,
       "config": {
         "editorSetting": {
           "language": "python",
@@ -596,19 +926,73 @@
         ]
       },
       "apps": [],
+      "runtimeInfos": {
+        "jobUrl": {
+          "propertyName": "jobUrl",
+          "label": "SPARK JOB",
+          "tooltip": "View in Spark web UI",
+          "group": "spark",
+          "values": [
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d132"
+            },
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d133"
+            },
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d134"
+            },
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d135"
+            },
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d136"
+            },
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d137"
+            },
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d138"
+            },
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d139"
+            },
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d140"
+            },
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d141"
+            },
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d142"
+            },
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d143"
+            },
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d144"
+            },
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d145"
+            }
+          ],
+          "interpreterSettingId": "spark"
+        }
+      },
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1578387700851_-177297320",
       "id": "20180530-135600_354945835",
       "dateCreated": "2020-01-07 17:01:40.851",
-      "dateStarted": "2020-03-11 11:38:23.549",
-      "dateFinished": "2020-03-11 11:38:26.102",
+      "dateStarted": "2021-07-26 04:34:03.273",
+      "dateFinished": "2021-07-26 04:34:05.760",
       "status": "FINISHED"
     },
     {
       "title": "Use SQL directly",
       "text": "%spark.pyspark\n\ndf1 \u003d spark.createDataFrame([(1, \"andy\", 20, \"USA\"), (2, \"jeff\", 23, \"China\"), (3, \"james\", 18, \"USA\")]) \\\n           .toDF(\"id\", \"name\", \"age\", \"country\")\n# call createOrReplaceTempView first if you want to query this DataFrame via sql\ndf1.createOrReplaceTempView(\"people\")\n# SparkSession.sql return DataFrame\ndf2 \u003d spark.sql(\"select name, age from people\")\ndf2.show()\n\n# You need to register udf if you want to use it in sql\nspark.udf.register(\"udf1\", lambda e : e.upper())\ndf3 \u003d spark.sql(\"select udf1(name), age from people\")\ndf3.show()",
       "user": "anonymous",
-      "dateUpdated": "2020-03-11 11:38:31.003",
+      "dateUpdated": "2021-07-26 04:34:05.774",
+      "progress": 0,
       "config": {
         "editorSetting": {
           "language": "python",
@@ -639,19 +1023,43 @@
         ]
       },
       "apps": [],
+      "runtimeInfos": {
+        "jobUrl": {
+          "propertyName": "jobUrl",
+          "label": "SPARK JOB",
+          "tooltip": "View in Spark web UI",
+          "group": "spark",
+          "values": [
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d146"
+            },
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d147"
+            },
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d148"
+            },
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d149"
+            }
+          ],
+          "interpreterSettingId": "spark"
+        }
+      },
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1578387700851_1756979054",
       "id": "20180530-132023_995737505",
       "dateCreated": "2020-01-07 17:01:40.851",
-      "dateStarted": "2020-03-11 11:38:31.009",
-      "dateFinished": "2020-03-11 11:38:43.891",
+      "dateStarted": "2021-07-26 04:34:05.777",
+      "dateFinished": "2021-07-26 04:34:06.449",
       "status": "FINISHED"
     },
     {
       "title": "Show Tables",
       "text": "%spark.sql\n\nshow tables",
       "user": "anonymous",
-      "dateUpdated": "2020-03-11 11:38:57.265",
+      "dateUpdated": "2021-07-26 04:34:06.478",
+      "progress": 0,
       "config": {
         "runOnSelectionChange": true,
         "title": true,
@@ -702,20 +1110,31 @@
         "params": {},
         "forms": {}
       },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TABLE",
+            "data": "database\ttableName\tisTemporary\n\tbank\ttrue\n\tpeople\ttrue\n"
+          }
+        ]
+      },
       "apps": [],
+      "runtimeInfos": {},
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1578388432752_877455036",
       "id": "paragraph_1578388432752_877455036",
       "dateCreated": "2020-01-07 17:13:52.752",
-      "dateStarted": "2020-01-21 15:47:16.980",
-      "dateFinished": "2020-01-21 15:47:17.086",
+      "dateStarted": "2021-07-26 04:34:06.482",
+      "dateFinished": "2021-07-26 04:34:06.556",
       "status": "FINISHED"
     },
     {
       "title": "Visualize DataFrame/Dataset",
       "text": "%md\n\nThere\u0027s 2 approaches to visualize DataFrame/Dataset in Zeppelin\n\n* Use SparkSQLInterpreter via `%spark.sql`\n* Use ZeppelinContext via `z.show`\n\n",
       "user": "anonymous",
-      "dateUpdated": "2020-01-21 15:47:18.301",
+      "dateUpdated": "2021-07-26 04:34:06.582",
+      "progress": 0,
       "config": {
         "tableHide": false,
         "editorSetting": {
@@ -748,19 +1167,21 @@
         ]
       },
       "apps": [],
+      "runtimeInfos": {},
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1578387700851_1924561483",
       "id": "20180530-132128_2114955642",
       "dateCreated": "2020-01-07 17:01:40.851",
-      "dateStarted": "2020-01-21 15:47:18.307",
-      "dateFinished": "2020-01-21 15:47:18.328",
+      "dateStarted": "2021-07-26 04:34:06.587",
+      "dateFinished": "2021-07-26 04:34:06.602",
       "status": "FINISHED"
     },
     {
       "title": "Visualize DataFrame/Dataset via z.show",
       "text": "%spark.pyspark\n\ndf1 \u003d spark.createDataFrame([(1, \"andy\", 20, \"USA\"), (2, \"jeff\", 23, \"China\"), (3, \"james\", 18, \"USA\")]).toDF(\"id\", \"name\", \"age\", \"country\")\ndf2 \u003d df1.groupBy(\"country\").count()\nz.show(df2)\n\n\n\n\n\n\n",
       "user": "anonymous",
-      "dateUpdated": "2020-03-11 13:25:43.355",
+      "dateUpdated": "2021-07-26 04:34:06.687",
+      "progress": 0,
       "config": {
         "editorSetting": {
           "language": "python",
@@ -892,19 +1313,46 @@
         ]
       },
       "apps": [],
+      "runtimeInfos": {
+        "jobUrl": {
+          "propertyName": "jobUrl",
+          "label": "SPARK JOB",
+          "tooltip": "View in Spark web UI",
+          "group": "spark",
+          "values": [
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d150"
+            },
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d151"
+            },
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d152"
+            },
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d153"
+            },
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d154"
+            }
+          ],
+          "interpreterSettingId": "spark"
+        }
+      },
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1578387700851_-809695439",
       "id": "20180530-132634_1285621466",
       "dateCreated": "2020-01-07 17:01:40.851",
-      "dateStarted": "2020-03-11 13:25:07.549",
-      "dateFinished": "2020-03-11 13:25:11.121",
+      "dateStarted": "2021-07-26 04:34:06.702",
+      "dateFinished": "2021-07-26 04:34:07.612",
       "status": "FINISHED"
     },
     {
       "title": "Visualize DataFrame/Dataset via %spark.sql",
       "text": "%spark.pyspark\n\ndf1 \u003d spark.createDataFrame([(1, \"andy\", 20, \"USA\"), (2, \"jeff\", 23, \"China\"), (3, \"james\", 18, \"USA\")]) \\\n            .toDF(\"id\", \"name\", \"age\", \"country\")\n            \n# register this DataFrame first before querying it via %spark.sql\ndf1.createOrReplaceTempView(\"people\")",
       "user": "anonymous",
-      "dateUpdated": "2020-03-11 13:25:15.482",
+      "dateUpdated": "2021-07-26 04:34:07.700",
+      "progress": 0,
       "config": {
         "editorSetting": {
           "language": "python",
@@ -930,19 +1378,21 @@
         "msg": []
       },
       "apps": [],
+      "runtimeInfos": {},
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1578387700851_381269276",
       "id": "20180530-132657_668624333",
       "dateCreated": "2020-01-07 17:01:40.851",
-      "dateStarted": "2020-03-11 13:25:15.489",
-      "dateFinished": "2020-03-11 13:25:15.730",
+      "dateStarted": "2021-07-26 04:34:07.704",
+      "dateFinished": "2021-07-26 04:34:07.979",
       "status": "FINISHED"
     },
     {
       "title": "",
       "text": "%spark.sql\n\nselect country, count(1) as count from people group by country",
       "user": "anonymous",
-      "dateUpdated": "2020-03-11 13:25:18.833",
+      "dateUpdated": "2021-07-26 04:34:08.003",
+      "progress": 0,
       "config": {
         "editorSetting": {
           "language": "sql",
@@ -1072,19 +1522,46 @@
         ]
       },
       "apps": [],
+      "runtimeInfos": {
+        "jobUrl": {
+          "propertyName": "jobUrl",
+          "label": "SPARK JOB",
+          "tooltip": "View in Spark web UI",
+          "group": "spark",
+          "values": [
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d155"
+            },
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d156"
+            },
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d157"
+            },
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d158"
+            },
+            {
+              "jobUrl": "http://3745c7ed824d:4040/jobs/job?id\u003d159"
+            }
+          ],
+          "interpreterSettingId": "spark"
+        }
+      },
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1578387700851_601200360",
       "id": "20180530-132823_944494152",
       "dateCreated": "2020-01-07 17:01:40.851",
-      "dateStarted": "2020-03-11 13:25:18.841",
-      "dateFinished": "2020-03-11 13:25:19.474",
+      "dateStarted": "2021-07-26 04:34:08.006",
+      "dateFinished": "2021-07-26 04:34:08.652",
       "status": "FINISHED"
     },
     {
       "title": "",
       "text": "%spark.sql\n",
       "user": "anonymous",
-      "dateUpdated": "2020-01-21 15:47:20.561",
+      "dateUpdated": "2021-07-26 04:34:08.707",
+      "progress": 0,
       "config": {
         "editorSetting": {
           "language": "sql",
@@ -1102,15 +1579,22 @@
         "params": {},
         "forms": {}
       },
+      "results": {
+        "code": "SUCCESS",
+        "msg": []
+      },
       "apps": [],
+      "runtimeInfos": {},
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1578387700851_-2136199261",
       "id": "20180530-132849_1305166760",
       "dateCreated": "2020-01-07 17:01:40.851",
+      "dateStarted": "2021-07-26 04:34:08.710",
+      "dateFinished": "2021-07-26 04:34:08.716",
       "status": "FINISHED"
     }
   ],
-  "name": "Spark SQL (PySpark)",
+  "name": "3. Spark SQL (PySpark)",
   "id": "2EWM84JXA",
   "defaultInterpreterGroup": "spark",
   "version": "0.9.0-SNAPSHOT",
@@ -1120,5 +1604,7 @@
   "config": {
     "isZeppelinNotebookCronEnable": false
   },
-  "info": {}
+  "info": {
+    "isRunning": false
+  }
 }
