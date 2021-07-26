@@ -447,17 +447,19 @@ abstract class FlinkScalaInterpreter(val properties: Properties,
       flinkILoop.bind("stenv", stenv.getClass().getCanonicalName(), stenv, List("@transient"))
       this.java_stenv = tblEnvFactory.createJavaBlinkStreamTableEnvironment(stEnvSetting, getFlinkClassLoader)
 
-      // flink planner
-      this.btenv_2 = tblEnvFactory.createScalaFlinkBatchTableEnvironment()
-      flinkILoop.bind("btenv_2", btenv_2.getClass().getCanonicalName(), btenv_2, List("@transient"))
-      stEnvSetting =
-        EnvironmentSettings.newInstance().inStreamingMode().useOldPlanner().build()
-      this.stenv_2 = tblEnvFactory.createScalaFlinkStreamTableEnvironment(stEnvSetting, getFlinkClassLoader)
-      flinkILoop.bind("stenv_2", stenv_2.getClass().getCanonicalName(), stenv_2, List("@transient"))
+      if (!flinkVersion.isAfterFlink114()) {
+        // flink planner is not supported after flink 1.14
+        this.btenv_2 = tblEnvFactory.createScalaFlinkBatchTableEnvironment()
+        flinkILoop.bind("btenv_2", btenv_2.getClass().getCanonicalName(), btenv_2, List("@transient"))
+        stEnvSetting =
+          EnvironmentSettings.newInstance().inStreamingMode().useOldPlanner().build()
+        this.stenv_2 = tblEnvFactory.createScalaFlinkStreamTableEnvironment(stEnvSetting, getFlinkClassLoader)
+        flinkILoop.bind("stenv_2", stenv_2.getClass().getCanonicalName(), stenv_2, List("@transient"))
 
-      this.java_btenv_2 = tblEnvFactory.createJavaFlinkBatchTableEnvironment()
-      btEnvSetting = EnvironmentSettings.newInstance.useOldPlanner.inStreamingMode.build
-      this.java_stenv_2 = tblEnvFactory.createJavaFlinkStreamTableEnvironment(btEnvSetting, getFlinkClassLoader)
+        this.java_btenv_2 = tblEnvFactory.createJavaFlinkBatchTableEnvironment()
+        btEnvSetting = EnvironmentSettings.newInstance.useOldPlanner.inStreamingMode.build
+        this.java_stenv_2 = tblEnvFactory.createJavaFlinkStreamTableEnvironment(btEnvSetting, getFlinkClassLoader)
+      }
     } finally {
       Thread.currentThread().setContextClassLoader(originalClassLoader)
     }
@@ -919,8 +921,8 @@ abstract class FlinkScalaInterpreter(val properties: Properties,
   def completion(buf: String, cursor: Int, context: InterpreterContext): java.util.List[InterpreterCompletion]
 
   private def getConfigurationOfStreamExecutionEnv(): Configuration = {
-    val getConfigurationMethod = classOf[JStreamExecutionEnvironment].getDeclaredMethod("getConfiguration")
-    getConfigurationMethod.setAccessible(true)
-    getConfigurationMethod.invoke(this.senv.getJavaEnv).asInstanceOf[Configuration]
+    val configurationField = classOf[JStreamExecutionEnvironment].getDeclaredField("configuration")
+    configurationField.setAccessible(true)
+    configurationField.get(this.senv.getJavaEnv).asInstanceOf[Configuration]
   }
 }

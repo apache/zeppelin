@@ -31,6 +31,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.sql.Timestamp;
+import java.time.temporal.TemporalField;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -98,16 +100,27 @@ public class AppendStreamSqlJob extends AbstractStreamSqlJob {
     });
 
     if (materializedTable.size() != 0) {
-      long maxTimestamp =
-              ((java.sql.Timestamp) materializedTable.get(materializedTable.size() - 1)
-                      .getField(0)).getTime();
-
-      materializedTable = materializedTable.stream()
-              .filter(row -> ((java.sql.Timestamp) row.getField(0)).getTime() >
-                      maxTimestamp - tsWindowThreshold)
-              .collect(Collectors.toList());
-
-      builder.append(tableToString(materializedTable));
+      // Timestamp type before/after Flink 1.14 has changed.
+      if (flinkShims.getFlinkVersion().isAfterFlink114()) {
+        java.time.LocalDateTime ldt = ((java.time.LocalDateTime) materializedTable
+                .get(materializedTable.size() - 1)
+                .getField(0));
+        final long maxTimestamp = Timestamp.valueOf(ldt).getTime();
+        materializedTable = materializedTable.stream()
+                .filter(row -> Timestamp.valueOf(((java.time.LocalDateTime) row.getField(0))).getTime() >
+                        maxTimestamp - tsWindowThreshold)
+                .collect(Collectors.toList());
+        builder.append(tableToString(materializedTable));
+      } else {
+        final long maxTimestamp =
+                ((java.sql.Timestamp) materializedTable.get(materializedTable.size() - 1)
+                        .getField(0)).getTime();
+        materializedTable = materializedTable.stream()
+                .filter(row -> ((java.sql.Timestamp) row.getField(0)).getTime() >
+                        maxTimestamp - tsWindowThreshold)
+                .collect(Collectors.toList());
+        builder.append(tableToString(materializedTable));
+      }
     }
     builder.append("\n%text ");
     return builder.toString();

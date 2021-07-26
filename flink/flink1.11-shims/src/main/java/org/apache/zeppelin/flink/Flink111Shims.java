@@ -20,8 +20,10 @@ package org.apache.zeppelin.flink;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.compress.utils.Lists;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.flink.api.common.ExecutionConfig;
 import org.apache.flink.api.common.JobStatus;
+import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeutils.TypeSerializer;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.scala.DataSet;
@@ -36,7 +38,9 @@ import org.apache.flink.streaming.api.environment.StreamExecutionEnvironmentFact
 import org.apache.flink.table.api.EnvironmentSettings;
 import org.apache.flink.table.api.StatementSet;
 import org.apache.flink.table.api.Table;
+import org.apache.flink.table.api.TableConfig;
 import org.apache.flink.table.api.TableEnvironment;
+import org.apache.flink.table.api.TableException;
 import org.apache.flink.table.api.TableResult;
 import org.apache.flink.table.api.bridge.java.internal.StreamTableEnvironmentImpl;
 import org.apache.flink.table.api.bridge.scala.BatchTableEnvironment;
@@ -46,8 +50,14 @@ import org.apache.flink.table.api.config.TableConfigOptions;
 import org.apache.flink.table.api.internal.TableEnvironmentInternal;
 import org.apache.flink.table.api.internal.CatalogTableSchemaResolver;
 import org.apache.flink.table.catalog.CatalogManager;
+import org.apache.flink.table.catalog.FunctionCatalog;
 import org.apache.flink.table.catalog.GenericInMemoryCatalog;
+import org.apache.flink.table.delegation.Executor;
+import org.apache.flink.table.delegation.ExecutorFactory;
 import org.apache.flink.table.delegation.Parser;
+import org.apache.flink.table.delegation.Planner;
+import org.apache.flink.table.delegation.PlannerFactory;
+import org.apache.flink.table.factories.ComponentFactoryService;
 import org.apache.flink.table.functions.AggregateFunction;
 import org.apache.flink.table.functions.ScalarFunction;
 import org.apache.flink.table.functions.TableAggregateFunction;
@@ -78,6 +88,7 @@ import org.apache.flink.table.operations.ddl.DropDatabaseOperation;
 import org.apache.flink.table.operations.ddl.DropTableOperation;
 import org.apache.flink.table.operations.ddl.DropTempSystemFunctionOperation;
 import org.apache.flink.table.operations.ddl.DropViewOperation;
+import org.apache.flink.table.planner.calcite.FlinkTypeFactory;
 import org.apache.flink.table.sinks.TableSink;
 import org.apache.flink.table.utils.PrintUtils;
 import org.apache.flink.types.Row;
@@ -98,6 +109,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -141,10 +153,9 @@ public class Flink111Shims extends FlinkShims {
 
   private Map<String, StatementSet> statementSetMap = new ConcurrentHashMap<>();
 
-  public Flink111Shims(Properties properties) {
-    super(properties);
+  public Flink111Shims(FlinkVersion flinkVersion, Properties properties) {
+    super(flinkVersion, properties);
   }
-
   @Override
   public void disableSysoutLogging(Object batchConfig, Object streamConfig) {
     ((ExecutionConfig) batchConfig).disableSysoutLogging();
@@ -472,5 +483,44 @@ public class Flink111Shims extends FlinkShims {
   @Override
   public String[] rowToString(Object row, Object table, Object tableConfig) {
     return PrintUtils.rowToString((Row) row);
+  }
+
+  public boolean isTimeIndicatorType(Object type) {
+    return FlinkTypeFactory.isTimeIndicatorType((TypeInformation<?>) type);
+  }
+
+  private Object lookupExecutor(ClassLoader classLoader,
+                                Object settings,
+                                Object sEnv) {
+    try {
+      Map<String, String> executorProperties = ((EnvironmentSettings) settings).toExecutorProperties();
+      ExecutorFactory executorFactory = ComponentFactoryService.find(ExecutorFactory.class, executorProperties);
+      Method createMethod = executorFactory.getClass()
+              .getMethod("create", Map.class, StreamExecutionEnvironment.class);
+
+      return (Executor) createMethod.invoke(
+              executorFactory,
+              executorProperties,
+              (StreamExecutionEnvironment) sEnv);
+    } catch (Exception e) {
+      throw new TableException(
+              "Could not instantiate the executor. Make sure a planner module is on the classpath",
+              e);
+    }
+  }
+
+  @Override
+  public ImmutablePair<Object, Object> createPlannerAndExecutor(
+          ClassLoader classLoader, Object environmentSettings, Object sEnv,
+          Object tableConfig, Object functionCatalog, Object catalogManager) {
+    EnvironmentSettings settings = (EnvironmentSettings) environmentSettings;
+    Executor executor = (Executor) lookupExecutor(classLoader, settings, sEnv);
+    Map<String, String> plannerProperties = settings.toPlannerProperties();
+    Planner planner = ComponentFactoryService.find(PlannerFactory.class, plannerProperties)
+            .create(plannerProperties, executor, (TableConfig) tableConfig,
+                    (FunctionCatalog) functionCatalog,
+                    (CatalogManager) catalogManager);
+    return ImmutablePair.of(planner, executor);
+
   }
 }

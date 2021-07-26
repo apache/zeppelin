@@ -186,6 +186,10 @@ public class PyFlinkInterpreter extends PythonInterpreter {
     return flinkInterpreter.getFlinkVersion().isFlink110();
   }
 
+  public boolean isAfterFlink114() {
+    return flinkInterpreter.getFlinkVersion().isAfterFlink114();
+  }
+
   public org.apache.flink.api.java.ExecutionEnvironment getJavaExecutionEnvironment() {
     return flinkInterpreter.getExecutionEnvironment().getJavaEnv();
   }
