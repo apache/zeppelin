@@ -60,7 +60,7 @@ public class IPyFlinkInterpreterTest extends IPythonInterpreterTest {
   private RemoteInterpreterEventClient mockIntpEventClient =
           mock(RemoteInterpreterEventClient.class);
   private LazyOpenInterpreter flinkScalaInterpreter;
-
+  private FlinkInterpreter flinkInnerInterpreter;
 
   public IPyFlinkInterpreterTest() {
     super();
@@ -85,8 +85,8 @@ public class IPyFlinkInterpreterTest extends IPythonInterpreterTest {
     context.setIntpEventClient(mockIntpEventClient);
     InterpreterContext.set(context);
 
-    this.flinkScalaInterpreter = new LazyOpenInterpreter(
-        new FlinkInterpreter(properties));
+    this.flinkInnerInterpreter = new FlinkInterpreter(properties);
+    this.flinkScalaInterpreter = new LazyOpenInterpreter(flinkInnerInterpreter);
     intpGroup = new InterpreterGroup();
     intpGroup.put("session_1", new ArrayList<Interpreter>());
     intpGroup.get("session_1").add(flinkScalaInterpreter);
@@ -119,12 +119,16 @@ public class IPyFlinkInterpreterTest extends IPythonInterpreterTest {
 
   @Test
   public void testBatchIPyFlink() throws InterpreterException, IOException {
-    testBatchPyFlink(interpreter, flinkScalaInterpreter);
+    if (!flinkInnerInterpreter.getFlinkVersion().isAfterFlink114()) {
+      testBatchPyFlink(interpreter, flinkScalaInterpreter);
+    }
   }
 
   @Test
   public void testStreamIPyFlink() throws InterpreterException, IOException {
-    testStreamPyFlink(interpreter, flinkScalaInterpreter);
+    if (!flinkInnerInterpreter.getFlinkVersion().isAfterFlink114()) {
+      testStreamPyFlink(interpreter, flinkScalaInterpreter);
+    }
   }
 
   @Test
@@ -154,7 +158,8 @@ public class IPyFlinkInterpreterTest extends IPythonInterpreterTest {
     testResumeStreamSqlFromSavePoint(interpreter, flinkScalaInterpreter);
   }
 
-  public static void testBatchPyFlink(Interpreter pyflinkInterpreter, Interpreter flinkScalaInterpreter) throws InterpreterException, IOException {
+  public static void testBatchPyFlink(Interpreter pyflinkInterpreter,
+                                      LazyOpenInterpreter flinkScalaInterpreter) throws InterpreterException, IOException {
     InterpreterContext context = createInterpreterContext();
     InterpreterResult result = pyflinkInterpreter.interpret(
         "import tempfile\n" +
@@ -273,9 +278,15 @@ public class IPyFlinkInterpreterTest extends IPythonInterpreterTest {
             , context);
     assertEquals(result.toString(),InterpreterResult.Code.SUCCESS, result.code());
     List<InterpreterResultMessage> resultMessages = context.out.toInterpreterResultMessage();
-    assertEquals(context.out.toString(), 1, resultMessages.size());
-    assertEquals(context.out.toString(), InterpreterResult.Type.TABLE, resultMessages.get(0).getType());
-    assertEquals(context.out.toString(), "a\tb\tc\n1\thi\thello\n2\thi\thello\n", resultMessages.get(0).getData());
+    FlinkVersion flinkVersion = ((FlinkInterpreter) flinkScalaInterpreter.getInnerInterpreter()).getFlinkVersion();
+    if (flinkVersion.isAfterFlink114()) {
+      assertEquals(InterpreterResult.Type.TEXT, resultMessages.get(0).getType());
+      assertEquals("z.show(DataSet) is not supported after Flink 1.14", resultMessages.get(0).getData());
+    } else {
+      assertEquals(context.out.toString(), 1, resultMessages.size());
+      assertEquals(context.out.toString(), InterpreterResult.Type.TABLE, resultMessages.get(0).getType());
+      assertEquals(context.out.toString(), "a\tb\tc\n1\thi\thello\n2\thi\thello\n", resultMessages.get(0).getData());
+    }
   }
 
   @Override

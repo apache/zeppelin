@@ -82,4 +82,8 @@ public class FlinkVersion {
   public boolean isFlink110() {
     return this.majorVersion == 1 && minorVersion == 10;
   }
+
+  public boolean isAfterFlink114() {
+    return newerThanOrEqual(FlinkVersion.fromVersionString("1.14.0"));
+  }
 }

@@ -60,6 +60,7 @@ class FlinkILoop(
     val remoteSenv = new ScalaShellStreamEnvironment(
       flinkConfig,
       this,
+      flinkScalaInterpreter.getFlinkVersion,
       getExternalJars(): _*)
 
     (remoteBenv,remoteSenv)

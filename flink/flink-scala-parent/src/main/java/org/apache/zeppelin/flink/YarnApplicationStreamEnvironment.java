@@ -30,6 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -72,7 +73,7 @@ public class YarnApplicationStreamEnvironment extends StreamExecutionEnvironment
   }
 
   private void updateDependencies() throws Exception {
-    final Configuration configuration = getConfiguration();
+    final Configuration configuration = (Configuration) getFlinkConfiguration();
     checkState(
             configuration.getBoolean(DeploymentOptions.ATTACHED),
             "Only ATTACHED mode is supported by the scala shell.");
@@ -80,6 +81,22 @@ public class YarnApplicationStreamEnvironment extends StreamExecutionEnvironment
     final List<URL> updatedJarFiles = getUpdatedJarFiles();
     ConfigUtils.encodeCollectionToConfig(
             configuration, PipelineOptions.JARS, updatedJarFiles, URL::toString);
+  }
+
+  public Object getFlinkConfiguration() {
+    if (flinkScalaInterpreter.getFlinkVersion().isAfterFlink114()) {
+      // starting from Flink 1.14, getConfiguration() return the readonly copy of internal
+      // configuration, so we need to get the internal configuration object via reflection.
+      try {
+        Field configurationField = StreamExecutionEnvironment.class.getDeclaredField("configuration");
+        configurationField.setAccessible(true);
+        return configurationField.get(this);
+      } catch (Exception e) {
+        throw new RuntimeException("Fail to get configuration from StreamExecutionEnvironment", e);
+      }
+    } else {
+      return super.getConfiguration();
+    }
   }
 
   private List<URL> getUpdatedJarFiles() throws MalformedURLException {
