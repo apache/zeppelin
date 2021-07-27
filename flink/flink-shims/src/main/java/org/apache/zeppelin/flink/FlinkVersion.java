@@ -63,6 +63,10 @@ public class FlinkVersion {
     return this.version < versionToCompare.version;
   }
 
+  public boolean newerThanOrEqual(FlinkVersion versionToCompare) {
+    return this.version >= versionToCompare.version;
+  }
+
   public int getMinorVersion() {
     return minorVersion;
   }
