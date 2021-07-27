@@ -502,7 +502,21 @@ public abstract class FlinkSqlInterrpeter extends AbstractInterpreter {
 
   public abstract void callInnerSelect(String sql, InterpreterContext context) throws IOException;
 
+  private String removeSingleQuote(String value) {
+    value = value.trim();
+    if (value.startsWith("'")) {
+      value = value.substring(1);
+    }
+    if (value.endsWith("'")) {
+      value = value.substring(0, value.length() - 1);
+    }
+    return value;
+  }
+
   public void callSet(String key, String value, InterpreterContext context) throws Exception {
+    key = removeSingleQuote(key);
+    value = removeSingleQuote(value);
+
     if ("execution.runtime-mode".equals(key)) {
       throw new UnsupportedOperationException("execution.runtime-mode is not supported to set, " +
               "you can use %flink.ssql & %flink.bsql to switch between streaming mode and batch mode");

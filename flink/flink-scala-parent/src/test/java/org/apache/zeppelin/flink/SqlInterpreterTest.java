@@ -551,6 +551,15 @@ public abstract class SqlInterpreterTest {
       InterpreterResult result = sqlInterpreter.interpret(
               "set table.sql-dialect=hive", context);
       assertEquals(context.out.toString(), Code.ERROR, result.code());
+      assertTrue(context.out.toString(),
+              context.out.toString().contains("table.sql-dialect is not a valid table/sql config"));
+    }
+
+    // table.local-time-zone is only available from 1.12
+    if (flinkVersion.newerThanOrEqual(FlinkVersion.fromVersionString("1.12.0"))) {
+      InterpreterContext context = getInterpreterContext();
+      InterpreterResult result = sqlInterpreter.interpret("SET 'table.local-time-zone' = 'UTC'", context);
+      assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
     }
   }
 
