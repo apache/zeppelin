@@ -216,7 +216,7 @@ jobs:
           mvn install -DskipTests -DskipRat -pl zeppelin-interpreter-integration,zeppelin-web,spark-submit,spark/spark-dependencies,markdown -am -Phadoop2 -Pintegration -B
           mvn clean package -pl zeppelin-plugins -amd -DskipTests -B
       - name: run tests
-        run: mvn test -DskipRat -pl zeppelin-interpreter-integration,zeppelin-web,spark-submit,spark/spark-dependencies,markdown -am -Phadoop2 -Pintegration -B -Dtest=ZeppelinSparkClusterTest24,SparkIntegrationTest24,ZeppelinSparkClusterTest23,SparkIntegrationTest23,ZeppelinSparkClusterTest22,SparkIntegrationTest22,ZeppelinSparkClusterTest30,SparkIntegrationTest30 -DfailIfNoTests=false
+        run: mvn test -DskipRat -pl zeppelin-interpreter-integration,zeppelin-web,spark-submit,spark/spark-dependencies,markdown -am -Phadoop2 -Pintegration -B -Dtest=ZeppelinSparkClusterTest24,SparkSubmitIntegrationTest,SparkIntegrationTest24,ZeppelinSparkClusterTest23,SparkIntegrationTest23,ZeppelinSparkClusterTest22,SparkIntegrationTest22,ZeppelinSparkClusterTest30,SparkIntegrationTest30 -DfailIfNoTests=false
   jdbcIntegrationTest-and-unit-test-of-Spark-2-4-with-Scala-2-11:
     runs-on: ubuntu-20.04
     steps:
