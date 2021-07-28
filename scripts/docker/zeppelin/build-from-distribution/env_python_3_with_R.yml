@@ -1,0 +1,33 @@
+name: python_3_with_R
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.7
+  - pycodestyle
+  - scipy
+  - grpcio
+  - protobuf=3
+  - pandasql=0.7.3
+  - ipython
+  - ipykernel
+  - jupyter_client
+  - hvplot
+  - pyyaml=3
+  - plotnine
+  - seaborn
+  - intake
+  - intake-parquet
+  - intake-xarray
+  - altair
+  - vega_datasets
+  - pip
+  - r-base=3
+  - r-data.table
+  - r-evaluate
+  - r-base64enc
+  - r-knitr
+  - r-ggplot2
+  - r-irkernel
+  - r-shiny
+  - r-googlevis

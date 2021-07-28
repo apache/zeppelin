@@ -43,7 +43,7 @@ public class MiniZeppelin {
   private File notebookDir;
   protected ZeppelinConfiguration conf;
 
-  public void start(Class clazz) throws IOException {
+  public void start(Class clazz, ZeppelinConfiguration zconf) throws IOException {
     zeppelinHome = new File("..");
     System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HOME.getVarName(),
         zeppelinHome.getAbsolutePath());
@@ -58,10 +58,14 @@ public class MiniZeppelin {
     System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_CONF_DIR.getVarName(), confDir.getAbsolutePath());
     System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_DIR.getVarName(), notebookDir.getAbsolutePath());
     System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT.getVarName(), "120000");
-    conf = ZeppelinConfiguration.create();
+    conf = zconf;
     interpreterSettingManager = new InterpreterSettingManager(conf,
         mock(AngularObjectRegistryListener.class), mock(RemoteInterpreterProcessListener.class), mock(ApplicationEventListener.class));
     interpreterFactory = new InterpreterFactory(interpreterSettingManager);
+  }
+
+  public void start(Class clazz) throws IOException {
+    start(clazz, ZeppelinConfiguration.create());
   }
 
   public void stop() throws IOException {
