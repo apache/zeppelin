@@ -18,6 +18,8 @@
 
 package org.apache.zeppelin.spark.submit;
 
+import org.apache.commons.exec.environment.EnvironmentUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.interpreter.InterpreterOutputListener;
@@ -27,8 +29,11 @@ import org.apache.zeppelin.shell.ShellInterpreter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 
 /**
@@ -42,6 +47,9 @@ public class SparkSubmitInterpreter extends ShellInterpreter {
 
   private String sparkHome;
 
+  // paragraphId --> yarnAppId
+  private ConcurrentMap<String, String> yarnAppIdMap = new ConcurrentHashMap();
+
   public SparkSubmitInterpreter(Properties property) {
     super(property);
     // Set time to be max integer so that the shell process won't timeout.
@@ -52,16 +60,37 @@ public class SparkSubmitInterpreter extends ShellInterpreter {
 
   @Override
   public InterpreterResult internalInterpret(String cmd, InterpreterContext context) {
+    if (StringUtils.isBlank(cmd)) {
+      return new InterpreterResult(InterpreterResult.Code.SUCCESS);
+    }
     String sparkSubmitCommand = sparkHome + "/bin/spark-submit " + cmd.trim();
     LOGGER.info("Run spark command: " + sparkSubmitCommand);
     context.out.addInterpreterOutListener(new SparkSubmitOutputListener(context));
-    return super.internalInterpret(sparkSubmitCommand, context);
+    InterpreterResult result = super.internalInterpret(sparkSubmitCommand, context);
+    yarnAppIdMap.remove(context.getParagraphId());
+    return result;
+  }
+
+  @Override
+  public void cancel(InterpreterContext context) {
+    super.cancel(context);
+    String yarnAppId = yarnAppIdMap.remove(context.getParagraphId());
+    if (StringUtils.isNotBlank(yarnAppId)) {
+      try {
+        LOGGER.info("Try to kill yarn app: {} of code: {}", yarnAppId, context.getParagraphText());
+        Runtime.getRuntime().exec(new String[] {"yarn", "application", "-kill", yarnAppId});
+      } catch (IOException e) {
+        LOGGER.warn("Fail to kill yarn app, please check whether yarn command is on your PATH", e);
+      }
+    } else {
+      LOGGER.warn("No yarn app associated with code: {}", context.getParagraphText());
+    }
   }
 
   /**
    * InterpreterOutputListener which extract spark ui link from logs.
    */
-  private static class SparkSubmitOutputListener implements InterpreterOutputListener  {
+  private class SparkSubmitOutputListener implements InterpreterOutputListener  {
 
     private InterpreterContext context;
     private boolean isSparkUrlSent = false;
@@ -78,6 +107,7 @@ public class SparkSubmitInterpreter extends ShellInterpreter {
     @Override
     public void onAppend(int index, InterpreterResultMessageOutput out, byte[] line) {
       String text = new String(line);
+      LOGGER.debug("Output: {}", text);
       if (isSparkUrlSent) {
         return;
       }
@@ -95,7 +125,8 @@ public class SparkSubmitInterpreter extends ShellInterpreter {
     private void buildSparkUIInfo(String log, InterpreterContext context) {
       int pos = log.lastIndexOf(" ");
       if (pos != -1) {
-        String sparkUI = log.substring(pos + 1);
+        String sparkUI = log.substring(pos + 1).trim();
+        sparkUI = sparkUI.substring(0, sparkUI.length() - 1);
         Map<String, String> infos = new java.util.HashMap<String, String>();
         infos.put("jobUrl", sparkUI);
         infos.put("label", "Spark UI");
@@ -103,6 +134,16 @@ public class SparkSubmitInterpreter extends ShellInterpreter {
         infos.put("noteId", context.getNoteId());
         infos.put("paraId", context.getParagraphId());
         context.getIntpEventClient().onParaInfosReceived(infos);
+
+        // extract yarn appId
+        int lastIndexOfSlash = sparkUI.lastIndexOf("/");
+        if (lastIndexOfSlash != -1) {
+          String yarnAppId = sparkUI.substring(lastIndexOfSlash + 1);
+          LOGGER.info("Detected yarn app: {}", yarnAppId);
+          SparkSubmitInterpreter.this.yarnAppIdMap.put(context.getParagraphId(), yarnAppId);
+        } else {
+          LOGGER.warn("Might be an invalid spark URL: " + sparkUI);
+        }
       } else {
         LOGGER.error("Unable to extract spark url from this log: " + log);
       }
