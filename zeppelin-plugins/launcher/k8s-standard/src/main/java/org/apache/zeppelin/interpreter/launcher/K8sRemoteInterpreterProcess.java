@@ -393,7 +393,7 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterManagedProcess
   }
 
   private String getInterpreterPodDnsName() {
-    return String.format("%s.%s.svc",
+    return String.format("%s.%s.svc.cluster.local",
         getPodName(), // service name and pod name is the same
         getNamespace());
   }
