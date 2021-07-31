@@ -114,3 +114,17 @@ z.angularBind <- function(name, value) {
 z.angularUnbind <- function(name, value) {
   SparkR:::callJMethod(.zeppelinContext, "angularUnbind", name)
 }
+
+z.show <- function(data) {
+  if (is.data.frame(data)) {
+    resultString = c(paste(colnames(data),  collapse ="\t"))
+    for (row in 1:nrow(data)) {
+      rowString <- paste(data[row,], collapse ="\t")
+      resultString = c(resultString, rowString)
+    }
+    a=paste(resultString, collapse="\n")
+    cat("\n%table ", a, "\n%text ", sep="")
+  } else {
+    cat(data)
+  }
+}
