@@ -5,6 +5,7 @@
       "text": "%md\n\n[Shiny](https://shiny.rstudio.com/tutorial/) is an R package that makes it easy to build interactive web applications (apps) straight from R. For developing one Shiny App in Zeppelin, you need to at least 3 paragraphs (server paragraph, ui paragraph and run type paragraph). User are not only able to build shiny app in R interpreter, but also in SparkR interpreter where you can use Spark.",
       "user": "anonymous",
       "dateUpdated": "2020-02-06 17:26:32.533",
+      "progress": 0,
       "config": {
         "colWidth": 12.0,
         "fontSize": 9.0,
@@ -34,6 +35,7 @@
         ]
       },
       "apps": [],
+      "runtimeInfos": {},
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1580981119260_-2080233417",
       "id": "paragraph_1580981119260_-2080233417",
@@ -46,7 +48,8 @@
       "title": "Shiny Server",
       "text": "%spark.shiny(type\u003dserver)\n\n# Define server logic to summarize and view selected dataset ----\nserver \u003c- function(input, output) {\n\n    # Return the requested dataset ----\n    datasetInput \u003c- reactive({\n        switch(input$dataset,\n        \"rock\" \u003d as.DataFrame(rock),\n        \"pressure\" \u003d as.DataFrame(pressure),\n        \"cars\" \u003d as.DataFrame(cars))\n    })\n\n    # Generate a summary of the dataset ----\n    output$summary \u003c- renderPrint({\n        dataset \u003c- datasetInput()\n        showDF(summary(dataset))\n    })\n\n    # Show the first \"n\" observations ----\n    output$view \u003c- renderTable({\n        head(datasetInput(), n \u003d input$obs)\n    })\n\n}\n",
       "user": "anonymous",
-      "dateUpdated": "2020-02-06 17:28:14.258",
+      "dateUpdated": "2021-07-31 12:37:18.062",
+      "progress": 0,
       "config": {
         "colWidth": 6.0,
         "fontSize": 9.0,
@@ -71,24 +74,26 @@
         "msg": [
           {
             "type": "TEXT",
-            "data": "Write server.R to /var/folders/99/mfxjjdtj7x70rvwgkxpq4jm40000gn/T/zeppelin-shiny1023768872015716789 successfully."
+            "data": "Write server.R to /tmp/zeppelin-shiny7021485758031533052 successfully."
           }
         ]
       },
       "apps": [],
+      "runtimeInfos": {},
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1580981178904_-1694112525",
       "id": "paragraph_1580981178904_-1694112525",
       "dateCreated": "2020-02-06 17:26:18.904",
-      "dateStarted": "2020-02-06 17:28:14.264",
-      "dateFinished": "2020-02-06 17:28:33.284",
+      "dateStarted": "2021-07-31 12:37:18.065",
+      "dateFinished": "2021-07-31 12:37:34.674",
       "status": "FINISHED"
     },
     {
       "title": "Shiny UI",
       "text": "%spark.shiny(type\u003dui)\n\n# Define UI for dataset viewer app ----\nui \u003c- fluidPage(\n\n    # App title ----\n    titlePanel(paste(\"Spark Version\", sparkR.version(), sep\u003d\":\")),\n\n    # Sidebar layout with a input and output definitions ----\n    sidebarLayout(\n\n        # Sidebar panel for inputs ----\n        sidebarPanel(\n\n            # Input: Selector for choosing dataset ----\n            selectInput(inputId \u003d \"dataset\",\n            label \u003d \"Choose a dataset:\",\n            choices \u003d c(\"rock\", \"pressure\", \"cars\")),\n\n            # Input: Numeric entry for number of obs to view ----\n            numericInput(inputId \u003d \"obs\",\n            label \u003d \"Number of observations to view:\",\n            value \u003d 10)\n        ),\n\n        # Main panel for displaying outputs ----\n        mainPanel(\n        \n            # Output: Verbatim text for data summary ----\n            verbatimTextOutput(\"summary\"),\n        \n            # Output: HTML table with requested number of observations ----\n            tableOutput(\"view\")\n        \n        )\n    )\n)",
       "user": "anonymous",
-      "dateUpdated": "2020-02-06 17:31:47.873",
+      "dateUpdated": "2021-07-31 12:38:08.606",
+      "progress": 0,
       "config": {
         "colWidth": 6.0,
         "fontSize": 9.0,
@@ -113,24 +118,26 @@
         "msg": [
           {
             "type": "TEXT",
-            "data": "Write ui.R to /var/folders/99/mfxjjdtj7x70rvwgkxpq4jm40000gn/T/zeppelin-shiny1023768872015716789 successfully."
+            "data": "Write ui.R to /tmp/zeppelin-shiny7021485758031533052 successfully."
           }
         ]
       },
       "apps": [],
+      "runtimeInfos": {},
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1580981253412_-1490669900",
       "id": "paragraph_1580981253412_-1490669900",
       "dateCreated": "2020-02-06 17:27:33.412",
-      "dateStarted": "2020-02-06 17:30:26.620",
-      "dateFinished": "2020-02-06 17:30:26.630",
+      "dateStarted": "2021-07-31 12:38:08.609",
+      "dateFinished": "2021-07-31 12:38:08.617",
       "status": "FINISHED"
     },
     {
       "title": "Shiny App",
       "text": "%spark.shiny(type\u003drun)\n",
       "user": "anonymous",
-      "dateUpdated": "2020-02-06 17:31:58.385",
+      "dateUpdated": "2021-07-31 12:38:11.571",
+      "progress": 0,
       "config": {
         "colWidth": 12.0,
         "fontSize": 9.0,
@@ -150,12 +157,75 @@
         "params": {},
         "forms": {}
       },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": ""
+          },
+          {
+            "type": "HTML",
+            "data": "\u003ciframe src\u003d\"http://172.17.0.2:37569\" height \u003d\"500px\" width\u003d\"100%\" frameBorder\u003d\"0\"\u003e\u003c/iframe\u003e\n"
+          }
+        ]
+      },
       "apps": [],
+      "runtimeInfos": {
+        "jobUrl": {
+          "propertyName": "jobUrl",
+          "label": "SPARK JOB",
+          "tooltip": "View in Spark web UI",
+          "group": "spark",
+          "values": [
+            {
+              "jobUrl": "http://5c3bcd393555:4040/jobs/job?id\u003d0"
+            },
+            {
+              "jobUrl": "http://5c3bcd393555:4040/jobs/job?id\u003d1"
+            },
+            {
+              "jobUrl": "http://5c3bcd393555:4040/jobs/job?id\u003d2"
+            },
+            {
+              "jobUrl": "http://5c3bcd393555:4040/jobs/job?id\u003d3"
+            },
+            {
+              "jobUrl": "http://5c3bcd393555:4040/jobs/job?id\u003d4"
+            },
+            {
+              "jobUrl": "http://5c3bcd393555:4040/jobs/job?id\u003d5"
+            },
+            {
+              "jobUrl": "http://5c3bcd393555:4040/jobs/job?id\u003d6"
+            },
+            {
+              "jobUrl": "http://5c3bcd393555:4040/jobs/job?id\u003d7"
+            },
+            {
+              "jobUrl": "http://5c3bcd393555:4040/jobs/job?id\u003d8"
+            },
+            {
+              "jobUrl": "http://5c3bcd393555:4040/jobs/job?id\u003d9"
+            },
+            {
+              "jobUrl": "http://5c3bcd393555:4040/jobs/job?id\u003d10"
+            },
+            {
+              "jobUrl": "http://5c3bcd393555:4040/jobs/job?id\u003d11"
+            },
+            {
+              "jobUrl": "http://5c3bcd393555:4040/jobs/job?id\u003d12"
+            }
+          ],
+          "interpreterSettingId": "spark"
+        }
+      },
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1580981260311_-1138471389",
       "id": "paragraph_1580981260311_-1138471389",
       "dateCreated": "2020-02-06 17:27:40.311",
-      "dateStarted": "2020-02-06 17:30:37.041",
+      "dateStarted": "2021-07-31 12:38:11.573",
       "dateFinished": "2020-02-06 17:30:52.885",
       "status": "ABORT"
     },
@@ -163,6 +233,7 @@
       "text": "%spark.shiny\n",
       "user": "anonymous",
       "dateUpdated": "2020-03-11 14:09:23.435",
+      "progress": 0,
       "config": {
         "colWidth": 12.0,
         "fontSize": 9.0,
@@ -181,6 +252,7 @@
         "forms": {}
       },
       "apps": [],
+      "runtimeInfos": {},
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1580981251266_390385714",
       "id": "paragraph_1580981251266_390385714",
@@ -188,7 +260,7 @@
       "status": "READY"
     }
   ],
-  "name": "SparkR Shiny App",
+  "name": "6. SparkR Shiny App",
   "id": "2F1CHQ4TT",
   "defaultInterpreterGroup": "spark",
   "version": "0.9.0-SNAPSHOT",

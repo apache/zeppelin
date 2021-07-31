@@ -48,7 +48,7 @@
       "title": "Shiny Server",
       "text": "%r.shiny(type\u003dserver)\n\n# Define server logic to summarize and view selected dataset ----\nserver \u003c- function(input, output) {\n\n    # Return the requested dataset ----\n    datasetInput \u003c- reactive({\n        switch(input$dataset,\n        \"rock\" \u003d rock,\n        \"pressure\" \u003d pressure,\n        \"cars\" \u003d cars)\n    })\n\n    # Generate a summary of the dataset ----\n    output$summary \u003c- renderPrint({\n        dataset \u003c- datasetInput()\n        summary(dataset)\n    })\n\n    # Show the first \"n\" observations ----\n    output$view \u003c- renderTable({\n        head(datasetInput(), n \u003d input$obs)\n    })\n\n}",
       "user": "anonymous",
-      "dateUpdated": "2021-06-15 04:12:36.403",
+      "dateUpdated": "2021-07-31 12:35:50.786",
       "progress": 0,
       "config": {
         "colWidth": 6.0,
@@ -76,7 +76,7 @@
         "msg": [
           {
             "type": "TEXT",
-            "data": "Write server.R to /tmp/zeppelin-shiny831370826037572027 successfully."
+            "data": "Write server.R to /tmp/zeppelin-shiny626071477036151736 successfully."
           }
         ]
       },
@@ -86,15 +86,15 @@
       "jobName": "paragraph_1580562566379_-876908296",
       "id": "paragraph_1580562566379_-876908296",
       "dateCreated": "2020-02-01 21:09:26.379",
-      "dateStarted": "2021-06-15 04:12:36.405",
-      "dateFinished": "2021-06-15 04:12:38.675",
+      "dateStarted": "2021-07-31 12:35:50.806",
+      "dateFinished": "2021-07-31 12:35:56.193",
       "status": "FINISHED"
     },
     {
       "title": "Shiny UI",
       "text": "%r.shiny(type\u003dui)\n\n# Define UI for dataset viewer app ----\nui \u003c- fluidPage(\n\n    # App title ----\n    titlePanel(\"Shiny Text\"),\n\n    # Sidebar layout with a input and output definitions ----\n    sidebarLayout(\n\n        # Sidebar panel for inputs ----\n        sidebarPanel(\n    \n            # Input: Selector for choosing dataset ----\n            selectInput(inputId \u003d \"dataset\",\n            label \u003d \"Choose a dataset:\",\n            choices \u003d c(\"rock\", \"pressure\", \"cars\")),\n    \n            # Input: Numeric entry for number of obs to view ----\n            numericInput(inputId \u003d \"obs\",\n            label \u003d \"Number of observations to view:\",\n            value \u003d 10)\n        ),\n\n        # Main panel for displaying outputs ----\n        mainPanel(\n        \n            # Output: Verbatim text for data summary ----\n            verbatimTextOutput(\"summary\"),\n            \n            # Output: HTML table with requested number of observations ----\n            tableOutput(\"view\")\n    \n        )\n    )\n)",
       "user": "anonymous",
-      "dateUpdated": "2021-06-15 04:12:39.921",
+      "dateUpdated": "2021-07-31 12:36:00.769",
       "progress": 0,
       "config": {
         "runOnSelectionChange": true,
@@ -122,7 +122,7 @@
         "msg": [
           {
             "type": "TEXT",
-            "data": "Write ui.R to /tmp/zeppelin-shiny831370826037572027 successfully."
+            "data": "Write ui.R to /tmp/zeppelin-shiny626071477036151736 successfully."
           }
         ]
       },
@@ -132,15 +132,15 @@
       "jobName": "paragraph_1580562634044_-1915679343",
       "id": "paragraph_1580562634044_-1915679343",
       "dateCreated": "2020-02-01 21:10:34.044",
-      "dateStarted": "2021-06-15 04:12:39.923",
-      "dateFinished": "2021-06-15 04:12:39.928",
+      "dateStarted": "2021-07-31 12:36:00.774",
+      "dateFinished": "2021-07-31 12:36:00.780",
       "status": "FINISHED"
     },
     {
       "title": "Shiny App",
       "text": "%r.shiny(type\u003drun)\n\n",
       "user": "anonymous",
-      "dateUpdated": "2021-06-15 04:14:08.796",
+      "dateUpdated": "2021-07-31 12:36:03.415",
       "progress": 0,
       "config": {
         "runOnSelectionChange": true,
@@ -168,7 +168,11 @@
         "msg": [
           {
             "type": "HTML",
-            "data": "\u003ciframe src\u003d\"http://172.17.0.2:43947\" height \u003d\"500px\" width\u003d\"100%\" frameBorder\u003d\"0\"\u003e\u003c/iframe\u003e\n"
+            "data": "\u003ciframe src\u003d\"http://172.17.0.2:6789\" height \u003d\"500px\" width\u003d\"100%\" frameBorder\u003d\"0\"\u003e\u003c/iframe\u003e\n"
+          },
+          {
+            "type": "TEXT",
+            "data": "  123: \u001b[37mhead.data.frame\u001b[39m\n  120: \u001b[34m\u001b[1mrenderTable [/tmp/zeppelin-shiny626071477036151736/server.R#22]\u001b[22m\u001b[39m\n  119: \u001b[37mfunc\u001b[39m\n  106: \u001b[37mrenderFunc\u001b[39m\n  105: \u001b[37moutput$view\u001b[39m\n   25: \u001b[37mrunApp\u001b[39m\nWarning message:\n“Error in if: missing value where TRUE/FALSE needed”\n\n"
           }
         ]
       },
@@ -178,8 +182,8 @@
       "jobName": "paragraph_1580562660988_2021181385",
       "id": "paragraph_1580562660988_2021181385",
       "dateCreated": "2020-02-01 21:11:00.988",
-      "dateStarted": "2021-06-15 04:14:08.798",
-      "dateFinished": "2021-06-15 04:14:27.853",
+      "dateStarted": "2021-07-31 12:36:03.419",
+      "dateFinished": "2021-07-31 12:36:38.525",
       "status": "ABORT"
     },
     {

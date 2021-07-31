@@ -2,9 +2,9 @@
   "paragraphs": [
     {
       "title": "Overview",
-      "text": "%md\n\nThis tutorial note demonostrate how to use R in Zeppelin. There\u0027re 2 interpreters:\n* %r.r  (Vanilla r interpreter, with least dependencies, only R environment installed is required)\n* %r.ir  (Provide more fancy R runtime via [IRKernel](https://github.com/IRkernel/IRkernel), almost the same experience like using R in Jupyter.)\n\n\n",
+      "text": "%md\n\nThis tutorial note demonostrate how to use R in Zeppelin. There\u0027re 2 interpreters:\n* %r.r  - Vanilla r interpreter, with least dependencies, only R environment installed is required\n* %r.ir (`recommended`)  - Provide more fancy R runtime via [IRKernel](https://github.com/IRkernel/IRkernel), almost the same experience like using R in Jupyter.)\n\nThis tutorial is to show you how to use R language via `%r.ir`. \n",
       "user": "anonymous",
-      "dateUpdated": "2021-06-15 04:12:01.069",
+      "dateUpdated": "2021-07-31 12:59:23.771",
       "progress": 0,
       "config": {
         "colWidth": 12.0,
@@ -12,14 +12,15 @@
         "enabled": true,
         "results": {},
         "editorSetting": {
-          "language": "text",
-          "editOnDblClick": false,
+          "language": "markdown",
+          "editOnDblClick": true,
           "completionKey": "TAB",
-          "completionSupport": true
+          "completionSupport": false
         },
-        "editorMode": "ace/mode/text",
+        "editorMode": "ace/mode/markdown",
         "title": true,
-        "editorHide": true
+        "editorHide": false,
+        "tableHide": false
       },
       "settings": {
         "params": {},
@@ -30,7 +31,7 @@
         "msg": [
           {
             "type": "HTML",
-            "data": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003cp\u003eThis tutorial note demonostrate how to use R in Zeppelin. There\u0026rsquo;re 2 interpreters:\u003c/p\u003e\n\u003cul\u003e\n\u003cli\u003e%r.r  (Vanilla r interpreter, with least dependencies, only R environment installed is required)\u003c/li\u003e\n\u003cli\u003e%r.ir  (Provide more fancy R runtime via \u003ca href\u003d\"https://github.com/IRkernel/IRkernel\"\u003eIRKernel\u003c/a\u003e, almost the same experience like using R in Jupyter.)\u003c/li\u003e\n\u003c/ul\u003e\n\n\u003c/div\u003e"
+            "data": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003cp\u003eThis tutorial note demonostrate how to use R in Zeppelin. There\u0026rsquo;re 2 interpreters:\u003c/p\u003e\n\u003cul\u003e\n\u003cli\u003e%r.r  - Vanilla r interpreter, with least dependencies, only R environment installed is required\u003c/li\u003e\n\u003cli\u003e%r.ir (\u003ccode\u003erecommended\u003c/code\u003e)  - Provide more fancy R runtime via \u003ca href\u003d\"https://github.com/IRkernel/IRkernel\"\u003eIRKernel\u003c/a\u003e, almost the same experience like using R in Jupyter.)\u003c/li\u003e\n\u003c/ul\u003e\n\u003cp\u003eThis tutorial is to show you how to use R language via \u003ccode\u003e%r.ir\u003c/code\u003e.\u003c/p\u003e\n\n\u003c/div\u003e"
           }
         ]
       },
@@ -40,15 +41,15 @@
       "jobName": "paragraph_1580780002030_-2142389262",
       "id": "paragraph_1580780002030_-2142389262",
       "dateCreated": "2020-02-04 09:33:22.030",
-      "dateStarted": "2021-06-15 04:12:01.093",
-      "dateFinished": "2021-06-15 04:12:03.501",
+      "dateStarted": "2021-07-31 12:59:23.778",
+      "dateFinished": "2021-07-31 12:59:23.797",
       "status": "FINISHED"
     },
     {
       "title": "Hello R",
       "text": "%r.ir\nfoo \u003c- TRUE\nprint(foo)\nbare \u003c- c(1, 2.5, 4)\nprint(bare)\ndouble \u003c- 15.0\nprint(double)",
       "user": "anonymous",
-      "dateUpdated": "2021-06-15 04:12:03.594",
+      "dateUpdated": "2021-07-31 12:59:23.876",
       "progress": 0,
       "config": {
         "colWidth": 12.0,
@@ -97,15 +98,15 @@
       "jobName": "paragraph_1429882946244_-381648689",
       "id": "20150424-154226_261270952",
       "dateCreated": "2015-04-24 03:42:26.000",
-      "dateStarted": "2021-06-15 04:12:03.606",
-      "dateFinished": "2021-06-15 04:12:09.115",
+      "dateStarted": "2021-07-31 12:59:23.882",
+      "dateFinished": "2021-07-31 12:59:28.598",
       "status": "FINISHED"
     },
     {
       "title": "Load R Librairies",
       "text": "%r.ir\n\nlibrary(data.table)\ndt \u003c- data.table(1:3)\nprint(dt)\nfor (i in 1:5) {\n  print(i*2)\n}\nprint(1:50)",
       "user": "anonymous",
-      "dateUpdated": "2021-06-15 04:12:09.214",
+      "dateUpdated": "2021-07-31 12:59:28.685",
       "progress": 0,
       "config": {
         "colWidth": 12.0,
@@ -154,15 +155,15 @@
       "jobName": "paragraph_1429882976611_1352445253",
       "id": "20150424-154256_645296307",
       "dateCreated": "2015-04-24 03:42:56.000",
-      "dateStarted": "2021-06-15 04:12:09.225",
-      "dateFinished": "2021-06-15 04:12:09.419",
+      "dateStarted": "2021-07-31 12:59:28.692",
+      "dateFinished": "2021-07-31 12:59:28.877",
       "status": "FINISHED"
     },
     {
       "title": "Load Iris Dataset",
       "text": "%r.ir\n\ncolnames(iris)\niris$Petal.Length\niris$Sepal.Length",
       "user": "anonymous",
-      "dateUpdated": "2021-06-15 04:12:09.523",
+      "dateUpdated": "2021-07-31 12:59:28.891",
       "progress": 0,
       "config": {
         "colWidth": 12.0,
@@ -219,15 +220,15 @@
       "jobName": "paragraph_1455138077044_161383897",
       "id": "20160210-220117_115873183",
       "dateCreated": "2016-02-10 10:01:17.000",
-      "dateStarted": "2021-06-15 04:12:09.533",
-      "dateFinished": "2021-06-15 04:12:09.755",
+      "dateStarted": "2021-07-31 12:59:28.897",
+      "dateFinished": "2021-07-31 12:59:29.175",
       "status": "FINISHED"
     },
     {
       "title": "TABLE Display",
-      "text": "%r.ir\n\nprint(\"%table name\\tsize\\nsmall\\t100\\nlarge\\t1000\")",
+      "text": "%r.ir\n\ncat(\"%table name\\tsize\\nsmall\\t100\\nlarge\\t1000\")",
       "user": "anonymous",
-      "dateUpdated": "2021-06-15 04:12:09.833",
+      "dateUpdated": "2021-07-31 12:59:29.197",
       "progress": 0,
       "config": {
         "colWidth": 6.0,
@@ -310,8 +311,8 @@
         "code": "SUCCESS",
         "msg": [
           {
-            "type": "TEXT",
-            "data": "[1] \"%table name\\tsize\\nsmall\\t100\\nlarge\\t1000\"\n"
+            "type": "TABLE",
+            "data": "name\tsize\nsmall\t100\nlarge\t1000"
           }
         ]
       },
@@ -321,15 +322,15 @@
       "jobName": "paragraph_1456216582752_6855525",
       "id": "20160223-093622_330111284",
       "dateCreated": "2016-02-23 09:36:22.000",
-      "dateStarted": "2021-06-15 04:12:09.841",
-      "dateFinished": "2021-06-15 04:12:09.906",
+      "dateStarted": "2021-07-31 12:59:29.202",
+      "dateFinished": "2021-07-31 12:59:29.260",
       "status": "FINISHED"
     },
     {
       "title": "HTML Display",
-      "text": "%r.ir \n\nprint(\"%html \u003ch3\u003eHello HTML\u003c/h3\u003e\")\nprint(\"\u003cfont color\u003d\u0027blue\u0027\u003e\u003cspan class\u003d\u0027fa fa-bars\u0027\u003e Easy...\u003c/font\u003e\u003c/span\u003e\")\nfor (i in 1:10) {\n  print(paste0(\"\u003ch4\u003e\", i, \" * 2 \u003d \", i*2, \"\u003c/h4\u003e\"))\n}\n",
+      "text": "%r.ir \n\ncat(\"%html \u003ch3\u003eHello HTML\u003c/h3\u003e\")\ncat(\"\u003cfont color\u003d\u0027blue\u0027\u003e\u003cspan class\u003d\u0027fa fa-bars\u0027\u003e Easy...\u003c/font\u003e\u003c/span\u003e\")\nfor (i in 1:10) {\n  cat(paste0(\"\u003ch4\u003e\", i, \" * 2 \u003d \", i*2, \"\u003c/h4\u003e\"))\n}\n",
       "user": "anonymous",
-      "dateUpdated": "2021-06-15 04:12:09.940",
+      "dateUpdated": "2021-07-31 12:59:29.301",
       "progress": 0,
       "config": {
         "colWidth": 6.0,
@@ -367,8 +368,8 @@
         "code": "SUCCESS",
         "msg": [
           {
-            "type": "TEXT",
-            "data": "[1] \"%html \u003ch3\u003eHello HTML\u003c/h3\u003e\"\n[1] \"\u003cfont color\u003d\u0027blue\u0027\u003e\u003cspan class\u003d\u0027fa fa-bars\u0027\u003e Easy...\u003c/font\u003e\u003c/span\u003e\"\n[1] \"\u003ch4\u003e1 * 2 \u003d 2\u003c/h4\u003e\"\n[1] \"\u003ch4\u003e2 * 2 \u003d 4\u003c/h4\u003e\"\n[1] \"\u003ch4\u003e3 * 2 \u003d 6\u003c/h4\u003e\"\n[1] \"\u003ch4\u003e4 * 2 \u003d 8\u003c/h4\u003e\"\n[1] \"\u003ch4\u003e5 * 2 \u003d 10\u003c/h4\u003e\"\n[1] \"\u003ch4\u003e6 * 2 \u003d 12\u003c/h4\u003e\"\n[1] \"\u003ch4\u003e7 * 2 \u003d 14\u003c/h4\u003e\"\n[1] \"\u003ch4\u003e8 * 2 \u003d 16\u003c/h4\u003e\"\n[1] \"\u003ch4\u003e9 * 2 \u003d 18\u003c/h4\u003e\"\n[1] \"\u003ch4\u003e10 * 2 \u003d 20\u003c/h4\u003e\"\n"
+            "type": "HTML",
+            "data": "\u003ch3\u003eHello HTML\u003c/h3\u003e\u003cfont color\u003d\u0027blue\u0027\u003e\u003cspan class\u003d\u0027fa fa-bars\u0027\u003e Easy...\u003c/font\u003e\u003c/span\u003e\u003ch4\u003e1 * 2 \u003d 2\u003c/h4\u003e\u003ch4\u003e2 * 2 \u003d 4\u003c/h4\u003e\u003ch4\u003e3 * 2 \u003d 6\u003c/h4\u003e\u003ch4\u003e4 * 2 \u003d 8\u003c/h4\u003e\u003ch4\u003e5 * 2 \u003d 10\u003c/h4\u003e\u003ch4\u003e6 * 2 \u003d 12\u003c/h4\u003e\u003ch4\u003e7 * 2 \u003d 14\u003c/h4\u003e\u003ch4\u003e8 * 2 \u003d 16\u003c/h4\u003e\u003ch4\u003e9 * 2 \u003d 18\u003c/h4\u003e\u003ch4\u003e10 * 2 \u003d 20\u003c/h4\u003e"
           }
         ]
       },
@@ -378,15 +379,15 @@
       "jobName": "paragraph_1456140102445_51059930",
       "id": "20160222-122142_1323614681",
       "dateCreated": "2016-02-22 12:21:42.000",
-      "dateStarted": "2021-06-15 04:12:09.948",
-      "dateFinished": "2021-06-15 04:12:10.019",
+      "dateStarted": "2021-07-31 12:59:29.307",
+      "dateFinished": "2021-07-31 12:59:29.369",
       "status": "FINISHED"
     },
     {
       "title": "GoogleVis: Bar Chart",
       "text": "%r.ir\n\nlibrary(googleVis)\ndf\u003ddata.frame(country\u003dc(\"US\", \"GB\", \"BR\"), \n              val1\u003dc(10,13,14), \n              val2\u003dc(23,12,32))\nBar \u003c- gvisBarChart(df)\nprint(Bar, tag \u003d \u0027chart\u0027)\n",
       "user": "anonymous",
-      "dateUpdated": "2021-06-15 04:12:10.048",
+      "dateUpdated": "2021-07-31 12:59:29.407",
       "progress": 0,
       "config": {
         "colWidth": 4.0,
@@ -427,7 +428,7 @@
           },
           {
             "type": "HTML",
-            "data": "\u003c!-- BarChart generated in R 3.6.3 by googleVis 0.6.10 package --\u003e\n\u003c!-- Tue Jun 15 04:12:10 2021 --\u003e\n\n\n\u003c!-- jsHeader --\u003e\n\u003cscript type\u003d\"text/javascript\"\u003e\n \n// jsData \nfunction gvisDataBarChartID11314b44a97 () {\nvar data \u003d new google.visualization.DataTable();\nvar datajson \u003d\n[\n [\n\"US\",\n10,\n23\n],\n[\n\"GB\",\n13,\n12\n],\n[\n\"BR\",\n14,\n32\n] \n];\ndata.addColumn(\u0027string\u0027,\u0027country\u0027);\ndata.addColumn(\u0027number\u0027,\u0027val1\u0027);\ndata.addColumn(\u0027number\u0027,\u0027val2\u0027);\ndata.addRows(datajson);\nreturn(data);\n}\n \n// jsDrawChart\nfunction drawChartBarChartID11314b44a97() {\nvar data \u003d gvisDataBarChartID11314b44a97();\nvar options \u003d {};\noptions[\"allowHtml\"] \u003d true;\n\n\n    var chart \u003d new google.visualization.BarChart(\n    document.getElementById(\u0027BarChartID11314b44a97\u0027)\n    );\n    chart.draw(data,options);\n    \n\n}\n  \n \n// jsDisplayChart\n(function() {\nvar pkgs \u003d window.__gvisPackages \u003d window.__gvisPackages || [];\nvar callbacks \u003d window.__gvisCallbacks \u003d window.__gvisCallbacks || [];\nvar chartid \u003d \"corechart\";\n  \n// Manually see if chartid is in pkgs (not all browsers support Array.indexOf)\nvar i, newPackage \u003d true;\nfor (i \u003d 0; newPackage \u0026\u0026 i \u003c pkgs.length; i++) {\nif (pkgs[i] \u003d\u003d\u003d chartid)\nnewPackage \u003d false;\n}\nif (newPackage)\n  pkgs.push(chartid);\n  \n// Add the drawChart function to the global list of callbacks\ncallbacks.push(drawChartBarChartID11314b44a97);\n})();\nfunction displayChartBarChartID11314b44a97() {\n  var pkgs \u003d window.__gvisPackages \u003d window.__gvisPackages || [];\n  var callbacks \u003d window.__gvisCallbacks \u003d window.__gvisCallbacks || [];\n  window.clearTimeout(window.__gvisLoad);\n  // The timeout is set to 100 because otherwise the container div we are\n  // targeting might not be part of the document yet\n  window.__gvisLoad \u003d setTimeout(function() {\n  var pkgCount \u003d pkgs.length;\n  google.load(\"visualization\", \"1\", { packages:pkgs, callback: function() {\n  if (pkgCount !\u003d pkgs.length) {\n  // Race condition where another setTimeout call snuck in after us; if\n  // that call added a package, we must not shift its callback\n  return;\n}\nwhile (callbacks.length \u003e 0)\ncallbacks.shift()();\n} });\n}, 100);\n}\n \n// jsFooter\n\u003c/script\u003e\n \n\u003c!-- jsChart --\u003e  \n\u003cscript type\u003d\"text/javascript\" src\u003d\"https://www.google.com/jsapi?callback\u003ddisplayChartBarChartID11314b44a97\"\u003e\u003c/script\u003e\n \n\u003c!-- divChart --\u003e\n  \n\u003cdiv id\u003d\"BarChartID11314b44a97\" \n  style\u003d\"width: 500; height: automatic;\"\u003e\n\u003c/div\u003e\n"
+            "data": "\u003c!-- BarChart generated in R 3.6.3 by googleVis 0.6.10 package --\u003e\n\u003c!-- Sat Jul 31 12:59:29 2021 --\u003e\n\n\n\u003c!-- jsHeader --\u003e\n\u003cscript type\u003d\"text/javascript\"\u003e\n \n// jsData \nfunction gvisDataBarChartID34f18480c5e () {\nvar data \u003d new google.visualization.DataTable();\nvar datajson \u003d\n[\n [\n\"US\",\n10,\n23\n],\n[\n\"GB\",\n13,\n12\n],\n[\n\"BR\",\n14,\n32\n] \n];\ndata.addColumn(\u0027string\u0027,\u0027country\u0027);\ndata.addColumn(\u0027number\u0027,\u0027val1\u0027);\ndata.addColumn(\u0027number\u0027,\u0027val2\u0027);\ndata.addRows(datajson);\nreturn(data);\n}\n \n// jsDrawChart\nfunction drawChartBarChartID34f18480c5e() {\nvar data \u003d gvisDataBarChartID34f18480c5e();\nvar options \u003d {};\noptions[\"allowHtml\"] \u003d true;\n\n\n    var chart \u003d new google.visualization.BarChart(\n    document.getElementById(\u0027BarChartID34f18480c5e\u0027)\n    );\n    chart.draw(data,options);\n    \n\n}\n  \n \n// jsDisplayChart\n(function() {\nvar pkgs \u003d window.__gvisPackages \u003d window.__gvisPackages || [];\nvar callbacks \u003d window.__gvisCallbacks \u003d window.__gvisCallbacks || [];\nvar chartid \u003d \"corechart\";\n  \n// Manually see if chartid is in pkgs (not all browsers support Array.indexOf)\nvar i, newPackage \u003d true;\nfor (i \u003d 0; newPackage \u0026\u0026 i \u003c pkgs.length; i++) {\nif (pkgs[i] \u003d\u003d\u003d chartid)\nnewPackage \u003d false;\n}\nif (newPackage)\n  pkgs.push(chartid);\n  \n// Add the drawChart function to the global list of callbacks\ncallbacks.push(drawChartBarChartID34f18480c5e);\n})();\nfunction displayChartBarChartID34f18480c5e() {\n  var pkgs \u003d window.__gvisPackages \u003d window.__gvisPackages || [];\n  var callbacks \u003d window.__gvisCallbacks \u003d window.__gvisCallbacks || [];\n  window.clearTimeout(window.__gvisLoad);\n  // The timeout is set to 100 because otherwise the container div we are\n  // targeting might not be part of the document yet\n  window.__gvisLoad \u003d setTimeout(function() {\n  var pkgCount \u003d pkgs.length;\n  google.load(\"visualization\", \"1\", { packages:pkgs, callback: function() {\n  if (pkgCount !\u003d pkgs.length) {\n  // Race condition where another setTimeout call snuck in after us; if\n  // that call added a package, we must not shift its callback\n  return;\n}\nwhile (callbacks.length \u003e 0)\ncallbacks.shift()();\n} });\n}, 100);\n}\n \n// jsFooter\n\u003c/script\u003e\n \n\u003c!-- jsChart --\u003e  \n\u003cscript type\u003d\"text/javascript\" src\u003d\"https://www.google.com/jsapi?callback\u003ddisplayChartBarChartID34f18480c5e\"\u003e\u003c/script\u003e\n \n\u003c!-- divChart --\u003e\n  \n\u003cdiv id\u003d\"BarChartID34f18480c5e\" \n  style\u003d\"width: 500; height: automatic;\"\u003e\n\u003c/div\u003e\n"
           }
         ]
       },
@@ -437,15 +438,15 @@
       "jobName": "paragraph_1485626417184_-1153542135",
       "id": "20170129-030017_426747323",
       "dateCreated": "2017-01-29 03:00:17.000",
-      "dateStarted": "2021-06-15 04:12:10.055",
-      "dateFinished": "2021-06-15 04:12:10.130",
+      "dateStarted": "2021-07-31 12:59:29.414",
+      "dateFinished": "2021-07-31 12:59:29.482",
       "status": "FINISHED"
     },
     {
       "title": "GoogleVis: Candlestick Chart",
       "text": "%r.ir\n\nlibrary(googleVis)\n\nCandle \u003c- gvisCandlestickChart(OpenClose, \n                               options\u003dlist(legend\u003d\u0027none\u0027))\n\nprint(Candle, tag \u003d \u0027chart\u0027)\n\n\n\n\n\n\n\n\n",
       "user": "anonymous",
-      "dateUpdated": "2021-06-15 04:12:10.155",
+      "dateUpdated": "2021-07-31 12:59:29.514",
       "progress": 0,
       "config": {
         "colWidth": 4.0,
@@ -482,7 +483,7 @@
         "msg": [
           {
             "type": "HTML",
-            "data": "\u003c!-- CandlestickChart generated in R 3.6.3 by googleVis 0.6.10 package --\u003e\n\u003c!-- Tue Jun 15 04:12:10 2021 --\u003e\n\n\n\u003c!-- jsHeader --\u003e\n\u003cscript type\u003d\"text/javascript\"\u003e\n \n// jsData \nfunction gvisDataCandlestickChartID1131164ca3a () {\nvar data \u003d new google.visualization.DataTable();\nvar datajson \u003d\n[\n [\n\"Mon\",\n20,\n28,\n38,\n45\n],\n[\n\"Tues\",\n31,\n38,\n55,\n66\n],\n[\n\"Wed\",\n50,\n55,\n77,\n80\n],\n[\n\"Thurs\",\n50,\n77,\n66,\n77\n],\n[\n\"Fri\",\n15,\n66,\n22,\n68\n] \n];\ndata.addColumn(\u0027string\u0027,\u0027Weekday\u0027);\ndata.addColumn(\u0027number\u0027,\u0027Low\u0027);\ndata.addColumn(\u0027number\u0027,\u0027Open\u0027);\ndata.addColumn(\u0027number\u0027,\u0027Close\u0027);\ndata.addColumn(\u0027number\u0027,\u0027High\u0027);\ndata.addRows(datajson);\nreturn(data);\n}\n \n// jsDrawChart\nfunction drawChartCandlestickChartID1131164ca3a() {\nvar data \u003d gvisDataCandlestickChartID1131164ca3a();\nvar options \u003d {};\noptions[\"allowHtml\"] \u003d true;\noptions[\"legend\"] \u003d \"none\";\n\n\n    var chart \u003d new google.visualization.CandlestickChart(\n    document.getElementById(\u0027CandlestickChartID1131164ca3a\u0027)\n    );\n    chart.draw(data,options);\n    \n\n}\n  \n \n// jsDisplayChart\n(function() {\nvar pkgs \u003d window.__gvisPackages \u003d window.__gvisPackages || [];\nvar callbacks \u003d window.__gvisCallbacks \u003d window.__gvisCallbacks || [];\nvar chartid \u003d \"corechart\";\n  \n// Manually see if chartid is in pkgs (not all browsers support Array.indexOf)\nvar i, newPackage \u003d true;\nfor (i \u003d 0; newPackage \u0026\u0026 i \u003c pkgs.length; i++) {\nif (pkgs[i] \u003d\u003d\u003d chartid)\nnewPackage \u003d false;\n}\nif (newPackage)\n  pkgs.push(chartid);\n  \n// Add the drawChart function to the global list of callbacks\ncallbacks.push(drawChartCandlestickChartID1131164ca3a);\n})();\nfunction displayChartCandlestickChartID1131164ca3a() {\n  var pkgs \u003d window.__gvisPackages \u003d window.__gvisPackages || [];\n  var callbacks \u003d window.__gvisCallbacks \u003d window.__gvisCallbacks || [];\n  window.clearTimeout(window.__gvisLoad);\n  // The timeout is set to 100 because otherwise the container div we are\n  // targeting might not be part of the document yet\n  window.__gvisLoad \u003d setTimeout(function() {\n  var pkgCount \u003d pkgs.length;\n  google.load(\"visualization\", \"1\", { packages:pkgs, callback: function() {\n  if (pkgCount !\u003d pkgs.length) {\n  // Race condition where another setTimeout call snuck in after us; if\n  // that call added a package, we must not shift its callback\n  return;\n}\nwhile (callbacks.length \u003e 0)\ncallbacks.shift()();\n} });\n}, 100);\n}\n \n// jsFooter\n\u003c/script\u003e\n \n\u003c!-- jsChart --\u003e  \n\u003cscript type\u003d\"text/javascript\" src\u003d\"https://www.google.com/jsapi?callback\u003ddisplayChartCandlestickChartID1131164ca3a\"\u003e\u003c/script\u003e\n \n\u003c!-- divChart --\u003e\n  \n\u003cdiv id\u003d\"CandlestickChartID1131164ca3a\" \n  style\u003d\"width: 500; height: automatic;\"\u003e\n\u003c/div\u003e\n"
+            "data": "\u003c!-- CandlestickChart generated in R 3.6.3 by googleVis 0.6.10 package --\u003e\n\u003c!-- Sat Jul 31 12:59:29 2021 --\u003e\n\n\n\u003c!-- jsHeader --\u003e\n\u003cscript type\u003d\"text/javascript\"\u003e\n \n// jsData \nfunction gvisDataCandlestickChartID34f1c7c0c2e () {\nvar data \u003d new google.visualization.DataTable();\nvar datajson \u003d\n[\n [\n\"Mon\",\n20,\n28,\n38,\n45\n],\n[\n\"Tues\",\n31,\n38,\n55,\n66\n],\n[\n\"Wed\",\n50,\n55,\n77,\n80\n],\n[\n\"Thurs\",\n50,\n77,\n66,\n77\n],\n[\n\"Fri\",\n15,\n66,\n22,\n68\n] \n];\ndata.addColumn(\u0027string\u0027,\u0027Weekday\u0027);\ndata.addColumn(\u0027number\u0027,\u0027Low\u0027);\ndata.addColumn(\u0027number\u0027,\u0027Open\u0027);\ndata.addColumn(\u0027number\u0027,\u0027Close\u0027);\ndata.addColumn(\u0027number\u0027,\u0027High\u0027);\ndata.addRows(datajson);\nreturn(data);\n}\n \n// jsDrawChart\nfunction drawChartCandlestickChartID34f1c7c0c2e() {\nvar data \u003d gvisDataCandlestickChartID34f1c7c0c2e();\nvar options \u003d {};\noptions[\"allowHtml\"] \u003d true;\noptions[\"legend\"] \u003d \"none\";\n\n\n    var chart \u003d new google.visualization.CandlestickChart(\n    document.getElementById(\u0027CandlestickChartID34f1c7c0c2e\u0027)\n    );\n    chart.draw(data,options);\n    \n\n}\n  \n \n// jsDisplayChart\n(function() {\nvar pkgs \u003d window.__gvisPackages \u003d window.__gvisPackages || [];\nvar callbacks \u003d window.__gvisCallbacks \u003d window.__gvisCallbacks || [];\nvar chartid \u003d \"corechart\";\n  \n// Manually see if chartid is in pkgs (not all browsers support Array.indexOf)\nvar i, newPackage \u003d true;\nfor (i \u003d 0; newPackage \u0026\u0026 i \u003c pkgs.length; i++) {\nif (pkgs[i] \u003d\u003d\u003d chartid)\nnewPackage \u003d false;\n}\nif (newPackage)\n  pkgs.push(chartid);\n  \n// Add the drawChart function to the global list of callbacks\ncallbacks.push(drawChartCandlestickChartID34f1c7c0c2e);\n})();\nfunction displayChartCandlestickChartID34f1c7c0c2e() {\n  var pkgs \u003d window.__gvisPackages \u003d window.__gvisPackages || [];\n  var callbacks \u003d window.__gvisCallbacks \u003d window.__gvisCallbacks || [];\n  window.clearTimeout(window.__gvisLoad);\n  // The timeout is set to 100 because otherwise the container div we are\n  // targeting might not be part of the document yet\n  window.__gvisLoad \u003d setTimeout(function() {\n  var pkgCount \u003d pkgs.length;\n  google.load(\"visualization\", \"1\", { packages:pkgs, callback: function() {\n  if (pkgCount !\u003d pkgs.length) {\n  // Race condition where another setTimeout call snuck in after us; if\n  // that call added a package, we must not shift its callback\n  return;\n}\nwhile (callbacks.length \u003e 0)\ncallbacks.shift()();\n} });\n}, 100);\n}\n \n// jsFooter\n\u003c/script\u003e\n \n\u003c!-- jsChart --\u003e  \n\u003cscript type\u003d\"text/javascript\" src\u003d\"https://www.google.com/jsapi?callback\u003ddisplayChartCandlestickChartID34f1c7c0c2e\"\u003e\u003c/script\u003e\n \n\u003c!-- divChart --\u003e\n  \n\u003cdiv id\u003d\"CandlestickChartID34f1c7c0c2e\" \n  style\u003d\"width: 500; height: automatic;\"\u003e\n\u003c/div\u003e\n"
           }
         ]
       },
@@ -492,15 +493,15 @@
       "jobName": "paragraph_1485627113560_-130863711",
       "id": "20170129-031153_758721410",
       "dateCreated": "2017-01-29 03:11:53.000",
-      "dateStarted": "2021-06-15 04:12:10.166",
-      "dateFinished": "2021-06-15 04:12:10.228",
+      "dateStarted": "2021-07-31 12:59:29.518",
+      "dateFinished": "2021-07-31 12:59:29.579",
       "status": "FINISHED"
     },
     {
       "title": "GoogleVis: Line chart",
       "text": "%r.ir\n\nlibrary(googleVis)\ndf\u003ddata.frame(country\u003dc(\"US\", \"GB\", \"BR\"), \n              val1\u003dc(10,13,14), \n              val2\u003dc(23,12,32))\n\nLine \u003c- gvisLineChart(df)\n\nprint(Line, tag \u003d \u0027chart\u0027)\n\n\n\n\n\n\n\n\n",
       "user": "anonymous",
-      "dateUpdated": "2021-06-15 04:12:10.264",
+      "dateUpdated": "2021-07-31 12:59:29.618",
       "progress": 0,
       "config": {
         "colWidth": 4.0,
@@ -537,7 +538,7 @@
         "msg": [
           {
             "type": "HTML",
-            "data": "\u003c!-- LineChart generated in R 3.6.3 by googleVis 0.6.10 package --\u003e\n\u003c!-- Tue Jun 15 04:12:10 2021 --\u003e\n\n\n\u003c!-- jsHeader --\u003e\n\u003cscript type\u003d\"text/javascript\"\u003e\n \n// jsData \nfunction gvisDataLineChartID1136265da05 () {\nvar data \u003d new google.visualization.DataTable();\nvar datajson \u003d\n[\n [\n\"US\",\n10,\n23\n],\n[\n\"GB\",\n13,\n12\n],\n[\n\"BR\",\n14,\n32\n] \n];\ndata.addColumn(\u0027string\u0027,\u0027country\u0027);\ndata.addColumn(\u0027number\u0027,\u0027val1\u0027);\ndata.addColumn(\u0027number\u0027,\u0027val2\u0027);\ndata.addRows(datajson);\nreturn(data);\n}\n \n// jsDrawChart\nfunction drawChartLineChartID1136265da05() {\nvar data \u003d gvisDataLineChartID1136265da05();\nvar options \u003d {};\noptions[\"allowHtml\"] \u003d true;\n\n\n    var chart \u003d new google.visualization.LineChart(\n    document.getElementById(\u0027LineChartID1136265da05\u0027)\n    );\n    chart.draw(data,options);\n    \n\n}\n  \n \n// jsDisplayChart\n(function() {\nvar pkgs \u003d window.__gvisPackages \u003d window.__gvisPackages || [];\nvar callbacks \u003d window.__gvisCallbacks \u003d window.__gvisCallbacks || [];\nvar chartid \u003d \"corechart\";\n  \n// Manually see if chartid is in pkgs (not all browsers support Array.indexOf)\nvar i, newPackage \u003d true;\nfor (i \u003d 0; newPackage \u0026\u0026 i \u003c pkgs.length; i++) {\nif (pkgs[i] \u003d\u003d\u003d chartid)\nnewPackage \u003d false;\n}\nif (newPackage)\n  pkgs.push(chartid);\n  \n// Add the drawChart function to the global list of callbacks\ncallbacks.push(drawChartLineChartID1136265da05);\n})();\nfunction displayChartLineChartID1136265da05() {\n  var pkgs \u003d window.__gvisPackages \u003d window.__gvisPackages || [];\n  var callbacks \u003d window.__gvisCallbacks \u003d window.__gvisCallbacks || [];\n  window.clearTimeout(window.__gvisLoad);\n  // The timeout is set to 100 because otherwise the container div we are\n  // targeting might not be part of the document yet\n  window.__gvisLoad \u003d setTimeout(function() {\n  var pkgCount \u003d pkgs.length;\n  google.load(\"visualization\", \"1\", { packages:pkgs, callback: function() {\n  if (pkgCount !\u003d pkgs.length) {\n  // Race condition where another setTimeout call snuck in after us; if\n  // that call added a package, we must not shift its callback\n  return;\n}\nwhile (callbacks.length \u003e 0)\ncallbacks.shift()();\n} });\n}, 100);\n}\n \n// jsFooter\n\u003c/script\u003e\n \n\u003c!-- jsChart --\u003e  \n\u003cscript type\u003d\"text/javascript\" src\u003d\"https://www.google.com/jsapi?callback\u003ddisplayChartLineChartID1136265da05\"\u003e\u003c/script\u003e\n \n\u003c!-- divChart --\u003e\n  \n\u003cdiv id\u003d\"LineChartID1136265da05\" \n  style\u003d\"width: 500; height: automatic;\"\u003e\n\u003c/div\u003e\n"
+            "data": "\u003c!-- LineChart generated in R 3.6.3 by googleVis 0.6.10 package --\u003e\n\u003c!-- Sat Jul 31 12:59:29 2021 --\u003e\n\n\n\u003c!-- jsHeader --\u003e\n\u003cscript type\u003d\"text/javascript\"\u003e\n \n// jsData \nfunction gvisDataLineChartID34f1e8751b6 () {\nvar data \u003d new google.visualization.DataTable();\nvar datajson \u003d\n[\n [\n\"US\",\n10,\n23\n],\n[\n\"GB\",\n13,\n12\n],\n[\n\"BR\",\n14,\n32\n] \n];\ndata.addColumn(\u0027string\u0027,\u0027country\u0027);\ndata.addColumn(\u0027number\u0027,\u0027val1\u0027);\ndata.addColumn(\u0027number\u0027,\u0027val2\u0027);\ndata.addRows(datajson);\nreturn(data);\n}\n \n// jsDrawChart\nfunction drawChartLineChartID34f1e8751b6() {\nvar data \u003d gvisDataLineChartID34f1e8751b6();\nvar options \u003d {};\noptions[\"allowHtml\"] \u003d true;\n\n\n    var chart \u003d new google.visualization.LineChart(\n    document.getElementById(\u0027LineChartID34f1e8751b6\u0027)\n    );\n    chart.draw(data,options);\n    \n\n}\n  \n \n// jsDisplayChart\n(function() {\nvar pkgs \u003d window.__gvisPackages \u003d window.__gvisPackages || [];\nvar callbacks \u003d window.__gvisCallbacks \u003d window.__gvisCallbacks || [];\nvar chartid \u003d \"corechart\";\n  \n// Manually see if chartid is in pkgs (not all browsers support Array.indexOf)\nvar i, newPackage \u003d true;\nfor (i \u003d 0; newPackage \u0026\u0026 i \u003c pkgs.length; i++) {\nif (pkgs[i] \u003d\u003d\u003d chartid)\nnewPackage \u003d false;\n}\nif (newPackage)\n  pkgs.push(chartid);\n  \n// Add the drawChart function to the global list of callbacks\ncallbacks.push(drawChartLineChartID34f1e8751b6);\n})();\nfunction displayChartLineChartID34f1e8751b6() {\n  var pkgs \u003d window.__gvisPackages \u003d window.__gvisPackages || [];\n  var callbacks \u003d window.__gvisCallbacks \u003d window.__gvisCallbacks || [];\n  window.clearTimeout(window.__gvisLoad);\n  // The timeout is set to 100 because otherwise the container div we are\n  // targeting might not be part of the document yet\n  window.__gvisLoad \u003d setTimeout(function() {\n  var pkgCount \u003d pkgs.length;\n  google.load(\"visualization\", \"1\", { packages:pkgs, callback: function() {\n  if (pkgCount !\u003d pkgs.length) {\n  // Race condition where another setTimeout call snuck in after us; if\n  // that call added a package, we must not shift its callback\n  return;\n}\nwhile (callbacks.length \u003e 0)\ncallbacks.shift()();\n} });\n}, 100);\n}\n \n// jsFooter\n\u003c/script\u003e\n \n\u003c!-- jsChart --\u003e  \n\u003cscript type\u003d\"text/javascript\" src\u003d\"https://www.google.com/jsapi?callback\u003ddisplayChartLineChartID34f1e8751b6\"\u003e\u003c/script\u003e\n \n\u003c!-- divChart --\u003e\n  \n\u003cdiv id\u003d\"LineChartID34f1e8751b6\" \n  style\u003d\"width: 500; height: automatic;\"\u003e\n\u003c/div\u003e\n"
           }
         ]
       },
@@ -547,14 +548,14 @@
       "jobName": "paragraph_1455138857313_92355963",
       "id": "20160210-221417_1400405266",
       "dateCreated": "2016-02-10 10:14:17.000",
-      "dateStarted": "2021-06-15 04:12:10.272",
-      "dateFinished": "2021-06-15 04:12:10.342",
+      "dateStarted": "2021-07-31 12:59:29.623",
+      "dateFinished": "2021-07-31 12:59:29.682",
       "status": "FINISHED"
     },
     {
       "text": "%r.ir\n\npairs(iris)",
       "user": "anonymous",
-      "dateUpdated": "2021-06-15 04:12:10.372",
+      "dateUpdated": "2021-07-31 12:59:29.723",
       "progress": 0,
       "config": {
         "colWidth": 4.0,
@@ -603,14 +604,14 @@
       "jobName": "paragraph_1455137735427_-1023869289",
       "id": "20160210-215535_1815168219",
       "dateCreated": "2016-02-10 09:55:35.000",
-      "dateStarted": "2021-06-15 04:12:10.380",
-      "dateFinished": "2021-06-15 04:12:10.736",
+      "dateStarted": "2021-07-31 12:59:29.727",
+      "dateFinished": "2021-07-31 12:59:29.973",
       "status": "FINISHED"
     },
     {
       "text": "%r.ir\n\nplot(iris, col \u003d heat.colors(3))",
       "user": "anonymous",
-      "dateUpdated": "2021-06-15 04:12:10.781",
+      "dateUpdated": "2021-07-31 12:59:30.027",
       "progress": 0,
       "config": {
         "colWidth": 4.0,
@@ -659,14 +660,14 @@
       "jobName": "paragraph_1455137737773_-549089146",
       "id": "20160210-215537_582262164",
       "dateCreated": "2016-02-10 09:55:37.000",
-      "dateStarted": "2021-06-15 04:12:10.790",
-      "dateFinished": "2021-06-15 04:12:11.061",
+      "dateStarted": "2021-07-31 12:59:30.032",
+      "dateFinished": "2021-07-31 12:59:30.301",
       "status": "FINISHED"
     },
     {
       "text": "%r.ir\n\nlibrary(ggplot2)\npres_rating \u003c- data.frame(\n  rating \u003d as.numeric(presidents),\n  year \u003d as.numeric(floor(time(presidents))),\n  quarter \u003d as.numeric(cycle(presidents))\n)\np \u003c- ggplot(pres_rating, aes(x\u003dyear, y\u003dquarter, fill\u003drating))\np + geom_raster()",
       "user": "anonymous",
-      "dateUpdated": "2021-06-15 04:12:11.087",
+      "dateUpdated": "2021-07-31 12:59:30.332",
       "progress": 0,
       "config": {
         "colWidth": 4.0,
@@ -720,15 +721,15 @@
       "jobName": "paragraph_1438930880648_-1572054429",
       "id": "20150807-090120_1060568667",
       "dateCreated": "2015-08-07 09:01:20.000",
-      "dateStarted": "2021-06-15 04:12:11.093",
-      "dateFinished": "2021-06-15 04:12:11.804",
+      "dateStarted": "2021-07-31 12:59:30.337",
+      "dateFinished": "2021-07-31 12:59:31.004",
       "status": "FINISHED"
     },
     {
       "title": "GoogleViz: Bubble Chart",
       "text": "%r.ir\n\nlibrary(googleVis)\nbubble \u003c- gvisBubbleChart(Fruits, idvar\u003d\"Fruit\", \n                          xvar\u003d\"Sales\", yvar\u003d\"Expenses\",\n                          colorvar\u003d\"Year\", sizevar\u003d\"Profit\",\n                          options\u003dlist(\n                            hAxis\u003d\u0027{minValue:75, maxValue:125}\u0027))\nprint(bubble, tag \u003d \u0027chart\u0027)",
       "user": "anonymous",
-      "dateUpdated": "2021-06-15 04:12:11.893",
+      "dateUpdated": "2021-07-31 12:59:31.038",
       "progress": 0,
       "config": {
         "colWidth": 6.0,
@@ -768,7 +769,7 @@
         "msg": [
           {
             "type": "HTML",
-            "data": "\u003c!-- BubbleChart generated in R 3.6.3 by googleVis 0.6.10 package --\u003e\n\u003c!-- Tue Jun 15 04:12:11 2021 --\u003e\n\n\n\u003c!-- jsHeader --\u003e\n\u003cscript type\u003d\"text/javascript\"\u003e\n \n// jsData \nfunction gvisDataBubbleChartID113673a4179 () {\nvar data \u003d new google.visualization.DataTable();\nvar datajson \u003d\n[\n [\n\"Apples\",\n98,\n78,\n2008,\n20\n],\n[\n\"Apples\",\n111,\n79,\n2009,\n32\n],\n[\n\"Apples\",\n89,\n76,\n2010,\n13\n],\n[\n\"Oranges\",\n96,\n81,\n2008,\n15\n],\n[\n\"Bananas\",\n85,\n76,\n2008,\n9\n],\n[\n\"Oranges\",\n93,\n80,\n2009,\n13\n],\n[\n\"Bananas\",\n94,\n78,\n2009,\n16\n],\n[\n\"Oranges\",\n98,\n91,\n2010,\n7\n],\n[\n\"Bananas\",\n81,\n71,\n2010,\n10\n] \n];\ndata.addColumn(\u0027string\u0027,\u0027Fruit\u0027);\ndata.addColumn(\u0027number\u0027,\u0027Sales\u0027);\ndata.addColumn(\u0027number\u0027,\u0027Expenses\u0027);\ndata.addColumn(\u0027number\u0027,\u0027Year\u0027);\ndata.addColumn(\u0027number\u0027,\u0027Profit\u0027);\ndata.addRows(datajson);\nreturn(data);\n}\n \n// jsDrawChart\nfunction drawChartBubbleChartID113673a4179() {\nvar data \u003d gvisDataBubbleChartID113673a4179();\nvar options \u003d {};\noptions[\"hAxis\"] \u003d {minValue:75, maxValue:125};\n\n\n    var chart \u003d new google.visualization.BubbleChart(\n    document.getElementById(\u0027BubbleChartID113673a4179\u0027)\n    );\n    chart.draw(data,options);\n    \n\n}\n  \n \n// jsDisplayChart\n(function() {\nvar pkgs \u003d window.__gvisPackages \u003d window.__gvisPackages || [];\nvar callbacks \u003d window.__gvisCallbacks \u003d window.__gvisCallbacks || [];\nvar chartid \u003d \"corechart\";\n  \n// Manually see if chartid is in pkgs (not all browsers support Array.indexOf)\nvar i, newPackage \u003d true;\nfor (i \u003d 0; newPackage \u0026\u0026 i \u003c pkgs.length; i++) {\nif (pkgs[i] \u003d\u003d\u003d chartid)\nnewPackage \u003d false;\n}\nif (newPackage)\n  pkgs.push(chartid);\n  \n// Add the drawChart function to the global list of callbacks\ncallbacks.push(drawChartBubbleChartID113673a4179);\n})();\nfunction displayChartBubbleChartID113673a4179() {\n  var pkgs \u003d window.__gvisPackages \u003d window.__gvisPackages || [];\n  var callbacks \u003d window.__gvisCallbacks \u003d window.__gvisCallbacks || [];\n  window.clearTimeout(window.__gvisLoad);\n  // The timeout is set to 100 because otherwise the container div we are\n  // targeting might not be part of the document yet\n  window.__gvisLoad \u003d setTimeout(function() {\n  var pkgCount \u003d pkgs.length;\n  google.load(\"visualization\", \"1\", { packages:pkgs, callback: function() {\n  if (pkgCount !\u003d pkgs.length) {\n  // Race condition where another setTimeout call snuck in after us; if\n  // that call added a package, we must not shift its callback\n  return;\n}\nwhile (callbacks.length \u003e 0)\ncallbacks.shift()();\n} });\n}, 100);\n}\n \n// jsFooter\n\u003c/script\u003e\n \n\u003c!-- jsChart --\u003e  \n\u003cscript type\u003d\"text/javascript\" src\u003d\"https://www.google.com/jsapi?callback\u003ddisplayChartBubbleChartID113673a4179\"\u003e\u003c/script\u003e\n \n\u003c!-- divChart --\u003e\n  \n\u003cdiv id\u003d\"BubbleChartID113673a4179\" \n  style\u003d\"width: 500; height: automatic;\"\u003e\n\u003c/div\u003e\n"
+            "data": "\u003c!-- BubbleChart generated in R 3.6.3 by googleVis 0.6.10 package --\u003e\n\u003c!-- Sat Jul 31 12:59:31 2021 --\u003e\n\n\n\u003c!-- jsHeader --\u003e\n\u003cscript type\u003d\"text/javascript\"\u003e\n \n// jsData \nfunction gvisDataBubbleChartID34f780e322 () {\nvar data \u003d new google.visualization.DataTable();\nvar datajson \u003d\n[\n [\n\"Apples\",\n98,\n78,\n2008,\n20\n],\n[\n\"Apples\",\n111,\n79,\n2009,\n32\n],\n[\n\"Apples\",\n89,\n76,\n2010,\n13\n],\n[\n\"Oranges\",\n96,\n81,\n2008,\n15\n],\n[\n\"Bananas\",\n85,\n76,\n2008,\n9\n],\n[\n\"Oranges\",\n93,\n80,\n2009,\n13\n],\n[\n\"Bananas\",\n94,\n78,\n2009,\n16\n],\n[\n\"Oranges\",\n98,\n91,\n2010,\n7\n],\n[\n\"Bananas\",\n81,\n71,\n2010,\n10\n] \n];\ndata.addColumn(\u0027string\u0027,\u0027Fruit\u0027);\ndata.addColumn(\u0027number\u0027,\u0027Sales\u0027);\ndata.addColumn(\u0027number\u0027,\u0027Expenses\u0027);\ndata.addColumn(\u0027number\u0027,\u0027Year\u0027);\ndata.addColumn(\u0027number\u0027,\u0027Profit\u0027);\ndata.addRows(datajson);\nreturn(data);\n}\n \n// jsDrawChart\nfunction drawChartBubbleChartID34f780e322() {\nvar data \u003d gvisDataBubbleChartID34f780e322();\nvar options \u003d {};\noptions[\"hAxis\"] \u003d {minValue:75, maxValue:125};\n\n\n    var chart \u003d new google.visualization.BubbleChart(\n    document.getElementById(\u0027BubbleChartID34f780e322\u0027)\n    );\n    chart.draw(data,options);\n    \n\n}\n  \n \n// jsDisplayChart\n(function() {\nvar pkgs \u003d window.__gvisPackages \u003d window.__gvisPackages || [];\nvar callbacks \u003d window.__gvisCallbacks \u003d window.__gvisCallbacks || [];\nvar chartid \u003d \"corechart\";\n  \n// Manually see if chartid is in pkgs (not all browsers support Array.indexOf)\nvar i, newPackage \u003d true;\nfor (i \u003d 0; newPackage \u0026\u0026 i \u003c pkgs.length; i++) {\nif (pkgs[i] \u003d\u003d\u003d chartid)\nnewPackage \u003d false;\n}\nif (newPackage)\n  pkgs.push(chartid);\n  \n// Add the drawChart function to the global list of callbacks\ncallbacks.push(drawChartBubbleChartID34f780e322);\n})();\nfunction displayChartBubbleChartID34f780e322() {\n  var pkgs \u003d window.__gvisPackages \u003d window.__gvisPackages || [];\n  var callbacks \u003d window.__gvisCallbacks \u003d window.__gvisCallbacks || [];\n  window.clearTimeout(window.__gvisLoad);\n  // The timeout is set to 100 because otherwise the container div we are\n  // targeting might not be part of the document yet\n  window.__gvisLoad \u003d setTimeout(function() {\n  var pkgCount \u003d pkgs.length;\n  google.load(\"visualization\", \"1\", { packages:pkgs, callback: function() {\n  if (pkgCount !\u003d pkgs.length) {\n  // Race condition where another setTimeout call snuck in after us; if\n  // that call added a package, we must not shift its callback\n  return;\n}\nwhile (callbacks.length \u003e 0)\ncallbacks.shift()();\n} });\n}, 100);\n}\n \n// jsFooter\n\u003c/script\u003e\n \n\u003c!-- jsChart --\u003e  \n\u003cscript type\u003d\"text/javascript\" src\u003d\"https://www.google.com/jsapi?callback\u003ddisplayChartBubbleChartID34f780e322\"\u003e\u003c/script\u003e\n \n\u003c!-- divChart --\u003e\n  \n\u003cdiv id\u003d\"BubbleChartID34f780e322\" \n  style\u003d\"width: 500; height: automatic;\"\u003e\n\u003c/div\u003e\n"
           }
         ]
       },
@@ -778,15 +779,15 @@
       "jobName": "paragraph_1455141578555_-1713165000",
       "id": "20160210-225938_1538591791",
       "dateCreated": "2016-02-10 10:59:38.000",
-      "dateStarted": "2021-06-15 04:12:11.902",
-      "dateFinished": "2021-06-15 04:12:11.965",
+      "dateStarted": "2021-07-31 12:59:31.042",
+      "dateFinished": "2021-07-31 12:59:31.102",
       "status": "FINISHED"
     },
     {
       "title": "GoogleViz: Geo Chart",
       "text": "%r.ir\n\nlibrary(googleVis)\ngeo \u003d gvisGeoChart(Exports, locationvar \u003d \"Country\", colorvar\u003d\"Profit\", options\u003dlist(Projection \u003d \"kavrayskiy-vii\"))\nprint(geo, tag \u003d \u0027chart\u0027)",
       "user": "anonymous",
-      "dateUpdated": "2021-06-15 04:12:12.002",
+      "dateUpdated": "2021-07-31 12:59:31.142",
       "progress": 0,
       "config": {
         "colWidth": 6.0,
@@ -826,7 +827,7 @@
         "msg": [
           {
             "type": "HTML",
-            "data": "\u003c!-- GeoChart generated in R 3.6.3 by googleVis 0.6.10 package --\u003e\n\u003c!-- Tue Jun 15 04:12:12 2021 --\u003e\n\n\n\u003c!-- jsHeader --\u003e\n\u003cscript type\u003d\"text/javascript\"\u003e\n \n// jsData \nfunction gvisDataGeoChartID11351e99d8e () {\nvar data \u003d new google.visualization.DataTable();\nvar datajson \u003d\n[\n [\n\"Germany\",\n3\n],\n[\n\"Brazil\",\n4\n],\n[\n\"United States\",\n5\n],\n[\n\"France\",\n4\n],\n[\n\"Hungary\",\n3\n],\n[\n\"India\",\n2\n],\n[\n\"Iceland\",\n1\n],\n[\n\"Norway\",\n4\n],\n[\n\"Spain\",\n5\n],\n[\n\"Turkey\",\n1\n] \n];\ndata.addColumn(\u0027string\u0027,\u0027Country\u0027);\ndata.addColumn(\u0027number\u0027,\u0027Profit\u0027);\ndata.addRows(datajson);\nreturn(data);\n}\n \n// jsDrawChart\nfunction drawChartGeoChartID11351e99d8e() {\nvar data \u003d gvisDataGeoChartID11351e99d8e();\nvar options \u003d {};\noptions[\"width\"] \u003d 556;\noptions[\"height\"] \u003d 347;\noptions[\"Projection\"] \u003d \"kavrayskiy-vii\";\n\n\n    var chart \u003d new google.visualization.GeoChart(\n    document.getElementById(\u0027GeoChartID11351e99d8e\u0027)\n    );\n    chart.draw(data,options);\n    \n\n}\n  \n \n// jsDisplayChart\n(function() {\nvar pkgs \u003d window.__gvisPackages \u003d window.__gvisPackages || [];\nvar callbacks \u003d window.__gvisCallbacks \u003d window.__gvisCallbacks || [];\nvar chartid \u003d \"geochart\";\n  \n// Manually see if chartid is in pkgs (not all browsers support Array.indexOf)\nvar i, newPackage \u003d true;\nfor (i \u003d 0; newPackage \u0026\u0026 i \u003c pkgs.length; i++) {\nif (pkgs[i] \u003d\u003d\u003d chartid)\nnewPackage \u003d false;\n}\nif (newPackage)\n  pkgs.push(chartid);\n  \n// Add the drawChart function to the global list of callbacks\ncallbacks.push(drawChartGeoChartID11351e99d8e);\n})();\nfunction displayChartGeoChartID11351e99d8e() {\n  var pkgs \u003d window.__gvisPackages \u003d window.__gvisPackages || [];\n  var callbacks \u003d window.__gvisCallbacks \u003d window.__gvisCallbacks || [];\n  window.clearTimeout(window.__gvisLoad);\n  // The timeout is set to 100 because otherwise the container div we are\n  // targeting might not be part of the document yet\n  window.__gvisLoad \u003d setTimeout(function() {\n  var pkgCount \u003d pkgs.length;\n  google.load(\"visualization\", \"1\", { packages:pkgs, callback: function() {\n  if (pkgCount !\u003d pkgs.length) {\n  // Race condition where another setTimeout call snuck in after us; if\n  // that call added a package, we must not shift its callback\n  return;\n}\nwhile (callbacks.length \u003e 0)\ncallbacks.shift()();\n} });\n}, 100);\n}\n \n// jsFooter\n\u003c/script\u003e\n \n\u003c!-- jsChart --\u003e  \n\u003cscript type\u003d\"text/javascript\" src\u003d\"https://www.google.com/jsapi?callback\u003ddisplayChartGeoChartID11351e99d8e\"\u003e\u003c/script\u003e\n \n\u003c!-- divChart --\u003e\n  \n\u003cdiv id\u003d\"GeoChartID11351e99d8e\" \n  style\u003d\"width: 556; height: 347;\"\u003e\n\u003c/div\u003e\n"
+            "data": "\u003c!-- GeoChart generated in R 3.6.3 by googleVis 0.6.10 package --\u003e\n\u003c!-- Sat Jul 31 12:59:31 2021 --\u003e\n\n\n\u003c!-- jsHeader --\u003e\n\u003cscript type\u003d\"text/javascript\"\u003e\n \n// jsData \nfunction gvisDataGeoChartID34f7ca42969 () {\nvar data \u003d new google.visualization.DataTable();\nvar datajson \u003d\n[\n [\n\"Germany\",\n3\n],\n[\n\"Brazil\",\n4\n],\n[\n\"United States\",\n5\n],\n[\n\"France\",\n4\n],\n[\n\"Hungary\",\n3\n],\n[\n\"India\",\n2\n],\n[\n\"Iceland\",\n1\n],\n[\n\"Norway\",\n4\n],\n[\n\"Spain\",\n5\n],\n[\n\"Turkey\",\n1\n] \n];\ndata.addColumn(\u0027string\u0027,\u0027Country\u0027);\ndata.addColumn(\u0027number\u0027,\u0027Profit\u0027);\ndata.addRows(datajson);\nreturn(data);\n}\n \n// jsDrawChart\nfunction drawChartGeoChartID34f7ca42969() {\nvar data \u003d gvisDataGeoChartID34f7ca42969();\nvar options \u003d {};\noptions[\"width\"] \u003d 556;\noptions[\"height\"] \u003d 347;\noptions[\"Projection\"] \u003d \"kavrayskiy-vii\";\n\n\n    var chart \u003d new google.visualization.GeoChart(\n    document.getElementById(\u0027GeoChartID34f7ca42969\u0027)\n    );\n    chart.draw(data,options);\n    \n\n}\n  \n \n// jsDisplayChart\n(function() {\nvar pkgs \u003d window.__gvisPackages \u003d window.__gvisPackages || [];\nvar callbacks \u003d window.__gvisCallbacks \u003d window.__gvisCallbacks || [];\nvar chartid \u003d \"geochart\";\n  \n// Manually see if chartid is in pkgs (not all browsers support Array.indexOf)\nvar i, newPackage \u003d true;\nfor (i \u003d 0; newPackage \u0026\u0026 i \u003c pkgs.length; i++) {\nif (pkgs[i] \u003d\u003d\u003d chartid)\nnewPackage \u003d false;\n}\nif (newPackage)\n  pkgs.push(chartid);\n  \n// Add the drawChart function to the global list of callbacks\ncallbacks.push(drawChartGeoChartID34f7ca42969);\n})();\nfunction displayChartGeoChartID34f7ca42969() {\n  var pkgs \u003d window.__gvisPackages \u003d window.__gvisPackages || [];\n  var callbacks \u003d window.__gvisCallbacks \u003d window.__gvisCallbacks || [];\n  window.clearTimeout(window.__gvisLoad);\n  // The timeout is set to 100 because otherwise the container div we are\n  // targeting might not be part of the document yet\n  window.__gvisLoad \u003d setTimeout(function() {\n  var pkgCount \u003d pkgs.length;\n  google.load(\"visualization\", \"1\", { packages:pkgs, callback: function() {\n  if (pkgCount !\u003d pkgs.length) {\n  // Race condition where another setTimeout call snuck in after us; if\n  // that call added a package, we must not shift its callback\n  return;\n}\nwhile (callbacks.length \u003e 0)\ncallbacks.shift()();\n} });\n}, 100);\n}\n \n// jsFooter\n\u003c/script\u003e\n \n\u003c!-- jsChart --\u003e  \n\u003cscript type\u003d\"text/javascript\" src\u003d\"https://www.google.com/jsapi?callback\u003ddisplayChartGeoChartID34f7ca42969\"\u003e\u003c/script\u003e\n \n\u003c!-- divChart --\u003e\n  \n\u003cdiv id\u003d\"GeoChartID34f7ca42969\" \n  style\u003d\"width: 556; height: 347;\"\u003e\n\u003c/div\u003e\n"
           }
         ]
       },
@@ -836,14 +837,14 @@
       "jobName": "paragraph_1455140544963_1486338978",
       "id": "20160210-224224_735421242",
       "dateCreated": "2016-02-10 10:42:24.000",
-      "dateStarted": "2021-06-15 04:12:12.014",
-      "dateFinished": "2021-06-15 04:12:12.081",
+      "dateStarted": "2021-07-31 12:59:31.147",
+      "dateFinished": "2021-07-31 12:59:31.205",
       "status": "FINISHED"
     },
     {
       "text": "%md\n\n## Congratulations, it\u0027s done.\n### You can create your own notebook in \u0027Notebook\u0027 menu. Good luck!",
       "user": "anonymous",
-      "dateUpdated": "2021-06-15 04:12:12.115",
+      "dateUpdated": "2021-07-31 12:59:31.247",
       "progress": 0,
       "config": {
         "colWidth": 12.0,
@@ -880,8 +881,8 @@
       "jobName": "paragraph_1485626988585_-946362813",
       "id": "20170129-030948_1379298104",
       "dateCreated": "2017-01-29 03:09:48.000",
-      "dateStarted": "2021-06-15 04:12:12.121",
-      "dateFinished": "2021-06-15 04:12:12.133",
+      "dateStarted": "2021-07-31 12:59:31.252",
+      "dateFinished": "2021-07-31 12:59:31.260",
       "status": "FINISHED"
     }
   ],
