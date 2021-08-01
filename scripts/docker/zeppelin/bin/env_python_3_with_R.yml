@@ -21,6 +21,7 @@ dependencies:
   - intake-xarray
   - altair
   - vega_datasets
+  - plotly
   - pip
   - r-base=3
   - r-data.table
