@@ -18,6 +18,13 @@
         "description": "R binary executable path",
         "type": "string"
       },
+      "zeppelin.R.maxResult": {
+        "envName": null,
+        "propertyName": "zeppelin.R.maxResult",
+        "defaultValue": "1000",
+        "description": "Max number of dataframe rows to display.",
+        "type": "number"
+      },
       "zeppelin.R.image.width": {
         "envName": "ZEPPELIN_R_IMAGE_WIDTH",
         "propertyName": "zeppelin.R.image.width",

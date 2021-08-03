@@ -48,6 +48,7 @@ import java.util.Properties;
 public class IRInterpreter extends JupyterKernelInterpreter {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(IRInterpreter.class);
+  private static RZeppelinContext z;
 
   // It is used to store shiny related code (ui.R & server.R)
   // only one shiny app can be hosted in one R session.
@@ -101,6 +102,13 @@ public class IRInterpreter extends JupyterKernelInterpreter {
           throw new InterpreterException("Fail to init SparkRBackend", e);
         }
         sparkRBackend.start();
+      }
+    }
+
+    synchronized (IRInterpreter.class) {
+      if (this.z == null) {
+        z = new RZeppelinContext(getInterpreterGroup().getInterpreterHookRegistry(),
+                Integer.parseInt(getProperty("zeppelin.R.maxResult", "1000")));
       }
     }
 
@@ -196,5 +204,9 @@ public class IRInterpreter extends JupyterKernelInterpreter {
     } finally {
       getKernelProcessLauncher().setRedirectedContext(null);
     }
+  }
+
+  public static RZeppelinContext getRZeppelinContext() {
+    return z;
   }
 }

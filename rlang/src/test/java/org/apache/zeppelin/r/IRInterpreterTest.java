@@ -19,11 +19,20 @@ package org.apache.zeppelin.r;
 
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterOutput;
+import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.InterpreterResultMessage;
 import org.apache.zeppelin.jupyter.IRKernelTest;
+import org.junit.Test;
 
+import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Properties;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 
 public class IRInterpreterTest extends IRKernelTest {
@@ -42,5 +51,43 @@ public class IRInterpreterTest extends IRKernelTest {
             .setLocalProperties(new HashMap<>())
             .build();
     return context;
+  }
+
+  @Test
+  public void testZShow() throws InterpreterException, IOException {
+    InterpreterContext context = getInterpreterContext();
+    InterpreterResult result = interpreter.interpret(
+            "df=data.frame(country=c(\"US\", \"GB\", \"BR\"),\n" +
+            "val1=c(10,13,14),\n" +
+            "val2=c(23,12,32))", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+
+    context = getInterpreterContext();
+    result = interpreter.interpret("z.show(df)", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    List<InterpreterResultMessage> resultMessages = context.out.toInterpreterResultMessage();
+    assertEquals(1, resultMessages.size());
+    assertEquals(resultMessages.toString(),
+            InterpreterResult.Type.TABLE, resultMessages.get(0).getType());
+    assertEquals("country\tval1\tval2\n" +
+                    "3\t10\t23\n" +
+                    "2\t13\t12\n" +
+                    "1\t14\t32\n",
+            resultMessages.get(0).getData());
+
+    context = getInterpreterContext();
+    result = interpreter.interpret("z.show(df, maxRows=1)", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    resultMessages = context.out.toInterpreterResultMessage();
+    assertEquals(2, resultMessages.size());
+    assertEquals(resultMessages.toString(),
+            InterpreterResult.Type.TABLE, resultMessages.get(0).getType());
+    assertEquals("country\tval1\tval2\n" +
+                    "3\t10\t23\n",
+            resultMessages.get(0).getData());
+    assertEquals(resultMessages.toString(),
+            InterpreterResult.Type.HTML, resultMessages.get(1).getType());
+    assertEquals("<font color=red>Results are limited by 1 rows.</font>\n",
+            resultMessages.get(1).getData());
   }
 }

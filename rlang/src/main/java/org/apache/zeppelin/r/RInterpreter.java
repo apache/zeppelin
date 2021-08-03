@@ -98,7 +98,7 @@ public class RInterpreter extends AbstractInterpreter {
     synchronized (RInterpreter.class) {
       if (this.z == null) {
         z = new RZeppelinContext(getInterpreterGroup().getInterpreterHookRegistry(),
-                Integer.parseInt(getProperty("zeppelin.r.maxResult", "1000")));
+                Integer.parseInt(getProperty("zeppelin.R.maxResult", "1000")));
       }
     }
     this.renderOptions = getProperty("zeppelin.R.render.options",
