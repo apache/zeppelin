@@ -3,7 +3,7 @@
 permalink: /:categories/:year/:month/:day/:title
 
 exclude: [".rvmrc", ".rbenv-version", "README.md", "Rakefile", "changelog.md", "vendor", "node_modules", "scss"]
-pygments: true
+highlighter: pygments
 markdown: redcarpet
 redcarpet:
   extensions: ["tables"]
