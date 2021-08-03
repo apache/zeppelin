@@ -30,6 +30,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.StringJoiner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -106,7 +107,6 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
               " to false if you want to use other modes.");
     }
 
-    StringBuilder sparkConfBuilder = new StringBuilder();
     if (isYarnMode() && getDeployMode().equals("cluster")) {
       if (sparkProperties.containsKey("spark.files")) {
         sparkProperties.put("spark.files", sparkProperties.getProperty("spark.files") + "," +
@@ -173,22 +173,25 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
       }
     }
 
+    StringJoiner sparkConfSJ = new StringJoiner("|");
     if (context.getOption().isUserImpersonate() && zConf.getZeppelinImpersonateSparkProxyUser()) {
-      sparkConfBuilder.append(" --proxy-user " + context.getUserName());
+      sparkConfSJ.add("--proxy-user");
+      sparkConfSJ.add(context.getUserName());
       sparkProperties.remove("spark.yarn.keytab");
       sparkProperties.remove("spark.yarn.principal");
     }
 
     for (String name : sparkProperties.stringPropertyNames()) {
-      sparkConfBuilder.append(" --conf " + name + "=" + sparkProperties.getProperty(name));
+      sparkConfSJ.add("--conf");
+      sparkConfSJ.add(name + "=" + sparkProperties.getProperty(name) + "");
     }
 
-    env.put("ZEPPELIN_SPARK_CONF", sparkConfBuilder.toString());
+    env.put("ZEPPELIN_SPARK_CONF", sparkConfSJ.toString());
 
     // set these env in the order of
     // 1. interpreter-setting
     // 2. zeppelin-env.sh
-    // It is encouraged to set env in interpreter setting, but just for backward compatability,
+    // It is encouraged to set env in interpreter setting, but just for backward compatibility,
     // we also fallback to zeppelin-env.sh if it is not specified in interpreter setting.
     for (String envName : new String[]{"SPARK_HOME", "SPARK_CONF_DIR", "HADOOP_CONF_DIR"})  {
       String envValue = getEnv(envName);
