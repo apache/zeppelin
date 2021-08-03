@@ -37,6 +37,7 @@ if (is.null(authSecret) || authSecret == '') {
 
 # scStartTime is needed by R/pkg/R/sparkR.R
 assign(".scStartTime", as.integer(Sys.time()), envir = SparkR:::.sparkREnv)
+assign(".maxRows", as.integer())
 
 if (isSparkSupported == "true") {
   # setup spark env
@@ -115,15 +116,18 @@ z.angularUnbind <- function(name, value) {
   SparkR:::callJMethod(.zeppelinContext, "angularUnbind", name)
 }
 
-z.show <- function(data) {
+z.show <- function(data, maxRows=1000) {
   if (is.data.frame(data)) {
     resultString = c(paste(colnames(data),  collapse ="\t"))
-    for (row in 1:nrow(data)) {
+    for (row in 1: min(nrow(data), maxRows)) {
       rowString <- paste(data[row,], collapse ="\t")
       resultString = c(resultString, rowString)
     }
     a=paste(resultString, collapse="\n")
-    cat("\n%table ", a, "\n%text ", sep="")
+    cat("\n%table ", a, "\n\n%text ", sep="")
+    if (nrow(data) > maxRows) {
+      cat("\n%html <font color=red>Results are limited by ", maxRows, " rows.</font>", "\n%text ", sep="")
+    }
   } else {
     cat(data)
   }
