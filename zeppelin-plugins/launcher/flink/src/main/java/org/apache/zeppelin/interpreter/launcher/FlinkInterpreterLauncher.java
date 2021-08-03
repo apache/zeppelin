@@ -31,6 +31,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.StringJoiner;
 import java.util.stream.Collectors;
 
 public class FlinkInterpreterLauncher extends StandardInterpreterLauncher {
@@ -173,20 +174,20 @@ public class FlinkInterpreterLauncher extends StandardInterpreterLauncher {
 
     envs.put("ZEPPELIN_FLINK_YARN_APPLICATION", "true");
 
-    StringBuilder flinkYarnApplicationConfBuilder = new StringBuilder();
+    StringJoiner flinkConfStringJoiner = new StringJoiner("|");
     // set yarn.ship-files
     List<String> yarnShipFiles = getYarnShipFiles(context);
     if (!yarnShipFiles.isEmpty()) {
-      flinkYarnApplicationConfBuilder.append(
-              " -D yarn.ship-files=" + yarnShipFiles.stream().collect(Collectors.joining(";")));
+      flinkConfStringJoiner.add("-D");
+      flinkConfStringJoiner.add("yarn.ship-files=" +
+              yarnShipFiles.stream().collect(Collectors.joining(";")));
     }
 
     // set yarn.application.name
     String yarnAppName = context.getProperties().getProperty("flink.yarn.appName");
     if (StringUtils.isNotBlank(yarnAppName)) {
-      // flink run command can not contains whitespace, so replace it with _
-      flinkYarnApplicationConfBuilder.append(
-              " -D yarn.application.name=" + yarnAppName.replaceAll(" ", "_") + "");
+      flinkConfStringJoiner.add("-D");
+      flinkConfStringJoiner.add("yarn.application.name=" + yarnAppName);
     }
 
     // add other yarn and python configuration.
@@ -199,11 +200,12 @@ public class FlinkInterpreterLauncher extends StandardInterpreterLauncher {
           LOGGER.warn("flink configuration key {} is skipped because it contains white space",
                   key);
         } else {
-          flinkYarnApplicationConfBuilder.append(" -D " + key + "=" + value);
+          flinkConfStringJoiner.add("-D");
+          flinkConfStringJoiner.add(key + "=" + value);
         }
       }
     }
-    envs.put("ZEPPELIN_FLINK_YARN_APPLICATION_CONF", flinkYarnApplicationConfBuilder.toString());
+    envs.put("ZEPPELIN_FLINK_YARN_APPLICATION_CONF", flinkConfStringJoiner.toString());
   }
 
   private List<String> getYarnShipFiles(InterpreterLaunchContext context) throws IOException {

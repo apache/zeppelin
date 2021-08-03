@@ -246,6 +246,8 @@ public abstract class SparkIntegrationTest {
     sparkInterpreterSetting.setProperty("zeppelin.spark.deprecatedMsg.show", "false");
     sparkInterpreterSetting.setProperty("spark.user.name", "#{user}");
     sparkInterpreterSetting.setProperty("zeppelin.spark.run.asLoginUser", "false");
+    // parameters with whitespace
+    sparkInterpreterSetting.setProperty("spark.app.name", "hello spark");
 
     try {
       setUpSparkInterpreterSetting(sparkInterpreterSetting);
@@ -255,6 +257,7 @@ public abstract class SparkIntegrationTest {
       GetApplicationsRequest request = GetApplicationsRequest.newInstance(EnumSet.of(YarnApplicationState.RUNNING));
       GetApplicationsResponse response = hadoopCluster.getYarnCluster().getResourceManager().getClientRMService().getApplications(request);
       assertEquals(1, response.getApplicationList().size());
+      assertEquals("hello spark", response.getApplicationList().get(0).getName());
 
     } finally {
       interpreterSettingManager.close();
