@@ -52,7 +52,7 @@ if (isSparkSupported == "true") {
   assign("sqlContext", get(".sqlc", envir = SparkR:::.sparkREnv), envir = .GlobalEnv)
   assign(".zeppelinContext", SparkR:::callJStatic("org.apache.zeppelin.spark.ZeppelinRContext", "getZeppelinContext"), envir = .GlobalEnv)
 } else {
-  assign(".zeppelinContext", SparkR:::callJStatic("org.apache.zeppelin.r.RInterpreter", "getRZeppelinContext"), envir = .GlobalEnv)
+  assign(".zeppelinContext", SparkR:::callJStatic("org.apache.zeppelin.r.IRInterpreter", "getRZeppelinContext"), envir = .GlobalEnv)
 }
 
 z.put <- function(name, object) {
@@ -116,7 +116,7 @@ z.angularUnbind <- function(name, value) {
   SparkR:::callJMethod(.zeppelinContext, "angularUnbind", name)
 }
 
-z.show <- function(data, maxRows=1000) {
+z.show <- function(data, maxRows=SparkR:::callJMethod(.zeppelinContext, "getMaxResult")) {
   if (is.data.frame(data)) {
     resultString = c(paste(colnames(data),  collapse ="\t"))
     for (row in 1: min(nrow(data), maxRows)) {
