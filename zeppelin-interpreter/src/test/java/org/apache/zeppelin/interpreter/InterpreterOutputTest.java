@@ -164,6 +164,16 @@ public class InterpreterOutputTest implements InterpreterOutputListener {
   }
 
   @Test
+  public void testMixTableText() throws IOException {
+    out.write("%table col1\tcol2\n\n%text val1".getBytes());
+    assertEquals(InterpreterResult.Type.TABLE, out.getOutputAt(0).getType());
+    assertEquals("col1\tcol2\n", new String(out.getOutputAt(0).toByteArray()));
+    out.flush();
+    assertEquals(InterpreterResult.Type.TEXT, out.getOutputAt(1).getType());
+    assertEquals("val1", new String(out.getOutputAt(1).toByteArray()));
+  }
+
+  @Test
   public void testTruncate() throws IOException {
     // output is truncated after the new line
     InterpreterOutput.LIMIT = 3;

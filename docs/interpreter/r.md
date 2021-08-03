@@ -162,7 +162,11 @@ Besides R base plotting, you can use other visualization library, e.g. `ggplot` 
 
 <img class="img-responsive" src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/r_googlevis.png" width="800px"/>
 
+You can also use `z.show()` in `%r.ir` to visualize the dataframe, e.g.
 
+<img class="img-responsive" src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/r_zshow.png" width="800px"/>
+
+  
 ## Make Shiny App in Zeppelin
 
 [Shiny](https://shiny.rstudio.com/tutorial/) is an R package that makes it easy to build interactive web applications (apps) straight from R.

@@ -37,6 +37,7 @@ if (is.null(authSecret) || authSecret == '') {
 
 # scStartTime is needed by R/pkg/R/sparkR.R
 assign(".scStartTime", as.integer(Sys.time()), envir = SparkR:::.sparkREnv)
+assign(".maxRows", as.integer())
 
 if (isSparkSupported == "true") {
   # setup spark env
@@ -51,7 +52,7 @@ if (isSparkSupported == "true") {
   assign("sqlContext", get(".sqlc", envir = SparkR:::.sparkREnv), envir = .GlobalEnv)
   assign(".zeppelinContext", SparkR:::callJStatic("org.apache.zeppelin.spark.ZeppelinRContext", "getZeppelinContext"), envir = .GlobalEnv)
 } else {
-  assign(".zeppelinContext", SparkR:::callJStatic("org.apache.zeppelin.r.RInterpreter", "getRZeppelinContext"), envir = .GlobalEnv)
+  assign(".zeppelinContext", SparkR:::callJStatic("org.apache.zeppelin.r.IRInterpreter", "getRZeppelinContext"), envir = .GlobalEnv)
 }
 
 z.put <- function(name, object) {
@@ -113,4 +114,21 @@ z.angularBind <- function(name, value) {
 
 z.angularUnbind <- function(name, value) {
   SparkR:::callJMethod(.zeppelinContext, "angularUnbind", name)
+}
+
+z.show <- function(data, maxRows=SparkR:::callJMethod(.zeppelinContext, "getMaxResult")) {
+  if (is.data.frame(data)) {
+    resultString = c(paste(colnames(data),  collapse ="\t"))
+    for (row in 1: min(nrow(data), maxRows)) {
+      rowString <- paste(data[row,], collapse ="\t")
+      resultString = c(resultString, rowString)
+    }
+    a=paste(resultString, collapse="\n")
+    cat("\n%table ", a, "\n\n%text ", sep="")
+    if (nrow(data) > maxRows) {
+      cat("\n%html <font color=red>Results are limited by ", maxRows, " rows.</font>", "\n%text ", sep="")
+    }
+  } else {
+    cat(data)
+  }
 }
