@@ -30,6 +30,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.StringJoiner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -106,7 +107,6 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
               " to false if you want to use other modes.");
     }
 
-    List<String> sparkConfList = new ArrayList<>();
     if (isYarnMode() && getDeployMode().equals("cluster")) {
       if (sparkProperties.containsKey("spark.files")) {
         sparkProperties.put("spark.files", sparkProperties.getProperty("spark.files") + "," +
@@ -173,20 +173,20 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
       }
     }
 
+    StringJoiner sparkConfSJ = new StringJoiner("|");
     if (context.getOption().isUserImpersonate() && zConf.getZeppelinImpersonateSparkProxyUser()) {
-      sparkConfList.add("--proxy-user");
-      sparkConfList.add(context.getUserName());
+      sparkConfSJ.add("--proxy-user");
+      sparkConfSJ.add(context.getUserName());
       sparkProperties.remove("spark.yarn.keytab");
       sparkProperties.remove("spark.yarn.principal");
     }
 
     for (String name : sparkProperties.stringPropertyNames()) {
-      sparkConfList.add("--conf");
-      sparkConfList.add(name + "=" + sparkProperties.getProperty(name) + "");
+      sparkConfSJ.add("--conf");
+      sparkConfSJ.add(name + "=" + sparkProperties.getProperty(name) + "");
     }
 
-    String sparkConfString = StringUtils.join(sparkConfList, "|");
-    env.put("ZEPPELIN_SPARK_CONF", sparkConfString);
+    env.put("ZEPPELIN_SPARK_CONF", sparkConfSJ.toString());
 
     // set these env in the order of
     // 1. interpreter-setting
