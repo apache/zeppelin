@@ -85,8 +85,8 @@ public class NoteManager {
         {
           try {
             addOrUpdateNoteNode(new NoteInfo(entry.getKey(), entry.getValue()));
-          } catch (IOException e) {
-            LOGGER.warn(e.getMessage());
+          } catch (Throwable e) {
+            LOGGER.warn("addOrUpdateNoteNode Fail: {}", entry.getKey() + " - " + e.getMessage(), e);
           }
         });
   }
