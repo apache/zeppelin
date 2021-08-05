@@ -77,7 +77,7 @@ public abstract class SqlInterpreterTest {
   protected FlinkInterpreter flinkInterpreter;
   protected IPyFlinkInterpreter iPyFlinkInterpreter;
   protected PyFlinkInterpreter pyFlinkInterpreter;
-  protected FlinkSqlInterrpeter sqlInterpreter;
+  protected FlinkSqlInterpreter sqlInterpreter;
 
   private AngularObjectRegistry angularObjectRegistry;
 
@@ -150,7 +150,7 @@ public abstract class SqlInterpreterTest {
     }
   }
 
-  protected abstract FlinkSqlInterrpeter createFlinkSqlInterpreter(Properties properties);
+  protected abstract FlinkSqlInterpreter createFlinkSqlInterpreter(Properties properties);
 
   @Test
   public void testDatabases() throws InterpreterException, IOException {

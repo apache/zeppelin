@@ -27,7 +27,6 @@ import org.apache.zeppelin.interpreter.InterpreterResultMessage;
 import org.junit.Test;
 
 import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.List;
@@ -40,7 +39,7 @@ import static org.junit.Assert.assertEquals;
 public class FlinkStreamSqlInterpreterTest extends SqlInterpreterTest {
 
   @Override
-  protected FlinkSqlInterrpeter createFlinkSqlInterpreter(Properties properties) {
+  protected FlinkSqlInterpreter createFlinkSqlInterpreter(Properties properties) {
     return new FlinkStreamSqlInterpreter(properties);
   }
 
