@@ -24,7 +24,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.flink.api.common.JobExecutionResult;
 import org.apache.flink.configuration.ConfigOption;
-import org.apache.flink.configuration.Configuration;
 import org.apache.flink.core.execution.JobClient;
 import org.apache.flink.core.execution.JobListener;
 import org.apache.flink.table.api.TableEnvironment;
@@ -51,9 +50,9 @@ import java.util.Properties;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
 
-public abstract class FlinkSqlInterrpeter extends AbstractInterpreter {
+public abstract class FlinkSqlInterpreter extends AbstractInterpreter {
 
-  protected static final Logger LOGGER = LoggerFactory.getLogger(FlinkSqlInterrpeter.class);
+  protected static final Logger LOGGER = LoggerFactory.getLogger(FlinkSqlInterpreter.class);
 
   protected FlinkInterpreter flinkInterpreter;
   protected TableEnvironment tbenv;
@@ -65,7 +64,7 @@ public abstract class FlinkSqlInterrpeter extends AbstractInterpreter {
   // https://ci.apache.org/projects/flink/flink-docs-release-1.10/dev/table/config.html
   private Map<String, ConfigOption> tableConfigOptions;
 
-  public FlinkSqlInterrpeter(Properties properties) {
+  public FlinkSqlInterpreter(Properties properties) {
     super(properties);
   }
 

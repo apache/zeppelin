@@ -27,7 +27,7 @@ import org.apache.zeppelin.scheduler.SchedulerFactory;
 import java.io.IOException;
 import java.util.Properties;
 
-public class FlinkBatchSqlInterpreter extends FlinkSqlInterrpeter {
+public class FlinkBatchSqlInterpreter extends FlinkSqlInterpreter {
 
   private ZeppelinContext z;
 
