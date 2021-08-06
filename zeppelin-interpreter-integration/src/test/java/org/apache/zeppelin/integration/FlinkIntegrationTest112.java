@@ -29,8 +29,8 @@ public class FlinkIntegrationTest112 extends FlinkIntegrationTest {
   @Parameterized.Parameters
   public static List<Object[]> data() {
     return Arrays.asList(new Object[][]{
-            {"1.12.0", "2.11"},
-            {"1.12.0", "2.12"}
+            {"1.12.4", "2.11"},
+            {"1.12.4", "2.12"}
     });
   }
 
