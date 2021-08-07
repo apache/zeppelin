@@ -30,12 +30,11 @@ import java.util.Properties;
 /**
  * SQL over Pandas DataFrame interpreter for %python group
  * <p>
- * Match experience of %sparpk.sql over Spark DataFrame
+ * Match experience of %spark.sql over Spark DataFrame
  */
 public class PythonInterpreterPandasSql extends Interpreter {
-  private static final Logger LOG = LoggerFactory.getLogger(PythonInterpreterPandasSql.class);
-
-  private String SQL_BOOTSTRAP_FILE_PY = "python/bootstrap_sql.py";
+  private static final Logger LOGGER = LoggerFactory.getLogger(PythonInterpreterPandasSql.class);
+  private static String SQL_BOOTSTRAP_FILE_PY = "python/bootstrap_sql.py";
 
   private PythonInterpreter pythonInterpreter;
 
@@ -45,20 +44,19 @@ public class PythonInterpreterPandasSql extends Interpreter {
 
   @Override
   public void open() throws InterpreterException {
-    LOG.info("Open Python SQL interpreter instance: {}", this.toString());
-
+    LOGGER.info("Open Python SQL interpreter instance: PythonInterpreterPandasSql");
     try {
-      LOG.info("Bootstrap {} interpreter with {}", this.toString(), SQL_BOOTSTRAP_FILE_PY);
+      LOGGER.info("Bootstrap PythonInterpreterPandasSql interpreter with {}", SQL_BOOTSTRAP_FILE_PY);
       this.pythonInterpreter = getInterpreterInTheSameSessionByClassName(PythonInterpreter.class);
       this.pythonInterpreter.bootstrapInterpreter(SQL_BOOTSTRAP_FILE_PY);
     } catch (IOException e) {
-      LOG.error("Can't execute " + SQL_BOOTSTRAP_FILE_PY + " to import SQL dependencies", e);
+      LOGGER.error("Can't execute " + SQL_BOOTSTRAP_FILE_PY + " to import SQL dependencies", e);
     }
   }
 
   @Override
   public void close() throws InterpreterException {
-    LOG.info("Close Python SQL interpreter instance: {}", this.toString());
+    LOGGER.info("Close Python SQL interpreter instance: {}", this.toString());
     if (pythonInterpreter != null) {
       pythonInterpreter.close();
     }
@@ -67,14 +65,14 @@ public class PythonInterpreterPandasSql extends Interpreter {
   @Override
   public InterpreterResult interpret(String st, InterpreterContext context)
       throws InterpreterException {
-    LOG.info("Running SQL query: '{}' over Pandas DataFrame", st);
+    LOGGER.info("Running SQL query: '{}' over Pandas DataFrame", st);
     return pythonInterpreter.interpret(
-        "__zeppelin__.show(pysqldf('" + st + "'))\n__zeppelin__._displayhook()", context);
+        "z.show(pysqldf('" + st + "'))", context);
   }
 
   @Override
-  public void cancel(InterpreterContext context) {
-
+  public void cancel(InterpreterContext context) throws InterpreterException {
+    pythonInterpreter.cancel(context);
   }
 
   @Override
@@ -83,8 +81,8 @@ public class PythonInterpreterPandasSql extends Interpreter {
   }
 
   @Override
-  public int getProgress(InterpreterContext context) {
-    return 0;
+  public int getProgress(InterpreterContext context) throws InterpreterException {
+    return pythonInterpreter.getProgress(context);
   }
 
 }

@@ -563,13 +563,23 @@ public class PythonInterpreter extends Interpreter {
     String bootstrapCode =
         IOUtils.toString(getClass().getClassLoader().getResourceAsStream(resourceName));
     try {
-      // Add hook explicitly, otherwise python will fail to execute the statement
-      InterpreterResult result = interpret(bootstrapCode + "\n" + "__zeppelin__._displayhook()",
-          InterpreterContext.get());
-      if (result.code() != Code.SUCCESS) {
-        throw new IOException("Fail to run bootstrap script: " + resourceName + "\n" + result);
+      if (iPythonInterpreter != null) {
+        InterpreterResult result = iPythonInterpreter.interpret(bootstrapCode,
+                InterpreterContext.get());
+        if (result.code() != Code.SUCCESS) {
+          throw new IOException("Fail to run bootstrap script: " + resourceName + "\n" + result);
+        } else {
+          LOGGER.debug("Bootstrap python successfully.");
+        }
       } else {
-        LOGGER.debug("Bootstrap python successfully.");
+        // Add hook explicitly, otherwise python will fail to execute the statement
+        InterpreterResult result = interpret(bootstrapCode + "\n" + "__zeppelin__._displayhook()",
+                InterpreterContext.get());
+        if (result.code() != Code.SUCCESS) {
+          throw new IOException("Fail to run bootstrap script: " + resourceName + "\n" + result);
+        } else {
+          LOGGER.debug("Bootstrap python successfully.");
+        }
       }
     } catch (InterpreterException e) {
       throw new IOException(e);
