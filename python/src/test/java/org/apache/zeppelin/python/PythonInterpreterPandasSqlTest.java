@@ -59,7 +59,8 @@ import static org.junit.Assert.assertTrue;
 @RunWith(value = Parameterized.class)
 public class PythonInterpreterPandasSqlTest {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(PythonInterpreterPandasSqlTest.class);
+  private static final Logger LOGGER =
+          LoggerFactory.getLogger(PythonInterpreterPandasSqlTest.class);
 
   @Parameterized.Parameters
   public static List<Object[]> data() {
@@ -216,7 +217,8 @@ public class PythonInterpreterPandasSqlTest {
             "index = pd.Index([10, 11, 12, 13], name='index_name')", context);
     pythonInterpreter.interpret(
             "d1 = {1 : [np.nan, 1, 2, 3], 'two' : [3., 4., 5., 6.7]}", context);
-    InterpreterResult ret = pythonInterpreter.interpret("df1 = pd.DataFrame(d1, index=index)", context);
+    InterpreterResult ret = pythonInterpreter.interpret(
+            "df1 = pd.DataFrame(d1, index=index)", context);
     assertEquals(ret.message().toString(), InterpreterResult.Code.SUCCESS, ret.code());
 
     // when
