@@ -36,19 +36,60 @@ Zeppelin supports python language which is very popular in data analytics and ma
   <tr>
     <td>%python</td>
     <td>PythonInterpreter</td>
-    <td>Vanilla python interpreter, with least dependencies, only python environment installed is required</td>
+    <td>Vanilla python interpreter, with least dependencies, only python environment installed is required, <code>%python</code> will use IPython if its prerequisites are met</td>
   </tr>
   <tr>
     <td>%python.ipython</td>
     <td>IPythonInterpreter</td>
-    <td>Provide more fancy python runtime via IPython, almost the same experience like Jupyter. It requires more things, but is the recommended interpreter for using python in Zeppelin, see below</td>
+    <td>Provide more fancy python runtime via IPython, almost the same experience like Jupyter. It requires more things, but is the recommended interpreter for using python in Zeppelin, see below for more details</td>
   </tr>
   <tr>
     <td>%python.sql</td>
     <td>PythonInterpreterPandasSql</td>
-    <td>Provide sql capability to query data in Pandas DataFrame via <code>pandasql</code></td>
+    <td>Provide sql capability to query data in Pandas DataFrame via <code>pandasql</code>, it can access dataframes in <code>%python</code></td>
   </tr>
 </table>
+
+## Main Features
+
+<table class="table-configuration">
+  <tr>
+    <th>Feature</th>
+    <th>Description</th>
+  </tr>
+  <tr>
+    <td>Support vanilla Python and IPython</td>
+    <td>Vanilla Python only requires python install, IPython provides almost the same user experience like Jupyter, like inline plotting, code completion, magic methods and etc.</td>
+  </tr>
+  <tr>
+    <td>Built-in ZeppelinContext Support</td>
+    <td>You can use ZeppelinContext to visualize pandas dataframe</td>
+  </tr>
+  <tr>
+    <td>Support SQL on Pandas dataframe</td>
+    <td>You can use Sql to query dataframe which is defined in Python</td>
+  </tr>
+  <tr>
+    <td>Run Python in yarn cluster with customized Python runtime</td>
+    <td>You can run Python in yarn cluster with customized Python runtime without affecting each other</td>
+  </tr>
+</table>
+
+## Play Python in Zeppelin docker
+
+For beginner, we would suggest you to play Python in Zeppelin docker first.
+In the Zeppelin docker image, we have already installed
+miniconda and lots of [useful python libraries](https://github.com/apache/zeppelin/blob/branch-0.10/scripts/docker/zeppelin/bin/env_python_3_with_R.yml)
+including IPython's prerequisites, so `%python` would use IPython.
+
+Without any extra configuration, you can run most of tutorial notes under folder `Python Tutorial` directly.
+
+
+```bash
+docker run -u $(id -u) -p 8080:8080 --rm --name zeppelin apache/zeppelin:0.10.0
+```
+
+After running the above command, you can open `http://localhost:8080` to play Python in Zeppelin. 
 
 
 ## Configuration
@@ -80,12 +121,13 @@ Zeppelin supports python language which is very popular in data analytics and ma
   <tr>
     <td>zeppelin.yarn.dist.archives</td>
     <td></td>
-    <td>Comma separated list of archives to be extracted into the working directory of interpreter. e.g. You can specify conda pack archive files via this property in python's yarn mode. It could be either files in local filesystem or files on hadoop compatible file systems</td>
+    <td>Used for ipython in yarn mode. It is a general zeppelin interpreter configuration, not python specific. For Python interpreter it is used 
+        to specify the conda env archive file which could be on local filesystem or on hadoop compatible file system.</td>
   </tr>
   <tr>
     <td>zeppelin.interpreter.conda.env.name</td>
     <td></td>
-    <td>conda environment name, aka the folder name in the working directory of interpreter</td>
+    <td>Used for ipython in yarn mode. conda environment name, aka the folder name in the working directory of interpreter yarn container.</td>
   </tr>
 </table>
 
@@ -143,29 +185,32 @@ z.show(plt, height='150px', fmt='svg')
 <img class="img-responsive" src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/pythonMatplotlib.png" />
 
 
-
 ## IPython Interpreter (`%python.ipython`) (recommended)
 
-IPython is more powerful than the vanilla python interpreter with extra functionality. You can use IPython with Python2 or Python3 which depends on which python you set in `zeppelin.python`.
+IPython is more powerful than the vanilla python interpreter with extra functionality. This is what we recommend you to use instead of vanilla python interpreter. You can use IPython with Python2 or Python3 which depends on which python you set in `zeppelin.python`.
 
-For non-anaconda environment 
+### Prerequisites
 
-   **Prerequisites**
-   
-    - Jupyter `pip install jupyter`
-    - grpcio `pip install grpcio`
-    - protobuf `pip install protobuf`
+* For non-anaconda environment, You need to install the following packages
 
-For anaconda environment (`zeppelin.python` points to the python under anaconda)
+```
+pip install jupyter
+pip install grpcio
+pip install protobuf
+```
 
-   **Prerequisites**
-   
-    - grpcio `pip install grpcio`
-    - protobuf `pip install protobuf`
+* For anaconda environment (`zeppelin.python` points to the python under anaconda)
+ 
+```
+pip install grpcio
+pip install protobuf
+```
+
+Zeppelin will check the above prerequisites when using `%python`, if IPython prerequisites are met, `%python` would use IPython interpreter, 
+otherwise it would use vanilla Python interpreter in `%python`.
 
 In addition to all the basic functions of the vanilla python interpreter, you can use all the IPython advanced features as you use it in Jupyter Notebook.
-
-e.g. 
+Take a look at tutorial note `Python Tutorial/1. IPython Basic` and  `Python Tutorial/2. IPython Visualization Tutorial` for how to use IPython in Zeppelin.
 
 ### Use IPython magic
 
@@ -193,65 +238,74 @@ plt.figure()
 plt.plot(data)
 ```
 
+### Run shell command
+
+```
+%python.ipython
+
+!pip install pandas
+```
+
 ### Colored text output
 
-<img class="img-responsive" src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/ipython_error.png" />
+<img class="img-responsive" src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/ipython_error.png" width="80%"/>
 
 ### More types of visualization
-e.g. IPython supports hvplot
+
+e.g. You can use hvplot in the same way as in Jupyter, Take a look at tutorial note `Python Tutorial/2. IPython Visualization Tutorial` for more visualization examples.
+
 <img class="img-responsive" src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/ipython_hvplot.png" />
 
+
 ### Better code completion
+
+Type `tab` can give you all the completion candidates just like in Jupyter.
+
 <img class="img-responsive" src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/ipython_code_completion.png" />
 
 
-By default, Zeppelin would use IPython in `%python` if IPython prerequisites are meet, otherwise it would use vanilla Python interpreter in `%python`.
-If you don't want to use IPython via `%python`, then you can set `zeppelin.python.useIPython` as `false` in interpreter setting.
+## Pandas Integration
 
-
-## Pandas integration
 Apache Zeppelin [Table Display System](../usage/display_system/basic.html#table) provides built-in data visualization capabilities. 
-Python interpreter leverages it to visualize Pandas DataFrames though similar `z.show()` API, same as with [Matplotlib integration](#matplotlib-integration).
+Python interpreter leverages it to visualize Pandas DataFrames via `z.show()` API.
 
-Example:
+For example:
 
-```python
-%python
+<img class="img-responsive" src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/python_zshow_df.png" />
 
-import pandas as pd
-rates = pd.read_csv("bank.csv", sep=";")
-z.show(rates)
-```
+By default, `z.show` only display 1000 rows, you can configure `zeppelin.python.maxResult` to adjust the max number of rows.
 
 ## SQL over Pandas DataFrames
 
 There is a convenience `%python.sql` interpreter that matches Apache Spark experience in Zeppelin and 
 enables usage of SQL language to query [Pandas DataFrames](http://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.html) and 
-visualization of results though built-in [Table Display System](../usage/display_system/basic.html#table).
+visualization of results through built-in [Table Display System](../usage/display_system/basic.html#table).
+`%python.sql` can access dataframes defined in `%python`.
 
- **Prerequisites**
+**Prerequisites**
 
   - Pandas `pip install pandas`
   - PandaSQL `pip install -U pandasql`
 
 Here's one example:
 
- - first paragraph
+* first paragraph
 
   ```python
 %python
-
 import pandas as pd
 rates = pd.read_csv("bank.csv", sep=";")
   ```
 
- - next paragraph
+* next paragraph
 
   ```sql
 %python.sql
-
 SELECT * FROM rates WHERE age < 40
   ```
+
+
+<img class="img-responsive" src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/python_pandas_sql.png" />
 
 
 ## Using Zeppelin Dynamic Forms
@@ -357,24 +411,31 @@ Python interpreter create a variable `z` which represent `ZeppelinContext` for y
   </tr>
 </table>
 
-## Run Python in yarn cluster
+## Run Python interpreter in yarn cluster
 
-Zeppelin supports to run python interpreter in yarn cluster which means the python interpreter runs in the yarn container.
+Zeppelin supports to [run interpreter in yarn cluster](../quickstart/yarn.html) which means the python interpreter can run in a yarn container.
 This can achieve better multi-tenant for python interpreter especially when you already have a hadoop yarn cluster.
 
-But there's one critical problem to run python in yarn cluster: how to manage the python environment in yarn container. Because yarn cluster is a distributed cluster environemt
-which is composed many nodes, and your python interpreter can start in any node. It is not practical to manage python environment in each nodes.
+But there's one critical problem to run python in yarn cluster: how to manage the python environment in yarn container. Because hadoop yarn cluster is a distributed cluster environment
+which is composed of many nodes, and your python interpreter can start in any node. It is not practical to manage python environment in each node beforehand.
 
 So in order to run python in yarn cluster, we would suggest you to use conda to manage your python environment, and Zeppelin can ship your
-codna environment to yarn container, so that each python interpreter can has its own python environment.
+conda environment to yarn container, so that each python interpreter can have its own python environment without affecting each other.
+
+Python interpreter in yarn cluster only works for IPython, so make sure IPython's prerequisites are met. So make sure including the following packages in Step 1.
+
+* python
+* jupyter
+* grpcio
+* protobuf
 
 ### Step 1
-We would suggest you to use conda pack to create archives of conda environments, and ship it to yarn container. Otherwise python interpreter
-will use the python executable in PATH of yarn container.
+We would suggest you to use [conda-pack](https://conda.github.io/conda-pack/) to create archive of conda environment, and ship it to yarn container. Otherwise python interpreter
+will use the python executable file in PATH of yarn container.
 
-Here's one example of yml file which could be used to generate a conda environment with python 3 and some useful python libraries.
+Here's one example of yaml file which could be used to create a conda environment with python 3 and some useful python libraries.
 
-* Create yml file for conda environment, write the following content into file `env_python_3.yml`
+* Create yaml file for conda environment, write the following content into file `python_3_env.yml`
 
 ```text
 name: python_3_env
@@ -383,16 +444,14 @@ channels:
   - defaults
 dependencies:
   - python=3.7 
+  - jupyter
+  - grpcio
+  - protobuf
   - pycodestyle
   - numpy
   - pandas
   - scipy
-  - grpcio
-  - protobuf
-  - pandasql
-  - ipython
-  - ipykernel
-  - jupyter_client
+  - pandasql  
   - panel
   - pyyaml
   - seaborn
@@ -407,11 +466,11 @@ dependencies:
 
 ```
 
-* Create conda environment via this yml file using either `conda` or `mamba`
+* Create conda environment via this yml file using either [conda](https://docs.conda.io/en/latest/) or [mamba](https://github.com/mamba-org/mamba)
 
 ```bash
 
-conda env create -f env_python_3.yml
+conda env create -f python_3_env.yml
 ```
 
 ```bash
@@ -420,28 +479,34 @@ mamba env create -f python_3_env
 ```
 
 
-* Pack the conda environment using either `conda`
+* Pack the conda environment using `conda`
 
 ```bash
 
-conda pack -n python_3
+conda pack -n python_3_env
 ```
 
 ### Step 2
 
-Specify the following properties to enable yarn mode for python interpreter, and specify the correct python environment.
+Specify the following properties to enable yarn mode for python interpreter.
 
 ```
+%python.conf
+
 zeppelin.interpreter.launcher yarn
-zeppelin.yarn.dist.archives /home/hadoop/python_3.tar.gz#environment
+zeppelin.yarn.dist.archives /home/hadoop/python_3_env.tar.gz#environment
 zeppelin.interpreter.conda.env.name environment
 ```
 
+Setting `zeppelin.interpreter.launcher` as `yarn` will launch python interpreter in yarn cluster.
+
 `zeppelin.yarn.dist.archives` is the python conda environment tar which is created in step 1.
 This tar will be shipped to yarn container and untar in the working directory of yarn container.
-`environment` in `/home/hadoop/python_3.tar.gz#environment` is the folder name after untar. This folder name should be the same as `zeppelin.interpreter.conda.env.name`.
+`environment` in `/home/hadoop/python_3.tar.gz#environment` is the folder name after untar.
 
-## Python environments (used for non-yarn mode)
+This folder name should be the same as `zeppelin.interpreter.conda.env.name`. Usually we name it as `environment` here.
+
+## Python environments (used for vanilla python interpreter in non-yarn mode)
 
 ### Default
 By default, PythonInterpreter will use python command defined in `zeppelin.python` property to run python process.
@@ -529,14 +594,6 @@ Here is an example
 %python.docker activate gcr.io/tensorflow/tensorflow:latest
 ```
 
-## Technical description
+## Community
 
-For in-depth technical details on current implementation please refer to [python/README.md](https://github.com/apache/zeppelin/blob/master/python/README.md).
-
-
-## Some features not yet implemented in the vanilla Python interpreter
-
-* Interrupt a paragraph execution (`cancel()` method) is currently only supported in Linux and MacOs. 
-If interpreter runs in another operating system (for instance MS Windows) , interrupt a paragraph will close the whole interpreter. 
-A JIRA ticket ([ZEPPELIN-893](https://issues.apache.org/jira/browse/ZEPPELIN-893)) is opened to implement this feature in a next release of the interpreter.
-* Progression bar in webUI  (`getProgress()` method) is currently not implemented.
+[Join our community](http://zeppelin.apache.org/community.html) to discuss with others.
