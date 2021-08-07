@@ -35,7 +35,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 
@@ -122,7 +121,7 @@ public class PythonInterpreterPandasSqlTest {
   }
 
   @After
-  public void afterTest() throws IOException, InterpreterException {
+  public void afterTest() throws InterpreterException {
     pandasSqlInterpreter.close();
   }
 
@@ -165,8 +164,9 @@ public class PythonInterpreterPandasSqlTest {
     assertTrue(new String(out.getOutputAt(1).toByteArray()).indexOf("park\t34") > 0);
 
     assertEquals(InterpreterResult.Code.SUCCESS,
-        pandasSqlInterpreter.interpret("select case when name==\"aa\" then name else name end from df2",
-            context).code());
+        pandasSqlInterpreter.interpret(
+                "select case when name==\"aa\" then name else name end from df2",
+                context).code());
   }
 
   @Test
@@ -191,12 +191,13 @@ public class PythonInterpreterPandasSqlTest {
     assertTrue(new String(out.getOutputAt(1).toByteArray()).indexOf("park\t34") > 0);
 
     assertEquals(InterpreterResult.Code.SUCCESS,
-            pandasSqlInterpreter.interpret("select case when name==\"aa\" then name else name end from df2",
+            pandasSqlInterpreter.interpret(
+                    "select case when name==\"aa\" then name else name end from df2",
                     context).code());
   }
 
   @Test
-  public void badSqlSyntaxFails() throws IOException, InterpreterException {
+  public void badSqlSyntaxFails() throws InterpreterException {
     //when
     InterpreterResult ret = pandasSqlInterpreter.interpret("select wrong syntax", context);
 
@@ -207,14 +208,15 @@ public class PythonInterpreterPandasSqlTest {
 
   @Test
   public void showDataFrame() throws IOException, InterpreterException {
-    InterpreterResult ret;
-    ret = pythonInterpreter.interpret("import pandas as pd", context);
-    ret = pythonInterpreter.interpret("import numpy as np", context);
+    pythonInterpreter.interpret("import pandas as pd", context);
+    pythonInterpreter.interpret("import numpy as np", context);
 
     // given a Pandas DataFrame with an index and non-text data
-    ret = pythonInterpreter.interpret("index = pd.Index([10, 11, 12, 13], name='index_name')", context);
-    ret = pythonInterpreter.interpret("d1 = {1 : [np.nan, 1, 2, 3], 'two' : [3., 4., 5., 6.7]}", context);
-    ret = pythonInterpreter.interpret("df1 = pd.DataFrame(d1, index=index)", context);
+    pythonInterpreter.interpret(
+            "index = pd.Index([10, 11, 12, 13], name='index_name')", context);
+    pythonInterpreter.interpret(
+            "d1 = {1 : [np.nan, 1, 2, 3], 'two' : [3., 4., 5., 6.7]}", context);
+    InterpreterResult ret = pythonInterpreter.interpret("df1 = pd.DataFrame(d1, index=index)", context);
     assertEquals(ret.message().toString(), InterpreterResult.Code.SUCCESS, ret.code());
 
     // when

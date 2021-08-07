@@ -46,7 +46,8 @@ public class PythonInterpreterPandasSql extends Interpreter {
   public void open() throws InterpreterException {
     LOGGER.info("Open Python SQL interpreter instance: PythonInterpreterPandasSql");
     try {
-      LOGGER.info("Bootstrap PythonInterpreterPandasSql interpreter with {}", SQL_BOOTSTRAP_FILE_PY);
+      LOGGER.info("Bootstrap PythonInterpreterPandasSql interpreter with {}",
+              SQL_BOOTSTRAP_FILE_PY);
       this.pythonInterpreter = getInterpreterInTheSameSessionByClassName(PythonInterpreter.class);
       this.pythonInterpreter.bootstrapInterpreter(SQL_BOOTSTRAP_FILE_PY);
     } catch (IOException e) {
