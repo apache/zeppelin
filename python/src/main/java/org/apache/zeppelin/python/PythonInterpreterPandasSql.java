@@ -68,7 +68,7 @@ public class PythonInterpreterPandasSql extends Interpreter {
       throws InterpreterException {
     LOGGER.info("Running SQL query: '{}' over Pandas DataFrame", st);
     return pythonInterpreter.interpret(
-        "z.show(pysqldf('" + st + "'))", context);
+        "z.show(pysqldf('" + st.trim() + "'))", context);
   }
 
   @Override
