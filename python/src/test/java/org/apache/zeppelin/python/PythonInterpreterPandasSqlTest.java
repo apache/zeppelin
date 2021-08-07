@@ -17,25 +17,32 @@
 
 package org.apache.zeppelin.python;
 
+import com.google.common.collect.Lists;
+import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterOutput;
-import org.apache.zeppelin.interpreter.InterpreterOutputListener;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Type;
-import org.apache.zeppelin.interpreter.InterpreterResultMessageOutput;
+import org.apache.zeppelin.interpreter.remote.RemoteInterpreterEventClient;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Properties;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
 
 /**
  * In order for this test to work, test env must have installed:
@@ -51,145 +58,191 @@ import static org.junit.Assert.assertTrue;
  * mvn -Dpython.test.exclude='' test -pl python -am
  * </code>
  */
-public class PythonInterpreterPandasSqlTest implements InterpreterOutputListener {
+@RunWith(value = Parameterized.class)
+public class PythonInterpreterPandasSqlTest {
 
+  private static final Logger LOGGER =
+          LoggerFactory.getLogger(PythonInterpreterPandasSqlTest.class);
+
+  @Parameterized.Parameters
+  public static List<Object[]> data() {
+    return Arrays.asList(new Object[][]{
+            {true},
+            {false}
+    });
+  }
+
+  private boolean useIPython;
   private InterpreterGroup intpGroup;
-  private PythonInterpreterPandasSql sql;
-  private PythonInterpreter python;
+  private PythonInterpreterPandasSql pandasSqlInterpreter;
+  private PythonInterpreter pythonInterpreter;
+  private IPythonInterpreter ipythonInterpreter;
 
   private InterpreterContext context;
-  InterpreterOutput out;
+
+  public PythonInterpreterPandasSqlTest(boolean useIPython) {
+    this.useIPython = useIPython;
+    LOGGER.info("Test PythonInterpreterPandasSqlTest while useIPython={}", useIPython);
+  }
 
   @Before
   public void setUp() throws Exception {
     Properties p = new Properties();
     p.setProperty("zeppelin.python", "python");
     p.setProperty("zeppelin.python.maxResult", "100");
-    p.setProperty("zeppelin.python.useIPython", "false");
+    p.setProperty("zeppelin.python.useIPython", useIPython + "");
     p.setProperty("zeppelin.python.gatewayserver_address", "127.0.0.1");
 
     intpGroup = new InterpreterGroup();
 
-    out = new InterpreterOutput(this);
-    context = InterpreterContext.builder()
-        .setInterpreterOut(out)
-        .build();
+    context = getInterpreterContext();
     InterpreterContext.set(context);
 
-    python = new PythonInterpreter(p);
-    python.setInterpreterGroup(intpGroup);
-    python.open();
+    pythonInterpreter = new PythonInterpreter(p);
+    ipythonInterpreter = new IPythonInterpreter(p);
+    pandasSqlInterpreter = new PythonInterpreterPandasSql(p);
 
-    sql = new PythonInterpreterPandasSql(p);
-    sql.setInterpreterGroup(intpGroup);
+    pythonInterpreter.setInterpreterGroup(intpGroup);
+    ipythonInterpreter.setInterpreterGroup(intpGroup);
+    pandasSqlInterpreter.setInterpreterGroup(intpGroup);
 
-    intpGroup.put("note", Arrays.asList(python, sql));
+    List<Interpreter> interpreters =
+            Lists.newArrayList(pythonInterpreter, ipythonInterpreter, pandasSqlInterpreter);
 
+    intpGroup.put("session_1", interpreters);
+
+    pythonInterpreter.open();
 
     // to make sure python is running.
-    InterpreterResult ret = python.interpret("print(\"python initialized\")\n", context);
+    InterpreterResult ret = pythonInterpreter.interpret("print(\"python initialized\")\n", context);
     assertEquals(ret.message().toString(), InterpreterResult.Code.SUCCESS, ret.code());
-
-    sql.open();
+    pandasSqlInterpreter.open();
   }
 
   @After
-  public void afterTest() throws IOException, InterpreterException {
-    sql.close();
+  public void afterTest() throws InterpreterException {
+    pandasSqlInterpreter.close();
   }
 
   @Test
   public void dependenciesAreInstalled() throws InterpreterException {
     InterpreterResult ret =
-        python.interpret("import pandas\nimport pandasql\nimport numpy\n", context);
+        pythonInterpreter.interpret("import pandas\nimport pandasql\nimport numpy\n", context);
     assertEquals(ret.message().toString(), InterpreterResult.Code.SUCCESS, ret.code());
   }
 
   @Test
   public void errorMessageIfDependenciesNotInstalled() throws InterpreterException {
-    InterpreterResult ret;
-    ret = sql.interpret("SELECT * from something", context);
+    context = getInterpreterContext();
+    InterpreterResult ret = pandasSqlInterpreter.interpret("SELECT * from something", context);
 
     assertNotNull(ret);
-    assertEquals(ret.message().get(0).getData(), InterpreterResult.Code.ERROR, ret.code());
-    assertTrue(ret.message().get(0).getData().contains("no such table: something"));
+    assertEquals(context.out.toString(), InterpreterResult.Code.ERROR, ret.code());
+    if (useIPython) {
+      assertTrue(context.out.toString(),
+              context.out.toString().contains("no such table: something"));
+    } else {
+      assertTrue(ret.toString(), ret.toString().contains("no such table: something"));
+    }
   }
 
   @Test
   public void sqlOverTestDataPrintsTable() throws IOException, InterpreterException {
-    InterpreterResult ret;
-    // given
-    //String expectedTable = "name\tage\n\nmoon\t33\n\npark\t34";
-    ret = python.interpret("import pandas as pd", context);
-    ret = python.interpret("import numpy as np", context);
+    InterpreterResult ret = pythonInterpreter.interpret("import pandas as pd\nimport numpy as np", context);
+    assertEquals(ret.message().toString(), InterpreterResult.Code.SUCCESS, ret.code());
+
     // DataFrame df2 \w test data
-    ret = python.interpret("df2 = pd.DataFrame({ 'age'  : np.array([33, 51, 51, 34]), " +
+    ret = pythonInterpreter.interpret("df2 = pd.DataFrame({ 'age'  : np.array([33, 51, 51, 34]), " +
         "'name' : pd.Categorical(['moon','jobs','gates','park'])})", context);
     assertEquals(ret.message().toString(), InterpreterResult.Code.SUCCESS, ret.code());
 
     //when
-    ret = sql.interpret("select name, age from df2 where age < 40", context);
+    context = getInterpreterContext();
+    ret = pandasSqlInterpreter.interpret("select name, age from df2 where age < 40", context);
 
     //then
-    assertEquals(new String(out.getOutputAt(1).toByteArray()),
-        InterpreterResult.Code.SUCCESS, ret.code());
-    assertEquals(new String(out.getOutputAt(1).toByteArray()), Type.TABLE,
-        out.getOutputAt(1).getType());
-    assertTrue(new String(out.getOutputAt(1).toByteArray()).indexOf("moon\t33") > 0);
-    assertTrue(new String(out.getOutputAt(1).toByteArray()).indexOf("park\t34") > 0);
+    assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, ret.code());
+    assertEquals(context.out.toString(), Type.TABLE,
+            context.out.toInterpreterResultMessage().get(0).getType());
+    assertTrue(context.out.toString().indexOf("moon\t33") > 0);
+    assertTrue(context.out.toString().indexOf("park\t34") > 0);
 
     assertEquals(InterpreterResult.Code.SUCCESS,
-        sql.interpret("select case when name==\"aa\" then name else name end from df2",
-            context).code());
+        pandasSqlInterpreter.interpret(
+                "select case when name==\"aa\" then name else name end from df2",
+                context).code());
   }
 
   @Test
-  public void badSqlSyntaxFails() throws IOException, InterpreterException {
+  public void testInIPython() throws IOException, InterpreterException {
+    InterpreterResult ret =
+            pythonInterpreter.interpret("import pandas as pd\nimport numpy as np", context);
+    assertEquals(ret.message().toString(), InterpreterResult.Code.SUCCESS, ret.code());
+    // DataFrame df2 \w test data
+    ret = pythonInterpreter.interpret("df2 = pd.DataFrame({ 'age'  : np.array([33, 51, 51, 34]), " +
+            "'name' : pd.Categorical(['moon','jobs','gates','park'])})", context);
+    assertEquals(ret.message().toString(), InterpreterResult.Code.SUCCESS, ret.code());
+
     //when
-    InterpreterResult ret = sql.interpret("select wrong syntax", context);
+    ret = pandasSqlInterpreter.interpret("select name, age from df2 where age < 40", context);
+
+    //then
+    assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, ret.code());
+    assertEquals(context.out.toString(), Type.TABLE,
+            context.out.toInterpreterResultMessage().get(1).getType());
+    assertTrue(context.out.toString().indexOf("moon\t33") > 0);
+    assertTrue(context.out.toString().indexOf("park\t34") > 0);
+
+    assertEquals(InterpreterResult.Code.SUCCESS,
+            pandasSqlInterpreter.interpret(
+                    "select case when name==\"aa\" then name else name end from df2",
+                    context).code());
+  }
+
+  @Test
+  public void badSqlSyntaxFails() throws InterpreterException {
+    //when
+    context = getInterpreterContext();
+    InterpreterResult ret = pandasSqlInterpreter.interpret("select wrong syntax", context);
 
     //then
     assertNotNull("Interpreter returned 'null'", ret);
-    assertEquals(ret.toString(), InterpreterResult.Code.ERROR, ret.code());
+    assertEquals(context.out.toString(), InterpreterResult.Code.ERROR, ret.code());
   }
 
   @Test
   public void showDataFrame() throws IOException, InterpreterException {
-    InterpreterResult ret;
-    ret = python.interpret("import pandas as pd", context);
-    ret = python.interpret("import numpy as np", context);
+    pythonInterpreter.interpret("import pandas as pd", context);
+    pythonInterpreter.interpret("import numpy as np", context);
 
     // given a Pandas DataFrame with an index and non-text data
-    ret = python.interpret("index = pd.Index([10, 11, 12, 13], name='index_name')", context);
-    ret = python.interpret("d1 = {1 : [np.nan, 1, 2, 3], 'two' : [3., 4., 5., 6.7]}", context);
-    ret = python.interpret("df1 = pd.DataFrame(d1, index=index)", context);
+    pythonInterpreter.interpret(
+            "index = pd.Index([10, 11, 12, 13], name='index_name')", context);
+    pythonInterpreter.interpret(
+            "d1 = {1 : [np.nan, 1, 2, 3], 'two' : [3., 4., 5., 6.7]}", context);
+    InterpreterResult ret = pythonInterpreter.interpret(
+            "df1 = pd.DataFrame(d1, index=index)", context);
     assertEquals(ret.message().toString(), InterpreterResult.Code.SUCCESS, ret.code());
 
     // when
-    ret = python.interpret("z.show(df1, show_index=True)", context);
+    context = getInterpreterContext();
+    ret = pythonInterpreter.interpret("z.show(df1, show_index=True)", context);
 
     // then
-    assertEquals(new String(out.getOutputAt(0).toByteArray()),
-        InterpreterResult.Code.SUCCESS, ret.code());
-    assertEquals(new String(out.getOutputAt(1).toByteArray()),
-        Type.TABLE, out.getOutputAt(1).getType());
-    assertTrue(new String(out.getOutputAt(1).toByteArray()).contains("index_name"));
-    assertTrue(new String(out.getOutputAt(1).toByteArray()).contains("nan"));
-    assertTrue(new String(out.getOutputAt(1).toByteArray()).contains("6.7"));
+    assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, ret.code());
+    assertEquals(context.out.toString(), Type.TABLE,
+            context.out.toInterpreterResultMessage().get(0).getType());
+    assertTrue(context.out.toString().contains("index_name"));
+    assertTrue(context.out.toString().contains("nan"));
+    assertTrue(context.out.toString().contains("6.7"));
   }
 
-  @Override
-  public void onUpdateAll(InterpreterOutput out) {
-
-  }
-
-  @Override
-  public void onAppend(int index, InterpreterResultMessageOutput out, byte[] line) {
-
-  }
-
-  @Override
-  public void onUpdate(int index, InterpreterResultMessageOutput out) {
-
+  private InterpreterContext getInterpreterContext() {
+    return InterpreterContext.builder()
+            .setNoteId("noteId")
+            .setParagraphId("paragraphId")
+            .setInterpreterOut(new InterpreterOutput())
+            .setIntpEventClient(mock(RemoteInterpreterEventClient.class))
+            .build();
   }
 }
