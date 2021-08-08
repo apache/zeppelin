@@ -27,7 +27,7 @@ limitations under the License.
 
 [R](https://www.r-project.org) is a free software environment for statistical computing and graphics.
 
-To run R code and visualize plots in Apache Zeppelin, you will need R on your master node (or your dev laptop).
+To run R code and visualize plots in Apache Zeppelin, you will need R on your zeppelin server node (or your dev laptop).
 
 + For Centos: `yum install R R-devel libcurl-devel openssl-devel`
 + For Ubuntu: `apt-get install r-base`
@@ -87,9 +87,9 @@ Zeppelin supports R language in 3 interpreters
   <tr>
     <td>%r.r</td>
     <td>RInterpreter</td>
-    <td>Vanilla r interpreter, with least dependencies, only R environment installed is required.
-    It is always recommended to use the fully qualified interpreter name <code>%r.r</code>code>, because <code>%r</code> is ambiguous, 
-    it could mean both <code>%spark.r</code> and <code>%r.r</code></td>
+    <td>Vanilla r interpreter, with least dependencies, only R environment and knitr are required.
+    It is always recommended to use the fully qualified interpreter name <code>%r.r</code>, because <code>%r</code> is ambiguous, 
+    it could mean <code>%spark.r</code> when current note's default interpreter is <code>%spark</code> and <code>%r.r</code> when the default interpreter is <code>%r</code></td>
   </tr>
   <tr>
     <td>%r.ir</td>
@@ -103,7 +103,7 @@ Zeppelin supports R language in 3 interpreters
   </tr>
 </table>
 
-If you want to use R with Spark, it is almost the same via `%spark.r`, `%spark.ir` & `%spark.shiny` . You can refer Spark Interpreter docs for more details.
+If you want to use R with Spark, it is almost the same via `%spark.r`, `%spark.ir` & `%spark.shiny` . You can refer Spark interpreter docs for more details.
 
 ## Configuration
 
@@ -139,38 +139,60 @@ If you want to use R with Spark, it is almost the same via `%spark.r`, `%spark.i
     <td>500px</td>
     <td>IFrame height of Shiny App</td>
   </tr>
+  <tr>
+    <td>zeppelin.R.shiny.portRange</td>
+    <td>:</td>
+    <td>Shiny app would launch a web app at some port, this property is to specify the portRange via format 'start':'end', e.g. '5000:5001'. By default it is ':' which means any port.</td>
+  </tr>
+  <tr>
+    <td>zeppelin.R.maxResult</td>
+    <td>1000</td>
+    <td>Max number of dataframe rows to display when using z.show</td>
+  </tr>
 </table>
 
-## Using the R Interpreter(`%r.r` & `%r.ir`)
+## How to use R Interpreter
 
-By default, the R Interpreter appears as two Zeppelin Interpreters, `%r.r` and `%r.ir`.
+There're two different implementations of R interpreters: `%r.r` and `%r.ir`.
 
-`%r.r` behaves like an ordinary REPL and use SparkR to communicate between R process and JVM process.
-`%r.ir` use IRKernel underneath, it behaves like using IRKernel in Jupyter notebook.  
+* Vanilla R Interpreter(`%r.r`) behaves like an ordinary REPL and use SparkR to communicate between R process and JVM process. It requires 'knitr'.
+* IRKernel R Interpreter(`%r.ir`) it behaves like using IRKernel in Jupyter notebook. It is based on [jupyter interpreter](jupyter.html). Besides jupyter interpreter's prerequisites, [IRkernel](https://github.com/IRkernel/IRkernel) needs to be installed. 
 
-R basic expression
+Take a look at the tutorial note `R Tutorial/1. R Basics` for how to write R code in Zeppelin.
+
+### R basic expression
+
+R basic expressions are supported in both `%r.r` and `%r.ir`.
 
 <img class="img-responsive" src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/r_basic.png" width="800px"/>
 
-R base plotting is fully supported
+### R base plotting
+
+R base plotting is supported in both `%r.r` and `%r.ir`.
 
 <img class="img-responsive" src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/r_plotting.png" width="800px"/>
 
-Besides R base plotting, you can use other visualization library, e.g. `ggplot` and `googlevis` 
+### Other plotting
+
+Besides R base plotting, you can use other visualization libraries in both `%r.r` and `%r.ir`, e.g. `ggplot` and `googleVis` 
 
 <img class="img-responsive" src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/r_ggplot.png" width="800px"/>
 
 <img class="img-responsive" src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/r_googlevis.png" width="800px"/>
 
-You can also use `z.show()` in `%r.ir` to visualize the dataframe, e.g.
+### z.show
+
+`z.show()` is only available in `%r.ir`, e.g.
 
 <img class="img-responsive" src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/r_zshow.png" width="800px"/>
 
-  
+By default, `z.show` would only display 1000 rows, you can specify the maxRows via `z.show(df, maxRows=2000)`
+
 ## Make Shiny App in Zeppelin
 
 [Shiny](https://shiny.rstudio.com/tutorial/) is an R package that makes it easy to build interactive web applications (apps) straight from R.
-For developing one Shiny App in Zeppelin, you need to at least 3 paragraphs (server paragraph, ui paragraph and run type paragraph)
+`%r.shiny` is used for developing R shiny app in Zeppelin notebook. It only works when IRKernel R Interpreter(`%r.ir`) is enabled.
+For developing one Shiny App in Zeppelin, you need to write at least 3 paragraphs (server type paragraph, ui type paragraph and run type paragraph)
 
 * Server type R shiny paragraph
 
@@ -252,13 +274,14 @@ ui <- fluidPage(
 
 ```
 
-After executing the run type R shiny paragraph, the shiny app will be launched and embedded as Iframe in paragraph.
+After executing the run type R shiny paragraph, the shiny app will be launched and embedded as iframe in paragraph.
+Take a look at the tutorial note `R Tutorial/2. Shiny App` for how to develop R shiny app.
 
 <img class="img-responsive" src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/r_shiny.png" width="800px"/>
 
-### Run multiple shiny app
+### Run multiple shiny apps
 
-If you want to run multiple shiny app, you can specify `app` in paragraph local property to differentiate shiny app.
+If you want to run multiple shiny apps, you can specify `app` in paragraph local property to differentiate different shiny apps.
 
 e.g.
 
@@ -273,3 +296,94 @@ e.g.
 ```r
 %r.shiny(type=run, app=app_1)
 ```
+
+## Run R in yarn cluster
+
+Zeppelin support to [run interpreter in yarn cluster](../quickstart/yarn.html). But there's one critical problem to run R in yarn cluster: how to manage the R environment in yarn container. 
+Because yarn cluster is a distributed cluster environment which is composed of many nodes, and your R interpreter can start in any node. 
+It is not practical to manage R environment in each node.
+
+So in order to run R in yarn cluster, we would suggest you to use conda to manage your R environment, and Zeppelin can ship your
+R conda environment to yarn container, so that each R interpreter can have its own R environment.
+
+Following are instructions of how to run R in yarn cluster. You can find all the code in the tutorial note `R Tutorial/3. R Conda Env in Yarn Mode`.
+
+To be noticed, you can only run IRKernel R interpreter(`%r.ir`) in yarn cluster. So make sure you include at least the following prerequisites in the below conda env:
+
+* python
+* jupyter
+* grpcio
+* protobuf
+* r-base
+* r-essentials
+* r-irkernel
+
+python, jupyter, grpcio and protobuf are required for [jupyter interpreter](../interpreter/jupyter.html), because IRKernel interpreter is based on jupyter interpreter. Others are for R runtime.
+
+### Step 1
+
+We would suggest you to use conda pack to create archive of conda environment. Otherwise R interpreter
+will use the R executable in PATH of yarn container.
+
+Here's one example of yaml file which could be used to generate a conda environment with R and some useful R libraries.
+
+* Create a yaml file for conda environment, write the following content into file `r_env.yml`
+
+```text
+name: r_env
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.7 
+  - jupyter
+  - grpcio
+  - protobuf
+  - r-base=3
+  - r-essentials
+  - r-evaluate
+  - r-base64enc
+  - r-knitr
+  - r-ggplot2
+  - r-irkernel
+  - r-shiny
+  - r-googlevis
+```
+
+* Create conda environment via this yaml file using either `conda` or `mamba`
+
+```bash
+
+conda env create -f r_env.yml
+```
+
+```bash
+
+mamba env create -f r_env.yml
+```
+
+
+* Pack the conda environment using `conda`
+
+```bash
+
+conda pack -n r_env
+```
+
+### Step 2
+
+Specify the following properties to enable yarn mode for R interpreter, and specify the correct R environment.
+
+```
+zeppelin.interpreter.launcher yarn
+zeppelin.yarn.dist.archives hdfs:///tmp/r_env.tar.gz#environment
+zeppelin.interpreter.conda.env.name environment
+```
+
+`zeppelin.yarn.dist.archives` is the R conda environment tar which is created in step 1. This tar will be shipped to yarn container and untar in the working directory of yarn container.
+`hdfs:///tmp/r_env.tar.gz` is the R conda archive file you created in step 2. `environment` in `hdfs:///tmp/r_env.tar.gz#environment` is the folder name after untar. 
+This folder name should be the same as `zeppelin.interpreter.conda.env.name`.
+
+### Step 3
+
+Now you can use run R interpreter in yarn container and also use any R libraries you specify in step 1.
