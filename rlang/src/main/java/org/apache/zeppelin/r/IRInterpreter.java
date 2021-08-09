@@ -158,7 +158,10 @@ public class IRInterpreter extends JupyterKernelInterpreter {
     Map<String, String> envs = super.setupKernelEnv();
     String pathEnv = envs.getOrDefault("PATH", "");
     if (condaEnv != null) {
-      pathEnv = new File(".").getAbsolutePath() + "/" + condaEnv + "/bin:" + pathEnv;
+      // add ${PWD}/${condaEnv}/bin to PATH, otherwise JupyterKernelInterpreter will fail to
+      // find R to launch IRKernel
+      pathEnv = new File(".").getAbsolutePath() + File.separator + condaEnv +
+              File.separator + "bin" + File.pathSeparator + pathEnv;
       envs.put("PATH", pathEnv);
     }
     return envs;
