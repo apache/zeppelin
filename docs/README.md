@@ -42,7 +42,7 @@ bundle exec jekyll serve --watch
 
 **Run locally using docker**
 ```
-docker run --rm -it \                                                  
+docker run --rm -it \
        -v $PWD:/docs \
        -w /docs \
        -p '4000:4000' \
