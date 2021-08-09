@@ -38,6 +38,7 @@ import java.io.InputStream;
 import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -150,6 +151,20 @@ public class IRInterpreter extends JupyterKernelInterpreter {
     if (response.getStatus() != ExecuteStatus.SUCCESS) {
       throw new IOException("Fail to setup JVMGateway\n" + response.getOutput());
     }
+  }
+
+  @Override
+  protected Map<String, String> setupKernelEnv() throws IOException {
+    Map<String, String> envs = super.setupKernelEnv();
+    String pathEnv = envs.getOrDefault("PATH", "");
+    if (condaEnv != null) {
+      // add ${PWD}/${condaEnv}/bin to PATH, otherwise JupyterKernelInterpreter will fail to
+      // find R to launch IRKernel
+      pathEnv = new File(".").getAbsolutePath() + File.separator + condaEnv +
+              File.separator + "bin" + File.pathSeparator + pathEnv;
+      envs.put("PATH", pathEnv);
+    }
+    return envs;
   }
 
   @Override
