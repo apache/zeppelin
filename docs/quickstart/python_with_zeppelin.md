@@ -27,16 +27,17 @@ limitations under the License.
 
 The following guides explain how to use Apache Zeppelin that enables you to write in Python:
 
+- supports [vanilla python](../interpreter/python.html#vanilla-python-interpreter-python) and [ipython](../interpreter/python.html#ipython-interpreter-pythonipython-recommended)
 - supports flexible python environments using [conda](../interpreter/python.html#conda), [docker](../interpreter/python.html#docker)  
 - can query using [PandasSQL](../interpreter/python.html#sql-over-pandas-dataframes)
 - also, provides [PySpark](../interpreter/spark.html)
+- [run python interpreter in yarn cluster](../interpreter/python.html#run-python-in-yarn-cluster) with customized conda python environment.
 - with [matplotlib integration](../interpreter/python.html#matplotlib-integration)
-- support [ipython](../interpreter/python.html#ipython-interpreter-pythonipython-recommended) 
 - can create results including **UI widgets** using [Dynamic Form](../interpreter/python.html#using-zeppelin-dynamic-forms)
 
 <br/>
 
-For the further information about Spark support in Zeppelin, please check 
+For the further information about Python support in Zeppelin, please check 
 
 - [Python Interpreter](../interpreter/python.html)
 

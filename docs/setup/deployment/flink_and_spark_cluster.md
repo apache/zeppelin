@@ -20,6 +20,8 @@ limitations under the License.
 
 {% include JB/setup %}
 
+<font color=red>This document is outdated, it is not verified in the latest Zeppelin.</font>
+
 # Install with Flink and Spark cluster
 
 <div id="toc"></div>

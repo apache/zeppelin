@@ -1,0 +1,1397 @@
+{
+  "paragraphs": [
+    {
+      "text": "%md\n\nThis tutorial is for how to customize pyspark runtime environment via conda in yarn-cluster mode.\nIn this approach, the spark interpreter (driver) and spark executor all run in yarn containers. \nAnd remmeber this approach only works when ipython is enabled, so make sure you include the following python packages in your conda env which are required for ipython.\n\n* jupyter\n* grpcio\n* protobuf\n\nThis turorial is only verified with spark 3.1.2, other versions of spark may not work especially when using pyarrow.\n\n",
+      "user": "anonymous",
+      "dateUpdated": "2021-08-09 20:25:07.164",
+      "progress": 0,
+      "config": {
+        "tableHide": false,
+        "editorSetting": {
+          "language": "markdown",
+          "editOnDblClick": true,
+          "completionKey": "TAB",
+          "completionSupport": false
+        },
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/markdown",
+        "fontSize": 9.0,
+        "editorHide": true,
+        "title": false,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003cp\u003eThis tutorial is for how to customize pyspark runtime environment via conda in yarn-cluster mode.\u003cbr /\u003e\nIn this approach, the spark interpreter (driver) and spark executor all run in yarn containers.\u003cbr /\u003e\nAnd remmeber this approach only works when ipython is enabled, so make sure you include the following python packages in your conda env which are required for ipython.\u003c/p\u003e\n\u003cul\u003e\n\u003cli\u003ejupyter\u003c/li\u003e\n\u003cli\u003egrpcio\u003c/li\u003e\n\u003cli\u003eprotobuf\u003c/li\u003e\n\u003c/ul\u003e\n\u003cp\u003eThis turorial is only verified with spark 3.1.2, other versions of spark may not work especially when using pyarrow.\u003c/p\u003e\n\n\u003c/div\u003e"
+          }
+        ]
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1628499052501_412639221",
+      "id": "paragraph_1616510705826_532544979",
+      "dateCreated": "2021-08-09 16:50:52.501",
+      "dateStarted": "2021-08-09 20:25:07.190",
+      "dateFinished": "2021-08-09 20:25:09.774",
+      "status": "FINISHED"
+    },
+    {
+      "title": "Create Python conda env",
+      "text": "%sh\n\n# make sure you have conda and momba installed.\n# install miniconda: https://docs.conda.io/en/latest/miniconda.html\n# install mamba: https://github.com/mamba-org/mamba\n\necho \"name: pyspark_env\nchannels:\n  - conda-forge\n  - defaults\ndependencies:\n  - python\u003d3.8 \n  - jupyter\n  - grpcio\n  - protobuf\n  - pandasql\n  - pycodestyle\n  # use numpy \u003c 1.20, otherwise the following pandas udf example will fail, see https://github.com/Azure/MachineLearningNotebooks/issues/1314\n  - numpy\u003d\u003d1.19.5  \n  # other versions of pandas may not work with pyarrow\n  - pandas\u003d\u003d0.25.3\n  - scipy\n  - panel\n  - pyyaml\n  - seaborn\n  - plotnine\n  - hvplot\n  - intake\n  - intake-parquet\n  - intake-xarray\n  - altair\n  - vega_datasets\n  - pyarrow\u003d\u003d1.0.1\" \u003e pyspark_env.yml\n    \nmamba env remove -n pyspark_env\nmamba env create -f pyspark_env.yml\n",
+      "user": "anonymous",
+      "dateUpdated": "2021-08-09 20:25:09.790",
+      "progress": 0,
+      "config": {
+        "editorSetting": {
+          "language": "sh",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": false
+        },
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/sh",
+        "fontSize": 9.0,
+        "title": true,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "\nRemove all packages in environment /mnt/disk1/jzhang/miniconda3/envs/pyspark_env:\n\npkgs/r/linux-64           \npkgs/main/noarch          \npkgs/main/linux-64        \npkgs/r/noarch             \nconda-forge/noarch        \nconda-forge/linux-64      \nTransaction\n\n  Prefix: /mnt/disk1/jzhang/miniconda3/envs/pyspark_env\n\n  Updating specs:\n\n   - python\u003d3.8\n   - jupyter\n   - grpcio\n   - protobuf\n   - pandasql\n   - pycodestyle\n   - numpy\u003d\u003d1.19.5\n   - pandas\u003d\u003d0.25.3\n   - scipy\n   - panel\n   - pyyaml\n   - seaborn\n   - plotnine\n   - hvplot\n   - intake\n   - intake-parquet\n   - intake-xarray\n   - altair\n   - vega_datasets\n   - pyarrow\u003d\u003d1.0.1\n\n\n  Package                               Version  Build                   Channel                    Size\n──────────────────────────────────────────────────────────────────────────────────────────────────────────\n  Install:\n──────────────────────────────────────────────────────────────────────────────────────────────────────────\n\n  + _libgcc_mutex                           0.1  conda_forge             conda-forge/linux-64     Cached\n  + _openmp_mutex                           4.5  1_gnu                   conda-forge/linux-64     Cached\n  + abseil-cpp                       20210324.2  h9c3ff4c_0              conda-forge/linux-64     Cached\n  + alsa-lib                              1.2.3  h516909a_0              conda-forge/linux-64     Cached\n  + altair                                4.1.0  py_1                    conda-forge/noarch       Cached\n  + appdirs                               1.4.4  pyh9f0ad1d_0            conda-forge/noarch       Cached\n  + argon2-cffi                          20.1.0  py38h497a2fe_2          conda-forge/linux-64     Cached\n  + arrow-cpp                             1.0.1  py38hf24f39c_45_cpu     conda-forge/linux-64     Cached\n  + asciitree                             0.3.3  py_2                    conda-forge/noarch       Cached\n  + async_generator                        1.10  py_0                    conda-forge/noarch       Cached\n  + attrs                                21.2.0  pyhd8ed1ab_0            conda-forge/noarch       Cached\n  + aws-c-cal                            0.5.11  h95a6274_0              conda-forge/linux-64     Cached\n  + aws-c-common                          0.6.2  h7f98852_0              conda-forge/linux-64     Cached\n  + aws-c-event-stream                    0.2.7  h3541f99_13             conda-forge/linux-64     Cached\n  + aws-c-io                             0.10.5  hfb6a706_0              conda-forge/linux-64     Cached\n  + aws-checksums                        0.1.11  ha31a3da_7              conda-forge/linux-64     Cached\n  + aws-sdk-cpp                         1.8.186  hb4091e7_3              conda-forge/linux-64     Cached\n  + backcall                              0.2.0  pyh9f0ad1d_0            conda-forge/noarch       Cached\n  + backports                               1.0  py_2                    conda-forge/noarch       Cached\n  + backports.functools_lru_cache         1.6.4  pyhd8ed1ab_0            conda-forge/noarch       Cached\n  + bleach                                4.0.0  pyhd8ed1ab_0            conda-forge/noarch       Cached\n  + bokeh                                 2.3.3  py38h578d9bd_0          conda-forge/linux-64     Cached\n  + brotli                                1.0.9  h7f98852_5              conda-forge/linux-64     Cached\n  + brotli-bin                            1.0.9  h7f98852_5              conda-forge/linux-64     Cached\n  + brotlipy                              0.7.0  py38h497a2fe_1001       conda-forge/linux-64     Cached\n  + bzip2                                 1.0.8  h7f98852_4              conda-forge/linux-64     Cached\n  + c-ares                               1.17.1  h7f98852_1              conda-forge/linux-64     Cached\n  + ca-certificates                   2021.5.30  ha878542_0              conda-forge/linux-64     Cached\n  + certifi                           2021.5.30  py38h578d9bd_0          conda-forge/linux-64     Cached\n  + cffi                                 1.14.6  py38ha65f79e_0          conda-forge/linux-64     Cached\n  + cftime                                1.5.0  py38hb5d20a5_0          conda-forge/linux-64     Cached\n  + chardet                               4.0.0  py38h578d9bd_1          conda-forge/linux-64     Cached\n  + charset-normalizer                    2.0.0  pyhd8ed1ab_0            conda-forge/noarch       Cached\n  + click                                 8.0.1  py38h578d9bd_0          conda-forge/linux-64     Cached\n  + cloudpickle                           1.6.0  py_0                    conda-forge/noarch       Cached\n  + colorama                              0.4.4  pyh9f0ad1d_0            conda-forge/noarch       Cached\n  + colorcet                              2.0.6  pyhd8ed1ab_0            conda-forge/noarch       Cached\n  + cramjam                               2.3.1  py38h497a2fe_1          conda-forge/linux-64     Cached\n  + cryptography                          3.4.7  py38ha5dfef3_0          conda-forge/linux-64     Cached\n  + curl                                 7.78.0  hea6ffbf_0              conda-forge/linux-64     Cached\n  + cycler                               0.10.0  py_2                    conda-forge/noarch       Cached\n  + cytoolz                              0.11.0  py38h497a2fe_3          conda-forge/linux-64     Cached\n  + dask                               2021.7.2  pyhd8ed1ab_0            conda-forge/noarch       Cached\n  + dask-core                          2021.7.2  pyhd8ed1ab_0            conda-forge/noarch       Cached\n  + dbus                                 1.13.6  h48d8840_2              conda-forge/linux-64     Cached\n  + debugpy                               1.4.1  py38h709712a_0          conda-forge/linux-64     Cached\n  + decorator                             5.0.9  pyhd8ed1ab_0            conda-forge/noarch       Cached\n  + defusedxml                            0.7.1  pyhd8ed1ab_0            conda-forge/noarch       Cached\n  + descartes                             1.1.0  py_4                    conda-forge/noarch       Cached\n  + distributed                        2021.7.2  py38h578d9bd_0          conda-forge/linux-64     Cached\n  + entrypoints                             0.3  py38h32f6830_1002       conda-forge/linux-64     Cached\n  + expat                                 2.4.1  h9c3ff4c_0              conda-forge/linux-64     Cached\n  + fasteners                              0.16  pyhd8ed1ab_0            conda-forge/noarch       Cached\n  + fastparquet                           0.6.3  py38hb5d20a5_0          conda-forge/linux-64     Cached\n  + fontconfig                           2.13.1  hba837de_1005           conda-forge/linux-64     Cached\n  + freetype                             2.10.4  h0708190_1              conda-forge/linux-64     Cached\n  + fsspec                             2021.7.0  pyhd8ed1ab_0            conda-forge/noarch       Cached\n  + gettext                            0.19.8.1  h0b5b191_1005           conda-forge/linux-64     Cached\n  + gflags                                2.2.2  he1b5a44_1004           conda-forge/linux-64     Cached\n  + glib                                 2.68.3  h9c3ff4c_0              conda-forge/linux-64     Cached\n  + glib-tools                           2.68.3  h9c3ff4c_0              conda-forge/linux-64     Cached\n  + glog                                  0.5.0  h48cff8f_0              conda-forge/linux-64     Cached\n  + greenlet                              1.1.1  py38h709712a_0          conda-forge/linux-64     Cached\n  + grpc-cpp                             1.39.0  hf1f433d_2              conda-forge/linux-64     Cached\n  + grpcio                               1.38.1  py38hdd6454d_0          conda-forge/linux-64     Cached\n  + gst-plugins-base                     1.18.4  hf529b03_2              conda-forge/linux-64     Cached\n  + gstreamer                            1.18.4  h76c114f_2              conda-forge/linux-64     Cached\n  + hdf4                                 4.2.15  h10796ff_3              conda-forge/linux-64     Cached\n  + hdf5                                 1.10.6  nompi_h6a2412b_1114     conda-forge/linux-64     Cached\n  + heapdict                              1.0.1  py_0                    conda-forge/noarch       Cached\n  + holoviews                            1.14.5  pyhd8ed1ab_0            conda-forge/noarch       Cached\n  + hvplot                                0.7.3  pyh6c4a22f_0            conda-forge/noarch       Cached\n  + icu                                    68.1  h58526e2_0              conda-forge/linux-64     Cached\n  + idna                                    3.1  pyhd3deb0d_0            conda-forge/noarch       Cached\n  + importlib-metadata                    4.6.3  py38h578d9bd_0          conda-forge/linux-64     Cached\n  + importlib_metadata                    4.6.3  hd8ed1ab_0              conda-forge/noarch       Cached\n  + intake                                0.6.2  pyhd8ed1ab_0            conda-forge/noarch       Cached\n  + intake-parquet                        0.2.3  py_0                    conda-forge/noarch       Cached\n  + intake-xarray                         0.5.0  pyhd8ed1ab_0            conda-forge/noarch       Cached\n  + ipykernel                             6.0.3  py38hd0cf306_0          conda-forge/linux-64     Cached\n  + ipython                              7.26.0  py38he5a9106_0          conda-forge/linux-64     Cached\n  + ipython_genutils                      0.2.0  py_1                    conda-forge/noarch       Cached\n  + ipywidgets                            7.6.3  pyhd3deb0d_0            conda-forge/noarch       Cached\n  + jbig                                    2.1  h7f98852_2003           conda-forge/linux-64     Cached\n  + jedi                                 0.18.0  py38h578d9bd_2          conda-forge/linux-64     Cached\n  + jinja2                                3.0.1  pyhd8ed1ab_0            conda-forge/noarch       Cached\n  + jpeg                                     9d  h36c2ea0_0              conda-forge/linux-64     Cached\n  + jsonschema                            3.2.0  py38h32f6830_1          conda-forge/linux-64     Cached\n  + jupyter                               1.0.0  py38h578d9bd_6          conda-forge/linux-64     Cached\n  + jupyter_client                       6.1.12  pyhd8ed1ab_0            conda-forge/noarch       Cached\n  + jupyter_console                       6.4.0  pyhd8ed1ab_0            conda-forge/noarch       Cached\n  + jupyter_core                          4.7.1  py38h578d9bd_0          conda-forge/linux-64     Cached\n  + jupyterlab_pygments                   0.1.2  pyh9f0ad1d_0            conda-forge/noarch       Cached\n  + jupyterlab_widgets                    1.0.0  pyhd8ed1ab_1            conda-forge/noarch       Cached\n  + kiwisolver                            1.3.1  py38h1fd1430_1          conda-forge/linux-64     Cached\n  + krb5                                 1.19.2  hcc1bbae_0              conda-forge/linux-64     Cached\n  + lcms2                                  2.12  hddcbb42_0              conda-forge/linux-64     Cached\n  + ld_impl_linux-64                     2.36.1  hea4e1c9_2              conda-forge/linux-64     Cached\n  + lerc                                  2.2.1  h9c3ff4c_0              conda-forge/linux-64     Cached\n  + libblas                               3.9.0  10_openblas             conda-forge/linux-64     Cached\n  + libbrotlicommon                       1.0.9  h7f98852_5              conda-forge/linux-64     Cached\n  + libbrotlidec                          1.0.9  h7f98852_5              conda-forge/linux-64     Cached\n  + libbrotlienc                          1.0.9  h7f98852_5              conda-forge/linux-64     Cached\n  + libcblas                              3.9.0  10_openblas             conda-forge/linux-64     Cached\n  + libclang                             11.1.0  default_ha53f305_1      conda-forge/linux-64     Cached\n  + libcurl                              7.78.0  h2574ce0_0              conda-forge/linux-64     Cached\n  + libdeflate                              1.7  h7f98852_5              conda-forge/linux-64     Cached\n  + libedit                        3.1.20191231  he28a2e2_2              conda-forge/linux-64     Cached\n  + libev                                  4.33  h516909a_1              conda-forge/linux-64     Cached\n  + libevent                             2.1.10  hcdb4288_3              conda-forge/linux-64     Cached\n  + libffi                                  3.3  h58526e2_2              conda-forge/linux-64     Cached\n  + libgcc-ng                            11.1.0  hc902ee8_8              conda-forge/linux-64     Cached\n  + libgfortran-ng                       11.1.0  h69a702a_8              conda-forge/linux-64     Cached\n  + libgfortran5                         11.1.0  h6c583b3_8              conda-forge/linux-64     Cached\n  + libglib                              2.68.3  h3e27bee_0              conda-forge/linux-64     Cached\n  + libgomp                              11.1.0  hc902ee8_8              conda-forge/linux-64     Cached\n  + libiconv                               1.16  h516909a_0              conda-forge/linux-64     Cached\n  + liblapack                             3.9.0  10_openblas             conda-forge/linux-64     Cached\n  + libllvm11                            11.1.0  hf817b99_2              conda-forge/linux-64     Cached\n  + libnetcdf                             4.8.0  nompi_hcd642e3_103      conda-forge/linux-64     Cached\n  + libnghttp2                           1.43.0  h812cca2_0              conda-forge/linux-64     Cached\n  + libogg                                1.3.4  h7f98852_1              conda-forge/linux-64     Cached\n  + libopenblas                          0.3.17  pthreads_h8fe5266_1     conda-forge/linux-64     Cached\n  + libopus                               1.3.1  h7f98852_1              conda-forge/linux-64     Cached\n  + libpng                               1.6.37  h21135ba_2              conda-forge/linux-64     Cached\n  + libpq                                  13.3  hd57d9b9_0              conda-forge/linux-64     Cached\n  + libprotobuf                          3.16.0  h780b84a_0              conda-forge/linux-64     Cached\n  + libsodium                            1.0.18  h36c2ea0_1              conda-forge/linux-64     Cached\n  + libssh2                               1.9.0  ha56f1ee_6              conda-forge/linux-64     Cached\n  + libstdcxx-ng                         11.1.0  h56837e0_8              conda-forge/linux-64     Cached\n  + libthrift                            0.14.2  he6d91bd_1              conda-forge/linux-64     Cached\n  + libtiff                               4.3.0  hf544144_1              conda-forge/linux-64     Cached\n  + libutf8proc                           2.6.1  h7f98852_0              conda-forge/linux-64     Cached\n  + libuuid                              2.32.1  h7f98852_1000           conda-forge/linux-64     Cached\n  + libvorbis                             1.3.7  h9c3ff4c_0              conda-forge/linux-64     Cached\n  + libwebp-base                          1.2.0  h7f98852_2              conda-forge/linux-64     Cached\n  + libxcb                                 1.13  h7f98852_1003           conda-forge/linux-64     Cached\n  + libxkbcommon                          1.0.3  he3ba5ed_0              conda-forge/linux-64     Cached\n  + libxml2                              2.9.12  h72842e0_0              conda-forge/linux-64     Cached\n  + libzip                                1.8.0  h4de3113_0              conda-forge/linux-64     Cached\n  + locket                                0.2.0  py_2                    conda-forge/noarch       Cached\n  + lz4-c                                 1.9.3  h9c3ff4c_1              conda-forge/linux-64     Cached\n  + markdown                              3.3.4  pyhd8ed1ab_0            conda-forge/noarch       Cached\n  + markupsafe                            2.0.1  py38h497a2fe_0          conda-forge/linux-64     Cached\n  + matplotlib-base                       3.4.2  py38hcc49a3a_0          conda-forge/linux-64     Cached\n  + matplotlib-inline                     0.1.2  pyhd8ed1ab_2            conda-forge/noarch       Cached\n  + mistune                               0.8.4  py38h497a2fe_1004       conda-forge/linux-64     Cached\n  + mizani                                0.7.0  py_0                    conda-forge/noarch       Cached\n  + monotonic                               1.5  py_0                    conda-forge/noarch       Cached\n  + msgpack-python                        1.0.2  py38h1fd1430_1          conda-forge/linux-64     Cached\n  + mysql-common                         8.0.25  ha770c72_2              conda-forge/linux-64     Cached\n  + mysql-libs                           8.0.25  hfa10184_2              conda-forge/linux-64     Cached\n  + nbclient                              0.5.3  pyhd8ed1ab_0            conda-forge/noarch       Cached\n  + nbconvert                             6.1.0  py38h578d9bd_0          conda-forge/linux-64     Cached\n  + nbformat                              5.1.3  pyhd8ed1ab_0            conda-forge/noarch       Cached\n  + ncurses                                 6.2  h58526e2_4              conda-forge/linux-64     Cached\n  + nest-asyncio                          1.5.1  pyhd8ed1ab_0            conda-forge/noarch       Cached\n  + netcdf4                               1.5.7  nompi_py38h5e9db54_100  conda-forge/linux-64     Cached\n  + notebook                              6.4.2  pyha770c72_0            conda-forge/noarch       Cached\n  + nspr                                   4.30  h9c3ff4c_0              conda-forge/linux-64     Cached\n  + nss                                    3.69  hb5efdd6_0              conda-forge/linux-64     Cached\n  + numcodecs                             0.8.0  py38h709712a_0          conda-forge/linux-64     Cached\n  + numpy                                1.19.5  py38h9894fe3_2          conda-forge/linux-64     Cached\n  + olefile                                0.46  pyh9f0ad1d_1            conda-forge/noarch       Cached\n  + openjpeg                              2.4.0  hb52868f_1              conda-forge/linux-64     Cached\n  + openssl                              1.1.1k  h7f98852_0              conda-forge/linux-64     Cached\n  + orc                                   1.6.9  h58a87f1_0              conda-forge/linux-64     Cached\n  + packaging                              21.0  pyhd8ed1ab_0            conda-forge/noarch       Cached\n  + palettable                            3.3.0  py_0                    conda-forge/noarch       Cached\n  + pandas                               0.25.3  py38hb3f55d8_0          conda-forge/linux-64     Cached\n  + pandasql                              0.7.3  pyhd8ed1ab_0            conda-forge/noarch       Cached\n  + pandoc                               2.14.1  h7f98852_0              conda-forge/linux-64     Cached\n  + pandocfilters                         1.4.2  py_1                    conda-forge/noarch       Cached\n  + panel                                0.12.0  pyhd8ed1ab_0            conda-forge/noarch       Cached\n  + param                                1.11.1  pyh6c4a22f_0            conda-forge/noarch       Cached\n  + parquet-cpp                           1.5.1  1                       conda-forge/linux-64     Cached\n  + parso                                 0.8.2  pyhd8ed1ab_0            conda-forge/noarch       Cached\n  + partd                                 1.2.0  pyhd8ed1ab_0            conda-forge/noarch       Cached\n  + patsy                                 0.5.1  py_0                    conda-forge/noarch       Cached\n  + pcre                                   8.45  h9c3ff4c_0              conda-forge/linux-64     Cached\n  + pexpect                               4.8.0  py38h32f6830_1          conda-forge/linux-64     Cached\n  + pickleshare                           0.7.5  py38h32f6830_1002       conda-forge/linux-64     Cached\n  + pillow                                8.3.1  py38h8e6f84c_0          conda-forge/linux-64     Cached\n  + pip                                  21.2.3  pyhd8ed1ab_0            conda-forge/noarch       Cached\n  + plotnine                              0.6.0  py_1                    conda-forge/noarch       Cached\n  + prometheus_client                    0.11.0  pyhd8ed1ab_0            conda-forge/noarch       Cached\n  + prompt-toolkit                       3.0.19  pyha770c72_0            conda-forge/noarch       Cached\n  + prompt_toolkit                       3.0.19  hd8ed1ab_0              conda-forge/noarch       Cached\n  + protobuf                             3.16.0  py38h709712a_0          conda-forge/linux-64     Cached\n  + psutil                                5.8.0  py38h497a2fe_1          conda-forge/linux-64     Cached\n  + pthread-stubs                           0.4  h36c2ea0_1001           conda-forge/linux-64     Cached\n  + ptyprocess                            0.7.0  pyhd3deb0d_0            conda-forge/noarch       Cached\n  + pyarrow                               1.0.1  py38h1bc9799_45_cpu     conda-forge/linux-64     Cached\n  + pycodestyle                           2.7.0  pyhd8ed1ab_0            conda-forge/noarch       Cached\n  + pycparser                              2.20  pyh9f0ad1d_2            conda-forge/noarch       Cached\n  + pyct                                  0.4.6  py_0                    conda-forge/noarch       Cached\n  + pyct-core                             0.4.6  py_0                    conda-forge/noarch       Cached\n  + pygments                              2.9.0  pyhd8ed1ab_0            conda-forge/noarch       Cached\n  + pyopenssl                            20.0.1  pyhd8ed1ab_0            conda-forge/noarch       Cached\n  + pyparsing                             2.4.7  pyh9f0ad1d_0            conda-forge/noarch       Cached\n  + pyqt                                 5.12.3  py38h578d9bd_7          conda-forge/linux-64     Cached\n  + pyqt-impl                            5.12.3  py38h7400c14_7          conda-forge/linux-64     Cached\n  + pyqt5-sip                           4.19.18  py38h709712a_7          conda-forge/linux-64     Cached\n  + pyqtchart                              5.12  py38h7400c14_7          conda-forge/linux-64     Cached\n  + pyqtwebengine                        5.12.1  py38h7400c14_7          conda-forge/linux-64     Cached\n  + pyrsistent                           0.17.3  py38h497a2fe_2          conda-forge/linux-64     Cached\n  + pysocks                               1.7.1  py38h578d9bd_3          conda-forge/linux-64     Cached\n  + python                               3.8.10  h49503c6_1_cpython      conda-forge/linux-64     Cached\n  + python-dateutil                       2.8.2  pyhd8ed1ab_0            conda-forge/noarch       Cached\n  + python_abi                              3.8  2_cp38                  conda-forge/linux-64     Cached\n  + pytz                                 2021.1  pyhd8ed1ab_0            conda-forge/noarch       Cached\n  + pyviz_comms                           2.1.0  pyhd8ed1ab_0            conda-forge/noarch       Cached\n  + pyyaml                                5.4.1  py38h497a2fe_0          conda-forge/linux-64     Cached\n  + pyzmq                                22.2.1  py38h2035c66_0          conda-forge/linux-64     Cached\n  + qt                                   5.12.9  hda022c4_4              conda-forge/linux-64     Cached\n  + qtconsole                             5.1.1  pyhd8ed1ab_0            conda-forge/noarch       Cached\n  + qtpy                                  1.9.0  py_0                    conda-forge/noarch       Cached\n  + re2                              2021.08.01  h9c3ff4c_0              conda-forge/linux-64     Cached\n  + readline                                8.1  h46c0cb4_0              conda-forge/linux-64     Cached\n  + requests                             2.26.0  pyhd8ed1ab_0            conda-forge/noarch       Cached\n  + s2n                                  1.0.10  h9b69904_0              conda-forge/linux-64     Cached\n  + scipy                                 1.7.1  py38h56a6a73_0          conda-forge/linux-64     Cached\n  + seaborn                              0.11.1  ha770c72_0              conda-forge/linux-64     Cached\n  + seaborn-base                         0.11.1  pyhd8ed1ab_1            conda-forge/noarch       Cached\n  + send2trash                            1.7.1  pyhd8ed1ab_0            conda-forge/noarch       Cached\n  + setuptools                           49.6.0  py38h578d9bd_3          conda-forge/linux-64     Cached\n  + six                                  1.16.0  pyh6c4a22f_0            conda-forge/noarch       Cached\n  + snappy                                1.1.8  he1b5a44_3              conda-forge/linux-64     Cached\n  + sortedcontainers                      2.4.0  pyhd8ed1ab_0            conda-forge/noarch       Cached\n  + sqlalchemy                           1.4.22  py38h497a2fe_0          conda-forge/linux-64     Cached\n  + sqlite                               3.36.0  h9cd32fc_0              conda-forge/linux-64     Cached\n  + statsmodels                          0.12.2  py38h5c078b8_0          conda-forge/linux-64     Cached\n  + tblib                                 1.7.0  pyhd8ed1ab_0            conda-forge/noarch       Cached\n  + terminado                            0.10.1  py38h578d9bd_0          conda-forge/linux-64     Cached\n  + testpath                              0.5.0  pyhd8ed1ab_0            conda-forge/noarch       Cached\n  + thrift                               0.13.0  py38h709712a_2          conda-forge/linux-64     Cached\n  + tk                                   8.6.10  h21135ba_1              conda-forge/linux-64     Cached\n  + toolz                                0.11.1  py_0                    conda-forge/noarch       Cached\n  + tornado                                 6.1  py38h497a2fe_1          conda-forge/linux-64     Cached\n  + tqdm                                 4.62.0  pyhd8ed1ab_0            conda-forge/noarch       Cached\n  + traitlets                             5.0.5  py_0                    conda-forge/noarch       Cached\n  + typing_extensions                  3.10.0.0  pyha770c72_0            conda-forge/noarch       Cached\n  + urllib3                              1.26.6  pyhd8ed1ab_0            conda-forge/noarch       Cached\n  + vega_datasets                         0.9.0  pyhd3deb0d_0            conda-forge/noarch       Cached\n  + wcwidth                               0.2.5  pyh9f0ad1d_2            conda-forge/noarch       Cached\n  + webencodings                          0.5.1  py_1                    conda-forge/noarch       Cached\n  + wheel                                0.36.2  pyhd3deb0d_0            conda-forge/noarch       Cached\n  + widgetsnbextension                    3.5.1  py38h578d9bd_4          conda-forge/linux-64     Cached\n  + xarray                               0.19.0  pyhd8ed1ab_0            conda-forge/noarch       Cached\n  + xorg-libxau                           1.0.9  h7f98852_0              conda-forge/linux-64     Cached\n  + xorg-libxdmcp                         1.1.3  h7f98852_0              conda-forge/linux-64     Cached\n  + xz                                    5.2.5  h516909a_1              conda-forge/linux-64     Cached\n  + yaml                                  0.2.5  h516909a_0              conda-forge/linux-64     Cached\n  + zarr                                  2.8.3  pyhd8ed1ab_0            conda-forge/noarch       Cached\n  + zeromq                                4.3.4  h9c3ff4c_0              conda-forge/linux-64     Cached\n  + zict                                  2.0.0  py_0                    conda-forge/noarch       Cached\n  + zipp                                  3.5.0  pyhd8ed1ab_0            conda-forge/noarch       Cached\n  + zlib                                 1.2.11  h516909a_1010           conda-forge/linux-64     Cached\n  + zstd                                  1.5.0  ha95c52a_0              conda-forge/linux-64     Cached\n\n  Summary:\n\n  Install: 259 packages\n\n  Total download: 0  B\n\n──────────────────────────────────────────────────────────────────────────────────────────────────────────\n\n\n\nLooking for: [\u0027python\u003d3.8\u0027, \u0027jupyter\u0027, \u0027grpcio\u0027, \u0027protobuf\u0027, \u0027pandasql\u0027, \u0027pycodestyle\u0027, \u0027numpy\u003d\u003d1.19.5\u0027, \u0027pandas\u003d\u003d0.25.3\u0027, \u0027scipy\u0027, \u0027panel\u0027, \u0027pyyaml\u0027, \u0027seaborn\u0027, \u0027plotnine\u0027, \u0027hvplot\u0027, \u0027intake\u0027, \u0027intake-parquet\u0027, \u0027intake-xarray\u0027, \u0027altair\u0027, \u0027vega_datasets\u0027, \u0027pyarrow\u003d\u003d1.0.1\u0027]\n\n\nPreparing transaction: ...working... done\nVerifying transaction: ...working... done\nExecuting transaction: ...working... Enabling notebook extension jupyter-js-widgets/extension...\n      - Validating: \u001b[32mOK\u001b[0m\n\ndone\n#\n# To activate this environment, use\n#\n#     $ conda activate pyspark_env\n#\n# To deactivate an active environment, use\n#\n#     $ conda deactivate\n\n"
+          }
+        ]
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1628499052502_43002557",
+      "id": "paragraph_1617163651950_276096757",
+      "dateCreated": "2021-08-09 16:50:52.502",
+      "dateStarted": "2021-08-09 20:25:09.796",
+      "dateFinished": "2021-08-09 20:26:01.854",
+      "status": "FINISHED"
+    },
+    {
+      "title": "Create Python conda tar",
+      "text": "%sh\n\nrm -rf pyspark_env.tar.gz\nconda pack -n pyspark_env\n",
+      "user": "anonymous",
+      "dateUpdated": "2021-08-09 20:26:01.935",
+      "progress": 0,
+      "config": {
+        "editorSetting": {
+          "language": "sh",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": false
+        },
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/sh",
+        "fontSize": 9.0,
+        "title": true,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "Collecting packages...\nPacking environment at \u0027/mnt/disk1/jzhang/miniconda3/envs/pyspark_env\u0027 to \u0027pyspark_env.tar.gz\u0027\n\r[                                        ] | 0% Completed |  0.0s\r[                                        ] | 0% Completed |  0.1s\r[                                        ] | 0% Completed |  0.2s\r[                                        ] | 0% Completed |  0.3s\r[                                        ] | 1% Completed |  0.4s\r[                                        ] | 1% Completed |  0.5s\r[                                        ] | 1% Completed |  0.6s\r[                                        ] | 1% Completed |  0.7s\r[                                        ] | 1% Completed |  0.8s\r[                                        ] | 1% Completed |  0.9s\r[                                        ] | 1% Completed |  1.0s\r[                                        ] | 1% Completed |  1.1s\r[                                        ] | 1% Completed |  1.2s\r[                                        ] | 2% Completed |  1.3s\r[                                        ] | 2% Completed |  1.4s\r[                                        ] | 2% Completed |  1.5s\r[                                        ] | 2% Completed |  1.6s\r[#                                       ] | 2% Completed |  1.7s\r[#                                       ] | 2% Completed |  1.8s\r[#                                       ] | 2% Completed |  1.9s\r[#                                       ] | 3% Completed |  2.0s\r[#                                       ] | 3% Completed |  2.1s\r[#                                       ] | 3% Completed |  2.2s\r[#                                       ] | 3% Completed |  2.3s\r[#                                       ] | 3% Completed |  2.4s\r[#                                       ] | 3% Completed |  2.5s\r[#                                       ] | 4% Completed |  2.6s\r[#                                       ] | 4% Completed |  2.7s\r[#                                       ] | 4% Completed |  2.8s\r[#                                       ] | 4% Completed |  2.9s\r[#                                       ] | 4% Completed |  3.0s\r[#                                       ] | 4% Completed |  3.1s\r[#                                       ] | 4% Completed |  3.2s\r[#                                       ] | 4% Completed |  3.3s\r[##                                      ] | 5% Completed |  3.4s\r[##                                      ] | 5% Completed |  3.5s\r[##                                      ] | 5% Completed |  3.6s\r[##                                      ] | 5% Completed |  3.7s\r[##                                      ] | 5% Completed |  3.8s\r[##                                      ] | 6% Completed |  3.9s\r[##                                      ] | 6% Completed |  4.0s\r[##                                      ] | 6% Completed |  4.1s\r[##                                      ] | 6% Completed |  4.2s\r[##                                      ] | 6% Completed |  4.3s\r[##                                      ] | 6% Completed |  4.4s\r[##                                      ] | 6% Completed |  4.5s\r[##                                      ] | 6% Completed |  4.6s\r[##                                      ] | 6% Completed |  4.7s\r[##                                      ] | 6% Completed |  4.8s\r[###                                     ] | 7% Completed |  4.9s\r[###                                     ] | 8% Completed |  5.0s\r[###                                     ] | 8% Completed |  5.1s\r[###                                     ] | 8% Completed |  5.2s\r[###                                     ] | 8% Completed |  5.3s\r[###                                     ] | 9% Completed |  5.4s\r[###                                     ] | 9% Completed |  5.5s\r[###                                     ] | 9% Completed |  5.6s\r[####                                    ] | 10% Completed |  5.7s\r[####                                    ] | 10% Completed |  5.8s\r[####                                    ] | 10% Completed |  5.9s\r[####                                    ] | 10% Completed |  6.0s\r[####                                    ] | 11% Completed |  6.1s\r[####                                    ] | 11% Completed |  6.2s\r[####                                    ] | 11% Completed |  6.3s\r[####                                    ] | 11% Completed |  6.4s\r[####                                    ] | 12% Completed |  6.5s\r[#####                                   ] | 12% Completed |  6.6s\r[#####                                   ] | 12% Completed |  6.7s\r[#####                                   ] | 13% Completed |  6.8s\r[#####                                   ] | 13% Completed |  6.9s\r[#####                                   ] | 13% Completed |  7.0s\r[#####                                   ] | 13% Completed |  7.1s\r[#####                                   ] | 13% Completed |  7.2s\r[#####                                   ] | 13% Completed |  7.3s\r[#####                                   ] | 13% Completed |  7.4s\r[#####                                   ] | 13% Completed |  7.5s\r[#####                                   ] | 13% Completed |  7.6s\r[#####                                   ] | 13% Completed |  7.7s\r[#####                                   ] | 13% Completed |  7.8s\r[#####                                   ] | 13% Completed |  7.9s\r[#####                                   ] | 13% Completed |  8.0s\r[#####                                   ] | 14% Completed |  8.1s\r[#####                                   ] | 14% Completed |  8.2s\r[#####                                   ] | 14% Completed |  8.3s\r[#####                                   ] | 14% Completed |  8.4s\r[#####                                   ] | 14% Completed |  8.5s\r[#####                                   ] | 14% Completed |  8.6s\r[#####                                   ] | 14% Completed |  8.7s\r[#####                                   ] | 14% Completed |  8.8s\r[#####                                   ] | 14% Completed |  8.9s\r[#####                                   ] | 14% Completed |  9.0s\r[#####                                   ] | 14% Completed |  9.1s\r[#####                                   ] | 14% Completed |  9.2s\r[#####                                   ] | 14% Completed |  9.3s\r[######                                  ] | 15% Completed |  9.4s\r[######                                  ] | 15% Completed |  9.5s\r[######                                  ] | 15% Completed |  9.6s\r[######                                  ] | 15% Completed |  9.7s\r[######                                  ] | 15% Completed |  9.8s\r[######                                  ] | 15% Completed |  9.9s\r[######                                  ] | 15% Completed | 10.0s\r[######                                  ] | 15% Completed | 10.1s\r[######                                  ] | 16% Completed | 10.2s\r[######                                  ] | 16% Completed | 10.3s\r[######                                  ] | 16% Completed | 10.4s\r[######                                  ] | 16% Completed | 10.5s\r[######                                  ] | 16% Completed | 10.6s\r[######                                  ] | 17% Completed | 10.7s\r[######                                  ] | 17% Completed | 10.8s\r[######                                  ] | 17% Completed | 10.9s\r[######                                  ] | 17% Completed | 11.0s\r[######                                  ] | 17% Completed | 11.1s\r[######                                  ] | 17% Completed | 11.2s\r[#######                                 ] | 17% Completed | 11.3s\r[#######                                 ] | 17% Completed | 11.4s\r[#######                                 ] | 17% Completed | 11.5s\r[#######                                 ] | 18% Completed | 11.6s\r[#######                                 ] | 18% Completed | 11.7s\r[#######                                 ] | 18% Completed | 11.8s\r[#######                                 ] | 18% Completed | 11.9s\r[#######                                 ] | 19% Completed | 12.0s\r[#######                                 ] | 19% Completed | 12.1s\r[#######                                 ] | 19% Completed | 12.2s\r[#######                                 ] | 19% Completed | 12.3s\r[#######                                 ] | 19% Completed | 12.4s\r[#######                                 ] | 19% Completed | 12.5s\r[#######                                 ] | 19% Completed | 12.6s\r[########                                ] | 20% Completed | 12.7s\r[########                                ] | 20% Completed | 12.8s\r[########                                ] | 20% Completed | 12.9s\r[########                                ] | 20% Completed | 13.0s\r[########                                ] | 20% Completed | 13.1s\r[########                                ] | 21% Completed | 13.2s\r[########                                ] | 21% Completed | 13.4s\r[########                                ] | 21% Completed | 13.5s\r[########                                ] | 22% Completed | 13.6s\r[########                                ] | 22% Completed | 13.7s\r[########                                ] | 22% Completed | 13.8s\r[########                                ] | 22% Completed | 13.9s\r[########                                ] | 22% Completed | 14.0s\r[########                                ] | 22% Completed | 14.1s\r[########                                ] | 22% Completed | 14.2s\r[########                                ] | 22% Completed | 14.3s\r[#########                               ] | 23% Completed | 14.4s\r[#########                               ] | 24% Completed | 14.5s\r[#########                               ] | 24% Completed | 14.6s\r[##########                              ] | 25% Completed | 14.7s\r[##########                              ] | 25% Completed | 14.8s\r[##########                              ] | 26% Completed | 14.9s\r[##########                              ] | 26% Completed | 15.0s\r[##########                              ] | 26% Completed | 15.1s\r[##########                              ] | 27% Completed | 15.2s\r[###########                             ] | 27% Completed | 15.3s\r[###########                             ] | 28% Completed | 15.4s\r[###########                             ] | 28% Completed | 15.5s\r[###########                             ] | 28% Completed | 15.6s\r[###########                             ] | 28% Completed | 15.7s\r[###########                             ] | 28% Completed | 15.8s\r[###########                             ] | 29% Completed | 15.9s\r[###########                             ] | 29% Completed | 16.0s\r[###########                             ] | 29% Completed | 16.1s\r[###########                             ] | 29% Completed | 16.2s\r[############                            ] | 30% Completed | 16.3s\r[############                            ] | 30% Completed | 16.4s\r[############                            ] | 30% Completed | 16.5s\r[############                            ] | 31% Completed | 16.6s\r[############                            ] | 31% Completed | 16.7s\r[#############                           ] | 32% Completed | 16.8s\r[#############                           ] | 33% Completed | 16.9s\r[#############                           ] | 33% Completed | 17.0s\r[#############                           ] | 34% Completed | 17.1s\r[#############                           ] | 34% Completed | 17.2s\r[##############                          ] | 35% Completed | 17.3s\r[##############                          ] | 36% Completed | 17.4s\r[##############                          ] | 36% Completed | 17.5s\r[##############                          ] | 36% Completed | 17.6s\r[##############                          ] | 36% Completed | 17.7s\r[##############                          ] | 36% Completed | 17.8s\r[##############                          ] | 36% Completed | 17.9s\r[##############                          ] | 37% Completed | 18.0s\r[##############                          ] | 37% Completed | 18.1s\r[###############                         ] | 37% Completed | 18.2s\r[###############                         ] | 37% Completed | 18.3s\r[###############                         ] | 37% Completed | 18.4s\r[###############                         ] | 38% Completed | 18.5s\r[###############                         ] | 38% Completed | 18.6s\r[###############                         ] | 38% Completed | 18.7s\r[###############                         ] | 38% Completed | 18.8s\r[###############                         ] | 38% Completed | 18.9s\r[###############                         ] | 38% Completed | 19.0s\r[###############                         ] | 38% Completed | 19.1s\r[###############                         ] | 38% Completed | 19.2s\r[###############                         ] | 38% Completed | 19.3s\r[###############                         ] | 39% Completed | 19.4s\r[###############                         ] | 39% Completed | 19.5s\r[###############                         ] | 39% Completed | 19.6s\r[################                        ] | 40% Completed | 19.7s\r[################                        ] | 40% Completed | 19.8s\r[################                        ] | 40% Completed | 19.9s\r[################                        ] | 40% Completed | 20.0s\r[################                        ] | 40% Completed | 20.1s\r[################                        ] | 40% Completed | 20.2s\r[################                        ] | 41% Completed | 20.3s\r[################                        ] | 41% Completed | 20.4s\r[################                        ] | 41% Completed | 20.5s\r[################                        ] | 41% Completed | 20.6s\r[################                        ] | 41% Completed | 20.7s\r[################                        ] | 41% Completed | 20.8s\r[################                        ] | 42% Completed | 20.9s\r[#################                       ] | 42% Completed | 21.0s\r[#################                       ] | 42% Completed | 21.1s\r[#################                       ] | 43% Completed | 21.2s\r[#################                       ] | 43% Completed | 21.3s\r[#################                       ] | 43% Completed | 21.4s\r[#################                       ] | 43% Completed | 21.5s\r[#################                       ] | 44% Completed | 21.6s\r[#################                       ] | 44% Completed | 21.7s\r[#################                       ] | 44% Completed | 21.8s\r[##################                      ] | 45% Completed | 21.9s\r[##################                      ] | 45% Completed | 22.0s\r[##################                      ] | 45% Completed | 22.1s\r[##################                      ] | 45% Completed | 22.2s\r[##################                      ] | 45% Completed | 22.3s\r[##################                      ] | 46% Completed | 22.4s\r[##################                      ] | 46% Completed | 22.5s\r[##################                      ] | 46% Completed | 22.6s\r[##################                      ] | 47% Completed | 22.7s\r[##################                      ] | 47% Completed | 22.8s\r[##################                      ] | 47% Completed | 22.9s\r[##################                      ] | 47% Completed | 23.0s\r[###################                     ] | 47% Completed | 23.1s\r[###################                     ] | 48% Completed | 23.2s\r[###################                     ] | 48% Completed | 23.3s\r[###################                     ] | 48% Completed | 23.4s\r[###################                     ] | 48% Completed | 23.5s\r[###################                     ] | 48% Completed | 23.6s\r[###################                     ] | 48% Completed | 23.7s\r[###################                     ] | 48% Completed | 23.8s\r[###################                     ] | 48% Completed | 23.9s\r[###################                     ] | 48% Completed | 24.0s\r[###################                     ] | 48% Completed | 24.1s\r[###################                     ] | 48% Completed | 24.2s\r[###################                     ] | 49% Completed | 24.3s\r[###################                     ] | 49% Completed | 24.4s\r[###################                     ] | 49% Completed | 24.5s\r[####################                    ] | 50% Completed | 24.6s\r[####################                    ] | 50% Completed | 24.7s\r[####################                    ] | 50% Completed | 24.8s\r[####################                    ] | 51% Completed | 24.9s\r[####################                    ] | 51% Completed | 25.0s\r[####################                    ] | 51% Completed | 25.1s\r[####################                    ] | 51% Completed | 25.2s\r[####################                    ] | 51% Completed | 25.3s\r[####################                    ] | 51% Completed | 25.4s\r[####################                    ] | 52% Completed | 25.5s\r[####################                    ] | 52% Completed | 25.6s\r[#####################                   ] | 52% Completed | 25.7s\r[#####################                   ] | 52% Completed | 25.8s\r[#####################                   ] | 52% Completed | 25.9s\r[#####################                   ] | 52% Completed | 26.0s\r[#####################                   ] | 52% Completed | 26.1s\r[#####################                   ] | 52% Completed | 26.2s\r[#####################                   ] | 52% Completed | 26.3s\r[#####################                   ] | 52% Completed | 26.4s\r[#####################                   ] | 52% Completed | 26.5s\r[#####################                   ] | 52% Completed | 26.6s\r[#####################                   ] | 52% Completed | 26.7s\r[#####################                   ] | 52% Completed | 26.8s\r[#####################                   ] | 52% Completed | 26.9s\r[#####################                   ] | 52% Completed | 27.0s\r[#####################                   ] | 52% Completed | 27.1s\r[#####################                   ] | 52% Completed | 27.2s\r[#####################                   ] | 52% Completed | 27.3s\r[#####################                   ] | 52% Completed | 27.4s\r[#####################                   ] | 52% Completed | 27.5s\r[#####################                   ] | 52% Completed | 27.6s\r[#####################                   ] | 52% Completed | 27.7s\r[#####################                   ] | 52% Completed | 27.8s\r[#####################                   ] | 52% Completed | 27.9s\r[#####################                   ] | 52% Completed | 28.0s\r[#####################                   ] | 53% Completed | 28.1s\r[#####################                   ] | 53% Completed | 28.2s\r[#####################                   ] | 53% Completed | 28.3s\r[#####################                   ] | 53% Completed | 28.4s\r[#####################                   ] | 53% Completed | 28.5s\r[#####################                   ] | 53% Completed | 28.6s\r[#####################                   ] | 53% Completed | 28.7s\r[#####################                   ] | 53% Completed | 28.8s\r[#####################                   ] | 53% Completed | 28.9s\r[#####################                   ] | 53% Completed | 29.0s\r[#####################                   ] | 53% Completed | 29.1s\r[#####################                   ] | 53% Completed | 29.2s\r[#####################                   ] | 53% Completed | 29.3s\r[#####################                   ] | 53% Completed | 29.4s\r[#####################                   ] | 53% Completed | 29.5s\r[#####################                   ] | 53% Completed | 29.6s\r[#####################                   ] | 53% Completed | 29.7s\r[#####################                   ] | 53% Completed | 29.8s\r[#####################                   ] | 53% Completed | 29.9s\r[#####################                   ] | 53% Completed | 30.0s\r[#####################                   ] | 53% Completed | 30.1s\r[#####################                   ] | 53% Completed | 30.2s\r[#####################                   ] | 53% Completed | 30.3s\r[#####################                   ] | 53% Completed | 30.4s\r[#####################                   ] | 53% Completed | 30.5s\r[#####################                   ] | 53% Completed | 30.6s\r[#####################                   ] | 53% Completed | 30.7s\r[#####################                   ] | 53% Completed | 30.8s\r[#####################                   ] | 53% Completed | 30.9s\r[#####################                   ] | 53% Completed | 31.0s\r[#####################                   ] | 54% Completed | 31.1s\r[#####################                   ] | 54% Completed | 31.2s\r[#####################                   ] | 54% Completed | 31.3s\r[#####################                   ] | 54% Completed | 31.4s\r[######################                  ] | 55% Completed | 31.5s\r[######################                  ] | 55% Completed | 31.6s\r[######################                  ] | 55% Completed | 31.7s\r[######################                  ] | 55% Completed | 31.8s\r[######################                  ] | 55% Completed | 31.9s\r[######################                  ] | 56% Completed | 32.0s\r[######################                  ] | 56% Completed | 32.1s\r[######################                  ] | 57% Completed | 32.2s\r[######################                  ] | 57% Completed | 32.3s\r[#######################                 ] | 57% Completed | 32.4s\r[#######################                 ] | 57% Completed | 32.5s\r[#######################                 ] | 57% Completed | 32.6s\r[#######################                 ] | 57% Completed | 32.7s\r[#######################                 ] | 57% Completed | 32.8s\r[#######################                 ] | 58% Completed | 32.9s\r[#######################                 ] | 58% Completed | 33.0s\r[#######################                 ] | 58% Completed | 33.1s\r[#######################                 ] | 58% Completed | 33.2s\r[#######################                 ] | 58% Completed | 33.3s\r[#######################                 ] | 59% Completed | 33.4s\r[#######################                 ] | 59% Completed | 33.5s\r[#######################                 ] | 59% Completed | 33.6s\r[########################                ] | 60% Completed | 33.7s\r[########################                ] | 60% Completed | 33.8s\r[########################                ] | 60% Completed | 33.9s\r[########################                ] | 60% Completed | 34.0s\r[########################                ] | 60% Completed | 34.1s\r[########################                ] | 61% Completed | 34.2s\r[########################                ] | 61% Completed | 34.3s\r[########################                ] | 61% Completed | 34.4s\r[########################                ] | 61% Completed | 34.5s\r[########################                ] | 62% Completed | 34.6s\r[########################                ] | 62% Completed | 34.7s\r[########################                ] | 62% Completed | 34.8s\r[########################                ] | 62% Completed | 34.9s\r[########################                ] | 62% Completed | 35.0s\r[########################                ] | 62% Completed | 35.1s\r[########################                ] | 62% Completed | 35.2s\r[########################                ] | 62% Completed | 35.3s\r[########################                ] | 62% Completed | 35.4s\r[########################                ] | 62% Completed | 35.5s\r[########################                ] | 62% Completed | 35.6s\r[########################                ] | 62% Completed | 35.7s\r[########################                ] | 62% Completed | 35.8s\r[#########################               ] | 62% Completed | 35.9s\r[#########################               ] | 63% Completed | 36.0s\r[#########################               ] | 63% Completed | 36.1s\r[#########################               ] | 63% Completed | 36.2s\r[#########################               ] | 64% Completed | 36.3s\r[#########################               ] | 64% Completed | 36.4s\r[##########################              ] | 65% Completed | 36.5s\r[##########################              ] | 65% Completed | 36.6s\r[##########################              ] | 65% Completed | 36.7s\r[##########################              ] | 65% Completed | 36.8s\r[##########################              ] | 66% Completed | 36.9s\r[##########################              ] | 66% Completed | 37.0s\r[##########################              ] | 66% Completed | 37.1s\r[##########################              ] | 67% Completed | 37.2s\r[##########################              ] | 67% Completed | 37.3s\r[###########################             ] | 67% Completed | 37.4s\r[###########################             ] | 68% Completed | 37.5s\r[###########################             ] | 68% Completed | 37.6s\r[###########################             ] | 68% Completed | 37.7s\r[###########################             ] | 69% Completed | 37.8s\r[###########################             ] | 69% Completed | 37.9s\r[###########################             ] | 69% Completed | 38.0s\r[############################            ] | 70% Completed | 38.1s\r[############################            ] | 70% Completed | 38.2s\r[############################            ] | 70% Completed | 38.3s\r[############################            ] | 71% Completed | 38.4s\r[############################            ] | 71% Completed | 38.5s\r[############################            ] | 71% Completed | 38.6s\r[############################            ] | 72% Completed | 38.7s\r[#############################           ] | 72% Completed | 38.8s\r[#############################           ] | 72% Completed | 38.9s\r[#############################           ] | 73% Completed | 39.0s\r[#############################           ] | 73% Completed | 39.1s\r[#############################           ] | 74% Completed | 39.2s\r[#############################           ] | 74% Completed | 39.3s\r[#############################           ] | 74% Completed | 39.4s\r[##############################          ] | 75% Completed | 39.5s\r[##############################          ] | 75% Completed | 39.6s\r[##############################          ] | 75% Completed | 39.7s\r[##############################          ] | 75% Completed | 39.8s\r[##############################          ] | 75% Completed | 39.9s\r[##############################          ] | 75% Completed | 40.0s\r[##############################          ] | 75% Completed | 40.1s\r[##############################          ] | 75% Completed | 40.2s\r[##############################          ] | 75% Completed | 40.3s\r[##############################          ] | 75% Completed | 40.4s\r[##############################          ] | 75% Completed | 40.5s\r[##############################          ] | 75% Completed | 40.6s\r[##############################          ] | 75% Completed | 40.7s\r[##############################          ] | 75% Completed | 40.8s\r[##############################          ] | 75% Completed | 40.9s\r[##############################          ] | 75% Completed | 41.0s\r[##############################          ] | 75% Completed | 41.1s\r[##############################          ] | 75% Completed | 41.2s\r[##############################          ] | 75% Completed | 41.3s\r[##############################          ] | 75% Completed | 41.4s\r[##############################          ] | 75% Completed | 41.5s\r[##############################          ] | 75% Completed | 41.6s\r[##############################          ] | 75% Completed | 41.7s\r[##############################          ] | 75% Completed | 41.8s\r[##############################          ] | 75% Completed | 41.9s\r[##############################          ] | 75% Completed | 42.0s\r[##############################          ] | 75% Completed | 42.1s\r[##############################          ] | 75% Completed | 42.2s\r[##############################          ] | 75% Completed | 42.3s\r[##############################          ] | 75% Completed | 42.4s\r[##############################          ] | 75% Completed | 42.5s\r[##############################          ] | 75% Completed | 42.6s\r[##############################          ] | 75% Completed | 42.7s\r[##############################          ] | 75% Completed | 42.8s\r[##############################          ] | 75% Completed | 42.9s\r[##############################          ] | 75% Completed | 43.0s\r[##############################          ] | 75% Completed | 43.1s\r[##############################          ] | 75% Completed | 43.2s\r[##############################          ] | 75% Completed | 43.3s\r[##############################          ] | 75% Completed | 43.4s\r[##############################          ] | 75% Completed | 43.5s\r[##############################          ] | 75% Completed | 43.6s\r[##############################          ] | 75% Completed | 43.7s\r[##############################          ] | 75% Completed | 43.8s\r[##############################          ] | 75% Completed | 43.9s\r[##############################          ] | 75% Completed | 44.0s\r[##############################          ] | 75% Completed | 44.1s\r[##############################          ] | 75% Completed | 44.2s\r[##############################          ] | 75% Completed | 44.3s\r[##############################          ] | 75% Completed | 44.4s\r[##############################          ] | 75% Completed | 44.5s\r[##############################          ] | 75% Completed | 44.6s\r[##############################          ] | 75% Completed | 44.7s\r[##############################          ] | 75% Completed | 44.8s\r[##############################          ] | 76% Completed | 44.9s\r[##############################          ] | 76% Completed | 45.0s\r[##############################          ] | 77% Completed | 45.1s\r[##############################          ] | 77% Completed | 45.2s\r[##############################          ] | 77% Completed | 45.3s\r[##############################          ] | 77% Completed | 45.4s\r[##############################          ] | 77% Completed | 45.5s\r[##############################          ] | 77% Completed | 45.6s\r[##############################          ] | 77% Completed | 45.7s\r[##############################          ] | 77% Completed | 45.8s\r[###############################         ] | 77% Completed | 45.9s\r[###############################         ] | 77% Completed | 46.0s\r[###############################         ] | 78% Completed | 46.1s\r[###############################         ] | 78% Completed | 46.2s\r[###############################         ] | 79% Completed | 46.3s\r[###############################         ] | 79% Completed | 46.4s\r[###############################         ] | 79% Completed | 46.5s\r[###############################         ] | 79% Completed | 46.6s\r[###############################         ] | 79% Completed | 46.7s\r[###############################         ] | 79% Completed | 46.8s\r[###############################         ] | 79% Completed | 46.9s\r[###############################         ] | 79% Completed | 47.0s\r[###############################         ] | 79% Completed | 47.1s\r[###############################         ] | 79% Completed | 47.2s\r[###############################         ] | 79% Completed | 47.3s\r[################################        ] | 80% Completed | 47.4s\r[################################        ] | 80% Completed | 47.5s\r[################################        ] | 81% Completed | 47.6s\r[################################        ] | 81% Completed | 47.7s\r[################################        ] | 81% Completed | 47.8s\r[################################        ] | 81% Completed | 47.9s\r[################################        ] | 81% Completed | 48.0s\r[################################        ] | 81% Completed | 48.1s\r[################################        ] | 81% Completed | 48.2s\r[################################        ] | 81% Completed | 48.3s\r[################################        ] | 81% Completed | 48.4s\r[################################        ] | 81% Completed | 48.5s\r[################################        ] | 81% Completed | 48.6s\r[################################        ] | 82% Completed | 48.7s\r[################################        ] | 82% Completed | 48.8s\r[#################################       ] | 82% Completed | 48.9s\r[#################################       ] | 82% Completed | 49.0s\r[#################################       ] | 83% Completed | 49.1s\r[#################################       ] | 83% Completed | 49.2s\r[#################################       ] | 83% Completed | 49.3s\r[#################################       ] | 84% Completed | 49.4s\r[#################################       ] | 84% Completed | 49.5s\r[#################################       ] | 84% Completed | 49.6s\r[#################################       ] | 84% Completed | 49.7s\r[#################################       ] | 84% Completed | 49.8s\r[#################################       ] | 84% Completed | 49.9s\r[#################################       ] | 84% Completed | 50.0s\r[#################################       ] | 84% Completed | 50.1s\r[##################################      ] | 85% Completed | 50.2s\r[##################################      ] | 85% Completed | 50.3s\r[##################################      ] | 85% Completed | 50.4s\r[##################################      ] | 85% Completed | 50.5s\r[##################################      ] | 85% Completed | 50.6s\r[##################################      ] | 86% Completed | 50.7s\r[##################################      ] | 86% Completed | 50.9s\r[##################################      ] | 86% Completed | 51.0s\r[##################################      ] | 86% Completed | 51.1s\r[##################################      ] | 86% Completed | 51.2s\r[##################################      ] | 86% Completed | 51.3s\r[##################################      ] | 86% Completed | 51.4s\r[##################################      ] | 86% Completed | 51.5s\r[##################################      ] | 86% Completed | 51.6s\r[##################################      ] | 86% Completed | 51.7s\r[##################################      ] | 86% Completed | 51.8s\r[##################################      ] | 86% Completed | 51.9s\r[##################################      ] | 86% Completed | 52.0s\r[##################################      ] | 86% Completed | 52.1s\r[##################################      ] | 86% Completed | 52.2s\r[##################################      ] | 86% Completed | 52.3s\r[##################################      ] | 86% Completed | 52.4s\r[##################################      ] | 86% Completed | 52.5s\r[##################################      ] | 86% Completed | 52.6s\r[##################################      ] | 86% Completed | 52.7s\r[##################################      ] | 86% Completed | 52.8s\r[##################################      ] | 86% Completed | 52.9s\r[##################################      ] | 86% Completed | 53.0s\r[##################################      ] | 86% Completed | 53.1s\r[##################################      ] | 86% Completed | 53.2s\r[##################################      ] | 86% Completed | 53.3s\r[##################################      ] | 86% Completed | 53.4s\r[##################################      ] | 86% Completed | 53.5s\r[##################################      ] | 86% Completed | 53.6s\r[##################################      ] | 87% Completed | 53.7s\r[##################################      ] | 87% Completed | 53.8s\r[###################################     ] | 87% Completed | 53.9s\r[###################################     ] | 87% Completed | 54.0s\r[###################################     ] | 88% Completed | 54.1s\r[###################################     ] | 88% Completed | 54.2s\r[###################################     ] | 88% Completed | 54.3s\r[###################################     ] | 88% Completed | 54.4s\r[###################################     ] | 89% Completed | 54.5s\r[###################################     ] | 89% Completed | 54.6s\r[###################################     ] | 89% Completed | 54.7s\r[###################################     ] | 89% Completed | 54.8s\r[####################################    ] | 90% Completed | 54.9s\r[####################################    ] | 90% Completed | 55.0s\r[####################################    ] | 90% Completed | 55.1s\r[####################################    ] | 90% Completed | 55.2s\r[####################################    ] | 91% Completed | 55.3s\r[####################################    ] | 91% Completed | 55.4s\r[####################################    ] | 91% Completed | 55.5s\r[####################################    ] | 91% Completed | 55.6s\r[####################################    ] | 91% Completed | 55.7s\r[####################################    ] | 92% Completed | 55.8s\r[#####################################   ] | 92% Completed | 55.9s\r[#####################################   ] | 93% Completed | 56.0s\r[#####################################   ] | 93% Completed | 56.1s\r[#####################################   ] | 93% Completed | 56.2s\r[#####################################   ] | 94% Completed | 56.3s\r[#####################################   ] | 94% Completed | 56.4s\r[#####################################   ] | 94% Completed | 56.5s\r[#####################################   ] | 94% Completed | 56.6s\r[#####################################   ] | 94% Completed | 56.7s\r[######################################  ] | 95% Completed | 56.8s\r[######################################  ] | 95% Completed | 56.9s\r[######################################  ] | 95% Completed | 57.0s\r[######################################  ] | 95% Completed | 57.1s\r[######################################  ] | 95% Completed | 57.2s\r[######################################  ] | 95% Completed | 57.3s\r[######################################  ] | 95% Completed | 57.4s\r[######################################  ] | 95% Completed | 57.5s\r[######################################  ] | 95% Completed | 57.6s\r[######################################  ] | 95% Completed | 57.7s\r[######################################  ] | 95% Completed | 57.8s\r[######################################  ] | 95% Completed | 57.9s\r[######################################  ] | 95% Completed | 58.0s\r[######################################  ] | 95% Completed | 58.1s\r[######################################  ] | 95% Completed | 58.2s\r[######################################  ] | 96% Completed | 58.3s\r[######################################  ] | 96% Completed | 58.4s\r[######################################  ] | 96% Completed | 58.5s\r[######################################  ] | 96% Completed | 58.6s\r[######################################  ] | 97% Completed | 58.7s\r[####################################### ] | 97% Completed | 58.8s\r[####################################### ] | 98% Completed | 58.9s\r[####################################### ] | 98% Completed | 59.0s\r[####################################### ] | 98% Completed | 59.1s\r[####################################### ] | 98% Completed | 59.2s\r[####################################### ] | 99% Completed | 59.3s\r[####################################### ] | 99% Completed | 59.4s\r[####################################### ] | 99% Completed | 59.5s\r[########################################] | 100% Completed | 59.6s\n"
+          }
+        ]
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1628499052502_1290046721",
+      "id": "paragraph_1617170106834_1523620028",
+      "dateCreated": "2021-08-09 16:50:52.502",
+      "dateStarted": "2021-08-09 20:26:01.944",
+      "dateFinished": "2021-08-09 20:27:03.580",
+      "status": "FINISHED"
+    },
+    {
+      "title": "Upload Python conda tar to hdfs",
+      "text": "%sh\n\nhadoop fs -rmr /tmp/pyspark_env.tar.gz\nhadoop fs -put pyspark_env.tar.gz /tmp\n# The python conda tar should be public accessible, so need to change permission here.\nhadoop fs -chmod 644 /tmp/pyspark_env.tar.gz\n",
+      "user": "anonymous",
+      "dateUpdated": "2021-08-09 20:27:03.588",
+      "progress": 0,
+      "config": {
+        "editorSetting": {
+          "language": "sh",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": false
+        },
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/sh",
+        "fontSize": 9.0,
+        "title": true,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "rmr: DEPRECATED: Please use \u0027-rm -r\u0027 instead.\n21/08/09 20:27:05 INFO fs.TrashPolicyDefault: Moved: \u0027hdfs://emr-header-1.cluster-46718:9000/tmp/pyspark_env.tar.gz\u0027 to trash at: hdfs://emr-header-1.cluster-46718:9000/user/hadoop/.Trash/Current/tmp/pyspark_env.tar.gz\n"
+          }
+        ]
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1628499052503_165730412",
+      "id": "paragraph_1617163700271_1335210825",
+      "dateCreated": "2021-08-09 16:50:52.503",
+      "dateStarted": "2021-08-09 20:27:03.591",
+      "dateFinished": "2021-08-09 20:27:10.407",
+      "status": "FINISHED"
+    },
+    {
+      "title": "Configure Spark Interpreter",
+      "text": "%spark.conf\n\n# set the following 2 properties to run spark in yarn-cluster mode\nspark.master yarn\nspark.submit.deployMode cluster\n\nspark.driver.memory 4g\nspark.executor.memory 4g\n\n# spark.yarn.dist.archives can be either local file or hdfs file\nspark.yarn.dist.archives hdfs:///tmp/pyspark_env.tar.gz#environment\n# spark.yarn.dist.archives pyspark_env.tar.gz#environment\n\nzeppelin.interpreter.conda.env.name environment\n\nspark.sql.execution.arrow.pyspark.enabled true\nspark.sql.execution.arrow.pyspark.fallback.enabled false\n\n# Set the following setting for ARROW if you are using spark 2.x, otherwise using pyarrow udf would fail\n# spark.yarn.appMasterEnv.ARROW_PRE_0_15_IPC_FORMAT 1\n# spark.executorEnv.ARROW_PRE_0_15_IPC_FORMAT 1\n",
+      "user": "anonymous",
+      "dateUpdated": "2021-08-09 20:27:10.499",
+      "progress": 0,
+      "config": {
+        "editorSetting": {
+          "language": "text",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": false
+        },
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/text",
+        "fontSize": 9.0,
+        "title": true,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": []
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1628499052503_1438301861",
+      "id": "paragraph_1616750271530_2029224504",
+      "dateCreated": "2021-08-09 16:50:52.503",
+      "dateStarted": "2021-08-09 20:27:10.506",
+      "dateFinished": "2021-08-09 20:27:10.517",
+      "status": "FINISHED"
+    },
+    {
+      "title": "Use Matplotlib",
+      "text": "%md\n\nThe following example use matplotlib in pyspark. Here the matplotlib is only used in spark driver.\n",
+      "user": "anonymous",
+      "dateUpdated": "2021-08-09 20:27:10.603",
+      "progress": 0,
+      "config": {
+        "tableHide": false,
+        "editorSetting": {
+          "language": "markdown",
+          "editOnDblClick": true,
+          "completionKey": "TAB",
+          "completionSupport": false
+        },
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/markdown",
+        "fontSize": 9.0,
+        "editorHide": true,
+        "title": true,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003cp\u003eThe following example use matplotlib in pyspark. Here the matplotlib is only used in spark driver.\u003c/p\u003e\n\n\u003c/div\u003e"
+          }
+        ]
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1628502898787_1101584010",
+      "id": "paragraph_1628502898787_1101584010",
+      "dateCreated": "2021-08-09 17:54:58.787",
+      "dateStarted": "2021-08-09 20:27:10.607",
+      "dateFinished": "2021-08-09 20:27:10.614",
+      "status": "FINISHED"
+    },
+    {
+      "title": "Use Matplotlib",
+      "text": "%spark.pyspark\n\n%matplotlib inline\n\nimport matplotlib.pyplot as plt\n\nplt.plot([1,2,3,4])\nplt.ylabel(\u0027some numbers\u0027)\nplt.show()\n",
+      "user": "anonymous",
+      "dateUpdated": "2021-08-09 20:27:10.707",
+      "progress": 0,
+      "config": {
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/python",
+        "fontSize": 9.0,
+        "title": false,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "IMG",
+            "data": "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\u003d\u003d\n"
+          }
+        ]
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1628499052504_67784564",
+      "id": "paragraph_1623916874799_812799753",
+      "dateCreated": "2021-08-09 16:50:52.504",
+      "dateStarted": "2021-08-09 20:27:10.711",
+      "dateFinished": "2021-08-09 20:28:22.417",
+      "status": "FINISHED"
+    },
+    {
+      "title": "PySpark UDF using Pandas and PyArrow",
+      "text": "%md\n\nFollowing are examples of using pandas and pyarrow in udf. Here we use python packages in both spark driver and executors. All the examples are from [apache spark official document](https://spark.apache.org/docs/latest/api/python/user_guide/arrow_pandas.html#recommended-pandas-and-pyarrow-versions)",
+      "user": "anonymous",
+      "dateUpdated": "2021-08-09 20:28:22.458",
+      "progress": 0,
+      "config": {
+        "tableHide": false,
+        "editorSetting": {
+          "language": "markdown",
+          "editOnDblClick": true,
+          "completionKey": "TAB",
+          "completionSupport": false
+        },
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/markdown",
+        "fontSize": 9.0,
+        "editorHide": true,
+        "title": true,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003cp\u003eFollowing are examples of using pandas and pyarrow in udf. Here we use python packages in both spark driver and executors. All the examples are from \u003ca href\u003d\"https://spark.apache.org/docs/latest/api/python/user_guide/arrow_pandas.html#recommended-pandas-and-pyarrow-versions\"\u003eapache spark official document\u003c/a\u003e\u003c/p\u003e\n\n\u003c/div\u003e"
+          }
+        ]
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1628502428567_60098788",
+      "id": "paragraph_1628502428567_60098788",
+      "dateCreated": "2021-08-09 17:47:08.568",
+      "dateStarted": "2021-08-09 20:28:22.461",
+      "dateFinished": "2021-08-09 20:28:22.478",
+      "status": "FINISHED"
+    },
+    {
+      "title": "Enabling for Conversion to/from Pandas",
+      "text": "%md\n\nArrow is available as an optimization when converting a Spark DataFrame to a Pandas DataFrame using the call `DataFrame.toPandas()` and when creating a Spark DataFrame from a Pandas DataFrame with `SparkSession.createDataFrame()`. To use Arrow when executing these calls, users need to first set the Spark configuration `spark.sql.execution.arrow.pyspark.enabled` to true. This is disabled by default.\n\nIn addition, optimizations enabled by `spark.sql.execution.arrow.pyspark.enabled` could fallback automatically to non-Arrow optimization implementation if an error occurs before the actual computation within Spark. This can be controlled by `spark.sql.execution.arrow.pyspark.fallback.enabled`.\n",
+      "user": "anonymous",
+      "dateUpdated": "2021-08-09 20:28:22.561",
+      "progress": 0,
+      "config": {
+        "tableHide": false,
+        "editorSetting": {
+          "language": "markdown",
+          "editOnDblClick": true,
+          "completionKey": "TAB",
+          "completionSupport": false
+        },
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/markdown",
+        "fontSize": 9.0,
+        "editorHide": true,
+        "title": true,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003cp\u003eArrow is available as an optimization when converting a Spark DataFrame to a Pandas DataFrame using the call \u003ccode\u003eDataFrame.toPandas()\u003c/code\u003e and when creating a Spark DataFrame from a Pandas DataFrame with \u003ccode\u003eSparkSession.createDataFrame()\u003c/code\u003e. To use Arrow when executing these calls, users need to first set the Spark configuration \u003ccode\u003espark.sql.execution.arrow.pyspark.enabled\u003c/code\u003e to true. This is disabled by default.\u003c/p\u003e\n\u003cp\u003eIn addition, optimizations enabled by \u003ccode\u003espark.sql.execution.arrow.pyspark.enabled\u003c/code\u003e could fallback automatically to non-Arrow optimization implementation if an error occurs before the actual computation within Spark. This can be controlled by \u003ccode\u003espark.sql.execution.arrow.pyspark.fallback.enabled\u003c/code\u003e.\u003c/p\u003e\n\n\u003c/div\u003e"
+          }
+        ]
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1628503042999_590218180",
+      "id": "paragraph_1628503042999_590218180",
+      "dateCreated": "2021-08-09 17:57:22.999",
+      "dateStarted": "2021-08-09 20:28:22.565",
+      "dateFinished": "2021-08-09 20:28:22.574",
+      "status": "FINISHED"
+    },
+    {
+      "text": "%spark.pyspark\n\nimport pandas as pd\nimport numpy as np\n\n# Generate a Pandas DataFrame\npdf \u003d pd.DataFrame(np.random.rand(100, 3))\n\n# Create a Spark DataFrame from a Pandas DataFrame using Arrow\ndf \u003d spark.createDataFrame(pdf)\n\n# Convert the Spark DataFrame back to a Pandas DataFrame using Arrow\nresult_pdf \u003d df.select(\"*\").toPandas()\n",
+      "user": "anonymous",
+      "dateUpdated": "2021-08-09 20:28:22.664",
+      "progress": 0,
+      "config": {
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/python",
+        "fontSize": 9.0,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": []
+      },
+      "apps": [],
+      "runtimeInfos": {
+        "jobUrl": {
+          "propertyName": "jobUrl",
+          "label": "SPARK JOB",
+          "tooltip": "View in Spark web UI",
+          "group": "spark",
+          "values": [
+            {
+              "jobUrl": "http://emr-worker-2.cluster-46718:37989/jobs/job?id\u003d0"
+            }
+          ],
+          "interpreterSettingId": "spark"
+        }
+      },
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1628499052504_328504071",
+      "id": "paragraph_1628487947468_761461400",
+      "dateCreated": "2021-08-09 16:50:52.504",
+      "dateStarted": "2021-08-09 20:28:22.668",
+      "dateFinished": "2021-08-09 20:28:27.045",
+      "status": "FINISHED"
+    },
+    {
+      "title": "Pandas UDFs (a.k.a. Vectorized UDFs)",
+      "text": "%md\n\nPandas UDFs are user defined functions that are executed by Spark using Arrow to transfer data and Pandas to work with the data, which allows vectorized operations. A Pandas UDF is defined using the `pandas_udf()` as a decorator or to wrap the function, and no additional configuration is required. A Pandas UDF behaves as a regular PySpark function API in general.\n\nBefore Spark 3.0, Pandas UDFs used to be defined with `pyspark.sql.functions.PandasUDFType`. From Spark 3.0 with Python 3.6+, you can also use Python type hints. Using Python type hints is preferred and using `pyspark.sql.functions.PandasUDFType` will be deprecated in the future release.\n\nNote that the type hint should use `pandas.Series` in all cases but there is one variant that `pandas.DataFrame` should be used for its input or output type hint instead when the input or output column is of StructType. The following example shows a Pandas UDF which takes long column, string column and struct column, and outputs a struct column. It requires the function to specify the type hints of `pandas.Series` and `pandas.DataFrame` as below\n",
+      "user": "anonymous",
+      "dateUpdated": "2021-08-09 20:28:27.071",
+      "progress": 0,
+      "config": {
+        "tableHide": false,
+        "editorSetting": {
+          "language": "markdown",
+          "editOnDblClick": true,
+          "completionKey": "TAB",
+          "completionSupport": false
+        },
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/markdown",
+        "fontSize": 9.0,
+        "editorHide": true,
+        "title": true,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003cp\u003ePandas UDFs are user defined functions that are executed by Spark using Arrow to transfer data and Pandas to work with the data, which allows vectorized operations. A Pandas UDF is defined using the \u003ccode\u003epandas_udf()\u003c/code\u003e as a decorator or to wrap the function, and no additional configuration is required. A Pandas UDF behaves as a regular PySpark function API in general.\u003c/p\u003e\n\u003cp\u003eBefore Spark 3.0, Pandas UDFs used to be defined with \u003ccode\u003epyspark.sql.functions.PandasUDFType\u003c/code\u003e. From Spark 3.0 with Python 3.6+, you can also use Python type hints. Using Python type hints is preferred and using \u003ccode\u003epyspark.sql.functions.PandasUDFType\u003c/code\u003e will be deprecated in the future release.\u003c/p\u003e\n\u003cp\u003eNote that the type hint should use \u003ccode\u003epandas.Series\u003c/code\u003e in all cases but there is one variant that \u003ccode\u003epandas.DataFrame\u003c/code\u003e should be used for its input or output type hint instead when the input or output column is of StructType. The following example shows a Pandas UDF which takes long column, string column and struct column, and outputs a struct column. It requires the function to specify the type hints of \u003ccode\u003epandas.Series\u003c/code\u003e and \u003ccode\u003epandas.DataFrame\u003c/code\u003e as below\u003c/p\u003e\n\n\u003c/div\u003e"
+          }
+        ]
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1628503123247_32503996",
+      "id": "paragraph_1628503123247_32503996",
+      "dateCreated": "2021-08-09 17:58:43.248",
+      "dateStarted": "2021-08-09 20:28:27.075",
+      "dateFinished": "2021-08-09 20:28:27.083",
+      "status": "FINISHED"
+    },
+    {
+      "text": "%spark.pyspark\n\nimport pandas as pd\n\nfrom pyspark.sql.functions import pandas_udf\n\n@pandas_udf(\"col1 string, col2 long\")\ndef func(s1: pd.Series, s2: pd.Series, s3: pd.DataFrame) -\u003e pd.DataFrame:\n    s3[\u0027col2\u0027] \u003d s1 + s2.str.len()\n    return s3\n\n# Create a Spark DataFrame that has three columns including a struct column.\ndf \u003d spark.createDataFrame(\n    [[1, \"a string\", (\"a nested string\",)]],\n    \"long_col long, string_col string, struct_col struct\u003ccol1:string\u003e\")\n\ndf.printSchema()\n\ndf.select(func(\"long_col\", \"string_col\", \"struct_col\")).printSchema()",
+      "user": "anonymous",
+      "dateUpdated": "2021-08-09 20:28:27.174",
+      "progress": 0,
+      "config": {
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/python",
+        "fontSize": 9.0,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "root\n |-- long_col: long (nullable \u003d true)\n |-- string_col: string (nullable \u003d true)\n |-- struct_col: struct (nullable \u003d true)\n |    |-- col1: string (nullable \u003d true)\n\nroot\n |-- func(long_col, string_col, struct_col): struct (nullable \u003d true)\n |    |-- col1: string (nullable \u003d true)\n |    |-- col2: long (nullable \u003d true)\n\n"
+          }
+        ]
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1628499507315_836384477",
+      "id": "paragraph_1628499507315_836384477",
+      "dateCreated": "2021-08-09 16:58:27.315",
+      "dateStarted": "2021-08-09 20:28:27.177",
+      "dateFinished": "2021-08-09 20:28:27.797",
+      "status": "FINISHED"
+    },
+    {
+      "title": "Series to Series",
+      "text": "%md\n\nThe type hint can be expressed as `pandas.Series`, … -\u003e `pandas.Series`.\n\nBy using `pandas_udf()` with the function having such type hints above, it creates a Pandas UDF where the given function takes one or more `pandas.Series` and outputs one `pandas.Series`. The output of the function should always be of the same length as the input. Internally, PySpark will execute a Pandas UDF by splitting columns into batches and calling the function for each batch as a subset of the data, then concatenating the results together.\n\nThe following example shows how to create this Pandas UDF that computes the product of 2 columns.",
+      "user": "anonymous",
+      "dateUpdated": "2021-08-09 20:28:27.878",
+      "progress": 0,
+      "config": {
+        "tableHide": false,
+        "editorSetting": {
+          "language": "markdown",
+          "editOnDblClick": true,
+          "completionKey": "TAB",
+          "completionSupport": false
+        },
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/markdown",
+        "fontSize": 9.0,
+        "editorHide": true,
+        "title": true,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003cp\u003eThe type hint can be expressed as \u003ccode\u003epandas.Series\u003c/code\u003e, … -\u0026gt; \u003ccode\u003epandas.Series\u003c/code\u003e.\u003c/p\u003e\n\u003cp\u003eBy using \u003ccode\u003epandas_udf()\u003c/code\u003e with the function having such type hints above, it creates a Pandas UDF where the given function takes one or more \u003ccode\u003epandas.Series\u003c/code\u003e and outputs one \u003ccode\u003epandas.Series\u003c/code\u003e. The output of the function should always be of the same length as the input. Internally, PySpark will execute a Pandas UDF by splitting columns into batches and calling the function for each batch as a subset of the data, then concatenating the results together.\u003c/p\u003e\n\u003cp\u003eThe following example shows how to create this Pandas UDF that computes the product of 2 columns.\u003c/p\u003e\n\n\u003c/div\u003e"
+          }
+        ]
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1628503203208_1371139053",
+      "id": "paragraph_1628503203208_1371139053",
+      "dateCreated": "2021-08-09 18:00:03.208",
+      "dateStarted": "2021-08-09 20:28:27.881",
+      "dateFinished": "2021-08-09 20:28:27.889",
+      "status": "FINISHED"
+    },
+    {
+      "title": "Series to Series",
+      "text": "%spark.pyspark\n\nimport pandas as pd\n\nfrom pyspark.sql.functions import col, pandas_udf\nfrom pyspark.sql.types import LongType\n\n# Declare the function and create the UDF\ndef multiply_func(a: pd.Series, b: pd.Series) -\u003e pd.Series:\n    return a * b\n\nmultiply \u003d pandas_udf(multiply_func, returnType\u003dLongType())\n\n# The function for a pandas_udf should be able to execute with local Pandas data\nx \u003d pd.Series([1, 2, 3])\nprint(multiply_func(x, x))\n# 0    1\n# 1    4\n# 2    9\n# dtype: int64\n\n# Create a Spark DataFrame, \u0027spark\u0027 is an existing SparkSession\ndf \u003d spark.createDataFrame(pd.DataFrame(x, columns\u003d[\"x\"]))\n\n# Execute function as a Spark vectorized UDF\ndf.select(multiply(col(\"x\"), col(\"x\"))).show()\n",
+      "user": "anonymous",
+      "dateUpdated": "2021-08-09 20:28:27.981",
+      "progress": 0,
+      "config": {
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/python",
+        "fontSize": 9.0,
+        "title": false,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "0    1\n1    4\n2    9\ndtype: int64\n+-------------------+\n|multiply_func(x, x)|\n+-------------------+\n|                  1|\n|                  4|\n|                  9|\n+-------------------+\n\n"
+          }
+        ]
+      },
+      "apps": [],
+      "runtimeInfos": {
+        "jobUrl": {
+          "propertyName": "jobUrl",
+          "label": "SPARK JOB",
+          "tooltip": "View in Spark web UI",
+          "group": "spark",
+          "values": [
+            {
+              "jobUrl": "http://emr-worker-2.cluster-46718:37989/jobs/job?id\u003d1"
+            },
+            {
+              "jobUrl": "http://emr-worker-2.cluster-46718:37989/jobs/job?id\u003d2"
+            }
+          ],
+          "interpreterSettingId": "spark"
+        }
+      },
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1628499530530_1328752796",
+      "id": "paragraph_1628499530530_1328752796",
+      "dateCreated": "2021-08-09 16:58:50.530",
+      "dateStarted": "2021-08-09 20:28:27.984",
+      "dateFinished": "2021-08-09 20:28:29.754",
+      "status": "FINISHED"
+    },
+    {
+      "title": "Iterator of Series to Iterator of Series",
+      "text": "%md\n\nThe type hint can be expressed as `Iterator[pandas.Series]` -\u003e `Iterator[pandas.Series]`.\n\nBy using `pandas_udf()` with the function having such type hints above, it creates a Pandas UDF where the given function takes an iterator of pandas.Series and outputs an iterator of `pandas.Series`. The length of the entire output from the function should be the same length of the entire input; therefore, it can prefetch the data from the input iterator as long as the lengths are the same. In this case, the created Pandas UDF requires one input column when the Pandas UDF is called. To use multiple input columns, a different type hint is required. See Iterator of Multiple Series to Iterator of Series.\n\nIt is also useful when the UDF execution requires initializing some states although internally it works identically as `Series` to `Series` case. The pseudocode below illustrates the example.\n",
+      "user": "anonymous",
+      "dateUpdated": "2021-08-09 20:28:29.785",
+      "progress": 0,
+      "config": {
+        "tableHide": false,
+        "editorSetting": {
+          "language": "markdown",
+          "editOnDblClick": true,
+          "completionKey": "TAB",
+          "completionSupport": false
+        },
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/markdown",
+        "fontSize": 9.0,
+        "editorHide": true,
+        "title": true,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003cp\u003eThe type hint can be expressed as \u003ccode\u003eIterator[pandas.Series]\u003c/code\u003e -\u0026gt; \u003ccode\u003eIterator[pandas.Series]\u003c/code\u003e.\u003c/p\u003e\n\u003cp\u003eBy using \u003ccode\u003epandas_udf()\u003c/code\u003e with the function having such type hints above, it creates a Pandas UDF where the given function takes an iterator of pandas.Series and outputs an iterator of \u003ccode\u003epandas.Series\u003c/code\u003e. The length of the entire output from the function should be the same length of the entire input; therefore, it can prefetch the data from the input iterator as long as the lengths are the same. In this case, the created Pandas UDF requires one input column when the Pandas UDF is called. To use multiple input columns, a different type hint is required. See Iterator of Multiple Series to Iterator of Series.\u003c/p\u003e\n\u003cp\u003eIt is also useful when the UDF execution requires initializing some states although internally it works identically as \u003ccode\u003eSeries\u003c/code\u003e to \u003ccode\u003eSeries\u003c/code\u003e case. The pseudocode below illustrates the example.\u003c/p\u003e\n\n\u003c/div\u003e"
+          }
+        ]
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1628503263767_1381148085",
+      "id": "paragraph_1628503263767_1381148085",
+      "dateCreated": "2021-08-09 18:01:03.767",
+      "dateStarted": "2021-08-09 20:28:29.788",
+      "dateFinished": "2021-08-09 20:28:29.798",
+      "status": "FINISHED"
+    },
+    {
+      "title": "Iterator of Series to Iterator of Series",
+      "text": "%spark.pyspark\n\nfrom typing import Iterator\n\nimport pandas as pd\n\nfrom pyspark.sql.functions import pandas_udf\n\npdf \u003d pd.DataFrame([1, 2, 3], columns\u003d[\"x\"])\ndf \u003d spark.createDataFrame(pdf)\n\n# Declare the function and create the UDF\n@pandas_udf(\"long\")\ndef plus_one(iterator: Iterator[pd.Series]) -\u003e Iterator[pd.Series]:\n    for x in iterator:\n        yield x + 1\n\ndf.select(plus_one(\"x\")).show()",
+      "user": "anonymous",
+      "dateUpdated": "2021-08-09 20:28:29.888",
+      "progress": 0,
+      "config": {
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/python",
+        "fontSize": 9.0,
+        "title": false,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "+-----------+\n|plus_one(x)|\n+-----------+\n|          2|\n|          3|\n|          4|\n+-----------+\n\n"
+          }
+        ]
+      },
+      "apps": [],
+      "runtimeInfos": {
+        "jobUrl": {
+          "propertyName": "jobUrl",
+          "label": "SPARK JOB",
+          "tooltip": "View in Spark web UI",
+          "group": "spark",
+          "values": [
+            {
+              "jobUrl": "http://emr-worker-2.cluster-46718:37989/jobs/job?id\u003d3"
+            },
+            {
+              "jobUrl": "http://emr-worker-2.cluster-46718:37989/jobs/job?id\u003d4"
+            }
+          ],
+          "interpreterSettingId": "spark"
+        }
+      },
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1628499052505_1336286916",
+      "id": "paragraph_1624351615156_2079208031",
+      "dateCreated": "2021-08-09 16:50:52.505",
+      "dateStarted": "2021-08-09 20:28:29.891",
+      "dateFinished": "2021-08-09 20:28:30.361",
+      "status": "FINISHED"
+    },
+    {
+      "title": "Iterator of Multiple Series to Iterator of Series",
+      "text": "%md\n\nThe type hint can be expressed as `Iterator[Tuple[pandas.Series, ...]]` -\u003e `Iterator[pandas.Series]`.\n\nBy using `pandas_udf()` with the function having such type hints above, it creates a Pandas UDF where the given function takes an iterator of a tuple of multiple pandas.Series and outputs an iterator of` pandas.Series`. In this case, the created pandas UDF requires multiple input columns as many as the series in the tuple when the Pandas UDF is called. Otherwise, it has the same characteristics and restrictions as Iterator of Series to Iterator of Series case.\n\nThe following example shows how to create this Pandas UDF:",
+      "user": "anonymous",
+      "dateUpdated": "2021-08-09 20:28:30.391",
+      "progress": 0,
+      "config": {
+        "tableHide": false,
+        "editorSetting": {
+          "language": "markdown",
+          "editOnDblClick": true,
+          "completionKey": "TAB",
+          "completionSupport": false
+        },
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/markdown",
+        "fontSize": 9.0,
+        "editorHide": true,
+        "title": true,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003cp\u003eThe type hint can be expressed as \u003ccode\u003eIterator[Tuple[pandas.Series, ...]]\u003c/code\u003e -\u0026gt; \u003ccode\u003eIterator[pandas.Series]\u003c/code\u003e.\u003c/p\u003e\n\u003cp\u003eBy using \u003ccode\u003epandas_udf()\u003c/code\u003e with the function having such type hints above, it creates a Pandas UDF where the given function takes an iterator of a tuple of multiple pandas.Series and outputs an iterator of\u003ccode\u003epandas.Series\u003c/code\u003e. In this case, the created pandas UDF requires multiple input columns as many as the series in the tuple when the Pandas UDF is called. Otherwise, it has the same characteristics and restrictions as Iterator of Series to Iterator of Series case.\u003c/p\u003e\n\u003cp\u003eThe following example shows how to create this Pandas UDF:\u003c/p\u003e\n\n\u003c/div\u003e"
+          }
+        ]
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1628503345832_1007259088",
+      "id": "paragraph_1628503345832_1007259088",
+      "dateCreated": "2021-08-09 18:02:25.832",
+      "dateStarted": "2021-08-09 20:28:30.395",
+      "dateFinished": "2021-08-09 20:28:30.402",
+      "status": "FINISHED"
+    },
+    {
+      "title": "Iterator of Multiple Series to Iterator of Series",
+      "text": "%spark.pyspark\n\nfrom typing import Iterator, Tuple\n\nimport pandas as pd\n\nfrom pyspark.sql.functions import pandas_udf\n\npdf \u003d pd.DataFrame([1, 2, 3], columns\u003d[\"x\"])\ndf \u003d spark.createDataFrame(pdf)\n\n# Declare the function and create the UDF\n@pandas_udf(\"long\")\ndef multiply_two_cols(\n        iterator: Iterator[Tuple[pd.Series, pd.Series]]) -\u003e Iterator[pd.Series]:\n    for a, b in iterator:\n        yield a * b\n\ndf.select(multiply_two_cols(\"x\", \"x\")).show()",
+      "user": "anonymous",
+      "dateUpdated": "2021-08-09 20:28:30.495",
+      "progress": 0,
+      "config": {
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/python",
+        "fontSize": 9.0,
+        "title": false,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "+-----------------------+\n|multiply_two_cols(x, x)|\n+-----------------------+\n|                      1|\n|                      4|\n|                      9|\n+-----------------------+\n\n"
+          }
+        ]
+      },
+      "apps": [],
+      "runtimeInfos": {
+        "jobUrl": {
+          "propertyName": "jobUrl",
+          "label": "SPARK JOB",
+          "tooltip": "View in Spark web UI",
+          "group": "spark",
+          "values": [
+            {
+              "jobUrl": "http://emr-worker-2.cluster-46718:37989/jobs/job?id\u003d5"
+            },
+            {
+              "jobUrl": "http://emr-worker-2.cluster-46718:37989/jobs/job?id\u003d6"
+            }
+          ],
+          "interpreterSettingId": "spark"
+        }
+      },
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1628499631390_1986337647",
+      "id": "paragraph_1628499631390_1986337647",
+      "dateCreated": "2021-08-09 17:00:31.390",
+      "dateStarted": "2021-08-09 20:28:30.498",
+      "dateFinished": "2021-08-09 20:28:32.071",
+      "status": "FINISHED"
+    },
+    {
+      "title": "Series to Scalar",
+      "text": "%md\n\nThe type hint can be expressed as `pandas.Series`, … -\u003e `Any`.\n\nBy using `pandas_udf()` with the function having such type hints above, it creates a Pandas UDF similar to PySpark’s aggregate functions. The given function takes pandas.Series and returns a scalar value. The return type should be a primitive data type, and the returned scalar can be either a python primitive type, e.g., int or float or a numpy data type, e.g., numpy.int64 or numpy.float64. Any should ideally be a specific scalar type accordingly.\n\nThis UDF can be also used with `GroupedData.agg()` and Window. It defines an aggregation from one or more pandas.Series to a scalar value, where each `pandas.Series` represents a column within the group or window.\n\nNote that this type of UDF does not support partial aggregation and all data for a group or window will be loaded into memory. Also, only unbounded window is supported with Grouped aggregate Pandas UDFs currently. The following example shows how to use this type of UDF to compute mean with a group-by and window operations:\n",
+      "user": "anonymous",
+      "dateUpdated": "2021-08-09 20:28:32.098",
+      "progress": 0,
+      "config": {
+        "tableHide": false,
+        "editorSetting": {
+          "language": "markdown",
+          "editOnDblClick": true,
+          "completionKey": "TAB",
+          "completionSupport": false
+        },
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/markdown",
+        "fontSize": 9.0,
+        "editorHide": true,
+        "title": true,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003cp\u003eThe type hint can be expressed as \u003ccode\u003epandas.Series\u003c/code\u003e, … -\u0026gt; \u003ccode\u003eAny\u003c/code\u003e.\u003c/p\u003e\n\u003cp\u003eBy using \u003ccode\u003epandas_udf()\u003c/code\u003e with the function having such type hints above, it creates a Pandas UDF similar to PySpark’s aggregate functions. The given function takes pandas.Series and returns a scalar value. The return type should be a primitive data type, and the returned scalar can be either a python primitive type, e.g., int or float or a numpy data type, e.g., numpy.int64 or numpy.float64. Any should ideally be a specific scalar type accordingly.\u003c/p\u003e\n\u003cp\u003eThis UDF can be also used with \u003ccode\u003eGroupedData.agg()\u003c/code\u003e and Window. It defines an aggregation from one or more pandas.Series to a scalar value, where each \u003ccode\u003epandas.Series\u003c/code\u003e represents a column within the group or window.\u003c/p\u003e\n\u003cp\u003eNote that this type of UDF does not support partial aggregation and all data for a group or window will be loaded into memory. Also, only unbounded window is supported with Grouped aggregate Pandas UDFs currently. The following example shows how to use this type of UDF to compute mean with a group-by and window operations:\u003c/p\u003e\n\n\u003c/div\u003e"
+          }
+        ]
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1628503394877_382217858",
+      "id": "paragraph_1628503394877_382217858",
+      "dateCreated": "2021-08-09 18:03:14.877",
+      "dateStarted": "2021-08-09 20:28:32.101",
+      "dateFinished": "2021-08-09 20:28:32.109",
+      "status": "FINISHED"
+    },
+    {
+      "title": "Series to Scalar",
+      "text": "%spark.pyspark\n\nimport pandas as pd\n\nfrom pyspark.sql.functions import pandas_udf\nfrom pyspark.sql import Window\n\ndf \u003d spark.createDataFrame(\n    [(1, 1.0), (1, 2.0), (2, 3.0), (2, 5.0), (2, 10.0)],\n    (\"id\", \"v\"))\n\n# Declare the function and create the UDF\n@pandas_udf(\"double\")\ndef mean_udf(v: pd.Series) -\u003e float:\n    return v.mean()\n\ndf.select(mean_udf(df[\u0027v\u0027])).show()\n\n\ndf.groupby(\"id\").agg(mean_udf(df[\u0027v\u0027])).show()\n\nw \u003d Window \\\n    .partitionBy(\u0027id\u0027) \\\n    .rowsBetween(Window.unboundedPreceding, Window.unboundedFollowing)\ndf.withColumn(\u0027mean_v\u0027, mean_udf(df[\u0027v\u0027]).over(w)).show()",
+      "user": "anonymous",
+      "dateUpdated": "2021-08-09 20:28:32.201",
+      "progress": 88,
+      "config": {
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/python",
+        "fontSize": 9.0,
+        "title": false,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "+-----------+\n|mean_udf(v)|\n+-----------+\n|        4.2|\n+-----------+\n\n+---+-----------+\n| id|mean_udf(v)|\n+---+-----------+\n|  1|        1.5|\n|  2|        6.0|\n+---+-----------+\n\n+---+----+------+\n| id|   v|mean_v|\n+---+----+------+\n|  1| 1.0|   1.5|\n|  1| 2.0|   1.5|\n|  2| 3.0|   6.0|\n|  2| 5.0|   6.0|\n|  2|10.0|   6.0|\n+---+----+------+\n\n"
+          }
+        ]
+      },
+      "apps": [],
+      "runtimeInfos": {
+        "jobUrl": {
+          "propertyName": "jobUrl",
+          "label": "SPARK JOB",
+          "tooltip": "View in Spark web UI",
+          "group": "spark",
+          "values": [
+            {
+              "jobUrl": "http://emr-worker-2.cluster-46718:37989/jobs/job?id\u003d7"
+            },
+            {
+              "jobUrl": "http://emr-worker-2.cluster-46718:37989/jobs/job?id\u003d8"
+            },
+            {
+              "jobUrl": "http://emr-worker-2.cluster-46718:37989/jobs/job?id\u003d9"
+            },
+            {
+              "jobUrl": "http://emr-worker-2.cluster-46718:37989/jobs/job?id\u003d10"
+            },
+            {
+              "jobUrl": "http://emr-worker-2.cluster-46718:37989/jobs/job?id\u003d11"
+            },
+            {
+              "jobUrl": "http://emr-worker-2.cluster-46718:37989/jobs/job?id\u003d12"
+            },
+            {
+              "jobUrl": "http://emr-worker-2.cluster-46718:37989/jobs/job?id\u003d13"
+            },
+            {
+              "jobUrl": "http://emr-worker-2.cluster-46718:37989/jobs/job?id\u003d14"
+            },
+            {
+              "jobUrl": "http://emr-worker-2.cluster-46718:37989/jobs/job?id\u003d15"
+            },
+            {
+              "jobUrl": "http://emr-worker-2.cluster-46718:37989/jobs/job?id\u003d16"
+            },
+            {
+              "jobUrl": "http://emr-worker-2.cluster-46718:37989/jobs/job?id\u003d17"
+            }
+          ],
+          "interpreterSettingId": "spark"
+        }
+      },
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1628499645163_1973652977",
+      "id": "paragraph_1628499645163_1973652977",
+      "dateCreated": "2021-08-09 17:00:45.163",
+      "dateStarted": "2021-08-09 20:28:32.204",
+      "dateFinished": "2021-08-09 20:28:42.919",
+      "status": "FINISHED"
+    },
+    {
+      "title": "Pandas Function APIs",
+      "text": "%md\n\nPandas Function APIs can directly apply a Python native function against the whole DataFrame by using Pandas instances. Internally it works similarly with Pandas UDFs by using Arrow to transfer data and Pandas to work with the data, which allows vectorized operations. However, a Pandas Function API behaves as a regular API under PySpark DataFrame instead of Column, and Python type hints in Pandas Functions APIs are optional and do not affect how it works internally at this moment although they might be required in the future.\n\nFrom Spark 3.0, grouped map pandas UDF is now categorized as a separate Pandas Function API, `DataFrame.groupby().applyInPandas()`. It is still possible to use it with `pyspark.sql.functions.PandasUDFType` and `DataFrame.groupby().apply()` as it was; however, it is preferred to use `DataFrame.groupby().applyInPandas()` directly. Using `pyspark.sql.functions.PandasUDFType` will be deprecated in the future\n",
+      "user": "anonymous",
+      "dateUpdated": "2021-08-09 20:28:43.011",
+      "progress": 0,
+      "config": {
+        "tableHide": false,
+        "editorSetting": {
+          "language": "markdown",
+          "editOnDblClick": true,
+          "completionKey": "TAB",
+          "completionSupport": false
+        },
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/markdown",
+        "fontSize": 9.0,
+        "editorHide": true,
+        "title": true,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003cp\u003ePandas Function APIs can directly apply a Python native function against the whole DataFrame by using Pandas instances. Internally it works similarly with Pandas UDFs by using Arrow to transfer data and Pandas to work with the data, which allows vectorized operations. However, a Pandas Function API behaves as a regular API under PySpark DataFrame instead of Column, and Python type hints in Pandas Functions APIs are optional and do not affect how it works internally at this moment although they might be required in the future.\u003c/p\u003e\n\u003cp\u003eFrom Spark 3.0, grouped map pandas UDF is now categorized as a separate Pandas Function API, \u003ccode\u003eDataFrame.groupby().applyInPandas()\u003c/code\u003e. It is still possible to use it with \u003ccode\u003epyspark.sql.functions.PandasUDFType\u003c/code\u003e and \u003ccode\u003eDataFrame.groupby().apply()\u003c/code\u003e as it was; however, it is preferred to use \u003ccode\u003eDataFrame.groupby().applyInPandas()\u003c/code\u003e directly. Using \u003ccode\u003epyspark.sql.functions.PandasUDFType\u003c/code\u003e will be deprecated in the future\u003c/p\u003e\n\n\u003c/div\u003e"
+          }
+        ]
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1628503449747_446542293",
+      "id": "paragraph_1628503449747_446542293",
+      "dateCreated": "2021-08-09 18:04:09.747",
+      "dateStarted": "2021-08-09 20:28:43.014",
+      "dateFinished": "2021-08-09 20:28:43.025",
+      "status": "FINISHED"
+    },
+    {
+      "title": "Grouped Map",
+      "text": "%md\n\nGrouped map operations with Pandas instances are supported by `DataFrame.groupby().applyInPandas()` which requires a Python function that takes a `pandas.DataFrame` and return another `pandas.DataFrame`. It maps each group to each pandas.DataFrame in the Python function.\n\nThis API implements the “split-apply-combine” pattern which consists of three steps:\n\n* Split the data into groups by using `DataFrame.groupBy()`.\n* Apply a function on each group. The input and output of the function are both pandas.DataFrame. The input data contains all the rows and columns for each group.\n* Combine the results into a new PySpark DataFrame.\n\nTo use `DataFrame.groupBy().applyInPandas()`, the user needs to define the following:\n\n* A Python function that defines the computation for each group.\n* A StructType object or a string that defines the schema of the output PySpark DataFrame.\n\nThe column labels of the returned `pandas.DataFrame` must either match the field names in the defined output schema if specified as strings, or match the field data types by position if not strings, e.g. integer indices. See `pandas.DataFrame` on how to label columns when constructing a `pandas.DataFrame`.\n\nNote that all data for a group will be loaded into memory before the function is applied. This can lead to out of memory exceptions, especially if the group sizes are skewed. The configuration for maxRecordsPerBatch is not applied on groups and it is up to the user to ensure that the grouped data will fit into the available memory.\n\nThe following example shows how to use `DataFrame.groupby().applyInPandas()` to subtract the mean from each value in the group.\n\n\n",
+      "user": "anonymous",
+      "dateUpdated": "2021-08-09 20:28:43.114",
+      "progress": 0,
+      "config": {
+        "tableHide": false,
+        "editorSetting": {
+          "language": "markdown",
+          "editOnDblClick": true,
+          "completionKey": "TAB",
+          "completionSupport": false
+        },
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/markdown",
+        "fontSize": 9.0,
+        "editorHide": true,
+        "title": true,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003cp\u003eGrouped map operations with Pandas instances are supported by \u003ccode\u003eDataFrame.groupby().applyInPandas()\u003c/code\u003e which requires a Python function that takes a \u003ccode\u003epandas.DataFrame\u003c/code\u003e and return another \u003ccode\u003epandas.DataFrame\u003c/code\u003e. It maps each group to each pandas.DataFrame in the Python function.\u003c/p\u003e\n\u003cp\u003eThis API implements the “split-apply-combine” pattern which consists of three steps:\u003c/p\u003e\n\u003cul\u003e\n\u003cli\u003eSplit the data into groups by using \u003ccode\u003eDataFrame.groupBy()\u003c/code\u003e.\u003c/li\u003e\n\u003cli\u003eApply a function on each group. The input and output of the function are both pandas.DataFrame. The input data contains all the rows and columns for each group.\u003c/li\u003e\n\u003cli\u003eCombine the results into a new PySpark DataFrame.\u003c/li\u003e\n\u003c/ul\u003e\n\u003cp\u003eTo use \u003ccode\u003eDataFrame.groupBy().applyInPandas()\u003c/code\u003e, the user needs to define the following:\u003c/p\u003e\n\u003cul\u003e\n\u003cli\u003eA Python function that defines the computation for each group.\u003c/li\u003e\n\u003cli\u003eA StructType object or a string that defines the schema of the output PySpark DataFrame.\u003c/li\u003e\n\u003c/ul\u003e\n\u003cp\u003eThe column labels of the returned \u003ccode\u003epandas.DataFrame\u003c/code\u003e must either match the field names in the defined output schema if specified as strings, or match the field data types by position if not strings, e.g. integer indices. See \u003ccode\u003epandas.DataFrame\u003c/code\u003e on how to label columns when constructing a \u003ccode\u003epandas.DataFrame\u003c/code\u003e.\u003c/p\u003e\n\u003cp\u003eNote that all data for a group will be loaded into memory before the function is applied. This can lead to out of memory exceptions, especially if the group sizes are skewed. The configuration for maxRecordsPerBatch is not applied on groups and it is up to the user to ensure that the grouped data will fit into the available memory.\u003c/p\u003e\n\u003cp\u003eThe following example shows how to use \u003ccode\u003eDataFrame.groupby().applyInPandas()\u003c/code\u003e to subtract the mean from each value in the group.\u003c/p\u003e\n\n\u003c/div\u003e"
+          }
+        ]
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1628503542685_1593420516",
+      "id": "paragraph_1628503542685_1593420516",
+      "dateCreated": "2021-08-09 18:05:42.685",
+      "dateStarted": "2021-08-09 20:28:43.117",
+      "dateFinished": "2021-08-09 20:28:43.127",
+      "status": "FINISHED"
+    },
+    {
+      "title": "Grouped Map",
+      "text": "%spark.pyspark\n\ndf \u003d spark.createDataFrame(\n    [(1, 1.0), (1, 2.0), (2, 3.0), (2, 5.0), (2, 10.0)],\n    (\"id\", \"v\"))\n\ndef subtract_mean(pdf):\n    # pdf is a pandas.DataFrame\n    v \u003d pdf.v\n    return pdf.assign(v\u003dv - v.mean())\n\ndf.groupby(\"id\").applyInPandas(subtract_mean, schema\u003d\"id long, v double\").show()",
+      "user": "anonymous",
+      "dateUpdated": "2021-08-09 20:28:43.217",
+      "progress": 75,
+      "config": {
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/python",
+        "fontSize": 9.0,
+        "title": false,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "+---+----+\n| id|   v|\n+---+----+\n|  1|-0.5|\n|  1| 0.5|\n|  2|-3.0|\n|  2|-1.0|\n|  2| 4.0|\n+---+----+\n\n"
+          }
+        ]
+      },
+      "apps": [],
+      "runtimeInfos": {
+        "jobUrl": {
+          "propertyName": "jobUrl",
+          "label": "SPARK JOB",
+          "tooltip": "View in Spark web UI",
+          "group": "spark",
+          "values": [
+            {
+              "jobUrl": "http://emr-worker-2.cluster-46718:37989/jobs/job?id\u003d18"
+            },
+            {
+              "jobUrl": "http://emr-worker-2.cluster-46718:37989/jobs/job?id\u003d19"
+            },
+            {
+              "jobUrl": "http://emr-worker-2.cluster-46718:37989/jobs/job?id\u003d20"
+            },
+            {
+              "jobUrl": "http://emr-worker-2.cluster-46718:37989/jobs/job?id\u003d21"
+            },
+            {
+              "jobUrl": "http://emr-worker-2.cluster-46718:37989/jobs/job?id\u003d22"
+            }
+          ],
+          "interpreterSettingId": "spark"
+        }
+      },
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1628499671399_1794474062",
+      "id": "paragraph_1628499671399_1794474062",
+      "dateCreated": "2021-08-09 17:01:11.399",
+      "dateStarted": "2021-08-09 20:28:43.220",
+      "dateFinished": "2021-08-09 20:28:44.605",
+      "status": "FINISHED"
+    },
+    {
+      "title": "Map",
+      "text": "%md\n\nMap operations with Pandas instances are supported by `DataFrame.mapInPandas()` which maps an iterator of pandas.DataFrames to another iterator of `pandas.DataFrames` that represents the current PySpark DataFrame and returns the result as a PySpark DataFrame. The function takes and outputs an iterator of `pandas.DataFrame`. It can return the output of arbitrary length in contrast to some Pandas UDFs although internally it works similarly with Series to Series Pandas UDF.\n\nThe following example shows how to use `DataFrame.mapInPandas()`:\n",
+      "user": "anonymous",
+      "dateUpdated": "2021-08-09 20:28:44.621",
+      "progress": 0,
+      "config": {
+        "tableHide": false,
+        "editorSetting": {
+          "language": "markdown",
+          "editOnDblClick": true,
+          "completionKey": "TAB",
+          "completionSupport": false
+        },
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/markdown",
+        "fontSize": 9.0,
+        "editorHide": true,
+        "title": true,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003cp\u003eMap operations with Pandas instances are supported by \u003ccode\u003eDataFrame.mapInPandas()\u003c/code\u003e which maps an iterator of pandas.DataFrames to another iterator of \u003ccode\u003epandas.DataFrames\u003c/code\u003e that represents the current PySpark DataFrame and returns the result as a PySpark DataFrame. The function takes and outputs an iterator of \u003ccode\u003epandas.DataFrame\u003c/code\u003e. It can return the output of arbitrary length in contrast to some Pandas UDFs although internally it works similarly with Series to Series Pandas UDF.\u003c/p\u003e\n\u003cp\u003eThe following example shows how to use \u003ccode\u003eDataFrame.mapInPandas()\u003c/code\u003e:\u003c/p\u003e\n\n\u003c/div\u003e"
+          }
+        ]
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1628502659243_294355457",
+      "id": "paragraph_1628502659243_294355457",
+      "dateCreated": "2021-08-09 17:50:59.243",
+      "dateStarted": "2021-08-09 20:28:44.624",
+      "dateFinished": "2021-08-09 20:28:44.630",
+      "status": "FINISHED"
+    },
+    {
+      "title": "Map",
+      "text": "%spark.pyspark\n\ndf \u003d spark.createDataFrame([(1, 21), (2, 30)], (\"id\", \"age\"))\n\ndef filter_func(iterator):\n    for pdf in iterator:\n        yield pdf[pdf.id \u003d\u003d 1]\n\ndf.mapInPandas(filter_func, schema\u003ddf.schema).show()",
+      "user": "anonymous",
+      "dateUpdated": "2021-08-09 20:28:44.724",
+      "progress": 0,
+      "config": {
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/python",
+        "fontSize": 9.0,
+        "title": false,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "+---+---+\n| id|age|\n+---+---+\n|  1| 21|\n+---+---+\n\n"
+          }
+        ]
+      },
+      "apps": [],
+      "runtimeInfos": {
+        "jobUrl": {
+          "propertyName": "jobUrl",
+          "label": "SPARK JOB",
+          "tooltip": "View in Spark web UI",
+          "group": "spark",
+          "values": [
+            {
+              "jobUrl": "http://emr-worker-2.cluster-46718:37989/jobs/job?id\u003d23"
+            },
+            {
+              "jobUrl": "http://emr-worker-2.cluster-46718:37989/jobs/job?id\u003d24"
+            }
+          ],
+          "interpreterSettingId": "spark"
+        }
+      },
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1628499682627_2106140471",
+      "id": "paragraph_1628499682627_2106140471",
+      "dateCreated": "2021-08-09 17:01:22.627",
+      "dateStarted": "2021-08-09 20:28:44.729",
+      "dateFinished": "2021-08-09 20:28:46.155",
+      "status": "FINISHED"
+    },
+    {
+      "title": "Co-grouped Map",
+      "text": "%md\n\n\u003cbr/\u003e\n\nCo-grouped map operations with Pandas instances are supported by `DataFrame.groupby().cogroup().applyInPandas()` which allows two PySpark DataFrames to be cogrouped by a common key and then a Python function applied to each cogroup. It consists of the following steps:\n\n* Shuffle the data such that the groups of each dataframe which share a key are cogrouped together.\n* Apply a function to each cogroup. The input of the function is two `pandas.DataFrame` (with an optional tuple representing the key). The output of the function is a `pandas.DataFrame`.\n* Combine the `pandas.DataFrames` from all groups into a new PySpark DataFrame.\n\nTo use `groupBy().cogroup().applyInPandas()`, the user needs to define the following:\n\n* A Python function that defines the computation for each cogroup.\n* A StructType object or a string that defines the schema of the output PySpark DataFrame.\n\nThe column labels of the returned `pandas.DataFrame` must either match the field names in the defined output schema if specified as strings, or match the field data types by position if not strings, e.g. integer indices. See `pandas.DataFrame`. on how to label columns when constructing a pandas.DataFrame.\n\nNote that all data for a cogroup will be loaded into memory before the function is applied. This can lead to out of memory exceptions, especially if the group sizes are skewed. The configuration for maxRecordsPerBatch is not applied and it is up to the user to ensure that the cogrouped data will fit into the available memory.\n\nThe following example shows how to use `DataFrame.groupby().cogroup().applyInPandas()` to perform an asof join between two datasets.",
+      "user": "anonymous",
+      "dateUpdated": "2021-08-09 20:28:46.229",
+      "progress": 0,
+      "config": {
+        "tableHide": false,
+        "editorSetting": {
+          "language": "markdown",
+          "editOnDblClick": true,
+          "completionKey": "TAB",
+          "completionSupport": false
+        },
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/markdown",
+        "fontSize": 9.0,
+        "editorHide": true,
+        "title": true,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003cbr/\u003e\n\u003cp\u003eCo-grouped map operations with Pandas instances are supported by \u003ccode\u003eDataFrame.groupby().cogroup().applyInPandas()\u003c/code\u003e which allows two PySpark DataFrames to be cogrouped by a common key and then a Python function applied to each cogroup. It consists of the following steps:\u003c/p\u003e\n\u003cul\u003e\n\u003cli\u003eShuffle the data such that the groups of each dataframe which share a key are cogrouped together.\u003c/li\u003e\n\u003cli\u003eApply a function to each cogroup. The input of the function is two \u003ccode\u003epandas.DataFrame\u003c/code\u003e (with an optional tuple representing the key). The output of the function is a \u003ccode\u003epandas.DataFrame\u003c/code\u003e.\u003c/li\u003e\n\u003cli\u003eCombine the \u003ccode\u003epandas.DataFrames\u003c/code\u003e from all groups into a new PySpark DataFrame.\u003c/li\u003e\n\u003c/ul\u003e\n\u003cp\u003eTo use \u003ccode\u003egroupBy().cogroup().applyInPandas()\u003c/code\u003e, the user needs to define the following:\u003c/p\u003e\n\u003cul\u003e\n\u003cli\u003eA Python function that defines the computation for each cogroup.\u003c/li\u003e\n\u003cli\u003eA StructType object or a string that defines the schema of the output PySpark DataFrame.\u003c/li\u003e\n\u003c/ul\u003e\n\u003cp\u003eThe column labels of the returned \u003ccode\u003epandas.DataFrame\u003c/code\u003e must either match the field names in the defined output schema if specified as strings, or match the field data types by position if not strings, e.g. integer indices. See \u003ccode\u003epandas.DataFrame\u003c/code\u003e. on how to label columns when constructing a pandas.DataFrame.\u003c/p\u003e\n\u003cp\u003eNote that all data for a cogroup will be loaded into memory before the function is applied. This can lead to out of memory exceptions, especially if the group sizes are skewed. The configuration for maxRecordsPerBatch is not applied and it is up to the user to ensure that the cogrouped data will fit into the available memory.\u003c/p\u003e\n\u003cp\u003eThe following example shows how to use \u003ccode\u003eDataFrame.groupby().cogroup().applyInPandas()\u003c/code\u003e to perform an asof join between two datasets.\u003c/p\u003e\n\n\u003c/div\u003e"
+          }
+        ]
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1628502751727_153024564",
+      "id": "paragraph_1628502751727_153024564",
+      "dateCreated": "2021-08-09 17:52:31.727",
+      "dateStarted": "2021-08-09 20:28:46.233",
+      "dateFinished": "2021-08-09 20:28:46.242",
+      "status": "FINISHED"
+    },
+    {
+      "title": "Co-grouped Map",
+      "text": "%spark.pyspark\n\nimport pandas as pd\n\ndf1 \u003d spark.createDataFrame(\n    [(20000101, 1, 1.0), (20000101, 2, 2.0), (20000102, 1, 3.0), (20000102, 2, 4.0)],\n    (\"time\", \"id\", \"v1\"))\n\ndf2 \u003d spark.createDataFrame(\n    [(20000101, 1, \"x\"), (20000101, 2, \"y\")],\n    (\"time\", \"id\", \"v2\"))\n\ndef asof_join(l, r):\n    return pd.merge_asof(l, r, on\u003d\"time\", by\u003d\"id\")\n\ndf1.groupby(\"id\").cogroup(df2.groupby(\"id\")).applyInPandas(\n    asof_join, schema\u003d\"time int, id int, v1 double, v2 string\").show()",
+      "user": "anonymous",
+      "dateUpdated": "2021-08-09 20:28:46.332",
+      "progress": 22,
+      "config": {
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/python",
+        "fontSize": 9.0,
+        "title": false,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "+--------+---+---+---+\n|    time| id| v1| v2|\n+--------+---+---+---+\n|20000101|  1|1.0|  x|\n|20000102|  1|3.0|  x|\n|20000101|  2|2.0|  y|\n|20000102|  2|4.0|  y|\n+--------+---+---+---+\n\n"
+          }
+        ]
+      },
+      "apps": [],
+      "runtimeInfos": {
+        "jobUrl": {
+          "propertyName": "jobUrl",
+          "label": "SPARK JOB",
+          "tooltip": "View in Spark web UI",
+          "group": "spark",
+          "values": [
+            {
+              "jobUrl": "http://emr-worker-2.cluster-46718:37989/jobs/job?id\u003d25"
+            },
+            {
+              "jobUrl": "http://emr-worker-2.cluster-46718:37989/jobs/job?id\u003d26"
+            },
+            {
+              "jobUrl": "http://emr-worker-2.cluster-46718:37989/jobs/job?id\u003d27"
+            },
+            {
+              "jobUrl": "http://emr-worker-2.cluster-46718:37989/jobs/job?id\u003d28"
+            },
+            {
+              "jobUrl": "http://emr-worker-2.cluster-46718:37989/jobs/job?id\u003d29"
+            }
+          ],
+          "interpreterSettingId": "spark"
+        }
+      },
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1628499694411_1813984093",
+      "id": "paragraph_1628499694411_1813984093",
+      "dateCreated": "2021-08-09 17:01:34.411",
+      "dateStarted": "2021-08-09 20:28:46.335",
+      "dateFinished": "2021-08-09 20:28:48.012",
+      "status": "FINISHED"
+    },
+    {
+      "text": "%spark.pyspark\n",
+      "user": "anonymous",
+      "dateUpdated": "2021-08-09 20:28:48.036",
+      "progress": 0,
+      "config": {
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/python",
+        "fontSize": 9.0,
+        "results": {},
+        "enabled": true,
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        }
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": []
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1628502158993_661405207",
+      "id": "paragraph_1628502158993_661405207",
+      "dateCreated": "2021-08-09 17:42:38.993",
+      "dateStarted": "2021-08-09 20:28:48.040",
+      "dateFinished": "2021-08-09 20:28:48.261",
+      "status": "FINISHED"
+    }
+  ],
+  "name": "8. PySpark Conda Env in Yarn Mode",
+  "id": "2GE79Y5FV",
+  "defaultInterpreterGroup": "spark",
+  "version": "0.10.0-SNAPSHOT",
+  "noteParams": {},
+  "noteForms": {},
+  "angularObjects": {},
+  "config": {
+    "personalizedMode": "false",
+    "looknfeel": "default",
+    "isZeppelinNotebookCronEnable": false
+  },
+  "info": {
+    "isRunning": true
+  }
+}
