@@ -40,7 +40,7 @@ import static org.junit.Assert.assertEquals;
 public class FlinkBatchSqlInterpreterTest extends SqlInterpreterTest {
 
   @Override
-  protected FlinkSqlInterrpeter createFlinkSqlInterpreter(Properties properties) {
+  protected FlinkSqlInterpreter createFlinkSqlInterpreter(Properties properties) {
     return new FlinkBatchSqlInterpreter(properties);
   }
 

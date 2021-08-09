@@ -30,7 +30,7 @@ import org.apache.zeppelin.scheduler.SchedulerFactory;
 import java.io.IOException;
 import java.util.Properties;
 
-public class FlinkStreamSqlInterpreter extends FlinkSqlInterrpeter {
+public class FlinkStreamSqlInterpreter extends FlinkSqlInterpreter {
 
   public FlinkStreamSqlInterpreter(Properties properties) {
     super(properties);
