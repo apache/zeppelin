@@ -151,16 +151,22 @@ If you want to use R with Spark, it is almost the same via `%spark.r`, `%spark.i
   </tr>
 </table>
 
+## Interpreter binding mode
+
+The default [interpreter binding mode](../usage/interpreter/interpreter_binding_mode.html) is `globally shared`. That means all notes share the same R interpreter. 
+So we would recommend you to ues `isolated per note` which means each note has own R interpreter without affecting each other. But it may run out of your machine resource if too many R
+interpreters are created. You can [run R in yarn mode](../interpreter/r.html#run-r-in-yarn-cluster) to avoid this problem. 
+
 ## How to use R Interpreter
 
-There're two different implementations of R interpreters: `%r.r` and `%r.ir`.
+There are two different implementations of R interpreters: `%r.r` and `%r.ir`.
 
-* Vanilla R Interpreter(`%r.r`) behaves like an ordinary REPL and use SparkR to communicate between R process and JVM process. It requires 'knitr'.
-* IRKernel R Interpreter(`%r.ir`) it behaves like using IRKernel in Jupyter notebook. It is based on [jupyter interpreter](jupyter.html). Besides jupyter interpreter's prerequisites, [IRkernel](https://github.com/IRkernel/IRkernel) needs to be installed. 
+* Vanilla R Interpreter(`%r.r`) behaves like an ordinary REPL and use SparkR to communicate between R process and JVM process. It requires `knitr` to be installed.
+* IRKernel R Interpreter(`%r.ir`) behaves like using IRKernel in Jupyter notebook. It is based on [jupyter interpreter](jupyter.html). Besides jupyter interpreter's prerequisites, [IRkernel](https://github.com/IRkernel/IRkernel) needs to be installed as well. 
 
 Take a look at the tutorial note `R Tutorial/1. R Basics` for how to write R code in Zeppelin.
 
-### R basic expression
+### R basic expressions
 
 R basic expressions are supported in both `%r.r` and `%r.ir`.
 
@@ -182,7 +188,7 @@ Besides R base plotting, you can use other visualization libraries in both `%r.r
 
 ### z.show
 
-`z.show()` is only available in `%r.ir`, e.g.
+`z.show()` is only available in `%r.ir` to visualize R dataframe, e.g.
 
 <img class="img-responsive" src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/r_zshow.png" width="800px"/>
 
@@ -191,7 +197,7 @@ By default, `z.show` would only display 1000 rows, you can specify the maxRows v
 ## Make Shiny App in Zeppelin
 
 [Shiny](https://shiny.rstudio.com/tutorial/) is an R package that makes it easy to build interactive web applications (apps) straight from R.
-`%r.shiny` is used for developing R shiny app in Zeppelin notebook. It only works when IRKernel R Interpreter(`%r.ir`) is enabled.
+`%r.shiny` is used for developing R shiny app in Zeppelin notebook. It only works when IRKernel Interpreter(`%r.ir`) is enabled.
 For developing one Shiny App in Zeppelin, you need to write at least 3 paragraphs (server type paragraph, ui type paragraph and run type paragraph)
 
 * Server type R shiny paragraph
@@ -300,15 +306,13 @@ e.g.
 ## Run R in yarn cluster
 
 Zeppelin support to [run interpreter in yarn cluster](../quickstart/yarn.html). But there's one critical problem to run R in yarn cluster: how to manage the R environment in yarn container. 
-Because yarn cluster is a distributed cluster environment which is composed of many nodes, and your R interpreter can start in any node. 
+Because yarn cluster is a distributed cluster which is composed of many nodes, and your R interpreter can start in any node. 
 It is not practical to manage R environment in each node.
 
 So in order to run R in yarn cluster, we would suggest you to use conda to manage your R environment, and Zeppelin can ship your
-R conda environment to yarn container, so that each R interpreter can have its own R environment.
+R conda environment to yarn container, so that each R interpreter can have its own R environment without affecting each other.
 
-Following are instructions of how to run R in yarn cluster. You can find all the code in the tutorial note `R Tutorial/3. R Conda Env in Yarn Mode`.
-
-To be noticed, you can only run IRKernel R interpreter(`%r.ir`) in yarn cluster. So make sure you include at least the following prerequisites in the below conda env:
+To be noticed, you can only run IRKernel interpreter(`%r.ir`) in yarn cluster. So make sure you include at least the following prerequisites in the below conda env:
 
 * python
 * jupyter
@@ -318,14 +322,16 @@ To be noticed, you can only run IRKernel R interpreter(`%r.ir`) in yarn cluster.
 * r-essentials
 * r-irkernel
 
-python, jupyter, grpcio and protobuf are required for [jupyter interpreter](../interpreter/jupyter.html), because IRKernel interpreter is based on jupyter interpreter. Others are for R runtime.
+`python`, `jupyter`, `grpcio` and `protobuf` are required for [jupyter interpreter](../interpreter/jupyter.html), because IRKernel interpreter is based on [jupyter interpreter](../interpreter/jupyter.html). Others are for R runtime.
+
+Following are instructions of how to run R in yarn cluster. You can find all the code in the tutorial note `R Tutorial/3. R Conda Env in Yarn Mode`.
+
 
 ### Step 1
 
-We would suggest you to use conda pack to create archive of conda environment. Otherwise R interpreter
-will use the R executable in PATH of yarn container.
+We would suggest you to use conda pack to create archive of conda environment.
 
-Here's one example of yaml file which could be used to generate a conda environment with R and some useful R libraries.
+Here's one example of yaml file which is used to generate a conda environment with R and some useful R libraries.
 
 * Create a yaml file for conda environment, write the following content into file `r_env.yml`
 
@@ -372,15 +378,17 @@ conda pack -n r_env
 
 ### Step 2
 
-Specify the following properties to enable yarn mode for R interpreter, and specify the correct R environment.
+Specify the following properties to enable yarn mode for R interpreter via [inline configuration](../usage/interpreter/overview.html#inline-generic-configuration)
 
 ```
+%r.conf
+
 zeppelin.interpreter.launcher yarn
 zeppelin.yarn.dist.archives hdfs:///tmp/r_env.tar.gz#environment
 zeppelin.interpreter.conda.env.name environment
 ```
 
-`zeppelin.yarn.dist.archives` is the R conda environment tar which is created in step 1. This tar will be shipped to yarn container and untar in the working directory of yarn container.
+`zeppelin.yarn.dist.archives` is the R conda environment tar file which is created in step 1. This tar will be shipped to yarn container and untar in the working directory of yarn container.
 `hdfs:///tmp/r_env.tar.gz` is the R conda archive file you created in step 2. `environment` in `hdfs:///tmp/r_env.tar.gz#environment` is the folder name after untar. 
 This folder name should be the same as `zeppelin.interpreter.conda.env.name`.
 
