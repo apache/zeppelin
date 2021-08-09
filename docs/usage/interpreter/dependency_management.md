@@ -24,13 +24,14 @@ limitations under the License.
 
 You can include external libraries to interpreter by setting dependencies in interpreter menu.
 
+To be noticed, this approach doesn't work for spark and flink interpreters. They have their own dependency management, please refer their doc for details.
+
 When your code requires external library, instead of doing download/copy/restart Zeppelin, you can easily do following jobs in this menu.
 
  * Load libraries recursively from Maven repository
  * Load libraries from local filesystem
  * Add additional maven repository
- * Automatically add libraries to SparkCluster
-
+ 
 <hr>
 <div class="row">
   <div class="col-md-6">

@@ -57,7 +57,7 @@ Following some examples:
 PRINT 'orders';
 ```
 
-![PRINT image]({{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/ksql.1.gif)
+![PRINT image]({{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/ksql.1.png)
 
 ```
 %ksql
@@ -66,7 +66,7 @@ CREATE STREAM ORDERS WITH
    KAFKA_TOPIC ='orders');
 ```
 
-![CREATE image]({{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/ksql.1.gif)
+![CREATE image]({{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/ksql.2.png)
 
 ```
 %ksql
@@ -75,4 +75,4 @@ FROM ORDERS
 LIMIT 10
 ```
 
-![LIMIT image]({{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/ksql.3.gif)
+![LIMIT image]({{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/ksql.3.png)

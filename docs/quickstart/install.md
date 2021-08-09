@@ -50,7 +50,7 @@ Two binary packages are available on the [download page](http://zeppelin.apache.
 
 - **all interpreter package**: unpack it in a directory of your choice and you're ready to go.
 - **net-install interpreter package**: only spark, python, markdown and shell interpreter included. Unpack and follow [install additional interpreters](../usage/interpreter/installation.html) to install other interpreters. If you're unsure, just run `./bin/install-interpreter.sh --all` and install all interpreters.
-  
+
 ### Building Zeppelin from source
 
 Follow the instructions [How to Build](../setup/basics/how_to_build.html), If you want to build from source instead of using binary package.
@@ -67,8 +67,10 @@ bin/zeppelin-daemon.sh start
 
 After Zeppelin has started successfully, go to [http://localhost:8080](http://localhost:8080) with your web browser.
 
-By default Zeppelin is listening at `127.0.0.1:8080`, so you can't access it when it is deployed in another remote machine.
+By default Zeppelin is listening at `127.0.0.1:8080`, so you can't access it when it is deployed on another remote machine.
 To access a remote Zeppelin, you need to change `zeppelin.server.addr` to `0.0.0.0` in `conf/zeppelin-site.xml`.
+
+Check log file at `ZEPPELIN_HOME/logs/zeppelin-server-*.log` if you can not open Zeppelin.
 
 #### Stopping Zeppelin
 
@@ -84,15 +86,27 @@ Make sure that [docker](https://www.docker.com/community-edition) is installed i
 Use this command to launch Apache Zeppelin in a container.
 
 ```bash
-docker run -p 8080:8080 --rm --name zeppelin apache/zeppelin:0.9.0
+docker run -p 8080:8080 --rm --name zeppelin apache/zeppelin:0.10.0
 
 ```
+
 To persist `logs` and `notebook` directories, use the [volume](https://docs.docker.com/engine/reference/commandline/run/#mount-volume--v-read-only) option for docker container.
 
 ```bash
-docker run -p 8080:8080 --rm -v $PWD/logs:/logs -v $PWD/notebook:/notebook \
+docker run -u $(id -u) -p 8080:8080 --rm -v $PWD/logs:/logs -v $PWD/notebook:/notebook \
            -e ZEPPELIN_LOG_DIR='/logs' -e ZEPPELIN_NOTEBOOK_DIR='/notebook' \
-           --name zeppelin apache/zeppelin:0.9.0
+           --name zeppelin apache/zeppelin:0.10.0
+```
+
+`-u $(id -u)` is to make sure you have the permission to write logs and notebooks. 
+
+For many interpreters, they require other dependencies, e.g. Spark interpreter requires Spark binary distribution
+and Flink interpreter requires Flink binary distribution. You can also mount them via docker volumn. e.g.
+
+```bash
+docker run -u $(id -u) -p 8080:8080 --rm -v /mnt/disk1/notebook:/notebook \
+-v /usr/lib/spark-current:/opt/spark -v /mnt/disk1/flink-1.12.2:/opt/flink -e FLINK_HOME=/opt/flink  \
+-e SPARK_HOME=/opt/spark  -e ZEPPELIN_NOTEBOOK_DIR='/notebook' --name zeppelin apache/zeppelin:0.10.0
 ```
 
 If you have trouble accessing `localhost:8080` in the browser, Please clear browser cache.
@@ -146,13 +160,15 @@ Congratulations, you have successfully installed Apache Zeppelin! Here are a few
 
 #### New to Apache Zeppelin...
  * For an in-depth overview, head to [Explore Zeppelin UI](../quickstart/explore_ui.html).
- * And then, try run [Tutorial Notebook](http://localhost:8080/#/notebook/2A94M5J1Z) in your Zeppelin.
+ * And then, try run Tutorial Notebooks shipped with your Zeppelin distribution.
  * And see how to change [configurations](../setup/operation/configuration.html) like port number, etc.
 
-#### Spark, Python, SQL, and more 
+#### Spark, Flink, SQL, Python, R and more 
  * [Spark support in Zeppelin](./spark_with_zeppelin.html), to know more about deep integration with [Apache Spark](http://spark.apache.org/). 
+ * [Flink support in Zeppelin](./flink_with_zeppelin.html), to know more about deep integration with [Apache Flink](http://flink.apache.org/).
  * [SQL support in Zeppelin](./sql_with_zeppelin.html) for SQL support
  * [Python support in Zeppelin](./python_with_zeppelin.html), for Matplotlib, Pandas, Conda/Docker integration.
+ * [R support in Zeppelin](./r_with_zeppelin.html)
  * [All Available Interpreters](../#available-interpreters)
 
 #### Multi-user support ...

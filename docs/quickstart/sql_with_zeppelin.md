@@ -38,6 +38,7 @@ The following guides explain how to use Apache Zeppelin that enables you to writ
   * [Apache Tajo](../interpreter/jdbc.html#apache-tajo)
   * and so on 
 - [Spark Interpreter](../interpreter/spark.html) supports [SparkSQL](http://spark.apache.org/sql/)
+- [Flink Interpreter](../interpreter/flink.html) supports [Flink SQL](https://ci.apache.org/projects/flink/flink-docs-release-1.13/docs/dev/table/sql/overview/)
 - [Python Interpreter](../interpreter/python.html) supports [pandasSQL](../interpreter/python.html#sql-over-pandas-dataframes) 
 - can create query result including **UI widgets** using [Dynamic Form](../usage/dynamic_form/intro.html)
 
@@ -56,6 +57,7 @@ For the further information about SQL support in Zeppelin, please check
 
 - [JDBC Interpreter](../interpreter/jdbc.html)
 - [Spark Interpreter](../interpreter/spark.html)
+- [Flink Interpreter](../interpreter/flink.html)
 - [Python Interpreter](../interpreter/python.html)
 - [IgniteSQL Interpreter](../interpreter/ignite.html#ignite-sql-interpreter) for [Apache Ignite](https://ignite.apache.org/)
 - [Kylin Interpreter](../interpreter/kylin.html) for [Apache Kylin](http://kylin.apache.org/)
