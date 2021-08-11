@@ -22,7 +22,7 @@
     <parent>
         <artifactId>flink-parent</artifactId>
         <groupId>org.apache.zeppelin</groupId>
-        <version>0.10.0-SNAPSHOT</version>
+        <version>0.10.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
