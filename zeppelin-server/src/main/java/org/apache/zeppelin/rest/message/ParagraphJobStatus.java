@@ -46,7 +46,7 @@ public class ParagraphJobStatus {
         if (!StringUtils.isBlank(p.getErrorMessage())) {
           this.errorMessage = p.getErrorMessage();
         } else {
-          this.errorMessage = p.getReturn().toString();
+          this.errorMessage = String.valueOf(p.getReturn());
         }
       }
     } else {
