@@ -151,6 +151,23 @@ If you want to use R with Spark, it is almost the same via `%spark.r`, `%spark.i
   </tr>
 </table>
 
+## Play R in Zeppelin docker
+
+For beginner, we would suggest you to play R in Zeppelin docker first. In the Zeppelin docker image, we have already installed R and lots of useful R libraries including IRKernel's prerequisites, so `%r.ir` is available.
+
+Without any extra configuration, you can run most of tutorial notes under folder `R Tutorial` directly.
+
+```
+docker run -u $(id -u) -p 8080:8080 -p:6789:6789 --rm --name zeppelin apache/zeppelin:0.10.0
+```
+
+After running the above command, you can open http://localhost:8080 to play R in Zeppelin.
+The port `6789` exposed in the above command is for R shiny app. You need to configure `zeppelin.R.shiny.portRange` to be `6789:6789` 
+to enable shiny app accessible as iframe in Zeppelin. 
+
+<img class="img-responsive" src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/r_shiny_app.gif" width="800px"/>
+
+
 ## Interpreter binding mode
 
 The default [interpreter binding mode](../usage/interpreter/interpreter_binding_mode.html) is `globally shared`. That means all notes share the same R interpreter. 
