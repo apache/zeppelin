@@ -23,7 +23,7 @@
   <parent>
     <artifactId>spark-parent</artifactId>
     <groupId>org.apache.zeppelin</groupId>
-    <version>0.11.0-SANPSHOT</version>
+    <version>0.10.0</version>
   </parent>
 
   <artifactId>zeppelin-spark-dependencies</artifactId>
