@@ -16,57 +16,76 @@ limitations under the License.
 <div class="new">
   <div class="container">
     <h2>What's new in</h2>
-    <span class="newZeppelin center-block">Apache Zeppelin 0.9</span>
+    <span class="newZeppelin center-block">Apache Zeppelin 0.10</span>
     <div class="border row">
       <div class="border col-md-4 col-sm-4">
-        <h4>Spark interpreter improved</h4>
+        <h4>Zeppelin SDK</h4>
         <div>
           <p>
-            IPython interpreter provides comparable user experience like Jupyter Notebook. For the details, click <a href="./docs/latest/interpreter/python.html#ipython-support">here</a>.
+            Not only you can use Zeppelin as interactive notebook, you can also use it as JobServer via Zeppelin SDK(<a href="./docs/latest/usage/zeppelin_sdk/client_api.html">client api</a> 
+& <a href="./docs/latest/usage/zeppelin_sdk/session_api.html">session api</a>)
           </p>
         </div>
       </div>
+
       <div class="border col-md-4 col-sm-4">
-        <h4>Note improvements</h4>
-        <p>
-          This release includes <a href="./docs/latest/usage/dynamic_form/intro.html#using-form-templates-scope-note">Note level dynamic form</a>, note revision comparator and ability to run paragraph sequentially, instead of simultaneous paragraph execution in previous releases.
-        </p>
-      </div>
-      <div class="border col-md-4 col-sm-4">
-        <h4>Inline configuration</h4>
-        <div class="personal">
-        <p>
-          Generic <a href="./docs/latest/usage/interpreter/overview.html#generic-confinterpreter">ConfInterpreter</a> provide a way configure interpreter inside each note.
-        </p>
+        <h4>Spark Interpreter Improved</h4>
+        <div>
+          <p>IPython interpreter provides comparable user experience like Jupyter Notebook. For the details, click <a href="./docs/latest/interpreter/python.html#ipython-support">here</a>.
+            <br/>
+            R interpreter provides comparable user experience like Jupyter Notebook. You can also make R shiny app in Zeppelin. click <a href="./docs/latest/interpreter/r.html">here</a>.
+          </p>
         </div>
       </div>
+
+      <div class="border col-md-4 col-sm-4">
+        <h4>Flink Interpreter Improved</h4>
+        <div>
+            <p>
+                Flink interpreter support Flink 1.10 and afterwards, both Scala 2.11 & 2.12 are supported. For the details, click <a href="./docs/latest/interpreter/flink.html>here</a>. 
+            </p>
+        </div>
+      </div>
+
     </div>
+
+
     <div class="border row">
       <div class="border col-md-4 col-sm-4">
-        <h4>Tab-key completion</h4>
-        <p>
-          Press `Tab` for code completion. (previous key combination `Ctrl+.` works as well)
-        </p>
-      </div>
-      <div class="border col-md-4 col-sm-4">
-        <h4>Interpreter lifecycle</h4>
+        <h4>Yarn Interpreter Mode</h4>
         <div>
-        <p>
-          Interpreter lifecycle manager automatically terminate interpreter process on idle timeout. So resources are released when they're not in use. See <a href="./docs/latest/usage/interpreter/overview.html#interpreter-lifecycle-management">here</a> for more details.
-        </p>
+            <p>
+              You can run interpreter in yarn cluster, e.g. you can run <a href="./docs/latest/interpreter/python.html#ipython-support">Python interpreter in yarn</a> and <a href="./docs/latest/interpreter/python.html#ipython-support">R interpreter in yarn</a> as well.
+            </p>
         </div>
       </div>
+
       <div class="border col-md-4 col-sm-4">
-        <h4>Helium online registry</h4>
-        <p>
-          This release includes online registry for Helium that can add custom visualization and more. <a href="./docs/latest/development/helium/overview.html">learn more</a> about it.
-        </p>
+        <h4>Inline Configuration</h4>
+        <div class="personal">
+            <p>
+              Generic <a href="./docs/latest/usage/interpreter/overview.html#generic-confinterpreter">ConfInterpreter</a> provide a way configure interpreter inside each note.
+            </p>
+        </div>
       </div>
+
+      <div class="border col-md-4 col-sm-4">
+        <h4>Interpreter Lifecycle Management</h4>
+        <div>
+            <p>
+              Interpreter lifecycle manager automatically terminate interpreter process on idle timeout. So resources are released when they're not in use. See <a href="./docs/latest/usage/interpreter/overview.html#interpreter-lifecycle-management">here</a> for more details.
+            </p>
+        </div>
+      </div>
+
     </div>
+    </div>
+
     <div class="col-md-12 col-sm-12 col-xs-12 text-center">
       <p style="text-align:center; margin-top: 32px; font-size: 14px; color: gray; font-weight: 200; font-style: italic; padding-bottom: 0;">See more details in 
-        <a href="./releases/zeppelin-release-0.8.1.html">0.8 Release Note</a>
+        <a href="./releases/zeppelin-release-0.10.0.html">0.10 Release Note</a>
       </p>
     </div>
+
   </div>
 </div>
