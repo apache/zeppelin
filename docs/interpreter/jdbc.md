@@ -1,7 +1,7 @@
 ---
 layout: page
 title: "Generic JDBC Interpreter for Apache Zeppelin"
-description: "Generic JDBC Interpreter lets you create a JDBC connection to any data source. You can use Postgres, MySql, MariaDB, Redshift, Apache Hive, Apache Phoenix, Apache Drill and Apache Tajo using JDBC interpreter."
+description: "Generic JDBC Interpreter lets you create a JDBC connection to any data source. You can use Postgres, MySql, MariaDB, Redshift, Apache Hive, Presto/Trino, Impala, Apache Phoenix, Apache Drill and Apache Tajo using JDBC interpreter."
 group: interpreter
 ---
 <!--
@@ -55,6 +55,14 @@ By now, it has been tested with:
     <li style="padding-bottom: 5px; list-style: circle">
       <a href="https://hive.apache.org/" target="_blank">Apache Hive</a> - 
       <a href="https://cwiki.apache.org/confluence/display/Hive/HiveServer2+Clients#HiveServer2Clients-JDBC" target="_blank">JDBC Driver</a>
+    </li>
+    <li style="padding-bottom: 5px; list-style: circle">
+      <a href="https://trino.io/" target="_blank">Presto/Trino</a> - 
+      <a href="https://trino.io/docs/current/installation/jdbc.html" target="_blank">JDBC Driver</a>
+    </li>
+    <li style="padding-bottom: 5px; list-style: circle">
+      <a href="https://impala.apache.org/" target="_blank">Impala</a> - 
+      <a href="https://impala.apache.org/docs/build/html/topics/impala_jdbc.html" target="_blank">JDBC Driver</a>
     </li>
     <li style="padding-bottom: 5px; list-style: circle">
       <a href="https://phoenix.apache.org/" target="_blank">Apache Phoenix</a> itself is a JDBC driver
@@ -154,7 +162,7 @@ The last step is **Dependency Setting**. Since Zeppelin only includes `PostgreSQ
 
 <img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/edit_dependencies.png" width="600px" />
 
-That's it. You can find more JDBC connection setting examples([Mysql](#mysql), [MariaDB](#mariadb), [Redshift](#redshift), [Apache Hive](#apache-hive), [Apache Phoenix](#apache-phoenix), and [Apache Tajo](#apache-tajo)) in [this section](#examples).
+That's it. You can find more JDBC connection setting examples([Mysql](#mysql), [MariaDB](#mariadb), [Redshift](#redshift), [Apache Hive](#apache-hive), [Presto/Trino](#prestotrino), [Impala](#impala), [Apache Phoenix](#apache-phoenix), and [Apache Tajo](#apache-tajo)) in [this section](#examples).
 
 ## JDBC Interpreter Datasource Pool Configuration
 The Jdbc interpreter uses the connection pool technology, and supports users to do some personal configuration of the connection pool. For example, we can configure `default.validationQuery='select 1'` and `default.testOnBorrow=true` in the Interpreter configuration to avoid the "Invalid SessionHandle" runtime error caused by Session timeout when connecting to HiveServer2 through JDBC interpreter.
@@ -280,23 +288,13 @@ For example, if a connection needs a schema parameter, it would have to add the 
   </tr>
 </table>
 
-## Binding JDBC interpter to notebook
-To bind the interpreters created in the interpreter setting page, click the gear icon at the top-right corner.
-
-<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/click_interpreter_binding_button.png" width="600px" />
-
-Select(blue) or deselect(white) the interpreter buttons depending on your use cases.
-If you need to use more than one interpreter in the notebook, activate several buttons.
-Don't forget to click `Save` button, or you will face `Interpreter *** is not found` error.
-
-<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/jdbc_interpreter_binding.png" width="550px" />
-
 ## How to use
 ### Run the paragraph with JDBC interpreter
 To test whether your databases and Zeppelin are successfully connected or not, type `%jdbc_interpreter_name`(e.g. `%mysql`) at the top of the paragraph and run `show databases`.
 
 ```sql
 %jdbc_interpreter_name
+
 show databases
 ```
 If the paragraph is `FINISHED` without any errors, a new paragraph will be automatically added after the previous one with `%jdbc_interpreter_name`.
@@ -310,6 +308,7 @@ So you don't need to type this prefix in every paragraphs' header.
 You can write multiple sql statements in one paragraph, just separate them with semi-colon. e.g
 
 ```sql
+%jdbc_interpreter_name
 
 USE zeppelin_demo;
 
@@ -317,16 +316,42 @@ CREATE TABLE pet (name VARCHAR(20), owner VARCHAR(20),
        species VARCHAR(20), sex CHAR(1), birth DATE, death DATE);
 ```
 
+### SQL Comment
+
+2 kinds of SQL comments are supported:
+
+* Single line comment start with `--`
+* Multiple line comment around with `/*  ... */`
+
+```sql
+
+%jdbc_interpreter_name
+
+-- single line comment
+show tables;
+/* multiple 
+   line 
+   comment
+ */
+select * from test_1;
+
+```
+
+
 ### Apply Zeppelin Dynamic Forms
 
 You can leverage [Zeppelin Dynamic Form](../usage/dynamic_form/intro.html) inside your queries. You can use both the `text input` and `select form` parametrization features.
 
-```sql
-%jdbc_interpreter_name
-SELECT name, country, performer
-FROM demo.performers
-WHERE name='${performer=Sheryl Crow|Doof|Fanfarlo|Los Paranoia}'
-```
+### Run SQL Continuously
+
+By default, sql statements in one paragraph are executed only once. But you can run it continuously by specifying local property `refreshInterval` (unit: milli-seconds),
+So that the sql statements are executed every interval of `refreshInterval` milli-seconds. This is useful when your data in database is updated continuously by external system,
+and you can build dynamic dashboard in Zeppelin via this approach.
+
+e.g. Here we query the mysql which is updated continuously by other external system.
+
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/jdbc_refresh.gif" width="800px" />
+
 ### Usage *precode*
 You can set *precode* for each data source. Code runs once while opening the connection.
 
@@ -358,24 +383,27 @@ An example settings of interpreter for the two data sources, each of which has i
     <td>default.precode</td>
     <td>set search_path='test_path'</td>
   </tr>
+</table>
+
+<table class="table-configuration">
   <tr>
-    <td>mysql.driver</td>
+    <td>default.driver</td>
     <td>com.mysql.jdbc.Driver</td>
   </tr>
   <tr>
-    <td>mysql.password</td>
+    <td>default.password</td>
     <td>1</td>
   </tr>
   <tr>
-    <td>mysql.url</td>
+    <td>default.url</td>
     <td>jdbc:mysql://localhost:3306/</td>
   </tr>
   <tr>
-    <td>mysql.user</td>
+    <td>default.user</td>
     <td>root</td>
   </tr>
   <tr>
-    <td>mysql.precode</td>
+    <td>default.precode</td>
     <td>set @v=12</td>
   </tr>
 </table>
@@ -385,16 +413,18 @@ Test of execution *precode* for each data source.
 
 ```sql
 %jdbc
+
 show search_path
 ```
-Returns value of `search_path` which is set in the *default.precode*.
+Returns value of `search_path` which is set in the default jdbc (use postgresql) interpreter's *default.precode*.
 
 
 ```sql
 %mysql
+
 select @v
 ```
-Returns value of `v` which is set in the *mysql.precode*.
+Returns value of `v` which is set in the mysql interpreter's *default.precode*.
 
 
 ## Examples
@@ -578,9 +608,18 @@ Here are some examples you can refer to. Including the below connectors, you can
 
 ### Apache Hive
 
-<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/hive_setting.png" width="600px" />
+Zeppelin just connect to `hiveserver2` to run hive sql via hive jdbc. There are 2 cases of connecting with Hive:
 
-##### Properties
+* Connect to Hive without KERBEROS
+* Connect to Hive with KERBEROS
+
+Each case requires different settings.
+
+##### Connect to Hive without KERBEROS
+
+In this scenario, you need to make the following settings at least. By default, hive job run as user of `default.user`.
+Refer [impersonation](../interpreter/jdbc.html#impersonation) if you want hive job run as the Zeppelin login user when authentication is enabled.
+
 <table class="table-configuration">
   <tr>
     <th>Name</th>
@@ -598,46 +637,81 @@ Here are some examples you can refer to. Including the below connectors, you can
     <td>default.user</td>
     <td>hive_user</td>
   </tr>
-  <tr>
-    <td>default.password</td>
-    <td>hive_password</td>
-  </tr>
-  <tr>
-    <td>default.proxy.user.property</td>
-    <td>Example value: hive.server2.proxy.user</td>
-  </tr>
 </table>
 
-[Apache Hive 1 JDBC Driver Docs](https://cwiki.apache.org/confluence/display/Hive/HiveServer2+Clients#HiveServer2Clients-JDBC)
-[Apache Hive 2 JDBC Driver Docs](https://cwiki.apache.org/confluence/display/Hive/HiveServer2+Clients#HiveServer2Clients-JDBC)
 
-##### Dependencies
 <table class="table-configuration">
   <tr>
     <th>Artifact</th>
     <th>Excludes</th>
   </tr>
   <tr>
-    <td>org.apache.hive:hive-jdbc:0.14.0</td>
-    <td></td>
-  </tr>
-  <tr>
-    <td>org.apache.hadoop:hadoop-common:2.6.0</td>
+    <td>org.apache.hive:hive-jdbc:2.3.4</td>
     <td></td>
   </tr>
 </table>
 
+
+##### Connect to Hive with KERBEROS
+
+In this scenario, you need to make the following settings at least. By default, hive job run as user of client principal (`zeppelin.jdbc.principal`).
+Refer [impersonation](../interpreter/jdbc.html#impersonation) if you want hive job run as the Zeppelin login user when authentication is enabled.
+
+<table class="table-configuration">
+  <tr>
+    <th>Name</th>
+    <th>Value</th>
+  </tr>
+  <tr>
+    <td>default.driver</td>
+    <td>org.apache.hive.jdbc.HiveDriver</td>
+  </tr>
+  <tr>
+    <td>default.url</td>
+    <td>jdbc:hive2://emr-header-1:10000/default;principal={hive_server2_principal}</td>
+  </tr>
+  <tr>
+    <td>zeppelin.jdbc.auth.type</td>
+    <td>KERBEROS</td>
+  </tr>
+  <tr>
+    <td>zeppelin.jdbc.keytab.location</td>
+    <td>keytab of client</td>
+  </tr>
+  <tr>
+    <td>zeppelin.jdbc.principal</td>
+    <td>principal of client</td>
+  </tr>
+</table>
+
+
+<table class="table-configuration">
+  <tr>
+    <th>Artifact</th>
+    <th>Excludes</th>
+  </tr>
+  <tr>
+    <td>org.apache.hive:hive-jdbc:2.3.4</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>org.apache.hive:hive-exec:2.3.4</td>
+    <td></td>
+  </tr>
+</table>
+
+
 [Maven Repository : org.apache.hive:hive-jdbc](https://mvnrepository.com/artifact/org.apache.hive/hive-jdbc)
 
 ##### Impersonation
+
 When Zeppelin server is running with authentication enabled, then the interpreter can utilize Hive's user proxy feature 
 i.e. send extra parameter for creating and running a session ("hive.server2.proxy.user=": "${loggedInUser}"). 
 This is particularly useful when multiple users are sharing a notebook.
 
 To enable this set following:
 
-  - `zeppelin.jdbc.auth.type` as `SIMPLE` or `KERBEROS` (if required) in the interpreter setting.
-  - `${prefix}.proxy.user.property` as `hive.server2.proxy.user`
+  - `default.proxy.user.property` as `hive.server2.proxy.user`
   
 See [User Impersonation in interpreter](../usage/interpreter/user_impersonation.html) for more information.
 
@@ -650,10 +724,6 @@ See [User Impersonation in interpreter](../usage/interpreter/user_impersonation.
   <tr>
     <td>hive.driver</td>
     <td>org.apache.hive.jdbc.HiveDriver</td>
-  </tr>
-  <tr>
-    <td>hive.password</td>
-    <td></td>
   </tr>
   <tr>
     <td>hive.url</td>
@@ -669,6 +739,91 @@ See [User Impersonation in interpreter](../usage/interpreter/user_impersonation.
   </tr>
 </table>
 
+### Presto/Trino
+
+Properties
+
+<table class="table-configuration">
+  <tr>
+    <th>Name</th>
+    <th>Value</th>
+  </tr>
+  <tr>
+    <td>default.driver</td>
+    <td>io.prestosql.jdbc.PrestoDriver</td>
+  </tr>
+  <tr>
+    <td>default.url</td>
+    <td>jdbc:presto://presto-server:9090/hive</td>
+  </tr>
+  <tr>
+    <td>default.user</td>
+    <td>presto_user</td>
+  </tr>
+</table>
+
+[Trino JDBC Driver Docs](https://trino.io/docs/current/installation/jdbc.html) <br/>
+[Presto JDBC Driver Docs](https://prestodb.io/docs/current/installation/jdbc.html)
+
+Dependencies
+
+<table class="table-configuration">
+  <tr>
+    <th>Artifact</th>
+    <th>Excludes</th>
+  </tr>
+  <tr>
+    <td>io.prestosql:presto-jdbc:350</td>
+    <td></td>
+  </tr>
+</table>
+
+### Impala
+
+Properties
+
+<table class="table-configuration">
+  <tr>
+    <th>Name</th>
+    <th>Value</th>
+  </tr>
+  <tr>
+    <td>default.driver</td>
+    <td>org.apache.hive.jdbc.HiveDriver</td>
+  </tr>
+  <tr>
+    <td>default.url</td>
+    <td>jdbc:hive2://emr-header-1.cluster-47080:21050/;auth=noSasl</td>
+  </tr>
+</table>
+
+Dependencies
+
+<table class="table-configuration">
+  <tr>
+    <th>Artifact</th>
+    <th>Excludes</th>
+  </tr>
+  <tr>
+    <td>org.apache.hive:hive-jdbc:2.3.4</td>
+    <td></td>
+  </tr>
+</table>
+
+[Impala JDBC Driver Docs](https://impala.apache.org/docs/build/html/topics/impala_jdbc.html)
+
+Dependencies
+
+<table class="table-configuration">
+  <tr>
+    <th>Artifact</th>
+    <th>Excludes</th>
+  </tr>
+  <tr>
+    <td>io.prestosql:presto-jdbc:350</td>
+    <td></td>
+  </tr>
+</table>
 
 ### Apache Phoenix
 
@@ -813,17 +968,18 @@ Before Adding one of the below dependencies, check the Phoenix version first.
 The JDBC interpreter also supports interpolation of `ZeppelinContext` objects into the paragraph text.
 The following example shows one use of this facility:
 
-####In Scala cell:
+#### In Scala cell:
 
 ```scala
 z.put("country_code", "KR")
     // ...
 ```
 
-####In later JDBC cell:
+#### In later JDBC cell:
 
 ```sql
 %jdbc_interpreter_name
+
 select * from patents_list where 
 priority_country = '{country_code}' and filing_date like '2015-%'
 ```
@@ -834,4 +990,5 @@ More details of this feature can be found in the Spark interpreter documentation
 [Zeppelin-Context](../usage/other_features/zeppelin_context.html)
 
 ## Bug reporting
+
 If you find a bug using JDBC interpreter, please create a [JIRA](https://issues.apache.org/jira/browse/ZEPPELIN) ticket.
