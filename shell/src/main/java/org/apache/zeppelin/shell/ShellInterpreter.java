@@ -57,6 +57,7 @@ public class ShellInterpreter extends KerberosInterpreter {
   private static final String DEFAULT_TIMEOUT = "60000";
   private static final String DEFAULT_CHECK_INTERVAL = "10000";
   private static final String DIRECTORY_USER_HOME = "shell.working.directory.user.home";
+  private static final String MAX_CONCURRENCY = "shell.concurrency.max";
 
   private final boolean isWindows = System.getProperty("os.name").startsWith("Windows");
   private final String shell = isWindows ? "cmd /c" : "bash -c";
@@ -213,7 +214,17 @@ public class ShellInterpreter extends KerberosInterpreter {
   @Override
   public Scheduler getScheduler() {
     return SchedulerFactory.singleton().createOrGetParallelScheduler(
-        ShellInterpreter.class.getName() + this.hashCode(), 10);
+        ShellInterpreter.class.getName() + this.hashCode(), getMaxConcurrent());
+  }
+
+  private int getMaxConcurrent() {
+    try {
+      return Integer.valueOf(getProperty(MAX_CONCURRENCY));
+    } catch (Exception e) {
+      LOGGER.error("Fail to parse {} with value: {}", MAX_CONCURRENCY,
+              getProperty(MAX_CONCURRENCY));
+      return 10;
+    }
   }
 
   @Override
