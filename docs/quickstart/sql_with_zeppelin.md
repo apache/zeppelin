@@ -33,6 +33,8 @@ The following guides explain how to use Apache Zeppelin that enables you to writ
   * [MariaDB](../interpreter/jdbc.html#mariadb)
   * [AWS Redshift](../interpreter/jdbc.html#redshift) 
   * [Apache Hive](../interpreter/jdbc.html#apache-hive)
+  * [Presto/Trino](../interpreter/jdbc.html#prestotrino)
+  * [Impala](../interpreter/jdbc.html#impala)
   * [Apache Phoenix](../interpreter/jdbc.html#apache-phoenix) 
   * [Apache Drill](../interpreter/jdbc.html#apache-drill)
   * [Apache Tajo](../interpreter/jdbc.html#apache-tajo)
@@ -43,7 +45,8 @@ The following guides explain how to use Apache Zeppelin that enables you to writ
 - can create query result including **UI widgets** using [Dynamic Form](../usage/dynamic_form/intro.html)
 
     ```sql
-    %sql 
+    %sql
+    
     select age, count(1) value 
     from bank 
     where age < ${maxAge=30} 
