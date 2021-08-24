@@ -133,11 +133,11 @@ e.g. Here we download Spark 3.1.2 to`/mnt/disk1/spark-3.1.2`,
 and we mount it to Zeppelin docker container and run the following command to start Zeppelin docker container.
 
 ```bash
-docker run -u $(id -u) -p 8080:8080 --rm -v /mnt/disk1/spark-3.1.2:/opt/spark -e SPARK_HOME=/opt/spark  --name zeppelin apache/zeppelin:0.10.0
+docker run -u $(id -u) -p 8080:8080 -p 4040:4040 --rm -v /mnt/disk1/spark-3.1.2:/opt/spark -e SPARK_HOME=/opt/spark  --name zeppelin apache/zeppelin:0.10.0
 ```
 
 After running the above command, you can open `http://localhost:8080` to play Spark in Zeppelin. We only verify the spark local mode in Zeppelin docker, other modes may not work due to network issues.
-
+`-p 4040:4040` is to expose Spark web ui, so that you can access Spark web ui via `http://localhost:8081`.
 
 ## Configuration
 The Spark interpreter can be configured with properties provided by Zeppelin.

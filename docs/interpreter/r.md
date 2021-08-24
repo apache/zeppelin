@@ -161,9 +161,12 @@ Without any extra configuration, you can run most of tutorial notes under folder
 docker run -u $(id -u) -p 8080:8080 -p:6789:6789 --rm --name zeppelin apache/zeppelin:0.10.0
 ```
 
-After running the above command, you can open http://localhost:8080 to play R in Zeppelin.
-The port `6789` exposed in the above command is for R shiny app. You need to configure `zeppelin.R.shiny.portRange` to be `6789:6789` 
-to enable shiny app accessible as iframe in Zeppelin. 
+After running the above command, you can open `http://localhost:8080` to play R in Zeppelin.
+The port `6789` exposed in the above command is for R shiny app. You need to make the following 2 interpreter properties to enable shiny app accessible as iframe in Zeppelin docker container. 
+
+* `zeppelin.R.shiny.portRange` to be `6789:6789`
+* Set `ZEPPELIN_LOCAL_IP` to be `0.0.0.0`
+
 
 <img class="img-responsive" src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/r_shiny_app.gif" width="800px"/>
 
