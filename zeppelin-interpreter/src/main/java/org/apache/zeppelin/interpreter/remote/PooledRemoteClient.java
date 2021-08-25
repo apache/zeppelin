@@ -60,6 +60,11 @@ public class PooledRemoteClient<T extends TServiceClient> {
     // Close client socket connection
     if (remoteClientFactory != null) {
       remoteClientFactory.close();
+      this.remoteClientFactory = null;
+    }
+    if (this.clientPool != null) {
+      this.clientPool.close();
+      this.clientPool = null;
     }
   }
 
