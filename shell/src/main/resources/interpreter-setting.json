@@ -53,6 +53,13 @@
         "defaultValue": false,
         "description": "Enable ZeppelinContext variable interpolation into paragraph text",
         "type": "checkbox"
+      },
+      "zeppelin.concurrency.max": {
+        "envName": null,
+        "propertyName": "zeppelin.concurrency.max",
+        "defaultValue": "10",
+        "description": "Max concurrency of shell interpreter",
+        "type": "number"
       }
     },
     "editor": {
