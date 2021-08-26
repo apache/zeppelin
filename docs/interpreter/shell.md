@@ -79,6 +79,11 @@ At the "Interpreters" menu in Zeppelin dropdown menu, you can set the property v
     <td></td>
     <td>Internal and external IP mapping of zeppelin server</td>
   </tr>
+  <tr>
+    <td>zeppelin.concurrency.max</td>
+    <td>10</td>
+    <td>Max concurrency of shell interpreter</td>
+  </tr>
 </table>
 
 ## Example
