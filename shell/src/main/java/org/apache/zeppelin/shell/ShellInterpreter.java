@@ -218,11 +218,12 @@ public class ShellInterpreter extends KerberosInterpreter {
   }
 
   private int getMaxConcurrent() {
+    String maxConcurrencyProperty = getProperty(MAX_CONCURRENCY, "10");
     try {
-      return Integer.valueOf(getProperty(MAX_CONCURRENCY));
-    } catch (Exception e) {
+      return Integer.valueOf(maxConcurrencyProperty);
+    } catch (NumberFormatException e) {
       LOGGER.error("Fail to parse {} with value: {}", MAX_CONCURRENCY,
-              getProperty(MAX_CONCURRENCY));
+              maxConcurrencyProperty);
       return 10;
     }
   }
