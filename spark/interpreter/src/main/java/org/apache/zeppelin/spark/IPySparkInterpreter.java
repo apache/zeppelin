@@ -53,10 +53,12 @@ public class IPySparkInterpreter extends IPythonInterpreter {
     if (opened) {
       return;
     }
+
+    this.sparkInterpreter = getInterpreterInTheSameSessionByClassName(SparkInterpreter.class);
     PySparkInterpreter pySparkInterpreter =
             getInterpreterInTheSameSessionByClassName(PySparkInterpreter.class, false);
-    setProperty("zeppelin.python", pySparkInterpreter.getPythonExec());
-    sparkInterpreter = getInterpreterInTheSameSessionByClassName(SparkInterpreter.class);
+    setProperty("zeppelin.python", pySparkInterpreter.getPythonExec(sparkInterpreter.getSparkContext().conf()));
+
     setProperty("zeppelin.py4j.useAuth",
             sparkInterpreter.getSparkVersion().isSecretSocketSupported() + "");
     SparkConf conf = sparkInterpreter.getSparkContext().getConf();
