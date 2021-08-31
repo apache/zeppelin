@@ -15,7 +15,7 @@
 FROM centos:centos7
 
 ENV SPARK_PROFILE 2.4
-ENV SPARK_VERSION 2.4.0
+ENV SPARK_VERSION 2.4.8
 ENV HADOOP_PROFILE 2.7
 ENV SPARK_HOME /usr/local/spark
 
@@ -39,7 +39,7 @@ ENV JAVA_HOME /usr/lib/jvm/java
 ENV PATH $PATH:$JAVA_HOME/bin
 
 # install spark
-RUN curl -s http://www.apache.org/dist/spark/spark-$SPARK_VERSION/spark-$SPARK_VERSION-bin-hadoop$HADOOP_PROFILE.tgz | tar -xz -C /usr/local/
+RUN curl -s https://downloads.apache.org/spark/spark-$SPARK_VERSION/spark-$SPARK_VERSION-bin-hadoop$HADOOP_PROFILE.tgz | tar -xz -C /usr/local/
 RUN cd /usr/local && ln -s spark-$SPARK_VERSION-bin-hadoop$HADOOP_PROFILE spark
 
 # update boot script
