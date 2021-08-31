@@ -39,7 +39,7 @@ ENV JAVA_HOME /usr/lib/jvm/java
 ENV PATH $PATH:$JAVA_HOME/bin
 
 # install spark
-RUN curl -s http://www.apache.org/dist/spark/spark-$SPARK_VERSION/spark-$SPARK_VERSION-bin-hadoop$HADOOP_PROFILE.tgz | tar -xz -C /usr/local/
+RUN curl -s https://downloads.apache.org/spark/spark-$SPARK_VERSION/spark-$SPARK_VERSION-bin-hadoop$HADOOP_PROFILE.tgz | tar -xz -C /usr/local/
 RUN cd /usr/local && ln -s spark-$SPARK_VERSION-bin-hadoop$HADOOP_PROFILE spark
 
 # update boot script
