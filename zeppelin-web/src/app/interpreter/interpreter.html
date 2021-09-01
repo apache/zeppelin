@@ -236,7 +236,7 @@ limitations under the License.
             <a class="fa fa-info-circle interpreter-binding-mode-info-link"
                aria-hidden="true"
                uib-tooltip="Can manage interpreter sessions differently by setting this option. Click this button to learn more"
-               ng-href="{{getInterpreterBindingModeDocsLink()}}" target="_blank"></a>
+               ng-href="{{getInterpreterBindingModeDocsLink()}}" target="_blank" rel="noopener noreferrer"></a>
             <span ng-if="getInterpreterRunningOption(setting.id) === 'Per User' && ticket.principal !== 'anonymous'">
               <span ng-if="getPerNoteOption(setting.id) === 'shared'">
                 <button type="button" class="btn btn-default btn-xs"
@@ -299,7 +299,7 @@ limitations under the License.
               <a class="fa fa-info-circle interpreter-binding-mode-info-link"
                  aria-hidden="true"
                  uib-tooltip="Can manage interpreter sessions differently by setting this option. Click this button to learn more"
-                 ng-href="{{getInterpreterBindingModeDocsLink()}}" target="_blank"></a>
+                 ng-href="{{getInterpreterBindingModeDocsLink()}}" target="_blank" rel="noopener noreferrer"></a>
               <button type="button" class="btn btn-default btn-xs"
                       ng-disabled="!valueform.$visible"
                       ng-click="setPerNoteOption(setting.id, 'shared')"

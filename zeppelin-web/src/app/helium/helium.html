@@ -89,7 +89,7 @@ limitations under the License.
                ng-bind-html=intpDefaultIcon></div>
           <div class="heliumPackageName">
             <span ng-if="hasNpmLink(pkgSearchResult)">
-              <a target="_blank" href="https://www.npmjs.com/package/{{pkgSearchResult.pkg.name}}">{{pkgSearchResult.pkg.name}}</a>
+              <a target="_blank" rel="noopener noreferrer" href="https://www.npmjs.com/package/{{pkgSearchResult.pkg.name}}">{{pkgSearchResult.pkg.name}}</a>
             </span>
             <span ng-if="!hasNpmLink(pkgSearchResult) && !hasMavenLink(pkgSearchResult)" ng-class="{'heliumLocalPackage': isLocalPackage(pkgSearchResult)}">
               {{pkgSearchResult.pkg.name}}
