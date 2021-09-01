@@ -21,6 +21,7 @@ limitations under the License.
         </h3>
         <div class="pull-right heliumLearnMore">
           <a target="_blank"
+             rel="noopener noreferrer"
              class="helium-repo-btn"
              ng-href="https://zeppelin.apache.org/helium_packages.html"
              tooltip-placement="bottom" uib-tooltip="Learn more">
@@ -96,6 +97,7 @@ limitations under the License.
             </span>
             <span ng-if="hasMavenLink(pkgSearchResult)">
               <a target="_blank"
+                 rel="noopener noreferrer"
                  href="http://search.maven.org/#search%7Cga%7C1%7Ca%3A%22{{pkgSearchResult.pkg.artifact.split('@')[0]}}%22%20AND%20v%3A%22{{pkgSearchResult.pkg.artifact.split('@')[1]}}%22">
                  {{pkgSearchResult.pkg.name}}
               </a>
