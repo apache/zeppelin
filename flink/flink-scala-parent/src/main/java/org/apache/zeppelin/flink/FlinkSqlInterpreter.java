@@ -61,7 +61,7 @@ public abstract class FlinkSqlInterpreter extends AbstractInterpreter {
   private int defaultSqlParallelism;
   private ReentrantReadWriteLock.WriteLock lock = new ReentrantReadWriteLock().writeLock();
   // all the available sql config options. see
-  // https://ci.apache.org/projects/flink/flink-docs-release-1.10/dev/table/config.html
+  // https://ci.apache.org/projects/flink/flink-docs-master/docs/dev/table/config/
   private Map<String, ConfigOption> tableConfigOptions;
 
   public FlinkSqlInterpreter(Properties properties) {
@@ -523,7 +523,7 @@ public abstract class FlinkSqlInterpreter extends AbstractInterpreter {
 
     if (!tableConfigOptions.containsKey(key)) {
       throw new IOException(key + " is not a valid table/sql config, please check link: " +
-              "https://ci.apache.org/projects/flink/flink-docs-release-1.10/dev/table/config.html");
+              "https://ci.apache.org/projects/flink/flink-docs-master/docs/dev/table/config/");
     }
 
     LOGGER.info("Set table config: {}={}", key, value);
