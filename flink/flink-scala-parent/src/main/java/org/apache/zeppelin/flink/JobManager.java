@@ -62,19 +62,20 @@ public class JobManager {
     LOGGER.info("Creating JobManager at flinkWebUrl: {}, displayedFlinkWebUrl: {}",
             flinkWebUrl, displayedFlinkWebUrl);
   }
-
+  
   public void addJob(InterpreterContext context, JobClient jobClient) {
     String paragraphId = context.getParagraphId();
     JobClient previousJobClient = this.jobs.put(paragraphId, jobClient);
+    if (previousJobClient != null) {
+      LOGGER.warn("There's another Job {} that is associated with paragraph {}",
+              jobClient.getJobID(), paragraphId);
+      return;
+    }
     long checkInterval = Long.parseLong(properties.getProperty("zeppelin.flink.job.check_interval", "1000"));
     FlinkJobProgressPoller thread = new FlinkJobProgressPoller(flinkWebUrl, jobClient.getJobID(), context, checkInterval);
     thread.setName("JobProgressPoller-Thread-" + paragraphId);
     thread.start();
     this.jobProgressPollerMap.put(jobClient.getJobID(), thread);
-    if (previousJobClient != null) {
-      LOGGER.warn("There's another Job {} that is associated with paragraph {}",
-              jobClient.getJobID(), paragraphId);
-    }
   }
 
   public void removeJob(String paragraphId) {
