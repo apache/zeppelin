@@ -150,7 +150,8 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
     let zeppelinVersion = $rootScope.zeppelinVersion;
     let url = 'https://zeppelin.apache.org/docs/' + zeppelinVersion + '/security/notebook_authorization.html';
     let content = 'Only authenticated user can set the permission.' +
-      '<a data-toggle="tooltip" data-placement="top" title="Learn more" target="_blank" rel="noopener noreferrer" href=' + url + '>' +
+      '<a data-toggle="tooltip" data-placement="top" title="Learn more" target="_blank" ' +
+      'rel="noopener noreferrer" href=' + url + '>' +
       '<i class="icon-question" />' +
       '</a>';
     BootstrapDialog.show({
