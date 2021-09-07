@@ -10,8 +10,7 @@
  * limitations under the License.
  */
 
-import { Directive, HostBinding, PLATFORM_ID, Inject, Input, ElementRef } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
+import { Directive, HostBinding, Input, ElementRef } from '@angular/core';
 
 @Directive({
   selector: 'a[href]',
@@ -21,9 +20,7 @@ export class ExternalLinkDirective {
   @HostBinding('attr.target') targetAttr = null;
   @Input() href: string;
 
-  constructor(
-    @Inject(PLATFORM_ID) private platformId: string,
-    private elementRef: ElementRef) {}
+  constructor(private elementRef: ElementRef) {}
 
   ngOnChanges() {
     this.elementRef.nativeElement.href = this.href;
@@ -39,6 +36,6 @@ export class ExternalLinkDirective {
   }
 
   private isLinkExternal() {
-    return isPlatformBrowser(this.platformId) && !this.elementRef.nativeElement.hostname.includes(location.hostname);
+    return !this.elementRef.nativeElement.hostname.includes(location.hostname);
   }
 }

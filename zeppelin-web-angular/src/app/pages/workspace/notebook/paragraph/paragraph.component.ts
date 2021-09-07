@@ -312,7 +312,7 @@ export class NotebookParagraphComponent extends ParagraphBase implements OnInit,
               nzTitle: 'Do you want to migrate the Angular.js template?',
               nzContent:
                 'The Angular.js template has been deprecated, please upgrade to Angular template.' +
-                ' (<a href="https://angular.io/guide/ajs-quick-reference" target="_blank" rel="noopener noreferrer">more info</a>)',
+                ' (<a href="https://angular.io/guide/ajs-quick-reference" target="_blank">more info</a>)',
               nzOnOk: () => {
                 this.switchMode('command');
                 this.ngTemplateAdapterService
