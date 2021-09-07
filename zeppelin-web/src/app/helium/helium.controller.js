@@ -185,9 +185,9 @@ export default function HeliumCtrl($scope, $rootScope, $sce,
 
   const getHeliumTypeText = function(type) {
     if (type === HeliumType.VISUALIZATION) {
-      return `<a target="_blank" href="https://zeppelin.apache.org/docs/${$rootScope.zeppelinVersion}/development/helium/writing_visualization.html">${type}</a>`; // eslint-disable-line max-len
+      return `<a target="_blank" rel="noopener noreferrer" href="https://zeppelin.apache.org/docs/${$rootScope.zeppelinVersion}/development/helium/writing_visualization.html">${type}</a>`; // eslint-disable-line max-len
     } else if (type === HeliumType.SPELL) {
-      return `<a target="_blank" href="https://zeppelin.apache.org/docs/${$rootScope.zeppelinVersion}/development/helium/writing_spell.html">${type}</a>`; // eslint-disable-line max-len
+      return `<a target="_blank" rel="noopener noreferrer" href="https://zeppelin.apache.org/docs/${$rootScope.zeppelinVersion}/development/helium/writing_spell.html">${type}</a>`; // eslint-disable-line max-len
     } else {
       return type;
     }

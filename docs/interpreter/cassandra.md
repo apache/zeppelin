@@ -163,7 +163,7 @@ The complete list of all CQL statements and versions can be found below:
    <tr>
      <td><strong>3.x</strong></td>
      <td>
-        <a target="_blank"
+        <a target="_blank" rel="noopener noreferrer"
           href="https://docs.datastax.com/en/archived/cql/3.3/cql/cqlIntro.html">
           https://docs.datastax.com/en/archived/cql/3.3/cql/cqlIntro.html
         </a>
@@ -172,7 +172,7 @@ The complete list of all CQL statements and versions can be found below:
    <tr>
      <td><strong>2.2</strong></td>
      <td>
-        <a target="_blank"
+        <a target="_blank" rel="noopener noreferrer"
           href="https://docs.datastax.com/en/archived/cql/3.3/cql/cqlIntro.html">
           https://docs.datastax.com/en/archived/cql/3.3/cql/cqlIntro.html
         </a>
@@ -181,7 +181,7 @@ The complete list of all CQL statements and versions can be found below:
    <tr>
      <td><strong>2.1</strong></td>
      <td>
-        <a target="_blank"
+        <a target="_blank" rel="noopener noreferrer"
           href="http://docs.datastax.com/en/cql/3.1/cql/cql_intro_c.html">
           http://docs.datastax.com/en/cql/3.1/cql/cql_intro_c.html
         </a>

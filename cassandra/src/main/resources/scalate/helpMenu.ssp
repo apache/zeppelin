@@ -219,7 +219,7 @@
                                     <tr>
                                         <td style="text-align:left"><strong>3.x</strong></td>
                                         <td style="text-align:left">
-                                            <a href="http://docs.datastax.com/en/cql/3.3/cql/cqlIntro.html" target="_blank">
+                                            <a href="http://docs.datastax.com/en/cql/3.3/cql/cqlIntro.html" target="_blank" rel="noopener noreferrer">
                                             http://docs.datastax.com/en/cql/3.3/cql/cqlIntro.html
                                             </a>
                                         </td>
@@ -227,7 +227,7 @@
                                         <tr>
                                             <td style="text-align:left"><strong>2.2</strong></td>
                                             <td style="text-align:left">
-                                                <a href="http://docs.datastax.com/en/cql/3.3/cql/cqlIntro.html" target="_blank">
+                                                <a href="http://docs.datastax.com/en/cql/3.3/cql/cqlIntro.html" target="_blank" rel="noopener noreferrer">
                                                     http://docs.datastax.com/en/cql/3.3/cql/cqlIntro.html
                                                 </a>
                                             </td>
@@ -235,7 +235,7 @@
                                         <tr>
                                             <td style="text-align:left"><strong>2.1</strong></td>
                                             <td style="text-align:left">
-                                                <a href="http://docs.datastax.com/en/cql/3.1/cql/cql_intro_c.html" target="_blank">
+                                                <a href="http://docs.datastax.com/en/cql/3.1/cql/cql_intro_c.html" target="_blank" rel="noopener noreferrer">
                                                     http://docs.datastax.com/en/cql/3.1/cql/cql_intro_c.html
                                                 </a>
                                             </td>
@@ -778,7 +778,7 @@ select id, double, float, text, date, time, timestamp from zep.test_format;</pre
                             <li><strong>null</strong> is parsed as-is</li>
                             <li><strong>boolean</strong> (true|false) are parsed as-is </li>
                             <li>collection values must follow the
-                                <a href="http://docs.datastax.com/en/cql/3.1/cql/cql_using/use_collections_c.html" target="_blank">standard CQL syntax</a>:
+                                <a href="http://docs.datastax.com/en/cql/3.1/cql/cql_using/use_collections_c.html" target="_blank" rel="noopener noreferrer">standard CQL syntax</a>:
                                 <ul>
                                     <li>list:  [‘list_item1’, ’list_item2’, ...]</li>
                                     <li>set: {‘set_item1’, ‘set_item2’, …}</li>
@@ -787,12 +787,12 @@ select id, double, float, text, date, time, timestamp from zep.test_format;</pre
                             </li>
                             <li>
                                 tuple values should be enclosed between parenthesis
-                                (see <a href="http://docs.datastax.com/en/cql/3.1/cql/cql_reference/tupleType.html" target="_blank">tuple CQL syntax</a>):
+                                (see <a href="http://docs.datastax.com/en/cql/3.1/cql/cql_reference/tupleType.html" target="_blank" rel="noopener noreferrer">tuple CQL syntax</a>):
                                 (‘text’, 123, true)
                             </li>
                             <li>
                                 udt values should be enclosed between brackets
-                                (see <a href="http://docs.datastax.com/en/cql/3.1/cql/cql_using/cqlUseUDT.html" target="_blank">udt CQL syntax</a>):
+                                (see <a href="http://docs.datastax.com/en/cql/3.1/cql/cql_using/cqlUseUDT.html" target="_blank" rel="noopener noreferrer">udt CQL syntax</a>):
                                 {stree_name: ‘Beverly Hills’,  number: 104, zip_code: 90020, state: ‘California’, …}
                             </li>
                         </ul>
@@ -834,7 +834,7 @@ select id, double, float, text, date, time, timestamp from zep.test_format;</pre
                   <div class="panel-body">
                     <p>
                         Instead of hard-coding your CQL queries, it is possible to use <strong>
-                        <a href="http://zeppelin.apache.org/docs/0.6.0-SNAPSHOT/manual/dynamicform.html" target="_blank">Zeppelin dynamic form</a>
+                        <a href="http://zeppelin.apache.org/docs/0.6.0-SNAPSHOT/manual/dynamicform.html" target="_blank" rel="noopener noreferrer">Zeppelin dynamic form</a>
                         </strong> syntax to inject simple value or multiple choices forms.
 
                         The legacy mustache syntax (  <strong>{{ }}</strong> ) to bind input text and select form is still supported but is deprecated and will be removed in future releases.
@@ -1050,7 +1050,7 @@ select id, double, float, text, date, time, timestamp from zep.test_format;</pre
                It is possible to execute many paragraphs in parallel. However, at the back-end side, we’re still using synchronous queries. <em>Asynchronous execution</em> is only possible when it is possible to return a <strong>Future</strong> value in the <strong>InterpreterResult</strong>. It may be an interesting proposal for the <strong>Zeppelin</strong> project.
                <br/><br/>
                Recently, <strong>Zeppelin</strong> allows you to choose the level of isolation for your interpreters (see
-               <strong><a href="http://zeppelin.apache.org/docs/0.6.0-SNAPSHOT/manual/interpreters.html" target="_blank">Interpreter Binding Mode</a></strong> ).
+               <strong><a href="http://zeppelin.apache.org/docs/0.6.0-SNAPSHOT/manual/interpreters.html" target="_blank" rel="noopener noreferrer">Interpreter Binding Mode</a></strong> ).
                <br/><br/>
                Long story short, you have 3 available bindings:
 
@@ -1137,7 +1137,7 @@ select id, double, float, text, date, time, timestamp from zep.test_format;</pre
         </div>        
         <div id="${contactsId}" class="panel-collapse collapse" role="tabpanel">
             <div class="panel-body">
-                If you encounter a bug for this interpreter, please create a <a href="https://issues.apache.org/jira/browse/ZEPPELIN" target="_blank"><strong>JIRA</strong></a> ticket.</a>
+                If you encounter a bug for this interpreter, please create a <a href="https://issues.apache.org/jira/browse/ZEPPELIN" target="_blank" rel="noopener noreferrer"><strong>JIRA</strong></a> ticket.</a>
             </div>
         </div>            
     </div>    
