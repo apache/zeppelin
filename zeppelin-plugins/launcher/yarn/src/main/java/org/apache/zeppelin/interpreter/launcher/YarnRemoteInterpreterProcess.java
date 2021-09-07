@@ -17,8 +17,6 @@
 
 package org.apache.zeppelin.interpreter.launcher;
 
-import com.google.common.collect.Lists;
-import com.google.common.io.Files;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.io.FileUtils;
 
@@ -59,7 +57,9 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -372,8 +372,8 @@ public class YarnRemoteInterpreterProcess extends RemoteInterpreterProcess {
    * classpath specified through the Hadoop and Yarn configurations.
    */
   private void populateHadoopClasspath(Map<String, String> envs) {
-    List<String> yarnClassPath = Lists.newArrayList(getYarnAppClasspath());
-    List<String> mrClassPath = Lists.newArrayList(getMRAppClasspath());
+    List<String> yarnClassPath = Arrays.asList(getYarnAppClasspath());
+    List<String> mrClassPath = Arrays.asList(getMRAppClasspath());
     yarnClassPath.addAll(mrClassPath);
     LOGGER.info("Adding hadoop classpath: {}", StringUtils.join(yarnClassPath, ":"));
     for (String path : yarnClassPath) {
@@ -468,7 +468,7 @@ public class YarnRemoteInterpreterProcess extends RemoteInterpreterProcess {
       }
     } else {
       zos.putNextEntry(new ZipEntry(zipEntryName));
-      Files.copy(srcFile, zos);
+      Files.copy(srcFile.toPath(), zos);
       zos.closeEntry();
     }
   }

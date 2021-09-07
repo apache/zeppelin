@@ -24,8 +24,6 @@ import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.contrib.nio.testing.LocalStorageHelper;
-import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -33,6 +31,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
@@ -61,8 +60,8 @@ public class GCSNotebookRepoTest {
   @Parameters
   public static Collection<Object[]> data() {
     return Arrays.asList(new Object[][] {
-        { "bucketname", Optional.absent(), "gs://bucketname" },
-        { "bucketname-with-slash", Optional.absent(), "gs://bucketname-with-slash/" },
+        { "bucketname", Optional.empty(), "gs://bucketname" },
+        { "bucketname-with-slash", Optional.empty(), "gs://bucketname-with-slash/" },
         { "bucketname", Optional.of("path/to/dir"), "gs://bucketname/path/to/dir" },
         { "bucketname", Optional.of("trailing/slash"), "gs://bucketname/trailing/slash/" }
     });
@@ -121,7 +120,7 @@ public class GCSNotebookRepoTest {
       noteIds.add(info.getId());
     }
     // Only valid paths are gs://bucketname/path/<noteid>/note.json
-    assertThat(noteIds).containsExactlyElementsIn(ImmutableList.of("12", "123"));
+    assertThat(noteIds).containsExactlyElementsIn(Arrays.asList("12", "123"));
   }
 
   @Test

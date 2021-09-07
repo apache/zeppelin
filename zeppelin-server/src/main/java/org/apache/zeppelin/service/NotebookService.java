@@ -23,7 +23,6 @@ import static org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars.ZEPPELIN_N
 import static org.apache.zeppelin.interpreter.InterpreterResult.Code.ERROR;
 import static org.apache.zeppelin.scheduler.Job.Status.ABORT;
 
-import com.google.common.base.Strings;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -1166,8 +1165,8 @@ public class NotebookService {
   private void addNewParagraphIfLastParagraphIsExecuted(Note note, Paragraph p) {
     // if it's the last paragraph and not empty, let's add a new one
     boolean isTheLastParagraph = note.isLastParagraph(p.getId());
-    if (!(Strings.isNullOrEmpty(p.getText()) ||
-        Strings.isNullOrEmpty(p.getScriptText())) &&
+    if (!(StringUtils.isEmpty(p.getText()) ||
+      StringUtils.isEmpty(p.getScriptText())) &&
         isTheLastParagraph) {
       note.addNewParagraph(p.getAuthenticationInfo());
     }

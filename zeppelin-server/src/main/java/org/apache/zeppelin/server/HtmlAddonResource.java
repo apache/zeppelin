@@ -16,24 +16,21 @@
  */
 package org.apache.zeppelin.server;
 
-import static com.google.common.base.Charsets.UTF_8;
-
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
+import java.nio.charset.StandardCharsets;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.eclipse.jetty.util.resource.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.google.common.io.CharStreams;
-import com.google.common.io.Files;
 
 /**
  * Resource for enabling html addons in index.html.
@@ -59,10 +56,7 @@ public class HtmlAddonResource extends Resource {
         this.indexResource = indexResource;
         try {
             // read original content from resource
-            String content;
-            try (final Reader reader = new InputStreamReader(indexResource.getInputStream())) {
-                content = CharStreams.toString(reader);
-            }
+            String content = IOUtils.toString(indexResource.getInputStream(), StandardCharsets.UTF_8);
 
             // process body addon
             if (bodyAddon != null) {
@@ -86,14 +80,14 @@ public class HtmlAddonResource extends Resource {
                 }
             }
 
-            this.alteredContent = content.getBytes(UTF_8);
+            this.alteredContent = content.getBytes(StandardCharsets.UTF_8);
 
             // only relevant in development mode: create altered temp file (as zeppelin web archives are addressed via local
             // filesystem folders)
             if (indexResource.getFile() != null) {
                 this.alteredTempFile = File.createTempFile(HTML_ADDON_IDENTIFIER, ".html");
                 this.alteredTempFile.deleteOnExit();
-                Files.write(this.alteredContent, this.alteredTempFile);
+                FileUtils.writeByteArrayToFile(this.alteredTempFile, this.alteredContent);
             }
 
         } catch (IOException e) {

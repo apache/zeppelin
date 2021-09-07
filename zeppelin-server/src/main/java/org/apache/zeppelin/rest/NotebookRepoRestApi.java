@@ -17,7 +17,6 @@
 package org.apache.zeppelin.rest;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Sets;
 import com.google.gson.JsonSyntaxException;
 
 import javax.inject.Inject;
@@ -30,6 +29,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -101,7 +101,7 @@ public class NotebookRepoRestApi {
 
   private ServiceContext getServiceContext() {
     AuthenticationInfo authInfo = new AuthenticationInfo(authenticationService.getPrincipal());
-    Set<String> userAndRoles = Sets.newHashSet();
+    Set<String> userAndRoles = new HashSet<>();
     userAndRoles.add(authenticationService.getPrincipal());
     userAndRoles.addAll(authenticationService.getAssociatedRoles());
     return new ServiceContext(authInfo, userAndRoles);

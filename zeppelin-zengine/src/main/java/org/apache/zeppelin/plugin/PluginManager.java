@@ -18,7 +18,6 @@
 package org.apache.zeppelin.plugin;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.Lists;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.launcher.InterpreterLauncher;
 import org.apache.zeppelin.interpreter.launcher.SparkInterpreterLauncher;
@@ -39,6 +38,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -57,13 +57,13 @@ public class PluginManager {
 
   private Map<String, InterpreterLauncher> cachedLaunchers = new HashMap<>();
 
-  private List<String> builtinLauncherClassNames = Lists.newArrayList(
+  private List<String> builtinLauncherClassNames = Arrays.asList(
           StandardInterpreterLauncher.class.getName(),
           SparkInterpreterLauncher.class.getName());
-  private List<String> builtinNotebookRepoClassNames = Lists.newArrayList(
+  private List<String> builtinNotebookRepoClassNames = Arrays.asList(
           VFSNotebookRepo.class.getName(),
           GitNotebookRepo.class.getName());
-  private List<String> builtinOldNotebookRepoClassNames = Lists.newArrayList(
+  private List<String> builtinOldNotebookRepoClassNames = Arrays.asList(
           OldVFSNotebookRepo.class.getName(),
           OldGitNotebookRepo.class.getName());
 

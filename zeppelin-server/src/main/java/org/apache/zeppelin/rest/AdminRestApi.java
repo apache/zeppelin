@@ -17,7 +17,7 @@
 
 package org.apache.zeppelin.rest;
 
-import com.google.common.collect.Lists;
+import java.util.Arrays;
 import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -59,7 +59,7 @@ public class AdminRestApi {
     logger.debug("name: {}", name);
     return null == name || name.isEmpty()
         ? adminService.getLoggers()
-        : Lists.newArrayList(adminService.getLogger(name));
+        : Arrays.asList(adminService.getLogger(name));
   }
 
   /**
@@ -81,6 +81,6 @@ public class AdminRestApi {
 
     adminService.setLoggerLevel(loggerRequest);
 
-    return Lists.newArrayList(adminService.getLogger(loggerRequest.getName()));
+    return Arrays.asList(adminService.getLogger(loggerRequest.getName()));
   }
 }

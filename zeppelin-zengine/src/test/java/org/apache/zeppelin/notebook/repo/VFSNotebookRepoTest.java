@@ -18,7 +18,6 @@
 package org.apache.zeppelin.notebook.repo;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.io.Files;
 import org.apache.commons.io.FileUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.Note;
@@ -30,6 +29,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
+import java.nio.file.Files;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -41,10 +41,11 @@ public class VFSNotebookRepoTest {
 
   private ZeppelinConfiguration zConf;
   private VFSNotebookRepo notebookRepo;
-  private File notebookDir = Files.createTempDir();
+  private File notebookDir;
 
   @Before
   public void setUp() throws IOException {
+    notebookDir = Files.createTempDirectory("notebookDir").toFile();
     System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_DIR.getVarName(),
         notebookDir.getAbsolutePath());
     notebookRepo = new VFSNotebookRepo();

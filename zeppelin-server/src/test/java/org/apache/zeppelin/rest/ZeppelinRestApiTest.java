@@ -17,13 +17,11 @@
 package org.apache.zeppelin.rest;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -33,7 +31,6 @@ import org.apache.http.util.EntityUtils;
 import org.apache.zeppelin.notebook.AuthorizationService;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.rest.message.NoteJobStatus;
-import org.apache.zeppelin.service.AuthenticationService;
 import org.apache.zeppelin.utils.TestUtils;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -45,6 +42,7 @@ import org.junit.runners.MethodSorters;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -53,7 +51,6 @@ import java.util.Map;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Paragraph;
-import org.apache.zeppelin.server.ZeppelinServer;
 import org.apache.zeppelin.user.AuthenticationInfo;
 
 /**
@@ -425,7 +422,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
             new TypeToken<Map<String, Object>>() {}.getType());
     List<Map<String, String>> body = (List<Map<String, String>>) resp.get("body");
     //TODO(khalid): anonymous or specific user notes?
-    HashSet<String> anonymous = Sets.newHashSet("anonymous");
+    HashSet<String> anonymous = new HashSet<>(Arrays.asList("anonymous"));
     AuthorizationService authorizationService = TestUtils.getInstance(AuthorizationService.class);
     assertEquals("List notes are equal", TestUtils.getInstance(Notebook.class)
             .getAllNotes(note -> authorizationService.isReader(note.getId(), anonymous))

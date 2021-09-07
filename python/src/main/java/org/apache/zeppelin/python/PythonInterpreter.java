@@ -17,7 +17,6 @@
 
 package org.apache.zeppelin.python;
 
-import com.google.common.io.Files;
 import com.google.gson.Gson;
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.ExecuteException;
@@ -44,6 +43,7 @@ import py4j.GatewayServer;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -182,7 +182,7 @@ public class PythonInterpreter extends Interpreter {
     if (System.getProperty("os.name", "").contains("Mac")) {
       System.setProperty("java.io.tmpdir", "/tmp");
     }
-    this.pythonWorkDir = Files.createTempDir();
+    this.pythonWorkDir = Files.createTempDirectory("python").toFile();
     this.pythonWorkDir.deleteOnExit();
     LOGGER.info("Create Python working dir: " + pythonWorkDir.getAbsolutePath());
     copyResourceToPythonWorkDir("python/zeppelin_python.py", "zeppelin_python.py");

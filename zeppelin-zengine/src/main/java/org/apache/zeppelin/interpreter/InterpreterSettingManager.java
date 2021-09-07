@@ -20,8 +20,6 @@ package org.apache.zeppelin.interpreter;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
@@ -34,6 +32,7 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.inject.Inject;
@@ -94,6 +93,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -123,15 +123,15 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
    * name --> InterpreterSetting
    */
   private final Map<String, InterpreterSetting> interpreterSettingTemplates =
-      Maps.newConcurrentMap();
+      new ConcurrentHashMap<>();
   /**
    * This is used by creating and running Interpreters
    * id --> InterpreterSetting
    * TODO(zjffdu) change it to name --> InterpreterSetting
    */
   private final Map<String, InterpreterSetting> interpreterSettings = Metrics.gaugeMapSize("interpreter.amount", Tags.empty(),
-      Maps.newConcurrentMap());
-  private final Map<String, List<Meter>> interpreterSettingsMeters = Maps.newConcurrentMap();
+    new ConcurrentHashMap<>());
+  private final Map<String, List<Meter>> interpreterSettingsMeters = new ConcurrentHashMap<>();
 
   private final List<RemoteRepository> interpreterRepositories;
   private InterpreterOption defaultOption;
@@ -205,12 +205,12 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
   }
 
   public void refreshInterpreterTemplates() {
-    Set<String> installedInterpreters = Sets.newHashSet(interpreterSettingTemplates.keySet());
+    Set<String> installedInterpreters = new HashSet<>(interpreterSettingTemplates.keySet());
 
     try {
       LOGGER.info("Refreshing interpreter list");
       loadInterpreterSettingFromDefaultDir(false);
-      Set<String> newlyAddedInterpreters = Sets.newHashSet(interpreterSettingTemplates.keySet());
+      Set<String> newlyAddedInterpreters = new HashSet<>(interpreterSettingTemplates.keySet());
       newlyAddedInterpreters.removeAll(installedInterpreters);
       if(!newlyAddedInterpreters.isEmpty()) {
         saveToFile();
@@ -345,7 +345,7 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
 
   public void saveToFile() throws IOException {
     InterpreterInfoSaving info = new InterpreterInfoSaving();
-    info.interpreterSettings = Maps.newHashMap(interpreterSettings);
+    info.interpreterSettings = new HashMap<>(interpreterSettings);
     info.interpreterRepositories = interpreterRepositories;
     configStorage.save(info);
   }
@@ -1104,7 +1104,7 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
 
   @ManagedAttribute
   public Set<String> getRunningInterpreters() {
-    Set<String> runningInterpreters = Sets.newHashSet();
+    Set<String> runningInterpreters = new HashSet<>();
     for (Map.Entry<String, InterpreterSetting> entry : interpreterSettings.entrySet()) {
       for (ManagedInterpreterGroup mig : entry.getValue().getAllInterpreterGroups()) {
         if (null != mig.getRemoteInterpreterProcess()) {

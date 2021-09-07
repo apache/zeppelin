@@ -17,7 +17,6 @@
 
 package org.apache.zeppelin.integration;
 
-import com.google.common.collect.Lists;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.yarn.api.protocolrecords.GetApplicationsRequest;
 import org.apache.hadoop.yarn.api.protocolrecords.GetApplicationsResponse;
@@ -34,13 +33,13 @@ import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.EnumSet;
 
 import static org.junit.Assert.assertEquals;
@@ -113,7 +112,7 @@ public class YarnInterpreterLauncherIntegrationTest {
     jdbcInterpreterSetting.setProperty("HADOOP_CONF_DIR", hadoopCluster.getConfigPath());
 
     Dependency dependency = new Dependency("mysql:mysql-connector-java:5.1.46");
-    jdbcInterpreterSetting.setDependencies(Lists.newArrayList(dependency));
+    jdbcInterpreterSetting.setDependencies(Arrays.asList(dependency));
     interpreterSettingManager.restart(jdbcInterpreterSetting.getId());
     jdbcInterpreterSetting.waitForReady(60 * 1000);
 

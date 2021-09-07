@@ -17,9 +17,9 @@
 
 package org.apache.zeppelin.rest;
 
-import com.google.common.collect.Maps;
 import javax.inject.Inject;
 import javax.inject.Singleton;
+
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.zeppelin.annotation.ZeppelinApi;
 import org.apache.zeppelin.dep.Repository;
@@ -55,6 +55,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -316,7 +317,7 @@ public class InterpreterRestApi {
             @Override
             public void onStart(String message, ServiceContext context) {
               Message m = new Message(OP.INTERPRETER_INSTALL_STARTED);
-              Map<String, Object> data = Maps.newHashMap();
+              Map<String, Object> data = new HashMap<>();
               data.put("result", "Starting");
               data.put("message", message);
               m.data = data;
@@ -326,7 +327,7 @@ public class InterpreterRestApi {
             @Override
             public void onSuccess(String message, ServiceContext context) {
               Message m = new Message(OP.INTERPRETER_INSTALL_RESULT);
-              Map<String, Object> data = Maps.newHashMap();
+              Map<String, Object> data = new HashMap<>();
               data.put("result", "Succeed");
               data.put("message", message);
               m.data = data;
@@ -336,7 +337,7 @@ public class InterpreterRestApi {
             @Override
             public void onFailure(Exception ex, ServiceContext context) {
               Message m = new Message(OP.INTERPRETER_INSTALL_RESULT);
-              Map<String, Object> data = Maps.newHashMap();
+              Map<String, Object> data = new HashMap<>();
               data.put("result", "Failed");
               data.put("message", ex.getMessage());
               m.data = data;

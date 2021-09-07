@@ -17,7 +17,6 @@
 
 package org.apache.zeppelin.integration;
 
-import com.google.common.io.Files;
 import org.apache.commons.io.IOUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.integration.DownloadUtils;
@@ -30,11 +29,12 @@ import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.utils.TestUtils;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -72,7 +72,7 @@ public abstract class ZeppelinFlinkClusterTest extends AbstractTestRestApi {
       note = TestUtils.getInstance(Notebook.class).createNote("note1", AuthenticationInfo.ANONYMOUS);
 
       // run p0 for %flink.conf
-      String checkpointPath = Files.createTempDir().getAbsolutePath();
+      String checkpointPath = Files.createTempDirectory("checkpoint").toAbsolutePath().toString();
       Paragraph p0 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
       StringBuilder builder = new StringBuilder("%flink.conf\n");
       builder.append("FLINK_HOME " + flinkHome + "\n");
@@ -127,7 +127,7 @@ public abstract class ZeppelinFlinkClusterTest extends AbstractTestRestApi {
       note = TestUtils.getInstance(Notebook.class).createNote("note2", AuthenticationInfo.ANONYMOUS);
 
       // run p0 for %flink.conf
-      String checkpointPath = Files.createTempDir().getAbsolutePath();
+      String checkpointPath = Files.createTempDirectory("checkpoint").toAbsolutePath().toString();
       Paragraph p0 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
       StringBuilder builder = new StringBuilder("%flink.conf\n");
       builder.append("FLINK_HOME " + flinkHome + "\n");
@@ -170,7 +170,7 @@ public abstract class ZeppelinFlinkClusterTest extends AbstractTestRestApi {
   }
 
   public static String getInitStreamScript(int sleep_interval) throws IOException {
-    return IOUtils.toString(FlinkIntegrationTest.class.getResource("/init_stream.scala"))
+    return IOUtils.toString(FlinkIntegrationTest.class.getResource("/init_stream.scala"), StandardCharsets.UTF_8)
             .replace("{{sleep_interval}}", sleep_interval + "");
   }
 }

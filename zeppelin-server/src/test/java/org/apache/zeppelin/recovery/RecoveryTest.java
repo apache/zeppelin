@@ -16,7 +16,6 @@
  */
 package org.apache.zeppelin.recovery;
 
-import com.google.common.io.Files;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import org.apache.commons.io.FileUtils;
@@ -42,6 +41,7 @@ import org.junit.Test;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
@@ -61,7 +61,7 @@ public class RecoveryTest extends AbstractTestRestApi {
   public void init() throws Exception {
     System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_RECOVERY_STORAGE_CLASS.getVarName(),
             FileSystemRecoveryStorage.class.getName());
-    recoveryDir = Files.createTempDir();
+    recoveryDir = Files.createTempDirectory("recovery").toFile();
     System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_RECOVERY_DIR.getVarName(),
             recoveryDir.getAbsolutePath());
     startUp(RecoveryTest.class.getSimpleName());

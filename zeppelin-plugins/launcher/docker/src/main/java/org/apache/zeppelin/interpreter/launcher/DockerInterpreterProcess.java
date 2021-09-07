@@ -17,9 +17,7 @@
 package org.apache.zeppelin.interpreter.launcher;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Charsets;
 import com.google.common.collect.Maps;
-import com.google.common.io.Files;
 import com.google.common.io.Resources;
 
 import java.io.File;
@@ -30,6 +28,8 @@ import java.net.SocketException;
 import java.net.URI;
 import java.net.URL;
 import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -184,7 +184,7 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
     DockerSpecTemplate specTemplate = new DockerSpecTemplate();
     specTemplate.loadProperties(getTemplateBindings());
     URL urlTemplate = this.getClass().getResource(DOCKER_INTP_JINJA);
-    String template = Resources.toString(urlTemplate, Charsets.UTF_8);
+    String template = Resources.toString(urlTemplate, StandardCharsets.UTF_8);
     String dockerCommand = specTemplate.render(template);
     int firstLineIsNewline = dockerCommand.indexOf("\n");
     if (firstLineIsNewline == 0) {
@@ -593,7 +593,7 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
   }
 
   private String file2Tar(HashMap<String, String> copyFiles) throws IOException {
-    File tmpDir = Files.createTempDir();
+    File tmpDir = Files.createTempDirectory("file2Tar").toFile();
 
     Date date = new Date();
     String tarFileName = tmpDir.getPath() + date.getTime() + ".tar";

@@ -18,7 +18,6 @@
 
 package org.apache.zeppelin.interpreter.recovery;
 
-import com.google.common.io.Files;
 import org.apache.commons.io.FileUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.AbstractInterpreterTest;
@@ -36,6 +35,7 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
@@ -44,11 +44,12 @@ public class FileSystemRecoveryStorageTest extends AbstractInterpreterTest {
 
   private File recoveryDir = null;
 
+  @Override
   @Before
   public void setUp() throws Exception {
     System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_RECOVERY_STORAGE_CLASS.getVarName(),
         FileSystemRecoveryStorage.class.getName());
-    recoveryDir = Files.createTempDir();
+    recoveryDir = Files.createTempDirectory("recoveryDir").toFile();
     System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_RECOVERY_DIR.getVarName(), recoveryDir.getAbsolutePath());
     super.setUp();
 
@@ -58,6 +59,7 @@ public class FileSystemRecoveryStorageTest extends AbstractInterpreterTest {
     when(mockNotebook.getNote("note2")).thenReturn(note2);
   }
 
+  @Override
   @After
   public void tearDown() throws Exception {
     super.tearDown();

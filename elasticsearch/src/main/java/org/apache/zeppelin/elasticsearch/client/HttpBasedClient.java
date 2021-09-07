@@ -17,7 +17,6 @@
 
 package org.apache.zeppelin.elasticsearch.client;
 
-import com.google.common.base.Joiner;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonParseException;
@@ -68,7 +67,7 @@ public class HttpBasedClient implements ElasticsearchClient {
     this.password = props.getProperty(ElasticsearchInterpreter.ELASTICSEARCH_BASIC_AUTH_PASSWORD);
   }
 
-  private boolean isSucceeded(HttpResponse response) {
+  private boolean isSucceeded(HttpResponse<?> response) {
     return response.getStatus() >= 200 && response.getStatus() < 300;
   }
 
@@ -135,8 +134,8 @@ public class HttpBasedClient implements ElasticsearchClient {
   }
 
   private String getUrl(String[] indices, String[] types) {
-    final String inds = indices == null ? null : Joiner.on(",").join(indices);
-    final String typs = types == null ? null : Joiner.on(",").join(types);
+    final String inds = indices == null ? null : String.join(",", indices);
+    final String typs = types == null ? null : String.join(",", types);
     return getUrl(inds, typs, null, false);
   }
 

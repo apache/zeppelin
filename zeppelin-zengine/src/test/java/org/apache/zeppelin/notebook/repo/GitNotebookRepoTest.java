@@ -46,8 +46,6 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Joiner;
-
 public class GitNotebookRepoTest {
   private static final Logger LOG = LoggerFactory.getLogger(GitNotebookRepoTest.class);
 
@@ -68,7 +66,7 @@ public class GitNotebookRepoTest {
     zeppelinDir.mkdirs();
     new File(zeppelinDir, "conf").mkdirs();
 
-    notebooksDir = Joiner.on(File.separator).join(zpath, "notebook");
+    notebooksDir = String.join(File.separator, zpath, "notebook");
     File notebookDir = new File(notebooksDir);
     notebookDir.mkdirs();
 
@@ -93,7 +91,7 @@ public class GitNotebookRepoTest {
   @Test
   public void initNonemptyNotebookDir() throws IOException, GitAPIException {
     //given - .git does not exit
-    File dotGit = new File(Joiner.on(File.separator).join(notebooksDir, ".git"));
+    File dotGit = new File(String.join(File.separator, notebooksDir, ".git"));
     assertThat(dotGit.exists()).isEqualTo(false);
 
     //when
