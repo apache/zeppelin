@@ -15,7 +15,7 @@ limitations under the License.
 <div id="{{paragraph.id}}_control" class="control" ng-show="!asIframe">
   <span>
     <span ng-show="paragraph.runtimeInfos.jobUrl.values.length == 1">
-      <a href="{{paragraph.runtimeInfos.jobUrl.values[0].jobUrl}}" target="_blank" style="text-decoration: none;"
+      <a href="{{paragraph.runtimeInfos.jobUrl.values[0].jobUrl}}" target="_blank" rel="noopener noreferrer" style="text-decoration: none;"
          tooltip-placement="top" uib-tooltip="{{paragraph.runtimeInfos.jobUrl.tooltip}}" >
         <span class="fa fa-tasks"></span>
         {{paragraph.runtimeInfos.jobUrl.label}}
@@ -29,8 +29,8 @@ limitations under the License.
       </span>
       <ul class="dropdown-menu" role="menu" style="width:200px;z-index:1002">
         <li ng-class="{'option-disabled': !noteOperationsAllowed()}" ng-repeat="value in paragraph.runtimeInfos.jobUrl.values">
-          <a ng-if="value.jobLabel === undefined" href="{{value['jobUrl']}}" target="_blank"><span class="fa fa-external-link-square"></span> Jobs #{{$index}}</a>
-          <a ng-if="value.jobLabel !== undefined" href="{{value['jobUrl']}}" target="_blank"><span class="fa fa-external-link-square"></span> {{value['jobLabel']}} </a>
+          <a ng-if="value.jobLabel === undefined" href="{{value['jobUrl']}}" target="_blank" rel="noopener noreferrer"><span class="fa fa-external-link-square"></span> Jobs #{{$index}}</a>
+          <a ng-if="value.jobLabel !== undefined" href="{{value['jobUrl']}}" target="_blank" rel="noopener noreferrer"><span class="fa fa-external-link-square"></span> {{value['jobLabel']}} </a>
         </li>
       </ul>
     </span>

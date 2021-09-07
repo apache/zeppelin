@@ -37,43 +37,43 @@ By now, it has been tested with:
   </div>
   <div class="col-md-6">
     <li style="padding-bottom: 5px; list-style: circle">
-      <a href="http://www.postgresql.org/" target="_blank">Postgresql</a> -
-      <a href="https://jdbc.postgresql.org/" target="_blank">JDBC Driver</a>
+      <a href="http://www.postgresql.org/" target="_blank" rel="noopener noreferrer">Postgresql</a> -
+      <a href="https://jdbc.postgresql.org/" target="_blank" rel="noopener noreferrer">JDBC Driver</a>
     </li>
     <li style="padding-bottom: 5px; list-style: circle">
-      <a href="https://www.mysql.com/" target="_blank">Mysql</a> -
-      <a href="https://dev.mysql.com/downloads/connector/j/" target="_blank">JDBC Driver</a>
+      <a href="https://www.mysql.com/" target="_blank" rel="noopener noreferrer">Mysql</a> -
+      <a href="https://dev.mysql.com/downloads/connector/j/" target="_blank" rel="noopener noreferrer">JDBC Driver</a>
     </li>
     <li style="padding-bottom: 5px; list-style: circle">
-      <a href="https://mariadb.org/" target="_blank">MariaDB</a> -
-      <a href="https://mariadb.com/kb/en/mariadb/about-mariadb-connector-j/" target="_blank">JDBC Driver</a>
+      <a href="https://mariadb.org/" target="_blank" rel="noopener noreferrer">MariaDB</a> -
+      <a href="https://mariadb.com/kb/en/mariadb/about-mariadb-connector-j/" target="_blank" rel="noopener noreferrer">JDBC Driver</a>
     </li>
     <li style="padding-bottom: 5px; list-style: circle">
-      <a href="https://aws.amazon.com/documentation/redshift/" target="_blank">Redshift</a> -
-      <a href="https://docs.aws.amazon.com/redshift/latest/mgmt/configure-jdbc-connection.html" target="_blank">JDBC Driver</a>
+      <a href="https://aws.amazon.com/documentation/redshift/" target="_blank" rel="noopener noreferrer">Redshift</a> -
+      <a href="https://docs.aws.amazon.com/redshift/latest/mgmt/configure-jdbc-connection.html" target="_blank" rel="noopener noreferrer">JDBC Driver</a>
     </li>
     <li style="padding-bottom: 5px; list-style: circle">
-      <a href="https://hive.apache.org/" target="_blank">Apache Hive</a> - 
-      <a href="https://cwiki.apache.org/confluence/display/Hive/HiveServer2+Clients#HiveServer2Clients-JDBC" target="_blank">JDBC Driver</a>
+      <a href="https://hive.apache.org/" target="_blank" rel="noopener noreferrer">Apache Hive</a> - 
+      <a href="https://cwiki.apache.org/confluence/display/Hive/HiveServer2+Clients#HiveServer2Clients-JDBC" target="_blank" rel="noopener noreferrer">JDBC Driver</a>
     </li>
     <li style="padding-bottom: 5px; list-style: circle">
-      <a href="https://trino.io/" target="_blank">Presto/Trino</a> - 
-      <a href="https://trino.io/docs/current/installation/jdbc.html" target="_blank">JDBC Driver</a>
+      <a href="https://trino.io/" target="_blank" rel="noopener noreferrer">Presto/Trino</a> - 
+      <a href="https://trino.io/docs/current/installation/jdbc.html" target="_blank" rel="noopener noreferrer">JDBC Driver</a>
     </li>
     <li style="padding-bottom: 5px; list-style: circle">
-      <a href="https://impala.apache.org/" target="_blank">Impala</a> - 
-      <a href="https://impala.apache.org/docs/build/html/topics/impala_jdbc.html" target="_blank">JDBC Driver</a>
+      <a href="https://impala.apache.org/" target="_blank" rel="noopener noreferrer">Impala</a> - 
+      <a href="https://impala.apache.org/docs/build/html/topics/impala_jdbc.html" target="_blank" rel="noopener noreferrer">JDBC Driver</a>
     </li>
     <li style="padding-bottom: 5px; list-style: circle">
-      <a href="https://phoenix.apache.org/" target="_blank">Apache Phoenix</a> itself is a JDBC driver
+      <a href="https://phoenix.apache.org/" target="_blank" rel="noopener noreferrer">Apache Phoenix</a> itself is a JDBC driver
     </li>
     <li style="padding-bottom: 5px; list-style: circle">
-      <a href="https://drill.apache.org/" target="_blank">Apache Drill</a> - 
-      <a href="https://drill.apache.org/docs/using-the-jdbc-driver" target="_blank">JDBC Driver</a>
+      <a href="https://drill.apache.org/" target="_blank" rel="noopener noreferrer">Apache Drill</a> - 
+      <a href="https://drill.apache.org/docs/using-the-jdbc-driver" target="_blank" rel="noopener noreferrer">JDBC Driver</a>
     </li>
     <li style="padding-bottom: 5px; list-style: circle">
-      <a href="http://tajo.apache.org/" target="_blank">Apache Tajo</a> - 
-      <a href="https://tajo.apache.org/docs/current/jdbc_driver.html" target="_blank">JDBC Driver</a>
+      <a href="http://tajo.apache.org/" target="_blank" rel="noopener noreferrer">Apache Tajo</a> - 
+      <a href="https://tajo.apache.org/docs/current/jdbc_driver.html" target="_blank" rel="noopener noreferrer">JDBC Driver</a>
     </li>
   </div>
 </div>

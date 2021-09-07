@@ -31,16 +31,16 @@
           tooltip-placement="top" uib-tooltip="Create Tensorboard">  Create Tensorboard
         </button>
         <a ng-if="TENSORBOARD_URL!=undefined" class="btn btn-default btn-xs" style="margin-left:20px;"
-          ng-href="{%raw%}{{TENSORBOARD_URL}}{%endraw%}" target="_blank" tooltip-placement="top" uib-tooltip="View training in Tensorboard">
+          ng-href="{%raw%}{{TENSORBOARD_URL}}{%endraw%}" target="_blank" rel="noopener noreferrer" tooltip-placement="top" uib-tooltip="View training in Tensorboard">
           <span class="icon-share-alt shortcut-icon" style="font-size:12px;"></span> Tensorboard
         </a>
         <a ng-if="YARN_TENSORBOARD_URL!=undefined" class="btn btn-default btn-xs" style="margin-left:4px;"
-          ng-href="{%raw%}{{YARN_TENSORBOARD_URL}}{%endraw%}" target="_blank" tooltip-placement="top" uib-tooltip="View tensorboard on YARN WEB">
+          ng-href="{%raw%}{{YARN_TENSORBOARD_URL}}{%endraw%}" target="_blank" rel="noopener noreferrer" tooltip-placement="top" uib-tooltip="View tensorboard on YARN WEB">
           <span class="icon-share-alt shortcut-icon" style="font-size:12px;"></span> Tensorboard on YARN
         </a>
 
         <a ng-if="YARN_APPLICATION_URL!=undefined" class="btn btn-default btn-xs" style="margin-left:4px;"
-          ng-href="{%raw%}{{YARN_APPLICATION_URL}}{%endraw%}" target="_blank" tooltip-placement="top" uib-tooltip="View application on YARN WEB">
+          ng-href="{%raw%}{{YARN_APPLICATION_URL}}{%endraw%}" target="_blank" rel="noopener noreferrer" tooltip-placement="top" uib-tooltip="View application on YARN WEB">
           <span class="icon-share-alt shortcut-icon" style="font-size:12px;"></span> Job on YARN
         </a>
         <button class="btn btn-default btn-xs" style="margin-left:4px;"
