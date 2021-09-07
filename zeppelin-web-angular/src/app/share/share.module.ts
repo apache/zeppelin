@@ -51,6 +51,7 @@ import { NoteTocComponent } from '@zeppelin/share/note-toc/note-toc.component';
 import { PageHeaderComponent } from '@zeppelin/share/page-header/page-header.component';
 import { HumanizeBytesPipe } from '@zeppelin/share/pipes';
 import { RunScriptsDirective } from '@zeppelin/share/run-scripts/run-scripts.directive';
+import { ExternalLinkDirective } from "@zeppelin/share/external-links/external-link.directive";
 import { SpinComponent } from '@zeppelin/share/spin/spin.component';
 import { Ng1MigrationComponent } from './ng1-migration/ng1-migration.component';
 import { ResizeHandleComponent } from './resize-handle';
@@ -74,9 +75,9 @@ const EXPORT_LIST = [
 const PIPES = [HumanizeBytesPipe];
 
 @NgModule({
-  declarations: [MODAL_LIST, EXPORT_LIST, PIPES, MathJaxDirective, RunScriptsDirective],
+  declarations: [MODAL_LIST, EXPORT_LIST, PIPES, MathJaxDirective, RunScriptsDirective, ExternalLinkDirective],
   entryComponents: [MODAL_LIST],
-  exports: [EXPORT_LIST, PIPES, MathJaxDirective, RunScriptsDirective, CodeEditorModule],
+  exports: [EXPORT_LIST, PIPES, MathJaxDirective, RunScriptsDirective, ExternalLinkDirective, CodeEditorModule],
   imports: [
     FormsModule,
     CommonModule,
