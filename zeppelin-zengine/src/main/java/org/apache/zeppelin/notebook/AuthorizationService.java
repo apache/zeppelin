@@ -17,7 +17,6 @@
 
 package org.apache.zeppelin.notebook;
 
-import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import org.apache.commons.lang3.StringUtils;
@@ -214,10 +213,10 @@ public class AuthorizationService implements ClusterEventListener {
     if (noteAuth == null) {
       throw new IOException("No noteAuth found for noteId: " + noteId);
     }
-    noteAuth.setReaders(Sets.newHashSet());
-    noteAuth.setRunners(Sets.newHashSet());
-    noteAuth.setWriters(Sets.newHashSet());
-    noteAuth.setOwners(Sets.newHashSet());
+    noteAuth.setReaders(new HashSet<>());
+    noteAuth.setRunners(new HashSet<>());
+    noteAuth.setWriters(new HashSet<>());
+    noteAuth.setOwners(new HashSet<>());
 
     if (broadcast) {
       broadcastClusterEvent(ClusterEvent.CLEAR_PERMISSION, noteId, null, null);
@@ -261,7 +260,7 @@ public class AuthorizationService implements ClusterEventListener {
   }
 
   public Set<String> getRoles(String user) {
-    return userRoles.getOrDefault(user, Sets.newHashSet());
+    return userRoles.getOrDefault(user, new HashSet<>());
   }
 
   public boolean isOwner(String noteId, Set<String> entities) {

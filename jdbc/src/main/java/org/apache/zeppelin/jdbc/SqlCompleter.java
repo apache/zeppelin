@@ -452,13 +452,13 @@ public class SqlCompleter {
     String column;
 
     if (cursorArgument.getSchema() == null) {             // process all
-      List<CharSequence> keywordsCandidates = new ArrayList();
+      List<CharSequence> keywordsCandidates = new ArrayList<>();
       List<CharSequence> schemaCandidates = new ArrayList<>();
       int keywordsRes = completeKeyword(buffer, cursor, keywordsCandidates);
       int schemaRes = completeSchema(buffer, cursor, schemaCandidates);
       addCompletions(candidates, keywordsCandidates, CompletionType.keyword.name());
       addCompletions(candidates, schemaCandidates, CompletionType.schema.name());
-      return NumberUtils.max(new int[]{keywordsRes, schemaRes});
+      return NumberUtils.max(keywordsRes, schemaRes);
     } else {
       schema = cursorArgument.getSchema();
       if (aliases.containsKey(schema)) {  // process alias case
@@ -467,20 +467,20 @@ public class SqlCompleter {
         schema = alias.substring(0, pointPos);
         table = alias.substring(pointPos + 1);
         column = cursorArgument.getColumn();
-        List<CharSequence> columnCandidates = new ArrayList();
+        List<CharSequence> columnCandidates = new ArrayList<>();
         int columnRes = completeColumn(schema, table, column, cursorArgument.getCursorPosition(),
             columnCandidates);
         addCompletions(candidates, columnCandidates, CompletionType.column.name());
         // process schema.table case
       } else if (cursorArgument.getTable() != null && cursorArgument.getColumn() == null) {
-        List<CharSequence> tableCandidates = new ArrayList();
+        List<CharSequence> tableCandidates = new ArrayList<>();
         table = cursorArgument.getTable();
         int tableRes = completeTable(schema, table, cursorArgument.getCursorPosition(),
             tableCandidates);
         addCompletions(candidates, tableCandidates, CompletionType.table.name());
         return tableRes;
       } else {
-        List<CharSequence> columnCandidates = new ArrayList();
+        List<CharSequence> columnCandidates = new ArrayList<>();
         table = cursorArgument.getTable();
         column = cursorArgument.getColumn();
         int columnRes = completeColumn(schema, table, column, cursorArgument.getCursorPosition(),
@@ -572,24 +572,15 @@ public class SqlCompleter {
     }
 
     public boolean needLoadSchemas() {
-      if (table == null && column == null) {
-        return true;
-      }
-      return false;
+      return table == null && column == null;
     }
 
     public boolean needLoadTables() {
-      if (schema != null && table != null && column == null) {
-        return true;
-      }
-      return false;
+      return schema != null && table != null && column == null;
     }
 
     public boolean needLoadColumns() {
-      if (schema != null && table != null && column != null) {
-        return true;
-      }
-      return false;
+      return schema != null && table != null && column != null;
     }
   }
 }

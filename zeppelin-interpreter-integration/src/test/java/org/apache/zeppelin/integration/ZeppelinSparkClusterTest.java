@@ -16,7 +16,6 @@
  */
 package org.apache.zeppelin.integration;
 
-import com.google.common.collect.Lists;
 import org.apache.commons.io.IOUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.display.AngularObject;
@@ -49,12 +48,14 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -694,7 +695,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
       }
     }
   }
-  
+
   private void verifySparkVersionNumber() throws IOException {
     Note note = null;
     try {
@@ -927,8 +928,8 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
       assertTrue(input instanceof CheckBox);
       CheckBox checkbox = (CheckBox) input;
       assertEquals("languages", checkbox.getDisplayName());
-      assertEquals(new Object[]{"java", "scala"}, checkbox.getDefaultValue());
-      assertEquals(Lists.newArrayList("java", "scala"), p1.getNote().getNoteParams().get("languages"));
+      assertArrayEquals(new Object[]{"java", "scala"}, checkbox.getDefaultValue());
+      assertEquals(Arrays.asList("java", "scala"), p1.getNote().getNoteParams().get("languages"));
 
       p2 = note.addNewParagraph(anonymous);
       p2.setText("%md hello $${checkbox:languages}");
@@ -991,8 +992,8 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
       assertTrue(input instanceof CheckBox);
       CheckBox checkbox = (CheckBox) input;
       assertEquals("languages", checkbox.getDisplayName());
-      assertEquals(new Object[]{"java", "scala"}, checkbox.getDefaultValue());
-      assertEquals(Lists.newArrayList("java", "scala"), p1.getNote().getNoteParams().get("languages"));
+      assertArrayEquals(new Object[]{"java", "scala"}, checkbox.getDefaultValue());
+      assertEquals(Arrays.asList("java", "scala"), p1.getNote().getNoteParams().get("languages"));
 
       p2 = note.addNewParagraph(anonymous);
       p2.setText("%md hello $${checkbox:languages}");

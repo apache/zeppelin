@@ -17,10 +17,10 @@
 
 package org.apache.zeppelin.rest;
 
-import com.google.common.collect.Sets;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -168,7 +168,7 @@ public class NotebookRestApi extends AbstractRestApi {
    * Check if the current user own the given note.
    */
   private void checkIfUserIsOwner(String noteId, String errorMsg) {
-    Set<String> userAndRoles = Sets.newHashSet();
+    Set<String> userAndRoles = new HashSet<>();
     userAndRoles.add(authenticationService.getPrincipal());
     userAndRoles.addAll(authenticationService.getAssociatedRoles());
     if (!authorizationService.isOwner(userAndRoles, noteId)) {
@@ -180,7 +180,7 @@ public class NotebookRestApi extends AbstractRestApi {
    * Check if the current user is either Owner or Writer for the given note.
    */
   private void checkIfUserCanWrite(String noteId, String errorMsg) {
-    Set<String> userAndRoles = Sets.newHashSet();
+    Set<String> userAndRoles = new HashSet<>();
     userAndRoles.add(authenticationService.getPrincipal());
     userAndRoles.addAll(authenticationService.getAssociatedRoles());
     if (!authorizationService.hasWritePermission(userAndRoles, noteId)) {
@@ -192,7 +192,7 @@ public class NotebookRestApi extends AbstractRestApi {
    * Check if the current user can access (at least he have to be reader) the given note.
    */
   private void checkIfUserCanRead(String noteId, String errorMsg) {
-    Set<String> userAndRoles = Sets.newHashSet();
+    Set<String> userAndRoles = new HashSet<>();
     userAndRoles.add(authenticationService.getPrincipal());
     userAndRoles.addAll(authenticationService.getAssociatedRoles());
     if (!authorizationService.hasReadPermission(userAndRoles, noteId)) {
@@ -204,7 +204,7 @@ public class NotebookRestApi extends AbstractRestApi {
    * Check if the current user can run the given note.
    */
   private void checkIfUserCanRun(String noteId, String errorMsg) {
-    Set<String> userAndRoles = Sets.newHashSet();
+    Set<String> userAndRoles = new HashSet<>();
     userAndRoles.add(authenticationService.getPrincipal());
     userAndRoles.addAll(authenticationService.getAssociatedRoles());
     if (!authorizationService.hasRunPermission(userAndRoles, noteId)) {
@@ -267,28 +267,28 @@ public class NotebookRestApi extends AbstractRestApi {
     // Set readers, if runners, writers and owners is empty -> set to user requesting the change
     if (readers != null && !readers.isEmpty()) {
       if (runners.isEmpty()) {
-        runners = Sets.newHashSet(authenticationService.getPrincipal());
+        runners = new HashSet<>(Arrays.asList(authenticationService.getPrincipal()));
       }
       if (writers.isEmpty()) {
-        writers = Sets.newHashSet(authenticationService.getPrincipal());
+        writers = new HashSet<>(Arrays.asList(authenticationService.getPrincipal()));
       }
       if (owners.isEmpty()) {
-        owners = Sets.newHashSet(authenticationService.getPrincipal());
+        owners = new HashSet<>(Arrays.asList(authenticationService.getPrincipal()));
       }
     }
     // Set runners, if writers and owners is empty -> set to user requesting the change
     if (runners != null && !runners.isEmpty()) {
       if (writers.isEmpty()) {
-        writers = Sets.newHashSet(authenticationService.getPrincipal());
+        writers = new HashSet<>(Arrays.asList(authenticationService.getPrincipal()));
       }
       if (owners.isEmpty()) {
-        owners = Sets.newHashSet(authenticationService.getPrincipal());
+        owners = new HashSet<>(Arrays.asList(authenticationService.getPrincipal()));
       }
     }
     // Set writers, if owners is empty -> set to user requesting the change
     if (writers != null && !writers.isEmpty()) {
       if (owners.isEmpty()) {
-        owners = Sets.newHashSet(authenticationService.getPrincipal());
+        owners = new HashSet<>(Arrays.asList(authenticationService.getPrincipal()));
       }
     }
 

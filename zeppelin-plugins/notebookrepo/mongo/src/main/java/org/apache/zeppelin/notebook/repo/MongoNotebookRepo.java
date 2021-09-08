@@ -19,7 +19,6 @@ package org.apache.zeppelin.notebook.repo;
 
 import static com.mongodb.client.model.Filters.and;
 import static com.mongodb.client.model.Filters.eq;
-import com.google.common.collect.Lists;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.Document;
@@ -28,7 +27,6 @@ import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
@@ -122,7 +120,7 @@ public class MongoNotebookRepo implements NotebookRepo {
             .append("as", Fields.FULL_PATH));
 
     try (AutoLock autoLock = lock.lockForRead()) {
-      ArrayList<Document> list = Lists.newArrayList(match, graphLookup);
+      List<Document> list = Arrays.asList(match, graphLookup);
       AggregateIterable<Document> aggregate = folders.aggregate(list);
       for (Document document : aggregate) {
         String id = document.getString(Fields.ID);
@@ -311,7 +309,7 @@ public class MongoNotebookRepo implements NotebookRepo {
         Boolean isDir = node.getBoolean(Fields.IS_DIR);
         String nodeName = node.getString(Fields.NAME);
 
-        if (isDir) {
+        if (isDir.booleanValue()) {
           StringBuilder sb = new StringBuilder();
           for (String s : pathArray) {
             sb.append("/").append(s);

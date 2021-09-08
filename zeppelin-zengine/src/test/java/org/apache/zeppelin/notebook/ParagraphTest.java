@@ -30,6 +30,7 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -64,8 +65,6 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import org.mockito.Mockito;
-
-import com.google.common.collect.Lists;
 
 public class ParagraphTest extends AbstractInterpreterTest {
 
@@ -271,7 +270,7 @@ public class ParagraphTest extends AbstractInterpreterTest {
     when(mockInterpreterGroup.getAngularObjectRegistry()).thenReturn(mock(AngularObjectRegistry.class));
     when(mockInterpreterGroup.getResourcePool()).thenReturn(mock(ResourcePool.class));
 
-    List<InterpreterSetting> spyInterpreterSettingList = spy(Lists.<InterpreterSetting>newArrayList());
+    List<InterpreterSetting> spyInterpreterSettingList = spy(new ArrayList<>());
     InterpreterSetting mockInterpreterSetting = mock(InterpreterSetting.class);
     when(mockInterpreterGroup.getInterpreterSetting()).thenReturn(mockInterpreterSetting);
     InterpreterOption mockInterpreterOption = mock(InterpreterOption.class);
@@ -294,7 +293,7 @@ public class ParagraphTest extends AbstractInterpreterTest {
     when(mockInterpreterResult.code()).thenReturn(Code.SUCCESS);
 
     // Actual test
-    List<InterpreterResultMessage> result1 = Lists.newArrayList();
+    List<InterpreterResultMessage> result1 = new ArrayList<>();
     result1.add(new InterpreterResultMessage(Type.TEXT, "result1"));
     when(mockInterpreterResult.message()).thenReturn(result1);
 
@@ -307,7 +306,7 @@ public class ParagraphTest extends AbstractInterpreterTest {
     when(mockInterpreter.interpret(anyString(), Mockito.<InterpreterContext>any())).thenReturn(mockInterpreterResult);
     when(mockInterpreterResult.code()).thenReturn(Code.SUCCESS);
 
-    List<InterpreterResultMessage> result2 = Lists.newArrayList();
+    List<InterpreterResultMessage> result2 = new ArrayList<>();
     result2.add(new InterpreterResultMessage(Type.TEXT, "result2"));
     when(mockInterpreterResult.message()).thenReturn(result2);
 

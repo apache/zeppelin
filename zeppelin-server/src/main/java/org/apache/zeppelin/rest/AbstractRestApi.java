@@ -17,8 +17,8 @@
 
 package org.apache.zeppelin.rest;
 
-import com.google.common.collect.Sets;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.Set;
 import javax.ws.rs.WebApplicationException;
 
@@ -37,7 +37,7 @@ public class AbstractRestApi {
 
   protected ServiceContext getServiceContext() {
     AuthenticationInfo authInfo = new AuthenticationInfo(authenticationService.getPrincipal());
-    Set<String> userAndRoles = Sets.newHashSet();
+    Set<String> userAndRoles = new HashSet<>();
     userAndRoles.add(authenticationService.getPrincipal());
     userAndRoles.addAll(authenticationService.getAssociatedRoles());
     return new ServiceContext(authInfo, userAndRoles);

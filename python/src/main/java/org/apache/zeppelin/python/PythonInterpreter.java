@@ -17,7 +17,6 @@
 
 package org.apache.zeppelin.python;
 
-import com.google.common.io.Files;
 import com.google.gson.Gson;
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.ExecuteException;
@@ -44,6 +43,7 @@ import py4j.GatewayServer;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -152,8 +152,10 @@ public class PythonInterpreter extends Interpreter {
     if (usePy4jAuth) {
       env.put("PY4J_GATEWAY_SECRET", secret);
     }
-    LOGGER.info("Launching Python Process Command: " + cmd.getExecutable() +
-        " " + StringUtils.join(cmd.getArguments(), " "));
+    if (LOGGER.isInfoEnabled()) {
+      LOGGER.info("Launching Python Process Command: {} {}",
+          cmd.getExecutable(), StringUtils.join(cmd.getArguments(), " "));
+    }
 
     pythonProcessLauncher = new PythonProcessLauncher(cmd, env);
     pythonProcessLauncher.launch();
@@ -182,9 +184,9 @@ public class PythonInterpreter extends Interpreter {
     if (System.getProperty("os.name", "").contains("Mac")) {
       System.setProperty("java.io.tmpdir", "/tmp");
     }
-    this.pythonWorkDir = Files.createTempDir();
+    this.pythonWorkDir = Files.createTempDirectory("python").toFile();
     this.pythonWorkDir.deleteOnExit();
-    LOGGER.info("Create Python working dir: " + pythonWorkDir.getAbsolutePath());
+    LOGGER.info("Create Python working dir: {}", pythonWorkDir.getAbsolutePath());
     copyResourceToPythonWorkDir("python/zeppelin_python.py", "zeppelin_python.py");
     copyResourceToPythonWorkDir("python/zeppelin_context.py", "zeppelin_context.py");
     copyResourceToPythonWorkDir("python/backend_zinline.py", "backend_zinline.py");
@@ -217,7 +219,7 @@ public class PythonInterpreter extends Interpreter {
     if (useBuiltinPy4j) {
       appendToPythonPath(env, pythonWorkDir.getAbsolutePath() + "/py4j-src-0.10.7.zip");
     }
-    LOGGER.info("PYTHONPATH: " + env.get("PYTHONPATH"));
+    LOGGER.info("PYTHONPATH: {}", env.get("PYTHONPATH"));
     return env;
   }
 
@@ -253,11 +255,9 @@ public class PythonInterpreter extends Interpreter {
       iPythonInterpreter.close();
       return;
     }
-    if (pythonProcessLauncher != null) {
-      if (pythonProcessLauncher.isRunning()) {
-        LOGGER.info("Kill python process");
-        pythonProcessLauncher.stop();
-      }
+    if (pythonProcessLauncher != null && pythonProcessLauncher.isRunning()) {
+      LOGGER.info("Kill python process");
+      pythonProcessLauncher.stop();
     }
     if (gatewayServer != null) {
       gatewayServer.shutdown();
@@ -265,13 +265,13 @@ public class PythonInterpreter extends Interpreter {
 
     // reset these 2 monitors otherwise when you restart PythonInterpreter it would fails to execute
     // python code as these 2 objects are in incorrect state.
-    statementSetNotifier = new Integer(0);
-    statementFinishedNotifier = new Integer(0);
+    statementSetNotifier = Integer.valueOf(0);
+    statementFinishedNotifier = Integer.valueOf(0);
   }
 
   private PythonInterpretRequest pythonInterpretRequest = null;
-  private Integer statementSetNotifier = new Integer(0);
-  private Integer statementFinishedNotifier = new Integer(0);
+  private Integer statementSetNotifier = Integer.valueOf(0);
+  private Integer statementFinishedNotifier = Integer.valueOf(0);
   private String statementOutput = null;
   private boolean statementError = false;
 
@@ -330,7 +330,7 @@ public class PythonInterpreter extends Interpreter {
   // called by Python Process
   public void setStatementsFinished(String out, boolean error) {
     synchronized (statementFinishedNotifier) {
-      LOGGER.debug("Setting python statement output: " + out + ", error: " + error);
+      LOGGER.debug("Setting python statement output: {}, error: {}", out, error);
       statementOutput = out;
       statementError = error;
       statementFinishedNotifier.notify();
@@ -348,7 +348,7 @@ public class PythonInterpreter extends Interpreter {
 
   // called by Python Process
   public void appendOutput(String message) throws IOException {
-    LOGGER.debug("Output from python process: " + message);
+    LOGGER.debug("Output from python process: {}", message);
     outputStream.getInterpreterOutput().write(message);
   }
 
@@ -412,7 +412,7 @@ public class PythonInterpreter extends Interpreter {
 
   public void interrupt() throws IOException, InterpreterException {
     if (pythonPid > -1) {
-      LOGGER.info("Sending SIGINT signal to PID : " + pythonPid);
+      LOGGER.info("Sending SIGINT signal to PID : {}", pythonPid);
       Runtime.getRuntime().exec("kill -SIGINT " + pythonPid);
     } else {
       LOGGER.warn("Non UNIX/Linux system, close the interpreter");
@@ -459,7 +459,7 @@ public class PythonInterpreter extends Interpreter {
     }
     String completionString = getCompletionTargetString(buf, cursor);
     String completionCommand = "__zeppelin_completion__.getCompletion('" + completionString + "')";
-    LOGGER.debug("completionCommand: " + completionCommand);
+    LOGGER.debug("completionCommand: {}", completionCommand);
 
     pythonInterpretRequest = new PythonInterpretRequest(completionCommand, true);
     statementOutput = null;
@@ -559,7 +559,7 @@ public class PythonInterpreter extends Interpreter {
   }
 
   protected void bootstrapInterpreter(String resourceName) throws IOException {
-    LOGGER.info("Bootstrap interpreter via " + resourceName);
+    LOGGER.info("Bootstrap interpreter via {}", resourceName);
     String bootstrapCode =
         IOUtils.toString(getClass().getClassLoader().getResourceAsStream(resourceName));
     try {
@@ -588,7 +588,7 @@ public class PythonInterpreter extends Interpreter {
 
   // Called by Python Process, used for debugging purpose
   public void logPythonOutput(String message) {
-    LOGGER.debug("Python Process Output: " + message);
+    LOGGER.debug("Python Process Output: {}", message);
   }
 
   public class PythonProcessLauncher extends ProcessLauncher {

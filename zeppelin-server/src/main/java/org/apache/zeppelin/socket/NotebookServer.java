@@ -16,7 +16,6 @@
  */
 package org.apache.zeppelin.socket;
 
-import com.google.common.base.Strings;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
@@ -29,7 +28,6 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -1586,8 +1584,8 @@ public class NotebookServer extends WebSocketServlet
 
             // if it's the last paragraph and not empty, let's add a new one
             boolean isTheLastParagraph = p.getNote().isLastParagraph(paragraphId);
-            if (!(Strings.isNullOrEmpty(p.getText()) ||
-                Strings.isNullOrEmpty(p.getScriptText())) &&
+            if (!(StringUtils.isEmpty(p.getText()) ||
+              StringUtils.isEmpty(p.getScriptText())) &&
                 isTheLastParagraph) {
               Paragraph newPara = p.getNote().addNewParagraph(p.getAuthenticationInfo());
               broadcastNewParagraph(p.getNote(), newPara);

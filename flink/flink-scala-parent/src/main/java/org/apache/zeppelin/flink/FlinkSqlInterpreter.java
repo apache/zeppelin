@@ -18,7 +18,6 @@
 
 package org.apache.zeppelin.flink;
 
-import com.google.common.collect.Lists;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -43,6 +42,7 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.Nullable;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -430,7 +430,7 @@ public abstract class FlinkSqlInterpreter extends AbstractInterpreter {
 
   private void callShowTables(InterpreterContext context) throws IOException {
     List<String> tables =
-            Lists.newArrayList(this.tbenv.listTables()).stream()
+            Arrays.asList(this.tbenv.listTables()).stream()
                     .filter(tbl -> !tbl.startsWith("UnnamedTable")).collect(Collectors.toList());
     context.out.write(
             "%table table\n" + StringUtils.join(tables, "\n") + "\n");
