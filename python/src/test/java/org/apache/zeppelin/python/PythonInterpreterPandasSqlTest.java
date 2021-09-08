@@ -17,7 +17,6 @@
 
 package org.apache.zeppelin.python;
 
-import com.google.common.collect.Lists;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
@@ -107,7 +106,8 @@ public class PythonInterpreterPandasSqlTest {
     pandasSqlInterpreter.setInterpreterGroup(intpGroup);
 
     List<Interpreter> interpreters =
-            Lists.newArrayList(pythonInterpreter, ipythonInterpreter, pandasSqlInterpreter);
+            Arrays.asList(pythonInterpreter, ipythonInterpreter, pandasSqlInterpreter);
+
 
     intpGroup.put("session_1", interpreters);
 

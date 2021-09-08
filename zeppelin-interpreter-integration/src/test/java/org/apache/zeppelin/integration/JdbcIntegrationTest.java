@@ -17,7 +17,6 @@
 
 package org.apache.zeppelin.integration;
 
-import com.google.common.collect.Lists;
 import org.apache.zeppelin.dep.Dependency;
 import org.apache.zeppelin.interpreter.ExecutionContext;
 import org.apache.zeppelin.interpreter.Interpreter;
@@ -33,6 +32,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -68,7 +68,7 @@ public class JdbcIntegrationTest {
     interpreterSetting.setProperty("default.password", "root");
 
     Dependency dependency = new Dependency("mysql:mysql-connector-java:5.1.46");
-    interpreterSetting.setDependencies(Lists.newArrayList(dependency));
+    interpreterSetting.setDependencies(Arrays.asList(dependency));
     interpreterSettingManager.restart(interpreterSetting.getId());
     interpreterSetting.waitForReady(60 * 1000);
     Interpreter jdbcInterpreter = interpreterFactory.getInterpreter("jdbc", new ExecutionContext("user1", "note1", "test"));

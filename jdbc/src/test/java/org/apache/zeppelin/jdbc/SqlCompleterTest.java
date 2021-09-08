@@ -14,12 +14,8 @@
  */
 package org.apache.zeppelin.jdbc;
 
-import static com.google.common.collect.Sets.newHashSet;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-
-import com.google.common.base.Joiner;
 
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
@@ -31,6 +27,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -99,7 +96,7 @@ public class SqlCompleterTest {
       logger.info(explain);
 
       Assert.assertEquals("Buffer [" + buffer.replace(" ", ".") + "] and Cursor[" + cursor + "] "
-          + explain, expected, newHashSet(candidates));
+          + explain, expected, new HashSet<>(candidates));
     }
 
     private String explain(String buffer, int cursor, List<InterpreterCompletion> candidates) {
@@ -126,15 +123,13 @@ public class SqlCompleterTest {
           sb.append(")");
         }
       }
-      sb.append(" >> [").append(Joiner.on(",").join(cndidateStrings)).append("]");
+      sb.append(" >> [").append(String.join(",", cndidateStrings)).append("]");
 
       return sb.toString();
     }
   }
 
   private Logger logger = LoggerFactory.getLogger(SqlCompleterTest.class);
-
-  private static final Set<String> EMPTY = new HashSet<>();
 
   private CompleterTester tester;
 
@@ -325,20 +320,20 @@ public class SqlCompleterTest {
   @Test
   public void testSchemaAndTable() {
     String buffer = "select * from prod_emart.fi";
-    tester.buffer(buffer).from(20).to(23).expect(newHashSet(
+    tester.buffer(buffer).from(20).to(23).expect(new HashSet<>(Arrays.asList(
             new InterpreterCompletion("prod_emart", "prod_emart",
-                    CompletionType.schema.name()))).test();
-    tester.buffer(buffer).from(25).to(27).expect(newHashSet(
+                    CompletionType.schema.name())))).test();
+    tester.buffer(buffer).from(25).to(27).expect(new HashSet<>(Arrays.asList(
             new InterpreterCompletion("financial_account", "financial_account",
-                    CompletionType.table.name()))).test();
+                    CompletionType.table.name())))).test();
   }
 
   @Test
   public void testEdges() {
     String buffer = "  ORDER  ";
-    tester.buffer(buffer).from(3).to(7).expect(newHashSet(
-            new InterpreterCompletion("ORDER", "ORDER", CompletionType.keyword.name()))).test();
-    tester.buffer(buffer).from(0).to(1).expect(newHashSet(
+    tester.buffer(buffer).from(3).to(7).expect(new HashSet<>(Arrays.asList(
+            new InterpreterCompletion("ORDER", "ORDER", CompletionType.keyword.name())))).test();
+    tester.buffer(buffer).from(0).to(1).expect(new HashSet<>(Arrays.asList(
         new InterpreterCompletion("ORDER", "ORDER", CompletionType.keyword.name()),
         new InterpreterCompletion("SUBCLASS_ORIGIN", "SUBCLASS_ORIGIN",
                 CompletionType.keyword.name()),
@@ -349,38 +344,38 @@ public class SqlCompleterTest {
         new InterpreterCompletion("prod_dds", "prod_dds", CompletionType.schema.name()),
         new InterpreterCompletion("SELECT", "SELECT", CompletionType.keyword.name()),
         new InterpreterCompletion("FROM", "FROM", CompletionType.keyword.name())
-    )).test();
+    ))).test();
   }
 
   @Test
   public void testMultipleWords() {
     String buffer = "SELE FRO LIM";
-    tester.buffer(buffer).from(2).to(4).expect(newHashSet(
-            new InterpreterCompletion("SELECT", "SELECT", CompletionType.keyword.name()))).test();
-    tester.buffer(buffer).from(6).to(8).expect(newHashSet(
-            new InterpreterCompletion("FROM", "FROM", CompletionType.keyword.name()))).test();
-    tester.buffer(buffer).from(10).to(12).expect(newHashSet(
-            new InterpreterCompletion("LIMIT", "LIMIT", CompletionType.keyword.name()))).test();
+    tester.buffer(buffer).from(2).to(4).expect(new HashSet<>(Arrays.asList(
+            new InterpreterCompletion("SELECT", "SELECT", CompletionType.keyword.name())))).test();
+    tester.buffer(buffer).from(6).to(8).expect(new HashSet<>(Arrays.asList(
+            new InterpreterCompletion("FROM", "FROM", CompletionType.keyword.name())))).test();
+    tester.buffer(buffer).from(10).to(12).expect(new HashSet<>(Arrays.asList(
+            new InterpreterCompletion("LIMIT", "LIMIT", CompletionType.keyword.name())))).test();
   }
 
   @Test
   public void testMultiLineBuffer() {
     String buffer = " \n SELE\nFRO";
-    tester.buffer(buffer).from(5).to(7).expect(newHashSet(
-            new InterpreterCompletion("SELECT", "SELECT", CompletionType.keyword.name()))).test();
-    tester.buffer(buffer).from(9).to(11).expect(newHashSet(
-            new InterpreterCompletion("FROM", "FROM", CompletionType.keyword.name()))).test();
+    tester.buffer(buffer).from(5).to(7).expect(new HashSet<>(Arrays.asList(
+            new InterpreterCompletion("SELECT", "SELECT", CompletionType.keyword.name())))).test();
+    tester.buffer(buffer).from(9).to(11).expect(new HashSet<>(Arrays.asList(
+            new InterpreterCompletion("FROM", "FROM", CompletionType.keyword.name())))).test();
   }
 
   @Test
   public void testMultipleCompletionSuggestions() {
     String buffer = "SU";
-    tester.buffer(buffer).from(2).to(2).expect(newHashSet(
+    tester.buffer(buffer).from(2).to(2).expect(new HashSet<>(Arrays.asList(
         new InterpreterCompletion("SUBCLASS_ORIGIN", "SUBCLASS_ORIGIN",
                 CompletionType.keyword.name()),
         new InterpreterCompletion("SUM", "SUM", CompletionType.keyword.name()),
         new InterpreterCompletion("SUBSTRING", "SUBSTRING", CompletionType.keyword.name()))
-    ).test();
+    )).test();
   }
 
   @Test

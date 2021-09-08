@@ -24,7 +24,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import com.google.common.collect.Sets;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.common.JsonSerializable;
 import org.slf4j.Logger;
@@ -43,7 +42,7 @@ public class AuthenticationInfo implements JsonSerializable {
   Set<String> roles;
   String ticket;
   UserCredentials userCredentials;
-  public static final AuthenticationInfo ANONYMOUS = new AuthenticationInfo("anonymous", Sets.newHashSet(),
+  public static final AuthenticationInfo ANONYMOUS = new AuthenticationInfo("anonymous", new HashSet<>(),
       "anonymous");
 
   public AuthenticationInfo() {}

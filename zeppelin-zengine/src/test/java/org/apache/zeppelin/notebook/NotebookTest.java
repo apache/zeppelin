@@ -17,7 +17,6 @@
 
 package org.apache.zeppelin.notebook;
 
-import com.google.common.collect.Sets;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.display.AngularObjectRegistry;
@@ -1090,7 +1089,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
         new HashSet<>(Arrays.asList("user1"))));
 
     // Test clearing of permissions
-    authorizationService.setReaders(note.getId(), Sets.<String>newHashSet());
+    authorizationService.setReaders(note.getId(), new HashSet<>());
     assertTrue(authorizationService.isReader(note.getId(),
         new HashSet<>(Arrays.asList("user2"))));
     assertTrue(authorizationService.isReader(note.getId(),
@@ -1103,7 +1102,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
   public void testAuthorizationRoles() throws IOException {
     String user1 = "user1";
     String user2 = "user2";
-    Set<String> roles = Sets.newHashSet("admin");
+    Set<String> roles = new HashSet<>(Arrays.asList("admin"));
     // set admin roles for both user1 and user2
     authorizationService.setRoles(user1, roles);
     authorizationService.setRoles(user2, roles);
@@ -1112,23 +1111,23 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
 
     // check that user1 is owner, reader, runner and writer
     assertTrue(authorizationService.isOwner(note.getId(),
-        Sets.newHashSet(user1)));
+      new HashSet<>(Arrays.asList(user1))));
     assertTrue(authorizationService.isReader(note.getId(),
-        Sets.newHashSet(user1)));
+      new HashSet<>(Arrays.asList(user1))));
     assertTrue(authorizationService.isRunner(note.getId(),
-        Sets.newHashSet(user2)));
+      new HashSet<>(Arrays.asList(user2))));
     assertTrue(authorizationService.isWriter(note.getId(),
-        Sets.newHashSet(user1)));
+      new HashSet<>(Arrays.asList(user1))));
 
     // since user1 and user2 both have admin role, user2 will be reader and writer as well
     assertFalse(authorizationService.isOwner(note.getId(),
-        Sets.newHashSet(user2)));
+      new HashSet<>(Arrays.asList(user2))));
     assertTrue(authorizationService.isReader(note.getId(),
-        Sets.newHashSet(user2)));
+      new HashSet<>(Arrays.asList(user2))));
     assertTrue(authorizationService.isRunner(note.getId(),
-        Sets.newHashSet(user2)));
+      new HashSet<>(Arrays.asList(user2))));
     assertTrue(authorizationService.isWriter(note.getId(),
-        Sets.newHashSet(user2)));
+      new HashSet<>(Arrays.asList(user2))));
 
     // check that user1 has note listed in his workbench
     Set<String> user1AndRoles = authorizationService.getRoles(user1);
@@ -1431,22 +1430,22 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
   public void testGetAllNotes() throws Exception {
     Note note1 = notebook.createNote("note1", anonymous);
     Note note2 = notebook.createNote("note2", anonymous);
-    assertEquals(2, notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), Sets.newHashSet("anonymous"))).size());
+    assertEquals(2, notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), new HashSet<>(Arrays.asList("anonymous")))).size());
 
-    authorizationService.setOwners(note1.getId(), Sets.newHashSet("user1"));
-    authorizationService.setWriters(note1.getId(), Sets.newHashSet("user1"));
-    authorizationService.setRunners(note1.getId(), Sets.newHashSet("user1"));
-    authorizationService.setReaders(note1.getId(), Sets.newHashSet("user1"));
-    assertEquals(1, notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), Sets.newHashSet("anonymous"))).size());
-    assertEquals(2, notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), Sets.newHashSet("user1"))).size());
+    authorizationService.setOwners(note1.getId(), new HashSet<>(Arrays.asList("user1")));
+    authorizationService.setWriters(note1.getId(), new HashSet<>(Arrays.asList("user1")));
+    authorizationService.setRunners(note1.getId(), new HashSet<>(Arrays.asList("user1")));
+    authorizationService.setReaders(note1.getId(), new HashSet<>(Arrays.asList("user1")));
+    assertEquals(1, notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), new HashSet<>(Arrays.asList("anonymous")))).size());
+    assertEquals(2, notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), new HashSet<>(Arrays.asList("user1")))).size());
 
-    authorizationService.setOwners(note2.getId(), Sets.newHashSet("user2"));
-    authorizationService.setWriters(note2.getId(), Sets.newHashSet("user2"));
-    authorizationService.setReaders(note2.getId(), Sets.newHashSet("user2"));
-    authorizationService.setRunners(note2.getId(), Sets.newHashSet("user2"));
-    assertEquals(0, notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), Sets.newHashSet("anonymous"))).size());
-    assertEquals(1, notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), Sets.newHashSet("user1"))).size());
-    assertEquals(1, notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), Sets.newHashSet("user2"))).size());
+    authorizationService.setOwners(note2.getId(), new HashSet<>(Arrays.asList("user2")));
+    authorizationService.setWriters(note2.getId(), new HashSet<>(Arrays.asList("user2")));
+    authorizationService.setReaders(note2.getId(), new HashSet<>(Arrays.asList("user2")));
+    authorizationService.setRunners(note2.getId(), new HashSet<>(Arrays.asList("user2")));
+    assertEquals(0, notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), new HashSet<>(Arrays.asList("anonymous")))).size());
+    assertEquals(1, notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), new HashSet<>(Arrays.asList("user1")))).size());
+    assertEquals(1, notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), new HashSet<>(Arrays.asList("user2")))).size());
     notebook.removeNote(note1, AuthenticationInfo.ANONYMOUS);
     notebook.removeNote(note2, AuthenticationInfo.ANONYMOUS);
   }
@@ -1466,8 +1465,8 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
 
   @Test
   public void testGetAllNotesWithDifferentPermissions() throws IOException {
-    List<Note> notes1 = notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), Sets.newHashSet("user1")));
-    List<Note> notes2 = notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), Sets.newHashSet("user2")));
+    List<Note> notes1 = notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), new HashSet<>(Arrays.asList("user1"))));
+    List<Note> notes2 = notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), new HashSet<>(Arrays.asList("user2"))));
     assertEquals(0, notes1.size());
     assertEquals(0, notes2.size());
 
@@ -1475,27 +1474,27 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     Note note1 = notebook.createNote("note1", new AuthenticationInfo("user1"));
 
     // note is public since readers and writers empty
-    notes1 = notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), Sets.newHashSet("user1")));
-    notes2 = notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), Sets.newHashSet("user2")));
+    notes1 = notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), new HashSet<>(Arrays.asList("user1"))));
+    notes2 = notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), new HashSet<>(Arrays.asList("user2"))));
     assertEquals(1, notes1.size());
     assertEquals(1, notes2.size());
 
-    authorizationService.setReaders(note1.getId(), Sets.newHashSet("user1"));
+    authorizationService.setReaders(note1.getId(), new HashSet<>(Arrays.asList("user1")));
     //note is public since writers empty
-    notes1 = notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), Sets.newHashSet("user1")));
-    notes2 = notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), Sets.newHashSet("user2")));
+    notes1 = notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), new HashSet<>(Arrays.asList("user1"))));
+    notes2 = notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), new HashSet<>(Arrays.asList("user2"))));
     assertEquals(1, notes1.size());
     assertEquals(1, notes2.size());
 
-    authorizationService.setRunners(note1.getId(), Sets.newHashSet("user1"));
-    notes1 = notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), Sets.newHashSet("user1")));
-    notes2 = notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), Sets.newHashSet("user2")));
+    authorizationService.setRunners(note1.getId(), new HashSet<>(Arrays.asList("user1")));
+    notes1 = notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), new HashSet<>(Arrays.asList("user1"))));
+    notes2 = notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), new HashSet<>(Arrays.asList("user2"))));
     assertEquals(1, notes1.size());
     assertEquals(1, notes2.size());
 
-    authorizationService.setWriters(note1.getId(), Sets.newHashSet("user1"));
-    notes1 = notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), Sets.newHashSet("user1")));
-    notes2 = notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), Sets.newHashSet("user2")));
+    authorizationService.setWriters(note1.getId(), new HashSet<>(Arrays.asList("user1")));
+    notes1 = notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), new HashSet<>(Arrays.asList("user1"))));
+    notes2 = notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), new HashSet<>(Arrays.asList("user2"))));
     assertEquals(1, notes1.size());
     assertEquals(0, notes2.size());
   }
@@ -1506,8 +1505,8 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     assertTrue(conf.isNotebookPublic());
     assertTrue(authorizationService.isPublic());
 
-    List<Note> notes1 = notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), Sets.newHashSet("user1")));
-    List<Note> notes2 = notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), Sets.newHashSet("user2")));
+    List<Note> notes1 = notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), new HashSet<>(Arrays.asList("user1"))));
+    List<Note> notes2 = notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), new HashSet<>(Arrays.asList("user2"))));
     assertEquals(0, notes1.size());
     assertEquals(0, notes2.size());
 
@@ -1515,8 +1514,8 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     Note notePublic = notebook.createNote("note1", new AuthenticationInfo("user1"));
 
     // both users have note
-    notes1 = notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), Sets.newHashSet("user1")));
-    notes2 = notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), Sets.newHashSet("user2")));
+    notes1 = notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), new HashSet<>(Arrays.asList("user1"))));
+    notes2 = notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), new HashSet<>(Arrays.asList("user2"))));
     assertEquals(1, notes1.size());
     assertEquals(1, notes2.size());
     assertEquals(notes1.get(0).getId(), notePublic.getId());
@@ -1536,8 +1535,8 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     assertFalse(authorizationService.isPublic());
 
     // check that still 1 note per user
-    notes1 = notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), Sets.newHashSet("user1")));
-    notes2 = notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), Sets.newHashSet("user2")));
+    notes1 = notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), new HashSet<>(Arrays.asList("user1"))));
+    notes2 = notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), new HashSet<>(Arrays.asList("user2"))));
     assertEquals(1, notes1.size());
     assertEquals(1, notes2.size());
 
@@ -1545,8 +1544,8 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     Note notePrivate = notebook.createNote("note2", new AuthenticationInfo("user1"));
 
     // only user1 have notePrivate right after creation
-    notes1 = notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), Sets.newHashSet("user1")));
-    notes2 = notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), Sets.newHashSet("user2")));
+    notes1 = notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), new HashSet<>(Arrays.asList("user1"))));
+    notes2 = notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), new HashSet<>(Arrays.asList("user2"))));
     assertEquals(2, notes1.size());
     assertEquals(1, notes2.size());
     assertEquals(true, notes1.contains(notePrivate));

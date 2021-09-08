@@ -17,10 +17,10 @@
 
 package org.apache.zeppelin.service;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.inject.Inject;
@@ -45,7 +45,7 @@ public class NoAuthenticationService implements AuthenticationService {
 
   @Override
   public Set<String> getAssociatedRoles() {
-    return Sets.newHashSet();
+    return new HashSet<>();
   }
 
   @Override
@@ -60,11 +60,11 @@ public class NoAuthenticationService implements AuthenticationService {
 
   @Override
   public List<String> getMatchedUsers(String searchText, int numUsersToFetch) {
-    return Lists.newArrayList();
+    return new ArrayList<>();
   }
 
   @Override
   public List<String> getMatchedRoles() {
-    return Lists.newArrayList();
+    return new ArrayList<>();
   }
 }

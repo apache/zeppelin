@@ -17,7 +17,6 @@
 
 package org.apache.zeppelin.notebook;
 
-import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
@@ -53,10 +52,10 @@ public class NoteAuth {
 
   public NoteAuth(String noteId, Map<String, Set<String>> permissions) {
     this.noteId = noteId;
-    this.readers = permissions.getOrDefault("readers", Sets.newHashSet());
-    this.writers = permissions.getOrDefault("writers", Sets.newHashSet());
-    this.runners = permissions.getOrDefault("runners", Sets.newHashSet());
-    this.owners = permissions.getOrDefault("owners", Sets.newHashSet());
+    this.readers = permissions.getOrDefault("readers", new HashSet<>());
+    this.writers = permissions.getOrDefault("writers", new HashSet<>());
+    this.runners = permissions.getOrDefault("runners", new HashSet<>());
+    this.owners = permissions.getOrDefault("owners", new HashSet<>());
   }
 
   // used when creating new note

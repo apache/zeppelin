@@ -17,10 +17,11 @@
 
 package org.apache.zeppelin.tabledata;
 
-import com.google.common.collect.Lists;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+
+import java.util.Arrays;
 
 public class TableDataUtilsTest {
 
@@ -36,10 +37,10 @@ public class TableDataUtilsTest {
 
   @Test
   public void testColumns() {
-    assertEquals(Lists.newArrayList("hello world", "hello world"),
+    assertEquals(Arrays.asList("hello world", "hello world"),
             TableDataUtils.normalizeColumns(new Object[]{"hello\tworld", "hello\nworld"}));
 
-    assertEquals(Lists.newArrayList("hello world", "null"),
+    assertEquals(Arrays.asList("hello world", "null"),
             TableDataUtils.normalizeColumns(new String[]{"hello\tworld", null}));
   }
 }

@@ -61,7 +61,7 @@ public class BeelineInPlaceUpdateStream implements InPlaceUpdateStream {
         GetOperationStatus
       */
       lastUpdateTimestamp = System.currentTimeMillis();
-      LOGGER.info("update progress: " + response.getProgressedPercentage());
+      LOGGER.info("update progress: {}", response.getProgressedPercentage());
       inPlaceUpdate.render(new ProgressMonitorWrapper(response));
     }
   }

@@ -17,7 +17,6 @@
 
 package org.apache.zeppelin.notebook.repo;
 
-import com.google.common.collect.Lists;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.notebook.Note;
@@ -148,7 +147,7 @@ public class NotebookRepoSync implements NotebookRepoWithVersionControl {
   }
 
   public List<NotebookRepoWithSettings> getNotebookRepos(AuthenticationInfo subject) {
-    List<NotebookRepoWithSettings> reposSetting = Lists.newArrayList();
+    List<NotebookRepoWithSettings> reposSetting = new ArrayList<>();
 
     NotebookRepoWithSettings repoWithSettings;
     for (NotebookRepo repo : repos) {

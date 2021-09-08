@@ -17,12 +17,12 @@
 
 package org.apache.zeppelin.service;
 
-import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -74,7 +74,7 @@ public class InterpreterService {
     final DependencyResolver dependencyResolver = new DependencyResolver(localRepoPath);
 
     // TODO(jl): Make a rule between an interpreter name and an installation directory
-    List<String> possibleInterpreterDirectories = Lists.newArrayList();
+    List<String> possibleInterpreterDirectories = new ArrayList<>();
     possibleInterpreterDirectories.add(interpreterName);
     if (interpreterName.startsWith(ZEPPELIN_ARTIFACT_PREFIX)) {
       possibleInterpreterDirectories.add(interpreterName.replace(ZEPPELIN_ARTIFACT_PREFIX, ""));

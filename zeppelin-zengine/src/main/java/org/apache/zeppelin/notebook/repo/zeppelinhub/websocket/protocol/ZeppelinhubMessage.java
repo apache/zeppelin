@@ -16,6 +16,7 @@
  */
 package org.apache.zeppelin.notebook.repo.zeppelinhub.websocket.protocol;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
@@ -25,7 +26,6 @@ import org.apache.zeppelin.common.Message.OP;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 
@@ -40,7 +40,7 @@ public class ZeppelinhubMessage implements JsonSerializable {
 
   public Object op;
   public Object data;
-  public Map<String, String> meta = Maps.newHashMap();
+  public Map<String, String> meta = new HashMap<>();
 
   private ZeppelinhubMessage() {
     this.op = OP.LIST_NOTES;

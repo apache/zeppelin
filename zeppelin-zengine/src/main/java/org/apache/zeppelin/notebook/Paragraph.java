@@ -28,8 +28,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.zeppelin.common.JsonSerializable;
 import org.apache.zeppelin.display.AngularObject;
@@ -62,8 +62,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Strings;
-import com.google.common.collect.Maps;
 
 /**
  * Paragraph is a representation of an execution unit.
@@ -121,9 +119,9 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
   public Paragraph(Paragraph p2) {
     super(p2.getId(), null);
     this.note = p2.note;
-    this.settings.setParams(Maps.newHashMap(p2.settings.getParams()));
-    this.settings.setForms(Maps.newLinkedHashMap(p2.settings.getForms()));
-    this.setConfig(Maps.newHashMap(p2.getConfig()));
+    this.settings.setParams(new HashMap<>(p2.settings.getParams()));
+    this.settings.setForms(new LinkedHashMap<>(p2.settings.getForms()));
+    this.setConfig(new HashMap<>(p2.getConfig()));
     this.setAuthenticationInfo(p2.getAuthenticationInfo());
     this.title = p2.title;
     this.text = p2.text;
@@ -319,7 +317,7 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
             (Boolean) config.getOrDefault(InterpreterSetting.PARAGRAPH_CONFIG_CHECK_EMTPY, true);
     // don't skip paragraph when local properties is not empty.
     // local properties can customize the behavior of interpreter. e.g. %r.shiny(type=run)
-    return checkEmptyConfig && Strings.isNullOrEmpty(scriptText) && localProperties.isEmpty();
+    return checkEmptyConfig && StringUtils.isEmpty(scriptText) && localProperties.isEmpty();
   }
 
   public boolean execute(boolean blocking) {
@@ -581,7 +579,7 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
   // NOTE: function setConfig(...) will overwrite all configuration
   // Merge configuration, you need to use function mergeConfig(...)
   public void setConfig(Map<String, Object> config) {
-    this.config = Maps.newHashMap(config);
+    this.config = new HashMap<>(config);
   }
 
   // [ZEPPELIN-3919] Paragraph config default value can be customized

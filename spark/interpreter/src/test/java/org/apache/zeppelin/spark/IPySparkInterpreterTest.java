@@ -18,7 +18,6 @@
 package org.apache.zeppelin.spark;
 
 
-import com.google.common.io.Files;
 import junit.framework.TestCase;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.zeppelin.interpreter.Interpreter;
@@ -35,6 +34,7 @@ import org.apache.zeppelin.python.IPythonInterpreterTest;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -62,7 +62,12 @@ public class IPySparkInterpreterTest extends IPythonInterpreterTest {
     p.setProperty("zeppelin.spark.maxResult", "3");
     p.setProperty("zeppelin.spark.importImplicit", "true");
     p.setProperty("zeppelin.pyspark.python", "python");
-    p.setProperty("zeppelin.dep.localrepo", Files.createTempDir().getAbsolutePath());
+    try {
+      p.setProperty("zeppelin.dep.localrepo", Files.createTempDirectory("localrepo").toAbsolutePath().toString());
+    } catch (IOException e) {
+      fail(ExceptionUtils.getStackTrace(e));
+    }
+
     p.setProperty("zeppelin.python.gatewayserver_address", "127.0.0.1");
     p.setProperty("zeppelin.spark.deprecatedMsg.show", "false");
     return p;

@@ -18,7 +18,6 @@
 package org.apache.zeppelin.notebook;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.Lists;
 import com.google.gson.ExclusionStrategy;
 import com.google.gson.FieldAttributes;
 import com.google.gson.Gson;
@@ -55,6 +54,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -908,8 +908,8 @@ public class Note implements JsonSerializable {
   private void snapshotAngularObjectRegistry(String user) {
     angularObjects = new HashMap<>();
 
-    List<InterpreterSetting> settings = getBindedInterpreterSettings(Lists.newArrayList(user));
-    if (settings == null || settings.size() == 0) {
+    List<InterpreterSetting> settings = getBindedInterpreterSettings(Arrays.asList(user));
+    if (settings == null || settings.isEmpty()) {
       return;
     }
 
@@ -925,7 +925,7 @@ public class Note implements JsonSerializable {
   private void removeAllAngularObjectInParagraph(String user, String paragraphId) {
     angularObjects = new HashMap<>();
 
-    List<InterpreterSetting> settings = getBindedInterpreterSettings(Lists.newArrayList(user));
+    List<InterpreterSetting> settings = getBindedInterpreterSettings(Arrays.asList(user));
     if (settings == null || settings.isEmpty()) {
       return;
     }

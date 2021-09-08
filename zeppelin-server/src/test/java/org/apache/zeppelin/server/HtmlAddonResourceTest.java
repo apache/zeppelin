@@ -21,14 +21,12 @@ import static org.junit.Assert.assertThat;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
+import java.nio.charset.StandardCharsets;
 
+import org.apache.commons.io.IOUtils;
 import org.eclipse.jetty.util.resource.Resource;
 import org.junit.Ignore;
 import org.junit.Test;
-
-import com.google.common.io.CharStreams;
 
 public class HtmlAddonResourceTest {
 
@@ -42,10 +40,7 @@ public class HtmlAddonResourceTest {
     public void testZeppelinWebHtmlAddon() throws IOException {
         final Resource addonResource = getHtmlAddonResource(FILE_PATH_INDEX_HTML_ZEPPELIN_WEB);
 
-        final String content;
-        try (final Reader reader = new InputStreamReader(addonResource.getInputStream())) {
-            content = CharStreams.toString(reader);
-        }
+        final String content = IOUtils.toString(addonResource.getInputStream(), StandardCharsets.UTF_8);
 
         assertThat(content, containsString(TEST_BODY_ADDON));
         assertThat(content, containsString(TEST_HEAD_ADDON));
@@ -57,10 +52,7 @@ public class HtmlAddonResourceTest {
     public void testZeppelinWebAngularHtmlAddon() throws IOException {
         final Resource addonResource = getHtmlAddonResource(FILE_PATH_INDEX_HTML_ZEPPELIN_WEB_ANGULAR);
 
-        final String content;
-        try (final Reader reader = new InputStreamReader(addonResource.getInputStream())) {
-            content = CharStreams.toString(reader);
-        }
+        final String content = IOUtils.toString(addonResource.getInputStream(), StandardCharsets.UTF_8);
 
         assertThat(content, containsString(TEST_BODY_ADDON));
         assertThat(content, containsString(TEST_HEAD_ADDON));

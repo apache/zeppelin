@@ -16,7 +16,6 @@
  */
 package org.apache.zeppelin.service;
 
-import com.google.common.collect.Lists;
 import java.security.Principal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -438,7 +437,7 @@ public class ShiroAuthenticationService implements AuthenticationService {
       userquery = String.format("SELECT %s FROM %s", username, tablename);
     } catch (IllegalAccessException e) {
       LOGGER.error("Error while accessing dataSource for JDBC Realm", e);
-      return Lists.newArrayList();
+      return new ArrayList<>();
     }
 
     try {

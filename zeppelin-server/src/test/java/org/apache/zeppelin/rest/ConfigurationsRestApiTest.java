@@ -18,8 +18,6 @@ package org.apache.zeppelin.rest;
 
 import static org.junit.Assert.assertTrue;
 
-import com.google.common.base.Predicate;
-import com.google.common.collect.Iterators;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -54,13 +52,9 @@ public class ConfigurationsRestApiTest extends AbstractTestRestApi {
     Map<String, String> body = (Map<String, String>) resp.get("body");
     assertTrue(body.size() > 0);
     // it shouldn't have key/value pair which key contains "password"
-    assertTrue(Iterators.all(body.keySet().iterator(), new Predicate<String>() {
-        @Override
-        public boolean apply(String key) {
-          return !key.contains("password");
-        }
-      }
-    ));
+    for (String key : body.keySet()) {
+      assertTrue(!key.contains("password"));
+    }
     get.close();
   }
 
@@ -72,13 +66,9 @@ public class ConfigurationsRestApiTest extends AbstractTestRestApi {
         new TypeToken<Map<String, Object>>(){}.getType());
     Map<String, String> body = (Map<String, String>) resp.get("body");
     assertTrue(body.size() > 0);
-    assertTrue(Iterators.all(body.keySet().iterator(), new Predicate<String>() {
-          @Override
-          public boolean apply(String key) {
-            return !key.contains("password") && key.startsWith(prefix);
-          }
-        }
-    ));
+    for (String key : body.keySet()) {
+      assertTrue(!key.contains("password") && key.startsWith(prefix));
+    }
     get.close();
   }
 }

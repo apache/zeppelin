@@ -18,8 +18,6 @@
 package org.apache.zeppelin.notebook.repo;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Joiner;
-import com.google.common.collect.Lists;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.user.AuthenticationInfo;
@@ -39,6 +37,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -75,8 +74,7 @@ public class GitNotebookRepo extends VFSNotebookRepo implements NotebookRepoWith
     setNotebookDirectory(conf.getNotebookDir());
 
     LOGGER.info("Opening a git repo at '{}'", this.rootNotebookFolder);
-    Repository localRepo = new FileRepository(Joiner.on(File.separator)
-        .join(this.rootNotebookFolder, ".git"));
+    Repository localRepo = new FileRepository(String.join(File.separator, this.rootNotebookFolder, ".git"));
     if (!localRepo.getDirectory().exists()) {
       LOGGER.info("Git repo {} does not exist, creating a new one", localRepo.getDirectory());
       localRepo.create();
@@ -196,7 +194,7 @@ public class GitNotebookRepo extends VFSNotebookRepo implements NotebookRepoWith
   public List<Revision> revisionHistory(String noteId,
                                         String notePath,
                                         AuthenticationInfo subject) throws IOException {
-    List<Revision> history = Lists.newArrayList();
+    List<Revision> history = new ArrayList<>();
     String noteFileName = buildNoteFileName(noteId, notePath);
     LOGGER.debug("Listing history for {}:", noteFileName);
     try {
@@ -224,7 +222,7 @@ public class GitNotebookRepo extends VFSNotebookRepo implements NotebookRepoWith
     }
     return revisionNote;
   }
-  
+
   @Override
   public void close() {
     git.getRepository().close();

@@ -19,7 +19,6 @@
 package org.apache.zeppelin.notebook.repo;
 
 
-import com.google.common.base.Joiner;
 import org.apache.commons.io.FileUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
@@ -82,18 +81,18 @@ public class GitHubNotebookRepoTest {
     localZeppelinDir.mkdirs();
 
     // Notebooks directory (for both the remote and local directories)
-    localNotebooksDir = Joiner.on(File.separator).join(localRepositoryPath, "notebook");
-    remoteNotebooksDir = Joiner.on(File.separator).join(remoteRepositoryPath, "notebook");
+    localNotebooksDir = String.join(File.separator, localRepositoryPath, "notebook");
+    remoteNotebooksDir = String.join(File.separator, remoteRepositoryPath, "notebook");
 
     File notebookDir = new File(localNotebooksDir);
     notebookDir.mkdirs();
-    
+
     FileUtils.copyDirectory(
         new File(GitHubNotebookRepoTest.class.getResource("/notebook").getFile()),
         new File(remoteNotebooksDir));
 
     // Create the fake remote Git repository
-    Repository remoteRepository = new FileRepository(Joiner.on(File.separator).join(remoteNotebooksDir, ".git"));
+    Repository remoteRepository = new FileRepository(String.join(File.separator, remoteNotebooksDir, ".git"));
     remoteRepository.create();
 
     remoteGit = new Git(remoteRepository);

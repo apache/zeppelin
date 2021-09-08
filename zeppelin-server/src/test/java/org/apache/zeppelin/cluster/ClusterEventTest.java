@@ -16,7 +16,6 @@
  */
 package org.apache.zeppelin.cluster;
 
-import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -440,7 +439,7 @@ public class ClusterEventTest extends ZeppelinServerMock {
       Thread.sleep(1000);
       checkClusterAuthEventListener();
 
-      Set<String> roles = Sets.newHashSet("admin");
+      Set<String> roles = new HashSet<>(Arrays.asList("admin"));
       // set admin roles for both user1 and user2
       authorizationService.setRoles(user2Id, roles);
       // wait cluster sync event

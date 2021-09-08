@@ -18,8 +18,6 @@
 package org.apache.zeppelin.socket;
 
 
-import com.google.common.collect.Queues;
-import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.apache.commons.lang3.StringUtils;
@@ -77,7 +75,7 @@ public class ConnectionManager {
    * noteSocketMap. This can be used to get information about websocket traffic and watch what
    * is going on.
    */
-  final Queue<NotebookSocket> watcherSockets = Queues.newConcurrentLinkedQueue();
+  final Queue<NotebookSocket> watcherSockets = new ConcurrentLinkedQueue<>();
 
   private final HashSet<String> collaborativeModeList = new HashSet<>();
   private final Boolean collaborativeModeEnable = ZeppelinConfiguration
@@ -311,7 +309,7 @@ public class ConnectionManager {
   }
 
   public Set<String> getConnectedUsers() {
-    Set<String> connectedUsers = Sets.newHashSet();
+    Set<String> connectedUsers = new HashSet<>();
     for (NotebookSocket notebookSocket : connectedSockets) {
       connectedUsers.add(notebookSocket.getUser());
     }
