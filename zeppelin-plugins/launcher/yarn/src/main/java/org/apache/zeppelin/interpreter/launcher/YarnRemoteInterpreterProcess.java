@@ -74,7 +74,7 @@ import java.util.zip.ZipOutputStream;
  */
 public class YarnRemoteInterpreterProcess extends RemoteInterpreterProcess {
 
-  private static Logger LOGGER = LoggerFactory.getLogger(YarnRemoteInterpreterProcess.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(YarnRemoteInterpreterProcess.class);
 
   private String host;
   private int port = -1;
@@ -122,14 +122,14 @@ public class YarnRemoteInterpreterProcess extends RemoteInterpreterProcess {
           LOGGER.info("Adding resource: {}", coreSite.getAbsolutePath());
           this.hadoopConf.addResource(coreSite.toURI().toURL());
         } catch (MalformedURLException e) {
-          LOGGER.warn("Fail to add core-site.xml: " + coreSite.getAbsolutePath(), e);
+          LOGGER.warn("Fail to add core-site.xml: {}", coreSite.getAbsolutePath(), e);
         }
         File yarnSite = new File(hadoopConfDir, "yarn-site.xml");
         try {
           LOGGER.info("Adding resource: {}", yarnSite.getAbsolutePath());
           this.hadoopConf.addResource(yarnSite.toURI().toURL());
         } catch (MalformedURLException e) {
-          LOGGER.warn("Fail to add yarn-site.xml: " + yarnSite.getAbsolutePath(), e);
+          LOGGER.warn("Fail to add yarn-site.xml: {}", yarnSite.getAbsolutePath(), e);
         }
       } else {
         throw new RuntimeException("HADOOP_CONF_DIR: " + hadoopConfDir.getAbsolutePath() +
@@ -375,7 +375,9 @@ public class YarnRemoteInterpreterProcess extends RemoteInterpreterProcess {
     List<String> yarnClassPath = Arrays.asList(getYarnAppClasspath());
     List<String> mrClassPath = Arrays.asList(getMRAppClasspath());
     yarnClassPath.addAll(mrClassPath);
-    LOGGER.info("Adding hadoop classpath: {}", StringUtils.join(yarnClassPath, ":"));
+    if (LOGGER.isInfoEnabled()) {
+      LOGGER.info("Adding hadoop classpath: {}", String.join(":", yarnClassPath));
+    }
     for (String path : yarnClassPath) {
       String newValue = path;
       if (envs.containsKey(ApplicationConstants.Environment.CLASSPATH.name())) {
@@ -570,7 +572,7 @@ public class YarnRemoteInterpreterProcess extends RemoteInterpreterProcess {
     FileSystem srcFs = srcPath.getFileSystem(hadoopConf);
 
     Path destPath = new Path(destDir, srcPath.getName());
-    LOGGER.info("Uploading resource " + srcPath + " to " + destPath);
+    LOGGER.info("Uploading resource {} to {}", srcPath, destPath);
     FileUtil.copy(srcFs, srcPath, destFs, destPath, false, hadoopConf);
     destFs.setReplication(destPath, replication);
     destFs.setPermission(destPath, APP_FILE_PERMISSION);

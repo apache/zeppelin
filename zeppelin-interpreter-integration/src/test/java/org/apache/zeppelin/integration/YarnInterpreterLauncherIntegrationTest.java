@@ -48,7 +48,7 @@ import static org.junit.Assert.assertTrue;
 
 public class YarnInterpreterLauncherIntegrationTest {
 
-  private static Logger LOGGER = LoggerFactory.getLogger(YarnInterpreterLauncherIntegrationTest.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(YarnInterpreterLauncherIntegrationTest.class);
 
   private static MiniHadoopCluster hadoopCluster;
   private static MiniZeppelin zeppelin;

@@ -37,7 +37,7 @@ import org.slf4j.LoggerFactory;
 @Path("/admin")
 @Singleton
 public class AdminRestApi {
-  private static final Logger logger = LoggerFactory.getLogger(AdminRestApi.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(AdminRestApi.class);
 
   private final AdminService adminService;
 
@@ -56,7 +56,7 @@ public class AdminRestApi {
   @GET
   @ZeppelinApi
   public List<org.apache.log4j.Logger> getLoggerSetting(@QueryParam("name") String name) {
-    logger.debug("name: {}", name);
+    LOGGER.debug("name: {}", name);
     return null == name || name.isEmpty()
         ? adminService.getLoggers()
         : Arrays.asList(adminService.getLogger(name));
@@ -74,10 +74,10 @@ public class AdminRestApi {
     if (null == loggerRequest
         || StringUtils.isEmpty(loggerRequest.getName())
         || StringUtils.isEmpty(loggerRequest.getLevel())) {
-      logger.trace("loggerRequest: {}", loggerRequest);
+      LOGGER.trace("loggerRequest: {}", loggerRequest);
       throw new BadRequestException("Wrong request body");
     }
-    logger.debug("loggerRequest: {}", loggerRequest);
+    LOGGER.debug("loggerRequest: {}", loggerRequest);
 
     adminService.setLoggerLevel(loggerRequest);
 

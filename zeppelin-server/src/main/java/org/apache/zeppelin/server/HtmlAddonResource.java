@@ -52,7 +52,7 @@ public class HtmlAddonResource extends Resource {
     private byte[] alteredContent;
 
     public HtmlAddonResource(final Resource indexResource, final String bodyAddon, final String headAddon) {
-        LOGGER.info("Enabling html addons in " + indexResource + ": body='{}' head='{}'", bodyAddon, headAddon);
+        LOGGER.info("Enabling html addons in {}: body='{}' head='{}'", indexResource, bodyAddon, headAddon);
         this.indexResource = indexResource;
         try {
             // read original content from resource
