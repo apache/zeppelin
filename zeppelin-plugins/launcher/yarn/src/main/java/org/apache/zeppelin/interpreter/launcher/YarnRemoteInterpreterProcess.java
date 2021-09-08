@@ -483,84 +483,84 @@ public class YarnRemoteInterpreterProcess extends RemoteInterpreterProcess {
    * @throws IOException
    */
   private File createInterpreterZip() throws IOException {
-    File interpreterArchive = File.createTempFile("zeppelin_interpreter_", ".zip", Files.createTempDir());
-    ZipOutputStream interpreterZipStream = new ZipOutputStream(new FileOutputStream(interpreterArchive));
-    interpreterZipStream.setLevel(0);
+    File interpreterArchive = File.createTempFile("zeppelin_interpreter_", ".zip", Files.createTempDirectory("yarn_interpreter").toFile());
+    try (ZipOutputStream interpreterZipStream = new ZipOutputStream(new FileOutputStream(interpreterArchive))) {
+      interpreterZipStream.setLevel(0);
 
-    String zeppelinHomeEnv = System.getenv("ZEPPELIN_HOME");
-    if (org.apache.commons.lang3.StringUtils.isBlank(zeppelinHomeEnv)) {
-      throw new IOException("ZEPPELIN_HOME is not specified");
+      String zeppelinHomeEnv = System.getenv("ZEPPELIN_HOME");
+      if (org.apache.commons.lang3.StringUtils.isBlank(zeppelinHomeEnv)) {
+        throw new IOException("ZEPPELIN_HOME is not specified");
+      }
+      File zeppelinHome = new File(zeppelinHomeEnv);
+      File binDir = new File(zeppelinHome, "bin");
+      addFileToZipStream(interpreterZipStream, binDir, null);
+
+      File confDir = new File(zeppelinHome, "conf");
+      addFileToZipStream(interpreterZipStream, confDir, null);
+
+      File interpreterDir = new File(zeppelinHome, "interpreter/" + launchContext.getInterpreterSettingGroup());
+      addFileToZipStream(interpreterZipStream, interpreterDir, "interpreter");
+
+      File localRepoDir = new File(zConf.getInterpreterLocalRepoPath() + File.separator
+              + launchContext.getInterpreterSettingName());
+      if (localRepoDir.exists() && localRepoDir.isDirectory()) {
+        LOGGER.debug("Adding localRepoDir {} to interpreter zip: ", localRepoDir.getAbsolutePath());
+        addFileToZipStream(interpreterZipStream, localRepoDir, "local-repo");
+      }
+
+      // add zeppelin-interpreter-shaded jar
+      File[] interpreterShadedFiles = new File(zeppelinHome, "interpreter").listFiles(
+              file -> file.getName().startsWith("zeppelin-interpreter-shaded")
+                      && file.getName().endsWith(".jar"));
+      if (interpreterShadedFiles.length == 0) {
+        throw new IOException("No zeppelin-interpreter-shaded jar found under " +
+                zeppelinHome.getAbsolutePath() + "/interpreter");
+      }
+      if (interpreterShadedFiles.length > 1) {
+        throw new IOException("More than 1 zeppelin-interpreter-shaded jars found under "
+                + zeppelinHome.getAbsolutePath() + "/interpreter");
+      }
+      addFileToZipStream(interpreterZipStream, interpreterShadedFiles[0], "interpreter");
+
+      interpreterZipStream.flush();
     }
-    File zeppelinHome = new File(zeppelinHomeEnv);
-    File binDir = new File(zeppelinHome, "bin");
-    addFileToZipStream(interpreterZipStream, binDir, null);
-
-    File confDir = new File(zeppelinHome, "conf");
-    addFileToZipStream(interpreterZipStream, confDir, null);
-
-    File interpreterDir = new File(zeppelinHome, "interpreter/" + launchContext.getInterpreterSettingGroup());
-    addFileToZipStream(interpreterZipStream, interpreterDir, "interpreter");
-
-    File localRepoDir = new File(zConf.getInterpreterLocalRepoPath() + "/"
-            + launchContext.getInterpreterSettingName());
-    if (localRepoDir.exists() && localRepoDir.isDirectory()) {
-      LOGGER.debug("Adding localRepoDir {} to interpreter zip: ", localRepoDir.getAbsolutePath());
-      addFileToZipStream(interpreterZipStream, localRepoDir, "local-repo");
-    }
-
-    // add zeppelin-interpreter-shaded jar
-    File[] interpreterShadedFiles = new File(zeppelinHome, "interpreter").listFiles(
-            file -> file.getName().startsWith("zeppelin-interpreter-shaded")
-                    && file.getName().endsWith(".jar"));
-    if (interpreterShadedFiles.length == 0) {
-      throw new IOException("No zeppelin-interpreter-shaded jar found under " +
-              zeppelinHome.getAbsolutePath() + "/interpreter");
-    }
-    if (interpreterShadedFiles.length > 1) {
-      throw new IOException("More than 1 zeppelin-interpreter-shaded jars found under "
-              + zeppelinHome.getAbsolutePath() + "/interpreter");
-    }
-    addFileToZipStream(interpreterZipStream, interpreterShadedFiles[0], "interpreter");
-
-    interpreterZipStream.flush();
-    interpreterZipStream.close();
     return interpreterArchive;
   }
 
   private File createFlinkZip() throws IOException {
-    File flinkArchive = File.createTempFile("flink_", ".zip", Files.createTempDir());
-    ZipOutputStream flinkZipStream = new ZipOutputStream(new FileOutputStream(flinkArchive));
-    flinkZipStream.setLevel(0);
+    File flinkArchive = File.createTempFile("flink_", ".zip", Files.createTempDirectory("yarn_interpreter").toFile());
+    try (ZipOutputStream flinkZipStream = new ZipOutputStream(new FileOutputStream(flinkArchive))) {
+      flinkZipStream.setLevel(0);
 
-    String flinkHomeEnv = envs.get("FLINK_HOME");
-    File flinkHome = new File(flinkHomeEnv);
-    if (!flinkHome.exists() || !flinkHome.isDirectory()) {
-      throw new IOException("FLINK_HOME " + flinkHome.getAbsolutePath() +
-              " doesn't exist or is not a directory.");
-    }
-    for (File file : flinkHome.listFiles()) {
-      addFileToZipStream(flinkZipStream, file, null);
-    }
+      String flinkHomeEnv = envs.get("FLINK_HOME");
+      File flinkHome = new File(flinkHomeEnv);
+      if (!flinkHome.exists() || !flinkHome.isDirectory()) {
+        throw new IOException("FLINK_HOME " + flinkHome.getAbsolutePath() +
+                " doesn't exist or is not a directory.");
+      }
+      for (File file : flinkHome.listFiles()) {
+        addFileToZipStream(flinkZipStream, file, null);
+      }
 
-    flinkZipStream.flush();
-    flinkZipStream.close();
+      flinkZipStream.flush();
+    }
     return flinkArchive;
   }
 
   private File createHiveConfZip(File hiveConfDir) throws IOException {
-    File hiveConfArchive = File.createTempFile("hive_conf", ".zip", Files.createTempDir());
-    ZipOutputStream hiveConfZipStream = new ZipOutputStream(new FileOutputStream(hiveConfArchive));
-    hiveConfZipStream.setLevel(0);
+    File hiveConfArchive = File.createTempFile("hive_conf", ".zip", Files.createTempDirectory("yarn_interpreter").toFile());
+    try (ZipOutputStream hiveConfZipStream = new ZipOutputStream(new FileOutputStream(hiveConfArchive))) {
+      hiveConfZipStream.setLevel(0);
 
-    if (!hiveConfDir.exists()) {
-      throw new IOException("HIVE_CONF_DIR " + hiveConfDir.getAbsolutePath() + " doesn't exist");
-    }
-    for (File file : hiveConfDir.listFiles()) {
-      addFileToZipStream(hiveConfZipStream, file, null);
-    }
+      if (!hiveConfDir.exists()) {
+        throw new IOException("HIVE_CONF_DIR " + hiveConfDir.getAbsolutePath() + " doesn't exist");
+      }
+      for (File file : hiveConfDir.listFiles()) {
+        addFileToZipStream(hiveConfZipStream, file, null);
+      }
 
-    hiveConfZipStream.flush();
-    hiveConfZipStream.close();
+      hiveConfZipStream.flush();
+    }
     return hiveConfArchive;
   }
 
