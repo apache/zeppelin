@@ -192,7 +192,7 @@ public class ZeppelinClientIntegrationTest extends AbstractTestRestApi {
     assertEquals("hello world\n", paragraphResult.getResults().get(0).getData());
 
     // run paragraph succeed with dynamic forms
-    paragraphId = zeppelinClient.addParagraph(noteId, "run sh", "%sh echo 'hello ${name=abc}'");
+    paragraphId = zeppelinClient.addParagraph(noteId, "run sh", "%sh(form=simple) echo 'hello ${name=abc}'");
     paragraphResult = zeppelinClient.executeParagraph(noteId, paragraphId);
     assertEquals(paragraphId, paragraphResult.getParagraphId());
     assertEquals(paragraphResult.toString(), Status.FINISHED, paragraphResult.getStatus());
@@ -252,7 +252,7 @@ public class ZeppelinClientIntegrationTest extends AbstractTestRestApi {
     assertEquals("hello world\n", paragraphResult.getResults().get(0).getData());
 
     // submit paragraph succeed with dynamic forms
-    paragraphId = zeppelinClient.addParagraph(noteId, "run sh", "%sh echo 'hello ${name=abc}'");
+    paragraphId = zeppelinClient.addParagraph(noteId, "run sh", "%sh(form=simple) echo 'hello ${name=abc}'");
     zeppelinClient.submitParagraph(noteId, paragraphId);
     paragraphResult = zeppelinClient.waitUtilParagraphFinish(noteId, paragraphId, 10 * 1000);
     assertEquals(paragraphId, paragraphResult.getParagraphId());
@@ -325,7 +325,7 @@ public class ZeppelinClientIntegrationTest extends AbstractTestRestApi {
     assertEquals("hello world\n", p0.getResults().get(0).getData());
 
     // update paragraph with dynamic forms
-    zeppelinClient.updateParagraph(noteId, p0Id, "run sh", "%sh echo 'hello ${name=abc}'");
+    zeppelinClient.updateParagraph(noteId, p0Id, "run sh", "%sh(form=simple) echo 'hello ${name=abc}'");
     noteResult = zeppelinClient.executeNote(noteId);
     assertEquals(noteId, noteResult.getNoteId());
     assertEquals(false, noteResult.isRunning());
@@ -396,7 +396,7 @@ public class ZeppelinClientIntegrationTest extends AbstractTestRestApi {
     assertEquals("hello world\n", p0.getResults().get(0).getData());
 
     // update paragraph with dynamic forms
-    zeppelinClient.updateParagraph(noteId, p0Id, "run sh", "%sh sleep 5\necho 'hello ${name=abc}'");
+    zeppelinClient.updateParagraph(noteId, p0Id, "run sh", "%sh(form=simple) sleep 5\necho 'hello ${name=abc}'");
     noteResult = zeppelinClient.submitNote(noteId);
     assertEquals(true, noteResult.isRunning());
     noteResult = zeppelinClient.waitUntilNoteFinished(noteId);

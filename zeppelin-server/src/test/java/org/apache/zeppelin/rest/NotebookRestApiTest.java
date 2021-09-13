@@ -466,7 +466,7 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
       Paragraph p1 = note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
       Paragraph p2 = note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
       p1.setText("%python name = z.input('name', 'world')\nprint(name)");
-      p2.setText("%sh echo '${name=world}'");
+      p2.setText("%sh(form=simple) echo '${name=world}'");
 
       Map<String, Object> paramsMap = new HashMap<>();
       paramsMap.put("name", "zeppelin");
