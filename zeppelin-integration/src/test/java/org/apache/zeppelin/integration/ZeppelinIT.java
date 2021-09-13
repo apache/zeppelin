@@ -197,7 +197,8 @@ public class ZeppelinIT extends AbstractZeppelinIT {
     }
   }
 
-  @Test
+  //It is a flaky test, disable it temporary, should fix it later. ZEPPELIN-5528
+  //@Test
   public void testSparkInterpreterDependencyLoading() throws Exception {
     try {
       // navigate to interpreter page
