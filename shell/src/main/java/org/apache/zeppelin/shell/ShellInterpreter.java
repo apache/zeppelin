@@ -203,7 +203,7 @@ public class ShellInterpreter extends KerberosInterpreter {
 
   @Override
   public FormType getFormType() {
-    return FormType.SIMPLE;
+    return FormType.NATIVE;
   }
 
   @Override
