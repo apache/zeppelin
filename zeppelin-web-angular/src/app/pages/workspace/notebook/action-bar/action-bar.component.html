@@ -12,7 +12,9 @@
 
 <div class="bar" [class.simple]="looknfeel !== 'default'">
   <div class="title">
-    <zeppelin-elastic-input [readonly]="revisionView"
+    <zeppelin-elastic-input nz-tooltip
+                            [nzTitle]="note.path"
+                            [readonly]="revisionView"
                             [value]="note.name"
                             (valueUpdate)="updateNoteName($event)"></zeppelin-elastic-input>
   </div>
