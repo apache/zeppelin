@@ -51,6 +51,7 @@ export interface Note {
     paragraphs: ParagraphItem[];
     name: string;
     id: string;
+    path: string;
     defaultInterpreterGroup: string;
     noteParams: NoteParams;
     noteForms: NoteForms;
