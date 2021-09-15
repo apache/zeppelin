@@ -26,13 +26,12 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 public class BasicKSQLHttpClient implements Closeable {
-
-  public static final String UTF_8 = "utf-8";
 
   interface BasicHTTPClientResponse {
     void onMessage(int status, String message);
@@ -72,7 +71,7 @@ public class BasicKSQLHttpClient implements Closeable {
 
   private void writeOutput(String data) throws IOException {
     try (OutputStream os = connection.getOutputStream()) {
-      byte[] input = data.getBytes(UTF_8);
+      byte[] input = data.getBytes(StandardCharsets.UTF_8);
       os.write(input);
     }
   }
@@ -81,7 +80,7 @@ public class BasicKSQLHttpClient implements Closeable {
     int status = createConnection();
     boolean isStatusOk = isStatusOk(status);
     return IOUtils.toString(isStatusOk ?
-        connection.getInputStream() : connection.getErrorStream(), UTF_8);
+        connection.getInputStream() : connection.getErrorStream(), StandardCharsets.UTF_8.name());
   }
 
   public void connectAsync(BasicHTTPClientResponse onResponse) throws IOException {
@@ -89,7 +88,8 @@ public class BasicKSQLHttpClient implements Closeable {
     boolean isStatusOk = isStatusOk(status);
     long start = System.currentTimeMillis();
 
-    try (InputStreamReader in = new InputStreamReader(connection.getInputStream(), UTF_8);
+    try (InputStreamReader in = new InputStreamReader(connection.getInputStream(),
+            StandardCharsets.UTF_8);
          BufferedReader br = new BufferedReader(in)) {
       while (connected && (timeout == -1 || System.currentTimeMillis() - start < timeout)) {
         if (br.ready()) {
