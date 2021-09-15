@@ -451,8 +451,8 @@ public class ConnectionManager {
     removeUserConnection(conn.getUser(), conn);
   }
 
-  private boolean isSessionAllowedToSwitchToWatcher(NotebookSocket session) {
-    String watcherSecurityKey = session.getRequest().getHeader(WatcherSecurityKey.HTTP_HEADER);
+  private boolean isSessionAllowedToSwitchToWatcher(NotebookSocket notebookSocket) {
+    String watcherSecurityKey = notebookSocket.getHeader(WatcherSecurityKey.HTTP_HEADER);
     return !(StringUtils.isBlank(watcherSecurityKey) || !watcherSecurityKey
         .equals(WatcherSecurityKey.getKey()));
   }

@@ -61,6 +61,10 @@
           <groupId>org.apache.zeppelin</groupId>
           <artifactId>zeppelin-interpreter-shaded</artifactId>
         </exclusion>
+        <exclusion>
+          <groupId>org.pegdown</groupId>
+          <artifactId>pegdown</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
 

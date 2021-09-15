@@ -109,12 +109,12 @@ public class NotebookServerTest extends AbstractTestRestApi {
   public void checkOrigin() throws UnknownHostException {
     String origin = "http://" + InetAddress.getLocalHost().getHostName() + ":8080";
     assertTrue("Origin " + origin + " is not allowed. Please check your hostname.",
-          notebookServer.checkOrigin(mockRequest, origin));
+          notebookServer.checkOrigin(origin));
   }
 
   @Test
   public void checkInvalidOrigin(){
-    assertFalse(notebookServer.checkOrigin(mockRequest, "http://evillocalhost:8080"));
+    assertFalse(notebookServer.checkOrigin("http://evillocalhost:8080"));
   }
 
   @Test
@@ -790,7 +790,6 @@ public class NotebookServerTest extends AbstractTestRestApi {
 
   private NotebookSocket createWebSocket() {
     NotebookSocket sock = mock(NotebookSocket.class);
-    when(sock.getRequest()).thenReturn(mockRequest);
     return sock;
   }
 }

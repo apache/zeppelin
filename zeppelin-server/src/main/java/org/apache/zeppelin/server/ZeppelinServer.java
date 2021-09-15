@@ -55,6 +55,8 @@ import javax.management.remote.JMXServiceURL;
 import javax.servlet.DispatcherType;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
+import javax.websocket.server.ServerEndpointConfig;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.web.env.EnvironmentLoaderListener;
 import org.apache.shiro.web.servlet.ShiroFilter;
@@ -117,6 +119,7 @@ import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.resource.Resource;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.webapp.WebAppContext;
+import org.eclipse.jetty.websocket.jsr356.server.deploy.WebSocketServerContainerInitializer;
 import org.eclipse.jetty.websocket.servlet.WebSocketServlet;
 import org.glassfish.hk2.api.Immediate;
 import org.glassfish.hk2.api.ServiceLocator;
@@ -147,6 +150,7 @@ public class ZeppelinServer extends ResourceConfig {
 
   @Inject
   public ZeppelinServer() {
+    LOG.info("Instantiated ZeppelinServer");
     InterpreterOutput.LIMIT = conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_OUTPUT_LIMIT);
 
     packages("org.apache.zeppelin.rest");
@@ -426,11 +430,17 @@ public class ZeppelinServer extends ResourceConfig {
   private static void setupNotebookServer(
       WebAppContext webapp, ZeppelinConfiguration conf, ServiceLocator serviceLocator) {
     String maxTextMessageSize = conf.getWebsocketMaxTextMessageSize();
-    final ServletHolder servletHolder =
-        new ServletHolder(serviceLocator.getService(NotebookServer.class));
-    servletHolder.setInitParameter("maxTextMessageSize", maxTextMessageSize);
-
-    webapp.addServlet(servletHolder, "/ws/*");
+//    final ServletHolder servletHolder =
+//        new ServletHolder(serviceLocator.getService(NotebookServer.class));
+//    servletHolder.setInitParameter("maxTextMessageSize", maxTextMessageSize);
+//
+//    webapp.addServlet(servletHolder, "/ws/*");
+    WebSocketServerContainerInitializer
+            .configure(webapp, (servletContext, wsContainer) -> {
+              wsContainer.setDefaultMaxTextMessageBufferSize(Integer.parseInt(maxTextMessageSize));
+//              wsContainer.addEndpoint(ZeppelinWebsocketEndpoint.class);
+              wsContainer.addEndpoint(NotebookServer.class);
+            });
   }
 
   private static void setupClusterManagerServer(ServiceLocator serviceLocator) {
