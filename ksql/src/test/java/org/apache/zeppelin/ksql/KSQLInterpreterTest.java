@@ -101,6 +101,7 @@ public class KSQLInterpreterTest {
         "value 1\n" +
         "value 2\n" +
         "value 3\n";
+    context.out.flush();
     assertEquals(1, context.out.toInterpreterResultMessage().size());
     assertEquals(expected, context.out.toInterpreterResultMessage().get(0).toString());
     assertEquals(InterpreterResult.Type.TABLE, context.out
@@ -147,6 +148,7 @@ public class KSQLInterpreterTest {
     // then
     List<Map<String, Object>> expected = Arrays.asList(row1, row2);
 
+    context.out.flush();
     String[] lines = context.out.toInterpreterResultMessage()
         .get(0).toString()
         .replace("%table ", "")
