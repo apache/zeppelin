@@ -667,6 +667,11 @@ public class InterpreterSetting {
     this.dependencies = dependencies;
     if (!this.dependencies.isEmpty()) {
       loadInterpreterDependencies();
+    } else {
+      // Interpreter setting may be in ERROR due to download fail,
+      // reset status to be READY when dependency is cleaned.
+      setStatus(Status.READY);
+      setErrorReason(null);
     }
   }
 
