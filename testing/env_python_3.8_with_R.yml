@@ -1,4 +1,4 @@
-name: python_3_with_flink
+name: python_3_with_R
 channels:
   - conda-forge
   - defaults
@@ -22,6 +22,12 @@ dependencies:
   - vega_datasets
   - plotly
   - pip
-  - pip:
-      - apache-flink==1.11.3
-
+  - r-base=3
+  - r-data.table
+  - r-evaluate
+  - r-base64enc
+  - r-knitr
+  - r-ggplot2
+  - r-irkernel
+  - r-shiny
+  - r-googlevis

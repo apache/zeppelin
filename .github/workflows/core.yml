@@ -32,6 +32,7 @@ jobs:
       fail-fast: false
       matrix:
         hadoop: [hadoop2, hadoop3]
+        python: [3.7, 3.8]
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -51,12 +52,12 @@ jobs:
           key: ${{ runner.os }}-zeppelin-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-zeppelin-
-      - name: Setup conda environment with python 3.7 and R
+      - name: Setup conda environment with python ${{ matrix.python }} and R
         uses: conda-incubator/setup-miniconda@v2
         with:
           activate-environment: python_3_with_R
-          environment-file: testing/env_python_3_with_R.yml
-          python-version: 3.7
+          environment-file: testing/env_python_${{ matrix.python }}_with_R.yml
+          python-version: ${{ matrix.python }}
           auto-activate-base: false
           channel-priority: strict
       - name: Make IRkernel available to Jupyter
@@ -298,6 +299,10 @@ jobs:
 
   spark-3-0-and-scala-2-12-and-other-interpreter:
     runs-on: ubuntu-20.04
+    strategy:
+      fail-fast: false
+      matrix:
+        python: [ 3.7, 3.8 ]
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -317,12 +322,12 @@ jobs:
           key: ${{ runner.os }}-zeppelin-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-zeppelin-
-      - name: Setup conda environment with python 3.7 and R
+      - name: Setup conda environment with python ${{ matrix.python }} and R
         uses: conda-incubator/setup-miniconda@v2
         with:
           activate-environment: python_3_with_R
-          environment-file: testing/env_python_3_with_R.yml
-          python-version: 3.7
+          environment-file: testing/env_python_${{ matrix.python }}_with_R.yml
+          python-version: ${{ matrix.python }}
           auto-activate-base: false
       - name: Make IRkernel available to Jupyter
         run: |
@@ -330,11 +335,15 @@ jobs:
       - name: install environment
         run: |
           mvn install -DskipTests -DskipRat -pl spark-submit,spark/spark-dependencies -am -Pspark-3.0 -Pspark-scala-2.12 -Phadoop2 -B
-      - name: run tests
+      - name: run tests with ${{ matrix.python }}
         run: mvn test -DskipRat -pl spark-submit,spark/spark-dependencies -am -Pspark-3.0 -Pspark-scala-2.12 -Phadoop2 -B -Dtest=org.apache.zeppelin.spark.*,apache.zeppelin.python.*,apache.zeppelin.jupyter.*,apache.zeppelin.r.* -DfailIfNoTests=false
 
   spark-3-1-and-scala-2-12-and-other-interpreter:
     runs-on: ubuntu-20.04
+    strategy:
+      fail-fast: false
+      matrix:
+        python: [ 3.7, 3.8 ]
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -354,19 +363,19 @@ jobs:
           key: ${{ runner.os }}-zeppelin-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-zeppelin-
-      - name: Setup conda environment with python 3.7 and R
+      - name: Setup conda environment with python ${{ matrix.python }} and R
         uses: conda-incubator/setup-miniconda@v2
         with:
           activate-environment: python_3_with_R
-          environment-file: testing/env_python_3_with_R.yml
-          python-version: 3.7
+          environment-file: testing/env_python_${{ matrix.python }}_with_R.yml
+          python-version: ${{ matrix.python }}
           auto-activate-base: false
       - name: Make IRkernel available to Jupyter
         run: |
           R -e "IRkernel::installspec()"
       - name: install environment
         run: mvn install -DskipTests -DskipRat -pl spark-submit,spark/spark-dependencies -am -Pspark-3.1 -Pspark-scala-2.12 -Phadoop2 -B
-      - name: run tests
+      - name: run tests with ${{ matrix.python }}
         run: mvn test -DskipRat -pl spark-submit,spark/spark-dependencies -am -Pspark-3.1 -Pspark-scala-2.12 -Phadoop2 -B -Dtest=org.apache.zeppelin.spark.*,apache.zeppelin.python.*,apache.zeppelin.jupyter.*,apache.zeppelin.r.* -DfailIfNoTests=false
   test-livy-0-5-with-spark-2-2-0-under-python3:
     runs-on: ubuntu-20.04
