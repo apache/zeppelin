@@ -77,6 +77,15 @@ class PythonCompletion:
       result = json.dumps(list(filter(lambda x : not re.match("^__.*", x), list(completionList))))
       self.interpreter.setStatementsFinished(result, False)
 
+# ast api is changed after python 3.8, see https://github.com/ipython/ipython/pull/11593
+if sys.version_info > (3,8):
+  from ast import Module
+else :
+  # mock the new API, ignore second argument
+  # see https://github.com/ipython/ipython/issues/11590
+  from ast import Module as OriginalModule
+  Module = lambda nodelist, type_ignores: OriginalModule(nodelist)
+
 host = sys.argv[1]
 port = int(sys.argv[2])
 
@@ -148,7 +157,7 @@ while True :
                                    [code.body[-(nhooks + 1)]] if len(code.body) > nhooks else [])
       try:
         for node in to_run_exec:
-          mod = ast.Module([node])
+          mod = Module([node], [])
           code = compile(mod, '<stdin>', 'exec')
           exec(code, _zcUserQueryNameSpace)
 
@@ -158,7 +167,7 @@ while True :
           exec(code, _zcUserQueryNameSpace)
 
         for node in to_run_hooks:
-          mod = ast.Module([node])
+          mod = Module([node], [])
           code = compile(mod, '<stdin>', 'exec')
           exec(code, _zcUserQueryNameSpace)
 
