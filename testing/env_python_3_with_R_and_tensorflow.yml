@@ -4,26 +4,27 @@ channels:
   - defaults
 dependencies:
   - pycodestyle
-  - numpy=1
-  - pandas=0.25
-  - scipy=1
-  - grpcio=1.22.0
-  - hvplot=0.5.2
-  - protobuf=3
-  - pandasql=0.7.3
-  - ipython=7
-  - matplotlib=3
-  - ipykernel=5
+  - scipy
+  - numpy=1.19.5
+  - grpcio
+  - protobuf
+  - pandasql
+  - ipython
+  - ipykernel
   - jupyter_client=5
-  - bokeh=1.3.4
-  - panel=0.6.0
-  - holoviews=1.12.3
-  - pyyaml=3
+  - hvplot
+  - plotnine
+  - seaborn
+  - bokeh
+  - intake
+  - intake-parquet
+  - intake-xarray
+  - altair
+  - vega_datasets
+  - plotly
   - pip
-  - pip:
-    - bkzep==0.6.1
-
   - r-base=3
+  - r-data.table
   - r-evaluate
   - r-base64enc
   - r-knitr
@@ -31,5 +32,4 @@ dependencies:
   - r-irkernel
   - r-shiny
   - r-googlevis
-
   - tensorflow=1.13

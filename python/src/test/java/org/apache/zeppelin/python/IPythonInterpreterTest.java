@@ -29,6 +29,8 @@ import org.apache.zeppelin.interpreter.InterpreterResultMessage;
 import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -48,6 +50,10 @@ import static org.junit.Assert.fail;
 
 
 public class IPythonInterpreterTest extends BasePythonInterpreterTest {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(IPythonInterpreterTest.class);
+
+  protected boolean enableBokehTest = true;
 
   protected Properties initIntpProperties() {
     Properties properties = new Properties();
@@ -215,14 +221,18 @@ public class IPythonInterpreterTest extends BasePythonInterpreterTest {
     assertTrue("No Image Output", hasImageOutput);
     assertTrue("No Line Text", hasLineText);
 
+    if (!enableBokehTest) {
+      LOGGER.info("Bokeh test is skipped");
+      return;
+    }
+
     // bokeh
     // bokeh initialization
     context = getInterpreterContext();
     result = interpreter.interpret("from bokeh.io import output_notebook, show\n" +
         "from bokeh.plotting import figure\n" +
-        "import bkzep\n" +
-        "output_notebook(notebook_type='zeppelin')", context);
-    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+        "output_notebook()", context);
+    assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
     interpreterResultMessages = context.out.toInterpreterResultMessage();
 
     if (interpreterResultMessages.size() == 3) {
@@ -299,14 +309,14 @@ public class IPythonInterpreterTest extends BasePythonInterpreterTest {
             InterpreterResult.Code.SUCCESS, result.code());
     interpreterResultMessages = context.out.toInterpreterResultMessage();
 
-    assertEquals(context.out.toString(), 5, interpreterResultMessages.size());
+    assertEquals(interpreterResultMessages.size() + ":" + context.out.toString(),
+            3, interpreterResultMessages.size());
     // the first message is the warning text message.
+    assertEquals(InterpreterResult.Type.HTML, interpreterResultMessages.get(0).getType());
     assertEquals(InterpreterResult.Type.HTML, interpreterResultMessages.get(1).getType());
     assertEquals(InterpreterResult.Type.HTML, interpreterResultMessages.get(2).getType());
-    assertEquals(InterpreterResult.Type.HTML, interpreterResultMessages.get(3).getType());
-    assertEquals(InterpreterResult.Type.HTML, interpreterResultMessages.get(4).getType());
     // docs_json is the source data of plotting which bokeh would use to render the plotting.
-    assertTrue(interpreterResultMessages.get(4).getData().contains("docs_json"));
+    assertTrue(interpreterResultMessages.get(2).getData().contains("docs_json"));
   }
 
 

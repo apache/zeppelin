@@ -62,6 +62,12 @@ public class IPyFlinkInterpreterTest extends IPythonInterpreterTest {
   private LazyOpenInterpreter flinkScalaInterpreter;
 
 
+  public IPyFlinkInterpreterTest() {
+    super();
+    // disable bokeh test, because its (bokeh2) dependencies conflicts with apache-flink,
+    this.enableBokehTest = false;
+  }
+
   protected Properties initIntpProperties() {
     Properties p = new Properties();
     p.setProperty("zeppelin.pyflink.python", "python");
