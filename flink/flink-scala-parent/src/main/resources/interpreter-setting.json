@@ -52,14 +52,14 @@
         "propertyName": null,
         "defaultValue": "1024m",
         "description": "Memory for JobManager, e.g. 1024m",
-        "type": "number"
+        "type": "text"
       },
       "taskmanager.memory.process.size": {
         "envName": null,
         "propertyName": null,
         "defaultValue": "1024m",
         "description": "Memory for TaskManager, e.g. 1024m",
-        "type": "number"
+        "type": "text"
       },
       "taskmanager.numberOfTaskSlots": {
         "envName": null,
@@ -92,7 +92,7 @@
       "zeppelin.flink.uiWebUrl": {
         "envName": null,
         "propertyName": null,
-        "defaultValue": false,
+        "defaultValue": "",
         "description": "User specified Flink JobManager url, it could be used in remote mode where Flink cluster is already started, or could be used as url template, e.g. https://knox-server:8443/gateway/cluster-topo/yarn/proxy/{{applicationId}}/ where {{applicationId}} would be replaced with yarn app id",
         "type": "string"
       },
