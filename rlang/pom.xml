@@ -134,9 +134,6 @@
             <plugin>
                 <artifactId>maven-enforcer-plugin</artifactId>
             </plugin>
-            <plugin>
-                <artifactId>maven-dependency-plugin</artifactId>
-            </plugin>
 
             <!-- include sparkr by default -->
             <plugin>

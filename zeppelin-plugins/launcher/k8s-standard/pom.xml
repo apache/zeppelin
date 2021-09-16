@@ -118,13 +118,15 @@
                     </filters>
                 </configuration>
             </plugin>
-            <!--  disable maven-dependency-plugin with execution copy-plugin-dependencies because we shade the whole dependency -->
+            <!--  skip maven-dependency-plugin with execution copy-plugin-dependencies because we shade the whole dependency -->
             <plugin>
                 <artifactId>maven-dependency-plugin</artifactId>
                 <executions>
                     <execution>
                         <id>copy-plugin-dependencies</id>
-                        <phase>none</phase>
+                        <configuration>
+                            <skip>true</skip>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
