@@ -15,11 +15,14 @@
  * limitations under the License.
  */
 package org.apache.zeppelin.search;
-
-import static com.google.common.truth.Truth.assertThat;
 import static org.apache.zeppelin.search.LuceneSearch.formatId;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
 
 
 import java.io.File;
@@ -96,15 +99,13 @@ public class LuceneSearchTest {
     List<Map<String, String>> results = noteSearchService.query("all");
 
     // then
-    assertThat(results).isNotEmpty();
-    assertThat(results.size()).isEqualTo(1);
+    assertFalse(results.isEmpty());
+    assertEquals(1, results.size());
     notebook.processNote(note2Id,
       note2 -> {
-        assertThat(results.get(0))
-        .containsEntry("id", formatId(note2Id, note2.getLastParagraph()));
+        assertEquals(formatId(note2.getId(), note2.getLastParagraph()), results.get(0).get("id"));
         return null;
       });
-
   }
 
   @Test
@@ -118,9 +119,9 @@ public class LuceneSearchTest {
     List<Map<String, String>> results = noteSearchService.query("Notebook1");
 
     // then
-    assertThat(results).isNotEmpty();
-    assertThat(results.size()).isEqualTo(1);
-    assertThat(results.get(0)).containsEntry("id", note1Id);
+    assertFalse(results.isEmpty());
+    assertEquals(1, results.size());
+    assertEquals(note1Id, results.get(0).get("id"));
   }
 
   @Test
@@ -134,15 +135,15 @@ public class LuceneSearchTest {
     List<Map<String, String>> results = noteSearchService.query("testingTitleSearch");
 
     // then
-    assertThat(results).isNotEmpty();
-    assertThat(results.size()).isAtLeast(1);
+    assertFalse(results.isEmpty());
+    assertTrue(results.size() >= 1);
     int TitleHits = 0;
     for (Map<String, String> res : results) {
       if (res.get("header").contains("testingTitleSearch")) {
         TitleHits++;
       }
     }
-    assertThat(TitleHits).isAtLeast(1);
+    assertTrue(TitleHits >= 1);
   }
 
   @Test
@@ -155,12 +156,10 @@ public class LuceneSearchTest {
     // then
     notebook.processNote(note1Id,
       note1 -> {
-        assertThat(id.split("/")).asList() // key structure <noteId>/paragraph/<paragraphId>
-        .containsAllOf(
-          note1Id, "paragraph", note1.getLastParagraph().getId()); // LuceneSearch.PARAGRAPH
+        assertArrayEquals(id.split("/"),  // key structure <noteId>/paragraph/<paragraphId>
+            new String[]{note1.getId(), "paragraph", note1.getLastParagraph().getId()}); // LuceneSearch.PARAGRAPH
         return null;
       });
-
   }
 
   @Test // (expected=IllegalStateException.class)
@@ -169,7 +168,7 @@ public class LuceneSearchTest {
     // when
     List<Map<String, String>> result = noteSearchService.query("anything");
     // then
-    assertThat(result).isEmpty();
+    assertTrue(result.isEmpty());
     // assert logs were printed
     // "ERROR org.apache.zeppelin.search.SearchService:97 - Failed to open index dir RAMDirectory"
   }
@@ -193,10 +192,10 @@ public class LuceneSearchTest {
 
     // then
     List<Map<String, String>> results = noteSearchService.query("all");
-    assertThat(results).isEmpty();
+    assertTrue(results.isEmpty());
 
     results = noteSearchService.query("indeed");
-    assertThat(results).isNotEmpty();
+    assertFalse(results.isEmpty());
   }
 
   @Test
@@ -214,18 +213,18 @@ public class LuceneSearchTest {
     String note2Id = newNoteWithParagraphs("Notebook2", "not test", "not test at all");
     drainSearchEvents();
 
-    assertThat(resultForQuery("Notebook2")).isNotEmpty();
+    assertFalse(resultForQuery("Notebook2").isEmpty());
 
     // when
     noteSearchService.deleteNoteIndex(note2Id);
 
     // then
-    assertThat(noteSearchService.query("all")).isEmpty();
-    assertThat(resultForQuery("Notebook2")).isEmpty();
+    assertTrue(noteSearchService.query("all").isEmpty());
+    assertTrue(resultForQuery("Notebook2").isEmpty());
 
     List<Map<String, String>> results = resultForQuery("test");
-    assertThat(results).isNotEmpty();
-    assertThat(results.size()).isEqualTo(1);
+    assertFalse(results.isEmpty());
+    assertEquals(1, results.size());
   }
 
   @Test
@@ -235,7 +234,7 @@ public class LuceneSearchTest {
     String note2Id = newNoteWithParagraphs("Notebook2", "not test", "not test at all");
     drainSearchEvents();
 
-    assertThat(resultForQuery("test").size()).isEqualTo(3);
+    assertEquals(3, resultForQuery("test").size());
 
     // when
     notebook.processNote(note1Id,
@@ -249,15 +248,15 @@ public class LuceneSearchTest {
     drainSearchEvents();
 
     // then
-    assertThat(resultForQuery("Notebook1").size()).isEqualTo(1);
+    assertEquals(1, resultForQuery("Notebook1").size());
 
     List<Map<String, String>> results = resultForQuery("test");
-    assertThat(results).isNotEmpty();
-    assertThat(results.size()).isEqualTo(2);
+    assertFalse(results.isEmpty());
+    assertEquals(2, results.size());
 
     // does not include Notebook1's paragraph any more
     for (Map<String, String> result : results) {
-      assertThat(result.get("id").startsWith(note1Id)).isFalse();
+      assertFalse(result.get("id").startsWith(note1Id));
     }
   }
 
@@ -267,7 +266,7 @@ public class LuceneSearchTest {
     String note1Id = newNoteWithParagraph("Notebook1", "test");
     String note2Id = newNoteWithParagraphs("Notebook2", "not test", "not test at all");
     drainSearchEvents();
-    assertThat(resultForQuery("test").size()).isEqualTo(3);
+    assertEquals(3, resultForQuery("test").size());
 
     // when
     // use write lock, because name is overwritten
@@ -280,9 +279,9 @@ public class LuceneSearchTest {
     drainSearchEvents();
     Thread.sleep(1000);
     // then
-    assertThat(resultForQuery("Notebook1")).isEmpty();
-    assertThat(resultForQuery("NotebookN")).isNotEmpty();
-    assertThat(resultForQuery("NotebookN").size()).isEqualTo(1);
+    assertTrue(resultForQuery("Notebook1").isEmpty());
+    assertFalse(resultForQuery("NotebookN").isEmpty());
+    assertEquals(1, resultForQuery("NotebookN").size());
   }
 
   private List<Map<String, String>> resultForQuery(String q) {

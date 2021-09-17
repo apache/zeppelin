@@ -47,7 +47,7 @@ public abstract class SearchService extends NoteEventAsyncListener {
    * Updates note index for the given note, only update index of note meta info,
    * such as id,name. Paragraph index will be done in method updateParagraphIndex.
    *
-   * @param note a Note to update index for
+   * @param noteId a NoteId to update index for
    * @throws IOException
    */
   public abstract void updateNoteIndex(String noteId);
@@ -55,11 +55,12 @@ public abstract class SearchService extends NoteEventAsyncListener {
   /**
    * Updates paragraph index for the given paragraph.
    *
-   * @param paragraph a Paragraph to update index for
+   * @param noteId a NoteId to update index for
+   * @param paragraphId a Paragraph to update index for
    * @throws IOException
    */
 
-  public abstract void updateParagraphIndex(String nodeId, String paragraphId);
+  public abstract void updateParagraphIndex(String noteId, String paragraphId);
 
   /**
    * Indexes the given note.
@@ -82,10 +83,10 @@ public abstract class SearchService extends NoteEventAsyncListener {
   public abstract void deleteNoteIndex(String noteId);
 
   /**
-   * Deletes doc for a given
+   * Deletes doc for a given NoteId and ParagraphId
    *
-   * @param noteId
-   * @param p
+   * @param noteId a NoteId to delete index for
+   * @param paragraphId a ParagraphId to delete index for
    * @throws IOException
    */
   public abstract void deleteParagraphIndex(String noteId, String paragraphId);
