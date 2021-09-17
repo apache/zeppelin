@@ -165,6 +165,7 @@ kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: {{zeppelin.k8s.interpreter.pod.name}}
+  namespace: {{zeppelin.k8s.interpreter.namespace}}
   {% if zeppelin.k8s.server.uid is defined %}
   ownerReferences:
   - apiVersion: v1
@@ -188,7 +189,7 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: spark-ui-{{zeppelin.k8s.interpreter.pod.name}}
-  namespace: {{zeppelin.k8s.namespace}}
+  namespace: {{zeppelin.k8s.interpreter.namespace}}
   {% if zeppelin.k8s.server.uid is defined %}
   ownerReferences:
   - apiVersion: v1
