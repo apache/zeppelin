@@ -17,7 +17,6 @@
 
 package org.apache.zeppelin.notebook.repo;
 
-import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -307,13 +306,13 @@ public class NotebookRepoSyncTest {
     Notebook vNotebookSync = new Notebook(vConf, mock(AuthorizationService.class), vRepoSync, new NoteManager(vRepoSync, conf), factory, interpreterSettingManager, credentials, null);
 
     // one git versioned storage initialized
-    assertThat(vRepoSync.getRepoCount()).isEqualTo(1);
-    assertThat(vRepoSync.getRepo(0)).isInstanceOf(GitNotebookRepo.class);
+    assertEquals(1, vRepoSync.getRepoCount());
+    assertTrue(vRepoSync.getRepo(0) instanceof GitNotebookRepo);
 
     GitNotebookRepo gitRepo = (GitNotebookRepo) vRepoSync.getRepo(0);
 
     // no notes
-    assertThat(vRepoSync.list(anonymous).size()).isEqualTo(0);
+    assertEquals(0, vRepoSync.list(anonymous).size());
     // create note
     String noteIdTmp = vNotebookSync.createNote("/test", "test", anonymous);
     System.out.println(noteIdTmp);
@@ -321,15 +320,16 @@ public class NotebookRepoSyncTest {
       noteTmp -> {
         return noteTmp;
     });
-    assertThat(vRepoSync.list(anonymous).size()).isEqualTo(1);
+    assertEquals(1, vRepoSync.list(anonymous).size());
     System.out.println(note);
+
     NoteInfo noteInfo = vRepoSync.list(anonymous).values().iterator().next();
     String noteId = noteInfo.getId();
     String notePath = noteInfo.getPath();
     // first checkpoint
     vRepoSync.checkpoint(noteId, notePath, "checkpoint message", anonymous);
     int vCount = gitRepo.revisionHistory(noteId, notePath, anonymous).size();
-    assertThat(vCount).isEqualTo(1);
+    assertEquals(1, vCount);
 
     note.setInterpreterFactory(mock(InterpreterFactory.class));
     Paragraph p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
@@ -341,7 +341,7 @@ public class NotebookRepoSyncTest {
     // save and checkpoint again
     vRepoSync.save(note, anonymous);
     vRepoSync.checkpoint(noteId, notePath, "checkpoint message 2", anonymous);
-    assertThat(gitRepo.revisionHistory(noteId, notePath, anonymous).size()).isEqualTo(vCount + 1);
+    assertEquals(vCount + 1, gitRepo.revisionHistory(noteId, notePath, anonymous).size());
     notebookRepoSync.remove(note.getId(), note.getPath(), anonymous);
   }
 
