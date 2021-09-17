@@ -90,12 +90,12 @@ public class K8sStandardInterpreterLauncher extends InterpreterLauncher {
   }
 
   /**
-   * @return get Zeppelin service. <service-name>.<namespace>.svc
+   * @return get Zeppelin service. <service-name>.<namespace>.svc.cluster.local
    * @throws IOException if the Zeppelin service cannot be generated
    */
   private String getZeppelinService(InterpreterLaunchContext context) throws IOException {
     if (isRunningOnKubernetes()) {
-      return String.format("%s.%s.svc",
+      return String.format("%s.%s.svc.cluster.local",
               zConf.getK8sServiceName(),
               getNamespace());
     } else {
