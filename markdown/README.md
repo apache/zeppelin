@@ -18,7 +18,7 @@ CommonMark/Markdown Java parser with source level AST.
  * maven dependency to add in pom.xml
  
  ```
-<flexmark.all.version>0.50.40</flexmark.all.version>
+<flexmark.all.version>0.62.2</flexmark.all.version>
 
  <dependency>
        <groupId>com.vladsch.flexmark</groupId>
