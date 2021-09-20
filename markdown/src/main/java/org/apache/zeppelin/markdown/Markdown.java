@@ -46,13 +46,6 @@ public class Markdown extends Interpreter {
    * Markdown Parser Type.
    */
   public enum MarkdownParserType {
-    PEGDOWN {
-      @Override
-      public String toString() {
-        return PARSER_TYPE_PEGDOWN;
-      }
-    },
-
     MARKDOWN4j {
       @Override
       public String toString() {
@@ -70,7 +63,6 @@ public class Markdown extends Interpreter {
   }
 
   public static final String MARKDOWN_PARSER_TYPE = "markdown.parser.type";
-  public static final String PARSER_TYPE_PEGDOWN = "pegdown";
   public static final String PARSER_TYPE_MARKDOWN4J = "markdown4j";
   public static final String PARSER_TYPE_FLEXMARK = "flexmark";
 
@@ -81,9 +73,7 @@ public class Markdown extends Interpreter {
   public static MarkdownParser createMarkdownParser(String parserType) {
     LOGGER.debug("Creating {} markdown interpreter", parserType);
 
-    if (MarkdownParserType.PEGDOWN.toString().equals(parserType)) {
-      return new PegdownParser();
-    } else if (MarkdownParserType.FLEXMARK.toString().equals(parserType)) {
+    if (MarkdownParserType.FLEXMARK.toString().equals(parserType)) {
       return new FlexmarkParser();
     } else {
       // default parser
