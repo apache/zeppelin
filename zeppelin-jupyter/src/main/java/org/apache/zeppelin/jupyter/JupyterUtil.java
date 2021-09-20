@@ -43,8 +43,8 @@ import org.apache.zeppelin.jupyter.zformat.Note;
 import org.apache.zeppelin.jupyter.zformat.Paragraph;
 import org.apache.zeppelin.jupyter.zformat.Result;
 import org.apache.zeppelin.jupyter.zformat.TypeData;
+import org.apache.zeppelin.markdown.FlexmarkParser;
 import org.apache.zeppelin.markdown.MarkdownParser;
-import org.apache.zeppelin.markdown.PegdownParser;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -78,7 +78,7 @@ public class JupyterUtil {
         .registerSubtype(ExecuteResult.class, "execute_result")
         .registerSubtype(DisplayData.class, "display_data").registerSubtype(Stream.class, "stream")
         .registerSubtype(Error.class, "error");
-    this.markdownProcessor = new PegdownParser();
+    this.markdownProcessor = new FlexmarkParser();
   }
 
   public Nbformat getNbformat(Reader in) {

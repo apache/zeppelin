@@ -96,7 +96,7 @@ public class JupyterUtilTest {
             "    <div class=\"col-sm-1\"><img src=\"https://knowledgeanyhow.org/static/images/favicon_32x32.png\" style=\"margin-top: -6px\"/></div>\n" +
             "    <div class=\"col-sm-11\">This notebook was created using <a href=\"https://knowledgeanyhow.org\">IBM Knowledge Anyhow Workbench</a>.  To learn more, visit us at <a href=\"https://knowledgeanyhow.org\">https://knowledgeanyhow.org</a>.</div>\n" +
             "    </div>\n" +
-            "</div>\n" +
+            "</div>\n\n" +
             "</div>" , results.get(0).getData());
     assertEquals("HTML", results.get(0).getType());
   }

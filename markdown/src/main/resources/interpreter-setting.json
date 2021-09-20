@@ -8,7 +8,7 @@
         "envName": "MARKDOWN_PARSER_TYPE",
         "propertyName": "markdown.parser.type",
         "defaultValue": "flexmark",
-        "description": "Markdown Parser Type. Available values: pegdown, markdown4j, flexmark. Default = flexmark",
+        "description": "Markdown Parser Type. Available values: markdown4j, flexmark. Default = flexmark",
         "type": "string"
       }
     },
