@@ -124,6 +124,7 @@
     <slf4j.version>1.7.30</slf4j.version>
     <log4j.version>1.2.17</log4j.version>
     <libthrift.version>0.13.0</libthrift.version>
+    <flexmark.all.version>0.62.2</flexmark.all.version>
     <gson.version>2.8.6</gson.version>
     <gson-extras.version>0.2.2</gson-extras.version>
     <jetty.version>9.4.31.v20200723</jetty.version>
@@ -151,7 +152,7 @@
     <hadoop3.1.version>3.1.3</hadoop3.1.version>
     <hadoop3.2.version>3.2.0</hadoop3.2.version>
     <hadoop.version>${hadoop2.7.version}</hadoop.version>
-    
+
     <hadoop.deps.scope>provided</hadoop.deps.scope>
     <quartz.scheduler.version>2.3.2</quartz.scheduler.version>
     <jettison.version>1.4.0</jettison.version>
@@ -214,6 +215,20 @@
 
   <dependencyManagement>
     <dependencies>
+      <!-- markdown -->
+      <dependency>
+        <groupId>com.vladsch.flexmark</groupId>
+        <artifactId>flexmark-all</artifactId>
+        <version>${flexmark.all.version}</version>
+        <exclusions>
+          <!-- jcl-over-slf4j is provided -->
+          <exclusion>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+
       <!-- Logging -->
       <dependency>
         <groupId>org.slf4j</groupId>
@@ -1243,7 +1258,7 @@
           <artifactId>scala-maven-plugin</artifactId>
           <version>${plugin.scala.alchim31.version}</version>
         </plugin>
-        
+
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-surefire-plugin</artifactId>
@@ -1379,7 +1394,7 @@
           <artifactId>maven-eclipse-plugin</artifactId>
           <version>${plugin.eclipse.version}</version>
         </plugin>
-        
+
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-dependency-plugin</artifactId>
@@ -1446,7 +1461,7 @@
         <artifactId>frontend-maven-plugin</artifactId>
         <version>${plugin.frontend.version}</version>
       </plugin>
-      
+
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-failsafe-plugin</artifactId>
@@ -1518,7 +1533,7 @@
         <artifactId>apache-rat-plugin</artifactId>
         <version>${plugin.rat.version}</version>
       </plugin>
-      
+
       </plugins>
     </pluginManagement>
   </build>

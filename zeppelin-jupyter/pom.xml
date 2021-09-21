@@ -53,15 +53,13 @@
     </dependency>
 
     <dependency>
-      <groupId>org.apache.zeppelin</groupId>
-      <artifactId>zeppelin-markdown</artifactId>
-      <version>${project.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.apache.zeppelin</groupId>
-          <artifactId>zeppelin-interpreter-shaded</artifactId>
-        </exclusion>
-      </exclusions>
+      <groupId>com.vladsch.flexmark</groupId>
+      <artifactId>flexmark-all</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
     </dependency>
 
     <!-- Test -->

@@ -39,12 +39,11 @@ import org.apache.zeppelin.jupyter.nbformat.Nbformat;
 import org.apache.zeppelin.jupyter.nbformat.Output;
 import org.apache.zeppelin.jupyter.nbformat.RawCell;
 import org.apache.zeppelin.jupyter.nbformat.Stream;
+import org.apache.zeppelin.jupyter.parser.MarkdownParser;
 import org.apache.zeppelin.jupyter.zformat.Note;
 import org.apache.zeppelin.jupyter.zformat.Paragraph;
 import org.apache.zeppelin.jupyter.zformat.Result;
 import org.apache.zeppelin.jupyter.zformat.TypeData;
-import org.apache.zeppelin.markdown.FlexmarkParser;
-import org.apache.zeppelin.markdown.MarkdownParser;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -68,7 +67,7 @@ public class JupyterUtil {
   private final RuntimeTypeAdapterFactory<Cell> cellTypeFactory;
   private final RuntimeTypeAdapterFactory<Output> outputTypeFactory;
 
-  private final MarkdownParser markdownProcessor;
+  private final MarkdownParser markdownParser;
 
   public JupyterUtil() {
     this.cellTypeFactory = RuntimeTypeAdapterFactory.of(Cell.class, "cell_type")
@@ -78,7 +77,7 @@ public class JupyterUtil {
         .registerSubtype(ExecuteResult.class, "execute_result")
         .registerSubtype(DisplayData.class, "display_data").registerSubtype(Stream.class, "stream")
         .registerSubtype(Error.class, "error");
-    this.markdownProcessor = new FlexmarkParser();
+    this.markdownParser = new MarkdownParser();
   }
 
   public Nbformat getNbformat(Reader in) {
@@ -146,7 +145,7 @@ public class JupyterUtil {
         }
       } else if (cell instanceof MarkdownCell || cell instanceof HeadingCell) {
         interpreterName = markdownReplaced;
-        String markdownContent = markdownProcessor.render(codeText);
+        String markdownContent = markdownParser.render(codeText);
         typeDataList.add(new TypeData(TypeData.HTML, markdownContent));
         paragraph.setUpMarkdownConfig(true);
       } else {
