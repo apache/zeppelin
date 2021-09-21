@@ -1,6 +1,6 @@
 # Overview
-Markdown parsers for Apache Zeppelin. Markdown is a plain text formatting syntax designed so that it can be converted to HTML. Apache Zeppelin uses `flexmark`, `pegdown` and `markdown4j`.
-Since both `pegdown` and `markdown4j` are deprecated but it support for backward compatibility.
+Markdown parsers for Apache Zeppelin. Markdown is a plain text formatting syntax designed so that it can be converted to HTML. Apache Zeppelin uses `flexmark` and `markdown4j`.
+Since `markdown4j` are deprecated but it supports for backward compatibility.
 
 # Architecture
 Current interpreter implementation creates the instance of parser based on the configuration parameter provided, default is `flexmark` through `Markdown` and render the text into html.

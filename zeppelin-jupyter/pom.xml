@@ -33,7 +33,6 @@
   <description>Jupyter support for Apache Zeppelin</description>
 
   <properties>
-    <flexmark.all.version>0.62.2</flexmark.all.version>
     <zeppelin.version>${project.version}</zeppelin.version>
   </properties>
 
@@ -56,14 +55,6 @@
     <dependency>
       <groupId>com.vladsch.flexmark</groupId>
       <artifactId>flexmark-all</artifactId>
-      <version>${flexmark.all.version}</version>
-      <exclusions>
-        <!-- jcl-over-slf4j is provided -->
-        <exclusion>
-          <groupId>commons-logging</groupId>
-          <artifactId>commons-logging</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
 
     <dependency>
