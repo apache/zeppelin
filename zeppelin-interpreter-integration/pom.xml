@@ -63,11 +63,6 @@
           <groupId>com.google.guava</groupId>
           <artifactId>guava</artifactId>
         </exclusion>
-        <!-- Dependency Convergence with ZEPPELIN-5518 -->
-        <exclusion>
-          <groupId>org.ow2.asm</groupId>
-          <artifactId>asm</artifactId>
-        </exclusion>
       </exclusions>
     </dependency>
 

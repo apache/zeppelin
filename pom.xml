@@ -156,8 +156,6 @@
     <quartz.scheduler.version>2.3.2</quartz.scheduler.version>
     <jettison.version>1.4.0</jettison.version>
     <jsoup.version>1.13.1</jsoup.version>
-    <!-- The below fixes dependency convergence related to ZEPPELIN-5518 -->
-    <!--<asm.version>7.3.1</asm.version>-->
     <nimbus.version>9.13</nimbus.version>
 
     <!-- test library versions -->
@@ -591,30 +589,6 @@
           </exclusion>
         </exclusions>
       </dependency>
-
-      <!--<dependency>
-        <groupId>org.ow2.asm</groupId>
-        <artifactId>asm</artifactId>
-        <version>${asm.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.ow2.asm</groupId>
-        <artifactId>asm-analysis</artifactId>
-        <version>${asm.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.ow2.asm</groupId>
-        <artifactId>asm-tree</artifactId>
-        <version>${asm.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.ow2.asm</groupId>
-        <artifactId>asm-util</artifactId>
-        <version>${asm.version}</version>
-      </dependency>-->
 
       <dependency>
         <groupId>org.apache.hadoop</groupId>

@@ -55,7 +55,6 @@ import javax.management.remote.JMXServiceURL;
 import javax.servlet.DispatcherType;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
-import javax.websocket.server.ServerEndpointConfig;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.web.env.EnvironmentLoaderListener;
@@ -430,15 +429,9 @@ public class ZeppelinServer extends ResourceConfig {
   private static void setupNotebookServer(
       WebAppContext webapp, ZeppelinConfiguration conf, ServiceLocator serviceLocator) {
     String maxTextMessageSize = conf.getWebsocketMaxTextMessageSize();
-//    final ServletHolder servletHolder =
-//        new ServletHolder(serviceLocator.getService(NotebookServer.class));
-//    servletHolder.setInitParameter("maxTextMessageSize", maxTextMessageSize);
-//
-//    webapp.addServlet(servletHolder, "/ws/*");
     WebSocketServerContainerInitializer
             .configure(webapp, (servletContext, wsContainer) -> {
               wsContainer.setDefaultMaxTextMessageBufferSize(Integer.parseInt(maxTextMessageSize));
-//              wsContainer.addEndpoint(ZeppelinWebsocketEndpoint.class);
               wsContainer.addEndpoint(NotebookServer.class);
             });
   }
