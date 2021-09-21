@@ -39,6 +39,7 @@
     <libpam4j.version>1.11</libpam4j.version>
     <jna.version>4.1.0</jna.version>
     <jackson.version>2.9.10.6</jackson.version>
+    <nimbus.version>9.13</nimbus.version>
 
     <!--test library versions-->
     <selenium.java.version>2.48.2</selenium.java.version>
