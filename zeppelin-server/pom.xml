@@ -73,6 +73,10 @@
           <groupId>com.fasterxml.jackson.core</groupId>
           <artifactId>jackson-core</artifactId>
         </exclusion>
+        <exclusion>
+          <groupId>org.ow2.asm</groupId>
+          <artifactId>asm</artifactId>
+        </exclusion>
         <!-- using jcl-over-slf4j instead -->
         <exclusion>
           <groupId>commons-logging</groupId>
@@ -299,6 +303,12 @@
       <artifactId>hadoop-common</artifactId>
       <classifier>tests</classifier>
       <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>org.ow2.asm</groupId>
+          <artifactId>asm</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <dependency>
