@@ -232,21 +232,6 @@
       <scope>provided</scope>
     </dependency>
 
-    <dependency>
-      <groupId>org.apache.flink</groupId>
-      <artifactId>flink-connector-hive_${flink.scala.binary.version}</artifactId>
-      <version>${flink.version}</version>
-      <scope>provided</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.flink</groupId>
-      <artifactId>flink-connector-hive_${flink.scala.binary.version}</artifactId>
-      <version>${flink.version}</version>
-      <classifier>tests</classifier>
-      <scope>test</scope>
-    </dependency>
-
     <!-- hadoop compatibility dependency -->
     <dependency>
       <groupId>org.apache.flink</groupId>
@@ -644,11 +629,37 @@
 
   <build>
     <pluginManagement>
-      <plugins>
+    <plugins>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>build-helper-maven-plugin</artifactId>
         <executions>
+          <execution>
+            <id>add-source</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>add-source</goal>
+            </goals>
+            <configuration>
+              <sources>
+            <source>src/main/scala</source>
+              </sources>
+            </configuration>
+          </execution>
+          <!-- Add src/test/scala to eclipse build path -->
+          <execution>
+            <id>add-test-source</id>
+            <phase>generate-test-sources</phase>
+            <goals>
+              <goal>add-test-source</goal>
+            </goals>
+            <configuration>
+              <sources>
+            <source>src/test/scala</source>
+              </sources>
+            </configuration>
+          </execution>
+
           <execution>
             <id>add-java-sources</id>
             <phase>generate-sources</phase>
@@ -846,40 +857,6 @@
             <sourceInclude>**/*.java</sourceInclude>
           </sourceIncludes>
         </configuration>
-      </plugin>
-
-      <!-- Adding scala source directories to build path -->
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>build-helper-maven-plugin</artifactId>
-        <executions>
-          <!-- Add src/main/scala to eclipse build path -->
-          <execution>
-            <id>add-source</id>
-            <phase>generate-sources</phase>
-            <goals>
-              <goal>add-source</goal>
-            </goals>
-            <configuration>
-              <sources>
-            <source>src/main/scala</source>
-              </sources>
-            </configuration>
-          </execution>
-          <!-- Add src/test/scala to eclipse build path -->
-          <execution>
-            <id>add-test-source</id>
-            <phase>generate-test-sources</phase>
-            <goals>
-              <goal>add-test-source</goal>
-            </goals>
-            <configuration>
-              <sources>
-            <source>src/test/scala</source>
-              </sources>
-            </configuration>
-          </execution>
-        </executions>
       </plugin>
 
       <plugin>
