@@ -17,57 +17,33 @@
 package org.apache.zeppelin.socket;
 
 import org.apache.commons.lang3.StringUtils;
-import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.WebSocketAdapter;
 
 import java.io.IOException;
+import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
+import javax.websocket.Session;
 
 /**
  * Notebook websocket.
  */
 public class NotebookSocket extends WebSocketAdapter {
-  private Session connection;
-  private final NotebookSocketListener listener;
-  private final HttpServletRequest request;
-  private final String protocol;
+  private Session session;
+  private Map<String, Object> headers;
   private String user;
 
-  public NotebookSocket(HttpServletRequest req, String protocol,
-      NotebookSocketListener listener) {
-    this.listener = listener;
-    this.request = req;
-    this.protocol = protocol;
+  public NotebookSocket(Session session, Map<String, Object> headers) {
+    this.session = session;
+    this.headers = headers;
     this.user = StringUtils.EMPTY;
   }
 
-  @Override
-  public void onWebSocketClose(int closeCode, String message) {
-    listener.onClose(this, closeCode, message);
-  }
-
-  @Override
-  public void onWebSocketConnect(Session connection) {
-    this.connection = connection;
-    listener.onOpen(this);
-  }
-
-  @Override
-  public void onWebSocketText(String message) {
-    listener.onMessage(this, message);
-  }
-
-  public HttpServletRequest getRequest() {
-    return request;
-  }
-
-  public String getProtocol() {
-    return protocol;
+  public String getHeader(String key) {
+    return String.valueOf(headers.get(key));
   }
 
   public synchronized void send(String serializeMessage) throws IOException {
-    connection.getRemote().sendStringByFuture(serializeMessage);
+    session.getBasicRemote().sendText(serializeMessage);
   }
 
   public String getUser() {
@@ -80,6 +56,6 @@ public class NotebookSocket extends WebSocketAdapter {
 
   @Override
   public String toString() {
-    return request.getRemoteHost() + ":" + request.getRemotePort();
+    return String.valueOf(session.getUserProperties().get("javax.websocket.endpoint.remoteAddress"));
   }
 }

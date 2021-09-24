@@ -57,6 +57,7 @@ public class AuthorizationService implements ClusterEventListener {
 
   @Inject
   public AuthorizationService(NoteManager noteManager, ZeppelinConfiguration conf) {
+    LOGGER.info("Injected AuthorizationService: {}", this);
     this.conf = conf;
     try {
       this.configStorage = ConfigStorage.getInstance(conf);

@@ -23,6 +23,7 @@ import java.net.UnknownHostException;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 
 public class CorsUtils {
+  public static final String HEADER_ORIGIN = "Origin";
   public static Boolean isValidOrigin(String sourceHost, ZeppelinConfiguration conf)
       throws UnknownHostException, URISyntaxException {
 

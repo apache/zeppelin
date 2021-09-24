@@ -39,6 +39,7 @@
     <libpam4j.version>1.11</libpam4j.version>
     <jna.version>4.1.0</jna.version>
     <jackson.version>2.9.10.6</jackson.version>
+    <nimbus.version>9.13</nimbus.version>
 
     <!--test library versions-->
     <selenium.java.version>2.48.2</selenium.java.version>
@@ -71,6 +72,10 @@
         <exclusion>
           <groupId>com.fasterxml.jackson.core</groupId>
           <artifactId>jackson-core</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.ow2.asm</groupId>
+          <artifactId>asm</artifactId>
         </exclusion>
         <!-- using jcl-over-slf4j instead -->
         <exclusion>
@@ -266,7 +271,7 @@
 
     <dependency>
       <groupId>org.eclipse.jetty.websocket</groupId>
-      <artifactId>websocket-server</artifactId>
+      <artifactId>javax-websocket-server-impl</artifactId>
       <version>${jetty.version}</version>
     </dependency>
 
@@ -278,7 +283,7 @@
     <dependency>
       <groupId>com.nimbusds</groupId>
       <artifactId>nimbus-jose-jwt</artifactId>
-      <version>4.41.2</version>
+      <version>${nimbus.version}</version>
     </dependency>
 
     <dependency>
@@ -298,6 +303,12 @@
       <artifactId>hadoop-common</artifactId>
       <classifier>tests</classifier>
       <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>org.ow2.asm</groupId>
+          <artifactId>asm</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <dependency>
