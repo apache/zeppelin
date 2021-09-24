@@ -26,6 +26,9 @@ import org.apache.zeppelin.server.ZeppelinServer;
 import org.apache.zeppelin.util.WatcherSecurityKey;
 import org.apache.zeppelin.utils.CorsUtils;
 
+/**
+ * This class set headers to websocket sessions and inject hk2 when initiating instances by ServerEndpoint annotation.
+ */
 public class SessionConfigurator extends ServerEndpointConfig.Configurator {
   @Override
   public void modifyHandshake(ServerEndpointConfig sec, HandshakeRequest request,
@@ -33,10 +36,10 @@ public class SessionConfigurator extends ServerEndpointConfig.Configurator {
     List<String> holder;
     holder = request.getHeaders().get(WatcherSecurityKey.HTTP_HEADER);
     sec.getUserProperties().put(WatcherSecurityKey.HTTP_HEADER,
-                                null != holder && holder.size() > 0 ? holder.get(0) : null);
+        null != holder && !holder.isEmpty() ? holder.get(0) : null);
     holder = request.getHeaders().get(CorsUtils.HEADER_ORIGIN);
     sec.getUserProperties().put(CorsUtils.HEADER_ORIGIN,
-                                null != holder && holder.size() > 0 ? holder.get(0) : null);
+        null != holder && !holder.isEmpty() ? holder.get(0) : null);
   }
 
   @Override
