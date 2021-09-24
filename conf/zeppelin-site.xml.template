@@ -314,15 +314,6 @@
 </property>
 -->
 
-<!-- For connecting your Zeppelin with ZeppelinHub -->
-<!--
-<property>
-  <name>zeppelin.notebook.storage</name>
-  <value>org.apache.zeppelin.notebook.repo.GitNotebookRepo, org.apache.zeppelin.notebook.repo.zeppelinhub.ZeppelinHubRepo</value>
-  <description>two notebook persistence layers (versioned local + ZeppelinHub)</description>
-</property>
--->
-
 <!-- MongoDB notebook storage -->
 <!--
 <property>

@@ -50,12 +50,6 @@ user3 = password4, role2
 #pamRealm=org.apache.zeppelin.realm.PamRealm
 #pamRealm.service=sshd
 
-### A sample for configuring ZeppelinHub Realm
-#zeppelinHubRealm = org.apache.zeppelin.realm.ZeppelinHubRealm
-## Url of ZeppelinHub
-#zeppelinHubRealm.zeppelinhubUrl = https://www.zeppelinhub.com
-#securityManager.realms = $zeppelinHubRealm
-
 ## A same for configuring Knox SSO Realm
 #knoxJwtRealm = org.apache.zeppelin.realm.jwt.KnoxJwtRealm
 #knoxJwtRealm.providerUrl = https://domain.example.com/

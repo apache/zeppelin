@@ -111,7 +111,6 @@ limitations under the License.
   * [S3 Storage](./setup/storage/storage.html#notebook-storage-in-s3)
   * [Azure Storage](./setup/storage/storage.html#notebook-storage-in-azure)
   * [Google Cloud Storage](./setup/storage/storage.html#notebook-storage-in-gcs)
-  * [ZeppelinHub Storage](./setup/storage/storage.html#notebook-storage-in-zeppelinhub)
   * [MongoDB Storage](./setup/storage/storage.html#notebook-storage-in-mongodb)
 * Operation 
   * [Configuration](./setup/operation/configuration.html): lists for Apache Zeppelin
