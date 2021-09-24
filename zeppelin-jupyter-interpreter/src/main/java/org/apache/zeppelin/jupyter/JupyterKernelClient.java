@@ -71,7 +71,7 @@ public class JupyterKernelClient {
    * Construct client for accessing RouteGuide server at {@code host:port}.
    */
   public JupyterKernelClient(String host, int port, String kernel) {
-    this(ManagedChannelBuilder.forAddress(host, port).usePlaintext(true), new Properties(),
+    this(ManagedChannelBuilder.forAddress(host, port).usePlaintext(), new Properties(),
             kernel);
   }
 

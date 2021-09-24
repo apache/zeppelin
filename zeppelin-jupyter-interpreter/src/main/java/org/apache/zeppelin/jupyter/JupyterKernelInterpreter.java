@@ -137,7 +137,7 @@ public class JupyterKernelInterpreter extends AbstractInterpreter {
               32 * 1024 * 1024 + ""));
 
       jupyterKernelClient = new JupyterKernelClient(ManagedChannelBuilder.forAddress("127.0.0.1",
-              kernelPort).usePlaintext(true).maxInboundMessageSize(messageSize),
+              kernelPort).usePlaintext().maxInboundMessageSize(messageSize),
               getProperties(), kernel);
       launchJupyterKernel(kernelPort);
     } catch (Exception e) {
