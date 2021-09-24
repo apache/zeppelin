@@ -466,38 +466,6 @@ Uncomment the next property for use OSSNotebookRepo class:
 </property>
 ```
 
-</br>
-## Notebook Storage in ZeppelinHub  <a name="ZeppelinHub"></a>
-
-ZeppelinHub storage layer allows out of the box connection of Zeppelin instance with your ZeppelinHub account. First of all, you need to either comment out the following  property in **zeppelin-site.xml**:
-
-```xml
-<!-- For connecting your Zeppelin with ZeppelinHub -->
-<!--
-<property>
-  <name>zeppelin.notebook.storage</name>
-  <value>org.apache.zeppelin.notebook.repo.GitNotebookRepo, org.apache.zeppelin.notebook.repo.zeppelinhub.ZeppelinHubRepo</value>
-  <description>two notebook persistence layers (local + ZeppelinHub)</description>
-</property>
--->
-```
-
-or set the environment variable in the file **zeppelin-env.sh**:
-
-```bash
-export ZEPPELIN_NOTEBOOK_STORAGE="org.apache.zeppelin.notebook.repo.GitNotebookRepo, org.apache.zeppelin.notebook.repo.zeppelinhub.ZeppelinHubRepo"
-```
-
-Secondly, you need to set the environment variables in the file **zeppelin-env.sh**:
-
-```bash
-export ZEPPELINHUB_API_TOKEN=ZeppelinHub token
-export ZEPPELINHUB_API_ADDRESS=address of ZeppelinHub service (e.g. https://www.zeppelinhub.com)
-```
-
-You can get more information on generating `token` and using authentication on the corresponding [help page](http://help.zeppelinhub.com/zeppelin_integration/#add-a-new-zeppelin-instance-and-generate-a-token).
-
-
 ## Notebook Storage in MongoDB <a name="MongoDB"></a>
 Using `MongoNotebookRepo`, you can store your notebook in [MongoDB](https://www.mongodb.com/).
 

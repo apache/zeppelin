@@ -210,21 +210,6 @@ either reuse one of these services or create your own for Zeppelin. Activiting P
  pamRealm.service=sshd
 ```
 
-### ZeppelinHub
-[ZeppelinHub](https://www.zeppelinhub.com) is a service that synchronize your Apache Zeppelin notebooks and enables you to collaborate easily.
-
-To enable login with your ZeppelinHub credential, apply the following change in `conf/shiro.ini` under `[main]` section.
-
-```
-### A sample for configuring ZeppelinHub Realm
-zeppelinHubRealm = org.apache.zeppelin.realm.ZeppelinHubRealm
-## Url of ZeppelinHub
-zeppelinHubRealm.zeppelinhubUrl = https://www.zeppelinhub.com
-securityManager.realms = $zeppelinHubRealm
-```
-
-> Note: ZeppelinHub is not related to Apache Zeppelin project.
-
 ### Knox SSO
 [KnoxSSO](https://knox.apache.org/books/knox-0-13-0/dev-guide.html#KnoxSSO+Integration) provides an abstraction for integrating any number of authentication systems and SSO solutions and enables participating web applications to scale to those solutions more easily. Without the token exchange capabilities offered by KnoxSSO each component UI would need to integrate with each desired solution on its own.
 
