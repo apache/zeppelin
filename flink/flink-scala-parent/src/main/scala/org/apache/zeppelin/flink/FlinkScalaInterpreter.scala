@@ -495,7 +495,7 @@ abstract class FlinkScalaInterpreter(val properties: Properties,
     }
     val database = properties.getProperty("zeppelin.flink.hive.database", "default")
     val hiveVersion = properties.getProperty("zeppelin.flink.hive.version", "2.3.4")
-    val hiveCatalog = new HiveCatalog("hive", database, hiveConfDir, hiveVersion)
+    val hiveCatalog = new HiveCatalog("hive", database, hiveConfDir.toString, hiveVersion)
     this.btenv.registerCatalog("hive", hiveCatalog)
     this.btenv.useCatalog("hive")
     this.btenv.useDatabase(database)
