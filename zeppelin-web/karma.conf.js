@@ -115,7 +115,16 @@ module.exports = function(config) {
     // - Safari (only Mac)
     // - PhantomJS
     // - IE (only Windows)
-    browsers: [ 'PhantomJS' ],
+    browsers: [ 'FirefoxHeadless' ],
+
+    plugins: [
+      'karma-coverage',
+      'karma-jasmine',
+      'karma-sourcemap-loader',
+      'karma-webpack',
+      'karma-spec-reporter',
+      'karma-firefox-launcher',
+    ],
 
     reporters: ['spec', 'coverage'],
 
