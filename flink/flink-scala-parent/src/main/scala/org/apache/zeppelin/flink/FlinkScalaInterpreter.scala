@@ -489,13 +489,13 @@ abstract class FlinkScalaInterpreter(val properties: Properties,
 
   private def registerHiveCatalog(): Unit = {
     val hiveConfDir =
-      properties.getOrDefault("HIVE_CONF_DIR", System.getenv("HIVE_CONF_DIR")).toString
+      properties.getOrDefault("HIVE_CONF_DIR", System.getenv("HIVE_CONF_DIR"))
     if (hiveConfDir == null) {
       throw new InterpreterException("HIVE_CONF_DIR is not specified");
     }
     val database = properties.getProperty("zeppelin.flink.hive.database", "default")
     val hiveVersion = properties.getProperty("zeppelin.flink.hive.version", "2.3.4")
-    val hiveCatalog = new HiveCatalog("hive", database, hiveConfDir, hiveVersion)
+    val hiveCatalog = new HiveCatalog("hive", database, hiveConfDir.toString, hiveVersion)
     this.btenv.registerCatalog("hive", hiveCatalog)
     this.btenv.useCatalog("hive")
     this.btenv.useDatabase(database)
