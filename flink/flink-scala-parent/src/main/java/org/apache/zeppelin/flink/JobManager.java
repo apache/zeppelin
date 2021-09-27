@@ -88,6 +88,12 @@ public class JobManager {
     }
     FlinkJobProgressPoller jobProgressPoller =
             this.jobProgressPollerMap.remove(jobClient.getJobID());
+    if (jobProgressPoller == null) {
+        LOGGER.warn("Unable to remove poller, because no poller is associated with paragraph: "
+                + paragraphId);
+        return;
+    }
+
     jobProgressPoller.cancel();
     jobProgressPoller.interrupt();
   }
