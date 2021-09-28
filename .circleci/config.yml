@@ -21,6 +21,11 @@ version: 2.1
 
 commands:
   build-common:
+    parameters:
+      jdk_version:
+        # 8, 11, 17, ...
+        type: integer
+        default: 8
     steps:
       - checkout
 
@@ -29,10 +34,10 @@ commands:
             - maven-repo-v1-{{ .Branch }}-{{ checksum "pom.xml" }}
             - maven-repo-v1-{{ .Branch }}-
             - maven-repo-v1-
-      - save_cache:
-          paths:
-            - ~/.m2
-          key: maven-repo-v1-{{ .Branch }}-{{ checksum "pom.xml" }}
+
+      - run:
+          name: Delete ~/.m2/repository/org/apache/zeppelin
+          command: rm -rf ~/.m2/repository/org/apache/zeppelin
 
       - run:
           name: Install build tools
@@ -41,16 +46,22 @@ commands:
             DEBIAN_FRONTEND=noninteractive \
             DEBCONF_NONINTERACTIVE_SEEN=true \
             TZ=UTC \
-            sudo apt-get install -y --no-install-recommends openjdk-8-jdk maven
+            sudo apt-get install -y --no-install-recommends openjdk-<< parameters.jdk_version >>-jdk maven
 
       - run:
           name: Build
           command: |
-            export JAVA_HOME="/usr/lib/jvm/java-8-openjdk-arm64/"
+            export JAVA_HOME="/usr/lib/jvm/java-<< parameters.jdk_version >>-openjdk-arm64/"
             export PATH="$JAVA_HOME/bin:$PATH"
             java -version
             mvn -version
-            mvn clean verify -Pspark-3.0 -Pspark-scala-2.12 -DskipTests --also-make-dependents --batch-mode --no-transfer-progress
+            mvn clean verify -Pspark-3.0 -Pspark-scala-2.12 --also-make-dependents --batch-mode --no-transfer-progress
+
+      - save_cache:
+          paths:
+            - ~/.m2
+          key: maven-repo-v1-{{ .Branch }}-{{ checksum "pom.xml" }}
+          when: always
 
 jobs:
   build-arm64:
