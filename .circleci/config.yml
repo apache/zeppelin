@@ -72,7 +72,7 @@ commands:
       
       - run:
           name: install and test plugins
-          command: mvn package -DskipRat -pl zeppelin-plugins -amd -B
+          command: mvn package -DskipRat -pl zeppelin-plugins,-org.apache.zeppelin:notebookrepo-mongo -amd -B
 
       - run:
           name: run tests with hadoop3
