@@ -46,7 +46,7 @@ commands:
             DEBIAN_FRONTEND=noninteractive \
             DEBCONF_NONINTERACTIVE_SEEN=true \
             TZ=UTC \
-            sudo apt-get install -y --no-install-recommends openjdk-<< parameters.jdk_version >>-jdk maven
+            sudo apt-get install -y --no-install-recommends openjdk-<< parameters.jdk_version >>-jdk maven wget
 
       - run:
           name: Build
