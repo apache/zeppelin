@@ -372,7 +372,7 @@ public class YarnRemoteInterpreterProcess extends RemoteInterpreterProcess {
    * classpath specified through the Hadoop and Yarn configurations.
    */
   private void populateHadoopClasspath(Map<String, String> envs) {
-    List<String> yarnClassPath = Arrays.asList(getYarnAppClasspath());
+    List<String> yarnClassPath = new ArrayList(Arrays.asList(getYarnAppClasspath()));
     List<String> mrClassPath = Arrays.asList(getMRAppClasspath());
     yarnClassPath.addAll(mrClassPath);
     if (LOGGER.isInfoEnabled()) {
