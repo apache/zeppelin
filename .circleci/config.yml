@@ -58,17 +58,16 @@ commands:
 
       - run:
           name: Maven install w/o tests
-          command: mvn clean install -DskipTests -Pspark-3.0 -Pspark-scala-2.12 --also-make-dependents --batch-mode --no-transfer-progress
-
-      - run:
-          name: Maven verify
-          command: mvn clean verify -Pspark-3.0 -Pspark-scala-2.12 --also-make-dependents --batch-mode --no-transfer-progress
+          command: mvn clean install -DskipTests -Pspark-3.0 -Pspark-scala-2.12 --also-make-dependents --batch-mode --no-transfer-progress --fail-never
 
       - save_cache:
           paths:
             - ~/.m2
           key: maven-repo-v1-{{ .Branch }}-{{ checksum "pom.xml" }}
-          when: always
+
+      - run:
+          name: Maven verify
+          command: mvn clean verify -Pspark-3.0 -Pspark-scala-2.12 --also-make-dependents --batch-mode --no-transfer-progress
 
 jobs:
   build-arm64:
