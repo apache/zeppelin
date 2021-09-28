@@ -49,13 +49,20 @@ commands:
             sudo apt-get install -y --no-install-recommends openjdk-<< parameters.jdk_version >>-jdk maven wget
 
       - run:
-          name: Build
+          name: Use JDK << parameters.jdk_version >>
           command: |
             export JAVA_HOME="/usr/lib/jvm/java-<< parameters.jdk_version >>-openjdk-arm64/"
             export PATH="$JAVA_HOME/bin:$PATH"
             java -version
             mvn -version
-            mvn clean verify -Pspark-3.0 -Pspark-scala-2.12 --also-make-dependents --batch-mode --no-transfer-progress
+
+      - run:
+          name: Maven install w/o tests
+          command: mvn clean install -DskipTests -Pspark-3.0 -Pspark-scala-2.12 --also-make-dependents --batch-mode --no-transfer-progress
+
+      - run:
+          name: Maven verify
+          command: mvn clean verify -Pspark-3.0 -Pspark-scala-2.12 --also-make-dependents --batch-mode --no-transfer-progress
 
       - save_cache:
           paths:
