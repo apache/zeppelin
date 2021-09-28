@@ -57,8 +57,27 @@ commands:
             mvn -version
 
       - run:
-          name: Maven install w/o tests
-          command: mvn clean install -DskipTests -Pspark-3.0 -Pspark-scala-2.12 --also-make-dependents --batch-mode --no-transfer-progress --fail-never
+          name: Export environment variables
+          command: |
+            export MAVEN_OPTS="-Xms1024M -Xmx2048M -XX:MaxMetaspaceSize=1024m -XX:-UseGCOverheadLimit -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn -Dhttp.keepAlive=false -Dmaven.wagon.http.pool=false -Dmaven.wagon.http.retryHandler.count=3"
+            export ZEPPELIN_HELIUM_REGISTRY=helium
+            export SPARK_PRINT_LAUNCH_COMMAND="true"
+            export SPARK_LOCAL_IP="127.0.0.1"
+            export ZEPPELIN_LOCAL_IP="127.0.0.1"
+
+      - run:
+          name: install application with some interpreter
+          command: |
+            mvn install -Pbuild-distr -DskipRat -DskipTests -pl zeppelin-server,zeppelin-web,spark-submit,spark/spark-dependencies,markdown,angular,shell -am -Phelium-dev -Pexamples -Phadoop3 --batch-mode --no-transfer-progress --fail-never
+      
+      - run:
+          name: install and test plugins
+          command: mvn package -DskipRat -pl zeppelin-plugins -amd -B
+
+      - run:
+          name: run tests with hadoop3
+          command: |
+            mvn verify -Pusing-packaged-distr -DskipRat -pl zeppelin-server,zeppelin-web,spark-submit,spark/spark-dependencies,markdown,angular,shell -am -Phelium-dev -Pexamples -Phadoop3 -Dtests.to.exclude=**/org/apache/zeppelin/spark/* -DfailIfNoTests=false
 
       - save_cache:
           paths:
