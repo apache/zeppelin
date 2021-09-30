@@ -30,6 +30,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Manage mvn repository.
@@ -78,20 +82,32 @@ public class Booter {
     return Paths.get(home).resolve(localRepoPath).toAbsolutePath().toString();
   }
 
-  public static RemoteRepository newCentralRepository(Proxy proxy) {
-    String mvnRepo = System.getenv("ZEPPELIN_INTERPRETER_DEP_MVNREPO");
-    if (mvnRepo == null) {
-      mvnRepo = ZeppelinConfiguration.create().getString(
+  public static List<RemoteRepository> newCentralRepository(Proxy proxy) {
+    String mvnRepoEnv = System.getenv("ZEPPELIN_INTERPRETER_DEP_MVNREPO");
+    if (mvnRepoEnv == null) {
+      mvnRepoEnv = ZeppelinConfiguration.create().getString(
               ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_DEP_MVNREPO);
     }
-    if (mvnRepo == null) {
-      mvnRepo = "https://repo1.maven.org/maven2/";
+    if (mvnRepoEnv == null) {
+      mvnRepoEnv = "https://repo1.maven.org/maven2/";
     }
-    RemoteRepository.Builder centralBuilder = new RemoteRepository.Builder("central", "default", mvnRepo);
-    if (proxy != null) {
-      centralBuilder.setProxy(proxy);
+
+    List<String> repoList = new ArrayList<>();
+    if (mvnRepoEnv.contains(",")) {
+      repoList.addAll(Arrays.asList(mvnRepoEnv.split(",+")));
+    } else {
+      repoList.add(mvnRepoEnv);
     }
-    return centralBuilder.build();
+
+    List<RemoteRepository> centralRepositorys = repoList.stream().map(repo -> {
+              RemoteRepository.Builder centralBuilder = new RemoteRepository.Builder("central", "default", repo);
+              if (proxy != null) {
+                centralBuilder.setProxy(proxy);
+              }
+              return centralBuilder.build();
+            }
+    ).collect(Collectors.toList());
+    return centralRepositorys;
   }
 
   public static RemoteRepository newLocalRepository() {

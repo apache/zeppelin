@@ -61,14 +61,14 @@ public abstract class AbstractDependencyResolver {
       }
     }
     session = Booter.newRepositorySystemSession(system, localRepoPath);
-    repos.add(Booter.newCentralRepository(proxy)); // add maven central
+    repos.addAll(Booter.newCentralRepository(proxy)); // add maven central
     repos.add(Booter.newLocalRepository());
   }
 
   public AbstractDependencyResolver(String localRepoPath, Proxy proxy) {
     this.proxy = proxy;
     session = Booter.newRepositorySystemSession(system, localRepoPath);
-    repos.add(Booter.newCentralRepository(proxy)); // add maven central
+    repos.addAll(Booter.newCentralRepository(proxy)); // add maven central
     repos.add(Booter.newLocalRepository());
   }
 
