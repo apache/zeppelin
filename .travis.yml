@@ -1,0 +1,272 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+# 
+#   http://www.apache.org/licenses/LICENSE-2.0
+# 
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+os: linux
+dist: focal
+arch: arm64
+language: generic
+sudo: false
+
+before_cache:
+  - sudo chown -R travis:travis $HOME/.m2
+  # Ensure that jobs do not influence each other with installed Zeppelin Jars
+  - rm -rf $HOME/.m2/repository/org/apache/zeppelin/
+
+
+cache:
+  apt: true
+  directories:
+    - .spark-dist
+    - ${HOME}/.m2
+    - ${HOME}/R
+    -  zeppelin-web/node
+    -  zeppelin-web/node_modules
+    -  zeppelin-web/bower_components
+
+addons:
+  apt:
+    sources:
+      - r-packages-focal
+    packages:
+      - r-base-dev
+      - xvfb
+      - wget
+      - openjdk-8-jdk
+      - maven
+
+env:
+  global:
+    # Interpreters not required by zeppelin-server integration tests
+    - INTERPRETERS='!hbase,!pig,!jdbc,!file,!flink,!ignite,!kylin,!lens,!cassandra,!elasticsearch,!bigquery,!alluxio,!scio,!livy,!groovy'
+    - MAVEN_OPTS="-Xms1024M -Xmx2048M -XX:MaxMetaspaceSize=1024m -XX:-UseGCOverheadLimit -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn -Dhttp.keepAlive=false -Dmaven.wagon.http.pool=false -Dmaven.wagon.http.retryHandler.count=3" ZEPPELIN_HELIUM_REGISTRY=helium SPARK_PRINT_LAUNCH_COMMAND="true" SPARK_LOCAL_IP="127.0.0.1" ZEPPELIN_LOCAL_IP="127.0.0.1"
+
+
+matrix:
+  include:
+    # Test License compliance using RAT tool
+    - name: "Test License compliance using RAT tool"
+      env: CACHE_NAME=rat
+      before_install:
+        - echo "MAVEN_OPTS='-Xms1024M -Xmx2048M -XX:MaxMetaspaceSize=1024m -XX:-UseGCOverheadLimit'" >> ~/.mavenrc
+      install:
+        - mvn clean -Prat -B
+      before_script:
+        - echo "export ZEPPELIN_HELIUM_REGISTRY=helium" >> conf/zeppelin-env.sh
+        - echo "export SPARK_PRINT_LAUNCH_COMMAND=true" >> conf/zeppelin-env.sh
+        - export SPARK_PRINT_LAUNCH_COMMAND=true
+        - tail conf/zeppelin-env.sh
+      script:
+        - mvn org.apache.rat:apache-rat-plugin:check -Prat -B
+
+    - name: "Default build command, no tests"
+      before_install:
+        - echo "MAVEN_OPTS='-Xms1024M -Xmx2048M -XX:MaxMetaspaceSize=1024m -XX:-UseGCOverheadLimit -Dorg.slf4j.simpleLogger.defaultLogLevel=warn'" >> ~/.mavenrc
+      install:
+        - mvn clean package -T C2 -DskipTests -Pweb-angular -B
+      before_script:
+        - echo "export ZEPPELIN_HELIUM_REGISTRY=helium" >> conf/zeppelin-env.sh
+        - echo "export SPARK_PRINT_LAUNCH_COMMAND=true" >> conf/zeppelin-env.sh
+        - export SPARK_PRINT_LAUNCH_COMMAND=true
+        - tail conf/zeppelin-env.sh
+      script:
+        - mvn test -DskipTests -Pweb-angular -B
+
+    - name: "Run e2e tests in zeppelin-web"
+      addons:
+        chrome: stable
+        apt:
+          sources:
+            - r-packages-focal
+          packages:
+            - r-base-dev
+            - xvfb
+            - wget
+            - openjdk-8-jdk
+            - maven
+
+      before_install:
+        - export PYTHON=3
+        - export SPARK_VER="2.1.0"
+        - export HADOOP_VER="2.6"
+        - echo "MAVEN_OPTS='-Xms1024M -Xmx2048M -XX:MaxMetaspaceSize=1024m -XX:-UseGCOverheadLimit -Dorg.slf4j.simpleLogger.defaultLogLevel=warn'" >> ~/.mavenrc
+        - bash -x ./testing/install_external_dependencies.sh
+        - source ~/.environ
+      install:
+        - mvn install -DskipTests -DskipRat -pl ${INTERPRETERS} -Phadoop2 -Pscala-2.11 -B
+      before_script:
+        - travis_retry ./testing/downloadSpark.sh $SPARK_VER $HADOOP_VER
+        - export SPARK_HOME=`pwd`/spark-$SPARK_VER-bin-hadoop$HADOOP_VER
+        - echo "export SPARK_HOME=`pwd`/spark-$SPARK_VER-bin-hadoop$HADOOP_VER" > conf/zeppelin-env.sh
+        - echo "export ZEPPELIN_HELIUM_REGISTRY=helium" >> conf/zeppelin-env.sh
+        - echo "export SPARK_PRINT_LAUNCH_COMMAND=true" >> conf/zeppelin-env.sh
+        - export SPARK_PRINT_LAUNCH_COMMAND=true
+        - tail conf/zeppelin-env.sh
+      script:
+        - mvn verify -DskipRat -pl zeppelin-web -Phadoop2 -Pscala-2.11 -B -Pweb-e2e
+
+    - name: "Run tests in zeppelin-web-angular"
+      addons:
+        chrome: stable
+        apt:
+          sources:
+            - r-packages-focal
+          packages:
+            - r-base-dev
+            - xvfb
+            - wget
+            - openjdk-8-jdk
+            - maven
+      before_install:
+        - echo "MAVEN_OPTS='-Xms1024M -Xmx2048M -XX:MaxMetaspaceSize=1024m -XX:-UseGCOverheadLimit -Dorg.slf4j.simpleLogger.defaultLogLevel=warn'" >> ~/.mavenrc
+      install:
+        - mvn clean -DskipTests -DskipRat -pl ${INTERPRETERS} -B
+      before_script:
+        - echo "export ZEPPELIN_HELIUM_REGISTRY=helium" >> conf/zeppelin-env.sh
+        - echo "export SPARK_PRINT_LAUNCH_COMMAND=true" >> conf/zeppelin-env.sh
+        - export SPARK_PRINT_LAUNCH_COMMAND=true
+        - tail conf/zeppelin-env.sh
+      script:
+        - mvn package -DskipRat -pl zeppelin-web-angular -Pweb-angular -B
+
+    # Test core modules
+    # Several tests were excluded from this configuration due to the following issues:
+    # HeliumApplicationFactoryTest - https://issues.apache.org/jira/browse/ZEPPELIN-2470
+    # After issues are fixed these tests need to be included back by removing them from the "-Dtests.to.exclude" property
+    - name: "Core modules"
+      env: PYTHON="3" SPARKR="true" PROFILE="-Pspark-2.2 -Pscalding -Phelium-dev -Pexamples -Pspark-scala-2.11 -Pscala-2.11" BUILD_FLAG="package -Pbuild-distr -DskipRat" TEST_FLAG="verify -Pusing-packaged-distr -DskipRat" MODULES="-pl ${INTERPRETERS}" TEST_PROJECTS="-Dtests.to.exclude=**/SparkIntegrationTest.java,**/ZeppelinSparkClusterTest.java,**/org/apache/zeppelin/spark/*,**/HeliumApplicationFactoryTest.java -DfailIfNoTests=false"
+
+    # Test selenium with spark module for 1.6.3
+    - name: "Selenium with Spark 1.6.3"
+      addons:
+        firefox: "31.0"
+        apt:
+          sources:
+            - r-packages-focal
+          packages:
+            - r-base-dev
+            - xvfb
+            - wget
+            - openjdk-8-jdk
+            - maven
+      env: CI="true" PYTHON="2" SCALA_VER="2.10" SPARK_VER="1.6.3" HADOOP_VER="2.6" PROFILE="-Pspark-1.6 -Pspark-scala-2.10 -Pscala-2.10 -Phadoop2 -Phadoop-2.6 -Phelium-dev -Pexamples -Pintegration" BUILD_FLAG="install -DskipTests -DskipRat" TEST_FLAG="verify -DskipRat" TEST_PROJECTS="-pl .,zeppelin-integration -DfailIfNoTests=false"
+
+    # Test interpreter modules
+    - name: "Test interpreter modules"
+      env: PYTHON="3" SCALA_VER="2.10" PROFILE="-Pscalding" BUILD_FLAG="package -DskipTests -DskipRat -Pr" TEST_FLAG="test -DskipRat" MODULES="-pl $(echo .,zeppelin-interpreter,${INTERPRETERS} | sed 's/!//g')" TEST_PROJECTS=""
+
+    # Run Spark integration test and unit test separately for each spark version
+
+    # ZeppelinSparkClusterTest24, SparkIntegrationTest24, JdbcIntegrationTest, Unit test of Spark 2.4
+    - name: "Spark 2.4 unit, integration and cluster tests"
+      sudo: required
+      env: PYTHON="2" SCALA_VER="2.11" PROFILE="-Pspark-2.4 -Pspark-scala-2.11 -Pscala-2.11 -Phadoop2 -Pintegration" SPARKR="true" BUILD_FLAG="install -DskipTests -DskipRat -am" TEST_FLAG="test -DskipRat -am" MODULES="-pl zeppelin-server,zeppelin-web,spark/interpreter,spark/spark-dependencies" TEST_PROJECTS="-Dtest=ZeppelinSparkClusterTest24,SparkIntegrationTest24,org.apache.zeppelin.spark.* -DfailIfNoTests=false"
+
+    # ZeppelinSparkClusterTest23, SparkIntegrationTest23, Unit test of Spark 2.3
+    - name: "Spark 2.3 unit, integration and cluster tests"
+      sudo: required
+      env: PYTHON="2" SCALA_VER="2.11" PROFILE="-Pspark-2.3 -Pspark-scala-2.11 -Pscala-2.11 -Phadoop2 -Pintegration" SPARKR="true" BUILD_FLAG="install -DskipTests -DskipRat -am" TEST_FLAG="test -DskipRat -am" MODULES="-pl zeppelin-server,zeppelin-web,spark/interpreter,spark/spark-dependencies" TEST_PROJECTS="-Dtest=ZeppelinSparkClusterTest23,SparkIntegrationTest23,org.apache.zeppelin.spark.* -DfailIfNoTests=false"
+
+    # ZeppelinSparkClusterTest22, SparkIntegrationTest22, Unit test of Spark 2.2
+    - name: "Spark 2.2 unit, integration and cluster tests"
+      sudo: required
+      env: PYTHON="3" SCALA_VER="2.10" PROFILE="-Pspark-2.2 -Pspark-scala-2.10 -Pscala-2.10 -Phadoop2 -Pintegration" SPARKR="true" BUILD_FLAG="install -DskipTests -DskipRat -am" TEST_FLAG="test -DskipRat -am" MODULES="-pl zeppelin-server,zeppelin-web,spark/interpreter,spark/spark-dependencies" TEST_PROJECTS="-Dtest=ZeppelinSparkClusterTest22,SparkIntegrationTest22,org.apache.zeppelin.spark.* -DfailIfNoTests=false"
+
+    # ZeppelinSparkClusterTest21, SparkIntegrationTest21, Unit test of Spark 2.1
+    - name: "Spark 2.1 unit, integration and cluster tests"
+      sudo: required
+      env: PYTHON="3" SCALA_VER="2.10" PROFILE="-Pspark-2.1 -Phadoop2 -Pspark-scala-2.10 -Pscala-2.10 -Pintegration" SPARKR="true" BUILD_FLAG="install -DskipTests -DskipRat -am" TEST_FLAG="test -DskipRat -am" MODULES="-pl zeppelin-server,zeppelin-web,spark/interpreter,spark/spark-dependencies" TEST_PROJECTS="-Dtest=ZeppelinSparkClusterTest21,SparkIntegrationTest21,org.apache.zeppelin.spark.* -DfailIfNoTests=false"
+
+    # ZeppelinSparkClusterTest20, SparkIntegrationTest20, Unit test of Spark 2.0
+    - name: "Spark 2.0 unit, integration and cluster tests"
+      sudo: required
+      env: PYTHON="3" SCALA_VER="2.10" PROFILE="-Pspark-2.0 -Phadoop2 -Pspark-scala-2.10 -Pscala-2.10 -Pintegration" SPARKR="true" BUILD_FLAG="install -DskipTests -DskipRat -am" TEST_FLAG="test -DskipRat -am" MODULES="-pl zeppelin-server,zeppelin-web,spark/interpreter,spark/spark-dependencies" TEST_PROJECTS="-Dtest=ZeppelinSparkClusterTest20,SparkIntegrationTest20,org.apache.zeppelin.spark.* -DfailIfNoTests=false"
+
+    # ZeppelinSparkClusterTest16, SparkIntegrationTest16, Unit test of Spark 1.6
+    - name: "Spark 1.6 unit, integration and cluster tests"
+      sudo: required
+      env: PYTHON="3" SCALA_VER="2.10" PROFILE="-Pspark-1.6 -Phadoop2 -Pspark-scala-2.10 -Pscala-2.10 -Pintegration" SPARKR="true" BUILD_FLAG="install -DskipTests -DskipRat -am" TEST_FLAG="test -DskipRat -am" MODULES="-pl zeppelin-server,zeppelin-web,spark/interpreter,spark/spark-dependencies" TEST_PROJECTS="-Dtest=ZeppelinSparkClusterTest16,SparkIntegrationTest16,org.apache.zeppelin.spark.* -DfailIfNoTests=false"
+
+      # Test python/pyspark with python 2, livy 0.5
+    - name: "PySpark 1.6.3 with Python 2, Livy 0.5"
+      sudo: required
+      env: PYTHON="2" SPARK_VER="1.6.3" HADOOP_VER="2.6" LIVY_VER="0.5.0-incubating" PROFILE="" BUILD_FLAG="install -am -DskipTests -DskipRat" TEST_FLAG="verify -DskipRat" MODULES="-pl livy" TEST_PROJECTS=""
+
+    # Test livy 0.5 with spark 2.2.0 under python3
+    - name: "PySpark 2.2.0 with Python 3, Livy 0.5"
+      sudo: required
+      env: PYTHON="3" SPARK_VER="2.2.0" HADOOP_VER="2.6" LIVY_VER="0.5.0-incubating" PROFILE="" BUILD_FLAG="install -am -DskipTests -DskipRat" TEST_FLAG="verify -DskipRat" MODULES="-pl livy" TEST_PROJECTS=""
+
+before_install:
+  # check files included in commit range, clear bower_components if a bower.json file has changed.
+  # bower cache clearing can also be forced by putting "bower clear" or "clear bower" in a commit message
+  - changedfiles=$(git diff --name-only $TRAVIS_COMMIT_RANGE 2>/dev/null) || changedfiles=""
+  - echo $changedfiles
+  - hasbowerchanged=$(echo $changedfiles | grep -c "bower.json" || true);
+  - gitlog=$(git log $TRAVIS_COMMIT_RANGE 2>/dev/null) || gitlog=""
+  - clearcache=$(echo $gitlog | grep -c -E "clear bower|bower clear" || true)
+  - if [ "$hasbowerchanged" -gt 0 ] || [ "$clearcache" -gt 0 ]; then echo "Clearing bower_components cache"; rm -r zeppelin-web/bower_components; npm cache verify; else echo "Using cached bower_components."; fi
+  - echo "MAVEN_OPTS='-Xms1024M -Xmx2048M -XX:MaxPermSize=1024m -XX:-UseGCOverheadLimit -Dorg.slf4j.simpleLogger.defaultLogLevel=warn'" >> ~/.mavenrc
+  - ls -la .spark-dist ${HOME}/.m2/repository/.cache/maven-download-plugin || true
+  - ls .node_modules && cp -r .node_modules zeppelin-web/node_modules || echo "node_modules are not cached"
+  - "/sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -ac -screen 0 1600x1024x16"
+  - lscpu
+  - export JAVA_HOME="/usr/lib/jvm/java-8-openjdk-${TRAVIS_CPU_ARCH}"
+  - export PATH="$JAVA_HOME/bin:$PATH"
+  - java -version
+  - mvn -version
+
+install:
+  - echo "mvn $BUILD_FLAG $MODULES $PROFILE -B"
+  - mvn $BUILD_FLAG $MODULES $PROFILE -B
+
+before_script:
+  - if [[ -n $SPARK_VER ]]; then travis_retry ./testing/downloadSpark.sh $SPARK_VER $HADOOP_VER; fi
+  - if [[ -n $LIVY_VER ]]; then ./testing/downloadLivy.sh $LIVY_VER; fi
+  - if [[ -n $LIVY_VER ]]; then export LIVY_HOME=`pwd`/livy-$LIVY_VER-bin; fi
+  - if [[ -n $LIVY_VER ]]; then export SPARK_HOME=`pwd`/spark-$SPARK_VER-bin-hadoop$HADOOP_VER; fi
+  - if [[ -n $SPARK_VER ]]; then export SPARK_HOME=`pwd`/spark-$SPARK_VER-bin-hadoop$HADOOP_VER; fi
+  - if [[ -n $SPARK_VER ]]; then echo "export SPARK_HOME=`pwd`/spark-$SPARK_VER-bin-hadoop$HADOOP_VER" > conf/zeppelin-env.sh; fi
+  - echo "export ZEPPELIN_HELIUM_REGISTRY=helium" >> conf/zeppelin-env.sh
+  - echo "export SPARK_PRINT_LAUNCH_COMMAND=true" >> conf/zeppelin-env.sh
+  - export SPARK_PRINT_LAUNCH_COMMAND=true
+  - tail conf/zeppelin-env.sh
+  # https://docs.travis-ci.com/user/gui-and-headless-browsers/#Using-xvfb-to-Run-Tests-That-Require-a-GUI
+  - if [[ -n $TEST_MODULES ]]; then export DISPLAY=:99.0; sh -e /etc/init.d/xvfb start; sleep 3; fi
+  # display info log for debugging
+  - if [[ -n $TEST_MODULES ]]; then echo "MAVEN_OPTS='-Xms1024M -Xmx2048M -XX:MaxPermSize=1024m -XX:-UseGCOverheadLimit -Dorg.slf4j.simpleLogger.defaultLogLevel=info'" > ~/.mavenrc; fi
+
+script:
+  - if [[ -n $TEST_MODULES ]]; then export MODULES="${TEST_MODULES}"; fi
+  - echo "mvn $TEST_FLAG $MODULES $PROFILE -B $TEST_PROJECTS"
+  - mvn $TEST_FLAG $MODULES $PROFILE -B $TEST_PROJECTS
+
+after_success:
+  - echo "Travis exited with ${TRAVIS_TEST_RESULT}"
+
+after_failure:
+  - echo "Travis exited with ${TRAVIS_TEST_RESULT}"
+  - find . -name rat.txt | xargs cat
+  - cat logs/*
+  - cat zeppelin-distribution/target/zeppelin-*-SNAPSHOT/zeppelin-*-SNAPSHOT/logs/zeppelin*.log
+  - cat zeppelin-distribution/target/zeppelin-*-SNAPSHOT/zeppelin-*-SNAPSHOT/logs/zeppelin*.out
+  - cat zeppelin-web/npm-debug.log
+  - cat spark-*/logs/*
+  - cat livy/target/tmp/*/output.log
+  - cat livy/target/tmp/livy-int-test/*/output.log
+  - ls -R livy/target/tmp/livy-int-test/MiniYarnMain/target/org.apache.livy.test.framework.MiniYarnMain/*
+  - cat livy/target/tmp/livy-int-test/MiniYarnMain/target/org.apache.livy.test.framework.MiniYarnMain/*/*/*/stdout
+  - cat livy/target/tmp/livy-int-test/MiniYarnMain/target/org.apache.livy.test.framework.MiniYarnMain/*/*/*/stderr
