@@ -82,7 +82,7 @@ public class Booter {
     return Paths.get(home).resolve(localRepoPath).toAbsolutePath().toString();
   }
 
-  public static List<RemoteRepository> newCentralRepository(Proxy proxy) {
+  public static List<RemoteRepository> newCentralRepositorys(Proxy proxy) {
     String mvnRepoEnv = System.getenv("ZEPPELIN_INTERPRETER_DEP_MVNREPO");
     if (mvnRepoEnv == null) {
       mvnRepoEnv = ZeppelinConfiguration.create().getString(
