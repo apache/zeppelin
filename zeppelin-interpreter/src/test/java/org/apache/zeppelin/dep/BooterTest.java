@@ -17,13 +17,19 @@
 
 package org.apache.zeppelin.dep;
 
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.eclipse.aether.repository.RemoteRepository;
 import org.junit.Test;
 
 import java.nio.file.Paths;
+import java.util.List;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 
 public class BooterTest {
 
@@ -45,5 +51,16 @@ public class BooterTest {
   @Test(expected = NullPointerException.class)
   public void should_throw_exception_for_null() {
     Booter.resolveLocalRepoPath(null);
+  }
+
+  @Test
+  public void getInterpreterMvnRepoPathTest() {
+    ZeppelinConfiguration.reset();
+    ZeppelinConfiguration.create("zeppelin-site-test.xml");
+    List<RemoteRepository> remoteRepositories = Booter.newCentralRepositorys(null);
+    assertNotNull(remoteRepositories);
+    assertEquals(2, remoteRepositories.size());
+    assertEquals("https://repo1.maven.org/maven2/", remoteRepositories.get(0).getUrl());
+    assertEquals("https://repo2.maven.org/maven2/", remoteRepositories.get(1).getUrl());
   }
 }

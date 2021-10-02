@@ -35,4 +35,10 @@
         <value>8080</value>
         <description>Server port.</description>
     </property>
+
+    <property>
+        <name>zeppelin.interpreter.dep.mvnRepo</name>
+        <value>https://repo1.maven.org/maven2/,https://repo2.maven.org/maven2/</value>
+        <description>depended mvn repos</description>
+    </property>
 </configuration>
