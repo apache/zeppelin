@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.notebook;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.display.AngularObjectRegistry;
@@ -49,6 +50,7 @@ import org.slf4j.LoggerFactory;
 import org.eclipse.aether.RepositoryException;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -1579,6 +1581,26 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     for (Paragraph p : paragraphs) {
     	  destNote.addCloneParagraph(p, AuthenticationInfo.ANONYMOUS);
       assertEquals("anonymous", p.getUser());
+    }
+  }
+
+  @Test
+  public void testMoveNote() throws InterruptedException, IOException {
+    Note note = null;
+    try {
+      note = notebook.createNote("note1", anonymous);
+      assertEquals("note1", note.getName());
+      assertEquals("/note1", note.getPath());
+      notebook.moveNote(note.getId(), "/tmp/note2", anonymous);
+
+      // read note json file to check the name field is updated
+      File noteFile = new File(conf.getNotebookDir() + "/" + notebookRepo.buildNoteFileName(note));
+      String noteJson = IOUtils.toString(new FileInputStream(noteFile));
+      assertTrue(noteJson, noteJson.contains("note2"));
+    } finally {
+      if (note != null) {
+        notebook.removeNote(note, anonymous);
+      }
     }
   }
 

@@ -246,6 +246,13 @@ public class NoteManager {
 
     // update notebookrepo
     this.notebookRepo.move(noteId, notePath, newNotePath, subject);
+
+    // save note if note name is changed, because we need to update the note field in note json.
+    String oldNoteName = getNoteName(notePath);
+    String newNoteName = getNoteName(newNotePath);
+    if (!StringUtils.equalsIgnoreCase(oldNoteName, newNoteName)) {
+      this.notebookRepo.save(noteNode.note, subject);
+    }
   }
 
   public void moveFolder(String folderPath,
