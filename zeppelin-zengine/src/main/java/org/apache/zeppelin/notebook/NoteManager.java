@@ -250,7 +250,7 @@ public class NoteManager {
     // save note if note name is changed, because we need to update the note field in note json.
     String oldNoteName = getNoteName(notePath);
     String newNoteName = getNoteName(newNotePath);
-    if (!oldNoteName.equalsIgnoreCase(newNoteName)) {
+    if (!StringUtils.equalsIgnoreCase(oldNoteName, newNoteName)) {
       this.notebookRepo.save(noteNode.note, subject);
     }
   }

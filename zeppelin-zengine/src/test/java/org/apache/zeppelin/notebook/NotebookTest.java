@@ -80,7 +80,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
 
   private Notebook notebook;
   private NoteManager noteManager;
-  private VFSNotebookRepo notebookRepo;
+  private NotebookRepo notebookRepo;
   private AuthorizationService authorizationService;
   private Credentials credentials;
   private AuthenticationInfo anonymous = AuthenticationInfo.ANONYMOUS;
