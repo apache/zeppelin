@@ -8,7 +8,7 @@ If you like to run these tests manually, please follow the following steps:
 * [Create a new project](https://support.google.com/cloud/answer/6251787?hl=en)
 * [Create a Google Compute Engine instance](https://cloud.google.com/compute/docs/instances/create-start-instance)
 * Copy the project ID that you created and add it to the property "projectId" in `resources/constants.json`
-* Run the command mvn <options> -Dbigquery.text.exclude='' test -pl bigquery -am
+* Run the command ./mvnw <options> -Dbigquery.text.exclude='' test -pl bigquery -am
 
 # Connection
 The Interpreter opens a connection with the BigQuery Service using the supplied Google project ID and the compute environment variables.

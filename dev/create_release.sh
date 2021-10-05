@@ -65,8 +65,8 @@ function make_binary_release() {
 
   cp -r "${WORKING_DIR}/zeppelin" "${WORKING_DIR}/zeppelin-${RELEASE_VERSION}-bin-${BIN_RELEASE_NAME}"
   cd "${WORKING_DIR}/zeppelin-${RELEASE_VERSION}-bin-${BIN_RELEASE_NAME}"
-  echo "mvn clean package -Pbuild-distr -DskipTests ${BUILD_FLAGS}"
-  mvn clean package -Pbuild-distr -DskipTests ${BUILD_FLAGS}
+  echo "./mvnw clean package -Pbuild-distr -DskipTests ${BUILD_FLAGS}"
+  ./mvnw clean package -Pbuild-distr -DskipTests ${BUILD_FLAGS}
   if [[ $? -ne 0 ]]; then
     echo "Build failed. ${BUILD_FLAGS}"
     exit 1

@@ -27,4 +27,4 @@ jobs:
           distribution: 'adopt'
           java-version: 8
       - name: Check Rat
-        run: mvn apache-rat:check -Prat -B
+        run: ./mvnw apache-rat:check -Prat -B

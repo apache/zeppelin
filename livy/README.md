@@ -11,5 +11,5 @@ You can add integration test to [LivyInterpreter.java](https://github.com/apache
 #!/usr/bin/env bash
 export LIVY_HOME=<path_of_livy_0.2.0>
 export SPARK_HOME=<path_of_spark-1.5.2>
-mvn clean verify -pl livy -DfailIfNoTests=false -DskipRat
+./mvnw clean verify -pl livy -DfailIfNoTests=false -DskipRat
 ```

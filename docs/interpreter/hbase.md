@@ -32,14 +32,14 @@ By default, Zeppelin is built against HBase 1.0.x releases. To work with HBase 1
 
 ```bash
 # HBase 1.1.4
-mvn clean package -DskipTests -Phadoop-2.6 -Dhadoop.version=2.6.0 -P build-distr -Dhbase.hbase.version=1.1.4 -Dhbase.hadoop.version=2.6.0
+./mvnw clean package -DskipTests -Phadoop-2.6 -Dhadoop.version=2.6.0 -P build-distr -Dhbase.hbase.version=1.1.4 -Dhbase.hadoop.version=2.6.0
 ```
 
 To work with HBase 1.2.0+, use the following build command:
 
 ```bash
 # HBase 1.2.0
-mvn clean package -DskipTests -Phadoop-2.6 -Dhadoop.version=2.6.0 -P build-distr -Dhbase.hbase.version=1.2.0 -Dhbase.hadoop.version=2.6.0
+./mvnw clean package -DskipTests -Phadoop-2.6 -Dhadoop.version=2.6.0 -P build-distr -Dhbase.hbase.version=1.2.0 -Dhbase.hadoop.version=2.6.0
 ```
 
 ## Configuration

@@ -11,7 +11,7 @@ Current interpreter implementation spawns new system python process through `Pro
   To run full suit of tests, including ones that depend on real Python interpreter AND external libraries installed (like Pandas, Pandasql, etc) do
 
   ```
-mvn -Dpython.test.exclude='' test -pl python -am
+./mvnw -Dpython.test.exclude='' test -pl python -am
   ```
 
  - **Py4j support**

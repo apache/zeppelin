@@ -44,9 +44,9 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-zeppelin-
       - name: Install application
-        run: mvn -B install -DskipTests -DskipRat -pl ${INTERPRETERS} -Phadoop2 -Pscala-2.11
+        run: ./mvnw -B install -DskipTests -DskipRat -pl ${INTERPRETERS} -Phadoop2 -Pscala-2.11
       - name: Run headless test
-        run: xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" mvn verify -DskipRat -pl zeppelin-web -Phadoop2 -Pscala-2.11 -Pweb-e2e -B
+        run: xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" ./mvnw verify -DskipRat -pl zeppelin-web -Phadoop2 -Pscala-2.11 -Pweb-e2e -B
   run-tests-in-zeppelin-web-angular:
     runs-on: ubuntu-20.04
     steps:
@@ -69,7 +69,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-zeppelin-
       - name: Run headless test
-        run: xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" mvn package -DskipRat -pl zeppelin-web-angular -Pweb-angular -B
+        run: xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" ./mvnw package -DskipRat -pl zeppelin-web-angular -Pweb-angular -B
 
   test-selenium-with-spark-module-for-spark-2-3:
     runs-on: ubuntu-20.04
@@ -107,8 +107,8 @@ jobs:
           R -e "IRkernel::installspec()"
       - name: install environment
         run: |
-          mvn clean install -DskipTests -DskipRat -pl ${INTERPRETERS} -Pspark-2.3 -Phadoop2 -Phelium-dev -Pexamples -Pintegration -Pspark-scala-2.11 -B
-          mvn clean package -pl zeppelin-plugins -amd -B
+          ./mvnw clean install -DskipTests -DskipRat -pl ${INTERPRETERS} -Pspark-2.3 -Phadoop2 -Phelium-dev -Pexamples -Pintegration -Pspark-scala-2.11 -B
+          ./mvnw clean package -pl zeppelin-plugins -amd -B
           ./testing/downloadSpark.sh "2.3.2" "2.6"
       - name: run tests
-        run: xvfb-run --auto-servernum --server-args="-screen 0 1600x1024x16" mvn verify -DskipRat -Pspark-2.3 -Phadoop2 -Phelium-dev -Pexamples -Pintegration -Pspark-scala-2.11 -B -pl zeppelin-integration -DfailIfNoTests=false
+        run: xvfb-run --auto-servernum --server-args="-screen 0 1600x1024x16" ./mvnw verify -DskipRat -Pspark-2.3 -Phadoop2 -Phelium-dev -Pexamples -Pintegration -Pspark-scala-2.11 -B -pl zeppelin-integration -DfailIfNoTests=false

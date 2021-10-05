@@ -8,7 +8,7 @@ Current interpreter implementation supports the static repl. It compiles the cod
 You have to first build the Beam interpreter by enable the **beam** profile as follows:
 
 ```
-mvn clean package -Pbeam -DskipTests -Pscala-2.10
+./mvnw clean package -Pbeam -DskipTests -Pscala-2.10
 ```
 
 ### Notice

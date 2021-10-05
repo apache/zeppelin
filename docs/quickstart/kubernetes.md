@@ -124,7 +124,7 @@ Check [here](https://spark.apache.org/docs/latest/running-on-kubernetes.html) to
 To build your own Zeppelin image, first build Zeppelin project with `-Pbuild-distr` flag.
 
 ```
-$ mvn package -DskipTests -Pbuild-distr <your flags>
+$ ./mvnw package -DskipTests -Pbuild-distr <your flags>
 ```
 
 Binary package will be created under `zeppelin-distribution/target` directory. Move created package file under `scripts/docker/zeppelin/bin/` directory.
