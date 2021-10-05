@@ -321,7 +321,7 @@ First, choose a GCS path under which to store notebooks.
   <value></value>
   <description>
     A GCS path in the form gs://bucketname/path/to/dir.
-    Notes are stored at {zeppelin.notebook.gcs.dir}/{notebook-id}/note.json
+    Notes are stored at {zeppelin.notebook.gcs.dir}/{notebook-name}_{notebook-id}.zpln
  </description>
 </property>
 ```
