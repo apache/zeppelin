@@ -36,13 +36,13 @@ is_dev_version() {
   else
     return 1
   fi
-} 
+}
 
 is_maintenance_version() {
   local version="$1"
   if [[ "${version}" == *"SNAPSHOT" ]]; then
     version = $(echo ${1} | cut -d'-' -f 1)
-  fi 
+  fi
   if [[ "${version}" == *".0" ]]; then
     return 1
   else
@@ -51,7 +51,7 @@ is_maintenance_version() {
 }
 
 # Change version in pom.xml
-mvn versions:set -DnewVersion="${TO_VERSION}" -DgenerateBackupPoms=false > /dev/null 2>&1 
+./mvnw versions:set -DnewVersion="${TO_VERSION}" -DgenerateBackupPoms=false > /dev/null 2>&1
 
 # Change version in example and package files
 sed -i '' 's/-'"${FROM_VERSION}"'.jar",/-'"${TO_VERSION}"'.jar",/g' zeppelin-examples/zeppelin-example-clock/zeppelin-example-clock.json

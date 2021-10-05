@@ -29,7 +29,7 @@ limitations under the License.
 You have to first build the Scalding interpreter by enable the **scalding** profile as follows:
 
 ```bash
-mvn clean package -Pscalding -DskipTests
+./mvnw clean package -Pscalding -DskipTests
 ```
 
 ## Enabling the Scalding Interpreter

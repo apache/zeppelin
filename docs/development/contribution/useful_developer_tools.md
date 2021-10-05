@@ -61,28 +61,28 @@ you can use this function like `setjdk 1.8` / `setjdk 1.7`
 
 ```bash
 # build `zeppelin-web` only
-mvn clean -pl 'zeppelin-web' package -DskipTests;
+./mvnw clean -pl 'zeppelin-web' package -DskipTests;
 
 # build `zeppelin-server` and its dependencies only
-mvn clean package -pl 'spark,spark-dependencies,python,markdown,zeppelin-server' --am -DskipTests
+./mvnw clean package -pl 'spark,spark-dependencies,python,markdown,zeppelin-server' --am -DskipTests
 
 # build spark related modules with default profiles: scala 2.10 
-mvn clean package -pl 'spark,spark-dependencies,zeppelin-server' --am -DskipTests
+./mvnw clean package -pl 'spark,spark-dependencies,zeppelin-server' --am -DskipTests
 
 # build spark related modules with profiles: scala 2.11, spark 2.1 hadoop 2.7 
 ./dev/change_scala_version.sh 2.11
-mvn clean package -Pspark-2.1 -Phadoop-2.7 -Pscala-2.11 \
+./mvnw clean package -Pspark-2.1 -Phadoop-2.7 -Pscala-2.11 \
 -pl 'spark,spark-dependencies,zeppelin-server' --am -DskipTests
 
 # build `zeppelin-server` and `markdown` with dependencies
-mvn clean package -pl 'markdown,zeppelin-server' --am -DskipTests
+./mvnw clean package -pl 'markdown,zeppelin-server' --am -DskipTests
 ```
 
 ### Running Individual Tests
 
 ```bash
 # run the `HeliumBundleFactoryTest` test class
-mvn test -pl 'zeppelin-server' --am -DfailIfNoTests=false -Dtest=HeliumBundleFactoryTest
+./mvnw test -pl 'zeppelin-server' --am -DfailIfNoTests=false -Dtest=HeliumBundleFactoryTest
 ```
 
 ### Running Selenium Tests
@@ -91,12 +91,12 @@ Make sure that Zeppelin instance is started to execute integration tests (= sele
 
 ```bash
 # run the `SparkParagraphIT` test class
-TEST_SELENIUM="true" mvn test -pl 'zeppelin-server' --am \
+TEST_SELENIUM="true" ./mvnw test -pl 'zeppelin-server' --am \
 -DfailIfNoTests=false -Dtest=SparkParagraphIT
 
 # run the `testSqlSpark` test function only in the `SparkParagraphIT` class
 # but note that, some test might be dependent on the previous tests
-TEST_SELENIUM="true" mvn test -pl 'zeppelin-server' --am \
+TEST_SELENIUM="true" ./mvnw test -pl 'zeppelin-server' --am \
 -DfailIfNoTests=false -Dtest=SparkParagraphIT#testSqlSpark
 ```
 

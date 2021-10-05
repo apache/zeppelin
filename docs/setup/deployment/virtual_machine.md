@@ -86,7 +86,6 @@ By default, Vagrant will share your project directory (the directory with the Va
 Running the following commands in the guest machine should display these expected versions:
 
 * `node --version` should report *v0.12.7*
-* `mvn --version` should report *Apache Maven 3.3.9* and *Java version: 1.7.0_85*
 
 The virtual machine consists of:
 
@@ -108,7 +107,7 @@ This assumes you've already cloned the project either on the host machine in the
 
 ```bash
 cd /zeppelin
-mvn clean package -Pspark-1.6 -Phadoop-2.4 -DskipTests
+./mvnw clean package -Pspark-1.6 -Phadoop-2.4 -DskipTests
 ./bin/zeppelin-daemon.sh start
 ```
 

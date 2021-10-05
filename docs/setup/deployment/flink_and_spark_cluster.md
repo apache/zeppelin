@@ -73,34 +73,6 @@ sudo apt-get update
 sudo apt-get install openjdk-7-jdk openjdk-7-jre-lib
 ```
 
-##### Maven 3.1+
-Zeppelin requires maven version 3.x.  The version available in the repositories at the time of writing is 2.x, so maven must be installed manually.
-
-Purge any existing versions of maven.
-
-```bash
-sudo apt-get purge maven maven2
-```
-
-Download the maven 3.3.9 binary.
-
-```bash
-wget "http://www.us.apache.org/dist/maven/maven-3/3.3.9/binaries/apache-maven-3.3.9-bin.tar.gz"
-```
-
-Unarchive the binary and move to the `/usr/local` directory.
-
-```bash
-tar -zxvf apache-maven-3.3.9-bin.tar.gz
-sudo mv ./apache-maven-3.3.9 /usr/local
-```
-
-Create symbolic links in `/usr/bin`.
-
-```bash
-sudo ln -s /usr/local/apache-maven-3.3.9/bin/mvn /usr/bin/mvn
-```
-
 ### Installing Zeppelin
 This provides a quick overview of Zeppelin installation from source, however the reader is encouraged to review the [Zeppelin Installation Guide](../../quickstart/install.html)
 
@@ -120,7 +92,7 @@ cd zeppelin
 Package Zeppelin.
 
 ```bash
-mvn clean package -DskipTests -Pspark-1.6 -Dflink.version=1.1.3 -Pscala-2.10
+./mvnw clean package -DskipTests -Pspark-1.6 -Dflink.version=1.1.3 -Pscala-2.10
 ```
 
 `-DskipTests` skips build tests- you're not developing (yet), so you don't need to do tests, the clone version *should* build.
@@ -139,7 +111,7 @@ As long as you didn't edit any code, it is unlikely the build is failing because
 
 - Don't get discouraged.
 - Scroll up and read through the logs. There will be clues there.
-- Retry (that is, run the `mvn clean package -DskipTests -Pspark-1.6` again)
+- Retry (that is, run the `./mvnw clean package -DskipTests -Pspark-1.6` again)
 - If there were clues that a dependency couldn't be downloaded wait a few hours or even days and retry again. Open source software when compiling is trying to download all of the dependencies it needs, if a server is off-line there is nothing you can do but wait for it to come back.
 - Make sure you followed all of the steps carefully.
 - Ask the community to help you. Go [here](http://zeppelin.apache.org/community.html) and join the user mailing list. People are there to help you. Make sure to copy and paste the build output (everything that happened in the console) and include that in your message.

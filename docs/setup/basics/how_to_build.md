@@ -61,7 +61,7 @@ git clone https://github.com/apache/zeppelin.git
 You can build Zeppelin with following maven command:
 
 ```bash
-mvn clean package -DskipTests [Options]
+./mvnw clean package -DskipTests [Options]
 ```
 
 Check [build-profiles](#build-profiles) section for further build options.
@@ -164,28 +164,28 @@ Here are some examples with several options:
 
 ```bash
 # build with spark-3.0, spark-scala-2.12
-mvn clean package -Pspark-3.0 -Pspark-scala-2.12 -DskipTests
+./mvnw clean package -Pspark-3.0 -Pspark-scala-2.12 -DskipTests
 
 # build with spark-2.4, spark-scala-2.11
-mvn clean package -Pspark-2.4 -Pspark-scala-2.11 -DskipTests
+./mvnw clean package -Pspark-2.4 -Pspark-scala-2.11 -DskipTests
 
 # build with spark-1.6, spark-scala-2.10
-mvn clean package -Pspark-1.6 -Pspark-scala-2.10 -DskipTests
+./mvnw clean package -Pspark-1.6 -Pspark-scala-2.10 -DskipTests
 
 # build with CDH
-mvn clean package -Pspark-1.6 -Pspark-scala-2.10 -Dhadoop.version=2.6.0-cdh5.5.0 -Pvendor-repo -DskipTests
+./mvnw clean package -Pspark-1.6 -Pspark-scala-2.10 -Dhadoop.version=2.6.0-cdh5.5.0 -Pvendor-repo -DskipTests
 ```
 
 Ignite Interpreter
 
 ```bash
-mvn clean package -Dignite.version=1.9.0 -DskipTests
+./mvnw clean package -Dignite.version=1.9.0 -DskipTests
 ```
 
 Scalding Interpreter
 
 ```bash
-mvn clean package -Pscalding -DskipTests
+./mvnw clean package -Pscalding -DskipTests
 ```
 
 ### Optional configurations
@@ -239,22 +239,10 @@ sudo apt-get install r-base-dev
 sudo apt-get install r-cran-evaluate
 ```
 
-
-
-### Install maven
-
-```bash
-wget http://www.eu.apache.org/dist/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.tar.gz
-sudo tar -zxf apache-maven-3.6.3-bin.tar.gz -C /usr/local/
-sudo ln -s /usr/local/apache-maven-3.6.3/bin/mvn /usr/local/bin/mvn
-```
-
 _Notes:_
  - Ensure node is installed by running `node --version`  
- - Ensure maven is running version 3.6.3 or higher with `mvn -version`
+ - Ensure maven is running version 3.6.3 or higher with `./mvnw -version`
  - Configure maven to use more memory than usual by `export MAVEN_OPTS="-Xmx2g -XX:MaxMetaspaceSize=512m"`
-
-
 
 ## Proxy setting (optional)
 
@@ -325,13 +313,13 @@ _Notes:_
 To package the final distribution including the compressed archive, run:
 
 ```sh
-mvn clean package -Pbuild-distr
+./mvnw clean package -Pbuild-distr
 ```
 
 To build a distribution with specific profiles, run:
 
 ```sh
-mvn clean package -Pbuild-distr -Pspark-2.4
+./mvnw clean package -Pbuild-distr -Pspark-2.4
 ```
 
 The profiles `-Pspark-2.4` can be adjusted if you wish to build to a specific spark versions.  

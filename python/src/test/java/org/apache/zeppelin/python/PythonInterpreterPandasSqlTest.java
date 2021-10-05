@@ -54,7 +54,7 @@ import static org.mockito.Mockito.mock;
  * <p>
  * To run manually on such environment, use:
  * <code>
- * mvn -Dpython.test.exclude='' test -pl python -am
+ * ./mvnw -Dpython.test.exclude='' test -pl python -am
  * </code>
  */
 @RunWith(value = Parameterized.class)

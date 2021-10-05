@@ -70,19 +70,19 @@ Before making a pull request, please take a look [Contribution Guidelines](http:
 ### Build
 
 ```bash
-mvn install
+./mvnw install
 ```
 
 To skip test
 
 ```bash
-mvn install -DskipTests
+./mvnw install -DskipTests
 ```
 
 To build with specific spark / hadoop version
 
 ```bash
-mvn install -Dspark.version=x.x.x -Dhadoop.version=x.x.x
+./mvnw install -Dspark.version=x.x.x -Dhadoop.version=x.x.x
 ```
 
 For the further 
@@ -97,7 +97,7 @@ For the further
 ```bash
 cd zeppelin-server
 HADOOP_HOME=YOUR_HADOOP_HOME JAVA_HOME=YOUR_JAVA_HOME \
-mvn exec:java -Dexec.mainClass="org.apache.zeppelin.server.ZeppelinServer" -Dexec.args=""
+./mvnw exec:java -Dexec.mainClass="org.apache.zeppelin.server.ZeppelinServer" -Dexec.args=""
 ```
 
 #### Option 2 - Daemon Script
@@ -105,7 +105,7 @@ mvn exec:java -Dexec.mainClass="org.apache.zeppelin.server.ZeppelinServer" -Dexe
 > **Note:** Make sure you first run 
 
 ```bash
-mvn clean install -DskipTests
+./mvnw clean install -DskipTests
 ```
 
 in your zeppelin root directory, otherwise your server build will fail to find the required dependencies in the local repro.
@@ -140,14 +140,14 @@ cd <zeppelin_home>/zeppelin-interpreter/src/main/thrift
 Zeppelin has [set of integration tests](https://github.com/apache/zeppelin/tree/master/zeppelin-server/src/test/java/org/apache/zeppelin/integration) using Selenium. To run these test, first build and run Zeppelin and make sure Zeppelin is running on port 8080. Then you can run test using following command
 
 ```bash
-TEST_SELENIUM=true mvn test -Dtest=[TEST_NAME] -DfailIfNoTests=false \
+TEST_SELENIUM=true ./mvnw test -Dtest=[TEST_NAME] -DfailIfNoTests=false \
 -pl 'zeppelin-interpreter,zeppelin-zengine,zeppelin-server'
 ```
 
 For example, to run [ParagraphActionIT](https://github.com/apache/zeppelin/blob/master/zeppelin-server/src/test/java/org/apache/zeppelin/integration/ParagraphActionsIT.java),
 
 ```bash
-TEST_SELENIUM=true mvn test -Dtest=ParagraphActionsIT -DfailIfNoTests=false \
+TEST_SELENIUM=true ./mvnw test -Dtest=ParagraphActionsIT -DfailIfNoTests=false \
 -pl 'zeppelin-interpreter,zeppelin-zengine,zeppelin-server'
 ```
 

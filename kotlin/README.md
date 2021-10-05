@@ -56,13 +56,13 @@ and `ZeppelinContext` from `SparkInterpreter` in the same session and binds them
 ## Testing
 Kotlin Interpreter and Spark Kotlin Interpreter come with unit tests. 
 They can be run with \
-`mvn clean test` \
+`./mvnw clean test` \
 in `$ZEPPELIN_HOME/kotlin` for base Kotlin Interpreter and \
-`mvn -Dtest=KotlinSparkInterpreterTest test` \
+`./mvnw -Dtest=KotlinSparkInterpreterTest test` \
 in `$ZEPPELIN_HOME/spark/interpreter` for Spark Kotlin Interpreter.
 
 To test manually, build Zeppelin with \
-`mvn clean package -DskipTests` \
+`./mvnw clean package -DskipTests` \
 and create a note with `kotlin` interpreter for base or `spark` for Spark. 
 In Spark interpreter, add `%spark.kotlin` in the start of paragraph to use Kotlin Spark Interpreter.
 
