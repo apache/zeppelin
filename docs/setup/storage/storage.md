@@ -321,18 +321,18 @@ First, choose a GCS path under which to store notebooks.
   <value></value>
   <description>
     A GCS path in the form gs://bucketname/path/to/dir.
-    Notes are stored at {zeppelin.notebook.gcs.dir}/{notebook-id}/note.json
+    Notes are stored at {zeppelin.notebook.gcs.dir}/{notebook-name}_{notebook-id}.zpln
  </description>
 </property>
 ```
 
-Then, initialize the `GCSNotebookRepo` class in the file **zeppelin-site.xml** by commenting the next property:
+Then, initialize the `GCSNotebookRepo` class in the file **zeppelin-site.xml** by uncommenting:
 
 ```xml
 <property>
   <name>zeppelin.notebook.storage</name>
-  <value>org.apache.zeppelin.notebook.repo.GitNotebookRepo</value>
-  <description>versioned notebook persistence layer implementation</description>
+  <value>org.apache.zeppelin.notebook.repo.GCSNotebookRepo</value>
+  <description>notebook persistence layer implementation</description>
 </property>
 ```
 
@@ -341,8 +341,8 @@ and commenting out:
 ```xml
 <property>
   <name>zeppelin.notebook.storage</name>
-  <value>org.apache.zeppelin.notebook.repo.GCSNotebookRepo</value>
-  <description>notebook persistence layer implementation</description>
+  <value>org.apache.zeppelin.notebook.repo.GitNotebookRepo</value>
+  <description>versioned notebook persistence layer implementation</description>
 </property>
 ```
 

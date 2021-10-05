@@ -111,7 +111,7 @@ public class GCSNotebookRepo implements NotebookRepo {
       this.basePath = Optional.empty();
     }
 
-    // Notes are stored at gs://bucketName/basePath/<note-id>/note.json
+    // Notes are stored at gs://bucketName/basePath/<note-name>_<note-id>.zpln
     if (basePath.isPresent()) {
       this.notePathPattern = Pattern.compile(
           "^" + Pattern.quote(basePath.get() + "/") + "(.+\\.zpln)$");
