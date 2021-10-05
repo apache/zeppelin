@@ -30,7 +30,7 @@ if [ -f /proc/self/cgroup ] && [ -n "$(command -v getent)" ]; then
         set +e
         uidentry="$(getent passwd "$myuid")"
         set -e
-        
+
         # If there is no passwd entry for the container UID, attempt to create one
         if [ -z "$uidentry" ] ; then
             if [ -w /etc/passwd ] ; then
@@ -115,8 +115,18 @@ addJarInDir "${ZEPPELIN_HOME}/zeppelin-web-angular/target/lib"
 
 ZEPPELIN_CLASSPATH="$CLASSPATH:$ZEPPELIN_CLASSPATH"
 
-if [[ -n "${HADOOP_CONF_DIR}" ]] && [[ -d "${HADOOP_CONF_DIR}" ]]; then
-  ZEPPELIN_CLASSPATH+=":${HADOOP_CONF_DIR}"
+## Add hadoop jars when env USE_HADOOP is true
+if [[ "${USE_HADOOP}" != "false"  ]]; then
+  if [[ -z "${HADOOP_CONF_DIR}" ]]; then
+    echo "Please specify HADOOP_CONF_DIR if USE_HADOOP is true"
+  else
+    ZEPPELIN_CLASSPATH+=":${HADOOP_CONF_DIR}"
+    if ! [ -x "$(command -v hadoop)" ]; then
+      echo 'hadoop command is not in PATH when HADOOP_CONF_DIR is specified.'
+    else
+      ZEPPELIN_CLASSPATH+=":`hadoop classpath`"
+    fi
+  fi
 fi
 
 if [[ ! -d "${ZEPPELIN_LOG_DIR}" ]]; then
