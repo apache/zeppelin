@@ -199,8 +199,8 @@ ldapRealm.hadoopSecurityCredentialPath = jceks://file/user/zeppelin/conf/zeppeli
 
 ### PAM
 [PAM](https://en.wikipedia.org/wiki/Pluggable_authentication_module) authentication support allows the reuse of existing authentication
-moduls on the host where Zeppelin is running. On a typical system modules are configured per service for example sshd, passwd, etc. under `/etc/pam.d/`. You can
-either reuse one of these services or create your own for Zeppelin. Activiting PAM authentication requires two parameters:
+modules on the host where Zeppelin is running. On a typical system modules are configured per service for example sshd, passwd, etc. under `/etc/pam.d/`. You can
+either reuse one of these services or create your own for Zeppelin. Activating PAM authentication requires two parameters:
  1. realm: The Shiro realm being used
  2. service: The service configured under `/etc/pam.d/` to be used. The name here needs to be the same as the file name under `/etc/pam.d/`
 
