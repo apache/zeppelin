@@ -253,7 +253,9 @@ authc = org.apache.zeppelin.realm.kerberos.KerberosAuthenticationFilter
 ```
 For above configuration to work, user need to do some more configurations outside Zeppelin.
 
-1). A valid SPNEGO keytab should be available on the Zeppelin node and should be readable by 'zeppelin' user. If there is a SPNEGO keytab already available (because of other Hadoop service), it can be reused here and no need to generate a new keytab. An example of working SPNEGO keytab could be:
+1. A valid SPNEGO keytab should be available on the Zeppelin node and should be readable by 'zeppelin' user. If there is a SPNEGO keytab already available (because of another Hadoop service), it can be reused here without generating a new keytab.
+An example of working SPNEGO keytab could be:
+
 ```
 $ klist -kt /etc/security/keytabs/spnego.service.keytab
 Keytab name: FILE:/etc/security/keytabs/spnego.service.keytab
@@ -264,16 +266,19 @@ KVNO Timestamp           Principal
    2 11/26/2018 16:58:38 HTTP/zeppelin.fqdn.domain.com@EXAMPLE.COM
    2 11/26/2018 16:58:38 HTTP/zeppelin.fqdn.domain.com@EXAMPLE.COM
 ```
-and the keytab permission should be: (VERY IMPORTANT to not to set this to 777 or readable by all !!!):
+
+Ensure that the keytab premissions are sufficiently strict while still readable by the 'zeppelin' user:
+
 ```
 $ ls -l /etc/security/keytabs/spnego.service.keytab
 -r--r-----. 1 root hadoop 346 Nov 26 16:58 /etc/security/keytabs/spnego.service.keytab
 ```
-Above 'zeppelin' user happens to be member of 'hadoop' group.
 
-2). A secret signature file must be present on Zeppelin node (readable to 'zeppelin' user). This file contains the random binary numbers which is used to sign 'hadoop.auth' cookie, generated during SPNEGO exchange. If such a file is already generated and available on the Zeppelin node, it should be used rather than generating a new file.
+Note that for the above example, the 'zeppelin' user can read the keytab because they are a member of the 'hadoop' group.
 
+2. A secret signature file must be present on Zeppelin node, readable by 'zeppelin' user. This file contains the random binary numbers which is used to sign 'hadoop.auth' cookie, generated during SPNEGO exchange. If such a file is already generated and available on the Zeppelin node, it should be used rather than generating a new file.
 Commands to generate a secret signature file (if required):
+
 ```
 dd if=/dev/urandom of=/etc/security/http_secret bs=1024 count=1
 chown hdfs:hadoop /etc/security/http_secret
