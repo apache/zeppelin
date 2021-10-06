@@ -213,6 +213,8 @@ either reuse one of these services or create your own for Zeppelin. Activiting P
 ### Knox SSO
 [KnoxSSO](https://knox.apache.org/books/knox-0-13-0/dev-guide.html#KnoxSSO+Integration) provides an abstraction for integrating any number of authentication systems and SSO solutions and enables participating web applications to scale to those solutions more easily. Without the token exchange capabilities offered by KnoxSSO each component UI would need to integrate with each desired solution on its own.
 
+When Knox SSO is enabled for Zeppelin, the [Apache Hadoop Groups Mapping](https://hadoop.apache.org/docs/r2.8.0/hadoop-project-dist/hadoop-common/GroupsMapping.html) configuration will used internally to determine group membership of user who is trying to log in. Role-based access permission can be set based on groups as seen by Hadoop.
+
 To enable this, apply the following change in `conf/shiro.ini` under `[main]` section.
 
 ```
