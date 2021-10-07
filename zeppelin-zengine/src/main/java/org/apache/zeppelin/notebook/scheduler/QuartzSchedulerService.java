@@ -25,9 +25,12 @@ import java.util.Set;
 import javax.inject.Inject;
 
 import com.google.common.annotations.VisibleForTesting;
+
+import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Notebook;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.quartz.CronScheduleBuilder;
 import org.quartz.CronTrigger;
 import org.quartz.JobBuilder;
@@ -67,14 +70,7 @@ public class QuartzSchedulerService implements SchedulerService {
         notebook.getNotesInfo().stream()
                 .forEach(entry -> {
                   try {
-                    if (!refreshCron(entry.getId())) {
-                      try {
-                        LOGGER.debug("Unload note: {}", entry.getId());
-                        notebook.getNote(entry.getId()).unLoad();
-                      } catch (Exception e) {
-                        LOGGER.warn("Fail to unload note: {}", entry.getId(), e);
-                      }
-                    }
+                    refreshCron(entry.getId());
                   } catch (Exception e) {
                     LOGGER.warn("Fail to refresh cron for note: {}", entry.getId());
                   }
@@ -103,75 +99,66 @@ public class QuartzSchedulerService implements SchedulerService {
   }
 
   @Override
-  public boolean refreshCron(String noteId) {
+  public boolean refreshCron(String noteId) throws IOException {
     removeCron(noteId);
-    Note note = null;
-    try {
-      note = notebook.getNote(noteId);
-    } catch (IOException e) {
-      LOGGER.warn("Skip refresh cron of note: {} because fail to get it", noteId, e);
-      return false;
-    }
-    if (note == null) {
-      LOGGER.warn("Skip refresh cron of note: {} because there's no such note", noteId);
-      return false;
-    }
-    if (note.isTrash()) {
-      LOGGER.warn("Skip refresh cron of note: {} because it is in trash", noteId);
-      return false;
-    }
+    return notebook.processNote(noteId,
+      note -> {
+        if (note == null) {
+          LOGGER.warn("Skip refresh cron of note: {} because there's no such note", noteId);
+          return false;
+        }
+        if (note.isTrash()) {
+          LOGGER.warn("Skip refresh cron of note: {} because it is in trash", noteId);
+          return false;
+        }
+        Map<String, Object> config = note.getConfig();
+        if (config == null) {
+          LOGGER.warn("Skip refresh cron of note: {} because its config is empty.", noteId);
+          return false;
+        }
+        if (!note.isCronSupported(zeppelinConfiguration)) {
+          LOGGER.warn("Skip refresh cron of note {} because its cron is not enabled.", noteId);
+          return false;
+        }
+        String cronExpr = (String) note.getConfig().get("cron");
+        if (cronExpr == null || cronExpr.trim().length() == 0) {
+          LOGGER.warn("Skip refresh cron of note {} because its cron expression is empty.", noteId);
+          return false;
+        }
+        JobDataMap jobDataMap = new JobDataMap();
+        jobDataMap.put("notebook", notebook);
+        jobDataMap.put("noteId", noteId);
+        JobDetail newJob =
+            JobBuilder.newJob(CronJob.class)
+                .withIdentity(noteId, "note")
+                .setJobData(jobDataMap)
+                .build();
+        Map<String, Object> info = note.getInfo();
+        info.put("cron", null);
+        CronTrigger trigger = null;
+        try {
+          trigger =
+              TriggerBuilder.newTrigger()
+                  .withIdentity("trigger_" + noteId, "note")
+                  .withSchedule(CronScheduleBuilder.cronSchedule(cronExpr))
+                  .forJob(noteId, "note")
+                  .build();
+        } catch (Exception e) {
+          LOGGER.error("Fail to create cron trigger for note: {}", noteId, e);
+          info.put("cron", e.getMessage());
+          return false;
+        }
 
-    Map<String, Object> config = note.getConfig();
-    if (config == null) {
-      LOGGER.warn("Skip refresh cron of note: {} because its config is empty.", noteId);
-      return false;
-    }
-
-    if (!note.isCronSupported(zeppelinConfiguration)) {
-      LOGGER.warn("Skip refresh cron of note {} because its cron is not enabled.", noteId);
-      return false;
-    }
-
-    String cronExpr = (String) note.getConfig().get("cron");
-    if (cronExpr == null || cronExpr.trim().length() == 0) {
-      LOGGER.warn("Skip refresh cron of note {} because its cron expression is empty.", noteId);
-      return false;
-    }
-
-    JobDataMap jobDataMap = new JobDataMap();
-    jobDataMap.put("note", note);
-    JobDetail newJob =
-        JobBuilder.newJob(CronJob.class)
-            .withIdentity(noteId, "note")
-            .setJobData(jobDataMap)
-            .build();
-
-    Map<String, Object> info = note.getInfo();
-    info.put("cron", null);
-
-    CronTrigger trigger = null;
-    try {
-      trigger =
-          TriggerBuilder.newTrigger()
-              .withIdentity("trigger_" + noteId, "note")
-              .withSchedule(CronScheduleBuilder.cronSchedule(cronExpr))
-              .forJob(noteId, "note")
-              .build();
-    } catch (Exception e) {
-      LOGGER.error("Fail to create cron trigger for note: {}", note.getName(), e);
-      info.put("cron", e.getMessage());
-      return false;
-    }
-
-    try {
-      LOGGER.info("Trigger cron for note: {}, with cron expression: {}",  note.getName(), cronExpr);
-      scheduler.scheduleJob(newJob, trigger);
-      return true;
-    } catch (SchedulerException e) {
-      LOGGER.error("Fail to schedule cron job for note: {}", note.getName(), e);
-      info.put("cron", "Scheduler Exception");
-      return false;
-    }
+        try {
+          LOGGER.info("Trigger cron for note: {}, with cron expression: {}",  noteId, cronExpr);
+          scheduler.scheduleJob(newJob, trigger);
+          return true;
+        } catch (SchedulerException e) {
+          LOGGER.error("Fail to schedule cron job for note: {}", noteId, e);
+          info.put("cron", "Scheduler Exception");
+          return false;
+        }
+      });
   }
 
   @Override

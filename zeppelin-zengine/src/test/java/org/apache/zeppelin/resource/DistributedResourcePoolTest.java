@@ -23,8 +23,7 @@ import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
-import org.apache.zeppelin.notebook.Note;
-import org.apache.zeppelin.notebook.NoteInfo;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -32,7 +31,6 @@ import org.junit.Test;
 import static org.apache.zeppelin.interpreter.InterpreterOption.ISOLATED;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.when;
 
 /**
  * Unittest for DistributedResourcePool
@@ -43,20 +41,21 @@ public class DistributedResourcePoolTest extends AbstractInterpreterTest {
   private RemoteInterpreter intp2;
   private InterpreterContext context;
 
+  private String note1Id;
+  private String note2Id;
+
 
   @Override
   @Before
   public void setUp() throws Exception {
     super.setUp();
-    Note note1 = new Note(new NoteInfo("note1", "/note_1"));
-    Note note2 = new Note(new NoteInfo("note2", "/note_2"));
-    when(mockNotebook.getNote("note1")).thenReturn(note1);
-    when(mockNotebook.getNote("note2")).thenReturn(note2);
+    note1Id = notebook.createNote("/note_1", AuthenticationInfo.ANONYMOUS);
+    note2Id = notebook.createNote("/note_2", AuthenticationInfo.ANONYMOUS);
 
     InterpreterSetting interpreterSetting = interpreterSettingManager.getByName("mock_resource_pool");
     interpreterSetting.getOption().setPerNote(ISOLATED);
-    intp1 = (RemoteInterpreter) interpreterSetting.getInterpreter("user1", "note1", "mock_resource_pool");
-    intp2 = (RemoteInterpreter) interpreterSetting.getInterpreter("user2", "note2", "mock_resource_pool");
+    intp1 = (RemoteInterpreter) interpreterSetting.getInterpreter("user1", note1Id, "mock_resource_pool");
+    intp2 = (RemoteInterpreter) interpreterSetting.getInterpreter("user2", note2Id, "mock_resource_pool");
 
     context = InterpreterContext.builder()
         .setNoteId("note")
@@ -160,17 +159,17 @@ public class DistributedResourcePoolTest extends AbstractInterpreterTest {
     Gson gson = new Gson();
 
     // when create some resources
-    intp1.interpret("put note1:paragraph1:key1 value1", context);
-    intp1.interpret("put note1:paragraph2:key1 value2", context);
-    intp2.interpret("put note2:paragraph1:key1 value1", context);
-    intp2.interpret("put note2:paragraph2:key2 value2", context);
+    intp1.interpret("put " + note1Id + ":paragraph1:key1 value1", context);
+    intp1.interpret("put " + note1Id + ":paragraph2:key1 value2", context);
+    intp2.interpret("put " + note2Id + ":paragraph1:key1 value1", context);
+    intp2.interpret("put " + note2Id + ":paragraph2:key2 value2", context);
 
 
     // then get all resources.
     assertEquals(4, interpreterSettingManager.getAllResources().size());
 
     // when remove all resources from note1
-    interpreterSettingManager.removeResourcesBelongsToNote("note1");
+    interpreterSettingManager.removeResourcesBelongsToNote(note1Id);
 
     // then resources should be removed.
     assertEquals(2, interpreterSettingManager.getAllResources().size());
@@ -183,12 +182,12 @@ public class DistributedResourcePoolTest extends AbstractInterpreterTest {
 
 
     // when remove all resources from note2:paragraph1
-    interpreterSettingManager.removeResourcesBelongsToParagraph("note2", "paragraph1");
+    interpreterSettingManager.removeResourcesBelongsToParagraph(note2Id, "paragraph1");
 
     // then 1
     assertEquals(1, interpreterSettingManager.getAllResources().size());
     assertEquals("value2", gson.fromJson(
-        intp1.interpret("get note2:paragraph2:key2", context).message().get(0).getData(),
+        intp1.interpret("get " + note2Id + ":paragraph2:key2", context).message().get(0).getData(),
         String.class));
 
   }

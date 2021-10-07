@@ -276,6 +276,10 @@ public class ZeppelinServer extends ResourceConfig {
     // Lazy loading will cause paragraph recovery and cron job initialization is delayed.
     Notebook notebook = ServiceLocatorUtilities.getService(
             sharedServiceLocator, Notebook.class.getName());
+    ServiceLocatorUtilities.getService(
+      sharedServiceLocator, SearchService.class.getName());
+    ServiceLocatorUtilities.getService(
+      sharedServiceLocator, SchedulerService.class.getName());
     // Try to recover here, don't do it in constructor of Notebook, because it would cause deadlock.
     notebook.recoveryIfNecessary();
 

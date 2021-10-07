@@ -26,7 +26,6 @@ import org.apache.zeppelin.client.ZSession;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.integration.DownloadUtils;
 import org.apache.zeppelin.interpreter.lifecycle.TimeoutLifecycleManager;
-import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.rest.AbstractTestRestApi;
 import org.apache.zeppelin.utils.TestUtils;
@@ -89,9 +88,13 @@ public class ZSessionIntegrationTest extends AbstractTestRestApi {
       assertNull(session.getWeburl());
       assertNotNull(session.getNoteId());
 
-      Note note = notebook.getNote(session.getNoteId());
-      assertEquals(2, note.getParagraphCount());
-      assertTrue(note.getParagraph(0).getText(), note.getParagraph(0).getText().startsWith("%sh.conf"));
+      notebook.processNote(session.getNoteId(),
+        note -> {
+          assertEquals(2, note.getParagraphCount());
+          assertTrue(note.getParagraph(0).getText(), note.getParagraph(0).getText().startsWith("%sh.conf"));
+          return null;
+        });
+
 
       ExecuteResult result = session.execute("pwd");
       assertEquals(result.toString(), Status.FINISHED, result.getStatus());
@@ -106,9 +109,12 @@ public class ZSessionIntegrationTest extends AbstractTestRestApi {
       assertEquals("TEXT", result.getResults().get(1).getType());
       assertTrue(result.getResults().get(1).getData(), result.getResults().get(1).getData().contains("ExitValue"));
 
-      assertEquals(4, note.getParagraphCount());
-      assertEquals("%sh invalid_command", note.getParagraph(3).getText());
-
+      notebook.processNote(session.getNoteId(),
+        note -> {
+          assertEquals(4, note.getParagraphCount());
+          assertEquals("%sh invalid_command", note.getParagraph(3).getText());
+          return null;
+        });
     } finally {
       session.stop();
     }
@@ -126,9 +132,12 @@ public class ZSessionIntegrationTest extends AbstractTestRestApi {
       assertNull(session.getWeburl());
       assertNotNull(session.getNoteId());
 
-      Note note = notebook.getNote(session.getNoteId());
-      assertEquals(2, note.getParagraphCount());
-      assertTrue(note.getParagraph(0).getText(), note.getParagraph(0).getText().startsWith("%sh.conf"));
+      notebook.processNote(session.getNoteId(),
+        note -> {
+          assertEquals(2, note.getParagraphCount());
+          assertTrue(note.getParagraph(0).getText(), note.getParagraph(0).getText().startsWith("%sh.conf"));
+          return null;
+        });
 
       ExecuteResult result = session.submit("sleep 10\npwd");
       assertFalse("Status is: " + result.getStatus().toString(), result.getStatus().isCompleted());
@@ -146,9 +155,12 @@ public class ZSessionIntegrationTest extends AbstractTestRestApi {
       assertEquals("TEXT", result.getResults().get(1).getType());
       assertTrue(result.getResults().get(1).getData(), result.getResults().get(1).getData().contains("ExitValue"));
 
-      assertEquals(4, note.getParagraphCount());
-      assertEquals("%sh invalid_command", note.getParagraph(3).getText());
-
+      notebook.processNote(session.getNoteId(),
+        note -> {
+          assertEquals(4, note.getParagraphCount());
+          assertEquals("%sh invalid_command", note.getParagraph(3).getText());
+          return null;
+        });
     } finally {
       session.stop();
     }
@@ -456,10 +468,10 @@ public class ZSessionIntegrationTest extends AbstractTestRestApi {
       assertNull(session.getWeburl());
       assertNotNull(session.getNoteId());
 
-      assertTrue(notebook.getAllNotes().size() > 0);
+      assertTrue(notebook.getNotesInfo().size() > 0);
 
       Thread.sleep(30 * 1000);
-      assertEquals(0, notebook.getAllNotes().size());
+      assertEquals(0, notebook.getNotesInfo().size());
 
       try {
         session.execute("1/0");

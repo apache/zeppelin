@@ -17,16 +17,11 @@
 
 package org.apache.zeppelin.search;
 
-import org.apache.zeppelin.conf.ZeppelinConfiguration;
-import org.apache.zeppelin.notebook.Note;
-import org.apache.zeppelin.notebook.Paragraph;
-
 import javax.inject.Inject;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Stream;
 
 public class NoSearchService extends SearchService {
 
@@ -41,38 +36,32 @@ public class NoSearchService extends SearchService {
   }
 
   @Override
-  public void updateNoteIndex(Note note) throws IOException {
+  public void updateNoteIndex(String noteId) throws IOException {
 
   }
 
   @Override
-  public void updateParagraphIndex(Paragraph paragraph) throws IOException {
+  public void updateParagraphIndex(String noteId, String paragraphId) throws IOException {
 
   }
 
   @Override
-  public void addNoteIndex(Note note) throws IOException {
+  public void addNoteIndex(String noteId) throws IOException {
 
   }
 
   @Override
-  public void addParagraphIndex(Paragraph pargaraph) throws IOException {
+  public void addParagraphIndex(String noteId, String paragraphId) throws IOException {
 
   }
 
   @Override
-  public void deleteNoteIndex(Note note) throws IOException {
+  public void deleteNoteIndex(String noteId) throws IOException {
 
   }
 
   @Override
-  public void deleteParagraphIndex(String noteId, Paragraph p) throws IOException {
-
-  }
-
-
-  @Override
-  public void startRebuildIndex(Stream<Note> notes) {
+  public void deleteParagraphIndex(String noteId, String paragraphId) throws IOException {
 
   }
 }

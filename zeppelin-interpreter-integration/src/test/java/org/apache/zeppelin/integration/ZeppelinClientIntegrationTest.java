@@ -27,7 +27,6 @@ import org.apache.zeppelin.client.ZeppelinClient;
 
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.common.SessionInfo;
-import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.rest.AbstractTestRestApi;
 import org.apache.zeppelin.utils.TestUtils;
@@ -110,7 +109,11 @@ public class ZeppelinClientIntegrationTest extends AbstractTestRestApi {
   @Test
   public void testNoteOperation() throws Exception {
     String noteId = zeppelinClient.createNote("/project_1/note1");
-    assertNotNull(notebook.getNote(noteId));
+    notebook.processNote(noteId,
+      note -> {
+        assertNotNull(note);
+        return null;
+      });
 
     // create duplicated note
     try {
@@ -149,34 +152,53 @@ public class ZeppelinClientIntegrationTest extends AbstractTestRestApi {
   @Test
   public void testCloneNote() throws Exception {
     String noteId = zeppelinClient.createNote("/clone_note_test/note1");
-    Note note1 = notebook.getNote(noteId);
-    assertNotNull(note1);
-
+    notebook.processNote(noteId,
+      note1 -> {
+        assertNotNull(note1);
+        return null;
+      });
     zeppelinClient.addParagraph(noteId, "title_1", "text_1");
-    assertEquals(1, note1.getParagraphCount());
+    notebook.processNote(noteId,
+      note1 -> {
+        assertEquals(1, note1.getParagraphCount());
+        return null;
+      });
 
     String clonedNoteId = zeppelinClient.cloneNote(noteId, "/clone_note_test/cloned_note1");
-    Note clonedNote = notebook.getNote(clonedNoteId);
-    assertEquals(1, clonedNote.getParagraphCount());
-    assertEquals("title_1", clonedNote.getParagraph(0).getTitle());
-    assertEquals("text_1", clonedNote.getParagraph(0).getText());
+    notebook.processNote(clonedNoteId,
+      clonedNote -> {
+        assertEquals(1, clonedNote.getParagraphCount());
+        assertEquals("title_1", clonedNote.getParagraph(0).getTitle());
+        assertEquals("text_1", clonedNote.getParagraph(0).getText());
+        return null;
+      });
   }
 
   @Test
   public void testRenameNote() throws Exception {
     String noteId = zeppelinClient.createNote("/rename_note_test/note1");
-    Note note1 = notebook.getNote(noteId);
-    assertNotNull(note1);
+    notebook.processNote(noteId,
+      note1 -> {
+        assertNotNull(note1);
+        return null;
+      });
 
     zeppelinClient.addParagraph(noteId, "title_1", "text_1");
-    assertEquals(1, note1.getParagraphCount());
+    notebook.processNote(noteId,
+      note1 -> {
+        assertEquals(1, note1.getParagraphCount());
+        return null;
+      });
 
     zeppelinClient.renameNote(noteId, "/rename_note_test/note1_renamed");
-    Note renamedNote = notebook.getNote(noteId);
-    assertEquals("/rename_note_test/note1_renamed", renamedNote.getPath());
-    assertEquals(1, renamedNote.getParagraphCount());
-    assertEquals("title_1", renamedNote.getParagraph(0).getTitle());
-    assertEquals("text_1", renamedNote.getParagraph(0).getText());
+    notebook.processNote(noteId,
+      renamedNote -> {
+        assertEquals("/rename_note_test/note1_renamed", renamedNote.getPath());
+        assertEquals(1, renamedNote.getParagraphCount());
+        assertEquals("title_1", renamedNote.getParagraph(0).getTitle());
+        assertEquals("text_1", renamedNote.getParagraph(0).getText());
+        return null;
+      });
   }
 
   @Test
