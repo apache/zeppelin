@@ -79,7 +79,7 @@ public class FlinkInterpreterLauncher extends StandardInterpreterLauncher {
       }
       envs.put("FLINK_APP_JAR", flinkAppJar);
       LOGGER.info("K8s application's FLINK_APP_JAR : " + flinkAppJar);
-      context.getProperties().put("zeppelin.interpreter.forceShutdown", "true");
+      context.getProperties().put("zeppelin.interpreter.forceShutdown", "false");
     } else {
       String flinkAppJar = chooseFlinkAppJar(flinkHome);
       LOGGER.info("Choose FLINK_APP_JAR for non k8s-application mode: {}", flinkAppJar);

@@ -146,7 +146,7 @@ public class RemoteInterpreterServer extends Thread
   // We should not call System.exit in this scenario when RemoteInterpreterServer is stopped,
   // Otherwise flink will think flink job is exited abnormally and will try to restart this
   // pod (RemoteInterpreterServer)
-  private boolean isForceShutdown = false;
+  private boolean isForceShutdown = true;
 
   private ZeppelinConfiguration zConf;
   // cluster manager client
@@ -326,7 +326,7 @@ public class RemoteInterpreterServer extends Thread
      * should be part of the next release and solve the problem.
      * We may have other threads that are not terminated successfully.
      */
-    if (!remoteInterpreterServer.isForceShutdown) {
+    if (remoteInterpreterServer.isForceShutdown) {
       LOGGER.info("Force shutting down");
       System.exit(0);
     }
@@ -394,7 +394,7 @@ public class RemoteInterpreterServer extends Thread
 
       interpreterGroup.addInterpreterToSession(new LazyOpenInterpreter(interpreter), sessionId);
 
-      this.isForceShutdown = Boolean.parseBoolean(properties.getOrDefault("zeppelin.interpreter.forceShutdown", "false"));
+      this.isForceShutdown = Boolean.parseBoolean(properties.getOrDefault("zeppelin.interpreter.forceShutdown", "true"));
       LOGGER.info("Instantiate interpreter {}, isForceShutdown: {}", className, isForceShutdown);
     } catch (Exception e) {
       LOGGER.error(e.getMessage(), e);
@@ -711,11 +711,9 @@ public class RemoteInterpreterServer extends Thread
         }
       }
 
-      if (server.isServing()) {
-        if (!isForceShutdown) {
-          LOGGER.info("Force shutting down");
-          System.exit(1);
-        }
+      if (server.isServing() && isForceShutdown) {
+        LOGGER.info("Force shutting down");
+        System.exit(1);
       }
 
       LOGGER.info("Shutting down");
