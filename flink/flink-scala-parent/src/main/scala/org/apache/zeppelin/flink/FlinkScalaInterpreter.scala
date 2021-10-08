@@ -18,7 +18,7 @@
 
 package org.apache.zeppelin.flink
 
-import java.io.File
+import java.io.{File, IOException}
 import java.net.{URL, URLClassLoader}
 import java.nio.file.Files
 import java.util.Properties
@@ -45,6 +45,7 @@ import org.apache.flink.table.functions.{AggregateFunction, ScalarFunction, Tabl
 import org.apache.flink.table.module.hive.HiveModule
 import org.apache.flink.yarn.cli.FlinkYarnSessionCli
 import org.apache.zeppelin.dep.DependencyResolver
+import org.apache.zeppelin.flink.internal.FlinkShell
 import org.apache.zeppelin.flink.internal.FlinkShell._
 import org.apache.zeppelin.flink.internal.FlinkILoop
 import org.apache.zeppelin.interpreter.Interpreter.FormType
@@ -145,7 +146,7 @@ abstract class FlinkScalaInterpreter(val properties: Properties,
     // load udf jar
     this.userUdfJars.foreach(jar => loadUDFJar(jar))
 
-    if (mode == ExecutionMode.YARN_APPLICATION) {
+    if (ExecutionMode.isApplicationMode(mode)) {
       // have to call senv.execute method before running any user code, otherwise yarn application mode
       // will cause ClassNotFound issue. Needs to do more investigation. TODO(zjffdu)
       val initCode =
@@ -185,7 +186,7 @@ abstract class FlinkScalaInterpreter(val properties: Properties,
       properties.getProperty("flink.execution.mode", "LOCAL")
         .replace("-", "_")
         .toUpperCase)
-    if (mode == ExecutionMode.YARN_APPLICATION) {
+    if (ExecutionMode.isYarnAppicationMode(mode)) {
       if (flinkVersion.isFlink110) {
         throw new Exception("yarn-application mode is only supported after Flink 1.11")
       }
@@ -195,6 +196,17 @@ abstract class FlinkScalaInterpreter(val properties: Properties,
       flinkConfDir = workingDirectory
       hiveConfDir = workingDirectory
     }
+    if (ExecutionMode.isK8sApplicationMode(mode)) {
+      if (flinkVersion.isFlink110) {
+        throw new Exception("application mode is only supported after Flink 1.11")
+      }
+      // use current pod working directory as FLINK_HOME
+      val workingDirectory = new File(".").getAbsolutePath
+      flinkHome = workingDirectory
+      flinkConfDir = workingDirectory + "/conf"
+      hiveConfDir = workingDirectory + "/conf"
+    }
+
     LOGGER.info("FLINK_HOME: " + flinkHome)
     LOGGER.info("FLINK_CONF_DIR: " + flinkConfDir)
     LOGGER.info("HADOOP_CONF_DIR: " + hadoopConfDir)
@@ -234,7 +246,17 @@ abstract class FlinkScalaInterpreter(val properties: Properties,
         .copy(queue = Some(queue))))
 
     this.userUdfJars = getUserUdfJars()
+
     this.userJars = getUserJarsExceptUdfJars ++ this.userUdfJars
+    if (ExecutionMode.isK8sApplicationMode(mode)) {
+      var flinkAppJar = properties.getProperty("flink.app.jar")
+      if (flinkAppJar != null && flinkAppJar.startsWith("local://")) {
+        flinkAppJar = flinkAppJar.substring(8)
+        this.userJars = this.userJars :+ flinkAppJar
+      } else {
+        throw new IOException("flink.app.jar is not set or invalid, flink.app.jar: " + flinkAppJar)
+      }
+    }
     LOGGER.info("UserJars: " + userJars.mkString(","))
     config = config.copy(externalJars = Some(userJars.toArray))
     LOGGER.info("Config: " + config)
@@ -317,6 +339,10 @@ abstract class FlinkScalaInterpreter(val properties: Properties,
             LOGGER.info("Use FlinkCluster in yarn application mode, appId: {}", yarnAppId)
             this.jmWebUrl = "http://localhost:" + HadoopUtils.getFlinkRestPort(yarnAppId)
             this.displayedJMWebUrl = getDisplayedJMWebUrl(yarnAppId)
+          } else if (ExecutionMode.isK8sApplicationMode(mode)) {
+            LOGGER.info("Use FlinkCluster in kubernetes-application mode")
+            this.jmWebUrl = "http://localhost:" + configuration.getInteger("rest.port", 8081)
+            this.displayedJMWebUrl = this.jmWebUrl
           } else {
             LOGGER.info("Use FlinkCluster in remote mode")
             this.jmWebUrl = "http://" + config.host.get + ":" + config.port.get
