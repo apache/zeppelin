@@ -40,17 +40,17 @@ import static org.apache.flink.util.Preconditions.checkState;
 
 
 /**
- * StreamExecutionEnvironment used for yarn application mode.
+ * StreamExecutionEnvironment used for application mode.
  * Need to add jars of scala shell before submitting jobs.
  */
-public class YarnApplicationStreamEnvironment extends StreamExecutionEnvironment {
+public class ApplicationModeStreamEnvironment extends StreamExecutionEnvironment {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(YarnApplicationStreamEnvironment.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(ApplicationModeStreamEnvironment.class);
 
   private FlinkILoop flinkILoop;
   private FlinkScalaInterpreter flinkScalaInterpreter;
 
-  public YarnApplicationStreamEnvironment(PipelineExecutorServiceLoader executorServiceLoader,
+  public ApplicationModeStreamEnvironment(PipelineExecutorServiceLoader executorServiceLoader,
                                           Configuration configuration,
                                           ClassLoader userClassloader,
                                           FlinkILoop flinkILoop,

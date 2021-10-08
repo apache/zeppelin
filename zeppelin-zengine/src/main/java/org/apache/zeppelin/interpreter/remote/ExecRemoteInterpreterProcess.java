@@ -229,9 +229,9 @@ public class ExecRemoteInterpreterProcess extends RemoteInterpreterManagedProces
         synchronized (this) {
           notifyAll();
         }
-      } else if (isFlinkYarnApplicationMode() && exitValue == 0) {
+      } else if (isFlinkApplicationMode() && exitValue == 0) {
         // Don't update transition state when flink launcher process exist
-        // in yarn application mode.
+        // in flink application mode.
         synchronized (this) {
           notifyAll();
         }
@@ -252,9 +252,8 @@ public class ExecRemoteInterpreterProcess extends RemoteInterpreterManagedProces
               getEnv().getOrDefault("ZEPPELIN_SPARK_YARN_CLUSTER", "false"));
     }
 
-    private boolean isFlinkYarnApplicationMode() {
-      return Boolean.parseBoolean(
-              getEnv().getOrDefault("ZEPPELIN_FLINK_YARN_APPLICATION", "false"));
+    private boolean isFlinkApplicationMode() {
+      return getEnv().containsKey("ZEPPELIN_FLINK_APPLICATION_MODE");
     }
 
     @Override

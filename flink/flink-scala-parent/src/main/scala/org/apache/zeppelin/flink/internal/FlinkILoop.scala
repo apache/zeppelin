@@ -23,13 +23,12 @@ import org.apache.flink.configuration.Configuration
 import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment
 import org.apache.flink.util.AbstractID
 import java.io.{BufferedReader, File, FileOutputStream, IOException}
-import java.net.URL
 
 import org.apache.flink.streaming.api.environment.{StreamExecutionEnvironment => JStreamExecutionEnvironment}
 import org.apache.flink.api.java.{ExecutionEnvironment => JExecutionEnvironment}
 import org.apache.flink.api.scala.ExecutionEnvironment
 import org.apache.flink.core.execution.PipelineExecutorServiceLoader
-import org.apache.zeppelin.flink.{FlinkScalaInterpreter, YarnApplicationExecutionEnvironment, YarnApplicationStreamEnvironment}
+import org.apache.zeppelin.flink.{ApplicationModeExecutionEnvironment, ApplicationModeStreamEnvironment, FlinkScalaInterpreter}
 import FlinkShell.ExecutionMode
 
 import scala.tools.nsc.interpreter._
@@ -71,17 +70,17 @@ class FlinkILoop(
     scalaBenv: ExecutionEnvironment,
     scalaSenv: StreamExecutionEnvironment
     ) = {
-    if (mode == ExecutionMode.YARN_APPLICATION) {
+    if (ExecutionMode.isApplicationMode(mode)) {
       // For yarn application mode, ExecutionEnvironment & StreamExecutionEnvironment has already been created
       // by flink itself, we here just try get them via reflection and reconstruct them.
-      val scalaBenv = new ExecutionEnvironment(new YarnApplicationExecutionEnvironment(
+      val scalaBenv = new ExecutionEnvironment(new ApplicationModeExecutionEnvironment(
         getExecutionEnvironmentField(jenv, "executorServiceLoader").asInstanceOf[PipelineExecutorServiceLoader],
         getExecutionEnvironmentField(jenv, "configuration").asInstanceOf[Configuration],
         getExecutionEnvironmentField(jenv, "userClassloader").asInstanceOf[ClassLoader],
         this,
         flinkScalaInterpreter
       ))
-      val scalaSenv = new StreamExecutionEnvironment(new YarnApplicationStreamEnvironment(
+      val scalaSenv = new StreamExecutionEnvironment(new ApplicationModeStreamEnvironment(
         getStreamExecutionEnvironmentField(jsenv, "executorServiceLoader").asInstanceOf[PipelineExecutorServiceLoader],
         getStreamExecutionEnvironmentField(jsenv, "configuration").asInstanceOf[Configuration],
         getStreamExecutionEnvironmentField(jsenv, "userClassloader").asInstanceOf[ClassLoader],
