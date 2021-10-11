@@ -112,9 +112,6 @@ object FlinkShell {
       case None => (flinkConfig, None)
     }
 
-    // workaround for FLINK-17788, otherwise it won't work with flink 1.10.1 which has been released.
-    flinkConfig.set(DeploymentOptions.TARGET, YarnSessionClusterExecutor.NAME)
-
     val (effectiveConfig, _) = clusterClient match {
       case Some(_) => fetchDeployedYarnClusterInfo(config, clusterConfig, "yarn-cluster", flinkShims)
       case None => fetchDeployedYarnClusterInfo(config, clusterConfig, "default", flinkShims)

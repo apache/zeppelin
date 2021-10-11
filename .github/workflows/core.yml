@@ -148,7 +148,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        flink: [110, 111, 112, 113, 114]
+        flink: [112, 113, 114]
     steps:
       - name: Checkout
         uses: actions/checkout@v2

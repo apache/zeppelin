@@ -8,10 +8,9 @@ This is the doc for Zeppelin developers who want to work on flink interpreter.
 
 Flink interpreter is more complex than other interpreter (such as jdbc, shell). Currently it has following 8 modules
 * flink-shims
-* flink1.10-shims
-* flink1.11-shims
 * flink1.12-shims
 * flink1.13-shims
+* flink1.14-shims
 * flink-scala-parent
 * flink-scala-2.11
 * flink-scala-2.12

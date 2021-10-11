@@ -341,11 +341,7 @@ public abstract class FlinkSqlInterpreter extends AbstractInterpreter {
   private void callDropView(SqlCommandParser.SqlCommandCall sqlCommand, InterpreterContext context) throws IOException {
     try {
       lock.lock();
-      if (flinkInterpreter.getFlinkVersion().isFlink110()) {
-        this.tbenv.dropTemporaryView(sqlCommand.operands[0]);
-      } else {
-        flinkInterpreter.getFlinkShims().executeSql(tbenv, sqlCommand.sql);
-      }
+      flinkInterpreter.getFlinkShims().executeSql(tbenv, sqlCommand.sql);
     } finally {
       if (lock.isHeldByCurrentThread()) {
         lock.unlock();
@@ -357,11 +353,7 @@ public abstract class FlinkSqlInterpreter extends AbstractInterpreter {
   private void callCreateView(SqlCommandParser.SqlCommandCall sqlCommand, InterpreterContext context) throws IOException {
     try {
       lock.lock();
-      if (flinkInterpreter.getFlinkVersion().isFlink110()) {
-        this.tbenv.createTemporaryView(sqlCommand.operands[0], tbenv.sqlQuery(sqlCommand.operands[1]));
-      } else {
-        flinkInterpreter.getFlinkShims().executeSql(tbenv, sqlCommand.sql);
-      }
+      flinkInterpreter.getFlinkShims().executeSql(tbenv, sqlCommand.sql);
     } finally {
       if (lock.isHeldByCurrentThread()) {
         lock.unlock();

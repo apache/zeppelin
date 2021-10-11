@@ -187,9 +187,6 @@ abstract class FlinkScalaInterpreter(val properties: Properties,
         .replace("-", "_")
         .toUpperCase)
     if (ExecutionMode.isYarnAppicationMode(mode)) {
-      if (flinkVersion.isFlink110) {
-        throw new Exception("yarn-application mode is only supported after Flink 1.11")
-      }
       // use current yarn container working directory as FLINK_HOME, FLINK_CONF_DIR and HIVE_CONF_DIR
       val workingDirectory = new File(".").getAbsolutePath
       flinkHome = workingDirectory
@@ -197,9 +194,6 @@ abstract class FlinkScalaInterpreter(val properties: Properties,
       hiveConfDir = workingDirectory
     }
     if (ExecutionMode.isK8sApplicationMode(mode)) {
-      if (flinkVersion.isFlink110) {
-        throw new Exception("application mode is only supported after Flink 1.11")
-      }
       // use current pod working directory as FLINK_HOME
       val workingDirectory = new File(".").getAbsolutePath
       flinkHome = workingDirectory
@@ -417,14 +411,8 @@ abstract class FlinkScalaInterpreter(val properties: Properties,
       )
 
       flinkILoop.intp.interpret("import " + packageImports.mkString(", "))
-
-      if (flinkVersion.isFlink110) {
-        flinkILoop.intp.interpret("import org.apache.flink.table.api.scala._")
-      } else {
-        flinkILoop.intp.interpret("import org.apache.flink.table.api._")
-        flinkILoop.intp.interpret("import org.apache.flink.table.api.bridge.scala._")
-      }
-
+      flinkILoop.intp.interpret("import org.apache.flink.table.api._")
+      flinkILoop.intp.interpret("import org.apache.flink.table.api.bridge.scala._")
       flinkILoop.intp.interpret("import org.apache.flink.table.functions.ScalarFunction")
       flinkILoop.intp.interpret("import org.apache.flink.table.functions.AggregateFunction")
       flinkILoop.intp.interpret("import org.apache.flink.table.functions.TableFunction")

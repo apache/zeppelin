@@ -104,14 +104,9 @@ public class TableEnvFactory {
 
   public TableEnvironment createScalaFlinkBatchTableEnvironment() {
     try {
-      Class clazz = null;
-      if (flinkVersion.isFlink110()) {
-        clazz = Class
-                .forName("org.apache.flink.table.api.scala.internal.BatchTableEnvironmentImpl");
-      } else {
-        clazz = Class
+      Class clazz = Class
                 .forName("org.apache.flink.table.api.bridge.scala.internal.BatchTableEnvironmentImpl");
-      }
+
       Constructor constructor = clazz
               .getConstructor(
                       org.apache.flink.api.scala.ExecutionEnvironment.class,
@@ -134,14 +129,8 @@ public class TableEnvFactory {
       Planner planner = (Planner) pair.left;
       Executor executor = (Executor) pair.right;
 
-      Class clazz = null;
-      if (flinkVersion.isFlink110()) {
-        clazz = Class
-                .forName("org.apache.flink.table.api.scala.internal.StreamTableEnvironmentImpl");
-      } else {
-        clazz = Class
+      Class clazz = Class
                 .forName("org.apache.flink.table.api.bridge.scala.internal.StreamTableEnvironmentImpl");
-      }
 
       try {
         Constructor constructor = clazz
@@ -195,14 +184,8 @@ public class TableEnvFactory {
 
   public TableEnvironment createJavaFlinkBatchTableEnvironment() {
     try {
-      Class<?> clazz = null;
-      if (flinkVersion.isFlink110()) {
-        clazz = Class
-                .forName("org.apache.flink.table.api.java.internal.BatchTableEnvironmentImpl");
-      } else {
-        clazz = Class
+      Class<?> clazz = Class
                 .forName("org.apache.flink.table.api.bridge.java.internal.BatchTableEnvironmentImpl");
-      }
 
       Constructor con = clazz.getConstructor(
               ExecutionEnvironment.class,
@@ -229,14 +212,8 @@ public class TableEnvFactory {
       Planner planner = (Planner) pair.left;
       Executor executor = (Executor) pair.right;
 
-      Class clazz = null;
-      if (flinkVersion.isFlink110()) {
-        clazz = Class
-                .forName("org.apache.flink.table.api.java.internal.StreamTableEnvironmentImpl");
-      } else {
-        clazz = Class
+      Class clazz = Class
                 .forName("org.apache.flink.table.api.bridge.java.internal.StreamTableEnvironmentImpl");
-      }
 
       try {
         Constructor constructor = clazz
@@ -297,14 +274,8 @@ public class TableEnvFactory {
       Planner planner = (Planner) pair.left;
       Executor executor = (Executor) pair.right;
 
-      Class clazz = null;
-      if (flinkVersion.isFlink110()) {
-        clazz = Class
-                .forName("org.apache.flink.table.api.scala.internal.StreamTableEnvironmentImpl");
-      } else {
-        clazz = Class
+      Class clazz = Class
                 .forName("org.apache.flink.table.api.bridge.scala.internal.StreamTableEnvironmentImpl");
-      }
       try {
         Constructor constructor = clazz
                 .getConstructor(
@@ -360,14 +331,9 @@ public class TableEnvFactory {
       Planner planner = (Planner) pair.left;
       Executor executor = (Executor) pair.right;
 
-      Class clazz = null;
-      if (flinkVersion.isFlink110()) {
-        clazz = Class
-                .forName("org.apache.flink.table.api.java.internal.StreamTableEnvironmentImpl");
-      } else {
-        clazz = Class
+      Class clazz = Class
                 .forName("org.apache.flink.table.api.bridge.java.internal.StreamTableEnvironmentImpl");
-      }
+
       try {
         Constructor constructor = clazz
                 .getConstructor(
@@ -424,14 +390,8 @@ public class TableEnvFactory {
       Planner planner = (Planner) pair.left;
       Executor executor = (Executor) pair.right;
 
-      Class clazz = null;
-      if (flinkVersion.isFlink110()) {
-        clazz = Class
-                .forName("org.apache.flink.table.api.java.internal.StreamTableEnvironmentImpl");
-      } else {
-        clazz = Class
+      Class clazz = Class
                 .forName("org.apache.flink.table.api.bridge.java.internal.StreamTableEnvironmentImpl");
-      }
       try {
         Constructor constructor = clazz.getConstructor(
                 CatalogManager.class,
