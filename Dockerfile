@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-FROM maven:3.5-jdk-8 as builder
+FROM openjdk:8 as builder
 ADD . /workspace/zeppelin
 WORKDIR /workspace/zeppelin
 # Allow npm and bower to run with root privileges
