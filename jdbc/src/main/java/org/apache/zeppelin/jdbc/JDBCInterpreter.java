@@ -473,10 +473,14 @@ public class JDBCInterpreter extends KerberosInterpreter {
     LOGGER.info("Creating connection pool for url: {}, user: {}, dbPrefix: {}, properties: {}",
             url, user, dbPrefix, properties);
 
+    /* Remove properties that is not valid properties for presto/trino by checking driver key.
+     * - Presto: com.facebook.presto.jdbc.PrestoDriver
+     * - Trino(ex. PrestoSQL): io.trino.jdbc.TrinoDriver / io.prestosql.jdbc.PrestoDriver
+     */
     String driverClass = properties.getProperty(DRIVER_KEY);
     if (driverClass != null && (driverClass.equals("com.facebook.presto.jdbc.PrestoDriver")
-            || driverClass.equals("io.prestosql.jdbc.PrestoDriver"))) {
-      // Only add valid properties otherwise presto won't work.
+            || driverClass.equals("io.prestosql.jdbc.PrestoDriver")
+            || driverClass.equals("io.trino.jdbc.TrinoDriver"))) {
       for (String key : properties.stringPropertyNames()) {
         if (!PRESTO_PROPERTIES.contains(key)) {
           properties.remove(key);
