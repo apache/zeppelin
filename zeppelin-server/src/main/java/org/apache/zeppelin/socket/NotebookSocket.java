@@ -17,8 +17,6 @@
 package org.apache.zeppelin.socket;
 
 import org.apache.commons.lang3.StringUtils;
-import org.eclipse.jetty.websocket.api.WebSocketAdapter;
-
 import java.io.IOException;
 import java.util.Map;
 
@@ -27,7 +25,7 @@ import javax.websocket.Session;
 /**
  * Notebook websocket.
  */
-public class NotebookSocket extends WebSocketAdapter {
+public class NotebookSocket {
   private Session session;
   private Map<String, Object> headers;
   private String user;
