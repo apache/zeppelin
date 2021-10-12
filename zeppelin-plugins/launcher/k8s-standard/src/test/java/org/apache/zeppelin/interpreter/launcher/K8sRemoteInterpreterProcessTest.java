@@ -123,6 +123,7 @@ public class K8sRemoteInterpreterProcessTest {
     assertEquals("12321:12321" , p.get("zeppelin.k8s.interpreter.rpc.portRange"));
     assertEquals("zeppelin.server.service" , p.get("zeppelin.k8s.server.rpc.service"));
     assertEquals(12320 , p.get("zeppelin.k8s.server.rpc.portRange"));
+    assertEquals("null", p.get("zeppelin.k8s.interpreter.user"));
     assertEquals("v1", p.get("my.key1"));
     assertEquals("V1", envs.get("MY_ENV1"));
 
@@ -218,6 +219,7 @@ public class K8sRemoteInterpreterProcessTest {
     // then
     assertEquals("spark-container:1.0", p.get("zeppelin.k8s.spark.container.image"));
     assertEquals(String.format("//4040-%s.%s", intp.getPodName(), "mydomain"), p.get("zeppelin.spark.uiWebUrl"));
+    assertEquals("mytestUser", p.get("zeppelin.k8s.interpreter.user"));
 
     envs = (HashMap<String, String>) p.get("zeppelin.k8s.envs");
     assertTrue( envs.containsKey("SPARK_HOME"));

@@ -23,6 +23,7 @@ metadata:
     app: {{zeppelin.k8s.interpreter.pod.name}}
     interpreterGroupId: {{zeppelin.k8s.interpreter.group.id}}
     interpreterSettingName: {{zeppelin.k8s.interpreter.setting.name}}
+    user: {{ zeppelin.k8s.interpreter.user }}
   {% if zeppelin.k8s.server.uid is defined %}
   ownerReferences:
   - apiVersion: v1
