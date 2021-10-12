@@ -290,6 +290,7 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterManagedProcess
     Properties k8sProperties = new Properties();
 
     // k8s template properties
+    k8sProperties.put("zeppelin.k8s.interpreter.user", String.valueOf(userName).trim());
     k8sProperties.put("zeppelin.k8s.interpreter.namespace", getInterpreterNamespace());
     k8sProperties.put("zeppelin.k8s.interpreter.pod.name", getPodName());
     k8sProperties.put("zeppelin.k8s.interpreter.serviceAccount", getServiceAccount());
@@ -310,7 +311,7 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterManagedProcess
       k8sProperties.put("zeppelin.k8s.server.uid", ownerUID());
       k8sProperties.put("zeppelin.k8s.server.pod.name", ownerName());
     }
-    
+
     Map<String, String> k8sEnv = new HashMap<>(getEnv());
     // environment variables
     k8sEnv.put(ENV_SERVICE_DOMAIN, getEnv().getOrDefault(ENV_SERVICE_DOMAIN, System.getenv(ENV_SERVICE_DOMAIN) == null ? "local.zeppelin-project.org" : System.getenv(ENV_SERVICE_DOMAIN)));
@@ -350,7 +351,7 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterManagedProcess
               getPodName(),
               k8sEnv.get(ENV_SERVICE_DOMAIN)
           ));
-      
+
       // Resources of Interpreter Pod
       if (properties.containsKey(SPARK_DRIVER_MEMORY)) {
         String memory;
