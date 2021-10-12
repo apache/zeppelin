@@ -63,9 +63,6 @@ public abstract class SparkShims {
     } else if (sparkMajorVersion == 2) {
       LOGGER.info("Initializing shims for Spark 2.x");
       sparkShimsClass = Class.forName("org.apache.zeppelin.spark.Spark2Shims");
-    } else if (sparkMajorVersion == 1){
-      LOGGER.info("Initializing shims for Spark 1.x");
-      sparkShimsClass = Class.forName("org.apache.zeppelin.spark.Spark1Shims");
     } else {
       throw new Exception("Spark major version: '" + sparkMajorVersion + "' is not supported yet");
     }

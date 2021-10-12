@@ -60,7 +60,6 @@ class SparkScala211Interpreter(override val conf: SparkConf,
 
     LOGGER.info("Scala shell repl output dir: " + outputDir.getAbsolutePath)
     conf.set("spark.repl.class.outputDir", outputDir.getAbsolutePath)
-    // Only Spark1 requires to create http server, Spark2 removes HttpServer class.
     startHttpServer(outputDir).foreach { case (server, uri) =>
       sparkHttpServer = server
       conf.set("spark.repl.class.uri", uri)

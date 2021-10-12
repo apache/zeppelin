@@ -133,51 +133,30 @@ public class IPySparkInterpreterTest extends IPythonInterpreterTest {
 
     // spark sql
     context = createInterpreterContext(mockIntpEventClient);
-    if (isSpark1(sparkVersion)) {
-      result = interpreter.interpret("df = sqlContext.createDataFrame([(1,'a'),(2,'b')])\ndf.show()", context);
-      assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-      interpreterResultMessages = context.out.toInterpreterResultMessage();
-      assertEquals(
-          "+---+---+\n" +
-              "| _1| _2|\n" +
-              "+---+---+\n" +
-              "|  1|  a|\n" +
-              "|  2|  b|\n" +
-              "+---+---+", interpreterResultMessages.get(0).getData().trim());
+    result = interpreter.interpret("df = spark.createDataFrame([(1,'a'),(2,'b')])\ndf.show()", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    interpreterResultMessages = context.out.toInterpreterResultMessage();
+    assertEquals(
+        "+---+---+\n" +
+            "| _1| _2|\n" +
+            "+---+---+\n" +
+            "|  1|  a|\n" +
+            "|  2|  b|\n" +
+            "+---+---+", interpreterResultMessages.get(0).getData().trim());
 
-      context = createInterpreterContext(mockIntpEventClient);
-      result = interpreter.interpret("z.show(df)", context);
-      assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-      interpreterResultMessages = context.out.toInterpreterResultMessage();
-      assertEquals(
-          "_1	_2\n" +
-              "1	a\n" +
-              "2	b", interpreterResultMessages.get(0).getData().trim());
-    } else {
-      result = interpreter.interpret("df = spark.createDataFrame([(1,'a'),(2,'b')])\ndf.show()", context);
-      assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-      interpreterResultMessages = context.out.toInterpreterResultMessage();
-      assertEquals(
-          "+---+---+\n" +
-              "| _1| _2|\n" +
-              "+---+---+\n" +
-              "|  1|  a|\n" +
-              "|  2|  b|\n" +
-              "+---+---+", interpreterResultMessages.get(0).getData().trim());
+    context = createInterpreterContext(mockIntpEventClient);
+    result = interpreter.interpret("z.show(df)", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    interpreterResultMessages = context.out.toInterpreterResultMessage();
+    assertEquals(
+        "_1	_2\n" +
+            "1	a\n" +
+            "2	b", interpreterResultMessages.get(0).getData().trim());
 
-      context = createInterpreterContext(mockIntpEventClient);
-      result = interpreter.interpret("z.show(df)", context);
-      assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-      interpreterResultMessages = context.out.toInterpreterResultMessage();
-      assertEquals(
-          "_1	_2\n" +
-              "1	a\n" +
-              "2	b", interpreterResultMessages.get(0).getData().trim());
+    // spark sql python API bindings
+    result = interpreter.interpret("df.explain()", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
 
-      // spark sql python API bindings
-      result = interpreter.interpret("df.explain()", context);
-      assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    }
     // cancel
     if (interpreter instanceof IPySparkInterpreter) {
       final InterpreterContext context2 = createInterpreterContext(mockIntpEventClient);
@@ -271,10 +250,6 @@ public class IPySparkInterpreterTest extends IPythonInterpreterTest {
       String exceptionMsg = ExceptionUtils.getStackTrace(e);
       TestCase.assertTrue(exceptionMsg, exceptionMsg.contains("No such file or directory"));
     }
-  }
-
-  private static boolean isSpark1(String sparkVersion) {
-    return sparkVersion.startsWith("'1.") || sparkVersion.startsWith("u'1.");
   }
 
   private static InterpreterContext createInterpreterContext(RemoteInterpreterEventClient mockRemoteEventClient) {

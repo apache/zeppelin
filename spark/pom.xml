@@ -57,12 +57,10 @@
     <modules>
         <module>interpreter</module>
         <module>spark-scala-parent</module>
-        <module>scala-2.10</module>
         <module>scala-2.11</module>
         <module>scala-2.12</module>
         <module>spark-dependencies</module>
         <module>spark-shims</module>
-        <module>spark1-shims</module>
         <module>spark2-shims</module>
         <module>spark3-shims</module>
     </modules>
@@ -155,14 +153,6 @@
             <properties>
                 <spark.scala.version>2.11.12</spark.scala.version>
                 <spark.scala.binary.version>2.11</spark.scala.binary.version>
-            </properties>
-        </profile>
-
-        <profile>
-            <id>spark-scala-2.10</id>
-            <properties>
-                <spark.scala.version>2.10.5</spark.scala.version>
-                <spark.scala.binary.version>2.10</spark.scala.binary.version>
             </properties>
         </profile>
 

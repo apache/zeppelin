@@ -224,51 +224,7 @@ abstract class BaseSparkScalaInterpreter(val conf: SparkConf,
   }
 
   protected def createSparkContext(): Unit = {
-    if (isSparkSessionPresent()) {
-      spark2CreateContext()
-    } else {
-      spark1CreateContext()
-    }
-  }
-
-  private def spark1CreateContext(): Unit = {
-    this.sc = SparkContext.getOrCreate(conf)
-    LOGGER.info("Created SparkContext")
-    getUserFiles().foreach(file => sc.addFile(file))
-
-    sc.getClass.getMethod("ui").invoke(sc).asInstanceOf[Option[_]] match {
-      case Some(webui) =>
-        sparkUrl = webui.getClass.getMethod("appUIAddress").invoke(webui).asInstanceOf[String]
-      case None =>
-    }
-
-    initAndSendSparkWebUrl()
-
-    val hiveSiteExisted: Boolean =
-      Thread.currentThread().getContextClassLoader.getResource("hive-site.xml") != null
-    val hiveEnabled = conf.getBoolean("zeppelin.spark.useHiveContext", false)
-    if (hiveEnabled && hiveSiteExisted) {
-      sqlContext = Class.forName("org.apache.spark.sql.hive.HiveContext")
-        .getConstructor(classOf[SparkContext]).newInstance(sc).asInstanceOf[SQLContext]
-      LOGGER.info("Created sql context (with Hive support)")
-    } else {
-      LOGGER.warn("spark.useHiveContext is set as true but no hive-site.xml" +
-          " is found in classpath, so zeppelin will fallback to SQLContext");
-      sqlContext = Class.forName("org.apache.spark.sql.SQLContext")
-        .getConstructor(classOf[SparkContext]).newInstance(sc).asInstanceOf[SQLContext]
-      LOGGER.info("Created sql context (without Hive support)")
-    }
-
-    bind("sc", "org.apache.spark.SparkContext", sc, List("""@transient"""))
-    bind("sqlContext", sqlContext.getClass.getCanonicalName, sqlContext, List("""@transient"""))
-
-    scalaInterpret("import org.apache.spark.SparkContext._")
-    scalaInterpret("import sqlContext.implicits._")
-    scalaInterpret("import sqlContext.sql")
-    scalaInterpret("import org.apache.spark.sql.functions._")
-    // print empty string otherwise the last statement's output of this method
-    // (aka. import org.apache.spark.sql.functions._) will mix with the output of user code
-    scalaInterpret("print(\"\")")
+    spark2CreateContext()
   }
 
   private def spark2CreateContext(): Unit = {

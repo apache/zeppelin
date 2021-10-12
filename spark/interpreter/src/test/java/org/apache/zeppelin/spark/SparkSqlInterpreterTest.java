@@ -225,18 +225,14 @@ public class SparkSqlInterpreterTest {
     assertEquals(InterpreterResult.Code.ERROR, ret.code());
     assertEquals(context.out.toString(), 2, context.out.toInterpreterResultMessage().size());
     assertEquals(context.out.toString(), Type.TABLE, context.out.toInterpreterResultMessage().get(0).getType());
-    if (!sparkInterpreter.getSparkVersion().isSpark1()) {
-      assertTrue(context.out.toString(), context.out.toInterpreterResultMessage().get(1).getData().contains("mismatched input"));
-    }
+    assertTrue(context.out.toString(), context.out.toInterpreterResultMessage().get(1).getData().contains("mismatched input"));
 
     // One correct sql + One invalid sql + One valid sql (skipped)
     ret = sqlInterpreter.interpret("select * from gr;invalid_sql; select count(1) from gr", context);
     assertEquals(InterpreterResult.Code.ERROR, ret.code());
     assertEquals(context.out.toString(), 2, context.out.toInterpreterResultMessage().size());
     assertEquals(context.out.toString(), Type.TABLE, context.out.toInterpreterResultMessage().get(0).getType());
-    if (!sparkInterpreter.getSparkVersion().isSpark1()) {
-      assertTrue(context.out.toString(), context.out.toInterpreterResultMessage().get(1).getData().contains("mismatched input"));
-    }
+    assertTrue(context.out.toString(), context.out.toInterpreterResultMessage().get(1).getData().contains("mismatched input"));
 
     // Two 2 comments
     ret = sqlInterpreter.interpret(
@@ -247,11 +243,7 @@ public class SparkSqlInterpreterTest {
 
   @Test
   public void testConcurrentSQL() throws InterpreterException, InterruptedException {
-    if (!sparkInterpreter.getSparkVersion().isSpark1()) {
-      sparkInterpreter.interpret("spark.udf.register(\"sleep\", (e:Int) => {Thread.sleep(e*1000); e})", context);
-    } else {
-      sparkInterpreter.interpret("sqlContext.udf.register(\"sleep\", (e:Int) => {Thread.sleep(e*1000); e})", context);
-    }
+    sparkInterpreter.interpret("spark.udf.register(\"sleep\", (e:Int) => {Thread.sleep(e*1000); e})", context);
 
     Thread thread1 = new Thread() {
       @Override
