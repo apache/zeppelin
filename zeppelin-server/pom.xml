@@ -295,6 +295,13 @@
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-client</artifactId>
+      <exclusions>
+        <!-- Provided by javax-websocket-server-impl -->
+        <exclusion>
+          <groupId>org.ow2.asm</groupId>
+          <artifactId>asm</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <!--test libraries-->
@@ -304,6 +311,7 @@
       <classifier>tests</classifier>
       <scope>test</scope>
       <exclusions>
+        <!-- Provided by javax-websocket-server-impl -->
         <exclusion>
           <groupId>org.ow2.asm</groupId>
           <artifactId>asm</artifactId>

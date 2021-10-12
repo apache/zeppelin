@@ -1079,7 +1079,6 @@
         <executions>
           <execution>
             <id>checkstyle-fail-build</id>
-            <phase>validate</phase>
             <goals>
               <goal>check</goal>
             </goals>
