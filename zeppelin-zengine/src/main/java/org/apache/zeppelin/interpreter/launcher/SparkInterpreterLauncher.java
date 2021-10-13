@@ -98,9 +98,14 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
       sparkProperties.setProperty("spark.pyspark.python", condaEnvName + "/bin/python");
     }
 
-    if (isYarnMode() && getDeployMode().equals("cluster")) {
+    if (isYarnCluster()) {
       env.put("ZEPPELIN_SPARK_YARN_CLUSTER", "true");
       sparkProperties.setProperty("spark.yarn.submit.waitAppCompletion", "false");
+      // Need to set `zeppelin.interpreter.forceShutdown` in interpreter properties directly
+      // instead of updating sparkProperties.
+      // Because `zeppelin.interpreter.forceShutdown` is initialized in RemoteInterpreterServer
+      // before SparkInterpreter is created.
+      context.getProperties().put("zeppelin.interpreter.forceShutdown", "false");
     } else if (zConf.isOnlyYarnCluster()){
       throw new IOException("Only yarn-cluster mode is allowed, please set " +
               ZeppelinConfiguration.ConfVars.ZEPPELIN_SPARK_ONLY_YARN_CLUSTER.getVarName() +
@@ -421,9 +426,5 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
 
   private boolean isYarnCluster() {
     return isYarnMode() && "cluster".equalsIgnoreCase(getDeployMode());
-  }
-
-  private boolean isYarnClient() {
-    return isYarnMode() && "client".equalsIgnoreCase(getDeployMode());
   }
 }

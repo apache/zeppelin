@@ -20,6 +20,8 @@ package org.apache.zeppelin.integration;
 import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.yarn.api.protocolrecords.GetApplicationsRequest;
 import org.apache.hadoop.yarn.api.protocolrecords.GetApplicationsResponse;
+import org.apache.hadoop.yarn.api.records.ApplicationReport;
+import org.apache.hadoop.yarn.api.records.FinalApplicationStatus;
 import org.apache.hadoop.yarn.api.records.YarnApplicationState;
 import org.apache.hadoop.yarn.exceptions.YarnException;
 import org.apache.maven.model.Model;
@@ -46,6 +48,8 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.EnumSet;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
@@ -249,6 +253,7 @@ public abstract class SparkIntegrationTest {
     // parameters with whitespace
     sparkInterpreterSetting.setProperty("spark.app.name", "hello spark");
 
+    String yarnAppId = null;
     try {
       setUpSparkInterpreterSetting(sparkInterpreterSetting);
       testInterpreterBasics();
@@ -258,10 +263,20 @@ public abstract class SparkIntegrationTest {
       GetApplicationsResponse response = hadoopCluster.getYarnCluster().getResourceManager().getClientRMService().getApplications(request);
       assertEquals(1, response.getApplicationList().size());
       assertEquals("hello spark", response.getApplicationList().get(0).getName());
-
+      yarnAppId = response.getApplicationList().get(0).getApplicationId().toString();
     } finally {
       interpreterSettingManager.close();
       waitForYarnAppCompleted(30 * 1000);
+
+      if (yarnAppId != null) {
+        // ensure yarn app is finished with SUCCEEDED status.
+        final String finalYarnAppId = yarnAppId;
+        GetApplicationsRequest request = GetApplicationsRequest.newInstance(EnumSet.of(YarnApplicationState.FINISHED));
+        GetApplicationsResponse response = hadoopCluster.getYarnCluster().getResourceManager().getClientRMService().getApplications(request);
+        List<ApplicationReport> apps = response.getApplicationList().stream().filter(app -> app.getApplicationId().toString().equals(finalYarnAppId)).collect(Collectors.toList());
+        assertEquals(1, apps.size());
+        assertEquals(FinalApplicationStatus.SUCCEEDED, apps.get(0).getFinalApplicationStatus());
+      }
     }
   }
 
