@@ -90,10 +90,6 @@ public class SparkVersion {
     return new SparkVersion(versionString);
   }
 
-  public boolean isSpark1() {
-    return this.olderThan(SPARK_2_0_0);
-  }
-
   public boolean isSecretSocketSupported() {
     return this.newerThanEquals(SparkVersion.SPARK_2_4_0) ||
             this.newerThanEqualsPatchVersion(SPARK_2_3_1) ||

@@ -85,48 +85,40 @@ public class SparkRInterpreterTest {
 
     result = sparkRInterpreter.interpret("sparkR.version()", getInterpreterContext());
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    if (sparkRInterpreter.isSpark1()) {
-      // spark 1.x
-      result = sparkRInterpreter.interpret("df <- createDataFrame(sqlContext, faithful)\nhead(df)", getInterpreterContext());
-      assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-      assertTrue(result.message().get(0).getData().contains("eruptions waiting"));
-      // spark job url is sent
-      verify(mockRemoteIntpEventClient, atLeastOnce()).onParaInfosReceived(any(Map.class));
-    } else {
-      // spark 2.x or 3.x
-      result = sparkRInterpreter.interpret("df <- as.DataFrame(faithful)\nhead(df)", getInterpreterContext());
-      assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-      assertTrue(result.message().get(0).getData().contains("eruptions waiting"));
-      // spark job url is sent
-      verify(mockRemoteIntpEventClient, atLeastOnce()).onParaInfosReceived(any(Map.class));
 
-      // cancel
-      final InterpreterContext context = getInterpreterContext();
-      Thread thread = new Thread() {
-        @Override
-        public void run() {
-          try {
-            InterpreterResult result = sparkRInterpreter.interpret("ldf <- dapplyCollect(\n" +
-                    "         df,\n" +
-                    "         function(x) {\n" +
-                    "           Sys.sleep(3)\n" +
-                    "           x <- cbind(x, \"waiting_secs\" = x$waiting * 60)\n" +
-                    "         })\n" +
-                    "head(ldf, 3)", context);
-            assertTrue(result.message().get(0).getData().contains("cancelled"));
-          } catch (InterpreterException e) {
-            fail("Should not throw InterpreterException");
-          }
+    result = sparkRInterpreter.interpret("df <- as.DataFrame(faithful)\nhead(df)", getInterpreterContext());
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    assertTrue(result.message().get(0).getData().contains("eruptions waiting"));
+    // spark job url is sent
+    verify(mockRemoteIntpEventClient, atLeastOnce()).onParaInfosReceived(any(Map.class));
+
+    // cancel
+    InterpreterContext context = getInterpreterContext();
+    InterpreterContext finalContext = context;
+    Thread thread = new Thread() {
+      @Override
+      public void run() {
+        try {
+          InterpreterResult result = sparkRInterpreter.interpret("ldf <- dapplyCollect(\n" +
+                  "         df,\n" +
+                  "         function(x) {\n" +
+                  "           Sys.sleep(3)\n" +
+                  "           x <- cbind(x, \"waiting_secs\" = x$waiting * 60)\n" +
+                  "         })\n" +
+                  "head(ldf, 3)", finalContext);
+          assertTrue(result.message().get(0).getData().contains("cancelled"));
+        } catch (InterpreterException e) {
+          fail("Should not throw InterpreterException");
         }
-      };
-      thread.setName("Cancel-Thread");
-      thread.start();
-      Thread.sleep(1000);
-      sparkRInterpreter.cancel(context);
-    }
+      }
+    };
+    thread.setName("Cancel-Thread");
+    thread.start();
+    Thread.sleep(1000);
+    sparkRInterpreter.cancel(context);
 
     // plotting
-    InterpreterContext context = getInterpreterContext();
+    context = getInterpreterContext();
     context.getLocalProperties().put("imageWidth", "100");
     result = sparkRInterpreter.interpret("hist(mtcars$mpg)", context);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());

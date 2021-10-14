@@ -63,13 +63,6 @@
 
     <dependency>
       <groupId>org.apache.zeppelin</groupId>
-      <artifactId>spark-scala-2.10</artifactId>
-      <version>${project.version}</version>
-      <scope>provided</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.zeppelin</groupId>
       <artifactId>spark-scala-2.11</artifactId>
       <version>${project.version}</version>
       <scope>provided</scope>

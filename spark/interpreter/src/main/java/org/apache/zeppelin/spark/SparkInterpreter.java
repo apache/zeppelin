@@ -84,7 +84,6 @@ public class SparkInterpreter extends AbstractInterpreter {
     }
     this.enableSupportedVersionCheck = java.lang.Boolean.parseBoolean(
         properties.getProperty("zeppelin.spark.enableSupportedVersionCheck", "true"));
-    innerInterpreterClassMap.put("2.10", "org.apache.zeppelin.spark.SparkScala210Interpreter");
     innerInterpreterClassMap.put("2.11", "org.apache.zeppelin.spark.SparkScala211Interpreter");
     innerInterpreterClassMap.put("2.12", "org.apache.zeppelin.spark.SparkScala212Interpreter");
   }
@@ -142,7 +141,6 @@ public class SparkInterpreter extends AbstractInterpreter {
    * Load AbstractSparkScalaInterpreter based on the runtime scala version.
    * Load AbstractSparkScalaInterpreter from the following location:
    *
-   * SparkScala210Interpreter   ZEPPELIN_HOME/interpreter/spark/scala-2.10
    * SparkScala211Interpreter   ZEPPELIN_HOME/interpreter/spark/scala-2.11
    * SparkScala212Interpreter   ZEPPELIN_HOME/interpreter/spark/scala-2.12
    *
@@ -257,9 +255,7 @@ public class SparkInterpreter extends AbstractInterpreter {
   private String extractScalaVersion() throws InterpreterException {
     String scalaVersionString = scala.util.Properties.versionString();
     LOGGER.info("Using Scala: " + scalaVersionString);
-    if (scalaVersionString.contains("version 2.10")) {
-      return "2.10";
-    } else if (scalaVersionString.contains("version 2.11")) {
+    if (scalaVersionString.contains("version 2.11")) {
       return "2.11";
     } else if (scalaVersionString.contains("version 2.12")) {
       return "2.12";
@@ -270,10 +266,6 @@ public class SparkInterpreter extends AbstractInterpreter {
 
   public boolean isScala212() throws InterpreterException {
     return extractScalaVersion().equals("2.12");
-  }
-
-  public boolean isScala210() throws InterpreterException {
-    return extractScalaVersion().equals("2.10");
   }
 
   private List<String> getDependencyFiles() throws InterpreterException {
