@@ -29,6 +29,7 @@ import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
+import org.apache.zeppelin.kotlin.KotlinInterpreter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -84,10 +85,12 @@ public class SparkInterpreter extends AbstractInterpreter {
     if (Boolean.parseBoolean(properties.getProperty("zeppelin.spark.scala.color", "true"))) {
       System.setProperty("scala.color", "true");
     }
+
     this.enableSupportedVersionCheck = java.lang.Boolean.parseBoolean(
         properties.getProperty("zeppelin.spark.enableSupportedVersionCheck", "true"));
     innerInterpreterClassMap.put("2.11", "org.apache.zeppelin.spark.SparkScala211Interpreter");
     innerInterpreterClassMap.put("2.12", "org.apache.zeppelin.spark.SparkScala212Interpreter");
+    innerInterpreterClassMap.put("2.13", "org.apache.zeppelin.spark.SparkScala213Interpreter");
   }
 
   @Override
@@ -145,6 +148,7 @@ public class SparkInterpreter extends AbstractInterpreter {
    *
    * SparkScala211Interpreter   ZEPPELIN_HOME/interpreter/spark/scala-2.11
    * SparkScala212Interpreter   ZEPPELIN_HOME/interpreter/spark/scala-2.12
+   * SparkScala213Interpreter   ZEPPELIN_HOME/interpreter/spark/scala-2.13
    *
    * @param conf
    * @return AbstractSparkScalaInterpreter
@@ -234,6 +238,12 @@ public class SparkInterpreter extends AbstractInterpreter {
     return this.innerInterpreter.getZeppelinContext();
   }
 
+  public InterpreterResult delegateInterpret(KotlinInterpreter kotlinInterpreter,
+                                             String code,
+                                             InterpreterContext context) {
+    return innerInterpreter.delegateInterpret(kotlinInterpreter, code, context);
+  }
+
   public SparkContext getSparkContext() {
     return this.sc;
   }
@@ -280,13 +290,23 @@ public class SparkInterpreter extends AbstractInterpreter {
       return "2.11";
     } else if (scalaVersionString.contains("2.12")) {
       return "2.12";
+    } else if (scalaVersionString.contains("2.13")) {
+      return "2.13";
     } else {
       throw new InterpreterException("Unsupported scala version: " + scalaVersionString);
     }
   }
 
+  public boolean isScala211() throws InterpreterException {
+    return scalaVersion.equals("2.11");
+  }
+
   public boolean isScala212() throws InterpreterException {
     return scalaVersion.equals("2.12");
+  }
+
+  public boolean isScala213() {
+    return scalaVersion.equals("2.13");
   }
 
   private List<String> getDependencyFiles() throws InterpreterException {

@@ -17,17 +17,24 @@
 
 package org.apache.zeppelin.spark;
 
-import static org.apache.zeppelin.spark.Utils.buildJobDesc;
-import static org.apache.zeppelin.spark.Utils.buildJobGroupId;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.sql.SQLContext;
 import org.apache.spark.util.Utils;
+import org.apache.zeppelin.interpreter.Interpreter;
+import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterException;
+import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.ZeppelinContext;
+import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
+import org.apache.zeppelin.kotlin.KotlinInterpreter;
+import org.apache.zeppelin.spark.kotlin.KotlinZeppelinBindings;
+import org.apache.zeppelin.spark.kotlin.SparkKotlinReceiver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -35,17 +42,9 @@ import java.util.Properties;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import scala.Console;
-import org.apache.zeppelin.interpreter.ZeppelinContext;
-import org.apache.zeppelin.interpreter.Interpreter;
-import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterException;
-import org.apache.zeppelin.interpreter.InterpreterOutput;
-import org.apache.zeppelin.interpreter.InterpreterResult;
-import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
-import org.apache.zeppelin.kotlin.KotlinInterpreter;
-import org.apache.zeppelin.spark.kotlin.KotlinZeppelinBindings;
-import org.apache.zeppelin.spark.kotlin.SparkKotlinReceiver;
+
+import static org.apache.zeppelin.spark.Utils.buildJobDesc;
+import static org.apache.zeppelin.spark.Utils.buildJobGroupId;
 
 public class KotlinSparkInterpreter extends Interpreter {
   private static Logger logger = LoggerFactory.getLogger(KotlinSparkInterpreter.class);
@@ -125,15 +124,7 @@ public class KotlinSparkInterpreter extends Interpreter {
     jsc.setJobGroup(buildJobGroupId(context), buildJobDesc(context), false);
     jsc.setLocalProperty("spark.scheduler.pool", context.getLocalProperties().get("pool"));
 
-    InterpreterOutput out = context.out;
-    PrintStream scalaOut = Console.out();
-    PrintStream newOut = (out != null) ? new PrintStream(out) : null;
-
-    Console.setOut(newOut);
-    InterpreterResult result = interpreter.interpret(st, context);
-    Console.setOut(scalaOut);
-
-    return result;
+    return sparkInterpreter.delegateInterpret(interpreter, st, context);
   }
 
   @Override

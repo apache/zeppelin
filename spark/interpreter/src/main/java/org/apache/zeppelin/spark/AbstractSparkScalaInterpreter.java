@@ -25,6 +25,7 @@ import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
+import org.apache.zeppelin.kotlin.KotlinInterpreter;
 
 import java.util.List;
 
@@ -64,6 +65,10 @@ public abstract class AbstractSparkScalaInterpreter {
   public abstract void close();
 
   public abstract InterpreterResult interpret(String st, InterpreterContext context);
+
+  public abstract InterpreterResult delegateInterpret(KotlinInterpreter kotlinInterpreter,
+                                                      String st,
+                                                      InterpreterContext context);
 
   public abstract List<InterpreterCompletion> completion(String buf,
                                                          int cursor,
