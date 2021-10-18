@@ -23,7 +23,7 @@ import org.junit.runners.Parameterized;
 import java.util.Arrays;
 import java.util.List;
 
-@RunWith(value = Parameterized.class)
+//@RunWith(value = Parameterized.class)
 public class ZeppelinFlinkClusterTest112 extends ZeppelinFlinkClusterTest {
 
   @Parameterized.Parameters
