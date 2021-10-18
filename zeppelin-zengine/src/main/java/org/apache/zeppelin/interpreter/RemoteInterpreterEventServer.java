@@ -556,6 +556,7 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
                                     Map<String, String> config)
           throws InterpreterRPCException, TException {
     try {
+      LOGGER.info("Update paragraph config");
       Note note = interpreterSettingManager.getNotebook().getNote(noteId);
       note.getParagraph(paragraphId).updateConfig(config);
       interpreterSettingManager.getNotebook().saveNote(note, AuthenticationInfo.ANONYMOUS);

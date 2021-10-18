@@ -268,6 +268,7 @@ public class JobManager {
                 if (!StringUtils.isBlank(checkpointPath) && !checkpointPath.equals(latestCheckpointPath)) {
                   Map<String, String> config = new HashMap<>();
                   config.put(LATEST_CHECKPOINT_PATH, checkpointPath);
+                  LOGGER.info("Update latest checkpoint path: {}", checkpointPath);
                   context.getIntpEventClient().updateParagraphConfig(
                           context.getNoteId(), context.getParagraphId(), config);
                   latestCheckpointPath = checkpointPath;

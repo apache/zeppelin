@@ -182,10 +182,6 @@ public class PyFlinkInterpreter extends PythonInterpreter {
     return flinkInterpreter.getProgress(context);
   }
 
-  public boolean isFlink110() {
-    return flinkInterpreter.getFlinkVersion().isFlink110();
-  }
-
   public boolean isAfterFlink114() {
     return flinkInterpreter.getFlinkVersion().isAfterFlink114();
   }

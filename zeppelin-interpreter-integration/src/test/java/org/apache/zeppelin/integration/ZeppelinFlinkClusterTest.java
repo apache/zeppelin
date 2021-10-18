@@ -29,6 +29,7 @@ import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.utils.TestUtils;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,10 +46,11 @@ public abstract class ZeppelinFlinkClusterTest extends AbstractTestRestApi {
   private String flinkVersion;
   private String flinkHome;
 
-  public ZeppelinFlinkClusterTest(String flinkVersion) throws Exception {
+  public ZeppelinFlinkClusterTest(String flinkVersion, String scalaVersion) throws Exception {
     this.flinkVersion = flinkVersion;
     LOGGER.info("Testing FlinkVersion: " + flinkVersion);
-    this.flinkHome = DownloadUtils.downloadFlink(flinkVersion, "2.11");
+    LOGGER.info("Testing ScalaVersion: " + scalaVersion);
+    this.flinkHome = DownloadUtils.downloadFlink(flinkVersion, scalaVersion);
   }
 
   @BeforeClass
@@ -63,6 +65,7 @@ public abstract class ZeppelinFlinkClusterTest extends AbstractTestRestApi {
     AbstractTestRestApi.shutDown();
   }
 
+  // TODO(zjffdu) Disable Temporary
   //@Test
   public void testResumeFromCheckpoint() throws Exception {
 
@@ -96,9 +99,11 @@ public abstract class ZeppelinFlinkClusterTest extends AbstractTestRestApi {
       note.run(p2.getId(), false);
       p2.waitUntilRunning();
 
-      Thread.sleep(30 * 1000);
-      TestUtils.getInstance(Notebook.class).getInterpreterSettingManager()
-              .getInterpreterSettingByName("flink").close();
+      Thread.sleep(60 * 1000);
+      p2.abort();
+
+      // Sleep 5 seconds to ensure checkpoint info is written to note file
+      Thread.sleep(5 * 1000);
       assertTrue(p2.getConfig().toString(), p2.getConfig().get("latest_checkpoint_path").toString().contains(checkpointPath));
 
       // run it again

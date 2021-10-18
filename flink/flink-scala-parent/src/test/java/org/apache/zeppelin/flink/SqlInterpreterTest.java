@@ -368,15 +368,13 @@ public abstract class SqlInterpreterTest {
     assertEquals("table\nsource_table\n", resultMessages.get(0).getData());
 
     // create temporary view
-    if (!flinkInterpreter.getFlinkVersion().isFlink110()) {
-      context = getInterpreterContext();
-      result = sqlInterpreter.interpret("create temporary view my_temp_view as select int_col from source_table", context);
-      assertEquals(result.toString(), Code.SUCCESS, result.code());
-      resultMessages = context.out.toInterpreterResultMessage();
-      assertEquals(1, resultMessages.size());
-      assertEquals(Type.TEXT, resultMessages.get(0).getType());
-      assertEquals("View has been created.\n", resultMessages.get(0).getData());
-    }
+    context = getInterpreterContext();
+    result = sqlInterpreter.interpret("create temporary view my_temp_view as select int_col from source_table", context);
+    assertEquals(result.toString(), Code.SUCCESS, result.code());
+    resultMessages = context.out.toInterpreterResultMessage();
+    assertEquals(1, resultMessages.size());
+    assertEquals(Type.TEXT, resultMessages.get(0).getType());
+    assertEquals("View has been created.\n", resultMessages.get(0).getData());
   }
 
   @Test
@@ -432,133 +430,107 @@ public abstract class SqlInterpreterTest {
 
   @Test
   public void testFunction() throws IOException, InterpreterException {
+    InterpreterContext context = getInterpreterContext();
 
-    FlinkVersion flinkVersion = flinkInterpreter.getFlinkVersion();
-    if(!flinkVersion.isFlink110()){
-      InterpreterContext context = getInterpreterContext();
+    // CREATE UDF
+    InterpreterResult result = sqlInterpreter.interpret(
+            "CREATE FUNCTION myudf AS 'org.apache.zeppelin.flink.JavaUpper' ;", context);
+    assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
+    List<InterpreterResultMessage> resultMessages = context.out.toInterpreterResultMessage();
+    assertTrue(resultMessages.toString(),resultMessages.get(0).getData().contains("Function has been created."));
 
-      // CREATE UDF
-      InterpreterResult result = sqlInterpreter.interpret(
-              "CREATE FUNCTION myudf AS 'org.apache.zeppelin.flink.JavaUpper' ;", context);
-      assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
-      List<InterpreterResultMessage> resultMessages = context.out.toInterpreterResultMessage();
-      assertTrue(resultMessages.toString(),resultMessages.get(0).getData().contains("Function has been created."));
-
-      // SHOW UDF
-      context = getInterpreterContext();
-      result = sqlInterpreter.interpret(
-              "SHOW FUNCTIONS ;", context);
-      assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
-      resultMessages = context.out.toInterpreterResultMessage();
-      assertTrue(resultMessages.toString(),resultMessages.get(0).getData().contains("myudf"));
+    // SHOW UDF
+    context = getInterpreterContext();
+    result = sqlInterpreter.interpret(
+            "SHOW FUNCTIONS ;", context);
+    assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
+    resultMessages = context.out.toInterpreterResultMessage();
+    assertTrue(resultMessages.toString(),resultMessages.get(0).getData().contains("myudf"));
 
 
-      // ALTER
-      context = getInterpreterContext();
-      result = sqlInterpreter.interpret(
-              "ALTER FUNCTION myUDF AS 'org.apache.zeppelin.flink.JavaLower' ; ", context);
-      assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
-      resultMessages = context.out.toInterpreterResultMessage();
-      assertTrue(resultMessages.toString(),resultMessages.get(0).getData().contains("Function has been modified."));
+    // ALTER
+    context = getInterpreterContext();
+    result = sqlInterpreter.interpret(
+            "ALTER FUNCTION myUDF AS 'org.apache.zeppelin.flink.JavaLower' ; ", context);
+    assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
+    resultMessages = context.out.toInterpreterResultMessage();
+    assertTrue(resultMessages.toString(),resultMessages.get(0).getData().contains("Function has been modified."));
 
 
-      // DROP UDF
-      context = getInterpreterContext();
-      result = sqlInterpreter.interpret("DROP FUNCTION myudf ;", context);
-      assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
-      resultMessages = context.out.toInterpreterResultMessage();
-      assertTrue(resultMessages.toString(),resultMessages.get(0).getData().contains("Function has been dropped."));
+    // DROP UDF
+    context = getInterpreterContext();
+    result = sqlInterpreter.interpret("DROP FUNCTION myudf ;", context);
+    assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
+    resultMessages = context.out.toInterpreterResultMessage();
+    assertTrue(resultMessages.toString(),resultMessages.get(0).getData().contains("Function has been dropped."));
 
 
-      // SHOW UDF. Due to drop UDF before, it shouldn't contain 'myudf'
-      result = sqlInterpreter.interpret(
-              "SHOW FUNCTIONS ;", context);
-      assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
-      resultMessages = context.out.toInterpreterResultMessage();
-      assertFalse(resultMessages.toString(), resultMessages.get(0).getData().contains("myudf"));
-    } else {
-      // Flink1.10 don't support ddl for function
-      assertTrue(flinkVersion.isFlink110());
-    }
-
+    // SHOW UDF. Due to drop UDF before, it shouldn't contain 'myudf'
+    result = sqlInterpreter.interpret(
+            "SHOW FUNCTIONS ;", context);
+    assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
+    resultMessages = context.out.toInterpreterResultMessage();
+    assertFalse(resultMessages.toString(), resultMessages.get(0).getData().contains("myudf"));
   }
 
   @Test
   public void testCatalog() throws IOException, InterpreterException{
-    FlinkVersion flinkVersion = flinkInterpreter.getFlinkVersion();
+    InterpreterContext context = getInterpreterContext();
 
-    if (!flinkVersion.isFlink110()){
-      InterpreterContext context = getInterpreterContext();
+    // CREATE CATALOG
+    InterpreterResult result = sqlInterpreter.interpret(
+            "CREATE CATALOG test_catalog \n" +
+                    "WITH( \n" +
+                    "'type'='generic_in_memory' \n" +
+                    ");", context);
+    assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
+    List<InterpreterResultMessage> resultMessages = context.out.toInterpreterResultMessage();
+    assertTrue(resultMessages.toString(),resultMessages.get(0).getData().contains("Catalog has been created."));
 
-      // CREATE CATALOG
-      InterpreterResult result = sqlInterpreter.interpret(
-              "CREATE CATALOG test_catalog \n" +
-                      "WITH( \n" +
-                      "'type'='generic_in_memory' \n" +
-                      ");", context);
-      assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
-      List<InterpreterResultMessage> resultMessages = context.out.toInterpreterResultMessage();
-      assertTrue(resultMessages.toString(),resultMessages.get(0).getData().contains("Catalog has been created."));
+    // USE CATALOG & SHOW DATABASES;
+    context = getInterpreterContext();
+    result = sqlInterpreter.interpret(
+            "USE CATALOG test_catalog ;\n" +
+                    "SHOW DATABASES;", context);
+    assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
+    resultMessages = context.out.toInterpreterResultMessage();
+    assertTrue(resultMessages.toString(),resultMessages.get(0).getData().contains("default"));
 
-      // USE CATALOG & SHOW DATABASES;
-      context = getInterpreterContext();
-      result = sqlInterpreter.interpret(
-              "USE CATALOG test_catalog ;\n" +
-                      "SHOW DATABASES;", context);
-      assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
-      resultMessages = context.out.toInterpreterResultMessage();
-      assertTrue(resultMessages.toString(),resultMessages.get(0).getData().contains("default"));
+    // DROP CATALOG
+    context = getInterpreterContext();
+    result = sqlInterpreter.interpret(
+            "DROP CATALOG test_catalog ;\n", context);
+    assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
+    resultMessages = context.out.toInterpreterResultMessage();
+    assertTrue(resultMessages.toString(),resultMessages.get(0).getData().contains("Catalog has been dropped."));
 
-      // DROP CATALOG
-      context = getInterpreterContext();
-      result = sqlInterpreter.interpret(
-              "DROP CATALOG test_catalog ;\n", context);
-      assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
-      resultMessages = context.out.toInterpreterResultMessage();
-      assertTrue(resultMessages.toString(),resultMessages.get(0).getData().contains("Catalog has been dropped."));
-
-      // SHOW CATALOG. Due to drop CATALOG before, it shouldn't contain 'test_catalog'
-      context = getInterpreterContext();
-      result = sqlInterpreter.interpret(
-              "SHOW CATALOGS ;\n", context);
-      assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
-      resultMessages = context.out.toInterpreterResultMessage();
-      assertTrue(resultMessages.toString(),resultMessages.get(0).getData().contains("default_catalog"));
-      assertFalse(resultMessages.toString(),resultMessages.get(0).getData().contains("test_catalog"));
-    } else {
-      // Flink1.10 don't support ddl for catalog
-      assertTrue(flinkVersion.isFlink110());
-    }
+    // SHOW CATALOG. Due to drop CATALOG before, it shouldn't contain 'test_catalog'
+    context = getInterpreterContext();
+    result = sqlInterpreter.interpret(
+            "SHOW CATALOGS ;\n", context);
+    assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
+    resultMessages = context.out.toInterpreterResultMessage();
+    assertTrue(resultMessages.toString(),resultMessages.get(0).getData().contains("default_catalog"));
+    assertFalse(resultMessages.toString(),resultMessages.get(0).getData().contains("test_catalog"));
 
   }
 
   @Test
   public void testSetProperty() throws InterpreterException {
     FlinkVersion flinkVersion = flinkInterpreter.getFlinkVersion();
+    InterpreterContext context = getInterpreterContext();
+    InterpreterResult result = sqlInterpreter.interpret(
+            "set table.sql-dialect=hive", context);
+    assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
 
-    if (!flinkVersion.isFlink110()){
-      InterpreterContext context = getInterpreterContext();
-      InterpreterResult result = sqlInterpreter.interpret(
-              "set table.sql-dialect=hive", context);
-      assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
-
-      sqlInterpreter.interpret("create table test_hive_table(a string, b int)\n" +
-              "partitioned by (dt string)", context);
-      assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
-    } else {
-      // Flink1.10 doesn't support set table.sql-dialet which is introduced in flink 1.11
-      InterpreterContext context = getInterpreterContext();
-      InterpreterResult result = sqlInterpreter.interpret(
-              "set table.sql-dialect=hive", context);
-      assertEquals(context.out.toString(), Code.ERROR, result.code());
-      assertTrue(context.out.toString(),
-              context.out.toString().contains("table.sql-dialect is not a valid table/sql config"));
-    }
+    sqlInterpreter.interpret("create table test_hive_table(a string, b int)\n" +
+            "partitioned by (dt string)", context);
+    assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
 
     // table.local-time-zone is only available from 1.12
     if (flinkVersion.newerThanOrEqual(FlinkVersion.fromVersionString("1.12.0"))) {
-      InterpreterContext context = getInterpreterContext();
-      InterpreterResult result = sqlInterpreter.interpret("SET 'table.local-time-zone' = 'UTC'", context);
+      context = getInterpreterContext();
+      result = sqlInterpreter.interpret("SET 'table.local-time-zone' = 'UTC'", context);
       assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
     }
   }
@@ -566,20 +538,14 @@ public abstract class SqlInterpreterTest {
   @Test
   public void testShowModules() throws InterpreterException, IOException {
     FlinkVersion flinkVersion = flinkInterpreter.getFlinkVersion();
+    InterpreterContext context = getInterpreterContext();
 
-    if (!flinkVersion.isFlink110()) {
-      InterpreterContext context = getInterpreterContext();
-
-      // CREATE CATALOG
-      InterpreterResult result = sqlInterpreter.interpret(
-              "show modules", context);
-      assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
-      List<InterpreterResultMessage> resultMessages = context.out.toInterpreterResultMessage();
-      assertTrue(resultMessages.toString(), resultMessages.get(0).getData().contains("core"));
-    } else {
-      // Flink1.10 don't support show modules
-      assertTrue(flinkVersion.isFlink110());
-    }
+    // CREATE CATALOG
+    InterpreterResult result = sqlInterpreter.interpret(
+            "show modules", context);
+    assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
+    List<InterpreterResultMessage> resultMessages = context.out.toInterpreterResultMessage();
+    assertTrue(resultMessages.toString(), resultMessages.get(0).getData().contains("core"));
   }
 
 

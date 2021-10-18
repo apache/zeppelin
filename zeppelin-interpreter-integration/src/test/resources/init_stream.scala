@@ -6,7 +6,7 @@ import java.util.Collections
 import scala.collection.JavaConversions._
 
 senv.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
-senv.enableCheckpointing(15000)
+senv.enableCheckpointing(5000)
 
 val data = senv.addSource(new SourceFunction[(Long, String)] with ListCheckpointed[java.lang.Long] {
 

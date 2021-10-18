@@ -406,10 +406,6 @@ public class FlinkBatchSqlInterpreterTest extends SqlInterpreterTest {
 
   @Test
   public void testFunctionHintRowType() throws InterpreterException, IOException {
-    if (flinkInterpreter.getFlinkVersion().isFlink110()) {
-      // Row Type hint is not supported in flink 1.10
-      return;
-    }
     // define table function with TableHint of Row return type
     InterpreterContext context = getInterpreterContext();
     InterpreterResult result = flinkInterpreter.interpret(

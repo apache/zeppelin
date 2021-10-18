@@ -24,16 +24,17 @@ import java.util.Arrays;
 import java.util.List;
 
 //@RunWith(value = Parameterized.class)
-public class ZeppelinFlinkClusterTest110 extends ZeppelinFlinkClusterTest {
+public class ZeppelinFlinkClusterTest113 extends ZeppelinFlinkClusterTest {
 
   @Parameterized.Parameters
   public static List<Object[]> data() {
     return Arrays.asList(new Object[][]{
-            {"1.10.2"}
+            {"1.13.2", "2.11"},
+            {"1.13.2", "2.12"}
     });
   }
 
-  public ZeppelinFlinkClusterTest110(String flinkVersion) throws Exception {
-    super(flinkVersion);
+  public ZeppelinFlinkClusterTest113(String flinkVersion, String scalaVersion) throws Exception {
+    super(flinkVersion, scalaVersion);
   }
 }
