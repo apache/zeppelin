@@ -32,13 +32,6 @@
   <name>Zeppelin: Spark Shims</name>
 
   <dependencies>
-    <dependency>
-      <groupId>org.apache.zeppelin</groupId>
-      <artifactId>zeppelin-interpreter-shaded</artifactId>
-      <version>${project.version}</version>
-      <scope>provided</scope>
-    </dependency>
-
     <!--
       This is for ZEPPELIN-2221 using VersionInfo for check the version of Yarn.
       It's checked that VersionInfo is compatible at least 2.2.0 to the latest one.
