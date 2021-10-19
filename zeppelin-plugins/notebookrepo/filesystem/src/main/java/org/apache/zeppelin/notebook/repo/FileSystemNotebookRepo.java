@@ -27,6 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -128,7 +129,7 @@ public class FileSystemNotebookRepo implements NotebookRepo {
   @Override
   public List<NotebookRepoSettingsInfo> getSettings(AuthenticationInfo subject) {
     LOGGER.warn("getSettings is not implemented for FileSystemNotebookRepo");
-    return null;
+    return Collections.emptyList();
   }
 
   @Override

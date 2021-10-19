@@ -55,6 +55,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -184,7 +185,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
 
     @Override
     public List<NotebookRepoSettingsInfo> getSettings(AuthenticationInfo subject) {
-      return null;
+      return Collections.emptyList();
     }
 
     @Override
@@ -265,7 +266,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
 
     @Override
     public List<NotebookRepoSettingsInfo> getSettings(AuthenticationInfo subject) {
-      return null;
+      return Collections.emptyList();
     }
 
     @Override
