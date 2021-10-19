@@ -518,8 +518,8 @@ export class Message {
   }
 
   saveInterpreterBindings(noteId, selectedSettingIds): void {
-    // this.send<OP.SAVE_INTERPRETER_BINDINGS>(OP.SAVE_INTERPRETER_BINDINGS,
-    //  {noteId: noteId, selectedSettingIds: selectedSettingIds});
+    this.send<OP.SAVE_INTERPRETER_BINDINGS>(OP.SAVE_INTERPRETER_BINDINGS,
+      {noteId: noteId, selectedSettingIds: selectedSettingIds});
   }
 
   listConfigurations(): void {

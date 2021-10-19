@@ -20,6 +20,7 @@ import {
   EditorSettingSend,
   FolderRename,
   GetInterpreterBindings,
+  SaveInterpreterBindings,
   GetNode,
   ListRevision,
   ListRevisionHistory,
@@ -160,6 +161,7 @@ export interface MessageSendDataTypeMap {
   [OP.UNSUBSCRIBE_UPDATE_NOTE_JOBS]: undefined;
   [OP.LIST_UPDATE_NOTE_JOBS]: undefined;
   [OP.GET_INTERPRETER_BINDINGS]: GetInterpreterBindings;
+  [OP.SAVE_INTERPRETER_BINDINGS]: SaveInterpreterBindings;
   [OP.GET_INTERPRETER_SETTINGS]: undefined;
   [OP.SAVE_NOTE_FORMS]: SaveNoteFormsReceived;
   [OP.REMOVE_NOTE_FORMS]: RemoveNoteForms;
