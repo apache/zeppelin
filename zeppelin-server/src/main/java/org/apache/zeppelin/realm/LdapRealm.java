@@ -206,10 +206,10 @@ public class LdapRealm extends DefaultLdapRealm {
   @Override
   protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token)
       throws org.apache.shiro.authc.AuthenticationException {
-    try{
+    try {
       return super.doGetAuthenticationInfo(token);
-    }catch (Exception e){
-      LOGGER.warn(String.format("Encountered Error while authenticating %s: %s", token.getPrincipal(), e.getMessage()));
+    } catch (org.apache.shiro.authc.AuthenticationException e){
+      LOGGER.warn("Encountered Error while authenticating {}: {}", token.getPrincipal(), e.getMessage());
       throw  e;
     }
   }
