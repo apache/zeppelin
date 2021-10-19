@@ -95,6 +95,11 @@ export interface GetInterpreterBindings {
   noteId: string;
 }
 
+export interface SaveInterpreterBindings {
+  noteId: string;
+  selectedSettingIds: string[];
+}
+
 export interface EditorSettingSend {
   paragraphId: string;
   magic: string;
