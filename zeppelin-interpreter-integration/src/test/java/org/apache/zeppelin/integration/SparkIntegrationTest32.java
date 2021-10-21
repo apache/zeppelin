@@ -35,7 +35,8 @@ public class SparkIntegrationTest32 extends SparkIntegrationTest {
   public static List<Object[]> data() {
     return Arrays.asList(new Object[][]{
         {"3.2.0", "2.7"},
-        {"3.2.0", "3.2"}
+        // TODO(zjffdu) Run integration tests under profile hadoop3
+        // {"3.2.0", "3.2"}
     });
   }
 
