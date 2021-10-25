@@ -71,7 +71,7 @@ jobs:
       - name: Run headless test
         run: xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" ./mvnw package -DskipRat -pl zeppelin-web-angular -Pweb-angular -B
 
-  test-selenium-with-spark-module-for-spark-2-3:
+  test-selenium-with-spark-module-for-spark-2-4:
     runs-on: ubuntu-20.04
     defaults:
       run:
@@ -107,8 +107,8 @@ jobs:
           R -e "IRkernel::installspec()"
       - name: install environment
         run: |
-          ./mvnw clean install -DskipTests -DskipRat -pl ${INTERPRETERS} -Pspark-2.3 -Phadoop2 -Phelium-dev -Pexamples -Pintegration -Pspark-scala-2.11 -B
+          ./mvnw clean install -DskipTests -DskipRat -pl ${INTERPRETERS} -Pspark-2.4 -Phadoop2 -Phelium-dev -Pexamples -Pintegration -Pspark-scala-2.11 -B
           ./mvnw clean package -pl zeppelin-plugins -amd -B
-          ./testing/downloadSpark.sh "2.3.2" "2.6"
+          ./testing/downloadSpark.sh "2.4.7" "2.7"
       - name: run tests
-        run: xvfb-run --auto-servernum --server-args="-screen 0 1600x1024x16" ./mvnw verify -DskipRat -Pspark-2.3 -Phadoop2 -Phelium-dev -Pexamples -Pintegration -Pspark-scala-2.11 -B -pl zeppelin-integration -DfailIfNoTests=false
+        run: xvfb-run --auto-servernum --server-args="-screen 0 1600x1024x16" ./mvnw verify -DskipRat -Pspark-2.4 -Phadoop2 -Phelium-dev -Pexamples -Pintegration -Pspark-scala-2.11 -B -pl zeppelin-integration -DfailIfNoTests=false

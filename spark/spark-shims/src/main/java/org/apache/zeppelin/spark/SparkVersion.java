@@ -25,18 +25,16 @@ import org.slf4j.LoggerFactory;
 public class SparkVersion {
   private static final Logger logger = LoggerFactory.getLogger(SparkVersion.class);
 
-  public static final SparkVersion SPARK_1_6_0 = SparkVersion.fromVersionString("1.6.0");
-
   public static final SparkVersion SPARK_2_0_0 = SparkVersion.fromVersionString("2.0.0");
   public static final SparkVersion SPARK_2_2_0 = SparkVersion.fromVersionString("2.2.0");
   public static final SparkVersion SPARK_2_3_0 = SparkVersion.fromVersionString("2.3.0");
   public static final SparkVersion SPARK_2_3_1 = SparkVersion.fromVersionString("2.3.1");
   public static final SparkVersion SPARK_2_4_0 = SparkVersion.fromVersionString("2.4.0");
   public static final SparkVersion SPARK_3_1_0 = SparkVersion.fromVersionString("3.1.0");
-  public static final SparkVersion SPARK_3_2_0 = SparkVersion.fromVersionString("3.2.0");
+  public static final SparkVersion SPARK_3_3_0 = SparkVersion.fromVersionString("3.3.0");
 
-  public static final SparkVersion MIN_SUPPORTED_VERSION =  SPARK_1_6_0;
-  public static final SparkVersion UNSUPPORTED_FUTURE_VERSION = SPARK_3_2_0;
+  public static final SparkVersion MIN_SUPPORTED_VERSION =  SPARK_2_0_0;
+  public static final SparkVersion UNSUPPORTED_FUTURE_VERSION = SPARK_3_3_0;
 
   private int version;
   private int majorVersion;

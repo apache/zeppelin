@@ -219,7 +219,7 @@ jobs:
           ./mvnw install -DskipTests -DskipRat -pl zeppelin-interpreter-integration,zeppelin-web,spark-submit,spark/spark-dependencies,markdown -am -Phadoop2 -Pintegration -B
           ./mvnw clean package -pl zeppelin-plugins -amd -DskipTests -B
       - name: run tests
-        run: ./mvnw test -DskipRat -pl zeppelin-interpreter-integration,zeppelin-web,spark-submit,spark/spark-dependencies,markdown -am -Phadoop2 -Pintegration -B -Dtest=ZeppelinSparkClusterTest24,SparkSubmitIntegrationTest,SparkIntegrationTest24,ZeppelinSparkClusterTest23,SparkIntegrationTest23,ZeppelinSparkClusterTest22,SparkIntegrationTest22,ZeppelinSparkClusterTest30,ZeppelinSparkClusterTest31,SparkIntegrationTest30,SparkIntegrationTest31 -DfailIfNoTests=false
+        run: ./mvnw test -DskipRat -pl zeppelin-interpreter-integration,zeppelin-web,spark-submit,spark/spark-dependencies,markdown -am -Phadoop2 -Pintegration -B -Dtest=SparkSubmitIntegrationTest,ZeppelinSparkClusterTest24,SparkIntegrationTest24,ZeppelinSparkClusterTest30,SparkIntegrationTest30,ZeppelinSparkClusterTest31,SparkIntegrationTest31,ZeppelinSparkClusterTest32,SparkIntegrationTest32 -DfailIfNoTests=false
 
   jdbcIntegrationTest-and-unit-test-of-Spark-2-4-with-Scala-2-11:
     runs-on: ubuntu-20.04
@@ -379,6 +379,47 @@ jobs:
         run: ./mvnw install -DskipTests -DskipRat -pl spark-submit,spark/spark-dependencies -am -Pspark-3.1 -Pspark-scala-2.12 -Phadoop2 -B
       - name: run tests with ${{ matrix.python }}
         run: ./mvnw test -DskipRat -pl spark-submit,spark/spark-dependencies -am -Pspark-3.1 -Pspark-scala-2.12 -Phadoop2 -B -Dtest=org.apache.zeppelin.spark.*,apache.zeppelin.python.*,apache.zeppelin.jupyter.*,apache.zeppelin.r.* -DfailIfNoTests=false
+
+  spark-3-2-and-scala-2-12-and-other-interpreter:
+    runs-on: ubuntu-20.04
+    strategy:
+      fail-fast: false
+      matrix:
+        python: [ 3.7, 3.8 ]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Tune Runner VM
+        uses: ./.github/actions/tune-runner-vm
+      - name: Set up JDK 8
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'adopt'
+          java-version: 8
+      - name: Cache local Maven repository
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.m2/repository
+            !~/.m2/repository/org/apache/zeppelin/
+          key: ${{ runner.os }}-zeppelin-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-zeppelin-
+      - name: Setup conda environment with python ${{ matrix.python }} and R
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          activate-environment: python_3_with_R
+          environment-file: testing/env_python_${{ matrix.python }}_with_R.yml
+          python-version: ${{ matrix.python }}
+          auto-activate-base: false
+      - name: Make IRkernel available to Jupyter
+        run: |
+          R -e "IRkernel::installspec()"
+      - name: install environment
+        run: ./mvnw install -DskipTests -DskipRat -pl spark-submit,spark/spark-dependencies -am -Pspark-3.2 -Pspark-scala-2.12 -Phadoop2 -B
+      - name: run tests with ${{ matrix.python }}
+        run: ./mvnw test -DskipRat -pl spark-submit,spark/spark-dependencies -am -Pspark-3.2 -Pspark-scala-2.12 -Phadoop2 -B -Dtest=org.apache.zeppelin.spark.*,apache.zeppelin.python.*,apache.zeppelin.jupyter.*,apache.zeppelin.r.* -DfailIfNoTests=false
+
   test-livy-0-5-with-spark-2-2-0-under-python3:
     runs-on: ubuntu-20.04
     steps:

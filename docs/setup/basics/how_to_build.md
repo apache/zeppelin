@@ -106,6 +106,7 @@ Set spark major version
 Available profiles are
 
 ```
+-Pspark-3.2
 -Pspark-3.1
 -Pspark-3.0
 -Pspark-2.4
@@ -116,7 +117,7 @@ minor version can be adjusted by `-Dspark.version=x.x.x`
 ##### `-Pspark-scala-[version] (optional)`
 
 To be noticed, these profiles also only affect the embedded mode (no need to specify `SPARK_HOME`) of Spark interpreter. 
-Actually Zeppelin supports all the versions of scala (2.10, 2.11, 2.12) in Spark interpreter as long as you specify `SPARK_HOME`.
+Actually Zeppelin supports all the versions of scala (2.11, 2.12) in Spark interpreter as long as you specify `SPARK_HOME`.
 
 Available profiles are
 

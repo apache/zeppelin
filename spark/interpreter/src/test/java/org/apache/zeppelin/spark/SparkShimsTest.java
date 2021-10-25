@@ -131,11 +131,7 @@ public class SparkShimsTest {
         try {
           sparkShims = SparkShims.getInstance(SparkVersion.SPARK_2_0_0.toString(), new Properties(), null);
         } catch (Throwable e2) {
-          try {
-            sparkShims = SparkShims.getInstance(SparkVersion.SPARK_1_6_0.toString(), new Properties(), null);
-          } catch (Throwable e3) {
-            throw new RuntimeException("All SparkShims are tried, but no one can be created.");
-          }
+          throw new RuntimeException("All SparkShims are tried, but no one can be created.");
         }
       }
     }
