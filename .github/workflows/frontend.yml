@@ -71,7 +71,7 @@ jobs:
       - name: Run headless test
         run: xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" mvn package -DskipRat -pl zeppelin-web-angular -Pweb-angular -B
 
-  test-selenium-with-spark-module-for-spark-2-3:
+  test-selenium-with-spark-module-for-spark-2-4:
     runs-on: ubuntu-20.04
     defaults:
       run:

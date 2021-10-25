@@ -112,6 +112,10 @@
           <groupId>net.sf.py4j</groupId>
           <artifactId>py4j</artifactId>
         </exclusion>
+        <exclusion>
+          <groupId>io.netty</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
 
@@ -125,6 +129,10 @@
         <exclusion>
           <groupId>net.sf.py4j</groupId>
           <artifactId>py4j</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>io.netty</groupId>
+          <artifactId>*</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -153,6 +161,10 @@
         <exclusion>
           <groupId>net.sf.py4j</groupId>
           <artifactId>py4j</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>io.netty</groupId>
+          <artifactId>*</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
