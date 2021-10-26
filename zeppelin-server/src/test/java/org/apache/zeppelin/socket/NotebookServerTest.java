@@ -42,6 +42,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -724,9 +725,9 @@ public class NotebookServerTest extends AbstractTestRestApi {
         Paragraph paragraph = note.getParagraph(paragraphId);
         // check RuntimeInfos
         assertTrue(paragraph.getRuntimeInfos().containsKey("jobUrl"));
-        List<Object> list = paragraph.getRuntimeInfos().get("jobUrl").getValue();
+        Queue<Object> list = paragraph.getRuntimeInfos().get("jobUrl").getValue();
         assertEquals(1, list.size());
-        Map<String, String> map = (Map<String, String>) list.get(0);
+        Map<String, String> map = (Map<String, String>) list.poll();
         assertEquals(2, map.size());
         assertEquals(map.get("jobUrl"), "jobUrl_value");
         assertEquals(map.get("jobLabel"), "jobLabel_value");

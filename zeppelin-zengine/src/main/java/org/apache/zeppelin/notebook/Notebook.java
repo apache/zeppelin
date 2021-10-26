@@ -327,10 +327,9 @@ public class Notebook {
             newNote.setConfig(new HashMap<>(sourceNote.getConfig()));
             newNote.setInfo(new HashMap<>(sourceNote.getInfo()));
             newNote.setDefaultInterpreterGroup(sourceNote.getDefaultInterpreterGroup());
-            newNote.setNoteForms(new HashMap<>(sourceNote.getNoteForms()));
-            newNote.setNoteParams(new HashMap<>(sourceNote.getNoteParams()));
+            newNote.setNoteForms(sourceNote.getNoteForms());
+            newNote.setNoteParams(sourceNote.getNoteParams());
             newNote.setRunning(false);
-
             saveNote(newNote, subject);
             authorizationService.cloneNoteMeta(newNote.getId(), sourceNoteId, subject);
             return null;
@@ -376,7 +375,7 @@ public class Notebook {
    * with other properties that is not persistent in NotebookRepo, such as paragraphJobListener.
    * <p>
    * Use {@link #processNote(String, boolean, NoteProcessor)} in case you want to force
-   * a note reload from the {@link #NotebookRepo}.
+   * a note reload from the {@link NotebookRepo}.
    * </p>
    * @param noteId
    * @param noteProcessor
@@ -426,7 +425,7 @@ public class Notebook {
 
   /**
    * Checks if the notebook contains a note with the specified note ID.
-   * @param notePath
+   * @param noteId
    * @return true if a note with the specified note ID exists, otherwise false
    */
   public boolean containsNoteById(String noteId) {

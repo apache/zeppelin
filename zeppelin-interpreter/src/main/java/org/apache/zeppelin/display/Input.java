@@ -37,6 +37,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
+ * Input is Immutable class.
  * Base class for dynamic forms. Also used as factory class of dynamic forms.
  *
  * @param <T>
@@ -81,15 +82,15 @@ public class Input<T> implements Serializable {
     return displayName;
   }
 
-  public void setDisplayName(String displayName) {
+  private void setDisplayName(String displayName) {
     this.displayName = displayName;
   }
 
-  public void setArgument(String argument) {
+  private void setArgument(String argument) {
     this.argument = argument;
   }
 
-  public void setHidden(boolean hidden) {
+  private void setHidden(boolean hidden) {
     this.hidden = hidden;
   }
 
@@ -555,5 +556,23 @@ public class Input<T> implements Serializable {
     } else {
       return false;
     }
+  }
+
+  public static Input convertFromOldInput(OldInput oldInput) {
+    Input convertedInput = null;
+
+    if (oldInput.options == null || oldInput instanceof OldInput.OldTextBox) {
+      convertedInput = new TextBox(oldInput.name, oldInput.defaultValue.toString());
+    } else if (oldInput instanceof OldInput.OldCheckBox) {
+      convertedInput = new CheckBox(oldInput.name, (List) oldInput.defaultValue, oldInput.options);
+    } else if (oldInput instanceof OldInput && oldInput.options != null) {
+      convertedInput = new Select(oldInput.name, oldInput.defaultValue, oldInput.options);
+    } else {
+      throw new RuntimeException("Can not convert this OldInput.");
+    }
+    convertedInput.setDisplayName(oldInput.getDisplayName());
+    convertedInput.setHidden(oldInput.isHidden());
+    convertedInput.setArgument(oldInput.getArgument());
+    return convertedInput;
   }
 }

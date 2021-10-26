@@ -5,21 +5,25 @@ import com.google.common.annotations.VisibleForTesting;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * Store runtime infos of each para
  *
  */
 public class ParagraphRuntimeInfo {
-  private String propertyName;  // Name of the property
-  private String label;         // Label to be used in UI
-  private String tooltip;       // Tooltip text toshow in UI
-  private String group;         // The interpretergroup from which the info was derived
+  private final String propertyName;  // Name of the property
+  private final String label;         // Label to be used in UI
+  private final String tooltip;       // Tooltip text toshow in UI
+  private final String group;         // The interpretergroup from which the info was derived
 
   // runtimeInfos job url or dropdown-menu key in
   // zeppelin-web/src/app/notebook/paragraph/paragraph-control.html
-  private List<Object> values;  // values for the key-value pair property
-  private String interpreterSettingId;
+  // Use ConcurrentLinkedQueue to make ParagraphRuntimeInfo thread-safe which is required by
+  // Note/Paragraph serialization (saving note to NotebookRepo or broadcast to frontend), see ZEPPELIN-5530.
+  private final ConcurrentLinkedQueue<Object> values;  // values for the key-value pair property
+  private final String interpreterSettingId;
   
   public ParagraphRuntimeInfo(String propertyName, String label, 
       String tooltip, String group, String intpSettingId) {
@@ -31,7 +35,7 @@ public class ParagraphRuntimeInfo {
     this.tooltip = tooltip;
     this.group = group;
     this.interpreterSettingId = intpSettingId;
-    this.values = new ArrayList<>();
+    this.values = new ConcurrentLinkedQueue();
   }
 
   public void addValue(Map<String, String> mapValue) {
@@ -39,7 +43,7 @@ public class ParagraphRuntimeInfo {
   }
 
   @VisibleForTesting
-  public List<Object> getValue() {
+  public Queue<Object> getValue() {
     return values;
   }
   

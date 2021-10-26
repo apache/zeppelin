@@ -64,6 +64,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -122,15 +123,19 @@ public class Note implements JsonSerializable {
   private static final DateTimeFormatter DATE_TIME_FORMATTER =
           DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss");
 
+  // Use CopyOnWriteArrayList to make Note thread-safe which is required by Note serialization
+  // (saving note to NotebookRepo or broadcast to frontend), see ZEPPELIN-5530.
   private CopyOnWriteArrayList<Paragraph> paragraphs = new CopyOnWriteArrayList<>();
   private String name = "";
   private String id;
   private String defaultInterpreterGroup;
   private String version;
 
-  private Map<String, Object> noteParams = new LinkedHashMap<>();
-  private Map<String, Input> noteForms = new LinkedHashMap<>();
-  private Map<String, List<AngularObject>> angularObjects = new HashMap<>();
+  // Use ConcurrentHashMap to make Note thread-safe which is required by Note serialization
+  // (saving note to NotebookRepo or broadcast to frontend), see ZEPPELIN-5530.
+  private Map<String, Object> noteParams = new ConcurrentHashMap<>();
+  private Map<String, Input> noteForms = new ConcurrentHashMap<>();
+  private Map<String, List<AngularObject>> angularObjects = new ConcurrentHashMap<>();
 
   /*
    * note configurations.
@@ -279,20 +284,34 @@ public class Note implements JsonSerializable {
     this.defaultInterpreterGroup = defaultInterpreterGroup;
   }
 
-  public Map<String, Object> getNoteParams() {
-    return noteParams;
+  public ConcurrentHashMap<String, Object> getNoteParams() {
+    if (noteParams == null) {
+      return new ConcurrentHashMap<>();
+    }
+    return new ConcurrentHashMap<>(noteParams);
   }
 
   public void setNoteParams(Map<String, Object> noteParams) {
     this.noteParams = noteParams;
   }
 
-  public Map<String, Input> getNoteForms() {
-    return noteForms;
+  public void removeNoteParam(String key) {
+    noteParams.remove(key);
+  }
+
+  public ConcurrentHashMap<String, Input> getNoteForms() {
+    if (noteForms == null) {
+      return new ConcurrentHashMap<>();
+    }
+    return new ConcurrentHashMap<>(noteForms);
   }
 
   public void setNoteForms(Map<String, Input> noteForms) {
     this.noteForms = noteForms;
+  }
+
+  public void removeNoteForm(String key) {
+    this.noteForms.remove(key);
   }
 
   public void setName(String name) {
@@ -359,7 +378,7 @@ public class Note implements JsonSerializable {
   }
 
   Map<String, List<AngularObject>> getAngularObjects() {
-    return angularObjects;
+    return new HashMap<>(angularObjects);
   }
 
   public List<AngularObject> getAngularObjects(String intpGroupId) {
@@ -862,6 +881,9 @@ public class Note implements JsonSerializable {
   }
 
   public CopyOnWriteArrayList<Paragraph> getParagraphs() {
+    if (this.paragraphs == null) {
+      return new CopyOnWriteArrayList<>();
+    }
     return this.paragraphs;
   }
 

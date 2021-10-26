@@ -27,7 +27,10 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -78,12 +81,18 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
   private Date dateUpdated;
   private int progress;
   // paragraph configs like isOpen, colWidth, etc
-  private Map<String, Object> config = new HashMap<>();
+  // Use ConcurrentHashMap to make Note thread-safe which is required by Note serialization
+  // (saving note to NotebookRepo or broadcast to frontend), see ZEPPELIN-5530.
+  private Map<String, Object> config = new ConcurrentHashMap<>();
   // form and parameter settings
   public GUI settings = new GUI();
   private InterpreterResult results;
   // Application states in this paragraph
-  private final List<ApplicationState> apps = new LinkedList<>();
+  private final Queue<ApplicationState> apps = new ConcurrentLinkedQueue<>();
+  // runtimeInfo, e.g. spark job url
+  // Use ConcurrentHashMap to make Note/Paragraph thread-safe which is required by Note/Paragraph serialization
+  // (saving note to NotebookRepo or broadcast to frontend), see ZEPPELIN-5530.
+  private Map<String, ParagraphRuntimeInfo> runtimeInfos = new ConcurrentHashMap<>();
 
   /************** Transient fields which are not serializabled  into note json **************/
   private transient String intpText;
@@ -96,7 +105,6 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
   private transient Map<String, Paragraph> userParagraphMap = new HashMap<>();
   private transient Map<String, String> localProperties = new HashMap<>();
 
-  private Map<String, ParagraphRuntimeInfo> runtimeInfos = new HashMap<>();
   private transient List<InterpreterResultMessage> outputBuffer = new ArrayList<>();
 
 

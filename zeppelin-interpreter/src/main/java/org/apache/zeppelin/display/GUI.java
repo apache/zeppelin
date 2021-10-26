@@ -172,7 +172,7 @@ public class GUI implements Serializable {
   public void convertOldInput() {
     for (Map.Entry<String, Input> entry : forms.entrySet()) {
       if (entry.getValue() instanceof OldInput) {
-        Input convertedInput = convertFromOldInput((OldInput) entry.getValue());
+        Input convertedInput = Input.convertFromOldInput((OldInput) entry.getValue());
         forms.put(entry.getKey(), convertedInput);
       }
     }
@@ -182,23 +182,5 @@ public class GUI implements Serializable {
     GUI gui = gson.fromJson(json, GUI.class);
     gui.convertOldInput();
     return gui;
-  }
-
-  private Input convertFromOldInput(OldInput oldInput) {
-    Input convertedInput = null;
-
-    if (oldInput.options == null || oldInput instanceof OldInput.OldTextBox) {
-      convertedInput = new TextBox(oldInput.name, oldInput.defaultValue.toString());
-    } else if (oldInput instanceof OldInput.OldCheckBox) {
-      convertedInput = new CheckBox(oldInput.name, (List) oldInput.defaultValue, oldInput.options);
-    } else if (oldInput instanceof OldInput && oldInput.options != null) {
-      convertedInput = new Select(oldInput.name, oldInput.defaultValue, oldInput.options);
-    } else {
-      throw new RuntimeException("Can not convert this OldInput.");
-    }
-    convertedInput.setDisplayName(oldInput.getDisplayName());
-    convertedInput.setHidden(oldInput.isHidden());
-    convertedInput.setArgument(oldInput.getArgument());
-    return convertedInput;
   }
 }
