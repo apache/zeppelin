@@ -437,6 +437,8 @@ public class ZeppelinServer extends ResourceConfig {
   }
 
   private static void setupClusterManagerServer(ServiceLocator serviceLocator) {
+    // LL
+    LOG.info("calling setupClusterManagerServer in ZeppelinServer.java\n");
     if (conf.isClusterMode()) {
       LOG.info("Cluster mode is enabled, starting ClusterManagerServer");
       ClusterManagerServer clusterManagerServer = ClusterManagerServer.getInstance(conf);

@@ -24,6 +24,7 @@ import java.util.Properties;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.scheduler.Scheduler;
 
+
 /**
  * Interpreter wrapper for lazy initialization
  */

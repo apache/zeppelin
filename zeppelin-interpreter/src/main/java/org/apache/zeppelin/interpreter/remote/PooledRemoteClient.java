@@ -101,11 +101,16 @@ public class PooledRemoteClient<T extends TServiceClient> implements AutoCloseab
           return func.call(client);
         }
       } catch (InterpreterRPCException e) {
+        // LL
+        LOGGER.info("non-server error with error msg: ");
+        LOGGER.info(e.getErrorMessage());
+        
         // zeppelin side exception, no need to retry
         broken = true;
         errorCause = e.getErrorMessage();
         break;
       } catch (Exception e1) {
+        LOGGER.info("server error with error msg: ");
         // thrift framework exception (maybe due to network issue), need to retry
         broken = true;
         continue;

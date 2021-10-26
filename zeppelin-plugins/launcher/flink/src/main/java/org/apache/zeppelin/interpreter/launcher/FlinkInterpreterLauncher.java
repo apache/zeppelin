@@ -51,8 +51,12 @@ public class FlinkInterpreterLauncher extends StandardInterpreterLauncher {
           throws IOException {
     Map<String, String> envs = super.buildEnvFromProperties(context);
 
+    //LL
+    LOGGER.info("in FlinkInterpreterLauncher\n");
     // update FLINK related environment variables
     String flinkHome = getFlinkHome(context);
+    LOGGER.info("flink home is: %s", flinkHome);
+    // 
     if (!envs.containsKey("FLINK_CONF_DIR")) {
       envs.put("FLINK_CONF_DIR", flinkHome + "/conf");
     }
@@ -62,6 +66,10 @@ public class FlinkInterpreterLauncher extends StandardInterpreterLauncher {
     normalizeConfiguration(context);
 
     String flinkExecutionMode = context.getProperties().getProperty("flink.execution.mode");
+
+    //LL
+    LOGGER.info("flink execution mode is %s,\n",flinkExecutionMode);
+
     if (!FLINK_EXECUTION_MODES.contains(flinkExecutionMode)) {
       throw new IOException("Not valid flink.execution.mode: " +
               flinkExecutionMode + ", valid modes ares: " +
@@ -74,6 +82,8 @@ public class FlinkInterpreterLauncher extends StandardInterpreterLauncher {
 
     if (isK8sApplicationMode(flinkExecutionMode)) {
       String flinkAppJar = context.getProperties().getProperty("flink.app.jar");
+      //LL
+      LOGGER.info("flinkAppJar %s \n",flinkAppJar);
       if (StringUtils.isBlank(flinkAppJar)) {
         throw new IOException("flink.app.jar is not specified for kubernetes-application mode");
       }
@@ -138,6 +148,33 @@ public class FlinkInterpreterLauncher extends StandardInterpreterLauncher {
     List<File> flinkDistFiles =
             Arrays.stream(flinkLibFolder.listFiles(file -> file.getName().contains("flink-dist_")))
                     .collect(Collectors.toList());
+
+    // LL
+    LOGGER.info("flinkHome is \n");
+    LOGGER.info("flinkHome\n");
+
+    LOGGER.info("Print all file in flinkhome\n");
+    List<File> flinkDistFilestest =
+            Arrays.stream(flinkLibFolder.listFiles())
+                    .collect(Collectors.toList());
+    for (int i=0; i<flinkDistFilestest.size(); i++) {
+      LOGGER.info(flinkDistFilestest.get(i).getName());
+      LOGGER.info("\n");
+    }  
+
+    LOGGER.info("Print all file in finkDistFiles\n");
+    for (int i=0; i<flinkDistFiles.size(); i++) {
+      LOGGER.info(flinkDistFiles.get(i).getName());
+      LOGGER.info("\n");
+    }  
+    
+    LOGGER.info(Integer.toString(flinkDistFiles.size()));
+    LOGGER.info("Only has one file, get file name: ");
+    LOGGER.info(flinkDistFiles.get(0).getName());
+    if (flinkDistFiles.size() < 1) {
+      throw new IOException("Files not loading");
+    }
+    // 
     if (flinkDistFiles.size() > 1) {
       throw new IOException("More than 1 flink-dist files: " +
               flinkDistFiles.stream()
@@ -148,14 +185,41 @@ public class FlinkInterpreterLauncher extends StandardInterpreterLauncher {
     if (flinkDistFiles.get(0).getName().contains("2.12")) {
       scalaVersion = "2.12";
     }
+
+    // LL
+    LOGGER.info("scala version should be 2.11, we have: ");
+    LOGGER.info(scalaVersion);
+
     final String flinkScalaVersion = scalaVersion;
     File flinkInterpreterFolder =
             new File(ZeppelinConfiguration.create().getInterpreterDir(), "flink");
+    LOGGER.info("flinkInterpreterFolder path: ");
+    LOGGER.info(ZeppelinConfiguration.create().getInterpreterDir() + "flink");
+    LOGGER.info("\n");
+
     List<File> flinkScalaJars =
             Arrays.stream(flinkInterpreterFolder
                     .listFiles(file -> file.getName().endsWith(".jar")))
             .filter(file -> file.getName().contains(flinkScalaVersion))
             .collect(Collectors.toList());
+
+    List<File> allfiles = Arrays.stream(flinkInterpreterFolder.listFiles()).collect(Collectors.toList());
+    LOGGER.info("print all files in flinkInterpreterFolder\n");
+    for (int i=0; i<allfiles.size(); i++) {
+      LOGGER.info(allfiles.get(i).getName());
+      LOGGER.info("\n");
+    }  
+
+    LOGGER.info("determined scala version: flinkScalaVersion, flinkScalaJars list should contain one file\n");
+    LOGGER.info(Integer.toString(flinkScalaJars.size()));
+    LOGGER.info("now print all names\n");
+    for (int i=0; i<flinkScalaJars.size(); i++) {
+      LOGGER.info(flinkScalaJars.get(i).getName());
+      LOGGER.info("\n");
+    }        
+    if (flinkScalaJars.size() < 1) {
+      throw new IOException("flinkScalaJars not loading");
+    }
     if (flinkScalaJars.size() > 1) {
       throw new IOException("More than 1 flink scala files: " +
               flinkScalaJars.stream()

@@ -945,6 +945,8 @@ public class InterpreterSetting {
           throw new IOException("Can not change interpreter properties when interpreter process " +
               "has already been launched");
         }
+        // LL
+        LOGGER.info("modifying interpreter setting in InterpreterSetting.java\n");
         intp.setProperties(properties);
       }
     }

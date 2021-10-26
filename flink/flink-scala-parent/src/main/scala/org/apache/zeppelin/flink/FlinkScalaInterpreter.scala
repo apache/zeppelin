@@ -118,9 +118,14 @@ abstract class FlinkScalaInterpreter(val properties: Properties,
 
 
   def open(): Unit = {
-
+    //LL
+    LOGGER.info("Running open(), should invoke createFlinkILoop?\n");
+    //
     val config = initFlinkConfig()
     createFlinkILoop(config)
+    //LL
+    LOGGER.info("createFlinkILoop() succesfully executed\n");
+    //
     createTableEnvs()
     setTableEnvConfig()
 

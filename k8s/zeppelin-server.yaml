@@ -29,13 +29,14 @@ data:
   # If you have your ingress controller configured to connect to `zeppelin-server` service and have a domain name for it (with wildcard subdomain point the same address), you can replace serviceDomain field with your own domain.
   SERVICE_DOMAIN: local.zeppelin-project.org:8080
   ZEPPELIN_K8S_SPARK_CONTAINER_IMAGE: spark:2.4.5
-  ZEPPELIN_K8S_CONTAINER_IMAGE: apache/zeppelin-interpreter:0.10.0
+  ZEPPELIN_K8S_CONTAINER_IMAGE: lli7flink.azurecr.io/zeppelin-interpreter-backup:0.11.0
   ZEPPELIN_HOME: /opt/zeppelin
   ZEPPELIN_SERVER_RPC_PORTRANGE: 12320:12320
   # default value of 'master' property for spark interpreter.
   SPARK_MASTER: k8s://https://kubernetes.default.svc
   # default value of 'SPARK_HOME' property for spark interpreter.
   SPARK_HOME: /spark
+  FLINK_HOME: flink-1.14.0
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -105,7 +106,7 @@ spec:
       labels:
         app.kubernetes.io/name: zeppelin-server
     spec:
-      serviceAccountName: zeppelin-server
+      serviceAccountName: flink
       volumes:
       - name: nginx-conf
         configMap:
@@ -115,8 +116,9 @@ spec:
             path: nginx.conf
       containers:
       - name: zeppelin-server
-        image: apache/zeppelin-server:0.10.0
+        image: lli7flink.azurecr.io/zeppelin-server-backup:0.11.0
         command: ["sh", "-c", "$(ZEPPELIN_HOME)/bin/zeppelin.sh"]
+        imagePullPolicy: Always
         lifecycle:
           preStop:
             exec:
@@ -186,7 +188,7 @@ spec:
 kind: Service
 apiVersion: v1
 metadata:
-  name: zeppelin-server
+  name: flink
 spec:
   ports:
     - name: http
@@ -194,12 +196,12 @@ spec:
     - name: rpc            # port name is referenced in the code. So it shouldn't be changed.
       port: 12320
   selector:
-    app.kubernetes.io/name: zeppelin-server
+    app.kubernetes.io/name: flink
 ---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: zeppelin-server
+  name: flink
 ---
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
@@ -207,7 +209,7 @@ metadata:
   name: zeppelin-server-role
 rules:
 - apiGroups: [""]
-  resources: ["pods", "services", "configmaps"]
+  resources: ["pods", "services", "configmaps", "deployments", "nodes"]
   verbs: ["create", "get", "update", "patch", "list", "delete", "watch"]
 - apiGroups: ["rbac.authorization.k8s.io"]
   resources: ["roles", "rolebindings"]
@@ -220,7 +222,7 @@ metadata:
   namespace: default
 subjects:
 - kind: ServiceAccount
-  name: zeppelin-server
+  name: flink
 roleRef:
   kind: ClusterRole
   name: zeppelin-server-role

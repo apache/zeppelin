@@ -13,13 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM zeppelin-distribution:latest AS zeppelin-distribution
+FROM lli7flink.azurecr.io/zeppelin-backup:0.11.0 AS zeppelin-distribution
 
 FROM ubuntu:20.04
 
 LABEL maintainer="Apache Software Foundation <dev@zeppelin.apache.org>"
 
-ARG version="0.10.0"
+ARG version="0.11.0-SNAPSHOT"
 
 ENV VERSION="${version}" \
     ZEPPELIN_HOME="/opt/zeppelin"
@@ -37,12 +37,13 @@ COPY log4j.properties ${ZEPPELIN_HOME}/conf/
 COPY log4j_yarn_cluster.properties ${ZEPPELIN_HOME}/conf/
 # Decide:
 ## 1) Build a huge image with all interpreters (default)
-COPY --from=zeppelin-distribution /opt/zeppelin/interpreter ${ZEPPELIN_HOME}/interpreter
+##COPY --from=zeppelin-distribution /opt/zeppelin/interpreter ${ZEPPELIN_HOME}/interpreter
 ## 2) Build an image with only some interpreters
 #### Copy interpreter-shaded JAR, needed for all interpreters
-### COPY --from=zeppelin-distribution /opt/zeppelin/interpreter/zeppelin-interpreter-shaded-${VERSION}.jar ${ZEPPELIN_HOME}/interpreter/zeppelin-interpreter-shaded-${VERSION}.jar
+COPY --from=zeppelin-distribution /opt/zeppelin/interpreter/zeppelin-interpreter-shaded-${VERSION}.jar ${ZEPPELIN_HOME}/interpreter/zeppelin-interpreter-shaded-${VERSION}.jar
 #### Copy specific interpreters,  replace "${interpreter_name}" with your interpreter. Of course you can repeat the line with defferent interpreter
-### COPY --from=zeppelin-distribution /opt/zeppelin/interpreter/${interpreter_name}  ${ZEPPELIN_HOME}/interpreter/${interpreter_name}
+COPY --from=zeppelin-distribution /opt/zeppelin/interpreter/flink  ${ZEPPELIN_HOME}/interpreter/flink
+
 
 
 # Decide: Install conda to manage python and R packages. Maybe adjust the packages in pip_packages.txt or conda_packages.txt
@@ -52,26 +53,21 @@ ARG miniconda_sha256="879457af6a0bf5b34b48c12de31d4df0ee2f06a8e68768e5758c3293b2
 COPY conda_packages.txt /conda_packages.txt
 # Some python packages are not available via conda, so we are using pip
 COPY pip_packages.txt /pip_packages.txt
+
+
+ARG miniconda_version="py38_4.8.3"
+ARG miniconda_sha256="879457af6a0bf5b34b48c12de31d4df0ee2f06a8e68768e5758c3293b2daf688"
 RUN set -ex && \
     wget -nv https://repo.anaconda.com/miniconda/Miniconda3-${miniconda_version}-Linux-x86_64.sh -O miniconda.sh && \
     echo "${miniconda_sha256} miniconda.sh" > anaconda.sha256 && \
     sha256sum --strict -c anaconda.sha256 && \
-    bash miniconda.sh -b -p /opt/conda && \
-    export PATH=/opt/conda/bin:$PATH && \
-    conda config --set always_yes yes --set changeps1 no && \
-    conda info -a && \
-    conda config --add channels conda-forge && \
-    conda install -y --quiet --file /conda_packages.txt && \
-    pip install -q -r /pip_packages.txt  && \
-    # Cleanup
-    rm -v miniconda.sh anaconda.sha256  && \
-    # Cleanup based on https://github.com/ContinuumIO/docker-images/commit/cac3352bf21a26fa0b97925b578fb24a0fe8c383
-    find /opt/conda/ -follow -type f -name '*.a' -delete && \
-    find /opt/conda/ -follow -type f -name '*.js.map' -delete && \
-    conda clean -ay
-    # Allow to modify conda packages. This allows malicious code to be injected into other interpreter sessions, therefore it is disabled by default
-    # chmod -R ug+rwX /opt/conda
-ENV PATH /opt/conda/bin:$PATH
+    bash miniconda.sh -f -b -p /opt/conda && \
+    /opt/conda/bin/conda install --yes -c conda-forge \
+      python=3.6 sqlalchemy tornado jinja2 traitlets requests pip pycurl \
+      nodejs configurable-http-proxy && \
+    /opt/conda/bin/pip install --upgrade pip && \
+    rm miniconda.sh
+ENV PATH=/opt/conda/bin:$PATH
 
 RUN mkdir -p "${ZEPPELIN_HOME}/logs" "${ZEPPELIN_HOME}/run" "${ZEPPELIN_HOME}/local-repo" && \
      # Allow process to edit /etc/passwd, to create a user entry for zeppelin

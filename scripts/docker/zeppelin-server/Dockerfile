@@ -13,13 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM zeppelin-distribution:latest AS zeppelin-distribution
+FROM lli7flink.azurecr.io/zeppelin-backup:0.11.0 AS zeppelin-distribution
 
 # Prepare all interpreter settings for Zeppelin server
 # This steps are not needed, if you you add only specific interpreters settings to your image
 FROM alpine:3.11 AS interpreter-settings
 COPY --from=zeppelin-distribution /opt/zeppelin/interpreter /tmp/interpreter
 RUN mkdir -p /opt/zeppelin/interpreter && \
+    mkdir -p /opt/zeppelin/flink-1.14.0 && \
     cd /tmp/interpreter && \
     find . -name 'interpreter-setting.json' -exec cp --parents \{\} /opt/zeppelin/interpreter \;
 
@@ -35,7 +36,7 @@ RUN set -ex && \
     apt-get autoclean && \
     apt-get clean
 
-ARG version="0.10.0"
+ARG version="0.11.0-SNAPSHOT"
 
 ENV LANG=en_US.UTF-8 \
     LC_ALL=en_US.UTF-8 \
@@ -47,6 +48,7 @@ ENV LANG=en_US.UTF-8 \
     ZEPPELIN_WAR_TEMPDIR="/tmp/webapps"
 
 # Copy Zeppelin related files
+COPY flink-1.14.0 /opt/zeppelin/flink-1.14.0
 COPY --from=zeppelin-distribution /opt/zeppelin/zeppelin-web-${VERSION}.war ${ZEPPELIN_HOME}/
 COPY --from=zeppelin-distribution /opt/zeppelin/zeppelin-web-angular-${VERSION}.war ${ZEPPELIN_HOME}/
 COPY --from=zeppelin-distribution /opt/zeppelin/conf ${ZEPPELIN_HOME}/conf
@@ -61,17 +63,21 @@ COPY --from=zeppelin-distribution /opt/zeppelin/k8s ${ZEPPELIN_HOME}/k8s
 
 # Decide
 ## 1) Copy and activate all interpreters (default)
-COPY --from=interpreter-settings /opt/zeppelin/interpreter ${ZEPPELIN_HOME}/interpreter
+## LL : don't use activate all!!! it doesn't copy flink related interpreter!
+COPY --from=zeppelin-distribution /opt/zeppelin/interpreter ${ZEPPELIN_HOME}/interpreter
 ## 2) Copy and activate only a specific set of interpreter
 # COPY --from=zeppelin-distribution /opt/zeppelin/interpreter/spark/interpreter-setting.json ${ZEPPELIN_HOME}/interpreter/spark/interpreter-setting.json
 # COPY --from=zeppelin-distribution /opt/zeppelin/interpreter/jdbc/interpreter-setting.json ${ZEPPELIN_HOME}/interpreter/jdbc/interpreter-setting.json
 # COPY --from=zeppelin-distribution /opt/zeppelin/interpreter/md/interpreter-setting.json ${ZEPPELIN_HOME}/interpreter/md/interpreter-setting.json
+#COPY --from=zeppelin-distribution /opt/zeppelin/interpreter/flink ${ZEPPELIN_HOME}/interpreter/flink
 
 COPY log4j.properties ${ZEPPELIN_HOME}/conf/
 
 RUN mkdir -p "${ZEPPELIN_HOME}/logs" "${ZEPPELIN_HOME}/run" "${ZEPPELIN_HOME}/notebook" "${ZEPPELIN_HOME}/local-repo" && \
      # Allow process to edit /etc/passwd, to create a user entry for zeppelin
     chgrp root /etc/passwd && chmod ug+rw /etc/passwd && \
+    # give access to flink
+    chmod -R 775 /opt/zeppelin/flink-1.14.0 && \
     # Give access to some specific folders
     chmod -R 775 "${ZEPPELIN_HOME}/logs" "${ZEPPELIN_HOME}/run" "${ZEPPELIN_HOME}/conf" "${ZEPPELIN_HOME}/notebook" "${ZEPPELIN_HOME}/local-repo"
 
