@@ -41,8 +41,6 @@
          instead of changing spark.version in this section.
     -->
 
-    <hadoop.version>${hadoop2.7.version}</hadoop.version>
-    <yarn.version>${hadoop.version}</yarn.version>
     <avro.version>1.7.7</avro.version>
     <avro.mapred.classifier/>
     <jets3t.version>0.7.1</jets3t.version>
@@ -118,24 +116,31 @@
       <version>${spark.version}</version>
     </dependency>
 
-    <!-- hadoop -->
-    <dependency>
-      <groupId>org.apache.hadoop</groupId>
-      <artifactId>hadoop-client</artifactId>
-      <version>${hadoop.version}</version>
-      <scope>compile</scope>
-    </dependency>
-
     <dependency>
       <groupId>org.apache.spark</groupId>
       <artifactId>spark-yarn_${spark.scala.binary.version}</artifactId>
       <version>${spark.version}</version>
     </dependency>
 
+    <!-- Explicit specify compile scope, otherwise it would use provided defined in root pom.xml -->
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-client</artifactId>
+      <version>2.7.7</version>
+      <scope>compile</scope>
+    </dependency>
+
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-yarn-api</artifactId>
-      <version>${yarn.version}</version>
+      <version>2.7.7</version>
+      <scope>compile</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-common</artifactId>
+      <version>2.7.7</version>
       <scope>compile</scope>
     </dependency>
 

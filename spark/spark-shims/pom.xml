@@ -39,7 +39,7 @@
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-common</artifactId>
-      <version>${hadoop2.6.version}</version>
+      <version>${hadoop.version}</version>
       <scope>provided</scope>
     </dependency>
   </dependencies>
