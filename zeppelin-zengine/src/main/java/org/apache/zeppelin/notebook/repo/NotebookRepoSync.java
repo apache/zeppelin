@@ -102,50 +102,6 @@ public class NotebookRepoSync implements NotebookRepoWithVersionControl {
     }
   }
 
-  // Zeppelin change its note file name structure in 0.9.0, this is called when upgrading
-  // from 0.9.0 before to 0.9.0 after
-  public void convertNoteFiles(ZeppelinConfiguration conf, boolean deleteOld) throws IOException {
-    // convert old note file (noteId/note.json) to new note file (note_name_note_id.zpln)
-    for (int i = 0; i < repos.size(); ++i) {
-      NotebookRepo newNotebookRepo = repos.get(i);
-      OldNotebookRepo oldNotebookRepo =
-              PluginManager.get().loadOldNotebookRepo(newNotebookRepo.getClass().getCanonicalName());
-      oldNotebookRepo.init(conf);
-      List<OldNoteInfo> oldNotesInfo = oldNotebookRepo.list(AuthenticationInfo.ANONYMOUS);
-      LOGGER.info("Convert old note file to new style, note count: {}", oldNotesInfo.size());
-      LOGGER.info("Delete old note: {}", deleteOld);
-      for (OldNoteInfo oldNoteInfo : oldNotesInfo) {
-        LOGGER.info("Converting note, id: {}", oldNoteInfo.getId());
-        Note note = oldNotebookRepo.get(oldNoteInfo.getId(), AuthenticationInfo.ANONYMOUS);
-        note.setPath(note.getName());
-        note.setVersion(Util.getVersion());
-        newNotebookRepo.save(note, AuthenticationInfo.ANONYMOUS);
-        if (newNotebookRepo instanceof NotebookRepoWithVersionControl) {
-          ((NotebookRepoWithVersionControl) newNotebookRepo).checkpoint(
-                  note.getId(),
-                  note.getPath(),
-                  "Upgrade note '" + note.getName() + "' to " + Util.getVersion(),
-                  AuthenticationInfo.ANONYMOUS);
-        }
-        if (deleteOld) {
-          oldNotebookRepo.remove(note.getId(), AuthenticationInfo.ANONYMOUS);
-          LOGGER.info("Remote old note: {}", note.getId());
-          // TODO(zjffdu) no commit when deleting note, This is an issue of
-          // NotebookRepoWithVersionControl
-          /**
-          if (oldNotebookRepo instanceof NotebookRepoWithVersionControl) {
-            ((NotebookRepoWithVersionControl) oldNotebookRepo).checkpoint(
-                    note.getId(),
-                    note.getName(),
-                    "Delete note '" + note.getName() + "' during note upgrade",
-                    AuthenticationInfo.ANONYMOUS);
-          }
-           **/
-        }
-      }
-    }
-  }
-
   public List<NotebookRepoWithSettings> getNotebookRepos(AuthenticationInfo subject) {
     List<NotebookRepoWithSettings> reposSetting = new ArrayList<>();
 
