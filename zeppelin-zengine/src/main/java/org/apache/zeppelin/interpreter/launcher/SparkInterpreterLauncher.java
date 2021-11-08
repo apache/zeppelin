@@ -156,7 +156,6 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
                 .map(jar -> jar.toAbsolutePath().toString()).collect(Collectors.toList());
           additionalJars.addAll(scalaJars);
         }
-
         // add zeppelin-interpreter-shaded
         Path interpreterFolder = Paths.get(zConf.getZeppelinHome(), "/interpreter");
         try (DirectoryStream<Path> interpreterStream = Files.newDirectoryStream(interpreterFolder, Files::isRegularFile)) {

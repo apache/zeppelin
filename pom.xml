@@ -407,7 +407,6 @@
         <scope>${hadoop.deps.scope}</scope>
       </dependency>
 
-
       <dependency>
         <groupId>org.apache.hadoop</groupId>
         <artifactId>hadoop-client</artifactId>
@@ -869,26 +868,10 @@
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
           </exclusion>
-<!--          <exclusion>-->
-<!--            <groupId>com.google.inject</groupId>-->
-<!--            <artifactId>guice</artifactId>-->
-<!--          </exclusion>-->
           <exclusion>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
           </exclusion>
-<!--          <exclusion>-->
-<!--            <groupId>org.apache.hadoop</groupId>-->
-<!--            <artifactId>hadoop-yarn-server-resourcemanager</artifactId>-->
-<!--          </exclusion>-->
-<!--          <exclusion>-->
-<!--            <groupId>org.apache.hadoop</groupId>-->
-<!--            <artifactId>hadoop-yarn-server-nodemanager</artifactId>-->
-<!--          </exclusion>-->
-<!--          <exclusion>-->
-<!--            <groupId>org.apache.hadoop</groupId>-->
-<!--            <artifactId>hadoop-yarn-server-applicationhistoryservice</artifactId>-->
-<!--          </exclusion>-->
         </exclusions>
       </dependency>
 
@@ -1435,32 +1418,6 @@
           <target>${java.version}</target>
         </configuration>
       </plugin>
-
-<!--      <plugin>-->
-<!--        <groupId>org.codehaus.mojo</groupId>-->
-<!--        <artifactId>flatten-maven-plugin</artifactId>-->
-<!--        <version>1.0.0</version>-->
-<!--        <configuration>-->
-<!--          <flattenMode>ossrh</flattenMode>-->
-<!--          <updatePomFile>true</updatePomFile>-->
-<!--        </configuration>-->
-<!--        <executions>-->
-<!--          <execution>-->
-<!--            <id>flatten</id>-->
-<!--            <phase>process-resources</phase>-->
-<!--            <goals>-->
-<!--              <goal>flatten</goal>-->
-<!--            </goals>-->
-<!--          </execution>-->
-<!--          <execution>-->
-<!--            <id>flatten.clean</id>-->
-<!--            <phase>clean</phase>-->
-<!--            <goals>-->
-<!--              <goal>clean</goal>-->
-<!--            </goals>-->
-<!--          </execution>-->
-<!--        </executions>-->
-<!--      </plugin>-->
 
       <!-- (TODO zjffdu disable it temporary to make CI pass)Test coverage plugin -->
 
@@ -2308,79 +2265,6 @@
         </plugins>
       </build>
     </profile>
-
-<!--    <profile>-->
-<!--      <id>hadoop2</id>-->
-<!--      <activation>-->
-<!--        <activeByDefault>true</activeByDefault>-->
-<!--      </activation>-->
-<!--      <properties>-->
-<!--        <hadoop.version>${hadoop2.7.version}</hadoop.version>-->
-<!--        <curator.version>2.7.1</curator.version>-->
-<!--        <commons-io.version>2.4</commons-io.version>-->
-<!--        &lt;!&ndash;-->
-<!--          the declaration site above of these variables explains why we need to re-assign them here-->
-<!--        &ndash;&gt;-->
-<!--        <hadoop-client-api.artifact>hadoop-client</hadoop-client-api.artifact>-->
-<!--        <hadoop-client-runtime.artifact>hadoop-yarn-api</hadoop-client-runtime.artifact>-->
-<!--        <hadoop-client-minicluster.artifact>hadoop-client</hadoop-client-minicluster.artifact>-->
-<!--      </properties>-->
-
-<!--        <dependencies>-->
-
-
-<!--        </dependencies>-->
-<!--    </profile>-->
-
-<!--    <profile>-->
-<!--      <id>hadoop3</id>-->
-<!--      <properties>-->
-<!--        <hadoop.version>${hadoop3.2.version}</hadoop.version>-->
-<!--        <curator.version>2.13.0</curator.version>-->
-<!--        <kerberos-client.version>2.0.0-M15</kerberos-client.version>-->
-
-<!--        <hadoop-client-api.artifact>hadoop-client-api</hadoop-client-api.artifact>-->
-<!--        <hadoop-client-runtime.artifact>hadoop-client-runtime</hadoop-client-runtime.artifact>-->
-<!--        <hadoop-client-minicluster.artifact>hadoop-client-minicluster</hadoop-client-minicluster.artifact>-->
-
-<!--      </properties>-->
-<!--      <dependencyManagement>-->
-<!--        <dependencies>-->
-
-<!--        </dependencies>-->
-<!--      </dependencyManagement>-->
-<!--    </profile>-->
-
-<!--    <profile>-->
-<!--      <id>hadoop2</id>-->
-<!--      <properties>-->
-<!--        <hadoop.version>${hadoop2.7.version}</hadoop.version>-->
-<!--        <curator.version>2.13.0</curator.version>-->
-<!--      </properties>-->
-<!--    </profile>-->
-
-<!--    <profile>-->
-<!--      <id>hadoop3</id>-->
-<!--      <properties>-->
-<!--        <hadoop.version>${hadoop3.2.version}</hadoop.version>-->
-<!--        <curator.version>2.13.0</curator.version>-->
-<!--        <kerberos-client.version>2.0.0-M15</kerberos-client.version>-->
-<!--      </properties>-->
-<!--      <dependencies>-->
-<!--        <dependency>-->
-<!--          <groupId>org.apache.hadoop</groupId>-->
-<!--          <artifactId>hadoop-client-minicluster</artifactId>-->
-<!--          <version>${hadoop.version}</version>-->
-<!--          <scope>test</scope>-->
-<!--          <exclusions>-->
-<!--            <exclusion>-->
-<!--              <groupId>commons-logging</groupId>-->
-<!--              <artifactId>commons-logging</artifactId>-->
-<!--            </exclusion>-->
-<!--          </exclusions>-->
-<!--        </dependency>-->
-<!--      </dependencies>-->
-<!--    </profile>-->
 
   </profiles>
 

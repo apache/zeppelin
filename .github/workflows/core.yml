@@ -27,7 +27,7 @@ defaults:
 
 jobs:
   # test on core-modules (zeppelin-interpreter,zeppelin-zengine,zeppelin-server),
-  # zeppelin-server test depends on some interpreter: spark, shell & markdown
+  # some interpreters are included, because zeppelin-server test depends on them: spark, shell & markdown
   core-modules:
     runs-on: ubuntu-20.04
     strategy:

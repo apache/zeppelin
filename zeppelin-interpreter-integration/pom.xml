@@ -164,9 +164,6 @@
           <environmentVariables>
             <ZEPPELIN_HOME>${basedir}/../</ZEPPELIN_HOME>
           </environmentVariables>
-          <systemPropertyVariables>
-            <profileId>${project.activeProfiles[0].id}</profileId>
-          </systemPropertyVariables>
         </configuration>
       </plugin>
       <plugin>

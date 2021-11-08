@@ -298,33 +298,6 @@
       <version>2.0.0-M15</version>
     </dependency>
 
-<!--    <dependency>-->
-<!--      <groupId>org.apache.hadoop</groupId>-->
-<!--      <artifactId>hadoop-client</artifactId>-->
-<!--      <exclusions>-->
-<!--        &lt;!&ndash; Provided by javax-websocket-server-impl &ndash;&gt;-->
-<!--        <exclusion>-->
-<!--          <groupId>org.ow2.asm</groupId>-->
-<!--          <artifactId>asm</artifactId>-->
-<!--        </exclusion>-->
-<!--      </exclusions>-->
-<!--    </dependency>-->
-
-    <!--test libraries-->
-<!--    <dependency>-->
-<!--      <groupId>org.apache.hadoop</groupId>-->
-<!--      <artifactId>hadoop-common</artifactId>-->
-<!--      <classifier>tests</classifier>-->
-<!--      <scope>test</scope>-->
-<!--      <exclusions>-->
-<!--        &lt;!&ndash; Provided by javax-websocket-server-impl &ndash;&gt;-->
-<!--        <exclusion>-->
-<!--          <groupId>org.ow2.asm</groupId>-->
-<!--          <artifactId>asm</artifactId>-->
-<!--        </exclusion>-->
-<!--      </exclusions>-->
-<!--    </dependency>-->
-
     <dependency>
       <groupId>org.apache.zeppelin</groupId>
       <artifactId>zeppelin-zengine</artifactId>
