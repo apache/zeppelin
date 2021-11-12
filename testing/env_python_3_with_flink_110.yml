@@ -10,6 +10,7 @@ dependencies:
   - protobuf
   - pandasql
   - ipython
+  - ipython_genutils
   - ipykernel
   - jupyter_client=5
   - hvplot
