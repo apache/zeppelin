@@ -415,12 +415,10 @@ public class Note implements JsonSerializable {
    * Delete the note AngularObject.
    */
   public void deleteAngularObject(String intpGroupId, String noteId, String paragraphId, String name) {
-    List<AngularObject> angularObjectList;
     if (angularObjects.containsKey(intpGroupId)) {
-      angularObjectList = angularObjects.get(intpGroupId);
 
       // Delete existing AngularObject
-      Iterator<AngularObject> iter = angularObjectList.iterator();
+      Iterator<AngularObject> iter = angularObjects.get(intpGroupId).iterator();
       while(iter.hasNext()){
         String noteIdCandidate = "";
         String paragraphIdCandidate = "";
@@ -491,28 +489,24 @@ public class Note implements JsonSerializable {
 
     paragraphs.add(newParagraph);
 
-    try {
-      fireParagraphCreateEvent(newParagraph);
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
+    fireParagraphCreateEvent(newParagraph);
 
   }
 
-  public void fireParagraphCreateEvent(Paragraph p) throws IOException {
+  public void fireParagraphCreateEvent(Paragraph p) {
     for (NoteEventListener listener : noteEventListeners) {
       listener.onParagraphCreate(p);
     }
   }
 
-  public void fireParagraphRemoveEvent(Paragraph p) throws IOException {
+  public void fireParagraphRemoveEvent(Paragraph p) {
     for (NoteEventListener listener : noteEventListeners) {
       listener.onParagraphRemove(p);
     }
   }
 
 
-  public void fireParagraphUpdateEvent(Paragraph p) throws IOException {
+  public void fireParagraphUpdateEvent(Paragraph p) {
     for (NoteEventListener listener : noteEventListeners) {
       listener.onParagraphUpdate(p);
     }
@@ -544,11 +538,7 @@ public class Note implements JsonSerializable {
 
   private void insertParagraph(Paragraph paragraph, int index) {
     paragraphs.add(index, paragraph);
-    try {
-      fireParagraphCreateEvent(paragraph);
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
+    fireParagraphCreateEvent(paragraph);
   }
 
   /**
@@ -563,11 +553,7 @@ public class Note implements JsonSerializable {
     for (Paragraph p : paragraphs) {
       if (p.getId().equals(paragraphId)) {
         paragraphs.remove(p);
-        try {
-          fireParagraphRemoveEvent(p);
-        } catch (IOException e) {
-          LOGGER.error("Fail to fire ParagraphRemoveEvent", e);
-        }
+        fireParagraphRemoveEvent(p);
         return p;
       }
     }

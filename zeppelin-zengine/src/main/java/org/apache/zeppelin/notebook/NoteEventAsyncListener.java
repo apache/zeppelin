@@ -46,17 +46,17 @@ public abstract class NoteEventAsyncListener implements NoteEventListener, Close
             new LinkedBlockingQueue<>(), new SchedulerThreadFactory(name));
   }
 
-  public abstract void handleNoteCreateEvent(NoteCreateEvent noteCreateEvent) throws Exception;
+  public abstract void handleNoteCreateEvent(NoteCreateEvent noteCreateEvent);
 
-  public abstract void handleNoteRemoveEvent(NoteRemoveEvent noteRemoveEvent) throws Exception;
+  public abstract void handleNoteRemoveEvent(NoteRemoveEvent noteRemoveEvent);
 
-  public abstract void handleNoteUpdateEvent(NoteUpdateEvent noteUpdateEvent) throws Exception;
+  public abstract void handleNoteUpdateEvent(NoteUpdateEvent noteUpdateEvent);
 
-  public abstract void handleParagraphCreateEvent(ParagraphCreateEvent paragraphCreateEvent) throws Exception;
+  public abstract void handleParagraphCreateEvent(ParagraphCreateEvent paragraphCreateEvent);
 
-  public abstract void handleParagraphRemoveEvent(ParagraphRemoveEvent paragraphRemoveEvent) throws Exception;
+  public abstract void handleParagraphRemoveEvent(ParagraphRemoveEvent paragraphRemoveEvent);
 
-  public abstract void handleParagraphUpdateEvent(ParagraphUpdateEvent paragraphUpdateEvent) throws Exception;
+  public abstract void handleParagraphUpdateEvent(ParagraphUpdateEvent paragraphUpdateEvent);
 
 
   @Override

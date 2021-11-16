@@ -50,7 +50,7 @@ public abstract class SearchService extends NoteEventAsyncListener {
    * @param note a Note to update index for
    * @throws IOException
    */
-  public abstract void updateNoteIndex(String noteId) throws IOException;
+  public abstract void updateNoteIndex(String noteId);
 
   /**
    * Updates paragraph index for the given paragraph.
@@ -59,27 +59,27 @@ public abstract class SearchService extends NoteEventAsyncListener {
    * @throws IOException
    */
 
-  public abstract void updateParagraphIndex(String nodeId, String paragraphId) throws IOException;
+  public abstract void updateParagraphIndex(String nodeId, String paragraphId);
 
   /**
    * Indexes the given note.
    *
    * @throws IOException If there is a low-level I/O error
    */
-  public abstract void addNoteIndex(String noteId) throws IOException;
+  public abstract void addNoteIndex(String noteId);
 
   /**
    * Indexes the given paragraph.
    *
    * @throws IOException If there is a low-level I/O error
    */
-  public abstract void addParagraphIndex(String nodeId, String paragraphId) throws IOException;
+  public abstract void addParagraphIndex(String nodeId, String paragraphId);
 
 
   /**
    * Deletes all docs on given Note from index
    */
-  public abstract void deleteNoteIndex(String noteId) throws IOException;
+  public abstract void deleteNoteIndex(String noteId);
 
   /**
    * Deletes doc for a given
@@ -88,7 +88,7 @@ public abstract class SearchService extends NoteEventAsyncListener {
    * @param p
    * @throws IOException
    */
-  public abstract void deleteParagraphIndex(String noteId, String paragraphId) throws IOException;
+  public abstract void deleteParagraphIndex(String noteId, String paragraphId);
 
   /**
    * Frees the recourses used by index
@@ -100,32 +100,32 @@ public abstract class SearchService extends NoteEventAsyncListener {
   }
 
   @Override
-  public void handleNoteCreateEvent(NoteCreateEvent noteCreateEvent) throws Exception {
+  public void handleNoteCreateEvent(NoteCreateEvent noteCreateEvent) {
     addNoteIndex(noteCreateEvent.getNoteId());
   }
 
   @Override
-  public void handleNoteRemoveEvent(NoteRemoveEvent noteRemoveEvent) throws Exception {
+  public void handleNoteRemoveEvent(NoteRemoveEvent noteRemoveEvent) {
     deleteNoteIndex(noteRemoveEvent.getNoteId());
   }
 
   @Override
-  public void handleNoteUpdateEvent(NoteUpdateEvent noteUpdateEvent) throws Exception {
+  public void handleNoteUpdateEvent(NoteUpdateEvent noteUpdateEvent) {
     updateNoteIndex(noteUpdateEvent.getNoteId());
   }
 
   @Override
-  public void handleParagraphCreateEvent(ParagraphCreateEvent paragraphCreateEvent) throws Exception {
+  public void handleParagraphCreateEvent(ParagraphCreateEvent paragraphCreateEvent) {
     addParagraphIndex(paragraphCreateEvent.getNodeId(), paragraphCreateEvent.getParagraphId());
   }
 
   @Override
-  public void handleParagraphRemoveEvent(ParagraphRemoveEvent paragraphRemoveEvent) throws Exception {
+  public void handleParagraphRemoveEvent(ParagraphRemoveEvent paragraphRemoveEvent) {
     deleteParagraphIndex(paragraphRemoveEvent.getNodeId(), paragraphRemoveEvent.getParagraphId());
   }
 
   @Override
-  public void handleParagraphUpdateEvent(ParagraphUpdateEvent paragraphUpdateEvent) throws Exception {
+  public void handleParagraphUpdateEvent(ParagraphUpdateEvent paragraphUpdateEvent) {
     updateParagraphIndex(paragraphUpdateEvent.getNodeId(), paragraphUpdateEvent.getParagraphId());
   }
 }

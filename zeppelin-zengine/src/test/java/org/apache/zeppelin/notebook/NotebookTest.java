@@ -1656,12 +1656,12 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
       }
 
       @Override
-      public void onParagraphUpdate(Paragraph p) throws IOException {
+      public void onParagraphUpdate(Paragraph p) {
 
       }
 
       @Override
-      public void onParagraphStatusChange(Paragraph p, Status status) throws IOException {
+      public void onParagraphStatusChange(Paragraph p, Status status) {
 
       }
 

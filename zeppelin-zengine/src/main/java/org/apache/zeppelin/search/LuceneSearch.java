@@ -207,37 +207,45 @@ public class LuceneSearch extends SearchService {
    * @see org.apache.zeppelin.search.Search#updateIndexDoc(org.apache.zeppelin.notebook.Note)
    */
   @Override
-  public void updateNoteIndex(String noteId) throws IOException {
+  public void updateNoteIndex(String noteId) {
     updateIndexNoteName(noteId);
   }
 
-  private void updateIndexNoteName(String noteId) throws IOException {
-     notebook.processNote(noteId,
-      note -> {
-        if (note != null) {
-          String noteName = note.getName();
-          LOGGER.debug("Update note index: {}, '{}'", noteId, noteName);
-          if (null == noteName || noteName.isEmpty()) {
-            LOGGER.debug("Skipping empty notebook name");
-            return null;
+  private void updateIndexNoteName(String noteId) {
+     try {
+      notebook.processNote(noteId,
+        note -> {
+          if (note != null) {
+            String noteName = note.getName();
+            LOGGER.debug("Update note index: {}, '{}'", noteId, noteName);
+            if (null == noteName || noteName.isEmpty()) {
+              LOGGER.debug("Skipping empty notebook name");
+              return null;
+            }
+            updateDoc(noteId, noteName, null);
           }
-          updateDoc(noteId, noteName, null);
-        }
-        return null;
-      });
+          return null;
+        });
+    } catch (IOException e) {
+      LOGGER.error("Unable to update note {}", noteId, e);
+    }
   }
 
   @Override
-  public void updateParagraphIndex(String noteId, String paragraphId) throws IOException {
-    notebook.processNote(noteId,
-      note -> {
-        if (note != null) {
-          Paragraph p = note.getParagraph(paragraphId);
-          LOGGER.debug("Update paragraph index: {}", paragraphId);
-          updateDoc(noteId, note.getName(), p);
-        }
-        return null;
-      });
+  public void updateParagraphIndex(String noteId, String paragraphId) {
+    try {
+      notebook.processNote(noteId,
+        note -> {
+          if (note != null) {
+            Paragraph p = note.getParagraph(paragraphId);
+            LOGGER.debug("Update paragraph index: {}", paragraphId);
+            updateDoc(noteId, note.getName(), p);
+          }
+          return null;
+        });
+    } catch (IOException e) {
+      LOGGER.error("Unable to update paragraph {} of note {}", paragraphId, noteId, e);
+    }
   }
 
   /**
@@ -316,7 +324,7 @@ public class LuceneSearch extends SearchService {
    * @see org.apache.zeppelin.search.Search#addIndexDoc(org.apache.zeppelin.notebook.Note)
    */
   @Override
-  public void addNoteIndex(String noteId) throws IOException {
+  public void addNoteIndex(String noteId) {
     try {
       notebook.processNote(noteId,
         note -> {
@@ -327,20 +335,24 @@ public class LuceneSearch extends SearchService {
         });
       indexWriter.commit();
     } catch (IOException e) {
-      throw new IOException("Failed to add note " + noteId + " to index", e);
+      LOGGER.error("Failed to add note {} to index", noteId, e);
     }
   }
 
   @Override
-  public void addParagraphIndex(String noteId, String paragraphId) throws IOException {
-    notebook.processNote(noteId,
-      note -> {
-        if (note != null) {
-          Paragraph p = note.getParagraph(paragraphId);
-          updateDoc(noteId, note.getName(), p);
-        }
-        return null;
-      });
+  public void addParagraphIndex(String noteId, String paragraphId) {
+    try {
+      notebook.processNote(noteId,
+        note -> {
+          if (note != null) {
+            Paragraph p = note.getParagraph(paragraphId);
+            updateDoc(noteId, note.getName(), p);
+          }
+          return null;
+        });
+    } catch (IOException e) {
+      LOGGER.error("Failed to add paragraph {} of note {} to index", paragraphId, noteId, e);
+    }
   }
 
   /**
@@ -360,9 +372,14 @@ public class LuceneSearch extends SearchService {
    * @see org.apache.zeppelin.search.Search#deleteIndexDocs(org.apache.zeppelin.notebook.Note)
    */
   @Override
-  public void deleteNoteIndex(String noteId) throws IOException{
-    deleteDoc(noteId, null);
-    deleteParagraphIndex(noteId, null);
+  public void deleteNoteIndex(String noteId) {
+    try {
+      deleteDoc(noteId, null);
+      deleteParagraphIndex(noteId, null);
+    } catch (IOException e) {
+      LOGGER.error("Unable to delete note {}", noteId, e);
+    }
+
   }
 
   /* (non-Javadoc)
@@ -370,8 +387,12 @@ public class LuceneSearch extends SearchService {
    *  #deleteIndexDoc(org.apache.zeppelin.notebook.Note, org.apache.zeppelin.notebook.Paragraph)
    */
   @Override
-  public void deleteParagraphIndex(String noteId, String paragraphId) throws IOException{
-    deleteDoc(noteId, paragraphId);
+  public void deleteParagraphIndex(String noteId, String paragraphId){
+    try {
+      deleteDoc(noteId, paragraphId);
+    } catch (IOException e) {
+      LOGGER.error("Unable to delete paragraph {} of note {}", paragraphId, noteId, e);
+    }
   }
 
   /**
@@ -426,11 +447,7 @@ public class LuceneSearch extends SearchService {
     Thread thread = new Thread(() -> {
       LOGGER.info("Starting rebuild index");
       notebook.getNotesInfo().forEach(noteInfo -> {
-        try {
-          addNoteIndex(noteInfo.getId());
-        } catch (IOException e) {
-          LOGGER.error("Unable to add Note {} to Index", noteInfo.getId(), e);
-        }
+        addNoteIndex(noteInfo.getId());
       });
       LOGGER.info("Finish rebuild index");
     });
@@ -439,7 +456,8 @@ public class LuceneSearch extends SearchService {
     try {
       thread.join();
     } catch (InterruptedException e) {
-      e.printStackTrace();
+      LOGGER.warn("Lucene Rebuild Index Thread interrupted!", e);
+      Thread.currentThread().interrupt();
     }
   }
 }

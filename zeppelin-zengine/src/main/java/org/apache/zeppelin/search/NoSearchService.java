@@ -18,7 +18,6 @@
 package org.apache.zeppelin.search;
 
 import javax.inject.Inject;
-import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -36,32 +35,32 @@ public class NoSearchService extends SearchService {
   }
 
   @Override
-  public void updateNoteIndex(String noteId) throws IOException {
-
+  public void updateNoteIndex(String noteId) {
+    // do nothing
   }
 
   @Override
-  public void updateParagraphIndex(String noteId, String paragraphId) throws IOException {
-
+  public void updateParagraphIndex(String noteId, String paragraphId) {
+    // do nothing
   }
 
   @Override
-  public void addNoteIndex(String noteId) throws IOException {
-
+  public void addNoteIndex(String noteId) {
+    // do nothing
   }
 
   @Override
-  public void addParagraphIndex(String noteId, String paragraphId) throws IOException {
-
+  public void addParagraphIndex(String noteId, String paragraphId) {
+    // do nothing
   }
 
   @Override
-  public void deleteNoteIndex(String noteId) throws IOException {
-
+  public void deleteNoteIndex(String noteId) {
+    // do nothing
   }
 
   @Override
-  public void deleteParagraphIndex(String noteId, String paragraphId) throws IOException {
-
+  public void deleteParagraphIndex(String noteId, String paragraphId) {
+    // do nothing
   }
 }

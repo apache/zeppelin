@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
@@ -71,7 +72,7 @@ public class Notebook {
   private ZeppelinConfiguration conf;
   private ParagraphJobListener paragraphJobListener;
   private NotebookRepo notebookRepo;
-  private List<NoteEventListener> noteEventListeners = new ArrayList<>();
+  private List<NoteEventListener> noteEventListeners = new CopyOnWriteArrayList<>();
   private Credentials credentials;
 
   /**
@@ -98,7 +99,7 @@ public class Notebook {
     // TODO(zjffdu) cycle refer, not a good solution
     this.interpreterSettingManager.setNotebook(this);
     this.credentials = credentials;
-    this.noteEventListeners.add(this.interpreterSettingManager);
+    addNotebookEventListener(this.interpreterSettingManager);
   }
 
   public void recoveryIfNecessary() {
@@ -735,32 +736,24 @@ public class Notebook {
   }
 
   public void addNotebookEventListener(NoteEventListener listener) {
-    synchronized(noteEventListeners) {
-      noteEventListeners.add(listener);
+    noteEventListeners.add(listener);
+  }
+
+  private void fireNoteCreateEvent(Note note, AuthenticationInfo subject) {
+    for (NoteEventListener listener : noteEventListeners) {
+      listener.onNoteCreate(note, subject);
     }
   }
 
-  private void fireNoteCreateEvent(Note note, AuthenticationInfo subject) throws IOException {
-    synchronized(noteEventListeners) {
-      for (NoteEventListener listener : noteEventListeners) {
-        listener.onNoteCreate(note, subject);
-      }
+  private void fireNoteUpdateEvent(Note note, AuthenticationInfo subject) {
+    for (NoteEventListener listener : noteEventListeners) {
+      listener.onNoteUpdate(note, subject);
     }
   }
 
-  private void fireNoteUpdateEvent(Note note, AuthenticationInfo subject) throws IOException {
-    synchronized(noteEventListeners) {
-      for (NoteEventListener listener : noteEventListeners) {
-        listener.onNoteUpdate(note, subject);
-      }
-    }
-  }
-
-  private void fireNoteRemoveEvent(Note note, AuthenticationInfo subject) throws IOException {
-    synchronized(noteEventListeners) {
-      for (NoteEventListener listener : noteEventListeners) {
-        listener.onNoteRemove(note, subject);
-      }
+  private void fireNoteRemoveEvent(Note note, AuthenticationInfo subject) {
+    for (NoteEventListener listener : noteEventListeners) {
+      listener.onNoteRemove(note, subject);
     }
   }
 

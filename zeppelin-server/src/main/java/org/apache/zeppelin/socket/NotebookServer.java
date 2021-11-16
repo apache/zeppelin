@@ -1982,7 +1982,7 @@ public class NotebookServer implements AngularObjectRegistryListener,
 
   @Override
   public void onParagraphUpdate(Paragraph p) {
-
+    // do nothing
   }
 
   @Override
@@ -1997,7 +1997,7 @@ public class NotebookServer implements AngularObjectRegistryListener,
 
   @Override
   public void onNoteUpdate(Note note, AuthenticationInfo subject) {
-
+    // do nothing
   }
 
   @Override

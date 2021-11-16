@@ -1120,7 +1120,7 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
   }
 
   @Override
-  public void onNoteRemove(Note note, AuthenticationInfo subject) throws IOException {
+  public void onNoteRemove(Note note, AuthenticationInfo subject) {
     // stop all associated interpreters
     if (note.getParagraphs() != null) {
       for (Paragraph paragraph : note.getParagraphs()) {
@@ -1185,40 +1185,38 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
   }
 
   @Override
-  public void onNoteCreate(Note note, AuthenticationInfo subject) throws IOException {
-
+  public void onNoteCreate(Note note, AuthenticationInfo subject) {
+    // do nothing
   }
 
   @Override
-  public void onNoteUpdate(Note note, AuthenticationInfo subject) throws IOException {
-
+  public void onNoteUpdate(Note note, AuthenticationInfo subject) {
+    // do nothing
   }
 
   @Override
-  public void onParagraphRemove(Paragraph p) throws IOException {
-
+  public void onParagraphRemove(Paragraph p) {
+    // do nothing
   }
 
   @Override
-  public void onParagraphCreate(Paragraph p) throws IOException {
-
+  public void onParagraphCreate(Paragraph p) {
+    // do nothing
   }
 
   @Override
-  public void onParagraphUpdate(Paragraph p) throws IOException {
-
+  public void onParagraphUpdate(Paragraph p) {
+    // do nothing
   }
 
   @Override
-  public void onParagraphStatusChange(Paragraph p, Job.Status status) throws IOException {
-
+  public void onParagraphStatusChange(Paragraph p, Job.Status status) {
+    // do nothing
   }
 
   @Override
   public void onClusterEvent(String msg) {
-    if (LOGGER.isDebugEnabled()) {
-      LOGGER.debug("onClusterEvent : {}", msg);
-    }
+    LOGGER.debug("onClusterEvent : {}", msg);
 
     try {
       ClusterMessage message = ClusterMessage.deserializeMessage(msg);
