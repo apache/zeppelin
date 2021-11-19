@@ -23,13 +23,13 @@
   <parent>
     <artifactId>zeppelin-examples</artifactId>
     <groupId>org.apache.zeppelin</groupId>
-    <version>0.10.1-SNAPSHOT</version>
+    <version>0.10.1</version>
     <relativePath>..</relativePath>
   </parent>
 
   <artifactId>zeppelin-example-spell-markdown</artifactId>
   <packaging>jar</packaging>
-  <version>0.10.1-SNAPSHOT</version>
+  <version>0.10.1</version>
   <name>Zeppelin: Example Spell - Markdown</name>
 
   <dependencies>
