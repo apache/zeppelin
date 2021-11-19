@@ -24,7 +24,7 @@
   <parent>
     <artifactId>zeppelin</artifactId>
     <groupId>org.apache.zeppelin</groupId>
-    <version>0.10.1</version>
+    <version>0.10.2-SNAPSHOT</version>
   </parent>
 
   <artifactId>zeppelin-interpreter-shaded</artifactId>
@@ -41,7 +41,7 @@
     <dependency>
       <groupId>org.apache.zeppelin</groupId>
       <artifactId>zeppelin-interpreter</artifactId>
-      <version>0.10.1</version>
+      <version>0.10.2-SNAPSHOT</version>
       <optional>true</optional>
     </dependency>
   </dependencies>
