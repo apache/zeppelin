@@ -754,6 +754,7 @@ public class Note implements JsonSerializable {
     if (isRunning()) {
       throw new Exception("Unable to run note:" + id + " because it is still in RUNNING state.");
     }
+    LOGGER.info("Run all paragraphs of note: {}, blocking: {}, isolated: {}", id, blocking, isolated);
     setIsolatedMode(isolated);
     setRunning(true);
     setStartTime(DATE_TIME_FORMATTER.format(LocalDateTime.now()));

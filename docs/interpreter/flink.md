@@ -790,6 +790,14 @@ In this section, we will list and explain all the supported local properties in 
   </tr>
 </table>
 
+## PerJob Mode
+
+The flink cluster launched in Zeppelin is session cluster, but you can simulate Flink's per job mode via this approach.
+* Set `zeppelin.notebook.run_all.isolated` to be `true` in `zeppelin-site.xml`
+* Run Flink note by clicking `Run all paragraphs` button in note menu.
+
+In this way, when all the paragraphs are finished, the flink interpreter will be shutdown and its associated flink cluster will be shutdown as well.
+
 ## Tutorial Notes
 
 Zeppelin is shipped with several Flink tutorial notes which may be helpful for you. You can check for more features in the tutorial notes.

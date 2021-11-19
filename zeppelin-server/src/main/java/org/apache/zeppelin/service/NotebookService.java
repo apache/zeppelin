@@ -428,54 +428,32 @@ public class NotebookService {
     }
 
     if (paragraphs != null) {
-      // run note via the data passed from frontend
-      try {
-        note.setRunning(true);
-        for (Map<String, Object> raw : paragraphs) {
-          String paragraphId = (String) raw.get("id");
-          if (paragraphId == null) {
-            LOGGER.warn("No id found in paragraph json: {}", raw);
-            continue;
-          }
-          try {
-            String text = (String) raw.get("paragraph");
-            String title = (String) raw.get("title");
-            Map<String, Object> params = (Map<String, Object>) raw.get("params");
-            Map<String, Object> config = (Map<String, Object>) raw.get("config");
-
-            if (!runParagraph(noteId, paragraphId, title, text, params, config, null, false, true,
-                    context, callback)) {
-              // stop execution when one paragraph fails.
-              return false;
-            }
-            // also stop execution when user code in a paragraph fails
-            Paragraph p = note.getParagraph(paragraphId);
-            InterpreterResult result = p.getReturn();
-            if (result != null && result.code() == ERROR) {
-              return false;
-            }
-            if (p.getStatus() == ABORT || p.isAborted()) {
-              return false;
-            }
-          } catch (Exception e) {
-            throw new IOException("Fail to run paragraph json: " + raw, e);
-          }
+      for (Map<String, Object> raw : paragraphs) {
+        String paragraphId = (String) raw.get("id");
+        if (paragraphId == null) {
+          LOGGER.warn("No id found in paragraph json: {}", raw);
+          continue;
         }
-      } finally {
-        note.setRunning(false);
-      }
-    } else {
-      try {
-        // run note directly when parameter `paragraphs` is null.
-        note.runAll(context.getAutheInfo(), true, false, new HashMap<>());
-        return true;
-      } catch (Exception e) {
-        LOGGER.warn("Fail to run note: {}", note.getName(), e);
-        return false;
+        String text = (String) raw.get("paragraph");
+        String title = (String) raw.get("title");
+        Map<String, Object> params = (Map<String, Object>) raw.get("params");
+        Map<String, Object> config = (Map<String, Object>) raw.get("config");
+        Paragraph p = note.getParagraph(paragraphId);
+        p.setText(text);
+        p.setTitle(title);
+        p.setConfig(config);
+        p.settings.setParams(params);
       }
     }
 
-    return true;
+    try {
+      boolean isolated = zConf.getBoolean(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_RUN_ALL_ISOLATED);
+      note.runAll(context.getAutheInfo(), true, isolated, new HashMap<>());
+      return true;
+    } catch (Exception e) {
+      LOGGER.warn("Fail to run note: {}", note.getName(), e);
+      return false;
+    }
   }
 
   public void cancelParagraph(String noteId,

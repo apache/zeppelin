@@ -463,6 +463,12 @@ Sources descending by priority:
     <td></td>
     <td>comma-separated list of folder, where cron is allowed</td>
   </tr>
+  <tr>
+    <td><h6 class="properties">ZEPPELIN_NOTEBOOK_RUN_ALL_ISOLATED</h6></td>
+    <td><h6 class="properties">zeppelin.notebook.run_all.isolated</h6></td>
+    <td></td>
+    <td>Whether using isolated mode for RUN ALL action in note menu bar. In isolated mode, associated interpreters will be shutdown after RUN ALL is finished.</td>
+  </tr>
 </table>
 
 

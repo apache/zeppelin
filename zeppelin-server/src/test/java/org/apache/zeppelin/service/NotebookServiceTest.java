@@ -84,8 +84,6 @@ public class NotebookServiceTest {
 
   private ServiceCallback callback = mock(ServiceCallback.class);
 
-  private Gson gson = new Gson();
-
 
   @Before
   public void setUp() throws Exception {
@@ -426,6 +424,7 @@ public class NotebookServiceTest {
     // TODO(zjffdu) Enable it after ZEPPELIN-3699
     // assertNotNull(p.getResult());
     verify(callback).onSuccess(p, context);
+
 
     // clean output
     reset(callback);
