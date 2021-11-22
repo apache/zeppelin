@@ -123,6 +123,14 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
     }
 
 
+    String scalaVersion = null;
+    try {
+      scalaVersion = detectSparkScalaVersion(getEnv("SPARK_HOME"), env);
+      context.getProperties().put("zeppelin.spark.scala.version", scalaVersion);
+    } catch (Exception e) {
+      throw new IOException("Fail to detect scala version, the reason is:"+ e.getMessage());
+    }
+
     if (isYarnMode()
         && getDeployMode().equals("cluster")) {
       try {
@@ -138,7 +146,6 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
           }
         }
 
-        String scalaVersion = detectSparkScalaVersion(getEnv("SPARK_HOME"), env);
         Path scalaFolder =  Paths.get(zConf.getZeppelinHome(), "/interpreter/spark/scala-" + scalaVersion);
         if (!scalaFolder.toFile().exists()) {
           throw new IOException("spark scala folder " + scalaFolder.toFile() + " doesn't exist");
