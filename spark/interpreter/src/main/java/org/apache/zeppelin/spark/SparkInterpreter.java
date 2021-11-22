@@ -74,6 +74,7 @@ public class SparkInterpreter extends AbstractInterpreter {
   private Object sparkSession;
 
   private SparkVersion sparkVersion;
+  private String scalaVersion;
   private boolean enableSupportedVersionCheck;
 
   public SparkInterpreter(Properties properties) {
@@ -149,7 +150,7 @@ public class SparkInterpreter extends AbstractInterpreter {
    * @throws Exception
    */
   private AbstractSparkScalaInterpreter loadSparkScalaInterpreter(SparkConf conf) throws Exception {
-    String scalaVersion = extractScalaVersion();
+    scalaVersion = extractScalaVersion(conf);
     ClassLoader scalaInterpreterClassLoader = Thread.currentThread().getContextClassLoader();
 
     String zeppelinHome = System.getenv("ZEPPELIN_HOME");
@@ -252,12 +253,24 @@ public class SparkInterpreter extends AbstractInterpreter {
     return sparkVersion;
   }
 
-  private String extractScalaVersion() throws InterpreterException {
-    String scalaVersionString = scala.util.Properties.versionString();
+  private String extractScalaVersion(SparkConf conf) throws InterpreterException {
+    // Use the scala version if SparkLauncher pass it by name of "zeppelin.spark.scala.version".
+
+    // If not, detect scala version by resource file library.version on classpath.
+    // Library.version is sometimes inaccurate and it is mainly used for unit test.
+    String scalaVersionString;
+    if (conf.contains("zeppelin.spark.scala.version")) {
+      scalaVersionString = conf.get("zeppelin.spark.scala.version");
+    } else {
+      scalaVersionString = scala.util.Properties.versionString();
+    }
     LOGGER.info("Using Scala: " + scalaVersionString);
-    if (scalaVersionString.contains("version 2.11")) {
+
+    if (StringUtils.isEmpty(scalaVersionString)) {
+      throw new InterpreterException("Scala Version is empty");
+    } else if (scalaVersionString.contains("2.11")) {
       return "2.11";
-    } else if (scalaVersionString.contains("version 2.12")) {
+    } else if (scalaVersionString.contains("2.12")) {
       return "2.12";
     } else {
       throw new InterpreterException("Unsupported scala version: " + scalaVersionString);
@@ -265,7 +278,7 @@ public class SparkInterpreter extends AbstractInterpreter {
   }
 
   public boolean isScala212() throws InterpreterException {
-    return extractScalaVersion().equals("2.12");
+    return scalaVersion.equals("2.12");
   }
 
   private List<String> getDependencyFiles() throws InterpreterException {
