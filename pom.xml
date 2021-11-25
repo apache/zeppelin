@@ -400,16 +400,16 @@
         <version>${jettison.version}</version>
       </dependency>
 
-      <dependency>
-        <groupId>org.apache.hadoop</groupId>
-        <artifactId>${hadoop-client-api.artifact}</artifactId>
-        <version>${hadoop.version}</version>
-        <scope>${hadoop.deps.scope}</scope>
-      </dependency>
+<!--      <dependency>-->
+<!--        <groupId>org.apache.hadoop</groupId>-->
+<!--        <artifactId>${hadoop-client-api.artifact}</artifactId>-->
+<!--        <version>${hadoop.version}</version>-->
+<!--        <scope>${hadoop.deps.scope}</scope>-->
+<!--      </dependency>-->
 
       <dependency>
         <groupId>org.apache.hadoop</groupId>
-        <artifactId>hadoop-client</artifactId>
+        <artifactId>${hadoop-client-api.artifact}</artifactId>
         <version>${hadoop.version}</version>
         <scope>${hadoop.deps.scope}</scope>
         <exclusions>

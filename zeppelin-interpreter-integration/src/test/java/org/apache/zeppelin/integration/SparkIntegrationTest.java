@@ -53,6 +53,7 @@ import java.util.stream.Collectors;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeTrue;
 
 
 public abstract class SparkIntegrationTest {
@@ -169,10 +170,7 @@ public abstract class SparkIntegrationTest {
 
   @Test
   public void testLocalMode() throws IOException, YarnException, InterpreterException, XmlPullParserException {
-    if (!isHadoopVersionMatch()) {
-      LOGGER.info("Hadoop version mismatch, skip test");
-      return;
-    }
+    assumeTrue("Hadoop version mismatch, skip test", isHadoopVersionMatch());
 
     InterpreterSetting sparkInterpreterSetting = interpreterSettingManager.getInterpreterSettingByName("spark");
     sparkInterpreterSetting.setProperty("spark.master", "local[*]");
@@ -199,10 +197,7 @@ public abstract class SparkIntegrationTest {
 
   @Test
   public void testYarnClientMode() throws IOException, YarnException, InterruptedException, InterpreterException, XmlPullParserException {
-    if (!isHadoopVersionMatch()) {
-      LOGGER.info("Hadoop version mismatch, skip test");
-      return;
-    }
+    assumeTrue("Hadoop version mismatch, skip test", isHadoopVersionMatch());
 
     InterpreterSetting sparkInterpreterSetting = interpreterSettingManager.getInterpreterSettingByName("spark");
     sparkInterpreterSetting.setProperty("spark.master", "yarn-client");
@@ -254,10 +249,7 @@ public abstract class SparkIntegrationTest {
 
   @Test
   public void testYarnClusterMode() throws IOException, YarnException, InterruptedException, InterpreterException, XmlPullParserException {
-    if (!isHadoopVersionMatch()) {
-      LOGGER.info("Hadoop version mismatch, skip test");
-      return;
-    }
+    assumeTrue("Hadoop version mismatch, skip test", isHadoopVersionMatch());
 
     InterpreterSetting sparkInterpreterSetting = interpreterSettingManager.getInterpreterSettingByName("spark");
     sparkInterpreterSetting.setProperty("spark.master", "yarn-cluster");
@@ -304,10 +296,7 @@ public abstract class SparkIntegrationTest {
 
   @Test
   public void testSparkSubmit() throws InterpreterException {
-    if (!isHadoopVersionMatch()) {
-      LOGGER.info("Hadoop version mismatch, skip test");
-      return;
-    }
+    assumeTrue("Hadoop version mismatch, skip test", isHadoopVersionMatch());
 
     try {
       InterpreterSetting sparkSubmitInterpreterSetting = interpreterSettingManager.getInterpreterSettingByName("spark-submit");
@@ -325,10 +314,7 @@ public abstract class SparkIntegrationTest {
 
   @Test
   public void testScopedMode() throws InterpreterException {
-    if (!isHadoopVersionMatch()) {
-      LOGGER.info("Hadoop version mismatch, skip test");
-      return;
-    }
+    assumeTrue("Hadoop version mismatch, skip test", isHadoopVersionMatch());
 
     InterpreterSetting sparkInterpreterSetting = interpreterSettingManager.getInterpreterSettingByName("spark");
     try {

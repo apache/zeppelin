@@ -236,7 +236,7 @@
       <properties>
         <hadoop.version>${hadoop2.7.version}</hadoop.version>
         <curator.version>2.7.1</curator.version>
-        <commons-io.version>2.4</commons-io.version>
+        <commons-io.version>2.11</commons-io.version>
         <!--
           the declaration site above of these variables explains why we need to re-assign them here
         -->

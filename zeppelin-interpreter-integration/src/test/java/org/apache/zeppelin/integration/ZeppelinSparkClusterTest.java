@@ -60,6 +60,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeTrue;
+
 
 /**
  * Test against spark cluster.
@@ -163,10 +165,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
 
   @Test
   public void scalaOutputTest() throws IOException, InterruptedException {
-    if (!isHadoopVersionMatch()) {
-      LOGGER.info("Hadoop version mismatch, skip test");
-      return;
-    }
+    assumeTrue("Hadoop version mismatch, skip test", isHadoopVersionMatch());
 
     String noteId = null;
     try {
@@ -225,10 +224,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
 
   @Test
   public void basicRDDTransformationAndActionTest() throws IOException {
-    if (!isHadoopVersionMatch()) {
-      LOGGER.info("Hadoop version mismatch, skip test");
-      return;
-    }
+    assumeTrue("Hadoop version mismatch, skip test", isHadoopVersionMatch());
 
     String noteId = null;
 
@@ -252,10 +248,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
 
   @Test
   public void sparkReadJSONTest() throws IOException {
-    if (!isHadoopVersionMatch()) {
-      LOGGER.info("Hadoop version mismatch, skip test");
-      return;
-    }
+    assumeTrue("Hadoop version mismatch, skip test", isHadoopVersionMatch());
 
     String noteId = null;
     try {
@@ -293,10 +286,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
 
   @Test
   public void sparkReadCSVTest() throws IOException {
-    if (!isHadoopVersionMatch()) {
-      LOGGER.info("Hadoop version mismatch, skip test");
-      return;
-    }
+    assumeTrue("Hadoop version mismatch, skip test", isHadoopVersionMatch());
 
     String noteId = null;
     try {
@@ -324,10 +314,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
 
   @Test
   public void sparkSQLTest() throws IOException {
-    if (!isHadoopVersionMatch()) {
-      LOGGER.info("Hadoop version mismatch, skip test");
-      return;
-    }
+    assumeTrue("Hadoop version mismatch, skip test", isHadoopVersionMatch());
 
     String noteId = null;
     try {
@@ -430,10 +417,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
 
   @Test
   public void sparkRTest() throws IOException {
-    if (!isHadoopVersionMatch()) {
-      LOGGER.info("Hadoop version mismatch, skip test");
-      return;
-    }
+    assumeTrue("Hadoop version mismatch, skip test", isHadoopVersionMatch());
 
     String noteId = null;
     try {
@@ -472,10 +456,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
 
   @Test
   public void pySparkTest() throws IOException {
-    if (!isHadoopVersionMatch()) {
-      LOGGER.info("Hadoop version mismatch, skip test");
-      return;
-    }
+    assumeTrue("Hadoop version mismatch, skip test", isHadoopVersionMatch());
 
     // create new note
     String noteId = null;
@@ -553,10 +534,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
 
   @Test
   public void zRunTest() throws IOException, InterruptedException {
-    if (!isHadoopVersionMatch()) {
-      LOGGER.info("Hadoop version mismatch, skip test");
-      return;
-    }
+    assumeTrue("Hadoop version mismatch, skip test", isHadoopVersionMatch());
 
     String noteId = null;
     String note2Id = null;
@@ -652,10 +630,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
 
   @Test
   public void testZeppelinContextResource() throws IOException {
-    if (!isHadoopVersionMatch()) {
-      LOGGER.info("Hadoop version mismatch, skip test");
-      return;
-    }
+    assumeTrue("Hadoop version mismatch, skip test", isHadoopVersionMatch());
 
     String noteId = null;
     try {
@@ -705,10 +680,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
 
   @Test
   public void testZeppelinContextHook() throws IOException {
-    if (!isHadoopVersionMatch()) {
-      LOGGER.info("Hadoop version mismatch, skip test");
-      return;
-    }
+    assumeTrue("Hadoop version mismatch, skip test", isHadoopVersionMatch());
 
     String noteId = null;
     String note2Id = null;
@@ -794,10 +766,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
 
   @Test
   public void testSparkZeppelinContextDynamicForms() throws IOException {
-    if (!isHadoopVersionMatch()) {
-      LOGGER.info("Hadoop version mismatch, skip test");
-      return;
-    }
+    assumeTrue("Hadoop version mismatch, skip test", isHadoopVersionMatch());
 
     String noteId = null;
     try {
@@ -842,10 +811,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
 
   @Test
   public void testPySparkZeppelinContextDynamicForms() throws IOException {
-    if (!isHadoopVersionMatch()) {
-      LOGGER.info("Hadoop version mismatch, skip test");
-      return;
-    }
+    assumeTrue("Hadoop version mismatch, skip test", isHadoopVersionMatch());
 
     String noteId = null;
     try {
@@ -888,10 +854,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
 
   @Test
   public void testAngularObjects() throws IOException, InterpreterNotFoundException {
-    if (!isHadoopVersionMatch()) {
-      LOGGER.info("Hadoop version mismatch, skip test");
-      return;
-    }
+    assumeTrue("Hadoop version mismatch, skip test", isHadoopVersionMatch());
 
     String noteId = null;
     try {
@@ -1008,10 +971,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
 
   @Test
   public void testScalaNoteDynamicForms() throws IOException {
-    if (!isHadoopVersionMatch()) {
-      LOGGER.info("Hadoop version mismatch, skip test");
-      return;
-    }
+    assumeTrue("Hadoop version mismatch, skip test", isHadoopVersionMatch());
 
     String noteId = null;
     try {
@@ -1081,10 +1041,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
 
   @Test
   public void testPythonNoteDynamicForms() throws IOException {
-    if (!isHadoopVersionMatch()) {
-      LOGGER.info("Hadoop version mismatch, skip test");
-      return;
-    }
+    assumeTrue("Hadoop version mismatch, skip test", isHadoopVersionMatch());
 
     String noteId = null;
     try {
@@ -1154,10 +1111,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
 
   @Test
   public void testRNoteDynamicForms() throws IOException {
-    if (!isHadoopVersionMatch()) {
-      LOGGER.info("Hadoop version mismatch, skip test");
-      return;
-    }
+    assumeTrue("Hadoop version mismatch, skip test", isHadoopVersionMatch());
 
     String noteId = null;
     try {
@@ -1193,10 +1147,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
 
   @Test
   public void testConfInterpreter() throws IOException {
-    if (!isHadoopVersionMatch()) {
-      LOGGER.info("Hadoop version mismatch, skip test");
-      return;
-    }
+    assumeTrue("Hadoop version mismatch, skip test", isHadoopVersionMatch());
 
     String noteId = null;
     try {
@@ -1237,10 +1188,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
 
   @Test
   public void testFailtoLaunchSpark() throws IOException {
-    if (!isHadoopVersionMatch()) {
-      LOGGER.info("Hadoop version mismatch, skip test");
-      return;
-    }
+    assumeTrue("Hadoop version mismatch, skip test", isHadoopVersionMatch());
 
     String noteId = null;
     try {
