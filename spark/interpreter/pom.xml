@@ -114,13 +114,6 @@
     </dependency>
 
     <dependency>
-      <groupId>org.apache.hadoop</groupId>
-      <artifactId>hadoop-client</artifactId>
-      <version>${hadoop.version}</version>
-      <scope>provided</scope>
-    </dependency>
-
-    <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>zeppelin-python</artifactId>
       <version>${project.version}</version>
