@@ -66,9 +66,9 @@ public class HDFSFileInterpreter extends FileInterpreter {
    */
   public class OneFileStatus {
     public long accessTime;
-    public int blockSize;
+    public long blockSize;
     public int childrenNum;
-    public int fileId;
+    public long fileId;
     public String group;
     public long length;
     public long modificationTime;
