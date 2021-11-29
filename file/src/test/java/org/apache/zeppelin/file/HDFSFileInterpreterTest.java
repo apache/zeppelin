@@ -141,7 +141,7 @@ public class HDFSFileInterpreterTest extends TestCase {
 class MockFileSystem {
   HashMap<String, String> mfs = new HashMap<>();
   static final String FILE_STATUSES =
-          "{\"accessTime\":0,\"blockSize\":0,\"childrenNum\":1,\"fileId\":16389," +
+          "{\"accessTime\":0,\"blockSize\":0,\"childrenNum\":1,\"fileId\":4947954640," +
                   "\"group\":\"hadoop\",\"length\":0,\"modificationTime\":1438548219672," +
                   "\"owner\":\"yarn\",\"pathSuffix\":\"app-logs\",\"permission\":\"777\"," +
                   "\"replication\":0,\"storagePolicy\":0,\"type\":\"DIRECTORY\"},\n" +
@@ -184,7 +184,7 @@ class MockFileSystem {
     );
     mfs.put("/tmp?op=LISTSTATUS",
         "{\"FileStatuses\":{\"FileStatus\":[\n" +
-            "        {\"accessTime\":1441253097489,\"blockSize\":134217728,\"childrenNum\":0," +
+            "        {\"accessTime\":1441253097489,\"blockSize\":2147483648,\"childrenNum\":0," +
                 "\"fileId\":16400,\"group\":\"hdfs\",\"length\":1645," +
                 "\"modificationTime\":1441253097517,\"owner\":\"hdfs\"," +
                 "\"pathSuffix\":\"ida8c06540_date040315\",\"permission\":\"755\"," +
