@@ -41,6 +41,8 @@
     <hive.version>2.3.4</hive.version>
     <hiverunner.version>4.0.0</hiverunner.version>
     <grpc.version>1.15.0</grpc.version>
+    <!-- Start from 1.15 flink is scala free (no scala version in its artifact) -->
+    <flink.library.scala.suffix>_${flink.scala.binary.version}</flink.library.scala.suffix>
 
     <flink.bin.download.url>https://archive.apache.org/dist/flink/flink-${flink.version}/flink-${flink.version}-bin-scala_${flink.scala.binary.version}.tgz</flink.bin.download.url>
   </properties>
@@ -69,6 +71,12 @@
     <dependency>
       <groupId>org.apache.zeppelin</groupId>
       <artifactId>flink1.14-shims</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.zeppelin</groupId>
+      <artifactId>flink1.15-shims</artifactId>
       <version>${project.version}</version>
     </dependency>
 
@@ -147,14 +155,14 @@
 
     <dependency>
       <groupId>org.apache.flink</groupId>
-      <artifactId>flink-clients_${flink.scala.binary.version}</artifactId>
+      <artifactId>flink-clients${flink.library.scala.suffix}</artifactId>
       <version>${flink.version}</version>
       <scope>provided</scope>
     </dependency>
 
     <dependency>
       <groupId>org.apache.flink</groupId>
-      <artifactId>flink-yarn_${flink.scala.binary.version}</artifactId>
+      <artifactId>flink-yarn${flink.library.scala.suffix}</artifactId>
       <version>${flink.version}</version>
       <scope>provided</scope>
       <exclusions>
@@ -193,7 +201,7 @@
 
     <dependency>
       <groupId>org.apache.flink</groupId>
-      <artifactId>flink-table-api-java-bridge_${flink.scala.binary.version}</artifactId>
+      <artifactId>flink-table-api-java-bridge${flink.library.scala.suffix}</artifactId>
       <version>${flink.version}</version>
       <scope>provided</scope>
     </dependency>
@@ -207,7 +215,7 @@
 
     <dependency>
       <groupId>org.apache.flink</groupId>
-      <artifactId>flink-streaming-java_${flink.scala.binary.version}</artifactId>
+      <artifactId>flink-streaming-java${flink.library.scala.suffix}</artifactId>
       <version>${flink.version}</version>
       <scope>provided</scope>
     </dependency>
@@ -1000,6 +1008,30 @@
       <id>flink-114</id>
       <properties>
         <flink.version>${flink1.14.version}</flink.version>
+      </properties>
+      <dependencies>
+        <dependency>
+          <groupId>org.apache.flink</groupId>
+          <artifactId>flink-runtime</artifactId>
+          <version>${flink.version}</version>
+          <scope>provided</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.flink</groupId>
+          <artifactId>flink-table-planner_${flink.scala.binary.version}</artifactId>
+          <version>${flink.version}</version>
+          <scope>provided</scope>
+        </dependency>
+      </dependencies>
+    </profile>
+
+    <profile>
+      <id>flink-115</id>
+      <properties>
+        <flink.version>${flink1.15.version}</flink.version>
+        <flink.scala.version>2.12.7</flink.scala.version>
+        <flink.scala.binary.version>2.12</flink.scala.binary.version>
+        <flink.library.scala.suffix></flink.library.scala.suffix>
       </properties>
       <dependencies>
         <dependency>

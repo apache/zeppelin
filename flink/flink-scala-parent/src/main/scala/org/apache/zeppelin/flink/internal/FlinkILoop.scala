@@ -30,7 +30,7 @@ import org.apache.flink.api.scala.ExecutionEnvironment
 import org.apache.flink.core.execution.PipelineExecutorServiceLoader
 import org.apache.zeppelin.flink.{ApplicationModeExecutionEnvironment, ApplicationModeStreamEnvironment, FlinkScalaInterpreter}
 import FlinkShell.ExecutionMode
-import org.apache.commons.lang.StringUtils
+import org.apache.commons.lang3.StringUtils
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.tools.nsc.interpreter._

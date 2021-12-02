@@ -62,6 +62,9 @@ public abstract class FlinkShims {
     } else if (flinkVersion.getMajorVersion() == 1 && flinkVersion.getMinorVersion() == 14) {
       LOGGER.info("Initializing shims for Flink 1.14");
       flinkShimsClass = Class.forName("org.apache.zeppelin.flink.Flink114Shims");
+    } else if (flinkVersion.getMajorVersion() == 1 && flinkVersion.getMinorVersion() == 15) {
+      LOGGER.info("Initializing shims for Flink 1.15");
+      flinkShimsClass = Class.forName("org.apache.zeppelin.flink.Flink115Shims");
     } else {
       throw new Exception("Flink version: '" + flinkVersion + "' is not supported yet");
     }
@@ -87,6 +90,8 @@ public abstract class FlinkShims {
   public FlinkVersion getFlinkVersion() {
     return flinkVersion;
   }
+
+  public abstract Object createFunctionCatalog(Object tableConfig, Object catalogManager, Object moduleManager);
 
   public abstract void initInnerBatchSqlInterpreter(FlinkSqlContext flinkSqlContext);
 
@@ -142,7 +147,11 @@ public abstract class FlinkShims {
 
   public abstract ImmutablePair<Object, Object> createPlannerAndExecutor(
           ClassLoader classLoader, Object environmentSettings, Object sEnv,
-          Object tableConfig, Object functionCatalog, Object catalogManager);
+          Object tableConfig, Object moduleManager, Object functionCatalog, Object catalogManager);
+
+  public abstract Object createBlinkPlannerEnvSettingBuilder();
+
+  public abstract Object createOldPlannerEnvSettingBuilder();
 
   public abstract InterpreterResult runSqlList(String st, InterpreterContext context, boolean isBatch);
 }

@@ -32,23 +32,61 @@
     <name>Zeppelin: Flink Parent</name>
     <description>Zeppelin Flink Support</description>
 
+
     <modules>
         <module>flink-scala-parent</module>
-        <module>flink-scala-2.11</module>
-        <module>flink-scala-2.12</module>
         <module>flink-shims</module>
         <module>flink1.12-shims</module>
         <module>flink1.13-shims</module>
         <module>flink1.14-shims</module>
+        <module>flink1.15-shims</module>
     </modules>
 
     <properties>
         <flink1.12.version>1.12.4</flink1.12.version>
         <flink1.13.version>1.13.2</flink1.13.version>
         <flink1.14.version>1.14.0</flink1.14.version>
+        <flink1.15.version>1.15.0</flink1.15.version>
 
         <flink.scala.version>2.11.12</flink.scala.version>
         <flink.scala.binary.version>2.11</flink.scala.binary.version>
     </properties>
+
+    <profiles>
+        <profile>
+            <id>flink-115</id>
+            <!-- Flink 1.15 only support scala 2.12-->
+            <modules>
+                <module>flink-scala-2.12</module>
+            </modules>
+        </profile>
+
+        <profile>
+            <id>flink-114</id>
+            <modules>
+                <module>flink-scala-2.11</module>
+                <module>flink-scala-2.12</module>
+            </modules>
+        </profile>
+
+        <profile>
+            <id>flink-113</id>
+            <modules>
+                <module>flink-scala-2.11</module>
+                <module>flink-scala-2.12</module>
+            </modules>
+        </profile>
+
+        <profile>
+            <id>flink-112</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <modules>
+                <module>flink-scala-2.11</module>
+                <module>flink-scala-2.12</module>
+            </modules>
+        </profile>
+    </profiles>
 
 </project>

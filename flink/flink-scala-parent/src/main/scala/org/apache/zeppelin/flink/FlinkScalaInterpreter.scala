@@ -432,13 +432,18 @@ abstract class FlinkScalaInterpreter(val properties: Properties,
         this.benv, this.senv, tableConfig)
 
       // blink planner
-      var btEnvSetting = EnvironmentSettings.newInstance().inBatchMode().useBlinkPlanner().build()
+      var btEnvSetting = this.flinkShims.createBlinkPlannerEnvSettingBuilder()
+        .asInstanceOf[EnvironmentSettings.Builder]
+        .inBatchMode()
+        .build()
       this.btenv = tblEnvFactory.createJavaBlinkBatchTableEnvironment(btEnvSetting, getFlinkClassLoader);
       flinkILoop.bind("btenv", btenv.getClass().getCanonicalName(), btenv, List("@transient"))
       this.java_btenv = this.btenv
 
-      var stEnvSetting =
-        EnvironmentSettings.newInstance().inStreamingMode().useBlinkPlanner().build()
+      var stEnvSetting = this.flinkShims.createBlinkPlannerEnvSettingBuilder()
+        .asInstanceOf[EnvironmentSettings.Builder]
+        .inStreamingMode()
+        .build()
       this.stenv = tblEnvFactory.createScalaBlinkStreamTableEnvironment(stEnvSetting, getFlinkClassLoader)
       flinkILoop.bind("stenv", stenv.getClass().getCanonicalName(), stenv, List("@transient"))
       this.java_stenv = tblEnvFactory.createJavaBlinkStreamTableEnvironment(stEnvSetting, getFlinkClassLoader)
@@ -586,8 +591,10 @@ abstract class FlinkScalaInterpreter(val properties: Properties,
     val originalClassLoader = Thread.currentThread().getContextClassLoader
     try {
       Thread.currentThread().setContextClassLoader(getFlinkClassLoader)
-      val stEnvSetting =
-        EnvironmentSettings.newInstance().inStreamingMode().useBlinkPlanner().build()
+      val stEnvSetting = this.flinkShims.createBlinkPlannerEnvSettingBuilder()
+        .asInstanceOf[EnvironmentSettings.Builder]
+        .inStreamingMode()
+        .build()
       this.tblEnvFactory.createStreamPlanner(stEnvSetting)
     } finally {
       Thread.currentThread().setContextClassLoader(originalClassLoader)

@@ -1,0 +1,29 @@
+name: python_3_with_flink
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - pycodestyle
+  - scipy
+  - numpy=1.19.5
+  - grpcio
+  - protobuf
+  - pandasql
+  - ipython
+  - ipython_genutils
+  - ipykernel
+  - jupyter_client=5
+  - hvplot
+  - plotnine
+  - seaborn
+  - intake
+  - intake-parquet
+  - intake-xarray
+  - altair
+  - vega_datasets
+  - plotly
+  - jinja2=3.0.3
+  - pip
+  - pip:
+      - apache-flink==1.15.0
+

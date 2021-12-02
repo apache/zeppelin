@@ -67,7 +67,6 @@ public class TableEnvFactory {
   private CatalogManager oldPlannerCatalogManager;
   private ModuleManager moduleManager;
   private FunctionCatalog functionCatalog;
-  private FunctionCatalog oldPlannerFunctionCatalog;
 
 
   public TableEnvFactory(FlinkVersion flinkVersion,
@@ -94,12 +93,8 @@ public class TableEnvFactory {
     this.catalogManager = (CatalogManager) flinkShims.createCatalogManager(streamTableConfig.getConfiguration());
     this.oldPlannerCatalogManager = (CatalogManager) flinkShims.createCatalogManager(
             this.oldPlannerStreamTableConfig.getConfiguration());
-
     this.moduleManager = new ModuleManager();
-
-    this.functionCatalog = new FunctionCatalog(streamTableConfig, catalogManager, moduleManager);
-    this.oldPlannerFunctionCatalog = new FunctionCatalog(
-            this.oldPlannerStreamTableConfig, this.oldPlannerCatalogManager, moduleManager);
+    this.functionCatalog = (FunctionCatalog) flinkShims.createFunctionCatalog(streamTableConfig, catalogManager, moduleManager);
   }
 
   public TableEnvironment createScalaFlinkBatchTableEnvironment() {
@@ -118,67 +113,6 @@ public class TableEnvFactory {
               constructor.newInstance(benv, oldPlannerBatchTableConfig, oldPlannerCatalogManager, moduleManager);
     } catch (Exception e) {
       throw new TableException("Fail to createScalaFlinkBatchTableEnvironment", e);
-    }
-  }
-
-  public TableEnvironment createScalaFlinkStreamTableEnvironment(EnvironmentSettings settings, ClassLoader classLoader) {
-    try {
-      ImmutablePair<Object, Object> pair = flinkShims.createPlannerAndExecutor(
-              classLoader, settings, senv.getJavaEnv(),
-              oldPlannerStreamTableConfig, functionCatalog, catalogManager);
-      Planner planner = (Planner) pair.left;
-      Executor executor = (Executor) pair.right;
-
-      Class clazz = Class
-                .forName("org.apache.flink.table.api.bridge.scala.internal.StreamTableEnvironmentImpl");
-
-      try {
-        Constructor constructor = clazz
-                .getConstructor(
-                        CatalogManager.class,
-                        ModuleManager.class,
-                        FunctionCatalog.class,
-                        TableConfig.class,
-                        org.apache.flink.streaming.api.scala.StreamExecutionEnvironment.class,
-                        Planner.class,
-                        Executor.class,
-                        boolean.class);
-        return (TableEnvironment) constructor.newInstance(
-                oldPlannerCatalogManager,
-                moduleManager,
-                oldPlannerFunctionCatalog,
-                oldPlannerStreamTableConfig,
-                senv,
-                planner,
-                executor,
-                settings.isStreamingMode());
-      } catch (NoSuchMethodException e) {
-        // Flink 1.11.1 change the constructor signature, FLINK-18419
-        Constructor constructor = clazz
-                .getConstructor(
-                        CatalogManager.class,
-                        ModuleManager.class,
-                        FunctionCatalog.class,
-                        TableConfig.class,
-                        org.apache.flink.streaming.api.scala.StreamExecutionEnvironment.class,
-                        Planner.class,
-                        Executor.class,
-                        boolean.class,
-                        ClassLoader.class);
-        return (TableEnvironment) constructor.newInstance(
-                oldPlannerCatalogManager,
-                moduleManager,
-                oldPlannerFunctionCatalog,
-                oldPlannerStreamTableConfig,
-                senv,
-                planner,
-                executor,
-                settings.isStreamingMode(),
-                classLoader);
-      }
-
-    } catch (Exception e) {
-      throw new TableException("Fail to createScalaFlinkStreamTableEnvironment", e);
     }
   }
 
@@ -203,74 +137,12 @@ public class TableEnvFactory {
     }
   }
 
-  public TableEnvironment createJavaFlinkStreamTableEnvironment(EnvironmentSettings settings,
-                                                                ClassLoader classLoader) {
-    try {
-      ImmutablePair<Object, Object> pair = flinkShims.createPlannerAndExecutor(
-              classLoader, settings, senv.getJavaEnv(),
-              oldPlannerBatchTableConfig, functionCatalog, catalogManager);
-      Planner planner = (Planner) pair.left;
-      Executor executor = (Executor) pair.right;
-
-      Class clazz = Class
-                .forName("org.apache.flink.table.api.bridge.java.internal.StreamTableEnvironmentImpl");
-
-      try {
-        Constructor constructor = clazz
-                .getConstructor(
-                        CatalogManager.class,
-                        ModuleManager.class,
-                        FunctionCatalog.class,
-                        TableConfig.class,
-                        org.apache.flink.streaming.api.environment.StreamExecutionEnvironment.class,
-                        Planner.class,
-                        Executor.class,
-                        boolean.class);
-        return (TableEnvironment) constructor.newInstance(
-                oldPlannerCatalogManager,
-                moduleManager,
-                oldPlannerFunctionCatalog,
-                oldPlannerStreamTableConfig,
-                senv.getJavaEnv(),
-                planner,
-                executor,
-                settings.isStreamingMode());
-      } catch (NoSuchMethodException e) {
-        // Flink 1.11.1 change the constructor signature, FLINK-18419
-        Constructor constructor = clazz
-                .getConstructor(
-                        CatalogManager.class,
-                        ModuleManager.class,
-                        FunctionCatalog.class,
-                        TableConfig.class,
-                        org.apache.flink.streaming.api.environment.StreamExecutionEnvironment.class,
-                        Planner.class,
-                        Executor.class,
-                        boolean.class,
-                        ClassLoader.class);
-        return (TableEnvironment) constructor.newInstance(
-                oldPlannerCatalogManager,
-                moduleManager,
-                oldPlannerFunctionCatalog,
-                oldPlannerStreamTableConfig,
-                senv.getJavaEnv(),
-                planner,
-                executor,
-                settings.isStreamingMode(),
-                classLoader);
-      }
-
-    } catch (Exception e) {
-      throw new TableException("Fail to createJavaFlinkStreamTableEnvironment", e);
-    }
-  }
-
   public TableEnvironment createScalaBlinkStreamTableEnvironment(EnvironmentSettings settings, ClassLoader classLoader) {
 
     try {
       ImmutablePair<Object, Object> pair = flinkShims.createPlannerAndExecutor(
               classLoader, settings, senv.getJavaEnv(),
-              streamTableConfig, functionCatalog, catalogManager);
+              streamTableConfig, moduleManager, functionCatalog, catalogManager);
       Planner planner = (Planner) pair.left;
       Executor executor = (Executor) pair.right;
 
@@ -327,7 +199,7 @@ public class TableEnvFactory {
     try {
       ImmutablePair<Object, Object> pair = flinkShims.createPlannerAndExecutor(
               classLoader, settings, senv.getJavaEnv(),
-              streamTableConfig, functionCatalog, catalogManager);
+              streamTableConfig, moduleManager, functionCatalog, catalogManager);
       Planner planner = (Planner) pair.left;
       Executor executor = (Executor) pair.right;
 
@@ -386,7 +258,7 @@ public class TableEnvFactory {
     try {
       ImmutablePair<Object, Object> pair = flinkShims.createPlannerAndExecutor(
               classLoader, settings, senv.getJavaEnv(),
-              batchTableConfig, functionCatalog, catalogManager);
+              batchTableConfig, moduleManager, functionCatalog, catalogManager);
       Planner planner = (Planner) pair.left;
       Executor executor = (Executor) pair.right;
 
@@ -443,7 +315,7 @@ public class TableEnvFactory {
   public void createStreamPlanner(EnvironmentSettings settings) {
     ImmutablePair<Object, Object> pair = flinkShims.createPlannerAndExecutor(
             Thread.currentThread().getContextClassLoader(), settings, senv.getJavaEnv(),
-            streamTableConfig, functionCatalog, catalogManager);
+            streamTableConfig, moduleManager, functionCatalog, catalogManager);
     Planner planner = (Planner) pair.left;
     this.flinkShims.setCatalogManagerSchemaResolver(catalogManager, planner.getParser(), settings);
   }
