@@ -913,6 +913,18 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
     saveAsService.saveAs(dsv, exportedFileName, extension);
   };
 
+  $scope.downloadParagraph = function() {
+    let noteId = $route.current.pathParams.noteId;
+    const paragraphId = $scope.$parent.paragraph.id;
+
+    angular.element('body').append('<a id="SaveAsId"></a>');
+    let saveAsElement = angular.element('body > a#SaveAsId');
+    saveAsElement.attr('href', '/api/notebook/' + noteId + '/paragraph/' + paragraphId + '/download');
+    saveAsElement.attr('target', '_blank');
+    saveAsElement[0].click();
+    saveAsElement.remove();
+  };
+
   $scope.getBase64ImageSrc = function(base64Data) {
     return 'data:image/png;base64,' + base64Data;
   };

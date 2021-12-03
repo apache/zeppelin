@@ -182,6 +182,12 @@
     </dependency>
 
     <dependency>
+      <groupId>com.opencsv</groupId>
+      <artifactId>opencsv</artifactId>
+      <version>5.2</version>
+    </dependency>
+
+    <dependency>
       <groupId>net.jodah</groupId>
       <artifactId>concurrentunit</artifactId>
       <version>0.4.4</version>

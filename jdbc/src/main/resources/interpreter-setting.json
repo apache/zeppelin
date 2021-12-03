@@ -63,6 +63,13 @@
       "common.max_count": {
         "envName": null,
         "propertyName": "common.max_count",
+        "defaultValue": "100000",
+        "description": "Max number of SQL result to save.",
+        "type": "number"
+      },
+      "common.max_notebook_count": {
+        "envName": null,
+        "propertyName": "common.max_notebook_count",
         "defaultValue": "1000",
         "description": "Max number of SQL result to display.",
         "type": "number"

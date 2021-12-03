@@ -19,6 +19,8 @@ package org.apache.zeppelin.rest;
 
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
+
+import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -36,6 +38,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import org.apache.commons.lang3.StringUtils;
@@ -93,6 +96,7 @@ public class NotebookRestApi extends AbstractRestApi {
   private final JobManagerService jobManagerService;
   private final AuthenticationService authenticationService;
   private final SchedulerService schedulerService;
+  private final ZeppelinConfiguration conf;
 
   @Inject
   public NotebookRestApi(
@@ -115,6 +119,7 @@ public class NotebookRestApi extends AbstractRestApi {
     this.zConf = zConf;
     this.authenticationService = authenticationService;
     this.schedulerService = schedulerService;
+    this.conf = ZeppelinConfiguration.create();
   }
 
   /**
@@ -612,6 +617,51 @@ public class NotebookRestApi extends AbstractRestApi {
     AuthenticationInfo subject = new AuthenticationInfo(user);
     notebook.saveNote(note, subject);
     return new JsonResponse<>(Status.OK, "", p).build();
+  }
+
+  /**
+   * Download paragraph
+   * @param noteId
+   * @param paragraphId
+   * @return data stream
+   * @throws IOException
+   */
+  @GET
+  @Produces("text/csv")
+  @Path("{notebookId}/paragraph/{paragraphId}/download")
+  @ZeppelinApi
+  public Response downParagraph(@PathParam("notebookId") String noteId,
+                                @PathParam("paragraphId") String paragraphId)
+          throws IOException {
+    LOGGER.info("Download paragraph, node.id: {}, paragrap.id: {}", noteId, paragraphId);
+
+    Note note = notebook.getNote(noteId);
+    if (note == null) {
+      return new JsonResponse(Status.NOT_FOUND, "note not found.").build();
+    }
+
+    Paragraph p = note.getParagraph(paragraphId);
+    if (p == null) {
+      return new JsonResponse(Status.NOT_FOUND, "paragraph not found.").build();
+    }
+
+    String resultFileParent = conf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_RESULT_DATA_DIR);
+
+    String fileName = noteId + "_" + paragraphId;
+    final File file = new File(resultFileParent + "/" + fileName);
+
+    Response.ResponseBuilder response = null;
+    if (file.exists()) {
+      LOGGER.info("Download data from " + file);
+      response = Response.ok((Object) file);
+    } else {
+      LOGGER.info("Download data from paragraph result " +
+              "because result file is not exists: " + file);
+      response = Response.ok(p.getResultMessage());
+    }
+    response.header("Content-Disposition", "attachment; filename=\"" + fileName + ".csv\"");
+    response.type(MediaType.TEXT_PLAIN + "; charset=UTF-8");
+    return response.build();
   }
 
   /**

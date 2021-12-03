@@ -19,6 +19,7 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 import static org.apache.hadoop.security.UserGroupInformation.AuthenticationMethod.KERBEROS;
 
+import com.opencsv.CSVWriter;
 import org.apache.commons.dbcp2.ConnectionFactory;
 import org.apache.commons.dbcp2.DriverManagerConnectionFactory;
 import org.apache.commons.dbcp2.PoolableConnectionFactory;
@@ -40,6 +41,8 @@ import org.apache.zeppelin.util.PropertiesUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
@@ -102,7 +105,9 @@ public class JDBCInterpreter extends KerberosInterpreter {
 
   static final String COMMON_KEY = "common";
   static final String MAX_LINE_KEY = "max_count";
-  static final int MAX_LINE_DEFAULT = 1000;
+  static final String MAX_LINE_NOTEBOOK_KEY = "max_notebook_count";
+  static final int MAX_LINE_DEFAULT = 100000;
+  static final int MAX_LINE_NOTEBOOK_DEFAULT = 1000;
 
   static final String DEFAULT_KEY = "default";
   static final String DRIVER_KEY = "driver";
@@ -123,6 +128,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
   private static final char WHITESPACE = ' ';
   private static final char NEWLINE = '\n';
   private static final char TAB = '\t';
+  private static final String TAB_STRING = "\t";
   private static final String TABLE_MAGIC_TAG = "%table ";
   private static final String EXPLAIN_PREDICATE = "EXPLAIN ";
   private static final String CANCEL_REASON = "cancel_reason";
@@ -160,6 +166,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
   private final HashMap<String, SqlCompleter> sqlCompletersMap;
 
   private int maxLineResults;
+  private int maxLineNotebookResults;
   private int maxRows;
   private SqlSplitter sqlSplitter;
 
@@ -167,12 +174,18 @@ public class JDBCInterpreter extends KerberosInterpreter {
   private Map<String, Boolean> isFirstRefreshMap = new HashMap<>();
   private Map<String, Boolean> paragraphCancelMap = new HashMap<>();
 
+  ResultDataFileProcessor resultDataFileProcessor;
+
   public JDBCInterpreter(Properties property) {
     super(property);
     jdbcUserConfigurationsMap = new HashMap<>();
     basePropertiesMap = new HashMap<>();
     sqlCompletersMap = new HashMap<>();
     maxLineResults = MAX_LINE_DEFAULT;
+    maxLineNotebookResults = MAX_LINE_NOTEBOOK_DEFAULT;
+
+    resultDataFileProcessor = new ResultDataFileProcessor(property);
+    ResultDataFileCleaner.start(resultDataFileProcessor.getResultDataDir());
   }
 
   @Override
@@ -242,6 +255,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
     LOGGER.debug("JDBC PropertiesMap: {}", basePropertiesMap);
 
     setMaxLineResults();
+    setMaxLineNotebookResults();
     setMaxRows();
 
     //TODO(zjffdu) Set different sql splitter for different sql dialects.
@@ -262,6 +276,14 @@ public class JDBCInterpreter extends KerberosInterpreter {
     if (basePropertiesMap.containsKey(COMMON_KEY) &&
         basePropertiesMap.get(COMMON_KEY).containsKey(MAX_LINE_KEY)) {
       maxLineResults = Integer.valueOf(basePropertiesMap.get(COMMON_KEY).getProperty(MAX_LINE_KEY));
+    }
+  }
+
+  private void setMaxLineNotebookResults() {
+    if (basePropertiesMap.containsKey(COMMON_KEY) &&
+        basePropertiesMap.get(COMMON_KEY).containsKey(MAX_LINE_NOTEBOOK_KEY)) {
+      maxLineNotebookResults = Integer.parseInt(basePropertiesMap.get(COMMON_KEY)
+        .getProperty(MAX_LINE_NOTEBOOK_KEY));
     }
   }
 
@@ -649,7 +671,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
   }
 
   private String getResults(ResultSet resultSet, boolean isTableType)
-      throws SQLException {
+          throws SQLException, IOException {
 
     ResultSetMetaData md = resultSet.getMetaData();
     StringBuilder msg;
@@ -659,43 +681,71 @@ public class JDBCInterpreter extends KerberosInterpreter {
       msg = new StringBuilder();
     }
 
-    for (int i = 1; i < md.getColumnCount() + 1; i++) {
-      if (i > 1) {
-        msg.append(TAB);
-      }
-      if (StringUtils.isNotEmpty(md.getColumnLabel(i))) {
-        msg.append(removeTablePrefix(replaceReservedChars(
-                TableDataUtils.normalizeColumn(md.getColumnLabel(i)))));
-      } else {
-        msg.append(removeTablePrefix(replaceReservedChars(
-                TableDataUtils.normalizeColumn(md.getColumnName(i)))));
+    File file = resultDataFileProcessor.getFile(resultSet.hashCode());
+    CSVWriter csvWriter = null;
+    if (file != null) {
+      try {
+        FileWriter fileWriter = new FileWriter(file);
+        csvWriter = new CSVWriter(fileWriter);
+      } catch (Exception ex) {
+        LOGGER.error("Failed to create result data file." + ex.getMessage());
       }
     }
-    msg.append(NEWLINE);
+
+    String[] row = new String[md.getColumnCount()];
+    String col;
+    for (int i = 1; i < md.getColumnCount() + 1; i++) {
+      if (StringUtils.isNotEmpty(md.getColumnLabel(i))) {
+        col = removeTablePrefix(replaceReservedChars(
+                TableDataUtils.normalizeColumn(md.getColumnLabel(i))));
+      } else {
+        col = removeTablePrefix(replaceReservedChars(
+                TableDataUtils.normalizeColumn(md.getColumnName(i))));
+      }
+      row[i - 1] = col;
+    }
+    if (csvWriter != null) {
+      csvWriter.writeNext(row);
+    }
+    msg.append(String.join(TAB_STRING, row)).append(NEWLINE);
 
     int displayRowCount = 0;
+    int rowCount = 0;
     boolean truncate = false;
     while (resultSet.next()) {
-      if (displayRowCount >= getMaxResult()) {
-        truncate = true;
-        break;
-      }
       for (int i = 1; i < md.getColumnCount() + 1; i++) {
         Object resultObject;
-        String resultValue;
         resultObject = resultSet.getObject(i);
         if (resultObject == null) {
-          resultValue = "null";
+          col = "null";
         } else {
-          resultValue = resultSet.getString(i);
+          col = resultSet.getString(i);
         }
-        msg.append(replaceReservedChars(TableDataUtils.normalizeColumn(resultValue)));
-        if (i != md.getColumnCount()) {
-          msg.append(TAB);
-        }
+        row[i - 1] = replaceReservedChars(TableDataUtils.normalizeColumn(col));
       }
-      msg.append(NEWLINE);
+
+      if (csvWriter != null) {
+        rowCount++;
+        csvWriter.writeNext(row);
+      }
+
+      if (displayRowCount >= getMaxNotebookResult()) {
+        truncate = true;
+        if (csvWriter == null) {
+          break;
+        }
+        continue;
+      }
+
+      msg.append(String.join(TAB_STRING, row)).append(NEWLINE);
       displayRowCount++;
+    }
+
+    LOGGER.debug("Saved Row Count : " + rowCount);
+    LOGGER.debug("display Row Count : " + displayRowCount);
+
+    if (csvWriter != null) {
+      csvWriter.close();
     }
 
     if (truncate) {
@@ -782,8 +832,8 @@ public class JDBCInterpreter extends KerberosInterpreter {
         statement = connection.createStatement();
 
         // fetch n+1 rows in order to indicate there's more rows available (for large selects)
-        statement.setFetchSize(context.getIntLocalProperty("limit", getMaxResult()));
-        statement.setMaxRows(context.getIntLocalProperty("limit", maxRows));
+        statement.setFetchSize(context.getIntLocalProperty("limit", maxRows));
+        statement.setMaxRows(context.getIntLocalProperty("limit", getMaxResult()));
 
         if (statement == null) {
           return new InterpreterResult(Code.ERROR, "Prefix not found.");
@@ -830,6 +880,8 @@ public class JDBCInterpreter extends KerberosInterpreter {
                 singleRowResult.pushAngularObjects();
 
               } else {
+                resultDataFileProcessor.createFile(context, resultSet.hashCode());
+
                 String results = getResults(resultSet,
                         !containsIgnoreCase(sqlToExecute, EXPLAIN_PREDICATE));
                 context.out.write(results);
@@ -936,6 +988,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
     String dbPrefix = getDBPrefix(context);
     LOGGER.debug("DBPrefix: {}, SQL command: '{}'", dbPrefix, cmd);
     if (!isRefreshMode(context)) {
+      resultDataFileProcessor.deleteFile(context);
       return executeSql(dbPrefix, cmd, context);
     } else {
       int refreshInterval = Integer.parseInt(context.getLocalProperties().get("refreshInterval"));
@@ -1080,6 +1133,10 @@ public class JDBCInterpreter extends KerberosInterpreter {
 
   public int getMaxResult() {
     return maxLineResults;
+  }
+
+  public int getMaxNotebookResult() {
+    return maxLineNotebookResults;
   }
 
   boolean isConcurrentExecution() {

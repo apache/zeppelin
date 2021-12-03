@@ -288,6 +288,36 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
     return cursor;
   }
 
+  public String getResultMessage() {
+    if (results != null) {
+      List<InterpreterResultMessage> list = results.message();
+      for (InterpreterResultMessage item : list) {
+        if (item.getType() == InterpreterResult.Type.TABLE) {
+          return resultToCsv(item.toString());
+        }
+      }
+    }
+
+    return "No data";
+  }
+
+  private String resultToCsv(String resultMessage) {
+    StringBuilder sb = new StringBuilder();
+    String[] lines = resultMessage.split("\n");
+
+    for (String eachLine: lines) {
+      String[] tokens = eachLine.split("\t");
+      String prefix = "";
+      for (String eachToken: tokens) {
+        sb.append(prefix).append("\"").append(eachToken.replace("\"", "'")).append("\"");
+        prefix = ",";
+      }
+      sb.append("\n");
+    }
+
+    return sb.toString();
+  }
+
   @Override
   public InterpreterResult getReturn() {
     return results;
