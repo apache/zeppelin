@@ -44,6 +44,7 @@
         <i nz-icon [nzType]="tableHide ? 'book' : 'read'" nzTheme="outline"></i>
       </button>
       <button nz-button
+              nz-tooltip
               nz-popconfirm
               *ngIf="!viewOnly"
               [disabled]="revisionView"
@@ -148,6 +149,7 @@
     <nz-button-group nzSize="small" *ngIf="!viewOnly">
       <button nz-button
               nz-popconfirm
+              nz-tooltip
               nzTitle="Remove this note permanently?"
               *ngIf="isTrash"
               [disabled]="isNoteParagraphRunning"
