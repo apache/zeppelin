@@ -578,7 +578,7 @@ public class Notebook {
    * @throws IOException
    */
   public void reloadAllNotes(AuthenticationInfo subject) throws IOException {
-    this.noteManager.reloadNotes();
+    this.noteManager.reloadNotesInfo();
 
     if (notebookRepo instanceof NotebookRepoSync) {
       NotebookRepoSync mainRepo = (NotebookRepoSync) notebookRepo;

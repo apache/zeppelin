@@ -354,6 +354,24 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
   }
 
   @Test
+  public void testReloadAllNotesWhenRunningNote() throws IOException, InterruptedException {
+    Note note1 = notebook.createNote("note1", AuthenticationInfo.ANONYMOUS);
+    Paragraph p1 = note1.insertNewParagraph(0, AuthenticationInfo.ANONYMOUS);
+    p1.setText("%mock1 sleep 10000");
+    note1.run(p1.getId(), false);
+    waitForRunning(p1);
+    notebook.saveNote(note1, AuthenticationInfo.ANONYMOUS);
+
+    notebook.reloadAllNotes(anonymous);
+    note1 = notebook.getNote(note1.getId());
+
+    // ensure reload won't change note status
+    assertEquals(Status.RUNNING, note1.getParagraph(p1.getId()).getStatus());
+    waitForFinish(p1);
+    assertEquals(Status.FINISHED, note1.getParagraph(p1.getId()).getStatus());
+  }
+
+  @Test
   public void testLoadAllNotes() {
     Note note;
     try {
@@ -1641,4 +1659,25 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
   }
 
 
+  private void waitForFinish(Paragraph p) {
+    while (p.getStatus() != Status.FINISHED
+            && p.getStatus() != Status.ERROR
+            && p.getStatus() != Status.ABORT) {
+      try {
+        Thread.sleep(100);
+      } catch (InterruptedException e) {
+        LOGGER.error("Exception in WebDriverManager while getWebDriver ", e);
+      }
+    }
+  }
+
+  private void waitForRunning(Paragraph p) {
+    while (p.getStatus() != Status.RUNNING) {
+      try {
+        Thread.sleep(100);
+      } catch (InterruptedException e) {
+        LOGGER.error("Exception in WebDriverManager while getWebDriver ", e);
+      }
+    }
+  }
 }

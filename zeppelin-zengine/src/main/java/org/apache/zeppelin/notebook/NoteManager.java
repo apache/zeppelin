@@ -30,10 +30,11 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -45,8 +46,11 @@ import java.util.stream.Stream;
  * 1. Mapping from noteId to note name
  * 2. The tree structure of notebook folder
  *
- * Note will be loaded lazily. Initially only noteId nad note name is loaded,
+ * Note will be loaded lazily. Initially only noteId and note name is loaded,
  * other note content is loaded until getNote is called.
+ *
+ * Add sync to notesInfo related methods, in case that notesInfo is being updated
+ * while it is also in reloading
  *
  * TODO(zjffdu) implement the lifecycle manager of Note
  * (release memory if note is not used for some period)
@@ -60,29 +64,29 @@ public class NoteManager {
 
   private NotebookRepo notebookRepo;
   // noteId -> notePath
-  private Map<String, String> notesInfo;
+  private ConcurrentMap<String, String> notesInfo;
 
   @Inject
   public NoteManager(NotebookRepo notebookRepo) throws IOException {
     this.notebookRepo = notebookRepo;
     this.root = new Folder("/", notebookRepo);
     this.trash = this.root.getOrCreateFolder(TRASH_FOLDER);
-    init();
+    buildNotesInfo();
   }
 
   // build the tree structure of notes
-  private void init() throws IOException {
+  private synchronized void buildNotesInfo() throws IOException {
     this.notesInfo = notebookRepo.list(AuthenticationInfo.ANONYMOUS).values().stream()
-        .collect(Collectors.toMap(NoteInfo::getId, NoteInfo::getPath));
+            .collect(Collectors.toConcurrentMap(NoteInfo::getId, NoteInfo::getPath));
     this.notesInfo.entrySet().stream()
-        .forEach(entry ->
-        {
-          try {
-            addOrUpdateNoteNode(new Note(new NoteInfo(entry.getKey(), entry.getValue())));
-          } catch (IOException e) {
-            LOGGER.warn(e.getMessage());
-          }
-        });
+            .forEach(entry ->
+            {
+              try {
+                getOrAddNoteNode(new Note(new NoteInfo(entry.getKey(), entry.getValue())));
+              } catch (IOException e) {
+                LOGGER.warn(e.getMessage());
+              }
+            });
   }
 
   public Map<String, String> getNotesInfo() {
@@ -111,13 +115,12 @@ public class NoteManager {
    *
    * @throws IOException
    */
-  public void reloadNotes() throws IOException {
-    this.root = new Folder("/", notebookRepo);
-    this.trash = this.root.getOrCreateFolder(TRASH_FOLDER);
-    init();
+  public void reloadNotesInfo() throws IOException {
+    // rebuild notesInfo
+    buildNotesInfo();
   }
 
-  private void addOrUpdateNoteNode(Note note, boolean checkDuplicates) throws IOException {
+  private synchronized NoteNode getOrAddNoteNode(Note note, boolean checkDuplicates) throws IOException {
     String notePath = note.getPath();
 
     if (checkDuplicates && !isNotePathAvailable(notePath)) {
@@ -132,12 +135,13 @@ public class NoteManager {
       }
     }
 
-    curFolder.addNote(tokens[tokens.length -1], note);
+    NoteNode noteNode = curFolder.getOrAddNote(tokens[tokens.length -1], note);
     this.notesInfo.put(note.getId(), note.getPath());
+    return noteNode;
   }
 
-  private void addOrUpdateNoteNode(Note note) throws IOException {
-    addOrUpdateNoteNode(note, false);
+  private NoteNode getOrAddNoteNode(Note note) throws IOException {
+    return getOrAddNoteNode(note, false);
   }
 
   /**
@@ -184,8 +188,8 @@ public class NoteManager {
     if (note.isRemoved()) {
       LOGGER.warn("Try to save note: {} when it is removed", note.getId());
     } else if (note.isLoaded() || !note.isSaved()) {
-      addOrUpdateNoteNode(note);
       this.notebookRepo.save(note, subject);
+      getOrAddNoteNode(note);
       note.setSaved(true);
     } else {
       LOGGER.warn("Try to save note: {} when it is unloaded", note.getId());
@@ -193,7 +197,7 @@ public class NoteManager {
   }
 
   public void addNote(Note note, AuthenticationInfo subject) throws IOException {
-    addOrUpdateNoteNode(note, true);
+    getOrAddNoteNode(note, true);
     note.setLoaded(true);
   }
 
@@ -214,16 +218,16 @@ public class NoteManager {
    * @param subject
    * @throws IOException
    */
-  public void removeNote(String noteId, AuthenticationInfo subject) throws IOException {
+  public synchronized void removeNote(String noteId, AuthenticationInfo subject) throws IOException {
     String notePath = this.notesInfo.remove(noteId);
     Folder folder = getOrCreateFolder(getFolderName(notePath));
     folder.removeNote(getNoteName(notePath));
     this.notebookRepo.remove(noteId, notePath, subject);
   }
 
-  public void moveNote(String noteId,
-                       String newNotePath,
-                       AuthenticationInfo subject) throws IOException {
+  public synchronized void moveNote(String noteId,
+                                    String newNotePath,
+                                    AuthenticationInfo subject) throws IOException {
     String notePath = this.notesInfo.get(noteId);
     if (noteId == null) {
       throw new IOException("No metadata found for this note: " + noteId);
@@ -255,9 +259,9 @@ public class NoteManager {
     }
   }
 
-  public void moveFolder(String folderPath,
-                         String newFolderPath,
-                         AuthenticationInfo subject) throws IOException {
+  public synchronized void moveFolder(String folderPath,
+                                      String newFolderPath,
+                                      AuthenticationInfo subject) throws IOException {
 
     // update notebookrepo
     this.notebookRepo.move(folderPath, newFolderPath, subject);
@@ -282,7 +286,7 @@ public class NoteManager {
    * @return
    * @throws IOException
    */
-  public List<Note> removeFolder(String folderPath, AuthenticationInfo subject) throws IOException {
+  public synchronized List<Note> removeFolder(String folderPath, AuthenticationInfo subject) throws IOException {
 
     // update notebookrepo
     this.notebookRepo.remove(folderPath, subject);
@@ -306,7 +310,7 @@ public class NoteManager {
    * @return return null if not found on NotebookRepo.
    * @throws IOException
    */
-  public Note getNote(String noteId, boolean reload) throws IOException {
+  public synchronized Note getNote(String noteId, boolean reload) throws IOException {
     String notePath = this.notesInfo.get(noteId);
     if (notePath == null) {
       return null;
@@ -316,7 +320,7 @@ public class NoteManager {
   }
 
   /**
-   * Get note from NotebookRepo.
+   * Get note from NotebookRepo. getOrAddNoteNode will load it when note is not loaded yet.
    *
    * @param noteId
    * @return return null if not found on NotebookRepo.
@@ -327,7 +331,7 @@ public class NoteManager {
     if (notePath == null) {
       return null;
     }
-    NoteNode noteNode = getNoteNode(notePath);
+    NoteNode noteNode = getOrAddNoteNode(new Note(new NoteInfo(noteId, notePath)));
     return noteNode.getNote();
   }
 
@@ -352,7 +356,7 @@ public class NoteManager {
     Folder curFolder = root;
     for (int i = 0; i < tokens.length - 1; ++i) {
       if (!StringUtils.isBlank(tokens[i])) {
-        curFolder = curFolder.getFolder(tokens[i]);
+        curFolder = curFolder.getOrCreateFolder(tokens[i]);
         if (curFolder == null) {
           throw new IOException("Can not find note: " + notePath);
         }
@@ -421,9 +425,9 @@ public class NoteManager {
     private NotebookRepo notebookRepo;
 
     // noteName -> NoteNode
-    private Map<String, NoteNode> notes = new HashMap<>();
+    private Map<String, NoteNode> notes = new ConcurrentHashMap<>();
     // folderName -> Folder
-    private Map<String, Folder> subFolders = new HashMap<>();
+    private Map<String, Folder> subFolders = new ConcurrentHashMap<>();
 
     public Folder(String name, NotebookRepo notebookRepo) {
       this.name = name;
@@ -473,8 +477,14 @@ public class NoteManager {
       return this.notes.get(noteName);
     }
 
-    public void addNote(String noteName, Note note) {
-      notes.put(noteName, new NoteNode(note, this, notebookRepo));
+    public NoteNode getOrAddNote(String noteName, Note note) {
+      if (notes.containsKey(noteName)) {
+        return notes.get(noteName);
+      } else {
+        NoteNode noteNode = new NoteNode(note, this, notebookRepo);
+        notes.put(noteName, noteNode);
+        return noteNode;
+      }
     }
 
     /**
@@ -576,17 +586,17 @@ public class NoteManager {
       this.notebookRepo = notebookRepo;
     }
 
-    public synchronized Note getNote() throws IOException {
-        return getNote(false);
+    public Note getNote() throws IOException {
+      return getNote(false);
     }
 
     /**
      * This method will load note from NotebookRepo. If you just want to get noteId, noteName or
-     * notePath, you can call method getNoteId, getNoteName & getNotePath
+     * notePath, you can call method getNoteId, getNoteName & getNotePath which is more efficient.
      * @return
      * @throws IOException
      */
-    public synchronized Note getNote(boolean reload) throws IOException {
+    public Note getNote(boolean reload) throws IOException {
       if (!note.isLoaded() || reload) {
         note = notebookRepo.get(note.getId(), note.getPath(), AuthenticationInfo.ANONYMOUS);
         if (parent.toString().equals("/")) {
