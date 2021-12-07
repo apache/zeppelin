@@ -62,6 +62,8 @@ jobs:
           channel-priority: strict
       - name: Make IRkernel available to Jupyter
         run: |
+          R -e "install.packages('devtools', repos = 'http://cran.us.r-project.org')"
+          R -e "devtools::install_github('IRkernel/IRkernel')"
           R -e "IRkernel::installspec()"
           conda list
           conda info
@@ -103,6 +105,8 @@ jobs:
           auto-activate-base: false
       - name: Make IRkernel available to Jupyter
         run: |
+          R -e "install.packages('devtools', repos = 'http://cran.us.r-project.org')"
+          R -e "devtools::install_github('IRkernel/IRkernel')"
           R -e "IRkernel::installspec()"
       - name: verify interpreter
         run: mvn verify -DskipRat -am -pl .,zeppelin-interpreter,zeppelin-interpreter-shaded,${INTERPRETERS} -Pscala-2.10 -B
@@ -136,6 +140,8 @@ jobs:
           auto-activate-base: false
       - name: Make IRkernel available to Jupyter
         run: |
+          R -e "install.packages('devtools', repos = 'http://cran.us.r-project.org')"
+          R -e "devtools::install_github('IRkernel/IRkernel')"
           R -e "IRkernel::installspec()"
       - name: install environment
         run: |
@@ -211,6 +217,8 @@ jobs:
           auto-activate-base: false
       - name: Make IRkernel available to Jupyter
         run: |
+          R -e "install.packages('devtools', repos = 'http://cran.us.r-project.org')"
+          R -e "devtools::install_github('IRkernel/IRkernel')"
           R -e "IRkernel::installspec()"
       - name: install environment
         run: |
@@ -252,6 +260,8 @@ jobs:
           auto-activate-base: false
       - name: Make IRkernel available to Jupyter
         run: |
+          R -e "install.packages('devtools', repos = 'http://cran.us.r-project.org')"
+          R -e "devtools::install_github('IRkernel/IRkernel')"
           R -e "IRkernel::installspec()"
       - name: install environment
         run: |
@@ -290,6 +300,8 @@ jobs:
           auto-activate-base: false
       - name: Make IRkernel available to Jupyter
         run: |
+          R -e "install.packages('devtools', repos = 'http://cran.us.r-project.org')"
+          R -e "devtools::install_github('IRkernel/IRkernel')"
           R -e "IRkernel::installspec()"
       - name: install environment
         run: |
@@ -331,6 +343,8 @@ jobs:
           auto-activate-base: false
       - name: Make IRkernel available to Jupyter
         run: |
+          R -e "install.packages('devtools', repos = 'http://cran.us.r-project.org')"
+          R -e "devtools::install_github('IRkernel/IRkernel')"
           R -e "IRkernel::installspec()"
       - name: install environment
         run: |
@@ -372,6 +386,8 @@ jobs:
           auto-activate-base: false
       - name: Make IRkernel available to Jupyter
         run: |
+          R -e "install.packages('devtools', repos = 'http://cran.us.r-project.org')"
+          R -e "devtools::install_github('IRkernel/IRkernel')"
           R -e "IRkernel::installspec()"
       - name: install environment
         run: mvn install -DskipTests -DskipRat -pl spark-submit,spark/spark-dependencies -am -Pspark-3.1 -Pspark-scala-2.12 -Phadoop2 -B
@@ -412,6 +428,8 @@ jobs:
           auto-activate-base: false
       - name: Make IRkernel available to Jupyter
         run: |
+          R -e "install.packages('devtools', repos = 'http://cran.us.r-project.org')"
+          R -e "devtools::install_github('IRkernel/IRkernel')"
           R -e "IRkernel::installspec()"
       - name: install environment
         run: mvn install -DskipTests -DskipRat -pl spark-submit,spark/spark-dependencies -am -Pspark-3.2 -Pspark-scala-2.12 -Phadoop2 -B
@@ -446,9 +464,6 @@ jobs:
           environment-file: testing/env_python_3_with_R.yml
           python-version: 3.7
           auto-activate-base: false
-      - name: Make IRkernel available to Jupyter
-        run: |
-          R -e "IRkernel::installspec()"
       - name: install environment
         run: |
           mvn install -DskipTests -DskipRat -pl livy -am  -B

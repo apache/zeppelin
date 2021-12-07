@@ -144,29 +144,28 @@ public class ManagedInterpreterGroup extends InterpreterGroup {
 
   private void closeInterpreter(Interpreter interpreter) {
     Scheduler scheduler = interpreter.getScheduler();
-
-    if (Boolean.parseBoolean(
-            interpreter.getProperty("zeppelin.interpreter.close.cancel_job", "true"))) {
-      for (final Job job : scheduler.getAllJobs()) {
-        if (!job.isTerminated()) {
-          job.abort();
-          job.setStatus(Job.Status.ABORT);
-          LOGGER.info("Job {} aborted ", job.getJobName());
-        }
-      }
-    } else {
-      LOGGER.info("Keep job running while closing interpreter: {}", interpreter.getClassName());
-    }
-
     try {
+      if (Boolean.parseBoolean(
+              interpreter.getProperty("zeppelin.interpreter.close.cancel_job", "true"))) {
+        for (final Job job : scheduler.getAllJobs()) {
+          if (!job.isTerminated()) {
+            job.abort();
+            job.setStatus(Job.Status.ABORT);
+            LOGGER.info("Job {} aborted ", job.getJobName());
+          }
+        }
+      } else {
+        LOGGER.info("Keep job running while closing interpreter: {}", interpreter.getClassName());
+      }
+
       LOGGER.info("Trying to close interpreter {}", interpreter.getClassName());
       interpreter.close();
     } catch (InterpreterException e) {
       LOGGER.warn("Fail to close interpreter {}", interpreter.getClassName(), e);
+    } finally {
+      //TODO(zjffdu) move the close of schedule to Interpreter
+      SchedulerFactory.singleton().removeScheduler(scheduler.getName());
     }
-
-    //TODO(zjffdu) move the close of schedule to Interpreter
-    SchedulerFactory.singleton().removeScheduler(scheduler.getName());
   }
 
   public synchronized List<Interpreter> getOrCreateSession(String user, String sessionId) {
