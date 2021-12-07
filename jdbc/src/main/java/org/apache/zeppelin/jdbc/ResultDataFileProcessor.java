@@ -81,7 +81,16 @@ public class ResultDataFileProcessor {
   void prepare() {
     resultDataDir = getProperty(RESULT_DATA_PATH);
     if (resultDataDir == null) {
-      resultDataDir = "/tmp/zeppelin-" + getProperty("user.name");
+      String defaultBaseDir = System.getProperty("java.io.tmpdir");
+      // set tmpdir to /tmp on MacOS, because docker can not share the /var folder which will
+      // cause PythonDockerInterpreter fails.
+      // https://stackoverflow.com/questions/45122459/docker-mounts-denied-the-paths-are-not-shared-
+      // from-os-x-and-are-not-known
+      if (System.getProperty("os.name", "").contains("Mac")) {
+        defaultBaseDir = "/tmp";
+      }
+      resultDataDir = String.join(File.separator,
+          defaultBaseDir, "zeppelin-" + getProperty("user.name"));
     }
 
     File file = new File(resultDataDir);

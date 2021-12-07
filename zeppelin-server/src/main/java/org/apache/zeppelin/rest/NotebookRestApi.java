@@ -648,7 +648,7 @@ public class NotebookRestApi extends AbstractRestApi {
     String resultFileParent = conf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_RESULT_DATA_DIR);
 
     String fileName = noteId + "_" + paragraphId;
-    final File file = new File(resultFileParent + "/" + fileName);
+    final File file = new File(resultFileParent, fileName);
 
     Response.ResponseBuilder response = null;
     if (file.exists()) {
