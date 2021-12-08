@@ -104,7 +104,8 @@ public class ResultDataFileProcessor {
   }
 
   public String getFileName(InterpreterContext context) {
-    return resultDataDir + "/" + context.getNoteId() + "_" + context.getParagraphId();
+    return String.join(File.separator, resultDataDir,
+            context.getNoteId() + "_" + context.getParagraphId());
   }
 
   public String getResultDataDir() {
