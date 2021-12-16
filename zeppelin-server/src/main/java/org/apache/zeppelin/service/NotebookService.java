@@ -29,13 +29,8 @@ import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
@@ -87,6 +82,7 @@ public class NotebookService {
   private final Notebook notebook;
   private final AuthorizationService authorizationService;
   private final SchedulerService schedulerService;
+  private final long sessionParagraphKeepThreshold;
 
   @Inject
   public NotebookService(
@@ -98,6 +94,8 @@ public class NotebookService {
     this.authorizationService = authorizationService;
     this.zConf = zeppelinConfiguration;
     this.schedulerService = schedulerService;
+    this.sessionParagraphKeepThreshold = zConf
+            .getLong(ZeppelinConfiguration.ConfVars.ZEPPELIN_SESSION_PARAGRAPH_KEEP_THRESHOLD);
   }
 
   public String getHomeNote(ServiceContext context,
@@ -371,7 +369,7 @@ public class NotebookService {
   /**
    * Executes given paragraph with passed paragraph info like noteId, paragraphId, title, text and etc.
    *
-   * @param noteId
+   * @param note
    * @param paragraphId
    * @param title
    * @param text
@@ -752,13 +750,14 @@ public class NotebookService {
    * @throws IOException
    */
   public String getNextSessionParagraphId(String noteId,
-                                        int maxParagraph,
-                                        ServiceContext context,
-                                        ServiceCallback<Paragraph> callback) throws IOException {
+                                          int maxParagraph,
+                                          ServiceContext context,
+                                          ServiceCallback<Paragraph> callback) throws IOException {
     if (!checkPermission(noteId, Permission.WRITER, Message.OP.PARAGRAPH_CLEAR_OUTPUT, context,
             callback)) {
       throw new IOException("No privilege to access this note");
     }
+
     return notebook.processNote(noteId,
       note -> {
         if (note == null) {
@@ -767,16 +766,31 @@ public class NotebookService {
         }
         synchronized (this) {
           if (note.getParagraphCount() >= maxParagraph) {
-            boolean removed = false;
+            Map<String, Date> finishedParagraphMap = new LinkedHashMap<>();
             for (int i = 1; i < note.getParagraphCount(); ++i) {
-              if (note.getParagraph(i).getStatus().isCompleted()) {
-                note.removeParagraph(context.getAutheInfo().getUser(), note.getParagraph(i).getId());
-                removed = true;
-                break;
+              Paragraph p = note.getParagraph(i);
+              if (p.getStatus().isCompleted()) {
+                finishedParagraphMap.put(p.getId(), p.getDateFinished() == null ? new Date() : p.getDateFinished());
               }
             }
-            if (!removed) {
+            if (finishedParagraphMap.isEmpty()) {
               throw new IOException("All the paragraphs are not completed, unable to find available paragraph");
+            } else {
+              // remove the paragraph that is finished earliest.
+              Map.Entry<String, Date> firstParagraph =
+                      finishedParagraphMap.entrySet().stream()
+                              .sorted(Map.Entry.comparingByValue())
+                              .findFirst().get();
+              // only remove it when the finished time gap is more than sessionParagraphKeepThreshold
+              // because we need to make sure client has already get the paragraph result.
+              // Otherwise it is possible that we remove the paragraph before client query the paragraph result
+              if ((System.currentTimeMillis() - firstParagraph.getValue().getTime()) > sessionParagraphKeepThreshold) {
+                LOGGER.info("Remove paragraph: {}", firstParagraph.getKey());
+                note.removeParagraph(context.getAutheInfo().getUser(), firstParagraph.getKey());
+              } else {
+                throw new IOException(String.format("No paragraph is completed in " + sessionParagraphKeepThreshold +
+                        " milliseconds, no available paragraph"));
+              }
             }
           }
           return note.addNewParagraph(context.getAutheInfo()).getId();

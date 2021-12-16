@@ -18,11 +18,7 @@
 
 package org.apache.zeppelin.service;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doCallRealMethod;
@@ -36,6 +32,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -62,6 +59,7 @@ import org.apache.zeppelin.notebook.exception.NotePathAlreadyExistsException;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.notebook.repo.VFSNotebookRepo;
 import org.apache.zeppelin.notebook.scheduler.QuartzSchedulerService;
+import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.search.LuceneSearch;
 import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.user.AuthenticationInfo;
@@ -526,5 +524,69 @@ public class NotebookServiceTest {
     } catch (IOException e) {
       assertEquals("Note name can not contain '..'", e.getMessage());
     }
+  }
+
+  @Test
+  public void testNextSessionParagraph() throws IOException {
+    // create note
+    String note1Id = notebookService.createNote("note1", "python", false, context, callback);
+    Note note1 = notebook.processNote(note1Id,
+            note1Read -> {
+              assertEquals("note1", note1Read.getName());
+              assertEquals(0, note1Read.getParagraphCount());
+              verify(callback).onSuccess(note1Read, context);
+              return note1Read;
+            });
+
+    // add 2 paragraphs
+    Paragraph p1 = notebookService.insertParagraph(note1.getId(), 0, new HashMap<>(), context,
+            callback);
+    assertNotNull(p1);
+    assertEquals(1, note1.getParagraphCount());
+
+    Paragraph p2 = notebookService.insertParagraph(note1.getId(), 0, new HashMap<>(), context,
+            callback);
+    assertNotNull(p2);
+    assertEquals(2, note1.getParagraphCount());
+
+    // able to get next session paragraph via inserting a new paragraph
+    String nextParagraphId = notebookService.getNextSessionParagraphId(note1.getId(), 10, context, callback);
+    Paragraph nextParagraph = note1.getParagraph(nextParagraphId);
+    assertNotNull(nextParagraph);
+    assertEquals(3, note1.getParagraphCount());
+
+    // unable to get next session paragraph because all paragraphs are running.
+    p1.setStatus(Job.Status.RUNNING);
+    p2.setStatus(Job.Status.RUNNING);
+    try {
+      notebookService.getNextSessionParagraphId(note1.getId(), 3, context, callback);
+      fail("should fail to get next session paragraph");
+    } catch (IOException e) {
+      assertEquals("All the paragraphs are not completed, unable to find available paragraph", e.getMessage());
+    }
+
+    // unable to get next session paragraph because no paragraphs are finished more than 10 seconds.
+    p1.setStatus(Job.Status.FINISHED);
+    p1.setDateFinished(new Date());
+    p2.setStatus(Job.Status.ERROR);
+    p2.setDateFinished(new Date());
+    try {
+      notebookService.getNextSessionParagraphId(note1.getId(), 3, context, callback);
+      fail("should fail to get next session paragraph");
+    } catch (IOException e) {
+      assertEquals("No paragraph is completed in 10000 milliseconds, no available paragraph", e.getMessage());
+    }
+
+    // replace the paragraph that is finished earliest with a new paragraph
+    p1.setStatus(Job.Status.FINISHED);
+    p1.setDateFinished(new Date(System.currentTimeMillis() - 60 * 1000));
+    p2.setStatus(Job.Status.ERROR);
+    p2.setDateFinished(new Date(System.currentTimeMillis() - 30 * 1000));
+
+    nextParagraphId = notebookService.getNextSessionParagraphId(note1.getId(), 3, context, callback);
+    assertEquals(3, note1.getParagraphCount());
+    // p1 is removed
+    assertNotNull(note1.getParagraph(nextParagraphId));
+    assertNotNull(note1.getParagraph(p2.getId()));
   }
 }

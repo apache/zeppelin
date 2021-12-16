@@ -1085,6 +1085,7 @@ public class ZeppelinConfiguration {
     ZEPPELIN_SPARK_ONLY_YARN_CLUSTER("zeppelin.spark.only_yarn_cluster", false),
     ZEPPELIN_SESSION_CHECK_INTERVAL("zeppelin.session.check_interval", 60 * 10 * 1000),
     ZEPPELIN_NOTE_CACHE_THRESHOLD("zeppelin.note.cache.threshold", 50),
+    ZEPPELIN_SESSION_PARAGRAPH_KEEP_THRESHOLD("zeppelin.session.paragraph.keep.threshold", 10 * 1000L),
     ZEPPELIN_NOTE_FILE_EXCLUDE_FIELDS("zeppelin.note.file.exclude.fields", "");
 
     private String varName;
