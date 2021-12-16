@@ -103,6 +103,9 @@ export abstract class ParagraphBase extends MessageListenersManager {
   paragraphData(data: MessageReceiveDataTypeMap[OP.PARAGRAPH]) {
     const oldPara = this.paragraph;
     const newPara = data.paragraph;
+    if (!newPara.results) {
+      newPara.results = {};
+    }
     if (this.isUpdateRequired(oldPara, newPara)) {
       this.updateParagraph(oldPara, newPara, () => {
         if (newPara.results && newPara.results.msg) {
