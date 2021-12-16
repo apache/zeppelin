@@ -106,9 +106,6 @@ export abstract class ParagraphBase extends MessageListenersManager {
     if (!newPara.results) {
       newPara.results = {};
     }
-    if (!newPara.results.msg) {
-      newPara.results.msg = [];
-    }
     if (this.isUpdateRequired(oldPara, newPara)) {
       this.updateParagraph(oldPara, newPara, () => {
         if (newPara.results && newPara.results.msg) {
