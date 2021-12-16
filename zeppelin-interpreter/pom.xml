@@ -235,11 +235,6 @@
       </activation>
       <properties>
         <hadoop.version>${hadoop2.7.version}</hadoop.version>
-<!--        <curator.version>2.7.1</curator.version>-->
-<!--        <commons-io.version>2.11</commons-io.version>-->
-        <!--
-          the declaration site above of these variables explains why we need to re-assign them here
-        -->
         <hadoop-client-api.artifact>hadoop-client</hadoop-client-api.artifact>
         <hadoop-client-runtime.artifact>hadoop-yarn-api</hadoop-client-runtime.artifact>
         <hadoop-client-minicluster.artifact>hadoop-client</hadoop-client-minicluster.artifact>
@@ -255,17 +250,6 @@
           <groupId>org.apache.hadoop</groupId>
           <artifactId>hadoop-yarn-client</artifactId>
         </dependency>
-
-<!--        <dependency>-->
-<!--          <groupId>org.apache.hadoop</groupId>-->
-<!--          <artifactId>hadoop-yarn-api</artifactId>-->
-<!--        </dependency>-->
-
-<!--        <dependency>-->
-<!--          <groupId>org.apache.hadoop</groupId>-->
-<!--          <artifactId>hadoop-yarn-common</artifactId>-->
-<!--        </dependency>-->
-
       </dependencies>
 
     </profile>
@@ -274,9 +258,6 @@
 
       <properties>
         <hadoop.version>${hadoop3.2.version}</hadoop.version>
-<!--        <curator.version>2.13.0</curator.version>-->
-<!--        <kerberos-client.version>2.0.0-M15</kerberos-client.version>-->
-
         <hadoop-client-api.artifact>hadoop-client-api</hadoop-client-api.artifact>
         <hadoop-client-runtime.artifact>hadoop-client-runtime</hadoop-client-runtime.artifact>
         <hadoop-client-minicluster.artifact>hadoop-client-minicluster</hadoop-client-minicluster.artifact>
