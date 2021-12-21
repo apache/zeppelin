@@ -61,43 +61,43 @@
     <module>zeppelin-jupyter-interpreter</module>
     <module>zeppelin-jupyter-interpreter-shaded</module>
     <module>kotlin</module>
-    <module>groovy</module>
+<!--    <module>groovy</module>-->
     <module>spark</module>
     <module>spark-submit</module>
-    <module>submarine</module>
+<!--    <module>submarine</module>-->
     <module>markdown</module>
-    <module>mongodb</module>
+<!--    <module>mongodb</module>-->
     <module>angular</module>
     <module>shell</module>
-    <module>livy</module>
-    <module>hbase</module>
-    <module>pig</module>
+<!--    <module>livy</module>-->
+<!--    <module>hbase</module>-->
+<!--    <module>pig</module>-->
     <module>jdbc</module>
-    <module>file</module>
+<!--    <module>file</module>-->
     <module>flink</module>
     <module>flink-cmd</module>
-    <module>ignite</module>
+<!--    <module>ignite</module>-->
     <module>influxdb</module>
     <module>kylin</module>
     <module>python</module>
-    <module>lens</module>
-    <module>cassandra</module>
-    <module>elasticsearch</module>
-    <module>bigquery</module>
-    <module>alluxio</module>
-    <module>scio</module>
-    <module>neo4j</module>
-    <module>sap</module>
-    <module>scalding</module>
+<!--    <module>lens</module>-->
+<!--    <module>cassandra</module>-->
+<!--    <module>elasticsearch</module>-->
+<!--    <module>bigquery</module>-->
+<!--    <module>alluxio</module>-->
+<!--    <module>scio</module>-->
+<!--    <module>neo4j</module>-->
+<!--    <module>sap</module>-->
+<!--    <module>scalding</module>-->
     <module>java</module>
-    <module>beam</module>
-    <module>hazelcastjet</module>
-    <module>geode</module>
-    <module>ksql</module>
-    <module>sparql</module>
+<!--    <module>beam</module>-->
+<!--    <module>hazelcastjet</module>-->
+<!--    <module>geode</module>-->
+<!--    <module>ksql</module>-->
+<!--    <module>sparql</module> -->
     <module>zeppelin-common</module>
     <module>zeppelin-client</module>
-    <module>zeppelin-client-examples</module>
+<!--    <module>zeppelin-client-examples</module> //-->
     <module>zeppelin-web</module>
     <module>zeppelin-server</module>
     <module>zeppelin-jupyter</module>
@@ -139,7 +139,7 @@
     <commons.io.version>2.6</commons.io.version>
     <commons.collections.version>3.2.2</commons.collections.version>
     <commons.cli.version>1.4</commons.cli.version>
-    <shiro.version>1.7.0</shiro.version>
+    <shiro.version>1.7.1</shiro.version>
     <bouncycastle.version>1.60</bouncycastle.version>
     <maven.version>3.6.3</maven.version>
     <dropwizard.version>4.1.14</dropwizard.version>

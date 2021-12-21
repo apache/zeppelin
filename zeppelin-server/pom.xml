@@ -38,7 +38,7 @@
     <javax.ws.rsapi.version>2.1</javax.ws.rsapi.version>
     <libpam4j.version>1.11</libpam4j.version>
     <jna.version>4.1.0</jna.version>
-    <jackson.version>2.9.10.6</jackson.version>
+    <jackson.version>2.9.10.8</jackson.version>
 
     <!--test library versions-->
     <selenium.java.version>2.48.2</selenium.java.version>
