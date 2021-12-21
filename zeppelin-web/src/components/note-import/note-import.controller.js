@@ -43,6 +43,10 @@ function NoteImportCtrl($scope, $timeout, websocketMsgSrv) {
     angular.element('#noteImportFile').click();
   };
 
+  $scope.resetFile = function(element) {
+    element.value = '';
+  };
+
   $scope.importFile = function(element) {
     $scope.note.errorText = '';
     $scope.note.importFile = element.files[0];
