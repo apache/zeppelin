@@ -47,6 +47,7 @@ limitations under the License.
             <div style="display: none">
               <input class="form-control note-name-input" id="noteImportFile"
                      placeholder="Note name" type="file"
+                     onclick="angular.element(this).scope().resetFile(this)"
                      ng-model="note.importFile" onchange="angular.element(this).scope().importFile(this)" />
             </div>
           </div>
