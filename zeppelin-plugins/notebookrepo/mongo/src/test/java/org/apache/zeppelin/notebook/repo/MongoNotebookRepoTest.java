@@ -19,6 +19,7 @@ package org.apache.zeppelin.notebook.repo;
 
 import static org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_MONGO_URI;
 import static org.junit.Assert.assertEquals;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -27,8 +28,7 @@ import java.net.ServerSocket;
 import java.util.Map;
 import de.flapdoodle.embed.mongo.MongodExecutable;
 import de.flapdoodle.embed.mongo.MongodStarter;
-import de.flapdoodle.embed.mongo.config.IMongodConfig;
-import de.flapdoodle.embed.mongo.config.MongodConfigBuilder;
+import de.flapdoodle.embed.mongo.config.MongodConfig;
 import de.flapdoodle.embed.mongo.config.Net;
 import de.flapdoodle.embed.mongo.distribution.Version;
 import de.flapdoodle.embed.process.runtime.Network;
@@ -53,7 +53,7 @@ public class MongoNotebookRepoTest {
     int port = socket.getLocalPort();
     socket.close();
 
-    IMongodConfig mongodConfig = new MongodConfigBuilder()
+    MongodConfig mongodConfig = MongodConfig.builder()
         .version(Version.Main.PRODUCTION)
         .net(new Net(bindIp, port, Network.localhostIsIPv6()))
         .build();
