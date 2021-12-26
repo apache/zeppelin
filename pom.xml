@@ -160,7 +160,7 @@
     <grpc.version>1.26.0</grpc.version>
 
     <!-- test library versions -->
-    <junit.version>4.12</junit.version>
+    <junit.jupiter.version>5.8.2</junit.jupiter.version>
     <mockito.version>1.10.19</mockito.version>
     <assertj.version>1.7.0</assertj.version>
     <powermock.version>1.6.4</powermock.version>
@@ -201,7 +201,7 @@
     <plugin.scm.version>1.11.2</plugin.scm.version>
     <plugin.shade.version>3.2.2</plugin.shade.version>
     <plugin.source.version>3.2.1</plugin.source.version>
-    <plugin.surefire.version>2.17</plugin.surefire.version>
+    <plugin.surefire.version>3.0.0-M5</plugin.surefire.version>
     <plugin.xml.version>1.0.2</plugin.xml.version>
 
     <testcontainers.version>1.15.1</testcontainers.version>
@@ -928,9 +928,22 @@
 
       <!-- Test libraries -->
       <dependency>
-        <groupId>junit</groupId>
-        <artifactId>junit</artifactId>
-        <version>${junit.version}</version>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter-engine</artifactId>
+        <version>${junit.jupiter.version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter-api</artifactId>
+        <version>${junit.jupiter.version}</version>
+        <scope>test</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>org.junit.vintage</groupId>
+        <artifactId>junit-vintage-engine</artifactId>
+        <version>${junit.jupiter.version}</version>
         <scope>test</scope>
       </dependency>
 
@@ -974,6 +987,12 @@
         <artifactId>powermock-module-junit4</artifactId>
         <version>${powermock.version}</version>
         <scope>test</scope>
+        <exclusions>
+          <exclusion>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
 
       <dependency>
@@ -1619,6 +1638,7 @@
             <plugin>
               <groupId>org.apache.maven.plugins</groupId>
               <artifactId>maven-surefire-plugin</artifactId>
+              <version>${plugin.surefire.version}</version>
               <configuration>
                 <skipTests>true</skipTests>
               </configuration>
@@ -1650,6 +1670,7 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-surefire-plugin</artifactId>
+            <version>${plugin.surefire.version}</version>
             <configuration>
               <skipTests>true</skipTests>
             </configuration>

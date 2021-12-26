@@ -334,10 +334,22 @@
     </dependency>
 
     <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <scope>test</scope>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter-engine</artifactId>
+        <scope>test</scope>
     </dependency>
+    <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter-api</artifactId>
+        <scope>test</scope>
+    </dependency>
+
+    <dependency>
+        <groupId>org.junit.vintage</groupId>
+        <artifactId>junit-vintage-engine</artifactId>
+        <scope>test</scope>
+    </dependency>
+
 
     <dependency>
       <groupId>org.mockito</groupId>
@@ -442,9 +454,9 @@
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration combine.children="append">
-          <forkCount>1</forkCount>
-          <reuseForks>false</reuseForks>
-          <argLine>-Xmx3g -Xms1g -Dfile.encoding=UTF-8</argLine>
+          <forkCount>4</forkCount>
+          <reuseForks>true</reuseForks>
+          <argLine>-Xmx4g -Xms1g -Dfile.encoding=UTF-8</argLine>
           <excludes>
             <exclude>${tests.to.exclude}</exclude>
           </excludes>
