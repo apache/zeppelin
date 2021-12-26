@@ -73,6 +73,12 @@
             <artifactId>kubernetes-server-mock</artifactId>
             <version>${kubernetes.client.version}</version>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>junit</groupId>
+                    <artifactId>junit</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
     </dependencies>
 
