@@ -79,11 +79,10 @@ public class HadoopUtils {
     return yarnClient.getApplicationReport(yarnAppId);
   }
 
-  public static void cleanupStagingDirInternal(ClusterClient clusterClient) {
+  public static void cleanupStagingDirInternal(String yarnAppId) {
     try {
-      ApplicationId appId = (ApplicationId) clusterClient.getClusterId();
       FileSystem fs = FileSystem.get(new Configuration());
-      Path stagingDirPath = new Path(fs.getHomeDirectory(), ".flink/" + appId.toString());
+      Path stagingDirPath = new Path(fs.getHomeDirectory(), ".flink/" + yarnAppId);
       if (fs.delete(stagingDirPath, true)) {
         LOGGER.info("Deleted staging directory " + stagingDirPath);
       }
