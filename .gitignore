@@ -16,7 +16,6 @@ spark/metastore_db
 spark-1.*-bin-hadoop*
 .spark-dist
 
-lens/lens-cli-hist.log
 
 # Zeppelin server
 zeppelin-server/local-repo
