@@ -154,7 +154,6 @@ limitations under the License.
   * [Kotlin](./interpreter/kotlin.html)
   * [KSQL](./interpreter/ksql.html)
   * [Kylin](./interpreter/kylin.html)
-  * [Lens](./interpreter/lens.html)
   * [Livy](./interpreter/livy.html)
   * [Mahout](./interpreter/mahout.html)
   * [Markdown](./interpreter/markdown.html)

@@ -74,7 +74,7 @@ jobs:
   test-interpreter-modules:
     runs-on: ubuntu-20.04
     env:
-      INTERPRETERS: 'beam,hbase,pig,jdbc,file,flink,flink-cmd,ignite,kylin,lens,cassandra,elasticsearch,bigquery,alluxio,scio,livy,groovy,sap,java,geode,neo4j,hazelcastjet,submarine,sparql,mongodb,influxdb,ksql,scalding'
+      INTERPRETERS: 'beam,hbase,pig,jdbc,file,flink,flink-cmd,ignite,kylin,cassandra,elasticsearch,bigquery,alluxio,scio,livy,groovy,sap,java,geode,neo4j,hazelcastjet,submarine,sparql,mongodb,influxdb,ksql,scalding'
     steps:
       - name: Checkout
         uses: actions/checkout@v2

@@ -199,11 +199,6 @@ You can also find the below community managed interpreter list in `conf/interpre
     <td>Kylin interpreter</td>
   </tr>
   <tr>
-    <td>lens</td>
-    <td>org.apache.zeppelin:zeppelin-lens:0.10.0</td>
-    <td>Lens interpreter</td>
-  </tr>
-  <tr>
     <td>livy</td>
     <td>org.apache.zeppelin:zeppelin-livy:0.10.0</td>
     <td>Livy interpreter</td>
