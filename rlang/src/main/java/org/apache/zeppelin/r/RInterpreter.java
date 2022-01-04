@@ -131,7 +131,7 @@ public class RInterpreter extends AbstractInterpreter {
       // render output with knitr
       if (rbackendDead.get()) {
         return new InterpreterResult(InterpreterResult.Code.ERROR,
-            "sparkR backend is dead, please try to increase spark.r.backendConnectionTimeout");
+            "sparkR backend is dead");
       }
       if (useKnitr) {
         zeppelinR.setInterpreterOutput(null);
