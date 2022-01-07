@@ -104,7 +104,7 @@ public class HttpBasedClient implements ElasticsearchClient {
   private String getUrl(String index, String type, String id, boolean useSearch) {
     try {
       final StringBuilder buffer = new StringBuilder();
-      buffer.append(protocol).append("://").append(host).append(":").append(port).append("/");
+      buffer.append(protocol.toLowerCase()).append("://").append(host).append(":").append(port).append("/");
       if (StringUtils.isNotEmpty(index)) {
         buffer.append(index);
 
