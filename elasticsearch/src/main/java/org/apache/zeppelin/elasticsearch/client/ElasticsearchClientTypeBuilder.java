@@ -1,28 +1,40 @@
 package org.apache.zeppelin.elasticsearch.client;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.Arrays;
 
 public class ElasticsearchClientTypeBuilder {
 
-    public static Build withValue(String value){
-        return new Builder(value);
+    private static final ElasticsearchClientType DEFAULT_ELASTICSEARCH_CLIENT_TYPE = ElasticsearchClientType.TRANSPORT;
+
+    public static Build withPropertyValue(String propertyValue) {
+        return new Builder(propertyValue);
     }
 
-    public interface Build{
+    public interface Build {
         ElasticsearchClientType build();
     }
 
-    public static class Builder implements Build {
-        private final String value;
+    private static class Builder implements Build {
+        private final String propertyValue;
 
-        public Builder(String value) {
-            this.value = value;
+        private Builder(String propertyValue) {
+            this.propertyValue = propertyValue;
         }
 
         @Override
         public ElasticsearchClientType build() {
-            boolean isExistingValue = Arrays.stream(ElasticsearchClientType.values()).anyMatch(clientType -> clientType.toString().equalsIgnoreCase(value));
-            return isExistingValue ? ElasticsearchClientType.valueOf(value.toLowerCase()) : ElasticsearchClientType.UNKNOWN;
+            boolean isEmpty = StringUtils.isEmpty(propertyValue);
+            return isEmpty ? DEFAULT_ELASTICSEARCH_CLIENT_TYPE : getElasticsearchClientType(propertyValue);
+        }
+
+        private ElasticsearchClientType getElasticsearchClientType(String propertyValue){
+            boolean isExistingValue =
+                    Arrays
+                            .stream(ElasticsearchClientType.values())
+                            .anyMatch(clientType -> clientType.toString().equalsIgnoreCase(propertyValue));
+            return isExistingValue ? ElasticsearchClientType.valueOf(propertyValue.toUpperCase()) : ElasticsearchClientType.UNKNOWN;
         }
     }
 }

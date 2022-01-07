@@ -112,7 +112,7 @@ public class ElasticsearchInterpreter extends Interpreter {
 
     ElasticsearchClientType clientType =
             ElasticsearchClientTypeBuilder
-                    .withValue(getProperty(ELASTICSEARCH_CLIENT_TYPE))
+                    .withPropertyValue(getProperty(ELASTICSEARCH_CLIENT_TYPE))
                     .build();
 
     try {
