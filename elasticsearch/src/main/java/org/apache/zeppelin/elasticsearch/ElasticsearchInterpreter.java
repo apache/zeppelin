@@ -22,6 +22,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.zeppelin.elasticsearch.client.*;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.common.xcontent.XContentHelper;
@@ -55,9 +56,6 @@ import org.apache.zeppelin.completer.CompletionType;
 import org.apache.zeppelin.elasticsearch.action.ActionResponse;
 import org.apache.zeppelin.elasticsearch.action.AggWrapper;
 import org.apache.zeppelin.elasticsearch.action.HitWrapper;
-import org.apache.zeppelin.elasticsearch.client.ElasticsearchClient;
-import org.apache.zeppelin.elasticsearch.client.HttpBasedClient;
-import org.apache.zeppelin.elasticsearch.client.TransportBasedClient;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterResult;
@@ -112,8 +110,10 @@ public class ElasticsearchInterpreter extends Interpreter {
   public void open() {
     logger.info("Properties: {}", getProperties());
 
-    String clientType = getProperty(ELASTICSEARCH_CLIENT_TYPE);
-    clientType = clientType == null ? null : clientType.toLowerCase();
+    ElasticsearchClientType clientType =
+            ElasticsearchClientTypeBuilder
+                    .withValue(getProperty(ELASTICSEARCH_CLIENT_TYPE))
+                    .build();
 
     try {
       this.resultSize = Integer.parseInt(getProperty(ELASTICSEARCH_RESULT_SIZE));
@@ -124,9 +124,9 @@ public class ElasticsearchInterpreter extends Interpreter {
     }
 
     try {
-      if (StringUtils.isEmpty(clientType) || "transport".equals(clientType)) {
+      if (ElasticsearchClientType.TRANSPORT.equals(clientType)) {
         elsClient = new TransportBasedClient(getProperties());
-      } else if ("http".equals(clientType)) {
+      } else if (clientType.isHttp()) {
         elsClient = new HttpBasedClient(getProperties());
       } else {
         logger.error("Unknown type of Elasticsearch client: " + clientType);
