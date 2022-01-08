@@ -6,10 +6,10 @@ public enum ElasticsearchClientType {
   private final boolean isHttp;
 
   ElasticsearchClientType(boolean isHttp) {
-        this.isHttp = isHttp;
-    }
+    this.isHttp = isHttp;
+  }
 
   public boolean isHttp() {
-        return isHttp;
-    }
+    return isHttp;
+  }
 }

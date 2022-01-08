@@ -22,7 +22,11 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.zeppelin.elasticsearch.client.*;
+import org.apache.zeppelin.elasticsearch.client.ElasticsearchClient;
+import org.apache.zeppelin.elasticsearch.client.ElasticsearchClientType;
+import org.apache.zeppelin.elasticsearch.client.ElasticsearchClientTypeBuilder;
+import org.apache.zeppelin.elasticsearch.client.HttpBasedClient;
+import org.apache.zeppelin.elasticsearch.client.TransportBasedClient;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.common.xcontent.XContentHelper;
@@ -60,6 +64,8 @@ import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
+
+import static org.apache.zeppelin.elasticsearch.client.ElasticsearchClientType.*;
 
 /**
  * Elasticsearch Interpreter for Zeppelin.
@@ -124,7 +130,7 @@ public class ElasticsearchInterpreter extends Interpreter {
     }
 
     try {
-      if (ElasticsearchClientType.TRANSPORT.equals(clientType)) {
+      if (TRANSPORT.equals(clientType)) {
         elsClient = new TransportBasedClient(getProperties());
       } else if (clientType.isHttp()) {
         elsClient = new HttpBasedClient(getProperties());

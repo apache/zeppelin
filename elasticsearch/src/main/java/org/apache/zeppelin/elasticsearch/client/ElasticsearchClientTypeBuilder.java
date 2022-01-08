@@ -4,9 +4,11 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.Arrays;
 
+import static org.apache.zeppelin.elasticsearch.client.ElasticsearchClientType.*;
+
 public class ElasticsearchClientTypeBuilder {
 
-  private static final ElasticsearchClientType DEFAULT_ELASTICSEARCH_CLIENT_TYPE = ElasticsearchClientType.TRANSPORT;
+  private static final ElasticsearchClientType DEFAULT_ELASTICSEARCH_CLIENT_TYPE = TRANSPORT;
 
   public static Build withPropertyValue(String propertyValue) {
     return new Builder(propertyValue);
@@ -32,9 +34,9 @@ public class ElasticsearchClientTypeBuilder {
     private ElasticsearchClientType getElasticsearchClientType(String propertyValue){
       boolean isExistingValue =
                     Arrays
-                            .stream(ElasticsearchClientType.values())
+                            .stream(values())
                             .anyMatch(clientType -> clientType.toString().equalsIgnoreCase(propertyValue));
-      return isExistingValue ? ElasticsearchClientType.valueOf(propertyValue.toUpperCase()) : ElasticsearchClientType.UNKNOWN;
+      return isExistingValue ? valueOf(propertyValue.toUpperCase()) : UNKNOWN;
     }
   }
 }
