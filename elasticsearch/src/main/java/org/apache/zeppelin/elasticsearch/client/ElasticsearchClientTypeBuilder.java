@@ -4,7 +4,10 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.Arrays;
 
-import static org.apache.zeppelin.elasticsearch.client.ElasticsearchClientType.*;
+import static org.apache.zeppelin.elasticsearch.client.ElasticsearchClientType.TRANSPORT;
+import static org.apache.zeppelin.elasticsearch.client.ElasticsearchClientType.UNKNOWN;
+import static org.apache.zeppelin.elasticsearch.client.ElasticsearchClientType.valueOf;
+import static org.apache.zeppelin.elasticsearch.client.ElasticsearchClientType.values;
 
 public class ElasticsearchClientTypeBuilder {
 

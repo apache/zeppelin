@@ -16,7 +16,8 @@ public class ElasticsearchClientTypeBuilderTest {
     //GIVEN
     String empty = "";
     //WHEN
-    ElasticsearchClientType clientType = ElasticsearchClientTypeBuilder.withPropertyValue(empty).build();
+    ElasticsearchClientType clientType =
+        ElasticsearchClientTypeBuilder.withPropertyValue(empty).build();
     //THEN
     assertThat(clientType, is(TRANSPORT));
   }
@@ -26,7 +27,8 @@ public class ElasticsearchClientTypeBuilderTest {
     //GIVEN
     String nullValue = null;
     //WHEN
-    ElasticsearchClientType clientType = ElasticsearchClientTypeBuilder.withPropertyValue(nullValue).build();
+    ElasticsearchClientType clientType =
+        ElasticsearchClientTypeBuilder.withPropertyValue(nullValue).build();
     //THEN
     assertThat(clientType, is(TRANSPORT));
   }
@@ -36,7 +38,8 @@ public class ElasticsearchClientTypeBuilderTest {
     //GIVEN
     String clientType = "https";
     //WHEN
-    ElasticsearchClientType esClientType = ElasticsearchClientTypeBuilder.withPropertyValue(clientType).build();
+    ElasticsearchClientType esClientType =
+        ElasticsearchClientTypeBuilder.withPropertyValue(clientType).build();
     //THEN
     assertThat(esClientType, is(HTTPS));
   }
@@ -46,7 +49,8 @@ public class ElasticsearchClientTypeBuilderTest {
     //GIVEN
     String clientType = "hTtP";
     //WHEN
-    ElasticsearchClientType esClientType = ElasticsearchClientTypeBuilder.withPropertyValue(clientType).build();
+    ElasticsearchClientType esClientType =
+        ElasticsearchClientTypeBuilder.withPropertyValue(clientType).build();
     //THEN
     assertThat(esClientType, is(HTTP));
   }
@@ -56,7 +60,8 @@ public class ElasticsearchClientTypeBuilderTest {
     //GIVEN
     String unknownValue = "an_unknown_value";
     //WHEN
-    ElasticsearchClientType esClientType = ElasticsearchClientTypeBuilder.withPropertyValue(unknownValue).build();
+    ElasticsearchClientType esClientType =
+        ElasticsearchClientTypeBuilder.withPropertyValue(unknownValue).build();
     //THEN
     assertThat(esClientType, is(UNKNOWN));
   }

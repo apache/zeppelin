@@ -65,7 +65,7 @@ import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 
-import static org.apache.zeppelin.elasticsearch.client.ElasticsearchClientType.*;
+import static org.apache.zeppelin.elasticsearch.client.ElasticsearchClientType.TRANSPORT;
 
 /**
  * Elasticsearch Interpreter for Zeppelin.

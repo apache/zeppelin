@@ -15,12 +15,12 @@ public class ElasticsearchClientTypeTest {
   public void it_should_return_http_when_reducing_on_http_types() {
     //GIVEN
     List<ElasticsearchClientType> httpTypes =
-      new ArrayList<>(Arrays.asList(ElasticsearchClientType.HTTP, ElasticsearchClientType.HTTPS));
+        new ArrayList<>(Arrays.asList(ElasticsearchClientType.HTTP, ElasticsearchClientType.HTTPS));
     //WHEN
     Boolean httpTypesReduced = httpTypes.stream()
-      .map(ElasticsearchClientType::isHttp)
-      .reduce(true, (ident, elasticsearchClientType) -> ident && elasticsearchClientType);
+        .map(ElasticsearchClientType::isHttp)
+        .reduce(true, (ident, elasticsearchClientType) -> ident && elasticsearchClientType);
     //THEN
     assertThat(httpTypesReduced, is(true));
-    }
+  }
 }
