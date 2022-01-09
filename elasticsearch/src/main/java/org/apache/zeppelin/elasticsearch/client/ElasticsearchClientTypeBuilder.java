@@ -25,20 +25,22 @@ public class ElasticsearchClientTypeBuilder {
     private final String propertyValue;
 
     private Builder(String propertyValue) {
-            this.propertyValue = propertyValue;
-        }
+      this.propertyValue = propertyValue;
+    }
 
     @Override
     public ElasticsearchClientType build() {
       boolean isEmpty = StringUtils.isEmpty(propertyValue);
-      return isEmpty ? DEFAULT_ELASTICSEARCH_CLIENT_TYPE : getElasticsearchClientType(propertyValue);
+      return isEmpty ?
+        DEFAULT_ELASTICSEARCH_CLIENT_TYPE :
+        getElasticsearchClientType(propertyValue);
     }
 
     private ElasticsearchClientType getElasticsearchClientType(String propertyValue){
       boolean isExistingValue =
-                    Arrays
-                            .stream(values())
-                            .anyMatch(clientType -> clientType.toString().equalsIgnoreCase(propertyValue));
+        Arrays
+          .stream(values())
+          .anyMatch(clientType -> clientType.toString().equalsIgnoreCase(propertyValue));
       return isExistingValue ? valueOf(propertyValue.toUpperCase()) : UNKNOWN;
     }
   }
