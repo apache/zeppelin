@@ -71,7 +71,7 @@ public class HttpBasedClient implements ElasticsearchClient {
 
   private String loadProtocol(Properties props){
     String proto = props.getProperty(ElasticsearchInterpreter.ELASTICSEARCH_CLIENT_TYPE);
-    if(StringUtils.isNotEmpty(proto)) {
+    if (StringUtils.isNotEmpty(proto)) {
       proto = proto.toLowerCase();
     }
     return proto;

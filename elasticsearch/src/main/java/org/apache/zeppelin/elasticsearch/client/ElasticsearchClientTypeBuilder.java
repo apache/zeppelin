@@ -55,7 +55,7 @@ public class ElasticsearchClientTypeBuilder {
 
     private ElasticsearchClientType getElasticsearchClientType(String propertyValue){
       boolean isExistingValue =
-        Arrays
+          Arrays
           .stream(values())
           .anyMatch(clientType -> clientType.toString().equalsIgnoreCase(propertyValue));
       return isExistingValue ? valueOf(propertyValue.toUpperCase()) : UNKNOWN;
