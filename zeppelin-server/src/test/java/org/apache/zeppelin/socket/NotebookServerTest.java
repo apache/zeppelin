@@ -23,12 +23,12 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -36,6 +36,7 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -56,16 +57,16 @@ import org.apache.zeppelin.interpreter.thrift.ParagraphInfo;
 import org.apache.zeppelin.interpreter.thrift.ServiceException;
 import org.apache.zeppelin.notebook.AuthorizationService;
 import org.apache.zeppelin.notebook.Note;
+import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.Paragraph;
+import org.apache.zeppelin.notebook.Notebook.NoteProcessor;
 import org.apache.zeppelin.notebook.repo.NotebookRepoWithVersionControl;
-import org.apache.zeppelin.notebook.scheduler.QuartzSchedulerService;
-import org.apache.zeppelin.notebook.scheduler.SchedulerService;
 import org.apache.zeppelin.common.Message;
 import org.apache.zeppelin.common.Message.OP;
 import org.apache.zeppelin.rest.AbstractTestRestApi;
 import org.apache.zeppelin.scheduler.Job;
-import org.apache.zeppelin.service.ConfigurationService;
+import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.service.NotebookService;
 import org.apache.zeppelin.service.ServiceContext;
 import org.apache.zeppelin.user.AuthenticationInfo;
@@ -74,6 +75,7 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 
 /** Basic REST API tests for notebookServer. */
@@ -127,19 +129,22 @@ public class NotebookServerTest extends AbstractTestRestApi {
 
     String noteName = "Note with millis " + System.currentTimeMillis();
     notebookServer.onMessage(sock1, new Message(OP.NEW_NOTE).put("name", noteName).toJson());
-    Note createdNote = null;
-    for (Note note : notebook.getAllNotes()) {
-      if (note.getName().equals(noteName)) {
-        createdNote = note;
+    NoteInfo createdNoteInfo = null;
+    for (NoteInfo noteInfo : notebook.getNotesInfo()) {
+      if (notebook.processNote(noteInfo.getId(), Note::getName).equals(noteName)) {
+        createdNoteInfo = noteInfo;
         break;
       }
     }
 
-    Message message = new Message(OP.GET_NOTE).put("id", createdNote.getId());
+    Message message = new Message(OP.GET_NOTE).put("id", createdNoteInfo.getId());
     notebookServer.onMessage(sock1, message.toJson());
     notebookServer.onMessage(sock2, message.toJson());
 
-    Paragraph paragraph = createdNote.getParagraphs().get(0);
+    Paragraph paragraph = notebook.processNote(createdNoteInfo.getId(),
+      createdNote -> {
+        return createdNote.getParagraphs().get(0);
+      });
     String paragraphId = paragraph.getId();
 
     String[] patches = new String[]{
@@ -173,7 +178,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
     verify(sock1, times(++sock1SendCount)).send(anyString());
     verify(sock2, times(sock2SendCount)).send(anyString());
 
-    notebook.removeNote(createdNote, anonymous);
+    notebook.removeNote(createdNoteInfo.getId(), anonymous);
   }
 
   private void patchParagraph(NotebookSocket noteSocket, String paragraphId, String patch) {
@@ -186,39 +191,45 @@ public class NotebookServerTest extends AbstractTestRestApi {
   @Test
   public void testMakeSureNoAngularObjectBroadcastToWebsocketWhoFireTheEvent()
           throws IOException, InterruptedException {
-    Note note1 = null;
+    String note1Id = null;
     try {
       // create a notebook
-      note1 = notebook.createNote("note1", anonymous);
+      note1Id = notebook.createNote("note1", anonymous);
 
       // get reference to interpreterGroup
       InterpreterGroup interpreterGroup = null;
       List<InterpreterSetting> settings = notebook.getInterpreterSettingManager().get();
       for (InterpreterSetting setting : settings) {
         if (setting.getName().equals("md")) {
-          interpreterGroup = setting.getOrCreateInterpreterGroup("anonymous", note1.getId());
+          interpreterGroup = setting.getOrCreateInterpreterGroup("anonymous", note1Id);
           break;
         }
       }
 
-      // start interpreter process
-      Paragraph p1 = note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
-      p1.setText("%md start remote interpreter process");
-      p1.setAuthenticationInfo(anonymous);
-      note1.run(p1.getId());
+      notebook.processNote(note1Id,
+        note1 -> {
+          // start interpreter process
+          Paragraph p1 = note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
+          p1.setText("%md start remote interpreter process");
+          p1.setAuthenticationInfo(anonymous);
+          note1.run(p1.getId());
+          return null;
+        });
 
+      Status status = notebook.processNote(note1Id, note1-> note1.getParagraph(0).getStatus());
       // wait for paragraph finished
       while (true) {
-        if (p1.getStatus() == Job.Status.FINISHED) {
+        if (status == Job.Status.FINISHED) {
           break;
         }
         Thread.sleep(100);
+        status = notebook.processNote(note1Id, note1-> note1.getParagraph(0).getStatus());
       }
       // sleep for 1 second to make sure job running thread finish to fire event. See ZEPPELIN-3277
       Thread.sleep(1000);
 
       // add angularObject
-      interpreterGroup.getAngularObjectRegistry().add("object1", "value1", note1.getId(), null);
+      interpreterGroup.getAngularObjectRegistry().add("object1", "value1", note1Id, null);
 
       // create two sockets and open it
       NotebookSocket sock1 = createWebSocket();
@@ -231,8 +242,8 @@ public class NotebookServerTest extends AbstractTestRestApi {
       notebookServer.onOpen(sock2);
       verify(sock1, times(0)).send(anyString()); // getNote, getAngularObject
       // open the same notebook from sockets
-      notebookServer.onMessage(sock1, new Message(OP.GET_NOTE).put("id", note1.getId()).toJson());
-      notebookServer.onMessage(sock2, new Message(OP.GET_NOTE).put("id", note1.getId()).toJson());
+      notebookServer.onMessage(sock1, new Message(OP.GET_NOTE).put("id", note1Id).toJson());
+      notebookServer.onMessage(sock2, new Message(OP.GET_NOTE).put("id", note1Id).toJson());
 
       reset(sock1);
       reset(sock2);
@@ -240,7 +251,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
       // update object from sock1
       notebookServer.onMessage(sock1,
               new Message(OP.ANGULAR_OBJECT_UPDATED)
-                      .put("noteId", note1.getId())
+                      .put("noteId", note1Id)
                       .put("name", "object1")
                       .put("value", "value1")
                       .put("interpreterGroupId", interpreterGroup.getId()).toJson());
@@ -250,8 +261,8 @@ public class NotebookServerTest extends AbstractTestRestApi {
       verify(sock1, times(0)).send(anyString());
       verify(sock2, times(1)).send(anyString());
     } finally {
-      if (note1 != null) {
-        notebook.removeNote(note1, anonymous);
+      if (note1Id != null) {
+        notebook.removeNote(note1Id, anonymous);
       }
     }
   }
@@ -260,32 +271,38 @@ public class NotebookServerTest extends AbstractTestRestApi {
   public void testAngularObjectSaveToNote()
       throws IOException, InterruptedException {
     // create a notebook
-    Note note1 = null;
+    String note1Id = null;
     try {
-      note1 = notebook.createNote("note1", "angular", anonymous);
+      note1Id = notebook.createNote("note1", "angular", anonymous);
 
       // get reference to interpreterGroup
       InterpreterGroup interpreterGroup = null;
-      List<InterpreterSetting> settings = note1.getBindedInterpreterSettings(new ArrayList<>());
+      List<InterpreterSetting> settings = notebook.processNote(note1Id, note1-> note1.getBindedInterpreterSettings(new ArrayList<>()));
       for (InterpreterSetting setting : settings) {
         if (setting.getName().equals("angular")) {
-          interpreterGroup = setting.getOrCreateInterpreterGroup("anonymous", note1.getId());
+          interpreterGroup = setting.getOrCreateInterpreterGroup("anonymous", note1Id);
           break;
         }
       }
 
-      // start interpreter process
-      Paragraph p1 = note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
-      p1.setText("%angular <h2>Bind here : {{COMMAND_TYPE}}</h2>");
-      p1.setAuthenticationInfo(anonymous);
-      note1.run(p1.getId());
+      String p1Id = notebook.processNote(note1Id,
+        note1 -> {
+          // start interpreter process
+          Paragraph p1 = note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
+          p1.setText("%angular <h2>Bind here : {{COMMAND_TYPE}}</h2>");
+          p1.setAuthenticationInfo(anonymous);
+          note1.run(p1.getId());
+          return p1.getId();
+        });
 
       // wait for paragraph finished
+      Status status = notebook.processNote(note1Id, note1-> note1.getParagraph(p1Id).getStatus());
       while (true) {
-        if (p1.getStatus() == Job.Status.FINISHED) {
+        if (status == Job.Status.FINISHED) {
           break;
         }
         Thread.sleep(100);
+        status = notebook.processNote(note1Id, note1-> note1.getParagraph(p1Id).getStatus());
       }
       // sleep for 1 second to make sure job running thread finish to fire event. See ZEPPELIN-3277
       Thread.sleep(1000);
@@ -296,67 +313,67 @@ public class NotebookServerTest extends AbstractTestRestApi {
       notebookServer.onOpen(sock1);
       verify(sock1, times(0)).send(anyString()); // getNote, getAngularObject
       // open the same notebook from sockets
-      notebookServer.onMessage(sock1, new Message(OP.GET_NOTE).put("id", note1.getId()).toJson());
+      notebookServer.onMessage(sock1, new Message(OP.GET_NOTE).put("id", note1Id).toJson());
 
       reset(sock1);
 
       // bind object from sock1
       notebookServer.onMessage(sock1,
               new Message(OP.ANGULAR_OBJECT_CLIENT_BIND)
-                      .put("noteId", note1.getId())
-                      .put("paragraphId", p1.getId())
+                      .put("noteId", note1Id)
+                      .put("paragraphId", p1Id)
                       .put("name", "COMMAND_TYPE")
                       .put("value", "COMMAND_TYPE_VALUE")
                       .put("interpreterGroupId", interpreterGroup.getId()).toJson());
-      List<AngularObject> list = note1.getAngularObjects("angular-shared_process");
-      assertEquals(list.size(), 1);
-      assertEquals(list.get(0).getNoteId(), note1.getId());
-      assertEquals(list.get(0).getParagraphId(), p1.getId());
-      assertEquals(list.get(0).getName(), "COMMAND_TYPE");
-      assertEquals(list.get(0).get(), "COMMAND_TYPE_VALUE");
+      List<AngularObject> list = notebook.processNote(note1Id, note1-> note1.getAngularObjects("angular-shared_process"));
+      assertEquals(1, list.size());
+      assertEquals(note1Id, list.get(0).getNoteId());
+      assertEquals(p1Id, list.get(0).getParagraphId());
+      assertEquals("COMMAND_TYPE", list.get(0).getName());
+      assertEquals("COMMAND_TYPE_VALUE", list.get(0).get());
       // Check if the interpreterGroup AngularObjectRegistry is updated
       Map<String, Map<String, AngularObject>> mapRegistry = interpreterGroup.getAngularObjectRegistry().getRegistry();
-      AngularObject ao = mapRegistry.get(note1.getId() + "_" + p1.getId()).get("COMMAND_TYPE");
-      assertEquals(ao.getName(), "COMMAND_TYPE");
-      assertEquals(ao.get(), "COMMAND_TYPE_VALUE");
+      AngularObject ao = mapRegistry.get(note1Id + "_" + p1Id).get("COMMAND_TYPE");
+      assertEquals("COMMAND_TYPE", ao.getName());
+      assertEquals("COMMAND_TYPE_VALUE", ao.get());
 
       // update bind object from sock1
       notebookServer.onMessage(sock1,
               new Message(OP.ANGULAR_OBJECT_UPDATED)
-                      .put("noteId", note1.getId())
-                      .put("paragraphId", p1.getId())
+                      .put("noteId", note1Id)
+                      .put("paragraphId", p1Id)
                       .put("name", "COMMAND_TYPE")
                       .put("value", "COMMAND_TYPE_VALUE_UPDATE")
                       .put("interpreterGroupId", interpreterGroup.getId()).toJson());
-      list = note1.getAngularObjects("angular-shared_process");
-      assertEquals(list.size(), 1);
-      assertEquals(list.get(0).getNoteId(), note1.getId());
-      assertEquals(list.get(0).getParagraphId(), p1.getId());
-      assertEquals(list.get(0).getName(), "COMMAND_TYPE");
-      assertEquals(list.get(0).get(), "COMMAND_TYPE_VALUE_UPDATE");
+      list = notebook.processNote(note1Id, note1-> note1.getAngularObjects("angular-shared_process"));
+      assertEquals(1, list.size());
+      assertEquals(note1Id, list.get(0).getNoteId());
+      assertEquals(p1Id, list.get(0).getParagraphId());
+      assertEquals("COMMAND_TYPE", list.get(0).getName());
+      assertEquals("COMMAND_TYPE_VALUE_UPDATE", list.get(0).get());
       // Check if the interpreterGroup AngularObjectRegistry is updated
       mapRegistry = interpreterGroup.getAngularObjectRegistry().getRegistry();
-      AngularObject ao1 = mapRegistry.get(note1.getId() + "_" + p1.getId()).get("COMMAND_TYPE");
-      assertEquals(ao1.getName(), "COMMAND_TYPE");
-      assertEquals(ao1.get(), "COMMAND_TYPE_VALUE_UPDATE");
+      AngularObject ao1 = mapRegistry.get(note1Id + "_" + p1Id).get("COMMAND_TYPE");
+      assertEquals("COMMAND_TYPE", ao1.getName());
+      assertEquals("COMMAND_TYPE_VALUE_UPDATE", ao1.get());
 
       // unbind object from sock1
       notebookServer.onMessage(sock1,
               new Message(OP.ANGULAR_OBJECT_CLIENT_UNBIND)
-                      .put("noteId", note1.getId())
-                      .put("paragraphId", p1.getId())
+                      .put("noteId", note1Id)
+                      .put("paragraphId", p1Id)
                       .put("name", "COMMAND_TYPE")
                       .put("value", "COMMAND_TYPE_VALUE")
                       .put("interpreterGroupId", interpreterGroup.getId()).toJson());
-      list = note1.getAngularObjects("angular-shared_process");
-      assertEquals(list.size(), 0);
+      list = notebook.processNote(note1Id, note1-> note1.getAngularObjects("angular-shared_process"));
+      assertEquals(0, list.size());
       // Check if the interpreterGroup AngularObjectRegistry is delete
       mapRegistry = interpreterGroup.getAngularObjectRegistry().getRegistry();
-      AngularObject ao2 = mapRegistry.get(note1.getId() + "_" + p1.getId()).get("COMMAND_TYPE");
+      AngularObject ao2 = mapRegistry.get(note1Id + "_" + p1Id).get("COMMAND_TYPE");
       assertNull(ao2);
     } finally {
-      if (note1 != null) {
-        notebook.removeNote(note1, anonymous);
+      if (note1Id != null) {
+        notebook.removeNote(note1Id, anonymous);
       }
     }
   }
@@ -364,39 +381,51 @@ public class NotebookServerTest extends AbstractTestRestApi {
   @Test
   public void testLoadAngularObjectFromNote() throws IOException, InterruptedException {
     // create a notebook
-    Note note1 = null;
+    String note1Id = null;
     try {
-      note1 = notebook.createNote("note1", anonymous);
+      note1Id = notebook.createNote("note1", anonymous);
 
       // get reference to interpreterGroup
       InterpreterGroup interpreterGroup = null;
       List<InterpreterSetting> settings = notebook.getInterpreterSettingManager().get();
       for (InterpreterSetting setting : settings) {
         if (setting.getName().equals("angular")) {
-          interpreterGroup = setting.getOrCreateInterpreterGroup("anonymous", note1.getId());
+          interpreterGroup = setting.getOrCreateInterpreterGroup("anonymous", note1Id);
           break;
         }
       }
+      String p1Id = notebook.processNote(note1Id,
+        note1 -> {
+          // start interpreter process
+          Paragraph p1 = note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
+          p1.setText("%angular <h2>Bind here : {{COMMAND_TYPE}}</h2>");
+          p1.setAuthenticationInfo(anonymous);
+          note1.run(p1.getId());
+          return p1.getId();
+        });
 
-      // start interpreter process
-      Paragraph p1 = note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
-      p1.setText("%angular <h2>Bind here : {{COMMAND_TYPE}}</h2>");
-      p1.setAuthenticationInfo(anonymous);
-      note1.run(p1.getId());
 
       // wait for paragraph finished
+      Status status = notebook.processNote(note1Id, note1-> note1.getParagraph(p1Id).getStatus());
       while (true) {
-        if (p1.getStatus() == Job.Status.FINISHED) {
+        System.out.println("loop");
+        if (status == Job.Status.FINISHED) {
           break;
         }
         Thread.sleep(100);
+        status = notebook.processNote(note1Id, note1-> note1.getParagraph(p1Id).getStatus());
       }
       // sleep for 1 second to make sure job running thread finish to fire event. See ZEPPELIN-3277
       Thread.sleep(1000);
 
       // set note AngularObject
-      AngularObject ao = new AngularObject("COMMAND_TYPE", "COMMAND_TYPE_VALUE", note1.getId(), p1.getId(), null);
-      note1.addOrUpdateAngularObject("angular-shared_process", ao);
+      AngularObject ao = new AngularObject("COMMAND_TYPE", "COMMAND_TYPE_VALUE", note1Id, p1Id, null);
+      notebook.processNote(note1Id,
+        note1 -> {
+          note1.addOrUpdateAngularObject("angular-shared_process", ao);
+          return null;
+        });
+
 
       // create sockets and open it
       NotebookSocket sock1 = createWebSocket();
@@ -404,21 +433,21 @@ public class NotebookServerTest extends AbstractTestRestApi {
 
       // Check the AngularObjectRegistry of the interpreterGroup before executing GET_NOTE
       Map<String, Map<String, AngularObject>> mapRegistry1 = interpreterGroup.getAngularObjectRegistry().getRegistry();
-      assertEquals(mapRegistry1.size(), 0);
+      assertEquals(0, mapRegistry1.size());
 
       // open the notebook from sockets, AngularObjectRegistry that triggers the update of the interpreterGroup
-      notebookServer.onMessage(sock1, new Message(OP.GET_NOTE).put("id", note1.getId()).toJson());
+      notebookServer.onMessage(sock1, new Message(OP.GET_NOTE).put("id", note1Id).toJson());
       Thread.sleep(1000);
 
       // After executing GET_NOTE, check the AngularObjectRegistry of the interpreterGroup
       Map<String, Map<String, AngularObject>> mapRegistry2 = interpreterGroup.getAngularObjectRegistry().getRegistry();
-      assertEquals(mapRegistry1.size(), 2);
-      AngularObject ao1 = mapRegistry2.get(note1.getId() + "_" + p1.getId()).get("COMMAND_TYPE");
-      assertEquals(ao1.getName(), "COMMAND_TYPE");
-      assertEquals(ao1.get(), "COMMAND_TYPE_VALUE");
+      assertEquals(2, mapRegistry1.size());
+      AngularObject ao1 = mapRegistry2.get(note1Id + "_" + p1Id).get("COMMAND_TYPE");
+      assertEquals("COMMAND_TYPE", ao1.getName());
+      assertEquals("COMMAND_TYPE_VALUE", ao1.get());
     } finally {
-      if (note1 != null) {
-        notebook.removeNote(note1, anonymous);
+      if (note1Id != null) {
+        notebook.removeNote(note1Id, anonymous);
       }
     }
   }
@@ -432,54 +461,65 @@ public class NotebookServerTest extends AbstractTestRestApi {
         "\"name\": \"Test Zeppelin notebook import\",\"config\": " +
         "{}}}}";
     Message messageReceived = notebookServer.deserializeMessage(msg);
-    Note note = null;
+    String noteId = null;
     ServiceContext context = new ServiceContext(AuthenticationInfo.ANONYMOUS, new HashSet<>());
     try {
       try {
-        note = notebookServer.importNote(null, context, messageReceived);
+        noteId = notebookServer.importNote(null, context, messageReceived);
       } catch (NullPointerException e) {
         //broadcastNoteList(); failed nothing to worry.
         LOG.error("Exception in NotebookServerTest while testImportNotebook, failed nothing to " +
                 "worry ", e);
       }
 
-      assertNotEquals(null, notebook.getNote(note.getId()));
-      assertEquals("Test Zeppelin notebook import", notebook.getNote(note.getId()).getName());
-      assertEquals("Test paragraphs import", notebook.getNote(note.getId()).getParagraphs().get(0)
-              .getText());
+      notebook.processNote(noteId,
+        note -> {
+          assertNotNull(note);
+          assertEquals("Test Zeppelin notebook import", note.getName());
+          assertEquals("Test paragraphs import", note.getParagraphs().get(0)
+            .getText());
+          return null;
+        });
+
     } finally {
-      if (note != null) {
-        notebook.removeNote(note, anonymous);
+      if (noteId != null) {
+        notebook.removeNote(noteId, anonymous);
       }
     }
   }
 
   @Test
   public void testImportJupyterNote() throws IOException {
-    String jupyterNoteJson = IOUtils.toString(getClass().getResourceAsStream("/Lecture-4.ipynb"));
+    String jupyterNoteJson = IOUtils.toString(getClass().getResourceAsStream("/Lecture-4.ipynb"), StandardCharsets.UTF_8);
     String msg = "{\"op\":\"IMPORT_NOTE\",\"data\":" +
             "{\"note\": " + jupyterNoteJson + "}}";
     Message messageReceived = notebookServer.deserializeMessage(msg);
-    Note note = null;
+    String noteId = null;
     ServiceContext context = new ServiceContext(AuthenticationInfo.ANONYMOUS, new HashSet<>());
     try {
       try {
-        note = notebookServer.importNote(null, context, messageReceived);
+        noteId = notebookServer.importNote(null, context, messageReceived);
       } catch (NullPointerException e) {
         //broadcastNoteList(); failed nothing to worry.
         LOG.error("Exception in NotebookServerTest while testImportJupyterNote, failed nothing to " +
                 "worry ", e);
       }
 
-      assertNotEquals(null, notebook.getNote(note.getId()));
-      assertTrue(notebook.getNote(note.getId()).getName(),
-              notebook.getNote(note.getId()).getName().startsWith("Note converted from Jupyter_"));
-      assertEquals("md", notebook.getNote(note.getId()).getParagraphs().get(0).getIntpText());
-      assertEquals("\n# matplotlib - 2D and 3D plotting in Python",
-              notebook.getNote(note.getId()).getParagraphs().get(0).getScriptText());
+      notebook.processNote(noteId,
+        note -> {
+          assertNotNull(note);
+          assertTrue(note.getName(), note.getName().startsWith("Note converted from Jupyter_"));
+          assertEquals("md", note.getParagraphs().get(0).getIntpText());
+          assertEquals("\n# matplotlib - 2D and 3D plotting in Python",
+            note.getParagraphs().get(0).getScriptText());
+          return null;
+        });
+
+
+
     } finally {
-      if (note != null) {
-        notebook.removeNote(note, anonymous);
+      if (noteId != null) {
+        notebook.removeNote(noteId, anonymous);
       }
     }
   }
@@ -501,7 +541,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
       notebookServer.setNotebookService(() -> notebookService);
       final Note note = mock(Note.class, RETURNS_DEEP_STUBS);
 
-      when(notebook.getNote("noteId")).thenReturn(note);
+      when(notebook.processNote(eq("noteId"), Mockito.any())).then(e -> e.getArgumentAt(1,NoteProcessor.class).process(note));
       final Paragraph paragraph = mock(Paragraph.class, RETURNS_DEEP_STUBS);
       when(note.getParagraph("paragraphId")).thenReturn(paragraph);
 
@@ -557,7 +597,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
       notebookServer.setNotebook(() -> notebook);
       notebookServer.setNotebookService(() -> notebookService);
       final Note note = mock(Note.class, RETURNS_DEEP_STUBS);
-      when(notebook.getNote("noteId")).thenReturn(note);
+      when(notebook.processNote(eq("noteId"), Mockito.any())).then(e -> e.getArgumentAt(1,NoteProcessor.class).process(note));
       final Paragraph paragraph = mock(Paragraph.class, RETURNS_DEEP_STUBS);
       when(note.getParagraph("paragraphId")).thenReturn(paragraph);
 
@@ -626,19 +666,20 @@ public class NotebookServerTest extends AbstractTestRestApi {
     // expect the events are broadcasted properly
     verify(sock1, times(sendCount)).send(anyString());
 
-    Note createdNote = null;
-    for (Note note : notebook.getAllNotes()) {
-      if (note.getName().equals(noteName)) {
-        createdNote = note;
+    String createdNoteId = null;
+    for (NoteInfo noteInfo : notebook.getNotesInfo()) {
+      ;
+      if (notebook.processNote(noteInfo.getId(), Note::getName).equals(noteName)) {
+        createdNoteId = noteInfo.getId();
         break;
       }
     }
 
     if (settings.size() > 1) {
       assertEquals(notebook.getInterpreterSettingManager().getDefaultInterpreterSetting(
-              createdNote.getId()).getId(), defaultInterpreterId);
+        createdNoteId).getId(), defaultInterpreterId);
     }
-    notebook.removeNote(createdNote, anonymous);
+    notebook.removeNote(createdNoteId, anonymous);
   }
 
   @Test
@@ -651,10 +692,10 @@ public class NotebookServerTest extends AbstractTestRestApi {
         "\"name\": \"Test RuntimeInfos\",\"config\": " +
         "{}}}}";
     Message messageReceived = notebookServer.deserializeMessage(msg);
-    Note note = null;
+    String noteId = null;
     ServiceContext context = new ServiceContext(AuthenticationInfo.ANONYMOUS, new HashSet<>());
     try {
-      note = notebookServer.importNote(null, context, messageReceived);
+      noteId = notebookServer.importNote(null, context, messageReceived);
     } catch (NullPointerException e) {
       //broadcastNoteList(); failed nothing to worry.
       LOG.error("Exception in NotebookServerTest while testImportNotebook, failed nothing to " +
@@ -662,47 +703,52 @@ public class NotebookServerTest extends AbstractTestRestApi {
     } catch (IOException e) {
       e.printStackTrace();
     }
-
-    assertNotEquals(null, notebook.getNote(note.getId()));
-    assertNotEquals(null, note.getParagraph(0));
-
-    String nodeId = note.getId();
-    String paragraphId = note.getParagraph(0).getId();
-
     // update RuntimeInfos
     Map<String, String> infos = new java.util.HashMap<>();
-    infos.put("jobUrl", "jobUrl_value");
-    infos.put("jobLabel", "jobLabel_value");
-    infos.put("label", "SPARK JOB");
-    infos.put("tooltip", "View in Spark web UI");
-    infos.put("noteId", nodeId);
-    infos.put("paraId", paragraphId);
+    String paragraphId = notebook.processNote(noteId,
+      note -> {
+        assertNotNull(note);
+        assertNotNull(note.getParagraph(0));
+        infos.put("jobUrl", "jobUrl_value");
+        infos.put("jobLabel", "jobLabel_value");
+        infos.put("label", "SPARK JOB");
+        infos.put("tooltip", "View in Spark web UI");
+        infos.put("noteId", note.getId());
+        infos.put("paraId", note.getParagraph(0).getId());
+        return note.getParagraph(0).getId();
+      });
 
-    notebookServer.onParaInfosReceived(nodeId, paragraphId, "spark", infos);
-    Paragraph paragraph = note.getParagraph(paragraphId);
-
-    // check RuntimeInfos
-    assertTrue(paragraph.getRuntimeInfos().containsKey("jobUrl"));
-    List<Object> list = paragraph.getRuntimeInfos().get("jobUrl").getValue();
-    assertEquals(1, list.size());
-    Map<String, String> map = (Map<String, String>) list.get(0);
-    assertEquals(2, map.size());
-    assertEquals(map.get("jobUrl"), "jobUrl_value");
-    assertEquals(map.get("jobLabel"), "jobLabel_value");
+    notebookServer.onParaInfosReceived(noteId, paragraphId, "spark", infos);
+    notebook.processNote(noteId,
+      note -> {
+        Paragraph paragraph = note.getParagraph(paragraphId);
+        // check RuntimeInfos
+        assertTrue(paragraph.getRuntimeInfos().containsKey("jobUrl"));
+        List<Object> list = paragraph.getRuntimeInfos().get("jobUrl").getValue();
+        assertEquals(1, list.size());
+        Map<String, String> map = (Map<String, String>) list.get(0);
+        assertEquals(2, map.size());
+        assertEquals(map.get("jobUrl"), "jobUrl_value");
+        assertEquals(map.get("jobLabel"), "jobLabel_value");
+        return null;
+      });
   }
 
   @Test
   public void testGetParagraphList() throws IOException {
-    Note note = null;
+    String noteId = null;
 
     try {
-      note = notebook.createNote("note1", anonymous);
-      Paragraph p1 = note.addNewParagraph(anonymous);
-      p1.setText("%md start remote interpreter process");
-      p1.setAuthenticationInfo(anonymous);
-      notebook.saveNote(note, anonymous);
+      noteId = notebook.createNote("note1", anonymous);
+      notebook.processNote(noteId,
+        note -> {
+          Paragraph p1 = note.addNewParagraph(anonymous);
+          p1.setText("%md start remote interpreter process");
+          p1.setAuthenticationInfo(anonymous);
+          notebook.saveNote(note, anonymous);
+          return null;
+        });
 
-      String noteId = note.getId();
       String user1Id = "user1", user2Id = "user2";
 
       // test user1 can get anonymous's note
@@ -746,44 +792,49 @@ public class NotebookServerTest extends AbstractTestRestApi {
       }
       assertNotNull(user1Id + " can get " + user2Id + "'s shared note", paragraphList2);
     } finally {
-      if (null != note) {
-        notebook.removeNote(note, anonymous);
+      if (null != noteId) {
+        notebook.removeNote(noteId, anonymous);
       }
     }
   }
 
   @Test
   public void testNoteRevision() throws IOException {
-    Note note = null;
+    String noteId = null;
 
     try {
-      note = notebook.createNote("note1", anonymous);
-      assertEquals(0, note.getParagraphCount());
-      NotebookRepoWithVersionControl.Revision firstRevision = notebook.checkpointNote(note.getId(), note.getPath(), "first commit", AuthenticationInfo.ANONYMOUS);
-      List<NotebookRepoWithVersionControl.Revision> revisionList = notebook.listRevisionHistory(note.getId(), note.getPath(), AuthenticationInfo.ANONYMOUS);
-      assertEquals(1, revisionList.size());
-      assertEquals(firstRevision.id, revisionList.get(0).id);
-      assertEquals("first commit", revisionList.get(0).message);
+      noteId = notebook.createNote("note1", anonymous);
+      notebook.processNote(noteId,
+        note -> {
+          assertEquals(0, note.getParagraphCount());
+          NotebookRepoWithVersionControl.Revision firstRevision = notebook.checkpointNote(note.getId(), note.getPath(), "first commit", AuthenticationInfo.ANONYMOUS);
+          List<NotebookRepoWithVersionControl.Revision> revisionList = notebook.listRevisionHistory(note.getId(), note.getPath(), AuthenticationInfo.ANONYMOUS);
+          assertEquals(1, revisionList.size());
+          assertEquals(firstRevision.id, revisionList.get(0).id);
+          assertEquals("first commit", revisionList.get(0).message);
 
-      // add one new paragraph and commit it
-      note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
-      notebook.saveNote(note, AuthenticationInfo.ANONYMOUS);
-      assertEquals(1, note.getParagraphCount());
-      NotebookRepoWithVersionControl.Revision secondRevision = notebook.checkpointNote(note.getId(), note.getPath(), "second commit", AuthenticationInfo.ANONYMOUS);
+          // add one new paragraph and commit it
+          note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
+          notebook.saveNote(note, AuthenticationInfo.ANONYMOUS);
+          assertEquals(1, note.getParagraphCount());
+          NotebookRepoWithVersionControl.Revision secondRevision = notebook.checkpointNote(note.getId(), note.getPath(), "second commit", AuthenticationInfo.ANONYMOUS);
 
-      revisionList = notebook.listRevisionHistory(note.getId(), note.getPath(), AuthenticationInfo.ANONYMOUS);
-      assertEquals(2, revisionList.size());
-      assertEquals(secondRevision.id, revisionList.get(0).id);
-      assertEquals("second commit", revisionList.get(0).message);
-      assertEquals(firstRevision.id, revisionList.get(1).id);
-      assertEquals("first commit", revisionList.get(1).message);
+          revisionList = notebook.listRevisionHistory(note.getId(), note.getPath(), AuthenticationInfo.ANONYMOUS);
+          assertEquals(2, revisionList.size());
+          assertEquals(secondRevision.id, revisionList.get(0).id);
+          assertEquals("second commit", revisionList.get(0).message);
+          assertEquals(firstRevision.id, revisionList.get(1).id);
+          assertEquals("first commit", revisionList.get(1).message);
 
-      // checkout the first commit
-      note = notebook.getNoteByRevision(note.getId(), note.getPath(), firstRevision.id, AuthenticationInfo.ANONYMOUS);
-      assertEquals(0, note.getParagraphCount());
+          // checkout the first commit
+          note = notebook.getNoteByRevision(note.getId(), note.getPath(), firstRevision.id, AuthenticationInfo.ANONYMOUS);
+          assertEquals(0, note.getParagraphCount());
+          return null;
+        });
+
     } finally {
-      if (null != note) {
-        notebook.removeNote(note, anonymous);
+      if (null != noteId) {
+        notebook.removeNote(noteId, anonymous);
       }
     }
   }

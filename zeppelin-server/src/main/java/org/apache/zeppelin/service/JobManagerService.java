@@ -22,6 +22,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.AuthorizationService;
 import org.apache.zeppelin.notebook.Note;
+import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.scheduler.Job;
@@ -31,6 +32,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -61,15 +63,18 @@ public class JobManagerService {
     if (!conf.isJobManagerEnabled()) {
       return new ArrayList<>();
     }
-    List<NoteJobInfo> notesJobInfo = new ArrayList<>();
-    Note jobNote = notebook.getNote(noteId);
-    if (jobNote == null) {
-      callback.onFailure(new IOException("Note " + noteId + " not found"), context);
-    } else {
-      notesJobInfo.add(new NoteJobInfo(jobNote));
-      callback.onSuccess(notesJobInfo, context);
-    }
-    return notesJobInfo;
+
+    return notebook.processNote(noteId,
+      jobNote -> {
+        List<NoteJobInfo> notesJobInfo = new ArrayList<>();
+        if (jobNote == null) {
+          callback.onFailure(new IOException("Note " + noteId + " not found"), context);
+        } else {
+          notesJobInfo.add(new NoteJobInfo(jobNote));
+          callback.onSuccess(notesJobInfo, context);
+        }
+        return notesJobInfo;
+      });
   }
 
   /**
@@ -83,12 +88,15 @@ public class JobManagerService {
       return new ArrayList<>();
     }
 
-    List<NoteJobInfo> notesJobInfo = notebook.getNoteStream()
-            .filter(note -> authorizationService.isOwner(context.getUserAndRoles(), note.getId()))
-            .map(NoteJobInfo::new)
-            .filter(noteJobInfo -> noteJobInfo.unixTimeLastRun > lastUpdateServerUnixTime)
-            .collect(Collectors.toList());
-
+    List<NoteJobInfo> notesJobInfo = new LinkedList<>();
+    for (NoteInfo noteInfo : notebook.getNotesInfo()) {
+      if (authorizationService.isOwner(context.getUserAndRoles(), noteInfo.getId())) {
+        NoteJobInfo noteJobInfo = notebook.processNote(noteInfo.getId(), NoteJobInfo::new);
+        if (noteJobInfo.unixTimeLastRun > lastUpdateServerUnixTime) {
+          notesJobInfo.add(noteJobInfo);
+        }
+      }
+    }
     callback.onSuccess(notesJobInfo, context);
     return notesJobInfo;
   }

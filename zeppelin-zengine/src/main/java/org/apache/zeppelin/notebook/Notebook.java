@@ -19,21 +19,19 @@ package org.apache.zeppelin.notebook;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import javax.inject.Inject;
 
-import com.google.common.annotations.VisibleForTesting;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.display.AngularObject;
@@ -52,7 +50,6 @@ import org.apache.zeppelin.notebook.repo.NotebookRepoSync;
 import org.apache.zeppelin.notebook.repo.NotebookRepoWithVersionControl;
 import org.apache.zeppelin.notebook.repo.NotebookRepoWithVersionControl.Revision;
 import org.apache.zeppelin.scheduler.Job;
-import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
 import org.quartz.SchedulerException;
@@ -75,8 +72,7 @@ public class Notebook {
   private ZeppelinConfiguration conf;
   private ParagraphJobListener paragraphJobListener;
   private NotebookRepo notebookRepo;
-  private SearchService noteSearchService;
-  private List<NoteEventListener> noteEventListeners = new ArrayList<>();
+  private List<NoteEventListener> noteEventListeners = new CopyOnWriteArrayList<>();
   private Credentials credentials;
 
   /**
@@ -92,9 +88,8 @@ public class Notebook {
       NoteManager noteManager,
       InterpreterFactory replFactory,
       InterpreterSettingManager interpreterSettingManager,
-      SearchService noteSearchService,
       Credentials credentials)
-      throws IOException {
+      {
     this.conf = conf;
     this.authorizationService = authorizationService;
     this.noteManager = noteManager;
@@ -103,14 +98,8 @@ public class Notebook {
     this.interpreterSettingManager = interpreterSettingManager;
     // TODO(zjffdu) cycle refer, not a good solution
     this.interpreterSettingManager.setNotebook(this);
-    this.noteSearchService = noteSearchService;
     this.credentials = credentials;
-    this.noteEventListeners.add(this.noteSearchService);
-    this.noteEventListeners.add(this.interpreterSettingManager);
-
-    if (conf.isIndexRebuild()) {
-      noteSearchService.startRebuildIndex(getNoteStream());
-    }
+    addNotebookEventListener(this.interpreterSettingManager);
   }
 
   public void recoveryIfNecessary() {
@@ -120,25 +109,28 @@ public class Notebook {
   }
 
   private void recoverRunningParagraphs() {
-    Thread thread = new Thread(() -> {
-      getNoteStream().forEach(note -> {
+    Thread thread = new Thread(() ->
+      getNotesInfo().forEach(noteInfo -> {
         try {
-          boolean hasRecoveredParagraph = false;
-          for (Paragraph paragraph : note.getParagraphs()) {
-            if (paragraph.getStatus() == Job.Status.RUNNING) {
-              paragraph.recover();
-              hasRecoveredParagraph = true;
-            }
-          }
-          // unload note to save memory when there's no paragraph recovering.
-          if (!hasRecoveredParagraph) {
-            note.unLoad();
+          List<Paragraph> paragraphsToRecover = new LinkedList<>();
+          processNote(noteInfo.getId(),
+            note -> {
+              for (Paragraph paragraph : note.getParagraphs()) {
+                if (paragraph.getStatus() == Job.Status.RUNNING) {
+                  paragraphsToRecover.add(paragraph);
+                }
+              }
+              return null;
+            });
+          // recover the paragraphs outside the read lock
+          for (Paragraph paragraph : paragraphsToRecover) {
+            paragraph.recover();
           }
         } catch (Exception e) {
-          LOGGER.warn("Fail to recovery note: {}", note.getPath(), e);
+          LOGGER.warn("Fail to recovery note: {}", noteInfo.getPath(), e);
         }
-      });
-    });
+      })
+    );
     thread.setName("Recovering-Thread");
     thread.start();
     LOGGER.info("Start paragraph recovering thread");
@@ -158,7 +150,6 @@ public class Notebook {
       NoteManager noteManager,
       InterpreterFactory replFactory,
       InterpreterSettingManager interpreterSettingManager,
-      SearchService noteSearchService,
       Credentials credentials,
       NoteEventListener noteEventListener)
       throws IOException {
@@ -169,10 +160,9 @@ public class Notebook {
         noteManager,
         replFactory,
         interpreterSettingManager,
-        noteSearchService,
         credentials);
     if (null != noteEventListener) {
-      this.noteEventListeners.add(noteEventListener);
+      addNotebookEventListener(noteEventListener);
     }
     this.paragraphJobListener = (ParagraphJobListener) noteEventListener;
   }
@@ -195,10 +185,10 @@ public class Notebook {
    *
    * @param notePath
    * @param subject
-   * @return
+   * @return noteId
    * @throws IOException
    */
-  public Note createNote(String notePath,
+  public String createNote(String notePath,
                          AuthenticationInfo subject) throws IOException {
     return createNote(notePath, interpreterSettingManager.getDefaultInterpreterSetting().getName(),
         subject);
@@ -211,10 +201,10 @@ public class Notebook {
    * @param notePath
    * @param subject
    * @param save
-   * @return
+   * @return noteId
    * @throws IOException
    */
-  public Note createNote(String notePath,
+  public String createNote(String notePath,
                          AuthenticationInfo subject,
                          boolean save) throws IOException {
     return createNote(notePath, interpreterSettingManager.getDefaultInterpreterSetting().getName(),
@@ -227,10 +217,10 @@ public class Notebook {
    * @param notePath
    * @param defaultInterpreterGroup
    * @param subject
-   * @return
+   * @return noteId
    * @throws IOException
    */
-  public Note createNote(String notePath,
+  public String createNote(String notePath,
                          String defaultInterpreterGroup,
                          AuthenticationInfo subject) throws IOException {
     return createNote(notePath, defaultInterpreterGroup, subject, true);
@@ -242,10 +232,10 @@ public class Notebook {
    * @param notePath
    * @param defaultInterpreterGroup
    * @param subject
-   * @return
+   * @return noteId
    * @throws IOException
    */
-  public Note createNote(String notePath,
+  public String createNote(String notePath,
                          String defaultInterpreterGroup,
                          AuthenticationInfo subject,
                          boolean save) throws IOException {
@@ -260,7 +250,7 @@ public class Notebook {
       noteManager.saveNote(note, subject);
     }
     fireNoteCreateEvent(note, subject);
-    return note;
+    return note.getId();
   }
 
   /**
@@ -272,13 +262,15 @@ public class Notebook {
    */
   public String exportNote(String noteId) throws IOException {
     try {
-      Note note = getNote(noteId);
-      if (note == null) {
-        throw new IOException("Note " + noteId + " not found");
-      }
-      return note.toJson();
+      return processNote(noteId,
+        note -> {
+          if (note == null) {
+            throw new IOException("Note " + noteId + " not found");
+          }
+          return note.toJson();
+        });
     } catch (IOException e) {
-      throw new IOException(noteId + " not found");
+      throw new IOException("Note " + noteId + " not found");
     }
   }
 
@@ -287,22 +279,26 @@ public class Notebook {
    *
    * @param sourceJson - the note JSON to import
    * @param notePath   - the path of the new note
-   * @return note ID
+   * @return noteId
    * @throws IOException
    */
-  public Note importNote(String sourceJson, String notePath, AuthenticationInfo subject)
+  public String importNote(String sourceJson, String notePath, AuthenticationInfo subject)
       throws IOException {
     Note oldNote = Note.fromJson(null, sourceJson);
     if (notePath == null) {
       notePath = oldNote.getName();
     }
-    Note newNote = createNote(notePath, subject);
-    List<Paragraph> paragraphs = oldNote.getParagraphs();
-    for (Paragraph p : paragraphs) {
-      newNote.addCloneParagraph(p, subject);
-    }
-    noteManager.saveNote(newNote, subject);
-    return newNote;
+    String newNoteId = createNote(notePath, subject);
+    processNote(newNoteId,
+      newNote -> {
+        List<Paragraph> paragraphs = oldNote.getParagraphs();
+        for (Paragraph p : paragraphs) {
+          newNote.addCloneParagraph(p, subject);
+        }
+        noteManager.saveNote(newNote, subject);
+        return null;
+      });
+    return newNoteId;
   }
 
   /**
@@ -310,34 +306,41 @@ public class Notebook {
    *
    * @param sourceNoteId - the note ID to clone
    * @param newNotePath  - the path of the new note
-   * @return noteId
+   * @return noteId from the new note
    * @throws IOException
    */
-  public Note cloneNote(String sourceNoteId, String newNotePath, AuthenticationInfo subject)
+  public String cloneNote(String sourceNoteId, String newNotePath, AuthenticationInfo subject)
       throws IOException {
-    Note sourceNote = getNote(sourceNoteId);
-    if (sourceNote == null) {
-      throw new IOException("Source note: " + sourceNoteId + " not found");
-    }
-    Note newNote = createNote(newNotePath, subject, false);
-    List<Paragraph> paragraphs = sourceNote.getParagraphs();
-    for (Paragraph p : paragraphs) {
-      newNote.addCloneParagraph(p, subject);
-    }
+    return processNote(sourceNoteId,
+      sourceNote -> {
+        if (sourceNote == null) {
+          throw new IOException("Source note: " + sourceNoteId + " not found");
+        }
+        String newNoteId = createNote(newNotePath, subject, false);
+        processNote(newNoteId,
+          newNote -> {
+            List<Paragraph> paragraphs = sourceNote.getParagraphs();
+            for (Paragraph p : paragraphs) {
+              newNote.addCloneParagraph(p, subject);
+            }
 
-    newNote.setConfig(new HashMap<>(sourceNote.getConfig()));
-    newNote.setInfo(new HashMap<>(sourceNote.getInfo()));
-    newNote.setDefaultInterpreterGroup(sourceNote.getDefaultInterpreterGroup());
-    newNote.setNoteForms(new HashMap<>(sourceNote.getNoteForms()));
-    newNote.setNoteParams(new HashMap<>(sourceNote.getNoteParams()));
-    newNote.setRunning(false);
+            newNote.setConfig(new HashMap<>(sourceNote.getConfig()));
+            newNote.setInfo(new HashMap<>(sourceNote.getInfo()));
+            newNote.setDefaultInterpreterGroup(sourceNote.getDefaultInterpreterGroup());
+            newNote.setNoteForms(new HashMap<>(sourceNote.getNoteForms()));
+            newNote.setNoteParams(new HashMap<>(sourceNote.getNoteParams()));
+            newNote.setRunning(false);
 
-    saveNote(newNote, subject);
-    authorizationService.cloneNoteMeta(newNote.getId(), sourceNoteId, subject);
-    return newNote;
+            saveNote(newNote, subject);
+            authorizationService.cloneNoteMeta(newNote.getId(), sourceNoteId, subject);
+            return null;
+          });
+
+        return newNoteId;
+      });
   }
 
-  public void removeNote(Note note, AuthenticationInfo subject) throws IOException {
+  private void removeNote(Note note, AuthenticationInfo subject) throws IOException {
     LOGGER.info("Remove note: {}", note.getId());
     // Set Remove to true to cancel saving this note
     note.setRemoved(true);
@@ -352,43 +355,64 @@ public class Notebook {
     authorizationService.removeNoteAuth(noteId);
   }
 
+  /**
+   * Removes the Note with the NoteId.
+   * @param noteId
+   * @param subject
+   * @throws IOException when fail to get it from NotebookRepo
+   */
   public void removeNote(String noteId, AuthenticationInfo subject) throws IOException {
-    Note note = getNote(noteId);
-    removeNote(note, subject);
+    processNote(noteId,
+      note -> {
+        if (note != null) {
+          removeNote(note, subject);
+        }
+        return null;
+    });
   }
 
   /**
-   * Get note from NotebookRepo and also initialize it with other properties that is not
-   * persistent in NotebookRepo, such as paragraphJobListener.
+   * Process a note in an eviction aware manner. It initializes the note
+   * with other properties that is not persistent in NotebookRepo, such as paragraphJobListener.
+   * <p>
+   * Use {@link #processNote(String, boolean, NoteProcessor)} in case you want to force
+   * a note reload from the {@link #NotebookRepo}.
+   * </p>
    * @param noteId
-   * @return null if note not found.
-   * @throws IOException when fail to get it from NotebookRepo.
+   * @param noteProcessor
+   * @return result of the noteProcessor
+   * @throws IOException when fail to get it from {@link NotebookRepo}
    */
-  public Note getNote(String noteId) throws IOException {
-    return getNote(noteId, false);
+  public <T> T processNote(String noteId, NoteProcessor<T> noteProcessor) throws IOException {
+    return processNote(noteId, false, noteProcessor);
   }
 
   /**
-   * Get note from NotebookRepo and also initialize it with other properties that is not
-   * persistent in NotebookRepo, such as paragraphJobListener.
+   * Process a note in an eviction aware manner. It initializes the note
+   * with other properties that is not persistent in NotebookRepo, such as paragraphJobListener.
+   *
    * @param noteId
-   * @return null if note not found.
-   * @throws IOException when fail to get it from NotebookRepo.
+   * @param reload
+   * @param noteProcessor
+   * @return result of the noteProcessor
+   * @throws IOException when fail to get it from {@link NotebookRepo}
    */
-  public Note getNote(String noteId, boolean reload) throws IOException {
-    Note note = noteManager.getNote(noteId, reload);
-    if (note == null) {
-      return null;
-    }
-    note.setInterpreterFactory(replFactory);
-    note.setInterpreterSettingManager(interpreterSettingManager);
-    note.setParagraphJobListener(paragraphJobListener);
-    note.setNoteEventListeners(noteEventListeners);
-    note.setCredentials(credentials);
-    for (Paragraph p : note.getParagraphs()) {
-      p.setNote(note);
-    }
-    return note;
+  public <T> T processNote(String noteId, boolean reload, NoteProcessor<T> noteProcessor) throws IOException {
+    return noteManager.processNote(noteId, reload, note -> {
+      if (note == null) {
+        return noteProcessor.process(note);
+      }
+      note.setInterpreterFactory(replFactory);
+      note.setInterpreterSettingManager(interpreterSettingManager);
+      note.setParagraphJobListener(paragraphJobListener);
+      note.setNoteEventListeners(noteEventListeners);
+      note.setCredentials(credentials);
+      for (final Paragraph p : note.getParagraphs()) {
+        p.setNote(note);
+      }
+      return noteProcessor.process(note);
+    });
+
   }
 
   public void saveNote(Note note, AuthenticationInfo subject) throws IOException {
@@ -400,10 +424,29 @@ public class Notebook {
     fireNoteUpdateEvent(note, subject);
   }
 
+  /**
+   * Checks if the notebook contains a note with the specified note ID.
+   * @param notePath
+   * @return true if a note with the specified note ID exists, otherwise false
+   */
+  public boolean containsNoteById(String noteId) {
+    return noteManager.getNotesInfo().containsKey(noteId);
+  }
+
+  /**
+   * Checks if the notebook contains a note with the given note path.
+   * @param notePath
+   * @return true if a note with the specified note path exists, otherwise false
+   */
   public boolean containsNote(String notePath) {
     return noteManager.containsNote(notePath);
   }
 
+  /**
+   * Checks if the notebook contains a folder with the given folder path
+   * @param folderPath
+   * @return true if a note with the specified folder path exists, otherwise false
+   */
   public boolean containsFolder(String folderPath) {
     return noteManager.containsFolder(folderPath);
   }
@@ -421,9 +464,9 @@ public class Notebook {
   public void removeFolder(String folderPath, AuthenticationInfo subject) throws IOException {
     LOGGER.info("Remove folder {}", folderPath);
     // TODO(zjffdu) NotebookRepo.remove is called twice here
-    List<Note> notes = noteManager.removeFolder(folderPath, subject);
-    for (Note note : notes) {
-      fireNoteRemoveEvent(note, subject);
+    List<NoteInfo> noteInfos = noteManager.removeFolder(folderPath, subject);
+    for (NoteInfo noteInfo : noteInfos) {
+      removeNote(noteInfo.getId(), subject);
     }
   }
 
@@ -496,7 +539,8 @@ public class Notebook {
   public Note loadNoteFromRepo(String id, AuthenticationInfo subject) {
     Note note = null;
     try {
-      note = noteManager.getNote(id);
+      // note can be safely returned here, because it's just broadcasted in json later on
+      note = processNote(id, n -> n);
     } catch (IOException e) {
       LOGGER.error("Fail to get note: {}", id, e);
       return null;
@@ -619,35 +663,6 @@ public class Notebook {
         .collect(Collectors.toList());
   }
 
-  public Stream<Note> getNoteStream() {
-    return noteManager.getNotesStream().map(note -> {
-      note.setInterpreterFactory(replFactory);
-      note.setInterpreterSettingManager(interpreterSettingManager);
-      note.setParagraphJobListener(paragraphJobListener);
-      note.setNoteEventListeners(noteEventListeners);
-      note.setCredentials(credentials);
-      for (Paragraph p : note.getParagraphs()) {
-        p.setNote(note);
-        p.setListener(paragraphJobListener);
-      }
-      return note;
-    });
-  }
-
-  @VisibleForTesting
-  public List<Note> getAllNotes(Function<Note, Boolean> func){
-    return getAllNotes().stream()
-        .filter(note -> func.apply(note))
-        .collect(Collectors.toList());
-  }
-
-  @VisibleForTesting
-  public List<Note> getAllNotes() {
-    List<Note> notes = getNoteStream().collect(Collectors.toList());
-    Collections.sort(notes, Comparator.comparing(Note::getPath));
-    return notes;
-  }
-
   public List<NoteInfo> getNotesInfo(Function<String, Boolean> func) {
     String homescreenNoteId = conf.getString(ConfVars.ZEPPELIN_NOTEBOOK_HOMESCREEN);
     boolean hideHomeScreenNotebookFromList =
@@ -677,27 +692,31 @@ public class Notebook {
   }
 
   public List<InterpreterSetting> getBindedInterpreterSettings(String noteId) throws IOException {
-    Note note  = getNote(noteId);
-    if (note == null) {
-      return new ArrayList<>();
-    }
-    Set<InterpreterSetting> settings = new HashSet<>();
-    for (Paragraph p : note.getParagraphs()) {
-      try {
-        Interpreter intp = p.getBindedInterpreter();
-        settings.add((
-                (ManagedInterpreterGroup) intp.getInterpreterGroup()).getInterpreterSetting());
-      } catch (InterpreterNotFoundException e) {
-        // ignore this
-      }
-    }
-    // add the default interpreter group
-    InterpreterSetting defaultIntpSetting =
-            interpreterSettingManager.getByName(note.getDefaultInterpreterGroup());
-    if (defaultIntpSetting != null) {
-      settings.add(defaultIntpSetting);
-    }
-    return new ArrayList<>(settings);
+    List<InterpreterSetting> interpreterSettings = new ArrayList<>();
+    processNote(noteId,
+      note -> {
+        if (note != null) {
+          Set<InterpreterSetting> settings = new HashSet<>();
+          for (Paragraph p : note.getParagraphs()) {
+            try {
+              Interpreter intp = p.getBindedInterpreter();
+              settings.add((
+                      (ManagedInterpreterGroup) intp.getInterpreterGroup()).getInterpreterSetting());
+            } catch (InterpreterNotFoundException e) {
+              // ignore this
+            }
+          }
+          // add the default interpreter group
+          InterpreterSetting defaultIntpSetting =
+                  interpreterSettingManager.getByName(note.getDefaultInterpreterGroup());
+          if (defaultIntpSetting != null) {
+            settings.add(defaultIntpSetting);
+          }
+          interpreterSettings.addAll(settings);
+        }
+        return null;
+    });
+    return interpreterSettings;
   }
 
   public InterpreterFactory getInterpreterFactory() {
@@ -714,26 +733,25 @@ public class Notebook {
 
   public void close() {
     this.notebookRepo.close();
-    this.noteSearchService.close();
   }
 
   public void addNotebookEventListener(NoteEventListener listener) {
     noteEventListeners.add(listener);
   }
 
-  private void fireNoteCreateEvent(Note note, AuthenticationInfo subject) throws IOException {
+  private void fireNoteCreateEvent(Note note, AuthenticationInfo subject) {
     for (NoteEventListener listener : noteEventListeners) {
       listener.onNoteCreate(note, subject);
     }
   }
 
-  private void fireNoteUpdateEvent(Note note, AuthenticationInfo subject) throws IOException {
+  private void fireNoteUpdateEvent(Note note, AuthenticationInfo subject) {
     for (NoteEventListener listener : noteEventListeners) {
       listener.onNoteUpdate(note, subject);
     }
   }
 
-  private void fireNoteRemoveEvent(Note note, AuthenticationInfo subject) throws IOException {
+  private void fireNoteRemoveEvent(Note note, AuthenticationInfo subject) {
     for (NoteEventListener listener : noteEventListeners) {
       listener.onNoteRemove(note, subject);
     }
@@ -747,5 +765,21 @@ public class Notebook {
     } else {
       return false;
     }
+  }
+
+  /**
+   * Functional Interface for note processing.
+   */
+  @FunctionalInterface
+  public interface NoteProcessor<T> {
+
+    /**
+     * Process a note.
+     *
+     * @param note the current note, or null in case note does not exist.
+     * @throws IOException
+     */
+    T process(Note note) throws IOException;
+
   }
 }

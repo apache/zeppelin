@@ -27,8 +27,7 @@ import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterOption;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
-import org.apache.zeppelin.notebook.Note;
-import org.apache.zeppelin.notebook.NoteInfo;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -38,11 +37,12 @@ import java.io.IOException;
 import java.nio.file.Files;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.when;
 
 public class FileSystemRecoveryStorageTest extends AbstractInterpreterTest {
 
   private File recoveryDir = null;
+  private String note1Id;
+  private String note2Id;
 
   @Override
   @Before
@@ -53,10 +53,8 @@ public class FileSystemRecoveryStorageTest extends AbstractInterpreterTest {
     System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_RECOVERY_DIR.getVarName(), recoveryDir.getAbsolutePath());
     super.setUp();
 
-    Note note1 = new Note(new NoteInfo("note1", "/note_1"));
-    Note note2 = new Note(new NoteInfo("note2", "/note_2"));
-    when(mockNotebook.getNote("note1")).thenReturn(note1);
-    when(mockNotebook.getNote("note2")).thenReturn(note2);
+    note1Id = notebook.createNote("/note_1", AuthenticationInfo.ANONYMOUS);
+    note2Id = notebook.createNote("/note_2", AuthenticationInfo.ANONYMOUS);
   }
 
   @Override
@@ -72,7 +70,7 @@ public class FileSystemRecoveryStorageTest extends AbstractInterpreterTest {
     InterpreterSetting interpreterSetting = interpreterSettingManager.getByName("test");
     interpreterSetting.getOption().setPerUser(InterpreterOption.SHARED);
 
-    Interpreter interpreter1 = interpreterSetting.getDefaultInterpreter("user1", "note1");
+    Interpreter interpreter1 = interpreterSetting.getDefaultInterpreter("user1", note1Id);
     RemoteInterpreter remoteInterpreter1 = (RemoteInterpreter) interpreter1;
     InterpreterContext context1 = InterpreterContext.builder()
         .setNoteId("noteId")
@@ -91,7 +89,7 @@ public class FileSystemRecoveryStorageTest extends AbstractInterpreterTest {
     InterpreterSetting interpreterSetting = interpreterSettingManager.getByName("test");
     interpreterSetting.getOption().setPerUser(InterpreterOption.ISOLATED);
 
-    Interpreter interpreter1 = interpreterSetting.getDefaultInterpreter("user1", "note1");
+    Interpreter interpreter1 = interpreterSetting.getDefaultInterpreter("user1", note1Id);
     RemoteInterpreter remoteInterpreter1 = (RemoteInterpreter) interpreter1;
     InterpreterContext context1 = InterpreterContext.builder()
         .setNoteId("noteId")
@@ -100,7 +98,7 @@ public class FileSystemRecoveryStorageTest extends AbstractInterpreterTest {
     remoteInterpreter1.interpret("hello", context1);
     assertEquals(1, interpreterSettingManager.getRecoveryStorage().restore().size());
 
-    Interpreter interpreter2 = interpreterSetting.getDefaultInterpreter("user2", "note2");
+    Interpreter interpreter2 = interpreterSetting.getDefaultInterpreter("user2", note2Id);
     RemoteInterpreter remoteInterpreter2 = (RemoteInterpreter) interpreter2;
     InterpreterContext context2 = InterpreterContext.builder()
         .setNoteId("noteId")
@@ -110,7 +108,7 @@ public class FileSystemRecoveryStorageTest extends AbstractInterpreterTest {
 
     assertEquals(2, interpreterSettingManager.getRecoveryStorage().restore().size());
 
-    interpreterSettingManager.restart(interpreterSetting.getId(), "user1", "note1");
+    interpreterSettingManager.restart(interpreterSetting.getId(), "user1", note1Id);
     assertEquals(1, interpreterSettingManager.getRecoveryStorage().restore().size());
 
     interpreterSetting.close();

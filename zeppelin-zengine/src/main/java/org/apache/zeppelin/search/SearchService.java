@@ -19,17 +19,12 @@ package org.apache.zeppelin.search;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Stream;
-
-import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteEventAsyncListener;
-import org.apache.zeppelin.notebook.Paragraph;
-
 import javax.annotation.PreDestroy;
 
 /**
  * Search (both, indexing and query) the notes.
- * 
+ *
  * Intended to have multiple implementation, i.e:
  *  - local Lucene (in-memory, on-disk)
  *  - remote Elasticsearch
@@ -55,7 +50,7 @@ public abstract class SearchService extends NoteEventAsyncListener {
    * @param note a Note to update index for
    * @throws IOException
    */
-  public abstract void updateNoteIndex(Note note) throws IOException;
+  public abstract void updateNoteIndex(String noteId);
 
   /**
    * Updates paragraph index for the given paragraph.
@@ -64,27 +59,27 @@ public abstract class SearchService extends NoteEventAsyncListener {
    * @throws IOException
    */
 
-  public abstract void updateParagraphIndex(Paragraph paragraph) throws IOException;
+  public abstract void updateParagraphIndex(String nodeId, String paragraphId);
 
   /**
    * Indexes the given note.
    *
    * @throws IOException If there is a low-level I/O error
    */
-  public abstract void addNoteIndex(Note note) throws IOException;
+  public abstract void addNoteIndex(String noteId);
 
   /**
    * Indexes the given paragraph.
    *
    * @throws IOException If there is a low-level I/O error
    */
-  public abstract void addParagraphIndex(Paragraph pargaraph) throws IOException;
+  public abstract void addParagraphIndex(String nodeId, String paragraphId);
 
 
   /**
    * Deletes all docs on given Note from index
    */
-  public abstract void deleteNoteIndex(Note note) throws IOException;
+  public abstract void deleteNoteIndex(String noteId);
 
   /**
    * Deletes doc for a given
@@ -93,46 +88,44 @@ public abstract class SearchService extends NoteEventAsyncListener {
    * @param p
    * @throws IOException
    */
-  public abstract void deleteParagraphIndex(String noteId, Paragraph p) throws IOException;
+  public abstract void deleteParagraphIndex(String noteId, String paragraphId);
 
   /**
    * Frees the recourses used by index
    */
+  @Override
   @PreDestroy
   public void close() {
     super.close();
   }
 
   @Override
-  public void handleNoteCreateEvent(NoteCreateEvent noteCreateEvent) throws Exception {
-    addNoteIndex(noteCreateEvent.getNote());
+  public void handleNoteCreateEvent(NoteCreateEvent noteCreateEvent) {
+    addNoteIndex(noteCreateEvent.getNoteId());
   }
 
   @Override
-  public void handleNoteRemoveEvent(NoteRemoveEvent noteRemoveEvent) throws Exception {
-    deleteNoteIndex(noteRemoveEvent.getNote());
+  public void handleNoteRemoveEvent(NoteRemoveEvent noteRemoveEvent) {
+    deleteNoteIndex(noteRemoveEvent.getNoteId());
   }
 
   @Override
-  public void handleNoteUpdateEvent(NoteUpdateEvent noteUpdateEvent) throws Exception {
-    updateNoteIndex(noteUpdateEvent.getNote());
+  public void handleNoteUpdateEvent(NoteUpdateEvent noteUpdateEvent) {
+    updateNoteIndex(noteUpdateEvent.getNoteId());
   }
 
   @Override
-  public void handleParagraphCreateEvent(ParagraphCreateEvent paragraphCreateEvent) throws Exception {
-    addParagraphIndex(paragraphCreateEvent.getParagraph());
+  public void handleParagraphCreateEvent(ParagraphCreateEvent paragraphCreateEvent) {
+    addParagraphIndex(paragraphCreateEvent.getNodeId(), paragraphCreateEvent.getParagraphId());
   }
 
   @Override
-  public void handleParagraphRemoveEvent(ParagraphRemoveEvent paragraphRemoveEvent) throws Exception {
-    Paragraph p = paragraphRemoveEvent.getParagraph();
-    deleteParagraphIndex(p.getNote().getId(), p);
+  public void handleParagraphRemoveEvent(ParagraphRemoveEvent paragraphRemoveEvent) {
+    deleteParagraphIndex(paragraphRemoveEvent.getNodeId(), paragraphRemoveEvent.getParagraphId());
   }
 
   @Override
-  public void handleParagraphUpdateEvent(ParagraphUpdateEvent paragraphUpdateEvent) throws Exception {
-    updateParagraphIndex(paragraphUpdateEvent.getParagraph());
+  public void handleParagraphUpdateEvent(ParagraphUpdateEvent paragraphUpdateEvent) {
+    updateParagraphIndex(paragraphUpdateEvent.getNodeId(), paragraphUpdateEvent.getParagraphId());
   }
-
-  public abstract void startRebuildIndex(Stream<Note> notes);
 }

@@ -544,8 +544,10 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
 
   public InterpreterSetting getDefaultInterpreterSetting(String noteId) {
     try {
-      Note note = notebook.getNote(noteId);
-      InterpreterSetting interpreterSetting = interpreterSettings.get(note.getDefaultInterpreterGroup());
+      InterpreterSetting interpreterSetting = notebook.processNote(noteId,
+        note -> {
+          return interpreterSettings.get(note.getDefaultInterpreterGroup());
+        });
       if (interpreterSetting == null) {
         interpreterSetting = get().get(0);
       }
@@ -957,11 +959,13 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
   // restart in note page
   public void restart(String settingId, String user, String noteId) throws InterpreterException {
     try {
-      Note note = notebook.getNote(noteId);
-      if (note == null) {
-        throw new InterpreterException("No such note: " + noteId);
-      }
-      ExecutionContext executionContext = note.getExecutionContext();
+      ExecutionContext executionContext = notebook.processNote(noteId,
+        note -> {
+          if (note == null) {
+            throw new IOException("No such note: " + noteId);
+          }
+          return note.getExecutionContext();
+        });
       executionContext.setUser(user);
       restart(settingId, executionContext);
     } catch (IOException e) {
@@ -1116,7 +1120,7 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
   }
 
   @Override
-  public void onNoteRemove(Note note, AuthenticationInfo subject) throws IOException {
+  public void onNoteRemove(Note note, AuthenticationInfo subject) {
     // stop all associated interpreters
     if (note.getParagraphs() != null) {
       for (Paragraph paragraph : note.getParagraphs()) {
@@ -1181,40 +1185,38 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
   }
 
   @Override
-  public void onNoteCreate(Note note, AuthenticationInfo subject) throws IOException {
-
+  public void onNoteCreate(Note note, AuthenticationInfo subject) {
+    // do nothing
   }
 
   @Override
-  public void onNoteUpdate(Note note, AuthenticationInfo subject) throws IOException {
-
+  public void onNoteUpdate(Note note, AuthenticationInfo subject) {
+    // do nothing
   }
 
   @Override
-  public void onParagraphRemove(Paragraph p) throws IOException {
-
+  public void onParagraphRemove(Paragraph p) {
+    // do nothing
   }
 
   @Override
-  public void onParagraphCreate(Paragraph p) throws IOException {
-
+  public void onParagraphCreate(Paragraph p) {
+    // do nothing
   }
 
   @Override
-  public void onParagraphUpdate(Paragraph p) throws IOException {
-
+  public void onParagraphUpdate(Paragraph p) {
+    // do nothing
   }
 
   @Override
-  public void onParagraphStatusChange(Paragraph p, Job.Status status) throws IOException {
-
+  public void onParagraphStatusChange(Paragraph p, Job.Status status) {
+    // do nothing
   }
 
   @Override
   public void onClusterEvent(String msg) {
-    if (LOGGER.isDebugEnabled()) {
-      LOGGER.debug("onClusterEvent : {}", msg);
-    }
+    LOGGER.debug("onClusterEvent : {}", msg);
 
     try {
       ClusterMessage message = ClusterMessage.deserializeMessage(msg);

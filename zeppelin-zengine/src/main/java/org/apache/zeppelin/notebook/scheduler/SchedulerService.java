@@ -17,9 +17,10 @@
 
 package org.apache.zeppelin.notebook.scheduler;
 
+import java.io.IOException;
 import java.util.Set;
 
 public interface SchedulerService {
-  boolean refreshCron(String noteId);
+  boolean refreshCron(String noteId) throws IOException;
   Set<?> getJobs();
 }
