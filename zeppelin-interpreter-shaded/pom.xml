@@ -155,6 +155,10 @@
             </goals>
             <configuration>
               <target>
+                <echo>ANT TASK - clean files....</echo>
+                <delete failonerror="false">
+                  <fileset dir="${project.basedir}/../interpreter" includes="zeppelin-interpreter-shaded-*.jar" />
+                </delete>
                 <echo>ANT TASK - copying files....</echo>
                 <copy todir="${project.basedir}/../interpreter" overwrite="true" flatten="true">
                   <fileset dir="${project.build.directory}" includes="zeppelin-interpreter-shaded-*.jar" >
