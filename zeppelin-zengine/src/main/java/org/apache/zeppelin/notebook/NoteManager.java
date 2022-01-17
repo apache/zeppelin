@@ -576,12 +576,12 @@ public class NoteManager {
   public static class NoteNode {
 
     private Folder parent;
-    private NoteInfo noteinfo;
+    private NoteInfo noteInfo;
     private NotebookRepo notebookRepo;
     private NoteCache noteCache;
 
-    public NoteNode(NoteInfo noteinfo, Folder parent, NotebookRepo notebookRepo, NoteCache noteCache) {
-      this.noteinfo = noteinfo;
+    public NoteNode(NoteInfo noteInfo, Folder parent, NotebookRepo notebookRepo, NoteCache noteCache) {
+      this.noteInfo = noteInfo;
       this.parent = parent;
       this.notebookRepo = notebookRepo;
       this.noteCache = noteCache;
@@ -600,12 +600,12 @@ public class NoteManager {
      */
     public <T> T loadAndProcessNote(boolean reload, NoteProcessor<T> noteProcessor)
         throws IOException {
-        // load note
+      // load note
       Note note;
       synchronized (this) {
-        note = noteCache.getNote(noteinfo.getId());
+        note = noteCache.getNote(noteInfo.getId());
         if (note == null || reload) {
-          note = notebookRepo.get(noteinfo.getId(), noteinfo.getPath(), AuthenticationInfo.ANONYMOUS);
+          note = notebookRepo.get(noteInfo.getId(), noteInfo.getPath(), AuthenticationInfo.ANONYMOUS);
           if (parent.toString().equals("/")) {
             note.setPath("/" + note.getName());
           } else {
@@ -614,9 +614,9 @@ public class NoteManager {
           note.setCronSupported(ZeppelinConfiguration.create());
           noteCache.putNote(note);
         }
-        note.getLock().readLock().lock();
       }
       try {
+        note.getLock().readLock().lock();
         // process note
         return noteProcessor.process(note);
       } finally {
@@ -625,23 +625,23 @@ public class NoteManager {
     }
 
     public String getNoteId() {
-      return this.noteinfo.getId();
+      return this.noteInfo.getId();
     }
 
     public String getNoteName() {
-      return this.noteinfo.getNoteName();
+      return this.noteInfo.getNoteName();
     }
 
     public String getNotePath() {
       if (parent.getPath().equals("/")) {
-        return parent.getPath() + noteinfo.getNoteName();
+        return parent.getPath() + noteInfo.getNoteName();
       } else {
-        return parent.getPath() + "/" + noteinfo.getNoteName();
+        return parent.getPath() + "/" + noteInfo.getNoteName();
       }
     }
 
     public NoteInfo getNoteInfo() {
-      return this.noteinfo;
+      return this.noteInfo;
     }
 
     public Folder getParent() {
@@ -658,14 +658,14 @@ public class NoteManager {
     }
 
     public void setNotePath(String notePath) {
-      this.noteinfo.setPath(notePath);
+      this.noteInfo.setPath(notePath);
     }
 
     /**
      * This is called when the ancestor folder is moved.
      */
     public void updateNotePath() {
-      this.noteinfo.setPath(getNotePath());
+      this.noteInfo.setPath(getNotePath());
     }
   }
 

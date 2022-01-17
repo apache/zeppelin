@@ -771,7 +771,7 @@ public class Notebook {
    * Functional Interface for note processing.
    */
   @FunctionalInterface
-  public static interface NoteProcessor<T> {
+  public interface NoteProcessor<T> {
 
     /**
      * Process a note.
