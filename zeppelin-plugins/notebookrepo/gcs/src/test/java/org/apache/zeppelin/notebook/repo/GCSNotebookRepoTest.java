@@ -186,6 +186,21 @@ public class GCSNotebookRepoTest {
     assertThat(storage.get(makeBlobId(runningNote.getId(), runningNote.getPath()))).isNull();
   }
 
+  @Test
+  public void testMove_nonexistent() throws Exception {
+    try {
+      notebookRepo.move("id", "/name", "/name_new", AUTH_INFO);
+      fail();
+    } catch (IOException e) {}
+  }
+
+  @Test
+  public void testMove() throws Exception {
+    create(runningNote);
+    notebookRepo.move(runningNote.getId(), runningNote.getPath(), runningNote.getPath() + "_new", AUTH_INFO);
+    assertThat(storage.get(makeBlobId(runningNote.getId(), runningNote.getPath()))).isNull();
+  }
+
   private String makeName(String relativePath) {
     if (basePath.isPresent()) {
       return basePath.get() + "/" + relativePath;

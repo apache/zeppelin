@@ -202,9 +202,14 @@ public class GCSNotebookRepo implements NotebookRepo {
 
   @Override
   public void move(String noteId, String notePath, String newNotePath, AuthenticationInfo subject) throws IOException {
-    BlobId blobId = makeBlobId(noteId, notePath);
+    Preconditions.checkArgument(StringUtils.isNotEmpty(noteId));
+    BlobId sourceBlobId = makeBlobId(noteId, notePath);
     BlobId destinationBlobId = makeBlobId(noteId, newNotePath);
-    storage.get(blobId).copyTo(destinationBlobId).getResult();
+    try {
+      storage.get(sourceBlobId).copyTo(destinationBlobId);
+    } catch (StorageException se) {
+      throw new IOException("Could not copy from " + sourceBlobId.toString() + " to " + destinationBlobId.toString() + ": " + se.getMessage(), se);
+    }
     remove(noteId, notePath, subject);
   }
 
