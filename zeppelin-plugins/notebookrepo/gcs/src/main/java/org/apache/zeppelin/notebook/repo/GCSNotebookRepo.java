@@ -201,8 +201,11 @@ public class GCSNotebookRepo implements NotebookRepo {
   }
 
   @Override
-  public void move(String noteId, String notePath, String newNotePath, AuthenticationInfo subject) {
-
+  public void move(String noteId, String notePath, String newNotePath, AuthenticationInfo subject) throws IOException {
+    BlobId blobId = makeBlobId(noteId, notePath);
+    BlobId destinationBlobId = makeBlobId(noteId, newNotePath);
+    storage.get(blobId).copyTo(destinationBlobId).getResult();
+    remove(noteId, notePath, subject);
   }
 
   @Override
