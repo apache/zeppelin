@@ -53,14 +53,7 @@ import org.apache.zeppelin.rest.exception.BadRequestException;
 import org.apache.zeppelin.rest.exception.ForbiddenException;
 import org.apache.zeppelin.rest.exception.NoteNotFoundException;
 import org.apache.zeppelin.rest.exception.ParagraphNotFoundException;
-import org.apache.zeppelin.rest.message.CronRequest;
-import org.apache.zeppelin.rest.message.NewNoteRequest;
-import org.apache.zeppelin.rest.message.NewParagraphRequest;
-import org.apache.zeppelin.rest.message.NoteJobStatus;
-import org.apache.zeppelin.rest.message.ParagraphJobStatus;
-import org.apache.zeppelin.rest.message.RenameNoteRequest;
-import org.apache.zeppelin.rest.message.ParametersRequest;
-import org.apache.zeppelin.rest.message.UpdateParagraphRequest;
+import org.apache.zeppelin.rest.message.*;
 import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.server.JsonResponse;
 import org.apache.zeppelin.service.AuthenticationService;
@@ -338,6 +331,31 @@ public class NotebookRestApi extends AbstractRestApi {
     return notebookService.getNote(noteId, reload,  getServiceContext(), new RestServiceCallback<>(),
       note -> new JsonResponse<>(Status.OK, "", note).build());
   }
+
+
+  /**
+   * Get note of this specified notePath.
+   *
+   *  @param message - JSON containing notePath
+   * @param reload
+   * @return
+   * @throws IOException
+   */
+
+  @POST
+  @Path("getByPath")
+  @ZeppelinApi
+  public Response getNoteByPath(String message,
+                                @QueryParam("reload") boolean reload) throws IOException {
+    // notePath may contains special character like space.
+    // it should be in http body instead of in url
+    // to avoid problem of url conversion by external service like knox
+    GetNoteByPathRequest request = GSON.fromJson(message, GetNoteByPathRequest.class);
+    String notePath = request.getNotePath();
+    return notebookService.getNoteByPath(notePath, reload, getServiceContext(), new RestServiceCallback<>(),
+            note -> new JsonResponse<>(Status.OK, "", note).build());
+  }
+
 
   /**
    * Export note REST API.

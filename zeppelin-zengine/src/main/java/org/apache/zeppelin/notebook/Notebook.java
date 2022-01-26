@@ -415,6 +415,10 @@ public class Notebook {
 
   }
 
+  public String getNoteIdByPath(String notePath) throws IOException {
+    return noteManager.getNoteIdByPath(notePath);
+  }
+
   public void saveNote(Note note, AuthenticationInfo subject) throws IOException {
     noteManager.saveNote(note, subject);
   }

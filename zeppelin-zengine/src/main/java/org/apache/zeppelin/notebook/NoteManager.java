@@ -417,6 +417,11 @@ public class NoteManager {
     return true;
   }
 
+  public String getNoteIdByPath(String notePath) throws IOException {
+    NoteNode noteNode = getNoteNode(notePath);
+    return noteNode.getNoteId();
+  }
+
   /**
    * Represent one folder that could contains sub folders and note files.
    */
