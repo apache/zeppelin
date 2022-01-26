@@ -120,6 +120,49 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
       }
     }
   }
+  
+  @Test
+  public void testGetNoteByPath() throws IOException {
+    LOG.info("Running testGetNoteByPath");
+    String note1Id = null;
+    try {
+        String notePath = "dir1/note1";
+        note1Id = TestUtils.getInstance(Notebook.class).createNote(notePath, anonymous);
+        TestUtils.getInstance(Notebook.class).processNote(note1Id,
+                note1 -> {
+                    note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
+                    TestUtils.getInstance(Notebook.class).saveNote(note1, anonymous);
+                    return null;
+                });
+
+        CloseableHttpResponse post = httpPost("/notebook/getByPath" , "{\"notePath\":\""+ notePath + "\"}" );
+
+        assertThat(post, isAllowed());
+        Map<String, Object> resp = gson.fromJson(EntityUtils.toString(post.getEntity(), StandardCharsets.UTF_8),
+                new TypeToken<Map<String, Object>>() {}.getType());
+        Map<String, Object> noteObject = (Map<String, Object>) resp.get("body");
+        assertEquals(notePath, ((String)noteObject.get("path")).substring(1));
+        post.close();
+    } finally {
+        // cleanup
+        if (null != note1Id) {
+            TestUtils.getInstance(Notebook.class).removeNote(note1Id, anonymous);
+        }
+    }
+  }
+
+  @Test
+  public void testGetNoteByPathWithPathNotExist() throws IOException {
+    LOG.info("Running testGetNoteByPathWithPathNotExist");
+    String notePath = "A note that doesn't exist";
+    CloseableHttpResponse post = httpPost("/notebook/getByPath" , "{\"notePath\":\""+ notePath + "\"}" );
+    assertThat(post, isNotFound());
+    Map<String, Object> resp = gson.fromJson(EntityUtils.toString(post.getEntity(), StandardCharsets.UTF_8),
+            new TypeToken<Map<String, Object>>() {}.getType());
+    String status = (String) resp.get("status");
+    assertEquals(status, "NOT_FOUND");
+    post.close();
+  }
 
   @Test
   public void testGetNoteParagraphJobStatus() throws IOException {

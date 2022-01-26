@@ -154,6 +154,31 @@ public class NotebookService {
   }
 
   /**
+   * @param notePath
+   * @param reload
+   * @param context
+   * @param callback
+   * @return
+   * @throws IOException
+   */
+  public <T> T getNoteByPath(String notePath,
+                             boolean reload,
+                             ServiceContext context,
+                             ServiceCallback<Note> callback,
+                             NoteProcessor<T> noteProcessor) throws IOException {
+    String noteId = null;
+    try {
+      noteId = notebook.getNoteIdByPath(notePath);
+    } catch (IOException e) {
+      throw new NoteNotFoundException(notePath);
+    }
+    return getNote(noteId, reload, context, callback, noteProcessor);
+  }
+
+
+
+
+  /**
    *
    * @param notePath
    * @param defaultInterpreterGroup
