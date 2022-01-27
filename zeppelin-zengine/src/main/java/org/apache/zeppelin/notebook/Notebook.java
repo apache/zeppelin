@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -327,8 +328,8 @@ public class Notebook {
             newNote.setConfig(new HashMap<>(sourceNote.getConfig()));
             newNote.setInfo(new HashMap<>(sourceNote.getInfo()));
             newNote.setDefaultInterpreterGroup(sourceNote.getDefaultInterpreterGroup());
-            newNote.setNoteForms(sourceNote.getNoteForms());
-            newNote.setNoteParams(sourceNote.getNoteParams());
+            newNote.setNoteForms(new ConcurrentHashMap<>(sourceNote.getNoteForms()));
+            newNote.setNoteParams(new ConcurrentHashMap<>(sourceNote.getNoteParams()));
             newNote.setRunning(false);
             saveNote(newNote, subject);
             authorizationService.cloneNoteMeta(newNote.getId(), sourceNoteId, subject);
