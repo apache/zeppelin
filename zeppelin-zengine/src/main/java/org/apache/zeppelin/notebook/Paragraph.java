@@ -619,27 +619,23 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
   }
 
   public ApplicationState createOrGetApplicationState(HeliumPackage pkg) {
-    synchronized (apps) {
-      for (ApplicationState as : apps) {
-        if (as.equals(pkg)) {
-          return as;
-        }
+    for (ApplicationState as : apps) {
+      if (as.equals(pkg)) {
+        return as;
       }
-
-      String appId = getApplicationId(pkg);
-      ApplicationState appState = new ApplicationState(appId, pkg);
-      apps.add(appState);
-      return appState;
     }
+
+    String appId = getApplicationId(pkg);
+    ApplicationState appState = new ApplicationState(appId, pkg);
+    apps.add(appState);
+    return appState;
   }
 
 
   public ApplicationState getApplicationState(String appId) {
-    synchronized (apps) {
-      for (ApplicationState as : apps) {
-        if (as.getId().equals(appId)) {
-          return as;
-        }
+    for (ApplicationState as : apps) {
+      if (as.getId().equals(appId)) {
+        return as;
       }
     }
 
@@ -647,9 +643,7 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
   }
 
   public List<ApplicationState> getAllApplicationStates() {
-    synchronized (apps) {
-      return new LinkedList<>(apps);
-    }
+    return new LinkedList<>(apps);
   }
 
   String extractVariablesFromAngularRegistry(String scriptBody, Map<String, Input> inputs,
