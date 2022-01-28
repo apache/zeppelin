@@ -64,6 +64,11 @@ Besides that, you can also specify other properties as following table.
     <td>default</td>
     <td>yarn queue name</td>
   </tr>
+  <tr>
+    <td>zeppelin.interpreter.yarn.node.label.expression</td>
+    <td></td>
+    <td>yarn node label expression specified for interpreter process</td>
+  </tr>
 </table>
 
 ## Differences with non-yarn interpreter mode (local mode)
