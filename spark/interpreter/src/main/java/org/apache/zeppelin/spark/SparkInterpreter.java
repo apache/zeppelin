@@ -66,6 +66,7 @@ public class SparkInterpreter extends AbstractInterpreter {
   }
 
   private static AtomicInteger SESSION_NUM = new AtomicInteger(0);
+  private static Class innerInterpreterClazz;
   private AbstractSparkScalaInterpreter innerInterpreter;
   private Map<String, String> innerInterpreterClassMap = new HashMap<>();
   private SparkContext sc;
@@ -151,38 +152,45 @@ public class SparkInterpreter extends AbstractInterpreter {
    */
   private AbstractSparkScalaInterpreter loadSparkScalaInterpreter(SparkConf conf) throws Exception {
     scalaVersion = extractScalaVersion(conf);
-    ClassLoader scalaInterpreterClassLoader = Thread.currentThread().getContextClassLoader();
-
-    String zeppelinHome = System.getenv("ZEPPELIN_HOME");
-    if (zeppelinHome != null) {
-      // ZEPPELIN_HOME is null in yarn-cluster mode, load it directly via current ClassLoader.
-      // otherwise, load from the specific folder ZEPPELIN_HOME/interpreter/spark/scala-<version>
-
-      File scalaJarFolder = new File(zeppelinHome + "/interpreter/spark/scala-" + scalaVersion);
-      List<URL> urls = new ArrayList<>();
-      for (File file : scalaJarFolder.listFiles()) {
-        LOGGER.debug("Add file " + file.getAbsolutePath() + " to classpath of spark scala interpreter: "
-                + scalaJarFolder);
-        urls.add(file.toURI().toURL());
+    // Make sure the innerInterpreter Class is loaded only once into JVM
+    // Use double lock to ensure thread safety
+    if (innerInterpreterClazz == null) {
+      synchronized (SparkInterpreter.class) {
+        if (innerInterpreterClazz == null) {
+          LOGGER.debug("innerInterpreterClazz is null, thread:{}", Thread.currentThread().getName());
+          ClassLoader scalaInterpreterClassLoader = Thread.currentThread().getContextClassLoader();
+          String zeppelinHome = System.getenv("ZEPPELIN_HOME");
+          if (zeppelinHome != null) {
+            // ZEPPELIN_HOME is null in yarn-cluster mode, load it directly via current ClassLoader.
+            // otherwise, load from the specific folder ZEPPELIN_HOME/interpreter/spark/scala-<version>
+            File scalaJarFolder = new File(zeppelinHome + "/interpreter/spark/scala-" + scalaVersion);
+            List<URL> urls = new ArrayList<>();
+            for (File file : scalaJarFolder.listFiles()) {
+              LOGGER.debug("Add file " + file.getAbsolutePath() + " to classpath of spark scala interpreter: "
+                      + scalaJarFolder);
+              urls.add(file.toURI().toURL());
+            }
+            scalaInterpreterClassLoader = new URLClassLoader(urls.toArray(new URL[0]),
+                    Thread.currentThread().getContextClassLoader());
+          }
+          String innerIntpClassName = innerInterpreterClassMap.get(scalaVersion);
+          innerInterpreterClazz = scalaInterpreterClassLoader.loadClass(innerIntpClassName);
+        }
       }
-      scalaInterpreterClassLoader = new URLClassLoader(urls.toArray(new URL[0]),
-              Thread.currentThread().getContextClassLoader());
     }
-
-    String innerIntpClassName = innerInterpreterClassMap.get(scalaVersion);
-    Class clazz = scalaInterpreterClassLoader.loadClass(innerIntpClassName);
     return (AbstractSparkScalaInterpreter)
-            clazz.getConstructor(SparkConf.class, List.class, Properties.class, InterpreterGroup.class, URLClassLoader.class, File.class)
-                    .newInstance(conf, getDependencyFiles(), getProperties(), getInterpreterGroup(), scalaInterpreterClassLoader, scalaShellOutputDir);
+            innerInterpreterClazz.getConstructor(SparkConf.class, List.class, Properties.class, InterpreterGroup.class, URLClassLoader.class, File.class)
+                    .newInstance(conf, getDependencyFiles(), getProperties(), getInterpreterGroup(), innerInterpreterClazz.getClassLoader(), scalaShellOutputDir);
   }
 
-  @Override
+    @Override
   public void close() throws InterpreterException {
     LOGGER.info("Close SparkInterpreter");
     if (SESSION_NUM.decrementAndGet() == 0 && innerInterpreter != null) {
       innerInterpreter.close();
-      innerInterpreter = null;
+      innerInterpreterClazz = null;
     }
+      innerInterpreter = null;
   }
 
   @Override
@@ -306,4 +314,9 @@ public class SparkInterpreter extends AbstractInterpreter {
   public boolean isUnsupportedSparkVersion() {
     return enableSupportedVersionCheck  && sparkVersion.isUnsupportedVersion();
   }
+
+  public AbstractSparkScalaInterpreter getInnerInterpreter() {
+    return innerInterpreter;
+  }
+
 }

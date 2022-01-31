@@ -202,13 +202,14 @@ abstract class BaseSparkScalaInterpreter(val conf: SparkConf,
     }
     if (sc != null) {
       sc.stop()
+      sc = null
     }
-    sc = null
     if (sparkSession != null) {
       sparkSession.getClass.getMethod("stop").invoke(sparkSession)
       sparkSession = null
     }
     sqlContext = null
+    z = null
   }
 
   private def cleanupStagingDirInternal(stagingDirPath: Path, hadoopConf: Configuration): Unit = {

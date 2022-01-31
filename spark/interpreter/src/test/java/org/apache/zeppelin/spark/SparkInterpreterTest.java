@@ -544,7 +544,7 @@ public class SparkInterpreterTest {
   }
 
   @Test
-  public void testScopedMode() throws InterpreterException {
+  public void testScopedMode() throws Exception {
     Properties properties = new Properties();
     properties.setProperty(SparkStringConstants.MASTER_PROP_NAME, "local");
     properties.setProperty(SparkStringConstants.APP_NAME_PROP_NAME, "test");
@@ -566,6 +566,9 @@ public class SparkInterpreterTest {
     InterpreterContext.set(getInterpreterContext());
     interpreter1.open();
     interpreter2.open();
+
+    // check if there is any duplicated loaded class
+    assertEquals(true, interpreter1.getInnerInterpreter().getClass()==interpreter2.getInnerInterpreter().getClass());
 
     InterpreterContext context = getInterpreterContext();
 
