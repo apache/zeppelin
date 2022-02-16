@@ -207,7 +207,7 @@ public class GCSNotebookRepo implements NotebookRepo {
     BlobId destinationBlobId = makeBlobId(noteId, newNotePath);
     try {
       storage.get(sourceBlobId).copyTo(destinationBlobId);
-    } catch (StorageException se) {
+    } catch (Exception se) {
       throw new IOException("Could not copy from " + sourceBlobId.toString() + " to " + destinationBlobId.toString() + ": " + se.getMessage(), se);
     }
     remove(noteId, notePath, subject);
