@@ -65,6 +65,7 @@ jobs:
           python-version: 3.7
           auto-activate-base: false
           channel-priority: strict
+          use-mamba: true
       - name: Make IRkernel available to Jupyter
         run: |
           R -e "IRkernel::installspec()"
@@ -106,6 +107,7 @@ jobs:
           environment-file: testing/env_python_3_with_R_and_tensorflow.yml
           python-version: 3.7
           auto-activate-base: false
+          use-mamba: true
       - name: verify interpreter
         run: ./mvnw verify -DskipRat -pl ${INTERPRETERS} -Pscala-2.10 -B
 
@@ -142,6 +144,7 @@ jobs:
           environment-file: testing/env_python_${{ matrix.python }}_with_R.yml
           python-version: ${{ matrix.python }}
           auto-activate-base: false
+          use-mamba: true
       - name: Make IRkernel available to Jupyter
         run: |
           R -e "IRkernel::installspec()"
@@ -188,6 +191,7 @@ jobs:
           environment-file: testing/env_python_3_with_R.yml
           python-version: 3.7
           auto-activate-base: false
+          use-mamba: true
       - name: Make IRkernel available to Jupyter
         run: |
           R -e "IRkernel::installspec()"
@@ -233,6 +237,7 @@ jobs:
           channels: conda-forge,defaults
           channel-priority: true
           auto-activate-base: false
+          use-mamba: true
       - name: run tests
         run: ./mvnw test -DskipRat -pl flink/flink-scala-2.11,flink/flink-scala-2.12,flink-cmd,zeppelin-interpreter-integration -Pflink-${{ matrix.flink }} -Phadoop2 -Pintegration -DfailIfNoTests=false -B -Dtest=org.apache.zeppelin.flink.*,FlinkIntegrationTest${{ matrix.flink }}
 
@@ -268,6 +273,7 @@ jobs:
           environment-file: testing/env_python_3_with_R.yml
           python-version: 3.7
           auto-activate-base: false
+          use-mamba: true
       - name: Make IRkernel available to Jupyter
         run: |
           R -e "IRkernel::installspec()"
@@ -313,6 +319,7 @@ jobs:
           environment-file: testing/env_python_${{ matrix.python }}_with_R.yml
           python-version: ${{ matrix.python }}
           auto-activate-base: false
+          use-mamba: true
       - name: Make IRkernel available to Jupyter
         run: |
           R -e "IRkernel::installspec()"
@@ -370,6 +377,7 @@ jobs:
           environment-file: testing/env_python_3_with_R.yml
           python-version: 3.7
           auto-activate-base: false
+          use-mamba: true
       - name: Make IRkernel available to Jupyter
         run: |
           R -e "IRkernel::installspec()"
