@@ -307,29 +307,11 @@
 
       <properties>
         <hadoop.version>${hadoop2.7.version}</hadoop.version>
-        <hadoop-client-api.artifact>hadoop-client</hadoop-client-api.artifact>
-        <hadoop-client-runtime.artifact>hadoop-yarn-api</hadoop-client-runtime.artifact>
-        <hadoop-client-minicluster.artifact>hadoop-client</hadoop-client-minicluster.artifact>
       </properties>
       <dependencies>
         <dependency>
           <groupId>org.apache.hadoop</groupId>
           <artifactId>hadoop-common</artifactId>
-        </dependency>
-
-        <dependency>
-          <groupId>org.apache.hadoop</groupId>
-          <artifactId>hadoop-yarn-client</artifactId>
-        </dependency>
-
-        <dependency>
-          <groupId>org.apache.hadoop</groupId>
-          <artifactId>hadoop-yarn-api</artifactId>
-        </dependency>
-
-        <dependency>
-          <groupId>org.apache.hadoop</groupId>
-          <artifactId>hadoop-yarn-common</artifactId>
         </dependency>
 
         <dependency>
@@ -351,12 +333,6 @@
       </properties>
 
       <dependencies>
-
-        <dependency>
-          <groupId>org.apache.hadoop</groupId>
-          <artifactId>${hadoop-client-api.artifact}</artifactId>
-        </dependency>
-
         <dependency>
           <groupId>org.apache.hadoop</groupId>
           <artifactId>${hadoop-client-runtime.artifact}</artifactId>
@@ -365,8 +341,9 @@
         <dependency>
           <groupId>org.apache.hadoop</groupId>
           <artifactId>${hadoop-client-minicluster.artifact}</artifactId>
+          <scope>test</scope>
+          <version>${hadoop.version}</version>
         </dependency>
-
       </dependencies>
     </profile>
   </profiles>

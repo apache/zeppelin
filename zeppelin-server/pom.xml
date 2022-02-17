@@ -40,6 +40,7 @@
     <jna.version>4.1.0</jna.version>
     <jackson.version>2.9.10.6</jackson.version>
     <nimbus.version>9.13</nimbus.version>
+    <kerberos.version>2.0.0-M15</kerberos.version>
 
     <!--test library versions-->
     <selenium.java.version>2.48.2</selenium.java.version>
@@ -295,7 +296,7 @@
     <dependency>
       <groupId>org.apache.directory.server</groupId>
       <artifactId>apacheds-kerberos-codec</artifactId>
-      <version>2.0.0-M15</version>
+      <version>${kerberos.version}</version>
     </dependency>
 
     <dependency>
@@ -499,25 +500,16 @@
 
       <properties>
         <hadoop.version>${hadoop3.2.version}</hadoop.version>
-        <hadoop-client-api.artifact>hadoop-client-api</hadoop-client-api.artifact>
         <hadoop-client-runtime.artifact>hadoop-client-runtime</hadoop-client-runtime.artifact>
       </properties>
 
       <dependencies>
         <dependency>
           <groupId>org.apache.hadoop</groupId>
-          <artifactId>${hadoop-client-api.artifact}</artifactId>
-          <version>${hadoop.version}</version>
-          <scope>${hadoop.deps.scope}</scope>
-        </dependency>
-
-        <dependency>
-          <groupId>org.apache.hadoop</groupId>
           <artifactId>${hadoop-client-runtime.artifact}</artifactId>
           <version>${hadoop.version}</version>
           <scope>${hadoop.deps.scope}</scope>
         </dependency>
-
       </dependencies>
 
     </profile>
