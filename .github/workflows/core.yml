@@ -63,8 +63,10 @@ jobs:
           activate-environment: python_3_with_R
           environment-file: testing/env_python_3.7_with_R.yml
           python-version: 3.7
+          mamba-version: "*"
+          channels: conda-forge,defaults
+          channel-priority: true
           auto-activate-base: false
-          channel-priority: strict
           use-mamba: true
       - name: Make IRkernel available to Jupyter
         run: |
@@ -106,6 +108,9 @@ jobs:
           activate-environment: python_3_with_R_and_tensorflow
           environment-file: testing/env_python_3_with_R_and_tensorflow.yml
           python-version: 3.7
+          mamba-version: "*"
+          channels: conda-forge,defaults
+          channel-priority: true
           auto-activate-base: false
           use-mamba: true
       - name: verify interpreter
@@ -143,6 +148,9 @@ jobs:
           activate-environment: python_3_with_R
           environment-file: testing/env_python_${{ matrix.python }}_with_R.yml
           python-version: ${{ matrix.python }}
+          mamba-version: "*"
+          channels: conda-forge,defaults
+          channel-priority: true
           auto-activate-base: false
           use-mamba: true
       - name: Make IRkernel available to Jupyter
@@ -190,6 +198,9 @@ jobs:
           activate-environment: python_3_with_R
           environment-file: testing/env_python_3_with_R.yml
           python-version: 3.7
+          mamba-version: "*"
+          channels: conda-forge,defaults
+          channel-priority: true
           auto-activate-base: false
           use-mamba: true
       - name: Make IRkernel available to Jupyter
@@ -272,6 +283,9 @@ jobs:
           activate-environment: python_3_with_R
           environment-file: testing/env_python_3_with_R.yml
           python-version: 3.7
+          mamba-version: "*"
+          channels: conda-forge,defaults
+          channel-priority: true
           auto-activate-base: false
           use-mamba: true
       - name: Make IRkernel available to Jupyter
@@ -318,6 +332,9 @@ jobs:
           activate-environment: python_3_with_R
           environment-file: testing/env_python_${{ matrix.python }}_with_R.yml
           python-version: ${{ matrix.python }}
+          mamba-version: "*"
+          channels: conda-forge,defaults
+          channel-priority: true
           auto-activate-base: false
           use-mamba: true
       - name: Make IRkernel available to Jupyter
@@ -376,6 +393,9 @@ jobs:
           activate-environment: python_3_with_R
           environment-file: testing/env_python_3_with_R.yml
           python-version: 3.7
+          mamba-version: "*"
+          channels: conda-forge,defaults
+          channel-priority: true
           auto-activate-base: false
           use-mamba: true
       - name: Make IRkernel available to Jupyter
