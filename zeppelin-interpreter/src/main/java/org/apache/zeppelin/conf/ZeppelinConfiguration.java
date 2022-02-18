@@ -500,6 +500,10 @@ public class ZeppelinConfiguration {
     return getString(ConfVars.ZEPPELIN_NOTEBOOK_OSS_ACCESSKEYSECRET);
   }
 
+  public int getOSSNoteMaxVersionNum(){
+    return getInt(ConfVars.ZEPPELIN_NOTEBOOK_OSS_MAX_VERSION_NUM);
+  }
+
   public String getMongoUri() {
     return getString(ConfVars.ZEPPELIN_NOTEBOOK_MONGO_URI);
   }
@@ -973,6 +977,7 @@ public class ZeppelinConfiguration {
     ZEPPELIN_NOTEBOOK_OSS_ENDPOINT("zeppelin.notebook.oss.endpoint", "http://oss-cn-hangzhou.aliyuncs.com"),
     ZEPPELIN_NOTEBOOK_OSS_ACCESSKEYID("zeppelin.notebook.oss.accesskeyid", null),
     ZEPPELIN_NOTEBOOK_OSS_ACCESSKEYSECRET("zeppelin.notebook.oss.accesskeysecret", null),
+    ZEPPELIN_NOTEBOOK_OSS_MAX_VERSION_NUM("zeppelin.notebook.oss.max.version.num", 30),
     ZEPPELIN_NOTEBOOK_AZURE_CONNECTION_STRING("zeppelin.notebook.azure.connectionString", null),
     ZEPPELIN_NOTEBOOK_AZURE_SHARE("zeppelin.notebook.azure.share", "zeppelin"),
     ZEPPELIN_NOTEBOOK_AZURE_USER("zeppelin.notebook.azure.user", "user"),

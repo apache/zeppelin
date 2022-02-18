@@ -19,14 +19,6 @@ package org.apache.zeppelin.notebook.repo;
 
 import com.aliyun.oss.OSS;
 import com.aliyun.oss.OSSClientBuilder;
-import com.aliyun.oss.model.CopyObjectRequest;
-import com.aliyun.oss.model.DeleteObjectsRequest;
-import com.aliyun.oss.model.ListObjectsRequest;
-import com.aliyun.oss.model.OSSObject;
-import com.aliyun.oss.model.OSSObjectSummary;
-import com.aliyun.oss.model.ObjectListing;
-import com.aliyun.oss.model.PutObjectRequest;
-import org.apache.commons.io.IOUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
@@ -34,26 +26,23 @@ import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.*;
+import java.util.*;
 
 
 /**
  * NotebookRepo for Aliyun OSS (https://cn.aliyun.com/product/oss)
  */
-public class OSSNotebookRepo implements NotebookRepo {
+public class OSSNotebookRepo implements NotebookRepoWithVersionControl {
   private static final Logger LOGGER = LoggerFactory.getLogger(OSSNotebookRepo.class);
 
-  private OSS ossClient;
   private String bucketName;
   private String rootFolder;
+  private static int NOTE_MAX_VERSION_NUM;
+
+  // Use ossOperator instead of ossClient directly
+  private OSS ossClient;
+  private OSSOperator ossOperator;
 
   public OSSNotebookRepo() {
   }
@@ -63,6 +52,7 @@ public class OSSNotebookRepo implements NotebookRepo {
     String endpoint = conf.getOSSEndpoint();
     bucketName = conf.getOSSBucketName();
     rootFolder = conf.getNotebookDir();
+    NOTE_MAX_VERSION_NUM = conf.getOSSNoteMaxVersionNum();
     // rootFolder is part of OSS key which doesn't start with '/'
     if (rootFolder.startsWith("/")) {
       rootFolder = rootFolder.substring(1);
@@ -70,133 +60,105 @@ public class OSSNotebookRepo implements NotebookRepo {
     String accessKeyId = conf.getOSSAccessKeyId();
     String accessKeySecret = conf.getOSSAccessKeySecret();
     this.ossClient = new OSSClientBuilder().build(endpoint, accessKeyId, accessKeySecret);
+    this.ossOperator = new OSSOperator(ossClient);
   }
 
   @Override
   public Map<String, NoteInfo> list(AuthenticationInfo subject) throws IOException {
     Map<String, NoteInfo> notesInfo = new HashMap<>();
-    final int maxKeys = 200;
-    String nextMarker = null;
-    ObjectListing objectListing = null;
-    do {
-      objectListing = ossClient.listObjects(
-              new ListObjectsRequest(bucketName)
-                      .withPrefix(rootFolder + "/")
-                      .withMarker(nextMarker)
-                      .withMaxKeys(maxKeys));
-      List<OSSObjectSummary> sums = objectListing.getObjectSummaries();
-      for (OSSObjectSummary s : sums) {
-        if (s.getKey().endsWith(".zpln")) {
-          try {
-            String noteId = getNoteId(s.getKey());
-            String notePath = getNotePath(rootFolder, s.getKey());
-            notesInfo.put(noteId, new NoteInfo(noteId, notePath));
-          } catch (IOException e) {
-            LOGGER.warn(e.getMessage());
-          }
-        } else {
-          LOGGER.debug("Skip invalid note file: {}", s.getKey());
+    List<String> objectKeys = ossOperator.listDirObjects(bucketName, rootFolder + "/");
+    for (String key : objectKeys) {
+      if (key.endsWith(".zpln")) {
+        try {
+          String noteId = getNoteId(key);
+          String notePath = getNotePath(rootFolder, key);
+          notesInfo.put(noteId, new NoteInfo(noteId, notePath));
+        } catch (IOException e) {
+          LOGGER.warn(e.getMessage());
         }
+      } else {
+        LOGGER.debug("Skip invalid note file: {}", key);
       }
-      nextMarker = objectListing.getNextMarker();
-    } while (objectListing.isTruncated());
-
+    }
     return notesInfo;
   }
 
+  public Note getByOSSPath(String noteId, String ossPath) throws IOException {
+    return Note.fromJson(noteId, ossOperator.getTextObject(bucketName, ossPath));
+  }
+
+
   @Override
   public Note get(String noteId, String notePath, AuthenticationInfo subject) throws IOException {
-    OSSObject ossObject = ossClient.getObject(bucketName,
-            rootFolder + "/" + buildNoteFileName(noteId, notePath));
-    InputStream in = null;
-    try {
-      in = ossObject.getObjectContent();
-      return Note.fromJson(noteId, IOUtils.toString(in, StandardCharsets.UTF_8));
-    } finally {
-      if (in != null) {
-        in.close();
-      }
-    }
+    return getByOSSPath(noteId, rootFolder + "/" + buildNoteFileName(noteId, notePath));
   }
 
   @Override
   public void save(Note note, AuthenticationInfo subject) throws IOException {
     String content = note.toJson();
-    PutObjectRequest putObjectRequest = new PutObjectRequest(bucketName,
+    ossOperator.putTextObject(bucketName,
             rootFolder + "/" + buildNoteFileName(note.getId(), note.getPath()),
             new ByteArrayInputStream(content.getBytes()));
-    ossClient.putObject(putObjectRequest);
   }
 
   @Override
   public void move(String noteId, String notePath, String newNotePath,
                    AuthenticationInfo subject) throws IOException {
-    String sourceKey = rootFolder + "/" + buildNoteFileName(noteId, notePath);
-    String destKey = rootFolder + "/" + buildNoteFileName(noteId, newNotePath);
-    CopyObjectRequest copyObjectRequest = new CopyObjectRequest(bucketName,
-            sourceKey, bucketName, destKey);
-    ossClient.copyObject(copyObjectRequest);
-    ossClient.deleteObject(bucketName, sourceKey);
+    String noteSourceKey = rootFolder + "/" + buildNoteFileName(noteId, notePath);
+    String noteDestKey = rootFolder + "/" + buildNoteFileName(noteId, newNotePath);
+    ossOperator.moveObject(bucketName, noteSourceKey, noteDestKey);
+    String revisionSourceDirKey = rootFolder + "/" + buildRevisionsDirName(noteId, notePath);
+    String revisionDestDirKey = rootFolder + "/" + buildRevisionsDirName(noteId, newNotePath);
+    ossOperator.moveDir(bucketName, revisionSourceDirKey, revisionDestDirKey);
   }
 
   @Override
   public void move(String folderPath, String newFolderPath, AuthenticationInfo subject) {
-    final int maxKeys = 200;
-    String nextMarker = null;
-    ObjectListing objectListing = null;
-    do {
-      objectListing = ossClient.listObjects(
-              new ListObjectsRequest(bucketName)
-                      .withPrefix(rootFolder + folderPath + "/")
-                      .withMarker(nextMarker)
-                      .withMaxKeys(maxKeys));
-      List<OSSObjectSummary> sums = objectListing.getObjectSummaries();
-      for (OSSObjectSummary s : sums) {
-        if (s.getKey().endsWith(".zpln")) {
-          try {
-            String noteId = getNoteId(s.getKey());
-            String notePath = getNotePath(rootFolder, s.getKey());
-            String newNotePath = newFolderPath + notePath.substring(folderPath.length());
-            move(noteId, notePath, newNotePath, subject);
-          } catch (IOException e) {
-            LOGGER.warn(e.getMessage());
-          }
-        } else {
-          LOGGER.debug("Skip invalid note file: {}", s.getKey());
+    List<String> objectKeys = ossOperator.listDirObjects(bucketName, rootFolder + folderPath + "/");
+    for (String key : objectKeys) {
+      if (key.endsWith(".zpln")) {
+        try {
+          String noteId = getNoteId(key);
+          String notePath = getNotePath(rootFolder, key);
+          String newNotePath = newFolderPath + notePath.substring(folderPath.length());
+          move(noteId, notePath, newNotePath, subject);
+        } catch (IOException e) {
+          LOGGER.warn(e.getMessage());
         }
+      } else {
+        LOGGER.debug("Skip invalid note file: {}", key);
       }
-      nextMarker = objectListing.getNextMarker();
-    } while (objectListing.isTruncated());
+    }
 
   }
 
   @Override
   public void remove(String noteId, String notePath, AuthenticationInfo subject)
       throws IOException {
-    ossClient.deleteObject(bucketName, rootFolder + "/" + buildNoteFileName(noteId, notePath));
+    ossOperator.deleteFile(bucketName, rootFolder + "/" + buildNoteFileName(noteId, notePath));
+    // if there is no file under revisonInfoPath, deleleDir() would do nothing
+    ossOperator.deleteDir(bucketName, rootFolder + "/" + buildRevisionsDirName(noteId, notePath));
   }
 
   @Override
   public void remove(String folderPath, AuthenticationInfo subject) {
-    String nextMarker = null;
-    ObjectListing objectListing = null;
-    do {
-      ListObjectsRequest listObjectsRequest = new ListObjectsRequest(bucketName)
-              .withPrefix(rootFolder + folderPath + "/")
-              .withMarker(nextMarker);
-      objectListing = ossClient.listObjects(listObjectsRequest);
-      if (!objectListing.getObjectSummaries().isEmpty()) {
-        List<String> keys = new ArrayList<>();
-        for (OSSObjectSummary s : objectListing.getObjectSummaries()) {
-          keys.add(s.getKey());
+    List<String> objectKeys = ossOperator.listDirObjects(bucketName, rootFolder + folderPath + "/");
+    for (String key : objectKeys) {
+      if (key.endsWith(".zpln")) {
+        try {
+          String noteId = getNoteId(key);
+          String notePath = getNotePath(rootFolder, key);
+          // delete note revision file
+          ossOperator.deleteDir(bucketName, buildRevisionsDirName(noteId, notePath));
+        } catch (IOException e) {
+          LOGGER.warn(e.getMessage());
         }
-        DeleteObjectsRequest deleteObjectsRequest = new DeleteObjectsRequest(bucketName).withKeys(keys);
-        ossClient.deleteObjects(deleteObjectsRequest);
       }
-
-      nextMarker = objectListing.getNextMarker();
-    } while (objectListing.isTruncated());
+    }
+    // delete note file
+    ossOperator.deleteFiles(bucketName, objectKeys);
   }
+
 
   @Override
   public void close() {
@@ -213,5 +175,89 @@ public class OSSNotebookRepo implements NotebookRepo {
   public void updateSettings(Map<String, String> settings, AuthenticationInfo subject) {
     LOGGER.warn("Method not implemented");
   }
+
+
+  String buildRevisionsDirName(String noteId, String notePath) throws IOException {
+    if (!notePath.startsWith("/")) {
+      throw new IOException("Invalid notePath: " + notePath);
+    }
+    return ".checkpoint/" + (notePath + "_" + noteId).substring(1);
+  }
+  
+  String buildRevisionsInfoAbsolutePath(String noteId, String notePath) throws IOException {
+    return rootFolder + "/" + buildRevisionsDirName(noteId, notePath) + "/" + ".revision-info";
+  }
+
+  String buildRevisionsFileAbsolutePath(String noteId, String notePath, String revisionId) throws IOException {
+    return rootFolder + "/" + buildRevisionsDirName(noteId, notePath) + "/" + revisionId;
+  }
+
+
+  @Override
+  public Revision checkpoint(String noteId, String notePath, String checkpointMsg, AuthenticationInfo subject) throws IOException {
+    Note note = get(noteId, notePath, subject);
+
+    //1 Write note content to revision file
+    String revisionId = UUID.randomUUID().toString().replace("-", "");
+    String noteContent = note.toJson();
+    ossOperator.putTextObject(bucketName,
+            buildRevisionsFileAbsolutePath(noteId, notePath, revisionId),
+            new ByteArrayInputStream(noteContent.getBytes()));
+
+    //2 Append revision info
+    Revision revision = new Revision(revisionId, checkpointMsg, (int) (System.currentTimeMillis() / 1000L));
+    // check revision info file if existed
+    RevisionsInfo revisionsHistory = new RevisionsInfo();
+    String revisonInfoPath = buildRevisionsInfoAbsolutePath(noteId, notePath);
+    boolean found = ossOperator.doesObjectExist(bucketName, revisonInfoPath);
+    if (found) {
+      String existedRevisionsInfoText = ossOperator.getTextObject(bucketName, revisonInfoPath);
+      revisionsHistory = RevisionsInfo.fromText(existedRevisionsInfoText);
+      // control the num of revison files, clean the oldest one if it exceeds.
+      if (revisionsHistory.size() >= NOTE_MAX_VERSION_NUM) {
+        Revision deletedRevision = revisionsHistory.removeLast();
+        ossOperator.deleteFile(bucketName, buildRevisionsFileAbsolutePath(noteId, notePath, deletedRevision.id));
+      }
+    }
+    revisionsHistory.addFirst(revision);
+
+    ossOperator.putTextObject(bucketName,
+            buildRevisionsInfoAbsolutePath(noteId, notePath),
+            new ByteArrayInputStream(revisionsHistory.toText().getBytes()));
+
+    return revision;
+  }
+  @Override
+  public Note get(String noteId, String notePath, String revId, AuthenticationInfo subject) throws IOException {
+    Note note = getByOSSPath(noteId,
+            rootFolder + "/" + buildRevisionsDirName(noteId, notePath) + "/" + revId);
+    note.setPath(notePath);
+    return note;
+  }
+
+  @Override
+  public List<Revision> revisionHistory(String noteId, String notePath, AuthenticationInfo subject) throws IOException {
+
+    List<Revision> revisions = new LinkedList<>();
+    String revisonInfoPath = buildRevisionsInfoAbsolutePath(noteId, notePath);
+    boolean found = ossOperator.doesObjectExist(bucketName, revisonInfoPath);
+    if (!found) {
+      return revisions;
+    }
+    String revisionsText = ossOperator.getTextObject(bucketName, revisonInfoPath);
+
+    return RevisionsInfo.fromText(revisionsText);
+  }
+
+  @Override
+  public Note setNoteRevision(String noteId, String notePath, String revId, AuthenticationInfo subject) throws IOException {
+    Note revisionNote = get(noteId, notePath, revId, subject);
+    if (revisionNote != null) {
+      save(revisionNote, subject);
+    }
+    return revisionNote;
+  }
+  
+
 
 }
