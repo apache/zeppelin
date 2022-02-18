@@ -264,17 +264,17 @@ public class SparkInterpreter extends AbstractInterpreter {
     if (conf.contains("zeppelin.spark.scala.version")) {
       scalaVersionString = conf.get("zeppelin.spark.scala.version");
     } else {
-      scalaVersionString = scala.util.Properties.versionString();
+      scalaVersionString = scala.util.Properties.versionNumberString();
     }
     LOGGER.info("Using Scala: " + scalaVersionString);
 
     if (StringUtils.isEmpty(scalaVersionString)) {
       throw new InterpreterException("Scala Version is empty");
-    } else if (scalaVersionString.contains("2.10")) {
+    } else if (scalaVersionString.startsWith("2.10")) {
       return "2.10";
-    } else if (scalaVersionString.contains("2.11")) {
+    } else if (scalaVersionString.startsWith("2.11")) {
       return "2.11";
-    } else if (scalaVersionString.contains("2.12")) {
+    } else if (scalaVersionString.startsWith("2.12")) {
       return "2.12";
     } else {
       throw new InterpreterException("Unsupported scala version: " + scalaVersionString);
@@ -286,7 +286,7 @@ public class SparkInterpreter extends AbstractInterpreter {
   }
 
   public boolean isScala210() throws InterpreterException {
-    return extractScalaVersion().equals("2.10");
+    return scalaVersion.equals("2.10");
   }
 
   private List<String> getDependencyFiles() throws InterpreterException {

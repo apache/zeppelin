@@ -58,15 +58,14 @@ jobs:
           activate-environment: python_3_with_R
           environment-file: testing/env_python_${{ matrix.python }}_with_R.yml
           python-version: ${{ matrix.python }}
+          mamba-version: "*"
+          channels: conda-forge,defaults
+          channel-priority: true
           auto-activate-base: false
-          channel-priority: strict
+          use-mamba: true
       - name: Make IRkernel available to Jupyter
         run: |
-          R -e "install.packages('devtools', repos = 'http://cran.us.r-project.org')"
-          R -e "devtools::install_github('IRkernel/IRkernel')"
           R -e "IRkernel::installspec()"
-          conda list
-          conda info
       - name: install application with some interpreter
         run: mvn install -Pbuild-distr -DskipRat -DskipTests -pl zeppelin-server,zeppelin-web,spark-submit,spark/spark-dependencies,markdown,angular,shell -am -Phelium-dev -Pexamples -P${{ matrix.hadoop }} -B
       - name: install and test plugins
@@ -102,11 +101,13 @@ jobs:
           activate-environment: python_3_with_R_and_tensorflow
           environment-file: testing/env_python_3_with_R_and_tensorflow.yml
           python-version: 3.7
+          mamba-version: "*"
+          channels: conda-forge,defaults
+          channel-priority: true
           auto-activate-base: false
+          use-mamba: true
       - name: Make IRkernel available to Jupyter
         run: |
-          R -e "install.packages('devtools', repos = 'http://cran.us.r-project.org')"
-          R -e "devtools::install_github('IRkernel/IRkernel')"
           R -e "IRkernel::installspec()"
       - name: verify interpreter
         run: mvn verify -DskipRat -am -pl .,zeppelin-interpreter,zeppelin-interpreter-shaded,${INTERPRETERS} -Pscala-2.10 -B
@@ -137,11 +138,13 @@ jobs:
           activate-environment: python_3_with_R
           environment-file: testing/env_python_3_with_R.yml
           python-version: 3.7
+          mamba-version: "*"
+          channels: conda-forge,defaults
+          channel-priority: true
           auto-activate-base: false
+          use-mamba: true
       - name: Make IRkernel available to Jupyter
         run: |
-          R -e "install.packages('devtools', repos = 'http://cran.us.r-project.org')"
-          R -e "devtools::install_github('IRkernel/IRkernel')"
           R -e "IRkernel::installspec()"
       - name: install environment
         run: |
@@ -180,7 +183,11 @@ jobs:
           activate-environment: python_3_with_flink
           environment-file: testing/env_python_3_with_flink_${{ matrix.flink }}.yml
           python-version: 3.7
+          mamba-version: "*"
+          channels: conda-forge,defaults
+          channel-priority: true
           auto-activate-base: false
+          use-mamba: true
       - name: install environment
         run: |
           mvn install -DskipTests -DskipRat -am -pl flink/flink-scala-2.11,flink/flink-scala-2.12,flink-cmd,zeppelin-interpreter-integration -Pflink-${{ matrix.flink }} -Pintegration -B
@@ -214,11 +221,13 @@ jobs:
           activate-environment: python_3_with_R
           environment-file: testing/env_python_3_with_R.yml
           python-version: 3.7
+          mamba-version: "*"
+          channels: conda-forge,defaults
+          channel-priority: true
           auto-activate-base: false
+          use-mamba: true
       - name: Make IRkernel available to Jupyter
         run: |
-          R -e "install.packages('devtools', repos = 'http://cran.us.r-project.org')"
-          R -e "devtools::install_github('IRkernel/IRkernel')"
           R -e "IRkernel::installspec()"
       - name: install environment
         run: |
@@ -257,11 +266,13 @@ jobs:
           activate-environment: python_3_with_R
           environment-file: testing/env_python_3_with_R.yml
           python-version: 3.7
+          mamba-version: "*"
+          channels: conda-forge,defaults
+          channel-priority: true
           auto-activate-base: false
+          use-mamba: true
       - name: Make IRkernel available to Jupyter
         run: |
-          R -e "install.packages('devtools', repos = 'http://cran.us.r-project.org')"
-          R -e "devtools::install_github('IRkernel/IRkernel')"
           R -e "IRkernel::installspec()"
       - name: install environment
         run: |
@@ -297,11 +308,13 @@ jobs:
           activate-environment: python_3_with_R
           environment-file: testing/env_python_3_with_R.yml
           python-version: 3.7
+          mamba-version: "*"
+          channels: conda-forge,defaults
+          channel-priority: true
           auto-activate-base: false
+          use-mamba: true
       - name: Make IRkernel available to Jupyter
         run: |
-          R -e "install.packages('devtools', repos = 'http://cran.us.r-project.org')"
-          R -e "devtools::install_github('IRkernel/IRkernel')"
           R -e "IRkernel::installspec()"
       - name: install environment
         run: |
@@ -340,11 +353,13 @@ jobs:
           activate-environment: python_3_with_R
           environment-file: testing/env_python_${{ matrix.python }}_with_R.yml
           python-version: ${{ matrix.python }}
+          mamba-version: "*"
+          channels: conda-forge,defaults
+          channel-priority: true
           auto-activate-base: false
+          use-mamba: true
       - name: Make IRkernel available to Jupyter
         run: |
-          R -e "install.packages('devtools', repos = 'http://cran.us.r-project.org')"
-          R -e "devtools::install_github('IRkernel/IRkernel')"
           R -e "IRkernel::installspec()"
       - name: install environment
         run: |
@@ -383,11 +398,13 @@ jobs:
           activate-environment: python_3_with_R
           environment-file: testing/env_python_${{ matrix.python }}_with_R.yml
           python-version: ${{ matrix.python }}
+          mamba-version: "*"
+          channels: conda-forge,defaults
+          channel-priority: true
           auto-activate-base: false
+          use-mamba: true
       - name: Make IRkernel available to Jupyter
         run: |
-          R -e "install.packages('devtools', repos = 'http://cran.us.r-project.org')"
-          R -e "devtools::install_github('IRkernel/IRkernel')"
           R -e "IRkernel::installspec()"
       - name: install environment
         run: mvn install -DskipTests -DskipRat -pl spark-submit,spark/spark-dependencies -am -Pspark-3.1 -Pspark-scala-2.12 -Phadoop2 -B
@@ -425,11 +442,13 @@ jobs:
           activate-environment: python_3_with_R
           environment-file: testing/env_python_${{ matrix.python }}_with_R.yml
           python-version: ${{ matrix.python }}
+          mamba-version: "*"
+          channels: conda-forge,defaults
+          channel-priority: true
           auto-activate-base: false
+          use-mamba: true
       - name: Make IRkernel available to Jupyter
         run: |
-          R -e "install.packages('devtools', repos = 'http://cran.us.r-project.org')"
-          R -e "devtools::install_github('IRkernel/IRkernel')"
           R -e "IRkernel::installspec()"
       - name: install environment
         run: mvn install -DskipTests -DskipRat -pl spark-submit,spark/spark-dependencies -am -Pspark-3.2 -Pspark-scala-2.12 -Phadoop2 -B
@@ -463,7 +482,11 @@ jobs:
           activate-environment: python_3_with_R
           environment-file: testing/env_python_3_with_R.yml
           python-version: 3.7
+          mamba-version: "*"
+          channels: conda-forge,defaults
+          channel-priority: true
           auto-activate-base: false
+          use-mamba: true
       - name: install environment
         run: |
           mvn install -DskipTests -DskipRat -pl livy -am  -B

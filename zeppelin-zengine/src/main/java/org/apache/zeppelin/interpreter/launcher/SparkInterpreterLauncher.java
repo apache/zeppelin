@@ -121,6 +121,7 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
     String scalaVersion = null;
     try {
       scalaVersion = detectSparkScalaVersion(getEnv("SPARK_HOME"), env);
+      LOGGER.info("Scala version: {}", scalaVersion);
       context.getProperties().put("zeppelin.spark.scala.version", scalaVersion);
     } catch (Exception e) {
       throw new IOException("Fail to detect scala version, the reason is:"+ e.getMessage());
