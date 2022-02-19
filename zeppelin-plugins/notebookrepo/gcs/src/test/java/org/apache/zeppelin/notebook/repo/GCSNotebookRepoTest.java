@@ -96,7 +96,6 @@ public class GCSNotebookRepoTest {
     Paragraph p = new Paragraph(note, null);
     p.setText("text");
     p.setStatus(Status.RUNNING);
-    String nullRoles = null;
     p.setAuthenticationInfo(new AuthenticationInfo("anonymous", (String)null, "anonymous"));
     note.addParagraph(p);
     return note;
