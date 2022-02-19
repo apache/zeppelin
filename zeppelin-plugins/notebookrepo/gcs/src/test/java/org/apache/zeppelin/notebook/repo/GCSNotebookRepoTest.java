@@ -96,6 +96,7 @@ public class GCSNotebookRepoTest {
     Paragraph p = new Paragraph(note, null);
     p.setText("text");
     p.setStatus(Status.RUNNING);
+    p.setAuthenticationInfo(new AuthenticationInfo("anonymous", (String)null, "anonymous"));
     note.addParagraph(p);
     return note;
   }
@@ -183,6 +184,21 @@ public class GCSNotebookRepoTest {
   public void testRemove() throws Exception {
     create(runningNote);
     notebookRepo.remove(runningNote.getId(), runningNote.getPath(), AUTH_INFO);
+    assertThat(storage.get(makeBlobId(runningNote.getId(), runningNote.getPath()))).isNull();
+  }
+
+  @Test
+  public void testMove_nonexistent() throws Exception {
+    try {
+      notebookRepo.move("id", "/name", "/name_new", AUTH_INFO);
+      fail();
+    } catch (IOException e) {}
+  }
+
+  @Test
+  public void testMove() throws Exception {
+    create(runningNote);
+    notebookRepo.move(runningNote.getId(), runningNote.getPath(), runningNote.getPath() + "_new", AUTH_INFO);
     assertThat(storage.get(makeBlobId(runningNote.getId(), runningNote.getPath()))).isNull();
   }
 
