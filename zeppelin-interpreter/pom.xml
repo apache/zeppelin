@@ -261,15 +261,9 @@
         <hadoop-client-api.artifact>hadoop-client-api</hadoop-client-api.artifact>
         <hadoop-client-runtime.artifact>hadoop-client-runtime</hadoop-client-runtime.artifact>
         <hadoop-client-minicluster.artifact>hadoop-client-minicluster</hadoop-client-minicluster.artifact>
-
       </properties>
 
       <dependencies>
-
-<!--        <dependency>-->
-<!--          <groupId>org.apache.hadoop</groupId>-->
-<!--          <artifactId>${hadoop-client-api.artifact}</artifactId>-->
-<!--        </dependency>-->
 
         <dependency>
           <groupId>org.apache.hadoop</groupId>
@@ -279,6 +273,7 @@
         <dependency>
           <groupId>org.apache.hadoop</groupId>
           <artifactId>${hadoop-client-minicluster.artifact}</artifactId>
+          <scope>test</scope>
         </dependency>
 
       </dependencies>
