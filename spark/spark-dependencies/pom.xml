@@ -118,7 +118,14 @@
       <version>${spark.version}</version>
     </dependency>
 
-    <!-- hadoop -->
+    <dependency>
+      <groupId>org.apache.spark</groupId>
+      <artifactId>spark-yarn_${spark.scala.binary.version}</artifactId>
+      <version>${spark.version}</version>
+    </dependency>
+
+    <!-- Include hadoop 2.7 into spark-dependencies jar.
+    Explicit specify compile scope, otherwise it would use provided defined in root pom.xml -->
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-client</artifactId>
@@ -127,15 +134,16 @@
     </dependency>
 
     <dependency>
-      <groupId>org.apache.spark</groupId>
-      <artifactId>spark-yarn_${spark.scala.binary.version}</artifactId>
-      <version>${spark.version}</version>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-yarn-api</artifactId>
+      <version>${hadoop.version}</version>
+      <scope>compile</scope>
     </dependency>
 
     <dependency>
       <groupId>org.apache.hadoop</groupId>
-      <artifactId>hadoop-yarn-api</artifactId>
-      <version>${yarn.version}</version>
+      <artifactId>hadoop-common</artifactId>
+      <version>${hadoop.version}</version>
       <scope>compile</scope>
     </dependency>
 

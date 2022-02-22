@@ -95,15 +95,15 @@ public abstract class FlinkIntegrationTest {
 
     InterpreterContext context = new InterpreterContext.Builder().setNoteId("note1").setParagraphId("paragraph_1").build();
     InterpreterResult interpreterResult = flinkInterpreter.interpret("1+1", context);
-    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
+    assertEquals(interpreterResult.toString(), InterpreterResult.Code.SUCCESS, interpreterResult.code());
     assertTrue(interpreterResult.message().get(0).getData().contains("2"));
 
     interpreterResult = flinkInterpreter.interpret("val data = benv.fromElements(1, 2, 3)\ndata.collect()", context);
-    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
+    assertEquals(interpreterResult.toString(), InterpreterResult.Code.SUCCESS, interpreterResult.code());
     assertTrue(interpreterResult.message().get(0).getData().contains("1, 2, 3"));
 
     interpreterResult = flinkInterpreter.interpret("val data = senv.fromElements(1, 2, 3)\ndata.print()", context);
-    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
+    assertEquals(interpreterResult.toString(), InterpreterResult.Code.SUCCESS, interpreterResult.code());
 
     // check spark weburl in zeppelin-server side
     InterpreterSetting flinkInterpreterSetting = interpreterSettingManager.getByName("flink");
