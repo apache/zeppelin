@@ -23,13 +23,13 @@
   <parent>
     <artifactId>flink-parent</artifactId>
     <groupId>org.apache.zeppelin</groupId>
-    <version>0.10.2-SNAPSHOT</version>
+    <version>0.10.1</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
   <artifactId>flink-scala-parent</artifactId>
   <packaging>pom</packaging>
-  <version>0.10.2-SNAPSHOT</version>
+  <version>0.10.1</version>
   <name>Zeppelin: Flink Scala Parent</name>
   <description>Zeppelin Flink Scala Parent</description>
 
