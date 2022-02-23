@@ -203,7 +203,7 @@ public class GCSNotebookRepoTest {
     Note secondNote = makeRunningNote();
     secondNote.setPath("/folder/sub_folder/test_note_second");
     create(secondNote);
-    notebookRepo.remove("folder", AUTH_INFO);
+    notebookRepo.remove("/folder", AUTH_INFO);
     assertThat(storage.get(makeBlobId(firstNote.getId(), firstNote.getPath()))).isNull();
     assertThat(storage.get(makeBlobId(secondNote.getId(), secondNote.getPath()))).isNull();
   }
@@ -240,7 +240,7 @@ public class GCSNotebookRepoTest {
     Note secondNote = makeRunningNote();
     secondNote.setPath("/folder/sub_folder/test_note_second");
     create(secondNote);
-    notebookRepo.move("folder", "folder_new", AUTH_INFO);
+    notebookRepo.move("/folder", "/folder_new", AUTH_INFO);
     assertThat(storage.get(makeBlobId(firstNote.getId(), firstNote.getPath()))).isNull();
     assertThat(storage.get(makeBlobId(firstNote.getId(), "/folder_new/test_note"))).isNotNull();
     assertThat(storage.get(makeBlobId(secondNote.getId(), secondNote.getPath()))).isNull();

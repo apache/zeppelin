@@ -224,8 +224,8 @@ public class GCSNotebookRepo implements NotebookRepo {
     }
 
     if(basePath.isPresent()) {
-      folderPath = basePath.get() + "/" + folderPath;
-      newFolderPath = basePath.get() + "/" + newFolderPath;
+      folderPath = basePath.get() + folderPath;
+      newFolderPath = basePath.get() + newFolderPath;
     }
     String oldPath = folderPath;
     String newPath = newFolderPath;
@@ -239,8 +239,9 @@ public class GCSNotebookRepo implements NotebookRepo {
         throw new IOException("Empty folder or folder does not exist: " + oldPath);
       }
       toBeDeleted.forEach((note -> {
-                storage.get(note).copyTo(bucketName, note.getName().replaceFirst(oldPath, newPath));
-                storage.delete(note);
+        String newLocation = ("/" + note.getName()).replaceFirst(oldPath, newPath).substring(1);
+        storage.get(note).copyTo(bucketName, ("/" + note.getName()).replaceFirst(oldPath, newPath).substring(1));
+        storage.delete(note);
       }));
     } catch (Exception se) {
       throw new IOException("Could not copy from " + oldPath + " to " + newPath + ": " + se.getMessage(), se);
@@ -267,7 +268,7 @@ public class GCSNotebookRepo implements NotebookRepo {
       folderPath = folderPath + "/";
     }
     if(basePath.isPresent()) {
-      folderPath = basePath.get() + "/" + folderPath;
+      folderPath = basePath.get() + folderPath;
     }
     String oldPath = folderPath;
     try {
@@ -280,9 +281,9 @@ public class GCSNotebookRepo implements NotebookRepo {
         throw new IOException("Empty folder or folder does not exist: " + oldPath);
       }
       // Note(Bagus): We an actually do this with storage.delete(toBeDeleted) but FakeStorageRPC used for tests still does not support it
-      toBeDeleted.forEach((note -> {
+      for(BlobId note: toBeDeleted) {
         storage.delete(note);
-      }));
+      }
     } catch (Exception se) {
       throw new IOException("Could not delete from " + oldPath + ": " + se.getMessage(), se);
     }
