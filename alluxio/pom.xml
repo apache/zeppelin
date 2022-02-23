@@ -100,6 +100,13 @@
             <version>${alluxio.version}</version>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-common</artifactId>
+            <version>2.7.7</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
