@@ -33,6 +33,7 @@ import com.google.gson.JsonParseException;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -214,8 +215,36 @@ public class GCSNotebookRepo implements NotebookRepo {
   }
 
   @Override
-  public void move(String folderPath, String newFolderPath, AuthenticationInfo subject) {
+  public void move(String folderPath, String newFolderPath, AuthenticationInfo subject) throws IOException{
+    if(!folderPath.endsWith("/")) {
+      folderPath = folderPath + "/";
+    }
+    if(!newFolderPath.endsWith("/")) {
+      newFolderPath = newFolderPath + "/";
+    }
 
+    if(basePath.isPresent()) {
+      folderPath = basePath.get() + "/" + folderPath;
+      newFolderPath = basePath.get() + "/" + newFolderPath;
+    }
+    String oldPath = folderPath;
+    String newPath = newFolderPath;
+    try {
+      ArrayList<BlobId> toBeDeleted = new ArrayList();
+      storage.list(bucketName, Storage.BlobListOption.prefix(oldPath)).getValues()
+              .forEach((note -> {
+                toBeDeleted.add(note.getBlobId());
+              }));
+      if(toBeDeleted.isEmpty()) {
+        throw new IOException("Empty folder or folder does not exist: " + oldPath);
+      }
+      toBeDeleted.forEach((note -> {
+                storage.get(note).copyTo(bucketName, note.getName().replaceFirst(oldPath, newPath));
+                storage.delete(note);
+      }));
+    } catch (Exception se) {
+      throw new IOException("Could not copy from " + oldPath + " to " + newPath + ": " + se.getMessage(), se);
+    }
   }
 
   @Override
@@ -233,8 +262,30 @@ public class GCSNotebookRepo implements NotebookRepo {
   }
 
   @Override
-  public void remove(String folderPath, AuthenticationInfo subject) {
-
+  public void remove(String folderPath, AuthenticationInfo subject) throws IOException {
+    if(!folderPath.endsWith("/")) {
+      folderPath = folderPath + "/";
+    }
+    if(basePath.isPresent()) {
+      folderPath = basePath.get() + "/" + folderPath;
+    }
+    String oldPath = folderPath;
+    try {
+      ArrayList<BlobId> toBeDeleted = new ArrayList();
+      storage.list(bucketName, Storage.BlobListOption.prefix(oldPath)).getValues()
+              .forEach((note -> {
+                toBeDeleted.add(note.getBlobId());
+              }));
+      if(toBeDeleted.isEmpty()) {
+        throw new IOException("Empty folder or folder does not exist: " + oldPath);
+      }
+      // Note(Bagus): We an actually do this with storage.delete(toBeDeleted) but FakeStorageRPC used for tests still does not support it
+      toBeDeleted.forEach((note -> {
+        storage.delete(note);
+      }));
+    } catch (Exception se) {
+      throw new IOException("Could not delete from " + oldPath + ": " + se.getMessage(), se);
+    }
   }
 
   @Override
