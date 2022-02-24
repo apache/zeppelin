@@ -40,8 +40,8 @@
     <frontend.maven.plugin.version>1.12.1</frontend.maven.plugin.version>
     <commons.vfs2.version>2.6.0</commons.vfs2.version>
     <eclipse.jgit.version>4.5.4.201711221230-r</eclipse.jgit.version>
-    <jackson.version>2.7.9</jackson.version>
-    <jackson.databind.version>2.7.9.7</jackson.databind.version>
+    <jackson.version>2.9.10</jackson.version>
+    <jackson.databind.version>2.9.10.6</jackson.databind.version>
   </properties>
 
   <dependencies>
