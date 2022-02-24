@@ -238,11 +238,11 @@ public class GCSNotebookRepo implements NotebookRepo {
       if(toBeDeleted.isEmpty()) {
         throw new IOException("Empty folder or folder does not exist: " + oldPath);
       }
-      toBeDeleted.forEach((note -> {
+      for(BlobId note: toBeDeleted) {
         String newLocation = ("/" + note.getName()).replaceFirst(oldPath, newPath).substring(1);
-        storage.get(note).copyTo(bucketName, ("/" + note.getName()).replaceFirst(oldPath, newPath).substring(1));
+        storage.get(note).copyTo(bucketName, newLocation);
         storage.delete(note);
-      }));
+      };
     } catch (Exception se) {
       throw new IOException("Could not copy from " + oldPath + " to " + newPath + ": " + se.getMessage(), se);
     }
