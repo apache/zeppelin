@@ -27,10 +27,7 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.StringJoiner;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -46,8 +43,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.util.Map;
-import java.util.Properties;
 
 /**
  * Spark specific launcher.
@@ -77,6 +72,15 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
         env.put(key, propValue);
       }
       if (isSparkConf(key, propValue)) {
+        // There is already initial value following --driver-java-options when SparkInterpreter launches.
+        // Values in sparkProperties would be added by --conf,
+        // and --conf spark.driver.extraJavaOptions would conflict with --driver-java-options.
+        // Therefore we add values of spark.driver.extraJavaOptions following --driver-java-options
+        // instead of into sparkProperties.
+        if (Objects.equals("spark.driver.extraJavaOptions", key)) {
+          env.put("SPARK_DRIVER_EXTRAJAVAOPTIONS_CONF", (String) properties.remove(key));
+          continue;
+        }
         sparkProperties.setProperty(key, propValue);
       }
     }
