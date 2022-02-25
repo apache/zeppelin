@@ -187,12 +187,10 @@ public class GCSNotebookRepoTest {
     assertThat(storage.get(makeBlobId(runningNote.getId(), runningNote.getPath()))).isNull();
   }
 
-  @Test
+  @Test(expected = IOException.class)
   public void testRemoveFolder_nonexistent() throws Exception {
-    try {
-      notebookRepo.remove("id", "/name", AUTH_INFO);
-      fail();
-    } catch (IOException e) {}
+    notebookRepo.remove("id", "/name", AUTH_INFO);
+    fail();
   }
 
   @Test
@@ -210,7 +208,7 @@ public class GCSNotebookRepoTest {
 
 
   @Test
-  public void testMove_nonexistent() throws Exception {
+  public void testMove_nonexistent() {
     try {
       notebookRepo.move("id", "/name", "/name_new", AUTH_INFO);
       fail();
@@ -224,12 +222,10 @@ public class GCSNotebookRepoTest {
     assertThat(storage.get(makeBlobId(runningNote.getId(), runningNote.getPath()))).isNull();
   }
 
-  @Test
+  @Test(expected = IOException.class)
   public void testMoveFolder_nonexistent() throws Exception {
-    try {
-      notebookRepo.move("/name", "/name_new", AUTH_INFO);
-      fail();
-    } catch (IOException e) {}
+    notebookRepo.move("/name", "/name_new", AUTH_INFO);
+    fail();
   }
 
   @Test
