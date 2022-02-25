@@ -36,7 +36,7 @@ import java.util.concurrent.TimeoutException;
 import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
 
-public class FlinkStreamSqlInterpreterTest extends SqlInterpreterTest {
+public class FlinkStreamSqlInterpreterTest extends FlinkSqlInterpreterTest {
 
   @Override
   protected FlinkSqlInterpreter createFlinkSqlInterpreter(Properties properties) {
@@ -70,7 +70,8 @@ public class FlinkStreamSqlInterpreterTest extends SqlInterpreterTest {
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
 
     context = getInterpreterContext();
-    String code = "val table = stenv.sqlQuery(\"select max(rowtime), count(1) from log\")\nz.show(table,streamType=\"single\", configs = Map(\"template\" -> \"Total Count: {1} <br/> {0}\"))";
+    String code = "val table = stenv.sqlQuery(\"select max(rowtime), count(1) from log\")\n" +
+            "z.show(table,streamType=\"single\", configs = Map(\"template\" -> \"Total Count: {1} <br/> {0}\"))";
     result = flinkInterpreter.interpret(code, context);
     assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
     List<InterpreterResultMessage> resultMessages = context.out.toInterpreterResultMessage();
@@ -160,6 +161,10 @@ public class FlinkStreamSqlInterpreterTest extends SqlInterpreterTest {
 
   @Test
   public void testCancelStreamSql() throws IOException, InterpreterException, InterruptedException, TimeoutException {
+    // clean checkpoint dir first, checkpoint dir is defined in init_stream.scala
+    File checkpointDir = new File("/tmp/flink/checkpoints");
+    FileUtils.deleteDirectory(checkpointDir);
+
     String initStreamScalaScript = getInitStreamScript(1000);
     InterpreterResult result = flinkInterpreter.interpret(initStreamScalaScript,
             getInterpreterContext());
@@ -181,13 +186,17 @@ public class FlinkStreamSqlInterpreterTest extends SqlInterpreterTest {
     });
     thread.start();
 
-    // the streaming job will run for 20 seconds. check init_stream.scala
-    // sleep 10 seconds to make sure the job is started but not finished
-    Thread.sleep(10 * 1000);
+    // the streaming job will run for 60 seconds. check init_stream.scala
+    // sleep 30 seconds to make sure the job is started but not finished
+    Thread.sleep(30 * 1000);
 
     InterpreterContext context = getInterpreterContext();
     sqlInterpreter.cancel(context);
-    waiter.await(10 * 1000);
+    waiter.await(30 * 1000);
+
+    // verify checkpoints
+    assertTrue(checkpointDir.listFiles(f -> f.isDirectory()).length > 0);
+
     // resume job
     sqlInterpreter.interpret("select url, count(1) as pv from " +
             "log group by url", context);
@@ -198,117 +207,154 @@ public class FlinkStreamSqlInterpreterTest extends SqlInterpreterTest {
             resultMessages.get(0).getData().contains("url\tpv\n"));
   }
 
-  // TODO(zjffdu) flaky test
-  // @Test
-  public void testResumeStreamSqlFromSavePoint() throws IOException, InterpreterException, InterruptedException, TimeoutException {
+  @Test
+  public void testResumeStreamSqlFromSavePointDir() throws IOException, InterpreterException, InterruptedException, TimeoutException {
+    if (!flinkInterpreter.getFlinkShims().getFlinkVersion().isAfterFlink114()) {
+      LOGGER.info("Skip testResumeStreamSqlFromSavePointPath, because this test is only passed after Flink 1.14 due to FLINK-23654");
+      // By default, this thread pool in Flink JobManager is the number of cpu cores. While the cpu cores in github action container is too small
+      return;
+    }
+
     String initStreamScalaScript = getInitStreamScript(1000);
     InterpreterResult result = flinkInterpreter.interpret(initStreamScalaScript,
             getInterpreterContext());
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
 
-    File savePointDir = FileUtils.getTempDirectory();
+    File savePointDir = Files.createTempDirectory("zeppelin-flink").toFile();
     final Waiter waiter = new Waiter();
     Thread thread = new Thread(() -> {
       try {
         InterpreterContext context = getInterpreterContext();
-        context.getLocalProperties().put("savePointDir", savePointDir.getAbsolutePath());
+        context.getLocalProperties().put(JobManager.SAVEPOINT_DIR, savePointDir.getAbsolutePath());
         context.getLocalProperties().put("parallelism", "1");
         context.getLocalProperties().put("maxParallelism", "10");
         InterpreterResult result2 = sqlInterpreter.interpret("select url, count(1) as pv from " +
                 "log group by url", context);
-        System.out.println("------------" + context.out.toString());
-        System.out.println("------------" + result2);
+        LOGGER.info("------------" + context.out.toString());
+        LOGGER.info("------------" + result2);
         waiter.assertTrue(context.out.toString().contains("url\tpv\n"));
+        // Flink job is succeed when it is cancelled with save point.
         waiter.assertEquals(InterpreterResult.Code.SUCCESS, result2.code());
       } catch (Exception e) {
-        e.printStackTrace();
+        LOGGER.error("Should not throw exception", e);
         waiter.fail("Should not fail here");
       }
       waiter.resume();
     });
     thread.start();
 
-    // the streaming job will run for 20 seconds. check init_stream.scala
-    // sleep 10 seconds to make sure the job is started but not finished
-    Thread.sleep(10 * 1000);
+    // the streaming job will run for 60 seconds. check init_stream.scala
+    // sleep 30 seconds to make sure the job is started but not finished
+    Thread.sleep(30 * 1000);
 
     InterpreterContext context = getInterpreterContext();
-    context.getLocalProperties().put("savePointDir", savePointDir.getAbsolutePath());
+    context.getLocalProperties().put(JobManager.SAVEPOINT_DIR, savePointDir.getAbsolutePath());
     context.getLocalProperties().put("parallelism", "2");
     context.getLocalProperties().put("maxParallelism", "10");
     sqlInterpreter.cancel(context);
-    waiter.await(10 * 1000);
+    waiter.await(30 * 1000);
+
+    // verify save point is generated
+    String[] allSavepointPath = savePointDir.list((dir, name) -> name.startsWith("savepoint"));
+    assertTrue(allSavepointPath.length > 0);
+
     // resume job from savepoint
+    context = getInterpreterContext();
+    context.getLocalProperties().put(JobManager.SAVEPOINT_DIR, savePointDir.getAbsolutePath());
+    context.getLocalProperties().put("parallelism", "2");
+    context.getLocalProperties().put("maxParallelism", "10");
     sqlInterpreter.interpret("select url, count(1) as pv from " +
             "log group by url", context);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
     List<InterpreterResultMessage> resultMessages = context.out.toInterpreterResultMessage();
     assertEquals(InterpreterResult.Type.TABLE, resultMessages.get(0).getType());
-    assertTrue(resultMessages.toString(),
-            resultMessages.get(0).getData().contains("url\tpv\n"));
+    assertEquals(resultMessages.toString(), "url\tpv\n" +
+                    "home\t10\n" +
+                    "product\t30\n" +
+                    "search\t20\n",
+            resultMessages.get(0).getData());
   }
 
-  // TODO(zjffdu) flaky test
-  //@Test
+  @Test
   public void testResumeStreamSqlFromExistSavePointPath() throws IOException, InterpreterException, InterruptedException, TimeoutException {
-    String initStreamScalaScript = getInitStreamScript(2000);
+    if (!flinkInterpreter.getFlinkShims().getFlinkVersion().isAfterFlink114()) {
+      LOGGER.info("Skip testResumeStreamSqlFromSavePointPath, because this test is only passed after Flink 1.14 due to FLINK-23654");
+      // By default, this thread pool in Flink JobManager is the number of cpu cores. While the cpu cores in github action container is too small
+      return;
+    }
+
+    String initStreamScalaScript = getInitStreamScript(1000);
     InterpreterResult result = flinkInterpreter.interpret(initStreamScalaScript,
             getInterpreterContext());
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
 
-    File savePointDir = FileUtils.getTempDirectory();
+    File savePointDir = Files.createTempDirectory("zeppelin-flink").toFile();
     final Waiter waiter = new Waiter();
     Thread thread = new Thread(() -> {
       try {
         InterpreterContext context = getInterpreterContext();
-        context.getLocalProperties().put("savePointDir", savePointDir.getAbsolutePath());
+        context.getLocalProperties().put(JobManager.SAVEPOINT_DIR, savePointDir.getAbsolutePath());
         context.getLocalProperties().put("parallelism", "1");
         context.getLocalProperties().put("maxParallelism", "10");
         InterpreterResult result2 = sqlInterpreter.interpret("select url, count(1) as pv from " +
                 "log group by url", context);
+        LOGGER.info("------------" + context.out.toString());
+        LOGGER.info("------------" + result2);
         waiter.assertTrue(context.out.toString().contains("url\tpv\n"));
+        // Flink job is succeed when it is cancelled with save point.
         waiter.assertEquals(InterpreterResult.Code.SUCCESS, result2.code());
       } catch (Exception e) {
-        e.printStackTrace();
+        LOGGER.error("Should not throw exception", e);
         waiter.fail("Should not fail here");
       }
       waiter.resume();
     });
     thread.start();
 
-    // the streaming job will run for 20 seconds. check init_stream.scala
-    // sleep 10 seconds to make sure the job is started but not finished
-    Thread.sleep(10 * 1000);
+    // the streaming job will run for 60 seconds. check init_stream.scala
+    // sleep 30 seconds to make sure the job is started but not finished
+    Thread.sleep(30 * 1000);
 
     InterpreterContext context = getInterpreterContext();
-    context.getLocalProperties().put("savePointDir", savePointDir.getAbsolutePath());
+    context.getLocalProperties().put(JobManager.SAVEPOINT_DIR, savePointDir.getAbsolutePath());
     context.getLocalProperties().put("parallelism", "2");
     context.getLocalProperties().put("maxParallelism", "10");
     sqlInterpreter.cancel(context);
-    waiter.await(10 * 1000);
+    waiter.await(30 * 1000);
 
     // get exist savepoint path from tempDirectory
     // if dir more than 1 then get first or throw error
     String[] allSavepointPath = savePointDir.list((dir, name) -> name.startsWith("savepoint"));
-    assertTrue(allSavepointPath.length>0);
+    assertTrue(allSavepointPath.length > 0);
 
     String savepointPath = savePointDir.getAbsolutePath().concat(File.separator).concat(allSavepointPath[0]);
 
     // resume job from exist savepointPath
+    context = getInterpreterContext();
     context.getConfig().put(JobManager.SAVEPOINT_PATH,savepointPath);
+    context.getLocalProperties().put("parallelism", "2");
+    context.getLocalProperties().put("maxParallelism", "10");
     sqlInterpreter.interpret("select url, count(1) as pv from " +
             "log group by url", context);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
     List<InterpreterResultMessage> resultMessages = context.out.toInterpreterResultMessage();
     assertEquals(InterpreterResult.Type.TABLE, resultMessages.get(0).getType());
-    assertTrue(resultMessages.toString(),
-            resultMessages.get(0).getData().contains("url\tpv\n"));
-
+    assertEquals(resultMessages.toString(), "url\tpv\n" +
+                    "home\t10\n" +
+                    "product\t30\n" +
+                    "search\t20\n",
+            resultMessages.get(0).getData());
   }
 
   @Test
   public void testResumeStreamSqlFromInvalidSavePointPath() throws IOException, InterpreterException, InterruptedException, TimeoutException {
-    String initStreamScalaScript = getInitStreamScript(2000);
+    if (!flinkInterpreter.getFlinkShims().getFlinkVersion().isAfterFlink114()) {
+      LOGGER.info("Skip testResumeStreamSqlFromSavePointPath, because this test is only passed after Flink 1.14 due to FLINK-23654");
+      // By default, this thread pool in Flink JobManager is the number of cpu cores. While the cpu cores in github action container is too small
+      return;
+    }
+
+    String initStreamScalaScript = getInitStreamScript(1000);
     InterpreterResult result = flinkInterpreter.interpret(initStreamScalaScript,
             getInterpreterContext());
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
@@ -343,10 +389,11 @@ public class FlinkStreamSqlInterpreterTest extends SqlInterpreterTest {
     result = sqlInterpreter.interpret("select myupper(url), count(1) as pv from " +
             "log group by url", context);
     assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
-//    assertEquals(InterpreterResult.Type.TABLE,
-//            updatedOutput.toInterpreterResultMessage().getType());
-//    assertTrue(updatedOutput.toInterpreterResultMessage().getData(),
-//            !updatedOutput.toInterpreterResultMessage().getData().isEmpty());
+    assertTrue(context.out.toString(), !context.out.toInterpreterResultMessage().isEmpty());
+    assertEquals(InterpreterResult.Type.TABLE,
+            context.out.toInterpreterResultMessage().get(0).getType());
+    assertTrue(context.out.toInterpreterResultMessage().get(0).getData(),
+            !context.out.toInterpreterResultMessage().get(0).getData().isEmpty());
   }
 
   @Test
@@ -389,6 +436,7 @@ public class FlinkStreamSqlInterpreterTest extends SqlInterpreterTest {
   @Test
   public void testMultipleInsertInto() throws InterpreterException, IOException {
     hiveShell.execute("create table source_table (id int, name string)");
+    hiveShell.execute("insert into source_table values(1, 'name')");
 
     File destDir = Files.createTempDirectory("flink_test").toFile();
     FileUtils.deleteDirectory(destDir);
@@ -426,16 +474,29 @@ public class FlinkStreamSqlInterpreterTest extends SqlInterpreterTest {
     result = sqlInterpreter.interpret(
             "insert into dest_table select * from source_table;insert into dest_table2 select * from source_table",
             context);
-
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+
+    // check dest_table
+    context = getInterpreterContext();
+    result = sqlInterpreter.interpret("select count(1) as c from dest_table", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    assertEquals("c\n1\n", context.out.toString());
+
+    // check dest_table2
+    context = getInterpreterContext();
+    result = sqlInterpreter.interpret("select count(1) as c from dest_table2", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    assertEquals("c\n1\n", context.out.toString());
 
     // runAsOne won't affect the select statement.
     context = getInterpreterContext();
     context.getLocalProperties().put("runAsOne", "true");
     result = sqlInterpreter.interpret(
-            "select 1",
+            "select 1 as a",
             context);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    assertEquals("a\n1\n", context.out.toString());
   }
 
   @Test

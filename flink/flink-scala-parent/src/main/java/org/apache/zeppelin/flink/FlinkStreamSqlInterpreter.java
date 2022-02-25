@@ -21,9 +21,9 @@ package org.apache.zeppelin.flink;
 import org.apache.zeppelin.flink.sql.AppendStreamSqlJob;
 import org.apache.zeppelin.flink.sql.SingleRowStreamSqlJob;
 import org.apache.zeppelin.flink.sql.UpdateStreamSqlJob;
-import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
+import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 
@@ -37,35 +37,35 @@ public class FlinkStreamSqlInterpreter extends FlinkSqlInterpreter {
   }
 
   @Override
-  protected boolean isBatch() {
-    return false;
-  }
-
-  @Override
   public void open() throws InterpreterException {
-    this.flinkInterpreter =
-            getInterpreterInTheSameSessionByClassName(FlinkInterpreter.class);
-    this.tbenv = flinkInterpreter.getJavaStreamTableEnvironment("blink");
     super.open();
+    FlinkSqlContext flinkSqlContext = new FlinkSqlContext(
+            flinkInterpreter.getExecutionEnvironment().getJavaEnv(),
+            flinkInterpreter.getStreamExecutionEnvironment().getJavaEnv(),
+            flinkInterpreter.getJavaBatchTableEnvironment("blink"),
+            flinkInterpreter.getJavaStreamTableEnvironment("blink"),
+            flinkInterpreter.getZeppelinContext(),
+            sql -> callInnerSelect(sql));
+
+    flinkInterpreter.getFlinkShims().initInnerStreamSqlInterpreter(flinkSqlContext);
   }
 
-  @Override
-  public void close() throws InterpreterException {
-
-  }
-
-  @Override
-  public void callInnerSelect(String sql, InterpreterContext context) throws IOException {
+  public void callInnerSelect(String sql) {
+    InterpreterContext context = InterpreterContext.get();
     String streamType = context.getLocalProperties().getOrDefault("type", "update");
     if (streamType.equalsIgnoreCase("single")) {
       SingleRowStreamSqlJob streamJob = new SingleRowStreamSqlJob(
               flinkInterpreter.getStreamExecutionEnvironment(),
-              tbenv,
+              flinkInterpreter.getJavaStreamTableEnvironment("blink"),
               flinkInterpreter.getJobManager(),
               context,
               flinkInterpreter.getDefaultParallelism(),
               flinkInterpreter.getFlinkShims());
-      streamJob.run(sql);
+      try {
+        streamJob.run(sql);
+      } catch (IOException e) {
+        throw new RuntimeException("Fail to run single type stream job", e);
+      }
     } else if (streamType.equalsIgnoreCase("append")) {
       AppendStreamSqlJob streamJob = new AppendStreamSqlJob(
               flinkInterpreter.getStreamExecutionEnvironment(),
@@ -74,7 +74,11 @@ public class FlinkStreamSqlInterpreter extends FlinkSqlInterpreter {
               context,
               flinkInterpreter.getDefaultParallelism(),
               flinkInterpreter.getFlinkShims());
-      streamJob.run(sql);
+      try {
+        streamJob.run(sql);
+      } catch (IOException e) {
+        throw new RuntimeException("Fail to run append type stream job", e);
+      }
     } else if (streamType.equalsIgnoreCase("update")) {
       UpdateStreamSqlJob streamJob = new UpdateStreamSqlJob(
               flinkInterpreter.getStreamExecutionEnvironment(),
@@ -83,24 +87,19 @@ public class FlinkStreamSqlInterpreter extends FlinkSqlInterpreter {
               context,
               flinkInterpreter.getDefaultParallelism(),
               flinkInterpreter.getFlinkShims());
-      streamJob.run(sql);
+      try {
+        streamJob.run(sql);
+      } catch (IOException e) {
+        throw new RuntimeException("Fail to run update type stream job", e);
+      }
     } else {
-      throw new IOException("Unrecognized stream type: " + streamType);
+      throw new RuntimeException("Unrecognized stream type: " + streamType);
     }
   }
 
   @Override
-  public void callInsertInto(String sql, InterpreterContext context) throws IOException {
-    super.callInsertInto(sql, context);
-  }
-
-  public void cancel(InterpreterContext context) throws InterpreterException {
-    this.flinkInterpreter.cancel(context);
-  }
-
-  @Override
-  public Interpreter.FormType getFormType() throws InterpreterException {
-    return Interpreter.FormType.SIMPLE;
+  public InterpreterResult runSqlList(String st, InterpreterContext context) {
+    return flinkShims.runSqlList(st, context, false);
   }
 
   @Override

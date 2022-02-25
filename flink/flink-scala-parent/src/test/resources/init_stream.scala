@@ -4,9 +4,16 @@ import org.apache.flink.streaming.api.TimeCharacteristic
 import org.apache.flink.streaming.api.checkpoint.ListCheckpointed
 import java.util.Collections
 import scala.collection.JavaConversions._
+import org.apache.flink.streaming.api.environment.CheckpointConfig.ExternalizedCheckpointCleanup
+import org.apache.flink.runtime.state.filesystem.FsStateBackend
+
 
 senv.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
-senv.enableCheckpointing(5000)
+senv.enableCheckpointing(10000)
+senv.setStateBackend(new FsStateBackend("file:///tmp/flink/checkpoints"));
+
+val chkConfig = senv.getCheckpointConfig
+chkConfig.enableExternalizedCheckpoints(ExternalizedCheckpointCleanup.RETAIN_ON_CANCELLATION)
 
 val data = senv.addSource(new SourceFunction[(Long, String)] with ListCheckpointed[java.lang.Long] {
 

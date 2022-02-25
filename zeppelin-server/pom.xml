@@ -457,9 +457,6 @@
   <profiles>
     <profile>
       <id>using-source-tree</id>
-      <activation>
-        <activeByDefault>true</activeByDefault>
-      </activation>
       <properties>
         <zeppelin.daemon.package.base>
 	        ../bin
@@ -469,9 +466,6 @@
 
     <profile>
       <id>using-packaged-distr</id>
-      <activation>
-        <activeByDefault>false</activeByDefault>
-      </activation>
       <properties>
         <zeppelin.daemon.package.base>
 	        ../zeppelin-distribution/target/zeppelin-${project.version}/zeppelin-${project.version}/bin
@@ -481,7 +475,6 @@
 
     <profile>
       <id>hadoop2</id>
-
       <properties>
         <hadoop.version>${hadoop2.7.version}</hadoop.version>
       </properties>
@@ -497,7 +490,9 @@
     </profile>
     <profile>
       <id>hadoop3</id>
-
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
       <properties>
         <hadoop.version>${hadoop3.2.version}</hadoop.version>
         <hadoop-client-runtime.artifact>hadoop-client-runtime</hadoop-client-runtime.artifact>

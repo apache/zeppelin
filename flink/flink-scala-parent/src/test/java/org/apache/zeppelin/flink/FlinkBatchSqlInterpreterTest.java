@@ -37,7 +37,7 @@ import java.util.Properties;
 import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
 
-public class FlinkBatchSqlInterpreterTest extends SqlInterpreterTest {
+public class FlinkBatchSqlInterpreterTest extends FlinkSqlInterpreterTest {
 
   @Override
   protected FlinkSqlInterpreter createFlinkSqlInterpreter(Properties properties) {
@@ -201,68 +201,46 @@ public class FlinkBatchSqlInterpreterTest extends SqlInterpreterTest {
     context = getInterpreterContext();
     result = sqlInterpreter.interpret(
             "insert into sink_table select * from source_table", context);
-    assertEquals(InterpreterResult.Code.ERROR, result.code());
+    assertEquals(context.out.toString(), InterpreterResult.Code.ERROR, result.code());
     resultMessages = context.out.toInterpreterResultMessage();
     assertTrue(resultMessages.get(0).getData(),
             resultMessages.get(0).getData().contains("already exists"));
 
-    // insert overwrite into
-    //    context = getInterpreterContext();
-    //    result = sqlInterpreter.interpret(
-    //            "insert overwrite dest_table select id + 1, name from source_table", context);
-    //    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    //    resultMessages = context.out.toInterpreterResultMessage();
-    //    assertEquals("Insertion successfully.\n", resultMessages.get(0).getData());
-    //
-    //    // verify insert into via select from the dest_table
-    //    context = getInterpreterContext();
-    //    result = sqlInterpreter.interpret(
-    //            "select * from dest_table", context);
-    //    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    //    resultMessages = context.out.toInterpreterResultMessage();
-    //    assertEquals("id\tname\n2\ta\n3\tb\n", resultMessages.get(0).getData());
-    //
-    //    // define scala udf
-    //    result = flinkInterpreter.interpret(
-    //            "class AddOne extends ScalarFunction {\n" +
-    //                    "  def eval(a: Int): Int = a + 1\n" +
-    //                    "}", getInterpreterContext());
-    //    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    //
-    //    result = flinkInterpreter.interpret("btenv.registerFunction(\"addOne\", new AddOne())",
-    //            getInterpreterContext());
-    //    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    //
-    //    // insert into dest_table2 using udf
-    //    destDir = Files.createTempDirectory("flink_test").toFile();
-    //    FileUtils.deleteDirectory(destDir);
-    //    result = sqlInterpreter.interpret(
-    //            "CREATE TABLE dest_table2 (\n" +
-    //                    "id int,\n" +
-    //                    "name string" +
-    //                    ") WITH (\n" +
-    //                    "'format.field-delimiter'=',',\n" +
-    //                    "'connector.type'='filesystem',\n" +
-    //                    "'format.derive-schema'='true',\n" +
-    //                    "'connector.path'='" + destDir.getAbsolutePath() + "',\n" +
-    //                    "'format.type'='csv'\n" +
-    //                    ");", getInterpreterContext());
-    //    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    //
-    //    context = getInterpreterContext();
-    //    result = sqlInterpreter.interpret(
-    //            "insert into dest_table2 select addOne(id), name from source_table", context);
-    //    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    //    resultMessages = context.out.toInterpreterResultMessage();
-    //    assertEquals("Insertion successfully.\n", resultMessages.get(0).getData());
-    //
-    //    // verify insert into via select from the dest table
-    //    context = getInterpreterContext();
-    //    result = sqlInterpreter.interpret(
-    //            "select * from dest_table2", context);
-    //    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    //    resultMessages = context.out.toInterpreterResultMessage();
-    //    assertEquals("id\tname\n2\ta\n3\tb\n", resultMessages.get(0).getData());
+    // insert into again will succeed after destDir is deleted
+    destDir.delete();
+    context = getInterpreterContext();
+    result = sqlInterpreter.interpret(
+            "insert into sink_table select * from source_table", context);
+    resultMessages = context.out.toInterpreterResultMessage();
+    assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
+    assertEquals("Insertion successfully.\n", resultMessages.get(0).getData());
+
+    // define scala udf
+    result = flinkInterpreter.interpret(
+            "class AddOne extends ScalarFunction {\n" +
+                    "  def eval(a: Int): Int = a + 1\n" +
+                    "}", getInterpreterContext());
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    result = flinkInterpreter.interpret("btenv.registerFunction(\"addOne\", new AddOne())",
+            getInterpreterContext());
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+
+    // insert into sink_table again using udf
+    destDir.delete();
+    context = getInterpreterContext();
+    result = sqlInterpreter.interpret(
+            "insert into sink_table select addOne(id), name from source_table", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    resultMessages = context.out.toInterpreterResultMessage();
+    assertEquals("Insertion successfully.\n", resultMessages.get(0).getData());
+
+    // verify insert into via select from the dest table
+    context = getInterpreterContext();
+    result = sqlInterpreter.interpret(
+            "select * from sink_table", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    resultMessages = context.out.toInterpreterResultMessage();
+    assertEquals("id\tname\n2\ta\n3\tb\n", resultMessages.get(0).getData());
   }
 
   @Test
@@ -293,8 +271,8 @@ public class FlinkBatchSqlInterpreterTest extends SqlInterpreterTest {
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
     List<InterpreterResultMessage> resultMessages = context.out.toInterpreterResultMessage();
     assertEquals("Insertion successfully.\n", resultMessages.get(0).getData());
-    assertEquals(ExecutionConfigOptions.TABLE_EXEC_RESOURCE_DEFAULT_PARALLELISM.defaultValue(),
-            sqlInterpreter.tbenv.getConfig().getConfiguration().get(ExecutionConfigOptions.TABLE_EXEC_RESOURCE_DEFAULT_PARALLELISM));
+    assertEquals(10,
+            flinkInterpreter.getBatchTableEnvironment().getConfig().getConfiguration().get(ExecutionConfigOptions.TABLE_EXEC_RESOURCE_DEFAULT_PARALLELISM).intValue());
 
     // set then insert into
     destDir.delete();
@@ -305,21 +283,10 @@ public class FlinkBatchSqlInterpreterTest extends SqlInterpreterTest {
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
     resultMessages = context.out.toInterpreterResultMessage();
     assertEquals("Insertion successfully.\n", resultMessages.get(0).getData());
-    assertEquals(ExecutionConfigOptions.TABLE_EXEC_RESOURCE_DEFAULT_PARALLELISM.defaultValue(),
-            sqlInterpreter.tbenv.getConfig().getConfiguration().get(ExecutionConfigOptions.TABLE_EXEC_RESOURCE_DEFAULT_PARALLELISM));
-    assertEquals(OptimizerConfigOptions.TABLE_OPTIMIZER_SOURCE_PREDICATE_PUSHDOWN_ENABLED.defaultValue(),
-            sqlInterpreter.tbenv.getConfig().getConfiguration().get(OptimizerConfigOptions.TABLE_OPTIMIZER_SOURCE_PREDICATE_PUSHDOWN_ENABLED));
-
-    // invalid config
-    destDir.delete();
-    context = getInterpreterContext();
-    result = sqlInterpreter.interpret(
-            "set table.invalid_config=false;" +
-                    "insert into sink_table select * from source_table", context);
-    assertEquals(InterpreterResult.Code.ERROR, result.code());
-    resultMessages = context.out.toInterpreterResultMessage();
-    assertTrue(resultMessages.get(0).getData(),
-            resultMessages.get(0).getData().contains("table.invalid_config is not a valid table/sql config"));
+    assertEquals(10,
+            flinkInterpreter.getBatchTableEnvironment().getConfig().getConfiguration().get(ExecutionConfigOptions.TABLE_EXEC_RESOURCE_DEFAULT_PARALLELISM).intValue());
+    assertEquals(false,
+            flinkInterpreter.getBatchTableEnvironment().getConfig().getConfiguration().get(OptimizerConfigOptions.TABLE_OPTIMIZER_SOURCE_PREDICATE_PUSHDOWN_ENABLED).booleanValue());
   }
 
   @Test

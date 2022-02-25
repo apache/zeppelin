@@ -19,11 +19,8 @@ package org.apache.zeppelin.flink;
 
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.zeppelin.flink.sql.SqlCommandParser;
 import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.jline.utils.AttributedString;
-import org.jline.utils.AttributedStringBuilder;
-import org.jline.utils.AttributedStyle;
+import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,8 +28,6 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.net.InetAddress;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 import java.util.Properties;
 
 /**
@@ -47,13 +42,15 @@ public abstract class FlinkShims {
 
   protected Properties properties;
   protected FlinkVersion flinkVersion;
+  protected FlinkSqlContext flinkSqlContext;
 
   public FlinkShims(FlinkVersion flinkVersion, Properties properties) {
     this.flinkVersion = flinkVersion;
     this.properties = properties;
   }
 
-  private static FlinkShims loadShims(FlinkVersion flinkVersion, Properties properties)
+  private static FlinkShims loadShims(FlinkVersion flinkVersion,
+                                      Properties properties)
       throws Exception {
     Class<?> flinkShimsClass;
     if (flinkVersion.getMajorVersion() == 1 && flinkVersion.getMinorVersion() == 12) {
@@ -65,6 +62,9 @@ public abstract class FlinkShims {
     } else if (flinkVersion.getMajorVersion() == 1 && flinkVersion.getMinorVersion() == 14) {
       LOGGER.info("Initializing shims for Flink 1.14");
       flinkShimsClass = Class.forName("org.apache.zeppelin.flink.Flink114Shims");
+    } else if (flinkVersion.getMajorVersion() == 1 && flinkVersion.getMinorVersion() == 15) {
+      LOGGER.info("Initializing shims for Flink 1.15");
+      flinkShimsClass = Class.forName("org.apache.zeppelin.flink.Flink115Shims");
     } else {
       throw new Exception("Flink version: '" + flinkVersion + "' is not supported yet");
     }
@@ -87,20 +87,13 @@ public abstract class FlinkShims {
     return flinkShims;
   }
 
-  protected static AttributedString formatCommand(SqlCommandParser.SqlCommand cmd, String description) {
-    return new AttributedStringBuilder()
-            .style(AttributedStyle.DEFAULT.bold())
-            .append(cmd.toString())
-            .append("\t\t")
-            .style(AttributedStyle.DEFAULT)
-            .append(description)
-            .append('\n')
-            .toAttributedString();
-  }
-
   public FlinkVersion getFlinkVersion() {
     return flinkVersion;
   }
+
+  public abstract void initInnerBatchSqlInterpreter(FlinkSqlContext flinkSqlContext);
+
+  public abstract void initInnerStreamSqlInterpreter(FlinkSqlContext flinkSqlContext);
 
   public abstract void disableSysoutLogging(Object batchConfig, Object streamConfig);
 
@@ -115,12 +108,6 @@ public abstract class FlinkShims {
                                                    Object serializer);
 
   public abstract List collectToList(Object table) throws Exception;
-
-  public abstract void startMultipleInsert(Object tblEnv, InterpreterContext context) throws Exception;
-
-  public abstract void addInsertStatement(String sql, Object tblEnv, InterpreterContext context) throws Exception;
-
-  public abstract boolean executeMultipleInsertInto(String jobName, Object tblEnv, InterpreterContext context) throws Exception;
 
   public abstract boolean rowEquals(Object row1, Object row2);
 
@@ -138,21 +125,11 @@ public abstract class FlinkShims {
 
   public abstract void registerTableSink(Object stenv, String tableName, Object collectTableSink);
 
-  public abstract Optional<SqlCommandParser.SqlCommandCall> parseSql(Object tableEnv, String stmt);
-
-  public abstract void executeSql(Object tableEnv, String sql);
-
-  public abstract String explain(Object tableEnv, String sql);
-
-  public abstract String sqlHelp();
-
   public abstract void setCatalogManagerSchemaResolver(Object catalogManager,
                                                        Object parser,
                                                        Object environmentSetting);
 
   public abstract Object updateEffectiveConfig(Object cliFrontend, Object commandLine, Object executorConfig);
-
-  public abstract Map extractTableConfigOptions();
 
   public void setBatchRuntimeMode(Object tableConfig) {
     // only needed after flink 1.13
@@ -169,4 +146,6 @@ public abstract class FlinkShims {
   public abstract ImmutablePair<Object, Object> createPlannerAndExecutor(
           ClassLoader classLoader, Object environmentSettings, Object sEnv,
           Object tableConfig, Object functionCatalog, Object catalogManager);
+
+  public abstract InterpreterResult runSqlList(String st, InterpreterContext context, boolean isBatch);
 }
