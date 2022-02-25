@@ -352,7 +352,8 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     <tr>
       <td>Description</td>
       <td>This ```POST``` method clones a note by the given id and create a new note using the given name
-          or default name if none given.
+          or default name if none given. If what you want to copy is a certain version of note, you need 
+          to specify the revisionId.
           The body field of the returned JSON contains the new note id.
       </td>
     </tr>
@@ -373,7 +374,10 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
       <td>
 
 ```json
-{"name": "name of new note"}
+{
+  "name": "name of new note",
+  "revisionId": "revisionId of note to be copied (optional)"
+}
 ```
 </td>
     </tr>

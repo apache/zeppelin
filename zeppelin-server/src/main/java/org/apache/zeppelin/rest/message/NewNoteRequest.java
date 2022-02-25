@@ -33,6 +33,7 @@ public class NewNoteRequest implements JsonSerializable {
   private String defaultInterpreterGroup;
   private boolean addingEmptyParagraph = false;
   private List<NewParagraphRequest> paragraphs;
+  private String revisionId;
 
   public NewNoteRequest (){
   }
@@ -51,6 +52,10 @@ public class NewNoteRequest implements JsonSerializable {
 
   public List<NewParagraphRequest> getParagraphs() {
     return paragraphs;
+  }
+
+  public String getRevisionId() {
+    return revisionId;
   }
 
   public String toJson() {
