@@ -1574,3 +1574,239 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
   </table>
 
 
+## Version control
+
+
+
+### Get revisions of a note
+
+  <table class="table-configuration">
+    <col width="200">
+    <tr>
+      <td>Description</td>
+      <td>This ```GET``` method gets the revisions of a note.
+      </td>
+    </tr>
+    <tr>
+      <td>URL</td>
+      <td>```http://[zeppelin-server]:[zeppelin-port]/api/notebook/[noteId]/revision```</td>
+    </tr>
+    <tr>
+      <td>Success code</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td>Fail code</td>
+      <td>500</td>
+    </tr>
+    <tr>
+      <td> sample JSON response </td>
+      <td>
+
+```json
+{
+    "status": "OK",
+    "body": [
+        {
+            "id": "f97ce5c7f076783023d33623ad52ca994277e5c1",
+            "message": "first commit",
+            "time": 1645712061
+        },
+        {
+            "id": "e9b964bebdecec6a59efe085f97db4040ae333aa",
+            "message": "second commit",
+            "time": 1645693163
+        }
+    ]
+}
+```
+</td>
+    </tr>
+  </table>
+
+<br/>
+### Save a revision for a note
+  <table class="table-configuration">
+    <col width="200">
+    <tr>
+      <td>Description</td>
+      <td>This ```POST``` method saves a revision for a note.
+      </td>
+    </tr>
+    <tr>
+      <td>URL</td>
+      <td>```http://[zeppelin-server]:[zeppelin-port]/api/notebook/[noteId]/revision```</td>
+    </tr>
+    <tr>
+      <td>Success code</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td>Bad Request code</td>
+      <td>400</td>
+    </tr>
+    <tr>
+      <td>Fail code</td>
+      <td>500</td>
+    </tr>
+    <tr>
+      <td> sample JSON input </td>
+      <td>
+
+```json
+{
+  "commitMessage": "first commit"
+}
+```
+</td>
+    </tr>
+    <tr>
+      <td> sample JSON response </td>
+      <td>
+
+```json
+{
+  "status": "OK"
+}
+```
+</td>
+    </tr>
+  </table>
+### Get a revision of a note
+  <table class="table-configuration">
+    <col width="200">
+    <tr>
+      <td>Description</td>
+      <td>This ```GET``` method gets a revision of a note.
+      </td>
+    </tr>
+    <tr>
+      <td>URL</td>
+      <td>```http://[zeppelin-server]:[zeppelin-port]/api/notebook/[noteId]/revision/{revisionId}```</td>
+    </tr>
+    <tr>
+      <td>Success code</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td>Fail code</td>
+      <td>500</td>
+    </tr>
+    <tr>
+      <td> sample JSON response </td>
+      <td>
+
+```json
+{
+  "status": "OK",
+  "message": "",
+  "body": {
+    "paragraphs": [
+      {
+        "text": "%sql \nselect age, count(1) value\nfrom bank \nwhere age < 30 \ngroup by
+ age \norder by age",
+        "config": {
+          "colWidth": 4,
+          "graph": {
+            "mode": "multiBarChart",
+            "height": 300,
+            "optionOpen": false,
+            "keys": [
+              {
+                "name": "age",
+                "index": 0,
+                "aggr": "sum"
+              }
+            ],
+            "values": [
+              {
+                "name": "value",
+                "index": 1,
+                "aggr": "sum"
+              }
+            ],
+            "groups": [],
+            "scatter": {
+              "xAxis": {
+                "name": "age",
+                "index": 0,
+                "aggr": "sum"
+              },
+              "yAxis": {
+                "name": "value",
+                "index": 1,
+                "aggr": "sum"
+              }
+            }
+          }
+        },
+        "settings": {
+          "params": {},
+          "forms": {}
+        },
+        "jobName": "paragraph\_1423500782552\_-1439281894",
+        "id": "20150210-015302\_1492795503",
+        "results": {
+          "code": "SUCCESS",
+          "msg": [
+            {
+              "type": "TABLE",
+              "data": "age\tvalue\n19\t4\n20\t3\n21\t7\n22\t9\n23\t20\n24\t24\n25\t44\n26
+\t77\n27\t94\n28\t103\n29\t97\n"
+            }
+          ]
+        },
+        "dateCreated": "Feb 10, 2015 1:53:02 AM",
+        "dateStarted": "Jul 3, 2015 1:43:17 PM",
+        "dateFinished": "Jul 3, 2015 1:43:23 PM",
+        "status": "FINISHED",
+        "progressUpdateIntervalMs": 500
+      }
+    ],
+    "name": "Zeppelin Tutorial",
+    "id": "2A94M5J1Z",
+    "angularObjects": {},
+    "config": {
+      "looknfeel": "default"
+    },
+    "info": {}
+  }
+}
+```
+</td>
+    </tr>
+  </table>
+### Revert a note to a specified version
+  <table class="table-configuration">
+    <col width="200">
+    <tr>
+      <td>Description</td>
+      <td>This ```PUT``` method reverts a note to a specified version
+      </td>
+    </tr>
+    <tr>
+      <td>URL</td>
+      <td>```http://[zeppelin-server]:[zeppelin-port]/api/notebook/[noteId]/revision/{revisionId}```</td>
+    </tr>
+    <tr>
+      <td>Success code</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td>Fail code</td>
+      <td>500</td>
+    </tr>
+    <tr>
+      <td> sample JSON response </td>
+      <td>
+
+```json
+{
+  "status": "OK"
+}
+```
+</td>
+    </tr>
+  </table>
+
+

@@ -48,6 +48,7 @@ import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.notebook.AuthorizationService;
+import org.apache.zeppelin.notebook.repo.NotebookRepoWithVersionControl;
 import org.apache.zeppelin.notebook.scheduler.SchedulerService;
 import org.apache.zeppelin.rest.exception.BadRequestException;
 import org.apache.zeppelin.rest.exception.ForbiddenException;
@@ -334,9 +335,94 @@ public class NotebookRestApi extends AbstractRestApi {
 
 
   /**
+   * Get revision history of a note.
+   *
+   * @param noteId
+   * @return
+   * @throws IOException
+   */
+  @GET
+  @Path("{noteId}/revision")
+  @ZeppelinApi
+  public Response getNoteRevisionHistory(@PathParam("noteId") String noteId) throws IOException {
+    LOGGER.info("Get revision history of note {}", noteId);
+    List<NotebookRepoWithVersionControl.Revision> revisions = notebookService.listRevisionHistory(noteId, getServiceContext(), new RestServiceCallback<>());
+    return new JsonResponse<>(Status.OK, revisions).build();
+  }
+
+
+  /**
+   * Save a revision for the a note
+   * 
+   * @param message
+   * @param noteId
+   * @return
+   * @throws IOException
+   */
+  @POST
+  @Path("{noteId}/revision")
+  @ZeppelinApi
+  public Response checkpointNote(String message,
+                                 @PathParam("noteId") String noteId) throws IOException {
+    LOGGER.info("Commit note by JSON {}", message);
+    CheckpointNoteRequest request = GSON.fromJson(message, CheckpointNoteRequest.class);
+    if (request == null || StringUtils.isEmpty(request.getCommitMessage())) {
+      LOGGER.warn("Trying to commit notebook {} with empty commitMessage", noteId);
+      throw new BadRequestException("commitMessage can not be empty");
+    }
+    NotebookRepoWithVersionControl.Revision revision = notebookService.checkpointNote(noteId, request.getCommitMessage(), getServiceContext(), new RestServiceCallback<>());
+    if (revision == null || StringUtils.isEmpty(revision.id)) {
+      return new JsonResponse<>(Status.OK, "Couldn't checkpoint note revision: possibly no changes found or storage doesn't support versioning. "
+              + "Please check the logs for more details.").build();
+    }
+    return new JsonResponse<>(Status.OK, "", revision.id).build();
+  }
+
+
+  /**
+   * Get a specified revision of a note.
+   *
+   * @param noteId
+   * @param revisionId
+   * @param reload
+   * @return
+   * @throws IOException
+   */
+  @GET
+  @Path("{noteId}/revision/{revisionId}")
+  @ZeppelinApi
+  public Response getNoteByRevison(@PathParam("noteId") String noteId,
+                                   @PathParam("revisionId") String revisionId,
+                                   @QueryParam("reload") boolean reload) throws IOException {
+    LOGGER.info("Get note {} by the revision {}", noteId, revisionId);
+    Note noteRevision = notebookService.getNotebyRevision(noteId, revisionId, getServiceContext(), new RestServiceCallback<>());
+    return new JsonResponse<>(Status.OK, "", noteRevision).build();
+  }
+
+
+  /**
+   * Revert a note to the specified version
+   *
+   * @param noteId
+   * @param revisionId
+   * @return
+   * @throws IOException
+   */
+  @PUT
+  @Path("{noteId}/revision/{revisionId}")
+  @ZeppelinApi
+  public Response setNoteRevision(@PathParam("noteId") String noteId,
+                                  @PathParam("revisionId") String revisionId) throws IOException {
+    LOGGER.info("Revert note {} to the revision {}", noteId, revisionId);
+    notebookService.setNoteRevision(noteId, revisionId, getServiceContext(), new RestServiceCallback<>());
+    return new JsonResponse<>(Status.OK).build();
+  }
+
+
+  /**
    * Get note of this specified notePath.
    *
-   *  @param message - JSON containing notePath
+   * @param message - JSON containing notePath
    * @param reload
    * @return
    * @throws IOException
