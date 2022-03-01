@@ -44,7 +44,7 @@ limitations under the License.
 <br />
 ## Multiple Language Backend
 [Apache Zeppelin interpreter](./docs/latest/usage/interpreter/overview.html) concept allows any language/data-processing-backend to be plugged into Zeppelin.
-Currently Apache Zeppelin supports many interpreters such as Apache Spark, Python, JDBC, Markdown and Shell.
+Currently Apache Zeppelin supports many interpreters such as Apache Spark, Apache Flink, Python, R, JDBC, Markdown and Shell.
 
 <img class="img-responsive" width="500px" style="margin:0 auto; padding: 26px;" src="./assets/themes/zeppelin/img/available_interpreters.png" />
 

@@ -22,7 +22,7 @@ limitations under the License.
         <h4>Zeppelin SDK</h4>
         <div>
           <p>
-            Not only you can use Zeppelin as interactive notebook, you can also use it as JobServer via Zeppelin SDK(<a href="./docs/latest/usage/zeppelin_sdk/client_api.html">client api</a> 
+            Not only you can use Zeppelin as interactive notebook, you can also use it as JobServer via Zeppelin SDK (<a href="./docs/latest/usage/zeppelin_sdk/client_api.html">client api</a> 
 & <a href="./docs/latest/usage/zeppelin_sdk/session_api.html">session api</a>)
           </p>
         </div>
@@ -31,10 +31,9 @@ limitations under the License.
       <div class="border col-md-4 col-sm-4">
         <h4>Spark Interpreter Improved</h4>
         <div>
-          <p>IPython interpreter provides comparable user experience like Jupyter Notebook. For the details, click <a href="./docs/latest/interpreter/python.html#ipython-support">here</a>.
-            <br/>
-            R interpreter provides comparable user experience like Jupyter Notebook. You can also make R shiny app in Zeppelin. click <a href="./docs/latest/interpreter/r.html">here</a>.
-          </p>
+          <p>
+             Spark interpreter provides comparable Python & R user experience like Jupyter Notebook. For the details, click <a href="./docs/latest/interpreter/spark.html">here</a>.
+         </p>
         </div>
       </div>
 
@@ -42,7 +41,8 @@ limitations under the License.
         <h4>Flink Interpreter Improved</h4>
         <div>
             <p>
-                Flink interpreter support Flink 1.10 and afterwards, both Scala 2.11 & 2.12 are supported. For the details, click <a href="./docs/latest/interpreter/flink.html>here</a>. 
+                Flink interpreter is refactored, supports Scala, Python & SQL. Flink 1.10 and afterwards (Scala 2.11 & 2.12) are all supported. <br/>
+                For the details, click <a href="./docs/latest/interpreter/flink.html">here</a>. 
             </p>
         </div>
       </div>
@@ -55,7 +55,7 @@ limitations under the License.
         <h4>Yarn Interpreter Mode</h4>
         <div>
             <p>
-              You can run interpreter in yarn cluster, e.g. you can run <a href="./docs/latest/interpreter/python.html#ipython-support">Python interpreter in yarn</a> and <a href="./docs/latest/interpreter/python.html#ipython-support">R interpreter in yarn</a> as well.
+              You can run interpreter in yarn cluster, e.g. you can run <a href="./docs/latest/interpreter/python.html#run-python-interpreter-in-yarn-cluster">Python interpreter in yarn</a> and <a href="./docs/latest/interpreter/r.html#run-r-in-yarn-cluster">R interpreter in yarn</a>.
             </p>
         </div>
       </div>
