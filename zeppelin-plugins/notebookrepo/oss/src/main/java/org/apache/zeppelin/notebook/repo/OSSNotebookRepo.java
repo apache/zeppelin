@@ -41,7 +41,6 @@ public class OSSNotebookRepo implements NotebookRepoWithVersionControl {
   private static int NOTE_MAX_VERSION_NUM;
 
   // Use ossOperator instead of ossClient directly
-  private OSS ossClient;
   private OSSOperator ossOperator;
 
   public OSSNotebookRepo() {
@@ -59,8 +58,7 @@ public class OSSNotebookRepo implements NotebookRepoWithVersionControl {
     }
     String accessKeyId = conf.getOSSAccessKeyId();
     String accessKeySecret = conf.getOSSAccessKeySecret();
-    this.ossClient = new OSSClientBuilder().build(endpoint, accessKeyId, accessKeySecret);
-    this.ossOperator = new OSSOperator(ossClient);
+    this.ossOperator = new OSSOperator(endpoint, accessKeyId, accessKeySecret);
   }
 
   @Override
@@ -162,7 +160,7 @@ public class OSSNotebookRepo implements NotebookRepoWithVersionControl {
 
   @Override
   public void close() {
-    ossClient.shutdown();
+    ossOperator.shutdown();
   }
 
   @Override

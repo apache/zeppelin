@@ -18,6 +18,7 @@
 package org.apache.zeppelin.notebook.repo;
 
 import com.aliyun.oss.OSS;
+import com.aliyun.oss.OSSClientBuilder;
 import com.aliyun.oss.model.*;
 import org.apache.commons.io.IOUtils;
 
@@ -31,8 +32,8 @@ import java.util.List;
 public class OSSOperator {
   private OSS ossClient;
 
-  public OSSOperator(OSS ossClient) {
-    this.ossClient = ossClient;
+  public OSSOperator(String endpoint, String accessKeyId, String accessKeySecret) {
+    this.ossClient = new OSSClientBuilder().build(endpoint, accessKeyId, accessKeySecret);
   }
 
 
@@ -111,6 +112,10 @@ public class OSSOperator {
       nextMarker = objectListing.getNextMarker();
     } while (objectListing.isTruncated());
     return keys;
+  }
+
+  public void shutdown() {
+    ossClient.shutdown();
   }
 
 
