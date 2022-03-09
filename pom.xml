@@ -128,7 +128,7 @@
     <gson-extras.version>0.2.2</gson-extras.version>
     <jetty.version>9.4.31.v20200723</jetty.version>
     <httpcomponents.core.version>4.4.1</httpcomponents.core.version>
-    <httpcomponents.client.version>4.5.1</httpcomponents.client.version>
+    <httpcomponents.client.version>4.5.13</httpcomponents.client.version>
     <httpcomponents.asyncclient.version>4.0.2</httpcomponents.asyncclient.version>
     <commons.compress.version>1.20</commons.compress.version>
     <commons.lang3.version>3.10</commons.lang3.version>
