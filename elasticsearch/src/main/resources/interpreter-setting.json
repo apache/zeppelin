@@ -22,7 +22,7 @@
         "envName": "ELASTICSEARCH_CLIENT_TYPE",
         "propertyName": "elasticsearch.client.type",
         "defaultValue": "transport",
-        "description": "The type of client for Elasticsearch (transport or http)",
+        "description": "The type of client for Elasticsearch (transport or http or https)",
         "type": "string"
       },
       "elasticsearch.cluster.name": {

@@ -29,7 +29,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @RunWith(value = Parameterized.class)
-public class SparkIntegrationTest24 extends SparkIntegrationTest{
+public class SparkIntegrationTest24 extends SparkIntegrationTest {
 
   public SparkIntegrationTest24(String sparkVersion, String hadoopVersion) {
     super(sparkVersion, hadoopVersion);
@@ -38,7 +38,7 @@ public class SparkIntegrationTest24 extends SparkIntegrationTest{
   @Parameterized.Parameters
   public static List<Object[]> data() {
     return Arrays.asList(new Object[][]{
-            {"2.4.7", "2.7"}
+            {"2.4.8", "2.7"}
     });
   }
 

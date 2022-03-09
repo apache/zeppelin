@@ -1206,16 +1206,19 @@ public class InterpreterSetting {
 
   private ExecutionContext getExecutionContext(String user, String noteId) {
     try {
-      Note note = getInterpreterSettingManager().getNotebook().getNote(noteId);
-      if (note == null) {
-        throw new RuntimeException("No such note: " + noteId);
-      } else {
-        ExecutionContext context = note.getExecutionContext();
-        context.setUser(user);
-        return context;
-      }
+      return getInterpreterSettingManager().getNotebook().processNote(noteId,
+        note -> {
+          if (note == null) {
+            throw new RuntimeException("No such note: " + noteId);
+          } else {
+            ExecutionContext context = note.getExecutionContext();
+            context.setUser(user);
+            return context;
+          }
+        });
     } catch (IOException e) {
       throw new RuntimeException("Fail to getExecutionContext", e);
     }
+
   }
 }

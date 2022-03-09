@@ -57,6 +57,7 @@ public class SparkRInterpreterTest {
     properties.setProperty("zeppelin.R.knitr", "true");
     properties.setProperty("spark.r.backendConnectionTimeout", "10");
     properties.setProperty("zeppelin.spark.deprecatedMsg.show", "false");
+    properties.setProperty("spark.sql.execution.arrow.sparkr.enabled", "false");
 
     InterpreterContext context = getInterpreterContext();
     InterpreterContext.set(context);
@@ -88,7 +89,7 @@ public class SparkRInterpreterTest {
 
     result = sparkRInterpreter.interpret("df <- as.DataFrame(faithful)\nhead(df)", getInterpreterContext());
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    assertTrue(result.message().get(0).getData().contains("eruptions waiting"));
+    assertTrue(result.toString(), result.message().get(0).getData().contains("eruptions waiting"));
     // spark job url is sent
     verify(mockRemoteIntpEventClient, atLeastOnce()).onParaInfosReceived(any(Map.class));
 

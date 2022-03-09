@@ -1,5 +1,6 @@
 package org.apache.zeppelin.notebook;
 
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.exception.NotePathAlreadyExistsException;
 import org.apache.zeppelin.notebook.repo.InMemoryNotebookRepo;
 import org.apache.zeppelin.user.AuthenticationInfo;
@@ -12,16 +13,21 @@ import java.io.IOException;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class NoteManagerTest {
   private NoteManager noteManager;
+  private ZeppelinConfiguration conf;
 
   @Rule
   public ExpectedException thrown = ExpectedException.none();
 
+
   @Before
   public void setUp() throws IOException {
-    this.noteManager = new NoteManager(new InMemoryNotebookRepo());
+    conf = ZeppelinConfiguration.create();
+    this.noteManager = new NoteManager(new InMemoryNotebookRepo(), conf);
   }
 
   @Test
@@ -39,15 +45,16 @@ public class NoteManagerTest {
 
     // list notes
     assertEquals(3, this.noteManager.getNotesInfo().size());
-    assertEquals(note1, this.noteManager.getNote(note1.getId()));
-    assertEquals(note2, this.noteManager.getNote(note2.getId()));
-    assertEquals(note3, this.noteManager.getNote(note3.getId()));
+    assertEquals(note1, this.noteManager.processNote(note1.getId(), n -> n));
+    assertEquals(note2, this.noteManager.processNote(note2.getId(), n -> n));
+    assertEquals(note3, this.noteManager.processNote(note3.getId(), n -> n));
 
     // move note
     this.noteManager.moveNote(note1.getId(), "/dev/project_1/my_note1",
         AuthenticationInfo.ANONYMOUS);
     assertEquals(3, this.noteManager.getNotesInfo().size());
-    assertEquals("/dev/project_1/my_note1", this.noteManager.getNote(note1.getId()).getPath());
+    assertEquals("/dev/project_1/my_note1",
+        this.noteManager.processNote(note1.getId(), n -> n).getPath());
 
     // move folder
     this.noteManager.moveFolder("/dev", "/staging", AuthenticationInfo.ANONYMOUS);
@@ -94,5 +101,44 @@ public class NoteManagerTest {
 
   private Note createNote(String notePath) {
     return new Note(notePath, "test", null, null, null, null, null);
+  }
+
+  @Test
+  public void testLruCache() throws IOException {
+
+    int cacheThreshold = conf.getNoteCacheThreshold();
+
+    // fill cache
+    for (int i = 0; i < cacheThreshold; ++i) {
+      Note note = createNote("/prod/note" + i);
+      noteManager.addNote(note, AuthenticationInfo.ANONYMOUS);
+    }
+    assertEquals(cacheThreshold, noteManager.getCacheSize());
+
+    // add cache + 1
+    Note noteNew = createNote("/prod/notenew");
+    noteManager.addNote(noteNew, AuthenticationInfo.ANONYMOUS);
+    // check for first eviction
+    assertEquals(cacheThreshold, noteManager.getCacheSize());
+
+    // add notes with read flag
+    for (int i = 0; i < cacheThreshold; ++i) {
+      Note note = createNote("/prod/noteDirty" + i);
+      note.getLock().readLock().lock();
+      noteManager.addNote(note, AuthenticationInfo.ANONYMOUS);
+    }
+    assertEquals(cacheThreshold, noteManager.getCacheSize());
+
+    // add cache + 1
+    Note noteNew2 = createNote("/prod/notenew2");
+    noteManager.addNote(noteNew2, AuthenticationInfo.ANONYMOUS);
+
+    // since all notes in the cache are with a read lock, the cache grows
+    assertEquals(cacheThreshold + 1, noteManager.getCacheSize());
+
+    assertTrue(noteManager.containsNote(noteNew2.getPath()));
+    noteManager.removeNote(noteNew2.getId(), AuthenticationInfo.ANONYMOUS);
+    assertFalse(noteManager.containsNote(noteNew2.getPath()));
+    assertEquals(cacheThreshold, noteManager.getCacheSize());
   }
 }

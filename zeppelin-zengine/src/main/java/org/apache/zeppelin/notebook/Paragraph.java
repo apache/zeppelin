@@ -719,7 +719,7 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
   }
 
   @VisibleForTesting
-  public void waitUntilFinished() throws Exception {
+  public void waitUntilFinished() throws InterruptedException {
     while(!isTerminated()) {
       LOGGER.debug("Wait for paragraph to be finished");
       Thread.sleep(1000);
@@ -727,7 +727,7 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
   }
 
   @VisibleForTesting
-  public void waitUntilRunning() throws Exception {
+  public void waitUntilRunning() throws InterruptedException {
     while(!isRunning()) {
       LOGGER.debug("Wait for paragraph to be running");
       Thread.sleep(1000);
@@ -809,14 +809,13 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
     } else if (outputBuffer.size() > index) {
       outputBuffer.set(index, interpreterResultMessage);
     } else {
-      LOGGER.warn("Get output of index: " + index + ", but there's only " +
-              outputBuffer.size() + " output in outputBuffer");
+      LOGGER.warn("Get output of index: {}, but there's only {} output in outputBuffer", index, outputBuffer.size());
     }
   }
 
   public void recover() {
     try {
-      LOGGER.info("Recovering paragraph: " + getId());
+      LOGGER.info("Recovering paragraph: {}", getId());
 
       this.interpreter = getBindedInterpreter();
       InterpreterSetting interpreterSetting = ((ManagedInterpreterGroup)

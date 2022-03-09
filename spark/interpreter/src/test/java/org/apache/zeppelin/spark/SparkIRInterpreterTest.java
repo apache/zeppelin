@@ -63,6 +63,7 @@ public class SparkIRInterpreterTest extends IRInterpreterTest {
     properties.setProperty("zeppelin.spark.maxResult", "100");
     properties.setProperty("spark.r.backendConnectionTimeout", "10");
     properties.setProperty("zeppelin.spark.deprecatedMsg.show", "false");
+    properties.setProperty("spark.sql.execution.arrow.sparkr.enabled", "false");
 
     InterpreterContext context = getInterpreterContext();
     InterpreterContext.set(context);
@@ -90,54 +91,43 @@ public class SparkIRInterpreterTest extends IRInterpreterTest {
 
     context = getInterpreterContext();
     result = interpreter.interpret("sparkR.version()", context);
-    if (result.code() == InterpreterResult.Code.ERROR) {
-      // Spark 1.x has no api for Spark.version()
-      // spark 1.x
-      context = getInterpreterContext();
-      result = interpreter.interpret("df <- createDataFrame(sqlContext, faithful)\nhead(df)", context);
-      interpreterResultMessages = context.out.toInterpreterResultMessage();
-      assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-      assertTrue(interpreterResultMessages.get(0).getData().contains(">eruptions</th>"));
-      // spark job url is sent
-      verify(mockRemoteIntpEventClient, atLeastOnce()).onParaInfosReceived(any(Map.class));
-    } else {
-      assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-      interpreterResultMessages = context.out.toInterpreterResultMessage();
-      if (interpreterResultMessages.get(0).getData().contains("2.2")) {
-        ENABLE_GOOGLEVIS_TEST = false;
-      }
-      context = getInterpreterContext();
-      result = interpreter.interpret("df <- as.DataFrame(faithful)\nhead(df)", context);
-      interpreterResultMessages = context.out.toInterpreterResultMessage();
-      assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-      assertTrue(interpreterResultMessages.get(0).getData().contains(">eruptions</th>"));
-      // spark job url is sent
-      verify(mockRemoteIntpEventClient, atLeastOnce()).onParaInfosReceived(any(Map.class));
 
-      // cancel
-      final InterpreterContext context2 = getInterpreterContext();
-      Thread thread = new Thread() {
-        @Override
-        public void run() {
-          try {
-            InterpreterResult result = interpreter.interpret("ldf <- dapplyCollect(\n" +
-                    "         df,\n" +
-                    "         function(x) {\n" +
-                    "           Sys.sleep(3)\n" +
-                    "           x <- cbind(x, \"waiting_secs\" = x$waiting * 60)\n" +
-                    "         })\n" +
-                    "head(ldf, 3)", context2);
-            assertTrue(result.message().get(0).getData().contains("cancelled"));
-          } catch (InterpreterException e) {
-            fail("Should not throw InterpreterException");
-          }
-        }
-      };
-      thread.setName("Cancel-Thread");
-      thread.start();
-      Thread.sleep(1000);
-      interpreter.cancel(context2);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    interpreterResultMessages = context.out.toInterpreterResultMessage();
+    if (interpreterResultMessages.get(0).getData().contains("2.2")) {
+      ENABLE_GOOGLEVIS_TEST = false;
     }
+    context = getInterpreterContext();
+    result = interpreter.interpret("df <- as.DataFrame(faithful)\nhead(df)", context);
+    interpreterResultMessages = context.out.toInterpreterResultMessage();
+    assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
+    assertTrue(interpreterResultMessages.get(0).getData().contains(">eruptions</th>"));
+    // spark job url is sent
+    verify(mockRemoteIntpEventClient, atLeastOnce()).onParaInfosReceived(any(Map.class));
+
+    // cancel
+    final InterpreterContext context2 = getInterpreterContext();
+    Thread thread = new Thread() {
+      @Override
+      public void run() {
+        try {
+          InterpreterResult result = interpreter.interpret("ldf <- dapplyCollect(\n" +
+                  "         df,\n" +
+                  "         function(x) {\n" +
+                  "           Sys.sleep(3)\n" +
+                  "           x <- cbind(x, \"waiting_secs\" = x$waiting * 60)\n" +
+                  "         })\n" +
+                  "head(ldf, 3)", context2);
+          assertTrue(result.message().get(0).getData().contains("cancelled"));
+        } catch (InterpreterException e) {
+          fail("Should not throw InterpreterException");
+        }
+      }
+    };
+    thread.setName("Cancel-Thread");
+    thread.start();
+    Thread.sleep(1000);
+    interpreter.cancel(context2);
   }
 
   @Override

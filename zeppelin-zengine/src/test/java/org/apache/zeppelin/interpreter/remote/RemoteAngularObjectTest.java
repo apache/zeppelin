@@ -25,16 +25,14 @@ import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
-import org.apache.zeppelin.notebook.Note;
-import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.resource.LocalResourcePool;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.when;
 
 public class RemoteAngularObjectTest extends AbstractInterpreterTest
     implements AngularObjectRegistryListener {
@@ -48,18 +46,20 @@ public class RemoteAngularObjectTest extends AbstractInterpreterTest
   private AtomicInteger onUpdate;
   private AtomicInteger onRemove;
 
+  private String note1Id;
+
+  @Override
   @Before
   public void setUp() throws Exception {
     super.setUp();
-    Note note1 = new Note(new NoteInfo("note1", "/note_1"));
-    when(mockNotebook.getNote("note1")).thenReturn(note1);
+    note1Id = notebook.createNote("/note_1", AuthenticationInfo.ANONYMOUS);
 
     onAdd = new AtomicInteger(0);
     onUpdate = new AtomicInteger(0);
     onRemove = new AtomicInteger(0);
 
     interpreterSetting = interpreterSettingManager.getInterpreterSettingByName("test");
-    intp = (RemoteInterpreter) interpreterSetting.getInterpreter("user1", "note1", "mock_ao");
+    intp = (RemoteInterpreter) interpreterSetting.getInterpreter("user1", note1Id, "mock_ao");
     localRegistry = (RemoteAngularObjectRegistry) intp.getInterpreterGroup().getAngularObjectRegistry();
 
     context = InterpreterContext.builder()

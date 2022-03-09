@@ -32,8 +32,7 @@ import org.apache.zeppelin.interpreter.InterpreterOption;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
-import org.apache.zeppelin.notebook.Note;
-import org.apache.zeppelin.notebook.NoteInfo;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -51,19 +50,18 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.mockito.Mockito.when;
 
 public class RemoteInterpreterTest extends AbstractInterpreterTest {
 
   private InterpreterSetting interpreterSetting;
+  private String note1Id;
 
   @Override
   @Before
   public void setUp() throws Exception {
     super.setUp();
     interpreterSetting = interpreterSettingManager.getInterpreterSettingByName("test");
-    Note note1 = new Note(new NoteInfo("note1", "/note_1"));
-    when(mockNotebook.getNote("note1")).thenReturn(note1);
+    note1Id = notebook.createNote("/note_1", AuthenticationInfo.ANONYMOUS);
   }
 
   @Override
@@ -75,8 +73,8 @@ public class RemoteInterpreterTest extends AbstractInterpreterTest {
   public void testSharedMode() throws InterpreterException, IOException {
     interpreterSetting.getOption().setPerUser(InterpreterOption.SHARED);
 
-    Interpreter interpreter1 = interpreterSetting.getDefaultInterpreter("user1", "note1");
-    Interpreter interpreter2 = interpreterSetting.getDefaultInterpreter("user2", "note1");
+    Interpreter interpreter1 = interpreterSetting.getDefaultInterpreter("user1", note1Id);
+    Interpreter interpreter2 = interpreterSetting.getDefaultInterpreter("user2", note1Id);
     assertTrue(interpreter1 instanceof RemoteInterpreter);
     RemoteInterpreter remoteInterpreter1 = (RemoteInterpreter) interpreter1;
     assertTrue(interpreter2 instanceof RemoteInterpreter);
@@ -109,8 +107,8 @@ public class RemoteInterpreterTest extends AbstractInterpreterTest {
   public void testScopedMode() throws InterpreterException, IOException {
     interpreterSetting.getOption().setPerUser(InterpreterOption.SCOPED);
 
-    Interpreter interpreter1 = interpreterSetting.getDefaultInterpreter("user1", "note1");
-    Interpreter interpreter2 = interpreterSetting.getDefaultInterpreter("user2", "note1");
+    Interpreter interpreter1 = interpreterSetting.getDefaultInterpreter("user1", note1Id);
+    Interpreter interpreter2 = interpreterSetting.getDefaultInterpreter("user2", note1Id);
     assertTrue(interpreter1 instanceof RemoteInterpreter);
     RemoteInterpreter remoteInterpreter1 = (RemoteInterpreter) interpreter1;
     assertTrue(interpreter2 instanceof RemoteInterpreter);
@@ -153,8 +151,8 @@ public class RemoteInterpreterTest extends AbstractInterpreterTest {
   public void testIsolatedMode() throws InterpreterException, IOException {
     interpreterSetting.getOption().setPerUser(InterpreterOption.ISOLATED);
 
-    Interpreter interpreter1 = interpreterSetting.getDefaultInterpreter("user1", "note1");
-    Interpreter interpreter2 = interpreterSetting.getDefaultInterpreter("user2", "note1");
+    Interpreter interpreter1 = interpreterSetting.getDefaultInterpreter("user1", note1Id);
+    Interpreter interpreter2 = interpreterSetting.getDefaultInterpreter("user2", note1Id);
     assertTrue(interpreter1 instanceof RemoteInterpreter);
     RemoteInterpreter remoteInterpreter1 = (RemoteInterpreter) interpreter1;
     assertTrue(interpreter2 instanceof RemoteInterpreter);
@@ -197,7 +195,7 @@ public class RemoteInterpreterTest extends AbstractInterpreterTest {
   public void testExecuteIncorrectPrecode() throws TTransportException, IOException, InterpreterException {
     interpreterSetting.getOption().setPerUser(InterpreterOption.SHARED);
     interpreterSetting.setProperty("zeppelin.SleepInterpreter.precode", "fail test");
-    Interpreter interpreter1 = interpreterSetting.getInterpreter("user1", "note1", "sleep");
+    Interpreter interpreter1 = interpreterSetting.getInterpreter("user1", note1Id, "sleep");
     InterpreterContext context1 = createDummyInterpreterContext();;
     assertEquals(Code.ERROR, interpreter1.interpret("10", context1).code());
   }
@@ -206,7 +204,7 @@ public class RemoteInterpreterTest extends AbstractInterpreterTest {
   public void testExecuteCorrectPrecode() throws TTransportException, IOException, InterpreterException {
     interpreterSetting.getOption().setPerUser(InterpreterOption.SHARED);
     interpreterSetting.setProperty("zeppelin.SleepInterpreter.precode", "1");
-    Interpreter interpreter1 = interpreterSetting.getInterpreter("user1", "note1", "sleep");
+    Interpreter interpreter1 = interpreterSetting.getInterpreter("user1", note1Id, "sleep");
     InterpreterContext context1 = createDummyInterpreterContext();
     assertEquals(Code.SUCCESS, interpreter1.interpret("10", context1).code());
   }
@@ -216,7 +214,7 @@ public class RemoteInterpreterTest extends AbstractInterpreterTest {
     interpreterSetting.setProperty("zeppelin.interpreter.echo.fail", "true");
     interpreterSetting.getOption().setPerUser(InterpreterOption.SHARED);
 
-    Interpreter interpreter1 = interpreterSetting.getDefaultInterpreter("user1", "note1");
+    Interpreter interpreter1 = interpreterSetting.getDefaultInterpreter("user1", note1Id);
     assertTrue(interpreter1 instanceof RemoteInterpreter);
     RemoteInterpreter remoteInterpreter1 = (RemoteInterpreter) interpreter1;
 
@@ -229,7 +227,7 @@ public class RemoteInterpreterTest extends AbstractInterpreterTest {
     interpreterSetting.getOption().setPerUser(InterpreterOption.SHARED);
     // by default SleepInterpreter would use FIFOScheduler
 
-    final Interpreter interpreter1 = interpreterSetting.getInterpreter("user1", "note1", "sleep");
+    final Interpreter interpreter1 = interpreterSetting.getInterpreter("user1", note1Id, "sleep");
     final InterpreterContext context1 = createDummyInterpreterContext();
     // run this dummy interpret method first to launch the RemoteInterpreterProcess to avoid the
     // time overhead of launching the process.
@@ -270,7 +268,7 @@ public class RemoteInterpreterTest extends AbstractInterpreterTest {
     interpreterSetting.getOption().setPerUser(InterpreterOption.SHARED);
     interpreterSetting.setProperty("zeppelin.SleepInterpreter.parallel", "true");
 
-    final Interpreter interpreter1 = interpreterSetting.getInterpreter("user1", "note1", "sleep");
+    final Interpreter interpreter1 = interpreterSetting.getInterpreter("user1", note1Id, "sleep");
     final InterpreterContext context1 = createDummyInterpreterContext();
 
     // run this dummy interpret method first to launch the RemoteInterpreterProcess to avoid the
@@ -310,8 +308,8 @@ public class RemoteInterpreterTest extends AbstractInterpreterTest {
   @Test
   public void testRemoteInterpreterSharesTheSameSchedulerInstanceInTheSameGroup() {
     interpreterSetting.getOption().setPerUser(InterpreterOption.SHARED);
-    Interpreter interpreter1 = interpreterSetting.getInterpreter("user1", "note1", "sleep");
-    Interpreter interpreter2 = interpreterSetting.getInterpreter("user1", "note1", "echo");
+    Interpreter interpreter1 = interpreterSetting.getInterpreter("user1", note1Id, "sleep");
+    Interpreter interpreter2 = interpreterSetting.getInterpreter("user1", note1Id, "echo");
     assertEquals(interpreter1.getInterpreterGroup(), interpreter2.getInterpreterGroup());
     assertEquals(interpreter1.getScheduler(), interpreter2.getScheduler());
   }
@@ -319,13 +317,13 @@ public class RemoteInterpreterTest extends AbstractInterpreterTest {
   @Test
   public void testMultiInterpreterSession() {
     interpreterSetting.getOption().setPerUser(InterpreterOption.SCOPED);
-    Interpreter interpreter1_user1 = interpreterSetting.getInterpreter("user1", "note1", "sleep");
-    Interpreter interpreter2_user1 = interpreterSetting.getInterpreter("user1", "note1", "echo");
+    Interpreter interpreter1_user1 = interpreterSetting.getInterpreter("user1", note1Id, "sleep");
+    Interpreter interpreter2_user1 = interpreterSetting.getInterpreter("user1", note1Id, "echo");
     assertEquals(interpreter1_user1.getInterpreterGroup(), interpreter2_user1.getInterpreterGroup());
     assertEquals(interpreter1_user1.getScheduler(), interpreter2_user1.getScheduler());
 
-    Interpreter interpreter1_user2 = interpreterSetting.getInterpreter("user2", "note1", "sleep");
-    Interpreter interpreter2_user2 = interpreterSetting.getInterpreter("user2", "note1", "echo");
+    Interpreter interpreter1_user2 = interpreterSetting.getInterpreter("user2", note1Id, "sleep");
+    Interpreter interpreter2_user2 = interpreterSetting.getInterpreter("user2", note1Id, "echo");
     assertEquals(interpreter1_user2.getInterpreterGroup(), interpreter2_user2.getInterpreterGroup());
     assertEquals(interpreter1_user2.getScheduler(), interpreter2_user2.getScheduler());
 
@@ -339,7 +337,7 @@ public class RemoteInterpreterTest extends AbstractInterpreterTest {
     final AngularObjectRegistry registry = new AngularObjectRegistry("spark", null);
     registry.add("name_1", "value_1", "note_1", "paragraphId_1");
     registry.add("name_2", "value_2", "node_2", "paragraphId_2");
-    Interpreter interpreter = interpreterSetting.getInterpreter("user1", "note1", "angular_obj");
+    Interpreter interpreter = interpreterSetting.getInterpreter("user1", note1Id, "angular_obj");
     interpreter.getInterpreterGroup().setAngularObjectRegistry(registry);
 
     final InterpreterContext context = createDummyInterpreterContext();
@@ -365,7 +363,7 @@ public class RemoteInterpreterTest extends AbstractInterpreterTest {
     interpreterSetting.setProperty("ENV_1", "VALUE_1");
     interpreterSetting.setProperty("property_1", "value_1");
 
-    final Interpreter interpreter1 = interpreterSetting.getInterpreter("user1", "note1", "get");
+    final Interpreter interpreter1 = interpreterSetting.getInterpreter("user1", note1Id, "get");
     final InterpreterContext context1 = createDummyInterpreterContext();
 
     assertEquals("VALUE_1", interpreter1.interpret("getEnv ENV_1", context1).message().get(0).getData());
@@ -389,7 +387,7 @@ public class RemoteInterpreterTest extends AbstractInterpreterTest {
     gui.select("select_id", paramOptions, "default");
     gui.textbox("textbox_id");
     Map<String, Input> expected = new LinkedHashMap<>(gui.getForms());
-    Interpreter interpreter = interpreterSetting.getDefaultInterpreter("user1", "note1");
+    Interpreter interpreter = interpreterSetting.getDefaultInterpreter("user1", note1Id);
     InterpreterContext context = createDummyInterpreterContext();
 
     interpreter.interpret("text", context);
@@ -400,7 +398,7 @@ public class RemoteInterpreterTest extends AbstractInterpreterTest {
   public void testFailToLaunchInterpreterProcess_InvalidRunner() {
     try {
       System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_REMOTE_RUNNER.getVarName(), "invalid_runner");
-      final Interpreter interpreter1 = interpreterSetting.getInterpreter("user1", "note1", "sleep");
+      final Interpreter interpreter1 = interpreterSetting.getInterpreter("user1", note1Id, "sleep");
       final InterpreterContext context1 = createDummyInterpreterContext();
       // run this dummy interpret method first to launch the RemoteInterpreterProcess to avoid the
       // time overhead of launching the process.
@@ -420,7 +418,7 @@ public class RemoteInterpreterTest extends AbstractInterpreterTest {
     try {
       System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_REMOTE_RUNNER.getVarName(),
                zeppelinHome.getAbsolutePath() + "/zeppelin-zengine/src/test/resources/bin/interpreter_invalid.sh");
-      final Interpreter interpreter1 = interpreterSetting.getInterpreter("user1", "note1", "sleep");
+      final Interpreter interpreter1 = interpreterSetting.getInterpreter("user1", note1Id, "sleep");
       final InterpreterContext context1 = createDummyInterpreterContext();
       // run this dummy interpret method first to launch the RemoteInterpreterProcess to avoid the
       // time overhead of launching the process.
@@ -441,7 +439,7 @@ public class RemoteInterpreterTest extends AbstractInterpreterTest {
       System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_REMOTE_RUNNER.getVarName(),
               zeppelinHome.getAbsolutePath() + "/zeppelin-zengine/src/test/resources/bin/interpreter_timeout.sh");
       System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT.getVarName(), "10000");
-      final Interpreter interpreter1 = interpreterSetting.getInterpreter("user1", "note1", "sleep");
+      final Interpreter interpreter1 = interpreterSetting.getInterpreter("user1", note1Id, "sleep");
       final InterpreterContext context1 = createDummyInterpreterContext();
       // run this dummy interpret method first to launch the RemoteInterpreterProcess to avoid the
       // time overhead of launching the process.

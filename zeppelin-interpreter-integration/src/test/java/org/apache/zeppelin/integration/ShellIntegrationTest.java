@@ -18,7 +18,6 @@
 package org.apache.zeppelin.integration;
 
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
-import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.rest.AbstractTestRestApi;
@@ -51,40 +50,45 @@ public class ShellIntegrationTest extends AbstractTestRestApi {
 
   @Test
   public void testBasicShell() throws IOException {
-    Note note = null;
+    String noteId = null;
     try {
-      note = TestUtils.getInstance(Notebook.class).createNote("note1", AuthenticationInfo.ANONYMOUS);
-      Paragraph p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
+      noteId = TestUtils.getInstance(Notebook.class).createNote("note1", AuthenticationInfo.ANONYMOUS);
+      TestUtils.getInstance(Notebook.class).processNote(noteId,
+        note -> {
+          Paragraph p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
 
-      // test correct shell command
-      p.setText("%sh echo 'hello world'");
-      note.run(p.getId(), true);
-      assertEquals(Job.Status.FINISHED, p.getStatus());
-      assertEquals("hello world\n", p.getReturn().message().get(0).getData());
+          // test correct shell command
+          p.setText("%sh echo 'hello world'");
+          note.run(p.getId(), true);
+          assertEquals(Job.Status.FINISHED, p.getStatus());
+          assertEquals("hello world\n", p.getReturn().message().get(0).getData());
 
-      // test invalid shell command
-      p.setText("%sh invalid_cmd");
-      note.run(p.getId(), true);
-      assertEquals(Job.Status.ERROR, p.getStatus());
-      assertTrue(p.getReturn().toString(),
-              p.getReturn().message().get(0).getData().contains("command not found"));
+          // test invalid shell command
+          p.setText("%sh invalid_cmd");
+          note.run(p.getId(), true);
+          assertEquals(Job.Status.ERROR, p.getStatus());
+          assertTrue(p.getReturn().toString(),
+                  p.getReturn().message().get(0).getData().contains("command not found"));
 
-      // test shell environment variable
-      p.setText("%sh a='hello world'\n" +
-              "echo ${a}");
-      note.run(p.getId(), true);
-      assertEquals(Job.Status.FINISHED, p.getStatus());
-      assertEquals("hello world\n", p.getReturn().message().get(0).getData());
+          // test shell environment variable
+          p.setText("%sh a='hello world'\n" +
+                  "echo ${a}");
+          note.run(p.getId(), true);
+          assertEquals(Job.Status.FINISHED, p.getStatus());
+          assertEquals("hello world\n", p.getReturn().message().get(0).getData());
 
-      // use dynamic form via local property
-      p.setText("%sh(form=simple) a='hello world'\n" +
-              "echo ${a}");
-      note.run(p.getId(), true);
-      assertEquals(Job.Status.FINISHED, p.getStatus());
-      assertEquals(0, p.getReturn().message().size());
+          // use dynamic form via local property
+          p.setText("%sh(form=simple) a='hello world'\n" +
+                  "echo ${a}");
+          note.run(p.getId(), true);
+          assertEquals(Job.Status.FINISHED, p.getStatus());
+          assertEquals(0, p.getReturn().message().size());
+          return null;
+        });
+
     } finally {
-      if (null != note) {
-        TestUtils.getInstance(Notebook.class).removeNote(note, AuthenticationInfo.ANONYMOUS);
+      if (null != noteId) {
+        TestUtils.getInstance(Notebook.class).removeNote(noteId, AuthenticationInfo.ANONYMOUS);
       }
     }
   }
