@@ -1034,11 +1034,10 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
       removed = true;
     }
 
-    File localRepoDir = new File(conf.getInterpreterLocalRepoPath() + "/" + id);
-    if (localRepoDir.getAbsolutePath().contains("..")) {
-      return removed;
+    File localRepoPath = new File(conf.getInterpreterLocalRepoPath());
+    if (Arrays.stream(localRepoPath.list()).anyMatch(id::equals)) {
+      FileUtils.deleteDirectory(new File(localRepoPath, id));
     }
-    FileUtils.deleteDirectory(localRepoDir);
 
     return removed;
   }
