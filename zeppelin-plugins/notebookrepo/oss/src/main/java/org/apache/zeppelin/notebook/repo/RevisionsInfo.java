@@ -23,15 +23,15 @@ import java.util.LinkedList;
 
 public class RevisionsInfo extends LinkedList<NotebookRepoWithVersionControl.Revision> {
 
-    public static RevisionsInfo fromText(String revisionsText) {
-        RevisionsInfo revisionsInfo = new Gson().fromJson(revisionsText, RevisionsInfo.class);
-        if (revisionsInfo == null) {
-            return new RevisionsInfo();
-        }
-        return revisionsInfo;
+  public static RevisionsInfo fromText(String revisionsText) {
+    RevisionsInfo revisionsInfo = new Gson().fromJson(revisionsText, RevisionsInfo.class);
+    if (revisionsInfo == null) {
+      return new RevisionsInfo();
     }
+    return revisionsInfo;
+  }
 
-    public String toText() {
-        return new Gson().toJson(this);
-    }
+  public String toText() {
+    return new Gson().toJson(this);
+  }
 }
