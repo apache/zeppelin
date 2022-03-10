@@ -105,7 +105,11 @@ jobs:
           activate-environment: python_3_with_R
           environment-file: testing/env_python_3_with_R.yml
           python-version: 3.7
+          mamba-version: "*"
+          channels: conda-forge,defaults
+          channel-priority: true
           auto-activate-base: false
+          use-mamba: true
       - name: Make IRkernel available to Jupyter
         run: |
           R -e "IRkernel::installspec()"
@@ -113,9 +117,9 @@ jobs:
         run: |
           ./mvnw clean install -DskipTests -DskipRat -pl ${INTERPRETERS} -Pspark-2.4 -Phadoop2 -Phelium-dev -Pexamples -Pintegration -Pspark-scala-2.11 -B
           ./mvnw clean package -pl zeppelin-plugins -amd -B
-          ./testing/downloadSpark.sh "2.4.7" "2.7"
       - name: run tests
-        run: xvfb-run --auto-servernum --server-args="-screen 0 1600x1024x16" ./mvnw verify -DskipRat -Pspark-2.4 -Phadoop2 -Phelium-dev -Pexamples -Pintegration -Pspark-scala-2.11 -B -pl zeppelin-integration -DfailIfNoTests=false
+        run: |
+          ./testing/downloadSpark.sh "2.4.7" "2.7" && echo "SPARK_HOME: ${SPARK_HOME}" && xvfb-run --auto-servernum --server-args="-screen 0 1600x1024x16" ./mvnw verify -DskipRat -Pspark-2.4 -Phadoop2 -Phelium-dev -Pexamples -Pintegration -Pspark-scala-2.11 -B -pl zeppelin-integration -DfailIfNoTests=false
       - name: Print zeppelin logs
         if: always()
         run: if [ -d "logs" ]; then cat logs/*; fi
