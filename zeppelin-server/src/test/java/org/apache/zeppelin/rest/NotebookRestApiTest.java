@@ -326,9 +326,7 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
               new TypeToken<Map<String, Object>>() {
               }.getType());
       assertEquals("OK", resp.get("status"));
-      Map<String, String> body = (Map) resp.get("body");
-      assertEquals(commitMessage, body.get("message"));
-      String revisionId = body.get("id");
+      String revisionId = (String) resp.get("body");
       notebook.processNote(note1Id, note -> {
         Note revisionOfNote = notebook.getNoteByRevision(note.getId(), note.getPath(), revisionId, anonymous);
         assertEquals(1, notebook.listRevisionHistory(note.getId(), note.getPath(), anonymous).size());

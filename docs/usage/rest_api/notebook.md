@@ -1666,7 +1666,9 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
 
 ```json
 {
-  "status": "OK"
+  "status": "OK",
+  "message": "",
+  "body": "6a5879218dfb797b013bcd24a594808045e34875"
 }
 ```
 </td>
