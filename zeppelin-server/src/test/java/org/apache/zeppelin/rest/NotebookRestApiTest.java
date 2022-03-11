@@ -118,7 +118,7 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
       }
     }
   }
-  
+
   @Test
   public void testGetNoteByPath() throws IOException {
     LOG.info("Running testGetNoteByPath");
@@ -1123,7 +1123,7 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
           new TypeToken<Map<String, Object>>() {}.getType());
       assertEquals("OK", resp.get("status"));
       post2.close();
-
+      Thread.sleep(60000);
       TestUtils.getInstance(Notebook.class).processNote(note1Id,
         note1 -> {
           Paragraph p1 = note1.getParagraph(0);

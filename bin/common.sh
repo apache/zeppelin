@@ -171,10 +171,6 @@ else
 fi
 export ZEPPELIN_RUNNER
 
-if [[ -z "$ZEPPELIN_IDENT_STRING" ]]; then
-  export ZEPPELIN_IDENT_STRING="${USER}"
-fi
-
 if [[ -z "$ZEPPELIN_INTERPRETER_REMOTE_RUNNER" ]]; then
   export ZEPPELIN_INTERPRETER_REMOTE_RUNNER="bin/interpreter.sh"
 fi
