@@ -35,6 +35,7 @@ import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.server.ZeppelinServer;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.utils.TestUtils;
+import org.glassfish.hk2.api.ServiceLocatorFactory;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -66,7 +67,7 @@ public class RecoveryTest extends AbstractTestRestApi {
             recoveryDir.getAbsolutePath());
     startUp(RecoveryTest.class.getSimpleName());
 
-    notebook = ZeppelinServer.sharedServiceLocator.getService(Notebook.class);
+    notebook = ServiceLocatorFactory.getInstance().find("shared-locator").getService(Notebook.class);
   }
 
   @After

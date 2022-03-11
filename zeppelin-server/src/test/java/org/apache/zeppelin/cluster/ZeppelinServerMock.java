@@ -145,8 +145,8 @@ public class ZeppelinServerMock {
         }
       }
       LOG.info("ZeppelinServerMock shutDown...");
-      ZeppelinServer.jettyWebServer.stop();
       executor.shutdown();
+      executor.shutdownNow();
       System.clearProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HOME.getVarName());
       System.clearProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_WAR.getVarName());
       System.clearProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_CONF_DIR.getVarName());
@@ -178,7 +178,6 @@ public class ZeppelinServerMock {
       }
       PluginManager.reset();
       ZeppelinConfiguration.reset();
-      ZeppelinServer.reset();
     }
   }
 

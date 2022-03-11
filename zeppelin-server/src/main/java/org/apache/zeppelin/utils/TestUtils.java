@@ -25,12 +25,12 @@ import org.glassfish.hk2.api.ServiceLocatorFactory;
 public class TestUtils {
   public static <T> T getInstance(Class<T> clazz) {
     checkCalledByTestMethod();
-    return getInstance(ZeppelinServer.sharedServiceLocator, clazz);
+    return getInstance(ServiceLocatorFactory.getInstance().find(ZeppelinServer.SERVICE_LOCATOR_NAME), clazz);
   }
 
   public static void clearInstances() {
     checkCalledByTestMethod();
-    ServiceLocatorFactory.getInstance().destroy("shared-locator");
+    ServiceLocatorFactory.getInstance().destroy(ZeppelinServer.SERVICE_LOCATOR_NAME);
   }
 
   static <T> T getInstance(ServiceLocator serviceLocator, Class<T> clazz) {
