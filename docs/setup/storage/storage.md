@@ -455,7 +455,7 @@ And you should configure oss related properties in file **zeppelin-site.xml**.
 </property>
 
 <property>
-  <name>zeppelin.notebook.oss.max.version.num</name>
+  <name>zeppelin.notebook.oss.version.max</name>
   <value></value>
   <description>Max num of note versions in OSSNoteRepo. It's not mandatory, the default value is 30</description>
 </property>

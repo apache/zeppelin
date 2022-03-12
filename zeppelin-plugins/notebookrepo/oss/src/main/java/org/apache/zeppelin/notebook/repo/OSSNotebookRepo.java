@@ -17,8 +17,6 @@
 
 package org.apache.zeppelin.notebook.repo;
 
-import com.aliyun.oss.OSS;
-import com.aliyun.oss.OSSClientBuilder;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
@@ -26,7 +24,8 @@ import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.util.*;
 
 
@@ -82,7 +81,8 @@ public class OSSNotebookRepo implements NotebookRepoWithVersionControl {
   }
 
   public Note getByOSSPath(String noteId, String ossPath) throws IOException {
-    return Note.fromJson(noteId, ossOperator.getTextObject(bucketName, ossPath));
+    String noteText = ossOperator.getTextObject(bucketName, ossPath);
+    return Note.fromJson(noteId, noteText);
   }
 
 
@@ -147,7 +147,7 @@ public class OSSNotebookRepo implements NotebookRepoWithVersionControl {
           String noteId = getNoteId(key);
           String notePath = getNotePath(rootFolder, key);
           // delete note revision file
-          ossOperator.deleteDir(bucketName, buildRevisionsDirName(noteId, notePath));
+          ossOperator.deleteDir(bucketName, rootFolder + "/" + buildRevisionsDirName(noteId, notePath));
         } catch (IOException e) {
           LOGGER.warn(e.getMessage());
         }
@@ -229,7 +229,9 @@ public class OSSNotebookRepo implements NotebookRepoWithVersionControl {
   public Note get(String noteId, String notePath, String revId, AuthenticationInfo subject) throws IOException {
     Note note = getByOSSPath(noteId,
             rootFolder + "/" + buildRevisionsDirName(noteId, notePath) + "/" + revId);
-    note.setPath(notePath);
+    if (note != null) {
+      note.setPath(notePath);
+    }
     return note;
   }
 
@@ -255,7 +257,6 @@ public class OSSNotebookRepo implements NotebookRepoWithVersionControl {
     }
     return revisionNote;
   }
-  
 
 
 }

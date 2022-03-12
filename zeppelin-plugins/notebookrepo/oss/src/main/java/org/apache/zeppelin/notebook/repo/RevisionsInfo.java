@@ -23,8 +23,10 @@ import java.util.LinkedList;
 
 public class RevisionsInfo extends LinkedList<NotebookRepoWithVersionControl.Revision> {
 
+  private static Gson GSON = new Gson();
+
   public static RevisionsInfo fromText(String revisionsText) {
-    RevisionsInfo revisionsInfo = new Gson().fromJson(revisionsText, RevisionsInfo.class);
+    RevisionsInfo revisionsInfo = GSON.fromJson(revisionsText, RevisionsInfo.class);
     if (revisionsInfo == null) {
       return new RevisionsInfo();
     }
@@ -32,6 +34,6 @@ public class RevisionsInfo extends LinkedList<NotebookRepoWithVersionControl.Rev
   }
 
   public String toText() {
-    return new Gson().toJson(this);
+    return GSON.toJson(this);
   }
 }

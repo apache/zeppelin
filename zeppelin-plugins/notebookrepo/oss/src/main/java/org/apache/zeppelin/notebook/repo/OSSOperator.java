@@ -37,12 +37,24 @@ public class OSSOperator {
   }
 
 
+  public void createBucket(String bucketName) {
+    ossClient.createBucket(bucketName);
+  }
+
+
+  public void deleteBucket(String bucketName) {
+    ossClient.deleteBucket(bucketName);
+  }
+
   public boolean doesObjectExist(String bucketName, String key) throws IOException {
     return ossClient.doesObjectExist(bucketName, key);
   }
 
 
   public String getTextObject(String bucketName, String key) throws IOException {
+    if (!doesObjectExist(bucketName, key)) {
+      return "";
+    }
     OSSObject ossObject = ossClient.getObject(bucketName, key);
     InputStream in = null;
     try {
@@ -62,14 +74,17 @@ public class OSSOperator {
   }
 
 
-  public void moveObject(String bucketName, String sourceKey, String destKey) {
+  public void moveObject(String bucketName, String sourceKey, String destKey) throws IOException {
+    if (!doesObjectExist(bucketName, sourceKey)) {
+      return;
+    }
     CopyObjectRequest copyObjectRequest = new CopyObjectRequest(bucketName,
             sourceKey, bucketName, destKey);
     ossClient.copyObject(copyObjectRequest);
     ossClient.deleteObject(bucketName, sourceKey);
   }
 
-  public void moveDir(String bucketName, String sourceDir, String destDir) {
+  public void moveDir(String bucketName, String sourceDir, String destDir) throws IOException {
     List<String> objectKeys = listDirObjects(bucketName, sourceDir);
     for (String key : objectKeys) {
       moveObject(bucketName, key, destDir + key.substring(sourceDir.length()));
