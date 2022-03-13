@@ -132,7 +132,7 @@ public class OSSNotebookRepo implements NotebookRepoWithVersionControl {
 
   @Override
   public void remove(String noteId, String notePath, AuthenticationInfo subject)
-      throws IOException {
+          throws IOException {
     ossOperator.deleteFile(bucketName, rootFolder + "/" + buildNoteFileName(noteId, notePath));
     // if there is no file under revisonInfoPath, deleleDir() would do nothing
     ossOperator.deleteDir(bucketName, rootFolder + "/" + buildRevisionsDirName(noteId, notePath));
@@ -181,7 +181,7 @@ public class OSSNotebookRepo implements NotebookRepoWithVersionControl {
     }
     return ".checkpoint/" + (notePath + "_" + noteId).substring(1);
   }
-  
+
   String buildRevisionsInfoAbsolutePath(String noteId, String notePath) throws IOException {
     return rootFolder + "/" + buildRevisionsDirName(noteId, notePath) + "/" + ".revision-info";
   }
@@ -225,6 +225,7 @@ public class OSSNotebookRepo implements NotebookRepoWithVersionControl {
 
     return revision;
   }
+
   @Override
   public Note get(String noteId, String notePath, String revId, AuthenticationInfo subject) throws IOException {
     Note note = getByOSSPath(noteId,

@@ -53,7 +53,7 @@ public class OSSOperator {
 
   public String getTextObject(String bucketName, String key) throws IOException {
     if (!doesObjectExist(bucketName, key)) {
-      return "";
+      throw new IOException("Note or its revision not found");
     }
     OSSObject ossObject = ossClient.getObject(bucketName, key);
     InputStream in = null;
@@ -76,7 +76,7 @@ public class OSSOperator {
 
   public void moveObject(String bucketName, String sourceKey, String destKey) throws IOException {
     if (!doesObjectExist(bucketName, sourceKey)) {
-      return;
+      throw new IOException("Note or its revision not found");
     }
     CopyObjectRequest copyObjectRequest = new CopyObjectRequest(bucketName,
             sourceKey, bucketName, destKey);
