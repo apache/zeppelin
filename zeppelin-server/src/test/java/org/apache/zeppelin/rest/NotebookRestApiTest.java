@@ -30,6 +30,7 @@ import com.google.gson.reflect.TypeToken;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.notebook.Notebook;
+import org.apache.zeppelin.notebook.repo.NotebookRepoWithVersionControl;
 import org.apache.zeppelin.rest.message.ParametersRequest;
 import org.apache.zeppelin.socket.NotebookServer;
 import org.apache.zeppelin.utils.TestUtils;
@@ -165,6 +166,112 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
   }
 
   @Test
+  public void testGetNoteRevisionHistory() throws IOException {
+    LOG.info("Running testGetNoteRevisionHistory");
+    String note1Id = null;
+    Notebook notebook = TestUtils.getInstance(Notebook.class);
+    try {
+      String notePath = "note1";
+      note1Id = notebook.createNote(notePath, anonymous);
+
+      //Add a paragraph and commit
+      NotebookRepoWithVersionControl.Revision first_commit =
+              notebook.processNote(note1Id, note -> {
+                Paragraph p1 = note.addNewParagraph(anonymous);
+                p1.setText("text1");
+                notebook.saveNote(note, AuthenticationInfo.ANONYMOUS);
+                return notebook.checkpointNote(note.getId(), note.getPath(), "first commit", anonymous);
+              });
+
+      //Add a paragraph again
+      notebook.processNote(note1Id, note -> {
+        Paragraph p2 = note.addNewParagraph(anonymous);
+        p2.setText("text2");
+        notebook.saveNote(note, AuthenticationInfo.ANONYMOUS);
+        return null;
+      });
+
+      // Verify
+      CloseableHttpResponse get1 = httpGet("/notebook/" + note1Id + "/revision");
+
+      assertThat(get1, isAllowed());
+      Map<String, Object> resp = gson.fromJson(EntityUtils.toString(get1.getEntity(), StandardCharsets.UTF_8),
+              new TypeToken<Map<String, Object>>() {
+              }.getType());
+      List<Map<String, Object>> body = (List<Map<String, Object>>) resp.get("body");
+      assertEquals(1, body.size());
+      assertEquals(first_commit.id, body.get(0).get("id"));
+      get1.close();
+
+      // Second commit
+      NotebookRepoWithVersionControl.Revision second_commit = notebook.processNote(note1Id, note -> notebook.checkpointNote(note.getId(), note.getPath(), "Second commit", anonymous));
+
+      // Verify
+      CloseableHttpResponse get2 = httpGet("/notebook/" + note1Id + "/revision");
+
+      assertThat(get2, isAllowed());
+      resp = gson.fromJson(EntityUtils.toString(get2.getEntity(), StandardCharsets.UTF_8),
+              new TypeToken<Map<String, Object>>() {
+              }.getType());
+      body = (List<Map<String, Object>>) resp.get("body");
+      assertEquals(2, body.size());
+      assertEquals(second_commit.id, body.get(0).get("id"));
+      get2.close();
+
+    } finally {
+      // cleanup
+      if (null != note1Id) {
+        notebook.removeNote(note1Id, anonymous);
+      }
+    }
+  }
+
+  @Test
+  public void testGetNoteByRevision() throws IOException {
+    LOG.info("Running testGetNoteByRevision");
+    String note1Id = null;
+    Notebook notebook = TestUtils.getInstance(Notebook.class);
+    try {
+      String notePath = "note1";
+      note1Id = notebook.createNote(notePath, anonymous);
+
+      //Add a paragraph and commit
+      NotebookRepoWithVersionControl.Revision first_commit =
+              notebook.processNote(note1Id, note -> {
+                Paragraph p1 = note.addNewParagraph(anonymous);
+                p1.setText("text1");
+                notebook.saveNote(note, AuthenticationInfo.ANONYMOUS);
+                return notebook.checkpointNote(note.getId(), note.getPath(), "first commit", anonymous);
+              });
+
+      //Add a paragraph again
+      notebook.processNote(note1Id, note -> {
+        Paragraph p2 = note.addNewParagraph(anonymous);
+        p2.setText("text2");
+        notebook.saveNote(note, AuthenticationInfo.ANONYMOUS);
+        return null;
+      });
+
+      // Verify
+      CloseableHttpResponse get = httpGet("/notebook/" + note1Id + "/revision/" + first_commit.id);
+
+      assertThat(get, isAllowed());
+      Map<String, Object> resp = gson.fromJson(EntityUtils.toString(get.getEntity(), StandardCharsets.UTF_8),
+              new TypeToken<Map<String, Object>>() {
+              }.getType());
+      Map<String, Object> noteObject = (Map<String, Object>) resp.get("body");
+      assertEquals(1, ((List) noteObject.get("paragraphs")).size());
+      assertEquals("text1", ((List<Map<String, String>>) noteObject.get("paragraphs")).get(0).get("text"));
+      get.close();
+    } finally {
+      // cleanup
+      if (null != note1Id) {
+        notebook.removeNote(note1Id, anonymous);
+      }
+    }
+  }
+
+  @Test
   public void testGetNoteParagraphJobStatus() throws IOException {
     LOG.info("Running testGetNoteParagraphJobStatus");
     String note1Id = null;
@@ -192,6 +299,99 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
       }
     }
   }
+
+  @Test
+  public void testCheckpointNote() throws IOException {
+    LOG.info("Running testCheckpointNote");
+    String note1Id = null;
+    Notebook notebook = TestUtils.getInstance(Notebook.class);
+    try {
+      String notePath = "note1";
+      note1Id = notebook.createNote(notePath, anonymous);
+
+      //Add a paragraph
+      notebook.processNote(note1Id, note -> {
+        Paragraph p1 = note.addNewParagraph(anonymous);
+        p1.setText("text1");
+        notebook.saveNote(note, AuthenticationInfo.ANONYMOUS);
+        return null;
+      });
+
+      // Call restful api to save a revision and verify
+      String commitMessage = "first commit";
+      CloseableHttpResponse post = httpPost("/notebook/" + note1Id + "/revision", "{\"commitMessage\" : \"" + commitMessage + "\"}");
+
+      assertThat(post, isAllowed());
+      Map<String, Object> resp = gson.fromJson(EntityUtils.toString(post.getEntity(), StandardCharsets.UTF_8),
+              new TypeToken<Map<String, Object>>() {
+              }.getType());
+      assertEquals("OK", resp.get("status"));
+      String revisionId = (String) resp.get("body");
+      notebook.processNote(note1Id, note -> {
+        Note revisionOfNote = notebook.getNoteByRevision(note.getId(), note.getPath(), revisionId, anonymous);
+        assertEquals(1, notebook.listRevisionHistory(note.getId(), note.getPath(), anonymous).size());
+        assertEquals(1, revisionOfNote.getParagraphs().size());
+        assertEquals("text1", revisionOfNote.getParagraph(0).getText());
+        return null;
+      });
+      post.close();
+    } finally {
+      // cleanup
+      if (null != note1Id) {
+        notebook.removeNote(note1Id, anonymous);
+      }
+    }
+  }
+
+
+  @Test
+  public void testSetNoteRevision() throws IOException {
+    LOG.info("Running testSetNoteRevision");
+    String note1Id = null;
+    Notebook notebook = TestUtils.getInstance(Notebook.class);
+    try {
+      String notePath = "note1";
+      note1Id = notebook.createNote(notePath, anonymous);
+
+      //Add a paragraph and commit
+      NotebookRepoWithVersionControl.Revision first_commit =
+              notebook.processNote(note1Id, note -> {
+                Paragraph p1 = note.addNewParagraph(anonymous);
+                p1.setText("text1");
+                notebook.saveNote(note, AuthenticationInfo.ANONYMOUS);
+                return notebook.checkpointNote(note.getId(), note.getPath(), "first commit", anonymous);
+              });
+
+      //Add a paragraph again
+      notebook.processNote(note1Id, note -> {
+        Paragraph p2 = note.addNewParagraph(anonymous);
+        p2.setText("text2");
+        notebook.saveNote(note, AuthenticationInfo.ANONYMOUS);
+        return null;
+      });
+
+      // Call restful api to revert note to first revision and verify
+      CloseableHttpResponse put = httpPut("/notebook/" + note1Id + "/revision/" + first_commit.id, "");
+
+      assertThat(put, isAllowed());
+      Map<String, Object> resp = gson.fromJson(EntityUtils.toString(put.getEntity(), StandardCharsets.UTF_8),
+              new TypeToken<Map<String, Object>>() {
+              }.getType());
+      assertEquals("OK", resp.get("status"));
+      notebook.processNote(note1Id, note -> {
+        assertEquals(1, note.getParagraphs().size());
+        assertEquals("text1", note.getParagraph(0).getText());
+        return null;
+      });
+      put.close();
+    } finally {
+      // cleanup
+      if (null != note1Id) {
+        notebook.removeNote(note1Id, anonymous);
+      }
+    }
+  }
+
 
   @Test
   public void testRunParagraphJob() throws Exception {

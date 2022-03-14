@@ -371,7 +371,7 @@ public class NotebookService {
   /**
    * Executes given paragraph with passed paragraph info like noteId, paragraphId, title, text and etc.
    *
-   * @param noteId
+   * @param note
    * @param paragraphId
    * @param title
    * @param text
@@ -1012,12 +1012,14 @@ public class NotebookService {
 
   }
 
-  public void getNotebyRevision(String noteId,
+  // notebook.getNoteByRevision(...) does not use the NoteCache,
+  // so we can return a Note object here.
+  public Note getNotebyRevision(String noteId,
                                 String revisionId,
                                 ServiceContext context,
                                 ServiceCallback<Note> callback) throws IOException {
 
-    notebook.processNote(noteId ,
+    return notebook.processNote(noteId,
       note -> {
         if (note == null) {
           callback.onFailure(new NoteNotFoundException(noteId), context);
@@ -1031,7 +1033,7 @@ public class NotebookService {
         Note revisionNote = notebook.getNoteByRevision(noteId, note.getPath(), revisionId,
             context.getAutheInfo());
         callback.onSuccess(revisionNote, context);
-        return null;
+        return revisionNote;
       });
   }
 
