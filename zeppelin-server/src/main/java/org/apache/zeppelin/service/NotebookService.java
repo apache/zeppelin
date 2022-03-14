@@ -317,15 +317,30 @@ public class NotebookService {
   }
 
   public String cloneNote(String noteId,
-                        String newNotePath,
-                        ServiceContext context,
-                        ServiceCallback<Note> callback) throws IOException {
+                          String newNotePath,
+                          ServiceContext context,
+                          ServiceCallback<Note> callback) throws IOException {
+    return cloneNote(noteId, "", newNotePath, context, callback);
+  }
+
+
+  public String cloneNote(String noteId,
+                          String revisionId,
+                          String newNotePath,
+                          ServiceContext context,
+                          ServiceCallback<Note> callback) throws IOException {
     //TODO(zjffdu) move these to Notebook
     if (StringUtils.isBlank(newNotePath)) {
       newNotePath = "/Cloned Note_" + noteId;
+      if(StringUtils.isNotEmpty(revisionId)) {
+        // If cloning a revision of the note,
+        // append the short commit id of revision to newNoteName
+        // to distinguish which commit to be copied.
+        newNotePath += "_" + revisionId.substring(0, 7);
+      }
     }
     try {
-      String newNoteId = notebook.cloneNote(noteId, normalizeNotePath(newNotePath),
+      String newNoteId = notebook.cloneNote(noteId, revisionId, normalizeNotePath(newNotePath),
           context.getAutheInfo());
       return notebook.processNote(newNoteId,
         newNote -> {

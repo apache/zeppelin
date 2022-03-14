@@ -32,6 +32,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.display.AngularObject;
@@ -310,25 +311,40 @@ public class Notebook {
    * @throws IOException
    */
   public String cloneNote(String sourceNoteId, String newNotePath, AuthenticationInfo subject)
+          throws IOException {
+    return cloneNote(sourceNoteId, "", newNotePath, subject);
+  }
+
+
+  public String cloneNote(String sourceNoteId, String revisionId, String newNotePath, AuthenticationInfo subject)
       throws IOException {
     return processNote(sourceNoteId,
       sourceNote -> {
         if (sourceNote == null) {
           throw new IOException("Source note: " + sourceNoteId + " not found");
         }
+        Note note;
+        if(StringUtils.isNotEmpty(revisionId)) {
+            note = getNoteByRevision(sourceNote.getId(), sourceNote.getPath(), revisionId, subject);
+        } else {
+          note = sourceNote;
+        }
+        if (note == null) {
+          throw new IOException("Source note: " + sourceNoteId + " revisionId " + revisionId + " not found");
+        }
         String newNoteId = createNote(newNotePath, subject, false);
         processNote(newNoteId,
           newNote -> {
-            List<Paragraph> paragraphs = sourceNote.getParagraphs();
+            List<Paragraph> paragraphs = note.getParagraphs();
             for (Paragraph p : paragraphs) {
               newNote.addCloneParagraph(p, subject);
             }
 
-            newNote.setConfig(new HashMap<>(sourceNote.getConfig()));
-            newNote.setInfo(new HashMap<>(sourceNote.getInfo()));
-            newNote.setDefaultInterpreterGroup(sourceNote.getDefaultInterpreterGroup());
-            newNote.setNoteForms(new HashMap<>(sourceNote.getNoteForms()));
-            newNote.setNoteParams(new HashMap<>(sourceNote.getNoteParams()));
+            newNote.setConfig(new HashMap<>(note.getConfig()));
+            newNote.setInfo(new HashMap<>(note.getInfo()));
+            newNote.setDefaultInterpreterGroup(note.getDefaultInterpreterGroup());
+            newNote.setNoteForms(new HashMap<>(note.getNoteForms()));
+            newNote.setNoteParams(new HashMap<>(note.getNoteParams()));
             newNote.setRunning(false);
 
             saveNote(newNote, subject);
@@ -528,11 +544,11 @@ public class Notebook {
     }
   }
 
-  public Note getNoteByRevision(String noteId, String noteName,
+  public Note getNoteByRevision(String noteId, String notePath,
                                 String revisionId, AuthenticationInfo subject)
       throws IOException {
     if (((NotebookRepoSync) notebookRepo).isRevisionSupportedInDefaultRepo()) {
-      return ((NotebookRepoWithVersionControl) notebookRepo).get(noteId, noteName,
+      return ((NotebookRepoWithVersionControl) notebookRepo).get(noteId, notePath,
           revisionId, subject);
     } else {
       return null;

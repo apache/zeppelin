@@ -555,11 +555,13 @@ public class NotebookRestApi extends AbstractRestApi {
     checkIfUserCanWrite(noteId, "Insufficient privileges you cannot clone this note");
     NewNoteRequest request = NewNoteRequest.fromJson(message);
     String newNoteName = null;
+    String revisionId = null;
     if (request != null) {
       newNoteName = request.getName();
+      revisionId = request.getRevisionId();
     }
     AuthenticationInfo subject = new AuthenticationInfo(authenticationService.getPrincipal());
-    String newNoteId = notebookService.cloneNote(noteId, newNoteName, getServiceContext(),
+    String newNoteId = notebookService.cloneNote(noteId, revisionId, newNoteName, getServiceContext(),
             new RestServiceCallback<Note>() {
               @Override
               public void onSuccess(Note newNote, ServiceContext context) throws IOException {
