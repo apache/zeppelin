@@ -36,6 +36,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -46,12 +47,16 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringReader;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+
+import static javax.xml.XMLConstants.ACCESS_EXTERNAL_DTD;
+import static javax.xml.XMLConstants.ACCESS_EXTERNAL_SCHEMA;
+import static javax.xml.XMLConstants.FEATURE_SECURE_PROCESSING;
 
 /**
  * Client for API  SAP Universe
@@ -215,7 +220,7 @@ public class UniverseClient {
     }
 
     try (InputStream xmlStream = response.getEntity().getContent()) {
-      DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+      DocumentBuilderFactory factory = newDocumentBuilderFactory();
       DocumentBuilder builder = factory.newDocumentBuilder();
       Document doc = builder.parse(xmlStream);
       XPathFactory xPathfactory = XPathFactory.newInstance();
@@ -308,7 +313,7 @@ public class UniverseClient {
 
         if (response.getStatusLine().getStatusCode() == 200) {
           try (InputStream xmlStream = response.getEntity().getContent()) {
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            DocumentBuilderFactory factory = newDocumentBuilderFactory();
             DocumentBuilder builder = factory.newDocumentBuilder();
             Document doc = builder.parse(xmlStream);
             XPathFactory xPathfactory = XPathFactory.newInstance();
@@ -383,7 +388,7 @@ public class UniverseClient {
     }
 
     try (InputStream xmlStream = response.getEntity().getContent()) {
-      DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+      DocumentBuilderFactory factory = newDocumentBuilderFactory();
       DocumentBuilder builder = factory.newDocumentBuilder();
       Document doc = builder.parse(xmlStream);
       XPathFactory xPathfactory = XPathFactory.newInstance();
@@ -459,7 +464,7 @@ public class UniverseClient {
     }
     if (response != null && response.getStatusLine().getStatusCode() == 200) {
       try (InputStream xmlStream = response.getEntity().getContent()) {
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        DocumentBuilderFactory factory = newDocumentBuilderFactory();
         DocumentBuilder builder = factory.newDocumentBuilder();
         Document doc = builder.parse(xmlStream);
         XPathFactory xPathfactory = XPathFactory.newInstance();
@@ -536,10 +541,10 @@ public class UniverseClient {
 
   private String getValue(String response, String xPathString) throws ParserConfigurationException,
       IOException, SAXException, XPathExpressionException {
-    try (InputStream xmlStream = new ByteArrayInputStream(response.getBytes())) {
-      DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+    try (StringReader reader = new StringReader(response)) {
+      DocumentBuilderFactory factory = newDocumentBuilderFactory();
       DocumentBuilder builder = factory.newDocumentBuilder();
-      Document doc = builder.parse(xmlStream);
+      Document doc = builder.parse(new InputSource(reader));
       XPathFactory xPathfactory = XPathFactory.newInstance();
       XPath xpath = xPathfactory.newXPath();
       XPathExpression expr = xpath.compile(xPathString);
@@ -795,5 +800,28 @@ public class UniverseClient {
         }
       }
     }
+  }
+
+  private static DocumentBuilderFactory newDocumentBuilderFactory() throws ParserConfigurationException {
+    DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+    dbf.setFeature(FEATURE_SECURE_PROCESSING, true);
+    dbf.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+    dbf.setFeature("http://apache.org/xml/features/nonvalidating/load-dtd-grammar", false);
+    dbf.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+    dbf.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+    dbf.setFeature("http://xml.org/sax/features/external-general-entities", false);
+    dbf.setXIncludeAware(false);
+    dbf.setExpandEntityReferences(false);
+    try {
+      dbf.setAttribute(ACCESS_EXTERNAL_DTD, "");
+    } catch (Exception ignore) {
+      //ignore
+    }
+    try {
+      dbf.setAttribute(ACCESS_EXTERNAL_SCHEMA, "");
+    } catch (Exception ignore) {
+      //ignore
+    }
+    return dbf;
   }
 }
