@@ -1039,8 +1039,11 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
     }
 
     File localRepoDir = new File(conf.getInterpreterLocalRepoPath() + "/" + id);
-    FileUtils.deleteDirectory(localRepoDir);
-
+    if (localRepoDir.getAbsolutePath().contains("..")) {
+      LOGGER.warn("inlineRemove will not remove directory because path contains .. traversal: {}", localRepoDir.getAbsolutePath());
+    } else {
+      FileUtils.deleteDirectory(localRepoDir);
+    }
     return removed;
   }
 
