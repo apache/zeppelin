@@ -158,8 +158,6 @@
               <target unless="skipTests">
                 <exec executable="./zeppelin-daemon.sh" dir="${zeppelin.daemon.package.base}"
                   spawn="false">
-                  <!-- specify the SPARK_HOME which is downloaded in testing/downloadSpark.sh -->
-                  <env key="SPARK_HOME" value="/home/runner/work/zeppelin/zeppelin/spark-2.4.7-bin-hadoop2.7"/>
                   <arg value="start"/>
                 </exec>
               </target>
