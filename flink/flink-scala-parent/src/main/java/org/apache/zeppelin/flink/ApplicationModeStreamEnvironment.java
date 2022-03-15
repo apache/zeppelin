@@ -25,6 +25,7 @@ import org.apache.flink.configuration.PipelineOptions;
 import org.apache.flink.core.execution.JobClient;
 import org.apache.flink.core.execution.PipelineExecutorServiceLoader;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
+import org.apache.flink.streaming.api.graph.StreamGraph;
 import org.apache.zeppelin.flink.internal.FlinkILoop;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,6 +71,18 @@ public class ApplicationModeStreamEnvironment extends StreamExecutionEnvironment
   public JobClient executeAsync(String jobName) throws Exception {
     updateDependencies();
     return super.executeAsync(jobName);
+  }
+
+  @Override
+  public JobExecutionResult execute(StreamGraph streamGraph) throws Exception {
+    updateDependencies();
+    return super.execute(streamGraph);
+  }
+
+  @Override
+  public JobClient executeAsync(StreamGraph streamGraph) throws Exception {
+    updateDependencies();
+    return super.executeAsync(streamGraph);
   }
 
   private void updateDependencies() throws Exception {
