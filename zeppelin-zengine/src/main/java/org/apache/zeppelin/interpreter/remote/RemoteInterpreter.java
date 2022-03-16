@@ -20,6 +20,7 @@ package org.apache.zeppelin.interpreter.remote;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.thrift.TException;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
@@ -252,6 +253,9 @@ public class RemoteInterpreter extends Interpreter {
           }
       );
     } catch (RemoteCallException e) {
+      if (StringUtils.isNotBlank(interpreterProcess.getErrorMessage())) {
+        return new InterpreterResult(InterpreterResult.Code.ERROR, interpreterProcess.getErrorMessage());
+      }
       throw new InterpreterException(e);
     }
 
