@@ -22,6 +22,7 @@ import org.apache.hadoop.yarn.api.records.ApplicationReport;
 import org.apache.hadoop.yarn.api.records.YarnApplicationState;
 import org.apache.hadoop.yarn.client.api.YarnClient;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
+import org.apache.hadoop.yarn.util.ConverterUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterManagedProcess;
@@ -29,6 +30,7 @@ import org.apache.zeppelin.scheduler.SchedulerThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -47,6 +49,7 @@ public class YarnAppMonitor {
   private ZeppelinConfiguration conf;
   private ScheduledExecutorService executor;
   private YarnClient yarnClient;
+  private boolean inited;
   private ConcurrentHashMap<ApplicationId, RemoteInterpreterManagedProcess> apps;
 
   public static synchronized YarnAppMonitor get() {
@@ -99,13 +102,40 @@ public class YarnAppMonitor {
               TimeUnit.SECONDS);
 
       LOGGER.info("YarnAppMonitor is started");
+      this.inited = true;
     } catch (Throwable e) {
       LOGGER.warn("Fail to initialize YarnAppMonitor", e);
+      this.inited = false;
     }
   }
 
-  public void addYarnApp(ApplicationId appId, RemoteInterpreterManagedProcess interpreterManagedProcess) {
+  public void addYarnApp(String appId, RemoteInterpreterManagedProcess interpreterManagedProcess) {
     LOGGER.info("Add {} to YarnAppMonitor", appId);
-    this.apps.put(appId, interpreterManagedProcess);
+    this.apps.put(ConverterUtils.toApplicationId(appId), interpreterManagedProcess);
   }
+
+  public String getDiagnostics(String yarnAppId) {
+    if (!inited) {
+      return "";
+    }
+    if (yarnClient != null) {
+      try {
+        ApplicationReport appReport = yarnClient.getApplicationReport(ApplicationId.fromString(yarnAppId));
+        if (appReport.getYarnApplicationState() == YarnApplicationState.FAILED ||
+                appReport.getYarnApplicationState() == YarnApplicationState.KILLED) {
+          return appReport.getDiagnostics();
+        }
+      } catch (Exception e) {
+        LOGGER.error("Fail to get yarn app diagnostics", e);
+      }
+    }
+    return "";
+  }
+
+  public void close() throws IOException {
+    if (yarnClient != null) {
+      yarnClient.close();
+    }
+  }
+
 }

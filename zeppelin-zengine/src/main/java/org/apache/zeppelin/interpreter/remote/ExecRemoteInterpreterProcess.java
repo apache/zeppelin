@@ -24,6 +24,9 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.ExecuteException;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.hadoop.yarn.api.records.ApplicationReport;
+import org.apache.hadoop.yarn.api.records.YarnApplicationState;
 import org.apache.hadoop.yarn.util.ConverterUtils;
 import org.apache.zeppelin.interpreter.YarnAppMonitor;
 import org.apache.zeppelin.interpreter.util.ProcessLauncher;
@@ -39,6 +42,7 @@ public class ExecRemoteInterpreterProcess extends RemoteInterpreterManagedProces
   private static final Pattern YARN_APP_PATTER = Pattern.compile("Submitted application (\\w+)");
 
   private final String interpreterRunner;
+  private String yarnAppId;
   private InterpreterProcessLauncher interpreterProcessLauncher;
 
   public ExecRemoteInterpreterProcess(
@@ -101,9 +105,9 @@ public class ExecRemoteInterpreterProcess extends RemoteInterpreterManagedProces
       String launchOutput = interpreterProcessLauncher.getProcessLaunchOutput();
       Matcher m = YARN_APP_PATTER.matcher(launchOutput);
       if (m.find()) {
-        String appId = m.group(1);
-        LOGGER.info("Detected yarn app: {}, add it to YarnAppMonitor", appId);
-        YarnAppMonitor.get().addYarnApp(ConverterUtils.toApplicationId(appId), this);
+        this.yarnAppId = m.group(1);
+        LOGGER.info("Detected yarn app: {}, add it to YarnAppMonitor", yarnAppId);
+        YarnAppMonitor.get().addYarnApp(yarnAppId, this);
       }
     }
   }
@@ -153,9 +157,13 @@ public class ExecRemoteInterpreterProcess extends RemoteInterpreterManagedProces
 
   @Override
   public String getErrorMessage() {
-    return this.interpreterProcessLauncher != null
-        ? this.interpreterProcessLauncher.getErrorMessage()
-        : "";
+    if (this.interpreterProcessLauncher != null) {
+      if (StringUtils.isNotBlank(this.interpreterProcessLauncher.getErrorMessage())) {
+        return this.interpreterProcessLauncher.getErrorMessage();
+      }
+    }
+
+    return super.getErrorMessage();
   }
 
   private class InterpreterProcessLauncher extends ProcessLauncher {
