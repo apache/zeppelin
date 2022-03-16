@@ -295,6 +295,46 @@ public abstract class SparkIntegrationTest {
   }
 
   @Test
+  public void testYarnClusterModeKilledManually() throws InterpreterException, IOException, InterruptedException {
+    assumeTrue("Hadoop version mismatch, skip test", isHadoopVersionMatch());
+
+    InterpreterSetting sparkInterpreterSetting = interpreterSettingManager.getInterpreterSettingByName("spark");
+    sparkInterpreterSetting.setProperty("spark.master", "yarn-cluster");
+    sparkInterpreterSetting.setProperty("HADOOP_CONF_DIR", hadoopCluster.getConfigPath());
+    sparkInterpreterSetting.setProperty("SPARK_HOME", sparkHome);
+    sparkInterpreterSetting.setProperty("ZEPPELIN_CONF_DIR", zeppelin.getZeppelinConfDir().getAbsolutePath());
+    sparkInterpreterSetting.setProperty("zeppelin.spark.useHiveContext", "false");
+    sparkInterpreterSetting.setProperty("zeppelin.pyspark.useIPython", "false");
+    sparkInterpreterSetting.setProperty("PYSPARK_PYTHON", getPythonExec());
+    sparkInterpreterSetting.setProperty("spark.driver.memory", "512m");
+    sparkInterpreterSetting.setProperty("zeppelin.spark.scala.color", "false");
+    sparkInterpreterSetting.setProperty("zeppelin.spark.deprecatedMsg.show", "false");
+    sparkInterpreterSetting.setProperty("spark.user.name", "#{user}");
+    sparkInterpreterSetting.setProperty("zeppelin.spark.run.asLoginUser", "false");
+    // parameters with whitespace
+    sparkInterpreterSetting.setProperty("spark.app.name", "hello spark");
+
+
+    try {
+      setUpSparkInterpreterSetting(sparkInterpreterSetting);
+      // test SparkInterpreter
+      Interpreter sparkInterpreter = interpreterFactory.getInterpreter("spark.spark", new ExecutionContext("user1", "note1", "test"));
+
+      InterpreterContext context = new InterpreterContext.Builder().setNoteId("note1").setParagraphId("paragraph_1").build();
+      InterpreterResult interpreterResult = sparkInterpreter.interpret("sc.version", context);
+      assertEquals(interpreterResult.toString(), InterpreterResult.Code.SUCCESS, interpreterResult.code());
+
+      killApplicationMaster();
+      context = new InterpreterContext.Builder().setNoteId("note1").setParagraphId("paragraph_1").build();
+      interpreterResult = sparkInterpreter.interpret("sc.version", context);
+      assertEquals(interpreterResult.toString(), InterpreterResult.Code.ERROR, interpreterResult.code());
+      assertTrue(interpreterResult.toString(), interpreterResult.toString().contains("Killed by external signal"));
+    } finally {
+      interpreterSettingManager.close();
+    }
+  }
+
+  @Test
   public void testSparkSubmit() throws InterpreterException {
     assumeTrue("Hadoop version mismatch, skip test", isHadoopVersionMatch());
 
@@ -367,5 +407,14 @@ public abstract class SparkIntegrationTest {
       throw new RuntimeException("Fail to run command: which python.");
     }
     return IOUtils.toString(process.getInputStream()).trim();
+  }
+
+  private void killApplicationMaster() throws IOException, InterruptedException {
+    Process process = Runtime.getRuntime().exec(new String[]{"pkill", "-f", "ApplicationMaster"});
+    if (process.waitFor() != 0) {
+      throw new RuntimeException("Fail to run command: pkill -f ApplicationMaster");
+    } else {
+      LOGGER.info("ApplicationMaster is killed");
+    }
   }
 }
