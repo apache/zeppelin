@@ -26,6 +26,7 @@ import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.ManagedInterpreterGroup;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
+import org.apache.zeppelin.interpreter.remote.RemoteCallException;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
 import org.apache.zeppelin.interpreter.thrift.RemoteApplicationResult;
 import org.apache.zeppelin.notebook.ApplicationState;
@@ -222,8 +223,13 @@ public class HeliumApplicationFactory implements ApplicationEventListener, NoteE
           throw new ApplicationException("Target interpreter process is not running");
         }
 
-        RemoteApplicationResult ret = intpProcess.callRemoteFunction(client ->
-                client.unloadApplication(appsToUnload.getId()));
+        RemoteApplicationResult ret = null;
+        try {
+          ret = intpProcess.callRemoteFunction(client ->
+                  client.unloadApplication(appsToUnload.getId()));
+        } catch (RemoteCallException e) {
+          throw new ApplicationException(e);
+        }
         if (ret.isSuccess()) {
           appStatusChange(paragraph, appsToUnload.getId(), ApplicationState.Status.UNLOADED);
         } else {
@@ -296,8 +302,13 @@ public class HeliumApplicationFactory implements ApplicationEventListener, NoteE
         if (intpProcess == null) {
           throw new ApplicationException("Target interpreter process is not running");
         }
-        RemoteApplicationResult ret = intpProcess.callRemoteFunction(client ->
-                client.runApplication(app.getId()));
+        RemoteApplicationResult ret = null;
+        try {
+          ret = intpProcess.callRemoteFunction(client ->
+                  client.runApplication(app.getId()));
+        } catch (RemoteCallException e) {
+          throw new ApplicationException(e);
+        }
         if (ret.isSuccess()) {
           // success
         } else {

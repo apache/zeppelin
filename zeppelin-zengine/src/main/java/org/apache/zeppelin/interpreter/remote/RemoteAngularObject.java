@@ -21,11 +21,14 @@ import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectListener;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.ManagedInterpreterGroup;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Proxy for AngularObject that exists in remote interpreter process
  */
 public class RemoteAngularObject extends AngularObject {
+  private static final Logger LOGGER = LoggerFactory.getLogger(RemoteAngularObject.class);
 
   private transient ManagedInterpreterGroup interpreterGroup;
 
@@ -45,10 +48,14 @@ public class RemoteAngularObject extends AngularObject {
     super.set(o, emitWeb);
 
     if (emitRemoteProcess) {
-      // send updated value to remote interpreter
-      interpreterGroup.getRemoteInterpreterProcess().
-          updateRemoteAngularObject(
-              getName(), getNoteId(), getParagraphId(), o);
+      try {
+        // send updated value to remote interpreter
+        interpreterGroup.getRemoteInterpreterProcess().
+                updateRemoteAngularObject(
+                        getName(), getNoteId(), getParagraphId(), o);
+      } catch (RemoteCallException e) {
+        LOGGER.warn("Fail to remote set", e);
+      }
     }
   }
 }

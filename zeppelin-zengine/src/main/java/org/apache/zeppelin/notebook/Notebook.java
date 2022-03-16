@@ -44,6 +44,7 @@ import org.apache.zeppelin.interpreter.InterpreterNotFoundException;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.interpreter.ManagedInterpreterGroup;
+import org.apache.zeppelin.interpreter.remote.RemoteCallException;
 import org.apache.zeppelin.notebook.NoteManager.Folder;
 import org.apache.zeppelin.notebook.NoteManager.NoteNode;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;

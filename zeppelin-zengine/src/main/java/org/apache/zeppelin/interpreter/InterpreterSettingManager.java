@@ -53,6 +53,7 @@ import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.interpreter.Interpreter.RegisteredInterpreter;
 import org.apache.zeppelin.interpreter.recovery.RecoveryStorage;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
+import org.apache.zeppelin.interpreter.remote.RemoteCallException;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
 import org.apache.zeppelin.notebook.ApplicationState;
@@ -682,11 +683,11 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
   }
 
   //TODO(zjffdu) move Resource related api to ResourceManager
-  public ResourceSet getAllResources() {
+  public ResourceSet getAllResources() throws RemoteCallException {
     return getAllResourcesExcept(null);
   }
 
-  private ResourceSet getAllResourcesExcept(String interpreterGroupExcludsion) {
+  private ResourceSet getAllResourcesExcept(String interpreterGroupExcludsion) throws RemoteCallException {
     ResourceSet resourceSet = new ResourceSet();
     for (ManagedInterpreterGroup intpGroup : getAllInterpreterGroup()) {
       if (interpreterGroupExcludsion != null &&

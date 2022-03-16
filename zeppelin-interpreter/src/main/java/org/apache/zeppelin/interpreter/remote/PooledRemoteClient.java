@@ -89,9 +89,10 @@ public class PooledRemoteClient<T extends TServiceClient> implements AutoCloseab
     }
   }
 
-  public <R> R callRemoteFunction(RemoteFunction<R, T> func) {
+  public <R> R callRemoteFunction(RemoteFunction<R, T> func) throws RemoteCallException {
     boolean broken = false;
     String errorCause = null;
+    Exception errorException = null;
     for (int i = 0;i < RETRY_COUNT; ++ i) {
       T client = null;
       broken = false;
@@ -100,14 +101,16 @@ public class PooledRemoteClient<T extends TServiceClient> implements AutoCloseab
         if (client != null) {
           return func.call(client);
         }
-      } catch (InterpreterRPCException e) {
+      } catch (InterpreterRPCException e1) {
         // zeppelin side exception, no need to retry
         broken = true;
-        errorCause = e.getErrorMessage();
+        errorCause = e1.getErrorMessage();
+        errorException = e1;
         break;
-      } catch (Exception e1) {
+      } catch (Exception e2) {
         // thrift framework exception (maybe due to network issue), need to retry
         broken = true;
+        errorException = e2;
         continue;
       } finally {
         if (client != null) {
@@ -116,9 +119,10 @@ public class PooledRemoteClient<T extends TServiceClient> implements AutoCloseab
       }
     }
     if (broken) {
-      throw new RuntimeException(errorCause);
+      throw new RemoteCallException(errorCause, errorException);
+    } else {
+      throw new RuntimeException("No result returned");
     }
-    return null;
   }
 
 

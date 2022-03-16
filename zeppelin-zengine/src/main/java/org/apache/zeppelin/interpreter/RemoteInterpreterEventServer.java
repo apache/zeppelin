@@ -29,12 +29,7 @@ import org.apache.thrift.transport.TTransportException;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.helium.ApplicationEventListener;
-import org.apache.zeppelin.interpreter.remote.AppendOutputRunner;
-import org.apache.zeppelin.interpreter.remote.InvokeResourceMethodEventMessage;
-import org.apache.zeppelin.interpreter.remote.RemoteAngularObject;
-import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
-import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
-import org.apache.zeppelin.interpreter.remote.RemoteInterpreterUtils;
+import org.apache.zeppelin.interpreter.remote.*;
 import org.apache.zeppelin.interpreter.thrift.AppOutputAppendEvent;
 import org.apache.zeppelin.interpreter.thrift.AppOutputUpdateEvent;
 import org.apache.zeppelin.interpreter.thrift.AppStatusUpdateEvent;
@@ -500,14 +495,13 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
         return null;
       }
     } else if (remoteInterpreterProcess.isRunning()) {
-      ByteBuffer res = remoteInterpreterProcess.callRemoteFunction(client ->
-              client.resourceInvokeMethod(
-                  resourceId.getNoteId(),
-                  resourceId.getParagraphId(),
-                  resourceId.getName(),
-                  message.toJson()));
-
       try {
+        ByteBuffer res = remoteInterpreterProcess.callRemoteFunction(client ->
+                client.resourceInvokeMethod(
+                    resourceId.getNoteId(),
+                    resourceId.getParagraphId(),
+                    resourceId.getName(),
+                    message.toJson()));
         return Resource.deserializeObject(res);
       } catch (Exception e) {
         LOGGER.error(e.getMessage(), e);
@@ -524,13 +518,12 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
       return null;
     }
     RemoteInterpreterProcess remoteInterpreterProcess = intpGroup.getRemoteInterpreterProcess();
-    ByteBuffer buffer = remoteInterpreterProcess.callRemoteFunction(client ->
-            client.resourceGet(
-                resourceId.getNoteId(),
-                resourceId.getParagraphId(),
-                resourceId.getName()));
-
     try {
+      ByteBuffer buffer = remoteInterpreterProcess.callRemoteFunction(client ->
+              client.resourceGet(
+                  resourceId.getNoteId(),
+                  resourceId.getParagraphId(),
+                  resourceId.getName()));
       return Resource.deserializeObject(buffer);
     } catch (Exception e) {
       LOGGER.error(e.getMessage(), e);
@@ -552,10 +545,15 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
           resourceSet.addAll(localPool.getAll());
         }
       } else if (remoteInterpreterProcess.isRunning()) {
-        List<String> resourceList = remoteInterpreterProcess.callRemoteFunction(
-                client -> client.resourcePoolGetAll());
-        for (String res : resourceList) {
-          resourceSet.add(RemoteResource.fromJson(res));
+        List<String> resourceList = null;
+        try {
+          resourceList = remoteInterpreterProcess.callRemoteFunction(
+                  client -> client.resourcePoolGetAll());
+          for (String res : resourceList) {
+            resourceSet.add(RemoteResource.fromJson(res));
+          }
+        } catch (RemoteCallException e) {
+          LOGGER.error(e.getMessage(), e);
         }
       }
     }

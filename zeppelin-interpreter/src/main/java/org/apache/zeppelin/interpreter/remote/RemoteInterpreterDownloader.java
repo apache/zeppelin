@@ -60,7 +60,12 @@ public class RemoteInterpreterDownloader {
 
       RemoteInterpreterDownloader downloader = new RemoteInterpreterDownloader(interpreter,
           intpEventClient, new File(localRepoPath));
-      downloader.syncAllLibraries();
+      try {
+        downloader.syncAllLibraries();
+      } catch (RemoteCallException e) {
+        LOGGER.error("Fail to sync libraries", e);
+        System.exit(-1);
+      }
     } else {
       LOGGER.error(
           "Wrong amount of Arguments. Expected: [ZeppelinHostname] [ZeppelinPort] [InterpreterName] [LocalRepoPath]");
@@ -69,7 +74,7 @@ public class RemoteInterpreterDownloader {
     }
   }
 
-  private void syncAllLibraries() {
+  private void syncAllLibraries() throws RemoteCallException {
     LOGGER.info("Loading all libraries for interpreter {} to {}", interpreter, localRepoDir);
     List<LibraryMetadata> metadatas = client.getAllLibraryMetadatas(interpreter);
     if (!localRepoDir.isDirectory()) {
@@ -141,7 +146,7 @@ public class RemoteInterpreterDownloader {
       } else {
         LOGGER.error("Unable to create a new library file {}", library);
       }
-    } catch (IOException e) {
+    } catch (IOException | RemoteCallException e) {
       LOGGER.error("Unable to download Library {}", metadata.getName(), e);
     }
   }

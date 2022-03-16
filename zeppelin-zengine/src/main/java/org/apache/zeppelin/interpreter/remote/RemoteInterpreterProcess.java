@@ -89,18 +89,18 @@ public abstract class RemoteInterpreterProcess implements InterpreterClient, Aut
   public void updateRemoteAngularObject(String name,
                                         String noteId,
                                         String paragraphId,
-                                        Object o) {
+                                        Object o) throws RemoteCallException {
     remoteClient.callRemoteFunction(client -> {
        client.angularObjectUpdate(name, noteId, paragraphId, GSON.toJson(o));
        return null;
     });
   }
 
-  public <R> R callRemoteFunction(PooledRemoteClient.RemoteFunction<R, Client> func) {
+  public <R> R callRemoteFunction(PooledRemoteClient.RemoteFunction<R, Client> func) throws RemoteCallException {
     return remoteClient.callRemoteFunction(func);
   }
 
-  public void init(ZeppelinConfiguration zConf) {
+  public void init(ZeppelinConfiguration zConf) throws RemoteCallException {
     callRemoteFunction(client -> {
       client.init(zConf.getCompleteConfiguration());
       return null;

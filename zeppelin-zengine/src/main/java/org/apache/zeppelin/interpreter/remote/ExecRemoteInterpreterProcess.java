@@ -157,6 +157,13 @@ public class ExecRemoteInterpreterProcess extends RemoteInterpreterManagedProces
 
   @Override
   public String getErrorMessage() {
+    if (isHadoopClientAvailable() && yarnAppId != null) {
+      String yarnDiagnostics = YarnAppMonitor.get().getDiagnostics(yarnAppId);
+      if (StringUtils.isNotBlank(yarnDiagnostics)) {
+        return yarnDiagnostics;
+      }
+    }
+
     if (this.interpreterProcessLauncher != null) {
       if (StringUtils.isNotBlank(this.interpreterProcessLauncher.getErrorMessage())) {
         return this.interpreterProcessLauncher.getErrorMessage();

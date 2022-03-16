@@ -76,7 +76,7 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector,
     }, connectionPoolSize);
   }
 
-  public <R> R callRemoteFunction(PooledRemoteClient.RemoteFunction<R, RemoteInterpreterEventService.Client> func) {
+  public <R> R callRemoteFunction(PooledRemoteClient.RemoteFunction<R, RemoteInterpreterEventService.Client> func) throws RemoteCallException {
     return remoteClient.callRemoteFunction(func);
   }
 
@@ -84,21 +84,21 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector,
     this.intpGroupId = intpGroupId;
   }
 
-  public void registerInterpreterProcess(RegisterInfo registerInfo) {
+  public void registerInterpreterProcess(RegisterInfo registerInfo) throws RemoteCallException {
     callRemoteFunction(client -> {
       client.registerInterpreterProcess(registerInfo);
       return null;
     });
   }
 
-  public void unRegisterInterpreterProcess() {
+  public void unRegisterInterpreterProcess() throws RemoteCallException {
     callRemoteFunction(client -> {
       client.unRegisterInterpreterProcess(intpGroupId);
       return null;
     });
   }
 
-  public void sendWebUrlInfo(String webUrl) {
+  public void sendWebUrlInfo(String webUrl) throws RemoteCallException {
     callRemoteFunction(client -> {
       client.sendWebUrl(new WebUrlInfo(intpGroupId, webUrl));
       return null;
@@ -127,15 +127,15 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector,
     }
   }
 
-  public List<ParagraphInfo> getParagraphList(String user, String noteId) {
+  public List<ParagraphInfo> getParagraphList(String user, String noteId) throws RemoteCallException {
     return callRemoteFunction(client -> client.getParagraphList(user, noteId));
   }
 
-  public List<LibraryMetadata> getAllLibraryMetadatas(String interpreter) {
+  public List<LibraryMetadata> getAllLibraryMetadatas(String interpreter) throws RemoteCallException {
     return callRemoteFunction(client -> client.getAllLibraryMetadatas(interpreter));
   }
 
-  public ByteBuffer getLibrary(String interpreter, String libraryName) {
+  public ByteBuffer getLibrary(String interpreter, String libraryName) throws RemoteCallException {
     return callRemoteFunction(client -> client.getLibrary(interpreter, libraryName));
   }
 
@@ -144,7 +144,7 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector,
     try {
       ByteBuffer buffer = callRemoteFunction(client -> client.getResource(resourceId.toJson()));
       return Resource.deserializeObject(buffer);
-    } catch (IOException | ClassNotFoundException e) {
+    } catch (IOException | ClassNotFoundException | RemoteCallException e) {
       LOGGER.warn("Fail to readResource: {}", resourceId, e);
       return null;
     }
@@ -176,7 +176,7 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector,
     try {
       ByteBuffer buffer = callRemoteFunction(client -> client.invokeMethod(intpGroupId, invokeMethod.toJson()));
       return Resource.deserializeObject(buffer);
-    } catch (IOException | ClassNotFoundException e) {
+    } catch (IOException | ClassNotFoundException | RemoteCallException e) {
       LOGGER.error("Failed to invoke method", e);
       return null;
     }
@@ -215,7 +215,7 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector,
       remoteResource.setResourcePoolConnector(this);
 
       return remoteResource;
-    } catch (IOException | ClassNotFoundException e) {
+    } catch (IOException | ClassNotFoundException | RemoteCallException e) {
       LOGGER.error("Failed to invoke method", e);
       return null;
     }

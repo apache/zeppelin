@@ -1121,15 +1121,13 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
         }
         try {
           note.runAll(anonymous, true, false, new HashMap<>());
+          assertEquals(2, interpreterSettingManager.getAllResources().size());
+          // remove a paragraph
+          note.removeParagraph(anonymous.getUser(), p1.getId());
+          assertEquals(1, interpreterSettingManager.getAllResources().size());
         } catch (Exception e) {
           fail();
         }
-
-        assertEquals(2, interpreterSettingManager.getAllResources().size());
-
-        // remove a paragraph
-        note.removeParagraph(anonymous.getUser(), p1.getId());
-        assertEquals(1, interpreterSettingManager.getAllResources().size());
         return null;
       });
 

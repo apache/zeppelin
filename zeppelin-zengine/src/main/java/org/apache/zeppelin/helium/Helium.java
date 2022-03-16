@@ -38,6 +38,7 @@ import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterNotFoundException;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.interpreter.ManagedInterpreterGroup;
+import org.apache.zeppelin.interpreter.remote.RemoteCallException;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.resource.DistributedResourcePool;
@@ -51,7 +52,7 @@ import org.slf4j.LoggerFactory;
  * Manages helium packages
  */
 public class Helium {
-  private Logger logger = LoggerFactory.getLogger(Helium.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(Helium.class);
   private List<HeliumRegistry> registry = new LinkedList<>();
 
   private HeliumConf heliumConf;
@@ -102,7 +103,7 @@ public class Helium {
     try {
       bundleFactory.buildAllPackages(getBundlePackagesToBundle());
     } catch (Exception e) {
-      logger.error(e.getMessage(), e);
+      LOGGER.error(e.getMessage(), e);
     }
   }
 
@@ -133,10 +134,10 @@ public class Helium {
       String[] paths = registryPaths.split(",");
       for (String uri : paths) {
         if (uri.startsWith("http://") || uri.startsWith("https://")) {
-          logger.info("Add helium online registry {}", uri);
+          LOGGER.info("Add helium online registry {}", uri);
           registry.add(new HeliumOnlineRegistry(uri, uri, registryCacheDir));
         } else {
-          logger.info("Add helium local registry {}", uri);
+          LOGGER.info("Add helium local registry {}", uri);
           registry.add(new HeliumLocalRegistry(uri, uri));
         }
       }
@@ -144,7 +145,7 @@ public class Helium {
 
     File heliumConfFile = new File(path);
     if (!heliumConfFile.isFile()) {
-      logger.warn("{} does not exists", path);
+      LOGGER.warn("{} does not exists", path);
       return new HeliumConf();
     } else {
       String jsonString = FileUtils.readFileToString(heliumConfFile);
@@ -219,7 +220,7 @@ public class Helium {
               allPackages.get(name).add(new HeliumPackageSearchResult(r.name(), pkg, enabled));
             }
           } catch (IOException e) {
-            logger.error(e.getMessage(), e);
+            LOGGER.error(e.getMessage(), e);
           }
         }
       } else {
@@ -314,7 +315,7 @@ public class Helium {
     HeliumPackageSearchResult pkgInfo = getPackageInfo(name, artifact);
 
     if (pkgInfo == null) {
-      logger.info("Package {} not found", name);
+      LOGGER.info("Package {} not found", name);
       return false;
     }
 
@@ -341,7 +342,7 @@ public class Helium {
     String pkg = heliumConf.getEnabledPackages().get(name);
 
     if (pkg == null) {
-      logger.info("Package {} not found", name);
+      LOGGER.info("Package {} not found", name);
       return false;
     }
 
@@ -394,7 +395,12 @@ public class Helium {
         allResources = resourcePool.getAll();
       }
     } else {
-      allResources = interpreterSettingManager.getAllResources();
+      try {
+        allResources = interpreterSettingManager.getAllResources();
+      } catch (RemoteCallException e) {
+        LOGGER.warn("Fail to getAllResources", e);
+        return null;
+      }
     }
 
     for (List<HeliumPackageSearchResult> pkgs : allPackages.values()) {
@@ -542,11 +548,15 @@ public class Helium {
           resourceSet.addAll(localPool.getAll());
         }
       } else if (remoteInterpreterProcess.isRunning()) {
-        List<String> resourceList = remoteInterpreterProcess.callRemoteFunction(client ->
-                client.resourcePoolGetAll());
-        Gson gson = new Gson();
-        for (String res : resourceList) {
-          resourceSet.add(gson.fromJson(res, Resource.class));
+        try {
+          List<String> resourceList = remoteInterpreterProcess.callRemoteFunction(client ->
+                  client.resourcePoolGetAll());
+          Gson gson = new Gson();
+          for (String res : resourceList) {
+            resourceSet.add(gson.fromJson(res, Resource.class));
+          }
+        } catch (RemoteCallException e) {
+          LOGGER.warn("Fail to call resourcePoolGetAll", e);
         }
       }
     }

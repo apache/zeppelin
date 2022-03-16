@@ -22,6 +22,7 @@ import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
+import org.apache.zeppelin.interpreter.remote.RemoteCallException;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.After;
@@ -155,7 +156,7 @@ public class DistributedResourcePoolTest extends AbstractInterpreterTest {
   }
 
   @Test
-  public void testResourcePoolUtils() throws InterpreterException {
+  public void testResourcePoolUtils() throws InterpreterException, RemoteCallException {
     Gson gson = new Gson();
 
     // when create some resources
