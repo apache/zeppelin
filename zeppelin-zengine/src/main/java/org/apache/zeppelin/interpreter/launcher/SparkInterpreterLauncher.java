@@ -129,7 +129,9 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
 
     String scalaVersion = null;
     try {
-      scalaVersion = detectSparkScalaVersion(getEnv("SPARK_HOME"), env);
+      String sparkHome = getEnv("SPARK_HOME");
+      LOGGER.info("SPARK_HOME: {}", sparkHome);
+      scalaVersion = detectSparkScalaVersion(sparkHome, env);
       context.getProperties().put("zeppelin.spark.scala.version", scalaVersion);
     } catch (Exception e) {
       throw new IOException("Fail to detect scala version, the reason is:"+ e.getMessage());
@@ -333,9 +335,13 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
    */
   private String getEnv(String envName) {
     String env = properties.getProperty(envName);
-    if (env == null) {
+    if (StringUtils.isBlank(env)) {
       env = System.getenv(envName);
     }
+    if (StringUtils.isBlank(env)) {
+      LOGGER.warn("environment variable: {} is empty", envName);
+    }
+
     return env;
   }
 
