@@ -65,14 +65,10 @@ public class RemoteAngularObjectRegistry extends AngularObjectRegistry {
       return super.add(name, o, noteId, paragraphId, true);
     }
 
-    try {
-      remoteInterpreterProcess.callRemoteFunction(client -> {
-        client.angularObjectAdd(name, noteId, paragraphId, GSON.toJson(o));
-        return null;
-      });
-    } catch (RemoteCallException e) {
-      LOGGER.warn("Fail to call remote angularObjectAdd", e);
-    }
+    remoteInterpreterProcess.callRemoteFunction(client -> {
+      client.angularObjectAdd(name, noteId, paragraphId, GSON.toJson(o));
+      return null;
+    });
 
     return super.add(name, o, noteId, paragraphId, true);
   }
@@ -92,14 +88,11 @@ public class RemoteAngularObjectRegistry extends AngularObjectRegistry {
     if (remoteInterpreterProcess == null || !remoteInterpreterProcess.isRunning()) {
       return super.remove(name, noteId, paragraphId);
     }
-    try {
-      remoteInterpreterProcess.callRemoteFunction(client -> {
-        client.angularObjectRemove(name, noteId, paragraphId);
-        return null;
-      });
-    } catch (RemoteCallException e) {
-      LOGGER.warn("Fail to call remote angularObjectRemove", e);
-    }
+
+    remoteInterpreterProcess.callRemoteFunction(client -> {
+      client.angularObjectRemove(name, noteId, paragraphId);
+      return null;
+    });
 
     return super.remove(name, noteId, paragraphId);
   }

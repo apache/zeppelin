@@ -545,15 +545,10 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
           resourceSet.addAll(localPool.getAll());
         }
       } else if (remoteInterpreterProcess.isRunning()) {
-        List<String> resourceList = null;
-        try {
-          resourceList = remoteInterpreterProcess.callRemoteFunction(
-                  client -> client.resourcePoolGetAll());
-          for (String res : resourceList) {
-            resourceSet.add(RemoteResource.fromJson(res));
-          }
-        } catch (RemoteCallException e) {
-          LOGGER.error(e.getMessage(), e);
+        List<String> resourceList = remoteInterpreterProcess.callRemoteFunction(
+                client -> client.resourcePoolGetAll());
+        for (String res : resourceList) {
+          resourceSet.add(RemoteResource.fromJson(res));
         }
       }
     }
