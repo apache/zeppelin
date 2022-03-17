@@ -120,7 +120,7 @@ public class YarnAppMonitor {
     }
     if (yarnClient != null) {
       try {
-        ApplicationReport appReport = yarnClient.getApplicationReport(ApplicationId.fromString(yarnAppId));
+        ApplicationReport appReport = yarnClient.getApplicationReport(ConverterUtils.toApplicationId(yarnAppId));
         if (appReport.getYarnApplicationState() == YarnApplicationState.FAILED ||
                 appReport.getYarnApplicationState() == YarnApplicationState.KILLED) {
           return appReport.getDiagnostics();
