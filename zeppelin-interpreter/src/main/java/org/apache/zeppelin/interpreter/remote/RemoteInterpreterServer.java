@@ -95,6 +95,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.Optional;
 
 import static org.apache.zeppelin.cluster.meta.ClusterMetaType.INTP_PROCESS_META;
 
@@ -379,6 +380,13 @@ public class RemoteInterpreterServer extends Thread
                 Integer.parseInt(properties.getOrDefault("zeppelin.interpreter.result.cache", "0"));
       }
 
+      boolean isPresent = Optional.ofNullable(interpreterGroup.get(sessionId)).orElse(new ArrayList<>()).stream()
+              .filter(m -> m.getClassName().equals(className)).findAny().isPresent();
+      if (isPresent) {
+        LOGGER.info("interpreter {} is existing", className);
+        return;
+      }
+
       Class<Interpreter> replClass = (Class<Interpreter>) Object.class.forName(className);
       Properties p = new Properties();
       p.putAll(properties);
@@ -482,9 +490,18 @@ public class RemoteInterpreterServer extends Thread
           Iterator<Interpreter> it = interpreters.iterator();
           while (it.hasNext()) {
             Interpreter inp = it.next();
-            if (inp.getClassName().equals(className)) {
+            boolean isOpen = false;
+            if (inp instanceof LazyOpenInterpreter) {
+              LazyOpenInterpreter lazy = (LazyOpenInterpreter) inp;
+              isOpen = lazy.isOpen();
+            }
+            // only remove the open and matched interpreter
+            if (inp.getClassName().equals(className) && isOpen) {
               try {
+                LOGGER.debug("Trying to close interpreter {} with scheduler thread{}", inp.getClassName(), inp.getScheduler().getName());
                 inp.close();
+                // close the thread
+                inp.getScheduler().stop();
               } catch (InterpreterException e) {
                 LOGGER.warn("Fail to close interpreter", e);
               }

@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.junit.Assert.assertEquals;
@@ -119,8 +120,13 @@ public class RemoteInterpreterServerTest {
     assertEquals(2, interpreter1.getProperties().size());
     assertEquals("value_1", interpreter1.getProperty("property_1"));
 
-    // create Test2Interpreter in session_1
+    // create duplicated Test1Interpreter in session_1
     server.createInterpreter("group_1", "session_1", Test1Interpreter.class.getName(),
+            intpProperties, "user_1");
+    assertEquals(1, server.getInterpreterGroup().get("session_1").size());
+
+    // create Test2Interpreter in session_1
+    server.createInterpreter("group_1", "session_1", Test2Interpreter.class.getName(),
         intpProperties, "user_1");
     assertEquals(2, server.getInterpreterGroup().get("session_1").size());
 
@@ -188,9 +194,31 @@ public class RemoteInterpreterServerTest {
     assertEquals(10, server.getProgress("session_1", Test1Interpreter.class.getName(),
         intpContext));
 
-    // close
+    // before close -> thread of Test1Interpreter is running
+    assertEquals(true, isThreadRunning(interpreter1.getScheduler().getName()));
+
+    // close opened Test1Interpreter -> remove from interpreterGroup
     server.close("session_1", Test1Interpreter.class.getName());
     assertTrue(interpreter1.closed.get());
+    assertEquals(1, server.getInterpreterGroup().get("session_1").size());
+
+    // close unopened Test2Interpreter -> keep in interpreterGroup
+    server.close("session_1", Test2Interpreter.class.getName());
+    assertEquals(1, server.getInterpreterGroup().get("session_1").size());
+
+    // after close -> thread of Test1Interpreter is not running
+    assertEquals(false, isThreadRunning(interpreter1.getScheduler().getName()));
+  }
+
+  private boolean isThreadRunning(String schedulerName) {
+    boolean res = false;
+    Set<Thread> threads = Thread.getAllStackTraces().keySet();
+    for (Thread t : threads) {
+      if (!t.getName().contains(schedulerName)) continue;
+      res = true;
+      break;
+    }
+    return res;
   }
 
   public static class Test1Interpreter extends Interpreter {
