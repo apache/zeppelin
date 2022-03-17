@@ -42,8 +42,16 @@ object FlinkShell {
   object ExecutionMode extends Enumeration {
     val UNDEFINED, LOCAL, REMOTE, YARN, YARN_APPLICATION, KUBERNETES_APPLICATION = Value
 
-    def isYarnAppicationMode(mode: ExecutionMode.Value): Boolean = {
+    def isYarnApplicationMode(mode: ExecutionMode.Value): Boolean = {
       mode == ExecutionMode.YARN_APPLICATION
+    }
+
+    def isYarnMode(mode: ExecutionMode.Value): Boolean = {
+      mode == ExecutionMode.YARN
+    }
+
+    def isOnYarn(mode: ExecutionMode.Value): Boolean = {
+      isYarnApplicationMode(mode) || isYarnMode(mode)
     }
 
     def isK8sApplicationMode(mode: ExecutionMode.Value): Boolean = {
@@ -51,7 +59,7 @@ object FlinkShell {
     }
 
     def isApplicationMode(mode: ExecutionMode.Value): Boolean = {
-      isYarnAppicationMode(mode) || isK8sApplicationMode(mode)
+      isYarnApplicationMode(mode) || isK8sApplicationMode(mode)
     }
   }
 
