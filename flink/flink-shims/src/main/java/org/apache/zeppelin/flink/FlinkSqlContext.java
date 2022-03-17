@@ -20,6 +20,10 @@ package org.apache.zeppelin.flink;
 
 import java.util.function.Consumer;
 
+
+/**
+ * Context class which is used to pass context from flink-scala-x module to flink-shims module.
+ */
 public class FlinkSqlContext {
 
     private Object benv;
