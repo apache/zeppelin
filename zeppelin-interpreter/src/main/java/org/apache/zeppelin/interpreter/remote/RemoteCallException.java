@@ -18,6 +18,10 @@
 
 package org.apache.zeppelin.interpreter.remote;
 
+/**
+ *
+ * Exception for calling interpreter thrift api.
+ */
 public class RemoteCallException extends Exception {
 
   public RemoteCallException(String message, Throwable cause) {
