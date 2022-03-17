@@ -182,6 +182,10 @@
           <groupId>org.codehaus.plexus</groupId>
           <artifactId>plexus-utils</artifactId>
         </exclusion>
+        <exclusion>
+          <groupId>org.apache.commons</groupId>
+          <artifactId>commons-compress</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
 
@@ -253,7 +257,7 @@
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-compress</artifactId>
-      <version>1.5</version>
+      <version>${commons.compress.version}</version>
     </dependency>
 
   </dependencies>
