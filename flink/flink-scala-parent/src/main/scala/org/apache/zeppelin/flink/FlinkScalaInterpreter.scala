@@ -147,25 +147,6 @@ abstract class FlinkScalaInterpreter(val properties: Properties,
 
     // load udf jar
     this.userUdfJars.foreach(jar => loadUDFJar(jar))
-
-    if (ExecutionMode.isApplicationMode(mode)) {
-      // have to call senv.execute method before running any user code, otherwise yarn application mode
-      // will cause ClassNotFound issue. Needs to do more investigation. TODO(zjffdu)
-      val initCode =
-        """
-          |val data = senv.fromElements("hello world", "hello flink", "hello hadoop")
-          |data.flatMap(line => line.split("\\s"))
-          |  .map(w => (w, 1))
-          |  .keyBy(0)
-          |  .sum(1)
-          |  .print
-          |
-          |senv.execute()
-          |""".stripMargin
-
-      interpret(initCode, InterpreterContext.get())
-      InterpreterContext.get().out.clear()
-    }
   }
 
   def createIMain(settings: Settings, out: JPrintWriter): IMain
