@@ -206,7 +206,7 @@ public class RemoteInterpreter extends Interpreter {
     }
     if (!interpreterProcess.isRunning()) {
       return new InterpreterResult(InterpreterResult.Code.ERROR,
-              "Interpreter process is not running\n" + interpreterProcess.getErrorMessage());
+              "Interpreter process is not running, cause: " + interpreterProcess.getErrorMessage());
     }
 
     return interpreterProcess.callRemoteFunction(client -> {

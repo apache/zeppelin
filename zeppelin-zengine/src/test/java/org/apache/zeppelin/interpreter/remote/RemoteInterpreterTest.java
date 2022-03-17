@@ -100,7 +100,7 @@ public class RemoteInterpreterTest extends AbstractInterpreterTest {
 
     InterpreterResult result = remoteInterpreter1.interpret("hello", context1);
     assertEquals(Code.ERROR, result.code());
-    assertEquals("Interpreter process is not running\n", result.message().get(0).getData());
+    assertEquals("Interpreter process is not running, cause: null", result.message().get(0).getData());
   }
 
   @Test
@@ -143,7 +143,7 @@ public class RemoteInterpreterTest extends AbstractInterpreterTest {
 
     InterpreterResult result = remoteInterpreter2.interpret("hello", context1);
     assertEquals(Code.ERROR, result.code());
-    assertEquals("Interpreter process is not running\n", result.message().get(0).getData());
+    assertEquals("Interpreter process is not running, cause: null", result.message().get(0).getData());
     assertNull(remoteInterpreter2.getInterpreterGroup().getRemoteInterpreterProcess());
   }
 
@@ -178,14 +178,14 @@ public class RemoteInterpreterTest extends AbstractInterpreterTest {
 
     InterpreterResult result = remoteInterpreter1.interpret("hello", context1);
     assertEquals(Code.ERROR, result.code());
-    assertEquals("Interpreter process is not running\n", result.message().get(0).getData());
+    assertEquals("Interpreter process is not running, cause: null", result.message().get(0).getData());
 
     assertEquals("hello", remoteInterpreter2.interpret("hello", context1).message().get(0).getData());
     remoteInterpreter2.getInterpreterGroup().close(remoteInterpreter2.getSessionId());
 
     result = remoteInterpreter2.interpret("hello", context1);
     assertEquals(Code.ERROR, result.code());
-    assertEquals("Interpreter process is not running\n", result.message().get(0).getData());
+    assertEquals("Interpreter process is not running, cause: null", result.message().get(0).getData());
 
     assertNull(remoteInterpreter2.getInterpreterGroup().getRemoteInterpreterProcess());
 
