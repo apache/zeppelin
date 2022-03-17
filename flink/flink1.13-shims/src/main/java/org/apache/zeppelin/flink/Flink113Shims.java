@@ -128,20 +128,24 @@ public class Flink113Shims extends FlinkShims {
     if ("yarn-application".equalsIgnoreCase(mode)) {
       // for yarn application mode, FLINK_HOME is container working directory
       String flinkHome = new File(".").getAbsolutePath();
-      return getPyFlinkPythonPath(flinkHome + "/lib/python");
+      return getPyFlinkPythonPath(new File(flinkHome + "/lib/python"));
     }
 
     String flinkHome = System.getenv("FLINK_HOME");
     if (StringUtils.isNotBlank(flinkHome)) {
-      return getPyFlinkPythonPath(flinkHome + "/opt/python");
+      return getPyFlinkPythonPath(new File(flinkHome + "/opt/python"));
     } else {
       throw new IOException("No FLINK_HOME is specified");
     }
   }
 
-  private String getPyFlinkPythonPath(String pyFlinkFolder) {
+  private String getPyFlinkPythonPath(File pyFlinkFolder) throws IOException {
     LOGGER.info("Getting pyflink lib from {}", pyFlinkFolder);
-    List<File> depFiles = Arrays.asList(new File(pyFlinkFolder).listFiles());
+    if (!pyFlinkFolder.exists() || !pyFlinkFolder.isDirectory()) {
+      throw new IOException(String.format("PyFlink folder %s does not exist or is not a folder",
+              pyFlinkFolder.getAbsolutePath()));
+    }
+    List<File> depFiles = Arrays.asList(pyFlinkFolder.listFiles());
     StringBuilder builder = new StringBuilder();
     for (File file : depFiles) {
       LOGGER.info("Adding extracted file {} to PYTHONPATH", file.getAbsolutePath());
