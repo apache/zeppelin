@@ -45,6 +45,6 @@ public class SessionConfigurator extends ServerEndpointConfig.Configurator {
 
   @Override
   public <T> T getEndpointInstance(Class<T> endpointClass) throws InstantiationException {
-    return ServiceLocatorFactory.getInstance().find("shared-locator").getService(endpointClass);
+    return ServiceLocatorFactory.getInstance().find(ZeppelinServer.SERVICE_LOCATOR_NAME).getService(endpointClass);
   }
 }
