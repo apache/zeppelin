@@ -67,7 +67,7 @@ public class RecoveryTest extends AbstractTestRestApi {
             recoveryDir.getAbsolutePath());
     startUp(RecoveryTest.class.getSimpleName());
 
-    notebook = ServiceLocatorFactory.getInstance().find("shared-locator").getService(Notebook.class);
+    notebook = ServiceLocatorFactory.getInstance().find(ZeppelinServer.SERVICE_LOCATOR_NAME).getService(Notebook.class);
   }
 
   @After

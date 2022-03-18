@@ -326,11 +326,8 @@ public abstract class AbstractTestRestApi {
         FileUtils.deleteQuietly(shiroIni);
       }
       LOG.info("Terminating Zeppelin Server...");
-      //ZeppelinServer.jettyWebServer.stop();
       executor.shutdown();
       executor.shutdownNow();
-      //PluginManager.reset();
-      //ZeppelinConfiguration.reset();
 
       long s = System.currentTimeMillis();
       boolean started = true;
