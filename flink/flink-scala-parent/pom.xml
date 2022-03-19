@@ -560,7 +560,7 @@
     <dependency>
       <groupId>net.jodah</groupId>
       <artifactId>concurrentunit</artifactId>
-      <version>0.4.4</version>
+      <version>0.4.6</version>
       <scope>test</scope>
     </dependency>
 
@@ -791,7 +791,7 @@
           <!-- set sun.zip.disableMemoryMapping=true because of
           https://blogs.oracle.com/poonam/crashes-in-zipgetentry
           https://bugs.java.com/bugdatabase/view_bug.do?bug_id=8191484 -->
-          <argLine>-Xmx5120m -XX:MaxMetaspaceSize=512m -Dsun.zip.disableMemoryMapping=true</argLine>
+          <argLine>-Xmx5120m -XX:MaxMetaspaceSize=1024m -Dsun.zip.disableMemoryMapping=true</argLine>
 <!--          <argLine>-Xmx4096m -XX:MaxMetaspaceSize=512m -Dsun.zip.disableMemoryMapping=true -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=6006</argLine>-->
 
           <environmentVariables>
