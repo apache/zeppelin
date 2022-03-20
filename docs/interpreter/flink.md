@@ -285,7 +285,11 @@ You can also add and set other Flink properties which are not listed in the tabl
     <td>true</td>
     <td>Whether display Scala shell output in colorful format</td>
   </tr>
-
+  <tr>
+    <td>zeppelin.flink.scala.shell.tmp_dir</td>
+    <td></td>
+    <td>emp folder for storing scala shell compiled jar</td>
+  </tr>
   <tr>
     <td>zeppelin.flink.enableHive</td>
     <td>false</td>

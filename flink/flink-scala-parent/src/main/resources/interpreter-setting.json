@@ -138,6 +138,13 @@
         "description": "Whether display scala shell output in colorful format",
         "type": "checkbox"
       },
+      "zeppelin.flink.scala.shell.tmp_dir": {
+        "envName": "zeppelin.flink.scala.shell.tmp_dir",
+        "propertyName": "zeppelin.flink.scala.shell.tmp_dir",
+        "defaultValue": "",
+        "description": "Temp folder for storing scala shell compiled jar",
+        "type": "string"
+      },
       "zeppelin.flink.enableHive": {
         "envName": null,
         "propertyName": null,

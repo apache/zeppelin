@@ -22,14 +22,16 @@ package org.apache.zeppelin.flink.internal
 import org.apache.flink.configuration.Configuration
 import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment
 import org.apache.flink.util.AbstractID
-import java.io.{BufferedReader, File, FileOutputStream, IOException}
 
+import java.io.{BufferedReader, File, FileOutputStream, IOException}
 import org.apache.flink.streaming.api.environment.{StreamExecutionEnvironment => JStreamExecutionEnvironment}
 import org.apache.flink.api.java.{ExecutionEnvironment => JExecutionEnvironment}
 import org.apache.flink.api.scala.ExecutionEnvironment
 import org.apache.flink.core.execution.PipelineExecutorServiceLoader
 import org.apache.zeppelin.flink.{ApplicationModeExecutionEnvironment, ApplicationModeStreamEnvironment, FlinkScalaInterpreter}
 import FlinkShell.ExecutionMode
+import org.apache.commons.lang.StringUtils
+import org.slf4j.{Logger, LoggerFactory}
 
 import scala.tools.nsc.interpreter._
 
@@ -45,6 +47,7 @@ class FlinkILoop(
                   flinkScalaInterpreter: FlinkScalaInterpreter)
   extends ILoop(in0, out0) {
 
+  private lazy val LOGGER: Logger = LoggerFactory.getLogger(getClass)
 
   // remote environment
   private val (remoteBenv: ScalaShellEnvironment,
@@ -101,9 +104,12 @@ class FlinkILoop(
   private val tmpDirBase: File = {
     // get unique temporary folder:
     val abstractID: String = new AbstractID().toString
-    val tmpDir: File = new File(
-      System.getProperty("java.io.tmpdir"),
-      "scala_shell_tmp-" + abstractID)
+    var scalaShellTmpParentFolder = flinkScalaInterpreter.properties.getProperty("zeppelin.flink.scala.shell.tmp_dir")
+    if (StringUtils.isBlank(scalaShellTmpParentFolder)) {
+      scalaShellTmpParentFolder = System.getProperty("java.io.tmpdir")
+    }
+    val tmpDir: File = new File(scalaShellTmpParentFolder, "scala_shell_tmp-" + abstractID)
+    LOGGER.info("Folder for scala shell compiled jar: {}", tmpDir.getAbsolutePath)
     if (!tmpDir.exists) {
       tmpDir.mkdir
     }
