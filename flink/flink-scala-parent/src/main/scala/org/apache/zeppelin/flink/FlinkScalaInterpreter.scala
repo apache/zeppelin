@@ -107,6 +107,8 @@ abstract class FlinkScalaInterpreter(val properties: Properties,
   private var jmWebUrl: String = _
   // used for displaying on zeppelin ui
   private var displayedJMWebUrl: String = _
+  // used only for yarn or yarn-application mode
+  private var yarnAppId: String = _
   private var jobManager: JobManager = _
   private var defaultParallelism = 1
   private var defaultSqlParallelism = 1
@@ -145,25 +147,6 @@ abstract class FlinkScalaInterpreter(val properties: Properties,
 
     // load udf jar
     this.userUdfJars.foreach(jar => loadUDFJar(jar))
-
-    if (ExecutionMode.isApplicationMode(mode)) {
-      // have to call senv.execute method before running any user code, otherwise yarn application mode
-      // will cause ClassNotFound issue. Needs to do more investigation. TODO(zjffdu)
-      val initCode =
-        """
-          |val data = senv.fromElements("hello world", "hello flink", "hello hadoop")
-          |data.flatMap(line => line.split("\\s"))
-          |  .map(w => (w, 1))
-          |  .keyBy(0)
-          |  .sum(1)
-          |  .print
-          |
-          |senv.execute()
-          |""".stripMargin
-
-      interpret(initCode, InterpreterContext.get())
-      InterpreterContext.get().out.clear()
-    }
   }
 
   def createIMain(settings: Settings, out: JPrintWriter): IMain
@@ -186,7 +169,8 @@ abstract class FlinkScalaInterpreter(val properties: Properties,
       properties.getProperty("flink.execution.mode", "LOCAL")
         .replace("-", "_")
         .toUpperCase)
-    if (ExecutionMode.isYarnAppicationMode(mode)) {
+
+    if (ExecutionMode.isYarnApplicationMode(mode)) {
       // use current yarn container working directory as FLINK_HOME, FLINK_CONF_DIR and HIVE_CONF_DIR
       val workingDirectory = new File(".").getAbsolutePath
       flinkHome = workingDirectory
@@ -296,7 +280,7 @@ abstract class FlinkScalaInterpreter(val properties: Properties,
     }
 
     val (iLoop, cluster) = {
-      // workaround of checking hadoop jars in yarn  mode
+      // workaround of checking hadoop jars in yarn mode
       if (mode == ExecutionMode.YARN) {
         try {
           Class.forName(classOf[FlinkYarnSessionCli].getName)
@@ -320,16 +304,16 @@ abstract class FlinkScalaInterpreter(val properties: Properties,
           } else if (mode == ExecutionMode.YARN) {
             LOGGER.info("Starting FlinkCluster in yarn mode")
             this.jmWebUrl = clusterClient.getWebInterfaceURL
-            val yarnAppId = HadoopUtils.getYarnAppId(clusterClient)
+            this.yarnAppId = HadoopUtils.getYarnAppId(clusterClient)
             this.displayedJMWebUrl = getDisplayedJMWebUrl(yarnAppId)
           } else {
             throw new Exception("Starting FlinkCluster in invalid mode: " + mode)
           }
         case None =>
           // yarn-application mode
-          if (mode == ExecutionMode.YARN_APPLICATION) {
+          if (ExecutionMode.isYarnApplicationMode(mode)) {
             // get yarnAppId from env `_APP_ID`
-            val yarnAppId = System.getenv("_APP_ID")
+            this.yarnAppId = System.getenv("_APP_ID")
             LOGGER.info("Use FlinkCluster in yarn application mode, appId: {}", yarnAppId)
             this.jmWebUrl = "http://localhost:" + HadoopUtils.getFlinkRestPort(yarnAppId)
             this.displayedJMWebUrl = getDisplayedJMWebUrl(yarnAppId)
@@ -750,16 +734,18 @@ abstract class FlinkScalaInterpreter(val properties: Properties,
             LOGGER.info("Shutdown FlinkCluster")
             clusterClient.shutDownCluster()
             clusterClient.close()
-            // delete staging dir
-            if (mode == ExecutionMode.YARN) {
-              HadoopUtils.cleanupStagingDirInternal(clusterClient)
-            }
           case None =>
             LOGGER.info("Don't close the Remote FlinkCluster")
         }
       }
     } else {
       LOGGER.info("Keep cluster alive when closing interpreter")
+    }
+
+    if (ExecutionMode.isOnYarn(mode) && StringUtils.isNotBlank(yarnAppId)) {
+      // delete staging dir
+      LOGGER.info("Deleting flink staging directory for app: {}", yarnAppId)
+      HadoopUtils.cleanupStagingDirInternal(yarnAppId)
     }
 
     if (flinkILoop != null) {

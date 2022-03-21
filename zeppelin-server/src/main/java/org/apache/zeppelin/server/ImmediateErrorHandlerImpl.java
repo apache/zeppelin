@@ -33,25 +33,25 @@ public class ImmediateErrorHandlerImpl implements ImmediateErrorHandler {
 
   @Override
   public void postConstructFailed(ActiveDescriptor<?> immediateService, Throwable exception) {
-    synchronized (this) {
+    synchronized (constructionErrors) {
       constructionErrors.add(new ErrorData(immediateService, exception));
-      this.notifyAll();
+      constructionErrors.notifyAll();
     }
   }
 
   @Override
   public void preDestroyFailed(ActiveDescriptor<?> immediateService, Throwable exception) {
-    synchronized (this) {
+    synchronized (constructionErrors) {
       destructionErrors.add(new ErrorData(immediateService, exception));
-      this.notifyAll();
+      constructionErrors.notifyAll();
     }
   }
 
   List<ErrorData> waitForAtLeastOneConstructionError(long waitTime) throws InterruptedException {
-    synchronized (this) {
-      while (constructionErrors.size() <= 0 && waitTime > 0) {
+    synchronized (constructionErrors) {
+      while (constructionErrors.isEmpty() && waitTime > 0) {
         long currentTime = System.currentTimeMillis();
-        wait(waitTime);
+        constructionErrors.wait(waitTime);
         long elapsedTime = System.currentTimeMillis() - currentTime;
         waitTime -= elapsedTime;
       }

@@ -25,6 +25,7 @@ import javax.websocket.server.ServerEndpointConfig;
 import org.apache.zeppelin.server.ZeppelinServer;
 import org.apache.zeppelin.util.WatcherSecurityKey;
 import org.apache.zeppelin.utils.CorsUtils;
+import org.glassfish.hk2.api.ServiceLocatorFactory;
 
 /**
  * This class set headers to websocket sessions and inject hk2 when initiating instances by ServerEndpoint annotation.
@@ -44,6 +45,6 @@ public class SessionConfigurator extends ServerEndpointConfig.Configurator {
 
   @Override
   public <T> T getEndpointInstance(Class<T> endpointClass) throws InstantiationException {
-    return ZeppelinServer.sharedServiceLocator.getService(endpointClass);
+    return ServiceLocatorFactory.getInstance().find("shared-locator").getService(endpointClass);
   }
 }

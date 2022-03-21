@@ -317,15 +317,30 @@ public class NotebookService {
   }
 
   public String cloneNote(String noteId,
-                        String newNotePath,
-                        ServiceContext context,
-                        ServiceCallback<Note> callback) throws IOException {
+                          String newNotePath,
+                          ServiceContext context,
+                          ServiceCallback<Note> callback) throws IOException {
+    return cloneNote(noteId, "", newNotePath, context, callback);
+  }
+
+
+  public String cloneNote(String noteId,
+                          String revisionId,
+                          String newNotePath,
+                          ServiceContext context,
+                          ServiceCallback<Note> callback) throws IOException {
     //TODO(zjffdu) move these to Notebook
     if (StringUtils.isBlank(newNotePath)) {
       newNotePath = "/Cloned Note_" + noteId;
+      if(StringUtils.isNotEmpty(revisionId)) {
+        // If cloning a revision of the note,
+        // append the short commit id of revision to newNoteName
+        // to distinguish which commit to be copied.
+        newNotePath += "_" + revisionId.substring(0, 7);
+      }
     }
     try {
-      String newNoteId = notebook.cloneNote(noteId, normalizeNotePath(newNotePath),
+      String newNoteId = notebook.cloneNote(noteId, revisionId, normalizeNotePath(newNotePath),
           context.getAutheInfo());
       return notebook.processNote(newNoteId,
         newNote -> {
@@ -371,7 +386,7 @@ public class NotebookService {
   /**
    * Executes given paragraph with passed paragraph info like noteId, paragraphId, title, text and etc.
    *
-   * @param noteId
+   * @param note
    * @param paragraphId
    * @param title
    * @param text
@@ -1012,12 +1027,14 @@ public class NotebookService {
 
   }
 
-  public void getNotebyRevision(String noteId,
+  // notebook.getNoteByRevision(...) does not use the NoteCache,
+  // so we can return a Note object here.
+  public Note getNotebyRevision(String noteId,
                                 String revisionId,
                                 ServiceContext context,
                                 ServiceCallback<Note> callback) throws IOException {
 
-    notebook.processNote(noteId ,
+    return notebook.processNote(noteId,
       note -> {
         if (note == null) {
           callback.onFailure(new NoteNotFoundException(noteId), context);
@@ -1031,7 +1048,7 @@ public class NotebookService {
         Note revisionNote = notebook.getNoteByRevision(noteId, note.getPath(), revisionId,
             context.getAutheInfo());
         callback.onSuccess(revisionNote, context);
-        return null;
+        return revisionNote;
       });
   }
 

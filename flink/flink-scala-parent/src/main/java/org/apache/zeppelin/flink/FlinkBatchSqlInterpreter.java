@@ -17,58 +17,36 @@
 
 package org.apache.zeppelin.flink;
 
-import org.apache.flink.table.api.Table;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
-import org.apache.zeppelin.interpreter.ZeppelinContext;
+import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 
-import java.io.IOException;
 import java.util.Properties;
 
 public class FlinkBatchSqlInterpreter extends FlinkSqlInterpreter {
-
-  private ZeppelinContext z;
 
   public FlinkBatchSqlInterpreter(Properties properties) {
     super(properties);
   }
 
   @Override
-  protected boolean isBatch() {
-    return true;
-  }
-
-  @Override
   public void open() throws InterpreterException {
-    this.flinkInterpreter =
-            getInterpreterInTheSameSessionByClassName(FlinkInterpreter.class);
-    this.tbenv = flinkInterpreter.getJavaBatchTableEnvironment("blink");
-    this.z = flinkInterpreter.getZeppelinContext();
     super.open();
+    FlinkSqlContext flinkSqlContext = new FlinkSqlContext(
+            flinkInterpreter.getExecutionEnvironment().getJavaEnv(),
+            flinkInterpreter.getStreamExecutionEnvironment().getJavaEnv(),
+            flinkInterpreter.getJavaBatchTableEnvironment("blink"),
+            flinkInterpreter.getJavaStreamTableEnvironment("blink"),
+            flinkInterpreter.getZeppelinContext(),
+            null);
+    flinkInterpreter.getFlinkShims().initInnerBatchSqlInterpreter(flinkSqlContext);
   }
 
   @Override
-  public void close() throws InterpreterException {
-
-  }
-
-  @Override
-  public void callInnerSelect(String sql, InterpreterContext context) throws IOException {
-    Table table = this.tbenv.sqlQuery(sql);
-    String result = z.showData(table);
-    context.out.write(result);
-  }
-
-  @Override
-  public void cancel(InterpreterContext context) throws InterpreterException {
-    flinkInterpreter.cancel(context);
-  }
-
-  @Override
-  public FormType getFormType() throws InterpreterException {
-    return FormType.SIMPLE;
+  public InterpreterResult runSqlList(String st, InterpreterContext context) {
+    return flinkShims.runSqlList(st, context, true);
   }
 
   @Override

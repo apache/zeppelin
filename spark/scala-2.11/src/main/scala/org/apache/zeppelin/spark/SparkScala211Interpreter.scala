@@ -120,6 +120,7 @@ class SparkScala211Interpreter(override val conf: SparkConf,
     super.close()
     if (sparkILoop != null) {
       sparkILoop.closeInterpreter()
+      sparkILoop = null
     }
   }
 

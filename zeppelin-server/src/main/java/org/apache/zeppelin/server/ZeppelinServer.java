@@ -135,30 +135,26 @@ public class ZeppelinServer extends ResourceConfig {
   private static final Logger LOG = LoggerFactory.getLogger(ZeppelinServer.class);
   private static final String WEB_APP_CONTEXT_NEXT = "/next";
 
-  public static Server jettyWebServer;
-  public static ServiceLocator sharedServiceLocator;
-
-  private static ZeppelinConfiguration conf;
-  private static PrometheusMeterRegistry promMetricRegistry;
-
-  public static void reset() {
-    conf = null;
-    jettyWebServer = null;
-    sharedServiceLocator = null;
-  }
+  public static final String SERVICE_LOCATOR_NAME= "shared-locator";
 
   @Inject
-  public ZeppelinServer() {
+  public ZeppelinServer(ZeppelinConfiguration conf) {
     LOG.info("Instantiated ZeppelinServer");
     InterpreterOutput.LIMIT = conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_OUTPUT_LIMIT);
 
     packages("org.apache.zeppelin.rest");
   }
 
-  public static void main(String[] args) throws InterruptedException, IOException {
-    ZeppelinServer.conf = ZeppelinConfiguration.create();
+  public static void main(String[] args) throws IOException {
+    ZeppelinConfiguration conf = ZeppelinConfiguration.create();
 
-    jettyWebServer = setupJettyServer(conf);
+    Server jettyWebServer = setupJettyServer(conf);
+
+    PrometheusMeterRegistry promMetricRegistry = null;
+    if (conf.isPrometheusMetricEnabled()) {
+      promMetricRegistry = new PrometheusMeterRegistry(PrometheusConfig.DEFAULT);
+      Metrics.addRegistry(promMetricRegistry);
+    }
     initMetrics(conf);
 
     TimedHandler timedHandler = new TimedHandler(Metrics.globalRegistry, Tags.empty());
@@ -167,7 +163,7 @@ public class ZeppelinServer extends ResourceConfig {
     ContextHandlerCollection contexts = new ContextHandlerCollection();
     timedHandler.setHandler(contexts);
 
-    sharedServiceLocator = ServiceLocatorFactory.getInstance().create("shared-locator");
+    ServiceLocator sharedServiceLocator = ServiceLocatorFactory.getInstance().create(SERVICE_LOCATOR_NAME);
     ServiceLocatorUtilities.enableImmediateScope(sharedServiceLocator);
     ServiceLocatorUtilities.addClasses(sharedServiceLocator,
       NotebookRepoSync.class,
@@ -230,10 +226,10 @@ public class ZeppelinServer extends ResourceConfig {
     final WebAppContext defaultWebApp = setupWebAppContext(contexts, conf, conf.getString(ConfVars.ZEPPELIN_WAR), conf.getServerContextPath());
     final WebAppContext nextWebApp = setupWebAppContext(contexts, conf, conf.getString(ConfVars.ZEPPELIN_ANGULAR_WAR), WEB_APP_CONTEXT_NEXT);
 
-    initWebApp(defaultWebApp);
-    initWebApp(nextWebApp);
+    initWebApp(defaultWebApp, conf, sharedServiceLocator, promMetricRegistry);
+    initWebApp(nextWebApp, conf, sharedServiceLocator, promMetricRegistry);
     // Cluster Manager Server
-    setupClusterManagerServer(sharedServiceLocator);
+    setupClusterManagerServer(sharedServiceLocator, conf);
 
     // JMX Enable
     if (conf.isJMXEnabled()) {
@@ -251,25 +247,9 @@ public class ZeppelinServer extends ResourceConfig {
       LOG.info("JMX Enabled with port: {}", port);
     }
 
-    LOG.info("Starting zeppelin server");
-    try {
-      jettyWebServer.start(); // Instantiates ZeppelinServer
-      List<ErrorData> errorData = handler.waitForAtLeastOneConstructionError(5 * 1000);
-      if(errorData.size() > 0 && errorData.get(0).getThrowable() != null) {
-        throw new Exception(errorData.get(0).getThrowable());
-      }
-      if (conf.getJettyName() != null) {
-        org.eclipse.jetty.http.HttpGenerator.setJettyVersion(conf.getJettyName());
-      }
-    } catch (Exception e) {
-      LOG.error("Error while running jettyServer", e);
-      System.exit(-1);
-    }
-    LOG.info("Done, zeppelin server started");
+    runNoteOnStart(conf, jettyWebServer, sharedServiceLocator);
 
-    runNoteOnStart(conf);
-
-    Runtime.getRuntime().addShutdownHook(shutdown(conf));
+    Runtime.getRuntime().addShutdownHook(new Thread(() -> shutdown(conf, jettyWebServer, sharedServiceLocator)));
 
     // Try to get Notebook from ServiceLocator, because Notebook instantiation is lazy, it is
     // created when user open zeppelin in browser if we don't get it explicitly here.
@@ -283,28 +263,51 @@ public class ZeppelinServer extends ResourceConfig {
     // Try to recover here, don't do it in constructor of Notebook, because it would cause deadlock.
     notebook.recoveryIfNecessary();
 
-    // when zeppelin is started inside of ide (especially for eclipse)
-    // for graceful shutdown, input any key in console window
-    if (System.getenv("ZEPPELIN_IDENT_STRING") == null) {
-      try {
-        System.in.read();
-      } catch (IOException e) {
-        LOG.error("Exception in ZeppelinServer while main ", e);
+    LOG.info("Starting zeppelin server");
+    try {
+      jettyWebServer.start(); // Instantiates ZeppelinServer
+      if (conf.getJettyName() != null) {
+        org.eclipse.jetty.http.HttpGenerator.setJettyVersion(conf.getJettyName());
       }
-      System.exit(0);
+    } catch (Exception e) {
+      LOG.error("Error while running jettyServer", e);
+      System.exit(-1);
     }
 
-    jettyWebServer.join();
+    LOG.info("Done, zeppelin server started");
+    try {
+      List<ErrorData> errorDatas = handler.waitForAtLeastOneConstructionError(5000);
+      for (ErrorData errorData : errorDatas) {
+        LOG.error("Error in Construction", errorData.getThrowable());
+      }
+      if (!errorDatas.isEmpty()) {
+        LOG.error("{} error(s) while starting - Termination", errorDatas.size());
+        System.exit(-1);
+      }
+    } catch (InterruptedException e) {
+      // Many fast unit tests interrupt the Zeppelin server at this point
+      LOG.error("Interrupt while waiting for construction errors - init shutdown", e);
+      shutdown(conf, jettyWebServer, sharedServiceLocator);
+      Thread.currentThread().interrupt();
+
+    }
+    if (jettyWebServer.isStopped() || jettyWebServer.isStopping()) {
+      LOG.debug("jetty server is stopped {} - is stopping {}", jettyWebServer.isStopped(), jettyWebServer.isStopping());
+    } else {
+      try {
+        jettyWebServer.join();
+      } catch (InterruptedException e) {
+        LOG.error("Interrupt while waiting for jetty threads - init shutdown", e);
+        shutdown(conf, jettyWebServer, sharedServiceLocator);
+        Thread.currentThread().interrupt();
+      }
+    }
     if (!conf.isRecoveryEnabled()) {
       sharedServiceLocator.getService(InterpreterSettingManager.class).close();
     }
   }
 
   private static void initMetrics(ZeppelinConfiguration conf) {
-    if (conf.isPrometheusMetricEnabled()) {
-      promMetricRegistry = new PrometheusMeterRegistry(PrometheusConfig.DEFAULT);
-      Metrics.addRegistry(promMetricRegistry);
-    }
     if (conf.isJMXEnabled()) {
       Metrics.addRegistry(new JmxMeterRegistry(JmxConfig.DEFAULT, Clock.SYSTEM));
     }
@@ -317,26 +320,22 @@ public class ZeppelinServer extends ResourceConfig {
     new JVMInfoBinder().bindTo(Metrics.globalRegistry);
   }
 
-  private static Thread shutdown(ZeppelinConfiguration conf) {
-    return new Thread(
-            () -> {
-              LOG.info("Shutting down Zeppelin Server ... ");
-              try {
-                if (jettyWebServer != null) {
-                  jettyWebServer.stop();
-                }
-                if (sharedServiceLocator != null) {
-                  if (!conf.isRecoveryEnabled()) {
-                    sharedServiceLocator.getService(InterpreterSettingManager.class).close();
-                  }
-                  sharedServiceLocator.getService(Notebook.class).close();
-                }
-                Thread.sleep(3000);
-              } catch (Exception e) {
-                LOG.error("Error while stopping servlet container", e);
-              }
-              LOG.info("Bye");
-            });
+  private static void shutdown(ZeppelinConfiguration conf, Server jettyWebServer, ServiceLocator sharedServiceLocator) {
+    LOG.info("Shutting down Zeppelin Server ... ");
+    try {
+      if (jettyWebServer != null) {
+        jettyWebServer.stop();
+      }
+      if (sharedServiceLocator != null) {
+        if (!conf.isRecoveryEnabled()) {
+          sharedServiceLocator.getService(InterpreterSettingManager.class).close();
+        }
+        sharedServiceLocator.getService(Notebook.class).close();
+      }
+    } catch (Exception e) {
+      LOG.error("Error while stopping servlet container", e);
+    }
+    LOG.info("Bye");
   }
 
   private static Server setupJettyServer(ZeppelinConfiguration conf) {
@@ -346,10 +345,10 @@ public class ZeppelinServer extends ResourceConfig {
                            conf.getInt(ConfVars.ZEPPELIN_SERVER_JETTY_THREAD_POOL_MIN),
                            conf.getInt(ConfVars.ZEPPELIN_SERVER_JETTY_THREAD_POOL_TIMEOUT));
     final Server server = new Server(threadPool);
-    initServerConnector(server, conf.getServerPort(), conf.getServerSslPort());
+    initServerConnector(server, conf);
     return server;
   }
-  private static void initServerConnector(Server server, int port, int sslPort) {
+  private static void initServerConnector(Server server, ZeppelinConfiguration conf) {
 
     ServerConnector connector;
     HttpConfiguration httpConfig = new HttpConfiguration();
@@ -357,9 +356,9 @@ public class ZeppelinServer extends ResourceConfig {
     httpConfig.setSendServerVersion(conf.sendJettyName());
     httpConfig.setRequestHeaderSize(conf.getJettyRequestHeaderSize());
     if (conf.useSsl()) {
-      LOG.debug("Enabling SSL for Zeppelin Server on port {}", sslPort);
+      LOG.debug("Enabling SSL for Zeppelin Server on port {}", conf.getServerSslPort());
       httpConfig.setSecureScheme(HttpScheme.HTTPS.asString());
-      httpConfig.setSecurePort(sslPort);
+      httpConfig.setSecurePort(conf.getServerSslPort());
 
       HttpConfiguration httpsConfig = new HttpConfiguration(httpConfig);
       httpsConfig.addCustomizer(new SecureRequestCustomizer());
@@ -371,7 +370,7 @@ public class ZeppelinServer extends ResourceConfig {
                       server,
                       sslConnectionFactory,
                       httpsConnectionFactory);
-      connector.setPort(sslPort);
+      connector.setPort(conf.getServerSslPort());
       connector.addBean(new JettySslHandshakeMetrics(Metrics.globalRegistry, Tags.empty()));
     } else {
       HttpConnectionFactory httpConnectionFactory = new HttpConnectionFactory(httpConfig);
@@ -379,7 +378,7 @@ public class ZeppelinServer extends ResourceConfig {
               new ServerConnector(
                       server,
                       httpConnectionFactory);
-      connector.setPort(port);
+      connector.setPort(conf.getServerPort());
     }
     // Set some timeout options to make debugging easier.
     int timeout = 1000 * 30;
@@ -389,7 +388,7 @@ public class ZeppelinServer extends ResourceConfig {
     server.addConnector(connector);
   }
 
-  private static void runNoteOnStart(ZeppelinConfiguration conf) throws IOException, InterruptedException {
+  private static void runNoteOnStart(ZeppelinConfiguration conf, Server jettyWebServer, ServiceLocator sharedServiceLocator) throws IOException {
     String noteIdToRun = conf.getNotebookRunId();
     if (!StringUtils.isEmpty(noteIdToRun)) {
       LOG.info("Running note {} on start", noteIdToRun);
@@ -422,16 +421,13 @@ public class ZeppelinServer extends ResourceConfig {
       });
 
       if (conf.getNotebookRunAutoShutdown()) {
-        Thread t = shutdown(conf);
-        t.start();
-        t.join();
+        shutdown(conf, jettyWebServer, sharedServiceLocator);
         System.exit(success ? 0 : 1);
       }
     }
   }
 
-  private static void setupNotebookServer(
-      WebAppContext webapp, ZeppelinConfiguration conf, ServiceLocator serviceLocator) {
+  private static void setupNotebookServer(WebAppContext webapp, ZeppelinConfiguration conf) {
     String maxTextMessageSize = conf.getWebsocketMaxTextMessageSize();
     WebSocketServerContainerInitializer
             .configure(webapp, (servletContext, wsContainer) -> {
@@ -440,7 +436,7 @@ public class ZeppelinServer extends ResourceConfig {
             });
   }
 
-  private static void setupClusterManagerServer(ServiceLocator serviceLocator) {
+  private static void setupClusterManagerServer(ServiceLocator serviceLocator, ZeppelinConfiguration conf) {
     if (conf.isClusterMode()) {
       LOG.info("Cluster mode is enabled, starting ClusterManagerServer");
       ClusterManagerServer clusterManagerServer = ClusterManagerServer.getInstance(conf);
@@ -458,7 +454,7 @@ public class ZeppelinServer extends ResourceConfig {
       // when the zeppelin service starts, Create a ClusterInterpreterLauncher object,
       // This allows the ClusterInterpreterLauncher to listen for cluster events.
       try {
-        InterpreterSettingManager intpSettingManager = sharedServiceLocator.getService(InterpreterSettingManager.class);
+        InterpreterSettingManager intpSettingManager = serviceLocator.getService(InterpreterSettingManager.class);
         RecoveryStorage recoveryStorage = ReflectionUtils.createClazzInstance(
                 conf.getRecoveryStorageClass(),
                 new Class[] {ZeppelinConfiguration.class, InterpreterSettingManager.class},
@@ -567,7 +563,7 @@ public class ZeppelinServer extends ResourceConfig {
     }
   }
 
-  private static void setupPrometheusContextHandler(WebAppContext webapp) {
+  private static void setupPrometheusContextHandler(WebAppContext webapp, PrometheusMeterRegistry promMetricRegistry) {
     webapp.addServlet(new ServletHolder(new PrometheusServlet(promMetricRegistry)), "/metrics");
   }
 
@@ -647,7 +643,7 @@ public class ZeppelinServer extends ResourceConfig {
     };
   }
 
-  private static void initWebApp(WebAppContext webApp) {
+  private static void initWebApp(WebAppContext webApp, ZeppelinConfiguration conf, ServiceLocator sharedServiceLocator, PrometheusMeterRegistry promMetricRegistry) {
     webApp.addEventListener(
             new ServletContextListener() {
               @Override
@@ -665,11 +661,13 @@ public class ZeppelinServer extends ResourceConfig {
     setupRestApiContextHandler(webApp, conf);
 
     // prometheus endpoint
-    setupPrometheusContextHandler(webApp);
+    if (promMetricRegistry != null) {
+      setupPrometheusContextHandler(webApp, promMetricRegistry);
+    }
     // health endpoints
     setupHealthCheckContextHandler(webApp);
 
     // Notebook server
-    setupNotebookServer(webApp, conf, sharedServiceLocator);
+    setupNotebookServer(webApp, conf);
   }
 }

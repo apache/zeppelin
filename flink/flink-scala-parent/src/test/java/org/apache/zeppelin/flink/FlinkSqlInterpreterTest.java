@@ -69,9 +69,9 @@ import static org.mockito.Mockito.mock;
 
 
 @RunWith(FlinkStandaloneHiveRunner.class)
-public abstract class SqlInterpreterTest {
+public abstract class FlinkSqlInterpreterTest {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(SqlInterpreterTest.class);
+  protected static final Logger LOGGER = LoggerFactory.getLogger(FlinkSqlInterpreterTest.class);
 
 
   protected FlinkInterpreter flinkInterpreter;
@@ -94,7 +94,7 @@ public abstract class SqlInterpreterTest {
     p.setProperty("zeppelin.pyflink.useIPython", "false");
     p.setProperty("local.number-taskmanager", "4");
     p.setProperty("zeppelin.python.gatewayserver_address", "127.0.0.1");
-
+    
     File hiveConfDir = Files.createTempDir();
     hiveShell.getHiveConf().writeXml(new FileWriter(new File(hiveConfDir, "hive-site.xml")));
     p.setProperty("HIVE_CONF_DIR", hiveConfDir.getAbsolutePath());
@@ -176,6 +176,15 @@ public abstract class SqlInterpreterTest {
     result = sqlInterpreter.interpret("use db1", context);
     assertEquals(Code.SUCCESS, result.code());
 
+    // show current database
+    context = getInterpreterContext();
+    result = sqlInterpreter.interpret("show current database", context);
+    assertEquals(Code.SUCCESS, result.code());
+    assertEquals(1, context.out.toInterpreterResultMessage().size());
+    assertEquals(Type.TEXT, context.out.toInterpreterResultMessage().get(0).getType());
+    assertEquals("current database: db1\n", context.out.toInterpreterResultMessage().get(0).getData());
+    
+    // show tables
     context = getInterpreterContext();
     result = sqlInterpreter.interpret("show tables", context);
     assertEquals(Code.SUCCESS, result.code());
@@ -183,10 +192,12 @@ public abstract class SqlInterpreterTest {
     assertEquals(Type.TABLE, resultMessages.get(0).getType());
     assertEquals("table\n", resultMessages.get(0).getData());
 
+    // create table
     context = getInterpreterContext();
     result = sqlInterpreter.interpret("CREATE TABLE source (msg INT) with ('connector'='print')", context);
     assertEquals(Code.SUCCESS, result.code());
 
+    // show tables
     context = getInterpreterContext();
     result = sqlInterpreter.interpret("show tables", context);
     assertEquals(Code.SUCCESS, result.code());
@@ -194,6 +205,7 @@ public abstract class SqlInterpreterTest {
     assertEquals(Type.TABLE, resultMessages.get(0).getType());
     assertEquals("table\nsource\n", resultMessages.get(0).getData());
 
+    // describe table
     context = getInterpreterContext();
     result = sqlInterpreter.interpret("describe db1.source", context);
     assertEquals(Code.SUCCESS, result.code());
@@ -203,14 +215,17 @@ public abstract class SqlInterpreterTest {
                     "msg\tINT\n"
             , resultMessages.get(0).getData());
 
+    // use database
     context = getInterpreterContext();
-    result = sqlInterpreter.interpret("use default", context);
-    assertEquals(Code.SUCCESS, result.code());
+    result = sqlInterpreter.interpret("use `default`", context);
+    assertEquals(context.out.toString(), Code.SUCCESS, result.code());
 
+    // show tables
     context = getInterpreterContext();
     result = sqlInterpreter.interpret("show tables", context);
     assertEquals(Code.SUCCESS, result.code());
     resultMessages = context.out.toInterpreterResultMessage();
+    assertEquals(1, resultMessages.size());
     assertEquals(Type.TABLE, resultMessages.get(0).getType());
     assertEquals("table\n", resultMessages.get(0).getData());
 
@@ -257,7 +272,7 @@ public abstract class SqlInterpreterTest {
     // describe table
     context = getInterpreterContext();
     result = sqlInterpreter.interpret("describe source_table", context);
-    assertEquals(Code.SUCCESS, result.code());
+    assertEquals(result.toString(), Code.SUCCESS, result.code());
     assertEquals(1, resultMessages.size());
     resultMessages = context.out.toInterpreterResultMessage();
     assertEquals(Type.TABLE, resultMessages.get(0).getType());
@@ -275,7 +290,7 @@ public abstract class SqlInterpreterTest {
     resultMessages = context.out.toInterpreterResultMessage();
     assertEquals(1, resultMessages.size());
     assertTrue(resultMessages.toString(),
-            resultMessages.get(0).getData().contains("Table `unknown_table` was not found."));
+            resultMessages.get(0).getData().contains("doesn't exist"));
 
     // drop unknown table
     context = getInterpreterContext();
@@ -301,7 +316,7 @@ public abstract class SqlInterpreterTest {
     resultMessages = context.out.toInterpreterResultMessage();
     assertEquals(1, resultMessages.size());
     assertTrue(resultMessages.get(0).getData(),
-            resultMessages.get(0).getData().contains("Table `source_table` was not found"));
+            resultMessages.get(0).getData().contains("doesn't exist"));
   }
 
   @Test
@@ -414,7 +429,6 @@ public abstract class SqlInterpreterTest {
 
   @Test
   public void testInvalidSql() throws InterpreterException, IOException {
-
     InterpreterContext context = getInterpreterContext();
     InterpreterResult result = sqlInterpreter.interpret("Invalid sql", context);
     assertEquals(Code.ERROR, result.code());
@@ -422,11 +436,8 @@ public abstract class SqlInterpreterTest {
     assertEquals(1, resultMessages.size());
     assertEquals(Type.TEXT, resultMessages.get(0).getType());
     assertTrue(resultMessages.get(0).getData(),
-            resultMessages.get(0).getData().contains("Invalid Sql statement: Invalid sql"));
-    assertTrue(resultMessages.get(0).getData(),
-            resultMessages.get(0).getData().contains("The following commands are available"));
+            resultMessages.get(0).getData().contains("Invalid Sql statement"));
   }
-
 
   @Test
   public void testFunction() throws IOException, InterpreterException {
@@ -447,23 +458,20 @@ public abstract class SqlInterpreterTest {
     resultMessages = context.out.toInterpreterResultMessage();
     assertTrue(resultMessages.toString(),resultMessages.get(0).getData().contains("myudf"));
 
-
     // ALTER
     context = getInterpreterContext();
     result = sqlInterpreter.interpret(
             "ALTER FUNCTION myUDF AS 'org.apache.zeppelin.flink.JavaLower' ; ", context);
     assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
     resultMessages = context.out.toInterpreterResultMessage();
-    assertTrue(resultMessages.toString(),resultMessages.get(0).getData().contains("Function has been modified."));
-
+    assertEquals("Alter function succeeded!\n",resultMessages.get(0).getData());
 
     // DROP UDF
     context = getInterpreterContext();
     result = sqlInterpreter.interpret("DROP FUNCTION myudf ;", context);
     assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
     resultMessages = context.out.toInterpreterResultMessage();
-    assertTrue(resultMessages.toString(),resultMessages.get(0).getData().contains("Function has been dropped."));
-
+    assertTrue(resultMessages.toString(),resultMessages.get(0).getData().contains("Function has been removed."));
 
     // SHOW UDF. Due to drop UDF before, it shouldn't contain 'myudf'
     result = sqlInterpreter.interpret(
@@ -485,7 +493,7 @@ public abstract class SqlInterpreterTest {
                     ");", context);
     assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
     List<InterpreterResultMessage> resultMessages = context.out.toInterpreterResultMessage();
-    assertTrue(resultMessages.toString(),resultMessages.get(0).getData().contains("Catalog has been created."));
+    assertTrue(context.out.toString(), resultMessages.get(0).getData().contains("Catalog has been created."));
 
     // USE CATALOG & SHOW DATABASES;
     context = getInterpreterContext();
@@ -495,6 +503,13 @@ public abstract class SqlInterpreterTest {
     assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
     resultMessages = context.out.toInterpreterResultMessage();
     assertTrue(resultMessages.toString(),resultMessages.get(0).getData().contains("default"));
+
+    // SHOW CURRENT CATALOG
+    context = getInterpreterContext();
+    result = sqlInterpreter.interpret("SHOW CURRENT CATALOG", context);
+    assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
+    resultMessages = context.out.toInterpreterResultMessage();
+    assertEquals("current catalog: test_catalog\n", resultMessages.get(0).getData());
 
     // DROP CATALOG
     context = getInterpreterContext();
@@ -510,44 +525,41 @@ public abstract class SqlInterpreterTest {
             "SHOW CATALOGS ;\n", context);
     assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
     resultMessages = context.out.toInterpreterResultMessage();
-    assertTrue(resultMessages.toString(),resultMessages.get(0).getData().contains("default_catalog"));
-    assertFalse(resultMessages.toString(),resultMessages.get(0).getData().contains("test_catalog"));
+    assertTrue(context.out.toString(), resultMessages.get(0).getData().contains("default_catalog"));
+    assertFalse(context.out.toString(), resultMessages.get(0).getData().contains("test_catalog"));
 
   }
 
   @Test
   public void testSetProperty() throws InterpreterException {
-    FlinkVersion flinkVersion = flinkInterpreter.getFlinkVersion();
+    // set time-zone with single quote
     InterpreterContext context = getInterpreterContext();
-    InterpreterResult result = sqlInterpreter.interpret(
+    InterpreterResult result = sqlInterpreter.interpret("SET 'table.local-time-zone' = 'UTC'", context);
+    assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
+
+    // set table.sql-dialect without quote
+    result = sqlInterpreter.interpret(
             "set table.sql-dialect=hive", context);
     assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
 
-    sqlInterpreter.interpret("create table test_hive_table(a string, b int)\n" +
-            "partitioned by (dt string)", context);
+    // show all settings
+    context = getInterpreterContext();
+    result = sqlInterpreter.interpret("SET", context);
     assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
-
-    // table.local-time-zone is only available from 1.12
-    if (flinkVersion.newerThanOrEqual(FlinkVersion.fromVersionString("1.12.0"))) {
-      context = getInterpreterContext();
-      result = sqlInterpreter.interpret("SET 'table.local-time-zone' = 'UTC'", context);
-      assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
-    }
+    assertTrue(context.out.toString(), context.out.toString().contains("'table.sql-dialect' = 'hive"));
+    assertTrue(context.out.toString(), context.out.toString().contains("'table.local-time-zone' = 'UTC"));
   }
 
   @Test
-  public void testShowModules() throws InterpreterException, IOException {
-    FlinkVersion flinkVersion = flinkInterpreter.getFlinkVersion();
+  public void testModules() throws InterpreterException, IOException {
     InterpreterContext context = getInterpreterContext();
-
-    // CREATE CATALOG
+    // show catalogs
     InterpreterResult result = sqlInterpreter.interpret(
             "show modules", context);
     assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
     List<InterpreterResultMessage> resultMessages = context.out.toInterpreterResultMessage();
     assertTrue(resultMessages.toString(), resultMessages.get(0).getData().contains("core"));
   }
-
 
   protected InterpreterContext getInterpreterContext() {
     InterpreterContext context = InterpreterContext.builder()
