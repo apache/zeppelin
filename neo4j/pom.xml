@@ -33,7 +33,7 @@
   
   <properties>
   	<neo4j.driver.version>4.1.1</neo4j.driver.version>
-  	<jackson.version>2.10.3</jackson.version>
+  	<jackson.version>2.10.5.1</jackson.version>
     <interpreter.name>neo4j</interpreter.name>
   </properties>
 
