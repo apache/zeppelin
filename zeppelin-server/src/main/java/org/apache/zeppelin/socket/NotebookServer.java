@@ -495,7 +495,7 @@ public class NotebookServer implements AngularObjectRegistryListener,
 
   @OnClose
   public void onClose(Session session, CloseReason closeReason) throws IOException {
-    NotebookSocket notebookSocket = sessionIdNotebookSocketMap.get(session.getId());
+    NotebookSocket notebookSocket = sessionIdNotebookSocketMap.remove(session.getId());
     if (null == notebookSocket) {
       session.close();
     } else {
