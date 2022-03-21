@@ -17,6 +17,8 @@
 package org.apache.zeppelin.socket;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.zeppelin.utils.ServerUtils;
+
 import java.io.IOException;
 import java.util.Map;
 
@@ -54,6 +56,6 @@ public class NotebookSocket {
 
   @Override
   public String toString() {
-    return String.valueOf(session.getUserProperties().get("javax.websocket.endpoint.remoteAddress"));
+    return ServerUtils.getRemoteAddress(session);
   }
 }
