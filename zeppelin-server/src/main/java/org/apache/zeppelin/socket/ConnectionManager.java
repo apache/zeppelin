@@ -208,7 +208,7 @@ public class ConnectionManager {
       for (NotebookSocket ns : connectedSockets) {
         try {
           ns.send(serializeMessage(m));
-        } catch (IOException e) {
+        } catch (IOException | RuntimeException e) {
           LOGGER.error("Send error: {}", m, e);
         }
       }
@@ -229,7 +229,7 @@ public class ConnectionManager {
     for (NotebookSocket conn : socketsToBroadcast) {
       try {
         conn.send(serializeMessage(m));
-      } catch (IOException e) {
+      } catch (IOException | RuntimeException e) {
         LOGGER.error("socket error", e);
       }
     }
@@ -245,7 +245,7 @@ public class ConnectionManager {
                   .message(serializeMessage(message))
                   .build()
                   .toJson());
-        } catch (IOException e) {
+        } catch (IOException | RuntimeException e) {
           LOGGER.error("Cannot broadcast message to watcher", e);
         }
       }
@@ -270,7 +270,7 @@ public class ConnectionManager {
       }
       try {
         conn.send(serializeMessage(m));
-      } catch (IOException e) {
+      } catch (IOException | RuntimeException e) {
         LOGGER.error("socket error", e);
       }
     }
@@ -292,7 +292,7 @@ public class ConnectionManager {
 
         try {
           conn.send(serializedMsg);
-        } catch (IOException  e) {
+        } catch (IOException | RuntimeException e) {
           LOGGER.error("Cannot broadcast message to conn", e);
         }
       }
@@ -322,7 +322,7 @@ public class ConnectionManager {
   public void unicast(Message m, NotebookSocket conn) {
     try {
       conn.send(serializeMessage(m));
-    } catch (IOException e) {
+    } catch (IOException | RuntimeException e) {
       LOGGER.error("socket error", e);
     }
     broadcastToWatchers(StringUtils.EMPTY, StringUtils.EMPTY, m);
