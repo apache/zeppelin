@@ -40,7 +40,7 @@
     <!-- must match with maven version -->
     <sisu.plexus.version>0.3.4</sisu.plexus.version>
     <jline.version>2.14.3</jline.version>
-    <atomix.version>3.0.0-rc4</atomix.version>
+    <atomix.version>3.1.12</atomix.version>
 
     <!--plugin versions-->
     <plugin.shade.version>2.3</plugin.shade.version>
