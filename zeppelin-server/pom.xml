@@ -38,7 +38,7 @@
     <javax.ws.rsapi.version>2.1</javax.ws.rsapi.version>
     <libpam4j.version>1.11</libpam4j.version>
     <jna.version>4.1.0</jna.version>
-    <jackson.version>2.9.10.6</jackson.version>
+    <jackson.version>2.9.10.8</jackson.version>
     <nimbus.version>9.13</nimbus.version>
     <kerberos.version>2.0.0-M15</kerberos.version>
 
