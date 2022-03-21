@@ -65,6 +65,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * Represent the note of Zeppelin. All the note and its paragraph operations are done
@@ -149,8 +150,12 @@ public class Note implements JsonSerializable {
   private String path;
 
   /********************************** transient fields ******************************************/
-  private transient boolean loaded = false;
-  private transient boolean saved = false;
+  /*
+   * Do not use the fair algorithm, because it blocks read accesses when a write access is waiting.
+   * We have read accesses from different threads, which are dependent on each other.
+   * The fair behavior can therefore create a DeadLock.
+   */
+  private transient final ReentrantReadWriteLock lock = new ReentrantReadWriteLock(false);
   private transient boolean removed = false;
   private transient InterpreterFactory interpreterFactory;
   private transient InterpreterSettingManager interpreterSettingManager;
@@ -179,11 +184,6 @@ public class Note implements JsonSerializable {
     setCronSupported(zConf);
   }
 
-  public Note(NoteInfo noteInfo) {
-    this.id = noteInfo.getId();
-    setPath(noteInfo.getPath());
-  }
-
   public String getPath() {
     return path;
   }
@@ -204,31 +204,6 @@ public class Note implements JsonSerializable {
 
   private void generateId() {
     id = IdHashes.generateId();
-  }
-
-  public boolean isLoaded() {
-    return loaded;
-  }
-
-  public void setLoaded(boolean loaded) {
-    this.loaded = loaded;
-  }
-
-  /**
-   * Release note memory
-   */
-  public void unLoad() {
-    if (isRunning() || isParagraphRunning()) {
-      LOGGER.warn("Unable to unload note because it is in RUNNING");
-    } else {
-      this.setLoaded(false);
-      this.paragraphs = null;
-      this.config = null;
-      this.info = null;
-      this.noteForms = null;
-      this.noteParams = null;
-      this.angularObjects = null;
-    }
   }
 
   public boolean isParagraphRunning() {
@@ -440,12 +415,10 @@ public class Note implements JsonSerializable {
    * Delete the note AngularObject.
    */
   public void deleteAngularObject(String intpGroupId, String noteId, String paragraphId, String name) {
-    List<AngularObject> angularObjectList;
     if (angularObjects.containsKey(intpGroupId)) {
-      angularObjectList = angularObjects.get(intpGroupId);
 
       // Delete existing AngularObject
-      Iterator<AngularObject> iter = angularObjectList.iterator();
+      Iterator<AngularObject> iter = angularObjects.get(intpGroupId).iterator();
       while(iter.hasNext()){
         String noteIdCandidate = "";
         String paragraphIdCandidate = "";
@@ -516,28 +489,24 @@ public class Note implements JsonSerializable {
 
     paragraphs.add(newParagraph);
 
-    try {
-      fireParagraphCreateEvent(newParagraph);
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
+    fireParagraphCreateEvent(newParagraph);
 
   }
 
-  public void fireParagraphCreateEvent(Paragraph p) throws IOException {
+  public void fireParagraphCreateEvent(Paragraph p) {
     for (NoteEventListener listener : noteEventListeners) {
       listener.onParagraphCreate(p);
     }
   }
 
-  public void fireParagraphRemoveEvent(Paragraph p) throws IOException {
+  public void fireParagraphRemoveEvent(Paragraph p) {
     for (NoteEventListener listener : noteEventListeners) {
       listener.onParagraphRemove(p);
     }
   }
 
 
-  public void fireParagraphUpdateEvent(Paragraph p) throws IOException {
+  public void fireParagraphUpdateEvent(Paragraph p) {
     for (NoteEventListener listener : noteEventListeners) {
       listener.onParagraphUpdate(p);
     }
@@ -569,11 +538,7 @@ public class Note implements JsonSerializable {
 
   private void insertParagraph(Paragraph paragraph, int index) {
     paragraphs.add(index, paragraph);
-    try {
-      fireParagraphCreateEvent(paragraph);
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
+    fireParagraphCreateEvent(paragraph);
   }
 
   /**
@@ -588,11 +553,7 @@ public class Note implements JsonSerializable {
     for (Paragraph p : paragraphs) {
       if (p.getId().equals(paragraphId)) {
         paragraphs.remove(p);
-        try {
-          fireParagraphRemoveEvent(p);
-        } catch (IOException e) {
-          LOGGER.error("Fail to fire ParagraphRemoveEvent", e);
-        }
+        fireParagraphRemoveEvent(p);
         return p;
       }
     }
@@ -1226,12 +1187,8 @@ public class Note implements JsonSerializable {
     this.noteEventListeners = noteEventListeners;
   }
 
-  public void setSaved(boolean saved) {
-    this.saved = saved;
-  }
-
-  public boolean isSaved() {
-    return saved;
+  public ReentrantReadWriteLock getLock() {
+    return lock;
   }
 
   public void setRemoved(boolean removed) {

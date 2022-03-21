@@ -53,6 +53,7 @@ public class HttpBasedClient implements ElasticsearchClient {
   private static final String QUERY_STRING_TEMPLATE =
       "{ \"query\": { \"query_string\": { \"query\": \"_Q_\", \"analyze_wildcard\": \"true\" } } }";
 
+  private final String protocol;
   private final String host;
   private final int port;
   private final String username;
@@ -61,10 +62,19 @@ public class HttpBasedClient implements ElasticsearchClient {
   private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
   public HttpBasedClient(Properties props) {
+    this.protocol = loadProtocol(props);
     this.host = props.getProperty(ElasticsearchInterpreter.ELASTICSEARCH_HOST);
     this.port = Integer.parseInt(props.getProperty(ElasticsearchInterpreter.ELASTICSEARCH_PORT));
     this.username = props.getProperty(ElasticsearchInterpreter.ELASTICSEARCH_BASIC_AUTH_USERNAME);
     this.password = props.getProperty(ElasticsearchInterpreter.ELASTICSEARCH_BASIC_AUTH_PASSWORD);
+  }
+
+  private String loadProtocol(Properties props){
+    String proto = props.getProperty(ElasticsearchInterpreter.ELASTICSEARCH_CLIENT_TYPE);
+    if (StringUtils.isNotEmpty(proto)) {
+      proto = proto.toLowerCase();
+    }
+    return proto;
   }
 
   private boolean isSucceeded(HttpResponse<?> response) {
@@ -102,7 +112,7 @@ public class HttpBasedClient implements ElasticsearchClient {
   private String getUrl(String index, String type, String id, boolean useSearch) {
     try {
       final StringBuilder buffer = new StringBuilder();
-      buffer.append("http://").append(host).append(":").append(port).append("/");
+      buffer.append(protocol).append("://").append(host).append(":").append(port).append("/");
       if (StringUtils.isNotEmpty(index)) {
         buffer.append(index);
 

@@ -96,6 +96,7 @@ public class GCSNotebookRepoTest {
     Paragraph p = new Paragraph(note, null);
     p.setText("text");
     p.setStatus(Status.RUNNING);
+    p.setAuthenticationInfo(new AuthenticationInfo("anonymous", (String)null, "anonymous"));
     note.addParagraph(p);
     return note;
   }
@@ -184,6 +185,62 @@ public class GCSNotebookRepoTest {
     create(runningNote);
     notebookRepo.remove(runningNote.getId(), runningNote.getPath(), AUTH_INFO);
     assertThat(storage.get(makeBlobId(runningNote.getId(), runningNote.getPath()))).isNull();
+  }
+
+  @Test(expected = IOException.class)
+  public void testRemoveFolder_nonexistent() throws Exception {
+    notebookRepo.remove("id", "/name", AUTH_INFO);
+    fail();
+  }
+
+  @Test
+  public void testRemoveFolder() throws Exception {
+    Note firstNote = makeRunningNote();
+    firstNote.setPath("/folder/test_note");
+    create(firstNote);
+    Note secondNote = makeRunningNote();
+    secondNote.setPath("/folder/sub_folder/test_note_second");
+    create(secondNote);
+    notebookRepo.remove("/folder", AUTH_INFO);
+    assertThat(storage.get(makeBlobId(firstNote.getId(), firstNote.getPath()))).isNull();
+    assertThat(storage.get(makeBlobId(secondNote.getId(), secondNote.getPath()))).isNull();
+  }
+
+
+  @Test
+  public void testMove_nonexistent() {
+    try {
+      notebookRepo.move("id", "/name", "/name_new", AUTH_INFO);
+      fail();
+    } catch (IOException e) {}
+  }
+
+  @Test
+  public void testMove() throws Exception {
+    create(runningNote);
+    notebookRepo.move(runningNote.getId(), runningNote.getPath(), runningNote.getPath() + "_new", AUTH_INFO);
+    assertThat(storage.get(makeBlobId(runningNote.getId(), runningNote.getPath()))).isNull();
+  }
+
+  @Test(expected = IOException.class)
+  public void testMoveFolder_nonexistent() throws Exception {
+    notebookRepo.move("/name", "/name_new", AUTH_INFO);
+    fail();
+  }
+
+  @Test
+  public void testMoveFolder() throws Exception {
+    Note firstNote = makeRunningNote();
+    firstNote.setPath("/folder/test_note");
+    create(firstNote);
+    Note secondNote = makeRunningNote();
+    secondNote.setPath("/folder/sub_folder/test_note_second");
+    create(secondNote);
+    notebookRepo.move("/folder", "/folder_new", AUTH_INFO);
+    assertThat(storage.get(makeBlobId(firstNote.getId(), firstNote.getPath()))).isNull();
+    assertThat(storage.get(makeBlobId(firstNote.getId(), "/folder_new/test_note"))).isNotNull();
+    assertThat(storage.get(makeBlobId(secondNote.getId(), secondNote.getPath()))).isNull();
+    assertThat(storage.get(makeBlobId(secondNote.getId(), "/folder_new/sub_folder/test_note_second"))).isNotNull();
   }
 
   private String makeName(String relativePath) {

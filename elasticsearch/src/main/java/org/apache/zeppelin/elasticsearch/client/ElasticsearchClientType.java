@@ -15,12 +15,18 @@
  * limitations under the License.
  */
 
-package org.apache.zeppelin.notebook.scheduler;
+package org.apache.zeppelin.elasticsearch.client;
 
-import java.io.IOException;
-import java.util.Set;
+public enum ElasticsearchClientType {
+  HTTP(true), HTTPS(true), TRANSPORT(false), UNKNOWN(false);
 
-public interface SchedulerService {
-  boolean refreshCron(String noteId) throws IOException;
-  Set<?> getJobs();
+  private final boolean isHttp;
+
+  ElasticsearchClientType(boolean isHttp) {
+    this.isHttp = isHttp;
+  }
+
+  public boolean isHttp() {
+    return isHttp;
+  }
 }

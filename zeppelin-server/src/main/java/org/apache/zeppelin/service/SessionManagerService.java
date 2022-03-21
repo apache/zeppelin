@@ -111,8 +111,8 @@ public class SessionManagerService {
       throw new Exception("Unable to generate session id");
     }
 
-    Note sessionNote = notebook.createNote(buildNotePath(interpreter, sessionId), AuthenticationInfo.ANONYMOUS);
-    SessionInfo sessionInfo = new SessionInfo(sessionId, sessionNote.getId(), interpreter);
+    String sessionNoteId = notebook.createNote(buildNotePath(interpreter, sessionId), AuthenticationInfo.ANONYMOUS);
+    SessionInfo sessionInfo = new SessionInfo(sessionId, sessionNoteId, interpreter);
     sessions.put(sessionId, sessionInfo);
     return sessionInfo;
   }

@@ -298,11 +298,14 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
 
     if (angularObject.getNoteId() != null) {
       try {
-        Note note = interpreterSettingManager.getNotebook().getNote(angularObject.getNoteId());
-        if (note != null) {
-          note.addOrUpdateAngularObject(intpGroupId, angularObject);
-          interpreterSettingManager.getNotebook().saveNote(note, AuthenticationInfo.ANONYMOUS);
-        }
+        interpreterSettingManager.getNotebook().processNote(angularObject.getNoteId(),
+          note -> {
+            if (note != null) {
+              note.addOrUpdateAngularObject(intpGroupId, angularObject);
+              interpreterSettingManager.getNotebook().saveNote(note, AuthenticationInfo.ANONYMOUS);
+            }
+            return null;
+          });
       } catch (IOException e) {
         LOGGER.error("Fail to get note: {}", angularObject.getNoteId());
       }
@@ -329,11 +332,14 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
 
     if (angularObject.getNoteId() != null) {
       try {
-        Note note = interpreterSettingManager.getNotebook().getNote(angularObject.getNoteId());
-        if (note != null) {
-          note.addOrUpdateAngularObject(intpGroupId, angularObject);
-          interpreterSettingManager.getNotebook().saveNote(note, AuthenticationInfo.ANONYMOUS);
-        }
+        interpreterSettingManager.getNotebook().processNote(angularObject.getNoteId(),
+            note -> {
+              if (note != null) {
+                note.addOrUpdateAngularObject(intpGroupId, angularObject);
+                interpreterSettingManager.getNotebook().saveNote(note, AuthenticationInfo.ANONYMOUS);
+              }
+              return null;
+            });
       } catch (IOException e) {
         LOGGER.error("Fail to get note: {}", angularObject.getNoteId());
       }
@@ -354,10 +360,16 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
 
     if (noteId != null) {
       try {
-        Note note = interpreterSettingManager.getNotebook().getNote(noteId);
-        note.deleteAngularObject(intpGroupId, noteId, paragraphId, name);
+        interpreterSettingManager.getNotebook().processNote(noteId,
+          note -> {
+            if (note == null) {
+              throw new IOException("Fail to get note: " + noteId);
+            }
+            note.deleteAngularObject(intpGroupId, noteId, paragraphId, name);
+            return null;
+          });
       } catch (IOException e) {
-        LOGGER.warn("Fail to get note: {}", noteId, e);
+        LOGGER.warn("Fail to removeAngularObject of note: {}", noteId, e);
       }
     }
   }
@@ -557,12 +569,16 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
           throws InterpreterRPCException, TException {
     try {
       LOGGER.info("Update paragraph config");
-      Note note = interpreterSettingManager.getNotebook().getNote(noteId);
-      note.getParagraph(paragraphId).updateConfig(config);
-      interpreterSettingManager.getNotebook().saveNote(note, AuthenticationInfo.ANONYMOUS);
+      interpreterSettingManager.getNotebook().processNote(noteId,
+          note -> {
+            note.getParagraph(paragraphId).updateConfig(config);
+            interpreterSettingManager.getNotebook().saveNote(note, AuthenticationInfo.ANONYMOUS);
+            return null;
+          });
     } catch (Exception e) {
       LOGGER.error("Fail to updateParagraphConfig", e);
     }
+
   }
 
   @Override

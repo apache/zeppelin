@@ -40,9 +40,6 @@
     <frontend.maven.plugin.version>1.3</frontend.maven.plugin.version>
     <commons.vfs2.version>2.6.0</commons.vfs2.version>
     <eclipse.jgit.version>4.5.4.201711221230-r</eclipse.jgit.version>
-    <!--test library versions-->
-    <google.truth.version>0.27</google.truth.version>
-    <google.testing.nio.version>0.32.0-alpha</google.testing.nio.version>
   </properties>
 
   <dependencies>
@@ -216,11 +213,6 @@
     </dependency>
 
     <dependency>
-      <groupId>org.apache.hadoop</groupId>
-      <artifactId>hadoop-client</artifactId>
-    </dependency>
-
-    <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <scope>test</scope>
@@ -230,19 +222,6 @@
       <groupId>org.mockito</groupId>
       <artifactId>mockito-all</artifactId>
       <scope>test</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>com.google.truth</groupId>
-      <artifactId>truth</artifactId>
-      <version>${google.truth.version}</version>
-      <scope>test</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>com.google.guava</groupId>
-          <artifactId>guava</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
 
     <dependency>
@@ -317,4 +296,55 @@
       </plugin>
     </plugins>
   </build>
+
+  <profiles>
+    <profile>
+      <id>hadoop2</id>
+
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+
+      <properties>
+        <hadoop.version>${hadoop2.7.version}</hadoop.version>
+      </properties>
+      <dependencies>
+        <dependency>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-common</artifactId>
+        </dependency>
+
+        <dependency>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-yarn-client</artifactId>
+        </dependency>
+      </dependencies>
+
+    </profile>
+    <profile>
+      <id>hadoop3</id>
+
+      <properties>
+        <hadoop.version>${hadoop3.2.version}</hadoop.version>
+        <hadoop-client-api.artifact>hadoop-client-api</hadoop-client-api.artifact>
+        <hadoop-client-runtime.artifact>hadoop-client-runtime</hadoop-client-runtime.artifact>
+        <hadoop-client-minicluster.artifact>hadoop-client-minicluster</hadoop-client-minicluster.artifact>
+
+      </properties>
+
+      <dependencies>
+        <dependency>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>${hadoop-client-runtime.artifact}</artifactId>
+        </dependency>
+
+        <dependency>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>${hadoop-client-minicluster.artifact}</artifactId>
+          <scope>test</scope>
+          <version>${hadoop.version}</version>
+        </dependency>
+      </dependencies>
+    </profile>
+  </profiles>
 </project>

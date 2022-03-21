@@ -121,59 +121,62 @@ public class HeliumRestApi {
   @Path("suggest/{noteId}/{paragraphId}")
   public Response suggest(@PathParam("noteId") String noteId,
           @PathParam("paragraphId") String paragraphId) {
-    Note note;
     try {
-      note = notebook.getNote(noteId);
+      return notebook.processNote(noteId,
+        note -> {
+          if (note == null) {
+            return new JsonResponse<>(Response.Status.NOT_FOUND, "Note " + noteId + " not found").build();
+          }
+
+          Paragraph paragraph = note.getParagraph(paragraphId);
+          if (paragraph == null) {
+            return new JsonResponse<>(Response.Status.NOT_FOUND, "Paragraph " + paragraphId + " not found")
+                .build();
+          }
+          try {
+            return new JsonResponse<>(Response.Status.OK, "", helium.suggestApp(paragraph)).build();
+          } catch (RuntimeException e) {
+            logger.error(e.getMessage(), e);
+            return new JsonResponse<>(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage()).build();
+          }
+        });
     } catch (IOException e) {
       return new JsonResponse<>(Response.Status.NOT_FOUND,
               "Fail to get note: " + noteId + "\n" + ExceptionUtils.getStackTrace(e)).build();
     }
-    if (note == null) {
-      return new JsonResponse<>(Response.Status.NOT_FOUND, "Note " + noteId + " not found").build();
-    }
-
-    Paragraph paragraph = note.getParagraph(paragraphId);
-    if (paragraph == null) {
-      return new JsonResponse<>(Response.Status.NOT_FOUND, "Paragraph " + paragraphId + " not found")
-          .build();
-    }
-    try {
-      return new JsonResponse<>(Response.Status.OK, "", helium.suggestApp(paragraph)).build();
-    } catch (RuntimeException e) {
-      logger.error(e.getMessage(), e);
-      return new JsonResponse<>(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage()).build();
-    }
-
   }
 
   @POST
   @Path("load/{noteId}/{paragraphId}")
   public Response load(@PathParam("noteId") String noteId,
           @PathParam("paragraphId") String paragraphId, String heliumPackage) {
-    Note note;
     try {
-      note = notebook.getNote(noteId);
+      return notebook.processNote(noteId,
+        note -> {
+          if (note == null) {
+            return new JsonResponse<>(Response.Status.NOT_FOUND, "Note " + noteId + " not found").build();
+          }
+          Paragraph paragraph = note.getParagraph(paragraphId);
+          if (paragraph == null) {
+            return new JsonResponse<>(Response.Status.NOT_FOUND, "Paragraph " + paragraphId + " not found")
+                .build();
+          }
+          HeliumPackage pkg = HeliumPackage.fromJson(heliumPackage);
+          try {
+            return new JsonResponse<>(Response.Status.OK, "",
+                    helium.getApplicationFactory().loadAndRun(pkg, paragraph)).build();
+          } catch (RuntimeException e) {
+            logger.error(e.getMessage(), e);
+            return new JsonResponse<>(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage()).build();
+          }
+        });
     } catch (IOException e) {
       return new JsonResponse<>(Response.Status.NOT_FOUND,
               "Fail to get note: " + noteId + "\n" + ExceptionUtils.getStackTrace(e)).build();
     }
-    if (note == null) {
-      return new JsonResponse<>(Response.Status.NOT_FOUND, "Note " + noteId + " not found").build();
-    }
 
-    Paragraph paragraph = note.getParagraph(paragraphId);
-    if (paragraph == null) {
-      return new JsonResponse<>(Response.Status.NOT_FOUND, "Paragraph " + paragraphId + " not found")
-          .build();
-    }
-    HeliumPackage pkg = HeliumPackage.fromJson(heliumPackage);
-    try {
-      return new JsonResponse<>(Response.Status.OK, "",
-              helium.getApplicationFactory().loadAndRun(pkg, paragraph)).build();
-    } catch (RuntimeException e) {
-      logger.error(e.getMessage(), e);
-      return new JsonResponse<>(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage()).build();
-    }
+
+
   }
 
   @GET

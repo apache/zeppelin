@@ -178,6 +178,10 @@ public class YarnRemoteInterpreterProcess extends RemoteInterpreterProcess {
       this.appId = appResponse.getApplicationId();
       ApplicationSubmissionContext appContext = yarnApplication.getApplicationSubmissionContext();
       appContext = createApplicationSubmissionContext(appContext);
+      String YARN_NODE_LABEL_EXPRESSION = "zeppelin.interpreter.yarn.node.label.expression";
+      if(StringUtils.isNotEmpty(properties.getProperty(YARN_NODE_LABEL_EXPRESSION,""))) {
+        appContext.setNodeLabelExpression(properties.getProperty(YARN_NODE_LABEL_EXPRESSION));
+      }
       yarnClient.submitApplication(appContext);
 
       long start = System.currentTimeMillis();

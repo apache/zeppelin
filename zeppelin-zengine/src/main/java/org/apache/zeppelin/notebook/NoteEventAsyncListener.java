@@ -46,17 +46,17 @@ public abstract class NoteEventAsyncListener implements NoteEventListener, Close
             new LinkedBlockingQueue<>(), new SchedulerThreadFactory(name));
   }
 
-  public abstract void handleNoteCreateEvent(NoteCreateEvent noteCreateEvent) throws Exception;
+  public abstract void handleNoteCreateEvent(NoteCreateEvent noteCreateEvent);
 
-  public abstract void handleNoteRemoveEvent(NoteRemoveEvent noteRemoveEvent) throws Exception;
+  public abstract void handleNoteRemoveEvent(NoteRemoveEvent noteRemoveEvent);
 
-  public abstract void handleNoteUpdateEvent(NoteUpdateEvent noteUpdateEvent) throws Exception;
+  public abstract void handleNoteUpdateEvent(NoteUpdateEvent noteUpdateEvent);
 
-  public abstract void handleParagraphCreateEvent(ParagraphCreateEvent paragraphCreateEvent) throws Exception;
+  public abstract void handleParagraphCreateEvent(ParagraphCreateEvent paragraphCreateEvent);
 
-  public abstract void handleParagraphRemoveEvent(ParagraphRemoveEvent paragraphRemoveEvent) throws Exception;
+  public abstract void handleParagraphRemoveEvent(ParagraphRemoveEvent paragraphRemoveEvent);
 
-  public abstract void handleParagraphUpdateEvent(ParagraphUpdateEvent paragraphUpdateEvent) throws Exception;
+  public abstract void handleParagraphUpdateEvent(ParagraphUpdateEvent paragraphUpdateEvent);
 
 
   @Override
@@ -66,37 +66,37 @@ public abstract class NoteEventAsyncListener implements NoteEventListener, Close
 
   @Override
   public void onNoteCreate(Note note, AuthenticationInfo subject) {
-    executor.execute(new EventHandling(new NoteCreateEvent(note)));
+    executor.execute(new EventHandling(new NoteCreateEvent(note.getId())));
   }
 
   @Override
   public void onNoteRemove(Note note, AuthenticationInfo subject) {
-    executor.execute(new EventHandling(new NoteRemoveEvent(note)));
+    executor.execute(new EventHandling(new NoteRemoveEvent(note.getId())));
   }
 
   @Override
   public void onNoteUpdate(Note note, AuthenticationInfo subject) {
-    executor.execute(new EventHandling(new NoteUpdateEvent(note)));
+    executor.execute(new EventHandling(new NoteUpdateEvent(note.getId())));
   }
 
   @Override
   public void onParagraphCreate(Paragraph p) {
-    executor.execute(new EventHandling(new ParagraphCreateEvent(p)));
+    executor.execute(new EventHandling(new ParagraphCreateEvent(p.getNote().getId(), p.getId())));
   }
 
   @Override
   public void onParagraphRemove(Paragraph p) {
-    executor.execute(new EventHandling(new ParagraphRemoveEvent(p)));
+    executor.execute(new EventHandling(new ParagraphRemoveEvent(p.getNote().getId(), p.getId())));
   }
 
   @Override
   public void onParagraphUpdate(Paragraph p) {
-    executor.execute(new EventHandling(new ParagraphUpdateEvent(p)));
+    executor.execute(new EventHandling(new ParagraphUpdateEvent(p.getNote().getId(), p.getId())));
   }
 
   @Override
   public void onParagraphStatusChange(Paragraph p, Job.Status status) {
-    executor.execute(new EventHandling(new ParagraphStatusChangeEvent(p)));
+    executor.execute(new EventHandling(new ParagraphStatusChangeEvent(p.getNote().getId(), p.getId())));
   }
 
   class EventHandling implements Runnable {
@@ -139,87 +139,111 @@ public abstract class NoteEventAsyncListener implements NoteEventListener, Close
   }
 
   public static class NoteCreateEvent implements NoteEvent {
-    private final Note note;
+    private final String noteId;
 
-    public NoteCreateEvent(Note note) {
-      this.note = note;
+    public NoteCreateEvent(String noteId) {
+      this.noteId = noteId;
     }
 
-    public Note getNote() {
-      return note;
+    public String getNoteId() {
+      return noteId;
     }
   }
 
   public static class NoteUpdateEvent implements NoteEvent {
-    private final Note note;
+    private final String noteId;
 
-    public NoteUpdateEvent(Note note) {
-      this.note = note;
+    public NoteUpdateEvent(String noteId) {
+      this.noteId = noteId;
     }
 
-    public Note getNote() {
-      return note;
+    public String getNoteId() {
+      return noteId;
     }
   }
 
 
   public static class NoteRemoveEvent implements NoteEvent {
-    private final Note note;
+    private final String noteId;
 
-    public NoteRemoveEvent(Note note) {
-      this.note = note;
+    public NoteRemoveEvent(String noteId) {
+      this.noteId = noteId;
     }
 
-    public Note getNote() {
-      return note;
+    public String getNoteId() {
+      return noteId;
     }
   }
 
   public static class ParagraphCreateEvent implements NoteEvent {
-    private final Paragraph p;
+    private final String nodeId;
+    private final String paragraphId;
 
-    public ParagraphCreateEvent(Paragraph p) {
-      this.p = p;
+    public ParagraphCreateEvent(String nodeId, String paragraphId) {
+      this.nodeId = nodeId;
+      this.paragraphId = paragraphId;
     }
 
-    public Paragraph getParagraph() {
-      return p;
+    public String getNodeId() {
+      return nodeId;
+    }
+
+    public String getParagraphId() {
+      return paragraphId;
     }
   }
 
   public static class ParagraphUpdateEvent implements NoteEvent {
-    private final Paragraph p;
+    private final String nodeId;
+    private final String paragraphId;
 
-    public ParagraphUpdateEvent(Paragraph p) {
-      this.p = p;
+    public ParagraphUpdateEvent(String nodeId, String paragraphId) {
+      this.nodeId = nodeId;
+      this.paragraphId = paragraphId;
     }
 
-    public Paragraph getParagraph() {
-      return p;
+    public String getNodeId() {
+      return nodeId;
+    }
+
+    public String getParagraphId() {
+      return paragraphId;
     }
   }
 
   public static class ParagraphRemoveEvent implements NoteEvent {
-    private final Paragraph p;
+    private final String nodeId;
+    private final String paragraphId;
 
-    public ParagraphRemoveEvent(Paragraph p) {
-      this.p = p;
+    public ParagraphRemoveEvent(String nodeId, String paragraphId) {
+      this.nodeId = nodeId;
+      this.paragraphId = paragraphId;
     }
 
-    public Paragraph getParagraph() {
-      return p;
+    public String getNodeId() {
+      return nodeId;
+    }
+
+    public String getParagraphId() {
+      return paragraphId;
     }
   }
 
   public static class ParagraphStatusChangeEvent implements NoteEvent {
-    private final Paragraph p;
+    private final String nodeId;
+    private final String paragraphId;
 
-    public ParagraphStatusChangeEvent(Paragraph p) {
-      this.p = p;
+    public ParagraphStatusChangeEvent(String nodeId, String paragraphId) {
+      this.nodeId = nodeId;
+      this.paragraphId = paragraphId;
     }
 
-    public Paragraph getParagraph() {
-      return p;
+    public String getNodeId() {
+      return nodeId;
+    }
+
+    public String getParagraphId() {
+      return paragraphId;
     }
   }
 }

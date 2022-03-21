@@ -289,12 +289,15 @@ public class ClusterEventTest extends ZeppelinServerMock {
 
   @Test
   public void testRenameNoteEvent() throws IOException {
-    Note note = null;
+    String noteId = null;
     try {
       String oldName = "old_name";
-      note = TestUtils.getInstance(Notebook.class).createNote(oldName, anonymous);
-      assertEquals(note.getName(), oldName);
-      String noteId = note.getId();
+      noteId = TestUtils.getInstance(Notebook.class).createNote(oldName, anonymous);
+      TestUtils.getInstance(Notebook.class).processNote(noteId,
+        note -> {
+          assertEquals(note.getName(), oldName);
+          return null;
+        });
 
       final String newName = "testName";
       String jsonRequest = "{\"name\": " + newName + "}";
@@ -303,7 +306,11 @@ public class ClusterEventTest extends ZeppelinServerMock {
       assertThat("test testRenameNote:", put, AbstractTestRestApi.isAllowed());
       put.close();
 
-      assertEquals(note.getName(), newName);
+      TestUtils.getInstance(Notebook.class).processNote(noteId,
+        note -> {
+          assertEquals(note.getName(), newName);
+          return null;
+        });
 
       // wait cluster sync event
       Thread.sleep(1000);
@@ -312,21 +319,21 @@ public class ClusterEventTest extends ZeppelinServerMock {
       LOGGER.error(e.getMessage(), e);
     } finally {
       // cleanup
-      if (null != note) {
-        TestUtils.getInstance(Notebook.class).removeNote(note, anonymous);
+      if (null != noteId) {
+        TestUtils.getInstance(Notebook.class).removeNote(noteId, anonymous);
       }
     }
   }
 
   @Test
   public void testCloneNoteEvent() throws IOException {
-    Note note1 = null;
+    String note1Id = null;
     String clonedNoteId = null;
     try {
-      note1 = TestUtils.getInstance(Notebook.class).createNote("note1", anonymous);
+      note1Id = TestUtils.getInstance(Notebook.class).createNote("note1", anonymous);
       Thread.sleep(1000);
 
-      CloseableHttpResponse post = AbstractTestRestApi.httpPost("/notebook/" + note1.getId(), "");
+      CloseableHttpResponse post = AbstractTestRestApi.httpPost("/notebook/" + note1Id, "");
       LOG.info("testCloneNote response\n" + post.getStatusLine().getReasonPhrase());
       assertThat(post, AbstractTestRestApi.isAllowed());
 
@@ -351,31 +358,34 @@ public class ClusterEventTest extends ZeppelinServerMock {
       LOGGER.error(e.getMessage(), e);
     } finally {
       // cleanup
-      if (null != note1) {
-        TestUtils.getInstance(Notebook.class).removeNote(note1, anonymous);
+      if (null != note1Id) {
+        TestUtils.getInstance(Notebook.class).removeNote(note1Id, anonymous);
       }
-      Note clonedNote = TestUtils.getInstance(Notebook.class).getNote(clonedNoteId);
-      if (null != clonedNote) {
-        TestUtils.getInstance(Notebook.class).removeNote(clonedNote, anonymous);
+      if (null != clonedNoteId) {
+        TestUtils.getInstance(Notebook.class).removeNote(clonedNoteId, anonymous);
       }
     }
   }
 
   @Test
   public void insertParagraphEvent() throws IOException {
-    Note note = null;
+    String noteId = null;
     try {
       // Create note and set result explicitly
-      note = TestUtils.getInstance(Notebook.class).createNote("note1", anonymous);
-      Paragraph p1 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
-      InterpreterResult result = new InterpreterResult(InterpreterResult.Code.SUCCESS,
-          InterpreterResult.Type.TEXT, "result");
-      p1.setResult(result);
+      noteId = TestUtils.getInstance(Notebook.class).createNote("note1", anonymous);
+      TestUtils.getInstance(Notebook.class).processNote(noteId,
+        note -> {
+          Paragraph p1 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
+          InterpreterResult result = new InterpreterResult(InterpreterResult.Code.SUCCESS,
+              InterpreterResult.Type.TEXT, "result");
+          p1.setResult(result);
+          return null;
+        });
 
       // insert new paragraph
       NewParagraphRequest newParagraphRequest = new NewParagraphRequest();
 
-      CloseableHttpResponse post = AbstractTestRestApi.httpPost("/notebook/" + note.getId() + "/paragraph", newParagraphRequest.toJson());
+      CloseableHttpResponse post = AbstractTestRestApi.httpPost("/notebook/" + noteId + "/paragraph", newParagraphRequest.toJson());
       LOG.info("test clear paragraph output response\n" + EntityUtils.toString(post.getEntity(), StandardCharsets.UTF_8));
       assertThat(post, AbstractTestRestApi.isAllowed());
       post.close();
@@ -387,24 +397,28 @@ public class ClusterEventTest extends ZeppelinServerMock {
       LOGGER.error(e.getMessage(), e);
     } finally {
       // cleanup
-      if (null != note) {
-        TestUtils.getInstance(Notebook.class).removeNote(note, anonymous);
+      if (null != noteId) {
+        TestUtils.getInstance(Notebook.class).removeNote(noteId, anonymous);
       }
     }
   }
 
   @Test
   public void testClusterAuthEvent() throws IOException {
-    Note note = null;
+    String noteId = null;
 
     try {
-      note = notebook.createNote("note1", anonymous);
-      Paragraph p1 = note.addNewParagraph(anonymous);
-      p1.setText("%md start remote interpreter process");
-      p1.setAuthenticationInfo(anonymous);
-      notebookServer.getNotebook().saveNote(note, anonymous);
+      noteId = notebook.createNote("note1", anonymous);
+      notebook.processNote(noteId,
+        note -> {
+          Paragraph p1 = note.addNewParagraph(anonymous);
+          p1.setText("%md start remote interpreter process");
+          p1.setAuthenticationInfo(anonymous);
+          notebookServer.getNotebook().saveNote(note, anonymous);
+          return null;
+        });
 
-      String noteId = note.getId();
+
       String user1Id = "user1", user2Id = "user2";
 
       // test user1 can get anonymous's note
@@ -453,8 +467,8 @@ public class ClusterEventTest extends ZeppelinServerMock {
     } catch (InterruptedException e) {
       LOGGER.error(e.getMessage(), e);
     } finally {
-      if (null != note) {
-        notebook.removeNote(note, anonymous);
+      if (null != noteId) {
+        notebook.removeNote(noteId, anonymous);
       }
     }
   }

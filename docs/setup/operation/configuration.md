@@ -463,6 +463,12 @@ Sources descending by priority:
     <td></td>
     <td>comma-separated list of folder, where cron is allowed</td>
   </tr>
+  <tr>
+    <td><h6 class="properties">ZEPPELIN_NOTE_CACHE_THRESHOLD</h6></td>
+    <td><h6 class="properties">zeppelin.note.cache.threshold</h6></td>
+    <td>50</td>
+    <td>Threshold for the number of notes in the cache before an eviction occurs.</td>
+  </tr>
 </table>
 
 

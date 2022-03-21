@@ -67,7 +67,9 @@ public class MiniHadoopCluster {
     YarnConfiguration baseConfig = new YarnConfiguration(hadoopConf);
     baseConfig.set("yarn.nodemanager.disk-health-checker.max-disk-utilization-per-disk-percentage", "98");
     baseConfig.set("yarn.scheduler.capacity.maximum-am-resource-percent", "1.0");
-
+    // the following 2 config are required by hadoop3
+    baseConfig.set("yarn.scheduler.capacity.root.queues", "default");
+    baseConfig.set("yarn.scheduler.capacity.root.default.capacity", "100");
     this.yarnCluster = new MiniYARNCluster(getClass().getName(), 2,
         1, 1);
     yarnCluster.init(baseConfig);

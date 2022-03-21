@@ -31,7 +31,6 @@ import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
-import org.apache.zeppelin.interpreter.InterpreterNotFoundException;
 import org.apache.zeppelin.interpreter.InterpreterOption;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
@@ -54,6 +53,7 @@ import java.util.stream.Collectors;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeTrue;
 
 
 public abstract class SparkIntegrationTest {
@@ -65,12 +65,14 @@ public abstract class SparkIntegrationTest {
   protected static InterpreterSettingManager interpreterSettingManager;
 
   private String sparkVersion;
+  private String hadoopVersion;
   private String sparkHome;
 
   public SparkIntegrationTest(String sparkVersion, String hadoopVersion) {
     LOGGER.info("Testing Spark Version: " + sparkVersion);
     LOGGER.info("Testing Hadoop Version: " + hadoopVersion);
     this.sparkVersion = sparkVersion;
+    this.hadoopVersion = hadoopVersion;
     this.sparkHome = DownloadUtils.downloadSpark(sparkVersion, hadoopVersion);
   }
 
@@ -97,6 +99,12 @@ public abstract class SparkIntegrationTest {
 
   protected void setUpSparkInterpreterSetting(InterpreterSetting interpreterSetting) {
     // sub class can customize spark interpreter setting.
+  }
+
+  private boolean isHadoopVersionMatch() {
+    String version = org.apache.hadoop.util.VersionInfo.getVersion();
+    String majorVersion = version.split("\\.")[0];
+    return majorVersion.equals(hadoopVersion.split("\\.")[0]);
   }
 
   private void testInterpreterBasics() throws IOException, InterpreterException, XmlPullParserException {
@@ -162,6 +170,8 @@ public abstract class SparkIntegrationTest {
 
   @Test
   public void testLocalMode() throws IOException, YarnException, InterpreterException, XmlPullParserException {
+    assumeTrue("Hadoop version mismatch, skip test", isHadoopVersionMatch());
+
     InterpreterSetting sparkInterpreterSetting = interpreterSettingManager.getInterpreterSettingByName("spark");
     sparkInterpreterSetting.setProperty("spark.master", "local[*]");
     sparkInterpreterSetting.setProperty("SPARK_HOME", sparkHome);
@@ -187,6 +197,8 @@ public abstract class SparkIntegrationTest {
 
   @Test
   public void testYarnClientMode() throws IOException, YarnException, InterruptedException, InterpreterException, XmlPullParserException {
+    assumeTrue("Hadoop version mismatch, skip test", isHadoopVersionMatch());
+
     InterpreterSetting sparkInterpreterSetting = interpreterSettingManager.getInterpreterSettingByName("spark");
     sparkInterpreterSetting.setProperty("spark.master", "yarn-client");
     sparkInterpreterSetting.setProperty("HADOOP_CONF_DIR", hadoopCluster.getConfigPath());
@@ -237,6 +249,8 @@ public abstract class SparkIntegrationTest {
 
   @Test
   public void testYarnClusterMode() throws IOException, YarnException, InterruptedException, InterpreterException, XmlPullParserException {
+    assumeTrue("Hadoop version mismatch, skip test", isHadoopVersionMatch());
+
     InterpreterSetting sparkInterpreterSetting = interpreterSettingManager.getInterpreterSettingByName("spark");
     sparkInterpreterSetting.setProperty("spark.master", "yarn-cluster");
     sparkInterpreterSetting.setProperty("HADOOP_CONF_DIR", hadoopCluster.getConfigPath());
@@ -282,6 +296,8 @@ public abstract class SparkIntegrationTest {
 
   @Test
   public void testSparkSubmit() throws InterpreterException {
+    assumeTrue("Hadoop version mismatch, skip test", isHadoopVersionMatch());
+
     try {
       InterpreterSetting sparkSubmitInterpreterSetting = interpreterSettingManager.getInterpreterSettingByName("spark-submit");
       sparkSubmitInterpreterSetting.setProperty("SPARK_HOME", sparkHome);
@@ -298,6 +314,8 @@ public abstract class SparkIntegrationTest {
 
   @Test
   public void testScopedMode() throws InterpreterException {
+    assumeTrue("Hadoop version mismatch, skip test", isHadoopVersionMatch());
+
     InterpreterSetting sparkInterpreterSetting = interpreterSettingManager.getInterpreterSettingByName("spark");
     try {
       sparkInterpreterSetting.setProperty("spark.master", "local[*]");

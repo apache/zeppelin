@@ -14,13 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.zeppelin.rest.message;
 
-package org.apache.zeppelin.notebook.scheduler;
+/**
+ * GetNoteByPathRequest rest api request message.
+ */
+public class GetNoteByPathRequest {
 
-import java.io.IOException;
-import java.util.Set;
+    private String notePath;
 
-public interface SchedulerService {
-  boolean refreshCron(String noteId) throws IOException;
-  Set<?> getJobs();
+    public GetNoteByPathRequest() {
+    }
+
+    public String getNotePath() {
+        return notePath;
+    }
 }

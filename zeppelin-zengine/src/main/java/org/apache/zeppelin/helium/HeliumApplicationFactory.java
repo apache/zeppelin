@@ -371,42 +371,39 @@ public class HeliumApplicationFactory implements ApplicationEventListener, NoteE
     if (notebook == null) {
       return null;
     }
-
-    Note note = null;
     try {
-      note = notebook.getNote(noteId);
-      if (note == null) {
-        logger.warn("Note " + noteId + " not found");
-        return null;
-      }
+      return notebook.processNote(noteId,
+        note -> {
+          if (note == null) {
+            logger.warn("Note {} not found", noteId);
+            return null;
+          }
+          Paragraph paragraph = note.getParagraph(paragraphId);
+          if (paragraph == null) {
+            logger.error("Can't get paragraph {}", paragraphId);
+            return null;
+          }
+          return paragraph.getApplicationState(appId);
+        });
     } catch (IOException e) {
       logger.error("Can't get note {}", noteId);
       return null;
     }
-
-    Paragraph paragraph = note.getParagraph(paragraphId);
-    if (paragraph == null) {
-      logger.error("Can't get paragraph {}", paragraphId);
-      return null;
-    }
-
-    ApplicationState appFound = paragraph.getApplicationState(appId);
-
-    return appFound;
   }
 
   @Override
-  public void onNoteRemove(Note note, AuthenticationInfo subject) throws IOException {
+  public void onNoteRemove(Note note, AuthenticationInfo subject) {
+    // do nothing
   }
 
   @Override
-  public void onNoteCreate(Note note, AuthenticationInfo subject) throws IOException {
-
+  public void onNoteCreate(Note note, AuthenticationInfo subject) {
+    // do nothing
   }
 
   @Override
-  public void onNoteUpdate(Note note, AuthenticationInfo subject) throws IOException {
-
+  public void onNoteUpdate(Note note, AuthenticationInfo subject) {
+    // do nothing
   }
 
   @Override
@@ -420,12 +417,12 @@ public class HeliumApplicationFactory implements ApplicationEventListener, NoteE
 
   @Override
   public void onParagraphCreate(Paragraph p) {
-
+    // do nothing
   }
 
   @Override
-  public void onParagraphUpdate(Paragraph p) throws IOException {
-
+  public void onParagraphUpdate(Paragraph p) {
+    // do nothing
   }
 
   @Override

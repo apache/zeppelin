@@ -17,7 +17,11 @@
 
 package org.apache.zeppelin.notebook.repo;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
 import java.io.File;
@@ -25,7 +29,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-import com.google.common.truth.Truth;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
@@ -92,52 +95,52 @@ public class GitNotebookRepoTest {
   public void initNonemptyNotebookDir() throws IOException, GitAPIException {
     //given - .git does not exit
     File dotGit = new File(String.join(File.separator, notebooksDir, ".git"));
-    assertThat(dotGit.exists()).isEqualTo(false);
+    assertFalse(dotGit.exists());
 
     //when
     notebookRepo = new GitNotebookRepo(conf);
 
     //then
     Git git = notebookRepo.getGit();
-    Truth.assertThat(git).isNotNull();
+    assertNotNull(git);
 
-    assertThat(dotGit.exists()).isEqualTo(true);
-    assertThat(notebookRepo.list(null)).isNotEmpty();
+    assertTrue(dotGit.exists());
+    assertFalse(notebookRepo.list(null).isEmpty());
 
     List<DiffEntry> diff = git.diff().call();
     // no commit, diff isn't empty
-    Truth.assertThat(diff).isNotEmpty();
+    assertFalse(diff.isEmpty());
   }
 
   @Test
   public void showNotebookHistoryEmptyTest() throws GitAPIException, IOException {
     //given
     notebookRepo = new GitNotebookRepo(conf);
-    assertThat(notebookRepo.list(null)).isNotEmpty();
+    assertFalse(notebookRepo.list(null).isEmpty());
 
     //when
     List<Revision> testNotebookHistory = notebookRepo.revisionHistory(TEST_NOTE_ID, TEST_NOTE_PATH, null);
 
     //then
     //no initial commit, empty history
-    assertThat(testNotebookHistory).isEmpty();
+    assertTrue(testNotebookHistory.isEmpty());
   }
 
   @Test
   public void showNotebookHistoryMultipleNotesTest() throws IOException {
     //initial checks
     notebookRepo = new GitNotebookRepo(conf);
-    assertThat(notebookRepo.list(null)).isNotEmpty();
-    assertThat(containsNote(notebookRepo.list(null), TEST_NOTE_ID)).isTrue();
-    assertThat(containsNote(notebookRepo.list(null), TEST_NOTE_ID2)).isTrue();
-    assertThat(notebookRepo.revisionHistory(TEST_NOTE_ID, TEST_NOTE_PATH, null)).isEmpty();
-    assertThat(notebookRepo.revisionHistory(TEST_NOTE_ID2, TEST_NOTE_PATH2, null)).isEmpty();
+    assertFalse(notebookRepo.list(null).isEmpty());
+    assertTrue(containsNote(notebookRepo.list(null), TEST_NOTE_ID));
+    assertTrue(containsNote(notebookRepo.list(null), TEST_NOTE_ID2));
+    assertTrue(notebookRepo.revisionHistory(TEST_NOTE_ID, TEST_NOTE_PATH, null).isEmpty());
+    assertTrue(notebookRepo.revisionHistory(TEST_NOTE_ID2, TEST_NOTE_PATH2, null).isEmpty());
 
     //add commit to both notes
     notebookRepo.checkpoint(TEST_NOTE_ID, TEST_NOTE_PATH, "first commit, note1", null);
-    assertThat(notebookRepo.revisionHistory(TEST_NOTE_ID, TEST_NOTE_PATH, null).size()).isEqualTo(1);
+    assertEquals(1, notebookRepo.revisionHistory(TEST_NOTE_ID, TEST_NOTE_PATH, null).size());
     notebookRepo.checkpoint(TEST_NOTE_ID2, TEST_NOTE_PATH2, "first commit, note2", null);
-    assertThat(notebookRepo.revisionHistory(TEST_NOTE_ID2, TEST_NOTE_PATH2, null).size()).isEqualTo(1);
+    assertEquals(1, notebookRepo.revisionHistory(TEST_NOTE_ID2, TEST_NOTE_PATH2, null).size());
 
     //modify, save and checkpoint first note
     Note note = notebookRepo.get(TEST_NOTE_ID, TEST_NOTE_PATH, null);
@@ -148,12 +151,11 @@ public class GitNotebookRepoTest {
     p.setConfig(config);
     p.setText("%md note1 test text");
     notebookRepo.save(note, null);
-    assertThat(notebookRepo.checkpoint(TEST_NOTE_ID, TEST_NOTE_PATH, "second commit, note1", null)).isNotNull();
-    assertThat(notebookRepo.revisionHistory(TEST_NOTE_ID, TEST_NOTE_PATH, null).size()).isEqualTo(2);
-    assertThat(notebookRepo.revisionHistory(TEST_NOTE_ID2, TEST_NOTE_PATH2, null).size()).isEqualTo(1);
-    assertThat(notebookRepo.checkpoint(TEST_NOTE_ID2, TEST_NOTE_PATH2, "first commit, note2", null))
-      .isEqualTo(Revision.EMPTY);
-    assertThat(notebookRepo.revisionHistory(TEST_NOTE_ID2, TEST_NOTE_PATH2, null).size()).isEqualTo(1);
+    assertNotNull(notebookRepo.checkpoint(TEST_NOTE_ID, TEST_NOTE_PATH, "second commit, note1", null));
+    assertEquals(2, notebookRepo.revisionHistory(TEST_NOTE_ID, TEST_NOTE_PATH, null).size());
+    assertEquals(1, notebookRepo.revisionHistory(TEST_NOTE_ID2, TEST_NOTE_PATH2, null).size());
+    assertEquals(Revision.EMPTY, notebookRepo.checkpoint(TEST_NOTE_ID2, TEST_NOTE_PATH2, "first commit, note2", null));
+    assertEquals(1, notebookRepo.revisionHistory(TEST_NOTE_ID2, TEST_NOTE_PATH2, null).size());
 
     //modify, save and checkpoint second note
     note = notebookRepo.get(TEST_NOTE_ID2, TEST_NOTE_PATH2, null);
@@ -164,22 +166,22 @@ public class GitNotebookRepoTest {
     p.setConfig(config);
     p.setText("%md note2 test text");
     notebookRepo.save(note, null);
-    assertThat(notebookRepo.checkpoint(TEST_NOTE_ID2, TEST_NOTE_PATH2, "second commit, note2", null)).isNotNull();
-    assertThat(notebookRepo.revisionHistory(TEST_NOTE_ID, TEST_NOTE_PATH, null).size()).isEqualTo(2);
-    assertThat(notebookRepo.revisionHistory(TEST_NOTE_ID2, TEST_NOTE_PATH2, null).size()).isEqualTo(2);
+    assertNotNull(notebookRepo.checkpoint(TEST_NOTE_ID2, TEST_NOTE_PATH2, "second commit, note2", null));
+    assertEquals(2, notebookRepo.revisionHistory(TEST_NOTE_ID, TEST_NOTE_PATH, null).size());
+    assertEquals(2, notebookRepo.revisionHistory(TEST_NOTE_ID2, TEST_NOTE_PATH2, null).size());
   }
 
   @Test
   public void addCheckpointTest() throws IOException, GitAPIException {
     // initial checks
     notebookRepo = new GitNotebookRepo(conf);
-    assertThat(notebookRepo.list(null)).isNotEmpty();
-    assertThat(containsNote(notebookRepo.list(null), TEST_NOTE_ID)).isTrue();
-    assertThat(notebookRepo.revisionHistory(TEST_NOTE_ID, TEST_NOTE_PATH, null)).isEmpty();
+    assertFalse(notebookRepo.list(null).isEmpty());
+    assertTrue(containsNote(notebookRepo.list(null), TEST_NOTE_ID));
+    assertTrue(notebookRepo.revisionHistory(TEST_NOTE_ID, TEST_NOTE_PATH, null).isEmpty());
 
     notebookRepo.checkpoint(TEST_NOTE_ID, TEST_NOTE_PATH, "first commit", null);
     List<Revision> notebookHistoryBefore = notebookRepo.revisionHistory(TEST_NOTE_ID, TEST_NOTE_PATH, null);
-    assertThat(notebookRepo.revisionHistory(TEST_NOTE_ID, TEST_NOTE_PATH, null)).isNotEmpty();
+    assertFalse(notebookRepo.revisionHistory(TEST_NOTE_ID, TEST_NOTE_PATH, null).isEmpty());
     int initialCount = notebookHistoryBefore.size();
 
     // add changes to note
@@ -197,7 +199,7 @@ public class GitNotebookRepoTest {
 
     // see if commit is added
     List<Revision> notebookHistoryAfter = notebookRepo.revisionHistory(TEST_NOTE_ID, TEST_NOTE_PATH, null);
-    assertThat(notebookHistoryAfter.size()).isEqualTo(initialCount + 1);
+    assertEquals(initialCount + 1, notebookHistoryAfter.size());
 
     int revCountBefore = 0;
     Iterable<RevCommit> revCommits = notebookRepo.getGit().log().call();
@@ -224,7 +226,7 @@ public class GitNotebookRepoTest {
     for (RevCommit revCommit : revCommits) {
       revCountAfter++;
     }
-    assertThat(revCountAfter).isEqualTo(revCountBefore);
+    assertEquals(revCountBefore, revCountAfter);
   }
 
   private boolean containsNote(Map<String, NoteInfo> notes, String noteId) {
@@ -240,13 +242,13 @@ public class GitNotebookRepoTest {
   public void getRevisionTest() throws IOException {
     // initial checks
     notebookRepo = new GitNotebookRepo(conf);
-    assertThat(notebookRepo.list(null)).isNotEmpty();
-    assertThat(containsNote(notebookRepo.list(null), TEST_NOTE_ID)).isTrue();
-    assertThat(notebookRepo.revisionHistory(TEST_NOTE_ID, TEST_NOTE_PATH, null)).isEmpty();
+    assertFalse(notebookRepo.list(null).isEmpty());
+    assertTrue(containsNote(notebookRepo.list(null), TEST_NOTE_ID));
+    assertTrue(notebookRepo.revisionHistory(TEST_NOTE_ID, TEST_NOTE_PATH, null).isEmpty());
 
     // add first checkpoint
     Revision revision_1 = notebookRepo.checkpoint(TEST_NOTE_ID, TEST_NOTE_PATH, "first commit", null);
-    assertThat(notebookRepo.revisionHistory(TEST_NOTE_ID, TEST_NOTE_PATH, null).size()).isEqualTo(1);
+    assertEquals(1, notebookRepo.revisionHistory(TEST_NOTE_ID, TEST_NOTE_PATH, null).size());
     int paragraphCount_1 = notebookRepo.get(TEST_NOTE_ID, TEST_NOTE_PATH, null).getParagraphs().size();
 
     // add paragraph and save
@@ -261,18 +263,18 @@ public class GitNotebookRepoTest {
 
     // second checkpoint
     notebookRepo.checkpoint(TEST_NOTE_ID, TEST_NOTE_PATH, "second commit", null);
-    assertThat(notebookRepo.revisionHistory(TEST_NOTE_ID, TEST_NOTE_PATH, null).size()).isEqualTo(2);
+    assertEquals(2, notebookRepo.revisionHistory(TEST_NOTE_ID, TEST_NOTE_PATH, null).size());
     int paragraphCount_2 = notebookRepo.get(TEST_NOTE_ID, TEST_NOTE_PATH, null).getParagraphs().size();
-    assertThat(paragraphCount_2).isEqualTo(paragraphCount_1 + 1);
+    assertEquals(paragraphCount_1 + 1, paragraphCount_2);
 
     // get note from revision 1
     Note noteRevision_1 = notebookRepo.get(TEST_NOTE_ID, TEST_NOTE_PATH, revision_1.id, null);
-    assertThat(noteRevision_1.getParagraphs().size()).isEqualTo(paragraphCount_1);
+    assertEquals(paragraphCount_1, noteRevision_1.getParagraphs().size());
 
     // get current note
     note = notebookRepo.get(TEST_NOTE_ID, TEST_NOTE_PATH, null);
     note.setInterpreterFactory(mock(InterpreterFactory.class));
-    assertThat(note.getParagraphs().size()).isEqualTo(paragraphCount_2);
+    assertEquals(paragraphCount_2, note.getParagraphs().size());
 
     // add one more paragraph and save
     Paragraph p2 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
@@ -283,34 +285,34 @@ public class GitNotebookRepoTest {
     note = notebookRepo.get(TEST_NOTE_ID, TEST_NOTE_PATH, null);
     note.setInterpreterFactory(mock(InterpreterFactory.class));
     int paragraphCount_3 = note.getParagraphs().size();
-    assertThat(paragraphCount_3).isEqualTo(paragraphCount_2 + 1);
+    assertEquals(paragraphCount_2 + 1, paragraphCount_3);
 
     // get revision 1 again
     noteRevision_1 = notebookRepo.get(TEST_NOTE_ID, TEST_NOTE_PATH, revision_1.id, null);
-    assertThat(noteRevision_1.getParagraphs().size()).isEqualTo(paragraphCount_1);
+    assertEquals(paragraphCount_1, noteRevision_1.getParagraphs().size());
 
     // check that note is unchanged
     note = notebookRepo.get(TEST_NOTE_ID, TEST_NOTE_PATH, null);
-    assertThat(note.getParagraphs().size()).isEqualTo(paragraphCount_3);
+    assertEquals(paragraphCount_3, note.getParagraphs().size());
   }
 
   @Test
   public void getRevisionFailTest() throws IOException {
     // initial checks
     notebookRepo = new GitNotebookRepo(conf);
-    assertThat(notebookRepo.list(null)).isNotEmpty();
-    assertThat(containsNote(notebookRepo.list(null), TEST_NOTE_ID)).isTrue();
-    assertThat(notebookRepo.revisionHistory(TEST_NOTE_ID, TEST_NOTE_PATH, null)).isEmpty();
+    assertFalse(notebookRepo.list(null).isEmpty());
+    assertTrue(containsNote(notebookRepo.list(null), TEST_NOTE_ID));
+    assertTrue(notebookRepo.revisionHistory(TEST_NOTE_ID, TEST_NOTE_PATH, null).isEmpty());
 
     // add first checkpoint
     Revision revision_1 = notebookRepo.checkpoint(TEST_NOTE_ID, TEST_NOTE_PATH, "first commit", null);
-    assertThat(notebookRepo.revisionHistory(TEST_NOTE_ID, TEST_NOTE_PATH, null).size()).isEqualTo(1);
+    assertEquals(1, notebookRepo.revisionHistory(TEST_NOTE_ID, TEST_NOTE_PATH, null).size());
     int paragraphCount_1 = notebookRepo.get(TEST_NOTE_ID, TEST_NOTE_PATH, null).getParagraphs().size();
 
     // get current note
     Note note = notebookRepo.get(TEST_NOTE_ID, TEST_NOTE_PATH, null);
     note.setInterpreterFactory(mock(InterpreterFactory.class));
-    assertThat(note.getParagraphs().size()).isEqualTo(paragraphCount_1);
+    assertEquals(paragraphCount_1, note.getParagraphs().size());
 
     // add one more paragraph and save
     Paragraph p1 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
@@ -323,26 +325,26 @@ public class GitNotebookRepoTest {
 
     // get note from revision 1
     Note noteRevision_1 = notebookRepo.get(TEST_NOTE_ID, TEST_NOTE_PATH, revision_1.id, null);
-    assertThat(noteRevision_1.getParagraphs().size()).isEqualTo(paragraphCount_1);
+    assertEquals(paragraphCount_1, noteRevision_1.getParagraphs().size());
 
     // get current note
     note = notebookRepo.get(TEST_NOTE_ID, TEST_NOTE_PATH, null);
     note.setInterpreterFactory(mock(InterpreterFactory.class));
-    assertThat(note.getParagraphs().size()).isEqualTo(paragraphCount_2);
+    assertEquals(paragraphCount_2, note.getParagraphs().size());
 
     // test for absent revision
     Revision absentRevision = new Revision("absentId", StringUtils.EMPTY, 0);
     note = notebookRepo.get(TEST_NOTE_ID, TEST_NOTE_PATH, absentRevision.id, null);
-    assertThat(note).isNull();
+    assertNull(note);
   }
 
   @Test
   public void setRevisionTest() throws IOException {
     //create repo and check that note doesn't contain revisions
     notebookRepo = new GitNotebookRepo(conf);
-    assertThat(notebookRepo.list(null)).isNotEmpty();
-    assertThat(containsNote(notebookRepo.list(null), TEST_NOTE_ID)).isTrue();
-    assertThat(notebookRepo.revisionHistory(TEST_NOTE_ID, TEST_NOTE_PATH, null)).isEmpty();
+    assertFalse(notebookRepo.list(null).isEmpty());
+    assertTrue(containsNote(notebookRepo.list(null), TEST_NOTE_ID));
+    assertTrue(notebookRepo.revisionHistory(TEST_NOTE_ID, TEST_NOTE_PATH, null).isEmpty());
 
     // get current note
     Note note = notebookRepo.get(TEST_NOTE_ID, TEST_NOTE_PATH, null);
@@ -353,8 +355,8 @@ public class GitNotebookRepoTest {
     // checkpoint revision1
     Revision revision1 = notebookRepo.checkpoint(TEST_NOTE_ID, TEST_NOTE_PATH, "set revision: first commit", null);
     //TODO(khalid): change to EMPTY after rebase
-    assertThat(revision1).isNotNull();
-    assertThat(notebookRepo.revisionHistory(TEST_NOTE_ID, TEST_NOTE_PATH, null).size()).isEqualTo(1);
+    assertNotNull(revision1);
+    assertEquals(1, notebookRepo.revisionHistory(TEST_NOTE_ID, TEST_NOTE_PATH, null).size());
 
     // add one more paragraph and save
     Paragraph p1 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
@@ -364,37 +366,37 @@ public class GitNotebookRepoTest {
     p1.setText("set revision sample text");
     notebookRepo.save(note, null);
     int paragraphCount_2 = note.getParagraphs().size();
-    assertThat(paragraphCount_2).isEqualTo(paragraphCount_1 + 1);
+    assertEquals(paragraphCount_1 + 1, paragraphCount_2);
     LOG.info("paragraph count after modification: {}", paragraphCount_2);
 
     // checkpoint revision2
     Revision revision2 = notebookRepo.checkpoint(TEST_NOTE_ID, TEST_NOTE_PATH, "set revision: second commit", null);
     //TODO(khalid): change to EMPTY after rebase
-    assertThat(revision2).isNotNull();
-    assertThat(notebookRepo.revisionHistory(TEST_NOTE_ID, TEST_NOTE_PATH, null).size()).isEqualTo(2);
+    assertNotNull(revision2);
+    assertEquals(2, notebookRepo.revisionHistory(TEST_NOTE_ID, TEST_NOTE_PATH, null).size());
 
     // set note to revision1
     Note returnedNote = notebookRepo.setNoteRevision(note.getId(), note.getPath(), revision1.id, null);
-    assertThat(returnedNote).isNotNull();
-    assertThat(returnedNote.getParagraphs().size()).isEqualTo(paragraphCount_1);
+    assertNotNull(returnedNote);
+    assertEquals(paragraphCount_1, returnedNote.getParagraphs().size());
 
     // check note from repo
     Note updatedNote = notebookRepo.get(note.getId(), note.getPath(), null);
-    assertThat(updatedNote).isNotNull();
-    assertThat(updatedNote.getParagraphs().size()).isEqualTo(paragraphCount_1);
+    assertNotNull(updatedNote);
+    assertEquals(paragraphCount_1, updatedNote.getParagraphs().size());
 
     // set back to revision2
     returnedNote = notebookRepo.setNoteRevision(note.getId(), note.getPath(), revision2.id, null);
-    assertThat(returnedNote).isNotNull();
-    assertThat(returnedNote.getParagraphs().size()).isEqualTo(paragraphCount_2);
+    assertNotNull(returnedNote);
+    assertEquals(paragraphCount_2, returnedNote.getParagraphs().size());
 
     // check note from repo
     updatedNote = notebookRepo.get(note.getId(), note.getPath(), null);
-    assertThat(updatedNote).isNotNull();
-    assertThat(updatedNote.getParagraphs().size()).isEqualTo(paragraphCount_2);
+    assertNotNull(updatedNote);
+    assertEquals(paragraphCount_2, updatedNote.getParagraphs().size());
 
     // try failure case - set to invalid revision
     returnedNote = notebookRepo.setNoteRevision(note.getId(), note.getPath(), "nonexistent_id", null);
-    assertThat(returnedNote).isNull();
+    assertNull(returnedNote);
   }
 }
