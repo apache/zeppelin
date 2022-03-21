@@ -20,6 +20,10 @@ package org.apache.zeppelin.socket;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+
+import io.micrometer.core.instrument.Metrics;
+import io.micrometer.core.instrument.Tags;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.display.GUI;
@@ -46,6 +50,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -62,21 +67,21 @@ public class ConnectionManager {
       .setPrettyPrinting()
       .registerTypeAdapterFactory(Input.TypeAdapterFactory).create();
 
-  final Queue<NotebookSocket> connectedSockets = new ConcurrentLinkedQueue<>();
+  final Queue<NotebookSocket> connectedSockets = Metrics.gaugeCollectionSize("zeppelin_connected_sockets", Tags.empty(), new ConcurrentLinkedQueue<>());
   // noteId -> connection
-  final Map<String, List<NotebookSocket>> noteSocketMap = new HashMap<>();
+  final Map<String, List<NotebookSocket>> noteSocketMap = Metrics.gaugeMapSize("zeppelin_note_sockets", Tags.empty(), new HashMap<>());
   // user -> connection
-  final Map<String, Queue<NotebookSocket>> userSocketMap = new HashMap<>();
+  final Map<String, Queue<NotebookSocket>> userSocketMap = Metrics.gaugeMapSize("zeppelin_user_sockets", Tags.empty(), new HashMap<>());
 
   /**
-   * This is a special endpoint in the notebook websoket, Every connection in this Queue
+   * This is a special endpoint in the notebook websocket, Every connection in this Queue
    * will be able to watch every websocket event, it doesnt need to be listed into the map of
    * noteSocketMap. This can be used to get information about websocket traffic and watch what
    * is going on.
    */
   final Queue<NotebookSocket> watcherSockets = new ConcurrentLinkedQueue<>();
 
-  private final HashSet<String> collaborativeModeList = new HashSet<>();
+  private final HashSet<String> collaborativeModeList = Metrics.gaugeCollectionSize("zeppelin_collaborative_modes", Tags.empty(),new HashSet<>());
   private final Boolean collaborativeModeEnable = ZeppelinConfiguration
       .create()
       .isZeppelinNotebookCollaborativeModeEnable();
@@ -151,11 +156,9 @@ public class ConnectionManager {
   public String getAssociatedNoteId(NotebookSocket socket) {
     String associatedNoteId = null;
     synchronized (noteSocketMap) {
-      Set<String> noteIds = noteSocketMap.keySet();
-      for (String noteId : noteIds) {
-        List<NotebookSocket> sockets = noteSocketMap.get(noteId);
-        if (sockets.contains(socket)) {
-          associatedNoteId = noteId;
+      for (Entry<String, List<NotebookSocket>> noteSocketMapEntry : noteSocketMap.entrySet()) {
+        if (noteSocketMapEntry.getValue().contains(socket)) {
+          associatedNoteId = noteSocketMapEntry.getKey();
         }
       }
     }
@@ -205,7 +208,7 @@ public class ConnectionManager {
       for (NotebookSocket ns : connectedSockets) {
         try {
           ns.send(serializeMessage(m));
-        } catch (IOException e) {
+        } catch (IOException | RuntimeException e) {
           LOGGER.error("Send error: {}", m, e);
         }
       }
@@ -226,7 +229,7 @@ public class ConnectionManager {
     for (NotebookSocket conn : socketsToBroadcast) {
       try {
         conn.send(serializeMessage(m));
-      } catch (IOException e) {
+      } catch (IOException | RuntimeException e) {
         LOGGER.error("socket error", e);
       }
     }
@@ -242,7 +245,7 @@ public class ConnectionManager {
                   .message(serializeMessage(message))
                   .build()
                   .toJson());
-        } catch (IOException e) {
+        } catch (IOException | RuntimeException e) {
           LOGGER.error("Cannot broadcast message to watcher", e);
         }
       }
@@ -267,7 +270,7 @@ public class ConnectionManager {
       }
       try {
         conn.send(serializeMessage(m));
-      } catch (IOException e) {
+      } catch (IOException | RuntimeException e) {
         LOGGER.error("socket error", e);
       }
     }
@@ -289,7 +292,7 @@ public class ConnectionManager {
 
         try {
           conn.send(serializedMsg);
-        } catch (IOException  e) {
+        } catch (IOException | RuntimeException e) {
           LOGGER.error("Cannot broadcast message to conn", e);
         }
       }
@@ -319,7 +322,7 @@ public class ConnectionManager {
   public void unicast(Message m, NotebookSocket conn) {
     try {
       conn.send(serializeMessage(m));
-    } catch (IOException e) {
+    } catch (IOException | RuntimeException e) {
       LOGGER.error("socket error", e);
     }
     broadcastToWatchers(StringUtils.EMPTY, StringUtils.EMPTY, m);
@@ -385,9 +388,9 @@ public class ConnectionManager {
 
   public void broadcastParagraphs(Map<String, Paragraph> userParagraphMap) {
     if (null != userParagraphMap) {
-      for (String user : userParagraphMap.keySet()) {
-        multicastToUser(user,
-            new Message(Message.OP.PARAGRAPH).put("paragraph", userParagraphMap.get(user)));
+      for (Entry<String, Paragraph> userParagraphEntry : userParagraphMap.entrySet()) {
+        multicastToUser(userParagraphEntry.getKey(),
+            new Message(Message.OP.PARAGRAPH).put("paragraph", userParagraphEntry.getValue()));
       }
     }
   }

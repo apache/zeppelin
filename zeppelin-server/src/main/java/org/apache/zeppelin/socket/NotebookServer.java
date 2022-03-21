@@ -19,8 +19,13 @@ package org.apache.zeppelin.socket;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
+
+import io.micrometer.core.instrument.Metrics;
+import io.micrometer.core.instrument.Tags;
+
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.net.SocketTimeoutException;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -40,6 +45,7 @@ import javax.inject.Provider;
 import javax.websocket.CloseReason;
 import javax.websocket.EndpointConfig;
 import javax.websocket.OnClose;
+import javax.websocket.OnError;
 import javax.websocket.OnMessage;
 import javax.websocket.OnOpen;
 import javax.websocket.Session;
@@ -91,6 +97,7 @@ import org.apache.zeppelin.types.InterpreterSettingsList;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.util.IdHashes;
 import org.apache.zeppelin.utils.CorsUtils;
+import org.apache.zeppelin.utils.ServerUtils;
 import org.apache.zeppelin.utils.TestUtils;
 import org.eclipse.jetty.util.annotation.ManagedAttribute;
 import org.eclipse.jetty.util.annotation.ManagedObject;
@@ -147,7 +154,7 @@ public class NotebookServer implements AngularObjectRegistryListener,
       ZeppelinConfiguration.ConfVars.ZEPPELIN_WEBSOCKET_PARAGRAPH_STATUS_PROGRESS);
 
   // TODO(jl): This will be removed by handling session directly
-  private final Map<String, NotebookSocket> sessionIdNotebookSocketMap = new ConcurrentHashMap<>();
+  private final Map<String, NotebookSocket> sessionIdNotebookSocketMap = Metrics.gaugeMapSize("zeppelin_session_id_notebook_sockets", Tags.empty(), new ConcurrentHashMap<>());
   private ConnectionManager connectionManager;
   private ZeppelinConfiguration zeppelinConfiguration;
   private Provider<Notebook> notebookProvider;
@@ -245,7 +252,7 @@ public class NotebookServer implements AngularObjectRegistryListener,
   @OnOpen
   public void onOpen(Session session, EndpointConfig endpointConfig) throws IOException {
 
-    LOG.info("Session: {}, config: {}", session, endpointConfig.getUserProperties().keySet());
+    LOG.info("Open connection to {} with Session: {}, config: {}", ServerUtils.getRemoteAddress(session), session, endpointConfig.getUserProperties().keySet());
 
     Map<String, Object> headers = endpointConfig.getUserProperties();
     String origin = String.valueOf(headers.get(CorsUtils.HEADER_ORIGIN));
@@ -318,7 +325,6 @@ public class NotebookServer implements AngularObjectRegistryListener,
       if (StringUtils.isEmpty(conn.getUser())) {
         connectionManager.addUserConnection(receivedMessage.principal, conn);
       }
-
       ServiceContext context = getServiceContext(ticketEntry);
       // Lets be elegant here
       switch (receivedMessage.op) {
@@ -484,7 +490,7 @@ public class NotebookServer implements AngularObjectRegistryListener,
           break;
       }
     } catch (Exception e) {
-      LOG.error("Can't handle message: " + msg, e);
+      LOG.error("Can't handle message: {}", msg, e);
       try {
         conn.send(serializeMessage(new Message(OP.ERROR_INFO).put("info", e.getMessage())));
       } catch (IOException iox) {
@@ -494,22 +500,37 @@ public class NotebookServer implements AngularObjectRegistryListener,
   }
 
   @OnClose
-  public void onClose(Session session, CloseReason closeReason) throws IOException {
-    NotebookSocket notebookSocket = sessionIdNotebookSocketMap.get(session.getId());
-    if (null == notebookSocket) {
-      session.close();
-    } else {
-      int code = closeReason.getCloseCode().getCode();
-      String reason = closeReason.getReasonPhrase();
-      onClose(notebookSocket, code, reason);
+  public void onClose(Session session, CloseReason closeReason) {
+    NotebookSocket notebookSocket = sessionIdNotebookSocketMap.remove(session.getId());
+    if (notebookSocket != null) {
+      LOG.info("Closed connection to {} ({}) {}", ServerUtils.getRemoteAddress(session), closeReason.getCloseCode().getCode(), closeReason.getReasonPhrase());
+      removeConnection(notebookSocket);
     }
   }
 
-  public void onClose(NotebookSocket notebookSocket, int code, String reason) {
-    LOG.info("Closed connection to {} ({}) {}", notebookSocket, code, reason);
+  private void removeConnection(NotebookSocket notebookSocket) {
     connectionManager.removeConnection(notebookSocket);
     connectionManager.removeConnectionFromAllNote(notebookSocket);
     connectionManager.removeUserConnection(notebookSocket.getUser(), notebookSocket);
+  }
+
+  @OnError
+  public void onError(Session session, Throwable error) {
+    if (session != null) {
+      NotebookSocket notebookSocket = sessionIdNotebookSocketMap.remove(session.getId());
+      if (notebookSocket != null) {
+        removeConnection(notebookSocket);
+      }
+    }
+    if (error instanceof SocketTimeoutException) {
+      LOG.warn("Socket Session to {} timed out", ServerUtils.getRemoteAddress(session));
+      LOG.debug("SocketTimeoutException", error);
+    } else if (error instanceof IOException) {
+      LOG.warn("Client {} is gone", ServerUtils.getRemoteAddress(session));
+      LOG.debug("IOException", error);
+    } else {
+      LOG.error("Error in WebSocket Session to {}", ServerUtils.getRemoteAddress(session), error);
+    }
   }
 
   protected Message deserializeMessage(String msg) {
