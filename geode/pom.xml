@@ -34,7 +34,7 @@
   <properties>
     <!--library versions-->
     <interpreter.name>geode</interpreter.name>
-    <geode.version>1.1.0</geode.version>
+    <geode.version>1.12.5</geode.version>
   </properties>
 
   <dependencies>
