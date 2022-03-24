@@ -346,9 +346,8 @@ public class Flink113SqlInterpreter {
 
   private void callInsert(CatalogSinkModifyOperation operation, InterpreterContext context) throws IOException {
     if (statementModeMap.getOrDefault(context.getParagraphId(), false)) {
-      List<ModifyOperation> modifyOperations = statementOperationsMap.getOrDefault(context.getParagraphId(), new ArrayList<>());
+      List<ModifyOperation> modifyOperations = statementOperationsMap.get(context.getParagraphId());
       modifyOperations.add(operation);
-      statementOperationsMap.put(context.getParagraphId(), modifyOperations);
     } else {
       callInserts(Collections.singletonList(operation), context);
     }
@@ -444,7 +443,12 @@ public class Flink113SqlInterpreter {
   }
 
   private void callBeginStatementSet(InterpreterContext context) throws IOException {
+    if (statementModeMap.getOrDefault(context.getParagraphId(), false)) {
+      throw new IOException("Only one statement is allowed in one paragraph");
+    }
     statementModeMap.put(context.getParagraphId(), true);
+    // initialize ModifyOperation list so that the following ModifyOperation will be added into this list.
+    statementOperationsMap.put(context.getParagraphId(), new ArrayList<>());
   }
 
   private void callEndStatementSet(InterpreterContext context) throws IOException {

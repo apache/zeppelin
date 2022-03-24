@@ -171,6 +171,7 @@ public class Flink114SqlInterpreter {
   private SqlSplitter sqlSplitter;
   // paragraphId -> Boolean, indicate whether it is runAsOne mode for the current paragraph.
   private Map<String, Boolean> statementModeMap = new HashMap<>();
+  // paragraphId -> list of ModifyOperation.
   private Map<String, List<ModifyOperation>> statementOperationsMap = new HashMap<>();
   private boolean isBatch;
   private ReentrantReadWriteLock.WriteLock lock = new ReentrantReadWriteLock().writeLock();
@@ -360,9 +361,8 @@ public class Flink114SqlInterpreter {
 
   private void callInsert(CatalogSinkModifyOperation operation, InterpreterContext context) throws IOException {
     if (statementModeMap.getOrDefault(context.getParagraphId(), false)) {
-      List<ModifyOperation> modifyOperations = statementOperationsMap.getOrDefault(context.getParagraphId(), new ArrayList<>());
+      List<ModifyOperation> modifyOperations = statementOperationsMap.get(context.getParagraphId());
       modifyOperations.add(operation);
-      statementOperationsMap.put(context.getParagraphId(), modifyOperations);
     } else {
       callInserts(Collections.singletonList(operation), context);
     }
@@ -472,7 +472,12 @@ public class Flink114SqlInterpreter {
   }
 
   private void callBeginStatementSet(InterpreterContext context) throws IOException {
+    if (statementModeMap.getOrDefault(context.getParagraphId(), false)) {
+      throw new IOException("Only one statement is allowed in one paragraph");
+    }
     statementModeMap.put(context.getParagraphId(), true);
+    // initialize ModifyOperation list so that the following ModifyOperation will be added into this list.
+    statementOperationsMap.put(context.getParagraphId(), new ArrayList<>());
   }
 
   private void callEndStatementSet(InterpreterContext context) throws IOException {
