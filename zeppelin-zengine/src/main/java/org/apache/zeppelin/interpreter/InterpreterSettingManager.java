@@ -1035,11 +1035,10 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
         // Cluster event accepting nodes do not need to save files repeatedly
         saveToFile();
       }
+      File localRepoPath = new File(conf.getInterpreterLocalRepoPath());
+      FileUtils.deleteDirectory(new File(localRepoPath, id));
       removed = true;
     }
-
-    File localRepoDir = new File(conf.getInterpreterLocalRepoPath() + "/" + id);
-    FileUtils.deleteDirectory(localRepoDir);
 
     return removed;
   }
