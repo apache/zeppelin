@@ -22,6 +22,7 @@ dependencies:
   - altair
   - vega_datasets
   - plotly
+  - jinja2=3.0.3
   - pip
   - pip:
       - apache-flink==1.13.1
