@@ -204,7 +204,11 @@ public class Flink113SqlInterpreter {
   public InterpreterResult runSqlList(String st, InterpreterContext context) {
     try {
       boolean runAsOne = Boolean.parseBoolean(context.getStringLocalProperty("runAsOne", "false"));
+      if (runAsOne) {
+        statementOperationsMap.put(context.getParagraphId(), new ArrayList<>());
+      }
       statementModeMap.put(context.getParagraphId(), runAsOne);
+
       String jobName = context.getLocalProperties().get("jobName");
       if (StringUtils.isNotBlank(jobName)) {
         tbenv.getConfig().getConfiguration().set(PipelineOptions.NAME, jobName);
