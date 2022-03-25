@@ -93,7 +93,7 @@ Set scala version (default 2.10). Available profiles are
 
 #### Spark Interpreter
 
-To be noticed, the spark profiles here only affect the embedded mode (no need to specify `SPARK_HOME`) of spark interpreter. 
+To be noticed, the spark profiles here only affect the uni test (no need to specify `SPARK_HOME`) of spark interpreter. 
 Zeppelin doesn't require you to build with different spark to make different versions of spark work in Zeppelin.
 You can run different versions of Spark in Zeppelin as long as you specify `SPARK_HOME`. Actually Zeppelin supports all the versions of Spark from 1.6 to 3.0.
 
@@ -116,7 +116,7 @@ minor version can be adjusted by `-Dspark.version=x.x.x`
 
 ##### `-Pspark-scala-[version] (optional)`
 
-To be noticed, these profiles also only affect the embedded mode (no need to specify `SPARK_HOME`) of Spark interpreter. 
+To be noticed, these profiles also only affect the unit test (no need to specify `SPARK_HOME`) of Spark interpreter. 
 Actually Zeppelin supports all the versions of scala (2.11, 2.12) in Spark interpreter as long as you specify `SPARK_HOME`.
 
 Available profiles are
@@ -125,9 +125,6 @@ Available profiles are
 -Pspark-scala-2.11
 -Pspark-scala-2.12
 ```
-
-If you want to use Spark 3.x in the embedded mode, then you have to specify both profile `spark-3.0` and `spark-scala-2.12`,
-because Spark 3.x doesn't support scala 2.11.
  
 #### Build hadoop with Zeppelin (`-Phadoop[version]`)
  
