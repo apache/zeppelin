@@ -596,6 +596,10 @@ public class FlinkStreamSqlInterpreterTest extends FlinkSqlInterpreterTest {
 
   @Test
   public void testStatementSet() throws IOException, InterpreterException {
+    if (flinkInterpreter.getFlinkVersion().getMinorVersion() == 12) {
+      LOGGER.warn("Skip Flink 1.12 as statement set is not supported before 1.12");
+      return;
+    }
     hiveShell.execute("create table source_table (id int, name string)");
     hiveShell.execute("insert into source_table values(1, 'name')");
 
