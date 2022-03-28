@@ -179,29 +179,8 @@ if [[ "${INTERPRETER_ID}" == "spark" ]]; then
     export PYTHONPATH="$SPARK_HOME/python/:$PYTHONPATH"
     export PYTHONPATH="${py4j[0]}:$PYTHONPATH"
   else
-    # add Hadoop jars into classpath
-    if [[ -n "${HADOOP_HOME}" ]]; then
-      # Apache
-      addEachJarInDirRecursiveForIntp "${HADOOP_HOME}/share"
-
-      # CDH
-      addJarInDirForIntp "${HADOOP_HOME}"
-      addJarInDirForIntp "${HADOOP_HOME}/lib"
-    fi
-
-    addJarInDirForIntp "${INTERPRETER_DIR}/dep"
-
-    py4j=("${ZEPPELIN_HOME}"/interpreter/spark/pyspark/py4j-*-src.zip)
-    # pick the first match py4j zip - there should only be one
-    PYSPARKPATH="${ZEPPELIN_HOME}/interpreter/spark/pyspark/pyspark.zip:${py4j[0]}"
-
-    if [[ -z "${PYTHONPATH}" ]]; then
-      export PYTHONPATH="${PYSPARKPATH}"
-    else
-      export PYTHONPATH="${PYTHONPATH}:${PYSPARKPATH}"
-    fi
-    unset PYSPARKPATH
-    export SPARK_CLASSPATH+=":${ZEPPELIN_INTP_CLASSPATH}"
+    echo "No SPARK_HOME is specified"
+    exit -1
   fi
 
   if [[ -n "${HADOOP_CONF_DIR}" ]] && [[ -d "${HADOOP_CONF_DIR}" ]]; then
