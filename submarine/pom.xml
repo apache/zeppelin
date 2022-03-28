@@ -34,7 +34,7 @@
     <!--library versions-->
     <interpreter.name>submarine</interpreter.name>
     <hadoop.version>${hadoop2.7.version}</hadoop.version>
-    <jinjava.version>2.4.0</jinjava.version>
+    <jinjava.version>2.5.4</jinjava.version>
     <squirrel.version>0.3.8</squirrel.version>
     <guava.version>24.1.1-jre</guava.version>
     <!--test library versions-->

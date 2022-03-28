@@ -47,6 +47,8 @@
       <name>Concurrent Maven Repo</name>
       <url>https://conjars.org/repo</url>
     </repository>
+
+    <!-- the twitter repo is unreliable (https://github.com/twitter/hadoop-lzo/issues/148) -->
     <repository>
       <id>twitter</id>
       <name>Twitter Maven Repo</name>
