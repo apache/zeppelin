@@ -111,7 +111,9 @@ class FlinkILoop(
     val tmpDir: File = new File(scalaShellTmpParentFolder, "scala_shell_tmp-" + abstractID)
     LOGGER.info("Folder for scala shell compiled jar: {}", tmpDir.getAbsolutePath)
     if (!tmpDir.exists) {
-      tmpDir.mkdir
+      if (!tmpDir.mkdirs()) {
+        throw new IOException("Unable to make tmp dir for scala shell", e)
+      }
     }
     tmpDir
   }
