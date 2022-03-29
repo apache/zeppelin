@@ -43,7 +43,7 @@ public class FlinkStreamSqlInterpreter extends FlinkSqlInterpreter {
             flinkInterpreter.getExecutionEnvironment().getJavaEnv(),
             flinkInterpreter.getStreamExecutionEnvironment().getJavaEnv(),
             flinkInterpreter.getJavaBatchTableEnvironment("blink"),
-            flinkInterpreter.getJavaStreamTableEnvironment("blink"),
+            flinkInterpreter.getJavaStreamTableEnvironment(),
             flinkInterpreter.getZeppelinContext(),
             sql -> callInnerSelect(sql));
 
@@ -56,7 +56,7 @@ public class FlinkStreamSqlInterpreter extends FlinkSqlInterpreter {
     if (streamType.equalsIgnoreCase("single")) {
       SingleRowStreamSqlJob streamJob = new SingleRowStreamSqlJob(
               flinkInterpreter.getStreamExecutionEnvironment(),
-              flinkInterpreter.getJavaStreamTableEnvironment("blink"),
+              flinkInterpreter.getJavaStreamTableEnvironment(),
               flinkInterpreter.getJobManager(),
               context,
               flinkInterpreter.getDefaultParallelism(),

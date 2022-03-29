@@ -199,7 +199,7 @@ public class PyFlinkInterpreter extends PythonInterpreter {
     return flinkInterpreter.getJavaBatchTableEnvironment(planner);
   }
 
-  public TableEnvironment getJavaStreamTableEnvironment(String planner) {
-    return flinkInterpreter.getJavaStreamTableEnvironment(planner);
+  public TableEnvironment getJavaStreamTableEnvironment() {
+    return flinkInterpreter.getJavaStreamTableEnvironment();
   }
 }
