@@ -171,7 +171,7 @@
                         <arg>-unchecked</arg>
                         <arg>-deprecation</arg>
                         <arg>-feature</arg>
-<!--                        <arg>-target:jvm-1.8</arg>-->
+                        <arg>-target:jvm-1.8</arg>
                     </args>
                     <jvmArgs>
                         <jvmArg>-Xms1024m</jvmArg>
