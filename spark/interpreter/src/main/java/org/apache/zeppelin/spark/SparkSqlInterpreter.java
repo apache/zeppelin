@@ -20,6 +20,7 @@ package org.apache.zeppelin.spark;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.spark.SparkContext;
 import org.apache.spark.sql.AnalysisException;
+import org.apache.spark.sql.SQLContext;
 import org.apache.zeppelin.interpreter.AbstractInterpreter;
 import org.apache.zeppelin.interpreter.ZeppelinContext;
 import org.apache.zeppelin.interpreter.InterpreterContext;
@@ -57,7 +58,7 @@ public class SparkSqlInterpreter extends AbstractInterpreter {
     this.sqlSplitter = new SqlSplitter();
   }
 
-  public boolean concurrentSQL() {
+  private boolean concurrentSQL() {
     return Boolean.parseBoolean(getProperty("zeppelin.spark.concurrentSQL"));
   }
 
@@ -83,7 +84,7 @@ public class SparkSqlInterpreter extends AbstractInterpreter {
     }
     Utils.printDeprecateMessage(sparkInterpreter.getSparkVersion(), context, properties);
     sparkInterpreter.getZeppelinContext().setInterpreterContext(context);
-    Object sqlContext = sparkInterpreter.getSQLContext();
+    SQLContext sqlContext = sparkInterpreter.getSQLContext();
     SparkContext sc = sparkInterpreter.getSparkContext();
 
     List<String> sqls = sqlSplitter.splitSql(st);
@@ -96,11 +97,10 @@ public class SparkSqlInterpreter extends AbstractInterpreter {
     ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
     try {
       Thread.currentThread().setContextClassLoader(sparkInterpreter.getScalaShellClassLoader());
-      Method method = sqlContext.getClass().getMethod("sql", String.class);
       for (String sql : sqls) {
         curSql = sql;
         String result = sparkInterpreter.getZeppelinContext()
-                .showData(method.invoke(sqlContext, sql), maxResult);
+                .showData(sqlContext.sql(sql), maxResult);
         context.out.write(result);
       }
       context.out.flush();
@@ -155,7 +155,6 @@ public class SparkSqlInterpreter extends AbstractInterpreter {
   public FormType getFormType() {
     return FormType.SIMPLE;
   }
-
 
   @Override
   public int getProgress(InterpreterContext context) throws InterpreterException {

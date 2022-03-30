@@ -148,9 +148,4 @@ public class SparkRInterpreter extends RInterpreter {
     return sparkInterpreter.getZeppelinContext();
   }
 
-  @Override
-  public List<InterpreterCompletion> completion(String buf, int cursor,
-                                                InterpreterContext interpreterContext) {
-    return new ArrayList<>();
-  }
 }
