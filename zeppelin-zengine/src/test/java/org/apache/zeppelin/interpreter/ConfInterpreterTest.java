@@ -21,8 +21,9 @@ import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import java.util.Properties;
+
+import static org.junit.Assert.*;
 
 public class ConfInterpreterTest extends AbstractInterpreterTest {
 
@@ -57,6 +58,57 @@ public class ConfInterpreterTest extends AbstractInterpreterTest {
     // run the paragraph with the same properties would result in ERROR
     result = confInterpreter.interpret("property_1\tnew_value_2\nnew_property\tdummy_value", context);
     assertEquals(InterpreterResult.Code.ERROR, result.code);
+  }
+
+  @Test
+  public void testPropertyTrim() throws InterpreterException {
+    assertTrue(interpreterFactory.getInterpreter("test.conf", executionContext) instanceof ConfInterpreter);
+    ConfInterpreter confInterpreter = (ConfInterpreter) interpreterFactory.getInterpreter("test.conf", executionContext);
+
+    InterpreterContext context = InterpreterContext.builder()
+            .setNoteId("noteId")
+            .setParagraphId("paragraphId")
+            .build();
+
+    // space before key and space after values
+    InterpreterResult result = confInterpreter.interpret(" property_1 \tnew_value \n new_property  \t dummy_value \n", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code);
+
+    assertTrue(interpreterFactory.getInterpreter("test", executionContext) instanceof RemoteInterpreter);
+    RemoteInterpreter remoteInterpreter = (RemoteInterpreter) interpreterFactory.getInterpreter("test", executionContext);
+    remoteInterpreter.interpret("hello world", context);
+    Properties intpProperties = remoteInterpreter.getProperties();
+    // Total 7 properties,
+    // 3 built-in properties (zeppelin.interpreter.output.limit, zeppelin.interpreter.localRepo, zeppelin.interpreter.connection.poolsize)
+    assertEquals(7, intpProperties.size());
+    assertNotNull(intpProperties.getProperty("zeppelin.interpreter.output.limit"));
+    assertNotNull(intpProperties.getProperty("zeppelin.interpreter.localRepo"));
+    assertNotNull(intpProperties.getProperty("zeppelin.interpreter.connection.poolsize"));
+    assertEquals("new_value", intpProperties.getProperty("property_1"));
+    assertEquals("new_value_2", intpProperties.getProperty("property_2"));
+    assertEquals("value_3", intpProperties.getProperty("property_3"));
+    assertEquals("dummy_value", intpProperties.getProperty("new_property"));
+  }
+
+  @Test
+  public void testEmptyValue() throws InterpreterException {
+    ConfInterpreter confInterpreter = (ConfInterpreter) interpreterFactory.getInterpreter("test.conf", executionContext);
+
+    InterpreterContext context = InterpreterContext.builder()
+            .setNoteId("noteId")
+            .setParagraphId("paragraphId")
+            .build();
+
+    InterpreterResult result = confInterpreter.interpret(" property_1\t \n new_property\t  \n", context);
+    assertEquals(result.toString(), InterpreterResult.Code.SUCCESS, result.code);
+
+    assertTrue(interpreterFactory.getInterpreter("test", executionContext) instanceof RemoteInterpreter);
+    RemoteInterpreter remoteInterpreter = (RemoteInterpreter) interpreterFactory.getInterpreter("test", executionContext);
+    remoteInterpreter.interpret("hello world", context);
+    assertEquals(7, remoteInterpreter.getProperties().size());
+    assertEquals("", remoteInterpreter.getProperty("property_1"));
+    assertEquals("", remoteInterpreter.getProperty("new_property"));
+    assertEquals("value_3", remoteInterpreter.getProperty("property_3"));
   }
 
   @Test
