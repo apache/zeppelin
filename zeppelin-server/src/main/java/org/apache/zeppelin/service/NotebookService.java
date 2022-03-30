@@ -103,7 +103,7 @@ public class NotebookService {
   public String getHomeNote(ServiceContext context,
                           ServiceCallback<Note> callback) throws IOException {
     String noteId = notebook.getConf().getString(ZEPPELIN_NOTEBOOK_HOMESCREEN);
-    if (noteId != null) {
+    if (StringUtils.isBlank(noteId)) {
       callback.onSuccess(null, context);
     } else {
       notebook.processNote(noteId,
