@@ -112,7 +112,7 @@ class FlinkILoop(
     LOGGER.info("Folder for scala shell compiled jar: {}", tmpDir.getAbsolutePath)
     if (!tmpDir.exists) {
       if (!tmpDir.mkdirs()) {
-        throw new IOException("Unable to make tmp dir for scala shell", e)
+        throw new IOException(s"Unable to make tmp dir ${tmpDir.getAbsolutePath} for scala shell")
       }
     }
     tmpDir
