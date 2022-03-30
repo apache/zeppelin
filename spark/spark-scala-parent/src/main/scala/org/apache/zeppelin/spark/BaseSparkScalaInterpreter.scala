@@ -18,26 +18,25 @@
 package org.apache.zeppelin.spark
 
 
-import java.io.{File, IOException}
-import java.net.{URL, URLClassLoader}
+import java.io.{File, IOException, PrintStream}
+import java.net.URLClassLoader
 import java.nio.file.Paths
 import java.util.concurrent.atomic.AtomicInteger
-
 import org.apache.commons.lang3.StringUtils
 import org.apache.hadoop.yarn.client.api.YarnClient
 import org.apache.hadoop.yarn.conf.YarnConfiguration
 import org.apache.hadoop.yarn.util.ConverterUtils
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
-import org.apache.spark.sql.SQLContext
+import org.apache.spark.sql.{SQLContext, SparkSession}
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.zeppelin.interpreter.util.InterpreterOutputStream
 import org.apache.zeppelin.interpreter.{InterpreterContext, InterpreterGroup, InterpreterResult, ZeppelinContext}
+import org.apache.zeppelin.kotlin.KotlinInterpreter
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.collection.JavaConverters._
-import scala.tools.nsc.interpreter.Completion
-import scala.util.control.NonFatal
+
 
 /**
   * Base class for different scala versions of SparkInterpreter. It should be
@@ -61,15 +60,11 @@ abstract class BaseSparkScalaInterpreter(val conf: SparkConf,
 
   protected var sqlContext: SQLContext = _
 
-  protected var sparkSession: Object = _
+  protected var sparkSession: SparkSession = _
 
   protected var userJars: Seq[String] = _
 
-  protected var sparkHttpServer: Object = _
-
   protected var sparkUrl: String = _
-
-  protected var scalaCompletion: Completion = _
 
   protected var z: SparkZeppelinContext = _
 
@@ -100,66 +95,19 @@ abstract class BaseSparkScalaInterpreter(val conf: SparkConf,
     BaseSparkScalaInterpreter.sessionNum.incrementAndGet()
   }
 
-  def interpret(code: String, context: InterpreterContext): InterpreterResult = {
-
-    val originalOut = System.out
-    val printREPLOutput = context.getStringLocalProperty("printREPLOutput", "true").toBoolean
-
-    def _interpret(code: String): scala.tools.nsc.interpreter.Results.Result = {
-      Console.withOut(interpreterOutput) {
-        System.setOut(Console.out)
-        if (printREPLOutput) {
-          interpreterOutput.setInterpreterOutput(context.out)
-        } else {
-          interpreterOutput.setInterpreterOutput(null)
-        }
-        interpreterOutput.ignoreLeadingNewLinesFromScalaReporter()
-
-        val status = scalaInterpret(code) match {
-          case success@scala.tools.nsc.interpreter.IR.Success =>
-            success
-          case scala.tools.nsc.interpreter.IR.Error =>
-            val errorMsg = new String(interpreterOutput.getInterpreterOutput.toByteArray)
-            if (errorMsg.contains("value toDF is not a member of org.apache.spark.rdd.RDD") ||
-              errorMsg.contains("value toDS is not a member of org.apache.spark.rdd.RDD")) {
-              // prepend "import sqlContext.implicits._" due to
-              // https://issues.scala-lang.org/browse/SI-6649
-              context.out.clear()
-              scalaInterpret("import sqlContext.implicits._\n" + code)
-            } else {
-              scala.tools.nsc.interpreter.IR.Error
-            }
-          case scala.tools.nsc.interpreter.IR.Incomplete =>
-            // add print("") at the end in case the last line is comment which lead to INCOMPLETE
-            scalaInterpret(code + "\nprint(\"\")")
-        }
-        context.out.flush()
-        status
-      }
-    }
-    // reset the java stdout
-    System.setOut(originalOut)
-
-    context.out.write("")
-    val lastStatus = _interpret(code) match {
-      case scala.tools.nsc.interpreter.IR.Success =>
-        InterpreterResult.Code.SUCCESS
-      case scala.tools.nsc.interpreter.IR.Error =>
-        InterpreterResult.Code.ERROR
-      case scala.tools.nsc.interpreter.IR.Incomplete =>
-        InterpreterResult.Code.INCOMPLETE
-    }
-
-    lastStatus match {
-      case InterpreterResult.Code.INCOMPLETE => new InterpreterResult( lastStatus, "Incomplete expression" )
-      case _ => new InterpreterResult(lastStatus)
+  // Used by KotlinSparkInterpreter
+  def delegateInterpret(interpreter: KotlinInterpreter,
+                        code: String,
+                        context: InterpreterContext): InterpreterResult = {
+    val out = context.out
+    val newOut = if (out != null) new PrintStream(out) else null
+    Console.withOut(newOut) {
+      interpreter.interpret(code, context)
     }
   }
 
   protected def interpret(code: String): InterpreterResult =
     interpret(code, InterpreterContext.get())
-
-  protected def scalaInterpret(code: String): scala.tools.nsc.interpreter.IR.Result
 
   protected def getProgress(jobGroup: String, context: InterpreterContext): Int = {
     JobProgressUtil.progress(sc, jobGroup)
@@ -197,9 +145,6 @@ abstract class BaseSparkScalaInterpreter(val conf: SparkConf,
       cleanupStagingDirInternal(stagingDirPath, hadoopConf)
     }
 
-    if (sparkHttpServer != null) {
-      sparkHttpServer.getClass.getMethod("stop").invoke(sparkHttpServer)
-    }
     if (sc != null) {
       sc.stop()
       sc = null
@@ -244,7 +189,7 @@ abstract class BaseSparkScalaInterpreter(val conf: SparkConf,
         sparkClz.getMethod("hiveClassesArePresent").invoke(sparkObj).asInstanceOf[Boolean]
       if (hiveSiteExisted && hiveClassesPresent) {
         builder.getClass.getMethod("enableHiveSupport").invoke(builder)
-        sparkSession = builder.getClass.getMethod("getOrCreate").invoke(builder)
+        sparkSession = builder.getClass.getMethod("getOrCreate").invoke(builder).asInstanceOf[SparkSession]
         LOGGER.info("Created Spark session (with Hive support)");
       } else {
         if (!hiveClassesPresent) {
@@ -253,11 +198,11 @@ abstract class BaseSparkScalaInterpreter(val conf: SparkConf,
         if (!hiveSiteExisted) {
           LOGGER.warn("Hive support can not be enabled because no hive-site.xml found")
         }
-        sparkSession = builder.getClass.getMethod("getOrCreate").invoke(builder)
+        sparkSession = builder.getClass.getMethod("getOrCreate").invoke(builder).asInstanceOf[SparkSession]
         LOGGER.info("Created Spark session (without Hive support)");
       }
     } else {
-      sparkSession = builder.getClass.getMethod("getOrCreate").invoke(builder)
+      sparkSession = builder.getClass.getMethod("getOrCreate").invoke(builder).asInstanceOf[SparkSession]
       LOGGER.info("Created Spark session (without Hive support)");
     }
 
@@ -276,17 +221,9 @@ abstract class BaseSparkScalaInterpreter(val conf: SparkConf,
     bind("spark", sparkSession.getClass.getCanonicalName, sparkSession, List("""@transient"""))
     bind("sc", "org.apache.spark.SparkContext", sc, List("""@transient"""))
     bind("sqlContext", "org.apache.spark.sql.SQLContext", sqlContext, List("""@transient"""))
-
-    scalaInterpret("import org.apache.spark.SparkContext._")
-    scalaInterpret("import spark.implicits._")
-    scalaInterpret("import spark.sql")
-    scalaInterpret("import org.apache.spark.sql.functions._")
-    // print empty string otherwise the last statement's output of this method
-    // (aka. import org.apache.spark.sql.functions._) will mix with the output of user code
-    scalaInterpret("print(\"\")")
   }
 
-  private def initAndSendSparkWebUrl(): Unit = {
+  protected def initAndSendSparkWebUrl(): Unit = {
     val webUiUrl = properties.getProperty("zeppelin.spark.uiWebUrl");
     if (!StringUtils.isBlank(webUiUrl)) {
       this.sparkUrl = webUiUrl.replace("{{applicationId}}", sc.applicationId);
@@ -306,7 +243,6 @@ abstract class BaseSparkScalaInterpreter(val conf: SparkConf,
     }
 
     sparkShims.setupSparkListener(sc.master, sparkUrl, InterpreterContext.get)
-
     z = new SparkZeppelinContext(sc, sparkShims,
       interpreterGroup.getInterpreterHookRegistry,
       properties.getProperty("zeppelin.spark.maxResult", "1000").toInt)
@@ -370,45 +306,6 @@ abstract class BaseSparkScalaInterpreter(val conf: SparkConf,
     method.invoke(obj, parameters: _ *)
   }
 
-  protected def startHttpServer(outputDir: File): Option[(Object, String)] = {
-    try {
-      val httpServerClass = Class.forName("org.apache.spark.HttpServer")
-      val securityManager = {
-        val constructor = Class.forName("org.apache.spark.SecurityManager")
-          .getConstructor(classOf[SparkConf])
-        constructor.setAccessible(true)
-        constructor.newInstance(conf).asInstanceOf[Object]
-      }
-      val httpServerConstructor = httpServerClass
-        .getConstructor(classOf[SparkConf],
-          classOf[File],
-          Class.forName("org.apache.spark.SecurityManager"),
-          classOf[Int],
-          classOf[String])
-      httpServerConstructor.setAccessible(true)
-      // Create Http Server
-      val port = conf.getInt("spark.replClassServer.port", 0)
-      val server = httpServerConstructor
-        .newInstance(conf, outputDir, securityManager, new Integer(port), "HTTP server")
-        .asInstanceOf[Object]
-
-      // Start Http Server
-      val startMethod = server.getClass.getMethod("start")
-      startMethod.setAccessible(true)
-      startMethod.invoke(server)
-
-      // Get uri of this Http Server
-      val uriMethod = server.getClass.getMethod("uri")
-      uriMethod.setAccessible(true)
-      val uri = uriMethod.invoke(server).asInstanceOf[String]
-      Some((server, uri))
-    } catch {
-      // Spark 2.0+ removed HttpServer, so return null instead.
-      case NonFatal(e) =>
-        None
-    }
-  }
-
   protected def getUserJars(): Seq[String] = {
     var classLoader = Thread.currentThread().getContextClassLoader
     var extraJars = Seq.empty[String]
@@ -435,7 +332,7 @@ abstract class BaseSparkScalaInterpreter(val conf: SparkConf,
   }
 
   protected def getUserFiles(): Seq[String] = {
-    depFiles.asScala.filter(!_.endsWith(".jar"))
+    depFiles.asScala.toSeq.filter(!_.endsWith(".jar"))
   }
 }
 

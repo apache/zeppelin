@@ -95,9 +95,9 @@ public class SparkSqlInterpreter extends AbstractInterpreter {
     String curSql = null;
     ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
     try {
-      if (!sparkInterpreter.isScala212()) {
-        // TODO(zjffdu) scala 2.12 still doesn't work for codegen (ZEPPELIN-4627)
-      Thread.currentThread().setContextClassLoader(sparkInterpreter.getScalaShellClassLoader());
+      if (sparkInterpreter.isScala211()) {
+        // TODO(zjffdu) scala 2.12,2.13 still doesn't work for codegen (ZEPPELIN-4627)
+        Thread.currentThread().setContextClassLoader(sparkInterpreter.getScalaShellClassLoader());
       }
       Method method = sqlContext.getClass().getMethod("sql", String.class);
       for (String sql : sqls) {

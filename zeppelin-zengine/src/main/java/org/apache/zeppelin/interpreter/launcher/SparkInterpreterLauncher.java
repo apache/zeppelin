@@ -132,6 +132,7 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
       String sparkHome = getEnv("SPARK_HOME");
       LOGGER.info("SPARK_HOME: {}", sparkHome);
       scalaVersion = detectSparkScalaVersion(sparkHome, env);
+      LOGGER.info("Scala version for Spark: {}", scalaVersion);
       context.getProperties().put("zeppelin.spark.scala.version", scalaVersion);
     } catch (Exception e) {
       throw new IOException("Fail to detect scala version, the reason is:"+ e.getMessage());
@@ -277,12 +278,12 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
     Matcher matcher = pattern.matcher(processOutput);
     if (matcher.find()) {
       String scalaVersion = matcher.group(1);
-      if (scalaVersion.startsWith("2.10")) {
-        return "2.10";
-      } else if (scalaVersion.startsWith("2.11")) {
+      if (scalaVersion.startsWith("2.11")) {
         return "2.11";
       } else if (scalaVersion.startsWith("2.12")) {
         return "2.12";
+      } else if (scalaVersion.startsWith("2.13")) {
+        return "2.13";
       } else {
         throw new Exception("Unsupported scala version: " + scalaVersion);
       }

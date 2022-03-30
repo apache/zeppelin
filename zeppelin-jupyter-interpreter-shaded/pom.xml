@@ -79,6 +79,14 @@
               <pattern>com.google</pattern>
               <shadedPattern>org.apache.zeppelin.jupyter.com.google</shadedPattern>
             </relocation>
+            <relocation>
+              <pattern>io</pattern>
+              <shadedPattern>org.apache.zeppelin.jupyter.io</shadedPattern>
+            </relocation>
+            <relocation>
+              <pattern>com.esotericsoftware</pattern>
+              <shadedPattern>org.apache.zeppelin.jupyter.com.esotericsoftware</shadedPattern>
+            </relocation>
           </relocations>
 
         </configuration>
