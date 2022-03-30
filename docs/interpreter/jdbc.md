@@ -467,7 +467,7 @@ Here are some examples you can refer to. Including the below connectors, you can
     <th>Excludes</th>
   </tr>
   <tr>
-    <td>org.postgresql:postgresql:9.4.1211</td>
+    <td>org.postgresql:postgresql:42.3.3</td>
     <td></td>
   </tr>
 </table>
