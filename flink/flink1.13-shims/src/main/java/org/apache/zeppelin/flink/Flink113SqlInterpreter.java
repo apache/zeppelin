@@ -164,8 +164,11 @@ public class Flink113SqlInterpreter {
   private ZeppelinContext z;
   private Parser sqlParser;
   private SqlSplitter sqlSplitter;
-  // paragraphId -> Boolean, indicate whether it is runAsOne mode for the current paragraph.
-  private Map<String, Boolean> statementModeMap = new HashMap<>();
+  // paragraphId -> list of ModifyOperation, used for statement set in 2 syntax:
+  // 1. runAsOne= true
+  // 2. begin statement set;
+  //    ...
+  //    end;
   private Map<String, List<ModifyOperation>> statementOperationsMap = new HashMap<>();
   private boolean isBatch;
   private ReentrantReadWriteLock.WriteLock lock = new ReentrantReadWriteLock().writeLock();
@@ -204,7 +207,10 @@ public class Flink113SqlInterpreter {
   public InterpreterResult runSqlList(String st, InterpreterContext context) {
     try {
       boolean runAsOne = Boolean.parseBoolean(context.getStringLocalProperty("runAsOne", "false"));
-      statementModeMap.put(context.getParagraphId(), runAsOne);
+      if (runAsOne) {
+        statementOperationsMap.put(context.getParagraphId(), new ArrayList<>());
+      }
+
       String jobName = context.getLocalProperties().get("jobName");
       if (StringUtils.isNotBlank(jobName)) {
         tbenv.getConfig().getConfiguration().set(PipelineOptions.NAME, jobName);
@@ -259,7 +265,6 @@ public class Flink113SqlInterpreter {
       return new InterpreterResult(InterpreterResult.Code.ERROR, ExceptionUtils.getStackTrace(e));
     } finally {
       statementOperationsMap.remove(context.getParagraphId());
-      statementModeMap.remove(context.getParagraphId());
     }
 
     return new InterpreterResult(InterpreterResult.Code.SUCCESS);
@@ -345,10 +350,9 @@ public class Flink113SqlInterpreter {
   }
 
   private void callInsert(CatalogSinkModifyOperation operation, InterpreterContext context) throws IOException {
-    if (statementModeMap.getOrDefault(context.getParagraphId(), false)) {
-      List<ModifyOperation> modifyOperations = statementOperationsMap.getOrDefault(context.getParagraphId(), new ArrayList<>());
+    if (statementOperationsMap.containsKey(context.getParagraphId())) {
+      List<ModifyOperation> modifyOperations = statementOperationsMap.get(context.getParagraphId());
       modifyOperations.add(operation);
-      statementOperationsMap.put(context.getParagraphId(), modifyOperations);
     } else {
       callInserts(Collections.singletonList(operation), context);
     }
@@ -444,7 +448,7 @@ public class Flink113SqlInterpreter {
   }
 
   private void callBeginStatementSet(InterpreterContext context) throws IOException {
-    statementModeMap.put(context.getParagraphId(), true);
+    statementOperationsMap.put(context.getParagraphId(), new ArrayList<>());
   }
 
   private void callEndStatementSet(InterpreterContext context) throws IOException {
@@ -454,7 +458,6 @@ public class Flink113SqlInterpreter {
     } else {
       context.out.write(MESSAGE_NO_STATEMENT_IN_STATEMENT_SET);
     }
-    statementModeMap.remove(context.getParagraphId());
   }
 
   private void callUseCatalog(String catalog, InterpreterContext context) throws IOException {

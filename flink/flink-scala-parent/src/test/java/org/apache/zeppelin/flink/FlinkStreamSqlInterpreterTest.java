@@ -20,12 +20,16 @@ package org.apache.zeppelin.flink;
 import net.jodah.concurrentunit.Waiter;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.flink.api.common.JobExecutionResult;
+import org.apache.flink.core.execution.JobClient;
+import org.apache.flink.core.execution.JobListener;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResultMessage;
 import org.junit.Test;
 
+import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -38,9 +42,38 @@ import static org.junit.Assert.assertEquals;
 
 public class FlinkStreamSqlInterpreterTest extends FlinkSqlInterpreterTest {
 
+
+  private static class FlinkJobListener implements JobListener {
+
+    private int jobCount = 0;
+
+    public int getJobCount() {
+      return jobCount;
+    }
+
+    @Override
+    public void onJobSubmitted(@Nullable JobClient jobClient, @Nullable Throwable throwable) {
+      jobCount ++;
+    }
+
+    @Override
+    public void onJobExecuted(@Nullable JobExecutionResult jobExecutionResult, @Nullable Throwable throwable) {
+
+    }
+  }
+
+  private FlinkJobListener flinkJobListener;
+
   @Override
   protected FlinkSqlInterpreter createFlinkSqlInterpreter(Properties properties) {
     return new FlinkStreamSqlInterpreter(properties);
+  }
+
+  @Override
+  public void setUp() throws InterpreterException, IOException {
+    super.setUp();
+    flinkJobListener = new FlinkJobListener();
+    flinkInterpreter.getStreamExecutionEnvironment().getJavaEnv().registerJobListener(flinkJobListener);
   }
 
   @Test
@@ -434,7 +467,65 @@ public class FlinkStreamSqlInterpreterTest extends FlinkSqlInterpreterTest {
   }
 
   @Test
-  public void testMultipleInsertInto() throws InterpreterException, IOException {
+  public void testMultipleInsertIntoSeparately() throws InterpreterException, IOException {
+    hiveShell.execute("create table source_table (id int, name string)");
+    hiveShell.execute("insert into source_table values(1, 'name')");
+
+    File destDir = Files.createTempDirectory("flink_test").toFile();
+    FileUtils.deleteDirectory(destDir);
+    InterpreterResult result = sqlInterpreter.interpret(
+            "CREATE TABLE dest_table (\n" +
+                    "id int,\n" +
+                    "name string" +
+                    ") WITH (\n" +
+                    "'format.field-delimiter'=',',\n" +
+                    "'connector.type'='filesystem',\n" +
+                    "'format.derive-schema'='true',\n" +
+                    "'connector.path'='" + destDir.getAbsolutePath() + "',\n" +
+                    "'format.type'='csv'\n" +
+                    ");", getInterpreterContext());
+
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+
+    File destDir2 = Files.createTempDirectory("flink_test").toFile();
+    FileUtils.deleteDirectory(destDir2);
+    result = sqlInterpreter.interpret(
+            "CREATE TABLE dest_table2 (\n" +
+                    "id int,\n" +
+                    "name string" +
+                    ") WITH (\n" +
+                    "'format.field-delimiter'=',',\n" +
+                    "'connector.type'='filesystem',\n" +
+                    "'format.derive-schema'='true',\n" +
+                    "'connector.path'='" + destDir2.getAbsolutePath() + "',\n" +
+                    "'format.type'='csv'\n" +
+                    ");", getInterpreterContext());
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+
+    InterpreterContext context = getInterpreterContext();
+    result = sqlInterpreter.interpret(
+            "insert into dest_table select * from source_table;\n" +
+                    "insert into dest_table2 select * from source_table",
+            context);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    // two  flink jobs are executed
+    assertEquals(2, flinkJobListener.getJobCount());
+
+    // check dest_table
+    context = getInterpreterContext();
+    result = sqlInterpreter.interpret("select count(1) as c from dest_table", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    assertEquals("c\n1\n", context.out.toString());
+
+    // check dest_table2
+    context = getInterpreterContext();
+    result = sqlInterpreter.interpret("select count(1) as c from dest_table2", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    assertEquals("c\n1\n", context.out.toString());
+  }
+
+  @Test
+  public void testMultipleInsertIntoRunAsOne() throws InterpreterException, IOException {
     hiveShell.execute("create table source_table (id int, name string)");
     hiveShell.execute("insert into source_table values(1, 'name')");
 
@@ -475,18 +566,22 @@ public class FlinkStreamSqlInterpreterTest extends FlinkSqlInterpreterTest {
             "insert into dest_table select * from source_table;insert into dest_table2 select * from source_table",
             context);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    // only one flink job is executed
+    assertEquals(1, flinkJobListener.getJobCount());
 
     // check dest_table
     context = getInterpreterContext();
     result = sqlInterpreter.interpret("select count(1) as c from dest_table", context);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
     assertEquals("c\n1\n", context.out.toString());
+    assertEquals(2, flinkJobListener.getJobCount());
 
     // check dest_table2
     context = getInterpreterContext();
     result = sqlInterpreter.interpret("select count(1) as c from dest_table2", context);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
     assertEquals("c\n1\n", context.out.toString());
+    assertEquals(3, flinkJobListener.getJobCount());
 
     // runAsOne won't affect the select statement.
     context = getInterpreterContext();
@@ -495,8 +590,77 @@ public class FlinkStreamSqlInterpreterTest extends FlinkSqlInterpreterTest {
             "select 1 as a",
             context);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
     assertEquals("a\n1\n", context.out.toString());
+    assertEquals(4, flinkJobListener.getJobCount());
+  }
+
+  @Test
+  public void testStatementSet() throws IOException, InterpreterException {
+    if (flinkInterpreter.getFlinkVersion().getMinorVersion() == 12) {
+      LOGGER.warn("Skip Flink 1.12 as statement set is not supported before 1.12");
+      return;
+    }
+    hiveShell.execute("create table source_table (id int, name string)");
+    hiveShell.execute("insert into source_table values(1, 'name')");
+
+    File destDir = Files.createTempDirectory("flink_test").toFile();
+    FileUtils.deleteDirectory(destDir);
+    InterpreterContext context = getInterpreterContext();
+    InterpreterResult result = sqlInterpreter.interpret(
+            "CREATE TABLE dest_table (\n" +
+                    "id int,\n" +
+                    "name string" +
+                    ") WITH (\n" +
+                    "'format.field-delimiter'=',',\n" +
+                    "'connector.type'='filesystem',\n" +
+                    "'format.derive-schema'='true',\n" +
+                    "'connector.path'='" + destDir.getAbsolutePath() + "',\n" +
+                    "'format.type'='csv'\n" +
+                    ");", context);
+
+    assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
+
+    File destDir2 = Files.createTempDirectory("flink_test").toFile();
+    FileUtils.deleteDirectory(destDir2);
+    context = getInterpreterContext();
+    result = sqlInterpreter.interpret(
+            "CREATE TABLE dest_table2 (\n" +
+                    "id int,\n" +
+                    "name string" +
+                    ") WITH (\n" +
+                    "'format.field-delimiter'=',',\n" +
+                    "'connector.type'='filesystem',\n" +
+                    "'format.derive-schema'='true',\n" +
+                    "'connector.path'='" + destDir2.getAbsolutePath() + "',\n" +
+                    "'format.type'='csv'\n" +
+                    ");", context);
+    assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
+
+    // insert into 2 sink tables in one statement set
+    context = getInterpreterContext();
+    result = sqlInterpreter.interpret(
+            "begin statement set;\n" +
+                    "insert into dest_table select * from source_table;\n" +
+                    "insert into dest_table2 select * from source_table;\n" +
+                    "end;",
+            context);
+    assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
+    // only one flink job is executed
+    assertEquals(1, flinkJobListener.getJobCount());
+
+    // check dest_table
+    context = getInterpreterContext();
+    result = sqlInterpreter.interpret("select count(1) as c from dest_table", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    assertEquals("c\n1\n", context.out.toString());
+    assertEquals(2, flinkJobListener.getJobCount());
+
+    // check dest_table2
+    context = getInterpreterContext();
+    result = sqlInterpreter.interpret("select count(1) as c from dest_table2", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    assertEquals("c\n1\n", context.out.toString());
+    assertEquals(3, flinkJobListener.getJobCount());
   }
 
   @Test
