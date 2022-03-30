@@ -67,7 +67,9 @@ public class ConfInterpreter extends Interpreter {
       finalProperties.putAll(getProperties());
       Properties newProperties = new Properties();
       newProperties.load(new StringReader(st));
-      finalProperties.putAll(newProperties);
+      for (String key : newProperties.stringPropertyNames()) {
+        finalProperties.put(key.trim(), newProperties.getProperty(key).trim());
+      }
       LOGGER.debug("Properties for InterpreterGroup: {} is {}", interpreterGroupId, finalProperties);
       interpreterSetting.setInterpreterGroupProperties(interpreterGroupId, finalProperties);
       return new InterpreterResult(InterpreterResult.Code.SUCCESS);
