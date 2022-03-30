@@ -139,7 +139,7 @@
     <commons.io.version>2.7</commons.io.version>
     <commons.collections.version>3.2.2</commons.collections.version>
     <commons.cli.version>1.4</commons.cli.version>
-    <shiro.version>1.7.0</shiro.version>
+    <shiro.version>1.8.0</shiro.version>
     <bouncycastle.version>1.60</bouncycastle.version>
     <maven.version>3.6.3</maven.version>
     <dropwizard.version>4.1.14</dropwizard.version>
