@@ -311,7 +311,6 @@ public class IPythonInterpreterTest extends BasePythonInterpreterTest {
     assertTrue(context.out.toString(), context.out.toString().contains("docs_json"));
   }
 
-
   // TODO(zjffdu) Enable it after new altair is released with this PR.
   // https://github.com/altair-viz/altair/pull/1620
   //@Test

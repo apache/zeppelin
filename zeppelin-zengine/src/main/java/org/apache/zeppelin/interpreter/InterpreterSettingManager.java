@@ -109,6 +109,8 @@ import static org.apache.zeppelin.cluster.ClusterManagerServer.CLUSTER_INTP_SETT
 @ManagedObject("interpreterSettingManager")
 public class InterpreterSettingManager implements NoteEventListener, ClusterEventListener {
 
+  public static final String INTERNAL_SETTING_NAME = "__internal__";
+
   private static final Pattern VALID_INTERPRETER_NAME = Pattern.compile("^[-_a-zA-Z0-9]+$");
   private static final Logger LOGGER = LoggerFactory.getLogger(InterpreterSettingManager.class);
   private static final Map<String, Object> DEFAULT_EDITOR = ImmutableMap.of(
@@ -975,6 +977,9 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
 
   // restart in note page
   public void restart(String settingId, ExecutionContext executionContext) throws InterpreterException {
+    if (settingId == null || settingId.startsWith("__internal__")) {
+      return;
+    }
     InterpreterSetting intpSetting = interpreterSettings.get(settingId);
     Preconditions.checkNotNull(intpSetting);
     intpSetting = interpreterSettings.get(settingId);

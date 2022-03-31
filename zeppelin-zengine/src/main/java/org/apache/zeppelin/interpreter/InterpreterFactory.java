@@ -47,6 +47,10 @@ public class InterpreterFactory implements InterpreterFactoryInterface {
       return defaultSetting.getDefaultInterpreter(executionContext);
     }
 
+    if ("run".equals(replName)) {
+      return new RunNotebookInterpreter(interpreterSettingManager);
+    }
+
     String[] replNameSplits = replName.split("\\.");
     if (replNameSplits.length == 2) {
       String group = replNameSplits[0];

@@ -382,6 +382,7 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
       setStatus(Job.Status.ERROR);
       return false;
     } catch (Throwable e) {
+      LOGGER.error("Internal error when running paragraph", e);
       InterpreterResult intpResult =
               new InterpreterResult(InterpreterResult.Code.ERROR,
                       "Unexpected exception: " + ExceptionUtils.getStackTrace(e));
@@ -504,6 +505,7 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
         InterpreterContext.remove();
       }
     } catch (Exception e) {
+      LOGGER.error("Internal error when running paragraph", e);
       return new InterpreterResult(Code.ERROR, ExceptionUtils.getStackTrace(e));
     } finally {
       localProperties.remove("isRecover");

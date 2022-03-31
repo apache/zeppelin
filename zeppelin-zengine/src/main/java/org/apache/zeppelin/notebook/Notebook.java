@@ -37,13 +37,7 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
-import org.apache.zeppelin.interpreter.Interpreter;
-import org.apache.zeppelin.interpreter.InterpreterFactory;
-import org.apache.zeppelin.interpreter.InterpreterGroup;
-import org.apache.zeppelin.interpreter.InterpreterNotFoundException;
-import org.apache.zeppelin.interpreter.InterpreterSetting;
-import org.apache.zeppelin.interpreter.InterpreterSettingManager;
-import org.apache.zeppelin.interpreter.ManagedInterpreterGroup;
+import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.notebook.NoteManager.Folder;
 import org.apache.zeppelin.notebook.NoteManager.NoteNode;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
@@ -720,8 +714,10 @@ public class Notebook {
           for (Paragraph p : note.getParagraphs()) {
             try {
               Interpreter intp = p.getBindedInterpreter();
-              settings.add((
-                      (ManagedInterpreterGroup) intp.getInterpreterGroup()).getInterpreterSetting());
+              if (!(intp instanceof RunNotebookInterpreter)) {
+                settings.add((
+                        (ManagedInterpreterGroup) intp.getInterpreterGroup()).getInterpreterSetting());
+              }
             } catch (InterpreterNotFoundException e) {
               // ignore this
             }

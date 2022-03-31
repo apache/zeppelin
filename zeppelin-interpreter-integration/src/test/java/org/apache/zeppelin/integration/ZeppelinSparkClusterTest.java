@@ -628,6 +628,245 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
     }
   }
 
+  private void setupPythonIsolatedPerNote() {
+    InterpreterSetting pythonIntpSetting = TestUtils.getInstance(Notebook.class).getInterpreterSettingManager()
+            .getInterpreterSettingByName("python");
+    pythonIntpSetting.getOption().setPerNote("isolated");
+  }
+
+  private void resetPythonIsolatedPerNote() {
+    InterpreterSetting pythonIntpSetting = TestUtils.getInstance(Notebook.class).getInterpreterSettingManager()
+            .getInterpreterSettingByName("python");
+    pythonIntpSetting.getOption().setPerNote("shared");
+  }
+
+  @Test
+  public void testRunNotebookInterpreter_RunSucceed() throws IOException {
+    assumeTrue("Hadoop version mismatch, skip test", isHadoopVersionMatch());
+
+    String note1Id = null;
+    String note2Id = null;
+    try {
+      setupPythonIsolatedPerNote();
+      // create new note: note1
+      note1Id = TestUtils.getInstance(Notebook.class).createNote("note1", anonymous);
+      // add one paragraph to note1
+      TestUtils.getInstance(Notebook.class).processNote(note1Id,
+              note -> {
+                Paragraph p0 = note.addNewParagraph(anonymous);
+                p0.setText("%python(form=simple) a='hello,${name}'\nprint(a)");
+                return null;
+              });
+
+      // create new note: note2
+      note2Id = TestUtils.getInstance(Notebook.class).createNote("note2", anonymous);
+      // Run paragraph(%run <note1Id>) in note2
+      final String finalNote1Id = note1Id;
+      TestUtils.getInstance(Notebook.class).processNote(note2Id,
+              note -> {
+                Paragraph p0 = note.addNewParagraph(anonymous);
+                p0.setText("%run " + finalNote1Id + " name=zeppelin");
+                p0.run();
+                InterpreterResult result = p0.getReturn();
+                assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+                assertEquals(1, result.message().size());
+                assertEquals(result.toString(), InterpreterResult.Type.TEXT, result.message().get(0).getType());
+                assertEquals(result.toString(), "hello,zeppelin\n", result.message().get(0).getData());
+
+                Paragraph p1 = note.addNewParagraph(anonymous);
+                p1.setText("%python print(a)");
+                p1.run();
+                result = p1.getReturn();
+                assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+                assertEquals(1, result.message().size());
+                assertEquals(result.toString(), InterpreterResult.Type.TEXT, result.message().get(0).getType());
+                assertEquals(result.toString(), "hello,zeppelin\n", result.message().get(0).getData());
+                return null;
+              });
+    } finally {
+      if (null != note1Id) {
+        TestUtils.getInstance(Notebook.class).removeNote(note1Id, anonymous);
+      }
+      if (null != note2Id) {
+        TestUtils.getInstance(Notebook.class).removeNote(note2Id, anonymous);
+      }
+      resetPythonIsolatedPerNote();
+    }
+  }
+
+  @Test
+  public void testRunNotebookInterpreter_RunMultipleNotes() throws IOException {
+    assumeTrue("Hadoop version mismatch, skip test", isHadoopVersionMatch());
+
+    String note1Id = null;
+    String note2Id = null;
+    String note3Id = null;
+    try {
+      setupPythonIsolatedPerNote();
+      // create new note: note1
+      note1Id = TestUtils.getInstance(Notebook.class).createNote("note1", anonymous);
+      // add one paragraph to note1
+      TestUtils.getInstance(Notebook.class).processNote(note1Id,
+              note -> {
+                Paragraph p0 = note.addNewParagraph(anonymous);
+                p0.setText("%python(form=simple) a='hello,${name}'\nprint(a)");
+                return null;
+              });
+
+      note2Id = TestUtils.getInstance(Notebook.class).createNote("note2", anonymous);
+      // add one paragraph to note1
+      TestUtils.getInstance(Notebook.class).processNote(note2Id,
+              note -> {
+                Paragraph p0 = note.addNewParagraph(anonymous);
+                p0.setText("%python(form=simple) b='hello,${name}'\nprint(b)");
+                return null;
+              });
+
+      // create new note: note3
+      note3Id = TestUtils.getInstance(Notebook.class).createNote("note3", anonymous);
+      // Run paragraph(%run <note1Id>\n<note2Id>) in note3
+      final String finalNote1Id = note1Id;
+      final String finalNote2Id = note2Id;
+      TestUtils.getInstance(Notebook.class).processNote(note3Id,
+              note -> {
+                Paragraph p0 = note.addNewParagraph(anonymous);
+                p0.setText("%run " + finalNote1Id + " name=apache\n" +
+                        finalNote2Id + " name=zeppelin");
+                p0.run();
+                InterpreterResult result = p0.getReturn();
+                assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+                assertEquals(2, result.message().size());
+                assertEquals(result.toString(), InterpreterResult.Type.TEXT, result.message().get(0).getType());
+                assertEquals(result.toString(), "hello,apache\n", result.message().get(0).getData());
+                assertEquals(result.toString(), InterpreterResult.Type.TEXT, result.message().get(1).getType());
+                assertEquals(result.toString(), "hello,zeppelin\n", result.message().get(1).getData());
+
+                Paragraph p1 = note.addNewParagraph(anonymous);
+                p1.setText("%python print(a)\nprint(b)");
+                p1.run();
+                result = p1.getReturn();
+                assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+                assertEquals(1, result.message().size());
+                assertEquals(result.toString(), InterpreterResult.Type.TEXT, result.message().get(0).getType());
+                assertEquals(result.toString(), "hello,apache\nhello,zeppelin\n", result.message().get(0).getData());
+                return null;
+              });
+    } finally {
+      if (null != note1Id) {
+        TestUtils.getInstance(Notebook.class).removeNote(note1Id, anonymous);
+      }
+      if (null != note2Id) {
+        TestUtils.getInstance(Notebook.class).removeNote(note2Id, anonymous);
+      }
+      if (null != note3Id) {
+        TestUtils.getInstance(Notebook.class).removeNote(note3Id, anonymous);
+      }
+      resetPythonIsolatedPerNote();
+    }
+  }
+
+  @Test
+  public void testRunNotebookInterpreter_RunError() throws IOException {
+    assumeTrue("Hadoop version mismatch, skip test", isHadoopVersionMatch());
+
+    String note1Id = null;
+    String note2Id = null;
+    try {
+      setupPythonIsolatedPerNote();
+      // create new note: note1
+      note1Id = TestUtils.getInstance(Notebook.class).createNote("note1", anonymous);
+      // add one paragraph to note1
+      TestUtils.getInstance(Notebook.class).processNote(note1Id,
+              note -> {
+                Paragraph p0 = note.addNewParagraph(anonymous);
+                // invalid code
+                p0.setText("%python invalid_code");
+                return null;
+              });
+
+      // create new note: note2
+      note2Id = TestUtils.getInstance(Notebook.class).createNote("note2", anonymous);
+      // Run paragraph(%run <note1Id>) in note2
+      final String finalNote1Id = note1Id;
+      TestUtils.getInstance(Notebook.class).processNote(note2Id,
+              note -> {
+                Paragraph p0 = note.addNewParagraph(anonymous);
+                p0.setText("%run " + finalNote1Id);
+                p0.run();
+                InterpreterResult result = p0.getReturn();
+                assertEquals(InterpreterResult.Code.ERROR, result.code());
+                assertEquals(1, result.message().size());
+                assertTrue(result.toString(), result.message().get(0).getData().contains("name 'invalid_code' is not defined"));
+                return null;
+              });
+    } finally {
+      if (null != note1Id) {
+        TestUtils.getInstance(Notebook.class).removeNote(note1Id, anonymous);
+      }
+      if (null != note2Id) {
+        TestUtils.getInstance(Notebook.class).removeNote(note2Id, anonymous);
+      }
+      resetPythonIsolatedPerNote();
+    }
+  }
+
+  @Test
+  public void testRunNotebookInterpreter_InvalidSyntax() throws IOException {
+    assumeTrue("Hadoop version mismatch, skip test", isHadoopVersionMatch());
+
+    String note1Id = null;
+    String note2Id = null;
+    try {
+      setupPythonIsolatedPerNote();
+      // create new note: note1
+      note1Id = TestUtils.getInstance(Notebook.class).createNote("note1", anonymous);
+      // add one paragraph to note1
+      TestUtils.getInstance(Notebook.class).processNote(note1Id,
+              note -> {
+                Paragraph p0 = note.addNewParagraph(anonymous);
+                p0.setText("%python print('hello,zeppelin')");
+                return null;
+              });
+
+      // create new note: note2
+      note2Id = TestUtils.getInstance(Notebook.class).createNote("note2", anonymous);
+      // Run paragraph(%run <note1Id>) in note2
+      final String finalNote1Id = note1Id;
+      TestUtils.getInstance(Notebook.class).processNote(note2Id,
+              note -> {
+                // invalid noteId
+                Paragraph p0 = note.addNewParagraph(anonymous);
+                p0.setText("%run invalid_noteId");
+                p0.run();
+                InterpreterResult result = p0.getReturn();
+                assertEquals(InterpreterResult.Code.ERROR, result.code());
+                assertEquals(1, result.message().size());
+                assertEquals(result.toString(), "Note `invalid_noteId` doesn't exist", result.message().get(0).getData());
+
+                // run current note itself
+                Paragraph p1 = note.addNewParagraph(anonymous);
+                p1.setText("%run " + note.getId());
+                p1.run();
+                result = p1.getReturn();
+                assertEquals(InterpreterResult.Code.ERROR, result.code());
+                assertEquals(1, result.message().size());
+                assertEquals(result.toString(), "Run current note itself in %run is not allowed", result.message().get(0).getData());
+
+                // invalid format of params
+                
+                return null;
+              });
+    } finally {
+      if (null != note1Id) {
+        TestUtils.getInstance(Notebook.class).removeNote(note1Id, anonymous);
+      }
+      if (null != note2Id) {
+        TestUtils.getInstance(Notebook.class).removeNote(note2Id, anonymous);
+      }
+      resetPythonIsolatedPerNote();
+    }
+  }
+
   @Test
   public void testZeppelinContextResource() throws IOException {
     assumeTrue("Hadoop version mismatch, skip test", isHadoopVersionMatch());
