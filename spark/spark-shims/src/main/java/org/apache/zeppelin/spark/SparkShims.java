@@ -17,7 +17,8 @@
 
 package org.apache.zeppelin.spark;
 
-import com.google.common.annotations.VisibleForTesting;
+
+import org.apache.zeppelin.shaded.com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.util.VersionInfo;
 import org.apache.hadoop.util.VersionUtil;
 import org.apache.zeppelin.interpreter.InterpreterContext;
@@ -162,7 +163,6 @@ public abstract class SparkShims {
         || (VersionUtil.compareVersions(HADOOP_VERSION_3_0_0, version) <= 0);
   }
 
-  @VisibleForTesting
   public static void reset() {
     sparkShims = null;
   }

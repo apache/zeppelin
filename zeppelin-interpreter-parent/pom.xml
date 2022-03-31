@@ -50,7 +50,7 @@
         </exclusion>
         <exclusion>
           <groupId>io.atomix</groupId>
-          <artifactId>atomix</artifactId>
+          <artifactId>*</artifactId>
         </exclusion>
       </exclusions>
     </dependency>

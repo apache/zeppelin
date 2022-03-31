@@ -38,6 +38,8 @@
     <guava.version>18.0</guava.version>
     <json-flattener.version>0.1.6</json-flattener.version>
     <unirest.version>1.4.9</unirest.version>
+    <!--test library versions-->
+    <hamcrest.all.version>1.3</hamcrest.all.version>
   </properties>
 
   <dependencies>
@@ -81,6 +83,12 @@
       <version>${unirest.version}</version>
     </dependency>
 
+    <dependency>
+      <groupId>org.hamcrest</groupId>
+      <artifactId>hamcrest-all</artifactId>
+      <version>${hamcrest.all.version}</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
