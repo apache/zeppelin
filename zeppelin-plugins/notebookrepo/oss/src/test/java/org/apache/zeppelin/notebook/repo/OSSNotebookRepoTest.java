@@ -21,7 +21,8 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.Paragraph;
-import org.apache.zeppelin.notebook.exception.CorruptedNoteException;
+import org.apache.zeppelin.notebook.repo.storage.MockStorageOperator;
+import org.apache.zeppelin.notebook.repo.storage.RemoteStorageOperator;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.After;
@@ -40,17 +41,19 @@ public class OSSNotebookRepoTest {
 
   private AuthenticationInfo anonymous = AuthenticationInfo.ANONYMOUS;
   private OSSNotebookRepo notebookRepo;
-  private OSSOperator ossOperator;
+  private RemoteStorageOperator ossOperator;
   private String bucket;
   private static int OSS_VERSION_MAX = 30;
+
+
 
   @Before
   public void setUp() throws IOException {
     bucket = "zeppelin-test-bucket";
-    String endpoint = "http://oss-cn-hangzhou.aliyuncs.com";
-    String accessKeyId = "oss.accessKeyId";
-    String accessKeySecret = "oss.accessKeySecret";
-    ossOperator = new OSSOperator(endpoint, accessKeyId, accessKeySecret);
+    String endpoint = "yourEndpoint";
+    String accessKeyId = "yourAccessKeyId";
+    String accessKeySecret = "yourAccessKeySecret";
+    ossOperator = new MockStorageOperator();
     ossOperator.createBucket(bucket);
     notebookRepo = new OSSNotebookRepo();
     ZeppelinConfiguration conf = ZeppelinConfiguration.create();
@@ -65,10 +68,11 @@ public class OSSNotebookRepoTest {
     System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_OSS_VERSION_MAX.getVarName(),
             OSS_VERSION_MAX + "");
     notebookRepo.init(conf);
+    notebookRepo.setOssOperator(ossOperator);
   }
 
   @After
-  public void tearDown() throws InterruptedException {
+  public void tearDown() throws InterruptedException, IOException {
     if (notebookRepo != null) {
       notebookRepo.close();
     }
@@ -110,8 +114,8 @@ public class OSSNotebookRepoTest {
     try {
       notebookRepo.get("invalid_id", "/invalid_path", anonymous);
       fail("Should fail to get non-existed note1");
-    } catch (CorruptedNoteException e) {
-      assertEquals(e.getMessage(), "noteId: invalid_id - Fail to parse note json: ");
+    } catch (IOException e) {
+      assertEquals(e.getMessage(), "Note or its revision not found");
     }
 
     // create another Note note2
@@ -190,8 +194,8 @@ public class OSSNotebookRepoTest {
       try {
         notebookRepo.get(note1.getId(), note1.getPath(), revisionList.get(i - 1).id, anonymous);
         fail("Should fail to get non-existed note1");
-      } catch (CorruptedNoteException e) {
-        assertEquals(e.getMessage(), "noteId: " + note1.getId() + " - Fail to parse note json: ");
+      } catch (IOException e) {
+        assertEquals(e.getMessage(), "Note or its revision not found");
       }
     }
 

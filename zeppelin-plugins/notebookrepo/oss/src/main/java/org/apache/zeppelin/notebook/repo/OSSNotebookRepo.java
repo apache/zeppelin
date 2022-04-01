@@ -20,6 +20,8 @@ package org.apache.zeppelin.notebook.repo;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
+import org.apache.zeppelin.notebook.repo.storage.OSSOperator;
+import org.apache.zeppelin.notebook.repo.storage.RemoteStorageOperator;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,7 +42,7 @@ public class OSSNotebookRepo implements NotebookRepoWithVersionControl {
   private static int NOTE_MAX_VERSION_NUM;
 
   // Use ossOperator instead of ossClient directly
-  private OSSOperator ossOperator;
+  private RemoteStorageOperator ossOperator;
 
   public OSSNotebookRepo() {
   }
@@ -55,9 +57,16 @@ public class OSSNotebookRepo implements NotebookRepoWithVersionControl {
     if (rootFolder.startsWith("/")) {
       rootFolder = rootFolder.substring(1);
     }
+    if (rootFolder.endsWith("/")) {
+      rootFolder = rootFolder.substring(0, rootFolder.length() - 1);
+    }
     String accessKeyId = conf.getOSSAccessKeyId();
     String accessKeySecret = conf.getOSSAccessKeySecret();
     this.ossOperator = new OSSOperator(endpoint, accessKeyId, accessKeySecret);
+  }
+
+  public void setOssOperator(RemoteStorageOperator ossOperator) {
+    this.ossOperator = ossOperator;
   }
 
   @Override
@@ -139,7 +148,7 @@ public class OSSNotebookRepo implements NotebookRepoWithVersionControl {
   }
 
   @Override
-  public void remove(String folderPath, AuthenticationInfo subject) {
+  public void remove(String folderPath, AuthenticationInfo subject) throws IOException {
     List<String> objectKeys = ossOperator.listDirObjects(bucketName, rootFolder + folderPath + "/");
     for (String key : objectKeys) {
       if (key.endsWith(".zpln")) {
