@@ -27,6 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
@@ -53,16 +54,22 @@ public class OSSNotebookRepo implements NotebookRepoWithVersionControl {
     bucketName = conf.getOSSBucketName();
     rootFolder = conf.getNotebookDir();
     NOTE_MAX_VERSION_NUM = conf.getOSSNoteMaxVersionNum();
-    // rootFolder is part of OSS key which doesn't start with '/'
-    if (rootFolder.startsWith("/")) {
-      rootFolder = rootFolder.substring(1);
-    }
-    if (rootFolder.endsWith("/")) {
-      rootFolder = rootFolder.substring(0, rootFolder.length() - 1);
-    }
+    // rootFolder is part of OSS key which doesn't start with '/' or './' or './/'
+    rootFolder = formatPath(rootFolder);
     String accessKeyId = conf.getOSSAccessKeyId();
     String accessKeySecret = conf.getOSSAccessKeySecret();
     this.ossOperator = new OSSOperator(endpoint, accessKeyId, accessKeySecret);
+  }
+
+  private static String formatPath(String path) {
+    if (path.startsWith("/")) {
+      path = path.substring(1);
+    }
+    path = new File(path).getPath();
+    if (path.startsWith("./")) {
+      path = path.substring(2);
+    }
+    return path;
   }
 
   public void setOssOperator(RemoteStorageOperator ossOperator) {
@@ -267,6 +274,5 @@ public class OSSNotebookRepo implements NotebookRepoWithVersionControl {
     }
     return revisionNote;
   }
-
 
 }
