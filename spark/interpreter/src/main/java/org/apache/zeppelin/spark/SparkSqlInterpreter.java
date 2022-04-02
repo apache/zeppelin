@@ -142,7 +142,7 @@ public class SparkSqlInterpreter extends AbstractInterpreter {
       }
     } finally {
       sc.clearJobGroup();
-      if (!sparkInterpreter.isScala212()) {
+      if (sparkInterpreter.isScala211()) {
         Thread.currentThread().setContextClassLoader(originalClassLoader);
       }
     }
