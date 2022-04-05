@@ -21,7 +21,6 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.Paragraph;
-import org.apache.zeppelin.notebook.repo.storage.MockStorageOperator;
 import org.apache.zeppelin.notebook.repo.storage.RemoteStorageOperator;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.user.AuthenticationInfo;
@@ -78,6 +77,8 @@ public class OSSNotebookRepoTest {
     }
     ossOperator.deleteDir(bucket, "");
     ossOperator.deleteBucket(bucket);
+    // The delete operations on OSS Service above has a delay.
+    // And it would affect setup of next test case if we do not wait for them to end.
     Thread.sleep(1000);
   }
 

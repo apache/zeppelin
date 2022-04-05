@@ -1,11 +1,14 @@
-package org.apache.zeppelin.notebook.repo.storage;
+package org.apache.zeppelin.notebook.repo;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.TrueFileFilter;
+import org.apache.zeppelin.notebook.repo.storage.RemoteStorageOperator;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -13,8 +16,12 @@ import java.util.stream.Collectors;
 
 public class MockStorageOperator implements RemoteStorageOperator {
 
-  private String mockRootFolder = "mock-storage-dir/";
+  private String mockRootFolder;
 
+  public MockStorageOperator() throws IOException {
+    Path tempDirectory = Files.createTempDirectory("zeppelin_mock_storage_dir_");
+    mockRootFolder = tempDirectory.toString() + "/";
+  }
 
   @Override
   public void createBucket(String bucketName) throws IOException {

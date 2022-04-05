@@ -54,7 +54,7 @@ public class OSSNotebookRepo implements NotebookRepoWithVersionControl {
     bucketName = conf.getOSSBucketName();
     rootFolder = conf.getNotebookDir();
     NOTE_MAX_VERSION_NUM = conf.getOSSNoteMaxVersionNum();
-    // rootFolder is part of OSS key which doesn't start with '/' or './' or './/'
+    // rootFolder is part of OSS key
     rootFolder = formatPath(rootFolder);
     String accessKeyId = conf.getOSSAccessKeyId();
     String accessKeySecret = conf.getOSSAccessKeySecret();
@@ -62,6 +62,8 @@ public class OSSNotebookRepo implements NotebookRepoWithVersionControl {
   }
 
   private static String formatPath(String path) {
+    // The path should not start with '/' or './' or './/'
+    // because it is not accepted by OSS service.
     if (path.startsWith("/")) {
       path = path.substring(1);
     }
@@ -191,18 +193,18 @@ public class OSSNotebookRepo implements NotebookRepoWithVersionControl {
   }
 
 
-  String buildRevisionsDirName(String noteId, String notePath) throws IOException {
+  private static String buildRevisionsDirName(String noteId, String notePath) throws IOException {
     if (!notePath.startsWith("/")) {
       throw new IOException("Invalid notePath: " + notePath);
     }
     return ".checkpoint/" + (notePath + "_" + noteId).substring(1);
   }
 
-  String buildRevisionsInfoAbsolutePath(String noteId, String notePath) throws IOException {
+  private String buildRevisionsInfoAbsolutePath(String noteId, String notePath) throws IOException {
     return rootFolder + "/" + buildRevisionsDirName(noteId, notePath) + "/" + ".revision-info";
   }
 
-  String buildRevisionsFileAbsolutePath(String noteId, String notePath, String revisionId) throws IOException {
+  private String buildRevisionsFileAbsolutePath(String noteId, String notePath, String revisionId) throws IOException {
     return rootFolder + "/" + buildRevisionsDirName(noteId, notePath) + "/" + revisionId;
   }
 
@@ -244,8 +246,7 @@ public class OSSNotebookRepo implements NotebookRepoWithVersionControl {
 
   @Override
   public Note get(String noteId, String notePath, String revId, AuthenticationInfo subject) throws IOException {
-    Note note = getByOSSPath(noteId,
-            rootFolder + "/" + buildRevisionsDirName(noteId, notePath) + "/" + revId);
+    Note note = getByOSSPath(noteId,  buildRevisionsFileAbsolutePath(noteId, notePath, revId));
     if (note != null) {
       note.setPath(notePath);
     }
