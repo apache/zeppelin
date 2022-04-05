@@ -29,9 +29,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-// OSSOperator is a higher-level encapsulation of OSSClient,
-// which makes OSSNotebookRepo shield from specific OSS operations
-// or complex combinations of them.
+
+/**
+ * OSSOperator is a higher-level encapsulation of OSSClient,
+ * which makes OSSNotebookRepo shield from specific OSS operations
+ * or complex combinations of them.
+ */
 public class OSSOperator implements RemoteStorageOperator {
   private OSS ossClient;
 
