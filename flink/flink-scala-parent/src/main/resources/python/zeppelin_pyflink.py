@@ -39,11 +39,9 @@ if not intp.isAfterFlink114():
   from pyflink.dataset import *
   b_env = pyflink.dataset.ExecutionEnvironment(intp.getJavaExecutionEnvironment())
   bt_env = BatchTableEnvironment(intp.getJavaBatchTableEnvironment("blink"))
-  st_env = StreamTableEnvironment(intp.getJavaStreamTableEnvironment("blink"))
-  bt_env_2 = BatchTableEnvironment(intp.getJavaBatchTableEnvironment("flink"))
-  st_env_2 = StreamTableEnvironment(intp.getJavaStreamTableEnvironment("flink"))
+  st_env = StreamTableEnvironment(intp.getJavaStreamTableEnvironment())
 else:
-  st_env = StreamTableEnvironment(intp.getJavaStreamTableEnvironment("blink"))
+  st_env = StreamTableEnvironment(intp.getJavaStreamTableEnvironment())
 
 
 from zeppelin_context import PyZeppelinContext

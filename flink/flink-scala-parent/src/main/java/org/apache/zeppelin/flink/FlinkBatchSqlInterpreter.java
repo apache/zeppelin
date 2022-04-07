@@ -38,7 +38,7 @@ public class FlinkBatchSqlInterpreter extends FlinkSqlInterpreter {
             flinkInterpreter.getExecutionEnvironment().getJavaEnv(),
             flinkInterpreter.getStreamExecutionEnvironment().getJavaEnv(),
             flinkInterpreter.getJavaBatchTableEnvironment("blink"),
-            flinkInterpreter.getJavaStreamTableEnvironment("blink"),
+            flinkInterpreter.getJavaStreamTableEnvironment(),
             flinkInterpreter.getZeppelinContext(),
             null);
     flinkInterpreter.getFlinkShims().initInnerBatchSqlInterpreter(flinkSqlContext);

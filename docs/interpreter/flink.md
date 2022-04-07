@@ -385,21 +385,13 @@ Here are the builtin variables created in Flink Scala shell.
 
 * senv (StreamExecutionEnvironment),
 * benv (ExecutionEnvironment)
-* stenv (StreamTableEnvironment for blink planner)
-* btenv (BatchTableEnvironment for blink planner)
-* stenv_2 (StreamTableEnvironment for flink planner)
-* btenv_2 (BatchTableEnvironment for flink planner)
+* stenv (StreamTableEnvironment for blink planner (aka. new planner))
+* btenv (BatchTableEnvironment for blink planner (aka. new planner))
 * z  (ZeppelinContext)
 
 ### Blink/Flink Planner
 
-There are 2 planners supported by Flink SQL: `flink` & `blink`.
-
-* If you want to use DataSet api, and convert it to Flink table then please use `flink` planner (`btenv_2` and `stenv_2`).
-* In other cases, we would always recommend you to use `blink` planner. This is also what Flink batch/streaming sql interpreter use (`%flink.bsql` & `%flink.ssql`)
-
-Check this [page](https://ci.apache.org/projects/flink/flink-docs-release-1.10/dev/table/common.html#main-differences-between-the-two-planners) for the difference between flink planner and blink planner.
-
+After Zeppelin 0.11, we remove the support of flink planner (aka. old planner) which is also removed after Flink 1.14.
 
 ### Stream WordCount Example
 
@@ -537,10 +529,8 @@ These are variables created in Python shell.
 
 * `s_env`    (StreamExecutionEnvironment),
 * `b_env`     (ExecutionEnvironment)
-* `st_env`   (StreamTableEnvironment for blink planner)
-* `bt_env`   (BatchTableEnvironment for blink planner)
-* `st_env_2`   (StreamTableEnvironment for flink planner)
-* `bt_env_2`   (BatchTableEnvironment for flink planner)
+* `st_env`   (StreamTableEnvironment for blink planner (aka. new planner))
+* `bt_env`   (BatchTableEnvironment for blink planner (aka. new planner))
 
 
 ### Configure PyFlink

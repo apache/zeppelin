@@ -86,9 +86,8 @@ abstract class FlinkScalaInterpreter(val properties: Properties,
   private var btenv: TableEnvironment = _
   private var stenv: TableEnvironment = _
 
-  // TableEnvironment of flink planner
+  // TableEnvironment of flink planner (used for convert Flink table to DataSet)
   private var btenv_2: TableEnvironment = _
-  private var stenv_2: TableEnvironment = _
 
   // PyFlink depends on java version of TableEnvironment,
   // so need to create java version of TableEnvironment
@@ -96,9 +95,8 @@ abstract class FlinkScalaInterpreter(val properties: Properties,
   private var java_btenv: TableEnvironment = _
   private var java_stenv: TableEnvironment = _
 
-  // java version of flink TableEnvironment
+  // java version TableEnvironment of old planner, used for converting Table to DataSet
   private var java_btenv_2: TableEnvironment = _
-  private var java_stenv_2: TableEnvironment = _
 
   private var z: FlinkZeppelinContext = _
   private var flinkVersion: FlinkVersion = _
@@ -448,15 +446,7 @@ abstract class FlinkScalaInterpreter(val properties: Properties,
       if (!flinkVersion.isAfterFlink114()) {
         // flink planner is not supported after flink 1.14
         this.btenv_2 = tblEnvFactory.createScalaFlinkBatchTableEnvironment()
-        flinkILoop.bind("btenv_2", btenv_2.getClass().getCanonicalName(), btenv_2, List("@transient"))
-        stEnvSetting =
-          EnvironmentSettings.newInstance().inStreamingMode().useOldPlanner().build()
-        this.stenv_2 = tblEnvFactory.createScalaFlinkStreamTableEnvironment(stEnvSetting, getFlinkClassLoader)
-        flinkILoop.bind("stenv_2", stenv_2.getClass().getCanonicalName(), stenv_2, List("@transient"))
-
         this.java_btenv_2 = tblEnvFactory.createJavaFlinkBatchTableEnvironment()
-        btEnvSetting = EnvironmentSettings.newInstance.useOldPlanner.inStreamingMode.build
-        this.java_stenv_2 = tblEnvFactory.createJavaFlinkStreamTableEnvironment(btEnvSetting, getFlinkClassLoader)
       }
     } finally {
       Thread.currentThread().setContextClassLoader(originalClassLoader)
@@ -768,11 +758,8 @@ abstract class FlinkScalaInterpreter(val properties: Properties,
       this.btenv_2
   }
 
-  def getStreamTableEnvironment(planner: String = "blink"): TableEnvironment = {
-    if (planner == "blink")
-      this.stenv
-    else
-      this.stenv_2
+  def getStreamTableEnvironment(): TableEnvironment = {
+    this.stenv
   }
 
   def getJavaBatchTableEnvironment(planner: String): TableEnvironment = {
@@ -783,12 +770,8 @@ abstract class FlinkScalaInterpreter(val properties: Properties,
     }
   }
 
-  def getJavaStreamTableEnvironment(planner: String): TableEnvironment = {
-    if (planner == "blink") {
-      this.java_stenv
-    } else {
-      this.java_stenv_2
-    }
+  def getJavaStreamTableEnvironment(): TableEnvironment = {
+    this.java_stenv
   }
 
   def getDefaultParallelism = this.defaultParallelism
