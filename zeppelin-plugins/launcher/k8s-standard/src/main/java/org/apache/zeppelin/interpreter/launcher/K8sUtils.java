@@ -27,9 +27,11 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import io.fabric8.kubernetes.client.Config;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
+
+import io.fabric8.kubernetes.client.Config;
 
 public class K8sUtils {
 
@@ -138,5 +140,38 @@ public class K8sUtils {
   private static String readFile(String path, Charset encoding) throws IOException {
     byte[] encoded = Files.readAllBytes(Paths.get(path));
     return new String(encoded, encoding);
+  }
+
+  private static final String ZEPPELIN = "zeppelin";
+  /**
+   * Generates a name for a Kubernetes object
+   *
+   * See https://kubernetes.io/docs/concepts/overview/working-with-objects/names/ for allowed names
+   *
+   * @param baseName parts of the name can be removed and some parts can be added to generate a permitted Kubernetes name
+   * @param randomSuffix flag to add a random suffix
+   * @return a validate Kubernetes name
+   */
+  public static String generateK8sName(String baseName, boolean randomSuffix) {
+    String result = ZEPPELIN;
+    if (StringUtils.isNotBlank(baseName)) {
+      // all to lowerCase
+      result = baseName.toLowerCase();
+      // Remove all disallowed values
+      result = result.replaceAll("[^a-z0-9\\.-]", "");
+      // Remove all multiple dots
+      result = result.replaceAll("\\.+", ".");
+      if (result.isEmpty() || !Character.isLetterOrDigit(result.charAt(0))) {
+        result = ZEPPELIN + result;
+      }
+      // 253 - 7 (suffix) = 246
+      if (result.length() > 246 - ZEPPELIN.length()) {
+        result = result.substring(0, 246 - ZEPPELIN.length());
+      }
+      if (!Character.isLetterOrDigit(result.charAt(result.length() - 1))) {
+        result = result + ZEPPELIN;
+      }
+    }
+    return randomSuffix ? result + "-" + RandomStringUtils.randomAlphabetic(6).toLowerCase() : result;
   }
 }
