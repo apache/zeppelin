@@ -197,7 +197,13 @@ public class SparkInterpreterTest {
     assertTrue(((String) onParaInfosReceivedArg.getValue().get("jobUrl")).startsWith("fake_spark_weburl/"
             + interpreter.getJavaSparkContext().sc().applicationId()));
 
-    // case class
+    // RDD of case class objects
+    result = interpreter.interpret(
+        "case class A(a: Integer, b: Integer)\n" +
+        "sc.parallelize(Seq(A(10, 20), A(30, 40))).collect()", getInterpreterContext());
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+
+    // Dataset of case class objects
     result = interpreter.interpret("val bankText = sc.textFile(\"bank.csv\")", getInterpreterContext());
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
 

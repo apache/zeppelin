@@ -95,10 +95,7 @@ public class SparkSqlInterpreter extends AbstractInterpreter {
     String curSql = null;
     ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
     try {
-      if (sparkInterpreter.isScala211()) {
-        // TODO(zjffdu) scala 2.12,2.13 still doesn't work for codegen (ZEPPELIN-4627)
-        Thread.currentThread().setContextClassLoader(sparkInterpreter.getScalaShellClassLoader());
-      }
+      Thread.currentThread().setContextClassLoader(sparkInterpreter.getScalaShellClassLoader());
       Method method = sqlContext.getClass().getMethod("sql", String.class);
       for (String sql : sqls) {
         curSql = sql;
@@ -142,9 +139,7 @@ public class SparkSqlInterpreter extends AbstractInterpreter {
       }
     } finally {
       sc.clearJobGroup();
-      if (sparkInterpreter.isScala211()) {
-        Thread.currentThread().setContextClassLoader(originalClassLoader);
-      }
+      Thread.currentThread().setContextClassLoader(originalClassLoader);
     }
 
     return new InterpreterResult(Code.SUCCESS);

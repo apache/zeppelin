@@ -19,7 +19,6 @@ package org.apache.zeppelin.spark
 
 import java.io.{BufferedReader, File}
 import java.net.URLClassLoader
-import java.nio.file.{Files, Paths}
 import java.util.Properties
 import org.apache.spark.SparkConf
 import org.apache.spark.repl.SparkILoop
@@ -226,7 +225,7 @@ private object SparkScala212Interpreter {
         foreach (intp quietRun _)
         )
       // classloader and power mode setup
-      intp.setContextClassLoader()
+      Thread.currentThread.setContextClassLoader(intp.classLoader)
       if (isReplPower) {
         replProps.power setValue true
         unleashAndSetPhase()
