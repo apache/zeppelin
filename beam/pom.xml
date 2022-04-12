@@ -34,7 +34,7 @@
   <properties>
     <interpreter.name>beam</interpreter.name>
 
-    <beam.hadoop.version>2.3.0</beam.hadoop.version>
+    <beam.hadoop.version>3.2.3</beam.hadoop.version>
     <beam.spark.version>1.6.2</beam.spark.version>
     <beam.beam.version>2.0.0</beam.beam.version>
     <beam.scala.binary.version>2.10</beam.scala.binary.version>
