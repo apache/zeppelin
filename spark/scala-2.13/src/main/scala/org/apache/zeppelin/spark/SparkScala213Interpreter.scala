@@ -76,6 +76,7 @@ class SparkScala213Interpreter(override val conf: SparkConf,
     sparkILoop = new SparkILoop(null, replOut)
     sparkILoop.run(settings)
     this.scalaCompletion = new ReplCompletion(sparkILoop.intp, new Accumulator)
+    Thread.currentThread.setContextClassLoader(sparkILoop.classLoader)
 
     createSparkContext()
 
