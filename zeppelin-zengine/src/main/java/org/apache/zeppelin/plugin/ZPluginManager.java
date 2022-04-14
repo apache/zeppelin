@@ -32,12 +32,10 @@ import java.nio.file.Paths;
 import java.util.List;
 
 import javax.inject.Inject;
-import javax.inject.Singleton;
 
 /**
  * Class for loading Plugins
  */
-@Singleton
 public class ZPluginManager implements IPluginManager {
   private static final Logger LOGGER = LoggerFactory.getLogger(ZPluginManager.class);
 
@@ -84,7 +82,7 @@ public class ZPluginManager implements IPluginManager {
   public synchronized InterpreterLauncher createInterpreterLauncher(String launcherPlugin,
                                                                   RecoveryStorage recoveryStorage)
       throws IOException {
-    LOGGER.info("Loading NotebookRepo Plugin: {}", launcherPlugin);
+    LOGGER.info("Loading launcher Plugin: {}", launcherPlugin);
     List<InterpreterLauncher> interpreterLaunchers = pluginManager.getExtensions(InterpreterLauncher.class);
     for (InterpreterLauncher interpreterLauncher : interpreterLaunchers) {
       if (launcherPlugin.equals(interpreterLauncher.getClass().getSimpleName())) {

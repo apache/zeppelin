@@ -177,7 +177,7 @@ public class ZeppelinServer extends ResourceConfig {
           @Override
           protected void configure() {
             Credentials credentials = new Credentials(conf);
-            bind(ZPluginManager.class).to(IPluginManager.class);
+            bind(ZPluginManager.class).to(IPluginManager.class).in(Singleton.class);
             bindAsContract(InterpreterFactory.class).in(Singleton.class);
             bindAsContract(NotebookRepoSync.class).to(NotebookRepo.class).in(Immediate.class);
             bindAsContract(Helium.class).in(Singleton.class);
