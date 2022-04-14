@@ -1230,7 +1230,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
   };
 
   $scope.getEditorValue = function() {
-    return !$scope.editor ? $scope.paragraph.text : $scope.editor.getValue();
+    return !$scope.editor || $scope.viewOnly ? $scope.paragraph.text : $scope.editor.getValue();
   };
 
   $scope.getProgress = function() {
