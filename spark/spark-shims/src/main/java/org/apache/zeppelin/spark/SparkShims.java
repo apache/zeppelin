@@ -18,7 +18,6 @@
 package org.apache.zeppelin.spark;
 
 
-import org.apache.zeppelin.shaded.com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.util.VersionInfo;
 import org.apache.hadoop.util.VersionUtil;
 import org.apache.zeppelin.interpreter.InterpreterContext;

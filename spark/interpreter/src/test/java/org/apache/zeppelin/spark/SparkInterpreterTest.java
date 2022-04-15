@@ -140,12 +140,6 @@ public class SparkInterpreterTest {
     result = interpreter.interpret("/*line 1 \n line 2*/print(\"hello world\")", getInterpreterContext());
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
 
-    if (!interpreter.isScala213()) {
-      // $intp not available for scala-2.13
-      result = interpreter.interpret("$intp", getInterpreterContext());
-      assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    }
-    
     // Companion object with case class
     result = interpreter.interpret("import scala.math._\n" +
         "object Circle {\n" +
@@ -207,6 +201,7 @@ public class SparkInterpreterTest {
     result = interpreter.interpret("val bankText = sc.textFile(\"bank.csv\")", getInterpreterContext());
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
 
+    context = getInterpreterContext();
     result = interpreter.interpret(
         "case class Bank(age:Integer, job:String, marital : String, education : String, balance : Integer)\n" +
             "val bank = bankText.map(s=>s.split(\";\")).filter(s => s(0)!=\"\\\"age\\\"\").map(\n" +
@@ -216,8 +211,8 @@ public class SparkInterpreterTest {
             "            s(3).replaceAll(\"\\\"\", \"\"),\n" +
             "            s(5).replaceAll(\"\\\"\", \"\").toInt\n" +
             "        )\n" +
-            ").toDF()", getInterpreterContext());
-    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+            ").toDF()", context);
+    assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
 
     // spark version
     result = interpreter.interpret("sc.version", getInterpreterContext());

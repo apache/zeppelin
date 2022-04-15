@@ -22,6 +22,7 @@ import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.sql.SQLContext;
+import org.apache.spark.sql.SparkSession;
 import org.apache.zeppelin.interpreter.AbstractInterpreter;
 import org.apache.zeppelin.interpreter.ZeppelinContext;
 import org.apache.zeppelin.interpreter.InterpreterContext;
@@ -73,7 +74,7 @@ public class SparkInterpreter extends AbstractInterpreter {
   private SparkContext sc;
   private JavaSparkContext jsc;
   private SQLContext sqlContext;
-  private Object sparkSession;
+  private SparkSession sparkSession;
 
   private SparkVersion sparkVersion;
   private String scalaVersion;
@@ -187,14 +188,14 @@ public class SparkInterpreter extends AbstractInterpreter {
                     .newInstance(conf, getDependencyFiles(), getProperties(), getInterpreterGroup(), innerInterpreterClazz.getClassLoader(), scalaShellOutputDir);
   }
 
-    @Override
+  @Override
   public void close() throws InterpreterException {
     LOGGER.info("Close SparkInterpreter");
     if (SESSION_NUM.decrementAndGet() == 0 && innerInterpreter != null) {
       innerInterpreter.close();
       innerInterpreterClazz = null;
     }
-      innerInterpreter = null;
+    innerInterpreter = null;
   }
 
   @Override
@@ -228,7 +229,7 @@ public class SparkInterpreter extends AbstractInterpreter {
 
   @Override
   public int getProgress(InterpreterContext context) throws InterpreterException {
-    return innerInterpreter.getProgress(Utils.buildJobGroupId(context), context);
+    return innerInterpreter.getProgress(context);
   }
 
   public ZeppelinContext getZeppelinContext() {
@@ -240,7 +241,7 @@ public class SparkInterpreter extends AbstractInterpreter {
 
   public InterpreterResult delegateInterpret(KotlinInterpreter kotlinInterpreter,
                                              String code,
-                                             InterpreterContext context) {
+                                             InterpreterContext context) throws InterpreterException{
     return innerInterpreter.delegateInterpret(kotlinInterpreter, code, context);
   }
 
@@ -248,14 +249,7 @@ public class SparkInterpreter extends AbstractInterpreter {
     return this.sc;
   }
 
-  /**
-   * Must use Object, because the its api signature in Spark 1.x is different from
-   * that of Spark 2.x.
-   * e.g. SqlContext.sql(sql) return different type.
-   *
-   * @return
-   */
-  public Object getSQLContext() {
+  public SQLContext getSQLContext() {
     return sqlContext;
   }
 
@@ -263,7 +257,7 @@ public class SparkInterpreter extends AbstractInterpreter {
     return this.jsc;
   }
 
-  public Object getSparkSession() {
+  public SparkSession getSparkSession() {
     return sparkSession;
   }
 
@@ -297,11 +291,11 @@ public class SparkInterpreter extends AbstractInterpreter {
     }
   }
 
-  public boolean isScala211() throws InterpreterException {
+  public boolean isScala211() {
     return scalaVersion.equals("2.11");
   }
 
-  public boolean isScala212() throws InterpreterException {
+  public boolean isScala212() {
     return scalaVersion.equals("2.12");
   }
 
