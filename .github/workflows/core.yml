@@ -50,6 +50,7 @@ jobs:
           path: |
             ~/.m2/repository
             !~/.m2/repository/org/apache/zeppelin/
+            ~/.spark-dist
           key: ${{ runner.os }}-zeppelin-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-zeppelin-
@@ -97,6 +98,7 @@ jobs:
           path: |
             ~/.m2/repository
             !~/.m2/repository/org/apache/zeppelin/
+            ~/.spark-dist
           key: ${{ runner.os }}-zeppelin-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-zeppelin-
@@ -139,6 +141,7 @@ jobs:
           path: |
             ~/.m2/repository
             !~/.m2/repository/org/apache/zeppelin/
+            ~/.spark-dist
           key: ${{ runner.os }}-zeppelin-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-zeppelin-
@@ -185,6 +188,7 @@ jobs:
           path: |
             ~/.m2/repository
             !~/.m2/repository/org/apache/zeppelin/
+            ~/.spark-dist
           key: ${{ runner.os }}-zeppelin-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-zeppelin-
@@ -231,6 +235,7 @@ jobs:
           path: |
             ~/.m2/repository
             !~/.m2/repository/org/apache/zeppelin/
+            ~/.spark-dist
           key: ${{ runner.os }}-zeppelin-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-zeppelin-
@@ -274,6 +279,7 @@ jobs:
           path: |
             ~/.m2/repository
             !~/.m2/repository/org/apache/zeppelin/
+            ~/.spark-dist
           key: ${{ runner.os }}-zeppelin-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-zeppelin-
@@ -321,6 +327,7 @@ jobs:
           path: |
             ~/.m2/repository
             !~/.m2/repository/org/apache/zeppelin/
+            ~/.spark-dist
           key: ${{ runner.os }}-zeppelin-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-zeppelin-
@@ -383,6 +390,7 @@ jobs:
           path: |
             ~/.m2/repository
             !~/.m2/repository/org/apache/zeppelin/
+            ~/.spark-dist
           key: ${{ runner.os }}-zeppelin-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-zeppelin-
