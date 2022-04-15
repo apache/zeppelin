@@ -30,3 +30,9 @@ github:
     - big-data
     - zeppelin
     - javascript
+  enabled_merge_buttons:
+    merge: false
+    squash: true
+    rebase: false
+notifications:
+  jira_options: link label comment
