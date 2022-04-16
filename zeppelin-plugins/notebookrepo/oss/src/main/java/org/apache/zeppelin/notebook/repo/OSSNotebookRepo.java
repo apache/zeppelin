@@ -211,6 +211,10 @@ public class OSSNotebookRepo implements NotebookRepoWithVersionControl {
 
   @Override
   public Revision checkpoint(String noteId, String notePath, String checkpointMsg, AuthenticationInfo subject) throws IOException {
+    if (NOTE_MAX_VERSION_NUM <= 0) {
+      throw new IOException("Version control is closed because the value of zeppelin.notebook.oss.version.max is set to 0");
+    }
+
     Note note = get(noteId, notePath, subject);
 
     //1 Write note content to revision file
@@ -255,6 +259,9 @@ public class OSSNotebookRepo implements NotebookRepoWithVersionControl {
 
   @Override
   public List<Revision> revisionHistory(String noteId, String notePath, AuthenticationInfo subject) throws IOException {
+    if (NOTE_MAX_VERSION_NUM <= 0) {
+      return new ArrayList<>();
+    }
 
     List<Revision> revisions = new LinkedList<>();
     String revisonInfoPath = buildRevisionsInfoAbsolutePath(noteId, notePath);

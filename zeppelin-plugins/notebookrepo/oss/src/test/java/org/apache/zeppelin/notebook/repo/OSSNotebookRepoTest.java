@@ -72,14 +72,16 @@ public class OSSNotebookRepoTest {
 
   @After
   public void tearDown() throws InterruptedException, IOException {
-    if (notebookRepo != null) {
-      notebookRepo.close();
-    }
     ossOperator.deleteDir(bucket, "");
     ossOperator.deleteBucket(bucket);
     // The delete operations on OSS Service above has a delay.
     // And it would affect setup of next test case if we do not wait for them to end.
     Thread.sleep(1000);
+
+    // notebookRepo.close() would call ossOperator.shutdown()
+    if (notebookRepo != null) {
+      notebookRepo.close();
+    }
   }
 
   @Test
