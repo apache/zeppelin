@@ -51,6 +51,7 @@ jobs:
             ~/.m2/repository
             !~/.m2/repository/org/apache/zeppelin/
             ~/.spark-dist
+            ~/.cache
           key: ${{ runner.os }}-zeppelin-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-zeppelin-
@@ -99,6 +100,7 @@ jobs:
             ~/.m2/repository
             !~/.m2/repository/org/apache/zeppelin/
             ~/.spark-dist
+            ~/.cache
           key: ${{ runner.os }}-zeppelin-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-zeppelin-
@@ -142,6 +144,7 @@ jobs:
             ~/.m2/repository
             !~/.m2/repository/org/apache/zeppelin/
             ~/.spark-dist
+            ~/.cache
           key: ${{ runner.os }}-zeppelin-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-zeppelin-
@@ -189,6 +192,7 @@ jobs:
             ~/.m2/repository
             !~/.m2/repository/org/apache/zeppelin/
             ~/.spark-dist
+            ~/.cache
           key: ${{ runner.os }}-zeppelin-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-zeppelin-
@@ -236,6 +240,7 @@ jobs:
             ~/.m2/repository
             !~/.m2/repository/org/apache/zeppelin/
             ~/.spark-dist
+            ~/.cache
           key: ${{ runner.os }}-zeppelin-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-zeppelin-
@@ -280,6 +285,7 @@ jobs:
             ~/.m2/repository
             !~/.m2/repository/org/apache/zeppelin/
             ~/.spark-dist
+            ~/.cache
           key: ${{ runner.os }}-zeppelin-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-zeppelin-
@@ -328,6 +334,7 @@ jobs:
             ~/.m2/repository
             !~/.m2/repository/org/apache/zeppelin/
             ~/.spark-dist
+            ~/.cache
           key: ${{ runner.os }}-zeppelin-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-zeppelin-
@@ -391,6 +398,7 @@ jobs:
             ~/.m2/repository
             !~/.m2/repository/org/apache/zeppelin/
             ~/.spark-dist
+            ~/.cache
           key: ${{ runner.os }}-zeppelin-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-zeppelin-
