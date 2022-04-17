@@ -604,6 +604,16 @@ public class JDBCInterpreter extends KerberosInterpreter {
 
   // only add tags for hive jdbc
   private String appendTagsToURL(String url, InterpreterContext context) {
+    // To deal engines which don't need to set application tag
+    String disabledAppTypeStr = getProperty("zeppelin.jdbc.hive.tagged.engines.exclude");
+    HashSet<String> disabledAppType = new HashSet<>();
+    if (StringUtils.isNotEmpty(disabledAppTypeStr)) {
+      disabledAppType = new HashSet<>(Arrays.asList(disabledAppTypeStr.split(",")));
+      if ((disabledAppType.contains("MAPREDUCE") && disabledAppType.contains("TEZ"))) {
+        return url;
+      }
+    }
+
     StringBuilder builder = new StringBuilder(url);
     if (url.startsWith("jdbc:hive2:")) {
       Integer lastIndexOfQMark = builder.indexOf("?");
@@ -613,8 +623,12 @@ public class JDBCInterpreter extends KerberosInterpreter {
       } else {
         lastIndexOfQMark++;
       }
-      builder.insert(lastIndexOfQMark, "mapreduce.job.tags=" + context.getParagraphId() + ";");
-      builder.insert(lastIndexOfQMark, "tez.application.tags=" + context.getParagraphId() + ";");
+      if (!disabledAppType.contains("MAPREDUCE")) {
+        builder.insert(lastIndexOfQMark, "mapreduce.job.tags=" + context.getParagraphId() + ";");
+      }
+      if (!disabledAppType.contains("TEZ")) {
+        builder.insert(lastIndexOfQMark, "tez.application.tags=" + context.getParagraphId() + ";");
+      }
     }
     return builder.toString();
   }

@@ -143,6 +143,13 @@
         "defaultValue": "1000",
         "description": "Query interval for hive statement",
         "type": "number"
+      },
+      "zeppelin.jdbc.hive.tagged.engines.exclude": {
+        "envName": null,
+        "propertyName": "zeppelin.jdbc.hive.tagged.engines.exclude",
+        "defaultValue": "",
+        "description": "hive engines which don't need to set yarn application tag. Example: TEZ,MAPREDUCE",
+        "type": "string"
       }
     },
     "editor": {
