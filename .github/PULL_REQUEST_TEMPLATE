@@ -4,7 +4,13 @@ First time? Check out the contributing guide - https://zeppelin.apache.org/contr
 
 
 ### What type of PR is it?
-[Bug Fix | Improvement | Feature | Documentation | Hot Fix | Refactoring]
+Bug Fix
+Improvement
+Feature
+Documentation
+Hot Fix
+Refactoring
+*Please leave your type of PR only*
 
 ### Todos
 * [ ] - Task
@@ -20,6 +26,6 @@ First time? Check out the contributing guide - https://zeppelin.apache.org/contr
 ### Screenshots (if appropriate)
 
 ### Questions:
-* Does the licenses files need update?
+* Does the licenses files need to update?
 * Is there breaking changes for older versions?
 * Does this needs documentation?
