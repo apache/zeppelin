@@ -15,7 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
-# https://cwiki.apache.org/confluence/display/INFRA/Git+-+.asf.yaml+features
+# https://cwiki.apache.org/confluence/display/INFRA/.asf.yaml+features+for+git+repositories
 
 github:
   description: "Web-based notebook that enables data-driven, interactive data analytics and collaborative documents with SQL, Scala and more."
