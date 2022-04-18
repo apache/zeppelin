@@ -40,7 +40,7 @@ public class OSSNotebookRepo implements NotebookRepoWithVersionControl {
 
   private String bucketName;
   private String rootFolder;
-  private static int NOTE_MAX_VERSION_NUM;
+  private int NOTE_MAX_VERSION_NUM;
 
   // Use ossOperator instead of ossClient directly
   private RemoteStorageOperator ossOperator;
