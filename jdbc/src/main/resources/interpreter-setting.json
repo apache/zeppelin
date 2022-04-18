@@ -77,7 +77,7 @@
       "zeppelin.jdbc.auth.kerberos.proxy.enable": {
         "envName": null,
         "propertyName": "zeppelin.jdbc.auth.kerberos.proxy.enable",
-        "defaultValue": "true",
+        "defaultValue": true,
         "description": "When auth type is Kerberos, enable/disable Kerberos proxy with the login user to get the connection. Default value is true.",
         "type": "checkbox"
       },
@@ -144,12 +144,12 @@
         "description": "Query interval for hive statement",
         "type": "number"
       },
-      "zeppelin.jdbc.hive.tagged.engines.exclude": {
+      "zeppelin.jdbc.hive.engines.tag.enable": {
         "envName": null,
-        "propertyName": "zeppelin.jdbc.hive.tagged.engines.exclude",
-        "defaultValue": "",
-        "description": "hive engines which don't need to set yarn application tag. Example: TEZ,MAPREDUCE",
-        "type": "string"
+        "propertyName": "zeppelin.jdbc.hive.engines.tag.enable",
+        "defaultValue": true,
+        "description": "Set application tag for applications started by hive engines",
+        "type": "checkbox"
       }
     },
     "editor": {
