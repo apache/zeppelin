@@ -502,6 +502,21 @@ public class ZeppelinClient {
     return queryNoteResult(noteId);
   }
 
+  /**
+   * Cancel a running note.
+   *
+   * @param noteId
+   * @throws Exception
+   */
+  public void cancelNote(String noteId) throws Exception {
+    HttpResponse<JsonNode> response = Unirest
+            .delete("/notebook/job/{noteId}")
+            .routeParam("noteId", noteId)
+            .asJson();
+    checkResponse(response);
+    JsonNode jsonNode = response.getBody();
+    checkJsonNodeStatus(jsonNode);
+  }
 
   /**
    * Import note with given note json content to the specified notePath.
