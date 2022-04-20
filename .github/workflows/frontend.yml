@@ -48,7 +48,7 @@ jobs:
       - name: Install application
         run: ./mvnw -B install -DskipTests -DskipRat -pl ${INTERPRETERS} -Phadoop2 -Pscala-2.11
       - name: Run headless test
-        run: xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" ./mvnw verify -DskipRat -pl zeppelin-web -Phadoop2 -Pscala-2.11 -Pweb-e2e -B
+        run: xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" ./mvnw verify -DskipRat -pl zeppelin-web -Pscala-2.11 -Pweb-e2e -B
       - name: Print zeppelin logs
         if: always()
         run: if [ -d "logs" ]; then cat logs/*; fi
