@@ -122,6 +122,7 @@ limitations under the License.
 #### Developer Guide
 * Extending Zeppelin
   * [Writing Zeppelin Interpreter](./development/writing_zeppelin_interpreter.html)
+  * [Writing Zeppelin Plugin](./development/writing_zeppelin_plugin.html)
   * [Helium: Overview](./development/helium/overview.html)
   * [Helium: Writing Application](./development/helium/writing_application.html)
   * [Helium: Writing Spell](./development/helium/writing_spell.html)
