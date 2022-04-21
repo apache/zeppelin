@@ -119,5 +119,4 @@ public class MockStorageOperator implements RemoteStorageOperator {
   public void shutdown() {
 
   }
-
 }

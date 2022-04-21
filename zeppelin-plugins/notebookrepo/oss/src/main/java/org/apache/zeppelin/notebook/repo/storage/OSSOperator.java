@@ -150,6 +150,4 @@ public class OSSOperator implements RemoteStorageOperator {
   public void shutdown() {
     ossClient.shutdown();
   }
-
-
 }

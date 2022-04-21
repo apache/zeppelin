@@ -40,7 +40,7 @@ public class OSSNotebookRepo implements NotebookRepoWithVersionControl {
 
   private String bucketName;
   private String rootFolder;
-  private int NOTE_MAX_VERSION_NUM;
+  private int maxVersionNumber;
 
   // Use ossOperator instead of ossClient directly
   private RemoteStorageOperator ossOperator;
@@ -53,7 +53,7 @@ public class OSSNotebookRepo implements NotebookRepoWithVersionControl {
     String endpoint = conf.getOSSEndpoint();
     bucketName = conf.getOSSBucketName();
     rootFolder = conf.getNotebookDir();
-    NOTE_MAX_VERSION_NUM = conf.getOSSNoteMaxVersionNum();
+    maxVersionNumber = conf.getOSSNoteMaxVersionNum();
     // rootFolder is part of OSS key
     rootFolder = formatPath(rootFolder);
     String accessKeyId = conf.getOSSAccessKeyId();
@@ -211,7 +211,7 @@ public class OSSNotebookRepo implements NotebookRepoWithVersionControl {
 
   @Override
   public Revision checkpoint(String noteId, String notePath, String checkpointMsg, AuthenticationInfo subject) throws IOException {
-    if (NOTE_MAX_VERSION_NUM <= 0) {
+    if (maxVersionNumber <= 0) {
       throw new IOException("Version control is closed because the value of zeppelin.notebook.oss.version.max is set to 0");
     }
 
@@ -234,7 +234,7 @@ public class OSSNotebookRepo implements NotebookRepoWithVersionControl {
       String existedRevisionsInfoText = ossOperator.getTextObject(bucketName, revisonInfoPath);
       revisionsHistory = RevisionsInfo.fromText(existedRevisionsInfoText);
       // control the num of revison files, clean the oldest one if it exceeds.
-      if (revisionsHistory.size() >= NOTE_MAX_VERSION_NUM) {
+      if (revisionsHistory.size() >= maxVersionNumber) {
         Revision deletedRevision = revisionsHistory.removeLast();
         ossOperator.deleteFile(bucketName, buildRevisionsFileAbsolutePath(noteId, notePath, deletedRevision.id));
       }
@@ -259,7 +259,7 @@ public class OSSNotebookRepo implements NotebookRepoWithVersionControl {
 
   @Override
   public List<Revision> revisionHistory(String noteId, String notePath, AuthenticationInfo subject) throws IOException {
-    if (NOTE_MAX_VERSION_NUM <= 0) {
+    if (maxVersionNumber <= 0) {
       return new ArrayList<>();
     }
 
@@ -282,5 +282,4 @@ public class OSSNotebookRepo implements NotebookRepoWithVersionControl {
     }
     return revisionNote;
   }
-
 }
