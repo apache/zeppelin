@@ -227,6 +227,7 @@ The following components are provided under Apache License.
     (Apache 2.0) Dropwizard Jackson Integration for Metrics (io.dropwizard.metrics:metrics-json:4.1.14) - https://github.com/dropwizard/metrics/blob/release/4.1.x/LICENSE
     (Apache 2.0) Dropwizard Metrics Health Checks (io.dropwizard.metrics:metrics-healthchecks:4.1.14) - https://github.com/dropwizard/metrics/blob/release/4.1.x/LICENSE
     (Apache 2.0) Dropwizard Metrics Integration with JMX (io.dropwizard.metrics:metrics-jmx:4.1.14) - https://github.com/dropwizard/metrics/blob/release/4.1.x/LICENSE
+    (Apache 2.0) Plugin Framework for Java (org.pf4j:pf4j:3.6.0) - https://github.com/pf4j/pf4j
 
 ========================================================================
 MIT licenses
@@ -285,6 +286,7 @@ The text of each license is also included at licenses/LICENSE-[project]-[version
     (The MIT License) ansi-up 2.0.2 (https://github.com/drudru/ansi_up) - https://github.com/drudru/ansi_up#license
     (The MIT License) bcpkix-jdk15on 1.60 (org.bouncycastle:bcpkix-jdk15on:1.60 https://github.com/bcgit/bc-java) - https://github.com/bcgit/bc-java/blob/master/LICENSE.html
     (The MIT License) influxdb-client-java 1.4.0 (com.influxdb:influxdb-client-java:1.4.0 https://github.com/influxdata/influxdb-client-java) - https://github.com/influxdata/influxdb-client-java/blob/master/LICENSE
+    (The MIT License) Java implementation of the SemVer Specification (com.github.zafarkhaja:java-semver:0.9.0) - https://github.com/zafarkhaja/jsemver
 
 ========================================================================
 BSD-style licenses
