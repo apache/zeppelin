@@ -72,6 +72,9 @@ public class ZPluginManager implements IPluginManager {
     List<NotebookRepo> notebookRepos = pluginManager.getExtensions(NotebookRepo.class);
     for (NotebookRepo notebookRepo : notebookRepos) {
       if (notebookRepoClassName.equals(notebookRepo.getClass().getName())) {
+        if (notebookRepo instanceof ExtensionWithPluginManager) {
+          ((ExtensionWithPluginManager) notebookRepo).setPluginManager(this);
+        }
         return notebookRepo;
       }
     }
@@ -86,6 +89,9 @@ public class ZPluginManager implements IPluginManager {
     List<InterpreterLauncher> interpreterLaunchers = pluginManager.getExtensions(InterpreterLauncher.class);
     for (InterpreterLauncher interpreterLauncher : interpreterLaunchers) {
       if (launcherPlugin.equals(interpreterLauncher.getClass().getSimpleName())) {
+        if (interpreterLauncher instanceof ExtensionWithPluginManager) {
+          ((ExtensionWithPluginManager) interpreterLauncher).setPluginManager(this);
+        }
         interpreterLauncher.init(zConf, recoveryStorage);
         return interpreterLauncher;
       }

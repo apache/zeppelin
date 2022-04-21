@@ -18,6 +18,7 @@ package org.apache.zeppelin.interpreter.launcher;
 
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.InterpreterOption;
+import org.apache.zeppelin.plugin.IPluginManager;
 import org.apache.zeppelin.plugin.ZPluginManager;
 import org.junit.Before;
 import org.junit.Test;
@@ -46,7 +47,7 @@ public class DockerInterpreterProcessTest {
   private static final Logger LOGGER = LoggerFactory.getLogger(DockerInterpreterProcessTest.class);
 
   private ZeppelinConfiguration zconf;
-  private ZPluginManager pluginManager;
+  private IPluginManager pluginManager;
 
   @Before
   public void setUp() {
@@ -58,7 +59,6 @@ public class DockerInterpreterProcessTest {
   public void testCreateIntpProcess() throws IOException {
     DockerInterpreterLauncher launcher
         = (DockerInterpreterLauncher) pluginManager.createInterpreterLauncher("DockerInterpreterLauncher", null);
-    launcher.setPluginManager(pluginManager);
     Properties properties = new Properties();
     properties.setProperty(
         ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT.getVarName(), "5000");

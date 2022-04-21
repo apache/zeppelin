@@ -30,6 +30,7 @@ import org.apache.zeppelin.interpreter.recovery.RecoveryStorage;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterRunningProcess;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterUtils;
+import org.apache.zeppelin.plugin.ExtensionWithPluginManager;
 import org.apache.zeppelin.plugin.IPluginManager;
 import org.pf4j.Extension;
 import org.slf4j.Logger;
@@ -38,8 +39,6 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-
-import javax.inject.Inject;
 
 import static org.apache.zeppelin.cluster.event.ClusterEvent.CREATE_INTP_PROCESS;
 import static org.apache.zeppelin.cluster.meta.ClusterMeta.INTP_TSERVER_HOST;
@@ -52,16 +51,15 @@ import static org.apache.zeppelin.cluster.meta.ClusterMeta.SERVER_PORT;
  */
 @Extension(points = InterpreterLauncher.class)
 public class ClusterInterpreterLauncher extends StandardInterpreterLauncher
-    implements ClusterEventListener {
+  implements ClusterEventListener, ExtensionWithPluginManager {
   private static final Logger LOGGER = LoggerFactory.getLogger(ClusterInterpreterLauncher.class);
 
   private InterpreterLaunchContext context;
   private ClusterManagerServer clusterServer;
   private IPluginManager pluginManager;
 
-  @Inject
-  void setPluginManager(IPluginManager pluginManager) {
-    LOGGER.info("Injecting PluginManager");
+  @Override
+  public void setPluginManager(IPluginManager pluginManager) {
     this.pluginManager = pluginManager;
   }
 
@@ -238,7 +236,6 @@ public class ClusterInterpreterLauncher extends StandardInterpreterLauncher
     InterpreterClient intpProcess = null;
     if (isRunningOnDocker(zConf)) {
       DockerInterpreterLauncher dockerIntpLauncher = (DockerInterpreterLauncher) pluginManager.createInterpreterLauncher("DockerInterpreterLauncher", null);
-      dockerIntpLauncher.setPluginManager(pluginManager);
       dockerIntpLauncher.setProperties(context.getProperties());
       intpProcess = dockerIntpLauncher.launch(context);
     } else {

@@ -16,6 +16,7 @@
  */
 package org.apache.zeppelin.interpreter.launcher;
 
+import org.apache.zeppelin.plugin.ExtensionWithPluginManager;
 import org.apache.zeppelin.plugin.IPluginManager;
 import org.pf4j.Extension;
 import org.slf4j.Logger;
@@ -24,21 +25,18 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.Map;
 
-import javax.inject.Inject;
-
 /**
  * Interpreter Launcher which use shell script to launch the interpreter process.
  */
 @Extension
-public class DockerInterpreterLauncher extends InterpreterLauncher {
+public class DockerInterpreterLauncher extends InterpreterLauncher implements ExtensionWithPluginManager {
   private static final Logger LOGGER = LoggerFactory.getLogger(DockerInterpreterLauncher.class);
 
   private InterpreterLaunchContext context;
   private IPluginManager pluginManager;
 
-  @Inject
-  void setPluginManager(IPluginManager pluginManager) {
-    LOGGER.info("Injecting PluginManager");
+  @Override
+  public void setPluginManager(IPluginManager pluginManager) {
     this.pluginManager = pluginManager;
   }
 

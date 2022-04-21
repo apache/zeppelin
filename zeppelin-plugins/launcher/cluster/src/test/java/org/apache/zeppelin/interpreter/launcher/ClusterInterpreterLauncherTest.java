@@ -115,7 +115,6 @@ public class ClusterInterpreterLauncherTest extends ClusterMockTest {
 
     ClusterInterpreterLauncher launcher
         = (ClusterInterpreterLauncher) pluginManager.createInterpreterLauncher("ClusterInterpreterLauncher", null);
-    launcher.setPluginManager(pluginManager);
     Properties properties = new Properties();
     properties.setProperty(
         ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT.getVarName(), "1000");
