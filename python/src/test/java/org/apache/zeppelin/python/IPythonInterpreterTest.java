@@ -307,16 +307,8 @@ public class IPythonInterpreterTest extends BasePythonInterpreterTest {
         "df.hvplot()", context);
     assertEquals(context.out.toInterpreterResultMessage().get(0).getData(),
             InterpreterResult.Code.SUCCESS, result.code());
-    interpreterResultMessages = context.out.toInterpreterResultMessage();
-
-    assertEquals(interpreterResultMessages.size() + ":" + context.out.toString(),
-            3, interpreterResultMessages.size());
-    // the first message is the warning text message.
-    assertEquals(InterpreterResult.Type.HTML, interpreterResultMessages.get(0).getType());
-    assertEquals(InterpreterResult.Type.HTML, interpreterResultMessages.get(1).getType());
-    assertEquals(InterpreterResult.Type.HTML, interpreterResultMessages.get(2).getType());
     // docs_json is the source data of plotting which bokeh would use to render the plotting.
-    assertTrue(interpreterResultMessages.get(2).getData().contains("docs_json"));
+    assertTrue(context.out.toString(), context.out.toString().contains("docs_json"));
   }
 
 
