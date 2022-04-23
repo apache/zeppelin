@@ -739,6 +739,8 @@ See [User Impersonation in interpreter](../usage/interpreter/user_impersonation.
   </tr>
 </table>
 
+See [Hive Interpreter](../interpreter/hive.html) for more properties about Hive interpreter.
+
 ### Presto/Trino
 
 Properties
