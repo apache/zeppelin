@@ -431,6 +431,50 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
   }
 
   @Test
+  public void testCancelNoteJob() throws Exception {
+    LOG.info("Running testCancelNoteJob");
+    String note1Id = null;
+    Notebook notebook = TestUtils.getInstance(Notebook.class);
+    try {
+      note1Id = notebook.createNote("note1", anonymous);
+      // Add 3 paragraphs for the note.
+      List<Paragraph> paragraphs = notebook.processNote(note1Id,
+              note1 -> {
+                List<Paragraph> paragraphsList = new ArrayList<>();
+                for (int i = 0; i < 3; i++) {
+                  Paragraph p1 = note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
+                  p1.setText("%python\nimport time\ntime.sleep(10)\nprint('done')");
+                  note1.run(p1.getId());
+                  paragraphsList.add(p1);
+                }
+                return paragraphsList;
+              });
+      //The first paragraph is running, and the other two is pending.
+      paragraphs.get(0).waitUntilRunning();
+
+
+      // cancel running note
+      CloseableHttpResponse delete = httpDelete("/notebook/job/" + note1Id);
+      assertThat(delete, isAllowed());
+      Map<String, Object> resp = gson.fromJson(EntityUtils.toString(delete.getEntity(), StandardCharsets.UTF_8),
+              new TypeToken<Map<String, Object>>() {
+              }.getType());
+      assertEquals("OK", resp.get("status"));
+      delete.close();
+      for (Paragraph p : paragraphs) {
+        p.waitUntilFinished();
+        assertEquals(Job.Status.ABORT, p.getStatus());
+      }
+
+    } finally {
+      // cleanup
+      if (null != note1Id) {
+        notebook.removeNote(note1Id, anonymous);
+      }
+    }
+  }
+
+  @Test
   public void testRunParagraphSynchronously() throws IOException {
     LOG.info("Running testRunParagraphSynchronously");
     String note1Id = null;
