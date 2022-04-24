@@ -604,7 +604,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
 
   // only add tags for hive jdbc
   private String appendTagsToURL(String url, InterpreterContext context) {
-    if (!Boolean.parseBoolean(getProperty("zeppelin.jdbc.hive.engines.tag.enable"))) {
+    if (!Boolean.parseBoolean(getProperty("zeppelin.jdbc.hive.engines.tag.enable", "true"))) {
       return url;
     }
 
