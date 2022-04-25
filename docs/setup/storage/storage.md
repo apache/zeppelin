@@ -454,6 +454,16 @@ And you should configure oss related properties in file **zeppelin-site.xml**.
   <description>Access key secret for your OSS account</description>
 </property>
 
+<property>
+  <name>zeppelin.notebook.oss.version.max</name>
+  <value>30</value>
+  <description>
+    Max num of note versions in OSSNoteBookRepo. 
+    It's not mandatory, the default value is 30. 
+    A value of 0 means that version control in OSSNoteBookRepo is disabled.
+  </description>
+</property>
+
 ```
 
 Uncomment the next property for use OSSNotebookRepo class:
