@@ -19,9 +19,9 @@ limitations under the License.
 -->
 {% include JB/setup %}
 
-# Zeppelin interpreter on Docker
+# Zeppelin Interpreter on Docker
 
-Zeppelin service runs on local server. zeppelin is able to run the interpreter in the docker container, Isolating the operating environment of the interpreter through the docker container. Zeppelin can be easily used without having to install python, spark, etc. on the local node.
+Zeppelin service runs on local server. Zeppelin is able to run the interpreter in the docker container, Isolating the operating environment of the interpreter through the docker container. Zeppelin can be easily used without having to install python, spark, etc. on the local node.
 
 Key benefits are
 
