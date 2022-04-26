@@ -498,10 +498,10 @@ export class Message {
     });
   }
 
-  editorSetting(paragraphId: string, replName: string): void {
+  editorSetting(paragraphId: string, paragraphText: string): void {
     this.send<OP.EDITOR_SETTING>(OP.EDITOR_SETTING, {
       paragraphId: paragraphId,
-      magic: replName
+      paragraphText: paragraphText
     });
   }
 

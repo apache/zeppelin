@@ -102,7 +102,7 @@ export interface SaveInterpreterBindings {
 
 export interface EditorSettingSend {
   paragraphId: string;
-  magic: string;
+  paragraphText: string;
 }
 
 export interface EditorSettingReceived {

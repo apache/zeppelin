@@ -179,13 +179,13 @@ export class NotebookParagraphCodeEditorComponent implements OnChanges, OnDestro
       const interpreterName = this.getInterpreterName(this.text);
       if (this.interpreterName !== interpreterName) {
         this.interpreterName = interpreterName;
-        this.getEditorSetting(interpreterName);
+        this.getEditorSetting();
       }
     }
   }
 
-  getEditorSetting(interpreterName: string) {
-    this.messageService.editorSetting(this.pid, interpreterName);
+  getEditorSetting() {
+    this.messageService.editorSetting(this.pid, this.text);
   }
 
   layout() {

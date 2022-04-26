@@ -160,7 +160,8 @@ export enum OP {
   /**
    * [c-s]
    * ask paragraph editor setting
-   * @param magic magic keyword written in paragraph
+   * @param paragraphId paragraph id
+   * @param paragraphText text of the paragraph
    * ex) spark.spark or spark
    */
   EDITOR_SETTING = 'EDITOR_SETTING',
