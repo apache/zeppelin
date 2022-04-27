@@ -56,6 +56,8 @@ public class ZeppelinClientExample {
               "%python\nimport time\ntime.sleep(5)\nprint('done')");
       zClient.submitParagraph(noteId, paragraphId2);
       zClient.waitUtilParagraphRunning(noteId, paragraphId2);
+      // It's also ok here to call zClient.cancelNote(noteId);
+      // CancelNote() would cancel all paragraphs in the note.
       zClient.cancelParagraph(noteId, paragraphId2);
       paragraphResult = zClient.waitUtilParagraphFinish(noteId, paragraphId2);
       System.out.println("Added new paragraph, submit it then cancel it");
