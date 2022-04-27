@@ -127,6 +127,21 @@ See the example below of settings and dependencies.
     <td></td>
     <td><b>( Optional ) </b>Other properties used by the driver of <code>%hive(${prefix})</code> </td>
   </tr>
+  <tr>
+    <td>zeppelin.jdbc.hive.timeout.threshold</td>
+    <td>60000</td>
+    <td>Timeout for hive job timeout</td>
+  </tr>
+  <tr>
+    <td>zeppelin.jdbc.hive.monitor.query_interval</td>
+    <td>1000</td>
+    <td>Query interval for hive statement</td>
+  </tr>
+  <tr>
+    <td>zeppelin.jdbc.hive.engines.tag.enable</td>
+    <td>true</td>
+    <td>Set application tag for applications started by hive engines</td>
+  </tr>
 </table>
 
 This interpreter provides multiple configuration with `${prefix}`. User can set a multiple connection properties by this prefix. It can be used like `%hive(${prefix})`.
