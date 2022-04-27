@@ -340,8 +340,8 @@ Sources descending by priority:
   <tr>
     <td><h6 class="properties">ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT</h6></td>
     <td><h6 class="properties">zeppelin.interpreter.connect.timeout</h6></td>
-    <td>30000</td>
-    <td>Output message from interpreter exceeding the limit will be truncated</td>
+    <td>600000</td>
+    <td>Interpreter process connect timeout in msec.</td>
   </tr>
   <tr>
     <td><h6 class="properties">ZEPPELIN_DEP_LOCALREPO</h6></td>
