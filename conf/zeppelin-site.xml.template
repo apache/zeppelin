@@ -417,7 +417,7 @@
 
 <property>
   <name>zeppelin.interpreter.connect.timeout</name>
-  <value>60000</value>
+  <value>600000</value>
   <description>Interpreter process connect timeout in msec.</description>
 </property>
 
