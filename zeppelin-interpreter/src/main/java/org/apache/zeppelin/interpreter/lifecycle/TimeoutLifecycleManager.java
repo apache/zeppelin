@@ -46,9 +46,9 @@ public class TimeoutLifecycleManager extends LifecycleManager {
   public TimeoutLifecycleManager(ZeppelinConfiguration zConf,
                                  RemoteInterpreterServer remoteInterpreterServer) {
     super(zConf, remoteInterpreterServer);
-    long checkInterval = zConf.getLong(ZeppelinConfiguration.ConfVars
+    long checkInterval = zConf.getTime(ZeppelinConfiguration.ConfVars
             .ZEPPELIN_INTERPRETER_LIFECYCLE_MANAGER_TIMEOUT_CHECK_INTERVAL);
-    long timeoutThreshold = zConf.getLong(
+    long timeoutThreshold = zConf.getTime(
         ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_LIFECYCLE_MANAGER_TIMEOUT_THRESHOLD);
     ScheduledExecutorService checkScheduler = ExecutorFactory.singleton()
         .createOrGetScheduled("TimeoutLifecycleManager", 1);
