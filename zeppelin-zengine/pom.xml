@@ -40,7 +40,6 @@
     <frontend.maven.plugin.version>1.3</frontend.maven.plugin.version>
     <commons.vfs2.version>2.6.0</commons.vfs2.version>
     <eclipse.jgit.version>4.5.4.201711221230-r</eclipse.jgit.version>
-    <pf4j.version>3.6.0</pf4j.version>
   </properties>
 
   <dependencies>
