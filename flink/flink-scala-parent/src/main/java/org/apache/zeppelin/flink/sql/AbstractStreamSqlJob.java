@@ -139,19 +139,7 @@ public abstract class AbstractStreamSqlJob {
              // new CollectStreamTableSink(iterator.getBindAddress(), iterator.getPort(), serializer);
       collectTableSink = (RetractStreamTableSink) collectTableSink.configure(
               outputType.getFieldNames(), outputType.getFieldTypes());
-
-      // workaround, otherwise it won't find the sink properly
-      String originalCatalog = stenv.getCurrentCatalog();
-      String originalDatabase = stenv.getCurrentDatabase();
-      try {
-        stenv.useCatalog("default_catalog");
-        stenv.useDatabase("default_database");
-        flinkShims.registerTableSink(stenv, tableName, collectTableSink);
-        table.insertInto(tableName);
-      } finally {
-        stenv.useCatalog(originalCatalog);
-        stenv.useDatabase(originalDatabase);
-      }
+      flinkShims.registerTableSink(stenv, tableName, collectTableSink);
 
       long delay = 1000L;
       long period = Long.parseLong(
@@ -163,7 +151,7 @@ public abstract class AbstractStreamSqlJob {
 
       LOGGER.info("Run job: " + tableName + ", parallelism: " + parallelism);
       String jobName = context.getStringLocalProperty("jobName", tableName);
-      stenv.execute(jobName);
+      table.executeInsert(tableName).await();
       LOGGER.info("Flink Job is finished, jobName: " + jobName);
       // wait for retrieve thread consume all data
       LOGGER.info("Waiting for retrieve thread to be done");

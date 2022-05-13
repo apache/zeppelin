@@ -198,7 +198,7 @@ jobs:
             ${{ runner.os }}-zeppelin-
       - name: install environment
         run: |
-          ./mvnw install -DskipTests -DskipRat -Phadoop2 -Pintegration -pl zeppelin-interpreter-integration,zeppelin-web,spark-submit,spark/scala-2.11,spark/scala-2.12,spark/scala-2.13,markdown,flink-cmd,flink/flink-scala-2.11,flink/flink-scala-2.12,jdbc,shell -am
+          ./mvnw install -DskipTests -DskipRat -Phadoop2 -Pintegration -pl zeppelin-interpreter-integration,zeppelin-web,spark-submit,spark/scala-2.11,spark/scala-2.12,spark/scala-2.13,markdown,flink-cmd,flink/flink-scala-2.11,flink/flink-scala-2.12,jdbc,shell -am -Pflink-114
           ./mvnw package -DskipRat -pl zeppelin-plugins -amd -DskipTests -B
       - name: Setup conda environment with python 3.7 and R
         uses: conda-incubator/setup-miniconda@v2
@@ -216,13 +216,16 @@ jobs:
           R -e "IRkernel::installspec()"
       - name: run tests
         run: ./mvnw test -DskipRat -pl zeppelin-interpreter-integration -Phadoop2 -Pintegration -DfailIfNoTests=false -Dtest=ZeppelinClientIntegrationTest,ZeppelinClientWithAuthIntegrationTest,ZSessionIntegrationTest,ShellIntegrationTest,JdbcIntegrationTest
-
+      - name: Print zeppelin logs
+        if: always()
+        run: if [ -d "logs" ]; then cat logs/*; fi
+        
   flink-test-and-flink-integration-test:
     runs-on: ubuntu-20.04
     strategy:
       fail-fast: false
       matrix:
-        flink: [112, 113, 114]
+        flink: [112, 113, 114, 115]
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -244,9 +247,15 @@ jobs:
           key: ${{ runner.os }}-zeppelin-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-zeppelin-
-      - name: install environment
+      - name: install environment for flink before 1.15 (exclusive)
+        if: matrix.flink != '115'
         run: |
           ./mvnw install -DskipTests -DskipRat -am -pl flink/flink-scala-2.11,flink/flink-scala-2.12,flink-cmd,zeppelin-interpreter-integration -Pflink-${{ matrix.flink }} -Phadoop2 -Pintegration -B
+          ./mvnw clean package -pl zeppelin-plugins -amd -DskipTests -B
+      - name: install environment for flink after 1.15 (inclusive)
+        if: matrix.flink == '115'
+        run: |
+          ./mvnw install -DskipTests -DskipRat -am -pl flink/flink-scala-2.12,flink-cmd,zeppelin-interpreter-integration -Pflink-${{ matrix.flink }} -Phadoop2 -Pintegration -B
           ./mvnw clean package -pl zeppelin-plugins -amd -DskipTests -B
       - name: Setup conda environment with python 3.7 and
         uses: conda-incubator/setup-miniconda@v2
@@ -259,8 +268,16 @@ jobs:
           channel-priority: true
           auto-activate-base: false
           use-mamba: true
-      - name: run tests
+      - name: run tests for flink before 1.15 (exclusive)
+        if: matrix.flink != '115'
         run: ./mvnw test -DskipRat -pl flink/flink-scala-2.11,flink/flink-scala-2.12,flink-cmd,zeppelin-interpreter-integration -Pflink-${{ matrix.flink }} -Phadoop2 -Pintegration -DfailIfNoTests=false -B -Dtest=org.apache.zeppelin.flink.*Test,FlinkIntegrationTest${{ matrix.flink }}
+      - name: run tests for flink before 1.15 (inclusive)
+        if: matrix.flink == '115'
+        run: ./mvnw test -DskipRat -pl flink/flink-scala-2.12,flink-cmd,zeppelin-interpreter-integration -Pflink-${{ matrix.flink }} -Phadoop2 -Pintegration -DfailIfNoTests=false -B -Dtest=org.apache.zeppelin.flink.*Test,FlinkIntegrationTest${{ matrix.flink }}
+      - name: Print zeppelin logs
+        if: always()
+        run: if [ -d "logs" ]; then cat logs/*; fi
+
 
   spark-integration-test:
     runs-on: ubuntu-20.04

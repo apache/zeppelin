@@ -136,7 +136,7 @@ public class FlinkInterpreterLauncher extends StandardInterpreterLauncher {
   private String chooseFlinkAppJar(String flinkHome) throws IOException {
     File flinkLibFolder = new File(flinkHome, "lib");
     List<File> flinkDistFiles =
-            Arrays.stream(flinkLibFolder.listFiles(file -> file.getName().contains("flink-dist_")))
+            Arrays.stream(flinkLibFolder.listFiles(file -> file.getName().contains("flink-dist")))
                     .collect(Collectors.toList());
     if (flinkDistFiles.size() > 1) {
       throw new IOException("More than 1 flink-dist files: " +
@@ -144,9 +144,15 @@ public class FlinkInterpreterLauncher extends StandardInterpreterLauncher {
                       .map(file -> file.getAbsolutePath())
                       .collect(Collectors.joining(",")));
     }
-    String scalaVersion = "2.11";
-    if (flinkDistFiles.get(0).getName().contains("2.12")) {
-      scalaVersion = "2.12";
+    if (flinkDistFiles.isEmpty()) {
+      throw new IOException(String.format("No flink-dist jar found under {0}", flinkHome + "/lib"));
+    }
+
+    // scala 2.12 is the only support scala version starting from Flink 1.15,
+    // so use 2.12 as the default value
+    String scalaVersion = "2.12";
+    if (flinkDistFiles.get(0).getName().contains("2.11")) {
+      scalaVersion = "2.11";
     }
     final String flinkScalaVersion = scalaVersion;
     File flinkInterpreterFolder =
@@ -156,8 +162,11 @@ public class FlinkInterpreterLauncher extends StandardInterpreterLauncher {
                     .listFiles(file -> file.getName().endsWith(".jar")))
             .filter(file -> file.getName().contains(flinkScalaVersion))
             .collect(Collectors.toList());
-    if (flinkScalaJars.size() > 1) {
-      throw new IOException("More than 1 flink scala files: " +
+
+    if (flinkScalaJars.isEmpty()) {
+      throw new IOException("No flink scala jar file is found");
+    } else if (flinkScalaJars.size() > 1) {
+      throw new IOException("More than 1 flink scala jar files: " +
               flinkScalaJars.stream()
                       .map(file -> file.getAbsolutePath())
                       .collect(Collectors.joining(",")));

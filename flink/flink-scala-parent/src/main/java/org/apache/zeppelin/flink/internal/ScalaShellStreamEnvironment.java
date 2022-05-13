@@ -79,21 +79,16 @@ public class ScalaShellStreamEnvironment extends StreamExecutionEnvironment {
   }
 
   public Object getFlinkConfiguration() {
-    if (flinkVersion.isAfterFlink114()) {
-      // starting from Flink 1.14, getConfiguration() return the readonly copy of internal
-      // configuration, so we need to get the internal configuration object via reflection.
-      try {
-        Field configurationField = StreamExecutionEnvironment.class.getDeclaredField("configuration");
-        configurationField.setAccessible(true);
-        return configurationField.get(this);
-      } catch (Exception e) {
-        throw new RuntimeException("Fail to get configuration from StreamExecutionEnvironment", e);
-      }
-    } else {
-      return super.getConfiguration();
+    // starting from Flink 1.14, getConfiguration() return the readonly copy of internal
+    // configuration, so we need to get the internal configuration object via reflection.
+    try {
+      Field configurationField = StreamExecutionEnvironment.class.getDeclaredField("configuration");
+      configurationField.setAccessible(true);
+      return configurationField.get(this);
+    } catch (Exception e) {
+      throw new RuntimeException("Fail to get configuration from StreamExecutionEnvironment", e);
     }
   }
-
 
   private List<URL> getUpdatedJarFiles() throws MalformedURLException {
     final URL jarUrl = flinkILoop.writeFilesToDisk().getAbsoluteFile().toURI().toURL();

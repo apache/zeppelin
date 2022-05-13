@@ -48,6 +48,7 @@ import org.apache.flink.table.functions.AggregateFunction;
 import org.apache.flink.table.functions.ScalarFunction;
 import org.apache.flink.table.functions.TableAggregateFunction;
 import org.apache.flink.table.functions.TableFunction;
+import org.apache.flink.table.module.ModuleManager;
 import org.apache.flink.table.planner.calcite.FlinkTypeFactory;
 import org.apache.flink.table.sinks.TableSink;
 import org.apache.flink.table.utils.PrintUtils;
@@ -92,6 +93,11 @@ public class Flink112Shims extends FlinkShims {
 
   public void initInnerStreamSqlInterpreter(FlinkSqlContext flinkSqlContext) {
     this.streamSqlInterpreter = new Flink112SqlInterpreter(flinkSqlContext, false);
+  }
+
+  @Override
+  public Object createFunctionCatalog(Object tableConfig, Object catalogManager, Object moduleManager) {
+    return new FunctionCatalog((TableConfig) tableConfig, (CatalogManager) catalogManager, (ModuleManager) moduleManager);
   }
 
   @Override
@@ -265,7 +271,7 @@ public class Flink112Shims extends FlinkShims {
   @Override
   public ImmutablePair<Object, Object> createPlannerAndExecutor(
           ClassLoader classLoader, Object environmentSettings, Object sEnv,
-          Object tableConfig, Object functionCatalog, Object catalogManager) {
+          Object tableConfig, Object moduleManager, Object functionCatalog, Object catalogManager) {
     EnvironmentSettings settings = (EnvironmentSettings) environmentSettings;
     Executor executor = (Executor) lookupExecutor(classLoader, settings, sEnv);
     Map<String, String> plannerProperties = settings.toPlannerProperties();
@@ -276,6 +282,17 @@ public class Flink112Shims extends FlinkShims {
     return ImmutablePair.of(planner, executor);
   }
 
+  @Override
+  public Object createBlinkPlannerEnvSettingBuilder() {
+    return EnvironmentSettings.newInstance().useBlinkPlanner();
+  }
+
+  @Override
+  public Object createOldPlannerEnvSettingBuilder() {
+    return EnvironmentSettings.newInstance().useOldPlanner();
+  }
+
+  @Override
   public InterpreterResult runSqlList(String st, InterpreterContext context, boolean isBatch) {
     if (isBatch) {
       return batchSqlInterpreter.runSqlList(st, context);
