@@ -15,15 +15,36 @@
  * limitations under the License.
  */
 
-package org.apache.zeppelin.notebook.repo;
+package org.apache.zeppelin.plugin;
 
-import org.apache.zeppelin.plugin.BasePlugin;
+import org.pf4j.Plugin;
 import org.pf4j.PluginWrapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class AWSPlugin extends BasePlugin {
+public class BasePlugin extends Plugin {
 
-  public AWSPlugin(PluginWrapper wrapper) {
-    super(wrapper, "AWSPlugin");
+  private static final Logger LOGGER = LoggerFactory.getLogger(BasePlugin.class);
+
+  final String name;
+
+  /**
+   *
+   * @param wrapper
+   * @param name - name of the plugin
+   */
+  public BasePlugin(PluginWrapper wrapper, String name) {
+    super(wrapper);
+    this.name = name;
   }
 
+  @Override
+  public void start() {
+    LOGGER.info("{}  started", name);
+  }
+
+  @Override
+  public void stop() {
+    LOGGER.info("{} stopped", name);
+  }
 }

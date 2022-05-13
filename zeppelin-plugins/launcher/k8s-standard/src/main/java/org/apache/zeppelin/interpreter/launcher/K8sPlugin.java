@@ -17,26 +17,12 @@
 
 package org.apache.zeppelin.interpreter.launcher;
 
-import org.pf4j.Plugin;
+import org.apache.zeppelin.plugin.BasePlugin;
 import org.pf4j.PluginWrapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-public class K8sPlugin extends Plugin {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(K8sPlugin.class);
+public class K8sPlugin extends BasePlugin {
 
   public K8sPlugin(PluginWrapper wrapper) {
-    super(wrapper);
-  }
-
-  @Override
-  public void start() {
-    LOGGER.info("K8sPlugin started");
-  }
-
-  @Override
-  public void stop() {
-    LOGGER.info("K8sPlugin stopped");
+    super(wrapper, "K8sPlugin");
   }
 }

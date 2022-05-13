@@ -17,26 +17,12 @@
 
 package org.apache.zeppelin.notebook.repo;
 
-import org.pf4j.Plugin;
+import org.apache.zeppelin.plugin.BasePlugin;
 import org.pf4j.PluginWrapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-public class GCSPlugin extends Plugin {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(GCSPlugin.class);
+public class GCSPlugin extends BasePlugin {
 
   public GCSPlugin(PluginWrapper wrapper) {
-    super(wrapper);
-  }
-
-  @Override
-  public void start() {
-    LOGGER.info("GCSPlugin started");
-  }
-
-  @Override
-  public void stop() {
-    LOGGER.info("GCSPlugin stopped");
+    super(wrapper, "GCSPlugin");
   }
 }

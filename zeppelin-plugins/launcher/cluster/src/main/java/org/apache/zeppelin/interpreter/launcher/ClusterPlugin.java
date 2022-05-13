@@ -17,26 +17,12 @@
 
 package org.apache.zeppelin.interpreter.launcher;
 
-import org.pf4j.Plugin;
+import org.apache.zeppelin.plugin.BasePlugin;
 import org.pf4j.PluginWrapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-public class ClusterPlugin extends Plugin {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(ClusterPlugin.class);
+public class ClusterPlugin extends BasePlugin {
 
   public ClusterPlugin(PluginWrapper wrapper) {
-    super(wrapper);
-  }
-
-  @Override
-  public void start() {
-    LOGGER.info("ClusterPlugin started");
-  }
-
-  @Override
-  public void stop() {
-    LOGGER.info("ClusterPlugin stopped");
+    super(wrapper, "ClusterPlugin");
   }
 }

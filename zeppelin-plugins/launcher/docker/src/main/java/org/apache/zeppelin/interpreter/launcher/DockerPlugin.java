@@ -17,26 +17,12 @@
 
 package org.apache.zeppelin.interpreter.launcher;
 
-import org.pf4j.Plugin;
+import org.apache.zeppelin.plugin.BasePlugin;
 import org.pf4j.PluginWrapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-public class DockerPlugin extends Plugin {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(DockerPlugin.class);
+public class DockerPlugin extends BasePlugin {
 
   public DockerPlugin(PluginWrapper wrapper) {
-    super(wrapper);
-  }
-
-  @Override
-  public void start() {
-    LOGGER.info("DockerPlugin started");
-  }
-
-  @Override
-  public void stop() {
-    LOGGER.info("DockerPlugin stopped");
+    super(wrapper, "DockerPlugin");
   }
 }

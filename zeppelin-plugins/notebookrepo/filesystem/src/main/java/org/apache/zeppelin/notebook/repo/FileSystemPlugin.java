@@ -17,26 +17,13 @@
 
 package org.apache.zeppelin.notebook.repo;
 
-import org.pf4j.Plugin;
+import org.apache.zeppelin.plugin.BasePlugin;
 import org.pf4j.PluginWrapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-public class FileSystemPlugin extends Plugin {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(FileSystemPlugin.class);
+public class FileSystemPlugin extends BasePlugin {
 
   public FileSystemPlugin(PluginWrapper wrapper) {
-    super(wrapper);
+    super(wrapper, "FileSystemPlugin");
   }
 
-  @Override
-  public void start() {
-    LOGGER.info("FileSystemPlugin started");
-  }
-
-  @Override
-  public void stop() {
-    LOGGER.info("FileSystemPlugin stopped");
-  }
 }

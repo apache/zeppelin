@@ -17,26 +17,17 @@
 
 package org.apache.zeppelin.notebook.repo;
 
+import org.apache.zeppelin.plugin.BasePlugin;
 import org.pf4j.Plugin;
 import org.pf4j.PluginWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class AliyunPlugin extends Plugin {
+public class AliyunPlugin extends BasePlugin {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AliyunPlugin.class);
 
   public AliyunPlugin(PluginWrapper wrapper) {
-    super(wrapper);
-  }
-
-  @Override
-  public void start() {
-    LOGGER.info("AliyunPlugin started");
-  }
-
-  @Override
-  public void stop() {
-    LOGGER.info("AliyunPlugin stopped");
+    super(wrapper, "AliyunPlugin");
   }
 }

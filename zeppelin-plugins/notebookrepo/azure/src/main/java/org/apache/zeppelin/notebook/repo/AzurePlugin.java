@@ -17,25 +17,13 @@
 
 package org.apache.zeppelin.notebook.repo;
 
-import org.pf4j.Plugin;
+import org.apache.zeppelin.plugin.BasePlugin;
 import org.pf4j.PluginWrapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-public class AzurePlugin extends Plugin {
-  private static final Logger LOGGER = LoggerFactory.getLogger(AzurePlugin.class);
+public class AzurePlugin extends BasePlugin {
 
   public AzurePlugin(PluginWrapper wrapper) {
-    super(wrapper);
+    super(wrapper, "AzurePlugin");
   }
 
-  @Override
-  public void start() {
-    LOGGER.info("AzurePlugin started");
-  }
-
-  @Override
-  public void stop() {
-    LOGGER.info("AzurePlugin stopped");
-  }
 }

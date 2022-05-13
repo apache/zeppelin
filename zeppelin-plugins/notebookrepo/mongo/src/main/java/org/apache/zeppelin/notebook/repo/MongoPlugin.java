@@ -17,26 +17,12 @@
 
 package org.apache.zeppelin.notebook.repo;
 
-import org.pf4j.Plugin;
+import org.apache.zeppelin.plugin.BasePlugin;
 import org.pf4j.PluginWrapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-public class MongoPlugin extends Plugin {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(MongoPlugin.class);
+public class MongoPlugin extends BasePlugin {
 
   public MongoPlugin(PluginWrapper wrapper) {
-    super(wrapper);
-  }
-
-  @Override
-  public void start() {
-    LOGGER.info("MongoPlugin started");
-  }
-
-  @Override
-  public void stop() {
-    LOGGER.info("MongoPlugin stopped");
+    super(wrapper, "MongoPlugin");
   }
 }

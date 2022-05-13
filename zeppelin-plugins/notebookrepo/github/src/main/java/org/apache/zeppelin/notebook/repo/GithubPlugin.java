@@ -17,26 +17,12 @@
 
 package org.apache.zeppelin.notebook.repo;
 
-import org.pf4j.Plugin;
+import org.apache.zeppelin.plugin.BasePlugin;
 import org.pf4j.PluginWrapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-public class GithubPlugin extends Plugin {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(GithubPlugin.class);
+public class GithubPlugin extends BasePlugin {
 
   public GithubPlugin(PluginWrapper wrapper) {
-    super(wrapper);
-  }
-
-  @Override
-  public void start() {
-    LOGGER.info("GithubPlugin started");
-  }
-
-  @Override
-  public void stop() {
-    LOGGER.info("GithubPlugin stopped");
+    super(wrapper, "GithubPlugin");
   }
 }

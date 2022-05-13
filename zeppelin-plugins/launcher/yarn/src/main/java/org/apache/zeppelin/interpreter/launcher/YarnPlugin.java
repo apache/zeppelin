@@ -17,26 +17,12 @@
 
 package org.apache.zeppelin.interpreter.launcher;
 
-import org.pf4j.Plugin;
+import org.apache.zeppelin.plugin.BasePlugin;
 import org.pf4j.PluginWrapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-public class YarnPlugin extends Plugin {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(YarnPlugin.class);
+public class YarnPlugin extends BasePlugin {
 
   public YarnPlugin(PluginWrapper wrapper) {
-    super(wrapper);
-  }
-
-  @Override
-  public void start() {
-    LOGGER.info("YarnPlugin started");
-  }
-
-  @Override
-  public void stop() {
-    LOGGER.info("YarnPlugin stopped");
+    super(wrapper, "YarnPlugin");
   }
 }

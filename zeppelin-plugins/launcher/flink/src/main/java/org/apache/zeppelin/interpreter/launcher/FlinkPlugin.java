@@ -17,26 +17,12 @@
 
 package org.apache.zeppelin.interpreter.launcher;
 
-import org.pf4j.Plugin;
+import org.apache.zeppelin.plugin.BasePlugin;
 import org.pf4j.PluginWrapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-public class FlinkPlugin extends Plugin {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(FlinkPlugin.class);
+public class FlinkPlugin extends BasePlugin {
 
   public FlinkPlugin(PluginWrapper wrapper) {
-    super(wrapper);
-  }
-
-  @Override
-  public void start() {
-    LOGGER.info("FlinkPlugin started");
-  }
-
-  @Override
-  public void stop() {
-    LOGGER.info("FlinkPlugin stopped");
+    super(wrapper, "FlinkPlugin");
   }
 }
