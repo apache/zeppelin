@@ -18,8 +18,9 @@
 
 package org.apache.zeppelin.interpreter.launcher;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
+import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.Test;
 
 public class K8sUtilsTest {
@@ -44,5 +45,21 @@ public class K8sUtilsTest {
   @Test(expected = NumberFormatException.class)
   public void testExceptionNoValidNumber() {
     K8sUtils.calculateMemoryWithDefaultOverhead("NoValidNumber10000000Tb");
+  }
+
+  @Test
+  public void testGenerateK8sName() {
+    assertEquals("zeppelin", K8sUtils.generateK8sName("", false));
+    assertEquals("zeppelin", K8sUtils.generateK8sName(null, false));
+    assertEquals("test", K8sUtils.generateK8sName("test", false));
+    assertEquals("test", K8sUtils.generateK8sName("!test", false));
+    assertEquals("zeppelin", K8sUtils.generateK8sName("!", false));
+    assertEquals("zeppelin.test", K8sUtils.generateK8sName(".test", false));
+    assertEquals("zeppelin.test", K8sUtils.generateK8sName("...test", false));
+    assertEquals("zeppelin.test.zeppelin", K8sUtils.generateK8sName(".test.", false));
+    assertEquals("zeppelin.test.zeppelin", K8sUtils.generateK8sName("...test....", false));
+    assertEquals("test", K8sUtils.generateK8sName("Test", false));
+
+    assertEquals(253 - "zeppelin".length() , K8sUtils.generateK8sName(RandomStringUtils.randomAlphabetic(260), true).length());
   }
 }
