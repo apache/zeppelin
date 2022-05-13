@@ -57,9 +57,9 @@ public class DockerInterpreterLauncher extends InterpreterLauncher implements Ex
 
     StandardInterpreterLauncher interpreterLauncher = null;
     if (isSpark()) {
-      interpreterLauncher = (StandardInterpreterLauncher) pluginManager.createInterpreterLauncher("SparkInterpreterLauncher", recoveryStorage);
+      interpreterLauncher = (SparkInterpreterLauncher) pluginManager.createInterpreterLauncher("SparkInterpreterLauncher", recoveryStorage);
     } else if (isFlink()) {
-      interpreterLauncher = (StandardInterpreterLauncher) pluginManager.createInterpreterLauncher("FlinkInterpreterLauncher", recoveryStorage);
+      interpreterLauncher = (FlinkInterpreterLauncher) pluginManager.createInterpreterLauncher("FlinkInterpreterLauncher", recoveryStorage);
     } else {
       interpreterLauncher = (StandardInterpreterLauncher) pluginManager.createInterpreterLauncher("StandardInterpreterLauncher", recoveryStorage);
     }
