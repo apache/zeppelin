@@ -59,13 +59,13 @@ public class LazyOpenInterpreter
   }
 
   @Override
-  public synchronized void open() throws InterpreterException {
-    if (opened == true) {
+  public void open() throws InterpreterException {
+    if (opened) {
       return;
     }
 
     synchronized (intp) {
-      if (opened == false) {
+      if (!opened) {
         try {
           intp.open();
           opened = true;
@@ -88,7 +88,7 @@ public class LazyOpenInterpreter
   @Override
   public void close() throws InterpreterException {
     synchronized (intp) {
-      if (opened == true) {
+      if (opened) {
         intp.close();
         opened = false;
       }
@@ -96,9 +96,7 @@ public class LazyOpenInterpreter
   }
 
   public boolean isOpen() {
-    synchronized (intp) {
-      return opened;
-    }
+    return opened;
   }
 
   @Override
@@ -115,8 +113,9 @@ public class LazyOpenInterpreter
 
   @Override
   public void cancel(InterpreterContext context) throws InterpreterException {
-    open();
-    intp.cancel(context);
+    if (opened) {
+      intp.cancel(context);
+    }
   }
 
   @Override
@@ -142,8 +141,7 @@ public class LazyOpenInterpreter
   public List<InterpreterCompletion> completion(String buf, int cursor,
       InterpreterContext interpreterContext) throws InterpreterException {
     open();
-    List completion = intp.completion(buf, cursor, interpreterContext);
-    return completion;
+    return intp.completion(buf, cursor, interpreterContext);
   }
 
   @Override
