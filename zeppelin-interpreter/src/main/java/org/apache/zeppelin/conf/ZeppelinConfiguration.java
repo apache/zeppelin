@@ -253,7 +253,7 @@ public class ZeppelinConfiguration {
   /**
    * This method is to support time unit like `1s`, `2m`, `3h`.
    *
-   * @param {ConfVars} c . Note：The type default value of `ConfVars  c` should be long.
+   * @param {ConfVars} c . Note：The type of default value of `ConfVars  c` should be long.
    * @return {long} Milliseconds
    */
   public long getTime(ConfVars c) {
