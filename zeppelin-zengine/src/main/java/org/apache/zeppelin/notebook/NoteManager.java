@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.Lock;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
@@ -79,7 +80,7 @@ public class NoteManager {
   // build the tree structure of notes
   private void init() throws IOException {
     this.notesInfo = notebookRepo.list(AuthenticationInfo.ANONYMOUS).values().stream()
-        .collect(Collectors.toMap(NoteInfo::getId, NoteInfo::getPath));
+        .collect(Collectors.toConcurrentMap(NoteInfo::getId, NoteInfo::getPath));
     this.notesInfo.entrySet().stream()
         .forEach(entry ->
         {
@@ -181,7 +182,11 @@ public class NoteManager {
     } else {
       addOrUpdateNoteNode(new NoteInfo(note));
       noteCache.putNote(note);
-      this.notebookRepo.save(note, subject);
+      // Make sure to execute `notebookRepo.save()` successfully in concurrent context
+      // Otherwise, the NullPointerException will be thrown when invoking notebookRepo.get() in the following operations.
+      synchronized (this) {
+        this.notebookRepo.save(note, subject);
+      }
     }
   }
 
@@ -218,7 +223,6 @@ public class NoteManager {
   public void moveNote(String noteId,
                        String newNotePath,
                        AuthenticationInfo subject) throws IOException {
-    String notePath = this.notesInfo.get(noteId);
     if (noteId == null) {
       throw new IOException("No metadata found for this note: " + noteId);
     }
@@ -228,6 +232,7 @@ public class NoteManager {
     }
 
     // move the old NoteNode from notePath to newNotePath
+    String notePath = this.notesInfo.get(noteId);
     NoteNode noteNode = getNoteNode(notePath);
     noteNode.getParent().removeNote(getNoteName(notePath));
     noteNode.setNotePath(newNotePath);
@@ -317,10 +322,10 @@ public class NoteManager {
    */
   public <T> T processNote(String noteId, boolean reload, NoteProcessor<T> noteProcessor)
       throws IOException {
-    String notePath = this.notesInfo.get(noteId);
-    if (notePath == null) {
+    if (this.notesInfo == null || noteId == null || !this.notesInfo.containsKey(noteId)) {
       return noteProcessor.process(null);
     }
+    String notePath = this.notesInfo.get(noteId);
     NoteNode noteNode = getNoteNode(notePath);
     return noteNode.loadAndProcessNote(reload, noteProcessor);
   }
@@ -433,9 +438,9 @@ public class NoteManager {
     private NoteCache noteCache;
 
     // noteName -> NoteNode
-    private Map<String, NoteNode> notes = new HashMap<>();
+    private Map<String, NoteNode> notes = new ConcurrentHashMap<>();
     // folderName -> Folder
-    private Map<String, Folder> subFolders = new HashMap<>();
+    private Map<String, Folder> subFolders = new ConcurrentHashMap<>();
 
     public Folder(String name, NotebookRepo notebookRepo, NoteCache noteCache) {
       this.name = name;
