@@ -761,6 +761,10 @@ public class ZeppelinConfiguration {
     return getString(ConfVars.ZEPPELIN_NOTEBOOK_CRON_FOLDERS);
   }
 
+  public boolean isZeppelinNotebookMarkdownEscapeHtml() {
+    return getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_MARKDOWN_ESCAPE_HTML);
+  }
+
   public Boolean isZeppelinNotebookCollaborativeModeEnable() {
     return getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_COLLABORATIVE_MODE_ENABLE);
   }
@@ -1079,6 +1083,7 @@ public class ZeppelinConfiguration {
             true),
     ZEPPELIN_NOTEBOOK_CRON_ENABLE("zeppelin.notebook.cron.enable", false),
     ZEPPELIN_NOTEBOOK_CRON_FOLDERS("zeppelin.notebook.cron.folders", null),
+    ZEPPELIN_NOTEBOOK_MARKDOWN_ESCAPE_HTML("zeppelin.notebook.markdown.escape.html", true),
     ZEPPELIN_PROXY_URL("zeppelin.proxy.url", null),
     ZEPPELIN_PROXY_USER("zeppelin.proxy.user", null),
     ZEPPELIN_PROXY_PASSWORD("zeppelin.proxy.password", null),

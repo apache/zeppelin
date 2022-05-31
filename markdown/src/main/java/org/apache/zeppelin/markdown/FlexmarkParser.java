@@ -28,6 +28,7 @@ import com.vladsch.flexmark.util.ast.Node;
 import com.vladsch.flexmark.html.HtmlRenderer;
 import com.vladsch.flexmark.parser.Parser;
 import com.vladsch.flexmark.util.data.MutableDataSet;
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,6 +45,7 @@ public class FlexmarkParser implements MarkdownParser {
   private HtmlRenderer renderer;
 
   public FlexmarkParser() {
+    ZeppelinConfiguration zConf = ZeppelinConfiguration.create();
     MutableDataSet options = new MutableDataSet();
     options.set(Parser.EXTENSIONS, Arrays.asList(StrikethroughExtension.create(),
             TablesExtension.create(),
@@ -54,6 +56,7 @@ public class FlexmarkParser implements MarkdownParser {
             EmojiExtension.create()));
     options.set(HtmlRenderer.SOFT_BREAK, "<br />\n");
     options.set(EmojiExtension.USE_IMAGE_TYPE, UNICODE_ONLY);
+    options.set(HtmlRenderer.ESCAPE_HTML, zConf.isZeppelinNotebookMarkdownEscapeHtml());
     parser = Parser.builder(options).build();
     renderer = HtmlRenderer.builder(options).build();
   }
