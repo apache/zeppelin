@@ -223,5 +223,26 @@ public class FlexmarkParserTest {
     // Do not activate, because this test depends on www.websequencediagrams.com
     //assertTrue(containsImg);
   }
+
+  @Test
+  public void testEscapeHtml() {
+    String input =
+            new StringBuilder()
+                    .append("This is\n")
+                    .append("<script type=\"text/javascript\">alert(1);</script>\n")
+                    .append("<div onclick='alert(2)'>this is div</div>\n")
+                    .toString();
+
+    String expected =
+            new StringBuilder()
+                    .append("<p>This is</p>\n")
+                    .append("<p>&lt;script type=&quot;text/javascript&quot;&gt;" +
+                            "alert(1);&lt;/script&gt;</p>\n")
+                    .append("<p>&lt;div &gt;this is div&lt;/div&gt;</p>\n")
+                    .toString();
+
+    InterpreterResult result = md.interpret(input, null);
+    assertEquals(wrapWithMarkdownClassDiv(expected), result.message().get(0).getData());
+  }
 }
 
