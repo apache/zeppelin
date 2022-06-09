@@ -246,7 +246,7 @@ public class Notebook {
     noteManager.addNote(note, subject);
     // init noteMeta
     authorizationService.createNoteAuth(note.getId(), subject);
-    authorizationService.saveNoteAuth(note.getId(), subject);
+    authorizationService.saveNoteAuth();
     if (save) {
       noteManager.saveNote(note, subject);
     }

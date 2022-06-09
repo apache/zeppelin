@@ -32,7 +32,7 @@ public class NotebookAuthorizationInfoSaving implements JsonSerializable {
 
   private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
-  public Map<String, Map<String, Set<String>>> authInfo;
+  private final Map<String, Map<String, Set<String>>> authInfo;
 
   public NotebookAuthorizationInfoSaving(Map<String, NoteAuth> notesAuth) {
     this.authInfo = new HashMap<>();
@@ -41,6 +41,11 @@ public class NotebookAuthorizationInfoSaving implements JsonSerializable {
     }
   }
 
+  public Map<String, Map<String, Set<String>>> getAuthInfo() {
+    return authInfo;
+  }
+
+  @Override
   public String toJson() {
     return gson.toJson(this);
   }

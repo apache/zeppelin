@@ -408,7 +408,7 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
       }
       this.interpreter = getBindedInterpreter();
       if (this.interpreter == null) {
-        LOGGER.error("Can not find interpreter name " + intpText);
+        LOGGER.error("Can not find interpreter name {}", intpText);
         throw new RuntimeException("Can not find interpreter for " + intpText);
       }
       LOGGER.info("Run paragraph [paragraph_id: {}, interpreter: {}, note_id: {}, user: {}]",
