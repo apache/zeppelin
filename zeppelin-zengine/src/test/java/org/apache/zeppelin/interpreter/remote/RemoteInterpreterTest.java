@@ -438,7 +438,7 @@ public class RemoteInterpreterTest extends AbstractInterpreterTest {
     try {
       System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_REMOTE_RUNNER.getVarName(),
               zeppelinHome.getAbsolutePath() + "/zeppelin-zengine/src/test/resources/bin/interpreter_timeout.sh");
-      System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT.getVarName(), "10000");
+      System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT.getVarName(), "10s");
       final Interpreter interpreter1 = interpreterSetting.getInterpreter("user1", note1Id, "sleep");
       final InterpreterContext context1 = createDummyInterpreterContext();
       // run this dummy interpret method first to launch the RemoteInterpreterProcess to avoid the

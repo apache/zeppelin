@@ -77,7 +77,7 @@ public class RecoveryUtils {
                                                                        ZeppelinConfiguration zConf) {
 
     int connectTimeout =
-            zConf.getInt(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT);
+            (int) zConf.getTime(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT);
     Properties interpreterProperties =  interpreterSettingManager.getByName(interpreterSettingName).getJavaProperties();
     int connectionPoolSize = Integer.parseInt(interpreterProperties.getProperty(
             ZEPPELIN_INTERPRETER_CONNECTION_POOL_SIZE.getVarName(),

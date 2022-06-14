@@ -53,7 +53,7 @@ public class StandardInterpreterLauncherTest {
     assertEquals("name", interpreterProcess.getInterpreterSettingName());
     assertEquals(".//interpreter/groupName", interpreterProcess.getInterpreterDir());
     assertEquals(".//local-repo/groupId", interpreterProcess.getLocalRepoDir());
-    assertEquals(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT.getIntValue(),
+    assertEquals(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT.getLongValue(),
         interpreterProcess.getConnectTimeout());
     assertEquals(zConf.getInterpreterRemoteRunnerPath(), interpreterProcess.getInterpreterRunner());
     assertTrue(interpreterProcess.getEnv().size() >= 2);
