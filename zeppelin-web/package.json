@@ -25,7 +25,7 @@
   },
   "dependencies": {
     "angular-ui-grid": "4.4.6",
-    "angular-viewport-watch": "github:wix/angular-viewport-watch",
+    "angular-viewport-watch": "git+https://github.com/wix/angular-viewport-watch.git",
     "ansi_up": "^2.0.2",
     "github-markdown-css": "2.6.0",
     "grunt-angular-templates": "^0.5.7",
