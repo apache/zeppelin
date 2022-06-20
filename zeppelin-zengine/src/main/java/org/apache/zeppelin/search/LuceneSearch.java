@@ -104,7 +104,7 @@ public class LuceneSearch extends SearchService {
       throw new IOException("Failed to create new IndexWriter", e);
     }
     if (conf.isIndexRebuild()) {
-      startRebuildIndex();
+      notebook.addInitConsumer(this::addNoteIndex);
     }
     this.notebook.addNotebookEventListener(this);
   }
@@ -441,23 +441,5 @@ public class LuceneSearch extends SearchService {
       return;
     }
     updateDoc(noteId, noteName, null);
-  }
-
-  public void startRebuildIndex() {
-    Thread thread = new Thread(() -> {
-      LOGGER.info("Starting rebuild index");
-      notebook.getNotesInfo().forEach(noteInfo -> {
-        addNoteIndex(noteInfo.getId());
-      });
-      LOGGER.info("Finish rebuild index");
-    });
-    thread.setName("LuceneSearch-RebuildIndex-Thread");
-    thread.start();
-    try {
-      thread.join();
-    } catch (InterruptedException e) {
-      LOGGER.warn("Lucene Rebuild Index Thread interrupted!", e);
-      Thread.currentThread().interrupt();
-    }
   }
 }
