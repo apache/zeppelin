@@ -16,29 +16,31 @@
   ~ limitations under the License.
   -->
 
-<web-app xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
-	version="3.0">
+<web-app xmlns="http://java.sun.com/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
+         version="3.0">
 
- <display-name>zeppelin-web</display-name>
-	<servlet>
-		<servlet-name>default</servlet-name>
+  <display-name>zeppelin-web</display-name>
+  <servlet>
+    <servlet-name>restServlet</servlet-name>
     <servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
     <init-param>
       <param-name>jersey.config.server.provider.packages</param-name>
       <param-value>org.apache.zeppelin.rest</param-value>
     </init-param>
+    <load-on-startup>1</load-on-startup>
+  </servlet>
 
-		<load-on-startup>1</load-on-startup>
-	</servlet>
-	<error-page>
-	  <error-code>404</error-code>
-	  <location>/WEB-INF/404.html</location>
-	</error-page>
-	<context-param>
-		<param-name>configuration</param-name>
-		<param-value>deployment</param-value>
-	</context-param>
+  <error-page>
+    <error-code>404</error-code>
+     <location>/WEB-INF/404.html</location>
+  </error-page>
+
+  <context-param>
+    <param-name>configuration</param-name>
+    <param-value>deployment</param-value>
+  </context-param>
 
   <session-config>
     <cookie-config>
