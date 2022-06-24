@@ -69,7 +69,7 @@ sed_i '1,/<scala\.binary\.version>[0-9]*\.[0-9]*</s/<scala\.binary\.version>[0-9
 
 # update <scala.version> in parent POM
 # This is to make variables in leaf pom to be substituted to real value when flattened-pom is created. 
-# maven-flatten plugin doesn't take properties defined under profile even if scala-2.11/scala-2.10 is activated via -Pscala-2.11/-Pscala-2.10,
+# maven-flatten plugin doesn't take properties defined under profile even if scala-2.11/scala-2.12 is activated via -Pscala-2.11/-Pscala-2.12,
 # and use default defined properties to create flatten pom.
 sed_i '1,/<scala\.version>[0-9]*\.[0-9]*\.[0-9]*</s/<scala\.version>[0-9]*\.[0-9]*\.[0-9]*</<scala.version>'${SCALA_LIB_VERSION}'</' \
   "${BASEDIR}/pom.xml"
