@@ -161,6 +161,11 @@ public class IPySparkInterpreter extends IPythonInterpreter {
     return sparkInterpreter.getSparkVersion().getMajorVersion() == 3;
   }
 
+  // Used by PySpark
+  public boolean isAfterSpark33() {
+    return sparkInterpreter.getSparkVersion().newerThanEquals(SparkVersion.SPARK_3_3_0);
+  }
+
   public JavaSparkContext getJavaSparkContext() {
     return sparkInterpreter.getJavaSparkContext();
   }
