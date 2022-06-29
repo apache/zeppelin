@@ -29,7 +29,6 @@
 
   <artifactId>flink-scala-parent</artifactId>
   <packaging>pom</packaging>
-  <version>0.11.0-SNAPSHOT</version>
   <name>Zeppelin: Flink Scala Parent</name>
   <description>Zeppelin Flink Scala Parent</description>
 
@@ -37,7 +36,7 @@
     <!--library versions-->
     <interpreter.name>flink</interpreter.name>
     <flink.version>${flink1.12.version}</flink.version>
-    <flink.hadoop.version>2.6.5</flink.hadoop.version>
+    <flink.hadoop.version>${hadoop2.7.version}</flink.hadoop.version>
     <hive.version>2.3.4</hive.version>
     <hiverunner.version>4.0.0</hiverunner.version>
     <grpc.version>1.15.0</grpc.version>
@@ -575,7 +574,7 @@
     <dependency>
       <groupId>com.klarna</groupId>
       <artifactId>hiverunner</artifactId>
-      <version>4.0.0</version>
+      <version>${hiverunner.version}</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -1051,7 +1050,6 @@
         <hiverunner.version>4.0.0</hiverunner.version>
       </properties>
     </profile>
-
     <profile>
       <id>hive1</id>
       <properties>
@@ -1067,7 +1065,5 @@
         </dependency>
       </dependencies>
     </profile>
-
   </profiles>
-
 </project>
