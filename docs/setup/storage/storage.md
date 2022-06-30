@@ -79,6 +79,7 @@ Notebooks may be stored in S3, and optionally encrypted.  The [``DefaultAWSCrede
 
 - The ``AWS_ACCESS_KEY_ID`` and ``AWS_SECRET_ACCESS_KEY`` environment variables
 - The ``aws.accessKeyId`` and ``aws.secretKey`` Java System properties
+- Web Identity Token credentials from the environment or container
 - Credential profiles file at the default location (````~/.aws/credentials````) used by the AWS CLI
 - Instance profile credentials delivered through the Amazon EC2 metadata service
 
