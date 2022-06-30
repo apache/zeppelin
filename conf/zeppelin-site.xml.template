@@ -91,6 +91,12 @@
   <description>Enable collaborative mode</description>
 </property>
 
+<property>
+  <name>zeppelin.notebook.versioned.mode.enable</name>
+  <value>true</value>
+  <description>Value to enable/disable version control support in Notes</description>
+</property>
+
 <!-- Google Cloud Storage notebook storage -->
 <!--
 <property>
