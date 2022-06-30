@@ -13,7 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM zeppelin-distribution:latest AS zeppelin-distribution
+ARG ZEPPELIN_DISTRIBUTION_IMAGE=zeppelin-distribution:latest
+FROM $ZEPPELIN_DISTRIBUTION_IMAGE AS zeppelin-distribution
 
 # Prepare all interpreter settings for Zeppelin server
 # This steps are not needed, if you you add only specific interpreters settings to your image
