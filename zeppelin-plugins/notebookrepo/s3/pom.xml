@@ -53,6 +53,10 @@
         </dependency>
 
         <dependency>
+            <!-- STS lib needs to be on class path for the WebidentityTokenCredentialsProvider to work properly,
+             otherwise it will be skipped in DefaultAWSCredentialsProviderChain
+             https://github.com/aws/aws-sdk-java/issues/2136
+             -->
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk-sts</artifactId>
             <version>${aws.sdk.version}</version>
