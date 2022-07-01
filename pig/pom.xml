@@ -36,7 +36,7 @@
     <properties>
         <interpreter.name>pig</interpreter.name>
         <pig.version>0.17.0</pig.version>
-        <hadoop.version>${hadoop2.6.version}</hadoop.version>
+        <hadoop.version>2.7.0</hadoop.version>
         <tez.version>0.7.0</tez.version>
         <pig.spark.version>1.6.3</pig.spark.version>
         <pig.scala.version>2.10</pig.scala.version>
