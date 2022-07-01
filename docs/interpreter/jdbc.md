@@ -162,7 +162,7 @@ The last step is **Dependency Setting**. Since Zeppelin only includes `PostgreSQ
 
 <img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/edit_dependencies.png" width="600px" />
 
-That's it. You can find more JDBC connection setting examples([Mysql](#mysql), [MariaDB](#mariadb), [Redshift](#redshift), [Apache Hive](#apache-hive), [Presto/Trino](#prestotrino), [Impala](#impala), [Apache Phoenix](#apache-phoenix), and [Apache Tajo](#apache-tajo)) in [this section](#examples).
+That's it. You can find more JDBC connection setting examples([Mysql](#mysql), [MariaDB](#mariadb), [Redshift](#redshift), [Apache Hive](#apache-hive), [Presto/Trino](#prestotrino), [Impala](#impala), [Apache Kyuubi (Incubating)](#apache-kyuubi-(incubating)), [Apache Phoenix](#apache-phoenix), and [Apache Tajo](#apache-tajo)) in [this section](#examples).
 
 ## JDBC Interpreter Datasource Pool Configuration
 The Jdbc interpreter uses the connection pool technology, and supports users to do some personal configuration of the connection pool. For example, we can configure `default.validationQuery='select 1'` and `default.testOnBorrow=true` in the Interpreter configuration to avoid the "Invalid SessionHandle" runtime error caused by Session timeout when connecting to HiveServer2 through JDBC interpreter.
@@ -823,6 +823,42 @@ Dependencies
   </tr>
   <tr>
     <td>io.prestosql:presto-jdbc:350</td>
+    <td></td>
+  </tr>
+</table>
+
+### Apache Kyuubi (Incubating)
+
+Properties
+
+<table class="table-configuration">
+  <tr>
+    <th>Name</th>
+    <th>Value</th>
+  </tr>
+  <tr>
+    <td>default.driver</td>
+    <td>org.apache.kyuubi.jdbc.KyuubiHiveDriver</td>
+  </tr>
+  <tr>
+    <td>default.url</td>
+    <td>jdbc:hive2://kyuubi-server:10009</td>
+  </tr>
+</table>
+
+Dependencies
+
+<table class="table-configuration">
+  <tr>
+    <th>Artifact</th>
+    <th>Excludes</th>
+  </tr>
+  <tr>
+    <td>org.apache.kyuubi:kyuubi-hive-jdbc-shaded:1.5.2-incubating</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>org.apache.hive:hive-jdbc:2.3.4</td>
     <td></td>
   </tr>
 </table>
