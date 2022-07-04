@@ -54,6 +54,16 @@ import io.fabric8.kubernetes.client.dsl.ParameterNamespaceListVisitFromServerGet
 public class K8sRemoteInterpreterProcess extends RemoteInterpreterManagedProcess {
   private static final Logger LOGGER = LoggerFactory.getLogger(K8sRemoteInterpreterProcess.class);
   private static final int K8S_INTERPRETER_SERVICE_PORT = 12321;
+  private static final Object SPARK_DRIVER_CLASSPATH = "";
+  private static final Object SPARK_DRIVER_DEFAULTJAVAOPTS = "";
+  private static final Object SPARK_DRIVER_EXTRALIBPATH = "";
+  private static final Object SPARK_DRIVER_EXTRAJAVAOPTS = "";
+  private static final Object SPARK_JARS = "";
+  private static final Object SPARK_JARS_PACKAGES = "";
+  private static final Object SPARK_JARS_EXCLUDES = "";
+  private static final Object SPARK_JARS_IVY = "";
+  private static final Object SPARK_JARS_IVYSETTINGS ="" ;
+  private static final Object SPARK_JARS_REPOSITORIES = "";
   private final KubernetesClient client;
   private final String interpreterNamespace;
   private final String interpreterGroupName;
@@ -423,6 +433,50 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterManagedProcess
     options.append(" --conf spark.driver.host=").append(getInterpreterPodDnsName());
     options.append(" --conf spark.driver.port=").append(getSparkDriverPort());
     options.append(" --conf spark.blockManager.port=").append(getSparkBlockManagerPort());
+
+    if (properties.containsKey(SPARK_DRIVER_MEMORY)) {
+      options.append(" --driver-memory ").append(properties.get(SPARK_DRIVER_MEMORY));
+    }
+
+    if (properties.containsKey(SPARK_DRIVER_CLASSPATH)) {
+      options.append(" --conf spark.driver.extraClassPath=").append(properties.get(SPARK_DRIVER_CLASSPATH));
+    }
+
+    if (properties.containsKey(SPARK_DRIVER_DEFAULTJAVAOPTS)) {
+      options.append(" --conf spark.driver.defaultJavaOptions=").append(properties.get(SPARK_DRIVER_DEFAULTJAVAOPTS));
+    }
+
+    if (properties.containsKey(SPARK_DRIVER_EXTRAJAVAOPTS)) {
+      options.append(" --conf spark.driver.extraJavaOptions=").append(properties.get(SPARK_DRIVER_EXTRAJAVAOPTS));
+    }
+
+    if (properties.containsKey(SPARK_DRIVER_EXTRALIBPATH)) {
+      options.append(" --conf spark.driver.extraLibraryPath=").append(properties.get(SPARK_DRIVER_EXTRALIBPATH));
+    }
+
+    if (properties.containsKey(SPARK_JARS)) {
+      options.append(" --conf spark.jars=").append(properties.get(SPARK_JARS));
+    }
+
+    if (properties.containsKey(SPARK_JARS_PACKAGES)) {
+      options.append(" --conf spark.jars.packages=").append(properties.get(SPARK_JARS_PACKAGES));
+    }
+
+    if (properties.containsKey(SPARK_JARS_EXCLUDES)) {
+      options.append(" --conf spark.jars.excludes=").append(properties.get(SPARK_JARS_EXCLUDES));
+    }
+
+    if (properties.containsKey(SPARK_JARS_IVY)) {
+      options.append(" --conf spark.jars.ivy=").append(properties.get(SPARK_JARS_IVY));
+    }
+
+    if (properties.containsKey(SPARK_JARS_IVYSETTINGS)) {
+      options.append(" --conf spark.jars.ivySettings=").append(properties.get(SPARK_JARS_IVYSETTINGS));
+    }
+
+    if (properties.containsKey(SPARK_JARS_REPOSITORIES)) {
+      options.append(" --conf spark.jars.repositories=").append(properties.get(SPARK_JARS_REPOSITORIES));
+    }
 
     return options.toString();
   }
