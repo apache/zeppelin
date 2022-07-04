@@ -469,6 +469,12 @@ Sources descending by priority:
     <td>50</td>
     <td>Threshold for the number of notes in the cache before an eviction occurs.</td>
   </tr>
+    <tr>
+      <td><h6 class="properties">ZEPPELIN_NOTEBOOK_VERSIONED_MODE_ENABLE</h6></td>
+      <td><h6 class="properties">zeppelin.notebook.versioned.mode.enable</h6></td>
+      <td>true</td>
+      <td>Value to enable/disable version control support in Notes.</td>
+    </tr>
 </table>
 
 

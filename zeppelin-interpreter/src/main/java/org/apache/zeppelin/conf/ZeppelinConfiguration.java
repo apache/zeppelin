@@ -1097,6 +1097,8 @@ public class ZeppelinConfiguration {
     ZEPPELIN_NOTEBOOK_GIT_REMOTE_ORIGIN("zeppelin.notebook.git.remote.origin", "origin"),
     ZEPPELIN_NOTEBOOK_COLLABORATIVE_MODE_ENABLE("zeppelin.notebook.collaborative.mode.enable",
             true),
+    ZEPPELIN_NOTEBOOK_VERSIONED_MODE_ENABLE("zeppelin.notebook.versioned.mode.enable",
+            true),
     ZEPPELIN_NOTEBOOK_CRON_ENABLE("zeppelin.notebook.cron.enable", false),
     ZEPPELIN_NOTEBOOK_CRON_FOLDERS("zeppelin.notebook.cron.folders", null),
     ZEPPELIN_NOTEBOOK_MARKDOWN_ESCAPE_HTML("zeppelin.notebook.markdown.escape.html", true),

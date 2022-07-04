@@ -778,6 +778,9 @@ public class Notebook {
   }
 
   public Boolean isRevisionSupported() {
+    if(!conf.getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_VERSIONED_MODE_ENABLE)) {
+      return false;
+    }
     if (notebookRepo instanceof NotebookRepoSync) {
       return ((NotebookRepoSync) notebookRepo).isRevisionSupportedInDefaultRepo();
     } else if (notebookRepo instanceof NotebookRepoWithVersionControl) {
