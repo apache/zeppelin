@@ -135,8 +135,10 @@ public class Notebook {
    * Asynchronous and parallel initialization of notes (during startup)
    */
   public void initNotebook() {
-    initExecutor = new ThreadPoolExecutor(0, Runtime.getRuntime().availableProcessors(), 1, TimeUnit.MINUTES,
-                  new LinkedBlockingQueue<>(), new SchedulerThreadFactory("NotebookInit"));
+    if (initExecutor == null || initExecutor.isShutdown() || initExecutor.isTerminated()) {
+      initExecutor = new ThreadPoolExecutor(0, Runtime.getRuntime().availableProcessors(), 1, TimeUnit.MINUTES,
+                     new LinkedBlockingQueue<>(), new SchedulerThreadFactory("NotebookInit"));
+    }
     for (NoteInfo noteInfo : getNotesInfo()) {
       initExecutor.execute(() -> {
         for (Consumer<String> initConsumer : initConsumers) {
