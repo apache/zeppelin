@@ -54,16 +54,6 @@ import io.fabric8.kubernetes.client.dsl.ParameterNamespaceListVisitFromServerGet
 public class K8sRemoteInterpreterProcess extends RemoteInterpreterManagedProcess {
   private static final Logger LOGGER = LoggerFactory.getLogger(K8sRemoteInterpreterProcess.class);
   private static final int K8S_INTERPRETER_SERVICE_PORT = 12321;
-  private static final Object SPARK_DRIVER_CLASSPATH = "";
-  private static final Object SPARK_DRIVER_DEFAULTJAVAOPTS = "";
-  private static final Object SPARK_DRIVER_EXTRALIBPATH = "";
-  private static final Object SPARK_DRIVER_EXTRAJAVAOPTS = "";
-  private static final Object SPARK_JARS = "";
-  private static final Object SPARK_JARS_PACKAGES = "";
-  private static final Object SPARK_JARS_EXCLUDES = "";
-  private static final Object SPARK_JARS_IVY = "";
-  private static final Object SPARK_JARS_IVYSETTINGS ="" ;
-  private static final Object SPARK_JARS_REPOSITORIES = "";
   private final KubernetesClient client;
   private final String interpreterNamespace;
   private final String interpreterGroupName;
@@ -88,6 +78,16 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterManagedProcess
   private static final String SPARK_CONTAINER_IMAGE = "zeppelin.k8s.spark.container.image";
   private static final String ENV_SERVICE_DOMAIN = "SERVICE_DOMAIN";
   private static final String ENV_ZEPPELIN_HOME = "ZEPPELIN_HOME";
+  private static final String SPARK_DRIVER_CLASSPATH = "spark.driver.extraClassPath";
+  private static final String SPARK_DRIVER_DEFAULTJAVAOPTS = "spark.driver.defaultJavaOptions";
+  private static final String SPARK_DRIVER_EXTRALIBPATH = "spark.driver.extraLibraryPath";
+  private static final String SPARK_DRIVER_EXTRAJAVAOPTS = "spark.driver.extraJavaOptions";
+  private static final String SPARK_JARS = "spark.jars";
+  private static final String SPARK_JARS_PACKAGES = "spark.jars.packages";
+  private static final String SPARK_JARS_EXCLUDES = "spark.jars.excludes";
+  private static final String SPARK_JARS_IVY = "spark.jars.ivy";
+  private static final String SPARK_JARS_IVYSETTINGS ="spark.jars.ivySettings" ;
+  private static final String SPARK_JARS_REPOSITORIES = "spark.jars.repositories";
 
   public K8sRemoteInterpreterProcess(
           KubernetesClient client,
