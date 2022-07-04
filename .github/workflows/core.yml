@@ -398,11 +398,11 @@ jobs:
       - name: run spark-3.3 tests with scala-2.12 and python-${{ matrix.python }}
         run: |
           rm -rf spark/interpreter/metastore_db
-          ./mvnw test -DskipRat -pl spark-submit,spark/interpreter -Pspark-3.3 -Pspark-scala-2.12 -Phadoop2 -Pintegration -B -DfailIfNoTests=false
+          ./mvnw test -DskipRat -pl spark-submit,spark/interpreter -Pspark-3.3 -Pspark-scala-2.12 -Phadoop3 -Pintegration -B -DfailIfNoTests=false
       - name: run spark-3.3 tests with scala-2.13 and python-${{ matrix.python }}
         run: |
           rm -rf spark/interpreter/metastore_db
-          ./mvnw test -DskipRat -pl spark-submit,spark/interpreter -Pspark-3.3 -Pspark-scala-2.13 -Phadoop2 -Pintegration -B -DfailIfNoTests=false
+          ./mvnw test -DskipRat -pl spark-submit,spark/interpreter -Pspark-3.3 -Pspark-scala-2.13 -Phadoop3 -Pintegration -B -DfailIfNoTests=false
 
   livy-0-5-with-spark-2-2-0-under-python3:
     runs-on: ubuntu-20.04
