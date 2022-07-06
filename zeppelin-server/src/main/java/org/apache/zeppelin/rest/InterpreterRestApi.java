@@ -197,7 +197,7 @@ public class InterpreterRestApi {
   @Path("setting/restart/{settingId}")
   @ZeppelinApi
   public Response restartSetting(String message, @PathParam("settingId") String settingId) {
-    LOGGER.info("Restart interpreterSetting {}, msg={}", settingId, message);
+    LOGGER.info("Restart interpreterSetting {}, msg={}, user={}", settingId, message, authenticationService.getPrincipal());
 
     InterpreterSetting setting = interpreterSettingManager.get(settingId);
     try {
