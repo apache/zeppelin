@@ -434,10 +434,6 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterManagedProcess
     options.append(" --conf spark.driver.port=").append(getSparkDriverPort());
     options.append(" --conf spark.blockManager.port=").append(getSparkBlockManagerPort());
 
-    if (properties.containsKey(SPARK_DRIVER_MEMORY)) {
-      options.append(" --driver-memory ").append(properties.get(SPARK_DRIVER_MEMORY));
-    }
-
     if (properties.containsKey(SPARK_DRIVER_CLASSPATH)) {
       options.append(" --conf spark.driver.extraClassPath=").append(properties.get(SPARK_DRIVER_CLASSPATH));
     }
