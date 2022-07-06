@@ -87,6 +87,11 @@ public class S3NotebookRepoTest {
   }
 
   @Test
+  public void testAwsSTSLibraryOnClassPath() throws ClassNotFoundException {
+    Class.forName("com.amazonaws.auth.STSSessionCredentialsProvider", false, getClass().getClassLoader());
+  }
+
+  @Test
   public void testNotebookRepo() throws IOException {
     Map<String, NoteInfo> notesInfo = notebookRepo.list(anonymous);
     assertEquals(0, notesInfo.size());
