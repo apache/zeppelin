@@ -104,7 +104,8 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     notebook = new Notebook(conf, authorizationService, notebookRepo, noteManager, interpreterFactory, interpreterSettingManager, credentials, null);
     notebook.setParagraphJobListener(this);
     schedulerService = new QuartzSchedulerService(conf, notebook);
-    schedulerService.waitForFinishInit();
+    notebook.initNotebook();
+    notebook.waitForFinishInit(1, TimeUnit.MINUTES);
   }
 
   @Override
@@ -991,9 +992,9 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
         note.setConfig(config);
         return null;
       });
-    final int jobsBeforeRefresh = schedulerService.getJobs().size();
+    final int jobsBeforeRefresh = schedulerService.getJobsSize();
     schedulerService.refreshCron(noteId);
-    final int jobsAfterRefresh = schedulerService.getJobs().size();
+    final int jobsAfterRefresh = schedulerService.getJobsSize();
 
     assertEquals(jobsBeforeRefresh, jobsAfterRefresh);
 

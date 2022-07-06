@@ -28,7 +28,12 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.function.Function;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 
@@ -51,8 +56,10 @@ import org.apache.zeppelin.notebook.repo.NotebookRepoSync;
 import org.apache.zeppelin.notebook.repo.NotebookRepoWithVersionControl;
 import org.apache.zeppelin.notebook.repo.NotebookRepoWithVersionControl.Revision;
 import org.apache.zeppelin.scheduler.Job;
+import org.apache.zeppelin.scheduler.SchedulerThreadFactory;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
+import org.apache.zeppelin.util.ExecutorUtil;
 import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -75,6 +82,8 @@ public class Notebook {
   private NotebookRepo notebookRepo;
   private List<NoteEventListener> noteEventListeners = new CopyOnWriteArrayList<>();
   private Credentials credentials;
+  private final List<Consumer<String>> initConsumers;
+  private ExecutorService initExecutor;
 
   /**
    * Main constructor \w manual Dependency Injection
@@ -101,12 +110,69 @@ public class Notebook {
     this.interpreterSettingManager.setNotebook(this);
     this.credentials = credentials;
     addNotebookEventListener(this.interpreterSettingManager);
+    initConsumers = new LinkedList<>();
   }
 
   public void recoveryIfNecessary() {
     if (conf.isRecoveryEnabled()) {
       recoverRunningParagraphs();
     }
+  }
+
+  /**
+   * Subsystems can add a consumer, which is executed during initialization.
+   * Initialization is performed in parallel and with multiple threads.
+   *
+   * The consumer must be thread safe.
+   *
+   * @param initConsumer Consumer, which is passed the NoteId.
+   */
+  public void addInitConsumer(Consumer<String> initConsumer) {
+    this.initConsumers.add(initConsumer);
+  }
+
+  /**
+   * Asynchronous and parallel initialization of notes (during startup)
+   */
+  public void initNotebook() {
+    if (initExecutor == null || initExecutor.isShutdown() || initExecutor.isTerminated()) {
+      initExecutor = new ThreadPoolExecutor(0, Runtime.getRuntime().availableProcessors(), 1, TimeUnit.MINUTES,
+                     new LinkedBlockingQueue<>(), new SchedulerThreadFactory("NotebookInit"));
+    }
+    for (NoteInfo noteInfo : getNotesInfo()) {
+      initExecutor.execute(() -> {
+        for (Consumer<String> initConsumer : initConsumers) {
+          initConsumer.accept(noteInfo.getId());
+        }
+      });
+    }
+  }
+
+  /**
+   * Blocks until all init jobs have completed execution,
+   * or the timeout occurs, or the current thread is
+   * interrupted, whichever happens first.
+   *
+   * @param timeout the maximum time to wait
+   * @param unit the time unit of the timeout argument
+   * @return {@code true} if this initJobs terminated or no initialization is active
+   *         {@code false} if the timeout elapsed before termination or the wait is interrupted
+   */
+  public boolean waitForFinishInit(long timeout, TimeUnit unit) {
+    if (initExecutor == null) {
+      return true;
+    }
+    try {
+      initExecutor.shutdown();
+      return initExecutor.awaitTermination(timeout, unit);
+    } catch (InterruptedException e) {
+      LOGGER.warn("Notebook Init-Job interrupted!", e);
+      // (Re-)Cancel if current thread also interrupted
+      initExecutor.shutdownNow();
+      // Preserve interrupt status
+      Thread.currentThread().interrupt();
+    }
+    return false;
   }
 
   private void recoverRunningParagraphs() {
@@ -683,14 +749,14 @@ public class Notebook {
         .collect(Collectors.toList());
   }
 
-  public List<NoteInfo> getNotesInfo(Function<String, Boolean> func) {
+  public List<NoteInfo> getNotesInfo(Predicate<String> func) {
     String homescreenNoteId = conf.getString(ConfVars.ZEPPELIN_NOTEBOOK_HOMESCREEN);
     boolean hideHomeScreenNotebookFromList =
         conf.getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_HOMESCREEN_HIDE);
 
     synchronized (noteManager.getNotesInfo()) {
       List<NoteInfo> notesInfo = noteManager.getNotesInfo().entrySet().stream().filter(entry ->
-              func.apply(entry.getKey()) &&
+              func.test(entry.getKey()) &&
               ((!hideHomeScreenNotebookFromList) ||
                   ((hideHomeScreenNotebookFromList) && !entry.getKey().equals(homescreenNoteId))))
           .map(entry -> new NoteInfo(entry.getKey(), entry.getValue()))
@@ -752,6 +818,9 @@ public class Notebook {
   }
 
   public void close() {
+    if (initExecutor != null) {
+      ExecutorUtil.softShutdown("NotebookInit", initExecutor, 1, TimeUnit.MINUTES);
+    }
     this.notebookRepo.close();
   }
 
