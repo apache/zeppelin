@@ -335,6 +335,20 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterManagedProcess
       }
       k8sEnv.put("SPARK_HOME", getEnv().getOrDefault("SPARK_HOME", "/spark"));
 
+      // There is already initial value following --driver-java-options added in interpreter.sh
+      // so we need to pass spark.driver.defaultJavaOptions and spark.driver.extraJavaOptions
+      // as SPARK_DRIVER_EXTRAJAVAOPTIONS_CONF env variable to build spark-submit command correctly.
+      StringBuilder driverExtraJavaOpts = new StringBuilder();
+      if (properties.containsKey(SPARK_DRIVER_DEFAULTJAVAOPTS)) {
+        driverExtraJavaOpts.append((String) properties.get(SPARK_DRIVER_DEFAULTJAVAOPTS));
+      }
+      if (properties.containsKey(SPARK_DRIVER_EXTRAJAVAOPTS)) {
+        driverExtraJavaOpts.append(" ");
+        driverExtraJavaOpts.append((String) properties.get(SPARK_DRIVER_EXTRAJAVAOPTS));
+      }
+      if (driverExtraJavaOpts.length() > 0) {
+        k8sEnv.put("SPARK_DRIVER_EXTRAJAVAOPTIONS_CONF", driverExtraJavaOpts.toString());
+      }
       // configure interpreter property "zeppelin.spark.uiWebUrl" if not defined, to enable spark ui through reverse proxy
       String webUrl = (String) properties.get("zeppelin.spark.uiWebUrl");
       if (StringUtils.isBlank(webUrl)) {
@@ -434,16 +448,9 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterManagedProcess
     options.append(" --conf spark.driver.port=").append(getSparkDriverPort());
     options.append(" --conf spark.blockManager.port=").append(getSparkBlockManagerPort());
 
+    // driver properties needs to be passed with spark-submit command when using spark client mode
     if (properties.containsKey(SPARK_DRIVER_CLASSPATH)) {
       options.append(" --conf spark.driver.extraClassPath=").append(properties.get(SPARK_DRIVER_CLASSPATH));
-    }
-
-    if (properties.containsKey(SPARK_DRIVER_DEFAULTJAVAOPTS)) {
-      options.append(" --conf spark.driver.defaultJavaOptions=").append(properties.get(SPARK_DRIVER_DEFAULTJAVAOPTS));
-    }
-
-    if (properties.containsKey(SPARK_DRIVER_EXTRAJAVAOPTS)) {
-      options.append(" --conf spark.driver.extraJavaOptions=").append(properties.get(SPARK_DRIVER_EXTRAJAVAOPTS));
     }
 
     if (properties.containsKey(SPARK_DRIVER_EXTRALIBPATH)) {
