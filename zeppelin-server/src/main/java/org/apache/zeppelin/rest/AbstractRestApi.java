@@ -37,6 +37,7 @@ public class AbstractRestApi {
 
   protected ServiceContext getServiceContext() {
     AuthenticationInfo authInfo = new AuthenticationInfo(authenticationService.getPrincipal());
+    authInfo.setRoles(authenticationService.getAssociatedRoles());
     Set<String> userAndRoles = new HashSet<>();
     userAndRoles.add(authenticationService.getPrincipal());
     userAndRoles.addAll(authenticationService.getAssociatedRoles());

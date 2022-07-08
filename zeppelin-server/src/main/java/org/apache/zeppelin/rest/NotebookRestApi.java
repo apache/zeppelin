@@ -86,7 +86,6 @@ public class NotebookRestApi extends AbstractRestApi {
   private final AuthorizationService authorizationService;
   private final NotebookService notebookService;
   private final JobManagerService jobManagerService;
-  private final AuthenticationService authenticationService;
   private final SchedulerService schedulerService;
 
   @Inject
@@ -108,7 +107,6 @@ public class NotebookRestApi extends AbstractRestApi {
     this.noteSearchService = search;
     this.authorizationService = authorizationService;
     this.zConf = zConf;
-    this.authenticationService = authenticationService;
     this.schedulerService = schedulerService;
   }
 
