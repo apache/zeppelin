@@ -70,7 +70,7 @@ public class SessionRestApi {
     if (StringUtils.isBlank(interpreter)) {
       LOGGER.info("List all sessions of all interpreters");
     } else {
-      LOGGER.info("List all sessions for interpreter: " + interpreter);
+      LOGGER.info("List all sessions for interpreter: {}", interpreter);
     }
     List<SessionInfo> sessionList = null;
     if (StringUtils.isBlank(interpreter)) {

@@ -16,30 +16,33 @@
  */
 package org.apache.zeppelin.rest.message;
 
-import com.google.gson.Gson;
-
 import java.util.List;
-
-import org.apache.zeppelin.common.JsonSerializable;
 
 /**
  *  NewNoteRequest rest api request message.
  */
-public class NewNoteRequest implements JsonSerializable {
-  private static final Gson GSON = new Gson();
+public class NewNoteRequest {
 
   //TODO(zjffdu) rename it to be notePath instead of name
-  private String name;
-  private String defaultInterpreterGroup;
-  private boolean addingEmptyParagraph = false;
-  private List<NewParagraphRequest> paragraphs;
-  private String revisionId;
+  private final String name;
+  private final String defaultInterpreterGroup;
+  private final Boolean addingEmptyParagraph;
+  private final List<NewParagraphRequest> paragraphs;
+  private final String revisionId;
 
-  public NewNoteRequest (){
+  public NewNoteRequest(String name, String defaultInterpreterGroup, Boolean addingEmptyParagraph, List<NewParagraphRequest> paragraphs, String revisionId) {
+    this.name = name;
+    this.defaultInterpreterGroup = defaultInterpreterGroup;
+    this.addingEmptyParagraph = addingEmptyParagraph;
+    this.paragraphs = paragraphs;
+    this.revisionId = revisionId;
   }
 
   public boolean getAddingEmptyParagraph() {
-    return addingEmptyParagraph;
+    if (addingEmptyParagraph == null) {
+      return false;
+    }
+    return addingEmptyParagraph.booleanValue();
   }
 
   public String getName() {
@@ -56,13 +59,5 @@ public class NewNoteRequest implements JsonSerializable {
 
   public String getRevisionId() {
     return revisionId;
-  }
-
-  public String toJson() {
-    return GSON.toJson(this);
-  }
-
-  public static NewNoteRequest fromJson(String json) {
-    return GSON.fromJson(json, NewNoteRequest.class);
   }
 }

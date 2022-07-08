@@ -21,9 +21,10 @@ package org.apache.zeppelin.rest.message;
  */
 public class GetNoteByPathRequest {
 
-    private String notePath;
+    private final String notePath;
 
-    public GetNoteByPathRequest() {
+    public GetNoteByPathRequest(String notePath) {
+        this.notePath = notePath;
     }
 
     public String getNotePath() {

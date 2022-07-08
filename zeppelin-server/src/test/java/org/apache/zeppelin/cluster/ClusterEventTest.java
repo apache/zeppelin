@@ -384,9 +384,9 @@ public class ClusterEventTest extends ZeppelinServerMock {
         });
 
       // insert new paragraph
-      NewParagraphRequest newParagraphRequest = new NewParagraphRequest();
+      NewParagraphRequest newParagraphRequest = new NewParagraphRequest("Test", null, null, null);
 
-      CloseableHttpResponse post = AbstractTestRestApi.httpPost("/notebook/" + noteId + "/paragraph", newParagraphRequest.toJson());
+      CloseableHttpResponse post = AbstractTestRestApi.httpPost("/notebook/" + noteId + "/paragraph", gson.toJson(newParagraphRequest));
       LOG.info("test clear paragraph output response\n" + EntityUtils.toString(post.getEntity(), StandardCharsets.UTF_8));
       assertThat(post, AbstractTestRestApi.isAllowed());
       post.close();
