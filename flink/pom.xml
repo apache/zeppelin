@@ -46,7 +46,7 @@
         <flink1.12.version>1.12.4</flink1.12.version>
         <flink1.13.version>1.13.2</flink1.13.version>
         <flink1.14.version>1.14.0</flink1.14.version>
-        <flink1.15.version>1.15.0</flink1.15.version>
+        <flink1.15.version>1.15.1</flink1.15.version>
 
         <flink.scala.version>2.11.12</flink.scala.version>
         <flink.scala.binary.version>2.11</flink.scala.binary.version>
