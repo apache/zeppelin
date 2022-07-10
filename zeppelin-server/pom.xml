@@ -458,7 +458,7 @@
     <profile>
       <id>using-source-tree</id>
       <activation>
-        <activeByDefault>true</activeByDefault>
+        <activeByDefault>false</activeByDefault>
       </activation>
       <properties>
         <zeppelin.daemon.package.base>
@@ -481,7 +481,9 @@
 
     <profile>
       <id>hadoop2</id>
-
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
       <properties>
         <hadoop.version>${hadoop2.7.version}</hadoop.version>
       </properties>
