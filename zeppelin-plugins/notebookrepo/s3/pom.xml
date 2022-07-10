@@ -34,7 +34,7 @@
     <description>NotebookRepo implementation based on S3</description>
 
     <properties>
-        <aws.sdk.s3.version>1.11.736</aws.sdk.s3.version>
+        <aws.sdk.version>1.11.736</aws.sdk.version>
         <plugin.name>NotebookRepo/S3NotebookRepo</plugin.name>
     </properties>
 
@@ -42,7 +42,24 @@
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk-s3</artifactId>
-            <version>${aws.sdk.s3.version}</version>
+            <version>${aws.sdk.version}</version>
+            <exclusions>
+                <!-- jcl-over-slf4j is provided by zeppelin-interprerter -->
+                <exclusion>
+                    <groupId>commons-logging</groupId>
+                    <artifactId>commons-logging</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <!-- STS lib needs to be on class path for the WebidentityTokenCredentialsProvider to work properly,
+             otherwise it will be skipped in DefaultAWSCredentialsProviderChain
+             https://github.com/aws/aws-sdk-java/issues/2136
+             -->
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk-sts</artifactId>
+            <version>${aws.sdk.version}</version>
             <exclusions>
                 <!-- jcl-over-slf4j is provided by zeppelin-interprerter -->
                 <exclusion>
