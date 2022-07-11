@@ -497,7 +497,9 @@
     </profile>
     <profile>
       <id>hadoop3</id>
-
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
       <properties>
         <hadoop.version>${hadoop3.2.version}</hadoop.version>
         <hadoop-client-runtime.artifact>hadoop-client-runtime</hadoop-client-runtime.artifact>
