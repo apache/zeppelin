@@ -30,11 +30,15 @@ public class SparkVersion {
   public static final SparkVersion SPARK_2_3_0 = SparkVersion.fromVersionString("2.3.0");
   public static final SparkVersion SPARK_2_3_1 = SparkVersion.fromVersionString("2.3.1");
   public static final SparkVersion SPARK_2_4_0 = SparkVersion.fromVersionString("2.4.0");
+
   public static final SparkVersion SPARK_3_1_0 = SparkVersion.fromVersionString("3.1.0");
+
   public static final SparkVersion SPARK_3_3_0 = SparkVersion.fromVersionString("3.3.0");
 
+  public static final SparkVersion SPARK_3_4_0 = SparkVersion.fromVersionString("3.4.0");
+
   public static final SparkVersion MIN_SUPPORTED_VERSION =  SPARK_2_0_0;
-  public static final SparkVersion UNSUPPORTED_FUTURE_VERSION = SPARK_3_3_0;
+  public static final SparkVersion UNSUPPORTED_FUTURE_VERSION = SPARK_3_4_0;
 
   private int version;
   private int majorVersion;

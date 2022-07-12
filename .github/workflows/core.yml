@@ -325,7 +325,7 @@ jobs:
         run: |
           R -e "IRkernel::installspec()"
       - name: run tests on hadoop${{ matrix.hadoop }}
-        run: ./mvnw test -DskipRat -pl zeppelin-interpreter-integration -Phadoop${{ matrix.hadoop }} -Pintegration -B -Dtest=SparkSubmitIntegrationTest,ZeppelinSparkClusterTest24,SparkIntegrationTest24,ZeppelinSparkClusterTest30,SparkIntegrationTest30,ZeppelinSparkClusterTest31,SparkIntegrationTest31,ZeppelinSparkClusterTest32,SparkIntegrationTest32 -DfailIfNoTests=false
+        run: ./mvnw test -DskipRat -pl zeppelin-interpreter-integration -Phadoop${{ matrix.hadoop }} -Pintegration -B -Dtest=SparkSubmitIntegrationTest,ZeppelinSparkClusterTest24,SparkIntegrationTest24,ZeppelinSparkClusterTest30,SparkIntegrationTest30,ZeppelinSparkClusterTest31,SparkIntegrationTest31,ZeppelinSparkClusterTest32,SparkIntegrationTest32,ZeppelinSparkClusterTest33,SparkIntegrationTest33 -DfailIfNoTests=false
 
   # test on spark for each spark version & scala version
   spark-test:
@@ -395,6 +395,14 @@ jobs:
         run: |
           rm -rf spark/interpreter/metastore_db
           ./mvnw test -DskipRat -pl spark-submit,spark/interpreter -Pspark-3.2 -Pspark-scala-2.13 -Phadoop2 -Pintegration -B -DfailIfNoTests=false
+      - name: run spark-3.3 tests with scala-2.12 and python-${{ matrix.python }}
+        run: |
+          rm -rf spark/interpreter/metastore_db
+          ./mvnw test -DskipRat -pl spark-submit,spark/interpreter -Pspark-3.3 -Pspark-scala-2.12 -Phadoop3 -Pintegration -B -DfailIfNoTests=false
+      - name: run spark-3.3 tests with scala-2.13 and python-${{ matrix.python }}
+        run: |
+          rm -rf spark/interpreter/metastore_db
+          ./mvnw test -DskipRat -pl spark-submit,spark/interpreter -Pspark-3.3 -Pspark-scala-2.13 -Phadoop3 -Pintegration -B -DfailIfNoTests=false
 
   livy-0-5-with-spark-2-2-0-under-python3:
     runs-on: ubuntu-20.04
