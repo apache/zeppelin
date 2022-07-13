@@ -55,8 +55,6 @@ zeppelin-web/yarn.lock
 .Rhistory
 /R/
 
-# scio
-.bigquery/
 
 # project level
 /logs/

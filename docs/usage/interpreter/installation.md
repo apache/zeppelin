@@ -234,11 +234,6 @@ You can also find the below community managed interpreter list in `conf/interpre
     <td>Scalding interpreter</td>
   </tr>
   <tr>
-    <td>scio</td>
-    <td>org.apache.zeppelin:zeppelin-scio:0.10.0</td>
-    <td>Scio interpreter</td>
-  </tr>
-  <tr>
     <td>shell</td>
     <td>org.apache.zeppelin:zeppelin-shell:0.10.0</td>
     <td>Shell command</td>

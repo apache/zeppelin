@@ -84,7 +84,6 @@
     <module>elasticsearch</module>
     <module>bigquery</module>
     <module>alluxio</module>
-    <module>scio</module>
     <module>neo4j</module>
     <module>sap</module>
     <module>scalding</module>
@@ -1457,7 +1456,7 @@
             </goals>
             <configuration>
               <failOnViolation>true</failOnViolation>
-              <excludes>org/apache/zeppelin/interpreter/thrift/*,org/apache/zeppelin/scio/avro/*,org/apache/zeppelin/python/proto/*</excludes>
+              <excludes>org/apache/zeppelin/interpreter/thrift/*,org/apache/zeppelin/python/proto/*</excludes>
             </configuration>
           </execution>
           <execution>
@@ -1467,7 +1466,7 @@
               <goal>checkstyle-aggregate</goal>
             </goals>
             <configuration>
-              <excludes>org/apache/zeppelin/interpreter/thrift/*,org/apache/zeppelin/scio/avro/*,org/apache/zeppelin/python/proto/*</excludes>
+              <excludes>org/apache/zeppelin/interpreter/thrift/*,org/apache/zeppelin/python/proto/*</excludes>
             </configuration>
           </execution>
         </executions>
