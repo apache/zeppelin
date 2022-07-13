@@ -27,7 +27,7 @@ limitations under the License.
 
 A deep learning algorithm project requires data acquisition, data processing, data cleaning, interactive visual programming adjustment parameters, algorithm testing, algorithm publishing, algorithm job scheduling, offline model training, model online services and many other processes and processes. Zeppelin is a web-based notebook that supports interactive data analysis. You can use SQL, Scala, Python, etc. to make data-driven, interactive, collaborative documents.
 
-You can use the more than 20 interpreters in zeppelin (for example: spark, hive, Cassandra, Elasticsearch, Kylin, HBase, etc.) to collect data, clean data, feature extraction, etc. in the data in Hadoop before completing the machine learning model training. The data preprocessing process.
+You can use the more than 20 interpreters in zeppelin (for example: spark, hive, Cassandra, Elasticsearch, HBase, etc.) to collect data, clean data, feature extraction, etc. in the data in Hadoop before completing the machine learning model training. The data preprocessing process.
 
 By integrating submarine in zeppelin, we use zeppelin's data discovery, data analysis and data visualization and collaboration capabilities to visualize the results of algorithm development and parameter adjustment during machine learning model training.
 

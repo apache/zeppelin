@@ -33,7 +33,6 @@ ignite          org.apache.zeppelin:zeppelin-ignite:0.10.0               Ignite 
 java            org.apache.zeppelin:zeppelin-java:0.10.0                 Java interpreter
 jdbc            org.apache.zeppelin:zeppelin-jdbc:0.10.0                 Jdbc interpreter
 kotlin          org.apache.zeppelin:zeppelin-kotlin:0.10.0               Kotlin interpreter
-kylin           org.apache.zeppelin:zeppelin-kylin:0.10.0                Kylin interpreter
 livy            org.apache.zeppelin:zeppelin-livy:0.10.0                 Livy interpreter
 md              org.apache.zeppelin:zeppelin-markdown:0.10.0             Markdown support
 neo4j           org.apache.zeppelin:zeppelin-neo4j:0.10.0                Neo4j interpreter
