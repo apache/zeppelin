@@ -85,7 +85,6 @@
     <module>alluxio</module>
     <module>neo4j</module>
     <module>sap</module>
-    <module>scalding</module>
     <module>java</module>
     <module>beam</module>
     <module>hazelcastjet</module>

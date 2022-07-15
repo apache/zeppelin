@@ -163,7 +163,6 @@ limitations under the License.
   * [Python](./interpreter/python.html)
   * [R](./interpreter/r.html)
   * [SAP](./interpreter/sap.html)
-  * [Scalding](./interpreter/scalding.html)
   * [Shell](./interpreter/shell.html)
   * [Spark](./interpreter/spark.html)
   * [Sparql](./interpreter/sparql.html)
