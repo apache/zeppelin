@@ -87,7 +87,6 @@
     <module>sap</module>
     <module>java</module>
     <module>beam</module>
-    <module>hazelcastjet</module>
     <module>geode</module>
     <module>ksql</module>
     <module>sparql</module>

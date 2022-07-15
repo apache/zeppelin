@@ -142,7 +142,6 @@ limitations under the License.
   * [Flink](./interpreter/flink.html)
   * [Geode](./interpreter/geode.html)
   * [Groovy](./interpreter/groovy.html)
-  * [Hazelcast Jet](./interpreter/hazelcastjet.html)
   * [HBase](./interpreter/hbase.html)
   * [HDFS](./interpreter/hdfs.html)
   * [Hive](./interpreter/hive.html)
