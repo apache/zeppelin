@@ -117,12 +117,6 @@
     </dependency>
 
     <dependency>
-      <groupId>org.apache.zeppelin</groupId>
-      <artifactId>zeppelin-scio</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-
-    <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-hdfs</artifactId>
       <version>${beam.hadoop.version}</version>

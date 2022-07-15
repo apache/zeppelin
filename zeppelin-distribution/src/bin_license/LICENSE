@@ -175,11 +175,6 @@ The following components are provided under Apache License.
     (Apache 2.0) tez-yarn-timeline-history-with-acls (org.apache.tez:tez-yarn-timeline-history-with-acls:0.7.0 - http://tez.apache.org)
     (Apache 2.0) jna (net.java.dev.jna:jna:4.1.0 https://github.com/java-native-access/jna)
     (Apache 2.0) MathJax v2.7.0 - https://github.com/mathjax/MathJax/blob/2.7.0/LICENSE
-    (Apache 2.0) Scio REPL 0.2.4 (com.spotify:scio-repl:0.2.4 - https://github.com/spotify/scio)
-    (Apache 2.0) Scio BigQuery 0.2.4 (com.spotify:scio-bigquery:0.2.4 - https://github.com/spotify/scio)
-    (Apache 2.0) Scio Core 0.2.4 (com.spotify:scio-core:0.2.4 - https://github.com/spotify/scio)
-    (Apache 2.0) Scio Extra 0.2.4 (com.spotify:scio-extra:0.2.4 - https://github.com/spotify/scio)
-    (Apache 2.0) Scio Test 0.2.4 (com.spotify:scio-test:0.2.4 - https://github.com/spotify/scio)
     (Apache 2.0) Netty Http2 Codec 4.1.0.CR1 (io.netty:netty-codec-http2:4.1.0.CR1 - https://github.com/netty/netty)
     (Apache 2.0) Netty Http Codec 4.1.0.CR1 (io.netty:netty-codec-http:4.1.0.CR1 - https://github.com/netty/netty)
     (Apache 2.0) Netty Handler 4.1.0.CR1 (io.netty:netty-handler:4.1.0.CR1 - https://github.com/netty/netty)
