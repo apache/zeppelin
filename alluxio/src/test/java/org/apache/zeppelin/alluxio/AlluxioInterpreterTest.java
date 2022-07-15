@@ -373,7 +373,8 @@ public class AlluxioInterpreterTest {
             "/testRoot/testFileA");
     expected += String.format(format, FormatUtils.getSizeFromBytes(0),
             CommonUtils.convertMsToDate(files[1].getCreationTimeMs(),
-                    fs.getConf().get(PropertyKey.USER_DATE_FORMAT_PATTERN)), "", "/testRoot/testDir");
+                    fs.getConf().get(PropertyKey.USER_DATE_FORMAT_PATTERN)),
+            "", "/testRoot/testDir");
     expected += String.format(format, FormatUtils.getSizeFromBytes(30),
             CommonUtils.convertMsToDate(files[2].getCreationTimeMs(),
                     fs.getConf().get(PropertyKey.USER_DATE_FORMAT_PATTERN)), "Not In Memory",
@@ -423,8 +424,8 @@ public class AlluxioInterpreterTest {
     expected +=
             String.format(format, FormatUtils.getSizeFromBytes(30),
                     CommonUtils.convertMsToDate(files[3].getCreationTimeMs(),
-                            fs.getConf().get(PropertyKey.USER_DATE_FORMAT_PATTERN)), "Not In Memory",
-                    "/testRoot/testFileC");
+                            fs.getConf().get(PropertyKey.USER_DATE_FORMAT_PATTERN)),
+                    "Not In Memory", "/testRoot/testFileC");
     expected += "\n";
 
     Assert.assertEquals(expected, output.message().get(0).getData());
