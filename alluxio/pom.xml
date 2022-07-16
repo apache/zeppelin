@@ -37,7 +37,6 @@
     </properties>
 
     <dependencies>
-
         <dependency>
             <groupId>org.alluxio</groupId>
             <artifactId>alluxio-shell</artifactId>
@@ -82,12 +81,6 @@
             <scope>test</scope>
         </dependency>
 
-        <dependency>
-            <groupId>org.apache.hadoop</groupId>
-            <artifactId>hadoop-common</artifactId>
-            <version>3.2.3</version>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
 
     <build>
