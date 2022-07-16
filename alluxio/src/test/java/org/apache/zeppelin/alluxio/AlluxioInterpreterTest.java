@@ -20,8 +20,6 @@ package org.apache.zeppelin.alluxio;
 
 
 import alluxio.conf.ServerConfiguration;
-import alluxio.grpc.OpenFilePOptions;
-import alluxio.grpc.ReadPType;
 import alluxio.grpc.WritePType;
 import alluxio.client.file.FileSystemTestUtils;
 import alluxio.master.LocalAlluxioCluster;
@@ -40,7 +38,6 @@ import java.util.Properties;
 
 import alluxio.AlluxioURI;
 import alluxio.Constants;
-import alluxio.client.file.FileInStream;
 import alluxio.client.file.FileSystem;
 import alluxio.client.file.URIStatus;
 import alluxio.exception.AlluxioException;
