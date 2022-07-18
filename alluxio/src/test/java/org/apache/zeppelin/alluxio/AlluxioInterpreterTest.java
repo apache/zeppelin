@@ -29,7 +29,6 @@ import org.junit.Before;
 import org.junit.Test;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -37,11 +36,9 @@ import java.util.List;
 import java.util.Properties;
 
 import alluxio.AlluxioURI;
-import alluxio.Constants;
 import alluxio.client.file.FileSystem;
 import alluxio.client.file.URIStatus;
 import alluxio.exception.AlluxioException;
-import alluxio.exception.ExceptionMessage;
 import alluxio.util.io.BufferUtils;
 import alluxio.util.io.PathUtils;
 
@@ -55,7 +52,6 @@ import static org.junit.Assert.assertEquals;
 
 public class AlluxioInterpreterTest {
   private AlluxioInterpreter alluxioInterpreter;
-  private static final int SIZE_BYTES = Constants.MB * 10;
   private LocalAlluxioCluster mLocalAlluxioCluster = null;
   private FileSystem fs = null;
 
@@ -70,7 +66,7 @@ public class AlluxioInterpreterTest {
 
   @Before
   public final void before() throws Exception {
-    mLocalAlluxioCluster = new LocalAlluxioCluster(10);
+    mLocalAlluxioCluster = new LocalAlluxioCluster(1);
     mLocalAlluxioCluster.initConfiguration("alluxio-test");
     ServerConfiguration.global().validate();
     mLocalAlluxioCluster.start();
@@ -127,22 +123,6 @@ public class AlluxioInterpreterTest {
   }
 
   @Test
-  public void catDirectoryTest() throws IOException {
-    String expected = "Successfully created directory /testDir\n\n" +
-            "Path \"/testDir\" must be a file.\n";
-    InterpreterResult output = alluxioInterpreter.interpret("mkdir /testDir" +
-            "\ncat /testDir", null);
-    Assert.assertEquals(Code.ERROR, output.code());
-    Assert.assertEquals(expected, output.message().get(0).getData());
-  }
-
-  @Test
-  public void catNotExistTest() throws IOException {
-    InterpreterResult output = alluxioInterpreter.interpret("cat /testFile", null);
-    Assert.assertEquals(Code.ERROR, output.code());
-  }
-
-  @Test
   public void catTest() throws IOException {
     FileSystemTestUtils.createByteFile(fs, "/testFile", WritePType.MUST_CACHE, 10, 10);
     InterpreterResult output = alluxioInterpreter.interpret("cat /testFile", null);
@@ -169,36 +149,7 @@ public class AlluxioInterpreterTest {
   }
 
   @Test
-  public void loadDirTest() throws IOException, AlluxioException {
-    FileSystemTestUtils.createByteFile(fs, "/testRoot/testFileA", WritePType.CACHE_THROUGH, 10, 10);
-    FileSystemTestUtils.createByteFile(fs, "/testRoot/testFileB", WritePType.MUST_CACHE, 10, 10);
-
-    int memPercentageA = fs.getStatus(
-            new AlluxioURI("/testRoot/testFileA")).getInMemoryPercentage();
-    int memPercentageB = fs.getStatus(
-            new AlluxioURI("/testRoot/testFileB")).getInMemoryPercentage();
-    Assert.assertFalse(memPercentageA == 0);
-    Assert.assertTrue(memPercentageB == 100);
-
-    alluxioInterpreter.interpret("load /testRoot", null);
-
-    memPercentageA = fs.getStatus(new AlluxioURI("/testRoot/testFileA")).getInMemoryPercentage();
-    memPercentageB = fs.getStatus(new AlluxioURI("/testRoot/testFileB")).getInMemoryPercentage();
-    Assert.assertTrue(memPercentageA == 100);
-    Assert.assertTrue(memPercentageB == 100);
-  }
-
-  @Test
-  public void copyToLocalLargeTest() throws IOException {
-    copyToLocalWithBytes(SIZE_BYTES);
-  }
-
-  @Test
   public void copyToLocalTest() throws IOException {
-    copyToLocalWithBytes(10);
-  }
-
-  private void copyToLocalWithBytes(int bytes) throws IOException {
     FileSystemTestUtils.createByteFile(fs, "/testFile", WritePType.MUST_CACHE, 10, 10);
 
     InterpreterResult output = alluxioInterpreter.interpret("copyToLocal /testFile " +
@@ -208,14 +159,6 @@ public class AlluxioInterpreterTest {
             "Copied /testFile to file://" + mLocalAlluxioCluster.getAlluxioHome() + "/testFile\n\n",
             output.message().get(0).getData());
     fileReadTest("/testFile", 10);
-  }
-
-  @Test
-  public void countNotExistTest() throws IOException {
-    InterpreterResult output = alluxioInterpreter.interpret("count /NotExistFile", null);
-    Assert.assertEquals(Code.ERROR, output.code());
-    Assert.assertEquals(ExceptionMessage.PATH_DOES_NOT_EXIST.getMessage("/NotExistFile") + "\n",
-            output.message().get(0).getData());
   }
 
   @Test
@@ -244,14 +187,6 @@ public class AlluxioInterpreterTest {
   }
 
   @Test
-  public void locationNotExistTest() throws IOException {
-    InterpreterResult output = alluxioInterpreter.interpret("location /NotExistFile", null);
-    Assert.assertEquals(ExceptionMessage.PATH_DOES_NOT_EXIST.getMessage("/NotExistFile") + "\n",
-            output.message().get(0).getData());
-    Assert.assertEquals(Code.ERROR, output.code());
-  }
-
-  @Test
   public void lsTest() throws IOException, AlluxioException {
     URIStatus[] files = new URIStatus[3];
 
@@ -272,59 +207,6 @@ public class AlluxioInterpreterTest {
   }
 
   @Test
-  public void lsRecursiveTest() throws IOException, AlluxioException {
-    URIStatus[] files = new URIStatus[4];
-
-    FileSystemTestUtils.createByteFile(fs, "/testRoot/testFileA",
-            WritePType.MUST_CACHE, 10, 10);
-    FileSystemTestUtils.createByteFile(fs, "/testRoot/testDir/testFileB",
-            WritePType.MUST_CACHE, 20, 20);
-    FileSystemTestUtils.createByteFile(fs, "/testRoot/testFileC",
-            WritePType.THROUGH, 30, 30);
-
-    files[0] = fs.getStatus(new AlluxioURI("/testRoot/testFileA"));
-    files[1] = fs.getStatus(new AlluxioURI("/testRoot/testDir"));
-    files[2] = fs.getStatus(new AlluxioURI("/testRoot/testDir/testFileB"));
-    files[3] = fs.getStatus(new AlluxioURI("/testRoot/testFileC"));
-  }
-
-  @Test
-  public void mkdirComplexPathTest() throws IOException, AlluxioException {
-    InterpreterResult output = alluxioInterpreter.interpret(
-            "mkdir /Complex!@#$%^&*()-_=+[]{};\"'<>,.?/File", null);
-
-    boolean existsDir = fs.exists(new AlluxioURI("/Complex!@#$%^&*()-_=+[]{};\"'<>,.?/File"));
-    Assert.assertEquals(
-            "Successfully created directory /Complex!@#$%^&*()-_=+[]{};\"'<>,.?/File\n\n",
-            output.message().get(0).getData());
-    Assert.assertTrue(existsDir);
-  }
-
-  @Test
-  public void mkdirExistingTest() throws IOException {
-    String command = "mkdir /festFile1";
-    Assert.assertEquals(Code.SUCCESS, alluxioInterpreter.interpret(command, null).code());
-    Assert.assertEquals(Code.ERROR, alluxioInterpreter.interpret(command, null).code());
-  }
-
-  @Test
-  public void mkdirInvalidPathTest() throws IOException {
-    Assert.assertEquals(
-            Code.ERROR,
-            alluxioInterpreter.interpret("mkdir /test File Invalid Path", null).code());
-  }
-
-  @Test
-  public void mkdirShortPathTest() throws IOException, AlluxioException {
-    InterpreterResult output = alluxioInterpreter.interpret("mkdir /root/testFile1", null);
-    boolean existsDir = fs.exists(new AlluxioURI("/root/testFile1"));
-    Assert.assertEquals(
-            "Successfully created directory /root/testFile1\n\n",
-            output.message().get(0).getData());
-    Assert.assertTrue(existsDir);
-  }
-
-  @Test
   public void mkdirTest() throws IOException, AlluxioException {
     String qualifiedPath =
             "alluxio://" + mLocalAlluxioCluster.getHostname() + ":"
@@ -335,16 +217,6 @@ public class AlluxioInterpreterTest {
             "Successfully created directory " + qualifiedPath + "\n\n",
             output.message().get(0).getData());
     Assert.assertTrue(existsDir);
-  }
-
-  private File generateFileContent(String path, byte[] toWrite)
-          throws IOException {
-    File testFile = new File(mLocalAlluxioCluster.getAlluxioHome() + path);
-    testFile.createNewFile();
-    FileOutputStream fos = new FileOutputStream(testFile);
-    fos.write(toWrite);
-    fos.close();
-    return testFile;
   }
 
   private void fileReadTest(String fileName, int size) throws IOException {
