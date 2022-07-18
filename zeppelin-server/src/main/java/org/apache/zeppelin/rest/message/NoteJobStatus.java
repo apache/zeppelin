@@ -17,7 +17,6 @@
 
 package org.apache.zeppelin.rest.message;
 
-import com.google.gson.annotations.SerializedName;
 import org.apache.zeppelin.notebook.Note;
 
 import java.util.List;
@@ -27,19 +26,18 @@ public class NoteJobStatus {
 
   private final String id;
   private final Boolean isRunning;
-  @SerializedName("paragraphs")
-  private final List<ParagraphJobStatus> paragraphJobStatusList;
+  private final List<ParagraphJobStatus> paragraphs;
 
   public NoteJobStatus(Note note) {
     this.id = note.getId();
     this.isRunning = Boolean.valueOf(note.isRunning());
-    this.paragraphJobStatusList = note.getParagraphs().stream()
+    this.paragraphs = note.getParagraphs().stream()
       .map(ParagraphJobStatus::new)
       .collect(Collectors.toList());
   }
 
   public List<ParagraphJobStatus> getParagraphJobStatusList() {
-    return paragraphJobStatusList;
+    return paragraphs;
   }
 
   public Boolean isRunning() {
