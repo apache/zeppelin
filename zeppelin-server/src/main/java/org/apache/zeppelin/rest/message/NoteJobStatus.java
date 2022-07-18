@@ -26,13 +26,13 @@ import java.util.stream.Collectors;
 public class NoteJobStatus {
 
   private final String id;
-  private final boolean isRunning;
+  private final Boolean isRunning;
   @SerializedName("paragraphs")
   private final List<ParagraphJobStatus> paragraphJobStatusList;
 
   public NoteJobStatus(Note note) {
     this.id = note.getId();
-    this.isRunning = note.isRunning();
+    this.isRunning = Boolean.valueOf(note.isRunning());
     this.paragraphJobStatusList = note.getParagraphs().stream()
       .map(ParagraphJobStatus::new)
       .collect(Collectors.toList());
@@ -42,7 +42,7 @@ public class NoteJobStatus {
     return paragraphJobStatusList;
   }
 
-  public boolean isRunning() {
+  public Boolean isRunning() {
     return isRunning;
   }
 

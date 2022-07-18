@@ -21,8 +21,8 @@ package org.apache.zeppelin.rest.message;
  */
 public class CronRequest {
 
-  private String cron;
-  private Boolean releaseResource;
+  private final String cron;
+  private final Boolean releaseResource;
 
   public CronRequest (String cron, Boolean releaseResource){
     this.cron = cron;

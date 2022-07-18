@@ -38,6 +38,10 @@ public class NewNoteRequest {
     this.revisionId = revisionId;
   }
 
+  /**
+   *
+   * @return addingEmptyParagraph, in case of null false is returned
+   */
   public boolean getAddingEmptyParagraph() {
     if (addingEmptyParagraph == null) {
       return false;
