@@ -25,11 +25,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Duration;
 import java.time.format.DateTimeParseException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -46,6 +42,7 @@ import org.apache.commons.configuration2.io.CombinedLocationStrategy;
 import org.apache.commons.configuration2.io.FileLocationStrategy;
 import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.SystemUtils;
 import org.apache.zeppelin.interpreter.lifecycle.NullLifecycleManager;
 import org.apache.zeppelin.util.Util;
 import org.slf4j.Logger;
@@ -327,7 +324,7 @@ public class ZeppelinConfiguration {
 
   public String getKeyStorePath() {
     String path = getString(ConfVars.ZEPPELIN_SSL_KEYSTORE_PATH);
-    if (path != null && path.startsWith("/") || isWindowsPath(path)) {
+    if (path != null && path.startsWith("/") || isWindowsCheck()) {
       return path;
     } else {
       return getAbsoluteDir(
@@ -359,7 +356,7 @@ public class ZeppelinConfiguration {
     if (path == null) {
       path = getKeyStorePath();
     }
-    if (path != null && path.startsWith("/") || isWindowsPath(path)) {
+    if (path != null && path.startsWith("/") || isWindowsCheck()) {
       return path;
     } else {
       return getAbsoluteDir(
@@ -613,7 +610,7 @@ public class ZeppelinConfiguration {
   }
 
   public String getAbsoluteDir(String path) {
-    if (path != null && (path.startsWith(File.separator) || isWindowsPath(path) || isPathWithScheme(path))) {
+    if (path != null && (path.startsWith(File.separator) || isWindowsCheck() || isPathWithScheme(path))) {
       return path;
     } else {
       return getString(ConfVars.ZEPPELIN_HOME) + File.separator + path;
@@ -636,8 +633,12 @@ public class ZeppelinConfiguration {
     return getString(ConfVars.ZEPPELIN_INTERPRETER_RPC_PORTRANGE);
   }
 
-  public boolean isWindowsPath(String path){
-    return path.matches("^[A-Za-z]:\\\\.*");
+  public boolean isWindowsCheck(){
+    Boolean wc = SystemUtils.IS_OS_WINDOWS;
+    if(Objects.isNull(wc)) {
+      return false;
+    }
+    return wc;
   }
 
   public boolean isPathWithScheme(String path){

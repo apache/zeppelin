@@ -69,18 +69,18 @@ public class ZeppelinConfigurationTest {
   }
 
   @Test
-  public void isWindowsPathTestTrue() {
+  public void isWindowsCheckTestTrue() {
 
     ZeppelinConfiguration conf = ZeppelinConfiguration.create("zeppelin-test-site.xml");
-    Boolean isIt = conf.isWindowsPath("c:\\test\\file.txt");
+    Boolean isIt = conf.isWindowsCheck();
     Assert.assertTrue(isIt);
   }
 
   @Test
-  public void isWindowsPathTestFalse() {
+  public void isWindowsCheckTestFalse() {
 
     ZeppelinConfiguration conf = ZeppelinConfiguration.create("zeppelin-test-site.xml");
-    Boolean isIt = conf.isWindowsPath("~/test/file.xml");
+    Boolean isIt = conf.isWindowsCheck();
     Assert.assertFalse(isIt);
   }
 
