@@ -236,7 +236,7 @@ To configure your interpreter you need to follow these steps:
 2. In the interpreter page, click the `+Create` button and configure your interpreter properties.
 Now you are done and ready to use your interpreter.
 
-> **Note :** Interpreters released with zeppelin have a [default configuration](https://github.com/apache/zeppelin/blob/master/zeppelin-zengine/src/main/java/org/apache/zeppelin/conf/ZeppelinConfiguration.java#L397) which is used when there is no `conf/zeppelin-site.xml`.
+> **Note :** Interpreters released with zeppelin have a [default configuration](https://github.com/apache/zeppelin/blob/master/zeppelin-interpreter/src/main/java/org/apache/zeppelin/conf/ZeppelinConfiguration.java#L928) which is used when there is no `conf/zeppelin-site.xml`.
 
 ## Use your interpreter
 
