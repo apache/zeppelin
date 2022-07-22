@@ -27,9 +27,13 @@ import org.apache.zeppelin.service.ServiceContext;
 import org.apache.zeppelin.service.SimpleServiceCallback;
 import org.apache.zeppelin.user.AuthenticationInfo;
 
+import com.google.gson.Gson;
+
 public class AbstractRestApi {
 
   protected AuthenticationService authenticationService;
+
+  protected static final Gson GSON = new Gson();
 
   protected AbstractRestApi(AuthenticationService authenticationService) {
     this.authenticationService = authenticationService;
@@ -37,6 +41,7 @@ public class AbstractRestApi {
 
   protected ServiceContext getServiceContext() {
     AuthenticationInfo authInfo = new AuthenticationInfo(authenticationService.getPrincipal());
+    authInfo.setRoles(authenticationService.getAssociatedRoles());
     Set<String> userAndRoles = new HashSet<>();
     userAndRoles.add(authenticationService.getPrincipal());
     userAndRoles.addAll(authenticationService.getAssociatedRoles());

@@ -23,16 +23,12 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.service.AuthenticationService;
-import org.apache.zeppelin.service.ServiceContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-
 import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -55,16 +51,16 @@ import org.apache.zeppelin.user.AuthenticationInfo;
 @Path("/notebook-repositories")
 @Produces("application/json")
 @Singleton
-public class NotebookRepoRestApi {
+public class NotebookRepoRestApi extends AbstractRestApi {
   private static final Logger LOG = LoggerFactory.getLogger(NotebookRepoRestApi.class);
 
   private final NotebookRepoSync noteRepos;
   private final NotebookServer notebookWsServer;
-  private final AuthenticationService authenticationService;
 
   @Inject
   public NotebookRepoRestApi(NotebookRepoSync noteRepos, NotebookServer notebookWsServer,
       AuthenticationService authenticationService) {
+    super(authenticationService);
     this.noteRepos = noteRepos;
     this.notebookWsServer = notebookWsServer;
     this.authenticationService = authenticationService;
@@ -99,14 +95,6 @@ public class NotebookRepoRestApi {
     return new JsonResponse<>(Status.OK, "", null).build();
   }
 
-  private ServiceContext getServiceContext() {
-    AuthenticationInfo authInfo = new AuthenticationInfo(authenticationService.getPrincipal());
-    Set<String> userAndRoles = new HashSet<>();
-    userAndRoles.add(authenticationService.getPrincipal());
-    userAndRoles.addAll(authenticationService.getAssociatedRoles());
-    return new ServiceContext(authInfo, userAndRoles);
-  }
-
   /**
    * Update a specific note repo.
    *
@@ -122,7 +110,7 @@ public class NotebookRepoRestApi {
     AuthenticationInfo subject = new AuthenticationInfo(authenticationService.getPrincipal());
     NotebookRepoSettingsRequest newSettings;
     try {
-      newSettings = NotebookRepoSettingsRequest.fromJson(payload);
+      newSettings = GSON.fromJson(payload, NotebookRepoSettingsRequest.class);
     } catch (JsonSyntaxException e) {
       LOG.error("Cannot update notebook repo settings", e);
       return new JsonResponse<>(Status.NOT_ACCEPTABLE, "",
@@ -136,7 +124,7 @@ public class NotebookRepoRestApi {
     }
     LOG.info("User {} is going to change repo setting", subject.getUser());
     NotebookRepoWithSettings updatedSettings =
-        noteRepos.updateNotebookRepo(newSettings.name, newSettings.settings, subject);
+        noteRepos.updateNotebookRepo(newSettings.getName(), newSettings.getSettings(), subject);
     if (!updatedSettings.isEmpty()) {
       LOG.info("Broadcasting note list to user {}", subject.getUser());
       try {

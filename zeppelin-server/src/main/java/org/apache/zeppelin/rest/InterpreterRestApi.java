@@ -67,11 +67,10 @@ import java.util.Set;
 @Path("/interpreter")
 @Produces("application/json")
 @Singleton
-public class InterpreterRestApi {
+public class InterpreterRestApi extends AbstractRestApi {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(InterpreterRestApi.class);
 
-  private final AuthenticationService authenticationService;
   private final AuthorizationService authorizationService;
   private final InterpreterService interpreterService;
   private final InterpreterSettingManager interpreterSettingManager;
@@ -84,7 +83,7 @@ public class InterpreterRestApi {
       InterpreterService interpreterService,
       InterpreterSettingManager interpreterSettingManager,
       NotebookServer notebookWsServer) {
-    this.authenticationService = authenticationService;
+    super(authenticationService);
     this.authorizationService = authorizationService;
     this.interpreterService = interpreterService;
     this.interpreterSettingManager = interpreterSettingManager;
@@ -132,8 +131,7 @@ public class InterpreterRestApi {
   @ZeppelinApi
   public Response newSettings(String message) {
     try {
-      NewInterpreterSettingRequest request =
-          NewInterpreterSettingRequest.fromJson(message);
+      NewInterpreterSettingRequest request = GSON.fromJson(message, NewInterpreterSettingRequest.class);
       if (request == null) {
         return new JsonResponse<>(Status.BAD_REQUEST).build();
       }
@@ -157,8 +155,7 @@ public class InterpreterRestApi {
     LOGGER.info("Update interpreterSetting {}", settingId);
 
     try {
-      UpdateInterpreterSettingRequest request =
-          UpdateInterpreterSettingRequest.fromJson(message);
+      UpdateInterpreterSettingRequest request = GSON.fromJson(message, UpdateInterpreterSettingRequest.class);
       interpreterSettingManager
           .setPropertyAndRestart(settingId, request.getOption(), request.getProperties(),
               request.getDependencies());
@@ -201,7 +198,7 @@ public class InterpreterRestApi {
 
     InterpreterSetting setting = interpreterSettingManager.get(settingId);
     try {
-      RestartInterpreterRequest request = RestartInterpreterRequest.fromJson(message);
+      RestartInterpreterRequest request = GSON.fromJson(message, RestartInterpreterRequest.class);
 
       String noteId = request == null ? null : request.getNoteId();
       if (null == noteId) {
@@ -308,8 +305,7 @@ public class InterpreterRestApi {
   @ZeppelinApi
   public Response installInterpreter(@NotNull String message) {
     LOGGER.info("Install interpreter: {}", message);
-    InterpreterInstallationRequest request = InterpreterInstallationRequest.fromJson(message);
-
+    InterpreterInstallationRequest request = GSON.fromJson(message, InterpreterInstallationRequest.class);
     try {
       interpreterService.installInterpreter(
           request,

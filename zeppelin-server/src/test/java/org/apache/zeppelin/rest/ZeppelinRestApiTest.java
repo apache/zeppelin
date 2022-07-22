@@ -575,7 +575,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
       Map<String, Object> resp = gson.fromJson(responseBody,
               new TypeToken<Map<String, Object>>() {}.getType());
 
-      NoteJobStatus noteJobStatus = NoteJobStatus.fromJson(gson.toJson(resp.get("body")));
+      NoteJobStatus noteJobStatus = gson.fromJson(gson.toJson(resp.get("body")), NoteJobStatus.class);
       assertEquals(1, noteJobStatus.getParagraphJobStatusList().size());
       int progress = Integer.parseInt(noteJobStatus.getParagraphJobStatusList().get(0).getProgress());
       assertTrue(progress >= 0 && progress <= 100);
@@ -826,7 +826,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
       assertThat("test note jobs run:", getNoteJobs, isAllowed());
       Map<String, Object> resp = gson.fromJson(EntityUtils.toString(getNoteJobs.getEntity(), StandardCharsets.UTF_8),
               new TypeToken<Map<String, Object>>() {}.getType());
-      NoteJobStatus noteJobStatus = NoteJobStatus.fromJson(gson.toJson(resp.get("body")));
+      NoteJobStatus noteJobStatus = gson.fromJson(gson.toJson(resp.get("body")), NoteJobStatus.class);
       assertNotNull(noteJobStatus.getParagraphJobStatusList().get(0).getStarted());
       assertNotNull(noteJobStatus.getParagraphJobStatusList().get(0).getFinished());
       getNoteJobs.close();

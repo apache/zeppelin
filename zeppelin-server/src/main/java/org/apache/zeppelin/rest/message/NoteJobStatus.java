@@ -17,34 +17,35 @@
 
 package org.apache.zeppelin.rest.message;
 
-import com.google.gson.Gson;
-import com.google.gson.annotations.SerializedName;
 import org.apache.zeppelin.notebook.Note;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class NoteJobStatus {
-  private static final Gson GSON = new Gson();
 
-  private String id;
-  private boolean isRunning;
-  @SerializedName("paragraphs")
-  private List<ParagraphJobStatus> paragraphJobStatusList;
+  private final String id;
+  private final Boolean isRunning;
+  private final List<ParagraphJobStatus> paragraphs;
 
   public NoteJobStatus(Note note) {
     this.id = note.getId();
-    this.isRunning = note.isRunning();
-    this.paragraphJobStatusList = note.getParagraphs().stream()
-            .map(p -> new ParagraphJobStatus(p))
-            .collect(Collectors.toList());
+    this.isRunning = Boolean.valueOf(note.isRunning());
+    this.paragraphs = note.getParagraphs().stream()
+      .map(ParagraphJobStatus::new)
+      .collect(Collectors.toList());
   }
 
   public List<ParagraphJobStatus> getParagraphJobStatusList() {
-    return paragraphJobStatusList;
+    return paragraphs;
   }
 
-  public static NoteJobStatus fromJson(String json) {
-    return GSON.fromJson(json, NoteJobStatus.class);
+  public Boolean isRunning() {
+    return isRunning;
   }
+
+  public String getId() {
+    return id;
+  }
+
 }

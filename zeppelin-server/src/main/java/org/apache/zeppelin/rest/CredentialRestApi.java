@@ -17,10 +17,7 @@
 
 package org.apache.zeppelin.rest;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import java.io.IOException;
-import java.util.Map;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.DELETE;
@@ -33,6 +30,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.zeppelin.rest.message.CredentialRequest;
 import org.apache.zeppelin.server.JsonResponse;
 import org.apache.zeppelin.service.AuthenticationService;
 import org.apache.zeppelin.user.Credentials;
@@ -45,16 +43,14 @@ import org.slf4j.LoggerFactory;
 @Path("/credential")
 @Produces("application/json")
 @Singleton
-public class CredentialRestApi {
+public class CredentialRestApi extends AbstractRestApi {
   private static final Logger LOGGER = LoggerFactory.getLogger(CredentialRestApi.class);
   private final Credentials credentials;
-  private final AuthenticationService authenticationService;
-  private final Gson gson = new Gson();
 
   @Inject
   public CredentialRestApi(Credentials credentials, AuthenticationService authenticationService) {
+    super(authenticationService);
     this.credentials = credentials;
-    this.authenticationService = authenticationService;
   }
 
   /**
@@ -65,24 +61,17 @@ public class CredentialRestApi {
    */
   @PUT
   public Response putCredentials(String message) {
-    Map<String, String> messageMap =
-        gson.fromJson(message, new TypeToken<Map<String, String>>() {}.getType());
-    String entity = messageMap.get("entity");
-    String username = messageMap.get("username");
-    String password = messageMap.get("password");
-
-    if (StringUtils.isEmpty(entity)
-        || StringUtils.isEmpty(username)
-        || StringUtils.isEmpty(password)) {
+    CredentialRequest request = GSON.fromJson(message, CredentialRequest.class);
+    if (StringUtils.isAnyBlank(request.getEntity(), request.getUsername(), request.getPassword())) {
       return new JsonResponse<>(Status.BAD_REQUEST).build();
     }
 
     String user = authenticationService.getPrincipal();
-    LOGGER.info("Update credentials for user {} entity {}", user, entity);
+    LOGGER.info("Update credentials for user {} entity {}", user, request.getEntity());
     UserCredentials uc;
     try {
       uc = credentials.getUserCredentials(user);
-      uc.putUsernamePassword(entity, new UsernamePassword(username, password));
+      uc.putUsernamePassword(request.getEntity(), new UsernamePassword(request.getUsername(), request.getPassword()));
       credentials.putUserCredentials(user, uc);
       return new JsonResponse<>(Status.OK).build();
     } catch (IOException e) {

@@ -826,7 +826,7 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
       paramsMap.put("name", "zeppelin");
       ParametersRequest parametersRequest = new ParametersRequest(paramsMap);
       CloseableHttpResponse post = httpPost("/notebook/job/" + note1Id + "?blocking=false&isolated=true&",
-              parametersRequest.toJson());
+        gson.toJson(parametersRequest));
       assertThat(post, isAllowed());
       Map<String, Object> resp = gson.fromJson(EntityUtils.toString(post.getEntity(), StandardCharsets.UTF_8),
               new TypeToken<Map<String, Object>>() {}.getType());

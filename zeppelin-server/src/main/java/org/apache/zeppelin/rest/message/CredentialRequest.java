@@ -16,20 +16,30 @@
  */
 package org.apache.zeppelin.rest.message;
 
-import java.util.Map;
-
 /**
- * ParametersRequest rest api request message.
+ *  CredentialRequest rest api request message.
  */
-public class ParametersRequest {
+public class CredentialRequest {
+  private final String entity;
+  private final String username;
+  private final String password;
 
-  private final Map<String, Object> params;
-
-  public ParametersRequest(Map<String, Object> params) {
-    this.params = params;
+  public CredentialRequest(String entity, String username, String password) {
+    this.entity = entity;
+    this.username = username;
+    this.password = password;
   }
 
-  public Map<String, Object> getParams() {
-    return params;
+  public String getEntity() {
+    return entity;
   }
+
+  public String getUsername() {
+    return username;
+  }
+
+  public String getPassword() {
+    return password;
+  }
+
 }

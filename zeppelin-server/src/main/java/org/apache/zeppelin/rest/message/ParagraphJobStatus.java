@@ -22,12 +22,12 @@ import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.scheduler.Job;
 
 public class ParagraphJobStatus {
-  private String id;
-  private String status;
+  private final String id;
+  private final String status;
   private String errorMessage;
   private String started;
   private String finished;
-  private String progress;
+  private final String progress;
 
   public ParagraphJobStatus(Paragraph p) {
     this.id = p.getId();
@@ -72,5 +72,9 @@ public class ParagraphJobStatus {
 
   public String getProgress() {
     return progress;
+  }
+
+  public String getErrorMessage() {
+    return errorMessage;
   }
 }

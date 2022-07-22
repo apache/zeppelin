@@ -14,21 +14,40 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.zeppelin.rest.message;
 
-package org.apache.zeppelin.rest;
-
-import javax.xml.bind.annotation.XmlRootElement;
+import java.util.Set;
 
 /**
- * Response wrapper.
+ * PermissionRequest rest api request message.
  */
-@XmlRootElement
-public class NotebookResponse {
-  private String msg;
+public class PermissionRequest {
+  private final Set<String> readers;
+  private final Set<String> runners;
+  private final Set<String> owners;
+  private final Set<String> writers;
 
-  public NotebookResponse() {}
-
-  public NotebookResponse(String msg) {
-    this.msg = msg;
+  public PermissionRequest(Set<String> readers, Set<String> runners, Set<String> owners, Set<String> writers) {
+    this.readers = readers;
+    this.runners = runners;
+    this.owners = owners;
+    this.writers = writers;
   }
+
+  public Set<String> getReaders() {
+    return readers;
+  }
+
+  public Set<String> getRunners() {
+    return runners;
+  }
+
+  public Set<String> getOwners() {
+    return owners;
+  }
+
+  public Set<String> getWriters() {
+    return writers;
+  }
+
 }
