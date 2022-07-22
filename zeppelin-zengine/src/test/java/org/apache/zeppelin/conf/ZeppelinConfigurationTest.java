@@ -69,19 +69,18 @@ public class ZeppelinConfigurationTest {
   }
 
   @Test
-  public void isWindowsPathTestTrue() {
-
+  public void checkWindowsTest() {
     ZeppelinConfiguration conf = ZeppelinConfiguration.create("zeppelin-test-site.xml");
-    Boolean isIt = conf.isWindowsPath("c:\\test\\file.txt");
-    Assert.assertTrue(isIt);
-  }
-
-  @Test
-  public void isWindowsPathTestFalse() {
-
-    ZeppelinConfiguration conf = ZeppelinConfiguration.create("zeppelin-test-site.xml");
-    Boolean isIt = conf.isWindowsPath("~/test/file.xml");
-    Assert.assertFalse(isIt);
+    if(System.getenv("CI_LINUX").equals("TRUE")) {
+      // Github action
+      Assert.assertFalse(conf.checkWindows());
+    } else if (System.getenv("CI_WINDOW").equals("TRUE")) {
+      // Appveyor
+      Assert.assertTrue(conf.checkWindows());
+    } else {
+      // Local
+      Assert.assertFalse(conf.checkWindows());
+    }
   }
 
   @Test
