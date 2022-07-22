@@ -68,7 +68,7 @@ In a notebook, to enable the **BigQuery** interpreter, click the **Gear** icon a
 Within Google Cloud Platform (e.g. Google App Engine, Google Compute Engine),
 built-in credentials are used by default.
 
-Outside of GCP, follow the Google API authentication instructions for [Zeppelin Google Cloud Storage](https://zeppelin.apache.org/docs/latest/storage/storage.html#notebook-storage-in-gcs)
+Outside of GCP, follow the Google API authentication instructions for [Zeppelin Google Cloud Storage](https://zeppelin.apache.org/docs/latest/setup/storage/storage.html#notebook-storage-in-google-cloud-storage)
 
 ## Using the BigQuery Interpreter
 

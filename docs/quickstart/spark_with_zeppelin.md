@@ -28,7 +28,7 @@ limitations under the License.
 For a brief overview of Apache Spark fundamentals with Apache Zeppelin, see the following guide:
 
 - **built-in** Apache Spark integration.
-- With [Spark Scala](https://spark.apache.org/docs/latest/quick-start.html) [SparkSQL](http://spark.apache.org/sql/), [PySpark](https://spark.apache.org/docs/latest/api/python/pyspark.html), [SparkR](https://spark.apache.org/docs/latest/sparkr.html)
+- With [Spark Scala](https://spark.apache.org/docs/latest/quick-start.html) [SparkSQL](http://spark.apache.org/sql/), [PySpark](https://spark.apache.org/docs/latest/api/python/), [SparkR](https://spark.apache.org/docs/latest/sparkr.html)
 - Inject [SparkContext](https://spark.apache.org/docs/latest/api/java/org/apache/spark/SparkContext.html), [SQLContext](https://spark.apache.org/docs/latest/sql-programming-guide.html) and [SparkSession](https://spark.apache.org/docs/latest/sql-programming-guide.html) automatically
 - Canceling job and displaying its progress 
 - Supports different modes: local, standalone, yarn(client & cluster), k8s

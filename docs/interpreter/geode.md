@@ -37,7 +37,7 @@ limitations under the License.
   </tr>
 </table>
 
-This interpreter supports the [Geode](http://geode.incubator.apache.org/) [Object Query Language (OQL)](http://geode-docs.cfapps.io/docs/developing/querying_basics/oql_compared_to_sql.html).  
+This interpreter supports the [Geode](http://geode.incubator.apache.org/) [Object Query Language (OQL)](https://geode.incubator.apache.org/docs/guide/latest/developing/querying_basics/query_basics.html).  
 With the OQL-based querying language:
 
 [<img align="right" src="http://img.youtube.com/vi/zvzzA9GXu3Q/3.jpg" alt="zeppelin-view" hspace="10" width="200"></img>](https://www.youtube.com/watch?v=zvzzA9GXu3Q)
@@ -104,7 +104,7 @@ The Geode interpreter expresses the following properties:
 ### Create / Destroy Regions
 
 The OQL specification does not support  [Geode Regions](https://cwiki.apache.org/confluence/display/GEODE/Index#Index-MainConceptsandComponents) mutation operations. 
-To `create`/`destroy` regions one should use the [GFSH](http://geode-docs.cfapps.io/docs/tools_modules/gfsh/chapter_overview.html) shell tool instead. 
+To `create`/`destroy` regions one should use the [GFSH](https://geode.incubator.apache.org/docs/guide/latest/tools_modules/gfsh/chapter_overview.html) shell tool instead. 
 In the following it is assumed that the GFSH is colocated with Zeppelin server.
 
 ```bash
@@ -126,7 +126,7 @@ EOF
 Above snippet re-creates two regions: `regionEmployee` and `regionCompany`. 
 Note that you have to explicitly specify the locator host and port. 
 The values should match those you have used in the Geode Interpreter configuration. 
-Comprehensive list of [GFSH Commands by Functional Area](http://geode-docs.cfapps.io/docs/tools_modules/gfsh/gfsh_quick_reference.html).
+Comprehensive list of [GFSH Commands by Functional Area](https://geode.incubator.apache.org/docs/guide/latest/tools_modules/gfsh/gfsh_quick_reference.html).
 
 ### Basic OQL
 ```sql
@@ -188,7 +188,7 @@ SELECT * FROM /regionEmployee e WHERE e.employeeId > ${Id}
 The Geode Interpreter provides a basic auto-completion functionality. On `(Ctrl+.)` it list the most relevant suggestions in a pop-up window.
 
 ## Geode REST API
-To list the defined regions you can use the [Geode REST API](http://geode-docs.cfapps.io/docs/geode_rest/chapter_overview.html):
+To list the defined regions you can use the [Geode REST API](https://geode.apache.org/docs/guide/latest/rest_apps/chapter_overview.html):
 
 ```
 http://<geode server hostname>phd1.localdomain:8484/gemfire-api/v1/

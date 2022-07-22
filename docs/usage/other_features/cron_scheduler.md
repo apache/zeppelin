@@ -39,7 +39,7 @@ You can set a cron schedule easily by clicking each option such as `1m` and `5m`
 
 ### Cron expression
 
-You can set the cron schedule by filling in this form. Please see [Cron Trigger Tutorial](http://www.quartz-scheduler.org/documentation/quartz-2.2.x/tutorials/crontrigger) for the available cron syntax.
+You can set the cron schedule by filling in this form. Please see [Cron Trigger Tutorial](https://www.quartz-scheduler.org/documentation/quartz-2.2.2/tutorials/tutorial-lesson-06.html) for the available cron syntax.
 
 ### Cron executing user (It is removed from 0.8 where it enforces the cron execution user to be the note owner for security purpose)
 
