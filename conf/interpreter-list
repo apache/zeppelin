@@ -35,7 +35,6 @@ kotlin          org.apache.zeppelin:zeppelin-kotlin:0.10.0               Kotlin 
 livy            org.apache.zeppelin:zeppelin-livy:0.10.0                 Livy interpreter
 md              org.apache.zeppelin:zeppelin-markdown:0.10.0             Markdown support
 neo4j           org.apache.zeppelin:zeppelin-neo4j:0.10.0                Neo4j interpreter
-pig             org.apache.zeppelin:zeppelin-pig:0.10.0                  Pig interpreter
 python          org.apache.zeppelin:zeppelin-python:0.10.0               Python interpreter
 sap             org.apache.zeppelin:zeppelin-sap:0.10.0                  SAP Support
 shell           org.apache.zeppelin:zeppelin-shell:0.10.0                Shell command

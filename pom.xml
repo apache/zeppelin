@@ -71,7 +71,6 @@
     <module>shell</module>
     <module>livy</module>
     <module>hbase</module>
-    <module>pig</module>
     <module>jdbc</module>
     <module>file</module>
     <module>flink</module>
