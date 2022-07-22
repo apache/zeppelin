@@ -34,7 +34,7 @@
     <description>NotebookRepo implementation based on S3</description>
 
     <properties>
-        <aws.sdk.version>1.11.736</aws.sdk.version>
+        <aws.sdk.version>1.12.261</aws.sdk.version>
         <plugin.name>NotebookRepo/S3NotebookRepo</plugin.name>
     </properties>
 
