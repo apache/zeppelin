@@ -27,7 +27,6 @@ file            org.apache.zeppelin:zeppelin-file:0.10.0                 HDFS fi
 flink           org.apache.zeppelin:zeppelin-flink:0.10.0                Flink interpreter
 geode           org.apache.zeppelin:zeppelin-geode:0.10.0                Apache Geode interpreter
 groovy          org.apache.zeppelin:zeppelin-groovy:0.10.0               Groovy interpreter
-hazelcastjet    org.apache.zeppelin:zeppelin-hazelcastjet:0.10.0         Hazelcast Jet interpreter
 hbase           org.apache.zeppelin:zeppelin-hbase:0.10.0                Hbase interpreter
 ignite          org.apache.zeppelin:zeppelin-ignite:0.10.0               Ignite interpreter
 java            org.apache.zeppelin:zeppelin-java:0.10.0                 Java interpreter
