@@ -341,6 +341,11 @@
       <scope>test</scope>
     </dependency>
 
+    <dependency>
+      <groupId>org.mongodb.spark</groupId>
+      <artifactId>mongo-spark-connector_${spark.scala.binary.version}</artifactId>
+      <version>2.4.4</version>
+    </dependency>
   </dependencies>
 
   <build>

@@ -29,26 +29,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.google.gson.Gson;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.zeppelin.common.JsonSerializable;
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.display.Input;
 import org.apache.zeppelin.helium.HeliumPackage;
-import org.apache.zeppelin.interpreter.Constants;
-import org.apache.zeppelin.interpreter.ExecutionContext;
-import org.apache.zeppelin.interpreter.Interpreter;
+import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.Interpreter.FormType;
-import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterException;
-import org.apache.zeppelin.interpreter.InterpreterNotFoundException;
-import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
-import org.apache.zeppelin.interpreter.InterpreterResultMessage;
-import org.apache.zeppelin.interpreter.InterpreterSetting;
-import org.apache.zeppelin.interpreter.ManagedInterpreterGroup;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.resource.ResourcePool;
@@ -466,6 +459,17 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
       LOGGER.debug("RUN : " + script);
       try {
         InterpreterContext context = getInterpreterContext();
+
+        // inject interpreter settings for spark interpreter
+        // spark sql cross-engine query depends on other interpreter settings
+        // it is necessary to inject here inorder to get all interpreter settings in yarn-cluster mode
+        ZeppelinConfiguration zConf = ZeppelinConfiguration.create();
+        InterpreterSettingManager interpreterSettingManager =
+                new InterpreterSettingManager(zConf, null, null, null);
+        if(interpreterSetting.getGroup().equals("spark")){
+          context.getLocalProperties().put("interpreterSettings",new Gson().toJson(interpreterSettingManager.get()));
+        }
+
         InterpreterContext.set(context);
 
         // Inject credentials

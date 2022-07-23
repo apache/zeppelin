@@ -17,10 +17,18 @@
 
 package org.apache.zeppelin.spark;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import com.mongodb.spark.MongoSpark;
+import com.mongodb.spark.config.ReadConfig;
+import javaslang.Tuple3;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.http.auth.InvalidCredentialsException;
 import org.apache.spark.SparkContext;
+import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.sql.AnalysisException;
 import org.apache.spark.sql.SQLContext;
+import org.apache.spark.sql.SparkSession;
 import org.apache.zeppelin.interpreter.AbstractInterpreter;
 import org.apache.zeppelin.interpreter.ZeppelinContext;
 import org.apache.zeppelin.interpreter.InterpreterContext;
@@ -31,13 +39,17 @@ import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.interpreter.util.SqlSplitter;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.lang.reflect.Method;
-import java.util.List;
-import java.util.Properties;
+import java.lang.reflect.Type;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Spark SQL interpreter for Zeppelin.
@@ -86,6 +98,22 @@ public class SparkSqlInterpreter extends AbstractInterpreter {
     sparkInterpreter.getZeppelinContext().setInterpreterContext(context);
     SQLContext sqlContext = sparkInterpreter.getSQLContext();
     SparkContext sc = sparkInterpreter.getSparkContext();
+
+    try {
+      st = enableCrossEngineQuerySupport(st,context);
+    } catch (Exception e) {
+      try{
+        LOGGER.error("inject DB error",e);
+        context.out.write(e.getMessage());
+        e.printStackTrace();
+        context.out.flush();
+        return new InterpreterResult(Code.ERROR);
+      }catch(IOException ex) {
+        LOGGER.error("Fail to write output", ex);
+        return new InterpreterResult(Code.ERROR);
+      }
+
+    }
 
     List<String> sqls = sqlSplitter.splitSql(st);
     int maxResult = Integer.parseInt(context.getLocalProperties().getOrDefault("limit",
@@ -143,6 +171,154 @@ public class SparkSqlInterpreter extends AbstractInterpreter {
     }
 
     return new InterpreterResult(Code.SUCCESS);
+  }
+
+
+  /**
+   * inject mysql/mongodb table to spark sql session
+   * the table that need to inject should be declared like : %interpreterName%.dbName.tableName
+   * table will be fully load into spark session without any filter
+   * @param st query string
+   * @param context zeppelin context
+   * @return new query string
+   * @throws IOException
+   */
+  public String enableCrossEngineQuerySupport(String st,InterpreterContext context) throws IOException, InvalidCredentialsException {
+    AuthenticationInfo authenticationInfo = context.getAuthenticationInfo();
+    HashSet<String> usersAndRoles = new HashSet<>(authenticationInfo.getUsersAndRoles());
+    Gson gson = new Gson();
+    // try to load interpreter settings from
+    Type listType = new TypeToken<ArrayList<InterSetting>>(){}.getType();
+    String interSettingsStr = context.getLocalProperties().get("interpreterSettings");
+
+    if(interSettingsStr == null || interSettingsStr.isEmpty()){
+      context.out.write("\ncannot perform cross engine query , reason : can not load interpreter settings" );
+    }
+
+
+    List<InterSetting> interSettings = gson.fromJson(context.getLocalProperties().get("interpreterSettings"),listType);
+    // get spark session
+    SparkSession session = (SparkSession) sparkInterpreter.getSparkSession();
+    // try to get interpreter name and db_name and table_name
+    Pattern pattern = Pattern.compile("([-_0-9a-zA-Z]*)\\.([-_0-9a-zA-Z]*)\\.([-_0-9a-zA-Z]*)");
+    Matcher matcher = pattern.matcher(st);
+    HashMap<String, Tuple3<String,String,String>> imap = new HashMap<>();
+
+    while(matcher.find()){
+      if(!imap.containsKey(matcher.group())){
+        // the value of map is interpreter_id, db_name, table_name
+        imap.put(matcher.group(), new Tuple3<>(matcher.group(1),matcher.group(2),matcher.group(3)));
+      }
+    }
+    for(Tuple3<String,String,String> info:imap.values()){
+      String interpreterId = info._1;
+      String dbName = info._2;
+      String tableName = info._3;
+      InterSetting iSetting = getInterpreterFromList(interSettings,interpreterId).orElse(null);
+      if(iSetting == null){
+        throw new IOException(String.format("No such interpreter with id : %s", interpreterId));
+      }
+      // check if this user can access current interpreter
+      HashSet<String> owners = new HashSet<>(iSetting.option.owners);
+      // if owners is empty, means all users can access
+      if(!owners.isEmpty()){
+        int size1 = owners.size();
+        owners.retainAll(usersAndRoles);
+        int size2 = owners.size();
+        if(size1 == size2){
+          // no user or roles match
+          throw new InvalidCredentialsException(String.format(String.format("user %s has not privilege to access interpreter %s",authenticationInfo.getUser(), interpreterId)));
+        }
+      }
+      String iGroup = iSetting.group;
+
+      String newTableName = String.format("%s_%s_%s", interpreterId,dbName,tableName).replace("-","_");
+      // do inject
+      if(iGroup.equals("jdbc")){
+        String jdbcUrl = iSetting.getProp("default.url");
+        String user = iSetting.getProp("default.user");
+        String password =  iSetting.getProp("default.password");
+        String driver =  iSetting.getProp("default.driver");
+        Properties properties = new Properties();
+        properties.setProperty("user", user);
+        properties.setProperty("password", password);
+        properties.setProperty("driver",driver);
+        session.read()
+                .jdbc(jdbcUrl, String.format("%s.%s", dbName,tableName),properties)
+                .registerTempTable(newTableName);
+
+      }else if (iGroup.equals("mongodb")){
+        HashMap<String,String> mongoProps = new HashMap<>();
+        String user =  iSetting.getProp("mongo.server.username","");
+        String password =  iSetting.getProp("mongo.server.password","");
+        String host = iSetting.getProp("mongo.server.host","127.0.0.1");
+        String port = iSetting.getProp("mongo.server.port","27017");
+        String authDb = iSetting.getProp("mongo.server.authenticationDatabase","");
+        mongoProps.put("uri", String.format("mongodb://%s:%s@%s:%s/%s.%s?authSource=%s",user,password,host,port,dbName,tableName,authDb));
+        mongoProps.put("collection",tableName);
+        mongoProps.put("database",dbName);
+        JavaSparkContext jsc = new JavaSparkContext(session.sparkContext());
+        ReadConfig readConfig = ReadConfig.create(mongoProps);
+        MongoSpark.builder().javaSparkContext(jsc).readConfig(readConfig).build().toJavaRDD().toDF().registerTempTable(newTableName);
+      }
+      else{
+        throw new IOException(String.format("Unsupported interpreter: %s", interpreterId));
+      }
+      // replace table qualifier in sql str
+      st = st.replaceAll(interpreterId+"\\."+dbName+"\\."+tableName,newTableName);
+
+    }
+    return st;
+
+
+  }
+
+  private Optional<InterSetting> getInterpreterFromList(List<InterSetting> interpreterSettings,String interpreterId){
+    return interpreterSettings.stream().filter(interpreterSetting -> Objects.equals(interpreterSetting.id, interpreterId)).findFirst();
+  }
+
+  private class InterSetting implements Serializable {
+    public String id;
+    public String name;
+    public String group;
+    public Map<String,Prop> properties;
+    public String status;
+    public Opt option;
+
+    public String getProp(String key){
+      Prop prop =  properties.get(key);
+      if(prop == null){
+        return null;
+      }
+      return prop.value;
+    }
+
+    public String getProp(String key,String default_val){
+      if (getProp(key) == null){
+        return default_val;
+      }else{
+        return getProp(key);
+      }
+    }
+
+    public class Prop implements Serializable{
+      public String name;
+      public String value;
+      public String type;
+      public String description;
+    }
+
+    private class Opt implements Serializable{
+      public boolean remote;
+      public int port;
+      public String perNote;
+      public String perUser;
+      public boolean isExistingProcess;
+      public boolean setPermission;
+      public List<String> owners;
+      public boolean isUserImpersonate;
+    }
+
   }
 
   @Override
