@@ -35,7 +35,6 @@ import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
-import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.interpreter.util.SqlSplitter;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
@@ -45,7 +44,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -100,10 +98,10 @@ public class SparkSqlInterpreter extends AbstractInterpreter {
     SparkContext sc = sparkInterpreter.getSparkContext();
 
     try {
-      st = enableCrossEngineQuerySupport(st,context);
+      st = enableCrossDatabaseQuerySupport(st,context);
     } catch (Exception e) {
       try{
-        LOGGER.error("Can not enable cross-engine query support:",e);
+        LOGGER.error("Can not enable cross datasource query support:",e);
         context.out.write(e.toString());
         e.printStackTrace();
         context.out.flush();
@@ -175,15 +173,13 @@ public class SparkSqlInterpreter extends AbstractInterpreter {
 
 
   /**
-   * inject mysql/mongodb table to spark sql session
-   * the table that need to inject should be declared like : %interpreterName%.dbName.tableName
-   * table will be fully load into spark session without any filter
+   * inject jdbc/mongodb table to spark sql session
+   * table should be declared in format : interpreterName.dbName.tableName
    * @param st query string
    * @param context zeppelin context
    * @return new query string
-   * @throws IOException
    */
-  public String enableCrossEngineQuerySupport(String st,InterpreterContext context) throws IOException, InvalidCredentialsException {
+  public String enableCrossDatabaseQuerySupport(String st, InterpreterContext context) throws IOException, InvalidCredentialsException {
     AuthenticationInfo authenticationInfo = context.getAuthenticationInfo();
     HashSet<String> usersAndRoles = new HashSet<>(authenticationInfo.getUsersAndRoles());
     Gson gson = new Gson();
@@ -192,7 +188,7 @@ public class SparkSqlInterpreter extends AbstractInterpreter {
     String interSettingsStr = context.getLocalProperties().get("interpreterSettings");
 
     if(interSettingsStr == null || interSettingsStr.isEmpty()){
-      context.out.write("\ncannot perform cross engine query , reason : can not load interpreter settings" );
+      context.out.write("\ncannot perform cross datasource query , reason : can not load interpreter settings" );
     }
 
 

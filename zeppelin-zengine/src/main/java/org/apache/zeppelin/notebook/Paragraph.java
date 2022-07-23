@@ -461,7 +461,7 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
         InterpreterContext context = getInterpreterContext();
 
         // inject interpreter settings for spark interpreter
-        // spark sql cross-engine query depends on other interpreter settings
+        // spark sql cross-datasource query depends on other interpreter settings
         // it is necessary to inject here inorder to get all interpreter settings in yarn-cluster mode
         ZeppelinConfiguration zConf = ZeppelinConfiguration.create();
         InterpreterSettingManager interpreterSettingManager =
