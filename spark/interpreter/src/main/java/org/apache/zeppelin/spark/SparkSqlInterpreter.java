@@ -103,13 +103,13 @@ public class SparkSqlInterpreter extends AbstractInterpreter {
       st = enableCrossEngineQuerySupport(st,context);
     } catch (Exception e) {
       try{
-        LOGGER.error("inject DB error",e);
-        context.out.write(e.getMessage());
+        LOGGER.error("Can not enable cross-engine query support:",e);
+        context.out.write(e.toString());
         e.printStackTrace();
         context.out.flush();
         return new InterpreterResult(Code.ERROR);
       }catch(IOException ex) {
-        LOGGER.error("Fail to write output", ex);
+        LOGGER.error("Fail to write output:", ex);
         return new InterpreterResult(Code.ERROR);
       }
 
