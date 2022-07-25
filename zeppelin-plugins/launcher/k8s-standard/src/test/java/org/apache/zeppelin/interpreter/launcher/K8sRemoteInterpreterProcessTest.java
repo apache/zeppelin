@@ -178,15 +178,16 @@ public class K8sRemoteInterpreterProcessTest {
     assertTrue(driverExtraOptions.contains("-Dextra_option"));
 
     String sparkSubmitOptions = envs.get("SPARK_SUBMIT_OPTIONS");
-    assertTrue(sparkSubmitOptions.startsWith("my options "));
-    assertTrue(sparkSubmitOptions.contains("spark.kubernetes.namespace=default"));
-    assertTrue(sparkSubmitOptions.contains("spark.kubernetes.driver.pod.name=" + intp.getPodName()));
-    assertTrue(sparkSubmitOptions.contains("spark.kubernetes.container.image=spark-container:1.0"));
-    assertTrue(sparkSubmitOptions.contains("spark.driver.host=" + intp.getPodName() + ".default.svc"));
-    assertTrue(sparkSubmitOptions.contains("spark.driver.port=" + intp.getSparkDriverPort()));
-    assertTrue(sparkSubmitOptions.contains("spark.blockManager.port=" + intp.getSparkBlockManagerPort()));
-    assertTrue(sparkSubmitOptions.contains("spark.jars.ivy=my_ivy_path"));
-    assertFalse(sparkSubmitOptions.contains("--proxy-user"));
+    assertTrue(sparkSubmitOptions.startsWith("my options"));
+    String zeppelinSparkConf = envs.get("ZEPPELIN_SPARK_CONF");
+    assertTrue(zeppelinSparkConf.contains("spark.kubernetes.namespace=default"));
+    assertTrue(zeppelinSparkConf.contains("spark.kubernetes.driver.pod.name=" + intp.getPodName()));
+    assertTrue(zeppelinSparkConf.contains("spark.kubernetes.container.image=spark-container:1.0"));
+    assertTrue(zeppelinSparkConf.contains("spark.driver.host=" + intp.getPodName() + ".default.svc"));
+    assertTrue(zeppelinSparkConf.contains("spark.driver.port=" + intp.getSparkDriverPort()));
+    assertTrue(zeppelinSparkConf.contains("spark.blockManager.port=" + intp.getSparkBlockManagerPort()));
+    assertTrue(zeppelinSparkConf.contains("spark.jars.ivy=my_ivy_path"));
+    assertFalse(zeppelinSparkConf.contains("--proxy-user"));
     assertTrue(intp.isSpark());
   }
 
@@ -231,14 +232,15 @@ public class K8sRemoteInterpreterProcessTest {
     assertTrue( envs.containsKey("SPARK_HOME"));
 
     String sparkSubmitOptions = envs.get("SPARK_SUBMIT_OPTIONS");
-    assertTrue(sparkSubmitOptions.startsWith("my options "));
-    assertTrue(sparkSubmitOptions.contains("spark.kubernetes.namespace=default"));
-    assertTrue(sparkSubmitOptions.contains("spark.kubernetes.driver.pod.name=" + intp.getPodName()));
-    assertTrue(sparkSubmitOptions.contains("spark.kubernetes.container.image=spark-container:1.0"));
-    assertTrue(sparkSubmitOptions.contains("spark.driver.host=" + intp.getPodName() + ".default.svc"));
-    assertTrue(sparkSubmitOptions.contains("spark.driver.port=" + intp.getSparkDriverPort()));
-    assertTrue(sparkSubmitOptions.contains("spark.blockManager.port=" + intp.getSparkBlockManagerPort()));
-    assertTrue(sparkSubmitOptions.contains("--proxy-user mytestUser"));
+    assertTrue(sparkSubmitOptions.startsWith("my options"));
+    String zeppelinSparkConf = envs.get("ZEPPELIN_SPARK_CONF");
+    assertTrue(zeppelinSparkConf.contains("spark.kubernetes.namespace=default"));
+    assertTrue(zeppelinSparkConf.contains("spark.kubernetes.driver.pod.name=" + intp.getPodName()));
+    assertTrue(zeppelinSparkConf.contains("spark.kubernetes.container.image=spark-container:1.0"));
+    assertTrue(zeppelinSparkConf.contains("spark.driver.host=" + intp.getPodName() + ".default.svc"));
+    assertTrue(zeppelinSparkConf.contains("spark.driver.port=" + intp.getSparkDriverPort()));
+    assertTrue(zeppelinSparkConf.contains("spark.blockManager.port=" + intp.getSparkBlockManagerPort()));
+    assertTrue(zeppelinSparkConf.contains("--proxy-user mytestUser"));
     assertTrue(intp.isSpark());
   }
 
