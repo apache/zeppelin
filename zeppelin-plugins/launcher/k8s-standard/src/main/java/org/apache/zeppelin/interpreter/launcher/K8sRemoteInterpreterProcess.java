@@ -422,7 +422,7 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterManagedProcess
 
   @VisibleForTesting
   String prepareZeppelinSparkConf(String userName) {
-    StringJoiner sparkConfSJ = new StringJoiner(" ");
+    StringJoiner sparkConfSJ = new StringJoiner("|");
     if (isUserImpersonated() && !StringUtils.containsIgnoreCase(userName, "anonymous")) {
       sparkConfSJ.add("--proxy-user");
       sparkConfSJ.add(userName);
