@@ -1634,7 +1634,6 @@
           <artifactId>maven-surefire-plugin</artifactId>
           <version>${plugin.surefire.version}</version>
           <configuration combine.children="append">
-            <forkCount>0</forkCount>
             <argLine>-Xmx2g -Xms1g -Dfile.encoding=UTF-8</argLine>
             <environmentVariables>
               <IS_ZEPPELIN_TEST>true</IS_ZEPPELIN_TEST>
