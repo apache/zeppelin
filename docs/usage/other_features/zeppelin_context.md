@@ -235,7 +235,7 @@ dynamic-forms and object-interpolation as described below.
 
 |             Interpreters that use Embedded Commands               |
 |-------------------------------------------------------------------|
-|spark.sql (\*), bigquery, cassandra, elasticsearch, file, hbase, jdbc (\*), livy, markdown, neo4j, pig, python, shell (\*), zengine |
+|spark.sql (\*), bigquery, cassandra, elasticsearch, file, hbase, jdbc (\*), livy, markdown, neo4j, python, shell (\*), zengine |
 
 Dynamic forms are available in all of the interpreters in the table above, 
 but object interpolation is only available in a small, but growing, list of interpreters 

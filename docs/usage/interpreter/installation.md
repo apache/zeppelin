@@ -193,11 +193,6 @@ You can also find the below community managed interpreter list in `conf/interpre
     <td>Neo4j interpreter</td>
   </tr>
   <tr>
-    <td>pig</td>
-    <td>org.apache.zeppelin:zeppelin-pig:0.10.0</td>
-    <td>Pig interpreter</td>
-  </tr>
-  <tr>
     <td>python</td>
     <td>org.apache.zeppelin:zeppelin-python:0.10.0</td>
     <td>Python interpreter</td>

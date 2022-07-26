@@ -156,7 +156,6 @@ limitations under the License.
   * [Markdown](./interpreter/markdown.html)
   * [MongoDB](./interpreter/mongodb.html)
   * [Neo4j](./interpreter/neo4j.html)
-  * [Pig](./interpreter/pig.html)
   * [Postgresql, HAWQ](./interpreter/postgresql.html)
   * [Python](./interpreter/python.html)
   * [R](./interpreter/r.html)

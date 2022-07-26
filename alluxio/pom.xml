@@ -32,24 +32,31 @@
     <name>Zeppelin: Alluxio interpreter</name>
 
     <properties>
-        <alluxio.version>1.0.0</alluxio.version>
+        <alluxio.version>2.5.0</alluxio.version>
         <interpreter.name>alluxio</interpreter.name>
     </properties>
 
     <dependencies>
         <dependency>
-              <groupId>com.google.guava</groupId>
-              <artifactId>guava</artifactId>
-              <version>15.0</version>
-        </dependency>
-
-        <dependency>
-              <groupId>org.alluxio</groupId>
-              <artifactId>alluxio-shell</artifactId>
-              <version>${alluxio.version}</version>
+            <groupId>org.alluxio</groupId>
+            <artifactId>alluxio-shell</artifactId>
+            <version>${alluxio.version}</version>
         </dependency>
 
         <!-- TEST -->
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>29.0-jre</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.google.protobuf</groupId>
+            <artifactId>protobuf-java</artifactId>
+            <version>3.12.4</version>
+            <scope>test</scope>
+        </dependency>
+
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-all</artifactId>
@@ -82,21 +89,7 @@
 
         <dependency>
             <groupId>org.alluxio</groupId>
-            <artifactId>alluxio-core-server</artifactId>
-            <version>${alluxio.version}</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.alluxio</groupId>
             <artifactId>alluxio-minicluster</artifactId>
-            <version>${alluxio.version}</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.alluxio</groupId>
-            <artifactId>alluxio-underfs-local</artifactId>
             <version>${alluxio.version}</version>
             <scope>test</scope>
         </dependency>
@@ -107,6 +100,7 @@
             <version>3.2.3</version>
             <scope>test</scope>
         </dependency>
+
     </dependencies>
 
     <build>
