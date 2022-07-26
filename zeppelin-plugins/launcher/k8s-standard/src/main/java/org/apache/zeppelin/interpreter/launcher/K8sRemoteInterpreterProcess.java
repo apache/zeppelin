@@ -432,7 +432,7 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterManagedProcess
       String propValue = properties.getProperty(key);
       if (isSparkConf(key, propValue)) {
         sparkConfSJ.add("--conf");
-        sparkConfSJ.add(key + "=" + propValue + "");
+        sparkConfSJ.add(key + "=" + propValue);
       }
     }
 
