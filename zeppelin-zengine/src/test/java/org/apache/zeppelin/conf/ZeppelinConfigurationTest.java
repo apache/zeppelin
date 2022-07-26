@@ -71,10 +71,10 @@ public class ZeppelinConfigurationTest {
   @Test
   public void checkWindowsTest() {
     ZeppelinConfiguration conf = ZeppelinConfiguration.create("zeppelin-test-site.xml");
-    if(System.getenv("CI_LINUX").equals("TRUE")) {
+    if(System.getenv("CI_LINUX").equals("true")) {
       // Github action
       Assert.assertFalse(conf.checkWindows());
-    } else if (System.getenv("CI_WINDOW").equals("TRUE")) {
+    } else if (System.getenv("CI_WINDOW").equals("true")) {
       // Appveyor
       Assert.assertTrue(conf.checkWindows());
     } else {
