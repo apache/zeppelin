@@ -165,7 +165,6 @@ The following components are provided under Apache License.
     (Apache 2.0) Tachyon Project Core (org.tachyonproject:tachyon:0.6.4 - http://tachyonproject.org/tachyon/)
     (Apache 2.0) Tachyon Project Client (org.tachyonproject:tachyon-client:0.6.4 - http://tachyonproject.org/tachyon-client/)
     (Apache 2.0) javax.inject (javax.inject:javax.inject:1 - http://code.google.com/p/atinject/)
-    (Apache 2.0) Apache Pig (org.apache.pig:0.16 - http://pig.apache.org)
     (Apache 2.0) tez-api (org.apache.tez:tez-api:0.7.0 - http://tez.apache.org)
     (Apache 2.0) tez-common (org.apache.tez:tez-common:0.7.0 - http://tez.apache.org)
     (Apache 2.0) tez-dag (org.apache.tez:tez-dag:0.7.0 - http://tez.apache.org)
