@@ -98,7 +98,7 @@ public class K8sStandardInterpreterLauncherTest {
     assertTrue(client instanceof K8sRemoteInterpreterProcess);
     K8sRemoteInterpreterProcess process = (K8sRemoteInterpreterProcess) client;
     assertTrue(process.isSpark());
-    assertTrue(process.prepareZeppelinSparkConf(context.getUserName()).contains("--proxy-user user1"));
+    assertTrue(process.prepareZeppelinSparkConf(context.getUserName()).contains("--proxy-user|user1"));
   }
 
   @Test

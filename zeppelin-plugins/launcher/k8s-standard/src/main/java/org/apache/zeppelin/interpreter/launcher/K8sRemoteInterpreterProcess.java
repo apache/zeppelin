@@ -325,20 +325,19 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterManagedProcess
       // There is already initial value following --driver-java-options added in interpreter.sh
       // so we need to pass spark.driver.defaultJavaOptions and spark.driver.extraJavaOptions
       // as SPARK_DRIVER_EXTRAJAVAOPTIONS_CONF env variable to build spark-submit command correctly.
-      StringBuilder driverExtraJavaOpts = new StringBuilder();
+      StringJoiner driverExtraJavaOpts = new StringJoiner(" ");
       if (properties.containsKey(SPARK_DRIVER_DEFAULTJAVAOPTS)) {
-        driverExtraJavaOpts.append((String) properties.remove(SPARK_DRIVER_DEFAULTJAVAOPTS));
+        driverExtraJavaOpts.add((String) properties.remove(SPARK_DRIVER_DEFAULTJAVAOPTS));
       }
       if (properties.containsKey(SPARK_DRIVER_EXTRAJAVAOPTS)) {
-        driverExtraJavaOpts.append(" ");
-        driverExtraJavaOpts.append((String) properties.remove(SPARK_DRIVER_EXTRAJAVAOPTS));
+        driverExtraJavaOpts.add((String) properties.remove(SPARK_DRIVER_EXTRAJAVAOPTS));
       }
       if (driverExtraJavaOpts.length() > 0) {
         k8sEnv.put("SPARK_DRIVER_EXTRAJAVAOPTIONS_CONF", driverExtraJavaOpts.toString());
       }
 
       if (isSparkOnKubernetes(properties)) {
-        this.addSparkK8sProperties();
+        addSparkK8sProperties();
         k8sEnv.put("ZEPPELIN_SPARK_CONF", prepareZeppelinSparkConf(userName));
       }
       k8sEnv.put("SPARK_HOME", getEnv().getOrDefault("SPARK_HOME", "/spark"));

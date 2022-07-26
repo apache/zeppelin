@@ -240,7 +240,7 @@ public class K8sRemoteInterpreterProcessTest {
     assertTrue(zeppelinSparkConf.contains("spark.driver.host=" + intp.getPodName() + ".default.svc"));
     assertTrue(zeppelinSparkConf.contains("spark.driver.port=" + intp.getSparkDriverPort()));
     assertTrue(zeppelinSparkConf.contains("spark.blockManager.port=" + intp.getSparkBlockManagerPort()));
-    assertTrue(zeppelinSparkConf.contains("--proxy-user mytestUser"));
+    assertTrue(zeppelinSparkConf.contains("--proxy-user|mytestUser"));
     assertTrue(intp.isSpark());
   }
 
