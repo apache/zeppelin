@@ -194,11 +194,6 @@ You can also find the below community managed interpreter list in `conf/interpre
     <td>Kotlin interpreter</td>
   </tr>
   <tr>
-    <td>kylin</td>
-    <td>org.apache.zeppelin:zeppelin-kylin:0.10.0</td>
-    <td>Kylin interpreter</td>
-  </tr>
-  <tr>
     <td>livy</td>
     <td>org.apache.zeppelin:zeppelin-livy:0.10.0</td>
     <td>Livy interpreter</td>

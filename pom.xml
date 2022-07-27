@@ -78,7 +78,6 @@
     <module>flink-cmd</module>
     <module>ignite</module>
     <module>influxdb</module>
-    <module>kylin</module>
     <module>python</module>
     <module>cassandra</module>
     <module>elasticsearch</module>
