@@ -38,8 +38,7 @@ environments is described below.
 In many programming-language interpreters (e.g. Apache Spark, Python, R) the zeppelin-context is available
 as a predefined variable `z` that can be used by directly invoking its methods.
 The methods available on the `z` object are described below.
-Other interpreters based on programming languages like Apache Beam, etc. also provide the
-predefined variable `z`.
+Other interpreters based on programming languages. also provide the predefined variable `z`.
 
 ### Exploring Spark DataFrames
 In the Apache Spark interpreter, the zeppelin-context provides a `show` method, which, 

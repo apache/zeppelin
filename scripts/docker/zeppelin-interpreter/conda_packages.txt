@@ -12,7 +12,6 @@ matplotlib
 ipykernel
 jupyter_client
 bokeh
-apache-beam
 
 # R packages
 r-evaluate

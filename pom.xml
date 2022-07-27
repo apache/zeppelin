@@ -84,7 +84,6 @@
     <module>neo4j</module>
     <module>sap</module>
     <module>java</module>
-    <module>beam</module>
     <module>ksql</module>
     <module>sparql</module>
     <module>zeppelin-common</module>
