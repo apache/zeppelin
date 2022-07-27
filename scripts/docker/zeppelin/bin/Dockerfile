@@ -29,7 +29,7 @@ ENV LOG_TAG="[ZEPPELIN_${Z_VERSION}]:" \
 
 RUN echo "$LOG_TAG install basic packages" && \
     apt-get -y update && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y locales language-pack-en tini openjdk-8-jre-headless wget unzip && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y locales language-pack-en tini openjdk-8-jdk-headless wget unzip && \
     # Cleanup
     rm -rf /var/lib/apt/lists/* && \
     apt-get autoclean && \
