@@ -431,7 +431,7 @@ jobs:
         run: |
           ./mvnw install -DskipTests -DskipRat -pl livy -am  -B
           ./testing/downloadSpark.sh "2.2.0" "2.6"
-          ./testing/downloadLivy.sh "0.5.0-incubating"
+          ./testing/downloadLivy.sh "0.7.1-incubating"
       - name: Setup conda environment with python 3.7 and R
         uses: conda-incubator/setup-miniconda@v2
         with:
