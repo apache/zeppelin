@@ -91,11 +91,11 @@ function publish_snapshot_to_maven() {
   echo "<password>$ASF_PASSWORD</password>" >> $tmp_settings
   echo "</server></servers></settings>" >> $tmp_settings
 
-  ./mvnw --settings $tmp_settings -Dmaven.repo.local="${tmp_repo}" -Pbeam -DskipTests \
+  ./mvnw --settings $tmp_settings -Dmaven.repo.local="${tmp_repo}" -DskipTests \
     $PUBLISH_PROFILES -Drat.skip=true deploy
 
   "${BASEDIR}/change_scala_version.sh" 2.11
-  ./mvnw -Pscala-2.11 --settings $tmp_settings -Dmaven.repo.local="${tmp_repo}" -Pbeam -DskipTests \
+  ./mvnw -Pscala-2.11 --settings $tmp_settings -Dmaven.repo.local="${tmp_repo}" -DskipTests \
     $PUBLISH_PROFILES -Drat.skip=true clean deploy
 
   rm $tmp_settings
