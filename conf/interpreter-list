@@ -36,7 +36,6 @@ livy            org.apache.zeppelin:zeppelin-livy:0.10.0                 Livy in
 md              org.apache.zeppelin:zeppelin-markdown:0.10.0             Markdown support
 neo4j           org.apache.zeppelin:zeppelin-neo4j:0.10.0                Neo4j interpreter
 python          org.apache.zeppelin:zeppelin-python:0.10.0               Python interpreter
-sap             org.apache.zeppelin:zeppelin-sap:0.10.0                  SAP Support
 shell           org.apache.zeppelin:zeppelin-shell:0.10.0                Shell command
 sparql          org.apache.zeppelin:zeppelin-sparql:0.10.0               Sparql interpreter
 submarine       org.apache.zeppelin:zeppelin-submarine:0.10.0            Submarine interpreter

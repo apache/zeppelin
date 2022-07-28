@@ -203,11 +203,6 @@ You can also find the below community managed interpreter list in `conf/interpre
     <td>Python interpreter</td>
   </tr>
   <tr>
-    <td>sap</td>
-    <td>org.apache.zeppelin:zeppelin-sap:0.10.0</td>
-    <td>SAP support</td>
-  </tr>
-  <tr>
     <td>shell</td>
     <td>org.apache.zeppelin:zeppelin-shell:0.10.0</td>
     <td>Shell command</td>

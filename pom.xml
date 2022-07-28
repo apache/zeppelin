@@ -83,7 +83,6 @@
     <module>bigquery</module>
     <module>alluxio</module>
     <module>neo4j</module>
-    <module>sap</module>
     <module>java</module>
     <module>beam</module>
     <module>geode</module>
