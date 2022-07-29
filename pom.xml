@@ -85,7 +85,6 @@
     <module>neo4j</module>
     <module>java</module>
     <module>beam</module>
-    <module>geode</module>
     <module>ksql</module>
     <module>sparql</module>
     <module>zeppelin-common</module>
