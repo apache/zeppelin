@@ -153,11 +153,6 @@ You can also find the below community managed interpreter list in `conf/interpre
     <td>Hbase interpreter</td>
   </tr>
   <tr>
-    <td>geode</td>
-    <td>org.apache.zeppelin:zeppelin-geode:0.10.0</td>
-    <td>Apache Geode interpreter</td>
-  </tr>
-  <tr>
     <td>groovy</td>
     <td>org.apache.zeppelin:zeppelin-groovy:0.10.0</td>
     <td>Groovy interpreter</td>

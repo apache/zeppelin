@@ -22,7 +22,7 @@
 <property>
   <name>zeppelin.server.addr</name>
   <value>127.0.0.1</value>
-  <description>Server binding address</description>
+  <description>Server binding address. If you cannot connect to your web browser on WSL or Windows, change 127.0.0.1 to 0.0.0.0. It, however, causes security issues when you open your machine to the public</description>
 </property>
 
 <property>

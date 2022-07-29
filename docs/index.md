@@ -140,7 +140,6 @@ limitations under the License.
   * [Cassandra](./interpreter/cassandra.html)
   * [Elasticsearch](./interpreter/elasticsearch.html)
   * [Flink](./interpreter/flink.html)
-  * [Geode](./interpreter/geode.html)
   * [Groovy](./interpreter/groovy.html)
   * [HBase](./interpreter/hbase.html)
   * [HDFS](./interpreter/hdfs.html)

@@ -19,7 +19,7 @@ env:
   SPARK_PRINT_LAUNCH_COMMAND: "true"
   SPARK_LOCAL_IP: 127.0.0.1
   ZEPPELIN_LOCAL_IP: 127.0.0.1
-  INTERPRETERS: '!beam,!hbase,!jdbc,!file,!flink,!cassandra,!elasticsearch,!bigquery,!alluxio,!livy,!groovy,!sap,!java,!geode,!neo4j,!submarine,!sparql,!mongodb'
+  INTERPRETERS: '!beam,!hbase,!jdbc,!file,!flink,!cassandra,!elasticsearch,!bigquery,!alluxio,!livy,!groovy,!sap,!java,!neo4j,!submarine,!sparql,!mongodb'
 
 jobs:
   run-e2e-tests-in-zeppelin-web:
