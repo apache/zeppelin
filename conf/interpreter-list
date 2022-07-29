@@ -25,7 +25,6 @@ cassandra       org.apache.zeppelin:zeppelin-cassandra:0.10.0            Cassand
 elasticsearch   org.apache.zeppelin:zeppelin-elasticsearch:0.10.0        Elasticsearch interpreter
 file            org.apache.zeppelin:zeppelin-file:0.10.0                 HDFS file interpreter
 flink           org.apache.zeppelin:zeppelin-flink:0.10.0                Flink interpreter
-geode           org.apache.zeppelin:zeppelin-geode:0.10.0                Apache Geode interpreter
 groovy          org.apache.zeppelin:zeppelin-groovy:0.10.0               Groovy interpreter
 hbase           org.apache.zeppelin:zeppelin-hbase:0.10.0                Hbase interpreter
 ignite          org.apache.zeppelin:zeppelin-ignite:0.10.0               Ignite interpreter
