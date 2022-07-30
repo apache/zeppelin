@@ -404,7 +404,7 @@ jobs:
           rm -rf spark/interpreter/metastore_db
           ./mvnw test -DskipRat -pl spark-submit,spark/interpreter -Pspark-3.3 -Pspark-scala-2.13 -Phadoop3 -Pintegration -B -DfailIfNoTests=false
 
-  livy-0-5-with-spark-2-2-0-under-python3:
+  livy-0-7-with-spark-2-2-0-under-python3:
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout
