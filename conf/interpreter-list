@@ -19,7 +19,6 @@
 
 alluxio         org.apache.zeppelin:zeppelin-alluxio:0.10.0              Alluxio interpreter
 angular         org.apache.zeppelin:zeppelin-angular:0.10.0              HTML and AngularJS view rendering
-beam            org.apache.zeppelin:zeppelin-beam:0.10.0                 Beam interpreter
 bigquery        org.apache.zeppelin:zeppelin-bigquery:0.10.0             BigQuery interpreter
 cassandra       org.apache.zeppelin:zeppelin-cassandra:0.10.0            Cassandra interpreter
 elasticsearch   org.apache.zeppelin:zeppelin-elasticsearch:0.10.0        Elasticsearch interpreter

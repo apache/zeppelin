@@ -135,7 +135,6 @@ limitations under the License.
 
 #### Available Interpreters 
   * [Alluxio](./interpreter/alluxio.html)
-  * [Beam](./interpreter/beam.html)
   * [BigQuery](./interpreter/bigquery.html)
   * [Cassandra](./interpreter/cassandra.html)
   * [Elasticsearch](./interpreter/elasticsearch.html)

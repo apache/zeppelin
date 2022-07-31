@@ -82,7 +82,7 @@ jobs:
   interpreter-test-non-core:
     runs-on: ubuntu-20.04
     env:
-      INTERPRETERS: 'beam,hbase,jdbc,file,flink-cmd,cassandra,elasticsearch,bigquery,alluxio,livy,groovy,sap,java,neo4j,submarine,sparql,mongodb,influxdb,ksql'
+      INTERPRETERS: 'hbase,jdbc,file,flink-cmd,cassandra,elasticsearch,bigquery,alluxio,livy,groovy,sap,java,neo4j,submarine,sparql,mongodb,influxdb,ksql'
     steps:
       - name: Checkout
         uses: actions/checkout@v2
