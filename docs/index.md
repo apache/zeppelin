@@ -144,7 +144,6 @@ limitations under the License.
   * [HBase](./interpreter/hbase.html)
   * [HDFS](./interpreter/hdfs.html)
   * [Hive](./interpreter/hive.html)
-  * [Ignite](./interpreter/ignite.html)
   * [influxDB](./interpreter/influxdb.html)
   * [Java](./interpreter/java.html)
   * [JDBC](./interpreter/jdbc.html)

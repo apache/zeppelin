@@ -33,7 +33,6 @@ The following components are provided under Apache License.
     (Apache 2.0) Apache Curator (org.apache.curator:curator:2.4.0 - http://curator.apache.org/)
     (Apache 2.0) Apache Cassandra (http://cassandra.apache.org/)
     (Apache 2.0) Apache HBase (http://hbase.apache.org/)
-    (Apache 2.0) Apache Ignite (http://ignite.apache.org/)
     (Apache 2.0) Apache Flink (http://flink.apache.org/)
     (Apache 2.0) Apache Jena (https://jena.apache.org/)
     (Apache 2.0) Apache Beam (http://beam.apache.org/)
