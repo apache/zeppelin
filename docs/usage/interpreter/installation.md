@@ -118,11 +118,6 @@ You can also find the below community managed interpreter list in `conf/interpre
     <td>HTML and AngularJS view rendering</td>
   </tr>
   <tr>
-    <td>beam</td>
-    <td>org.apache.zeppelin:zeppelin-beam:0.10.0</td>
-    <td>Beam interpreter</td>
-  </tr>
-  <tr>
     <td>bigquery</td>
     <td>org.apache.zeppelin:zeppelin-bigquery:0.10.0</td>
     <td>BigQuery interpreter</td>
@@ -153,19 +148,9 @@ You can also find the below community managed interpreter list in `conf/interpre
     <td>Hbase interpreter</td>
   </tr>
   <tr>
-    <td>geode</td>
-    <td>org.apache.zeppelin:zeppelin-geode:0.10.0</td>
-    <td>Apache Geode interpreter</td>
-  </tr>
-  <tr>
     <td>groovy</td>
     <td>org.apache.zeppelin:zeppelin-groovy:0.10.0</td>
     <td>Groovy interpreter</td>
-  </tr>
-  <tr>
-    <td>ignite</td>
-    <td>org.apache.zeppelin:zeppelin-ignite:0.10.0</td>
-    <td>Ignite interpreter</td>
   </tr>
   <tr>
     <td>java</td>

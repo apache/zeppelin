@@ -135,17 +135,14 @@ limitations under the License.
 
 #### Available Interpreters 
   * [Alluxio](./interpreter/alluxio.html)
-  * [Beam](./interpreter/beam.html)
   * [BigQuery](./interpreter/bigquery.html)
   * [Cassandra](./interpreter/cassandra.html)
   * [Elasticsearch](./interpreter/elasticsearch.html)
   * [Flink](./interpreter/flink.html)
-  * [Geode](./interpreter/geode.html)
   * [Groovy](./interpreter/groovy.html)
   * [HBase](./interpreter/hbase.html)
   * [HDFS](./interpreter/hdfs.html)
   * [Hive](./interpreter/hive.html)
-  * [Ignite](./interpreter/ignite.html)
   * [influxDB](./interpreter/influxdb.html)
   * [Java](./interpreter/java.html)
   * [JDBC](./interpreter/jdbc.html)
