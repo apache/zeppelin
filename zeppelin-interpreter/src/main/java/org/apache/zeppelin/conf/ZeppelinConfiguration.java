@@ -46,6 +46,7 @@ import org.apache.commons.configuration2.io.CombinedLocationStrategy;
 import org.apache.commons.configuration2.io.FileLocationStrategy;
 import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.SystemUtils;
 import org.apache.zeppelin.interpreter.lifecycle.NullLifecycleManager;
 import org.apache.zeppelin.util.Util;
 import org.slf4j.Logger;
@@ -327,7 +328,7 @@ public class ZeppelinConfiguration {
 
   public String getKeyStorePath() {
     String path = getString(ConfVars.ZEPPELIN_SSL_KEYSTORE_PATH);
-    if (path != null && path.startsWith("/") || isWindowsPath(path)) {
+    if (path != null && path.startsWith("/") || checkWindows()) {
       return path;
     } else {
       return getAbsoluteDir(
@@ -359,7 +360,7 @@ public class ZeppelinConfiguration {
     if (path == null) {
       path = getKeyStorePath();
     }
-    if (path != null && path.startsWith("/") || isWindowsPath(path)) {
+    if (path != null && path.startsWith("/") || checkWindows()) {
       return path;
     } else {
       return getAbsoluteDir(
@@ -613,7 +614,7 @@ public class ZeppelinConfiguration {
   }
 
   public String getAbsoluteDir(String path) {
-    if (path != null && (path.startsWith(File.separator) || isWindowsPath(path) || isPathWithScheme(path))) {
+    if (path != null && (path.startsWith(File.separator) || checkWindows() || isPathWithScheme(path))) {
       return path;
     } else {
       return getString(ConfVars.ZEPPELIN_HOME) + File.separator + path;
@@ -636,8 +637,8 @@ public class ZeppelinConfiguration {
     return getString(ConfVars.ZEPPELIN_INTERPRETER_RPC_PORTRANGE);
   }
 
-  public boolean isWindowsPath(String path){
-    return path.matches("^[A-Za-z]:\\\\.*");
+  public boolean checkWindows(){
+    return SystemUtils.IS_OS_WINDOWS;
   }
 
   public boolean isPathWithScheme(String path){

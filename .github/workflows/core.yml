@@ -19,6 +19,7 @@ env:
   SPARK_PRINT_LAUNCH_COMMAND: "true"
   SPARK_LOCAL_IP: 127.0.0.1
   ZEPPELIN_LOCAL_IP: 127.0.0.1
+  CI_LINUX: "true"
 
 # Use the bash login, because we are using miniconda
 defaults:
