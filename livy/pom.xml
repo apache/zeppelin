@@ -39,7 +39,7 @@
         <spring.security.kerberosclient>1.0.1.RELEASE</spring.security.kerberosclient>
 
         <!--test library versions-->
-        <livy.version>0.5.0-incubating</livy.version>
+        <livy.version>0.7.1-incubating</livy.version>
         <spark.version>2.1.0</spark.version>
         <hadoop.version>${hadoop2.6.version}</hadoop.version>
     </properties>

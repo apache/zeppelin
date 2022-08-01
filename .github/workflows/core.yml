@@ -82,7 +82,7 @@ jobs:
   interpreter-test-non-core:
     runs-on: ubuntu-20.04
     env:
-      INTERPRETERS: 'beam,hbase,jdbc,file,flink-cmd,ignite,cassandra,elasticsearch,bigquery,alluxio,livy,groovy,java,neo4j,submarine,sparql,mongodb,influxdb,ksql'
+      INTERPRETERS: 'hbase,jdbc,file,flink-cmd,cassandra,elasticsearch,bigquery,alluxio,livy,groovy,java,neo4j,submarine,sparql,mongodb,influxdb,ksql'
 
     steps:
       - name: Checkout
@@ -405,7 +405,7 @@ jobs:
           rm -rf spark/interpreter/metastore_db
           ./mvnw test -DskipRat -pl spark-submit,spark/interpreter -Pspark-3.3 -Pspark-scala-2.13 -Phadoop3 -Pintegration -B -DfailIfNoTests=false
 
-  livy-0-5-with-spark-2-2-0-under-python3:
+  livy-0-7-with-spark-2-2-0-under-python3:
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout
@@ -432,7 +432,7 @@ jobs:
         run: |
           ./mvnw install -DskipTests -DskipRat -pl livy -am  -B
           ./testing/downloadSpark.sh "2.2.0" "2.6"
-          ./testing/downloadLivy.sh "0.5.0-incubating"
+          ./testing/downloadLivy.sh "0.7.1-incubating"
       - name: Setup conda environment with python 3.7 and R
         uses: conda-incubator/setup-miniconda@v2
         with:

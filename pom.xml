@@ -75,7 +75,6 @@
     <module>file</module>
     <module>flink</module>
     <module>flink-cmd</module>
-    <module>ignite</module>
     <module>influxdb</module>
     <module>python</module>
     <module>cassandra</module>
@@ -84,7 +83,6 @@
     <module>alluxio</module>
     <module>neo4j</module>
     <module>java</module>
-    <module>beam</module>
     <module>ksql</module>
     <module>sparql</module>
     <module>zeppelin-common</module>
