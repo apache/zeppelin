@@ -82,7 +82,6 @@
     <module>bigquery</module>
     <module>alluxio</module>
     <module>neo4j</module>
-    <module>sap</module>
     <module>java</module>
     <module>sparql</module>
     <module>zeppelin-common</module>
