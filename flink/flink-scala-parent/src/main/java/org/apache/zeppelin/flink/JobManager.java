@@ -72,6 +72,10 @@ public class JobManager {
       return;
     }
     long checkInterval = Long.parseLong(properties.getProperty("zeppelin.flink.job.check_interval", "1000"));
+    if (checkInterval < 0) {
+      LOGGER.warn("The value of checkInterval must be positive {}", checkInterval);
+      return;
+    }
     FlinkJobProgressPoller thread = new FlinkJobProgressPoller(flinkWebUrl, jobClient.getJobID(), context, checkInterval);
     thread.setName("JobProgressPoller-Thread-" + paragraphId);
     thread.start();
