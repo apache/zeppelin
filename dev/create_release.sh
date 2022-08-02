@@ -98,7 +98,7 @@ function make_binary_release() {
 git_clone
 make_source_package
 
-make_binary_release netinst "-Pweb-angular -Phadoop-2.6 -pl !hbase,!jdbc,!file,!flink,!cassandra,!elasticsearch,!bigquery,!alluxio,!livy,!groovy,!sap,!java,!neo4j,!submarine,!sparql,!mongodb,!ksql -am"
+make_binary_release netinst "-Pweb-angular -Phadoop-2.6 -pl !hbase,!jdbc,!file,!flink,!cassandra,!elasticsearch,!bigquery,!alluxio,!livy,!groovy,!java,!neo4j,!submarine,!sparql,!mongodb,!ksql -am"
 make_binary_release all "-Pweb-angular -Phadoop-2.6"
 
 # remove non release files and dirs
