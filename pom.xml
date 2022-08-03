@@ -83,7 +83,6 @@
     <module>alluxio</module>
     <module>neo4j</module>
     <module>java</module>
-    <module>ksql</module>
     <module>sparql</module>
     <module>zeppelin-common</module>
     <module>zeppelin-client</module>
