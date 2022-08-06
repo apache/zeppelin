@@ -34,7 +34,7 @@
   <properties>
     <!--library versions-->
     <interpreter.name>jdbc</interpreter.name>
-    <postgresql.version>42.3.3</postgresql.version>
+    <postgresql.version>42.4.1</postgresql.version>
     <hadoop.version>${hadoop2.7.version}</hadoop.version>
     <h2.version>2.0.206</h2.version>
     <commons.dbcp2.version>2.0.1</commons.dbcp2.version>
