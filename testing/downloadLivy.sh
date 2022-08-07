@@ -49,7 +49,7 @@ download_with_retry() {
 }
 
 LIVY_CACHE=".livy-dist"
-LIVY_ARCHIVE="livy-${LIVY_VERSION}-bin"
+LIVY_ARCHIVE="apache-livy-${LIVY_VERSION}-bin"
 export LIVY_HOME="${ZEPPELIN_HOME}/livy-server-$LIVY_VERSION"
 echo "LIVY_HOME is ${LIVY_HOME}"
 
