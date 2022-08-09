@@ -1073,7 +1073,6 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
     }
   }
 
-  @VisibleForTesting
   public List<String> getSettingIds() {
     List<String> settingIds = new ArrayList<>();
     for (InterpreterSetting interpreterSetting : get()) {

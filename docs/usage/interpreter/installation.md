@@ -61,18 +61,7 @@ Zeppelin support both Scala 2.10 and 2.11 for several interpreters as below:
     <td>org.apache.zeppelin:zeppelin-spark_2.10:0.10.0</td>
     <td>org.apache.zeppelin:zeppelin-spark_2.11:0.10.0</td>
   </tr>
-  <tr>
-    <td>scalding</td>
-    <td>org.apache.zeppelin:zeppelin-scalding_2.10:0.10.0</td>
-    <td>org.apache.zeppelin:zeppelin-scalding_2.11:0.10.0</td>
-  </tr>
 </table>
-
-If you install one of these interpreters only with `--name` option, installer will download interpreter built with Scala 2.11 by default. If you want to specify Scala version, you will need to add `--artifact` option. Here is the example of installing flink interpreter built with Scala 2.10.
-
-```bash
-./bin/install-interpreter.sh --name flink --artifact org.apache.zeppelin:zeppelin-scalding_2.10:0.10.0
-```
 
 #### Install Spark interpreter built with Scala 2.10
 
@@ -129,11 +118,6 @@ You can also find the below community managed interpreter list in `conf/interpre
     <td>HTML and AngularJS view rendering</td>
   </tr>
   <tr>
-    <td>beam</td>
-    <td>org.apache.zeppelin:zeppelin-beam:0.10.0</td>
-    <td>Beam interpreter</td>
-  </tr>
-  <tr>
     <td>bigquery</td>
     <td>org.apache.zeppelin:zeppelin-bigquery:0.10.0</td>
     <td>BigQuery interpreter</td>
@@ -164,19 +148,9 @@ You can also find the below community managed interpreter list in `conf/interpre
     <td>Hbase interpreter</td>
   </tr>
   <tr>
-    <td>geode</td>
-    <td>org.apache.zeppelin:zeppelin-geode:0.10.0</td>
-    <td>Apache Geode interpreter</td>
-  </tr>
-  <tr>
     <td>groovy</td>
     <td>org.apache.zeppelin:zeppelin-groovy:0.10.0</td>
     <td>Groovy interpreter</td>
-  </tr>
-  <tr>
-    <td>ignite</td>
-    <td>org.apache.zeppelin:zeppelin-ignite:0.10.0</td>
-    <td>Ignite interpreter</td>
   </tr>
   <tr>
     <td>java</td>
@@ -194,11 +168,6 @@ You can also find the below community managed interpreter list in `conf/interpre
     <td>Kotlin interpreter</td>
   </tr>
   <tr>
-    <td>kylin</td>
-    <td>org.apache.zeppelin:zeppelin-kylin:0.10.0</td>
-    <td>Kylin interpreter</td>
-  </tr>
-  <tr>
     <td>livy</td>
     <td>org.apache.zeppelin:zeppelin-livy:0.10.0</td>
     <td>Livy interpreter</td>
@@ -214,29 +183,9 @@ You can also find the below community managed interpreter list in `conf/interpre
     <td>Neo4j interpreter</td>
   </tr>
   <tr>
-    <td>pig</td>
-    <td>org.apache.zeppelin:zeppelin-pig:0.10.0</td>
-    <td>Pig interpreter</td>
-  </tr>
-  <tr>
     <td>python</td>
     <td>org.apache.zeppelin:zeppelin-python:0.10.0</td>
     <td>Python interpreter</td>
-  </tr>
-  <tr>
-    <td>sap</td>
-    <td>org.apache.zeppelin:zeppelin-sap:0.10.0</td>
-    <td>SAP support</td>
-  </tr>
-  <tr>
-    <td>scalding</td>
-    <td>org.apache.zeppelin:zeppelin-scalding_2.0.10:0.10.0</td>
-    <td>Scalding interpreter</td>
-  </tr>
-  <tr>
-    <td>scio</td>
-    <td>org.apache.zeppelin:zeppelin-scio:0.10.0</td>
-    <td>Scio interpreter</td>
   </tr>
   <tr>
     <td>shell</td>

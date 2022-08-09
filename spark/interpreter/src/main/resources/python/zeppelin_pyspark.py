@@ -49,10 +49,12 @@ conf = SparkConf(_jvm = gateway.jvm, _jconf = jconf)
 sc = _zsc_ = SparkContext(jsc=jsc, gateway=gateway, conf=conf)
 
 from pyspark.sql import SparkSession
+from pyspark.sql import SQLContext
 spark = __zSpark__ = SparkSession(sc, intp.getSparkSession())
-sqlc = __zSqlc__ = __zSpark__._wrapped
-
-sqlContext = __zSqlc__
+if intp.isAfterSpark33():
+  sqlContext = sqlc = __zSqlc__ = SQLContext._get_or_create(sc)
+else:
+  sqlContext = sqlc = __zSqlc__ = __zSpark__._wrapped
 
 from zeppelin_context import PyZeppelinContext
 

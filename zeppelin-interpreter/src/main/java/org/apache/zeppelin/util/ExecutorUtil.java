@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.util;
 
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -38,7 +39,8 @@ public class ExecutorUtil {
       // Wait a while for existing tasks to terminate
       if (!executor.awaitTermination(stopTimeoutVal, stopTimeoutUnit)) {
         LOGGER.warn("{} was not shut down in the given time {} {} - interrupting now", name, stopTimeoutVal, stopTimeoutUnit);
-        executor.shutdownNow(); // Cancel currently executing tasks
+        List<Runnable> neverExecuted = executor.shutdownNow(); // Cancel currently executing tasks
+        LOGGER.warn("{} tasks were never executed from {}.", neverExecuted.size(), name);
         // Wait a while for tasks to respond to being cancelled
         if (!executor.awaitTermination(stopTimeoutVal, stopTimeoutUnit)) {
           LOGGER.error("executor {} did not terminate", name);

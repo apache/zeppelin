@@ -33,7 +33,7 @@
   <properties>
     <!--library versions-->
     <interpreter.name>hbase</interpreter.name>
-    <hbase.hbase.version>1.0.0</hbase.hbase.version>
+    <hbase.hbase.version>2.4.12</hbase.hbase.version>
     <hbase.hadoop.version>${hadoop2.6.version}</hbase.hadoop.version>
     <jruby.version>1.6.8</jruby.version>
     <protobuf.version>2.5.0</protobuf.version>
@@ -85,11 +85,6 @@
       <groupId>com.google.protobuf</groupId>
       <artifactId>protobuf-java</artifactId>
       <version>${protobuf.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.hbase</groupId>
-      <artifactId>hbase-server</artifactId>
-      <version>${hbase.hbase.version}</version>
     </dependency>
     <dependency>
       <groupId>jline</groupId>

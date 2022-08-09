@@ -13,7 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM zeppelin-distribution:latest AS zeppelin-distribution
+ARG ZEPPELIN_DISTRIBUTION_IMAGE=zeppelin-distribution:latest
+FROM $ZEPPELIN_DISTRIBUTION_IMAGE AS zeppelin-distribution
 
 FROM ubuntu:20.04
 

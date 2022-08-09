@@ -27,6 +27,7 @@ import org.apache.zeppelin.server.JsonResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -54,8 +55,8 @@ public class ClusterRestApi {
   // Do not modify, Use by `zeppelin-web/src/app/cluster/cluster.html`
   private static String PROPERTIES = "properties";
 
-  public ClusterRestApi() {
-    ZeppelinConfiguration zConf = ZeppelinConfiguration.create();
+  @Inject
+  public ClusterRestApi(ZeppelinConfiguration zConf) {
     if (zConf.isClusterMode()) {
       clusterManagerServer = ClusterManagerServer.getInstance(zConf);
     } else {

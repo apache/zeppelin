@@ -18,6 +18,11 @@
 
 package org.apache.zeppelin.alluxio;
 
+import alluxio.cli.fs.FileSystemShell;
+import alluxio.conf.InstancedConfiguration;
+import alluxio.conf.PropertyKey;
+import alluxio.conf.Source;
+import alluxio.util.ConfigurationUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,8 +35,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 
-import alluxio.Configuration;
-import alluxio.shell.AlluxioShell;
 
 import org.apache.zeppelin.completer.CompletionType;
 import org.apache.zeppelin.interpreter.Interpreter;
@@ -50,7 +53,7 @@ public class AlluxioInterpreter extends Interpreter {
   protected static final String ALLUXIO_MASTER_HOSTNAME = "alluxio.master.hostname";
   protected static final String ALLUXIO_MASTER_PORT = "alluxio.master.port";
 
-  private AlluxioShell fs;
+  private FileSystemShell fs;
 
   private int totalCommands = 0;
   private int completedCommands = 0;
@@ -80,13 +83,16 @@ public class AlluxioInterpreter extends Interpreter {
 
     System.setProperty(ALLUXIO_MASTER_HOSTNAME, alluxioMasterHostname);
     System.setProperty(ALLUXIO_MASTER_PORT, alluxioMasterPort);
-    fs = new AlluxioShell(new Configuration());
+
+    InstancedConfiguration conf = new InstancedConfiguration(ConfigurationUtils.defaults());
+    // Reduce the RPC retry max duration to fall earlier for CLIs
+    conf.set(PropertyKey.USER_RPC_RETRY_MAX_DURATION, "5s", Source.DEFAULT);
+    fs = new FileSystemShell(conf);
   }
 
   @Override
   public void close() {
     logger.info("Closing Alluxio shell");
-
     try {
       fs.close();
     } catch (IOException e) {

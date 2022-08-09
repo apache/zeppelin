@@ -260,6 +260,8 @@ public class ZeppelinServer extends ResourceConfig {
       sharedServiceLocator, SearchService.class.getName());
     ServiceLocatorUtilities.getService(
       sharedServiceLocator, SchedulerService.class.getName());
+    // Initialization of the Notes in the notebook asynchronously
+    notebook.initNotebook();
     // Try to recover here, don't do it in constructor of Notebook, because it would cause deadlock.
     notebook.recoveryIfNecessary();
 
@@ -549,7 +551,6 @@ public class ZeppelinServer extends ResourceConfig {
 
     servletHolder.setInitParameter("javax.ws.rs.Application", ZeppelinServer.class.getName());
     servletHolder.setName("rest");
-    servletHolder.setForcedPath("rest");
     webapp.setSessionHandler(new SessionHandler());
     webapp.addServlet(servletHolder, "/api/*");
 

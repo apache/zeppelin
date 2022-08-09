@@ -16,22 +16,14 @@
  */
 package org.apache.zeppelin.rest.message;
 
-import com.google.gson.Gson;
-
 import java.util.Map;
-
-import org.apache.zeppelin.common.JsonSerializable;
 
 /**
  * ParametersRequest rest api request message.
  */
-public class ParametersRequest implements JsonSerializable {
-  private static final Gson GSON = new Gson();
+public class ParametersRequest {
 
-  private Map<String, Object> params;
-
-  public ParametersRequest() {
-  }
+  private final Map<String, Object> params;
 
   public ParametersRequest(Map<String, Object> params) {
     this.params = params;
@@ -39,13 +31,5 @@ public class ParametersRequest implements JsonSerializable {
 
   public Map<String, Object> getParams() {
     return params;
-  }
-
-  public String toJson() {
-    return GSON.toJson(this);
-  }
-
-  public static ParametersRequest fromJson(String json) {
-    return GSON.fromJson(json, ParametersRequest.class);
   }
 }

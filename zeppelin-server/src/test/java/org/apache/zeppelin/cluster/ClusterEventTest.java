@@ -32,7 +32,6 @@ import org.apache.zeppelin.interpreter.remote.RemoteInterpreterUtils;
 import org.apache.zeppelin.interpreter.thrift.ParagraphInfo;
 import org.apache.zeppelin.interpreter.thrift.ServiceException;
 import org.apache.zeppelin.notebook.AuthorizationService;
-import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.notebook.scheduler.QuartzSchedulerService;
@@ -63,6 +62,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -101,7 +101,8 @@ public class ClusterEventTest extends ZeppelinServerMock {
     authorizationService = TestUtils.getInstance(AuthorizationService.class);
 
     schedulerService = new QuartzSchedulerService(zconf, notebook);
-    schedulerService.waitForFinishInit();
+    notebook.initNotebook();
+    notebook.waitForFinishInit(1, TimeUnit.MINUTES);
     notebookServer = spy(NotebookServer.getInstance());
     notebookService = new NotebookService(notebook, authorizationService, zconf, schedulerService);
 
@@ -383,9 +384,9 @@ public class ClusterEventTest extends ZeppelinServerMock {
         });
 
       // insert new paragraph
-      NewParagraphRequest newParagraphRequest = new NewParagraphRequest();
+      NewParagraphRequest newParagraphRequest = new NewParagraphRequest("Test", null, null, null);
 
-      CloseableHttpResponse post = AbstractTestRestApi.httpPost("/notebook/" + noteId + "/paragraph", newParagraphRequest.toJson());
+      CloseableHttpResponse post = AbstractTestRestApi.httpPost("/notebook/" + noteId + "/paragraph", gson.toJson(newParagraphRequest));
       LOG.info("test clear paragraph output response\n" + EntityUtils.toString(post.getEntity(), StandardCharsets.UTF_8));
       assertThat(post, AbstractTestRestApi.isAllowed());
       post.close();

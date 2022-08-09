@@ -16,25 +16,20 @@
  */
 package org.apache.zeppelin.rest.message;
 
-import com.google.gson.Gson;
-
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Collections;
 import java.util.Map;
 
-import org.apache.zeppelin.common.JsonSerializable;
-
 /**
  * Represent payload of a notebook repo settings.
  */
-public class NotebookRepoSettingsRequest implements JsonSerializable {
-  private static final Gson gson = new Gson();
+public class NotebookRepoSettingsRequest {
 
   public static final NotebookRepoSettingsRequest EMPTY = new NotebookRepoSettingsRequest();
 
-  public String name;
-  public Map<String, String> settings;
+  private final String name;
+  private final Map<String, String> settings;
 
   public NotebookRepoSettingsRequest() {
     name = StringUtils.EMPTY;
@@ -52,11 +47,11 @@ public class NotebookRepoSettingsRequest implements JsonSerializable {
     return repoSetting.isEmpty();
   }
 
-  public String toJson() {
-    return gson.toJson(this);
+  public String getName() {
+    return name;
   }
 
-  public static NotebookRepoSettingsRequest fromJson(String json) {
-    return gson.fromJson(json, NotebookRepoSettingsRequest.class);
+  public Map<String, String> getSettings() {
+    return settings;
   }
 }

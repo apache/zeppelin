@@ -25,7 +25,7 @@ limitations under the License.
 
 ### 1. Import Cloudera QuickStart Docker image
 
->[Cloudera](http://www.cloudera.com/) has officially provided CDH Docker Hub in their own container. Please check [this guide page](http://www.cloudera.com/documentation/enterprise/latest/topics/quickstart_docker_container.html#cloudera_docker_container) for more information.
+>[Cloudera](http://www.cloudera.com/) has officially provided CDH Docker Hub in their own container. Please check [this guide page](https://hub.docker.com/r/cloudera/quickstart/) for more information.
 
 You can import the Docker image by pulling it from Cloudera Docker Hub.
 

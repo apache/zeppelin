@@ -23,6 +23,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.Duration;
+import java.time.format.DateTimeParseException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -246,6 +248,20 @@ public class ZeppelinConfiguration {
       return sysConfig.getLong(propertyName);
     }
     return getLongValue(propertyName, defaultValue);
+  }
+
+  /**
+   * This method is to support time unit like `1s`, `2m`, `3h`.
+   *
+   * @param {ConfVars} c . Note：The type of default value of `ConfVars  c` should be long.
+   * @return {long} Milliseconds
+   */
+  public long getTime(ConfVars c) {
+    try {
+      return timeUnitToMill(getString(c.name(), c.getVarName(), ""));
+    } catch (Exception e) {
+      return getLong(c);
+    }
   }
 
   public float getFloat(ConfVars c) {
@@ -761,6 +777,10 @@ public class ZeppelinConfiguration {
     return getString(ConfVars.ZEPPELIN_NOTEBOOK_CRON_FOLDERS);
   }
 
+  public boolean isZeppelinNotebookMarkdownEscapeHtml() {
+    return getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_MARKDOWN_ESCAPE_HTML);
+  }
+
   public Boolean isZeppelinNotebookCollaborativeModeEnable() {
     return getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_COLLABORATIVE_MODE_ENABLE);
   }
@@ -936,7 +956,7 @@ public class ZeppelinConfiguration {
     ZEPPELIN_INTERPRETER_LOCALREPO("zeppelin.interpreter.localRepo", "local-repo"),
     ZEPPELIN_INTERPRETER_DEP_MVNREPO("zeppelin.interpreter.dep.mvnRepo",
         "https://repo1.maven.org/maven2/"),
-    ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT("zeppelin.interpreter.connect.timeout", 600000),
+    ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT("zeppelin.interpreter.connect.timeout", 600000L),
     ZEPPELIN_INTERPRETER_CONNECTION_POOL_SIZE("zeppelin.interpreter.connection.poolsize", 100),
     ZEPPELIN_INTERPRETER_GROUP_DEFAULT("zeppelin.interpreter.group.default", "spark"),
     ZEPPELIN_INTERPRETER_OUTPUT_LIMIT("zeppelin.interpreter.output.limit", 1024 * 100),
@@ -1077,8 +1097,11 @@ public class ZeppelinConfiguration {
     ZEPPELIN_NOTEBOOK_GIT_REMOTE_ORIGIN("zeppelin.notebook.git.remote.origin", "origin"),
     ZEPPELIN_NOTEBOOK_COLLABORATIVE_MODE_ENABLE("zeppelin.notebook.collaborative.mode.enable",
             true),
+    ZEPPELIN_NOTEBOOK_VERSIONED_MODE_ENABLE("zeppelin.notebook.versioned.mode.enable",
+            true),
     ZEPPELIN_NOTEBOOK_CRON_ENABLE("zeppelin.notebook.cron.enable", false),
     ZEPPELIN_NOTEBOOK_CRON_FOLDERS("zeppelin.notebook.cron.folders", null),
+    ZEPPELIN_NOTEBOOK_MARKDOWN_ESCAPE_HTML("zeppelin.notebook.markdown.escape.html", true),
     ZEPPELIN_PROXY_URL("zeppelin.proxy.url", null),
     ZEPPELIN_PROXY_USER("zeppelin.proxy.user", null),
     ZEPPELIN_PROXY_PASSWORD("zeppelin.proxy.password", null),
@@ -1179,4 +1202,14 @@ public class ZeppelinConfiguration {
       return booleanValue;
     }
   }
+
+  public static long timeUnitToMill(String timeStrWithUnit) {
+    // If `timeStrWithUnit` doesn't include time unit,
+    // `Duration.parse` would fail to parse and throw Exception.
+    if (timeStrWithUnit.endsWith("ms")) {
+      return Long.parseLong(timeStrWithUnit.substring(0, timeStrWithUnit.length() - 2));
+    }
+    return Duration.parse("PT" + timeStrWithUnit).toMillis();
+  }
+
 }

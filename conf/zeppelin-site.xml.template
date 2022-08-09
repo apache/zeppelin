@@ -22,7 +22,7 @@
 <property>
   <name>zeppelin.server.addr</name>
   <value>127.0.0.1</value>
-  <description>Server binding address</description>
+  <description>Server binding address. If you cannot connect to your web browser on WSL or Windows, change 127.0.0.1 to 0.0.0.0. It, however, causes security issues when you open your machine to the public</description>
 </property>
 
 <property>
@@ -89,6 +89,12 @@
   <name>zeppelin.notebook.collaborative.mode.enable</name>
   <value>true</value>
   <description>Enable collaborative mode</description>
+</property>
+
+<property>
+  <name>zeppelin.notebook.versioned.mode.enable</name>
+  <value>true</value>
+  <description>Value to enable/disable version control support in Notes</description>
 </property>
 
 <!-- Google Cloud Storage notebook storage -->
@@ -417,8 +423,8 @@
 
 <property>
   <name>zeppelin.interpreter.connect.timeout</name>
-  <value>600000</value>
-  <description>Interpreter process connect timeout in msec.</description>
+  <value>600s</value>
+  <description>Interpreter process connect timeout. Default time unit is msec.</description>
 </property>
 
 <property>
@@ -569,14 +575,14 @@
 
 <property>
   <name>zeppelin.interpreter.lifecyclemanager.timeout.checkinterval</name>
-  <value>60000</value>
-  <description>Milliseconds of the interval to checking whether interpreter is time out</description>
+  <value>1m</value>
+  <description>Interval to checking whether interpreter is time out</description>
 </property>
 
 <property>
   <name>zeppelin.interpreter.lifecyclemanager.timeout.threshold</name>
-  <value>3600000</value>
-  <description>Milliseconds of the interpreter timeout threshold, by default it is 1 hour</description>
+  <value>1h</value>
+  <description>Interpreter timeout threshold, by default it is 1 hour</description>
 </property>
 -->
 

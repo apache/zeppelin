@@ -490,7 +490,7 @@ public class RemoteInterpreterServer extends Thread
           Iterator<Interpreter> it = interpreters.iterator();
           while (it.hasNext()) {
             Interpreter inp = it.next();
-            boolean isOpen = false;
+            boolean isOpen = true;
             if (inp instanceof LazyOpenInterpreter) {
               LazyOpenInterpreter lazy = (LazyOpenInterpreter) inp;
               isOpen = lazy.isOpen();

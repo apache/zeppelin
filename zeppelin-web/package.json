@@ -25,15 +25,15 @@
   },
   "dependencies": {
     "angular-ui-grid": "4.4.6",
-    "angular-viewport-watch": "github:wix/angular-viewport-watch",
+    "angular-viewport-watch": "git+https://github.com/wix/angular-viewport-watch.git",
     "ansi_up": "^2.0.2",
     "github-markdown-css": "2.6.0",
     "grunt-angular-templates": "^0.5.7",
     "grunt-dom-munger": "^3.4.0",
     "headroom.js": "^0.9.3",
-    "moment": "^2.29.2",
+    "moment": "^2.29.4",
     "moment-duration-format": "^1.3.0",
-    "scrollmonitor": "^1.2.3",
+    "scrollmonitor": "^1.2.9",
     "diff-match-patch": "1.0.0"
   },
   "devDependencies": {

@@ -118,7 +118,7 @@ bin/zeppelin-daemon.sh stop
 ```
 
 ## Interpreter
-Zeppelin provides various distributed processing frameworks to process data that ranges from Spark, JDBC and Ignite to name a few. This document describes to configure JDBC & Spark interpreters.
+Zeppelin provides various distributed processing frameworks to process data that ranges from Spark and JDBC to name a few. This document describes to configure JDBC & Spark interpreters.
 
 ### Hive
 Zeppelin supports Hive through JDBC interpreter. You might need the information to use Hive and can find in your hive-site.xml

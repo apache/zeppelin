@@ -23,11 +23,11 @@ limitations under the License.
 
 <div id="toc"></div>
 
-[Hadoop Submarine ](https://hadoop.apache.org/submarine/) is the latest machine learning framework subproject in the Hadoop 3.1 release. It allows Hadoop to support Tensorflow, MXNet, Caffe, Spark, etc. A variety of deep learning frameworks provide a full-featured system framework for machine learning algorithm development, distributed model training, model management, and model publishing, combined with hadoop's intrinsic data storage and data processing capabilities to enable data scientists to Good mining and the value of the data.
+[Hadoop Submarine ](https://submarine.apache.org/) is the latest machine learning framework subproject in the Hadoop 3.1 release. It allows Hadoop to support Tensorflow, MXNet, Caffe, Spark, etc. A variety of deep learning frameworks provide a full-featured system framework for machine learning algorithm development, distributed model training, model management, and model publishing, combined with hadoop's intrinsic data storage and data processing capabilities to enable data scientists to Good mining and the value of the data.
 
 A deep learning algorithm project requires data acquisition, data processing, data cleaning, interactive visual programming adjustment parameters, algorithm testing, algorithm publishing, algorithm job scheduling, offline model training, model online services and many other processes and processes. Zeppelin is a web-based notebook that supports interactive data analysis. You can use SQL, Scala, Python, etc. to make data-driven, interactive, collaborative documents.
 
-You can use the more than 20 interpreters in zeppelin (for example: spark, hive, Cassandra, Elasticsearch, Kylin, HBase, etc.) to collect data, clean data, feature extraction, etc. in the data in Hadoop before completing the machine learning model training. The data preprocessing process.
+You can use the more than 20 interpreters in zeppelin (for example: spark, hive, Cassandra, Elasticsearch, HBase, etc.) to collect data, clean data, feature extraction, etc. in the data in Hadoop before completing the machine learning model training. The data preprocessing process.
 
 By integrating submarine in zeppelin, we use zeppelin's data discovery, data analysis and data visualization and collaboration capabilities to visualize the results of algorithm development and parameter adjustment during machine learning model training.
 
@@ -385,7 +385,7 @@ The docker images file is stored in the `zeppelin/scripts/docker/submarine` dire
 + **Submarine interpreter BUG**
   If you encounter a bug for this interpreter, please create a sub **JIRA** ticket on [ZEPPELIN-3856](https://issues.apache.org/jira/browse/ZEPPELIN-3856).
 + **Submarine Running problem**
-  If you encounter a problem for Submarine runtime, please create a **ISSUE** on [hadoop-submarine-ecosystem](https://github.com/hadoopsubmarine/hadoop-submarine-ecosystem).
+  If you encounter a problem for Submarine runtime, please create a **ISSUE** on [apache-hadoop-submarine](https://github.com/apache/submarine/issues).
 + **YARN Submarine BUG**
   If you encounter a bug for Yarn Submarine, please create a **JIRA** ticket on [SUBMARINE](https://issues.apache.org/jira/browse/SUBMARINE).
 
@@ -399,9 +399,9 @@ The docker images file is stored in the `zeppelin/scripts/docker/submarine` dire
   + You can use the hadoop version of the hadoop submarine team git repository.
 
 2. **Submarine runtime environment**
-  you can use Submarine-installer https://github.com/hadoopsubmarine, Deploy Docker and network environments.
+  you can use Submarine-installer https://github.com/apache/submarine, Deploy Docker and network environments.
 
 ## More
 
-**Hadoop Submarine Project**: https://hadoop.apache.org/submarine
+**Hadoop Submarine Project**: https://submarine.apache.org/
 **Youtube Submarine Channel**: https://www.youtube.com/channel/UC4JBt8Y8VJ0BW0IM9YpdCyQ

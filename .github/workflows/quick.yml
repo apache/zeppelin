@@ -7,6 +7,9 @@ on:
       - branch-*
     types: [opened, synchronize]
 
+permissions:
+  contents: read
+
 jobs:
   license-check:
     runs-on: ubuntu-20.04
