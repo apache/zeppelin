@@ -23,13 +23,7 @@ import com.google.gson.reflect.TypeToken;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Properties;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.Locale;
+import java.util.*;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.interpreter.InterpreterContext;
@@ -39,6 +33,7 @@ import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResultMessage;
 import org.apache.zeppelin.interpreter.InterpreterUtils;
 import org.apache.zeppelin.interpreter.ResultMessages;
+import org.apache.zeppelin.interpreter.util.SqlSplitter;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 
@@ -59,7 +54,7 @@ public class LivySparkSQLInterpreter extends BaseLivyInterpreter {
   private boolean isSpark2 = false;
   private int maxResult = 1000;
   private boolean truncate = true;
-
+  private SqlSplitter sqlSplitter;
   public LivySparkSQLInterpreter(Properties property) {
     super(property);
     this.maxResult = Integer.parseInt(property.getProperty(ZEPPELIN_LIVY_SPARK_SQL_MAX_RESULT));
@@ -76,6 +71,7 @@ public class LivySparkSQLInterpreter extends BaseLivyInterpreter {
 
   @Override
   public void open() throws InterpreterException {
+    this.sqlSplitter = new SqlSplitter();
     this.sparkInterpreter = getInterpreterInTheSameSessionByClassName(LivySparkInterpreter.class);
     // As we don't know whether livyserver use spark2 or spark1, so we will detect SparkSession
     // to judge whether it is using spark2.
@@ -114,6 +110,40 @@ public class LivySparkSQLInterpreter extends BaseLivyInterpreter {
 
   @Override
   public InterpreterResult interpret(String line, InterpreterContext context) {
+    String appInfoHtml = "";
+    List<String> sqlQueries = sqlSplitter.splitSql(line);
+    for (String query:sqlQueries) {
+      try {
+        InterpreterResult res = interpret_(query, context);
+        for(InterpreterResultMessage msg: res.message()){
+          if (this.displayAppInfo && msg.getData().startsWith("<hr/>Spark Application Id: ")){
+            appInfoHtml = msg.toString();
+            continue;
+          }
+          context.out.write(msg.toString());
+          context.out.write("\n");
+          context.out.flush();
+        }
+      }catch (Exception e){
+        LOGGER.error(e.toString());
+        e.printStackTrace();
+      }
+    }
+
+    if(this.displayAppInfo){
+      try {
+        context.out.write(appInfoHtml);
+        context.out.flush();
+      }catch (Exception e){
+        LOGGER.error(e.getMessage());
+        e.printStackTrace();
+      }
+    }
+
+    return new InterpreterResult(InterpreterResult.Code.SUCCESS);
+  }
+
+  public InterpreterResult interpret_(String line, InterpreterContext context) {
     try {
       if (StringUtils.isEmpty(line)) {
         return new InterpreterResult(InterpreterResult.Code.SUCCESS, "");
@@ -141,6 +171,10 @@ public class LivySparkSQLInterpreter extends BaseLivyInterpreter {
       if (result.code() == InterpreterResult.Code.SUCCESS) {
         InterpreterResult result2 = new InterpreterResult(InterpreterResult.Code.SUCCESS);
         for (InterpreterResultMessage message : result.message()) {
+          // when sql content is "use xxx", message.getData() is "df: org.apache.spark.sql.DataFrame = []"
+          if (message.getType() == InterpreterResult.Type.TEXT && message.getData().equals("df: org.apache.spark.sql.DataFrame = []")){
+            continue;
+          }
           // convert Text type to Table type. We assume the text type must be the sql output. This
           // assumption is correct for now. Ideally livy should return table type. We may do it in
           // the future release of livy.
