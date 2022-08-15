@@ -109,12 +109,12 @@ public class LivySparkSQLInterpreter extends BaseLivyInterpreter {
   }
 
   @Override
-  public InterpreterResult interpret(String line, InterpreterContext context) {
+  public InterpreterResult interpret(String text, InterpreterContext context) {
     String appInfoHtml = "";
-    List<String> sqlQueries = sqlSplitter.splitSql(line);
+    List<String> sqlQueries = sqlSplitter.splitSql(text);
     for (String query:sqlQueries) {
       try {
-        InterpreterResult res = interpret_(query, context);
+        InterpreterResult res = interpretSql(query, context);
         for(InterpreterResultMessage msg: res.message()){
           if (this.displayAppInfo && msg.getData().startsWith("<hr/>Spark Application Id: ")){
             appInfoHtml = msg.toString();
@@ -143,7 +143,7 @@ public class LivySparkSQLInterpreter extends BaseLivyInterpreter {
     return new InterpreterResult(InterpreterResult.Code.SUCCESS);
   }
 
-  public InterpreterResult interpret_(String line, InterpreterContext context) {
+  public InterpreterResult interpretSql(String line, InterpreterContext context) {
     try {
       if (StringUtils.isEmpty(line)) {
         return new InterpreterResult(InterpreterResult.Code.SUCCESS, "");
@@ -171,10 +171,6 @@ public class LivySparkSQLInterpreter extends BaseLivyInterpreter {
       if (result.code() == InterpreterResult.Code.SUCCESS) {
         InterpreterResult result2 = new InterpreterResult(InterpreterResult.Code.SUCCESS);
         for (InterpreterResultMessage message : result.message()) {
-          // when sql content is "use xxx", message.getData() is "df: org.apache.spark.sql.DataFrame = []"
-          if (message.getType() == InterpreterResult.Type.TEXT && message.getData().equals("df: org.apache.spark.sql.DataFrame = []")){
-            continue;
-          }
           // convert Text type to Table type. We assume the text type must be the sql output. This
           // assumption is correct for now. Ideally livy should return table type. We may do it in
           // the future release of livy.
@@ -184,6 +180,11 @@ public class LivySparkSQLInterpreter extends BaseLivyInterpreter {
               rows = parseSQLJsonOutput(message.getData());
             } else {
               rows = parseSQLOutput(message.getData());
+            }
+            // ddl statement will result in empty table without header
+            if(rows.size() == 0){
+              result2.add(InterpreterResult.Type.TEXT, "success");
+              continue;
             }
             result2.add(InterpreterResult.Type.TABLE, StringUtils.join(rows, "\n"));
             if (rows.size() >= (maxResult + 1)) {
@@ -214,6 +215,9 @@ public class LivySparkSQLInterpreter extends BaseLivyInterpreter {
     List<String> rows = new ArrayList<>();
 
     String[] rowsOutput = output.split("(?<!\\\\)\\n");
+    if(rowsOutput.length <= 1){
+      return rows;
+    }
     String[] header = rowsOutput[1].split("\t");
     List<String> cells = new ArrayList<>(Arrays.asList(header));
     rows.add(StringUtils.join(cells, "\t"));
