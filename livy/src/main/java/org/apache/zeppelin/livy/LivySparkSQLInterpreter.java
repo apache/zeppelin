@@ -216,6 +216,7 @@ public class LivySparkSQLInterpreter extends BaseLivyInterpreter {
 
     String[] rowsOutput = output.split("(?<!\\\\)\\n");
     if(rowsOutput.length <= 1){
+      // message.getData() for DDL statement is only 1 line : "df: org.apache.spark.sql.DataFrame = []"
       return rows;
     }
     String[] header = rowsOutput[1].split("\t");
