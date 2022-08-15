@@ -230,13 +230,14 @@ public class LivySparkSQLInterpreter extends BaseLivyInterpreter {
     rows.add(StringUtils.join(cells, "\t"));
 
     for (int i = 2; i < rowsOutput.length; i++) {
-      Map<String, String> retMap = new Gson().fromJson(
-          rowsOutput[i], new TypeToken<HashMap<String, String>>() {
+      Map<String, Object> retMap = new Gson().fromJson(
+          rowsOutput[i], new TypeToken<HashMap<String, Object>>() {
           }.getType()
       );
       cells = new ArrayList<>();
       for (String s : header) {
         cells.add(retMap.getOrDefault(s, "null")
+            .toString()
             .replace("\n", "\\n")
             .replace("\t", "\\t"));
       }
