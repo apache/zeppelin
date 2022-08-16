@@ -151,28 +151,30 @@ The other more flexible option is to use the LdapRealm. It allows for mapping of
 [main]
 ldapRealm=org.apache.zeppelin.realm.LdapRealm
 
-ldapRealm.contextFactory.authenticationMechanism=simple
-ldapRealm.contextFactory.url=ldap://localhost:33389
-ldapRealm.userDnTemplate=uid={0},ou=people,dc=hadoop,dc=apache,dc=org
+ldapRealm.contextFactory.authenticationMechanism = simple
+ldapRealm.contextFactory.url = ldap://localhost:33389
+ldapRealm.userDnTemplate = uid={0},ou=people,dc=hadoop,dc=apache,dc=org
 # Ability to set ldap paging Size if needed default is 100
 ldapRealm.pagingSize = 200
-ldapRealm.authorizationEnabled=true
-ldapRealm.contextFactory.systemAuthenticationMechanism=simple
-ldapRealm.searchBase=dc=hadoop,dc=apache,dc=org
+ldapRealm.authorizationEnabled = true
+ldapRealm.contextFactory.authenticationMechanism = simple
+ldapRealm.searchBase = dc=hadoop,dc=apache,dc=org
 ldapRealm.userSearchBase = dc=hadoop,dc=apache,dc=org
 ldapRealm.groupSearchBase = ou=groups,dc=hadoop,dc=apache,dc=org
-ldapRealm.groupObjectClass=groupofnames
+ldapRealm.groupObjectClass = groupofnames
 # Allow userSearchAttribute to be customized
+# If userSearchAttributeName was configured, Zeppelin would use userObjectClass and userSearchAttributeName to search for an actual user DN
+# Otherwise, memberAttributeValueTemplate would be used to construct the user DN.
 ldapRealm.userSearchAttributeName = sAMAccountName
-ldapRealm.memberAttribute=member
+ldapRealm.memberAttribute = member
 # force usernames returned from ldap to lowercase useful for AD
 ldapRealm.userLowerCase = true
 # ability set searchScopes subtree (default), one, base
 ldapRealm.userSearchScope = subtree;
 ldapRealm.groupSearchScope = subtree;
-ldapRealm.memberAttributeValueTemplate=cn={0},ou=people,dc=hadoop,dc=apache,dc=org
-ldapRealm.contextFactory.systemUsername=uid=guest,ou=people,dc=hadoop,dc=apache,dc=org
-ldapRealm.contextFactory.systemPassword=S{ALIAS=ldcSystemPassword}
+ldapRealm.memberAttributeValueTemplate = cn={0},ou=people,dc=hadoop,dc=apache,dc=org
+ldapRealm.contextFactory.systemUsername = uid=guest,ou=people,dc=hadoop,dc=apache,dc=org
+ldapRealm.contextFactory.systemPassword = S{ALIAS=ldcSystemPassword}
 # enable support for nested groups using the LDAP_MATCHING_RULE_IN_CHAIN operator
 ldapRealm.groupSearchEnableMatchingRuleInChain = true
 # optional mapping from physical groups to logical application roles
@@ -180,7 +182,7 @@ ldapRealm.rolesByGroup = LDN_USERS: user_role, NYK_USERS: user_role, HKG_USERS: 
 # optional list of roles that are allowed to authenticate. Incase not present all groups are allowed to authenticate (login).
 # This changes nothing for url specific permissions that will continue to work as specified in [urls].
 ldapRealm.allowedRolesForAuthentication = admin_role,user_role
-ldapRealm.permissionsByRole= user_role = *:ToDoItemsJdo:*:*, *:ToDoItem:*:*; admin_role = *
+ldapRealm.permissionsByRole = user_role = *:ToDoItemsJdo:*:*, *:ToDoItem:*:*; admin_role = *
 securityManager.sessionManager = $sessionManager
 securityManager.realms = $ldapRealm
 ```
