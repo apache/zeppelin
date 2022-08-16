@@ -1,7 +1,7 @@
 ---
 layout: page
 title: "Notebook Storage for Apache Zeppelin"
-description: "Apache Zeppelin has a pluggable notebook storage mechanism controlled by zeppelin.notebook.storage configuration option with multiple implementations."
+description: Apache Zeppelin has a pluggable notebook storage mechanism controlled by zeppelin.notebook.storage configuration option with multiple implementations."
 group: setup/storage
 ---
 <!--
