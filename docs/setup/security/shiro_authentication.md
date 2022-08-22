@@ -157,7 +157,6 @@ ldapRealm.userDnTemplate = uid={0},ou=people,dc=hadoop,dc=apache,dc=org
 # Ability to set ldap paging Size if needed default is 100
 ldapRealm.pagingSize = 200
 ldapRealm.authorizationEnabled = true
-ldapRealm.contextFactory.authenticationMechanism = simple
 ldapRealm.searchBase = dc=hadoop,dc=apache,dc=org
 ldapRealm.userSearchBase = dc=hadoop,dc=apache,dc=org
 ldapRealm.groupSearchBase = ou=groups,dc=hadoop,dc=apache,dc=org
