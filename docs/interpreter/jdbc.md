@@ -829,6 +829,17 @@ Dependencies
 
 ### Apache Kyuubi (Incubating)
 
+Zeppelin connect to `Kyuubi` to run sql via `KyuubiHiveDriver`. There are 2 cases of connecting with Kyuubi:
+
+* Connect to Kyuubi without KERBEROS
+* Connect to Kyuubi with KERBEROS
+
+Each case requires different settings.
+
+##### Connect to Kyuubi without KERBEROS
+
+In this scenario, you need to make the following settings at least. Kyuubi engine run as user of `default.user`.
+
 Properties
 
 <table class="table-configuration">
@@ -858,7 +869,58 @@ Dependencies
     <td></td>
   </tr>
   <tr>
-    <td>org.apache.hive:hive-jdbc:2.3.4</td>
+    <td>org.apache.hive:hive-jdbc:3.1.2</td>
+    <td></td>
+  </tr>
+</table>
+
+
+##### Connect to Kyuubi with KERBEROS
+
+In this scenario, you need to make the following settings at least. Kyuubi engine run as user of client principal (`zeppelin.jdbc.principal`).
+
+Properties
+
+<table class="table-configuration">
+  <tr>
+    <th>Name</th>
+    <th>Value</th>
+  </tr>
+  <tr>
+    <td>default.driver</td>
+    <td>org.apache.kyuubi.jdbc.KyuubiHiveDriver</td>
+  </tr>
+  <tr>
+    <td>default.url</td>
+    <td>jdbc:hive2://kyuubi-server:10009/default;principal={kyuubi_principal}</td>
+  </tr>
+  <tr>
+    <td>zeppelin.jdbc.auth.type</td>
+    <td>KERBEROS</td>
+  </tr>
+  <tr>
+    <td>zeppelin.jdbc.keytab.location</td>
+    <td>keytab of client</td>
+  </tr>
+  <tr>
+    <td>zeppelin.jdbc.principal</td>
+    <td>principal of client</td>
+  </tr>
+</table>
+
+Dependencies
+
+<table class="table-configuration">
+  <tr>
+    <th>Artifact</th>
+    <th>Excludes</th>
+  </tr>
+  <tr>
+    <td>org.apache.kyuubi:kyuubi-hive-jdbc-shaded:1.5.2-incubating</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>org.apache.hive:hive-jdbc:3.1.2</td>
     <td></td>
   </tr>
 </table>

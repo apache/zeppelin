@@ -805,7 +805,10 @@ public class JDBCInterpreter extends KerberosInterpreter {
 
           // start hive monitor thread if it is hive jdbc
           String jdbcURL = getJDBCConfiguration(user).getPropertyMap(dbPrefix).getProperty(URL_KEY);
-          if (jdbcURL != null && jdbcURL.startsWith("jdbc:hive2://")) {
+          String driver =
+                  getJDBCConfiguration(user).getPropertyMap(dbPrefix).getProperty(DRIVER_KEY);
+          if (jdbcURL != null && jdbcURL.startsWith("jdbc:hive2://")
+                  && driver != null && driver.equals("org.apache.hive.jdbc.HiveDriver")) {
             HiveUtils.startHiveMonitorThread(statement, context,
                     Boolean.parseBoolean(getProperty("hive.log.display", "true")), this);
           }
