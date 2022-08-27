@@ -30,7 +30,6 @@ public class LivyProgrammaticInterpreter extends BaseLivyInterpreter {
             try {
                 this.livyVersion = getLivyVersion();
                 LOGGER.info("Use livy " + livyVersion);
-                System.out.println(livyVersion);
             } catch (APINotFoundException e) {
                 // assume it is livy 0.2.0 when livy doesn't support rest api of fetching version.
                 this.livyVersion = new LivyVersion("0.2.0");
