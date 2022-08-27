@@ -827,6 +827,35 @@ public class LivyInterpreterIT {
     }
   }
 
+  /*
+  @Test
+  public void testProgrammaticInterpreter() throws InterpreterException {
+    if (!checkPreCondition()) {
+      return;
+    }
+
+    LazyOpenInterpreter programmaticInterpreter = new LazyOpenInterpreter(
+            new LivyProgrammaticInterpreter(properties)
+    );
+
+    try {
+      AuthenticationInfo authInfo = new AuthenticationInfo("user1");
+      MyInterpreterOutputListener outputListener = new MyInterpreterOutputListener();
+      InterpreterOutput output = new InterpreterOutput(outputListener);
+      InterpreterContext context = InterpreterContext.builder()
+              .setNoteId("noteId")
+              .setParagraphId("paragraphId")
+              .setAuthenticationInfo(authInfo)
+              .setInterpreterOut(output)
+              .build();
+
+      programmaticInterpreter.open();
+    } finally {
+
+    }
+  }
+   */
+
   private boolean isSpark2(BaseLivyInterpreter interpreter, InterpreterContext context) {
     if (interpreter instanceof LivySparkRInterpreter) {
       InterpreterResult result = interpreter.interpret("sparkR.session()", context);
