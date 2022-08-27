@@ -173,9 +173,9 @@ public class IPythonInterpreter extends JupyterKernelInterpreter {
     Map<String, String> envs = super.setupKernelEnv();
     if (useBuiltinPy4j) {
       //TODO(zjffdu) don't do hard code on py4j here
-      File py4jDestFile = new File(kernelWorkDir, "py4j-src-0.10.7.zip");
+      File py4jDestFile = new File(kernelWorkDir, "py4j-src-0.10.9.7.zip");
       FileUtils.copyURLToFile(getClass().getClassLoader().getResource(
-              "python/py4j-src-0.10.7.zip"), py4jDestFile);
+              "python/py4j-src-0.10.9.7.zip"), py4jDestFile);
       if (additionalPythonPath != null) {
         // put the py4j at the end, because additionalPythonPath may already contain py4j.
         // e.g. IPySparkInterpreter
