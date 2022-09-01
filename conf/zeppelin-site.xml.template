@@ -776,6 +776,12 @@
 </property>
 
 <property>
+  <name>zeppelin.k8s.interpreter.customLabels</name>
+  <value></value>
+  <description>A comma-separated list of Key, Value pair of k8s pods labels ex) k1:v1, k2:v2 </description>
+</property>
+
+<property>
   <name>zeppelin.docker.container.image</name>
   <value>apache/zeppelin:0.8.0</value>
   <description>Docker image for interpreters</description>

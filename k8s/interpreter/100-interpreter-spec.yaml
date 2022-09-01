@@ -24,6 +24,9 @@ metadata:
     interpreterGroupId: {{zeppelin.k8s.interpreter.group.id}}
     interpreterSettingName: {{zeppelin.k8s.interpreter.setting.name}}
     user: {{ zeppelin.k8s.interpreter.user }}
+    {% for k, v in zeppelin.k8s.interpreter.customLabels.items() %}
+    {{k}} : {{v}}
+    {% endfor %}
   {% if zeppelin.k8s.server.uid is defined %}
   ownerReferences:
   - apiVersion: v1
