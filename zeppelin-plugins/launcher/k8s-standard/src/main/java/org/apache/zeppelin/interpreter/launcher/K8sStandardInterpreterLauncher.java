@@ -123,7 +123,8 @@ public class K8sStandardInterpreterLauncher extends InterpreterLauncher {
             getConnectTimeout(),
             getConnectPoolSize(),
             isUserImpersonateForSparkInterpreter(context),
-            zConf.getK8sTimeoutDuringPending());
+            zConf.getK8sTimeoutDuringPending(),
+            zConf.getK8sCustomLabels());
   }
 
   protected Map<String, String> buildEnvFromProperties(InterpreterLaunchContext context) {

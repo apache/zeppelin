@@ -71,7 +71,8 @@ public class K8sRemoteInterpreterProcessTest {
         10,
         10,
         false,
-        false);
+        false,
+        "");
 
 
     // following values are hardcoded in k8s/interpreter/100-interpreter.yaml.
@@ -106,7 +107,8 @@ public class K8sRemoteInterpreterProcessTest {
         10,
         10,
         false,
-        false);
+        false,
+        "");
 
     // when
     Properties p = intp.getTemplateBindings(null);
@@ -160,7 +162,8 @@ public class K8sRemoteInterpreterProcessTest {
         10,
         10,
         false,
-        false);
+        false,
+        "");
 
     // when
     Properties p = intp.getTemplateBindings("mytestUser");
@@ -212,7 +215,8 @@ public class K8sRemoteInterpreterProcessTest {
         10,
         10,
         true,
-        false);
+        false,
+        "");
 
     // when
     Properties p = intp.getTemplateBindings("mytestUser");
@@ -264,7 +268,8 @@ public class K8sRemoteInterpreterProcessTest {
         10,
         10,
         true,
-        false);
+        false,
+        "");
 
     // when
     Properties p = intp.getTemplateBindings("anonymous");
@@ -304,7 +309,8 @@ public class K8sRemoteInterpreterProcessTest {
         10,
         10,
         false,
-        false);
+        false,
+        "");
 
     // when non template url
     assertEquals("static.url",
@@ -349,7 +355,8 @@ public class K8sRemoteInterpreterProcessTest {
         10,
         10,
         false,
-        false);
+        false,
+        "");
 
     // when
     Properties p = intp.getTemplateBindings(null);
@@ -386,7 +393,8 @@ public class K8sRemoteInterpreterProcessTest {
         10,
         10,
         false,
-        false);
+        false,
+        "");
 
     // when
     Properties p = intp.getTemplateBindings(null);
@@ -423,7 +431,8 @@ public class K8sRemoteInterpreterProcessTest {
         10000,
         10,
         false,
-        true);
+        true,
+        "");
     ExecutorService service = Executors.newFixedThreadPool(1);
     service
         .submit(new PodStatusSimulator(server.getClient(), intp.getInterpreterNamespace(), intp.getPodName(), intp));
@@ -459,7 +468,8 @@ public class K8sRemoteInterpreterProcessTest {
         3000,
         10,
         false,
-        true);
+        true,
+        "");
     PodStatusSimulator podStatusSimulator = new PodStatusSimulator(server.getClient(), intp.getInterpreterNamespace(), intp.getPodName(), intp);
     podStatusSimulator.setSecondPhase("Failed");
     podStatusSimulator.setSuccessfulStart(false);
@@ -506,7 +516,8 @@ public class K8sRemoteInterpreterProcessTest {
         3000,
         10,
         false,
-        false);
+        false,
+        "");
     PodStatusSimulator podStatusSimulator = new PodStatusSimulator(server.getClient(), intp.getInterpreterNamespace(), intp.getPodName(), intp);
     podStatusSimulator.setFirstPhase("Pending");
     podStatusSimulator.setSecondPhase("Pending");

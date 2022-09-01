@@ -64,6 +64,8 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterManagedProcess
   private final String podName;
   private final String sparkImage;
 
+  private final String customLabels;
+
   // Pod Forward
   private final boolean portForward;
   private LocalPortForward localPortForward;
@@ -96,7 +98,8 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterManagedProcess
           int connectTimeout,
           int connectionPoolSize,
           boolean isUserImpersonatedForSpark,
-          boolean timeoutDuringPending
+          boolean timeoutDuringPending,
+          String customLabels
   ) {
     super(intpEventServerPort,
           intpEventServerHost,
@@ -119,6 +122,7 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterManagedProcess
     this.sparkImage = sparkImage;
     this.podName = K8sUtils.generateK8sName(interpreterGroupId, true);
     this.timeoutDuringPending = timeoutDuringPending;
+    this.customLabels = customLabels;
   }
 
   /**
@@ -145,6 +149,18 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterManagedProcess
     }
     else{
       return "default";
+    }
+  }
+
+  public Map<String, String> getCustomLables(){
+    Map<String, String> m = new HashMap<>();
+    if(customLabels.isEmpty()) return m;
+    else {
+      Arrays.stream(customLabels.split(",")).forEach(kv -> {
+        String[ ] splits = kv.split(":", 2);
+        m.put(splits[0], splits[1]);
+      });
+      return m;
     }
   }
 
@@ -302,6 +318,7 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterManagedProcess
     k8sProperties.put("zeppelin.k8s.interpreter.rpc.portRange", getInterpreterPortRange());
     k8sProperties.put("zeppelin.k8s.server.rpc.service", intpEventServerHost);
     k8sProperties.put("zeppelin.k8s.server.rpc.portRange", intpEventServerPort);
+    k8sProperties.put("zeppelin.k8s.interpreter.customLabels", getCustomLables());
 
     String serverNamespace = K8sUtils.getCurrentK8sNamespace();
     String interpreterNamespace = getInterpreterNamespace();

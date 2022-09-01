@@ -879,6 +879,10 @@ public class ZeppelinConfiguration {
     return getBoolean(ConfVars.ZEPPELIN_K8S_TIMEOUT_DURING_PENDING);
   }
 
+  public String getK8sCustomLabels(){
+    return getString(ConfVars.ZEPPELIN_K8S_INTERPRETER_CUSTOM_LABELS);
+  }
+
   public String getDockerContainerImage() {
     return getString(ConfVars.ZEPPELIN_DOCKER_CONTAINER_IMAGE);
   }
@@ -1085,11 +1089,9 @@ public class ZeppelinConfiguration {
     ZEPPELIN_K8S_TEMPLATE_DIR("zeppelin.k8s.template.dir", "k8s"),
     ZEPPELIN_K8S_SERVICE_NAME("zeppelin.k8s.service.name", "zeppelin-server"),
     ZEPPELIN_K8S_TIMEOUT_DURING_PENDING("zeppelin.k8s.timeout.during.pending", true),
-
+    ZEPPELIN_K8S_INTERPRETER_CUSTOM_LABELS("zeppelin.k8s.interpreter.customLabels", ""),
     ZEPPELIN_DOCKER_CONTAINER_IMAGE("zeppelin.docker.container.image", "apache/zeppelin:" + Util.getVersion()),
-
     ZEPPELIN_METRIC_ENABLE_PROMETHEUS("zeppelin.metric.enable.prometheus", false),
-
     ZEPPELIN_IMPERSONATE_SPARK_PROXY_USER("zeppelin.impersonate.spark.proxy.user", true),
     ZEPPELIN_NOTEBOOK_GIT_REMOTE_URL("zeppelin.notebook.git.remote.url", ""),
     ZEPPELIN_NOTEBOOK_GIT_REMOTE_USERNAME("zeppelin.notebook.git.remote.username", "token"),
