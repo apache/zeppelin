@@ -541,7 +541,41 @@ public class K8sRemoteInterpreterProcessTest {
     // Check that the Pod is deleted
     assertNull(server.getClient().pods().inNamespace(intp.getInterpreterNamespace())
         .withName(intp.getPodName()).get());
+  }
 
+  @Test
+  public void testK8sPodsLabels() throws InterruptedException {
+    // given
+    Properties properties = new Properties();
+    Map<String, String> envs = new HashMap<>();
+    envs.put("SERVICE_DOMAIN", "mydomain");
+    URL url = Thread.currentThread().getContextClassLoader()
+            .getResource("k8s-specs/interpreter-spec.yaml");
+    File file = new File(url.getPath());
+
+    K8sRemoteInterpreterProcess intp = new K8sRemoteInterpreterProcess(
+            server.getClient(),
+            "default",
+            file,
+            "interpreter-container:1.0",
+            "shared_process",
+            "spark",
+            "myspark",
+            properties,
+            envs,
+            "zeppelin.server.service",
+            12320,
+            false,
+            "spark-container:1.0",
+            3000,
+            10,
+            false,
+            false,
+            "k1:v1");
+
+    Map<String, String> m = new HashMap<>();
+    m.put("k1", "v1");
+    assertEquals(m, intp.getCustomLables());
   }
 
   class PodStatusSimulator implements Runnable {
