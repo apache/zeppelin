@@ -27,6 +27,7 @@ import org.apache.zeppelin.interpreter.jupyter.proto.ExecuteResponse;
 import org.apache.zeppelin.interpreter.jupyter.proto.ExecuteStatus;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterUtils;
 import org.apache.zeppelin.jupyter.JupyterKernelInterpreter;
+import org.apache.zeppelin.jupyter.PythonPackagePredicate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import py4j.GatewayServer;
@@ -67,10 +68,16 @@ public class IPythonInterpreter extends JupyterKernelInterpreter {
   }
 
   @Override
-  public List<String> getRequiredPackages() {
-    List<String> requiredPackages = super.getRequiredPackages();
-    requiredPackages.add("ipython");
-    requiredPackages.add("ipykernel");
+  public List<PythonPackagePredicate<String>> getRequiredPackagesPredicates() {
+    List<PythonPackagePredicate<String>> requiredPackages = super.getRequiredPackagesPredicates();
+    requiredPackages.add(
+        new PythonPackagePredicate<>("ipython",
+            packages -> packages.contains("ipython ") ||
+                        packages.contains("ipython=")));
+    requiredPackages.add(
+        new PythonPackagePredicate<>("ipykernel",
+            packages -> packages.contains("ipykernel ") ||
+                        packages.contains("ipykernel=")));
     return requiredPackages;
   }
 
