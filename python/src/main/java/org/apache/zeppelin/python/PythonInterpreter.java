@@ -191,7 +191,7 @@ public class PythonInterpreter extends Interpreter {
     copyResourceToPythonWorkDir("python/zeppelin_context.py", "zeppelin_context.py");
     copyResourceToPythonWorkDir("python/backend_zinline.py", "backend_zinline.py");
     copyResourceToPythonWorkDir("python/mpl_config.py", "mpl_config.py");
-    copyResourceToPythonWorkDir("python/py4j-src-0.10.7.zip", "py4j-src-0.10.7.zip");
+    copyResourceToPythonWorkDir("python/py4j-src-0.10.9.7.zip", "py4j-src-0.10.9.7.zip");
   }
 
   protected boolean useIPython() {
@@ -217,7 +217,7 @@ public class PythonInterpreter extends Interpreter {
     Map<String, String> env = EnvironmentUtils.getProcEnvironment();
     appendToPythonPath(env, pythonWorkDir.getAbsolutePath());
     if (useBuiltinPy4j) {
-      appendToPythonPath(env, pythonWorkDir.getAbsolutePath() + "/py4j-src-0.10.7.zip");
+      appendToPythonPath(env, pythonWorkDir.getAbsolutePath() + "/py4j-src-0.10.9.7.zip");
     }
     LOGGER.info("PYTHONPATH: {}", env.get("PYTHONPATH"));
     return env;
