@@ -546,6 +546,12 @@
           <artifactId>hadoop-common</artifactId>
           <version>${hadoop.version}</version>
           <scope>${hadoop.deps.scope}</scope>
+          <exclusions>
+            <exclusion>
+              <groupId>commons-net</groupId>
+              <artifactId>commons-net</artifactId>
+            </exclusion>
+          </exclusions>
         </dependency>
       </dependencies>
 
