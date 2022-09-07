@@ -90,7 +90,6 @@
     <module>zeppelin-web</module>
     <module>zeppelin-server</module>
     <module>zeppelin-jupyter</module>
-    <module>zeppelin-plugins</module>
     <module>zeppelin-distribution</module>
   </modules>
 
@@ -1920,6 +1919,19 @@
         <scala.version>${scala.2.11.version}</scala.version>
         <scala.binary.version>2.11</scala.binary.version>
       </properties>
+    </profile>
+
+    <profile>
+      <id>include-plugins</id>
+      <!-- It would be always activated if you don't add -DskipZeppelinPlugins     -->
+      <activation>
+        <property>
+          <name>!skipZeppelinPlugins</name>
+        </property>
+      </activation>
+      <modules>
+        <module>zeppelin-plugins</module>
+      </modules>
     </profile>
 
     <profile>

@@ -46,7 +46,9 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-zeppelin-
       - name: Install application
-        run: ./mvnw -B install -DskipTests -DskipRat -pl ${INTERPRETERS} -Phadoop2 -Pscala-2.11
+        run: |
+          ./mvnw -B install -DskipTests -DskipRat -DskipZeppelinPlugins -pl ${INTERPRETERS} -Phadoop2 -Pscala-2.11
+          ./mvnw clean package -pl zeppelin-plugins -amd -B
       - name: Run headless test
         run: xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" ./mvnw verify -DskipRat -pl zeppelin-web -Pscala-2.11 -Pweb-e2e -B
       - name: Print zeppelin logs
@@ -121,7 +123,7 @@ jobs:
           R -e "IRkernel::installspec()"
       - name: install environment
         run: |
-          ./mvnw clean install -DskipTests -DskipRat -pl ${INTERPRETERS} -Pspark-2.4 -Phadoop2 -Phelium-dev -Pexamples -Pintegration -Pspark-scala-2.11 -B
+          ./mvnw clean install -DskipTests -DskipRat -DskipZeppelinPlugins -pl ${INTERPRETERS} -Pspark-2.4 -Phadoop2 -Phelium-dev -Pexamples -Pintegration -Pspark-scala-2.11 -B
           ./mvnw clean package -pl zeppelin-plugins -amd -B
       - name: run tests
         run: |
