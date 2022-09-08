@@ -1923,7 +1923,7 @@
 
     <profile>
       <id>include-plugins</id>
-      <!-- It would be always activated if you don't add -DskipZeppelinPlugins     -->
+      <!-- It would be always activated if you don't add -DskipZeppelinPlugins -->
       <activation>
         <property>
           <name>!skipZeppelinPlugins</name>
