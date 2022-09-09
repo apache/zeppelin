@@ -101,6 +101,11 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     statement.execute(
         "DROP TABLE IF EXISTS test_table; " +
         "CREATE TABLE test_table(id varchar(255), name varchar(255));");
+    statement.execute(
+        "CREATE USER IF NOT EXISTS dbuser PASSWORD 'dbpassword';" +
+        "CREATE USER IF NOT EXISTS user1Id PASSWORD 'user1Pw';" +
+        "CREATE USER IF NOT EXISTS user2Id PASSWORD 'user2Pw';"
+    );
 
     PreparedStatement insertStatement = connection.prepareStatement(
             "insert into test_table(id, name) values ('a', 'a_name'),('b', 'b_name'),('c', ?);");
