@@ -44,6 +44,10 @@
     </dependency>
   </dependencies>
 
+  <properties>
+    <scala.version>${spark.2.11.version}</scala.version>
+  </properties>
+
   <build>
     <plugins>
       <plugin>
