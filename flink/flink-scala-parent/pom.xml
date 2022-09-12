@@ -751,6 +751,7 @@
             <arg>-unchecked</arg>
             <arg>-deprecation</arg>
             <arg>-feature</arg>
+            <arg>-nobootcp</arg>
           </args>
           <jvmArgs>
             <jvmArg>-Xms1024m</jvmArg>
