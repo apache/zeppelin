@@ -96,11 +96,28 @@ public class JupyterKernelInterpreter extends AbstractInterpreter {
     return this.kernel;
   }
 
-  public List<String> getRequiredPackages() {
-    List<String> requiredPackages = new ArrayList<>();
-    requiredPackages.add("jupyter-client");
-    requiredPackages.add("grpcio");
-    requiredPackages.add("protobuf");
+  public List<PythonPackagePredicate<String>> getRequiredPackagesPredicates() {
+    /**
+     * Example line, if the Python package is installed with pip:
+     *  grpcio==1.18.0
+     * Example line, if the Python package is installed with conda:
+     *  grpcio @ file:///home/conda/feedstock_root/build_artifacts/grpcio_1604365513151/work
+     */
+    List<PythonPackagePredicate<String>> requiredPackages = new ArrayList<>();
+    requiredPackages.add(
+        new PythonPackagePredicate<>("jupyter-client or jupyter_client",
+            packages -> packages.contains("jupyter-client ") ||
+                        packages.contains("jupyter-client=") ||
+                        packages.contains("jupyter_client ") ||
+                        packages.contains("jupyter_client=")));
+    requiredPackages.add(
+        new PythonPackagePredicate<>("grpcio",
+            packages -> packages.contains("grpcio ") ||
+                        packages.contains("grpcio=")));
+    requiredPackages.add(
+        new PythonPackagePredicate<>("protobuf",
+            packages -> packages.contains("protobuf ") ||
+                        packages.contains("protobuf=")));
     return requiredPackages;
   }
 
@@ -172,16 +189,9 @@ public class JupyterKernelInterpreter extends AbstractInterpreter {
       }
       try (FileInputStream in = new FileInputStream(stdoutFile)) {
         String freezeOutput = IOUtils.toString(in, StandardCharsets.UTF_8);
-        for (String packageName : getRequiredPackages()) {
-          /**
-           * Example line, if the Python package is installed with pip:
-           *  grpcio==1.18.0
-           * Example line, if the Python package is installed with conda:
-           *  grpcio @ file:///home/conda/feedstock_root/build_artifacts/grpcio_1604365513151/work
-           */
-          if (!freezeOutput.contains(packageName + "=") &&
-              !freezeOutput.contains(packageName + " ")) {
-            return packageName + " is not installed, installed packages:\n" + freezeOutput;
+        for (PythonPackagePredicate<String> packagePredicate : getRequiredPackagesPredicates()) {
+          if (!packagePredicate.test(freezeOutput)) {
+            return packagePredicate + " is not installed, installed packages:\n" + freezeOutput;
           }
         }
         LOGGER.info("Prerequisite for kernel {} is met", getKernelName());
