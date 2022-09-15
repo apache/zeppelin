@@ -96,7 +96,7 @@
 
   <properties>
     <!-- language versions -->
-    <java.version>1.8</java.version>
+    <java.version>11</java.version>
     <scala.2.10.version>2.10.7</scala.2.10.version>
     <scala.version>${scala.2.10.version}</scala.version>
     <scala.binary.version>2.10</scala.binary.version>
@@ -107,7 +107,7 @@
     <!-- frontend maven plugin related versions-->
     <node.version>v12.3.1</node.version>
     <npm.version>6.9.0</npm.version>
-    <plugin.frontend.version>1.6</plugin.frontend.version>
+    <plugin.frontend.version>1.12.1</plugin.frontend.version>
 
     <!-- common library versions -->
     <slf4j.version>1.7.30</slf4j.version>
@@ -1903,16 +1903,16 @@
   </build>
 
   <profiles>
-    <profile>
-      <id>scala-2.10</id>
-      <activation>
-        <activeByDefault>true</activeByDefault>
-      </activation>
-      <properties>
-        <scala.version>${scala.2.10.version}</scala.version>
-        <scala.binary.version>2.10</scala.binary.version>
-      </properties>
-    </profile>
+<!--    <profile>-->
+<!--      <id>scala-2.10</id>-->
+<!--      <activation>-->
+<!--        <activeByDefault>true</activeByDefault>-->
+<!--      </activation>-->
+<!--      <properties>-->
+<!--        <scala.version>${scala.2.10.version}</scala.version>-->
+<!--        <scala.binary.version>2.10</scala.binary.version>-->
+<!--      </properties>-->
+<!--    </profile>-->
 
     <profile>
       <id>scala-2.11</id>
