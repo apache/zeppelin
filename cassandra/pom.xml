@@ -31,14 +31,18 @@
     <description>Zeppelin cassandra support</description>
 
     <properties>
-        <cassandra.driver.version>4.8.0</cassandra.driver.version>
-        <snappy.version>1.1.7.3</snappy.version>
-        <lz4.version>1.7.0</lz4.version>
-        <scalate.version>1.7.1</scalate.version>
+        <cassandra.driver.version>4.14.1</cassandra.driver.version>
+        <snappy.version>1.1.8.4</snappy.version>
+        <lz4.version>1.8.0</lz4.version>
+        <scalate.version>1.9.8</scalate.version>
 
         <!-- test library versions -->
-        <jna.version>4.2.0</jna.version>
+        <jna.version>5.12.1</jna.version>
         <cassandra.unit.version>4.3.1.0</cassandra.unit.version>
+
+        <scala.version>2.12.16</scala.version>
+        <scala.binary.version>2.12</scala.binary.version>
+        <cassandra.scalatest.version>3.2.0-SNAP10</cassandra.scalatest.version>
 
         <interpreter.name>cassandra</interpreter.name>
     </properties>
@@ -122,7 +126,7 @@
         <dependency>
             <groupId>org.scalatest</groupId>
             <artifactId>scalatest_${scala.binary.version}</artifactId>
-            <version>${scalatest.version}</version>
+            <version>${cassandra.scalatest.version}</version>
             <scope>test</scope>
         </dependency>
 
@@ -158,6 +162,12 @@
             <artifactId>assertj-core</artifactId>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>org.scala-lang.modules</groupId>
+            <artifactId>scala-parser-combinators_${scala.binary.version}</artifactId>
+            <version>1.1.2</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -174,30 +184,51 @@
         <plugins>
             <!-- Plugin to compile Scala code -->
             <plugin>
-                <groupId>org.scala-tools</groupId>
-                <artifactId>maven-scala-plugin</artifactId>
+                <groupId>net.alchim31.maven</groupId>
+                <artifactId>scala-maven-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>compile</id>
+                        <id>eclipse-add-source</id>
                         <goals>
-                            <goal>compile</goal>
+                            <goal>add-source</goal>
                         </goals>
-                        <phase>compile</phase>
                     </execution>
                     <execution>
-                        <id>test-compile</id>
-                        <goals>
-                            <goal>testCompile</goal>
-                        </goals>
-                        <phase>test-compile</phase>
-                    </execution>
-                    <execution>
+                        <id>scala-compile-first</id>
                         <phase>process-resources</phase>
                         <goals>
                             <goal>compile</goal>
                         </goals>
                     </execution>
+                    <execution>
+                        <id>scala-test-compile-first</id>
+                        <phase>process-test-resources</phase>
+                        <goals>
+                            <goal>testCompile</goal>
+                        </goals>
+                    </execution>
                 </executions>
+                <configuration>
+                    <args>
+                        <arg>-unchecked</arg>
+                        <arg>-deprecation</arg>
+                        <arg>-feature</arg>
+                        <arg>-nobootcp</arg>
+<!--                        <arg>-target:jvm-1.8</arg>-->
+                    </args>
+                    <jvmArgs>
+                        <jvmArg>-Xms1024m</jvmArg>
+                        <jvmArg>-Xmx1024m</jvmArg>
+                        <jvmArg>-XX:MaxMetaspaceSize=${MaxMetaspace}</jvmArg>
+                    </jvmArgs>
+                    <javacArgs>
+                        <javacArg>-source</javacArg>
+                        <javacArg>${java.version}</javacArg>
+                        <javacArg>-target</javacArg>
+                        <javacArg>${java.version}</javacArg>
+                        <javacArg>-Xlint:all,-serial,-path,-options</javacArg>
+                    </javacArgs>
+                </configuration>
             </plugin>
 
             <plugin>
@@ -209,24 +240,6 @@
                         <goals>
                             <goal>test</goal>
                         </goals>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <plugin>
-                <groupId>org.scalatra.scalate</groupId>
-                <artifactId>maven-scalate-plugin_${scala.binary.version}</artifactId>
-                <executions>
-                    <execution>
-                        <id>compile</id>
-                        <phase>process-classes</phase>
-                        <goals>
-                            <goal>precompile</goal>
-                        </goals>
-                        <configuration>
-                            <resourcesSourceDirectory>${basedir}/src/main/resources/scalate</resourcesSourceDirectory>
-                            <contextClass>org.fusesource.scalate.DefaultRenderContext</contextClass>
-                        </configuration>
                     </execution>
                 </executions>
             </plugin>
