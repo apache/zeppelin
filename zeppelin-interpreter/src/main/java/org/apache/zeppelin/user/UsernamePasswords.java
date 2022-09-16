@@ -17,35 +17,45 @@
 
 package org.apache.zeppelin.user;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.HashMap;
 
 /**
  * User Credentials POJO
+ *
+ * Key: Credential entity
+ *
+ * Value: credentials
  */
-public class UserCredentials {
-  private Map<String, UsernamePassword> userCredentials = new ConcurrentHashMap<>();
+public class UsernamePasswords extends HashMap<String, UsernamePassword> {
+
+  /**
+   *
+   */
+  private static final long serialVersionUID = 1L;
 
   public UsernamePassword getUsernamePassword(String entity) {
-    return userCredentials.get(entity);
+    return get(entity);
   }
 
-  public void putUsernamePassword(String entity, UsernamePassword up) {
-    userCredentials.put(entity, up);
+  /**
+   * Wrapper method for {@link HashMap#remove(Object)}
+   */
+  public UsernamePassword removeUsernamePassword(String entity) {
+    return remove(entity);
   }
 
-  public void removeUsernamePassword(String entity) {
-    userCredentials.remove(entity);
+  /**
+   * Wrapper method for {@link HashMap#put(Object, Object)}
+   */
+  public UsernamePassword putUsernamePassword(String entity, UsernamePassword up) {
+    return put(entity, up);
   }
 
+  /**
+   * Wrapper method for {@link HashMap#containsKey(Object)}
+   */
   public boolean existUsernamePassword(String entity) {
-    return userCredentials.containsKey(entity);
+    return containsKey(entity);
   }
 
-  @Override
-  public String toString() {
-    return "UserCredentials{" +
-        "userCredentials=" + userCredentials +
-        '}';
-  }
 }

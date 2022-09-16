@@ -17,7 +17,6 @@
 
 package org.apache.zeppelin.notebook;
 
-import java.io.IOException;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Date;
@@ -55,8 +54,8 @@ import org.apache.zeppelin.resource.ResourcePool;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.JobWithProgressPoller;
 import org.apache.zeppelin.user.AuthenticationInfo;
-import org.apache.zeppelin.user.Credentials;
-import org.apache.zeppelin.user.UserCredentials;
+import org.apache.zeppelin.user.CredentialsMgr;
+import org.apache.zeppelin.user.UsernamePasswords;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -465,8 +464,8 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
 
         InterpreterResult ret = null;
         if (shouldInjectCredentials) {
-          UserCredentials creds = context.getAuthenticationInfo().getUserCredentials();
-          CredentialInjector credinjector = new CredentialInjector(creds);
+          UsernamePasswords usernamePassword = context.getAuthenticationInfo().getUsernamePasswords();
+          CredentialInjector credinjector = new CredentialInjector(usernamePassword);
           String code = credinjector.replaceCredentials(script);
           ret = interpreter.interpret(code, context);
           ret = credinjector.hidePasswords(ret);
@@ -526,16 +525,10 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
       replName = interpreterSetting.getName();
     }
 
-    Credentials credentials = note.getCredentials();
+    CredentialsMgr credentials = note.getCredentials();
     if (subject != null) {
-      UserCredentials userCredentials;
-      try {
-        userCredentials = credentials.getUserCredentials(subject.getUser());
-      } catch (IOException e) {
-        LOGGER.warn("Unable to get Usercredentials. Working with empty UserCredentials", e);
-        userCredentials = new UserCredentials();
-      }
-      subject.setUserCredentials(userCredentials);
+      UsernamePasswords usernamePasswords = credentials.getAllUsernamePasswords(subject.getUsersAndRoles());
+      subject.setUsernamePasswords(usernamePasswords);
     }
 
     return InterpreterContext.builder()

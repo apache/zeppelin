@@ -75,8 +75,8 @@ import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.jdbc.security.JDBCSecurityImpl;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
-import org.apache.zeppelin.user.UserCredentials;
 import org.apache.zeppelin.user.UsernamePassword;
+import org.apache.zeppelin.user.UsernamePasswords;
 
 /**
  * JDBC interpreter for Zeppelin. This interpreter can also be used for accessing HAWQ,
@@ -259,6 +259,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
     this.sqlSplitter = new SqlSplitter();
   }
 
+  @Override
   protected boolean isKerboseEnabled() {
     if (!isEmpty(getProperty("zeppelin.jdbc.auth.type"))) {
       UserGroupInformation.AuthenticationMethod authType = JDBCSecurityImpl.getAuthType(properties);
@@ -401,9 +402,9 @@ public class JDBCInterpreter extends KerberosInterpreter {
 
   private UsernamePassword getUsernamePassword(InterpreterContext interpreterContext,
                                                String entity) {
-    UserCredentials uc = interpreterContext.getAuthenticationInfo().getUserCredentials();
-    if (uc != null) {
-      return uc.getUsernamePassword(entity);
+    UsernamePasswords ups = interpreterContext.getAuthenticationInfo().getUsernamePasswords();
+    if (ups != null) {
+      return ups.getUsernamePassword(entity);
     }
     return null;
   }
@@ -734,6 +735,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
     return updatedCount < 0 && columnCount <= 0 ? true : false;
   }
 
+  @Override
   public InterpreterResult executePrecode(InterpreterContext interpreterContext)
           throws InterpreterException {
     InterpreterResult interpreterResult = null;
