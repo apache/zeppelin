@@ -29,7 +29,7 @@ import org.apache.zeppelin.interpreter.ManagedInterpreterGroup;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.user.AuthenticationInfo;
-import org.apache.zeppelin.user.Credentials;
+import org.apache.zeppelin.user.CredentialsMgr;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -55,7 +55,9 @@ class NoteTest {
 
   NotebookRepo repo;
   ParagraphJobListener paragraphJobListener;
-  Credentials credentials;
+
+  CredentialsMgr credentials;
+
   Interpreter interpreter;
   ManagedInterpreterGroup interpreterGroup;
   InterpreterSetting interpreterSetting;
@@ -72,7 +74,7 @@ class NoteTest {
   public void setUp() {
     repo = mock(NotebookRepo.class);
     paragraphJobListener = mock(ParagraphJobListener.class);
-    credentials = mock(Credentials.class);
+    credentials = mock(CredentialsMgr.class);
     interpreter = mock(Interpreter.class);
     interpreterGroup = mock(ManagedInterpreterGroup.class);
     interpreterSetting = mock(InterpreterSetting.class);

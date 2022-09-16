@@ -41,6 +41,7 @@ import org.junit.jupiter.api.TestMethodOrder;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -329,7 +330,7 @@ class InterpreterRestApiTest extends AbstractTestRestApi {
         note -> {
           Paragraph p = note.getParagraph(pId);
           assertEquals(p.getReturn().message().get(0).getData(), getSimulatedMarkdownResult("markdown"));
-          return note.getBindedInterpreterSettings(new ArrayList<>());
+          return note.getBindedInterpreterSettings(new HashSet<>());
         });
 
       // when: restart interpreter
@@ -423,7 +424,7 @@ class InterpreterRestApiTest extends AbstractTestRestApi {
         note -> {
           Paragraph p = note.getParagraph(pId);
           assertEquals(p.getReturn().message().get(0).getData(), getSimulatedMarkdownResult("markdown"));
-          return note.getBindedInterpreterSettings(new ArrayList<>());
+          return note.getBindedInterpreterSettings(new HashSet<>());
         });
 
       // when: get md interpreter
