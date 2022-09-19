@@ -196,7 +196,6 @@
     <plugin.shade.version>3.2.2</plugin.shade.version>
     <plugin.source.version>3.2.1</plugin.source.version>
     <plugin.surefire.version>2.22.2</plugin.surefire.version>
-    <plugin.xml.version>1.0.2</plugin.xml.version>
 
     <testcontainers.version>1.15.1</testcontainers.version>
 
@@ -1649,33 +1648,6 @@
         </plugin>
 
         <plugin>
-          <groupId>org.codehaus.mojo</groupId>
-          <artifactId>xml-maven-plugin</artifactId>
-          <version>${plugin.xml.version}</version>
-          <executions>
-            <execution>
-              <phase>verify</phase>
-              <goals>
-                <goal>validate</goal>
-              </goals>
-            </execution>
-          </executions>
-          <configuration>
-            <validationSets>
-              <validationSet>
-                <dir>${project.basedir}</dir>
-                <includes>
-                  <include>
-                    pom.xml
-                  </include>
-                </includes>
-                <systemId>_tools/maven-4.0.0.xsd</systemId>
-              </validationSet>
-            </validationSets>
-          </configuration>
-        </plugin>
-
-        <plugin>
           <groupId>com.googlecode.maven-download-plugin</groupId>
           <artifactId>download-maven-plugin</artifactId>
           <version>${plugin.download.version}</version>
@@ -2105,7 +2077,6 @@
               <exclude>**/local-repo/**</exclude>
               <exclude>**/null/**</exclude>
               <exclude>**/notebook/**</exclude>
-              <exclude>_tools/maven-4.0.0.xsd</exclude>
               <exclude>**/README.md</exclude>
               <exclude>DEPENDENCIES</exclude>
               <exclude>DEPLOY.md</exclude>
