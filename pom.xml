@@ -52,6 +52,7 @@
   <inceptionYear>2013</inceptionYear>
 
   <modules>
+    <module>build-tools</module>
     <module>zeppelin-interpreter-parent</module>
     <module>zeppelin-interpreter</module>
     <module>zeppelin-interpreter-shaded</module>
@@ -1426,45 +1427,6 @@
 
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-checkstyle-plugin</artifactId>
-        <version>${plugin.checkstyle.version}</version>
-        <configuration>
-          <skip>true</skip>
-          <failOnViolation>false</failOnViolation>
-          <includeTestSourceDirectory>true</includeTestSourceDirectory>
-          <sourceDirectories>${basedir}/src/main/java,${basedir}/src/main/scala</sourceDirectories>
-          <testSourceDirectories>${basedir}/src/test/java</testSourceDirectories>
-          <configLocation>_tools/checkstyle.xml</configLocation>
-          <outputFile>${basedir}/target/checkstyle-output.xml</outputFile>
-          <inputEncoding>${project.build.sourceEncoding}</inputEncoding>
-          <outputEncoding>${project.reporting.outputEncoding}</outputEncoding>
-        </configuration>
-        <executions>
-          <execution>
-            <id>checkstyle-fail-build</id>
-            <goals>
-              <goal>check</goal>
-            </goals>
-            <configuration>
-              <failOnViolation>true</failOnViolation>
-              <excludes>org/apache/zeppelin/interpreter/thrift/*,org/apache/zeppelin/python/proto/*</excludes>
-            </configuration>
-          </execution>
-          <execution>
-            <id>checkstyle-gen-html-report</id>
-            <phase>install</phase>
-            <goals>
-              <goal>checkstyle-aggregate</goal>
-            </goals>
-            <configuration>
-              <excludes>org/apache/zeppelin/interpreter/thrift/*,org/apache/zeppelin/python/proto/*</excludes>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
         <version>${plugin.jar.version}</version>
         <configuration>
@@ -1598,7 +1560,6 @@
               <artifactId>maven-shade-plugin</artifactId>
               <version>${plugin.shade.version}</version>
           </plugin>
-
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-install-plugin</artifactId>
@@ -1609,6 +1570,34 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-checkstyle-plugin</artifactId>
           <version>${plugin.checkstyle.version}</version>
+          <configuration>
+            <skip>true</skip>
+            <failOnViolation>false</failOnViolation>
+            <includeTestSourceDirectory>true</includeTestSourceDirectory>
+            <sourceDirectories>${basedir}/src/main/java,${basedir}/src/main/scala</sourceDirectories>
+            <testSourceDirectories>${basedir}/src/test/java</testSourceDirectories>
+            <!-- use the tools module -->
+            <configLocation>zeppelin/checkstyle.xml</configLocation>
+          </configuration>
+          <executions>
+            <execution>
+              <id>checkstyle-fail-build</id>
+              <goals>
+                <goal>check</goal>
+              </goals>
+              <configuration>
+                <failOnViolation>true</failOnViolation>
+                <excludes>org/apache/zeppelin/interpreter/thrift/*,org/apache/zeppelin/python/proto/*</excludes>
+              </configuration>
+            </execution>
+          </executions>
+          <dependencies>
+            <dependency>
+              <groupId>org.apache.zeppelin</groupId>
+              <artifactId>build-tools</artifactId>
+              <version>${project.version}</version>
+            </dependency>
+          </dependencies>
         </plugin>
 
         <plugin>
@@ -2118,7 +2107,6 @@
               <exclude>**/local-repo/**</exclude>
               <exclude>**/null/**</exclude>
               <exclude>**/notebook/**</exclude>
-              <exclude>_tools/site/css/*</exclude>
               <exclude>_tools/maven-4.0.0.xsd</exclude>
               <exclude>**/README.md</exclude>
               <exclude>DEPENDENCIES</exclude>
@@ -2251,4 +2239,26 @@
 
   </profiles>
 
+  <reporting>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+        <reportSets>
+          <reportSet>
+            <id>aggregate</id>
+            <inherited>false</inherited><!-- don't run aggregate in child modules -->
+            <reports>
+              <report>checkstyle-aggregate</report>
+            </reports>
+            <configuration>
+                <!-- use the tool module -->
+              <configLocation>zeppelin/checkstyle.xml</configLocation>
+              <excludes>org/apache/zeppelin/interpreter/thrift/*,org/apache/zeppelin/python/proto/*</excludes>
+            </configuration>
+          </reportSet>
+        </reportSets>
+      </plugin>
+    </plugins>
+  </reporting>
 </project>

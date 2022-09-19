@@ -54,9 +54,6 @@
             <plugin>
                 <artifactId>maven-shade-plugin</artifactId>
             </plugin>
-            <plugin>
-                <artifactId>maven-checkstyle-plugin</artifactId>
-            </plugin>
         </plugins>
     </build>
 
