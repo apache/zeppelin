@@ -1571,8 +1571,6 @@
           <artifactId>maven-checkstyle-plugin</artifactId>
           <version>${plugin.checkstyle.version}</version>
           <configuration>
-            <skip>true</skip>
-            <failOnViolation>false</failOnViolation>
             <includeTestSourceDirectory>true</includeTestSourceDirectory>
             <sourceDirectories>${basedir}/src/main/java,${basedir}/src/main/scala</sourceDirectories>
             <testSourceDirectories>${basedir}/src/test/java</testSourceDirectories>
