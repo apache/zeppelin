@@ -722,16 +722,16 @@ See [User Impersonation in interpreter](../usage/interpreter/user_impersonation.
     <th>Value</th>
   </tr>
   <tr>
-    <td>hive.driver</td>
+    <td>default.driver</td>
     <td>org.apache.hive.jdbc.HiveDriver</td>
   </tr>
   <tr>
-    <td>hive.url</td>
+    <td>default.url</td>
     <td>jdbc:hive2://hive-server-host:2181/;serviceDiscoveryMode=zooKeeper;zooKeeperNamespace=hiveserver2</td>
   </tr>
   <tr>
-    <td>hive.proxy.user.property</td>
-    <td>hive.server2.proxy.user</td>
+    <td>default.proxy.user.property</td>
+    <td>default.server2.proxy.user</td>
   </tr>
   <tr>
     <td>zeppelin.jdbc.auth.type</td>
