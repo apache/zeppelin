@@ -27,6 +27,7 @@ import java.util.Map;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.recovery.RecoveryStorage;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterUtils;
+import org.pf4j.Extension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,13 +37,15 @@ import io.fabric8.kubernetes.client.KubernetesClient;
 /**
  * Interpreter Launcher which use shell script to launch the interpreter process.
  */
+@Extension
 public class K8sStandardInterpreterLauncher extends InterpreterLauncher {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(K8sStandardInterpreterLauncher.class);
-  private final KubernetesClient client;
+  private KubernetesClient client;
 
-  public K8sStandardInterpreterLauncher(ZeppelinConfiguration zConf, RecoveryStorage recoveryStorage) {
-    super(zConf, recoveryStorage);
+  @Override
+  public void init(ZeppelinConfiguration zConf, RecoveryStorage recoveryStorage) {
+    super.init(zConf, recoveryStorage);
     client = new DefaultKubernetesClient();
   }
 

@@ -20,7 +20,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.notebook.Notebook;
-import org.apache.zeppelin.plugin.PluginManager;
 import org.apache.zeppelin.rest.AbstractTestRestApi;
 import org.apache.zeppelin.server.ZeppelinServer;
 import org.apache.zeppelin.utils.TestUtils;
@@ -176,7 +175,6 @@ public class ZeppelinServerMock {
       if (deleteConfDir) {
         FileUtils.deleteDirectory(confDir);
       }
-      PluginManager.reset();
       ZeppelinConfiguration.reset();
     }
   }

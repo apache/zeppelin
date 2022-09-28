@@ -17,21 +17,34 @@
 
 package org.apache.zeppelin.plugin;
 
-import org.apache.zeppelin.notebook.repo.GitNotebookRepo;
-import org.apache.zeppelin.notebook.repo.NotebookRepo;
-import org.junit.Test;
+import org.pf4j.Plugin;
+import org.pf4j.PluginWrapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
+public class BasePlugin extends Plugin {
 
-import static org.junit.Assert.assertTrue;
+  private static final Logger LOGGER = LoggerFactory.getLogger(BasePlugin.class);
 
+  final String name;
 
-public class PluginManagerTest {
+  /**
+   *
+   * @param wrapper
+   * @param name - name of the plugin
+   */
+  public BasePlugin(PluginWrapper wrapper, String name) {
+    super(wrapper);
+    this.name = name;
+  }
 
-  @Test
-  public void testLoadGitNotebookRepo() throws IOException {
-    NotebookRepo notebookRepo = PluginManager.get()
-            .loadNotebookRepo("org.apache.zeppelin.notebook.repo.GitNotebookRepo");
-    assertTrue(notebookRepo instanceof GitNotebookRepo);
+  @Override
+  public void start() {
+    LOGGER.info("{}  started", name);
+  }
+
+  @Override
+  public void stop() {
+    LOGGER.info("{} stopped", name);
   }
 }

@@ -17,20 +17,22 @@
 package org.apache.zeppelin.notebook.repo.mock;
 
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
-import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
+import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.notebook.repo.VFSNotebookRepo;
+import org.pf4j.Extension;
 
 import java.io.IOException;
 
+@Extension(points = NotebookRepo.class)
 public class VFSNotebookRepoMock extends VFSNotebookRepo {
 
   public VFSNotebookRepoMock() {
-    String secNotebookDir = ZeppelinConfiguration.create().getNotebookDir() + "_secondary";
-    System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_DIR.getVarName(), secNotebookDir);
   }
 
+  @Override
   public void init(ZeppelinConfiguration conf) throws IOException {
-    super.init(conf);
+    this.conf = conf;
+    setNotebookDirectory(conf.getNotebookDir() + "_secondary");
   }
 
 }

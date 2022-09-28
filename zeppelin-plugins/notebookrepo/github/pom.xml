@@ -35,14 +35,6 @@
 
     <properties>
         <plugin.name>NotebookRepo/GitHubNotebookRepo</plugin.name>
+        <plugin.class>org.apache.zeppelin.notebook.repo.GithubPlugin</plugin.class>
     </properties>
-
-    <build>
-        <plugins>
-            <plugin>
-                <artifactId>maven-dependency-plugin</artifactId>
-            </plugin>
-        </plugins>
-    </build>
-
 </project>

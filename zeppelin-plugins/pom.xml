@@ -34,6 +34,9 @@
     <properties>
         <!-- no need to include hadoop jar, because it's already included in zeppelin-zengine -->
         <hadoop.deps.scope>provided</hadoop.deps.scope>
+        <!-- Override below properties in each plugin's pom.xml -->
+        <plugin.name />
+        <plugin.class />
     </properties>
 
     <modules>
@@ -58,17 +61,6 @@
             <artifactId>zeppelin-zengine</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.fasterxml.jackson.core</groupId>
-                    <artifactId>jackson-core</artifactId>
-                </exclusion>
-                <!-- jcl-over-slf4j is provided by zeppelin-interprerter -->
-                <exclusion>
-                    <groupId>commons-logging</groupId>
-                    <artifactId>commons-logging</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <!-- Test libraries -->
@@ -86,70 +78,72 @@
     </dependencies>
 
     <build>
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                    <artifactId>maven-dependency-plugin</artifactId>
-                    <executions>
-                        <execution>
-                            <id>copy-plugin-dependencies</id>
-                            <phase>package</phase>
-                            <goals>
-                                <goal>copy-dependencies</goal>
-                            </goals>
-                            <configuration>
-                                <outputDirectory>${project.basedir}/../../../plugins/${plugin.name}</outputDirectory>
-                                <overWriteReleases>false</overWriteReleases>
-                                <overWriteSnapshots>false</overWriteSnapshots>
-                                <overWriteIfNewer>true</overWriteIfNewer>
-                                <includeScope>runtime</includeScope>
-                            </configuration>
-                        </execution>
-                        <execution>
-                            <id>copy-plugin-artifact</id>
-                            <phase>package</phase>
-                            <goals>
-                                <goal>copy</goal>
-                            </goals>
-                            <configuration>
-                                <outputDirectory>${project.basedir}/../../../plugins/${plugin.name}</outputDirectory>
-                                <overWriteReleases>false</overWriteReleases>
-                                <overWriteSnapshots>false</overWriteSnapshots>
-                                <overWriteIfNewer>true</overWriteIfNewer>
-                                <artifactItems>
-                                    <artifactItem>
-                                        <groupId>${project.groupId}</groupId>
-                                        <artifactId>${project.artifactId}</artifactId>
-                                        <version>${project.version}</version>
-                                        <type>${project.packaging}</type>
-                                    </artifactItem>
-                                </artifactItems>
-                            </configuration>
-                        </execution>
-                    </executions>
-                </plugin>
-                <plugin>
-                    <artifactId>maven-clean-plugin</artifactId>
-                    <executions>
-                        <execution>
-                            <id>delete-plugin-dir</id>
-                            <goals>
-                                <goal>clean</goal>
-                            </goals>
-                            <phase>clean</phase>
-                            <configuration>
-                                <filesets>
-                                    <fileset>
-                                        <directory>${project.basedir}/../../../plugins/${plugin.name}</directory>
-                                        <followSymlinks>true</followSymlinks>
-                                        <useDefaultExcludes>false</useDefaultExcludes>
-                                    </fileset>
-                                </filesets>
-                            </configuration>
-                        </execution>
-                    </executions>
-                </plugin>
-            </plugins>
-        </pluginManagement>
+        <plugins>
+              <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <executions>
+                  <execution>
+                    <id>enforce</id>
+                    <phase>none</phase>
+                  </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <configuration>
+                    <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
+                    <finalName>${project.artifactId}-plugin</finalName>
+                    <outputDirectory>${project.basedir}/../../../plugins/</outputDirectory>
+                    <appendAssemblyId>false</appendAssemblyId>
+                    <attach>false</attach>
+                    <archive>
+                        <manifest>
+                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                            <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+                        </manifest>
+                        <manifestEntries>
+                            <Plugin-Id>${plugin.name}</Plugin-Id>
+                            <Plugin-Version>${project.version}</Plugin-Version>
+                            <Plugin-Class>${plugin.class}</Plugin-Class>
+                        </manifestEntries>
+                    </archive>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>make-assembly</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-clean-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>delete-plugin-dir</id>
+                        <goals>
+                            <goal>clean</goal>
+                        </goals>
+                        <inherited>false</inherited>
+                        <phase>clean</phase>
+                        <configuration>
+                            <filesets>
+                                <fileset>
+                                    <directory>${project.basedir}/../../../plugins</directory>
+                                    <followSymlinks>true</followSymlinks>
+                                    <useDefaultExcludes>false</useDefaultExcludes>
+                                </fileset>
+                            </filesets>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
     </build>
 </project>

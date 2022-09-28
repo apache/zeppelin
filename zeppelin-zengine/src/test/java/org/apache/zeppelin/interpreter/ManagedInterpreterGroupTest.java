@@ -19,6 +19,7 @@ package org.apache.zeppelin.interpreter;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.eclipse.aether.RepositoryException;
 
 import java.io.IOException;
@@ -44,12 +45,14 @@ public class ManagedInterpreterGroupTest {
     List<InterpreterInfo> interpreterInfos = new ArrayList<>();
     interpreterInfos.add(interpreterInfo1);
     interpreterInfos.add(interpreterInfo2);
+    ZeppelinConfiguration zconf = ZeppelinConfiguration.create();
     interpreterSetting = new InterpreterSetting.Builder()
         .setId("id")
         .setName("test")
         .setGroup("test")
         .setInterpreterInfos(interpreterInfos)
         .setOption(interpreterOption)
+        .setConf(zconf)
         .create();
   }
 

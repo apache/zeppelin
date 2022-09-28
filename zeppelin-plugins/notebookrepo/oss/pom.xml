@@ -36,6 +36,7 @@
     <properties>
         <oss.version>3.8.0</oss.version>
         <plugin.name>NotebookRepo/OSSNotebookRepo</plugin.name>
+        <plugin.class>org.apache.zeppelin.notebook.repo.AliyunPlugin</plugin.class>
     </properties>
 
     <dependencies>
@@ -45,12 +46,4 @@
             <version>${oss.version}</version>
         </dependency>
     </dependencies>
-
-    <build>
-        <plugins>
-            <plugin>
-                <artifactId>maven-dependency-plugin</artifactId>
-            </plugin>
-        </plugins>
-    </build>
 </project>

@@ -36,6 +36,7 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.user.AuthenticationInfo;
+import org.pf4j.Extension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,6 +66,7 @@ import com.amazonaws.services.s3.model.S3ObjectSummary;
 /**
  * Backend for storing Notebooks on S3
  */
+@Extension
 public class S3NotebookRepo implements NotebookRepo {
   private static final Logger LOGGER = LoggerFactory.getLogger(S3NotebookRepo.class);
 
@@ -94,6 +96,7 @@ public class S3NotebookRepo implements NotebookRepo {
 
   }
 
+  @Override
   public void init(ZeppelinConfiguration conf) throws IOException {
     this.conf = conf;
     bucketName = conf.getS3BucketName();
@@ -114,7 +117,7 @@ public class S3NotebookRepo implements NotebookRepo {
     }
 
     ClientConfiguration cliConf = createClientConfiguration();
-    
+
     // see if we should be encrypting data in S3
     String kmsKeyID = conf.getS3KMSKeyID();
     if (kmsKeyID != null) {

@@ -22,15 +22,17 @@ import java.util.Properties;
 
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.recovery.RecoveryStorage;
+import org.pf4j.ExtensionPoint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_CONNECTION_POOL_SIZE;
 
 /**
+ *
  * Component to Launch interpreter process.
  */
-public abstract class InterpreterLauncher {
+public abstract class InterpreterLauncher implements ExtensionPoint {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(InterpreterLauncher.class);
   private static final String SPECIAL_CHARACTER="{}()<>&*‘|=?;[]$–#~!.\"%/\\:+,`";
@@ -39,7 +41,7 @@ public abstract class InterpreterLauncher {
   protected Properties properties;
   protected RecoveryStorage recoveryStorage;
 
-  public InterpreterLauncher(ZeppelinConfiguration zConf, RecoveryStorage recoveryStorage) {
+  public void init(ZeppelinConfiguration zConf, RecoveryStorage recoveryStorage) {
     this.zConf = zConf;
     this.recoveryStorage = recoveryStorage;
   }
@@ -109,7 +111,6 @@ public abstract class InterpreterLauncher {
     // launch it via sub class implementation without recovering.
     return launchDirectly(context);
   }
-
   /**
    * launch interpreter process directly without recovering.
    *
@@ -118,5 +119,4 @@ public abstract class InterpreterLauncher {
    * @throws IOException
    */
   public abstract InterpreterClient launchDirectly(InterpreterLaunchContext context) throws IOException;
-
 }

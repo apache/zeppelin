@@ -26,6 +26,7 @@ import org.eclipse.jgit.api.RemoteAddCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.transport.URIish;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
+import org.pf4j.Extension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,6 +48,7 @@ import java.net.URISyntaxException;
  * You should be able to use this integration with all remote git repositories that accept
  * username + password authentication, not just GitHub.
  */
+@Extension
 public class GitHubNotebookRepo extends GitNotebookRepo {
   private static final Logger LOG = LoggerFactory.getLogger(GitHubNotebookRepo.class);
   private ZeppelinConfiguration zeppelinConfiguration;

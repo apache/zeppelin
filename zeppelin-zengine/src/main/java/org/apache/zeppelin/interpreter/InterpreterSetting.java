@@ -29,6 +29,8 @@ import com.google.gson.annotations.SerializedName;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
+import javax.inject.Inject;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
@@ -45,8 +47,7 @@ import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
-import org.apache.zeppelin.notebook.Note;
-import org.apache.zeppelin.plugin.PluginManager;
+import org.apache.zeppelin.plugin.IPluginManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -133,7 +134,11 @@ public class InterpreterSetting {
   private transient ApplicationEventListener appEventListener;
   private transient DependencyResolver dependencyResolver;
 
-  private transient ZeppelinConfiguration conf = ZeppelinConfiguration.create();
+  @Inject
+  private transient ZeppelinConfiguration conf;
+
+  @Inject
+  private transient IPluginManager pluginManager;
 
   private transient RecoveryStorage recoveryStorage;
   private transient RemoteInterpreterEventServer interpreterEventServer;
@@ -199,6 +204,11 @@ public class InterpreterSetting {
 
     public Builder setConf(ZeppelinConfiguration conf) {
       interpreterSetting.conf = conf;
+      return this;
+    }
+
+    public Builder setPluginManager(IPluginManager pluginManager) {
+      interpreterSetting.pluginManager = pluginManager;
       return this;
     }
 
@@ -288,10 +298,11 @@ public class InterpreterSetting {
     this.interpreterDir = o.getInterpreterDir();
     this.interpreterRunner = o.getInterpreterRunner();
     this.conf = o.getConf();
+    this.pluginManager = o.getPluginManager();
   }
 
   private InterpreterLauncher createLauncher(Properties properties) throws IOException {
-    return PluginManager.get().loadInterpreterLauncher(
+    return pluginManager.createInterpreterLauncher(
         getLauncherPlugin(properties), recoveryStorage);
   }
 
@@ -654,8 +665,17 @@ public class InterpreterSetting {
     return conf;
   }
 
+  public IPluginManager getPluginManager() {
+    return pluginManager;
+  }
+
   public InterpreterSetting setConf(ZeppelinConfiguration conf) {
     this.conf = conf;
+    return this;
+  }
+
+  public InterpreterSetting setPluginManager(IPluginManager pluginManager) {
+    this.pluginManager = pluginManager;
     return this;
   }
 

@@ -19,6 +19,8 @@ package org.apache.zeppelin.interpreter.launcher;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.InterpreterOption;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterRunningProcess;
+import org.apache.zeppelin.plugin.IPluginManager;
+import org.apache.zeppelin.plugin.ZPluginManager;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -33,7 +35,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class ClusterInterpreterLauncherTest extends ClusterMockTest {
-  private static Logger LOGGER = LoggerFactory.getLogger(ClusterInterpreterLauncherTest.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(ClusterInterpreterLauncherTest.class);
+  private IPluginManager pluginManager;
 
   @BeforeClass
   public static void startTest() throws IOException, InterruptedException {
@@ -50,6 +53,8 @@ public class ClusterInterpreterLauncherTest extends ClusterMockTest {
     for (final ZeppelinConfiguration.ConfVars confVar : ZeppelinConfiguration.ConfVars.values()) {
       System.clearProperty(confVar.getVarName());
     }
+    pluginManager = new ZPluginManager(zconf);
+    pluginManager.loadAndStartPlugins();
   }
 
   // TODO(zjffdu) disable this test because this is not a correct unit test,
@@ -58,8 +63,7 @@ public class ClusterInterpreterLauncherTest extends ClusterMockTest {
   public void testConnectExistOnlineIntpProcess() throws IOException {
     mockIntpProcessMeta("intpGroupId", true);
 
-    ClusterInterpreterLauncher launcher
-        = new ClusterInterpreterLauncher(ClusterMockTest.zconf, null);
+    ClusterInterpreterLauncher launcher = (ClusterInterpreterLauncher) pluginManager.createInterpreterLauncher("ClusterInterpreterLauncher", null);
     Properties properties = new Properties();
     properties.setProperty(
         ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT.getVarName(), "5000");
@@ -83,7 +87,7 @@ public class ClusterInterpreterLauncherTest extends ClusterMockTest {
     mockIntpProcessMeta("intpGroupId2", false);
 
     ClusterInterpreterLauncher launcher
-        = new ClusterInterpreterLauncher(ClusterMockTest.zconf, null);
+        = (ClusterInterpreterLauncher) pluginManager.createInterpreterLauncher("ClusterInterpreterLauncher", null);;
     Properties properties = new Properties();
     properties.setProperty(
         ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT.getVarName(), "5000");
@@ -110,7 +114,7 @@ public class ClusterInterpreterLauncherTest extends ClusterMockTest {
     zconf.setRunMode(ZeppelinConfiguration.RUN_MODE.DOCKER);
 
     ClusterInterpreterLauncher launcher
-        = new ClusterInterpreterLauncher(zconf, null);
+        = (ClusterInterpreterLauncher) pluginManager.createInterpreterLauncher("ClusterInterpreterLauncher", null);
     Properties properties = new Properties();
     properties.setProperty(
         ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT.getVarName(), "1000");
@@ -129,7 +133,7 @@ public class ClusterInterpreterLauncherTest extends ClusterMockTest {
     zconf.setRunMode(ZeppelinConfiguration.RUN_MODE.LOCAL);
 
     ClusterInterpreterLauncher launcher
-        = new ClusterInterpreterLauncher(zconf, null);
+        = (ClusterInterpreterLauncher) pluginManager.createInterpreterLauncher("ClusterInterpreterLauncher", null);
     Properties properties = new Properties();
     properties.setProperty(
         ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT.getVarName(), "1000");

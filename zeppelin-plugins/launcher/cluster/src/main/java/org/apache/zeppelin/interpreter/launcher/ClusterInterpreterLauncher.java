@@ -30,6 +30,9 @@ import org.apache.zeppelin.interpreter.recovery.RecoveryStorage;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterRunningProcess;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterUtils;
+import org.apache.zeppelin.plugin.ExtensionWithPluginManager;
+import org.apache.zeppelin.plugin.IPluginManager;
+import org.pf4j.Extension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,22 +49,30 @@ import static org.apache.zeppelin.cluster.meta.ClusterMeta.SERVER_PORT;
 /**
  * Interpreter Launcher which use cluster to launch the interpreter process.
  */
+@Extension(points = InterpreterLauncher.class)
 public class ClusterInterpreterLauncher extends StandardInterpreterLauncher
-    implements ClusterEventListener {
+  implements ClusterEventListener, ExtensionWithPluginManager {
   private static final Logger LOGGER = LoggerFactory.getLogger(ClusterInterpreterLauncher.class);
 
   private InterpreterLaunchContext context;
   private ClusterManagerServer clusterServer;
-  public ClusterInterpreterLauncher(ZeppelinConfiguration zConf, RecoveryStorage recoveryStorage)
-      throws IOException {
-    super(zConf, recoveryStorage);
+  private IPluginManager pluginManager;
+
+  @Override
+  public void setPluginManager(IPluginManager pluginManager) {
+    this.pluginManager = pluginManager;
+  }
+
+  @Override
+  public void init(ZeppelinConfiguration zConf, RecoveryStorage recoveryStorage) {
+    super.init(zConf, recoveryStorage);
     this.clusterServer = ClusterManagerServer.getInstance(zConf);
     clusterServer.addClusterEventListeners(ClusterManagerServer.CLUSTER_INTP_EVENT_TOPIC, this);
   }
 
   @Override
   public InterpreterClient launchDirectly(InterpreterLaunchContext context) throws IOException {
-    LOGGER.info("Launching Interpreter: " + context.getInterpreterSettingGroup());
+    LOGGER.info("Launching Interpreter: {}", context.getInterpreterSettingGroup());
 
     this.context = context;
     this.properties = context.getProperties();
@@ -224,7 +235,7 @@ public class ClusterInterpreterLauncher extends StandardInterpreterLauncher
 
     InterpreterClient intpProcess = null;
     if (isRunningOnDocker(zConf)) {
-      DockerInterpreterLauncher dockerIntpLauncher = new DockerInterpreterLauncher(zConf, null);
+      DockerInterpreterLauncher dockerIntpLauncher = (DockerInterpreterLauncher) pluginManager.createInterpreterLauncher("DockerInterpreterLauncher", null);
       dockerIntpLauncher.setProperties(context.getProperties());
       intpProcess = dockerIntpLauncher.launch(context);
     } else {

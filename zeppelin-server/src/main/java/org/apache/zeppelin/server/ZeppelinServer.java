@@ -86,7 +86,8 @@ import org.apache.zeppelin.notebook.repo.NotebookRepoSync;
 import org.apache.zeppelin.notebook.scheduler.NoSchedulerService;
 import org.apache.zeppelin.notebook.scheduler.QuartzSchedulerService;
 import org.apache.zeppelin.notebook.scheduler.SchedulerService;
-import org.apache.zeppelin.plugin.PluginManager;
+import org.apache.zeppelin.plugin.IPluginManager;
+import org.apache.zeppelin.plugin.ZPluginManager;
 import org.apache.zeppelin.rest.exception.WebApplicationExceptionMapper;
 import org.apache.zeppelin.search.LuceneSearch;
 import org.apache.zeppelin.search.NoSearchService;
@@ -176,6 +177,7 @@ public class ZeppelinServer extends ResourceConfig {
           @Override
           protected void configure() {
             Credentials credentials = new Credentials(conf);
+            bind(ZPluginManager.class).to(IPluginManager.class).in(Singleton.class);
             bindAsContract(InterpreterFactory.class).in(Singleton.class);
             bindAsContract(NotebookRepoSync.class).to(NotebookRepo.class).in(Immediate.class);
             bindAsContract(Helium.class).in(Singleton.class);
@@ -228,8 +230,11 @@ public class ZeppelinServer extends ResourceConfig {
 
     initWebApp(defaultWebApp, conf, sharedServiceLocator, promMetricRegistry);
     initWebApp(nextWebApp, conf, sharedServiceLocator, promMetricRegistry);
+    IPluginManager pluginManager = ServiceLocatorUtilities.getService(
+      sharedServiceLocator, IPluginManager.class.getName());
+    pluginManager.loadAndStartPlugins();
     // Cluster Manager Server
-    setupClusterManagerServer(sharedServiceLocator, conf);
+    setupClusterManagerServer(sharedServiceLocator, conf, pluginManager);
 
     // JMX Enable
     if (conf.isJMXEnabled()) {
@@ -438,7 +443,7 @@ public class ZeppelinServer extends ResourceConfig {
             });
   }
 
-  private static void setupClusterManagerServer(ServiceLocator serviceLocator, ZeppelinConfiguration conf) {
+  private static void setupClusterManagerServer(ServiceLocator serviceLocator, ZeppelinConfiguration conf, IPluginManager pluginManager) {
     if (conf.isClusterMode()) {
       LOG.info("Cluster mode is enabled, starting ClusterManagerServer");
       ClusterManagerServer clusterManagerServer = ClusterManagerServer.getInstance(conf);
@@ -462,7 +467,7 @@ public class ZeppelinServer extends ResourceConfig {
                 new Class[] {ZeppelinConfiguration.class, InterpreterSettingManager.class},
                 new Object[] {conf, intpSettingManager});
         recoveryStorage.init();
-        PluginManager.get().loadInterpreterLauncher(InterpreterSetting.CLUSTER_INTERPRETER_LAUNCHER_NAME, recoveryStorage);
+        pluginManager.createInterpreterLauncher(InterpreterSetting.CLUSTER_INTERPRETER_LAUNCHER_NAME, recoveryStorage);
       } catch (IOException e) {
         LOG.error(e.getMessage(), e);
       }

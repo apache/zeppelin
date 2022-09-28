@@ -27,6 +27,7 @@ import org.apache.zeppelin.interpreter.recovery.RecoveryStorage;
 import org.apache.zeppelin.interpreter.remote.ExecRemoteInterpreterProcess;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterRunningProcess;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterUtils;
+import org.pf4j.Extension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,12 +38,15 @@ import java.util.Map;
 /**
  * Interpreter Launcher which use shell script to launch the interpreter process.
  */
+@Extension
 public class StandardInterpreterLauncher extends InterpreterLauncher {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(StandardInterpreterLauncher.class);
 
-  public StandardInterpreterLauncher(ZeppelinConfiguration zConf, RecoveryStorage recoveryStorage) {
-    super(zConf, recoveryStorage);
+  @Override
+  public void init(ZeppelinConfiguration zConf, RecoveryStorage recoveryStorage) {
+    this.zConf = zConf;
+    this.recoveryStorage = recoveryStorage;
   }
 
   @Override

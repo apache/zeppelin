@@ -39,6 +39,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.recovery.RecoveryStorage;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterUtils;
+import org.pf4j.Extension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,16 +48,13 @@ import java.io.File;
 /**
  * Spark specific launcher.
  */
+@Extension
 public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SparkInterpreterLauncher.class);
   public static final String SPARK_MASTER_KEY = "spark.master";
   private static final String DEFAULT_MASTER = "local[*]";
   Optional<String> sparkMaster = Optional.empty();
-
-  public SparkInterpreterLauncher(ZeppelinConfiguration zConf, RecoveryStorage recoveryStorage) {
-    super(zConf, recoveryStorage);
-  }
 
   @Override
   public Map<String, String> buildEnvFromProperties(InterpreterLaunchContext context) throws IOException {

@@ -20,6 +20,8 @@ package org.apache.zeppelin.notebook.repo;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.notebook.repo.mock.VFSNotebookRepoMock;
+import org.apache.zeppelin.plugin.IPluginManager;
+import org.apache.zeppelin.plugin.ZPluginManager;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -45,10 +47,15 @@ public class NotebookRepoSyncInitializationTest {
   private String unsupportedStorageConf = validFirstStorageClass + "," + validSecondStorageClass + "," + validSecondStorageClass;
   private String emptyStorageConf = "";
 
+  private ZeppelinConfiguration conf;
+  private IPluginManager pluginManager;
+
   @Before
   public void setUp(){
     System.setProperty(ConfVars.ZEPPELIN_PLUGINS_DIR.getVarName(), new File("../../../plugins").getAbsolutePath());
     System.setProperty("zeppelin.isTest", "true");
+    conf = ZeppelinConfiguration.create();
+    pluginManager = new ZPluginManager(conf);
   }
 
   @After
@@ -61,11 +68,10 @@ public class NotebookRepoSyncInitializationTest {
     // no need to initialize folder due to one storage
     // set confs
     System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_STORAGE.getVarName(), validOneStorageConf);
-    ZeppelinConfiguration conf = ZeppelinConfiguration.create();
     // create repo
-    NotebookRepoSync notebookRepoSync = new NotebookRepoSync(conf);
+    NotebookRepoSync notebookRepoSync = new NotebookRepoSync(conf, pluginManager);
     // check proper initialization of one storage
-    assertEquals(notebookRepoSync.getRepoCount(), 1);
+    assertEquals(1, notebookRepoSync.getRepoCount());
     assertTrue(notebookRepoSync.getRepo(0) instanceof VFSNotebookRepo);
   }
 
@@ -89,7 +95,7 @@ public class NotebookRepoSyncInitializationTest {
     System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_STORAGE.getVarName(), validTwoStorageConf);
     ZeppelinConfiguration conf = ZeppelinConfiguration.create();
     // create repo
-    NotebookRepoSync notebookRepoSync = new NotebookRepoSync(conf);
+    NotebookRepoSync notebookRepoSync = new NotebookRepoSync(conf, pluginManager);
     // check that both initialized
     assertEquals(notebookRepoSync.getRepoCount(), 2);
     assertTrue(notebookRepoSync.getRepo(0) instanceof VFSNotebookRepo);
@@ -103,11 +109,11 @@ public class NotebookRepoSyncInitializationTest {
     ZeppelinConfiguration conf = ZeppelinConfiguration.create();
     // create repo
     try {
-      NotebookRepoSync notebookRepoSync = new NotebookRepoSync(conf);
+      NotebookRepoSync notebookRepoSync = new NotebookRepoSync(conf, pluginManager);
       fail("Should throw exception due to invalid NotebookRepo");
     } catch (IOException e) {
       LOGGER.error(e.getMessage());
-      assertTrue(e.getMessage().contains("Fail to instantiate notebookrepo from classpath directly"));
+      assertTrue(e.getMessage().contains("Fail to instantiate notebookrepo org.apache.zeppelin.notebook.repo.DummyNotebookRepo from plugin"));
     }
   }
 
@@ -131,7 +137,7 @@ public class NotebookRepoSyncInitializationTest {
     System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_STORAGE.getVarName(), unsupportedStorageConf);
     ZeppelinConfiguration conf = ZeppelinConfiguration.create();
     // create repo
-    NotebookRepoSync notebookRepoSync = new NotebookRepoSync(conf);
+    NotebookRepoSync notebookRepoSync = new NotebookRepoSync(conf, pluginManager);
     // check that first two storages initialized instead of three
     assertEquals(notebookRepoSync.getRepoCount(), 2);
     assertTrue(notebookRepoSync.getRepo(0) instanceof VFSNotebookRepo);
@@ -144,7 +150,7 @@ public class NotebookRepoSyncInitializationTest {
     System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_STORAGE.getVarName(), emptyStorageConf);
     ZeppelinConfiguration conf = ZeppelinConfiguration.create();
     // create repo
-    NotebookRepoSync notebookRepoSync = new NotebookRepoSync(conf);
+    NotebookRepoSync notebookRepoSync = new NotebookRepoSync(conf, pluginManager);
     // check initialization of one default storage
     assertEquals(notebookRepoSync.getRepoCount(), 1);
     assertTrue(notebookRepoSync.getRepo(0) instanceof NotebookRepoWithVersionControl);
@@ -156,11 +162,11 @@ public class NotebookRepoSyncInitializationTest {
     ZeppelinConfiguration conf = ZeppelinConfiguration.create();
     // create repo
     try {
-      NotebookRepoSync notebookRepoSync = new NotebookRepoSync(conf);
+      NotebookRepoSync notebookRepoSync = new NotebookRepoSync(conf, pluginManager);
       fail("Should throw exception due to invalid NotebookRepo");
     } catch (IOException e) {
       LOGGER.error(e.getMessage());
-      assertTrue(e.getMessage().contains("Fail to instantiate notebookrepo from classpath directly"));
+      assertTrue(e.getMessage().contains("Fail to instantiate notebookrepo org.apache.zeppelin.notebook.repo.DummyNotebookRepo from plugin"));
     }
   }
 }

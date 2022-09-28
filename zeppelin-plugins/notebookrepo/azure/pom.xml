@@ -37,6 +37,7 @@
         <adl.sdk.version>2.1.4</adl.sdk.version>
         <azure.storage.version>4.0.0</azure.storage.version>
         <plugin.name>NotebookRepo/AzureNotebookRepo</plugin.name>
+        <plugin.class>org.apache.zeppelin.notebook.repo.AzurePlugin</plugin.class>
     </properties>
 
     <dependencies>
@@ -44,6 +45,12 @@
             <groupId>com.microsoft.azure</groupId>
             <artifactId>azure-data-lake-store-sdk</artifactId>
             <version>${adl.sdk.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.microsoft.azure</groupId>
@@ -51,26 +58,10 @@
             <version>${azure.storage.version}</version>
             <exclusions>
                 <exclusion>
-                    <groupId>com.fasterxml.jackson.core</groupId>
-                    <artifactId>jackson-core</artifactId>
-                </exclusion>
-                <exclusion>
                     <groupId>org.slf4j</groupId>
                     <artifactId>slf4j-api</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.commons</groupId>
-                    <artifactId>commons-lang3</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
     </dependencies>
-
-    <build>
-        <plugins>
-            <plugin>
-                <artifactId>maven-dependency-plugin</artifactId>
-            </plugin>
-        </plugins>
-    </build>
 </project>

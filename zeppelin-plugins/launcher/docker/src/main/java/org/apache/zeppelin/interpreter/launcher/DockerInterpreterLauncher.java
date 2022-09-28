@@ -16,8 +16,9 @@
  */
 package org.apache.zeppelin.interpreter.launcher;
 
-import org.apache.zeppelin.conf.ZeppelinConfiguration;
-import org.apache.zeppelin.interpreter.recovery.RecoveryStorage;
+import org.apache.zeppelin.plugin.ExtensionWithPluginManager;
+import org.apache.zeppelin.plugin.IPluginManager;
+import org.pf4j.Extension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,14 +28,16 @@ import java.util.Map;
 /**
  * Interpreter Launcher which use shell script to launch the interpreter process.
  */
-public class DockerInterpreterLauncher extends InterpreterLauncher {
+@Extension
+public class DockerInterpreterLauncher extends InterpreterLauncher implements ExtensionWithPluginManager {
   private static final Logger LOGGER = LoggerFactory.getLogger(DockerInterpreterLauncher.class);
 
   private InterpreterLaunchContext context;
+  private IPluginManager pluginManager;
 
-  public DockerInterpreterLauncher(ZeppelinConfiguration zConf, RecoveryStorage recoveryStorage)
-      throws IOException {
-    super(zConf, recoveryStorage);
+  @Override
+  public void setPluginManager(IPluginManager pluginManager) {
+    this.pluginManager = pluginManager;
   }
 
   @Override
@@ -54,11 +57,11 @@ public class DockerInterpreterLauncher extends InterpreterLauncher {
 
     StandardInterpreterLauncher interpreterLauncher = null;
     if (isSpark()) {
-      interpreterLauncher = new SparkInterpreterLauncher(zConf, recoveryStorage);
+      interpreterLauncher = (SparkInterpreterLauncher) pluginManager.createInterpreterLauncher("SparkInterpreterLauncher", recoveryStorage);
     } else if (isFlink()) {
-      interpreterLauncher = new FlinkInterpreterLauncher(zConf, recoveryStorage);
+      interpreterLauncher = (FlinkInterpreterLauncher) pluginManager.createInterpreterLauncher("FlinkInterpreterLauncher", recoveryStorage);
     } else {
-      interpreterLauncher = new StandardInterpreterLauncher(zConf, recoveryStorage);
+      interpreterLauncher = (StandardInterpreterLauncher) pluginManager.createInterpreterLauncher("StandardInterpreterLauncher", recoveryStorage);
     }
     interpreterLauncher.setProperties(context.getProperties());
     Map<String, String> env = interpreterLauncher.buildEnvFromProperties(context);

@@ -38,18 +38,18 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.user.AuthenticationInfo;
+import org.pf4j.Extension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * Azure storage backend for notebooks
  */
+@Extension
 public class AzureNotebookRepo implements NotebookRepo {
   private static final Logger LOGGER = LoggerFactory.getLogger(AzureNotebookRepo.class);
 
   private ZeppelinConfiguration conf;
-  private String user;
-  private String shareName;
   private CloudFileDirectory rootDir;
 
   public AzureNotebookRepo() {
@@ -59,8 +59,8 @@ public class AzureNotebookRepo implements NotebookRepo {
   @Override
   public void init(ZeppelinConfiguration conf) throws IOException {
     this.conf = conf;
-    user = conf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_AZURE_USER);
-    shareName = conf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_AZURE_SHARE);
+    String user = conf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_AZURE_USER);
+    String shareName = conf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_AZURE_SHARE);
 
     try {
       CloudStorageAccount account = CloudStorageAccount.parse(

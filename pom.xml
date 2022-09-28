@@ -134,6 +134,7 @@
     <maven.version>3.6.3</maven.version>
     <dropwizard.version>4.1.14</dropwizard.version>
     <micrometer.version>1.6.0</micrometer.version>
+    <pf4j.version>3.6.0</pf4j.version>
 
     <hadoop2.7.version>2.7.7</hadoop2.7.version>
     <hadoop2.6.version>2.6.5</hadoop2.6.version>
