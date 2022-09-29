@@ -25,12 +25,12 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.StringJoiner;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterManagedProcess;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterServer;
@@ -78,6 +78,8 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterManagedProcess
   private static final String SPARK_CONTAINER_IMAGE = "zeppelin.k8s.spark.container.image";
   private static final String ENV_SERVICE_DOMAIN = "SERVICE_DOMAIN";
   private static final String ENV_ZEPPELIN_HOME = "ZEPPELIN_HOME";
+  private static final String SPARK_DRIVER_DEFAULTJAVAOPTS = "spark.driver.defaultJavaOptions";
+  private static final String SPARK_DRIVER_EXTRAJAVAOPTS = "spark.driver.extraJavaOptions";
 
   public K8sRemoteInterpreterProcess(
           KubernetesClient client,
@@ -319,9 +321,24 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterManagedProcess
     if (isSpark()) {
       int webUiPort = 4040;
       k8sProperties.put("zeppelin.k8s.spark.container.image", sparkImage);
+
+      // There is already initial value following --driver-java-options added in interpreter.sh
+      // so we need to pass spark.driver.defaultJavaOptions and spark.driver.extraJavaOptions
+      // as SPARK_DRIVER_EXTRAJAVAOPTIONS_CONF env variable to build spark-submit command correctly.
+      StringJoiner driverExtraJavaOpts = new StringJoiner(" ");
+      if (properties.containsKey(SPARK_DRIVER_DEFAULTJAVAOPTS)) {
+        driverExtraJavaOpts.add((String) properties.remove(SPARK_DRIVER_DEFAULTJAVAOPTS));
+      }
+      if (properties.containsKey(SPARK_DRIVER_EXTRAJAVAOPTS)) {
+        driverExtraJavaOpts.add((String) properties.remove(SPARK_DRIVER_EXTRAJAVAOPTS));
+      }
+      if (driverExtraJavaOpts.length() > 0) {
+        k8sEnv.put("SPARK_DRIVER_EXTRAJAVAOPTIONS_CONF", driverExtraJavaOpts.toString());
+      }
+
       if (isSparkOnKubernetes(properties)) {
-        k8sEnv.put("SPARK_SUBMIT_OPTIONS",
-            getEnv().getOrDefault("SPARK_SUBMIT_OPTIONS", "") + buildSparkSubmitOptions(userName));
+        addSparkK8sProperties();
+        k8sEnv.put("ZEPPELIN_SPARK_CONF", prepareZeppelinSparkConf(userName));
       }
       k8sEnv.put("SPARK_HOME", getEnv().getOrDefault("SPARK_HOME", "/spark"));
 
@@ -403,34 +420,45 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterManagedProcess
   }
 
   @VisibleForTesting
-  String buildSparkSubmitOptions(String userName) {
-    StringBuilder options = new StringBuilder();
-
-    options.append(" --master k8s://https://kubernetes.default.svc");
-    options.append(" --deploy-mode client");
-    if (properties.containsKey(SPARK_DRIVER_MEMORY)) {
-      options.append(" --driver-memory ").append(properties.get(SPARK_DRIVER_MEMORY));
-    }
+  String prepareZeppelinSparkConf(String userName) {
+    StringJoiner sparkConfSJ = new StringJoiner("|");
     if (isUserImpersonated() && !StringUtils.containsIgnoreCase(userName, "anonymous")) {
-      options.append(" --proxy-user ").append(userName);
+      sparkConfSJ.add("--proxy-user");
+      sparkConfSJ.add(userName);
     }
-    options.append(" --conf spark.kubernetes.namespace=").append(getInterpreterNamespace());
-    options.append(" --conf spark.executor.instances=1");
-    options.append(" --conf spark.kubernetes.driver.pod.name=").append(getPodName());
-    String sparkContainerImage = properties.containsKey(SPARK_CONTAINER_IMAGE) ? properties.getProperty(SPARK_CONTAINER_IMAGE) : sparkImage;
-    options.append(" --conf spark.kubernetes.container.image=").append(sparkContainerImage);
-    options.append(" --conf spark.driver.bindAddress=0.0.0.0");
-    options.append(" --conf spark.driver.host=").append(getInterpreterPodDnsName());
-    options.append(" --conf spark.driver.port=").append(getSparkDriverPort());
-    options.append(" --conf spark.blockManager.port=").append(getSparkBlockManagerPort());
 
-    return options.toString();
+    for (String key : properties.stringPropertyNames()) {
+      String propValue = properties.getProperty(key);
+      if (isSparkConf(key, propValue)) {
+        sparkConfSJ.add("--conf");
+        sparkConfSJ.add(key + "=" + propValue);
+      }
+    }
+
+    return sparkConfSJ.toString();
+  }
+
+  private void addSparkK8sProperties() {
+    properties.setProperty("spark.master", "k8s://https://kubernetes.default.svc");
+    properties.setProperty("spark.submit.deployMode", "client");
+    properties.setProperty("spark.kubernetes.namespace", getInterpreterNamespace());
+    properties.setProperty("spark.kubernetes.driver.pod.name", getPodName());
+    properties.setProperty("spark.kubernetes.container.image", properties.containsKey(SPARK_CONTAINER_IMAGE) ?
+            properties.getProperty(SPARK_CONTAINER_IMAGE) : sparkImage);
+    properties.setProperty("spark.driver.bindAddress", "0.0.0.0");
+    properties.setProperty("spark.driver.host", getInterpreterPodDnsName());
+    properties.setProperty("spark.driver.port", String.valueOf(getSparkDriverPort()));
+    properties.setProperty("spark.blockManager.port", String.valueOf(getSparkBlockManagerPort()));
   }
 
   private String getInterpreterPodDnsName() {
     return String.format("%s.%s.svc",
         getPodName(), // service name and pod name is the same
         getInterpreterNamespace());
+  }
+
+  private boolean isSparkConf(String key, String value) {
+    return !StringUtils.isEmpty(key) && key.startsWith("spark.") && !StringUtils.isEmpty(value);
   }
 
   /**
