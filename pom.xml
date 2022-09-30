@@ -182,7 +182,7 @@
     <plugin.javadoc.version>3.2.0</plugin.javadoc.version>
     <plugin.jdeb.version>1.8</plugin.jdeb.version>
     <plugin.lifecycle.mapping.version>1.0.0</plugin.lifecycle.mapping.version>
-    <plugin.protobuf.version>0.5.0</plugin.protobuf.version>
+    <plugin.protobuf.version>0.6.1</plugin.protobuf.version>
     <plugin.rat.version>0.13</plugin.rat.version>
     <plugin.remote.resource.version>1.7.0</plugin.remote.resource.version>
     <plugin.resource.version>3.1.0</plugin.resource.version>
