@@ -36,7 +36,7 @@
     <hbase.hbase.version>2.4.12</hbase.hbase.version>
     <hbase.hadoop.version>${hadoop2.6.version}</hbase.hadoop.version>
     <jruby.version>1.6.8</jruby.version>
-    <protobuf.version>2.5.0</protobuf.version>
+    <protobuf.version>3.16.3</protobuf.version>
     <jline.version>2.12.1</jline.version>
 
     <!--test library versions-->
