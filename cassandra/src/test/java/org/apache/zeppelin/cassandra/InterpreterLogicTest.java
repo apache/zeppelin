@@ -148,8 +148,8 @@ public class InterpreterLogicTest {
     //Given
     AngularObjectRegistry angularObjectRegistry = new AngularObjectRegistry("cassandra", null);
     when(intrContext.getAngularObjectRegistry()).thenReturn(angularObjectRegistry);
-    when(intrContext.getGui().input("table", "zeppelin.demo")).thenReturn("zeppelin.demo");
-    when(intrContext.getGui().input("id", "'John'")).thenReturn("'John'");
+    when(intrContext.getGui().textbox("table", "zeppelin.demo")).thenReturn("zeppelin.demo");
+    when(intrContext.getGui().textbox("id", "'John'")).thenReturn("'John'");
 
     //When
     final String actual = helper.maybeExtractVariables(
