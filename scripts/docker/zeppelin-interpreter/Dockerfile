@@ -16,7 +16,7 @@
 ARG ZEPPELIN_DISTRIBUTION_IMAGE=zeppelin-distribution:latest
 FROM $ZEPPELIN_DISTRIBUTION_IMAGE AS zeppelin-distribution
 
-FROM ubuntu:20.04
+FROM ubuntu:22.04
 
 LABEL maintainer="Apache Software Foundation <dev@zeppelin.apache.org>"
 
@@ -25,13 +25,16 @@ ARG version="0.10.0"
 ENV VERSION="${version}" \
     ZEPPELIN_HOME="/opt/zeppelin"
 
+# Install Java for zeppelin interpreter
+# Install micromamba to install a python environment via conda
 RUN set -ex && \
-    apt-get -y update && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y openjdk-8-jre-headless wget tini && \
+    /usr/bin/apt-get update && \
+    DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get install -y openjdk-11-jre-headless wget tini bzip2 && \
+    /usr/bin/wget -qO- https://micromamba.snakepit.net/api/micromamba/linux-64/latest | tar -xvj bin/micromamba && \
     # Cleanup
-    rm -rf /var/lib/apt/lists/* && \
-    apt-get autoclean && \
-    apt-get clean
+    /usr/bin/apt-get clean && \
+    /bin/rm -rf /var/lib/apt/lists/*
+
 
 COPY --from=zeppelin-distribution /opt/zeppelin/bin ${ZEPPELIN_HOME}/bin
 COPY log4j.properties ${ZEPPELIN_HOME}/conf/
@@ -46,33 +49,20 @@ COPY --from=zeppelin-distribution /opt/zeppelin/interpreter ${ZEPPELIN_HOME}/int
 ### COPY --from=zeppelin-distribution /opt/zeppelin/interpreter/${interpreter_name}  ${ZEPPELIN_HOME}/interpreter/${interpreter_name}
 
 
-# Decide: Install conda to manage python and R packages. Maybe adjust the packages in pip_packages.txt or conda_packages.txt
-ARG miniconda_version="py38_4.8.3"
-ARG miniconda_sha256="879457af6a0bf5b34b48c12de31d4df0ee2f06a8e68768e5758c3293b2daf688"
+# Decide: Install conda to manage python and R packages. Maybe adjust the packages env_python_3_with_R
 # Install python and R packages via conda
-COPY conda_packages.txt /conda_packages.txt
-# Some python packages are not available via conda, so we are using pip
-COPY pip_packages.txt /pip_packages.txt
+COPY env_python_3_with_R.yml /env_python_3_with_R.yml
+# To improve the build time, the Zeppelin team recommends a conda proxy
+# COPY condarc /etc/conda/condarc
 RUN set -ex && \
-    wget -nv https://repo.anaconda.com/miniconda/Miniconda3-${miniconda_version}-Linux-x86_64.sh -O miniconda.sh && \
-    echo "${miniconda_sha256} miniconda.sh" > anaconda.sha256 && \
-    sha256sum --strict -c anaconda.sha256 && \
-    bash miniconda.sh -b -p /opt/conda && \
-    export PATH=/opt/conda/bin:$PATH && \
-    conda config --set always_yes yes --set changeps1 no && \
-    conda info -a && \
-    conda config --add channels conda-forge && \
-    conda install -y --quiet --file /conda_packages.txt && \
-    pip install -q -r /pip_packages.txt  && \
-    # Cleanup
-    rm -v miniconda.sh anaconda.sha256  && \
-    # Cleanup based on https://github.com/ContinuumIO/docker-images/commit/cac3352bf21a26fa0b97925b578fb24a0fe8c383
-    find /opt/conda/ -follow -type f -name '*.a' -delete && \
-    find /opt/conda/ -follow -type f -name '*.js.map' -delete && \
-    conda clean -ay
-    # Allow to modify conda packages. This allows malicious code to be injected into other interpreter sessions, therefore it is disabled by default
-    # chmod -R ug+rwX /opt/conda
-ENV PATH /opt/conda/bin:$PATH
+    micromamba create -y -p /opt/conda -f env_python_3_with_R.yml && \
+    micromamba clean -ay
+
+ENV PATH=/opt/conda/bin:$PATH \
+    SPARK_HOME=/opt/conda/lib/python3.9/site-packages/pyspark
+
+# Allow to modify conda packages. This allows malicious code to be injected into other interpreter sessions, therefore it is disabled by default
+# chmod -R ug+rwX /opt/conda
 
 RUN mkdir -p "${ZEPPELIN_HOME}/logs" "${ZEPPELIN_HOME}/run" "${ZEPPELIN_HOME}/local-repo" && \
      # Allow process to edit /etc/passwd, to create a user entry for zeppelin
