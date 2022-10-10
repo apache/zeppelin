@@ -34,10 +34,10 @@ Key benefits are
 
  - Zeppelin >= 0.9.0 docker image
  - Spark >= 2.4.0 docker image (in case of using Spark Interpreter)
- - A running Kubernetes cluster with access configured to it using [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) 
+ - A running Kubernetes cluster with access configured to it using [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
  - [Kubernetes DNS](https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/) configured in your cluster
  - Enough cpu and memory in your Kubernetes cluster. We recommend 4CPUs, 6g of memory to be able to start Spark Interpreter with few executors.
-  
+
    - If you're using [minikube](https://kubernetes.io/docs/setup/minikube/), check your cluster capacity (`kubectl describe node`) and increase if necessary
 
      ```
@@ -46,38 +46,89 @@ Key benefits are
      $ minikube config set memory <number in MB>
      $ minikube start
      $ minikube config view
-     ``` 
+     ```
 
 ## Quickstart
 
-Get `zeppelin-server.yaml` from github repository or find it from Zeppelin distribution package.
+Let's first clone the Zeppelin repository from GitHub:
 
+```sh
+git clone https://github.com/apache/zeppelin.git
+cd zeppelin
+# you can check out to your desired version/branch
+# git checkout tags/v0.10.1
+# just make sure you check the version inside "./pom.xml"
 ```
-# Get it from Zeppelin distribution package.
-$ ls <zeppelin-distribution>/k8s/zeppelin-server.yaml
 
-# or download it from github
-$ curl -s -O https://raw.githubusercontent.com/apache/zeppelin/master/k8s/zeppelin-server.yaml
+Now we are going to create the `zeppelin-distribution` image. This may take some time and this image will be used as a base for the upcoming required images:
+
+```sh
+docker build -t zeppelin-distribution:latest -f ./Dockerfile .
 ```
 
-Start zeppelin on kubernetes cluster,
+Next, we will build our `zeppelin-server` image:
 
+```sh
+cd scripts/docker/zeppelin-server
+# Looking at the "./pom.xml" we can see the version is 0.11.0-SNAPSHOT
+# Let's set the correct version in our Dockerfile:
+# vi Dockerfile
+# ARG version="0.11.0-SNAPSHOT"
+# Once you saved the Dockerfile with the correct version we can build our image:
+docker build -t zeppelin-server:0.11.0-SNAPSHOT -f ./Dockerfile .
 ```
+
+The last image we build is `zeppelin-interpreter`:
+
+```sh
+cd scripts/docker/zeppelin-interpreter
+docker build -t zeppelin-interpreter:0.11.0-SNAPSHOT -f ./Dockerfile .
+```
+
+So we should now have the following images:
+
+```sh
+# sudo if you are on Linux and Docker requires root
+$ docker images
+
+REPOSITORY                    TAG               IMAGE ID       CREATED          SIZE
+zeppelin-interpreter          0.11.0-SNAPSHOT   4f77fe989eed   3 minutes ago    622MB
+zeppelin-server               0.11.0-SNAPSHOT   4f77fe989eed   3 minutes ago    622MB
+zeppelin-distribution         latest            bd2fb4b321d2   40 minutes ago   1.27GB
+```
+
+Now that we have the images ready, let's edit the `zeppelin-server.yaml` file with the correct names:
+
+```sh
+# from the root of the zeppelin directory
+cd ./k8s/
+vi zeppelin-server.yaml
+# we need to change ZEPPELIN_K8S_CONTAINER_IMAGE to
+# ZEPPELIN_K8S_CONTAINER_IMAGE: zeppelin-interpreter:0.11.0-SNAPSHOT
+# and then:
+#      containers:
+#      - name: zeppelin-server
+#        image: zeppelin-server:0.11.0-SNAPSHOT
+```
+
+Start zeppelin on Kubernetes cluster,
+
+```sh
 kubectl apply -f zeppelin-server.yaml
 ```
 
 Port forward Zeppelin server port,
- 
-```
+
+```sh
 kubectl port-forward zeppelin-server 8080:80
 ```
 
 and browse [localhost:8080](http://localhost:8080).
-Try run some paragraphs and see each interpreter is running as a Pod (using `kubectl get pods`), instead of a local process.
+Try running some paragraphs and see if each interpreter is running as a Pod (using `kubectl get pods`), instead of a local process.
 
-To shutdown,
+To shut down,
 
-```
+```sh
 kubectl delete -f zeppelin-server.yaml
 ```
 
@@ -104,7 +155,7 @@ Create note and configure executor number (default 1)
 ```
 %spark.conf
 spark.executor.instances  5
-``` 
+```
 
 And then start your spark interpreter
 
@@ -114,7 +165,7 @@ sc.parallelize(1 to 100).count
 ...
 ```
 While `spark.master` property of SparkInterpreter starts with `k8s://` (default `k8s://https://kubernetes.default.svc` when Zeppelin started using zeppelin-server.yaml), Spark executors will be automatically created in your Kubernetes cluster.
-Spark UI is accessible by clicking `SPARK JOB` on the Paragraph. 
+Spark UI is accessible by clicking `SPARK JOB` on the Paragraph.
 
 Check [here](https://spark.apache.org/docs/latest/running-on-kubernetes.html) to know more about Running Spark on Kubernetes.
 
@@ -155,7 +206,7 @@ Then build docker image.
 
 ```
 # configure docker env, if you're using minikube
-$ eval $(minikube docker-env) 
+$ eval $(minikube docker-env)
 
 # change directory
 $ cd scripts/docker/zeppelin/bin/
