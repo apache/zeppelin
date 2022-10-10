@@ -97,19 +97,7 @@ zeppelin-server               0.11.0-SNAPSHOT   4f77fe989eed   3 minutes ago    
 zeppelin-distribution         latest            bd2fb4b321d2   40 minutes ago   1.27GB
 ```
 
-Now that we have the images ready, let's edit the `zeppelin-server.yaml` file with the correct names:
-
-```sh
-# from the root of the zeppelin directory
-cd ./k8s/
-vi zeppelin-server.yaml
-# we need to change ZEPPELIN_K8S_CONTAINER_IMAGE to
-# ZEPPELIN_K8S_CONTAINER_IMAGE: zeppelin-interpreter:0.11.0-SNAPSHOT
-# and then:
-#      containers:
-#      - name: zeppelin-server
-#        image: zeppelin-server:0.11.0-SNAPSHOT
-```
+Reminder: Please adjust the images in the YAML-File of `zeppelin-server.yaml`
 
 Start zeppelin on Kubernetes cluster,
 
