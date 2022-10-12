@@ -121,7 +121,7 @@ public class LivySparkSQLInterpreter extends BaseLivyInterpreter {
     for (String query:sqlQueries) {
       try {
         InterpreterResult res = interpretSql(query, context);
-        for(InterpreterResultMessage msg: res.message()){
+        for (InterpreterResultMessage msg: res.message()){
           if (this.displayAppInfo && msg.getData().startsWith("<hr/>Spark Application Id: ")){
             appInfoHtml = msg.toString();
             continue;
@@ -130,17 +130,17 @@ public class LivySparkSQLInterpreter extends BaseLivyInterpreter {
           context.out.write("\n");
           context.out.flush();
         }
-      }catch (Exception e){
+      } catch (Exception e){
         LOGGER.error(e.toString());
         e.printStackTrace();
       }
     }
 
-    if(this.displayAppInfo){
+    if (this.displayAppInfo){
       try {
         context.out.write(appInfoHtml);
         context.out.flush();
-      }catch (Exception e){
+      } catch (Exception e){
         LOGGER.error(e.getMessage());
         e.printStackTrace();
       }
@@ -188,7 +188,7 @@ public class LivySparkSQLInterpreter extends BaseLivyInterpreter {
               rows = parseSQLOutput(message.getData());
             }
             // ddl statement will result in empty table without header
-            if(rows.size() == 0){
+            if (rows.size() == 0){
               result2.add(InterpreterResult.Type.TEXT, "success");
               continue;
             }
@@ -221,8 +221,9 @@ public class LivySparkSQLInterpreter extends BaseLivyInterpreter {
     List<String> rows = new ArrayList<>();
 
     String[] rowsOutput = output.split("(?<!\\\\)\\n");
-    if(rowsOutput.length <= 1){
-      // message.getData() for DDL statement is only 1  line : "df: org.apache.spark.sql.DataFrame = []"
+    if (rowsOutput.length <= 1){
+      // message.getData() for DDL statement is only 1 line :
+      // "df: org.apache.spark.sql.DataFrame = []"
       return rows;
     }
     String[] header = rowsOutput[1].split("\t");
