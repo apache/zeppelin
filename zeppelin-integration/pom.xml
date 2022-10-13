@@ -75,6 +75,22 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.rauschig</groupId>
+      <artifactId>jarchivelib</artifactId>
+      <version>0.7.1</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.apache.commons</groupId>
+          <artifactId>commons-compress</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>zeppelin-zengine</artifactId>
       <version>${project.version}</version>
@@ -94,21 +110,53 @@
       </exclusions>
       <scope>test</scope>
     </dependency>
-    
+
     <dependency>
-      <groupId>org.apache.commons</groupId>
-      <artifactId>commons-lang3</artifactId>
+      <groupId>org.apache.zeppelin</groupId>
+      <artifactId>spark-scala-2.11</artifactId>
+      <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.rauschig</groupId>
-      <artifactId>jarchivelib</artifactId>
-      <version>0.7.1</version>
+      <groupId>org.apache.zeppelin</groupId>
+      <artifactId>spark-shims</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.zeppelin</groupId>
+      <artifactId>zeppelin-shell</artifactId>
+      <version>${project.version}</version>
       <exclusions>
         <exclusion>
-          <groupId>org.apache.commons</groupId>
-          <artifactId>commons-compress</artifactId>
+          <groupId>org.jsoup</groupId>
+          <artifactId>jsoup</artifactId>
         </exclusion>
       </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.zeppelin</groupId>
+      <artifactId>zeppelin-angular</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.zeppelin</groupId>
+      <artifactId>zeppelin-markdown</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.zeppelin</groupId>
+      <artifactId>zeppelin-python</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.zeppelin</groupId>
+      <artifactId>zeppelin-web</artifactId>
+      <version>${project.version}</version>
+      <type>war</type>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.zeppelin</groupId>
+      <artifactId>zeppelin-server</artifactId>
+      <version>${project.version}</version>
     </dependency>
 
     <!--test libraries-->
@@ -117,6 +165,7 @@
       <artifactId>junit</artifactId>
       <scope>test</scope>
     </dependency>
+
   </dependencies>
 
   <build>
@@ -186,6 +235,15 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-dependency-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>enforce</id>
+            <phase>none</phase>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>
