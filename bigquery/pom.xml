@@ -39,7 +39,7 @@
 
     <!-- library versions -->
     <bigquery.api.version>v2-rev20190917-1.30.3</bigquery.api.version>
-    <guava.version>24.1.1-jre</guava.version>
+    <guava.version>29.0-jre</guava.version>
 
     <interpreter.name>bigquery</interpreter.name>
   </properties>
