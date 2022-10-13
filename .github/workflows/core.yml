@@ -25,6 +25,9 @@ defaults:
   run:
     shell: bash -l {0}
 
+permissions:
+  contents: read # to fetch code (actions/checkout)
+
 jobs:
   # test on core-modules (zeppelin-interpreter,zeppelin-zengine,zeppelin-server),
   # some interpreters are included, because zeppelin-server test depends on them: spark, shell & markdown

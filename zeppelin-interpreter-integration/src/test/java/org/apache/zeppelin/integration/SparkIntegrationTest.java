@@ -110,7 +110,7 @@ public abstract class SparkIntegrationTest {
   private void testInterpreterBasics() throws IOException, InterpreterException, XmlPullParserException {
     // add jars & packages for testing
     InterpreterSetting sparkInterpreterSetting = interpreterSettingManager.getInterpreterSettingByName("spark");
-    sparkInterpreterSetting.setProperty("spark.jars.packages", "com.maxmind.geoip2:geoip2:2.5.0");
+    sparkInterpreterSetting.setProperty("spark.jars.packages", "com.maxmind.geoip2:geoip2:2.16.1");
     sparkInterpreterSetting.setProperty("SPARK_PRINT_LAUNCH_COMMAND", "true");
     sparkInterpreterSetting.setProperty("zeppelin.python.gatewayserver_address", "127.0.0.1");
 

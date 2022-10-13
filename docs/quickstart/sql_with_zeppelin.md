@@ -35,6 +35,7 @@ The following guides explain how to use Apache Zeppelin that enables you to writ
   * [Apache Hive](../interpreter/jdbc.html#apache-hive)
   * [Presto/Trino](../interpreter/jdbc.html#prestotrino)
   * [Impala](../interpreter/jdbc.html#impala)
+  * [Apache Kyuubi (Incubating)](../interpreter/jdbc.html#apache-kyuubi-incubating)
   * [Apache Phoenix](../interpreter/jdbc.html#apache-phoenix) 
   * [Apache Drill](../interpreter/jdbc.html#apache-drill)
   * [Apache Tajo](../interpreter/jdbc.html#apache-tajo)

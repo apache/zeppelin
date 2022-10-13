@@ -27,6 +27,7 @@ import org.apache.zeppelin.interpreter.jupyter.proto.ExecuteResponse;
 import org.apache.zeppelin.interpreter.jupyter.proto.ExecuteStatus;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterUtils;
 import org.apache.zeppelin.jupyter.JupyterKernelInterpreter;
+import org.apache.zeppelin.jupyter.PythonPackagePredicate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import py4j.GatewayServer;
@@ -67,10 +68,16 @@ public class IPythonInterpreter extends JupyterKernelInterpreter {
   }
 
   @Override
-  public List<String> getRequiredPackages() {
-    List<String> requiredPackages = super.getRequiredPackages();
-    requiredPackages.add("ipython");
-    requiredPackages.add("ipykernel");
+  public List<PythonPackagePredicate<String>> getRequiredPackagesPredicates() {
+    List<PythonPackagePredicate<String>> requiredPackages = super.getRequiredPackagesPredicates();
+    requiredPackages.add(
+        new PythonPackagePredicate<>("ipython",
+            packages -> packages.contains("ipython ") ||
+                        packages.contains("ipython=")));
+    requiredPackages.add(
+        new PythonPackagePredicate<>("ipykernel",
+            packages -> packages.contains("ipykernel ") ||
+                        packages.contains("ipykernel=")));
     return requiredPackages;
   }
 
@@ -173,9 +180,9 @@ public class IPythonInterpreter extends JupyterKernelInterpreter {
     Map<String, String> envs = super.setupKernelEnv();
     if (useBuiltinPy4j) {
       //TODO(zjffdu) don't do hard code on py4j here
-      File py4jDestFile = new File(kernelWorkDir, "py4j-src-0.10.7.zip");
+      File py4jDestFile = new File(kernelWorkDir, "py4j-src-0.10.9.7.zip");
       FileUtils.copyURLToFile(getClass().getClassLoader().getResource(
-              "python/py4j-src-0.10.7.zip"), py4jDestFile);
+              "python/py4j-src-0.10.9.7.zip"), py4jDestFile);
       if (additionalPythonPath != null) {
         // put the py4j at the end, because additionalPythonPath may already contain py4j.
         // e.g. IPySparkInterpreter
