@@ -1,7 +1,7 @@
 The following components are provided under Apache License.
 
     (Apache 2.0) nvd3.js v1.7.1 (http://nvd3.org/) - https://github.com/novus/nvd3/blob/v1.7.1/LICENSE.md
-    (Apache 2.0) gson v2.2 (com.google.code.gson:gson:jar:2.2 - https://github.com/google/gson) - https://github.com/google/gson/blob/gson-2.2/LICENSE
+    (Apache 2.0) gson v2.8.9 (com.google.code.gson:gson:jar:2.8.9 - https://github.com/google/gson) - https://github.com/google/gson/blob/gson-parent-2.8.9/LICENSE
     (Apache 2.0) Amazon Web Services SDK for Java v1.11.736 (https://aws.amazon.com/sdk-for-java/) - https://raw.githubusercontent.com/aws/aws-sdk-java/1.11.736/LICENSE.txt
     (Apache 2.0) JavaEWAH v0.7.9 (https://github.com/lemire/javaewah) - https://github.com/lemire/javaewah/blob/master/LICENSE-2.0.txt
     (Apache 2.0) Apache Commons Logging (commons-logging:commons-logging:1.1.1 - http://commons.apache.org/proper/commons-logging/)
