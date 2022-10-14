@@ -37,7 +37,7 @@
     <!--library versions-->
     <interpreter.name>flink</interpreter.name>
     <flink.version>${flink1.12.version}</flink.version>
-    <flink.hadoop.version>2.6.5</flink.hadoop.version>
+    <flink.hadoop.version>2.7.3</flink.hadoop.version>
     <hive.version>2.3.4</hive.version>
     <hiverunner.version>4.0.0</hiverunner.version>
     <grpc.version>1.15.0</grpc.version>
