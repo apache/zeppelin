@@ -35,7 +35,7 @@
 
   <properties>
     <unirest.version>3.7.04</unirest.version>
-    <commons-text.version>1.8</commons-text.version>
+    <commons-text.version>1.10.0</commons-text.version>
   </properties>
 
   <dependencies>

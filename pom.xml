@@ -124,7 +124,7 @@
     <httpcomponents.asyncclient.version>4.0.2</httpcomponents.asyncclient.version>
     <commons.compress.version>1.21</commons.compress.version>
     <commons.lang3.version>3.12.0</commons.lang3.version>
-    <commons.text.version>1.8</commons.text.version>
+    <commons.text.version>1.10.0</commons.text.version>
     <commons.configuration2.version>2.8.0</commons.configuration2.version>
     <commons.exec.version>1.3</commons.exec.version>
     <commons.codec.version>1.14</commons.codec.version>
