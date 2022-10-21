@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.integration;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.yarn.api.protocolrecords.GetApplicationsRequest;
 import org.apache.hadoop.yarn.api.protocolrecords.GetApplicationsResponse;
@@ -46,6 +47,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -99,6 +101,18 @@ public abstract class SparkIntegrationTest {
 
   protected void setUpSparkInterpreterSetting(InterpreterSetting interpreterSetting) {
     // sub class can customize spark interpreter setting.
+  }
+
+  /**
+   * Configures ivy to download jar libraries only from remote.
+   *
+   * @param interpreterSetting
+   * @throws IOException
+   */
+  private void setupIvySettings(InterpreterSetting interpreterSetting) throws IOException {
+    File ivysettings = new File(zeppelin.getZeppelinConfDir(), "ivysettings.xml");
+    FileUtils.copyToFile(SparkIntegrationTest.class.getResourceAsStream("/ivysettings.xml"), ivysettings);
+    interpreterSetting.setProperty("spark.jars.ivySettings", ivysettings.getAbsolutePath());
   }
 
   private boolean isHadoopVersionMatch() {
@@ -184,6 +198,7 @@ public abstract class SparkIntegrationTest {
 
     try {
       setUpSparkInterpreterSetting(sparkInterpreterSetting);
+      setupIvySettings(sparkInterpreterSetting);
       testInterpreterBasics();
 
       // no yarn application launched
@@ -215,6 +230,7 @@ public abstract class SparkIntegrationTest {
 
     try {
       setUpSparkInterpreterSetting(sparkInterpreterSetting);
+      setupIvySettings(sparkInterpreterSetting);
       testInterpreterBasics();
 
       // 1 yarn application launched
@@ -270,6 +286,7 @@ public abstract class SparkIntegrationTest {
     String yarnAppId = null;
     try {
       setUpSparkInterpreterSetting(sparkInterpreterSetting);
+      setupIvySettings(sparkInterpreterSetting);
       testInterpreterBasics();
 
       // 1 yarn application launched
@@ -366,6 +383,6 @@ public abstract class SparkIntegrationTest {
     if (process.waitFor() != 0) {
       throw new RuntimeException("Fail to run command: which python.");
     }
-    return IOUtils.toString(process.getInputStream()).trim();
+    return IOUtils.toString(process.getInputStream(), StandardCharsets.UTF_8).trim();
   }
 }
