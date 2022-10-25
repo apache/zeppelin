@@ -92,26 +92,26 @@ cd zeppelin
 Package Zeppelin.
 
 ```bash
-./mvnw clean package -DskipTests -Pspark-1.6 -Dflink.version=1.1.3 -Pscala-2.10
+./mvnw clean package -DskipTests -Pspark-3.2 -Dflink.version=1.1.3 -Pscala-2.11
 ```
 
 `-DskipTests` skips build tests- you're not developing (yet), so you don't need to do tests, the clone version *should* build.
 
-`-Pspark-1.6` tells maven to build a Zeppelin with Spark 1.6.  This is important because Zeppelin has its own Spark interpreter and the versions must be the same.
+`-Pspark-3.2` tells maven to build a Zeppelin with Spark 3.2.  This is important because Zeppelin has its own Spark interpreter and the versions must be the same.
 
 `-Dflink.version=1.1.3` tells maven specifically to build Zeppelin with Flink version 1.1.3.
 
--`-Pscala-2.10` tells maven to build with Scala v2.10.
+-`-Pscala-2.11` tells maven to build with Scala v2.11.
 
 
-**Note:** You can build against any version of Spark that has a Zeppelin build profile available. The key is to make sure you check out the matching version of Spark to build. At the time of this writing, Spark 1.6 was the most recent Spark version available.
+**Note:** You can build against any version of Spark that has a Zeppelin build profile available. The key is to make sure you check out the matching version of Spark to build. At the time of this writing, Spark 3.2 was the most recent Spark version available.
 
 **Note:** On build failures. Having installed Zeppelin close to 30 times now, I will tell you that sometimes the build fails for seemingly no reason.
 As long as you didn't edit any code, it is unlikely the build is failing because of something you did. What does tend to happen, is some dependency that maven is trying to download is unreachable.  If your build fails on this step here are some tips:
 
 - Don't get discouraged.
 - Scroll up and read through the logs. There will be clues there.
-- Retry (that is, run the `./mvnw clean package -DskipTests -Pspark-1.6` again)
+- Retry (that is, run the `./mvnw clean package -DskipTests -Pspark-3.2` again)
 - If there were clues that a dependency couldn't be downloaded wait a few hours or even days and retry again. Open source software when compiling is trying to download all of the dependencies it needs, if a server is off-line there is nothing you can do but wait for it to come back.
 - Make sure you followed all of the steps carefully.
 - Ask the community to help you. Go [here](http://zeppelin.apache.org/community.html) and join the user mailing list. People are there to help you. Make sure to copy and paste the build output (everything that happened in the console) and include that in your message.

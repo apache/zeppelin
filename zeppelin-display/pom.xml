@@ -33,7 +33,6 @@
   <properties>
     <!--plugin versions -->
     <plugin.failsafe.version>2.16</plugin.failsafe.version>
-    <plugin.scala.version>2.15.2</plugin.scala.version>
     <plugin.scalatest.version>1.0</plugin.scalatest.version>
   </properties>
 
@@ -89,20 +88,6 @@
     </dependency>
   </dependencies>
 
-  <profiles>
-    <profile>
-      <id>scala-2.11</id>
-      <dependencies>
-        <dependency>
-          <groupId>org.scala-lang.modules</groupId>
-          <artifactId>scala-xml_${scala.binary.version}</artifactId>
-          <version>1.1.0</version>
-          <scope>provided</scope>
-        </dependency>
-      </dependencies>
-    </profile>
-  </profiles>
-
   <build>
     <plugins>
       <plugin>
@@ -121,30 +106,49 @@
       </plugin>
 
       <plugin>
-        <groupId>org.scala-tools</groupId>
-        <artifactId>maven-scala-plugin</artifactId>
+        <groupId>net.alchim31.maven</groupId>
+        <artifactId>scala-maven-plugin</artifactId>
         <executions>
           <execution>
-            <id>compile</id>
+            <id>eclipse-add-source</id>
             <goals>
-              <goal>compile</goal>
+              <goal>add-source</goal>
             </goals>
-            <phase>compile</phase>
           </execution>
           <execution>
-            <id>test-compile</id>
-            <goals>
-              <goal>testCompile</goal>
-            </goals>
-            <phase>test-compile</phase>
-          </execution>
-          <execution>
+            <id>scala-compile-first</id>
             <phase>process-resources</phase>
             <goals>
               <goal>compile</goal>
             </goals>
           </execution>
+          <execution>
+            <id>scala-test-compile-first</id>
+            <phase>process-test-resources</phase>
+            <goals>
+              <goal>testCompile</goal>
+            </goals>
+          </execution>
         </executions>
+        <configuration>
+          <args>
+            <arg>-unchecked</arg>
+            <arg>-deprecation</arg>
+            <arg>-feature</arg>
+          </args>
+          <jvmArgs>
+            <jvmArg>-Xms1024m</jvmArg>
+            <jvmArg>-Xmx1024m</jvmArg>
+            <jvmArg>-XX:MaxMetaspaceSize=${MaxMetaspace}</jvmArg>
+          </jvmArgs>
+          <javacArgs>
+            <javacArg>-source</javacArg>
+            <javacArg>${java.version}</javacArg>
+            <javacArg>-target</javacArg>
+            <javacArg>${java.version}</javacArg>
+            <javacArg>-Xlint:all,-serial,-path,-options</javacArg>
+          </javacArgs>
+        </configuration>
       </plugin>
 
       <plugin>

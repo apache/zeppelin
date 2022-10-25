@@ -32,7 +32,7 @@
   <parent>
     <groupId>org.apache</groupId>
     <artifactId>apache</artifactId>
-    <version>17</version>
+    <version>26</version>
   </parent>
 
   <licenses>
@@ -97,11 +97,11 @@
 
   <properties>
     <!-- language versions -->
+    <maven.compiler.target>1.8</maven.compiler.target>
     <java.version>1.8</java.version>
-    <scala.2.10.version>2.10.5</scala.2.10.version>
-    <scala.version>${scala.2.10.version}</scala.version>
-    <scala.binary.version>2.10</scala.binary.version>
-    <scala.2.11.version>2.11.8</scala.2.11.version>
+    <scala.version>${scala.2.11.version}</scala.version>
+    <scala.binary.version>2.11</scala.binary.version>
+    <scala.2.11.version>2.11.12</scala.2.11.version>
     <scala.2.12.version>2.12.16</scala.2.12.version>
     <scalatest.version>3.0.7</scalatest.version>
     <scalacheck.version>1.12.5</scalacheck.version>
@@ -188,7 +188,7 @@
     <plugin.remote.resource.version>1.7.0</plugin.remote.resource.version>
     <plugin.resource.version>3.1.0</plugin.resource.version>
     <plugin.s3.upload.version>1.4</plugin.s3.upload.version>
-    <plugin.scala.alchim31.version>3.4.6</plugin.scala.alchim31.version>
+    <plugin.scala.alchim31.version>4.6.3</plugin.scala.alchim31.version>
     <plugin.scala.tools.version>2.15.2</plugin.scala.tools.version>
     <plugin.scalate.version>1.7.1</plugin.scalate.version>
     <plugin.scalatest.version>2.0.0</plugin.scalatest.version>
@@ -1801,12 +1801,6 @@
       </plugin>
 
       <plugin>
-        <groupId>org.scala-tools</groupId>
-        <artifactId>maven-scala-plugin</artifactId>
-        <version>${plugin.scala.tools.version}</version>
-      </plugin>
-
-      <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-source-plugin</artifactId>
         <version>${plugin.source.version}</version>
@@ -1836,17 +1830,6 @@
 
   <profiles>
     <profile>
-      <id>scala-2.10</id>
-      <activation>
-        <activeByDefault>true</activeByDefault>
-      </activation>
-      <properties>
-        <scala.version>${scala.2.10.version}</scala.version>
-        <scala.binary.version>2.10</scala.binary.version>
-      </properties>
-    </profile>
-
-    <profile>
       <id>scala-2.11</id>
       <properties>
         <scala.version>${scala.2.11.version}</scala.version>
@@ -1855,10 +1838,10 @@
     </profile>
     <profile>
       <id>scala-2.12</id>
-       <properties>
+      <properties>
         <scala.version>${scala.2.12.version}</scala.version>
         <scala.binary.version>2.12</scala.binary.version>
-       </properties>
+      </properties>
     </profile>
 
     <profile>
