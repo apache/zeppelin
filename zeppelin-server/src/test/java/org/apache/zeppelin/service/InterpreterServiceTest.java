@@ -18,6 +18,7 @@
 package org.apache.zeppelin.service;
 
 import static org.junit.Assert.assertEquals;
+
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.times;
@@ -38,7 +39,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class InterpreterServiceTest {
@@ -60,10 +61,6 @@ public class InterpreterServiceTest {
     when(mockZeppelinConfiguration.getInterpreterDir()).thenReturn(interpreterDir.toString());
     when(mockZeppelinConfiguration.getInterpreterLocalRepoPath())
         .thenReturn(localRepoDir.toString());
-
-    when(mockZeppelinConfiguration.getZeppelinProxyUrl()).thenReturn(null);
-    when(mockZeppelinConfiguration.getZeppelinProxyUser()).thenReturn(null);
-    when(mockZeppelinConfiguration.getZeppelinProxyPassword()).thenReturn(null);
 
     interpreterService =
         new InterpreterService(mockZeppelinConfiguration, mockInterpreterSettingManager);

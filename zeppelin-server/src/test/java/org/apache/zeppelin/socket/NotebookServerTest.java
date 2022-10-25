@@ -23,7 +23,7 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.mock;
@@ -541,7 +541,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
       notebookServer.setNotebookService(() -> notebookService);
       final Note note = mock(Note.class, RETURNS_DEEP_STUBS);
 
-      when(notebook.processNote(eq("noteId"), Mockito.any())).then(e -> e.getArgumentAt(1,NoteProcessor.class).process(note));
+      when(notebook.processNote(eq("noteId"), Mockito.any())).then(e -> e.getArgument(1, NoteProcessor.class).process(note));
       final Paragraph paragraph = mock(Paragraph.class, RETURNS_DEEP_STUBS);
       when(note.getParagraph("paragraphId")).thenReturn(paragraph);
 
@@ -597,7 +597,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
       notebookServer.setNotebook(() -> notebook);
       notebookServer.setNotebookService(() -> notebookService);
       final Note note = mock(Note.class, RETURNS_DEEP_STUBS);
-      when(notebook.processNote(eq("noteId"), Mockito.any())).then(e -> e.getArgumentAt(1,NoteProcessor.class).process(note));
+      when(notebook.processNote(eq("noteId"), Mockito.any())).then(e -> e.getArgument(1, NoteProcessor.class).process(note));
       final Paragraph paragraph = mock(Paragraph.class, RETURNS_DEEP_STUBS);
       when(note.getParagraph("paragraphId")).thenReturn(paragraph);
 
