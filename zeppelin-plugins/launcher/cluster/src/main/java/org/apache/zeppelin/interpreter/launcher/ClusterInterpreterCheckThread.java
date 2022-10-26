@@ -23,7 +23,7 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
+import java.util.Map;
 
 import static org.apache.zeppelin.cluster.meta.ClusterMeta.INTP_TSERVER_HOST;
 import static org.apache.zeppelin.cluster.meta.ClusterMeta.INTP_TSERVER_PORT;
@@ -54,9 +54,9 @@ public class ClusterInterpreterCheckThread extends Thread {
             ZeppelinConfiguration.create());
 
     clusterServer.getIntpProcessStatus(intpGroupId, connectTimeout,
-        new ClusterCallback<HashMap<String, Object>>() {
+        new ClusterCallback<Map<String, Object>>() {
           @Override
-          public InterpreterClient online(HashMap<String, Object> result) {
+          public InterpreterClient online(Map<String, Object> result) {
             String intpTSrvHost = (String) result.get(INTP_TSERVER_HOST);
             int intpTSrvPort = (int) result.get(INTP_TSERVER_PORT);
             LOGGER.info("Found cluster interpreter {}:{}", intpTSrvHost, intpTSrvPort);

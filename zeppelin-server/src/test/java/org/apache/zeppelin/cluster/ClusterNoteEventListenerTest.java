@@ -30,7 +30,6 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.fail;
 
 public class ClusterNoteEventListenerTest implements ClusterEventListener {

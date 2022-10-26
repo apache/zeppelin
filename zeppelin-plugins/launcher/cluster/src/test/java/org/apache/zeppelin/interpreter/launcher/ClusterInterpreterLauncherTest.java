@@ -33,7 +33,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class ClusterInterpreterLauncherTest extends ClusterMockTest {
-  private static Logger LOGGER = LoggerFactory.getLogger(ClusterInterpreterLauncherTest.class);
+  private static final Logger LOGGER =
+    LoggerFactory.getLogger(ClusterInterpreterLauncherTest.class);
 
   @BeforeClass
   public static void startTest() throws IOException, InterruptedException {

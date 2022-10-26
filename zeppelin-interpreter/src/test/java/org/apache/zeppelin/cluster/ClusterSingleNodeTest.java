@@ -28,9 +28,11 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 public class ClusterSingleNodeTest {
   private static Logger LOGGER = LoggerFactory.getLogger(ClusterSingleNodeTest.class);
@@ -98,22 +100,19 @@ public class ClusterSingleNodeTest {
     LOGGER.info("getServerMeta >>>");
 
     // Get metadata for all services
-    Object meta = clusterClient.getClusterMeta(ClusterMetaType.SERVER_META, "");
+    Map<String, Map<String, Object>> meta = clusterClient.getClusterMeta(ClusterMetaType.SERVER_META, "");
     LOGGER.info(meta.toString());
 
-    Object intpMeta = clusterClient.getClusterMeta(ClusterMetaType.INTP_PROCESS_META, "");
+    Map<String, Map<String, Object>> intpMeta = clusterClient.getClusterMeta(ClusterMetaType.INTP_PROCESS_META, "");
     LOGGER.info(intpMeta.toString());
 
     assertNotNull(meta);
-    assertEquals(true, (meta instanceof HashMap));
-    HashMap hashMap = (HashMap) meta;
+    assertTrue(meta instanceof Map);
 
     // Get metadata for the current service
-    Object values = hashMap.get(clusterClient.getClusterNodeName());
-    assertEquals(true, (values instanceof HashMap));
-    HashMap mapMetaValues = (HashMap) values;
-
-    assertEquals(true, mapMetaValues.size()>0);
+    Map<String, Object> values = meta.get(clusterClient.getClusterNodeName());
+    assertTrue(values instanceof Map);
+    assertTrue(values.size() > 0);
 
     LOGGER.info("getServerMeta <<<");
   }
@@ -121,7 +120,7 @@ public class ClusterSingleNodeTest {
   @Test
   public void putIntpProcessMeta() {
     // mock IntpProcess Meta
-    HashMap<String, Object> meta = new HashMap<>();
+    Map<String, Object> meta = new HashMap<>();
     meta.put(ClusterMeta.SERVER_HOST, zServerHost);
     meta.put(ClusterMeta.SERVER_PORT, zServerPort);
     meta.put(ClusterMeta.INTP_TSERVER_HOST, "INTP_TSERVER_HOST");
@@ -135,7 +134,7 @@ public class ClusterSingleNodeTest {
     clusterClient.putClusterMeta(ClusterMetaType.INTP_PROCESS_META, metaKey, meta);
 
     // get IntpProcess Meta
-    HashMap<String, HashMap<String, Object>> check
+    Map<String, Map<String, Object>> check
         = clusterClient.getClusterMeta(ClusterMetaType.INTP_PROCESS_META, metaKey);
 
     LOGGER.info(check.toString());
