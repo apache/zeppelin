@@ -119,7 +119,19 @@
     </dependency>
     <dependency>
       <groupId>org.apache.zeppelin</groupId>
-      <artifactId>spark-shims</artifactId>
+      <artifactId>spark-scala-2.12</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.zeppelin</groupId>
+      <artifactId>spark-scala-2.13</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.zeppelin</groupId>
+      <artifactId>spark-interpreter</artifactId>
       <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
