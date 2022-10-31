@@ -124,10 +124,10 @@ jobs:
           R -e "IRkernel::installspec()"
       - name: Install Environment
         run: |
-          ./mvnw clean install -DskipTests -DskipRat -am -pl zeppelin-integration -Pintegration -Pspark-scala-2.11 -Pspark-2.4 -Phadoop2 -B
+          ./mvnw clean install -DskipTests -DskipRat -am -pl zeppelin-integration -Pintegration -Pspark-scala-2.11 -Pspark-2.4 -Phadoop2 -Pweb-dist -B
       - name: run tests
         run: |
-          source ./testing/downloadSpark.sh "2.4.7" "2.7" && echo "SPARK_HOME: ${SPARK_HOME}" && xvfb-run --auto-servernum --server-args="-screen 0 1600x1024x16" ./mvnw verify -DskipRat -DfailIfNoTests=false -pl zeppelin-integration -Pintegration -Pspark-scala-2.11 -Pspark-2.4 -Phadoop2 -B
+          source ./testing/downloadSpark.sh "2.4.7" "2.7" && echo "SPARK_HOME: ${SPARK_HOME}" && xvfb-run --auto-servernum --server-args="-screen 0 1600x1024x16" ./mvnw verify -DskipRat -DfailIfNoTests=false -pl zeppelin-integration -Pintegration -Pspark-scala-2.11 -Pspark-2.4 -Phadoop2 -Pweb-dist -B
       - name: Print zeppelin logs
         if: always()
         run: if [ -d "logs" ]; then cat logs/*; fi
