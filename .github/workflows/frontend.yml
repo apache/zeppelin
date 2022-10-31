@@ -127,7 +127,7 @@ jobs:
           ./mvnw clean install -DskipTests -DskipRat -am -pl zeppelin-integration -Pintegration -Pspark-scala-2.11 -Pspark-2.4 -Phadoop2 -Pweb-dist -B
       - name: run tests
         run: |
-          source ./testing/downloadSpark.sh "2.4.7" "2.7" && echo "SPARK_HOME: ${SPARK_HOME}" && xvfb-run --auto-servernum --server-args="-screen 0 1600x1024x16" ./mvnw verify -DskipRat -DfailIfNoTests=false -pl zeppelin-integration -Pintegration -Pspark-scala-2.11 -Pspark-2.4 -Phadoop2 -Pweb-dist -B
+          source ./testing/downloadSpark.sh "2.4.7" "2.7" && echo "SPARK_HOME: ${SPARK_HOME}" && xvfb-run --auto-servernum --server-args="-screen 0 1600x1024x16" ./mvnw verify -DskipRat -DfailIfNoTests=false -pl zeppelin-integration -Pintegration -Pspark-scala-2.11 -Pspark-2.4 -Phadoop2 -Pweb-dist -Pusing-source-tree -B
       - name: Print zeppelin logs
         if: always()
         run: if [ -d "logs" ]; then cat logs/*; fi
