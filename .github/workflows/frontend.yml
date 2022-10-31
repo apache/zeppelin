@@ -49,9 +49,9 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-zeppelin-
       - name: Install application
-        run: ./mvnw clean install -DskipTests -DskipRat -am -pl zeppelin-web -Pscala-2.11 -Pspark-scala-2.11 -Pspark-2.4 -Phadoop2 -B
+        run: ./mvnw clean install -DskipTests -DskipRat -am -pl zeppelin-web -Pscala-2.11 -Pspark-scala-2.11 -Pspark-2.4 -Phadoop2 -Pweb-dist -B
       - name: Run headless test
-        run: xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" ./mvnw verify -DskipRat -pl zeppelin-web -Pscala-2.11 -Pspark-scala-2.11 -Pspark-2.4 -Phadoop2 -Pweb-e2e -B
+        run: xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" ./mvnw verify -DskipRat -pl zeppelin-web -Pscala-2.11 -Pspark-scala-2.11 -Pspark-2.4 -Phadoop2 -Pweb-dist -Pweb-e2e -B
       - name: Print zeppelin logs
         if: always()
         run: if [ -d "logs" ]; then cat logs/*; fi
