@@ -429,7 +429,7 @@ abstract class FlinkScalaInterpreter(val properties: Properties,
       tableConfig.getConfiguration.addAll(configuration)
 
       this.tblEnvFactory = new TableEnvFactory(this.flinkVersion, this.flinkShims,
-        this.benv, this.senv, tableConfig)
+        this.benv, this.senv, tableConfig, this.userJars.map(new URL(_)).asJava)
 
       // blink planner
       var btEnvSetting = this.flinkShims.createBlinkPlannerEnvSettingBuilder()
