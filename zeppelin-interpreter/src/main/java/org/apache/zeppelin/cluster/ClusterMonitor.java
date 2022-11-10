@@ -136,14 +136,14 @@ public class ClusterMonitor {
     LocalDateTime now = LocalDateTime.now();
     // check machine mate
     for (ClusterMetaType metaType : ClusterMetaType.values()) {
-      Map<String, HashMap<String, Object>> clusterMeta
+      Map<String, Map<String, Object>> clusterMeta
           = clusterManager.getClusterMeta(metaType, "");
 
       if (LOGGER.isDebugEnabled()) {
         LOGGER.debug("clusterMeta : {}", clusterMeta);
       }
 
-      for (Map.Entry<String, HashMap<String, Object>> entry : clusterMeta.entrySet()) {
+      for (Map.Entry<String, Map<String, Object>> entry : clusterMeta.entrySet()) {
         String key = entry.getKey();
         Map<String, Object> meta = entry.getValue();
 

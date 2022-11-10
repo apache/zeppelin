@@ -90,6 +90,7 @@ public class ClusterManagerServer extends ClusterManager {
     }
   }
 
+  @Override
   public void start() {
     if (!zConf.isClusterMode()) {
       return;
@@ -262,13 +263,13 @@ public class ClusterManagerServer extends ClusterManager {
   }
 
   // Obtain the server node whose resources are idle in the cluster
-  public HashMap<String, Object> getIdleNodeMeta() {
-    HashMap<String, Object> idleNodeMeta = null;
-    HashMap<String, HashMap<String, Object>> clusterMeta = getClusterMeta(SERVER_META, "");
+  public Map<String, Object> getIdleNodeMeta() {
+    Map<String, Object> idleNodeMeta = null;
+    Map<String, Map<String, Object>> clusterMeta = getClusterMeta(SERVER_META, "");
 
     long memoryIdle = 0;
-    for (Map.Entry<String, HashMap<String, Object>> entry : clusterMeta.entrySet()) {
-      HashMap<String, Object> meta = entry.getValue();
+    for (Map.Entry<String, Map<String, Object>> entry : clusterMeta.entrySet()) {
+      Map<String, Object> meta = entry.getValue();
       // Check if the service or process is offline
       String status = (String) meta.get(ClusterMeta.STATUS);
       if (null == status || StringUtils.isEmpty(status)

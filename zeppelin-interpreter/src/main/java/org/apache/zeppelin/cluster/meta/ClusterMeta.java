@@ -16,7 +16,6 @@
  */
 package org.apache.zeppelin.cluster.meta;
 
-import com.google.gson.Gson;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,36 +28,36 @@ import java.util.Map;
  * Metadata stores metadata information in a KV key-value pair
  */
 public class ClusterMeta implements Serializable {
-  private static Logger logger = LoggerFactory.getLogger(ClusterMeta.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(ClusterMeta.class);
 
   // The name of each server node in the cluster
-  public static String NODE_NAME            = "NODE_NAME";
+  public static final String NODE_NAME = "NODE_NAME";
 
   // zeppelin-server meta
-  public static String SERVER_HOST          = "SERVER_HOST";
-  public static String SERVER_PORT          = "SERVER_PORT";
-  public static String SERVER_START_TIME    = "SERVER_START_TIME";
+  public static final String SERVER_HOST = "SERVER_HOST";
+  public static final String SERVER_PORT = "SERVER_PORT";
+  public static final String SERVER_START_TIME = "SERVER_START_TIME";
 
   // interperter-process meta
-  public static String INTP_PROCESS_NAME    = "INTP_PROCESS_NAME";
-  public static String INTP_TSERVER_HOST    = "INTP_TSERVER_HOST";
-  public static String INTP_TSERVER_PORT    = "INTP_TSERVER_PORT";
-  public static String INTP_START_TIME      = "INTP_START_TIME";
+  public static final String INTP_PROCESS_NAME = "INTP_PROCESS_NAME";
+  public static final String INTP_TSERVER_HOST = "INTP_TSERVER_HOST";
+  public static final String INTP_TSERVER_PORT = "INTP_TSERVER_PORT";
+  public static final String INTP_START_TIME = "INTP_START_TIME";
 
   // zeppelin-server resource usage
-  public static String CPU_CAPACITY         = "CPU_CAPACITY";
-  public static String CPU_USED             = "CPU_USED";
-  public static String MEMORY_CAPACITY      = "MEMORY_CAPACITY";
-  public static String MEMORY_USED          = "MEMORY_USED";
+  public static final String CPU_CAPACITY = "CPU_CAPACITY";
+  public static final String CPU_USED = "CPU_USED";
+  public static final String MEMORY_CAPACITY = "MEMORY_CAPACITY";
+  public static final String MEMORY_USED = "MEMORY_USED";
 
-  public static String LATEST_HEARTBEAT     = "LATEST_HEARTBEAT";
+  public static final String LATEST_HEARTBEAT = "LATEST_HEARTBEAT";
 
   // zeppelin-server or interperter-process status
-  public static String STATUS               = "STATUS";
-  public static String ONLINE_STATUS        = "ONLINE";
-  public static String OFFLINE_STATUS       = "OFFLINE";
-  public static String INTP_PROCESS_COUNT   = "INTP_PROCESS_COUNT";
-  public static String INTP_PROCESS_LIST    = "INTP_PROCESS_LIST";
+  public static final String STATUS = "STATUS";
+  public static final String ONLINE_STATUS = "ONLINE";
+  public static final String OFFLINE_STATUS = "OFFLINE";
+  public static final String INTP_PROCESS_COUNT = "INTP_PROCESS_COUNT";
+  public static final String INTP_PROCESS_LIST = "INTP_PROCESS_LIST";
 
   // cluster_name = host:port
   // Map:cluster_name -> {server_tserver_host,server_tserver_port,cpu_capacity,...}
@@ -66,8 +65,6 @@ public class ClusterMeta implements Serializable {
 
   // Map:InterpreterGroupId -> {cluster_name,intp_tserver_host,...}
   private Map<String, Map<String, Object>> mapInterpreterMeta = new HashMap<>();
-
-  public static Gson gson = new Gson();
 
   public void put(ClusterMetaType type, String key, Object value) {
     Map<String, Object> mapValue = (Map<String, Object>) value;
@@ -104,7 +101,7 @@ public class ClusterMeta implements Serializable {
         if (mapServerMeta.containsKey(key)) {
           values = mapServerMeta.get(key);
         } else {
-          logger.warn("can not find key : {}", key);
+          LOGGER.warn("can not find key : {}", key);
         }
         break;
       case INTP_PROCESS_META:
@@ -114,7 +111,7 @@ public class ClusterMeta implements Serializable {
         if (mapInterpreterMeta.containsKey(key)) {
           values = mapInterpreterMeta.get(key);
         } else {
-          logger.warn("can not find key : {}", key);
+          LOGGER.warn("can not find key : {}", key);
         }
         break;
     }
@@ -131,14 +128,14 @@ public class ClusterMeta implements Serializable {
         if (mapServerMeta.containsKey(key)) {
           return mapServerMeta.remove(key);
         } else {
-          logger.warn("can not find key : {}", key);
+          LOGGER.warn("can not find key : {}", key);
         }
         break;
       case INTP_PROCESS_META:
         if (mapInterpreterMeta.containsKey(key)) {
           return mapInterpreterMeta.remove(key);
         } else {
-          logger.warn("can not find key : {}", key);
+          LOGGER.warn("can not find key : {}", key);
         }
         break;
     }

@@ -18,7 +18,6 @@ package org.apache.zeppelin.cluster;
 
 import org.apache.zeppelin.cluster.event.ClusterEventListener;
 import org.apache.zeppelin.cluster.event.ClusterMessage;
-import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,5 +33,6 @@ public class ClusterIntpSettingEventListenerTest implements ClusterEventListener
     receiveMsg = msg;
     LOGGER.info("ClusterIntpSettingEventListenerTest#onClusterEvent : {}", msg);
     ClusterMessage message = ClusterMessage.deserializeMessage(msg);
+    assertNotNull(message);
   }
 }
