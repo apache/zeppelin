@@ -233,7 +233,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        flink: [112, 113, 114, 115]
+        flink: [112, 113, 114, 115, 116]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -256,12 +256,12 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-zeppelin-
       - name: install environment for flink before 1.15 (exclusive)
-        if: matrix.flink != '115'
+        if: matrix.flink < '115'
         run: |
           ./mvnw install -DskipTests -am -pl flink/flink-scala-2.11,flink/flink-scala-2.12,flink-cmd,zeppelin-interpreter-integration -Pflink-${{ matrix.flink }} -Phadoop2 -Pintegration ${MAVEN_ARGS}
           ./mvnw clean package -pl zeppelin-plugins -amd -DskipTests ${MAVEN_ARGS}
       - name: install environment for flink after 1.15 (inclusive)
-        if: matrix.flink == '115'
+        if: matrix.flink >= '115'
         run: |
           ./mvnw install -DskipTests -am -pl flink/flink-scala-2.12,flink-cmd,zeppelin-interpreter-integration -Pflink-${{ matrix.flink }} -Phadoop2 -Pintegration ${MAVEN_ARGS}
           ./mvnw clean package -pl zeppelin-plugins -amd -DskipTests ${MAVEN_ARGS}
@@ -277,10 +277,10 @@ jobs:
           auto-activate-base: false
           use-mamba: true
       - name: run tests for flink before 1.15 (exclusive)
-        if: matrix.flink != '115'
-        run: ./mvnw verify -pl flink/flink-scala-2.11,flink/flink-scala-2.12,flink-cmd,zeppelin-interpreter-integration -am -Pflink-${{ matrix.flink }} -Phadoop2 -Pintegration -DfailIfNoTests=false -Dtest=org.apache.zeppelin.flink.*Test,FlinkIntegrationTest${{ matrix.flink }} ${MAVEN_ARGS}
-      - name: run tests for flink before 1.15 (inclusive)
-        if: matrix.flink == '115'
+        if: matrix.flink < '115'
+        run: ./mvnw verify -pl flink/flink-scala-2.11,flink/flink-scala-2.12,flink-cmd,zeppelin-interpreter-integration -Pflink-${{ matrix.flink }} -Phadoop2 -Pintegration -DfailIfNoTests=false -B -Dtest=org.apache.zeppelin.flink.*Test,FlinkIntegrationTest${{ matrix.flink }} ${MAVEN_ARGS}
+      - name: run tests for flink after 1.15 (inclusive)
+        if: matrix.flink >= '115'
         run: ./mvnw verify -pl flink/flink-scala-2.12,flink-cmd,zeppelin-interpreter-integration -Pflink-${{ matrix.flink }} -am -Phadoop2 -Pintegration -DfailIfNoTests=false -Dtest=org.apache.zeppelin.flink.*Test,FlinkIntegrationTest${{ matrix.flink }} ${MAVEN_ARGS}
       - name: Print zeppelin logs
         if: always()
