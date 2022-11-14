@@ -187,7 +187,6 @@
     <plugin.lifecycle.mapping.version>1.0.0</plugin.lifecycle.mapping.version>
     <plugin.protobuf.version>3.11.4</plugin.protobuf.version>
     <plugin.rat.version>0.13</plugin.rat.version>
-    <plugin.remote.resource.version>1.7.0</plugin.remote.resource.version>
     <plugin.resource.version>3.1.0</plugin.resource.version>
     <plugin.s3.upload.version>1.4</plugin.s3.upload.version>
     <plugin.scala.alchim31.version>4.6.3</plugin.scala.alchim31.version>
@@ -1434,24 +1433,6 @@
 
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-remote-resources-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>process-remote-resources</id>
-            <goals>
-              <goal>process</goal>
-            </goals>
-            <configuration>
-              <resourceBundles>
-                <resourceBundle>org.apache:apache-jar-resource-bundle:1.0</resourceBundle>
-              </resourceBundles>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-scm-plugin</artifactId>
         <configuration>
           <connectionType>developerConnection</connectionType>
@@ -1582,12 +1563,6 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-deploy-plugin</artifactId>
           <version>${plugin.deploy.version}</version>
-        </plugin>
-
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-remote-resources-plugin</artifactId>
-          <version>${plugin.remote.resource.version}</version>
         </plugin>
 
         <plugin>
