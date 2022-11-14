@@ -335,23 +335,6 @@
 
   <build>
     <plugins>
-      <plugin>
-        <artifactId>maven-enforcer-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>enforce</id>
-            <phase>none</phase>
-          </execution>
-        </executions>
-
-        <configuration>
-          <rules>
-            <requireJavaVersion>
-              <version>1.7</version>
-            </requireJavaVersion>
-          </rules>
-        </configuration>
-      </plugin>
 
       <plugin>
         <groupId>com.googlecode.maven-download-plugin</groupId>

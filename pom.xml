@@ -1446,7 +1446,7 @@
         <artifactId>maven-enforcer-plugin</artifactId>
         <executions>
           <execution>
-            <id>enforce</id>
+            <id>enforce-dependency-convergence</id>
             <configuration>
               <rules>
                 <DependencyConvergence/>
