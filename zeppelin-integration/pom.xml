@@ -37,14 +37,9 @@
   </prerequisites>
 
   <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-
     <!--test library versions-->
     <selenium.java.version>3.141.59</selenium.java.version>
     <commons.lang3.version>3.7</commons.lang3.version>
-
-    <!--plugin library versions-->
-    <plugin.failsafe.version>2.16</plugin.failsafe.version>
   </properties>
 
   <dependencies>

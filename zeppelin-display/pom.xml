@@ -30,12 +30,6 @@
   <packaging>jar</packaging>
   <name>Zeppelin: Display system apis</name>
 
-  <properties>
-    <!--plugin versions -->
-    <plugin.failsafe.version>2.16</plugin.failsafe.version>
-    <plugin.scalatest.version>1.0</plugin.scalatest.version>
-  </properties>
-
   <dependencyManagement>
     <dependencies>
       <dependency>

@@ -33,7 +33,6 @@
   <description>Zeppelin Interpreter Shaded</description>
 
   <properties>
-    <!--plugin versions-->
     <shaded.dependency.prefix>org.apache.zeppelin.shaded</shaded.dependency.prefix>
   </properties>
 
