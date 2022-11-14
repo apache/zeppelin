@@ -1457,20 +1457,6 @@
               <goal>enforce</goal>
             </goals>
           </execution>
-          <!-- https://maven.apache.org/enforcer/enforcer-rules/requireMavenVersion.html -->
-          <execution>
-            <id>enforce-maven</id>
-            <goals>
-              <goal>enforce</goal>
-            </goals>
-            <configuration>
-              <rules>
-                <requireMavenVersion>
-                  <version>[3.1.0,)</version>
-                </requireMavenVersion>
-              </rules>
-            </configuration>
-          </execution>
         </executions>
       </plugin>
 
