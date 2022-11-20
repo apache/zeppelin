@@ -30,8 +30,8 @@ import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.UserCredentials;
 import org.apache.zeppelin.user.UsernamePassword;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -59,10 +59,10 @@ import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_URL;
 import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_USER;
 import static org.apache.zeppelin.jdbc.JDBCInterpreter.PRECODE_KEY_TEMPLATE;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
 /**
@@ -92,7 +92,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     return p;
   }
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     Class.forName("org.h2.Driver");
     Connection connection = DriverManager.getConnection(getJdbcConnection());
@@ -266,8 +266,9 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
 
     InterpreterResult interpreterResult = t.interpret(sqlQuery, context);
     assertEquals(InterpreterResult.Code.ERROR, interpreterResult.code());
-    assertTrue(interpreterResult.toString(), interpreterResult.message()
-            .get(0).getData().contains("Table \"INVALID_TABLE\" not found;"));
+    assertTrue(interpreterResult.message()
+            .get(0).getData().contains("Table \"INVALID_TABLE\" not found;"),
+            interpreterResult.toString());
   }
 
   @Test
@@ -286,8 +287,8 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
 
     InterpreterResult interpreterResult = t.interpret(sqlQuery, context);
     List<InterpreterResultMessage> resultMessages = context.out.toInterpreterResultMessage();
-    assertEquals(interpreterResult.toString(),
-            InterpreterResult.Code.SUCCESS, interpreterResult.code());
+    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code(),
+            interpreterResult.toString());
     assertEquals(InterpreterResult.Type.TABLE, resultMessages.get(0).getType());
     assertEquals("SOME_OTHER_NAME\na_name\n", resultMessages.get(0).getData());
   }
@@ -710,8 +711,8 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
 
     assertEquals(InterpreterResult.Code.ERROR, interpreterResult.code());
     assertEquals(InterpreterResult.Type.TEXT, interpreterResult.message().get(0).getType());
-    assertTrue(interpreterResult.toString(),
-            interpreterResult.message().get(0).getData().contains("Syntax error"));
+    assertTrue(interpreterResult.message().get(0).getData().contains("Syntax error"),
+            interpreterResult.toString());
   }
 
   @Test
