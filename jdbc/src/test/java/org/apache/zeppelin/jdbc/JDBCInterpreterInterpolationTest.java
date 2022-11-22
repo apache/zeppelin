@@ -23,8 +23,8 @@ import org.apache.zeppelin.interpreter.InterpreterResultMessage;
 import org.apache.zeppelin.resource.LocalResourcePool;
 import org.apache.zeppelin.resource.ResourcePool;
 import org.apache.zeppelin.user.AuthenticationInfo;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -36,7 +36,7 @@ import java.util.List;
 import java.util.Properties;
 
 import static java.lang.String.format;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * JDBC interpreter Z-variable interpolation unit tests.
@@ -56,7 +56,7 @@ public class JDBCInterpreterInterpolationTest extends BasicJDBCTestCaseAdapter {
     return jdbcConnection;
   }
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     Class.forName("org.h2.Driver");
     Connection connection = DriverManager.getConnection(getJdbcConnection());

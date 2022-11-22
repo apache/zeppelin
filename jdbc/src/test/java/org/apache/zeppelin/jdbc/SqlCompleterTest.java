@@ -14,13 +14,12 @@
  */
 package org.apache.zeppelin.jdbc;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.apache.commons.lang3.StringUtils;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -95,8 +94,8 @@ public class SqlCompleterTest {
 
       logger.info(explain);
 
-      Assert.assertEquals("Buffer [" + buffer.replace(" ", ".") + "] and Cursor[" + cursor + "] "
-          + explain, expected, new HashSet<>(candidates));
+      assertEquals(expected, new HashSet<>(candidates), "Buffer [" + buffer.replace(" ", ".")
+              + "] and Cursor[" + cursor + "] " + explain);
     }
 
     private String explain(String buffer, int cursor, List<InterpreterCompletion> candidates) {
@@ -138,7 +137,7 @@ public class SqlCompleterTest {
 
   private SqlCompleter sqlCompleter = new SqlCompleter(0);
 
-  @Before
+  @BeforeEach
   public void beforeTest() throws IOException, SQLException {
     Set<String> schemas = new HashSet<>();
     Set<String> keywords = new HashSet<>();
