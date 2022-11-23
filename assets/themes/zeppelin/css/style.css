@@ -1117,6 +1117,10 @@ and (max-width: 768px) {
     font-size: 15px;
   }
 
+  .docs .dropdown-menu li.title a {
+    color: white !important;
+  }
+
   .navbar-collapse.in {
     overflow-y: auto;
   }
@@ -1214,6 +1218,10 @@ and (max-width: 996px) {
     font-size: 15px;
   }
 
+  .docs .dropdown-menu li.title a {
+    color: white !important;
+  }
+
   .navbar-inverse .navbar-nav > li > a {
     margin-left: -12px;
     font-size: 15px;
@@ -1298,6 +1306,11 @@ and (max-width: 1024px) {
 
 .docs .dropdown-menu li a {
   padding-left: 30px;
+}
+
+.docs .dropdown-menu li.title a {
+  padding-left: 0px;
+  color: #3071a9;
 }
 
 /*

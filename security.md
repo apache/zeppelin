@@ -1,3 +1,24 @@
+---
+layout: page
+title: "Security"
+description: "This page explains what security characteristics can be expected from Zeppelin, what measures operators of a Zeppelin instance will have to take, and how to report any security issues found in the Zeppelin software."
+group:
+---
+<!--
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+{% include JB/setup %}
+
 # Zeppelin Security
 
 This page explains what security characteristics can be expected from
