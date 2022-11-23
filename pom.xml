@@ -99,8 +99,10 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
     <!-- language versions -->
-    <maven.compiler.target>1.8</maven.compiler.target>
     <java.version>1.8</java.version>
+    <!-- These two lines could be changed like `maven.compiler.release` after updating JDK11 -->
+    <maven.compiler.source>${java.version}</maven.compiler.source>
+    <maven.compiler.target>${java.version}</maven.compiler.target>
     <scala.version>${scala.2.11.version}</scala.version>
     <scala.binary.version>2.11</scala.binary.version>
     <scala.2.11.version>2.11.12</scala.2.11.version>
@@ -199,8 +201,6 @@
     <plugin.surefire.version>2.22.2</plugin.surefire.version>
 
     <testcontainers.version>1.15.1</testcontainers.version>
-
-    <plugin.gitcommitid.useNativeGit>false</plugin.gitcommitid.useNativeGit>
 
     <MaxMetaspace>512m</MaxMetaspace>
 
@@ -1478,27 +1478,6 @@
         <artifactId>maven-deploy-plugin</artifactId>
       </plugin>
 
-      <plugin>
-        <groupId>pl.project13.maven</groupId>
-        <artifactId>git-commit-id-plugin</artifactId>
-        <executions>
-          <execution>
-            <goals>
-              <goal>revision</goal>
-            </goals>
-          </execution>
-        </executions>
-        <configuration>
-          <skipPoms>false</skipPoms>
-          <dotGitDirectory>${project.basedir}/.git</dotGitDirectory>
-          <useNativeGit>${plugin.gitcommitid.useNativeGit}</useNativeGit>
-          <generateGitPropertiesFile>true</generateGitPropertiesFile>
-          <generateGitPropertiesFilename>${project.build.outputDirectory}/git.properties</generateGitPropertiesFilename>
-          <failOnNoGitDirectory>false</failOnNoGitDirectory>
-          <dateFormat>yyyy-MM-dd HH:mm:ss</dateFormat>
-        </configuration>
-      </plugin>
-
     <!--TODO(alex): make part of the build and reconcile conflicts
     <plugin>
       <groupId>com.ning.maven.plugins</groupId>
@@ -1945,9 +1924,6 @@
 
     <profile>
       <id>rat</id>
-      <activation>
-        <property><name>!skipRat</name></property>
-      </activation>
       <build>
         <plugins>
         <plugin>
