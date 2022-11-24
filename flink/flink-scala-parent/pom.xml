@@ -821,30 +821,6 @@
         <artifactId>scalatest-maven-plugin</artifactId>
       </plugin>
 
-      <!-- Eclipse Integration -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-eclipse-plugin</artifactId>
-        <configuration>
-          <downloadSources>true</downloadSources>
-          <projectnatures>
-            <projectnature>org.scala-ide.sdt.core.scalanature</projectnature>
-            <projectnature>org.eclipse.jdt.core.javanature</projectnature>
-          </projectnatures>
-          <buildcommands>
-            <buildcommand>org.scala-ide.sdt.core.scalabuilder</buildcommand>
-          </buildcommands>
-          <classpathContainers>
-            <classpathContainer>org.scala-ide.sdt.launching.SCALA_CONTAINER</classpathContainer>
-            <classpathContainer>org.eclipse.jdt.launching.JRE_CONTAINER</classpathContainer>
-          </classpathContainers>
-          <sourceIncludes>
-            <sourceInclude>**/*.scala</sourceInclude>
-            <sourceInclude>**/*.java</sourceInclude>
-          </sourceIncludes>
-        </configuration>
-      </plugin>
-
       <plugin>
         <artifactId>maven-enforcer-plugin</artifactId>
       </plugin>
