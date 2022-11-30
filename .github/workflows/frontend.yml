@@ -11,10 +11,12 @@ env:
   # Disable keepAlive and pool
   # https://github.com/actions/virtual-environments/issues/1499#issuecomment-689467080
   MAVEN_OPTS: >-
-      -Xms1024M -Xmx2048M -XX:MaxMetaspaceSize=1024m -XX:-UseGCOverheadLimit -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+      -Xms1024M -Xmx2048M -XX:MaxMetaspaceSize=1024m -XX:-UseGCOverheadLimit
       -Dhttp.keepAlive=false
       -Dmaven.wagon.http.pool=false
       -Dmaven.wagon.http.retryHandler.count=3
+  MAVEN_ARGS: >-
+      -B --no-transfer-progress
   ZEPPELIN_HELIUM_REGISTRY: helium
   SPARK_PRINT_LAUNCH_COMMAND: "true"
   SPARK_LOCAL_IP: 127.0.0.1
@@ -49,9 +51,9 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-zeppelin-
       - name: Install application
-        run: ./mvnw clean install -DskipTests -am -pl zeppelin-web -Pscala-2.11 -Pspark-scala-2.11 -Pspark-2.4 -Phadoop2 -Pweb-dist -B
+        run: ./mvnw clean install -DskipTests -am -pl zeppelin-web -Pscala-2.11 -Pspark-scala-2.11 -Pspark-2.4 -Phadoop2 -Pweb-dist ${MAVEN_ARGS}
       - name: Run headless test
-        run: xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" ./mvnw verify -pl zeppelin-web -Pscala-2.11 -Pspark-scala-2.11 -Pspark-2.4 -Phadoop2 -Pweb-dist -Pweb-e2e -B
+        run: xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" ./mvnw verify -pl zeppelin-web -Pscala-2.11 -Pspark-scala-2.11 -Pspark-2.4 -Phadoop2 -Pweb-dist -Pweb-e2e ${MAVEN_ARGS}
       - name: Print zeppelin logs
         if: always()
         run: if [ -d "logs" ]; then cat logs/*; fi
@@ -80,7 +82,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-zeppelin-
       - name: Run headless test
-        run: xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" ./mvnw package -pl zeppelin-web-angular -Pweb-angular -B
+        run: xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" ./mvnw package -pl zeppelin-web-angular -Pweb-angular ${MAVEN_ARGS}
 
   test-selenium-with-spark-module-for-spark-2-4:
     runs-on: ubuntu-20.04
@@ -124,10 +126,10 @@ jobs:
           R -e "IRkernel::installspec()"
       - name: Install Environment
         run: |
-          ./mvnw clean install -DskipTests -am -pl zeppelin-integration -Pintegration -Pspark-scala-2.11 -Pspark-2.4 -Phadoop2 -Pweb-dist -B
+          ./mvnw clean install -DskipTests -am -pl zeppelin-integration -Pintegration -Pspark-scala-2.11 -Pspark-2.4 -Phadoop2 -Pweb-dist ${MAVEN_ARGS}
       - name: run tests
         run: |
-          source ./testing/downloadSpark.sh "2.4.7" "2.7" && echo "SPARK_HOME: ${SPARK_HOME}" && xvfb-run --auto-servernum --server-args="-screen 0 1600x1024x16" ./mvnw verify -DfailIfNoTests=false -pl zeppelin-integration -Pintegration -Pspark-scala-2.11 -Pspark-2.4 -Phadoop2 -Pweb-dist -Pusing-source-tree -B
+          source ./testing/downloadSpark.sh "2.4.7" "2.7" && echo "SPARK_HOME: ${SPARK_HOME}" && xvfb-run --auto-servernum --server-args="-screen 0 1600x1024x16" ./mvnw verify -DfailIfNoTests=false -pl zeppelin-integration -Pintegration -Pspark-scala-2.11 -Pspark-2.4 -Phadoop2 -Pweb-dist -Pusing-source-tree ${MAVEN_ARGS}
       - name: Print zeppelin logs
         if: always()
         run: if [ -d "logs" ]; then cat logs/*; fi
