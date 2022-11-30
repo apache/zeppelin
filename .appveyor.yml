@@ -31,4 +31,4 @@ install:
 
 build_script:
   - echo "Build"
-  - ps: ./mvnw clean package -DskipTests --no-transfer-progress
+  - ps: ./mvnw clean package -DskipTests -B
