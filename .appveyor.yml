@@ -31,4 +31,4 @@ install:
 
 build_script:
   - echo "Build"
-  - ps: ./mvnw clean package -DskipTests -B
+  - ps: ./mvnw clean package -DskipTests -Dorg.slf4j.simpleLogger.log.org.apache.maven.plugins.shade.mojo.ShadeMojo=warn -Dorg.slf4j.simpleLogger.log.com.googlecode.download.maven.plugin.internal.WGet=warn
