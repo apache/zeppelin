@@ -19,7 +19,9 @@
 package org.apache.zeppelin.alluxio;
 
 import alluxio.cli.fs.FileSystemShell;
-import alluxio.conf.*;
+import alluxio.conf.Configuration;
+import alluxio.conf.AlluxioConfiguration;
+import alluxio.conf.PropertyKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
