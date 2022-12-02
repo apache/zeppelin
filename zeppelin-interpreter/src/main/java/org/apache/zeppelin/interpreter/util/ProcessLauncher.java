@@ -132,7 +132,7 @@ public abstract class ProcessLauncher implements ExecuteResultHandler {
   @Override
   public void onProcessFailed(ExecuteException e) {
     LOGGER.warn("Process with cmd {} is failed due to", commandLine, e);
-
+    LOGGER.warn("Process ErrorMessage: \n{}", getErrorMessage());
     errorMessage = ExceptionUtils.getStackTrace(e);
     transition(State.TERMINATED);
   }
