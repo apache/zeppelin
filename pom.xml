@@ -1585,6 +1585,7 @@
           <artifactId>scala-maven-plugin</artifactId>
           <version>${plugin.scala.alchim31.version}</version>
           <configuration>
+            <recompileMode>all</recompileMode>
             <args>
               <arg>-unchecked</arg>
               <arg>-deprecation</arg>
