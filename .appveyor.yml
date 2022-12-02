@@ -26,6 +26,9 @@ build: off
 os:
   - Visual Studio 2015
 
+cache:
+  - C:\Users\appveyor\.m2
+
 install:
   - echo "Install"
 
