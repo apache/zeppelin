@@ -43,7 +43,7 @@ build_script:
   - cmd: echo %USERPROFILE%
   - cmd: java -version
   - cmd: >-
-      ./mvnw.cmd clean package -DskipTests ^
+      ./mvnw.cmd -v clean package -DskipTests ^
       -Dorg.slf4j.simpleLogger.log.org.apache.maven.plugins.shade.mojo.ShadeMojo=warn ^
       -Dorg.slf4j.simpleLogger.log.com.googlecode.download.maven.plugin.internal.WGet=warn ^
       -Dorg.slf4j.simpleLogger.log.org.apache.maven.plugins.dependency.fromDependencies.CopyDependenciesMojo=warn ^
