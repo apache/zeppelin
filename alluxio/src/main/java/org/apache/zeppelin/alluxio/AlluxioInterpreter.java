@@ -74,8 +74,6 @@ public class AlluxioInterpreter extends Interpreter {
 
     alluxioMasterHostname = property.getProperty(ALLUXIO_MASTER_HOSTNAME);
     alluxioMasterPort = property.getProperty(ALLUXIO_MASTER_PORT);
-
-
   }
 
   private Stream<String> filteredProperties(String prefix) {
