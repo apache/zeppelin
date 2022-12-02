@@ -87,7 +87,7 @@ public class AlluxioInterpreter extends Interpreter {
     logger.info("Starting Alluxio shell to connect to " + alluxioMasterHostname +
         " on port " + alluxioMasterPort);
     // Setting the extra parameters being set in the interpreter config starting with alluxio
-    filteredProperties("alluxio.").forEach(x->System.setProperty(x, properties.getProperty(x)));
+    filteredProperties("alluxio.").forEach(x -> System.setProperty(x, properties.getProperty(x)));
 
     System.setProperty(PropertyKey.USER_RPC_RETRY_MAX_DURATION.getName(), "5s");
 
