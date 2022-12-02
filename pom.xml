@@ -1584,6 +1584,13 @@
           <groupId>net.alchim31.maven</groupId>
           <artifactId>scala-maven-plugin</artifactId>
           <version>${plugin.scala.alchim31.version}</version>
+          <configuration>
+            <args>
+              <arg>-unchecked</arg>
+              <arg>-deprecation</arg>
+              <arg>-feature</arg>
+            </args>
+          </configuration>
         </plugin>
 
         <plugin>
