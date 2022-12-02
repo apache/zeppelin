@@ -33,6 +33,7 @@ cache:
   - %USERPROFILE%/.m2
 
 build_script:
+  - ps: echo %USERPROFILE%
   - java -version
   - ps: >-
       ./mvnw.cmd clean package `-DskipTests `
