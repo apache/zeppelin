@@ -21,7 +21,7 @@ version: '0.11-SNAPSHOT.{build}'
 
 shallow_clone: true
 
-build: Script
+build: Off
 
 os:
   - Visual Studio 2022
