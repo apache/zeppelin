@@ -21,22 +21,22 @@ version: '0.11-SNAPSHOT.{build}'
 
 shallow_clone: true
 
-build: off
+build: Script
 
 os:
   - Visual Studio 2015
 
+environment:
+  APPVEYOR_SAVE_CACHE_ON_ERROR: True
+
 cache:
   - C:\Users\appveyor\.m2
 
-install:
-  - echo "Install"
-
 build_script:
-  - echo "Build"
+  - java -version
   - ps: >-
       ./mvnw.cmd clean package `-DskipTests `
       `-Dorg.slf4j.simpleLogger.log.org.apache.maven.plugins.shade.mojo.ShadeMojo=warn `
       `-Dorg.slf4j.simpleLogger.log.com.googlecode.download.maven.plugin.internal.WGet=warn `
-      `-Dorg.slf4j.simpleLogger.log.org.apache.maven.plugins.dependency.fromDependencies.CopyDependenciesMojo=warm `
+      `-Dorg.slf4j.simpleLogger.log.org.apache.maven.plugins.dependency.fromDependencies.CopyDependenciesMojo=warn `
       --no-transfer-progress
