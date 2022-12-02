@@ -35,11 +35,22 @@
 
     <properties>
         <gcs.storage.version>1.14.0</gcs.storage.version>
+        <!-- Should match to the gcs storage version -->
+        <guava.version>20.0</guava.version>
         <google.testing.nio.version>0.32.0-alpha</google.testing.nio.version>
         <google.truth.version>0.27</google.truth.version>
         <plugin.name>NotebookRepo/GCSNotebookRepo</plugin.name>
     </properties>
 
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>20.0</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <dependencies>
         <dependency>
@@ -54,10 +65,6 @@
                 <exclusion>
                     <groupId>com.google.protobuf</groupId>
                     <artifactId>protobuf-java</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.google.guava</groupId>
-                    <artifactId>guava</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>com.google.api</groupId>
@@ -88,10 +95,6 @@
                     <groupId>com.google.code.findbugs</groupId>
                     <artifactId>jsr305</artifactId>
                 </exclusion>
-                <exclusion>
-                    <groupId>com.google.guava</groupId>
-                    <artifactId>guava</artifactId>
-                </exclusion>
             </exclusions>
         </dependency>
 
@@ -100,16 +103,6 @@
             <artifactId>truth</artifactId>
             <version>${google.truth.version}</version>
             <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.google.guava</groupId>
-                    <artifactId>guava</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>junit</groupId>
-                    <artifactId>junit</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <dependency>
@@ -117,10 +110,6 @@
             <artifactId>api-common</artifactId>
             <version>1.2.0</version>
             <exclusions>
-                <exclusion>
-                    <groupId>com.google.guava</groupId>
-                    <artifactId>guava</artifactId>
-                </exclusion>
                 <exclusion>
                     <groupId>com.google.code.findbugs</groupId>
                     <artifactId>jsr305</artifactId>

@@ -58,6 +58,7 @@
       <artifactId>zeppelin-zengine</artifactId>
       <version>${project.version}</version>
       <exclusions>
+        <!-- imported by hadoop-client -->
         <exclusion>
           <groupId>com.google.guava</groupId>
           <artifactId>guava</artifactId>
@@ -67,12 +68,6 @@
           <artifactId>asm</artifactId>
         </exclusion>
       </exclusions>
-    </dependency>
-
-    <dependency>
-      <groupId>com.google.guava</groupId>
-      <artifactId>guava</artifactId>
-      <version>20.0</version>
     </dependency>
 
     <dependency>
@@ -94,6 +89,7 @@
       <classifier>tests</classifier>
       <scope>test</scope>
       <exclusions>
+        <!-- imported by hadoop-client -->
         <exclusion>
           <groupId>com.google.guava</groupId>
           <artifactId>guava</artifactId>

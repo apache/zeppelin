@@ -456,10 +456,6 @@
             <artifactId>xercesImpl</artifactId>
           </exclusion>
           <exclusion>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-          </exclusion>
-          <exclusion>
             <groupId>com.google.code.findbugs</groupId>
             <artifactId>jsr305</artifactId>
           </exclusion>
@@ -699,10 +695,6 @@
           <exclusion>
             <groupId>org.codehaus.jackson</groupId>
             <artifactId>jackson-core-asl</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
           </exclusion>
           <exclusion>
             <groupId>com.google.code.findbugs</groupId>

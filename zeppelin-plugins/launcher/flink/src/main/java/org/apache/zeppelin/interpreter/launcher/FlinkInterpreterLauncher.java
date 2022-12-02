@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -37,8 +38,8 @@ import java.util.stream.Collectors;
 public class FlinkInterpreterLauncher extends StandardInterpreterLauncher {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(FlinkInterpreterLauncher.class);
-  private static final Set<String> FLINK_EXECUTION_MODES = Sets.newHashSet(
-          "local", "remote", "yarn", "yarn-application", "kubernetes-application");
+  private static final Set<String> FLINK_EXECUTION_MODES = new HashSet<>(Arrays.asList(
+          "local", "remote", "yarn", "yarn-application", "kubernetes-application"));
 
   public FlinkInterpreterLauncher(ZeppelinConfiguration zConf, RecoveryStorage recoveryStorage) {
     super(zConf, recoveryStorage);
