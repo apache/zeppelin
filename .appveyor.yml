@@ -24,7 +24,7 @@ shallow_clone: true
 build: Script
 
 os:
-  - Visual Studio 2015
+  - Visual Studio 2022
 
 environment:
   APPVEYOR_SAVE_CACHE_ON_ERROR: True
