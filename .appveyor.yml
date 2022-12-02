@@ -30,7 +30,7 @@ environment:
   APPVEYOR_SAVE_CACHE_ON_ERROR: True
 
 cache:
-  - C:\Users\appveyor\.m2
+  - %USERPROFILE%/.m2
 
 build_script:
   - java -version
