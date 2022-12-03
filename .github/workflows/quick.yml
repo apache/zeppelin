@@ -9,8 +9,6 @@ on:
     branches:
       - master
       - branch-*
-    paths:
-      - !**.md # Ignore documentation contribution
 
 permissions:
   contents: read
