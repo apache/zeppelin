@@ -32,7 +32,7 @@
     <name>Zeppelin: Alluxio interpreter</name>
 
     <properties>
-        <alluxio.version>2.5.0</alluxio.version>
+        <alluxio.version>2.9.0</alluxio.version>
         <interpreter.name>alluxio</interpreter.name>
     </properties>
 
@@ -47,7 +47,7 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>29.0-jre</version>
+            <version>31.0.1-jre</version>
             <scope>test</scope>
         </dependency>
         <dependency>
