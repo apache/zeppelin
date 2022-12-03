@@ -1,11 +1,16 @@
 name: quick
+
 on:
   push:
+    branches:
+      - master
+      - branch-*
   pull_request:
     branches:
       - master
       - branch-*
-    types: [opened, synchronize]
+    paths:
+      - !**.md # Ignore documentation contribution
 
 permissions:
   contents: read
