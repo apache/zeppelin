@@ -20,18 +20,18 @@ package org.apache.zeppelin.notebook.repo;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.notebook.repo.mock.VFSNotebookRepoMock;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 //TODO(zjffdu) move it to zeppelin-zengine
 public class NotebookRepoSyncInitializationTest {
@@ -45,13 +45,13 @@ public class NotebookRepoSyncInitializationTest {
   private String unsupportedStorageConf = validFirstStorageClass + "," + validSecondStorageClass + "," + validSecondStorageClass;
   private String emptyStorageConf = "";
 
-  @Before
+  @BeforeEach
   public void setUp(){
     System.setProperty(ConfVars.ZEPPELIN_PLUGINS_DIR.getVarName(), new File("../../../plugins").getAbsolutePath());
     System.setProperty("zeppelin.isTest", "true");
   }
 
-  @After
+  @AfterEach
   public void tearDown() {
     System.clearProperty("zeppelin.isTest");
   }

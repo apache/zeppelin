@@ -29,18 +29,15 @@ import org.apache.zeppelin.notebook.NoteManager;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.repo.InMemoryNotebookRepo;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
-import org.apache.zeppelin.search.LuceneSearch;
-import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.user.Credentials;
-import org.junit.After;
-import org.junit.Before;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 /**
  * This class will load configuration files under
@@ -62,7 +59,7 @@ public abstract class AbstractInterpreterTest {
   protected File notebookDir;
   protected ZeppelinConfiguration conf;
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     // copy the resources files to a temp folder
     zeppelinHome = new File("..");
@@ -97,7 +94,7 @@ public abstract class AbstractInterpreterTest {
     interpreterSettingManager.setNotebook(notebook);
   }
 
-  @After
+  @AfterEach
   public void tearDown() throws Exception {
     if (interpreterSettingManager != null) {
       interpreterSettingManager.close();

@@ -18,26 +18,6 @@
 package org.apache.zeppelin.notebook;
 
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.apache.commons.lang3.tuple.Triple;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectBuilder;
@@ -61,12 +41,30 @@ import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
 import org.apache.zeppelin.user.UserCredentials;
 import org.apache.zeppelin.user.UsernamePassword;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class ParagraphTest extends AbstractInterpreterTest {
 
@@ -135,18 +133,15 @@ public class ParagraphTest extends AbstractInterpreterTest {
     assertEquals("a", paragraph.getScriptText());
     assertEquals(0, paragraph.getLocalProperties().size());
   }
-
-  @Rule
-  public ExpectedException expectedEx = ExpectedException.none();
-
+  
   @Test
   public void testInvalidProperties() {
-    expectedEx.expect(RuntimeException.class);
-    expectedEx.expectMessage("Invalid paragraph properties format");
-
-    Note note = createNote();
-    Paragraph paragraph = new Paragraph(note, null);
-    paragraph.setText("%test(p1=v1=v2) a");
+    assertThrows(RuntimeException.class, () -> {
+              Note note = createNote();
+              Paragraph paragraph = new Paragraph(note, null);
+              paragraph.setText("%test(p1=v1=v2) a");
+            },
+            "Invalid paragraph properties format");
   }
 
   @Test
@@ -256,7 +251,7 @@ public class ParagraphTest extends AbstractInterpreterTest {
     assertEquals(defaultValue, newUserParagraph.getReturn().message().get(0).getData());
   }
 
-  @Ignore
+  @Disabled
   public void returnUnchangedResultsWithDifferentUser() throws Throwable {
     Note mockNote = mock(Note.class);
     when(mockNote.getCredentials()).thenReturn(mock(Credentials.class));

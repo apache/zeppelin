@@ -2,16 +2,16 @@ package org.apache.zeppelin.interpreter.install;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -34,7 +34,7 @@ public class InstallInterpreterTest {
   private InstallInterpreter installer;
   private File interpreterBaseDir;
 
-  @Before
+  @BeforeEach
   public void setUp() throws IOException {
     tmpDir = new File(System.getProperty("java.io.tmpdir")+"/ZeppelinLTest_"+System.currentTimeMillis());
     new File(tmpDir, "conf").mkdirs();
@@ -59,7 +59,7 @@ public class InstallInterpreterTest {
         .getAbsolutePath());
   }
 
-  @After
+  @AfterEach
   public void tearDown() throws IOException {
     FileUtils.deleteDirectory(tmpDir);
   }

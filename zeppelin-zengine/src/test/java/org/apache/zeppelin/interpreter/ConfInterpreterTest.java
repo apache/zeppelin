@@ -18,12 +18,11 @@
 package org.apache.zeppelin.interpreter;
 
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.Properties;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ConfInterpreterTest extends AbstractInterpreterTest {
 
@@ -100,7 +99,7 @@ public class ConfInterpreterTest extends AbstractInterpreterTest {
             .build();
 
     InterpreterResult result = confInterpreter.interpret(" property_1\t \n new_property\t  \n", context);
-    assertEquals(result.toString(), InterpreterResult.Code.SUCCESS, result.code);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code, result.toString());
 
     assertTrue(interpreterFactory.getInterpreter("test", executionContext) instanceof RemoteInterpreter);
     RemoteInterpreter remoteInterpreter = (RemoteInterpreter) interpreterFactory.getInterpreter("test", executionContext);

@@ -30,9 +30,7 @@ import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 
@@ -41,16 +39,16 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.only;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import org.mockito.junit.MockitoJUnitRunner;
 
-@RunWith(MockitoJUnitRunner.class)
 public class NoteTest {
   @Mock
   NotebookRepo repo;
@@ -83,16 +81,13 @@ public class NoteTest {
 
   private AuthenticationInfo anonymous = new AuthenticationInfo("anonymous");
 
-  @Before
-  public void setUp() {
-    when(interpreter.getInterpreterGroup()).thenReturn(interpreterGroup);
-    when(interpreterGroup.getInterpreterSetting()).thenReturn(interpreterSetting);
-  }
 
   @Test
   public void runNormalTest() throws InterpreterNotFoundException {
     when(interpreterFactory.getInterpreter(eq("spark"), any())).thenReturn(interpreter);
     when(interpreter.getScheduler()).thenReturn(scheduler);
+    when(interpreter.getInterpreterGroup()).thenReturn(interpreterGroup);
+    when(interpreterGroup.getInterpreterSetting()).thenReturn(interpreterSetting);
 
     String pText = "%spark sc.version";
     Note note = new Note("test", "test", interpreterFactory, interpreterSettingManager, paragraphJobListener, credentials, noteEventListener);
@@ -106,7 +101,7 @@ public class NoteTest {
     verify(scheduler, only()).submit(pCaptor.capture());
     verify(interpreterFactory, times(1)).getInterpreter(eq("spark"), any());
 
-    assertEquals("Paragraph text", pText, pCaptor.getValue().getText());
+    assertEquals( pText, pCaptor.getValue().getText(), "Paragraph text");
   }
 
   @Test

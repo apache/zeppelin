@@ -16,10 +16,10 @@
  */
 package org.apache.zeppelin.search;
 import static org.apache.zeppelin.search.LuceneSearch.formatId;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -45,9 +45,9 @@ import org.apache.zeppelin.notebook.repo.InMemoryNotebookRepo;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class LuceneSearchTest {
 
@@ -57,7 +57,7 @@ public class LuceneSearchTest {
   private LuceneSearch noteSearchService;
   private File indexDir;
 
-  @Before
+  @BeforeEach
   public void startUp() throws IOException {
     indexDir = Files.createTempDirectory("lucene").toFile();
     System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_SEARCH_INDEX_PATH.getVarName(), indexDir.getAbsolutePath());
@@ -75,7 +75,7 @@ public class LuceneSearchTest {
     noteSearchService = new LuceneSearch(ZeppelinConfiguration.create(), notebook);
   }
 
-  @After
+  @AfterEach
   public void shutDown() throws IOException {
     noteSearchService.close();
     FileUtils.deleteDirectory(indexDir);

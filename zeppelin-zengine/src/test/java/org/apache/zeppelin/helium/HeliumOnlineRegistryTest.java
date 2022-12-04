@@ -17,11 +17,11 @@
 
 package org.apache.zeppelin.helium;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.apache.commons.io.FileUtils;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import java.io.File;
 import java.io.IOException;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
@@ -35,7 +35,7 @@ public class HeliumOnlineRegistryTest {
 
   private File tmpDir;
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     tmpDir = new File(
             System.getProperty("java.io.tmpdir")
@@ -44,7 +44,7 @@ public class HeliumOnlineRegistryTest {
     );
   }
 
-  @After
+  @AfterEach
   public void tearDown() throws IOException {
     FileUtils.deleteDirectory(tmpDir);
   }
@@ -73,12 +73,12 @@ public class HeliumOnlineRegistryTest {
             ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_S3_TIMEOUT.getStringValue()
     );
     assertTrue(
+            basicTimeout > processTime,
             String.format(
                     "Wrong timeout during connection: expected %s, actual is about %d",
                     TIMEOUT,
                     processTime
-            ),
-            basicTimeout > processTime
+            )
     );
   }
 }

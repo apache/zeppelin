@@ -40,9 +40,9 @@ import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,13 +66,13 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
 
 
@@ -89,7 +89,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
   private QuartzSchedulerService schedulerService;
 
   @Override
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_PUBLIC.getVarName(), "true");
     System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_CRON_ENABLE.getVarName(), "true");
@@ -109,7 +109,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
   }
 
   @Override
-  @After
+  @AfterEach
   public void tearDown() throws Exception {
     super.tearDown();
     System.clearProperty(ConfVars.ZEPPELIN_NOTEBOOK_PUBLIC.getVarName());
@@ -124,13 +124,12 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     notebookRepo = new DummyNotebookRepo();
     notebook = new Notebook(conf, mock(AuthorizationService.class), notebookRepo, new NoteManager(notebookRepo, conf), interpreterFactory,
         interpreterSettingManager, credentials, null);
-    assertFalse("Revision is not supported in DummyNotebookRepo", notebook.isRevisionSupported());
+    assertFalse( notebook.isRevisionSupported(), "Revision is not supported in DummyNotebookRepo");
 
     notebookRepo = new DummyNotebookRepoWithVersionControl();
     notebook = new Notebook(conf, mock(AuthorizationService.class), notebookRepo, new NoteManager(notebookRepo, conf), interpreterFactory,
         interpreterSettingManager, credentials, null);
-    assertTrue("Revision is supported in DummyNotebookRepoWithVersionControl",
-        notebook.isRevisionSupported());
+    assertTrue(notebook.isRevisionSupported(), "Revision is supported in DummyNotebookRepoWithVersionControl");
   }
 
   public static class DummyNotebookRepo implements NotebookRepo {
@@ -1879,7 +1878,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
           return new File(conf.getNotebookDir() + "/" + notebookRepo.buildNoteFileName(note));
         });
       String noteJson = IOUtils.toString(new FileInputStream(noteFile), StandardCharsets.UTF_8);
-      assertTrue(noteJson, noteJson.contains("note2"));
+      assertTrue(noteJson.contains("note2"), noteJson);
     } finally {
       if (noteId != null) {
         notebook.removeNote(noteId, anonymous);

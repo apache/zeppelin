@@ -23,8 +23,8 @@ import org.apache.zeppelin.interpreter.InterpreterOption;
 import org.apache.zeppelin.interpreter.integration.DownloadUtils;
 import org.apache.zeppelin.interpreter.remote.ExecRemoteInterpreterProcess;
 import org.apache.zeppelin.util.Util;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,9 +35,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Properties;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class SparkInterpreterLauncherTest {
 
@@ -46,7 +46,7 @@ public class SparkInterpreterLauncherTest {
   private String sparkHome;
   private String zeppelinHome;
 
-  @Before
+  @BeforeEach
   public void setUp() {
     for (final ZeppelinConfiguration.ConfVars confVar : ZeppelinConfiguration.ConfVars.values()) {
       System.clearProperty(confVar.getVarName());
