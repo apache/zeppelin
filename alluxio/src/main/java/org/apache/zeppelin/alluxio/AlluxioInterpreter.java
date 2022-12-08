@@ -78,7 +78,7 @@ public class AlluxioInterpreter extends Interpreter {
 
   private Stream<String> filteredProperties(String prefix) {
     return properties.stringPropertyNames().stream().filter(
-            propertyKey -> propertyKey.startsWith(prefix)
+      propertyKey -> propertyKey.startsWith(prefix)
     );
   }
 
