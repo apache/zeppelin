@@ -156,6 +156,7 @@
     <jsoup.version>1.13.1</jsoup.version>
     <protobuf.version>3.21.7</protobuf.version>
     <grpc.version>1.51.0</grpc.version>
+    <google.errorprone.version>2.14.0</google.errorprone.version>
 
     <!-- test library versions -->
     <junit.jupiter.version>5.7.1</junit.jupiter.version>
