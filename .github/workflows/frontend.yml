@@ -2,9 +2,8 @@ name: frontend
 
 on:
   push:
-    branches:
-      - master
-      - branch-*
+    ignore-branches:
+      - dependabot/**
   pull_request:
     branches:
       - master
