@@ -199,6 +199,7 @@
     <plugin.shade.version>3.2.2</plugin.shade.version>
     <plugin.source.version>3.2.1</plugin.source.version>
     <plugin.surefire.version>2.22.2</plugin.surefire.version>
+    <plugin.os.version>1.4.1.Final</plugin.os.version>
 
     <testcontainers.version>1.15.1</testcontainers.version>
 
