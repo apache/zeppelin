@@ -139,29 +139,29 @@ public class ParagraphTextParserTest {
 
   @Test
   public void testParagraphTextUnfinishedConfig() {
-    assertThrows(RuntimeException.class, () ->
-              ParagraphTextParser.parse("%spark.pyspark(pool="),
+    assertThrows(RuntimeException.class,
+            () -> ParagraphTextParser.parse("%spark.pyspark(pool="),
             "Problems by parsing paragraph. Not finished interpreter configuration");
   }
 
   @Test
   public void testParagraphTextUnfinishedQuote() {
-    assertThrows(RuntimeException.class, () ->
-                    ParagraphTextParser.parse("%spark.pyspark(pool=\"2314234) sc.version"),
+    assertThrows(RuntimeException.class,
+            () -> ParagraphTextParser.parse("%spark.pyspark(pool=\"2314234) sc.version"),
             "Problems by parsing paragraph. Not finished interpreter configuration");
   }
 
   @Test
   public void testParagraphTextUnclosedBackslash() {
-    assertThrows(RuntimeException.class, () ->
-                    ParagraphTextParser.parse("%spark.pyspark(pool=\\"),
+    assertThrows(RuntimeException.class,
+            () -> ParagraphTextParser.parse("%spark.pyspark(pool=\\"),
             "Problems by parsing paragraph. Unfinished escape sequence");
   }
 
   @Test
   public void testParagraphTextEmptyKey() {
-    assertThrows((RuntimeException.class), () ->
-            ParagraphTextParser.parse("%spark.pyspark(pool=123, ,)"),
-                    "Problems by parsing paragraph. Local property key is empty");
+    assertThrows((RuntimeException.class),
+            () -> ParagraphTextParser.parse("%spark.pyspark(pool=123, ,)"),
+            "Problems by parsing paragraph. Local property key is empty");
   }
 }

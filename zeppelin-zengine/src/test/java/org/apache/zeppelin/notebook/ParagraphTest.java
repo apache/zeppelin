@@ -133,10 +133,11 @@ public class ParagraphTest extends AbstractInterpreterTest {
     assertEquals("a", paragraph.getScriptText());
     assertEquals(0, paragraph.getLocalProperties().size());
   }
-  
+
   @Test
   public void testInvalidProperties() {
-    assertThrows(RuntimeException.class, () -> {
+    assertThrows(RuntimeException.class,
+            () -> {
               Note note = createNote();
               Paragraph paragraph = new Paragraph(note, null);
               paragraph.setText("%test(p1=v1=v2) a");
@@ -255,7 +256,7 @@ public class ParagraphTest extends AbstractInterpreterTest {
   public void returnUnchangedResultsWithDifferentUser() throws Throwable {
     Note mockNote = mock(Note.class);
     when(mockNote.getCredentials()).thenReturn(mock(Credentials.class));
-    Paragraph spyParagraph = spy(new Paragraph("para_1", mockNote,  null));
+    Paragraph spyParagraph = spy(new Paragraph("para_1", mockNote, null));
 
     Interpreter mockInterpreter = mock(Interpreter.class);
     spyParagraph.setInterpreter(mockInterpreter);
@@ -357,7 +358,7 @@ public class ParagraphTest extends AbstractInterpreterTest {
     UserCredentials uc = mock(UserCredentials.class);
     when(creds.getUserCredentials(anyString())).thenReturn(uc);
     UsernamePassword up = new UsernamePassword("user", "pwd");
-    when(uc.getUsernamePassword("ent")).thenReturn(up );
+    when(uc.getUsernamePassword("ent")).thenReturn(up);
 
     Interpreter mockInterpreter = mock(Interpreter.class);
     spyParagraph.setInterpreter(mockInterpreter);

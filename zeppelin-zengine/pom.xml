@@ -236,6 +236,7 @@
       <groupId>org.mockito</groupId>
       <artifactId>mockito-junit-jupiter</artifactId>
       <scope>test</scope>
+      <version>${mockito.version}</version>
       <exclusions>
         <exclusion>
           <groupId>org.junit.jupiter</groupId>

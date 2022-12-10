@@ -96,7 +96,8 @@ public class NoteManagerTest {
   @Test
   public void testAddNoteRejectsDuplicatePath() throws IOException {
 
-    assertThrows(NotePathAlreadyExistsException.class, () -> {
+    assertThrows(NotePathAlreadyExistsException.class,
+            () -> {
               Note note1 = createNote("/prod/note");
               Note note2 = createNote("/prod/note");
 
@@ -108,7 +109,8 @@ public class NoteManagerTest {
 
   @Test
   public void testMoveNoteRejectsDuplicatePath() throws IOException {
-    assertThrows(NotePathAlreadyExistsException.class, () -> {
+    assertThrows(NotePathAlreadyExistsException.class,
+            () -> {
               Note note1 = createNote("/prod/note-1");
               Note note2 = createNote("/prod/note-2");
 
