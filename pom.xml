@@ -152,7 +152,7 @@
     <hadoop-client-minicluster.artifact>hadoop-client</hadoop-client-minicluster.artifact>
 
     <quartz.scheduler.version>2.3.2</quartz.scheduler.version>
-    <jettison.version>1.4.0</jettison.version>
+    <jettison.version>1.5.1</jettison.version>
     <jsoup.version>1.13.1</jsoup.version>
     <protoc.version>3.5.0</protoc.version>
     <grpc.version>1.26.0</grpc.version>
