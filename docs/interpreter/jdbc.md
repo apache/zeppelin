@@ -162,7 +162,7 @@ The last step is **Dependency Setting**. Since Zeppelin only includes `PostgreSQ
 
 <img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/edit_dependencies.png" width="600px" />
 
-That's it. You can find more JDBC connection setting examples([Mysql](#mysql), [MariaDB](#mariadb), [Redshift](#redshift), [Apache Hive](#apache-hive), [Presto/Trino](#prestotrino), [Impala](#impala), [Apache Kyuubi (Incubating)](#apache-kyuubi-(incubating)), [Apache Phoenix](#apache-phoenix), and [Apache Tajo](#apache-tajo)) in [this section](#examples).
+That's it. You can find more JDBC connection setting examples([Mysql](#mysql), [MariaDB](#mariadb), [Redshift](#redshift), [Apache Hive](#apache-hive), [Presto/Trino](#prestotrino), [Impala](#impala), [Apache Kyuubi](#apache-kyuubi), [Apache Phoenix](#apache-phoenix), and [Apache Tajo](#apache-tajo)) in [this section](#examples).
 
 ## JDBC Interpreter Datasource Pool Configuration
 The Jdbc interpreter uses the connection pool technology, and supports users to do some personal configuration of the connection pool. For example, we can configure `default.validationQuery='select 1'` and `default.testOnBorrow=true` in the Interpreter configuration to avoid the "Invalid SessionHandle" runtime error caused by Session timeout when connecting to HiveServer2 through JDBC interpreter.
@@ -827,7 +827,7 @@ Dependencies
   </tr>
 </table>
 
-### Apache Kyuubi (Incubating)
+### Apache Kyuubi
 
 Zeppelin connect to `Kyuubi` to run sql via `KyuubiHiveDriver`. There are 2 cases of connecting with Kyuubi:
 
@@ -865,7 +865,7 @@ Dependencies
     <th>Excludes</th>
   </tr>
   <tr>
-    <td>org.apache.kyuubi:kyuubi-hive-jdbc-shaded:1.5.2-incubating</td>
+    <td>org.apache.kyuubi:kyuubi-hive-jdbc-shaded:1.6.1-incubating</td>
     <td></td>
   </tr>
   <tr>
@@ -916,7 +916,7 @@ Dependencies
     <th>Excludes</th>
   </tr>
   <tr>
-    <td>org.apache.kyuubi:kyuubi-hive-jdbc-shaded:1.5.2-incubating</td>
+    <td>org.apache.kyuubi:kyuubi-hive-jdbc-shaded:1.6.1-incubating</td>
     <td></td>
   </tr>
   <tr>
