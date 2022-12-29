@@ -34,7 +34,6 @@
   <properties>
     <interpreter.name>python</interpreter.name>
     <python.py4j.version>0.10.7</python.py4j.version>
-    <grpc.version>1.15.0</grpc.version>
     <interpreter.jar.name>python-interpreter-with-py4j</interpreter.jar.name>
   </properties>
 
@@ -92,7 +91,7 @@
       <extension>
         <groupId>kr.motd.maven</groupId>
         <artifactId>os-maven-plugin</artifactId>
-        <version>1.4.1.Final</version>
+        <version>${plugin.os.version}</version>
       </extension>
     </extensions>
 

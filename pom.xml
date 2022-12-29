@@ -154,8 +154,9 @@
     <quartz.scheduler.version>2.3.2</quartz.scheduler.version>
     <jettison.version>1.4.0</jettison.version>
     <jsoup.version>1.13.1</jsoup.version>
-    <protoc.version>3.5.0</protoc.version>
-    <grpc.version>1.26.0</grpc.version>
+    <protobuf.version>3.21.7</protobuf.version>
+    <grpc.version>1.51.0</grpc.version>
+    <google.errorprone.version>2.14.0</google.errorprone.version>
 
     <!-- test library versions -->
     <junit.jupiter.version>5.7.1</junit.jupiter.version>
@@ -198,6 +199,7 @@
     <plugin.shade.version>3.2.2</plugin.shade.version>
     <plugin.source.version>3.2.1</plugin.source.version>
     <plugin.surefire.version>2.22.2</plugin.surefire.version>
+    <plugin.os.version>1.4.1.Final</plugin.os.version>
 
     <testcontainers.version>1.15.1</testcontainers.version>
 
