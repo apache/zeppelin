@@ -113,7 +113,7 @@
     <!-- frontend maven plugin related versions-->
     <node.version>v12.3.1</node.version>
     <npm.version>6.9.0</npm.version>
-    <plugin.frontend.version>1.6</plugin.frontend.version>
+    <plugin.frontend.version>1.12.1</plugin.frontend.version>
 
     <!-- common library versions -->
     <slf4j.version>1.7.30</slf4j.version>

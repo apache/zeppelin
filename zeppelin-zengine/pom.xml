@@ -39,6 +39,7 @@
     <xml.apis.version>1.4.01</xml.apis.version>
     <commons.vfs2.version>2.6.0</commons.vfs2.version>
     <eclipse.jgit.version>4.5.4.201711221230-r</eclipse.jgit.version>
+    <eirslett.version>1.6</eirslett.version>
   </properties>
 
   <dependencies>
@@ -175,7 +176,7 @@
     <dependency>
       <groupId>com.github.eirslett</groupId>
       <artifactId>frontend-plugin-core</artifactId>
-      <version>${plugin.frontend.version}</version>
+      <version>${eirslett.version}</version>
       <exclusions>
         <exclusion>
           <groupId>org.codehaus.plexus</groupId>
@@ -184,6 +185,10 @@
         <exclusion>
           <groupId>org.apache.commons</groupId>
           <artifactId>commons-compress</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.fasterxml.jackson.core</groupId>
+          <artifactId>jackson-databind</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
