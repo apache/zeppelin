@@ -1,11 +1,13 @@
 name: core
+
 on:
   push:
+    ignore-branches:
+      - dependabot/**
   pull_request:
     branches:
       - master
       - branch-*
-    types: [opened, synchronize]
 
 env:
   # Disable keepAlive and pool
