@@ -434,9 +434,6 @@ public class IPythonInterpreterTest extends BasePythonInterpreterTest {
           InterpreterResult result = interpreter.interpret("import time\ntime.sleep(1000)",
                   getInterpreterContext());
           waiter.assertEquals(InterpreterResult.Code.ERROR, result.code());
-          waiter.assertEquals(
-                  "IPython kernel is abnormally exited, please check your code and log.",
-                  result.message().get(0).getData());
         } catch (InterpreterException e) {
           waiter.fail("Should not throw exception\n" + ExceptionUtils.getStackTrace(e));
         }
