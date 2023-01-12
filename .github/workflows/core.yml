@@ -90,7 +90,7 @@ jobs:
   interpreter-test-non-core:
     runs-on: ubuntu-20.04
     env:
-      INTERPRETERS: 'hbase,jdbc,file,flink-cmd,cassandra,elasticsearch,bigquery,alluxio,livy,groovy,java,neo4j,submarine,sparql,mongodb,influxdb'
+      INTERPRETERS: 'hbase,jdbc,file,flink-cmd,cassandra,elasticsearch,bigquery,alluxio,livy,groovy,java,neo4j,submarine,sparql,mongodb,influxdb,shell'
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -113,7 +113,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-zeppelin-
       - name: install environment
-        run: ./mvnw install -DskipTests -am -pl .,zeppelin-interpreter,zeppelin-interpreter-shaded,${INTERPRETERS} -Pscala-2.11 ${MAVEN_ARGS}
+        run: ./mvnw install -DskipTests -am -pl ${INTERPRETERS} -Pscala-2.11 ${MAVEN_ARGS}
       - name: Setup conda environment with python 3.7 and R
         uses: conda-incubator/setup-miniconda@v2
         with:
@@ -126,7 +126,7 @@ jobs:
           auto-activate-base: false
           use-mamba: true
       - name: verify interpreter
-        run: ./mvnw verify -pl ${INTERPRETERS} -Pscala-2.11 ${MAVEN_ARGS}
+        run: ./mvnw verify -am -pl ${INTERPRETERS} -Pscala-2.11 ${MAVEN_ARGS}
 
   # test interpreter modules for jupyter, python, rlang
   interpreter-test-jupyter-python-rlang:
