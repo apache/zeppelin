@@ -118,7 +118,7 @@ jobs:
           activate-environment: python_3_with_R
           environment-file: testing/env_python_3_with_R.yml
           python-version: 3.7
-          mamba-version: "*"
+          miniforge-variant: Mambaforge
           channels: conda-forge,defaults
           channel-priority: true
           auto-activate-base: false
