@@ -120,7 +120,7 @@ jobs:
           activate-environment: python_3_with_R_and_tensorflow
           environment-file: testing/env_python_3_with_R_and_tensorflow.yml
           python-version: 3.7
-          mamba-version: "*"
+          miniforge-variant: Mambaforge
           channels: conda-forge,defaults
           channel-priority: true
           auto-activate-base: false
@@ -162,7 +162,7 @@ jobs:
           activate-environment: python_3_with_R
           environment-file: testing/env_python_${{ matrix.python }}_with_R.yml
           python-version: ${{ matrix.python }}
-          mamba-version: "*"
+          miniforge-variant: Mambaforge
           channels: conda-forge,defaults
           channel-priority: true
           auto-activate-base: false
@@ -214,7 +214,7 @@ jobs:
           activate-environment: python_3_with_R
           environment-file: testing/env_python_3_with_R.yml
           python-version: 3.7
-          mamba-version: "*"
+          miniforge-variant: Mambaforge
           channels: conda-forge,defaults
           channel-priority: true
           auto-activate-base: false
@@ -271,7 +271,7 @@ jobs:
           activate-environment: python_3_with_flink
           environment-file: testing/env_python_3_with_flink_${{ matrix.flink }}.yml
           python-version: 3.7
-          mamba-version: "*"
+          miniforge-variant: Mambaforge
           channels: conda-forge,defaults
           channel-priority: true
           auto-activate-base: false
@@ -324,7 +324,7 @@ jobs:
           activate-environment: python_3_with_R
           environment-file: testing/env_python_3_with_R.yml
           python-version: 3.7
-          mamba-version: "*"
+          miniforge-variant: Mambaforge
           channels: conda-forge,defaults
           channel-priority: true
           auto-activate-base: false
@@ -371,7 +371,7 @@ jobs:
           activate-environment: python_3_with_R
           environment-file: testing/env_python_${{ matrix.python }}_with_R.yml
           python-version: ${{ matrix.python }}
-          mamba-version: "*"
+          miniforge-variant: Mambaforge
           channels: conda-forge,defaults
           channel-priority: true
           auto-activate-base: false
@@ -446,7 +446,7 @@ jobs:
           activate-environment: python_3_with_R
           environment-file: testing/env_python_3_with_R.yml
           python-version: 3.7
-          mamba-version: "*"
+          miniforge-variant: Mambaforge
           channels: conda-forge,defaults
           channel-priority: true
           auto-activate-base: false
