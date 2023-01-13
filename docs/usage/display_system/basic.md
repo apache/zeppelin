@@ -1,7 +1,7 @@
 ---
 layout: page
 title: "Basic Display System in Apache Zeppelin"
-description: "There are several display systems available in Apache Zeppelin. By default, Zeppelin prints interpreter responce as a plain text using %text display system. However, display systems for showing HTML, tables, markdown or even graph visualizations are also available."
+description: "There are several display systems available in Apache Zeppelin. By default, Zeppelin prints interpreter response as a plain text using %text display system. However, display systems for showing HTML, tables, markdown or even graph visualizations are also available."
 group: usage/display_system
 ---
 <!--
