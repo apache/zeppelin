@@ -21,6 +21,10 @@ version: '0.11.0.{build}'
 
 shallow_clone: true
 
+branches:
+  except:
+    - /dependabot/
+
 platform:
   - x64
 
