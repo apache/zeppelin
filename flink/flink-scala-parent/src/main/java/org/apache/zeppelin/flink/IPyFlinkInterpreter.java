@@ -101,7 +101,7 @@ public class IPyFlinkInterpreter extends IPythonInterpreter {
         InterpreterResult result =
                 super.internalInterpret("intp.resetClassLoaderInPythonThread()", context);
         if (result.code() != InterpreterResult.Code.SUCCESS) {
-          LOGGER.warn("Fail to resetClassLoaderInPythonThread: " + result.toString());
+          LOGGER.warn("Fail to resetClassLoaderInPythonThread: {}", result);
         }
       }
     }
@@ -112,7 +112,7 @@ public class IPyFlinkInterpreter extends IPythonInterpreter {
     flinkInterpreter.cancel(context);
     super.cancel(context);
   }
-  
+
   /**
    * Called by python process.
    */

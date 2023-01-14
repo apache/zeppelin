@@ -35,7 +35,7 @@ import java.util.List;
 
 public class UpdateStreamSqlJob extends AbstractStreamSqlJob {
 
-  private static Logger LOGGER = LoggerFactory.getLogger(UpdateStreamSqlJob.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(UpdateStreamSqlJob.class);
 
   private List<Row> materializedTable = new ArrayList<>();
   private List<Row> lastSnapshot = new ArrayList<>();
@@ -54,19 +54,21 @@ public class UpdateStreamSqlJob extends AbstractStreamSqlJob {
     return "retract";
   }
 
+  @Override
   protected void processInsert(Row row) {
     enableToRefresh = true;
     resultLock.notify();
-    LOGGER.debug("processInsert: " + row.toString());
+    LOGGER.debug("processInsert: {}", row);
     materializedTable.add(row);
   }
 
+  @Override
   protected void processDelete(Row row) {
     enableToRefresh = false;
-    LOGGER.debug("processDelete: " + row.toString());
+    LOGGER.debug("processDelete: {}", row);
     for (int i = 0; i < materializedTable.size(); i++) {
       if (flinkShims.rowEquals(materializedTable.get(i), row)) {
-        LOGGER.debug("real processDelete: " + row.toString());
+        LOGGER.debug("real processDelete: {}", row);
         materializedTable.remove(i);
         break;
       }
@@ -103,7 +105,7 @@ public class UpdateStreamSqlJob extends AbstractStreamSqlJob {
       String result = buildResult();
       context.out.write(result);
       context.out.flush();
-      LOGGER.debug("Refresh with data: " + result);
+      LOGGER.debug("Refresh with data: {}", result);
       this.lastSnapshot.clear();
       for (Row row : materializedTable) {
         this.lastSnapshot.add(row);

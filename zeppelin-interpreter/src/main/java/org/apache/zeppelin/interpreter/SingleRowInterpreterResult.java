@@ -29,10 +29,10 @@ import java.util.List;
 public class SingleRowInterpreterResult {
 
   private String template;
-  private List values;
+  private List<Object> values;
   private InterpreterContext context;
 
-  public SingleRowInterpreterResult(List values, String template, InterpreterContext context) {
+  public SingleRowInterpreterResult(List<Object> values, String template, InterpreterContext context) {
     this.values = values;
     this.template = template;
     this.context = context;
