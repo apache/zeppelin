@@ -153,6 +153,10 @@ public abstract class ProcessLauncher implements ExecuteResultHandler {
     return launchTimeout;
   }
 
+  public boolean isAlive() {
+    return state != State.TERMINATED && state != State.COMPLETED;
+  }
+
   public boolean isRunning() {
     return this.state == State.RUNNING;
   }

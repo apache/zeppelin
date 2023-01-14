@@ -122,6 +122,10 @@ public class TimeoutLifecycleManagerTest extends AbstractInterpreterTest {
 
     while(!remoteInterpreter.isOpened()) {
       Thread.sleep(1000);
+      if (remoteInterpreter.getOrCreateInterpreterProcess().isAlive()) {
+        LOGGER.error("Interpreter already shut down");
+        break;
+      }
       LOGGER.info("Wait for interpreter to be started");
     }
 

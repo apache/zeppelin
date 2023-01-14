@@ -68,6 +68,8 @@ public interface InterpreterClient {
    */
   int getPort();
 
+  boolean isAlive();
+
   boolean isRunning();
 
   /**
