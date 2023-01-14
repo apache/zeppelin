@@ -107,6 +107,13 @@ public abstract class ProcessLauncher implements ExecuteResultHandler {
   public void transition(State state) {
     this.state = state;
     LOGGER.info("Process state is transitioned to {}", state);
+    try {
+      // Debug
+      Runtime.getRuntime().exec(new String[]{
+              "cat", "/home/runner/work/zeppelin/zeppelin/logs/zeppelin-interpreter*"});
+    } catch (IOException e) {
+      LOGGER.info("cat error");
+    }
   }
 
   public void onTimeout() {
