@@ -195,7 +195,6 @@
     <plugin.scalate.version>1.7.1</plugin.scalate.version>
     <plugin.scalatest.version>2.0.0</plugin.scalatest.version>
     <plugin.scm.version>1.11.2</plugin.scm.version>
-    <plugin.shade.version>3.2.2</plugin.shade.version>
     <plugin.source.version>3.2.1</plugin.source.version>
     <plugin.surefire.version>2.22.2</plugin.surefire.version>
     <plugin.os.version>1.4.1.Final</plugin.os.version>
@@ -1501,12 +1500,6 @@
 
     <pluginManagement>
       <plugins>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-shade-plugin</artifactId>
-          <version>${plugin.shade.version}</version>
-        </plugin>
-
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-jar-plugin</artifactId>
