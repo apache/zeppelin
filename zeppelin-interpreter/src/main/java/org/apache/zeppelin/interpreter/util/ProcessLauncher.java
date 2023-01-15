@@ -30,8 +30,9 @@ import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
+import java.io.*;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Abstract class for launching java process.
@@ -109,8 +110,12 @@ public abstract class ProcessLauncher implements ExecuteResultHandler {
     LOGGER.info("Process state is transitioned to {}", state);
     try {
       // Debug
-      Runtime.getRuntime().exec(new String[]{
-              "cat", "/home/runner/work/zeppelin/zeppelin/logs/zeppelin-interpreter*"});
+      LOGGER.info("interpreter-log\n{}",
+              new BufferedReader(new InputStreamReader(Runtime.getRuntime().exec(
+                              new String[]{"cat", "/home/runner/work/zeppelin/zeppelin/logs/zeppelin-interpreter*"})
+                      .getInputStream()))
+                      .lines()
+                      .collect(Collectors.joining("\n")));
     } catch (IOException e) {
       LOGGER.info("cat error");
     }
