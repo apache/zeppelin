@@ -25,7 +25,6 @@ env:
 
 jobs:
   license-check:
-    if: ${{ false }}
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout
@@ -38,7 +37,6 @@ jobs:
       - name: Check Rat
         run: ./mvnw apache-rat:check -Prat ${MAVEN_ARGS}
   maven-validate:
-    if: ${{ false }}
     runs-on: ubuntu-20.04
     strategy:
       fail-fast: false
