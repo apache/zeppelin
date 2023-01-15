@@ -117,6 +117,8 @@
                 <exclude>org/w3c/dom/**/*</exclude>
                 <exclude>org/xml/sax/*</exclude>
                 <exclude>org/xml/sax/**/*</exclude>
+
+                <exclude>org/eclipse/sisu/**</exclude>
               </excludes>
             </relocation>
             <relocation>
