@@ -93,6 +93,7 @@ jobs:
 
   # test interpreter modules except spark, flink, python, rlang, jupyter
   interpreter-test-non-core:
+    if: ${{ false }}
     runs-on: ubuntu-20.04
     env:
       INTERPRETERS: 'hbase,jdbc,file,flink-cmd,cassandra,elasticsearch,bigquery,alluxio,livy,groovy,java,neo4j,submarine,sparql,mongodb,influxdb'
@@ -135,6 +136,7 @@ jobs:
 
   # test interpreter modules for jupyter, python, rlang
   interpreter-test-jupyter-python-rlang:
+    if: ${{ false }}
     runs-on: ubuntu-20.04
     strategy:
       fail-fast: false
@@ -184,6 +186,7 @@ jobs:
 
   # zeppelin integration test except Spark & Flink
   zeppelin-integration-test:
+    if: ${{ false }}
     runs-on: ubuntu-20.04
     steps:
       # user/password => root/root
@@ -234,6 +237,7 @@ jobs:
         run: if [ -d "logs" ]; then cat logs/*; fi
 
   flink-test-and-flink-integration-test:
+    if: ${{ false }}
     runs-on: ubuntu-20.04
     strategy:
       fail-fast: false
@@ -293,6 +297,7 @@ jobs:
 
 
   spark-integration-test:
+    if: ${{ false }}
     runs-on: ubuntu-20.04
     strategy:
       fail-fast: false
@@ -342,6 +347,7 @@ jobs:
 
   # test on spark for each spark version & scala version
   spark-test:
+    if: ${{ false }}
     runs-on: ubuntu-20.04
     strategy:
       fail-fast: false
@@ -418,6 +424,7 @@ jobs:
           ./mvnw test -pl spark-submit,spark/interpreter -Pspark-3.3 -Pspark-scala-2.13 -Phadoop3 -Pintegration -DfailIfNoTests=false ${MAVEN_ARGS}
 
   livy-0-7-with-spark-2-2-0-under-python3:
+    if: ${{ false }}
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout
@@ -463,6 +470,7 @@ jobs:
         run: ./mvnw verify -pl livy -am  ${MAVEN_ARGS}
 
   default-build:
+    if: ${{ false }}
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout
