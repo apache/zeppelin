@@ -93,7 +93,9 @@
             <filter>
               <!-- It makes a conflict with grpc-netty's NameResolverProvider -->
               <artifact>io.grpc:grpc-core</artifact>
-              <exclude>**/io.grpc.NameResolverProvider</exclude>
+              <excludes>
+                <exclude>**/io.grpc.NameResolverProvider</exclude>
+              </excludes>
             </filter>
           </filters>
           <transformers>
