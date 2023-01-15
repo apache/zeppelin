@@ -90,6 +90,11 @@
             <filter>
               <artifact>*:*</artifact>
             </filter>
+            <filter>
+              <!-- It makes a conflict with grpc-netty's NameResolverProvider -->
+              <artifact>io.grpc:grpc-core</artifact>
+              <exclude>**/io.grpc.NameResolverProvider</exclude>
+            </filter>
           </filters>
           <transformers>
             <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
