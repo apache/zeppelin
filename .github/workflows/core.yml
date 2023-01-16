@@ -59,7 +59,8 @@ jobs:
             !~/.m2/repository/org/apache/zeppelin/
             ~/.spark-dist
             ~/.cache
-          key: ${{ runner.os }}-zeppelin-${{ hashFiles('**/pom.xml') }}
+            ~/conda_pkgs_dir
+          key: ${{ runner.os }}-zeppelin-${{ hashFiles('**/pom.xml') }}-${{ hashFiles('testing/env_python_3.7_with_R.yml') }}
           restore-keys: |
             ${{ runner.os }}-zeppelin-
       - name: install application with some interpreter

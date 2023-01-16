@@ -406,6 +406,11 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
     return containerPort;
   }
 
+  public boolean isAlive() {
+    //TODO(ZEPPELIN-5876): Implement it more accurately
+    return isRunning();
+  }
+
   @Override
   public boolean isRunning() {
     if (RemoteInterpreterUtils.checkIfRemoteEndpointAccessible(getHost(), getPort())) {

@@ -68,6 +68,16 @@ public interface InterpreterClient {
    */
   int getPort();
 
+  /**
+   * The Interpreter is alive. It's different from `running` as it shows process status only.
+   * @return true if interpreter process is running. Otherwise, false
+   */
+  boolean isAlive();
+
+  /**
+   * The interpreter is working as expected. This means the interpreter can communicate with server
+   * @return true if interpreter is working correctly. Otherwise, false
+   */
   boolean isRunning();
 
   /**

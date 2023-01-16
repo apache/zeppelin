@@ -147,6 +147,11 @@ public class ExecRemoteInterpreterProcess extends RemoteInterpreterManagedProces
   }
 
   @Override
+  public boolean isAlive() {
+    return interpreterProcessLauncher != null && interpreterProcessLauncher.isAlive();
+  }
+
+  @Override
   public boolean isRunning() {
     return interpreterProcessLauncher != null && interpreterProcessLauncher.isRunning();
   }
