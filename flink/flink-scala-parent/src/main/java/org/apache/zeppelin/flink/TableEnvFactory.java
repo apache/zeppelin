@@ -44,7 +44,7 @@ import java.lang.reflect.Constructor;
  */
 public class TableEnvFactory {
 
-  private static Logger LOGGER = LoggerFactory.getLogger(TableEnvFactory.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(TableEnvFactory.class);
 
   private FlinkVersion flinkVersion;
   private FlinkShims flinkShims;
@@ -99,10 +99,10 @@ public class TableEnvFactory {
 
   public TableEnvironment createScalaFlinkBatchTableEnvironment() {
     try {
-      Class clazz = Class
+      Class<?> clazz = Class
                 .forName("org.apache.flink.table.api.bridge.scala.internal.BatchTableEnvironmentImpl");
 
-      Constructor constructor = clazz
+      Constructor<?> constructor = clazz
               .getConstructor(
                       org.apache.flink.api.scala.ExecutionEnvironment.class,
                       TableConfig.class,
@@ -121,7 +121,7 @@ public class TableEnvFactory {
       Class<?> clazz = Class
                 .forName("org.apache.flink.table.api.bridge.java.internal.BatchTableEnvironmentImpl");
 
-      Constructor con = clazz.getConstructor(
+      Constructor<?> con = clazz.getConstructor(
               ExecutionEnvironment.class,
               TableConfig.class,
               CatalogManager.class,
@@ -146,10 +146,10 @@ public class TableEnvFactory {
       Planner planner = (Planner) pair.left;
       Executor executor = (Executor) pair.right;
 
-      Class clazz = Class
+      Class<?> clazz = Class
                 .forName("org.apache.flink.table.api.bridge.scala.internal.StreamTableEnvironmentImpl");
       try {
-        Constructor constructor = clazz
+        Constructor<?> constructor = clazz
                 .getConstructor(
                         CatalogManager.class,
                         ModuleManager.class,
@@ -169,7 +169,7 @@ public class TableEnvFactory {
                 settings.isStreamingMode());
       } catch (NoSuchMethodException e) {
         // Flink 1.11.1 change the constructor signature, FLINK-18419
-        Constructor constructor = clazz
+        Constructor<?> constructor = clazz
                 .getConstructor(
                         CatalogManager.class,
                         ModuleManager.class,
@@ -203,11 +203,11 @@ public class TableEnvFactory {
       Planner planner = (Planner) pair.left;
       Executor executor = (Executor) pair.right;
 
-      Class clazz = Class
+      Class<?> clazz = Class
                 .forName("org.apache.flink.table.api.bridge.java.internal.StreamTableEnvironmentImpl");
 
       try {
-        Constructor constructor = clazz
+        Constructor<?> constructor = clazz
                 .getConstructor(
                         CatalogManager.class,
                         ModuleManager.class,
@@ -262,10 +262,10 @@ public class TableEnvFactory {
       Planner planner = (Planner) pair.left;
       Executor executor = (Executor) pair.right;
 
-      Class clazz = Class
+      Class<?> clazz = Class
                 .forName("org.apache.flink.table.api.bridge.java.internal.StreamTableEnvironmentImpl");
       try {
-        Constructor constructor = clazz.getConstructor(
+        Constructor<?> constructor = clazz.getConstructor(
                 CatalogManager.class,
                 ModuleManager.class,
                 FunctionCatalog.class,
@@ -285,7 +285,7 @@ public class TableEnvFactory {
                 settings.isStreamingMode());
       } catch (NoSuchMethodException e) {
         // Flink 1.11.1 change the constructor signature, FLINK-18419
-        Constructor constructor = clazz.getConstructor(
+        Constructor<?> constructor = clazz.getConstructor(
                 CatalogManager.class,
                 ModuleManager.class,
                 FunctionCatalog.class,

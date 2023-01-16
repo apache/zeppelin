@@ -123,7 +123,7 @@ public class PyFlinkInterpreter extends PythonInterpreter {
       if (useIPython() || (!useIPython() && getPythonProcessLauncher().isRunning())) {
         InterpreterResult result = super.interpret("intp.resetClassLoaderInPythonThread()", context);
         if (result.code() != InterpreterResult.Code.SUCCESS) {
-          LOGGER.warn("Fail to resetClassLoaderInPythonThread: " + result.toString());
+          LOGGER.warn("Fail to resetClassLoaderInPythonThread: {}", result);
         }
       }
     }

@@ -17,19 +17,18 @@
 
 package org.apache.zeppelin.interpreter;
 
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
 
-import java.io.Serializable;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
+import org.junit.Test;
 
 public class SingleRowInterpreterResultTest {
 
   @Test
   public void testHtml() {
-    List<Serializable> list = Arrays.asList("2020-01-01", 10);
+    List<Object> list = Arrays.asList("2020-01-01", 10);
     String template = "Total count:{1} for {0}";
     InterpreterContext context = InterpreterContext.builder().build();
     SingleRowInterpreterResult singleRowInterpreterResult = new SingleRowInterpreterResult(list, template, context);
@@ -39,7 +38,7 @@ public class SingleRowInterpreterResultTest {
 
   @Test
   public void testAngular() {
-    List<Serializable> list = Arrays.asList("2020-01-01", 10);
+    List<Object> list = Arrays.asList("2020-01-01", 10);
     String template = "Total count:{1} for {0}";
     InterpreterContext context = InterpreterContext.builder().build();
     SingleRowInterpreterResult singleRowInterpreterResult = new SingleRowInterpreterResult(list, template, context);
