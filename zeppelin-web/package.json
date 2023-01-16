@@ -72,7 +72,7 @@
     "grunt-postcss": "^0.7.1",
     "grunt-replace": "^1.0.1",
     "grunt-svgmin": "^0.4.0",
-    "grunt-usemin": "^2.1.1",
+    "grunt-usemin": "^2.6.2",
     "grunt-wiredep": "~2.0.0",
     "html-webpack-plugin": "^3.2.0",
     "imports-loader": "^0.7.1",
