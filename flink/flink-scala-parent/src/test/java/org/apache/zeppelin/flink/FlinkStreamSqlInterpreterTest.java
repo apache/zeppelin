@@ -692,7 +692,7 @@ public class FlinkStreamSqlInterpreterTest extends FlinkSqlInterpreterTest {
   }
 
   public static String getInitStreamScript(int sleep_interval) throws IOException {
-    return IOUtils.toString(FlinkStreamSqlInterpreterTest.class.getResource("/init_stream.scala"))
+    return IOUtils.toString(FlinkStreamSqlInterpreterTest.class.getResource("/init_stream.scala2"))
             .replace("{{sleep_interval}}", sleep_interval + "");
   }
 }

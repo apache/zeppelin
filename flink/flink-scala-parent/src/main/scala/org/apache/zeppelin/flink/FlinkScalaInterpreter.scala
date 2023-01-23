@@ -434,6 +434,7 @@ abstract class FlinkScalaInterpreter(val properties: Properties,
       // blink planner
       var btEnvSetting = this.flinkShims.createBlinkPlannerEnvSettingBuilder()
         .asInstanceOf[EnvironmentSettings.Builder]
+        //.withClassLoader(getFlinkClassLoader)
         .inBatchMode()
         .build()
       this.btenv = tblEnvFactory.createJavaBlinkBatchTableEnvironment(btEnvSetting, getFlinkClassLoader);
@@ -442,6 +443,7 @@ abstract class FlinkScalaInterpreter(val properties: Properties,
 
       var stEnvSetting = this.flinkShims.createBlinkPlannerEnvSettingBuilder()
         .asInstanceOf[EnvironmentSettings.Builder]
+        //.withClassLoader(getFlinkClassLoader)
         .inStreamingMode()
         .build()
       this.stenv = tblEnvFactory.createScalaBlinkStreamTableEnvironment(stEnvSetting, getFlinkClassLoader)
@@ -590,9 +592,10 @@ abstract class FlinkScalaInterpreter(val properties: Properties,
   def createPlannerAgain(): Unit = {
     val originalClassLoader = Thread.currentThread().getContextClassLoader
     try {
-      Thread.currentThread().setContextClassLoader(getFlinkClassLoader)
+      Thread.currentThread().setContextClassLoader(getFlinkScalaShellLoader)
       val stEnvSetting = this.flinkShims.createBlinkPlannerEnvSettingBuilder()
         .asInstanceOf[EnvironmentSettings.Builder]
+        //.withClassLoader(getFlinkScalaShellLoader)
         .inStreamingMode()
         .build()
       this.tblEnvFactory.createStreamPlanner(stEnvSetting)
@@ -844,12 +847,19 @@ abstract class FlinkScalaInterpreter(val properties: Properties,
   def getJobManager = this.jobManager
 
   def getFlinkScalaShellLoader: ClassLoader = {
-    val userCodeJarFile = this.flinkILoop.writeFilesToDisk()
-    new URLClassLoader(Array(userCodeJarFile.toURL) ++ userJars.map(e => new File(e).toURL))
+
+    if (this.flinkILoop == null) {
+      new URLClassLoader(userJars.map(e => new File(e).toURL).toArray)
+    } else {
+      return flinkILoop.classLoader;
+  //      val userCodeJarFile = this.flinkILoop.writeFilesToDisk()
+  //      new URLClassLoader(Array(userCodeJarFile.toURL) ++ userJars.map(e => new File(e).toURL))
+    }
   }
 
   private def getFlinkClassLoader: ClassLoader = {
-    new URLClassLoader(userJars.map(e => new File(e).toURL).toArray)
+    //new URLClassLoader(userJars.map(e => new File(e).toURL).toArray)
+    getFlinkScalaShellLoader
   }
 
   def getZeppelinContext = this.z

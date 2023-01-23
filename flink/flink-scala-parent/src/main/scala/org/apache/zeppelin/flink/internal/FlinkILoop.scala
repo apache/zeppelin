@@ -183,28 +183,20 @@ class FlinkILoop(
       }
     }
     val vd = intp.virtualDirectory
-
     val vdIt = vd.iterator
-
     for (fi <- vdIt) {
       if (fi.isDirectory) {
-
         val fiIt = fi.iterator
-
         for (f <- fiIt) {
-
           // directory for compiled line
           val lineDir = new File(tmpDirShell.getAbsolutePath, fi.name)
           lineDir.mkdirs()
-
           // compiled classes for commands from shell
           val writeFile = new File(lineDir.getAbsolutePath, f.name)
           val outputStream = new FileOutputStream(writeFile)
           val inputStream = f.input
-
           // copy file contents
           org.apache.commons.io.IOUtils.copy(inputStream, outputStream)
-
           inputStream.close()
           outputStream.close()
         }
@@ -212,12 +204,9 @@ class FlinkILoop(
     }
 
     val compiledClasses = new File(tmpDirShell.getAbsolutePath)
-
     val jarFilePath = new File(tmpJarShell.getAbsolutePath)
-
     val jh: JarHelper = new JarHelper
     jh.jarDir(compiledClasses, jarFilePath)
-
     jarFilePath
   }
 
