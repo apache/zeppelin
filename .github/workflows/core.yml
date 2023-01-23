@@ -90,7 +90,7 @@ jobs:
   interpreter-test-non-core:
     runs-on: ubuntu-20.04
     env:
-      INTERPRETERS: 'hbase,jdbc,file,flink-cmd,cassandra,elasticsearch,bigquery,alluxio,livy,groovy,java,neo4j,submarine,sparql,mongodb,influxdb'
+      INTERPRETERS: 'hbase,jdbc,file,flink-cmd,cassandra,elasticsearch,bigquery,alluxio,livy,groovy,java,neo4j,submarine,sparql,mongodb,influxdb,shell'
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -113,7 +113,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-zeppelin-
       - name: install environment
-        run: ./mvnw install -DskipTests -am -pl .,zeppelin-interpreter,zeppelin-interpreter-shaded,${INTERPRETERS} -Pscala-2.11 ${MAVEN_ARGS}
+        run: ./mvnw install -DskipTests -am -pl ${INTERPRETERS} -Pscala-2.11 ${MAVEN_ARGS}
       - name: Setup conda environment with python 3.7 and R
         uses: conda-incubator/setup-miniconda@v2
         with:
@@ -126,7 +126,7 @@ jobs:
           auto-activate-base: false
           use-mamba: true
       - name: verify interpreter
-        run: ./mvnw verify -pl ${INTERPRETERS} -Pscala-2.11 ${MAVEN_ARGS}
+        run: ./mvnw verify -am -pl ${INTERPRETERS} -Pscala-2.11 ${MAVEN_ARGS}
 
   # test interpreter modules for jupyter, python, rlang
   interpreter-test-jupyter-python-rlang:
@@ -278,10 +278,10 @@ jobs:
           use-mamba: true
       - name: run tests for flink before 1.15 (exclusive)
         if: matrix.flink != '115'
-        run: ./mvnw test -pl flink/flink-scala-2.11,flink/flink-scala-2.12,flink-cmd,zeppelin-interpreter-integration -Pflink-${{ matrix.flink }} -Phadoop2 -Pintegration -DfailIfNoTests=false -Dtest=org.apache.zeppelin.flink.*Test,FlinkIntegrationTest${{ matrix.flink }} ${MAVEN_ARGS}
+        run: ./mvnw verify -pl flink/flink-scala-2.11,flink/flink-scala-2.12,flink-cmd,zeppelin-interpreter-integration -am -Pflink-${{ matrix.flink }} -Phadoop2 -Pintegration -DfailIfNoTests=false -Dtest=org.apache.zeppelin.flink.*Test,FlinkIntegrationTest${{ matrix.flink }} ${MAVEN_ARGS}
       - name: run tests for flink before 1.15 (inclusive)
         if: matrix.flink == '115'
-        run: ./mvnw test -pl flink/flink-scala-2.12,flink-cmd,zeppelin-interpreter-integration -Pflink-${{ matrix.flink }} -Phadoop2 -Pintegration -DfailIfNoTests=false -Dtest=org.apache.zeppelin.flink.*Test,FlinkIntegrationTest${{ matrix.flink }} ${MAVEN_ARGS}
+        run: ./mvnw verify -pl flink/flink-scala-2.12,flink-cmd,zeppelin-interpreter-integration -Pflink-${{ matrix.flink }} -am -Phadoop2 -Pintegration -DfailIfNoTests=false -Dtest=org.apache.zeppelin.flink.*Test,FlinkIntegrationTest${{ matrix.flink }} ${MAVEN_ARGS}
       - name: Print zeppelin logs
         if: always()
         run: if [ -d "logs" ]; then cat logs/*; fi
@@ -381,36 +381,38 @@ jobs:
           R -e "IRkernel::installspec()"
       - name: run spark-2.4 tests with scala-2.11 and python-${{ matrix.python }}
         if: matrix.python == '3.7'  # Spark 2.4 doesn't support python 3.8
-        run: ./mvnw test -pl spark-submit,spark/interpreter -Pspark-2.4 -Pspark-scala-2.11 -DfailIfNoTests=false ${MAVEN_ARGS}
+        run: |
+          rm -rf spark/interpreter/metastore_db
+          ./mvnw verify -pl spark-submit,spark/interpreter -am -Dtest=org/apache/zeppelin/spark/* -Pspark-2.4 -Pspark-scala-2.11 -DfailIfNoTests=false ${MAVEN_ARGS}
       - name: run spark-2.4 tests with scala-2.12 and python-${{ matrix.python }}
         if: matrix.python == '3.7'  # Spark 2.4 doesn't support python 3.8
         run: |
           rm -rf spark/interpreter/metastore_db
-          ./mvnw test -pl spark-submit,spark/interpreter -Pspark-2.4 -Pspark-scala-2.12 -Phadoop2 -Pintegration -DfailIfNoTests=false ${MAVEN_ARGS}
+          ./mvnw verify -pl spark-submit,spark/interpreter -am -Dtest=org/apache/zeppelin/spark/* -Pspark-2.4 -Pspark-scala-2.12 -Phadoop2 -Pintegration -DfailIfNoTests=false ${MAVEN_ARGS}
       - name: run spark-3.0 tests with scala-2.12 and python-${{ matrix.python }}
         run: |
           rm -rf spark/interpreter/metastore_db
-          ./mvnw test -pl spark-submit,spark/interpreter -Pspark-3.0 -Pspark-scala-2.12 -Phadoop2 -Pintegration -DfailIfNoTests=false ${MAVEN_ARGS}
+          ./mvnw verify -pl spark-submit,spark/interpreter -am -Dtest=org/apache/zeppelin/spark/* -Pspark-3.0 -Pspark-scala-2.12 -Phadoop2 -Pintegration -DfailIfNoTests=false ${MAVEN_ARGS}
       - name: run spark-3.1 tests with scala-2.12 and python-${{ matrix.python }}
         run: |
           rm -rf spark/interpreter/metastore_db
-          ./mvnw test -pl spark-submit,spark/interpreter -Pspark-3.1 -Pspark-scala-2.12 -Phadoop2 -Pintegration -DfailIfNoTests=false ${MAVEN_ARGS}
+          ./mvnw verify -pl spark-submit,spark/interpreter -am -Dtest=org/apache/zeppelin/spark/* -Pspark-3.1 -Pspark-scala-2.12 -Phadoop2 -Pintegration -DfailIfNoTests=false ${MAVEN_ARGS}
       - name: run spark-3.2 tests with scala-2.12 and python-${{ matrix.python }}
         run: |
           rm -rf spark/interpreter/metastore_db
-          ./mvnw test -pl spark-submit,spark/interpreter -Pspark-3.2 -Pspark-scala-2.12 -Phadoop2 -Pintegration -DfailIfNoTests=false ${MAVEN_ARGS}
+          ./mvnw verify -pl spark-submit,spark/interpreter -am -Dtest=org/apache/zeppelin/spark/* -Pspark-3.2 -Pspark-scala-2.12 -Phadoop2 -Pintegration -DfailIfNoTests=false ${MAVEN_ARGS}
       - name: run spark-3.2 tests with scala-2.13 and python-${{ matrix.python }}
         run: |
           rm -rf spark/interpreter/metastore_db
-          ./mvnw test -pl spark-submit,spark/interpreter -Pspark-3.2 -Pspark-scala-2.13 -Phadoop2 -Pintegration -DfailIfNoTests=false ${MAVEN_ARGS}
+          ./mvnw verify -pl spark-submit,spark/interpreter -am -Dtest=org/apache/zeppelin/spark/* -Pspark-3.2 -Pspark-scala-2.13 -Phadoop2 -Pintegration -DfailIfNoTests=false ${MAVEN_ARGS}
       - name: run spark-3.3 tests with scala-2.12 and python-${{ matrix.python }}
         run: |
           rm -rf spark/interpreter/metastore_db
-          ./mvnw test -pl spark-submit,spark/interpreter -Pspark-3.3 -Pspark-scala-2.12 -Phadoop3 -Pintegration -DfailIfNoTests=false ${MAVEN_ARGS}
+          ./mvnw verify -pl spark-submit,spark/interpreter -am -Dtest=org/apache/zeppelin/spark/* -Pspark-3.3 -Pspark-scala-2.12 -Phadoop3 -Pintegration -DfailIfNoTests=false ${MAVEN_ARGS}
       - name: run spark-3.3 tests with scala-2.13 and python-${{ matrix.python }}
         run: |
           rm -rf spark/interpreter/metastore_db
-          ./mvnw test -pl spark-submit,spark/interpreter -Pspark-3.3 -Pspark-scala-2.13 -Phadoop3 -Pintegration -DfailIfNoTests=false ${MAVEN_ARGS}
+          ./mvnw verify -pl spark-submit,spark/interpreter -am -Dtest=org/apache/zeppelin/spark/* -Pspark-3.3 -Pspark-scala-2.13 -Phadoop3 -Pintegration -DfailIfNoTests=false ${MAVEN_ARGS}
 
   livy-0-7-with-spark-2-2-0-under-python3:
     runs-on: ubuntu-20.04
