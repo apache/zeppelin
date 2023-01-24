@@ -436,7 +436,6 @@ abstract class FlinkScalaInterpreter(val properties: Properties,
       // blink planner
       val btEnvSetting = this.flinkShims.createBlinkPlannerEnvSettingBuilder()
         .asInstanceOf[EnvironmentSettings.Builder]
-        //.withClassLoader(getFlinkClassLoader)
         .inBatchMode()
         .build()
       this.btenv = tblEnvFactory.createJavaBlinkBatchTableEnvironment(btEnvSetting, getFlinkScalaShellLoader);
@@ -445,7 +444,6 @@ abstract class FlinkScalaInterpreter(val properties: Properties,
 
       val stEnvSetting = this.flinkShims.createBlinkPlannerEnvSettingBuilder()
         .asInstanceOf[EnvironmentSettings.Builder]
-        //.withClassLoader(getFlinkClassLoader)
         .inStreamingMode()
         .build()
       this.stenv = tblEnvFactory.createScalaBlinkStreamTableEnvironment(stEnvSetting, getFlinkScalaShellLoader)
@@ -597,7 +595,6 @@ abstract class FlinkScalaInterpreter(val properties: Properties,
       Thread.currentThread().setContextClassLoader(getFlinkScalaShellLoader)
       val stEnvSetting = this.flinkShims.createBlinkPlannerEnvSettingBuilder()
         .asInstanceOf[EnvironmentSettings.Builder]
-        //.withClassLoader(getFlinkScalaShellLoader)
         .inStreamingMode()
         .build()
       this.tblEnvFactory.createStreamPlanner(stEnvSetting)
@@ -857,8 +854,7 @@ abstract class FlinkScalaInterpreter(val properties: Properties,
   }
 
   private def getFlinkClassLoader: ClassLoader = {
-    //new URLClassLoader(userJars.map(e => new File(e).toURL).toArray)
-    getFlinkScalaShellLoader
+    new URLClassLoader(userJars.map(e => new File(e).toURL).toArray)
   }
 
   def getZeppelinContext = this.z
