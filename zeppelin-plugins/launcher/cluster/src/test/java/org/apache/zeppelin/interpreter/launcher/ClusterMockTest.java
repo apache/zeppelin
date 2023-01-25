@@ -34,8 +34,8 @@ import java.util.Map;
 
 import static org.apache.zeppelin.cluster.meta.ClusterMeta.OFFLINE_STATUS;
 import static org.apache.zeppelin.cluster.meta.ClusterMeta.ONLINE_STATUS;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class ClusterMockTest {
   private static Logger LOGGER = LoggerFactory.getLogger(ClusterMockTest.class);
@@ -114,7 +114,7 @@ public class ClusterMockTest {
 
     // Get metadata for all services
     Map<String, Map<String, Object>> meta =
-      clusterClient.getClusterMeta(ClusterMetaType.SERVER_META, "");
+        clusterClient.getClusterMeta(ClusterMetaType.SERVER_META, "");
 
     LOGGER.info(meta.toString());
 
@@ -152,8 +152,8 @@ public class ClusterMockTest {
     clusterClient.putClusterMeta(ClusterMetaType.INTP_PROCESS_META, metaKey, meta);
 
     // get IntpProcess Meta
-    Map<String, Map<String, Object>> check
-        = clusterClient.getClusterMeta(ClusterMetaType.INTP_PROCESS_META, metaKey);
+    Map<String, Map<String, Object>> check =
+        clusterClient.getClusterMeta(ClusterMetaType.INTP_PROCESS_META, metaKey);
 
     LOGGER.info(check.toString());
 
