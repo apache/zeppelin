@@ -229,34 +229,35 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
 
       execInContainer(containerId, dockerCommand, false);
     } catch (DockerException e) {
-      LOGGER.error(e.getMessage(), e);
-      throw new IOException(e.getMessage());
+      throw new IOException(e);
     } catch (InterruptedException e) {
-      LOGGER.error(e.getMessage(), e);
       // Restore interrupted state...
       Thread.currentThread().interrupt();
-      throw new IOException(e.getMessage());
+      throw new IOException("Docker preparations were interrupted.", e);
     }
 
     long startTime = System.currentTimeMillis();
-
+    long timeoutTime = startTime + getConnectTimeout();
     // wait until interpreter send dockerStarted message through thrift rpc
     synchronized (dockerStarted) {
-      while (!dockerStarted.get()) {
+      while (!dockerStarted.get() && !Thread.currentThread().isInterrupted()) {
+        long timeToTimeout = timeoutTime - System.currentTimeMillis();
+        if (timeToTimeout <= 0) {
+          LOGGER.info("Interpreter docker creation is time out in {} seconds",
+              getConnectTimeout() / 1000);
+          stop();
+          throw new IOException(
+              "Launching zeppelin interpreter on docker is time out, kill it now");
+        }
         try {
-          dockerStarted.wait(getConnectTimeout());
+          dockerStarted.wait(timeToTimeout);
         } catch (InterruptedException e) {
-          LOGGER.error("Remote interpreter is not accessible");
           // Restore interrupted state...
           Thread.currentThread().interrupt();
-          throw new IOException(e.getMessage());
+          stop();
+          throw new IOException("Remote interpreter is not accessible", e);
         }
       }
-    }
-
-    if (!dockerStarted.get()) {
-      LOGGER.info("Interpreter docker creation is time out in {} seconds",
-          getConnectTimeout() / 1000);
     }
 
     // waits for interpreter thrift rpc server ready
@@ -337,7 +338,7 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
           return null;
         });
       } catch (Exception e) {
-        LOGGER.warn("ignore the exception when shutting down", e);
+        LOGGER.warn("Ignore the exception when shutting down", e);
       }
     }
     try {
@@ -411,6 +412,7 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
     return containerPort;
   }
 
+  @Override
   public boolean isAlive() {
     //TODO(ZEPPELIN-5876): Implement it more accurately
     return isRunning();
@@ -550,11 +552,8 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
     String tarFile = file2Tar(copyFiles);
 
     // copy tar to ZEPPELIN_CONTAINER_DIR, auto unzip
-    InputStream inputStream = new FileInputStream(tarFile);
-    try {
+    try (InputStream inputStream = new FileInputStream(tarFile)) {
       docker.copyToContainer(inputStream, containerId, CONTAINER_UPLOAD_TAR_DIR);
-    } finally {
-      inputStream.close();
     }
 
     // copy all files in CONTAINER_UPLOAD_TAR_DIR to the root directory
@@ -585,7 +584,7 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
   private void execInContainer(String containerId, String execCommand, boolean logout)
       throws DockerException, InterruptedException {
 
-    LOGGER.info("exec container commmand: {}");
+    LOGGER.info("exec container commmand: {}", execCommand);
 
     final String[] command = {"sh", "-c", execCommand};
     final ExecCreation execCreation = docker.execCreate(
