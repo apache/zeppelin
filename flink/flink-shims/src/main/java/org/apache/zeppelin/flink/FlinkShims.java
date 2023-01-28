@@ -54,10 +54,7 @@ public abstract class FlinkShims {
                                       Properties properties)
       throws Exception {
     Class<?> flinkShimsClass;
-    if (flinkVersion.getMajorVersion() == 1 && flinkVersion.getMinorVersion() == 12) {
-      LOGGER.info("Initializing shims for Flink 1.12");
-      flinkShimsClass = Class.forName("org.apache.zeppelin.flink.Flink112Shims");
-    } else if (flinkVersion.getMajorVersion() == 1 && flinkVersion.getMinorVersion() == 13) {
+    if (flinkVersion.getMajorVersion() == 1 && flinkVersion.getMinorVersion() == 13) {
       LOGGER.info("Initializing shims for Flink 1.13");
       flinkShimsClass = Class.forName("org.apache.zeppelin.flink.Flink113Shims");
     } else if (flinkVersion.getMajorVersion() == 1 && flinkVersion.getMinorVersion() == 14) {
