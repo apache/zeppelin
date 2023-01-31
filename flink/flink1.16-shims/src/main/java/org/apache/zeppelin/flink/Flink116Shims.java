@@ -22,41 +22,45 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.flink.api.common.RuntimeExecutionMode;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeutils.TypeSerializer;
 import org.apache.flink.api.java.tuple.Tuple2;
-import org.apache.flink.api.scala.DataSet;
 import org.apache.flink.client.cli.CliFrontend;
 import org.apache.flink.client.cli.CustomCommandLine;
 import org.apache.flink.configuration.Configuration;
+import org.apache.flink.configuration.ExecutionOptions;
 import org.apache.flink.configuration.ReadableConfig;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironmentFactory;
-import org.apache.flink.table.api.EnvironmentSettings;
-import org.apache.flink.table.api.Table;
-import org.apache.flink.table.api.TableConfig;
-import org.apache.flink.table.api.TableException;
+import org.apache.flink.table.api.*;
 import org.apache.flink.table.api.bridge.java.internal.StreamTableEnvironmentImpl;
-import org.apache.flink.table.api.bridge.scala.BatchTableEnvironment;
-import org.apache.flink.table.api.internal.CatalogTableSchemaResolver;
+import org.apache.flink.table.api.config.TableConfigOptions;
 import org.apache.flink.table.catalog.CatalogManager;
 import org.apache.flink.table.catalog.FunctionCatalog;
 import org.apache.flink.table.catalog.GenericInMemoryCatalog;
-import org.apache.flink.table.delegation.*;
-import org.apache.flink.table.factories.ComponentFactoryService;
+import org.apache.flink.table.catalog.ResolvedSchema;
+import org.apache.flink.table.client.resource.ClientResourceManager;
+import org.apache.flink.table.client.util.ClientClassloaderUtil;
+import org.apache.flink.table.client.util.ClientWrapperClassLoader;
+import org.apache.flink.table.delegation.Executor;
+import org.apache.flink.table.delegation.ExecutorFactory;
+import org.apache.flink.table.delegation.Planner;
+import org.apache.flink.table.factories.FactoryUtil;
+import org.apache.flink.table.factories.PlannerFactoryUtil;
 import org.apache.flink.table.functions.AggregateFunction;
 import org.apache.flink.table.functions.ScalarFunction;
 import org.apache.flink.table.functions.TableAggregateFunction;
 import org.apache.flink.table.functions.TableFunction;
 import org.apache.flink.table.module.ModuleManager;
 import org.apache.flink.table.planner.calcite.FlinkTypeFactory;
+import org.apache.flink.table.resource.ResourceManager;
 import org.apache.flink.table.sinks.TableSink;
-import org.apache.flink.table.utils.PrintUtils;
+import org.apache.flink.table.typeutils.TimeIndicatorTypeInfo;
 import org.apache.flink.types.Row;
 import org.apache.flink.types.RowKind;
 import org.apache.flink.util.FlinkException;
-import org.apache.zeppelin.flink.shims112.CollectStreamTableSink;
-import org.apache.zeppelin.flink.shims112.Flink112ScalaShims;
+import org.apache.zeppelin.flink.shims116.CollectStreamTableSink;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.slf4j.Logger;
@@ -67,43 +71,51 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.URL;
+import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 
 
 /**
- * Shims for flink 1.12
+ * Shims for flink 1.16
  */
-public class Flink112Shims extends FlinkShims {
+public class Flink116Shims extends FlinkShims {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(Flink112Shims.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(Flink116Shims.class);
 
-  private Flink112SqlInterpreter batchSqlInterpreter;
-  private Flink112SqlInterpreter streamSqlInterpreter;
+  private Flink116SqlInterpreter batchSqlInterpreter;
+  private Flink116SqlInterpreter streamSqlInterpreter;
 
-
-  public Flink112Shims(FlinkVersion flinkVersion, Properties properties) {
+  public Flink116Shims(FlinkVersion flinkVersion, Properties properties) {
     super(flinkVersion, properties);
   }
 
   public void initInnerBatchSqlInterpreter(FlinkSqlContext flinkSqlContext) {
-    this.batchSqlInterpreter = new Flink112SqlInterpreter(flinkSqlContext, true);
+    this.batchSqlInterpreter = new Flink116SqlInterpreter(flinkSqlContext, true);
   }
 
   public void initInnerStreamSqlInterpreter(FlinkSqlContext flinkSqlContext) {
-    this.streamSqlInterpreter = new Flink112SqlInterpreter(flinkSqlContext, false);
+    this.streamSqlInterpreter = new Flink116SqlInterpreter(flinkSqlContext, false);
   }
 
   @Override
   public Object createResourceManager(List<URL> jars, Object tableConfig) {
-    return null;
+    Configuration configuration = ((TableConfig) tableConfig).getConfiguration().clone();
+    ClientWrapperClassLoader userClassLoader =
+            new ClientWrapperClassLoader(
+                    ClientClassloaderUtil.buildUserClassLoader(
+                            jars,
+                            Thread.currentThread().getContextClassLoader(),
+                            new Configuration(configuration)),
+                    configuration);
+    return new ClientResourceManager(configuration, userClassLoader);
   }
 
   @Override
   public Object createFunctionCatalog(Object tableConfig, Object catalogManager, Object moduleManager, List<URL> jars) {
-    return new FunctionCatalog((TableConfig) tableConfig, (CatalogManager) catalogManager, (ModuleManager) moduleManager);
+    ResourceManager resourceManager = (ResourceManager) createResourceManager(jars, (TableConfig) tableConfig);
+    return new FunctionCatalog((TableConfig) tableConfig, resourceManager, (CatalogManager) catalogManager, (ModuleManager) moduleManager);
   }
 
   @Override
@@ -132,10 +144,12 @@ public class Flink112Shims extends FlinkShims {
     Planner planner = (Planner) pair.left;
     Executor executor = (Executor) pair.right;
 
+    ResourceManager resourceManager = (ResourceManager) createResourceManager(jars, tableConfig);
+
     return new org.apache.flink.table.api.bridge.scala.internal.StreamTableEnvironmentImpl(catalogManager,
-            moduleManager,
+            moduleManager, resourceManager,
             functionCatalog, tableConfig, new org.apache.flink.streaming.api.scala.StreamExecutionEnvironment(senv),
-            planner, executor, environmentSettings.isStreamingMode(), classLoader);
+            planner, executor, environmentSettings.isStreamingMode());
   }
 
   @Override
@@ -159,9 +173,12 @@ public class Flink112Shims extends FlinkShims {
     Planner planner = (Planner) pair.left;
     Executor executor = (Executor) pair.right;
 
-    return new StreamTableEnvironmentImpl(catalogManager, moduleManager,
-            functionCatalog, tableConfig, senv, planner, executor, environmentSettings.isStreamingMode(), classLoader);
+    ResourceManager resourceManager = (ResourceManager) createResourceManager(jars, tableConfig);
+
+    return new StreamTableEnvironmentImpl(catalogManager, moduleManager, resourceManager,
+            functionCatalog, tableConfig, senv, planner, executor, environmentSettings.isStreamingMode());
   }
+
   @Override
   public Object createStreamExecutionEnvironmentFactory(Object streamExecutionEnvironment) {
     return new StreamExecutionEnvironmentFactory() {
@@ -235,12 +252,12 @@ public class Flink112Shims extends FlinkShims {
 
   @Override
   public Object fromDataSet(Object btenv, Object ds) {
-    return Flink112ScalaShims.fromDataSet((BatchTableEnvironment) btenv, (DataSet) ds);
+    throw new RuntimeException("Conversion from DataSet is not supported in Flink 1.15");
   }
 
   @Override
   public Object toDataSet(Object btenv, Object table) {
-    return Flink112ScalaShims.toDataSet((BatchTableEnvironment) btenv, (Table) table);
+    throw new RuntimeException("Conversion to DataSet is not supported in Flink 1.15");
   }
 
   @Override
@@ -251,7 +268,7 @@ public class Flink112Shims extends FlinkShims {
 
   @Override
   public void registerScalarFunction(Object btenv, String name, Object scalarFunction) {
-    ((StreamTableEnvironmentImpl)(btenv)).createTemporarySystemFunction(name, (ScalarFunction) scalarFunction);
+    ((StreamTableEnvironmentImpl) (btenv)).createTemporarySystemFunction(name, (ScalarFunction) scalarFunction);
   }
 
   @Override
@@ -272,6 +289,7 @@ public class Flink112Shims extends FlinkShims {
   /**
    * Flink 1.11 bind CatalogManager with parser which make blink and flink could not share the same CatalogManager.
    * This is a workaround which always reset CatalogTableSchemaResolver before running any flink code.
+   *
    * @param catalogManager
    * @param parserObject
    * @param environmentSetting
@@ -280,44 +298,65 @@ public class Flink112Shims extends FlinkShims {
   public void setCatalogManagerSchemaResolver(Object catalogManager,
                                               Object parserObject,
                                               Object environmentSetting) {
-    ((CatalogManager) catalogManager).setCatalogTableSchemaResolver(
-            new CatalogTableSchemaResolver((Parser)parserObject,
-                    ((EnvironmentSettings)environmentSetting).isStreamingMode()));
+
   }
 
   @Override
   public Object updateEffectiveConfig(Object cliFrontend, Object commandLine, Object effectiveConfig) {
-    CustomCommandLine customCommandLine = ((CliFrontend)cliFrontend).validateAndGetActiveCommandLine((CommandLine) commandLine);
+    CustomCommandLine customCommandLine = ((CliFrontend) cliFrontend).validateAndGetActiveCommandLine((CommandLine) commandLine);
     try {
-       ((Configuration) effectiveConfig).addAll(customCommandLine.toConfiguration((CommandLine) commandLine));
-       return effectiveConfig;
+      ((Configuration) effectiveConfig).addAll(customCommandLine.toConfiguration((CommandLine) commandLine));
+      return effectiveConfig;
     } catch (FlinkException e) {
       throw new RuntimeException("Fail to call addAll", e);
     }
   }
 
   @Override
-  public String[] rowToString(Object row, Object table, Object tableConfig) {
-    return PrintUtils.rowToString((Row) row);
+  public void setBatchRuntimeMode(Object tableConfig) {
+    ((TableConfig) tableConfig).getConfiguration()
+            .set(ExecutionOptions.RUNTIME_MODE, RuntimeExecutionMode.BATCH);
   }
 
+  @Override
+  public void setOldPlanner(Object tableConfig) {
+
+  }
+
+  @Override
+  public String[] rowToString(Object row, Object table, Object tableConfig) {
+    final String zone = ((TableConfig) tableConfig).getConfiguration()
+            .get(TableConfigOptions.LOCAL_TIME_ZONE);
+    ZoneId zoneId = TableConfigOptions.LOCAL_TIME_ZONE.defaultValue().equals(zone)
+            ? ZoneId.systemDefault()
+            : ZoneId.of(zone);
+
+    ResolvedSchema resolvedSchema = ((Table) table).getResolvedSchema();
+    return PrintUtils.rowToString((Row) row, resolvedSchema, zoneId);
+  }
+
+  @Override
   public boolean isTimeIndicatorType(Object type) {
-    return FlinkTypeFactory.isTimeIndicatorType((TypeInformation<?>) type);
+    if (type instanceof TimeIndicatorTypeInfo) {
+      return true;
+    } else {
+      return false;
+    }
   }
 
   private Object lookupExecutor(ClassLoader classLoader,
                                 Object settings,
                                 Object sEnv) {
     try {
-      Map<String, String> executorProperties = ((EnvironmentSettings) settings).toExecutorProperties();
-      ExecutorFactory executorFactory = ComponentFactoryService.find(ExecutorFactory.class, executorProperties);
-      Method createMethod = executorFactory.getClass()
-              .getMethod("create", Map.class, StreamExecutionEnvironment.class);
+      final ExecutorFactory executorFactory =
+              FactoryUtil.discoverFactory(
+                      classLoader, ExecutorFactory.class, ExecutorFactory.DEFAULT_IDENTIFIER);
+      final Method createMethod =
+              executorFactory
+                      .getClass()
+                      .getMethod("create", StreamExecutionEnvironment.class);
 
-      return createMethod.invoke(
-              executorFactory,
-              executorProperties,
-              sEnv);
+      return createMethod.invoke(executorFactory, sEnv);
     } catch (Exception e) {
       throw new TableException(
               "Could not instantiate the executor. Make sure a planner module is on the classpath",
@@ -330,26 +369,26 @@ public class Flink112Shims extends FlinkShims {
           ClassLoader classLoader, Object environmentSettings, Object sEnv,
           Object tableConfig, Object moduleManager, Object functionCatalog, Object catalogManager) {
     EnvironmentSettings settings = (EnvironmentSettings) environmentSettings;
-    Executor executor = (Executor) lookupExecutor(classLoader, settings, sEnv);
-    Map<String, String> plannerProperties = settings.toPlannerProperties();
-    Planner planner = ComponentFactoryService.find(PlannerFactory.class, plannerProperties)
-            .create(plannerProperties, executor, (TableConfig) tableConfig,
-                    (FunctionCatalog) functionCatalog,
-                    (CatalogManager) catalogManager);
+    Executor executor = (Executor) lookupExecutor(classLoader, environmentSettings, sEnv);
+    Planner planner = PlannerFactoryUtil.createPlanner(executor,
+            (TableConfig) tableConfig,
+            Thread.currentThread().getContextClassLoader(),
+            (ModuleManager) moduleManager,
+            (CatalogManager) catalogManager,
+            (FunctionCatalog) functionCatalog);
     return ImmutablePair.of(planner, executor);
   }
 
   @Override
   public Object createBlinkPlannerEnvSettingBuilder() {
-    return EnvironmentSettings.newInstance().useBlinkPlanner();
+    return EnvironmentSettings.newInstance();
   }
 
   @Override
   public Object createOldPlannerEnvSettingBuilder() {
-    return EnvironmentSettings.newInstance().useOldPlanner();
+    return EnvironmentSettings.newInstance();
   }
 
-  @Override
   public InterpreterResult runSqlList(String st, InterpreterContext context, boolean isBatch) {
     if (isBatch) {
       return batchSqlInterpreter.runSqlList(st, context);

@@ -59,11 +59,21 @@ public class ScalaShellStreamEnvironment extends StreamExecutionEnvironment {
           final Configuration configuration,
           final FlinkILoop flinkILoop,
           final FlinkVersion flinkVersion,
+          final ClassLoader classLoader,
           final String... jarFiles) {
     super(configuration);
     this.flinkILoop = checkNotNull(flinkILoop);
     this.flinkVersion = checkNotNull(flinkVersion);
     this.jarFiles = checkNotNull(JarUtils.getJarFiles(jarFiles));
+    if (flinkVersion.newerThanOrEqual(FlinkVersion.fromVersionString("1.16"))) {
+      try {
+        Field field = StreamExecutionEnvironment.class.getDeclaredField("userClassloader");
+        field.setAccessible(true);
+        field.set(this, classLoader);
+      } catch (NoSuchFieldException | IllegalAccessException e) {
+        throw new RuntimeException("Unable to set userClassLoader", e);
+      }
+    }
   }
 
   @Override
