@@ -88,7 +88,7 @@ access to this port.
  Set to the same time zone as the zeppelin server, keeping the time zone in the interpreter docker container the same as the server. E.g, `"America/New_York"` or `"Asia/Shanghai"`
 
  ```bash
- export DOCKER_TIME_ZONE="America/New_York"
+ export ZEPPELIN_DOCKER_TIME_ZONE="America/New_York"
  ```
 
 

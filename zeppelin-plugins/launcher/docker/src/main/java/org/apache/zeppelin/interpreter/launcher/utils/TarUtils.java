@@ -32,39 +32,46 @@ import java.io.IOException;
 import java.util.List;
 
 public class TarUtils {
+
+  private TarUtils() {
+    throw new IllegalStateException("Utility class");
+  }
+
   private static final Logger LOGGER = LoggerFactory.getLogger(TarUtils.class);
 
   public static void compress(String name, List<TarFileEntry> files) throws IOException {
-    try (TarArchiveOutputStream out = getTarArchiveOutputStream(name)){
-      for (TarFileEntry tarFileEntry : files){
-        addToArchiveCompression(out, tarFileEntry.getFile(), tarFileEntry.getArchivePath());
+    try (FileOutputStream fileOutputStream = new FileOutputStream(name)) {
+      try (TarArchiveOutputStream out = getTarArchiveOutputStream(fileOutputStream)) {
+        for (TarFileEntry tarFileEntry : files) {
+          addToArchiveCompression(out, tarFileEntry.getFile(), tarFileEntry.getArchivePath());
+        }
       }
     }
   }
 
   public static void decompress(String in, File out) throws IOException {
-    FileInputStream fileInputStream = new FileInputStream(in);
-    GzipCompressorInputStream gzipInputStream = new GzipCompressorInputStream(fileInputStream);
+    try (FileInputStream fileInputStream = new FileInputStream(in)) {
+      GzipCompressorInputStream gzipInputStream = new GzipCompressorInputStream(fileInputStream);
 
-    try (TarArchiveInputStream fin = new TarArchiveInputStream(gzipInputStream)){
-      TarArchiveEntry entry;
-      while ((entry = fin.getNextTarEntry()) != null) {
-        if (entry.isDirectory()) {
-          continue;
+      try (TarArchiveInputStream fin = new TarArchiveInputStream(gzipInputStream)) {
+        TarArchiveEntry entry;
+        while ((entry = fin.getNextTarEntry()) != null) {
+          if (entry.isDirectory()) {
+            continue;
+          }
+          File curfile = new File(out, entry.getName());
+          File parent = curfile.getParentFile();
+          if (!parent.exists()) {
+            parent.mkdirs();
+          }
+          IOUtils.copy(fin, new FileOutputStream(curfile));
         }
-        File curfile = new File(out, entry.getName());
-        File parent = curfile.getParentFile();
-        if (!parent.exists()) {
-          parent.mkdirs();
-        }
-        IOUtils.copy(fin, new FileOutputStream(curfile));
       }
     }
   }
 
-  private static TarArchiveOutputStream getTarArchiveOutputStream(String name)
+  private static TarArchiveOutputStream getTarArchiveOutputStream(FileOutputStream fileOutputStream)
       throws IOException {
-    FileOutputStream fileOutputStream = new FileOutputStream(name);
     GzipCompressorOutputStream gzipOutputStream = new GzipCompressorOutputStream(fileOutputStream);
     TarArchiveOutputStream taos = new TarArchiveOutputStream(gzipOutputStream);
 
@@ -82,7 +89,7 @@ public class TarUtils {
       throws IOException {
     if (file.isFile()){
       String archivePath = "." + dir;
-      LOGGER.info("archivePath = " + archivePath);
+      LOGGER.info("archivePath = {}", archivePath);
       out.putArchiveEntry(new TarArchiveEntry(file, archivePath));
       try (FileInputStream in = new FileInputStream(file)) {
         IOUtils.copy(in, out);
@@ -97,7 +104,7 @@ public class TarUtils {
         }
       }
     } else {
-      LOGGER.error(file.getName() + " is not supported");
+      LOGGER.error("{} is not supported", file.getName());
     }
   }
 }
