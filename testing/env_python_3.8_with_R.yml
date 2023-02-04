@@ -9,6 +9,7 @@ dependencies:
   - grpcio
   - protobuf
   - pandasql
+  - sqlalchemy=1.4.46
   - ipython
   - ipython_genutils
   - ipykernel
