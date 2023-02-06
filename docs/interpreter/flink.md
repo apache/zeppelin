@@ -151,7 +151,6 @@ Flink 1.15 is scala free and has changed its binary distribution. If you would l
 * Move FLINK_HOME/lib/flink-table-planner-loader-1.15.0.jar to FLINK_HOME/opt
 * Download flink-table-api-scala-bridge_2.12-1.15.0.jar and flink-table-api-scala_2.12-1.15.0.jar to FLINK_HOME/lib
 
-
 ## Flink on Zeppelin Architecture
 
 <img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/flink_architecture.png">

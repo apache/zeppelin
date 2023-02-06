@@ -36,7 +36,6 @@
     <modules>
         <module>flink-scala-parent</module>
         <module>flink-shims</module>
-        <module>flink1.12-shims</module>
         <module>flink1.13-shims</module>
         <module>flink1.14-shims</module>
         <module>flink1.15-shims</module>
@@ -44,7 +43,6 @@
     </modules>
 
     <properties>
-        <flink1.12.version>1.12.4</flink1.12.version>
         <flink1.13.version>1.13.2</flink1.13.version>
         <flink1.14.version>1.14.0</flink1.14.version>
         <flink1.15.version>1.15.1</flink1.15.version>
@@ -87,16 +85,6 @@
             </modules>
         </profile>
 
-        <profile>
-            <id>flink-112</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <modules>
-                <module>flink-scala-2.11</module>
-                <module>flink-scala-2.12</module>
-            </modules>
-        </profile>
     </profiles>
 
 </project>
