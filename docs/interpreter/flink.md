@@ -194,7 +194,7 @@ You can also add and set other Flink properties which are not listed in the tabl
   <tr>
     <td>flink.execution.mode</td>
     <td>local</td>
-    <td>Execution mode of Flink, e.g. local | remote | yarn | yarn-application</td>
+    <td>Execution mode of Flink, e.g. local | remote | yarn | yarn-application | kubernetes-application</td>
   </tr>
   <tr>
     <td>flink.execution.remote.host</td>
