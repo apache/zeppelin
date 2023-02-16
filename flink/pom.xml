@@ -79,6 +79,9 @@
 
         <profile>
             <id>flink-113</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
             <modules>
                 <module>flink-scala-2.11</module>
                 <module>flink-scala-2.12</module>
