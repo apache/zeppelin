@@ -25,7 +25,6 @@ import org.apache.zeppelin.flink.FlinkShims;
 import org.apache.zeppelin.flink.JobManager;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.SingleRowInterpreterResult;
-import org.apache.zeppelin.tabledata.TableDataUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,7 +34,7 @@ import java.util.List;
 
 public class SingleRowStreamSqlJob extends AbstractStreamSqlJob {
 
-  private static Logger LOGGER = LoggerFactory.getLogger(SingleRowStreamSqlJob.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(SingleRowStreamSqlJob.class);
 
   private Row latestRow;
   private String template;
@@ -56,8 +55,9 @@ public class SingleRowStreamSqlJob extends AbstractStreamSqlJob {
     return "single";
   }
 
+  @Override
   protected void processInsert(Row row) {
-    LOGGER.debug("processInsert: " + row.toString());
+    LOGGER.debug("processInsert: {}", row);
     latestRow = row;
   }
 
@@ -95,8 +95,8 @@ public class SingleRowStreamSqlJob extends AbstractStreamSqlJob {
     singleRowResult.pushAngularObjects();
   }
 
-  private List rowToList(Row row) {
-    List list = new ArrayList<>();
+  private List<Object> rowToList(Row row) {
+    List<Object> list = new ArrayList<>();
     for (int i = 0; i < row.getArity(); i++) {
       list.add(row.getField(i));
     }

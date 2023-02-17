@@ -162,7 +162,7 @@ The last step is **Dependency Setting**. Since Zeppelin only includes `PostgreSQ
 
 <img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/edit_dependencies.png" width="600px" />
 
-That's it. You can find more JDBC connection setting examples([Mysql](#mysql), [MariaDB](#mariadb), [Redshift](#redshift), [Apache Hive](#apache-hive), [Presto/Trino](#prestotrino), [Impala](#impala), [Apache Phoenix](#apache-phoenix), and [Apache Tajo](#apache-tajo)) in [this section](#examples).
+That's it. You can find more JDBC connection setting examples([Mysql](#mysql), [MariaDB](#mariadb), [Redshift](#redshift), [Apache Hive](#apache-hive), [Presto/Trino](#prestotrino), [Impala](#impala), [Apache Kyuubi](#apache-kyuubi), [Apache Phoenix](#apache-phoenix), and [Apache Tajo](#apache-tajo)) in [this section](#examples).
 
 ## JDBC Interpreter Datasource Pool Configuration
 The Jdbc interpreter uses the connection pool technology, and supports users to do some personal configuration of the connection pool. For example, we can configure `default.validationQuery='select 1'` and `default.testOnBorrow=true` in the Interpreter configuration to avoid the "Invalid SessionHandle" runtime error caused by Session timeout when connecting to HiveServer2 through JDBC interpreter.
@@ -722,16 +722,16 @@ See [User Impersonation in interpreter](../usage/interpreter/user_impersonation.
     <th>Value</th>
   </tr>
   <tr>
-    <td>hive.driver</td>
+    <td>default.driver</td>
     <td>org.apache.hive.jdbc.HiveDriver</td>
   </tr>
   <tr>
-    <td>hive.url</td>
+    <td>default.url</td>
     <td>jdbc:hive2://hive-server-host:2181/;serviceDiscoveryMode=zooKeeper;zooKeeperNamespace=hiveserver2</td>
   </tr>
   <tr>
-    <td>hive.proxy.user.property</td>
-    <td>hive.server2.proxy.user</td>
+    <td>default.proxy.user.property</td>
+    <td>default.server2.proxy.user</td>
   </tr>
   <tr>
     <td>zeppelin.jdbc.auth.type</td>
@@ -823,6 +823,104 @@ Dependencies
   </tr>
   <tr>
     <td>io.prestosql:presto-jdbc:350</td>
+    <td></td>
+  </tr>
+</table>
+
+### Apache Kyuubi
+
+Zeppelin connect to `Kyuubi` to run sql via `KyuubiHiveDriver`. There are 2 cases of connecting with Kyuubi:
+
+* Connect to Kyuubi without KERBEROS
+* Connect to Kyuubi with KERBEROS
+
+Each case requires different settings.
+
+##### Connect to Kyuubi without KERBEROS
+
+In this scenario, you need to make the following settings at least. Kyuubi engine run as user of `default.user`.
+
+Properties
+
+<table class="table-configuration">
+  <tr>
+    <th>Name</th>
+    <th>Value</th>
+  </tr>
+  <tr>
+    <td>default.driver</td>
+    <td>org.apache.kyuubi.jdbc.KyuubiHiveDriver</td>
+  </tr>
+  <tr>
+    <td>default.url</td>
+    <td>jdbc:hive2://kyuubi-server:10009</td>
+  </tr>
+</table>
+
+Dependencies
+
+<table class="table-configuration">
+  <tr>
+    <th>Artifact</th>
+    <th>Excludes</th>
+  </tr>
+  <tr>
+    <td>org.apache.kyuubi:kyuubi-hive-jdbc-shaded:1.6.1-incubating</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>org.apache.hive:hive-jdbc:3.1.2</td>
+    <td></td>
+  </tr>
+</table>
+
+
+##### Connect to Kyuubi with KERBEROS
+
+In this scenario, you need to make the following settings at least. Kyuubi engine run as user of client principal (`zeppelin.jdbc.principal`).
+
+Properties
+
+<table class="table-configuration">
+  <tr>
+    <th>Name</th>
+    <th>Value</th>
+  </tr>
+  <tr>
+    <td>default.driver</td>
+    <td>org.apache.kyuubi.jdbc.KyuubiHiveDriver</td>
+  </tr>
+  <tr>
+    <td>default.url</td>
+    <td>jdbc:hive2://kyuubi-server:10009/default;principal={kyuubi_principal}</td>
+  </tr>
+  <tr>
+    <td>zeppelin.jdbc.auth.type</td>
+    <td>KERBEROS</td>
+  </tr>
+  <tr>
+    <td>zeppelin.jdbc.keytab.location</td>
+    <td>keytab of client</td>
+  </tr>
+  <tr>
+    <td>zeppelin.jdbc.principal</td>
+    <td>principal of client</td>
+  </tr>
+</table>
+
+Dependencies
+
+<table class="table-configuration">
+  <tr>
+    <th>Artifact</th>
+    <th>Excludes</th>
+  </tr>
+  <tr>
+    <td>org.apache.kyuubi:kyuubi-hive-jdbc-shaded:1.6.1-incubating</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>org.apache.hive:hive-jdbc:3.1.2</td>
     <td></td>
   </tr>
 </table>

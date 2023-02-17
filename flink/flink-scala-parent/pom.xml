@@ -29,15 +29,14 @@
 
   <artifactId>flink-scala-parent</artifactId>
   <packaging>pom</packaging>
-  <version>0.11.0-SNAPSHOT</version>
   <name>Zeppelin: Flink Scala Parent</name>
   <description>Zeppelin Flink Scala Parent</description>
 
   <properties>
     <!--library versions-->
     <interpreter.name>flink</interpreter.name>
-    <flink.version>${flink1.12.version}</flink.version>
-    <flink.hadoop.version>2.6.5</flink.hadoop.version>
+    <flink.version>${flink1.13.version}</flink.version>
+    <flink.hadoop.version>${hadoop2.7.version}</flink.hadoop.version>
     <hive.version>2.3.4</hive.version>
     <hiverunner.version>4.0.0</hiverunner.version>
     <grpc.version>1.15.0</grpc.version>
@@ -58,12 +57,6 @@
 
     <dependency>
       <groupId>org.apache.zeppelin</groupId>
-      <artifactId>flink1.12-shims</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.zeppelin</groupId>
       <artifactId>flink1.13-shims</artifactId>
       <version>${project.version}</version>
     </dependency>
@@ -77,6 +70,12 @@
     <dependency>
       <groupId>org.apache.zeppelin</groupId>
       <artifactId>flink1.15-shims</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.zeppelin</groupId>
+      <artifactId>flink1.16-shims</artifactId>
       <version>${project.version}</version>
     </dependency>
 
@@ -141,13 +140,6 @@
 
     <dependency>
       <groupId>org.apache.flink</groupId>
-      <artifactId>flink-python_${flink.scala.binary.version}</artifactId>
-      <version>${flink.version}</version>
-      <scope>provided</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.flink</groupId>
       <artifactId>flink-core</artifactId>
       <version>${flink.version}</version>
       <scope>provided</scope>
@@ -177,10 +169,6 @@
         <exclusion>
           <groupId>org.eclipse.jetty</groupId>
           <artifactId>*</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>io.netty</groupId>
-          <artifactId>netty</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -365,7 +353,7 @@
 
     <dependency>
       <groupId>org.powermock</groupId>
-      <artifactId>powermock-api-mockito</artifactId>
+      <artifactId>powermock-api-mockito2</artifactId>
       <scope>test</scope>
     </dependency>
 
@@ -575,7 +563,7 @@
     <dependency>
       <groupId>com.klarna</groupId>
       <artifactId>hiverunner</artifactId>
-      <version>4.0.0</version>
+      <version>${hiverunner.version}</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -602,8 +590,14 @@
     </dependency>
 
     <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-engine</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.junit.vintage</groupId>
+      <artifactId>junit-vintage-engine</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -816,30 +810,6 @@
         <artifactId>scalatest-maven-plugin</artifactId>
       </plugin>
 
-      <!-- Eclipse Integration -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-eclipse-plugin</artifactId>
-        <configuration>
-          <downloadSources>true</downloadSources>
-          <projectnatures>
-            <projectnature>org.scala-ide.sdt.core.scalanature</projectnature>
-            <projectnature>org.eclipse.jdt.core.javanature</projectnature>
-          </projectnatures>
-          <buildcommands>
-            <buildcommand>org.scala-ide.sdt.core.scalabuilder</buildcommand>
-          </buildcommands>
-          <classpathContainers>
-            <classpathContainer>org.scala-ide.sdt.launching.SCALA_CONTAINER</classpathContainer>
-            <classpathContainer>org.eclipse.jdt.launching.JRE_CONTAINER</classpathContainer>
-          </classpathContainers>
-          <sourceIncludes>
-            <sourceInclude>**/*.scala</sourceInclude>
-            <sourceInclude>**/*.java</sourceInclude>
-          </sourceIncludes>
-        </configuration>
-      </plugin>
-
       <plugin>
         <artifactId>maven-enforcer-plugin</artifactId>
       </plugin>
@@ -858,14 +828,6 @@
             </configuration>
           </execution>
         </executions>
-      </plugin>
-
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-checkstyle-plugin</artifactId>
-        <configuration>
-          <skip>true</skip>
-        </configuration>
       </plugin>
 
       <plugin>
@@ -927,45 +889,6 @@
   <profiles>
 
     <profile>
-      <id>flink-112</id>
-      <properties>
-        <flink.version>${flink1.12.version}</flink.version>
-      </properties>
-      <dependencies>
-        <dependency>
-          <groupId>org.apache.flink</groupId>
-          <artifactId>flink-runtime_${flink.scala.binary.version}</artifactId>
-          <version>${flink.version}</version>
-          <scope>provided</scope>
-        </dependency>
-        <dependency>
-          <groupId>org.apache.flink</groupId>
-          <artifactId>flink-table-runtime-blink_${flink.scala.binary.version}</artifactId>
-          <version>${flink.version}</version>
-          <scope>provided</scope>
-        </dependency>
-        <dependency>
-          <groupId>org.apache.flink</groupId>
-          <artifactId>flink-table-planner_${flink.scala.binary.version}</artifactId>
-          <version>${flink.version}</version>
-          <scope>provided</scope>
-        </dependency>
-        <dependency>
-          <groupId>org.apache.flink</groupId>
-          <artifactId>flink-table-planner-blink_${flink.scala.binary.version}</artifactId>
-          <version>${flink.version}</version>
-          <scope>provided</scope>
-          <exclusions>
-            <exclusion>
-              <groupId>org.reflections</groupId>
-              <artifactId>reflections</artifactId>
-            </exclusion>
-          </exclusions>
-        </dependency>
-      </dependencies>
-    </profile>
-
-    <profile>
       <id>flink-113</id>
       <properties>
         <flink.version>${flink1.13.version}</flink.version>
@@ -1001,6 +924,12 @@
             </exclusion>
           </exclusions>
         </dependency>
+        <dependency>
+          <groupId>org.apache.flink</groupId>
+          <artifactId>flink-python_${flink.scala.binary.version}</artifactId>
+          <version>${flink.version}</version>
+          <scope>provided</scope>
+        </dependency>
       </dependencies>
     </profile>
 
@@ -1019,6 +948,12 @@
         <dependency>
           <groupId>org.apache.flink</groupId>
           <artifactId>flink-table-planner_${flink.scala.binary.version}</artifactId>
+          <version>${flink.version}</version>
+          <scope>provided</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.flink</groupId>
+          <artifactId>flink-python_${flink.scala.binary.version}</artifactId>
           <version>${flink.version}</version>
           <scope>provided</scope>
         </dependency>
@@ -1046,6 +981,48 @@
           <version>${flink.version}</version>
           <scope>provided</scope>
         </dependency>
+        <dependency>
+          <groupId>org.apache.flink</groupId>
+          <artifactId>flink-python_${flink.scala.binary.version}</artifactId>
+          <version>${flink.version}</version>
+          <scope>provided</scope>
+        </dependency>
+      </dependencies>
+    </profile>
+
+    <profile>
+      <id>flink-116</id>
+      <properties>
+        <flink.version>${flink1.16.version}</flink.version>
+        <flink.scala.version>2.12.7</flink.scala.version>
+        <flink.scala.binary.version>2.12</flink.scala.binary.version>
+        <flink.library.scala.suffix></flink.library.scala.suffix>
+      </properties>
+      <dependencies>
+        <dependency>
+          <groupId>org.apache.flink</groupId>
+          <artifactId>flink-runtime</artifactId>
+          <version>${flink.version}</version>
+          <scope>provided</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.flink</groupId>
+          <artifactId>flink-table-planner_${flink.scala.binary.version}</artifactId>
+          <version>${flink.version}</version>
+          <scope>provided</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.flink</groupId>
+          <artifactId>flink-sql-client</artifactId>
+          <version>${flink.version}</version>
+          <scope>provided</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.flink</groupId>
+          <artifactId>flink-python</artifactId>
+          <version>${flink.version}</version>
+          <scope>provided</scope>
+        </dependency>
       </dependencies>
     </profile>
 
@@ -1059,7 +1036,6 @@
         <hiverunner.version>4.0.0</hiverunner.version>
       </properties>
     </profile>
-
     <profile>
       <id>hive1</id>
       <properties>
@@ -1075,7 +1051,5 @@
         </dependency>
       </dependencies>
     </profile>
-
   </profiles>
-
 </project>

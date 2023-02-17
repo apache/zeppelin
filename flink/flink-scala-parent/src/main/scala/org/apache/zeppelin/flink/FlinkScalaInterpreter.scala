@@ -365,6 +365,8 @@ abstract class FlinkScalaInterpreter(val properties: Properties,
 
     flinkILoop.settings = settings
     flinkILoop.intp = createIMain(settings, replOut)
+    flinkILoop.initEnvironments()
+
     flinkILoop.intp.beQuietDuring {
       // set execution environment
       flinkILoop.intp.bind("benv", flinkILoop.scalaBenv)
@@ -424,29 +426,29 @@ abstract class FlinkScalaInterpreter(val properties: Properties,
   private def createTableEnvs(): Unit = {
     val originalClassLoader = Thread.currentThread().getContextClassLoader
     try {
-      Thread.currentThread().setContextClassLoader(getFlinkClassLoader)
+      Thread.currentThread().setContextClassLoader(getFlinkScalaShellLoader)
       val tableConfig = new TableConfig
       tableConfig.getConfiguration.addAll(configuration)
 
       this.tblEnvFactory = new TableEnvFactory(this.flinkVersion, this.flinkShims,
-        this.benv, this.senv, tableConfig)
+        this.benv, this.senv, tableConfig, this.userJars.map(new URL(_)).asJava)
 
       // blink planner
-      var btEnvSetting = this.flinkShims.createBlinkPlannerEnvSettingBuilder()
+      val btEnvSetting = this.flinkShims.createBlinkPlannerEnvSettingBuilder()
         .asInstanceOf[EnvironmentSettings.Builder]
         .inBatchMode()
         .build()
-      this.btenv = tblEnvFactory.createJavaBlinkBatchTableEnvironment(btEnvSetting, getFlinkClassLoader);
+      this.btenv = tblEnvFactory.createJavaBlinkBatchTableEnvironment(btEnvSetting, getFlinkScalaShellLoader);
       flinkILoop.bind("btenv", btenv.getClass().getCanonicalName(), btenv, List("@transient"))
       this.java_btenv = this.btenv
 
-      var stEnvSetting = this.flinkShims.createBlinkPlannerEnvSettingBuilder()
+      val stEnvSetting = this.flinkShims.createBlinkPlannerEnvSettingBuilder()
         .asInstanceOf[EnvironmentSettings.Builder]
         .inStreamingMode()
         .build()
-      this.stenv = tblEnvFactory.createScalaBlinkStreamTableEnvironment(stEnvSetting, getFlinkClassLoader)
+      this.stenv = tblEnvFactory.createScalaBlinkStreamTableEnvironment(stEnvSetting, getFlinkScalaShellLoader)
       flinkILoop.bind("stenv", stenv.getClass().getCanonicalName(), stenv, List("@transient"))
-      this.java_stenv = tblEnvFactory.createJavaBlinkStreamTableEnvironment(stEnvSetting, getFlinkClassLoader)
+      this.java_stenv = tblEnvFactory.createJavaBlinkStreamTableEnvironment(stEnvSetting, getFlinkScalaShellLoader)
 
       if (!flinkVersion.isAfterFlink114()) {
         // flink planner is not supported after flink 1.14
@@ -506,7 +508,7 @@ abstract class FlinkScalaInterpreter(val properties: Properties,
 
     val udfPackages = properties.getProperty("flink.udf.jars.packages", "").split(",").toSet
     val urls = Array(new URL("jar:file:" + jar + "!/"))
-    val cl = new URLClassLoader(urls, getFlinkScalaShellLoader)
+    val cl = new URLClassLoader(urls, getFlinkClassLoader)
 
     while (entries.hasMoreElements) {
       val je = entries.nextElement
@@ -590,7 +592,7 @@ abstract class FlinkScalaInterpreter(val properties: Properties,
   def createPlannerAgain(): Unit = {
     val originalClassLoader = Thread.currentThread().getContextClassLoader
     try {
-      Thread.currentThread().setContextClassLoader(getFlinkClassLoader)
+      Thread.currentThread().setContextClassLoader(getFlinkScalaShellLoader)
       val stEnvSetting = this.flinkShims.createBlinkPlannerEnvSettingBuilder()
         .asInstanceOf[EnvironmentSettings.Builder]
         .inStreamingMode()
@@ -844,8 +846,11 @@ abstract class FlinkScalaInterpreter(val properties: Properties,
   def getJobManager = this.jobManager
 
   def getFlinkScalaShellLoader: ClassLoader = {
-    val userCodeJarFile = this.flinkILoop.writeFilesToDisk()
-    new URLClassLoader(Array(userCodeJarFile.toURL) ++ userJars.map(e => new File(e).toURL))
+    if (this.flinkILoop == null) {
+      getFlinkClassLoader
+    } else {
+      flinkILoop.classLoader;
+    }
   }
 
   private def getFlinkClassLoader: ClassLoader = {

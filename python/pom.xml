@@ -34,7 +34,6 @@
   <properties>
     <interpreter.name>python</interpreter.name>
     <python.py4j.version>0.10.7</python.py4j.version>
-    <grpc.version>1.15.0</grpc.version>
     <interpreter.jar.name>python-interpreter-with-py4j</interpreter.jar.name>
   </properties>
 
@@ -73,7 +72,7 @@
     <!-- test libraries -->
     <dependency>
       <groupId>org.mockito</groupId>
-      <artifactId>mockito-all</artifactId>
+      <artifactId>mockito-core</artifactId>
       <scope>test</scope>
     </dependency>
 
@@ -92,7 +91,7 @@
       <extension>
         <groupId>kr.motd.maven</groupId>
         <artifactId>os-maven-plugin</artifactId>
-        <version>1.4.1.Final</version>
+        <version>${plugin.os.version}</version>
       </extension>
     </extensions>
 
@@ -177,9 +176,6 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-checkstyle-plugin</artifactId>
-        <configuration>
-          <skip>false</skip>
-        </configuration>
       </plugin>
     </plugins>
   </build>

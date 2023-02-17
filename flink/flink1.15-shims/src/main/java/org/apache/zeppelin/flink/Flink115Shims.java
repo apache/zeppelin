@@ -65,6 +65,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
+import java.net.URL;
 import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.List;
@@ -94,13 +95,70 @@ public class Flink115Shims extends FlinkShims {
   }
 
   @Override
-  public Object createFunctionCatalog(Object tableConfig, Object catalogManager, Object moduleManager) {
+  public Object createResourceManager(List<URL> jars, Object tableConfig) {
+    return null;
+  }
+
+  @Override
+  public Object createFunctionCatalog(Object tableConfig, Object catalogManager, Object moduleManager, List<URL> jars) {
     return new FunctionCatalog((TableConfig) tableConfig, (CatalogManager) catalogManager, (ModuleManager) moduleManager);
   }
 
   @Override
   public void disableSysoutLogging(Object batchConfig, Object streamConfig) {
     // do nothing
+  }
+
+  @Override
+  public Object createScalaBlinkStreamTableEnvironment(Object environmentSettingsObj,
+                                                       Object senvObj,
+                                                       Object tableConfigObj,
+                                                       Object moduleManagerObj,
+                                                       Object functionCatalogObj,
+                                                       Object catalogManagerObj,
+                                                       List<URL> jars,
+                                                       ClassLoader classLoader) {
+    EnvironmentSettings environmentSettings = (EnvironmentSettings) environmentSettingsObj;
+    StreamExecutionEnvironment senv = (StreamExecutionEnvironment) senvObj;
+    TableConfig tableConfig = (TableConfig) tableConfigObj;
+    ModuleManager moduleManager = (ModuleManager) moduleManagerObj;
+    FunctionCatalog functionCatalog = (FunctionCatalog) functionCatalogObj;
+    CatalogManager catalogManager = (CatalogManager) catalogManagerObj;
+    ImmutablePair<Object, Object> pair = createPlannerAndExecutor(
+            classLoader, environmentSettings, senv,
+            tableConfig, moduleManager, functionCatalog, catalogManager);
+    Planner planner = (Planner) pair.left;
+    Executor executor = (Executor) pair.right;
+
+    return new org.apache.flink.table.api.bridge.scala.internal.StreamTableEnvironmentImpl(catalogManager,
+            moduleManager,
+            functionCatalog, tableConfig, new org.apache.flink.streaming.api.scala.StreamExecutionEnvironment(senv),
+            planner, executor, environmentSettings.isStreamingMode(), classLoader);
+  }
+
+  @Override
+  public Object createJavaBlinkStreamTableEnvironment(Object environmentSettingsObj,
+                                                      Object senvObj,
+                                                      Object tableConfigObj,
+                                                      Object moduleManagerObj,
+                                                      Object functionCatalogObj,
+                                                      Object catalogManagerObj,
+                                                      List<URL> jars,
+                                                      ClassLoader classLoader) {
+    EnvironmentSettings environmentSettings = (EnvironmentSettings) environmentSettingsObj;
+    StreamExecutionEnvironment senv = (StreamExecutionEnvironment) senvObj;
+    TableConfig tableConfig = (TableConfig) tableConfigObj;
+    ModuleManager moduleManager = (ModuleManager) moduleManagerObj;
+    FunctionCatalog functionCatalog = (FunctionCatalog) functionCatalogObj;
+    CatalogManager catalogManager = (CatalogManager) catalogManagerObj;
+    ImmutablePair<Object, Object> pair = createPlannerAndExecutor(
+            classLoader, environmentSettings, senv,
+            tableConfig, moduleManager, functionCatalog, catalogManager);
+    Planner planner = (Planner) pair.left;
+    Executor executor = (Executor) pair.right;
+
+    return new StreamTableEnvironmentImpl(catalogManager, moduleManager,
+            functionCatalog, tableConfig, senv, planner, executor, environmentSettings.isStreamingMode(), classLoader);
   }
 
   @Override

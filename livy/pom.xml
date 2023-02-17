@@ -40,8 +40,8 @@
 
         <!--test library versions-->
         <livy.version>0.7.1-incubating</livy.version>
-        <spark.version>2.1.0</spark.version>
-        <hadoop.version>${hadoop2.6.version}</hadoop.version>
+        <spark.version>2.4.8</spark.version>
+        <hadoop.version>${hadoop2.7.version}</hadoop.version>
     </properties>
 
     <dependencies>
@@ -370,9 +370,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
-                <configuration>
-                    <skip>false</skip>
-                </configuration>
             </plugin>
         </plugins>
     </build>

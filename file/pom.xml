@@ -36,10 +36,6 @@
     <interpreter.name>file</interpreter.name>
     <ws.rsapi.version>2.0</ws.rsapi.version>
     <jersey.common.version>2.22.2</jersey.common.version>
-
-    <!--plugin versions-->
-    <plugin.surefire.version>2.18.1</plugin.surefire.version>
-    <interpreter.name>file</interpreter.name>
   </properties>
 
   <dependencies>
@@ -80,9 +76,6 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-checkstyle-plugin</artifactId>
-        <configuration>
-          <skip>false</skip>
-        </configuration>
       </plugin>
     </plugins>
   </build>

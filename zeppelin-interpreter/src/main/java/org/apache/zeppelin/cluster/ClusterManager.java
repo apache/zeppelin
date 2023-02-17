@@ -344,7 +344,7 @@ public abstract class ClusterManager {
 
     ClusterMetaType metaType = entity.getMetaType();
     String metaKey = entity.getKey();
-    HashMap<String, Object> newMetaValue = entity.getValues();
+    Map<String, Object> newMetaValue = entity.getValues();
 
     if (LOGGER.isDebugEnabled()) {
       LOGGER.debug("putClusterMeta {} {}", metaType, metaKey);
@@ -361,7 +361,7 @@ public abstract class ClusterManager {
   }
 
   // put metadata into cluster metadata
-  public void putClusterMeta(ClusterMetaType type, String key, HashMap<String, Object> values) {
+  public void putClusterMeta(ClusterMetaType type, String key, Map<String, Object> values) {
     ClusterMetaEntity metaEntity = new ClusterMetaEntity(PUT_OPERATION, type, key, values);
 
     boolean result = putClusterMeta(metaEntity);
@@ -407,9 +407,9 @@ public abstract class ClusterManager {
   }
 
   // get metadata by cluster metadata
-  public HashMap<String, HashMap<String, Object>> getClusterMeta(
+  public Map<String, Map<String, Object>> getClusterMeta(
       ClusterMetaType metaType, String metaKey) {
-    HashMap<String, HashMap<String, Object>> clusterMeta = new HashMap<>();
+    Map<String, Map<String, Object>> clusterMeta = new HashMap<>();
     if (!raftInitialized()) {
       LOGGER.error("Raft incomplete initialization!");
       return clusterMeta;
@@ -434,7 +434,7 @@ public abstract class ClusterManager {
     }
 
     if (LOGGER.isDebugEnabled()) {
-      LOGGER.debug("getClusterMeta >>> {}", clusterMeta.toString());
+      LOGGER.debug("getClusterMeta >>> {}", clusterMeta);
     }
 
     return clusterMeta;
@@ -442,12 +442,12 @@ public abstract class ClusterManager {
 
   public InterpreterClient getIntpProcessStatus(String intpName,
                                                 int timeout,
-                                                ClusterCallback<HashMap<String, Object>> callback) {
+                                                ClusterCallback<Map<String, Object>> callback) {
     final int CHECK_META_INTERVAL = 1000;
     int MAX_RETRY_GET_META = timeout / CHECK_META_INTERVAL;
     int retryGetMeta = 0;
     while (retryGetMeta++ < MAX_RETRY_GET_META) {
-      HashMap<String, Object> intpMeta = getClusterMeta(INTP_PROCESS_META, intpName).get(intpName);
+      Map<String, Object> intpMeta = getClusterMeta(INTP_PROCESS_META, intpName).get(intpName);
       if (interpreterMetaOnline(intpMeta)) {
         // connect exist Interpreter Process
         String intpTSrvHost = (String) intpMeta.get(INTP_TSERVER_HOST);
@@ -485,7 +485,7 @@ public abstract class ClusterManager {
   }
 
   // Check if the interpreter is online
-  private boolean interpreterMetaOnline(HashMap<String, Object> intpProcMeta) {
+  private boolean interpreterMetaOnline(Map<String, Object> intpProcMeta) {
     if (null != intpProcMeta
         && intpProcMeta.containsKey(INTP_TSERVER_HOST)
         && intpProcMeta.containsKey(INTP_TSERVER_PORT)

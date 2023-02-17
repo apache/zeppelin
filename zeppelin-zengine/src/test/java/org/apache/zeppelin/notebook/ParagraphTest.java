@@ -21,12 +21,14 @@ package org.apache.zeppelin.notebook;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -351,9 +353,6 @@ public class ParagraphTest extends AbstractInterpreterTest {
     }
   }
 
-  //(TODO zjffdu) temporary disable it.
-  //https://github.com/apache/zeppelin/pull/3416
-  @Ignore
   @Test
   public void credentialReplacement() throws Throwable {
     Note mockNote = mock(Note.class);
@@ -369,11 +368,16 @@ public class ParagraphTest extends AbstractInterpreterTest {
     spyParagraph.setInterpreter(mockInterpreter);
     doReturn(mockInterpreter).when(spyParagraph).getBindedInterpreter();
 
+    InterpreterSetting mockInterpreterSetting = mock(InterpreterSetting.class);
+    when(mockInterpreterSetting.getStatus()).thenReturn(InterpreterSetting.Status.READY);
+    when(mockInterpreterSetting.isUserAuthorized(anyList())).thenReturn(true);
+
     ManagedInterpreterGroup mockInterpreterGroup = mock(ManagedInterpreterGroup.class);
     when(mockInterpreter.getInterpreterGroup()).thenReturn(mockInterpreterGroup);
     when(mockInterpreterGroup.getId()).thenReturn("mock_id_1");
     when(mockInterpreterGroup.getAngularObjectRegistry()).thenReturn(mock(AngularObjectRegistry.class));
     when(mockInterpreterGroup.getResourcePool()).thenReturn(mock(ResourcePool.class));
+    when(mockInterpreterGroup.getInterpreterSetting()).thenReturn(mockInterpreterSetting);
     when(mockInterpreter.getFormType()).thenReturn(FormType.NONE);
 
     ParagraphJobListener mockJobListener = mock(ParagraphJobListener.class);
@@ -386,23 +390,23 @@ public class ParagraphTest extends AbstractInterpreterTest {
     AuthenticationInfo user1 = new AuthenticationInfo("user1");
     spyParagraph.setAuthenticationInfo(user1);
 
-    spyParagraph.setText("val x = \"usr={user.ent}&pass={password.ent}\"");
+    spyParagraph.setText("val x = \"usr={ent.user}&pass={ent.password}\"");
 
     // Credentials should only be injected when it is enabled for an interpreter or when specified in a local property
     when(mockInterpreter.getProperty(Constants.INJECT_CREDENTIALS, "false")).thenReturn("false");
     spyParagraph.jobRun();
-    verify(mockInterpreter).interpret(eq("val x = \"usr={user.ent}&pass={password.ent}\""), any(InterpreterContext.class));
+    verify(mockInterpreter).interpret(eq("val x = \"usr={ent.user}&pass={ent.password}\""), any(InterpreterContext.class));
 
     when(mockInterpreter.getProperty(Constants.INJECT_CREDENTIALS, "false")).thenReturn("true");
-    mockInterpreter.setProperty(Constants.INJECT_CREDENTIALS, "true");
+    mockInterpreter.setProperty(Constants.INJECT_CREDENTIALS, "false");
     spyParagraph.jobRun();
     verify(mockInterpreter).interpret(eq("val x = \"usr=user&pass=pwd\""), any(InterpreterContext.class));
 
     // Check if local property override works
-    when(mockInterpreter.getProperty(Constants.INJECT_CREDENTIALS, "false")).thenReturn("true");
+    when(mockInterpreter.getProperty(Constants.INJECT_CREDENTIALS, "false")).thenReturn("false");
     spyParagraph.getLocalProperties().put(Constants.INJECT_CREDENTIALS, "true");
     spyParagraph.jobRun();
-    verify(mockInterpreter).interpret(eq("val x = \"usr=user&pass=pwd\""), any(InterpreterContext.class));
+    verify(mockInterpreter, times(2)).interpret(eq("val x = \"usr=user&pass=pwd\""), any(InterpreterContext.class));
 
   }
 }

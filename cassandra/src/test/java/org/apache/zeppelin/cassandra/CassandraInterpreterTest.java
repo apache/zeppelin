@@ -19,6 +19,8 @@ package org.apache.zeppelin.cassandra;
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.config.DefaultDriverOption;
 import com.datastax.oss.driver.api.core.config.DriverExecutionProfile;
+
+import org.apache.commons.io.IOUtils;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.interpreter.Interpreter;
@@ -33,10 +35,8 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Properties;
 
@@ -264,7 +264,7 @@ public class CassandraInterpreterTest { //extends AbstractCassandraUnit4CQLTestC
             "The Way You Are\tTears for Fears\t1983\n" +
             "Primitive\tSoulfly\t2003\n");
   }
-    
+
   @Test
   public void should_throw_statement_not_having_semi_colon() {
     //Given
@@ -834,18 +834,12 @@ public class CassandraInterpreterTest { //extends AbstractCassandraUnit4CQLTestC
   }
 
   private static String readTestResource(String testResource) {
-    StringBuilder builder = new StringBuilder();
-    InputStream stream = testResource.getClass().getResourceAsStream(testResource);
-
-    try (BufferedReader br = new BufferedReader(new InputStreamReader(stream))) {
-      String line;
-      while ((line = br.readLine()) != null) {
-        builder.append(line).append("\n");
-      }
-    } catch (Exception ex) {
-      throw  new RuntimeException(ex);
+    try {
+      return IOUtils.toString(
+        CassandraInterpreterTest.class.getResourceAsStream(testResource),
+        StandardCharsets.UTF_8);
+    } catch (IOException ex) {
+      throw new RuntimeException(ex);
     }
-
-    return builder.toString();
   }
 }

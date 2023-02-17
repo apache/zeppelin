@@ -19,7 +19,7 @@
 package org.apache.zeppelin.alluxio;
 
 
-import alluxio.conf.ServerConfiguration;
+import alluxio.conf.Configuration;
 import alluxio.grpc.WritePType;
 import alluxio.client.file.FileSystemTestUtils;
 import alluxio.master.LocalAlluxioCluster;
@@ -66,9 +66,9 @@ public class AlluxioInterpreterTest {
 
   @Before
   public final void before() throws Exception {
-    mLocalAlluxioCluster = new LocalAlluxioCluster(1);
+    mLocalAlluxioCluster = new LocalAlluxioCluster(1, false);
     mLocalAlluxioCluster.initConfiguration("alluxio-test");
-    ServerConfiguration.global().validate();
+    Configuration.global().validate();
     mLocalAlluxioCluster.start();
 
     fs = mLocalAlluxioCluster.getClient();

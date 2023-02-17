@@ -87,8 +87,8 @@ To be noticed, this scala profile affect the modules (e.g. cassandra) that use s
 Set scala version (default 2.10). Available profiles are
 
 ```
--Pscala-2.10
 -Pscala-2.11
+-Pscala-2.12
 ```
 
 #### Spark Interpreter

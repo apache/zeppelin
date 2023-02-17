@@ -32,7 +32,7 @@
   <parent>
     <groupId>org.apache</groupId>
     <artifactId>apache</artifactId>
-    <version>17</version>
+    <version>28</version>
   </parent>
 
   <licenses>
@@ -52,6 +52,7 @@
   <inceptionYear>2013</inceptionYear>
 
   <modules>
+    <module>build-tools</module>
     <module>zeppelin-interpreter-parent</module>
     <module>zeppelin-interpreter</module>
     <module>zeppelin-interpreter-shaded</module>
@@ -95,26 +96,31 @@
   </modules>
 
   <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
     <!-- language versions -->
     <java.version>1.8</java.version>
-    <scala.2.10.version>2.10.5</scala.2.10.version>
-    <scala.version>${scala.2.10.version}</scala.version>
-    <scala.binary.version>2.10</scala.binary.version>
-    <scala.2.11.version>2.11.8</scala.2.11.version>
+    <!-- These two lines could be changed like `maven.compiler.release` after updating JDK11 -->
+    <maven.compiler.source>${java.version}</maven.compiler.source>
+    <maven.compiler.target>${java.version}</maven.compiler.target>
+    <scala.version>${scala.2.11.version}</scala.version>
+    <scala.binary.version>2.11</scala.binary.version>
+    <scala.2.11.version>2.11.12</scala.2.11.version>
+    <scala.2.12.version>2.12.16</scala.2.12.version>
     <scalatest.version>3.0.7</scalatest.version>
     <scalacheck.version>1.12.5</scalacheck.version>
 
     <!-- frontend maven plugin related versions-->
     <node.version>v12.3.1</node.version>
     <npm.version>6.9.0</npm.version>
-    <plugin.frontend.version>1.6</plugin.frontend.version>
+    <plugin.frontend.version>1.12.1</plugin.frontend.version>
 
     <!-- common library versions -->
     <slf4j.version>1.7.30</slf4j.version>
     <log4j.version>1.2.17</log4j.version>
     <libthrift.version>0.13.0</libthrift.version>
     <flexmark.all.version>0.62.2</flexmark.all.version>
-    <gson.version>2.8.6</gson.version>
+    <gson.version>2.8.9</gson.version>
     <gson-extras.version>0.2.2</gson-extras.version>
     <jetty.version>9.4.48.v20220622</jetty.version>
     <httpcomponents.core.version>4.4.1</httpcomponents.core.version>
@@ -122,21 +128,20 @@
     <httpcomponents.asyncclient.version>4.0.2</httpcomponents.asyncclient.version>
     <commons.compress.version>1.21</commons.compress.version>
     <commons.lang3.version>3.12.0</commons.lang3.version>
-    <commons.text.version>1.8</commons.text.version>
-    <commons.configuration2.version>2.7</commons.configuration2.version>
+    <commons.text.version>1.10.0</commons.text.version>
+    <commons.configuration2.version>2.8.0</commons.configuration2.version>
     <commons.exec.version>1.3</commons.exec.version>
     <commons.codec.version>1.14</commons.codec.version>
     <commons.io.version>2.7</commons.io.version>
     <commons.collections.version>3.2.2</commons.collections.version>
     <commons.cli.version>1.4</commons.cli.version>
     <shiro.version>1.9.1</shiro.version>
-    <bouncycastle.version>1.60</bouncycastle.version>
+    <bouncycastle.version>1.70</bouncycastle.version>
     <maven.version>3.6.3</maven.version>
     <dropwizard.version>4.1.14</dropwizard.version>
     <micrometer.version>1.6.0</micrometer.version>
 
     <hadoop2.7.version>2.7.7</hadoop2.7.version>
-    <hadoop2.6.version>2.6.5</hadoop2.6.version>
     <hadoop3.0.version>3.0.3</hadoop3.0.version>
     <hadoop3.1.version>3.1.3</hadoop3.1.version>
     <hadoop3.2.version>3.2.0</hadoop3.2.version>
@@ -147,16 +152,17 @@
     <hadoop-client-minicluster.artifact>hadoop-client</hadoop-client-minicluster.artifact>
 
     <quartz.scheduler.version>2.3.2</quartz.scheduler.version>
-    <jettison.version>1.4.0</jettison.version>
+    <jettison.version>1.5.2</jettison.version>
     <jsoup.version>1.13.1</jsoup.version>
-    <protoc.version>3.5.0</protoc.version>
-    <grpc.version>1.26.0</grpc.version>
+    <protobuf.version>3.21.7</protobuf.version>
+    <grpc.version>1.51.0</grpc.version>
+    <google.errorprone.version>2.14.0</google.errorprone.version>
 
     <!-- test library versions -->
-    <junit.version>4.12</junit.version>
-    <mockito.version>1.10.19</mockito.version>
+    <junit.jupiter.version>5.7.1</junit.jupiter.version>
+    <mockito.version>3.12.4</mockito.version>
     <assertj.version>1.7.0</assertj.version>
-    <powermock.version>1.6.4</powermock.version>
+    <powermock.version>2.0.9</powermock.version>
 
     <!-- plugin versions -->
     <plugin.antrun.version>1.8</plugin.antrun.version>
@@ -171,35 +177,29 @@
     <plugin.dependency.version>3.1.2</plugin.dependency.version>
     <plugin.deploy.version>2.8.2</plugin.deploy.version>
     <plugin.download.version>1.6.0</plugin.download.version>
-    <plugin.eclipse.version>2.8</plugin.eclipse.version>
     <plugin.enforcer.version>3.0.0-M3</plugin.enforcer.version>
     <plugin.exec.version>1.6.0</plugin.exec.version>
     <plugin.failsafe.version>2.17</plugin.failsafe.version>
     <plugin.git.commit.id.version>4.0.0</plugin.git.commit.id.version>
     <plugin.gpg.version>1.6</plugin.gpg.version>
-    <plugin.install.version>3.0.0-M1</plugin.install.version>
     <plugin.jar.version>3.2.0</plugin.jar.version>
     <plugin.javadoc.version>3.2.0</plugin.javadoc.version>
     <plugin.jdeb.version>1.8</plugin.jdeb.version>
     <plugin.lifecycle.mapping.version>1.0.0</plugin.lifecycle.mapping.version>
-    <plugin.protobuf.version>0.5.0</plugin.protobuf.version>
+    <plugin.protobuf.version>3.11.4</plugin.protobuf.version>
     <plugin.rat.version>0.13</plugin.rat.version>
-    <plugin.remote.resource.version>1.7.0</plugin.remote.resource.version>
     <plugin.resource.version>3.1.0</plugin.resource.version>
     <plugin.s3.upload.version>1.4</plugin.s3.upload.version>
-    <plugin.scala.alchim31.version>3.4.6</plugin.scala.alchim31.version>
+    <plugin.scala.alchim31.version>4.6.3</plugin.scala.alchim31.version>
     <plugin.scala.tools.version>2.15.2</plugin.scala.tools.version>
     <plugin.scalate.version>1.7.1</plugin.scalate.version>
     <plugin.scalatest.version>2.0.0</plugin.scalatest.version>
     <plugin.scm.version>1.11.2</plugin.scm.version>
-    <plugin.shade.version>3.2.2</plugin.shade.version>
     <plugin.source.version>3.2.1</plugin.source.version>
     <plugin.surefire.version>2.22.2</plugin.surefire.version>
-    <plugin.xml.version>1.0.2</plugin.xml.version>
+    <plugin.os.version>1.4.1.Final</plugin.os.version>
 
     <testcontainers.version>1.15.1</testcontainers.version>
-
-    <plugin.gitcommitid.useNativeGit>false</plugin.gitcommitid.useNativeGit>
 
     <MaxMetaspace>512m</MaxMetaspace>
 
@@ -1129,9 +1129,16 @@
 
       <!-- Test libraries -->
       <dependency>
-        <groupId>junit</groupId>
-        <artifactId>junit</artifactId>
-        <version>${junit.version}</version>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter-engine</artifactId>
+        <version>${junit.jupiter.version}</version>
+        <scope>test</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>org.junit.vintage</groupId>
+        <artifactId>junit-vintage-engine</artifactId>
+        <version>${junit.jupiter.version}</version>
         <scope>test</scope>
       </dependency>
 
@@ -1150,15 +1157,8 @@
       </dependency>
 
       <dependency>
-        <groupId>org.mockito</groupId>
-        <artifactId>mockito-all</artifactId>
-        <version>${mockito.version}</version>
-        <scope>test</scope>
-      </dependency>
-
-      <dependency>
         <groupId>org.powermock</groupId>
-        <artifactId>powermock-api-mockito</artifactId>
+        <artifactId>powermock-api-mockito2</artifactId>
         <version>${powermock.version}</version>
         <scope>test</scope>
       </dependency>
@@ -1175,6 +1175,12 @@
         <artifactId>powermock-module-junit4</artifactId>
         <version>${powermock.version}</version>
         <scope>test</scope>
+        <exclusions>
+          <exclusion>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
 
       <dependency>
@@ -1395,7 +1401,6 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>${plugin.compiler.version}</version>
         <configuration>
           <source>${java.version}</source>
           <target>${java.version}</target>
@@ -1426,47 +1431,7 @@
 
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-checkstyle-plugin</artifactId>
-        <version>${plugin.checkstyle.version}</version>
-        <configuration>
-          <skip>true</skip>
-          <failOnViolation>false</failOnViolation>
-          <includeTestSourceDirectory>true</includeTestSourceDirectory>
-          <sourceDirectories>${basedir}/src/main/java,${basedir}/src/main/scala</sourceDirectories>
-          <testSourceDirectories>${basedir}/src/test/java</testSourceDirectories>
-          <configLocation>_tools/checkstyle.xml</configLocation>
-          <outputFile>${basedir}/target/checkstyle-output.xml</outputFile>
-          <inputEncoding>${project.build.sourceEncoding}</inputEncoding>
-          <outputEncoding>${project.reporting.outputEncoding}</outputEncoding>
-        </configuration>
-        <executions>
-          <execution>
-            <id>checkstyle-fail-build</id>
-            <goals>
-              <goal>check</goal>
-            </goals>
-            <configuration>
-              <failOnViolation>true</failOnViolation>
-              <excludes>org/apache/zeppelin/interpreter/thrift/*,org/apache/zeppelin/python/proto/*</excludes>
-            </configuration>
-          </execution>
-          <execution>
-            <id>checkstyle-gen-html-report</id>
-            <phase>install</phase>
-            <goals>
-              <goal>checkstyle-aggregate</goal>
-            </goals>
-            <configuration>
-              <excludes>org/apache/zeppelin/interpreter/thrift/*,org/apache/zeppelin/python/proto/*</excludes>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
-        <version>${plugin.jar.version}</version>
         <configuration>
           <archive>
             <manifest>
@@ -1480,27 +1445,7 @@
 
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-remote-resources-plugin</artifactId>
-        <version>${plugin.remote.resource.version}</version>
-        <executions>
-          <execution>
-            <id>process-remote-resources</id>
-            <goals>
-              <goal>process</goal>
-            </goals>
-            <configuration>
-              <resourceBundles>
-                <resourceBundle>org.apache:apache-jar-resource-bundle:1.0</resourceBundle>
-              </resourceBundles>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-scm-plugin</artifactId>
-        <version>${plugin.scm.version}</version>
         <configuration>
           <connectionType>developerConnection</connectionType>
           <scmVersion>branch-0.1</scmVersion>
@@ -1511,10 +1456,9 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-enforcer-plugin</artifactId>
-        <version>${plugin.enforcer.version}</version>
         <executions>
           <execution>
-            <id>enforce</id>
+            <id>enforce-dependency-convergence</id>
             <configuration>
               <rules>
                 <DependencyConvergence/>
@@ -1525,49 +1469,12 @@
               <goal>enforce</goal>
             </goals>
           </execution>
-          <!-- https://maven.apache.org/enforcer/enforcer-rules/requireMavenVersion.html -->
-          <execution>
-            <id>enforce-maven</id>
-            <goals>
-              <goal>enforce</goal>
-            </goals>
-            <configuration>
-              <rules>
-                <requireMavenVersion>
-                  <version>[3.1.0,)</version>
-                </requireMavenVersion>
-              </rules>
-            </configuration>
-          </execution>
         </executions>
       </plugin>
 
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-deploy-plugin</artifactId>
-        <version>${plugin.deploy.version}</version>
-      </plugin>
-
-      <plugin>
-        <groupId>pl.project13.maven</groupId>
-        <artifactId>git-commit-id-plugin</artifactId>
-        <version>${plugin.git.commit.id.version}</version>
-        <executions>
-          <execution>
-            <goals>
-              <goal>revision</goal>
-            </goals>
-          </execution>
-        </executions>
-        <configuration>
-          <skipPoms>false</skipPoms>
-          <dotGitDirectory>${project.basedir}/.git</dotGitDirectory>
-          <useNativeGit>${plugin.gitcommitid.useNativeGit}</useNativeGit>
-          <generateGitPropertiesFile>true</generateGitPropertiesFile>
-          <generateGitPropertiesFilename>${project.build.outputDirectory}/git.properties</generateGitPropertiesFilename>
-          <failOnNoGitDirectory>false</failOnNoGitDirectory>
-          <dateFormat>yyyy-MM-dd HH:mm:ss</dateFormat>
-        </configuration>
       </plugin>
 
     <!--TODO(alex): make part of the build and reconcile conflicts
@@ -1593,22 +1500,66 @@
 
     <pluginManagement>
       <plugins>
-          <plugin>
-              <groupId>org.apache.maven.plugins</groupId>
-              <artifactId>maven-shade-plugin</artifactId>
-              <version>${plugin.shade.version}</version>
-          </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-jar-plugin</artifactId>
+          <version>${plugin.jar.version}</version>
+        </plugin>
 
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-install-plugin</artifactId>
-          <version>${plugin.install.version}</version>
+          <artifactId>maven-scm-plugin</artifactId>
+          <version>${plugin.scm.version}</version>
+        </plugin>
+
+        <plugin>
+          <groupId>pl.project13.maven</groupId>
+          <artifactId>git-commit-id-plugin</artifactId>
+          <version>${plugin.git.commit.id.version}</version>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-enforcer-plugin</artifactId>
+          <version>${plugin.enforcer.version}</version>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-deploy-plugin</artifactId>
+          <version>${plugin.deploy.version}</version>
         </plugin>
 
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-checkstyle-plugin</artifactId>
           <version>${plugin.checkstyle.version}</version>
+          <configuration>
+            <includeTestSourceDirectory>true</includeTestSourceDirectory>
+            <sourceDirectories>${basedir}/src/main/java,${basedir}/src/main/scala</sourceDirectories>
+            <testSourceDirectories>${basedir}/src/test/java</testSourceDirectories>
+            <!-- use the tools module -->
+            <configLocation>zeppelin/checkstyle.xml</configLocation>
+          </configuration>
+          <executions>
+            <execution>
+              <id>checkstyle-fail-build</id>
+              <goals>
+                <goal>check</goal>
+              </goals>
+              <configuration>
+                <failOnViolation>true</failOnViolation>
+                <excludes>org/apache/zeppelin/interpreter/thrift/*,org/apache/zeppelin/python/proto/*</excludes>
+              </configuration>
+            </execution>
+          </executions>
+          <dependencies>
+            <dependency>
+              <groupId>org.apache.zeppelin</groupId>
+              <artifactId>build-tools</artifactId>
+              <version>${project.version}</version>
+            </dependency>
+          </dependencies>
         </plugin>
 
         <plugin>
@@ -1621,6 +1572,14 @@
           <groupId>net.alchim31.maven</groupId>
           <artifactId>scala-maven-plugin</artifactId>
           <version>${plugin.scala.alchim31.version}</version>
+          <configuration>
+            <recompileMode>all</recompileMode>
+            <args>
+              <arg>-unchecked</arg>
+              <arg>-deprecation</arg>
+              <arg>-feature</arg>
+            </args>
+          </configuration>
         </plugin>
 
         <plugin>
@@ -1662,33 +1621,6 @@
         </plugin>
 
         <plugin>
-          <groupId>org.codehaus.mojo</groupId>
-          <artifactId>xml-maven-plugin</artifactId>
-          <version>${plugin.xml.version}</version>
-          <executions>
-            <execution>
-              <phase>verify</phase>
-              <goals>
-                <goal>validate</goal>
-              </goals>
-            </execution>
-          </executions>
-          <configuration>
-            <validationSets>
-              <validationSet>
-                <dir>${project.basedir}</dir>
-                <includes>
-                  <include>
-                    pom.xml
-                  </include>
-                </includes>
-                <systemId>_tools/maven-4.0.0.xsd</systemId>
-              </validationSet>
-            </validationSets>
-          </configuration>
-        </plugin>
-
-        <plugin>
           <groupId>com.googlecode.maven-download-plugin</groupId>
           <artifactId>download-maven-plugin</artifactId>
           <version>${plugin.download.version}</version>
@@ -1698,65 +1630,6 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-antrun-plugin</artifactId>
           <version>${plugin.antrun.version}</version>
-        </plugin>
-
-        <!--This plugin's configuration is used to store Eclipse m2e settings
-          only. It has no influence on the Maven build itself. -->
-        <plugin>
-          <groupId>org.eclipse.m2e</groupId>
-          <artifactId>lifecycle-mapping</artifactId>
-          <version>${plugin.lifecycle.mapping.version}</version>
-          <configuration>
-            <lifecycleMappingMetadata>
-              <pluginExecutions>
-                <pluginExecution>
-                  <pluginExecutionFilter>
-                    <groupId>
-                      org.apache.maven.plugins
-                    </groupId>
-                    <artifactId>
-                      maven-dependency-plugin
-                    </artifactId>
-                    <versionRange>
-                      [2.8,)
-                    </versionRange>
-                    <goals>
-                      <goal>copy-dependencies</goal>
-                    </goals>
-                  </pluginExecutionFilter>
-                  <action>
-                    <ignore/>
-                  </action>
-                </pluginExecution>
-                <pluginExecution>
-                  <pluginExecutionFilter>
-                    <groupId>
-                      org.apache.maven.plugins
-                    </groupId>
-                    <artifactId>
-                      maven-checkstyle-plugin
-                    </artifactId>
-                    <versionRange>
-                      [2.13,)
-                    </versionRange>
-                    <goals>
-                      <goal>checkstyle</goal>
-                      <goal>check</goal>
-                    </goals>
-                  </pluginExecutionFilter>
-                  <action>
-                    <ignore></ignore>
-                  </action>
-                </pluginExecution>
-              </pluginExecutions>
-            </lifecycleMappingMetadata>
-          </configuration>
-        </plugin>
-
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-eclipse-plugin</artifactId>
-          <version>${plugin.eclipse.version}</version>
         </plugin>
 
         <plugin>
@@ -1782,143 +1655,106 @@
         </plugin>
 
         <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-resources-plugin</artifactId>
-          <version>${plugin.resource.version}</version>
-          <executions>
-            <execution>
-              <id>copy-resources</id>
-              <phase>validate</phase>
-              <goals>
-                <goal>copy-resources</goal>
-              </goals>
-              <configuration>
-                <outputDirectory>${basedir}/target/site</outputDirectory>
-                <resources>
-                  <resource>
-                    <directory>${basedir}/../_tools/site</directory>
-                    <filtering>true</filtering>
-                    <includes>
-                      <include>**/*</include>
-                    </includes>
-                  </resource>
-                </resources>
-              </configuration>
-            </execution>
-          </executions>
+          <groupId>org.scalatest</groupId>
+          <artifactId>scalatest-maven-plugin</artifactId>
+          <version>${plugin.scalatest.version}</version>
         </plugin>
 
-      <plugin>
-        <groupId>org.scalatest</groupId>
-        <artifactId>scalatest-maven-plugin</artifactId>
-        <version>${plugin.scalatest.version}</version>
-      </plugin>
 
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>build-helper-maven-plugin</artifactId>
-        <version>${plugin.buildhelper.version}</version>
-      </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>build-helper-maven-plugin</artifactId>
+          <version>${plugin.buildhelper.version}</version>
+        </plugin>
 
-      <plugin>
-        <groupId>com.github.eirslett</groupId>
-        <artifactId>frontend-maven-plugin</artifactId>
-        <version>${plugin.frontend.version}</version>
-      </plugin>
+        <plugin>
+          <groupId>com.github.eirslett</groupId>
+          <artifactId>frontend-maven-plugin</artifactId>
+          <version>${plugin.frontend.version}</version>
+        </plugin>
 
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-failsafe-plugin</artifactId>
-        <version>${plugin.failsafe.version}</version>
-      </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-failsafe-plugin</artifactId>
+          <version>${plugin.failsafe.version}</version>
+        </plugin>
 
-      <plugin>
-        <groupId>org.xolstice.maven.plugins</groupId>
-        <artifactId>protobuf-maven-plugin</artifactId>
-        <version>${plugin.protobuf.version}</version>
-      </plugin>
+        <plugin>
+          <groupId>com.github.os72</groupId>
+          <artifactId>protoc-jar-maven-plugin</artifactId>
+          <version>${plugin.protobuf.version}</version>
+        </plugin>
 
-      <plugin>
-        <groupId>com.bazaarvoice.maven.plugins</groupId>
-        <artifactId>s3-upload-maven-plugin</artifactId>
-        <version>${plugin.s3.upload.version}</version>
-      </plugin>
+        <plugin>
+          <groupId>com.bazaarvoice.maven.plugins</groupId>
+          <artifactId>s3-upload-maven-plugin</artifactId>
+          <version>${plugin.s3.upload.version}</version>
+        </plugin>
 
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>buildnumber-maven-plugin</artifactId>
-        <version>${plugin.buildnumber.version}</version>
-      </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>buildnumber-maven-plugin</artifactId>
+          <version>${plugin.buildnumber.version}</version>
+        </plugin>
 
-      <plugin>
-        <groupId>org.vafer</groupId>
-        <artifactId>jdeb</artifactId>
-        <version>${plugin.jdeb.version}</version>
-      </plugin>
+        <plugin>
+          <groupId>org.vafer</groupId>
+          <artifactId>jdeb</artifactId>
+          <version>${plugin.jdeb.version}</version>
+        </plugin>
 
-      <plugin>
-        <groupId>org.apache.avro</groupId>
-        <artifactId>avro-maven-plugin</artifactId>
-        <version>${plugin.avro.version}</version>
-      </plugin>
+        <plugin>
+          <groupId>org.apache.avro</groupId>
+          <artifactId>avro-maven-plugin</artifactId>
+          <version>${plugin.avro.version}</version>
+        </plugin>
 
-      <plugin>
-        <groupId>org.scalatra.scalate</groupId>
-        <artifactId>maven-scalate-plugin_${scala.binary.version}</artifactId>
-        <version>${plugin.scalate.version}</version>
-      </plugin>
+        <plugin>
+          <groupId>org.scalatra.scalate</groupId>
+          <artifactId>maven-scalate-plugin_${scala.binary.version}</artifactId>
+          <version>${plugin.scalate.version}</version>
+        </plugin>
 
-      <plugin>
-        <groupId>org.scala-tools</groupId>
-        <artifactId>maven-scala-plugin</artifactId>
-        <version>${plugin.scala.tools.version}</version>
-      </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-source-plugin</artifactId>
+          <version>${plugin.source.version}</version>
+        </plugin>
 
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-source-plugin</artifactId>
-        <version>${plugin.source.version}</version>
-      </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-javadoc-plugin</artifactId>
+          <version>${plugin.javadoc.version}</version>
+        </plugin>
 
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-javadoc-plugin</artifactId>
-        <version>${plugin.javadoc.version}</version>
-      </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-gpg-plugin</artifactId>
+          <version>${plugin.gpg.version}</version>
+        </plugin>
 
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-gpg-plugin</artifactId>
-        <version>${plugin.gpg.version}</version>
-      </plugin>
-
-      <plugin>
-        <groupId>org.apache.rat</groupId>
-        <artifactId>apache-rat-plugin</artifactId>
-        <version>${plugin.rat.version}</version>
-      </plugin>
-
+        <plugin>
+          <groupId>org.apache.rat</groupId>
+          <artifactId>apache-rat-plugin</artifactId>
+          <version>${plugin.rat.version}</version>
+        </plugin>
       </plugins>
     </pluginManagement>
   </build>
 
   <profiles>
     <profile>
-      <id>scala-2.10</id>
-      <activation>
-        <activeByDefault>true</activeByDefault>
-      </activation>
-      <properties>
-        <scala.version>${scala.2.10.version}</scala.version>
-        <scala.binary.version>2.10</scala.binary.version>
-      </properties>
-    </profile>
-
-    <profile>
       <id>scala-2.11</id>
       <properties>
         <scala.version>${scala.2.11.version}</scala.version>
         <scala.binary.version>2.11</scala.binary.version>
+      </properties>
+    </profile>
+    <profile>
+      <id>scala-2.12</id>
+      <properties>
+        <scala.version>${scala.2.12.version}</scala.version>
+        <scala.binary.version>2.12</scala.binary.version>
       </properties>
     </profile>
 
@@ -2077,9 +1913,6 @@
 
     <profile>
       <id>rat</id>
-      <activation>
-        <property><name>!skipRat</name></property>
-      </activation>
       <build>
         <plugins>
         <plugin>
@@ -2118,8 +1951,6 @@
               <exclude>**/local-repo/**</exclude>
               <exclude>**/null/**</exclude>
               <exclude>**/notebook/**</exclude>
-              <exclude>_tools/site/css/*</exclude>
-              <exclude>_tools/maven-4.0.0.xsd</exclude>
               <exclude>**/README.md</exclude>
               <exclude>DEPENDENCIES</exclude>
               <exclude>DEPLOY.md</exclude>
@@ -2251,4 +2082,26 @@
 
   </profiles>
 
+  <reporting>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+        <reportSets>
+          <reportSet>
+            <id>aggregate</id>
+            <inherited>false</inherited><!-- don't run aggregate in child modules -->
+            <reports>
+              <report>checkstyle-aggregate</report>
+            </reports>
+            <configuration>
+                <!-- use the tool module -->
+              <configLocation>zeppelin/checkstyle.xml</configLocation>
+              <excludes>org/apache/zeppelin/interpreter/thrift/*,org/apache/zeppelin/python/proto/*</excludes>
+            </configuration>
+          </reportSet>
+        </reportSets>
+      </plugin>
+    </plugins>
+  </reporting>
 </project>

@@ -61,16 +61,6 @@
       <artifactId>commons-compress</artifactId>
       <version>${commons.compress.version}</version>
     </dependency>
-    <dependency>
-      <groupId>org.powermock</groupId>
-      <artifactId>powermock-api-mockito</artifactId>
-      <version>${powermock.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.powermock</groupId>
-      <artifactId>powermock-module-junit4</artifactId>
-      <version>${powermock.version}</version>
-    </dependency>
   </dependencies>
 
   <build>
@@ -78,16 +68,13 @@
       <testResource>
         <directory>${project.basedir}/src/test/resources</directory>
       </testResource>
-      <testResource>
-        <directory>${project.basedir}/src/main/resources</directory>
-      </testResource>
     </testResources>
     <plugins>
       <plugin>
         <artifactId>maven-enforcer-plugin</artifactId>
         <executions>
           <execution>
-            <id>enforce</id>
+            <id>enforce-dependency-convergence</id>
             <phase>none</phase>
           </execution>
         </executions>
@@ -98,9 +85,6 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-checkstyle-plugin</artifactId>
-        <configuration>
-          <skip>false</skip>
-        </configuration>
       </plugin>
     </plugins>
     <resources>

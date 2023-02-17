@@ -72,16 +72,13 @@ public class JarHelper {
     }
 
     mDestJarName = destJar.getCanonicalPath();
-    FileOutputStream fout = new FileOutputStream(destJar);
-    JarOutputStream jout = new JarOutputStream(fout);
-    // jout.setLevel(0);
-    try {
+    try (
+      FileOutputStream fout = new FileOutputStream(destJar);
+      JarOutputStream jout = new JarOutputStream(fout)) {
+      // jout.setLevel(0);
       jarDir(dirOrFile2Jar, jout, null);
     } catch (IOException ioe) {
       throw ioe;
-    } finally {
-      jout.close();
-      fout.close();
     }
   }
 
@@ -89,7 +86,6 @@ public class JarHelper {
    * Unjars a given jar file into a given directory.
    */
   public void unjarDir(File jarFile, File destDir) throws IOException {
-    BufferedOutputStream dest = null;
     FileInputStream fis = new FileInputStream(jarFile);
     unjar(fis, destDir);
   }

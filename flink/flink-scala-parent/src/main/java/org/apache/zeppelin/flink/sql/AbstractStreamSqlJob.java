@@ -117,7 +117,7 @@ public abstract class AbstractStreamSqlJob {
       this.schema = removeTimeAttributes(flinkShims, table.getSchema());
       checkTableSchema(schema);
 
-      LOGGER.info("ResultTable Schema: " + this.schema);
+      LOGGER.info("ResultTable Schema: {}", this.schema);
       final RowTypeInfo outputType = new RowTypeInfo(schema.getFieldTypes(),
               schema.getFieldNames());
 
@@ -132,8 +132,8 @@ public abstract class AbstractStreamSqlJob {
               serializer);
       // create table sink
       // pass binding address and port such that sink knows where to send to
-      LOGGER.debug("Collecting data at address: " + iterator.getBindAddress() +
-              ":" + iterator.getPort());
+      LOGGER.debug("Collecting data at address: {}:{}",
+        iterator.getBindAddress(), iterator.getPort());
       RetractStreamTableSink collectTableSink =
               (RetractStreamTableSink) flinkShims.getCollectStreamTableSink(iterator.getBindAddress(), iterator.getPort(), serializer);
              // new CollectStreamTableSink(iterator.getBindAddress(), iterator.getPort(), serializer);
@@ -149,16 +149,16 @@ public abstract class AbstractStreamSqlJob {
       ResultRetrievalThread retrievalThread = new ResultRetrievalThread(refreshScheduler);
       retrievalThread.start();
 
-      LOGGER.info("Run job: " + tableName + ", parallelism: " + parallelism);
+      LOGGER.info("Run job: {}, parallelism: {}", tableName, parallelism);
       String jobName = context.getStringLocalProperty("jobName", tableName);
       table.executeInsert(tableName).await();
-      LOGGER.info("Flink Job is finished, jobName: " + jobName);
+      LOGGER.info("Flink Job is finished, jobName: {}", jobName);
       // wait for retrieve thread consume all data
       LOGGER.info("Waiting for retrieve thread to be done");
       retrievalThread.join();
       refresh(context);
       String finalResult = buildResult();
-      LOGGER.info("Final Result: " + finalResult);
+      LOGGER.info("Final Result: {}", finalResult);
       return finalResult;
     } catch (Exception e) {
       LOGGER.error("Fail to run stream sql job", e);
@@ -229,7 +229,7 @@ public abstract class AbstractStreamSqlJob {
       isRunning = false;
       LOGGER.info("ResultRetrieval Thread is done, isRunning={}, hasNext={}",
               isRunning, iterator.hasNext());
-      LOGGER.info("Final Result: " + buildResult());
+      LOGGER.info("Final Result: {}", buildResult());
       refreshExecutorService.shutdownNow();
     }
 
@@ -255,7 +255,7 @@ public abstract class AbstractStreamSqlJob {
           if (!enableToRefresh) {
             resultLock.wait();
           }
-          LOGGER.debug("Refresh result of paragraph: " + context.getParagraphId());
+          LOGGER.debug("Refresh result of paragraph: {}", context.getParagraphId());
           refresh(context);
         }
       } catch (Exception e) {
