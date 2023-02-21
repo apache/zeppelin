@@ -33,13 +33,14 @@
     <properties>
         <interpreter.name>kotlin</interpreter.name>
         <kotlin.version>1.8.10</kotlin.version>
+        <kotlin.scripting.embeddable.version>1.3.72</kotlin.scripting.embeddable.version>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
             <artifactId>kotlin-scripting-jvm-host-embeddable</artifactId>
-            <version>${kotlin.version}</version>
+            <version>${kotlin.scripting.embeddable.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.jetbrains.kotlin</groupId>
