@@ -35,8 +35,8 @@
     <properties>
         <interpreter.name>influxdb</interpreter.name>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <influxdb.client.version>1.7.0</influxdb.client.version>
-        <dependency.okhttp3.version>3.13.1</dependency.okhttp3.version>
+        <influxdb.client.version>2.3.0</influxdb.client.version>
+        <dependency.okhttp3.version>4.7.2</dependency.okhttp3.version>
     </properties>
 
     <dependencies>
