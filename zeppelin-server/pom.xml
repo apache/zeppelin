@@ -372,6 +372,12 @@
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-engine</artifactId>
       <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>org.apiguardian</groupId>
+          <artifactId>apiguardian-api</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <dependency>
