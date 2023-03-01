@@ -68,7 +68,7 @@ class GCSNotebookRepoTest {
   private Note runningNote;
 
   @BeforeEach
-  public void setUp() throws Exception {
+  void setUp() throws Exception {
     this.runningNote = makeRunningNote();
     this.storage = LocalStorageHelper.getOptions().getService();
   }

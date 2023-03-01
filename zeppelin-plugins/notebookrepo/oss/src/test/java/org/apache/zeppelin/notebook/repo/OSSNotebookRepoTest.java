@@ -48,7 +48,7 @@ class OSSNotebookRepoTest {
 
 
   @BeforeEach
-  public void setUp() throws IOException {
+  void setUp() throws IOException {
     bucket = "zeppelin-test-bucket";
     String endpoint = "yourEndpoint";
     String accessKeyId = "yourAccessKeyId";
@@ -72,7 +72,7 @@ class OSSNotebookRepoTest {
   }
 
   @AfterEach
-  public void tearDown() throws InterruptedException, IOException {
+  void tearDown() throws InterruptedException, IOException {
     ossOperator.deleteDir(bucket, "");
     ossOperator.deleteBucket(bucket);
     // The delete operations on OSS Service above has a delay.

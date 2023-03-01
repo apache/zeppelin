@@ -47,7 +47,7 @@ class MongoNotebookRepoTest {
   private MongoNotebookRepo notebookRepo;
 
   @BeforeEach
-  public void setUp() throws IOException {
+  void setUp() throws IOException {
     String bindIp = "localhost";
     ServerSocket socket = new ServerSocket(0);
     int port = socket.getLocalPort();
@@ -69,7 +69,7 @@ class MongoNotebookRepoTest {
   }
 
   @AfterEach
-  public void tearDown() throws IOException {
+  void tearDown() throws IOException {
     if (mongodExecutable != null) {
       mongodExecutable.stop();
     }

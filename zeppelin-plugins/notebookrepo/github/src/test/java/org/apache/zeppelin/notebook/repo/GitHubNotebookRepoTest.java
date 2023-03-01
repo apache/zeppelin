@@ -65,7 +65,7 @@ class GitHubNotebookRepoTest {
   private Git remoteGit;
 
   @BeforeEach
-  public void setUp() throws Exception {
+  void setUp() throws Exception {
     conf = ZeppelinConfiguration.create();
 
     String remoteRepositoryPath = System.getProperty("java.io.tmpdir") + "/ZeppelinTestRemote_" +
@@ -120,7 +120,7 @@ class GitHubNotebookRepoTest {
   }
 
   @AfterEach
-  public void tearDown() throws Exception {
+  void tearDown() throws Exception {
     // Cleanup the temporary folders uses as Git repositories
     File[] temporaryFolders = { remoteZeppelinDir, localZeppelinDir };
 

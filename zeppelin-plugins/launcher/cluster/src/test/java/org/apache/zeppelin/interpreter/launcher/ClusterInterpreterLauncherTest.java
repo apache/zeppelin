@@ -37,17 +37,17 @@ public class ClusterInterpreterLauncherTest extends ClusterMockTest {
       LoggerFactory.getLogger(ClusterInterpreterLauncherTest.class);
 
   @BeforeAll
-  public static void startTest() throws IOException, InterruptedException {
+  static void startTest() throws IOException, InterruptedException {
     ClusterMockTest.startCluster();
   }
 
   @AfterAll
-  public static void stopTest() throws IOException, InterruptedException {
+  static void stopTest() throws IOException, InterruptedException {
     ClusterMockTest.stopCluster();
   }
 
   @BeforeEach
-  public void setUp() {
+  void setUp() {
     for (final ZeppelinConfiguration.ConfVars confVar : ZeppelinConfiguration.ConfVars.values()) {
       System.clearProperty(confVar.getVarName());
     }

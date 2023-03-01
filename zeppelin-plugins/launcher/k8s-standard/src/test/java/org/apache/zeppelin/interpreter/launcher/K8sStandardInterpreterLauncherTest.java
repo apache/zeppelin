@@ -33,7 +33,7 @@ import org.junit.jupiter.api.Test;
  */
 class K8sStandardInterpreterLauncherTest {
   @BeforeEach
-  public void setUp() {
+  void setUp() {
     for (final ZeppelinConfiguration.ConfVars confVar : ZeppelinConfiguration.ConfVars.values()) {
       System.clearProperty(confVar.getVarName());
     }

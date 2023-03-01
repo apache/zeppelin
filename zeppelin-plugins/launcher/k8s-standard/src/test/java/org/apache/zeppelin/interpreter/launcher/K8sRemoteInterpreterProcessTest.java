@@ -192,7 +192,7 @@ class K8sRemoteInterpreterProcessTest {
   }
 
   @Test
-  public void testGetTemplateBindingsForSparkWithProxyUser() {
+  void testGetTemplateBindingsForSparkWithProxyUser() {
     // given
     Properties properties = new Properties();
     properties.put("my.key1", "v1");
@@ -245,7 +245,7 @@ class K8sRemoteInterpreterProcessTest {
   }
 
   @Test
-  public void testGetTemplateBindingsForSparkWithProxyUserAnonymous() {
+  void testGetTemplateBindingsForSparkWithProxyUserAnonymous() {
     // given
     Properties properties = new Properties();
     properties.put("my.key1", "v1");

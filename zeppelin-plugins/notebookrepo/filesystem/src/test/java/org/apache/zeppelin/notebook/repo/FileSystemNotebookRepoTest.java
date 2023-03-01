@@ -49,7 +49,7 @@ class FileSystemNotebookRepoTest {
   private AuthenticationInfo authInfo = AuthenticationInfo.ANONYMOUS;
 
   @BeforeEach
-  public void setUp() throws IOException {
+  void setUp() throws IOException {
     notebookDir = Files.createTempDirectory("FileSystemNotebookRepoTest").toFile().getAbsolutePath();
     zConf = ZeppelinConfiguration.create();
     System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_DIR.getVarName(), notebookDir);
@@ -60,7 +60,7 @@ class FileSystemNotebookRepoTest {
   }
 
   @AfterEach
-  public void tearDown() throws IOException {
+  void tearDown() throws IOException {
     FileUtils.deleteDirectory(new File(notebookDir));
   }
 

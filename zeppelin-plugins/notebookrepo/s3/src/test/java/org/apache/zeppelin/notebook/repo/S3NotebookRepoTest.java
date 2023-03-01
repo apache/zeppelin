@@ -52,7 +52,7 @@ class S3NotebookRepoTest {
 
 
   @BeforeEach
-  public void setUp() throws IOException {
+  void setUp() throws IOException {
     String bucket = "test-bucket";
     notebookRepo = new S3NotebookRepo();
     ZeppelinConfiguration conf = ZeppelinConfiguration.create();
@@ -80,7 +80,7 @@ class S3NotebookRepoTest {
   }
 
   @AfterEach
-  public void tearDown() {
+  void tearDown() {
     if (notebookRepo != null) {
       notebookRepo.close();
     }
