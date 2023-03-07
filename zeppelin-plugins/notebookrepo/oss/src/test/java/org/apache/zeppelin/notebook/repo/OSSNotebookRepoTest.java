@@ -24,19 +24,20 @@ import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.notebook.repo.storage.RemoteStorageOperator;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.user.AuthenticationInfo;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
-public class OSSNotebookRepoTest {
+class OSSNotebookRepoTest {
 
   private AuthenticationInfo anonymous = AuthenticationInfo.ANONYMOUS;
   private OSSNotebookRepo notebookRepo;
@@ -46,8 +47,8 @@ public class OSSNotebookRepoTest {
 
 
 
-  @Before
-  public void setUp() throws IOException {
+  @BeforeEach
+  void setUp() throws IOException {
     bucket = "zeppelin-test-bucket";
     String endpoint = "yourEndpoint";
     String accessKeyId = "yourAccessKeyId";
@@ -70,8 +71,8 @@ public class OSSNotebookRepoTest {
     notebookRepo.setOssOperator(ossOperator);
   }
 
-  @After
-  public void tearDown() throws InterruptedException, IOException {
+  @AfterEach
+  void tearDown() throws InterruptedException, IOException {
     ossOperator.deleteDir(bucket, "");
     ossOperator.deleteBucket(bucket);
     // The delete operations on OSS Service above has a delay.
@@ -85,7 +86,7 @@ public class OSSNotebookRepoTest {
   }
 
   @Test
-  public void testNotebookRepo() throws IOException {
+  void testNotebookRepo() throws IOException {
     Map<String, NoteInfo> notesInfo = notebookRepo.list(anonymous);
     assertEquals(0, notesInfo.size());
 
@@ -118,7 +119,7 @@ public class OSSNotebookRepoTest {
       notebookRepo.get("invalid_id", "/invalid_path", anonymous);
       fail("Should fail to get non-existed note1");
     } catch (IOException e) {
-      assertEquals(e.getMessage(), "Note or its revision not found");
+      assertEquals("Note or its revision not found", e.getMessage());
     }
 
     // create another Note note2
@@ -161,7 +162,7 @@ public class OSSNotebookRepoTest {
 
 
   @Test
-  public void testNotebookRepoWithVersionControl() throws IOException {
+  void testNotebookRepoWithVersionControl() throws IOException {
     Map<String, NoteInfo> notesInfo = notebookRepo.list(anonymous);
     assertEquals(0, notesInfo.size());
 
@@ -198,7 +199,7 @@ public class OSSNotebookRepoTest {
         notebookRepo.get(note1.getId(), note1.getPath(), revisionList.get(i - 1).id, anonymous);
         fail("Should fail to get non-existed note1");
       } catch (IOException e) {
-        assertEquals(e.getMessage(), "Note or its revision not found");
+        assertEquals("Note or its revision not found", e.getMessage());
       }
     }
 

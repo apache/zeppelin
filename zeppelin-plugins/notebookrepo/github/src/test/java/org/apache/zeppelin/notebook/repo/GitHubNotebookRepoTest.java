@@ -30,9 +30,9 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.internal.storage.file.FileRepository;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,6 +40,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 
 /**
@@ -48,7 +49,7 @@ import static org.mockito.Mockito.mock;
  * 1. The first repository is considered as a remote that mimics a remote GitHub directory
  * 2. The second repository is considered as the local notebook repository
  */
-public class GitHubNotebookRepoTest {
+class GitHubNotebookRepoTest {
   private static final Logger LOG = LoggerFactory.getLogger(GitHubNotebookRepoTest.class);
 
   private static final String TEST_NOTE_ID = "2A94M5J1Z";
@@ -63,8 +64,8 @@ public class GitHubNotebookRepoTest {
   private RevCommit firstCommitRevision;
   private Git remoteGit;
 
-  @Before
-  public void setUp() throws Exception {
+  @BeforeEach
+  void setUp() throws Exception {
     conf = ZeppelinConfiguration.create();
 
     String remoteRepositoryPath = System.getProperty("java.io.tmpdir") + "/ZeppelinTestRemote_" +
@@ -118,8 +119,8 @@ public class GitHubNotebookRepoTest {
     gitHubNotebookRepo.init(conf);
   }
 
-  @After
-  public void tearDown() throws Exception {
+  @AfterEach
+  void tearDown() throws Exception {
     // Cleanup the temporary folders uses as Git repositories
     File[] temporaryFolders = { remoteZeppelinDir, localZeppelinDir };
 
@@ -133,10 +134,10 @@ public class GitHubNotebookRepoTest {
   /**
    * Test the case when the Notebook repository is created, it pulls the latest changes from the remote repository
    */
-  public void pullChangesFromRemoteRepositoryOnLoadingNotebook() throws IOException, GitAPIException {
+  void pullChangesFromRemoteRepositoryOnLoadingNotebook() throws IOException, GitAPIException {
     NotebookRepoWithVersionControl.Revision firstHistoryRevision = gitHubNotebookRepo.revisionHistory(TEST_NOTE_ID, TEST_NOTE_PATH, null).get(0);
 
-    assert(this.firstCommitRevision.getName().equals(firstHistoryRevision.id));
+    assertEquals(this.firstCommitRevision.getName(), firstHistoryRevision.id);
   }
 
   @Test
@@ -144,7 +145,7 @@ public class GitHubNotebookRepoTest {
    * Test the case when the check-pointing (add new files and commit) it also pulls the latest changes from the
    * remote repository
    */
-  public void pullChangesFromRemoteRepositoryOnCheckpointing() throws GitAPIException, IOException {
+  void pullChangesFromRemoteRepositoryOnCheckpointing() throws GitAPIException, IOException {
     // Create a new commit in the remote repository
     RevCommit secondCommitRevision = remoteGit.commit().setMessage("Second commit from remote repository").call();
 
@@ -175,7 +176,7 @@ public class GitHubNotebookRepoTest {
    * Test the case when the check-pointing (add new files and commit) it pushes the local commits to the remote
    * repository
    */
-  public void pushLocalChangesToRemoteRepositoryOnCheckpointing() throws IOException, GitAPIException {
+  void pushLocalChangesToRemoteRepositoryOnCheckpointing() throws IOException, GitAPIException {
     // Add a new paragraph to the local repository
     addParagraphToNotebook();
 

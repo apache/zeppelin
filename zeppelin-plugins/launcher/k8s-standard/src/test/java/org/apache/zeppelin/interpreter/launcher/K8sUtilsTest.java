@@ -18,15 +18,17 @@
 
 package org.apache.zeppelin.interpreter.launcher;
 
-import static org.junit.Assert.assertEquals;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.apache.commons.lang3.RandomStringUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class K8sUtilsTest {
+class K8sUtilsTest {
 
   @Test
-  public void testConvert() {
+  void testConvert() {
     assertEquals("484Mi", K8sUtils.calculateMemoryWithDefaultOverhead("100m"));
     assertEquals("1408Mi", K8sUtils.calculateMemoryWithDefaultOverhead("1Gb"));
     assertEquals("4505Mi", K8sUtils.calculateMemoryWithDefaultOverhead("4Gb"));
@@ -37,18 +39,23 @@ public class K8sUtilsTest {
     assertEquals("115343360Mi", K8sUtils.calculateMemoryWithDefaultOverhead("100Tb"));
   }
 
-  @Test(expected = NumberFormatException.class)
-  public void testExceptionMaxLong() {
-    K8sUtils.calculateMemoryWithDefaultOverhead("10000000Tb");
-  }
+  @Test
+  void testExceptionMaxLong() {
+    assertThrows(NumberFormatException.class, () -> {
+      K8sUtils.calculateMemoryWithDefaultOverhead("10000000Tb");
+    });
 
-  @Test(expected = NumberFormatException.class)
-  public void testExceptionNoValidNumber() {
-    K8sUtils.calculateMemoryWithDefaultOverhead("NoValidNumber10000000Tb");
   }
 
   @Test
-  public void testGenerateK8sName() {
+  void testExceptionNoValidNumber() {
+    assertThrows(NumberFormatException.class, () -> {
+      K8sUtils.calculateMemoryWithDefaultOverhead("NoValidNumber10000000Tb");
+    });
+  }
+
+  @Test
+  void testGenerateK8sName() {
     assertEquals("zeppelin", K8sUtils.generateK8sName("", false));
     assertEquals("zeppelin", K8sUtils.generateK8sName(null, false));
     assertEquals("test", K8sUtils.generateK8sName("test", false));

@@ -27,32 +27,32 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.user.AuthenticationInfo;
-import org.gaul.s3proxy.junit.S3ProxyRule;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.gaul.s3proxy.junit.S3ProxyExtension;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import java.io.IOException;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.fail;
 
-public class S3NotebookRepoTest {
+class S3NotebookRepoTest {
 
   private AuthenticationInfo anonymous = AuthenticationInfo.ANONYMOUS;
   private S3NotebookRepo notebookRepo;
 
-  @Rule
-  public S3ProxyRule s3Proxy = S3ProxyRule.builder()
-          .withCredentials("access", "secret")
-          .build();
+  @RegisterExtension
+  static S3ProxyExtension s3Proxy = S3ProxyExtension.builder()
+    .withCredentials("access", "secret")
+    .build();
 
 
-  @Before
-  public void setUp() throws IOException {
+  @BeforeEach
+  void setUp() throws IOException {
     String bucket = "test-bucket";
     notebookRepo = new S3NotebookRepo();
     ZeppelinConfiguration conf = ZeppelinConfiguration.create();
@@ -79,20 +79,20 @@ public class S3NotebookRepoTest {
     s3Client.createBucket(bucket);
   }
 
-  @After
-  public void tearDown() {
+  @AfterEach
+  void tearDown() {
     if (notebookRepo != null) {
       notebookRepo.close();
     }
   }
 
   @Test
-  public void testAwsSTSLibraryOnClassPath() throws ClassNotFoundException {
-    Class.forName("com.amazonaws.auth.STSSessionCredentialsProvider", false, getClass().getClassLoader());
+  void testAwsSTSLibraryOnClassPath() throws ClassNotFoundException {
+    assertNotNull(Class.forName("com.amazonaws.auth.STSSessionCredentialsProvider", false, getClass().getClassLoader()));
   }
 
   @Test
-  public void testNotebookRepo() throws IOException {
+  void testNotebookRepo() throws IOException {
     Map<String, NoteInfo> notesInfo = notebookRepo.list(anonymous);
     assertEquals(0, notesInfo.size());
 
