@@ -17,16 +17,17 @@
 package org.apache.zeppelin.interpreter.launcher;
 
 import com.google.common.collect.ImmutableMap;
-import org.junit.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.Map;
 import java.util.Properties;
 
-import static org.junit.Assert.assertEquals;
+import org.junit.jupiter.api.Test;
 
-public class K8sSpecTemplateTest {
+class K8sSpecTemplateTest {
   @Test
-  public void testRender() {
+  void testRender() {
     // given template variables
     K8sSpecTemplate template = new K8sSpecTemplate();
     template.put("name", "world");
@@ -39,7 +40,7 @@ public class K8sSpecTemplateTest {
   }
 
   @Test
-  public void testObject() {
+  void testObject() {
     K8sSpecTemplate template = new K8sSpecTemplate();
     template.put("k8s", ImmutableMap.of("key", "world"));
 
@@ -51,7 +52,7 @@ public class K8sSpecTemplateTest {
   }
 
   @Test
-  public void testRenderWithStrip() {
+  void testRenderWithStrip() {
     // given
     K8sSpecTemplate template = new K8sSpecTemplate();
     template.put("test", "test");
@@ -66,7 +67,7 @@ public class K8sSpecTemplateTest {
   }
 
   @Test
-  public void testIterate() {
+  void testIterate() {
     // given
     K8sSpecTemplate template = new K8sSpecTemplate();
     template.put("dict", ImmutableMap.of(
@@ -88,7 +89,7 @@ public class K8sSpecTemplateTest {
   }
 
   @Test
-  public void testLoadProperties() {
+  void testLoadProperties() {
     // given
     K8sSpecTemplate template = new K8sSpecTemplate();
     Properties p = new Properties();
@@ -108,7 +109,7 @@ public class K8sSpecTemplateTest {
   }
 
   @Test
-  public void testLoadPropertyOverrideString() {
+  void testLoadPropertyOverrideString() {
     // given
     K8sSpecTemplate template = new K8sSpecTemplate();
     Properties p = new Properties();
@@ -124,7 +125,7 @@ public class K8sSpecTemplateTest {
   }
 
   @Test
-  public void testLoadPropertyOverrideDict() {
+  void testLoadPropertyOverrideDict() {
     // given
     K8sSpecTemplate template = new K8sSpecTemplate();
     Properties p = new Properties();
@@ -140,7 +141,7 @@ public class K8sSpecTemplateTest {
   }
 
   @Test
-  public void testLoadPropertyWithMap() {
+  void testLoadPropertyWithMap() {
     // given
     K8sSpecTemplate template = new K8sSpecTemplate();
     Properties p = new Properties();
