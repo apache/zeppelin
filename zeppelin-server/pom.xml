@@ -336,16 +336,6 @@
           <groupId>org.objenesis</groupId>
           <artifactId>objenesis</artifactId>
         </exclusion>
-        <!-- used from powermock-module-junit -->
-        <exclusion>
-          <groupId>net.bytebuddy</groupId>
-          <artifactId>byte-buddy-agent</artifactId>
-        </exclusion>
-        <!-- used from powermock-module-junit -->
-        <exclusion>
-          <groupId>net.bytebuddy</groupId>
-          <artifactId>byte-buddy</artifactId>
-        </exclusion>
       </exclusions>
     </dependency>
 
@@ -392,38 +382,6 @@
       <version>${xml.apis.version}</version>
       <scope>test</scope>
     </dependency>
-
-      <dependency>
-        <groupId>org.powermock</groupId>
-        <artifactId>powermock-module-junit4</artifactId>
-        <scope>test</scope>
-        <exclusions>
-          <exclusion>
-            <groupId>org.javassist</groupId>
-            <artifactId>javassist</artifactId>
-          </exclusion>
-          <!-- used from zeppelin-zenigne -->
-          <exclusion>
-            <groupId>org.objenesis</groupId>
-            <artifactId>objenesis</artifactId>
-          </exclusion>
-        </exclusions>
-      </dependency>
-      <dependency>
-        <groupId>org.powermock</groupId>
-        <artifactId>powermock-api-mockito2</artifactId>
-        <scope>test</scope>
-        <exclusions>
-          <exclusion>
-            <groupId>org.hamcrest</groupId>
-            <artifactId>hamcrest-core</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>org.objenesis</groupId>
-            <artifactId>objenesis</artifactId>
-          </exclusion>
-        </exclusions>
-      </dependency>
 
       <dependency>
         <groupId>org.bitbucket.cowwoc</groupId>

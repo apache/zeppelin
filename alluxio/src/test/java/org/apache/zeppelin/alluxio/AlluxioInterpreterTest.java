@@ -82,7 +82,7 @@ public class AlluxioInterpreterTest {
 
   @Test
   public void testCompletion() {
-    List expectedResultOne = Arrays.asList(
+    List<InterpreterCompletion> expectedResultOne = Arrays.asList(
         new InterpreterCompletion("cat", "cat", CompletionType.command.name()),
         new InterpreterCompletion("chgrp", "chgrp", CompletionType.command.name()),
         new InterpreterCompletion("chmod", "chmod", CompletionType.command.name()),
@@ -91,18 +91,18 @@ public class AlluxioInterpreterTest {
         new InterpreterCompletion("copyToLocal", "copyToLocal", CompletionType.command.name()),
         new InterpreterCompletion("count", "count", CompletionType.command.name()),
         new InterpreterCompletion("createLineage", "createLineage", CompletionType.command.name()));
-    List expectedResultTwo = Arrays.asList(
+    List<InterpreterCompletion> expectedResultTwo = Arrays.asList(
         new InterpreterCompletion("copyFromLocal", "copyFromLocal",
               CompletionType.command.name()),
         new InterpreterCompletion("copyToLocal", "copyToLocal",
               CompletionType.command.name()),
         new InterpreterCompletion("count", "count", CompletionType.command.name()));
-    List expectedResultThree = Arrays.asList(
+    List<InterpreterCompletion> expectedResultThree = Arrays.asList(
         new InterpreterCompletion("copyFromLocal", "copyFromLocal",
               CompletionType.command.name()),
         new InterpreterCompletion("copyToLocal", "copyToLocal",
               CompletionType.command.name()));
-    List expectedResultNone = new ArrayList<>();
+    List<InterpreterCompletion> expectedResultNone = new ArrayList<>();
 
     List<InterpreterCompletion> resultOne = alluxioInterpreter.completion("c", 0, null);
     List<InterpreterCompletion> resultTwo = alluxioInterpreter.completion("co", 0, null);
@@ -115,7 +115,7 @@ public class AlluxioInterpreterTest {
     Assert.assertEquals(expectedResultThree, resultThree);
     Assert.assertEquals(expectedResultNone, resultNotMatch);
 
-    List allCompletionList = new ArrayList<>();
+    List<String> allCompletionList = new ArrayList<>();
     for (InterpreterCompletion ic : resultAll) {
       allCompletionList.add(ic.getName());
     }

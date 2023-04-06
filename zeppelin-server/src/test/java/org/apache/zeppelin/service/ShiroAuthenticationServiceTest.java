@@ -18,6 +18,7 @@ package org.apache.zeppelin.service;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 
 import java.io.IOException;
@@ -25,34 +26,32 @@ import java.security.Principal;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.mgt.DefaultSecurityManager;
+import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.LifecycleUtils;
 import org.apache.shiro.util.ThreadContext;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
-import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.realm.jwt.KnoxJwtRealm;
+import org.apache.zeppelin.service.shiro.AbstractShiroTest;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest(org.apache.shiro.SecurityUtils.class)
-public class ShiroAuthenticationServiceTest {
-  @Mock
-  org.apache.shiro.subject.Subject subject;
 
+public class ShiroAuthenticationServiceTest extends AbstractShiroTest {
+
+  Subject subject;
   ShiroAuthenticationService shiroSecurityService;
-  ZeppelinConfiguration zeppelinConfiguration;
+  ZeppelinConfiguration zConf;
 
   @Before
   public void setup() throws Exception {
-    zeppelinConfiguration = ZeppelinConfiguration.create();
-    shiroSecurityService = new ShiroAuthenticationService(zeppelinConfiguration);
+    subject = mock(Subject.class);
+    zConf = mock(ZeppelinConfiguration.class);
+    when(zConf.getShiroPath()).thenReturn(StringUtils.EMPTY);
+    setSubject(subject);
+    shiroSecurityService = new ShiroAuthenticationService(zConf);
   }
 
   @Test
@@ -65,12 +64,9 @@ public class ShiroAuthenticationServiceTest {
   @Test
   public void testUsernameForceLowerCase() throws IOException, InterruptedException {
     String expectedName = "java.security.Principal.getName()";
-    System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_USERNAME_FORCE_LOWERCASE
-        .getVarName(), String.valueOf(true));
+    when(zConf.isUsernameForceLowerCase()).thenReturn(true);
     setupPrincipalName(expectedName);
     assertEquals(expectedName.toLowerCase(), shiroSecurityService.getPrincipal());
-    System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_USERNAME_FORCE_LOWERCASE
-        .getVarName(), String.valueOf(false));
   }
 
   @Test
@@ -92,16 +88,14 @@ public class ShiroAuthenticationServiceTest {
     assertEquals(testRoles, roles);
   }
 
+  @After
+  public void tearDownSubject() {
+    clearSubject();
+  }
+
   private void setupPrincipalName(String expectedName) {
-    PowerMockito.mockStatic(org.apache.shiro.SecurityUtils.class);
-    when(org.apache.shiro.SecurityUtils.getSubject()).thenReturn(subject);
     when(subject.isAuthenticated()).thenReturn(true);
     when(subject.getPrincipal()).thenReturn(new TestPrincipal(expectedName));
-
-    Notebook notebook = Mockito.mock(Notebook.class);
-    when(notebook.getConf())
-        .thenReturn(ZeppelinConfiguration.create("zeppelin-site.xml"));
-
   }
 
   public class TestPrincipal implements Principal {
