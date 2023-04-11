@@ -94,11 +94,6 @@ public class AuthorizationService implements ClusterEventListener {
     this.notesAuth.put(noteId, noteAuth);
   }
 
-  public void cloneNoteMeta(String noteId, String sourceNoteId, AuthenticationInfo subject) {
-    NoteAuth noteAuth = new NoteAuth(noteId, subject, conf);
-    this.notesAuth.put(noteId, noteAuth);
-  }
-
   /**
    * Persistent NoteAuth
    *
