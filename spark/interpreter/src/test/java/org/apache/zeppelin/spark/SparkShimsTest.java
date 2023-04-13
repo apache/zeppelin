@@ -20,16 +20,16 @@ package org.apache.zeppelin.spark;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import org.apache.hadoop.util.VersionInfo;
-import org.apache.zeppelin.interpreter.ZeppelinContext;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterEventClient;
 import org.junit.Before;
@@ -40,10 +40,6 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 
 @RunWith(Enclosed.class)
 public class SparkShimsTest {
@@ -108,12 +104,7 @@ public class SparkShimsTest {
     }
   }
 
-  @RunWith(PowerMockRunner.class)
-  @PrepareForTest({ZeppelinContext.class, VersionInfo.class})
-  @PowerMockIgnore({"javax.net.*", "javax.security.*"})
   public static class SingleTests {
-    @Captor ArgumentCaptor<Map<String, String>> argumentCaptor;
-
     SparkShims sparkShims;
     InterpreterContext mockContext;
     RemoteInterpreterEventClient mockIntpEventClient;
@@ -123,7 +114,6 @@ public class SparkShimsTest {
       mockContext = mock(InterpreterContext.class);
       mockIntpEventClient = mock(RemoteInterpreterEventClient.class);
       when(mockContext.getIntpEventClient()).thenReturn(mockIntpEventClient);
-      doNothing().when(mockIntpEventClient).onParaInfosReceived(argumentCaptor.capture());
 
       try {
         sparkShims = SparkShims.getInstance(SparkVersion.SPARK_3_1_0.toString(), new Properties(), null);
@@ -141,8 +131,10 @@ public class SparkShimsTest {
       Properties properties = new Properties();
       properties.setProperty("spark.jobGroup.id", "zeppelin|user1|noteId|paragraphId");
       sparkShims.buildSparkJobUrl("local", "http://sparkurl", 0, properties, mockContext);
-
-      Map<String, String> mapValue = argumentCaptor.getValue();
+      @SuppressWarnings("unchecked")
+      ArgumentCaptor<Map<String, String>> argument = ArgumentCaptor.forClass(HashMap.class);
+      verify(mockIntpEventClient).onParaInfosReceived(argument.capture());
+      Map<String, String> mapValue = argument.getValue();
       assertTrue(mapValue.keySet().contains("jobUrl"));
       assertTrue(mapValue.get("jobUrl").contains("/jobs/job?id="));
     }
@@ -152,8 +144,10 @@ public class SparkShimsTest {
       Properties properties = new Properties();
       properties.setProperty("spark.jobGroup.id", "zeppelin|user1|noteId|paragraphId");
       sparkShims.buildSparkJobUrl("yarn", "http://sparkurl", 0, properties, mockContext);
-
-      Map<String, String> mapValue = argumentCaptor.getValue();
+      @SuppressWarnings("unchecked")
+      ArgumentCaptor<Map<String, String>> argument = ArgumentCaptor.forClass(HashMap.class);
+      verify(mockIntpEventClient).onParaInfosReceived(argument.capture());
+      Map<String, String> mapValue = argument.getValue();
       assertTrue(mapValue.keySet().contains("jobUrl"));
 
       if (sparkShims.supportYarn6615(VersionInfo.getVersion())) {
