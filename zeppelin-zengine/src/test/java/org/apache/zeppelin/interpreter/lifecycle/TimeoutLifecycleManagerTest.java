@@ -25,6 +25,8 @@ import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
 import org.apache.zeppelin.scheduler.Job;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -35,11 +37,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class TimeoutLifecycleManagerTest extends AbstractInterpreterTest {
+class TimeoutLifecycleManagerTest extends AbstractInterpreterTest {
 
   private File zeppelinSiteFile = new File("zeppelin-site.xml");
 
   @Override
+  @BeforeEach
   public void setUp() throws Exception {
     ZeppelinConfiguration zConf = ZeppelinConfiguration.create();
     zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_LIFECYCLE_MANAGER_CLASS.getVarName(),
@@ -51,12 +54,13 @@ public class TimeoutLifecycleManagerTest extends AbstractInterpreterTest {
   }
 
   @Override
+  @AfterEach
   public void tearDown() {
     zeppelinSiteFile.delete();
   }
 
   @Test
-  public void testTimeout_1() throws InterpreterException, InterruptedException, IOException {
+  void testTimeout_1() throws InterpreterException, InterruptedException, IOException {
     assertTrue(interpreterFactory.getInterpreter("test.echo", new ExecutionContext("user1", "note1", "test")) instanceof RemoteInterpreter);
     RemoteInterpreter remoteInterpreter = (RemoteInterpreter) interpreterFactory.getInterpreter("test.echo", new ExecutionContext("user1", "note1", "test"));
     assertFalse(remoteInterpreter.isOpened());
@@ -79,7 +83,7 @@ public class TimeoutLifecycleManagerTest extends AbstractInterpreterTest {
   }
 
   @Test
-  public void testTimeout_2() throws InterpreterException, InterruptedException, IOException {
+  void testTimeout_2() throws InterpreterException, InterruptedException, IOException {
     assertTrue(interpreterFactory.getInterpreter("test.sleep", new ExecutionContext("user1", "note1", "test")) instanceof RemoteInterpreter);
     final RemoteInterpreter remoteInterpreter = (RemoteInterpreter) interpreterFactory.getInterpreter("test.sleep", new ExecutionContext("user1", "note1", "test"));
 
