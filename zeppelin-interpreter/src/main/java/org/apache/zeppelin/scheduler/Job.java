@@ -123,8 +123,14 @@ public abstract class Job<T> {
   }
 
   @Override
-  public boolean equals(Object o) {
-    return ((Job) o).id.equals(id);
+  public boolean equals(Object obj) {
+    if (obj == null)
+      return false;
+
+    if (!(obj instanceof Job))
+      return false;
+
+    return ((Job<?>) obj).id.equals(id);
   }
 
   public Status getStatus() {

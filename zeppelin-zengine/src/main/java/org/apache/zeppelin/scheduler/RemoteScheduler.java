@@ -48,7 +48,7 @@ public class RemoteScheduler extends AbstractScheduler {
   }
 
   @Override
-  public void runJobInScheduler(Job job) {
+  public void runJobInScheduler(Job<?> job) {
     JobRunner jobRunner = new JobRunner(this, job);
     executor.execute(jobRunner);
     String executionMode =
@@ -92,10 +92,10 @@ public class RemoteScheduler extends AbstractScheduler {
     private final long checkIntervalMsec;
     private final AtomicBoolean terminate;
     private final JobListener listener;
-    private final Job job;
+    private final Job<?> job;
     private volatile Status lastStatus;
 
-    public JobStatusPoller(Job job,
+    public JobStatusPoller(Job<?> job,
                            JobListener listener,
                            long checkIntervalMsec) {
       setName("JobStatusPoller-" + job.getId());
@@ -160,11 +160,11 @@ public class RemoteScheduler extends AbstractScheduler {
   private class JobRunner implements Runnable, JobListener {
     private final Logger logger = LoggerFactory.getLogger(JobRunner.class);
     private final RemoteScheduler scheduler;
-    private final Job job;
+    private final Job<?> job;
     private volatile boolean jobExecuted;
     private volatile boolean jobSubmittedRemotely;
 
-    public JobRunner(RemoteScheduler scheduler, Job job) {
+    public JobRunner(RemoteScheduler scheduler, Job<?> job) {
       this.scheduler = scheduler;
       this.job = job;
       jobExecuted = false;
@@ -197,12 +197,12 @@ public class RemoteScheduler extends AbstractScheduler {
     }
 
     @Override
-    public void onProgressUpdate(Job job, int progress) {
+    public void onProgressUpdate(Job<?> job, int progress) {
     }
 
     // Call by JobStatusPoller thread, update status when JobStatusPoller get new status.
     @Override
-    public void onStatusChange(Job job, Status before, Status after) {
+    public void onStatusChange(Job<?> job, Status before, Status after) {
       if (!job.equals(this.job)) {
         logger.error("StatusChange for an unkown job. {} != {}", this.job.getId(), job.getId());
         return;

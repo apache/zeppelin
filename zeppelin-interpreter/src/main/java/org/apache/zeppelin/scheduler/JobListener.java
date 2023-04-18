@@ -17,11 +17,14 @@
 
 package org.apache.zeppelin.scheduler;
 
+import org.apache.zeppelin.scheduler.Job.Status;
+
 /**
  * Listener for job execution.
  */
-public interface JobListener<T extends Job> {
-  void onProgressUpdate(T job, int progress);
+public interface JobListener {
+  void onProgressUpdate(Job<?> job, int progress);
 
-  void onStatusChange(T job, Job.Status before, Job.Status after);
+  void onStatusChange(Job<?> job, Status before, Status after);
+
 }
