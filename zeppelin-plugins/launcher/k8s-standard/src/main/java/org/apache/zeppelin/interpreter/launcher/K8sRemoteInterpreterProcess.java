@@ -397,6 +397,8 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterManagedProcess
     return k8sProperties;
   }
 
+  // https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#syntax-and-character-set
+  // labels from shiro needs to be k8s friendly 
   private static String sanitize(String userName) {
     String sanitized = "";
     if (StringUtils.isEmpty(userName)) {
