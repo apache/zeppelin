@@ -23,6 +23,7 @@ import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.flink.api.common.RuntimeExecutionMode;
+import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeutils.TypeSerializer;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.client.cli.CliFrontend;
@@ -52,6 +53,7 @@ import org.apache.flink.table.functions.ScalarFunction;
 import org.apache.flink.table.functions.TableAggregateFunction;
 import org.apache.flink.table.functions.TableFunction;
 import org.apache.flink.table.module.ModuleManager;
+import org.apache.flink.table.planner.calcite.FlinkTypeFactory;
 import org.apache.flink.table.resource.ResourceManager;
 import org.apache.flink.table.sinks.TableSink;
 import org.apache.flink.table.typeutils.TimeIndicatorTypeInfo;
@@ -78,23 +80,23 @@ import java.util.Properties;
 /**
  * Shims for flink 1.16
  */
-public class Flink116Shims extends FlinkShims {
+public class Flink117Shims extends FlinkShims {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(Flink116Shims.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(Flink117Shims.class);
 
-  private Flink116SqlInterpreter batchSqlInterpreter;
-  private Flink116SqlInterpreter streamSqlInterpreter;
+  private Flink117SqlInterpreter batchSqlInterpreter;
+  private Flink117SqlInterpreter streamSqlInterpreter;
 
-  public Flink116Shims(FlinkVersion flinkVersion, Properties properties) {
+  public Flink117Shims(FlinkVersion flinkVersion, Properties properties) {
     super(flinkVersion, properties);
   }
 
   public void initInnerBatchSqlInterpreter(FlinkSqlContext flinkSqlContext) {
-    this.batchSqlInterpreter = new Flink116SqlInterpreter(flinkSqlContext, true);
+    this.batchSqlInterpreter = new Flink117SqlInterpreter(flinkSqlContext, true);
   }
 
   public void initInnerStreamSqlInterpreter(FlinkSqlContext flinkSqlContext) {
-    this.streamSqlInterpreter = new Flink116SqlInterpreter(flinkSqlContext, false);
+    this.streamSqlInterpreter = new Flink117SqlInterpreter(flinkSqlContext, false);
   }
 
   @Override
