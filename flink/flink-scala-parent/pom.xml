@@ -81,6 +81,12 @@
 
     <dependency>
       <groupId>org.apache.zeppelin</groupId>
+      <artifactId>flink1.17-shims</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.zeppelin</groupId>
       <artifactId>zeppelin-python</artifactId>
       <version>${project.version}</version>
       <exclusions>
@@ -982,6 +988,42 @@
       <id>flink-116</id>
       <properties>
         <flink.version>${flink1.16.version}</flink.version>
+        <flink.scala.version>2.12.7</flink.scala.version>
+        <flink.scala.binary.version>2.12</flink.scala.binary.version>
+        <flink.library.scala.suffix></flink.library.scala.suffix>
+      </properties>
+      <dependencies>
+        <dependency>
+          <groupId>org.apache.flink</groupId>
+          <artifactId>flink-runtime</artifactId>
+          <version>${flink.version}</version>
+          <scope>provided</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.flink</groupId>
+          <artifactId>flink-table-planner_${flink.scala.binary.version}</artifactId>
+          <version>${flink.version}</version>
+          <scope>provided</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.flink</groupId>
+          <artifactId>flink-sql-client</artifactId>
+          <version>${flink.version}</version>
+          <scope>provided</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.flink</groupId>
+          <artifactId>flink-python</artifactId>
+          <version>${flink.version}</version>
+          <scope>provided</scope>
+        </dependency>
+      </dependencies>
+    </profile>
+
+    <profile>
+      <id>flink-117</id>
+      <properties>
+        <flink.version>${flink1.17.version}</flink.version>
         <flink.scala.version>2.12.7</flink.scala.version>
         <flink.scala.binary.version>2.12</flink.scala.binary.version>
         <flink.library.scala.suffix></flink.library.scala.suffix>
