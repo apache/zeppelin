@@ -297,7 +297,7 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterManagedProcess
     Properties k8sProperties = new Properties();
 
     // k8s template properties
-    k8sProperties.put("zeppelin.k8s.interpreter.user", sanitize(userName));
+    k8sProperties.put("zeppelin.k8s.interpreter.user", K8sUtils.generateK8sName(userName, false));
     k8sProperties.put("zeppelin.k8s.interpreter.namespace", getInterpreterNamespace());
     k8sProperties.put("zeppelin.k8s.interpreter.pod.name", getPodName());
     k8sProperties.put("zeppelin.k8s.interpreter.serviceAccount", getServiceAccount());
@@ -395,24 +395,6 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterManagedProcess
     // interpreter properties overrides the values
     k8sProperties.putAll(Maps.fromProperties(properties));
     return k8sProperties;
-  }
-
-  // https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#syntax-and-character-set
-  // labels from shiro needs to be k8s friendly 
-  private static String sanitize(String userName) {
-    String sanitized = "";
-    if (StringUtils.isEmpty(userName)) {
-      return sanitized;
-    }
-
-
-    if (userName.length() >= 63) {
-      sanitized = userName.substring(0, 62);
-    }
-
-    sanitized.replaceAll("[^a-zA-Z0-9]", "");
-
-    return sanitized;
   }
 
   @VisibleForTesting
