@@ -70,6 +70,14 @@ public abstract class Job<T> {
     public boolean isCompleted() {
       return this == FINISHED || this == ERROR || this == ABORT;
     }
+
+    public boolean isAbort() {
+      return this == ABORT;
+    }
+
+    public boolean isFailed() {
+      return this == ERROR || this == ABORT;
+    }
   }
 
   private String jobName;

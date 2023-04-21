@@ -260,6 +260,7 @@ public class RemoteSchedulerTest extends AbstractInterpreterTest
 
     assertNotNull(job1.getDateFinished());
     assertTrue(job1.isTerminated());
+    assertEquals("1000", job1.getReturn());
     assertNull(job2.getDateFinished());
     assertTrue(job2.isTerminated());
     assertEquals("result2", job2.getReturn());
