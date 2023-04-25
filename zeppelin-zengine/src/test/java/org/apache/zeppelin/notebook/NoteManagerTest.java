@@ -45,7 +45,6 @@ public class NoteManagerTest {
   @Rule
   public ExpectedException thrown = ExpectedException.none();
 
-
   @Before
   public void setUp() throws IOException {
     conf = ZeppelinConfiguration.create();
@@ -151,8 +150,9 @@ public class NoteManagerTest {
     }
     assertEquals(cacheThreshold, noteManager.getCacheSize());
 
-    // add cache + 1
+    // add cache + 1 with read flag
     Note noteNew2 = createNote("/prod/notenew2");
+    noteNew2.getLock().readLock().lock();
     noteManager.addNote(noteNew2, AuthenticationInfo.ANONYMOUS);
 
     // since all notes in the cache are with a read lock, the cache grows
@@ -162,6 +162,14 @@ public class NoteManagerTest {
     noteManager.removeNote(noteNew2.getId(), AuthenticationInfo.ANONYMOUS);
     assertFalse(noteManager.containsNote(noteNew2.getPath()));
     assertEquals(cacheThreshold, noteManager.getCacheSize());
+
+    // add cache + 1 without read flag
+    Note noteNew3 = createNote("/prod/notenew3");
+    noteManager.addNote(noteNew3, AuthenticationInfo.ANONYMOUS);
+
+    // since all dirty notes in the cache are with a read flag, the cache removes noteNew3, because it has no read flag
+    assertEquals(cacheThreshold, noteManager.getCacheSize());
+    System.out.println(noteManager.containsNote(noteNew3.getPath()));
   }
 
   @Test
