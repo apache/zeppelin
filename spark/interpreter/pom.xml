@@ -70,6 +70,13 @@
       <groupId>org.apache.zeppelin</groupId>
       <artifactId>zeppelin-display</artifactId>
       <version>${project.version}</version>
+      <exclusions>
+        <!-- use scala-xml from spark -->
+        <exclusion>
+          <groupId>org.scala-lang.modules</groupId>
+          <artifactId>scala-xml_${scala.binary.version}</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <dependency>
