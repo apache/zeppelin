@@ -136,6 +136,7 @@
             <arg>-deprecation</arg>
             <arg>-feature</arg>
             <arg>-language:implicitConversions</arg>
+            <arg>-nobootcp</arg>
           </args>
           <jvmArgs>
             <jvmArg>-Xms1024m</jvmArg>
