@@ -169,7 +169,7 @@ public class NoteManagerTest {
 
     // since all dirty notes in the cache are with a read flag, the cache removes noteNew3, because it has no read flag
     assertEquals(cacheThreshold, noteManager.getCacheSize());
-    System.out.println(noteManager.containsNote(noteNew3.getPath()));
+    assertTrue(noteManager.containsNote(noteNew3.getPath()));
   }
 
   @Test
