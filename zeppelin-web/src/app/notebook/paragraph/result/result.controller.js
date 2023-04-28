@@ -895,6 +895,7 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
           if (row.hasOwnProperty(index)) {
             let stringValue = (row[index]).toString();
             if (stringValue.indexOf(delimiter) > -1) {
+              stringValue = stringValue.replaceAll('"', '""');
               dsvRow += '"' + stringValue + '"' + delimiter;
             } else {
               dsvRow += row[index] + delimiter;
