@@ -234,6 +234,10 @@ function WebsocketMessageService($rootScope, websocketEvents) {
       websocketEvents.sendNewEvent({op: 'PARAGRAPH_REMOVE', data: {id: paragraphId}});
     },
 
+    debugParagraph: function(paragraphId) {
+      websocketEvents.sendNewEvent({op: 'DEBUG_PARAGRAPH', data: {id: paragraphId}});
+    },
+
     clearParagraphOutput: function(paragraphId) {
       websocketEvents.sendNewEvent({op: 'PARAGRAPH_CLEAR_OUTPUT', data: {id: paragraphId}});
     },

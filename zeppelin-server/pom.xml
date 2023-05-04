@@ -45,6 +45,7 @@
     <!--test library versions-->
     <selenium.java.version>2.48.2</selenium.java.version>
     <xml.apis.version>1.4.01</xml.apis.version>
+    <antlr4.version>4.7.2</antlr4.version>
   </properties>
 
   <dependencies>
@@ -388,6 +389,12 @@
         <artifactId>diff-match-patch</artifactId>
         <version>1.1</version>
       </dependency>
+
+    <dependency>
+      <groupId>org.antlr</groupId>
+      <artifactId>antlr4</artifactId>
+      <version>${antlr4.version}</version>
+    </dependency>
   </dependencies>
   <build>
     <plugins>

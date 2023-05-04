@@ -88,6 +88,8 @@ public class Message implements JsonSerializable {
                       // @param config paragraph config
                       // @param params paragraph params
 
+    DEBUG_PARAGRAPH,
+
     COMMIT_PARAGRAPH, // [c-s] commit paragraph
                       // @param id paragraph id
                       // @param title paragraph title

@@ -210,6 +210,14 @@ limitations under the License.
             Remove
           </a>
         </li>
+        <li>
+          <!-- debug paragraph -->
+          <a ng-click="debugParagraph(paragraph)" ng-if="note.defaultInterpreterGroup==='jdbc'" ng-class="{'item-disable' : isNoteRunning}">
+            <span class="icon-control-play shortcut-icon"></span>
+            <span class="shortcut-keys">Ctrl+{{ isMac ? 'Option' : 'Alt'}}+G</span>
+            Debug
+          </a>
+        </li>
       </ul>
     </span>
   </span>
