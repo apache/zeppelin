@@ -31,13 +31,13 @@ public interface Scheduler extends Runnable {
 
   String getName();
 
-  List<Job> getAllJobs();
+  List<Job<?>> getAllJobs();
 
-  Job getJob(String jobId);
+  Job<?> getJob(String jobId);
 
-  void submit(Job job);
+  void submit(Job<?> job);
 
-  Job cancel(String jobId);
+  Job<?> cancel(String jobId);
 
   void stop();
 

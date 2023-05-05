@@ -755,11 +755,11 @@ public class RemoteInterpreterServer extends Thread
   class InterpretJobListener implements JobListener {
 
     @Override
-    public void onProgressUpdate(Job job, int progress) {
+    public void onProgressUpdate(Job<?> job, int progress) {
     }
 
     @Override
-    public void onStatusChange(Job job, Status before, Status after) {
+    public void onStatusChange(Job<?> job, Status before, Status after) {
       synchronized (this) {
         notifyAll();
       }

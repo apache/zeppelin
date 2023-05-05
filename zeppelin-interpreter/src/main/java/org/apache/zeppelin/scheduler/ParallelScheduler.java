@@ -41,7 +41,7 @@ public class ParallelScheduler extends AbstractScheduler {
   }
 
   @Override
-  public void runJobInScheduler(final Job runningJob) {
+  public void runJobInScheduler(final Job<?> runningJob) {
     // submit this job to a FixedThreadPool so that at most maxConcurrencyJobs running
     executor.execute(() -> runJob(runningJob));
   }

@@ -1893,11 +1893,11 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
   }
 
   @Override
-  public void onProgressUpdate(Paragraph paragraph, int progress) {
+  public void onProgressUpdate(Job<?> paragraph, int progress) {
   }
 
   @Override
-  public void onStatusChange(Paragraph paragraph, Status before, Status after) {
+  public void onStatusChange(Job<?> paragraph, Status before, Status after) {
     if (afterStatusChangedListener != null) {
       afterStatusChangedListener.onStatusChanged(paragraph, before, after);
     }

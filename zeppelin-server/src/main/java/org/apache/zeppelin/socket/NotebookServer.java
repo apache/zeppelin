@@ -86,6 +86,7 @@ import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.notebook.ParagraphJobListener;
 import org.apache.zeppelin.notebook.repo.NotebookRepoWithVersionControl.Revision;
 import org.apache.zeppelin.rest.exception.ForbiddenException;
+import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.service.ConfigurationService;
 import org.apache.zeppelin.service.JobManagerService;
@@ -2046,56 +2047,64 @@ public class NotebookServer implements AngularObjectRegistryListener,
   }
 
   @Override
-  public void onProgressUpdate(Paragraph p, int progress) {
-    if (!sendParagraphStatusToFrontend) {
-      return;
+  public void onProgressUpdate(Job<?> job, int progress) {
+    if (job instanceof Paragraph) {
+      final Paragraph p = (Paragraph) job;
+      if (!sendParagraphStatusToFrontend) {
+        return;
+      }
+      connectionManager.broadcast(p.getNote().getId(),
+          new Message(OP.PROGRESS).put("id", p.getId()).put("progress", progress));
     }
-    connectionManager.broadcast(p.getNote().getId(),
-        new Message(OP.PROGRESS).put("id", p.getId()).put("progress", progress));
   }
 
   @Override
-  public void onStatusChange(Paragraph p, Status before, Status after) {
-    if (after == Status.ERROR) {
-      if (p.getException() != null) {
-        LOG.error("Error", p.getException());
-      }
-    }
+  public void onStatusChange(Job<?> job, Status before, Status after) {
+    if (job instanceof Paragraph) {
+      final Paragraph p = (Paragraph) job;
 
-    if (p.isTerminated() || after == Status.RUNNING) {
-      if (p.getStatus() == Status.FINISHED) {
-        LOG.info("Job {} is finished successfully, status: {}", p.getId(), p.getStatus());
-      } else if (p.isTerminated()) {
-        LOG.warn("Job {} is finished, status: {}, exception: {}, result: {}", p.getId(),
-            p.getStatus(), p.getException(), p.getReturn());
-      } else {
-        LOG.info("Job {} starts to RUNNING", p.getId());
+      if (after == Status.ERROR) {
+        if (p.getException() != null) {
+          LOG.error("Error", p.getException());
+        }
       }
 
+      if (p.isTerminated() || after == Status.RUNNING) {
+        if (p.getStatus() == Status.FINISHED) {
+          LOG.info("Job {} is finished successfully, status: {}", p.getId(), p.getStatus());
+        } else if (p.isTerminated()) {
+          LOG.warn("Job {} is finished, status: {}, exception: {}, result: {}", p.getId(),
+              p.getStatus(), p.getException(), p.getReturn());
+        } else {
+          LOG.info("Job {} starts to RUNNING", p.getId());
+        }
+
+        try {
+          String noteId = p.getNote().getId();
+          getNotebook().processNote(noteId,
+              note -> {
+                if (note == null) {
+                  LOG.warn("Note {} doesn't existed.", noteId);
+                  return null;
+                } else {
+                  getNotebook().saveNote(p.getNote(), p.getAuthenticationInfo());
+                }
+                return null;
+              });
+        } catch (IOException e) {
+          LOG.error(e.toString(), e);
+        }
+      }
+
+      p.setStatusToUserParagraph(p.getStatus());
+      broadcastParagraph(p.getNote(), p, MSG_ID_NOT_DEFINED);
       try {
-        String noteId = p.getNote().getId();
-        getNotebook().processNote(noteId,
-          note -> {
-            if (note == null) {
-              LOG.warn("Note {} doesn't existed.", noteId);
-              return null;
-            } else {
-              getNotebook().saveNote(p.getNote(), p.getAuthenticationInfo());
-            }
-            return null;
-          });
+        broadcastUpdateNoteJobInfo(p.getNote(), System.currentTimeMillis() - 5000);
       } catch (IOException e) {
-        LOG.error(e.toString(), e);
+        LOG.error("can not broadcast for job manager", e);
       }
     }
 
-    p.setStatusToUserParagraph(p.getStatus());
-    broadcastParagraph(p.getNote(), p, MSG_ID_NOT_DEFINED);
-    try {
-      broadcastUpdateNoteJobInfo(p.getNote(), System.currentTimeMillis() - 5000);
-    } catch (IOException e) {
-      LOG.error("can not broadcast for job manager", e);
-    }
   }
 
   @Override

@@ -141,9 +141,9 @@ public class KotlinInterpreter extends Interpreter {
   }
 
   private Job<?> getRunningJob(String paragraphId) {
-    Job foundJob = null;
-    Collection<Job> jobsRunning = getScheduler().getAllJobs();
-    for (Job job : jobsRunning) {
+    Job<?> foundJob = null;
+    Collection<Job<?>> jobsRunning = getScheduler().getAllJobs();
+    for (Job<?> job : jobsRunning) {
       if (job.getId().equals(paragraphId)) {
         foundJob = job;
       }
