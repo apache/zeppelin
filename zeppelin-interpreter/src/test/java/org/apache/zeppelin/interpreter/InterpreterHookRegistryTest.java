@@ -17,19 +17,20 @@
 
 package org.apache.zeppelin.interpreter;
 
-import org.junit.Test;
-
 import static org.apache.zeppelin.interpreter.InterpreterHookRegistry.HookType.POST_EXEC;
 import static org.apache.zeppelin.interpreter.InterpreterHookRegistry.HookType.POST_EXEC_DEV;
 import static org.apache.zeppelin.interpreter.InterpreterHookRegistry.HookType.PRE_EXEC;
 import static org.apache.zeppelin.interpreter.InterpreterHookRegistry.HookType.PRE_EXEC_DEV;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class InterpreterHookRegistryTest {
+import org.junit.jupiter.api.Test;
+
+class InterpreterHookRegistryTest {
 
   @Test
-  public void testBasic() throws InvalidHookException {
+  void testBasic() throws InvalidHookException {
     final String GLOBAL_KEY = InterpreterHookRegistry.GLOBAL_KEY;
     final String noteId = "note";
     final String className = "class";
@@ -64,12 +65,15 @@ public class InterpreterHookRegistryTest {
     assertEquals(registry.get(GLOBAL_KEY, className, PRE_EXEC.getName()), preExecHook);
   }
 
-  @Test(expected = InvalidHookException.class)
-  public void testValidEventCode() throws InvalidHookException {
-    InterpreterHookRegistry registry = new InterpreterHookRegistry();
+  @Test
+  void testValidEventCode() {
+    assertThrows(InvalidHookException.class, () -> {
+      InterpreterHookRegistry registry = new InterpreterHookRegistry();
+      // Test that only valid event codes ("pre_exec", "post_exec") are accepted
+      registry.register("foo", "bar", "baz", "whatever");
+    });
 
-    // Test that only valid event codes ("pre_exec", "post_exec") are accepted
-    registry.register("foo", "bar", "baz", "whatever");
+
   }
 
 }

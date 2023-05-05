@@ -17,17 +17,17 @@
 
 package org.apache.zeppelin.interpreter;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class SingleRowInterpreterResultTest {
+class SingleRowInterpreterResultTest {
 
   @Test
-  public void testHtml() {
+  void testHtml() {
     List<Object> list = Arrays.asList("2020-01-01", 10);
     String template = "Total count:{1} for {0}";
     InterpreterContext context = InterpreterContext.builder().build();
@@ -37,7 +37,7 @@ public class SingleRowInterpreterResultTest {
   }
 
   @Test
-  public void testAngular() {
+  void testAngular() {
     List<Object> list = Arrays.asList("2020-01-01", 10);
     String template = "Total count:{1} for {0}";
     InterpreterContext context = InterpreterContext.builder().build();

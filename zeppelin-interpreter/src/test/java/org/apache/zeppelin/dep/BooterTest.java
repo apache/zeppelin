@@ -19,42 +19,43 @@ package org.apache.zeppelin.dep;
 
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.eclipse.aether.repository.RemoteRepository;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.nio.file.Paths;
 import java.util.List;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
-public class BooterTest {
+class BooterTest {
 
   @Test
-  public void should_return_absolute_path() {
+  void should_return_absolute_path() {
     String resolvedPath = Booter.resolveLocalRepoPath("path");
     assertTrue(Paths.get(resolvedPath).isAbsolute());
   }
 
   @Test
-  public void should_not_change_absolute_path() {
+  void should_not_change_absolute_path() {
     String absolutePath
         = Paths.get("first", "second").toAbsolutePath().toString();
     String resolvedPath = Booter.resolveLocalRepoPath(absolutePath);
-
-    assertThat(resolvedPath, equalTo(absolutePath));
-  }
-
-  @Test(expected = NullPointerException.class)
-  public void should_throw_exception_for_null() {
-    Booter.resolveLocalRepoPath(null);
+    assertEquals(absolutePath, resolvedPath);
   }
 
   @Test
-  public void getInterpreterMvnRepoPathTest() {
+  void should_throw_exception_for_null() {
+    assertThrows(NullPointerException.class, () -> {
+      Booter.resolveLocalRepoPath(null);
+    });
+
+  }
+
+  @Test
+  void getInterpreterMvnRepoPathTest() {
     ZeppelinConfiguration.reset();
     ZeppelinConfiguration.create("zeppelin-site-test.xml");
     List<RemoteRepository> remoteRepositories = Booter.newCentralRepositorys(null);

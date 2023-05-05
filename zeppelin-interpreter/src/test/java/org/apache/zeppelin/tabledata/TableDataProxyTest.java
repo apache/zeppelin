@@ -19,24 +19,24 @@ package org.apache.zeppelin.tabledata;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResultMessage;
 import org.apache.zeppelin.resource.LocalResourcePool;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import java.util.Iterator;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-
-public class TableDataProxyTest {
+class TableDataProxyTest {
   private LocalResourcePool pool;
 
-  @Before
-  public void setUp() {
+  @BeforeEach
+  void setUp() {
     pool = new LocalResourcePool("p1");
   }
 
   @Test
-  public void testProxyTable() {
+  void testProxyTable() {
     InterpreterResultMessage msg = new InterpreterResultMessage(
         InterpreterResult.Type.TABLE,
         "key\tvalue\nsun\t100\nmoon\t200\n");
