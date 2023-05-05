@@ -16,21 +16,21 @@
  */
 package org.apache.zeppelin.security;
 
-import org.junit.Test;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.util.EntityUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.rest.AbstractTestRestApi;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.nio.charset.StandardCharsets;
 
-public class DirAccessTest extends AbstractTestRestApi {
+class DirAccessTest extends AbstractTestRestApi {
   @Test
-  public void testDirAccessForbidden() throws Exception {
+  void testDirAccessForbidden() throws Exception {
     synchronized (this) {
       try {
         System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_SERVER_DEFAULT_DIR_ALLOWED
@@ -47,7 +47,7 @@ public class DirAccessTest extends AbstractTestRestApi {
   }
 
   @Test
-  public void testDirAccessOk() throws Exception {
+  void testDirAccessOk() throws Exception {
     synchronized (this) {
       try {
         System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_SERVER_DEFAULT_DIR_ALLOWED

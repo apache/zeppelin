@@ -16,7 +16,7 @@
  */
 package org.apache.zeppelin.server;
 
-import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.io.File;
@@ -25,10 +25,10 @@ import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.IOUtils;
 import org.eclipse.jetty.util.resource.Resource;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
-public class HtmlAddonResourceTest {
+class HtmlAddonResourceTest {
 
     private final static String TEST_BODY_ADDON = "<!-- foo -->";
     private final static String TEST_HEAD_ADDON = "<!-- bar -->";
@@ -37,7 +37,7 @@ public class HtmlAddonResourceTest {
     private final static String FILE_PATH_INDEX_HTML_ZEPPELIN_WEB_ANGULAR = "../zeppelin-web-angular/dist/zeppelin/index.html";
 
     @Test
-    public void testZeppelinWebHtmlAddon() throws IOException {
+    void testZeppelinWebHtmlAddon() throws IOException {
         final Resource addonResource = getHtmlAddonResource(FILE_PATH_INDEX_HTML_ZEPPELIN_WEB);
 
         final String content = IOUtils.toString(addonResource.getInputStream(), StandardCharsets.UTF_8);
@@ -48,8 +48,8 @@ public class HtmlAddonResourceTest {
     }
 
     @Test
-    @Ignore // ignored due to zeppelin-web-angular not build for core tests
-    public void testZeppelinWebAngularHtmlAddon() throws IOException {
+    @Disabled // ignored due to zeppelin-web-angular not build for core tests
+    void testZeppelinWebAngularHtmlAddon() throws IOException {
         final Resource addonResource = getHtmlAddonResource(FILE_PATH_INDEX_HTML_ZEPPELIN_WEB_ANGULAR);
 
         final String content = IOUtils.toString(addonResource.getInputStream(), StandardCharsets.UTF_8);
