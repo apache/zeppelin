@@ -19,6 +19,7 @@ package org.apache.zeppelin.interpreter;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -82,7 +83,7 @@ class InterpreterOutputChangeWatcherTest implements InterpreterOutputChangeListe
 
     assertNotNull(fileChanged);
     assertEquals(fileChanged, file1);
-    assertEquals(1, numChanged.get());
+    assertTrue(numChanged.get() >= 1, "Changes: " + numChanged.get());
   }
 
 

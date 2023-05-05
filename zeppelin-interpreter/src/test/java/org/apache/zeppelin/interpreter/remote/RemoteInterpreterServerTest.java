@@ -210,6 +210,8 @@ class RemoteInterpreterServerTest {
     server.close("session_1", Test2Interpreter.class.getName());
     assertEquals(1, server.getInterpreterGroup().get("session_1").size());
 
+    // // Close is async process
+    Thread.sleep(100);
     // after close -> thread of Test1Interpreter is not running
     assertEquals(false, isThreadRunning(interpreter1.getScheduler().getName()));
   }
@@ -253,10 +255,14 @@ class RemoteInterpreterServerTest {
         }
         return new InterpreterResult(InterpreterResult.Code.SUCCESS, "SINGLE_OUTPUT_SUCCESS");
       } else if (st.equals("SLEEP")) {
-        try {
-          Thread.sleep(3 * 1000);
-        } catch (InterruptedException e) {
-          LOGGER.error("Interrupt", e);
+        int count = 0;
+        while (!cancelled.get() || count > 30) {
+          try {
+            Thread.sleep(100);
+          } catch (InterruptedException e) {
+            return new InterpreterResult(InterpreterResult.Code.ERROR, "SLEEP_SUCCESS");
+          }
+          ++count;
         }
         return new InterpreterResult(InterpreterResult.Code.SUCCESS, "SLEEP_SUCCESS");
       }
