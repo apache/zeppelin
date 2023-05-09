@@ -318,6 +318,16 @@ export abstract class ParagraphBase extends MessageListenersManager {
     );
   }
 
+  debugParagraphUsingBackendInterpreter(paragraphText: string) {
+    this.messageService.debugParagraph(
+      this.paragraph.id,
+      this.paragraph.title,
+      paragraphText,
+      this.paragraph.config,
+      this.paragraph.settings.params
+    );
+  }
+
   cancelParagraph() {
     this.messageService.cancelParagraph(this.paragraph.id);
   }

@@ -401,6 +401,32 @@ export class Message {
     });
   }
 
+  debugParagraph(
+    paragraphId: string,
+    paragraphTitle: string,
+    paragraphData: string,
+    paragraphConfig: ParagraphConfig,
+    paragraphParams: ParagraphParams
+  ): void {
+    // short circuit update status without waiting for server response
+    this.shortCircuit({
+      op: OP.PARAGRAPH_STATUS,
+      data: {
+        id: paragraphId,
+        status: "PENDING"
+      }
+    })
+
+    // send message to server
+    this.send<OP.DEBUG_PARAGRAPH>(OP.DEBUG_PARAGRAPH, {
+      id: paragraphId,
+      title: paragraphTitle,
+      paragraph: paragraphData,
+      config: paragraphConfig,
+      params: paragraphParams
+    });
+  }
+
   runAllParagraphs(noteId: string, paragraphs: SendParagraph[]): void {
     this.send<OP.RUN_ALL_PARAGRAPHS>(OP.RUN_ALL_PARAGRAPHS, {
       noteId: noteId,

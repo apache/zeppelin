@@ -71,6 +71,7 @@ import {
   PatchParagraphSend,
   Progress,
   RunAllParagraphs,
+  DebugParagraph,
   RunParagraph
 } from './message-paragraph.interface';
 
@@ -143,6 +144,7 @@ export interface MessageSendDataTypeMap {
   [OP.CANCEL_PARAGRAPH]: CancelParagraph;
   [OP.PARAGRAPH_EXECUTED_BY_SPELL]: {}; // TODO(hsuanxyz)
   [OP.RUN_PARAGRAPH]: RunParagraph;
+  [OP.DEBUG_PARAGRAPH]: DebugParagraph;
   [OP.RUN_ALL_PARAGRAPHS]: RunAllParagraphs;
   [OP.PARAGRAPH_REMOVE]: ParagraphRemove;
   [OP.PARAGRAPH_CLEAR_OUTPUT]: ParagraphClearOutput;

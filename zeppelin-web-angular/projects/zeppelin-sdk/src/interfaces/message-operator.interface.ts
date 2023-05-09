@@ -113,6 +113,8 @@ export enum OP {
    */
   RUN_PARAGRAPH = 'RUN_PARAGRAPH',
 
+  DEBUG_PARAGRAPH = 'DEBUG_PARAGRAPH',
+
   /**
    * [c-s]
    * commit paragraph

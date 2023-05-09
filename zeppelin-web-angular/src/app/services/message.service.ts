@@ -234,6 +234,16 @@ export class MessageService extends Message implements OnDestroy {
     super.runParagraph(paragraphId, paragraphTitle, paragraphData, paragraphConfig, paragraphParams);
   }
 
+  debugParagraph(
+    paragraphId: string,
+    paragraphTitle: string,
+    paragraphData: string,
+    paragraphConfig: ParagraphConfig,
+    paragraphParams: ParagraphParams
+  ): void {
+    super.debugParagraph(paragraphId, paragraphTitle, paragraphData, paragraphConfig, paragraphParams);
+  }
+
   runAllParagraphs(noteId: string, paragraphs: SendParagraph[]): void {
     super.runAllParagraphs(noteId, paragraphs);
   }

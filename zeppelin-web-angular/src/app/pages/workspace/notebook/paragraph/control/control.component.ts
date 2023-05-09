@@ -56,12 +56,14 @@ export class NotebookParagraphControlComponent implements OnInit, OnChanges {
   @Input() title = false;
   @Input() lineNumbers = false;
   @Input() paragraphLength: number;
+  @Input() defaultInterpreterGroup: string;
   @Output() readonly colWidthChange = new EventEmitter<number>();
   @Output() readonly titleChange = new EventEmitter<boolean>();
   @Output() readonly enabledChange = new EventEmitter<boolean>();
   @Output() readonly fontSizeChange = new EventEmitter<number>();
   @Output() readonly tableHideChange = new EventEmitter<boolean>();
   @Output() readonly runParagraph = new EventEmitter();
+  @Output() readonly debugParagraph = new EventEmitter();
   @Output() readonly lineNumbersChange = new EventEmitter<boolean>();
   @Output() readonly cancelParagraph = new EventEmitter();
   @Output() readonly editorHideChange = new EventEmitter<boolean>();
@@ -193,6 +195,14 @@ export class NotebookParagraphControlComponent implements OnInit, OnChanges {
         icon: 'api',
         trigger: () => this.toggleEnabled(),
         shortCut: `R (Command)`
+      },
+      {
+        label: 'Debug',
+        show: this.defaultInterpreterGroup === 'jdbc' ? true : false,
+        disabled: this.isEntireNoteRunning,
+        icon: 'api',
+        trigger: () => this.trigger(this.debugParagraph),
+        shortCut: `G (Command)`
       }
     ];
   }

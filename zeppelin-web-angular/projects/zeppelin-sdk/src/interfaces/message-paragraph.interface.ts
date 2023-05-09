@@ -168,6 +168,11 @@ export interface RunParagraph extends SendParagraph {
   [key: string]: any;
 }
 
+export interface DebugParagraph extends SendParagraph {
+  // tslint:disable-next-line no-any
+  [key: string]: any;
+}
+
 export interface CommitParagraph extends SendParagraph {
   noteId: string;
 }

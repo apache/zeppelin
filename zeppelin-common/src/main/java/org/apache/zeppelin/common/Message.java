@@ -82,6 +82,8 @@ public class Message implements JsonSerializable {
 
     FOLDER_RENAME,
 
+    DEBUG_PARAGRAPH,
+
     RUN_PARAGRAPH,    // [c-s] run paragraph
                       // @param id paragraph id
                       // @param paragraph paragraph content.ie. script

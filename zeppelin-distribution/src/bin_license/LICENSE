@@ -226,6 +226,7 @@ The following components are provided under Apache License.
     (Apache 2.0) Dropwizard Jackson Integration for Metrics (io.dropwizard.metrics:metrics-json:4.1.14) - https://github.com/dropwizard/metrics/blob/release/4.1.x/LICENSE
     (Apache 2.0) Dropwizard Metrics Health Checks (io.dropwizard.metrics:metrics-healthchecks:4.1.14) - https://github.com/dropwizard/metrics/blob/release/4.1.x/LICENSE
     (Apache 2.0) Dropwizard Metrics Integration with JMX (io.dropwizard.metrics:metrics-jmx:4.1.14) - https://github.com/dropwizard/metrics/blob/release/4.1.x/LICENSE
+    (Apache 2.0) antlr4-runtime (org.antlr:antlr4-runtime:4.7.2 - https://github.com/antlr/antlr4)
 
 ========================================================================
 MIT licenses

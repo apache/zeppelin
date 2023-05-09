@@ -426,6 +426,63 @@ select @v
 ```
 Returns value of `v` which is set in the mysql interpreter's *default.precode*.
 
+## Sql Debug
+As we know,we develop in java and c, if the actual result is not same to our's expect result, we can add breakPoint and debug it find the reason or add log find the reason also.The feature of sql debug is also let you debug your sql to find it.
+
+for example
+
+```sql
+%jdbc_interpreter_name
+select * from (
+                  select name,`age` from test_db.user_info_01
+                  union ALL
+                  select name,`age` from test_db.user_info_02
+                  union ALL
+                  select name,`age` from test_db.user_info_03
+)t group by name,`age`
+```
+
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/query_table_result.png" />
+
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/new_ui_query_table_result.png" />
+
+but the data of 'xiaohe' should not in it,if we want find which table create the data of 'xiaohe',most of us run three times by manually,because it has three tables.
+
+```sql
+%jdbc_interpreter_name
+select name,`age` from test_db.user_info_01 where name='xiaohe'
+```
+
+```sql
+%jdbc_interpreter_name
+select name,`age` from test_db.user_info_02 where name='xiaohe'
+```
+
+```sql
+%jdbc_interpreter_name
+select name,`age` from test_db.user_info_03 where name='xiaohe'
+```
+
+if the sql is more complex,the action must more complexed.if there is a solution to quickly find this problem?let we introduce the feature of sql debug
+
+firstly,add your sql and click the button of debug paragraph,just like this
+
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/debug_paragraph.png" />
+
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/new_ui_debug_paragraph.png" />
+
+then it will return result like this
+
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/debug_result.png" />
+
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/new_ui_debug_result.png" />
+
+then we can query the table of created to find the reason
+
+```sql
+%jdbc_interpreter_name
+select * from test_zeppelin.tmp_zeppelin_paragraph_1683297437359_1950110405_1 where name='xiaohe'
+```
 
 ## Examples
 Here are some examples you can refer to. Including the below connectors, you can connect every databases as long as it can be configured with it's JDBC driver.

@@ -69,6 +69,7 @@ import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.helium.HeliumPackage;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.InterpreterResultMessage;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
@@ -96,6 +97,7 @@ import org.apache.zeppelin.ticket.TicketContainer;
 import org.apache.zeppelin.types.InterpreterSettingsList;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.util.IdHashes;
+import org.apache.zeppelin.antlr.SqlSplitVisitor;
 import org.apache.zeppelin.utils.CorsUtils;
 import org.apache.zeppelin.utils.ServerUtils;
 import org.apache.zeppelin.utils.TestUtils;
@@ -405,6 +407,9 @@ public class NotebookServer implements AngularObjectRegistryListener,
           break;
         case PARAGRAPH_REMOVE:
           removeParagraph(conn, context, receivedMessage);
+          break;
+        case DEBUG_PARAGRAPH:
+          debugParagraph(conn, context, receivedMessage);
           break;
         case PARAGRAPH_CLEAR_OUTPUT:
           clearParagraphOutput(conn, context, receivedMessage);
@@ -1622,6 +1627,77 @@ public class NotebookServer implements AngularObjectRegistryListener,
                 new Message(OP.RUN_PARAGRAPH_USING_SPELL).put("paragraph", p), conn);
           }
         });
+  }
+
+  private void setResult(Paragraph p, int size, List<String> createTableList){
+    List<InterpreterResultMessage> resultMessageList = p.getReturn().message();
+    if (p.getReturn().code() == InterpreterResult.Code.SUCCESS){//success
+      if (resultMessageList.size() == size){
+        int successSize = 0;
+        for (InterpreterResultMessage interpreterResultMessage : resultMessageList){
+          if(interpreterResultMessage.equals("Query executed successfully. Affected rows : 1\n\n")){
+            successSize++;
+          }
+        }
+        if (successSize == size){
+          StringBuilder text = new StringBuilder("createTableSql\n");
+          for (String createTableSql : createTableList){
+            text.append(createTableSql + "\n");
+          }
+          InterpreterResult interpreterResult = new InterpreterResult(InterpreterResult.Code.SUCCESS, InterpreterResult.Type.TABLE, text.toString());
+          p.setResult(interpreterResult);
+        }
+      }
+    }
+  }
+
+  private void debugParagraph(NotebookSocket conn,
+                              ServiceContext context,
+                              Message fromMessage) throws IOException {
+    String paragraphId = (String) fromMessage.get("id");
+    String noteId = connectionManager.getAssociatedNoteId(conn);
+    String text = (String) fromMessage.get("paragraph");
+    //split
+    List<String> createTableList = SqlSplitVisitor.splitSql(text, paragraphId);
+    int size = createTableList.size();
+    StringBuilder sqlText = new StringBuilder();
+    for (String createTableSql : createTableList){
+      sqlText.append(createTableSql + "\n");
+    }
+    String title = (String) fromMessage.get("title");
+    Map<String, Object> params = (Map<String, Object>) fromMessage.get("params");
+    Map<String, Object> config = (Map<String, Object>) fromMessage.get("config");
+    String finalText = sqlText.toString();
+    getNotebook().processNote(noteId,
+      note -> {
+        getNotebookService().runParagraph(note, paragraphId, title, finalText, params, config, null,
+          false, false, context,
+          new WebSocketServiceCallback<Paragraph>(conn) {
+            @Override
+            public void onSuccess(Paragraph p, ServiceContext context)
+                throws IOException {
+              super.onSuccess(p, context);
+              //change result
+              setResult(p, size, createTableList);
+              if (p.getNote().isPersonalizedMode()) {
+                Paragraph p2 = p.getNote().clearPersonalizedParagraphOutput(paragraphId,
+                    context.getAutheInfo().getUser());
+                connectionManager.unicastParagraph(p.getNote(), p2, context.getAutheInfo().getUser(), fromMessage.msgId);
+              }
+
+              // if it's the last paragraph and not empty, let's add a new one
+              boolean isTheLastParagraph = p.getNote().isLastParagraph(paragraphId);
+              if (!(StringUtils.isEmpty(p.getText()) ||
+                StringUtils.isEmpty(p.getScriptText())) &&
+                  isTheLastParagraph) {
+                Paragraph newPara = p.getNote().addNewParagraph(p.getAuthenticationInfo());
+                broadcastNewParagraph(p.getNote(), newPara);
+              }
+            }
+          });
+        return null;
+      });
+
   }
 
   private void runParagraph(NotebookSocket conn,

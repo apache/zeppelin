@@ -330,6 +330,44 @@ export class NotebookParagraphComponent extends ParagraphBase implements OnInit,
     }
   }
 
+  debugParagraph(paragraphText?: string, propagated: boolean = false) {
+    const text = paragraphText || this.paragraph.text;
+    if (text && !this.isParagraphRunning) {
+      const magic = SpellResult.extractMagic(text);
+
+      if (this.heliumService.getSpellByMagic(magic)) {
+        this.runParagraphUsingSpell(text, magic, propagated);
+        this.runParagraphAfter(text);
+      } else {
+        const check = this.ngTemplateAdapterService.preCheck(text);
+        if (!check) {
+          this.debugParagraphUsingBackendInterpreter(text);
+          this.runParagraphAfter(text);
+        } else {
+          this.waitConfirmFromEdit = true;
+          this.nzModalService
+            .confirm({
+              nzTitle: 'Do you want to migrate the Angular.js template?',
+              nzContent:
+                'The Angular.js template has been deprecated, please upgrade to Angular template.' +
+                ' (<a href="https://angular.io/guide/ajs-quick-reference" target="_blank">more info</a>)',
+              nzOnOk: () => {
+                this.switchMode('command');
+                this.ngTemplateAdapterService
+                  .openMigrationDialog(check)
+                  .pipe(takeUntil(this.destroy$))
+                  .subscribe(newText => {
+                    this.cloneParagraph('below', newText);
+                  });
+              }
+            })
+            .afterClose.pipe(takeUntil(this.destroy$))
+            .subscribe(() => (this.waitConfirmFromEdit = false));
+        }
+      }
+    }
+  }
+
   insertParagraph(position: string) {
     if (this.revisionView === true) {
       return;
