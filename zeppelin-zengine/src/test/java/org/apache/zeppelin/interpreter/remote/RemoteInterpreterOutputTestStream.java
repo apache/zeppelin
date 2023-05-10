@@ -23,15 +23,15 @@ import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.thrift.ParagraphInfo;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
 /**
@@ -43,13 +43,13 @@ public class RemoteInterpreterOutputTestStream extends AbstractInterpreterTest
 
   private InterpreterSetting interpreterSetting;
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     super.setUp();
     interpreterSetting = interpreterSettingManager.get("test");
   }
 
-  @After
+  @AfterEach
   public void tearDown() throws Exception {
     interpreterSetting.close();
   }

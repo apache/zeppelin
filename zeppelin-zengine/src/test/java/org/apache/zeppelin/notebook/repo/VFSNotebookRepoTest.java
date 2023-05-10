@@ -24,9 +24,9 @@ import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.user.AuthenticationInfo;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -35,7 +35,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class VFSNotebookRepoTest {
 
@@ -43,7 +43,7 @@ public class VFSNotebookRepoTest {
   private VFSNotebookRepo notebookRepo;
   private File notebookDir;
 
-  @Before
+  @BeforeEach
   public void setUp() throws IOException {
     notebookDir = Files.createTempDirectory("notebookDir").toFile();
     System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_DIR.getVarName(),
@@ -53,7 +53,7 @@ public class VFSNotebookRepoTest {
     notebookRepo.init(zConf);
   }
 
-  @After
+  @AfterEach
   public void tearDown() throws IOException {
     FileUtils.deleteDirectory(notebookDir);
   }

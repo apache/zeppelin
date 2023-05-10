@@ -17,10 +17,10 @@
 package org.apache.zeppelin.helium;
 
 import static org.apache.zeppelin.helium.HeliumBundleFactory.HELIUM_LOCAL_REPO;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.github.eirslett.maven.plugins.frontend.lib.InstallationException;
 import com.github.eirslett.maven.plugins.frontend.lib.TaskRunnerException;
@@ -32,16 +32,16 @@ import java.util.LinkedList;
 import java.util.List;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class HeliumBundleFactoryTest {
   private HeliumBundleFactory hbf;
   private File nodeInstallationDir;
   private String zeppelinHomePath;
 
-  @Before
+  @BeforeEach
   public void setUp() throws InstallationException, TaskRunnerException, IOException {
     zeppelinHomePath = System.getProperty(ConfVars.ZEPPELIN_HOME.getVarName());
     System.setProperty(ConfVars.ZEPPELIN_HOME.getVarName(), "../");
@@ -55,7 +55,7 @@ public class HeliumBundleFactoryTest {
     hbf.copyFrameworkModulesToInstallPath(true);
   }
 
-  @After
+  @AfterEach
   public void tearDown() throws IOException {
     if (null != zeppelinHomePath) {
       System.setProperty(ConfVars.ZEPPELIN_HOME.getVarName(), zeppelinHomePath);

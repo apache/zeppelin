@@ -17,19 +17,20 @@
 
 package org.apache.zeppelin.util;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class UtilTest {
 
     @Test
     public void getVersionTest() {
-        Assertions.assertNotNull(Util.getVersion());
+        assertNotNull(Util.getVersion());
     }
 
     @Test
     public void getGitInfoTest() {
-        Assertions.assertNotNull(Util.getGitCommitId());
-        Assertions.assertNotNull(Util.getGitTimestamp());
+        assertNotNull(Util.getGitCommitId());
+        assertNotNull(Util.getGitTimestamp());
     }
 }

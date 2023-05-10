@@ -17,8 +17,8 @@
 
 package org.apache.zeppelin.notebook.repo;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 
 import com.google.common.io.Files;
@@ -44,9 +44,9 @@ import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.storage.ConfigStorage;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,7 +67,7 @@ public class NotebookRepoSyncTest {
   private AuthorizationService authorizationService;
   private static final Logger LOG = LoggerFactory.getLogger(NotebookRepoSyncTest.class);
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     System.setProperty("zeppelin.isTest", "true");
     ZEPPELIN_HOME = Files.createTempDir();
@@ -104,7 +104,7 @@ public class NotebookRepoSyncTest {
     anonymous = new AuthenticationInfo("anonymous");
   }
 
-  @After
+  @AfterEach
   public void tearDown() throws Exception {
     delete(ZEPPELIN_HOME);
     System.clearProperty("zeppelin.isTest");

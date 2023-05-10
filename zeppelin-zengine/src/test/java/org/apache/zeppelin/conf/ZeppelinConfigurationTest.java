@@ -18,25 +18,24 @@ package org.apache.zeppelin.conf;
 
 
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import java.net.MalformedURLException;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ZeppelinConfigurationTest {
-  @BeforeClass
+  @BeforeAll
   public static void clearSystemVariables() {
     ZeppelinConfiguration.reset();
   }
 
-  @After
+  @AfterEach
   public void cleanup() {
     ZeppelinConfiguration.reset();
   }
@@ -46,9 +45,9 @@ public class ZeppelinConfigurationTest {
 
     ZeppelinConfiguration conf = ZeppelinConfiguration.create("test-zeppelin-site2.xml");
     List<String> origins = conf.getAllowedOrigins();
-    Assert.assertEquals(2, origins.size());
-    Assert.assertEquals("http://onehost:8080", origins.get(0));
-    Assert.assertEquals("http://otherhost.com", origins.get(1));
+    assertEquals(2, origins.size());
+    assertEquals("http://onehost:8080", origins.get(0));
+    assertEquals("http://otherhost.com", origins.get(1));
   }
 
   @Test
@@ -56,8 +55,8 @@ public class ZeppelinConfigurationTest {
 
     ZeppelinConfiguration conf = ZeppelinConfiguration.create("test-zeppelin-site1.xml");
     List<String> origins = conf.getAllowedOrigins();
-    Assert.assertEquals(1, origins.size());
-    Assert.assertEquals("http://onehost:8080", origins.get(0));
+    assertEquals(1, origins.size());
+    assertEquals("http://onehost:8080", origins.get(0));
   }
 
   @Test
@@ -65,7 +64,7 @@ public class ZeppelinConfigurationTest {
 
     ZeppelinConfiguration conf = ZeppelinConfiguration.create("zeppelin-test-site.xml");
     List<String> origins = conf.getAllowedOrigins();
-    Assert.assertEquals(1, origins.size());
+    assertEquals(1, origins.size());
   }
 
   @Test
@@ -73,7 +72,7 @@ public class ZeppelinConfigurationTest {
 
     ZeppelinConfiguration conf = ZeppelinConfiguration.create("zeppelin-test-site.xml");
     Boolean isIt = conf.isWindowsPath("c:\\test\\file.txt");
-    Assert.assertTrue(isIt);
+    assertTrue(isIt);
   }
 
   @Test
@@ -81,7 +80,7 @@ public class ZeppelinConfigurationTest {
 
     ZeppelinConfiguration conf = ZeppelinConfiguration.create("zeppelin-test-site.xml");
     Boolean isIt = conf.isWindowsPath("~/test/file.xml");
-    Assert.assertFalse(isIt);
+    assertFalse(isIt);
   }
 
   @Test
@@ -89,7 +88,7 @@ public class ZeppelinConfigurationTest {
 
     ZeppelinConfiguration conf = ZeppelinConfiguration.create("zeppelin-test-site.xml");
     Boolean isIt = conf.isPathWithScheme("hdfs://hadoop.example.com/zeppelin/notebook");
-    Assert.assertTrue(isIt);
+    assertTrue(isIt);
   }
 
   @Test
@@ -97,7 +96,7 @@ public class ZeppelinConfigurationTest {
 
     ZeppelinConfiguration conf = ZeppelinConfiguration.create("zeppelin-test-site.xml");
     Boolean isIt = conf.isPathWithScheme("~/test/file.xml");
-    Assert.assertFalse(isIt);
+    assertFalse(isIt);
   }
 
   @Test
@@ -105,7 +104,7 @@ public class ZeppelinConfigurationTest {
 
     ZeppelinConfiguration conf = ZeppelinConfiguration.create("zeppelin-test-site.xml");
     Boolean isIt = conf.isPathWithScheme("c:\\test\\file.txt");
-    Assert.assertFalse(isIt);
+    assertFalse(isIt);
   }
 
   @Test
@@ -127,8 +126,8 @@ public class ZeppelinConfigurationTest {
   public void getPathTest() {
     ZeppelinConfiguration conf = ZeppelinConfiguration.create("zeppelin-test-site.xml");
     conf.setProperty(ConfVars.ZEPPELIN_HOME.getVarName(), "/usr/lib/zeppelin");
-    Assert.assertEquals("/usr/lib/zeppelin", conf.getZeppelinHome());
-    Assert.assertEquals("/usr/lib/zeppelin/conf", conf.getConfDir());
+    assertEquals("/usr/lib/zeppelin", conf.getZeppelinHome());
+    assertEquals("/usr/lib/zeppelin/conf", conf.getConfDir());
   }
 
   @Test

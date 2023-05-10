@@ -18,23 +18,23 @@ package org.apache.zeppelin.helium;
 
 import com.github.eirslett.maven.plugins.frontend.lib.TaskRunnerException;
 import org.apache.commons.io.FileUtils;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class HeliumTest {
   private File tmpDir;
   private File localRegistryPath;
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     tmpDir = new File(System.getProperty("java.io.tmpdir") + "/ZeppelinLTest_" + System.currentTimeMillis());
     tmpDir.mkdirs();
@@ -42,7 +42,7 @@ public class HeliumTest {
     localRegistryPath.mkdirs();
   }
 
-  @After
+  @AfterEach
   public void tearDown() throws IOException {
     FileUtils.deleteDirectory(tmpDir);
   }
