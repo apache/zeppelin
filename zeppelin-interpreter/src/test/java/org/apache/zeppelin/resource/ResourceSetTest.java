@@ -16,17 +16,17 @@
  */
 package org.apache.zeppelin.resource;
 
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import static org.junit.Assert.assertEquals;
+import org.junit.jupiter.api.Test;
 
 /**
  * Unit test for ResourceSet
  */
-public class ResourceSetTest {
+class ResourceSetTest {
 
   @Test
-  public void testFilterByName() {
+  void testFilterByName() {
     ResourceSet set = new ResourceSet();
 
     set.add(new Resource(null, new ResourceId("poo1", "resource1"), "value1"));
@@ -39,7 +39,7 @@ public class ResourceSetTest {
   }
 
   @Test
-  public void testFilterByClassName() {
+  void testFilterByClassName() {
     ResourceSet set = new ResourceSet();
 
     set.add(new Resource(null, new ResourceId("poo1", "resource1"), "value1"));

@@ -19,20 +19,20 @@ package org.apache.zeppelin.cluster;
 import org.apache.zeppelin.cluster.meta.ClusterMetaType;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterUtils;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 public class ClusterMultiNodeTest {
   private static Logger LOGGER = LoggerFactory.getLogger(ClusterMultiNodeTest.class);
@@ -43,8 +43,8 @@ public class ClusterMultiNodeTest {
 
   static final String metaKey = "ClusterMultiNodeTestKey";
 
-  @BeforeClass
-  public static void startCluster() throws IOException, InterruptedException {
+  @BeforeAll
+  static void startCluster() throws IOException, InterruptedException {
     LOGGER.info("startCluster >>>");
 
     String clusterAddrList = "";
@@ -109,8 +109,8 @@ public class ClusterMultiNodeTest {
     getClusterServerMeta();
   }
 
-  @AfterClass
-  public static void stopCluster() {
+  @AfterAll
+  static void stopCluster() {
     LOGGER.info("stopCluster >>>");
     if (null != clusterClient) {
       clusterClient.shutdown();

@@ -21,34 +21,34 @@ import org.apache.commons.io.FileUtils;
 import org.apache.zeppelin.dep.DependencyResolver;
 import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.resource.LocalResourcePool;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
-public class ApplicationLoaderTest {
+class ApplicationLoaderTest {
   private File tmpDir;
 
-  @Before
-  public void setUp() {
+  @BeforeEach
+  void setUp() {
     tmpDir = new File(System.getProperty("java.io.tmpdir") + "/ZeppelinLTest_" +
         System.currentTimeMillis());
     tmpDir.mkdirs();
   }
 
-  @After
-  public void tearDown() throws IOException {
+  @AfterEach
+  void tearDown() throws IOException {
     FileUtils.deleteDirectory(tmpDir);
   }
 
   @Test
-  public void loadUnloadApplication() throws Exception {
+  void loadUnloadApplication() throws Exception {
     // given
     LocalResourcePool resourcePool = new LocalResourcePool("pool1");
     DependencyResolver dep = new DependencyResolver(tmpDir.getAbsolutePath());

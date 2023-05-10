@@ -17,15 +17,15 @@
 
 package org.apache.zeppelin.interpreter;
 
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import org.junit.jupiter.api.Test;
 
-public class InterpreterContextTest {
+class InterpreterContextTest {
 
   @Test
-  public void testThreadLocal() {
+  void testThreadLocal() {
     InterpreterContext.remove();
     assertNull(InterpreterContext.get());
 
