@@ -32,7 +32,7 @@ import java.util.Properties;
 
 import static org.apache.zeppelin.markdown.FlexmarkParser.wrapWithMarkdownClassDiv;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 public class FlexmarkParserTest {
 
