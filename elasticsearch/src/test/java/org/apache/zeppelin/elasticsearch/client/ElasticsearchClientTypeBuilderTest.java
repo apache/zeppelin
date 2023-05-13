@@ -23,7 +23,7 @@ import static org.apache.zeppelin.elasticsearch.client.ElasticsearchClientType.H
 import static org.apache.zeppelin.elasticsearch.client.ElasticsearchClientType.HTTPS;
 import static org.apache.zeppelin.elasticsearch.client.ElasticsearchClientType.TRANSPORT;
 import static org.apache.zeppelin.elasticsearch.client.ElasticsearchClientType.UNKNOWN;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
 public class ElasticsearchClientTypeBuilderTest {

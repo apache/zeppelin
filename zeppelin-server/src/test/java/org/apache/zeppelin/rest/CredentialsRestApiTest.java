@@ -23,7 +23,6 @@ import static org.junit.Assert.assertNull;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.util.Map;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;

@@ -16,20 +16,17 @@
  */
 package org.apache.zeppelin.rest;
 
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.util.EntityUtils;
-import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.utils.TestUtils;
 import org.hamcrest.Matcher;
@@ -37,6 +34,9 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 public class NotebookSecurityRestApiTest extends AbstractTestRestApi {
   Gson gson = new Gson();
