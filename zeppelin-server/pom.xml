@@ -45,6 +45,7 @@
     <!--test library versions-->
     <selenium.java.version>2.48.2</selenium.java.version>
     <xml.apis.version>1.4.01</xml.apis.version>
+    <hamcrest.version>2.2</hamcrest.version>
   </properties>
 
   <dependencies>
@@ -320,11 +321,11 @@
     </dependency>
 
     <dependency>
-      <groupId>org.junit.vintage</groupId>
-      <artifactId>junit-vintage-engine</artifactId>
+      <groupId>org.hamcrest</groupId>
+      <artifactId>hamcrest</artifactId>
+      <version>${hamcrest.version}</version>
       <scope>test</scope>
     </dependency>
-
 
     <dependency>
       <groupId>org.mockito</groupId>

@@ -17,8 +17,9 @@
 
 package org.apache.zeppelin.metric;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 
@@ -27,21 +28,21 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.util.EntityUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.rest.AbstractTestRestApi;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
-public class MetricEndpointTest extends AbstractTestRestApi {
+class MetricEndpointTest extends AbstractTestRestApi {
 
-  @BeforeClass
-  public static void setUp() throws Exception {
+  @BeforeAll
+  static void setUp() throws Exception {
     System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_METRIC_ENABLE_PROMETHEUS.getVarName(),
       "true");
     AbstractTestRestApi.startUp(MetricEndpointTest.class.getSimpleName());
   }
 
-  @AfterClass
-  public static void destroy() throws Exception {
+  @AfterAll
+  static void destroy() throws Exception {
     AbstractTestRestApi.shutDown();
   }
 
@@ -50,11 +51,11 @@ public class MetricEndpointTest extends AbstractTestRestApi {
    * @throws IOException
    */
   @Test
-  public void testPrometheusMetricJVM() throws IOException {
+  void testPrometheusMetricJVM() throws IOException {
     CloseableHttpResponse get = getHttpClient().execute(new HttpGet(getUrlToTest() + "/metrics"));
     assertEquals(200, get.getStatusLine().getStatusCode());
     String response = EntityUtils.toString(get.getEntity());
-    assertTrue("Contains JVM metric", response.contains("jvm_memory"));
+    assertTrue(response.contains("jvm_memory"), "Contains JVM metric");
     get.close();
   }
 

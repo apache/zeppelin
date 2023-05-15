@@ -16,41 +16,41 @@
  */
 package org.apache.zeppelin.ticket;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class TicketContainerTest {
+class TicketContainerTest {
   private TicketContainer container;
 
-  @Before
-  public void setUp() {
+  @BeforeEach
+  void setUp() {
     container = TicketContainer.instance;
   }
 
   @Test
-  public void isValidAnonymous() {
+  void isValidAnonymous() {
     boolean ok = container.isValid("anonymous", "anonymous");
     assertTrue(ok);
   }
 
   @Test
-  public void isValidExistingPrincipal() {
+  void isValidExistingPrincipal() {
     TicketContainer.Entry ticket = container.getTicketEntry("someuser1", null);
     boolean ok = container.isValid("someuser1", ticket.getTicket());
     assertTrue(ok);
   }
 
   @Test
-  public void isValidNonExistingPrincipal() {
+  void isValidNonExistingPrincipal() {
     boolean ok = container.isValid("unknownuser", "someticket");
     assertFalse(ok);
   }
 
   @Test
-  public void isValidunkownTicket() {
+  void isValidunkownTicket() {
     TicketContainer.Entry ticketEntry = container.getTicketEntry("someuser2", null);
     boolean ok = container.isValid("someuser2", ticketEntry.getTicket() + "makeitinvalid");
     assertFalse(ok);

@@ -25,30 +25,30 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
 
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.rest.AbstractTestRestApi;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class RequestHeaderSizeTest extends AbstractTestRestApi {
+class RequestHeaderSizeTest extends AbstractTestRestApi {
   private static final int REQUEST_HEADER_MAX_SIZE = 20000;
 
-  @Before
-  public void startZeppelin() throws Exception {
+  @BeforeEach
+  void startZeppelin() throws Exception {
     System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_SERVER_JETTY_REQUEST_HEADER_SIZE
             .getVarName(), String.valueOf(REQUEST_HEADER_MAX_SIZE));
     startUp(RequestHeaderSizeTest.class.getSimpleName());
   }
 
-  @After
-  public void stopZeppelin() throws Exception {
+  @AfterEach
+  void stopZeppelin() throws Exception {
     shutDown();
   }
 
   @Test
-  public void increased_request_header_size_do_not_cause_431_when_request_size_is_over_8K()
+  void increased_request_header_size_do_not_cause_431_when_request_size_is_over_8K()
       throws Exception {
     CloseableHttpClient client = HttpClients.createDefault();
     HttpGet httpGet = new HttpGet(getUrlToTest() + "/version");

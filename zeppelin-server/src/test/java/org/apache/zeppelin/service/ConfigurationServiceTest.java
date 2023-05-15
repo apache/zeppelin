@@ -20,25 +20,23 @@ package org.apache.zeppelin.service;
 
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.rest.AbstractTestRestApi;
-import org.apache.zeppelin.server.ZeppelinServer;
-import org.apache.zeppelin.socket.NotebookServer;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.utils.TestUtils;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Map;
 
-import static junit.framework.TestCase.assertTrue;
-import static org.junit.Assert.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 
-public class ConfigurationServiceTest extends AbstractTestRestApi {
+class ConfigurationServiceTest extends AbstractTestRestApi {
 
   private static ConfigurationService configurationService;
 
@@ -47,21 +45,21 @@ public class ConfigurationServiceTest extends AbstractTestRestApi {
 
   private ServiceCallback callback = mock(ServiceCallback.class);
 
-  @BeforeClass
-  public static void setUp() throws Exception {
+  @BeforeAll
+  static void setUp() throws Exception {
     System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HELIUM_REGISTRY.getVarName(),
         "helium");
     AbstractTestRestApi.startUp(ConfigurationServiceTest.class.getSimpleName());
     configurationService = TestUtils.getInstance(ConfigurationService.class);
   }
 
-  @AfterClass
-  public static void destroy() throws Exception {
+  @AfterAll
+  static void destroy() throws Exception {
     AbstractTestRestApi.shutDown();
   }
 
   @Test
-  public void testFetchConfiguration() throws IOException {
+  void testFetchConfiguration() throws IOException {
     Map<String, String> properties = configurationService.getAllProperties(context, callback);
     verify(callback).onSuccess(properties, context);
     for (Map.Entry<String, String> entry : properties.entrySet()) {
