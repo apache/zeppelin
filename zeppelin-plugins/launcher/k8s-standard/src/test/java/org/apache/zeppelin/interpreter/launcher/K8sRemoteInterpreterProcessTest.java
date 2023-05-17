@@ -125,7 +125,7 @@ class K8sRemoteInterpreterProcessTest {
     assertEquals("12321:12321" , p.get("zeppelin.k8s.interpreter.rpc.portRange"));
     assertEquals("zeppelin.server.service" , p.get("zeppelin.k8s.server.rpc.service"));
     assertEquals(12320 , p.get("zeppelin.k8s.server.rpc.portRange"));
-    assertEquals("zeppelin", p.get("zeppelin.k8s.interpreter.user"));
+    assertNull(p.get("zeppelin.k8s.interpreter.user"));
     assertEquals("v1", p.get("my.key1"));
     assertEquals("V1", envs.get("MY_ENV1"));
 
