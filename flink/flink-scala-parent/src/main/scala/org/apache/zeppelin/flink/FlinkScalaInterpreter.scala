@@ -65,7 +65,7 @@ import scala.tools.nsc.interpreter.{Completion, IMain, IR, JPrintWriter, Results
  * @param properties
  */
 abstract class FlinkScalaInterpreter(val properties: Properties,
-                                     val flinkScalaClassLoader: URLClassLoader) {
+                                     val flinkScalaClassLoader: ClassLoader) {
 
   private lazy val LOGGER: Logger = LoggerFactory.getLogger(getClass)
 
