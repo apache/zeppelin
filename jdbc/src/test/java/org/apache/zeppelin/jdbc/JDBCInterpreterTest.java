@@ -187,6 +187,35 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
   }
 
   @Test
+  public void testComplexSelectQuery() throws IOException, InterpreterException {
+    Properties properties = new Properties();
+    properties.setProperty("common.max_count", "1000");
+    properties.setProperty("common.max_retry", "3");
+    properties.setProperty("default.driver", "org.h2.Driver");
+    properties.setProperty("default.url", getJdbcConnection());
+    properties.setProperty("default.user", "");
+    properties.setProperty("default.password", "");
+    JDBCInterpreter t = new JDBCInterpreter(properties);
+    t.open();
+
+    String sqlQuery1 = "select * from test_table WHERE ID in ('a', 'b'); ";
+    InterpreterResult interpreterResult1 = t.interpret(sqlQuery1, context);
+    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult1.code());
+    assertEquals(0, t.getLruCache().size());
+
+    String sqlQuery2 = "select * from (select id,count(*) as cnt from test_table group by id) t WHERE ID = 'a'; ";
+    InterpreterResult interpreterResult2 = t.interpret(sqlQuery2, context);
+    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult2.code());
+    assertEquals(1, t.getLruCache().size());
+
+    String sqlQuery3 = "select * from (select id,count(*) as cnt from test_table group by id) t WHERE ID = 'b'; ";
+    InterpreterResult interpreterResult3 = t.interpret(sqlQuery3, context);
+    assertEquals(1, t.getLruCache().size());
+    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult3.code());
+
+  }
+
+  @Test
   public void testSelectQuery() throws IOException, InterpreterException {
     Properties properties = new Properties();
     properties.setProperty("common.max_count", "1000");

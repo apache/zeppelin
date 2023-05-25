@@ -296,6 +296,22 @@ public class ZeppelinConfiguration {
     return getString(ConfVars.ZEPPELIN_HOME);
   }
 
+  public String getZeppelinTmpDbNamePrefix() {
+    return getString(ConfVars.ZEPPELIN_TMP_DB_NAME_PREFIX);
+  }
+
+  public String getZeppelinTmpTableNamePrefix() {
+    return getString(ConfVars.ZEPPELIN_TMP_TABLE_NAME_PREFIX);
+  }
+
+  public String getZeppelinTmpSqlPrefix() {
+    return getString(ConfVars.ZEPPELIN_TMP_SQL_PREFIX);
+  }
+
+  public int getZeppelinTmpTableCacheThreshold() {
+    return getInt(ConfVars.ZEPPELIN_TMP_TABLE_CACHE_THRESHOLD);
+  }
+
   public boolean useSsl() {
     return getBoolean(ConfVars.ZEPPELIN_SSL);
   }
@@ -1119,7 +1135,13 @@ public class ZeppelinConfiguration {
     ZEPPELIN_SPARK_ONLY_YARN_CLUSTER("zeppelin.spark.only_yarn_cluster", false),
     ZEPPELIN_SESSION_CHECK_INTERVAL("zeppelin.session.check_interval", 60 * 10 * 1000),
     ZEPPELIN_NOTE_CACHE_THRESHOLD("zeppelin.note.cache.threshold", 50),
-    ZEPPELIN_NOTE_FILE_EXCLUDE_FIELDS("zeppelin.note.file.exclude.fields", "");
+    ZEPPELIN_NOTE_FILE_EXCLUDE_FIELDS("zeppelin.note.file.exclude.fields", ""),
+
+    ZEPPELIN_TMP_DB_NAME_PREFIX("zeppelin.tmp.db.name.prefix", "tmp_zeppelin_db_"),
+    ZEPPELIN_TMP_TABLE_NAME_PREFIX("zeppelin.tmp.table.name.prefix", "tmp_zeppelin_table_"),
+    ZEPPELIN_TMP_SQL_PREFIX("zeppelin.tmp.sql.prefix", "select * from "),
+    ZEPPELIN_TMP_TABLE_CACHE_THRESHOLD("zeppelin.tmp.table.cache.threshold", 10000);
+
 
     private String varName;
     private Class<?> varClass;
