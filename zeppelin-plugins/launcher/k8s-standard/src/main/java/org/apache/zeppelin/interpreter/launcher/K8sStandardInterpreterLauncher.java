@@ -104,24 +104,23 @@ public class K8sStandardInterpreterLauncher extends InterpreterLauncher {
   @Override
   public InterpreterClient launchDirectly(InterpreterLaunchContext context) throws IOException {
     LOGGER.info("Launching Interpreter: {}", context.getInterpreterSettingGroup());
-    this.properties = context.getProperties();
 
     return new K8sRemoteInterpreterProcess(
             client,
-            K8sUtils.getInterpreterNamespace(properties, zConf),
+            K8sUtils.getInterpreterNamespace(context.getProperties(), zConf),
             new File(zConf.getK8sTemplatesDir(), "interpreter"),
             zConf.getK8sContainerImage(),
             context.getInterpreterGroupId(),
             context.getInterpreterSettingGroup(),
             context.getInterpreterSettingName(),
-            properties,
+            context.getProperties(),
             buildEnvFromProperties(context),
             getZeppelinService(context),
             getZeppelinServiceRpcPort(context),
             zConf.getK8sPortForward(),
             zConf.getK8sSparkContainerImage(),
-            getConnectTimeout(),
-            getConnectPoolSize(),
+            getConnectTimeout(context),
+            getConnectPoolSize(context),
             isUserImpersonateForSparkInterpreter(context),
             zConf.getK8sTimeoutDuringPending());
   }
