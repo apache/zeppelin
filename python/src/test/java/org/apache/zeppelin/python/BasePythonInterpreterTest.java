@@ -339,6 +339,25 @@ public abstract class BasePythonInterpreterTest extends ConcurrentTestCase {
             "%html <strong>1</strong>\t2\tb\n" +
             "%html <strong>2</strong>\t3\tc\n", interpreterResultMessages.get(0).getData());
 
+    // z.show(df, show_index=True), index is timestamp
+    context = getInterpreterContext();
+    result = interpreter.interpret("import pandas as pd\n" +
+                    "idx = pd.date_range('20230530', periods=3, freq='D')\n" +
+                    "df = pd.DataFrame({'name':['a','b','c']}, index= idx)\n" +
+                    "z.show(df, show_index=True)",
+            context);
+    assertEquals(context.out.toInterpreterResultMessage().toString(),
+            InterpreterResult.Code.SUCCESS, result.code());
+    interpreterResultMessages = context.out.toInterpreterResultMessage();
+    assertEquals(1, interpreterResultMessages.size());
+    assertEquals(InterpreterResult.Type.TABLE, interpreterResultMessages.get(0).getType());
+    assertEquals("\tname\n" +
+            "%html <strong>2023-05-30T00:00:00.000000000</strong>\ta\n" +
+            "%html <strong>2023-05-31T00:00:00.000000000</strong>\tb\n" +
+            "%html <strong>2023-06-01T00:00:00.000000000</strong>\tc\n",
+            interpreterResultMessages.get(0).getData());
+
+
     // z.show(matplotlib)
     context = getInterpreterContext();
     result = interpreter.interpret("import matplotlib.pyplot as plt\n" +
