@@ -220,10 +220,9 @@ class PyZeppelinContext(object):
                 body_buf.write("\t")
                 body_buf.write(self.normalizeColumn(str(cell)))
             # don't print '\n' after the last row
-            with warnings.catch_warnings():
-                warnings.simplefilter("ignore", category=DeprecationWarning)
-                if idx != (rowNumber - 1):
-                    body_buf.write("\n")
+            rowNumber -=1
+            if rowNumber != 0:
+                body_buf.write("\n")
         body_buf.seek(0)
         header_buf.seek(0)
         print("%table " + header_buf.read() + body_buf.read())
