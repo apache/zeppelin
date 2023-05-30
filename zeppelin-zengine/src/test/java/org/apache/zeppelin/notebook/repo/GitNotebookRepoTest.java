@@ -399,4 +399,96 @@ public class GitNotebookRepoTest {
     returnedNote = notebookRepo.setNoteRevision(note.getId(), note.getPath(), "nonexistent_id", null);
     assertNull(returnedNote);
   }
+
+  @Test
+  public void moveNoteTest() throws IOException, GitAPIException {
+    //given
+    notebookRepo = new GitNotebookRepo(conf);
+    notebookRepo.checkpoint(TEST_NOTE_ID, TEST_NOTE_PATH, "first commit, note1", null);
+
+    //when
+    final String NOTE_FILENAME = TEST_NOTE_PATH.substring(TEST_NOTE_PATH.lastIndexOf("/") + 1);
+    final String MOVE_DIR = "/move";
+    final String TEST_MOVE_PATH = MOVE_DIR + "/" + NOTE_FILENAME;
+    new File(notebooksDir + MOVE_DIR).mkdirs();
+    notebookRepo.move(TEST_NOTE_ID, TEST_NOTE_PATH, TEST_MOVE_PATH, null);
+
+    //then
+    assertFileIsMoved();
+  }
+
+  @Test
+  public void moveFolderTest() throws IOException, GitAPIException {
+    //given
+    notebookRepo = new GitNotebookRepo(conf);
+    notebookRepo.checkpoint(TEST_NOTE_ID, TEST_NOTE_PATH, "first commit, note1", null);
+    notebookRepo.checkpoint(TEST_NOTE_ID2, TEST_NOTE_PATH2, "second commit, note2", null);
+
+    //when
+    final String NOTE_DIR = TEST_NOTE_PATH.substring(0, TEST_NOTE_PATH.lastIndexOf("/"));
+    final String MOVE_DIR = "/move";
+    new File(notebooksDir + MOVE_DIR).mkdirs();
+    notebookRepo.move(NOTE_DIR, MOVE_DIR, null);
+
+    //then
+    assertFileIsMoved();
+  }
+
+  @Test
+  public void removeNoteTest() throws IOException, GitAPIException {
+    //given
+    notebookRepo = new GitNotebookRepo(conf);
+    notebookRepo.checkpoint(TEST_NOTE_ID, TEST_NOTE_PATH, "first commit, note1", null);
+
+    //when
+    notebookRepo.remove(TEST_NOTE_ID, TEST_NOTE_PATH, null);
+
+    //then
+    assertFileIsDeleted();
+  }
+
+  @Test
+  public void removeFolderTest() throws IOException, GitAPIException {
+    //given
+    notebookRepo = new GitNotebookRepo(conf);
+    notebookRepo.checkpoint(TEST_NOTE_ID, TEST_NOTE_PATH, "first commit, note1", null);
+
+    //when
+    final String NOTE_DIR = TEST_NOTE_PATH.substring(0, TEST_NOTE_PATH.lastIndexOf("/"));
+    notebookRepo.remove(NOTE_DIR, null);
+
+    //then
+    assertFileIsDeleted();
+  }
+
+  private void assertFileIsMoved() throws IOException, GitAPIException {
+    Git git = notebookRepo.getGit();
+    RevCommit latestCommit = git.log().call().iterator().next();
+    ObjectId treeId = latestCommit.getTree().getId();
+    Repository repository = git.getRepository();
+
+    try (TreeWalk treeWalk = new TreeWalk(repository)) {
+      treeWalk.reset(treeId);
+      treeWalk.next();
+      RevCommit previousCommit = latestCommit.getParent(0);
+      try (TreeWalk previousTreeWalk = new TreeWalk(repository)) {
+        previousTreeWalk.reset(previousCommit.getTree());
+        previousTreeWalk.next();
+        assertNotEquals(treeWalk.getPathString(), previousTreeWalk.getPathString());
+        assertEquals(treeWalk.getObjectId(0), previousTreeWalk.getObjectId(0));
+      }
+    }
+  }
+
+  private void assertFileIsDeleted() throws IOException, GitAPIException {
+    Git git = notebookRepo.getGit();
+    RevCommit latestCommit = git.log().call().iterator().next();
+    ObjectId treeId = latestCommit.getTree().getId();
+    Repository repository = git.getRepository();
+
+    try (TreeWalk treeWalk = new TreeWalk(repository)) {
+      treeWalk.reset(treeId);
+      assertFalse(treeWalk.next());
+    }
+  }
 }
