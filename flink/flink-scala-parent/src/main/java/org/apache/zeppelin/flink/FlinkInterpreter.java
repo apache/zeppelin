@@ -90,7 +90,7 @@ public class FlinkInterpreter extends Interpreter {
     Class<?> clazz = Class.forName(innerIntpClassName);
 
     return (FlinkScalaInterpreter)
-            clazz.getConstructor(Properties.class, URLClassLoader.class)
+            clazz.getConstructor(Properties.class, ClassLoader.class)
                     .newInstance(getProperties(), flinkScalaClassLoader);
   }
 
