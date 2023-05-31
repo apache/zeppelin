@@ -41,6 +41,7 @@
     <sisu.plexus.version>0.3.4</sisu.plexus.version>
     <jline.version>2.14.3</jline.version>
     <atomix.version>3.0.0-rc5</atomix.version>
+    <antlr4.version>4.7.2</antlr4.version>
   </properties>
 
   <dependencies>
@@ -212,6 +213,12 @@
       <artifactId>mockito-core</artifactId>
       <scope>test</scope>
     </dependency>
+
+    <dependency>
+      <groupId>org.antlr</groupId>
+      <artifactId>antlr4-runtime</artifactId>
+      <version>${antlr4.version}</version>
+    </dependency>
   </dependencies>
 
   <build>
@@ -235,6 +242,22 @@
           <failOnNoGitDirectory>false</failOnNoGitDirectory>
           <dateFormat>yyyy-MM-dd HH:mm:ss</dateFormat>
         </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.antlr</groupId>
+        <artifactId>antlr4-maven-plugin</artifactId>
+        <version>${antlr4.version}</version>
+        <configuration>
+          <visitor>true</visitor>
+        </configuration>
+        <executions>
+          <execution>
+            <id>antlr</id>
+            <goals>
+              <goal>antlr4</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
 
