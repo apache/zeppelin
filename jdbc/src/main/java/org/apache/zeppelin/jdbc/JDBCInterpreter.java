@@ -31,11 +31,15 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.alias.CredentialProvider;
 import org.apache.hadoop.security.alias.CredentialProviderFactory;
+import org.apache.zeppelin.antlr.ComplexSqlSplitVisitor;
+import org.apache.zeppelin.antlr.ComplexSqlVisitor;
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.SingleRowInterpreterResult;
 import org.apache.zeppelin.interpreter.ZeppelinContext;
 import org.apache.zeppelin.interpreter.util.SqlSplitter;
 import org.apache.zeppelin.jdbc.hive.HiveUtils;
 import org.apache.zeppelin.tabledata.TableDataUtils;
+import org.apache.zeppelin.util.DateUtil;
 import org.apache.zeppelin.util.PropertiesUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,6 +60,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.LinkedHashMap;
+import java.util.Collections;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -167,12 +173,21 @@ public class JDBCInterpreter extends KerberosInterpreter {
   private Map<String, Boolean> isFirstRefreshMap = new HashMap<>();
   private Map<String, Boolean> paragraphCancelMap = new HashMap<>();
 
+  private ZeppelinConfiguration conf;
+  private Map<String, String> lruCache;
+
   public JDBCInterpreter(Properties property) {
     super(property);
     jdbcUserConfigurationsMap = new HashMap<>();
     basePropertiesMap = new HashMap<>();
     sqlCompletersMap = new HashMap<>();
     maxLineResults = MAX_LINE_DEFAULT;
+    conf = ZeppelinConfiguration.create();
+    lruCache = Collections.synchronizedMap(new LRUCache());
+  }
+
+  public Map<String, String> getLruCache() {
+    return lruCache;
   }
 
   @Override
@@ -809,6 +824,32 @@ public class JDBCInterpreter extends KerberosInterpreter {
             HiveUtils.startHiveMonitorThread(statement, context,
                     Boolean.parseBoolean(getProperty("hive.log.display", "true")), this);
           }
+          if (ComplexSqlVisitor.isComplexSql(sqlToExecute)) {
+            //complex sql
+            String targetSql = ComplexSqlSplitVisitor.getComplexSql(sqlToExecute);
+            if (lruCache.containsKey(targetSql)) {
+              //lru cache search find
+              sqlToExecute = sqlToExecute.replace(targetSql, conf.getZeppelinTmpSqlPrefix() + lruCache.get(targetSql));
+            } else {
+              //not find
+              String dataBaseName = conf.getZeppelinTmpDbNamePrefix() + DateUtil.getCurrentDateZero();
+              String tableName = conf.getZeppelinTmpTableNamePrefix() + System.currentTimeMillis();
+              String tableFullName = dataBaseName + "." + tableName;
+              String newScript;
+              if (driver.equals("org.h2.Driver")) {
+                newScript = "CREATE schema IF NOT EXISTS " + dataBaseName + ";create table " + tableFullName + " as "+ targetSql;
+              } else {
+                newScript = "CREATE database IF NOT EXISTS " + dataBaseName + ";create table " + tableFullName + " as "+ targetSql;
+              }
+              try {
+                statement.execute(newScript);
+                sqlToExecute = sqlToExecute.replace(targetSql, conf.getZeppelinTmpSqlPrefix() + tableFullName);
+                lruCache.put(targetSql, tableFullName);
+              } catch (Exception e){
+                LOGGER.error("Data cache error " + newScript, e);
+              }
+            }
+          }
           boolean isResultSetAvailable = statement.execute(sqlToExecute);
           getJDBCConfiguration(user).setConnectionInDBDriverPoolSuccessful();
           if (isResultSetAvailable) {
@@ -1099,6 +1140,23 @@ public class JDBCInterpreter extends KerberosInterpreter {
       LOGGER.error("Fail to parse {} with value: {}", CONCURRENT_EXECUTION_COUNT,
               getProperty(CONCURRENT_EXECUTION_COUNT));
       return 10;
+    }
+  }
+
+  private class LRUCache extends LinkedHashMap<String, String> {
+
+    private static final long serialVersionUID = 1L;
+
+    public LRUCache() {
+      super(conf.getZeppelinTmpTableCacheThreshold(), 0.5f, true /* lru by access mode */);
+    }
+
+    @Override
+    protected boolean removeEldestEntry(java.util.Map.Entry<String, String> eldest) {
+      if (size() <= conf.getZeppelinTmpTableCacheThreshold()) {
+        return false;
+      }
+      return true;
     }
   }
 }
