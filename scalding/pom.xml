@@ -43,9 +43,8 @@
 
   <repositories>
     <repository>
-      <id>conjars</id>
-      <name>Concurrent Maven Repo</name>
-      <url>https://conjars.org/repo</url>
+      <id>conjars.org</id>
+      <url>https://conjars.wensel.net/repo</url>
     </repository>
     <repository>
       <id>twitter</id>
