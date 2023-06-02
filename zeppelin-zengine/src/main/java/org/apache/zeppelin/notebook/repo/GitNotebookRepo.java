@@ -90,9 +90,9 @@ public class GitNotebookRepo extends VFSNotebookRepo implements NotebookRepoWith
     super.move(noteId, notePath, newNotePath, subject);
     String noteFileName = buildNoteFileName(noteId, notePath);
     String newNoteFileName = buildNoteFileName(noteId, newNotePath);
-    git.rm().addFilepattern(noteFileName);
-    git.add().addFilepattern(newNoteFileName);
     try {
+      git.rm().addFilepattern(noteFileName).call();
+      git.add().addFilepattern(newNoteFileName).call();
       git.commit().setMessage("Move note " + noteId + " from " + noteFileName + " to " +
           newNoteFileName).call();
     } catch (GitAPIException e) {
@@ -104,10 +104,34 @@ public class GitNotebookRepo extends VFSNotebookRepo implements NotebookRepoWith
   public void move(String folderPath, String newFolderPath,
                    AuthenticationInfo subject) throws IOException {
     super.move(folderPath, newFolderPath, subject);
-    git.rm().addFilepattern(folderPath.substring(1));
-    git.add().addFilepattern(newFolderPath.substring(1));
     try {
+      git.rm().addFilepattern(folderPath.substring(1)).call();
+      git.add().addFilepattern(newFolderPath.substring(1)).call();
       git.commit().setMessage("Move folder " + folderPath + " to " + newFolderPath).call();
+    } catch (GitAPIException e) {
+      throw new IOException(e);
+    }
+  }
+
+  @Override
+  public void remove(String noteId, String notePath, AuthenticationInfo subject)
+      throws IOException {
+    super.remove(noteId, notePath, subject);
+    String noteFileName = buildNoteFileName(noteId, notePath);
+    try {
+      git.rm().addFilepattern(noteFileName).call();
+      git.commit().setMessage("Remove note: " + noteId + ", notePath: " + notePath).call();
+    } catch (GitAPIException e) {
+      throw new IOException(e);
+    }
+  }
+
+  @Override
+  public void remove(String folderPath, AuthenticationInfo subject) throws IOException {
+    super.remove(folderPath, subject);
+    try {
+      git.rm().addFilepattern(folderPath.substring(1)).call();
+      git.commit().setMessage("Remove folder: " + folderPath).call();
     } catch (GitAPIException e) {
       throw new IOException(e);
     }
@@ -238,4 +262,3 @@ public class GitNotebookRepo extends VFSNotebookRepo implements NotebookRepoWith
   }
 
 }
-
