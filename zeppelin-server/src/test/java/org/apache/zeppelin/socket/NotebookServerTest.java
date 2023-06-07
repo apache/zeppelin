@@ -16,7 +16,6 @@
  */
 package org.apache.zeppelin.socket;
 
-import static java.util.Arrays.asList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -42,6 +41,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -566,7 +566,10 @@ class NotebookServerTest extends AbstractTestRestApi {
               .put("noteId", "noteId")
               .put("paragraphId", "paragraphId"));
 
-      notebookServer.getConnectionManager().noteSocketMap.put("noteId", asList(conn, otherConn));
+      Set<NotebookSocket> sockets = new HashSet<>();
+      sockets.add(otherConn);
+      sockets.add(conn);
+      notebookServer.getConnectionManager().noteSocketMap.put("noteId", sockets);
 
       // When
       notebookServer.angularObjectClientBind(conn, messageReceived);
@@ -619,7 +622,10 @@ class NotebookServerTest extends AbstractTestRestApi {
               .put("noteId", "noteId")
               .put("paragraphId", "paragraphId"));
 
-      notebookServer.getConnectionManager().noteSocketMap.put("noteId", asList(conn, otherConn));
+      Set<NotebookSocket> sockets = new HashSet<>();
+      sockets.add(otherConn);
+      sockets.add(conn);
+      notebookServer.getConnectionManager().noteSocketMap.put("noteId", sockets);
 
       // When
       notebookServer.angularObjectClientUnbind(conn, messageReceived);
