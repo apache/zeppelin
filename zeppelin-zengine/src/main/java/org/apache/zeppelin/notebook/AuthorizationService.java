@@ -99,7 +99,7 @@ public class AuthorizationService implements ClusterEventListener {
    *
    * @throws IOException
    */
-  public void saveNoteAuth() throws IOException {
+  public synchronized void saveNoteAuth() throws IOException {
     configStorage.save(new NotebookAuthorizationInfoSaving(this.notesAuth));
   }
 
