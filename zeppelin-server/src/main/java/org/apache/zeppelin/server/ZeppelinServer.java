@@ -577,7 +577,6 @@ public class ZeppelinServer {
       // Development mode, read from FS
       // webApp.setDescriptor(warPath+"/WEB-INF/web.xml");
       webApp.setResourceBase(warFile.getPath());
-      webApp.setParentLoaderPriority(true);
     } else {
       // use packaged WAR
       webApp.setWar(warFile.getAbsolutePath());
