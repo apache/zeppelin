@@ -131,7 +131,8 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
     this.containerName = interpreterGroupId.toLowerCase();
 
     containerSparkHome = zconf.getString(ConfVars.ZEPPELIN_DOCKER_CONTAINER_SPARK_HOME);
-    uploadLocalLibToContainter = zconf.getBoolean(ConfVars.ZEPPELIN_DOCKER_UPLOAD_LOCAL_LIB_TO_CONTAINTER);
+    uploadLocalLibToContainter = zconf.getBoolean(
+        ConfVars.ZEPPELIN_DOCKER_UPLOAD_LOCAL_LIB_TO_CONTAINTER);
 
     try {
       this.zeppelinHome = getZeppelinHome();

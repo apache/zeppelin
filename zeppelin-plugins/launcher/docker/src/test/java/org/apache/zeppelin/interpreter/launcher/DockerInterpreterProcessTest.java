@@ -62,27 +62,30 @@ class DockerInterpreterProcessTest {
 
   @Test
   void testEnv() throws IOException {
-    when(zconf.getString(ConfVars.ZEPPELIN_DOCKER_CONTAINER_SPARK_HOME)).thenReturn("my-spark-home");
-    when(zconf.getBoolean(ConfVars.ZEPPELIN_DOCKER_UPLOAD_LOCAL_LIB_TO_CONTAINTER)).thenReturn(false);
-    when(zconf.getString(ConfVars.ZEPPELIN_DOCKER_HOST)).thenReturn("http://my-docker-host:2375");
+    when(zconf.getString(ConfVars.ZEPPELIN_DOCKER_CONTAINER_SPARK_HOME))
+        .thenReturn("my-spark-home");
+    when(zconf.getBoolean(ConfVars.ZEPPELIN_DOCKER_UPLOAD_LOCAL_LIB_TO_CONTAINTER))
+        .thenReturn(false);
+    when(zconf.getString(ConfVars.ZEPPELIN_DOCKER_HOST))
+        .thenReturn("http://my-docker-host:2375");
 
     Properties properties = new Properties();
     properties.setProperty(
-      ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT.getVarName(), "5000");
+        ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT.getVarName(), "5000");
     HashMap<String, String> envs = new HashMap<String, String>();
     envs.put("MY_ENV1", "V1");
 
     DockerInterpreterProcess intp = spy(new DockerInterpreterProcess(
-      zconf,
-      "interpreter-container:1.0",
-      "shared_process",
-      "sh",
-      "shell",
-      properties,
-      envs,
-      "zeppelin.server.hostname",
-      12320,
-      5000, 10));
+        zconf,
+        "interpreter-container:1.0",
+        "shared_process",
+        "sh",
+        "shell",
+        properties,
+        envs,
+        "zeppelin.server.hostname",
+        12320,
+        5000, 10));
 
     assertEquals("my-spark-home", intp.containerSparkHome);
     assertFalse(intp.uploadLocalLibToContainter);
