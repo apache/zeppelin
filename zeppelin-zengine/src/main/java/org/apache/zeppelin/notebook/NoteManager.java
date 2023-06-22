@@ -33,6 +33,7 @@ import javax.inject.Singleton;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.Notebook.NoteProcessor;
+import org.apache.zeppelin.notebook.exception.FolderPathAlreadyExistsException;
 import org.apache.zeppelin.notebook.exception.NotePathAlreadyExistsException;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.user.AuthenticationInfo;
@@ -270,6 +271,10 @@ public class NoteManager {
   public void moveFolder(String folderPath,
                          String newFolderPath,
                          AuthenticationInfo subject) throws IOException {
+
+    if (containsFolder(newFolderPath)) {
+      throw new FolderPathAlreadyExistsException("Folder '" + newFolderPath + "' existed");
+    }
 
     // update notebookrepo
     this.notebookRepo.move(folderPath, newFolderPath, subject);
