@@ -376,7 +376,7 @@ public class NoteManager {
     return noteNode;
   }
 
-  private Folder getFolder(String folderPath) throws IOException {
+  public Folder getFolder(String folderPath) throws IOException {
     String[] tokens = folderPath.split("/");
     Folder curFolder = root;
     for (int i = 0; i < tokens.length; ++i) {
