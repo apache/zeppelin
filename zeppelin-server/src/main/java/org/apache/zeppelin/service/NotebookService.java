@@ -1535,13 +1535,13 @@ public class NotebookService {
    * Return null when it is allowed, otherwise return the error message which could be
    * propagated to frontend
    *
-   * @param note
+   * @param noteInfo
    * @param context
    * @param permission
    * @param op
    * @return
    */
-  private <T> boolean checkPermission(Note note,
+  private <T> boolean checkPermission(NoteInfo noteInfo,
                                       Permission permission,
                                       Message.OP op,
                                       ServiceContext context,
@@ -1550,20 +1550,20 @@ public class NotebookService {
     Set<String> allowed = null;
     switch (permission) {
       case READER:
-        isAllowed = authorizationService.isReader(note.getId(), context.getUserAndRoles());
-        allowed = authorizationService.getReaders(note.getId());
+        isAllowed = authorizationService.isReader(noteInfo.getId(), context.getUserAndRoles());
+        allowed = authorizationService.getReaders(noteInfo.getId());
         break;
       case WRITER:
-        isAllowed = authorizationService.isWriter(note.getId(), context.getUserAndRoles());
-        allowed = authorizationService.getWriters(note.getId());
+        isAllowed = authorizationService.isWriter(noteInfo.getId(), context.getUserAndRoles());
+        allowed = authorizationService.getWriters(noteInfo.getId());
         break;
       case RUNNER:
-        isAllowed = authorizationService.isRunner(note.getId(), context.getUserAndRoles());
-        allowed = authorizationService.getRunners(note.getId());
+        isAllowed = authorizationService.isRunner(noteInfo.getId(), context.getUserAndRoles());
+        allowed = authorizationService.getRunners(noteInfo.getId());
         break;
       case OWNER:
-        isAllowed = authorizationService.isOwner(note.getId(), context.getUserAndRoles());
-        allowed = authorizationService.getOwners(note.getId());
+        isAllowed = authorizationService.isOwner(noteInfo.getId(), context.getUserAndRoles());
+        allowed = authorizationService.getOwners(noteInfo.getId());
         break;
     }
     if (isAllowed) {
@@ -1573,7 +1573,7 @@ public class NotebookService {
               "Insufficient %s privileges to '%s' note.\n" +
               "Allowed users or roles: %s\n" +
               "But the user %s belongs to: %s",
-              permission, note.getName(),
+              permission, noteInfo.getNoteName(),
               allowed,
               context.getAutheInfo().getUser(), context.getUserAndRoles());
       callback.onFailure(new ForbiddenException(errorMsg), context);
@@ -1597,8 +1597,8 @@ public class NotebookService {
                                       ServiceContext context,
                                       ServiceCallback<T> callback) throws IOException {
 
-    for (Note note : folder.getRawNotesRecursively()) {
-      if (!checkPermission(note, permission, op, context, callback)) {
+    for (NoteInfo noteInfo : folder.getNoteInfoRecursively()) {
+      if (!checkPermission(noteInfo, permission, op, context, callback)) {
         return false;
       }
     }
