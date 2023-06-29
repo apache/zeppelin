@@ -43,4 +43,7 @@ github:
     - ZEPPELIN
 
 notifications:
-  jira_options: link label comment
+  commits: commits@zeppelin.apache.org
+  issues: reviews@zeppelin.apache.org
+  pullrequests: reviews@zeppelin.apache.org
+  jira_options: link label
