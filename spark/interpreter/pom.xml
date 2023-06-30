@@ -535,9 +535,6 @@
 
     <profile>
       <id>spark-3.3</id>
-      <activation>
-        <activeByDefault>true</activeByDefault>
-      </activation>
       <properties>
         <datanucleus.core.version>4.1.17</datanucleus.core.version>
         <datanucleus.rdbms.version>4.1.19</datanucleus.rdbms.version>
