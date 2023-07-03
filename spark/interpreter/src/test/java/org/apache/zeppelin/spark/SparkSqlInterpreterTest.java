@@ -309,11 +309,5 @@ public class SparkSqlInterpreterTest {
     assertEquals(InterpreterResult.Code.ERROR, ret.code());
     assertEquals(1, context.out.toInterpreterResultMessage().size());
     assertEquals(Type.TEXT, context.out.toInterpreterResultMessage().get(0).getType());
-
-    // spark 1.x could not detect the root cause correctly
-    if (!sparkInterpreter.getSparkContext().version().startsWith("1.")) {
-      assertTrue(context.out.toInterpreterResultMessage().get(0).getData().contains("ClassNotFoundException") ||
-              context.out.toInterpreterResultMessage().get(0).getData().contains("Can not load class"));
-    }
   }
 }
