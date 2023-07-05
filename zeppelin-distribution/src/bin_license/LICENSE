@@ -83,7 +83,7 @@ The following components are provided under Apache License.
     (Apache 2.0) Lucene Sandbox (org.apache.lucene:lucene-sandbox:8.7.0 https://github.com/apache/lucene)
     (Apache 2.0) Lucene Highlighter (org.apache.lucene:lucene-highlighter:8.7.0 https://github.com/apache/lucene)
     (Apache 2.0) Lucene Memory (org.apache.lucene:lucene-memory:8.7.0 https://github.com/apache/lucene)
-    (Apache 2.0) Elasticsearch: Core (org.elasticsearch:elasticsearch:2.4.3 - https://github.com/elastic/elasticsearch)
+    (Apache 2.0) Elasticsearch: Core (org.elasticsearch:elasticsearch:5.6.15 - https://github.com/elastic/elasticsearch)
     Apache Lucene via elasticsearch interpreter
     (Apache 2.0) Lucene Core (org.apache.lucene:lucene-core:5.5.2 https://github.com/apache/lucene)
     (Apache 2.0) Lucene Backward Codes (org.apache.lucene:lucene-backward-codecs:5.5.2 https://github.com/apache/lucene)
