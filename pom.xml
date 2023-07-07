@@ -153,7 +153,7 @@
 
     <quartz.scheduler.version>2.3.2</quartz.scheduler.version>
     <jettison.version>1.5.4</jettison.version>
-    <jsoup.version>1.13.1</jsoup.version>
+    <jsoup.version>1.16.1</jsoup.version>
     <protobuf.version>3.21.7</protobuf.version>
     <grpc.version>1.51.0</grpc.version>
     <google.errorprone.version>2.14.0</google.errorprone.version>
