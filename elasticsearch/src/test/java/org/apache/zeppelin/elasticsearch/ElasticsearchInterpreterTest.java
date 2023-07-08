@@ -23,10 +23,12 @@ import static org.junit.Assert.assertNotNull;
 
 import org.apache.commons.lang3.RandomUtils;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
+import org.elasticsearch.action.support.WriteRequest.RefreshPolicy;
 import org.elasticsearch.client.Client;
+import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.node.Node;
-import org.elasticsearch.node.NodeBuilder;
+import org.elasticsearch.common.transport.InetSocketTransportAddress;
+import org.elasticsearch.transport.client.PreBuiltTransportClient;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -36,6 +38,7 @@ import org.junit.experimental.theories.Theory;
 import org.junit.runner.RunWith;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -57,14 +60,14 @@ public class ElasticsearchInterpreterTest {
   @DataPoint public static ElasticsearchInterpreter httpInterpreter;
 
   private static Client elsClient;
-  private static Node elsNode;
+  private static TransportClient transportClient;
 
   private static final String[] METHODS = { "GET", "PUT", "DELETE", "POST" };
   private static final int[] STATUS = { 200, 404, 500, 403 };
 
   private static final String ELS_CLUSTER_NAME = "zeppelin-elasticsearch-interpreter-test";
   private static final String ELS_HOST = "localhost";
-  private static final String ELS_TRANSPORT_PORT = "10300";
+  private static final int ELS_TRANSPORT_PORT = 10300;
   private static final String ELS_HTTP_PORT = "10200";
   private static final String ELS_PATH = "/tmp/els";
 
@@ -72,7 +75,7 @@ public class ElasticsearchInterpreterTest {
 
   @BeforeClass
   public static void populate() throws IOException {
-    final Settings settings = Settings.settingsBuilder()
+    final Settings settings = Settings.builder()
             .put("cluster.name", ELS_CLUSTER_NAME)
             .put("network.host", ELS_HOST)
             .put("http.port", ELS_HTTP_PORT)
@@ -80,8 +83,11 @@ public class ElasticsearchInterpreterTest {
             .put("path.home", ELS_PATH)
             .build();
 
-    elsNode = NodeBuilder.nodeBuilder().settings(settings).node();
-    elsClient = elsNode.client();
+    transportClient = new PreBuiltTransportClient(settings)
+            .addTransportAddress(new InetSocketTransportAddress(InetAddress
+              .getByName(ELS_HOST), ELS_TRANSPORT_PORT));
+
+    elsClient = transportClient;
 
     elsClient.admin().indices().prepareCreate("logs")
       .addMapping("http", jsonBuilder()
@@ -93,7 +99,7 @@ public class ElasticsearchInterpreterTest {
 
     for (int i = 0; i < 48; i++) {
       elsClient.prepareIndex("logs", "http", "" + i)
-        .setRefresh(true)
+        .setRefreshPolicy(RefreshPolicy.IMMEDIATE)
         .setSource(jsonBuilder()
           .startObject()
             .field("date", new Date())
@@ -110,7 +116,7 @@ public class ElasticsearchInterpreterTest {
 
     for (int i = 1; i < 3; i++) {
       elsClient.prepareIndex("logs", "http", "very/strange/id#" + i)
-        .setRefresh(true)
+        .setRefreshPolicy(RefreshPolicy.IMMEDIATE)
         .setSource(jsonBuilder()
             .startObject()
               .field("date", new Date())
@@ -155,8 +161,8 @@ public class ElasticsearchInterpreterTest {
       elsClient.close();
     }
 
-    if (elsNode != null) {
-      elsNode.close();
+    if (transportClient != null) {
+      transportClient.close();
     }
   }
 

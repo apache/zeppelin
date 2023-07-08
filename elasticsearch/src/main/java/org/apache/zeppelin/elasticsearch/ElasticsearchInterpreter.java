@@ -35,7 +35,7 @@ import org.elasticsearch.search.aggregations.Aggregations;
 import org.elasticsearch.search.aggregations.InternalMultiBucketAggregation;
 import org.elasticsearch.search.aggregations.bucket.InternalSingleBucketAggregation;
 import org.elasticsearch.search.aggregations.bucket.MultiBucketsAggregation;
-import org.elasticsearch.search.aggregations.metrics.InternalMetricsAggregation;
+import org.elasticsearch.search.aggregations.metrics.InternalNumericMetricsAggregation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -434,14 +434,14 @@ public class ElasticsearchInterpreter extends Interpreter {
     InterpreterResult.Type resType = InterpreterResult.Type.TEXT;
     String resMsg = "";
 
-    if (agg instanceof InternalMetricsAggregation) {
-      resMsg = XContentHelper.toString((InternalMetricsAggregation) agg).toString();
+    if (agg instanceof InternalNumericMetricsAggregation) {
+      resMsg = XContentHelper.toString((InternalNumericMetricsAggregation) agg).toString();
     } else if (agg instanceof InternalSingleBucketAggregation) {
       resMsg = XContentHelper.toString((InternalSingleBucketAggregation) agg).toString();
     } else if (agg instanceof InternalMultiBucketAggregation) {
       final Set<String> headerKeys = new HashSet<>();
       final List<Map<String, Object>> buckets = new LinkedList<>();
-      final InternalMultiBucketAggregation multiBucketAgg = (InternalMultiBucketAggregation) agg;
+      final MultiBucketsAggregation multiBucketAgg = (MultiBucketsAggregation) agg;
 
       for (final MultiBucketsAggregation.Bucket bucket : multiBucketAgg.getBuckets()) {
         try {

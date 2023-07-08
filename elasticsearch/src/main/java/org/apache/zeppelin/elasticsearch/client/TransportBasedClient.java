@@ -23,13 +23,13 @@ import com.google.gson.JsonSyntaxException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.action.delete.DeleteResponse;
+import org.elasticsearch.action.DocWriteResponse;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchAction;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
-import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.common.xcontent.XContentBuilder;
@@ -43,7 +43,9 @@ import org.elasticsearch.search.aggregations.Aggregations;
 import org.elasticsearch.search.aggregations.InternalMultiBucketAggregation;
 import org.elasticsearch.search.aggregations.bucket.InternalSingleBucketAggregation;
 import org.elasticsearch.search.aggregations.bucket.MultiBucketsAggregation;
-import org.elasticsearch.search.aggregations.metrics.InternalMetricsAggregation;
+import org.elasticsearch.search.aggregations.metrics.InternalNumericMetricsAggregation;
+import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.elasticsearch.transport.client.PreBuiltTransportClient;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -76,12 +78,12 @@ public class TransportBasedClient implements ElasticsearchClient {
     final String clusterName =
         props.getProperty(ElasticsearchInterpreter.ELASTICSEARCH_CLUSTER_NAME);
 
-    final Settings settings = Settings.settingsBuilder()
+    final Settings settings = Settings.builder()
         .put("cluster.name", clusterName)
         .put(props)
         .build();
 
-    client = TransportClient.builder().settings(settings).build()
+    client = new PreBuiltTransportClient(settings)
         .addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName(host), port));
   }
 
@@ -107,7 +109,7 @@ public class TransportBasedClient implements ElasticsearchClient {
         .get();
 
     return new ActionResponse()
-        .succeeded(delResp.isFound())
+        .succeeded(delResp.getResult() != DocWriteResponse.Result.DELETED)
         .hit(new HitWrapper(
             delResp.getIndex(),
             delResp.getType(),
@@ -123,7 +125,7 @@ public class TransportBasedClient implements ElasticsearchClient {
         .get();
 
     return new ActionResponse()
-        .succeeded(idxResp.isCreated())
+        .succeeded(idxResp.getResult() == DocWriteResponse.Result.CREATED)
         .hit(new HitWrapper(
             idxResp.getIndex(),
             idxResp.getType(),
@@ -149,8 +151,9 @@ public class TransportBasedClient implements ElasticsearchClient {
       // So, try to parse as a JSON => if there is an error, consider the query a Lucene one
       try {
         @SuppressWarnings("rawtypes")
-        final Map source = gson.fromJson(query, Map.class);
-        reqBuilder.setExtraSource(source);
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+        searchSourceBuilder.query(QueryBuilders.wrapperQuery(query));
+        reqBuilder.setSource(searchSourceBuilder);
       } catch (final JsonSyntaxException e) {
         // This is not a JSON (or maybe not well formatted...)
         reqBuilder.setQuery(QueryBuilders.queryStringQuery(query).analyzeWildcard(true));
@@ -192,16 +195,16 @@ public class TransportBasedClient implements ElasticsearchClient {
     //
     final Aggregation agg = aggregations.asList().get(0);
 
-    if (agg instanceof InternalMetricsAggregation) {
+    if (agg instanceof InternalNumericMetricsAggregation) {
       actionResp.addAggregation(new AggWrapper(AggWrapper.AggregationType.SIMPLE,
-          XContentHelper.toString((InternalMetricsAggregation) agg).toString()));
+          XContentHelper.toString((InternalNumericMetricsAggregation) agg).toString()));
     } else if (agg instanceof InternalSingleBucketAggregation) {
       actionResp.addAggregation(new AggWrapper(AggWrapper.AggregationType.SIMPLE,
           XContentHelper.toString((InternalSingleBucketAggregation) agg).toString()));
     } else if (agg instanceof InternalMultiBucketAggregation) {
       final Set<String> headerKeys = new HashSet<>();
       final List<Map<String, Object>> buckets = new LinkedList<>();
-      final InternalMultiBucketAggregation multiBucketAgg = (InternalMultiBucketAggregation) agg;
+      final MultiBucketsAggregation multiBucketAgg = (MultiBucketsAggregation) agg;
 
       for (final MultiBucketsAggregation.Bucket bucket : multiBucketAgg.getBuckets()) {
         try {
