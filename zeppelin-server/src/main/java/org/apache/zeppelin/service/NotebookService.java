@@ -236,6 +236,10 @@ public class NotebookService {
     }
 
     notePath = notePath.replace("\r", " ").replace("\n", " ");
+    if (notePath.endsWith("/")) {
+      throw new IOException("Note name shouldn't end with '/'");
+    }
+
     int pos = notePath.lastIndexOf("/");
     if ((notePath.length() - pos) > 255) {
       throw new IOException("Note name must be less than 255");

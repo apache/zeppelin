@@ -528,5 +528,11 @@ class NotebookServiceTest {
     } catch (IOException e) {
       assertEquals("Note name can not contain '..'", e.getMessage());
     }
+    try {
+      notebookService.normalizeNotePath("./");
+      fail("shold fail");
+    } catch (IOException e) {
+      assertEquals("Note name shouldn't end with '/'", e.getMessage());
+    }
   }
 }
