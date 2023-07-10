@@ -536,7 +536,7 @@ class NotebookServiceTest {
     }
     try {
       notebookService.normalizeNotePath("./");
-      fail("shold fail");
+      fail("Should fail");
     } catch (IOException e) {
       assertEquals("Note name shouldn't end with '/'", e.getMessage());
     }
