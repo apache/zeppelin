@@ -24,6 +24,7 @@ import static org.apache.zeppelin.interpreter.InterpreterResult.Code.ERROR;
 import static org.apache.zeppelin.scheduler.Job.Status.ABORT;
 
 import java.io.IOException;
+import java.net.URLDecoder;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
@@ -236,6 +237,8 @@ public class NotebookService {
     }
 
     notePath = notePath.replace("\r", " ").replace("\n", " ");
+
+    notePath = URLDecoder.decode(notePath, "UTF-8");
     if (notePath.endsWith("/")) {
       throw new IOException("Note name shouldn't end with '/'");
     }
