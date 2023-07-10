@@ -913,7 +913,7 @@ public class NotebookService {
               return null;
             }
 
-            if (context.getUserAndRoles().containsAll(requestCronRoles)) {
+            if (!context.getUserAndRoles().containsAll(requestCronRoles)) {
               LOGGER.error("Wrong cronExecutingRoles: {}", requestCronRoles);
               callback.onFailure(new IllegalArgumentException(requestCronRoles.toString()), context);
               return null;

@@ -597,7 +597,7 @@ public class ZeppelinConfiguration {
   }
 
   public boolean isAuthenticationEnabled() {
-    return StringUtils.EMPTY != getShiroPath();
+    return !StringUtils.isBlank(getShiroPath());
   }
 
   public String getInterpreterRemoteRunnerPath() {
