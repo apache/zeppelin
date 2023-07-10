@@ -238,7 +238,7 @@ public class NotebookService {
 
     notePath = notePath.replace("\r", " ").replace("\n", " ");
 
-    notePath = URLDecoder.decode(notePath, "UTF-8");
+    notePath = URLDecoder.decode(notePath, StandardCharsets.UTF_8.toString());
     if (notePath.endsWith("/")) {
       throw new IOException("Note name shouldn't end with '/'");
     }
