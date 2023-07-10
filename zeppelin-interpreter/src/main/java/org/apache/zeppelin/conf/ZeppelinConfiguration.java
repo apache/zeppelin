@@ -596,6 +596,10 @@ public class ZeppelinConfiguration {
     return new File(shiroPath).exists() ? shiroPath : StringUtils.EMPTY;
   }
 
+  public boolean isAuthenticationEnabled() {
+    return StringUtils.EMPTY != getShiroPath();
+  }
+
   public String getInterpreterRemoteRunnerPath() {
     return getAbsoluteDir(ConfVars.ZEPPELIN_INTERPRETER_REMOTE_RUNNER);
   }
@@ -770,7 +774,7 @@ public class ZeppelinConfiguration {
   }
 
   public boolean isZeppelinNotebookCronEnable() {
-    return getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_CRON_ENABLE);
+    return getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_CRON_ENABLE) && isAuthenticationEnabled();
   }
 
   public String getZeppelinNotebookCronFolders() {
