@@ -27,7 +27,7 @@ module.exports = function(grunt) {
 
   // Configurable paths for the application
   var appConfig = {
-    app: require('./bower.json').appPath || 'src',
+    app: 'src',
     dist: 'dist'
   };
 
@@ -76,10 +76,6 @@ module.exports = function(grunt) {
 
     // Watches files for changes and runs tasks based on the changed files
     watch: {
-      bower: {
-        files: ['bower.json'],
-        tasks: ['wiredep:dist', 'wiredep:test']
-      },
       html: {
         files: [
           '<%= yeoman.app %>/**/*.html'
@@ -105,7 +101,7 @@ module.exports = function(grunt) {
         files: ['Gruntfile.js']
       },
       livereload: {
-        options: {livereload: 35729,},
+        options: {livereload: 35730,},
         files: [
           '<%= yeoman.app %>/app/**/*.html',
           '<%= yeoman.app %>/*.html',
@@ -291,7 +287,7 @@ module.exports = function(grunt) {
           src: ['app/**/*.html', 'components/**/*.html']
         }, {
           expand: true,
-          cwd: 'bower_components/datatables/media/images',
+          cwd: 'node_modules/datatables/media/images',
           src: '{,*/}*.{png,jpg,jpeg,gif}',
           dest: '<%= yeoman.dist %>/images'
         }, {
@@ -301,22 +297,22 @@ module.exports = function(grunt) {
           src: ['generated/*']
         }, {
           expand: true,
-          cwd: 'bower_components/bootstrap/dist',
+          cwd: 'node_modules/bootstrap/dist',
           src: 'fonts/*',
           dest: '<%= yeoman.dist %>'
         }, {
           expand: true,
-          cwd: 'bower_components/jquery-ui/themes/base/images',
+          cwd: 'node_modules/jquery-ui/themes/base/images',
           src: '{,*/}*.{png,jpg,jpeg,gif}',
           dest: '<%= yeoman.dist %>/styles/images'
         }, {
           expand: true,
-          cwd: 'bower_components/ngclipboard',
+          cwd: 'node_modules/ngclipboard',
           src: 'dist/**',
           dest: '<%= yeoman.dist %>'
         }, {
           expand: true,
-          cwd: 'bower_components/MathJax',
+          cwd: 'node_modules/mathjax',
           src: [
             'extensions/**', 'jax/**', 'fonts/**'],
           dest: '<%= yeoman.dist %>'
@@ -380,8 +376,6 @@ module.exports = function(grunt) {
 
   grunt.registerTask('pre-webpack-dev', 'Compile then start a connect web server', function(target) {
     grunt.task.run([
-      'wiredep:test',
-      'wiredep:dist',
     ]);
   });
 
@@ -391,14 +385,10 @@ module.exports = function(grunt) {
 
   grunt.registerTask('pre-webpack-dist', [
     'htmlhint',
-    'wiredep:test',
-    'wiredep:dist',
   ]);
 
   grunt.registerTask('pre-webpack-ci', [
     'htmlhint',
-    'wiredep:test',
-    'wiredep:ci',
   ]);
 
   grunt.registerTask('post-webpack-dist', [

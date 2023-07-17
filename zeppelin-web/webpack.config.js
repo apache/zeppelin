@@ -149,7 +149,7 @@ module.exports = function makeWebpackConfig () {
       // Compiles ES6 and ES7 into ES5 code
       test: /\.(js|jsx)$/,
       use: ['ng-annotate-loader', 'babel-loader'],
-      exclude: /(node_modules|bower_components)/,
+      exclude: /(node_modules)/,
     }, {
       // CSS LOADER
       // Reference: https://github.com/webpack/css-loader
@@ -246,7 +246,7 @@ module.exports = function makeWebpackConfig () {
       {
         // COVERAGE
         test: /\.js$/,
-        exclude: /(node_modules|bower_components|\.test\.js)/,
+        exclude: /(node_modules|\.test\.js)/,
         loader: 'istanbul-instrumenter',
         enforce: 'post'
       }
@@ -285,7 +285,7 @@ module.exports = function makeWebpackConfig () {
     progress: true,
     contentBase: './src',
     before: function(app) {
-      app.use('**/bower_components/', express.static(path.resolve(__dirname, './bower_components/')));
+      app.use('**/node_modules/', express.static(path.resolve(__dirname, './node_modules/')));
       app.use('**/app/', express.static(path.resolve(__dirname, './src/app/')));
       app.use('**/assets/', express.static(path.resolve(__dirname, './src/assets/')));
       app.use('**/fonts/', express.static(path.resolve(__dirname, './src/fonts/')));
