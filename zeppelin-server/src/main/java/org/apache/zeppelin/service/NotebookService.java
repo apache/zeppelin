@@ -25,6 +25,7 @@ import static org.apache.zeppelin.scheduler.Job.Status.ABORT;
 
 import java.io.IOException;
 import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
