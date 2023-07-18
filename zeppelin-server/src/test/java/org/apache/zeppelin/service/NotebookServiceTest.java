@@ -528,5 +528,17 @@ class NotebookServiceTest {
     } catch (IOException e) {
       assertEquals("Note name can not contain '..'", e.getMessage());
     }
+    try {
+      notebookService.normalizeNotePath("%2e%2e/%2e%2e/tmp/test222");
+      fail("Should fail");
+    } catch (IOException e) {
+      assertEquals("Note name can not contain '..'", e.getMessage());
+    }
+    try {
+      notebookService.normalizeNotePath("./");
+      fail("Should fail");
+    } catch (IOException e) {
+      assertEquals("Note name shouldn't end with '/'", e.getMessage());
+    }
   }
 }
