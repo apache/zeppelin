@@ -497,6 +497,10 @@
       <dependencies>
         <dependency>
           <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-common</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.hadoop</groupId>
           <artifactId>${hadoop-client-runtime.artifact}</artifactId>
           <version>${hadoop.version}</version>
           <scope>${hadoop.deps.scope}</scope>
