@@ -102,20 +102,20 @@
         <executions>
 
           <execution>
-            <id>install node and yarn</id>
+            <id>install node and npm</id>
             <goals>
-              <goal>install-node-and-yarn</goal>
+              <goal>install-node-and-npm</goal>
             </goals>
             <configuration>
               <nodeVersion>${node.version}</nodeVersion>
-              <yarnVersion>${yarn.version}0</yarnVersion>
+              <npmVersion>${npm.version}</npmVersion>
             </configuration>
           </execution>
 
           <execution>
-            <id>yarn install</id>
+            <id>npm install</id>
             <goals>
-              <goal>yarn</goal>
+              <goal>npm</goal>
             </goals>
             <configuration>
               <skip>${web.e2e.enabled}</skip>
@@ -124,9 +124,9 @@
           </execution>
 
           <execution>
-            <id>yarn build</id>
+            <id>npm build</id>
             <goals>
-              <goal>yarn</goal>
+              <goal>npm</goal>
             </goals>
             <configuration>
               <skip>${web.e2e.enabled}</skip>
@@ -135,9 +135,9 @@
           </execution>
 
           <execution>
-            <id>yarn test</id>
+            <id>npm test</id>
             <goals>
-              <goal>yarn</goal>
+              <goal>npm</goal>
             </goals>
             <phase>test</phase>
             <configuration>
@@ -147,9 +147,9 @@
           </execution>
 
             <execution>
-              <id>yarn e2e</id>
+              <id>npm e2e</id>
               <goals>
-                <goal>yarn</goal>
+                <goal>npm</goal>
               </goals>
               <phase>integration-test</phase>
               <configuration>

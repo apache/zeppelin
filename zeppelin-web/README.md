@@ -11,16 +11,16 @@ It is recommended to install node 6.0.0+ since Zeppelin uses 6.9.1+ (see [creati
 All build commands are described in [package.json](./package.json)
 
 ```sh
-# install required depepdencies and bower packages (only once)
-$ npm install -g yarn
-$ yarn install
+# install required dependencies (only once)
+$ npm install -g npm
+$ npm install
 
 # build zeppelin-web for production
-$ yarn run build
+$ npm run build:dist
 
 # run frontend application only in dev mode (localhost:9000) 
 # you need to run zeppelin backend instance also
-$ yarn run dev
+$ npm run dev
 ```
 
 Supports the following options with using npm environment variable when running the web development mode.
@@ -28,21 +28,21 @@ Supports the following options with using npm environment variable when running 
 ```
 # if you are using a custom port instead of default(8080), 
 # you must use the 'SERVER_PORT' variable to run the web application development mode
-$ SERVER_PORT=YOUR_ZEPPELIN_PORT yarn run dev
+$ SERVER_PORT=YOUR_ZEPPELIN_PORT npm run dev
 
 # if you want to use a web dev port instead of default(9000), 
 # you can use the 'WEB_PORT' variable
-$ WEB_PORT=YOUR_WEB_DEV_PORT yarn run dev
+$ WEB_PORT=YOUR_WEB_DEV_PORT npm run dev
 ```
 
 ### Testing
 
 ```sh
 # running unit tests
-$ yarn run karma-test
+$ npm run karma-test
 
 # running e2e tests: make sure that zeppelin instance started (localhost:8080)
-$ yarn run e2e
+$ npm run e2e
 ```
 
 - to write unit tests, please refer [Angular Test Patterns](https://github.com/daniellmb/angular-test-patterns)
@@ -67,18 +67,12 @@ change your git config with `git config --global url."https://".insteadOf git://
 
 #### Proxy issues
 
-Try to add to the `.bowerrc` file the following content:
-```
-  "proxy" : "http://<host>:<port>",
-  "https-proxy" : "http://<host>:<port>"
-```
-
-also try to add proxy info to yarn install command:
+Try to add proxy info to npm install command:
 ```xml
 <execution>
-	<id>yarn install</id>
+	<id>npm install</id>
 	<goals>
-    	<goal>yarn</goal>
+    	<goal>npm</goal>
     </goals>
     <configuration>
     	<arguments>--proxy=http://<host>:<port> --https-proxy=http://<host>:<port></arguments>
