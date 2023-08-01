@@ -97,6 +97,9 @@ Thumbs.db
 .idea/
 *.iml
 
+# vscode project files
+.vscode/
+
 # maven target files
 target/
 **/target/
