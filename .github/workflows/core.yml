@@ -487,4 +487,4 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-zeppelin-
       - name: build without any profiles
-        run: ./mvnw clean package -DskipTests ${MAVEN_ARGS}
+        run: ./mvnw clean verify -DskipTests ${MAVEN_ARGS}
