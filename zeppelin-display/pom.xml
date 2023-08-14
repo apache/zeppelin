@@ -69,6 +69,12 @@
     </dependency>
 
     <dependency>
+      <groupId>org.scala-lang.modules</groupId>
+      <artifactId>scala-xml_${scala.binary.version}</artifactId>
+      <version>1.1.0</version>
+    </dependency>
+
+    <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-engine</artifactId>
       <scope>test</scope>
@@ -136,6 +142,7 @@
             <arg>-deprecation</arg>
             <arg>-feature</arg>
             <arg>-language:implicitConversions</arg>
+            <arg>-nobootcp</arg>
           </args>
           <jvmArgs>
             <jvmArg>-Xms1024m</jvmArg>

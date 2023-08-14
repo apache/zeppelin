@@ -41,16 +41,17 @@ jobs:
       fail-fast: false
       matrix:
         hadoop: [hadoop2, hadoop3]
+        java: [ 8, 11 ]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Tune Runner VM
         uses: ./.github/actions/tune-runner-vm
-      - name: Set up JDK 8
+      - name: Set up JDK ${{ matrix.java }}
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
-          java-version: 8
+          java-version: ${{ matrix.java }}
       - name: Cache local Maven repository
         uses: actions/cache@v3
         with:
@@ -89,6 +90,10 @@ jobs:
   # test interpreter modules except spark, flink, python, rlang, jupyter
   interpreter-test-non-core:
     runs-on: ubuntu-20.04
+    strategy:
+      fail-fast: false
+      matrix:
+        java: [ 8, 11 ]
     env:
       INTERPRETERS: 'hbase,jdbc,file,flink-cmd,cassandra,elasticsearch,bigquery,alluxio,livy,groovy,java,neo4j,submarine,sparql,mongodb,influxdb,shell'
     steps:
@@ -96,11 +101,11 @@ jobs:
         uses: actions/checkout@v3
       - name: Tune Runner VM
         uses: ./.github/actions/tune-runner-vm
-      - name: Set up JDK 8
+      - name: Set up JDK ${{ matrix.java }}
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
-          java-version: 8
+          java-version: ${{ matrix.java }}
       - name: Cache local Maven repository
         uses: actions/cache@v3
         with:
@@ -135,16 +140,17 @@ jobs:
       fail-fast: false
       matrix:
         python: [ 3.7, 3.8 ]
+        java: [ 8, 11 ]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Tune Runner VM
         uses: ./.github/actions/tune-runner-vm
-      - name: Set up JDK 8
+      - name: Set up JDK ${{ matrix.java }}
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
-          java-version: 8
+          java-version: ${{ matrix.java }}
       - name: Cache local Maven repository
         uses: actions/cache@v3
         with:
@@ -180,6 +186,10 @@ jobs:
   # zeppelin integration test except Spark & Flink
   zeppelin-integration-test:
     runs-on: ubuntu-20.04
+    strategy:
+      fail-fast: false
+      matrix:
+        java: [ 8, 11 ]
     steps:
       # user/password => root/root
       - name: Start mysql
@@ -188,11 +198,11 @@ jobs:
         uses: actions/checkout@v3
       - name: Tune Runner VM
         uses: ./.github/actions/tune-runner-vm
-      - name: Set up JDK 8
+      - name: Set up JDK ${{ matrix.java }}
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
-          java-version: 8
+          java-version: ${{ matrix.java }}
       - name: Cache local Maven repository
         uses: actions/cache@v3
         with:
@@ -206,7 +216,7 @@ jobs:
             ${{ runner.os }}-zeppelin-
       - name: install environment
         run: |
-          ./mvnw install -DskipTests -Phadoop2 -Pintegration -pl zeppelin-interpreter-integration,zeppelin-web,spark-submit,spark/scala-2.11,spark/scala-2.12,spark/scala-2.13,markdown,flink-cmd,flink/flink-scala-2.11,flink/flink-scala-2.12,jdbc,shell -am -Pflink-114
+          ./mvnw install -DskipTests -Phadoop2 -Pintegration -pl zeppelin-interpreter-integration,zeppelin-web,spark-submit,spark/scala-2.11,spark/scala-2.12,spark/scala-2.13,markdown,flink-cmd,flink/flink-scala-2.11,flink/flink-scala-2.12,jdbc,shell -am -Pflink-114  ${MAVEN_ARGS}
           ./mvnw package -pl zeppelin-plugins -amd -DskipTests ${MAVEN_ARGS}
       - name: Setup conda environment with python 3.7 and R
         uses: conda-incubator/setup-miniconda@v2
@@ -293,16 +303,17 @@ jobs:
       fail-fast: false
       matrix:
         hadoop: [ 2, 3 ]
+        java: [ 8, 11 ]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Tune Runner VM
         uses: ./.github/actions/tune-runner-vm
-      - name: Set up JDK 8
+      - name: Set up JDK ${{ matrix.java }}
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
-          java-version: 8
+          java-version: ${{ matrix.java }}
       - name: Cache local Maven repository
         uses: actions/cache@v3
         with:
@@ -333,7 +344,10 @@ jobs:
         run: |
           R -e "IRkernel::installspec()"
       - name: run tests on hadoop${{ matrix.hadoop }}
-        run: ./mvnw test -pl zeppelin-interpreter-integration -Phadoop${{ matrix.hadoop }} -Pintegration -Dtest=SparkSubmitIntegrationTest,ZeppelinSparkClusterTest24,SparkIntegrationTest24,ZeppelinSparkClusterTest30,SparkIntegrationTest30,ZeppelinSparkClusterTest31,SparkIntegrationTest31,ZeppelinSparkClusterTest32,SparkIntegrationTest32,ZeppelinSparkClusterTest33,SparkIntegrationTest33 -DfailIfNoTests=false ${MAVEN_ARGS}
+        run: ./mvnw test -pl zeppelin-interpreter-integration -Phadoop${{ matrix.hadoop }} -Pintegration -Dtest=SparkSubmitIntegrationTest,ZeppelinSparkClusterTest30,SparkIntegrationTest30,ZeppelinSparkClusterTest31,SparkIntegrationTest31,ZeppelinSparkClusterTest32,SparkIntegrationTest32,ZeppelinSparkClusterTest33,SparkIntegrationTest33 -DfailIfNoTests=false ${MAVEN_ARGS}
+      - name: run Spark 2.4 tests on hadoop${{ matrix.hadoop }}
+        run: ./mvnw test -pl zeppelin-interpreter-integration -Phadoop${{ matrix.hadoop }} -Pintegration -Dtest=ZeppelinSparkClusterTest24,SparkIntegrationTest24 -DfailIfNoTests=false ${MAVEN_ARGS}
+        if: matrix.matrix.java == 8  # Spark 2.4 doesn't support JDK 11
 
   # test on spark for each spark version & scala version
   spark-test:
@@ -342,16 +356,17 @@ jobs:
       fail-fast: false
       matrix:
         python: [ 3.7, 3.8 ]
+        java: [ 8, 11 ]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Tune Runner VM
         uses: ./.github/actions/tune-runner-vm
-      - name: Set up JDK 8
+      - name: Set up JDK ${{ matrix.java }}
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
-          java-version: 8
+          java-version: ${{ matrix.java }}
       - name: Cache local Maven repository
         uses: actions/cache@v3
         with:
@@ -380,12 +395,12 @@ jobs:
         run: |
           R -e "IRkernel::installspec()"
       - name: run spark-2.4 tests with scala-2.11 and python-${{ matrix.python }}
-        if: matrix.python == '3.7'  # Spark 2.4 doesn't support python 3.8
+        if: matrix.python == '3.7 && matrix.java == 8'  # Spark 2.4 doesn't support python 3.8 and JDK 8
         run: |
           rm -rf spark/interpreter/metastore_db
           ./mvnw verify -pl spark-submit,spark/interpreter -am -Dtest=org/apache/zeppelin/spark/* -Pspark-2.4 -Pspark-scala-2.11 -DfailIfNoTests=false ${MAVEN_ARGS}
       - name: run spark-2.4 tests with scala-2.12 and python-${{ matrix.python }}
-        if: matrix.python == '3.7'  # Spark 2.4 doesn't support python 3.8
+        if: matrix.python == '3.7 && matrix.java == 8'  # Spark 2.4 doesn't support python 3.8 and JDK 8
         run: |
           rm -rf spark/interpreter/metastore_db
           ./mvnw verify -pl spark-submit,spark/interpreter -am -Dtest=org/apache/zeppelin/spark/* -Pspark-2.4 -Pspark-scala-2.12 -Phadoop2 -Pintegration -DfailIfNoTests=false ${MAVEN_ARGS}
@@ -465,16 +480,20 @@ jobs:
 
   default-build:
     runs-on: ubuntu-20.04
+    strategy:
+      fail-fast: false
+      matrix:
+        java: [ 8, 11 ]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Tune Runner VM
         uses: ./.github/actions/tune-runner-vm
-      - name: Set up JDK 8
+      - name: Set up JDK ${{ matrix.java }}
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
-          java-version: 8
+          java-version: ${{ matrix.java }}
       - name: Cache local Maven repository
         uses: actions/cache@v3
         with:
