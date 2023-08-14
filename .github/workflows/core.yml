@@ -65,7 +65,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-zeppelin-
       - name: install application with some interpreter
-        run: ./mvnw install -Pbuild-distr -DskipTests -pl zeppelin-server,zeppelin-web,spark-submit,spark/scala-2.11,spark/scala-2.12,spark/scala-2.13,markdown,angular,shell -am -Phelium-dev -Pexamples -P${{ matrix.hadoop }} ${MAVEN_ARGS}
+        run: ./mvnw install -Pbuild-distr -DskipTests -pl zeppelin-server,zeppelin-web,spark-submit,spark/scala-2.12,spark/scala-2.13,markdown,angular,shell -am -Phelium-dev -Pexamples -P${{ matrix.hadoop }} ${MAVEN_ARGS}
       - name: install and test plugins
         run: ./mvnw package -pl zeppelin-plugins -amd ${MAVEN_ARGS}
       - name: Setup conda environment with python 3.7 and R
@@ -85,7 +85,7 @@ jobs:
           conda list
           conda info
       - name: run tests with ${{ matrix.hadoop }} # skip spark test because we would run them in other CI
-        run: ./mvnw verify -Pusing-packaged-distr -pl zeppelin-server,zeppelin-web,spark-submit,spark/scala-2.11,spark/scala-2.12,spark/scala-2.13,markdown,angular,shell -am -Phelium-dev -Pexamples -P${{ matrix.hadoop }} -Dtests.to.exclude=**/org/apache/zeppelin/spark/* -DfailIfNoTests=false
+        run: ./mvnw verify -Pusing-packaged-distr -pl zeppelin-server,zeppelin-web,spark-submit,spark/scala-2.12,spark/scala-2.13,markdown,angular,shell -am -Phelium-dev -Pexamples -P${{ matrix.hadoop }} -Dtests.to.exclude=**/org/apache/zeppelin/spark/* -DfailIfNoTests=false
 
   # test interpreter modules except spark, flink, python, rlang, jupyter
   interpreter-test-non-core:
@@ -216,7 +216,7 @@ jobs:
             ${{ runner.os }}-zeppelin-
       - name: install environment
         run: |
-          ./mvnw install -DskipTests -Phadoop2 -Pintegration -pl zeppelin-interpreter-integration,zeppelin-web,spark-submit,spark/scala-2.11,spark/scala-2.12,spark/scala-2.13,markdown,flink-cmd,flink/flink-scala-2.11,flink/flink-scala-2.12,jdbc,shell -am -Pflink-114  ${MAVEN_ARGS}
+          ./mvnw install -DskipTests -Phadoop2 -Pintegration -pl zeppelin-interpreter-integration,zeppelin-web,spark-submit,spark/scala-2.12,spark/scala-2.13,markdown,flink-cmd,flink/flink-scala-2.11,flink/flink-scala-2.12,jdbc,shell -am -Pflink-114  ${MAVEN_ARGS}
           ./mvnw package -pl zeppelin-plugins -amd -DskipTests ${MAVEN_ARGS}
       - name: Setup conda environment with python 3.7 and R
         uses: conda-incubator/setup-miniconda@v2
@@ -302,7 +302,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        hadoop: [ 2, 3 ]
+        hadoop: [ 3 ]
         java: [ 8, 11 ]
     steps:
       - name: Checkout
@@ -327,7 +327,7 @@ jobs:
             ${{ runner.os }}-zeppelin-
       - name: install environment
         run: |
-          ./mvnw install -DskipTests -pl zeppelin-interpreter-integration,zeppelin-web,spark-submit,spark/scala-2.11,spark/scala-2.12,spark/scala-2.13,markdown -am -Phadoop2 -Pintegration ${MAVEN_ARGS}
+          ./mvnw install -DskipTests -pl zeppelin-interpreter-integration,zeppelin-web,spark-submit,spark/scala-2.12,spark/scala-2.13,markdown -am -Phadoop2 -Pintegration ${MAVEN_ARGS}
           ./mvnw clean package -pl zeppelin-plugins -amd -DskipTests ${MAVEN_ARGS}
       - name: Setup conda environment with python 3.7 and R
         uses: conda-incubator/setup-miniconda@v2
@@ -344,10 +344,7 @@ jobs:
         run: |
           R -e "IRkernel::installspec()"
       - name: run tests on hadoop${{ matrix.hadoop }}
-        run: ./mvnw test -pl zeppelin-interpreter-integration -Phadoop${{ matrix.hadoop }} -Pintegration -Dtest=SparkSubmitIntegrationTest,ZeppelinSparkClusterTest30,SparkIntegrationTest30,ZeppelinSparkClusterTest31,SparkIntegrationTest31,ZeppelinSparkClusterTest32,SparkIntegrationTest32,ZeppelinSparkClusterTest33,SparkIntegrationTest33 -DfailIfNoTests=false ${MAVEN_ARGS}
-      - name: run Spark 2.4 tests on hadoop${{ matrix.hadoop }}
-        run: ./mvnw test -pl zeppelin-interpreter-integration -Phadoop${{ matrix.hadoop }} -Pintegration -Dtest=ZeppelinSparkClusterTest24,SparkIntegrationTest24 -DfailIfNoTests=false ${MAVEN_ARGS}
-        if: matrix.matrix.java == 8  # Spark 2.4 doesn't support JDK 11
+        run: ./mvnw test -pl zeppelin-interpreter-integration -Phadoop${{ matrix.hadoop }} -Pintegration -Dtest=SparkSubmitIntegrationTest,ZeppelinSparkClusterTest32,SparkIntegrationTest32,ZeppelinSparkClusterTest33,SparkIntegrationTest33 -DfailIfNoTests=false ${MAVEN_ARGS}
 
   # test on spark for each spark version & scala version
   spark-test:
@@ -379,7 +376,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-zeppelin-
       - name: install environment
-        run: ./mvnw install -DskipTests -pl spark-submit,spark/scala-2.11,spark/scala-2.12,spark/scala-2.13 -am -Phadoop2 ${MAVEN_ARGS}
+        run: ./mvnw install -DskipTests -pl spark-submit,spark/scala-2.12,spark/scala-2.13 -am -Phadoop2 ${MAVEN_ARGS}
       - name: Setup conda environment with python ${{ matrix.python }} and R
         uses: conda-incubator/setup-miniconda@v2
         with:
@@ -394,24 +391,6 @@ jobs:
       - name: Make IRkernel available to Jupyter
         run: |
           R -e "IRkernel::installspec()"
-      - name: run spark-2.4 tests with scala-2.11 and python-${{ matrix.python }}
-        if: matrix.python == '3.7 && matrix.java == 8'  # Spark 2.4 doesn't support python 3.8 and JDK 8
-        run: |
-          rm -rf spark/interpreter/metastore_db
-          ./mvnw verify -pl spark-submit,spark/interpreter -am -Dtest=org/apache/zeppelin/spark/* -Pspark-2.4 -Pspark-scala-2.11 -DfailIfNoTests=false ${MAVEN_ARGS}
-      - name: run spark-2.4 tests with scala-2.12 and python-${{ matrix.python }}
-        if: matrix.python == '3.7 && matrix.java == 8'  # Spark 2.4 doesn't support python 3.8 and JDK 8
-        run: |
-          rm -rf spark/interpreter/metastore_db
-          ./mvnw verify -pl spark-submit,spark/interpreter -am -Dtest=org/apache/zeppelin/spark/* -Pspark-2.4 -Pspark-scala-2.12 -Phadoop2 -Pintegration -DfailIfNoTests=false ${MAVEN_ARGS}
-      - name: run spark-3.0 tests with scala-2.12 and python-${{ matrix.python }}
-        run: |
-          rm -rf spark/interpreter/metastore_db
-          ./mvnw verify -pl spark-submit,spark/interpreter -am -Dtest=org/apache/zeppelin/spark/* -Pspark-3.0 -Pspark-scala-2.12 -Phadoop2 -Pintegration -DfailIfNoTests=false ${MAVEN_ARGS}
-      - name: run spark-3.1 tests with scala-2.12 and python-${{ matrix.python }}
-        run: |
-          rm -rf spark/interpreter/metastore_db
-          ./mvnw verify -pl spark-submit,spark/interpreter -am -Dtest=org/apache/zeppelin/spark/* -Pspark-3.1 -Pspark-scala-2.12 -Phadoop2 -Pintegration -DfailIfNoTests=false ${MAVEN_ARGS}
       - name: run spark-3.2 tests with scala-2.12 and python-${{ matrix.python }}
         run: |
           rm -rf spark/interpreter/metastore_db
@@ -433,7 +412,7 @@ jobs:
           rm -rf spark/interpreter/metastore_db
           ./mvnw verify -pl spark-submit,spark/interpreter -am -Dtest=org/apache/zeppelin/spark/* -Pspark-3.4 -Pspark-scala-2.13 -Phadoop3 -Pintegration -DfailIfNoTests=false ${MAVEN_ARGS}
 
-  livy-0-7-with-spark-2-2-0-under-python3:
+  livy-0-7-with-spark-3-4-1-under-python3:
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout
@@ -459,7 +438,7 @@ jobs:
       - name: install environment
         run: |
           ./mvnw install -DskipTests -pl livy -am  ${MAVEN_ARGS}
-          ./testing/downloadSpark.sh "2.2.0" "2.6"
+          ./testing/downloadSpark.sh "3.4.1" "3"
           ./testing/downloadLivy.sh "0.7.1-incubating"
       - name: Setup conda environment with python 3.7 and R
         uses: conda-incubator/setup-miniconda@v2
