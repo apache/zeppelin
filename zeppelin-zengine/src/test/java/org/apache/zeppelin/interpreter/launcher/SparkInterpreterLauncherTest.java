@@ -54,7 +54,7 @@ public class SparkInterpreterLauncherTest {
       System.clearProperty(confVar.getVarName());
     }
 
-    sparkHome = DownloadUtils.downloadSpark("2.4.7", "2.7");
+    sparkHome = DownloadUtils.downloadSpark("3.4.1", "3");
     System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HOME.getVarName(),
             new File("..").getAbsolutePath());
 
@@ -212,7 +212,8 @@ public class SparkInterpreterLauncherTest {
 
       assertEquals("true", interpreterProcess.getEnv().get("ZEPPELIN_SPARK_YARN_CLUSTER"));
       String sparkJars = "jar_1," +
-              zeppelinHome + "/interpreter/spark/scala-2.11/spark-scala-2.11-" + Util.getVersion() + ".jar," +
+        zeppelinHome + "/interpreter/spark/scala-2.12/spark-scala-2.12-" + Util.getVersion()
+        + ".jar," +
               zeppelinHome + "/interpreter/zeppelin-interpreter-shaded-" + Util.getVersion() + ".jar";
       String sparkrZip = sparkHome + "/R/lib/sparkr.zip#sparkr";
       String sparkFiles = "file_1," + zeppelinHome + "/conf/log4j_yarn_cluster.properties";
@@ -261,7 +262,8 @@ public class SparkInterpreterLauncherTest {
       assertEquals("true", interpreterProcess.getEnv().get("ZEPPELIN_SPARK_YARN_CLUSTER"));
       String sparkJars = "jar_1," +
               Paths.get(localRepoPath.toAbsolutePath().toString(), "test.jar").toString() + "," +
-              zeppelinHome + "/interpreter/spark/scala-2.11/spark-scala-2.11-" + Util.getVersion() + ".jar," +
+        zeppelinHome + "/interpreter/spark/scala-2.12/spark-scala-2.12-" + Util.getVersion()
+        + ".jar," +
               zeppelinHome + "/interpreter/zeppelin-interpreter-shaded-" + Util.getVersion() + ".jar";
       String sparkrZip = sparkHome + "/R/lib/sparkr.zip#sparkr";
       String sparkFiles = "file_1," + zeppelinHome + "/conf/log4j_yarn_cluster.properties";
@@ -311,7 +313,8 @@ public class SparkInterpreterLauncherTest {
       assertEquals("true", interpreterProcess.getEnv().get("ZEPPELIN_SPARK_YARN_CLUSTER"));
 
       String sparkJars = "jar_1," +
-              zeppelinHome + "/interpreter/spark/scala-2.11/spark-scala-2.11-" + Util.getVersion() + ".jar," +
+        zeppelinHome + "/interpreter/spark/scala-2.12/spark-scala-2.12-" + Util.getVersion()
+        + ".jar," +
               zeppelinHome + "/interpreter/zeppelin-interpreter-shaded-" + Util.getVersion() + ".jar";
       String sparkrZip = sparkHome + "/R/lib/sparkr.zip#sparkr";
       // escape special characters
