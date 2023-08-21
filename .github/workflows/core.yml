@@ -40,7 +40,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        hadoop: [hadoop2, hadoop3]
+        hadoop: [hadoop3]
         java: [ 8, 11 ]
     steps:
       - name: Checkout
@@ -183,7 +183,7 @@ jobs:
           R -e "IRkernel::installspec()"
       - name: install environment
         run: |
-          ./mvnw install -DskipTests -pl python,rlang,zeppelin-jupyter-interpreter -am -Phadoop2 ${MAVEN_ARGS}
+          ./mvnw install -DskipTests -pl python,rlang,zeppelin-jupyter-interpreter -am -Phadoop3 ${MAVEN_ARGS}
       - name: run tests with ${{ matrix.python }}
         run: |
           ./mvnw test -pl python,rlang,zeppelin-jupyter-interpreter -DfailIfNoTests=false ${MAVEN_ARGS}
@@ -221,7 +221,7 @@ jobs:
             ${{ runner.os }}-zeppelin-
       - name: install environment
         run: |
-          ./mvnw install -DskipTests -Phadoop2 -Pintegration -pl zeppelin-interpreter-integration,zeppelin-web,spark-submit,spark/scala-2.12,spark/scala-2.13,markdown,flink-cmd,flink/flink-scala-2.12,jdbc,shell -am -Pflink-117 ${MAVEN_ARGS}
+          ./mvnw install -DskipTests -Phadoop3 -Pintegration -pl zeppelin-interpreter-integration,zeppelin-web,spark-submit,spark/scala-2.12,spark/scala-2.13,markdown,flink-cmd,flink/flink-scala-2.12,jdbc,shell -am -Pflink-117 ${MAVEN_ARGS}
           ./mvnw package -pl zeppelin-plugins -amd -DskipTests ${MAVEN_ARGS}
       - name: Setup conda environment with python 3.9 and R
         uses: conda-incubator/setup-miniconda@v2
@@ -238,7 +238,7 @@ jobs:
         run: |
           R -e "IRkernel::installspec()"
       - name: run tests
-        run: ./mvnw test -pl zeppelin-interpreter-integration -Phadoop2 -Pintegration -DfailIfNoTests=false -Dtest=ZeppelinClientIntegrationTest,ZeppelinClientWithAuthIntegrationTest,ZSessionIntegrationTest,ShellIntegrationTest,JdbcIntegrationTest
+        run: ./mvnw test -pl zeppelin-interpreter-integration -Phadoop3 -Pintegration -DfailIfNoTests=false -Dtest=ZeppelinClientIntegrationTest,ZeppelinClientWithAuthIntegrationTest,ZSessionIntegrationTest,ShellIntegrationTest,JdbcIntegrationTest
       - name: Print zeppelin logs
         if: always()
         run: if [ -d "logs" ]; then cat logs/*; fi
@@ -278,7 +278,7 @@ jobs:
             ${{ runner.os }}-zeppelin-
       - name: install environment for flink
         run: |
-          ./mvnw install -DskipTests -am -pl flink/flink-scala-2.12,flink-cmd,zeppelin-interpreter-integration -Pflink-${{ matrix.flink }} -Phadoop2 -Pintegration ${MAVEN_ARGS}
+          ./mvnw install -DskipTests -am -pl flink/flink-scala-2.12,flink-cmd,zeppelin-interpreter-integration -Pflink-${{ matrix.flink }} -Phadoop3 -Pintegration ${MAVEN_ARGS}
           ./mvnw clean package -pl zeppelin-plugins -amd -DskipTests ${MAVEN_ARGS}
       - name: Setup conda environment with python ${{ matrix.python }} and R
         uses: conda-incubator/setup-miniconda@v2
@@ -292,7 +292,7 @@ jobs:
           auto-activate-base: false
           use-mamba: true
       - name: run tests for flink
-        run: ./mvnw verify -pl flink/flink-scala-2.12,flink-cmd,zeppelin-interpreter-integration -Pflink-${{ matrix.flink }} -am -Phadoop2 -Pintegration -DfailIfNoTests=false -Dtest=org.apache.zeppelin.flink.*Test,FlinkIntegrationTest${{ matrix.flink }} ${MAVEN_ARGS}
+        run: ./mvnw verify -pl flink/flink-scala-2.12,flink-cmd,zeppelin-interpreter-integration -Pflink-${{ matrix.flink }} -am -Phadoop3 -Pintegration -DfailIfNoTests=false -Dtest=org.apache.zeppelin.flink.*Test,FlinkIntegrationTest${{ matrix.flink }} ${MAVEN_ARGS}
       - name: Print zeppelin logs
         if: always()
         run: if [ -d "logs" ]; then cat logs/*; fi
@@ -328,7 +328,7 @@ jobs:
             ${{ runner.os }}-zeppelin-
       - name: install environment
         run: |
-          ./mvnw install -DskipTests -pl zeppelin-interpreter-integration,zeppelin-web,spark-submit,spark/scala-2.12,spark/scala-2.13,markdown -am -Phadoop2 -Pintegration ${MAVEN_ARGS}
+          ./mvnw install -DskipTests -pl zeppelin-interpreter-integration,zeppelin-web,spark-submit,spark/scala-2.12,spark/scala-2.13,markdown -am -Phadoop3 -Pintegration ${MAVEN_ARGS}
           ./mvnw clean package -pl zeppelin-plugins -amd -DskipTests ${MAVEN_ARGS}
       - name: Setup conda environment with python 3.9 and R
         uses: conda-incubator/setup-miniconda@v2
@@ -382,7 +382,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-zeppelin-
       - name: install environment
-        run: ./mvnw install -DskipTests -pl spark-submit,spark/scala-2.12,spark/scala-2.13 -am -Phadoop2 ${MAVEN_ARGS}
+        run: ./mvnw install -DskipTests -pl spark-submit,spark/scala-2.12,spark/scala-2.13 -am -Phadoop3 ${MAVEN_ARGS}
       - name: Setup conda environment with python ${{ matrix.python }} and R
         uses: conda-incubator/setup-miniconda@v2
         with:
@@ -400,11 +400,11 @@ jobs:
       - name: run spark-3.2 tests with scala-2.12 and python-${{ matrix.python }}
         run: |
           rm -rf spark/interpreter/metastore_db
-          ./mvnw verify -pl spark-submit,spark/interpreter -am -Dtest=org/apache/zeppelin/spark/* -Pspark-3.2 -Pspark-scala-2.12 -Phadoop2 -Pintegration -DfailIfNoTests=false ${MAVEN_ARGS}
+          ./mvnw verify -pl spark-submit,spark/interpreter -am -Dtest=org/apache/zeppelin/spark/* -Pspark-3.2 -Pspark-scala-2.12 -Phadoop3 -Pintegration -DfailIfNoTests=false ${MAVEN_ARGS}
       - name: run spark-3.2 tests with scala-2.13 and python-${{ matrix.python }}
         run: |
           rm -rf spark/interpreter/metastore_db
-          ./mvnw verify -pl spark-submit,spark/interpreter -am -Dtest=org/apache/zeppelin/spark/* -Pspark-3.2 -Pspark-scala-2.13 -Phadoop2 -Pintegration -DfailIfNoTests=false ${MAVEN_ARGS}
+          ./mvnw verify -pl spark-submit,spark/interpreter -am -Dtest=org/apache/zeppelin/spark/* -Pspark-3.2 -Pspark-scala-2.13 -Phadoop3 -Pintegration -DfailIfNoTests=false ${MAVEN_ARGS}
       - name: run spark-3.3 tests with scala-2.12 and python-${{ matrix.python }}
         run: |
           rm -rf spark/interpreter/metastore_db
