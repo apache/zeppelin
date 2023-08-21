@@ -40,14 +40,14 @@
     <maven.aeither.provider.version>3.0.3</maven.aeither.provider.version>
     <wagon.version>2.7</wagon.version>
 
-    <datanucleus.rdbms.version>3.2.9</datanucleus.rdbms.version>
-    <datanucleus.apijdo.version>3.2.6</datanucleus.apijdo.version>
-    <datanucleus.core.version>3.2.10</datanucleus.core.version>
+    <datanucleus.rdbms.version>4.1.19</datanucleus.rdbms.version>
+    <datanucleus.apijdo.version>4.2.4</datanucleus.apijdo.version>
+    <datanucleus.core.version>4.1.17</datanucleus.core.version>
 
     <!-- spark versions -->
-    <spark.version>3.1.2</spark.version>
-    <protobuf.version>2.5.0</protobuf.version>
-    <py4j.version>0.10.9</py4j.version>
+    <spark.version>3.4.1</spark.version>
+    <protobuf.version>3.21.12</protobuf.version>
+    <py4j.version>0.10.9.7</py4j.version>
     <spark.scala.version>2.12.7</spark.scala.version>
     <spark.scala.binary.version>2.12</spark.scala.binary.version>
 
@@ -70,12 +70,13 @@
       <groupId>org.apache.zeppelin</groupId>
       <artifactId>zeppelin-display</artifactId>
       <version>${project.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.zeppelin</groupId>
-      <artifactId>spark2-shims</artifactId>
-      <version>${project.version}</version>
+      <exclusions>
+        <!-- use scala-xml from spark -->
+        <exclusion>
+          <groupId>org.scala-lang.modules</groupId>
+          <artifactId>scala-xml_${scala.binary.version}</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <dependency>
@@ -509,14 +510,6 @@
       </properties>
     </profile>
 
-    <profile>
-      <id>spark-scala-2.11</id>
-      <properties>
-        <spark.scala.version>2.11.12</spark.scala.version>
-        <spark.scala.binary.version>2.11</spark.scala.binary.version>
-      </properties>
-    </profile>
-
     <!-- profile spark-x only affect spark version used in test -->
     <profile>
       <id>spark-3.4</id>
@@ -527,7 +520,7 @@
         <datanucleus.core.version>4.1.17</datanucleus.core.version>
         <datanucleus.rdbms.version>4.1.19</datanucleus.rdbms.version>
         <datanucleus.apijdo.version>4.2.4</datanucleus.apijdo.version>
-        <spark.version>3.4.0</spark.version>
+        <spark.version>3.4.1</spark.version>
         <protobuf.version>3.21.12</protobuf.version>
         <py4j.version>0.10.9.7</py4j.version>
       </properties>
@@ -539,7 +532,7 @@
         <datanucleus.core.version>4.1.17</datanucleus.core.version>
         <datanucleus.rdbms.version>4.1.19</datanucleus.rdbms.version>
         <datanucleus.apijdo.version>4.2.4</datanucleus.apijdo.version>
-        <spark.version>3.3.0</spark.version>
+        <spark.version>3.3.2</spark.version>
         <protobuf.version>2.5.0</protobuf.version>
         <py4j.version>0.10.9.5</py4j.version>
       </properties>
@@ -551,42 +544,9 @@
         <datanucleus.core.version>4.1.17</datanucleus.core.version>
         <datanucleus.rdbms.version>4.1.19</datanucleus.rdbms.version>
         <datanucleus.apijdo.version>4.2.4</datanucleus.apijdo.version>
-        <spark.version>3.2.0</spark.version>
+        <spark.version>3.2.4</spark.version>
         <protobuf.version>2.5.0</protobuf.version>
-        <py4j.version>0.10.9.2</py4j.version>
-      </properties>
-    </profile>
-
-    <profile>
-      <id>spark-3.1</id>
-      <properties>
-        <datanucleus.core.version>4.1.17</datanucleus.core.version>
-        <datanucleus.rdbms.version>4.1.19</datanucleus.rdbms.version>
-        <datanucleus.apijdo.version>4.2.4</datanucleus.apijdo.version>
-        <spark.version>3.1.2</spark.version>
-        <protobuf.version>2.5.0</protobuf.version>
-        <py4j.version>0.10.9</py4j.version>
-      </properties>
-    </profile>
-
-    <profile>
-      <id>spark-3.0</id>
-      <properties>
-        <datanucleus.core.version>4.1.17</datanucleus.core.version>
-        <datanucleus.rdbms.version>4.1.19</datanucleus.rdbms.version>
-        <datanucleus.apijdo.version>4.2.4</datanucleus.apijdo.version>
-        <spark.version>3.0.3</spark.version>
-        <protobuf.version>2.5.0</protobuf.version>
-        <py4j.version>0.10.9</py4j.version>
-      </properties>
-    </profile>
-
-    <profile>
-      <id>spark-2.4</id>
-      <properties>
-        <spark.version>2.4.5</spark.version>
-        <protobuf.version>2.5.0</protobuf.version>
-        <py4j.version>0.10.7</py4j.version>
+        <py4j.version>0.10.9.5</py4j.version>
       </properties>
     </profile>
 

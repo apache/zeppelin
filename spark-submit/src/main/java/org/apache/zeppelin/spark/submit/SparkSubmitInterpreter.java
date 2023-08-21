@@ -48,14 +48,14 @@ public class SparkSubmitInterpreter extends ShellInterpreter {
   private String sparkHome;
 
   // paragraphId --> yarnAppId
-  private ConcurrentMap<String, String> yarnAppIdMap = new ConcurrentHashMap();
+  private ConcurrentMap<String, String> yarnAppIdMap = new ConcurrentHashMap<>();
 
   public SparkSubmitInterpreter(Properties property) {
     super(property);
     // Set time to be max integer so that the shell process won't timeout.
     setProperty("shell.command.timeout.millisecs", Integer.MAX_VALUE + "");
     this.sparkHome = properties.getProperty("SPARK_HOME");
-    LOGGER.info("SPARK_HOME: " + sparkHome);
+    LOGGER.info("SPARK_HOME: {}", sparkHome);
   }
 
   @Override
@@ -64,7 +64,7 @@ public class SparkSubmitInterpreter extends ShellInterpreter {
       return new InterpreterResult(InterpreterResult.Code.SUCCESS);
     }
     String sparkSubmitCommand = sparkHome + "/bin/spark-submit " + cmd.trim();
-    LOGGER.info("Run spark command: " + sparkSubmitCommand);
+    LOGGER.info("Run spark command: {}", sparkSubmitCommand);
     context.out.addInterpreterOutListener(new SparkSubmitOutputListener(context));
     InterpreterResult result = super.internalInterpret(sparkSubmitCommand, context);
     yarnAppIdMap.remove(context.getParagraphId());
@@ -142,10 +142,10 @@ public class SparkSubmitInterpreter extends ShellInterpreter {
           LOGGER.info("Detected yarn app: {}", yarnAppId);
           SparkSubmitInterpreter.this.yarnAppIdMap.put(context.getParagraphId(), yarnAppId);
         } else {
-          LOGGER.warn("Might be an invalid spark URL: " + sparkUI);
+          LOGGER.warn("Might be an invalid spark URL: {}", sparkUI);
         }
       } else {
-        LOGGER.error("Unable to extract spark url from this log: " + log);
+        LOGGER.error("Unable to extract spark url from this log: {}", log);
       }
     }
 
