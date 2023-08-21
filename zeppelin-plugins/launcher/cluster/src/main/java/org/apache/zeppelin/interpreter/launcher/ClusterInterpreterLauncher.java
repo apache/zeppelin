@@ -230,7 +230,7 @@ public class ClusterInterpreterLauncher extends StandardInterpreterLauncher
 
     // must first step start check interpreter thread
     ClusterInterpreterCheckThread intpCheckThread = new ClusterInterpreterCheckThread(
-      intpProcess, context.getInterpreterGroupId(), getConnectTimeout(context));
+        intpProcess, context.getInterpreterGroupId(), getConnectTimeout(context));
     intpCheckThread.start();
 
     return intpProcess;

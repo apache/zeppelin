@@ -67,8 +67,8 @@ public class ZSessionIntegrationTest extends AbstractTestRestApi {
     zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_LIFECYCLE_MANAGER_TIMEOUT_THRESHOLD.getVarName(), "10000");
 
     notebook = TestUtils.getInstance(Notebook.class);
-    sparkHome = DownloadUtils.downloadSpark("3.2.4", "3.2");
-    flinkHome = DownloadUtils.downloadFlink("1.13.2", "2.11");
+    sparkHome = DownloadUtils.downloadSpark("3.4.1", "3");
+    flinkHome = DownloadUtils.downloadFlink("1.13.2", "2.12");
   }
 
   @AfterClass
@@ -188,7 +188,7 @@ public class ZSessionIntegrationTest extends AbstractTestRestApi {
       assertEquals(result.toString(), Status.FINISHED, result.getStatus());
       assertEquals(1, result.getResults().size());
       assertEquals("TEXT", result.getResults().get(0).getType());
-      assertTrue(result.getResults().get(0).getData(), result.getResults().get(0).getData().contains("3.2.4"));
+      assertTrue(result.getResults().get(0).getData(), result.getResults().get(0).getData().contains("3.4.1"));
       assertEquals(0, result.getJobUrls().size());
 
       // pyspark
@@ -226,7 +226,7 @@ public class ZSessionIntegrationTest extends AbstractTestRestApi {
       assertEquals(Status.ERROR, result.getStatus());
       assertEquals(1, result.getResults().size());
       assertEquals("TEXT", result.getResults().get(0).getType());
-      assertTrue(result.getResults().get(0).getData(), result.getResults().get(0).getData().contains("Table or view not found: unknown_table"));
+      assertTrue(result.getResults().get(0).getData(), result.getResults().get(0).getData().contains("The table or view `unknown_table` cannot be found"));
       assertEquals(0, result.getJobUrls().size());
 
     } finally {
@@ -257,7 +257,7 @@ public class ZSessionIntegrationTest extends AbstractTestRestApi {
       assertEquals(result.toString(), Status.FINISHED, result.getStatus());
       assertEquals(1, result.getResults().size());
       assertEquals("TEXT", result.getResults().get(0).getType());
-      assertTrue(result.getResults().get(0).getData(), result.getResults().get(0).getData().contains("3.2.4"));
+      assertTrue(result.getResults().get(0).getData(), result.getResults().get(0).getData().contains("3.4.1"));
       assertEquals(0, result.getJobUrls().size());
 
       // pyspark
@@ -299,7 +299,7 @@ public class ZSessionIntegrationTest extends AbstractTestRestApi {
       assertEquals(Status.ERROR, result.getStatus());
       assertEquals(1, result.getResults().size());
       assertEquals("TEXT", result.getResults().get(0).getType());
-      assertTrue(result.getResults().get(0).getData(), result.getResults().get(0).getData().contains("Table or view not found: unknown_table"));
+      assertTrue(result.getResults().get(0).getData(), result.getResults().get(0).getData().contains("The table or view `unknown_table` cannot be found"));
       assertEquals(0, result.getJobUrls().size());
 
       // cancel

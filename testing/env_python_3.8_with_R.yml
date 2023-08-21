@@ -15,6 +15,7 @@ dependencies:
   - ipykernel
   - jupyter_client=5
   - hvplot
+  - holoviews=1.16
   - plotnine
   - seaborn
   - intake

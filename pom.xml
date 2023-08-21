@@ -144,7 +144,8 @@
     <hadoop2.7.version>2.7.7</hadoop2.7.version>
     <hadoop3.0.version>3.0.3</hadoop3.0.version>
     <hadoop3.1.version>3.1.3</hadoop3.1.version>
-    <hadoop3.2.version>3.2.3</hadoop3.2.version>
+    <hadoop3.2.version>3.2.4</hadoop3.2.version>
+    <hadoop3.3.version>3.3.6</hadoop3.3.version>
     <hadoop.version>${hadoop2.7.version}</hadoop.version>
     <hadoop.deps.scope>provided</hadoop.deps.scope>
     <hadoop-client-api.artifact>hadoop-client</hadoop-client-api.artifact>
@@ -153,7 +154,7 @@
 
     <quartz.scheduler.version>2.3.2</quartz.scheduler.version>
     <jettison.version>1.5.4</jettison.version>
-    <jsoup.version>1.13.1</jsoup.version>
+    <jsoup.version>1.16.1</jsoup.version>
     <protobuf.version>3.21.7</protobuf.version>
     <grpc.version>1.51.0</grpc.version>
     <google.errorprone.version>2.14.0</google.errorprone.version>

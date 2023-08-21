@@ -469,8 +469,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
   private void createConnectionPool(String url, String user,
       Properties properties) throws SQLException, ClassNotFoundException {
 
-    LOGGER.info("Creating connection pool for url: {}, user: {}, properties: {}",
-            url, user, properties);
+    LOGGER.info("Creating connection pool for url: {}, user: {}", url, user);
 
     /* Remove properties that is not valid properties for presto/trino by checking driver key.
      * - Presto: com.facebook.presto.jdbc.PrestoDriver

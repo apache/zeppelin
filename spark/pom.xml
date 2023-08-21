@@ -38,10 +38,10 @@
         <datanucleus.core.version>3.2.10</datanucleus.core.version>
 
         <!-- spark versions -->
-        <spark.version>3.1.2</spark.version>
+        <spark.version>3.4.1</spark.version>
         <protobuf.version>2.5.0</protobuf.version>
         <py4j.version>0.10.9</py4j.version>
-        <spark.scala.version>2.12.7</spark.scala.version>
+        <spark.scala.version>2.12.18</spark.scala.version>
         <spark.scala.binary.version>2.12</spark.scala.binary.version>
 
         <scala.compile.version>${spark.scala.version}</scala.compile.version>
@@ -58,11 +58,9 @@
     <modules>
         <module>interpreter</module>
         <module>spark-scala-parent</module>
-        <module>scala-2.11</module>
         <module>scala-2.12</module>
         <module>scala-2.13</module>
         <module>spark-shims</module>
-        <module>spark2-shims</module>
         <module>spark3-shims</module>
     </modules>
 
