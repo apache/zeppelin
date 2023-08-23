@@ -17,24 +17,24 @@
 
 package org.apache.zeppelin.livy;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
-
-import org.junit.Before;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 import java.util.Properties;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 /**
  * Unit test for LivySQLInterpreter.
  */
-public class LivySQLInterpreterTest {
+class LivySQLInterpreterTest {
 
   private LivySparkSQLInterpreter sqlInterpreter;
 
-  @Before
+  @BeforeEach
   public void setUp() {
     Properties properties = new Properties();
     properties.setProperty("zeppelin.livy.url", "http://localhost:8998");
@@ -45,14 +45,14 @@ public class LivySQLInterpreterTest {
   }
 
   @Test
-  public void testHttpHeaders() {
+  void testHttpHeaders() {
     assertEquals(1, sqlInterpreter.getCustomHeaders().size());
     assertTrue(sqlInterpreter.getCustomHeaders().get("HEADER_1").startsWith("VALUE_1_"));
     assertNotEquals("VALUE_1_${HOME}", sqlInterpreter.getCustomHeaders().get("HEADER_1"));
   }
 
   @Test
-  public void testParseSQLOutput() {
+  void testParseSQLOutput() {
     // Empty sql output
     //    +---+---+
     //    |  a|  b|
@@ -173,7 +173,7 @@ public class LivySQLInterpreterTest {
   }
 
   @Test
-  public void parseSQLJsonOutput() {
+  void parseSQLJsonOutput() {
     //  Empty sql output
     //  id name
     List<String> rows = sqlInterpreter.parseSQLJsonOutput("\nid\tname\n");
