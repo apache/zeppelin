@@ -19,25 +19,25 @@ package org.apache.zeppelin.java;
 
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterResult;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Properties;
 
-import static org.junit.Assert.assertEquals;
-
 /**
  * JavaInterpreterTest
  */
-public class JavaInterpreterTest {
+class JavaInterpreterTest {
 
   private static JavaInterpreter java;
   private static InterpreterContext context;
 
-  @BeforeClass
+  @BeforeAll
   public static void setUp() {
     Properties p = new Properties();
     java = new JavaInterpreter(p);
@@ -45,13 +45,13 @@ public class JavaInterpreterTest {
     context = InterpreterContext.builder().build();
   }
 
-  @AfterClass
+  @AfterAll
   public static void tearDown() {
     java.close();
   }
 
   @Test
-  public void testStaticRepl() {
+  void testStaticRepl() {
 
     StringWriter writer = new StringWriter();
     PrintWriter out = new PrintWriter(writer);
@@ -69,7 +69,7 @@ public class JavaInterpreterTest {
   }
 
   @Test
-  public void testStaticReplWithoutMain() {
+  void testStaticReplWithoutMain() {
 
     StringBuffer sourceCode = new StringBuffer();
     sourceCode.append("package org.mdkt;\n");
@@ -81,7 +81,7 @@ public class JavaInterpreterTest {
   }
 
   @Test
-  public void testStaticReplWithSyntaxError() {
+  void testStaticReplWithSyntaxError() {
 
     StringWriter writer = new StringWriter();
     PrintWriter out = new PrintWriter(writer);
