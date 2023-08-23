@@ -20,13 +20,11 @@ package org.apache.zeppelin.kotlin;
 import static org.apache.zeppelin.interpreter.InterpreterResult.Code.ERROR;
 import static org.apache.zeppelin.interpreter.InterpreterResult.Code.SUCCESS;
 import static org.apache.zeppelin.kotlin.reflect.KotlinReflectUtil.shorten;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -44,9 +42,12 @@ import org.apache.zeppelin.interpreter.InterpreterResultMessageOutput;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.kotlin.reflect.KotlinFunctionInfo;
 import org.apache.zeppelin.kotlin.reflect.KotlinVariableInfo;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 
-public class KotlinInterpreterTest {
+class KotlinInterpreterTest {
 
   private static KotlinInterpreter interpreter;
   private static InterpreterContext context;
@@ -63,13 +64,13 @@ public class KotlinInterpreterTest {
     output = "";
   }
 
-  @Before
+  @BeforeEach
   public void setUp() throws InterpreterException {
     prepareInterpreter();
     interpreter.open();
   }
 
-  @After
+  @AfterEach
   public void tearDown() {
     interpreter.close();
   }
@@ -91,43 +92,43 @@ public class KotlinInterpreterTest {
   }
 
   @Test
-  public void testLiteral() throws Exception {
+  void testLiteral() throws Exception {
     testCodeForResult("1", "Int = 1");
   }
 
   @Test
-  public void testOperation() throws Exception {
+  void testOperation() throws Exception {
     testCodeForResult("\"foo\" + \"bar\"", "String = foobar");
   }
 
   @Test
-  public void testFunction() throws Exception {
+  void testFunction() throws Exception {
     testCodeForResult(
         "fun square(x: Int): Int = x * x\nsquare(10)",
         "Int = 100");
   }
 
   @Test
-  public void testIncomplete() throws Exception {
+  void testIncomplete() throws Exception {
     InterpreterResult result = interpreter.interpret("val x =", context);
     assertEquals(ERROR, result.code());
   }
 
   @Test
-  public void testCompileError() throws Exception {
+  void testCompileError() throws Exception {
     InterpreterResult result = interpreter.interpret("prinln(1)", context);
     assertEquals(ERROR, result.code());
     assertEquals("Unresolved reference: prinln", result.message().get(0).getData().trim());
   }
 
   @Test
-  public void testOutput() throws Exception {
+  void testOutput() throws Exception {
     testCodeForResult("println(\"Hello Kotlin\")", "");
     assertEquals("Hello Kotlin\n", output);
   }
 
   @Test
-  public void testRuntimeError() throws Exception {
+  void testRuntimeError() throws Exception {
     InterpreterResult result = interpreter.interpret(
         "throw RuntimeException(\"Error Message\")", context);
     assertEquals(ERROR, result.code());
@@ -135,7 +136,7 @@ public class KotlinInterpreterTest {
   }
 
   @Test
-  public void testCancel() throws Exception {
+  void testCancel() throws Exception {
     Thread t = new Thread(() -> {
       try {
         InterpreterResult result = interpreter.interpret(
@@ -143,7 +144,7 @@ public class KotlinInterpreterTest {
         assertEquals(ERROR, result.code());
         assertEquals("sleep interrupted", result.message().get(0).getData().trim());
       } catch (InterpreterException e) {
-        Assert.fail(e.getMessage());
+        fail(e.getMessage());
       }
     });
     t.start();
@@ -152,7 +153,7 @@ public class KotlinInterpreterTest {
   }
 
   @Test
-  public void testVariables() throws Exception {
+  void testVariables() throws Exception {
     interpreter.interpret("val x = 1", context);
     interpreter.interpret("val x = 2", context);
     List<KotlinVariableInfo> vars = interpreter.getVariables();
@@ -162,7 +163,7 @@ public class KotlinInterpreterTest {
         .filter(info -> info.getName().equals("x"))
         .findFirst()
         .orElseGet( () -> {
-          Assert.fail();
+          fail();
           return null;
         });
 
@@ -171,28 +172,28 @@ public class KotlinInterpreterTest {
   }
 
   @Test
-  public void testGetVariablesFromCode() throws Exception {
+  void testGetVariablesFromCode() throws Exception {
     interpreter.interpret("val x = 1", context);
     interpreter.interpret("val y = 2", context);
     interpreter.interpret("val x = 3", context);
     interpreter.interpret("val l = listOf(1,2,3)", context);
     interpreter.interpret("kc.showVars()", context);
-    System.out.println(output);
-    assertTrue(output.contains("x: Int = 3"));
-    assertTrue(output.contains("y: Int = 2"));
-    assertTrue(output.contains("l: List<Int> = [1, 2, 3]"));
+    assertTrue(output.contains("x: Int = 3"), output);
+    assertTrue(output.contains("y: Int = 2"), output);
+    assertTrue(output.contains("l: List<Int> = [1, 2, 3]"), output);
     InterpreterResult res = interpreter.interpret("kc.vars = null", context);
     assertTrue(res.message().get(0).getData().contains("Val cannot be reassigned"));
   }
 
   @Test
-  public void testFunctionsAsValues() throws Exception {
-    System.out.println(interpreter.interpret("val f = { x: Int -> x + 1 }", context));
-    System.out.println(interpreter.getVariables());
+  void testFunctionsAsValues() throws Exception {
+    InterpreterResult res = interpreter.interpret("val f = { x: Int -> x + 1 }", context);
+    assertEquals(SUCCESS, res.code());
+    assertNotNull(interpreter.getVariables());
   }
 
   @Test
-  public void testMethods() throws Exception {
+  void testMethods() throws Exception {
     interpreter.interpret("fun sq(x: Int): Int = x * x", context);
     interpreter.interpret("fun sq(x: Int): Int = x * x", context);
     assertEquals(1, interpreter.getFunctions().size());
@@ -200,15 +201,19 @@ public class KotlinInterpreterTest {
     interpreter.interpret("fun <T> singletonListOf(elem: T): List<T> = listOf(elem)", context);
     List<String> signatures = interpreter.getFunctions().stream()
         .map(KotlinFunctionInfo::toString).collect(Collectors.toList());
-    System.out.println(signatures);
-    assertTrue(signatures.stream().anyMatch(signature ->
-        signature.equals("fun sq(kotlin.Int): kotlin.Int")));
-    assertTrue(signatures.stream().anyMatch(signature ->
-        signature.equals("fun singletonListOf(T): kotlin.collections.List<T>")));
+    assertTrue(
+        signatures.stream()
+            .anyMatch(signature -> signature.equals("fun sq(kotlin.Int): kotlin.Int")),
+        signatures.toString());
+    assertTrue(
+        signatures.stream()
+            .anyMatch(signature -> signature
+                .equals("fun singletonListOf(T): kotlin.collections.List<T>")),
+        signatures.toString());
   }
 
   @Test
-  public void testCompletion() throws Exception {
+  void testCompletion() throws Exception {
     interpreter.interpret("val x = 1", context);
     interpreter.interpret("fun inc(n: Int): Int = n + 1", context);
     List<InterpreterCompletion> completions = interpreter.completion("", 0, context);
@@ -217,7 +222,7 @@ public class KotlinInterpreterTest {
   }
 
   @Test
-  public void testOutputClasses() throws Exception {
+  void testOutputClasses() throws Exception {
     prepareInterpreter();
     Path tempPath = Files.createTempDirectory("tempKotlinClasses");
     interpreter.getKotlinReplProperties().outputDir(tempPath.toAbsolutePath().toString());
@@ -226,9 +231,8 @@ public class KotlinInterpreterTest {
     File[] dir = tempPath.toFile().listFiles();
     assertNotNull(dir);
     assertTrue(dir.length > 0);
-    System.out.println(tempPath);
     assertTrue(Arrays.stream(dir)
-        .anyMatch(file -> file.getName().matches("Line_\\d+\\.class")));
+        .anyMatch(file -> file.getName().matches("Line_\\d+\\.class")), tempPath.toString());
     int oldLength = dir.length;
     interpreter.interpret("x + 1", context);
     dir = tempPath.toFile().listFiles();
@@ -237,7 +241,7 @@ public class KotlinInterpreterTest {
   }
 
   @Test
-  public void testWrapper() throws Exception {
+  void testWrapper() throws Exception {
     String code = "import org.jetbrains.kotlin.cli.common.repl.InvokeWrapper\n" +
             "var k = 0\n" +
             "val wrapper = object : InvokeWrapper {\n" +
@@ -264,7 +268,7 @@ public class KotlinInterpreterTest {
   }
 
   @Test
-  public void testReflectUtil() throws Exception {
+  void testReflectUtil() throws Exception {
     String message = interpreter.interpret("1", context)
         .message().get(0).getData();
     assertTrue(shorten(message).contains("Int = 1"));
@@ -280,7 +284,7 @@ public class KotlinInterpreterTest {
   }
 
   @Test
-  public void fullTypeNamesTest() throws Exception {
+  void fullTypeNamesTest() throws Exception {
     prepareInterpreter();
     interpreter.getKotlinReplProperties().shortenTypes(false);
     interpreter.open();
@@ -291,8 +295,7 @@ public class KotlinInterpreterTest {
     assertEquals("fun f(kotlin.collections.List<kotlin.String>): kotlin.Unit\n", output);
     output = "";
     interpreter.interpret("kc.showVars()", context);
-    System.out.println(output);
-    assertTrue(output.contains("s: kotlin.String = abc"));
+    assertTrue(output.contains("s: kotlin.String = abc"), output);
   }
 
   private static InterpreterContext getInterpreterContext() {
