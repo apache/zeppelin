@@ -37,9 +37,6 @@
         <spark.version>2.4.5</spark.version>
 
         <spark.archive>spark-${spark.version}</spark.archive>
-        <spark.src.download.url>
-            https://archive.apache.org/dist/spark/${spark.archive}/${spark.archive}.tgz
-        </spark.src.download.url>
         <spark.bin.download.url>
             https://archive.apache.org/dist/spark/${spark.archive}/${spark.archive}-bin-without-hadoop.tgz
         </spark.bin.download.url>

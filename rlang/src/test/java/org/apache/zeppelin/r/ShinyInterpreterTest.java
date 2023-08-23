@@ -29,9 +29,9 @@ import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResultMessage;
 import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterEventClient;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -41,16 +41,16 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static junit.framework.TestCase.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
 
 public class ShinyInterpreterTest {
 
   protected ShinyInterpreter interpreter;
 
-  @Before
+  @BeforeEach
   public void setUp() throws InterpreterException {
     Properties properties = new Properties();
 
@@ -65,7 +65,7 @@ public class ShinyInterpreterTest {
     interpreter.open();
   }
 
-  @After
+  @AfterEach
   public void tearDown() throws InterpreterException {
     if (interpreter != null) {
       interpreter.close();
@@ -73,7 +73,7 @@ public class ShinyInterpreterTest {
   }
 
   @Test
-  public void testShinyApp() throws
+  void testShinyApp() throws
           IOException, InterpreterException, InterruptedException, UnirestException {
     /****************** Launch Shiny app with default app name *****************************/
     InterpreterContext context = getInterpreterContext();
@@ -101,10 +101,10 @@ public class ShinyInterpreterTest {
     Thread.sleep(5 * 1000);
     // extract shiny url
     List<InterpreterResultMessage> resultMessages = context2.out.toInterpreterResultMessage();
-    assertEquals(resultMessages.toString(), 1, resultMessages.size());
+    assertEquals(1, resultMessages.size(), resultMessages.toString());
     assertEquals(InterpreterResult.Type.HTML, resultMessages.get(0).getType());
     String resultMessageData = resultMessages.get(0).getData();
-    assertTrue(resultMessageData, resultMessageData.contains("<iframe"));
+    assertTrue(resultMessageData.contains("<iframe"), resultMessageData);
     Pattern urlPattern = Pattern.compile(".*src=\"(http\\S*)\".*", Pattern.DOTALL);
     Matcher matcher = urlPattern.matcher(resultMessageData);
     if (!matcher.matches()) {
@@ -115,7 +115,7 @@ public class ShinyInterpreterTest {
     // verify shiny app via calling its rest api
     HttpResponse<String> response = Unirest.get(shinyURL).asString();
     assertEquals(200, response.getStatus());
-    assertTrue(response.getBody(), response.getBody().contains("Shiny Text"));
+    assertTrue(response.getBody().contains("Shiny Text"), response.getBody());
 
     /************************ Launch another shiny app (app2) *****************************/
     context = getInterpreterContext();
@@ -149,7 +149,7 @@ public class ShinyInterpreterTest {
     assertEquals(1, resultMessages.size());
     assertEquals(InterpreterResult.Type.HTML, resultMessages.get(0).getType());
     resultMessageData = resultMessages.get(0).getData();
-    assertTrue(resultMessageData, resultMessageData.contains("<iframe"));
+    assertTrue(resultMessageData.contains("<iframe"), resultMessageData);
     matcher = urlPattern.matcher(resultMessageData);
     if (!matcher.matches()) {
       fail("Unable to extract url: " + resultMessageData);
@@ -159,7 +159,7 @@ public class ShinyInterpreterTest {
     // verify shiny app via calling its rest api
     response = Unirest.get(shinyURL2).asString();
     assertEquals(200, response.getStatus());
-    assertTrue(response.getBody(), response.getBody().contains("Shiny Text"));
+    assertTrue(response.getBody().contains("Shiny Text"), response.getBody());
 
     // cancel paragraph to stop the first shiny app
     interpreter.cancel(getInterpreterContext());
@@ -169,17 +169,17 @@ public class ShinyInterpreterTest {
       Unirest.get(shinyURL).asString();
       fail("Should fail to connect to shiny app");
     } catch (Exception e) {
-      assertTrue(e.getMessage(), e.getMessage().contains("Connection refused"));
+      assertTrue(e.getMessage().contains("Connection refused"), e.getMessage());
     }
 
     // the second shiny app still works
     response = Unirest.get(shinyURL2).asString();
     assertEquals(200, response.getStatus());
-    assertTrue(response.getBody(), response.getBody().contains("Shiny Text"));
+    assertTrue(response.getBody().contains("Shiny Text"), response.getBody());
   }
 
   @Test
-  public void testInvalidShinyApp()
+  void testInvalidShinyApp()
           throws IOException, InterpreterException, InterruptedException, UnirestException {
     InterpreterContext context = getInterpreterContext();
     context.getLocalProperties().put("type", "ui");
@@ -205,10 +205,10 @@ public class ShinyInterpreterTest {
     // wait for the shiny app start
     Thread.sleep(5 * 1000);
     List<InterpreterResultMessage> resultMessages = context2.out.toInterpreterResultMessage();
-    assertEquals(resultMessages.toString(), 1, resultMessages.size());
+    assertEquals(1, resultMessages.size(), resultMessages.toString());
     assertEquals(InterpreterResult.Type.HTML, resultMessages.get(0).getType());
     String resultMessageData = resultMessages.get(0).getData();
-    assertTrue(resultMessageData, resultMessageData.contains("<iframe"));
+    assertTrue(resultMessageData.contains("<iframe"), resultMessageData);
     Pattern urlPattern = Pattern.compile(".*src=\"(http\\S*)\".*", Pattern.DOTALL);
     Matcher matcher = urlPattern.matcher(resultMessageData);
     if (!matcher.matches()) {
@@ -221,8 +221,8 @@ public class ShinyInterpreterTest {
     assertEquals(500, response.getStatus());
 
     resultMessages = context2.out.toInterpreterResultMessage();
-    assertTrue(resultMessages.get(1).getData(),
-            resultMessages.get(1).getData().contains("object 'Invalid_code' not found"));
+    assertTrue(resultMessages.get(1).getData().contains("object 'Invalid_code' not found"),
+      resultMessages.get(1).getData());
 
     // cancel paragraph to stop shiny app
     interpreter.cancel(getInterpreterContext());
@@ -232,7 +232,7 @@ public class ShinyInterpreterTest {
       Unirest.get(shinyURL).asString();
       fail("Should fail to connect to shiny app");
     } catch (Exception e) {
-      assertTrue(e.getMessage(), e.getMessage().contains("Connection refused"));
+      assertTrue(e.getMessage().contains("Connection refused"), e.getMessage());
     }
   }
 
