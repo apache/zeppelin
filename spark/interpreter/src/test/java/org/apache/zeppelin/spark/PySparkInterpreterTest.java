@@ -27,23 +27,26 @@ import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterEventClient;
 import org.apache.zeppelin.python.PythonInterpreterTest;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.LinkedList;
 import java.util.Properties;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
 
 
-public class PySparkInterpreterTest extends PythonInterpreterTest {
+class PySparkInterpreterTest extends PythonInterpreterTest {
 
   private RemoteInterpreterEventClient mockRemoteEventClient = mock(RemoteInterpreterEventClient.class);
 
   @Override
+  @BeforeEach
   public void setUp() throws InterpreterException {
     Properties properties = new Properties();
     properties.setProperty(SparkStringConstants.MASTER_PROP_NAME, "local");
@@ -90,6 +93,7 @@ public class PySparkInterpreterTest extends PythonInterpreterTest {
   }
 
   @Override
+  @AfterEach
   public void tearDown() throws InterpreterException {
     intpGroup.close();
     intpGroup = null;
@@ -97,7 +101,7 @@ public class PySparkInterpreterTest extends PythonInterpreterTest {
   }
 
   @Test
-  public void testPySpark() throws InterruptedException, InterpreterException, IOException {
+  void testPySpark() throws InterruptedException, InterpreterException, IOException {
     IPySparkInterpreterTest.testPySpark(interpreter, mockRemoteEventClient);
   }
 
@@ -137,7 +141,7 @@ public class PySparkInterpreterTest extends PythonInterpreterTest {
       fail("Should fail to open PySparkInterpreter");
     } catch (InterpreterException e) {
       String stacktrace = ExceptionUtils.getStackTrace(e);
-      assertTrue(stacktrace, stacktrace.contains("No such file or directory"));
+      assertTrue(stacktrace.contains("No such file or directory"), stacktrace);
     }
   }
 
