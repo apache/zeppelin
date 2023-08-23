@@ -18,73 +18,72 @@
 package org.apache.zeppelin.integration;
 
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import org.apache.zeppelin.client.ClientConfig;
 import org.apache.zeppelin.client.ZeppelinClient;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
-import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.rest.AbstractTestRestApi;
-import org.apache.zeppelin.utils.TestUtils;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 public class ZeppelinClientWithAuthIntegrationTest extends AbstractTestRestApi {
-  private static Notebook notebook;
 
   private static ClientConfig clientConfig;
   private static ZeppelinClient zeppelinClient;
 
-  @BeforeClass
+  @BeforeAll
   public static void setUp() throws Exception {
     System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HELIUM_REGISTRY.getVarName(),
             "helium");
     System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_ALLOWED_ORIGINS.getVarName(), "*");
 
     AbstractTestRestApi.startUpWithAuthenticationEnable(ZeppelinClientWithAuthIntegrationTest.class.getSimpleName());
-    notebook = TestUtils.getInstance(Notebook.class);
 
     clientConfig = new ClientConfig("http://localhost:8080");
     zeppelinClient = new ZeppelinClient(clientConfig);
   }
 
-  @AfterClass
+  @AfterAll
   public static void destroy() throws Exception {
     AbstractTestRestApi.shutDown();
   }
 
   @Test
-  public void testZeppelinVersion() throws Exception {
+  void testZeppelinVersion() throws Exception {
     String version = zeppelinClient.getVersion();
     LOG.info("Zeppelin version: " + version);
+    assertNotNull(version);
   }
 
   @Test
-  public void testCreateNoteWithoutLogin() throws Exception {
+  void testCreateNoteWithoutLogin() throws Exception {
     try {
       zeppelinClient.createNote("/note_1");
       fail("Should fail due to not login");
     } catch (Exception e) {
-      assertTrue(e.getMessage(), e.getMessage().contains("login first"));
+      assertTrue(e.getMessage().contains("login first"), e.getMessage());
     }
   }
 
   @Test
-  public void testCreateNoteAfterLogin() throws Exception {
+  void testCreateNoteAfterLogin() throws Exception {
     zeppelinClient.login("admin", "password1");
-    zeppelinClient.createNote("/note_2");
+    String response = zeppelinClient.createNote("/note_2");
+    assertNotNull(response);
   }
 
   @Test
-  public void testLoginFailed() throws Exception {
+  void testLoginFailed() throws Exception {
     // wrong password
     try {
       zeppelinClient.login("admin", "invalid_password");
       fail("Should fail to login");
     } catch (Exception e) {
-      assertTrue(e.getMessage(), e.getMessage().contains("Forbidden"));
+      assertTrue(e.getMessage().contains("Forbidden"), e.getMessage());
     }
 
     // wrong username
@@ -92,7 +91,7 @@ public class ZeppelinClientWithAuthIntegrationTest extends AbstractTestRestApi {
       zeppelinClient.login("invalid_user", "password1");
       fail("Should fail to login");
     } catch (Exception e) {
-      assertTrue(e.getMessage(), e.getMessage().contains("Forbidden"));
+      assertTrue(e.getMessage().contains("Forbidden"), e.getMessage());
     }
   }
 }

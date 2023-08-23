@@ -38,11 +38,20 @@ import org.apache.zeppelin.rest.AbstractTestRestApi;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.utils.TestUtils;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -54,14 +63,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeTrue;
-
 
 /**
  * Test against spark cluster.
@@ -83,7 +84,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
   private String hadoopVersion;
   private AuthenticationInfo anonymous = new AuthenticationInfo("anonymous");
 
-  public ZeppelinSparkClusterTest(String sparkVersion, String hadoopVersion) throws Exception {
+  public void prepareSpark(String sparkVersion, String hadoopVersion) throws Exception {
     this.sparkVersion = sparkVersion;
     LOGGER.info("Testing SparkVersion: " + sparkVersion);
     this.sparkHome = DownloadUtils.downloadSpark(sparkVersion, hadoopVersion);
@@ -129,14 +130,14 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
     TestUtils.getInstance(Notebook.class).getInterpreterSettingManager().restart(sparkIntpSetting.getId());
   }
 
-  @BeforeClass
+  @BeforeAll
   public static void setUp() throws Exception {
     System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HELIUM_REGISTRY.getVarName(),
             "helium");
     AbstractTestRestApi.startUp(ZeppelinSparkClusterTest.class.getSimpleName());
   }
 
-  @AfterClass
+  @AfterAll
   public static void destroy() throws Exception {
     AbstractTestRestApi.shutDown();
   }
@@ -165,7 +166,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
 
   @Test
   public void scalaOutputTest() throws IOException, InterruptedException {
-    assumeTrue("Hadoop version mismatch, skip test", isHadoopVersionMatch());
+    assumeTrue(isHadoopVersionMatch(), "Hadoop version mismatch, skip test");
 
     String noteId = null;
     try {
@@ -224,7 +225,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
 
   @Test
   public void basicRDDTransformationAndActionTest() throws IOException {
-    assumeTrue("Hadoop version mismatch, skip test", isHadoopVersionMatch());
+    assumeTrue(isHadoopVersionMatch(), "Hadoop version mismatch, skip test");
 
     String noteId = null;
 
@@ -248,7 +249,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
 
   @Test
   public void sparkReadJSONTest() throws IOException {
-    assumeTrue("Hadoop version mismatch, skip test", isHadoopVersionMatch());
+    assumeTrue(isHadoopVersionMatch(), "Hadoop version mismatch, skip test");
 
     String noteId = null;
     try {
@@ -277,7 +278,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
 
   @Test
   public void sparkReadCSVTest() throws IOException {
-    assumeTrue("Hadoop version mismatch, skip test", isHadoopVersionMatch());
+    assumeTrue(isHadoopVersionMatch(), "Hadoop version mismatch, skip test");
 
     String noteId = null;
     try {
@@ -305,7 +306,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
 
   @Test
   public void sparkSQLTest() throws IOException {
-    assumeTrue("Hadoop version mismatch, skip test", isHadoopVersionMatch());
+    assumeTrue(isHadoopVersionMatch(), "Hadoop version mismatch, skip test");
 
     String noteId = null;
     try {
@@ -371,8 +372,8 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
           note.run(p.getId(), true);
           assertEquals(Status.FINISHED, p.getStatus());
           assertEquals(InterpreterResult.Type.TEXT, p.getReturn().message().get(0).getType());
-          assertTrue(p.getReturn().toString(),
-                  p.getReturn().message().get(0).getData().contains("name age\n1 hello  20"));
+          assertTrue(p.getReturn().message().get(0).getData().contains("name age\n1 hello  20"),
+            p.getReturn().toString());
 
           // test display DataSet
           p = note.addNewParagraph(anonymous);
@@ -393,7 +394,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
 
   @Test
   public void sparkRTest() throws IOException {
-    assumeTrue("Hadoop version mismatch, skip test", isHadoopVersionMatch());
+    assumeTrue(isHadoopVersionMatch(), "Hadoop version mismatch, skip test");
 
     String noteId = null;
     try {
@@ -421,7 +422,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
 
   @Test
   public void pySparkTest() throws IOException {
-    assumeTrue("Hadoop version mismatch, skip test", isHadoopVersionMatch());
+    assumeTrue(isHadoopVersionMatch(), "Hadoop version mismatch, skip test");
 
     // create new note
     String noteId = null;
@@ -479,7 +480,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
 
   @Test
   public void zRunTest() throws IOException, InterruptedException {
-    assumeTrue("Hadoop version mismatch, skip test", isHadoopVersionMatch());
+    assumeTrue(isHadoopVersionMatch(), "Hadoop version mismatch, skip test");
 
     String noteId = null;
     String note2Id = null;
@@ -575,7 +576,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
 
   @Test
   public void testZeppelinContextResource() throws IOException {
-    assumeTrue("Hadoop version mismatch, skip test", isHadoopVersionMatch());
+    assumeTrue(isHadoopVersionMatch(), "Hadoop version mismatch, skip test");
 
     String noteId = null;
     try {
@@ -610,8 +611,8 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
           assertEquals(Status.FINISHED, p3.getStatus());
           assertEquals("hello world\n", p3.getReturn().message().get(0).getData());
           assertEquals(Status.FINISHED, p4.getStatus());
-          assertTrue(p4.getReturn().toString(),
-                  p4.getReturn().message().get(0).getData().contains("hello world"));
+          assertTrue(p4.getReturn().message().get(0).getData().contains("hello world"),
+            p4.getReturn().toString());
           assertEquals(Status.FINISHED, p5.getStatus());
           assertEquals("hello world\n", p5.getReturn().message().get(0).getData());
           return null;
@@ -625,7 +626,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
 
   @Test
   public void testZeppelinContextHook() throws IOException {
-    assumeTrue("Hadoop version mismatch, skip test", isHadoopVersionMatch());
+    assumeTrue(isHadoopVersionMatch(), "Hadoop version mismatch, skip test");
 
     String noteId = null;
     String note2Id = null;
@@ -690,8 +691,8 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
           note.run(p.getId());
           waitForFinish(p);
           assertEquals(Status.FINISHED, p.getStatus());
-          assertTrue(p.getReturn().toString(),
-                  p.getReturn().message().get(0).getData().contains(sparkVersion));
+          assertTrue(p.getReturn().message().get(0).getData().contains(sparkVersion),
+            p.getReturn().toString());
           return null;
         });
     } finally {
@@ -701,13 +702,9 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
     }
   }
 
-  private boolean isSpark3() {
-    return sparkVersion.startsWith("3.");
-  }
-
   @Test
   public void testSparkZeppelinContextDynamicForms() throws IOException {
-    assumeTrue("Hadoop version mismatch, skip test", isHadoopVersionMatch());
+    assumeTrue(isHadoopVersionMatch(), "Hadoop version mismatch, skip test");
 
     String noteId = null;
     try {
@@ -752,7 +749,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
 
   @Test
   public void testPySparkZeppelinContextDynamicForms() throws IOException {
-    assumeTrue("Hadoop version mismatch, skip test", isHadoopVersionMatch());
+    assumeTrue(isHadoopVersionMatch(), "Hadoop version mismatch, skip test");
 
     String noteId = null;
     try {
@@ -795,7 +792,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
 
   @Test
   public void testAngularObjects() throws IOException, InterpreterNotFoundException {
-    assumeTrue("Hadoop version mismatch, skip test", isHadoopVersionMatch());
+    assumeTrue(isHadoopVersionMatch(), "Hadoop version mismatch, skip test");
 
     String noteId = null;
     try {
@@ -912,7 +909,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
 
   @Test
   public void testScalaNoteDynamicForms() throws IOException {
-    assumeTrue("Hadoop version mismatch, skip test", isHadoopVersionMatch());
+    assumeTrue(isHadoopVersionMatch(), "Hadoop version mismatch, skip test");
 
     String noteId = null;
     try {
@@ -936,7 +933,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
           p2.setText("%md hello $${name}");
           note.run(p2.getId(), true);
           assertEquals(Status.FINISHED, p2.getStatus());
-          assertTrue(p2.getReturn().toString(), p2.getReturn().toString().contains("hello world"));
+          assertTrue(p2.getReturn().toString().contains("hello world"), p2.getReturn().toString());
 
           // create Select
           p1.setText("%spark z.noteSelect(\"language\", Seq((\"java\" -> \"JAVA\"), (\"scala\" -> \"SCALA\")), \"java\")");
@@ -953,7 +950,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
           p2.setText("%md hello $${language}");
           note.run(p2.getId(), true);
           assertEquals(Status.FINISHED, p2.getStatus());
-          assertTrue(p2.getReturn().toString(), p2.getReturn().toString().contains("hello java"));
+          assertTrue(p2.getReturn().toString().contains("hello java"), p2.getReturn().toString());
 
           // create Checkbox
           p1.setText("%spark z.noteCheckbox(\"languages\", Seq((\"java\" -> \"JAVA\"), (\"scala\" -> \"SCALA\")), Seq(\"java\", \"scala\"))");
@@ -970,7 +967,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
           p2.setText("%md hello $${checkbox:languages}");
           note.run(p2.getId(), true);
           assertEquals(Status.FINISHED, p2.getStatus());
-          assertTrue(p2.getReturn().toString(), p2.getReturn().toString().contains("hello java,scala"));
+          assertTrue(p2.getReturn().toString().contains("hello java,scala"), p2.getReturn().toString());
           return null;
         });
     } finally {
@@ -982,7 +979,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
 
   @Test
   public void testPythonNoteDynamicForms() throws IOException {
-    assumeTrue("Hadoop version mismatch, skip test", isHadoopVersionMatch());
+    assumeTrue(isHadoopVersionMatch(), "Hadoop version mismatch, skip test");
 
     String noteId = null;
     try {
@@ -1006,7 +1003,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
           p2.setText("%md hello $${name}");
           note.run(p2.getId(), true);
           assertEquals(Status.FINISHED, p2.getStatus());
-          assertTrue(p2.getReturn().toString(), p2.getReturn().toString().contains("hello world"));
+          assertTrue(p2.getReturn().toString().contains("hello world"), p2.getReturn().toString());
 
           // create Select
           p1.setText("%spark.pyspark z.noteSelect('language', [('java', 'JAVA'), ('scala', 'SCALA')], 'java')");
@@ -1023,7 +1020,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
           p2.setText("%md hello $${language}");
           note.run(p2.getId(), true);
           assertEquals(Status.FINISHED, p2.getStatus());
-          assertTrue(p2.getReturn().toString(), p2.getReturn().toString().contains("hello java"));
+          assertTrue(p2.getReturn().toString().contains("hello java"), p2.getReturn().toString());
 
           // create Checkbox
           p1.setText("%spark.pyspark z.noteCheckbox('languages', [('java', 'JAVA'), ('scala', 'SCALA')], ['java', 'scala'])");
@@ -1040,7 +1037,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
           p2.setText("%md hello $${checkbox:languages}");
           note.run(p2.getId(), true);
           assertEquals(Status.FINISHED, p2.getStatus());
-          assertTrue(p2.getReturn().toString(), p2.getReturn().toString().contains("hello java,scala"));
+          assertTrue(p2.getReturn().toString().contains("hello java,scala"), p2.getReturn().toString());
           return null;
         });
     } finally {
@@ -1052,7 +1049,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
 
   @Test
   public void testRNoteDynamicForms() throws IOException {
-    assumeTrue("Hadoop version mismatch, skip test", isHadoopVersionMatch());
+    assumeTrue(isHadoopVersionMatch(), "Hadoop version mismatch, skip test");
 
     String noteId = null;
     try {
@@ -1076,7 +1073,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
           p2.setText("%md hello $${name}");
           note.run(p2.getId(), true);
           assertEquals(Status.FINISHED, p2.getStatus());
-          assertTrue(p2.getReturn().toString(), p2.getReturn().toString().contains("hello world"));
+          assertTrue(p2.getReturn().toString().contains("hello world"), p2.getReturn().toString());
           return null;
         });
     } finally {
@@ -1088,7 +1085,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
 
   @Test
   public void testConfInterpreter() throws IOException {
-    assumeTrue("Hadoop version mismatch, skip test", isHadoopVersionMatch());
+    assumeTrue(isHadoopVersionMatch(), "Hadoop version mismatch, skip test");
 
     String noteId = null;
     try {
@@ -1129,7 +1126,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
 
   @Test
   public void testFailtoLaunchSpark() throws IOException {
-    assumeTrue("Hadoop version mismatch, skip test", isHadoopVersionMatch());
+    assumeTrue(isHadoopVersionMatch(), "Hadoop version mismatch, skip test");
 
     String noteId = null;
     try {
@@ -1146,14 +1143,14 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
           p1.setText("%spark\nsc.version");
           note.run(p1.getId(), true);
           assertEquals(Status.ERROR, p1.getStatus());
-          assertTrue("Actual error message: " + p1.getReturn().message().get(0).getData(),
-                  p1.getReturn().message().get(0).getData().contains("No such file or directory"));
+          assertTrue(p1.getReturn().message().get(0).getData().contains("No such file or directory"),
+            "Actual error message: " + p1.getReturn().message().get(0).getData());
 
           // run it again, and get the same error
           note.run(p1.getId(), true);
           assertEquals(Status.ERROR, p1.getStatus());
-          assertTrue("Actual error message: " + p1.getReturn().message().get(0).getData(),
-                  p1.getReturn().message().get(0).getData().contains("No such file or directory"));
+          assertTrue(p1.getReturn().message().get(0).getData().contains("No such file or directory"),
+            "Actual error message: " + p1.getReturn().message().get(0).getData());
           return null;
         });
     } finally {

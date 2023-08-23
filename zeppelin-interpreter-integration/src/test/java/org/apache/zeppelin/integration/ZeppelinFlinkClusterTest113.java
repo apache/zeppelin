@@ -17,24 +17,29 @@
 
 package org.apache.zeppelin.integration;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 
-import java.util.Arrays;
-import java.util.List;
+public class ZeppelinFlinkClusterTest113 {
 
-//@RunWith(value = Parameterized.class)
-public class ZeppelinFlinkClusterTest113 extends ZeppelinFlinkClusterTest {
+  @Nested
+  @DisplayName("Scala 2.11")
+  public class Scala211 extends ZeppelinFlinkClusterTest {
 
-  @Parameterized.Parameters
-  public static List<Object[]> data() {
-    return Arrays.asList(new Object[][]{
-            {"1.13.2", "2.11"},
-            {"1.13.2", "2.12"}
-    });
+      @BeforeEach
+      public void downloadFlink() {
+        download("1.13.2", "2.11");
+      }
   }
 
-  public ZeppelinFlinkClusterTest113(String flinkVersion, String scalaVersion) throws Exception {
-    super(flinkVersion, scalaVersion);
+  @Nested
+  @DisplayName("Scala 2.12")
+  public class Scala212 extends ZeppelinFlinkClusterTest {
+
+      @BeforeEach
+      public void downloadFlink() {
+        download("1.13.2", "2.12");
+      }
   }
 }

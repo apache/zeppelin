@@ -32,17 +32,19 @@ import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.interpreter.integration.DownloadUtils;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.IOException;
 import java.util.EnumSet;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 public abstract class FlinkIntegrationTest {
   private static Logger LOGGER = LoggerFactory.getLogger(FlinkIntegrationTest.class);
@@ -57,7 +59,7 @@ public abstract class FlinkIntegrationTest {
   private String hadoopHome;
   private String flinkHome;
 
-  public FlinkIntegrationTest(String flinkVersion, String scalaVersion) {
+  public void download(String flinkVersion, String scalaVersion) throws IOException {
     LOGGER.info("Testing FlinkVersion: " + flinkVersion);
     LOGGER.info("Testing ScalaVersion: " + scalaVersion);
     this.flinkVersion = flinkVersion;
@@ -66,7 +68,7 @@ public abstract class FlinkIntegrationTest {
     this.hadoopHome = DownloadUtils.downloadHadoop("2.7.7");
   }
 
-  @BeforeClass
+  @BeforeAll
   public static void setUp() throws IOException {
     Configuration conf = new Configuration();
     conf.setBoolean(YarnConfiguration.YARN_MINICLUSTER_FIXED_PORTS, true);
@@ -79,7 +81,7 @@ public abstract class FlinkIntegrationTest {
     interpreterSettingManager = zeppelin.getInterpreterSettingManager();
   }
 
-  @AfterClass
+  @AfterAll
   public static void tearDown() throws IOException {
     if (zeppelin != null) {
       zeppelin.stop();
@@ -95,15 +97,15 @@ public abstract class FlinkIntegrationTest {
 
     InterpreterContext context = new InterpreterContext.Builder().setNoteId("note1").setParagraphId("paragraph_1").build();
     InterpreterResult interpreterResult = flinkInterpreter.interpret("1+1", context);
-    assertEquals(interpreterResult.toString(), InterpreterResult.Code.SUCCESS, interpreterResult.code());
+    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code(), interpreterResult.toString());
     assertTrue(interpreterResult.message().get(0).getData().contains("2"));
 
     interpreterResult = flinkInterpreter.interpret("val data = benv.fromElements(1, 2, 3)\ndata.collect()", context);
-    assertEquals(interpreterResult.toString(), InterpreterResult.Code.SUCCESS, interpreterResult.code());
+    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code(), interpreterResult.toString());
     assertTrue(interpreterResult.message().get(0).getData().contains("1, 2, 3"));
 
     interpreterResult = flinkInterpreter.interpret("val data = senv.fromElements(1, 2, 3)\ndata.print()", context);
-    assertEquals(interpreterResult.toString(), InterpreterResult.Code.SUCCESS, interpreterResult.code());
+    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code(), interpreterResult.toString());
 
     // check spark weburl in zeppelin-server side
     InterpreterSetting flinkInterpreterSetting = interpreterSettingManager.getByName("flink");

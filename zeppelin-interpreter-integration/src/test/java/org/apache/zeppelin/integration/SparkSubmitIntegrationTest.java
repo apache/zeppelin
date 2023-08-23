@@ -34,20 +34,20 @@ import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.interpreter.integration.DownloadUtils;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 public class SparkSubmitIntegrationTest {
 
@@ -60,7 +60,7 @@ public class SparkSubmitIntegrationTest {
 
   private static String sparkHome;
 
-  @BeforeClass
+  @BeforeAll
   public static void setUp() throws IOException {
     String sparkVersion = "3.4.1";
     String hadoopVersion = "3";
@@ -83,7 +83,7 @@ public class SparkSubmitIntegrationTest {
     sparkSubmitInterpreterSetting.setProperty("YARN_CONF_DIR", hadoopCluster.getConfigPath());
   }
 
-  @AfterClass
+  @AfterAll
   public static void tearDown() throws IOException {
     if (zeppelin != null) {
       zeppelin.stop();
@@ -94,7 +94,7 @@ public class SparkSubmitIntegrationTest {
   }
 
   @Test
-  public void testLocalMode() throws InterpreterException, YarnException {
+  void testLocalMode() throws InterpreterException, YarnException {
     try {
       // test SparkSubmitInterpreterSetting
       Interpreter sparkSubmitInterpreter = interpreterFactory.getInterpreter("spark-submit", new ExecutionContext("user1", "note1", "test"));
@@ -103,7 +103,7 @@ public class SparkSubmitIntegrationTest {
       InterpreterResult interpreterResult =
               sparkSubmitInterpreter.interpret("--master local --class org.apache.spark.examples.SparkPi --deploy-mode client " +
               sparkHome + "/examples/jars/spark-examples_2.12-3.4.1.jar", context);
-      assertEquals(interpreterResult.toString(), InterpreterResult.Code.SUCCESS, interpreterResult.code());
+      assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code(), interpreterResult.toString());
 
       // no yarn application launched
       GetApplicationsRequest request = GetApplicationsRequest.newInstance(EnumSet.of(YarnApplicationState.RUNNING));
@@ -115,7 +115,7 @@ public class SparkSubmitIntegrationTest {
   }
 
   @Test
-  public void testYarnMode() throws InterpreterException, YarnException {
+  void testYarnMode() throws InterpreterException, YarnException {
     try {
       // test SparkSubmitInterpreterSetting
       Interpreter sparkSubmitInterpreter = interpreterFactory.getInterpreter("spark-submit", new ExecutionContext("user1", "note1", "test"));
@@ -127,7 +127,7 @@ public class SparkSubmitIntegrationTest {
                       "--conf spark.app.name=" + yarnAppName + " --conf spark.driver.memory=512m " +
                       "--conf spark.executor.memory=512m " +
                       sparkHome + "/examples/jars/spark-examples_2.12-3.4.1.jar", context);
-      assertEquals(interpreterResult.toString(), InterpreterResult.Code.SUCCESS, interpreterResult.code());
+      assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code(), interpreterResult.toString());
 
       GetApplicationsRequest request = GetApplicationsRequest.newInstance(EnumSet.of(YarnApplicationState.FINISHED));
       GetApplicationsResponse response = hadoopCluster.getYarnCluster().getResourceManager().getClientRMService().getApplications(request);
@@ -143,7 +143,7 @@ public class SparkSubmitIntegrationTest {
   }
 
   @Test
-  public void testCancelSparkYarnApp() throws InterpreterException, YarnException, TimeoutException, InterruptedException {
+  void testCancelSparkYarnApp() throws InterpreterException, YarnException, TimeoutException, InterruptedException {
     try {
       // test SparkSubmitInterpreterSetting
       Interpreter sparkSubmitInterpreter = interpreterFactory.getInterpreter("spark-submit", new ExecutionContext("user1", "note1", "test"));
@@ -160,8 +160,8 @@ public class SparkSubmitIntegrationTest {
                             "--conf spark.app.name=" + yarnAppName + " --conf spark.driver.memory=512m " +
                             "--conf spark.executor.memory=512m " +
                             sparkHome + "/examples/jars/spark-examples_2.12-3.4.1.jar", context);
-            assertEquals(interpreterResult.toString(), InterpreterResult.Code.INCOMPLETE, interpreterResult.code());
-            assertTrue(interpreterResult.toString(), interpreterResult.toString().contains("Paragraph received a SIGTERM"));
+            assertEquals(InterpreterResult.Code.INCOMPLETE, interpreterResult.code(), interpreterResult.toString());
+            assertTrue(interpreterResult.toString().contains("Paragraph received a SIGTERM"), interpreterResult.toString());
           } catch (InterpreterException e) {
             waiter.fail("Should not throw exception\n" + ExceptionUtils.getStackTrace(e));
           }

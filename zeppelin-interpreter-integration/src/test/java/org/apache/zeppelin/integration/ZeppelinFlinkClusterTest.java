@@ -20,25 +20,27 @@ package org.apache.zeppelin.integration;
 import org.apache.commons.io.IOUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.integration.DownloadUtils;
-import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.rest.AbstractTestRestApi;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.utils.TestUtils;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 public abstract class ZeppelinFlinkClusterTest extends AbstractTestRestApi {
 
@@ -46,27 +48,27 @@ public abstract class ZeppelinFlinkClusterTest extends AbstractTestRestApi {
   private String flinkVersion;
   private String flinkHome;
 
-  public ZeppelinFlinkClusterTest(String flinkVersion, String scalaVersion) throws Exception {
+  public void download(String flinkVersion, String scalaVersion) {
     this.flinkVersion = flinkVersion;
     LOGGER.info("Testing FlinkVersion: " + flinkVersion);
     LOGGER.info("Testing ScalaVersion: " + scalaVersion);
     this.flinkHome = DownloadUtils.downloadFlink(flinkVersion, scalaVersion);
   }
 
-  @BeforeClass
+  @BeforeAll
   public static void setUp() throws Exception {
     System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HELIUM_REGISTRY.getVarName(),
             "helium");
     AbstractTestRestApi.startUp(ZeppelinFlinkClusterTest.class.getSimpleName());
   }
 
-  @AfterClass
+  @AfterAll
   public static void destroy() throws Exception {
     AbstractTestRestApi.shutDown();
   }
 
-  // TODO(zjffdu) Disable Temporary
-  //@Test
+  @Disabled("(zjffdu) Disable Temporary")
+  @Test
   public void testResumeFromCheckpoint() throws Exception {
 
     String noteId = null;
@@ -105,7 +107,7 @@ public abstract class ZeppelinFlinkClusterTest extends AbstractTestRestApi {
             p2.abort();
             // Sleep 5 seconds to ensure checkpoint info is written to note file
             Thread.sleep(5 * 1000);
-            assertTrue(p2.getConfig().toString(), p2.getConfig().get("latest_checkpoint_path").toString().contains(checkpointPath));
+            assertTrue(p2.getConfig().get("latest_checkpoint_path").toString().contains(checkpointPath), p2.getConfig().toString());
           } catch (InterruptedException e) {
             fail();
           }
@@ -119,7 +121,7 @@ public abstract class ZeppelinFlinkClusterTest extends AbstractTestRestApi {
           } catch (InterruptedException e) {
             fail();
           }
-          assertEquals(p2.getReturn().toString(), Job.Status.FINISHED, p2.getStatus());
+          assertEquals(Job.Status.FINISHED, p2.getStatus(), p2.getReturn().toString());
           return null;
         });
     } catch (Exception e) {
@@ -132,7 +134,8 @@ public abstract class ZeppelinFlinkClusterTest extends AbstractTestRestApi {
     }
   }
 
-  //@Test
+  @Disabled
+  @Test
   public void testResumeFromInvalidCheckpoint() throws Exception {
 
     String noteId = null;
@@ -171,8 +174,8 @@ public abstract class ZeppelinFlinkClusterTest extends AbstractTestRestApi {
           } catch (InterruptedException e) {
             fail();
           }
-          assertEquals(p2.getReturn().toString(), Job.Status.ERROR, p2.getStatus());
-          assertTrue(p2.getReturn().toString(), p2.getReturn().toString().contains("Cannot find checkpoint"));
+          assertEquals(Job.Status.ERROR, p2.getStatus(), p2.getReturn().toString());
+          assertTrue(p2.getReturn().toString().contains("Cannot find checkpoint"), p2.getReturn().toString());
 
           p2.setText("%flink.ssql(type=single, template=<h1>Total: {0}</h1>, resumeFromLatestCheckpoint=false)\n" +
                   "select count(1) from log;");
@@ -182,7 +185,7 @@ public abstract class ZeppelinFlinkClusterTest extends AbstractTestRestApi {
           } catch (InterruptedException e) {
             fail();
           }
-          assertEquals(p2.getReturn().toString(), Job.Status.FINISHED, p2.getStatus());
+          assertEquals(Job.Status.FINISHED, p2.getStatus(), p2.getReturn().toString());
           return null;
         });
 

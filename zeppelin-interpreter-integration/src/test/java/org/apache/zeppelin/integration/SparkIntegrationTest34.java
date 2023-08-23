@@ -17,40 +17,30 @@
 
 package org.apache.zeppelin.integration;
 
-import org.apache.zeppelin.interpreter.InterpreterSetting;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import java.io.IOException;
 
-import java.util.Arrays;
-import java.util.List;
-
-@RunWith(value = Parameterized.class)
 public class SparkIntegrationTest34 extends SparkIntegrationTest {
 
-  public SparkIntegrationTest34(String sparkVersion, String hadoopVersion) {
-    super(sparkVersion, hadoopVersion);
+  @Nested
+  @DisplayName("Hadoop2")
+  public class Hadoop2 extends SparkIntegrationTest {
+
+    @BeforeEach
+    public void downloadSpark() throws IOException {
+      prepareSpark("3.4.0", "2");
+    }
   }
 
-  @Parameterized.Parameters
-  public static List<Object[]> data() {
-    return Arrays.asList(new Object[][]{
-            {"3.4.0", "3"},
-    });
-  }
+  @Nested
+  @DisplayName("Hadoop3")
+  public class Hadoop3 extends SparkIntegrationTest {
 
-  @Override
-  protected void setUpSparkInterpreterSetting(InterpreterSetting interpreterSetting) {
-    // spark3 doesn't support yarn-client and yarn-cluster anymore, use
-    // spark.master and spark.submit.deployMode instead
-    String sparkMaster = interpreterSetting.getJavaProperties().getProperty("spark.master");
-    if (sparkMaster.equals("yarn-client")) {
-      interpreterSetting.setProperty("spark.master", "yarn");
-      interpreterSetting.setProperty("spark.submit.deployMode", "client");
-    } else if (sparkMaster.equals("yarn-cluster")){
-      interpreterSetting.setProperty("spark.master", "yarn");
-      interpreterSetting.setProperty("spark.submit.deployMode", "cluster");
-    } else if (sparkMaster.startsWith("local")) {
-      interpreterSetting.setProperty("spark.submit.deployMode", "client");
+    @BeforeEach
+    public void downloadSpark() throws IOException {
+      prepareSpark("3.4.0", "3");
     }
   }
 }
