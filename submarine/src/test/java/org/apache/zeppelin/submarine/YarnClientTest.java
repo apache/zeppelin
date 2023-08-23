@@ -16,13 +16,10 @@ package org.apache.zeppelin.submarine;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
-import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.submarine.commons.SubmarineConstants;
 import org.apache.zeppelin.submarine.hadoop.YarnClient;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.net.URL;
@@ -31,15 +28,14 @@ import java.util.Map;
 import java.util.Properties;
 
 import static org.apache.zeppelin.submarine.commons.SubmarineConstants.ZEPPELIN_SUBMARINE_AUTH_TYPE;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class YarnClientTest {
-  private static Logger LOGGER = LoggerFactory.getLogger(YarnClientTest.class);
 
   private static YarnClient yarnClient = null;
 
-  @BeforeClass
+  @BeforeAll
   public static void initEnv() {
-    ZeppelinConfiguration zconf = ZeppelinConfiguration.create();
     Properties properties = new Properties();
     properties.setProperty(ZEPPELIN_SUBMARINE_AUTH_TYPE, "simple");
     properties.setProperty("zeppelin.python.useIPython", "false");
@@ -50,39 +46,39 @@ public class YarnClientTest {
   }
 
   @Test
-  public void testParseAppAttempts() throws IOException {
+  void testParseAppAttempts() throws IOException {
     String jsonFile = "ws-v1-cluster-apps-application_id-appattempts.json";
     URL urlJson = Resources.getResource(jsonFile);
     String jsonContent = Resources.toString(urlJson, Charsets.UTF_8);
 
     List<Map<String, Object>> list = yarnClient.parseAppAttempts(jsonContent);
 
-    LOGGER.info("");
+    assertNotNull(list);
   }
 
   @Test
-  public void testParseAppAttemptsContainers() throws IOException {
+  void testParseAppAttemptsContainers() throws IOException {
     String jsonFile = "ws-v1-cluster-apps-application_id-appattempts-appattempt_id-containers.json";
     URL urlJson = Resources.getResource(jsonFile);
     String jsonContent = Resources.toString(urlJson, Charsets.UTF_8);
 
     List<Map<String, Object>> list = yarnClient.parseAppAttemptsContainers(jsonContent);
 
-    list.get(0).get(YarnClient.HOST_IP);
-    list.get(0).get(YarnClient.HOST_PORT);
-    list.get(0).get(YarnClient.CONTAINER_PORT);
+    assertNotNull(list.get(0).get(YarnClient.HOST_IP));
+    assertNotNull(list.get(0).get(YarnClient.HOST_PORT));
+    assertNotNull(list.get(0).get(YarnClient.CONTAINER_PORT));
 
-    LOGGER.info("");
+    assertNotNull(list);
   }
 
   @Test
-  public void testParseClusterApps() throws IOException {
+  void testParseClusterApps() throws IOException {
     String jsonFile = "ws-v1-cluster-apps-application_id-finished.json";
     URL urlJson = Resources.getResource(jsonFile);
     String jsonContent = Resources.toString(urlJson, Charsets.UTF_8);
 
     Map<String, Object> list = yarnClient.parseClusterApps(jsonContent);
 
-    LOGGER.info("");
+    assertNotNull(list);
   }
 }

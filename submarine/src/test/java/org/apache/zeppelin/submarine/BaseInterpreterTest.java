@@ -25,8 +25,8 @@ import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterEventClient;
 import org.apache.zeppelin.user.AuthenticationInfo;
-import org.junit.After;
-import org.junit.Before;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -34,10 +34,10 @@ import static org.mockito.Mockito.mock;
 
 public abstract class BaseInterpreterTest {
 
-  @Before
+  @BeforeEach
   public abstract void setUp() throws InterpreterException;
 
-  @After
+  @AfterEach
   public abstract void tearDown() throws InterpreterException;
 
   protected InterpreterContext getIntpContext() {

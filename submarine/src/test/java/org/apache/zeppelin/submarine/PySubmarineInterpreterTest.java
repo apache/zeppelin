@@ -23,24 +23,24 @@ import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.submarine.commons.SubmarineConstants;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.LinkedList;
 import java.util.Properties;
 
 import static org.apache.zeppelin.submarine.commons.SubmarineConstants.ZEPPELIN_SUBMARINE_AUTH_TYPE;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class PySubmarineInterpreterTest extends BaseInterpreterTest {
-  private static Logger LOGGER = LoggerFactory.getLogger(PySubmarineInterpreterTest.class);
+class PySubmarineInterpreterTest extends BaseInterpreterTest {
 
   PySubmarineInterpreter pySubmarineIntp;
   protected InterpreterGroup intpGroup;
 
   @Override
+  @BeforeEach
   public void setUp() throws InterpreterException {
     intpGroup = new InterpreterGroup();
     Properties properties = new Properties();
@@ -60,7 +60,7 @@ public class PySubmarineInterpreterTest extends BaseInterpreterTest {
   }
 
   @Test
-  public void testTensorflow() throws InterpreterException {
+  void testTensorflow() throws InterpreterException {
     String callTensorflowFunc = "import tensorflow as tf\n" +
         "print('Installed TensorFlow version:' + tf.__version__)";
 
@@ -73,12 +73,12 @@ public class PySubmarineInterpreterTest extends BaseInterpreterTest {
     // Successfully execute tensorflow to get the version function,
     // otherwise it will trigger an exception.
     String tfVersionInfo = intpContext.out().getCurrentOutput().toString();
-    LOGGER.info(tfVersionInfo);
     boolean getVersion = tfVersionInfo.contains("Installed TensorFlow version:");
-    assertTrue(tfVersionInfo, getVersion);
+    assertTrue(getVersion, tfVersionInfo);
   }
 
   @Override
+  @AfterEach
   public void tearDown() throws InterpreterException {
     pySubmarineIntp.close();
     intpGroup.close();
