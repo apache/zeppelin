@@ -38,8 +38,7 @@
 
   <properties>
     <!--test library versions-->
-    <selenium.java.version>3.141.59</selenium.java.version>
-    <commons.lang3.version>3.7</commons.lang3.version>
+    <selenium.java.version>4.11.0</selenium.java.version>
   </properties>
 
   <dependencies>
@@ -49,11 +48,6 @@
       <version>${gson.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.google.guava</groupId>
-      <artifactId>guava</artifactId>
-      <version>23.0</version>
-    </dependency>
-    <dependency>
       <groupId>org.seleniumhq.selenium</groupId>
       <artifactId>selenium-java</artifactId>
       <version>${selenium.java.version}</version>
@@ -61,10 +55,6 @@
         <exclusion>
           <groupId>com.google.code.gson</groupId>
           <artifactId>gson</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.google.guava</groupId>
-          <artifactId>guava</artifactId>
         </exclusion>
       </exclusions>
       <scope>test</scope>
@@ -111,12 +101,24 @@
       <artifactId>spark-interpreter</artifactId>
       <version>${project.version}</version>
       <scope>test</scope>
+            <exclusions>
+      <exclusion>
+          <groupId>com.google.guava</groupId>
+          <artifactId>guava</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.zeppelin</groupId>
       <artifactId>zeppelin-shell</artifactId>
       <version>${project.version}</version>
       <scope>test</scope>
+      <exclusions>
+      <exclusion>
+          <groupId>com.google.guava</groupId>
+          <artifactId>guava</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.zeppelin</groupId>
@@ -154,12 +156,6 @@
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-engine</artifactId>
-      <scope>test</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.junit.vintage</groupId>
-      <artifactId>junit-vintage-engine</artifactId>
       <scope>test</scope>
     </dependency>
 
