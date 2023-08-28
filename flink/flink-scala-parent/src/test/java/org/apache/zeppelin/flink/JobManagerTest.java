@@ -17,14 +17,14 @@
 
 package org.apache.zeppelin.flink;
 
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import static org.junit.Assert.assertEquals;
+import org.junit.jupiter.api.Test;
 
-public class JobManagerTest {
+class JobManagerTest {
 
   @Test
-  public void testRichDuration() {
+  void testRichDuration() {
     String richDuration = JobManager.toRichTimeDuration(18);
     assertEquals("18 seconds", richDuration);
 
