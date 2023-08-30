@@ -384,7 +384,10 @@ The following components are provided under the EPL License.
     (EPL 1.0) JRuby (org.jruby.jruby-complete:v1.6.8 - http://www.jruby.org/)
     (EPL 1.0) Sisu Plexus 0.3.4 (org.eclipse.sisu:org.eclipse.sisu.plexus:0.3.4 - https://www.eclipse.org/sisu/)
     (EPL 1.0) Sisu Inject 0.3.4 (org.eclipse.sisu:org.eclipse.sisu.inject:0.3.4 - https://www.eclipse.org/sisu/)
-    (EPL 1.0) JUnit 4.12 (junit:junit:4.12 - https://github.com/junit-team/junit4)
+    (EPL 2.0) JUnit Jupiter Engine 5.7.1 (org.junit.jupiter:junit-jupiter-engine:5.7.1 - https://github.com/junit-team/junit5)
+    (EPL 2.0) JUnit Platform Engine 5.7.1 (org.junit.jupiter:junit-platform-engine:5.7.1 - https://github.com/junit-team/junit5)
+    (EPL 2.0) JUnit Platform Commons 5.7.1 (org.junit.jupiter:junit-platform-commons:5.7.1 - https://github.com/junit-team/junit5)
+    (EPL 2.0) JUnit Jupiter API 5.7.1 (org.junit.jupiter:junit-jupiter-api:5.7.1 - https://github.com/junit-team/junit5)
 
 
 
