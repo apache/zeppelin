@@ -599,12 +599,12 @@ Here are some examples you can refer to. Including the below connectors, you can
     <th>Excludes</th>
   </tr>
   <tr>
-    <td>com.amazonaws:aws-java-sdk-redshift:1.11.51</td>
+    <td>com.amazon.redshift:redshift-jdbc42:2.1.0.18</td>
     <td></td>
   </tr>
 </table>
 
-[Maven Repository: com.amazonaws:aws-java-sdk-redshift](https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk-redshift)
+[Maven Repository: com.amazon.redshift:redshift-jdbc42](https://mvnrepository.com/artifact/com.amazon.redshift/redshift-jdbc42)
 
 ### Apache Hive
 
