@@ -128,7 +128,7 @@ class SparkScala213Interpreter(conf: SparkConf,
                           context: InterpreterContext): java.util.List[InterpreterCompletion] = {
     scalaCompletion.complete(buf.substring(0, cursor), cursor)
       .candidates
-      .map(e => new InterpreterCompletion(e.defString, e.defString, null))
+      .map(e => new InterpreterCompletion(e.name, e.name, null))
       .asJava
   }
 
