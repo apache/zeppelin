@@ -102,7 +102,7 @@
         <executions>
 
           <execution>
-            <id>install node</id>
+            <id>install node and npm-install</id>
             <goals>
               <goal>install-node-and-npm</goal>
             </goals>
@@ -119,7 +119,7 @@
             </goals>
             <configuration>
               <skip>${web.e2e.enabled}</skip>
-              <arguments>install --no-lockfile</arguments>
+              <arguments>install --legacy-peer-deps</arguments>
             </configuration>
           </execution>
 
@@ -227,9 +227,6 @@
         <artifactId>maven-clean-plugin</artifactId>
         <configuration>
           <filesets>
-            <fileset>
-              <directory>bower_components</directory>
-            </fileset>
             <fileset>
               <directory>node</directory>
             </fileset>
