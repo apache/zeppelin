@@ -199,7 +199,7 @@
     <plugin.surefire.version>2.22.2</plugin.surefire.version>
     <plugin.os.version>1.4.1.Final</plugin.os.version>
 
-    <testcontainers.version>1.15.1</testcontainers.version>
+    <testcontainers.version>1.19.0</testcontainers.version>
 
     <MaxMetaspace>512m</MaxMetaspace>
 
@@ -1173,6 +1173,13 @@
       <dependency>
         <groupId>org.testcontainers</groupId>
         <artifactId>neo4j</artifactId>
+        <version>${testcontainers.version}</version>
+        <scope>test</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>junit-jupiter</artifactId>
         <version>${testcontainers.version}</version>
         <scope>test</scope>
       </dependency>
