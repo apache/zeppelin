@@ -17,9 +17,13 @@
 
 package org.apache.zeppelin.mongodb;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 import java.util.Scanner;
 
@@ -31,30 +35,27 @@ import org.apache.zeppelin.interpreter.InterpreterOutputListener;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.InterpreterResultMessageOutput;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertEquals;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 /**
  * As there is no 'mongo' on the build platform, these tests simulates some basic behavior.
  *
  */
 public class MongoDbInterpreterTest implements InterpreterOutputListener {
-  
+
   private static final String SHELL_EXTENSION =
       new Scanner(MongoDbInterpreter.class.getResourceAsStream("/shell_extension.js"), "UTF-8")
       .useDelimiter("\\A").next();
-  
+
   private static final boolean IS_WINDOWS = System.getProperty("os.name")
       .startsWith("Windows");
-  
+
   private static final String MONGO_SHELL = System.getProperty("java.io.tmpdir") +
           (System.getProperty("java.io.tmpdir").endsWith(File.separator) ? StringUtils.EMPTY : File.separator)
           + "zeppelin-mongo-scripts"+ File.separator +"mongo-test." + (IS_WINDOWS ? "bat" : "sh");
-    
+
   private final Properties props = new Properties();
   private final MongoDbInterpreter interpreter = new MongoDbInterpreter(props);
   private final InterpreterOutput out = new InterpreterOutput(this);
@@ -63,21 +64,22 @@ public class MongoDbInterpreterTest implements InterpreterOutputListener {
           .setInterpreterOut(out).setNoteId("test").setParagraphId("test").build();
 
   private ByteBuffer buffer;
-  
-  @BeforeClass
+
+  @BeforeAll
   public static void setup() {
     // Create a fake 'mongo'
     final File mongoFile = new File(MONGO_SHELL);
     try {
-      FileUtils.write(mongoFile, (IS_WINDOWS ? "@echo off\ntype \"%3%\"" : "cat \"$3\""));
+      FileUtils.write(mongoFile, (IS_WINDOWS ? "@echo off\ntype \"%3%\"" : "cat \"$3\""),
+        StandardCharsets.UTF_8);
       FileUtils.forceDeleteOnExit(mongoFile);
     }
     catch (IOException ex) {
       System.out.println(ex.getMessage());
     }
   }
-  
-  @Before
+
+  @BeforeEach
   public void init() {
     buffer = ByteBuffer.allocate(10000);
     props.put("mongo.shell.path", (IS_WINDOWS ? "" : "sh ") + MONGO_SHELL);
@@ -94,19 +96,19 @@ public class MongoDbInterpreterTest implements InterpreterOutputListener {
     interpreter.open();
   }
 
-  @After
+  @AfterEach
   public void destroy(){
     interpreter.close();
   }
 
   @Test
-  public void testSuccess() {
+  void testSuccess() {
     final String userScript = "print('hello');";
-    
+
     final InterpreterResult res = interpreter.interpret(userScript, context);
 
-    assertSame("Check SUCCESS: " + res.message(), Code.SUCCESS, res.code());
-    
+    assertSame(Code.SUCCESS, res.code(), "Check SUCCESS: " + res.message());
+
     try {
       out.flush();
     } catch (IOException ex) {
@@ -114,7 +116,7 @@ public class MongoDbInterpreterTest implements InterpreterOutputListener {
     }
 
     final String resultScript = new String(getBufferBytes());
-    
+
     final String expectedScript = SHELL_EXTENSION.replace(
         "TABLE_LIMIT_PLACEHOLDER", interpreter.getProperty("mongo.shell.command.table.limit"))
             .replace("TARGET_DB_PLACEHOLDER", interpreter.getProperty("mongo.server.database"))
@@ -122,13 +124,13 @@ public class MongoDbInterpreterTest implements InterpreterOutputListener {
             .replace("PASSWORD_PLACEHOLDER", interpreter.getProperty("mongo.server.password"))
             .replace("AUTH_DB_PLACEHOLDER", interpreter. getProperty("mongo.server.authenticationDatabase"))+
         userScript;
-    
+
     // The script that is executed must contain the functions provided by this interpreter
-    assertEquals("Check SCRIPT", expectedScript, resultScript);
+    assertEquals(expectedScript, resultScript, "Check SCRIPT");
   }
-  
+
   @Test
-  public void testBadConf() {
+  void testBadConf() {
     props.setProperty("mongo.shell.path", "/bad/path/to/mongo");
     final InterpreterResult res = interpreter.interpret("print('hello')", context);
 
