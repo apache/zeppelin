@@ -119,7 +119,7 @@
             </goals>
             <configuration>
               <skip>${web.e2e.enabled}</skip>
-              <arguments>install --legacy-peer-deps</arguments>
+              <arguments>install --no-lockfile</arguments>
             </configuration>
           </execution>
 
