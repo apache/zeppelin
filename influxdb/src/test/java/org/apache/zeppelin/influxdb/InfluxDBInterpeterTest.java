@@ -15,6 +15,9 @@
 
 package org.apache.zeppelin.influxdb;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.io.IOException;
 import java.util.List;
 import java.util.Properties;
@@ -28,14 +31,12 @@ import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResultMessage;
 import org.apache.zeppelin.user.AuthenticationInfo;
-import org.junit.After;
-import org.junit.Assert;
-import static org.junit.Assert.assertEquals;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 
-public class InfluxDBInterpeterTest {
+class InfluxDBInterpeterTest {
 
   Properties properties;
 
@@ -196,7 +197,7 @@ public class InfluxDBInterpeterTest {
   }
 
 
-  @Before
+  @BeforeEach
   public void before() throws InterpreterException {
     //properties for local influxdb2 server
     properties = new Properties();
@@ -208,7 +209,7 @@ public class InfluxDBInterpeterTest {
     properties.setProperty("influxdb.logLevel", LogLevel.BODY.toString());
   }
 
-  @After
+  @AfterEach
   public void after() throws IOException {
     if (mockServer != null) {
       mockServer.shutdown();
@@ -216,7 +217,7 @@ public class InfluxDBInterpeterTest {
   }
 
   @Test
-  public void testSigleTable() throws InterpreterException {
+  void testSigleTable() throws InterpreterException {
 
     InfluxDBInterpreter t = new InfluxDBInterpreter(properties);
     t.open();
@@ -242,9 +243,9 @@ public class InfluxDBInterpeterTest {
     assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
 
     List<InterpreterResultMessage> message = interpreterResult.message();
-    Assert.assertEquals(1, message.size());
-    Assert.assertEquals(InterpreterResult.Type.TABLE, message.get(0).getType());
-    Assert.assertEquals("result\ttable\t_time\t_value\t_field\n" +
+    assertEquals(1, message.size());
+    assertEquals(InterpreterResult.Type.TABLE, message.get(0).getType());
+    assertEquals("result\ttable\t_time\t_value\t_field\n" +
             "_result\t0\t2020-01-24T10:23:56Z\t12.114014251781473\tusage_user\n" +
             "_result\t0\t2020-01-24T10:23:57Z\t12.048493938257717\tusage_user\n" +
             "_result\t0\t2020-01-24T10:24:06Z\t12.715678919729932\tusage_user\n" +
@@ -261,7 +262,7 @@ public class InfluxDBInterpeterTest {
   }
 
   @Test
-  public void testMultiTable() throws InterpreterException {
+  void testMultiTable() throws InterpreterException {
 
     InfluxDBInterpreter t = new InfluxDBInterpreter(properties);
     t.open();
@@ -283,17 +284,17 @@ public class InfluxDBInterpeterTest {
 
     // if prefix not found return ERROR and Prefix not found.
     if (InterpreterResult.Code.ERROR.equals(interpreterResult.code())) {
-      Assert.fail(interpreterResult.toString());
+      fail(interpreterResult.toString());
     }
 
     assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
     List<InterpreterResultMessage> message = interpreterResult.message();
 
-    Assert.assertEquals(9, message.size());
+    assertEquals(9, message.size());
 
-    message.forEach(m -> Assert.assertEquals(InterpreterResult.Type.TABLE, m.getType()));
+    message.forEach(m -> assertEquals(InterpreterResult.Type.TABLE, m.getType()));
 
-    Assert.assertEquals(
+    assertEquals(
         "result\ttable\t_start\t_stop\t_field\t_measurement\tcpu\thost\t_value\t_time\n" +
         "_result\t0\t2020-01-24T09:27:44.845218500Z\t2020-01-24T10:27:44.845218500Z\tusage_user" +
         "\tcpu\tcpu-total\tmacek.local\t12.381414297598637\t2020-01-24T09:28:00Z\n" +
@@ -307,7 +308,7 @@ public class InfluxDBInterpeterTest {
             "\tcpu\tcpu-total\tmacek.local\t16.046354351571846\t2020-01-24T09:32:00Z\n",
         message.get(0).getData());
 
-    Assert.assertEquals("result\ttable\t_start\t_stop\t_field\t_measurement\tcpu\thost\t_value" +
+    assertEquals("result\ttable\t_start\t_stop\t_field\t_measurement\tcpu\thost\t_value" +
         "\t_time\n" +
         "_result\t8\t2020-01-24T09:27:44.845218500Z\t2020-01-24T10:27:44.845218500Z\tusage_user" +
         "\tcpu\tcpu7\tmacek.local\t3.4507517507517504\t2020-01-24T09:28:00Z\n" +
