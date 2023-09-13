@@ -16,27 +16,27 @@ package org.apache.zeppelin.submarine;
 
 import com.google.common.io.Resources;
 import com.hubspot.jinjava.Jinjava;
-import org.apache.commons.io.Charsets;
 import org.apache.zeppelin.submarine.commons.SubmarineConstants;
 import org.apache.zeppelin.submarine.job.SubmarineJob;
+import org.junit.jupiter.api.Test;
 import org.apache.zeppelin.submarine.commons.SubmarineUtils;
-import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.io.IOException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-
-public class JinjaTemplatesTest {
+class JinjaTemplatesTest {
   private static Logger LOGGER = LoggerFactory.getLogger(JinjaTemplatesTest.class);
 
   @Test
-  public void jobRunJinjaTemplateTest1() throws IOException {
+  void jobRunJinjaTemplateTest1() throws IOException {
     String str = jobRunJinjaTemplateTest(Boolean.TRUE, Boolean.TRUE);
 
     StringBuffer sbCheck = new StringBuffer();
@@ -79,7 +79,7 @@ public class JinjaTemplatesTest {
   }
 
   @Test
-  public void jobRunJinjaTemplateTest2() throws IOException {
+  void jobRunJinjaTemplateTest2() throws IOException {
     String str = jobRunJinjaTemplateTest(Boolean.TRUE, Boolean.FALSE);
     StringBuffer sbCheck = new StringBuffer();
     sbCheck.append("SUBMARINE_HADOOP_HOME_VALUE/bin/yarn jar HADOOP_YARN_SUBMARINE_JAR_VALUE \\\n" +
@@ -119,7 +119,7 @@ public class JinjaTemplatesTest {
   }
 
   @Test
-  public void jobRunJinjaTemplateTest3() throws IOException {
+  void jobRunJinjaTemplateTest3() throws IOException {
     String str = jobRunJinjaTemplateTest(Boolean.TRUE, null);
     StringBuffer sbCheck = new StringBuffer();
     sbCheck.append("SUBMARINE_HADOOP_HOME_VALUE/bin/yarn jar HADOOP_YARN_SUBMARINE_JAR_VALUE \\\n" +
@@ -159,7 +159,7 @@ public class JinjaTemplatesTest {
   }
 
   @Test
-  public void jobRunJinjaTemplateTest4() throws IOException {
+  void jobRunJinjaTemplateTest4() throws IOException {
     String str = jobRunJinjaTemplateTest(Boolean.FALSE, Boolean.TRUE);
     StringBuffer sbCheck = new StringBuffer();
     sbCheck.append("DOCKER_HADOOP_HDFS_HOME_VALUE/bin/yarn jar " +
@@ -195,7 +195,7 @@ public class JinjaTemplatesTest {
   }
 
   @Test
-  public void jobRunJinjaTemplateTest5() throws IOException {
+  void jobRunJinjaTemplateTest5() throws IOException {
     String str = jobRunJinjaTemplateTest(Boolean.FALSE, Boolean.FALSE);
     StringBuffer sbCheck = new StringBuffer();
     sbCheck.append("SUBMARINE_HADOOP_HOME_VALUE/bin/yarn jar " +
@@ -231,7 +231,7 @@ public class JinjaTemplatesTest {
   }
 
   @Test
-  public void jobRunJinjaTemplateTest6() throws IOException {
+  void jobRunJinjaTemplateTest6() throws IOException {
     String str = jobRunJinjaTemplateTest(null, Boolean.FALSE);
     StringBuffer sbCheck = new StringBuffer();
     sbCheck.append("SUBMARINE_HADOOP_HOME_VALUE/bin/yarn jar HADOOP_YARN_SUBMARINE_JAR_VALUE \\\n" +
@@ -266,7 +266,7 @@ public class JinjaTemplatesTest {
   }
 
   @Test
-  public void jobRunJinjaTemplateTest7() throws IOException {
+  void jobRunJinjaTemplateTest7() throws IOException {
     String str = jobRunJinjaTemplateTest(null, null);
     StringBuffer sbCheck = new StringBuffer();
     sbCheck.append("SUBMARINE_HADOOP_HOME_VALUE/bin/yarn jar HADOOP_YARN_SUBMARINE_JAR_VALUE \\\n" +
@@ -301,7 +301,7 @@ public class JinjaTemplatesTest {
   }
 
   @Test
-  public void jobRunJinjaTemplateTest8() throws IOException {
+  void jobRunJinjaTemplateTest8() throws IOException {
     String str = tensorboardJinjaTemplateTest(Boolean.TRUE, Boolean.TRUE);
     StringBuffer sbCheck = new StringBuffer();
     sbCheck.append("DOCKER_HADOOP_HDFS_HOME_VALUE/bin/yarn jar \\\n" +
@@ -324,7 +324,7 @@ public class JinjaTemplatesTest {
   }
 
   @Test
-  public void jobRunJinjaTemplateTest9() throws IOException {
+  void jobRunJinjaTemplateTest9() throws IOException {
     String str = tensorboardJinjaTemplateTest(Boolean.TRUE, Boolean.FALSE);
     StringBuffer sbCheck = new StringBuffer();
     sbCheck.append("SUBMARINE_HADOOP_HOME_VALUE/bin/yarn jar \\\n" +
@@ -348,7 +348,7 @@ public class JinjaTemplatesTest {
 
   public String jobRunJinjaTemplateTest(Boolean dist, Boolean launchMode) throws IOException {
     URL urlTemplate = Resources.getResource(SubmarineJob.SUBMARINE_JOBRUN_TF_JINJA);
-    String template = Resources.toString(urlTemplate, Charsets.UTF_8);
+    String template = Resources.toString(urlTemplate, StandardCharsets.UTF_8);
     Jinjava jinjava = new Jinjava();
     HashMap<String, Object> jinjaParams = initJinjaParams(dist, launchMode);
 
@@ -367,7 +367,7 @@ public class JinjaTemplatesTest {
 
   public String tensorboardJinjaTemplateTest(Boolean dist, Boolean launchMode) throws IOException {
     URL urlTemplate = Resources.getResource(SubmarineJob.SUBMARINE_TENSORBOARD_JINJA);
-    String template = Resources.toString(urlTemplate, Charsets.UTF_8);
+    String template = Resources.toString(urlTemplate, StandardCharsets.UTF_8);
     Jinjava jinjava = new Jinjava();
     HashMap<String, Object> jinjaParams = initJinjaParams(dist, launchMode);
 
@@ -384,7 +384,7 @@ public class JinjaTemplatesTest {
   }
 
   private HashMap<String, Object> initJinjaParams(Boolean dist, Boolean launchMode) {
-    HashMap<String, Object> jinjaParams = new HashMap();
+    HashMap<String, Object> jinjaParams = new HashMap<>();
 
     if (launchMode == Boolean.TRUE) {
       jinjaParams.put(SubmarineUtils.unifyKey(SubmarineConstants.INTERPRETER_LAUNCH_MODE), "yarn");

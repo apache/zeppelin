@@ -21,7 +21,7 @@ import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.ExecuteException;
 import org.apache.commons.exec.LogOutputStream;
 import org.apache.commons.exec.PumpStreamHandler;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,7 +40,7 @@ public class SubmarineJobTest {
   private static final String DEFAULT_EXECUTOR_TEST = "DefaultExecutorTest.sh";
 
   @Test
-  public void defaultExecutorTest() throws IOException {
+  void defaultExecutorTest() throws IOException {
     DefaultExecutor executor = new DefaultExecutor();
     CommandLine cmdLine = CommandLine.parse(shell);
 

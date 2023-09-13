@@ -14,75 +14,47 @@
 
 package org.apache.zeppelin.submarine;
 
-import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.submarine.hadoop.HdfsClient;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.io.IOException;
 import java.util.Properties;
-
-import static org.junit.Assert.assertEquals;
 
 public class HdfsClientTest {
   private static Logger LOGGER = LoggerFactory.getLogger(HdfsClientTest.class);
 
   private static HdfsClient hdfsClient = null;
 
-  @BeforeClass
+  @BeforeAll
   public static void initEnv() {
-    ZeppelinConfiguration zconf = ZeppelinConfiguration.create();
     Properties properties = new Properties();
     hdfsClient = new HdfsClient(properties);
   }
 
-  @Test
-  public void testParseText0() throws IOException {
-    String text = "abc";
+  @ParameterizedTest
+  @ValueSource(strings = {
+      "abc",
+      "%submarine abc",
+      "%submarine.sh abc",
+      "%submarine.sh(k1=v1,k2=v2) abc" })
+  void testParseText0(String text) throws IOException {
     String script = hdfsClient.parseText(text);
     LOGGER.info(script);
-    assertEquals(script, "abc");
+    assertEquals("abc", script);
   }
 
   @Test
-  public void testParseText1() throws IOException {
-    String text = "%submarine abc";
-    String script = hdfsClient.parseText(text);
-    LOGGER.info(script);
-    assertEquals(script, "abc");
-  }
-
-  @Test
-  public void testParseText2() throws IOException {
-    String text = "%submarine.sh abc";
-    String script = hdfsClient.parseText(text);
-    LOGGER.info(script);
-    assertEquals(script, "abc");
-  }
-
-  @Test
-  public void testParseText3() throws IOException {
-    String text = "%submarine.sh(k1=v1,k2=v2) abc";
-    String script = hdfsClient.parseText(text);
-    LOGGER.info(script);
-    assertEquals(script, "abc");
-  }
-
-  @Test
-  public void testParseText4() throws IOException {
-    String text = "%submarine.sh(k1=v1,k2=v2) abc";
-    String script = hdfsClient.parseText(text);
-    LOGGER.info(script);
-    assertEquals(script, "abc");
-  }
-
-  @Test
-  public void testParseText5() throws IOException {
+  void testParseText5() throws IOException {
     String text = "";
     String script = hdfsClient.parseText(text);
     LOGGER.info(script);
-    assertEquals(script, "");
+    assertEquals("", script);
   }
 }
