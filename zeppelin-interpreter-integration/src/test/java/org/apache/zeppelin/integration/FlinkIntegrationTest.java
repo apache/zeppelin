@@ -18,6 +18,7 @@
 package org.apache.zeppelin.integration;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.yarn.api.protocolrecords.GetApplicationsRequest;
 import org.apache.hadoop.yarn.api.protocolrecords.GetApplicationsResponse;
 import org.apache.hadoop.yarn.api.records.YarnApplicationState;
@@ -55,7 +56,6 @@ public abstract class FlinkIntegrationTest {
   private static InterpreterSettingManager interpreterSettingManager;
 
   private String flinkVersion;
-  private String scalaVersion;
   private String hadoopHome;
   private String flinkHome;
 
@@ -63,15 +63,15 @@ public abstract class FlinkIntegrationTest {
     LOGGER.info("Testing FlinkVersion: " + flinkVersion);
     LOGGER.info("Testing ScalaVersion: " + scalaVersion);
     this.flinkVersion = flinkVersion;
-    this.scalaVersion = scalaVersion;
     this.flinkHome = DownloadUtils.downloadFlink(flinkVersion, scalaVersion);
-    this.hadoopHome = DownloadUtils.downloadHadoop("2.7.7");
+    this.hadoopHome = DownloadUtils.downloadHadoop("3.2.4");
   }
 
   @BeforeAll
   public static void setUp() throws IOException {
     Configuration conf = new Configuration();
     conf.setBoolean(YarnConfiguration.YARN_MINICLUSTER_FIXED_PORTS, true);
+    conf.set(MiniDFSCluster.HDFS_MINIDFS_BASEDIR, "target/hadoop-minicluster");
     hadoopCluster = new MiniHadoopCluster(conf);
     hadoopCluster.start();
 
@@ -141,7 +141,6 @@ public abstract class FlinkIntegrationTest {
     interpreterSettingManager.close();
   }
 
-  // TODO(zjffdu) enable it when make yarn integration test work
   @Test
   public void testYarnMode() throws IOException, InterpreterException, YarnException {
     InterpreterSetting flinkInterpreterSetting = interpreterSettingManager.getInterpreterSettingByName("flink");

@@ -253,74 +253,19 @@
 
   <profiles>
     <profile>
-      <id>hadoop2</id>
-
+      <id>hadoop3</id>
       <activation>
         <activeByDefault>true</activeByDefault>
       </activation>
       <properties>
-        <hadoop.version>${hadoop2.7.version}</hadoop.version>
-        <hadoop-client-api.artifact>hadoop-client</hadoop-client-api.artifact>
-        <hadoop-client-runtime.artifact>hadoop-yarn-api</hadoop-client-runtime.artifact>
-        <hadoop-client-minicluster.artifact>hadoop-client</hadoop-client-minicluster.artifact>
-      </properties>
-
-      <dependencies>
-        <dependency>
-          <groupId>org.apache.hadoop</groupId>
-          <artifactId>hadoop-common</artifactId>
-          <exclusions>
-            <exclusion>
-              <groupId>log4j</groupId>
-              <artifactId>log4j</artifactId>
-            </exclusion>
-            <exclusion>
-              <groupId>org.slf4j</groupId>
-              <artifactId>slf4j-log4j12</artifactId>
-            </exclusion>
-          </exclusions>
-        </dependency>
-
-        <dependency>
-          <groupId>org.apache.hadoop</groupId>
-          <artifactId>hadoop-yarn-client</artifactId>
-          <exclusions>
-            <exclusion>
-              <groupId>log4j</groupId>
-              <artifactId>log4j</artifactId>
-            </exclusion>
-          </exclusions>
-        </dependency>
-      </dependencies>
-
-    </profile>
-    <profile>
-      <id>hadoop3</id>
-
-      <properties>
         <hadoop.version>${hadoop3.2.version}</hadoop.version>
-        <hadoop-client-api.artifact>hadoop-client-api</hadoop-client-api.artifact>
-        <hadoop-client-runtime.artifact>hadoop-client-runtime</hadoop-client-runtime.artifact>
-        <hadoop-client-minicluster.artifact>hadoop-client-minicluster</hadoop-client-minicluster.artifact>
       </properties>
 
       <dependencies>
 
         <dependency>
           <groupId>org.apache.hadoop</groupId>
-          <artifactId>${hadoop-client-runtime.artifact}</artifactId>
-        </dependency>
-
-        <dependency>
-          <groupId>org.apache.hadoop</groupId>
-          <artifactId>${hadoop-client-minicluster.artifact}</artifactId>
-          <scope>test</scope>
-          <exclusions>
-            <exclusion>
-              <groupId>junit</groupId>
-              <artifactId>junit</artifactId>
-            </exclusion>
-          </exclusions>
+          <artifactId>hadoop-client-runtime</artifactId>
         </dependency>
 
       </dependencies>

@@ -66,30 +66,6 @@
                     </exclusion>
                 </exclusions>
             </dependency>
-            <!-- Fix enforcer plugin for hadoop2
-                 Can be removed when hadoop2 is removed.
-                 hadoop2 ships with a very old version.
-                 Keep the version in sync with s3proxy test dependency
-            -->
-            <dependency>
-                <groupId>com.google.inject</groupId>
-                <artifactId>guice</artifactId>
-                <version>5.0.1</version>
-            </dependency>
-            <!-- Fix enforcer plugin
-                 org.apache.hadoop:hadoop-yarn-client 2.7 and org.gaul:s3proxy are shipped with javax.xml.bind:jaxb-api
-             -->
-            <dependency>
-                <groupId>org.apache.hadoop</groupId>
-                <artifactId>hadoop-yarn-client</artifactId>
-                <version>${hadoop2.7.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>javax.xml.bind</groupId>
-                        <artifactId>jaxb-api</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
         </dependencies>
     </dependencyManagement>
     <dependencies>
