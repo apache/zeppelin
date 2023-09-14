@@ -40,9 +40,13 @@ import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
+import org.apache.commons.io.FilenameUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,6 +69,7 @@ import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -1858,19 +1863,21 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
       });
   }
 
-  @Test
-  public void testMoveNote() throws InterruptedException, IOException {
+  @ParameterizedTest
+  @MethodSource("provideMoveTestParameters")
+  public void testMoveNote(String oldName, String newPath) throws InterruptedException, IOException {
     String noteId = null;
+    String newName = FilenameUtils.getBaseName(newPath);
     try {
-      noteId = notebook.createNote("note1", anonymous);
+      noteId = notebook.createNote(oldName, anonymous);
       notebook.processNote(noteId,
         note -> {
-          assertEquals("note1", note.getName());
-          assertEquals("/note1", note.getPath());
+          assertEquals(oldName, note.getName());
+          assertEquals("/" + oldName, note.getPath());
           return null;
         });
 
-      notebook.moveNote(noteId, "/tmp/note2", anonymous);
+      notebook.moveNote(noteId, newPath, anonymous);
 
       // read note json file to check the name field is updated
       File noteFile = notebook.processNote(noteId,
@@ -1878,12 +1885,20 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
           return new File(conf.getNotebookDir() + "/" + notebookRepo.buildNoteFileName(note));
         });
       String noteJson = IOUtils.toString(new FileInputStream(noteFile), StandardCharsets.UTF_8);
-      assertTrue(noteJson.contains("note2"), noteJson);
+      assertTrue(noteJson.contains(newName), noteJson);
     } finally {
       if (noteId != null) {
         notebook.removeNote(noteId, anonymous);
       }
     }
+  }
+
+  private static Stream<Arguments> provideMoveTestParameters() {
+    return Stream.of(
+      Arguments.of("note1", "/temp/note2"),
+      Arguments.of("note1", "/Note1"),
+      Arguments.of("note1", "/temp/Note1")
+    );
   }
 
   @Override
