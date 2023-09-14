@@ -70,13 +70,6 @@
             <scope>test</scope>
         </dependency>
 
-        <dependency>
-            <groupId>org.apache.hadoop</groupId>
-            <artifactId>hadoop-common</artifactId>
-            <version>3.2.4</version>
-            <scope>test</scope>
-        </dependency>
-
     </dependencies>
 
     <build>
