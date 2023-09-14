@@ -36,7 +36,7 @@
     <!--library versions-->
     <interpreter.name>flink</interpreter.name>
     <flink.version>${flink1.13.version}</flink.version>
-    <flink.hadoop.version>${hadoop2.7.version}</flink.hadoop.version>
+    <flink.hadoop.version>${hadoop3.2.version}</flink.hadoop.version>
     <hive.version>2.3.4</hive.version>
     <hiverunner.version>4.0.0</hiverunner.version>
     <grpc.version>1.15.0</grpc.version>
@@ -298,35 +298,7 @@
 
     <dependency>
       <groupId>org.apache.hadoop</groupId>
-      <artifactId>hadoop-common</artifactId>
-      <version>${flink.hadoop.version}</version>
-      <scope>provided</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.hadoop</groupId>
-      <artifactId>hadoop-hdfs</artifactId>
-      <version>${flink.hadoop.version}</version>
-      <scope>provided</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.hadoop</groupId>
-      <artifactId>hadoop-yarn-common</artifactId>
-      <version>${flink.hadoop.version}</version>
-      <scope>provided</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.hadoop</groupId>
-      <artifactId>hadoop-yarn-client</artifactId>
-      <version>${flink.hadoop.version}</version>
-      <scope>provided</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.hadoop</groupId>
-      <artifactId>hadoop-mapreduce-client-core</artifactId>
+      <artifactId>hadoop-client-runtime</artifactId>
       <version>${flink.hadoop.version}</version>
       <scope>provided</scope>
     </dependency>
@@ -1016,21 +988,6 @@
         <hive.version>2.3.4</hive.version>
         <hiverunner.version>4.0.0</hiverunner.version>
       </properties>
-    </profile>
-    <profile>
-      <id>hive1</id>
-      <properties>
-        <hive.version>1.2.1</hive.version>
-        <hiverunner.version>3.2.1</hiverunner.version>
-      </properties>
-      <dependencies>
-        <dependency>
-          <groupId>org.apache.hadoop</groupId>
-          <artifactId>hadoop-common</artifactId>
-          <version>2.7.5</version>
-          <scope>provided</scope>
-        </dependency>
-      </dependencies>
     </profile>
   </profiles>
 </project>

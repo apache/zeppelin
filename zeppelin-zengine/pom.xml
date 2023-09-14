@@ -38,9 +38,21 @@
     <org.reflections.version>0.9.8</org.reflections.version>
     <xml.apis.version>1.4.01</xml.apis.version>
     <commons.vfs2.version>2.6.0</commons.vfs2.version>
+    <!-- Should match which the version from commons-vfs2 -->
+    <jackson.annocations.version>2.9.8</jackson.annocations.version>
     <eclipse.jgit.version>4.5.4.201711221230-r</eclipse.jgit.version>
     <eirslett.version>1.6</eirslett.version>
   </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-annotations</artifactId>
+        <version>${jackson.annocations.version}</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
 
   <dependencies>
     <dependency>
@@ -198,10 +210,7 @@
       <artifactId>commons-vfs2</artifactId>
       <version>${commons.vfs2.version}</version>
       <exclusions>
-        <exclusion>
-          <groupId>org.codehaus.plexus</groupId>
-          <artifactId>plexus-utils</artifactId>
-        </exclusion>
+        <!-- use hadoop-client-runtime to mount hadoop filesystems -->
         <exclusion>
           <groupId>org.apache.hadoop</groupId>
           <artifactId>hadoop-hdfs-client</artifactId>
@@ -308,56 +317,18 @@
 
   <profiles>
     <profile>
-      <id>hadoop2</id>
-
+      <id>hadoop3</id>
       <activation>
         <activeByDefault>true</activeByDefault>
       </activation>
-
-      <properties>
-        <hadoop.version>${hadoop2.7.version}</hadoop.version>
-      </properties>
-      <dependencies>
-        <dependency>
-          <groupId>org.apache.hadoop</groupId>
-          <artifactId>hadoop-common</artifactId>
-        </dependency>
-
-        <dependency>
-          <groupId>org.apache.hadoop</groupId>
-          <artifactId>hadoop-yarn-client</artifactId>
-        </dependency>
-      </dependencies>
-
-    </profile>
-    <profile>
-      <id>hadoop3</id>
-
       <properties>
         <hadoop.version>${hadoop3.2.version}</hadoop.version>
-        <hadoop-client-api.artifact>hadoop-client-api</hadoop-client-api.artifact>
-        <hadoop-client-runtime.artifact>hadoop-client-runtime</hadoop-client-runtime.artifact>
-        <hadoop-client-minicluster.artifact>hadoop-client-minicluster</hadoop-client-minicluster.artifact>
-
       </properties>
 
       <dependencies>
         <dependency>
           <groupId>org.apache.hadoop</groupId>
-          <artifactId>${hadoop-client-runtime.artifact}</artifactId>
-        </dependency>
-
-        <dependency>
-          <groupId>org.apache.hadoop</groupId>
-          <artifactId>${hadoop-client-minicluster.artifact}</artifactId>
-          <scope>test</scope>
-          <version>${hadoop.version}</version>
-          <exclusions>
-            <exclusion>
-              <groupId>junit</groupId>
-              <artifactId>junit</artifactId>
-            </exclusion>
-          </exclusions>
+          <artifactId>hadoop-client-runtime</artifactId>
         </dependency>
       </dependencies>
     </profile>
