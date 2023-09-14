@@ -20,7 +20,6 @@ package org.apache.zeppelin.flink;
 
 import com.google.common.io.Files;
 import org.apache.zeppelin.display.AngularObjectRegistry;
-import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
@@ -28,7 +27,10 @@ import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterEventClient;
 import org.apache.zeppelin.python.PythonInterpreterTest;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.LinkedList;
@@ -38,7 +40,7 @@ import java.util.concurrent.TimeoutException;
 import static org.mockito.Mockito.mock;
 
 
-public class PyFlinkInterpreterTest extends PythonInterpreterTest {
+class PyFlinkInterpreterTest extends PythonInterpreterTest {
 
   private FlinkInterpreter flinkInnerInterpreter;
   private LazyOpenInterpreter flinkScalaInterpreter;
@@ -47,6 +49,7 @@ public class PyFlinkInterpreterTest extends PythonInterpreterTest {
 
 
   @Override
+  @BeforeEach
   public void setUp() throws InterpreterException {
     Properties properties = new Properties();
     properties.setProperty("zeppelin.pyflink.python", "python");
@@ -89,6 +92,7 @@ public class PyFlinkInterpreterTest extends PythonInterpreterTest {
   }
 
   @Override
+  @AfterEach
   public void tearDown() {
     intpGroup.close();
     intpGroup = null;
@@ -96,45 +100,48 @@ public class PyFlinkInterpreterTest extends PythonInterpreterTest {
   }
 
   @Test
-  public void testBatchPyFlink() throws InterpreterException, IOException {
+  void testBatchPyFlink() throws InterpreterException, IOException {
     if (!flinkInnerInterpreter.getFlinkVersion().isAfterFlink114()){
       IPyFlinkInterpreterTest.testBatchPyFlink(interpreter, flinkScalaInterpreter);
     }
   }
 
   @Test
-  public void testStreamIPyFlink() throws InterpreterException, IOException {
+  void testStreamIPyFlink() throws InterpreterException, IOException {
     if (!flinkInnerInterpreter.getFlinkVersion().isAfterFlink114()) {
       IPyFlinkInterpreterTest.testStreamPyFlink(interpreter, flinkScalaInterpreter);
     }
   }
 
   @Test
-  public void testSingleStreamTableApi() throws InterpreterException, IOException {
+  void testSingleStreamTableApi() throws InterpreterException, IOException {
     IPyFlinkInterpreterTest.testSingleStreamTableApi(interpreter, flinkScalaInterpreter);
   }
 
   @Test
-  public void testUpdateStreamTableApi() throws InterpreterException, IOException {
+  void testUpdateStreamTableApi() throws InterpreterException, IOException {
     IPyFlinkInterpreterTest.testUpdateStreamTableApi(interpreter, flinkScalaInterpreter);
   }
 
   @Test
-  public void testAppendStreamTableApi() throws InterpreterException, IOException {
+  void testAppendStreamTableApi() throws InterpreterException, IOException {
     IPyFlinkInterpreterTest.testAppendStreamTableApi(interpreter, flinkScalaInterpreter);
   }
 
   @Test
-  public void testCancelStreamSql() throws InterpreterException, IOException, TimeoutException, InterruptedException {
+  void testCancelStreamSql()
+      throws InterpreterException, IOException, TimeoutException, InterruptedException {
     IPyFlinkInterpreterTest.testCancelStreamSql(interpreter, flinkScalaInterpreter);
   }
 
-  // TODO(zjffdu) flaky test
-  // @Test
-  public void testResumeStreamSqlFromSavePoint() throws InterpreterException, IOException, TimeoutException, InterruptedException {
+  @Test
+  @Disabled("(zjffdu) flaky test")
+  void testResumeStreamSqlFromSavePoint()
+      throws InterpreterException, IOException, TimeoutException, InterruptedException {
     IPyFlinkInterpreterTest.testResumeStreamSqlFromSavePoint(interpreter, flinkScalaInterpreter);
   }
 
+  @Override
   protected InterpreterContext getInterpreterContext() {
     InterpreterContext context = InterpreterContext.builder()
             .setNoteId("noteId")

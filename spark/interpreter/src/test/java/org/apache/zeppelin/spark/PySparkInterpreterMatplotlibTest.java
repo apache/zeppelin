@@ -27,31 +27,31 @@ import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Type;
 import org.apache.zeppelin.interpreter.InterpreterResultMessage;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterEventClient;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.FixMethodOrder;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-import org.junit.runners.MethodSorters;
+import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.io.TempDir;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertTrue;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+@TestMethodOrder(MethodOrderer.MethodName.class)
 public class PySparkInterpreterMatplotlibTest {
 
-  @ClassRule
-  public static TemporaryFolder tmpDir = new TemporaryFolder();
+  @TempDir
+  static File tmpDir;
 
   static SparkInterpreter sparkInterpreter;
   static PySparkInterpreter pyspark;
@@ -99,7 +99,7 @@ public class PySparkInterpreterMatplotlibTest {
     p.setProperty("zeppelin.spark.maxResult", "1000");
     p.setProperty("zeppelin.spark.importImplicit", "true");
     p.setProperty("zeppelin.pyspark.python", "python");
-    p.setProperty("zeppelin.dep.localrepo", tmpDir.newFolder().getAbsolutePath());
+    p.setProperty("zeppelin.dep.localrepo", tmpDir.getAbsolutePath());
     p.setProperty("zeppelin.pyspark.useIPython", "false");
     p.setProperty("zeppelin.python.gatewayserver_address", "127.0.0.1");
     p.setProperty("zeppelin.spark.deprecatedMsg.show", "false");
@@ -120,7 +120,7 @@ public class PySparkInterpreterMatplotlibTest {
     return version;
   }
 
-  @BeforeClass
+  @BeforeAll
   public static void setUp() throws Exception {
     intpGroup = new InterpreterGroup();
     intpGroup.put("note", new LinkedList<Interpreter>());
@@ -143,25 +143,25 @@ public class PySparkInterpreterMatplotlibTest {
     pyspark.open();
   }
 
-  @AfterClass
+  @AfterAll
   public static void tearDown() throws InterpreterException {
     pyspark.close();
     sparkInterpreter.close();
   }
 
   @Test
-  public void dependenciesAreInstalled() throws InterpreterException {
+  void dependenciesAreInstalled() throws InterpreterException {
     // matplotlib
     InterpreterResult ret = pyspark.interpret("import matplotlib", context);
-    assertEquals(ret.message().toString(), InterpreterResult.Code.SUCCESS, ret.code());
+    assertEquals(InterpreterResult.Code.SUCCESS, ret.code(), ret.message().toString());
 
     // inline backend
     ret = pyspark.interpret("import backend_zinline", context);
-    assertEquals(ret.message().toString(), InterpreterResult.Code.SUCCESS, ret.code());
+    assertEquals(InterpreterResult.Code.SUCCESS, ret.code(), ret.message().toString());
   }
 
   @Test
-  public void showPlot() throws InterpreterException {
+  void showPlot() throws InterpreterException {
     // Simple plot test
     InterpreterResult ret;
     ret = pyspark.interpret("import matplotlib.pyplot as plt", context);
@@ -170,15 +170,15 @@ public class PySparkInterpreterMatplotlibTest {
     ret = pyspark.interpret("plt.plot([1, 2, 3])", context);
     ret = pyspark.interpret("plt.show()", context);
 
-    assertEquals(ret.message().toString(), InterpreterResult.Code.SUCCESS, ret.code());
-    assertEquals(ret.message().toString(), Type.HTML, ret.message().get(0).getType());
+    assertEquals(InterpreterResult.Code.SUCCESS, ret.code(), ret.message().toString());
+    assertEquals(Type.HTML, ret.message().get(0).getType(), ret.message().toString());
     assertTrue(ret.message().get(0).getData().contains("data:image/png;base64"));
     assertTrue(ret.message().get(0).getData().contains("<div>"));
   }
 
   @Test
   // Test for when configuration is set to auto-close figures after show().
-  public void testClose() throws InterpreterException {
+  void testClose() throws InterpreterException {
     InterpreterResult ret;
     InterpreterResult ret1;
     InterpreterResult ret2;
@@ -205,7 +205,7 @@ public class PySparkInterpreterMatplotlibTest {
 
   @Test
   // Test for when configuration is set to not auto-close figures after show().
-  public void testNoClose() throws InterpreterException {
+  void testNoClose() throws InterpreterException {
     InterpreterResult ret;
     InterpreterResult ret1;
     InterpreterResult ret2;
@@ -220,7 +220,7 @@ public class PySparkInterpreterMatplotlibTest {
     // of FigureManager, causing show() to set the output
     // type to HTML even though the figure is inactive.
     ret = pyspark.interpret("plt.show()", context);
-    assertEquals(ret.message().toString(), InterpreterResult.Code.SUCCESS, ret.code());
+    assertEquals(InterpreterResult.Code.SUCCESS, ret.code(), ret.message().toString());
 
     // Now test that plot can be reshown if it is updated. It should be
     // different from the previous one because it will plot the same line
@@ -232,15 +232,15 @@ public class PySparkInterpreterMatplotlibTest {
 
   @Test
   // Test angular mode
-  public void testAngular() throws InterpreterException {
+  void testAngular() throws InterpreterException {
     InterpreterResult ret;
     ret = pyspark.interpret("import matplotlib.pyplot as plt", context);
     ret = pyspark.interpret("plt.close()", context);
     ret = pyspark.interpret("z.configure_mpl(interactive=False, close=False, angular=True)", context);
     ret = pyspark.interpret("plt.plot([1, 2, 3])", context);
     ret = pyspark.interpret("plt.show()", context);
-    assertEquals(ret.message().toString(), InterpreterResult.Code.SUCCESS, ret.code());
-    assertEquals(ret.message().toString(), Type.ANGULAR, ret.message().get(0).getType());
+    assertEquals(InterpreterResult.Code.SUCCESS, ret.code(), ret.message().toString());
+    assertEquals(Type.ANGULAR, ret.message().get(0).getType(), ret.message().toString());
 
     // Check if the figure data is in the Angular Object Registry
     AngularObjectRegistry registry = context.getAngularObjectRegistry();

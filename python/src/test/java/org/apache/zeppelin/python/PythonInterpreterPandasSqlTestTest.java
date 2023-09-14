@@ -6,7 +6,7 @@
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ *  http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,14 +15,25 @@
  * limitations under the License.
  */
 
-package org.apache.zeppelin.flink.cmd;
+package org.apache.zeppelin.python;
 
-import org.junit.Test;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 
-public class FlinkCmdInterpreterTest {
+public class PythonInterpreterPandasSqlTestTest {
+  @Nested
+  @DisplayName("iPythonEnabled")
+  public class iPythonEnabled extends PythonInterpreterPandasSqlTest {
+    public iPythonEnabled() {
+      super(true);
+    }
+  }
 
-  @Test
-  public void test() {
-
+  @Nested
+  @DisplayName("iPythonDisabled")
+  public class iPythonDisabled extends PythonInterpreterPandasSqlTest {
+    public iPythonDisabled() {
+      super(false);
+    }
   }
 }

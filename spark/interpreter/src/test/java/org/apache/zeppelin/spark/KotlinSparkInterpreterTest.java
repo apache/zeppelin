@@ -19,19 +19,12 @@ package org.apache.zeppelin.spark;
 
 import static org.apache.zeppelin.interpreter.InterpreterResult.Code.ERROR;
 import static org.apache.zeppelin.interpreter.InterpreterResult.Code.SUCCESS;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.rules.TemporaryFolder;
+
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -50,14 +43,15 @@ import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResultMessageOutput;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterEventClient;
 import org.apache.zeppelin.resource.LocalResourcePool;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 public class KotlinSparkInterpreterTest {
 
-  @ClassRule
-  public static TemporaryFolder tmpDir = new TemporaryFolder();
-
-  @Rule
-  public ExpectedException exceptionRule = ExpectedException.none();
+  @TempDir
+  static File tmpDir;
 
   private static SparkInterpreter repl;
   private static InterpreterGroup intpGroup;
@@ -66,14 +60,14 @@ public class KotlinSparkInterpreterTest {
   private static String output;
   private static boolean sparkSupported;
 
-  public static Properties getSparkTestProperties(TemporaryFolder tmpDir) throws IOException {
+  public static Properties getSparkTestProperties() throws IOException {
     Properties p = new Properties();
     p.setProperty(SparkStringConstants.MASTER_PROP_NAME, "local[*]");
     p.setProperty(SparkStringConstants.APP_NAME_PROP_NAME, "Zeppelin Test");
     p.setProperty("zeppelin.spark.useHiveContext", "true");
     p.setProperty("zeppelin.spark.maxResult", "1000");
     p.setProperty("zeppelin.spark.importImplicit", "true");
-    p.setProperty("zeppelin.dep.localrepo", tmpDir.newFolder().getAbsolutePath());
+    p.setProperty("zeppelin.dep.localrepo", tmpDir.getAbsolutePath());
     p.setProperty("zeppelin.spark.property_1", "value_1");
     return p;
   }
@@ -94,7 +88,7 @@ public class KotlinSparkInterpreterTest {
     assertEquals(expected, value);
   }
 
-  @BeforeClass
+  @BeforeAll
   public static void setUp() throws Exception {
     intpGroup = new InterpreterGroup();
     context = InterpreterContext.builder()
@@ -132,7 +126,7 @@ public class KotlinSparkInterpreterTest {
 
     intpGroup.put("note", new LinkedList<Interpreter>());
 
-    Properties properties = getSparkTestProperties(tmpDir);
+    Properties properties = getSparkTestProperties();
     repl = new SparkInterpreter(properties);
     repl.setInterpreterGroup(intpGroup);
     intpGroup.get("note").add(repl);
@@ -150,26 +144,18 @@ public class KotlinSparkInterpreterTest {
     }
   }
 
-  @AfterClass
+  @AfterAll
   public static void tearDown() throws InterpreterException {
     repl.close();
   }
 
-  @Before
-  public void expectUnsupportedError() {
-    if (!sparkSupported) {
-      exceptionRule.expect(UnsupportedClassVersionError.class);
-    }
-    Assume.assumeFalse("Spark version should be >= 2.4.", interpreter.isSparkVersionUnsupported());
-  }
-
   @Test
-  public void simpleKotlinTest() throws Exception {
+  void simpleKotlinTest() throws Exception {
     testCodeForResult("1 + 1", "Int = 2");
   }
 
   @Test
-  public void dataFrameTest() throws Exception {
+  void dataFrameTest() throws Exception {
     interpreter.interpret("spark.range(100, 0, -1).sort(\"id\").show(2)", context);
     assertTrue(output.contains(
         "+---+\n" +
@@ -181,7 +167,7 @@ public class KotlinSparkInterpreterTest {
   }
 
   @Test
-  public void testCancel() throws Exception {
+  void testCancel() throws Exception {
     Thread t = new Thread(() -> {
       try {
         InterpreterResult result = interpreter.interpret(
@@ -190,10 +176,10 @@ public class KotlinSparkInterpreterTest {
         assertTrue(result.message().get(0).getData().trim().contains("cancelled"));
       } catch (UnsupportedClassVersionError e) {
         if (sparkSupported) {
-          Assert.fail(e.getMessage());
+          fail(e.getMessage());
         }
       } catch (InterpreterException e) {
-        Assert.fail(e.getMessage());
+        fail(e.getMessage());
       }
     });
     t.start();
@@ -202,7 +188,7 @@ public class KotlinSparkInterpreterTest {
   }
 
   @Test
-  public void sparkPropertiesTest() throws Exception {
+  void sparkPropertiesTest() throws Exception {
     InterpreterResult result = interpreter.interpret(
         "sc.conf.all.map{ it.toString() }", context);
     String message = result.message().get(0).getData().trim();
@@ -211,7 +197,7 @@ public class KotlinSparkInterpreterTest {
   }
 
   @Test
-  public void classWriteTest() throws Exception {
+  void classWriteTest() throws Exception {
     interpreter.interpret("val f = { x: Any -> println(x) }", context);
     output = "";
     InterpreterResult result = interpreter.interpret("spark.range(5).foreach(f)", context);
@@ -234,7 +220,7 @@ public class KotlinSparkInterpreterTest {
   }
 
   @Test
-  public void zeppelinContextTest() throws Exception {
+  void zeppelinContextTest() throws Exception {
     InterpreterResult result = interpreter.interpret("z.input(\"name\", \"default_name\")", context);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
     assertEquals(1, context.getGui().getForms().size());

@@ -14,31 +14,24 @@
 
 package org.apache.zeppelin.hbase;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertEquals;
-
-import org.apache.log4j.BasicConfigurator;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.util.Properties;
 
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for HBase Interpreter.
  */
 public class HbaseInterpreterTest {
-  private static Logger logger = LoggerFactory.getLogger(HbaseInterpreterTest.class);
   private static HbaseInterpreter hbaseInterpreter;
 
-  @BeforeClass
+  @BeforeAll
   public static void setUp() throws NullPointerException, InterpreterException {
-    BasicConfigurator.configure();
     Properties properties = new Properties();
     properties.put("hbase.home", "");
     properties.put("hbase.ruby.sources", "");
@@ -47,30 +40,30 @@ public class HbaseInterpreterTest {
     hbaseInterpreter = new HbaseInterpreter(properties);
     hbaseInterpreter.open();
   }
-  
+
   @Test
-  public void newObject() {
-    assertThat(hbaseInterpreter, notNullValue());
+  void newObject() {
+    assertNotNull(hbaseInterpreter);
   }
 
   @Test
-  public void putsTest() {
+  void putsTest() {
     InterpreterResult result = hbaseInterpreter.interpret("puts \"Hello World\"", null);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    assertEquals(result.message().get(0).getType(), InterpreterResult.Type.TEXT);
+    assertEquals(InterpreterResult.Type.TEXT, result.message().get(0).getType());
     assertEquals("Hello World\n", result.message().get(0).getData());
   }
-  
+
   public void putsLoadPath() {
     InterpreterResult result = hbaseInterpreter.interpret(
             "require 'two_power'; puts twoToThePowerOf(4)", null);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    assertEquals(result.message().get(0).getType(), InterpreterResult.Type.TEXT);
+    assertEquals(InterpreterResult.Type.TEXT, result.message().get(0).getType());
     assertEquals("16\n", result.message().get(0).getData());
   }
 
   @Test
-  public void testException() {
+  void testException() {
     InterpreterResult result = hbaseInterpreter.interpret("plot practical joke", null);
     assertEquals(InterpreterResult.Code.ERROR, result.code());
     assertEquals("(NameError) undefined local variable or method `joke' for main:Object",

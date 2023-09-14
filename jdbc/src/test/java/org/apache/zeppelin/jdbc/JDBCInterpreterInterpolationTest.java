@@ -41,7 +41,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 /**
  * JDBC interpreter Z-variable interpolation unit tests.
  */
-public class JDBCInterpreterInterpolationTest extends BasicJDBCTestCaseAdapter {
+class JDBCInterpreterInterpolationTest extends BasicJDBCTestCaseAdapter {
 
   private static String jdbcConnection;
   private InterpreterContext interpreterContext;
@@ -56,6 +56,7 @@ public class JDBCInterpreterInterpolationTest extends BasicJDBCTestCaseAdapter {
     return jdbcConnection;
   }
 
+  @Override
   @BeforeEach
   public void setUp() throws Exception {
     Class.forName("org.h2.Driver");
@@ -77,7 +78,7 @@ public class JDBCInterpreterInterpolationTest extends BasicJDBCTestCaseAdapter {
   }
 
   @Test
-  public void testEnableDisableProperty() throws IOException, InterpreterException {
+  void testEnableDisableProperty() throws IOException, InterpreterException {
     Properties properties = new Properties();
     properties.setProperty("common.max_count", "1000");
     properties.setProperty("common.max_retry", "3");
@@ -120,7 +121,7 @@ public class JDBCInterpreterInterpolationTest extends BasicJDBCTestCaseAdapter {
   }
 
   @Test
-  public void testNormalQueryInterpolation() throws IOException, InterpreterException {
+  void testNormalQueryInterpolation() throws IOException, InterpreterException {
     Properties properties = new Properties();
     properties.setProperty("common.max_count", "1000");
     properties.setProperty("common.max_retry", "3");
@@ -163,7 +164,7 @@ public class JDBCInterpreterInterpolationTest extends BasicJDBCTestCaseAdapter {
   }
 
   @Test
-  public void testEscapedInterpolationPattern() throws IOException, InterpreterException {
+  void testEscapedInterpolationPattern() throws IOException, InterpreterException {
     Properties properties = new Properties();
     properties.setProperty("common.max_count", "1000");
     properties.setProperty("common.max_retry", "3");

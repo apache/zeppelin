@@ -122,12 +122,6 @@
     </dependency>
 
     <dependency>
-      <groupId>org.junit.vintage</groupId>
-      <artifactId>junit-vintage-engine</artifactId>
-      <scope>test</scope>
-    </dependency>
-
-    <dependency>
       <groupId>net.jodah</groupId>
       <artifactId>concurrentunit</artifactId>
       <version>0.4.4</version>
@@ -200,12 +194,6 @@
           <groupId>org.apache.hadoop</groupId>
           <artifactId>${hadoop-client-minicluster.artifact}</artifactId>
           <scope>test</scope>
-          <exclusions>
-            <exclusion>
-              <groupId>junit</groupId>
-              <artifactId>junit</artifactId>
-            </exclusion>
-          </exclusions>
         </dependency>
 
       </dependencies>

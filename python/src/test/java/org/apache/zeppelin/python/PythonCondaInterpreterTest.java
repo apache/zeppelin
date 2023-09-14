@@ -23,8 +23,8 @@ import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.interpreter.InterpreterResult;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -34,8 +34,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Matcher;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -43,11 +43,11 @@ import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-public class PythonCondaInterpreterTest {
+class PythonCondaInterpreterTest {
   private PythonCondaInterpreter conda;
   private PythonInterpreter python;
 
-  @Before
+  @BeforeEach
   public void setUp() throws InterpreterException {
     conda = spy(new PythonCondaInterpreter(new Properties()));
     when(conda.getClassName()).thenReturn(PythonCondaInterpreter.class.getName());
@@ -68,7 +68,7 @@ public class PythonCondaInterpreterTest {
   }
 
   @Test
-  public void testListEnv() throws IOException, InterruptedException, InterpreterException {
+  void testListEnv() throws IOException, InterruptedException, InterpreterException {
     setMockCondaEnvList();
 
     // list available env
@@ -83,7 +83,7 @@ public class PythonCondaInterpreterTest {
   }
 
   @Test
-  public void testActivateEnv() throws IOException, InterruptedException, InterpreterException {
+  void testActivateEnv() throws IOException, InterruptedException, InterpreterException {
     setMockCondaEnvList();
     String envname = "env1";
     InterpreterContext context = getInterpreterContext();
@@ -91,11 +91,11 @@ public class PythonCondaInterpreterTest {
     verify(python, times(1)).open();
     verify(python, times(1)).close();
     verify(python).setPythonExec("/path1/bin/python");
-    assertTrue(envname.equals(conda.getCurrentCondaEnvName()));
+    assertEquals(envname, conda.getCurrentCondaEnvName());
   }
 
   @Test
-  public void testDeactivate() throws InterpreterException {
+  void testDeactivate() throws InterpreterException {
     InterpreterContext context = getInterpreterContext();
     conda.interpret("deactivate", context);
     verify(python, times(1)).open();
@@ -105,7 +105,7 @@ public class PythonCondaInterpreterTest {
   }
 
   @Test
-  public void testParseCondaCommonStdout()
+  void testParseCondaCommonStdout()
       throws IOException, InterruptedException {
 
     StringBuilder sb = new StringBuilder()
@@ -122,7 +122,7 @@ public class PythonCondaInterpreterTest {
   }
 
   @Test
-  public void testGetRestArgsFromMatcher() {
+  void testGetRestArgsFromMatcher() {
     Matcher m =
         PythonCondaInterpreter.PATTERN_COMMAND_ENV.matcher("env remove --name test --yes");
     m.matches();

@@ -92,6 +92,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     return p;
   }
 
+  @Override
   @BeforeEach
   public void setUp() throws Exception {
     Class.forName("org.h2.Driver");
@@ -118,7 +119,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
   }
 
   @Test
-  public void testForParsePropertyKey() {
+  void testForParsePropertyKey() {
     JDBCInterpreter t = new JDBCInterpreter(new Properties());
     Map<String, String> localProperties = new HashMap<>();
     InterpreterContext interpreterContext = InterpreterContext.builder()
@@ -146,7 +147,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
    * JDBC Interpreter would try to use default config.
    */
   @Test
-  public void testDBPrefixProhibited() throws IOException, InterpreterException {
+  void testDBPrefixProhibited() throws IOException, InterpreterException {
     Properties properties = new Properties();
     properties.setProperty("common.max_count", "1000");
     properties.setProperty("common.max_retry", "3");
@@ -176,7 +177,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
   }
 
   @Test
-  public void testDefaultProperties() {
+  void testDefaultProperties() {
     JDBCInterpreter jdbcInterpreter = new JDBCInterpreter(getJDBCTestProperties());
 
     assertEquals("org.postgresql.Driver", jdbcInterpreter.getProperty(DEFAULT_DRIVER));
@@ -187,7 +188,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
   }
 
   @Test
-  public void testSelectQuery() throws IOException, InterpreterException {
+  void testSelectQuery() throws IOException, InterpreterException {
     Properties properties = new Properties();
     properties.setProperty("common.max_count", "1000");
     properties.setProperty("common.max_retry", "3");
@@ -218,7 +219,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
   }
 
   @Test
-  public void testSelectWithRefresh() throws IOException, InterruptedException, TimeoutException {
+  void testSelectWithRefresh() throws IOException, InterruptedException, TimeoutException {
     Properties properties = new Properties();
     properties.setProperty("common.max_count", "1000");
     properties.setProperty("common.max_retry", "3");
@@ -250,7 +251,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
   }
 
   @Test
-  public void testInvalidSelectWithRefresh() throws IOException, InterpreterException {
+  void testInvalidSelectWithRefresh() throws IOException, InterpreterException {
     Properties properties = new Properties();
     properties.setProperty("common.max_count", "1000");
     properties.setProperty("common.max_retry", "3");
@@ -272,7 +273,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
   }
 
   @Test
-  public void testColumnAliasQuery() throws IOException, InterpreterException {
+  void testColumnAliasQuery() throws IOException, InterpreterException {
     Properties properties = new Properties();
     properties.setProperty("common.max_count", "1000");
     properties.setProperty("common.max_retry", "3");
@@ -294,7 +295,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
   }
 
   @Test
-  public void testSplitSqlQuery() {
+  void testSplitSqlQuery() {
     String sqlQuery = "insert into test_table(id, name) values ('a', ';\"');" +
         "select * from test_table;" +
         "select * from test_table WHERE ID = \";'\";" +
@@ -325,7 +326,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
   }
 
   @Test
-  public void testQueryWithEscapedCharacters() throws IOException,
+  void testQueryWithEscapedCharacters() throws IOException,
           InterpreterException {
     String sqlQuery = "select '\\n', ';';" +
         "select replace('A\\;B', '\\', 'text');" +
@@ -358,7 +359,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
   }
 
   @Test
-  public void testSelectMultipleQueries() throws IOException, InterpreterException {
+  void testSelectMultipleQueries() throws IOException, InterpreterException {
     Properties properties = new Properties();
     properties.setProperty("common.max_count", "1000");
     properties.setProperty("common.max_retry", "3");
@@ -387,7 +388,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
   }
 
   @Test
-  public void testDefaultSplitQuries() throws IOException, InterpreterException {
+  void testDefaultSplitQuries() throws IOException, InterpreterException {
     Properties properties = new Properties();
     properties.setProperty("common.max_count", "1000");
     properties.setProperty("common.max_retry", "3");
@@ -415,7 +416,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
   }
 
   @Test
-  public void testSelectQueryWithNull() throws IOException, InterpreterException {
+  void testSelectQueryWithNull() throws IOException, InterpreterException {
     Properties properties = new Properties();
     properties.setProperty("common.max_count", "1000");
     properties.setProperty("common.max_retry", "3");
@@ -438,7 +439,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
 
 
   @Test
-  public void testSelectQueryMaxResult() throws IOException, InterpreterException {
+  void testSelectQueryMaxResult() throws IOException, InterpreterException {
     Properties properties = new Properties();
     properties.setProperty("common.max_count", "1");
     properties.setProperty("common.max_retry", "3");
@@ -463,7 +464,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
   }
 
   @Test
-  public void concurrentSettingTest() {
+  void concurrentSettingTest() {
     Properties properties = new Properties();
     properties.setProperty("zeppelin.jdbc.concurrent.use", "true");
     properties.setProperty("zeppelin.jdbc.concurrent.max_connection", "10");
@@ -486,7 +487,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
   }
 
   @Test
-  public void testAutoCompletion() throws IOException, InterpreterException {
+  void testAutoCompletion() throws IOException, InterpreterException {
     Properties properties = new Properties();
     properties.setProperty("common.max_count", "1000");
     properties.setProperty("common.max_retry", "3");
@@ -543,7 +544,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
   }
 
   @Test
-  public void testMultiTenant_1() throws IOException, InterpreterException {
+  void testMultiTenant_1() throws IOException, InterpreterException {
     // user1 %jdbc  select from default db
     // user2 %jdbc  select from default db
 
@@ -584,7 +585,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
   }
 
   @Test
-  public void testMultiTenant_2() throws IOException, InterpreterException {
+  void testMultiTenant_2() throws IOException, InterpreterException {
     // user1 %hive  select from default db
     // user2 %hive  select from default db
     Properties properties = getDBProperty("default", "", "");
@@ -621,7 +622,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
   }
 
   @Test
-  public void testPrecode() throws IOException, InterpreterException {
+  void testPrecode() throws IOException, InterpreterException {
     Properties properties = new Properties();
     properties.setProperty("default.driver", "org.h2.Driver");
     properties.setProperty("default.url", getJdbcConnection());
@@ -651,7 +652,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
   }
 
   @Test
-  public void testIncorrectPrecode() throws IOException, InterpreterException {
+  void testIncorrectPrecode() throws IOException, InterpreterException {
     Properties properties = new Properties();
     properties.setProperty("default.driver", "org.h2.Driver");
     properties.setProperty("default.url", getJdbcConnection());
@@ -673,7 +674,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
 
 
   @Test
-  public void testStatementPrecode() throws IOException, InterpreterException {
+  void testStatementPrecode() throws IOException, InterpreterException {
     Properties properties = new Properties();
     properties.setProperty("default.driver", "org.h2.Driver");
     properties.setProperty("default.url", getJdbcConnection());
@@ -694,7 +695,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
   }
 
   @Test
-  public void testIncorrectStatementPrecode() throws IOException,
+  void testIncorrectStatementPrecode() throws IOException,
           InterpreterException {
     Properties properties = new Properties();
     properties.setProperty("default.driver", "org.h2.Driver");
@@ -716,7 +717,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
   }
 
   @Test
-  public void testSplitSqlQueryWithComments() throws IOException,
+  void testSplitSqlQueryWithComments() throws IOException,
           InterpreterException {
     Properties properties = new Properties();
     properties.setProperty("common.max_count", "1000");

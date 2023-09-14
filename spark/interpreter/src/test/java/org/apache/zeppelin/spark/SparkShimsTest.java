@@ -17,72 +17,53 @@
 
 package org.apache.zeppelin.spark;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import org.apache.hadoop.util.VersionInfo;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterEventClient;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.runners.Enclosed;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameter;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.ArgumentCaptor;
 
-@RunWith(Enclosed.class)
-public class SparkShimsTest {
+class SparkShimsTest {
 
-  @RunWith(Parameterized.class)
-  public static class ParamTests {
-    @Parameters(name = "Hadoop {0} supports jobUrl: {1}")
-    public static Collection<Object[]> data() {
-      return Arrays.asList(
-          new Object[][] {
-            {"2.6.0", false},
-            {"2.6.1", false},
-            {"2.6.2", false},
-            {"2.6.3", false},
-            {"2.6.4", false},
-            {"2.6.5", false},
-            {"2.6.6", true}, // The latest fixed version
-            {"2.6.7", true}, // Future version
-            {"2.7.0", false},
-            {"2.7.1", false},
-            {"2.7.2", false},
-            {"2.7.3", false},
-            {"2.7.4", true}, // The latest fixed version
-            {"2.7.5", true}, // Future versions
-            {"2.8.0", false},
-            {"2.8.1", false},
-            {"2.8.2", true}, // The latest fixed version
-            {"2.8.3", true}, // Future versions
-            {"2.9.0", true}, // The latest fixed version
-            {"2.9.1", true}, // Future versions
-            {"3.0.0", true}, // The latest fixed version
-            {"3.0.0-alpha4", true}, // The latest fixed version
-            {"3.0.1", true}, // Future versions
-          });
-    }
-
-    @Parameter public String version;
-
-    @Parameter(1)
-    public boolean expected;
-
-    @Test
-    public void checkYarnVersionTest() {
+  @ParameterizedTest
+  @CsvSource({"2.6.0, false",
+  "2.6.1, false",
+  "2.6.2, false",
+  "2.6.3, false",
+  "2.6.4, false",
+  "2.6.5, false",
+  "2.6.6, true", // The latest fixed version
+  "2.6.7, true", // Future version
+  "2.7.0, false",
+  "2.7.1, false",
+  "2.7.2, false",
+  "2.7.3, false",
+  "2.7.4, true", // The latest fixed version
+  "2.7.5, true", // Future versions
+  "2.8.0, false",
+  "2.8.1, false",
+  "2.8.2, true", // The latest fixed version
+  "2.8.3, true", // Future versions
+  "2.9.0, true", // The latest fixed version
+  "2.9.1, true", // Future versions
+  "3.0.0, true", // The latest fixed version
+  "3.0.0-alpha4, true", // The latest fixed version
+  "3.0.1, true"}) // Future versions
+  void checkYarnVersionTest(String version, boolean expected) {
       SparkShims sparkShims =
           new SparkShims(new Properties()) {
             @Override
@@ -101,15 +82,15 @@ public class SparkShimsTest {
             }
           };
       assertEquals(expected, sparkShims.supportYarn6615(version));
-    }
   }
 
-  public static class SingleTests {
+  @Nested
+  class SingleTests {
     SparkShims sparkShims;
     InterpreterContext mockContext;
     RemoteInterpreterEventClient mockIntpEventClient;
 
-    @Before
+    @BeforeEach
     public void setUp() {
       mockContext = mock(InterpreterContext.class);
       mockIntpEventClient = mock(RemoteInterpreterEventClient.class);
@@ -127,7 +108,7 @@ public class SparkShimsTest {
     }
 
     @Test
-    public void runUnderLocalTest() {
+    void runUnderLocalTest() {
       Properties properties = new Properties();
       properties.setProperty("spark.jobGroup.id", "zeppelin|user1|noteId|paragraphId");
       sparkShims.buildSparkJobUrl("local", "http://sparkurl", 0, properties, mockContext);
@@ -140,7 +121,7 @@ public class SparkShimsTest {
     }
 
     @Test
-    public void runUnderYarnTest() {
+    void runUnderYarnTest() {
       Properties properties = new Properties();
       properties.setProperty("spark.jobGroup.id", "zeppelin|user1|noteId|paragraphId");
       sparkShims.buildSparkJobUrl("yarn", "http://sparkurl", 0, properties, mockContext);

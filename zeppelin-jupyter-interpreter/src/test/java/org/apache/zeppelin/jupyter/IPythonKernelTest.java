@@ -29,9 +29,9 @@ import org.apache.zeppelin.interpreter.remote.RemoteInterpreterEventClient;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.resource.LocalResourcePool;
 import org.apache.zeppelin.resource.ResourcePool;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -40,8 +40,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import static junit.framework.TestCase.assertTrue;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 
 
@@ -49,13 +49,13 @@ import static org.mockito.Mockito.mock;
  * TODO(zjffdu) These tests are copied from python module.
  * Should reorganize them to avoid code duplication.
  */
-public class IPythonKernelTest {
+class IPythonKernelTest {
 
   protected InterpreterGroup intpGroup;
   protected Interpreter interpreter;
   private ResourcePool resourcePool;
 
-  @Before
+  @BeforeEach
   public void setUp() throws InterpreterException {
     Properties properties = new Properties();
     interpreter = new LazyOpenInterpreter(new JupyterInterpreter(properties));
@@ -69,7 +69,7 @@ public class IPythonKernelTest {
     interpreter.open();
   }
 
-  @After
+  @AfterEach
   public void tearDown() throws InterpreterException {
     if (interpreter != null) {
       interpreter.close();
@@ -77,7 +77,7 @@ public class IPythonKernelTest {
   }
 
   @Test
-  public void testPythonBasics() throws InterpreterException, InterruptedException, IOException {
+  void testPythonBasics() throws InterpreterException, InterruptedException, IOException {
     InterpreterContext context = getInterpreterContext();
     InterpreterResult result =
             interpreter.interpret("import sys\nprint(sys.version[0])", context);
@@ -230,7 +230,7 @@ public class IPythonKernelTest {
   }
 
   @Test
-  public void testInterpolate() throws InterpreterException, IOException {
+  void testInterpolate() throws InterpreterException, IOException {
     intpGroup.getResourcePool().put("name", "hello");
     InterpreterContext context = getInterpreterContext();
     context.getLocalProperties().put("interpolate", "true");
@@ -246,7 +246,7 @@ public class IPythonKernelTest {
   }
 
   @Test
-  public void testCodeCompletion() throws InterpreterException, InterruptedException {
+  void testCodeCompletion() throws InterpreterException, InterruptedException {
     // define `a` first
     InterpreterContext context = getInterpreterContext();
     String st = "a='hello'";
@@ -277,7 +277,7 @@ public class IPythonKernelTest {
   }
 
   @Test
-  public void testUpdateOutput() throws IOException, InterpreterException {
+  void testUpdateOutput() throws IOException, InterpreterException {
     InterpreterContext context = getInterpreterContext();
     String st = "import sys\n" +
             "import time\n" +

@@ -16,19 +16,21 @@
  */
 package org.apache.zeppelin.spark;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class SparkVersionTest {
+class SparkVersionTest {
 
   @Test
-  public void testUnknownSparkVersion() {
+  void testUnknownSparkVersion() {
     assertEquals(99999, SparkVersion.fromVersionString("DEV-10.10").toNumber());
   }
 
   @Test
-  public void testUnsupportedVersion() {
+  void testUnsupportedVersion() {
     assertTrue(SparkVersion.fromVersionString("1.4.2").isUnsupportedVersion());
     assertFalse(SparkVersion.fromVersionString("2.3.0").isUnsupportedVersion());
     assertTrue(SparkVersion.fromVersionString("0.9.0").isUnsupportedVersion());
@@ -38,7 +40,7 @@ public class SparkVersionTest {
   }
 
   @Test
-  public void testSparkVersion() {
+  void testSparkVersion() {
     // test equals
     assertEquals(SparkVersion.SPARK_2_0_0, SparkVersion.fromVersionString("2.0.0"));
     assertEquals(SparkVersion.SPARK_2_0_0, SparkVersion.fromVersionString("2.0.0-SNAPSHOT"));
