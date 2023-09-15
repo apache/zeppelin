@@ -19,6 +19,7 @@ package org.apache.zeppelin.livy;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
 import com.google.gson.annotations.SerializedName;
 
 import org.apache.commons.lang3.StringUtils;
@@ -782,7 +783,8 @@ public abstract class BaseLivyInterpreter extends Interpreter {
     public final Map<String, String> conf;
     public final Map<String, String> params;
 
-    CreateSessionRequest(String kind, String user, Map<String, String> conf, Map<String, String> params) {
+    CreateSessionRequest(String kind, String user, Map<String, String> conf,
+                         Map<String, String> params) {
       this.kind = kind;
       this.user = user;
       this.conf = conf;
