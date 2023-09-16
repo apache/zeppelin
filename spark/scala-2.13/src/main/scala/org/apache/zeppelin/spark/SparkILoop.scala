@@ -19,11 +19,10 @@ package org.apache.zeppelin.spark
 
 import java.io.{BufferedReader, PrintWriter}
 
-import scala.Predef.{println => _, _}
+import scala.Predef.{println => _}
 import scala.tools.nsc.GenericRunnerSettings
 import scala.tools.nsc.Settings
 import scala.tools.nsc.interpreter.shell.{ILoop, ShellConfig}
-import scala.tools.nsc.util.stringFromStream
 import scala.util.Properties.{javaVersion, javaVmName, versionString}
 
 /**

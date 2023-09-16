@@ -61,7 +61,6 @@
     <module>rlang</module>
     <module>zeppelin-jupyter-interpreter</module>
     <module>zeppelin-jupyter-interpreter-shaded</module>
-    <module>kotlin</module>
     <module>groovy</module>
     <module>spark</module>
     <module>spark-submit</module>
