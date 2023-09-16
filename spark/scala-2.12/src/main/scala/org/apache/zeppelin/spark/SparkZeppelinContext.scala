@@ -25,6 +25,7 @@ import org.apache.zeppelin.display.AngularObjectWatcher
 import org.apache.zeppelin.display.ui.OptionInput.ParamOption
 import org.apache.zeppelin.interpreter.{ZeppelinContext, InterpreterContext, InterpreterHookRegistry}
 
+import scala.collection.Seq
 import scala.collection.JavaConverters._
 
 
