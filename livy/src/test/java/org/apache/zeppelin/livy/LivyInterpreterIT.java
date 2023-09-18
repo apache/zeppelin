@@ -645,6 +645,42 @@ public class LivyInterpreterIT {
   }
 
   @Test
+  void testLivyParams() throws InterpreterException {
+    if (!checkPreCondition()) {
+      return;
+    }
+    InterpreterGroup interpreterGroup = new InterpreterGroup("group_1");
+    interpreterGroup.put("session_1", new ArrayList<Interpreter>());
+    Properties props = new Properties(properties);
+    props.setProperty("livy.spark.executor.cores", "4");
+    props.setProperty("livy.name", "zeppelin-livy");
+    LivySparkInterpreter sparkInterpreter = new LivySparkInterpreter(props);
+    sparkInterpreter.setInterpreterGroup(interpreterGroup);
+    interpreterGroup.get("session_1").add(sparkInterpreter);
+    AuthenticationInfo authInfo = new AuthenticationInfo("user1");
+    MyInterpreterOutputListener outputListener = new MyInterpreterOutputListener();
+    InterpreterOutput output = new InterpreterOutput(outputListener);
+    InterpreterContext context = InterpreterContext.builder()
+            .setNoteId("noteId")
+            .setParagraphId("paragraphId")
+            .setAuthenticationInfo(authInfo)
+            .setInterpreterOut(output)
+            .build();
+    sparkInterpreter.open();
+
+    try {
+      InterpreterResult result = sparkInterpreter.interpret("sc.version\n" +
+              "assert(sc.getConf.get(\"spark.executor.cores\") == \"4\" && " +
+                      "sc.getConf.get(\"spark.app.name\") == \"zeppelin-livy\")"
+              , context);
+      assertEquals(InterpreterResult.Code.SUCCESS, result.code(), result.toString());
+      assertEquals(1, result.message().size());
+    } finally {
+      sparkInterpreter.close();
+    }
+  }
+
+  @Test
   void testLivyTutorialNote() throws IOException, InterpreterException {
     if (!checkPreCondition()) {
       return;
