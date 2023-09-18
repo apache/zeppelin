@@ -22,10 +22,9 @@ import org.apache.spark.SparkConf
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion
 import org.apache.zeppelin.interpreter.util.InterpreterOutputStream
 import org.apache.zeppelin.interpreter.{InterpreterContext, InterpreterException, InterpreterGroup, InterpreterResult}
-import org.apache.zeppelin.kotlin.KotlinInterpreter
 import org.slf4j.{Logger, LoggerFactory}
 
-import java.io.{File, PrintStream, PrintWriter}
+import java.io.{File, PrintWriter}
 import java.net.URLClassLoader
 import java.nio.file.Paths
 import java.util.Properties
@@ -150,17 +149,6 @@ class SparkScala213Interpreter(conf: SparkConf,
 
   override def getScalaShellClassLoader: ClassLoader = {
     sparkILoop.classLoader
-  }
-
-  // Used by KotlinSparkInterpreter
-  def delegateInterpret(interpreter: KotlinInterpreter,
-                        code: String,
-                        context: InterpreterContext): InterpreterResult = {
-    val out = context.out
-    val newOut = if (out != null) new PrintStream(out) else null
-    Console.withOut(newOut) {
-      interpreter.interpret(code, context)
-    }
   }
 
   override def close(): Unit = {

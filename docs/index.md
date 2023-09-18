@@ -147,7 +147,6 @@ limitations under the License.
   * [Java](./interpreter/java.html)
   * [JDBC](./interpreter/jdbc.html)
   * [Jupyter](./interpreter/jupyter.html)
-  * [Kotlin](./interpreter/kotlin.html)
   * [Livy](./interpreter/livy.html)
   * [Mahout](./interpreter/mahout.html)
   * [Markdown](./interpreter/markdown.html)

@@ -69,11 +69,6 @@ Apache Spark is supported in Zeppelin with Spark interpreter group which consist
     <td>SparkSQLInterpreter</td>
     <td>Provides a SQL environment</td>
   </tr>
-  <tr>
-    <td>%spark.kotlin</td>
-    <td>KotlinSparkInterpreter</td>
-    <td>Provides a Kotlin environment</td>
-  </tr>
 </table>
 
 ## Main Features
@@ -390,7 +385,7 @@ You can also choose `scoped` mode. For `scoped` per note mode, Zeppelin creates 
 
 ## SparkContext, SQLContext, SparkSession, ZeppelinContext
 
-SparkContext, SQLContext, SparkSession (for spark 2.x, 3.x) and ZeppelinContext are automatically created and exposed as variable names `sc`, `sqlContext`, `spark` and `z` respectively, in Scala, Kotlin, Python and R environments.
+SparkContext, SQLContext, SparkSession (for spark 2.x, 3.x) and ZeppelinContext are automatically created and exposed as variable names `sc`, `sqlContext`, `spark` and `z` respectively, in Scala, Python and R environments.
 
 
 > Note that Scala/Python/R environment shares the same SparkContext, SQLContext, SparkSession and ZeppelinContext instance.

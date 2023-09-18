@@ -163,11 +163,6 @@ You can also find the below community managed interpreter list in `conf/interpre
     <td>Jdbc interpreter</td>
   </tr>
   <tr>
-    <td>kotlin</td>
-    <td>org.apache.zeppelin:zeppelin-kotlin:0.7.0</td>
-    <td>Kotlin interpreter</td>
-  </tr>
-  <tr>
     <td>livy</td>
     <td>org.apache.zeppelin:zeppelin-livy:0.10.0</td>
     <td>Livy interpreter</td>

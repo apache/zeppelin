@@ -42,8 +42,7 @@ class SparkZeppelinContext(val sc: SparkContext,
     "sql" -> "org.apache.zeppelin.spark.SparkSqlInterpreter",
     "pyspark" -> "org.apache.zeppelin.spark.PySparkInterpreter",
     "ipyspark" -> "org.apache.zeppelin.spark.IPySparkInterpreter",
-    "r" -> "org.apache.zeppelin.spark.SparkRInterpreter",
-    "kotlin" -> "org.apache.zeppelin.spark.KotlinSparkInterpreter"
+    "r" -> "org.apache.zeppelin.spark.SparkRInterpreter"
   )
 
   private val supportedClasses = scala.collection.mutable.ArrayBuffer[Class[_]]()

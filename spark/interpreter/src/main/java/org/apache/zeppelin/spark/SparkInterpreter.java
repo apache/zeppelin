@@ -30,7 +30,6 @@ import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
-import org.apache.zeppelin.kotlin.KotlinInterpreter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -238,12 +237,6 @@ public class SparkInterpreter extends AbstractInterpreter {
       throw new RuntimeException("innerInterpreterContext is null");
     }
     return this.innerInterpreter.getZeppelinContext();
-  }
-
-  public InterpreterResult delegateInterpret(KotlinInterpreter kotlinInterpreter,
-                                             String code,
-                                             InterpreterContext context) throws InterpreterException{
-    return innerInterpreter.delegateInterpret(kotlinInterpreter, code, context);
   }
 
   public SparkContext getSparkContext() {

@@ -28,7 +28,6 @@ groovy          org.apache.zeppelin:zeppelin-groovy:0.10.0               Groovy 
 hbase           org.apache.zeppelin:zeppelin-hbase:0.10.0                Hbase interpreter
 java            org.apache.zeppelin:zeppelin-java:0.10.0                 Java interpreter
 jdbc            org.apache.zeppelin:zeppelin-jdbc:0.10.0                 Jdbc interpreter
-kotlin          org.apache.zeppelin:zeppelin-kotlin:0.10.0               Kotlin interpreter
 livy            org.apache.zeppelin:zeppelin-livy:0.10.0                 Livy interpreter
 md              org.apache.zeppelin:zeppelin-markdown:0.10.0             Markdown support
 neo4j           org.apache.zeppelin:zeppelin-neo4j:0.10.0                Neo4j interpreter
