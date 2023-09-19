@@ -247,7 +247,7 @@ public class NoteManager {
     this.notebookRepo.move(noteId, notePath, newNotePath, subject);
 
     // Update path of the note
-    if (!notePath.equals(newNotePath)) {
+    if (!StringUtils.equals(notePath, newNotePath)) {
       processNote(noteId,
         note -> {
           note.setPath(newNotePath);
@@ -258,7 +258,7 @@ public class NoteManager {
     // save note if note name is changed, because we need to update the note field in note json.
     String oldNoteName = getNoteName(notePath);
     String newNoteName = getNoteName(newNotePath);
-    if (!oldNoteName.equals(newNoteName)) {
+    if (!StringUtils.equals(oldNoteName, newNoteName)) {
       processNote(noteId,
         note -> {
           this.notebookRepo.save(note, subject);
