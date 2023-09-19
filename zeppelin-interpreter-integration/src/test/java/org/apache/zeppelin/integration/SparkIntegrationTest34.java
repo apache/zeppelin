@@ -22,17 +22,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import java.io.IOException;
 
-public class SparkIntegrationTest34 extends SparkIntegrationTest {
-
-  @Nested
-  @DisplayName("Hadoop2")
-  public class Hadoop2 extends SparkIntegrationTest {
-
-    @BeforeEach
-    public void downloadSpark() throws IOException {
-      prepareSpark("3.4.0", "2");
-    }
-  }
+public class SparkIntegrationTest34 {
 
   @Nested
   @DisplayName("Hadoop3")
