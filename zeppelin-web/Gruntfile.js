@@ -130,40 +130,6 @@ module.exports = function(grunt) {
       }
     },
 
-    // Automatically inject Bower components into the app
-    wiredep: {
-      ci: {
-        src: ['<%= yeoman.app %>/index.html'],
-        ignorePath: /\.\.\//,
-        exclude: [
-        ]
-      },
-      dist: {
-        src: ['<%= yeoman.app %>/index.html'],
-        ignorePath: /\.\.\//,
-        exclude: [
-        ],
-      },
-      test: {
-        devDependencies: true,
-        src: '<%= karma.unit.configFile %>',
-        ignorePath: /\.\.\//,
-        exclude: [
-        ],
-        fileTypes: {
-          js: {
-            block: /(([\s\t]*)\/{2}\s*?bower:\s*?(\S*))(\n|\r|.)*?(\/{2}\s*endbower)/gi,
-            detect: {
-              js: /'(.*\.js)'/gi
-            },
-            replace: {
-              js: '\'{{filePath}}\','
-            }
-          }
-        }
-      }
-    },
-
     // Reads HTML for usemin blocks to enable smart builds that automatically
     // concat, minify and revision files. Creates configurations in memory so
     // additional tasks can operate on them

@@ -11,8 +11,7 @@ It is recommended to install node 6.0.0+ since Zeppelin uses 6.9.1+ (see [creati
 All build commands are described in [package.json](./package.json)
 
 ```sh
-# install required depepdencies and bower packages (only once)
-$ npm install -g npm
+# install required depepdencies (only once)
 $ npm install
 
 # build zeppelin-web for production

@@ -149,7 +149,7 @@ module.exports = function makeWebpackConfig () {
       // Compiles ES6 and ES7 into ES5 code
       test: /\.(js|jsx)$/,
       use: ['ng-annotate-loader', 'babel-loader'],
-      exclude: /(node_modules|bower_components)/,
+      exclude: /(node_modules)/,
     }, {
       // CSS LOADER
       // Reference: https://github.com/webpack/css-loader
