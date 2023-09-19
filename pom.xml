@@ -139,6 +139,7 @@
     <maven.version>3.6.3</maven.version>
     <dropwizard.version>4.1.14</dropwizard.version>
     <micrometer.version>1.6.0</micrometer.version>
+    <findbugs.jsr305.version>3.0.2</findbugs.jsr305.version>
 
     <hadoop3.2.version>3.2.4</hadoop3.2.version>
     <hadoop3.3.version>3.3.6</hadoop3.3.version>
@@ -355,6 +356,13 @@
         <groupId>commons-cli</groupId>
         <artifactId>commons-cli</artifactId>
         <version>${commons.cli.version}</version>
+      </dependency>
+
+      <!-- Use the latest annotation version of findbugs in all modules -->
+      <dependency>
+        <groupId>com.google.code.findbugs</groupId>
+        <artifactId>jsr305</artifactId>
+        <version>${findbugs.jsr305.version}</version>
       </dependency>
 
       <!-- Apache Shiro -->
