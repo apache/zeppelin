@@ -93,7 +93,7 @@ Set scala version (default 2.12). Available profiles are
 
 #### Spark Interpreter
 
-To be noticed, the spark profiles here only affect the uni test (no need to specify `SPARK_HOME`) of spark interpreter. 
+To be noticed, the spark profiles here only affect the unit test (no need to specify `SPARK_HOME`) of spark interpreter. 
 Zeppelin doesn't require you to build with different spark to make different versions of spark work in Zeppelin.
 You can run different versions of Spark in Zeppelin as long as you specify `SPARK_HOME`. Actually Zeppelin supports all the versions of Spark from 3.2 to 3.4.
 
