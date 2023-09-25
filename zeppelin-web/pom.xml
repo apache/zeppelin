@@ -102,7 +102,7 @@
         <executions>
 
           <execution>
-            <id>install node</id>
+            <id>install node and npm</id>
             <goals>
               <goal>install-node-and-npm</goal>
             </goals>
@@ -227,9 +227,6 @@
         <artifactId>maven-clean-plugin</artifactId>
         <configuration>
           <filesets>
-            <fileset>
-              <directory>bower_components</directory>
-            </fileset>
             <fileset>
               <directory>node</directory>
             </fileset>
