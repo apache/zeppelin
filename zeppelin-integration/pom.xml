@@ -288,18 +288,6 @@
         </dependency>
       </dependencies>
     </profile>
-
-    <profile>
-      <id>spark-scala-2.11</id>
-      <dependencies>
-        <dependency>
-          <groupId>org.apache.zeppelin</groupId>
-          <artifactId>spark-scala-2.11</artifactId>
-          <version>${project.version}</version>
-          <scope>test</scope>
-        </dependency>
-      </dependencies>
-    </profile>
   </profiles>
 
 </project>
