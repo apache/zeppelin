@@ -127,7 +127,7 @@ class SparkScala213Interpreter(conf: SparkConf,
                           cursor: Int,
                           context: InterpreterContext): java.util.List[InterpreterCompletion] = {
     // ZEPPELIN-5946: Spark 3.2 uses Scala 2.13.5, Spark 3.3 to 3.5 use Scala 2.13.8.
-    // Since Scala 2.13.7(scala/scala#9656), field "defString" was renamed to "name".
+    // In Scala 2.13.7(scala/scala#9656), field "defString" was renamed to "name".
     val completionCandidateClass = classOf[CompletionCandidate].getClass
     val nameField = try {
       completionCandidateClass.getDeclaredField("name")

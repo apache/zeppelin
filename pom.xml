@@ -102,8 +102,8 @@
     <!-- These two lines could be changed like `maven.compiler.release` after updating JDK11 -->
     <maven.compiler.source>${java.version}</maven.compiler.source>
     <maven.compiler.target>${java.version}</maven.compiler.target>
-    <scala.version>${scala.2.12.version}</scala.version>
-    <scala.binary.version>2.12</scala.binary.version>
+    <scala.version>${scala.2.11.version}</scala.version>
+    <scala.binary.version>2.11</scala.binary.version>
     <scala.2.11.version>2.11.12</scala.2.11.version>
     <scala.2.12.version>2.12.17</scala.2.12.version>
     <scalatest.version>3.0.7</scalatest.version>
