@@ -37,8 +37,8 @@
     <interpreter.name>flink</interpreter.name>
     <flink.version>${flink1.13.version}</flink.version>
     <flink.hadoop.version>${hadoop3.2.version}</flink.hadoop.version>
-    <hive.version>2.3.4</hive.version>
-    <hiverunner.version>4.0.0</hiverunner.version>
+    <hive.version>3.1.2</hive.version>
+    <hiverunner.version>6.1.0</hiverunner.version>
     <grpc.version>1.15.0</grpc.version>
     <!-- Start from 1.15 flink is scala free (no scala version in its artifact) -->
     <flink.library.scala.suffix>_${flink.scala.binary.version}</flink.library.scala.suffix>
@@ -164,10 +164,6 @@
         </exclusion>
         <exclusion>
           <groupId>org.apache.hadoop</groupId>
-          <artifactId>*</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.eclipse.jetty</groupId>
           <artifactId>*</artifactId>
         </exclusion>
       </exclusions>
@@ -324,14 +320,6 @@
           <artifactId>guava</artifactId>
         </exclusion>
         <exclusion>
-          <groupId>io.netty</groupId>
-          <artifactId>netty</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>io.netty</groupId>
-          <artifactId>netty-all</artifactId>
-        </exclusion>
-        <exclusion>
           <groupId>com.google.protobuf</groupId>
           <artifactId>protobuf-java</artifactId>
         </exclusion>
@@ -413,14 +401,6 @@
           <artifactId>guava</artifactId>
         </exclusion>
         <exclusion>
-          <groupId>io.netty</groupId>
-          <artifactId>netty</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>io.netty</groupId>
-          <artifactId>netty-all</artifactId>
-        </exclusion>
-        <exclusion>
           <groupId>com.google.protobuf</groupId>
           <artifactId>protobuf-java</artifactId>
         </exclusion>
@@ -444,10 +424,6 @@
         <exclusion>
           <groupId>com.google.guava</groupId>
           <artifactId>guava</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>io.netty</groupId>
-          <artifactId>netty</artifactId>
         </exclusion>
         <exclusion>
           <groupId>javax.jms</groupId>
@@ -485,14 +461,6 @@
           <artifactId>guava</artifactId>
         </exclusion>
         <exclusion>
-          <groupId>io.netty</groupId>
-          <artifactId>netty</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>io.netty</groupId>
-          <artifactId>netty-all</artifactId>
-        </exclusion>
-        <exclusion>
           <groupId>org.apache.logging.log4j</groupId>
           <artifactId>log4j-slf4j-impl</artifactId>
         </exclusion>
@@ -511,7 +479,7 @@
     </dependency>
 
     <dependency>
-      <groupId>com.klarna</groupId>
+      <groupId>io.github.hiverunner</groupId>
       <artifactId>hiverunner</artifactId>
       <version>${hiverunner.version}</version>
       <scope>test</scope>
@@ -523,6 +491,16 @@
         <exclusion>
           <groupId>org.pentaho</groupId>
           <artifactId>pentaho-aggdesigner-algorithm</artifactId>
+        </exclusion>
+        <!-- provided by hive-hcatalog-core -->
+        <exclusion>
+          <groupId>io.netty</groupId>
+          <artifactId>netty</artifactId>
+        </exclusion>
+        <!-- provided by hive-hcatalog-core -->
+        <exclusion>
+          <groupId>io.netty</groupId>
+          <artifactId>netty-all</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -815,10 +793,10 @@
             </transformer>
           </transformers>
           <relocations>
-            <relocation>
+<!--            <relocation>
               <pattern>io.netty</pattern>
               <shadedPattern>org.apache.zeppelin.shaded.io.netty</shadedPattern>
-            </relocation>
+            </relocation>-->
             <relocation>
               <pattern>com.google</pattern>
               <shadedPattern>org.apache.zeppelin.shaded.com.google</shadedPattern>
@@ -980,13 +958,13 @@
     </profile>
 
     <profile>
-      <id>hive2</id>
+      <id>hive3</id>
       <activation>
         <activeByDefault>true</activeByDefault>
       </activation>
       <properties>
-        <hive.version>2.3.4</hive.version>
-        <hiverunner.version>4.0.0</hiverunner.version>
+        <hive.version>3.1.2</hive.version>
+        <hiverunner.version>6.1.0</hiverunner.version>
       </properties>
     </profile>
   </profiles>
