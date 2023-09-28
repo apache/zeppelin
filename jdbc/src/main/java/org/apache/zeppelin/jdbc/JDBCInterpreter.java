@@ -207,6 +207,15 @@ public class JDBCInterpreter extends KerberosInterpreter {
   @Override
   public void open() {
     super.open();
+
+    // login via keytab first in open method, otherwise the underlying runKerbose thread will
+    // fail and cause the interpreter closed.
+    String authType = properties.getProperty("zeppelin.jdbc.auth.type", "SIMPLE").trim();
+    if ("KERBEROS".equalsIgnoreCase(authType)) {
+      JDBCSecurityImpl.createSecureConfiguration(getProperties(),
+              UserGroupInformation.AuthenticationMethod.KERBEROS);
+    }
+
     for (String propertyKey : properties.stringPropertyNames()) {
       LOGGER.debug("propertyKey: {}", propertyKey);
       String[] keyValue = propertyKey.split("\\.", 2);
