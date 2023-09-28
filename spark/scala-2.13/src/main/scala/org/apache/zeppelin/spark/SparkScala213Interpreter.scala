@@ -129,16 +129,16 @@ class SparkScala213Interpreter(conf: SparkConf,
     // ZEPPELIN-5946: Spark 3.2 uses Scala 2.13.5, Spark 3.3 to 3.5 use Scala 2.13.8.
     // In Scala 2.13.7(scala/scala#9656), field "defString" was renamed to "name".
     val completionCandidateClass = classOf[CompletionCandidate].getClass
-    val nameField = try {
-      completionCandidateClass.getDeclaredField("name")
+    val nameMethod = try {
+      completionCandidateClass.getMethod("name")
     } catch {
       case _: NoSuchFieldException =>
-        completionCandidateClass.getDeclaredField("defString")
+        completionCandidateClass.getMethod("defString")
     }
     scalaCompletion.complete(buf.substring(0, cursor), cursor)
       .candidates
       .map { e: CompletionCandidate =>
-        val name = nameField.get(e).asInstanceOf[String]
+        val name = nameMethod.invoke(e).asInstanceOf[String]
         new InterpreterCompletion(name, name, null)
       }
       .asJava
