@@ -132,7 +132,7 @@ class SparkScala213Interpreter(conf: SparkConf,
     val nameMethod = try {
       completionCandidateClass.getMethod("name")
     } catch {
-      case _: NoSuchFieldException =>
+      case _: NoSuchMethodException =>
         completionCandidateClass.getMethod("defString")
     }
     scalaCompletion.complete(buf.substring(0, cursor), cursor)
