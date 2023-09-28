@@ -417,7 +417,7 @@
 
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
-        <configuration combine.children="append">
+        <configuration>
           <forkCount>1</forkCount>
           <reuseForks>false</reuseForks>
           <argLine>-Xmx3g -Xms1g -Dfile.encoding=UTF-8</argLine>

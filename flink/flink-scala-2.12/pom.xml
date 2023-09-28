@@ -38,8 +38,8 @@
     <flink.scala.version>2.12.7</flink.scala.version>
     <flink.scala.binary.version>2.12</flink.scala.binary.version>
     <flink.scala.compile.version>${flink.scala.version}</flink.scala.compile.version>
-    <flink.hadoop.version>${hadoop2.7.version}</flink.hadoop.version>
-    <hive.version>2.3.4</hive.version>
+    <flink.hadoop.version>${hadoop3.2.version}</flink.hadoop.version>
+    <hive.version>2.3.7</hive.version>
     <hiverunner.version>4.0.0</hiverunner.version>
     <grpc.version>1.15.0</grpc.version>
 
