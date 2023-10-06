@@ -126,9 +126,21 @@ class SparkScala213Interpreter(conf: SparkConf,
   override def completion(buf: String,
                           cursor: Int,
                           context: InterpreterContext): java.util.List[InterpreterCompletion] = {
+    // ZEPPELIN-5946: Spark 3.2 uses Scala 2.13.5, Spark 3.3 to 3.5 use Scala 2.13.8.
+    // In Scala 2.13.7(scala/scala#9656), field "defString" was renamed to "name".
+    val completionCandidateClass = classOf[CompletionCandidate]
+    val nameMethod = try {
+      completionCandidateClass.getMethod("name")
+    } catch {
+      case _: NoSuchMethodException =>
+        completionCandidateClass.getMethod("defString")
+    }
     scalaCompletion.complete(buf.substring(0, cursor), cursor)
       .candidates
-      .map(e => new InterpreterCompletion(e.defString, e.defString, null))
+      .map { e: CompletionCandidate =>
+        val name = nameMethod.invoke(e).asInstanceOf[String]
+        new InterpreterCompletion(name, name, null)
+      }
       .asJava
   }
 

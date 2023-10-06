@@ -34,7 +34,7 @@
 
     <properties>
         <interpreter.name>r</interpreter.name>
-        <spark.version>2.4.5</spark.version>
+        <spark.version>3.4.1</spark.version>
 
         <spark.archive>spark-${spark.version}</spark.archive>
         <spark.bin.download.url>
@@ -98,8 +98,14 @@
 
         <dependency>
             <groupId>org.apache.spark</groupId>
-            <artifactId>spark-core_2.11</artifactId>
+            <artifactId>spark-core_2.12</artifactId>
             <version>${spark.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.hadoop</groupId>
+                    <artifactId>hadoop-client-api</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
