@@ -21,6 +21,6 @@ Version: [[version]]-[[buildNumber]]
 Section: misc
 Priority: optional
 Architecture: all
-Maintainer: Lee moon soo <leemoonsoo@gmail.com>
+Maintainer: Apache Zeppelin PMC <dev@zeppelin.apache.org>
 Description: [[name]]
 Distribution: development
