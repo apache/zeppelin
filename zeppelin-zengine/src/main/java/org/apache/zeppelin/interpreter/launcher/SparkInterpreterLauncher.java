@@ -279,9 +279,7 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
     Matcher matcher = pattern.matcher(processOutput);
     if (matcher.find()) {
       String scalaVersion = matcher.group(1);
-      if (scalaVersion.startsWith("2.11")) {
-        return "2.11";
-      } else if (scalaVersion.startsWith("2.12")) {
+      if (scalaVersion.startsWith("2.12")) {
         return "2.12";
       } else if (scalaVersion.startsWith("2.13")) {
         return "2.13";
@@ -294,37 +292,17 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
   }
 
   private String detectSparkScalaVersionByReplClass(String sparkHome) throws Exception {
-    File sparkLibFolder = new File(sparkHome + "/lib");
-    if (sparkLibFolder.exists()) {
-      // spark 1.6 if spark/lib exists
-      File[] sparkAssemblyJars = new File(sparkHome + "/lib").listFiles(new FilenameFilter() {
-        @Override
-        public boolean accept(File dir, String name) {
-          return name.contains("spark-assembly");
-        }
-      });
-      if (sparkAssemblyJars.length == 0) {
-        throw new Exception("No spark assembly file found in SPARK_HOME: " + sparkHome);
-      }
-      if (sparkAssemblyJars.length > 1) {
-        throw new Exception("Multiple spark assembly file found in SPARK_HOME: " + sparkHome);
-      }
-      try (URLClassLoader urlClassLoader = new URLClassLoader(new URL[]{sparkAssemblyJars[0].toURI().toURL()});){
-        urlClassLoader.loadClass("org.apache.spark.repl.SparkCommandLine");
-        return "2.10";
-      } catch (ClassNotFoundException e) {
-        return "2.11";
-      }
+    File sparkJarsFolder = new File(sparkHome + "/jars");
+    boolean sparkRepl212Exists =
+            Stream.of(sparkJarsFolder.listFiles()).anyMatch(file -> file.getName().contains("spark-repl_2.12"));
+    boolean sparkRepl213Exists =
+            Stream.of(sparkJarsFolder.listFiles()).anyMatch(file -> file.getName().contains("spark-repl_2.13"));
+    if (sparkRepl212Exists) {
+      return "2.12";
+    } else if (sparkRepl213Exists) {
+      return "2.13";
     } else {
-      // spark 2.x if spark/lib doesn't exists
-      File sparkJarsFolder = new File(sparkHome + "/jars");
-      boolean sparkRepl211Exists =
-              Stream.of(sparkJarsFolder.listFiles()).anyMatch(file -> file.getName().contains("spark-repl_2.11"));
-      if (sparkRepl211Exists) {
-        return "2.11";
-      } else {
-        return "2.10";
-      }
+      throw new Exception("Can not detect the scala version by spark-repl");
     }
   }
 

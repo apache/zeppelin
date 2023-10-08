@@ -80,15 +80,6 @@ public class IRInterpreter extends JupyterKernelInterpreter {
     return 20404;
   }
 
-  /**
-   * Spark 2.4.3 need secret for socket communication between R process and jvm process.
-   * Sub class can override this, e.g. SparkRInterpreter
-   * @return
-   */
-  protected boolean isSecretSupported() {
-    return true;
-  }
-
   @Override
   public void open() throws InterpreterException {
     super.open();
@@ -98,7 +89,7 @@ public class IRInterpreter extends JupyterKernelInterpreter {
     synchronized (sparkRBackend) {
       if (!sparkRBackend.isStarted()) {
         try {
-          sparkRBackend.init(isSecretSupported());
+          sparkRBackend.init();
         } catch (Exception e) {
           throw new InterpreterException("Fail to init SparkRBackend", e);
         }

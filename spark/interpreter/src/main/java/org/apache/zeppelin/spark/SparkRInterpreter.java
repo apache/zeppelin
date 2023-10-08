@@ -56,11 +56,6 @@ public class SparkRInterpreter extends RInterpreter {
   }
 
   @Override
-  protected boolean isSecretSupported() {
-    return sparkVersion.isSecretSocketSupported();
-  }
-
-  @Override
   protected int sparkVersion() {
     return new SparkVersion(sc.version()).toNumber();
   }
@@ -99,15 +94,13 @@ public class SparkRInterpreter extends RInterpreter {
     setJobGroup = "dummy__ <- setJobGroup(\"" + jobGroup +
         "\", \" +" + jobDesc + "\", TRUE)";
     lines = setJobGroup + "\n" + lines;
-    if (sparkInterpreter.getSparkVersion().newerThanEquals(SparkVersion.SPARK_2_3_0)) {
-      // setLocalProperty is only available from spark 2.3.0
-      String setPoolStmt = "setLocalProperty('spark.scheduler.pool', NULL)";
-      if (interpreterContext.getLocalProperties().containsKey("pool")) {
-        setPoolStmt = "setLocalProperty('spark.scheduler.pool', '" +
-            interpreterContext.getLocalProperties().get("pool") + "')";
-      }
-      lines = setPoolStmt + "\n" + lines;
+
+    String setPoolStmt = "setLocalProperty('spark.scheduler.pool', NULL)";
+    if (interpreterContext.getLocalProperties().containsKey("pool")) {
+      setPoolStmt = "setLocalProperty('spark.scheduler.pool', '" +
+          interpreterContext.getLocalProperties().get("pool") + "')";
     }
+    lines = setPoolStmt + "\n" + lines;
     return super.internalInterpret(lines, interpreterContext);
   }
 

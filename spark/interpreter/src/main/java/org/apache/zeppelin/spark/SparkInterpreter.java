@@ -88,7 +88,6 @@ public class SparkInterpreter extends AbstractInterpreter {
 
     this.enableSupportedVersionCheck = java.lang.Boolean.parseBoolean(
         properties.getProperty("zeppelin.spark.enableSupportedVersionCheck", "true"));
-    innerInterpreterClassMap.put("2.11", "org.apache.zeppelin.spark.SparkScala211Interpreter");
     innerInterpreterClassMap.put("2.12", "org.apache.zeppelin.spark.SparkScala212Interpreter");
     innerInterpreterClassMap.put("2.13", "org.apache.zeppelin.spark.SparkScala213Interpreter");
   }
@@ -274,8 +273,6 @@ public class SparkInterpreter extends AbstractInterpreter {
 
     if (StringUtils.isEmpty(scalaVersionString)) {
       throw new InterpreterException("Scala Version is empty");
-    } else if (scalaVersionString.contains("2.11")) {
-      return "2.11";
     } else if (scalaVersionString.contains("2.12")) {
       return "2.12";
     } else if (scalaVersionString.contains("2.13")) {
@@ -285,9 +282,6 @@ public class SparkInterpreter extends AbstractInterpreter {
     }
   }
 
-  public boolean isScala211() {
-    return scalaVersion.equals("2.11");
-  }
 
   public boolean isScala212() {
     return scalaVersion.equals("2.12");
