@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.spark;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.ui.CheckBox;
 import org.apache.zeppelin.display.ui.Password;
@@ -236,7 +237,8 @@ class SparkInterpreterTest {
         "val df = spark.createDataFrame(Seq((1,\"a\"),(2, null)))\n" +
             "df.show()", getInterpreterContext());
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    assertTrue(output.contains(
+    // SPARK-43063 changed the output of null to NULL
+    assertTrue(StringUtils.containsIgnoreCase(output,
         "+---+----+\n" +
         "| _1|  _2|\n" +
         "+---+----+\n" +
