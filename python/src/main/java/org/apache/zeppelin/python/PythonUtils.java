@@ -39,17 +39,12 @@ public class PythonUtils {
                                                   String secretKey) throws IOException {
     LOGGER.info("Launching GatewayServer at {}:{}", serverAddress, port);
     try {
-      Class clz = Class.forName("py4j.GatewayServer$GatewayServerBuilder", true,
-          Thread.currentThread().getContextClassLoader());
-      Object builder = clz.getConstructor(Object.class).newInstance(entryPoint);
-      builder.getClass().getMethod("authToken", String.class).invoke(builder, secretKey);
-      builder.getClass().getMethod("javaPort", int.class).invoke(builder, port);
-      builder.getClass().getMethod("javaAddress", InetAddress.class).invoke(builder,
-          InetAddress.getByName(serverAddress));
-      builder.getClass()
-          .getMethod("callbackClient", int.class, InetAddress.class, String.class)
-          .invoke(builder, port, InetAddress.getByName(serverAddress), secretKey);
-      return (GatewayServer) builder.getClass().getMethod("build").invoke(builder);
+      return new GatewayServer.GatewayServerBuilder(entryPoint)
+              .authToken(secretKey)
+              .javaPort(port)
+              .javaAddress(InetAddress.getByName(serverAddress))
+              .callbackClient(port, InetAddress.getByName(serverAddress), secretKey)
+              .build();
     } catch (Exception e) {
       throw new IOException(e);
     }
