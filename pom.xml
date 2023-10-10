@@ -183,7 +183,6 @@
     <plugin.gpg.version>1.6</plugin.gpg.version>
     <plugin.jar.version>3.2.0</plugin.jar.version>
     <plugin.javadoc.version>3.2.0</plugin.javadoc.version>
-    <plugin.jdeb.version>1.8</plugin.jdeb.version>
     <plugin.lifecycle.mapping.version>1.0.0</plugin.lifecycle.mapping.version>
     <plugin.protobuf.version>3.11.4</plugin.protobuf.version>
     <plugin.rat.version>0.13</plugin.rat.version>
@@ -1667,12 +1666,6 @@
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>buildnumber-maven-plugin</artifactId>
           <version>${plugin.buildnumber.version}</version>
-        </plugin>
-
-        <plugin>
-          <groupId>org.vafer</groupId>
-          <artifactId>jdeb</artifactId>
-          <version>${plugin.jdeb.version}</version>
         </plugin>
 
         <plugin>
