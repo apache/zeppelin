@@ -293,10 +293,19 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
 
   private String detectSparkScalaVersionByReplClass(String sparkHome) throws Exception {
     File sparkJarsFolder = new File(sparkHome + "/jars");
+    File[] sparkJarFiles = sparkJarsFolder.listFiles();
+    long sparkReplFileNum =
+            Stream.of(sparkJarFiles).filter(file -> file.getName().contains("spark-repl_")).count();
+    if (sparkReplFileNum == 0) {
+      throw new Exception("No spark-repl jar found in SPARK_HOME: " + sparkHome);
+    }
+    if (sparkReplFileNum > 1) {
+      throw new Exception("Multiple spark-repl jar found in SPARK_HOME: " + sparkHome);
+    }
     boolean sparkRepl212Exists =
-            Stream.of(sparkJarsFolder.listFiles()).anyMatch(file -> file.getName().contains("spark-repl_2.12"));
+            Stream.of(sparkJarFiles).anyMatch(file -> file.getName().contains("spark-repl_2.12"));
     boolean sparkRepl213Exists =
-            Stream.of(sparkJarsFolder.listFiles()).anyMatch(file -> file.getName().contains("spark-repl_2.13"));
+            Stream.of(sparkJarFiles).anyMatch(file -> file.getName().contains("spark-repl_2.13"));
     if (sparkRepl212Exists) {
       return "2.12";
     } else if (sparkRepl213Exists) {
