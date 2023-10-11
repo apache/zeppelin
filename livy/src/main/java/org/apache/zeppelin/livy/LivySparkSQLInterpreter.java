@@ -180,6 +180,11 @@ public class LivySparkSQLInterpreter extends BaseLivyInterpreter {
     List<String> rows = new ArrayList<>();
 
     String[] rowsOutput = output.split("(?<!\\\\)\\n");
+
+    if (rowsOutput.length < 2){
+      return Arrays.asList(rowsOutput);
+    }
+
     String[] header = rowsOutput[1].split("\t");
     List<String> cells = new ArrayList<>(Arrays.asList(header));
     rows.add(StringUtils.join(cells, "\t"));

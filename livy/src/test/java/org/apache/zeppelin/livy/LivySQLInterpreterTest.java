@@ -174,9 +174,14 @@ class LivySQLInterpreterTest {
 
   @Test
   void parseSQLJsonOutput() {
+
+    //  Empty output
+    List<String> rows = sqlInterpreter.parseSQLJsonOutput("\n");
+    assertEquals(0, rows.size());
+
     //  Empty sql output
     //  id name
-    List<String> rows = sqlInterpreter.parseSQLJsonOutput("\nid\tname\n");
+    rows = sqlInterpreter.parseSQLJsonOutput("\nid\tname\n");
     assertEquals(1, rows.size());
     assertEquals("id\tname", rows.get(0));
 
