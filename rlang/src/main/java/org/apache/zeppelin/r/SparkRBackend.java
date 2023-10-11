@@ -49,17 +49,12 @@ public class SparkRBackend {
     };
   }
 
-  public void init(boolean isSecretSocketSupported) throws Exception {
-    Class rBackendClass = RBackend.class;
-    if (isSecretSocketSupported) {
-      Tuple2<Integer, Object> result =
-              (Tuple2<Integer, Object>) rBackendClass.getMethod("init").invoke(backend);
-      portNumber = result._1;
-      Object rAuthHelper = result._2;
-      secret = (String) rAuthHelper.getClass().getMethod("secret").invoke(rAuthHelper);
-    } else {
-      portNumber = (Integer) rBackendClass.getMethod("init").invoke(backend);
-    }
+  public void init() throws Exception {
+    Tuple2<Integer, Object> result =
+            (Tuple2<Integer, Object>) RBackend.class.getMethod("init").invoke(backend);
+    portNumber = result._1;
+    Object rAuthHelper = result._2;
+    secret = (String) rAuthHelper.getClass().getMethod("secret").invoke(rAuthHelper);
   }
 
   public void start() {

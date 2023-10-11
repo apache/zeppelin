@@ -27,7 +27,6 @@ import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.SecureRandom;
-import java.util.List;
 import java.util.Properties;
 
 public class PythonUtils {
@@ -37,35 +36,17 @@ public class PythonUtils {
   public static GatewayServer createGatewayServer(Object entryPoint,
                                                   String serverAddress,
                                                   int port,
-                                                  String secretKey,
-                                                  boolean useAuth) throws IOException {
-    LOGGER.info("Launching GatewayServer at " + serverAddress + ":" + port +
-        ", useAuth: " + useAuth);
-    if (useAuth) {
-      try {
-        Class clz = Class.forName("py4j.GatewayServer$GatewayServerBuilder", true,
-            Thread.currentThread().getContextClassLoader());
-        Object builder = clz.getConstructor(Object.class).newInstance(entryPoint);
-        builder.getClass().getMethod("authToken", String.class).invoke(builder, secretKey);
-        builder.getClass().getMethod("javaPort", int.class).invoke(builder, port);
-        builder.getClass().getMethod("javaAddress", InetAddress.class).invoke(builder,
-            InetAddress.getByName(serverAddress));
-        builder.getClass()
-            .getMethod("callbackClient", int.class, InetAddress.class, String.class)
-            .invoke(builder, port, InetAddress.getByName(serverAddress), secretKey);
-        return (GatewayServer) builder.getClass().getMethod("build").invoke(builder);
-      } catch (Exception e) {
-        throw new IOException(e);
-      }
-    } else {
-      return new GatewayServer(entryPoint,
-          port,
-          GatewayServer.DEFAULT_PYTHON_PORT,
-          InetAddress.getByName(serverAddress),
-          InetAddress.getByName(serverAddress),
-          GatewayServer.DEFAULT_CONNECT_TIMEOUT,
-          GatewayServer.DEFAULT_READ_TIMEOUT,
-          (List) null);
+                                                  String secretKey) throws IOException {
+    LOGGER.info("Launching GatewayServer at {}:{}", serverAddress, port);
+    try {
+      return new GatewayServer.GatewayServerBuilder(entryPoint)
+              .authToken(secretKey)
+              .javaPort(port)
+              .javaAddress(InetAddress.getByName(serverAddress))
+              .callbackClient(port, InetAddress.getByName(serverAddress), secretKey)
+              .build();
+    } catch (Exception e) {
+      throw new IOException(e);
     }
   }
 
