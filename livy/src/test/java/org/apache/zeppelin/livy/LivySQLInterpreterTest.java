@@ -279,5 +279,12 @@ class LivySQLInterpreterTest {
     assertEquals("1\t1a", rows.get(1));
     assertEquals("2\tみんく", rows.get(2));
     assertEquals("3\t3a", rows.get(3));
+
+
+    rows = sqlInterpreter.parseSQLJsonOutput("\nid\tarray\tname\n"
+            + "{\"id\":1,\"array\":[\"1a\",\"2a\"],\"name\":\"1b\"}\n");
+    assertEquals(2, rows.size());
+    assertEquals("id\tarray\tname", rows.get(0));
+    assertEquals("1\t[\"1a\",\"2a\"]\t1b", rows.get(1));
   }
 }

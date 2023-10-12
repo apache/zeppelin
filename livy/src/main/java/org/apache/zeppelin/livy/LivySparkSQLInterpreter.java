@@ -18,7 +18,8 @@
 package org.apache.zeppelin.livy;
 
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -190,10 +191,10 @@ public class LivySparkSQLInterpreter extends BaseLivyInterpreter {
     rows.add(StringUtils.join(cells, "\t"));
 
     for (int i = 2; i < rowsOutput.length; i++) {
-      Map<String, String> retMap = new Gson().fromJson(
-          rowsOutput[i], new TypeToken<HashMap<String, String>>() {
-          }.getType()
-      );
+      // one-by-one serialization to handle the case when
+      // the value is non-primitive such as: {"lang": ["java", "NodeJS"]}.
+      Map<String, String> retMap = serialize(rowsOutput[i]);
+
       cells = new ArrayList<>();
       for (String s : header) {
         cells.add(retMap.getOrDefault(s, "null")
@@ -201,8 +202,27 @@ public class LivySparkSQLInterpreter extends BaseLivyInterpreter {
             .replace("\t", "\\t"));
       }
       rows.add(StringUtils.join(cells, "\t"));
+
     }
     return rows;
+  }
+
+  private Map<String, String> serialize(String jsonString) {
+    Map<String, String> map = new HashMap<>();
+    Gson gson = new Gson();
+    JsonElement jsonElement = gson.fromJson(jsonString, JsonElement.class);
+    JsonObject jsonObject = jsonElement.getAsJsonObject();
+    for (String key : jsonObject.keySet()) {
+      JsonElement value = jsonObject.get(key);
+
+      if (value.isJsonPrimitive()) {
+        map.put(key, value.getAsString());
+      } else {
+        map.put(key, value.toString());
+      }
+
+    }
+    return map;
   }
 
   protected List<String> parseSQLOutput(String str) {
