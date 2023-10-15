@@ -207,7 +207,7 @@ public class LivySparkSQLInterpreter extends BaseLivyInterpreter {
     return rows;
   }
 
-  private Map<String, String> serialize(String jsonString) {
+  private Map<String, String> deserialize(String jsonString) {
     Map<String, String> map = new HashMap<>();
     Gson gson = new Gson();
     JsonElement jsonElement = gson.fromJson(jsonString, JsonElement.class);
