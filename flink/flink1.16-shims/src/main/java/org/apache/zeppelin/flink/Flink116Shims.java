@@ -58,7 +58,7 @@ import org.apache.flink.table.typeutils.TimeIndicatorTypeInfo;
 import org.apache.flink.types.Row;
 import org.apache.flink.types.RowKind;
 import org.apache.flink.util.FlinkException;
-import org.apache.zeppelin.flink.shims117.CollectStreamTableSink;
+import org.apache.zeppelin.flink.shims116.CollectStreamTableSink;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.slf4j.Logger;

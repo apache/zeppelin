@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.zeppelin.flink.shims117;
+package org.apache.zeppelin.flink.shims116;
 
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeinfo.Types;

@@ -23,7 +23,6 @@ import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.flink.api.common.RuntimeExecutionMode;
-import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeutils.TypeSerializer;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.client.cli.CliFrontend;
@@ -53,7 +52,6 @@ import org.apache.flink.table.functions.ScalarFunction;
 import org.apache.flink.table.functions.TableAggregateFunction;
 import org.apache.flink.table.functions.TableFunction;
 import org.apache.flink.table.module.ModuleManager;
-import org.apache.flink.table.planner.calcite.FlinkTypeFactory;
 import org.apache.flink.table.resource.ResourceManager;
 import org.apache.flink.table.sinks.TableSink;
 import org.apache.flink.table.typeutils.TimeIndicatorTypeInfo;
@@ -78,7 +76,7 @@ import java.util.Properties;
 
 
 /**
- * Shims for flink 1.16
+ * Shims for flink 1.17
  */
 public class Flink117Shims extends FlinkShims {
 
@@ -252,12 +250,12 @@ public class Flink117Shims extends FlinkShims {
 
   @Override
   public Object fromDataSet(Object btenv, Object ds) {
-    throw new RuntimeException("Conversion from DataSet is not supported in Flink 1.15");
+    throw new RuntimeException("Conversion from DataSet is not supported in Flink 1.17");
   }
 
   @Override
   public Object toDataSet(Object btenv, Object table) {
-    throw new RuntimeException("Conversion to DataSet is not supported in Flink 1.15");
+    throw new RuntimeException("Conversion to DataSet is not supported in Flink 1.17");
   }
 
   @Override
