@@ -42,6 +42,9 @@ public abstract class InterpreterLauncher {
   public InterpreterLauncher(ZeppelinConfiguration zConf, RecoveryStorage recoveryStorage) {
     this.zConf = zConf;
     this.recoveryStorage = recoveryStorage;
+    if (zConf.isRecoveryEnabled() && recoveryStorage == null) {
+      throw new IllegalArgumentException("recoveryStorage must not be null when zeppelin.recovery.storage.class is set");
+    }
   }
 
   public void setProperties(Properties props) {
