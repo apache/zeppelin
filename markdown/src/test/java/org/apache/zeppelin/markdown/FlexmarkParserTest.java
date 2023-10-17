@@ -18,12 +18,9 @@
 package org.apache.zeppelin.markdown;
 
 import org.apache.zeppelin.interpreter.InterpreterResult;
-import org.hamcrest.CoreMatchers;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ErrorCollector;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,18 +28,17 @@ import java.util.ArrayList;
 import java.util.Properties;
 
 import static org.apache.zeppelin.markdown.FlexmarkParser.wrapWithMarkdownClassDiv;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
-public class FlexmarkParserTest {
+class FlexmarkParserTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(FlexmarkParserTest.class);
   Markdown md;
 
-  @Rule
-  public ErrorCollector collector = new ErrorCollector();
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     Properties props = new Properties();
     props.put(Markdown.MARKDOWN_PARSER_TYPE, Markdown.PARSER_TYPE_FLEXMARK);
@@ -50,28 +46,16 @@ public class FlexmarkParserTest {
     md.open();
   }
 
-  @After
+  @AfterEach
   public void tearDown() throws Exception {
     md.close();
   }
 
   @Test
-  public void testMultipleThread() {
-    ArrayList<Thread> arrThreads = new ArrayList<Thread>();
+  void testMultipleThread() {
+    ArrayList<MarkdownThread> arrThreads = new ArrayList<MarkdownThread>();
     for (int i = 0; i < 10; i++) {
-      Thread t = new Thread() {
-        @Override
-        public void run() {
-          String r1 = null;
-          try {
-            r1 = md.interpret("# H1", null).code().name();
-          } catch (Exception e) {
-            LOGGER.error("testTestMultipleThread failed to interpret", e);
-          }
-          collector.checkThat("SUCCESS",
-              CoreMatchers.containsString(r1));
-        }
-      };
+      MarkdownThread t = new MarkdownThread(md);
       t.start();
       arrThreads.add(t);
     }
@@ -80,20 +64,47 @@ public class FlexmarkParserTest {
       try {
         arrThreads.get(i).join();
       } catch (InterruptedException e) {
-        LOGGER.error("testTestMultipleThread failed to join threads", e);
+        fail("testTestMultipleThread failed to join threads", e);
       }
+    }
+    for (MarkdownThread mdt : arrThreads) {
+      assertTrue(mdt.getResult().contains("SUCCESS"));
+    }
+  }
+
+  private class MarkdownThread extends Thread {
+    private String result;
+    private final Markdown md;
+
+    MarkdownThread(Markdown md) {
+      this.md = md;
+    }
+
+    @Override
+    public void run() {
+      String r1 = null;
+      try {
+        r1 = md.interpret("# H1", null).code().name();
+      } catch (Exception e) {
+        LOGGER.error("testTestMultipleThread failed to interpret", e);
+      }
+      result = r1;
+    }
+
+    public String getResult() {
+      return result;
     }
   }
 
   @Test
-  public void testStrikethrough() {
+  void testStrikethrough() {
     InterpreterResult result = md.interpret("This is ~~deleted~~ text", null);
     assertEquals(wrapWithMarkdownClassDiv("<p>This is <del>deleted</del> text</p>\n"),
         result.message().get(0).getData());
   }
 
   @Test
-  public void testHeader() {
+  void testHeader() {
     InterpreterResult r1 = md.interpret("# H1", null);
     assertEquals(wrapWithMarkdownClassDiv("<h1>H1</h1>\n"), r1.message().get(0).getData());
 
@@ -120,7 +131,7 @@ public class FlexmarkParserTest {
   }
 
   @Test
-  public void testItalics() {
+  void testItalics() {
     InterpreterResult result = md.interpret("This is *italics* text", null);
 
     assertEquals(
@@ -129,7 +140,7 @@ public class FlexmarkParserTest {
   }
 
   @Test
-  public void testStrongEmphasis() {
+  void testStrongEmphasis() {
     InterpreterResult result = md.interpret("This is **strong emphasis** text", null);
     assertEquals(
         wrapWithMarkdownClassDiv("<p>This is <strong>strong emphasis</strong> text</p>\n"),
@@ -137,7 +148,7 @@ public class FlexmarkParserTest {
   }
 
   @Test
-  public void testOrderedList() {
+  void testOrderedList() {
     String input =
         new StringBuilder()
             .append("1. First ordered list item\n")
@@ -159,7 +170,7 @@ public class FlexmarkParserTest {
   }
 
   @Test
-  public void testUnorderedList() {
+  void testUnorderedList() {
     String input =
         new StringBuilder()
             .append("* Unordered list can use asterisks\n")
@@ -186,7 +197,7 @@ public class FlexmarkParserTest {
   }
 
   @Test
-  public void testYumlPlugin() {
+  void testYumlPlugin() {
     String input = new StringBuilder()
         .append("%%% yuml style=nofunky scale=120 format=svg\n")
         .append("[Customer]<>-orders>[Order]\n")
@@ -196,12 +207,11 @@ public class FlexmarkParserTest {
         .toString();
 
     InterpreterResult result = md.interpret(input, null);
-    assertThat(result.message().get(0).getData(), CoreMatchers
-        .containsString("<img src=\"http://yuml.me/diagram/"));
+    assertTrue(result.message().get(0).getData().contains("<img src=\"http://yuml.me/diagram/"));
   }
 
   @Test
-  public void testWebsequencePlugin() {
+  void testWebsequencePlugin() {
     String input =
         new StringBuilder()
             .append("%%% sequence style=modern-blue\n")
@@ -225,7 +235,7 @@ public class FlexmarkParserTest {
   }
 
   @Test
-  public void testEscapeHtml() {
+  void testEscapeHtml() {
     String input =
             new StringBuilder()
                     .append("This is\n")

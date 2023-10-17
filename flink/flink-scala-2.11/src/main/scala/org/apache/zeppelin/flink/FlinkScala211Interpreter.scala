@@ -30,7 +30,7 @@ import scala.tools.nsc.interpreter.{IMain, JPrintWriter}
 
 
 class FlinkScala211Interpreter(override val properties: Properties,
-                               override val flinkScalaClassLoader: URLClassLoader)
+                               override val flinkScalaClassLoader: ClassLoader)
   extends FlinkScalaInterpreter(properties, flinkScalaClassLoader) {
 
   override def completion(buf: String,

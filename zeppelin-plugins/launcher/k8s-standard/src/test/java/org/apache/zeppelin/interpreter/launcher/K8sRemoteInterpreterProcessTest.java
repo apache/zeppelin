@@ -17,12 +17,12 @@
 
 package org.apache.zeppelin.interpreter.launcher;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.File;
 import java.io.IOException;
@@ -36,26 +36,26 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterManagedProcess;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.PodStatus;
 import io.fabric8.kubernetes.client.KubernetesClient;
-import io.fabric8.kubernetes.client.server.mock.KubernetesServer;
+import io.fabric8.kubernetes.client.server.mock.EnableKubernetesMockClient;
 
-public class K8sRemoteInterpreterProcessTest {
+@EnableKubernetesMockClient(https = false, crud = true)
+class K8sRemoteInterpreterProcessTest {
 
-  @Rule
-  public KubernetesServer server = new KubernetesServer(false, true);
+  KubernetesClient client;
 
   @Test
-  public void testPredefinedPortNumbers() {
+  void testPredefinedPortNumbers() {
     // given
     Properties properties = new Properties();
     Map<String, String> envs = new HashMap<>();
 
     K8sRemoteInterpreterProcess intp = new K8sRemoteInterpreterProcess(
-        server.getClient(),
+        client,
         "default",
         new File(".skip"),
         "interpreter-container:1.0",
@@ -82,7 +82,7 @@ public class K8sRemoteInterpreterProcessTest {
   }
 
   @Test
-  public void testGetTemplateBindings() {
+  void testGetTemplateBindings() {
     // given
     Properties properties = new Properties();
     properties.put("my.key1", "v1");
@@ -90,7 +90,7 @@ public class K8sRemoteInterpreterProcessTest {
     envs.put("MY_ENV1", "V1");
 
     K8sRemoteInterpreterProcess intp = new K8sRemoteInterpreterProcess(
-        server.getClient(),
+        client,
         "default",
         new File(".skip"),
         "interpreter-container:1.0",
@@ -133,7 +133,7 @@ public class K8sRemoteInterpreterProcessTest {
   }
 
   @Test
-  public void testGetTemplateBindingsForSpark() {
+  void testGetTemplateBindingsForSpark() {
     // given
     Properties properties = new Properties();
     properties.put("my.key1", "v1");
@@ -146,7 +146,7 @@ public class K8sRemoteInterpreterProcessTest {
     envs.put("SERVICE_DOMAIN", "mydomain");
 
     K8sRemoteInterpreterProcess intp = new K8sRemoteInterpreterProcess(
-        server.getClient(),
+      client,
         "default",
         new File(".skip"),
         "interpreter-container:1.0",
@@ -192,7 +192,7 @@ public class K8sRemoteInterpreterProcessTest {
   }
 
   @Test
-  public void testGetTemplateBindingsForSparkWithProxyUser() {
+  void testGetTemplateBindingsForSparkWithProxyUser() {
     // given
     Properties properties = new Properties();
     properties.put("my.key1", "v1");
@@ -203,7 +203,7 @@ public class K8sRemoteInterpreterProcessTest {
     envs.put("SERVICE_DOMAIN", "mydomain");
 
     K8sRemoteInterpreterProcess intp = new K8sRemoteInterpreterProcess(
-        server.getClient(),
+      client,
         "default",
         new File(".skip"),
         "interpreter-container:1.0",
@@ -245,7 +245,7 @@ public class K8sRemoteInterpreterProcessTest {
   }
 
   @Test
-  public void testGetTemplateBindingsForSparkWithProxyUserAnonymous() {
+  void testGetTemplateBindingsForSparkWithProxyUserAnonymous() {
     // given
     Properties properties = new Properties();
     properties.put("my.key1", "v1");
@@ -256,7 +256,7 @@ public class K8sRemoteInterpreterProcessTest {
     envs.put("SERVICE_DOMAIN", "mydomain");
 
     K8sRemoteInterpreterProcess intp = new K8sRemoteInterpreterProcess(
-        server.getClient(),
+      client,
         "default",
         new File(".skip"),
         "interpreter-container:1.0",
@@ -289,14 +289,14 @@ public class K8sRemoteInterpreterProcessTest {
   }
 
   @Test
-  public void testSparkUiWebUrlTemplate() {
+  void testSparkUiWebUrlTemplate() {
     // given
     Properties properties = new Properties();
     Map<String, String> envs = new HashMap<>();
     envs.put("SERVICE_DOMAIN", "mydomain");
 
     K8sRemoteInterpreterProcess intp = new K8sRemoteInterpreterProcess(
-        server.getClient(),
+      client,
         "default",
         new File(".skip"),
         "interpreter-container:1.0",
@@ -332,7 +332,7 @@ public class K8sRemoteInterpreterProcessTest {
   }
 
   @Test
-  public void testSparkPodResources() {
+  void testSparkPodResources() {
     // given
     Properties properties = new Properties();
     properties.put("spark.driver.memory", "1g");
@@ -341,7 +341,7 @@ public class K8sRemoteInterpreterProcessTest {
     envs.put("SERVICE_DOMAIN", "mydomain");
 
     K8sRemoteInterpreterProcess intp = new K8sRemoteInterpreterProcess(
-        server.getClient(),
+      client,
         "default",
         new File(".skip"),
         "interpreter-container:1.0",
@@ -368,7 +368,7 @@ public class K8sRemoteInterpreterProcessTest {
   }
 
   @Test
-  public void testSparkPodResourcesMemoryOverhead() {
+  void testSparkPodResourcesMemoryOverhead() {
     // given
     Properties properties = new Properties();
     properties.put("spark.driver.memory", "1g");
@@ -378,7 +378,7 @@ public class K8sRemoteInterpreterProcessTest {
     envs.put("SERVICE_DOMAIN", "mydomain");
 
     K8sRemoteInterpreterProcess intp = new K8sRemoteInterpreterProcess(
-        server.getClient(),
+        client,
         "default",
         new File(".skip"),
         "interpreter-container:1.0",
@@ -405,7 +405,7 @@ public class K8sRemoteInterpreterProcessTest {
   }
 
   @Test
-  public void testK8sStartSuccessful() throws IOException {
+  void testK8sStartSuccessful() throws IOException {
     // given
     Properties properties = new Properties();
     Map<String, String> envs = new HashMap<>();
@@ -415,7 +415,7 @@ public class K8sRemoteInterpreterProcessTest {
     File file = new File(url.getPath());
 
     K8sRemoteInterpreterProcess intp = new K8sRemoteInterpreterProcess(
-        server.getClient(),
+      client,
         "default",
         file,
         "interpreter-container:1.0",
@@ -434,14 +434,14 @@ public class K8sRemoteInterpreterProcessTest {
         true);
     ExecutorService service = Executors.newFixedThreadPool(1);
     service
-        .submit(new PodStatusSimulator(server.getClient(), intp.getInterpreterNamespace(), intp.getPodName(), intp));
+      .submit(new PodStatusSimulator(client, intp.getInterpreterNamespace(), intp.getPodName(), intp));
     intp.start("TestUser");
     // then
     assertEquals("Running", intp.getPodPhase());
   }
 
   @Test
-  public void testK8sStartFailed() {
+  void testK8sStartFailed() {
     // given
     Properties properties = new Properties();
     Map<String, String> envs = new HashMap<>();
@@ -451,7 +451,7 @@ public class K8sRemoteInterpreterProcessTest {
     File file = new File(url.getPath());
 
     K8sRemoteInterpreterProcess intp = new K8sRemoteInterpreterProcess(
-        server.getClient(),
+      client,
         "default",
         file,
         "interpreter-container:1.0",
@@ -468,7 +468,7 @@ public class K8sRemoteInterpreterProcessTest {
         10,
         false,
         true);
-    PodStatusSimulator podStatusSimulator = new PodStatusSimulator(server.getClient(), intp.getInterpreterNamespace(), intp.getPodName(), intp);
+    PodStatusSimulator podStatusSimulator = new PodStatusSimulator(client, intp.getInterpreterNamespace(), intp.getPodName(), intp);
     podStatusSimulator.setSecondPhase("Failed");
     podStatusSimulator.setSuccessfulStart(false);
     ExecutorService service = Executors.newFixedThreadPool(1);
@@ -482,13 +482,13 @@ public class K8sRemoteInterpreterProcessTest {
       assertNotNull(e);
       // Check that the Pod is deleted
       assertNull(
-          server.getClient().pods().inNamespace(intp.getInterpreterNamespace()).withName(intp.getPodName())
+        client.pods().inNamespace(intp.getInterpreterNamespace()).withName(intp.getPodName())
               .get());
     }
   }
 
   @Test
-  public void testK8sStartTimeoutPending() throws InterruptedException {
+  void testK8sStartTimeoutPending() throws InterruptedException {
     // given
     Properties properties = new Properties();
     Map<String, String> envs = new HashMap<>();
@@ -498,7 +498,7 @@ public class K8sRemoteInterpreterProcessTest {
     File file = new File(url.getPath());
 
     K8sRemoteInterpreterProcess intp = new K8sRemoteInterpreterProcess(
-        server.getClient(),
+      client,
         "default",
         file,
         "interpreter-container:1.0",
@@ -515,7 +515,7 @@ public class K8sRemoteInterpreterProcessTest {
         10,
         false,
         false);
-    PodStatusSimulator podStatusSimulator = new PodStatusSimulator(server.getClient(), intp.getInterpreterNamespace(), intp.getPodName(), intp);
+    PodStatusSimulator podStatusSimulator = new PodStatusSimulator(client, intp.getInterpreterNamespace(), intp.getPodName(), intp);
     podStatusSimulator.setFirstPhase("Pending");
     podStatusSimulator.setSecondPhase("Pending");
     podStatusSimulator.setSuccessfulStart(false);
@@ -536,7 +536,7 @@ public class K8sRemoteInterpreterProcessTest {
     // wait for a shutdown
     service.awaitTermination(10, TimeUnit.SECONDS);
     // Check that the Pod is deleted
-    assertNull(server.getClient().pods().inNamespace(intp.getInterpreterNamespace())
+    assertNull(client.pods().inNamespace(intp.getInterpreterNamespace())
         .withName(intp.getPodName()).get());
 
   }

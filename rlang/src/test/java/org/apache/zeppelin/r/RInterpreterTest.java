@@ -26,23 +26,23 @@ import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Properties;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-public class RInterpreterTest {
+class RInterpreterTest {
 
   private RInterpreter rInterpreter;
 
-  @Before
+  @BeforeEach
   public void setUp() throws InterpreterException {
     Properties properties = new Properties();
     properties.setProperty("zeppelin.R.knitr", "true");
@@ -59,13 +59,13 @@ public class RInterpreterTest {
     rInterpreter.open();
   }
 
-  @After
+  @AfterEach
   public void tearDown() throws InterpreterException {
     rInterpreter.close();
   }
 
   @Test
-  public void testSparkRInterpreter() throws InterpreterException, InterruptedException, IOException {
+  void testSparkRInterpreter() throws InterpreterException, InterruptedException, IOException {
     InterpreterResult result = rInterpreter.interpret("1+1", getInterpreterContext());
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
     assertTrue(result.message().get(0).getData().contains("2"));
@@ -78,10 +78,9 @@ public class RInterpreterTest {
             "double <- 15.0\n" +
             "print(double)", context);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    assertTrue(result.toString(),
-                       result.message().get(0).getData().contains("[1] TRUE\n" +
-                               "[1] 1.0 2.5 4.0\n" +
-                               "[1] 15\n"));
+    assertTrue(result.message().get(0).getData().contains("[1] TRUE\n" +
+      "[1] 1.0 2.5 4.0\n" +
+      "[1] 15\n"), result.toString());
 
     // plotting
     context = getInterpreterContext();
@@ -108,7 +107,7 @@ public class RInterpreterTest {
   }
 
   @Test
-  public void testInvalidR() throws InterpreterException {
+  void testInvalidR() throws InterpreterException {
     tearDown();
 
     Properties properties = new Properties();
@@ -129,7 +128,7 @@ public class RInterpreterTest {
       fail("Should fail to open SparkRInterpreter");
     } catch (InterpreterException e) {
       String stacktrace = ExceptionUtils.getStackTrace(e);
-      assertTrue(stacktrace, stacktrace.contains("No such file or directory"));
+      assertTrue(stacktrace.contains("No such file or directory"), stacktrace);
     }
   }
 

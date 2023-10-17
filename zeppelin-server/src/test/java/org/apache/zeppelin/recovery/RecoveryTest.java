@@ -36,20 +36,20 @@ import org.apache.zeppelin.server.ZeppelinServer;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.utils.TestUtils;
 import org.glassfish.hk2.api.ServiceLocatorFactory;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
-
-public class RecoveryTest extends AbstractTestRestApi {
+class RecoveryTest extends AbstractTestRestApi {
 
   private Gson gson = new Gson();
   private static File recoveryDir = null;
@@ -58,8 +58,8 @@ public class RecoveryTest extends AbstractTestRestApi {
 
   private AuthenticationInfo anonymous = new AuthenticationInfo("anonymous");
 
-  @Before
-  public void init() throws Exception {
+  @BeforeEach
+  void init() throws Exception {
     System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_RECOVERY_STORAGE_CLASS.getVarName(),
             FileSystemRecoveryStorage.class.getName());
     recoveryDir = Files.createTempDirectory("recovery").toFile();
@@ -70,8 +70,8 @@ public class RecoveryTest extends AbstractTestRestApi {
     notebook = ServiceLocatorFactory.getInstance().find(ZeppelinServer.SERVICE_LOCATOR_NAME).getService(Notebook.class);
   }
 
-  @After
-  public void destroy() throws Exception {
+  @AfterEach
+  void destroy() throws Exception {
     shutDown(true, true);
     FileUtils.deleteDirectory(recoveryDir);
     System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_RECOVERY_STORAGE_CLASS.getVarName(),
@@ -79,7 +79,7 @@ public class RecoveryTest extends AbstractTestRestApi {
   }
 
   @Test
-  public void testRecovery() throws Exception {
+  void testRecovery() throws Exception {
     LOG.info("Test testRecovery");
     String note1Id = null;
     try {
@@ -140,7 +140,7 @@ public class RecoveryTest extends AbstractTestRestApi {
   }
 
   @Test
-  public void testRecovery_2() throws Exception {
+  void testRecovery_2() throws Exception {
     LOG.info("Test testRecovery_2");
     String note1Id = null;
     try {
@@ -171,7 +171,7 @@ public class RecoveryTest extends AbstractTestRestApi {
                     .getInterpreterSetting().getId()
             );
           } catch (InterpreterException e) {
-            fail();
+            fail(e);
           }
           return null;
         });
@@ -209,7 +209,7 @@ public class RecoveryTest extends AbstractTestRestApi {
   }
 
   @Test
-  public void testRecovery_3() throws Exception {
+  void testRecovery_3() throws Exception {
     LOG.info("Test testRecovery_3");
     String note1Id = null;
     try {
@@ -272,7 +272,7 @@ public class RecoveryTest extends AbstractTestRestApi {
   }
 
   @Test
-  public void testRecovery_Running_Paragraph_sh() throws Exception {
+  void testRecovery_Running_Paragraph_sh() throws Exception {
     LOG.info("Test testRecovery_Running_Paragraph_sh");
     String note1Id = null;
     try {
@@ -325,7 +325,7 @@ public class RecoveryTest extends AbstractTestRestApi {
   }
 
   @Test
-  public void testRecovery_Finished_Paragraph_python() throws Exception {
+  void testRecovery_Finished_Paragraph_python() throws Exception {
     LOG.info("Test testRecovery_Finished_Paragraph_python");
     String note1Id = null;
     try {

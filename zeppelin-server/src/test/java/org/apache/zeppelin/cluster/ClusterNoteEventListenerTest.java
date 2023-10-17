@@ -26,12 +26,11 @@ import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
-
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.fail;
 
 public class ClusterNoteEventListenerTest implements ClusterEventListener {
   private static Logger LOGGER = LoggerFactory.getLogger(ClusterNoteEventListenerTest.class);

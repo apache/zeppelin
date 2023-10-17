@@ -38,10 +38,10 @@
         <datanucleus.core.version>3.2.10</datanucleus.core.version>
 
         <!-- spark versions -->
-        <spark.version>3.1.2</spark.version>
+        <spark.version>3.4.1</spark.version>
         <protobuf.version>2.5.0</protobuf.version>
-        <py4j.version>0.10.9</py4j.version>
-        <spark.scala.version>2.12.7</spark.scala.version>
+        <py4j.version>0.10.9.7</py4j.version>
+        <spark.scala.version>2.12.17</spark.scala.version>
         <spark.scala.binary.version>2.12</spark.scala.binary.version>
 
         <scala.compile.version>${spark.scala.version}</scala.compile.version>
@@ -58,80 +58,18 @@
     <modules>
         <module>interpreter</module>
         <module>spark-scala-parent</module>
-        <module>scala-2.11</module>
         <module>scala-2.12</module>
         <module>scala-2.13</module>
         <module>spark-shims</module>
-        <module>spark2-shims</module>
         <module>spark3-shims</module>
     </modules>
 
     <build>
         <plugins>
             <plugin>
-                <artifactId>maven-enforcer-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>enforce</id>
-                        <phase>none</phase>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-clean-plugin</artifactId>
-                <configuration combine.self="override"></configuration>
             </plugin>
-
-            <plugin>
-                <groupId>net.alchim31.maven</groupId>
-                <artifactId>scala-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>eclipse-add-source</id>
-                        <goals>
-                            <goal>add-source</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>scala-compile-first</id>
-                        <phase>process-resources</phase>
-                        <goals>
-                            <goal>compile</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>scala-test-compile-first</id>
-                        <phase>process-test-resources</phase>
-                        <goals>
-                            <goal>testCompile</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <args>
-                        <arg>-unchecked</arg>
-                        <arg>-deprecation</arg>
-                        <arg>-feature</arg>
-                    </args>
-                    <jvmArgs>
-                        <jvmArg>-Xms1024m</jvmArg>
-                        <jvmArg>-Xmx1024m</jvmArg>
-                        <jvmArg>-XX:MaxMetaspaceSize=${MaxMetaspace}</jvmArg>
-                    </jvmArgs>
-                    <javacArgs>
-                        <javacArg>-source</javacArg>
-                        <javacArg>${java.version}</javacArg>
-                        <javacArg>-target</javacArg>
-                        <javacArg>${java.version}</javacArg>
-                        <javacArg>-Xlint:all,-serial,-path,-options</javacArg>
-                    </javacArgs>
-                </configuration>
-            </plugin>
-
         </plugins>
     </build>
-
-
 </project>

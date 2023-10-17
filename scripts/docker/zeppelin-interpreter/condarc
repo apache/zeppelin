@@ -1,0 +1,5 @@
+# Example to use an proxy for conda
+channel_alias: https://leandi.avm.de/repository/anaconda-proxy
+default_channels:
+  - https://proxy.mycompany.com/repository/anaconda-proxy/main
+  - https://proxy.mycompany.com/repository/anaconda-proxy/r

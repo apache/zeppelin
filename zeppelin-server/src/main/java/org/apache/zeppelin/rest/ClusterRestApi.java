@@ -39,6 +39,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * clusters Rest api.
@@ -53,7 +54,7 @@ public class ClusterRestApi {
 
 
   // Do not modify, Use by `zeppelin-web/src/app/cluster/cluster.html`
-  private static String PROPERTIES = "properties";
+  private static final String PROPERTIES = "properties";
 
   @Inject
   public ClusterRestApi(ZeppelinConfiguration zConf) {
@@ -85,13 +86,13 @@ public class ClusterRestApi {
   public Response getClusterNodes(){
     List<Map<String, Object>> nodes = new ArrayList<>();
 
-    Map<String, HashMap<String, Object>> clusterMeta;
-    Map<String, HashMap<String, Object>> intpMeta;
+    Map<String, Map<String, Object>> clusterMeta;
+    Map<String, Map<String, Object>> intpMeta;
     clusterMeta = clusterManagerServer.getClusterMeta(ClusterMetaType.SERVER_META, "");
     intpMeta = clusterManagerServer.getClusterMeta(ClusterMetaType.INTP_PROCESS_META, "");
 
     // Number of calculation processes
-    for (Map.Entry<String, HashMap<String, Object>> serverMetaEntity : clusterMeta.entrySet()) {
+    for (Entry<String, Map<String, Object>> serverMetaEntity : clusterMeta.entrySet()) {
       if (!serverMetaEntity.getValue().containsKey(ClusterMeta.NODE_NAME)) {
         continue;
       }
@@ -99,7 +100,7 @@ public class ClusterRestApi {
 
       List<String> arrIntpProcess = new ArrayList<>();
       int intpProcCount = 0;
-      for (Map.Entry<String, HashMap<String, Object>> intpMetaEntity : intpMeta.entrySet()) {
+      for (Map.Entry<String, Map<String, Object>> intpMetaEntity : intpMeta.entrySet()) {
         if (!intpMetaEntity.getValue().containsKey(ClusterMeta.NODE_NAME)
             && !intpMetaEntity.getValue().containsKey(ClusterMeta.INTP_PROCESS_NAME)) {
           continue;
@@ -116,7 +117,7 @@ public class ClusterRestApi {
       serverMetaEntity.getValue().put(ClusterMeta.INTP_PROCESS_LIST, arrIntpProcess);
     }
 
-    for (Map.Entry<String, HashMap<String, Object>> entry : clusterMeta.entrySet()) {
+    for (Map.Entry<String, Map<String, Object>> entry : clusterMeta.entrySet()) {
       String nodeName = entry.getKey();
       Map<String, Object> properties = entry.getValue();
 
@@ -197,11 +198,11 @@ public class ClusterRestApi {
                                  @PathParam("intpName") String intpName){
     List<Map<String, Object>> intpProcesses = new ArrayList<>();
 
-    Map<String, HashMap<String, Object>> intpMeta = clusterManagerServer.getClusterMeta(
+    Map<String, Map<String, Object>> intpMeta = clusterManagerServer.getClusterMeta(
             ClusterMetaType.INTP_PROCESS_META, "");
 
     // Number of calculation processes
-    for (Map.Entry<String, HashMap<String, Object>> intpMetaEntity : intpMeta.entrySet()) {
+    for (Map.Entry<String, Map<String, Object>> intpMetaEntity : intpMeta.entrySet()) {
       String intpNodeName = (String) intpMetaEntity.getValue().get(ClusterMeta.NODE_NAME);
 
       if (null != intpNodeName && intpNodeName.equals(nodeName)) {

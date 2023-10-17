@@ -20,17 +20,13 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import org.apache.zeppelin.cluster.event.ClusterEventListener;
 import org.apache.zeppelin.cluster.event.ClusterMessage;
-import org.apache.zeppelin.notebook.Note;
-import org.apache.zeppelin.notebook.Paragraph;
-import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Map;
-import java.util.Set;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.fail;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
+import java.util.Set;
 
 public class ClusterAuthEventListenerTest implements ClusterEventListener {
   private static Logger LOGGER = LoggerFactory.getLogger(ClusterAuthEventListenerTest.class);

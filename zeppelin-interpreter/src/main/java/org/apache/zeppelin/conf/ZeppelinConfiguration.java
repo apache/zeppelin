@@ -24,12 +24,12 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Duration;
-import java.time.format.DateTimeParseException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -1086,7 +1086,13 @@ public class ZeppelinConfiguration {
     ZEPPELIN_K8S_SERVICE_NAME("zeppelin.k8s.service.name", "zeppelin-server"),
     ZEPPELIN_K8S_TIMEOUT_DURING_PENDING("zeppelin.k8s.timeout.during.pending", true),
 
+    // Used by K8s and Docker plugin
     ZEPPELIN_DOCKER_CONTAINER_IMAGE("zeppelin.docker.container.image", "apache/zeppelin:" + Util.getVersion()),
+
+    ZEPPELIN_DOCKER_CONTAINER_SPARK_HOME("zeppelin.docker.container.spark.home", "/spark"),
+    ZEPPELIN_DOCKER_UPLOAD_LOCAL_LIB_TO_CONTAINTER("zeppelin.docker.upload.local.lib.to.container", true),
+    ZEPPELIN_DOCKER_HOST("zeppelin.docker.host", "http://0.0.0.0:2375"),
+    ZEPPELIN_DOCKER_TIME_ZONE("zeppelin.docker.time.zone", TimeZone.getDefault().getID()),
 
     ZEPPELIN_METRIC_ENABLE_PROMETHEUS("zeppelin.metric.enable.prometheus", false),
 

@@ -408,9 +408,9 @@ public class FlinkStreamSqlInterpreterTest extends FlinkSqlInterpreterTest {
   @Test
   public void testStreamUDF() throws IOException, InterpreterException {
     String initStreamScalaScript = getInitStreamScript(100);
-    InterpreterResult result = flinkInterpreter.interpret(initStreamScalaScript,
-            getInterpreterContext());
-    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    InterpreterContext context = getInterpreterContext();
+    InterpreterResult result = flinkInterpreter.interpret(initStreamScalaScript, context);
+    assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
 
     result = flinkInterpreter.interpret(
             "class MyUpper extends ScalarFunction {\n" +
@@ -418,7 +418,7 @@ public class FlinkStreamSqlInterpreterTest extends FlinkSqlInterpreterTest {
                     "}\n" + "stenv.registerFunction(\"myupper\", new MyUpper())", getInterpreterContext());
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
 
-    InterpreterContext context = getInterpreterContext();
+    context = getInterpreterContext();
     result = sqlInterpreter.interpret("select myupper(url), count(1) as pv from " +
             "log group by url", context);
     assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
@@ -692,7 +692,7 @@ public class FlinkStreamSqlInterpreterTest extends FlinkSqlInterpreterTest {
   }
 
   public static String getInitStreamScript(int sleep_interval) throws IOException {
-    return IOUtils.toString(FlinkStreamSqlInterpreterTest.class.getResource("/init_stream.scala"))
+    return IOUtils.toString(FlinkStreamSqlInterpreterTest.class.getResource("/init_stream.scala2"))
             .replace("{{sleep_interval}}", sleep_interval + "");
   }
 }

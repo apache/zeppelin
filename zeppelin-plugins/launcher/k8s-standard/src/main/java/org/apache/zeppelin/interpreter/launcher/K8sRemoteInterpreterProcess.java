@@ -229,6 +229,12 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterManagedProcess
   }
 
   @Override
+  public boolean isAlive() {
+    final String podPhase = getPodPhase();
+    return "Pending".equalsIgnoreCase(podPhase) || "Running".equalsIgnoreCase(podPhase);
+  }
+
+  @Override
   public boolean isRunning() {
     return "Running".equalsIgnoreCase(getPodPhase()) && started.get();
   }

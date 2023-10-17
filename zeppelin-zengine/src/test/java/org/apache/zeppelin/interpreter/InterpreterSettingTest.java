@@ -21,8 +21,8 @@ import com.google.common.collect.Lists;
 import org.apache.zeppelin.dep.Dependency;
 import org.apache.zeppelin.dep.DependencyResolver;
 import org.apache.zeppelin.user.AuthenticationInfo;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,11 +30,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -48,7 +48,7 @@ public class InterpreterSettingTest extends AbstractInterpreterTest{
 
 
   @Override
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     super.setUp();
     interpreterSettingManager = mock(InterpreterSettingManager.class);
@@ -578,8 +578,9 @@ public class InterpreterSettingTest extends AbstractInterpreterTest{
       Thread.sleep(1000);
       LOGGER.warn("Downloading dependency");
     }
-    assertTrue(interpreterSetting.getErrorReason(),
-            interpreterSetting.getErrorReason().contains("Cannot fetch dependencies"));
+    assertTrue(
+            interpreterSetting.getErrorReason().contains("Cannot fetch dependencies"),
+            interpreterSetting.getErrorReason());
 
     // clean dependency
     interpreterSetting.setDependencies(new ArrayList<>());

@@ -33,8 +33,7 @@
   <description>Zeppelin Interpreter Shaded</description>
 
   <properties>
-    <!--plugin versions-->
-    <shaded.dependency.prefix>org.apache.zeppelin.shaded</shaded.dependency.prefix>
+    <shaded.dependency.prefix>shaded.org.apache.zeppelin</shaded.dependency.prefix>
   </properties>
 
   <dependencies>
@@ -118,6 +117,11 @@
                 <exclude>org/w3c/dom/**/*</exclude>
                 <exclude>org/xml/sax/*</exclude>
                 <exclude>org/xml/sax/**/*</exclude>
+
+                <!-- ZEPPELIN-5875 To avoid changing class name improperly between configuration and code
+                  `org/apache/zeppelin/shaded/org.apache.zeppelin.shaded.org.eclipse.sisu.space.SisuIndexAPT6`
+                  -->
+                <exclude>org/eclipse/sisu/**</exclude>
               </excludes>
             </relocation>
             <relocation>

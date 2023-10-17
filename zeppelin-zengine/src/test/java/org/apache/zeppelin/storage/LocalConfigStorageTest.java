@@ -19,7 +19,7 @@ package org.apache.zeppelin.storage;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.zeppelin.util.FileUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -31,7 +31,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Random;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class LocalConfigStorageTest {
     public static final String TEST_STRING = "this is a test!";

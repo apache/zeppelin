@@ -42,15 +42,13 @@ import org.apache.zeppelin.service.NotebookService;
 import org.apache.zeppelin.socket.NotebookServer;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.utils.TestUtils;
-import org.hamcrest.MatcherAssert;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -64,10 +62,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.mock;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
@@ -87,13 +84,12 @@ public class ClusterEventTest extends ZeppelinServerMock {
   private static QuartzSchedulerService schedulerService;
   private static NotebookService notebookService;
   private static AuthorizationService authorizationService;
-  private HttpServletRequest mockRequest;
   private AuthenticationInfo anonymous;
 
   Gson gson = new Gson();
 
-  @BeforeClass
-  public static void init() throws Exception {
+  @BeforeAll
+  static void init() throws Exception {
     ZeppelinConfiguration zconf = genZeppelinConf();
 
     ZeppelinServerMock.startUp("ClusterEventTest", zconf);
@@ -138,8 +134,8 @@ public class ClusterEventTest extends ZeppelinServerMock {
     getClusterServerMeta();
   }
 
-  @AfterClass
-  public static void destroy() throws Exception {
+  @AfterAll
+  static void destroy() throws Exception {
     try {
       if (null != clusterClient) {
         clusterClient.shutdown();
@@ -158,9 +154,8 @@ public class ClusterEventTest extends ZeppelinServerMock {
     LOGGER.info("stopCluster <<<");
   }
 
-  @Before
-  public void setUp() {
-    mockRequest = mock(HttpServletRequest.class);
+  @BeforeEach
+  void setUp() {
     anonymous = new AuthenticationInfo("anonymous");
   }
 
@@ -188,10 +183,10 @@ public class ClusterEventTest extends ZeppelinServerMock {
                                                             int clusterPort,
                                                             ZeppelinConfiguration zConf)
       throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
-    Class clazz = ClusterManagerServer.class;
-    Constructor constructor = clazz.getDeclaredConstructor(ZeppelinConfiguration.class);
+    Class<ClusterManagerServer> clazz = ClusterManagerServer.class;
+    Constructor<ClusterManagerServer> constructor = clazz.getDeclaredConstructor(ZeppelinConfiguration.class);
     constructor.setAccessible(true);
-    ClusterManagerServer clusterServer = (ClusterManagerServer) constructor.newInstance(zConf);
+    ClusterManagerServer clusterServer = constructor.newInstance(zConf);
     clusterServer.initTestCluster(clusterAddrList, clusterHost, clusterPort);
 
     clusterServer.addClusterEventListeners(ClusterManagerServer.CLUSTER_NOTE_EVENT_TOPIC, notebookServer);
@@ -283,13 +278,13 @@ public class ClusterEventTest extends ZeppelinServerMock {
     assertEquals(true, (srvMeta instanceof HashMap));
     HashMap hashMap = (HashMap) srvMeta;
 
-    assertEquals(hashMap.size(), 3);
+    assertEquals(3, hashMap.size());
 
     LOGGER.info("getClusterServerMeta <<< ");
   }
 
   @Test
-  public void testRenameNoteEvent() throws IOException {
+  void testRenameNoteEvent() throws IOException {
     String noteId = null;
     try {
       String oldName = "old_name";
@@ -307,15 +302,17 @@ public class ClusterEventTest extends ZeppelinServerMock {
       assertThat("test testRenameNote:", put, AbstractTestRestApi.isAllowed());
       put.close();
 
+      // wait cluster sync event
+      Thread.sleep(1000);
+      checkClusterNoteEventListener();
+
       TestUtils.getInstance(Notebook.class).processNote(noteId,
         note -> {
           assertEquals(note.getName(), newName);
           return null;
         });
 
-      // wait cluster sync event
-      Thread.sleep(1000);
-      checkClusterNoteEventListener();
+
     } catch (InterruptedException e) {
       LOGGER.error(e.getMessage(), e);
     } finally {
@@ -327,7 +324,7 @@ public class ClusterEventTest extends ZeppelinServerMock {
   }
 
   @Test
-  public void testCloneNoteEvent() throws IOException {
+  void testCloneNoteEvent() throws IOException {
     String note1Id = null;
     String clonedNoteId = null;
     try {
@@ -369,7 +366,7 @@ public class ClusterEventTest extends ZeppelinServerMock {
   }
 
   @Test
-  public void insertParagraphEvent() throws IOException {
+  void insertParagraphEvent() throws IOException {
     String noteId = null;
     try {
       // Create note and set result explicitly
@@ -405,7 +402,7 @@ public class ClusterEventTest extends ZeppelinServerMock {
   }
 
   @Test
-  public void testClusterAuthEvent() throws IOException {
+  void testClusterAuthEvent() throws IOException {
     String noteId = null;
 
     try {
@@ -431,7 +428,7 @@ public class ClusterEventTest extends ZeppelinServerMock {
       } catch (TException e) {
         LOGGER.error(e.getMessage(), e);
       }
-      assertNotNull(user1Id + " can get anonymous's note", paragraphList0);
+      assertNotNull(paragraphList0, user1Id + " can get anonymous's note");
 
       // test user1 cannot get user2's note
       authorizationService.setOwners(noteId, new HashSet<>(Arrays.asList(user2Id)));
@@ -475,7 +472,7 @@ public class ClusterEventTest extends ZeppelinServerMock {
   }
 
   @Test
-  public void testInterpreterEvent() throws IOException, InterruptedException {
+  void testInterpreterEvent() throws IOException, InterruptedException {
     // when: Create 1 interpreter settings `sh1`
     String md1Name = "sh1";
 
@@ -495,7 +492,7 @@ public class ClusterEventTest extends ZeppelinServerMock {
     String postResponse = EntityUtils.toString(post.getEntity(), StandardCharsets.UTF_8);
     LOG.info("testCreatedInterpreterDependencies create response\n" + postResponse);
     InterpreterSetting created = convertResponseToInterpreterSetting(postResponse);
-    MatcherAssert.assertThat("test create method:", post, AbstractTestRestApi.isAllowed());
+    assertThat("test create method:", post, AbstractTestRestApi.isAllowed());
     post.close();
 
     // 1. Call settings API
@@ -544,7 +541,7 @@ public class ClusterEventTest extends ZeppelinServerMock {
     CloseableHttpResponse put = AbstractTestRestApi.httpPut("/interpreter/setting/" + created.getId(), jsonRequest.toString());
     LOG.info("testSettingCRUD update response\n" + EntityUtils.toString(put.getEntity(), StandardCharsets.UTF_8));
     // then: call update setting API
-    MatcherAssert.assertThat("test update method:", put, AbstractTestRestApi.isAllowed());
+    assertThat("test update method:", put, AbstractTestRestApi.isAllowed());
     put.close();
     Thread.sleep(1000);
     checkClusterIntpSettingEventListener();
@@ -553,7 +550,7 @@ public class ClusterEventTest extends ZeppelinServerMock {
     CloseableHttpResponse delete = AbstractTestRestApi.httpDelete("/interpreter/setting/" + created.getId());
     LOG.info("testSettingCRUD delete response\n" + EntityUtils.toString(delete.getEntity(), StandardCharsets.UTF_8));
     // then: call delete setting API
-    MatcherAssert.assertThat("Test delete method:", delete, AbstractTestRestApi.isAllowed());
+    assertThat("Test delete method:", delete, AbstractTestRestApi.isAllowed());
     delete.close();
     Thread.sleep(1000);
     checkClusterIntpSettingEventListener();

@@ -45,7 +45,9 @@ public class ParagraphResult {
   public ParagraphResult(JSONObject paragraphJson) {
     this.paragraphId = paragraphJson.getString("id");
     this.status = Status.valueOf(paragraphJson.getString("status"));
-    this.progress = paragraphJson.getInt("progress");
+    if (paragraphJson.has("progress")) {
+      this.progress = paragraphJson.getInt("progress");
+    }
     this.results = new ArrayList<>();
     if (paragraphJson.has("results")) {
       JSONObject resultJson = paragraphJson.getJSONObject("results");

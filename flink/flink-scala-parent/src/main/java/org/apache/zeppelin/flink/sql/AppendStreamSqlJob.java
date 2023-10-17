@@ -32,7 +32,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.sql.Timestamp;
-import java.time.temporal.TemporalField;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -70,7 +69,7 @@ public class AppendStreamSqlJob extends AbstractStreamSqlJob {
 
   @Override
   protected void processInsert(Row row) {
-    LOGGER.debug("processInsert: " + row.toString());
+    LOGGER.debug("processInsert: {}", row.toString());
     materializedTable.add(row);
   }
 
@@ -99,7 +98,7 @@ public class AppendStreamSqlJob extends AbstractStreamSqlJob {
       return f1.compareTo(f2);
     });
 
-    if (materializedTable.size() != 0) {
+    if (!materializedTable.isEmpty()) {
       // Timestamp type before/after Flink 1.14 has changed.
       if (flinkShims.getFlinkVersion().isAfterFlink114()) {
         java.time.LocalDateTime ldt = ((java.time.LocalDateTime) materializedTable
@@ -133,7 +132,7 @@ public class AppendStreamSqlJob extends AbstractStreamSqlJob {
       String result = buildResult();
       context.out.write(result);
       context.out.flush();
-      LOGGER.debug("Refresh with data: " + result);
+      LOGGER.debug("Refresh with data: {}", result);
     } catch (IOException e) {
       LOGGER.error("Fail to refresh data", e);
     }

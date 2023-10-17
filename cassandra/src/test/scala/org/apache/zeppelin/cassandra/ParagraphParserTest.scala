@@ -19,7 +19,7 @@ package org.apache.zeppelin.cassandra
 import com.datastax.oss.driver.api.core.{ConsistencyLevel, CqlSession}
 import com.datastax.oss.driver.api.core.cql.{BatchType, PreparedStatement}
 import org.apache.zeppelin.interpreter.InterpreterException
-import org.scalatest.mock.MockitoSugar
+import org.scalatest.mockito.MockitoSugar
 import org.scalatest.{BeforeAndAfterEach, FlatSpec, Matchers}
 import org.apache.zeppelin.cassandra.ParagraphParser._
 import org.apache.zeppelin.cassandra.TextBlockHierarchy._

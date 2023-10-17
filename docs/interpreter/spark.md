@@ -69,11 +69,6 @@ Apache Spark is supported in Zeppelin with Spark interpreter group which consist
     <td>SparkSQLInterpreter</td>
     <td>Provides a SQL environment</td>
   </tr>
-  <tr>
-    <td>%spark.kotlin</td>
-    <td>KotlinSparkInterpreter</td>
-    <td>Provides a Kotlin environment</td>
-  </tr>
 </table>
 
 ## Main Features
@@ -89,7 +84,7 @@ Apache Spark is supported in Zeppelin with Spark interpreter group which consist
   </tr>
   <tr>
     <td>Support multiple versions of Scala</td>
-    <td>You can run different Scala versions (2.10/2.11/2.12) of Spark in on Zeppelin instance</td>
+    <td>You can run different Scala versions (2.12/2.13) of Spark in on Zeppelin instance</td>
   </tr>
   <tr>
     <td>Support multiple languages</td>
@@ -284,16 +279,6 @@ You can also set other Spark properties which are not listed in the table. For a
     <td>false</td>
     <td>whether use yarn proxy url as Spark weburl, e.g. http://localhost:8088/proxy/application_1583396598068_0004</td>
   </tr>
-  <tr>
-    <td>spark.repl.target</td>
-    <td>jvm-1.6</td>
-    <td>
-      Manually specifying the Java version of Spark Interpreter Scala REPL,Available options:<br/> 
-      scala-compile v2.10.7 to v2.11.12 supports "jvm-1.5, jvm-1.6, jvm-1.7 and jvm-1.8", and the default value is jvm-1.6.<br/> 
-      scala-compile v2.10.1 to v2.10.6 supports "jvm-1.5, jvm-1.6, jvm-1.7", and the default value is jvm-1.6.<br/> 
-      scala-compile v2.12.x defaults to jvm-1.8, and only supports jvm-1.8.
-    </td>
-  </tr>
 </table>
 
 Without any configuration, Spark interpreter works out of box in local mode. But if you want to connect to your Spark cluster, you'll need to follow below two simple steps.
@@ -332,15 +317,8 @@ export HADOOP_CONF_DIR=/usr/lib/hadoop
 #### Set `SPARK_HOME` in interpreter setting page
 
 If you want to use multiple versions of Spark, then you need to create multiple Spark interpreters and set `SPARK_HOME` separately. e.g.
-Create a new Spark interpreter `spark24` for Spark 2.4 and set its `SPARK_HOME` in interpreter setting page as following,
-<center>
-<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/spark_SPARK_HOME24.png" width="80%">
-</center>
-
-Create a new Spark interpreter `spark16` for Spark 1.6 and set its `SPARK_HOME` in interpreter setting page as following,
-<center>
-<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/spark_SPARK_HOME16.png" width="80%">
-</center>
+Create a new Spark interpreter `spark33` for Spark 3.3 and set its `SPARK_HOME` in interpreter setting page,
+Create a new Spark interpreter `spark34` for Spark 3.4 and set its `SPARK_HOME` in interpreter setting page.
 
 
 #### Set `SPARK_HOME` via [inline generic configuration](../usage/interpreter/overview.html#inline-generic-confinterpreter) 
@@ -407,7 +385,7 @@ You can also choose `scoped` mode. For `scoped` per note mode, Zeppelin creates 
 
 ## SparkContext, SQLContext, SparkSession, ZeppelinContext
 
-SparkContext, SQLContext, SparkSession (for spark 2.x, 3.x) and ZeppelinContext are automatically created and exposed as variable names `sc`, `sqlContext`, `spark` and `z` respectively, in Scala, Kotlin, Python and R environments.
+SparkContext, SQLContext, SparkSession (for spark 2.x, 3.x) and ZeppelinContext are automatically created and exposed as variable names `sc`, `sqlContext`, `spark` and `z` respectively, in Scala, Python and R environments.
 
 
 > Note that Scala/Python/R environment shares the same SparkContext, SQLContext, SparkSession and ZeppelinContext instance.
@@ -627,15 +605,6 @@ you need to enable user impersonation for more security control. In order the en
 
 **Step 3(Optional)** If you are using kerberos cluster, then you need to set `zeppelin.server.kerberos.keytab` and `zeppelin.server.kerberos.principal` to the user(aka. user in Step 1) you want to 
 impersonate in `zeppelin-site.xml`.
-
-
-
-## Deprecate Spark 2.2 and earlier versions
-Starting from 0.9, Zeppelin deprecate Spark 2.2 and earlier versions. So you will see a warning message when you use Spark 2.2 and earlier.
-You can get rid of this message by setting `zeppelin.spark.deprecatedMsg.show` to `false`.
-
-<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/spark_deprecate.png">
-
 
 ## Community
 

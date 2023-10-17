@@ -21,10 +21,9 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.exception.NotePathAlreadyExistsException;
 import org.apache.zeppelin.notebook.repo.InMemoryNotebookRepo;
 import org.apache.zeppelin.user.AuthenticationInfo;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.Map;
@@ -34,19 +33,18 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class NoteManagerTest {
   private NoteManager noteManager;
   private ZeppelinConfiguration conf;
 
-  @Rule
-  public ExpectedException thrown = ExpectedException.none();
 
 
-  @Before
+  @BeforeEach
   public void setUp() throws IOException {
     conf = ZeppelinConfiguration.create();
     this.noteManager = new NoteManager(new InMemoryNotebookRepo(), conf);
@@ -73,10 +71,10 @@ public class NoteManagerTest {
 
     // move note
     this.noteManager.moveNote(note1.getId(), "/dev/project_1/my_note1",
-        AuthenticationInfo.ANONYMOUS);
+            AuthenticationInfo.ANONYMOUS);
     assertEquals(3, this.noteManager.getNotesInfo().size());
     assertEquals("/dev/project_1/my_note1",
-        this.noteManager.processNote(note1.getId(), n -> n).getPath());
+            this.noteManager.processNote(note1.getId(), n -> n).getPath());
 
     // move folder
     this.noteManager.moveFolder("/dev", "/staging", AuthenticationInfo.ANONYMOUS);
@@ -97,28 +95,31 @@ public class NoteManagerTest {
 
   @Test
   public void testAddNoteRejectsDuplicatePath() throws IOException {
-    thrown.expect(NotePathAlreadyExistsException.class);
-    thrown.expectMessage("Note '/prod/note' existed");
 
-    Note note1 = createNote("/prod/note");
-    Note note2 = createNote("/prod/note");
+    assertThrows(NotePathAlreadyExistsException.class,
+            () -> {
+              Note note1 = createNote("/prod/note");
+              Note note2 = createNote("/prod/note");
 
-    noteManager.addNote(note1, AuthenticationInfo.ANONYMOUS);
-    noteManager.addNote(note2, AuthenticationInfo.ANONYMOUS);
+              noteManager.addNote(note1, AuthenticationInfo.ANONYMOUS);
+              noteManager.addNote(note2, AuthenticationInfo.ANONYMOUS);
+            },
+            "Note '/prod/note' existed");
   }
 
   @Test
   public void testMoveNoteRejectsDuplicatePath() throws IOException {
-    thrown.expect(NotePathAlreadyExistsException.class);
-    thrown.expectMessage("Note '/prod/note-1' existed");
+    assertThrows(NotePathAlreadyExistsException.class,
+            () -> {
+              Note note1 = createNote("/prod/note-1");
+              Note note2 = createNote("/prod/note-2");
 
-    Note note1 = createNote("/prod/note-1");
-    Note note2 = createNote("/prod/note-2");
+              noteManager.addNote(note1, AuthenticationInfo.ANONYMOUS);
+              noteManager.addNote(note2, AuthenticationInfo.ANONYMOUS);
 
-    noteManager.addNote(note1, AuthenticationInfo.ANONYMOUS);
-    noteManager.addNote(note2, AuthenticationInfo.ANONYMOUS);
-
-    noteManager.moveNote(note2.getId(), "/prod/note-1", AuthenticationInfo.ANONYMOUS);
+              noteManager.moveNote(note2.getId(), "/prod/note-1", AuthenticationInfo.ANONYMOUS);
+            },
+            "Note '/prod/note-1' existed");
   }
 
   private Note createNote(String notePath) {
@@ -151,8 +152,9 @@ public class NoteManagerTest {
     }
     assertEquals(cacheThreshold, noteManager.getCacheSize());
 
-    // add cache + 1
+    // add cache + 1 with read flag
     Note noteNew2 = createNote("/prod/notenew2");
+    noteNew2.getLock().readLock().lock();
     noteManager.addNote(noteNew2, AuthenticationInfo.ANONYMOUS);
 
     // since all notes in the cache are with a read lock, the cache grows
@@ -162,6 +164,14 @@ public class NoteManagerTest {
     noteManager.removeNote(noteNew2.getId(), AuthenticationInfo.ANONYMOUS);
     assertFalse(noteManager.containsNote(noteNew2.getPath()));
     assertEquals(cacheThreshold, noteManager.getCacheSize());
+
+    // add cache + 1 without read flag
+    Note noteNew3 = createNote("/prod/notenew3");
+    noteManager.addNote(noteNew3, AuthenticationInfo.ANONYMOUS);
+
+    // since all dirty notes in the cache are with a read flag, the cache removes noteNew3, because it has no read flag
+    assertEquals(cacheThreshold, noteManager.getCacheSize());
+    assertTrue(noteManager.containsNote(noteNew3.getPath()));
   }
 
   @Test

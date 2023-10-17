@@ -20,19 +20,22 @@ import org.apache.zeppelin.cluster.meta.ClusterMeta;
 import org.apache.zeppelin.cluster.meta.ClusterMetaType;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterUtils;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
-public class ClusterSingleNodeTest {
+class ClusterSingleNodeTest {
   private static Logger LOGGER = LoggerFactory.getLogger(ClusterSingleNodeTest.class);
   private static ZeppelinConfiguration zconf;
 
@@ -43,8 +46,8 @@ public class ClusterSingleNodeTest {
   static int zServerPort;
   static final String metaKey = "ClusterSingleNodeTestKey";
 
-  @BeforeClass
-  public static void startCluster() throws IOException, InterruptedException {
+  @BeforeAll
+  static void startCluster() throws IOException, InterruptedException {
     LOGGER.info("startCluster >>>");
 
     zconf = ZeppelinConfiguration.create("zeppelin-site-test.xml");
@@ -81,8 +84,8 @@ public class ClusterSingleNodeTest {
     LOGGER.info("startCluster <<<");
   }
 
-  @AfterClass
-  public static void stopCluster() {
+  @AfterAll
+  static void stopCluster() {
     if (null != clusterClient) {
       clusterClient.shutdown();
     }
@@ -94,34 +97,31 @@ public class ClusterSingleNodeTest {
   }
 
   @Test
-  public void getServerMeta() {
+  void getServerMeta() {
     LOGGER.info("getServerMeta >>>");
 
     // Get metadata for all services
-    Object meta = clusterClient.getClusterMeta(ClusterMetaType.SERVER_META, "");
+    Map<String, Map<String, Object>> meta = clusterClient.getClusterMeta(ClusterMetaType.SERVER_META, "");
     LOGGER.info(meta.toString());
 
-    Object intpMeta = clusterClient.getClusterMeta(ClusterMetaType.INTP_PROCESS_META, "");
+    Map<String, Map<String, Object>> intpMeta = clusterClient.getClusterMeta(ClusterMetaType.INTP_PROCESS_META, "");
     LOGGER.info(intpMeta.toString());
 
     assertNotNull(meta);
-    assertEquals(true, (meta instanceof HashMap));
-    HashMap hashMap = (HashMap) meta;
+    assertTrue(meta instanceof Map);
 
     // Get metadata for the current service
-    Object values = hashMap.get(clusterClient.getClusterNodeName());
-    assertEquals(true, (values instanceof HashMap));
-    HashMap mapMetaValues = (HashMap) values;
-
-    assertEquals(true, mapMetaValues.size()>0);
+    Map<String, Object> values = meta.get(clusterClient.getClusterNodeName());
+    assertTrue(values instanceof Map);
+    assertTrue(values.size() > 0);
 
     LOGGER.info("getServerMeta <<<");
   }
 
   @Test
-  public void putIntpProcessMeta() {
+  void putIntpProcessMeta() {
     // mock IntpProcess Meta
-    HashMap<String, Object> meta = new HashMap<>();
+    Map<String, Object> meta = new HashMap<>();
     meta.put(ClusterMeta.SERVER_HOST, zServerHost);
     meta.put(ClusterMeta.SERVER_PORT, zServerPort);
     meta.put(ClusterMeta.INTP_TSERVER_HOST, "INTP_TSERVER_HOST");
@@ -135,7 +135,7 @@ public class ClusterSingleNodeTest {
     clusterClient.putClusterMeta(ClusterMetaType.INTP_PROCESS_META, metaKey, meta);
 
     // get IntpProcess Meta
-    HashMap<String, HashMap<String, Object>> check
+    Map<String, Map<String, Object>> check
         = clusterClient.getClusterMeta(ClusterMetaType.INTP_PROCESS_META, metaKey);
 
     LOGGER.info(check.toString());

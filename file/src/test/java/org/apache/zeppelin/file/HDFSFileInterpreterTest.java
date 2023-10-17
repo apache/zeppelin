@@ -18,13 +18,11 @@
 
 package org.apache.zeppelin.file;
 
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import com.google.gson.Gson;
 
-import junit.framework.TestCase;
-
-import org.junit.Test;
 import org.slf4j.Logger;
 
 import java.util.Arrays;
@@ -35,13 +33,14 @@ import java.util.Properties;
 import org.apache.zeppelin.completer.CompletionType;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests Interpreter by running pre-determined commands against mock file system.
  */
-public class HDFSFileInterpreterTest extends TestCase {
+class HDFSFileInterpreterTest {
   @Test
-  public void testMaxLength() {
+  void testMaxLength() {
     HDFSFileInterpreter t = new MockHDFSFileInterpreter(new Properties());
     t.open();
     InterpreterResult result = t.interpret("ls -l /", null);
@@ -61,7 +60,7 @@ public class HDFSFileInterpreterTest extends TestCase {
   }
 
   @Test
-  public void test() {
+  void test() {
     HDFSFileInterpreter t = new MockHDFSFileInterpreter(new Properties());
     t.open();
 
@@ -72,58 +71,58 @@ public class HDFSFileInterpreterTest extends TestCase {
     // 2. paths (. and ..) are correctly handled
     // 3. flags and arguments to commands are correctly handled
     InterpreterResult result1 = t.interpret("ls -l /", null);
-    assertEquals(result1.message().get(0).getType(), InterpreterResult.Type.TEXT);
+    assertEquals(InterpreterResult.Type.TEXT, result1.message().get(0).getType());
 
     InterpreterResult result2 = t.interpret("ls -l /./user/..", null);
-    assertEquals(result2.message().get(0).getType(), InterpreterResult.Type.TEXT);
+    assertEquals(InterpreterResult.Type.TEXT, result2.message().get(0).getType());
 
     assertEquals(result1.message().get(0).getData(), result2.message().get(0).getData());
 
     // Ensure you can do cd and after that the ls uses current directory correctly
     InterpreterResult result3 = t.interpret("cd user", null);
-    assertEquals(result3.message().get(0).getType(), InterpreterResult.Type.TEXT);
-    assertEquals(result3.message().get(0).getData(), "OK");
+    assertEquals(InterpreterResult.Type.TEXT, result3.message().get(0).getType());
+    assertEquals("OK", result3.message().get(0).getData());
 
     InterpreterResult result4 = t.interpret("ls", null);
-    assertEquals(result4.message().get(0).getType(), InterpreterResult.Type.TEXT);
+    assertEquals(InterpreterResult.Type.TEXT, result4.message().get(0).getType());
 
     InterpreterResult result5 = t.interpret("ls /user", null);
-    assertEquals(result5.message().get(0).getType(), InterpreterResult.Type.TEXT);
+    assertEquals(InterpreterResult.Type.TEXT, result5.message().get(0).getType());
 
     assertEquals(result4.message().get(0).getData(), result5.message().get(0).getData());
 
     // Ensure pwd works correctly
     InterpreterResult result6 = t.interpret("pwd", null);
-    assertEquals(result6.message().get(0).getType(), InterpreterResult.Type.TEXT);
-    assertEquals(result6.message().get(0).getData(), "/user");
+    assertEquals(InterpreterResult.Type.TEXT, result6.message().get(0).getType());
+    assertEquals("/user", result6.message().get(0).getData());
 
     // Move a couple of levels and check we're in the right place
     InterpreterResult result7 = t.interpret("cd ../mr-history/done", null);
-    assertEquals(result7.message().get(0).getType(), InterpreterResult.Type.TEXT);
-    assertEquals(result7.message().get(0).getData(), "OK");
+    assertEquals(InterpreterResult.Type.TEXT, result7.message().get(0).getType());
+    assertEquals("OK", result7.message().get(0).getData());
 
     InterpreterResult result8 = t.interpret("ls -l ", null);
-    assertEquals(result8.message().get(0).getType(), InterpreterResult.Type.TEXT);
+    assertEquals(InterpreterResult.Type.TEXT, result8.message().get(0).getType());
 
     InterpreterResult result9 = t.interpret("ls -l /mr-history/done", null);
-    assertEquals(result9.message().get(0).getType(), InterpreterResult.Type.TEXT);
+    assertEquals(InterpreterResult.Type.TEXT, result9.message().get(0).getType());
 
     assertEquals(result8.message().get(0).getData(), result9.message().get(0).getData());
 
     InterpreterResult result10 = t.interpret("cd ../..", null);
-    assertEquals(result10.message().get(0).getType(), InterpreterResult.Type.TEXT);
-    assertEquals(result7.message().get(0).getData(), "OK");
+    assertEquals(InterpreterResult.Type.TEXT, result10.message().get(0).getType());
+    assertEquals("OK", result7.message().get(0).getData());
 
     InterpreterResult result11 = t.interpret("ls -l ", null);
-    assertEquals(result11.message().get(0).getType(), InterpreterResult.Type.TEXT);
+    assertEquals(InterpreterResult.Type.TEXT, result11.message().get(0).getType());
 
     // we should be back to first result after all this navigation
     assertEquals(result1.message().get(0).getData(), result11.message().get(0).getData());
 
     // auto completion test
-    List expectedResultOne = Arrays.asList(
+    List<InterpreterCompletion> expectedResultOne = Arrays.asList(
             new InterpreterCompletion("ls", "ls", CompletionType.command.name()));
-    List expectedResultTwo = Arrays.asList(
+    List<InterpreterCompletion> expectedResultTwo = Arrays.asList(
             new InterpreterCompletion("pwd", "pwd", CompletionType.command.name()));
     List<InterpreterCompletion> resultOne = t.completion("l", 0, null);
     List<InterpreterCompletion> resultTwo = t.completion("p", 0, null);

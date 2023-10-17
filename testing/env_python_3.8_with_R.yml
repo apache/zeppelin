@@ -9,11 +9,13 @@ dependencies:
   - grpcio
   - protobuf
   - pandasql
+  - sqlalchemy=1.4.46
   - ipython
   - ipython_genutils
   - ipykernel
   - jupyter_client=5
   - hvplot
+  - holoviews=1.16
   - plotnine
   - seaborn
   - intake

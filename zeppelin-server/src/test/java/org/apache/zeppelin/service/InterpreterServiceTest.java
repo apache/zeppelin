@@ -17,9 +17,11 @@
 
 package org.apache.zeppelin.service;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -33,17 +35,13 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.dep.DependencyResolver;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.rest.message.InterpreterInstallationRequest;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-@RunWith(MockitoJUnitRunner.class)
-public class InterpreterServiceTest {
-  @Mock private ZeppelinConfiguration mockZeppelinConfiguration;
-  @Mock private InterpreterSettingManager mockInterpreterSettingManager;
+class InterpreterServiceTest {
+  private ZeppelinConfiguration mockZeppelinConfiguration;
+  private InterpreterSettingManager mockInterpreterSettingManager;
 
   private Path temporaryDir;
   private Path interpreterDir;
@@ -51,8 +49,10 @@ public class InterpreterServiceTest {
 
   InterpreterService interpreterService;
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
+    mockZeppelinConfiguration = mock(ZeppelinConfiguration.class);
+    mockInterpreterSettingManager = mock(InterpreterSettingManager.class);
     temporaryDir = Files.createTempDirectory("tmp");
     interpreterDir = Files.createTempDirectory(temporaryDir, "interpreter");
     localRepoDir = Files.createTempDirectory(temporaryDir, "local-repo");
@@ -61,44 +61,42 @@ public class InterpreterServiceTest {
     when(mockZeppelinConfiguration.getInterpreterLocalRepoPath())
         .thenReturn(localRepoDir.toString());
 
-    when(mockZeppelinConfiguration.getZeppelinProxyUrl()).thenReturn(null);
-    when(mockZeppelinConfiguration.getZeppelinProxyUser()).thenReturn(null);
-    when(mockZeppelinConfiguration.getZeppelinProxyPassword()).thenReturn(null);
-
     interpreterService =
         new InterpreterService(mockZeppelinConfiguration, mockInterpreterSettingManager);
   }
 
-  @After
+  @AfterEach
   public void tearDown() throws Exception {
     if (null != temporaryDir) {
       FileUtils.deleteDirectory(temporaryDir.toFile());
     }
   }
 
-  @Test(expected = Exception.class)
-  public void interpreterAlreadyExist() throws Exception {
+  @Test
+  void interpreterAlreadyExist() throws IOException {
     String alreadyExistName = "aen";
     Path specificInterpreterDir =
-        Files.createDirectory(Paths.get(interpreterDir.toString(), alreadyExistName));
-
-    interpreterService.installInterpreter(
+      Files.createDirectory(Paths.get(interpreterDir.toString(), alreadyExistName));
+    assertThrows(Exception.class, () -> {
+      interpreterService.installInterpreter(
         new InterpreterInstallationRequest(alreadyExistName, "artifact"), null);
+    });
   }
 
-  @Test(expected = Exception.class)
-  public void interpreterAlreadyExistWithDifferentName() throws Exception {
+  @Test
+  void interpreterAlreadyExistWithDifferentName() throws IOException {
     String interpreterName = "in";
     Files.createDirectory(Paths.get(interpreterDir.toString(), interpreterName));
 
     String anotherButSameInterpreterName = "zeppelin-" + interpreterName;
-
-    interpreterService.installInterpreter(
+    assertThrows(Exception.class, () -> {
+      interpreterService.installInterpreter(
         new InterpreterInstallationRequest(anotherButSameInterpreterName, "artifact"), null);
+    });
   }
 
   @Test
-  public void downloadInterpreter() throws IOException {
+  void downloadInterpreter() throws IOException {
     final String interpreterName = "test-interpreter";
     String artifactName = "junit:junit:4.11";
     Path specificInterpreterPath =
@@ -124,7 +122,7 @@ public class InterpreterServiceTest {
 
           @Override
           public void onFailure(Exception ex, ServiceContext context) {
-            fail();
+          fail(ex);
           }
         });
 

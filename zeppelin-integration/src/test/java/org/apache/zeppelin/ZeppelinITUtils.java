@@ -21,11 +21,12 @@ package org.apache.zeppelin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.openqa.selenium.WebDriver;
-import java.util.concurrent.TimeUnit;
+
+import java.time.Duration;
 
 public class ZeppelinITUtils {
 
-  public final static Logger LOG = LoggerFactory.getLogger(ZeppelinITUtils.class);
+  private final static Logger LOG = LoggerFactory.getLogger(ZeppelinITUtils.class);
 
   public static void sleep(long millis, boolean logOutput) {
     if (logOutput) {
@@ -50,11 +51,11 @@ public class ZeppelinITUtils {
   }
 
   public static void turnOffImplicitWaits(WebDriver driver) {
-    driver.manage().timeouts().implicitlyWait(0, TimeUnit.SECONDS);
+    driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(0));
   }
 
   public static void turnOnImplicitWaits(WebDriver driver) {
-    driver.manage().timeouts().implicitlyWait(AbstractZeppelinIT.MAX_IMPLICIT_WAIT,
-        TimeUnit.SECONDS);
+    driver.manage().timeouts()
+      .implicitlyWait(Duration.ofSeconds(AbstractZeppelinIT.MAX_IMPLICIT_WAIT));
   }
 }

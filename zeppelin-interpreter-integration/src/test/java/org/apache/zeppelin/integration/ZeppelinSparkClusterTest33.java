@@ -17,24 +17,29 @@
 
 package org.apache.zeppelin.integration;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 
-import java.util.Arrays;
-import java.util.List;
+public class ZeppelinSparkClusterTest33 {
 
-@RunWith(value = Parameterized.class)
-public class ZeppelinSparkClusterTest33 extends ZeppelinSparkClusterTest {
+  @Nested
+  @DisplayName("Hadoop2")
+  public class Hadoop2 extends ZeppelinSparkClusterTest {
 
-  public ZeppelinSparkClusterTest33(String sparkVersion, String hadoopVersion) throws Exception {
-    super(sparkVersion, hadoopVersion);
+      @BeforeEach
+      public void downloadSpark() throws Exception {
+        prepareSpark("3.3.0", "2");
+      }
   }
 
-  @Parameterized.Parameters
-  public static List<Object[]> data() {
-    return Arrays.asList(new Object[][]{
-        {"3.3.0", "2"},
-        {"3.3.0", "3"}
-    });
+  @Nested
+  @DisplayName("Hadoop3")
+  public class Hadoop3 extends ZeppelinSparkClusterTest {
+
+      @BeforeEach
+      public void downloadSpark() throws Exception {
+        prepareSpark("3.3.0", "3");
+      }
   }
 }

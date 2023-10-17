@@ -38,7 +38,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class JobManager {
 
-  private static Logger LOGGER = LoggerFactory.getLogger(JobManager.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(JobManager.class);
   public static final String LATEST_CHECKPOINT_PATH = "latest_checkpoint_path";
   public static final String SAVEPOINT_PATH = "savepoint_path";
   public static final String RESUME_FROM_SAVEPOINT = "resumeFromSavepoint";
@@ -62,7 +62,7 @@ public class JobManager {
     LOGGER.info("Creating JobManager at flinkWebUrl: {}, displayedFlinkWebUrl: {}",
             flinkWebUrl, displayedFlinkWebUrl);
   }
-  
+
   public void addJob(InterpreterContext context, JobClient jobClient) {
     String paragraphId = context.getParagraphId();
     JobClient previousJobClient = this.jobs.put(paragraphId, jobClient);
@@ -83,18 +83,18 @@ public class JobManager {
   }
 
   public void removeJob(String paragraphId) {
-    LOGGER.info("Remove job in paragraph: " + paragraphId);
+    LOGGER.info("Remove job in paragraph: {}", paragraphId);
     JobClient jobClient = this.jobs.remove(paragraphId);
     if (jobClient == null) {
-      LOGGER.warn("Unable to remove job, because no job is associated with paragraph: "
-              + paragraphId);
+      LOGGER.warn("Unable to remove job, because no job is associated with paragraph: {}",
+        paragraphId);
       return;
     }
     FlinkJobProgressPoller jobProgressPoller =
             this.jobProgressPollerMap.remove(jobClient.getJobID());
     if (jobProgressPoller == null) {
-        LOGGER.warn("Unable to remove poller, because no poller is associated with paragraph: "
-                + paragraphId);
+      LOGGER.warn("Unable to remove poller, because no poller is associated with paragraph: {}",
+        paragraphId);
         return;
     }
 
@@ -114,21 +114,21 @@ public class JobManager {
       infos.put("paraId", context.getParagraphId());
       context.getIntpEventClient().onParaInfosReceived(infos);
     } else {
-      LOGGER.warn("No job is associated with paragraph: " + context.getParagraphId());
+      LOGGER.warn("No job is associated with paragraph: {}", context.getParagraphId());
     }
   }
 
   public int getJobProgress(String paragraphId) {
     JobClient jobClient = this.jobs.get(paragraphId);
     if (jobClient == null) {
-      LOGGER.warn("Unable to get job progress for paragraph: " + paragraphId +
-              ", because no job is associated with this paragraph");
+      LOGGER.warn("Unable to get job progress for paragraph: {}"
+        + ", because no job is associated with this paragraph", paragraphId);
       return 0;
     }
     FlinkJobProgressPoller jobProgressPoller = this.jobProgressPollerMap.get(jobClient.getJobID());
     if (jobProgressPoller == null) {
-      LOGGER.warn("Unable to get job progress for paragraph: " + paragraphId +
-              ", because no job progress is associated with this jobId: " + jobClient.getJobID());
+      LOGGER.warn("Unable to get job progress for paragraph: {}"
+        + ", because no job progress is associated with this jobId: {}", paragraphId, jobClient.getJobID());
       return 0;
     }
     return jobProgressPoller.getProgress();
@@ -174,8 +174,8 @@ public class JobManager {
       throw new InterpreterException(errorMessage, e);
     } finally {
       if (cancelled) {
-        LOGGER.info("Cancelling is successful, remove the associated FlinkJobProgressPoller of paragraph: "
-                + context.getParagraphId());
+        LOGGER.info("Cancelling is successful, remove the associated FlinkJobProgressPoller of paragraph: {}",
+          context.getParagraphId());
         FlinkJobProgressPoller jobProgressPoller = jobProgressPollerMap.remove(jobClient.getJobID());
         if (jobProgressPoller != null) {
           jobProgressPoller.cancel();
@@ -231,11 +231,11 @@ public class JobManager {
             totalTasks += vertex.getInt("parallelism");
             finishedTasks += vertex.getJSONObject("tasks").getInt("FINISHED");
           }
-          LOGGER.debug("Total tasks:" + totalTasks);
-          LOGGER.debug("Finished tasks:" + finishedTasks);
+          LOGGER.debug("Total tasks:{}", totalTasks);
+          LOGGER.debug("Finished tasks:{}", finishedTasks);
           if (finishedTasks != 0) {
             this.progress = finishedTasks * 100 / totalTasks;
-            LOGGER.debug("Progress: " + this.progress);
+            LOGGER.debug("Progress: {}", this.progress);
           }
           String jobState = rootNode.getObject().getString("state");
           if (jobState.equalsIgnoreCase("finished")) {

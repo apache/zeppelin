@@ -17,38 +17,33 @@
 
 package org.apache.zeppelin.integration;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import java.io.IOException;
+
 import org.apache.zeppelin.AbstractZeppelinIT;
 import org.apache.zeppelin.WebDriverManager;
-import org.hamcrest.CoreMatchers;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ErrorCollector;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.openqa.selenium.By;
-import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.Select;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-public class InterpreterIT extends AbstractZeppelinIT {
-  private static final Logger LOG = LoggerFactory.getLogger(InterpreterIT.class);
+class InterpreterIT extends AbstractZeppelinIT {
 
-  @Rule
-  public ErrorCollector collector = new ErrorCollector();
-
-  @Before
-  public void startUp() {
-    driver = WebDriverManager.getWebDriver();
+  @BeforeEach
+  public void startUp() throws IOException {
+    manager = new WebDriverManager();
   }
 
-  @After
-  public void tearDown() {
-    driver.quit();
+  @AfterEach
+  public void tearDown() throws IOException {
+    manager.close();
   }
 
   @Test
-  public void testShowDescriptionOnInterpreterCreate() throws Exception {
+  void testShowDescriptionOnInterpreterCreate() throws Exception {
     try {
       // navigate to interpreter page
       // setting button
@@ -60,12 +55,17 @@ public class InterpreterIT extends AbstractZeppelinIT {
       // create button
       clickAndWait(By.xpath("//button[contains(., 'Create')]"));
 
-      Select select = new Select(driver.findElement(By.xpath("//select[@ng-change='newInterpreterGroupChange()']")));
+      Select select = new Select(manager.getWebDriver()
+        .findElement(By.xpath("//select[@ng-change='newInterpreterGroupChange()']")));
       select.selectByVisibleText("spark");
 
-      collector.checkThat("description of interpreter property is displayed",
-          driver.findElement(By.xpath("//tr/td[contains(text(), 'spark.app.name')]/following-sibling::td[2]")).getText(),
-          CoreMatchers.equalTo("The name of spark application."));
+      assertEquals(
+        "The name of spark application.",
+        manager.getWebDriver()
+          .findElement(
+            By.xpath("//tr/td[contains(text(), 'spark.app.name')]/following-sibling::td[2]"))
+          .getText(),
+        "description of interpreter property is displayed");
 
     } catch (Exception e) {
       handleException("Exception in InterpreterIT while testShowDescriptionOnInterpreterCreate ", e);

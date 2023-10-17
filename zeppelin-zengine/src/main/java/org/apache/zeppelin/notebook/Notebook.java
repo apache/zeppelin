@@ -414,7 +414,7 @@ public class Notebook {
             newNote.setRunning(false);
 
             saveNote(newNote, subject);
-            authorizationService.cloneNoteMeta(newNote.getId(), sourceNoteId, subject);
+            authorizationService.createNoteAuth(newNote.getId(), subject);
             return null;
           });
 

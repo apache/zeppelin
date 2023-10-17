@@ -19,11 +19,9 @@
 package org.apache.zeppelin.flink.internal;
 
 
-import org.apache.flink.api.common.InvalidProgramException;
 import org.apache.flink.api.java.ExecutionEnvironment;
 import org.apache.flink.configuration.ConfigUtils;
 import org.apache.flink.configuration.Configuration;
-import org.apache.flink.configuration.DeploymentOptions;
 import org.apache.flink.configuration.PipelineOptions;
 import org.apache.flink.core.execution.JobClient;
 import org.apache.flink.util.JarUtils;
@@ -34,7 +32,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.apache.flink.util.Preconditions.checkNotNull;
-import static org.apache.flink.util.Preconditions.checkState;
 
 /**
  * This class is copied from flink project, the reason is that flink scala shell only supports

@@ -76,8 +76,8 @@
     </dependency>
 
     <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-engine</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -96,7 +96,7 @@
           <artifactId>maven-enforcer-plugin</artifactId>
           <executions>
             <execution>
-              <id>enforce</id>
+              <id>enforce-dependency-convergence</id>
               <phase>none</phase>
             </execution>
           </executions>
@@ -107,6 +107,7 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-shade-plugin</artifactId>
           <configuration>
+            <createDependencyReducedPom>false</createDependencyReducedPom>
             <filters>
               <filter>
                 <artifact>*:*</artifact>

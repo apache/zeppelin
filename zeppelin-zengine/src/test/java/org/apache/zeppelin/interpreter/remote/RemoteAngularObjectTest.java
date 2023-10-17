@@ -27,12 +27,12 @@ import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.resource.LocalResourcePool;
 import org.apache.zeppelin.user.AuthenticationInfo;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class RemoteAngularObjectTest extends AbstractInterpreterTest
     implements AngularObjectRegistryListener {
@@ -49,7 +49,7 @@ public class RemoteAngularObjectTest extends AbstractInterpreterTest
   private String note1Id;
 
   @Override
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     super.setUp();
     note1Id = notebook.createNote("/note_1", AuthenticationInfo.ANONYMOUS);

@@ -162,7 +162,7 @@ The last step is **Dependency Setting**. Since Zeppelin only includes `PostgreSQ
 
 <img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/edit_dependencies.png" width="600px" />
 
-That's it. You can find more JDBC connection setting examples([Mysql](#mysql), [MariaDB](#mariadb), [Redshift](#redshift), [Apache Hive](#apache-hive), [Presto/Trino](#prestotrino), [Impala](#impala), [Apache Kyuubi (Incubating)](#apache-kyuubi-(incubating)), [Apache Phoenix](#apache-phoenix), and [Apache Tajo](#apache-tajo)) in [this section](#examples).
+That's it. You can find more JDBC connection setting examples([Mysql](#mysql), [MariaDB](#mariadb), [Redshift](#redshift), [Apache Hive](#apache-hive), [Presto/Trino](#prestotrino), [Impala](#impala), [Apache Kyuubi](#apache-kyuubi), [Apache Phoenix](#apache-phoenix), and [Apache Tajo](#apache-tajo)) in [this section](#examples).
 
 ## JDBC Interpreter Datasource Pool Configuration
 The Jdbc interpreter uses the connection pool technology, and supports users to do some personal configuration of the connection pool. For example, we can configure `default.validationQuery='select 1'` and `default.testOnBorrow=true` in the Interpreter configuration to avoid the "Invalid SessionHandle" runtime error caused by Session timeout when connecting to HiveServer2 through JDBC interpreter.
@@ -599,12 +599,12 @@ Here are some examples you can refer to. Including the below connectors, you can
     <th>Excludes</th>
   </tr>
   <tr>
-    <td>com.amazonaws:aws-java-sdk-redshift:1.11.51</td>
+    <td>com.amazon.redshift:redshift-jdbc42:2.1.0.18</td>
     <td></td>
   </tr>
 </table>
 
-[Maven Repository: com.amazonaws:aws-java-sdk-redshift](https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk-redshift)
+[Maven Repository: com.amazon.redshift:redshift-jdbc42](https://mvnrepository.com/artifact/com.amazon.redshift/redshift-jdbc42)
 
 ### Apache Hive
 
@@ -722,16 +722,16 @@ See [User Impersonation in interpreter](../usage/interpreter/user_impersonation.
     <th>Value</th>
   </tr>
   <tr>
-    <td>hive.driver</td>
+    <td>default.driver</td>
     <td>org.apache.hive.jdbc.HiveDriver</td>
   </tr>
   <tr>
-    <td>hive.url</td>
+    <td>default.url</td>
     <td>jdbc:hive2://hive-server-host:2181/;serviceDiscoveryMode=zooKeeper;zooKeeperNamespace=hiveserver2</td>
   </tr>
   <tr>
-    <td>hive.proxy.user.property</td>
-    <td>hive.server2.proxy.user</td>
+    <td>default.proxy.user.property</td>
+    <td>default.server2.proxy.user</td>
   </tr>
   <tr>
     <td>zeppelin.jdbc.auth.type</td>
@@ -827,7 +827,7 @@ Dependencies
   </tr>
 </table>
 
-### Apache Kyuubi (Incubating)
+### Apache Kyuubi
 
 Zeppelin connect to `Kyuubi` to run sql via `KyuubiHiveDriver`. There are 2 cases of connecting with Kyuubi:
 
@@ -865,7 +865,7 @@ Dependencies
     <th>Excludes</th>
   </tr>
   <tr>
-    <td>org.apache.kyuubi:kyuubi-hive-jdbc-shaded:1.5.2-incubating</td>
+    <td>org.apache.kyuubi:kyuubi-hive-jdbc-shaded:1.6.1-incubating</td>
     <td></td>
   </tr>
   <tr>
@@ -916,7 +916,7 @@ Dependencies
     <th>Excludes</th>
   </tr>
   <tr>
-    <td>org.apache.kyuubi:kyuubi-hive-jdbc-shaded:1.5.2-incubating</td>
+    <td>org.apache.kyuubi:kyuubi-hive-jdbc-shaded:1.6.1-incubating</td>
     <td></td>
   </tr>
   <tr>

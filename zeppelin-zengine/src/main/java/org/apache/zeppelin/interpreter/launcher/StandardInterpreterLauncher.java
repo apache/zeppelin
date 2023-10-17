@@ -48,13 +48,12 @@ public class StandardInterpreterLauncher extends InterpreterLauncher {
   @Override
   public InterpreterClient launchDirectly(InterpreterLaunchContext context) throws IOException {
     LOGGER.info("Launching new interpreter process of {}", context.getInterpreterSettingGroup());
-    this.properties = context.getProperties();
     InterpreterOption option = context.getOption();
     InterpreterRunner runner = context.getRunner();
     String groupName = context.getInterpreterSettingGroup();
     String name = context.getInterpreterSettingName();
-    int connectTimeout = getConnectTimeout();
-    int connectionPoolSize = getConnectPoolSize();
+    int connectTimeout = getConnectTimeout(context);
+    int connectionPoolSize = getConnectPoolSize(context);
 
     if (option.isExistingProcess()) {
       return new RemoteInterpreterRunningProcess(

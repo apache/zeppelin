@@ -33,7 +33,7 @@
   
   <properties>
   	<neo4j.driver.version>4.1.1</neo4j.driver.version>
-  	<jackson.version>2.12.6.1</jackson.version>
+  	<jackson.version>2.12.7.1</jackson.version>
     <interpreter.name>neo4j</interpreter.name>
   </properties>
 
@@ -63,20 +63,18 @@
     <dependency>
       <groupId>org.testcontainers</groupId>
       <artifactId>neo4j</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 
   <build>
     <plugins>
-      <plugin>
-        <artifactId>maven-enforcer-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>enforce</id>
-            <phase>none</phase>
-          </execution>
-        </executions>
-      </plugin>
       <plugin>
         <artifactId>maven-resources-plugin</artifactId>
       </plugin>

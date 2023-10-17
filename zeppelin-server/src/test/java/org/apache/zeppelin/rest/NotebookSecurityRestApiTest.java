@@ -17,46 +17,43 @@
 package org.apache.zeppelin.rest;
 
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.util.EntityUtils;
-import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.utils.TestUtils;
 import org.hamcrest.Matcher;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 public class NotebookSecurityRestApiTest extends AbstractTestRestApi {
   Gson gson = new Gson();
 
-  @BeforeClass
+  @BeforeAll
   public static void init() throws Exception {
     AbstractTestRestApi.startUpWithAuthenticationEnable(
             NotebookSecurityRestApiTest.class.getSimpleName());
   }
 
-  @AfterClass
+  @AfterAll
   public static void destroy() throws Exception {
     AbstractTestRestApi.shutDown();
   }
 
-  @Before
-  public void setUp() {}
-
   @Test
-  public void testThatUserCanCreateAndRemoveNote() throws IOException {
+  void testThatUserCanCreateAndRemoveNote() throws IOException {
     String noteId = createNoteForUser("test_1", "admin", "password1");
     assertNotNull(noteId);
     String id = getNoteIdForUser(noteId, "admin", "password1");
@@ -65,7 +62,7 @@ public class NotebookSecurityRestApiTest extends AbstractTestRestApi {
   }
 
   @Test
-  public void testThatOtherUserCanAccessNoteIfPermissionNotSet() throws IOException {
+  void testThatOtherUserCanAccessNoteIfPermissionNotSet() throws IOException {
     String noteId = createNoteForUser("test_2", "admin", "password1");
 
     userTryGetNote(noteId, "user1", "password2", isAllowed());
@@ -74,7 +71,7 @@ public class NotebookSecurityRestApiTest extends AbstractTestRestApi {
   }
 
   @Test
-  public void testThatOtherUserCannotAccessNoteIfPermissionSet() throws IOException {
+  void testThatOtherUserCannotAccessNoteIfPermissionSet() throws IOException {
     String noteId = createNoteForUser("test_3", "admin", "password1");
 
     //set permission
@@ -92,7 +89,7 @@ public class NotebookSecurityRestApiTest extends AbstractTestRestApi {
   }
 
   @Test
-  public void testThatWriterCannotRemoveNote() throws IOException {
+  void testThatWriterCannotRemoveNote() throws IOException {
     String noteId = createNoteForUser("test_4", "admin", "password1");
 
     //set permission
@@ -107,7 +104,7 @@ public class NotebookSecurityRestApiTest extends AbstractTestRestApi {
 
     TestUtils.getInstance(Notebook.class).processNote(noteId,
       deletedNote -> {
-        assertNull("Deleted note should be null", deletedNote);
+        assertNull(deletedNote, "Deleted note should be null");
         return null;
       });
   }
@@ -147,7 +144,7 @@ public class NotebookSecurityRestApiTest extends AbstractTestRestApi {
     Notebook notebook = TestUtils.getInstance(Notebook.class);
     notebook.processNote(newNoteId,
       newNote -> {
-        assertNotNull("Can not find new note by id", newNote);
+        assertNotNull(newNote, "Can not find new note by id");
         return null;
       });
     return newNoteId;
@@ -161,7 +158,7 @@ public class NotebookSecurityRestApiTest extends AbstractTestRestApi {
     if (!noteId.isEmpty()) {
       TestUtils.getInstance(Notebook.class).processNote(noteId,
         deletedNote -> {
-          assertNull("Deleted note should be null", deletedNote);
+          assertNull(deletedNote, "Deleted note should be null");
           return null;
         });
     }

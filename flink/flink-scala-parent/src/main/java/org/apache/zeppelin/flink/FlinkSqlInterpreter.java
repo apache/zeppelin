@@ -46,7 +46,7 @@ public abstract class FlinkSqlInterpreter extends AbstractInterpreter {
 
   @Override
   protected InterpreterResult internalInterpret(String st, InterpreterContext context) throws InterpreterException {
-    LOGGER.debug("Interpret code: " + st);
+    LOGGER.debug("Interpret code: {}", st);
     // set ClassLoader of current Thread to be the ClassLoader of Flink scala-shell,
     // otherwise codegen will fail to find classes defined in scala-shell
     ClassLoader originClassLoader = Thread.currentThread().getContextClassLoader();

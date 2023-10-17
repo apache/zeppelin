@@ -21,7 +21,7 @@ package org.apache.zeppelin.notebook;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -247,7 +247,7 @@ public class NoteManager {
     this.notebookRepo.move(noteId, notePath, newNotePath, subject);
 
     // Update path of the note
-    if (!StringUtils.equalsIgnoreCase(notePath, newNotePath)) {
+    if (!StringUtils.equals(notePath, newNotePath)) {
       processNote(noteId,
         note -> {
           note.setPath(newNotePath);
@@ -258,7 +258,7 @@ public class NoteManager {
     // save note if note name is changed, because we need to update the note field in note json.
     String oldNoteName = getNoteName(notePath);
     String newNoteName = getNoteName(newNotePath);
-    if (!StringUtils.equalsIgnoreCase(oldNoteName, newNoteName)) {
+    if (!StringUtils.equals(oldNoteName, newNoteName)) {
       processNote(noteId,
         note -> {
           this.notebookRepo.save(note, subject);
@@ -736,7 +736,6 @@ public class NoteManager {
         if (size() <= NoteCache.this.threshold) {
           return false;
         }
-
         final Note eldestNote = eldest.getValue();
         final Lock lock = eldestNote.getLock().writeLock();
         if (lock.tryLock()) { // avoid eviction in case the note is in use
@@ -748,11 +747,32 @@ public class NoteManager {
         } else {
           LOGGER.info("Can not evict note {}, because the write lock can not be acquired. {} notes currently loaded.",
               eldestNote.getId(), size());
+          cleanupCache();
           return false;
         }
       }
-    }
 
+      private void cleanupCache() {
+        Iterator<Map.Entry<String, Note>> iterator = this.entrySet().iterator();
+        int count = 0;
+        // if size >= shrinked_size and have next() try remove
+        while ((this.size() - 1) >= NoteCache.this.threshold && iterator.hasNext()) {
+          Map.Entry<String, Note> noteEntry = iterator.next();
+          final Note note = noteEntry.getValue();
+          final Lock lock = note.getLock().writeLock();
+          if (lock.tryLock()) { // avoid eviction in case the note is in use
+            try {
+              iterator.remove(); // remove LRU element from LinkedHashMap
+              LOGGER.debug("Remove note {} from LRU Cache", note.getId());
+              ++count;
+            } finally {
+              lock.unlock();
+            }
+          }
+        }
+        LOGGER.info("The cache cleanup removes {} entries", count);
+      }
+    }
   }
 
 

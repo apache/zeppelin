@@ -19,10 +19,9 @@
 package org.apache.zeppelin.alluxio;
 
 import alluxio.cli.fs.FileSystemShell;
-import alluxio.conf.InstancedConfiguration;
+import alluxio.conf.Configuration;
+import alluxio.conf.AlluxioConfiguration;
 import alluxio.conf.PropertyKey;
-import alluxio.conf.Source;
-import alluxio.util.ConfigurationUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,6 +33,7 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
+import java.util.stream.Stream;
 
 
 import org.apache.zeppelin.completer.CompletionType;
@@ -76,17 +76,23 @@ public class AlluxioInterpreter extends Interpreter {
     alluxioMasterPort = property.getProperty(ALLUXIO_MASTER_PORT);
   }
 
+  private Stream<String> filteredProperties(String prefix) {
+    return properties.stringPropertyNames().stream().filter(
+      propertyKey -> propertyKey.startsWith(prefix)
+    );
+  }
+
   @Override
   public void open() {
     logger.info("Starting Alluxio shell to connect to " + alluxioMasterHostname +
         " on port " + alluxioMasterPort);
+    // Setting the extra parameters being set in the interpreter config starting with alluxio
+    filteredProperties("alluxio.").forEach(x -> System.setProperty(x, properties.getProperty(x)));
 
-    System.setProperty(ALLUXIO_MASTER_HOSTNAME, alluxioMasterHostname);
-    System.setProperty(ALLUXIO_MASTER_PORT, alluxioMasterPort);
+    System.setProperty(PropertyKey.USER_RPC_RETRY_MAX_DURATION.getName(), "5s");
 
-    InstancedConfiguration conf = new InstancedConfiguration(ConfigurationUtils.defaults());
+    AlluxioConfiguration conf = Configuration.global();
     // Reduce the RPC retry max duration to fall earlier for CLIs
-    conf.set(PropertyKey.USER_RPC_RETRY_MAX_DURATION, "5s", Source.DEFAULT);
     fs = new FileSystemShell(conf);
   }
 

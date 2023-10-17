@@ -22,7 +22,9 @@ import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.submarine.commons.SubmarineConstants;
 import org.apache.zeppelin.submarine.job.SubmarineJob;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,15 +32,16 @@ import java.util.Properties;
 
 import static org.apache.zeppelin.submarine.commons.SubmarineConstants.OPERATION_TYPE;
 import static org.apache.zeppelin.submarine.commons.SubmarineConstants.ZEPPELIN_SUBMARINE_AUTH_TYPE;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class SubmarineInterpreterTest extends BaseInterpreterTest {
+class SubmarineInterpreterTest extends BaseInterpreterTest {
   private static Logger LOGGER = LoggerFactory.getLogger(SubmarineInterpreterTest.class);
 
   private SubmarineInterpreter submarineIntp;
 
   @Override
+  @BeforeEach
   public void setUp() throws InterpreterException {
     Properties properties = new Properties();
     properties.setProperty(ZEPPELIN_SUBMARINE_AUTH_TYPE, "simple");
@@ -54,7 +57,7 @@ public class SubmarineInterpreterTest extends BaseInterpreterTest {
   }
 
   @Test
-  public void testDashboard() throws InterpreterException {
+  void testDashboard() throws InterpreterException {
     String script = "dashboard";
     InterpreterContext intpContext = getIntpContext();
 
@@ -62,16 +65,16 @@ public class SubmarineInterpreterTest extends BaseInterpreterTest {
     String message = interpreterResult.toJson();
     LOGGER.info(message);
 
-    assertEquals(interpreterResult.code(), InterpreterResult.Code.SUCCESS);
+    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
     assertTrue(intpContext.out().size() >= 2);
 
     String dashboardTemplate = intpContext.out().getOutputAt(0).toString();
     LOGGER.info(dashboardTemplate);
-    assertTrue("Did not generate template!", (dashboardTemplate.length() > 500));
+    assertTrue(dashboardTemplate.length() > 500, "Did not generate template!");
   }
 
   @Test
-  public void testJobRun() throws InterpreterException {
+  void testJobRun() throws InterpreterException {
     String script = "JOB_RUN";
     InterpreterContext intpContext = getIntpContext();
 
@@ -81,10 +84,10 @@ public class SubmarineInterpreterTest extends BaseInterpreterTest {
     String message = interpreterResult.toJson();
     LOGGER.info(message);
 
-    assertEquals(interpreterResult.code(), InterpreterResult.Code.SUCCESS);
+    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
     assertTrue(intpContext.out().size() >= 2);
     String template = intpContext.out().getOutputAt(0).toString();
-    assertTrue("Did not generate template!", (template.length() > 500));
+    assertTrue(template.length() > 500, "Did not generate template!");
 
     SubmarineJob job = submarineIntp.getSubmarineContext().getSubmarineJob("noteId");
     int loop = 10;
@@ -99,6 +102,7 @@ public class SubmarineInterpreterTest extends BaseInterpreterTest {
   }
 
   @Override
+  @AfterEach
   public void tearDown() throws InterpreterException {
     submarineIntp.close();
   }

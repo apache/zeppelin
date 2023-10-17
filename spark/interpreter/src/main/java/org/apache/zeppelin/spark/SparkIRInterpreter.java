@@ -38,7 +38,6 @@ public class SparkIRInterpreter extends IRInterpreter {
 
   private SparkInterpreter sparkInterpreter;
   private SparkVersion sparkVersion;
-  private boolean isSpark2;
   private SparkContext sc;
   private JavaSparkContext jsc;
 
@@ -52,10 +51,6 @@ public class SparkIRInterpreter extends IRInterpreter {
 
   protected int sparkVersion() {
     return this.sparkVersion.toNumber();
-  }
-
-  protected boolean isSecretSupported() {
-    return this.sparkVersion.isSecretSocketSupported();
   }
 
   /**
@@ -75,13 +70,10 @@ public class SparkIRInterpreter extends IRInterpreter {
     this.sc = sparkInterpreter.getSparkContext();
     this.jsc = sparkInterpreter.getJavaSparkContext();
     this.sparkVersion = new SparkVersion(sc.version());
-    this.isSpark2 = sparkVersion.newerThanEquals(SparkVersion.SPARK_2_0_0);
 
     ZeppelinRContext.setSparkContext(sc);
     ZeppelinRContext.setJavaSparkContext(jsc);
-    if (isSpark2) {
-      ZeppelinRContext.setSparkSession(sparkInterpreter.getSparkSession());
-    }
+    ZeppelinRContext.setSparkSession(sparkInterpreter.getSparkSession());
     ZeppelinRContext.setSqlContext(sparkInterpreter.getSQLContext());
     ZeppelinRContext.setZeppelinContext(sparkInterpreter.getZeppelinContext());
     super.open();
@@ -94,25 +86,16 @@ public class SparkIRInterpreter extends IRInterpreter {
     String jobGroup = Utils.buildJobGroupId(context);
     String jobDesc = Utils.buildJobDesc(context);
     sparkInterpreter.getSparkContext().setJobGroup(jobGroup, jobDesc, false);
-    String setJobGroup = "";
-    // assign setJobGroup to dummy__, otherwise it would print NULL for this statement
-    if (isSpark2) {
-      setJobGroup = "dummy__ <- setJobGroup(\"" + jobGroup +
-              "\", \" +" + jobDesc + "\", TRUE)";
-    } else {
-      setJobGroup = "dummy__ <- setJobGroup(sc, \"" + jobGroup +
-              "\", \"" + jobDesc + "\", TRUE)";
-    }
+    // assign setJobGroup to dummy__
+    String setJobGroup = "dummy__ <- setJobGroup(\"" + jobGroup + "\", \" +" + jobDesc + "\", TRUE)";
     lines = setJobGroup + "\n" + lines;
-    if (sparkInterpreter.getSparkVersion().newerThanEquals(SparkVersion.SPARK_2_3_0)) {
-      // setLocalProperty is only available from spark 2.3.0
-      String setPoolStmt = "setLocalProperty('spark.scheduler.pool', NULL)";
-      if (context.getLocalProperties().containsKey("pool")) {
-        setPoolStmt = "setLocalProperty('spark.scheduler.pool', '" +
-                context.getLocalProperties().get("pool") + "')";
-      }
-      lines = setPoolStmt + "\n" + lines;
+
+    String setPoolStmt = "setLocalProperty('spark.scheduler.pool', NULL)";
+    if (context.getLocalProperties().containsKey("pool")) {
+      setPoolStmt = "setLocalProperty('spark.scheduler.pool', '" +
+              context.getLocalProperties().get("pool") + "')";
     }
+    lines = setPoolStmt + "\n" + lines;
     return super.internalInterpret(lines, context);
   }
 }

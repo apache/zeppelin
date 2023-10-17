@@ -18,19 +18,19 @@ FROM $ZEPPELIN_DISTRIBUTION_IMAGE AS zeppelin-distribution
 
 # Prepare all interpreter settings for Zeppelin server
 # This steps are not needed, if you you add only specific interpreters settings to your image
-FROM alpine:3.11 AS interpreter-settings
+FROM alpine:3.13 AS interpreter-settings
 COPY --from=zeppelin-distribution /opt/zeppelin/interpreter /tmp/interpreter
 RUN mkdir -p /opt/zeppelin/interpreter && \
     cd /tmp/interpreter && \
     find . -name 'interpreter-setting.json' -exec cp --parents \{\} /opt/zeppelin/interpreter \;
 
-FROM ubuntu:20.04
+FROM ubuntu:22.04
 LABEL maintainer="Apache Software Foundation <dev@zeppelin.apache.org>"
 
 RUN set -ex && \
     apt-get -y update && \
     # Install language and other base packages
-    DEBIAN_FRONTEND=noninteractive apt-get install -y language-pack-en openjdk-8-jre-headless tini wget && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y language-pack-en openjdk-11-jre-headless tini wget && \
     # Cleanup
     rm -rf /var/lib/apt/lists/* && \
     apt-get autoclean && \

@@ -19,7 +19,7 @@ package org.apache.zeppelin.rest;
 import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -27,12 +27,12 @@ import com.google.gson.reflect.TypeToken;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.util.EntityUtils;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.FixMethodOrder;
-import org.junit.Test;
-import org.junit.runners.MethodSorters;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -44,22 +44,22 @@ import org.apache.zeppelin.user.AuthenticationInfo;
 /**
  * NotebookRepo rest api test.
  */
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+@TestMethodOrder(MethodOrderer.MethodName.class)
 public class NotebookRepoRestApiTest extends AbstractTestRestApi {
   Gson gson = new Gson();
   AuthenticationInfo anonymous;
 
-  @BeforeClass
+  @BeforeAll
   public static void init() throws Exception {
     AbstractTestRestApi.startUp(NotebookRepoRestApiTest.class.getSimpleName());
   }
 
-  @AfterClass
+  @AfterAll
   public static void destroy() throws Exception {
     AbstractTestRestApi.shutDown();
   }
 
-  @Before
+  @BeforeEach
   public void setUp() {
     anonymous = new AuthenticationInfo("anonymous");
   }

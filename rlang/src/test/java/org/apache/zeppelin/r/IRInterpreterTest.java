@@ -24,15 +24,14 @@ import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResultMessage;
 import org.apache.zeppelin.jupyter.IRKernelTest;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 
 public class IRInterpreterTest extends IRKernelTest {
@@ -67,8 +66,8 @@ public class IRInterpreterTest extends IRKernelTest {
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
     List<InterpreterResultMessage> resultMessages = context.out.toInterpreterResultMessage();
     assertEquals(1, resultMessages.size());
-    assertEquals(resultMessages.toString(),
-            InterpreterResult.Type.TABLE, resultMessages.get(0).getType());
+    assertEquals(InterpreterResult.Type.TABLE, resultMessages.get(0).getType(),
+      resultMessages.toString());
     assertEquals("country\tval1\tval2\n" +
                     "3\t10\t23\n" +
                     "2\t13\t12\n" +
@@ -80,13 +79,12 @@ public class IRInterpreterTest extends IRKernelTest {
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
     resultMessages = context.out.toInterpreterResultMessage();
     assertEquals(2, resultMessages.size());
-    assertEquals(resultMessages.toString(),
-            InterpreterResult.Type.TABLE, resultMessages.get(0).getType());
+    assertEquals(InterpreterResult.Type.TABLE, resultMessages.get(0).getType(), resultMessages.toString());
     assertEquals("country\tval1\tval2\n" +
                     "3\t10\t23\n",
             resultMessages.get(0).getData());
-    assertEquals(resultMessages.toString(),
-            InterpreterResult.Type.HTML, resultMessages.get(1).getType());
+    assertEquals(InterpreterResult.Type.HTML, resultMessages.get(1).getType(),
+      resultMessages.toString());
     assertEquals("<font color=red>Results are limited by 1 rows.</font>\n",
             resultMessages.get(1).getData());
   }

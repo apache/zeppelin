@@ -40,10 +40,7 @@
     <!-- must match with maven version -->
     <sisu.plexus.version>0.3.4</sisu.plexus.version>
     <jline.version>2.14.3</jline.version>
-    <atomix.version>3.0.0-rc4</atomix.version>
-
-    <!--plugin versions-->
-    <plugin.shade.version>2.3</plugin.shade.version>
+    <atomix.version>3.0.0-rc5</atomix.version>
   </properties>
 
   <dependencies>
@@ -205,19 +202,42 @@
     </dependency>
 
     <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-engine</artifactId>
       <scope>test</scope>
     </dependency>
 
     <dependency>
       <groupId>org.mockito</groupId>
-      <artifactId>mockito-all</artifactId>
+      <artifactId>mockito-core</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>
 
   <build>
+    <plugins>
+      <plugin>
+        <groupId>pl.project13.maven</groupId>
+        <artifactId>git-commit-id-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>revision</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <skipPoms>false</skipPoms>
+          <dotGitDirectory>${project.basedir}/.git</dotGitDirectory>
+          <useNativeGit>false</useNativeGit>
+          <generateGitPropertiesFile>true</generateGitPropertiesFile>
+          <generateGitPropertiesFilename>${project.build.outputDirectory}/git.properties</generateGitPropertiesFilename>
+          <failOnNoGitDirectory>false</failOnNoGitDirectory>
+          <dateFormat>yyyy-MM-dd HH:mm:ss</dateFormat>
+        </configuration>
+      </plugin>
+    </plugins>
+
     <resources>
       <resource>
         <directory>src/main/resources</directory>
@@ -274,6 +294,12 @@
           <groupId>org.apache.hadoop</groupId>
           <artifactId>${hadoop-client-minicluster.artifact}</artifactId>
           <scope>test</scope>
+          <exclusions>
+            <exclusion>
+              <groupId>junit</groupId>
+              <artifactId>junit</artifactId>
+            </exclusion>
+          </exclusions>
         </dependency>
 
       </dependencies>

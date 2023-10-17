@@ -61,18 +61,17 @@ public class ClusterInterpreterLauncher extends StandardInterpreterLauncher
 
   @Override
   public InterpreterClient launchDirectly(InterpreterLaunchContext context) throws IOException {
-    LOGGER.info("Launching Interpreter: " + context.getInterpreterSettingGroup());
+    LOGGER.info("Launching Interpreter: {}", context.getInterpreterSettingGroup());
 
     this.context = context;
-    this.properties = context.getProperties();
-    int connectTimeout = getConnectTimeout();
+    int connectTimeout = getConnectTimeout(context);
     String intpGroupId = context.getInterpreterGroupId();
 
     // connect exist Interpreter Process
     InterpreterClient intpClient = clusterServer.getIntpProcessStatus(
-        intpGroupId, 3000, new ClusterCallback<HashMap<String, Object>>() {
+        intpGroupId, 3000, new ClusterCallback<Map<String, Object>>() {
           @Override
-          public InterpreterClient online(HashMap<String, Object> result) {
+          public InterpreterClient online(Map<String, Object> result) {
             String intpTserverHost = (String) result.get(INTP_TSERVER_HOST);
             int intpTserverPort = (int) result.get(INTP_TSERVER_PORT);
 
@@ -80,7 +79,7 @@ public class ClusterInterpreterLauncher extends StandardInterpreterLauncher
                 context.getInterpreterSettingName(),
                 context.getInterpreterGroupId(),
                 connectTimeout,
-                getConnectPoolSize(),
+                getConnectPoolSize(context),
                 context.getIntpEventServerHost(),
                 context.getIntpEventServerPort(),
                 intpTserverHost,
@@ -100,7 +99,7 @@ public class ClusterInterpreterLauncher extends StandardInterpreterLauncher
     // No process was found for the InterpreterGroup ID
     String srvHost = null;
     int srvPort = 0;
-    HashMap<String, Object> meta = clusterServer.getIdleNodeMeta();
+    Map<String, Object> meta = clusterServer.getIdleNodeMeta();
     if (null == meta) {
       LOGGER.error("Don't get idle node meta, launch interpreter on local.");
       InterpreterClient clusterIntpProcess = createInterpreterProcess(context);
@@ -145,9 +144,9 @@ public class ClusterInterpreterLauncher extends StandardInterpreterLauncher
     String finalSrvHost = srvHost;
     int finalSrvPort = srvPort;
     intpClient = clusterServer.getIntpProcessStatus(intpGroupId, connectTimeout,
-        new ClusterCallback<HashMap<String, Object>>() {
+        new ClusterCallback<Map<String, Object>>() {
           @Override
-          public InterpreterClient online(HashMap<String, Object> result) {
+          public InterpreterClient online(Map<String, Object> result) {
             // connect exist Interpreter Process
             String intpTserverHost = (String) result.get(INTP_TSERVER_HOST);
             int intpTserverPort = (int) result.get(INTP_TSERVER_PORT);
@@ -156,7 +155,7 @@ public class ClusterInterpreterLauncher extends StandardInterpreterLauncher
                 context.getInterpreterSettingName(),
                 context.getInterpreterGroupId(),
                 connectTimeout,
-                getConnectPoolSize(),
+                getConnectPoolSize(context),
                 context.getIntpEventServerHost(),
                 context.getIntpEventServerPort(),
                 intpTserverHost,
@@ -220,12 +219,10 @@ public class ClusterInterpreterLauncher extends StandardInterpreterLauncher
   private InterpreterClient createInterpreterProcess(InterpreterLaunchContext context)
       throws IOException {
     this.context = context;
-    this.properties = context.getProperties();
 
     InterpreterClient intpProcess = null;
     if (isRunningOnDocker(zConf)) {
       DockerInterpreterLauncher dockerIntpLauncher = new DockerInterpreterLauncher(zConf, null);
-      dockerIntpLauncher.setProperties(context.getProperties());
       intpProcess = dockerIntpLauncher.launch(context);
     } else {
       intpProcess = createClusterIntpProcess();
@@ -233,7 +230,7 @@ public class ClusterInterpreterLauncher extends StandardInterpreterLauncher
 
     // must first step start check interpreter thread
     ClusterInterpreterCheckThread intpCheckThread = new ClusterInterpreterCheckThread(
-        intpProcess, context.getInterpreterGroupId(), getConnectTimeout());
+        intpProcess, context.getInterpreterGroupId(), getConnectTimeout(context));
     intpCheckThread.start();
 
     return intpProcess;
@@ -246,8 +243,8 @@ public class ClusterInterpreterLauncher extends StandardInterpreterLauncher
       InterpreterRunner runner = context.getRunner();
       String intpSetGroupName = context.getInterpreterSettingGroup();
       String intpSetName = context.getInterpreterSettingName();
-      int connectTimeout = getConnectTimeout();
-      int connectionPoolSize = getConnectPoolSize();
+      int connectTimeout = getConnectTimeout(context);
+      int connectionPoolSize = getConnectPoolSize(context);
       String localRepoPath = zConf.getInterpreterLocalRepoPath() + "/"
           + context.getInterpreterSettingId();
 

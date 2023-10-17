@@ -34,12 +34,9 @@
 
     <properties>
         <interpreter.name>r</interpreter.name>
-        <spark.version>2.4.5</spark.version>
+        <spark.version>3.4.1</spark.version>
 
         <spark.archive>spark-${spark.version}</spark.archive>
-        <spark.src.download.url>
-            https://archive.apache.org/dist/spark/${spark.archive}/${spark.archive}.tgz
-        </spark.src.download.url>
         <spark.bin.download.url>
             https://archive.apache.org/dist/spark/${spark.archive}/${spark.archive}-bin-without-hadoop.tgz
         </spark.bin.download.url>
@@ -91,19 +88,24 @@
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
-            <version>4.5.13</version>
         </dependency>
 
         <dependency>
             <groupId>org.mockito</groupId>
-            <artifactId>mockito-all</artifactId>
+            <artifactId>mockito-core</artifactId>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>org.apache.spark</groupId>
-            <artifactId>spark-core_2.11</artifactId>
+            <artifactId>spark-core_2.12</artifactId>
             <version>${spark.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.hadoop</groupId>
+                    <artifactId>hadoop-client-api</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>

@@ -28,18 +28,18 @@ import org.apache.zeppelin.interpreter.thrift.ParagraphInfo;
 import org.apache.zeppelin.resource.LocalResourcePool;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.user.AuthenticationInfo;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class RemoteSchedulerTest extends AbstractInterpreterTest
     implements RemoteInterpreterProcessListener {
@@ -51,7 +51,7 @@ public class RemoteSchedulerTest extends AbstractInterpreterTest
   private String note1Id;
 
   @Override
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     super.setUp();
     note1Id = notebook.createNote("/note_1", AuthenticationInfo.ANONYMOUS);
@@ -60,7 +60,7 @@ public class RemoteSchedulerTest extends AbstractInterpreterTest
   }
 
   @Override
-  @After
+  @AfterEach
   public void tearDown() {
     interpreterSetting.close();
   }
@@ -260,6 +260,7 @@ public class RemoteSchedulerTest extends AbstractInterpreterTest
 
     assertNotNull(job1.getDateFinished());
     assertTrue(job1.isTerminated());
+    assertEquals("1000", job1.getReturn());
     assertNull(job2.getDateFinished());
     assertTrue(job2.isTerminated());
     assertEquals("result2", job2.getReturn());

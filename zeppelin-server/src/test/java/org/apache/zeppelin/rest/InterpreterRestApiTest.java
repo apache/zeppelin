@@ -31,12 +31,12 @@ import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.utils.TestUtils;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.FixMethodOrder;
-import org.junit.Test;
-import org.junit.runners.MethodSorters;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -45,34 +45,34 @@ import java.util.List;
 import java.util.Map;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * Zeppelin interpreter rest api tests.
  */
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class InterpreterRestApiTest extends AbstractTestRestApi {
+@TestMethodOrder(MethodOrderer.MethodName.class)
+class InterpreterRestApiTest extends AbstractTestRestApi {
   private Gson gson = new Gson();
   private AuthenticationInfo anonymous;
 
-  @BeforeClass
-  public static void init() throws Exception {
+  @BeforeAll
+  static void init() throws Exception {
     AbstractTestRestApi.startUp(InterpreterRestApiTest.class.getSimpleName());
   }
 
-  @AfterClass
-  public static void destroy() throws Exception {
+  @AfterAll
+  static void destroy() throws Exception {
     AbstractTestRestApi.shutDown();
   }
 
-  @Before
-  public void setUp() {
+  @BeforeEach
+  void setUp() {
     anonymous = new AuthenticationInfo("anonymous");
   }
 
   @Test
-  public void getAvailableInterpreters() throws IOException {
+  void getAvailableInterpreters() throws IOException {
     // when
     CloseableHttpResponse get = httpGet("/interpreter");
     JsonObject body = getBodyFieldFromResponse(EntityUtils.toString(get.getEntity(), StandardCharsets.UTF_8));
@@ -85,7 +85,7 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
   }
 
   @Test
-  public void getSettings() throws IOException {
+  void getSettings() throws IOException {
     // when
     CloseableHttpResponse get = httpGet("/interpreter/setting");
     // then
@@ -97,7 +97,7 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
   }
 
   @Test
-  public void testGetNonExistInterpreterSetting() throws IOException {
+  void testGetNonExistInterpreterSetting() throws IOException {
     // when
     String nonExistInterpreterSettingId = "apache_.zeppelin_1s_.aw3some$";
     CloseableHttpResponse get = httpGet("/interpreter/setting/" + nonExistInterpreterSettingId);
@@ -108,7 +108,7 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
   }
 
   @Test
-  public void testSettingsCRUD() throws IOException {
+  void testSettingsCRUD() throws IOException {
     // when: call create setting API
     String rawRequest = "{\"name\":\"md3\",\"group\":\"md\"," +
             "\"properties\":{\"propname\": {\"value\": \"propvalue\", \"name\": \"propname\", " +
@@ -157,7 +157,7 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
   }
 
   @Test
-  public void testCreatedInterpreterDependencies() throws IOException {
+  void testCreatedInterpreterDependencies() throws IOException {
     // when: Create 2 interpreter settings `md1` and `md2` which have different dep.
     String md1Name = "md1";
     String md2Name = "md2";
@@ -226,7 +226,7 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
   }
 
   @Test
-  public void testSettingsCreateWithEmptyJson() throws IOException {
+  void testSettingsCreateWithEmptyJson() throws IOException {
     // Call Create Setting REST API
     CloseableHttpResponse post = httpPost("/interpreter/setting/", "");
     LOG.info("testSettingCRUD create response\n" + EntityUtils.toString(post.getEntity(), StandardCharsets.UTF_8));
@@ -235,7 +235,7 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
   }
 
   @Test
-  public void testSettingsCreateWithInvalidName() throws IOException {
+  void testSettingsCreateWithInvalidName() throws IOException {
     String reqBody = "{"
         + "\"name\": \"mdName\","
         + "\"group\": \"md\","
@@ -291,7 +291,7 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
   }
 
   @Test
-  public void testInterpreterRestart() throws IOException, InterruptedException {
+  void testInterpreterRestart() throws IOException, InterruptedException {
     String noteId = null;
     try {
       // when: create new note
@@ -388,7 +388,7 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
   }
 
   @Test
-  public void testRestartInterpreterPerNote() throws IOException, InterruptedException {
+  void testRestartInterpreterPerNote() throws IOException, InterruptedException {
     String noteId = null;
     try {
       // when: create new note
@@ -463,14 +463,14 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
   }
 
   @Test
-  public void testListRepository() throws IOException {
+  void testListRepository() throws IOException {
     CloseableHttpResponse get = httpGet("/interpreter/repository");
     assertThat(get, isAllowed());
     get.close();
   }
 
   @Test
-  public void testAddDeleteRepository() throws IOException {
+  void testAddDeleteRepository() throws IOException {
     // Call create repository API
     String repoId = "securecentral";
     String jsonRequest = "{\"id\":\"" + repoId +

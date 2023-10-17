@@ -22,7 +22,9 @@ import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.shell.terminal.TerminalSocketTest;
 import org.eclipse.jetty.util.component.LifeCycle;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,15 +32,16 @@ import javax.websocket.ContainerProvider;
 import javax.websocket.DeploymentException;
 import javax.websocket.Session;
 import javax.websocket.WebSocketContainer;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.IOException;
 import java.net.URI;
 import java.util.Properties;
 import java.util.regex.Pattern;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
-public class TerminalInterpreterTest extends BaseInterpreterTest {
+class TerminalInterpreterTest extends BaseInterpreterTest {
   private static final Logger LOGGER = LoggerFactory.getLogger(TerminalInterpreterTest.class);
 
   private TerminalInterpreter terminal;
@@ -46,6 +49,7 @@ public class TerminalInterpreterTest extends BaseInterpreterTest {
   private InterpreterResult result;
 
   @Override
+  @BeforeEach
   public void setUp() throws InterpreterException {
     Properties p = new Properties();
     intpContext = getIntpContext();
@@ -62,12 +66,13 @@ public class TerminalInterpreterTest extends BaseInterpreterTest {
   }
 
   @Override
+  @AfterEach
   public void tearDown() throws InterpreterException {
     terminal.close();
   }
 
   @Test
-  public void testInvalidCommand() {
+  void testInvalidCommand() {
     Session session = null;
     WebSocketContainer webSocketContainer = null;
 
@@ -147,7 +152,7 @@ public class TerminalInterpreterTest extends BaseInterpreterTest {
   }
 
   @Test
-  public void testValidCommand() {
+  void testValidCommand() {
     Session session = null;
     WebSocketContainer webSocketContainer = null;
 

@@ -41,6 +41,45 @@
     <plugin.frontend.npmDownloadRoot>https://registry.npmjs.org/npm/-/</plugin.frontend.npmDownloadRoot>
   </properties>
 
+  <dependencies>
+    <dependency>
+      <groupId>org.apache.zeppelin</groupId>
+      <artifactId>spark-interpreter</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.zeppelin</groupId>
+      <artifactId>zeppelin-shell</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.zeppelin</groupId>
+      <artifactId>zeppelin-angular</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.zeppelin</groupId>
+      <artifactId>zeppelin-markdown</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.zeppelin</groupId>
+      <artifactId>zeppelin-python</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.zeppelin</groupId>
+      <artifactId>zeppelin-server</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
   <build>
     <plugins>
       <plugin>
@@ -63,7 +102,7 @@
         <executions>
 
           <execution>
-            <id>install node</id>
+            <id>install node and npm</id>
             <goals>
               <goal>install-node-and-npm</goal>
             </goals>
@@ -189,9 +228,6 @@
         <configuration>
           <filesets>
             <fileset>
-              <directory>bower_components</directory>
-            </fileset>
-            <fileset>
               <directory>node</directory>
             </fileset>
             <fileset>
@@ -203,6 +239,16 @@
 
       <plugin>
         <artifactId>maven-resources-plugin</artifactId>
+      </plugin>
+
+      <plugin>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>enforce-dependency-convergence</id>
+            <phase>none</phase>
+          </execution>
+        </executions>
       </plugin>
 
     </plugins>
@@ -231,6 +277,30 @@
         <web.e2e.disabled>false</web.e2e.disabled>
         <web.e2e.enabled>true</web.e2e.enabled>
       </properties>
+    </profile>
+    <!-- Include some test dependencies depending on the spark-scala profile -->
+    <profile>
+      <id>spark-scala-2.13</id>
+      <dependencies>
+        <dependency>
+          <groupId>org.apache.zeppelin</groupId>
+          <artifactId>spark-scala-2.13</artifactId>
+          <version>${project.version}</version>
+          <scope>test</scope>
+        </dependency>
+      </dependencies>
+    </profile>
+
+    <profile>
+      <id>spark-scala-2.12</id>
+      <dependencies>
+        <dependency>
+          <groupId>org.apache.zeppelin</groupId>
+          <artifactId>spark-scala-2.12</artifactId>
+          <version>${project.version}</version>
+          <scope>test</scope>
+        </dependency>
+      </dependencies>
     </profile>
   </profiles>
 

@@ -17,16 +17,16 @@
 
 package org.apache.zeppelin.helium;
 
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
+import org.junit.jupiter.api.Test;
 
-public class HeliumPackageTest {
+class HeliumPackageTest {
 
   @Test
-  public void parseSpellPackageInfo() {
+  void parseSpellPackageInfo() {
     String examplePackage = "{\n" +
         "  \"type\" : \"SPELL\",\n" +
         "  \"name\" : \"echo-spell\",\n" +
@@ -41,12 +41,12 @@ public class HeliumPackageTest {
         "}";
 
     HeliumPackage p = HeliumPackage.fromJson(examplePackage);
-    assertEquals(p.getSpellInfo().getMagic(), "%echo");
-    assertEquals(p.getSpellInfo().getUsage(), "%echo <TEXT>");
+    assertEquals("%echo", p.getSpellInfo().getMagic());
+    assertEquals("%echo <TEXT>", p.getSpellInfo().getUsage());
   }
 
   @Test
-  public void parseConfig() {
+  void parseConfig() {
     String examplePackage = "{\n" +
         "  \"type\" : \"SPELL\",\n" +
         "  \"name\" : \"translator-spell\",\n" +
@@ -71,10 +71,8 @@ public class HeliumPackageTest {
     Map<String, Object> config = p.getConfig();
     Map<String, Object> accessToken = (Map<String, Object>) config.get("access-token");
 
-    assertEquals((String) accessToken.get("type"), "string");
-    assertEquals((String) accessToken.get("description"),
-        "access token for Google Translation API");
-    assertEquals((String) accessToken.get("defaultValue"),
-        "EXAMPLE-TOKEN");
+    assertEquals("string", accessToken.get("type"));
+    assertEquals("access token for Google Translation API", accessToken.get("description"));
+    assertEquals("EXAMPLE-TOKEN", accessToken.get("defaultValue"));
   }
 }

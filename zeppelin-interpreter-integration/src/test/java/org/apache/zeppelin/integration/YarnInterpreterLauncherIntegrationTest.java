@@ -32,19 +32,19 @@ import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.user.AuthenticationInfo;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.EnumSet;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 public class YarnInterpreterLauncherIntegrationTest {
 
@@ -57,7 +57,7 @@ public class YarnInterpreterLauncherIntegrationTest {
 
   private String hadoopHome;
 
-  @BeforeClass
+  @BeforeAll
   public static void setUp() throws IOException {
     Configuration conf = new Configuration();
     hadoopCluster = new MiniHadoopCluster(conf);
@@ -69,7 +69,7 @@ public class YarnInterpreterLauncherIntegrationTest {
     interpreterSettingManager = zeppelin.getInterpreterSettingManager();
   }
 
-  @AfterClass
+  @AfterAll
   public static void tearDown() throws IOException {
     if (zeppelin != null) {
       zeppelin.stop();
@@ -80,7 +80,7 @@ public class YarnInterpreterLauncherIntegrationTest {
   }
 
   @Test
-  public void testLaunchShellInYarn() throws YarnException, InterpreterException, InterruptedException {
+  void testLaunchShellInYarn() throws YarnException, InterpreterException, InterruptedException {
     InterpreterSetting shellInterpreterSetting = interpreterSettingManager.getInterpreterSettingByName("sh");
     shellInterpreterSetting.setProperty("zeppelin.interpreter.launcher", "yarn");
     shellInterpreterSetting.setProperty("HADOOP_CONF_DIR", hadoopCluster.getConfigPath());
@@ -90,7 +90,7 @@ public class YarnInterpreterLauncherIntegrationTest {
     InterpreterContext context = new InterpreterContext.Builder().setNoteId("note1").setParagraphId("paragraph_1").build();
     InterpreterResult interpreterResult = shellInterpreter.interpret("pwd", context);
     assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
-    assertTrue(interpreterResult.toString(), interpreterResult.message().get(0).getData().contains("/usercache/"));
+    assertTrue(interpreterResult.message().get(0).getData().contains("/usercache/"), interpreterResult.toString());
 
     Thread.sleep(1000);
     // 1 yarn application launched
@@ -102,7 +102,7 @@ public class YarnInterpreterLauncherIntegrationTest {
   }
 
   @Test
-  public void testJdbcPython_YarnLauncher() throws InterpreterException, YarnException, InterruptedException {
+  void testJdbcPython_YarnLauncher() throws InterpreterException, YarnException, InterruptedException {
     InterpreterSetting jdbcInterpreterSetting = interpreterSettingManager.getInterpreterSettingByName("jdbc");
     jdbcInterpreterSetting.setProperty("default.driver", "com.mysql.jdbc.Driver");
     jdbcInterpreterSetting.setProperty("default.url", "jdbc:mysql://localhost:3306/");
@@ -122,7 +122,7 @@ public class YarnInterpreterLauncherIntegrationTest {
     pythonInterpreterSetting.setProperty("HADOOP_CONF_DIR", hadoopCluster.getConfigPath());
 
     Interpreter jdbcInterpreter = interpreterFactory.getInterpreter("jdbc", new ExecutionContext("user1", "note1", "test"));
-    assertNotNull("JdbcInterpreter is null", jdbcInterpreter);
+    assertNotNull(jdbcInterpreter, "JdbcInterpreter is null");
 
     InterpreterContext context = new InterpreterContext.Builder()
             .setNoteId("note1")
@@ -130,18 +130,18 @@ public class YarnInterpreterLauncherIntegrationTest {
             .setAuthenticationInfo(AuthenticationInfo.ANONYMOUS)
             .build();
     InterpreterResult interpreterResult = jdbcInterpreter.interpret("show databases;", context);
-    assertEquals(interpreterResult.toString(), InterpreterResult.Code.SUCCESS, interpreterResult.code());
+    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code(), interpreterResult.toString());
 
     context.getLocalProperties().put("saveAs", "table_1");
     interpreterResult = jdbcInterpreter.interpret("SELECT 1 as c1, 2 as c2;", context);
-    assertEquals(interpreterResult.toString(), InterpreterResult.Code.SUCCESS, interpreterResult.code());
+    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code(), interpreterResult.toString());
     assertEquals(1, interpreterResult.message().size());
     assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(0).getType());
     assertEquals("c1\tc2\n1\t2\n", interpreterResult.message().get(0).getData());
 
     // read table_1 from python interpreter
     Interpreter pythonInterpreter = interpreterFactory.getInterpreter("python", new ExecutionContext("user1", "note1", "test"));
-    assertNotNull("PythonInterpreter is null", pythonInterpreter);
+    assertNotNull(pythonInterpreter, "PythonInterpreter is null");
 
     context = new InterpreterContext.Builder()
             .setNoteId("note1")
@@ -149,7 +149,7 @@ public class YarnInterpreterLauncherIntegrationTest {
             .setAuthenticationInfo(AuthenticationInfo.ANONYMOUS)
             .build();
     interpreterResult = pythonInterpreter.interpret("df=z.getAsDataFrame('table_1')\nz.show(df)", context);
-    assertEquals(interpreterResult.toString(), InterpreterResult.Code.SUCCESS, interpreterResult.code());
+    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code(), interpreterResult.toString());
     assertEquals(1, interpreterResult.message().size());
     assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(0).getType());
     assertEquals("c1\tc2\n1\t2\n", interpreterResult.message().get(0).getData());

@@ -36,18 +36,18 @@ limitations under the License.
     <link rel="apple-touch-icon" href="apple-touch-icon.png" />
     <link rel="icon" type="image/x-icon" href="favicon.ico" />
     <!-- build:css(.) styles/vendor.css -->
-    <!-- bower:css -->
-    <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.css" />
-    <link rel="stylesheet" href="bower_components/nvd3/build/nv.d3.css" />
-    <link rel="stylesheet" href="bower_components/perfect-scrollbar/src/perfect-scrollbar.css" />
-    <link rel="stylesheet" href="bower_components/ng-sortable/dist/ng-sortable.css" />
-    <link rel="stylesheet" href="bower_components/angular-xeditable/dist/css/xeditable.css" />
-    <link rel="stylesheet" href="bower_components/highlightjs/styles/github.css" />
-    <link rel="stylesheet" href="bower_components/ngtoast/dist/ngToast.css" />
-    <link rel="stylesheet" href="bower_components/bootstrap3-dialog/dist/css/bootstrap-dialog.min.css" />
-    <!-- endbower -->
-    <link rel="stylesheet" href="bower_components/jquery-ui/themes/base/jquery-ui.css" />
-    <link rel="stylesheet" href="bower_components/select2/dist/css/select2.css" />
+    <!-- npm:css -->
+    <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.css" />
+    <link rel="stylesheet" href="node_modules/nvd3/build/nv.d3.css" />
+    <link rel="stylesheet" href="node_modules/perfect-scrollbar/src/perfect-scrollbar.css" />
+    <link rel="stylesheet" href="node_modules/ng-sortable/dist/ng-sortable.css" />
+    <link rel="stylesheet" href="node_modules/angular-xeditable/dist/css/xeditable.css" />
+    <link rel="stylesheet" href="node_modules/highlight.js/styles/github.css" />
+    <link rel="stylesheet" href="node_modules/ng-toast/dist/ngToast.css" />
+    <link rel="stylesheet" href="node_modules/bootstrap3-dialog/dist/css/bootstrap-dialog.min.css" />
+    <link rel="stylesheet" href="node_modules/jquery-ui/themes/base/all.css" />
+    <link rel="stylesheet" href="node_modules/select2/dist/css/select2.css" />
+    <!-- endnpm -->
     <!-- endbuild -->
     <!-- build:css(.tmp) styles/main.css -->
     <link rel="stylesheet" href="components/navbar/navbar.css" />
@@ -140,8 +140,8 @@ limitations under the License.
     </div>
     <!-- build:js(.) scripts/oldieshim.js -->
     <!--[if lt IE 9]>
-    <script src="bower_components/es5-shim/es5-shim.js"></script>
-    <script src="bower_components/json3/lib/json3.min.js"></script>
+    <script src="node_modules/es5-shim/es5-shim.js"></script>
+    <script src="node_modules/json3/lib/json3.min.js"></script>
     <![endif]-->
     <!-- endbuild -->
 
@@ -165,59 +165,58 @@ limitations under the License.
     </script>
 
     <!-- build:js(.) scripts/vendor.js -->
-    <!-- bower:js -->
-    <script src="bower_components/jquery/dist/jquery.js"></script>
-    <script src="bower_components/angular/angular.js"></script>
-    <script src="bower_components/json3/lib/json3.js"></script>
-    <script src="bower_components/bootstrap/dist/js/bootstrap.js"></script>
-    <script src="bower_components/angular-cookies/angular-cookies.js"></script>
-    <script src="bower_components/angular-sanitize/angular-sanitize.js"></script>
-    <script src="bower_components/angular-animate/angular-animate.js"></script>
-    <script src="bower_components/angular-touch/angular-touch.js"></script>
-    <script src="bower_components/angular-route/angular-route.js"></script>
-    <script src="bower_components/angular-resource/angular-resource.js"></script>
-    <script src="bower_components/angular-bootstrap/ui-bootstrap-tpls.js"></script>
-    <script src="bower_components/angular-websocket/angular-websocket.min.js"></script>
-    <script src="bower_components/ace-builds/src-noconflict/ace.js"></script>
-    <script src="bower_components/ace-builds/src-noconflict/mode-scala.js"></script>
-    <script src="bower_components/ace-builds/src-noconflict/mode-kotlin.js"></script>
-    <script src="bower_components/ace-builds/src-noconflict/mode-python.js"></script>
-    <script src="bower_components/ace-builds/src-noconflict/mode-sql.js"></script>
-    <script src="bower_components/ace-builds/src-noconflict/mode-markdown.js"></script>
-    <script src="bower_components/ace-builds/src-noconflict/mode-pig.js"></script>
-    <script src="bower_components/ace-builds/src-noconflict/mode-sh.js"></script>
-    <script src="bower_components/ace-builds/src-noconflict/mode-r.js"></script>
-    <script src="bower_components/ace-builds/src-noconflict/mode-sparql.js"></script>
-    <script src="bower_components/ace-builds/src-noconflict/keybinding-emacs.js"></script>
-    <script src="bower_components/ace-builds/src-noconflict/ext-language_tools.js"></script>
-    <script src="bower_components/ace-builds/src-noconflict/theme-chrome.js"></script>
-    <script src="bower_components/ace-builds/src-noconflict/mode-javascript.js"></script>
-    <script src="bower_components/angular-ui-ace/ui-ace.js"></script>
-    <script src="bower_components/jquery.scrollTo/jquery.scrollTo.js"></script>
-    <script src="bower_components/d3/d3.js"></script>
-    <script src="bower_components/nvd3/build/nv.d3.js"></script>
-    <script src="bower_components/jquery-ui/jquery-ui.js"></script>
-    <script src="bower_components/angular-dragdrop/src/angular-dragdrop.js"></script>
-    <script src="bower_components/perfect-scrollbar/src/perfect-scrollbar.js"></script>
-    <script src="bower_components/ng-sortable/dist/ng-sortable.js"></script>
-    <script src="bower_components/angular-elastic/elastic.js"></script>
-    <script src="bower_components/angular-elastic-input/dist/angular-elastic-input.min.js"></script>
-    <script src="bower_components/angular-xeditable/dist/js/xeditable.js"></script>
-    <script src="bower_components/highlightjs/highlight.pack.js"></script>
-    <script src="bower_components/lodash/lodash.js"></script>
-    <script src="bower_components/angular-filter/dist/angular-filter.js"></script>
-    <script src="bower_components/ngtoast/dist/ngToast.js"></script>
-    <script src="bower_components/ng-focus-if/focusIf.js"></script>
-    <script src="bower_components/bootstrap3-dialog/dist/js/bootstrap-dialog.min.js"></script>
-    <script src="bower_components/select2/dist/js/select2.js"></script>
-    <script src="bower_components/MathJax/MathJax.js"></script>
-    <script src="bower_components/clipboard/dist/clipboard.js"></script>
-    <script src="bower_components/ngclipboard/dist/ngclipboard.js"></script>
-    <script src="bower_components/jsdiff/diff.js"></script>
-    <script src="bower_components/ngInfiniteScroll/build/ng-infinite-scroll.js"></script>
-    <script src="bower_components/jszip/dist/jszip.js"></script>
-    <script src="bower_components/excel-builder-js/dist/excel-builder.dist.js"></script>
-    <!-- endbower -->
+    <!-- npm:js -->
+    <script src="node_modules/jquery/dist/jquery.js"></script>
+    <script src="node_modules/angular/angular.js"></script>
+    <script src="node_modules/json3/lib/json3.js"></script>
+    <script src="node_modules/bootstrap/dist/js/bootstrap.js"></script>
+    <script src="node_modules/angular-cookies/angular-cookies.js"></script>
+    <script src="node_modules/angular-sanitize/angular-sanitize.js"></script>
+    <script src="node_modules/angular-animate/angular-animate.js"></script>
+    <script src="node_modules/angular-touch/angular-touch.js"></script>
+    <script src="node_modules/angular-route/angular-route.js"></script>
+    <script src="node_modules/angular-resource/angular-resource.js"></script>
+    <script src="node_modules/angular-ui-bootstrap/dist/ui-bootstrap-tpls.js"></script>
+    <script src="node_modules/angular-websocket/angular-websocket.min.js"></script>
+    <script src="node_modules/ace-builds/src-noconflict/ace.js"></script>
+    <script src="node_modules/ace-builds/src-noconflict/mode-scala.js"></script>
+    <script src="node_modules/ace-builds/src-noconflict/mode-python.js"></script>
+    <script src="node_modules/ace-builds/src-noconflict/mode-sql.js"></script>
+    <script src="node_modules/ace-builds/src-noconflict/mode-markdown.js"></script>
+    <script src="node_modules/ace-builds/src-noconflict/mode-pig.js"></script>
+    <script src="node_modules/ace-builds/src-noconflict/mode-sh.js"></script>
+    <script src="node_modules/ace-builds/src-noconflict/mode-r.js"></script>
+    <script src="node_modules/ace-builds/src-noconflict/mode-sparql.js"></script>
+    <script src="node_modules/ace-builds/src-noconflict/keybinding-emacs.js"></script>
+    <script src="node_modules/ace-builds/src-noconflict/ext-language_tools.js"></script>
+    <script src="node_modules/ace-builds/src-noconflict/theme-chrome.js"></script>
+    <script src="node_modules/ace-builds/src-noconflict/mode-javascript.js"></script>
+    <script src="node_modules/angular-ui-ace/src/ui-ace.js"></script>
+    <script src="node_modules/jquery.scrollTo/jquery.scrollTo.js"></script>
+    <script src="node_modules/d3/d3.js"></script>
+    <script src="node_modules/nvd3/build/nv.d3.js"></script>
+    <script src="node_modules/jquery-ui/dist/jquery-ui.js"></script>
+    <script src="node_modules/angular-dragdrop/src/angular-dragdrop.js"></script>
+    <script src="node_modules/perfect-scrollbar/src/perfect-scrollbar.js"></script>
+    <script src="node_modules/ng-sortable/dist/ng-sortable.js"></script>
+    <script src="node_modules/angular-elastic/elastic.js"></script>
+    <script src="node_modules/angular-elastic-input/dist/angular-elastic-input.min.js"></script>
+    <script src="node_modules/angular-xeditable/dist/js/xeditable.js"></script>
+    <script src="node_modules/highlight.js/lib/highlight.js"></script>
+    <script src="node_modules/lodash/index.js"></script>
+    <script src="node_modules/angular-filter/dist/angular-filter.js"></script>
+    <script src="node_modules/ng-toast/dist/ngToast.js"></script>
+    <script src="node_modules/ng-focus-if/focusIf.js"></script>
+    <script src="node_modules/bootstrap3-dialog/dist/js/bootstrap-dialog.min.js"></script>
+    <script src="node_modules/select2/dist/js/select2.js"></script>
+    <script src="node_modules/mathjax/MathJax.js"></script>
+    <script src="node_modules/clipboard/dist/clipboard.js"></script>
+    <script src="node_modules/ngclipboard/dist/ngclipboard.js"></script>
+    <script src="node_modules/diff/dist/diff.js"></script>
+    <script src="node_modules/ng-infinite-scroll/build/ng-infinite-scroll.js"></script>
+    <script src="node_modules/jszip/dist/jszip.js"></script>
+    <script src="node_modules/excel-builder/dist/excel-builder.dist.js"></script>
+    <!-- endnpm -->
     <!-- endbuild -->
   </body>
 </html>

@@ -20,8 +20,6 @@ import com.codahale.metrics.servlets.HealthCheckServlet;
 import com.codahale.metrics.servlets.PingServlet;
 import com.google.gson.Gson;
 
-import static org.apache.zeppelin.server.HtmlAddonResource.HTML_ADDON_IDENTIFIER;
-
 import io.micrometer.core.instrument.Clock;
 import io.micrometer.core.instrument.Metrics;
 import io.micrometer.core.instrument.Tags;
@@ -111,11 +109,8 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.SslConnectionFactory;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
-import org.eclipse.jetty.server.session.SessionHandler;
-import org.eclipse.jetty.servlet.DefaultServlet;
 import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.ServletHolder;
-import org.eclipse.jetty.util.resource.Resource;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.eclipse.jetty.websocket.jsr356.server.deploy.WebSocketServerContainerInitializer;
@@ -125,13 +120,12 @@ import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.api.ServiceLocatorFactory;
 import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
-import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.servlet.ServletProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /** Main class of Zeppelin. */
-public class ZeppelinServer extends ResourceConfig {
+public class ZeppelinServer {
   private static final Logger LOG = LoggerFactory.getLogger(ZeppelinServer.class);
   private static final String WEB_APP_CONTEXT_NEXT = "/next";
 
@@ -141,8 +135,6 @@ public class ZeppelinServer extends ResourceConfig {
   public ZeppelinServer(ZeppelinConfiguration conf) {
     LOG.info("Instantiated ZeppelinServer");
     InterpreterOutput.LIMIT = conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_OUTPUT_LIMIT);
-
-    packages("org.apache.zeppelin.rest");
   }
 
   public static void main(String[] args) throws IOException {
@@ -549,9 +541,8 @@ public class ZeppelinServer extends ResourceConfig {
     final ServletHolder servletHolder =
         new ServletHolder(new org.glassfish.jersey.servlet.ServletContainer());
 
-    servletHolder.setInitParameter("javax.ws.rs.Application", ZeppelinServer.class.getName());
+    servletHolder.setInitParameter("javax.ws.rs.Application", RestApiApplication.class.getName());
     servletHolder.setName("rest");
-    webapp.setSessionHandler(new SessionHandler());
     webapp.addServlet(servletHolder, "/api/*");
 
     String shiroIniPath = conf.getShiroPath();
@@ -584,7 +575,6 @@ public class ZeppelinServer extends ResourceConfig {
       // Development mode, read from FS
       // webApp.setDescriptor(warPath+"/WEB-INF/web.xml");
       webApp.setResourceBase(warFile.getPath());
-      webApp.setParentLoaderPriority(true);
     } else {
       // use packaged WAR
       webApp.setWar(warFile.getAbsolutePath());
@@ -595,7 +585,7 @@ public class ZeppelinServer extends ResourceConfig {
       webApp.setTempDirectory(warTempDirectory);
     }
     // Explicit bind to root
-    webApp.addServlet(new ServletHolder(setupServlet(webApp, conf)), "/*");
+    webApp.addServlet(new ServletHolder(new IndexHtmlServlet(conf)), "/index.html");
     contexts.addHandler(webApp);
 
     webApp.addFilter(new FilterHolder(CorsFilter.class), "/*", EnumSet.allOf(DispatcherType.class));
@@ -604,44 +594,6 @@ public class ZeppelinServer extends ResourceConfig {
         "org.eclipse.jetty.servlet.Default.dirAllowed",
         Boolean.toString(conf.getBoolean(ConfVars.ZEPPELIN_SERVER_DEFAULT_DIR_ALLOWED)));
     return webApp;
-  }
-
-  private static DefaultServlet setupServlet(
-      WebAppContext webApp,
-      ZeppelinConfiguration conf) {
-
-    // provide DefaultServlet as is in case html addon is not used
-    if (conf.getHtmlBodyAddon()==null && conf.getHtmlHeadAddon()==null) {
-      return new DefaultServlet();
-    }
-
-    // override ResourceFactory interface part of DefaultServlet for intercepting the static index.html properly.
-    return new DefaultServlet() {
-
-        private static final long serialVersionUID = 1L;
-
-        @Override
-        public Resource getResource(String pathInContext) {
-
-            // proceed for everything but '/index.html'
-            if (!HtmlAddonResource.INDEX_HTML_PATH.equals(pathInContext)) {
-                return super.getResource(pathInContext);
-            }
-
-            // create the altered 'index.html' resource and cache it via webapp attributes
-            if (webApp.getAttribute(HTML_ADDON_IDENTIFIER) == null) {
-                webApp.setAttribute(
-                    HTML_ADDON_IDENTIFIER,
-                    new HtmlAddonResource(
-                        super.getResource(pathInContext),
-                        conf.getHtmlBodyAddon(),
-                        conf.getHtmlHeadAddon()));
-            }
-
-            return (Resource) webApp.getAttribute(HTML_ADDON_IDENTIFIER);
-        }
-
-    };
   }
 
   private static void initWebApp(WebAppContext webApp, ZeppelinConfiguration conf, ServiceLocator sharedServiceLocator, PrometheusMeterRegistry promMetricRegistry) {

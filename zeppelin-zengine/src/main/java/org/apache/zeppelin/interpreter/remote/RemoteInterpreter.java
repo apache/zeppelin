@@ -30,7 +30,6 @@ import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
-import org.apache.zeppelin.interpreter.LifecycleManager;
 import org.apache.zeppelin.interpreter.ManagedInterpreterGroup;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterContext;
@@ -342,17 +341,14 @@ public class RemoteInterpreter extends Interpreter {
     // running under the scheduler of this session will be aborted.
     String executionMode = getProperty(".execution.mode", "paragraph");
     if (executionMode.equals("paragraph")) {
-      Scheduler s = new RemoteScheduler(
-              RemoteInterpreter.class.getSimpleName() + "-" + getInterpreterGroup().getId() + "-" + sessionId,
-              SchedulerFactory.singleton().getExecutor(),
-              this);
+      String name = RemoteInterpreter.class.getSimpleName() + "-" + getInterpreterGroup().getId()
+          + "-" + sessionId;
+      Scheduler s = new RemoteScheduler(name, this);
       return SchedulerFactory.singleton().createOrGetScheduler(s);
     } else if (executionMode.equals("note")) {
       String noteId = getProperty(".noteId");
-      Scheduler s = new RemoteScheduler(
-              RemoteInterpreter.class.getSimpleName() + "-" + noteId,
-              SchedulerFactory.singleton().getExecutor(),
-              this);
+      String name = RemoteInterpreter.class.getSimpleName() + "-" + noteId;
+      Scheduler s = new RemoteScheduler(name, this);
       return SchedulerFactory.singleton().createOrGetScheduler(s);
     } else {
       throw new RuntimeException("Invalid execution mode: " + executionMode);

@@ -36,10 +36,10 @@ public abstract class AbstractScheduler implements Scheduler {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AbstractScheduler.class);
 
-  protected String name;
+  protected final String name;
   protected volatile boolean terminate = false;
-  protected BlockingQueue<Job> queue = new LinkedBlockingQueue<>();
-  protected Map<String, Job> jobs = new ConcurrentHashMap<>();
+  protected BlockingQueue<Job<?>> queue = new LinkedBlockingQueue<>();
+  protected Map<String, Job<?>> jobs = new ConcurrentHashMap<>();
   private Thread schedulerThread;
 
   public AbstractScheduler(String name) {
@@ -52,17 +52,17 @@ public abstract class AbstractScheduler implements Scheduler {
   }
 
   @Override
-  public List<Job> getAllJobs() {
+  public List<Job<?>> getAllJobs() {
     return new ArrayList<>(jobs.values());
   }
 
   @Override
-  public Job getJob(String jobId) {
+  public Job<?> getJob(String jobId) {
     return jobs.get(jobId);
   }
 
   @Override
-  public void submit(Job job) {
+  public void submit(Job<?> job) {
     job.setStatus(Job.Status.PENDING);
     try {
       queue.put(job);
@@ -74,8 +74,8 @@ public abstract class AbstractScheduler implements Scheduler {
   }
 
   @Override
-  public Job cancel(String jobId) {
-    Job job = jobs.remove(jobId);
+  public Job<?> cancel(String jobId) {
+    Job<?> job = jobs.remove(jobId);
     job.abort();
     return job;
   }
@@ -84,24 +84,27 @@ public abstract class AbstractScheduler implements Scheduler {
   public void run() {
     schedulerThread = Thread.currentThread();
     while (!terminate && !schedulerThread.isInterrupted()) {
-      Job runningJob = null;
+      Job<?> runningJob = null;
       try {
         runningJob = queue.take();
       } catch (InterruptedException e) {
         LOGGER.warn("{} is interrupted", getClass().getSimpleName());
+        // Restore interrupted state...
+        Thread.currentThread().interrupt();
         break;
       }
 
       runJobInScheduler(runningJob);
     }
+    stop();
   }
 
-  public abstract void runJobInScheduler(Job job);
+  public abstract void runJobInScheduler(Job<?> job);
 
   @Override
   public void stop() {
     terminate = true;
-    for (Job job : queue) {
+    for (Job<?> job : queue) {
       job.aborted = true;
       job.jobAbort();
     }
@@ -116,7 +119,7 @@ public abstract class AbstractScheduler implements Scheduler {
    *
    * @param runningJob
    */
-  protected void runJob(Job runningJob) {
+  protected void runJob(Job<?> runningJob) {
     if (runningJob.isAborted()) {
       LOGGER.info("Job {} is aborted", runningJob.getId());
       runningJob.setStatus(Job.Status.ABORT);
@@ -124,7 +127,7 @@ public abstract class AbstractScheduler implements Scheduler {
       return;
     }
 
-    LOGGER.info("Job {} started by scheduler {}",runningJob.getId(), name);
+    LOGGER.info("Job {} started by scheduler {}", runningJob.getId(), name);
     // Don't set RUNNING status when it is RemoteScheduler, update it via JobStatusPoller
     if (!getClass().getSimpleName().equals("RemoteScheduler")) {
       runningJob.setStatus(Job.Status.RUNNING);
@@ -133,21 +136,14 @@ public abstract class AbstractScheduler implements Scheduler {
     Object jobResult = runningJob.getReturn();
     synchronized (runningJob) {
       if (runningJob.isAborted()) {
+        LOGGER.debug("Job Aborted, {}, {}", runningJob.getId(), runningJob.getErrorMessage());
         runningJob.setStatus(Job.Status.ABORT);
-        LOGGER.debug("Job Aborted, " + runningJob.getId() + ", " +
-                runningJob.getErrorMessage());
-      } else if (runningJob.getException() != null) {
-        LOGGER.debug("Job Error, " + runningJob.getId() + ", " +
-                runningJob.getReturn());
-        runningJob.setStatus(Job.Status.ERROR);
-      } else if (jobResult != null && jobResult instanceof InterpreterResult
-              && ((InterpreterResult) jobResult).code() == InterpreterResult.Code.ERROR) {
-        LOGGER.debug("Job Error, " + runningJob.getId() + ", " +
-                runningJob.getReturn());
+      } else if (runningJob.getException() != null || (jobResult instanceof InterpreterResult
+          && ((InterpreterResult) jobResult).code() == InterpreterResult.Code.ERROR)) {
+        LOGGER.debug("Job Error, {}, {}", runningJob.getId(), runningJob.getReturn());
         runningJob.setStatus(Job.Status.ERROR);
       } else {
-        LOGGER.debug("Job Finished, " + runningJob.getId() + ", Result: " +
-                runningJob.getReturn());
+        LOGGER.debug("Job Finished, {}, Result: {}", runningJob.getId(), runningJob.getReturn());
         runningJob.setStatus(Job.Status.FINISHED);
       }
     }

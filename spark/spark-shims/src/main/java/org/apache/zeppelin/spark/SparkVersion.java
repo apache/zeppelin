@@ -25,20 +25,16 @@ import org.slf4j.LoggerFactory;
 public class SparkVersion {
   private static final Logger logger = LoggerFactory.getLogger(SparkVersion.class);
 
-  public static final SparkVersion SPARK_2_0_0 = SparkVersion.fromVersionString("2.0.0");
-  public static final SparkVersion SPARK_2_2_0 = SparkVersion.fromVersionString("2.2.0");
-  public static final SparkVersion SPARK_2_3_0 = SparkVersion.fromVersionString("2.3.0");
-  public static final SparkVersion SPARK_2_3_1 = SparkVersion.fromVersionString("2.3.1");
-  public static final SparkVersion SPARK_2_4_0 = SparkVersion.fromVersionString("2.4.0");
-
-  public static final SparkVersion SPARK_3_1_0 = SparkVersion.fromVersionString("3.1.0");
+  public static final SparkVersion SPARK_3_2_0 = SparkVersion.fromVersionString("3.2.0");
 
   public static final SparkVersion SPARK_3_3_0 = SparkVersion.fromVersionString("3.3.0");
 
-  public static final SparkVersion SPARK_3_4_0 = SparkVersion.fromVersionString("3.4.0");
+  public static final SparkVersion SPARK_3_5_0 = SparkVersion.fromVersionString("3.5.0");
 
-  public static final SparkVersion MIN_SUPPORTED_VERSION =  SPARK_2_0_0;
-  public static final SparkVersion UNSUPPORTED_FUTURE_VERSION = SPARK_3_4_0;
+  public static final SparkVersion SPARK_4_0_0 = SparkVersion.fromVersionString("4.0.0");
+
+  public static final SparkVersion MIN_SUPPORTED_VERSION =  SPARK_3_2_0;
+  public static final SparkVersion UNSUPPORTED_FUTURE_VERSION = SPARK_4_0_0;
 
   private int version;
   private int majorVersion;
@@ -90,13 +86,6 @@ public class SparkVersion {
 
   public static SparkVersion fromVersionString(String versionString) {
     return new SparkVersion(versionString);
-  }
-
-  public boolean isSecretSocketSupported() {
-    return this.newerThanEquals(SparkVersion.SPARK_2_4_0) ||
-            this.newerThanEqualsPatchVersion(SPARK_2_3_1) ||
-            this.newerThanEqualsPatchVersion(SparkVersion.fromVersionString("2.2.2")) ||
-            this.newerThanEqualsPatchVersion(SparkVersion.fromVersionString("2.1.3"));
   }
 
   public boolean equals(Object versionToCompare) {

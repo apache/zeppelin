@@ -132,7 +132,7 @@ public abstract class ProcessLauncher implements ExecuteResultHandler {
   @Override
   public void onProcessFailed(ExecuteException e) {
     LOGGER.warn("Process with cmd {} is failed due to", commandLine, e);
-
+    LOGGER.warn("Process ErrorMessage: \n{}", getErrorMessage());
     errorMessage = ExceptionUtils.getStackTrace(e);
     transition(State.TERMINATED);
   }
@@ -151,6 +151,10 @@ public abstract class ProcessLauncher implements ExecuteResultHandler {
 
   public boolean isLaunchTimeout() {
     return launchTimeout;
+  }
+
+  public boolean isAlive() {
+    return state != State.TERMINATED && state != State.COMPLETED;
   }
 
   public boolean isRunning() {

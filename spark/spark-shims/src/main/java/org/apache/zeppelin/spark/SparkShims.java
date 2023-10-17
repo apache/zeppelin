@@ -25,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Constructor;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
@@ -60,9 +61,6 @@ public abstract class SparkShims {
     if (sparkMajorVersion == 3) {
       LOGGER.info("Initializing shims for Spark 3.x");
       sparkShimsClass = Class.forName("org.apache.zeppelin.spark.Spark3Shims");
-    } else if (sparkMajorVersion == 2) {
-      LOGGER.info("Initializing shims for Spark 2.x");
-      sparkShimsClass = Class.forName("org.apache.zeppelin.spark.Spark2Shims");
     } else {
       throw new Exception("Spark major version: '" + sparkMajorVersion + "' is not supported yet");
     }
@@ -118,13 +116,13 @@ public abstract class SparkShims {
 
     String jobGroupId = jobProperties.getProperty("spark.jobGroup.id");
 
-    Map<String, String> infos = new java.util.HashMap<String, String>();
+    Map<String, String> infos = new HashMap<>();
     infos.put("jobUrl", jobUrl);
     infos.put("label", "SPARK JOB");
     infos.put("tooltip", "View in Spark web UI");
     infos.put("noteId", getNoteId(jobGroupId));
     infos.put("paraId", getParagraphId(jobGroupId));
-    LOGGER.debug("Send spark job url: " + infos);
+    LOGGER.debug("Send spark job url: {}", infos);
     context.getIntpEventClient().onParaInfosReceived(infos);
   }
 

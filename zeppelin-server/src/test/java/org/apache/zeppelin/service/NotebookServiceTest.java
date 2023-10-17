@@ -18,13 +18,13 @@
 
 package org.apache.zeppelin.service;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -67,14 +67,14 @@ import org.apache.zeppelin.search.LuceneSearch;
 import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 import com.google.gson.Gson;
 
-public class NotebookServiceTest {
+class NotebookServiceTest {
 
   private static NotebookService notebookService;
 
@@ -89,8 +89,8 @@ public class NotebookServiceTest {
   private Gson gson = new Gson();
 
 
-  @Before
-  public void setUp() throws Exception {
+  @BeforeEach
+  void setUp() throws Exception {
     notebookDir = Files.createTempDirectory("notebookDir").toAbsolutePath().toFile();
     System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_DIR.getVarName(),
             notebookDir.getAbsolutePath());
@@ -142,14 +142,14 @@ public class NotebookServiceTest {
         .thenReturn(mockInterpreterSetting);
   }
 
-  @After
-  public void tearDown() {
+  @AfterEach
+  void tearDown() {
     notebookDir.delete();
     searchService.close();
   }
 
   @Test
-  public void testNoteOperations() throws IOException {
+  void testNoteOperations() throws IOException {
     // get home note
     String homeNoteId = notebookService.getHomeNote(context, callback);
     assertNull(homeNoteId);
@@ -326,7 +326,7 @@ public class NotebookServiceTest {
         moveToTrash = true;
       }
     }
-    assertTrue("No note is moved to trash", moveToTrash);
+    assertTrue(moveToTrash, "No note is moved to trash");
 
     // restore it
     notebookService.restoreNote(importedNoteId, context, callback);
@@ -359,7 +359,7 @@ public class NotebookServiceTest {
         moveToTrash = true;
       }
     }
-    assertTrue("No folder is moved to trash", moveToTrash);
+    assertTrue(moveToTrash, "No folder is moved to trash");
 
     // restore folder
     reset(callback);
@@ -388,7 +388,7 @@ public class NotebookServiceTest {
   }
 
   @Test
-  public void testRenameNoteRejectsDuplicate() throws IOException {
+  void testRenameNoteRejectsDuplicate() throws IOException {
     String note1Id = notebookService.createNote("/folder/note1", "test", true, context, callback);
     notebook.processNote(note1Id,
       note1 -> {
@@ -416,7 +416,7 @@ public class NotebookServiceTest {
 
 
   @Test
-  public void testParagraphOperations() throws IOException {
+  void testParagraphOperations() throws IOException {
     // create note
     String note1Id = notebookService.createNote("note1", "python", false, context, callback);
     notebook.processNote(note1Id,
@@ -508,7 +508,7 @@ public class NotebookServiceTest {
   }
 
   @Test
-  public void testNormalizeNotePath() throws IOException {
+  void testNormalizeNotePath() throws IOException {
     assertEquals("/Untitled Note", notebookService.normalizeNotePath(" "));
     assertEquals("/Untitled Note", notebookService.normalizeNotePath(null));
     assertEquals("/my_note", notebookService.normalizeNotePath("my_note"));
@@ -527,6 +527,18 @@ public class NotebookServiceTest {
       fail("Should fail");
     } catch (IOException e) {
       assertEquals("Note name can not contain '..'", e.getMessage());
+    }
+    try {
+      notebookService.normalizeNotePath("%2e%2e/%2e%2e/tmp/test222");
+      fail("Should fail");
+    } catch (IOException e) {
+      assertEquals("Note name can not contain '..'", e.getMessage());
+    }
+    try {
+      notebookService.normalizeNotePath("./");
+      fail("Should fail");
+    } catch (IOException e) {
+      assertEquals("Note name shouldn't end with '/'", e.getMessage());
     }
   }
 }

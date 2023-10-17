@@ -21,17 +21,19 @@ import org.apache.zeppelin.display.ui.CheckBox;
 import org.apache.zeppelin.display.ui.OptionInput.ParamOption;
 import org.apache.zeppelin.display.ui.Select;
 import org.apache.zeppelin.display.ui.TextBox;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
-public class GUITest {
+class GUITest {
 
   private ParamOption[] options = new ParamOption[]{
       new ParamOption("1", "value_1"),
@@ -40,14 +42,14 @@ public class GUITest {
 
   private List<Object> checkedItems;
 
-  @Before
-  public void setUp() {
+  @BeforeEach
+  void setUp() {
     checkedItems = new ArrayList<>();
     checkedItems.add("1");
   }
 
   @Test
-  public void testSelect() {
+  void testSelect() {
     GUI gui = new GUI();
     Object selected = gui.select("list_1", options, null);
     // use the first one as the default value
@@ -63,11 +65,11 @@ public class GUITest {
   }
 
   @Test
-  public void testGson() {
+  void testGson() {
     GUI gui = new GUI();
     gui.textbox("textbox_1", "default_text_1");
     gui.select("select_1", options, "1");
-    List<Object> list = new ArrayList();
+    List<Object> list = new ArrayList<>();
     list.add("1");
     gui.checkbox("checkbox_1", options, list);
 
@@ -75,13 +77,11 @@ public class GUITest {
     System.out.println(json);
     GUI gui2 = GUI.fromJson(json);
     assertEquals(gui2.toJson(), json);
-    assertEquals(gui2.forms, gui2.forms);
-    assertEquals(gui2.params, gui2.params);
   }
 
   // Case 1. Old input forms are created in backend, in this case type is always set
   @Test
-  public void testOldGson_1() throws IOException {
+  void testOldGson_1() throws IOException {
 
     GUI gui = new GUI();
     gui.forms.put("textbox_1", new OldInput.OldTextBox("textbox_1", "default_text_1"));
@@ -94,19 +94,19 @@ public class GUITest {
 
     // convert to new input forms
     GUI gui2 = GUI.fromJson(json);
-    assertTrue(3 == gui2.forms.size());
+    assertEquals(3, gui2.forms.size());
     assertTrue(gui2.forms.get("textbox_1") instanceof TextBox);
     assertEquals("default_text_1", gui2.forms.get("textbox_1").getDefaultValue());
     assertTrue(gui2.forms.get("select_1") instanceof Select);
-    assertEquals(options, ((Select) gui2.forms.get("select_1")).getOptions());
+    assertArrayEquals(options, ((Select) gui2.forms.get("select_1")).getOptions());
     assertTrue(gui2.forms.get("checkbox_1") instanceof CheckBox);
-    assertEquals(options, ((CheckBox) gui2.forms.get("checkbox_1")).getOptions());
+    assertArrayEquals(options, ((CheckBox) gui2.forms.get("checkbox_1")).getOptions());
   }
 
   // Case 2. Old input forms are created in frontend, in this case type is only set for checkbox
   // Actually this is a bug due to method Input#getInputForm
   @Test
-  public void testOldGson_2() throws IOException {
+  void testOldGson_2() throws IOException {
 
     GUI gui = new GUI();
     gui.forms.put("textbox_1", new OldInput("textbox_1", "default_text_1"));
@@ -119,18 +119,18 @@ public class GUITest {
 
     // convert to new input forms
     GUI gui2 = GUI.fromJson(json);
-    assertTrue(3 == gui2.forms.size());
+    assertEquals(3, gui2.forms.size());
     assertTrue(gui2.forms.get("textbox_1") instanceof TextBox);
     assertEquals("default_text_1", gui2.forms.get("textbox_1").getDefaultValue());
     assertTrue(gui2.forms.get("select_1") instanceof Select);
-    assertEquals(options, ((Select) gui2.forms.get("select_1")).getOptions());
+    assertArrayEquals(options, ((Select) gui2.forms.get("select_1")).getOptions());
     assertTrue(gui2.forms.get("checkbox_1") instanceof CheckBox);
-    assertEquals(options, ((CheckBox) gui2.forms.get("checkbox_1")).getOptions());
+    assertArrayEquals(options, ((CheckBox) gui2.forms.get("checkbox_1")).getOptions());
   }
 
   // load old json file and will convert it into new forms of Input
   @Test
-  public void testOldGson_3() throws IOException {
+  void testOldGson_3() throws IOException {
     String oldJson = "{\n" +
         "        \"params\": {\n" +
         "          \"maxAge\": \"35\"\n" +

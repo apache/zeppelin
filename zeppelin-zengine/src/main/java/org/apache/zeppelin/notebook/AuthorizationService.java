@@ -32,10 +32,10 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * This class is responsible for maintain notes authorization info. And provide api for
@@ -50,10 +50,10 @@ public class AuthorizationService implements ClusterEventListener {
   private ConfigStorage configStorage;
 
   // contains roles for each user (username --> roles)
-  private Map<String, Set<String>> userRoles = new HashMap<>();
+  private Map<String, Set<String>> userRoles = new ConcurrentHashMap<>();
 
   // cached note permission info. (noteId --> NoteAuth)
-  private Map<String, NoteAuth> notesAuth = new HashMap<>();
+  private Map<String, NoteAuth> notesAuth = new ConcurrentHashMap<>();
 
   @Inject
   public AuthorizationService(NoteManager noteManager, ZeppelinConfiguration conf) {
@@ -94,17 +94,12 @@ public class AuthorizationService implements ClusterEventListener {
     this.notesAuth.put(noteId, noteAuth);
   }
 
-  public void cloneNoteMeta(String noteId, String sourceNoteId, AuthenticationInfo subject) {
-    NoteAuth noteAuth = new NoteAuth(noteId, subject, conf);
-    this.notesAuth.put(noteId, noteAuth);
-  }
-
   /**
    * Persistent NoteAuth
    *
    * @throws IOException
    */
-  public void saveNoteAuth() throws IOException {
+  public synchronized void saveNoteAuth() throws IOException {
     configStorage.save(new NotebookAuthorizationInfoSaving(this.notesAuth));
   }
 

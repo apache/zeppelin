@@ -20,8 +20,8 @@ import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterOutput;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.io.File;
@@ -36,11 +36,11 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-public class PythonDockerInterpreterTest {
+class PythonDockerInterpreterTest {
   private PythonDockerInterpreter docker;
   private PythonInterpreter python;
 
-  @Before
+  @BeforeEach
   public void setUp() throws InterpreterException {
     docker = spy(new PythonDockerInterpreter(new Properties()));
     python = mock(PythonInterpreter.class);
@@ -58,7 +58,7 @@ public class PythonDockerInterpreterTest {
   }
 
   @Test
-  public void testActivateEnv() throws InterpreterException {
+  void testActivateEnv() throws InterpreterException {
     InterpreterContext context = getInterpreterContext();
     docker.interpret("activate env", context);
     verify(python, times(1)).open();
@@ -68,7 +68,7 @@ public class PythonDockerInterpreterTest {
   }
 
   @Test
-  public void testDeactivate() throws InterpreterException {
+  void testDeactivate() throws InterpreterException {
     InterpreterContext context = getInterpreterContext();
     docker.interpret("deactivate", context);
     verify(python, times(1)).open();

@@ -18,8 +18,8 @@
  */
 package org.apache.zeppelin.realm;
 
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.any;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -27,7 +27,7 @@ import static org.mockito.Mockito.when;
 import org.apache.shiro.realm.ldap.LdapContextFactory;
 import org.apache.shiro.session.Session;
 import org.apache.shiro.subject.SimplePrincipalCollection;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -42,9 +42,9 @@ import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 import javax.naming.ldap.LdapContext;
 
-public class LdapRealmTest {
+class LdapRealmTest {
   @Test
-  public void testGetUserDn() {
+  void testGetUserDn() {
     LdapRealm realm = new LdapRealm();
 
     // without a user search filter
@@ -57,13 +57,13 @@ public class LdapRealmTest {
   }
 
   @Test
-  public void testExpandTemplate() {
+  void testExpandTemplate() {
     assertEquals("uid=foo,cn=users,dc=ods,dc=foo",
             LdapRealm.expandTemplate("uid={0},cn=users,dc=ods,dc=foo", "foo"));
   }
 
   @Test
-  public void getUserDnForSearch() {
+  void getUserDnForSearch() {
     LdapRealm realm = new LdapRealm();
 
     realm.setUserSearchAttributeName("uid");
@@ -77,7 +77,7 @@ public class LdapRealmTest {
   }
 
   @Test
-  public void testRolesFor() throws NamingException {
+  void testRolesFor() throws NamingException {
     LdapRealm realm = new LdapRealm();
     realm.setGroupSearchBase("cn=groups,dc=apache");
     realm.setGroupObjectClass("posixGroup");
@@ -116,7 +116,7 @@ public class LdapRealmTest {
     verify(ldapCtx).search("cn=groups,dc=apache", "(objectclass=posixGroup)",
             realm.getGroupSearchControls());
 
-    assertEquals(new HashSet(Arrays.asList("group-one", "zeppelin-role")), roles);
+    assertEquals(new HashSet<>(Arrays.asList("group-one", "zeppelin-role")), roles);
   }
 
   private NamingEnumeration<SearchResult> enumerationOf(BasicAttributes... attrs) {

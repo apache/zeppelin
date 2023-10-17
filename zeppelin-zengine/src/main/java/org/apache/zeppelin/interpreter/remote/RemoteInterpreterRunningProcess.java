@@ -98,6 +98,11 @@ public class RemoteInterpreterRunningProcess extends RemoteInterpreterProcess {
   }
 
   @Override
+  public boolean isAlive() {
+    //TODO(ZEPPELIN-5876): Implement it more accurately
+    return isRunning();
+  }
+  @Override
   public boolean isRunning() {
     return RemoteInterpreterUtils.checkIfRemoteEndpointAccessible(getHost(), getPort());
   }

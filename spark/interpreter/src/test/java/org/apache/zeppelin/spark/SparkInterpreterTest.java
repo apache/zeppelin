@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.spark;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.ui.CheckBox;
 import org.apache.zeppelin.display.ui.Password;
@@ -31,9 +32,9 @@ import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResultMessageOutput;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterEventClient;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 import java.io.IOException;
@@ -41,8 +42,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -50,7 +51,7 @@ import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 
 
-public class SparkInterpreterTest {
+class SparkInterpreterTest {
 
   private SparkInterpreter interpreter;
 
@@ -61,13 +62,13 @@ public class SparkInterpreterTest {
 
   private RemoteInterpreterEventClient mockRemoteEventClient;
 
-  @Before
+  @BeforeEach
   public void setUp() {
     mockRemoteEventClient = mock(RemoteInterpreterEventClient.class);
   }
 
   @Test
-  public void testSparkInterpreter() throws IOException, InterruptedException, InterpreterException {
+  void testSparkInterpreter() throws IOException, InterruptedException, InterpreterException {
     Properties properties = new Properties();
     properties.setProperty(SparkStringConstants.MASTER_PROP_NAME, "local");
     properties.setProperty(SparkStringConstants.APP_NAME_PROP_NAME, "test");
@@ -91,7 +92,7 @@ public class SparkInterpreterTest {
     InterpreterResult result = interpreter.interpret("val a=\"hello world\"", getInterpreterContext());
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
     // Use contains instead of equals, because there's behavior difference between different scala versions
-    assertTrue(output, output.contains("a: String = hello world\n"));
+    assertTrue(output.contains("a: String = hello world\n"), output);
 
     result = interpreter.interpret("print(a)", getInterpreterContext());
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
@@ -127,7 +128,7 @@ public class SparkInterpreterTest {
       // multiple line comment, not supported by scala-2.13
       context = getInterpreterContext();
       result = interpreter.interpret("/*line 1 \n line 2*/", context);
-      assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
+      assertEquals(InterpreterResult.Code.SUCCESS, result.code(), context.out.toString());
     }
 
     // test function
@@ -212,7 +213,7 @@ public class SparkInterpreterTest {
             "            s(5).replaceAll(\"\\\"\", \"\").toInt\n" +
             "        )\n" +
             ").toDF()", context);
-    assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code(), context.out.toString());
 
     // spark version
     result = interpreter.interpret("sc.version", getInterpreterContext());
@@ -236,7 +237,8 @@ public class SparkInterpreterTest {
         "val df = spark.createDataFrame(Seq((1,\"a\"),(2, null)))\n" +
             "df.show()", getInterpreterContext());
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    assertTrue(output.contains(
+    // SPARK-43063 changed the output of null to NULL
+    assertTrue(StringUtils.containsIgnoreCase(output,
         "+---+----+\n" +
         "| _1|  _2|\n" +
         "+---+----+\n" +
@@ -247,7 +249,7 @@ public class SparkInterpreterTest {
     // ZeppelinContext
     context = getInterpreterContext();
     result = interpreter.interpret("z.show(df)", context);
-    assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code(), context.out.toString());
     assertEquals(InterpreterResult.Type.TABLE, messageOutput.getType());
     messageOutput.flush();
     assertEquals("_1\t_2\n1\ta\n2\tnull\n", messageOutput.toInterpreterResultMessage().getData());
@@ -326,7 +328,7 @@ public class SparkInterpreterTest {
       result = interpreter.interpret("<div style=\"color:blue\">\n" +
               "<h4>Hello Angular Display System</h4>\n" +
               "</div>.display", context);
-      assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
+      assertEquals(InterpreterResult.Code.SUCCESS, result.code(), context.out.toString());
       assertEquals(InterpreterResult.Type.ANGULAR, messageOutput.getType());
       assertTrue(messageOutput.toInterpreterResultMessage().getData().contains("Hello Angular Display System"));
 
@@ -393,7 +395,7 @@ public class SparkInterpreterTest {
   }
 
   @Test
-  public void testDisableReplOutput() throws InterpreterException {
+  void testDisableReplOutput() throws InterpreterException {
     Properties properties = new Properties();
     properties.setProperty(SparkStringConstants.MASTER_PROP_NAME, "local");
     properties.setProperty(SparkStringConstants.APP_NAME_PROP_NAME, "test");
@@ -420,7 +422,7 @@ public class SparkInterpreterTest {
   }
 
   @Test
-  public void testDisableReplOutputForParagraph() throws InterpreterException {
+  void testDisableReplOutputForParagraph() throws InterpreterException {
     Properties properties = new Properties();
     properties.setProperty("spark.master", "local");
     properties.setProperty("spark.app.name", "test");
@@ -438,7 +440,7 @@ public class SparkInterpreterTest {
     InterpreterResult result = interpreter.interpret("val a=\"hello world\"", getInterpreterContext());
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
     // Use contains instead of equals, because there's behavior different between different scala versions
-    assertTrue(output, output.contains("a: String = hello world\n"));
+    assertTrue(output.contains("a: String = hello world\n"), output);
 
     result = interpreter.interpret("print(a)", getInterpreterContext());
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
@@ -456,7 +458,7 @@ public class SparkInterpreterTest {
     // REPL output get back if we don't set printREPLOutput in paragraph local properties
     result = interpreter.interpret("val a=\"hello world\"", getInterpreterContext());
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    assertTrue(output, output.contains("a: String = hello world\n"));
+    assertTrue(output.contains("a: String = hello world\n"), output);
 
     result = interpreter.interpret("print(a)", getInterpreterContext());
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
@@ -465,7 +467,7 @@ public class SparkInterpreterTest {
   }
 
   @Test
-  public void testSchedulePool() throws InterpreterException {
+  void testSchedulePool() throws InterpreterException {
     Properties properties = new Properties();
     properties.setProperty(SparkStringConstants.MASTER_PROP_NAME, "local");
     properties.setProperty(SparkStringConstants.APP_NAME_PROP_NAME, "test");
@@ -494,7 +496,7 @@ public class SparkInterpreterTest {
 
   // spark.ui.enabled: false
   @Test
-  public void testDisableSparkUI_1() throws InterpreterException {
+  void testDisableSparkUI_1() throws InterpreterException {
     Properties properties = new Properties();
     properties.setProperty(SparkStringConstants.MASTER_PROP_NAME, "local");
     properties.setProperty(SparkStringConstants.APP_NAME_PROP_NAME, "test");
@@ -519,7 +521,7 @@ public class SparkInterpreterTest {
 
   // zeppelin.spark.ui.hidden: true
   @Test
-  public void testDisableSparkUI_2() throws InterpreterException {
+  void testDisableSparkUI_2() throws InterpreterException {
     Properties properties = new Properties();
     properties.setProperty(SparkStringConstants.MASTER_PROP_NAME, "local");
     properties.setProperty(SparkStringConstants.APP_NAME_PROP_NAME, "test");
@@ -543,7 +545,7 @@ public class SparkInterpreterTest {
   }
 
   @Test
-  public void testScopedMode() throws Exception {
+  void testScopedMode() throws Exception {
     Properties properties = new Properties();
     properties.setProperty(SparkStringConstants.MASTER_PROP_NAME, "local");
     properties.setProperty(SparkStringConstants.APP_NAME_PROP_NAME, "test");
@@ -585,7 +587,7 @@ public class SparkInterpreterTest {
     interpreter2.close();
   }
 
-  @After
+  @AfterEach
   public void tearDown() throws InterpreterException {
     if (this.interpreter != null) {
       this.interpreter.close();

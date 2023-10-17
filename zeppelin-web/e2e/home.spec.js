@@ -23,6 +23,7 @@ describe('Home e2e Test', function() {
   //tests
   it('should have a welcome message', function() {
     browser.get('http://localhost:8080');
+    browser.sleep(500);
     var welcomeElem = element(by.id('welcome'))
 
     expect(welcomeElem.getText()).toEqual('Welcome to Zeppelin!')
@@ -47,8 +48,7 @@ describe('Home e2e Test', function() {
     sendKeysToInput(element(by.xpath('//input[@id="newInterpreterSettingName"]')), interpreterName)
     clickOn(element(by.xpath('//select[@ng-model="newInterpreterSetting.group"]')))
     browser.sleep(500)
-    browser.actions().sendKeys(protractor.Key.ARROW_DOWN).perform()
-    browser.actions().sendKeys(protractor.Key.ENTER).perform()
+    browser.actions().sendKeys('angular').perform()
     clickOn(element(by.xpath('//div[@ng-show="showAddNewSetting"]//input[@id="idShowPermission"]')))
     sendKeysToInput(element(by.xpath('//div[@ng-show="showAddNewSetting"]//input[@class="select2-search__field"]')), ownerName)
     browser.sleep(500)

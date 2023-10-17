@@ -53,7 +53,7 @@ public class FlinkInterpreter extends Interpreter {
 
   private String extractScalaVersion() throws InterpreterException {
     String scalaVersionString = scala.util.Properties.versionString();
-    LOGGER.info("Using Scala: " + scalaVersionString);
+    LOGGER.info("Using Scala: {}", scalaVersionString);
     if (scalaVersionString.contains("version 2.11")) {
       return "2.11";
     } else if (scalaVersionString.contains("version 2.12")) {
@@ -87,10 +87,10 @@ public class FlinkInterpreter extends Interpreter {
     String scalaVersion = extractScalaVersion();
     ClassLoader flinkScalaClassLoader = FlinkScalaInterpreter.class.getClassLoader();
     String innerIntpClassName = innerInterpreterClassMap.get(scalaVersion);
-    Class clazz = Class.forName(innerIntpClassName);
+    Class<?> clazz = Class.forName(innerIntpClassName);
 
     return (FlinkScalaInterpreter)
-            clazz.getConstructor(Properties.class, URLClassLoader.class)
+            clazz.getConstructor(Properties.class, ClassLoader.class)
                     .newInstance(getProperties(), flinkScalaClassLoader);
   }
 
@@ -104,7 +104,7 @@ public class FlinkInterpreter extends Interpreter {
   @Override
   public InterpreterResult interpret(String st, InterpreterContext context)
       throws InterpreterException {
-    LOGGER.debug("Interpret code: " + st);
+    LOGGER.debug("Interpret code: {}", st);
     this.z.setInterpreterContext(context);
     this.z.setGui(context.getGui());
     this.z.setNoteGui(context.getNoteGui());

@@ -37,9 +37,9 @@
     <lucene.version>8.7.0</lucene.version>
     <org.reflections.version>0.9.8</org.reflections.version>
     <xml.apis.version>1.4.01</xml.apis.version>
-    <frontend.maven.plugin.version>1.3</frontend.maven.plugin.version>
     <commons.vfs2.version>2.6.0</commons.vfs2.version>
     <eclipse.jgit.version>4.5.4.201711221230-r</eclipse.jgit.version>
+    <eirslett.version>1.6</eirslett.version>
   </properties>
 
   <dependencies>
@@ -176,7 +176,7 @@
     <dependency>
       <groupId>com.github.eirslett</groupId>
       <artifactId>frontend-plugin-core</artifactId>
-      <version>${frontend.maven.plugin.version}</version>
+      <version>${eirslett.version}</version>
       <exclusions>
         <exclusion>
           <groupId>org.codehaus.plexus</groupId>
@@ -185,6 +185,10 @@
         <exclusion>
           <groupId>org.apache.commons</groupId>
           <artifactId>commons-compress</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.fasterxml.jackson.core</groupId>
+          <artifactId>jackson-databind</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -217,14 +221,19 @@
     </dependency>
 
     <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-engine</artifactId>
       <scope>test</scope>
     </dependency>
 
     <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-params</artifactId>
+    </dependency>
+
+    <dependency>
       <groupId>org.mockito</groupId>
-      <artifactId>mockito-all</artifactId>
+      <artifactId>mockito-core</artifactId>
       <scope>test</scope>
     </dependency>
 
@@ -294,10 +303,6 @@
         </executions>
       </plugin>
 
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-dependency-plugin</artifactId>
-      </plugin>
     </plugins>
   </build>
 
@@ -347,6 +352,12 @@
           <artifactId>${hadoop-client-minicluster.artifact}</artifactId>
           <scope>test</scope>
           <version>${hadoop.version}</version>
+          <exclusions>
+            <exclusion>
+              <groupId>junit</groupId>
+              <artifactId>junit</artifactId>
+            </exclusion>
+          </exclusions>
         </dependency>
       </dependencies>
     </profile>

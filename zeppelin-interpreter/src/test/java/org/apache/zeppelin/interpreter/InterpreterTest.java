@@ -17,17 +17,17 @@
 
 package org.apache.zeppelin.interpreter;
 
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.Properties;
 
-import static org.junit.Assert.assertEquals;
+import org.junit.jupiter.api.Test;
 
 //TODO(zjffdu) add more test for Interpreter which is a very important class
-public class InterpreterTest {
+class InterpreterTest {
 
   @Test
-  public void testDefaultProperty() {
+  void testDefaultProperty() {
     Properties p = new Properties();
     p.put("p1", "v1");
     Interpreter intp = new DummyInterpreter(p);
@@ -38,7 +38,7 @@ public class InterpreterTest {
   }
 
   @Test
-  public void testOverriddenProperty() {
+  void testOverriddenProperty() {
     Properties p = new Properties();
     p.put("p1", "v1");
     Interpreter intp = new DummyInterpreter(p);
@@ -52,7 +52,7 @@ public class InterpreterTest {
   }
 
   @Test
-  public void testPropertyWithReplacedContextFields() {
+  void testPropertyWithReplacedContextFields() {
     String noteId = "testNoteId";
     String paragraphTitle = "testParagraphTitle";
     String paragraphText = "testParagraphText";

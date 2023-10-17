@@ -19,20 +19,20 @@ package org.apache.zeppelin.cluster;
 import org.apache.zeppelin.cluster.meta.ClusterMetaType;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterUtils;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import java.util.Map;
 
 public class ClusterMultiNodeTest {
   private static Logger LOGGER = LoggerFactory.getLogger(ClusterMultiNodeTest.class);
@@ -43,8 +43,8 @@ public class ClusterMultiNodeTest {
 
   static final String metaKey = "ClusterMultiNodeTestKey";
 
-  @BeforeClass
-  public static void startCluster() throws IOException, InterruptedException {
+  @BeforeAll
+  static void startCluster() throws IOException, InterruptedException {
     LOGGER.info("startCluster >>>");
 
     String clusterAddrList = "";
@@ -68,10 +68,10 @@ public class ClusterMultiNodeTest {
         String clusterHost = parts[0];
         int clusterPort = Integer.valueOf(parts[1]);
 
-        Class clazz = ClusterManagerServer.class;
-        Constructor constructor = clazz.getDeclaredConstructor();
+        Class<ClusterManagerServer> clazz = ClusterManagerServer.class;
+        Constructor<ClusterManagerServer> constructor = clazz.getDeclaredConstructor();
         constructor.setAccessible(true);
-        ClusterManagerServer clusterServer = (ClusterManagerServer) constructor.newInstance();
+        ClusterManagerServer clusterServer = constructor.newInstance();
         clusterServer.initTestCluster(clusterAddrList, clusterHost, clusterPort);
 
         clusterServers.add(clusterServer);
@@ -109,8 +109,8 @@ public class ClusterMultiNodeTest {
     getClusterServerMeta();
   }
 
-  @AfterClass
-  public static void stopCluster() {
+  @AfterAll
+  static void stopCluster() {
     LOGGER.info("stopCluster >>>");
     if (null != clusterClient) {
       clusterClient.shutdown();
@@ -145,17 +145,16 @@ public class ClusterMultiNodeTest {
   public static void getClusterServerMeta() {
     LOGGER.info("getClusterServerMeta >>>");
     // Get metadata for all services
-    Object srvMeta = clusterClient.getClusterMeta(ClusterMetaType.SERVER_META, "");
+    Map<String, Map<String, Object>> srvMeta = clusterClient.getClusterMeta(ClusterMetaType.SERVER_META, "");
     LOGGER.info(srvMeta.toString());
 
-    Object intpMeta = clusterClient.getClusterMeta(ClusterMetaType.INTP_PROCESS_META, "");
+    Map<String, Map<String, Object>> intpMeta = clusterClient.getClusterMeta(ClusterMetaType.INTP_PROCESS_META, "");
     LOGGER.info(intpMeta.toString());
 
     assertNotNull(srvMeta);
-    assertEquals(true, (srvMeta instanceof HashMap));
-    HashMap hashMap = (HashMap) srvMeta;
+    assertTrue(srvMeta instanceof Map);
 
-    assertEquals(hashMap.size(), 3);
+    assertEquals(3, srvMeta.size());
     LOGGER.info("getClusterServerMeta <<<");
   }
 }

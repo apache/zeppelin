@@ -36,6 +36,7 @@
     <properties>
         <aws.sdk.version>1.12.261</aws.sdk.version>
         <plugin.name>NotebookRepo/S3NotebookRepo</plugin.name>
+        <jackson.version>2.12.6</jackson.version>
     </properties>
 
     <dependencyManagement>
@@ -46,11 +47,46 @@
             <dependency>
                 <groupId>com.fasterxml.jackson.dataformat</groupId>
                 <artifactId>jackson-dataformat-cbor</artifactId>
-                <version>2.12.6</version>
+                <version>${jackson.version}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>com.fasterxml.jackson.core</groupId>
                         <artifactId>jackson-databind</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.dataformat</groupId>
+                <artifactId>jackson-dataformat-xml</artifactId>
+                <version>${jackson.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>com.fasterxml.jackson.core</groupId>
+                        <artifactId>jackson-databind</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <!-- Fix enforcer plugin for hadoop2
+                 Can be removed when hadoop2 is removed.
+                 hadoop2 ships with a very old version.
+                 Keep the version in sync with s3proxy test dependency
+            -->
+            <dependency>
+                <groupId>com.google.inject</groupId>
+                <artifactId>guice</artifactId>
+                <version>5.0.1</version>
+            </dependency>
+            <!-- Fix enforcer plugin
+                 org.apache.hadoop:hadoop-yarn-client 2.7 and org.gaul:s3proxy are shipped with javax.xml.bind:jaxb-api
+             -->
+            <dependency>
+                <groupId>org.apache.hadoop</groupId>
+                <artifactId>hadoop-yarn-client</artifactId>
+                <version>${hadoop2.7.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>javax.xml.bind</groupId>
+                        <artifactId>jaxb-api</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -90,7 +126,7 @@
         <dependency>
             <groupId>org.gaul</groupId>
             <artifactId>s3proxy</artifactId>
-            <version>1.7.1</version>
+            <version>2.0.0</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>
@@ -106,16 +142,8 @@
                     <artifactId>guava</artifactId>
                 </exclusion>
                 <exclusion>
-                    <groupId>javax.xml.bind</groupId>
-                    <artifactId>jaxb-api</artifactId>
-                </exclusion>
-                <exclusion>
                     <groupId>com.fasterxml.jackson.core</groupId>
                     <artifactId>jackson-core</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.fasterxml.jackson.dataformat</groupId>
-                    <artifactId>jackson-dataformat-xml</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>org.eclipse.jetty</groupId>
@@ -137,10 +165,17 @@
                     <groupId>com.google.code.findbugs</groupId>
                     <artifactId>jsr305</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>javax.annotation</groupId>
+                    <artifactId>javax.annotation-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>jakarta.xml.bind</groupId>
+                    <artifactId>jakarta.xml.bind-api</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
     </dependencies>
-
     <build>
         <plugins>
             <plugin>

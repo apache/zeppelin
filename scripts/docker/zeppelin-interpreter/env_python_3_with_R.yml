@@ -1,0 +1,38 @@
+name: python_3_with_R
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python >=3.9,<3.10
+  - pyspark=3.3.2
+  - pycodestyle
+  - scipy
+  - numpy
+  - grpcio
+  - protobuf
+  - pandasql
+  - ipython
+  - ipykernel
+  - jupyter_client
+  - hvplot
+  - plotnine
+  - seaborn
+  - intake
+  - intake-parquet
+  - intake-xarray
+  - altair
+  - vega_datasets
+  - plotly
+  - pip
+  - pip:
+    # works for regular pip packages
+    - bkzep==0.6.1
+  - r-base=3
+  - r-data.table
+  - r-evaluate
+  - r-base64enc
+  - r-knitr
+  - r-ggplot2
+  - r-irkernel
+  - r-shiny
+  - r-googlevis

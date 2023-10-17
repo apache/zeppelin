@@ -1,57 +1,54 @@
 name: quick
+
 on:
   push:
+    branches-ignore:
+      - 'dependabot/**'
   pull_request:
     branches:
       - master
-      - branch-*
-    types: [opened, synchronize]
+      - 'branch-*'
 
 permissions:
   contents: read
 
+env:
+  # Disable keepAlive and pool
+  # https://github.com/actions/virtual-environments/issues/1499#issuecomment-689467080
+  MAVEN_OPTS: >-
+      -Xms1024M -Xmx2048M -XX:MaxMetaspaceSize=1024m -XX:-UseGCOverheadLimit
+      -Dhttp.keepAlive=false
+      -Dmaven.wagon.http.pool=false
+      -Dmaven.wagon.http.retryHandler.count=3
+  MAVEN_ARGS: >-
+      -B --no-transfer-progress
+
 jobs:
   license-check:
     runs-on: ubuntu-20.04
-    env:
-      # Disable keepAlive and pool
-      # https://github.com/actions/virtual-environments/issues/1499#issuecomment-689467080
-      MAVEN_OPTS: >-
-          -Xms1024M -Xmx2048M -XX:MaxMetaspaceSize=1024m -XX:-UseGCOverheadLimit -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
-          -Dhttp.keepAlive=false
-          -Dmaven.wagon.http.pool=false
-          -Dmaven.wagon.http.retryHandler.count=3
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
-      - name: Set up JDK 8
-        uses: actions/setup-java@v2
+        uses: actions/checkout@v3
+      - name: Set up JDK 11
+        uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
-          java-version: 8
+          java-version: 11
       - name: Check Rat
-        run: ./mvnw apache-rat:check -Prat -B
+        run: ./mvnw apache-rat:check -Prat ${MAVEN_ARGS}
   maven-validate:
     runs-on: ubuntu-20.04
     strategy:
       fail-fast: false
       matrix:
         hadoop: [hadoop2, hadoop3]
-    env:
-      # Disable keepAlive and pool
-      # https://github.com/actions/virtual-environments/issues/1499#issuecomment-689467080
-      MAVEN_OPTS: >-
-          -Xms1024M -Xmx2048M -XX:MaxMetaspaceSize=1024m -XX:-UseGCOverheadLimit -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
-          -Dhttp.keepAlive=false
-          -Dmaven.wagon.http.pool=false
-          -Dmaven.wagon.http.retryHandler.count=3
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
-      - name: Set up JDK 8
-        uses: actions/setup-java@v2
+        uses: actions/checkout@v3
+      - name: Set up JDK 11
+        uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
-          java-version: 8
+          java-version: 11
       - name: Run Maven Validate
-        run: ./mvnw validate -DskipRat -P${{ matrix.hadoop }} -Pinclude-hadoop -B
+        run: ./mvnw validate -P${{ matrix.hadoop }} -Pinclude-hadoop ${MAVEN_ARGS}

@@ -21,9 +21,9 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.apache.zeppelin.common.JsonSerializable;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Only used for saving NotebookAuthorization info
@@ -35,7 +35,7 @@ public class NotebookAuthorizationInfoSaving implements JsonSerializable {
   private final Map<String, Map<String, Set<String>>> authInfo;
 
   public NotebookAuthorizationInfoSaving(Map<String, NoteAuth> notesAuth) {
-    this.authInfo = new HashMap<>();
+    this.authInfo = new ConcurrentHashMap<>();
     for (Map.Entry<String, NoteAuth> entry : notesAuth.entrySet()) {
       this.authInfo.put(entry.getKey(), entry.getValue().toMap());
     }

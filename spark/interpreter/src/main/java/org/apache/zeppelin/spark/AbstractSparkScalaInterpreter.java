@@ -18,7 +18,7 @@
 package org.apache.zeppelin.spark;
 
 import com.google.common.collect.Lists;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -35,7 +35,6 @@ import org.apache.spark.sql.SQLContext;
 import org.apache.spark.sql.SparkSession;
 import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
-import org.apache.zeppelin.kotlin.KotlinInterpreter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -161,10 +160,6 @@ public abstract class AbstractSparkScalaInterpreter {
 
   public abstract InterpreterResult interpret(String st,
                                               InterpreterContext context) throws InterpreterException;
-
-  public abstract InterpreterResult delegateInterpret(KotlinInterpreter kotlinInterpreter,
-                                                      String st,
-                                                      InterpreterContext context) throws InterpreterException;
 
   public abstract List<InterpreterCompletion> completion(String buf,
                                                          int cursor,

@@ -17,14 +17,15 @@
 
 package org.apache.zeppelin.interpreter.launcher;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.InterpreterOption;
 import org.apache.zeppelin.interpreter.integration.DownloadUtils;
 import org.apache.zeppelin.interpreter.remote.ExecRemoteInterpreterProcess;
 import org.apache.zeppelin.util.Util;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,11 +34,12 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Properties;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class SparkInterpreterLauncherTest {
 
@@ -46,13 +48,13 @@ public class SparkInterpreterLauncherTest {
   private String sparkHome;
   private String zeppelinHome;
 
-  @Before
+  @BeforeEach
   public void setUp() {
     for (final ZeppelinConfiguration.ConfVars confVar : ZeppelinConfiguration.ConfVars.values()) {
       System.clearProperty(confVar.getVarName());
     }
 
-    sparkHome = DownloadUtils.downloadSpark("2.4.7", "2.7");
+    sparkHome = DownloadUtils.downloadSpark("3.4.1", "3");
     System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HOME.getVarName(),
             new File("..").getAbsolutePath());
 
@@ -73,14 +75,15 @@ public class SparkInterpreterLauncherTest {
     InterpreterLaunchContext context = new InterpreterLaunchContext(properties, option, null, "user1", "intpGroupId", "groupId", "groupName", "name", 0, "host");
     InterpreterClient client = launcher.launch(context);
     assertTrue(client instanceof ExecRemoteInterpreterProcess);
-    ExecRemoteInterpreterProcess interpreterProcess = (ExecRemoteInterpreterProcess) client;
-    assertEquals("name", interpreterProcess.getInterpreterSettingName());
-    assertEquals(zeppelinHome + "/interpreter/groupName", interpreterProcess.getInterpreterDir());
-    assertEquals(zeppelinHome + "/local-repo/groupId", interpreterProcess.getLocalRepoDir());
-    assertEquals(10000, interpreterProcess.getConnectTimeout());
-    assertEquals(zConf.getInterpreterRemoteRunnerPath(), interpreterProcess.getInterpreterRunner());
-    assertTrue(interpreterProcess.getEnv().size() >= 2);
-    assertEquals(true, interpreterProcess.isUserImpersonated());
+    try (ExecRemoteInterpreterProcess interpreterProcess = (ExecRemoteInterpreterProcess) client) {
+      assertEquals("name", interpreterProcess.getInterpreterSettingName());
+      assertEquals(zeppelinHome + "/interpreter/groupName", interpreterProcess.getInterpreterDir());
+      assertEquals(zeppelinHome + "/local-repo/groupId", interpreterProcess.getLocalRepoDir());
+      assertEquals(10000, interpreterProcess.getConnectTimeout());
+      assertEquals(zConf.getInterpreterRemoteRunnerPath(), interpreterProcess.getInterpreterRunner());
+      assertTrue(interpreterProcess.getEnv().size() >= 2);
+      assertEquals(true, interpreterProcess.isUserImpersonated());
+    }
   }
 
   @Test
@@ -99,17 +102,19 @@ public class SparkInterpreterLauncherTest {
     InterpreterLaunchContext context = new InterpreterLaunchContext(properties, option, null, "user1", "intpGroupId", "groupId", "spark", "spark", 0, "host");
     InterpreterClient client = launcher.launch(context);
     assertTrue( client instanceof ExecRemoteInterpreterProcess);
-    ExecRemoteInterpreterProcess interpreterProcess = (ExecRemoteInterpreterProcess) client;
-    assertEquals("spark", interpreterProcess.getInterpreterSettingName());
-    assertTrue(interpreterProcess.getInterpreterDir().endsWith("/interpreter/spark"));
-    assertTrue(interpreterProcess.getLocalRepoDir().endsWith("/local-repo/groupId"));
-    assertEquals(zConf.getInterpreterRemoteRunnerPath(), interpreterProcess.getInterpreterRunner());
-    assertTrue(interpreterProcess.getEnv().size() >= 2);
-    assertEquals(sparkHome, interpreterProcess.getEnv().get("SPARK_HOME"));
-    assertFalse(interpreterProcess.getEnv().containsKey("ENV_1"));
-    assertEquals("--conf|spark.files=file_1" +
-                    "|--conf|spark.jars=jar_1|--conf|spark.app.name=intpGroupId|--conf|spark.master=local[*]",
-            interpreterProcess.getEnv().get("ZEPPELIN_SPARK_CONF"));
+    try (ExecRemoteInterpreterProcess interpreterProcess = (ExecRemoteInterpreterProcess) client) {
+      assertEquals("spark", interpreterProcess.getInterpreterSettingName());
+      assertTrue(interpreterProcess.getInterpreterDir().endsWith("/interpreter/spark"));
+      assertTrue(interpreterProcess.getLocalRepoDir().endsWith("/local-repo/groupId"));
+      assertEquals(zConf.getInterpreterRemoteRunnerPath(), interpreterProcess.getInterpreterRunner());
+      assertTrue(interpreterProcess.getEnv().size() >= 2);
+      assertEquals(sparkHome, interpreterProcess.getEnv().get("SPARK_HOME"));
+      assertFalse(interpreterProcess.getEnv().containsKey("ENV_1"));
+      String expected = "--conf|spark.files=file_1" +
+        "|--conf|spark.jars=jar_1|--conf|spark.app.name=intpGroupId|--conf|spark.master=local[*]";
+      assertTrue(CollectionUtils.isEqualCollection(Arrays.asList(expected.split("\\|")),
+        Arrays.asList(interpreterProcess.getEnv().get("ZEPPELIN_SPARK_CONF").split("\\|"))));
+    }
   }
 
   @Test
@@ -127,21 +132,23 @@ public class SparkInterpreterLauncherTest {
     InterpreterLaunchContext context = new InterpreterLaunchContext(properties, option, null, "user1", "intpGroupId", "groupId", "spark", "spark", 0, "host");
     InterpreterClient client = launcher.launch(context);
     assertTrue( client instanceof ExecRemoteInterpreterProcess);
-    ExecRemoteInterpreterProcess interpreterProcess = (ExecRemoteInterpreterProcess) client;
-    assertEquals("spark", interpreterProcess.getInterpreterSettingName());
-    assertTrue(interpreterProcess.getInterpreterDir().endsWith("/interpreter/spark"));
-    assertTrue(interpreterProcess.getLocalRepoDir().endsWith("/local-repo/groupId"));
-    assertEquals(zConf.getInterpreterRemoteRunnerPath(), interpreterProcess.getInterpreterRunner());
-    assertTrue(interpreterProcess.getEnv().size() >= 2);
-    assertEquals(sparkHome, interpreterProcess.getEnv().get("SPARK_HOME"));
+    try (ExecRemoteInterpreterProcess interpreterProcess = (ExecRemoteInterpreterProcess) client) {
+      assertEquals("spark", interpreterProcess.getInterpreterSettingName());
+      assertTrue(interpreterProcess.getInterpreterDir().endsWith("/interpreter/spark"));
+      assertTrue(interpreterProcess.getLocalRepoDir().endsWith("/local-repo/groupId"));
+      assertEquals(zConf.getInterpreterRemoteRunnerPath(), interpreterProcess.getInterpreterRunner());
+      assertTrue(interpreterProcess.getEnv().size() >= 2);
+      assertEquals(sparkHome, interpreterProcess.getEnv().get("SPARK_HOME"));
 
-    String sparkJars = "jar_1";
-    String sparkrZip = sparkHome + "/R/lib/sparkr.zip#sparkr";
-    String sparkFiles = "file_1";
-    assertEquals("--conf|spark.yarn.dist.archives=" + sparkrZip +
-                    "|--conf|spark.files=" + sparkFiles + "|--conf|spark.jars=" + sparkJars +
-                    "|--conf|spark.yarn.isPython=true|--conf|spark.app.name=intpGroupId|--conf|spark.master=yarn-client",
-            interpreterProcess.getEnv().get("ZEPPELIN_SPARK_CONF"));
+      String sparkJars = "jar_1";
+      String sparkrZip = sparkHome + "/R/lib/sparkr.zip#sparkr";
+      String sparkFiles = "file_1";
+      String expected = "--conf|spark.yarn.dist.archives=" + sparkrZip +
+        "|--conf|spark.files=" + sparkFiles + "|--conf|spark.jars=" + sparkJars +
+        "|--conf|spark.yarn.isPython=true|--conf|spark.app.name=intpGroupId|--conf|spark.master=yarn-client";
+      assertTrue(CollectionUtils.isEqualCollection(Arrays.asList(expected.split("\\|")),
+        Arrays.asList(interpreterProcess.getEnv().get("ZEPPELIN_SPARK_CONF").split("\\|"))));
+    }
   }
 
   @Test
@@ -160,22 +167,24 @@ public class SparkInterpreterLauncherTest {
     InterpreterLaunchContext context = new InterpreterLaunchContext(properties, option, null, "user1", "intpGroupId", "groupId", "spark", "spark", 0, "host");
     InterpreterClient client = launcher.launch(context);
     assertTrue( client instanceof ExecRemoteInterpreterProcess);
-    ExecRemoteInterpreterProcess interpreterProcess = (ExecRemoteInterpreterProcess) client;
-    assertEquals("spark", interpreterProcess.getInterpreterSettingName());
-    assertTrue(interpreterProcess.getInterpreterDir().endsWith("/interpreter/spark"));
-    assertTrue(interpreterProcess.getLocalRepoDir().endsWith("/local-repo/groupId"));
-    assertEquals(zConf.getInterpreterRemoteRunnerPath(), interpreterProcess.getInterpreterRunner());
-    assertTrue(interpreterProcess.getEnv().size() >= 2);
-    assertEquals(sparkHome, interpreterProcess.getEnv().get("SPARK_HOME"));
+    try (ExecRemoteInterpreterProcess interpreterProcess = (ExecRemoteInterpreterProcess) client) {
+      assertEquals("spark", interpreterProcess.getInterpreterSettingName());
+      assertTrue(interpreterProcess.getInterpreterDir().endsWith("/interpreter/spark"));
+      assertTrue(interpreterProcess.getLocalRepoDir().endsWith("/local-repo/groupId"));
+      assertEquals(zConf.getInterpreterRemoteRunnerPath(), interpreterProcess.getInterpreterRunner());
+      assertTrue(interpreterProcess.getEnv().size() >= 2);
+      assertEquals(sparkHome, interpreterProcess.getEnv().get("SPARK_HOME"));
 
-    String sparkJars = "jar_1";
-    String sparkrZip = sparkHome + "/R/lib/sparkr.zip#sparkr";
-    String sparkFiles = "file_1";
-    assertEquals("--conf|spark.yarn.dist.archives=" + sparkrZip +
-                    "|--conf|spark.files=" + sparkFiles + "|--conf|spark.jars=" + sparkJars +
-                    "|--conf|spark.submit.deployMode=client" +
-                    "|--conf|spark.yarn.isPython=true|--conf|spark.app.name=intpGroupId|--conf|spark.master=yarn",
-            interpreterProcess.getEnv().get("ZEPPELIN_SPARK_CONF"));
+      String sparkJars = "jar_1";
+      String sparkrZip = sparkHome + "/R/lib/sparkr.zip#sparkr";
+      String sparkFiles = "file_1";
+      String expected = "--conf|spark.yarn.dist.archives=" + sparkrZip +
+        "|--conf|spark.files=" + sparkFiles + "|--conf|spark.jars=" + sparkJars +
+        "|--conf|spark.submit.deployMode=client" +
+        "|--conf|spark.yarn.isPython=true|--conf|spark.app.name=intpGroupId|--conf|spark.master=yarn";
+      assertTrue(CollectionUtils.isEqualCollection(Arrays.asList(expected.split("\\|")),
+        Arrays.asList(interpreterProcess.getEnv().get("ZEPPELIN_SPARK_CONF").split("\\|"))));
+    }
   }
 
   @Test
@@ -193,29 +202,32 @@ public class SparkInterpreterLauncherTest {
     InterpreterLaunchContext context = new InterpreterLaunchContext(properties, option, null, "user1", "intpGroupId", "groupId", "spark", "spark", 0, "host");
     InterpreterClient client = launcher.launch(context);
     assertTrue( client instanceof ExecRemoteInterpreterProcess);
-    ExecRemoteInterpreterProcess interpreterProcess = (ExecRemoteInterpreterProcess) client;
-    assertEquals("spark", interpreterProcess.getInterpreterSettingName());
-    assertTrue(interpreterProcess.getInterpreterDir().endsWith("/interpreter/spark"));
-    assertTrue(interpreterProcess.getLocalRepoDir().endsWith("/local-repo/groupId"));
-    assertEquals(zConf.getInterpreterRemoteRunnerPath(), interpreterProcess.getInterpreterRunner());
-    assertTrue(interpreterProcess.getEnv().size() >= 3);
-    assertEquals(sparkHome, interpreterProcess.getEnv().get("SPARK_HOME"));
+    try (ExecRemoteInterpreterProcess interpreterProcess = (ExecRemoteInterpreterProcess) client) {
+      assertEquals("spark", interpreterProcess.getInterpreterSettingName());
+      assertTrue(interpreterProcess.getInterpreterDir().endsWith("/interpreter/spark"));
+      assertTrue(interpreterProcess.getLocalRepoDir().endsWith("/local-repo/groupId"));
+      assertEquals(zConf.getInterpreterRemoteRunnerPath(), interpreterProcess.getInterpreterRunner());
+      assertTrue(interpreterProcess.getEnv().size() >= 3);
+      assertEquals(sparkHome, interpreterProcess.getEnv().get("SPARK_HOME"));
 
-    assertEquals("true", interpreterProcess.getEnv().get("ZEPPELIN_SPARK_YARN_CLUSTER"));
-    String sparkJars = "jar_1," +
-            zeppelinHome + "/interpreter/spark/scala-2.11/spark-scala-2.11-" + Util.getVersion() + ".jar," +
-            zeppelinHome + "/interpreter/zeppelin-interpreter-shaded-" + Util.getVersion() + ".jar";
-    String sparkrZip = sparkHome + "/R/lib/sparkr.zip#sparkr";
-    String sparkFiles = "file_1," + zeppelinHome + "/conf/log4j_yarn_cluster.properties";
-    assertEquals("--conf|spark.yarn.dist.archives=" + sparkrZip +
-                    "|--conf|spark.yarn.maxAppAttempts=1" +
-                    "|--conf|spark.files=" + sparkFiles +
-                    "|--conf|spark.jars=" + sparkJars +
-                    "|--conf|spark.yarn.isPython=true" +
-                    "|--conf|spark.yarn.submit.waitAppCompletion=false" +
-                    "|--conf|spark.app.name=intpGroupId" +
-                    "|--conf|spark.master=yarn-cluster",
-            interpreterProcess.getEnv().get("ZEPPELIN_SPARK_CONF"));
+      assertEquals("true", interpreterProcess.getEnv().get("ZEPPELIN_SPARK_YARN_CLUSTER"));
+      String sparkJars = "jar_1," +
+        zeppelinHome + "/interpreter/spark/scala-2.12/spark-scala-2.12-" + Util.getVersion()
+        + ".jar," +
+              zeppelinHome + "/interpreter/zeppelin-interpreter-shaded-" + Util.getVersion() + ".jar";
+      String sparkrZip = sparkHome + "/R/lib/sparkr.zip#sparkr";
+      String sparkFiles = "file_1," + zeppelinHome + "/conf/log4j_yarn_cluster.properties";
+      String expected = "--conf|spark.yarn.dist.archives=" + sparkrZip +
+                      "|--conf|spark.yarn.maxAppAttempts=1" +
+                      "|--conf|spark.files=" + sparkFiles +
+                      "|--conf|spark.jars=" + sparkJars +
+                      "|--conf|spark.yarn.isPython=true" +
+                      "|--conf|spark.yarn.submit.waitAppCompletion=false" +
+                      "|--conf|spark.app.name=intpGroupId" +
+                      "|--conf|spark.master=yarn-cluster";
+      assertTrue(CollectionUtils.isEqualCollection(Arrays.asList(expected.split("\\|")),
+        Arrays.asList(interpreterProcess.getEnv().get("ZEPPELIN_SPARK_CONF").split("\\|"))));
+    }
   }
 
   @Test
@@ -240,28 +252,32 @@ public class SparkInterpreterLauncherTest {
 
     InterpreterClient client = launcher.launch(context);
     assertTrue(client instanceof ExecRemoteInterpreterProcess);
-    ExecRemoteInterpreterProcess interpreterProcess = (ExecRemoteInterpreterProcess) client;
-    assertEquals("spark", interpreterProcess.getInterpreterSettingName());
-    assertTrue(interpreterProcess.getInterpreterDir().endsWith("/interpreter/spark"));
-    assertTrue(interpreterProcess.getLocalRepoDir().endsWith("/local-repo/groupId"));
-    assertEquals(zConf.getInterpreterRemoteRunnerPath(), interpreterProcess.getInterpreterRunner());
-    assertTrue(interpreterProcess.getEnv().size() >= 3);
-    assertEquals(sparkHome, interpreterProcess.getEnv().get("SPARK_HOME"));
-    assertEquals("true", interpreterProcess.getEnv().get("ZEPPELIN_SPARK_YARN_CLUSTER"));
-    String sparkJars = "jar_1," +
-            Paths.get(localRepoPath.toAbsolutePath().toString(), "test.jar").toString() + "," +
-            zeppelinHome + "/interpreter/spark/scala-2.11/spark-scala-2.11-" + Util.getVersion() + ".jar," +
-            zeppelinHome + "/interpreter/zeppelin-interpreter-shaded-" + Util.getVersion() + ".jar";
-    String sparkrZip = sparkHome + "/R/lib/sparkr.zip#sparkr";
-    String sparkFiles = "file_1," + zeppelinHome + "/conf/log4j_yarn_cluster.properties";
-    assertEquals("--proxy-user|user1|--conf|spark.yarn.dist.archives=" + sparkrZip +
-            "|--conf|spark.yarn.isPython=true|--conf|spark.app.name=intpGroupId" +
-            "|--conf|spark.yarn.maxAppAttempts=1" +
-            "|--conf|spark.master=yarn" +
-            "|--conf|spark.files=" + sparkFiles + "|--conf|spark.jars=" + sparkJars +
-            "|--conf|spark.submit.deployMode=cluster" +
-            "|--conf|spark.yarn.submit.waitAppCompletion=false",
-            interpreterProcess.getEnv().get("ZEPPELIN_SPARK_CONF"));
+    try (ExecRemoteInterpreterProcess interpreterProcess = (ExecRemoteInterpreterProcess) client) {
+      assertEquals("spark", interpreterProcess.getInterpreterSettingName());
+      assertTrue(interpreterProcess.getInterpreterDir().endsWith("/interpreter/spark"));
+      assertTrue(interpreterProcess.getLocalRepoDir().endsWith("/local-repo/groupId"));
+      assertEquals(zConf.getInterpreterRemoteRunnerPath(), interpreterProcess.getInterpreterRunner());
+      assertTrue(interpreterProcess.getEnv().size() >= 3);
+      assertEquals(sparkHome, interpreterProcess.getEnv().get("SPARK_HOME"));
+      assertEquals("true", interpreterProcess.getEnv().get("ZEPPELIN_SPARK_YARN_CLUSTER"));
+      String sparkJars = "jar_1," +
+              Paths.get(localRepoPath.toAbsolutePath().toString(), "test.jar").toString() + "," +
+        zeppelinHome + "/interpreter/spark/scala-2.12/spark-scala-2.12-" + Util.getVersion()
+        + ".jar," +
+              zeppelinHome + "/interpreter/zeppelin-interpreter-shaded-" + Util.getVersion() + ".jar";
+      String sparkrZip = sparkHome + "/R/lib/sparkr.zip#sparkr";
+      String sparkFiles = "file_1," + zeppelinHome + "/conf/log4j_yarn_cluster.properties";
+      String expected = "--proxy-user|user1|--conf|spark.yarn.dist.archives=" + sparkrZip +
+              "|--conf|spark.yarn.isPython=true|--conf|spark.app.name=intpGroupId" +
+              "|--conf|spark.yarn.maxAppAttempts=1" +
+              "|--conf|spark.master=yarn" +
+              "|--conf|spark.files=" + sparkFiles + "|--conf|spark.jars=" + sparkJars +
+              "|--conf|spark.submit.deployMode=cluster" +
+              "|--conf|spark.yarn.submit.waitAppCompletion=false";
+      assertTrue(CollectionUtils.isEqualCollection(Arrays.asList(expected.split("\\|")),
+        Arrays.asList(interpreterProcess.getEnv().get("ZEPPELIN_SPARK_CONF").split("\\|"))));
+      assertTrue(interpreterProcess.getEnv().get("ZEPPELIN_SPARK_CONF").startsWith("--proxy-user|user1"));
+    }
     Files.deleteIfExists(Paths.get(localRepoPath.toAbsolutePath().toString(), "test.jar"));
     FileUtils.deleteDirectory(localRepoPath.toFile());
   }
@@ -287,32 +303,36 @@ public class SparkInterpreterLauncherTest {
 
     InterpreterClient client = launcher.launch(context);
     assertTrue(client instanceof ExecRemoteInterpreterProcess);
-    ExecRemoteInterpreterProcess interpreterProcess = (ExecRemoteInterpreterProcess) client;
-    assertEquals("spark", interpreterProcess.getInterpreterSettingName());
-    assertTrue(interpreterProcess.getInterpreterDir().endsWith("/interpreter/spark"));
-    assertTrue(interpreterProcess.getLocalRepoDir().endsWith("/local-repo/groupId"));
-    assertEquals(zConf.getInterpreterRemoteRunnerPath(), interpreterProcess.getInterpreterRunner());
-    assertTrue(interpreterProcess.getEnv().size() >= 3);
-    assertEquals(sparkHome, interpreterProcess.getEnv().get("SPARK_HOME"));
-    assertEquals("true", interpreterProcess.getEnv().get("ZEPPELIN_SPARK_YARN_CLUSTER"));
+    try (ExecRemoteInterpreterProcess interpreterProcess = (ExecRemoteInterpreterProcess) client) {
+      assertEquals("spark", interpreterProcess.getInterpreterSettingName());
+      assertTrue(interpreterProcess.getInterpreterDir().endsWith("/interpreter/spark"));
+      assertTrue(interpreterProcess.getLocalRepoDir().endsWith("/local-repo/groupId"));
+      assertEquals(zConf.getInterpreterRemoteRunnerPath(), interpreterProcess.getInterpreterRunner());
+      assertTrue(interpreterProcess.getEnv().size() >= 3);
+      assertEquals(sparkHome, interpreterProcess.getEnv().get("SPARK_HOME"));
+      assertEquals("true", interpreterProcess.getEnv().get("ZEPPELIN_SPARK_YARN_CLUSTER"));
 
-    String sparkJars = "jar_1," +
-            zeppelinHome + "/interpreter/spark/scala-2.11/spark-scala-2.11-" + Util.getVersion() + ".jar," +
-            zeppelinHome + "/interpreter/zeppelin-interpreter-shaded-" + Util.getVersion() + ".jar";
-    String sparkrZip = sparkHome + "/R/lib/sparkr.zip#sparkr";
-    // escape special characters
-    String sparkFiles = "{}," + zeppelinHome + "/conf/log4j_yarn_cluster.properties";
-    assertEquals("--proxy-user|user1" +
-                    "|--conf|spark.yarn.dist.archives=" + sparkrZip +
-                    "|--conf|spark.yarn.isPython=true" +
-                    "|--conf|spark.app.name=intpGroupId" +
-                    "|--conf|spark.yarn.maxAppAttempts=1" +
-                    "|--conf|spark.master=yarn" +
-                    "|--conf|spark.files=" + sparkFiles +
-                    "|--conf|spark.jars=" + sparkJars +
-                    "|--conf|spark.submit.deployMode=cluster" +
-                    "|--conf|spark.yarn.submit.waitAppCompletion=false",
-            interpreterProcess.getEnv().get("ZEPPELIN_SPARK_CONF"));
+      String sparkJars = "jar_1," +
+        zeppelinHome + "/interpreter/spark/scala-2.12/spark-scala-2.12-" + Util.getVersion()
+        + ".jar," +
+              zeppelinHome + "/interpreter/zeppelin-interpreter-shaded-" + Util.getVersion() + ".jar";
+      String sparkrZip = sparkHome + "/R/lib/sparkr.zip#sparkr";
+      // escape special characters
+      String sparkFiles = "{}," + zeppelinHome + "/conf/log4j_yarn_cluster.properties";
+      String expected = "--proxy-user|user1" +
+                      "|--conf|spark.yarn.dist.archives=" + sparkrZip +
+                      "|--conf|spark.yarn.isPython=true" +
+                      "|--conf|spark.app.name=intpGroupId" +
+                      "|--conf|spark.yarn.maxAppAttempts=1" +
+                      "|--conf|spark.master=yarn" +
+                      "|--conf|spark.files=" + sparkFiles +
+                      "|--conf|spark.jars=" + sparkJars +
+                      "|--conf|spark.submit.deployMode=cluster" +
+                      "|--conf|spark.yarn.submit.waitAppCompletion=false";
+      assertTrue(CollectionUtils.isEqualCollection(Arrays.asList(expected.split("\\|")),
+        Arrays.asList(interpreterProcess.getEnv().get("ZEPPELIN_SPARK_CONF").split("\\|"))));
+      assertTrue(interpreterProcess.getEnv().get("ZEPPELIN_SPARK_CONF").startsWith("--proxy-user|user1"));
+    }
     FileUtils.deleteDirectory(localRepoPath.toFile());
   }
 }

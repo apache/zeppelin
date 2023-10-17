@@ -25,7 +25,6 @@ import org.apache.flink.configuration.DeploymentOptions;
 import org.apache.flink.configuration.PipelineOptions;
 import org.apache.flink.core.execution.JobClient;
 import org.apache.flink.core.execution.PipelineExecutorServiceLoader;
-import org.apache.flink.streaming.api.graph.StreamGraph;
 import org.apache.zeppelin.flink.internal.FlinkILoop;
 
 import java.io.File;
