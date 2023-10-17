@@ -411,6 +411,11 @@ jobs:
         run: |
           rm -rf spark/interpreter/metastore_db
           ./mvnw verify -pl spark-submit,spark/interpreter -am -Dtest=org/apache/zeppelin/spark/* -Pspark-3.4 -Pspark-scala-2.13 -Phadoop3 -Pintegration -DfailIfNoTests=false ${MAVEN_ARGS}
+      - name: run spark-3.5 tests with scala-2.13 and python-${{ matrix.python }}
+        if: matrix.python >= '3.8'
+        run: |
+          rm -rf spark/interpreter/metastore_db
+          ./mvnw verify -pl spark-submit,spark/interpreter -am -Dtest=org/apache/zeppelin/spark/* -Pspark-3.5 -Pspark-scala-2.13 -Phadoop3 -Pintegration -DfailIfNoTests=false ${MAVEN_ARGS}
 
   livy-0-7-with-spark-3-4-1-under-python3:
     runs-on: ubuntu-20.04
