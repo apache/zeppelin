@@ -17,23 +17,12 @@
 
 package org.apache.zeppelin.integration;
 
-import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import java.io.IOException;
 
 public class SparkIntegrationTest32  {
-
-  @Nested
-  @DisplayName("Hadoop2")
-  public class Hadoop2 extends SparkIntegrationTest {
-
-    @BeforeEach
-    public void downloadSpark() throws IOException {
-      prepareSpark("3.2.0", "2.7");
-    }
-  }
 
   @Nested
   @DisplayName("Hadoop3")

@@ -135,7 +135,6 @@ Set hadoop major version (default hadoop3).
 Available profiles are
 
 ```
--Phadoop2
 -Phadoop3
 ```
 

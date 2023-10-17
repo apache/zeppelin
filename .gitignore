@@ -10,6 +10,10 @@
 /interpreter/*
 !/interpreter/lib
 
+# metals
+.bloop
+.metals
+
 # interpreter temp files
 derby.log
 spark/metastore_db

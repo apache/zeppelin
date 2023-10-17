@@ -36,17 +36,73 @@
     <!--library versions-->
     <interpreter.name>flink</interpreter.name>
     <flink.version>${flink1.13.version}</flink.version>
-    <flink.hadoop.version>${hadoop2.7.version}</flink.hadoop.version>
-    <hive.version>2.3.4</hive.version>
-    <hiverunner.version>4.0.0</hiverunner.version>
+    <flink.hadoop.version>${hadoop3.2.version}</flink.hadoop.version>
+    <hive.version>3.1.2</hive.version>
+    <hiverunner.version>6.1.0</hiverunner.version>
     <grpc.version>1.15.0</grpc.version>
     <!-- Start from 1.15 flink is scala free (no scala version in its artifact) -->
     <flink.library.scala.suffix>_${flink.scala.binary.version}</flink.library.scala.suffix>
 
     <flink.bin.download.url>https://archive.apache.org/dist/flink/flink-${flink.version}/flink-${flink.version}-bin-scala_${flink.scala.binary.version}.tgz</flink.bin.download.url>
+    <!-- multiple dependencies come with own jetty version, find a matching one -->
+    <jetty.version>9.4.52.v20230823</jetty.version>
   </properties>
 
-  
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.eclipse.jetty</groupId>
+        <artifactId>jetty-http</artifactId>
+        <version>${jetty.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.jetty</groupId>
+        <artifactId>jetty-util</artifactId>
+        <version>${jetty.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.jetty</groupId>
+        <artifactId>jetty-util-ajax</artifactId>
+        <version>${jetty.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.jetty</groupId>
+        <artifactId>jetty-webapp</artifactId>
+        <version>${jetty.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.jetty</groupId>
+        <artifactId>jetty-security</artifactId>
+        <version>${jetty.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.jetty</groupId>
+        <artifactId>jetty-server</artifactId>
+        <version>${jetty.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.jetty</groupId>
+        <artifactId>jetty-servlet</artifactId>
+        <version>${jetty.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.jetty</groupId>
+        <artifactId>jetty-rewrite</artifactId>
+        <version>${jetty.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.jetty</groupId>
+        <artifactId>jetty-runner</artifactId>
+        <version>${jetty.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.jetty</groupId>
+        <artifactId>jetty-io</artifactId>
+        <version>${jetty.version}</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
   <dependencies>
 
     <dependency>
@@ -164,10 +220,6 @@
         </exclusion>
         <exclusion>
           <groupId>org.apache.hadoop</groupId>
-          <artifactId>*</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.eclipse.jetty</groupId>
           <artifactId>*</artifactId>
         </exclusion>
       </exclusions>
@@ -298,35 +350,7 @@
 
     <dependency>
       <groupId>org.apache.hadoop</groupId>
-      <artifactId>hadoop-common</artifactId>
-      <version>${flink.hadoop.version}</version>
-      <scope>provided</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.hadoop</groupId>
-      <artifactId>hadoop-hdfs</artifactId>
-      <version>${flink.hadoop.version}</version>
-      <scope>provided</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.hadoop</groupId>
-      <artifactId>hadoop-yarn-common</artifactId>
-      <version>${flink.hadoop.version}</version>
-      <scope>provided</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.hadoop</groupId>
-      <artifactId>hadoop-yarn-client</artifactId>
-      <version>${flink.hadoop.version}</version>
-      <scope>provided</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.hadoop</groupId>
-      <artifactId>hadoop-mapreduce-client-core</artifactId>
+      <artifactId>hadoop-client-runtime</artifactId>
       <version>${flink.hadoop.version}</version>
       <scope>provided</scope>
     </dependency>
@@ -350,14 +374,6 @@
         <exclusion>
           <groupId>com.google.guava</groupId>
           <artifactId>guava</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>io.netty</groupId>
-          <artifactId>netty</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>io.netty</groupId>
-          <artifactId>netty-all</artifactId>
         </exclusion>
         <exclusion>
           <groupId>com.google.protobuf</groupId>
@@ -441,14 +457,6 @@
           <artifactId>guava</artifactId>
         </exclusion>
         <exclusion>
-          <groupId>io.netty</groupId>
-          <artifactId>netty</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>io.netty</groupId>
-          <artifactId>netty-all</artifactId>
-        </exclusion>
-        <exclusion>
           <groupId>com.google.protobuf</groupId>
           <artifactId>protobuf-java</artifactId>
         </exclusion>
@@ -472,10 +480,6 @@
         <exclusion>
           <groupId>com.google.guava</groupId>
           <artifactId>guava</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>io.netty</groupId>
-          <artifactId>netty</artifactId>
         </exclusion>
         <exclusion>
           <groupId>javax.jms</groupId>
@@ -513,14 +517,6 @@
           <artifactId>guava</artifactId>
         </exclusion>
         <exclusion>
-          <groupId>io.netty</groupId>
-          <artifactId>netty</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>io.netty</groupId>
-          <artifactId>netty-all</artifactId>
-        </exclusion>
-        <exclusion>
           <groupId>org.apache.logging.log4j</groupId>
           <artifactId>log4j-slf4j-impl</artifactId>
         </exclusion>
@@ -539,7 +535,7 @@
     </dependency>
 
     <dependency>
-      <groupId>com.klarna</groupId>
+      <groupId>io.github.hiverunner</groupId>
       <artifactId>hiverunner</artifactId>
       <version>${hiverunner.version}</version>
       <scope>test</scope>
@@ -551,6 +547,16 @@
         <exclusion>
           <groupId>org.pentaho</groupId>
           <artifactId>pentaho-aggdesigner-algorithm</artifactId>
+        </exclusion>
+        <!-- provided by hive-hcatalog-core -->
+        <exclusion>
+          <groupId>io.netty</groupId>
+          <artifactId>netty</artifactId>
+        </exclusion>
+        <!-- provided by hive-hcatalog-core -->
+        <exclusion>
+          <groupId>io.netty</groupId>
+          <artifactId>netty-all</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -843,10 +849,10 @@
             </transformer>
           </transformers>
           <relocations>
-            <relocation>
+<!--            <relocation>
               <pattern>io.netty</pattern>
               <shadedPattern>org.apache.zeppelin.shaded.io.netty</shadedPattern>
-            </relocation>
+            </relocation>-->
             <relocation>
               <pattern>com.google</pattern>
               <shadedPattern>org.apache.zeppelin.shaded.com.google</shadedPattern>
@@ -1008,29 +1014,14 @@
     </profile>
 
     <profile>
-      <id>hive2</id>
+      <id>hive3</id>
       <activation>
         <activeByDefault>true</activeByDefault>
       </activation>
       <properties>
-        <hive.version>2.3.4</hive.version>
-        <hiverunner.version>4.0.0</hiverunner.version>
+        <hive.version>3.1.2</hive.version>
+        <hiverunner.version>6.1.0</hiverunner.version>
       </properties>
-    </profile>
-    <profile>
-      <id>hive1</id>
-      <properties>
-        <hive.version>1.2.1</hive.version>
-        <hiverunner.version>3.2.1</hiverunner.version>
-      </properties>
-      <dependencies>
-        <dependency>
-          <groupId>org.apache.hadoop</groupId>
-          <artifactId>hadoop-common</artifactId>
-          <version>2.7.5</version>
-          <scope>provided</scope>
-        </dependency>
-      </dependencies>
     </profile>
   </profiles>
 </project>
