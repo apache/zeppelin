@@ -37,7 +37,7 @@
     <!--library versions -->
     <pty4j.version>0.9.3</pty4j.version>
     <jinjava.version>2.4.0</jinjava.version>
-    <guava.version>24.1.1-jre</guava.version>
+    <guava.version>32.0.0-jre</guava.version>
   </properties>
 
   <!-- pty4j library not in maven central repository (http://repo.maven.apache.org/maven2) -->
