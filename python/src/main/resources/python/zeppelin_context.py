@@ -179,7 +179,7 @@ class PyZeppelinContext(object):
     def show(self, p, **kwargs):
         if hasattr(p, '__name__') and p.__name__ == "matplotlib.pyplot":
             self.show_matplotlib(p, **kwargs)
-        elif type(p).__name__ == "DataFrame": # does not play well with sub-classes
+        elif any(t.__name__ == 'DataFrame' for t in type(p).mro()):
             # `isinstance(p, DataFrame)` would req `import pandas.core.frame.DataFrame`
             # and so a dependency on pandas
             self.show_dataframe(p, **kwargs)
