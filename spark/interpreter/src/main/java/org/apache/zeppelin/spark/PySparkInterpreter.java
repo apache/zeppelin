@@ -88,8 +88,6 @@ public class PySparkInterpreter extends PythonInterpreter {
       // must create spark interpreter after ClassLoader is set, otherwise the additional jars
       // can not be loaded by spark repl.
       this.sparkInterpreter = getInterpreterInTheSameSessionByClassName(SparkInterpreter.class);
-      setProperty("zeppelin.py4j.useAuth",
-          sparkInterpreter.getSparkVersion().isSecretSocketSupported() + "");
       // create Python Process and JVM gateway
       super.open();
     } finally {

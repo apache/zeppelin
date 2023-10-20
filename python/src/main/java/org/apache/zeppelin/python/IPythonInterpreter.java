@@ -55,7 +55,6 @@ public class IPythonInterpreter extends JupyterKernelInterpreter {
   private String additionalPythonPath;
   private String additionalPythonInitFile;
   private boolean useBuiltinPy4j = true;
-  private boolean usePy4JAuth = true;
   private String py4jGatewaySecret;
 
   public IPythonInterpreter(Properties properties) {
@@ -128,7 +127,7 @@ public class IPythonInterpreter extends JupyterKernelInterpreter {
 
   private void setupJVMGateway(String gatewayHost, int gatewayPort) throws IOException {
     this.gatewayServer = PythonUtils.createGatewayServer(this, gatewayHost,
-            gatewayPort, py4jGatewaySecret, usePy4JAuth);
+            gatewayPort, py4jGatewaySecret);
     gatewayServer.start();
   }
 
@@ -199,11 +198,8 @@ public class IPythonInterpreter extends JupyterKernelInterpreter {
       envs.put("PYTHONPATH", additionalPythonPath);
     }
 
-    this.usePy4JAuth = Boolean.parseBoolean(getProperty("zeppelin.py4j.useAuth", "true"));
     this.py4jGatewaySecret = PythonUtils.createSecret(256);
-    if (usePy4JAuth) {
-      envs.put("PY4J_GATEWAY_SECRET", this.py4jGatewaySecret);
-    }
+    envs.put("PY4J_GATEWAY_SECRET", this.py4jGatewaySecret);
     LOGGER.info("PYTHONPATH: {}", envs.get("PYTHONPATH"));
     return envs;
   }

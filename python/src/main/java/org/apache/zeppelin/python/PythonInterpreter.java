@@ -70,7 +70,6 @@ public class PythonInterpreter extends Interpreter {
   private ZeppelinContext zeppelinContext;
   // set by PythonCondaInterpreter
   private String condaPythonExec;
-  private boolean usePy4jAuth = false;
 
   public PythonInterpreter(Properties property) {
     super(property);
@@ -116,7 +115,6 @@ public class PythonInterpreter extends Interpreter {
     }
 
     try {
-      this.usePy4jAuth = Boolean.parseBoolean(getProperty("zeppelin.py4j.useAuth", "true"));
       createGatewayServerAndStartScript();
     } catch (IOException e) {
       LOGGER.error("Fail to open PythonInterpreter", e);
@@ -132,8 +130,7 @@ public class PythonInterpreter extends Interpreter {
     // container can also connect to this gateway server.
     String serverAddress = PythonUtils.getLocalIP(properties);
     String secret = PythonUtils.createSecret(256);
-    this.gatewayServer = PythonUtils.createGatewayServer(this, serverAddress, port, secret,
-        usePy4jAuth);
+    this.gatewayServer = PythonUtils.createGatewayServer(this, serverAddress, port, secret);
     gatewayServer.start();
 
     // launch python process to connect to the gateway server in JVM side
@@ -149,9 +146,7 @@ public class PythonInterpreter extends Interpreter {
 
     outputStream = new InterpreterOutputStream(LOGGER);
     Map<String, String> env = setupPythonEnv();
-    if (usePy4jAuth) {
-      env.put("PY4J_GATEWAY_SECRET", secret);
-    }
+    env.put("PY4J_GATEWAY_SECRET", secret);
     if (LOGGER.isInfoEnabled()) {
       LOGGER.info("Launching Python Process Command: {} {}",
           cmd.getExecutable(), StringUtils.join(cmd.getArguments(), " "));
