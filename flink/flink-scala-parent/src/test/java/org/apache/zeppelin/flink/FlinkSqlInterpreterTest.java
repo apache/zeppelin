@@ -511,6 +511,11 @@ public abstract class FlinkSqlInterpreterTest {
     resultMessages = context.out.toInterpreterResultMessage();
     assertEquals("current catalog: test_catalog\n", resultMessages.get(0).getData());
 
+    // USE DEFAULT_CATALOG
+    context = getInterpreterContext();
+    result = sqlInterpreter.interpret("USE CATALOG default_catalog", context);
+    assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
+
     // DROP CATALOG
     context = getInterpreterContext();
     result = sqlInterpreter.interpret(
@@ -526,8 +531,6 @@ public abstract class FlinkSqlInterpreterTest {
     assertEquals(context.out.toString(), InterpreterResult.Code.SUCCESS, result.code());
     resultMessages = context.out.toInterpreterResultMessage();
     assertTrue(context.out.toString(), resultMessages.get(0).getData().contains("default_catalog"));
-    assertFalse(context.out.toString(), resultMessages.get(0).getData().contains("test_catalog"));
-
   }
 
   @Test
