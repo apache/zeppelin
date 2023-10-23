@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.livy.cluster;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,7 +30,7 @@ import java.util.Optional;
 
 public class LivyClusterUtils {
 
-    public static Logger LOG = LoggerFactory.getLogger(LivyClusterUtils.class);
+    public static final Logger LOG = LoggerFactory.getLogger(LivyClusterUtils.class);
 
     private static Map<String, String> _config = null;
 
