@@ -49,8 +49,6 @@ public interface LivyCluster {
 
     String livyEndpoint();
 
-    Optional<String> jdbcEndpoint();
-
     Path hdfsScratchDir();
 
     //
@@ -102,5 +100,16 @@ public interface LivyCluster {
 //        conf
 //    }
 //
+
+//    lazy val fs = doAsClusterUser {
+//        FileSystem.get(hadoopConf)
+//    }
+//
+//    lazy val yarnClient = doAsClusterUser {
+//        val c = YarnClient.createYarnClient()
+//        c.init(yarnConf)
+//        c.start()
+//        c
+//    }
 }
 

@@ -29,11 +29,11 @@ public class MiniYarnMain extends MiniClusterBase {
         baseConfig.set(YarnConfiguration.NM_USER_HOME_DIR, System.getenv("HOME"));
 
         // Install a shutdown hook for stop the service and kill all running applications.
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> yarnCluster.stop()));
+        Runtime.getRuntime().addShutdownHook(new Thread(yarnCluster::stop));
 
         yarnCluster.start();
 
-        // Workaround for YARN-2642.
+        // Workaround for YARN-2642, which is unresolved until now.
         Configuration yarnConfig = yarnCluster.getConfig();
 //            eventually(timeout(30 seconds), interval(100 millis)) {
 //                assert(yarnConfig.get(YarnConfiguration.RM_ADDRESS).split(":")(1) != "0",
