@@ -35,10 +35,7 @@ import org.apache.flink.streaming.api.environment.StreamExecutionEnvironmentFact
 import org.apache.flink.table.api.*;
 import org.apache.flink.table.api.bridge.java.internal.StreamTableEnvironmentImpl;
 import org.apache.flink.table.api.config.TableConfigOptions;
-import org.apache.flink.table.catalog.CatalogManager;
-import org.apache.flink.table.catalog.FunctionCatalog;
-import org.apache.flink.table.catalog.GenericInMemoryCatalog;
-import org.apache.flink.table.catalog.ResolvedSchema;
+import org.apache.flink.table.catalog.*;
 import org.apache.flink.table.client.resource.ClientResourceManager;
 import org.apache.flink.table.client.util.ClientClassloaderUtil;
 import org.apache.flink.table.client.util.ClientWrapperClassLoader;
@@ -189,9 +186,15 @@ public class Flink118Shims extends FlinkShims {
 
   @Override
   public Object createCatalogManager(Object config) {
+    CatalogStoreHolder catalogStoreHolder = CatalogStoreHolder.newBuilder()
+            .classloader(Thread.currentThread().getContextClassLoader())
+            .catalogStore(new GenericInMemoryCatalogStore())
+            .config((Configuration) config)
+            .build();
     return CatalogManager.newBuilder()
             .classLoader(Thread.currentThread().getContextClassLoader())
             .config((ReadableConfig) config)
+            .catalogStoreHolder(catalogStoreHolder)
             .defaultCatalog("default_catalog",
                     new GenericInMemoryCatalog("default_catalog", "default_database"))
             .build();
