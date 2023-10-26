@@ -74,6 +74,12 @@
 
     <dependency>
       <groupId>org.apache.zeppelin</groupId>
+      <artifactId>flink1.18-shims</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.zeppelin</groupId>
       <artifactId>zeppelin-python</artifactId>
       <version>${project.version}</version>
       <exclusions>
@@ -1059,6 +1065,97 @@
               <outputDirectory>${project.build.directory}</outputDirectory>
             </configuration>
           </execution>
+          <execution>
+            <id>download-flink-api-scala</id>
+            <phase>validate</phase>
+            <goals>
+              <goal>wget</goal>
+            </goals>
+            <configuration>
+              <readTimeOut>60000</readTimeOut>
+              <retries>5</retries>
+              <url>https://repo1.maven.org/maven2/org/apache/flink/flink-table-api-scala_${flink.scala.binary.version}/${flink.version}/flink-table-api-scala_${flink.scala.binary.version}-${flink.version}.jar</url>
+              <outputDirectory>${project.build.directory}/flink-${flink.version}/lib</outputDirectory>
+            </configuration>
+          </execution>
+          <execution>
+            <id>download-flink-api-scala-bridge</id>
+            <phase>validate</phase>
+            <goals>
+              <goal>wget</goal>
+            </goals>
+            <configuration>
+              <readTimeOut>60000</readTimeOut>
+              <retries>5</retries>
+              <url>https://repo1.maven.org/maven2/org/apache/flink/flink-table-api-scala-bridge_${flink.scala.binary.version}/${flink.version}/flink-table-api-scala-bridge_${flink.scala.binary.version}-${flink.version}.jar</url>
+              <outputDirectory>${project.build.directory}/flink-${flink.version}/lib</outputDirectory>
+            </configuration>
+          </execution>
+          <execution>
+            <id>download-flink-api-java-bridge</id>
+            <phase>validate</phase>
+            <goals>
+              <goal>wget</goal>
+            </goals>
+            <configuration>
+              <readTimeOut>60000</readTimeOut>
+              <retries>5</retries>
+              <url>https://repo1.maven.org/maven2/org/apache/flink/flink-table-api-java-bridge/${flink.version}/flink-table-api-java-bridge-${flink.version}.jar</url>
+              <outputDirectory>${project.build.directory}/flink-${flink.version}/lib</outputDirectory>
+            </configuration>
+          </execution>
+          <execution>
+            <id>download-flink-streaming-java</id>
+            <phase>validate</phase>
+            <goals>
+              <goal>wget</goal>
+            </goals>
+            <configuration>
+              <readTimeOut>60000</readTimeOut>
+              <retries>5</retries>
+              <url>https://repo1.maven.org/maven2/org/apache/flink/flink-streaming-java/${flink.version}/flink-streaming-java-${flink.version}.jar</url>
+              <outputDirectory>${project.build.directory}/flink-${flink.version}/lib</outputDirectory>
+            </configuration>
+          </execution>
+          <execution>
+            <id>download-flink-streaming-scala</id>
+            <phase>validate</phase>
+            <goals>
+              <goal>wget</goal>
+            </goals>
+            <configuration>
+              <readTimeOut>60000</readTimeOut>
+              <retries>5</retries>
+              <url>https://repo1.maven.org/maven2/org/apache/flink/flink-streaming-scala_${flink.scala.binary.version}/${flink.version}/flink-streaming-scala_${flink.scala.binary.version}-${flink.version}.jar</url>
+              <outputDirectory>${project.build.directory}/flink-${flink.version}/lib</outputDirectory>
+            </configuration>
+          </execution>
+          <execution>
+            <id>download-scala-library</id>
+            <phase>validate</phase>
+            <goals>
+              <goal>wget</goal>
+            </goals>
+            <configuration>
+              <readTimeOut>60000</readTimeOut>
+              <retries>5</retries>
+              <url>https://repo1.maven.org/maven2/org/scala-lang/scala-library/${flink.scala.version}/scala-library-${flink.scala.version}.jar</url>
+              <outputDirectory>${project.build.directory}/flink-${flink.version}/lib</outputDirectory>
+            </configuration>
+          </execution>
+          <execution>
+            <id>download-scala-reflect</id>
+            <phase>validate</phase>
+            <goals>
+              <goal>wget</goal>
+            </goals>
+            <configuration>
+              <readTimeOut>60000</readTimeOut>
+              <retries>5</retries>
+              <url>https://repo1.maven.org/maven2/org/scala-lang/scala-reflect/${flink.scala.version}/scala-reflect-${flink.scala.version}.jar</url>
+              <outputDirectory>${project.build.directory}/flink-${flink.version}/lib</outputDirectory>
+            </configuration>
+          </execution>
         </executions>
       </plugin>
 
@@ -1270,6 +1367,41 @@
       <id>flink-117</id>
       <properties>
         <flink.version>${flink1.17.version}</flink.version>
+        <flink.scala.version>2.12.7</flink.scala.version>
+        <flink.scala.binary.version>2.12</flink.scala.binary.version>
+      </properties>
+      <dependencies>
+        <dependency>
+          <groupId>org.apache.flink</groupId>
+          <artifactId>flink-runtime</artifactId>
+          <version>${flink.version}</version>
+          <scope>provided</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.flink</groupId>
+          <artifactId>flink-table-planner_${flink.scala.binary.version}</artifactId>
+          <version>${flink.version}</version>
+          <scope>provided</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.flink</groupId>
+          <artifactId>flink-sql-client</artifactId>
+          <version>${flink.version}</version>
+          <scope>provided</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.flink</groupId>
+          <artifactId>flink-python</artifactId>
+          <version>${flink.version}</version>
+          <scope>provided</scope>
+        </dependency>
+      </dependencies>
+    </profile>
+
+    <profile>
+      <id>flink-118</id>
+      <properties>
+        <flink.version>${flink1.18.version}</flink.version>
         <flink.scala.version>2.12.7</flink.scala.version>
         <flink.scala.binary.version>2.12</flink.scala.binary.version>
       </properties>
