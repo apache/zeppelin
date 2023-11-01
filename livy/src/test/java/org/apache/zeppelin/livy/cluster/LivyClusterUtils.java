@@ -61,9 +61,10 @@ public class LivyClusterUtils {
             LivyCluster _cluster = null;
             try {
                 _cluster = new MiniCluster(config());
+                LivyCluster _finalCluster = _cluster;
                 Runtime.getRuntime().addShutdownHook(new Thread(() -> {
                     LOG.info("Shutting down cluster pool.");
-                    _cluster.cleanUp();
+                    _finalCluster.cleanUp();
                 }));
                 _cluster.deploy();
             } catch (Throwable e) {

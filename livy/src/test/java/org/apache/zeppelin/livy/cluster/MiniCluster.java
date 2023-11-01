@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -38,9 +39,9 @@ public class MiniCluster implements LivyCluster {
     private final Map<String, String> config;
 
     private String _livyEndpoint;
-    private Path _hdfsScrathDir;
+    private Path _hdfsScratchDir;
 
-    private File _tempDir = new File(System.getProperty("java.io.tmpdir") + "/livy-int-test");
+    private File _tempDir = new File(System.getProperty("java.io.tmpdir"), "livy-int-test");
     private File _sparkConfigDir;
     private File _configDir;
 
@@ -51,13 +52,6 @@ public class MiniCluster implements LivyCluster {
     public MiniCluster(Map<String, String> config) {
         this.config = config;
     }
-
-    // Explicitly remove the "test-lib" dependency from the classpath of child processes. We
-    // want tests to explicitly upload this jar when necessary, to test those code paths.
-//    String[] cp = System.getProperty("java.class.path").split(File.pathSeparator);
-//    String[] filtered = Arrays.stream(cp).filter(path -> !new File(path).getName().startsWith("livy-test-lib-")).;
-//    assert(cp.size != filtered.size, "livy-test-lib jar not found in classpath!")
-//    String childClasspath = filtered.mkString(File.pathSeparator)
 
     @Override
     public void deploy() {
@@ -80,11 +74,11 @@ public class MiniCluster implements LivyCluster {
 
         _configDir = mkdir("hadoop-conf", _tempDir);
         MiniClusterUtils.saveProperties(config, new File(_configDir, "cluster.conf"));
-        hdfs = Optional.of(start(MiniHdfsMain.getClass(), new File(_configDir, "core-site.xml")));
-        yarn = Optional.of(start(MiniYarnMain.getClass(), new File(_configDir, "yarn-site.xml")));
+        hdfs = Optional.of(start(MiniHdfsMain.class, new File(_configDir, "core-site.xml")));
+        yarn = Optional.of(start(MiniYarnMain.class, new File(_configDir, "yarn-site.xml")));
         runLivy();
 
-        _hdfsScrathDir = fs.makeQualified(new Path("/"));
+        _hdfsScratchDir = fs.makeQualified(new Path("/"));
     }
 
     private File mkdir(String name, File parent) {
@@ -98,9 +92,11 @@ public class MiniCluster implements LivyCluster {
 
     @Override
     public void cleanUp() {
-        Seq(hdfs, yarn, livy).flatten.foreach(stop)
+        hdfs.ifPresent(this::stop);
         hdfs = Optional.empty();
+        yarn.ifPresent(this::stop);
         yarn = Optional.empty();
+        livy.ifPresent(this::stop);
         livy = Optional.empty();
     }
 
@@ -114,7 +110,7 @@ public class MiniCluster implements LivyCluster {
         assertFalse(livy.isPresent());
         File confFile = new File(_configDir, "serverUrl.conf");
 
-        ProcessInfo localLivy = start(MiniLivyMain.getClass(), confFile);
+        ProcessInfo localLivy = start(MiniLivyMain.class, confFile);
 
         Map<String, String> props = MiniClusterUtils.loadProperties(confFile);
         _livyEndpoint = config.getOrDefault("livyEndpoint", props.get("livy.server.server-url"));
@@ -131,10 +127,9 @@ public class MiniCluster implements LivyCluster {
 
     @Override
     public void stopLivy() {
-        assertTrue(livy.isPresent());
-        livy.foreach(stop)
-        _livyEndpoint = null;
+        livy.ifPresent(this::stop);
         livy = Optional.empty();
+        _livyEndpoint = null;
     }
 
     @Override
@@ -144,61 +139,66 @@ public class MiniCluster implements LivyCluster {
 
     @Override
     public Path hdfsScratchDir() {
-        return _hdfsScrathDir;
+        return _hdfsScratchDir;
     }
 
-    private ProcessInfo start(
-            Class klass,
-            File configFile) {
+    private ProcessInfo start(Class<?> klass, File configFile) {
+        try {
+            String simpleName = StringUtils.stripEnd(klass.getSimpleName(), "$");
+            File procDir = mkdir(simpleName, _tempDir);
+            File procTmp = mkdir("tmp", procDir);
 
-        String simpleName = StringUtils.stripEnd(klass.getSimpleName(), "$");
-        File procDir = mkdir(simpleName, _tempDir);
-        File procTmp = mkdir("tmp", procDir);
+            // Before starting anything, clean up previous running sessions.
+            Runtime.getRuntime().exec(new String[]{"pkill", "-f", "simpleName"});
 
-        // Before starting anything, clean up previous running sessions.
-        sys.process.Process(s"pkill -f $simpleName") !
+            String[] cmd = new String[]{
+                    System.getProperty("java.home") + "/bin/java",
+                    "-Dtest.appender=console",
+                    "-Djava.io.tmpdir=" + procTmp.getAbsolutePath(),
+                    "-cp", _configDir.getAbsolutePath() + File.pathSeparator + System.getProperty("java.class.path"),
+                    StringUtils.stripEnd(klass.getName(), "$"),
+                    _configDir.getAbsolutePath()
+            };
 
-                val cmd =
-                Seq(
-                        System.getProperty("java.home") + "/bin/java",
-                        "-Dtest.appender=console",
-                        "-Djava.io.tmpdir=" + procTmp.getAbsolutePath(),
-                        "-cp", childClasspath + File.pathSeparator + _configDir.getAbsolutePath())++
-        Seq(
-                StringUtils.stripEnd(klass.getName(), "$"),
-                _configDir.getAbsolutePath());
+            File logFile = new File(procDir, "output.log");
+            ProcessBuilder pb = new ProcessBuilder(cmd)
+                    .directory(procDir)
+                    .redirectErrorStream(true)
+                    .redirectOutput(ProcessBuilder.Redirect.appendTo(logFile));
 
-        File logFile = new File(procDir, "output.log");
-        ProcessBuilder pb = new ProcessBuilder(cmd.toArray:_ *)
-            .directory(procDir)
-                .redirectErrorStream(true)
-                .redirectOutput(ProcessBuilder.Redirect.appendTo(logFile))
+            pb.environment().put("LIVY_CONF_DIR", _configDir.getAbsolutePath());
+            pb.environment().put("HADOOP_CONF_DIR", _configDir.getAbsolutePath());
+            pb.environment().put("SPARK_CONF_DIR", _sparkConfigDir.getAbsolutePath());
+            pb.environment().put("SPARK_LOCAL_IP", "127.0.0.1");
 
-        pb.environment().put("LIVY_CONF_DIR", _configDir.getAbsolutePath())
-        pb.environment().put("HADOOP_CONF_DIR", _configDir.getAbsolutePath())
-        pb.environment().put("SPARK_CONF_DIR", _sparkConfigDir.getAbsolutePath())
-        pb.environment().put("SPARK_LOCAL_IP", "127.0.0.1")
+            Process child = pb.start();
 
-        Process child = pb.start();
+            // Wait for the config file to show up before returning, so that dependent services
+            // can see the configuration. Exit early if process dies.
+            eventually(timeout(30seconds), interval(100millis)) {
+                assertTrue(configFile.isFile(), simpleName + " hasn't started yet.");
 
-        // Wait for the config file to show up before returning, so that dependent services
-        // can see the configuration. Exit early if process dies.
-        eventually(timeout(30seconds), interval(100 millis)) {
-            assert (configFile.isFile(),s "$simpleName hasn't started yet.")
-
-            try {
-                int exitCode = child.exitValue();
-                throw new IOException("Child process exited unexpectedly (exit code " + exitCode + ")");
-            } catch (IllegalThreadStateException its) {
-                // Try again.
+                try {
+                    int exitCode = child.exitValue();
+                    throw new IOException("Child process exited unexpectedly (exit code " + exitCode + ")");
+                } catch (IllegalThreadStateException its) {
+                    // Try again.
+                } catch (IOException rethrow) {
+                    throw rethrow;
+                }
             }
+            return new ProcessInfo(child, logFile);
+        } catch (IOException ioe) {
+            throw new UncheckedIOException(ioe);
         }
-
-        return new ProcessInfo(child, logFile);
     }
 
     private void stop(ProcessInfo svc) {
-        svc.process.destroy();
-        svc.process.waitFor();
+        try {
+            svc.process.destroy();
+            svc.process.waitFor();
+        } catch (InterruptedException ie) {
+            // do nothing
+        }
     }
 }
