@@ -17,18 +17,20 @@
 
 package org.apache.zeppelin.livy.cluster;
 
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.yarn.conf.YarnConfiguration;
-import org.apache.hadoop.yarn.server.MiniYARNCluster;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Stream;
 
 public class MiniLivyMain extends MiniClusterBase {
 
@@ -51,6 +53,11 @@ public class MiniLivyMain extends MiniClusterBase {
     @Override
     protected void start(MiniClusterConfig config, String configPath) {
         try {
+            String workingDir = Paths.get(".").toAbsolutePath().toString();
+            File outputFile = new File(workingDir, "output.log");
+            FileUtils.deleteQuietly(outputFile);
+            outputFile.createNewFile();
+
             Map<String, String> livyConf = baseLivyConf(configPath);
             // if (Cluster.isRunningOnTravis) {
             //   livyConf.put("livy.server.yarn.app-lookup-timeout", "2m");
@@ -62,19 +69,29 @@ public class MiniLivyMain extends MiniClusterBase {
                     .resolve("bin/livy-server")
                     .toAbsolutePath().toString();
 
-            ProcessBuilder livyServerPb = new ProcessBuilder(livyServerScript);
-            livyServerPb.environment().put("LIVY_CONF_DIR", configPath);
-            Process livyServerProcess = livyServerPb.start();
+            ProcessBuilder livyPb = new ProcessBuilder(livyServerScript);
+            livyPb.environment().put("LIVY_CONF_DIR", configPath);
+            livyPb.environment().put("LIVY_LOG_DIR", workingDir);
+            livyPb.redirectErrorStream(true);
+            livyPb.redirectOutput(outputFile);
+            Process livyProcess = livyPb.start();
 
-
-            // Write a serverUrl.conf file to the conf directory with the location of the Livy
-            // server. Do it atomically since it's used by MiniCluster to detect when the Livy server
-            // is up and ready.
-            eventually(timeout(30 seconds), interval(1 second)) {
-                var serverUrlConf = Map("livy.server.server-url" -> server.serverUrl())
-                MiniClusterUtils.saveProperties(serverUrlConf, new File(configPath + "/serverUrl.conf"));
+            // TODO run in new thread and add 30s timeout check
+            try (Stream<String> lines = Files.lines(outputFile.toPath(), StandardCharsets.UTF_8)) {
+                // An example of bootstrap log:
+                //   23/10/28 12:28:34 INFO WebServer: Starting server on http://my-laptop:8998
+                lines.filter(line -> line.contains("Starting server on")).findFirst().ifPresent(log -> {
+                            String serverUrl = StringUtils.substringAfter(log, "Starting server on").trim();
+                            // Write a serverUrl.conf file to the conf directory with the location of the Livy
+                            // server. Do it atomically since it's used by MiniCluster to detect when the Livy server
+                            // is up and ready.
+                            Map<String, String> serverUrlConf = new HashMap<>();
+                            serverUrlConf.put("livy.server.server-url", serverUrl);
+                            MiniClusterUtils.saveProperties(serverUrlConf, new File(configPath + "/serverUrl.conf"));
+                        }
+                );
             }
-        }catch (IOException ioe) {
+        } catch (IOException ioe) {
             throw new UncheckedIOException(ioe);
         }
     }

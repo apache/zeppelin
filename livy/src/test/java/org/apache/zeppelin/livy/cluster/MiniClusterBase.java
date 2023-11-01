@@ -29,7 +29,7 @@ public abstract class MiniClusterBase {
 
     public void main(String[] args) {
         String klass = getClass().getSimpleName();
-        LOG.info("{}  is starting up.", klass);
+        LOG.info("{} is starting up.", klass);
 
         String configPath = args[0];
 
@@ -38,7 +38,7 @@ public abstract class MiniClusterBase {
         MiniClusterConfig config = new MiniClusterConfig(props);
 
         start(config, configPath);
-        LOG.info("{} running.", klass);
+        LOG.info("{} is running.", klass);
         while (true) synchronized (this) {
             try {
                 wait();
