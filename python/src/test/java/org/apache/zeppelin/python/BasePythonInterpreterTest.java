@@ -311,6 +311,22 @@ public abstract class BasePythonInterpreterTest extends ConcurrentTestCase {
     assertEquals(InterpreterResult.Type.TABLE, interpreterResultMessages.get(0).getType());
     assertEquals("id\tname\n1\ta a\n2\tb b\n3\tc c\n", interpreterResultMessages.get(0).getData());
 
+    // Pandas DataFrame with sub type
+    context = getInterpreterContext();
+    result = interpreter.interpret("import pandas as pd\n" +
+        "class ExtendedDataFrame(pd.DataFrame):\n" +
+        "  pass\n" +
+        "df = ExtendedDataFrame({'id':[1,2,3], 'name':['a\ta','b\\nb','c\\r\\nc']})\n" +
+        "z.show(df)",
+        context);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code(),
+        context.out.toInterpreterResultMessage().toString());
+    interpreterResultMessages = context.out.toInterpreterResultMessage();
+    assertEquals(1, interpreterResultMessages.size());
+    assertEquals(InterpreterResult.Type.TABLE, interpreterResultMessages.get(0).getType());
+    assertEquals("id\tname\n1\ta a\n2\tb b\n3\tc c\n", interpreterResultMessages.get(0).getData());
+
+    // Pandas DataFrame limited to three results
     context = getInterpreterContext();
     result = interpreter.interpret("import pandas as pd\n" +
         "df = pd.DataFrame({'id':[1,2,3,4], 'name':['a','b','c', 'd']})\nz.show(df)", context);
