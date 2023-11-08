@@ -112,12 +112,12 @@ jobs:
           key: ${{ runner.os }}-zeppelin-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-zeppelin-
-      - name: Setup conda environment with python 3.7 and R
+      - name: Setup conda environment with python 3.9 and R
         uses: conda-incubator/setup-miniconda@v2
         with:
           activate-environment: python_3_with_R
           environment-file: testing/env_python_3_with_R.yml
-          python-version: 3.7
+          python-version: 3.9
           miniforge-variant: Mambaforge
           channels: conda-forge,defaults
           channel-priority: true

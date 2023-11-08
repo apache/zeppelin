@@ -1,4 +1,4 @@
-name: python_3_with_R_and_tensorflow
+name: python_3_with_R
 channels:
   - conda-forge
   - defaults
@@ -18,7 +18,6 @@ dependencies:
   - holoviews=1.16
   - plotnine
   - seaborn
-  - bokeh=2.4
   - intake
   - intake-parquet
   - intake-xarray
@@ -36,4 +35,3 @@ dependencies:
   - r-irkernel
   - r-shiny
   - r-googlevis
-  - tensorflow
