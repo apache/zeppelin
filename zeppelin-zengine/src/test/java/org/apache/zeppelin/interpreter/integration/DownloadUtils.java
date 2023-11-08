@@ -83,6 +83,25 @@ public class DownloadUtils {
       runShellCommand(new String[]{"wget",
               "https://repo1.maven.org/maven2/org/apache/flink/flink-shaded-hadoop2-uber/2.7.5-1.8.1/flink-shaded-hadoop2-uber-2.7.5-1.8.1.jar",
               "-P", targetFlinkHomeFolder + "/lib"});
+      runShellCommand(new String[]{"wget",
+              "https://repo1.maven.org/maven2/org/apache/flink/flink-table-api-scala_" + scalaVersion + "/"
+                      + flinkVersion + "/flink-table-api-scala_" + scalaVersion + "-" + flinkVersion + ".jar",
+              "-P", targetFlinkHomeFolder + "/lib"});
+      runShellCommand(new String[]{"wget",
+              "https://repo1.maven.org/maven2/org/apache/flink/flink-table-api-scala-bridge_" + scalaVersion + "/"
+                      + flinkVersion + "/flink-table-api-scala-bridge_" + scalaVersion + "-" + flinkVersion + ".jar",
+              "-P", targetFlinkHomeFolder + "/lib"});
+      runShellCommand(new String[]{"mv",
+              targetFlinkHomeFolder + "/opt/" + "flink-table-planner_" + scalaVersion + "-" + flinkVersion + ".jar",
+              targetFlinkHomeFolder + "/lib"});
+      runShellCommand(new String[]{"mv",
+              targetFlinkHomeFolder + "/lib/" + "flink-table-planner-loader-" + flinkVersion + ".jar",
+              targetFlinkHomeFolder + "/opt"});
+      if (SemanticVersion.of(flinkVersion).equalsOrNewerThan(SemanticVersion.of("1.16.0"))) {
+        runShellCommand(new String[]{"mv",
+                targetFlinkHomeFolder + "/opt/" + "flink-sql-client-" + flinkVersion + ".jar",
+                targetFlinkHomeFolder + "/lib"});
+      }
     } catch (Exception e) {
       throw new RuntimeException("Fail to download jar", e);
     }

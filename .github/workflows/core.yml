@@ -216,7 +216,7 @@ jobs:
             ${{ runner.os }}-zeppelin-
       - name: install environment
         run: |
-          ./mvnw install -DskipTests -Phadoop2 -Pintegration -pl zeppelin-interpreter-integration,zeppelin-web,spark-submit,spark/scala-2.12,spark/scala-2.13,markdown,flink-cmd,flink/flink-scala-2.12,jdbc,shell -am -Pflink-117  ${MAVEN_ARGS}
+          ./mvnw install -DskipTests -Phadoop2 -Pintegration -pl zeppelin-interpreter-integration,zeppelin-web,spark-submit,spark/scala-2.12,spark/scala-2.13,markdown,flink-cmd,flink/flink-scala-2.12,jdbc,shell -am -Pflink-117 ${MAVEN_ARGS}
           ./mvnw package -pl zeppelin-plugins -amd -DskipTests ${MAVEN_ARGS}
       - name: Setup conda environment with python 3.7 and R
         uses: conda-incubator/setup-miniconda@v2
