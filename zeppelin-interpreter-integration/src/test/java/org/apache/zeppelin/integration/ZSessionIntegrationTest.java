@@ -69,7 +69,7 @@ public class ZSessionIntegrationTest extends AbstractTestRestApi {
 
     notebook = TestUtils.getInstance(Notebook.class);
     sparkHome = DownloadUtils.downloadSpark("3.4.1", "3");
-    flinkHome = DownloadUtils.downloadFlink("1.17.1", "2.12");
+    flinkHome = DownloadUtils.downloadFlink("1.15.0", "2.12");
   }
 
   @AfterAll
