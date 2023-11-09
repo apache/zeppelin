@@ -78,7 +78,7 @@ public class DownloadUtils {
                       + flinkVersion + "/flink-hadoop-compatibility_" + scalaVersion + "-" + flinkVersion + ".jar",
               "-P", targetFlinkHomeFolder + "/lib"});
       runShellCommand(new String[]{"wget",
-              "https://repo1.maven.org/maven2/org/apache/hive/hive-exec/2.3.4/hive-exec-2.3.4.jar",
+              "https://repo1.maven.org/maven2/org/apache/hive/hive-exec/2.3.7/hive-exec-2.3.7.jar",
               "-P", targetFlinkHomeFolder + "/lib"});
       runShellCommand(new String[]{"wget",
               "https://repo1.maven.org/maven2/org/apache/flink/flink-shaded-hadoop2-uber/2.7.5-1.8.1/flink-shaded-hadoop2-uber-2.7.5-1.8.1.jar",
