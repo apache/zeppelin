@@ -36,27 +36,26 @@
     <modules>
         <module>flink-scala-parent</module>
         <module>flink-shims</module>
-        <module>flink1.13-shims</module>
-        <module>flink1.14-shims</module>
         <module>flink1.15-shims</module>
         <module>flink1.16-shims</module>
         <module>flink1.17-shims</module>
     </modules>
 
     <properties>
-        <flink1.13.version>1.13.2</flink1.13.version>
-        <flink1.14.version>1.14.0</flink1.14.version>
         <flink1.15.version>1.15.1</flink1.15.version>
         <flink1.16.version>1.16.0</flink1.16.version>
         <flink1.17.version>1.17.1</flink1.17.version>
 
-        <flink.scala.version>2.11.12</flink.scala.version>
-        <flink.scala.binary.version>2.11</flink.scala.binary.version>
+        <flink.scala.version>2.12.7</flink.scala.version>
+        <flink.scala.binary.version>2.12</flink.scala.binary.version>
     </properties>
 
     <profiles>
         <profile>
             <id>flink-117</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
             <!-- Flink 1.17 only support scala 2.12-->
             <modules>
                 <module>flink-scala-2.12</module>
@@ -78,26 +77,6 @@
                 <module>flink-scala-2.12</module>
             </modules>
         </profile>
-
-        <profile>
-            <id>flink-114</id>
-            <modules>
-                <module>flink-scala-2.11</module>
-                <module>flink-scala-2.12</module>
-            </modules>
-        </profile>
-
-        <profile>
-            <id>flink-113</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <modules>
-                <module>flink-scala-2.11</module>
-                <module>flink-scala-2.12</module>
-            </modules>
-        </profile>
-
     </profiles>
 
 </project>

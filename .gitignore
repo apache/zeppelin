@@ -67,6 +67,7 @@ zeppelin-web/yarn.lock
 /warehouse/
 /notebook/
 /local-repo/
+/notebook_*/
 
 **/sessions/
 **/data/
@@ -96,6 +97,9 @@ Thumbs.db
 # intelliJ IDEA project files
 .idea/
 *.iml
+
+# Jetbrains Fleet project files
+.fleet/
 
 # vscode project files
 .vscode/
@@ -132,3 +136,6 @@ tramp
 
 # jEnv file
 .java-version
+
+# pyenv file
+.python-version
