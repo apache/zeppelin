@@ -443,7 +443,7 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  - python=3.7 
+  - python=3.9
   - jupyter
   - grpcio
   - protobuf
