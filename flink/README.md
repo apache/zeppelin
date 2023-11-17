@@ -7,8 +7,7 @@ This is the doc for Zeppelin developers who want to work on flink interpreter.
 ### Project Structure
 
 Flink interpreter is more complex than other interpreter (such as jdbc, shell).
-
-Currently, it has the following modules are clustered into two groups:
+Currently, it has the following modules clustered into two groups:
 
 * flink-shims
 * flink1.15-shims
