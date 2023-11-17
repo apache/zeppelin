@@ -202,7 +202,6 @@ public class LivySparkSQLInterpreter extends BaseLivyInterpreter {
             .replace("\t", "\\t"));
       }
       rows.add(StringUtils.join(cells, "\t"));
-
     }
     return rows;
   }
