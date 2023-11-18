@@ -561,6 +561,9 @@
         </executions>
       </plugin>
     </plugins>
+
+    <outputDirectory>target/scala-${spark.scala.binary.version}/classes</outputDirectory>
+    <testOutputDirectory>target/scala-${spark.scala.binary.version}/test-classes</testOutputDirectory>
   </build>
 
   <profiles>

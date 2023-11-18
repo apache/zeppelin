@@ -22,7 +22,7 @@ import org.apache.zeppelin.display.angular.AbstractAngularElem
 import org.apache.zeppelin.display.{angular, AngularObject}
 import org.apache.zeppelin.interpreter.InterpreterContext
 
-import scala.collection.JavaConversions
+import scala.collection.JavaConverters._
 import scala.xml._
 
 /**
@@ -79,7 +79,7 @@ object AngularElem {
     val ic = InterpreterContext.get
     val registry = ic.getAngularObjectRegistry
 
-    JavaConversions.asScalaBuffer(registry.getAll(ic.getNoteId, ic.getParagraphId)).foreach(ao =>
+    registry.getAll(ic.getNoteId, ic.getParagraphId).asScala.foreach(ao =>
       registry.remove(ao.getName, ao.getNoteId, ao.getParagraphId)
     )
   }
