@@ -66,12 +66,11 @@ you can use this function like `setjdk 1.8` / `setjdk 1.7`
 # build `zeppelin-server` and its dependencies only
 ./mvnw clean package -pl 'spark,spark-dependencies,python,markdown,zeppelin-server' --am -DskipTests
 
-# build spark related modules with default profiles: scala 2.10 
+# build spark related modules with default profiles
 ./mvnw clean package -pl 'spark,spark-dependencies,zeppelin-server' --am -DskipTests
 
-# build spark related modules with profiles: scala 2.11, spark 2.1 hadoop 2.7 
-./dev/change_scala_version.sh 2.11
-./mvnw clean package -Pspark-2.1 -Phadoop-2.7 -Pscala-2.11 \
+# build spark related modules with profiles: scala 2.13, spark 3.5 hadoop 3.3
+./mvnw clean package -Pspark-scala-2.13 -Pspark-3.5 -Phadoop-3.3 \
 -pl 'spark,spark-dependencies,zeppelin-server' --am -DskipTests
 
 # build `zeppelin-server` and `markdown` with dependencies
