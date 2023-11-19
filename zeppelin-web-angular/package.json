@@ -36,7 +36,7 @@
     "highlight.js": "^9.15.8",
     "lodash": "^4.17.11",
     "mathjax": "2.7.5",
-    "monaco-editor": "0.18.1",
+    "monaco-editor": "0.15.1",
     "ng-zorro-antd": "^8.4.0",
     "ng1-template-updater": "0.0.4",
     "parse5": "^5.1.1",
