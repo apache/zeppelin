@@ -82,11 +82,11 @@ public class YarnAppMonitor {
                       String yarnDiagnostics = appReport.getDiagnostics();
                       interpreterManagedProcess.processStopped("Yarn diagnostics: " + yarnDiagnostics);
                       iter.remove();
-                      LOGGER.info("Remove {} from YarnAppMonitor, because its state is {}", appId ,
+                      LOGGER.info("Remove {} from YarnAppMonitor, because its state is {}", appId,
                               appReport.getYarnApplicationState());
                     } else if (appReport.getYarnApplicationState() == YarnApplicationState.FINISHED) {
                       iter.remove();
-                      LOGGER.info("Remove {} from YarnAppMonitor, because its state is ", appId,
+                      LOGGER.info("Remove {} from YarnAppMonitor, because its state is {}", appId,
                               appReport.getYarnApplicationState());
                     }
                   }
