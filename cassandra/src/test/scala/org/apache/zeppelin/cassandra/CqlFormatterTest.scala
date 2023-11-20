@@ -23,13 +23,13 @@ import java.util.Properties
 
 import com.datastax.oss.driver.api.core.`type`.DataTypes
 import com.datastax.oss.driver.api.core.`type`.codec.registry.CodecRegistry
-import org.scalatest.{BeforeAndAfterEach, FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfterEach
+import org.scalatest.flatspec._
+import org.scalatest.matchers.should.Matchers._
 
 import scala.collection.JavaConverters._
 
-class CqlFormatterTest extends FlatSpec
-  with BeforeAndAfterEach
-  with Matchers {
+class CqlFormatterTest extends AnyFlatSpec with BeforeAndAfterEach {
 
   val longVal: java.lang.Long = java.lang.Long.valueOf(12345678901L)
   val floatVal: java.lang.Float = java.lang.Float.valueOf(123.456789f)

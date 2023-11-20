@@ -39,12 +39,10 @@
         <!-- test library versions -->
         <jna.version>5.12.1</jna.version>
         <cassandra.unit.version>4.3.1.0</cassandra.unit.version>
-        <scalecheck.version>1.17.0</scalecheck.version>
 
         <scala.version>${scala.2.12.version}</scala.version>
         <scala.binary.version>2.12</scala.binary.version>
         <scala.parser.combinators>1.1.2</scala.parser.combinators>
-        <cassandra.scalatest.version>3.2.0-SNAP10</cassandra.scalatest.version>
 
         <interpreter.name>cassandra</interpreter.name>
     </properties>
@@ -127,14 +125,14 @@
         <dependency>
             <groupId>org.scalatest</groupId>
             <artifactId>scalatest_${scala.binary.version}</artifactId>
-            <version>${cassandra.scalatest.version}</version>
+            <version>${scalatest.version}</version>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>org.scalacheck</groupId>
             <artifactId>scalacheck_${scala.binary.version}</artifactId>
-            <version>${scalecheck.version}</version>
+            <version>${scalacheck.version}</version>
             <scope>test</scope>
         </dependency>
 

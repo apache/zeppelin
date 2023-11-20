@@ -16,17 +16,18 @@
  */
 package org.apache.zeppelin.display.angular
 
-import org.apache.zeppelin.display.{AngularObjectRegistry, GUI}
+import org.apache.zeppelin.display.AngularObjectRegistry
 import org.apache.zeppelin.interpreter._
-import org.apache.zeppelin.user.AuthenticationInfo
+import org.scalatest.{BeforeAndAfter, BeforeAndAfterEach}
 import org.scalatest.concurrent.Eventually
-import org.scalatest.{BeforeAndAfter, BeforeAndAfterEach, FlatSpec, Matchers}
+import org.scalatest.flatspec._
+import org.scalatest.matchers.should.Matchers._
 
 /**
   * Abstract Test for AngularModel
   */
-trait AbstractAngularModelTest extends FlatSpec
-with BeforeAndAfter with BeforeAndAfterEach with Eventually with Matchers {
+trait AbstractAngularModelTest extends AnyFlatSpec
+with BeforeAndAfter with BeforeAndAfterEach with Eventually {
   override def beforeEach() {
     val intpGroup = new InterpreterGroup()
     val context = InterpreterContext.builder

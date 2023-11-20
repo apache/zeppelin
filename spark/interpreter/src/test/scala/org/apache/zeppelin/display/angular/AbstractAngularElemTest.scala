@@ -17,20 +17,20 @@
 package org.apache.zeppelin.display.angular
 
 import java.io.{ByteArrayOutputStream, PrintStream}
-import java.util
 
-import org.apache.zeppelin.display.{AngularObject, AngularObjectRegistry, GUI}
+import org.apache.zeppelin.display.{AngularObject, AngularObjectRegistry}
 import org.apache.zeppelin.interpreter._
-import org.apache.zeppelin.user.AuthenticationInfo
+import org.scalatest.{BeforeAndAfter, BeforeAndAfterEach}
 import org.scalatest.concurrent.Eventually
+import org.scalatest.flatspec._
+import org.scalatest.matchers.should.Matchers._
 import org.scalatest.time.{Seconds, Span}
-import org.scalatest.{BeforeAndAfter, BeforeAndAfterEach, FlatSpec, Matchers}
 
 /**
   * Test
   */
 trait AbstractAngularElemTest
-  extends FlatSpec with BeforeAndAfter with BeforeAndAfterEach with Eventually with Matchers {
+  extends AnyFlatSpec with BeforeAndAfter with BeforeAndAfterEach with Eventually {
 
   override def beforeEach() {
     val intpGroup = new InterpreterGroup()

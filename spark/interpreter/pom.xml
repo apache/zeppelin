@@ -68,19 +68,6 @@
   <dependencies>
     <dependency>
       <groupId>org.apache.zeppelin</groupId>
-      <artifactId>zeppelin-display</artifactId>
-      <version>${project.version}</version>
-      <exclusions>
-        <!-- use scala-xml from spark -->
-        <exclusion>
-          <groupId>org.scala-lang.modules</groupId>
-          <artifactId>scala-xml_${scala.binary.version}</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.zeppelin</groupId>
       <artifactId>spark3-shims</artifactId>
       <version>${project.version}</version>
     </dependency>
@@ -217,7 +204,7 @@
       <version>${spark.version}</version>
       <scope>provided</scope>
     </dependency>
-      
+
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-exec</artifactId>
@@ -312,6 +299,19 @@
       <scope>test</scope>
     </dependency>
 
+    <dependency>
+      <groupId>org.scalatest</groupId>
+      <artifactId>scalatest_${spark.scala.binary.version}</artifactId>
+      <version>${scalatest.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.scalacheck</groupId>
+      <artifactId>scalacheck_${spark.scala.binary.version}</artifactId>
+      <version>${scalacheck.version}</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
@@ -484,7 +484,86 @@
           </execution>
         </executions>
       </plugin>
+
+      <plugin>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>integration-test</goal>
+              <goal>verify</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <argLine>-Xmx2048m</argLine>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>net.alchim31.maven</groupId>
+        <artifactId>scala-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>eclipse-add-source</id>
+            <goals>
+              <goal>add-source</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>scala-compile-first</id>
+            <phase>process-resources</phase>
+            <goals>
+              <goal>compile</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>scala-test-compile-first</id>
+            <phase>process-test-resources</phase>
+            <goals>
+              <goal>testCompile</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <scalaVersion>${spark.scala.version}</scalaVersion>
+          <args>
+            <arg>-unchecked</arg>
+            <arg>-deprecation</arg>
+            <arg>-feature</arg>
+            <arg>-nobootcp</arg>
+          </args>
+          <jvmArgs>
+            <jvmArg>-Xms1024m</jvmArg>
+            <jvmArg>-Xmx1024m</jvmArg>
+            <jvmArg>-XX:MaxMetaspaceSize=${MaxMetaspace}</jvmArg>
+          </jvmArgs>
+          <javacArgs>
+            <javacArg>-source</javacArg>
+            <javacArg>${java.version}</javacArg>
+            <javacArg>-target</javacArg>
+            <javacArg>${java.version}</javacArg>
+            <javacArg>-Xlint:all,-serial,-path,-options</javacArg>
+          </javacArgs>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.scalatest</groupId>
+        <artifactId>scalatest-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>test</id>
+            <goals>
+              <goal>test</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
+
+    <outputDirectory>target/scala-${spark.scala.binary.version}/classes</outputDirectory>
+    <testOutputDirectory>target/scala-${spark.scala.binary.version}/test-classes</testOutputDirectory>
   </build>
 
   <profiles>
@@ -514,9 +593,6 @@
     <profile>
       <id>spark-3.5</id>
       <properties>
-        <datanucleus.core.version>4.1.17</datanucleus.core.version>
-        <datanucleus.rdbms.version>4.1.19</datanucleus.rdbms.version>
-        <datanucleus.apijdo.version>4.2.4</datanucleus.apijdo.version>
         <spark.version>3.5.0</spark.version>
         <protobuf.version>3.21.12</protobuf.version>
         <py4j.version>0.10.9.7</py4j.version>
@@ -529,9 +605,6 @@
         <activeByDefault>true</activeByDefault>
       </activation>
       <properties>
-        <datanucleus.core.version>4.1.17</datanucleus.core.version>
-        <datanucleus.rdbms.version>4.1.19</datanucleus.rdbms.version>
-        <datanucleus.apijdo.version>4.2.4</datanucleus.apijdo.version>
         <spark.version>3.4.1</spark.version>
         <protobuf.version>3.21.12</protobuf.version>
         <py4j.version>0.10.9.7</py4j.version>
@@ -541,9 +614,6 @@
     <profile>
       <id>spark-3.3</id>
       <properties>
-        <datanucleus.core.version>4.1.17</datanucleus.core.version>
-        <datanucleus.rdbms.version>4.1.19</datanucleus.rdbms.version>
-        <datanucleus.apijdo.version>4.2.4</datanucleus.apijdo.version>
         <spark.version>3.3.3</spark.version>
         <protobuf.version>2.5.0</protobuf.version>
         <py4j.version>0.10.9.5</py4j.version>
@@ -553,9 +623,6 @@
     <profile>
       <id>spark-3.2</id>
       <properties>
-        <datanucleus.core.version>4.1.17</datanucleus.core.version>
-        <datanucleus.rdbms.version>4.1.19</datanucleus.rdbms.version>
-        <datanucleus.apijdo.version>4.2.4</datanucleus.apijdo.version>
         <spark.version>3.2.4</spark.version>
         <protobuf.version>2.5.0</protobuf.version>
         <py4j.version>0.10.9.5</py4j.version>
