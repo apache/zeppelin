@@ -18,7 +18,8 @@
 package org.apache.zeppelin.livy;
 
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -180,15 +181,20 @@ public class LivySparkSQLInterpreter extends BaseLivyInterpreter {
     List<String> rows = new ArrayList<>();
 
     String[] rowsOutput = output.split("(?<!\\\\)\\n");
+
+    if (rowsOutput.length < 2){
+      return Arrays.asList(rowsOutput);
+    }
+
     String[] header = rowsOutput[1].split("\t");
     List<String> cells = new ArrayList<>(Arrays.asList(header));
     rows.add(StringUtils.join(cells, "\t"));
 
     for (int i = 2; i < rowsOutput.length; i++) {
-      Map<String, String> retMap = new Gson().fromJson(
-          rowsOutput[i], new TypeToken<HashMap<String, String>>() {
-          }.getType()
-      );
+      // one-by-one serialization to handle the case when
+      // the value is non-primitive such as: {"lang": ["java", "NodeJS"]}.
+      Map<String, String> retMap = deserialize(rowsOutput[i]);
+
       cells = new ArrayList<>();
       for (String s : header) {
         cells.add(retMap.getOrDefault(s, "null")
@@ -198,6 +204,26 @@ public class LivySparkSQLInterpreter extends BaseLivyInterpreter {
       rows.add(StringUtils.join(cells, "\t"));
     }
     return rows;
+  }
+
+  private Map<String, String> deserialize(String jsonString) {
+    Map<String, String> map = new HashMap<>();
+    Gson gson = new Gson();
+    JsonElement jsonElement = gson.fromJson(jsonString, JsonElement.class);
+    JsonObject jsonObject = jsonElement.getAsJsonObject();
+
+    for (Map.Entry<String, JsonElement> entry : jsonObject.entrySet()) {
+      String key = entry.getKey();
+      JsonElement value = entry.getValue();
+
+      if (value.isJsonPrimitive()) {
+        map.put(key, value.getAsString());
+      } else {
+        map.put(key, value.toString());
+      }
+
+    }
+    return map;
   }
 
   protected List<String> parseSQLOutput(String str) {
