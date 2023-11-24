@@ -118,7 +118,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-zeppelin-
       - name: install environment
-        run: ./mvnw install -DskipTests -am -pl ${INTERPRETERS} -Pscala-2.11 ${MAVEN_ARGS}
+        run: ./mvnw install -DskipTests -am -pl ${INTERPRETERS} ${MAVEN_ARGS}
       - name: Setup conda environment with python 3.9 and R
         uses: conda-incubator/setup-miniconda@v2
         with:
@@ -131,7 +131,7 @@ jobs:
           auto-activate-base: false
           use-mamba: true
       - name: verify interpreter
-        run: ./mvnw verify -am -pl ${INTERPRETERS} -Pscala-2.11 ${MAVEN_ARGS}
+        run: ./mvnw verify -am -pl ${INTERPRETERS} ${MAVEN_ARGS}
 
   # test interpreter modules for jupyter, python, rlang
   interpreter-test-jupyter-python-rlang:

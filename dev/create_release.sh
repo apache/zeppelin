@@ -42,7 +42,6 @@ done
 
 RELEASE_VERSION="$1"
 GIT_TAG="$2"
-SCALA_VERSION="2.11"
 
 function make_source_package() {
   # create source package
@@ -98,9 +97,9 @@ function make_binary_release() {
 git_clone
 make_source_package
 
-make_binary_release netinst "-Pweb-angular -Phadoop-2.6 -pl !hbase,!jdbc,!file,!flink,!cassandra,!elasticsearch,!bigquery,!alluxio,!livy,!groovy,!java,!neo4j,!submarine,!sparql,!mongodb -am"
+make_binary_release netinst "-Pweb-angular -pl !hbase,!jdbc,!file,!flink,!cassandra,!elasticsearch,!bigquery,!alluxio,!livy,!groovy,!java,!neo4j,!submarine,!sparql,!mongodb -am"
 
-make_binary_release all "-Pweb-angular -Phadoop-2.6"
+make_binary_release all "-Pweb-angular"
 
 # remove non release files and dirs
 rm -rf "${WORKING_DIR}/zeppelin"

@@ -1708,21 +1708,6 @@
 
   <profiles>
     <profile>
-      <id>scala-2.11</id>
-      <properties>
-        <scala.version>${scala.2.11.version}</scala.version>
-        <scala.binary.version>2.11</scala.binary.version>
-      </properties>
-    </profile>
-    <profile>
-      <id>scala-2.12</id>
-      <properties>
-        <scala.version>${scala.2.12.version}</scala.version>
-        <scala.binary.version>2.12</scala.binary.version>
-      </properties>
-    </profile>
-
-    <profile>
       <id>web-angular</id>
       <modules>
         <module>zeppelin-web-angular</module>

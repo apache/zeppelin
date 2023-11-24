@@ -79,18 +79,6 @@ You can directly start Zeppelin by running the following command after successfu
 
 ### Build profiles
 
-
-#### Scala profile
-
-To be noticed, this scala profile affect the modules (e.g. cassandra) that use scala except Spark interpreter (Spark interpreter use other profiles to control its scala version, see the doc below).
-
-Set scala version (default 2.11). Available profiles are
-
-```
--Pscala-2.11
--Pscala-2.12
-```
-
 #### Spark Interpreter
 
 To be noticed, the spark profiles here only affect the unit test (no need to specify `SPARK_HOME`) of spark interpreter. 
