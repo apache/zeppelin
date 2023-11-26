@@ -773,6 +773,18 @@
           <groupId>org.apache.hbase</groupId>
         </exclusion>
         <exclusion>
+          <groupId>org.apache.hbase</groupId>
+          <artifactId>hbase-client</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.hbase</groupId>
+          <artifactId>hbase-common</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.hbase</groupId>
+          <artifactId>hbase-server</artifactId>
+        </exclusion>
+        <exclusion>
           <groupId>log4j</groupId>
           <artifactId>log4j</artifactId>
         </exclusion>
@@ -989,12 +1001,12 @@
       <artifactId>slf4j-api</artifactId>
     </dependency>
 
-<!--    <dependency>-->
-<!--      <groupId>com.lmax</groupId>-->
-<!--      <artifactId>disruptor</artifactId>-->
-<!--      <version>3.4.4</version>-->
-<!--      <scope>test</scope>-->
-<!--    </dependency>-->
+    <dependency>
+      <groupId>com.lmax</groupId>
+      <artifactId>disruptor</artifactId>
+      <version>3.4.4</version>
+      <scope>test</scope>
+    </dependency>
 
     <dependency>
       <groupId>org.junit.jupiter</groupId>
