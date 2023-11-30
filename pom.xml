@@ -177,7 +177,6 @@
     <plugin.download.version>1.6.0</plugin.download.version>
     <plugin.enforcer.version>3.0.0-M3</plugin.enforcer.version>
     <plugin.exec.version>1.6.0</plugin.exec.version>
-    <plugin.failsafe.version>2.17</plugin.failsafe.version>
     <plugin.git.commit.id.version>4.0.0</plugin.git.commit.id.version>
     <plugin.gpg.version>1.6</plugin.gpg.version>
     <plugin.jar.version>3.2.0</plugin.jar.version>
@@ -193,7 +192,7 @@
     <plugin.scalatest.version>2.0.0</plugin.scalatest.version>
     <plugin.scm.version>1.11.2</plugin.scm.version>
     <plugin.source.version>3.2.1</plugin.source.version>
-    <plugin.surefire.version>2.22.2</plugin.surefire.version>
+    <plugin.surefire.version>3.2.2</plugin.surefire.version>
     <plugin.os.version>1.4.1.Final</plugin.os.version>
 
     <testcontainers.version>1.19.0</testcontainers.version>
@@ -1646,7 +1645,7 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-failsafe-plugin</artifactId>
-          <version>${plugin.failsafe.version}</version>
+          <version>${plugin.surefire.version}</version>
         </plugin>
 
         <plugin>
