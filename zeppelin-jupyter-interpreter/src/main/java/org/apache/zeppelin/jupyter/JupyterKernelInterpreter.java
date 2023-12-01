@@ -191,7 +191,9 @@ public class JupyterKernelInterpreter extends AbstractInterpreter {
         String freezeOutput = IOUtils.toString(in, StandardCharsets.UTF_8);
         for (PythonPackagePredicate<String> packagePredicate : getRequiredPackagesPredicates()) {
           if (!packagePredicate.test(freezeOutput)) {
-            return packagePredicate + " is not installed, installed packages:\n" + freezeOutput;
+            return packagePredicate + " is not installed, python: " + pythonExec +
+                    ", conda_env=" + getProperty("zeppelin.interpreter.conda.env.name") +
+                    ", installed packages:\n" + freezeOutput;
           }
         }
         LOGGER.info("Prerequisite for kernel {} is met", getKernelName());
