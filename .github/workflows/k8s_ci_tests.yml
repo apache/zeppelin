@@ -1,0 +1,127 @@
+name: k8s_ci_tests
+on:
+  push:
+  pull_request:
+    branches:
+      - master
+      - branch-*
+    types: [opened, synchronize]
+
+env:
+  # Disable keepAlive and pool
+  # https://github.com/actions/virtual-environments/issues/1499#issuecomment-689467080
+  MAVEN_OPTS: >-
+    -Xms1024M -Xmx2048M -XX:MaxMetaspaceSize=1024m -XX:-UseGCOverheadLimit -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+    -Dhttp.keepAlive=false
+    -Dmaven.wagon.http.pool=false
+    -Dmaven.wagon.http.retryHandler.count=3
+  ZEPPELIN_HELIUM_REGISTRY: helium
+  SPARK_PRINT_LAUNCH_COMMAND: "true"
+
+# Use the bash login, because we are using miniconda
+defaults:
+  run:
+    shell: bash -l {0}
+
+jobs:
+  test-kubernetes-mode:
+    runs-on: ubuntu-20.04
+    strategy:
+      fail-fast: false
+      matrix:
+        sparkVersion: [spark-3.1.2/spark-3.1.2-bin-hadoop3.2, spark-3.1.2/spark-3.1.2-bin-hadoop2.7]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Tune Runner VM
+        uses: ./.github/actions/tune-runner-vm
+      - name: Set up JDK 8
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'adopt'
+          java-version: 8
+      - name: Install socat (For Minikube to use port-forwarding)
+        run: sudo apt-get -y install socat
+      - name: Cache local Maven repository
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.m2/repository
+            !~/.m2/repository/org/apache/zeppelin/
+          key: ${{ runner.os }}-zeppelin-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-zeppelin-
+      - name: build the final distribution
+        run: |
+          mvn install -DskipRat -DskipTests -Pintegration -pl zeppelin-interpreter-integration,zeppelin-server,zeppelin-web,spark-submit,spark/spark-dependencies,markdown,angular,shell -am -B
+          mvn package -DskipRat -DskipTests -pl zeppelin-plugins -amd -B
+          mvn package -Pbuild-distr -DskipRat -DskipTests -pl zeppelin-distribution -am -Pbuild-distr
+      - name: check the final distribution
+        run: ls -l zeppelin-distribution/target
+      - name: set up and start minikube cluster
+        #uses: medyagh/setup-minikube@master
+        uses: manusa/actions-setup-minikube@v2.4.2
+        with:
+          minikube version: 'v1.16.0'
+          kubernetes version: 'v1.19.2'
+      - name: verify minikube
+        run: |
+          env
+          # wait for the minikube to start
+          sleep 2m
+          kubectl get pods -A
+          kubectl cluster-info
+          kubectl describe nodes
+      - name: switch docker daemon
+        run: eval $(minikube -p minikube docker-env)
+      - name: download spark and build images
+        run: |
+          wget -O ~/spark.tgz https://downloads.apache.org/spark/${{ matrix.sparkVersion }}.tgz
+          tar -zxvf ~/spark.tgz -C /opt
+          mv /opt/spark-* /opt/spark
+          export SPARK_HOME=/opt/spark
+          cd /opt/spark/
+          # change the kerserver keys.gnupg.net to keyserver.ubuntu.com (https://github.com/apache/spark/pull/33071)
+          # sed -i 's/keys.gnupg.net/keyserver.ubuntu.com/g' ./kubernetes/dockerfiles/spark/bindings/R/Dockerfile
+          # cat ./kubernetes/dockerfiles/spark/bindings/R/Dockerfile
+          # install python3.7 in spark-py image, to make sure the python version is the same between driver and worker
+          sed -i 's/apt install -y python3 python3-pip && \\/apt install -y wget/' ./kubernetes/dockerfiles/spark/bindings/python/Dockerfile
+          sed -i '29,31c ARG miniconda_version="py37_4.9.2"\nARG miniconda_sha256="79510c6e7bd9e012856e25dcb21b3e093aa4ac8113d9aa7e82a86987eabe1c31"\nRUN set -ex && \\ \n    wget -nv https://repo.anaconda.com/miniconda/Miniconda3-${miniconda_version}-Linux-x86_64.sh -O miniconda.sh && \\ \n    echo "${miniconda_sha256} miniconda.sh" > anaconda.sha256 && \\ \n    sha256sum --strict -c anaconda.sha256 && \\ \n    bash miniconda.sh -b -p /opt/conda && \\ \n    export PATH=/opt/conda/bin:$PATH && \\ \n    conda config --set always_yes yes --set changeps1 no && \\ \n    conda info -a \nENV PATH \/opt\/conda\/bin:$PATH' ./kubernetes/dockerfiles/spark/bindings/python/Dockerfile
+          cat ./kubernetes/dockerfiles/spark/bindings/python/Dockerfile
+          ./bin/docker-image-tool.sh -r local -t latest -p ./kubernetes/dockerfiles/spark/bindings/python/Dockerfile build
+          # ./bin/docker-image-tool.sh -r local -t latest -R ./kubernetes/dockerfiles/spark/bindings/R/Dockerfile build
+          echo -n "verifying images:"
+          docker images
+      - name: build zeppelin docker images
+        run: |
+          # move the distribution tar.gz file and remove the version information
+          ls -l ./zeppelin-distribution/target/
+          mv ./zeppelin-distribution/target/zeppelin-*.tar.gz ./scripts/docker/zeppelin/build-from-distribution/zeppelin-bin.tar.gz
+          ls -l ./scripts/docker/zeppelin/build-from-distribution/
+          # copy the properties
+          cp ./scripts/docker/zeppelin/bin/log4j.properties ./scripts/docker/zeppelin/build-from-distribution/
+          cp ./scripts/docker/zeppelin/bin/log4j2.properties ./scripts/docker/zeppelin/build-from-distribution/
+          cp ./scripts/docker/zeppelin/bin/log4j_docker.properties ./scripts/docker/zeppelin/build-from-distribution/
+          cp ./scripts/docker/zeppelin/bin/log4j2_docker.properties ./scripts/docker/zeppelin/build-from-distribution/
+          # build the zeppelin docer image
+          docker build --progress=plain -f ./scripts/docker/zeppelin/build-from-distribution/Dockerfile -t local/zeppelin:latest ./scripts/docker/zeppelin/build-from-distribution/
+          echo -n "verifying images:"
+          docker images
+      - name: mvn testing
+        run: |
+          export SERVICE_DOMAIN=mydomain
+          # Run the maven test classes about the minikube test
+          mvn test -DskipRat -Dtest=K8sMinikubeTestBasic,K8sMinikubeTestPySpark -pl zeppelin-interpreter-integration -B -Pintegration -DfailIfNoTests=false
+      - name: Cat minikube logs
+        if: failure()
+        run: |
+          kubectl get pods -A
+          minikube logs
+          minikube logs > ~/minikube_logs.log
+      - name: Upload minikube logs
+        uses: actions/upload-artifact@v2
+        if: failure()
+        with:
+          name: minikube-logs
+          path: ~/minikube_logs.log
+          retention-days: 7
