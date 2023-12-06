@@ -342,9 +342,11 @@ jobs:
           auto-activate-base: false
           use-mamba: true
       - name: Make IRkernel available to Jupyter
+        shell: bash -el {0}
         run: |
           R -e "IRkernel::installspec()"
       - name: run tests on hadoop${{ matrix.hadoop }}
+        shell: bash -el {0}
         run: |
           conda activate python_3_with_R
           export PYSPARK_PYTHON=`which python`
