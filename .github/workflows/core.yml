@@ -346,6 +346,7 @@ jobs:
           R -e "IRkernel::installspec()"
       - name: run tests on hadoop${{ matrix.hadoop }}
         run: |
+          conda activate python_3_with_R
           export PYSPARK_PYTHON=`which python`
           echo "PYSPARK_PYTHON=$PYSPARK_PYTHON"
           echo "PATH=$PATH"
