@@ -347,6 +347,8 @@ jobs:
       - name: run tests on hadoop${{ matrix.hadoop }}
         run: |
           export PYSPARK_PYTHON=`which python`
+          echo "PYSPARK_PYTHON=$PYSPARK_PYTHON"
+          echo "PATH=$PATH"
           ./mvnw test -pl zeppelin-interpreter-integration -Phadoop${{ matrix.hadoop }} -Pintegration -Dtest=SparkSubmitIntegrationTest,ZeppelinSparkClusterTest32,SparkIntegrationTest32,ZeppelinSparkClusterTest33,SparkIntegrationTest33 -DfailIfNoTests=false ${MAVEN_ARGS}
 
   # test on spark for each spark version & scala version
