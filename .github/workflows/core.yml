@@ -330,8 +330,8 @@ jobs:
         shell: bash
         run: |
           whoami
-          apt-get update -y
-          apt-get install -y r-base r-cran-data.table r-cran-evaluate r-cran-base64enc r-cran-knitr r-cran-ggplot2 r-cran-irkernel r-cran-shiny r-cran-googlevis
+          sudo apt-get update -y
+          sudo apt-get install -y r-base r-cran-data.table r-cran-evaluate r-cran-base64enc r-cran-knitr r-cran-ggplot2 r-cran-irkernel r-cran-shiny r-cran-googlevis
       - name: install environment
         run: |
           ./mvnw install -DskipTests -pl zeppelin-interpreter-integration,zeppelin-web,spark-submit,spark/scala-2.12,spark/scala-2.13,markdown -am -Phadoop2 -Pintegration ${MAVEN_ARGS}
