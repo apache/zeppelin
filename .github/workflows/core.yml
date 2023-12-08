@@ -341,6 +341,10 @@ jobs:
           channel-priority: true
           auto-activate-base: false
           use-mamba: true
+      - name: Install R
+        run: |
+          apt-get update -y
+          apt-get install -y r-base r-cran-data.table r-cran-evaluate r-cran-base64enc r-cran-knitr r-cran-ggplot2 r-cran-irkernel r-cran-shiny r-cran-googlevis
       - name: Make IRkernel available to Jupyter
         shell: bash -el {0}
         run: |
