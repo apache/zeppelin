@@ -326,6 +326,10 @@ jobs:
           key: ${{ runner.os }}-zeppelin-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-zeppelin-
+      - name: Install R
+        run: |
+          apt-get update -y
+          apt-get install -y r-base r-cran-data.table r-cran-evaluate r-cran-base64enc r-cran-knitr r-cran-ggplot2 r-cran-irkernel r-cran-shiny r-cran-googlevis
       - name: install environment
         run: |
           ./mvnw install -DskipTests -pl zeppelin-interpreter-integration,zeppelin-web,spark-submit,spark/scala-2.12,spark/scala-2.13,markdown -am -Phadoop2 -Pintegration ${MAVEN_ARGS}
@@ -341,10 +345,6 @@ jobs:
           channel-priority: true
           auto-activate-base: false
           use-mamba: true
-      - name: Install R
-        run: |
-          apt-get update -y
-          apt-get install -y r-base r-cran-data.table r-cran-evaluate r-cran-base64enc r-cran-knitr r-cran-ggplot2 r-cran-irkernel r-cran-shiny r-cran-googlevis
       - name: Make IRkernel available to Jupyter
         shell: bash -el {0}
         run: |
