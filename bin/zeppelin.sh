@@ -129,6 +129,10 @@ if [[ "${USE_HADOOP}" != "false"  ]]; then
   fi
 fi
 
+if [[ -n "${HADOOP_CLASSPATH}" ]] && [[ -d "${HADOOP_CLASSPATH}" ]]; then
+  ZEPPELIN_CLASSPATH+=":${HADOOP_CLASSPATH}"
+fi
+
 if [[ ! -d "${ZEPPELIN_LOG_DIR}" ]]; then
   echo "Log dir doesn't exist, create ${ZEPPELIN_LOG_DIR}"
   mkdir -p "${ZEPPELIN_LOG_DIR}"
