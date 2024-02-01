@@ -23,19 +23,21 @@ import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.user.AuthenticationInfo;
 
+import com.google.gson.Gson;
+
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class InMemoryNotebookRepo implements NotebookRepo {
+public class InMemoryNotebookRepo extends AbstractNotebookRepo {
 
   private Map<String, Note> notes = new HashMap<>();
 
   @Override
-  public void init(ZeppelinConfiguration zConf) throws IOException {
-
+  public void init(ZeppelinConfiguration zConf, Gson gson) throws IOException {
+    super.init(zConf, gson);
   }
 
   @Override
@@ -118,5 +120,10 @@ public class InMemoryNotebookRepo implements NotebookRepo {
 
   public void reset() {
     this.notes.clear();
+  }
+
+  @Override
+  public Gson getGson() {
+    return gson;
   }
 }

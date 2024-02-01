@@ -49,8 +49,7 @@ public abstract class AbstractDependencyResolver {
   protected RepositorySystemSession session;
   private Proxy proxy = null;
 
-  public AbstractDependencyResolver(String localRepoPath) {
-    ZeppelinConfiguration conf = ZeppelinConfiguration.create();
+  protected AbstractDependencyResolver(String localRepoPath, ZeppelinConfiguration conf) {
     if (conf.getZeppelinProxyUrl() != null) {
       try {
         URL proxyUrl = new URL(conf.getZeppelinProxyUrl());
@@ -61,14 +60,15 @@ public abstract class AbstractDependencyResolver {
       }
     }
     session = Booter.newRepositorySystemSession(system, localRepoPath);
-    repos.addAll(Booter.newCentralRepositorys(proxy)); // add maven central
+    repos.addAll(Booter.newCentralRepositorys(proxy, conf)); // add maven central
     repos.add(Booter.newLocalRepository());
   }
 
-  public AbstractDependencyResolver(String localRepoPath, Proxy proxy) {
+  protected AbstractDependencyResolver(String localRepoPath, Proxy proxy,
+      ZeppelinConfiguration conf) {
     this.proxy = proxy;
     session = Booter.newRepositorySystemSession(system, localRepoPath);
-    repos.addAll(Booter.newCentralRepositorys(proxy)); // add maven central
+    repos.addAll(Booter.newCentralRepositorys(proxy, conf)); // add maven central
     repos.add(Booter.newLocalRepository());
   }
 

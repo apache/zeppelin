@@ -42,14 +42,17 @@ public class ManagedInterpreterGroup extends InterpreterGroup {
   private InterpreterSetting interpreterSetting;
   private RemoteInterpreterProcess remoteInterpreterProcess; // attached remote interpreter process
   private Object interpreterProcessCreationLock = new Object();
+  private final ZeppelinConfiguration zConf;
 
   /**
    * Create InterpreterGroup with given id and interpreterSetting, used in ZeppelinServer
    * @param id
    * @param interpreterSetting
    */
-  ManagedInterpreterGroup(String id, InterpreterSetting interpreterSetting) {
+  ManagedInterpreterGroup(String id, InterpreterSetting interpreterSetting,
+      ZeppelinConfiguration zConf) {
     super(id);
+    this.zConf = zConf;
     this.interpreterSetting = interpreterSetting;
   }
 
@@ -66,7 +69,7 @@ public class ManagedInterpreterGroup extends InterpreterGroup {
         remoteInterpreterProcess = interpreterSetting.createInterpreterProcess(id, userName,
                 properties);
         remoteInterpreterProcess.start(userName);
-        remoteInterpreterProcess.init(ZeppelinConfiguration.create());
+        remoteInterpreterProcess.init(zConf);
         getInterpreterSetting().getRecoveryStorage()
                 .onInterpreterClientStart(remoteInterpreterProcess);
       }
@@ -182,6 +185,7 @@ public class ManagedInterpreterGroup extends InterpreterGroup {
     }
   }
 
+  @Override
   public boolean isEmpty() {
     return this.sessions.isEmpty();
   }

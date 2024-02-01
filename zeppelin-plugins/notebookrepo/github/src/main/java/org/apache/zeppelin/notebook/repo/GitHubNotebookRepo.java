@@ -29,6 +29,8 @@ import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.gson.Gson;
+
 import java.io.IOException;
 import java.net.URISyntaxException;
 
@@ -53,8 +55,8 @@ public class GitHubNotebookRepo extends GitNotebookRepo {
   private Git git;
 
   @Override
-  public void init(ZeppelinConfiguration conf) throws IOException {
-    super.init(conf);
+  public void init(ZeppelinConfiguration conf, Gson gson) throws IOException {
+    super.init(conf, gson);
     LOG.debug("initializing GitHubNotebookRepo");
     this.git = super.getGit();
     this.zeppelinConfiguration = conf;

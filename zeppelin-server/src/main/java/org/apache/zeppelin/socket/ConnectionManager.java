@@ -82,16 +82,14 @@ public class ConnectionManager {
   final Queue<NotebookSocket> watcherSockets = new ConcurrentLinkedQueue<>();
 
   private final HashSet<String> collaborativeModeList = Metrics.gaugeCollectionSize("zeppelin_collaborative_modes", Tags.empty(),new HashSet<>());
-  private final Boolean collaborativeModeEnable = ZeppelinConfiguration
-      .create()
-      .isZeppelinNotebookCollaborativeModeEnable();
-
 
   private final AuthorizationService authorizationService;
+  private final ZeppelinConfiguration zConf;
 
   @Inject
-  public ConnectionManager(AuthorizationService authorizationService) {
+  public ConnectionManager(AuthorizationService authorizationService, ZeppelinConfiguration zConf) {
     this.authorizationService = authorizationService;
+    this.zConf = zConf;
   }
 
   public void addConnection(NotebookSocket conn) {
@@ -191,7 +189,7 @@ public class ConnectionManager {
   }
 
   private void checkCollaborativeStatus(String noteId, Set<NotebookSocket> socketList) {
-    if (!collaborativeModeEnable.booleanValue()) {
+    if (!zConf.isZeppelinNotebookCollaborativeModeEnable()) {
       return;
     }
     boolean collaborativeStatusNew = socketList.size() > 1;

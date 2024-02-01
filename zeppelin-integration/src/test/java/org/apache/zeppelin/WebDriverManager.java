@@ -64,22 +64,22 @@ public class WebDriverManager implements Closeable {
   final Path downloadDir;
   final WebDriver driver;
 
-  public WebDriverManager(boolean deleteTempFiles) throws IOException {
+  public WebDriverManager(boolean deleteTempFiles, int port) throws IOException {
     this.deleteTempFiles = deleteTempFiles;
     this.downloadDir = Files.createTempFile("browser", ".download");
     this.logDir = Files.createTempFile("logdir", ".download");
-    this.driver = constructWebDriver();
+    this.driver = constructWebDriver(port);
   }
 
-  public WebDriverManager() throws IOException {
-    this(true);
+  public WebDriverManager(int port) throws IOException {
+    this(true, port);
   }
 
   public WebDriver getWebDriver() {
     return this.driver;
   }
 
-  private WebDriver constructWebDriver() {
+  private WebDriver constructWebDriver(int port) {
     Supplier<WebDriver> chromeDriverSupplier = () -> {
       try {
         ChromeOptions options = new ChromeOptions();
@@ -128,7 +128,7 @@ public class WebDriverManager implements Closeable {
       throw new RuntimeException("No available WebDriver");
     }
 
-    String url = SystemUtils.getEnvironmentVariable("url", "http://localhost:8080");
+    String url = "http://localhost:" + port;
 
     long start = System.currentTimeMillis();
     boolean loaded = false;

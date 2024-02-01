@@ -14,25 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.zeppelin.notebook.repo.mock;
 
-import org.apache.zeppelin.conf.ZeppelinConfiguration;
-import org.apache.zeppelin.notebook.repo.VFSNotebookRepo;
-
-import com.google.gson.Gson;
+package org.apache.zeppelin.notebook.repo;
 
 import java.io.IOException;
 
-public class VFSNotebookRepoMock extends VFSNotebookRepo {
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
 
-  public VFSNotebookRepoMock() {
-  }
+import com.google.gson.Gson;
+
+public abstract class AbstractNotebookRepo implements NotebookRepo {
+
+  protected ZeppelinConfiguration conf;
+  protected Gson gson;
 
   @Override
   public void init(ZeppelinConfiguration conf, Gson gson) throws IOException {
-    this.conf = conf;
     this.gson = gson;
-    setNotebookDirectory(conf.getNotebookDir() + "_secondary");
+    this.conf = conf;
   }
 
+  @Override
+  public Gson getGson() {
+    return gson;
+  }
 }

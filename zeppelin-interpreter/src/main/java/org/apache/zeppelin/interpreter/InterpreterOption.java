@@ -30,7 +30,6 @@ public class InterpreterOption {
   public static final transient String SHARED = "shared";
   public static final transient String SCOPED = "scoped";
   public static final transient String ISOLATED = "isolated";
-  private static ZeppelinConfiguration conf =  ZeppelinConfiguration.create();
 
   // always set it as true, keep this field just for backward compatibility
   boolean remote = true;
@@ -69,9 +68,9 @@ public class InterpreterOption {
     this.setPermission = setPermission;
   }
 
-  public List<String> getOwners() {
+  public List<String> getOwners(ZeppelinConfiguration conf) {
     if (null != owners && conf.isUsernameForceLowerCase()) {
-      List<String> lowerCaseUsers = new ArrayList<String>();
+      List<String> lowerCaseUsers = new ArrayList<>();
       for (String owner : owners) {
         lowerCaseUsers.add(owner.toLowerCase());
       }
@@ -113,7 +112,7 @@ public class InterpreterOption {
     option.isExistingProcess = other.isExistingProcess;
     option.setPermission = other.setPermission;
     option.owners = (null == other.owners) ?
-        new ArrayList<String>() : new ArrayList<>(other.owners);
+        new ArrayList<>() : new ArrayList<>(other.owners);
 
     return option;
   }

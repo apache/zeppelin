@@ -25,6 +25,7 @@ import org.apache.http.util.EntityUtils;
 import org.apache.zeppelin.notebook.AuthorizationService;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.rest.message.NoteJobStatus;
+import org.apache.zeppelin.test.DownloadUtils;
 import org.apache.zeppelin.utils.TestUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -33,6 +34,8 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -43,7 +46,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.zeppelin.MiniZeppelinServer;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
+import org.apache.zeppelin.integration.TestHelper;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.user.AuthenticationInfo;
@@ -60,21 +65,31 @@ import static org.junit.jupiter.api.Assertions.fail;
  */
 @TestMethodOrder(MethodOrderer.MethodName.class)
 class ZeppelinRestApiTest extends AbstractTestRestApi {
+  private static final Logger LOG = LoggerFactory.getLogger(ZeppelinRestApiTest.class);
   Gson gson = new Gson();
   AuthenticationInfo anonymous;
+  private static MiniZeppelinServer zepServer;
 
   @BeforeAll
-  static void init() throws Exception {
-    AbstractTestRestApi.startUp(ZeppelinRestApiTest.class.getSimpleName());
+  public static void init() throws Exception {
+    String sparkHome = DownloadUtils.downloadSpark();
+    zepServer = new MiniZeppelinServer(ZeppelinRestApiTest.class.getSimpleName());
+    zepServer.addInterpreter("md");
+    zepServer.addInterpreter("sh");
+    zepServer.addInterpreter("spark");
+    zepServer.copyBinDir();
+    zepServer.start();
+    TestHelper.configureSparkInterpreter(zepServer, sparkHome);
   }
 
   @AfterAll
-  static void destroy() throws Exception {
-    AbstractTestRestApi.shutDown();
+  public static void destroy() throws Exception {
+    zepServer.destroy();
   }
 
   @BeforeEach
   void setUp() {
+    conf = zepServer.getZeppelinConfiguration();
     anonymous = new AuthenticationInfo("anonymous");
   }
 

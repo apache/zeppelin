@@ -94,7 +94,7 @@ public class YarnClient {
 
   private boolean hadoopSecurityEnabled = true; // simple or kerberos
 
-  public YarnClient(Properties properties) {
+  public YarnClient(Properties properties, ZeppelinConfiguration zConf) {
     this.hadoopConf = new Configuration();
 
     String hadoopAuthType = properties.getProperty(
@@ -117,7 +117,6 @@ public class YarnClient {
       String principal = properties.getProperty(
           SubmarineConstants.SUBMARINE_HADOOP_PRINCIPAL, "");
 
-      ZeppelinConfiguration zConf = ZeppelinConfiguration.create();
       if (StringUtils.isEmpty(keytab)) {
         keytab = zConf.getString(
             ZeppelinConfiguration.ConfVars.ZEPPELIN_SERVER_KERBEROS_KEYTAB);

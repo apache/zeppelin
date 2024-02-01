@@ -101,7 +101,8 @@ class InterpreterServiceTest {
     String artifactName = "junit:junit:4.11";
     Path specificInterpreterPath =
         Files.createDirectory(Paths.get(interpreterDir.toString(), interpreterName));
-    DependencyResolver dependencyResolver = new DependencyResolver(localRepoDir.toString());
+    DependencyResolver dependencyResolver =
+        new DependencyResolver(localRepoDir.toString(), ZeppelinConfiguration.load());
 
     doNothing().when(mockInterpreterSettingManager).refreshInterpreterTemplates();
 

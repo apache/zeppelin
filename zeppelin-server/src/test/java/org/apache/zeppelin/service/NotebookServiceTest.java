@@ -67,6 +67,7 @@ import org.apache.zeppelin.search.LuceneSearch;
 import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
+import org.apache.zeppelin.util.NoteUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -86,7 +87,7 @@ class NotebookServiceTest {
 
   private ServiceCallback callback = mock(ServiceCallback.class);
 
-  private Gson gson = new Gson();
+  private Gson gson;
 
 
   @BeforeEach
@@ -94,9 +95,10 @@ class NotebookServiceTest {
     notebookDir = Files.createTempDirectory("notebookDir").toAbsolutePath().toFile();
     System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_DIR.getVarName(),
             notebookDir.getAbsolutePath());
-    ZeppelinConfiguration zeppelinConfiguration = ZeppelinConfiguration.create();
+    ZeppelinConfiguration zeppelinConfiguration = ZeppelinConfiguration.load();
+    gson = NoteUtils.getNoteGson(zeppelinConfiguration);
     NotebookRepo notebookRepo = new VFSNotebookRepo();
-    notebookRepo.init(zeppelinConfiguration);
+    notebookRepo.init(zeppelinConfiguration, gson);
 
     InterpreterSettingManager mockInterpreterSettingManager = mock(InterpreterSettingManager.class);
     InterpreterFactory mockInterpreterFactory = mock(InterpreterFactory.class);

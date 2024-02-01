@@ -17,18 +17,25 @@
 package org.apache.zeppelin.cluster;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import org.apache.zeppelin.cluster.event.ClusterEventListener;
 import org.apache.zeppelin.cluster.event.ClusterMessage;
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.display.Input;
 import org.apache.zeppelin.notebook.Note;
+import org.apache.zeppelin.notebook.NotebookImportDeserializer;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.user.AuthenticationInfo;
+import org.apache.zeppelin.util.NoteUtils;
+import org.junit.jupiter.api.BeforeEach;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
+import java.util.Date;
 import java.util.Map;
 import java.util.Set;
 
@@ -36,6 +43,15 @@ public class ClusterNoteEventListenerTest implements ClusterEventListener {
   private static Logger LOGGER = LoggerFactory.getLogger(ClusterNoteEventListenerTest.class);
 
   public String receiveMsg = null;
+
+  private ZeppelinConfiguration conf;
+  private Gson gson;
+
+  @BeforeEach
+  void setup() {
+    conf = ZeppelinConfiguration.load();
+    gson = NoteUtils.getNoteGson(conf);
+  }
 
   @Override
   public void onClusterEvent(String msg) {
@@ -56,13 +72,13 @@ public class ClusterNoteEventListenerTest implements ClusterEventListener {
         LOGGER.debug(authenticationInfo.toJson());
       } else if (key.equals("Note")) {
         try {
-          note = Note.fromJson(null, json);
+          note = NoteUtils.fromJson(gson, conf, null, json);
         } catch (IOException e) {
           LOGGER.warn("Fail to parse note json", e);
         }
         LOGGER.debug(note.toJson());
       } else if (key.equals("Paragraph")) {
-        paragraph = Paragraph.fromJson(json);
+        paragraph = gson.fromJson(json, Paragraph.class);
         LOGGER.debug(paragraph.toJson());
       } else if (key.equals("Set<String>")) {
         Gson gson = new Gson();

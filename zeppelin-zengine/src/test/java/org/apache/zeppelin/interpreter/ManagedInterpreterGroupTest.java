@@ -18,6 +18,7 @@
 package org.apache.zeppelin.interpreter;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.eclipse.aether.RepositoryException;
 import org.junit.jupiter.api.Test;
 
@@ -32,9 +33,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class ManagedInterpreterGroupTest {
 
   private InterpreterSetting interpreterSetting;
+  private ZeppelinConfiguration zConf;
 
   @BeforeEach
   public void setUp() throws IOException, RepositoryException {
+    zConf = ZeppelinConfiguration.load();
     InterpreterOption interpreterOption = new InterpreterOption();
     interpreterOption.setPerUser(InterpreterOption.SCOPED);
     InterpreterInfo interpreterInfo1 = new InterpreterInfo(EchoInterpreter.class.getName(),
@@ -50,12 +53,14 @@ class ManagedInterpreterGroupTest {
         .setGroup("test")
         .setInterpreterInfos(interpreterInfos)
         .setOption(interpreterOption)
+        .setConf(zConf)
         .create();
   }
 
   @Test
   void testInterpreterGroup() {
-    ManagedInterpreterGroup interpreterGroup = new ManagedInterpreterGroup("group_1", interpreterSetting);
+    ManagedInterpreterGroup interpreterGroup =
+        new ManagedInterpreterGroup("group_1", interpreterSetting, zConf);
     assertEquals(0, interpreterGroup.getSessionNum());
 
     // create session_1

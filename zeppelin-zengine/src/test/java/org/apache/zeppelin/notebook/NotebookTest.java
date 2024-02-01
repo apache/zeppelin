@@ -40,6 +40,7 @@ import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
+import org.apache.zeppelin.util.NoteUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -50,6 +51,9 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.gson.Gson;
+
 import org.eclipse.aether.RepositoryException;
 
 import java.io.File;
@@ -97,12 +101,12 @@ class NotebookTest extends AbstractInterpreterTest implements ParagraphJobListen
   @Override
   @BeforeEach
   public void setUp() throws Exception {
-    System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_PUBLIC.getVarName(), "true");
-    System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_CRON_ENABLE.getVarName(), "true");
     super.setUp();
+    conf.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_PUBLIC.getVarName(), "true");
+    conf.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_CRON_ENABLE.getVarName(), "true");
 
     notebookRepo = new VFSNotebookRepo();
-    notebookRepo.init(conf);
+    notebookRepo.init(conf, NoteUtils.getNoteGson(conf));
     noteManager = new NoteManager(notebookRepo, conf);
     authorizationService = new AuthorizationService(noteManager, conf);
 
@@ -144,7 +148,7 @@ class NotebookTest extends AbstractInterpreterTest implements ParagraphJobListen
   public static class DummyNotebookRepo implements NotebookRepo {
 
     @Override
-    public void init(ZeppelinConfiguration zConf) throws IOException {
+    public void init(ZeppelinConfiguration zConf, Gson gson) throws IOException {
 
     }
 
@@ -196,6 +200,11 @@ class NotebookTest extends AbstractInterpreterTest implements ParagraphJobListen
     @Override
     public void updateSettings(Map<String, String> settings, AuthenticationInfo subject) {
 
+    }
+
+    @Override
+    public Gson getGson() {
+      return null;
     }
   }
 
@@ -225,7 +234,7 @@ class NotebookTest extends AbstractInterpreterTest implements ParagraphJobListen
     }
 
     @Override
-    public void init(ZeppelinConfiguration zConf) throws IOException {
+    public void init(ZeppelinConfiguration zConf, Gson gson) throws IOException {
 
     }
 
@@ -277,6 +286,11 @@ class NotebookTest extends AbstractInterpreterTest implements ParagraphJobListen
     @Override
     public void updateSettings(Map<String, String> settings, AuthenticationInfo subject) {
 
+    }
+
+    @Override
+    public Gson getGson() {
+      return null;
     }
   }
 
@@ -742,81 +756,73 @@ class NotebookTest extends AbstractInterpreterTest implements ParagraphJobListen
 
   @Test
   void testScheduleDisabled() throws InterruptedException, IOException {
-    System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_CRON_ENABLE.getVarName(), "false");
-    try {
-      final int timeout = 10;
-      final String everySecondCron = "* * * * * ?";
-      final CountDownLatch jobsToExecuteCount = new CountDownLatch(5);
-      final String noteId = notebook.createNote("note1", anonymous);
+    conf.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_CRON_ENABLE.getVarName(), "false");
+    final int timeout = 10;
+    final String everySecondCron = "* * * * * ?";
+    final CountDownLatch jobsToExecuteCount = new CountDownLatch(5);
+    final String noteId = notebook.createNote("note1", anonymous);
 
-      executeNewParagraphByCron(noteId, everySecondCron);
-      afterStatusChangedListener = new StatusChangedListener() {
-        @Override
-        public void onStatusChanged(Job<?> job, Status before, Status after) {
-          if (after == Status.FINISHED) {
-            jobsToExecuteCount.countDown();
-          }
+    executeNewParagraphByCron(noteId, everySecondCron);
+    afterStatusChangedListener = new StatusChangedListener() {
+      @Override
+      public void onStatusChanged(Job<?> job, Status before, Status after) {
+        if (after == Status.FINISHED) {
+          jobsToExecuteCount.countDown();
         }
-      };
+      }
+    };
 
-      //This job should not run because "ZEPPELIN_NOTEBOOK_CRON_ENABLE" is set to false
-      assertFalse(jobsToExecuteCount.await(timeout, TimeUnit.SECONDS));
+    // This job should not run because "ZEPPELIN_NOTEBOOK_CRON_ENABLE" is set to false
+    assertFalse(jobsToExecuteCount.await(timeout, TimeUnit.SECONDS));
 
-      terminateScheduledNote(noteId);
-      afterStatusChangedListener = null;
-    } finally {
-      System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_CRON_ENABLE.getVarName(), "true");
-    }
+    terminateScheduledNote(noteId);
+    afterStatusChangedListener = null;
   }
 
   @Test
   void testScheduleDisabledWithName() throws InterruptedException, IOException {
 
-    System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_CRON_FOLDERS.getVarName(), "/System");
-    try {
-      final int timeout = 30;
-      final String everySecondCron = "* * * * * ?";
-      // each run starts a new JVM and the job takes about ~5 seconds
-      final CountDownLatch jobsToExecuteCount = new CountDownLatch(5);
-      final String noteId = notebook.createNote("note1", anonymous);
+    conf.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_CRON_FOLDERS.getVarName(), "/System");
+    final int timeout = 30;
+    final String everySecondCron = "* * * * * ?";
+    // each run starts a new JVM and the job takes about ~5 seconds
+    final CountDownLatch jobsToExecuteCount = new CountDownLatch(5);
+    final String noteId = notebook.createNote("note1", anonymous);
 
-      executeNewParagraphByCron(noteId, everySecondCron);
-      afterStatusChangedListener = new StatusChangedListener() {
-        @Override
-        public void onStatusChanged(Job<?> job, Status before, Status after) {
-          if (after == Status.FINISHED) {
-            jobsToExecuteCount.countDown();
-          }
+    executeNewParagraphByCron(noteId, everySecondCron);
+    afterStatusChangedListener = new StatusChangedListener() {
+      @Override
+      public void onStatusChanged(Job<?> job, Status before, Status after) {
+        if (after == Status.FINISHED) {
+          jobsToExecuteCount.countDown();
         }
-      };
+      }
+    };
 
-      //This job should not run because it's path does not matches "ZEPPELIN_NOTEBOOK_CRON_FOLDERS"
-      assertFalse(jobsToExecuteCount.await(timeout, TimeUnit.SECONDS));
+    // This job should not run because it's path does not matches "ZEPPELIN_NOTEBOOK_CRON_FOLDERS"
+    assertFalse(jobsToExecuteCount.await(timeout, TimeUnit.SECONDS));
 
-      terminateScheduledNote(noteId);
-      afterStatusChangedListener = null;
+    terminateScheduledNote(noteId);
+    afterStatusChangedListener = null;
 
-      final String noteNameSystemId = notebook.createNote("/System/test1", anonymous);
-      final CountDownLatch jobsToExecuteCountNameSystem = new CountDownLatch(5);
+    final String noteNameSystemId = notebook.createNote("/System/test1", anonymous);
+    final CountDownLatch jobsToExecuteCountNameSystem = new CountDownLatch(5);
 
-      executeNewParagraphByCron(noteNameSystemId, everySecondCron);
-      afterStatusChangedListener = new StatusChangedListener() {
-        @Override
-        public void onStatusChanged(Job<?> job, Status before, Status after) {
-          if (after == Status.FINISHED) {
-            jobsToExecuteCountNameSystem.countDown();
-          }
+    executeNewParagraphByCron(noteNameSystemId, everySecondCron);
+    afterStatusChangedListener = new StatusChangedListener() {
+      @Override
+      public void onStatusChanged(Job<?> job, Status before, Status after) {
+        if (after == Status.FINISHED) {
+          jobsToExecuteCountNameSystem.countDown();
         }
-      };
+      }
+    };
 
-      //This job should run because it's path contains "System/"
-      assertTrue(jobsToExecuteCountNameSystem.await(timeout, TimeUnit.SECONDS));
+    // This job should run because it's path contains "System/"
+    assertTrue(jobsToExecuteCountNameSystem.await(timeout, TimeUnit.SECONDS));
 
-      terminateScheduledNote(noteNameSystemId);
-      afterStatusChangedListener = null;
-    } finally {
-      System.clearProperty(ConfVars.ZEPPELIN_NOTEBOOK_CRON_FOLDERS.getVarName());
-    }
+    terminateScheduledNote(noteNameSystemId);
+    afterStatusChangedListener = null;
   }
 
   private void terminateScheduledNote(String noteId) throws IOException {
@@ -1361,7 +1367,8 @@ class NotebookTest extends AbstractInterpreterTest implements ParagraphJobListen
   void testInterpreterSettingConfig() {
     LOGGER.info("testInterpreterSettingConfig >>> ");
     Note note = new Note("testInterpreterSettingConfig", "config_test",
-        interpreterFactory, interpreterSettingManager, this, credentials, new ArrayList<>());
+        interpreterFactory, interpreterSettingManager, this, credentials, new ArrayList<>(), conf,
+        NoteUtils.getNoteGson(conf));
 
     // create paragraphs
     Paragraph p1 = note.addNewParagraph(anonymous);
@@ -1798,10 +1805,13 @@ class NotebookTest extends AbstractInterpreterTest implements ParagraphJobListen
     assertEquals(0, authorizationService.getWriters(notePublicId).size());
 
     // case of private note
-    System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_PUBLIC.getVarName(), "false");
-    ZeppelinConfiguration conf2 = ZeppelinConfiguration.create();
+
+    ZeppelinConfiguration conf2 = ZeppelinConfiguration.load();
+    conf2.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_PUBLIC.getVarName(), "false");
     assertFalse(conf2.isNotebookPublic());
-    // notebook authorization reads from conf, so no need to re-initilize
+    authorizationService = new AuthorizationService(noteManager, conf2);
+    notebook = new Notebook(conf2, authorizationService, notebookRepo, noteManager,
+        interpreterFactory, interpreterSettingManager, credentials, null);
     assertFalse(authorizationService.isPublic());
 
     // check that still 1 note per user
@@ -1832,10 +1842,6 @@ class NotebookTest extends AbstractInterpreterTest implements ParagraphJobListen
     assertEquals(1, authorizationService.getReaders(notePrivateId).size());
     assertEquals(1, authorizationService.getRunners(notePrivateId).size());
     assertEquals(1, authorizationService.getWriters(notePrivateId).size());
-
-    //set back public to true
-    System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_PUBLIC.getVarName(), "true");
-    ZeppelinConfiguration.create();
   }
 
   @Test

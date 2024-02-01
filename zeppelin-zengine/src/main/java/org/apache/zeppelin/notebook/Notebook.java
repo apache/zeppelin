@@ -35,6 +35,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+
 import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
@@ -60,6 +61,7 @@ import org.apache.zeppelin.scheduler.SchedulerThreadFactory;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
 import org.apache.zeppelin.util.ExecutorUtil;
+import org.apache.zeppelin.util.NoteUtils;
 import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -308,7 +310,7 @@ public class Notebook {
                          boolean save) throws IOException {
     Note note =
             new Note(notePath, defaultInterpreterGroup, replFactory, interpreterSettingManager,
-                    paragraphJobListener, credentials, noteEventListeners);
+            paragraphJobListener, credentials, noteEventListeners, conf, notebookRepo.getGson());
     noteManager.addNote(note, subject);
     // init noteMeta
     authorizationService.createNoteAuth(note.getId(), subject);
@@ -351,7 +353,7 @@ public class Notebook {
    */
   public String importNote(String sourceJson, String notePath, AuthenticationInfo subject)
       throws IOException {
-    Note oldNote = Note.fromJson(null, sourceJson);
+    Note oldNote = NoteUtils.fromJson(notebookRepo.getGson(), conf, null, sourceJson);
     if (notePath == null) {
       notePath = oldNote.getName();
     }

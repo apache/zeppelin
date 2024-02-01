@@ -21,38 +21,31 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.util.List;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.AbstractZeppelinIT;
+import org.apache.zeppelin.MiniZeppelinServer;
 import org.apache.zeppelin.WebDriverManager;
-import org.apache.zeppelin.ZeppelinITUtils;
-import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebElement;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 
 /**
  * Created for org.apache.zeppelin.integration on 13/06/16.
  */
 public class AuthenticationIT extends AbstractZeppelinIT {
-  private static final Logger LOG = LoggerFactory.getLogger(AuthenticationIT.class);
 
-  static String shiroPath;
-  static String authShiro = "[users]\n" +
+  private static MiniZeppelinServer zepServer;
+
+  private static final String AUTH_SHIRO = "[users]\n" +
       "admin = password1, admin\n" +
       "finance1 = finance1, finance\n" +
       "finance2 = finance2, finance\n" +
@@ -74,12 +67,17 @@ public class AuthenticationIT extends AbstractZeppelinIT {
       "/api/interpreter/** = authc, anyofrolesuser[admin, finance]\n" +
       "/** = authc";
 
-  static String originalShiro = "";
-
+  @BeforeAll
+  static void init() throws Exception {
+    zepServer = new MiniZeppelinServer(AuthenticationIT.class.getSimpleName());
+    zepServer.addConfigFile("shiro.ini", AUTH_SHIRO);
+    zepServer.addInterpreter("jdbc");
+    zepServer.start();
+  }
 
   @BeforeEach
   public void startUpManager() throws IOException {
-    manager = new WebDriverManager();
+    manager = new WebDriverManager(zepServer.getZeppelinConfiguration().getServerPort());
   }
 
   @AfterEach
@@ -87,43 +85,12 @@ public class AuthenticationIT extends AbstractZeppelinIT {
     manager.close();
   }
 
-  @BeforeAll
-  public static void startUp() throws IOException {
-    try {
-      System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HOME.getVarName(), new File("../").getAbsolutePath());
-      ZeppelinConfiguration conf = ZeppelinConfiguration.create();
-      shiroPath = conf.getAbsoluteDir(String.format("%s/shiro.ini", conf.getConfDir()));
-      File file = new File(shiroPath);
-      if (file.exists()) {
-        originalShiro = StringUtils.join(FileUtils.readLines(file, "UTF-8"), "\n");
-      }
-      FileUtils.write(file, authShiro, "UTF-8");
-    } catch (IOException e) {
-      LOG.error("Error in AuthenticationIT startUp::", e);
-    }
-    ZeppelinITUtils.restartZeppelin();
-  }
-
-
   @AfterAll
-  public static void tearDown() throws IOException {
-    try {
-      if (!StringUtils.isBlank(shiroPath)) {
-        File file = new File(shiroPath);
-        if (StringUtils.isBlank(originalShiro)) {
-          FileUtils.deleteQuietly(file);
-        } else {
-          FileUtils.write(file, originalShiro, "UTF-8");
-        }
-      }
-    } catch (IOException e) {
-      LOG.error("Error in AuthenticationIT tearDown::", e);
-    }
-    ZeppelinITUtils.restartZeppelin();
+  public static void tearDown() throws Exception {
+    zepServer.destroy();
   }
 
   @Test
-  @Disabled
   void testSimpleAuthentication() throws Exception {
     try {
       authenticationUser("admin", "password1");

@@ -16,13 +16,12 @@
  */
 package org.apache.zeppelin.integration;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.CommandExecutor;
+import org.apache.zeppelin.MiniZeppelinServer;
 import org.apache.zeppelin.ProcessData;
 import org.apache.zeppelin.AbstractZeppelinIT;
 import org.apache.zeppelin.WebDriverManager;
 import org.apache.zeppelin.ZeppelinITUtils;
-import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -37,13 +36,10 @@ import org.openqa.selenium.TimeoutException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.apache.commons.io.FileUtils;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
-import java.io.File;
 import java.io.IOException;
 import java.time.Duration;
 
@@ -51,8 +47,7 @@ import java.time.Duration;
 public class InterpreterModeActionsIT extends AbstractZeppelinIT {
   private static final Logger LOG = LoggerFactory.getLogger(InterpreterModeActionsIT.class);
 
-  static String shiroPath;
-  static String authShiro = "[users]\n" +
+  private final static String AUTH_SHIRO = "[users]\n" +
       "admin = password1, admin\n" +
       "user1 = password2, admin\n" +
       "user2 = password3, admin\n" +
@@ -68,17 +63,26 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
       "/api/cluster/address = anon\n" +
       "/** = authc";
 
-  static String originalShiro = "";
-  static String interpreterOptionPath = "";
-  static String originalInterpreterOption = "";
-
-  static String cmdPsPython = "ps aux | grep 'kernel_server.py' | grep -v 'grep' | wc -l";
-  static String cmdPsInterpreter = "ps aux | grep 'zeppelin/interpreter/python/*' |" +
+  private final static String CMD_PS_PYTHON =
+      "ps aux | grep 'kernel_server.py' | grep -v 'grep' | wc -l";
+  private final static String CMD_PS_INTERPRETER_PYTHON = "ps aux | grep 'interpreter/python/*' |" +
           " sed -E '/grep/d' | wc -l";
 
+  private static MiniZeppelinServer zepServer;
+
+  @BeforeAll
+  static void init() throws Exception {
+    zepServer = new MiniZeppelinServer(AuthenticationIT.class.getSimpleName());
+    zepServer.addConfigFile("shiro.ini", AUTH_SHIRO);
+    zepServer.addInterpreter("python");
+    zepServer.copyLogProperties();
+    zepServer.copyBinDir();
+    zepServer.start();
+  }
+
   @BeforeEach
-  public void startUpManager() throws IOException {
-    manager = new WebDriverManager();
+  public void startUp() throws IOException {
+    manager = new WebDriverManager(zepServer.getZeppelinConfiguration().getServerPort());
   }
 
   @AfterEach
@@ -86,52 +90,9 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
     manager.close();
   }
 
-  @BeforeAll
-  public static void startUp() throws IOException {
-    try {
-      System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HOME.getVarName(), new File("../").getAbsolutePath());
-      ZeppelinConfiguration conf = ZeppelinConfiguration.create();
-      shiroPath = conf.getAbsoluteDir(String.format("%s/shiro.ini", conf.getConfDir()));
-      interpreterOptionPath = conf.getAbsoluteDir(String.format("%s/interpreter.json", conf.getConfDir()));
-      File shiroFile = new File(shiroPath);
-      if (shiroFile.exists()) {
-        originalShiro = StringUtils.join(FileUtils.readLines(shiroFile, "UTF-8"), "\n");
-      }
-      FileUtils.write(shiroFile, authShiro, "UTF-8");
-
-      File interpreterOptionFile = new File(interpreterOptionPath);
-      if (interpreterOptionFile.exists()) {
-        originalInterpreterOption = StringUtils.join(FileUtils.readLines(interpreterOptionFile, "UTF-8"), "\n");
-      }
-    } catch (IOException e) {
-      LOG.error("Error in InterpreterModeActionsIT startUp::", e);
-    }
-    ZeppelinITUtils.restartZeppelin();
-  }
-
   @AfterAll
-  public static void tearDown() throws IOException {
-    try {
-      if (!StringUtils.isBlank(shiroPath)) {
-        File shiroFile = new File(shiroPath);
-        if (StringUtils.isBlank(originalShiro)) {
-          FileUtils.deleteQuietly(shiroFile);
-        } else {
-          FileUtils.write(shiroFile, originalShiro, "UTF-8");
-        }
-      }
-      if (!StringUtils.isBlank(interpreterOptionPath)) {
-        File interpreterOptionFile = new File(interpreterOptionPath);
-        if (StringUtils.isBlank(originalInterpreterOption)) {
-          FileUtils.deleteQuietly(interpreterOptionFile);
-        } else {
-          FileUtils.write(interpreterOptionFile, originalInterpreterOption, "UTF-8");
-        }
-      }
-    } catch (IOException e) {
-      LOG.error("Error in InterpreterModeActionsIT tearDown::", e);
-    }
-    ZeppelinITUtils.restartZeppelin();
+  public static void tearDown() throws Exception {
+    zepServer.destroy();
   }
 
   private void setPythonParagraph(int num, String text) {
@@ -193,11 +154,11 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
             By.xpath(getParagraphXPath(2) + "//div[contains(@class, 'text plainTextContent')]"))
           .getText().trim(),
         "The output field paragraph contains");
-      String resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(cmdPsPython,
+      String resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(CMD_PS_PYTHON,
           false, ProcessData.Types_Of_Data.OUTPUT);
       resultProcessNum = resultProcessNum.trim().replaceAll("\n", "");
       assertEquals("1", resultProcessNum, "The number of python process");
-      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(cmdPsInterpreter,
+      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(CMD_PS_INTERPRETER_PYTHON,
           false, ProcessData.Types_Of_Data.OUTPUT);
       resultProcessNum = resultProcessNum.trim().replaceAll("\n", "");
       assertEquals("1", resultProcessNum, "The number of python interpreter process is wrong");
@@ -224,11 +185,11 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
       assertEquals("user2", manager.getWebDriver().findElement(By.xpath(
         getParagraphXPath(2) + "//div[contains(@class, 'text plainTextContent')]")).getText().trim(),
         "The output field paragraph contains");
-      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(cmdPsPython,
+      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(CMD_PS_PYTHON,
           false, ProcessData.Types_Of_Data.OUTPUT);
       resultProcessNum = resultProcessNum.trim().replaceAll("\n", "");
       assertEquals("1", resultProcessNum, "The number of python process is wrong");
-      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(cmdPsInterpreter,
+      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(CMD_PS_INTERPRETER_PYTHON,
           false, ProcessData.Types_Of_Data.OUTPUT);
       resultProcessNum = resultProcessNum.trim().replaceAll("\n", "");
       assertEquals("1", resultProcessNum, "The number of python interpreter process is wrong");
@@ -256,11 +217,11 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
         waitForParagraph(2, "ERROR");
         fail("Exception in InterpreterModeActionsIT while running Python Paragraph", e);
       }
-      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(cmdPsPython,
+      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(CMD_PS_PYTHON,
           false, ProcessData.Types_Of_Data.OUTPUT);
       resultProcessNum = resultProcessNum.trim().replaceAll("\n", "");
       assertEquals("1", resultProcessNum, "The number of python process wrong");
-      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(cmdPsInterpreter,
+      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(CMD_PS_INTERPRETER_PYTHON,
           false, ProcessData.Types_Of_Data.OUTPUT);
       resultProcessNum = resultProcessNum.trim().replaceAll("\n", "");
       assertEquals("1", resultProcessNum, "The number of python interpreter process is wrong");
@@ -285,11 +246,11 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
       if (element.isDisplayed()) {
         clickAndWait(By.xpath("//*[@id='actionbar']//span[contains(@uib-tooltip, 'Interpreter binding')]"));
       }
-      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(cmdPsPython,
+      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(CMD_PS_PYTHON,
           false, ProcessData.Types_Of_Data.OUTPUT);
       resultProcessNum = resultProcessNum.trim().replaceAll("\n", "");
       assertEquals("0", resultProcessNum, "The number of python process is wrong");
-      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(cmdPsInterpreter,
+      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(CMD_PS_INTERPRETER_PYTHON,
           false, ProcessData.Types_Of_Data.OUTPUT);
       resultProcessNum = resultProcessNum.trim().replaceAll("\n", "");
       assertEquals("0", resultProcessNum, "The number of python interpreter process is wrong");
@@ -354,11 +315,11 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
         getParagraphXPath(2) + "//div[contains(@class, 'text plainTextContent')]")).getText(),
         "The output field paragraph contains");
 
-      String resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(cmdPsPython,
+      String resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(CMD_PS_PYTHON,
           false, ProcessData.Types_Of_Data.OUTPUT);
       resultProcessNum = resultProcessNum.trim().replaceAll("\n", "");
       assertEquals("1", resultProcessNum, "The number of python process is wrong");
-      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(cmdPsInterpreter,
+      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(CMD_PS_INTERPRETER_PYTHON,
           false, ProcessData.Types_Of_Data.OUTPUT);
       resultProcessNum = resultProcessNum.trim().replaceAll("\n", "");
       assertEquals("1", resultProcessNum, "The number of python interpreter process is wrong");
@@ -388,11 +349,11 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
         getParagraphXPath(2) + "//div[contains(@class, 'text plainTextContent')]")).getText(),
         "The output field paragraph contains");
 
-      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(cmdPsPython,
+      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(CMD_PS_PYTHON,
           false, ProcessData.Types_Of_Data.OUTPUT);
       resultProcessNum = resultProcessNum.trim().replaceAll("\n", "");
       assertEquals("2", resultProcessNum, "The number of python process is wrong");
-      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(cmdPsInterpreter,
+      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(CMD_PS_INTERPRETER_PYTHON,
           false, ProcessData.Types_Of_Data.OUTPUT);
       resultProcessNum = resultProcessNum.trim().replaceAll("\n", "");
       assertEquals("1", resultProcessNum, "The number of python interpreter process is wrong");
@@ -444,11 +405,11 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
         clickAndWait(By.xpath("//*[@id='actionbar']//span[contains(@uib-tooltip, 'Interpreter binding')]"));
       }
 
-      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(cmdPsPython,
+      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(CMD_PS_PYTHON,
           false, ProcessData.Types_Of_Data.OUTPUT);
       resultProcessNum = resultProcessNum.trim().replaceAll("\n", "");
       assertEquals("1", resultProcessNum, "The number of python process is wrong");
-      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(cmdPsInterpreter,
+      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(CMD_PS_INTERPRETER_PYTHON,
           false, ProcessData.Types_Of_Data.OUTPUT);
       resultProcessNum = resultProcessNum.trim().replaceAll("\n", "");
       assertEquals("1", resultProcessNum, "The number of python interpreter process is wrong");
@@ -486,11 +447,11 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
         clickAndWait(By.xpath("//*[@id='actionbar']//span[contains(@uib-tooltip, 'Interpreter binding')]"));
       }
 
-      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(cmdPsPython,
+      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(CMD_PS_PYTHON,
           false, ProcessData.Types_Of_Data.OUTPUT);
       resultProcessNum = resultProcessNum.trim().replaceAll("\n", "");
       assertEquals("0", resultProcessNum, "The number of python process is wrong");
-      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(cmdPsInterpreter,
+      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(CMD_PS_INTERPRETER_PYTHON,
           false, ProcessData.Types_Of_Data.OUTPUT);
       resultProcessNum = resultProcessNum.trim().replaceAll("\n", "");
       assertEquals("0", resultProcessNum, "The number of python process interpreter is wrong");
@@ -535,11 +496,11 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
         waitForParagraph(1, "ERROR");
         fail("Exception in InterpreterModeActionsIT while running Python Paragraph", e);
       }
-      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(cmdPsPython,
+      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(CMD_PS_PYTHON,
           false, ProcessData.Types_Of_Data.OUTPUT);
       resultProcessNum = resultProcessNum.trim().replaceAll("\n", "");
       assertEquals("2", resultProcessNum, "The number of python process is wrong");
-      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(cmdPsInterpreter,
+      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(CMD_PS_INTERPRETER_PYTHON,
           false, ProcessData.Types_Of_Data.OUTPUT);
       resultProcessNum = resultProcessNum.trim().replaceAll("\n", "");
       assertEquals("1", resultProcessNum, "The number of python interpreter process is wrong");
@@ -571,11 +532,11 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
         assertTrue(invisibilityStatus, "interpreter setting dialog visibility status");
       }
 
-      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(cmdPsPython,
+      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(CMD_PS_PYTHON,
           false, ProcessData.Types_Of_Data.OUTPUT);
       resultProcessNum = resultProcessNum.trim().replaceAll("\n", "");
       assertEquals("0", resultProcessNum, "The number of python process is wrong");
-      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(cmdPsInterpreter,
+      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(CMD_PS_INTERPRETER_PYTHON,
           false, ProcessData.Types_Of_Data.OUTPUT);
       resultProcessNum = resultProcessNum.trim().replaceAll("\n", "");
       assertEquals("0", resultProcessNum, "The number of python interpreter process is wrong");
@@ -637,11 +598,11 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
         getParagraphXPath(2) + "//div[contains(@class, 'text plainTextContent')]")).getText().trim(),
         "The output field paragraph contains");
 
-      String resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(cmdPsPython,
+      String resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(CMD_PS_PYTHON,
           false, ProcessData.Types_Of_Data.OUTPUT);
       resultProcessNum = resultProcessNum.trim().replaceAll("\n", "");
       assertEquals("1", resultProcessNum, "The number of python process is wrong");
-      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(cmdPsInterpreter,
+      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(CMD_PS_INTERPRETER_PYTHON,
           false, ProcessData.Types_Of_Data.OUTPUT);
       resultProcessNum = resultProcessNum.trim().replaceAll("\n", "");
       assertEquals("1", resultProcessNum, "The number of python interpreter process is wrong");
@@ -671,11 +632,11 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
         getParagraphXPath(2) + "//div[contains(@class, 'text plainTextContent')]")).getText().trim(),
         "The output field paragraph contains");
 
-      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(cmdPsPython,
+      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(CMD_PS_PYTHON,
           false, ProcessData.Types_Of_Data.OUTPUT);
       resultProcessNum = resultProcessNum.trim().replaceAll("\n", "");
       assertEquals("2", resultProcessNum, "The number of python process is wrong");
-      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(cmdPsInterpreter,
+      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(CMD_PS_INTERPRETER_PYTHON,
           false, ProcessData.Types_Of_Data.OUTPUT);
       resultProcessNum = resultProcessNum.trim().replaceAll("\n", "");
       assertEquals("2", resultProcessNum, "The number of python interpreter process is wrong");
@@ -728,11 +689,11 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
         clickAndWait(By.xpath("//*[@id='actionbar']//span[contains(@uib-tooltip, 'Interpreter binding')]"));
       }
 
-      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(cmdPsPython,
+      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(CMD_PS_PYTHON,
           false, ProcessData.Types_Of_Data.OUTPUT);
       resultProcessNum = resultProcessNum.trim().replaceAll("\n", "");
       assertEquals("1", resultProcessNum, "The number of python process is wrong");
-      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(cmdPsInterpreter,
+      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(CMD_PS_INTERPRETER_PYTHON,
           false, ProcessData.Types_Of_Data.OUTPUT);
       resultProcessNum = resultProcessNum.trim().replaceAll("\n", "");
       assertEquals("1", resultProcessNum, "The number of python interpreter process is wrong");
@@ -771,11 +732,11 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
         clickAndWait(By.xpath("//*[@id='actionbar']//span[contains(@uib-tooltip, 'Interpreter binding')]"));
       }
 
-      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(cmdPsPython,
+      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(CMD_PS_PYTHON,
           false, ProcessData.Types_Of_Data.OUTPUT);
       resultProcessNum = resultProcessNum.trim().replaceAll("\n", "");
       assertEquals("0", resultProcessNum, "The number of python process is wrong");
-      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(cmdPsInterpreter,
+      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(CMD_PS_INTERPRETER_PYTHON,
           false, ProcessData.Types_Of_Data.OUTPUT);
       resultProcessNum = resultProcessNum.trim().replaceAll("\n", "");
       assertEquals("0", resultProcessNum, "The number of python interpreter process is wrong");
@@ -820,11 +781,11 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
         waitForParagraph(1, "ERROR");
         fail("Exception in InterpreterModeActionsIT while running Python Paragraph");
       }
-      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(cmdPsPython,
+      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(CMD_PS_PYTHON,
           false, ProcessData.Types_Of_Data.OUTPUT);
       resultProcessNum = resultProcessNum.trim().replaceAll("\n", "");
       assertEquals("2", resultProcessNum, "The number of python process is wrong");
-      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(cmdPsInterpreter,
+      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(CMD_PS_INTERPRETER_PYTHON,
           false, ProcessData.Types_Of_Data.OUTPUT);
       resultProcessNum = resultProcessNum.trim().replaceAll("\n", "");
       assertEquals("2", resultProcessNum, "The number of python interpreter process is wrong");
@@ -856,11 +817,11 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
         assertTrue(invisibilityStatus, "interpreter setting dialog visibility status");
       }
 
-      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(cmdPsPython,
+      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(CMD_PS_PYTHON,
           false, ProcessData.Types_Of_Data.OUTPUT);
       resultProcessNum = resultProcessNum.trim().replaceAll("\n", "");
       assertEquals("0", resultProcessNum, "The number of python process is wrong");
-      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(cmdPsInterpreter,
+      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(CMD_PS_INTERPRETER_PYTHON,
           false, ProcessData.Types_Of_Data.OUTPUT);
       resultProcessNum = resultProcessNum.trim().replaceAll("\n", "");
       assertEquals("0", resultProcessNum, "The number of python interpreter process is wrong");

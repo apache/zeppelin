@@ -18,6 +18,7 @@ package org.apache.zeppelin.socket;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 
 import io.micrometer.core.instrument.Metrics;
@@ -97,6 +98,7 @@ import org.apache.zeppelin.ticket.TicketContainer;
 import org.apache.zeppelin.types.InterpreterSettingsList;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.util.IdHashes;
+import org.apache.zeppelin.util.NoteUtils;
 import org.apache.zeppelin.utils.CorsUtils;
 import org.apache.zeppelin.utils.ServerUtils;
 import org.apache.zeppelin.utils.TestUtils;
@@ -139,9 +141,6 @@ public class NotebookServer implements AngularObjectRegistryListener,
     }
   }
 
-  private final Boolean collaborativeModeEnable = ZeppelinConfiguration
-      .create()
-      .isZeppelinNotebookCollaborativeModeEnable();
   private static final Logger LOG = LoggerFactory.getLogger(NotebookServer.class);
   private static final Gson gson = new GsonBuilder()
       .setDateFormat("yyyy-MM-dd'T'HH:mm:ssZ")
@@ -151,8 +150,6 @@ public class NotebookServer implements AngularObjectRegistryListener,
   private static final AtomicReference<NotebookServer> self = new AtomicReference<>();
 
   private final ExecutorService executorService = Executors.newFixedThreadPool(10);
-  private final boolean sendParagraphStatusToFrontend = ZeppelinConfiguration.create().getBoolean(
-      ZeppelinConfiguration.ConfVars.ZEPPELIN_WEBSOCKET_PARAGRAPH_STATUS_PROGRESS);
 
   // TODO(jl): This will be removed by handling session directly
   private final Map<String, NotebookSocket> sessionIdNotebookSocketMap = Metrics.gaugeMapSize("zeppelin_session_id_notebook_sockets", Tags.empty(), new ConcurrentHashMap<>());
@@ -308,8 +305,7 @@ public class NotebookServer implements AngularObjectRegistryListener,
         return;
       }
 
-      ZeppelinConfiguration conf = ZeppelinConfiguration.create();
-      boolean allowAnonymous = conf.isAnonymousAllowed();
+      boolean allowAnonymous = zeppelinConfiguration.isAnonymousAllowed();
       if (!allowAnonymous && receivedMessage.principal.equals("anonymous")) {
         LOG.warn("Anonymous access not allowed.");
         return;
@@ -513,6 +509,10 @@ public class NotebookServer implements AngularObjectRegistryListener,
     connectionManager.removeConnection(notebookSocket);
     connectionManager.removeConnectionFromAllNote(notebookSocket);
     connectionManager.removeUserConnection(notebookSocket.getUser(), notebookSocket);
+  }
+
+  private boolean sendParagraphStatusToFrontend() {
+    return zeppelinConfiguration.getBoolean(ZeppelinConfiguration.ConfVars.ZEPPELIN_WEBSOCKET_PARAGRAPH_STATUS_PROGRESS);
   }
 
   @OnError
@@ -720,8 +720,7 @@ public class NotebookServer implements AngularObjectRegistryListener,
 
   // broadcast ClusterEvent
   private void broadcastClusterEvent(ClusterEvent event, String msgId, Object... objects) {
-    ZeppelinConfiguration conf = ZeppelinConfiguration.create();
-    if (!conf.isClusterMode()) {
+    if (!zeppelinConfiguration.isClusterMode()) {
       return;
     }
 
@@ -753,7 +752,7 @@ public class NotebookServer implements AngularObjectRegistryListener,
     }
 
     String msg = ClusterMessage.serializeMessage(clusterMessage);
-    ClusterManagerServer.getInstance(conf).broadcastClusterEvent(
+    ClusterManagerServer.getInstance(zeppelinConfiguration).broadcastClusterEvent(
         ClusterManagerServer.CLUSTER_NOTE_EVENT_TOPIC, msg);
   }
 
@@ -776,12 +775,12 @@ public class NotebookServer implements AngularObjectRegistryListener,
         authenticationInfo = AuthenticationInfo.fromJson(json);
       } else if (StringUtils.equals(key, "Note")) {
         try {
-          note = Note.fromJson(null, json);
-        } catch (IOException e) {
+          note = NoteUtils.getNoteGson(zeppelinConfiguration).fromJson(json, Note.class);
+        } catch (JsonSyntaxException e) {
           LOG.warn("Fail to parse note json", e);
         }
       } else if (StringUtils.equals(key, "Paragraph")) {
-        paragraph = Paragraph.fromJson(json);
+        paragraph = NoteUtils.getNoteGson(zeppelinConfiguration).fromJson(json, Paragraph.class);
       } else if (StringUtils.equals(key, "Set<String>")) {
         Gson gson = new Gson();
         userAndRoles = gson.fromJson(json, new TypeToken<Set<String>>() {
@@ -791,7 +790,7 @@ public class NotebookServer implements AngularObjectRegistryListener,
         userParagraphMap = gson.fromJson(json, new TypeToken<Map<String, Paragraph>>() {
         }.getType());
       } else {
-        LOG.error("Unknown key:{}, json:{}!" + key, json);
+        LOG.error("Unknown key:{}, json:{}!", key, json);
       }
     }
 
@@ -1201,7 +1200,7 @@ public class NotebookServer implements AngularObjectRegistryListener,
   private void patchParagraph(NotebookSocket conn,
                               ServiceContext context,
                               Message fromMessage) throws IOException {
-    if (!collaborativeModeEnable) {
+    if (!zeppelinConfiguration.isZeppelinNotebookCollaborativeModeEnable()) {
       return;
     }
     String paragraphId = fromMessage.getType("id", LOG);
@@ -1784,7 +1783,7 @@ public class NotebookServer implements AngularObjectRegistryListener,
    */
   @Override
   public void onOutputAppend(String noteId, String paragraphId, int index, String output) {
-    if (!sendParagraphStatusToFrontend) {
+    if (!sendParagraphStatusToFrontend()) {
       return;
     }
     Message msg = new Message(OP.PARAGRAPH_APPEND_OUTPUT)
@@ -1803,7 +1802,7 @@ public class NotebookServer implements AngularObjectRegistryListener,
   @Override
   public void onOutputUpdated(String noteId, String paragraphId, int index,
                               InterpreterResult.Type type, String output) {
-    if (!sendParagraphStatusToFrontend) {
+    if (!sendParagraphStatusToFrontend()) {
       return;
     }
     Message msg = new Message(OP.PARAGRAPH_UPDATE_OUTPUT)
@@ -1841,7 +1840,7 @@ public class NotebookServer implements AngularObjectRegistryListener,
    */
   @Override
   public void onOutputClear(String noteId, String paragraphId) {
-    if (!sendParagraphStatusToFrontend) {
+    if (!sendParagraphStatusToFrontend()) {
       return;
     }
 
@@ -2050,7 +2049,7 @@ public class NotebookServer implements AngularObjectRegistryListener,
   public void onProgressUpdate(Job<?> job, int progress) {
     if (job instanceof Paragraph) {
       final Paragraph p = (Paragraph) job;
-      if (!sendParagraphStatusToFrontend) {
+      if (!sendParagraphStatusToFrontend()) {
         return;
       }
       connectionManager.broadcast(p.getNote().getId(),

@@ -24,6 +24,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 
 
@@ -37,11 +39,7 @@ class HeliumOnlineRegistryTest {
 
   @BeforeEach
   public void setUp() throws Exception {
-    tmpDir = new File(
-            System.getProperty("java.io.tmpdir")
-                    + "/ZeppelinLTest_"
-                    + System.currentTimeMillis()
-    );
+    tmpDir = Files.createTempDirectory("ZeppelinLTest").toFile();
   }
 
   @AfterEach
@@ -51,18 +49,13 @@ class HeliumOnlineRegistryTest {
 
   @Test
   void zeppelinNotebookS3TimeoutPropertyTest() throws IOException {
-    System.setProperty(
-            ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_S3_TIMEOUT.getVarName(),
-            TIMEOUT
-    );
-    System.setProperty(
-            ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_S3_ENDPOINT.getVarName(),
-            IP
-    );
+    ZeppelinConfiguration zConf = ZeppelinConfiguration.load();
+    zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_S3_TIMEOUT.getVarName(), TIMEOUT);
+    zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_S3_ENDPOINT.getVarName(), IP);
     HeliumOnlineRegistry heliumOnlineRegistry = new HeliumOnlineRegistry(
             "https://" + IP,
             "https://" + IP,
-            tmpDir
+            tmpDir, zConf
     );
 
     long start = System.currentTimeMillis();

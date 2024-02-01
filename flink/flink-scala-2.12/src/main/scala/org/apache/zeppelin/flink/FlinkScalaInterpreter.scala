@@ -44,6 +44,7 @@ import org.apache.flink.table.catalog.hive.HiveCatalog
 import org.apache.flink.table.functions.{AggregateFunction, ScalarFunction, TableAggregateFunction, TableFunction}
 import org.apache.flink.table.module.hive.HiveModule
 import org.apache.flink.yarn.cli.FlinkYarnSessionCli
+import org.apache.zeppelin.conf.ZeppelinConfiguration
 import org.apache.zeppelin.dep.DependencyResolver
 import org.apache.zeppelin.flink.internal.FlinkShell
 import org.apache.zeppelin.flink.internal.FlinkShell._
@@ -798,7 +799,7 @@ abstract class FlinkScalaInterpreter(val properties: Properties,
     val flinkPackageJars =
       if (!StringUtils.isBlank(properties.getProperty("flink.execution.packages", ""))) {
         val packages = properties.getProperty("flink.execution.packages")
-        val dependencyResolver = new DependencyResolver(System.getProperty("user.home") + "/.m2/repository")
+        val dependencyResolver = new DependencyResolver(System.getProperty("user.home") + "/.m2/repository", ZeppelinConfiguration.load())
         packages.split(",")
           .flatMap(e => JavaConversions.asScalaBuffer(dependencyResolver.load(e)))
           .map(e => e.getAbsolutePath).toSeq

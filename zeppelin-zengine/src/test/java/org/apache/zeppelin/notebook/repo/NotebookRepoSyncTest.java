@@ -21,9 +21,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 
-import com.google.common.io.Files;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -44,6 +44,7 @@ import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.storage.ConfigStorage;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
+import org.apache.zeppelin.util.NoteUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -51,10 +52,13 @@ import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.gson.Gson;
+
 class NotebookRepoSyncTest {
 
-  private File ZEPPELIN_HOME;
+  private File zeppelinHome;
   private ZeppelinConfiguration conf;
+  private Gson gson;
   private File mainNotebookDir;
   private File secNotebookDir;
   private Notebook notebook;
@@ -70,25 +74,27 @@ class NotebookRepoSyncTest {
   @BeforeEach
   public void setUp() throws Exception {
     System.setProperty("zeppelin.isTest", "true");
-    ZEPPELIN_HOME = Files.createTempDir();
-    new File(ZEPPELIN_HOME, "conf").mkdirs();
-    String mainNotePath = ZEPPELIN_HOME.getAbsolutePath() + "/notebook";
-    String secNotePath = ZEPPELIN_HOME.getAbsolutePath() + "/notebook_secondary";
-    mainNotebookDir = new File(mainNotePath);
-    secNotebookDir = new File(secNotePath);
+    zeppelinHome = Files.createTempDirectory(this.getClass().getSimpleName()).toFile();
+    File confDir = new File(zeppelinHome, "conf");
+    confDir.mkdirs();
+    String mainNotePath = zeppelinHome.getAbsolutePath() + "/notebook";
+    String secNotePath = zeppelinHome.getAbsolutePath() + "/notebook_secondary";
+    mainNotebookDir = new File(zeppelinHome, "notebook");
+    secNotebookDir = new File(zeppelinHome, "notebook_secondary");
     mainNotebookDir.mkdirs();
     secNotebookDir.mkdirs();
+    conf = ZeppelinConfiguration.load();
+    gson = NoteUtils.getNoteGson(conf);
 
-    System.setProperty(ConfVars.ZEPPELIN_HOME.getVarName(), ZEPPELIN_HOME.getAbsolutePath());
-    System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_DIR.getVarName(), mainNotebookDir.getAbsolutePath());
-    System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_STORAGE.getVarName(), "org.apache.zeppelin.notebook.repo.VFSNotebookRepo,org.apache.zeppelin.notebook.repo.mock.VFSNotebookRepoMock");
-    System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_ONE_WAY_SYNC.getVarName(), "false");
-    System.setProperty(ConfVars.ZEPPELIN_CONFIG_FS_DIR.getVarName(), ZEPPELIN_HOME.getAbsolutePath() + "/conf");
-    System.setProperty(ConfVars.ZEPPELIN_PLUGINS_DIR.getVarName(), new File("../../../plugins").getAbsolutePath());
+    conf.setProperty(ConfVars.ZEPPELIN_HOME.getVarName(), zeppelinHome.getAbsolutePath());
+    conf.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_DIR.getVarName(), mainNotebookDir.getAbsolutePath());
+    conf.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_STORAGE.getVarName(), "org.apache.zeppelin.notebook.repo.VFSNotebookRepo,org.apache.zeppelin.notebook.repo.mock.VFSNotebookRepoMock");
+    conf.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_ONE_WAY_SYNC.getVarName(), "false");
+    conf.setProperty(ConfVars.ZEPPELIN_CONFIG_FS_DIR.getVarName(), zeppelinHome.getAbsolutePath() + "/conf");
+    conf.setProperty(ConfVars.ZEPPELIN_PLUGINS_DIR.getVarName(), new File("../../../plugins").getAbsolutePath());
 
     LOG.info("main Note dir : " + mainNotePath);
     LOG.info("secondary note dir : " + secNotePath);
-    conf = ZeppelinConfiguration.create();
 
     ConfigStorage.reset();
 
@@ -96,7 +102,8 @@ class NotebookRepoSyncTest {
         mock(AngularObjectRegistryListener.class), mock(RemoteInterpreterProcessListener.class), mock(ApplicationEventListener.class));
     factory = new InterpreterFactory(interpreterSettingManager);
 
-    notebookRepoSync = new NotebookRepoSync(conf);
+    notebookRepoSync = new NotebookRepoSync();
+    notebookRepoSync.init(conf, gson);
     noteManager = new NoteManager(notebookRepoSync, conf);
     authorizationService = new AuthorizationService(noteManager, conf);
     credentials = new Credentials(conf);
@@ -106,7 +113,7 @@ class NotebookRepoSyncTest {
 
   @AfterEach
   public void tearDown() throws Exception {
-    delete(ZEPPELIN_HOME);
+    FileUtils.deleteDirectory(zeppelinHome);
     System.clearProperty("zeppelin.isTest");
   }
 
@@ -252,10 +259,12 @@ class NotebookRepoSyncTest {
 
   @Test
   void testOneWaySyncOnReloadedList() throws IOException, SchedulerException {
-    System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_DIR.getVarName(), mainNotebookDir.getAbsolutePath());
-    System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_ONE_WAY_SYNC.getVarName(), "true");
-    conf = ZeppelinConfiguration.create();
-    notebookRepoSync = new NotebookRepoSync(conf);
+    conf.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_DIR.getVarName(),
+        mainNotebookDir.getAbsolutePath());
+    conf.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_ONE_WAY_SYNC.getVarName(), "true");
+
+    notebookRepoSync = new NotebookRepoSync();
+    notebookRepoSync.init(conf, gson);
     notebook = new Notebook(conf, mock(AuthorizationService.class), notebookRepoSync, new NoteManager(notebookRepoSync, conf), factory, interpreterSettingManager, credentials, null);
 
     // check that both storage repos are empty
@@ -299,11 +308,13 @@ class NotebookRepoSyncTest {
 
   @Test
   void testCheckpointOneStorage() throws IOException, SchedulerException {
-    System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_STORAGE.getVarName(), "org.apache.zeppelin.notebook.repo.GitNotebookRepo");
-    ZeppelinConfiguration vConf = ZeppelinConfiguration.create();
+    conf.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_STORAGE.getVarName(),
+        "org.apache.zeppelin.notebook.repo.GitNotebookRepo");
 
-    NotebookRepoSync vRepoSync = new NotebookRepoSync(vConf);
-    Notebook vNotebookSync = new Notebook(vConf, mock(AuthorizationService.class), vRepoSync, new NoteManager(vRepoSync, conf), factory, interpreterSettingManager, credentials, null);
+    NotebookRepoSync vRepoSync = new NotebookRepoSync();
+    vRepoSync.init(conf, gson);
+    Notebook vNotebookSync = new Notebook(conf, mock(AuthorizationService.class), vRepoSync,
+        new NoteManager(vRepoSync, conf), factory, interpreterSettingManager, credentials, null);
 
     // one git versioned storage initialized
     assertEquals(1, vRepoSync.getRepoCount());
@@ -421,19 +432,5 @@ class NotebookRepoSyncTest {
     assertEquals(0, authorizationService.getReaders(noteId).size());
     assertEquals(0, authorizationService.getRunners(noteId).size());
     assertEquals(0, authorizationService.getWriters(noteId).size());
-  }
-
-  static void delete(File file) {
-    if (file.isFile()) {
-      file.delete();
-    } else if (file.isDirectory()) {
-      File[] files = file.listFiles();
-      if (files != null && files.length > 0) {
-        for (File f : files) {
-          delete(f);
-        }
-      }
-      file.delete();
-    }
   }
 }

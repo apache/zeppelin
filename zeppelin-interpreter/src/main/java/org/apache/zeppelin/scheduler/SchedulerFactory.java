@@ -50,9 +50,8 @@ public class SchedulerFactory {
   }
 
   private SchedulerFactory() {
-    ZeppelinConfiguration zConf = ZeppelinConfiguration.create();
-    int threadPoolSize =
-            zConf.getInt(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_SCHEDULER_POOL_SIZE);
+    int threadPoolSize = ZeppelinConfiguration
+        .getStaticInt(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_SCHEDULER_POOL_SIZE);
     LOGGER.info("Scheduler Thread Pool Size: {}", threadPoolSize);
     executor = ExecutorFactory.singleton().createOrGet(SCHEDULER_EXECUTOR_NAME, threadPoolSize);
   }

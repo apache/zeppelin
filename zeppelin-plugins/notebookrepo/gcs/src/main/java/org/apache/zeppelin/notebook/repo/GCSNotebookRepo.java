@@ -28,6 +28,7 @@ import com.google.cloud.storage.StorageException;
 import com.google.cloud.storage.StorageOptions;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import com.google.gson.Gson;
 import com.google.gson.JsonParseException;
 
 import java.io.FileInputStream;
@@ -48,6 +49,7 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.user.AuthenticationInfo;
+import org.apache.zeppelin.util.NoteUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,7 +67,7 @@ import org.slf4j.LoggerFactory;
  * @see <a href="https://github.com/google/google-auth-library-java">
  *   google-auth-library-java</a>.
  */
-public class GCSNotebookRepo implements NotebookRepo {
+public class GCSNotebookRepo extends AbstractNotebookRepo {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(GCSNotebookRepo.class);
   private String encoding;
@@ -78,9 +80,10 @@ public class GCSNotebookRepo implements NotebookRepo {
   }
 
   @VisibleForTesting
-  public GCSNotebookRepo(ZeppelinConfiguration zConf, Storage storage) throws IOException {
+  public GCSNotebookRepo(ZeppelinConfiguration conf, Gson gson, Storage storage) throws IOException
+  {
     try {
-      init(zConf);
+      init(conf, gson);
     } catch (IOException e) {
       // Skip Credentials Exception during tests
       if (!e.getMessage().contains("Default Credentials")) {
@@ -91,9 +94,9 @@ public class GCSNotebookRepo implements NotebookRepo {
   }
 
   @Override
-  public void init(ZeppelinConfiguration zConf) throws IOException {
+  public void init(ZeppelinConfiguration zConf, Gson gson) throws IOException {
+    super.init(zConf, gson);
     this.encoding =  zConf.getString(ConfVars.ZEPPELIN_ENCODING);
-
     String gcsStorageDir = zConf.getGCSStorageDir();
     if (gcsStorageDir.isEmpty()) {
       throw new IOException("GCS storage directory must be set using 'zeppelin.notebook.gcs.dir'");
@@ -189,7 +192,7 @@ public class GCSNotebookRepo implements NotebookRepo {
     }
 
     try {
-      return Note.fromJson(noteId, new String(contents, encoding));
+      return NoteUtils.fromJson(gson, conf, noteId, new String(contents, encoding));
     } catch (JsonParseException jpe) {
       throw new IOException(
           "Could note parse as json " + blobId.toString() + jpe.getMessage(), jpe);

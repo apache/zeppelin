@@ -17,7 +17,8 @@
 
 package org.apache.zeppelin.notebook.repo;
 
-import com.google.common.annotations.VisibleForTesting;
+import com.google.gson.Gson;
+
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.user.AuthenticationInfo;
@@ -60,17 +61,9 @@ public class GitNotebookRepo extends VFSNotebookRepo implements NotebookRepoWith
     super();
   }
 
-  @VisibleForTesting
-  public GitNotebookRepo(ZeppelinConfiguration conf) throws IOException {
-    this();
-    init(conf);
-  }
-
   @Override
-  public void init(ZeppelinConfiguration conf) throws IOException {
-    //TODO(zjffdu), it is weird that I can not call super.init directly here, as it would cause
-    //AbstractMethodError
-    this.conf = conf;
+  public void init(ZeppelinConfiguration conf, Gson gson) throws IOException {
+    super.init(conf, gson);
     setNotebookDirectory(conf.getNotebookDir());
 
     LOGGER.info("Opening a git repo at '{}'", this.rootNotebookFolder);

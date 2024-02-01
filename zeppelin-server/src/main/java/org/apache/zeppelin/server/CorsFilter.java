@@ -37,6 +37,12 @@ import org.slf4j.LoggerFactory;
 public class CorsFilter implements Filter {
   private static final Logger LOGGER = LoggerFactory.getLogger(CorsFilter.class);
 
+  private final ZeppelinConfiguration conf;
+
+  public CorsFilter(ZeppelinConfiguration conf) {
+    this.conf = conf;
+  }
+
   @Override
   public void doFilter(ServletRequest request, ServletResponse response, FilterChain filterChain)
       throws IOException, ServletException {
@@ -44,7 +50,7 @@ public class CorsFilter implements Filter {
     String origin = "";
 
     try {
-      if (CorsUtils.isValidOrigin(sourceHost, ZeppelinConfiguration.create())) {
+      if (CorsUtils.isValidOrigin(sourceHost, conf)) {
         origin = sourceHost;
       }
     } catch (URISyntaxException e) {
@@ -70,13 +76,12 @@ public class CorsFilter implements Filter {
     response.setHeader("Access-Control-Allow-Headers", "authorization,Content-Type");
     response.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, HEAD, DELETE");
 
-    ZeppelinConfiguration zeppelinConfiguration = ZeppelinConfiguration.create();
-    response.setHeader("X-FRAME-OPTIONS", zeppelinConfiguration.getXFrameOptions());
-    if (zeppelinConfiguration.useSsl()) {
-      response.setHeader("Strict-Transport-Security", zeppelinConfiguration.getStrictTransport());
+    response.setHeader("X-FRAME-OPTIONS", conf.getXFrameOptions());
+    if (conf.useSsl()) {
+      response.setHeader("Strict-Transport-Security", conf.getStrictTransport());
     }
-    response.setHeader("X-XSS-Protection", zeppelinConfiguration.getXxssProtection());
-    response.setHeader("X-Content-Type-Options", zeppelinConfiguration.getXContentTypeOptions());
+    response.setHeader("X-XSS-Protection", conf.getXxssProtection());
+    response.setHeader("X-Content-Type-Options", conf.getXContentTypeOptions());
   }
 
   @Override

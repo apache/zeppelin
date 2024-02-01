@@ -49,8 +49,8 @@ public class PluginManager {
 
   private static PluginManager instance;
 
-  private ZeppelinConfiguration zConf = ZeppelinConfiguration.create();
-  private String pluginsDir = zConf.getPluginsDir();
+  private final String pluginsDir;
+  private final ZeppelinConfiguration zConf;
 
   private Map<String, InterpreterLauncher> cachedLaunchers = new HashMap<>();
 
@@ -61,9 +61,14 @@ public class PluginManager {
           VFSNotebookRepo.class.getName(),
           GitNotebookRepo.class.getName());
 
-  public static synchronized PluginManager get() {
+  public PluginManager(ZeppelinConfiguration zConf) {
+    pluginsDir = zConf.getPluginsDir();
+    this.zConf = zConf;
+  }
+
+  public static synchronized PluginManager get(ZeppelinConfiguration zConf) {
     if (instance == null) {
-      instance = new PluginManager();
+      instance = new PluginManager(zConf);
     }
     return instance;
   }

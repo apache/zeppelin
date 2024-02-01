@@ -28,6 +28,8 @@ import org.apache.hadoop.yarn.exceptions.YarnException;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.apache.zeppelin.test.DownloadUtils;
+import org.apache.zeppelin.MiniZeppelinServer;
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.ExecutionContext;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
@@ -61,7 +63,6 @@ public abstract class SparkIntegrationTest {
   private static Logger LOGGER = LoggerFactory.getLogger(SparkIntegrationTest.class);
 
   private static MiniHadoopCluster hadoopCluster;
-  private static MiniZeppelin zeppelin;
   private static InterpreterFactory interpreterFactory;
   protected static InterpreterSettingManager interpreterSettingManager;
 
@@ -69,33 +70,44 @@ public abstract class SparkIntegrationTest {
   private String hadoopVersion;
   private String sparkHome;
 
+  private static MiniZeppelinServer zepServer;
+
+  @BeforeAll
+  static void init() throws Exception {
+    String sparkVersion = "3.4.1";
+    String hadoopVersion = "3";
+    LOGGER.info("Testing Spark Version: " + sparkVersion);
+    LOGGER.info("Testing Hadoop Version: " + hadoopVersion);
+    hadoopCluster = new MiniHadoopCluster();
+    hadoopCluster.start();
+
+    zepServer = new MiniZeppelinServer(SparkIntegrationTest.class.getSimpleName());
+    zepServer.addInterpreter("sh");
+    zepServer.addInterpreter("spark");
+    zepServer.addInterpreter("spark-submit");
+    zepServer.copyBinDir();
+    zepServer.copyLogProperties();
+    zepServer.getZeppelinConfiguration().setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HELIUM_REGISTRY.getVarName(),
+        "helium");
+    zepServer.start();
+    interpreterSettingManager = zepServer.getServiceLocator().getService(InterpreterSettingManager.class);
+    interpreterFactory = zepServer.getServiceLocator().getService(InterpreterFactory.class);
+  }
+
+  @AfterAll
+  public static void tearDown() throws Exception {
+    zepServer.destroy();
+    if (hadoopCluster != null) {
+      hadoopCluster.stop();
+    }
+  }
+  
   public void prepareSpark(String sparkVersion, String hadoopVersion) {
     LOGGER.info("Testing Spark Version: " + sparkVersion);
     LOGGER.info("Testing Hadoop Version: " + hadoopVersion);
     this.sparkVersion = sparkVersion;
     this.hadoopVersion = hadoopVersion;
     this.sparkHome = DownloadUtils.downloadSpark(sparkVersion, hadoopVersion);
-  }
-
-  @BeforeAll
-  public static void setUp() throws IOException {
-    hadoopCluster = new MiniHadoopCluster();
-    hadoopCluster.start();
-
-    zeppelin = new MiniZeppelin();
-    zeppelin.start(SparkIntegrationTest.class);
-    interpreterFactory = zeppelin.getInterpreterFactory();
-    interpreterSettingManager = zeppelin.getInterpreterSettingManager();
-  }
-
-  @AfterAll
-  public static void tearDown() throws IOException {
-    if (zeppelin != null) {
-      zeppelin.stop();
-    }
-    if (hadoopCluster != null) {
-      hadoopCluster.stop();
-    }
   }
 
   protected void setUpSparkInterpreterSetting(InterpreterSetting interpreterSetting) {
@@ -122,8 +134,8 @@ public abstract class SparkIntegrationTest {
    * @throws IOException
    */
   private void setupIvySettings(InterpreterSetting interpreterSetting) throws IOException {
-    File ivysettings = new File(zeppelin.getZeppelinConfDir(), "ivysettings.xml");
-    FileUtils.copyToFile(SparkIntegrationTest.class.getResourceAsStream("/ivysettings.xml"), ivysettings);
+    String ivysettingsContent = IOUtils.toString(SparkIntegrationTest.class.getResourceAsStream("/ivysettings.xml"), StandardCharsets.UTF_8.name());
+    File ivysettings = zepServer.addConfigFile("ivysettings.xml", ivysettingsContent);
     interpreterSetting.setProperty("spark.jars.ivySettings", ivysettings.getAbsolutePath());
   }
 
@@ -197,7 +209,7 @@ public abstract class SparkIntegrationTest {
     InterpreterSetting sparkInterpreterSetting = interpreterSettingManager.getInterpreterSettingByName("spark");
     sparkInterpreterSetting.setProperty("spark.master", "local[*]");
     sparkInterpreterSetting.setProperty("SPARK_HOME", sparkHome);
-    sparkInterpreterSetting.setProperty("ZEPPELIN_CONF_DIR", zeppelin.getZeppelinConfDir().getAbsolutePath());
+    sparkInterpreterSetting.setProperty("ZEPPELIN_CONF_DIR", zepServer.getZeppelinConfiguration().getConfDir());
     sparkInterpreterSetting.setProperty("zeppelin.spark.useHiveContext", "false");
     sparkInterpreterSetting.setProperty("zeppelin.pyspark.useIPython", "false");
     sparkInterpreterSetting.setProperty("zeppelin.spark.scala.color", "false");
@@ -226,7 +238,7 @@ public abstract class SparkIntegrationTest {
     sparkInterpreterSetting.setProperty("spark.master", "yarn-client");
     sparkInterpreterSetting.setProperty("HADOOP_CONF_DIR", hadoopCluster.getConfigPath());
     sparkInterpreterSetting.setProperty("SPARK_HOME", sparkHome);
-    sparkInterpreterSetting.setProperty("ZEPPELIN_CONF_DIR", zeppelin.getZeppelinConfDir().getAbsolutePath());
+    sparkInterpreterSetting.setProperty("ZEPPELIN_CONF_DIR", zepServer.getZeppelinConfiguration().getConfDir());
     sparkInterpreterSetting.setProperty("zeppelin.spark.useHiveContext", "false");
     sparkInterpreterSetting.setProperty("zeppelin.pyspark.useIPython", "false");
     sparkInterpreterSetting.setProperty("PYSPARK_PYTHON", getPythonExec());
@@ -280,7 +292,7 @@ public abstract class SparkIntegrationTest {
     sparkInterpreterSetting.setProperty("spark.master", "yarn-cluster");
     sparkInterpreterSetting.setProperty("HADOOP_CONF_DIR", hadoopCluster.getConfigPath());
     sparkInterpreterSetting.setProperty("SPARK_HOME", sparkHome);
-    sparkInterpreterSetting.setProperty("ZEPPELIN_CONF_DIR", zeppelin.getZeppelinConfDir().getAbsolutePath());
+    sparkInterpreterSetting.setProperty("ZEPPELIN_CONF_DIR", zepServer.getZeppelinConfiguration().getConfDir());
     sparkInterpreterSetting.setProperty("zeppelin.spark.useHiveContext", "false");
     sparkInterpreterSetting.setProperty("zeppelin.pyspark.useIPython", "false");
     sparkInterpreterSetting.setProperty("PYSPARK_PYTHON", getPythonExec());
@@ -350,7 +362,7 @@ public abstract class SparkIntegrationTest {
       sparkInterpreterSetting.setProperty("spark.master", "local[*]");
       sparkInterpreterSetting.setProperty("spark.submit.deployMode", "client");
       sparkInterpreterSetting.setProperty("SPARK_HOME", sparkHome);
-      sparkInterpreterSetting.setProperty("ZEPPELIN_CONF_DIR", zeppelin.getZeppelinConfDir().getAbsolutePath());
+      sparkInterpreterSetting.setProperty("ZEPPELIN_CONF_DIR", zepServer.getZeppelinConfiguration().getConfDir());
       sparkInterpreterSetting.setProperty("zeppelin.spark.useHiveContext", "false");
       sparkInterpreterSetting.setProperty("zeppelin.pyspark.useIPython", "false");
       sparkInterpreterSetting.setProperty("zeppelin.spark.scala.color", "false");

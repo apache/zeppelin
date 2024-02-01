@@ -36,6 +36,7 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.user.AuthenticationInfo;
+import org.apache.zeppelin.util.NoteUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,11 +62,12 @@ import com.amazonaws.regions.Region;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
+import com.google.gson.Gson;
 
 /**
  * Backend for storing Notebooks on S3
  */
-public class S3NotebookRepo implements NotebookRepo {
+public class S3NotebookRepo extends AbstractNotebookRepo {
   private static final Logger LOGGER = LoggerFactory.getLogger(S3NotebookRepo.class);
 
   // Use a credential provider chain so that instance profiles can be utilized
@@ -87,15 +89,15 @@ public class S3NotebookRepo implements NotebookRepo {
   private String user;
   private boolean useServerSideEncryption;
   private CannedAccessControlList objectCannedAcl;
-  private ZeppelinConfiguration conf;
   private String rootFolder;
 
   public S3NotebookRepo() {
 
   }
 
-  public void init(ZeppelinConfiguration conf) throws IOException {
-    this.conf = conf;
+  @Override
+  public void init(ZeppelinConfiguration conf, Gson gson) throws IOException {
+    super.init(conf, gson);
     bucketName = conf.getS3BucketName();
     user = conf.getS3User();
     rootFolder = user + "/notebook";
@@ -114,7 +116,7 @@ public class S3NotebookRepo implements NotebookRepo {
     }
 
     ClientConfiguration cliConf = createClientConfiguration();
-    
+
     // see if we should be encrypting data in S3
     String kmsKeyID = conf.getS3KMSKeyID();
     if (kmsKeyID != null) {
@@ -224,7 +226,7 @@ public class S3NotebookRepo implements NotebookRepo {
     }
     try (InputStream ins = s3object.getObjectContent()) {
       String json = IOUtils.toString(ins, conf.getString(ConfVars.ZEPPELIN_ENCODING));
-      return Note.fromJson(noteId, json);
+      return NoteUtils.fromJson(gson, conf, noteId, json);
     }
   }
 
@@ -234,9 +236,9 @@ public class S3NotebookRepo implements NotebookRepo {
     String key = rootFolder + "/" + buildNoteFileName(note);
     File file = File.createTempFile("note", "zpln");
     try {
-      Writer writer = new OutputStreamWriter(new FileOutputStream(file));
-      writer.write(json);
-      writer.close();
+      try (Writer writer = new OutputStreamWriter(new FileOutputStream(file))) {
+        writer.write(json);
+      }
       PutObjectRequest putRequest = new PutObjectRequest(bucketName, key, file);
       if (useServerSideEncryption) {
         // Request server-side encryption.
@@ -334,5 +336,4 @@ public class S3NotebookRepo implements NotebookRepo {
   public void updateSettings(Map<String, String> settings, AuthenticationInfo subject) {
     LOGGER.warn("Method not implemented");
   }
-
 }
