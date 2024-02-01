@@ -65,6 +65,8 @@ public class Helium {
   private final HeliumApplicationFactory applicationFactory;
   private final InterpreterSettingManager interpreterSettingManager;
 
+  private final ZeppelinConfiguration conf;
+
   @Inject
   public Helium(
       ZeppelinConfiguration conf,
@@ -77,7 +79,8 @@ public class Helium {
         new File(conf.getAbsoluteDir(ConfVars.ZEPPELIN_DEP_LOCALREPO), "helium-registry-cache"),
         heliumBundleFactory,
         heliumApplicationFactory,
-        interpreterSettingManager);
+        interpreterSettingManager,
+        conf);
   }
 
   @VisibleForTesting
@@ -87,7 +90,8 @@ public class Helium {
       File registryCacheDir,
       HeliumBundleFactory bundleFactory,
       HeliumApplicationFactory applicationFactory,
-      InterpreterSettingManager interpreterSettingManager)
+      InterpreterSettingManager interpreterSettingManager,
+      ZeppelinConfiguration conf)
       throws IOException {
     this.heliumConfPath = heliumConfPath;
     this.registryPaths = registryPaths;
@@ -95,6 +99,7 @@ public class Helium {
     this.bundleFactory = bundleFactory;
     this.applicationFactory = applicationFactory;
     this.interpreterSettingManager = interpreterSettingManager;
+    this.conf = conf;
     heliumConf = loadConf(heliumConfPath);
     allPackages = getAllPackageInfo();
 
@@ -134,7 +139,7 @@ public class Helium {
       for (String uri : paths) {
         if (uri.startsWith("http://") || uri.startsWith("https://")) {
           logger.info("Add helium online registry {}", uri);
-          registry.add(new HeliumOnlineRegistry(uri, uri, registryCacheDir));
+          registry.add(new HeliumOnlineRegistry(uri, uri, registryCacheDir, conf));
         } else {
           logger.info("Add helium local registry {}", uri);
           registry.add(new HeliumLocalRegistry(uri, uri));

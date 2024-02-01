@@ -21,10 +21,12 @@ import com.google.gson.reflect.TypeToken;
 
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.util.EntityUtils;
+import org.apache.zeppelin.MiniZeppelinServer;
 import org.apache.zeppelin.common.SessionInfo;
 import org.apache.zeppelin.server.JsonResponse;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -36,14 +38,23 @@ import javax.ws.rs.core.Response.Status;
 class SessionRestApiTest extends AbstractTestRestApi {
   Gson gson = new Gson();
 
+  private static MiniZeppelinServer zepServer;
+
   @BeforeAll
-  static void init() throws Exception {
-    AbstractTestRestApi.startUp(SessionRestApi.class.getSimpleName());
+  public static void init() throws Exception {
+    zepServer = new MiniZeppelinServer(SessionRestApiTest.class.getSimpleName());
+    zepServer.addInterpreter("md");
+    zepServer.start();
   }
 
   @AfterAll
-  static void destroy() throws Exception {
-    AbstractTestRestApi.shutDown();
+  public static void destroy() throws Exception {
+    zepServer.destroy();
+  }
+
+  @BeforeEach
+  void setup() {
+    conf = zepServer.getZeppelinConfiguration();
   }
 
   @Test

@@ -30,6 +30,7 @@ import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.repo.InMemoryNotebookRepo;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.user.Credentials;
+import org.apache.zeppelin.util.NoteUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.slf4j.Logger;
@@ -76,13 +77,19 @@ public abstract class AbstractInterpreterTest {
     FileUtils.copyDirectory(new File("src/test/resources/interpreter"), interpreterDir);
     FileUtils.copyDirectory(new File("src/test/resources/conf"), confDir);
 
-    System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HOME.getVarName(), zeppelinHome.getAbsolutePath());
-    System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_CONF_DIR.getVarName(), confDir.getAbsolutePath());
-    System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_DIR.getVarName(), interpreterDir.getAbsolutePath());
-    System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_DIR.getVarName(), notebookDir.getAbsolutePath());
-    System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_GROUP_DEFAULT.getVarName(), "test");
+    conf = ZeppelinConfiguration.load();
+    conf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HOME.getVarName(),
+        zeppelinHome.getAbsolutePath());
+    conf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_CONF_DIR.getVarName(),
+        confDir.getAbsolutePath());
+    conf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_DIR.getVarName(),
+        interpreterDir.getAbsolutePath());
+    conf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_DIR.getVarName(),
+        notebookDir.getAbsolutePath());
+    conf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_GROUP_DEFAULT.getVarName(),
+        "test");
 
-    conf = ZeppelinConfiguration.create();
+
     NotebookRepo notebookRepo = new InMemoryNotebookRepo();
     NoteManager noteManager = new NoteManager(notebookRepo, conf);
     AuthorizationService authorizationService = new AuthorizationService(noteManager, conf);
@@ -114,7 +121,8 @@ public abstract class AbstractInterpreterTest {
   }
 
   protected Note createNote() {
-    return new Note("test", "test", interpreterFactory, interpreterSettingManager, null, null, null);
+    return new Note("test", "test", interpreterFactory, interpreterSettingManager, null, null, null,
+        conf, NoteUtils.getNoteGson(conf));
   }
 
   protected InterpreterContext createDummyInterpreterContext() {

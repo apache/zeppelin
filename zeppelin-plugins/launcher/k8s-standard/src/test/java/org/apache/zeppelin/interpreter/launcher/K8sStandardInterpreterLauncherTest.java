@@ -42,7 +42,7 @@ class K8sStandardInterpreterLauncherTest {
   @Test
   void testK8sLauncher() throws IOException {
     // given
-    ZeppelinConfiguration zConf = ZeppelinConfiguration.create();
+    ZeppelinConfiguration zConf = ZeppelinConfiguration.load();
     K8sStandardInterpreterLauncher launcher = new K8sStandardInterpreterLauncher(zConf, null);
     Properties properties = new Properties();
     properties.setProperty("ENV_1", "VALUE_1");
@@ -71,7 +71,7 @@ class K8sStandardInterpreterLauncherTest {
   @Test
   void testK8sLauncherWithSparkAndUserImpersonate() throws IOException {
     // given
-    ZeppelinConfiguration zConf = ZeppelinConfiguration.create();
+    ZeppelinConfiguration zConf = ZeppelinConfiguration.load();
     K8sStandardInterpreterLauncher launcher = new K8sStandardInterpreterLauncher(zConf, null);
     Properties properties = new Properties();
     properties.setProperty("ENV_1", "VALUE_1");
@@ -105,7 +105,7 @@ class K8sStandardInterpreterLauncherTest {
   @Test
   void testK8sLauncherWithSparkAndWithoutUserImpersonate() throws IOException {
     // given
-    ZeppelinConfiguration zConf = ZeppelinConfiguration.create();
+    ZeppelinConfiguration zConf = ZeppelinConfiguration.load();
     K8sStandardInterpreterLauncher launcher = new K8sStandardInterpreterLauncher(zConf, null);
     Properties properties = new Properties();
     properties.setProperty("ENV_1", "VALUE_1");

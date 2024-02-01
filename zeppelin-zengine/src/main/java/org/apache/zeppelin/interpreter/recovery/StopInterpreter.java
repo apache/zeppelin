@@ -38,14 +38,14 @@ public class StopInterpreter {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(StopInterpreter.class);
 
-  public static void main(String[] args) throws IOException {
-    ZeppelinConfiguration zConf = ZeppelinConfiguration.create();
+  public StopInterpreter(ZeppelinConfiguration zConf) throws IOException {
     InterpreterSettingManager interpreterSettingManager =
-            new InterpreterSettingManager(zConf, null, null, null);
+        new InterpreterSettingManager(zConf, null, null, null);
 
-    RecoveryStorage recoveryStorage  = ReflectionUtils.createClazzInstance(zConf.getRecoveryStorageClass(),
-        new Class[] {ZeppelinConfiguration.class, InterpreterSettingManager.class},
-        new Object[] {zConf, interpreterSettingManager});
+    RecoveryStorage recoveryStorage =
+        ReflectionUtils.createClazzInstance(zConf.getRecoveryStorageClass(),
+            new Class[] { ZeppelinConfiguration.class, InterpreterSettingManager.class },
+            new Object[] { zConf, interpreterSettingManager });
 
     LOGGER.info("Using RecoveryStorage: {}", recoveryStorage.getClass().getName());
     Map<String, InterpreterClient> restoredClients = recoveryStorage.restore();
@@ -55,5 +55,10 @@ public class StopInterpreter {
         client.stop();
       }
     }
+  }
+
+  public static void main(String[] args) throws IOException {
+    ZeppelinConfiguration zConf = ZeppelinConfiguration.load();
+    new StopInterpreter(zConf);
   }
 }

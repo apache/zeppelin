@@ -45,7 +45,7 @@ public class FlexmarkParser implements MarkdownParser {
   private HtmlRenderer renderer;
 
   public FlexmarkParser() {
-    ZeppelinConfiguration zConf = ZeppelinConfiguration.create();
+    ZeppelinConfiguration zConf = ZeppelinConfiguration.load();
     MutableDataSet options = new MutableDataSet();
     options.set(Parser.EXTENSIONS, Arrays.asList(StrikethroughExtension.create(),
             TablesExtension.create(),

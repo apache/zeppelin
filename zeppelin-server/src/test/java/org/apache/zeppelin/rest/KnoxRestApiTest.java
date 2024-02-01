@@ -20,8 +20,10 @@ import com.google.gson.Gson;
 
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.util.EntityUtils;
+import org.apache.zeppelin.MiniZeppelinServer;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -43,15 +45,24 @@ public class KnoxRestApiTest extends AbstractTestRestApi {
   private static final Logger LOG = LoggerFactory.getLogger(KnoxRestApiTest.class);
 
   Gson gson = new Gson();
+  private static MiniZeppelinServer zepServer;
 
   @BeforeAll
   public static void init() throws Exception {
-    AbstractTestRestApi.startUpWithKnoxEnable(KnoxRestApiTest.class.getSimpleName());
+    zepServer = new MiniZeppelinServer(KnoxRestApiTest.class.getSimpleName());
+    zepServer.addConfigFile("shiro.ini", AbstractTestRestApi.ZEPPELIN_SHIRO_KNOX);
+    zepServer.addConfigFile("knox-sso.pem", AbstractTestRestApi.KNOW_SSO_PEM_CERTIFICATE);
+    zepServer.start();
+  }
+
+  @BeforeEach
+  void setup() {
+    conf = zepServer.getZeppelinConfiguration();
   }
 
   @AfterAll
   public static void destroy() throws Exception {
-    AbstractTestRestApi.shutDown();
+    zepServer.destroy();
   }
 
 

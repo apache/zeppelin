@@ -26,24 +26,29 @@ import java.io.IOException;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.util.EntityUtils;
+import org.apache.zeppelin.MiniZeppelinServer;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.rest.AbstractTestRestApi;
+import org.apache.zeppelin.rest.NotebookRepoRestApiTest;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 class MetricEndpointTest extends AbstractTestRestApi {
 
+  private static MiniZeppelinServer zepServer;
+
   @BeforeAll
   static void setUp() throws Exception {
-    System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_METRIC_ENABLE_PROMETHEUS.getVarName(),
-      "true");
-    AbstractTestRestApi.startUp(MetricEndpointTest.class.getSimpleName());
+    zepServer = new MiniZeppelinServer(NotebookRepoRestApiTest.class.getSimpleName());
+    zepServer.getZeppelinConfiguration().setProperty(
+        ZeppelinConfiguration.ConfVars.ZEPPELIN_METRIC_ENABLE_PROMETHEUS.getVarName(), "true");
+    zepServer.start();
   }
 
   @AfterAll
   static void destroy() throws Exception {
-    AbstractTestRestApi.shutDown();
+    zepServer.destroy();
   }
 
   /**
@@ -52,18 +57,16 @@ class MetricEndpointTest extends AbstractTestRestApi {
    */
   @Test
   void testPrometheusMetricJVM() throws IOException {
-    CloseableHttpResponse get = getHttpClient().execute(new HttpGet(getUrlToTest() + "/metrics"));
-    assertEquals(200, get.getStatusLine().getStatusCode());
-    String response = EntityUtils.toString(get.getEntity());
-    assertTrue(response.contains("jvm_memory"), "Contains JVM metric");
-    get.close();
+    try (
+        CloseableHttpResponse get = getHttpClient().execute(
+            new HttpGet(getUrlToTest(zepServer.getZeppelinConfiguration()) + "/metrics"))) {
+      assertEquals(200, get.getStatusLine().getStatusCode());
+      String response = EntityUtils.toString(get.getEntity());
+      assertTrue(response.contains("jvm_memory"), "Contains JVM metric");
+    }
   }
 
-  protected static String getUrlToTest() {
-    String url = "http://localhost:8080";
-    if (System.getProperty("url") != null) {
-      url = System.getProperty("url");
-    }
-    return url;
+  protected static String getUrlToTest(ZeppelinConfiguration zConf) {
+    return "http://localhost:" + zConf.getServerPort();
   }
 }

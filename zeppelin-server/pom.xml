@@ -384,6 +384,18 @@
         </exclusion>
       </exclusions>
     </dependency>
+    <dependency>
+      <groupId>org.awaitility</groupId>
+      <artifactId>awaitility</artifactId>
+      <scope>test</scope>
+      <exclusions>
+        <!-- separate dependency -->
+        <exclusion>
+          <groupId>org.hamcrest</groupId>
+          <artifactId>hamcrest</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
 
     <dependency> <!-- because there are two of them above  -->
       <groupId>xml-apis</groupId>

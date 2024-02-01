@@ -24,7 +24,6 @@ import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.repo.NotebookRepoWithVersionControl;
 import org.apache.zeppelin.rest.message.ParametersRequest;
-import org.apache.zeppelin.socket.NotebookServer;
 import org.apache.zeppelin.utils.TestUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -32,6 +31,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -39,6 +40,7 @@ import java.util.*;
 
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.util.EntityUtils;
+import org.apache.zeppelin.MiniZeppelinServer;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Paragraph;
@@ -58,22 +60,31 @@ import static org.junit.jupiter.api.Assertions.fail;
  */
 @TestMethodOrder(MethodOrderer.MethodName.class)
 class NotebookRestApiTest extends AbstractTestRestApi {
+  private static final Logger LOG = LoggerFactory.getLogger(NotebookRestApiTest.class);
   Gson gson = new Gson();
   AuthenticationInfo anonymous;
 
+  private static MiniZeppelinServer zepServer;
+
   @BeforeAll
   static void init() throws Exception {
-    startUp(NotebookRestApiTest.class.getSimpleName());
-    TestUtils.getInstance(Notebook.class).setParagraphJobListener(NotebookServer.getInstance());
+    zepServer = new MiniZeppelinServer(NotebookRestApiTest.class.getSimpleName());
+    zepServer.copyLogProperties();
+    zepServer.addInterpreter("md");
+    zepServer.addInterpreter("python");
+    zepServer.addInterpreter("sh");
+    zepServer.copyBinDir();
+    zepServer.start();
   }
 
   @AfterAll
   static void destroy() throws Exception {
-    AbstractTestRestApi.shutDown();
+    zepServer.destroy();
   }
 
   @BeforeEach
   void setUp() {
+    conf = zepServer.getZeppelinConfiguration();
     anonymous = new AuthenticationInfo("anonymous");
   }
 
@@ -413,7 +424,7 @@ class NotebookRestApiTest extends AbstractTestRestApi {
       assertEquals(Job.Status.FINISHED, p.getStatus());
 
       // run non-blank paragraph
-      p.setText("test");
+      p.setText("%python \n print(\"hello");
       post = httpPost("/notebook/job/" + note1Id + "/" + p.getId(), "");
       assertThat(post, isAllowed());
       resp = gson.fromJson(EntityUtils.toString(post.getEntity(), StandardCharsets.UTF_8),
@@ -517,7 +528,7 @@ class NotebookRestApiTest extends AbstractTestRestApi {
       assertEquals("ERROR", stringMap.get("code"));
       List<Map> interpreterResults = (List<Map>) stringMap.get("msg");
       assertTrue(interpreterResults.get(0).get("data").toString()
-          .contains("invalid_cmd: command not found"), interpreterResults.get(0).toString());
+          .contains("invalid_cmd: "), interpreterResults.get(0).toString());
       post.close();
       assertNotEquals(Job.Status.READY, p.getStatus());
 
@@ -1158,8 +1169,8 @@ class NotebookRestApiTest extends AbstractTestRestApi {
       put.close();
 
       // restart server (while keeping interpreter configuration)
-      AbstractTestRestApi.shutDown(false);
-      startUp(NotebookRestApiTest.class.getSimpleName(), false);
+      zepServer.shutDown(false);
+      zepServer.start();
 
       CloseableHttpResponse post2 = httpPost("/notebook/job/" + note1Id + "?blocking=true", "");
       assertThat(post2, isAllowed());

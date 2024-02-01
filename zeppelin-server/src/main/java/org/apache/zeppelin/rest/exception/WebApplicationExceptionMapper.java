@@ -30,7 +30,7 @@ import org.slf4j.LoggerFactory;
 
 @Provider
 public class WebApplicationExceptionMapper implements ExceptionMapper<Throwable> {
-  private static final Logger LOGGER = LoggerFactory.getLogger(WebApplicationException.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(WebApplicationExceptionMapper.class);
 
   private final Gson gson;
 

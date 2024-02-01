@@ -133,7 +133,7 @@ public class InterpreterSetting {
   private transient ApplicationEventListener appEventListener;
   private transient DependencyResolver dependencyResolver;
 
-  private transient ZeppelinConfiguration conf = ZeppelinConfiguration.create();
+  private transient ZeppelinConfiguration conf;
 
   private transient RecoveryStorage recoveryStorage;
   private transient RemoteInterpreterEventServer interpreterEventServer;
@@ -291,7 +291,7 @@ public class InterpreterSetting {
   }
 
   private InterpreterLauncher createLauncher(Properties properties) throws IOException {
-    return PluginManager.get().loadInterpreterLauncher(
+    return PluginManager.get(conf).loadInterpreterLauncher(
         getLauncherPlugin(properties), recoveryStorage);
   }
 
@@ -808,7 +808,7 @@ public class InterpreterSetting {
       return true;
     }
     Set<String> intersection = new HashSet<>(userAndRoles);
-    intersection.retainAll(option.getOwners());
+    intersection.retainAll(option.getOwners(conf));
     return !intersection.isEmpty();
   }
 
@@ -920,7 +920,7 @@ public class InterpreterSetting {
 
   private ManagedInterpreterGroup createInterpreterGroup(String groupId) {
     AngularObjectRegistry angularObjectRegistry;
-    ManagedInterpreterGroup interpreterGroup = new ManagedInterpreterGroup(groupId, this);
+    ManagedInterpreterGroup interpreterGroup = new ManagedInterpreterGroup(groupId, this, conf);
     angularObjectRegistry =
         new RemoteAngularObjectRegistry(groupId, angularObjectRegistryListener, interpreterGroup);
     interpreterGroup.setAngularObjectRegistry(angularObjectRegistry);
@@ -1015,11 +1015,11 @@ public class InterpreterSetting {
       if (option != null) {
         JsonArray users = option.getAsJsonArray("users");
         if (users != null) {
-          if (this.option.getOwners() == null) {
+          if (this.option.getOwners(conf) == null) {
             this.option.owners = new LinkedList<>();
           }
           for (JsonElement user : users) {
-            this.option.getOwners().add(user.getAsString());
+            this.option.getOwners(conf).add(user.getAsString());
           }
         }
       }

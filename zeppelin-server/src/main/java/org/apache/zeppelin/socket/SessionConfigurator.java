@@ -21,16 +21,25 @@ import java.util.List;
 import javax.websocket.HandshakeResponse;
 import javax.websocket.server.HandshakeRequest;
 import javax.websocket.server.ServerEndpointConfig;
+import javax.websocket.server.ServerEndpointConfig.Configurator;
 
 import org.apache.zeppelin.server.ZeppelinServer;
 import org.apache.zeppelin.util.WatcherSecurityKey;
 import org.apache.zeppelin.utils.CorsUtils;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.api.ServiceLocatorFactory;
 
 /**
  * This class set headers to websocket sessions and inject hk2 when initiating instances by ServerEndpoint annotation.
  */
-public class SessionConfigurator extends ServerEndpointConfig.Configurator {
+public class SessionConfigurator extends Configurator {
+
+  private final ServiceLocator serviceLocator;
+
+  public SessionConfigurator() {
+    serviceLocator = ServiceLocatorFactory.getInstance().find(ZeppelinServer.DEFAULT_SERVICE_LOCATOR_NAME);
+  }
+
   @Override
   public void modifyHandshake(ServerEndpointConfig sec, HandshakeRequest request,
                               HandshakeResponse response) {
@@ -45,6 +54,6 @@ public class SessionConfigurator extends ServerEndpointConfig.Configurator {
 
   @Override
   public <T> T getEndpointInstance(Class<T> endpointClass) throws InstantiationException {
-    return ServiceLocatorFactory.getInstance().find(ZeppelinServer.SERVICE_LOCATOR_NAME).getService(endpointClass);
+    return serviceLocator.getService(endpointClass);
   }
 }

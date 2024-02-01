@@ -18,6 +18,7 @@ package org.apache.zeppelin.helium;
 
 import com.github.eirslett.maven.plugins.frontend.lib.TaskRunnerException;
 import org.apache.commons.io.FileUtils;
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,6 +26,7 @@ import org.junit.jupiter.api.Test;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
 
 import static org.apache.zeppelin.helium.HeliumPackage.newHeliumPackage;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -34,10 +36,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class HeliumTest {
   private File tmpDir;
   private File localRegistryPath;
+  private ZeppelinConfiguration zConf;
 
   @BeforeEach
   public void setUp() throws Exception {
-    tmpDir = new File(System.getProperty("java.io.tmpdir") + "/ZeppelinLTest_" + System.currentTimeMillis());
+    tmpDir = Files.createTempDirectory("ZeppelinLTest").toFile();
+    zConf = ZeppelinConfiguration.load();
     tmpDir.mkdirs();
     localRegistryPath = new File(tmpDir, "helium");
     localRegistryPath.mkdirs();
@@ -53,7 +57,7 @@ class HeliumTest {
     // given
     File heliumConf = new File(tmpDir, "helium.conf");
     Helium helium = new Helium(heliumConf.getAbsolutePath(), localRegistryPath.getAbsolutePath(),
-        null, null, null, null);
+        null, null, null, null, zConf);
     assertFalse(heliumConf.exists());
 
     // when
@@ -63,15 +67,16 @@ class HeliumTest {
     assertTrue(heliumConf.exists());
 
     // then load without exception
-    Helium heliumRestored = new Helium(
-        heliumConf.getAbsolutePath(), localRegistryPath.getAbsolutePath(), null, null, null, null);
+    new Helium(heliumConf.getAbsolutePath(), localRegistryPath.getAbsolutePath(), null, null, null,
+        null, zConf);
   }
 
   @Test
   void testRestoreRegistryInstances() throws IOException, URISyntaxException, TaskRunnerException {
     File heliumConf = new File(tmpDir, "helium.conf");
     Helium helium = new Helium(
-        heliumConf.getAbsolutePath(), localRegistryPath.getAbsolutePath(), null, null, null, null);
+        heliumConf.getAbsolutePath(), localRegistryPath.getAbsolutePath(), null, null, null, null,
+        zConf);
     HeliumTestRegistry registry1 = new HeliumTestRegistry("r1", "r1");
     HeliumTestRegistry registry2 = new HeliumTestRegistry("r2", "r2");
     helium.addRegistry(registry1);
@@ -106,7 +111,8 @@ class HeliumTest {
   void testRefresh() throws IOException, URISyntaxException, TaskRunnerException {
     File heliumConf = new File(tmpDir, "helium.conf");
     Helium helium = new Helium(
-        heliumConf.getAbsolutePath(), localRegistryPath.getAbsolutePath(), null, null, null, null);
+        heliumConf.getAbsolutePath(), localRegistryPath.getAbsolutePath(), null, null, null, null,
+        zConf);
     HeliumTestRegistry registry1 = new HeliumTestRegistry("r1", "r1");
     helium.addRegistry(registry1);
 

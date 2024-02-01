@@ -38,6 +38,7 @@ public class DownloadUtils {
   private static Logger LOGGER = LoggerFactory.getLogger(DownloadUtils.class);
 
   private static String downloadFolder = System.getProperty("user.home") + "/.cache";
+  public static final String DEFAULT_SPARK_VERSION = "3.4.2";
 
   static {
     try {
@@ -47,6 +48,22 @@ public class DownloadUtils {
     }
   }
 
+  /**
+   * Download Spark with default versions
+   *
+   * @return home of Spark installation
+   */
+  public static String downloadSpark() {
+    return downloadSpark(DEFAULT_SPARK_VERSION, "3");
+  }
+
+  /**
+   * Download of a Spark distribution
+   *
+   * @param sparkVersion
+   * @param hadoopVersion
+   * @return home of Spark installation
+   */
   public static String downloadSpark(String sparkVersion, String hadoopVersion) {
     String sparkDownloadFolder = downloadFolder + "/spark";
     File targetSparkHomeFolder =

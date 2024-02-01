@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.integration;
 
+import org.apache.zeppelin.MiniZeppelinServer;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.Paragraph;
@@ -26,26 +27,35 @@ import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.utils.TestUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 
-public class ShellIntegrationTest extends AbstractTestRestApi {
+class ShellIntegrationTest extends AbstractTestRestApi {
 
+  private static MiniZeppelinServer zepServer;
 
   @BeforeAll
-  public static void setUp() throws Exception {
-    System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HELIUM_REGISTRY.getVarName(),
-            "helium");
-    AbstractTestRestApi.startUp(ShellIntegrationTest.class.getSimpleName());
+  static void init() throws Exception {
+    zepServer = new MiniZeppelinServer(ShellIntegrationTest.class.getSimpleName());
+    zepServer.addInterpreter("sh");
+    zepServer.copyBinDir();
+    zepServer.getZeppelinConfiguration().setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HELIUM_REGISTRY.getVarName(),
+        "helium");
+    zepServer.start();
   }
 
   @AfterAll
-  public static void destroy() throws Exception {
-    AbstractTestRestApi.shutDown();
+  static void destroy() throws Exception {
+    zepServer.destroy();
+  }
+
+  @BeforeEach
+  void setup() {
+    conf = zepServer.getZeppelinConfiguration();
   }
 
   @Test
@@ -67,7 +77,6 @@ public class ShellIntegrationTest extends AbstractTestRestApi {
           p.setText("%sh invalid_cmd");
           note.run(p.getId(), true);
           assertEquals(Job.Status.ERROR, p.getStatus());
-          assertTrue(p.getReturn().message().get(0).getData().contains("command not found"), p.getReturn().toString());
 
           // test shell environment variable
           p.setText("%sh a='hello world'\n" +

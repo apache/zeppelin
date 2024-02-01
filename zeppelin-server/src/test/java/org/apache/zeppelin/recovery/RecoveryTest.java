@@ -21,6 +21,7 @@ import com.google.gson.reflect.TypeToken;
 import org.apache.commons.io.FileUtils;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.util.EntityUtils;
+import org.apache.zeppelin.MiniZeppelinServer;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
@@ -32,13 +33,14 @@ import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.rest.AbstractTestRestApi;
 import org.apache.zeppelin.scheduler.Job;
-import org.apache.zeppelin.server.ZeppelinServer;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.utils.TestUtils;
-import org.glassfish.hk2.api.ServiceLocatorFactory;
-import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -50,33 +52,46 @@ import java.nio.file.Files;
 import java.util.Map;
 
 class RecoveryTest extends AbstractTestRestApi {
-
+  private static final Logger LOG = LoggerFactory.getLogger(RecoveryTest.class);
   private Gson gson = new Gson();
   private static File recoveryDir = null;
+  private static MiniZeppelinServer zepServer;
 
   private Notebook notebook;
 
   private AuthenticationInfo anonymous = new AuthenticationInfo("anonymous");
 
-  @BeforeEach
-  void init() throws Exception {
-    System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_RECOVERY_STORAGE_CLASS.getVarName(),
-            FileSystemRecoveryStorage.class.getName());
+  @BeforeAll
+  static void init() throws Exception {
+    zepServer = new MiniZeppelinServer(RecoveryTest.class.getSimpleName());
+    zepServer.addInterpreter("sh");
+    zepServer.addInterpreter("python");
+    zepServer.copyLogProperties();
+    zepServer.copyBinDir();
+    zepServer.getZeppelinConfiguration().setProperty(
+        ZeppelinConfiguration.ConfVars.ZEPPELIN_RECOVERY_STORAGE_CLASS.getVarName(),
+        FileSystemRecoveryStorage.class.getName());
     recoveryDir = Files.createTempDirectory("recovery").toFile();
-    System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_RECOVERY_DIR.getVarName(),
-            recoveryDir.getAbsolutePath());
-    startUp(RecoveryTest.class.getSimpleName());
+    zepServer.getZeppelinConfiguration().setProperty(
+        ZeppelinConfiguration.ConfVars.ZEPPELIN_RECOVERY_DIR.getVarName(),
+        recoveryDir.getAbsolutePath());
+    zepServer.start();
 
-    notebook = ServiceLocatorFactory.getInstance().find(ZeppelinServer.SERVICE_LOCATOR_NAME).getService(Notebook.class);
   }
 
-  @AfterEach
-  void destroy() throws Exception {
-    shutDown(true, true);
+  @AfterAll
+  static void destroy() throws Exception {
+    zepServer.destroy();
     FileUtils.deleteDirectory(recoveryDir);
-    System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_RECOVERY_STORAGE_CLASS.getVarName(),
-            ZeppelinConfiguration.ConfVars.ZEPPELIN_RECOVERY_STORAGE_CLASS.getStringValue());
   }
+
+  @BeforeEach
+  void setUp() {
+    conf = zepServer.getZeppelinConfiguration();
+    notebook = zepServer.getServiceLocator().getService(Notebook.class);
+    anonymous = new AuthenticationInfo("anonymous");
+  }
+
 
   @Test
   void testRecovery() throws Exception {
@@ -107,8 +122,8 @@ class RecoveryTest extends AbstractTestRestApi {
         });
 
       // shutdown zeppelin and restart it
-      shutDown();
-      startUp(RecoveryTest.class.getSimpleName(), false);
+      zepServer.shutDown(false);
+      zepServer.start();
 
       // run the paragraph again, but change the text to print variable `user`
       Thread.sleep(10 * 1000);
@@ -177,8 +192,8 @@ class RecoveryTest extends AbstractTestRestApi {
         });
 
       // shutdown zeppelin and restart it
-      shutDown();
-      startUp(RecoveryTest.class.getSimpleName(), false);
+      zepServer.shutDown();
+      zepServer.start();
 
       Thread.sleep(5 * 1000);
       // run the paragraph again, but change the text to print variable `user`.
@@ -237,11 +252,9 @@ class RecoveryTest extends AbstractTestRestApi {
         });
 
       // shutdown zeppelin and restart it
-      shutDown();
-      StopInterpreter.main(new String[]{});
-
-      startUp(RecoveryTest.class.getSimpleName(), false);
-
+      zepServer.shutDown();
+      new StopInterpreter(conf);
+      zepServer.start();
       Thread.sleep(5 * 1000);
       // run the paragraph again, but change the text to print variable `user`.
       // can not recover the python interpreter, because it has been shutdown.
@@ -276,7 +289,8 @@ class RecoveryTest extends AbstractTestRestApi {
     LOG.info("Test testRecovery_Running_Paragraph_sh");
     String note1Id = null;
     try {
-      note1Id = TestUtils.getInstance(Notebook.class).createNote("note4", AuthenticationInfo.ANONYMOUS);
+      note1Id = zepServer.getServiceLocator().getService(Notebook.class).createNote("note4",
+          AuthenticationInfo.ANONYMOUS);
       Paragraph p1 = TestUtils.getInstance(Notebook.class).processNote(note1Id,
         note1 -> {
           return note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
@@ -299,8 +313,12 @@ class RecoveryTest extends AbstractTestRestApi {
       }
 
       // shutdown zeppelin and restart it
-      shutDown();
-      startUp(RecoveryTest.class.getSimpleName(), false);
+      zepServer.shutDown();
+      zepServer.start();
+      p1 = zepServer.getServiceLocator().getService(Notebook.class).processNote(note1Id,
+          note -> {
+            return note.getParagraph(0);
+          });
 
       // wait until paragraph is finished
       start = System.currentTimeMillis();
@@ -310,7 +328,7 @@ class RecoveryTest extends AbstractTestRestApi {
         }
         Thread.sleep(1000);
       }
-
+      Thread.sleep(11 * 1000);
       assertEquals(Job.Status.FINISHED, p1.getStatus());
       assertEquals("hello\n", p1.getReturn().message().get(0).getData());
       Thread.sleep(5 * 1000);
@@ -355,11 +373,11 @@ class RecoveryTest extends AbstractTestRestApi {
       }
 
       // shutdown zeppelin and restart it
-      shutDown();
+      zepServer.shutDown();
       // sleep 15 seconds to make sure the paragraph is finished
       Thread.sleep(15 * 1000);
 
-      startUp(RecoveryTest.class.getSimpleName(), false);
+      zepServer.start();
       // sleep 10 seconds to make sure recovering is finished
       Thread.sleep(10 * 1000);
 

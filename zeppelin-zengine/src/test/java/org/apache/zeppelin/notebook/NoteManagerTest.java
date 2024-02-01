@@ -21,7 +21,7 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.exception.NotePathAlreadyExistsException;
 import org.apache.zeppelin.notebook.repo.InMemoryNotebookRepo;
 import org.apache.zeppelin.user.AuthenticationInfo;
-
+import org.apache.zeppelin.util.NoteUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -46,7 +46,7 @@ class NoteManagerTest {
 
   @BeforeEach
   public void setUp() throws IOException {
-    conf = ZeppelinConfiguration.create();
+    conf = ZeppelinConfiguration.load();
     this.noteManager = new NoteManager(new InMemoryNotebookRepo(), conf);
   }
 
@@ -123,7 +123,8 @@ class NoteManagerTest {
   }
 
   private Note createNote(String notePath) {
-    return new Note(notePath, "test", null, null, null, null, null);
+    return new Note(notePath, "test", null, null, null, null, null, conf,
+        NoteUtils.getNoteGson(conf));
   }
 
   @Test

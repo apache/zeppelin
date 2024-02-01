@@ -24,9 +24,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.IOException;
 
 import org.apache.zeppelin.AbstractZeppelinIT;
+import org.apache.zeppelin.MiniZeppelinServer;
 import org.apache.zeppelin.WebDriverManager;
 import org.apache.zeppelin.ZeppelinITUtils;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -52,15 +55,33 @@ import org.slf4j.LoggerFactory;
 class ZeppelinIT extends AbstractZeppelinIT {
   private static final Logger LOG = LoggerFactory.getLogger(ZeppelinIT.class);
 
+  private static MiniZeppelinServer zepServer;
+
+  @BeforeAll
+  static void init() throws Exception {
+
+    zepServer = new MiniZeppelinServer(AuthenticationIT.class.getSimpleName());
+    zepServer.addInterpreter("md");
+    zepServer.addInterpreter("angular");
+    zepServer.addInterpreter("sh");
+    zepServer.copyLogProperties();
+    zepServer.copyBinDir();
+    zepServer.start();
+  }
 
   @BeforeEach
   public void startUp() throws IOException {
-    manager = new WebDriverManager();
+    manager = new WebDriverManager(zepServer.getZeppelinConfiguration().getServerPort());
   }
 
   @AfterEach
-  public void tearDown() throws IOException {
+  public void tearDownManager() throws IOException {
     manager.close();
+  }
+
+  @AfterAll
+  public static void tearDown() throws Exception {
+    zepServer.destroy();
   }
 
   @Test

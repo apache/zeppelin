@@ -23,6 +23,8 @@ import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.user.AuthenticationInfo;
 
+import com.google.gson.Gson;
+
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.List;
@@ -33,7 +35,7 @@ import java.util.Map;
  */
 public interface NotebookRepo extends Closeable {
 
-  void init(ZeppelinConfiguration zConf) throws IOException;
+  void init(ZeppelinConfiguration zConf, Gson gson) throws IOException;
 
   /**
    * Lists notebook information about all notebooks in storage. This method should only read
@@ -139,6 +141,8 @@ public interface NotebookRepo extends Closeable {
   @ZeppelinApi
   void updateSettings(Map<String, String> settings, AuthenticationInfo subject);
 
+  Gson getGson();
+
   default String buildNoteFileName(String noteId, String notePath) throws IOException {
     if (!notePath.startsWith("/")) {
       throw new IOException("Invalid notePath: " + notePath);
@@ -181,4 +185,5 @@ public interface NotebookRepo extends Closeable {
       throw new IOException("Invalid note name: " + noteFileName);
     }
   }
+
 }

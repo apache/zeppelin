@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.integration;
 
+import org.apache.zeppelin.MiniZeppelinServer;
 import org.apache.zeppelin.dep.Dependency;
 import org.apache.zeppelin.interpreter.ExecutionContext;
 import org.apache.zeppelin.interpreter.Interpreter;
@@ -29,35 +30,41 @@ import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import java.io.IOException;
 import java.util.Arrays;
 
 
 public class JdbcIntegrationTest {
 
-  private static MiniZeppelin zeppelin;
   private static InterpreterFactory interpreterFactory;
   private static InterpreterSettingManager interpreterSettingManager;
+  private static MiniZeppelinServer zepServer;
 
 
   @BeforeAll
-  public static void setUp() throws IOException {
-    zeppelin = new MiniZeppelin();
-    zeppelin.start(JdbcIntegrationTest.class);
-    interpreterFactory = zeppelin.getInterpreterFactory();
-    interpreterSettingManager = zeppelin.getInterpreterSettingManager();
+  public static void setUp() throws Exception {
+    zepServer = new MiniZeppelinServer(JdbcIntegrationTest.class.getSimpleName());
+    zepServer.addInterpreter("jdbc");
+    zepServer.addInterpreter("python");
+    zepServer.copyBinDir();
+    zepServer.copyLogProperties();
+    zepServer.start();
+  }
+
+  @BeforeEach
+  void setup() {
+    interpreterSettingManager = zepServer.getServiceLocator().getService(InterpreterSettingManager.class);
+    interpreterFactory = new InterpreterFactory(interpreterSettingManager);
   }
 
   @AfterAll
-  public static void tearDown() throws IOException {
-    if (zeppelin != null) {
-      zeppelin.stop();
-    }
+  public static void tearDown() throws Exception {
+    zepServer.destroy();
   }
 
   @Test
@@ -68,7 +75,7 @@ public class JdbcIntegrationTest {
     interpreterSetting.setProperty("default.user", "root");
     interpreterSetting.setProperty("default.password", "root");
 
-    Dependency dependency = new Dependency("mysql:mysql-connector-java:5.1.46");
+    Dependency dependency = new Dependency("mysql:mysql-connector-java:5.1.49");
     interpreterSetting.setDependencies(Arrays.asList(dependency));
     interpreterSettingManager.restart(interpreterSetting.getId());
     interpreterSetting.waitForReady(60 * 1000);

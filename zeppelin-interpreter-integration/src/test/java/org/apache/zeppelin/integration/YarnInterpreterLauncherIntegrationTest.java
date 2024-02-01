@@ -22,6 +22,8 @@ import org.apache.hadoop.yarn.api.protocolrecords.GetApplicationsRequest;
 import org.apache.hadoop.yarn.api.protocolrecords.GetApplicationsResponse;
 import org.apache.hadoop.yarn.api.records.YarnApplicationState;
 import org.apache.hadoop.yarn.exceptions.YarnException;
+import org.apache.zeppelin.MiniZeppelinServer;
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.dep.Dependency;
 import org.apache.zeppelin.interpreter.ExecutionContext;
 import org.apache.zeppelin.interpreter.Interpreter;
@@ -34,6 +36,7 @@ import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,8 +44,6 @@ import org.slf4j.LoggerFactory;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.EnumSet;
 
@@ -51,29 +52,38 @@ public class YarnInterpreterLauncherIntegrationTest {
   private static final Logger LOGGER = LoggerFactory.getLogger(YarnInterpreterLauncherIntegrationTest.class);
 
   private static MiniHadoopCluster hadoopCluster;
-  private static MiniZeppelin zeppelin;
+  private static MiniZeppelinServer zepServer;
   private static InterpreterFactory interpreterFactory;
   private static InterpreterSettingManager interpreterSettingManager;
 
-  private String hadoopHome;
-
   @BeforeAll
-  public static void setUp() throws IOException {
+  static void init() throws Exception {
     Configuration conf = new Configuration();
     hadoopCluster = new MiniHadoopCluster(conf);
     hadoopCluster.start();
 
-    zeppelin = new MiniZeppelin();
-    zeppelin.start(YarnInterpreterLauncherIntegrationTest.class);
-    interpreterFactory = zeppelin.getInterpreterFactory();
-    interpreterSettingManager = zeppelin.getInterpreterSettingManager();
-  }
+    zepServer = new MiniZeppelinServer(YarnInterpreterLauncherIntegrationTest.class.getSimpleName());
+    zepServer.addInterpreter("sh");
+    zepServer.addInterpreter("jdbc");
+    zepServer.addInterpreter("python");
+    zepServer.addLauncher("YarnInterpreterLauncher");
+    zepServer.copyLogProperties();
+    zepServer.copyBinDir();
+    zepServer.getZeppelinConfiguration().setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HELIUM_REGISTRY.getVarName(),
+        "helium");
+    zepServer.getZeppelinConfiguration().setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_ALLOWED_ORIGINS.getVarName(), "*");
+    zepServer.getZeppelinConfiguration().setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT.getVarName(), "120000");
 
+    zepServer.start();
+  }
+  @BeforeEach
+  void setup() {
+    interpreterSettingManager = zepServer.getServiceLocator().getService(InterpreterSettingManager.class);
+    interpreterFactory = new InterpreterFactory(interpreterSettingManager);
+  }
   @AfterAll
-  public static void tearDown() throws IOException {
-    if (zeppelin != null) {
-      zeppelin.stop();
-    }
+  public static void tearDown() throws Exception {
+    zepServer.destroy();
     if (hadoopCluster != null) {
       hadoopCluster.stop();
     }

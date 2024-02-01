@@ -47,7 +47,8 @@ public class YarnInterpreterLauncher extends InterpreterLauncher {
             context.getProperties(),
             buildEnvFromProperties(context),
             getConnectTimeout(context),
-            getConnectPoolSize(context));
+            getConnectPoolSize(context),
+            zConf);
   }
 
   protected Map<String, String> buildEnvFromProperties(InterpreterLaunchContext context) {

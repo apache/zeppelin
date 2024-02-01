@@ -24,6 +24,7 @@ import com.google.gson.reflect.TypeToken;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.util.EntityUtils;
+import org.apache.zeppelin.MiniZeppelinServer;
 import org.apache.zeppelin.interpreter.InterpreterOption;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.notebook.Notebook;
@@ -37,6 +38,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -53,21 +56,27 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
  */
 @TestMethodOrder(MethodOrderer.MethodName.class)
 class InterpreterRestApiTest extends AbstractTestRestApi {
+  private static final Logger LOG = LoggerFactory.getLogger(InterpreterRestApiTest.class);
   private Gson gson = new Gson();
   private AuthenticationInfo anonymous;
+  private static MiniZeppelinServer zepServer;
 
   @BeforeAll
   static void init() throws Exception {
-    AbstractTestRestApi.startUp(InterpreterRestApiTest.class.getSimpleName());
+    zepServer = new MiniZeppelinServer(InterpreterRestApiTest.class.getSimpleName());
+    zepServer.copyBinDir();
+    zepServer.addInterpreter("md");
+    zepServer.start();
   }
 
   @AfterAll
   static void destroy() throws Exception {
-    AbstractTestRestApi.shutDown();
+    zepServer.destroy();
   }
 
   @BeforeEach
   void setUp() {
+    conf = zepServer.getZeppelinConfiguration();
     anonymous = new AuthenticationInfo("anonymous");
   }
 
@@ -142,7 +151,8 @@ class InterpreterRestApiTest extends AbstractTestRestApi {
     jsonObject.addProperty("value", "this is new prop");
     jsonObject.addProperty("type", "textarea");
     jsonRequest.getAsJsonObject("properties").add("propname2", jsonObject);
-    CloseableHttpResponse put = httpPut("/interpreter/setting/" + newSettingId, jsonRequest.toString());
+    CloseableHttpResponse put = httpPut("/interpreter/setting/" + newSettingId,
+        jsonRequest.toString());
     LOG.info("testSettingCRUD update response\n" + EntityUtils.toString(put.getEntity(), StandardCharsets.UTF_8));
     // then: call update setting API
     assertThat("test update method:", put, isAllowed());
@@ -336,7 +346,8 @@ class InterpreterRestApiTest extends AbstractTestRestApi {
       for (InterpreterSetting setting : settings) {
         if (setting.getName().equals("md")) {
           // call restart interpreter API
-          CloseableHttpResponse put = httpPut("/interpreter/setting/restart/" + setting.getId(), "");
+          CloseableHttpResponse put =
+              httpPut("/interpreter/setting/restart/" + setting.getId(), "");
           assertThat("test interpreter restart:", put, isAllowed());
           put.close();
           break;
@@ -439,7 +450,8 @@ class InterpreterRestApiTest extends AbstractTestRestApi {
 
       // Restart isolated mode of Interpreter for note.
       mdIntpSetting.getOption().setPerNote(InterpreterOption.ISOLATED);
-      CloseableHttpResponse put = httpPut("/interpreter/setting/restart/" + mdIntpSetting.getId(), jsonRequest);
+      CloseableHttpResponse put = httpPut("/interpreter/setting/restart/" + mdIntpSetting.getId(),
+          jsonRequest);
       assertThat("isolated interpreter restart:", put, isAllowed());
       put.close();
 

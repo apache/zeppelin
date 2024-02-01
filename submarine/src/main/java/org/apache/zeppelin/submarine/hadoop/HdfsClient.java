@@ -50,7 +50,7 @@ import java.util.regex.Pattern;
 public class HdfsClient {
   private static Logger LOGGER = LoggerFactory.getLogger(HdfsClient.class);
 
-  private ZeppelinConfiguration zConf = ZeppelinConfiguration.create();
+  private final ZeppelinConfiguration zConf;
   private Configuration hadoopConf;
   private boolean isSecurityEnabled;
   private FileSystem fs;
@@ -58,7 +58,8 @@ public class HdfsClient {
   private static Pattern REPL_PATTERN =
       Pattern.compile("(\\s*)%([\\w\\.]+)(\\(.*?\\))?.*", Pattern.DOTALL);
 
-  public HdfsClient(Properties properties) {
+  public HdfsClient(Properties properties, ZeppelinConfiguration zConf) {
+    this.zConf = zConf;
     String krb5conf = properties.getProperty(SubmarineConstants.SUBMARINE_HADOOP_KRB5_CONF, "");
     if (!StringUtils.isEmpty(krb5conf)) {
       System.setProperty("java.security.krb5.conf", krb5conf);
@@ -79,7 +80,6 @@ public class HdfsClient {
       String principal = properties.getProperty(
           SubmarineConstants.SUBMARINE_HADOOP_PRINCIPAL, "");
 
-      ZeppelinConfiguration zConf = ZeppelinConfiguration.create();
       if (StringUtils.isEmpty(keytab)) {
         keytab = zConf.getString(
             ZeppelinConfiguration.ConfVars.ZEPPELIN_SERVER_KERBEROS_KEYTAB);

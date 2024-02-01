@@ -30,28 +30,30 @@ import static org.apache.zeppelin.cluster.meta.ClusterMeta.INTP_TSERVER_PORT;
 
 // Metadata registered in the cluster by the interpreter process,
 // Keep the interpreter process started
-public class ClusterInterpreterCheckThread extends Thread {
+public class ClusterInterpreterCheck implements Runnable {
   private static final Logger LOGGER
-      = LoggerFactory.getLogger(ClusterInterpreterCheckThread.class);
+      = LoggerFactory.getLogger(ClusterInterpreterCheck.class);
 
-  private InterpreterClient intpProcess;
-  private String intpGroupId;
-  private int connectTimeout;
+  private final InterpreterClient intpProcess;
+  private final String intpGroupId;
+  private final int connectTimeout;
+  private final ZeppelinConfiguration zConf;
 
-  ClusterInterpreterCheckThread(InterpreterClient intpProcess,
-                                String intpGroupId,
-                                int connectTimeout) {
+  ClusterInterpreterCheck(InterpreterClient intpProcess,
+                          String intpGroupId,
+                          int connectTimeout,
+                          ZeppelinConfiguration zConf) {
     this.intpProcess = intpProcess;
     this.intpGroupId = intpGroupId;
     this.connectTimeout = connectTimeout;
+    this.zConf = zConf;
   }
 
   @Override
   public void run() {
     LOGGER.info("ClusterInterpreterCheckThread run() >>>");
 
-    ClusterManagerServer clusterServer = ClusterManagerServer.getInstance(
-            ZeppelinConfiguration.create());
+    ClusterManagerServer clusterServer = ClusterManagerServer.getInstance(zConf);
 
     clusterServer.getIntpProcessStatus(intpGroupId, connectTimeout,
         new ClusterCallback<Map<String, Object>>() {

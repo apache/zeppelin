@@ -18,12 +18,14 @@
 
 package org.apache.zeppelin.service;
 
+import org.apache.zeppelin.MiniZeppelinServer;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.rest.AbstractTestRestApi;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.utils.TestUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -45,17 +47,26 @@ class ConfigurationServiceTest extends AbstractTestRestApi {
 
   private ServiceCallback callback = mock(ServiceCallback.class);
 
+  private static MiniZeppelinServer zepServer;
+
   @BeforeAll
-  static void setUp() throws Exception {
-    System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HELIUM_REGISTRY.getVarName(),
+  public static void init() throws Exception {
+    zepServer = new MiniZeppelinServer(ConfigurationServiceTest.class.getSimpleName());
+    zepServer.getZeppelinConfiguration().setProperty(
+        ZeppelinConfiguration.ConfVars.ZEPPELIN_HELIUM_REGISTRY.getVarName(),
         "helium");
-    AbstractTestRestApi.startUp(ConfigurationServiceTest.class.getSimpleName());
-    configurationService = TestUtils.getInstance(ConfigurationService.class);
+    zepServer.start();
+    configurationService = zepServer.getServiceLocator().getService(ConfigurationService.class);
   }
 
   @AfterAll
-  static void destroy() throws Exception {
-    AbstractTestRestApi.shutDown();
+  public static void destroy() throws Exception {
+    zepServer.destroy();
+  }
+
+  @BeforeEach
+  void setUp() {
+    conf = zepServer.getZeppelinConfiguration();
   }
 
   @Test

@@ -34,20 +34,26 @@ import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.user.AuthenticationInfo;
+import org.apache.zeppelin.util.NoteUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import com.google.gson.Gson;
 
 class MongoNotebookRepoTest {
 
   private MongodExecutable mongodExecutable;
 
   private ZeppelinConfiguration zConf;
+  private Gson gson;
 
   private MongoNotebookRepo notebookRepo;
 
   @BeforeEach
   void setUp() throws IOException {
+    zConf = ZeppelinConfiguration.load();
+    gson = NoteUtils.getNoteGson(zConf);
     String bindIp = "localhost";
     ServerSocket socket = new ServerSocket(0);
     int port = socket.getLocalPort();
@@ -62,10 +68,10 @@ class MongoNotebookRepoTest {
         .prepare(mongodConfig);
     mongodExecutable.start();
 
-    System.setProperty(ZEPPELIN_NOTEBOOK_MONGO_URI.getVarName(), "mongodb://" + bindIp + ":" + port);
-    zConf = ZeppelinConfiguration.create();
+    zConf.setProperty(ZEPPELIN_NOTEBOOK_MONGO_URI.getVarName(), "mongodb://" + bindIp + ":" + port);
+
     notebookRepo = new MongoNotebookRepo();
-    notebookRepo.init(zConf);
+    notebookRepo.init(zConf, gson);
   }
 
   @AfterEach
@@ -82,6 +88,8 @@ class MongoNotebookRepoTest {
     // create note1
     Note note1 = new Note();
     note1.setPath("/my_project/my_note1");
+    note1.setGson(gson);
+    note1.setZeppelinConfiguration(zConf);
     Paragraph p1 = note1.insertNewParagraph(0, AuthenticationInfo.ANONYMOUS);
     p1.setText("%md hello world");
     p1.setTitle("my title");
@@ -96,6 +104,8 @@ class MongoNotebookRepoTest {
     // create note2
     Note note2 = new Note();
     note2.setPath("/my_note2");
+    note2.setGson(gson);
+    note2.setZeppelinConfiguration(zConf);
     Paragraph p2 = note2.insertNewParagraph(0, AuthenticationInfo.ANONYMOUS);
     p2.setText("%md hello world2");
     p2.setTitle("my title2");
@@ -134,9 +144,11 @@ class MongoNotebookRepoTest {
     Note note = new Note();
     String notePath = "/folder1/folder2/folder3/folder4/folder5/my_note";
     note.setPath(notePath);
+    note.setGson(gson);
+    note.setZeppelinConfiguration(zConf);
     notebookRepo.save(note, AuthenticationInfo.ANONYMOUS);
 
-    notebookRepo.init(zConf);
+    notebookRepo.init(zConf, gson);
     Map<String, NoteInfo> noteInfos = notebookRepo.list(AuthenticationInfo.ANONYMOUS);
     assertEquals(1, notebookRepo.list(AuthenticationInfo.ANONYMOUS).size());
     assertEquals(notePath, noteInfos.get(note.getId()).getPath());

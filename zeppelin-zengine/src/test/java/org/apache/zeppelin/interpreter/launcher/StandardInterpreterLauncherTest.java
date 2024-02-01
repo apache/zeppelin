@@ -31,16 +31,15 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class StandardInterpreterLauncherTest {
 
+  private ZeppelinConfiguration zConf;
+
   @BeforeEach
   public void setUp() {
-    for (final ZeppelinConfiguration.ConfVars confVar : ZeppelinConfiguration.ConfVars.values()) {
-      System.clearProperty(confVar.getVarName());
-    }
+    zConf = ZeppelinConfiguration.load();
   }
 
   @Test
   void testLauncher() throws IOException {
-    ZeppelinConfiguration zConf = ZeppelinConfiguration.create();
     StandardInterpreterLauncher launcher = new StandardInterpreterLauncher(zConf, null);
     Properties properties = new Properties();
     properties.setProperty("ENV_1", "VALUE_1");
@@ -66,7 +65,6 @@ class StandardInterpreterLauncherTest {
 
   @Test
   void testConnectTimeOut() throws IOException {
-    ZeppelinConfiguration zConf = ZeppelinConfiguration.create();
     StandardInterpreterLauncher launcher = new StandardInterpreterLauncher(zConf, null);
     Properties properties = new Properties();
     properties.setProperty(

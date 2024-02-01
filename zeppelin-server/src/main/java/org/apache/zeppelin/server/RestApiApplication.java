@@ -54,6 +54,8 @@ public class RestApiApplication extends Application {
 
     // add ExceptionMapper
     s.add(WebApplicationExceptionMapper.class);
+    // add JSON-Consumer and Producer
+    s.add(GsonProvider.class);
     return s;
   }
 }

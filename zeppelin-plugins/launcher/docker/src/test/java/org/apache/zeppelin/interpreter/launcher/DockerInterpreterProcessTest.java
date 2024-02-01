@@ -36,7 +36,7 @@ import static org.mockito.Mockito.when;
 
 class DockerInterpreterProcessTest {
 
-  protected static ZeppelinConfiguration zconf = spy(ZeppelinConfiguration.create());
+  protected static ZeppelinConfiguration zconf = spy(ZeppelinConfiguration.load());
 
   @Test
   void testCreateIntpProcess() throws IOException {

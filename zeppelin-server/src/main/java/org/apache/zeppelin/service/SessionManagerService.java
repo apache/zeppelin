@@ -53,13 +53,16 @@ public class SessionManagerService {
   private final InterpreterSettingManager interpreterSettingManager;
   private final Notebook notebook;
   private final ScheduledExecutorService sessionCheckerExecutor;
+  private final ZeppelinConfiguration zConf;
 
-  public SessionManagerService(Notebook notebook, InterpreterSettingManager interpreterSettingManager) {
+  public SessionManagerService(Notebook notebook,
+      InterpreterSettingManager interpreterSettingManager, ZeppelinConfiguration zConf) {
     this.notebook = notebook;
     this.interpreterSettingManager = interpreterSettingManager;
+    this.zConf = zConf;
     this.sessionCheckerExecutor = ExecutorFactory.singleton().createOrGetScheduled("Session-Checker-Executor", 1);
-    int sessionCheckerInterval = ZeppelinConfiguration.create()
-            .getInt(ZeppelinConfiguration.ConfVars.ZEPPELIN_SESSION_CHECK_INTERVAL);
+    int sessionCheckerInterval =
+        zConf.getInt(ZeppelinConfiguration.ConfVars.ZEPPELIN_SESSION_CHECK_INTERVAL);
     this.sessionCheckerExecutor.scheduleAtFixedRate(() -> {
       LOGGER.info("Start session check task");
       Iterator<Map.Entry<String, SessionInfo>> iter = sessions.entrySet().iterator();
@@ -156,7 +159,7 @@ public class SessionManagerService {
   public SessionInfo getSessionInfo(String sessionId) throws Exception {
     SessionInfo sessionInfo = sessions.get(sessionId);
     if (sessionInfo == null) {
-      LOGGER.warn("No such session: " + sessionId);
+      LOGGER.warn("No such session: {}", sessionId);
       return null;
     }
     ManagedInterpreterGroup interpreterGroup = this.interpreterSettingManager.getInterpreterGroupById(sessionId);

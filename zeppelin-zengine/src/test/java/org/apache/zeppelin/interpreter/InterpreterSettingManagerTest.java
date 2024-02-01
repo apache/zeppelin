@@ -196,7 +196,7 @@ class InterpreterSettingManagerTest extends AbstractInterpreterTest {
     assertEquals(6, interpreterSettingManager.get().size());
 
     // load it again
-    InterpreterSettingManager interpreterSettingManager3 = new InterpreterSettingManager(ZeppelinConfiguration.create(),
+    InterpreterSettingManager interpreterSettingManager3 = new InterpreterSettingManager(conf,
         mock(AngularObjectRegistryListener.class), mock(RemoteInterpreterProcessListener.class), mock(ApplicationEventListener.class));
     assertEquals(6, interpreterSettingManager3.get().size());
 
