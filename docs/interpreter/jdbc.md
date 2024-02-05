@@ -450,11 +450,11 @@ Here are some examples you can refer to. Including the below connectors, you can
   </tr>
   <tr>
     <td>default.user</td>
-    <td>mysql_user</td>
+    <td>pg_user</td>
   </tr>
   <tr>
     <td>default.password</td>
-    <td>mysql_password</td>
+    <td>pg_password</td>
   </tr>
 </table>
 
