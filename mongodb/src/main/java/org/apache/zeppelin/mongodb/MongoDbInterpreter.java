@@ -73,7 +73,14 @@ public class MongoDbInterpreter extends Interpreter {
     }
     commandTimeout = Long.parseLong(getProperty("mongo.shell.command.timeout"));
     maxConcurrency = Integer.parseInt(getProperty("mongo.interpreter.concurrency.max"));
-    dbAddress = getProperty("mongo.server.host") + ":" + getProperty("mongo.server.port");
+    
+    String mongoProtocol = getProperty("mongo.server.protocol", "mongodb");
+    if ("mongodb".equalsIgnoreCase(mongoProtocol)){
+      dbAddress = getProperty("mongo.server.host") + ":" + getProperty("mongo.server.port");
+	  }else{
+	    dbAddress = mongoProtocol +"://"+ getProperty("mongo.server.host");
+	  }
+    
     prepareShellExtension();
   }
 
@@ -117,6 +124,61 @@ public class MongoDbInterpreter extends Interpreter {
     executor.setWatchdog(new ExecuteWatchdog(commandTimeout));
 
     final CommandLine cmdLine = CommandLine.parse(getProperty("mongo.shell.path"));
+    String apiVersion = getProperty("mongo.server.api.version", "");
+    if (!"".equalsIgnoreCase(apiVersion)){
+      cmdLine.addArgument("--apiVersion", false);
+	    cmdLine.addArgument(apiVersion, false);
+	  }
+    
+    String runWithSSL = getProperty("mongo.server.ssl.enabled", "false");
+    if ("true".equalsIgnoreCase(runWithSSL))
+      cmdLine.addArgument("--ssl", false);
+    
+    String runWithTSLS = getProperty("mongo.server.tls.enabled", "false");
+    if ("true".equalsIgnoreCase(runWithTSLS))
+      cmdLine.addArgument("--tls", false);
+    
+    String runWithCA = getProperty("mongo.server.ca.file", "");
+    if (!"".equalsIgnoreCase(runWithCA) && "true".equalsIgnoreCase(runWithTSLS)) {
+      cmdLine.addArgument("--tlsCAFile", false);
+      cmdLine.addArgument(runWithCA, false);
+    }
+    
+    if (!"".equalsIgnoreCase(runWithCA) && "true".equalsIgnoreCase(runWithSSL)) {
+      cmdLine.addArgument("--sslCAFile", false);
+      cmdLine.addArgument(runWithCA, false);
+    }
+    
+    String allowInvalid = getProperty("mongo.server.allowInvalid", "");
+    if (!"".equalsIgnoreCase(allowInvalid) && "true".equalsIgnoreCase(runWithTSLS)) {
+      cmdLine.addArgument("--tlsAllowInvalidHostnames", false);
+      cmdLine.addArgument("--tlsAllowInvalidCertificates", false);
+    } 
+    
+    String awsAccessKeyId = getProperty("mongo.server.aws.fle.awsAccessKeyId", "");
+    if (!"".equalsIgnoreCase(awsAccessKeyId)) {
+      cmdLine.addArgument("--awsAccessKeyId", false);
+      cmdLine.addArgument(awsAccessKeyId, false);
+    }
+    
+    String awsSecretAccessKey = getProperty("mongo.server.aws.fle.awsSecretAccessKey", "");
+    if (!"".equalsIgnoreCase(awsSecretAccessKey)) {
+      cmdLine.addArgument("--awsSecretAccessKey", false);
+      cmdLine.addArgument(awsSecretAccessKey, false);
+    }
+    
+    String awsSessionToken = getProperty("mongo.server.aws.fle.awsSessionToken", "");
+    if (!"".equalsIgnoreCase(awsSessionToken)) {
+      cmdLine.addArgument("--awsSessionToken", false);
+      cmdLine.addArgument(awsSessionToken, false);
+    }
+    
+    String keyVaultNamespace = getProperty("mongo.server.aws.fle.keyVaultNamespace", "");
+    if (!"".equalsIgnoreCase(keyVaultNamespace)) {
+      cmdLine.addArgument("--keyVaultNamespace", false);
+      cmdLine.addArgument(keyVaultNamespace, false);
+    }
+    
     cmdLine.addArgument("--quiet", false);
     cmdLine.addArgument(dbAddress, false);
     cmdLine.addArgument(scriptFile.getAbsolutePath(), false);
