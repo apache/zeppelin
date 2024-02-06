@@ -73,11 +73,12 @@ public class MongoDbInterpreter extends Interpreter {
     }
     commandTimeout = Long.parseLong(getProperty("mongo.shell.command.timeout"));
     maxConcurrency = Integer.parseInt(getProperty("mongo.interpreter.concurrency.max"));
-    
+
+		/* adding support for protocal like mongodb+srv for atlas cluster*/
     String mongoProtocol = getProperty("mongo.server.protocol", "mongodb");
-    if ("mongodb".equalsIgnoreCase(mongoProtocol)){
+		if ("mongodb".equalsIgnoreCase(mongoProtocol)){
       dbAddress = getProperty("mongo.server.host") + ":" + getProperty("mongo.server.port");
-	  }else{
+		}else{
 	    dbAddress = mongoProtocol +"://"+ getProperty("mongo.server.host");
 	  }
     
@@ -124,12 +125,14 @@ public class MongoDbInterpreter extends Interpreter {
     executor.setWatchdog(new ExecuteWatchdog(commandTimeout));
 
     final CommandLine cmdLine = CommandLine.parse(getProperty("mongo.shell.path"));
+		/* added support for API versions */
     String apiVersion = getProperty("mongo.server.api.version", "");
     if (!"".equalsIgnoreCase(apiVersion)){
       cmdLine.addArgument("--apiVersion", false);
 	    cmdLine.addArgument(apiVersion, false);
 	  }
-    
+
+		/* adding support for SSL for and TLS for documentDB */
     String runWithSSL = getProperty("mongo.server.ssl.enabled", "false");
     if ("true".equalsIgnoreCase(runWithSSL))
       cmdLine.addArgument("--ssl", false);
@@ -154,25 +157,29 @@ public class MongoDbInterpreter extends Interpreter {
       cmdLine.addArgument("--tlsAllowInvalidHostnames", false);
       cmdLine.addArgument("--tlsAllowInvalidCertificates", false);
     } 
-    
+
+		/* support for AWS AccessKey */
     String awsAccessKeyId = getProperty("mongo.server.aws.fle.awsAccessKeyId", "");
     if (!"".equalsIgnoreCase(awsAccessKeyId)) {
       cmdLine.addArgument("--awsAccessKeyId", false);
       cmdLine.addArgument(awsAccessKeyId, false);
     }
-    
+
+		/* support for AWS secret */
     String awsSecretAccessKey = getProperty("mongo.server.aws.fle.awsSecretAccessKey", "");
     if (!"".equalsIgnoreCase(awsSecretAccessKey)) {
       cmdLine.addArgument("--awsSecretAccessKey", false);
       cmdLine.addArgument(awsSecretAccessKey, false);
     }
-    
+
+		/* support for AWS session token */
     String awsSessionToken = getProperty("mongo.server.aws.fle.awsSessionToken", "");
     if (!"".equalsIgnoreCase(awsSessionToken)) {
       cmdLine.addArgument("--awsSessionToken", false);
       cmdLine.addArgument(awsSessionToken, false);
     }
-    
+
+		/* support for AWS key valult namespace */
     String keyVaultNamespace = getProperty("mongo.server.aws.fle.keyVaultNamespace", "");
     if (!"".equalsIgnoreCase(keyVaultNamespace)) {
       cmdLine.addArgument("--keyVaultNamespace", false);
