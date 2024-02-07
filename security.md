@@ -36,6 +36,12 @@ available to trusted users, and the server on which Zeppelin is
 installed does not contain any secrets or have privileges beyond
 those the users are trusted with.
 
+Especially, `sh` interpreter can access the local shell and execute
+arbitrary commands with the privileges of the user running Zeppelin 
+server. This is also intentional behaviors of Zeppelin, but it's too 
+dangerous to allow by default. This will be disabled from the release 
+of 0.11.1.
+
 ### Zeppelin on Docker
 
 An exception to the above is when the Zeppelin interpreter
@@ -91,7 +97,7 @@ An overview of the vulnerability handling process is:
 
 * The reporter reports the vulnerability privately to [security@zeppelin.apache.org](mailto:security@zeppelin.apache.org).
 * The Zeppelin project security team works privately with the reporter to resolve the vulnerability.
-* The Zeppelin project creates a new release of the package the vulnerabilty affects to deliver its fix.
+* The Zeppelin project creates a new release of the package the vulnerability affects to deliver its fix.
 * The Zeppelin project publicly announces the vulnerability and describes how to apply the fix.
 
 Committers should read a [more detailed description of the process](https://www.apache.org/security/committers.html). Reporters of security vulnerabilities may also find it useful.
