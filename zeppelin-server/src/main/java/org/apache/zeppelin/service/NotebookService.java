@@ -899,7 +899,7 @@ public class NotebookService {
           }
         } else {
           String requestCronUser = (String) config.get("cronExecutingUser");
-          List<String> requestCronRoles = (List<String>) config.get("cronExecutingRoles");
+          Set<String> requestCronRoles = (Set<String>) config.get("cronExecutingRoles");
 
           if (!authorizationService.hasRunPermission(Collections.singleton(requestCronUser), note.getId())) {
             LOGGER.error("Wrong cronExecutingUser: {}", requestCronUser);
