@@ -36,7 +36,7 @@ Apache Zeppelin officially supports and is tested on the following environments:
   </tr>
   <tr>
     <td>OpenJDK or Oracle JDK</td>
-    <td>1.8 (151+) <br /> (set <code>JAVA_HOME</code>)</td>
+    <td>11.0.22+<br /> (set <code>JAVA_HOME</code>)</td>
   </tr>
   <tr>
     <td>OS</td>
