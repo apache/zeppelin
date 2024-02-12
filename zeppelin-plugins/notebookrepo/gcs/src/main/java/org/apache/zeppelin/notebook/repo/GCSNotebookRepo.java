@@ -79,7 +79,14 @@ public class GCSNotebookRepo implements NotebookRepo {
 
   @VisibleForTesting
   public GCSNotebookRepo(ZeppelinConfiguration zConf, Storage storage) throws IOException {
-    init(zConf);
+    try {
+      init(zConf);
+    } catch (IOException e) {
+      // Skip Credentials Exception during tests
+      if (!e.getMessage().contains("Default Credentials")) {
+        throw e;
+      }
+    }
     this.storage = storage;
   }
 

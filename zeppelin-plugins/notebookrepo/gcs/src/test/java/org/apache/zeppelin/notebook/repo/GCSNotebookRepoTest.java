@@ -27,6 +27,7 @@ import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.contrib.nio.testing.LocalStorageHelper;
 import com.google.common.collect.ImmutableMap;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -41,17 +42,16 @@ import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.user.AuthenticationInfo;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-//TODO(zjffdu) This test fails due to some changes in google, need to fix
-@Disabled
 class GCSNotebookRepoTest {
   private static final AuthenticationInfo AUTH_INFO = AuthenticationInfo.ANONYMOUS;
+  private static final String DEFAULT_URL = "gs://bucketname";
 
   private GCSNotebookRepo notebookRepo;
   private Storage storage;
@@ -73,7 +73,15 @@ class GCSNotebookRepoTest {
     this.storage = LocalStorageHelper.getOptions().getService();
   }
 
+  @AfterEach
+  void tearDown() {
+    if (notebookRepo != null) {
+      notebookRepo.close();
+    }
+  }
+
   private static Note makeRunningNote() {
+
     Note note = new Note();
     note.setPath("/test_note");
     note.setConfig(ImmutableMap.<String, Object>of("key", "value"));
@@ -117,10 +125,11 @@ class GCSNotebookRepoTest {
 
   @Test
   void testGet_nonexistent() throws Exception {
-    try {
+    System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_GCS_STORAGE_DIR.getVarName(), DEFAULT_URL);
+    this.notebookRepo = new GCSNotebookRepo(ZeppelinConfiguration.create(), storage);
+    assertThrows(IOException.class, () -> {
       notebookRepo.get("id", "", AUTH_INFO);
-      fail();
-    } catch (IOException e) {}
+    });
   }
 
   @ParameterizedTest
@@ -145,10 +154,9 @@ class GCSNotebookRepoTest {
     System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_GCS_STORAGE_DIR.getVarName(), uriPath);
     this.notebookRepo = new GCSNotebookRepo(ZeppelinConfiguration.create(), storage);
     createMalformed("id", "/name", bucketName, basePath);
-    try {
+    assertThrows(IOException.class, () -> {
       notebookRepo.get("id", "/name", AUTH_INFO);
-      fail();
-    } catch (IOException e) {}
+    });
   }
 
   @ParameterizedTest
@@ -177,10 +185,11 @@ class GCSNotebookRepoTest {
 
   @Test
   void testRemove_nonexistent() throws Exception {
-    try {
+    System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_GCS_STORAGE_DIR.getVarName(), DEFAULT_URL);
+    this.notebookRepo = new GCSNotebookRepo(ZeppelinConfiguration.create(), storage);
+    assertThrows(IOException.class, () -> {
       notebookRepo.remove("id", "/name", AUTH_INFO);
-      fail();
-    } catch (IOException e) {}
+    });
   }
 
   @ParameterizedTest
@@ -195,11 +204,12 @@ class GCSNotebookRepoTest {
 
   @Test
   void testRemoveFolder_nonexistent() throws Exception {
+    System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_GCS_STORAGE_DIR.getVarName(), DEFAULT_URL);
+    this.notebookRepo = new GCSNotebookRepo(ZeppelinConfiguration.create(), storage);
     assertThrows(IOException.class, () -> {
       notebookRepo.remove("id", "/name", AUTH_INFO);
       fail();
     });
-
   }
 
   @ParameterizedTest
@@ -220,11 +230,12 @@ class GCSNotebookRepoTest {
 
 
   @Test
-  void testMove_nonexistent() {
-    try {
+  void testMove_nonexistent() throws IOException {
+    System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_GCS_STORAGE_DIR.getVarName(), DEFAULT_URL);
+    this.notebookRepo = new GCSNotebookRepo(ZeppelinConfiguration.create(), storage);
+    assertThrows(IOException.class, () -> {
       notebookRepo.move("id", "/name", "/name_new", AUTH_INFO);
-      fail();
-    } catch (IOException e) {}
+    });
   }
 
   @ParameterizedTest
@@ -239,9 +250,10 @@ class GCSNotebookRepoTest {
 
   @Test
   void testMoveFolder_nonexistent() throws Exception {
+    System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_GCS_STORAGE_DIR.getVarName(), DEFAULT_URL);
+    this.notebookRepo = new GCSNotebookRepo(ZeppelinConfiguration.create(), storage);
     assertThrows(IOException.class, () -> {
       notebookRepo.move("/name", "/name_new", AUTH_INFO);
-      fail();
     });
   }
 
@@ -282,40 +294,38 @@ class GCSNotebookRepoTest {
   private void createAt(Note note, String relativePath, String bucketName, Optional<String> basePath) throws IOException {
     BlobId id = BlobId.of(bucketName, makeName(relativePath, basePath));
     BlobInfo info = BlobInfo.newBuilder(id).setContentType("application/json").build();
-    storage.create(info, note.toJson().getBytes("UTF-8"));
+    storage.create(info, note.toJson().getBytes(StandardCharsets.UTF_8));
   }
 
   private void create(Note note, String bucketName, Optional<String> basePath) throws IOException {
     BlobInfo info = BlobInfo.newBuilder(makeBlobId(note.getId(), note.getPath(), bucketName, basePath))
         .setContentType("application/json")
         .build();
-    storage.create(info, note.toJson().getBytes("UTF-8"));
+    storage.create(info, note.toJson().getBytes(StandardCharsets.UTF_8));
   }
 
   private void createMalformed(String noteId, String notePath, String bucketName, Optional<String> basePath) throws IOException {
     BlobInfo info = BlobInfo.newBuilder(makeBlobId(noteId, notePath, bucketName, basePath))
         .setContentType("application/json")
         .build();
-    storage.create(info, "{ invalid-json }".getBytes("UTF-8"));
+    storage.create(info, "{ invalid-json }".getBytes(StandardCharsets.UTF_8));
   }
 
   /* These tests test path parsing for illegal paths, and do not use the parameterized vars */
 
   @Test
   void testInitialization_pathNotSet() throws Exception {
-    try {
-      System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_GCS_STORAGE_DIR.getVarName(), "");
-      new GCSNotebookRepo(ZeppelinConfiguration.create(), storage);
-      fail();
-    } catch (IOException e) {}
+    System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_GCS_STORAGE_DIR.getVarName(), "");
+    assertThrows(IOException.class, () -> {
+      notebookRepo = new GCSNotebookRepo(ZeppelinConfiguration.create(), storage);
+    });
   }
 
   @Test
   void testInitialization_malformedPath() throws Exception {
-    try {
-      System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_GCS_STORAGE_DIR.getVarName(), "foo");
-      new GCSNotebookRepo(ZeppelinConfiguration.create(), storage);
-      fail();
-    } catch (IOException e) {}
+    System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_GCS_STORAGE_DIR.getVarName(), "foo");
+    assertThrows(IOException.class, () -> {
+      notebookRepo = new GCSNotebookRepo(ZeppelinConfiguration.create(), storage);
+    });
   }
 }
