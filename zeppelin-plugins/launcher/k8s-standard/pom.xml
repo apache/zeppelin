@@ -35,7 +35,7 @@
 
     <properties>
         <plugin.name>Launcher/K8sStandardInterpreterLauncher</plugin.name>
-        <kubernetes.client.version>5.4.1</kubernetes.client.version>
+        <kubernetes.client.version>5.12.4</kubernetes.client.version>
         <jinjava.version>2.5.4</jinjava.version>
     </properties>
 
@@ -72,6 +72,11 @@
             <groupId>io.fabric8</groupId>
             <artifactId>kubernetes-server-mock</artifactId>
             <version>${kubernetes.client.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.awaitility</groupId>
+            <artifactId>awaitility</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
