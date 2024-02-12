@@ -14,10 +14,9 @@
 
 package org.apache.zeppelin.submarine;
 
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.submarine.job.SubmarineJob;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -25,7 +24,6 @@ import java.util.Map;
 import java.util.Properties;
 
 public class SubmarineContext {
-  private Logger LOGGER = LoggerFactory.getLogger(SubmarineContext.class);
 
   private static SubmarineContext instance = null;
 
@@ -41,11 +39,12 @@ public class SubmarineContext {
     }
   }
 
-  public SubmarineJob addOrGetSubmarineJob(Properties properties, InterpreterContext context) {
+  public SubmarineJob addOrGetSubmarineJob(Properties properties, InterpreterContext context,
+      ZeppelinConfiguration zConf) {
     SubmarineJob submarineJob = null;
     String noteId = context.getNoteId();
     if (!mapSubmarineJob.containsKey(noteId)) {
-      submarineJob = new SubmarineJob(context, properties);
+      submarineJob = new SubmarineJob(context, properties, zConf);
       mapSubmarineJob.put(noteId, submarineJob);
     } else {
       submarineJob = mapSubmarineJob.get(noteId);
