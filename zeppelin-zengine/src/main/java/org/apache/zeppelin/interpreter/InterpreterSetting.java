@@ -823,7 +823,7 @@ public class InterpreterSetting {
     Properties intpProperties = getJavaProperties();
     for (InterpreterInfo info : interpreterInfos) {
       Interpreter interpreter = new RemoteInterpreter(intpProperties, sessionId,
-          info.getClassName(), user);
+          info.getClassName(), user, conf);
       if (info.isDefaultInterpreter()) {
         interpreters.add(0, interpreter);
       } else {

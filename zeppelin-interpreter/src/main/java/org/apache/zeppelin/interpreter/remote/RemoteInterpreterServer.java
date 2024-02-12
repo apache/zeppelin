@@ -399,6 +399,7 @@ public class RemoteInterpreterServer extends Thread
 
       interpreter.setInterpreterGroup(interpreterGroup);
       interpreter.setUserName(userName);
+      interpreter.setZeppelinConfiguration(zConf);
 
       interpreterGroup.addInterpreterToSession(new LazyOpenInterpreter(interpreter), sessionId);
 

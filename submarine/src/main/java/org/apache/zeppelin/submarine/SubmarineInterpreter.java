@@ -110,7 +110,7 @@ public class SubmarineInterpreter extends Interpreter {
         properties.setProperty(TF_CHECKPOINT_PATH, checkpointPath);
       }
 
-      SubmarineJob submarineJob = submarineContext.addOrGetSubmarineJob(properties, context);
+      SubmarineJob submarineJob = submarineContext.addOrGetSubmarineJob(properties, context, zConf);
 
       LOGGER.debug("Run shell command '" + script + "'");
       String command = "", operation = "", cleanCheckpoint = "";
@@ -189,7 +189,7 @@ public class SubmarineInterpreter extends Interpreter {
 
   @Override
   public void cancel(InterpreterContext context) {
-    SubmarineJob submarineJob = submarineContext.addOrGetSubmarineJob(properties, context);
+    SubmarineJob submarineJob = submarineContext.addOrGetSubmarineJob(properties, context, zConf);
     String userName = context.getAuthenticationInfo().getUser();
     String noteId = context.getNoteId();
     String jobName = SubmarineUtils.getJobName(userName, noteId);

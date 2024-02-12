@@ -109,13 +109,13 @@ public class SubmarineJob extends Thread {
   public static final String SUBMARINE_TENSORBOARD_JINJA
       = "jinja_templates/submarine-tensorboard.jinja";
 
-  public SubmarineJob(InterpreterContext context, Properties properties) {
+  public SubmarineJob(InterpreterContext context, Properties properties,
+      ZeppelinConfiguration zConf) {
     this.intpContext = context;
     this.properties = properties;
     this.noteId = context.getNoteId();
     this.noteName = context.getNoteName();
     this.userName = context.getAuthenticationInfo().getUser();
-    ZeppelinConfiguration zConf = ZeppelinConfiguration.load();
     this.yarnClient = new YarnClient(properties, zConf);
     this.hdfsClient = new HdfsClient(properties, zConf);
     this.submarineUI = new SubmarineUI(intpContext);
