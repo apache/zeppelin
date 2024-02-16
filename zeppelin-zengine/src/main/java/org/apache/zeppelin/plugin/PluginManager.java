@@ -17,7 +17,6 @@
 
 package org.apache.zeppelin.plugin;
 
-import com.google.common.annotations.VisibleForTesting;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.launcher.InterpreterLauncher;
 import org.apache.zeppelin.interpreter.launcher.SparkInterpreterLauncher;
@@ -40,14 +39,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.inject.Inject;
+
 /**
  * Class for loading Plugins. It is singleton and factory class.
  *
  */
 public class PluginManager {
   private static final Logger LOGGER = LoggerFactory.getLogger(PluginManager.class);
-
-  private static PluginManager instance;
 
   private final String pluginsDir;
   private final ZeppelinConfiguration zConf;
@@ -61,16 +60,10 @@ public class PluginManager {
           VFSNotebookRepo.class.getName(),
           GitNotebookRepo.class.getName());
 
+  @Inject
   public PluginManager(ZeppelinConfiguration zConf) {
     pluginsDir = zConf.getPluginsDir();
     this.zConf = zConf;
-  }
-
-  public static synchronized PluginManager get(ZeppelinConfiguration zConf) {
-    if (instance == null) {
-      instance = new PluginManager(zConf);
-    }
-    return instance;
   }
 
   public NotebookRepo loadNotebookRepo(String notebookRepoClassName) throws IOException {
@@ -165,10 +158,5 @@ public class PluginManager {
       return null;
     }
     return new URLClassLoader(urls.toArray(new URL[0]));
-  }
-
-  @VisibleForTesting
-  public static void reset() {
-    instance = null;
   }
 }

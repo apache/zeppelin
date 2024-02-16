@@ -55,6 +55,7 @@ import javax.management.remote.JMXServiceURL;
 import javax.servlet.DispatcherType;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
+import javax.websocket.server.ServerEndpointConfig;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.web.env.EnvironmentLoaderListener;
@@ -94,6 +95,7 @@ import org.apache.zeppelin.service.*;
 import org.apache.zeppelin.service.AuthenticationService;
 import org.apache.zeppelin.socket.ConnectionManager;
 import org.apache.zeppelin.socket.NotebookServer;
+import org.apache.zeppelin.storage.ConfigStorage;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
 import org.apache.zeppelin.util.NoteUtils;
@@ -136,12 +138,13 @@ public class ZeppelinServer implements AutoCloseable {
   private final Optional<PrometheusMeterRegistry> promMetricRegistry;
   private final Server jettyWebServer;
   private final ServiceLocator sharedServiceLocator;
+  private final ConfigStorage storage;
 
-  public ZeppelinServer(ZeppelinConfiguration conf) {
+  public ZeppelinServer(ZeppelinConfiguration conf) throws IOException {
     this(conf, DEFAULT_SERVICE_LOCATOR_NAME);
   }
 
-  public ZeppelinServer(ZeppelinConfiguration conf, String serviceLocatorName) {
+  public ZeppelinServer(ZeppelinConfiguration conf, String serviceLocatorName) throws IOException {
     LOG.info("Instantiated ZeppelinServer");
     this.conf = conf;
     if (conf.isPrometheusMetricEnabled()) {
@@ -151,6 +154,7 @@ public class ZeppelinServer implements AutoCloseable {
     }
     jettyWebServer = setupJettyServer();
     sharedServiceLocator = ServiceLocatorFactory.getInstance().create(serviceLocatorName);
+    storage = ConfigStorage.createConfigStorage(conf);
   }
 
   public void startZeppelin() {
@@ -166,19 +170,21 @@ public class ZeppelinServer implements AutoCloseable {
       ImmediateErrorHandlerImpl.class);
     ImmediateErrorHandlerImpl handler = sharedServiceLocator.getService(ImmediateErrorHandlerImpl.class);
 
+
     ServiceLocatorUtilities.bind(
         sharedServiceLocator,
         new AbstractBinder() {
           @Override
           protected void configure() {
-            Credentials credentials = new Credentials(conf);
+            bind(storage).to(ConfigStorage.class);
+            bindAsContract(PluginManager.class).in(Singleton.class);
             bindAsContract(InterpreterFactory.class).in(Singleton.class);
             bindAsContract(NotebookRepoSync.class).to(NotebookRepo.class).in(Singleton.class);
             bindAsContract(Helium.class).in(Singleton.class);
             bind(conf).to(ZeppelinConfiguration.class);
             bindAsContract(InterpreterSettingManager.class).in(Singleton.class);
             bindAsContract(InterpreterService.class).in(Singleton.class);
-            bind(credentials).to(Credentials.class);
+            bindAsContract(Credentials.class).in(Singleton.class);
             bindAsContract(AdminService.class).in(Singleton.class);
             bindAsContract(AuthorizationService.class).in(Singleton.class);
             bindAsContract(ConnectionManager.class).in(Singleton.class);
@@ -231,7 +237,7 @@ public class ZeppelinServer implements AutoCloseable {
       LOG.error("Failed to init NotebookRepo", e);
     }
     // Cluster Manager Server
-    setupClusterManagerServer(sharedServiceLocator, conf);
+    setupClusterManagerServer();
 
     initJMX();
 
@@ -465,31 +471,34 @@ public class ZeppelinServer implements AutoCloseable {
             });
   }
 
-  private static void setupClusterManagerServer(ServiceLocator serviceLocator, ZeppelinConfiguration conf) {
+  private void setupClusterManagerServer() {
     if (conf.isClusterMode()) {
       LOG.info("Cluster mode is enabled, starting ClusterManagerServer");
       ClusterManagerServer clusterManagerServer = ClusterManagerServer.getInstance(conf);
 
-      NotebookServer notebookServer = serviceLocator.getService(NotebookServer.class);
+      NotebookServer notebookServer = sharedServiceLocator.getService(NotebookServer.class);
       clusterManagerServer.addClusterEventListeners(ClusterManagerServer.CLUSTER_NOTE_EVENT_TOPIC, notebookServer);
 
-      AuthorizationService authorizationService = serviceLocator.getService(AuthorizationService.class);
+      AuthorizationService authorizationService =
+          sharedServiceLocator.getService(AuthorizationService.class);
       clusterManagerServer.addClusterEventListeners(ClusterManagerServer.CLUSTER_AUTH_EVENT_TOPIC, authorizationService);
 
-      InterpreterSettingManager interpreterSettingManager = serviceLocator.getService(InterpreterSettingManager.class);
+      InterpreterSettingManager interpreterSettingManager =
+          sharedServiceLocator.getService(InterpreterSettingManager.class);
       clusterManagerServer.addClusterEventListeners(ClusterManagerServer.CLUSTER_INTP_SETTING_EVENT_TOPIC, interpreterSettingManager);
 
       // Since the ClusterInterpreterLauncher is lazy, dynamically generated, So in cluster mode,
       // when the zeppelin service starts, Create a ClusterInterpreterLauncher object,
       // This allows the ClusterInterpreterLauncher to listen for cluster events.
       try {
-        InterpreterSettingManager intpSettingManager = serviceLocator.getService(InterpreterSettingManager.class);
+        InterpreterSettingManager intpSettingManager =
+            sharedServiceLocator.getService(InterpreterSettingManager.class);
         RecoveryStorage recoveryStorage = ReflectionUtils.createClazzInstance(
                 conf.getRecoveryStorageClass(),
                 new Class[] {ZeppelinConfiguration.class, InterpreterSettingManager.class},
                 new Object[] {conf, intpSettingManager});
         recoveryStorage.init();
-        PluginManager.get(conf).loadInterpreterLauncher(
+        sharedServiceLocator.getService(PluginManager.class).loadInterpreterLauncher(
             InterpreterSetting.CLUSTER_INTERPRETER_LAUNCHER_NAME, recoveryStorage);
       } catch (IOException e) {
         LOG.error(e.getMessage(), e);

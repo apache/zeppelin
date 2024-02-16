@@ -65,6 +65,7 @@ import org.apache.zeppelin.notebook.repo.VFSNotebookRepo;
 import org.apache.zeppelin.notebook.scheduler.QuartzSchedulerService;
 import org.apache.zeppelin.search.LuceneSearch;
 import org.apache.zeppelin.search.SearchService;
+import org.apache.zeppelin.storage.ConfigStorage;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
 import org.apache.zeppelin.util.NoteUtils;
@@ -93,12 +94,13 @@ class NotebookServiceTest {
   @BeforeEach
   void setUp() throws Exception {
     notebookDir = Files.createTempDirectory("notebookDir").toAbsolutePath().toFile();
-    System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_DIR.getVarName(),
-            notebookDir.getAbsolutePath());
-    ZeppelinConfiguration zeppelinConfiguration = ZeppelinConfiguration.load();
-    gson = NoteUtils.getNoteGson(zeppelinConfiguration);
+    ZeppelinConfiguration zConf = ZeppelinConfiguration.load();
+    zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_DIR.getVarName(),
+        notebookDir.getAbsolutePath());
+    gson = NoteUtils.getNoteGson(zConf);
+    ConfigStorage storage = ConfigStorage.createConfigStorage(zConf);
     NotebookRepo notebookRepo = new VFSNotebookRepo();
-    notebookRepo.init(zeppelinConfiguration, gson);
+    notebookRepo.init(zConf, gson);
 
     InterpreterSettingManager mockInterpreterSettingManager = mock(InterpreterSettingManager.class);
     InterpreterFactory mockInterpreterFactory = mock(InterpreterFactory.class);
@@ -118,11 +120,12 @@ class NotebookServiceTest {
     when(mockInterpreterGroup.getInterpreterSetting()).thenReturn(mockInterpreterSetting);
     when(mockInterpreterSetting.getStatus()).thenReturn(InterpreterSetting.Status.READY);
     Credentials credentials = new Credentials();
-    NoteManager noteManager = new NoteManager(notebookRepo, zeppelinConfiguration);
-    AuthorizationService authorizationService = new AuthorizationService(noteManager, zeppelinConfiguration);
+    NoteManager noteManager = new NoteManager(notebookRepo, zConf);
+    AuthorizationService authorizationService =
+        new AuthorizationService(noteManager, zConf, storage);
     notebook =
         new Notebook(
-            zeppelinConfiguration,
+            zConf,
             authorizationService,
             notebookRepo,
             noteManager,
@@ -130,13 +133,13 @@ class NotebookServiceTest {
             mockInterpreterSettingManager,
             credentials,
             null);
-    searchService = new LuceneSearch(zeppelinConfiguration, notebook);
-    QuartzSchedulerService schedulerService = new QuartzSchedulerService(zeppelinConfiguration, notebook);
+    searchService = new LuceneSearch(zConf, notebook);
+    QuartzSchedulerService schedulerService = new QuartzSchedulerService(zConf, notebook);
     notebook.initNotebook();
     notebook.waitForFinishInit(1, TimeUnit.MINUTES);
     notebookService =
         new NotebookService(
-            notebook, authorizationService, zeppelinConfiguration, schedulerService);
+            notebook, authorizationService, zConf, schedulerService);
 
     String interpreterName = "test";
     when(mockInterpreterSetting.getName()).thenReturn(interpreterName);

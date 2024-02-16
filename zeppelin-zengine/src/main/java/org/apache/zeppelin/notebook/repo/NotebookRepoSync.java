@@ -55,9 +55,11 @@ public class NotebookRepoSync implements NotebookRepoWithVersionControl {
 
   private List<NotebookRepo> repos = new ArrayList<>();
   private boolean oneWaySync;
+  private final PluginManager pluginManager;
 
   @Inject
-  public NotebookRepoSync() {
+  public NotebookRepoSync(PluginManager pluginManager) {
+    this.pluginManager = pluginManager;
   }
 
   @Override
@@ -78,7 +80,7 @@ public class NotebookRepoSync implements NotebookRepoWithVersionControl {
     // init the underlying NotebookRepo
     for (int i = 0; i < Math.min(storageClassNames.length, getMaxRepoNum()); i++) {
       NotebookRepo notebookRepo =
-          PluginManager.get(conf).loadNotebookRepo(storageClassNames[i].trim());
+          pluginManager.loadNotebookRepo(storageClassNames[i].trim());
       notebookRepo.init(conf, gson);
       repos.add(notebookRepo);
     }
@@ -86,7 +88,7 @@ public class NotebookRepoSync implements NotebookRepoWithVersionControl {
     // couldn't initialize any storage, use default
     if (getRepoCount() == 0) {
       LOGGER.info("No storage could be initialized, using default {} storage", DEFAULT_STORAGE);
-      NotebookRepo defaultNotebookRepo = PluginManager.get(conf).loadNotebookRepo(DEFAULT_STORAGE);
+      NotebookRepo defaultNotebookRepo = pluginManager.loadNotebookRepo(DEFAULT_STORAGE);
       defaultNotebookRepo.init(conf, gson);
       repos.add(defaultNotebookRepo);
     }

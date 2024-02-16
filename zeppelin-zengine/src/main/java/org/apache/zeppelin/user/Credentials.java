@@ -22,6 +22,8 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.inject.Inject;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.storage.ConfigStorage;
@@ -38,7 +40,7 @@ public class Credentials {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(Credentials.class);
 
-  private ConfigStorage storage;
+  private final ConfigStorage storage;
   private Map<String, UserCredentials> credentialsMap;
   private Gson gson;
   private Encryptor encryptor;
@@ -50,15 +52,16 @@ public class Credentials {
    * @param conf
    * @throws IOException
    */
-  public Credentials(ZeppelinConfiguration conf) {
+  @Inject
+  public Credentials(ZeppelinConfiguration conf, ConfigStorage storage) {
     credentialsMap = new HashMap<>();
     if (conf.credentialsPersist()) {
       String encryptKey = conf.getCredentialsEncryptKey();
       if (StringUtils.isNotBlank(encryptKey)) {
         this.encryptor = new Encryptor(encryptKey);
       }
+      this.storage = storage;
       try {
-        storage = ConfigStorage.getInstance(conf);
         GsonBuilder builder = new GsonBuilder();
         builder.setPrettyPrinting();
         gson = builder.create();
@@ -66,12 +69,11 @@ public class Credentials {
       } catch (IOException e) {
         LOGGER.error("Fail to create ConfigStorage for Credentials. Persistenz will be disabled", e);
         encryptor = null;
-        storage = null;
         gson = null;
       }
     } else {
       encryptor = null;
-      storage = null;
+      this.storage = null;
       gson = null;
     }
   }

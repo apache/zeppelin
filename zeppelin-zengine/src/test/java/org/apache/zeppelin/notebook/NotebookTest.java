@@ -108,9 +108,10 @@ class NotebookTest extends AbstractInterpreterTest implements ParagraphJobListen
     notebookRepo = new VFSNotebookRepo();
     notebookRepo.init(conf, NoteUtils.getNoteGson(conf));
     noteManager = new NoteManager(notebookRepo, conf);
-    authorizationService = new AuthorizationService(noteManager, conf);
 
-    credentials = new Credentials(conf);
+    authorizationService = new AuthorizationService(noteManager, conf, storage);
+
+    credentials = new Credentials(conf, storage);
     notebook = new Notebook(conf, authorizationService, notebookRepo, noteManager, interpreterFactory, interpreterSettingManager, credentials, null);
     notebook.setParagraphJobListener(this);
     schedulerService = new QuartzSchedulerService(conf, notebook);
@@ -1809,7 +1810,7 @@ class NotebookTest extends AbstractInterpreterTest implements ParagraphJobListen
     ZeppelinConfiguration conf2 = ZeppelinConfiguration.load();
     conf2.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_PUBLIC.getVarName(), "false");
     assertFalse(conf2.isNotebookPublic());
-    authorizationService = new AuthorizationService(noteManager, conf2);
+    authorizationService = new AuthorizationService(noteManager, conf2, storage);
     notebook = new Notebook(conf2, authorizationService, notebookRepo, noteManager,
         interpreterFactory, interpreterSettingManager, credentials, null);
     assertFalse(authorizationService.isPublic());

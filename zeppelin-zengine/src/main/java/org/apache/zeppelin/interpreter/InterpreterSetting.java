@@ -134,6 +134,7 @@ public class InterpreterSetting {
   private transient DependencyResolver dependencyResolver;
 
   private transient ZeppelinConfiguration conf;
+  private transient PluginManager pluginManager;
 
   private transient RecoveryStorage recoveryStorage;
   private transient RemoteInterpreterEventServer interpreterEventServer;
@@ -199,6 +200,11 @@ public class InterpreterSetting {
 
     public Builder setConf(ZeppelinConfiguration conf) {
       interpreterSetting.conf = conf;
+      return this;
+    }
+
+    public Builder setPluginManager(PluginManager pluginManager) {
+      interpreterSetting.pluginManager = pluginManager;
       return this;
     }
 
@@ -288,10 +294,11 @@ public class InterpreterSetting {
     this.interpreterDir = o.getInterpreterDir();
     this.interpreterRunner = o.getInterpreterRunner();
     this.conf = o.getConf();
+    this.pluginManager = o.getPluginMananger();
   }
 
   private InterpreterLauncher createLauncher(Properties properties) throws IOException {
-    return PluginManager.get(conf).loadInterpreterLauncher(
+    return pluginManager.loadInterpreterLauncher(
         getLauncherPlugin(properties), recoveryStorage);
   }
 
@@ -656,6 +663,15 @@ public class InterpreterSetting {
 
   public InterpreterSetting setConf(ZeppelinConfiguration conf) {
     this.conf = conf;
+    return this;
+  }
+
+  public PluginManager getPluginMananger() {
+    return pluginManager;
+  }
+
+  public InterpreterSetting setPluginMananger(PluginManager pluginManager) {
+    this.pluginManager = pluginManager;
     return this;
   }
 

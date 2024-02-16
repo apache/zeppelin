@@ -21,6 +21,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.notebook.repo.mock.VFSNotebookRepoMock;
+import org.apache.zeppelin.plugin.PluginManager;
 import org.apache.zeppelin.util.NoteUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -47,6 +48,7 @@ class NotebookRepoSyncInitializationTest {
 
   private ZeppelinConfiguration zConf;
   private Gson gson;
+  private PluginManager pluginManager;
 
   @BeforeEach
   public void setUp(){
@@ -55,6 +57,7 @@ class NotebookRepoSyncInitializationTest {
     System.setProperty("zeppelin.isTest", "true");
     zConf.setProperty(ConfVars.ZEPPELIN_PLUGINS_DIR.getVarName(),
         new File("../../../plugins").getAbsolutePath());
+    pluginManager = new PluginManager(zConf);
   }
 
   @Test
@@ -63,7 +66,7 @@ class NotebookRepoSyncInitializationTest {
     // set confs
     zConf.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_STORAGE.getVarName(), validOneStorageConf);
     // create repo
-    try (NotebookRepoSync notebookRepoSync = new NotebookRepoSync()) {
+    try (NotebookRepoSync notebookRepoSync = new NotebookRepoSync(pluginManager)) {
       notebookRepoSync.init(zConf, gson);
 
       // check proper initialization of one storage
@@ -89,7 +92,7 @@ class NotebookRepoSyncInitializationTest {
         mainNotebookDir.getAbsolutePath());
     zConf.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_STORAGE.getVarName(), validTwoStorageConf);
     // create repo
-    try (NotebookRepoSync notebookRepoSync = new NotebookRepoSync()) {
+    try (NotebookRepoSync notebookRepoSync = new NotebookRepoSync(pluginManager)) {
       notebookRepoSync.init(zConf, gson);
       // check that both initialized
       assertEquals(2, notebookRepoSync.getRepoCount());
@@ -106,7 +109,7 @@ class NotebookRepoSyncInitializationTest {
     zConf.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_STORAGE.getVarName(), invalidTwoStorageConf);
     // create repo
     IOException exception = assertThrows(IOException.class, () -> {
-      try (NotebookRepoSync notebookRepoSync = new NotebookRepoSync()) {
+      try (NotebookRepoSync notebookRepoSync = new NotebookRepoSync(pluginManager)) {
         notebookRepoSync.init(zConf, gson);
       }
     });
@@ -131,7 +134,7 @@ class NotebookRepoSyncInitializationTest {
         mainNotebookDir.getAbsolutePath());
     zConf.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_STORAGE.getVarName(), unsupportedStorageConf);
     // create repo
-    try (NotebookRepoSync notebookRepoSync = new NotebookRepoSync()) {
+    try (NotebookRepoSync notebookRepoSync = new NotebookRepoSync(pluginManager)) {
       notebookRepoSync.init(zConf, gson);
       // check that first two storages initialized instead of three
       assertEquals(2, notebookRepoSync.getRepoCount());
@@ -146,7 +149,7 @@ class NotebookRepoSyncInitializationTest {
     // set confs
     zConf.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_STORAGE.getVarName(), emptyStorageConf);
     // create repo
-    try (NotebookRepoSync notebookRepoSync = new NotebookRepoSync()) {
+    try (NotebookRepoSync notebookRepoSync = new NotebookRepoSync(pluginManager)) {
       notebookRepoSync.init(zConf, gson);
       // check initialization of one default storage
       assertEquals(1, notebookRepoSync.getRepoCount());
@@ -159,7 +162,7 @@ class NotebookRepoSyncInitializationTest {
     zConf.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_STORAGE.getVarName(), invalidStorageClass);
     // create repo
     IOException e = assertThrows(IOException.class, () -> {
-      try (NotebookRepoSync notebookRepoSync = new NotebookRepoSync()) {
+      try (NotebookRepoSync notebookRepoSync = new NotebookRepoSync(pluginManager)) {
         notebookRepoSync.init(zConf, gson);
       }
     });
