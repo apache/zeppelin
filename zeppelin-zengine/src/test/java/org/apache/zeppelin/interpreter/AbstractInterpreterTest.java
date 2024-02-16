@@ -29,6 +29,8 @@ import org.apache.zeppelin.notebook.NoteManager;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.repo.InMemoryNotebookRepo;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
+import org.apache.zeppelin.plugin.PluginManager;
+import org.apache.zeppelin.storage.ConfigStorage;
 import org.apache.zeppelin.user.Credentials;
 import org.apache.zeppelin.util.NoteUtils;
 import org.junit.jupiter.api.AfterEach;
@@ -59,6 +61,8 @@ public abstract class AbstractInterpreterTest {
   protected File confDir;
   protected File notebookDir;
   protected ZeppelinConfiguration conf;
+  protected ConfigStorage storage;
+  protected PluginManager pluginManager;
 
   @BeforeEach
   public void setUp() throws Exception {
@@ -92,11 +96,15 @@ public abstract class AbstractInterpreterTest {
 
     NotebookRepo notebookRepo = new InMemoryNotebookRepo();
     NoteManager noteManager = new NoteManager(notebookRepo, conf);
-    AuthorizationService authorizationService = new AuthorizationService(noteManager, conf);
+    storage = ConfigStorage.createConfigStorage(conf);
+    pluginManager = new PluginManager(conf);
+    AuthorizationService authorizationService =
+        new AuthorizationService(noteManager, conf, storage);
     interpreterSettingManager = new InterpreterSettingManager(conf,
-        mock(AngularObjectRegistryListener.class), mock(RemoteInterpreterProcessListener.class), mock(ApplicationEventListener.class));
+        mock(AngularObjectRegistryListener.class), mock(RemoteInterpreterProcessListener.class),
+        mock(ApplicationEventListener.class), storage, pluginManager);
     interpreterFactory = new InterpreterFactory(interpreterSettingManager);
-    Credentials credentials = new Credentials(conf);
+    Credentials credentials = new Credentials(conf, storage);
     notebook = new Notebook(conf, authorizationService, notebookRepo, noteManager, interpreterFactory, interpreterSettingManager, credentials);
     interpreterSettingManager.setNotebook(notebook);
   }

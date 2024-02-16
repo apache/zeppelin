@@ -46,8 +46,8 @@ public class AuthorizationService implements ClusterEventListener {
   private static final Logger LOGGER = LoggerFactory.getLogger(AuthorizationService.class);
   private static final Set<String> EMPTY_SET = new HashSet<>();
 
-  private ZeppelinConfiguration conf;
-  private ConfigStorage configStorage;
+  private final ZeppelinConfiguration conf;
+  private final ConfigStorage configStorage;
 
   // contains roles for each user (username --> roles)
   private Map<String, Set<String>> userRoles = new ConcurrentHashMap<>();
@@ -56,11 +56,12 @@ public class AuthorizationService implements ClusterEventListener {
   private Map<String, NoteAuth> notesAuth = new ConcurrentHashMap<>();
 
   @Inject
-  public AuthorizationService(NoteManager noteManager, ZeppelinConfiguration conf) {
+  public AuthorizationService(NoteManager noteManager, ZeppelinConfiguration conf,
+      ConfigStorage storage) {
     LOGGER.info("Injected AuthorizationService: {}", this);
     this.conf = conf;
+    this.configStorage = storage;
     try {
-      this.configStorage = ConfigStorage.getInstance(conf);
       // init notesAuth by reading notebook-authorization.json
       NotebookAuthorizationInfoSaving authorizationInfoSaving = configStorage.loadNotebookAuthorization();
       if (authorizationInfoSaving != null) {

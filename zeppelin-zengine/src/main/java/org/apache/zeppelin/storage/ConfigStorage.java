@@ -18,11 +18,9 @@
 
 package org.apache.zeppelin.storage;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
-import org.apache.zeppelin.healthcheck.HealthChecks;
 import org.apache.zeppelin.interpreter.InterpreterInfoSaving;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.notebook.NotebookAuthorizationInfoSaving;
@@ -43,19 +41,9 @@ public abstract class ConfigStorage {
 
   protected static final String STORAGE_HEALTHCHECK_NAME = "ConfigStorage";
 
-  private static ConfigStorage instance;
-
   protected ZeppelinConfiguration zConf;
 
-  public static synchronized ConfigStorage getInstance(ZeppelinConfiguration zConf)
-      throws IOException {
-    if (instance == null) {
-      instance = createConfigStorage(zConf);
-    }
-    return instance;
-  }
-
-  private static ConfigStorage createConfigStorage(ZeppelinConfiguration zConf) throws IOException {
+  public static ConfigStorage createConfigStorage(ZeppelinConfiguration zConf) throws IOException {
     String configStorageClass =
         zConf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_CONFIG_STORAGE_CLASS);
     return ReflectionUtils.createClazzInstance(configStorageClass,
@@ -95,11 +83,5 @@ public abstract class ConfigStorage {
               .getAsJsonObject(interpreterSetting.getId()));
     }
     return infoSaving;
-  }
-
-  @VisibleForTesting
-  public static void reset() {
-    HealthChecks.getHealthCheckLivenessRegistry().unregister(STORAGE_HEALTHCHECK_NAME);
-    instance = null;
   }
 }
