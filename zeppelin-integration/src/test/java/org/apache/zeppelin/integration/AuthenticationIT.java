@@ -72,7 +72,7 @@ public class AuthenticationIT extends AbstractZeppelinIT {
     zepServer = new MiniZeppelinServer(AuthenticationIT.class.getSimpleName());
     zepServer.addConfigFile("shiro.ini", AUTH_SHIRO);
     zepServer.addInterpreter("jdbc");
-    zepServer.start();
+    zepServer.start(true, AuthenticationIT.class.getSimpleName());
   }
 
   @BeforeEach

@@ -62,14 +62,14 @@ public class PersonalizeActionsIT extends AbstractZeppelinIT {
   static void init() throws Exception {
     String sparkHome = DownloadUtils.downloadSpark();
 
-    zepServer = new MiniZeppelinServer(AuthenticationIT.class.getSimpleName());
+    zepServer = new MiniZeppelinServer(PersonalizeActionsIT.class.getSimpleName());
     zepServer.addConfigFile("shiro.ini", AUTH_SHIRO);
     zepServer.addInterpreter("md");
     zepServer.addInterpreter("python");
     zepServer.addInterpreter("spark");
     zepServer.copyLogProperties();
     zepServer.copyBinDir();
-    zepServer.start();
+    zepServer.start(true, PersonalizeActionsIT.class.getSimpleName());
     TestHelper.configureSparkInterpreter(zepServer, sparkHome);
   }
 

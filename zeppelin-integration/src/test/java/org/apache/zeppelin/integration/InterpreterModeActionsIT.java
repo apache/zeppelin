@@ -72,12 +72,12 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
 
   @BeforeAll
   static void init() throws Exception {
-    zepServer = new MiniZeppelinServer(AuthenticationIT.class.getSimpleName());
+    zepServer = new MiniZeppelinServer(InterpreterModeActionsIT.class.getSimpleName());
     zepServer.addConfigFile("shiro.ini", AUTH_SHIRO);
     zepServer.addInterpreter("python");
     zepServer.copyLogProperties();
     zepServer.copyBinDir();
-    zepServer.start();
+    zepServer.start(true, InterpreterModeActionsIT.class.getSimpleName());
   }
 
   @BeforeEach

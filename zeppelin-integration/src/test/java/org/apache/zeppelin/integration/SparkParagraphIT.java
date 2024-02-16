@@ -48,11 +48,11 @@ class SparkParagraphIT extends AbstractZeppelinIT {
   static void init() throws Exception {
     String sparkHome = DownloadUtils.downloadSpark();
 
-    zepServer = new MiniZeppelinServer(AuthenticationIT.class.getSimpleName());
+    zepServer = new MiniZeppelinServer(SparkParagraphIT.class.getSimpleName());
     zepServer.addInterpreter("spark");
     zepServer.copyLogProperties();
     zepServer.copyBinDir();
-    zepServer.start();
+    zepServer.start(true, SparkParagraphIT.class.getSimpleName());
     TestHelper.configureSparkInterpreter(zepServer, sparkHome);
   }
 
