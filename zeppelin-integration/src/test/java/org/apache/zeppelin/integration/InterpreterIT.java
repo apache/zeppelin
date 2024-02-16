@@ -38,9 +38,9 @@ class InterpreterIT extends AbstractZeppelinIT {
 
   @BeforeAll
   static void init() throws Exception {
-    zepServer = new MiniZeppelinServer(AuthenticationIT.class.getSimpleName());
+    zepServer = new MiniZeppelinServer(InterpreterIT.class.getSimpleName());
     zepServer.addInterpreter("spark");
-    zepServer.start();
+    zepServer.start(true, InterpreterIT.class.getSimpleName());
   }
 
   @BeforeEach

@@ -60,13 +60,13 @@ class ZeppelinIT extends AbstractZeppelinIT {
   @BeforeAll
   static void init() throws Exception {
 
-    zepServer = new MiniZeppelinServer(AuthenticationIT.class.getSimpleName());
+    zepServer = new MiniZeppelinServer(ZeppelinIT.class.getSimpleName());
     zepServer.addInterpreter("md");
     zepServer.addInterpreter("angular");
     zepServer.addInterpreter("sh");
     zepServer.copyLogProperties();
     zepServer.copyBinDir();
-    zepServer.start();
+    zepServer.start(true, ZeppelinIT.class.getSimpleName());
   }
 
   @BeforeEach
