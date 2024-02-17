@@ -773,7 +773,7 @@ public class LdapRealm extends DefaultLdapRealm {
   }
 
   public void setUserSearchFilter(final String filter) {
-    this.userSearchFilter = (filter == null ? null : filter.trim());
+    this.userSearchFilter = (filter == null ? null : escapeAttributeValue(filter.trim()));
   }
 
   public String getGroupSearchFilter() {
@@ -781,7 +781,7 @@ public class LdapRealm extends DefaultLdapRealm {
   }
 
   public void setGroupSearchFilter(final String filter) {
-    this.groupSearchFilter = (filter == null ? null : filter.trim());
+    this.groupSearchFilter = (filter == null ? null : escapeAttributeValue(filter.trim()));
   }
 
   public boolean getUserLowerCase() {
@@ -940,6 +940,74 @@ public class LdapRealm extends DefaultLdapRealm {
       }
     }
   }
+
+  // Implements the necessary escaping to represent an attribute value as a String as per RFC 4514.
+  protected String escapeAttributeValue(String input) {
+    if (input == null) {
+      return null;
+    }
+    int len = input.length();
+    StringBuilder result = new StringBuilder();
+
+    for (int i = 0; i < len; i++) {
+      char c = input.charAt(i);
+      switch (c) {
+        case ' ': {
+          if (i == 0 || i == (len - 1)) {
+            result.append("\\20");
+          } else {
+            result.append(c);
+          }
+          break;
+        }
+        case '#': {
+          if (i == 0) {
+            result.append("\\23");
+          } else {
+            result.append(c);
+          }
+          break;
+        }
+        case '\"': {
+          result.append("\\22");
+          break;
+        }
+        case '+': {
+          result.append("\\2B");
+          break;
+        }
+        case ',': {
+          result.append("\\2C");
+          break;
+        }
+        case ';': {
+          result.append("\\3B");
+          break;
+        }
+        case '<': {
+          result.append("\\3C");
+          break;
+        }
+        case '>': {
+          result.append("\\3E");
+          break;
+        }
+        case '\\': {
+          result.append("\\5C");
+          break;
+        }
+        case '\u0000': {
+          result.append("\\00");
+          break;
+        }
+        default:
+          result.append(c);
+      }
+    }
+
+    return result.toString();
+  }
+
 
   @Override
   protected AuthenticationInfo createAuthenticationInfo(AuthenticationToken token,
