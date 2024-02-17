@@ -942,6 +942,7 @@ public class LdapRealm extends DefaultLdapRealm {
   }
 
   // Implements the necessary escaping to represent an attribute value as a String as per RFC 4514.
+  // https://github.com/apache/tomcat/blob/main/java/org/apache/catalina/realm/JNDIRealm.java#L2921
   protected String escapeAttributeValue(String input) {
     if (input == null) {
       return null;
