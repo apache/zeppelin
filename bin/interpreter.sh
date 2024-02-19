@@ -101,6 +101,9 @@ fi
 
 . "${bin}/common.sh"
 
+# Escape envs
+ZEPPELIN_INTP_CLASSPATH_OVERRIDES=$(printf %q "${ZEPPELIN_INTP_CLASSPATH_OVERRIDES}")
+
 check_java_version
 
 ZEPPELIN_INTERPRETER_API_JAR=$(find "${ZEPPELIN_HOME}/interpreter" -name 'zeppelin-interpreter-shaded-*.jar')
