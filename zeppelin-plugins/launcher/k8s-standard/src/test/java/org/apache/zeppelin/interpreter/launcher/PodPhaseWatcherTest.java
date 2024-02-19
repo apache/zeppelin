@@ -22,7 +22,10 @@ package org.apache.zeppelin.interpreter.launcher;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.awaitility.Awaitility.await;
 
+import java.time.Duration;
+import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.StringUtils;
@@ -46,7 +49,9 @@ class PodPhaseWatcherTest {
   void testPhase() throws InterruptedException {
     // CREATE
     client.pods().inNamespace("ns1")
-        .create(new PodBuilder().withNewMetadata().withName("pod1").endMetadata().build());
+        .create(new PodBuilder().withNewMetadata().withName("pod1").endMetadata().withNewStatus()
+            .endStatus().build());
+    await().until(isPodAvailable("pod1"));
     // READ
     PodList podList = client.pods().inNamespace("ns1").list();
     assertNotNull(podList);
@@ -56,21 +61,31 @@ class PodPhaseWatcherTest {
     PodPhaseWatcher podWatcher = new PodPhaseWatcher(
         phase -> StringUtils.equalsAnyIgnoreCase(phase, "Succeeded", "Failed", "Running"));
     try (Watch watch = client.pods().inNamespace("ns1").withName("pod1").watch(podWatcher)) {
-
       // Update Pod to "pending" phase
       pod.setStatus(new PodStatus(null, null, null, null, null, null, null, "Pending", null, null,
               null, null, null));
-      pod = client.pods().inNamespace("ns1").updateStatus(pod);
+      pod = client.pods().inNamespace("ns1").replaceStatus(pod);
 
       // Wait a little bit, till update is applied
-      Thread.sleep(1000);
+      await().pollDelay(Duration.ofSeconds(1))
+          .until(isPodPhase(pod.getMetadata().getName(), "Pending"));
       // Update Pod to "Running" phase
       pod.setStatus(new PodStatusBuilder(new PodStatus(null, null, null, null, null, null, null,
               "Running", null, null, null, null, null)).build());
-      client.pods().inNamespace("ns1").updateStatus(pod);
-
+      client.pods().inNamespace("ns1").replaceStatus(pod);
+      await().pollDelay(Duration.ofSeconds(1))
+          .until(isPodPhase(pod.getMetadata().getName(), "Running"));
       assertTrue(podWatcher.getCountDownLatch().await(1, TimeUnit.SECONDS));
     }
+  }
+
+  private Callable<Boolean> isPodPhase(String pod, String phase) {
+    return () -> phase
+        .equals(client.pods().inNamespace("ns1").withName(pod).get().getStatus().getPhase());
+  }
+
+  private Callable<Boolean> isPodAvailable(String pod) {
+    return () -> client.pods().inNamespace("ns1").withName(pod).get() != null;
   }
 
   @Test
