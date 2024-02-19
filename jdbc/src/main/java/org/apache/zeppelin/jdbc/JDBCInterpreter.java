@@ -153,6 +153,14 @@ public class JDBCInterpreter extends KerberosInterpreter {
           "KerberosConfigPath", "KerberosKeytabPath", "KerberosCredentialCachePath",
           "extraCredentials", "roles", "sessionProperties"));
 
+  private static final String ALLOW_LOAD_LOCAL_IN_FILE_NAME = "allowLoadLocalInfile";
+
+  private static final String AUTO_DESERIALIZE = "autoDeserialize";
+
+  private static final String ALLOW_LOCAL_IN_FILE_NAME = "allowLocalInfile";
+
+  private static final String ALLOW_URL_IN_LOCAL_IN_FILE_NAME = "allowUrlInLocalInfile";
+
   // database --> Properties
   private final HashMap<String, Properties> basePropertiesMap;
   // username --> User Configuration
@@ -533,6 +541,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
     String url = properties.getProperty(URL_KEY);
     url = appendProxyUserToURL(url, user);
     String connectionUrl = appendTagsToURL(url, context);
+    validateConnectionUrl(connectionUrl);
 
     String authType = getProperty("zeppelin.jdbc.auth.type", "SIMPLE")
             .trim().toUpperCase();
@@ -574,6 +583,15 @@ public class JDBCInterpreter extends KerberosInterpreter {
     }
 
     return connection;
+  }
+
+  private void validateConnectionUrl(String url) {
+    if (containsIgnoreCase(url, ALLOW_LOAD_LOCAL_IN_FILE_NAME) ||
+        containsIgnoreCase(url, AUTO_DESERIALIZE) ||
+        containsIgnoreCase(url, ALLOW_LOCAL_IN_FILE_NAME) ||
+        containsIgnoreCase(url, ALLOW_URL_IN_LOCAL_IN_FILE_NAME)) {
+      throw new IllegalArgumentException("Connection URL contains sensitive configuration");
+    }
   }
 
   private String appendProxyUserToURL(String url, String user) {
@@ -749,6 +767,9 @@ public class JDBCInterpreter extends KerberosInterpreter {
 
     try {
       connection = getConnection(context);
+    } catch (IllegalArgumentException e) {
+      LOGGER.error("Cannot run " + sql, e);
+      return new InterpreterResult(Code.ERROR, "Connection URL contains improper configuration");
     } catch (Exception e) {
       LOGGER.error("Fail to getConnection", e);
       try {
@@ -763,7 +784,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
       }
     }
     if (connection == null) {
-      return new InterpreterResult(Code.ERROR, "User's connectin not found.");
+      return new InterpreterResult(Code.ERROR, "User's connection not found.");
     }
 
     try {
