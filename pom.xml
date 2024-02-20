@@ -114,7 +114,7 @@
     <plugin.frontend.version>1.12.1</plugin.frontend.version>
 
     <!-- common library versions -->
-    <slf4j.version>1.7.36</slf4j.version>
+    <slf4j.version>1.7.35</slf4j.version>
     <reload4j.version>1.2.25</reload4j.version>
     <libthrift.version>0.13.0</libthrift.version>
     <flexmark.all.version>0.62.2</flexmark.all.version>
