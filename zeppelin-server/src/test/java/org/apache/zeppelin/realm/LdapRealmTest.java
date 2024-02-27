@@ -119,6 +119,19 @@ class LdapRealmTest {
     assertEquals(new HashSet<>(Arrays.asList("group-one", "zeppelin-role")), roles);
   }
 
+  @Test
+  void testFilterEscaping() {
+    LdapRealm realm = new LdapRealm();
+    assertEquals("foo", realm.escapeAttributeValue("foo"));
+    assertEquals("foo\\2B", realm.escapeAttributeValue("foo+"));
+    assertEquals("foo\\5C", realm.escapeAttributeValue("foo\\"));
+    assertEquals("foo\\00", realm.escapeAttributeValue("foo\u0000"));
+    realm.setUserSearchFilter("uid=<{0}>");
+    assertEquals("uid=\\3C{0}\\3E", realm.getUserSearchFilter());
+    realm.setUserSearchFilter("gid=\\{0}\\");
+    assertEquals("gid=\\5C{0}\\5C", realm.getUserSearchFilter());
+  }
+
   private NamingEnumeration<SearchResult> enumerationOf(BasicAttributes... attrs) {
     final Iterator<BasicAttributes> iterator = Arrays.asList(attrs).iterator();
     return new NamingEnumeration<SearchResult>() {
