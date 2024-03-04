@@ -17,7 +17,6 @@
 
 package org.apache.zeppelin.integration;
 
-import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
