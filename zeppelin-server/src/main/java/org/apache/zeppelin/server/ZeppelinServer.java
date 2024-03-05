@@ -95,6 +95,7 @@ import org.apache.zeppelin.service.*;
 import org.apache.zeppelin.service.AuthenticationService;
 import org.apache.zeppelin.socket.ConnectionManager;
 import org.apache.zeppelin.socket.NotebookServer;
+import org.apache.zeppelin.socket.SessionConfigurator;
 import org.apache.zeppelin.storage.ConfigStorage;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
@@ -467,7 +468,8 @@ public class ZeppelinServer implements AutoCloseable {
     WebSocketServerContainerInitializer
             .configure(webapp, (servletContext, wsContainer) -> {
               wsContainer.setDefaultMaxTextMessageBufferSize(Integer.parseInt(maxTextMessageSize));
-              wsContainer.addEndpoint(NotebookServer.class);
+              wsContainer.addEndpoint(ServerEndpointConfig.Builder.create(NotebookServer.class, "/ws")
+              .configurator(new SessionConfigurator(sharedServiceLocator)).build());
             });
   }
 
