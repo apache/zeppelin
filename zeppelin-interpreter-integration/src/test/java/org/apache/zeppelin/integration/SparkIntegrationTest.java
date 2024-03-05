@@ -405,7 +405,7 @@ public abstract class SparkIntegrationTest {
   private String getRExec() throws IOException, InterruptedException {
     Process process = Runtime.getRuntime().exec(new String[]{"which", "R"});
     if (process.waitFor() != 0) {
-      throw new RuntimeException("Fail to run command: which Rscript.");
+      throw new RuntimeException("Fail to run command: which R.");
     }
     return IOUtils.toString(process.getInputStream(), StandardCharsets.UTF_8).trim();
   }
