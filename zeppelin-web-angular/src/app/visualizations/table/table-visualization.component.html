@@ -37,12 +37,13 @@
 <nz-table #table
           nzSize="small"
           nzShowSizeChanger
+          [nzScroll]="{ x: '1300px' }"
           [nzData]="rows"
           [nzFooter]="aggregatesFooter">
   <thead>
   <tr>
     <th *ngFor="let col of columns"
-        nzWidth="800px"
+        nzWidth="200px"
         nzShowSort
         nzCustomFilter
         [nzSortKey]="col"
