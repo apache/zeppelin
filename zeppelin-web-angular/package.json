@@ -34,7 +34,7 @@
     "diff-match-patch": "^1.0.4",
     "github-markdown-css": "^3.0.1",
     "highlight.js": "^9.15.8",
-    "lodash": "^4.17.11",
+    "lodash": "^4.17.21",
     "mathjax": "2.7.5",
     "monaco-editor": "0.15.1",
     "ng-zorro-antd": "^8.4.0",
