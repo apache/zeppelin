@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static org.apache.zeppelin.helium.HeliumPackage.newHeliumPackage;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -64,7 +65,7 @@ class HeliumRestApiTest extends AbstractTestRestApi {
     HeliumTestRegistry registry = new HeliumTestRegistry("r1", "r1");
     helium.clear();
 
-    registry.add(new HeliumPackage(
+    registry.add(newHeliumPackage(
         HeliumType.APPLICATION,
         "name1",
         "desc1",
@@ -74,7 +75,7 @@ class HeliumRestApiTest extends AbstractTestRestApi {
         "",
         ""));
 
-    registry.add(new HeliumPackage(
+    registry.add(newHeliumPackage(
         HeliumType.APPLICATION,
         "name2",
         "desc2",

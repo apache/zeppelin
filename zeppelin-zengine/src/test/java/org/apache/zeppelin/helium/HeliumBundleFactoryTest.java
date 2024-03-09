@@ -17,6 +17,7 @@
 package org.apache.zeppelin.helium;
 
 import static org.apache.zeppelin.helium.HeliumBundleFactory.HELIUM_LOCAL_REPO;
+import static org.apache.zeppelin.helium.HeliumPackage.newHeliumPackage;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -72,7 +73,7 @@ public class HeliumBundleFactoryTest {
   @Test
   public void downloadPackage() throws TaskRunnerException {
     HeliumPackage pkg =
-        new HeliumPackage(
+        newHeliumPackage(
             HeliumType.VISUALIZATION,
             "lodash",
             "lodash",
@@ -89,7 +90,7 @@ public class HeliumBundleFactoryTest {
   @Test
   public void bundlePackage() throws IOException, TaskRunnerException {
     HeliumPackage pkg =
-        new HeliumPackage(
+        newHeliumPackage(
             HeliumType.VISUALIZATION,
             "zeppelin-bubblechart",
             "zeppelin-bubblechart",
@@ -114,7 +115,7 @@ public class HeliumBundleFactoryTest {
     String localPkg = resDir + "/../../../src/test/resources/helium/vis1";
 
     HeliumPackage pkg =
-        new HeliumPackage(
+        newHeliumPackage(
             HeliumType.VISUALIZATION,
             "vis1",
             "vis1",
@@ -135,7 +136,7 @@ public class HeliumBundleFactoryTest {
     String localPkg = resDir + "/../../../src/test/resources/helium/vis2";
 
     HeliumPackage pkg =
-        new HeliumPackage(
+        newHeliumPackage(
             HeliumType.VISUALIZATION,
             "vis2",
             "vis2",
@@ -161,7 +162,7 @@ public class HeliumBundleFactoryTest {
     String resDir = new File(res.getFile()).getParent();
 
     HeliumPackage pkgV1 =
-        new HeliumPackage(
+        newHeliumPackage(
             HeliumType.VISUALIZATION,
             "zeppelin-bubblechart",
             "zeppelin-bubblechart",
@@ -172,7 +173,7 @@ public class HeliumBundleFactoryTest {
             "icon");
 
     HeliumPackage pkgV2 =
-        new HeliumPackage(
+        newHeliumPackage(
             HeliumType.VISUALIZATION,
             "zeppelin-bubblechart",
             "zeppelin-bubblechart",
