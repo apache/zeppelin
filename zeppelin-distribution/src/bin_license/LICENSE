@@ -421,8 +421,14 @@ Creative Commons CC0 (http://creativecommons.org/publicdomain/zero/1.0/)
 
     (CC0 1.0 Universal) JSR166e (com.twitter:jsr166e:1.1.0 - http://github.com/twitter/jsr166e)
     (Public Domain, per Creative Commons CC0) HdrHistogram (org.hdrhistogram:HdrHistogram:2.1.6 - http://hdrhistogram.github.io/HdrHistogram/)
+
+========================================================================
+Public Domain
+========================================================================
+
     (Public Domain) XZ for Java (org.tukaani:xz:1.0 - http://tukaani.org/xz/java.html)
     (Public Domain) AOP alliance (aopalliance:aopalliance:1.0 - http://aopalliance.sourceforge.net)
+    (Public Domain) JSON in Java [package org.json] (org.json/json/20240205 - https://github.com/stleary/JSON-java/blob/master/LICENSE)
 
 ========================================================================
 Multiple licenses

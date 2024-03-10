@@ -75,7 +75,16 @@
                     <groupId>org.codehaus.jackson</groupId>
                     <artifactId>jackson-core-asl</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>org.json</groupId>
+                    <artifactId>json</artifactId>
+                </exclusion>
             </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
         </dependency>
 
         <dependency>
