@@ -91,6 +91,11 @@
         </dependency>
 
         <dependency>
+            <groupId>ch.qos.reload4j</groupId>
+            <artifactId>reload4j</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
             <scope>test</scope>
@@ -126,6 +131,12 @@
             <artifactId>hadoop-common</artifactId>
             <version>${hadoop.version}</version>
             <scope>compile</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>log4j</groupId>
+                    <artifactId>log4j</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -206,6 +217,7 @@
                     <artifactSet>
                         <excludes>
                             <exclude>org.apache.zeppelin:zeppelin-interpreter-shaded</exclude>
+                            <exclude>log4j:log4j</exclude>
                         </excludes>
                     </artifactSet>
                     <outputFile>${project.build.directory}/../../interpreter/r/${interpreter.jar.name}-${project.version}.jar</outputFile>
