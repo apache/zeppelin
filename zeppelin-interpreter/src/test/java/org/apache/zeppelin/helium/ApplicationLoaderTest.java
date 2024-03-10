@@ -25,6 +25,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import static org.apache.zeppelin.helium.HeliumPackage.newHeliumPackage;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -74,7 +75,7 @@ class ApplicationLoaderTest {
   }
 
   public HeliumPackage createPackageInfo(String className, String artifact) {
-    HeliumPackage app1 = new HeliumPackage(
+    HeliumPackage app1 = newHeliumPackage(
         HeliumType.APPLICATION,
         "name1",
         "desc1",

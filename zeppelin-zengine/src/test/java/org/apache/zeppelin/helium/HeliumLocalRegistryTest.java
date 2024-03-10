@@ -25,6 +25,7 @@ import org.junit.jupiter.api.Test;
 import java.io.File;
 import java.io.IOException;
 
+import static org.apache.zeppelin.helium.HeliumPackage.newHeliumPackage;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class HeliumLocalRegistryTest {
@@ -50,7 +51,7 @@ public class HeliumLocalRegistryTest {
 
     // when
     Gson gson = new Gson();
-    HeliumPackage pkg1 = new HeliumPackage(HeliumType.APPLICATION,
+    HeliumPackage pkg1 = newHeliumPackage(HeliumType.APPLICATION,
         "app1",
         "desc1",
         "artifact1",

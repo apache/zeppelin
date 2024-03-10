@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.helium;
 
+import static org.apache.commons.text.StringEscapeUtils.escapeHtml4;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.Map;
@@ -42,7 +43,7 @@ class HeliumPackageTest {
 
     HeliumPackage p = HeliumPackage.fromJson(examplePackage);
     assertEquals("%echo", p.getSpellInfo().getMagic());
-    assertEquals("%echo <TEXT>", p.getSpellInfo().getUsage());
+    assertEquals(escapeHtml4("%echo <TEXT>"), p.getSpellInfo().getUsage());
   }
 
   @Test

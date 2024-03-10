@@ -16,6 +16,7 @@
  */
 package org.apache.zeppelin.helium;
 
+import static org.apache.zeppelin.helium.HeliumPackage.newHeliumPackage;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
@@ -90,7 +91,7 @@ public class HeliumApplicationFactoryTest extends AbstractInterpreterTest {
   public void testLoadRunUnloadApplication()
       throws IOException, ApplicationException, InterruptedException {
     // given
-    HeliumPackage pkg1 = new HeliumPackage(HeliumType.APPLICATION,
+    HeliumPackage pkg1 = newHeliumPackage(HeliumType.APPLICATION,
         "name1",
         "desc1",
         "",
@@ -139,7 +140,7 @@ public class HeliumApplicationFactoryTest extends AbstractInterpreterTest {
   @Disabled
   public void testUnloadOnParagraphRemove() throws IOException {
     // given
-    HeliumPackage pkg1 = new HeliumPackage(HeliumType.APPLICATION,
+    HeliumPackage pkg1 = newHeliumPackage(HeliumType.APPLICATION,
         "name1",
         "desc1",
         "",
@@ -182,7 +183,7 @@ public class HeliumApplicationFactoryTest extends AbstractInterpreterTest {
   @Disabled
   public void testUnloadOnInterpreterUnbind() throws IOException {
     // given
-    HeliumPackage pkg1 = new HeliumPackage(HeliumType.APPLICATION,
+    HeliumPackage pkg1 = newHeliumPackage(HeliumType.APPLICATION,
         "name1",
         "desc1",
         "",
@@ -249,7 +250,7 @@ public class HeliumApplicationFactoryTest extends AbstractInterpreterTest {
   @Disabled
   public void testUnloadOnInterpreterRestart() throws IOException, InterpreterException {
     // given
-    HeliumPackage pkg1 = new HeliumPackage(HeliumType.APPLICATION,
+    HeliumPackage pkg1 = newHeliumPackage(HeliumType.APPLICATION,
         "name1",
         "desc1",
         "",
