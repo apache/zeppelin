@@ -26,6 +26,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 
+import static org.apache.zeppelin.helium.HeliumPackage.newHeliumPackage;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -77,7 +78,7 @@ public class HeliumTest {
     helium.addRegistry(registry2);
 
     // when
-    registry1.add(new HeliumPackage(
+    registry1.add(newHeliumPackage(
         HeliumType.APPLICATION,
         "name1",
         "desc1",
@@ -87,7 +88,7 @@ public class HeliumTest {
         "",
         ""));
 
-    registry2.add(new HeliumPackage(
+    registry2.add(newHeliumPackage(
         HeliumType.APPLICATION,
         "name2",
         "desc2",
@@ -110,7 +111,7 @@ public class HeliumTest {
     helium.addRegistry(registry1);
 
     // when
-    registry1.add(new HeliumPackage(
+    registry1.add(newHeliumPackage(
         HeliumType.APPLICATION,
         "name1",
         "desc1",
@@ -124,7 +125,7 @@ public class HeliumTest {
     assertEquals(1, helium.getAllPackageInfo().size());
 
     // when
-    registry1.add(new HeliumPackage(
+    registry1.add(newHeliumPackage(
         HeliumType.APPLICATION,
         "name2",
         "desc2",
