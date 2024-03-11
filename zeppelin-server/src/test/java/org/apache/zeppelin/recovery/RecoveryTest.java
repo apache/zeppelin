@@ -45,11 +45,13 @@ import org.slf4j.LoggerFactory;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.awaitility.Awaitility.await;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Map;
+import java.util.concurrent.Callable;
 
 class RecoveryTest extends AbstractTestRestApi {
   private static final Logger LOG = LoggerFactory.getLogger(RecoveryTest.class);
@@ -284,6 +286,14 @@ class RecoveryTest extends AbstractTestRestApi {
     }
   }
 
+  private Callable<Boolean> hasParagraphStatus(Paragraph p, Job.Status status) {
+    return () -> p.getStatus().equals(status);
+  }
+
+  private Callable<Boolean> isParagraphTerminated(Paragraph p) {
+    return () -> p.isTerminated();
+  }
+
   @Test
   void testRecovery_Running_Paragraph_sh() throws Exception {
     LOG.info("Test testRecovery_Running_Paragraph_sh");
@@ -300,14 +310,8 @@ class RecoveryTest extends AbstractTestRestApi {
       CloseableHttpResponse post = httpPost("/notebook/job/" + note1Id + "/" + p1.getId(), "");
       assertThat(post, isAllowed());
       post.close();
-      long start = System.currentTimeMillis();
       // wait until paragraph is RUNNING
-      while((System.currentTimeMillis() - start) < 10 * 1000) {
-        if (p1.getStatus() == Job.Status.RUNNING) {
-          break;
-        }
-        Thread.sleep(1000);
-      }
+      await().until(hasParagraphStatus(p1, Job.Status.RUNNING));
       if (p1.getStatus() != Job.Status.RUNNING) {
         fail("Fail to run paragraph: " + p1.getReturn());
       }
@@ -315,19 +319,10 @@ class RecoveryTest extends AbstractTestRestApi {
       // shutdown zeppelin and restart it
       zepServer.shutDown();
       zepServer.start();
-      p1 = zepServer.getServiceLocator().getService(Notebook.class).processNote(note1Id,
-          note -> {
-            return note.getParagraph(0);
-          });
 
       // wait until paragraph is finished
-      start = System.currentTimeMillis();
-      while((System.currentTimeMillis() - start) < 10 * 1000) {
-        if (p1.isTerminated()) {
-          break;
-        }
-        Thread.sleep(1000);
-      }
+      await().until(isParagraphTerminated(p1));
+      // Wait because paragraph is re submited
       Thread.sleep(11 * 1000);
       assertEquals(Job.Status.FINISHED, p1.getStatus());
       assertEquals("hello\n", p1.getReturn().message().get(0).getData());

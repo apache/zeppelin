@@ -287,9 +287,4 @@ public class OSSNotebookRepo extends AbstractNotebookRepo
     }
     return revisionNote;
   }
-
-  @Override
-  public Gson getGson() {
-    return gson;
-  }
 }

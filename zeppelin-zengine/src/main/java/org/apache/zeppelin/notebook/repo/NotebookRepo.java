@@ -185,5 +185,4 @@ public interface NotebookRepo extends Closeable {
       throw new IOException("Invalid note name: " + noteFileName);
     }
   }
-
 }
