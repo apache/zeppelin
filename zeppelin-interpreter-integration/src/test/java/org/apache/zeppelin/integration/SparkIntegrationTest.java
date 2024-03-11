@@ -17,7 +17,6 @@
 
 package org.apache.zeppelin.integration;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.yarn.api.protocolrecords.GetApplicationsRequest;
 import org.apache.hadoop.yarn.api.protocolrecords.GetApplicationsResponse;
@@ -72,12 +71,16 @@ public abstract class SparkIntegrationTest {
 
   private static MiniZeppelinServer zepServer;
 
-  @BeforeAll
-  static void init() throws Exception {
-    String sparkVersion = "3.4.1";
-    String hadoopVersion = "3";
+  public void prepareSpark(String sparkVersion, String hadoopVersion) {
     LOGGER.info("Testing Spark Version: " + sparkVersion);
     LOGGER.info("Testing Hadoop Version: " + hadoopVersion);
+    this.sparkVersion = sparkVersion;
+    this.hadoopVersion = hadoopVersion;
+    this.sparkHome = DownloadUtils.downloadSpark(sparkVersion, hadoopVersion);
+  }
+
+  @BeforeAll
+  static void init() throws Exception {
     hadoopCluster = new MiniHadoopCluster();
     hadoopCluster.start();
 
@@ -100,14 +103,6 @@ public abstract class SparkIntegrationTest {
     if (hadoopCluster != null) {
       hadoopCluster.stop();
     }
-  }
-  
-  public void prepareSpark(String sparkVersion, String hadoopVersion) {
-    LOGGER.info("Testing Spark Version: " + sparkVersion);
-    LOGGER.info("Testing Hadoop Version: " + hadoopVersion);
-    this.sparkVersion = sparkVersion;
-    this.hadoopVersion = hadoopVersion;
-    this.sparkHome = DownloadUtils.downloadSpark(sparkVersion, hadoopVersion);
   }
 
   protected void setUpSparkInterpreterSetting(InterpreterSetting interpreterSetting) {
