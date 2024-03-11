@@ -63,9 +63,10 @@ class ZeppelinClientIntegrationTest extends AbstractTestRestApi {
     zepServer.addInterpreter("sh");
     zepServer.copyBinDir();
     zepServer.copyLogProperties();
-    zepServer.getZeppelinConfiguration().setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HELIUM_REGISTRY.getVarName(),
+    ZeppelinConfiguration zConf = zepServer.getZeppelinConfiguration();
+    zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HELIUM_REGISTRY.getVarName(),
         "helium");
-    zepServer.getZeppelinConfiguration().setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_ALLOWED_ORIGINS.getVarName(), "*");
+    zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_ALLOWED_ORIGINS.getVarName(), "*");
     zepServer.start();
     clientConfig = new ClientConfig("http://localhost:" + zepServer.getZeppelinConfiguration().getServerPort());
     zeppelinClient = new ZeppelinClient(clientConfig);
@@ -255,7 +256,7 @@ class ZeppelinClientIntegrationTest extends AbstractTestRestApi {
     assertEquals(2, paragraphResult.getResults().size());
     assertEquals("TEXT", paragraphResult.getResults().get(0).getType());
     // depends on JVM language
-    //assertTrue(paragraphResult.getResults().get(0).getData().contains("command not found"), paragraphResult.getResults().get(0).getData());
+    // assertTrue(paragraphResult.getResults().get(0).getData().contains("command not found"), paragraphResult.getResults().get(0).getData());
     assertEquals("TEXT", paragraphResult.getResults().get(1).getType());
     assertTrue(paragraphResult.getResults().get(1).getData().contains("ExitValue"), paragraphResult.getResults().get(1).getData());
 

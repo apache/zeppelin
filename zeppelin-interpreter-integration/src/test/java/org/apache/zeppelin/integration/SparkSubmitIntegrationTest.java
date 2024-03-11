@@ -39,6 +39,8 @@ import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -50,6 +52,8 @@ import java.util.stream.Collectors;
 
 public class SparkSubmitIntegrationTest {
 
+  private static Logger LOGGER = LoggerFactory.getLogger(SparkSubmitIntegrationTest.class);
+
   private static MiniHadoopCluster hadoopCluster;
   private static InterpreterFactory interpreterFactory;
   private static InterpreterSettingManager interpreterSettingManager;
@@ -59,6 +63,8 @@ public class SparkSubmitIntegrationTest {
 
   @BeforeAll
   static void init() throws Exception {
+    LOGGER.info("Testing Spark Version: " + DownloadUtils.DEFAULT_SPARK_VERSION);
+    LOGGER.info("Testing Hadoop Version: " + DownloadUtils.DEFAULT_SPARK_HADOOP_VERSION);
     sparkHome = DownloadUtils.downloadSpark();
     hadoopCluster = new MiniHadoopCluster();
     hadoopCluster.start();
