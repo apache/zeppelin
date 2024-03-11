@@ -502,7 +502,22 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
 
   @Override
   protected boolean jobAbort() {
+    if (isAborted()) {
+      LOGGER.debug("Paragraph is already aborted.");
+      return true;
+    }
+    if (isRunning() && this.interpreter == null) {
+      try {
+        LOGGER.debug("Trying to get the binded interpreter to cancel.");
+        this.interpreter = getBindedInterpreter();
+      } catch (InterpreterNotFoundException e) {
+        LOGGER.debug("Unable to abort because there's no interpreter bind to it", e);
+        setInterpreterNotFound(e);
+        return true;
+      }
+    }
     if (interpreter == null) {
+      LOGGER.debug("Unable to abort because interpreter is null");
       return true;
     }
     try {
