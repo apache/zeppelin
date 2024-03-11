@@ -131,7 +131,7 @@ class NotebookServerTest extends AbstractTestRestApi {
 
   @Test
   void testCollaborativeEditing() throws IOException {
-    if (!ZeppelinConfiguration.load().isZeppelinNotebookCollaborativeModeEnable()) {
+    if (!zepServer.getZeppelinConfiguration().isZeppelinNotebookCollaborativeModeEnable()) {
       return;
     }
     NotebookSocket sock1 = createWebSocket();
@@ -677,7 +677,7 @@ class NotebookServerTest extends AbstractTestRestApi {
         .put("defaultInterpreterId", defaultInterpreterId).toJson());
 
     int sendCount = 2;
-    if (ZeppelinConfiguration.load().isZeppelinNotebookCollaborativeModeEnable()) {
+    if (zepServer.getZeppelinConfiguration().isZeppelinNotebookCollaborativeModeEnable()) {
       sendCount++;
     }
     // expect the events are broadcasted properly

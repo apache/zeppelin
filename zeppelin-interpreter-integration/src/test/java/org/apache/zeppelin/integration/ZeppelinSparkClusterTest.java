@@ -1138,15 +1138,15 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
           note.run(p1.getId(), true);
           assertEquals(Status.ERROR, p1.getStatus());
           // depends on JVM language
-          //assertTrue(p1.getReturn().message().get(0).getData().contains("No such file or directory"),
+//          assertTrue(p1.getReturn().message().get(0).getData().contains("No such file or directory"),
 //            "Actual error message: " + p1.getReturn().message().get(0).getData());
 
           // run it again, and get the same error
           note.run(p1.getId(), true);
           assertEquals(Status.ERROR, p1.getStatus());
-       // depends on JVM language
-          //assertTrue(p1.getReturn().message().get(0).getData().contains("No such file or directory"),
-//            "Actual error message: " + p1.getReturn().message().get(0).getData());
+          // depends on JVM language
+//          assertTrue(p1.getReturn().message().get(0).getData().contains("No such file or directory"),
+//            Actual error message: " + p1.getReturn().message().get(0).getData());
           return null;
         });
     } finally {

@@ -578,7 +578,7 @@ class InterpreterSettingTest extends AbstractInterpreterTest{
             .setOption(interpreterOption)
             .setIntepreterSettingManager(interpreterSettingManager)
             .setDependencyResolver(new DependencyResolver("/tmp", conf))
-        .setConf(conf)
+            .setConf(conf)
             .create();
 
     // set invalid dependency

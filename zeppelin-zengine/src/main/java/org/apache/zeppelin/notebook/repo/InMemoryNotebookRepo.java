@@ -121,9 +121,4 @@ public class InMemoryNotebookRepo extends AbstractNotebookRepo {
   public void reset() {
     this.notes.clear();
   }
-
-  @Override
-  public Gson getGson() {
-    return gson;
-  }
 }
