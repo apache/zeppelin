@@ -20,7 +20,7 @@ FROM ubuntu:22.04
 
 LABEL maintainer="Apache Software Foundation <dev@zeppelin.apache.org>"
 
-ARG version="0.10.0"
+ARG version="0.12.0-SNAPSHOT"
 
 ENV VERSION="${version}" \
     ZEPPELIN_HOME="/opt/zeppelin"
@@ -30,7 +30,7 @@ ENV VERSION="${version}" \
 RUN set -ex && \
     /usr/bin/apt-get update && \
     DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get install -y openjdk-11-jre-headless wget tini bzip2 && \
-    /usr/bin/wget -qO- https://micromamba.snakepit.net/api/micromamba/linux-64/latest | tar -xvj bin/micromamba && \
+    /usr/bin/wget --no-iri -qO- https://micromamba.snakepit.net/api/micromamba/linux-64/latest | tar -xvj bin/micromamba && \
     # Cleanup
     /usr/bin/apt-get clean && \
     /bin/rm -rf /var/lib/apt/lists/*
