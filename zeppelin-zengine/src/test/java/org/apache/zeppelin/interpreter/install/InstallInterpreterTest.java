@@ -29,7 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-public class InstallInterpreterTest {
+class InstallInterpreterTest {
   private File tmpDir;
   private InstallInterpreter installer;
   private File interpreterBaseDir;
@@ -66,12 +66,12 @@ public class InstallInterpreterTest {
 
 
   @Test
-  public void testList() {
+  void testList() {
     assertEquals(2, installer.list().size());
   }
 
   @Test
-  public void install() {
+  void install() {
     assertEquals(0, interpreterBaseDir.listFiles().length);
 
     installer.install("intp1");
@@ -79,7 +79,7 @@ public class InstallInterpreterTest {
   }
 
   @Test
-  public void installAll() {
+  void installAll() {
     installer.installAll();
     assertTrue(new File(interpreterBaseDir, "intp1").isDirectory());
     assertTrue(new File(interpreterBaseDir, "intp2").isDirectory());

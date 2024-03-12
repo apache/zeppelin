@@ -26,10 +26,10 @@ import java.io.IOException;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
-public class PluginManagerTest {
+class PluginManagerTest {
 
   @Test
-  public void testLoadGitNotebookRepo() throws IOException {
+  void testLoadGitNotebookRepo() throws IOException {
     NotebookRepo notebookRepo = PluginManager.get()
             .loadNotebookRepo("org.apache.zeppelin.notebook.repo.GitNotebookRepo");
     assertTrue(notebookRepo instanceof GitNotebookRepo);

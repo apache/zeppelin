@@ -288,15 +288,17 @@ public class HeliumBundleFactory {
       // if online package
       String version = nameAndVersion[1];
       File tgz = new File(heliumLocalRepoDirectory, pkg.getName() + "-" + version + ".tgz");
-      tgz.delete();
+      FileUtils.deleteQuietly(tgz);
 
       // wget, extract and move dir to `bundles/${pkg.getName()}`, and remove tgz
       npmCommand(fpf, "pack " + pkg.getArtifact());
       File extracted = new File(heliumBundleDirectory, "package");
       FileUtils.deleteDirectory(extracted);
       List<String> entries = unTgz(tgz, heliumBundleDirectory);
-      for (String entry: entries) LOGGER.debug("Extracted " + entry);
-      tgz.delete();
+      for (String entry : entries) {
+        LOGGER.debug("Extracted {}", entry);
+      }
+      FileUtils.deleteQuietly(tgz);
       FileUtils.copyDirectory(extracted, bundleDir);
       FileUtils.deleteDirectory(extracted);
     }

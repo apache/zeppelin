@@ -23,6 +23,7 @@ import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.user.AuthenticationInfo;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -30,7 +31,7 @@ import java.util.Map;
 /**
  * Notebook repository (persistence layer) abstraction.
  */
-public interface NotebookRepo {
+public interface NotebookRepo extends Closeable {
 
   void init(ZeppelinConfiguration zConf) throws IOException;
 
@@ -115,6 +116,7 @@ public interface NotebookRepo {
   /**
    * Release any underlying resources
    */
+  @Override
   @ZeppelinApi
   void close();
 

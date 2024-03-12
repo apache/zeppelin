@@ -23,8 +23,6 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -32,9 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.IOException;
 import java.util.Properties;
 
-public class ClusterInterpreterLauncherTest extends ClusterMockTest {
-  private static final Logger LOGGER =
-      LoggerFactory.getLogger(ClusterInterpreterLauncherTest.class);
+class ClusterInterpreterLauncherTest extends ClusterMockTest {
 
   @BeforeAll
   static void startTest() throws IOException, InterruptedException {
@@ -77,6 +73,7 @@ public class ClusterInterpreterLauncherTest extends ClusterMockTest {
     assertEquals("127.0.0.1", interpreterProcess.getHost());
     assertEquals("name", interpreterProcess.getInterpreterSettingName());
     assertEquals(5000, interpreterProcess.getConnectTimeout());
+    interpreterProcess.close();
   }
 
   @Test
@@ -104,6 +101,7 @@ public class ClusterInterpreterLauncherTest extends ClusterMockTest {
     assertEquals(zconf.getInterpreterRemoteRunnerPath(), interpreterProcess.getInterpreterRunner());
     assertTrue(interpreterProcess.getEnv().size() >= 1);
     assertEquals(true, interpreterProcess.isUserImpersonated());
+    interpreterProcess.close();
   }
 
   @Test

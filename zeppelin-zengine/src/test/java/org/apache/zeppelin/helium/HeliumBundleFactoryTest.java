@@ -37,7 +37,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class HeliumBundleFactoryTest {
+class HeliumBundleFactoryTest {
   private HeliumBundleFactory hbf;
   private File nodeInstallationDir;
   private String zeppelinHomePath;
@@ -64,14 +64,14 @@ public class HeliumBundleFactoryTest {
   }
 
   @Test
-  public void testInstallNpm() throws InstallationException {
+  void testInstallNpm() throws InstallationException {
     assertTrue(new File(nodeInstallationDir, "/node/npm").isFile());
     assertTrue(new File(nodeInstallationDir, "/node/node").isFile());
     assertTrue(new File(nodeInstallationDir, "/node/yarn/dist/bin/yarn").isFile());
   }
 
   @Test
-  public void downloadPackage() throws TaskRunnerException {
+  void downloadPackage() throws TaskRunnerException {
     HeliumPackage pkg =
         newHeliumPackage(
             HeliumType.VISUALIZATION,
@@ -88,7 +88,7 @@ public class HeliumBundleFactoryTest {
   }
 
   @Test
-  public void bundlePackage() throws IOException, TaskRunnerException {
+  void bundlePackage() throws IOException, TaskRunnerException {
     HeliumPackage pkg =
         newHeliumPackage(
             HeliumType.VISUALIZATION,
@@ -109,7 +109,7 @@ public class HeliumBundleFactoryTest {
   }
 
   @Test
-  public void bundleLocalPackage() throws IOException, TaskRunnerException {
+  void bundleLocalPackage() throws IOException, TaskRunnerException {
     URL res = Resources.getResource("helium/webpack.config.js");
     String resDir = new File(res.getFile()).getParent();
     String localPkg = resDir + "/../../../src/test/resources/helium/vis1";
@@ -157,7 +157,7 @@ public class HeliumBundleFactoryTest {
   }
 
   @Test
-  public void switchVersion() throws IOException, TaskRunnerException {
+  void switchVersion() throws IOException, TaskRunnerException {
     URL res = Resources.getResource("helium/webpack.config.js");
     String resDir = new File(res.getFile()).getParent();
 

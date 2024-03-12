@@ -29,7 +29,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
-public class ManagedInterpreterGroupTest {
+class ManagedInterpreterGroupTest {
 
   private InterpreterSetting interpreterSetting;
 
@@ -54,7 +54,7 @@ public class ManagedInterpreterGroupTest {
   }
 
   @Test
-  public void testInterpreterGroup() {
+  void testInterpreterGroup() {
     ManagedInterpreterGroup interpreterGroup = new ManagedInterpreterGroup("group_1", interpreterSetting);
     assertEquals(0, interpreterGroup.getSessionNum());
 

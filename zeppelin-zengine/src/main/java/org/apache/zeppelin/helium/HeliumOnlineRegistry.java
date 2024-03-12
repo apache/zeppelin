@@ -100,7 +100,9 @@ public class HeliumOnlineRegistry extends HeliumRegistry {
 
     if (response.getStatusLine().getStatusCode() != 200) {
       // try read from cache
-      logger.error(uri() + " returned " + response.getStatusLine().toString());
+      if (logger.isErrorEnabled()) {
+        logger.error("{} returned {}", uri(), response.getStatusLine());
+      }
       return readFromCache();
     } else {
       List<HeliumPackage> packageList = new LinkedList<>();

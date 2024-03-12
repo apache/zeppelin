@@ -131,7 +131,7 @@ import static org.apache.zeppelin.cluster.meta.ClusterMetaType.INTP_PROCESS_META
 public abstract class ClusterManager {
   private static final Logger LOGGER = LoggerFactory.getLogger(ClusterManager.class);
 
-  public ZeppelinConfiguration zConf;
+  protected final ZeppelinConfiguration zConf;
 
   protected Collection<Node> clusterNodes = new ArrayList<>();
 
@@ -158,8 +158,8 @@ public abstract class ClusterManager {
   protected boolean isTest = false;
 
   public ClusterManager(ZeppelinConfiguration zConf) {
+    this.zConf = zConf;
     try {
-      this.zConf = zConf;
       zeplServerHost = RemoteInterpreterUtils.findAvailableHostAddress();
       String clusterAddr = this.zConf.getClusterAddress();
       if (!StringUtils.isEmpty(clusterAddr)) {

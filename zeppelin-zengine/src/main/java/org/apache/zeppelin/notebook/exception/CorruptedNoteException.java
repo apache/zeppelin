@@ -20,7 +20,10 @@ package org.apache.zeppelin.notebook.exception;
 import java.io.IOException;
 
 public class CorruptedNoteException extends IOException {
-    public CorruptedNoteException(final String noteId, final String message, Exception e) {
-        super(String.format("noteId: %s - %s", noteId, message), e);
-    }
+
+  private static final long serialVersionUID = 1743308058186542714L;
+
+  public CorruptedNoteException(final String noteId, final String message, Exception e) {
+    super(String.format("noteId: %s - %s", noteId, message), e);
+  }
 }

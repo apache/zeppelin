@@ -37,7 +37,7 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class VFSNotebookRepoTest {
+class VFSNotebookRepoTest {
 
   private ZeppelinConfiguration zConf;
   private VFSNotebookRepo notebookRepo;
@@ -59,7 +59,7 @@ public class VFSNotebookRepoTest {
   }
 
   @Test
-  public void testBasics() throws IOException {
+  void testBasics() throws IOException {
     assertEquals(0, notebookRepo.list(AuthenticationInfo.ANONYMOUS).size());
 
     // create note1
@@ -107,7 +107,7 @@ public class VFSNotebookRepoTest {
   }
 
   @Test
-  public void testNoteNameWithColon() throws IOException {
+  void testNoteNameWithColon() throws IOException {
     assertEquals(0, notebookRepo.list(AuthenticationInfo.ANONYMOUS).size());
 
     // create note with colon in name
@@ -122,7 +122,7 @@ public class VFSNotebookRepoTest {
   }
 
   @Test
-  public void testUpdateSettings() throws IOException {
+  void testUpdateSettings() throws IOException {
     List<NotebookRepoSettingsInfo> repoSettings = notebookRepo.getSettings(AuthenticationInfo.ANONYMOUS);
     assertEquals(1, repoSettings.size());
     NotebookRepoSettingsInfo settingInfo = repoSettings.get(0);

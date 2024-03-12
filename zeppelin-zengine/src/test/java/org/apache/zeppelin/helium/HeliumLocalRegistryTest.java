@@ -28,7 +28,7 @@ import java.io.IOException;
 import static org.apache.zeppelin.helium.HeliumPackage.newHeliumPackage;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class HeliumLocalRegistryTest {
+class HeliumLocalRegistryTest {
   private File tmpDir;
 
   @BeforeEach
@@ -43,7 +43,7 @@ public class HeliumLocalRegistryTest {
   }
 
   @Test
-  public void testGetAllPackage() throws IOException {
+  void testGetAllPackage() throws IOException {
     // given
     File r1Path = new File(tmpDir, "r1");
     HeliumLocalRegistry r1 = new HeliumLocalRegistry("r1", r1Path.getAbsolutePath());

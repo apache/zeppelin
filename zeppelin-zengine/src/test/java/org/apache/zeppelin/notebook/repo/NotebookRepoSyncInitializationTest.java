@@ -33,9 +33,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
-//TODO(zjffdu) move it to zeppelin-zengine
-public class NotebookRepoSyncInitializationTest {
+class NotebookRepoSyncInitializationTest {
   private static final Logger LOGGER = LoggerFactory.getLogger(NotebookRepoSyncInitializationTest.class);
+
   private String validFirstStorageClass = "org.apache.zeppelin.notebook.repo.VFSNotebookRepo";
   private String validSecondStorageClass = "org.apache.zeppelin.notebook.repo.mock.VFSNotebookRepoMock";
   private String invalidStorageClass = "org.apache.zeppelin.notebook.repo.DummyNotebookRepo";
@@ -70,7 +70,7 @@ public class NotebookRepoSyncInitializationTest {
   }
 
   @Test
-  public void validInitTwoStorageTest() throws IOException {
+  void validInitTwoStorageTest() throws IOException {
     // initialize folders for each storage
     String zpath = System.getProperty("java.io.tmpdir") + "/ZeppelinLTest_" + System.currentTimeMillis();
     File mainZepDir = new File(zpath);
@@ -97,7 +97,7 @@ public class NotebookRepoSyncInitializationTest {
   }
 
   @Test
-  public void invalidInitTwoStorageTest() throws IOException {
+  void invalidInitTwoStorageTest() throws IOException {
     // set confs
     System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_STORAGE.getVarName(), invalidTwoStorageConf);
     ZeppelinConfiguration conf = ZeppelinConfiguration.create();
@@ -112,7 +112,7 @@ public class NotebookRepoSyncInitializationTest {
   }
 
   @Test
-  public void initUnsupportedNumberStoragesTest() throws IOException {
+  void initUnsupportedNumberStoragesTest() throws IOException {
     // initialize folders for each storage, currently for 2 only
     String zpath = System.getProperty("java.io.tmpdir") + "/ZeppelinLTest_" + System.currentTimeMillis();
     File mainZepDir = new File(zpath);
@@ -139,7 +139,7 @@ public class NotebookRepoSyncInitializationTest {
   }
 
   @Test
-  public void initEmptyStorageTest() throws IOException {
+  void initEmptyStorageTest() throws IOException {
     // set confs
     System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_STORAGE.getVarName(), emptyStorageConf);
     ZeppelinConfiguration conf = ZeppelinConfiguration.create();
@@ -151,7 +151,7 @@ public class NotebookRepoSyncInitializationTest {
   }
 
   @Test
-  public void initOneDummyStorageTest() {
+  void initOneDummyStorageTest() {
     System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_STORAGE.getVarName(), invalidStorageClass);
     ZeppelinConfiguration conf = ZeppelinConfiguration.create();
     // create repo
