@@ -30,6 +30,10 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 
 /**
  * Utility class for downloading spark/flink. This is used for spark/flink integration test.
@@ -94,21 +98,37 @@ public class DownloadUtils {
               "https://repo1.maven.org/maven2/org/apache/flink/flink-table-api-scala-bridge_" + scalaVersion + "/"
                       + flinkVersion + "/flink-table-api-scala-bridge_" + scalaVersion + "-" + flinkVersion + ".jar",
               "-P", targetFlinkHomeFolder + "/lib"});
-      runShellCommand(new String[]{"mv",
-              targetFlinkHomeFolder + "/opt/" + "flink-table-planner_" + scalaVersion + "-" + flinkVersion + ".jar",
-              targetFlinkHomeFolder + "/lib"});
-      runShellCommand(new String[]{"mv",
-              targetFlinkHomeFolder + "/lib/" + "flink-table-planner-loader-" + flinkVersion + ".jar",
-              targetFlinkHomeFolder + "/opt"});
+      String jarName = "flink-table-planner_" + scalaVersion + "-" + flinkVersion + ".jar";
+      mvFile(
+          targetFlinkHomeFolder + File.separator + "opt" + File.separator + jarName,
+          targetFlinkHomeFolder + File.separator + "lib" + File.separator + jarName);
+      jarName = "flink-table-planner-loader-" + flinkVersion + ".jar";
+      mvFile(
+          targetFlinkHomeFolder + File.separator + "lib" + File.separator + jarName,
+          targetFlinkHomeFolder + File.separator + "opt" + File.separator + jarName);
       if (SemanticVersion.of(flinkVersion).equalsOrNewerThan(SemanticVersion.of("1.16.0"))) {
-        runShellCommand(new String[]{"mv",
-                targetFlinkHomeFolder + "/opt/" + "flink-sql-client-" + flinkVersion + ".jar",
-                targetFlinkHomeFolder + "/lib"});
+        jarName = "flink-sql-client-" + flinkVersion + ".jar";
+        mvFile(targetFlinkHomeFolder + File.separator + "opt" + File.separator + jarName,
+            targetFlinkHomeFolder + File.separator + "lib" + File.separator + jarName);
       }
     } catch (Exception e) {
       throw new RuntimeException("Fail to download jar", e);
     }
     return targetFlinkHomeFolder.getAbsolutePath();
+  }
+
+  private static void mvFile(String srcPath, String dstPath) throws IOException {
+    Path src = Paths.get(srcPath);
+    Path dst = Paths.get(dstPath);
+    if (src.toFile().exists()) {
+      if (dst.toFile().exists()) {
+        LOGGER.warn("{} does exits - replacing", dstPath);
+      }
+      LOGGER.info("Copy file {} to {}", src, dst);
+      Files.move(src, dst, StandardCopyOption.REPLACE_EXISTING);
+    } else {
+      LOGGER.warn("{} does not exits - skipping", srcPath);
+    }
   }
 
   public static String downloadHadoop(String version) {
