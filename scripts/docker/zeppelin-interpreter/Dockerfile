@@ -30,7 +30,7 @@ ENV VERSION="${version}" \
 RUN set -ex && \
     /usr/bin/apt-get update && \
     DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get install -y openjdk-11-jre-headless wget tini bzip2 && \
-    /usr/bin/wget --no-iri -qO- https://micromamba.snakepit.net/api/micromamba/linux-64/latest | tar -xvj bin/micromamba && \
+    /usr/bin/wget --remote-encoding=utf-8 -qO- https://micromamba.snakepit.net/api/micromamba/linux-64/latest | tar -xvj bin/micromamba && \
     # Cleanup
     /usr/bin/apt-get clean && \
     /bin/rm -rf /var/lib/apt/lists/*
