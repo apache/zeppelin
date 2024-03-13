@@ -53,7 +53,7 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class GitNotebookRepoTest {
+class GitNotebookRepoTest {
   private static final Logger LOG = LoggerFactory.getLogger(GitNotebookRepoTest.class);
 
   private static final String TEST_NOTE_ID = "2A94M5J1Z";
@@ -96,7 +96,7 @@ public class GitNotebookRepoTest {
   }
 
   @Test
-  public void initNonemptyNotebookDir() throws IOException, GitAPIException {
+  void initNonemptyNotebookDir() throws IOException, GitAPIException {
     //given - .git does not exit
     File dotGit = new File(String.join(File.separator, notebooksDir, ".git"));
     assertFalse(dotGit.exists());
@@ -117,7 +117,7 @@ public class GitNotebookRepoTest {
   }
 
   @Test
-  public void showNotebookHistoryEmptyTest() throws GitAPIException, IOException {
+  void showNotebookHistoryEmptyTest() throws GitAPIException, IOException {
     //given
     notebookRepo = new GitNotebookRepo(conf);
     assertFalse(notebookRepo.list(null).isEmpty());
@@ -131,7 +131,7 @@ public class GitNotebookRepoTest {
   }
 
   @Test
-  public void showNotebookHistoryMultipleNotesTest() throws IOException {
+  void showNotebookHistoryMultipleNotesTest() throws IOException {
     //initial checks
     notebookRepo = new GitNotebookRepo(conf);
     assertFalse(notebookRepo.list(null).isEmpty());
@@ -176,7 +176,7 @@ public class GitNotebookRepoTest {
   }
 
   @Test
-  public void addCheckpointTest() throws IOException, GitAPIException {
+  void addCheckpointTest() throws IOException, GitAPIException {
     // initial checks
     notebookRepo = new GitNotebookRepo(conf);
     assertFalse(notebookRepo.list(null).isEmpty());
@@ -243,7 +243,7 @@ public class GitNotebookRepoTest {
   }
 
   @Test
-  public void getRevisionTest() throws IOException {
+  void getRevisionTest() throws IOException {
     // initial checks
     notebookRepo = new GitNotebookRepo(conf);
     assertFalse(notebookRepo.list(null).isEmpty());
@@ -301,7 +301,7 @@ public class GitNotebookRepoTest {
   }
 
   @Test
-  public void getRevisionFailTest() throws IOException {
+  void getRevisionFailTest() throws IOException {
     // initial checks
     notebookRepo = new GitNotebookRepo(conf);
     assertFalse(notebookRepo.list(null).isEmpty());
@@ -343,7 +343,7 @@ public class GitNotebookRepoTest {
   }
 
   @Test
-  public void setRevisionTest() throws IOException {
+  void setRevisionTest() throws IOException {
     //create repo and check that note doesn't contain revisions
     notebookRepo = new GitNotebookRepo(conf);
     assertFalse(notebookRepo.list(null).isEmpty());
@@ -405,7 +405,7 @@ public class GitNotebookRepoTest {
   }
 
   @Test
-  public void moveNoteTest() throws IOException, GitAPIException {
+  void moveNoteTest() throws IOException, GitAPIException {
     //given
     notebookRepo = new GitNotebookRepo(conf);
     notebookRepo.checkpoint(TEST_NOTE_ID, TEST_NOTE_PATH, "first commit, note1", null);
@@ -422,7 +422,7 @@ public class GitNotebookRepoTest {
   }
 
   @Test
-  public void moveFolderTest() throws IOException, GitAPIException {
+  void moveFolderTest() throws IOException, GitAPIException {
     //given
     notebookRepo = new GitNotebookRepo(conf);
     notebookRepo.checkpoint(TEST_NOTE_ID, TEST_NOTE_PATH, "first commit, note1", null);
@@ -439,7 +439,7 @@ public class GitNotebookRepoTest {
   }
 
   @Test
-  public void removeNoteTest() throws IOException, GitAPIException {
+  void removeNoteTest() throws IOException, GitAPIException {
     //given
     notebookRepo = new GitNotebookRepo(conf);
     notebookRepo.checkpoint(TEST_NOTE_ID, TEST_NOTE_PATH, "first commit, note1", null);
@@ -452,7 +452,7 @@ public class GitNotebookRepoTest {
   }
 
   @Test
-  public void removeFolderTest() throws IOException, GitAPIException {
+  void removeFolderTest() throws IOException, GitAPIException {
     //given
     notebookRepo = new GitNotebookRepo(conf);
     notebookRepo.checkpoint(TEST_NOTE_ID, TEST_NOTE_PATH, "first commit, note1", null);

@@ -41,7 +41,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class SparkInterpreterLauncherTest {
+class SparkInterpreterLauncherTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SparkInterpreterLauncher.class);
 
@@ -87,7 +87,7 @@ public class SparkInterpreterLauncherTest {
   }
 
   @Test
-  public void testLocalMode() throws IOException {
+  void testLocalMode() throws IOException {
     ZeppelinConfiguration zConf = ZeppelinConfiguration.create();
     SparkInterpreterLauncher launcher = new SparkInterpreterLauncher(zConf, null);
     Properties properties = new Properties();

@@ -43,7 +43,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-public class AppendOutputRunnerTest {
+class AppendOutputRunnerTest {
 
   private static final int NUM_EVENTS = 10000;
   private static final int NUM_CLUBBED_EVENTS = 100;
@@ -63,7 +63,7 @@ public class AppendOutputRunnerTest {
   }
 
   @Test
-  public void testSingleEvent() throws InterruptedException {
+  void testSingleEvent() throws InterruptedException {
     RemoteInterpreterProcessListener listener = mock(RemoteInterpreterProcessListener.class);
     String[][] buffer = {{"note", "para", "data\n"}};
 
@@ -89,7 +89,7 @@ public class AppendOutputRunnerTest {
   }
 
   @Test
-  public void testMultipleEventsOfDifferentParagraphs() throws InterruptedException {
+  void testMultipleEventsOfDifferentParagraphs() throws InterruptedException {
     RemoteInterpreterProcessListener listener = mock(RemoteInterpreterProcessListener.class);
     String note1 = "note1";
     String note2 = "note2";
@@ -111,7 +111,7 @@ public class AppendOutputRunnerTest {
   }
 
   @Test
-  public void testClubbedData() throws InterruptedException {
+  void testClubbedData() throws InterruptedException {
     RemoteInterpreterProcessListener listener = mock(RemoteInterpreterProcessListener.class);
     AppendOutputRunner runner = new AppendOutputRunner(listener);
     future = service.scheduleWithFixedDelay(runner, 0,
@@ -130,7 +130,7 @@ public class AppendOutputRunnerTest {
   }
 
   @Test
-  public void testWarnLoggerForLargeData() throws InterruptedException {
+  void testWarnLoggerForLargeData() throws InterruptedException {
     RemoteInterpreterProcessListener listener = mock(RemoteInterpreterProcessListener.class);
     AppendOutputRunner runner = new AppendOutputRunner(listener);
     String data = "data\n";

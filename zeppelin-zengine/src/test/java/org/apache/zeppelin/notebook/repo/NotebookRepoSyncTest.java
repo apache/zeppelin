@@ -51,7 +51,7 @@ import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class NotebookRepoSyncTest {
+class NotebookRepoSyncTest {
 
   private File ZEPPELIN_HOME;
   private ZeppelinConfiguration conf;
@@ -123,7 +123,7 @@ public class NotebookRepoSyncTest {
     assertEquals(0, notebookRepoSync.list(1, anonymous).size());
 
     /* create note */
-    String noteId = notebook.createNote("test", "", anonymous);
+    notebook.createNote("test", "", anonymous);
 
     // check that automatically saved on both storages
     assertEquals(1, notebookRepoSync.list(0, anonymous).size());
@@ -141,7 +141,7 @@ public class NotebookRepoSyncTest {
     assertEquals(0, notebookRepoSync.list(0, anonymous).size());
     assertEquals(0, notebookRepoSync.list(1, anonymous).size());
 
-    String noteId = notebook.createNote("test", "", anonymous);
+    notebook.createNote("test", "", anonymous);
 
     /* check that created in both storage systems */
     assertEquals(1, notebookRepoSync.list(0, anonymous).size());

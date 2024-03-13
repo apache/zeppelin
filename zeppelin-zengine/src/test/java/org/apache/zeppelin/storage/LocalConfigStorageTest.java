@@ -33,11 +33,11 @@ import java.util.Random;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class LocalConfigStorageTest {
+class LocalConfigStorageTest {
     public static final String TEST_STRING = "this is a test!";
 
     @Test
-    public void testWritingAtomically() throws IOException {
+    void testWritingAtomically() throws IOException {
         final Path destination = Files.createTempFile("test-", "file");
         final File destinationFile = destination.toFile();
         try {
@@ -52,7 +52,7 @@ public class LocalConfigStorageTest {
     }
 
     @Test
-    public void testWritingAtomicallyNonExistingDir() throws IOException {
+    void testWritingAtomicallyNonExistingDir() throws IOException {
         Random rnd = new Random();
         final Path destDir = Paths.get(System.getProperty("java.io.tmpdir"), "non-existing-" + rnd.nextLong());
         final Path destination = Paths.get(destDir.toString(),"test-" + rnd.nextLong() + "-file");
@@ -70,7 +70,7 @@ public class LocalConfigStorageTest {
     }
 
     @Test
-    public void testReading() throws IOException {
+    void testReading() throws IOException {
         final Path destination = Files.createTempFile("test-", "file");
         final File destinationFile = destination.toFile();
 

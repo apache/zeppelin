@@ -17,19 +17,19 @@
 
 package org.apache.zeppelin.interpreter.remote;
 
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.zeppelin.interpreter.AbstractInterpreterTest;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
-import org.apache.zeppelin.interpreter.thrift.ParagraphInfo;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.io.File;
 import java.io.IOException;
-import java.util.List;
-import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -37,21 +37,27 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 /**
  * Test for remote interpreter output stream
  */
-public class RemoteInterpreterOutputTestStream extends AbstractInterpreterTest
-    implements RemoteInterpreterProcessListener {
+class RemoteInterpreterOutputTestStreamTest extends AbstractInterpreterTest {
 
 
   private InterpreterSetting interpreterSetting;
+  private String noteId;
 
+  @Override
   @BeforeEach
   public void setUp() throws Exception {
     super.setUp();
     interpreterSetting = interpreterSettingManager.get("test");
+    noteId = notebook.createNote(File.separator + RandomStringUtils.randomAlphabetic(6),
+        AuthenticationInfo.ANONYMOUS);
   }
 
+  @Override
   @AfterEach
   public void tearDown() throws Exception {
     interpreterSetting.close();
+    notebook.removeNote(noteId, AuthenticationInfo.ANONYMOUS);
+    super.tearDown();
   }
 
   private InterpreterContext createInterpreterContext() {
@@ -62,8 +68,8 @@ public class RemoteInterpreterOutputTestStream extends AbstractInterpreterTest
   }
 
   @Test
-  public void testInterpreterResultOnly() throws InterpreterException {
-    RemoteInterpreter intp = (RemoteInterpreter) interpreterSetting.getInterpreter("user1", "note1", "mock_stream");
+  void testInterpreterResultOnly() throws InterpreterException, IOException {
+    RemoteInterpreter intp = (RemoteInterpreter) interpreterSetting.getInterpreter("user1", noteId, "mock_stream");
     InterpreterResult ret = intp.interpret("SUCCESS::staticresult", createInterpreterContext());
     assertEquals(InterpreterResult.Code.SUCCESS, ret.code());
     assertEquals("staticresult", ret.message().get(0).getData());
@@ -78,8 +84,9 @@ public class RemoteInterpreterOutputTestStream extends AbstractInterpreterTest
   }
 
   @Test
-  public void testInterpreterOutputStreamOnly() throws InterpreterException {
-    RemoteInterpreter intp = (RemoteInterpreter) interpreterSetting.getInterpreter("user1", "note1", "mock_stream");
+  void testInterpreterOutputStreamOnly() throws InterpreterException {
+    RemoteInterpreter intp =
+        (RemoteInterpreter) interpreterSetting.getInterpreter("user1", noteId, "mock_stream");
     InterpreterResult ret = intp.interpret("SUCCESS:streamresult:", createInterpreterContext());
     assertEquals(InterpreterResult.Code.SUCCESS, ret.code());
     assertEquals("streamresult", ret.message().get(0).getData());
@@ -90,8 +97,9 @@ public class RemoteInterpreterOutputTestStream extends AbstractInterpreterTest
   }
 
   @Test
-  public void testInterpreterResultOutputStreamMixed() throws InterpreterException {
-    RemoteInterpreter intp = (RemoteInterpreter) interpreterSetting.getInterpreter("user1", "note1", "mock_stream");
+  void testInterpreterResultOutputStreamMixed() throws InterpreterException {
+    RemoteInterpreter intp =
+        (RemoteInterpreter) interpreterSetting.getInterpreter("user1", noteId, "mock_stream");
     InterpreterResult ret = intp.interpret("SUCCESS:stream:static", createInterpreterContext());
     assertEquals(InterpreterResult.Code.SUCCESS, ret.code());
     assertEquals("stream", ret.message().get(0).getData());
@@ -99,8 +107,9 @@ public class RemoteInterpreterOutputTestStream extends AbstractInterpreterTest
   }
 
   @Test
-  public void testOutputType() throws InterpreterException {
-    RemoteInterpreter intp = (RemoteInterpreter) interpreterSetting.getInterpreter("user1", "note1", "mock_stream");
+  void testOutputType() throws InterpreterException {
+    RemoteInterpreter intp =
+        (RemoteInterpreter) interpreterSetting.getInterpreter("user1", noteId, "mock_stream");
 
     InterpreterResult ret = intp.interpret("SUCCESS:%html hello:", createInterpreterContext());
     assertEquals(InterpreterResult.Type.HTML, ret.message().get(0).getType());
@@ -117,38 +126,4 @@ public class RemoteInterpreterOutputTestStream extends AbstractInterpreterTest
     assertEquals("world", ret.message().get(1).getData());
   }
 
-  @Override
-  public void onOutputAppend(String noteId, String paragraphId, int index, String output) {
-
-  }
-
-  @Override
-  public void onOutputUpdated(String noteId, String paragraphId, int index, InterpreterResult.Type type, String output) {
-
-  }
-
-  @Override
-  public void onOutputClear(String noteId, String paragraphId) {
-
-  }
-
-  @Override
-  public void runParagraphs(String noteId, List<Integer> paragraphIndices, List<String> paragraphIds, String curParagraphId) throws IOException {
-
-  }
-
-  @Override
-  public void onParaInfosReceived(String noteId, String paragraphId,
-      String interpreterSettingId, Map<String, String> metaInfos) {
-  }
-
-  @Override
-  public List<ParagraphInfo> getParagraphList(String user, String noteId) {
-    return null;
-  }
-
-  @Override
-  public void checkpointOutput(String noteId, String paragraphId) {
-
-  }
 }

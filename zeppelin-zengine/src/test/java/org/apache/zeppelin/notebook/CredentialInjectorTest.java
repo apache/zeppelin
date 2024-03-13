@@ -28,7 +28,7 @@ import org.apache.zeppelin.user.UserCredentials;
 import org.apache.zeppelin.user.UsernamePassword;
 import org.junit.jupiter.api.Test;
 
-public class CredentialInjectorTest {
+class CredentialInjectorTest {
 
   private static final String TEMPLATE =
     "val jdbcUrl = \"jdbc:mysql://localhost/emp?user={mysql.user}&password={mysql.password}\"";
@@ -41,7 +41,7 @@ public class CredentialInjectorTest {
     "jdbcUrl: String = jdbc:mysql://localhost/employees?user=username&password=###";
 
   @Test
-  public void replaceCredentials() {
+  void replaceCredentials() {
     UserCredentials userCredentials = mock(UserCredentials.class);
     UsernamePassword usernamePassword = new UsernamePassword("username", "pwd");
     when(userCredentials.getUsernamePassword("mysql")).thenReturn(usernamePassword);
@@ -56,7 +56,7 @@ public class CredentialInjectorTest {
   }
 
   @Test
-  public void replaceCredentialNoTexts() {
+  void replaceCredentialNoTexts() {
     UserCredentials userCredentials = mock(UserCredentials.class);
     CredentialInjector testee = new CredentialInjector(userCredentials);
     String actual = testee.replaceCredentials(null);
@@ -64,7 +64,7 @@ public class CredentialInjectorTest {
   }
 
   @Test
-  public void replaceCredentialsNotExisting() {
+  void replaceCredentialsNotExisting() {
     UserCredentials userCredentials = mock(UserCredentials.class);
     CredentialInjector testee = new CredentialInjector(userCredentials);
     String actual = testee.replaceCredentials(TEMPLATE);
@@ -75,9 +75,9 @@ public class CredentialInjectorTest {
     assertEquals(1, hiddenResult.message().size());
     assertEquals(ANSWER, hiddenResult.message().get(0).getData());
   }
-  
+
   @Test
-  public void hidePasswordsNoResult() {
+  void hidePasswordsNoResult() {
     UserCredentials userCredentials = mock(UserCredentials.class);
     CredentialInjector testee = new CredentialInjector(userCredentials);
     assertNull(testee.hidePasswords(null));
