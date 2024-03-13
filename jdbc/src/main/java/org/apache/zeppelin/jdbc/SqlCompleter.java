@@ -207,8 +207,7 @@ public class SqlCompleter {
     }
   }
 
-  public static Set<String> getSqlKeywordsCompletions(DatabaseMetaData meta) throws IOException,
-          SQLException {
+  public static Set<String> getSqlKeywordsCompletions(DatabaseMetaData meta) throws IOException {
     // Add the default SQL completions
     String keywords =
             new BufferedReader(new InputStreamReader(
@@ -217,11 +216,11 @@ public class SqlCompleter {
     Set<String> completions = new TreeSet<>();
 
     if (null != meta) {
-      // Add the driver specific SQL completions
-      String driverSpecificKeywords =
-              "/" + meta.getDriverName().replace(" ", "-").toLowerCase() + "-sql.keywords";
-      logger.info("JDBC DriverName:" + driverSpecificKeywords);
       try {
+        // Add the driver specific SQL completions
+        String driverSpecificKeywords =
+                "/" + meta.getDriverName().replace(" ", "-").toLowerCase() + "-sql.keywords";
+        logger.info("JDBC DriverName: {}", driverSpecificKeywords);
         if (SqlCompleter.class.getResource(driverSpecificKeywords) != null) {
           String driverKeywords =
                   new BufferedReader(new InputStreamReader(
@@ -229,35 +228,35 @@ public class SqlCompleter {
                           .readLine();
           keywords += "," + driverKeywords.toUpperCase();
         }
-      } catch (Exception e) {
+      } catch (IOException | SQLException e) {
         logger.debug("fail to get driver specific SQL completions for " +
-                driverSpecificKeywords + " : " + e, e);
+            meta.getClass().getName() + " : " + e, e);
       }
 
       // Add the keywords from the current JDBC connection
       try {
         keywords += "," + meta.getSQLKeywords();
-      } catch (Exception e) {
+      } catch (SQLException e) {
         logger.debug("fail to get SQL key words from database metadata: " + e, e);
       }
       try {
         keywords += "," + meta.getStringFunctions();
-      } catch (Exception e) {
+      } catch (SQLException e) {
         logger.debug("fail to get string function names from database metadata: " + e, e);
       }
       try {
         keywords += "," + meta.getNumericFunctions();
-      } catch (Exception e) {
+      } catch (SQLException e) {
         logger.debug("fail to get numeric function names from database metadata: " + e, e);
       }
       try {
         keywords += "," + meta.getSystemFunctions();
-      } catch (Exception e) {
+      } catch (SQLException e) {
         logger.debug("fail to get system function names from database metadata: " + e, e);
       }
       try {
         keywords += "," + meta.getTimeDateFunctions();
-      } catch (Exception e) {
+      } catch (SQLException e) {
         logger.debug("fail to get time date function names from database metadata: " + e, e);
       }
 
