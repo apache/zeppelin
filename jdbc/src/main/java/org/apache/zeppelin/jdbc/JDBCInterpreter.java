@@ -800,8 +800,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
           // so we need to trim it first in this case.
           sqlToExecute = sqlToExecute.trim();
         }
-        LOGGER.info(String.format("[%s|%s|%s] Execute sql: %s",
-                user, noteId, paragraphId, sqlToExecute));
+        LOGGER.info("[{}|{}|{}] Execute sql: {}", user, noteId, paragraphId, sqlToExecute);
         statement = connection.createStatement();
 
         // fetch n+1 rows in order to indicate there's more rows available (for large selects)
