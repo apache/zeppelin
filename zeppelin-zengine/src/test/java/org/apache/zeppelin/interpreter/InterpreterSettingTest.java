@@ -38,7 +38,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class InterpreterSettingTest extends AbstractInterpreterTest{
+class InterpreterSettingTest extends AbstractInterpreterTest{
 
   private static final Logger LOGGER = LoggerFactory.getLogger(InterpreterSettingTest.class);
 
@@ -59,7 +59,7 @@ public class InterpreterSettingTest extends AbstractInterpreterTest{
   }
 
   @Test
-  public void testCreateInterpreters() {
+  void testCreateInterpreters() {
     InterpreterOption interpreterOption = new InterpreterOption();
     interpreterOption.setPerUser(InterpreterOption.SHARED);
     InterpreterInfo interpreterInfo1 = new InterpreterInfo(EchoInterpreter.class.getName(),
@@ -95,7 +95,7 @@ public class InterpreterSettingTest extends AbstractInterpreterTest{
   }
 
   @Test
-  public void testSharedMode() {
+  void testSharedMode() {
     InterpreterOption interpreterOption = new InterpreterOption();
     interpreterOption.setPerUser(InterpreterOption.SHARED);
     InterpreterInfo interpreterInfo1 = new InterpreterInfo(EchoInterpreter.class.getName(),
@@ -135,7 +135,7 @@ public class InterpreterSettingTest extends AbstractInterpreterTest{
   }
 
   @Test
-  public void testPerUserScopedMode() {
+  void testPerUserScopedMode() {
     InterpreterOption interpreterOption = new InterpreterOption();
     interpreterOption.setPerUser(InterpreterOption.SCOPED);
     InterpreterInfo interpreterInfo1 = new InterpreterInfo(EchoInterpreter.class.getName(),
@@ -175,7 +175,7 @@ public class InterpreterSettingTest extends AbstractInterpreterTest{
   }
 
   @Test
-  public void testPerNoteScopedMode() {
+  void testPerNoteScopedMode() {
     InterpreterOption interpreterOption = new InterpreterOption();
     interpreterOption.setPerNote(InterpreterOption.SCOPED);
     InterpreterInfo interpreterInfo1 = new InterpreterInfo(EchoInterpreter.class.getName(),
@@ -215,7 +215,7 @@ public class InterpreterSettingTest extends AbstractInterpreterTest{
   }
 
   @Test
-  public void testPerUserIsolatedMode() {
+  void testPerUserIsolatedMode() {
     InterpreterOption interpreterOption = new InterpreterOption();
     interpreterOption.setPerUser(InterpreterOption.ISOLATED);
     InterpreterInfo interpreterInfo1 = new InterpreterInfo(EchoInterpreter.class.getName(),
@@ -256,7 +256,7 @@ public class InterpreterSettingTest extends AbstractInterpreterTest{
   }
 
   @Test
-  public void testPerNoteIsolatedMode() {
+  void testPerNoteIsolatedMode() {
     InterpreterOption interpreterOption = new InterpreterOption();
     interpreterOption.setPerNote(InterpreterOption.ISOLATED);
     InterpreterInfo interpreterInfo1 = new InterpreterInfo(EchoInterpreter.class.getName(),
@@ -297,7 +297,7 @@ public class InterpreterSettingTest extends AbstractInterpreterTest{
   }
 
   @Test
-  public void testPerUserIsolatedPerNoteScopedMode() {
+  void testPerUserIsolatedPerNoteScopedMode() {
     InterpreterOption interpreterOption = new InterpreterOption();
     interpreterOption.setPerUser(InterpreterOption.ISOLATED);
     interpreterOption.setPerNote(InterpreterOption.SCOPED);
@@ -353,7 +353,7 @@ public class InterpreterSettingTest extends AbstractInterpreterTest{
   }
 
   @Test
-  public void testPerUserIsolatedPerNoteIsolatedMode() {
+  void testPerUserIsolatedPerNoteIsolatedMode() {
     InterpreterOption interpreterOption = new InterpreterOption();
     interpreterOption.setPerUser(InterpreterOption.ISOLATED);
     interpreterOption.setPerNote(InterpreterOption.ISOLATED);
@@ -415,7 +415,7 @@ public class InterpreterSettingTest extends AbstractInterpreterTest{
   }
 
   @Test
-  public void testPerUserScopedPerNoteScopedMode() {
+  void testPerUserScopedPerNoteScopedMode() {
     InterpreterOption interpreterOption = new InterpreterOption();
     interpreterOption.setPerUser(InterpreterOption.SCOPED);
     interpreterOption.setPerNote(InterpreterOption.SCOPED);
@@ -474,7 +474,7 @@ public class InterpreterSettingTest extends AbstractInterpreterTest{
   }
 
   @Test
-  public void testInterpreterJsonSerializable() {
+  void testInterpreterJsonSerializable() {
     InterpreterOption interpreterOption = new InterpreterOption();
     interpreterOption.setPerUser(InterpreterOption.SHARED);
     InterpreterInfo interpreterInfo1 = new InterpreterInfo(EchoInterpreter.class.getName(),
@@ -496,16 +496,16 @@ public class InterpreterSettingTest extends AbstractInterpreterTest{
     String json = InterpreterSetting.toJson(interpreterSetting);
 
     InterpreterSetting checkIntpSetting = InterpreterSetting.fromJson(json);
-    assertEquals(checkIntpSetting.getId(), "id");
-    assertEquals(checkIntpSetting.getName(), "id");
-    assertEquals(checkIntpSetting.getGroup(), "group");
+    assertEquals("id", checkIntpSetting.getId());
+    assertEquals("id", checkIntpSetting.getName());
+    assertEquals("group", checkIntpSetting.getGroup());
     assertTrue(checkIntpSetting.getOption().perUserShared());
     assertNotNull(checkIntpSetting.getInterpreterInfo("echo"));
     assertNotNull(checkIntpSetting.getInterpreterInfo("double_echo"));
   }
 
   @Test
-  public void testIsUserAuthorized() {
+  void testIsUserAuthorized() {
       List<String> userAndRoles = new ArrayList<>();
       userAndRoles.add("User1");
       userAndRoles.add("Role1");
@@ -557,7 +557,7 @@ public class InterpreterSettingTest extends AbstractInterpreterTest{
   }
 
   @Test
-  public void testLoadDependency() throws InterruptedException {
+  void testLoadDependency() throws InterruptedException {
     InterpreterOption interpreterOption = new InterpreterOption();
     interpreterOption.setUserPermission(true);
     InterpreterSetting interpreterSetting = new InterpreterSetting.Builder()

@@ -63,7 +63,7 @@ public abstract class ConfigStorage {
   }
 
 
-  public ConfigStorage(ZeppelinConfiguration zConf) {
+  protected ConfigStorage(ZeppelinConfiguration zConf) {
     this.zConf = zConf;
   }
 

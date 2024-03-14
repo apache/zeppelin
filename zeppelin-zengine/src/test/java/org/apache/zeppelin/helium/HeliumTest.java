@@ -31,7 +31,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class HeliumTest {
+class HeliumTest {
   private File tmpDir;
   private File localRegistryPath;
 
@@ -49,7 +49,7 @@ public class HeliumTest {
   }
 
   @Test
-  public void testSaveLoadConf() throws IOException, URISyntaxException, TaskRunnerException {
+  void testSaveLoadConf() throws IOException, URISyntaxException, TaskRunnerException {
     // given
     File heliumConf = new File(tmpDir, "helium.conf");
     Helium helium = new Helium(heliumConf.getAbsolutePath(), localRegistryPath.getAbsolutePath(),
@@ -68,7 +68,7 @@ public class HeliumTest {
   }
 
   @Test
-  public void testRestoreRegistryInstances() throws IOException, URISyntaxException, TaskRunnerException {
+  void testRestoreRegistryInstances() throws IOException, URISyntaxException, TaskRunnerException {
     File heliumConf = new File(tmpDir, "helium.conf");
     Helium helium = new Helium(
         heliumConf.getAbsolutePath(), localRegistryPath.getAbsolutePath(), null, null, null, null);
@@ -103,7 +103,7 @@ public class HeliumTest {
   }
 
   @Test
-  public void testRefresh() throws IOException, URISyntaxException, TaskRunnerException {
+  void testRefresh() throws IOException, URISyntaxException, TaskRunnerException {
     File heliumConf = new File(tmpDir, "helium.conf");
     Helium helium = new Helium(
         heliumConf.getAbsolutePath(), localRegistryPath.getAbsolutePath(), null, null, null, null);

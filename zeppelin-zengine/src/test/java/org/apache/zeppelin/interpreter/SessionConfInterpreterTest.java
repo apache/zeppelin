@@ -29,10 +29,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class SessionConfInterpreterTest {
+class SessionConfInterpreterTest {
 
   @Test
-  public void testUserSessionConfInterpreter() throws InterpreterException {
+  void testUserSessionConfInterpreter() throws InterpreterException {
 
     InterpreterSetting mockInterpreterSetting = mock(InterpreterSetting.class);
     ManagedInterpreterGroup mockInterpreterGroup = mock(ManagedInterpreterGroup.class);

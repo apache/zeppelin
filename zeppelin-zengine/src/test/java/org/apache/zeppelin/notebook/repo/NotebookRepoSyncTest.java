@@ -51,7 +51,7 @@ import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class NotebookRepoSyncTest {
+class NotebookRepoSyncTest {
 
   private File ZEPPELIN_HOME;
   private ZeppelinConfiguration conf;
@@ -111,19 +111,19 @@ public class NotebookRepoSyncTest {
   }
 
   @Test
-  public void testRepoCount() throws IOException {
+  void testRepoCount() throws IOException {
     assertTrue(notebookRepoSync.getMaxRepoNum() >= notebookRepoSync.getRepoCount());
   }
 
   @Test
-  public void testSyncOnCreate() throws IOException {
+  void testSyncOnCreate() throws IOException {
     /* check that both storage systems are empty */
     assertTrue(notebookRepoSync.getRepoCount() > 1);
     assertEquals(0, notebookRepoSync.list(0, anonymous).size());
     assertEquals(0, notebookRepoSync.list(1, anonymous).size());
 
     /* create note */
-    String noteId = notebook.createNote("test", "", anonymous);
+    notebook.createNote("test", "", anonymous);
 
     // check that automatically saved on both storages
     assertEquals(1, notebookRepoSync.list(0, anonymous).size());
@@ -135,13 +135,13 @@ public class NotebookRepoSyncTest {
   }
 
   @Test
-  public void testSyncOnDelete() throws IOException {
+  void testSyncOnDelete() throws IOException {
     /* create note */
     assertTrue(notebookRepoSync.getRepoCount() > 1);
     assertEquals(0, notebookRepoSync.list(0, anonymous).size());
     assertEquals(0, notebookRepoSync.list(1, anonymous).size());
 
-    String noteId = notebook.createNote("test", "", anonymous);
+    notebook.createNote("test", "", anonymous);
 
     /* check that created in both storage systems */
     assertEquals(1, notebookRepoSync.list(0, anonymous).size());
@@ -159,7 +159,7 @@ public class NotebookRepoSyncTest {
   }
 
   @Test
-  public void testSyncUpdateMain() throws IOException {
+  void testSyncUpdateMain() throws IOException {
 
     /* create note */
     String noteId = notebook.createNote("/test", "test", anonymous);
@@ -167,7 +167,7 @@ public class NotebookRepoSyncTest {
       note -> {
         note.setInterpreterFactory(mock(InterpreterFactory.class));
         Paragraph p1 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
-        Map config = p1.getConfig();
+        Map<String, Object> config = p1.getConfig();
         config.put("enabled", true);
         p1.setConfig(config);
         p1.setText("hello world");
@@ -225,7 +225,7 @@ public class NotebookRepoSyncTest {
   }
 
   @Test
-  public void testSyncOnReloadedList() throws Exception {
+  void testSyncOnReloadedList() throws Exception {
     /* check that both storage repos are empty */
     assertTrue(notebookRepoSync.getRepoCount() > 1);
     assertEquals(0, notebookRepoSync.list(0, anonymous).size());
@@ -251,7 +251,7 @@ public class NotebookRepoSyncTest {
   }
 
   @Test
-  public void testOneWaySyncOnReloadedList() throws IOException, SchedulerException {
+  void testOneWaySyncOnReloadedList() throws IOException, SchedulerException {
     System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_DIR.getVarName(), mainNotebookDir.getAbsolutePath());
     System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_ONE_WAY_SYNC.getVarName(), "true");
     conf = ZeppelinConfiguration.create();
@@ -298,7 +298,7 @@ public class NotebookRepoSyncTest {
   }
 
   @Test
-  public void testCheckpointOneStorage() throws IOException, SchedulerException {
+  void testCheckpointOneStorage() throws IOException, SchedulerException {
     System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_STORAGE.getVarName(), "org.apache.zeppelin.notebook.repo.GitNotebookRepo");
     ZeppelinConfiguration vConf = ZeppelinConfiguration.create();
 
@@ -346,7 +346,7 @@ public class NotebookRepoSyncTest {
   }
 
   @Test
-  public void testSyncWithAcl() throws IOException {
+  void testSyncWithAcl() throws IOException {
     /* scenario 1 - note exists with acl on main storage */
     AuthenticationInfo user1 = new AuthenticationInfo("user1");
     String noteId = notebook.createNote("/test", "test", user1);

@@ -66,10 +66,10 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class ParagraphTest extends AbstractInterpreterTest {
+class ParagraphTest extends AbstractInterpreterTest {
 
   @Test
-  public void scriptBodyWithReplName() {
+  void scriptBodyWithReplName() {
     Note note = createNote();
     Paragraph paragraph = new Paragraph(note, null);
     paragraph.setText("%test (1234567");
@@ -82,7 +82,7 @@ public class ParagraphTest extends AbstractInterpreterTest {
   }
 
   @Test
-  public void scriptBodyWithoutReplName() {
+  void scriptBodyWithoutReplName() {
     Note note = createNote();
     Paragraph paragraph = new Paragraph(note, null);
     paragraph.setText("1234567");
@@ -91,7 +91,7 @@ public class ParagraphTest extends AbstractInterpreterTest {
   }
 
   @Test
-  public void replNameAndNoBody() {
+  void replNameAndNoBody() {
     Note note = createNote();
     Paragraph paragraph = new Paragraph(note, null);
     paragraph.setText("%test");
@@ -100,7 +100,7 @@ public class ParagraphTest extends AbstractInterpreterTest {
   }
 
   @Test
-  public void replSingleCharName() {
+  void replSingleCharName() {
     Note note = createNote();
     Paragraph paragraph = new Paragraph(note, null);
     paragraph.setText("%r a");
@@ -109,7 +109,7 @@ public class ParagraphTest extends AbstractInterpreterTest {
   }
 
   @Test
-  public void testParagraphProperties() {
+  void testParagraphProperties() {
     Note note = createNote();
     Paragraph paragraph = new Paragraph(note, null);
     paragraph.setText("%test(p1=v1,p2=v2) a");
@@ -135,18 +135,18 @@ public class ParagraphTest extends AbstractInterpreterTest {
   }
 
   @Test
-  public void testInvalidProperties() {
+  void testInvalidProperties() {
+    Note note = createNote();
+    Paragraph paragraph = new Paragraph(note, null);
     assertThrows(RuntimeException.class,
             () -> {
-              Note note = createNote();
-              Paragraph paragraph = new Paragraph(note, null);
               paragraph.setText("%test(p1=v1=v2) a");
             },
             "Invalid paragraph properties format");
   }
 
   @Test
-  public void replInvalid() {
+  void replInvalid() {
     Note note = createNote();
     Paragraph paragraph = new Paragraph(note, null);
     paragraph.setText("foo %r");
@@ -163,7 +163,7 @@ public class ParagraphTest extends AbstractInterpreterTest {
   }
 
   @Test
-  public void replNameEndsWithWhitespace() {
+  void replNameEndsWithWhitespace() {
     Note note = createNote();
     Paragraph paragraph = new Paragraph(note, null);
     paragraph.setText("%test\r\n###Hello");
@@ -204,7 +204,7 @@ public class ParagraphTest extends AbstractInterpreterTest {
   }
 
   @Test
-  public void should_extract_variable_from_angular_object_registry() throws Exception {
+  void should_extract_variable_from_angular_object_registry() throws Exception {
     //Given
     final String noteId = "noteId";
 
@@ -243,7 +243,7 @@ public class ParagraphTest extends AbstractInterpreterTest {
   }
 
   @Test
-  public void returnDefaultParagraphWithNewUser() {
+  void returnDefaultParagraphWithNewUser() {
     Paragraph p = new Paragraph("para_1", null, null);
     String defaultValue = "Default Value";
     p.setResult(new InterpreterResult(Code.SUCCESS, defaultValue));
@@ -253,7 +253,8 @@ public class ParagraphTest extends AbstractInterpreterTest {
   }
 
   @Disabled
-  public void returnUnchangedResultsWithDifferentUser() throws Throwable {
+  @Test
+  void returnUnchangedResultsWithDifferentUser() throws Throwable {
     Note mockNote = mock(Note.class);
     when(mockNote.getCredentials()).thenReturn(mock(Credentials.class));
     Paragraph spyParagraph = spy(new Paragraph("para_1", mockNote, null));
@@ -319,7 +320,7 @@ public class ParagraphTest extends AbstractInterpreterTest {
   }
 
   @Test
-  public void testCursorPosition() {
+  void testCursorPosition() {
     Paragraph paragraph = spy(new Paragraph());
     // left = buffer, middle = cursor position into source code, right = cursor position after parse
     List<Triple<String, Integer, Integer>> dataSet = Arrays.asList(
@@ -350,7 +351,7 @@ public class ParagraphTest extends AbstractInterpreterTest {
   }
 
   @Test
-  public void credentialReplacement() throws Throwable {
+  void credentialReplacement() throws Throwable {
     Note mockNote = mock(Note.class);
     Credentials creds = mock(Credentials.class);
     when(mockNote.getCredentials()).thenReturn(creds);

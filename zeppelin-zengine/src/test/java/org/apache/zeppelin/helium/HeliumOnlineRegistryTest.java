@@ -27,7 +27,7 @@ import java.io.IOException;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 
 
-public class HeliumOnlineRegistryTest {
+class HeliumOnlineRegistryTest {
   // ip 192.168.65.17 belongs to private network
   // request will be ended with connection time out error
   private static final String IP = "192.168.65.17";
@@ -50,7 +50,7 @@ public class HeliumOnlineRegistryTest {
   }
 
   @Test
-  public void zeppelinNotebookS3TimeoutPropertyTest() throws IOException {
+  void zeppelinNotebookS3TimeoutPropertyTest() throws IOException {
     System.setProperty(
             ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_S3_TIMEOUT.getVarName(),
             TIMEOUT

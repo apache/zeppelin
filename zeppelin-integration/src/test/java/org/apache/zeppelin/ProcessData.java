@@ -41,7 +41,6 @@ public class ProcessData {
 
   private Process checked_process;
   private boolean printToConsole = false;
-  private boolean removeRedundantOutput = true;
 
   public ProcessData(Process connected_process, boolean printToConsole, int silenceTimeout, TimeUnit timeUnit) {
     this.checked_process = connected_process;

@@ -43,7 +43,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-public class HeliumApplicationFactoryTest extends AbstractInterpreterTest {
+class HeliumApplicationFactoryTest extends AbstractInterpreterTest {
 
   private NotebookRepo notebookRepo;
   private Notebook notebook;
@@ -88,7 +88,7 @@ public class HeliumApplicationFactoryTest extends AbstractInterpreterTest {
 
   @Test
   @Disabled
-  public void testLoadRunUnloadApplication()
+  void testLoadRunUnloadApplication()
       throws IOException, ApplicationException, InterruptedException {
     // given
     HeliumPackage pkg1 = newHeliumPackage(HeliumType.APPLICATION,
@@ -138,7 +138,7 @@ public class HeliumApplicationFactoryTest extends AbstractInterpreterTest {
 
   @Test
   @Disabled
-  public void testUnloadOnParagraphRemove() throws IOException {
+  void testUnloadOnParagraphRemove() throws IOException {
     // given
     HeliumPackage pkg1 = newHeliumPackage(HeliumType.APPLICATION,
         "name1",
@@ -181,7 +181,7 @@ public class HeliumApplicationFactoryTest extends AbstractInterpreterTest {
 
   @Test
   @Disabled
-  public void testUnloadOnInterpreterUnbind() throws IOException {
+  void testUnloadOnInterpreterUnbind() throws IOException {
     // given
     HeliumPackage pkg1 = newHeliumPackage(HeliumType.APPLICATION,
         "name1",
@@ -221,7 +221,7 @@ public class HeliumApplicationFactoryTest extends AbstractInterpreterTest {
 
   @Test
   @Disabled
-  public void testInterpreterUnbindOfNullReplParagraph() throws IOException {
+  void testInterpreterUnbindOfNullReplParagraph() throws IOException {
     // create note
     String note1Id = notebook.createNote("note1", anonymous);
     Note note1 = notebook.processNote(note1Id,
@@ -248,7 +248,7 @@ public class HeliumApplicationFactoryTest extends AbstractInterpreterTest {
 
   @Test
   @Disabled
-  public void testUnloadOnInterpreterRestart() throws IOException, InterpreterException {
+  void testUnloadOnInterpreterRestart() throws IOException, InterpreterException {
     // given
     HeliumPackage pkg1 = newHeliumPackage(HeliumType.APPLICATION,
         "name1",

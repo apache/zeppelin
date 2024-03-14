@@ -20,11 +20,8 @@ package org.apache.zeppelin.scheduler;
 import org.apache.zeppelin.interpreter.AbstractInterpreterTest;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
-import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
-import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
-import org.apache.zeppelin.interpreter.thrift.ParagraphInfo;
 import org.apache.zeppelin.resource.LocalResourcePool;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.user.AuthenticationInfo;
@@ -32,8 +29,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -41,8 +36,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class RemoteSchedulerTest extends AbstractInterpreterTest
-    implements RemoteInterpreterProcessListener {
+class RemoteSchedulerTest extends AbstractInterpreterTest
+{
 
   private InterpreterSetting interpreterSetting;
   private SchedulerFactory schedulerSvc;
@@ -66,7 +61,7 @@ public class RemoteSchedulerTest extends AbstractInterpreterTest
   }
 
   @Test
-  public void test() throws Exception {
+  void test() throws Exception {
     final RemoteInterpreter intpA = (RemoteInterpreter) interpreterSetting.getInterpreter("user1", note1Id, "mock");
 
     intpA.open();
@@ -136,7 +131,7 @@ public class RemoteSchedulerTest extends AbstractInterpreterTest
   }
 
   @Test
-  public void testAbortOnPending() throws Exception {
+  void testAbortOnPending() throws Exception {
     final RemoteInterpreter intpA = (RemoteInterpreter) interpreterSetting.getInterpreter("user1", note1Id, "mock");
     intpA.open();
 
@@ -269,38 +264,4 @@ public class RemoteSchedulerTest extends AbstractInterpreterTest
     schedulerSvc.removeScheduler("test");
   }
 
-  @Override
-  public void onOutputAppend(String noteId, String paragraphId, int index, String output) {
-
-  }
-
-  @Override
-  public void onOutputUpdated(String noteId, String paragraphId, int index, InterpreterResult.Type type, String output) {
-
-  }
-
-  @Override
-  public void onOutputClear(String noteId, String paragraphId) {
-
-  }
-
-  @Override
-  public void runParagraphs(String noteId, List<Integer> paragraphIndices, List<String> paragraphIds, String curParagraphId) throws IOException {
-
-  }
-
-  @Override
-  public void onParaInfosReceived(String noteId, String paragraphId,
-                                  String interpreterSettingId, Map<String, String> metaInfos) {
-  }
-
-  @Override
-  public List<ParagraphInfo> getParagraphList(String user, String noteId) {
-    return null;
-  }
-
-  @Override
-  public void checkpointOutput(String noteId, String paragraphId) {
-
-  }
 }

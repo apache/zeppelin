@@ -29,7 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class ZeppelinConfigurationTest {
+class ZeppelinConfigurationTest {
   @BeforeAll
   public static void clearSystemVariables() {
     ZeppelinConfiguration.reset();
@@ -41,7 +41,7 @@ public class ZeppelinConfigurationTest {
   }
 
   @Test
-  public void getAllowedOrigins2Test() throws MalformedURLException {
+  void getAllowedOrigins2Test() throws MalformedURLException {
 
     ZeppelinConfiguration conf = ZeppelinConfiguration.create("test-zeppelin-site2.xml");
     List<String> origins = conf.getAllowedOrigins();
@@ -51,7 +51,7 @@ public class ZeppelinConfigurationTest {
   }
 
   @Test
-  public void getAllowedOrigins1Test() throws MalformedURLException {
+  void getAllowedOrigins1Test() throws MalformedURLException {
 
     ZeppelinConfiguration conf = ZeppelinConfiguration.create("test-zeppelin-site1.xml");
     List<String> origins = conf.getAllowedOrigins();
@@ -60,7 +60,7 @@ public class ZeppelinConfigurationTest {
   }
 
   @Test
-  public void getAllowedOriginsNoneTest() throws MalformedURLException {
+  void getAllowedOriginsNoneTest() throws MalformedURLException {
 
     ZeppelinConfiguration conf = ZeppelinConfiguration.create("zeppelin-test-site.xml");
     List<String> origins = conf.getAllowedOrigins();
@@ -68,7 +68,7 @@ public class ZeppelinConfigurationTest {
   }
 
   @Test
-  public void isWindowsPathTestTrue() {
+  void isWindowsPathTestTrue() {
 
     ZeppelinConfiguration conf = ZeppelinConfiguration.create("zeppelin-test-site.xml");
     Boolean isIt = conf.isWindowsPath("c:\\test\\file.txt");
@@ -76,7 +76,7 @@ public class ZeppelinConfigurationTest {
   }
 
   @Test
-  public void isWindowsPathTestFalse() {
+  void isWindowsPathTestFalse() {
 
     ZeppelinConfiguration conf = ZeppelinConfiguration.create("zeppelin-test-site.xml");
     Boolean isIt = conf.isWindowsPath("~/test/file.xml");
@@ -84,7 +84,7 @@ public class ZeppelinConfigurationTest {
   }
 
   @Test
-  public void isPathWithSchemeTestTrue() {
+  void isPathWithSchemeTestTrue() {
 
     ZeppelinConfiguration conf = ZeppelinConfiguration.create("zeppelin-test-site.xml");
     Boolean isIt = conf.isPathWithScheme("hdfs://hadoop.example.com/zeppelin/notebook");
@@ -92,7 +92,7 @@ public class ZeppelinConfigurationTest {
   }
 
   @Test
-  public void isPathWithSchemeTestFalse() {
+  void isPathWithSchemeTestFalse() {
 
     ZeppelinConfiguration conf = ZeppelinConfiguration.create("zeppelin-test-site.xml");
     Boolean isIt = conf.isPathWithScheme("~/test/file.xml");
@@ -100,7 +100,7 @@ public class ZeppelinConfigurationTest {
   }
 
   @Test
-  public void isPathWithInvalidSchemeTest() {
+  void isPathWithInvalidSchemeTest() {
 
     ZeppelinConfiguration conf = ZeppelinConfiguration.create("zeppelin-test-site.xml");
     Boolean isIt = conf.isPathWithScheme("c:\\test\\file.txt");
@@ -108,14 +108,14 @@ public class ZeppelinConfigurationTest {
   }
 
   @Test
-  public void getNotebookDirTest() {
+  void getNotebookDirTest() {
     ZeppelinConfiguration conf = ZeppelinConfiguration.create("zeppelin-test-site.xml");
     String notebookLocation = conf.getNotebookDir();
     assertTrue(notebookLocation.endsWith("notebook"));
   }
 
   @Test
-  public void isNotebookPublicTest() {
+  void isNotebookPublicTest() {
 
     ZeppelinConfiguration conf = ZeppelinConfiguration.create("zeppelin-test-site.xml");
     boolean isIt = conf.isNotebookPublic();
@@ -123,7 +123,7 @@ public class ZeppelinConfigurationTest {
   }
 
   @Test
-  public void getPathTest() {
+  void getPathTest() {
     ZeppelinConfiguration conf = ZeppelinConfiguration.create("zeppelin-test-site.xml");
     conf.setProperty(ConfVars.ZEPPELIN_HOME.getVarName(), "/usr/lib/zeppelin");
     assertEquals("/usr/lib/zeppelin", conf.getZeppelinHome());
@@ -131,7 +131,7 @@ public class ZeppelinConfigurationTest {
   }
 
   @Test
-  public void getConfigFSPath() {
+  void getConfigFSPath() {
     ZeppelinConfiguration conf = ZeppelinConfiguration.create("zeppelin-test-site.xml");
     conf.setProperty(ConfVars.ZEPPELIN_HOME.getVarName(), "/usr/lib/zeppelin");
     conf.setProperty(ConfVars.ZEPPELIN_CONFIG_FS_DIR.getVarName(), "conf");

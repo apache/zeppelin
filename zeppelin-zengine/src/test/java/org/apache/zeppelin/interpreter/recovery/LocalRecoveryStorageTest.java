@@ -38,7 +38,7 @@ import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class LocalRecoveryStorageTest extends AbstractInterpreterTest {
+class LocalRecoveryStorageTest extends AbstractInterpreterTest {
   private File recoveryDir = null;
   private String note1Id;
   private String note2Id;
@@ -66,7 +66,7 @@ public class LocalRecoveryStorageTest extends AbstractInterpreterTest {
   }
 
   @Test
-  public void testSingleInterpreterProcess() throws InterpreterException, IOException {
+  void testSingleInterpreterProcess() throws InterpreterException, IOException {
     InterpreterSetting interpreterSetting = interpreterSettingManager.getByName("test");
     interpreterSetting.getOption().setPerUser(InterpreterOption.SHARED);
 
@@ -85,7 +85,7 @@ public class LocalRecoveryStorageTest extends AbstractInterpreterTest {
   }
 
   @Test
-  public void testMultipleInterpreterProcess() throws InterpreterException, IOException {
+  void testMultipleInterpreterProcess() throws InterpreterException, IOException {
     InterpreterSetting interpreterSetting = interpreterSettingManager.getByName("test");
     interpreterSetting.getOption().setPerUser(InterpreterOption.ISOLATED);
 

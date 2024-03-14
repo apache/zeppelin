@@ -49,7 +49,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class LuceneSearchTest {
+class LuceneSearchTest {
 
   private Notebook notebook;
   private InterpreterSettingManager interpreterSettingManager;
@@ -89,9 +89,9 @@ public class LuceneSearchTest {
   }
 
   @Test
-  public void canIndexAndQuery() throws IOException, InterruptedException {
+  void canIndexAndQuery() throws IOException, InterruptedException {
     // given
-    String note1Id = newNoteWithParagraph("Notebook1", "test");
+    newNoteWithParagraph("Notebook1", "test");
     String note2Id = newNoteWithParagraphs("Notebook2", "not test", "not test at all");
     drainSearchEvents();
 
@@ -109,10 +109,10 @@ public class LuceneSearchTest {
   }
 
   @Test
-  public void canIndexAndQueryByNotebookName() throws IOException, InterruptedException {
+  void canIndexAndQueryByNotebookName() throws IOException, InterruptedException {
     // given
     String note1Id = newNoteWithParagraph("Notebook1", "test");
-    String note2Id = newNoteWithParagraphs("Notebook2", "not test", "not test at all");
+    newNoteWithParagraphs("Notebook2", "not test", "not test at all");
     drainSearchEvents();
 
     // when
@@ -125,10 +125,10 @@ public class LuceneSearchTest {
   }
 
   @Test
-  public void canIndexAndQueryByParagraphTitle() throws IOException, InterruptedException {
+  void canIndexAndQueryByParagraphTitle() throws IOException, InterruptedException {
     // given
-    String note1Id = newNoteWithParagraph("Notebook1", "test", "testingTitleSearch");
-    String note2Id = newNoteWithParagraph("Notebook2", "not test", "notTestingTitleSearch");
+    newNoteWithParagraph("Notebook1", "test", "testingTitleSearch");
+    newNoteWithParagraph("Notebook2", "not test", "notTestingTitleSearch");
     drainSearchEvents();
 
     // when
@@ -147,7 +147,7 @@ public class LuceneSearchTest {
   }
 
   @Test
-  public void indexKeyContract() throws IOException, InterruptedException {
+  void indexKeyContract() throws IOException, InterruptedException {
     // given
     String note1Id = newNoteWithParagraph("Notebook1", "test");
     drainSearchEvents();
@@ -163,7 +163,7 @@ public class LuceneSearchTest {
   }
 
   @Test // (expected=IllegalStateException.class)
-  public void canNotSearchBeforeIndexing() {
+  void canNotSearchBeforeIndexing() {
     // given NO noteSearchService.index() was called
     // when
     List<Map<String, String>> result = noteSearchService.query("anything");
@@ -174,9 +174,9 @@ public class LuceneSearchTest {
   }
 
   @Test
-  public void canIndexAndReIndex() throws IOException, InterruptedException {
+  void canIndexAndReIndex() throws IOException, InterruptedException {
     // given
-    String note1Id = newNoteWithParagraph("Notebook1", "test");
+    newNoteWithParagraph("Notebook1", "test");
     String note2Id = newNoteWithParagraphs("Notebook2", "not test", "not test at all");
     drainSearchEvents();
 
@@ -199,7 +199,7 @@ public class LuceneSearchTest {
   }
 
   @Test
-  public void canDeleteNull() throws IOException {
+  void canDeleteNull() {
     // give
     // looks like a bug in web UI: it tries to delete a note twice (after it has just been deleted)
     // when
@@ -207,9 +207,9 @@ public class LuceneSearchTest {
   }
 
   @Test
-  public void canDeleteFromIndex() throws IOException, InterruptedException {
+  void canDeleteFromIndex() throws IOException, InterruptedException {
     // given
-    String note1Id = newNoteWithParagraph("Notebook1", "test");
+    newNoteWithParagraph("Notebook1", "test");
     String note2Id = newNoteWithParagraphs("Notebook2", "not test", "not test at all");
     drainSearchEvents();
 
@@ -228,10 +228,10 @@ public class LuceneSearchTest {
   }
 
   @Test
-  public void indexParagraphUpdatedOnNoteSave() throws IOException, InterruptedException {
+  void indexParagraphUpdatedOnNoteSave() throws IOException, InterruptedException {
     // given: total 2 notebooks, 3 paragraphs
     String note1Id = newNoteWithParagraph("Notebook1", "test");
-    String note2Id = newNoteWithParagraphs("Notebook2", "not test", "not test at all");
+    newNoteWithParagraphs("Notebook2", "not test", "not test at all");
     drainSearchEvents();
 
     assertEquals(3, resultForQuery("test").size());
@@ -261,10 +261,10 @@ public class LuceneSearchTest {
   }
 
   @Test
-  public void indexNoteNameUpdatedOnNoteSave() throws IOException, InterruptedException {
+  void indexNoteNameUpdatedOnNoteSave() throws IOException, InterruptedException {
     // given: total 2 notebooks, 3 paragraphs
     String note1Id = newNoteWithParagraph("Notebook1", "test");
-    String note2Id = newNoteWithParagraphs("Notebook2", "not test", "not test at all");
+    newNoteWithParagraphs("Notebook2", "not test", "not test at all");
     drainSearchEvents();
     assertEquals(3, resultForQuery("test").size());
 

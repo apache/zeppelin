@@ -21,15 +21,15 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-public class UtilTest {
+class UtilTest {
 
     @Test
-    public void getVersionTest() {
+  void getVersionTest() {
         assertNotNull(Util.getVersion());
     }
 
     @Test
-    public void getGitInfoTest() {
+    void getGitInfoTest() {
         assertNotNull(Util.getGitCommitId());
         assertNotNull(Util.getGitTimestamp());
     }

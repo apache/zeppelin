@@ -31,7 +31,7 @@ import javax.annotation.PreDestroy;
  */
 public abstract class SearchService extends NoteEventAsyncListener {
 
-  public SearchService(String name) {
+  protected SearchService(String name) {
     super(name);
   }
 
