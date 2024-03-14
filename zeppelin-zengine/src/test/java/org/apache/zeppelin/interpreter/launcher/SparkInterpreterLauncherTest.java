@@ -19,9 +19,9 @@ package org.apache.zeppelin.interpreter.launcher;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.io.FileUtils;
+import org.apache.zeppelin.test.DownloadUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.InterpreterOption;
-import org.apache.zeppelin.interpreter.integration.DownloadUtils;
 import org.apache.zeppelin.interpreter.remote.ExecRemoteInterpreterProcess;
 import org.apache.zeppelin.util.Util;
 import org.junit.jupiter.api.BeforeEach;
@@ -54,7 +54,7 @@ class SparkInterpreterLauncherTest {
       System.clearProperty(confVar.getVarName());
     }
 
-    sparkHome = DownloadUtils.downloadSpark("3.4.1", "3");
+    sparkHome = DownloadUtils.downloadSpark();
     System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HOME.getVarName(),
             new File("..").getAbsolutePath());
 
