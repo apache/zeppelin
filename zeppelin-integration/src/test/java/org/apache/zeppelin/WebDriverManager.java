@@ -107,7 +107,7 @@ public class WebDriverManager implements Closeable {
     };
 
     WebDriver driver;
-    switch (System.getenv("ZEPPELIN_SELENIUM_BROWSER").toLowerCase(Locale.ROOT)) {
+    switch (SystemUtils.getEnvironmentVariable("ZEPPELIN_SELENIUM_BROWSER", "").toLowerCase(Locale.ROOT)) {
       case "chrome":
         driver = chromeDriverSupplier.get();
         break;
