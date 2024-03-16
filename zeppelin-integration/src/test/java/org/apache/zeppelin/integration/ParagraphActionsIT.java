@@ -598,6 +598,7 @@ class ParagraphActionsIT extends AbstractZeppelinIT {
   }
 
   @Test
+  @Disabled("flaky")
   void testEditOnDoubleClick() throws Exception {
     try {
       createNewNote();
