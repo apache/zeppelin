@@ -118,17 +118,7 @@ abstract public class AbstractZeppelinIT {
   }
 
   protected WebElement pollingWait(final By locator, final long timeWait) {
-    Wait<WebDriver> wait = new FluentWait<>(manager.getWebDriver())
-        .withTimeout(Duration.of(timeWait, ChronoUnit.SECONDS))
-        .pollingEvery(Duration.of(1, ChronoUnit.SECONDS))
-        .ignoring(NoSuchElementException.class);
-
-    return wait.until(new Function<WebDriver, WebElement>() {
-      @Override
-      public WebElement apply(WebDriver driver) {
-        return driver.findElement(locator);
-      }
-    });
+    return ZeppelinITUtils.pollingWait(manager.getWebDriver(), locator, timeWait);
   }
 
   protected void createNewNote() {

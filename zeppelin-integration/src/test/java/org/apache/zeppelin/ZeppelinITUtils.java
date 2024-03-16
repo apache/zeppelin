@@ -18,11 +18,22 @@
 package org.apache.zeppelin;
 
 
+import com.google.common.base.Function;
+import org.openqa.selenium.By;
+import org.openqa.selenium.NoSuchElementException;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.FluentWait;
+import org.openqa.selenium.support.ui.Wait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.openqa.selenium.WebDriver;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.time.Duration;
+import java.time.temporal.ChronoUnit;
+
+import static org.apache.zeppelin.AbstractZeppelinIT.MAX_BROWSER_TIMEOUT_SEC;
 
 public class ZeppelinITUtils {
 
@@ -57,5 +68,59 @@ public class ZeppelinITUtils {
   public static void turnOnImplicitWaits(WebDriver driver) {
     driver.manage().timeouts()
       .implicitlyWait(Duration.ofSeconds(AbstractZeppelinIT.MAX_IMPLICIT_WAIT));
+  }
+
+  public static WebElement pollingWait(final WebDriver driver, final By locator, final long timeWait) {
+    Wait<WebDriver> wait = new FluentWait<>(driver)
+        .withTimeout(Duration.of(timeWait, ChronoUnit.SECONDS))
+        .pollingEvery(Duration.of(1, ChronoUnit.SECONDS))
+        .ignoring(NoSuchElementException.class);
+
+    return wait.until(new Function<WebDriver, WebElement>() {
+      @Override
+      public WebElement apply(WebDriver driver) {
+        return driver.findElement(locator);
+      }
+    });
+  }
+
+  public static void authenticationUser(WebDriver driver, String userName, String password) {
+    ZeppelinITUtils.pollingWait(
+        driver,
+        By.xpath("//div[contains(@class, 'navbar-collapse')]//li//button[contains(.,'Login')]"),
+        MAX_BROWSER_TIMEOUT_SEC).click();
+
+    ZeppelinITUtils.sleep(1000, false);
+
+    ZeppelinITUtils.pollingWait(
+        driver,
+        By.xpath("//*[@id='userName']"),
+        MAX_BROWSER_TIMEOUT_SEC).sendKeys(userName);
+    ZeppelinITUtils.pollingWait(
+        driver,
+        By.xpath("//*[@id='password']"),
+        MAX_BROWSER_TIMEOUT_SEC).sendKeys(password);
+    ZeppelinITUtils.pollingWait(
+        driver,
+        By.xpath("//*[@id='loginModalContent']//button[contains(.,'Login')]"),
+        MAX_BROWSER_TIMEOUT_SEC).click();
+
+    ZeppelinITUtils.sleep(1000, false);
+  }
+
+  public static void logoutUser(WebDriver driver, String userName) throws URISyntaxException {
+    ZeppelinITUtils.sleep(500, false);
+    driver.findElement(
+        By.xpath("//div[contains(@class, 'navbar-collapse')]//li[contains(.,'" + userName + "')]")).click();
+    ZeppelinITUtils.sleep(500, false);
+    driver.findElement(
+        By.xpath("//div[contains(@class, 'navbar-collapse')]//li[contains(.,'" + userName + "')]//a[@ng-click='navbar.logout()']")).click();
+    ZeppelinITUtils.sleep(2000, false);
+    if (driver.findElement(
+        By.xpath("//*[@id='loginModal']//div[contains(@class, 'modal-header')]/button")).isDisplayed()) {
+      driver.findElement(By.xpath("//*[@id='loginModal']//div[contains(@class, 'modal-header')]/button")).click();
+    }
+    driver.get(new URI(driver.getCurrentUrl()).resolve("/#/").toString());
+    ZeppelinITUtils.sleep(500, false);
   }
 }
