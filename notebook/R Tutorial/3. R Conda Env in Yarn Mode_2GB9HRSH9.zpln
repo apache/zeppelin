@@ -386,7 +386,7 @@
  "name": "3. R Conda Env in Yarn Mode",
  "id": "2GB9HRSH9",
  "defaultInterpreterGroup": "r",
- "version": "0.10.0-SNAPSHOT",
+ "version": "0.11.1",
  "noteParams": {},
  "noteForms": {},
  "angularObjects": {},

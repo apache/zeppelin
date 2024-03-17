@@ -158,7 +158,7 @@ For beginner, we would suggest you to play R in Zeppelin docker first. In the Ze
 Without any extra configuration, you can run most of tutorial notes under folder `R Tutorial` directly.
 
 ```
-docker run -u $(id -u) -p 8080:8080 -p:6789:6789 --rm --name zeppelin apache/zeppelin:0.10.0
+docker run -u $(id -u) -p 8080:8080 -p:6789:6789 --rm --name zeppelin apache/zeppelin:0.11.1
 ```
 
 After running the above command, you can open `http://localhost:8080` to play R in Zeppelin.

@@ -86,7 +86,7 @@ Without any extra configuration, you can run most of tutorial notes under folder
 
 
 ```bash
-docker run -u $(id -u) -p 8080:8080 --rm --name zeppelin apache/zeppelin:0.10.0
+docker run -u $(id -u) -p 8080:8080 --rm --name zeppelin apache/zeppelin:0.11.1
 ```
 
 After running the above command, you can open `http://localhost:8080` to play Python in Zeppelin. 

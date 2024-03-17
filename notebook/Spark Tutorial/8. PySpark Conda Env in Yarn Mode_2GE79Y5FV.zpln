@@ -1382,7 +1382,7 @@
   "name": "8. PySpark Conda Env in Yarn Mode",
   "id": "2GE79Y5FV",
   "defaultInterpreterGroup": "spark",
-  "version": "0.10.0-SNAPSHOT",
+  "version": "0.10.1",
   "noteParams": {},
   "noteForms": {},
   "angularObjects": {},
