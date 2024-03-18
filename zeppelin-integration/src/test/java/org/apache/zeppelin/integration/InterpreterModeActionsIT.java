@@ -45,8 +45,6 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.time.Duration;
 
 
@@ -134,39 +132,6 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
       LOG.error("Error in InterpreterModeActionsIT tearDown::", e);
     }
     ZeppelinITUtils.restartZeppelin();
-  }
-
-  private void authenticationUser(String userName, String password) {
-    pollingWait(By.xpath(
-        "//div[contains(@class, 'navbar-collapse')]//li//button[contains(.,'Login')]"),
-        MAX_BROWSER_TIMEOUT_SEC).click();
-    ZeppelinITUtils.sleep(500, false);
-    pollingWait(By.xpath("//*[@id='userName']"), MAX_BROWSER_TIMEOUT_SEC).sendKeys(userName);
-    pollingWait(By.xpath("//*[@id='password']"), MAX_BROWSER_TIMEOUT_SEC).sendKeys(password);
-    pollingWait(By.xpath("//*[@id='loginModalContent']//button[contains(.,'Login')]"),
-        MAX_BROWSER_TIMEOUT_SEC).click();
-    ZeppelinITUtils.sleep(1000, false);
-  }
-
-  private void logoutUser(String userName) throws URISyntaxException {
-    ZeppelinITUtils.sleep(500, false);
-    manager.getWebDriver()
-      .findElement(By.xpath("//div[contains(@class, 'navbar-collapse')]//li[contains(.,'" +
-        userName + "')]")).click();
-    ZeppelinITUtils.sleep(500, false);
-    manager.getWebDriver()
-      .findElement(By.xpath("//div[contains(@class, 'navbar-collapse')]//li[contains(.,'" +
-        userName + "')]//a[@ng-click='navbar.logout()']")).click();
-    ZeppelinITUtils.sleep(2000, false);
-    if (manager.getWebDriver()
-      .findElement(By.xpath("//*[@id='loginModal']//div[contains(@class, 'modal-header')]/button"))
-        .isDisplayed()) {
-      manager.getWebDriver().findElement(
-        By.xpath("//*[@id='loginModal']//div[contains(@class, 'modal-header')]/button")).click();
-    }
-    manager.getWebDriver()
-      .get(new URI(manager.getWebDriver().getCurrentUrl()).resolve("/#/").toString());
-    ZeppelinITUtils.sleep(500, false);
   }
 
   private void setPythonParagraph(int num, String text) {

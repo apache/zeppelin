@@ -126,12 +126,12 @@ public class AuthenticationIT extends AbstractZeppelinIT {
   @Disabled
   void testSimpleAuthentication() throws Exception {
     try {
-      ZeppelinITUtils.authenticationUser(manager.getWebDriver(), "admin", "password1");
+      authenticationUser("admin", "password1");
 
       assertTrue(manager.getWebDriver().findElement(By.partialLinkText("Create new note"))
         .isDisplayed(), "Check is user logged in");
 
-      ZeppelinITUtils.logoutUser(manager.getWebDriver(), "admin");
+      logoutUser("admin");
     } catch (Exception e) {
       handleException("Exception in AuthenticationIT while testCreateNewButton ", e);
     }
@@ -140,7 +140,7 @@ public class AuthenticationIT extends AbstractZeppelinIT {
   @Test
   void testAnyOfRolesUser() throws Exception {
     try {
-      ZeppelinITUtils.authenticationUser(manager.getWebDriver(), "admin", "password1");
+      authenticationUser("admin", "password1");
 
       pollingWait(By.xpath("//div/button[contains(@class, 'nav-btn dropdown-toggle ng-scope')]"),
           MAX_BROWSER_TIMEOUT_SEC).click();
@@ -150,9 +150,9 @@ public class AuthenticationIT extends AbstractZeppelinIT {
         "//div[@id='main']/div/div[2]"),
         MIN_IMPLICIT_WAIT).isDisplayed(), "Check is user has permission to view this page");
 
-      ZeppelinITUtils.logoutUser(manager.getWebDriver(), "admin");;
+      logoutUser("admin");;
 
-      ZeppelinITUtils.authenticationUser(manager.getWebDriver(), "finance1", "finance1");
+      authenticationUser("finance1", "finance1");
 
       pollingWait(By.xpath("//div/button[contains(@class, 'nav-btn dropdown-toggle ng-scope')]"),
           MAX_BROWSER_TIMEOUT_SEC).click();
@@ -162,9 +162,9 @@ public class AuthenticationIT extends AbstractZeppelinIT {
         pollingWait(By.xpath("//div[@id='main']/div/div[2]"), MIN_IMPLICIT_WAIT).isDisplayed(),
         "Check is user has permission to view this page");
 
-      ZeppelinITUtils.logoutUser(manager.getWebDriver(), "finance1");
+      logoutUser("finance1");
 
-      ZeppelinITUtils.authenticationUser(manager.getWebDriver(), "hr1", "hr1");
+      authenticationUser("hr1", "hr1");
 
       pollingWait(By.xpath("//div/button[contains(@class, 'nav-btn dropdown-toggle ng-scope')]"),
           MAX_BROWSER_TIMEOUT_SEC).click();
@@ -178,7 +178,7 @@ public class AuthenticationIT extends AbstractZeppelinIT {
       } catch (TimeoutException e) {
         throw new Exception("Expected ngToast not found", e);
       }
-      ZeppelinITUtils.logoutUser(manager.getWebDriver(), "hr1");
+      logoutUser("hr1");
 
     } catch (Exception e) {
       handleException("Exception in AuthenticationIT while testAnyOfRolesUser ", e);
@@ -188,7 +188,7 @@ public class AuthenticationIT extends AbstractZeppelinIT {
   @Test
   void testGroupPermission() throws Exception {
     try {
-      ZeppelinITUtils.authenticationUser(manager.getWebDriver(), "finance1", "finance1");
+      authenticationUser("finance1", "finance1");
       createNewNote();
 
       String noteId = manager.getWebDriver().getCurrentUrl()
@@ -210,9 +210,9 @@ public class AuthenticationIT extends AbstractZeppelinIT {
       pollingWait(By.xpath("//div[@class='modal-dialog'][contains(.,'Permissions Saved ')]" +
               "//div[@class='modal-footer']//button[contains(.,'OK')]"),
           MAX_BROWSER_TIMEOUT_SEC).click();
-      ZeppelinITUtils.logoutUser(manager.getWebDriver(), "finance1");
+      logoutUser("finance1");
 
-      ZeppelinITUtils.authenticationUser(manager.getWebDriver(), "hr1", "hr1");
+      authenticationUser("hr1", "hr1");
       try {
         WebElement element = pollingWait(By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + noteId + "')]"),
             MAX_BROWSER_TIMEOUT_SEC);
@@ -231,9 +231,9 @@ public class AuthenticationIT extends AbstractZeppelinIT {
       manager.getWebDriver().findElement(
           By.xpath("//div[@class='modal-content'][contains(.,'Insufficient privileges')]" +
               "//div[@class='modal-footer']//button[2]")).click();
-      ZeppelinITUtils.logoutUser(manager.getWebDriver(), "hr1");
+      logoutUser("hr1");
 
-      ZeppelinITUtils.authenticationUser(manager.getWebDriver(), "finance2", "finance2");
+      authenticationUser("finance2", "finance2");
       try {
         WebElement element = pollingWait(By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + noteId + "')]"),
             MAX_BROWSER_TIMEOUT_SEC);
@@ -250,7 +250,7 @@ public class AuthenticationIT extends AbstractZeppelinIT {
               "//div[contains(.,'Insufficient privileges')]"));
       assertEquals(0, privilegesModal.size(), "Check is user has permission to view this note");
       deleteTestNotebook(manager.getWebDriver());
-      ZeppelinITUtils.logoutUser(manager.getWebDriver(), "finance2");
+      logoutUser("finance2");
 
 
     } catch (Exception e) {

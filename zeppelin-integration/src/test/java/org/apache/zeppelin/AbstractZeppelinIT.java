@@ -20,6 +20,8 @@ package org.apache.zeppelin;
 
 import com.google.common.base.Function;
 import java.io.File;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import org.apache.commons.codec.binary.Base64;
@@ -52,6 +54,39 @@ abstract public class AbstractZeppelinIT {
   protected static final long MAX_BROWSER_TIMEOUT_SEC = 30;
   protected static final long MAX_PARAGRAPH_TIMEOUT_SEC = 120;
 
+  protected void authenticationUser(String userName, String password) {
+    pollingWait(
+        By.xpath("//div[contains(@class, 'navbar-collapse')]//li//button[contains(.,'Login')]"),
+        MAX_BROWSER_TIMEOUT_SEC).click();
+
+    ZeppelinITUtils.sleep(1000, false);
+
+    pollingWait(By.xpath("//*[@id='userName']"), MAX_BROWSER_TIMEOUT_SEC).sendKeys(userName);
+    pollingWait(By.xpath("//*[@id='password']"), MAX_BROWSER_TIMEOUT_SEC).sendKeys(password);
+    pollingWait(
+        By.xpath("//*[@id='loginModalContent']//button[contains(.,'Login')]"),
+        MAX_BROWSER_TIMEOUT_SEC).click();
+
+    ZeppelinITUtils.sleep(1000, false);
+  }
+
+  protected void logoutUser(String userName) throws URISyntaxException {
+    ZeppelinITUtils.sleep(500, false);
+    manager.getWebDriver().findElement(
+        By.xpath("//div[contains(@class, 'navbar-collapse')]//li[contains(.,'" + userName + "')]")).click();
+    ZeppelinITUtils.sleep(500, false);
+    manager.getWebDriver().findElement(
+        By.xpath("//div[contains(@class, 'navbar-collapse')]//li[contains(.,'" + userName + "')]//a[@ng-click='navbar.logout()']")).click();
+    ZeppelinITUtils.sleep(2000, false);
+    if (manager.getWebDriver().findElement(
+        By.xpath("//*[@id='loginModal']//div[contains(@class, 'modal-header')]/button")).isDisplayed()) {
+      manager.getWebDriver().findElement(
+          By.xpath("//*[@id='loginModal']//div[contains(@class, 'modal-header')]/button")).click();
+    }
+    manager.getWebDriver().get(new URI(manager.getWebDriver().getCurrentUrl()).resolve("/#/").toString());
+    ZeppelinITUtils.sleep(500, false);
+  }
+  
   protected void setTextOfParagraph(int paragraphNo, String text) {
     String paragraphXpath = getParagraphXPath(paragraphNo);
 
@@ -118,7 +153,12 @@ abstract public class AbstractZeppelinIT {
   }
 
   protected WebElement pollingWait(final By locator, final long timeWait) {
-    return ZeppelinITUtils.pollingWait(manager.getWebDriver(), locator, timeWait);
+    Wait<WebDriver> wait = new FluentWait<>(manager.getWebDriver())
+        .withTimeout(Duration.of(timeWait, ChronoUnit.SECONDS))
+        .pollingEvery(Duration.of(1, ChronoUnit.SECONDS))
+        .ignoring(NoSuchElementException.class);
+
+    return wait.until((Function<WebDriver, WebElement>) driver -> driver.findElement(locator));
   }
 
   protected void createNewNote() {

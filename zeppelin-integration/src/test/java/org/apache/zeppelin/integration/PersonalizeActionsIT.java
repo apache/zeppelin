@@ -119,7 +119,7 @@ public class PersonalizeActionsIT extends AbstractZeppelinIT {
   void testSimpleAction() throws Exception {
     try {
       // step 1 : (admin) create a new note, run a paragraph and turn on personalized mode
-      ZeppelinITUtils.authenticationUser(manager.getWebDriver(), "admin", "password1");
+      authenticationUser("admin", "password1");
       By locator = By.xpath("//div[contains(@class, \"col-md-4\")]/div/h5/a[contains(.,'Create new" +
           " note')]");
       WebDriverWait wait =
@@ -140,10 +140,10 @@ public class PersonalizeActionsIT extends AbstractZeppelinIT {
           "//button[contains(@uib-tooltip, 'Switch to personal mode')]"), MAX_BROWSER_TIMEOUT_SEC).click();
       clickAndWait(By.xpath("//div[@class='modal-dialog'][contains(.,'Do you want to personalize your analysis?')" +
           "]//div[@class='modal-footer']//button[contains(.,'OK')]"));
-      ZeppelinITUtils.logoutUser(manager.getWebDriver(), "admin");;
+      logoutUser("admin");
 
       // step 2 : (user1) make sure it is on personalized mode and 'Before' in result of paragraph
-      ZeppelinITUtils.authenticationUser(manager.getWebDriver(), "user1", "password2");
+      authenticationUser("user1", "password2");
       locator = By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + noteId + "')]");
       wait = new WebDriverWait(manager.getWebDriver(), Duration.ofSeconds(MAX_BROWSER_TIMEOUT_SEC));
       element = wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
@@ -161,10 +161,10 @@ public class PersonalizeActionsIT extends AbstractZeppelinIT {
           .findElement(
               By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'markdown-body')]"))
           .getText());
-      ZeppelinITUtils.logoutUser(manager.getWebDriver(), "user1");
+      logoutUser("user1");
 
       // step 3 : (admin) change paragraph contents to 'After' and check result of paragraph
-      ZeppelinITUtils.authenticationUser(manager.getWebDriver(), "admin", "password1");
+      authenticationUser("admin", "password1");
       locator = By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + noteId + "')]");
       element = wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
       if (element.isDisplayed()) {
@@ -176,10 +176,10 @@ public class PersonalizeActionsIT extends AbstractZeppelinIT {
           .findElement(
               By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'markdown-body')]"))
           .getText());
-      ZeppelinITUtils.logoutUser(manager.getWebDriver(), "admin");;
+      logoutUser("admin");;
 
       // step 4 : (user1) check whether result is 'Before' or not
-      ZeppelinITUtils.authenticationUser(manager.getWebDriver(), "user1", "password2");
+      authenticationUser("user1", "password2");
       locator = By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + noteId + "')]");
       element = wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
       if (element.isDisplayed()) {
@@ -189,7 +189,7 @@ public class PersonalizeActionsIT extends AbstractZeppelinIT {
           .findElement(
               By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'markdown-body')]"))
           .getText());
-      ZeppelinITUtils.logoutUser(manager.getWebDriver(), "user1");
+      logoutUser("user1");
     } catch (Exception e) {
       handleException("Exception in PersonalizeActionsIT while testSimpleAction ", e);
     }
@@ -199,7 +199,7 @@ public class PersonalizeActionsIT extends AbstractZeppelinIT {
   void testGraphAction() throws Exception {
     try {
       // step 1 : (admin) create a new note, run a paragraph, change active graph to 'Bar chart', turn on personalized mode
-      ZeppelinITUtils.authenticationUser(manager.getWebDriver(), "admin", "password1");
+      authenticationUser("admin", "password1");
       By locator = By.xpath("//div[contains(@class, \"col-md-4\")]/div/h5/a[contains(.,'Create new" +
           " note')]");
       WebDriverWait wait =
@@ -236,12 +236,12 @@ public class PersonalizeActionsIT extends AbstractZeppelinIT {
               + "//button[contains(@class," +
               "'btn btn-default btn-sm ng-binding ng-scope active')]//i")).getAttribute("class"));
 
-      ZeppelinITUtils.logoutUser(manager.getWebDriver(), "admin");;
+      logoutUser("admin");;
       manager.getWebDriver().navigate().refresh();
 
       // step 2 : (user1) make sure it is on personalized mode and active graph is 'Bar chart',
       // try to change active graph to 'Table' and then check result
-      ZeppelinITUtils.authenticationUser(manager.getWebDriver(), "user1", "password2");
+      authenticationUser("user1", "password2");
       locator = By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + noteId + "')]");
       element = wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
       if (element.isDisplayed()) {
@@ -262,11 +262,11 @@ public class PersonalizeActionsIT extends AbstractZeppelinIT {
       assertEquals("fa fa-table", manager.getWebDriver().findElement(By.xpath(getParagraphXPath(1)
           + "//button[contains(@class," +
           "'btn btn-default btn-sm ng-binding ng-scope active')]//i")).getAttribute("class"));
-      ZeppelinITUtils.logoutUser(manager.getWebDriver(), "user1");
+      logoutUser("user1");
       manager.getWebDriver().navigate().refresh();
 
       // step 3: (admin) Admin view is still table because of it's personalized!
-      ZeppelinITUtils.authenticationUser(manager.getWebDriver(), "admin", "password1");
+      authenticationUser("admin", "password1");
       locator = By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + noteId + "')]");
       element = wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
       if (element.isDisplayed()) {
@@ -278,7 +278,7 @@ public class PersonalizeActionsIT extends AbstractZeppelinIT {
               + "//button[contains(@class," +
               "'btn btn-default btn-sm ng-binding ng-scope active')]//i")).getAttribute("class"));
 
-      ZeppelinITUtils.logoutUser(manager.getWebDriver(), "admin");;
+      logoutUser("admin");;
     } catch (Exception e) {
       handleException("Exception in PersonalizeActionsIT while testGraphAction ", e);
     }
@@ -288,7 +288,7 @@ public class PersonalizeActionsIT extends AbstractZeppelinIT {
   void testDynamicFormAction() throws Exception {
     try {
       // step 1 : (admin) login, create a new note, run a paragraph with data of spark tutorial, logout.
-      ZeppelinITUtils.authenticationUser(manager.getWebDriver(), "admin", "password1");
+      authenticationUser("admin", "password1");
       By locator = By.xpath("//div[contains(@class, \"col-md-4\")]/div/h5/a[contains(.,'Create new" +
           " note')]");
       WebDriverWait wait =
@@ -315,11 +315,11 @@ public class PersonalizeActionsIT extends AbstractZeppelinIT {
           "//button[contains(@uib-tooltip, 'Switch to personal mode')]"), MAX_BROWSER_TIMEOUT_SEC).click();
       clickAndWait(By.xpath("//div[@class='modal-dialog'][contains(.,'Do you want to personalize your analysis?')" +
           "]//div[@class='modal-footer']//button[contains(.,'OK')]"));
-      ZeppelinITUtils.logoutUser(manager.getWebDriver(), "admin");;
+      logoutUser("admin");;
 
       // step 2 : (user1) make sure it is on personalized mode and  dynamic form value is 'Before',
       // try to change dynamic form value to 'After' and then check result
-      ZeppelinITUtils.authenticationUser(manager.getWebDriver(), "user1", "password2");
+      authenticationUser("user1", "password2");
       locator = By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + noteId + "')]");
       element = wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
       if (element.isDisplayed()) {
@@ -352,7 +352,7 @@ public class PersonalizeActionsIT extends AbstractZeppelinIT {
           .findElement(By
               .xpath(getParagraphXPath(1) + "//div[contains(@class, 'text plainTextContent')]"))
           .getText());
-      ZeppelinITUtils.logoutUser(manager.getWebDriver(), "user1");
+      logoutUser("user1");
 
     } catch (Exception e) {
       handleException("Exception in PersonalizeActionsIT while testGraphAction ", e);
