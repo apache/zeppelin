@@ -18,22 +18,11 @@
 package org.apache.zeppelin;
 
 
-import com.google.common.base.Function;
-import org.openqa.selenium.By;
-import org.openqa.selenium.NoSuchElementException;
-import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.ui.FluentWait;
-import org.openqa.selenium.support.ui.Wait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.openqa.selenium.WebDriver;
 
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.time.Duration;
-import java.time.temporal.ChronoUnit;
-
-import static org.apache.zeppelin.AbstractZeppelinIT.MAX_BROWSER_TIMEOUT_SEC;
 
 public class ZeppelinITUtils {
 
