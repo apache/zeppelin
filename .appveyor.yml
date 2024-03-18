@@ -17,7 +17,7 @@
 # under the License.
 #
 
-version: '0.11.0.{build}'
+version: '0.12.0.{build}'
 
 shallow_clone: true
 
