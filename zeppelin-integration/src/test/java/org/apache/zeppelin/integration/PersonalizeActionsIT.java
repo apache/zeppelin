@@ -176,7 +176,7 @@ public class PersonalizeActionsIT extends AbstractZeppelinIT {
           .findElement(
               By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'markdown-body')]"))
           .getText());
-      logoutUser("admin");;
+      logoutUser("admin");
 
       // step 4 : (user1) check whether result is 'Before' or not
       authenticationUser("user1", "password2");
@@ -236,7 +236,7 @@ public class PersonalizeActionsIT extends AbstractZeppelinIT {
               + "//button[contains(@class," +
               "'btn btn-default btn-sm ng-binding ng-scope active')]//i")).getAttribute("class"));
 
-      logoutUser("admin");;
+      logoutUser("admin");
       manager.getWebDriver().navigate().refresh();
 
       // step 2 : (user1) make sure it is on personalized mode and active graph is 'Bar chart',
@@ -278,7 +278,7 @@ public class PersonalizeActionsIT extends AbstractZeppelinIT {
               + "//button[contains(@class," +
               "'btn btn-default btn-sm ng-binding ng-scope active')]//i")).getAttribute("class"));
 
-      logoutUser("admin");;
+      logoutUser("admin");
     } catch (Exception e) {
       handleException("Exception in PersonalizeActionsIT while testGraphAction ", e);
     }
@@ -315,7 +315,7 @@ public class PersonalizeActionsIT extends AbstractZeppelinIT {
           "//button[contains(@uib-tooltip, 'Switch to personal mode')]"), MAX_BROWSER_TIMEOUT_SEC).click();
       clickAndWait(By.xpath("//div[@class='modal-dialog'][contains(.,'Do you want to personalize your analysis?')" +
           "]//div[@class='modal-footer']//button[contains(.,'OK')]"));
-      logoutUser("admin");;
+      logoutUser("admin");
 
       // step 2 : (user1) make sure it is on personalized mode and  dynamic form value is 'Before',
       // try to change dynamic form value to 'After' and then check result

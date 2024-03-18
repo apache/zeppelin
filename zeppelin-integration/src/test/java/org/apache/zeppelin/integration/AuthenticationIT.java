@@ -150,7 +150,7 @@ public class AuthenticationIT extends AbstractZeppelinIT {
         "//div[@id='main']/div/div[2]"),
         MIN_IMPLICIT_WAIT).isDisplayed(), "Check is user has permission to view this page");
 
-      logoutUser("admin");;
+      logoutUser("admin");
 
       authenticationUser("finance1", "finance1");
 
