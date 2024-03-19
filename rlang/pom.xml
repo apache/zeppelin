@@ -38,7 +38,7 @@
 
         <spark.archive>spark-${spark.version}</spark.archive>
         <spark.bin.download.url>
-            https://archive.apache.org/dist/spark/${spark.archive}/${spark.archive}-bin-without-hadoop.tgz
+            https://archive.apache.org/dist/spark/${spark.archive}/${spark.archive}-bin-hadoop3.tgz
         </spark.bin.download.url>
         <interpreter.jar.name>zeppelin-interpreter-r</interpreter.jar.name>
     </properties>
@@ -105,12 +105,6 @@
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-core_2.12</artifactId>
             <version>${spark.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.apache.hadoop</groupId>
-                    <artifactId>hadoop-client-api</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <dependency>
@@ -121,17 +115,20 @@
 
         <dependency>
             <groupId>org.apache.hadoop</groupId>
-            <artifactId>hadoop-client-runtime</artifactId>
-            <version>${hadoop.version}</version>
-            <scope>compile</scope>
+            <artifactId>hadoop-client-api</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-client-runtime</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>com.mashape.unirest</groupId>
             <artifactId>unirest-java</artifactId>
             <version>1.4.9</version>
             <scope>test</scope>
         </dependency>
-
     </dependencies>
 
     <build>
@@ -176,7 +173,7 @@
                             <resources>
                                 <resource>
                                     <directory>
-                                        ${project.build.directory}/spark-${spark.version}-bin-without-hadoop/R/lib
+                                        ${project.build.directory}/spark-${spark.version}-bin-hadoop3/R/lib
                                     </directory>
                                 </resource>
                             </resources>
