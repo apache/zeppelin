@@ -235,6 +235,7 @@ public abstract class SparkIntegrationTest {
     sparkInterpreterSetting.setProperty("zeppelin.spark.deprecatedMsg.show", "false");
     sparkInterpreterSetting.setProperty("spark.user.name", "#{user}");
     sparkInterpreterSetting.setProperty("zeppelin.spark.run.asLoginUser", "false");
+    sparkInterpreterSetting.setProperty("spark.r.command", getRScriptExec());
 
     try {
       setUpSparkInterpreterSetting(sparkInterpreterSetting);
@@ -283,6 +284,9 @@ public abstract class SparkIntegrationTest {
     sparkInterpreterSetting.setProperty("zeppelin.spark.useHiveContext", "false");
     sparkInterpreterSetting.setProperty("zeppelin.pyspark.useIPython", "false");
     sparkInterpreterSetting.setProperty("PYSPARK_PYTHON", getPythonExec());
+    sparkInterpreterSetting.setProperty("spark.pyspark.python", getPythonExec());
+    sparkInterpreterSetting.setProperty("zeppelin.R.cmd", getRExec());
+    sparkInterpreterSetting.setProperty("spark.r.command", getRScriptExec());
     sparkInterpreterSetting.setProperty("spark.driver.memory", "512m");
     sparkInterpreterSetting.setProperty("zeppelin.spark.scala.color", "false");
     sparkInterpreterSetting.setProperty("zeppelin.spark.deprecatedMsg.show", "false");
@@ -386,6 +390,22 @@ public abstract class SparkIntegrationTest {
     Process process = Runtime.getRuntime().exec(new String[]{"which", "python"});
     if (process.waitFor() != 0) {
       throw new RuntimeException("Fail to run command: which python.");
+    }
+    return IOUtils.toString(process.getInputStream(), StandardCharsets.UTF_8).trim();
+  }
+
+  private String getRScriptExec() throws IOException, InterruptedException {
+    Process process = Runtime.getRuntime().exec(new String[]{"which", "Rscript"});
+    if (process.waitFor() != 0) {
+      throw new RuntimeException("Fail to run command: which Rscript.");
+    }
+    return IOUtils.toString(process.getInputStream(), StandardCharsets.UTF_8).trim();
+  }
+
+  private String getRExec() throws IOException, InterruptedException {
+    Process process = Runtime.getRuntime().exec(new String[]{"which", "R"});
+    if (process.waitFor() != 0) {
+      throw new RuntimeException("Fail to run command: which R.");
     }
     return IOUtils.toString(process.getInputStream(), StandardCharsets.UTF_8).trim();
   }
