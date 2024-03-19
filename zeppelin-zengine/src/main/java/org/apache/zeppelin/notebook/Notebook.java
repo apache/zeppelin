@@ -537,6 +537,10 @@ public class Notebook {
     return noteManager.containsFolder(folderPath);
   }
 
+  public NoteManager.Folder getFolder(String folderPath) throws IOException {
+    return noteManager.getFolder(folderPath);
+  }
+
   public void moveNote(String noteId, String newNotePath, AuthenticationInfo subject) throws IOException {
     LOGGER.info("Move note {} to {}", noteId, newNotePath);
     noteManager.moveNote(noteId, newNotePath, subject);
