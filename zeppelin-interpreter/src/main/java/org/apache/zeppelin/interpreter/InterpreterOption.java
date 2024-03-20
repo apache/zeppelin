@@ -20,7 +20,6 @@ package org.apache.zeppelin.interpreter;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.google.gson.Gson;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 
 /**
@@ -30,6 +29,7 @@ public class InterpreterOption {
   public static final transient String SHARED = "shared";
   public static final transient String SCOPED = "scoped";
   public static final transient String ISOLATED = "isolated";
+  private transient ZeppelinConfiguration conf;
 
   // always set it as true, keep this field just for backward compatibility
   boolean remote = true;
@@ -60,6 +60,10 @@ public class InterpreterOption {
     this.host = host;
   }
 
+  public void setConf(ZeppelinConfiguration conf) {
+    this.conf = conf;
+  }
+
   public boolean permissionIsSet() {
     return setPermission;
   }
@@ -68,7 +72,7 @@ public class InterpreterOption {
     this.setPermission = setPermission;
   }
 
-  public List<String> getOwners(ZeppelinConfiguration conf) {
+  public List<String> getOwners() {
     if (null != owners && conf.isUsernameForceLowerCase()) {
       List<String> lowerCaseUsers = new ArrayList<>();
       for (String owner : owners) {
@@ -113,7 +117,7 @@ public class InterpreterOption {
     option.setPermission = other.setPermission;
     option.owners = (null == other.owners) ?
         new ArrayList<>() : new ArrayList<>(other.owners);
-
+    option.conf = other.conf;
     return option;
   }
 
