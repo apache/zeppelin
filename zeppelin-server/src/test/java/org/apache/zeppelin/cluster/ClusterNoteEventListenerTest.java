@@ -17,17 +17,15 @@
 package org.apache.zeppelin.cluster;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import org.apache.zeppelin.cluster.event.ClusterEventListener;
 import org.apache.zeppelin.cluster.event.ClusterMessage;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
-import org.apache.zeppelin.display.Input;
+import org.apache.zeppelin.notebook.GsonNoteParser;
 import org.apache.zeppelin.notebook.Note;
-import org.apache.zeppelin.notebook.NotebookImportDeserializer;
+import org.apache.zeppelin.notebook.NoteParser;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.user.AuthenticationInfo;
-import org.apache.zeppelin.util.NoteUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,7 +33,6 @@ import org.slf4j.LoggerFactory;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
-import java.util.Date;
 import java.util.Map;
 import java.util.Set;
 
@@ -45,12 +42,12 @@ public class ClusterNoteEventListenerTest implements ClusterEventListener {
   public String receiveMsg = null;
 
   private ZeppelinConfiguration conf;
-  private Gson gson;
+  private NoteParser noteParser;
 
   @BeforeEach
   void setup() {
     conf = ZeppelinConfiguration.load();
-    gson = NoteUtils.getNoteGson(conf);
+    noteParser = new GsonNoteParser(conf);
   }
 
   @Override
@@ -72,13 +69,13 @@ public class ClusterNoteEventListenerTest implements ClusterEventListener {
         LOGGER.debug(authenticationInfo.toJson());
       } else if (key.equals("Note")) {
         try {
-          note = NoteUtils.fromJson(gson, conf, null, json);
+          note = noteParser.fromJson(null, json);
+          LOGGER.debug(note.toJson());
         } catch (IOException e) {
           LOGGER.warn("Fail to parse note json", e);
         }
-        LOGGER.debug(note.toJson());
       } else if (key.equals("Paragraph")) {
-        paragraph = gson.fromJson(json, Paragraph.class);
+        paragraph = noteParser.fromJson(json);
         LOGGER.debug(paragraph.toJson());
       } else if (key.equals("Set<String>")) {
         Gson gson = new Gson();

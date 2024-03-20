@@ -34,7 +34,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.google.gson.Gson;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
 import com.mongodb.client.AggregateIterable;
@@ -47,8 +46,8 @@ import com.mongodb.client.model.Updates;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
+import org.apache.zeppelin.notebook.NoteParser;
 import org.apache.zeppelin.user.AuthenticationInfo;
-import org.apache.zeppelin.util.NoteUtils;
 
 /**
  * Backend for storing Notebook on MongoDB.
@@ -73,8 +72,8 @@ public class MongoNotebookRepo extends AbstractNotebookRepo {
   }
 
   @Override
-  public void init(ZeppelinConfiguration conf, Gson gson) throws IOException {
-    super.init(conf, gson);
+  public void init(ZeppelinConfiguration conf, NoteParser noteParser) throws IOException {
+    super.init(conf, noteParser);
     client = new MongoClient(new MongoClientURI(conf.getMongoUri()));
     db = client.getDatabase(conf.getMongoDatabase());
     notes = db.getCollection(conf.getMongoCollection());
@@ -94,7 +93,7 @@ public class MongoNotebookRepo extends AbstractNotebookRepo {
    */
   private void insertFileSystemNotes() throws IOException {
     try (NotebookRepo vfsRepo = new VFSNotebookRepo()) {
-      vfsRepo.init(conf, gson);
+      vfsRepo.init(conf, noteParser);
       Map<String, NoteInfo> infos = vfsRepo.list(null);
 
       try (AutoLock autoLock = lock.lockForWrite()) {
@@ -436,7 +435,7 @@ public class MongoNotebookRepo extends AbstractNotebookRepo {
     // document to JSON
     String json = doc.toJson();
     // JSON to note
-    return NoteUtils.fromJson(gson, conf, noteId, json);
+    return noteParser.fromJson(noteId, json);
   }
 
   /**

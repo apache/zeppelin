@@ -21,6 +21,7 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
+import org.apache.zeppelin.notebook.NoteParser;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.plugin.PluginManager;
 import org.apache.zeppelin.user.AuthenticationInfo;
@@ -63,7 +64,7 @@ public class NotebookRepoSync implements NotebookRepoWithVersionControl {
   }
 
   @Override
-  public void init(ZeppelinConfiguration conf, Gson gson) throws IOException {
+  public void init(ZeppelinConfiguration conf, NoteParser noteParser) throws IOException {
     oneWaySync = conf.getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_ONE_WAY_SYNC);
     String allStorageClassNames = conf.getNotebookStorageClass().trim();
     if (allStorageClassNames.isEmpty()) {
@@ -81,7 +82,7 @@ public class NotebookRepoSync implements NotebookRepoWithVersionControl {
     for (int i = 0; i < Math.min(storageClassNames.length, getMaxRepoNum()); i++) {
       NotebookRepo notebookRepo =
           pluginManager.loadNotebookRepo(storageClassNames[i].trim());
-      notebookRepo.init(conf, gson);
+      notebookRepo.init(conf, noteParser);
       repos.add(notebookRepo);
     }
 
@@ -89,7 +90,7 @@ public class NotebookRepoSync implements NotebookRepoWithVersionControl {
     if (getRepoCount() == 0) {
       LOGGER.info("No storage could be initialized, using default {} storage", DEFAULT_STORAGE);
       NotebookRepo defaultNotebookRepo = pluginManager.loadNotebookRepo(DEFAULT_STORAGE);
-      defaultNotebookRepo.init(conf, gson);
+      defaultNotebookRepo.init(conf, noteParser);
       repos.add(defaultNotebookRepo);
     }
     // sync for anonymous mode on start
@@ -550,9 +551,9 @@ public class NotebookRepoSync implements NotebookRepoWithVersionControl {
   }
 
   @Override
-  public Gson getGson() {
+  public NoteParser getNoteParser() {
     try {
-      return getRepo(0).getGson();
+      return getRepo(0).getNoteParser();
     } catch (IOException e) {
       LOGGER.error("Error getting first repo", e);
     }

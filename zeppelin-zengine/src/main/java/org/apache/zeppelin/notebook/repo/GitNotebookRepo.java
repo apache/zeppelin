@@ -17,10 +17,9 @@
 
 package org.apache.zeppelin.notebook.repo;
 
-import com.google.gson.Gson;
-
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.Note;
+import org.apache.zeppelin.notebook.NoteParser;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -62,8 +61,8 @@ public class GitNotebookRepo extends VFSNotebookRepo implements NotebookRepoWith
   }
 
   @Override
-  public void init(ZeppelinConfiguration conf, Gson gson) throws IOException {
-    super.init(conf, gson);
+  public void init(ZeppelinConfiguration conf, NoteParser noteParser) throws IOException {
+    super.init(conf, noteParser);
     setNotebookDirectory(conf.getNotebookDir());
 
     LOGGER.info("Opening a git repo at '{}'", this.rootNotebookFolder);

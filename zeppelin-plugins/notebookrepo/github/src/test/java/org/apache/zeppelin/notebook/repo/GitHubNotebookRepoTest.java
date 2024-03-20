@@ -22,10 +22,11 @@ package org.apache.zeppelin.notebook.repo;
 import org.apache.commons.io.FileUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
+import org.apache.zeppelin.notebook.GsonNoteParser;
 import org.apache.zeppelin.notebook.Note;
+import org.apache.zeppelin.notebook.NoteParser;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.user.AuthenticationInfo;
-import org.apache.zeppelin.util.NoteUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.internal.storage.file.FileRepository;
@@ -34,8 +35,6 @@ import org.eclipse.jgit.revwalk.RevCommit;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import com.google.gson.Gson;
 
 import java.io.File;
 import java.io.IOException;
@@ -63,12 +62,12 @@ class GitHubNotebookRepoTest {
   private GitHubNotebookRepo gitHubNotebookRepo;
   private RevCommit firstCommitRevision;
   private Git remoteGit;
-  private Gson gson;
+  private NoteParser noteParser;
 
   @BeforeEach
   void setUp() throws Exception {
     conf = ZeppelinConfiguration.load();
-    gson = NoteUtils.getNoteGson(conf);
+    noteParser = new GsonNoteParser(conf);
 
     // Create a fake remote notebook Git repository locally in another directory
     remoteZeppelinDir =
@@ -113,7 +112,7 @@ class GitHubNotebookRepoTest {
 
     // Create the Notebook repository (configured for the local repository)
     gitHubNotebookRepo = new GitHubNotebookRepo();
-    gitHubNotebookRepo.init(conf, gson);
+    gitHubNotebookRepo.init(conf, noteParser);
   }
 
   @AfterEach

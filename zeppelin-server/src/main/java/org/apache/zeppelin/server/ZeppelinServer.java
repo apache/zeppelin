@@ -78,8 +78,10 @@ import org.apache.zeppelin.metric.JVMInfoBinder;
 import org.apache.zeppelin.metric.PrometheusServlet;
 import org.apache.zeppelin.notebook.NoteEventListener;
 import org.apache.zeppelin.notebook.NoteManager;
+import org.apache.zeppelin.notebook.NoteParser;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.AuthorizationService;
+import org.apache.zeppelin.notebook.GsonNoteParser;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.notebook.repo.NotebookRepoSync;
@@ -99,7 +101,6 @@ import org.apache.zeppelin.socket.SessionConfigurator;
 import org.apache.zeppelin.storage.ConfigStorage;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
-import org.apache.zeppelin.util.NoteUtils;
 import org.apache.zeppelin.util.ReflectionUtils;
 import org.apache.zeppelin.utils.PEMImporter;
 import org.eclipse.jetty.http.HttpScheme;
@@ -179,6 +180,7 @@ public class ZeppelinServer implements AutoCloseable {
           protected void configure() {
             bind(storage).to(ConfigStorage.class);
             bindAsContract(PluginManager.class).in(Singleton.class);
+            bind(GsonNoteParser.class).to(NoteParser.class).in(Singleton.class);
             bindAsContract(InterpreterFactory.class).in(Singleton.class);
             bindAsContract(NotebookRepoSync.class).to(NotebookRepo.class).in(Singleton.class);
             bindAsContract(Helium.class).in(Singleton.class);
@@ -232,8 +234,10 @@ public class ZeppelinServer implements AutoCloseable {
 
     NotebookRepo repo =
         ServiceLocatorUtilities.getService(sharedServiceLocator, NotebookRepo.class.getName());
+    NoteParser noteParser =
+        ServiceLocatorUtilities.getService(sharedServiceLocator, NoteParser.class.getName());
     try {
-      repo.init(conf, NoteUtils.getNoteGson(conf));
+      repo.init(conf, noteParser);
     } catch (IOException e) {
       LOG.error("Failed to init NotebookRepo", e);
     }

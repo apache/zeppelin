@@ -24,15 +24,16 @@ import org.apache.zeppelin.display.AngularObjectRegistryListener;
 import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
 import org.apache.zeppelin.notebook.AuthorizationService;
+import org.apache.zeppelin.notebook.GsonNoteParser;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteManager;
+import org.apache.zeppelin.notebook.NoteParser;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.repo.InMemoryNotebookRepo;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.plugin.PluginManager;
 import org.apache.zeppelin.storage.ConfigStorage;
 import org.apache.zeppelin.user.Credentials;
-import org.apache.zeppelin.util.NoteUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.slf4j.Logger;
@@ -55,6 +56,7 @@ public abstract class AbstractInterpreterTest {
 
   protected InterpreterSettingManager interpreterSettingManager;
   protected InterpreterFactory interpreterFactory;
+  protected NoteParser noteParser;
   protected Notebook notebook;
   protected File zeppelinHome;
   protected File interpreterDir;
@@ -96,10 +98,12 @@ public abstract class AbstractInterpreterTest {
 
     NotebookRepo notebookRepo = new InMemoryNotebookRepo();
     NoteManager noteManager = new NoteManager(notebookRepo, conf);
+    noteParser = new GsonNoteParser(conf);
     storage = ConfigStorage.createConfigStorage(conf);
     pluginManager = new PluginManager(conf);
     AuthorizationService authorizationService =
         new AuthorizationService(noteManager, conf, storage);
+
     interpreterSettingManager = new InterpreterSettingManager(conf,
         mock(AngularObjectRegistryListener.class), mock(RemoteInterpreterProcessListener.class),
         mock(ApplicationEventListener.class), storage, pluginManager);
@@ -130,7 +134,7 @@ public abstract class AbstractInterpreterTest {
 
   protected Note createNote() {
     return new Note("test", "test", interpreterFactory, interpreterSettingManager, null, null, null,
-        conf, NoteUtils.getNoteGson(conf));
+        conf, noteParser);
   }
 
   protected InterpreterContext createDummyInterpreterContext() {

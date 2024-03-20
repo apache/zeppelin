@@ -18,18 +18,17 @@
 package org.apache.zeppelin.notebook.repo;
 
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.notebook.GsonNoteParser;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
+import org.apache.zeppelin.notebook.NoteParser;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.notebook.repo.storage.RemoteStorageOperator;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.user.AuthenticationInfo;
-import org.apache.zeppelin.util.NoteUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import com.google.gson.Gson;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -49,12 +48,12 @@ class OSSNotebookRepoTest {
   private static int OSS_VERSION_MAX = 30;
 
   private ZeppelinConfiguration conf;
-  private Gson gson;
+  private NoteParser noteParser;
 
   @BeforeEach
   void setUp() throws IOException {
     ZeppelinConfiguration conf = ZeppelinConfiguration.load();
-    gson = NoteUtils.getNoteGson(conf);
+    noteParser = new GsonNoteParser(conf);
     bucket = "zeppelin-test-bucket";
     String endpoint = "yourEndpoint";
     String accessKeyId = "yourAccessKeyId";
@@ -74,7 +73,7 @@ class OSSNotebookRepoTest {
             accessKeySecret);
     conf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_OSS_VERSION_MAX.getVarName(),
             OSS_VERSION_MAX + "");
-    notebookRepo.init(conf, gson);
+    notebookRepo.init(conf, noteParser);
     notebookRepo.setOssOperator(ossOperator);
   }
 
@@ -100,7 +99,7 @@ class OSSNotebookRepoTest {
     // create Note note1
     Note note1 = new Note();
     note1.setZeppelinConfiguration(conf);
-    note1.setGson(gson);
+    note1.setNoteParser(noteParser);
     note1.setPath("/spark/note_1");
     notebookRepo.save(note1, anonymous);
 
@@ -134,7 +133,7 @@ class OSSNotebookRepoTest {
     // create another Note note2
     Note note2 = new Note();
     note2.setZeppelinConfiguration(conf);
-    note2.setGson(gson);
+    note2.setNoteParser(noteParser);
     note2.setPath("/spark/note_2");
     notebookRepo.save(note2, anonymous);
 
@@ -180,7 +179,7 @@ class OSSNotebookRepoTest {
     // create Note note1
     Note note1 = new Note();
     note1.setZeppelinConfiguration(conf);
-    note1.setGson(gson);
+    note1.setNoteParser(noteParser);
     note1.setPath("/version_control/note_1");
 
     List<NotebookRepoWithVersionControl.Revision> revisionList = new ArrayList<>();

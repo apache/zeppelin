@@ -20,14 +20,12 @@ package org.apache.zeppelin.notebook.repo;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
+import org.apache.zeppelin.notebook.NoteParser;
 import org.apache.zeppelin.notebook.repo.storage.OSSOperator;
 import org.apache.zeppelin.notebook.repo.storage.RemoteStorageOperator;
 import org.apache.zeppelin.user.AuthenticationInfo;
-import org.apache.zeppelin.util.NoteUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.gson.Gson;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -53,8 +51,8 @@ public class OSSNotebookRepo extends AbstractNotebookRepo
   }
 
   @Override
-  public void init(ZeppelinConfiguration conf, Gson gson) throws IOException {
-    super.init(conf, gson);
+  public void init(ZeppelinConfiguration conf, NoteParser noteParser) throws IOException {
+    super.init(conf, noteParser);
     String endpoint = conf.getOSSEndpoint();
     bucketName = conf.getOSSBucketName();
     rootFolder = conf.getNotebookDir();
@@ -105,7 +103,7 @@ public class OSSNotebookRepo extends AbstractNotebookRepo
 
   public Note getByOSSPath(String noteId, String ossPath) throws IOException {
     String noteText = ossOperator.getTextObject(bucketName, ossPath);
-    return NoteUtils.fromJson(gson, conf, noteId, noteText);
+    return noteParser.fromJson(noteId, noteText);
   }
 
 

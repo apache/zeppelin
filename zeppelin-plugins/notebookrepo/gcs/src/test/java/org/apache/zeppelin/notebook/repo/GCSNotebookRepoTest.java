@@ -26,7 +26,6 @@ import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.contrib.nio.testing.LocalStorageHelper;
 import com.google.common.collect.ImmutableMap;
-import com.google.gson.Gson;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -39,12 +38,13 @@ import java.util.stream.Stream;
 
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
+import org.apache.zeppelin.notebook.GsonNoteParser;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
+import org.apache.zeppelin.notebook.NoteParser;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.user.AuthenticationInfo;
-import org.apache.zeppelin.util.NoteUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -59,7 +59,7 @@ class GCSNotebookRepoTest {
   private GCSNotebookRepo notebookRepo;
   private Storage storage;
   private ZeppelinConfiguration zConf;
-  private Gson gson;
+  private NoteParser noteParser;
 
   private static Stream<Arguments> buckets() {
     return Stream.of(
@@ -75,8 +75,8 @@ class GCSNotebookRepoTest {
   @BeforeEach
   void setUp() throws Exception {
     this.zConf = ZeppelinConfiguration.load();
-    this.gson = NoteUtils.getNoteGson(zConf);
-    this.runningNote = makeRunningNote(zConf, gson);
+    this.noteParser = new GsonNoteParser(zConf);
+    this.runningNote = makeRunningNote(zConf, noteParser);
     this.storage = LocalStorageHelper.getOptions().getService();
   }
 
@@ -87,10 +87,10 @@ class GCSNotebookRepoTest {
     }
   }
 
-  private static Note makeRunningNote(ZeppelinConfiguration zConf, Gson gson) {
+  private static Note makeRunningNote(ZeppelinConfiguration zConf, NoteParser noteParser) {
     Note note = new Note();
     note.setZeppelinConfiguration(zConf);
-    note.setGson(gson);
+    note.setNoteParser(noteParser);
     note.setPath("/test_note");
     note.setConfig(ImmutableMap.<String, Object>of("key", "value"));
 
@@ -106,7 +106,7 @@ class GCSNotebookRepoTest {
   @MethodSource("buckets")
   void testList_nonexistent(String bucketName, Optional<String> basePath, String uriPath) throws Exception {
     zConf.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_GCS_STORAGE_DIR.getVarName(), uriPath);
-    this.notebookRepo = new GCSNotebookRepo(zConf, gson, storage);
+    this.notebookRepo = new GCSNotebookRepo(zConf, noteParser, storage);
     assertThat(notebookRepo.list(AUTH_INFO)).isEmpty();
   }
 
@@ -114,7 +114,7 @@ class GCSNotebookRepoTest {
   @MethodSource("buckets")
   void testList(String bucketName, Optional<String> basePath, String uriPath) throws Exception {
     zConf.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_GCS_STORAGE_DIR.getVarName(), uriPath);
-    this.notebookRepo = new GCSNotebookRepo(zConf, gson, storage);
+    this.notebookRepo = new GCSNotebookRepo(zConf, noteParser, storage);
     createAt(runningNote, "note.zpln", bucketName, basePath);
     createAt(runningNote, "/note.zpln", bucketName, basePath);
     createAt(runningNote, "validid/my_12.zpln", bucketName, basePath);
@@ -134,7 +134,7 @@ class GCSNotebookRepoTest {
   @Test
   void testGet_nonexistent() throws Exception {
     zConf.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_GCS_STORAGE_DIR.getVarName(), DEFAULT_URL);
-    this.notebookRepo = new GCSNotebookRepo(zConf, gson, storage);
+    this.notebookRepo = new GCSNotebookRepo(zConf, noteParser, storage);
     assertThrows(IOException.class, () -> {
       notebookRepo.get("id", "", AUTH_INFO);
     });
@@ -144,7 +144,7 @@ class GCSNotebookRepoTest {
   @MethodSource("buckets")
   void testGet(String bucketName, Optional<String> basePath, String uriPath) throws Exception {
     zConf.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_GCS_STORAGE_DIR.getVarName(), uriPath);
-    this.notebookRepo = new GCSNotebookRepo(zConf, gson, storage);
+    this.notebookRepo = new GCSNotebookRepo(zConf, noteParser, storage);
     create(runningNote, bucketName, basePath);
 
     // Status of saved running note is removed in get()
@@ -160,7 +160,7 @@ class GCSNotebookRepoTest {
   @MethodSource("buckets")
   void testGet_malformed(String bucketName, Optional<String> basePath, String uriPath) throws Exception {
     zConf.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_GCS_STORAGE_DIR.getVarName(), uriPath);
-    this.notebookRepo = new GCSNotebookRepo(zConf, gson, storage);
+    this.notebookRepo = new GCSNotebookRepo(zConf, noteParser, storage);
     createMalformed("id", "/name", bucketName, basePath);
     assertThrows(IOException.class, () -> {
       notebookRepo.get("id", "/name", AUTH_INFO);
@@ -171,7 +171,7 @@ class GCSNotebookRepoTest {
   @MethodSource("buckets")
   void testSave_create(String bucketName, Optional<String> basePath, String uriPath) throws Exception {
     zConf.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_GCS_STORAGE_DIR.getVarName(), uriPath);
-    this.notebookRepo = new GCSNotebookRepo(zConf, gson, storage);
+    this.notebookRepo = new GCSNotebookRepo(zConf, noteParser, storage);
     notebookRepo.save(runningNote, AUTH_INFO);
     // Output is saved
     assertThat(storage.readAllBytes(makeBlobId(runningNote.getId(), runningNote.getPath(), bucketName, basePath)))
@@ -182,7 +182,7 @@ class GCSNotebookRepoTest {
   @MethodSource("buckets")
   void testSave_update(String bucketName, Optional<String> basePath, String uriPath) throws Exception {
     zConf.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_GCS_STORAGE_DIR.getVarName(), uriPath);
-    this.notebookRepo = new GCSNotebookRepo(zConf, gson, storage);
+    this.notebookRepo = new GCSNotebookRepo(zConf, noteParser, storage);
     notebookRepo.save(runningNote, AUTH_INFO);
     // Change name of runningNote
     runningNote.setPath("/new-name");
@@ -194,7 +194,7 @@ class GCSNotebookRepoTest {
   @Test
   void testRemove_nonexistent() throws Exception {
     zConf.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_GCS_STORAGE_DIR.getVarName(), DEFAULT_URL);
-    this.notebookRepo = new GCSNotebookRepo(zConf, gson, storage);
+    this.notebookRepo = new GCSNotebookRepo(zConf, noteParser, storage);
     assertThrows(IOException.class, () -> {
       notebookRepo.remove("id", "/name", AUTH_INFO);
     });
@@ -204,7 +204,7 @@ class GCSNotebookRepoTest {
   @MethodSource("buckets")
   void testRemove(String bucketName, Optional<String> basePath, String uriPath) throws Exception {
     zConf.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_GCS_STORAGE_DIR.getVarName(), uriPath);
-    this.notebookRepo = new GCSNotebookRepo(zConf, gson, storage);
+    this.notebookRepo = new GCSNotebookRepo(zConf, noteParser, storage);
     create(runningNote, bucketName, basePath);
     notebookRepo.remove(runningNote.getId(), runningNote.getPath(), AUTH_INFO);
     assertThat(storage.get(makeBlobId(runningNote.getId(), runningNote.getPath(), bucketName, basePath))).isNull();
@@ -213,7 +213,7 @@ class GCSNotebookRepoTest {
   @Test
   void testRemoveFolder_nonexistent() throws Exception {
     zConf.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_GCS_STORAGE_DIR.getVarName(), DEFAULT_URL);
-    this.notebookRepo = new GCSNotebookRepo(zConf, gson, storage);
+    this.notebookRepo = new GCSNotebookRepo(zConf, noteParser, storage);
     assertThrows(IOException.class, () -> {
       notebookRepo.remove("id", "/name", AUTH_INFO);
       fail();
@@ -224,11 +224,11 @@ class GCSNotebookRepoTest {
   @MethodSource("buckets")
   void testRemoveFolder(String bucketName, Optional<String> basePath, String uriPath) throws Exception {
     zConf.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_GCS_STORAGE_DIR.getVarName(), uriPath);
-    this.notebookRepo = new GCSNotebookRepo(zConf, gson, storage);
-    Note firstNote = makeRunningNote(zConf, gson);
+    this.notebookRepo = new GCSNotebookRepo(zConf, noteParser, storage);
+    Note firstNote = makeRunningNote(zConf, noteParser);
     firstNote.setPath("/folder/test_note");
     create(firstNote, bucketName, basePath);
-    Note secondNote = makeRunningNote(zConf, gson);
+    Note secondNote = makeRunningNote(zConf, noteParser);
     secondNote.setPath("/folder/sub_folder/test_note_second");
     create(secondNote, bucketName, basePath);
     notebookRepo.remove("/folder", AUTH_INFO);
@@ -240,7 +240,7 @@ class GCSNotebookRepoTest {
   @Test
   void testMove_nonexistent() throws IOException {
     zConf.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_GCS_STORAGE_DIR.getVarName(), DEFAULT_URL);
-    this.notebookRepo = new GCSNotebookRepo(zConf, gson, storage);
+    this.notebookRepo = new GCSNotebookRepo(zConf, noteParser, storage);
     assertThrows(IOException.class, () -> {
       notebookRepo.move("id", "/name", "/name_new", AUTH_INFO);
     });
@@ -250,7 +250,7 @@ class GCSNotebookRepoTest {
   @MethodSource("buckets")
   void testMove(String bucketName, Optional<String> basePath, String uriPath) throws Exception {
     zConf.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_GCS_STORAGE_DIR.getVarName(), uriPath);
-    this.notebookRepo = new GCSNotebookRepo(zConf, gson, storage);
+    this.notebookRepo = new GCSNotebookRepo(zConf, noteParser, storage);
     create(runningNote, bucketName, basePath);
     notebookRepo.move(runningNote.getId(), runningNote.getPath(), runningNote.getPath() + "_new", AUTH_INFO);
     assertThat(storage.get(makeBlobId(runningNote.getId(), runningNote.getPath(), bucketName, basePath))).isNull();
@@ -259,7 +259,7 @@ class GCSNotebookRepoTest {
   @Test
   void testMoveFolder_nonexistent() throws Exception {
     zConf.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_GCS_STORAGE_DIR.getVarName(), DEFAULT_URL);
-    this.notebookRepo = new GCSNotebookRepo(zConf, gson, storage);
+    this.notebookRepo = new GCSNotebookRepo(zConf, noteParser, storage);
     assertThrows(IOException.class, () -> {
       notebookRepo.move("/name", "/name_new", AUTH_INFO);
     });
@@ -269,11 +269,11 @@ class GCSNotebookRepoTest {
   @MethodSource("buckets")
   void testMoveFolder(String bucketName, Optional<String> basePath, String uriPath) throws Exception {
     zConf.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_GCS_STORAGE_DIR.getVarName(), uriPath);
-    this.notebookRepo = new GCSNotebookRepo(zConf, gson, storage);
-    Note firstNote = makeRunningNote(zConf, gson);
+    this.notebookRepo = new GCSNotebookRepo(zConf, noteParser, storage);
+    Note firstNote = makeRunningNote(zConf, noteParser);
     firstNote.setPath("/folder/test_note");
     create(firstNote, bucketName, basePath);
-    Note secondNote = makeRunningNote(zConf, gson);
+    Note secondNote = makeRunningNote(zConf, noteParser);
     secondNote.setPath("/folder/sub_folder/test_note_second");
     create(secondNote, bucketName, basePath);
     notebookRepo.move("/folder", "/folder_new", AUTH_INFO);
@@ -325,7 +325,7 @@ class GCSNotebookRepoTest {
   void testInitialization_pathNotSet() throws Exception {
     zConf.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_GCS_STORAGE_DIR.getVarName(), "");
     assertThrows(IOException.class, () -> {
-      notebookRepo = new GCSNotebookRepo(zConf, gson, storage);
+      notebookRepo = new GCSNotebookRepo(zConf, noteParser, storage);
     });
   }
 
@@ -333,7 +333,7 @@ class GCSNotebookRepoTest {
   void testInitialization_malformedPath() throws Exception {
     zConf.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_GCS_STORAGE_DIR.getVarName(), "foo");
     assertThrows(IOException.class, () -> {
-      notebookRepo = new GCSNotebookRepo(zConf, gson, storage);
+      notebookRepo = new GCSNotebookRepo(zConf, noteParser, storage);
     });
   }
 }

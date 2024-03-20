@@ -35,8 +35,8 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
+import org.apache.zeppelin.notebook.NoteParser;
 import org.apache.zeppelin.user.AuthenticationInfo;
-import org.apache.zeppelin.util.NoteUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,7 +62,6 @@ import com.amazonaws.regions.Region;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
-import com.google.gson.Gson;
 
 /**
  * Backend for storing Notebooks on S3
@@ -96,8 +95,8 @@ public class S3NotebookRepo extends AbstractNotebookRepo {
   }
 
   @Override
-  public void init(ZeppelinConfiguration conf, Gson gson) throws IOException {
-    super.init(conf, gson);
+  public void init(ZeppelinConfiguration conf, NoteParser noteParser) throws IOException {
+    super.init(conf, noteParser);
     bucketName = conf.getS3BucketName();
     user = conf.getS3User();
     rootFolder = user + "/notebook";
@@ -226,7 +225,7 @@ public class S3NotebookRepo extends AbstractNotebookRepo {
     }
     try (InputStream ins = s3object.getObjectContent()) {
       String json = IOUtils.toString(ins, conf.getString(ConfVars.ZEPPELIN_ENCODING));
-      return NoteUtils.fromJson(gson, conf, noteId, json);
+      return noteParser.fromJson(noteId, json);
     }
   }
 

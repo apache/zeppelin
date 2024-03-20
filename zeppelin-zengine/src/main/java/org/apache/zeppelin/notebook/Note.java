@@ -18,7 +18,6 @@
 package org.apache.zeppelin.notebook;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.gson.Gson;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.common.JsonSerializable;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
@@ -112,7 +111,7 @@ public class Note implements JsonSerializable {
   private transient List<NoteEventListener> noteEventListeners = new ArrayList<>();
   private transient Credentials credentials;
   private transient ZeppelinConfiguration zConf;
-  private transient Gson gson;
+  private transient NoteParser noteParser;
 
   public Note() {
     generateId();
@@ -121,7 +120,7 @@ public class Note implements JsonSerializable {
   public Note(String path, String defaultInterpreterGroup, InterpreterFactory factory,
               InterpreterSettingManager interpreterSettingManager, ParagraphJobListener paragraphJobListener,
               Credentials credentials, List<NoteEventListener> noteEventListener,
-              ZeppelinConfiguration zConf, Gson gson) {
+              ZeppelinConfiguration zConf, NoteParser noteParser) {
     setPath(path);
     this.defaultInterpreterGroup = defaultInterpreterGroup;
     this.interpreterFactory = factory;
@@ -130,7 +129,7 @@ public class Note implements JsonSerializable {
     this.noteEventListeners = noteEventListener;
     this.credentials = credentials;
     this.zConf = zConf;
-    this.gson = gson;
+    this.noteParser = noteParser;
     this.version = Util.getVersion();
     generateId();
 
@@ -432,7 +431,7 @@ public class Note implements JsonSerializable {
     LOGGER.debug("newParagraph user: {}", newParagraph.getUser());
 
     try {
-      String resultJson = gson.toJson(srcParagraph.getReturn());
+      String resultJson = srcParagraph.getReturn().toJson();
       InterpreterResult result = InterpreterResult.fromJson(resultJson);
       newParagraph.setReturn(result, null);
     } catch (Exception e) {
@@ -942,7 +941,7 @@ public class Note implements JsonSerializable {
     newNote.setConfig(getConfig());
     newNote.angularObjects = getAngularObjects();
     newNote.setZeppelinConfiguration(zConf);
-    newNote.setGson(gson);
+    newNote.setNoteParser(noteParser);
 
     Paragraph newParagraph;
     for (Paragraph p : paragraphs) {
@@ -1037,7 +1036,7 @@ public class Note implements JsonSerializable {
 
   @Override
   public String toJson() {
-    return gson.toJson(this);
+    return noteParser.toJson(this);
   }
 
   public void postProcessParagraphs() {
@@ -1130,15 +1129,15 @@ public class Note implements JsonSerializable {
     return executionContext;
   }
 
-  public Gson getGSON() {
-    return gson;
+  public NoteParser getNoteParser() {
+    return noteParser;
   }
 
   public void setZeppelinConfiguration(ZeppelinConfiguration zConf) {
     this.zConf = zConf;
   }
 
-  public void setGson(Gson gson) {
-    this.gson = gson;
+  public void setNoteParser(NoteParser noteParser) {
+    this.noteParser = noteParser;
   }
 }

@@ -40,7 +40,6 @@ import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
-import org.apache.zeppelin.util.NoteUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -51,8 +50,6 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.gson.Gson;
 
 import org.eclipse.aether.RepositoryException;
 
@@ -106,7 +103,7 @@ class NotebookTest extends AbstractInterpreterTest implements ParagraphJobListen
     conf.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_CRON_ENABLE.getVarName(), "true");
 
     notebookRepo = new VFSNotebookRepo();
-    notebookRepo.init(conf, NoteUtils.getNoteGson(conf));
+    notebookRepo.init(conf, noteParser);
     noteManager = new NoteManager(notebookRepo, conf);
 
     authorizationService = new AuthorizationService(noteManager, conf, storage);
@@ -149,7 +146,7 @@ class NotebookTest extends AbstractInterpreterTest implements ParagraphJobListen
   public static class DummyNotebookRepo implements NotebookRepo {
 
     @Override
-    public void init(ZeppelinConfiguration zConf, Gson gson) throws IOException {
+    public void init(ZeppelinConfiguration zConf, NoteParser noteParser) throws IOException {
 
     }
 
@@ -204,7 +201,7 @@ class NotebookTest extends AbstractInterpreterTest implements ParagraphJobListen
     }
 
     @Override
-    public Gson getGson() {
+    public NoteParser getNoteParser() {
       return null;
     }
   }
@@ -235,7 +232,7 @@ class NotebookTest extends AbstractInterpreterTest implements ParagraphJobListen
     }
 
     @Override
-    public void init(ZeppelinConfiguration zConf, Gson gson) throws IOException {
+    public void init(ZeppelinConfiguration zConf, NoteParser noteParser) throws IOException {
 
     }
 
@@ -290,7 +287,7 @@ class NotebookTest extends AbstractInterpreterTest implements ParagraphJobListen
     }
 
     @Override
-    public Gson getGson() {
+    public NoteParser getNoteParser() {
       return null;
     }
   }
@@ -1369,7 +1366,7 @@ class NotebookTest extends AbstractInterpreterTest implements ParagraphJobListen
     LOGGER.info("testInterpreterSettingConfig >>> ");
     Note note = new Note("testInterpreterSettingConfig", "config_test",
         interpreterFactory, interpreterSettingManager, this, credentials, new ArrayList<>(), conf,
-        NoteUtils.getNoteGson(conf));
+        noteParser);
 
     // create paragraphs
     Paragraph p1 = note.addNewParagraph(anonymous);

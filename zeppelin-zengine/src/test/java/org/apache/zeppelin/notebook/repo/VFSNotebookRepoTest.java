@@ -18,15 +18,15 @@
 package org.apache.zeppelin.notebook.repo;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.gson.Gson;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.notebook.GsonNoteParser;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
+import org.apache.zeppelin.notebook.NoteParser;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.user.AuthenticationInfo;
-import org.apache.zeppelin.util.NoteUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -43,19 +43,19 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class VFSNotebookRepoTest {
 
   private ZeppelinConfiguration zConf;
-  private Gson gson;
+  private NoteParser noteParser;
   private VFSNotebookRepo notebookRepo;
   private File notebookDir;
 
   @BeforeEach
   public void setUp() throws IOException {
     zConf = ZeppelinConfiguration.load();
-    gson = NoteUtils.getNoteGson(zConf);
+    noteParser = new GsonNoteParser(zConf);
     notebookDir = Files.createTempDirectory(this.getClass().getSimpleName()).toFile();
     zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_DIR.getVarName(),
         notebookDir.getAbsolutePath());
     notebookRepo = new VFSNotebookRepo();
-    notebookRepo.init(zConf, gson);
+    notebookRepo.init(zConf, noteParser);
   }
 
   @AfterEach
@@ -70,7 +70,7 @@ class VFSNotebookRepoTest {
     // create note1
     Note note1 = new Note();
     note1.setPath("/my_project/my_note1");
-    note1.setGson(gson);
+    note1.setNoteParser(noteParser);
     Paragraph p1 = note1.insertNewParagraph(0, AuthenticationInfo.ANONYMOUS);
     p1.setText("%md hello world");
     p1.setTitle("my title");
@@ -84,7 +84,7 @@ class VFSNotebookRepoTest {
     // create note2
     Note note2 = new Note();
     note2.setPath("/my_note2");
-    note2.setGson(gson);
+    note2.setNoteParser(noteParser);
     Paragraph p2 = note2.insertNewParagraph(0, AuthenticationInfo.ANONYMOUS);
     p2.setText("%md hello world2");
     p2.setTitle("my title2");
@@ -98,7 +98,7 @@ class VFSNotebookRepoTest {
     notebookRepo.move(note2.getId(), note2.getPath(), "/my_project2/my_note2", AuthenticationInfo.ANONYMOUS);
 
     Note note3 = notebookRepo.get(note2.getId(), newPath, AuthenticationInfo.ANONYMOUS);
-    note3.setGson(gson);
+    note3.setNoteParser(noteParser);
     assertEquals(note2, note3);
 
     // move folder
@@ -107,7 +107,7 @@ class VFSNotebookRepoTest {
     assertEquals(2, noteInfos.size());
 
     Note note4 = notebookRepo.get(note3.getId(), "/my_project3/my_project2/my_note2", AuthenticationInfo.ANONYMOUS);
-    note4.setGson(gson);
+    note4.setNoteParser(noteParser);
     assertEquals(note3, note4);
 
     // remote note1
@@ -122,7 +122,7 @@ class VFSNotebookRepoTest {
     // create note with colon in name
     Note note1 = new Note();
     note1.setPath("/my_project/my:note1");
-    note1.setGson(gson);
+    note1.setNoteParser(noteParser);
     Paragraph p1 = note1.insertNewParagraph(0, AuthenticationInfo.ANONYMOUS);
     p1.setText("%md hello world");
     p1.setTitle("my title");

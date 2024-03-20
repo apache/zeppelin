@@ -23,15 +23,14 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.notebook.GsonNoteParser;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
+import org.apache.zeppelin.notebook.NoteParser;
 import org.apache.zeppelin.user.AuthenticationInfo;
-import org.apache.zeppelin.util.NoteUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import com.google.gson.Gson;
 
 import java.io.File;
 import java.io.IOException;
@@ -50,19 +49,19 @@ class FileSystemNotebookRepoTest {
   private FileSystemNotebookRepo hdfsNotebookRepo;
   private String notebookDir;
   private AuthenticationInfo authInfo = AuthenticationInfo.ANONYMOUS;
-  private Gson gson;
+  private NoteParser noteParser;
 
   @BeforeEach
   void setUp() throws IOException {
     notebookDir = Files.createTempDirectory("FileSystemNotebookRepoTest").toFile().getAbsolutePath();
     zConf = ZeppelinConfiguration.load();
-    gson = NoteUtils.getNoteGson(zConf);
+    noteParser = new GsonNoteParser(zConf);
     zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_DIR.getVarName(),
         notebookDir);
     hadoopConf = new Configuration();
     fs = FileSystem.get(hadoopConf);
     hdfsNotebookRepo = new FileSystemNotebookRepo();
-    hdfsNotebookRepo.init(zConf, gson);
+    hdfsNotebookRepo.init(zConf, noteParser);
   }
 
   @AfterEach
@@ -77,7 +76,7 @@ class FileSystemNotebookRepoTest {
     // create a new note
     Note note = new Note();
     note.setZeppelinConfiguration(zConf);
-    note.setGson(gson);
+    note.setNoteParser(noteParser);
     note.setPath("/title_1");
 
     Map<String, Object> config = new HashMap<>();
@@ -113,7 +112,7 @@ class FileSystemNotebookRepoTest {
     // create another new note under folder
     note = new Note();
     note.setZeppelinConfiguration(zConf);
-    note.setGson(gson);
+    note.setNoteParser(noteParser);
     note.setPath("/folder1/title_1");
     note.setConfig(config);
     hdfsNotebookRepo.save(note, authInfo);
@@ -143,7 +142,7 @@ class FileSystemNotebookRepoTest {
     // create a new note
     Note note = new Note();
     note.setZeppelinConfiguration(zConf);
-    note.setGson(gson);
+    note.setNoteParser(noteParser);
     note.setPath("/title_1");
     Map<String, Object> config = new HashMap<>();
     config.put("config_1", "value_1");

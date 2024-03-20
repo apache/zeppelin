@@ -21,9 +21,8 @@ package org.apache.zeppelin.notebook.repo;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
+import org.apache.zeppelin.notebook.NoteParser;
 import org.apache.zeppelin.user.AuthenticationInfo;
-
-import com.google.gson.Gson;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -36,8 +35,8 @@ public class InMemoryNotebookRepo extends AbstractNotebookRepo {
   private Map<String, Note> notes = new HashMap<>();
 
   @Override
-  public void init(ZeppelinConfiguration zConf, Gson gson) throws IOException {
-    super.init(zConf, gson);
+  public void init(ZeppelinConfiguration zConf, NoteParser parser) throws IOException {
+    super.init(zConf, parser);
   }
 
   @Override

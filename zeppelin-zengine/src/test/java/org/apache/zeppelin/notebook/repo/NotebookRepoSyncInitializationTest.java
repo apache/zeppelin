@@ -20,12 +20,12 @@ package org.apache.zeppelin.notebook.repo;
 import org.apache.commons.io.FileUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
+import org.apache.zeppelin.notebook.GsonNoteParser;
+import org.apache.zeppelin.notebook.NoteParser;
 import org.apache.zeppelin.notebook.repo.mock.VFSNotebookRepoMock;
 import org.apache.zeppelin.plugin.PluginManager;
-import org.apache.zeppelin.util.NoteUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import com.google.gson.Gson;
 
 import java.io.File;
 import java.io.IOException;
@@ -47,13 +47,13 @@ class NotebookRepoSyncInitializationTest {
   private String emptyStorageConf = "";
 
   private ZeppelinConfiguration zConf;
-  private Gson gson;
+  private NoteParser noteParser;
   private PluginManager pluginManager;
 
   @BeforeEach
   public void setUp(){
     zConf = ZeppelinConfiguration.load();
-    gson = NoteUtils.getNoteGson(zConf);
+    noteParser = new GsonNoteParser(zConf);
     System.setProperty("zeppelin.isTest", "true");
     zConf.setProperty(ConfVars.ZEPPELIN_PLUGINS_DIR.getVarName(),
         new File("../../../plugins").getAbsolutePath());
@@ -67,7 +67,7 @@ class NotebookRepoSyncInitializationTest {
     zConf.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_STORAGE.getVarName(), validOneStorageConf);
     // create repo
     try (NotebookRepoSync notebookRepoSync = new NotebookRepoSync(pluginManager)) {
-      notebookRepoSync.init(zConf, gson);
+      notebookRepoSync.init(zConf, noteParser);
 
       // check proper initialization of one storage
       assertEquals(1, notebookRepoSync.getRepoCount());
@@ -93,7 +93,7 @@ class NotebookRepoSyncInitializationTest {
     zConf.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_STORAGE.getVarName(), validTwoStorageConf);
     // create repo
     try (NotebookRepoSync notebookRepoSync = new NotebookRepoSync(pluginManager)) {
-      notebookRepoSync.init(zConf, gson);
+      notebookRepoSync.init(zConf, noteParser);
       // check that both initialized
       assertEquals(2, notebookRepoSync.getRepoCount());
       assertTrue(notebookRepoSync.getRepo(0) instanceof VFSNotebookRepo);
@@ -110,7 +110,7 @@ class NotebookRepoSyncInitializationTest {
     // create repo
     IOException exception = assertThrows(IOException.class, () -> {
       try (NotebookRepoSync notebookRepoSync = new NotebookRepoSync(pluginManager)) {
-        notebookRepoSync.init(zConf, gson);
+        notebookRepoSync.init(zConf, noteParser);
       }
     });
     assertTrue(exception.getMessage()
@@ -135,7 +135,7 @@ class NotebookRepoSyncInitializationTest {
     zConf.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_STORAGE.getVarName(), unsupportedStorageConf);
     // create repo
     try (NotebookRepoSync notebookRepoSync = new NotebookRepoSync(pluginManager)) {
-      notebookRepoSync.init(zConf, gson);
+      notebookRepoSync.init(zConf, noteParser);
       // check that first two storages initialized instead of three
       assertEquals(2, notebookRepoSync.getRepoCount());
       assertTrue(notebookRepoSync.getRepo(0) instanceof VFSNotebookRepo);
@@ -150,7 +150,7 @@ class NotebookRepoSyncInitializationTest {
     zConf.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_STORAGE.getVarName(), emptyStorageConf);
     // create repo
     try (NotebookRepoSync notebookRepoSync = new NotebookRepoSync(pluginManager)) {
-      notebookRepoSync.init(zConf, gson);
+      notebookRepoSync.init(zConf, noteParser);
       // check initialization of one default storage
       assertEquals(1, notebookRepoSync.getRepoCount());
       assertTrue(notebookRepoSync.getRepo(0) instanceof NotebookRepoWithVersionControl);
@@ -163,7 +163,7 @@ class NotebookRepoSyncInitializationTest {
     // create repo
     IOException e = assertThrows(IOException.class, () -> {
       try (NotebookRepoSync notebookRepoSync = new NotebookRepoSync(pluginManager)) {
-        notebookRepoSync.init(zConf, gson);
+        notebookRepoSync.init(zConf, noteParser);
       }
     });
     assertTrue(e.getMessage().contains("Fail to instantiate notebookrepo from classpath directly"));

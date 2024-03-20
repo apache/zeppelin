@@ -31,13 +31,10 @@ import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
-import org.apache.zeppelin.util.NoteUtils;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-
-import com.google.gson.Gson;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -74,12 +71,12 @@ class NoteTest {
   private AuthenticationInfo anonymous = new AuthenticationInfo("anonymous");
 
   private static ZeppelinConfiguration zConf;
-  private static Gson gson;
+  private static NoteParser noteParser;
 
   @BeforeAll
   public static void before() {
     zConf = ZeppelinConfiguration.load();
-    gson = NoteUtils.getNoteGson(zConf);
+    noteParser = new GsonNoteParser(zConf);
   }
 
   @BeforeEach
@@ -103,7 +100,7 @@ class NoteTest {
     when(interpreterGroup.getInterpreterSetting()).thenReturn(interpreterSetting);
 
     String pText = "%spark sc.version";
-    Note note = new Note("test", "test", interpreterFactory, interpreterSettingManager, paragraphJobListener, credentials, noteEventListener, zConf, gson);
+    Note note = new Note("test", "test", interpreterFactory, interpreterSettingManager, paragraphJobListener, credentials, noteEventListener, zConf, noteParser);
 
     Paragraph p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     p.setText(pText);
@@ -120,7 +117,7 @@ class NoteTest {
   @Test
   void addParagraphWithEmptyReplNameTest() {
     Note note = new Note("test", "", interpreterFactory, interpreterSettingManager,
-        paragraphJobListener, credentials, noteEventListener, zConf, gson);
+        paragraphJobListener, credentials, noteEventListener, zConf, noteParser);
     Paragraph p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     assertNull(p.getText());
   }
@@ -128,7 +125,7 @@ class NoteTest {
   @Test
   void addParagraphWithLastReplNameTest() throws InterpreterNotFoundException {
     when(interpreterFactory.getInterpreter(eq("spark"), any())).thenReturn(interpreter);
-    Note note = new Note("test", "", interpreterFactory, interpreterSettingManager, paragraphJobListener, credentials, noteEventListener, zConf, gson);
+    Note note = new Note("test", "", interpreterFactory, interpreterSettingManager, paragraphJobListener, credentials, noteEventListener, zConf, noteParser);
     Paragraph p1 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     p1.setText("%spark ");
     Paragraph p2 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
@@ -139,7 +136,7 @@ class NoteTest {
   @Test
   void insertParagraphWithLastReplNameTest() throws InterpreterNotFoundException {
     when(interpreterFactory.getInterpreter(eq("spark"), any())).thenReturn(interpreter);
-    Note note = new Note("test", "", interpreterFactory, interpreterSettingManager, paragraphJobListener, credentials, noteEventListener, zConf, gson);
+    Note note = new Note("test", "", interpreterFactory, interpreterSettingManager, paragraphJobListener, credentials, noteEventListener, zConf, noteParser);
     Paragraph p1 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     p1.setText("%spark ");
     Paragraph p2 = note.insertNewParagraph(note.getParagraphs().size(), AuthenticationInfo.ANONYMOUS);
@@ -150,7 +147,7 @@ class NoteTest {
   @Test
   void insertParagraphWithInvalidReplNameTest() throws InterpreterNotFoundException {
     when(interpreterFactory.getInterpreter(eq("invalid"), any())).thenReturn(null);
-    Note note = new Note("test", "", interpreterFactory, interpreterSettingManager, paragraphJobListener, credentials, noteEventListener, zConf, gson);
+    Note note = new Note("test", "", interpreterFactory, interpreterSettingManager, paragraphJobListener, credentials, noteEventListener, zConf, noteParser);
     Paragraph p1 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     p1.setText("%invalid ");
     Paragraph p2 = note.insertNewParagraph(note.getParagraphs().size(), AuthenticationInfo.ANONYMOUS);
@@ -161,7 +158,7 @@ class NoteTest {
   @Test
   void insertParagraphwithUser() {
     Note note = new Note("test", "", interpreterFactory, interpreterSettingManager,
-        paragraphJobListener, credentials, noteEventListener, zConf, gson);
+        paragraphJobListener, credentials, noteEventListener, zConf, noteParser);
     Paragraph p = note.insertNewParagraph(note.getParagraphs().size(), AuthenticationInfo.ANONYMOUS);
     assertEquals("anonymous", p.getUser());
   }
@@ -170,7 +167,7 @@ class NoteTest {
   void clearAllParagraphOutputTest() throws InterpreterNotFoundException {
 
     Note note = new Note("test", "", interpreterFactory, interpreterSettingManager,
-        paragraphJobListener, credentials, noteEventListener, zConf, gson);
+        paragraphJobListener, credentials, noteEventListener, zConf, noteParser);
     Paragraph p1 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     InterpreterResult result = new InterpreterResult(InterpreterResult.Code.SUCCESS, InterpreterResult.Type.TEXT, "result");
     p1.setResult(result);
@@ -188,7 +185,7 @@ class NoteTest {
   @Test
   void personalizedModeReturnDifferentParagraphInstancePerUser() {
     Note note = new Note("test", "", interpreterFactory, interpreterSettingManager,
-        paragraphJobListener, credentials, noteEventListener, zConf, gson);
+        paragraphJobListener, credentials, noteEventListener, zConf, noteParser);
     String user1 = "user1";
     String user2 = "user2";
     note.setPersonalizedMode(true);
@@ -203,7 +200,7 @@ class NoteTest {
 
   public void testNoteJson() throws IOException {
     Note note = new Note("test", "", interpreterFactory, interpreterSettingManager,
-        paragraphJobListener, credentials, noteEventListener, zConf, gson);
+        paragraphJobListener, credentials, noteEventListener, zConf, noteParser);
     note.setName("/test_note");
     note.getConfig().put("config_1", "value_1");
     note.getInfo().put("info_1", "value_1");
@@ -221,7 +218,7 @@ class NoteTest {
     assertEquals(p2, p);
 
     // test Note Json
-    Note note2 = NoteUtils.fromJson(gson, zConf, null, note.toJson());
+    Note note2 = noteParser.fromJson(null, note.toJson());
     assertEquals(note2, note);
   }
 }

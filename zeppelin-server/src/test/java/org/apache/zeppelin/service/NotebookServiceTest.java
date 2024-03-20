@@ -54,9 +54,11 @@ import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.interpreter.ManagedInterpreterGroup;
 import org.apache.zeppelin.notebook.AuthorizationService;
+import org.apache.zeppelin.notebook.GsonNoteParser;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.NoteManager;
+import org.apache.zeppelin.notebook.NoteParser;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.notebook.exception.NotePathAlreadyExistsException;
@@ -68,7 +70,6 @@ import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.storage.ConfigStorage;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
-import org.apache.zeppelin.util.NoteUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -88,7 +89,7 @@ class NotebookServiceTest {
 
   private ServiceCallback callback = mock(ServiceCallback.class);
 
-  private Gson gson;
+  private NoteParser noteParser;
 
 
   @BeforeEach
@@ -97,10 +98,10 @@ class NotebookServiceTest {
     ZeppelinConfiguration zConf = ZeppelinConfiguration.load();
     zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_DIR.getVarName(),
         notebookDir.getAbsolutePath());
-    gson = NoteUtils.getNoteGson(zConf);
+    noteParser = new GsonNoteParser(zConf);
     ConfigStorage storage = ConfigStorage.createConfigStorage(zConf);
     NotebookRepo notebookRepo = new VFSNotebookRepo();
-    notebookRepo.init(zConf, gson);
+    notebookRepo.init(zConf, noteParser);
 
     InterpreterSettingManager mockInterpreterSettingManager = mock(InterpreterSettingManager.class);
     InterpreterFactory mockInterpreterFactory = mock(InterpreterFactory.class);

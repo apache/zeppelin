@@ -785,11 +785,11 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
 
   @Override
   public String toJson() {
-    return note.getGSON().toJson(this);
+    return note.getNoteParser().toJson(this);
   }
 
   public Paragraph fromJson(String json) {
-    return note.getGSON().fromJson(json, Paragraph.class);
+    return note.getNoteParser().fromJson(json);
   }
 
   public void updateOutputBuffer(int index, InterpreterResult.Type type, String output) {
