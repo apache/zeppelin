@@ -33,8 +33,6 @@
   <properties>
     <!--library versions-->
     <interpreter.name>hbase</interpreter.name>
-    <hbase.hbase.version>2.4.12</hbase.hbase.version>
-    <hbase.hadoop.version>${hadoop3.2.version}</hbase.hadoop.version>
     <jruby.version>1.6.8</jruby.version>
     <protobuf.version>2.5.0</protobuf.version>
     <jline.version>2.12.1</jline.version>
@@ -52,26 +50,6 @@
       <groupId>org.jruby</groupId>
       <artifactId>jruby-complete</artifactId>
       <version>${jruby.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.hadoop</groupId>
-      <artifactId>hadoop-yarn-common</artifactId>
-      <version>${hbase.hadoop.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.hadoop</groupId>
-      <artifactId>hadoop-yarn-api</artifactId>
-      <version>${hbase.hadoop.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.hbase</groupId>
-      <artifactId>hbase-client</artifactId>
-      <version>${hbase.hbase.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.hbase</groupId>
-      <artifactId>hbase-annotations</artifactId>
-      <version>${hbase.hbase.version}</version>
     </dependency>
     <dependency>
       <groupId>com.google.protobuf</groupId>
