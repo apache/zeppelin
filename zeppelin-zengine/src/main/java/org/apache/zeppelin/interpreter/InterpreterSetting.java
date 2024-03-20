@@ -45,7 +45,6 @@ import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
-import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.plugin.PluginManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -200,6 +199,7 @@ public class InterpreterSetting {
 
     public Builder setConf(ZeppelinConfiguration conf) {
       interpreterSetting.conf = conf;
+      interpreterSetting.option.setConf(conf);
       return this;
     }
 
@@ -663,6 +663,7 @@ public class InterpreterSetting {
 
   public InterpreterSetting setConf(ZeppelinConfiguration conf) {
     this.conf = conf;
+    this.option.setConf(conf);
     return this;
   }
 
@@ -824,7 +825,7 @@ public class InterpreterSetting {
       return true;
     }
     Set<String> intersection = new HashSet<>(userAndRoles);
-    intersection.retainAll(option.getOwners(conf));
+    intersection.retainAll(option.getOwners());
     return !intersection.isEmpty();
   }
 
@@ -1031,11 +1032,11 @@ public class InterpreterSetting {
       if (option != null) {
         JsonArray users = option.getAsJsonArray("users");
         if (users != null) {
-          if (this.option.getOwners(conf) == null) {
+          if (this.option.getOwners() == null) {
             this.option.owners = new LinkedList<>();
           }
           for (JsonElement user : users) {
-            this.option.getOwners(conf).add(user.getAsString());
+            this.option.getOwners().add(user.getAsString());
           }
         }
       }
