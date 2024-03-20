@@ -24,6 +24,7 @@ import com.google.gson.reflect.TypeToken;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.util.EntityUtils;
+import org.apache.zeppelin.MiniZeppelinServer;
 import org.apache.zeppelin.interpreter.InterpreterOption;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.notebook.Notebook;
@@ -37,6 +38,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -53,21 +56,27 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
  */
 @TestMethodOrder(MethodOrderer.MethodName.class)
 class InterpreterRestApiTest extends AbstractTestRestApi {
+  private static final Logger LOG = LoggerFactory.getLogger(InterpreterRestApiTest.class);
   private Gson gson = new Gson();
   private AuthenticationInfo anonymous;
+  private static MiniZeppelinServer zepServer;
 
   @BeforeAll
   static void init() throws Exception {
-    AbstractTestRestApi.startUp(InterpreterRestApiTest.class.getSimpleName());
+    zepServer = new MiniZeppelinServer(InterpreterRestApiTest.class.getSimpleName());
+    zepServer.copyBinDir();
+    zepServer.addInterpreter("md");
+    zepServer.start();
   }
 
   @AfterAll
   static void destroy() throws Exception {
-    AbstractTestRestApi.shutDown();
+    zepServer.destroy();
   }
 
   @BeforeEach
   void setUp() {
+    conf = zepServer.getZeppelinConfiguration();
     anonymous = new AuthenticationInfo("anonymous");
   }
 

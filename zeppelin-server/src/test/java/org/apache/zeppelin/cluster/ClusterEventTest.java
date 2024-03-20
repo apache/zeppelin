@@ -24,6 +24,7 @@ import com.google.gson.reflect.TypeToken;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.util.EntityUtils;
 import org.apache.thrift.TException;
+import org.apache.zeppelin.MiniZeppelinServer;
 import org.apache.zeppelin.cluster.meta.ClusterMetaType;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.InterpreterResult;
@@ -68,8 +69,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
-public class ClusterEventTest extends ZeppelinServerMock {
-  private static Logger LOGGER = LoggerFactory.getLogger(ClusterEventTest.class);
+public class ClusterEventTest extends AbstractTestRestApi {
+  private static final Logger LOGGER = LoggerFactory.getLogger(ClusterEventTest.class);
 
   private static List<ClusterAuthEventListenerTest> clusterAuthEventListenerTests = new ArrayList<>();
   private static List<ClusterNoteEventListenerTest> clusterNoteEventListenerTests = new ArrayList<>();
@@ -88,14 +89,23 @@ public class ClusterEventTest extends ZeppelinServerMock {
 
   Gson gson = new Gson();
 
+  private static MiniZeppelinServer zepServer;
+
+  @BeforeEach
+  void setup() {
+    conf = zepServer.getZeppelinConfiguration();
+  }
+
   @BeforeAll
   static void init() throws Exception {
-    ZeppelinConfiguration zconf = genZeppelinConf();
-
-    ZeppelinServerMock.startUp("ClusterEventTest", zconf);
-    notebook = TestUtils.getInstance(Notebook.class);
-    authorizationService = TestUtils.getInstance(AuthorizationService.class);
-
+    zepServer = new MiniZeppelinServer(ClusterEventTest.class.getSimpleName());
+    zepServer.addInterpreter("md");
+    zepServer.addInterpreter("sh");
+    genClusterAddressConf(zepServer.getZeppelinConfiguration());
+    zepServer.start();
+    notebook = zepServer.getServiceLocator().getService(Notebook.class);
+    authorizationService = zepServer.getServiceLocator().getService(AuthorizationService.class);
+    ZeppelinConfiguration zconf = zepServer.getZeppelinConfiguration();
     schedulerService = new QuartzSchedulerService(zconf, notebook);
     notebook.initNotebook();
     notebook.waitForFinishInit(1, TimeUnit.MINUTES);
@@ -136,30 +146,24 @@ public class ClusterEventTest extends ZeppelinServerMock {
 
   @AfterAll
   static void destroy() throws Exception {
-    try {
-      if (null != clusterClient) {
-        clusterClient.shutdown();
-      }
-      for (ClusterManagerServer clusterServer : clusterServers) {
-        clusterServer.shutdown();
-      }
-
-      ZeppelinServerMock.shutDown();
-    } finally {
-      // Because zconf is a single instance, it needs clean cluster address
-      ZeppelinConfiguration zconf = ZeppelinConfiguration.create();
-      zconf.setClusterAddress("");
+    if (null != clusterClient) {
+      clusterClient.shutdown();
     }
-    ZeppelinConfiguration.reset();
+    for (ClusterManagerServer clusterServer : clusterServers) {
+      clusterServer.shutdown();
+    }
+
+    zepServer.destroy();
     LOGGER.info("stopCluster <<<");
   }
 
   @BeforeEach
   void setUp() {
     anonymous = new AuthenticationInfo("anonymous");
+    conf = zepServer.getZeppelinConfiguration();
   }
 
-  private static ZeppelinConfiguration genZeppelinConf()
+  private static void genClusterAddressConf(ZeppelinConfiguration zconf)
       throws IOException, InterruptedException {
     String clusterAddrList = "";
     String zServerHost = RemoteInterpreterUtils.findAvailableHostAddress();
@@ -171,11 +175,8 @@ public class ClusterEventTest extends ZeppelinServerMock {
         clusterAddrList += ",";
       }
     }
-    ZeppelinConfiguration zconf = ZeppelinConfiguration.create();
     zconf.setClusterAddress(clusterAddrList);
     LOGGER.info("clusterAddrList = {}", clusterAddrList);
-
-    return zconf;
   }
 
   public static ClusterManagerServer startClusterSingleNode(String clusterAddrList,
@@ -298,7 +299,7 @@ public class ClusterEventTest extends ZeppelinServerMock {
       final String newName = "testName";
       String jsonRequest = "{\"name\": " + newName + "}";
 
-      CloseableHttpResponse put = AbstractTestRestApi.httpPut("/notebook/" + noteId + "/rename/", jsonRequest);
+      CloseableHttpResponse put = httpPut("/notebook/" + noteId + "/rename/", jsonRequest);
       assertThat("test testRenameNote:", put, AbstractTestRestApi.isAllowed());
       put.close();
 
@@ -331,8 +332,8 @@ public class ClusterEventTest extends ZeppelinServerMock {
       note1Id = TestUtils.getInstance(Notebook.class).createNote("note1", anonymous);
       Thread.sleep(1000);
 
-      CloseableHttpResponse post = AbstractTestRestApi.httpPost("/notebook/" + note1Id, "");
-      LOG.info("testCloneNote response\n" + post.getStatusLine().getReasonPhrase());
+      CloseableHttpResponse post = httpPost("/notebook/" + note1Id, "");
+      LOGGER.info("testCloneNote response\n" + post.getStatusLine().getReasonPhrase());
       assertThat(post, AbstractTestRestApi.isAllowed());
 
       Map<String, Object> resp = gson.fromJson(EntityUtils.toString(post.getEntity(), StandardCharsets.UTF_8),
@@ -341,7 +342,7 @@ public class ClusterEventTest extends ZeppelinServerMock {
       post.close();
       Thread.sleep(1000);
 
-      CloseableHttpResponse get = AbstractTestRestApi.httpGet("/notebook/" + clonedNoteId);
+      CloseableHttpResponse get = httpGet("/notebook/" + clonedNoteId);
       assertThat(get, AbstractTestRestApi.isAllowed());
       Map<String, Object> resp2 = gson.fromJson(EntityUtils.toString(get.getEntity(), StandardCharsets.UTF_8),
           new TypeToken<Map<String, Object>>() {}.getType());
@@ -383,8 +384,10 @@ public class ClusterEventTest extends ZeppelinServerMock {
       // insert new paragraph
       NewParagraphRequest newParagraphRequest = new NewParagraphRequest("Test", null, null, null);
 
-      CloseableHttpResponse post = AbstractTestRestApi.httpPost("/notebook/" + noteId + "/paragraph", gson.toJson(newParagraphRequest));
-      LOG.info("test clear paragraph output response\n" + EntityUtils.toString(post.getEntity(), StandardCharsets.UTF_8));
+      CloseableHttpResponse post =
+          httpPost("/notebook/" + noteId + "/paragraph", gson.toJson(newParagraphRequest));
+      LOGGER.info("test clear paragraph output response\n"
+          + EntityUtils.toString(post.getEntity(), StandardCharsets.UTF_8));
       assertThat(post, AbstractTestRestApi.isAllowed());
       post.close();
 
@@ -488,15 +491,15 @@ public class ClusterEventTest extends ZeppelinServerMock {
         "      \"exclusions\":[]\n" +
         "    }]," +
         "\"option\": { \"remote\": true, \"session\": false }}";
-    CloseableHttpResponse post = AbstractTestRestApi.httpPost("/interpreter/setting", reqBody1);
+    CloseableHttpResponse post = httpPost("/interpreter/setting", reqBody1);
     String postResponse = EntityUtils.toString(post.getEntity(), StandardCharsets.UTF_8);
-    LOG.info("testCreatedInterpreterDependencies create response\n" + postResponse);
+    LOGGER.info("testCreatedInterpreterDependencies create response\n" + postResponse);
     InterpreterSetting created = convertResponseToInterpreterSetting(postResponse);
     assertThat("test create method:", post, AbstractTestRestApi.isAllowed());
     post.close();
 
     // 1. Call settings API
-    CloseableHttpResponse get = AbstractTestRestApi.httpGet("/interpreter/setting");
+    CloseableHttpResponse get = httpGet("/interpreter/setting");
     String rawResponse = EntityUtils.toString(get.getEntity(), StandardCharsets.UTF_8);
     get.close();
 
@@ -538,8 +541,10 @@ public class ClusterEventTest extends ZeppelinServerMock {
     jsonObject.addProperty("value", "this is new prop");
     jsonObject.addProperty("type", "textarea");
     jsonRequest.getAsJsonObject("properties").add("propname2", jsonObject);
-    CloseableHttpResponse put = AbstractTestRestApi.httpPut("/interpreter/setting/" + created.getId(), jsonRequest.toString());
-    LOG.info("testSettingCRUD update response\n" + EntityUtils.toString(put.getEntity(), StandardCharsets.UTF_8));
+    CloseableHttpResponse put =
+        httpPut("/interpreter/setting/" + created.getId(), jsonRequest.toString());
+    LOGGER.info("testSettingCRUD update response\n"
+        + EntityUtils.toString(put.getEntity(), StandardCharsets.UTF_8));
     // then: call update setting API
     assertThat("test update method:", put, AbstractTestRestApi.isAllowed());
     put.close();
@@ -547,8 +552,9 @@ public class ClusterEventTest extends ZeppelinServerMock {
     checkClusterIntpSettingEventListener();
 
     // 3: call delete setting API
-    CloseableHttpResponse delete = AbstractTestRestApi.httpDelete("/interpreter/setting/" + created.getId());
-    LOG.info("testSettingCRUD delete response\n" + EntityUtils.toString(delete.getEntity(), StandardCharsets.UTF_8));
+    CloseableHttpResponse delete = httpDelete("/interpreter/setting/" + created.getId());
+    LOGGER.info("testSettingCRUD delete response\n"
+        + EntityUtils.toString(delete.getEntity(), StandardCharsets.UTF_8));
     // then: call delete setting API
     assertThat("Test delete method:", delete, AbstractTestRestApi.isAllowed());
     delete.close();

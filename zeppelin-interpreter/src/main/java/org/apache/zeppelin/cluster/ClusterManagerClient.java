@@ -63,10 +63,11 @@ public class ClusterManagerClient extends ClusterManager {
     super.start();
 
     // Instantiated cluster monitoring class
-    clusterMonitor = new ClusterMonitor(this);
+    clusterMonitor = new ClusterMonitor(this, zConf);
     clusterMonitor.start(INTP_PROCESS_META, metaKey);
   }
 
+  @Override
   public void shutdown() {
     if (!zConf.isClusterMode()) {
       return;

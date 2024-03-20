@@ -22,6 +22,7 @@ import org.apache.zeppelin.annotation.ZeppelinApi;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.common.SessionInfo;
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.rest.exception.SessionNoteFoundException;
 import org.apache.zeppelin.server.JsonResponse;
 import org.apache.zeppelin.service.SessionManagerService;
@@ -53,8 +54,10 @@ public class SessionRestApi {
   private final SessionManagerService sessionManagerService;
 
   @Inject
-  public SessionRestApi(Notebook notebook, InterpreterSettingManager interpreterSettingManager) {
-    this.sessionManagerService = new SessionManagerService(notebook, interpreterSettingManager);
+  public SessionRestApi(Notebook notebook, InterpreterSettingManager interpreterSettingManager,
+      ZeppelinConfiguration zConf) {
+    this.sessionManagerService =
+        new SessionManagerService(notebook, interpreterSettingManager, zConf);
   }
 
   /**

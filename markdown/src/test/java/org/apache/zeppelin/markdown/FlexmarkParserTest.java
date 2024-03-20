@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.markdown;
 
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -43,6 +44,7 @@ class FlexmarkParserTest {
     Properties props = new Properties();
     props.put(Markdown.MARKDOWN_PARSER_TYPE, Markdown.PARSER_TYPE_FLEXMARK);
     md = new Markdown(props);
+    md.setZeppelinConfiguration(ZeppelinConfiguration.load());
     md.open();
   }
 

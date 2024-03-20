@@ -39,6 +39,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.zeppelin.MiniZeppelinServer;
 import org.apache.zeppelin.user.AuthenticationInfo;
 
 /**
@@ -49,19 +50,23 @@ public class NotebookRepoRestApiTest extends AbstractTestRestApi {
   Gson gson = new Gson();
   AuthenticationInfo anonymous;
 
+  private static MiniZeppelinServer zepServer;
+
   @BeforeAll
   public static void init() throws Exception {
-    AbstractTestRestApi.startUp(NotebookRepoRestApiTest.class.getSimpleName());
+    zepServer = new MiniZeppelinServer(NotebookRepoRestApiTest.class.getSimpleName());
+    zepServer.start();
   }
 
   @AfterAll
   public static void destroy() throws Exception {
-    AbstractTestRestApi.shutDown();
+    zepServer.destroy();
   }
 
   @BeforeEach
   public void setUp() {
     anonymous = new AuthenticationInfo("anonymous");
+    conf = zepServer.getZeppelinConfiguration();
   }
 
   private List<Map<String, Object>> getListOfReposotiry() throws IOException {
@@ -80,13 +85,13 @@ public class NotebookRepoRestApiTest extends AbstractTestRestApi {
   }
 
   @Test
-  public void thatCanGetNotebookRepositoiesSettings() throws IOException {
+  void thatCanGetNotebookRepositoiesSettings() throws IOException {
     List<Map<String, Object>> listOfRepositories = getListOfReposotiry();
     assertThat(listOfRepositories.size(), is(not(0)));
   }
 
   @Test
-  public void reloadRepositories() throws IOException {
+  void reloadRepositories() throws IOException {
     CloseableHttpResponse get = httpGet("/notebook-repositories/reload");
     int status = get.getStatusLine().getStatusCode();
     get.close();
@@ -94,7 +99,7 @@ public class NotebookRepoRestApiTest extends AbstractTestRestApi {
   }
 
   @Test
-  public void setNewDirectoryForLocalDirectory() throws IOException {
+  void setNewDirectoryForLocalDirectory() throws IOException {
     List<Map<String, Object>> listOfRepositories = getListOfReposotiry();
     String localVfs = StringUtils.EMPTY;
     String className = StringUtils.EMPTY;

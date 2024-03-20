@@ -17,6 +17,7 @@ package org.apache.zeppelin.submarine.job;
 import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.Path;
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.submarine.hadoop.HdfsClient;
 import org.apache.zeppelin.submarine.job.thread.JobRunThread;
@@ -108,14 +109,15 @@ public class SubmarineJob extends Thread {
   public static final String SUBMARINE_TENSORBOARD_JINJA
       = "jinja_templates/submarine-tensorboard.jinja";
 
-  public SubmarineJob(InterpreterContext context, Properties properties) {
+  public SubmarineJob(InterpreterContext context, Properties properties,
+      ZeppelinConfiguration zConf) {
     this.intpContext = context;
     this.properties = properties;
     this.noteId = context.getNoteId();
     this.noteName = context.getNoteName();
     this.userName = context.getAuthenticationInfo().getUser();
-    this.yarnClient = new YarnClient(properties);
-    this.hdfsClient = new HdfsClient(properties);
+    this.yarnClient = new YarnClient(properties, zConf);
+    this.hdfsClient = new HdfsClient(properties, zConf);
     this.submarineUI = new SubmarineUI(intpContext);
 
     this.start();

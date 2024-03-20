@@ -22,34 +22,48 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
+import org.apache.zeppelin.MiniZeppelinServer;
 import org.apache.zeppelin.client.ClientConfig;
 import org.apache.zeppelin.client.ZeppelinClient;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.rest.AbstractTestRestApi;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class ZeppelinClientWithAuthIntegrationTest extends AbstractTestRestApi {
+class ZeppelinClientWithAuthIntegrationTest extends AbstractTestRestApi {
+
+  private static final Logger LOG = LoggerFactory.getLogger(ZeppelinClientWithAuthIntegrationTest.class);
 
   private static ClientConfig clientConfig;
   private static ZeppelinClient zeppelinClient;
+  private static MiniZeppelinServer zepServer;
 
   @BeforeAll
-  public static void setUp() throws Exception {
-    System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HELIUM_REGISTRY.getVarName(),
-            "helium");
-    System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_ALLOWED_ORIGINS.getVarName(), "*");
-
-    AbstractTestRestApi.startUpWithAuthenticationEnable(ZeppelinClientWithAuthIntegrationTest.class.getSimpleName());
-
-    clientConfig = new ClientConfig("http://localhost:8080");
+  static void init() throws Exception {
+    zepServer = new MiniZeppelinServer(ZeppelinClientWithAuthIntegrationTest.class.getSimpleName());
+    zepServer.addInterpreter("md");
+    zepServer.addConfigFile("shiro.ini", AbstractTestRestApi.ZEPPELIN_SHIRO);
+    zepServer.copyBinDir();
+    zepServer.getZeppelinConfiguration().setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HELIUM_REGISTRY.getVarName(),
+        "helium");
+    zepServer.getZeppelinConfiguration().setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_ALLOWED_ORIGINS.getVarName(), "*");
+    zepServer.start();
+    clientConfig = new ClientConfig("http://localhost:" + zepServer.getZeppelinConfiguration().getServerPort());
     zeppelinClient = new ZeppelinClient(clientConfig);
   }
 
   @AfterAll
-  public static void destroy() throws Exception {
-    AbstractTestRestApi.shutDown();
+  static void destroy() throws Exception {
+    zepServer.destroy();
+  }
+
+  @BeforeEach
+  void setup() {
+    conf = zepServer.getZeppelinConfiguration();
   }
 
   @Test

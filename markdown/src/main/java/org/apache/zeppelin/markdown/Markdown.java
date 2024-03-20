@@ -70,11 +70,11 @@ public class Markdown extends Interpreter {
     super(property);
   }
 
-  public static MarkdownParser createMarkdownParser(String parserType) {
+  public MarkdownParser createMarkdownParser(String parserType) {
     LOGGER.debug("Creating {} markdown interpreter", parserType);
 
     if (MarkdownParserType.FLEXMARK.toString().equals(parserType)) {
-      return new FlexmarkParser();
+      return new FlexmarkParser(zConf);
     } else {
       // default parser
       return new Markdown4jParser();

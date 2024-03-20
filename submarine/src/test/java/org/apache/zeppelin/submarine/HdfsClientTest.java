@@ -14,6 +14,7 @@
 
 package org.apache.zeppelin.submarine;
 
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.submarine.hadoop.HdfsClient;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -35,7 +36,7 @@ public class HdfsClientTest {
   @BeforeAll
   public static void initEnv() {
     Properties properties = new Properties();
-    hdfsClient = new HdfsClient(properties);
+    hdfsClient = new HdfsClient(properties, ZeppelinConfiguration.load());
   }
 
   @ParameterizedTest

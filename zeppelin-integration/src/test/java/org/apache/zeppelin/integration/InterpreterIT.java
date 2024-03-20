@@ -22,9 +22,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.io.IOException;
 
 import org.apache.zeppelin.AbstractZeppelinIT;
+import org.apache.zeppelin.MiniZeppelinServer;
 import org.apache.zeppelin.WebDriverManager;
-
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.By;
@@ -32,14 +34,28 @@ import org.openqa.selenium.support.ui.Select;
 
 class InterpreterIT extends AbstractZeppelinIT {
 
+  private static MiniZeppelinServer zepServer;
+
+  @BeforeAll
+  static void init() throws Exception {
+    zepServer = new MiniZeppelinServer(InterpreterIT.class.getSimpleName());
+    zepServer.addInterpreter("spark");
+    zepServer.start(true, InterpreterIT.class.getSimpleName());
+  }
+
   @BeforeEach
   public void startUp() throws IOException {
-    manager = new WebDriverManager();
+    manager = new WebDriverManager(zepServer.getZeppelinConfiguration().getServerPort());
   }
 
   @AfterEach
-  public void tearDown() throws IOException {
+  public void tearDownManager() throws IOException {
     manager.close();
+  }
+
+  @AfterAll
+  public static void tearDown() throws Exception {
+    zepServer.destroy();
   }
 
   @Test

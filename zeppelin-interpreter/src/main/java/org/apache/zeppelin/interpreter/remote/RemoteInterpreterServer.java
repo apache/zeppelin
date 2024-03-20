@@ -207,7 +207,7 @@ public class RemoteInterpreterServer extends Thread
 
   @Override
   public void init(Map<String, String> properties) throws InterpreterRPCException, TException {
-    this.zConf = ZeppelinConfiguration.create();
+    this.zConf = ZeppelinConfiguration.load();
     for (Map.Entry<String, String> entry : properties.entrySet()) {
       this.zConf.setProperty(entry.getKey(), entry.getValue());
     }
@@ -373,7 +373,7 @@ public class RemoteInterpreterServer extends Thread
                   properties.get("zeppelin.interpreter.output.limit"));
         }
 
-        depLoader = new DependencyResolver(localRepoPath);
+        depLoader = new DependencyResolver(localRepoPath, zConf);
         appLoader = new ApplicationLoader(resourcePool, depLoader);
 
         resultCacheInSeconds =
@@ -399,6 +399,7 @@ public class RemoteInterpreterServer extends Thread
 
       interpreter.setInterpreterGroup(interpreterGroup);
       interpreter.setUserName(userName);
+      interpreter.setZeppelinConfiguration(zConf);
 
       interpreterGroup.addInterpreterToSession(new LazyOpenInterpreter(interpreter), sessionId);
 

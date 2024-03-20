@@ -78,7 +78,7 @@ public class YarnRemoteInterpreterProcess extends RemoteInterpreterProcess {
 
   private String host;
   private int port = -1;
-  private ZeppelinConfiguration zConf;
+  private final ZeppelinConfiguration zConf;
   private final InterpreterLaunchContext launchContext;
   private final Properties properties;
   private final Map<String, String> envs;
@@ -102,12 +102,13 @@ public class YarnRemoteInterpreterProcess extends RemoteInterpreterProcess {
           Properties properties,
           Map<String, String> envs,
           int connectTimeout,
-          int connectionPoolSize) {
+          int connectionPoolSize,
+          ZeppelinConfiguration zConf) {
     super(connectTimeout,
             connectionPoolSize,
             launchContext.getIntpEventServerHost(),
             launchContext.getIntpEventServerPort());
-    this.zConf = ZeppelinConfiguration.create();
+    this.zConf = zConf;
     this.launchContext = launchContext;
     this.properties = properties;
     this.envs = envs;
@@ -491,7 +492,7 @@ public class YarnRemoteInterpreterProcess extends RemoteInterpreterProcess {
     try (ZipOutputStream interpreterZipStream = new ZipOutputStream(new FileOutputStream(interpreterArchive))) {
       interpreterZipStream.setLevel(0);
 
-      String zeppelinHomeEnv = System.getenv("ZEPPELIN_HOME");
+      String zeppelinHomeEnv = zConf.getZeppelinHome();
       if (org.apache.commons.lang3.StringUtils.isBlank(zeppelinHomeEnv)) {
         throw new IOException("ZEPPELIN_HOME is not specified");
       }

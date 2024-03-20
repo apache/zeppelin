@@ -100,7 +100,7 @@ public class ClusterManagerServer extends ClusterManager {
 
     // Instantiated raftServer monitoring class
     String clusterName = getClusterNodeName();
-    clusterMonitor = new ClusterMonitor(this);
+    clusterMonitor = new ClusterMonitor(this, zConf);
     clusterMonitor.start(SERVER_META, clusterName);
 
     super.start();

@@ -65,7 +65,8 @@ public class PySubmarineInterpreter extends PythonInterpreter {
       }
     }
 
-    SubmarineJob submarineJob = submarineContext.addOrGetSubmarineJob(this.properties, context);
+    SubmarineJob submarineJob =
+        submarineContext.addOrGetSubmarineJob(this.properties, context, zConf);
     if (null != submarineJob && null != submarineJob.getHdfsClient()) {
       try {
         String noteId = context.getNoteId();

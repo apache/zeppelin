@@ -18,6 +18,7 @@
 package org.apache.zeppelin.notebook.repo;
 
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.notebook.NoteParser;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.PullCommand;
@@ -53,8 +54,8 @@ public class GitHubNotebookRepo extends GitNotebookRepo {
   private Git git;
 
   @Override
-  public void init(ZeppelinConfiguration conf) throws IOException {
-    super.init(conf);
+  public void init(ZeppelinConfiguration conf, NoteParser noteParser) throws IOException {
+    super.init(conf, noteParser);
     LOG.debug("initializing GitHubNotebookRepo");
     this.git = super.getGit();
     this.zeppelinConfiguration = conf;

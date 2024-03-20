@@ -16,6 +16,8 @@ package org.apache.zeppelin.submarine;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
+
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.submarine.commons.SubmarineConstants;
 import org.apache.zeppelin.submarine.hadoop.YarnClient;
 import org.junit.jupiter.api.BeforeAll;
@@ -42,7 +44,7 @@ public class YarnClientTest {
     properties.setProperty("zeppelin.python.gatewayserver_address", "127.0.0.1");
     properties.setProperty(SubmarineConstants.SUBMARINE_HADOOP_KEYTAB, "keytab");
     properties.setProperty(SubmarineConstants.SUBMARINE_HADOOP_PRINCIPAL, "user");
-    yarnClient = new YarnClient(properties);
+    yarnClient = new YarnClient(properties, ZeppelinConfiguration.load());
   }
 
   @Test

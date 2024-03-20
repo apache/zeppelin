@@ -45,7 +45,6 @@ import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
-import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.plugin.PluginManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -133,7 +132,8 @@ public class InterpreterSetting {
   private transient ApplicationEventListener appEventListener;
   private transient DependencyResolver dependencyResolver;
 
-  private transient ZeppelinConfiguration conf = ZeppelinConfiguration.create();
+  private transient ZeppelinConfiguration conf;
+  private transient PluginManager pluginManager;
 
   private transient RecoveryStorage recoveryStorage;
   private transient RemoteInterpreterEventServer interpreterEventServer;
@@ -199,6 +199,12 @@ public class InterpreterSetting {
 
     public Builder setConf(ZeppelinConfiguration conf) {
       interpreterSetting.conf = conf;
+      interpreterSetting.option.setConf(conf);
+      return this;
+    }
+
+    public Builder setPluginManager(PluginManager pluginManager) {
+      interpreterSetting.pluginManager = pluginManager;
       return this;
     }
 
@@ -288,10 +294,11 @@ public class InterpreterSetting {
     this.interpreterDir = o.getInterpreterDir();
     this.interpreterRunner = o.getInterpreterRunner();
     this.conf = o.getConf();
+    this.pluginManager = o.getPluginMananger();
   }
 
   private InterpreterLauncher createLauncher(Properties properties) throws IOException {
-    return PluginManager.get().loadInterpreterLauncher(
+    return pluginManager.loadInterpreterLauncher(
         getLauncherPlugin(properties), recoveryStorage);
   }
 
@@ -656,6 +663,16 @@ public class InterpreterSetting {
 
   public InterpreterSetting setConf(ZeppelinConfiguration conf) {
     this.conf = conf;
+    this.option.setConf(conf);
+    return this;
+  }
+
+  public PluginManager getPluginMananger() {
+    return pluginManager;
+  }
+
+  public InterpreterSetting setPluginMananger(PluginManager pluginManager) {
+    this.pluginManager = pluginManager;
     return this;
   }
 
@@ -823,7 +840,7 @@ public class InterpreterSetting {
     Properties intpProperties = getJavaProperties();
     for (InterpreterInfo info : interpreterInfos) {
       Interpreter interpreter = new RemoteInterpreter(intpProperties, sessionId,
-          info.getClassName(), user);
+          info.getClassName(), user, conf);
       if (info.isDefaultInterpreter()) {
         interpreters.add(0, interpreter);
       } else {
@@ -920,7 +937,7 @@ public class InterpreterSetting {
 
   private ManagedInterpreterGroup createInterpreterGroup(String groupId) {
     AngularObjectRegistry angularObjectRegistry;
-    ManagedInterpreterGroup interpreterGroup = new ManagedInterpreterGroup(groupId, this);
+    ManagedInterpreterGroup interpreterGroup = new ManagedInterpreterGroup(groupId, this, conf);
     angularObjectRegistry =
         new RemoteAngularObjectRegistry(groupId, angularObjectRegistryListener, interpreterGroup);
     interpreterGroup.setAngularObjectRegistry(angularObjectRegistry);

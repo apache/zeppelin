@@ -31,19 +31,20 @@ import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.awaitility.Awaitility.await;
 
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import javax.servlet.http.HttpServletRequest;
+import java.util.concurrent.Callable;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.thrift.TException;
@@ -62,6 +63,7 @@ import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.notebook.Notebook.NoteProcessor;
 import org.apache.zeppelin.notebook.repo.NotebookRepoWithVersionControl;
+import org.apache.zeppelin.MiniZeppelinServer;
 import org.apache.zeppelin.common.Message;
 import org.apache.zeppelin.common.Message.OP;
 import org.apache.zeppelin.rest.AbstractTestRestApi;
@@ -70,40 +72,48 @@ import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.service.NotebookService;
 import org.apache.zeppelin.service.ServiceContext;
 import org.apache.zeppelin.user.AuthenticationInfo;
-import org.apache.zeppelin.utils.TestUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /** Basic REST API tests for notebookServer. */
 class NotebookServerTest extends AbstractTestRestApi {
+  private static final Logger LOG = LoggerFactory.getLogger(NotebookServerTest.class);
   private static Notebook notebook;
   private static NotebookServer notebookServer;
   private static NotebookService notebookService;
   private static AuthorizationService authorizationService;
-  private HttpServletRequest mockRequest;
   private AuthenticationInfo anonymous;
 
+  private static MiniZeppelinServer zepServer;
+
   @BeforeAll
-  static void init() throws Exception {
-    AbstractTestRestApi.startUp(NotebookServerTest.class.getSimpleName());
-    notebook = TestUtils.getInstance(Notebook.class);
-    authorizationService =  TestUtils.getInstance(AuthorizationService.class);
-    notebookServer = TestUtils.getInstance(NotebookServer.class);
-    notebookService = TestUtils.getInstance(NotebookService.class);
+  public static void init() throws Exception {
+    zepServer = new MiniZeppelinServer(NotebookServerTest.class.getSimpleName());
+    zepServer.addInterpreter("md");
+    zepServer.addInterpreter("angular");
+    zepServer.addInterpreter("spark");
+    zepServer.copyBinDir();
+    zepServer.start();
+    notebook = zepServer.getServiceLocator().getService(Notebook.class);
+    authorizationService = zepServer.getServiceLocator().getService(AuthorizationService.class);
+    notebookServer = zepServer.getServiceLocator().getService(NotebookServer.class);
+    notebookService = zepServer.getServiceLocator().getService(NotebookService.class);
   }
 
   @AfterAll
-  static void destroy() throws Exception {
-    AbstractTestRestApi.shutDown();
+  public static void destroy() throws Exception {
+    zepServer.destroy();
   }
 
   @BeforeEach
   void setUp() {
-    mockRequest = mock(HttpServletRequest.class);
+    conf = zepServer.getZeppelinConfiguration();
     anonymous = AuthenticationInfo.ANONYMOUS;
   }
 
@@ -121,7 +131,7 @@ class NotebookServerTest extends AbstractTestRestApi {
 
   @Test
   void testCollaborativeEditing() throws IOException {
-    if (!ZeppelinConfiguration.create().isZeppelinNotebookCollaborativeModeEnable()) {
+    if (!zepServer.getZeppelinConfiguration().isZeppelinNotebookCollaborativeModeEnable()) {
       return;
     }
     NotebookSocket sock1 = createWebSocket();
@@ -406,15 +416,8 @@ class NotebookServerTest extends AbstractTestRestApi {
 
 
       // wait for paragraph finished
-      Status status = notebook.processNote(note1Id, note1-> note1.getParagraph(p1Id).getStatus());
-      while (true) {
-        System.out.println("loop");
-        if (status == Job.Status.FINISHED) {
-          break;
-        }
-        Thread.sleep(100);
-        status = notebook.processNote(note1Id, note1-> note1.getParagraph(p1Id).getStatus());
-      }
+      await().atMost(Duration.ofMinutes(5)).pollInterval(Duration.ofMillis(100))
+          .until(checkParagraphStatus(note1Id, p1Id, Status.FINISHED));
       // sleep for 1 second to make sure job running thread finish to fire event. See ZEPPELIN-3277
       Thread.sleep(1000);
 
@@ -450,6 +453,14 @@ class NotebookServerTest extends AbstractTestRestApi {
         notebook.removeNote(note1Id, anonymous);
       }
     }
+  }
+
+  private Callable<Boolean> checkParagraphStatus(String noteId, String paragraphId, Status status) {
+    return () -> {
+      return status
+          .equals(notebook.processNote(noteId, note -> note.getParagraph(paragraphId).getStatus()));
+    };
+
   }
 
   @Test
@@ -666,7 +677,7 @@ class NotebookServerTest extends AbstractTestRestApi {
         .put("defaultInterpreterId", defaultInterpreterId).toJson());
 
     int sendCount = 2;
-    if (ZeppelinConfiguration.create().isZeppelinNotebookCollaborativeModeEnable()) {
+    if (zepServer.getZeppelinConfiguration().isZeppelinNotebookCollaborativeModeEnable()) {
       sendCount++;
     }
     // expect the events are broadcasted properly
