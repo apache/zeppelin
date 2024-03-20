@@ -116,6 +116,22 @@
           <groupId>org.apache.hbase</groupId>
           <artifactId>hbase-server</artifactId>
         </exclusion>
+        <exclusion>
+          <groupId>org.apache.hbase</groupId>
+          <artifactId>hbase-client</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.hbase</groupId>
+          <artifactId>hbase-mapreduce</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-yarn-server-resourcemanager</artifactId>
+        </exclusion>
+        <exclusion>
+          <artifactId>hbase-hadoop2-compat</artifactId>
+          <groupId>org.apache.hbase</groupId>
+        </exclusion>
       </exclusions>
     </dependency>
 

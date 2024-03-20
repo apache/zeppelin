@@ -84,7 +84,7 @@
       <dependencies>
         <dependency>
           <groupId>org.apache.hadoop</groupId>
-          <artifactId>hadoop-client</artifactId>
+          <artifactId>hadoop-client-api</artifactId>
           <scope>provided</scope>
           <version>${hadoop.version}</version>
         </dependency>
