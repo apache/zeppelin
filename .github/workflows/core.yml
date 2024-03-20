@@ -238,7 +238,7 @@ jobs:
         run: |
           R -e "IRkernel::installspec()"
       - name: run tests
-        run: ./mvnw test -pl zeppelin-interpreter-integration -Phadoop3 -Pintegration -DfailIfNoTests=false -Dtest=ZeppelinClientIntegrationTest,ZeppelinClientWithAuthIntegrationTest,ZSessionIntegrationTest,ShellIntegrationTest,JdbcIntegrationTest
+        run: ./mvnw test -pl zeppelin-interpreter-integration -am -Phadoop3 -Pintegration -DfailIfNoTests=false -Dtest=ZeppelinClientIntegrationTest,ZeppelinClientWithAuthIntegrationTest,ZSessionIntegrationTest,ShellIntegrationTest,JdbcIntegrationTest
       - name: Print zeppelin logs
         if: always()
         run: if [ -d "logs" ]; then cat logs/*; fi
