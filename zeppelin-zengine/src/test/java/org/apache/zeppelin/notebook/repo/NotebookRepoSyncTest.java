@@ -36,16 +36,17 @@ import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
 import org.apache.zeppelin.notebook.AuthorizationService;
+import org.apache.zeppelin.notebook.GsonNoteParser;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.NoteManager;
+import org.apache.zeppelin.notebook.NoteParser;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.plugin.PluginManager;
 import org.apache.zeppelin.storage.ConfigStorage;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
-import org.apache.zeppelin.util.NoteUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -53,13 +54,11 @@ import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.gson.Gson;
-
 class NotebookRepoSyncTest {
 
   private File zeppelinHome;
   private ZeppelinConfiguration conf;
-  private Gson gson;
+  private NoteParser noteParser;
   private ConfigStorage storage;
   private PluginManager pluginManager;
   private File mainNotebookDir;
@@ -87,7 +86,7 @@ class NotebookRepoSyncTest {
     mainNotebookDir.mkdirs();
     secNotebookDir.mkdirs();
     conf = ZeppelinConfiguration.load();
-    gson = NoteUtils.getNoteGson(conf);
+    noteParser = new GsonNoteParser(conf);
     storage = ConfigStorage.createConfigStorage(conf);
     conf.setProperty(ConfVars.ZEPPELIN_HOME.getVarName(), zeppelinHome.getAbsolutePath());
     conf.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_DIR.getVarName(), mainNotebookDir.getAbsolutePath());
@@ -105,7 +104,7 @@ class NotebookRepoSyncTest {
     factory = new InterpreterFactory(interpreterSettingManager);
 
     notebookRepoSync = new NotebookRepoSync(pluginManager);
-    notebookRepoSync.init(conf, gson);
+    notebookRepoSync.init(conf, noteParser);
     noteManager = new NoteManager(notebookRepoSync, conf);
     authorizationService = new AuthorizationService(noteManager, conf, storage);
     credentials = new Credentials(conf, storage);
@@ -266,7 +265,7 @@ class NotebookRepoSyncTest {
     conf.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_ONE_WAY_SYNC.getVarName(), "true");
 
     notebookRepoSync = new NotebookRepoSync(pluginManager);
-    notebookRepoSync.init(conf, gson);
+    notebookRepoSync.init(conf, noteParser);
     notebook = new Notebook(conf, mock(AuthorizationService.class), notebookRepoSync, new NoteManager(notebookRepoSync, conf), factory, interpreterSettingManager, credentials, null);
 
     // check that both storage repos are empty
@@ -314,7 +313,7 @@ class NotebookRepoSyncTest {
         "org.apache.zeppelin.notebook.repo.GitNotebookRepo");
 
     NotebookRepoSync vRepoSync = new NotebookRepoSync(pluginManager);
-    vRepoSync.init(conf, gson);
+    vRepoSync.init(conf, noteParser);
     Notebook vNotebookSync = new Notebook(conf, mock(AuthorizationService.class), vRepoSync,
         new NoteManager(vRepoSync, conf), factory, interpreterSettingManager, credentials, null);
 

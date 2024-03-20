@@ -20,22 +20,21 @@ package org.apache.zeppelin.notebook.repo;
 import java.io.IOException;
 
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
-
-import com.google.gson.Gson;
+import org.apache.zeppelin.notebook.NoteParser;
 
 public abstract class AbstractNotebookRepo implements NotebookRepo {
 
   protected ZeppelinConfiguration conf;
-  protected Gson gson;
+  protected NoteParser noteParser;
 
   @Override
-  public void init(ZeppelinConfiguration conf, Gson gson) throws IOException {
-    this.gson = gson;
+  public void init(ZeppelinConfiguration conf, NoteParser parser) throws IOException {
+    this.noteParser = parser;
     this.conf = conf;
   }
 
   @Override
-  public Gson getGson() {
-    return gson;
+  public NoteParser getNoteParser() {
+    return noteParser;
   }
 }

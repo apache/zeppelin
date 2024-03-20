@@ -28,8 +28,6 @@ import com.google.cloud.storage.StorageException;
 import com.google.cloud.storage.StorageOptions;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
-import com.google.gson.Gson;
-import com.google.gson.JsonParseException;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -48,8 +46,9 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
+import org.apache.zeppelin.notebook.NoteParser;
+import org.apache.zeppelin.notebook.exception.CorruptedNoteException;
 import org.apache.zeppelin.user.AuthenticationInfo;
-import org.apache.zeppelin.util.NoteUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -80,10 +79,11 @@ public class GCSNotebookRepo extends AbstractNotebookRepo {
   }
 
   @VisibleForTesting
-  public GCSNotebookRepo(ZeppelinConfiguration conf, Gson gson, Storage storage) throws IOException
+  public GCSNotebookRepo(ZeppelinConfiguration conf, NoteParser noteParser, Storage storage)
+      throws IOException
   {
     try {
-      init(conf, gson);
+      init(conf, noteParser);
     } catch (IOException e) {
       // Skip Credentials Exception during tests
       if (!e.getMessage().contains("Default Credentials")) {
@@ -94,8 +94,8 @@ public class GCSNotebookRepo extends AbstractNotebookRepo {
   }
 
   @Override
-  public void init(ZeppelinConfiguration zConf, Gson gson) throws IOException {
-    super.init(zConf, gson);
+  public void init(ZeppelinConfiguration zConf, NoteParser noteParser) throws IOException {
+    super.init(zConf, noteParser);
     this.encoding =  zConf.getString(ConfVars.ZEPPELIN_ENCODING);
     String gcsStorageDir = zConf.getGCSStorageDir();
     if (gcsStorageDir.isEmpty()) {
@@ -192,8 +192,8 @@ public class GCSNotebookRepo extends AbstractNotebookRepo {
     }
 
     try {
-      return NoteUtils.fromJson(gson, conf, noteId, new String(contents, encoding));
-    } catch (JsonParseException jpe) {
+      return noteParser.fromJson(noteId, new String(contents, encoding));
+    } catch (CorruptedNoteException jpe) {
       throw new IOException(
           "Could note parse as json " + blobId.toString() + jpe.getMessage(), jpe);
     }

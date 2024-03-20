@@ -17,9 +17,8 @@
 package org.apache.zeppelin.notebook.repo.mock;
 
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.notebook.NoteParser;
 import org.apache.zeppelin.notebook.repo.VFSNotebookRepo;
-
-import com.google.gson.Gson;
 
 import java.io.IOException;
 
@@ -29,9 +28,9 @@ public class VFSNotebookRepoMock extends VFSNotebookRepo {
   }
 
   @Override
-  public void init(ZeppelinConfiguration conf, Gson gson) throws IOException {
+  public void init(ZeppelinConfiguration conf, NoteParser noteParser) throws IOException {
     this.conf = conf;
-    this.gson = gson;
+    this.noteParser = noteParser;
     setNotebookDirectory(conf.getNotebookDir() + "_secondary");
   }
 

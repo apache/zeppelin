@@ -18,7 +18,6 @@ package org.apache.zeppelin.socket;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 
 import io.micrometer.core.instrument.Metrics;
@@ -82,10 +81,12 @@ import org.apache.zeppelin.notebook.AuthorizationService;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteEventListener;
 import org.apache.zeppelin.notebook.NoteInfo;
+import org.apache.zeppelin.notebook.NoteParser;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.NotebookImportDeserializer;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.notebook.ParagraphJobListener;
+import org.apache.zeppelin.notebook.exception.CorruptedNoteException;
 import org.apache.zeppelin.notebook.repo.NotebookRepoWithVersionControl.Revision;
 import org.apache.zeppelin.rest.exception.ForbiddenException;
 import org.apache.zeppelin.scheduler.Job;
@@ -99,7 +100,6 @@ import org.apache.zeppelin.ticket.TicketContainer;
 import org.apache.zeppelin.types.InterpreterSettingsList;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.util.IdHashes;
-import org.apache.zeppelin.util.NoteUtils;
 import org.apache.zeppelin.utils.CorsUtils;
 import org.apache.zeppelin.utils.ServerUtils;
 import org.apache.zeppelin.utils.TestUtils;
@@ -157,6 +157,7 @@ public class NotebookServer implements AngularObjectRegistryListener,
   private ConnectionManager connectionManager;
   private ZeppelinConfiguration zeppelinConfiguration;
   private Provider<Notebook> notebookProvider;
+  private Provider<NoteParser> noteParser;
   private Provider<NotebookService> notebookServiceProvider;
   private AuthorizationService authorizationService;
   private Provider<ConfigurationService> configurationServiceProvider;
@@ -170,6 +171,12 @@ public class NotebookServer implements AngularObjectRegistryListener,
   @Inject
   public void setZeppelinConfiguration(ZeppelinConfiguration zeppelinConfiguration) {
     this.zeppelinConfiguration = zeppelinConfiguration;
+  }
+
+  @Inject
+  public void setNoteParser(Provider<NoteParser> noteParser) {
+    this.noteParser = noteParser;
+    LOG.info("Injected NoteParser");
   }
 
   @Inject
@@ -776,12 +783,12 @@ public class NotebookServer implements AngularObjectRegistryListener,
         authenticationInfo = AuthenticationInfo.fromJson(json);
       } else if (StringUtils.equals(key, "Note")) {
         try {
-          note = NoteUtils.getNoteGson(zeppelinConfiguration).fromJson(json, Note.class);
-        } catch (JsonSyntaxException e) {
+          note = noteParser.get().fromJson(null, json);
+        } catch (CorruptedNoteException e) {
           LOG.warn("Fail to parse note json", e);
         }
       } else if (StringUtils.equals(key, "Paragraph")) {
-        paragraph = NoteUtils.getNoteGson(zeppelinConfiguration).fromJson(json, Paragraph.class);
+        paragraph = noteParser.get().fromJson(json);
       } else if (StringUtils.equals(key, "Set<String>")) {
         Gson gson = new Gson();
         userAndRoles = gson.fromJson(json, new TypeToken<Set<String>>() {
