@@ -123,7 +123,7 @@
     "karma-sourcemap-loader": "^0.3.7",
     "karma-spec-reporter": "0.0.31",
     "karma-firefox-launcher": "2.1.2",
-    "karma-webpack": "^4.0.2",
+    "karma-webpack": "^5.0.1",
     "load-grunt-tasks": "^0.4.0",
     "mini-css-extract-plugin": "^0.4.4",
     "ng-annotate-loader": "^0.2.0",
@@ -137,7 +137,7 @@
     "time-grunt": "^0.3.1",
     "webpack": "^4.24.0",
     "webpack-cli": "^3.3.12",
-    "webpack-dev-server": "^3.1.10"
+    "webpack-dev-server": "^5.0.4"
   },
   "repository": {
     "type": "git",
