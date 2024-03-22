@@ -78,7 +78,7 @@
         <activeByDefault>true</activeByDefault>
       </activation>
       <properties>
-        <hadoop.version>${hadoop3.2.version}</hadoop.version>
+        <hadoop.version>${hadoop3.3.version}</hadoop.version>
       </properties>
 
       <dependencies>

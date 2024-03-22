@@ -54,7 +54,7 @@
                 <activeByDefault>true</activeByDefault>
             </activation>
             <properties>
-                <hadoop.version>${hadoop3.2.version}</hadoop.version>
+                <hadoop.version>${hadoop3.3.version}</hadoop.version>
             </properties>
 
             <dependencies>
@@ -76,7 +76,7 @@
         <profile>
             <id>hadoop3-azure</id>
             <properties>
-                <hadoop.version>${hadoop3.2.version}</hadoop.version>
+                <hadoop.version>${hadoop3.3.version}</hadoop.version>
             </properties>
             <dependencies>
                 <dependency>
@@ -155,7 +155,7 @@
         <profile>
             <id>hadoop3-aws</id>
             <properties>
-                <hadoop.version>${hadoop3.2.version}</hadoop.version>
+                <hadoop.version>${hadoop3.3.version}</hadoop.version>
             </properties>
             <dependencies>
                 <dependency>
