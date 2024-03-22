@@ -143,7 +143,7 @@
 
     <hadoop3.2.version>3.2.4</hadoop3.2.version>
     <hadoop3.3.version>3.3.6</hadoop3.3.version>
-    <hadoop.version>${hadoop3.2.version}</hadoop.version>
+    <hadoop.version>${hadoop3.3.version}</hadoop.version>
     <hadoop.deps.scope>provided</hadoop.deps.scope>
 
     <quartz.scheduler.version>2.3.2</quartz.scheduler.version>

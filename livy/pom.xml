@@ -41,7 +41,7 @@
         <!--test library versions-->
         <livy.version>0.7.1-incubating</livy.version>
         <spark.version>2.4.8</spark.version>
-        <hadoop.version>${hadoop3.2.version}</hadoop.version>
+        <hadoop.version>${hadoop3.3.version}</hadoop.version>
     </properties>
 
     <dependencies>
