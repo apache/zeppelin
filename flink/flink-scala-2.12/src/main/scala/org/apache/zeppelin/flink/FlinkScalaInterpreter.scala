@@ -491,7 +491,7 @@ abstract class FlinkScalaInterpreter(val properties: Properties,
       throw new InterpreterException("HIVE_CONF_DIR is not specified");
     }
     val database = properties.getProperty("zeppelin.flink.hive.database", "default")
-    val hiveVersion = properties.getProperty("zeppelin.flink.hive.version", "2.3.7")
+    val hiveVersion = properties.getProperty("zeppelin.flink.hive.version", "2.3.4")
     val hiveCatalog = new HiveCatalog("hive", database, hiveConfDir.toString, hiveVersion)
     this.btenv.registerCatalog("hive", hiveCatalog)
     this.btenv.useCatalog("hive")

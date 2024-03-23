@@ -38,8 +38,7 @@
     <flink.scala.version>2.12.7</flink.scala.version>
     <flink.scala.binary.version>2.12</flink.scala.binary.version>
     <flink.scala.compile.version>${flink.scala.version}</flink.scala.compile.version>
-    <flink.hadoop.version>${hadoop3.3.version}</flink.hadoop.version>
-    <hive.version>2.3.7</hive.version>
+    <hive.version>2.3.9</hive.version>
     <hive.guava.version>14.0.1</hive.guava.version>
     <derby.version>10.14.2.0</derby.version>
     <hiverunner.version>5.3.0</hiverunner.version>
@@ -973,7 +972,6 @@
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-client-runtime</artifactId>
-      <version>${flink.hadoop.version}</version>
       <scope>provided</scope>
     </dependency>
 
