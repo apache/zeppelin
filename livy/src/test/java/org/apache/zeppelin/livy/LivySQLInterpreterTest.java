@@ -27,15 +27,12 @@ import java.util.Properties;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-/**
- * Unit test for LivySQLInterpreter.
- */
 class LivySQLInterpreterTest {
 
   private LivySparkSQLInterpreter sqlInterpreter;
 
   @BeforeEach
-  public void setUp() {
+  public void beforeEach() {
     Properties properties = new Properties();
     properties.setProperty("zeppelin.livy.url", "http://localhost:8998");
     properties.setProperty("zeppelin.livy.session.create_timeout", "120");
@@ -43,7 +40,6 @@ class LivySQLInterpreterTest {
     properties.setProperty("zeppelin.livy.http.headers", "HEADER_1: VALUE_1_${HOME}");
     sqlInterpreter = new LivySparkSQLInterpreter(properties);
   }
-
   @Test
   void testHttpHeaders() {
     assertEquals(1, sqlInterpreter.getCustomHeaders().size());
