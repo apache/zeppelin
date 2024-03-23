@@ -466,7 +466,10 @@ jobs:
         run: |
           R -e "IRkernel::installspec()"
       - name: run tests
-        run: ./mvnw verify -pl livy -am  ${MAVEN_ARGS}
+        run: |
+          export SPARK_HOME=$PWD/spark-3.4.1-bin-hadoop3
+          export LIVY_HOME=$PWD/apache-livy-0.7.1-incubating-bin
+          ./mvnw verify -pl livy -am  ${MAVEN_ARGS}
 
   default-build:
     runs-on: ubuntu-20.04
