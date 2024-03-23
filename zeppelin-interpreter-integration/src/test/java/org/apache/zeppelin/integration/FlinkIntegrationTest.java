@@ -64,7 +64,7 @@ public abstract class FlinkIntegrationTest {
     LOGGER.info("Testing ScalaVersion: " + scalaVersion);
     this.flinkVersion = flinkVersion;
     this.flinkHome = DownloadUtils.downloadFlink(flinkVersion, scalaVersion);
-    this.hadoopHome = DownloadUtils.downloadHadoop("3.2.4");
+    this.hadoopHome = DownloadUtils.downloadHadoop("3.3.6");
   }
 
   @BeforeAll
