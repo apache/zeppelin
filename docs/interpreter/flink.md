@@ -301,7 +301,7 @@ You can also add and set other Flink properties which are not listed in the tabl
   </tr>
   <tr>
     <td>zeppelin.flink.hive.version</td>
-    <td>2.3.4</td>
+    <td>2.3.7</td>
     <td>Hive version that you would like to connect</td>
   </tr>
   <tr>

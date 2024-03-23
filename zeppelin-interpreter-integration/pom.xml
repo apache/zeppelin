@@ -59,20 +59,10 @@
       <version>${project.version}</version>
       <exclusions>
         <exclusion>
-          <groupId>com.google.guava</groupId>
-          <artifactId>guava</artifactId>
-        </exclusion>
-        <exclusion>
           <groupId>org.ow2.asm</groupId>
           <artifactId>asm</artifactId>
         </exclusion>
       </exclusions>
-    </dependency>
-
-    <dependency>
-      <groupId>com.google.guava</groupId>
-      <artifactId>guava</artifactId>
-      <version>20.0</version>
     </dependency>
 
     <dependency>
@@ -99,12 +89,6 @@
       <version>${project.version}</version>
       <classifier>tests</classifier>
       <scope>test</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>com.google.guava</groupId>
-          <artifactId>guava</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
 
     <dependency>
@@ -178,21 +162,19 @@
 
       <properties>
         <hadoop.version>${hadoop3.3.version}</hadoop.version>
-        <hadoop-client-runtime.artifact>hadoop-client-runtime</hadoop-client-runtime.artifact>
-        <hadoop-client-minicluster.artifact>hadoop-client-minicluster</hadoop-client-minicluster.artifact>
       </properties>
 
       <dependencies>
 
         <dependency>
           <groupId>org.apache.hadoop</groupId>
-          <artifactId>${hadoop-client-runtime.artifact}</artifactId>
+          <artifactId>hadoop-client-runtime</artifactId>
           <scope>test</scope>
         </dependency>
 
         <dependency>
           <groupId>org.apache.hadoop</groupId>
-          <artifactId>${hadoop-client-minicluster.artifact}</artifactId>
+          <artifactId>hadoop-client-minicluster</artifactId>
           <scope>test</scope>
         </dependency>
 

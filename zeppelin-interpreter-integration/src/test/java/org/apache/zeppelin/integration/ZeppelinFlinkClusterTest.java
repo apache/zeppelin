@@ -45,11 +45,9 @@ import java.nio.file.Files;
 public abstract class ZeppelinFlinkClusterTest extends AbstractTestRestApi {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ZeppelinFlinkClusterTest.class);
-  private String flinkVersion;
   private String flinkHome;
 
   public void download(String flinkVersion, String scalaVersion) {
-    this.flinkVersion = flinkVersion;
     LOGGER.info("Testing FlinkVersion: " + flinkVersion);
     LOGGER.info("Testing ScalaVersion: " + scalaVersion);
     this.flinkHome = DownloadUtils.downloadFlink(flinkVersion, scalaVersion);

@@ -41,7 +41,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        hadoop: [hadoop2, hadoop3]
+        hadoop: [hadoop3]
     steps:
       - name: Checkout
         uses: actions/checkout@v3

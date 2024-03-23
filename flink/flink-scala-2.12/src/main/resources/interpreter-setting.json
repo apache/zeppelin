@@ -155,7 +155,7 @@
       "zeppelin.flink.hive.version": {
         "envName": null,
         "propertyName": null,
-        "defaultValue": "2.3.4",
+        "defaultValue": "2.3.7",
         "description": "Hive version that you would like to connect",
         "type": "string"
       },
