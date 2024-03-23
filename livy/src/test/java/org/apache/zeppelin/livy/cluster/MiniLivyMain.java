@@ -40,13 +40,13 @@ public class MiniLivyMain extends MiniClusterBase {
 
     protected Map<String, String> baseLivyConf(String configPath) {
         Map<String, String> conf = new HashMap<>();
-        conf.put("livy.spark.master", "yarn");
-        conf.put("livy.spark.deploy-mode", "cluster");
+        //conf.put("livy.spark.master", "yarn");
+        //conf.put("livy.spark.deploy-mode", "cluster");
         conf.put("livy.server.heartbeat-watchdog.interval", "1s");
-        conf.put("livy.server.yarn.poll-interval", "500ms");
-        conf.put("livy.server.recovery.mode", "recovery");
-        conf.put("livy.server.recovery.state-store", "filesystem");
-        conf.put("livy.server.recovery.state-store.url", "file://" + configPath + "/state-store");
+       // conf.put("livy.server.yarn.poll-interval", "500ms");
+        //conf.put("livy.server.recovery.mode", "recovery");
+        //conf.put("livy.server.recovery.state-store", "filesystem");
+        //conf.put("livy.server.recovery.state-store.url", "file://" + configPath + "/state-store");
         return conf;
     }
 

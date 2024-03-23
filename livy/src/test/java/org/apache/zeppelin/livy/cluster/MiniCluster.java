@@ -21,12 +21,17 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.Path;
 
+import static org.awaitility.Awaitility.*;
+import static java.util.concurrent.TimeUnit.*;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -78,7 +83,7 @@ public class MiniCluster implements LivyCluster {
         yarn = Optional.of(start(MiniYarnMain.class, new File(_configDir, "yarn-site.xml")));
         runLivy();
 
-        _hdfsScratchDir = fs.makeQualified(new Path("/"));
+        // _hdfsScratchDir = fs.makeQualified(new Path("/"));
     }
 
     private File mkdir(String name, File parent) {
@@ -115,12 +120,19 @@ public class MiniCluster implements LivyCluster {
         Map<String, String> props = MiniClusterUtils.loadProperties(confFile);
         _livyEndpoint = config.getOrDefault("livyEndpoint", props.get("livy.server.server-url"));
 
-        // Wait until Livy server responds.
-//        val httpClient = new DefaultAsyncHttpClient()
-//        eventually(timeout(30 seconds), interval(1 second)) {
-//            val res = httpClient.prepareGet(_livyEndpoint + "/metrics").execute().get()
-//            assert(res.getStatusCode() == HttpServletResponse.SC_OK)
-//        }
+        String heathCheckEndpoint = _livyEndpoint + "/metrics";
+        await().atMost(30, SECONDS).until(() -> {
+            try {
+                HttpURLConnection httpConn = (HttpURLConnection) new URL(heathCheckEndpoint).openConnection();
+                httpConn.setReadTimeout(3000);
+                httpConn.setRequestMethod("GET");
+                httpConn.connect();
+                return httpConn.getResponseCode() == HttpURLConnection.HTTP_OK;
+            } catch (Exception e) {
+                LOG.debug("Failed to connect to: {}", heathCheckEndpoint, e);
+                return false;
+            }
+        });
 
         livy = Optional.of(localLivy);
     }
@@ -175,17 +187,14 @@ public class MiniCluster implements LivyCluster {
 
             // Wait for the config file to show up before returning, so that dependent services
             // can see the configuration. Exit early if process dies.
-            eventually(timeout(30seconds), interval(100millis)) {
-                assertTrue(configFile.isFile(), simpleName + " hasn't started yet.");
-
-                try {
-                    int exitCode = child.exitValue();
-                    throw new IOException("Child process exited unexpectedly (exit code " + exitCode + ")");
-                } catch (IllegalThreadStateException its) {
-                    // Try again.
-                } catch (IOException rethrow) {
-                    throw rethrow;
-                }
+            await().atMost(30, SECONDS).until(configFile::isFile);
+            try {
+                int exitCode = child.exitValue();
+                throw new IOException("Child process exited unexpectedly (exit code " + exitCode + ")");
+            } catch (IllegalThreadStateException ignore) {
+                // Try again.
+            } catch (IOException rethrow) {
+                throw rethrow;
             }
             return new ProcessInfo(child, logFile);
         } catch (IOException ioe) {
@@ -197,7 +206,7 @@ public class MiniCluster implements LivyCluster {
         try {
             svc.process.destroy();
             svc.process.waitFor();
-        } catch (InterruptedException ie) {
+        } catch (InterruptedException ignore) {
             // do nothing
         }
     }

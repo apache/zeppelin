@@ -46,6 +46,12 @@
 
     <dependencies>
         <dependency>
+            <groupId>org.awaitility</groupId>
+            <artifactId>awaitility</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
             <groupId>org.apache.livy</groupId>
             <artifactId>livy-integration-test</artifactId>
             <version>${livy.version}</version>
