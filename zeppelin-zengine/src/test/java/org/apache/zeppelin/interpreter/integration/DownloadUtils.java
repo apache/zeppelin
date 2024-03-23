@@ -78,7 +78,7 @@ public class DownloadUtils {
                       + flinkVersion + "/flink-hadoop-compatibility_" + scalaVersion + "-" + flinkVersion + ".jar",
               "-P", targetFlinkHomeFolder + "/lib"});
       runShellCommand(new String[]{"wget",
-              "https://repo1.maven.org/maven2/org/apache/hive/hive-exec/2.3.9/hive-exec-2.3.9.jar",
+              "https://repo1.maven.org/maven2/org/apache/hive/hive-exec/2.3.7/hive-exec-2.3.7.jar",
               "-P", targetFlinkHomeFolder + "/lib"});
       runShellCommand(new String[]{"wget",
               "https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-client-api/3.3.6/hadoop-client-api-3.3.6.jar",
