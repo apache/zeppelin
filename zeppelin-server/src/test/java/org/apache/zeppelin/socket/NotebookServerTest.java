@@ -36,7 +36,6 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -277,7 +276,7 @@ class NotebookServerTest extends AbstractTestRestApi {
 
       // get reference to interpreterGroup
       InterpreterGroup interpreterGroup = null;
-      List<InterpreterSetting> settings = notebook.processNote(note1Id, note1-> note1.getBindedInterpreterSettings(new ArrayList<>()));
+      List<InterpreterSetting> settings = notebook.processNote(note1Id, note1 -> note1.getBindedInterpreterSettings(new HashSet<>()));
       for (InterpreterSetting setting : settings) {
         if (setting.getName().equals("angular")) {
           interpreterGroup = setting.getOrCreateInterpreterGroup("anonymous", note1Id);

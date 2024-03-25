@@ -45,7 +45,7 @@ import org.apache.zeppelin.notebook.utility.IdHashes;
 import org.apache.zeppelin.scheduler.ExecutorFactory;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.user.AuthenticationInfo;
-import org.apache.zeppelin.user.Credentials;
+import org.apache.zeppelin.user.CredentialsMgr;
 import org.apache.zeppelin.util.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,7 +54,6 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -161,7 +160,7 @@ public class Note implements JsonSerializable {
   private transient InterpreterSettingManager interpreterSettingManager;
   private transient ParagraphJobListener paragraphJobListener;
   private transient List<NoteEventListener> noteEventListeners = new ArrayList<>();
-  private transient Credentials credentials;
+  private transient CredentialsMgr credentials;
   private transient ZeppelinConfiguration zConf = ZeppelinConfiguration.create();
 
   public Note() {
@@ -170,7 +169,7 @@ public class Note implements JsonSerializable {
 
   public Note(String path, String defaultInterpreterGroup, InterpreterFactory factory,
               InterpreterSettingManager interpreterSettingManager, ParagraphJobListener paragraphJobListener,
-              Credentials credentials, List<NoteEventListener> noteEventListener) {
+              CredentialsMgr credentials, List<NoteEventListener> noteEventListener) {
     setPath(path);
     this.defaultInterpreterGroup = defaultInterpreterGroup;
     this.interpreterFactory = factory;
@@ -350,11 +349,11 @@ public class Note implements JsonSerializable {
     getConfig().put("isZeppelinNotebookCronEnable", isCronSupported(config));
   }
 
-  public Credentials getCredentials() {
+  public CredentialsMgr getCredentials() {
     return credentials;
   }
 
-  public void setCredentials(Credentials credentials) {
+  public void setCredentials(CredentialsMgr credentials) {
     this.credentials = credentials;
   }
 
@@ -866,8 +865,9 @@ public class Note implements JsonSerializable {
   // TODO(zjffdu) how does this used ?
   private void snapshotAngularObjectRegistry(String user) {
     angularObjects = new HashMap<>();
-
-    List<InterpreterSetting> settings = getBindedInterpreterSettings(Arrays.asList(user));
+    Set<String> userAndRoles = new HashSet<>();
+    userAndRoles.add(user);
+    List<InterpreterSetting> settings = getBindedInterpreterSettings(userAndRoles);
     if (settings == null || settings.isEmpty()) {
       return;
     }
@@ -883,8 +883,9 @@ public class Note implements JsonSerializable {
 
   private void removeAllAngularObjectInParagraph(String user, String paragraphId) {
     angularObjects = new HashMap<>();
-
-    List<InterpreterSetting> settings = getBindedInterpreterSettings(Arrays.asList(user));
+    Set<String> userAndRoles = new HashSet<>();
+    userAndRoles.add(user);
+    List<InterpreterSetting> settings = getBindedInterpreterSettings(userAndRoles);
     if (settings == null || settings.isEmpty()) {
       return;
     }
@@ -922,7 +923,7 @@ public class Note implements JsonSerializable {
     }
   }
 
-  public List<InterpreterSetting> getBindedInterpreterSettings(List<String> userAndRoles) {
+  public List<InterpreterSetting> getBindedInterpreterSettings(Set<String> userAndRoles) {
     // use LinkedHashSet because order matters, the first one represent the default interpreter setting.
     Set<InterpreterSetting> settings = new LinkedHashSet<>();
     // add the default interpreter group

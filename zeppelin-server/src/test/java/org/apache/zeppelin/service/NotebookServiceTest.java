@@ -66,10 +66,11 @@ import org.apache.zeppelin.notebook.scheduler.QuartzSchedulerService;
 import org.apache.zeppelin.search.LuceneSearch;
 import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.user.AuthenticationInfo;
-import org.apache.zeppelin.user.Credentials;
+import org.apache.zeppelin.user.CredentialsMgr;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import org.mockito.ArgumentCaptor;
 
 import com.google.gson.Gson;
@@ -115,7 +116,7 @@ class NotebookServiceTest {
     when(mockInterpreterSetting.isUserAuthorized(any())).thenReturn(true);
     when(mockInterpreterGroup.getInterpreterSetting()).thenReturn(mockInterpreterSetting);
     when(mockInterpreterSetting.getStatus()).thenReturn(InterpreterSetting.Status.READY);
-    Credentials credentials = new Credentials();
+    CredentialsMgr credentials = new CredentialsMgr(zeppelinConfiguration);
     NoteManager noteManager = new NoteManager(notebookRepo, zeppelinConfiguration);
     AuthorizationService authorizationService = new AuthorizationService(noteManager, zeppelinConfiguration);
     notebook =

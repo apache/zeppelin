@@ -22,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.HashSet;
 
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.AbstractInterpreterTest;
@@ -37,7 +37,7 @@ import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.user.AuthenticationInfo;
-import org.apache.zeppelin.user.Credentials;
+import org.apache.zeppelin.user.CredentialsMgr;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -70,7 +70,7 @@ class HeliumApplicationFactoryTest extends AbstractInterpreterTest {
             new NoteManager(notebookRepo, ZeppelinConfiguration.create()),
             interpreterFactory,
             interpreterSettingManager,
-            new Credentials());
+            new CredentialsMgr(conf));
 
     heliumAppFactory = new HeliumApplicationFactory(notebook, null);
 
@@ -264,7 +264,7 @@ class HeliumApplicationFactoryTest extends AbstractInterpreterTest {
         return note1Tmp;
       });
     String mock1IntpSettingId = null;
-    for (InterpreterSetting setting : note1.getBindedInterpreterSettings(new ArrayList<>())) {
+    for (InterpreterSetting setting : note1.getBindedInterpreterSettings(new HashSet<>())) {
       if (setting.getName().equals("mock1")) {
         mock1IntpSettingId = setting.getId();
         break;

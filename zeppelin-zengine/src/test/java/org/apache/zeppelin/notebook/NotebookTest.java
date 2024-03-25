@@ -39,7 +39,7 @@ import org.apache.zeppelin.resource.LocalResourcePool;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.user.AuthenticationInfo;
-import org.apache.zeppelin.user.Credentials;
+import org.apache.zeppelin.user.CredentialsMgr;
 import org.apache.commons.io.FilenameUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -89,7 +89,7 @@ class NotebookTest extends AbstractInterpreterTest implements ParagraphJobListen
   private NoteManager noteManager;
   private NotebookRepo notebookRepo;
   private AuthorizationService authorizationService;
-  private Credentials credentials;
+  private CredentialsMgr credentials;
   private AuthenticationInfo anonymous = AuthenticationInfo.ANONYMOUS;
   private StatusChangedListener afterStatusChangedListener;
   private QuartzSchedulerService schedulerService;
@@ -106,7 +106,7 @@ class NotebookTest extends AbstractInterpreterTest implements ParagraphJobListen
     noteManager = new NoteManager(notebookRepo, conf);
     authorizationService = new AuthorizationService(noteManager, conf);
 
-    credentials = new Credentials(conf);
+    credentials = new CredentialsMgr(conf);
     notebook = new Notebook(conf, authorizationService, notebookRepo, noteManager, interpreterFactory, interpreterSettingManager, credentials, null);
     notebook.setParagraphJobListener(this);
     schedulerService = new QuartzSchedulerService(conf, notebook);
@@ -1155,7 +1155,7 @@ class NotebookTest extends AbstractInterpreterTest implements ParagraphJobListen
     String noteId = notebook.createNote("note1", anonymous);
     AngularObjectRegistry registry = notebook.processNote(noteId,
       note -> {
-        return note.getBindedInterpreterSettings(new ArrayList<>()).get(0).getOrCreateInterpreterGroup(anonymous.getUser(), note.getId())
+        return note.getBindedInterpreterSettings(new HashSet<>()).get(0).getOrCreateInterpreterGroup(anonymous.getUser(), note.getId())
           .getAngularObjectRegistry();
       });
     String paragraphId = notebook.processNote(noteId,
@@ -1190,7 +1190,7 @@ class NotebookTest extends AbstractInterpreterTest implements ParagraphJobListen
 
     AngularObjectRegistry registry = notebook.processNote(noteId,
       note -> {
-        return note.getBindedInterpreterSettings(new ArrayList<>()).get(0).getOrCreateInterpreterGroup(anonymous.getUser(), note.getId())
+        return note.getBindedInterpreterSettings(new HashSet<>()).get(0).getOrCreateInterpreterGroup(anonymous.getUser(), note.getId())
           .getAngularObjectRegistry();
       });
 
@@ -1232,7 +1232,7 @@ class NotebookTest extends AbstractInterpreterTest implements ParagraphJobListen
     String noteId = notebook.createNote("note1", anonymous);
     notebook.processNote(noteId,
       note -> {
-        AngularObjectRegistry registry = note.getBindedInterpreterSettings(new ArrayList<>()).get(0).getOrCreateInterpreterGroup(anonymous.getUser(), note.getId())
+        AngularObjectRegistry registry = note.getBindedInterpreterSettings(new HashSet<>()).get(0).getOrCreateInterpreterGroup(anonymous.getUser(), note.getId())
             .getAngularObjectRegistry();
 
         // add local scope object
@@ -1242,11 +1242,11 @@ class NotebookTest extends AbstractInterpreterTest implements ParagraphJobListen
 
         // restart interpreter
         try {
-          interpreterSettingManager.restart(note.getBindedInterpreterSettings(new ArrayList<>()).get(0).getId());
+          interpreterSettingManager.restart(note.getBindedInterpreterSettings(new HashSet<>()).get(0).getId());
         } catch (InterpreterException e) {
           fail();
         }
-        registry = note.getBindedInterpreterSettings(new ArrayList<>()).get(0)
+        registry = note.getBindedInterpreterSettings(new HashSet<>()).get(0)
             .getOrCreateInterpreterGroup(anonymous.getUser(), note.getId())
             .getAngularObjectRegistry();
 
@@ -1467,7 +1467,7 @@ class NotebookTest extends AbstractInterpreterTest implements ParagraphJobListen
         p1.setAuthenticationInfo(anonymous);
 
         // restart interpreter with per user session enabled
-        for (InterpreterSetting setting : note1.getBindedInterpreterSettings(new ArrayList<>())) {
+        for (InterpreterSetting setting : note1.getBindedInterpreterSettings(new HashSet<>())) {
           setting.getOption().setPerNote(InterpreterOption.SCOPED);
           try {
             notebook.getInterpreterSettingManager().restart(setting.getId());
@@ -1528,7 +1528,7 @@ class NotebookTest extends AbstractInterpreterTest implements ParagraphJobListen
 
 
             // restart interpreter with per note session enabled
-            for (InterpreterSetting setting : note1.getBindedInterpreterSettings(new ArrayList<>())) {
+            for (InterpreterSetting setting : note1.getBindedInterpreterSettings(new HashSet<>())) {
               setting.getOption().setPerNote(InterpreterOption.SCOPED);
               try {
                 notebook.getInterpreterSettingManager().restart(setting.getId());
@@ -1585,7 +1585,7 @@ class NotebookTest extends AbstractInterpreterTest implements ParagraphJobListen
             assertEquals(p1.getReturn().message().get(0).getData(), p2.getReturn().message().get(0).getData());
 
             // restart interpreter with scoped mode enabled
-            for (InterpreterSetting setting : note1.getBindedInterpreterSettings(new ArrayList<>())) {
+            for (InterpreterSetting setting : note1.getBindedInterpreterSettings(new HashSet<>())) {
               setting.getOption().setPerNote(InterpreterOption.SCOPED);
               try {
                 notebook.getInterpreterSettingManager().restart(setting.getId());
@@ -1604,7 +1604,7 @@ class NotebookTest extends AbstractInterpreterTest implements ParagraphJobListen
             assertNotEquals(p1.getReturn().message().get(0).getData(), p2.getReturn().message().get(0).getData());
 
             // restart interpreter with isolated mode enabled
-            for (InterpreterSetting setting : note1.getBindedInterpreterSettings(new ArrayList<>())) {
+            for (InterpreterSetting setting : note1.getBindedInterpreterSettings(new HashSet<>())) {
               setting.getOption().setPerNote(InterpreterOption.ISOLATED);
               try {
                 setting.getInterpreterSettingManager().restart(setting.getId());

@@ -43,7 +43,7 @@ import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.storage.ConfigStorage;
 import org.apache.zeppelin.user.AuthenticationInfo;
-import org.apache.zeppelin.user.Credentials;
+import org.apache.zeppelin.user.CredentialsMgr;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -61,7 +61,7 @@ class NotebookRepoSyncTest {
   private NotebookRepoSync notebookRepoSync;
   private InterpreterFactory factory;
   private InterpreterSettingManager interpreterSettingManager;
-  private Credentials credentials;
+  private CredentialsMgr credentials;
   private AuthenticationInfo anonymous;
   private NoteManager noteManager;
   private AuthorizationService authorizationService;
@@ -99,7 +99,7 @@ class NotebookRepoSyncTest {
     notebookRepoSync = new NotebookRepoSync(conf);
     noteManager = new NoteManager(notebookRepoSync, conf);
     authorizationService = new AuthorizationService(noteManager, conf);
-    credentials = new Credentials(conf);
+    credentials = new CredentialsMgr(conf);
     notebook = new Notebook(conf, authorizationService, notebookRepoSync, noteManager, factory, interpreterSettingManager, credentials, null);
     anonymous = new AuthenticationInfo("anonymous");
   }
