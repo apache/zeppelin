@@ -28,7 +28,7 @@ fi
 
 if [[ -z "${SHASUM}" ]]; then
   SHASUM="sha512sum"
-  if [ "$(uname)" == "Darwin" ]; then
+  if [ "$(uname -s)" = "Darwin" ]; then
       SHASUM="shasum -a 512"
   fi
 fi
