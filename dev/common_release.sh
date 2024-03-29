@@ -20,11 +20,17 @@
 # common fucntions
 
 if [[ -z "${TAR}" ]]; then
-  TAR="/usr/bin/tar"
+  TAR="tar"
+    if [ "$(uname -s)" = "Darwin" ]; then
+      TAR="tar --no-mac-metadata --no-xattrs --no-fflags"
+    fi
 fi
 
 if [[ -z "${SHASUM}" ]]; then
-  SHASUM="/usr/bin/shasum"
+  SHASUM="sha512sum"
+  if [ "$(uname)" == "Darwin" ]; then
+      SHASUM="shasum -a 512"
+  fi
 fi
 
 if [[ -z "${WORKING_DIR}" ]]; then
