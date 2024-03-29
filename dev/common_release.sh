@@ -21,9 +21,9 @@
 
 if [[ -z "${TAR}" ]]; then
   TAR="tar"
-    if [ "$(uname -s)" = "Darwin" ]; then
-      TAR="tar --no-mac-metadata --no-xattrs --no-fflags"
-    fi
+  if [ "$(uname -s)" = "Darwin" ]; then
+    TAR="tar --no-mac-metadata --no-xattrs --no-fflags"
+  fi
 fi
 
 if [[ -z "${SHASUM}" ]]; then
