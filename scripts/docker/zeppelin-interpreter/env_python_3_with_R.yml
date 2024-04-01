@@ -23,7 +23,6 @@ dependencies:
   - altair
   - vega_datasets
   - plotly
-  - bokeh=3.3.4
   - pip
   - pip:
     # works for regular pip packages
