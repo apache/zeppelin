@@ -999,6 +999,7 @@
       <artifactId>slf4j-api</artifactId>
     </dependency>
 
+    <!-- hive enables log4j2 async log by default, which requires disruptor available on classpath-->
     <dependency>
       <groupId>com.lmax</groupId>
       <artifactId>disruptor</artifactId>

@@ -34,32 +34,13 @@
     <!--library versions-->
     <interpreter.name>hbase</interpreter.name>
     <jruby.version>1.6.8</jruby.version>
-    <protobuf.version>2.5.0</protobuf.version>
-    <jline.version>2.12.1</jline.version>
-
   </properties>
 
   <dependencies>
-
-    <dependency>
-      <groupId>org.apache.commons</groupId>
-      <artifactId>commons-exec</artifactId>
-      <version>${commons.exec.version}</version>
-    </dependency>
     <dependency>
       <groupId>org.jruby</groupId>
       <artifactId>jruby-complete</artifactId>
       <version>${jruby.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.google.protobuf</groupId>
-      <artifactId>protobuf-java</artifactId>
-      <version>${protobuf.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>jline</groupId>
-      <artifactId>jline</artifactId>
-      <version>${jline.version}</version>
     </dependency>
   </dependencies>
 
