@@ -22,6 +22,7 @@ dependencies:
   - altair
   - vega_datasets
   - plotly
+  - bokeh=3.3.4
   - pip
   - r-base=3
   - r-data.table
