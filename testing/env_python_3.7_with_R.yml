@@ -22,7 +22,7 @@ dependencies:
   - intake-xarray
   - altair
   - vega_datasets
-  - plotly=5.19.0
+  - plotly
   - jinja2=3.0.3
   - pip
   - r-base=3.6
