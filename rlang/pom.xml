@@ -38,7 +38,7 @@
 
         <spark.archive>spark-${spark.version}</spark.archive>
         <spark.bin.download.url>
-            https://archive.apache.org/dist/spark/${spark.archive}/${spark.archive}-bin-hadoop3.tgz
+            https://archive.apache.org/dist/spark/${spark.archive}/${spark.archive}-bin-without-hadoop.tgz
         </spark.bin.download.url>
         <interpreter.jar.name>zeppelin-interpreter-r</interpreter.jar.name>
     </properties>
@@ -173,7 +173,7 @@
                             <resources>
                                 <resource>
                                     <directory>
-                                        ${project.build.directory}/spark-${spark.version}-bin-hadoop3/R/lib
+                                        ${project.build.directory}/spark-${spark.version}-bin-without-hadoop/R/lib
                                     </directory>
                                 </resource>
                             </resources>
