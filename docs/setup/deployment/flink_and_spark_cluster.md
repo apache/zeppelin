@@ -225,16 +225,16 @@ Building from source is recommended  where possible, for simplicity in this tuto
 To download the Flink Binary use `wget`
 
 ```bash
-wget "http://mirror.cogentco.com/pub/apache/flink/flink-1.1.3/flink-1.1.3-bin-hadoop24-scala_2.10.tgz"
-tar -xzvf flink-1.1.3-bin-hadoop24-scala_2.10.tgz
+wget "http://mirror.cogentco.com/pub/apache/flink/flink-1.16.2/flink-1.16.2-bin-scala_2.12.tgz"
+tar -xzvf flink-1.16.2-bin-scala_2.12.tgz
 ```
 
-This will download Flink 1.1.3, compatible with Hadoop 2.4.  You do not have to install Hadoop for this binary to work, but if you are using Hadoop, please change `24` to your appropriate version.
+This will download Flink 1.16.2.
 
 Start the Flink Cluster.
 
 ```bash
-flink-1.1.3/bin/start-cluster.sh
+flink-1.16.2/bin/start-cluster.sh
 ```
 
 ###### Building From source
@@ -295,12 +295,12 @@ Using binaries is also
 To download the Spark Binary use `wget`
 
 ```bash
-wget "http://d3kbcqa49mib13.cloudfront.net/spark-1.6.3-bin-hadoop2.6.tgz"
-tar -xzvf spark-1.6.3-bin-hadoop2.6.tgz
-mv spark-1.6.3-bin-hadoop2.6 spark
+wget "https://dlcdn.apache.org/spark/spark-3.4.1/spark-3.4.1-bin-hadoop3.tgz"
+tar -xzvf spark-3.4.1-bin-hadoop3.tgz
+mv spark-3.4.1-bin-hadoop3 spark
 ```
 
-This will download Spark 1.6.3, compatible with Hadoop 2.6.  You do not have to install Hadoop for this binary to work, but if you are using Hadoop, please change `2.6` to your appropriate version.
+This will download Spark 3.4.1, compatible with Hadoop 3.  You do not have to install Hadoop for this binary to work, but if you are using Hadoop, please change `3` to your appropriate version.
 
 ###### Building From source
 

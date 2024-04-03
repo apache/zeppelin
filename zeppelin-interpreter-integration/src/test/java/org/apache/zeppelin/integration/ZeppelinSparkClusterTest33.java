@@ -24,16 +24,6 @@ import org.junit.jupiter.api.Nested;
 public class ZeppelinSparkClusterTest33 {
 
   @Nested
-  @DisplayName("Hadoop2")
-  public class Hadoop2 extends ZeppelinSparkClusterTest {
-
-      @BeforeEach
-      public void downloadSpark() throws Exception {
-        prepareSpark("3.3.0", "2");
-      }
-  }
-
-  @Nested
   @DisplayName("Hadoop3")
   public class Hadoop3 extends ZeppelinSparkClusterTest {
 

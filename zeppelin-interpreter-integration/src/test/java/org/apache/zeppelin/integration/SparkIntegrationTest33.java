@@ -25,16 +25,6 @@ import java.io.IOException;
 public class SparkIntegrationTest33 {
 
   @Nested
-  @DisplayName("Hadoop2")
-  public class Hadoop2 extends SparkIntegrationTest {
-
-    @BeforeEach
-    public void downloadSpark() throws IOException {
-      prepareSpark("3.3.0", "2");
-    }
-  }
-
-  @Nested
   @DisplayName("Hadoop3")
   public class Hadoop3 extends SparkIntegrationTest {
 
