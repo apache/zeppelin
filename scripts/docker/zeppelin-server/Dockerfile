@@ -40,7 +40,7 @@ ARG version="0.11.1"
 
 ENV LANG=en_US.UTF-8 \
     LC_ALL=en_US.UTF-8 \
-    JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64 \
+    JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64 \
     VERSION="${version}" \
     HOME="/opt/zeppelin" \
     ZEPPELIN_HOME="/opt/zeppelin" \
