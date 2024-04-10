@@ -374,7 +374,7 @@ export default function HeliumCtrl($scope, $rootScope, $sce,
   };
 
   $scope.getDescriptionText = function(pkgSearchResult) {
-    return $sce.trustAsHtml(pkgSearchResult.pkg.description);
+    return pkgSearchResult.pkg.description;
   };
 
   init();
