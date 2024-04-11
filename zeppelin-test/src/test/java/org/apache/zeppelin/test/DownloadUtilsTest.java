@@ -26,7 +26,7 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 
-//@Disabled("Takes a long time and depends on external factors.")
+@Disabled("Takes a long time and depends on external factors.")
 class DownloadUtilsTest {
 
   @Test
@@ -46,6 +46,14 @@ class DownloadUtilsTest {
   }
 
   @Test
+  void downloadSparkWithScala() {
+    String sparkHome = DownloadUtils.downloadSpark(DownloadUtils.DEFAULT_SPARK_VERSION, DownloadUtils.DEFAULT_SPARK_HADOOP_VERSION, "2.13");
+    Path sparkHomePath = Paths.get(sparkHome);
+    assertTrue(sparkHomePath.toFile().exists());
+    assertTrue(sparkHomePath.toFile().isDirectory());
+  }
+
+  @Test
   void downloadFlink() {
     String sparkHome = DownloadUtils.downloadFlink("1.16.3", "2.12");
     Path sparkHomePath = Paths.get(sparkHome);
@@ -56,6 +64,14 @@ class DownloadUtilsTest {
   @Test
   void downloadLivy() {
     String sparkHome = DownloadUtils.downloadLivy("0.7.1-incubating");
+    Path sparkHomePath = Paths.get(sparkHome);
+    assertTrue(sparkHomePath.toFile().exists());
+    assertTrue(sparkHomePath.toFile().isDirectory());
+  }
+
+  @Test
+  void downloadLivy080() {
+    String sparkHome = DownloadUtils.downloadLivy("0.8.0-incubating", "2.12");
     Path sparkHomePath = Paths.get(sparkHome);
     assertTrue(sparkHomePath.toFile().exists());
     assertTrue(sparkHomePath.toFile().isDirectory());

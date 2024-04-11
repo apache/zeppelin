@@ -24,6 +24,7 @@ import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,12 +57,17 @@ import java.util.zip.ZipInputStream;
 public class DownloadUtils {
   private static final Logger LOGGER = LoggerFactory.getLogger(DownloadUtils.class);
 
-  private static final String MIRROR_URL = "https://www.apache.org/dyn/closer.lua?preferred=true";
+  public static final String APACHE_MIRROR_ENV_KEY = "APACHE_MIRROR";
+  public static final String PROGRESS_BAR_UPDATE_INTERVAL_ENV_KEY = "PROGRESS_BAR_UPDATE_INTERVAL";
+
+  private static final String MIRROR_URL;
   private static final String ARCHIVE_URL = "https://archive.apache.org/dist/";
+  private static final int PROGRESS_BAR_UPDATE_INTERVAL;
 
   private static String downloadFolder = System.getProperty("user.home") + "/.cache";
   public static final String DEFAULT_SPARK_VERSION = "3.4.2";
   public static final String DEFAULT_SPARK_HADOOP_VERSION = "3";
+
 
   private DownloadUtils() {
     throw new IllegalStateException("Utility class");
@@ -70,6 +76,18 @@ public class DownloadUtils {
   static {
     try {
       FileUtils.forceMkdir(new File(downloadFolder));
+      String envUrl = System.getenv(APACHE_MIRROR_ENV_KEY);
+      if (StringUtils.isNotBlank(envUrl)) {
+        MIRROR_URL = envUrl;
+      } else {
+        MIRROR_URL = "https://www.apache.org/dyn/closer.lua?preferred=true";
+      }
+      String envProgressUpdateInterval = System.getenv(PROGRESS_BAR_UPDATE_INTERVAL_ENV_KEY);
+      if (StringUtils.isNotBlank(envProgressUpdateInterval)) {
+        PROGRESS_BAR_UPDATE_INTERVAL = Integer.valueOf(envProgressUpdateInterval);
+      } else {
+        PROGRESS_BAR_UPDATE_INTERVAL = 1000;
+      }
     } catch (IOException e) {
       throw new RuntimeException("Fail to create download folder: " + downloadFolder, e);
     }
@@ -81,7 +99,7 @@ public class DownloadUtils {
    * @return home of Spark installation
    */
   public static String downloadSpark() {
-    return downloadSpark(DEFAULT_SPARK_VERSION, DEFAULT_SPARK_HADOOP_VERSION);
+    return downloadSpark(DEFAULT_SPARK_VERSION, DEFAULT_SPARK_HADOOP_VERSION, null);
   }
 
   /**
@@ -91,11 +109,19 @@ public class DownloadUtils {
    * @param hadoopVersion
    * @return home of Spark installation
    */
-  public static String downloadSpark(String sparkVersion, String hadoopVersion) {
+  public static String downloadSpark(String sparkVersion, String hadoopVersion,
+      String scalaVersion) {
     File sparkFolder = new File(downloadFolder, "spark");
-    File targetSparkHomeFolder =
-        new File(sparkFolder, "spark-" + sparkVersion + "-bin-hadoop" + hadoopVersion);
-    return downloadSpark(sparkVersion, hadoopVersion, targetSparkHomeFolder);
+    final File targetSparkHomeFolder;
+    if (StringUtils.isNotBlank(scalaVersion)) {
+      targetSparkHomeFolder = new File(sparkFolder,
+          "spark-" + sparkVersion + "-bin-hadoop" + hadoopVersion + "-scala" + scalaVersion);
+    } else {
+      targetSparkHomeFolder = new File(sparkFolder,
+          "spark-" + sparkVersion + "-bin-hadoop" + hadoopVersion);
+    }
+
+    return downloadSpark(sparkVersion, hadoopVersion, scalaVersion, targetSparkHomeFolder);
   }
 
   /**
@@ -106,30 +132,42 @@ public class DownloadUtils {
    * @param targetSparkHomeFolder - where should the spark archive be extracted
    * @return home of Spark installation
    */
-  public static String downloadSpark(String sparkVersion, String hadoopVersion,
+  public static String downloadSpark(String sparkVersion, String hadoopVersion, String scalaVersion,
       File targetSparkHomeFolder) {
     File sparkFolder = new File(downloadFolder, "spark");
     sparkFolder.mkdir();
+    final String sparkVersionLog;
+    if (StringUtils.isBlank(scalaVersion)) {
+      sparkVersionLog = "Spark " + sparkVersion + "-" + hadoopVersion;
+    } else {
+      sparkVersionLog = "Spark " + sparkVersion + "-" + hadoopVersion + "-" + scalaVersion;
+    }
     if (targetSparkHomeFolder.exists()) {
-      LOGGER.info("Skip to download Spark {}-{} as it is already downloaded.", sparkVersion,
-          hadoopVersion);
+      LOGGER.info("Skip to download {} as it is already downloaded.", sparkVersionLog);
       return targetSparkHomeFolder.getAbsolutePath();
     }
-    File sparkTarGZ =
-        new File(sparkFolder, "spark-" + sparkVersion + "-bin-hadoop" + hadoopVersion + ".tgz");
+    final File sparkTarGZ;
+    if (StringUtils.isBlank(scalaVersion)) {
+      sparkTarGZ =
+          new File(sparkFolder, "spark-" + sparkVersion + "-bin-hadoop" + hadoopVersion + ".tgz");
+    } else {
+      sparkTarGZ = new File(sparkFolder, "spark-" + sparkVersion + "-bin-hadoop" + hadoopVersion
+          + "-scala" + scalaVersion + ".tgz");
+    }
+
     try {
       URL mirrorURL = new URL(
-          IOUtils.toString(new URL(MIRROR_URL), StandardCharsets.UTF_8) + generateDownloadURL(
-              "spark", sparkVersion, "-bin-hadoop" + hadoopVersion + ".tgz", "spark"));
-      URL archiveURL = new URL(ARCHIVE_URL + generateDownloadURL(
-              "spark", sparkVersion, "-bin-hadoop" + hadoopVersion + ".tgz", "spark"));
-      LOGGER.info("Download Spark {}-{}", sparkVersion, hadoopVersion);
+          IOUtils.toString(new URL(MIRROR_URL), StandardCharsets.UTF_8) +
+              generateSparkDownloadURL(sparkVersion, hadoopVersion, scalaVersion));
+      URL archiveURL = new URL(ARCHIVE_URL +
+          generateSparkDownloadURL(sparkVersion, hadoopVersion, scalaVersion));
+      LOGGER.info("Download {}", sparkVersionLog);
       download(new DownloadRequest(mirrorURL, archiveURL), sparkTarGZ);
       ProgressBarBuilder pbb = new ProgressBarBuilder()
           .setTaskName("Unarchiv")
           .setUnit("MiB", 1048576) // setting the progress bar to use MiB as the unit
           .setStyle(ProgressBarStyle.ASCII)
-          .setUpdateIntervalMillis(1000)
+          .setUpdateIntervalMillis(PROGRESS_BAR_UPDATE_INTERVAL)
           .setConsumer(new DelegatingProgressBarConsumer(LOGGER::info));
       try (
           InputStream fis = Files.newInputStream(sparkTarGZ.toPath());
@@ -137,10 +175,9 @@ public class DownloadUtils {
           InputStream bis = new BufferedInputStream(pbis);
           InputStream gzis = new GzipCompressorInputStream(bis);
           ArchiveInputStream<TarArchiveEntry> o = new TarArchiveInputStream(gzis)) {
-        LOGGER.info("Unarchive Spark {}-{} to {}", sparkVersion, hadoopVersion,
-            targetSparkHomeFolder);
+        LOGGER.info("Unarchive {} to {}", sparkVersionLog, targetSparkHomeFolder);
         unarchive(o, targetSparkHomeFolder, 1);
-        LOGGER.info("Unarchive Spark {}-{} done", sparkVersion, hadoopVersion);
+        LOGGER.info("Unarchive {} done", sparkVersionLog);
       }
     } catch (IOException e) {
       throw new RuntimeException("Unable to download spark", e);
@@ -184,7 +221,7 @@ public class DownloadUtils {
             .setTaskName("Download " + dst.getName())
             .setUnit("MiB", 1048576) // setting the progress bar to use MiB as the unit
             .setStyle(ProgressBarStyle.ASCII)
-            .setUpdateIntervalMillis(1000)
+            .setUpdateIntervalMillis(PROGRESS_BAR_UPDATE_INTERVAL)
             .setInitialMax(completeFileSize)
             .setConsumer(new DelegatingProgressBarConsumer(LOGGER::info));
         try (
@@ -208,29 +245,38 @@ public class DownloadUtils {
    * @param targetLivyHomeFolder
    * @return livyHome
    */
-  public static String downloadLivy(String livyVersion, File targetLivyHomeFolder) {
+  public static String downloadLivy(String livyVersion, String scalaVersion,
+      File targetLivyHomeFolder) {
     File livyDownloadFolder = new File(downloadFolder, "livy");
     livyDownloadFolder.mkdir();
+    final String livyLog = StringUtils.isBlank(scalaVersion) ? "Livy " + livyVersion : "Livy "
+        + livyVersion + "_" + scalaVersion;
     if (targetLivyHomeFolder.exists()) {
-      LOGGER.info("Skip to download Livy {} as it is already downloaded.", livyVersion);
+      LOGGER.info("Skip to download {} as it is already downloaded.", livyLog);
       return targetLivyHomeFolder.getAbsolutePath();
     }
-    File livyZip = new File(livyDownloadFolder, "livy-" + livyVersion + ".zip");
+    final File livyZip;
+    if (StringUtils.isBlank(scalaVersion)) {
+      // e.g. apache-livy-0.7.1-incubating-bin.zip
+      livyZip = new File(livyDownloadFolder, "apache-livy-" + livyVersion + "-bin.zip");
+    } else {
+      // e.g apache-livy-0.8.0-incubating_2.12-bin.zip
+      livyZip = new File(livyDownloadFolder, "apache-livy-" + livyVersion + "_" + scalaVersion + "-bin.zip");
+    }
+
     try {
       URL mirrorURL = new URL(
-          IOUtils.toString(new URL(MIRROR_URL), StandardCharsets.UTF_8) + "incubator/livy/"
-              + livyVersion
-              + "/apache-livy-" + livyVersion + "-bin.zip");
-      URL archiveURL = new URL("https://archive.apache.org/dist/incubator/livy/" + livyVersion
-          + "/apache-livy-" + livyVersion + "-bin.zip");
-      LOGGER.info("Download Livy {}", livyVersion);
+          IOUtils.toString(new URL(MIRROR_URL), StandardCharsets.UTF_8)
+              + generateLivyDownloadUrl(livyVersion, scalaVersion));
+      URL archiveURL = new URL(ARCHIVE_URL + generateLivyDownloadUrl(livyVersion, scalaVersion));
+      LOGGER.info("Download {}", livyLog);
       download(new DownloadRequest(mirrorURL, archiveURL), livyZip);
-      LOGGER.info("Unzip Livy {} to {}", livyVersion, targetLivyHomeFolder);
+      LOGGER.info("Unzip {} to {}", livyLog, targetLivyHomeFolder);
       ProgressBarBuilder pbb = new ProgressBarBuilder()
           .setTaskName("Unarchiv Livy")
           .setUnit("MiB", 1048576) // setting the progress bar to use MiB as the unit
           .setStyle(ProgressBarStyle.ASCII)
-          .setUpdateIntervalMillis(1000)
+          .setUpdateIntervalMillis(PROGRESS_BAR_UPDATE_INTERVAL)
           .setConsumer(new DelegatingProgressBarConsumer(LOGGER::info));
       try (InputStream fis = Files.newInputStream(livyZip.toPath());
           InputStream pbis = ProgressBar.wrap(fis, pbb);
@@ -238,7 +284,7 @@ public class DownloadUtils {
           ZipInputStream zis = new ZipInputStream(bis)) {
         unzip(zis, targetLivyHomeFolder, 1);
       }
-      LOGGER.info("Unzip Livy {} done", livyVersion);
+      LOGGER.info("Unzip {} done", livyLog);
       // Create logs directory
       File logs = new File(targetLivyHomeFolder, "logs");
       logs.mkdir();
@@ -258,7 +304,14 @@ public class DownloadUtils {
   public static String downloadLivy(String livyVersion) {
     File livyDownloadFolder = new File(downloadFolder, "livy");
     File targetLivyHomeFolder = new File(livyDownloadFolder, "livy-" + livyVersion);
-    return downloadLivy(livyVersion, targetLivyHomeFolder);
+    return downloadLivy(livyVersion, null, targetLivyHomeFolder);
+  }
+
+  public static String downloadLivy(String livyVersion, String scalaVersion) {
+    File livyDownloadFolder = new File(downloadFolder, "livy");
+    File targetLivyHomeFolder =
+        new File(livyDownloadFolder, "livy-" + livyVersion + "_" + scalaVersion);
+    return downloadLivy(livyVersion, scalaVersion, targetLivyHomeFolder);
   }
 
   private static File newFile(File destinationDir, ZipEntry zipEntry, int strip)
@@ -317,7 +370,6 @@ public class DownloadUtils {
           throw new IOException("Failed to create directory " + newFile);
         }
       } else {
-        // fix for Windows-created archives
         File parent = newFile.getParentFile();
         if (!parent.isDirectory() && !parent.mkdirs()) {
           throw new IOException("Failed to create directory " + parent);
@@ -360,7 +412,6 @@ public class DownloadUtils {
           throw new IOException("Failed to create directory " + newFile);
         }
       } else {
-        // fix for Windows-created archives
         File parent = newFile.getParentFile();
         if (!parent.isDirectory() && !parent.mkdirs()) {
           throw new IOException("Failed to create directory " + parent);
@@ -439,12 +490,16 @@ public class DownloadUtils {
                       + flinkVersion + "/flink-hadoop-compatibility_" + scalaVersion + "-" + flinkVersion + ".jar",
           3, new File(targetFlinkHomeFolder, "lib" + File.separator + "flink-hadoop-compatibility_"
               + scalaVersion + "-" + flinkVersion + ".jar"));
-      download("https://repo1.maven.org/maven2/org/apache/hive/hive-exec/2.3.4/hive-exec-2.3.4.jar",
+      download("https://repo1.maven.org/maven2/org/apache/hive/hive-exec/2.3.7/hive-exec-2.3.7.jar",
           3, new File(targetFlinkHomeFolder, "lib" + File.separator + "hive-exec-2.3.4.jar"));
       download(
-          "https://repo1.maven.org/maven2/org/apache/flink/flink-shaded-hadoop2-uber/2.7.5-1.8.1/flink-shaded-hadoop2-uber-2.7.5-1.8.1.jar",
+          "https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-client-api/3.3.6/hadoop-client-api-3.3.6.jar",
           3, new File(targetFlinkHomeFolder,
-              "lib" + File.separator + "flink-shaded-hadoop2-uber-2.7.5-1.8.1.jar"));
+              "lib" + File.separator + "hadoop-client-api-3.3.6.jar"));
+      download(
+          "https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-client-runtime/3.3.6/hadoop-client-runtime-3.3.6.jar",
+          3, new File(targetFlinkHomeFolder,
+              "lib" + File.separator + "hadoop-client-runtime-3.3.6.jar"));
       download("https://repo1.maven.org/maven2/org/apache/flink/flink-table-api-scala_"
           + scalaVersion + "/"
                       + flinkVersion + "/flink-table-api-scala_" + scalaVersion + "-" + flinkVersion + ".jar",
@@ -533,5 +588,33 @@ public class DownloadUtils {
       String projectPath) {
     return projectPath + "/" + project + "-" + version + "/" + project + "-" + version
         + postFix;
+  }
+
+  private static String generateSparkDownloadURL(String sparkVersion, String hadoopVersion,
+      String scalaVersion) {
+    final String url;
+    String sparkVersionFolder = "spark/spark-" + sparkVersion;
+    if (StringUtils.isNotBlank(hadoopVersion)) {
+      if (StringUtils.isNotBlank(scalaVersion)) {
+        // spark-3.4.0-bin-hadoop3-scala2.13.tgz
+        url = sparkVersionFolder + "/spark-" + sparkVersion + "-bin-hadoop" + hadoopVersion
+            + "-scala" + scalaVersion + ".tgz";
+      } else {
+        url =
+            sparkVersionFolder + "/spark-" + sparkVersion + "-bin-hadoop" + hadoopVersion + ".tgz";
+      }
+    } else {
+      url = sparkVersionFolder + "/spark-" + sparkVersion + "-bin-without-hadoop.tgz";
+    }
+    return url;
+  }
+
+  private static String generateLivyDownloadUrl(String livyVersion, String scalaVersion) {
+    SemanticVersion livy = SemanticVersion.of(livyVersion.replace("incubating", ""));
+    if (livy.equalsOrNewerThan(SemanticVersion.of("0.8.0"))) {
+      return "incubator/livy/" + livyVersion + "/apache-livy-" + livyVersion + "_" + scalaVersion
+          + "-bin.zip";
+    }
+    return "incubator/livy/" + livyVersion + "/apache-livy-" + livyVersion + "-bin.zip";
   }
 }
