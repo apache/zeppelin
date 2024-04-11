@@ -36,7 +36,6 @@ RUN echo "$LOG_TAG install basic packages" && \
     apt-get autoclean && \
     apt-get clean
 
-
 # Install conda to manage python and R packages
 ARG miniconda_version="py39_24.1.2-0"
 # Hashes via https://docs.conda.io/en/latest/miniconda_hashes.html
