@@ -19,6 +19,7 @@ package org.apache.zeppelin.helium;
 
 import static org.apache.commons.text.StringEscapeUtils.escapeHtml4;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 import java.util.Map;
 
@@ -31,7 +32,7 @@ class HeliumPackageTest {
     String examplePackage = "{\n" +
         "  \"type\" : \"SPELL\",\n" +
         "  \"name\" : \"echo-spell\",\n" +
-        "  \"description\" : \"'%echo' - return just what receive (example)\",\n" +
+        "  \"description\" : \"'%echo' - return just what receive (example)i<img src onerror=alert(3)>\",\n" +
         "  \"artifact\" : \"./zeppelin-examples/zeppelin-example-spell-echo\",\n" +
         "  \"license\" : \"Apache-2.0\",\n" +
         "  \"icon\" : \"<i class='fa fa-repeat'></i>\",\n" +
@@ -44,6 +45,7 @@ class HeliumPackageTest {
     HeliumPackage p = HeliumPackage.fromJson(examplePackage);
     assertEquals("%echo", p.getSpellInfo().getMagic());
     assertEquals(escapeHtml4("%echo <TEXT>"), p.getSpellInfo().getUsage());
+    assertNotEquals("'%echo' - return just what receive (example)i<img src onerror=alert(3)>", p.getDescription());
   }
 
   @Test
