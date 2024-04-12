@@ -80,7 +80,9 @@ public class DownloadUtils {
       if (StringUtils.isNotBlank(envUrl)) {
         MIRROR_URL = envUrl;
       } else {
-        MIRROR_URL = "https://www.apache.org/dyn/closer.lua?preferred=true";
+        MIRROR_URL =
+            IOUtils.toString(new URL("https://www.apache.org/dyn/closer.lua?preferred=true"),
+                StandardCharsets.UTF_8);
       }
       String envProgressUpdateInterval = System.getenv(PROGRESS_BAR_UPDATE_INTERVAL_ENV_KEY);
       if (StringUtils.isNotBlank(envProgressUpdateInterval)) {
@@ -103,10 +105,22 @@ public class DownloadUtils {
   }
 
   /**
-   * Download of a Spark distribution
+   * Download of a Spark distribution with a specific Hadoop version
    *
    * @param sparkVersion
    * @param hadoopVersion
+   * @return home of Spark installation
+   */
+  public static String downloadSpark(String sparkVersion, String hadoopVersion) {
+    return downloadSpark(sparkVersion, hadoopVersion, null);
+  }
+
+  /**
+   * Download of a Spark distribution with a Hadoop and Scala version
+   *
+   * @param sparkVersion
+   * @param hadoopVersion
+   * @param scalaVersion
    * @return home of Spark installation
    */
   public static String downloadSpark(String sparkVersion, String hadoopVersion,
@@ -156,9 +170,8 @@ public class DownloadUtils {
     }
 
     try {
-      URL mirrorURL = new URL(
-          IOUtils.toString(new URL(MIRROR_URL), StandardCharsets.UTF_8) +
-              generateSparkDownloadURL(sparkVersion, hadoopVersion, scalaVersion));
+      URL mirrorURL = new URL(MIRROR_URL +
+          generateSparkDownloadURL(sparkVersion, hadoopVersion, scalaVersion));
       URL archiveURL = new URL(ARCHIVE_URL +
           generateSparkDownloadURL(sparkVersion, hadoopVersion, scalaVersion));
       LOGGER.info("Download {}", sparkVersionLog);
@@ -265,9 +278,7 @@ public class DownloadUtils {
     }
 
     try {
-      URL mirrorURL = new URL(
-          IOUtils.toString(new URL(MIRROR_URL), StandardCharsets.UTF_8)
-              + generateLivyDownloadUrl(livyVersion, scalaVersion));
+      URL mirrorURL = new URL(MIRROR_URL + generateLivyDownloadUrl(livyVersion, scalaVersion));
       URL archiveURL = new URL(ARCHIVE_URL + generateLivyDownloadUrl(livyVersion, scalaVersion));
       LOGGER.info("Download {}", livyLog);
       download(new DownloadRequest(mirrorURL, archiveURL), livyZip);
@@ -450,8 +461,7 @@ public class DownloadUtils {
     File flinkTGZ = new File(flinkDownloadFolder,
         "flink-" + flinkVersion + "-bin-scala_" + scalaVersion + ".tgz");
     try {
-      URL mirrorURL = new URL(
-          IOUtils.toString(new URL(MIRROR_URL), StandardCharsets.UTF_8) + generateDownloadURL(
+      URL mirrorURL = new URL(MIRROR_URL + generateDownloadURL(
               "flink", flinkVersion, "-bin-scala_" + scalaVersion + ".tgz", "flink"));
       URL archiveURL = new URL(ARCHIVE_URL + generateDownloadURL(
           "flink", flinkVersion, "-bin-scala_" + scalaVersion + ".tgz", "flink"));
@@ -555,9 +565,8 @@ public class DownloadUtils {
     }
     File hadoopTGZ = new File(hadoopDownloadFolder, "hadoop-" + version + ".tar.gz");
     try {
-      URL mirrorURL = new URL(
-          IOUtils.toString(new URL(MIRROR_URL), StandardCharsets.UTF_8) + generateDownloadURL(
-              "hadoop", version, ".tar.gz", "hadoop/core"));
+      URL mirrorURL = new URL(MIRROR_URL + generateDownloadURL(
+          "hadoop", version, ".tar.gz", "hadoop/core"));
       URL archiveURL = new URL(ARCHIVE_URL + generateDownloadURL(
           "hadoop", version, ".tar.gz", "hadoop/core"));
       LOGGER.info("Download Hadoop {}", version);
