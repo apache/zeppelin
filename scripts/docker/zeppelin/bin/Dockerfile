@@ -24,13 +24,13 @@ ENV LOG_TAG="[ZEPPELIN_${Z_VERSION}]:" \
     HOME="/opt/zeppelin" \
     LANG=en_US.UTF-8 \
     LC_ALL=en_US.UTF-8 \
-    JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64 \
+    JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64 \
     ZEPPELIN_ADDR="0.0.0.0"
 
 RUN echo "$LOG_TAG install basic packages" && \
     apt-get -y update && \
     # Switch back to install JRE instead of JDK when moving to JDK9 or later.
-    DEBIAN_FRONTEND=noninteractive apt-get install -y locales language-pack-en tini openjdk-8-jdk-headless wget unzip && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y locales language-pack-en tini openjdk-11-jdk-headless wget unzip && \
     # Cleanup
     rm -rf /var/lib/apt/lists/* && \
     apt-get autoclean && \
