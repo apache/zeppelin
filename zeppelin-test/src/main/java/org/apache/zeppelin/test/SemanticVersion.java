@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.zeppelin.interpreter.integration;
+package org.apache.zeppelin.test;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

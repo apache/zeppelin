@@ -25,6 +25,7 @@ import org.apache.hadoop.yarn.api.protocolrecords.GetApplicationsResponse;
 import org.apache.hadoop.yarn.api.records.ApplicationReport;
 import org.apache.hadoop.yarn.api.records.YarnApplicationState;
 import org.apache.hadoop.yarn.exceptions.YarnException;
+import org.apache.zeppelin.test.DownloadUtils;
 import org.apache.zeppelin.interpreter.ExecutionContext;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
@@ -33,7 +34,6 @@ import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
-import org.apache.zeppelin.interpreter.integration.DownloadUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -62,11 +62,9 @@ public class SparkSubmitIntegrationTest {
 
   @BeforeAll
   public static void setUp() throws IOException {
-    String sparkVersion = "3.4.1";
-    String hadoopVersion = "3";
-    LOGGER.info("Testing Spark Version: " + sparkVersion);
-    LOGGER.info("Testing Hadoop Version: " + hadoopVersion);
-    sparkHome = DownloadUtils.downloadSpark(sparkVersion, hadoopVersion);
+    LOGGER.info("Testing Spark Version: " + DownloadUtils.DEFAULT_SPARK_VERSION);
+    LOGGER.info("Testing Hadoop Version: " + DownloadUtils.DEFAULT_SPARK_HADOOP_VERSION);
+    sparkHome = DownloadUtils.downloadSpark();
 
     hadoopCluster = new MiniHadoopCluster();
     hadoopCluster.start();
@@ -102,7 +100,7 @@ public class SparkSubmitIntegrationTest {
       InterpreterContext context = new InterpreterContext.Builder().setNoteId("note1").setParagraphId("paragraph_1").build();
       InterpreterResult interpreterResult =
               sparkSubmitInterpreter.interpret("--master local --class org.apache.spark.examples.SparkPi --deploy-mode client " +
-              sparkHome + "/examples/jars/spark-examples_2.12-3.4.1.jar", context);
+              sparkHome + "/examples/jars/spark-examples_2.12-" + DownloadUtils.DEFAULT_SPARK_VERSION + ".jar", context);
       assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code(), interpreterResult.toString());
 
       // no yarn application launched
@@ -126,7 +124,7 @@ public class SparkSubmitIntegrationTest {
               sparkSubmitInterpreter.interpret("--master yarn --deploy-mode cluster --class org.apache.spark.examples.SparkPi " +
                       "--conf spark.app.name=" + yarnAppName + " --conf spark.driver.memory=512m " +
                       "--conf spark.executor.memory=512m " +
-                      sparkHome + "/examples/jars/spark-examples_2.12-3.4.1.jar", context);
+                      sparkHome + "/examples/jars/spark-examples_2.12-" + DownloadUtils.DEFAULT_SPARK_VERSION + ".jar", context);
       assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code(), interpreterResult.toString());
 
       GetApplicationsRequest request = GetApplicationsRequest.newInstance(EnumSet.of(YarnApplicationState.FINISHED));
@@ -159,7 +157,7 @@ public class SparkSubmitIntegrationTest {
                     sparkSubmitInterpreter.interpret("--master yarn  --deploy-mode cluster --class org.apache.spark.examples.SparkPi " +
                             "--conf spark.app.name=" + yarnAppName + " --conf spark.driver.memory=512m " +
                             "--conf spark.executor.memory=512m " +
-                            sparkHome + "/examples/jars/spark-examples_2.12-3.4.1.jar", context);
+                            sparkHome + "/examples/jars/spark-examples_2.12-" + DownloadUtils.DEFAULT_SPARK_VERSION + ".jar", context);
             assertEquals(InterpreterResult.Code.INCOMPLETE, interpreterResult.code(), interpreterResult.toString());
             assertTrue(interpreterResult.toString().contains("Paragraph received a SIGTERM"), interpreterResult.toString());
           } catch (InterpreterException e) {
