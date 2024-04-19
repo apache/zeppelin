@@ -423,6 +423,10 @@ jobs:
           rm -rf spark/interpreter/metastore_db
           ./mvnw verify -pl spark-submit,spark/interpreter -am -Dtest=org/apache/zeppelin/spark/* -Pspark-3.5 -Pspark-scala-2.13 -Phadoop3 -Pintegration -DfailIfNoTests=false ${MAVEN_ARGS}
 
+  # The version combination is based on the facts:
+  # 1. official Livy 0.8 binary tarball is built against Spark 2.4
+  # 2. official Spark 2.4 binary tarball is built against Scala 2.11
+  # 3. Spark 2.4 support Python 2.7, 3.4 to 3.7
   livy-0-8-with-spark-2-4-under-python37:
     runs-on: ubuntu-20.04
     steps:
