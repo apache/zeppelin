@@ -402,7 +402,7 @@ public class LivyInterpreterIT extends WithLivyServer {
         assertTrue(result.message().get(0).getData().contains("[Row(_1=u'hello', _2=20)]")
             || result.message().get(0).getData().contains("[Row(_1='hello', _2=20)]"));
       } else {
-        result = pysparkInterpreter.interpret("df=spark.createDataFrame([(\"hello\",20)])\n"
+        result = pysparkInterpreter.interpret("df=spark.createDataFrame([('hello',20)])\n"
             + "df.collect()", context);
         assertEquals(InterpreterResult.Code.SUCCESS, result.code(), result.toString());
         assertEquals(1, result.message().size());
@@ -456,7 +456,7 @@ public class LivyInterpreterIT extends WithLivyServer {
   }
 
   @Test
-  void testSparkInterpreterWithDisplayAppInfo_StringWithoutTruncation()
+  void testSparkInterpreterStringWithoutTruncation()
       throws InterpreterException {
     if (!checkPreCondition()) {
       return;
@@ -464,7 +464,6 @@ public class LivyInterpreterIT extends WithLivyServer {
     InterpreterGroup interpreterGroup = new InterpreterGroup("group_1");
     interpreterGroup.put("session_1", new ArrayList<Interpreter>());
     Properties properties2 = new Properties(properties);
-    properties2.put("zeppelin.livy.displayAppInfo", "false"); // temporary disable
     // enable spark ui because it is disabled by livy integration test
     properties2.put("livy.spark.ui.enabled", "true");
     properties2.put(LivySparkSQLInterpreter.ZEPPELIN_LIVY_SPARK_SQL_FIELD_TRUNCATE, "false");
@@ -490,21 +489,19 @@ public class LivyInterpreterIT extends WithLivyServer {
     try {
       InterpreterResult result = sparkInterpreter.interpret("sc.version", context);
       assertEquals(InterpreterResult.Code.SUCCESS, result.code(), result.toString());
-      assertEquals(2, result.message().size());
-      // check appId and ensure it is not null
-      assertTrue(result.message().get(1).getData().contains("Spark Application Id:"));
+      assertEquals(1, result.message().size(), result.toString());
 
       // html output
       String htmlCode = "println(\"%html <h1> hello </h1>\")";
       result = sparkInterpreter.interpret(htmlCode, context);
       assertEquals(InterpreterResult.Code.SUCCESS, result.code(), result.toString());
-      assertEquals(2, result.message().size());
+      assertEquals(1, result.message().size());
       assertEquals(InterpreterResult.Type.HTML, result.message().get(0).getType());
 
       // detect spark version
       result = sparkInterpreter.interpret("sc.version", context);
       assertEquals(InterpreterResult.Code.SUCCESS, result.code(), result.toString());
-      assertEquals(2, result.message().size());
+      assertEquals(1, result.message().size());
 
       boolean isSpark2 = isSpark2(sparkInterpreter, context);
 
@@ -523,7 +520,7 @@ public class LivyInterpreterIT extends WithLivyServer {
                 + ".toDF(\"col_1\", \"col_2\")\n"
                 + "df.collect()", context);
         assertEquals(InterpreterResult.Code.SUCCESS, result.code(), result.toString());
-        assertEquals(2, result.message().size());
+        assertEquals(1, result.message().size());
         assertTrue(result.message().get(0).getData()
             .contains("Array[org.apache.spark.sql.Row] = Array([12characters12characters,20])"));
       }

@@ -423,7 +423,7 @@ jobs:
           rm -rf spark/interpreter/metastore_db
           ./mvnw verify -pl spark-submit,spark/interpreter -am -Dtest=org/apache/zeppelin/spark/* -Pspark-3.5 -Pspark-scala-2.13 -Phadoop3 -Pintegration -DfailIfNoTests=false ${MAVEN_ARGS}
 
-  livy-0-8-with-spark-3-5-1-under-python3:
+  livy-0-8-with-spark-2-4-under-python37:
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout
@@ -449,14 +449,14 @@ jobs:
       - name: install environment
         run: |
           ./mvnw install -DskipTests -pl livy -am  ${MAVEN_ARGS}
-          ./testing/downloadSpark.sh "3.5.1" "3"
-          ./testing/downloadLivy.sh "0.8.0-incubating" "2.12"
-      - name: Setup conda environment with python 3.9 and R
+          ./testing/downloadSpark.sh "2.4.8" "2.7"
+          ./testing/downloadLivy.sh "0.8.0-incubating" "2.11"
+      - name: Setup conda environment with python 3.7 and R
         uses: conda-incubator/setup-miniconda@v2
         with:
-          activate-environment: python_3_with_R
-          environment-file: testing/env_python_3_with_R.yml
-          python-version: 3.9
+          activate-environment: python_37_with_R
+          environment-file: testing/env_python_3.7_with_R.yml
+          python-version: 3.7
           miniforge-variant: Mambaforge
           channels: conda-forge,defaults
           channel-priority: true
@@ -467,9 +467,9 @@ jobs:
           R -e "IRkernel::installspec()"
       - name: run tests
         run: |
-          export SPARK_HOME=$PWD/spark-3.5.1-bin-hadoop3
-          export LIVY_HOME=$PWD/apache-livy-0.8.0-incubating_2.12-bin
-          ./mvnw verify -pl livy -am  ${MAVEN_ARGS}
+          export SPARK_HOME=$PWD/spark-2.4.8-bin-hadoop2.7
+          export LIVY_HOME=$PWD/apache-livy-0.8.0-incubating_2.11-bin
+          ./mvnw verify -pl livy -am ${MAVEN_ARGS}
 
   default-build:
     runs-on: ubuntu-20.04
