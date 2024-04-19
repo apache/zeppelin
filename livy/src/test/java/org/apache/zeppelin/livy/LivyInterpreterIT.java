@@ -631,18 +631,18 @@ public class LivyInterpreterIT extends WithLivyServer {
     MyInterpreterOutputListener outputListener = new MyInterpreterOutputListener();
     InterpreterOutput output = new InterpreterOutput(outputListener);
     InterpreterContext context = InterpreterContext.builder()
-        .setNoteId("noteId")
-        .setParagraphId("paragraphId")
-        .setAuthenticationInfo(authInfo)
-        .setInterpreterOut(output)
-        .build();
+            .setNoteId("noteId")
+            .setParagraphId("paragraphId")
+            .setAuthenticationInfo(authInfo)
+            .setInterpreterOut(output)
+            .build();
     sparkInterpreter.open();
 
     try {
       InterpreterResult result = sparkInterpreter.interpret("sc.version\n" +
               "assert(sc.getConf.get(\"spark.executor.cores\") == \"4\" && " +
-              "sc.getConf.get(\"spark.app.name\") == \"zeppelin-livy\")"
-          , context);
+                     "sc.getConf.get(\"spark.app.name\") == \"zeppelin-livy\")"
+                     , context);
       assertEquals(InterpreterResult.Code.SUCCESS, result.code(), result.toString());
       assertEquals(1, result.message().size());
     } finally {
