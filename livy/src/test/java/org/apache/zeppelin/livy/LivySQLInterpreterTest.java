@@ -27,6 +27,9 @@ import java.util.Properties;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+/**
+ * Unit test for LivySQLInterpreter.
+ */
 class LivySQLInterpreterTest {
 
   private LivySparkSQLInterpreter sqlInterpreter;
@@ -40,6 +43,7 @@ class LivySQLInterpreterTest {
     properties.setProperty("zeppelin.livy.http.headers", "HEADER_1: VALUE_1_${HOME}");
     sqlInterpreter = new LivySparkSQLInterpreter(properties);
   }
+
   @Test
   void testHttpHeaders() {
     assertEquals(1, sqlInterpreter.getCustomHeaders().size());
