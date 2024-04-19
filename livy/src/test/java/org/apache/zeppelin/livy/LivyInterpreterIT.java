@@ -642,7 +642,7 @@ public class LivyInterpreterIT extends WithLivyServer {
       InterpreterResult result = sparkInterpreter.interpret("sc.version\n" +
               "assert(sc.getConf.get(\"spark.executor.cores\") == \"4\" && " +
                      "sc.getConf.get(\"spark.app.name\") == \"zeppelin-livy\")"
-                     , context);
+              , context);
       assertEquals(InterpreterResult.Code.SUCCESS, result.code(), result.toString());
       assertEquals(1, result.message().size());
     } finally {
