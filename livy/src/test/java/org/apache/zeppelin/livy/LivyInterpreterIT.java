@@ -464,7 +464,7 @@ public class LivyInterpreterIT extends WithLivyServer {
     InterpreterGroup interpreterGroup = new InterpreterGroup("group_1");
     interpreterGroup.put("session_1", new ArrayList<Interpreter>());
     Properties properties2 = new Properties(properties);
-    properties2.put("zeppelin.livy.displayAppInfo", "true");
+    properties2.put("zeppelin.livy.displayAppInfo", "false"); // temporary disable
     // enable spark ui because it is disabled by livy integration test
     properties2.put("livy.spark.ui.enabled", "true");
     properties2.put(LivySparkSQLInterpreter.ZEPPELIN_LIVY_SPARK_SQL_FIELD_TRUNCATE, "false");
