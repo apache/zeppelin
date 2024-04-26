@@ -43,6 +43,9 @@
         <artifactId>maven-resources-plugin</artifactId>
       </plugin>
       <plugin>
+        <artifactId>maven-shade-plugin</artifactId>
+      </plugin>
+      <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>build-helper-maven-plugin</artifactId>
       </plugin>

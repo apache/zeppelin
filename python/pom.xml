@@ -132,6 +132,10 @@
       </plugin>
 
       <plugin>
+        <artifactId>maven-shade-plugin</artifactId>
+      </plugin>
+
+      <plugin>
         <artifactId>maven-resources-plugin</artifactId>
       </plugin>
 
@@ -148,6 +152,9 @@
           <filters>
             <filter>
               <artifact>*:*</artifact>
+              <excludes>
+                <exclude>META-INF/maven/**</exclude>
+              </excludes>
             </filter>
           </filters>
           <transformers>

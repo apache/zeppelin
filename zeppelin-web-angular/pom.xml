@@ -48,8 +48,8 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-war-plugin</artifactId>
         <configuration>
-          <warSourceDirectory>dist\zeppelin</warSourceDirectory>
-          <webXml>dist\zeppelin\WEB-INF\web.xml</webXml>
+          <warSourceDirectory>src</warSourceDirectory>
+          <webXml>WEB-INF/web.xml</webXml>
         </configuration>
       </plugin>
 

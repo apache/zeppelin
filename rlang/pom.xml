@@ -206,6 +206,9 @@
                     <filters>
                         <filter>
                             <artifact>*:*</artifact>
+                            <excludes>
+                                <exclude>META-INF/maven/**</exclude>
+                            </excludes>
                         </filter>
                     </filters>
                     <transformers>

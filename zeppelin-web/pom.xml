@@ -41,6 +41,21 @@
     <plugin.frontend.npmDownloadRoot>https://registry.npmjs.org/npm/-/</plugin.frontend.npmDownloadRoot>
   </properties>
 
+  <repositories>
+    <repository>
+      <id>central</id>
+      <name>aliyun maven</name>
+      <url>http://maven.aliyun.com/nexus/content/groups/public/</url>
+      <layout>default</layout>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
+  </repositories>
+
   <dependencies>
     <dependency>
       <groupId>org.apache.zeppelin</groupId>
@@ -86,8 +101,8 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-war-plugin</artifactId>
         <configuration>
-          <warSourceDirectory>dist</warSourceDirectory>
-          <webXml>dist\WEB-INF\web.xml</webXml>
+          <warSourceDirectory>src</warSourceDirectory>
+          <webXml>src/WEB-INF/web.xml</webXml>
         </configuration>
       </plugin>
 
