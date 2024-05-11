@@ -29,8 +29,8 @@ ENV VERSION="${version}" \
 # Install micromamba to install a python environment via conda
 RUN set -ex && \
     /usr/bin/apt-get update && \
-    DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get install -y openjdk-11-jre-headless wget tini bzip2 && \
-    /usr/bin/wget -qO- https://micromamba.snakepit.net/api/micromamba/linux-64/latest | tar -xvj bin/micromamba && \
+    DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get install -y openjdk-11-jre-headless curl wget tini bzip2 && \
+    /usr/bin/curl -Ls https://micromamba.snakepit.net/api/micromamba/linux-64/latest | tar -xvj bin/micromamba && \
     # Cleanup
     /usr/bin/apt-get clean && \
     /bin/rm -rf /var/lib/apt/lists/*
