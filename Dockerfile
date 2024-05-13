@@ -23,7 +23,7 @@ RUN echo "unsafe-perm=true" > ~/.npmrc && \
     echo '{ "allow_root": true }' > ~/.bowerrc && \
     ./mvnw -B package -DskipTests -Pbuild-distr -Pspark-3.3 -Pinclude-hadoop -Phadoop3 -Pspark-scala-2.12 -Pweb-angular -Pweb-dist && \
     # Example with doesn't compile all interpreters
-    # ./mvnw -B package -DskipTests -Pbuild-distr -Pspark-3.2 -Pinclude-hadoop -Phadoop3 -Pspark-scala-2.12 -Pweb-angular -Pweb-dist -pl '!groovy,!submarine,!livy,!hbase,!file,!flink' && \
+    # ./mvnw -B package -DskipTests -Pbuild-distr -Pspark-3.2 -Pinclude-hadoop -Phadoop3 -Pspark-scala-2.12 -Pweb-angular -Pweb-dist -pl '!groovy,!livy,!hbase,!file,!flink' && \
     mv /workspace/zeppelin/zeppelin-distribution/target/zeppelin-*/zeppelin-* /opt/zeppelin/ && \
     # Removing stuff saves time, because docker creates a temporary layer
     rm -rf ~/.m2 && \

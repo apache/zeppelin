@@ -97,7 +97,7 @@ function make_binary_release() {
 git_clone
 make_source_package
 
-make_binary_release netinst "-Pweb-angular -pl !hbase,!jdbc,!file,!flink,!cassandra,!elasticsearch,!bigquery,!alluxio,!livy,!groovy,!java,!neo4j,!submarine,!sparql,!mongodb,!shell -am"
+make_binary_release netinst "-Pweb-angular -pl !hbase,!jdbc,!file,!flink,!cassandra,!elasticsearch,!bigquery,!alluxio,!livy,!groovy,!java,!neo4j,!sparql,!mongodb,!shell -am"
 
 make_binary_release all "-Pweb-angular -pl !shell"
 
