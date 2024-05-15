@@ -303,14 +303,14 @@ body .navbar {
 }
 
 .zeppelin {
-  background: url('../assets/images/zepLogo.png') no-repeat right;
+  background: url('../assets/images/ortegeLogo.png') no-repeat right;
   height: 380px;
   opacity: 0.2;
 }
 
 .zeppelin2 {
-  background: url('../assets/images/zepLogo.png') no-repeat right;
-  background-position-y: 12px;
+  background: url('../assets/images/ortegeLogo.png') no-repeat right;
+  background-position-y: 47%;
   height: 380px;
   opacity: 0.2;
 }
