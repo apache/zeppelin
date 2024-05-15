@@ -27,6 +27,7 @@ dependencies:
   - pip:
     # works for regular pip packages
     - bkzep==0.6.1
+    - scikit-learn==1.4.2
   - r-base=3
   - r-data.table
   - r-evaluate
