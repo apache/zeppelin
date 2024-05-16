@@ -22,6 +22,7 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.FileSystemStorage;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
+import org.apache.zeppelin.notebook.NoteParser;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,7 +37,7 @@ import java.util.Map;
  * NotebookRepos for hdfs.
  *
  */
-public class FileSystemNotebookRepo implements NotebookRepo {
+public class FileSystemNotebookRepo extends AbstractNotebookRepo {
   private static final Logger LOGGER = LoggerFactory.getLogger(FileSystemNotebookRepo.class);
 
   private FileSystemStorage fs;
@@ -47,10 +48,12 @@ public class FileSystemNotebookRepo implements NotebookRepo {
   }
 
   @Override
-  public void init(ZeppelinConfiguration zConf) throws IOException {
-    this.fs = new FileSystemStorage(zConf, zConf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_DIR));
+  public void init(ZeppelinConfiguration conf, NoteParser noteParser) throws IOException {
+    super.init(conf, noteParser);
+    this.fs = new FileSystemStorage(conf,
+        conf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_DIR));
     LOGGER.info("Creating FileSystem: {}", this.fs.getFs().getClass().getName());
-    this.notebookDir = this.fs.makeQualified(new Path(zConf.getNotebookDir()));
+    this.notebookDir = this.fs.makeQualified(new Path(conf.getNotebookDir()));
     LOGGER.info("Using folder {} to store notebook", notebookDir);
     this.fs.tryMkDir(notebookDir);
   }
@@ -75,7 +78,7 @@ public class FileSystemNotebookRepo implements NotebookRepo {
   public Note get(String noteId, String notePath, AuthenticationInfo subject) throws IOException {
     String content = this.fs.readFile(
         new Path(notebookDir, buildNoteFileName(noteId, notePath)));
-    return Note.fromJson(noteId, content);
+    return noteParser.fromJson(noteId, content);
   }
 
   @Override

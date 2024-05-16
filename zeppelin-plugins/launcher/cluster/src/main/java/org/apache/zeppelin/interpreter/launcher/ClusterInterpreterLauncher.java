@@ -36,6 +36,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Executors;
 
 import static org.apache.zeppelin.cluster.event.ClusterEvent.CREATE_INTP_PROCESS;
 import static org.apache.zeppelin.cluster.meta.ClusterMeta.INTP_TSERVER_HOST;
@@ -229,9 +230,9 @@ public class ClusterInterpreterLauncher extends StandardInterpreterLauncher
     }
 
     // must first step start check interpreter thread
-    ClusterInterpreterCheckThread intpCheckThread = new ClusterInterpreterCheckThread(
-        intpProcess, context.getInterpreterGroupId(), getConnectTimeout(context));
-    intpCheckThread.start();
+    ClusterInterpreterCheck intpCheck = new ClusterInterpreterCheck(
+        intpProcess, context.getInterpreterGroupId(), getConnectTimeout(context), zConf);
+    Executors.newSingleThreadExecutor().execute(intpCheck);
 
     return intpProcess;
   }

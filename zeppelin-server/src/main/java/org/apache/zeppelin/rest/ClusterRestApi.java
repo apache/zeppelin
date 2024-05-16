@@ -55,9 +55,11 @@ public class ClusterRestApi {
 
   // Do not modify, Use by `zeppelin-web/src/app/cluster/cluster.html`
   private static final String PROPERTIES = "properties";
+  private final ZeppelinConfiguration zConf;
 
   @Inject
   public ClusterRestApi(ZeppelinConfiguration zConf) {
+    this.zConf = zConf;
     if (zConf.isClusterMode()) {
       clusterManagerServer = ClusterManagerServer.getInstance(zConf);
     } else {
@@ -69,8 +71,7 @@ public class ClusterRestApi {
   @Path("/address")
   @ZeppelinApi
   public Response getClusterAddress() {
-    ZeppelinConfiguration zconf = ZeppelinConfiguration.create();
-    String clusterAddr = zconf.getClusterAddress();
+    String clusterAddr = zConf.getClusterAddress();
     Map<String, String> data = new HashMap<>();
     data.put("clusterAddr", clusterAddr);
 

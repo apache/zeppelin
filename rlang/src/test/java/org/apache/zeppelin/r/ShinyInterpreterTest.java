@@ -221,8 +221,11 @@ public class ShinyInterpreterTest {
     assertEquals(500, response.getStatus());
 
     resultMessages = context2.out.toInterpreterResultMessage();
-    assertTrue(resultMessages.get(1).getData().contains("object 'Invalid_code' not found"),
-      resultMessages.get(1).getData());
+    assertTrue(resultMessages.get(1).getData().contains("Invalid_code"),
+        resultMessages.get(1).getData());
+    // depends on JVM language
+    // assertTrue(resultMessages.get(1).getData().contains("object 'Invalid_code' not found"),
+    // resultMessages.get(1).getData());
 
     // cancel paragraph to stop shiny app
     interpreter.cancel(getInterpreterContext());

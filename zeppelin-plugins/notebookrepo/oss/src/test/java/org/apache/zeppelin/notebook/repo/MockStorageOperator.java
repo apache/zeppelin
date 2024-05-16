@@ -24,8 +24,8 @@ import org.apache.zeppelin.notebook.repo.storage.RemoteStorageOperator;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -33,26 +33,25 @@ import java.util.stream.Collectors;
 
 public class MockStorageOperator implements RemoteStorageOperator {
 
-  private String mockRootFolder;
+  private File mockRootFolder;
 
   public MockStorageOperator() throws IOException {
-    Path tempDirectory = Files.createTempDirectory("zeppelin_mock_storage_dir_");
-    mockRootFolder = tempDirectory.toString() + "/";
+    mockRootFolder = Files.createTempDirectory("zeppelin_mock_storage_dir_").toFile();
   }
 
   @Override
   public void createBucket(String bucketName) throws IOException {
-    FileUtils.forceMkdir(new File(mockRootFolder + bucketName));
+    FileUtils.forceMkdir(new File(mockRootFolder, bucketName));
   }
 
   @Override
   public void deleteBucket(String bucketName) throws IOException {
-    FileUtils.deleteDirectory(new File(mockRootFolder + bucketName));
+    FileUtils.deleteDirectory(new File(mockRootFolder, bucketName));
   }
 
   @Override
   public boolean doesObjectExist(String bucketName, String key) throws IOException {
-    File file = new File(mockRootFolder + bucketName + "/" + key);
+    File file = new File(mockRootFolder, bucketName + File.separator + key);
     return file.exists() && !file.isDirectory();
   }
 
@@ -61,20 +60,21 @@ public class MockStorageOperator implements RemoteStorageOperator {
     if (!doesObjectExist(bucketName, key)) {
       throw new IOException("Note or its revision not found");
     }
-    return FileUtils.readFileToString(new File(mockRootFolder + bucketName + "/" + key), "UTF-8");
+    return FileUtils.readFileToString(new File(mockRootFolder, bucketName + File.separator + key),
+        StandardCharsets.UTF_8);
   }
 
   @Override
   public void putTextObject(String bucketName, String key, InputStream inputStream) throws IOException {
-    File destination = new File(mockRootFolder + bucketName + "/" + key);
+    File destination = new File(mockRootFolder, bucketName + File.separator + key);
     destination.getParentFile().mkdirs();
     FileUtils.copyInputStreamToFile(inputStream, destination);
   }
 
   @Override
   public void moveObject(String bucketName, String sourceKey, String destKey) throws IOException {
-    FileUtils.moveFile(new File(mockRootFolder + bucketName + "/" + sourceKey),
-            new File(mockRootFolder + bucketName + "/" + destKey));
+    FileUtils.moveFile(new File(mockRootFolder, bucketName + File.separator + sourceKey),
+        new File(mockRootFolder, bucketName + File.separator + destKey));
   }
 
   @Override
@@ -93,7 +93,7 @@ public class MockStorageOperator implements RemoteStorageOperator {
 
   @Override
   public void deleteFile(String bucketName, String objectKey) throws IOException {
-    FileUtils.forceDelete(new File(mockRootFolder + bucketName + "/" + objectKey));
+    FileUtils.forceDelete(new File(mockRootFolder, bucketName + File.separator + objectKey));
   }
 
   @Override
@@ -107,16 +107,23 @@ public class MockStorageOperator implements RemoteStorageOperator {
 
   @Override
   public List<String> listDirObjects(String bucketName, String dirname) {
-    File directory = new File(mockRootFolder + bucketName + "/" + dirname);
+    File directory = new File(mockRootFolder, bucketName + File.separator + dirname);
     if (!directory.isDirectory()) {
       return new ArrayList<>();
     }
     Collection<File> files = FileUtils.listFiles(directory, TrueFileFilter.INSTANCE, TrueFileFilter.INSTANCE);
-    return files.stream().map(file -> file.getPath().substring((mockRootFolder + bucketName + "/").length())).collect(Collectors.toList());
+    return files.stream().map(
+        file -> file.getPath()
+            .substring((mockRootFolder + File.separator + bucketName + File.separator).length()))
+        .collect(Collectors.toList());
   }
 
   @Override
   public void shutdown() {
-
+    try {
+      FileUtils.deleteDirectory(mockRootFolder);
+    } catch (IOException e) {
+      // Test case
+    }
   }
 }

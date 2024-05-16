@@ -20,6 +20,7 @@ package org.apache.zeppelin.notebook.repo;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
+import org.apache.zeppelin.notebook.NoteParser;
 import org.apache.zeppelin.notebook.repo.storage.OSSOperator;
 import org.apache.zeppelin.notebook.repo.storage.RemoteStorageOperator;
 import org.apache.zeppelin.user.AuthenticationInfo;
@@ -35,7 +36,8 @@ import java.util.*;
 /**
  * NotebookRepo for Aliyun OSS (https://cn.aliyun.com/product/oss)
  */
-public class OSSNotebookRepo implements NotebookRepoWithVersionControl {
+public class OSSNotebookRepo extends AbstractNotebookRepo
+    implements NotebookRepoWithVersionControl {
   private static final Logger LOGGER = LoggerFactory.getLogger(OSSNotebookRepo.class);
 
   private String bucketName;
@@ -49,7 +51,8 @@ public class OSSNotebookRepo implements NotebookRepoWithVersionControl {
   }
 
   @Override
-  public void init(ZeppelinConfiguration conf) throws IOException {
+  public void init(ZeppelinConfiguration conf, NoteParser noteParser) throws IOException {
+    super.init(conf, noteParser);
     String endpoint = conf.getOSSEndpoint();
     bucketName = conf.getOSSBucketName();
     rootFolder = conf.getNotebookDir();
@@ -100,7 +103,7 @@ public class OSSNotebookRepo implements NotebookRepoWithVersionControl {
 
   public Note getByOSSPath(String noteId, String ossPath) throws IOException {
     String noteText = ossOperator.getTextObject(bucketName, ossPath);
-    return Note.fromJson(noteId, noteText);
+    return noteParser.fromJson(noteId, noteText);
   }
 
 

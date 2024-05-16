@@ -18,6 +18,7 @@
 
 package org.apache.zeppelin.interpreter;
 
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
 import org.junit.jupiter.api.Test;
 
@@ -45,7 +46,8 @@ class SessionConfInterpreterTest {
         properties, "session_1", "group_1", mockInterpreterSetting);
 
     RemoteInterpreter remoteInterpreter =
-        new RemoteInterpreter(properties, "session_1", "clasName", "user1");
+        new RemoteInterpreter(properties, "session_1", "clasName", "user1",
+            ZeppelinConfiguration.load());
     List<Interpreter> interpreters = new ArrayList<>();
     interpreters.add(confInterpreter);
     interpreters.add(remoteInterpreter);

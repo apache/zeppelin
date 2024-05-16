@@ -26,9 +26,13 @@ import java.io.IOException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.AbstractZeppelinIT;
+import org.apache.zeppelin.MiniZeppelinServer;
 import org.apache.zeppelin.WebDriverManager;
 import org.apache.zeppelin.ZeppelinITUtils;
+import org.apache.zeppelin.test.DownloadUtils;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -40,14 +44,35 @@ import org.openqa.selenium.support.ui.Select;
 
 class ParagraphActionsIT extends AbstractZeppelinIT {
 
+  private static MiniZeppelinServer zepServer;
+
+  @BeforeAll
+  static void init() throws Exception {
+    String sparkHome = DownloadUtils.downloadSpark();
+
+    zepServer = new MiniZeppelinServer(ParagraphActionsIT.class.getSimpleName());
+    zepServer.addInterpreter("md");
+    zepServer.addInterpreter("sh");
+    zepServer.addInterpreter("spark");
+    zepServer.copyLogProperties();
+    zepServer.copyBinDir();
+    zepServer.start(true, ParagraphActionsIT.class.getSimpleName());
+    TestHelper.configureSparkInterpreter(zepServer, sparkHome);
+  }
+
   @BeforeEach
   public void startUp() throws IOException {
-    manager = new WebDriverManager();
+    manager = new WebDriverManager(zepServer.getZeppelinConfiguration().getServerPort());
   }
 
   @AfterEach
-  public void tearDown() throws IOException {
+  public void tearDownManager() throws IOException {
     manager.close();
+  }
+
+  @AfterAll
+  public static void tearDown() throws Exception {
+    zepServer.destroy();
   }
 
   @Test
@@ -656,7 +681,6 @@ class ParagraphActionsIT extends AbstractZeppelinIT {
   void testSingleDynamicFormTextInput() throws Exception {
     try {
       createNewNote();
-
       setTextOfParagraph(1, "%spark println(\"Hello \"+z.textbox(\"name\", \"world\")) ");
 
       runParagraph(1);

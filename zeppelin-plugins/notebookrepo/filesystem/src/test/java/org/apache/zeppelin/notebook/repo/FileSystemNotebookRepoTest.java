@@ -23,8 +23,10 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.notebook.GsonNoteParser;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
+import org.apache.zeppelin.notebook.NoteParser;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -47,16 +49,19 @@ class FileSystemNotebookRepoTest {
   private FileSystemNotebookRepo hdfsNotebookRepo;
   private String notebookDir;
   private AuthenticationInfo authInfo = AuthenticationInfo.ANONYMOUS;
+  private NoteParser noteParser;
 
   @BeforeEach
   void setUp() throws IOException {
     notebookDir = Files.createTempDirectory("FileSystemNotebookRepoTest").toFile().getAbsolutePath();
-    zConf = ZeppelinConfiguration.create();
-    System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_DIR.getVarName(), notebookDir);
+    zConf = ZeppelinConfiguration.load();
+    noteParser = new GsonNoteParser(zConf);
+    zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_DIR.getVarName(),
+        notebookDir);
     hadoopConf = new Configuration();
     fs = FileSystem.get(hadoopConf);
     hdfsNotebookRepo = new FileSystemNotebookRepo();
-    hdfsNotebookRepo.init(zConf);
+    hdfsNotebookRepo.init(zConf, noteParser);
   }
 
   @AfterEach
@@ -70,6 +75,8 @@ class FileSystemNotebookRepoTest {
 
     // create a new note
     Note note = new Note();
+    note.setZeppelinConfiguration(zConf);
+    note.setNoteParser(noteParser);
     note.setPath("/title_1");
 
     Map<String, Object> config = new HashMap<>();
@@ -104,6 +111,8 @@ class FileSystemNotebookRepoTest {
 
     // create another new note under folder
     note = new Note();
+    note.setZeppelinConfiguration(zConf);
+    note.setNoteParser(noteParser);
     note.setPath("/folder1/title_1");
     note.setConfig(config);
     hdfsNotebookRepo.save(note, authInfo);
@@ -132,6 +141,8 @@ class FileSystemNotebookRepoTest {
     // scenario_2: note_folder is existed.
     // create a new note
     Note note = new Note();
+    note.setZeppelinConfiguration(zConf);
+    note.setNoteParser(noteParser);
     note.setPath("/title_1");
     Map<String, Object> config = new HashMap<>();
     config.put("config_1", "value_1");

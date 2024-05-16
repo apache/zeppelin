@@ -16,11 +16,10 @@
  */
 package org.apache.zeppelin.integration;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.AbstractZeppelinIT;
+import org.apache.zeppelin.MiniZeppelinServer;
 import org.apache.zeppelin.WebDriverManager;
-import org.apache.zeppelin.ZeppelinITUtils;
-import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.test.DownloadUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -31,23 +30,15 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.TimeoutException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import org.apache.commons.io.FileUtils;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 
-import java.io.File;
 import java.io.IOException;
 import java.time.Duration;
 
 public class PersonalizeActionsIT extends AbstractZeppelinIT {
-  private static final Logger LOG = LoggerFactory.getLogger(PersonalizeActionsIT.class);
-
-  static String shiroPath;
-  static String authShiro = "[users]\n" +
+  private static final String AUTH_SHIRO = "[users]\n" +
       "admin = password1, admin\n" +
       "user1 = password2, user\n" +
       "[main]\n" +
@@ -65,9 +56,26 @@ public class PersonalizeActionsIT extends AbstractZeppelinIT {
 
   static String originalShiro = "";
 
+  private static MiniZeppelinServer zepServer;
+
+  @BeforeAll
+  static void init() throws Exception {
+    String sparkHome = DownloadUtils.downloadSpark();
+
+    zepServer = new MiniZeppelinServer(PersonalizeActionsIT.class.getSimpleName());
+    zepServer.addConfigFile("shiro.ini", AUTH_SHIRO);
+    zepServer.addInterpreter("md");
+    zepServer.addInterpreter("python");
+    zepServer.addInterpreter("spark");
+    zepServer.copyLogProperties();
+    zepServer.copyBinDir();
+    zepServer.start(true, PersonalizeActionsIT.class.getSimpleName());
+    TestHelper.configureSparkInterpreter(zepServer, sparkHome);
+  }
+
   @BeforeEach
-  public void startUpManager() throws IOException {
-    manager = new WebDriverManager();
+  public void startUp() throws IOException {
+    manager = new WebDriverManager(zepServer.getZeppelinConfiguration().getServerPort());
   }
 
   @AfterEach
@@ -75,39 +83,11 @@ public class PersonalizeActionsIT extends AbstractZeppelinIT {
     manager.close();
   }
 
-  @BeforeAll
-  public static void startUp() throws IOException {
-    try {
-      System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HOME.getVarName(), new File("../").getAbsolutePath());
-      ZeppelinConfiguration conf = ZeppelinConfiguration.create();
-      shiroPath = conf.getAbsoluteDir(String.format("%s/shiro.ini", conf.getConfDir()));
-      File file = new File(shiroPath);
-      if (file.exists()) {
-        originalShiro = StringUtils.join(FileUtils.readLines(file, "UTF-8"), "\n");
-      }
-      FileUtils.write(file, authShiro, "UTF-8");
-    } catch (IOException e) {
-      LOG.error("Error in PersonalizeActionsIT startUp::", e);
-    }
-    ZeppelinITUtils.restartZeppelin();
+  @AfterAll
+  public static void tearDown() throws Exception {
+    zepServer.destroy();
   }
 
-  @AfterAll
-  public static void tearDown() throws IOException {
-    try {
-      if (!StringUtils.isBlank(shiroPath)) {
-        File file = new File(shiroPath);
-        if (StringUtils.isBlank(originalShiro)) {
-          FileUtils.deleteQuietly(file);
-        } else {
-          FileUtils.write(file, originalShiro, "UTF-8");
-        }
-      }
-    } catch (IOException e) {
-      LOG.error("Error in PersonalizeActionsIT tearDown::", e);
-    }
-    ZeppelinITUtils.restartZeppelin();
-  }
 
   private void setParagraphText(String text) {
     setTextOfParagraph(1, "%md\\n # " + text);

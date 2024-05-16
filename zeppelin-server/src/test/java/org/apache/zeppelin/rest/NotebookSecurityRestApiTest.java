@@ -26,11 +26,13 @@ import java.util.Map;
 
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.util.EntityUtils;
+import org.apache.zeppelin.MiniZeppelinServer;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.utils.TestUtils;
 import org.hamcrest.Matcher;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -41,15 +43,22 @@ import com.google.gson.reflect.TypeToken;
 public class NotebookSecurityRestApiTest extends AbstractTestRestApi {
   Gson gson = new Gson();
 
+  private static MiniZeppelinServer zepServer;
+
   @BeforeAll
   public static void init() throws Exception {
-    AbstractTestRestApi.startUpWithAuthenticationEnable(
-            NotebookSecurityRestApiTest.class.getSimpleName());
+    zepServer = new MiniZeppelinServer(NotebookSecurityRestApiTest.class.getSimpleName());
+    zepServer.addConfigFile("shiro.ini", ZEPPELIN_SHIRO);
+    zepServer.start();
   }
-
   @AfterAll
   public static void destroy() throws Exception {
-    AbstractTestRestApi.shutDown();
+    zepServer.destroy();
+  }
+
+  @BeforeEach
+  void setup() {
+    conf = zepServer.getZeppelinConfiguration();
   }
 
   @Test

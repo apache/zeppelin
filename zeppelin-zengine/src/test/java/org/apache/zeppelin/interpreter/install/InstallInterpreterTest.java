@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -33,11 +34,12 @@ class InstallInterpreterTest {
   private File tmpDir;
   private InstallInterpreter installer;
   private File interpreterBaseDir;
+  private ZeppelinConfiguration zConf;
 
   @BeforeEach
   public void setUp() throws IOException {
-    tmpDir = new File(System.getProperty("java.io.tmpdir")+"/ZeppelinLTest_"+System.currentTimeMillis());
-    new File(tmpDir, "conf").mkdirs();
+    tmpDir = Files.createTempDirectory("InstallInterpreterTest").toFile();
+    zConf = ZeppelinConfiguration.load();
     interpreterBaseDir = new File(tmpDir, "interpreter");
     File localRepoDir = new File(tmpDir, "local-repo");
     interpreterBaseDir.mkdir();
@@ -55,8 +57,8 @@ class InstallInterpreterTest {
 
     FileUtils.writeStringToFile(new File(tmpDir, "conf/interpreter-list"), interpreterList, StandardCharsets.UTF_8);
 
-    installer = new InstallInterpreter(interpreterListFile, interpreterBaseDir, localRepoDir
-        .getAbsolutePath());
+    installer = new InstallInterpreter(interpreterListFile, interpreterBaseDir,
+        localRepoDir.getAbsolutePath(), zConf);
   }
 
   @AfterEach

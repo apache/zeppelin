@@ -21,8 +21,8 @@ import com.google.gson.reflect.TypeToken;
 
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.util.EntityUtils;
+import org.apache.zeppelin.MiniZeppelinServer;
 import org.apache.zeppelin.helium.Helium;
-import org.apache.zeppelin.utils.TestUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -47,17 +47,24 @@ import org.apache.zeppelin.helium.HeliumType;
 
 class HeliumRestApiTest extends AbstractTestRestApi {
   private Gson gson = new Gson();
+  private static MiniZeppelinServer zepServer;
   private static Helium helium;
 
   @BeforeAll
   static void init() throws Exception {
-    AbstractTestRestApi.startUp(HeliumRestApi.class.getSimpleName());
-    helium = TestUtils.getInstance(Helium.class);
+    zepServer = new MiniZeppelinServer(HeliumRestApi.class.getSimpleName());
+    zepServer.start();
+    helium = zepServer.getServiceLocator().getService(Helium.class);
+  }
+
+  @BeforeEach
+  void setup() {
+    conf = zepServer.getZeppelinConfiguration();
   }
 
   @AfterAll
   static void destroy() throws Exception {
-    AbstractTestRestApi.shutDown();
+    zepServer.destroy();
   }
 
   @BeforeEach

@@ -26,6 +26,8 @@ import org.apache.hadoop.yarn.api.records.ApplicationReport;
 import org.apache.hadoop.yarn.api.records.YarnApplicationState;
 import org.apache.hadoop.yarn.exceptions.YarnException;
 import org.apache.zeppelin.test.DownloadUtils;
+import org.apache.zeppelin.MiniZeppelinServer;
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.ExecutionContext;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
@@ -43,7 +45,6 @@ import org.slf4j.LoggerFactory;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.io.IOException;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
@@ -54,38 +55,38 @@ public class SparkSubmitIntegrationTest {
   private static Logger LOGGER = LoggerFactory.getLogger(SparkSubmitIntegrationTest.class);
 
   private static MiniHadoopCluster hadoopCluster;
-  private static MiniZeppelin zeppelin;
   private static InterpreterFactory interpreterFactory;
   private static InterpreterSettingManager interpreterSettingManager;
 
   private static String sparkHome;
+  private static MiniZeppelinServer zepServer;
 
   @BeforeAll
-  public static void setUp() throws IOException {
+  static void init() throws Exception {
     LOGGER.info("Testing Spark Version: " + DownloadUtils.DEFAULT_SPARK_VERSION);
     LOGGER.info("Testing Hadoop Version: " + DownloadUtils.DEFAULT_SPARK_HADOOP_VERSION);
     sparkHome = DownloadUtils.downloadSpark();
-
     hadoopCluster = new MiniHadoopCluster();
     hadoopCluster.start();
 
-    zeppelin = new MiniZeppelin();
-    zeppelin.start(SparkIntegrationTest.class);
-    interpreterFactory = zeppelin.getInterpreterFactory();
-    interpreterSettingManager = zeppelin.getInterpreterSettingManager();
-
-    InterpreterSetting sparkSubmitInterpreterSetting =
-            interpreterSettingManager.getInterpreterSettingByName("spark-submit");
+    zepServer = new MiniZeppelinServer(SparkSubmitIntegrationTest.class.getSimpleName());
+    zepServer.addInterpreter("sh");
+    zepServer.addInterpreter("spark-submit");
+    zepServer.copyBinDir();
+    zepServer.getZeppelinConfiguration().setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HELIUM_REGISTRY.getVarName(),
+        "helium");
+    zepServer.start();
+    interpreterSettingManager = zepServer.getServiceLocator().getService(InterpreterSettingManager.class);
+    interpreterFactory = zepServer.getServiceLocator().getService(InterpreterFactory.class);
+    InterpreterSetting sparkSubmitInterpreterSetting = interpreterSettingManager.getInterpreterSettingByName("spark-submit");
     sparkSubmitInterpreterSetting.setProperty("SPARK_HOME", sparkHome);
     sparkSubmitInterpreterSetting.setProperty("HADOOP_CONF_DIR", hadoopCluster.getConfigPath());
     sparkSubmitInterpreterSetting.setProperty("YARN_CONF_DIR", hadoopCluster.getConfigPath());
   }
 
   @AfterAll
-  public static void tearDown() throws IOException {
-    if (zeppelin != null) {
-      zeppelin.stop();
-    }
+  public static void tearDown() throws Exception {
+    zepServer.destroy();
     if (hadoopCluster != null) {
       hadoopCluster.stop();
     }

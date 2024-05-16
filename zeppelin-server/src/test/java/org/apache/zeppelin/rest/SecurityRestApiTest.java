@@ -21,9 +21,11 @@ import com.google.gson.reflect.TypeToken;
 
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.util.EntityUtils;
+import org.apache.zeppelin.MiniZeppelinServer;
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -35,15 +37,23 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 class SecurityRestApiTest extends AbstractTestRestApi {
   Gson gson = new Gson();
+  private static MiniZeppelinServer zepServer;
 
   @BeforeAll
   static void init() throws Exception {
-    AbstractTestRestApi.startUpWithAuthenticationEnable(SecurityRestApiTest.class.getSimpleName());
+    zepServer = new MiniZeppelinServer(SecurityRestApiTest.class.getSimpleName());
+    zepServer.addConfigFile("shiro.ini", ZEPPELIN_SHIRO);
+    zepServer.start();
   }
 
   @AfterAll
   static void destroy() throws Exception {
-    AbstractTestRestApi.shutDown();
+    zepServer.destroy();
+  }
+
+  @BeforeEach
+  void setup() {
+    conf = zepServer.getZeppelinConfiguration();
   }
 
   @Test

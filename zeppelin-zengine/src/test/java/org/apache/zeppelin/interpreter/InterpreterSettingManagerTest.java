@@ -87,7 +87,8 @@ class InterpreterSettingManagerTest extends AbstractInterpreterTest {
 
     // Load it again
     InterpreterSettingManager interpreterSettingManager2 = new InterpreterSettingManager(conf,
-        mock(AngularObjectRegistryListener.class), mock(RemoteInterpreterProcessListener.class), mock(ApplicationEventListener.class));
+        mock(AngularObjectRegistryListener.class), mock(RemoteInterpreterProcessListener.class),
+        mock(ApplicationEventListener.class), storage, pluginManager);
     assertEquals(6, interpreterSettingManager2.get().size());
     interpreterSetting = interpreterSettingManager2.getByName("test");
     assertEquals("test", interpreterSetting.getName());
@@ -145,7 +146,8 @@ class InterpreterSettingManagerTest extends AbstractInterpreterTest {
 
     // load it again, it should be saved in interpreter-setting.json. So we can restore it properly
     InterpreterSettingManager interpreterSettingManager2 = new InterpreterSettingManager(conf,
-        mock(AngularObjectRegistryListener.class), mock(RemoteInterpreterProcessListener.class), mock(ApplicationEventListener.class));
+        mock(AngularObjectRegistryListener.class), mock(RemoteInterpreterProcessListener.class),
+        mock(ApplicationEventListener.class), storage, pluginManager);
     assertEquals(7, interpreterSettingManager2.get().size());
     interpreterSetting = interpreterSettingManager2.getByName("test3");
     assertEquals("test3", interpreterSetting.getName());
@@ -196,8 +198,9 @@ class InterpreterSettingManagerTest extends AbstractInterpreterTest {
     assertEquals(6, interpreterSettingManager.get().size());
 
     // load it again
-    InterpreterSettingManager interpreterSettingManager3 = new InterpreterSettingManager(ZeppelinConfiguration.create(),
-        mock(AngularObjectRegistryListener.class), mock(RemoteInterpreterProcessListener.class), mock(ApplicationEventListener.class));
+    InterpreterSettingManager interpreterSettingManager3 = new InterpreterSettingManager(conf,
+        mock(AngularObjectRegistryListener.class), mock(RemoteInterpreterProcessListener.class),
+        mock(ApplicationEventListener.class), storage, pluginManager);
     assertEquals(6, interpreterSettingManager3.get().size());
 
   }

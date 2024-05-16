@@ -68,10 +68,12 @@ public class ClusterMonitor {
   // and the interperterGroupID when monitoring the interperter processes
   private String metaKey;
 
-  public ClusterMonitor(ClusterManager clusterManagerServer) {
-    this.clusterManager = clusterManagerServer;
+  private final ZeppelinConfiguration zconf;
 
-    ZeppelinConfiguration zconf = ZeppelinConfiguration.create();
+  public ClusterMonitor(ClusterManager clusterManagerServer, ZeppelinConfiguration zconf) {
+    this.clusterManager = clusterManagerServer;
+    this.zconf = zconf;
+
     heartbeatInterval = zconf.getClusterHeartbeatInterval();
     heartbeatTimeout = zconf.getClusterHeartbeatTimeout();
 

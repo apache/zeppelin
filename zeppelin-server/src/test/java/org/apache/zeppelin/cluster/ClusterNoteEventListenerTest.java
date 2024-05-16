@@ -20,9 +20,13 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import org.apache.zeppelin.cluster.event.ClusterEventListener;
 import org.apache.zeppelin.cluster.event.ClusterMessage;
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.notebook.GsonNoteParser;
 import org.apache.zeppelin.notebook.Note;
+import org.apache.zeppelin.notebook.NoteParser;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.user.AuthenticationInfo;
+import org.junit.jupiter.api.BeforeEach;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,6 +40,15 @@ public class ClusterNoteEventListenerTest implements ClusterEventListener {
   private static Logger LOGGER = LoggerFactory.getLogger(ClusterNoteEventListenerTest.class);
 
   public String receiveMsg = null;
+
+  private ZeppelinConfiguration conf;
+  private NoteParser noteParser;
+
+  @BeforeEach
+  void setup() {
+    conf = ZeppelinConfiguration.load();
+    noteParser = new GsonNoteParser(conf);
+  }
 
   @Override
   public void onClusterEvent(String msg) {
@@ -56,13 +69,13 @@ public class ClusterNoteEventListenerTest implements ClusterEventListener {
         LOGGER.debug(authenticationInfo.toJson());
       } else if (key.equals("Note")) {
         try {
-          note = Note.fromJson(null, json);
+          note = noteParser.fromJson(null, json);
+          LOGGER.debug(note.toJson());
         } catch (IOException e) {
           LOGGER.warn("Fail to parse note json", e);
         }
-        LOGGER.debug(note.toJson());
       } else if (key.equals("Paragraph")) {
-        paragraph = Paragraph.fromJson(json);
+        paragraph = noteParser.fromJson(json);
         LOGGER.debug(paragraph.toJson());
       } else if (key.equals("Set<String>")) {
         Gson gson = new Gson();

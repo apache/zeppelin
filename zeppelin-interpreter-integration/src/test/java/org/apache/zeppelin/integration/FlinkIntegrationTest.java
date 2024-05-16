@@ -25,6 +25,7 @@ import org.apache.hadoop.yarn.api.records.YarnApplicationState;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.apache.hadoop.yarn.exceptions.YarnException;
 import org.apache.zeppelin.test.DownloadUtils;
+import org.apache.zeppelin.MiniZeppelinServer;
 import org.apache.zeppelin.interpreter.ExecutionContext;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
@@ -35,6 +36,7 @@ import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,7 +52,7 @@ public abstract class FlinkIntegrationTest {
   private static Logger LOGGER = LoggerFactory.getLogger(FlinkIntegrationTest.class);
 
   private static MiniHadoopCluster hadoopCluster;
-  private static MiniZeppelin zeppelin;
+  private static MiniZeppelinServer zepServer;
   private static InterpreterFactory interpreterFactory;
   private static InterpreterSettingManager interpreterSettingManager;
 
@@ -67,27 +69,35 @@ public abstract class FlinkIntegrationTest {
   }
 
   @BeforeAll
-  public static void setUp() throws IOException {
+  public static void setUp() throws Exception {
     Configuration conf = new Configuration();
     conf.setBoolean(YarnConfiguration.YARN_MINICLUSTER_FIXED_PORTS, true);
     conf.set(MiniDFSCluster.HDFS_MINIDFS_BASEDIR, "target/hadoop-minicluster");
     hadoopCluster = new MiniHadoopCluster(conf);
     hadoopCluster.start();
 
-    zeppelin = new MiniZeppelin();
-    zeppelin.start(FlinkIntegrationTest.class);
-    interpreterFactory = zeppelin.getInterpreterFactory();
-    interpreterSettingManager = zeppelin.getInterpreterSettingManager();
+    zepServer = new MiniZeppelinServer(FlinkIntegrationTest.class.getSimpleName());
+    zepServer.addInterpreter("flink");
+    zepServer.addInterpreter("flink-cmd");
+    zepServer.copyLogProperties();
+    zepServer.copyBinDir();
+    zepServer.addLauncher("YarnInterpreterLauncher");
+    zepServer.addLauncher("FlinkInterpreterLauncher");
+    zepServer.start();
   }
 
   @AfterAll
-  public static void tearDown() throws IOException {
-    if (zeppelin != null) {
-      zeppelin.stop();
-    }
+  public static void tearDown() throws Exception {
+    zepServer.destroy();
     if (hadoopCluster != null) {
       hadoopCluster.stop();
     }
+  }
+
+  @BeforeEach
+  void setup() {
+    interpreterSettingManager = zepServer.getServiceLocator().getService(InterpreterSettingManager.class);
+    interpreterFactory = new InterpreterFactory(interpreterSettingManager);
   }
 
   private void testInterpreterBasics() throws IOException, InterpreterException {
@@ -127,7 +137,7 @@ public abstract class FlinkIntegrationTest {
   public void testLocalMode() throws IOException, YarnException, InterpreterException {
     InterpreterSetting flinkInterpreterSetting = interpreterSettingManager.getInterpreterSettingByName("flink");
     flinkInterpreterSetting.setProperty("FLINK_HOME", flinkHome);
-    flinkInterpreterSetting.setProperty("ZEPPELIN_CONF_DIR", zeppelin.getZeppelinConfDir().getAbsolutePath());
+    flinkInterpreterSetting.setProperty("ZEPPELIN_CONF_DIR", zepServer.getZeppelinConfiguration().getConfDir());
     flinkInterpreterSetting.setProperty("flink.execution.mode", "local");
 
     testInterpreterBasics();
@@ -146,7 +156,7 @@ public abstract class FlinkIntegrationTest {
     flinkInterpreterSetting.setProperty("HADOOP_CONF_DIR", hadoopCluster.getConfigPath());
     flinkInterpreterSetting.setProperty("FLINK_HOME", flinkHome);
     flinkInterpreterSetting.setProperty("PATH", hadoopHome + "/bin:" + System.getenv("PATH"));
-    flinkInterpreterSetting.setProperty("ZEPPELIN_CONF_DIR", zeppelin.getZeppelinConfDir().getAbsolutePath());
+    flinkInterpreterSetting.setProperty("ZEPPELIN_CONF_DIR", zepServer.getZeppelinConfiguration().getConfDir());
     flinkInterpreterSetting.setProperty("flink.execution.mode", "yarn");
     flinkInterpreterSetting.setProperty("zeppelin.flink.run.asLoginUser", "false");
 
@@ -170,7 +180,7 @@ public abstract class FlinkIntegrationTest {
     flinkInterpreterSetting.setProperty("HADOOP_CONF_DIR", hadoopCluster.getConfigPath());
     flinkInterpreterSetting.setProperty("FLINK_HOME", flinkHome);
     flinkInterpreterSetting.setProperty("PATH", hadoopHome + "/bin:" + System.getenv("PATH"));
-    flinkInterpreterSetting.setProperty("ZEPPELIN_CONF_DIR", zeppelin.getZeppelinConfDir().getAbsolutePath());
+    flinkInterpreterSetting.setProperty("ZEPPELIN_CONF_DIR", zepServer.getZeppelinConfiguration().getConfDir());
     flinkInterpreterSetting.setProperty("flink.execution.mode", "yarn-application");
     // parameters with whitespace
     flinkInterpreterSetting.setProperty("flink.yarn.appName", "hello flink");

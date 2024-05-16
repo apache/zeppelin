@@ -57,7 +57,7 @@ public class ClusterMultiNodeTest {
         clusterAddrList += ",";
       }
     }
-    zconf = ZeppelinConfiguration.create();
+    zconf = ZeppelinConfiguration.load();
     zconf.setClusterAddress(clusterAddrList);
 
     // mock cluster manager server
@@ -118,7 +118,6 @@ public class ClusterMultiNodeTest {
     for (ClusterManagerServer clusterServer : clusterServers) {
       clusterServer.shutdown();
     }
-    ZeppelinConfiguration.reset();
     LOGGER.info("stopCluster <<<");
   }
 

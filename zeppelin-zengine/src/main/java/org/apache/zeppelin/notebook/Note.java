@@ -18,10 +18,6 @@
 package org.apache.zeppelin.notebook;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.gson.ExclusionStrategy;
-import com.google.gson.FieldAttributes;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.common.JsonSerializable;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
@@ -40,7 +36,6 @@ import org.apache.zeppelin.interpreter.ManagedInterpreterGroup;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObject;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
-import org.apache.zeppelin.notebook.exception.CorruptedNoteException;
 import org.apache.zeppelin.notebook.utility.IdHashes;
 import org.apache.zeppelin.scheduler.ExecutorFactory;
 import org.apache.zeppelin.scheduler.Job.Status;
@@ -50,12 +45,10 @@ import org.apache.zeppelin.util.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -74,51 +67,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 public class Note implements JsonSerializable {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(Note.class);
-
-  // serialize Paragraph#runtimeInfos and Note#path to frontend but not to note file
-  private static final ExclusionStrategy NOTE_GSON_EXCLUSION_STRATEGY =
-          new NoteJsonExclusionStrategy(ZeppelinConfiguration.create());
-
-  private static class NoteJsonExclusionStrategy implements ExclusionStrategy {
-    private Set<String> noteExcludeFields = new HashSet<>();
-    private Set<String> paragraphExcludeFields = new HashSet<>();
-
-    public NoteJsonExclusionStrategy(ZeppelinConfiguration zConf) {
-      String[] excludeFields = zConf.getNoteFileExcludedFields();
-      for (String field : excludeFields) {
-        if (field.startsWith("Paragraph")) {
-          paragraphExcludeFields.add(field.substring(10));
-        } else {
-          noteExcludeFields.add(field);
-        }
-      }
-    }
-
-    @Override
-    public boolean shouldSkipField(FieldAttributes field) {
-      if(field.getName().equals("path")) {
-        return true;
-      }
-      if (field.getDeclaringClass().equals(Paragraph.class)) {
-        return paragraphExcludeFields.contains(field.getName());
-      } else {
-        return noteExcludeFields.contains(field.getName());
-      }
-    }
-
-    @Override
-    public boolean shouldSkipClass(Class<?> aClass) {
-      return false;
-    }
-  }
-
-  private static final Gson GSON = new GsonBuilder()
-          .setPrettyPrinting()
-          .setDateFormat("yyyy-MM-dd HH:mm:ss.SSS")
-          .registerTypeAdapter(Date.class, new NotebookImportDeserializer())
-          .registerTypeAdapterFactory(Input.TypeAdapterFactory)
-          .setExclusionStrategies(NOTE_GSON_EXCLUSION_STRATEGY)
-          .create();
   private static final DateTimeFormatter DATE_TIME_FORMATTER =
           DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss");
 
@@ -162,7 +110,8 @@ public class Note implements JsonSerializable {
   private transient ParagraphJobListener paragraphJobListener;
   private transient List<NoteEventListener> noteEventListeners = new ArrayList<>();
   private transient Credentials credentials;
-  private transient ZeppelinConfiguration zConf = ZeppelinConfiguration.create();
+  private transient ZeppelinConfiguration zConf;
+  private transient NoteParser noteParser;
 
   public Note() {
     generateId();
@@ -170,7 +119,8 @@ public class Note implements JsonSerializable {
 
   public Note(String path, String defaultInterpreterGroup, InterpreterFactory factory,
               InterpreterSettingManager interpreterSettingManager, ParagraphJobListener paragraphJobListener,
-              Credentials credentials, List<NoteEventListener> noteEventListener) {
+              Credentials credentials, List<NoteEventListener> noteEventListener,
+              ZeppelinConfiguration zConf, NoteParser noteParser) {
     setPath(path);
     this.defaultInterpreterGroup = defaultInterpreterGroup;
     this.interpreterFactory = factory;
@@ -178,6 +128,8 @@ public class Note implements JsonSerializable {
     this.paragraphJobListener = paragraphJobListener;
     this.noteEventListeners = noteEventListener;
     this.credentials = credentials;
+    this.zConf = zConf;
+    this.noteParser = noteParser;
     this.version = Util.getVersion();
     generateId();
 
@@ -269,8 +221,8 @@ public class Note implements JsonSerializable {
 
   public String getDefaultInterpreterGroup() {
     if (StringUtils.isBlank(defaultInterpreterGroup)) {
-      defaultInterpreterGroup = ZeppelinConfiguration.create()
-              .getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_GROUP_DEFAULT);
+      defaultInterpreterGroup =
+          zConf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_GROUP_DEFAULT);
     }
     return defaultInterpreterGroup;
   }
@@ -479,7 +431,7 @@ public class Note implements JsonSerializable {
     LOGGER.debug("newParagraph user: {}", newParagraph.getUser());
 
     try {
-      String resultJson = GSON.toJson(srcParagraph.getReturn());
+      String resultJson = srcParagraph.getReturn().toJson();
       InterpreterResult result = InterpreterResult.fromJson(resultJson);
       newParagraph.setReturn(result, null);
     } catch (Exception e) {
@@ -859,7 +811,7 @@ public class Note implements JsonSerializable {
     return p.completion(buffer, cursor);
   }
 
-  public CopyOnWriteArrayList<Paragraph> getParagraphs() {
+  public List<Paragraph> getParagraphs() {
     return this.paragraphs;
   }
 
@@ -986,8 +938,10 @@ public class Note implements JsonSerializable {
     Note newNote = new Note();
     newNote.name = getName();
     newNote.id = getId();
-    newNote.config = getConfig();
+    newNote.setConfig(getConfig());
     newNote.angularObjects = getAngularObjects();
+    newNote.setZeppelinConfiguration(zConf);
+    newNote.setNoteParser(noteParser);
 
     Paragraph newParagraph;
     for (Paragraph p : paragraphs) {
@@ -1082,27 +1036,7 @@ public class Note implements JsonSerializable {
 
   @Override
   public String toJson() {
-    return GSON.toJson(this);
-  }
-
-  /**
-   * Parse note json from note file. Throw IOException if fail to parse note json.
-   *
-   * @param json
-   * @return Note
-   * @throws IOException if fail to parse note json (note file may be corrupted)
-   */
-  public static Note fromJson(String noteId, String json) throws IOException {
-    try {
-      Note note = GSON.fromJson(json, Note.class);
-      convertOldInput(note);
-      note.info.remove("isRunning");
-      note.postProcessParagraphs();
-      return note;
-    } catch (Exception e) {
-      LOGGER.error("Fail to parse note json: {}", e.toString());
-      throw new CorruptedNoteException(noteId, "Fail to parse note json: " + json, e);
-    }
+    return noteParser.toJson(this);
   }
 
   public void postProcessParagraphs() {
@@ -1126,12 +1060,6 @@ public class Note implements JsonSerializable {
           }
         }
       }
-    }
-  }
-
-  private static void convertOldInput(Note note) {
-    for (Paragraph p : note.paragraphs) {
-      p.settings.convertOldInput();
     }
   }
 
@@ -1176,10 +1104,6 @@ public class Note implements JsonSerializable {
     return result;
   }
 
-  public static Gson getGSON() {
-    return GSON;
-  }
-
   public void setNoteEventListeners(List<NoteEventListener> noteEventListeners) {
     this.noteEventListeners = noteEventListeners;
   }
@@ -1203,5 +1127,17 @@ public class Note implements JsonSerializable {
     executionContext.setInIsolatedMode(isIsolatedMode());
     executionContext.setStartTime(getStartTime());
     return executionContext;
+  }
+
+  public NoteParser getNoteParser() {
+    return noteParser;
+  }
+
+  public void setZeppelinConfiguration(ZeppelinConfiguration zConf) {
+    this.zConf = zConf;
+  }
+
+  public void setNoteParser(NoteParser noteParser) {
+    this.noteParser = noteParser;
   }
 }

@@ -24,6 +24,8 @@ import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 
 import static org.apache.zeppelin.helium.HeliumPackage.newHeliumPackage;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -33,8 +35,7 @@ class HeliumLocalRegistryTest {
 
   @BeforeEach
   public void setUp() throws Exception {
-    tmpDir = new File(System.getProperty("java.io.tmpdir") + "/ZeppelinLTest_" + System.currentTimeMillis());
-    tmpDir.mkdirs();
+    tmpDir = Files.createTempDirectory("ZeppelinLTest_").toFile();
   }
 
   @AfterEach
@@ -59,7 +60,8 @@ class HeliumLocalRegistryTest {
         new String[][]{},
         "license",
         "");
-    FileUtils.writeStringToFile(new File(r1Path, "pkg1.json"), gson.toJson(pkg1));
+    FileUtils.writeStringToFile(new File(r1Path, "pkg1.json"), gson.toJson(pkg1),
+        StandardCharsets.UTF_8);
 
     // then
     assertEquals(1, r1.getAll().size());
