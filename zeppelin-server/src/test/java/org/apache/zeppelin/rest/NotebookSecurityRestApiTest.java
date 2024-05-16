@@ -28,7 +28,6 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.util.EntityUtils;
 import org.apache.zeppelin.MiniZeppelinServer;
 import org.apache.zeppelin.notebook.Notebook;
-import org.apache.zeppelin.utils.TestUtils;
 import org.hamcrest.Matcher;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -44,6 +43,7 @@ public class NotebookSecurityRestApiTest extends AbstractTestRestApi {
   Gson gson = new Gson();
 
   private static MiniZeppelinServer zepServer;
+  private Notebook notebook;
 
   @BeforeAll
   public static void init() throws Exception {
@@ -58,6 +58,7 @@ public class NotebookSecurityRestApiTest extends AbstractTestRestApi {
 
   @BeforeEach
   void setup() {
+    notebook = zepServer.getService(Notebook.class);
     conf = zepServer.getZeppelinConfiguration();
   }
 
@@ -111,7 +112,7 @@ public class NotebookSecurityRestApiTest extends AbstractTestRestApi {
     userTryRemoveNote(noteId, "user2", "password3", isForbidden());
     userTryRemoveNote(noteId, "user1", "password2", isAllowed());
 
-    TestUtils.getInstance(Notebook.class).processNote(noteId,
+    notebook.processNote(noteId,
       deletedNote -> {
         assertNull(deletedNote, "Deleted note should be null");
         return null;
@@ -150,7 +151,6 @@ public class NotebookSecurityRestApiTest extends AbstractTestRestApi {
           EntityUtils.toString(post.getEntity(), StandardCharsets.UTF_8), new TypeToken<Map<String, Object>>() {}.getType());
     post.close();
     String newNoteId = (String) resp.get("body");
-    Notebook notebook = TestUtils.getInstance(Notebook.class);
     notebook.processNote(newNoteId,
       newNote -> {
         assertNotNull(newNote, "Can not find new note by id");
@@ -165,7 +165,7 @@ public class NotebookSecurityRestApiTest extends AbstractTestRestApi {
     delete.close();
     // make sure note is deleted
     if (!noteId.isEmpty()) {
-      TestUtils.getInstance(Notebook.class).processNote(noteId,
+      notebook.processNote(noteId,
         deletedNote -> {
           assertNull(deletedNote, "Deleted note should be null");
           return null;

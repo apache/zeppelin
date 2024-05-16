@@ -54,7 +54,7 @@ class HeliumRestApiTest extends AbstractTestRestApi {
   static void init() throws Exception {
     zepServer = new MiniZeppelinServer(HeliumRestApi.class.getSimpleName());
     zepServer.start();
-    helium = zepServer.getServiceLocator().getService(Helium.class);
+    helium = zepServer.getService(Helium.class);
   }
 
   @BeforeEach

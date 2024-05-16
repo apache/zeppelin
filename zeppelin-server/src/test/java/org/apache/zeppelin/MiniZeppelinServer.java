@@ -21,6 +21,8 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
+import org.apache.zeppelin.interpreter.InterpreterSetting;
+import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.rest.AbstractTestRestApi;
 import org.apache.zeppelin.server.ZeppelinServer;
 import org.glassfish.hk2.api.ServiceLocator;
@@ -316,5 +318,9 @@ public class MiniZeppelinServer implements AutoCloseable {
 
   public void destroy() throws Exception {
     close();
+  }
+
+  public <T> T getService(Class<T> clazz) {
+    return getServiceLocator().getService(clazz);
   }
 }

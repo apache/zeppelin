@@ -79,7 +79,7 @@ public class ZSessionIntegrationTest extends AbstractTestRestApi {
     sparkHome = DownloadUtils.downloadSpark();
     flinkHome = DownloadUtils.downloadFlink("1.17.1", "2.12");
     zepServer.start();
-    notebook = zepServer.getServiceLocator().getService(Notebook.class);
+    notebook = zepServer.getService(Notebook.class);
 
   }
 
