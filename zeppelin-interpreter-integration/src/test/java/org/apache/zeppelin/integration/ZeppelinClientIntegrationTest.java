@@ -70,7 +70,7 @@ class ZeppelinClientIntegrationTest extends AbstractTestRestApi {
     zepServer.start();
     clientConfig = new ClientConfig("http://localhost:" + zepServer.getZeppelinConfiguration().getServerPort());
     zeppelinClient = new ZeppelinClient(clientConfig);
-    notebook = zepServer.getServiceLocator().getService(Notebook.class);
+    notebook = zepServer.getService(Notebook.class);
   }
 
   @AfterAll
