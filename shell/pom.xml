@@ -125,9 +125,9 @@
       </plugin>
       <plugin>
         <artifactId>maven-resources-plugin</artifactId>
-      </plugin>
-      <plugin>
-        <artifactId>maven-shade-plugin</artifactId>
+        <configuration>
+          <skip>true</skip>
+        </configuration>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
