@@ -139,7 +139,7 @@ public class Credentials {
   private void loadFromFile() throws IOException {
     try {
       String json = storage.loadCredentials();
-      if (json != null && encryptor != null && !json.isEmpty()) {
+      if (encryptor != null && StringUtils.isNotBlank(json)) {
         json = encryptor.decrypt(json);
       }
 
