@@ -100,10 +100,10 @@ class NotebookServerTest extends AbstractTestRestApi {
     zepServer.addInterpreter("spark");
     zepServer.copyBinDir();
     zepServer.start();
-    notebook = zepServer.getServiceLocator().getService(Notebook.class);
-    authorizationService = zepServer.getServiceLocator().getService(AuthorizationService.class);
-    notebookServer = zepServer.getServiceLocator().getService(NotebookServer.class);
-    notebookService = zepServer.getServiceLocator().getService(NotebookService.class);
+    notebook = zepServer.getService(Notebook.class);
+    authorizationService = zepServer.getService(AuthorizationService.class);
+    notebookServer = zepServer.getService(NotebookServer.class);
+    notebookService = zepServer.getService(NotebookService.class);
   }
 
   @AfterAll

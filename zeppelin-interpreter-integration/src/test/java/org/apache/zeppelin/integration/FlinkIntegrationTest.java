@@ -96,7 +96,7 @@ public abstract class FlinkIntegrationTest {
 
   @BeforeEach
   void setup() {
-    interpreterSettingManager = zepServer.getServiceLocator().getService(InterpreterSettingManager.class);
+    interpreterSettingManager = zepServer.getService(InterpreterSettingManager.class);
     interpreterFactory = new InterpreterFactory(interpreterSettingManager);
   }
 

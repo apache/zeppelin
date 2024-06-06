@@ -42,7 +42,6 @@ import org.apache.zeppelin.service.ConfigurationService;
 import org.apache.zeppelin.service.NotebookService;
 import org.apache.zeppelin.socket.NotebookServer;
 import org.apache.zeppelin.user.AuthenticationInfo;
-import org.apache.zeppelin.utils.TestUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -103,13 +102,13 @@ public class ClusterEventTest extends AbstractTestRestApi {
     zepServer.addInterpreter("sh");
     genClusterAddressConf(zepServer.getZeppelinConfiguration());
     zepServer.start();
-    notebook = zepServer.getServiceLocator().getService(Notebook.class);
-    authorizationService = zepServer.getServiceLocator().getService(AuthorizationService.class);
+    notebook = zepServer.getService(Notebook.class);
+    authorizationService = zepServer.getService(AuthorizationService.class);
     ZeppelinConfiguration zconf = zepServer.getZeppelinConfiguration();
     schedulerService = new QuartzSchedulerService(zconf, notebook);
     notebook.initNotebook();
     notebook.waitForFinishInit(1, TimeUnit.MINUTES);
-    notebookServer = spy(NotebookServer.getInstance());
+    notebookServer = spy(zepServer.getService(NotebookServer.class));
     notebookService = new NotebookService(notebook, authorizationService, zconf, schedulerService);
 
     ConfigurationService configurationService = new ConfigurationService(notebook.getConf());
@@ -289,8 +288,8 @@ public class ClusterEventTest extends AbstractTestRestApi {
     String noteId = null;
     try {
       String oldName = "old_name";
-      noteId = TestUtils.getInstance(Notebook.class).createNote(oldName, anonymous);
-      TestUtils.getInstance(Notebook.class).processNote(noteId,
+      noteId = notebook.createNote(oldName, anonymous);
+      notebook.processNote(noteId,
         note -> {
           assertEquals(note.getName(), oldName);
           return null;
@@ -307,7 +306,7 @@ public class ClusterEventTest extends AbstractTestRestApi {
       Thread.sleep(1000);
       checkClusterNoteEventListener();
 
-      TestUtils.getInstance(Notebook.class).processNote(noteId,
+      notebook.processNote(noteId,
         note -> {
           assertEquals(note.getName(), newName);
           return null;
@@ -319,7 +318,7 @@ public class ClusterEventTest extends AbstractTestRestApi {
     } finally {
       // cleanup
       if (null != noteId) {
-        TestUtils.getInstance(Notebook.class).removeNote(noteId, anonymous);
+        notebook.removeNote(noteId, anonymous);
       }
     }
   }
@@ -329,7 +328,7 @@ public class ClusterEventTest extends AbstractTestRestApi {
     String note1Id = null;
     String clonedNoteId = null;
     try {
-      note1Id = TestUtils.getInstance(Notebook.class).createNote("note1", anonymous);
+      note1Id = notebook.createNote("note1", anonymous);
       Thread.sleep(1000);
 
       CloseableHttpResponse post = httpPost("/notebook/" + note1Id, "");
@@ -358,10 +357,10 @@ public class ClusterEventTest extends AbstractTestRestApi {
     } finally {
       // cleanup
       if (null != note1Id) {
-        TestUtils.getInstance(Notebook.class).removeNote(note1Id, anonymous);
+        notebook.removeNote(note1Id, anonymous);
       }
       if (null != clonedNoteId) {
-        TestUtils.getInstance(Notebook.class).removeNote(clonedNoteId, anonymous);
+        notebook.removeNote(clonedNoteId, anonymous);
       }
     }
   }
@@ -371,8 +370,8 @@ public class ClusterEventTest extends AbstractTestRestApi {
     String noteId = null;
     try {
       // Create note and set result explicitly
-      noteId = TestUtils.getInstance(Notebook.class).createNote("note1", anonymous);
-      TestUtils.getInstance(Notebook.class).processNote(noteId,
+      noteId = notebook.createNote("note1", anonymous);
+      notebook.processNote(noteId,
         note -> {
           Paragraph p1 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
           InterpreterResult result = new InterpreterResult(InterpreterResult.Code.SUCCESS,
@@ -399,7 +398,7 @@ public class ClusterEventTest extends AbstractTestRestApi {
     } finally {
       // cleanup
       if (null != noteId) {
-        TestUtils.getInstance(Notebook.class).removeNote(noteId, anonymous);
+        notebook.removeNote(noteId, anonymous);
       }
     }
   }
