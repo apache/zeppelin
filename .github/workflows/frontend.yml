@@ -23,7 +23,7 @@ env:
   SPARK_PRINT_LAUNCH_COMMAND: "true"
   SPARK_LOCAL_IP: 127.0.0.1
   ZEPPELIN_LOCAL_IP: 127.0.0.1
-  INTERPRETERS: '!hbase,!jdbc,!file,!flink,!cassandra,!elasticsearch,!bigquery,!alluxio,!livy,!groovy,!java,!neo4j,!submarine,!sparql,!mongodb'
+  INTERPRETERS: '!hbase,!jdbc,!file,!flink,!cassandra,!elasticsearch,!bigquery,!alluxio,!livy,!groovy,!java,!neo4j,!sparql,!mongodb'
 
 permissions:
   contents: read # to fetch code (actions/checkout)

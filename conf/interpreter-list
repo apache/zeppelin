@@ -34,4 +34,3 @@ neo4j           org.apache.zeppelin:zeppelin-neo4j:0.12.0-SNAPSHOT              
 python          org.apache.zeppelin:zeppelin-python:0.12.0-SNAPSHOT               Python interpreter
 shell           org.apache.zeppelin:zeppelin-shell:0.12.0-SNAPSHOT                Shell command
 sparql          org.apache.zeppelin:zeppelin-sparql:0.12.0-SNAPSHOT               Sparql interpreter
-submarine       org.apache.zeppelin:zeppelin-submarine:0.12.0-SNAPSHOT            Submarine interpreter

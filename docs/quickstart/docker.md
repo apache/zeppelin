@@ -149,7 +149,6 @@ Zeppelin service runs on local server, it auto configure itself to use `DockerIn
  - Keytab file configured in the interpreter properties
    - zeppelin.shell.keytab.location
    - spark.yarn.keytab
-   - submarine.hadoop.keytab
    - zeppelin.jdbc.keytab.location
    - zeppelin.server.kerberos.keytab
 

@@ -167,9 +167,4 @@ You can also find the below community managed interpreter list in `conf/interpre
     <td>org.apache.zeppelin:zeppelin-sparql:0.12.0-SNAPSHOT</td>
     <td>Sparql interpreter</td>
   </tr>
-  <tr>
-    <td>submarine</td>
-    <td>org.apache.zeppelin:zeppelin-submarine:0.12.0-SNAPSHOT</td>
-    <td>Submarine interpreter</td>
-  </tr>
 </table>
