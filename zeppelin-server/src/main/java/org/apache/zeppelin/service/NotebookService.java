@@ -702,6 +702,11 @@ public class NotebookService {
       return;
     }
     try {
+      NoteManager.Folder folder = notebook.getFolder(folderPath);
+      if (!checkFolderPermission(folder, Permission.OWNER, Message.OP.RESTORE_FOLDER, context, callback)) {
+        return;
+      }
+
       String destFolderPath = folderPath.replace("/" + NoteManager.TRASH_FOLDER, "");
       notebook.moveFolder(folderPath, destFolderPath, context.getAutheInfo());
       callback.onSuccess(null, context);
@@ -716,6 +721,12 @@ public class NotebookService {
                          ServiceCallback<Void> callback) throws IOException {
 
     try {
+      String folderPath = "/" + NoteManager.TRASH_FOLDER;
+      NoteManager.Folder folder = notebook.getFolder(folderPath);
+      if (!checkFolderPermission(folder, Permission.OWNER, Message.OP.RESTORE_ALL, context, callback)) {
+        return;
+      }
+
       notebook.restoreAll(context.getAutheInfo());
       callback.onSuccess(null, context);
     } catch (IOException e) {
@@ -1243,24 +1254,38 @@ public class NotebookService {
                               ServiceContext context,
                               ServiceCallback<Void> callback) throws IOException {
 
-    //TODO(zjffdu) folder permission check
     //TODO(zjffdu) folderPath is relative path, need to fix it in frontend
     LOGGER.info("Move folder {} to trash", folderPath);
 
-    String destFolderPath = "/" + NoteManager.TRASH_FOLDER + "/" + folderPath;
-    if (notebook.containsNote(destFolderPath)) {
-      destFolderPath = destFolderPath + " " +
-          TRASH_CONFLICT_TIMESTAMP_FORMATTER.format(Instant.now());
-    }
+    try {
+      NoteManager.Folder folder = notebook.getFolder("/" + folderPath);
+      if (!checkFolderPermission(folder, Permission.OWNER, Message.OP.MOVE_FOLDER_TO_TRASH, context, callback)) {
+        return;
+      }
 
-    notebook.moveFolder("/" + folderPath, destFolderPath, context.getAutheInfo());
-    callback.onSuccess(null, context);
+      String destFolderPath = "/" + NoteManager.TRASH_FOLDER + "/" + folderPath;
+      if (notebook.containsNote(destFolderPath)) {
+        destFolderPath = destFolderPath + " " +
+                TRASH_CONFLICT_TIMESTAMP_FORMATTER.format(Instant.now());
+      }
+
+      notebook.moveFolder("/" + folderPath, destFolderPath, context.getAutheInfo());
+      callback.onSuccess(null, context);
+    } catch (IOException e) {
+      callback.onFailure(e, context);
+    }
   }
 
   public void emptyTrash(ServiceContext context,
                          ServiceCallback<Void> callback) throws IOException {
 
     try {
+      String folderPath = "/" + NoteManager.TRASH_FOLDER;
+      NoteManager.Folder folder = notebook.getFolder(folderPath);
+      if (!checkFolderPermission(folder, Permission.OWNER, Message.OP.EMPTY_TRASH, context, callback)) {
+        return;
+      }
+
       notebook.emptyTrash(context.getAutheInfo());
       callback.onSuccess(null, context);
     } catch (IOException e) {
@@ -1273,6 +1298,11 @@ public class NotebookService {
                            ServiceContext context,
                            ServiceCallback<List<NoteInfo>> callback) throws IOException {
     try {
+      NoteManager.Folder folder = notebook.getFolder(folderPath);
+      if (!checkFolderPermission(folder, Permission.OWNER, Message.OP.REMOVE_FOLDER, context, callback)) {
+        return null;
+      }
+
       notebook.removeFolder(folderPath, context.getAutheInfo());
       List<NoteInfo> notesInfo = notebook.getNotesInfo(
               noteId -> authorizationService.isReader(noteId, context.getUserAndRoles()));
@@ -1288,9 +1318,12 @@ public class NotebookService {
                            String newFolderPath,
                            ServiceContext context,
                            ServiceCallback<List<NoteInfo>> callback) throws IOException {
-    //TODO(zjffdu) folder permission check
-
     try {
+      NoteManager.Folder folder = notebook.getFolder(folderPath);
+      if (!checkFolderPermission(folder, Permission.OWNER, Message.OP.FOLDER_RENAME, context, callback)) {
+        return null;
+      }
+
       notebook.moveFolder(normalizeNotePath(folderPath),
               normalizeNotePath(newFolderPath), context.getAutheInfo());
       List<NoteInfo> notesInfo = notebook.getNotesInfo(
@@ -1547,5 +1580,79 @@ public class NotebookService {
       callback.onFailure(new ForbiddenException(errorMsg), context);
       return false;
     }
+  }
+
+  /**
+   * Return null when it is allowed, otherwise return the error message which could be
+   * propagated to frontend
+   *
+   * @param noteInfo
+   * @param context
+   * @param permission
+   * @param op
+   * @return
+   */
+  private <T> boolean checkPermission(NoteInfo noteInfo,
+                                      Permission permission,
+                                      Message.OP op,
+                                      ServiceContext context,
+                                      ServiceCallback<T> callback) throws IOException {
+    boolean isAllowed = false;
+    Set<String> allowed = null;
+    switch (permission) {
+      case READER:
+        isAllowed = authorizationService.isReader(noteInfo.getId(), context.getUserAndRoles());
+        allowed = authorizationService.getReaders(noteInfo.getId());
+        break;
+      case WRITER:
+        isAllowed = authorizationService.isWriter(noteInfo.getId(), context.getUserAndRoles());
+        allowed = authorizationService.getWriters(noteInfo.getId());
+        break;
+      case RUNNER:
+        isAllowed = authorizationService.isRunner(noteInfo.getId(), context.getUserAndRoles());
+        allowed = authorizationService.getRunners(noteInfo.getId());
+        break;
+      case OWNER:
+        isAllowed = authorizationService.isOwner(noteInfo.getId(), context.getUserAndRoles());
+        allowed = authorizationService.getOwners(noteInfo.getId());
+        break;
+    }
+    if (isAllowed) {
+      return true;
+    } else {
+      String errorMsg = String.format(
+              "Insufficient %s privileges to '%s' note.\n" +
+              "Allowed users or roles: %s\n" +
+              "But the user %s belongs to: %s",
+              permission, noteInfo.getNoteName(),
+              allowed,
+              context.getAutheInfo().getUser(), context.getUserAndRoles());
+      callback.onFailure(new ForbiddenException(errorMsg), context);
+      return false;
+    }
+  }
+
+  /**
+   * Return null when it is allowed, otherwise return the error message which could be
+   * propagated to frontend
+   *
+   * @param folder
+   * @param context
+   * @param permission
+   * @param op
+   * @return
+   */
+  private <T> boolean checkFolderPermission(NoteManager.Folder folder,
+                                      Permission permission,
+                                      Message.OP op,
+                                      ServiceContext context,
+                                      ServiceCallback<T> callback) throws IOException {
+
+    for (NoteInfo noteInfo : folder.getNoteInfoRecursively()) {
+      if (!checkPermission(noteInfo, permission, op, context, callback)) {
+        return false;
+      }
+    }
+    return true;
   }
 }
