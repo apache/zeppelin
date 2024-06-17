@@ -40,7 +40,7 @@
     <flink.scala.compile.version>${flink.scala.version}</flink.scala.compile.version>
     <hive.version>2.3.7</hive.version>
     <hive.guava.version>14.0.1</hive.guava.version>
-    <derby.version>10.14.2.0</derby.version>
+    <derby.version>10.17.1.0</derby.version>
     <hiverunner.version>5.3.0</hiverunner.version>
     <grpc.version>1.15.0</grpc.version>
 
