@@ -163,8 +163,12 @@ export class NotebookActionBarComponent extends MessageListenersManager implemen
     this.setConfig();
   }
 
-  setConfig() {
-    // TODO(hsuanxyz)
+  setConfig(config?: Note['note']['config']) {
+    if (config) {
+      this.note.config = config;
+    }
+
+    this.messageService.updateNote(this.note.id, this.note.name, this.note.config);
   }
 
   cloneNote() {
