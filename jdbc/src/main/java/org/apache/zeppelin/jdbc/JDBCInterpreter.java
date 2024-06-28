@@ -35,6 +35,7 @@ import org.apache.zeppelin.interpreter.SingleRowInterpreterResult;
 import org.apache.zeppelin.interpreter.ZeppelinContext;
 import org.apache.zeppelin.interpreter.util.SqlSplitter;
 import org.apache.zeppelin.jdbc.hive.HiveUtils;
+import org.apache.zeppelin.jdbc.kyuubi.KyuubiUtils;
 import org.apache.zeppelin.tabledata.TableDataUtils;
 import org.apache.zeppelin.util.PropertiesUtil;
 import org.slf4j.Logger;
@@ -825,10 +826,16 @@ public class JDBCInterpreter extends KerberosInterpreter {
           String jdbcURL = getJDBCConfiguration(user).getProperty().getProperty(URL_KEY);
           String driver =
                   getJDBCConfiguration(user).getProperty().getProperty(DRIVER_KEY);
-          if (jdbcURL != null && jdbcURL.startsWith("jdbc:hive2://")
-                  && driver != null && driver.equals("org.apache.hive.jdbc.HiveDriver")) {
-            HiveUtils.startHiveMonitorThread(statement, context,
+          if (jdbcURL != null && driver != null) {
+            if (driver.equals("org.apache.hive.jdbc.HiveDriver") &&
+                jdbcURL.startsWith("jdbc:hive2://")) {
+              HiveUtils.startHiveMonitorThread(statement, context,
                     Boolean.parseBoolean(getProperty("hive.log.display", "true")), this);
+            } else if (driver.equals("org.apache.kyuubi.jdbc.KyuubiHiveDriver") &&
+                (jdbcURL.startsWith("jdbc:kyuubi://") || jdbcURL.startsWith("jdbc:hive2://"))) {
+              KyuubiUtils.startMonitorThread(connection, statement, context,
+                  Boolean.parseBoolean(getProperty("kyuubi.log.display", "true")), this);
+            }
           }
           boolean isResultSetAvailable = statement.execute(sqlToExecute);
           getJDBCConfiguration(user).setConnectionInDBDriverPoolSuccessful();
