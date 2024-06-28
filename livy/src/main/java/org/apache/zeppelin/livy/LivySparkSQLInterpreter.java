@@ -359,25 +359,7 @@ public class LivySparkSQLInterpreter extends BaseLivyInterpreter {
             break;
         }
       } else {
-        switch (ch) {
-          case '\'' :
-            out.write('\\');
-            break;
-          case '"' :
-            out.write('\\');
-            out.write('"');
-            break;
-          case '\\' :
-            out.write('\\');
-            out.write('\\');
-            break;
-          case '/' :
-            out.write('\\');
-            break;
-          default :
-            out.write(ch);
-            break;
-        }
+        out.write(ch);
       }
     }
   }
