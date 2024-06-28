@@ -39,6 +39,7 @@
     <h2.version>2.2.220</h2.version>
     <commons.dbcp2.version>2.0.1</commons.dbcp2.version>
     <hive3.version>3.1.3</hive3.version>
+    <kyuubi.version>1.9.1</kyuubi.version>
 
     <!--test library versions-->
     <mockrunner.jdbc.version>1.0.8</mockrunner.jdbc.version>
@@ -133,6 +134,13 @@
           <groupId>org.apache.hbase</groupId>
         </exclusion>
       </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.kyuubi</groupId>
+      <artifactId>kyuubi-hive-jdbc-shaded</artifactId>
+      <version>${kyuubi.version}</version>
+      <scope>provided</scope>
     </dependency>
 
     <dependency>
