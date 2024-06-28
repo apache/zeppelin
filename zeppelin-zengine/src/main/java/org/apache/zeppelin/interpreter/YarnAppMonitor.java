@@ -44,7 +44,6 @@ public class YarnAppMonitor {
   private static final Logger LOGGER = LoggerFactory.getLogger(YarnAppMonitor.class);
   private static YarnAppMonitor instance;
 
-  private ZeppelinConfiguration conf;
   private ScheduledExecutorService executor;
   private YarnClient yarnClient;
   private ConcurrentHashMap<ApplicationId, RemoteInterpreterManagedProcess> apps;
@@ -58,7 +57,6 @@ public class YarnAppMonitor {
 
   private YarnAppMonitor() {
     try {
-      this.conf = ZeppelinConfiguration.create();
       this.yarnClient = YarnClient.createYarnClient();
       YarnConfiguration yarnConf = new YarnConfiguration();
       // disable timeline service as we only query yarn app here.
@@ -94,8 +92,10 @@ public class YarnAppMonitor {
                   LOGGER.warn("Fail to check yarn app status", e);
                 }
               },
-              conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_YARN_MONITOR_INTERVAL_SECS),
-              conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_YARN_MONITOR_INTERVAL_SECS),
+          ZeppelinConfiguration
+              .getStaticInt(ConfVars.ZEPPELIN_INTERPRETER_YARN_MONITOR_INTERVAL_SECS),
+          ZeppelinConfiguration
+              .getStaticInt(ConfVars.ZEPPELIN_INTERPRETER_YARN_MONITOR_INTERVAL_SECS),
               TimeUnit.SECONDS);
 
       LOGGER.info("YarnAppMonitor is started");

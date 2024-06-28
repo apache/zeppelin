@@ -36,11 +36,11 @@ RUN set -ex && \
     apt-get autoclean && \
     apt-get clean
 
-ARG version="0.10.0"
+ARG version="0.12.0-SNAPSHOT"
 
 ENV LANG=en_US.UTF-8 \
     LC_ALL=en_US.UTF-8 \
-    JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64 \
+    JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64 \
     VERSION="${version}" \
     HOME="/opt/zeppelin" \
     ZEPPELIN_HOME="/opt/zeppelin" \

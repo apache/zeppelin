@@ -162,7 +162,7 @@ The last step is **Dependency Setting**. Since Zeppelin only includes `PostgreSQ
 
 <img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/edit_dependencies.png" width="600px" />
 
-That's it. You can find more JDBC connection setting examples([Mysql](#mysql), [MariaDB](#mariadb), [Redshift](#redshift), [Apache Hive](#apache-hive), [Presto/Trino](#prestotrino), [Impala](#impala), [Apache Kyuubi](#apache-kyuubi), [Apache Phoenix](#apache-phoenix), and [Apache Tajo](#apache-tajo)) in [this section](#examples).
+That's it. You can find more JDBC connection setting examples([MySQL](#mysql), [MariaDB](#mariadb), [Redshift](#redshift), [Apache Hive](#apache-hive), [Presto/Trino](#prestotrino), [Impala](#impala), [Apache Kyuubi](#apache-kyuubi), [Apache Phoenix](#apache-phoenix), and [Apache Tajo](#apache-tajo)) in [this section](#examples).
 
 ## JDBC Interpreter Datasource Pool Configuration
 The Jdbc interpreter uses the connection pool technology, and supports users to do some personal configuration of the connection pool. For example, we can configure `default.validationQuery='select 1'` and `default.testOnBorrow=true` in the Interpreter configuration to avoid the "Invalid SessionHandle" runtime error caused by Session timeout when connecting to HiveServer2 through JDBC interpreter.
@@ -829,7 +829,7 @@ Dependencies
 
 ### Apache Kyuubi
 
-Zeppelin connect to `Kyuubi` to run sql via `KyuubiHiveDriver`. There are 2 cases of connecting with Kyuubi:
+Zeppelin connect to Kyuubi to run SQL via [Kyuubi JDBC Driver](https://kyuubi.readthedocs.io/en/master/client/jdbc/kyuubi_jdbc.html). There are 2 cases of connecting with Kyuubi:
 
 * Connect to Kyuubi without KERBEROS
 * Connect to Kyuubi with KERBEROS
@@ -853,7 +853,7 @@ Properties
   </tr>
   <tr>
     <td>default.url</td>
-    <td>jdbc:hive2://kyuubi-server:10009</td>
+    <td>jdbc:kyuubi://kyuubi-server:10009</td>
   </tr>
 </table>
 
@@ -865,11 +865,7 @@ Dependencies
     <th>Excludes</th>
   </tr>
   <tr>
-    <td>org.apache.kyuubi:kyuubi-hive-jdbc-shaded:1.6.1-incubating</td>
-    <td></td>
-  </tr>
-  <tr>
-    <td>org.apache.hive:hive-jdbc:3.1.2</td>
+    <td>org.apache.kyuubi:kyuubi-hive-jdbc-shaded:1.9.0</td>
     <td></td>
   </tr>
 </table>
@@ -892,7 +888,7 @@ Properties
   </tr>
   <tr>
     <td>default.url</td>
-    <td>jdbc:hive2://kyuubi-server:10009/default;principal={kyuubi_principal}</td>
+    <td>jdbc:kyuubi://kyuubi-server:10009/default;principal={kyuubi_server_principal}</td>
   </tr>
   <tr>
     <td>zeppelin.jdbc.auth.type</td>
@@ -916,11 +912,15 @@ Dependencies
     <th>Excludes</th>
   </tr>
   <tr>
-    <td>org.apache.kyuubi:kyuubi-hive-jdbc-shaded:1.6.1-incubating</td>
+    <td>org.apache.kyuubi:kyuubi-hive-jdbc-shaded:1.9.0</td>
     <td></td>
   </tr>
   <tr>
-    <td>org.apache.hive:hive-jdbc:3.1.2</td>
+    <td>org.apache.hadoop:hadoop-client-api:3.3.6</td>
+    <td></td>
+  </tr>
+    <tr>
+    <td>org.apache.hadoop:hadoop-client-runtime:3.3.6</td>
     <td></td>
   </tr>
 </table>

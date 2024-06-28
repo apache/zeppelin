@@ -18,6 +18,8 @@ package org.apache.zeppelin.socket;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
+
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.AuthorizationService;
 import org.junit.jupiter.api.Test;
 
@@ -27,7 +29,7 @@ class ConnectionManagerTest {
   void checkMapGrow() {
     AuthorizationService authService = mock(AuthorizationService.class);
 
-    ConnectionManager manager = new ConnectionManager(authService);
+    ConnectionManager manager = new ConnectionManager(authService, ZeppelinConfiguration.load());
     NotebookSocket socket = mock(NotebookSocket.class);
     manager.addNoteConnection("test", socket);
     assertEquals(1, manager.noteSocketMap.size());
@@ -48,7 +50,7 @@ class ConnectionManagerTest {
   void checkMapGrowRemoveAll() {
     AuthorizationService authService = mock(AuthorizationService.class);
 
-    ConnectionManager manager = new ConnectionManager(authService);
+    ConnectionManager manager = new ConnectionManager(authService, ZeppelinConfiguration.load());
     NotebookSocket socket = mock(NotebookSocket.class);
     manager.addNoteConnection("test", socket);
     assertEquals(1, manager.noteSocketMap.size());

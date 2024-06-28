@@ -17,7 +17,6 @@
 package org.apache.zeppelin.helium;
 
 import java.io.IOException;
-import java.net.URI;
 import java.util.LinkedList;
 import java.util.List;
 

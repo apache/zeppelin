@@ -35,7 +35,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * Unittest for DistributedResourcePool
  */
-public class DistributedResourcePoolTest extends AbstractInterpreterTest {
+class DistributedResourcePoolTest extends AbstractInterpreterTest {
 
   private RemoteInterpreter intp1;
   private RemoteInterpreter intp2;
@@ -73,7 +73,7 @@ public class DistributedResourcePoolTest extends AbstractInterpreterTest {
   }
 
   @Test
-  public void testRemoteDistributedResourcePool() throws InterpreterException {
+  void testRemoteDistributedResourcePool() throws InterpreterException {
     Gson gson = new Gson();
     InterpreterResult ret;
     intp1.interpret("put key1 value1", context);
@@ -93,7 +93,7 @@ public class DistributedResourcePoolTest extends AbstractInterpreterTest {
   }
 
   @Test
-  public void testDistributedResourcePool() {
+  void testDistributedResourcePool() {
     final LocalResourcePool pool2 = new LocalResourcePool("pool2");
     final LocalResourcePool pool3 = new LocalResourcePool("pool3");
 
@@ -155,7 +155,7 @@ public class DistributedResourcePoolTest extends AbstractInterpreterTest {
   }
 
   @Test
-  public void testResourcePoolUtils() throws InterpreterException {
+  void testResourcePoolUtils() throws InterpreterException {
     Gson gson = new Gson();
 
     // when create some resources
@@ -193,7 +193,7 @@ public class DistributedResourcePoolTest extends AbstractInterpreterTest {
   }
 
   @Test
-  public void testResourceInvokeMethod() throws InterpreterException {
+  void testResourceInvokeMethod() throws InterpreterException {
     Gson gson = new Gson();
     InterpreterResult ret;
     intp1.interpret("put key1 hey", context);

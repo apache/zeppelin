@@ -24,16 +24,18 @@ import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 
+import static org.apache.zeppelin.helium.HeliumPackage.newHeliumPackage;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class HeliumLocalRegistryTest {
+class HeliumLocalRegistryTest {
   private File tmpDir;
 
   @BeforeEach
   public void setUp() throws Exception {
-    tmpDir = new File(System.getProperty("java.io.tmpdir") + "/ZeppelinLTest_" + System.currentTimeMillis());
-    tmpDir.mkdirs();
+    tmpDir = Files.createTempDirectory("ZeppelinLTest_").toFile();
   }
 
   @AfterEach
@@ -42,7 +44,7 @@ public class HeliumLocalRegistryTest {
   }
 
   @Test
-  public void testGetAllPackage() throws IOException {
+  void testGetAllPackage() throws IOException {
     // given
     File r1Path = new File(tmpDir, "r1");
     HeliumLocalRegistry r1 = new HeliumLocalRegistry("r1", r1Path.getAbsolutePath());
@@ -50,7 +52,7 @@ public class HeliumLocalRegistryTest {
 
     // when
     Gson gson = new Gson();
-    HeliumPackage pkg1 = new HeliumPackage(HeliumType.APPLICATION,
+    HeliumPackage pkg1 = newHeliumPackage(HeliumType.APPLICATION,
         "app1",
         "desc1",
         "artifact1",
@@ -58,7 +60,8 @@ public class HeliumLocalRegistryTest {
         new String[][]{},
         "license",
         "");
-    FileUtils.writeStringToFile(new File(r1Path, "pkg1.json"), gson.toJson(pkg1));
+    FileUtils.writeStringToFile(new File(r1Path, "pkg1.json"), gson.toJson(pkg1),
+        StandardCharsets.UTF_8);
 
     // then
     assertEquals(1, r1.getAll().size());

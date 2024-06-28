@@ -21,8 +21,8 @@ import com.google.gson.reflect.TypeToken;
 
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.util.EntityUtils;
+import org.apache.zeppelin.MiniZeppelinServer;
 import org.apache.zeppelin.helium.Helium;
-import org.apache.zeppelin.utils.TestUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static org.apache.zeppelin.helium.HeliumPackage.newHeliumPackage;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -46,17 +47,24 @@ import org.apache.zeppelin.helium.HeliumType;
 
 class HeliumRestApiTest extends AbstractTestRestApi {
   private Gson gson = new Gson();
+  private static MiniZeppelinServer zepServer;
   private static Helium helium;
 
   @BeforeAll
   static void init() throws Exception {
-    AbstractTestRestApi.startUp(HeliumRestApi.class.getSimpleName());
-    helium = TestUtils.getInstance(Helium.class);
+    zepServer = new MiniZeppelinServer(HeliumRestApi.class.getSimpleName());
+    zepServer.start();
+    helium = zepServer.getServiceLocator().getService(Helium.class);
+  }
+
+  @BeforeEach
+  void setup() {
+    conf = zepServer.getZeppelinConfiguration();
   }
 
   @AfterAll
   static void destroy() throws Exception {
-    AbstractTestRestApi.shutDown();
+    zepServer.destroy();
   }
 
   @BeforeEach
@@ -64,7 +72,7 @@ class HeliumRestApiTest extends AbstractTestRestApi {
     HeliumTestRegistry registry = new HeliumTestRegistry("r1", "r1");
     helium.clear();
 
-    registry.add(new HeliumPackage(
+    registry.add(newHeliumPackage(
         HeliumType.APPLICATION,
         "name1",
         "desc1",
@@ -74,7 +82,7 @@ class HeliumRestApiTest extends AbstractTestRestApi {
         "",
         ""));
 
-    registry.add(new HeliumPackage(
+    registry.add(newHeliumPackage(
         HeliumType.APPLICATION,
         "name2",
         "desc2",

@@ -71,7 +71,7 @@ public class InterpreterService {
     String interpreterBaseDir = conf.getInterpreterDir();
     String localRepoPath = conf.getInterpreterLocalRepoPath();
 
-    final DependencyResolver dependencyResolver = new DependencyResolver(localRepoPath);
+    final DependencyResolver dependencyResolver = new DependencyResolver(localRepoPath, conf);
 
     // TODO(jl): Make a rule between an interpreter name and an installation directory
     List<String> possibleInterpreterDirectories = new ArrayList<>();

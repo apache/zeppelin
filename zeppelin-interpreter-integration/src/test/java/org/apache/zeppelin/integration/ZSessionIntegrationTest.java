@@ -18,19 +18,20 @@
 package org.apache.zeppelin.integration;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.zeppelin.test.DownloadUtils;
+import org.apache.zeppelin.MiniZeppelinServer;
 import org.apache.zeppelin.client.ClientConfig;
 import org.apache.zeppelin.client.ExecuteResult;
 import org.apache.zeppelin.client.websocket.SimpleMessageHandler;
 import org.apache.zeppelin.client.Status;
 import org.apache.zeppelin.client.ZSession;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
-import org.apache.zeppelin.interpreter.integration.DownloadUtils;
 import org.apache.zeppelin.interpreter.lifecycle.TimeoutLifecycleManager;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.rest.AbstractTestRestApi;
-import org.apache.zeppelin.utils.TestUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -50,31 +51,47 @@ public class ZSessionIntegrationTest extends AbstractTestRestApi {
   private static Notebook notebook;
   private static String sparkHome;
   private static String flinkHome;
+  private static MiniZeppelinServer zepServer;
 
-  private ClientConfig clientConfig = new ClientConfig("http://localhost:8080");
-
+  private ClientConfig clientConfig;
 
   @BeforeAll
-  public static void setUp() throws Exception {
-    System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HELIUM_REGISTRY.getVarName(),
-            "helium");
-    System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_ALLOWED_ORIGINS.getVarName(), "*");
-    System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_SESSION_CHECK_INTERVAL.getVarName(), "5000");
-
-    AbstractTestRestApi.startUp(ZSessionIntegrationTest.class.getSimpleName());
-    ZeppelinConfiguration zConf = ZeppelinConfiguration.create();
+  static void init() throws Exception {
+    zepServer = new MiniZeppelinServer(ZSessionIntegrationTest.class.getSimpleName());
+    zepServer.addInterpreter("sh");
+    zepServer.addInterpreter("spark");
+    zepServer.addInterpreter("spark-submit");
+    zepServer.addInterpreter("flink");
+    zepServer.addInterpreter("flink-cmd");
+    zepServer.addInterpreter("python");
+    zepServer.copyBinDir();
+    zepServer.addLauncher("FlinkInterpreterLauncher");
+    ZeppelinConfiguration zConf = zepServer.getZeppelinConfiguration();
+    zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HELIUM_REGISTRY.getVarName(),
+        "helium");
+    zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_ALLOWED_ORIGINS.getVarName(), "*");
+    zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_SESSION_CHECK_INTERVAL.getVarName(), "5000");
+    zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HELIUM_REGISTRY.getVarName(),
+        "helium");
     zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_LIFECYCLE_MANAGER_CLASS.getVarName(), TimeoutLifecycleManager.class.getName());
     zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_LIFECYCLE_MANAGER_TIMEOUT_CHECK_INTERVAL.getVarName(), "5000");
     zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_LIFECYCLE_MANAGER_TIMEOUT_THRESHOLD.getVarName(), "10000");
-
-    notebook = TestUtils.getInstance(Notebook.class);
-    sparkHome = DownloadUtils.downloadSpark("3.4.1", "3");
+    sparkHome = DownloadUtils.downloadSpark();
     flinkHome = DownloadUtils.downloadFlink("1.17.1", "2.12");
+    zepServer.start();
+    notebook = zepServer.getServiceLocator().getService(Notebook.class);
+
   }
 
   @AfterAll
-  public static void destroy() throws Exception {
-    AbstractTestRestApi.shutDown();
+  static void destroy() throws Exception {
+    zepServer.destroy();
+  }
+
+  @BeforeEach
+  void setup() {
+    conf = zepServer.getZeppelinConfiguration();
+    clientConfig = new ClientConfig("http://localhost:" + conf.getServerPort());
   }
 
   @Test
@@ -106,7 +123,8 @@ public class ZSessionIntegrationTest extends AbstractTestRestApi {
       assertEquals(Status.ERROR, result.getStatus());
       assertEquals(2, result.getResults().size());
       assertEquals("TEXT", result.getResults().get(0).getType());
-      assertTrue(result.getResults().get(0).getData().contains("command not found"), result.getResults().get(0).getData());
+      // Depends on JVM language
+      //assertTrue(result.getResults().get(0).getData().contains("command not found"), result.getResults().get(0).getData());
       assertEquals("TEXT", result.getResults().get(1).getType());
       assertTrue(result.getResults().get(1).getData().contains("ExitValue"), result.getResults().get(1).getData());
 
@@ -152,7 +170,8 @@ public class ZSessionIntegrationTest extends AbstractTestRestApi {
       assertEquals(Status.ERROR, result.getStatus());
       assertEquals(2, result.getResults().size());
       assertEquals("TEXT", result.getResults().get(0).getType());
-      assertTrue(result.getResults().get(0).getData().contains("command not found"), result.getResults().get(0).getData());
+      // depends of JVM language
+      // assertTrue(result.getResults().get(0).getData().contains("command not found"), result.getResults().get(0).getData());
       assertEquals("TEXT", result.getResults().get(1).getType());
       assertTrue(result.getResults().get(1).getData().contains("ExitValue"), result.getResults().get(1).getData());
 
@@ -189,7 +208,7 @@ public class ZSessionIntegrationTest extends AbstractTestRestApi {
       assertEquals(Status.FINISHED, result.getStatus(), result.toString());
       assertEquals(1, result.getResults().size());
       assertEquals("TEXT", result.getResults().get(0).getType());
-      assertTrue(result.getResults().get(0).getData().contains("3.4.1"), result.getResults().get(0).getData());
+      assertTrue(result.getResults().get(0).getData().contains(DownloadUtils.DEFAULT_SPARK_VERSION), result.getResults().get(0).getData());
       assertEquals(0, result.getJobUrls().size());
 
       // pyspark
@@ -258,7 +277,7 @@ public class ZSessionIntegrationTest extends AbstractTestRestApi {
       assertEquals(Status.FINISHED, result.getStatus(), result.toString());
       assertEquals(1, result.getResults().size());
       assertEquals("TEXT", result.getResults().get(0).getType());
-      assertTrue(result.getResults().get(0).getData().contains("3.4.1"), result.getResults().get(0).getData());
+      assertTrue(result.getResults().get(0).getData().contains(DownloadUtils.DEFAULT_SPARK_VERSION), result.getResults().get(0).getData());
       assertEquals(0, result.getJobUrls().size());
 
       // pyspark

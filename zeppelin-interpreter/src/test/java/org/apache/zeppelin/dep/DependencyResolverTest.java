@@ -18,6 +18,7 @@
 package org.apache.zeppelin.dep;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.eclipse.aether.RepositoryException;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -44,7 +45,7 @@ class DependencyResolverTest {
         System.currentTimeMillis());
     testPath = tmpDir.getAbsolutePath() + "/test-repo";
     testCopyPath = new File(tmpDir, "test-copy-repo");
-    resolver = new DependencyResolver(testPath);
+    resolver = new DependencyResolver(testPath, ZeppelinConfiguration.load());
   }
 
   @AfterAll
@@ -108,7 +109,8 @@ class DependencyResolverTest {
     FileNotFoundException exception = assertThrows(FileNotFoundException.class, () -> {
       resolver.load("one.two:1.0", testCopyPath);
     });
-    assertEquals("Source 'one.two:1.0' does not exist", exception.getMessage());
+    assertEquals("File system element for parameter 'source' does not exist: 'one.two:1.0'",
+        exception.getMessage());
   }
 
 }

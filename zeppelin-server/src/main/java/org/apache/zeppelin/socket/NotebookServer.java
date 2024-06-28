@@ -43,6 +43,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.websocket.CloseReason;
+import javax.websocket.Endpoint;
 import javax.websocket.EndpointConfig;
 import javax.websocket.OnClose;
 import javax.websocket.OnError;
@@ -80,10 +81,12 @@ import org.apache.zeppelin.notebook.AuthorizationService;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteEventListener;
 import org.apache.zeppelin.notebook.NoteInfo;
+import org.apache.zeppelin.notebook.NoteParser;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.NotebookImportDeserializer;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.notebook.ParagraphJobListener;
+import org.apache.zeppelin.notebook.exception.CorruptedNoteException;
 import org.apache.zeppelin.notebook.repo.NotebookRepoWithVersionControl.Revision;
 import org.apache.zeppelin.rest.exception.ForbiddenException;
 import org.apache.zeppelin.scheduler.Job;
@@ -115,7 +118,7 @@ import static org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars.ZEPPELIN_A
  * no-parameter constructor
  */
 @ManagedObject
-@ServerEndpoint(value = "/ws", configurator = SessionConfigurator.class)
+@ServerEndpoint(value = "/ws")
 public class NotebookServer implements AngularObjectRegistryListener,
     RemoteInterpreterProcessListener,
     ApplicationEventListener,
@@ -139,9 +142,6 @@ public class NotebookServer implements AngularObjectRegistryListener,
     }
   }
 
-  private final Boolean collaborativeModeEnable = ZeppelinConfiguration
-      .create()
-      .isZeppelinNotebookCollaborativeModeEnable();
   private static final Logger LOG = LoggerFactory.getLogger(NotebookServer.class);
   private static final Gson gson = new GsonBuilder()
       .setDateFormat("yyyy-MM-dd'T'HH:mm:ssZ")
@@ -151,14 +151,13 @@ public class NotebookServer implements AngularObjectRegistryListener,
   private static final AtomicReference<NotebookServer> self = new AtomicReference<>();
 
   private final ExecutorService executorService = Executors.newFixedThreadPool(10);
-  private final boolean sendParagraphStatusToFrontend = ZeppelinConfiguration.create().getBoolean(
-      ZeppelinConfiguration.ConfVars.ZEPPELIN_WEBSOCKET_PARAGRAPH_STATUS_PROGRESS);
 
   // TODO(jl): This will be removed by handling session directly
   private final Map<String, NotebookSocket> sessionIdNotebookSocketMap = Metrics.gaugeMapSize("zeppelin_session_id_notebook_sockets", Tags.empty(), new ConcurrentHashMap<>());
   private ConnectionManager connectionManager;
   private ZeppelinConfiguration zeppelinConfiguration;
   private Provider<Notebook> notebookProvider;
+  private Provider<NoteParser> noteParser;
   private Provider<NotebookService> notebookServiceProvider;
   private AuthorizationService authorizationService;
   private Provider<ConfigurationService> configurationServiceProvider;
@@ -172,6 +171,12 @@ public class NotebookServer implements AngularObjectRegistryListener,
   @Inject
   public void setZeppelinConfiguration(ZeppelinConfiguration zeppelinConfiguration) {
     this.zeppelinConfiguration = zeppelinConfiguration;
+  }
+
+  @Inject
+  public void setNoteParser(Provider<NoteParser> noteParser) {
+    this.noteParser = noteParser;
+    LOG.info("Injected NoteParser");
   }
 
   @Inject
@@ -308,8 +313,7 @@ public class NotebookServer implements AngularObjectRegistryListener,
         return;
       }
 
-      ZeppelinConfiguration conf = ZeppelinConfiguration.create();
-      boolean allowAnonymous = conf.isAnonymousAllowed();
+      boolean allowAnonymous = zeppelinConfiguration.isAnonymousAllowed();
       if (!allowAnonymous && receivedMessage.principal.equals("anonymous")) {
         LOG.warn("Anonymous access not allowed.");
         return;
@@ -513,6 +517,10 @@ public class NotebookServer implements AngularObjectRegistryListener,
     connectionManager.removeConnection(notebookSocket);
     connectionManager.removeConnectionFromAllNote(notebookSocket);
     connectionManager.removeUserConnection(notebookSocket.getUser(), notebookSocket);
+  }
+
+  private boolean sendParagraphStatusToFrontend() {
+    return zeppelinConfiguration.getBoolean(ZeppelinConfiguration.ConfVars.ZEPPELIN_WEBSOCKET_PARAGRAPH_STATUS_PROGRESS);
   }
 
   @OnError
@@ -720,8 +728,7 @@ public class NotebookServer implements AngularObjectRegistryListener,
 
   // broadcast ClusterEvent
   private void broadcastClusterEvent(ClusterEvent event, String msgId, Object... objects) {
-    ZeppelinConfiguration conf = ZeppelinConfiguration.create();
-    if (!conf.isClusterMode()) {
+    if (!zeppelinConfiguration.isClusterMode()) {
       return;
     }
 
@@ -753,7 +760,7 @@ public class NotebookServer implements AngularObjectRegistryListener,
     }
 
     String msg = ClusterMessage.serializeMessage(clusterMessage);
-    ClusterManagerServer.getInstance(conf).broadcastClusterEvent(
+    ClusterManagerServer.getInstance(zeppelinConfiguration).broadcastClusterEvent(
         ClusterManagerServer.CLUSTER_NOTE_EVENT_TOPIC, msg);
   }
 
@@ -776,12 +783,12 @@ public class NotebookServer implements AngularObjectRegistryListener,
         authenticationInfo = AuthenticationInfo.fromJson(json);
       } else if (StringUtils.equals(key, "Note")) {
         try {
-          note = Note.fromJson(null, json);
-        } catch (IOException e) {
+          note = noteParser.get().fromJson(null, json);
+        } catch (CorruptedNoteException e) {
           LOG.warn("Fail to parse note json", e);
         }
       } else if (StringUtils.equals(key, "Paragraph")) {
-        paragraph = Paragraph.fromJson(json);
+        paragraph = noteParser.get().fromJson(json);
       } else if (StringUtils.equals(key, "Set<String>")) {
         Gson gson = new Gson();
         userAndRoles = gson.fromJson(json, new TypeToken<Set<String>>() {
@@ -791,7 +798,7 @@ public class NotebookServer implements AngularObjectRegistryListener,
         userParagraphMap = gson.fromJson(json, new TypeToken<Map<String, Paragraph>>() {
         }.getType());
       } else {
-        LOG.error("Unknown key:{}, json:{}!" + key, json);
+        LOG.error("Unknown key:{}, json:{}!", key, json);
       }
     }
 
@@ -1201,7 +1208,7 @@ public class NotebookServer implements AngularObjectRegistryListener,
   private void patchParagraph(NotebookSocket conn,
                               ServiceContext context,
                               Message fromMessage) throws IOException {
-    if (!collaborativeModeEnable) {
+    if (!zeppelinConfiguration.isZeppelinNotebookCollaborativeModeEnable()) {
       return;
     }
     String paragraphId = fromMessage.getType("id", LOG);
@@ -1784,7 +1791,7 @@ public class NotebookServer implements AngularObjectRegistryListener,
    */
   @Override
   public void onOutputAppend(String noteId, String paragraphId, int index, String output) {
-    if (!sendParagraphStatusToFrontend) {
+    if (!sendParagraphStatusToFrontend()) {
       return;
     }
     Message msg = new Message(OP.PARAGRAPH_APPEND_OUTPUT)
@@ -1803,7 +1810,7 @@ public class NotebookServer implements AngularObjectRegistryListener,
   @Override
   public void onOutputUpdated(String noteId, String paragraphId, int index,
                               InterpreterResult.Type type, String output) {
-    if (!sendParagraphStatusToFrontend) {
+    if (!sendParagraphStatusToFrontend()) {
       return;
     }
     Message msg = new Message(OP.PARAGRAPH_UPDATE_OUTPUT)
@@ -1841,7 +1848,7 @@ public class NotebookServer implements AngularObjectRegistryListener,
    */
   @Override
   public void onOutputClear(String noteId, String paragraphId) {
-    if (!sendParagraphStatusToFrontend) {
+    if (!sendParagraphStatusToFrontend()) {
       return;
     }
 
@@ -2050,7 +2057,7 @@ public class NotebookServer implements AngularObjectRegistryListener,
   public void onProgressUpdate(Job<?> job, int progress) {
     if (job instanceof Paragraph) {
       final Paragraph p = (Paragraph) job;
-      if (!sendParagraphStatusToFrontend) {
+      if (!sendParagraphStatusToFrontend()) {
         return;
       }
       connectionManager.broadcast(p.getNote().getId(),

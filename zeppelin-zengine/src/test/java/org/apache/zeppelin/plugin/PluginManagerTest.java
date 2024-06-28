@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.plugin;
 
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.repo.GitNotebookRepo;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.junit.jupiter.api.Test;
@@ -26,11 +27,11 @@ import java.io.IOException;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
-public class PluginManagerTest {
+class PluginManagerTest {
 
   @Test
-  public void testLoadGitNotebookRepo() throws IOException {
-    NotebookRepo notebookRepo = PluginManager.get()
+  void testLoadGitNotebookRepo() throws IOException {
+    NotebookRepo notebookRepo = new PluginManager(ZeppelinConfiguration.load())
             .loadNotebookRepo("org.apache.zeppelin.notebook.repo.GitNotebookRepo");
     assertTrue(notebookRepo instanceof GitNotebookRepo);
   }

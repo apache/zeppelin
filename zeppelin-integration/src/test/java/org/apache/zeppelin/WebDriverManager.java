@@ -17,13 +17,18 @@
 
 package org.apache.zeppelin;
 
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.Closeable;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.*;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
+
+import org.apache.commons.lang3.SystemUtils;
 import org.openqa.selenium.By;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
@@ -39,7 +44,17 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
+// This class auto discovery the available WebDriver in the following priority:
+//   Chrome, Firefox, Safari.
+//
+// You can also use the environment variable ZEPPELIN_SELENIUM_BROWSER to choose a specific one.
+// For example, unlike Chromium and Firefox drivers, Safari's WebDriver is pre-installed on macOS,
+// to enable automation on Safari, just simply run the following command from the terminal:
+//   safaridriver --enable
+// and then specify Safari for Zeppelin Selenium integration tests:
+//   export ZEPPELIN_SELENIUM_BROWSER=Safari
+//
+// To learn more about WebDriver, visit: https://www.selenium.dev/documentation/webdriver/
 public class WebDriverManager implements Closeable {
 
   public final static Logger LOG = LoggerFactory.getLogger(WebDriverManager.class);
@@ -49,58 +64,74 @@ public class WebDriverManager implements Closeable {
   final Path downloadDir;
   final WebDriver driver;
 
-  public WebDriverManager(boolean deleteTempFiles) throws IOException {
+  public WebDriverManager(boolean deleteTempFiles, int port) throws IOException {
     this.deleteTempFiles = deleteTempFiles;
     this.downloadDir = Files.createTempFile("browser", ".download");
     this.logDir = Files.createTempFile("logdir", ".download");
-    this.driver = constructWebDriver();
+    this.driver = constructWebDriver(port);
   }
 
-  public WebDriverManager() throws IOException {
-    this(true);
+  public WebDriverManager(int port) throws IOException {
+    this(true, port);
   }
 
   public WebDriver getWebDriver() {
     return this.driver;
   }
 
-  private WebDriver constructWebDriver() {
-    WebDriver driver = null;
-    if (driver == null) {
+  private WebDriver constructWebDriver(int port) {
+    Supplier<WebDriver> chromeDriverSupplier = () -> {
       try {
         ChromeOptions options = new ChromeOptions();
-        driver = new ChromeDriver(options);
+        return new ChromeDriver(options);
       } catch (Exception e) {
         LOG.error("Exception in WebDriverManager while ChromeDriver ", e);
+        return null;
       }
-    }
-    if (driver == null) {
+    };
+    Supplier<WebDriver> firefoxDriverSupplier = () -> {
       try {
-        driver = getFirefoxDriver();
+        return getFirefoxDriver();
       } catch (Exception e) {
         LOG.error("Exception in WebDriverManager while FireFox Driver ", e);
+        return null;
       }
-    }
-    if (driver == null) {
+    };
+    Supplier<WebDriver> safariDriverSupplier = () -> {
       try {
-        driver = new SafariDriver();
+        return new SafariDriver();
       } catch (Exception e) {
         LOG.error("Exception in WebDriverManager while SafariDriver ", e);
+        return null;
       }
+    };
+
+    WebDriver driver;
+    switch (SystemUtils.getEnvironmentVariable("ZEPPELIN_SELENIUM_BROWSER", "").toLowerCase(Locale.ROOT)) {
+      case "chrome":
+        driver = chromeDriverSupplier.get();
+        break;
+      case "firefox":
+        driver = firefoxDriverSupplier.get();
+        break;
+      case "safari":
+        driver = safariDriverSupplier.get();
+        break;
+      default:
+        driver = Stream.of(chromeDriverSupplier, firefoxDriverSupplier, safariDriverSupplier)
+            .map(Supplier::get)
+            .filter(Objects::nonNull)
+            .findFirst()
+            .orElse(null);
+    }
+    if (driver == null) {
+      throw new RuntimeException("No available WebDriver");
     }
 
-    String url;
-    if (System.getenv("url") != null) {
-      url = System.getenv("url");
-    } else {
-      url = "http://localhost:8080";
-    }
+    String url = "http://localhost:" + port;
 
     long start = System.currentTimeMillis();
     boolean loaded = false;
-    if (driver == null) {
-      throw new RuntimeException("No webdriver");
-    }
     driver.manage().timeouts()
       .implicitlyWait(Duration.ofSeconds(AbstractZeppelinIT.MAX_IMPLICIT_WAIT));
     driver.get(url);
@@ -123,15 +154,13 @@ public class WebDriverManager implements Closeable {
       }
     }
 
-    if (loaded == false) {
-      fail();
-    }
+    assertTrue(loaded);
 
     driver.manage().window().maximize();
     return driver;
   }
 
-  public WebDriver getFirefoxDriver() throws IOException {
+  private WebDriver getFirefoxDriver() {
 
     FirefoxProfile profile = new FirefoxProfile();
     profile.setPreference("browser.download.folderList", 2);

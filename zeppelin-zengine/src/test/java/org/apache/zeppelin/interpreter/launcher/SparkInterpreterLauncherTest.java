@@ -19,9 +19,9 @@ package org.apache.zeppelin.interpreter.launcher;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.io.FileUtils;
+import org.apache.zeppelin.test.DownloadUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.InterpreterOption;
-import org.apache.zeppelin.interpreter.integration.DownloadUtils;
 import org.apache.zeppelin.interpreter.remote.ExecRemoteInterpreterProcess;
 import org.apache.zeppelin.util.Util;
 import org.junit.jupiter.api.BeforeEach;
@@ -41,30 +41,26 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class SparkInterpreterLauncherTest {
+class SparkInterpreterLauncherTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SparkInterpreterLauncher.class);
 
   private String sparkHome;
   private String zeppelinHome;
+  private ZeppelinConfiguration zConf;
 
   @BeforeEach
   public void setUp() {
-    for (final ZeppelinConfiguration.ConfVars confVar : ZeppelinConfiguration.ConfVars.values()) {
-      System.clearProperty(confVar.getVarName());
-    }
-
-    sparkHome = DownloadUtils.downloadSpark("3.4.1", "3");
-    System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HOME.getVarName(),
-            new File("..").getAbsolutePath());
-
-    zeppelinHome = ZeppelinConfiguration.create().getZeppelinHome();
+    sparkHome = DownloadUtils.downloadSpark();
+    zConf = ZeppelinConfiguration.load();
+    zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HOME.getVarName(),
+        new File("..").getAbsolutePath());
+    zeppelinHome = zConf.getZeppelinHome();
     LOGGER.info("ZEPPELIN_HOME: " + zeppelinHome);
   }
 
   @Test
-  public void testConnectTimeOut() throws IOException {
-    ZeppelinConfiguration zConf = ZeppelinConfiguration.create();
+  void testConnectTimeOut() throws IOException {
     SparkInterpreterLauncher launcher = new SparkInterpreterLauncher(zConf, null);
     Properties properties = new Properties();
     properties.setProperty("SPARK_HOME", sparkHome);
@@ -87,8 +83,7 @@ public class SparkInterpreterLauncherTest {
   }
 
   @Test
-  public void testLocalMode() throws IOException {
-    ZeppelinConfiguration zConf = ZeppelinConfiguration.create();
+  void testLocalMode() throws IOException {
     SparkInterpreterLauncher launcher = new SparkInterpreterLauncher(zConf, null);
     Properties properties = new Properties();
     properties.setProperty("SPARK_HOME", sparkHome);
@@ -118,8 +113,7 @@ public class SparkInterpreterLauncherTest {
   }
 
   @Test
-  public void testYarnClientMode_1() throws IOException {
-    ZeppelinConfiguration zConf = ZeppelinConfiguration.create();
+  void testYarnClientMode_1() throws IOException {
     SparkInterpreterLauncher launcher = new SparkInterpreterLauncher(zConf, null);
     Properties properties = new Properties();
     properties.setProperty("SPARK_HOME", sparkHome);
@@ -152,8 +146,7 @@ public class SparkInterpreterLauncherTest {
   }
 
   @Test
-  public void testYarnClientMode_2() throws IOException {
-    ZeppelinConfiguration zConf = ZeppelinConfiguration.create();
+  void testYarnClientMode_2() throws IOException {
     SparkInterpreterLauncher launcher = new SparkInterpreterLauncher(zConf, null);
     Properties properties = new Properties();
     properties.setProperty("SPARK_HOME", sparkHome);
@@ -188,8 +181,7 @@ public class SparkInterpreterLauncherTest {
   }
 
   @Test
-  public void testYarnClusterMode_1() throws IOException {
-    ZeppelinConfiguration zConf = ZeppelinConfiguration.create();
+  void testYarnClusterMode_1() throws IOException {
     SparkInterpreterLauncher launcher = new SparkInterpreterLauncher(zConf, null);
     Properties properties = new Properties();
     properties.setProperty("SPARK_HOME", sparkHome);
@@ -231,8 +223,7 @@ public class SparkInterpreterLauncherTest {
   }
 
   @Test
-  public void testYarnClusterMode_2() throws IOException {
-    ZeppelinConfiguration zConf = ZeppelinConfiguration.create();
+  void testYarnClusterMode_2() throws IOException {
     SparkInterpreterLauncher launcher = new SparkInterpreterLauncher(zConf, null);
     Properties properties = new Properties();
     properties.setProperty("SPARK_HOME", sparkHome);
@@ -283,8 +274,7 @@ public class SparkInterpreterLauncherTest {
   }
 
   @Test
-  public void testYarnClusterMode_3() throws IOException {
-    ZeppelinConfiguration zConf = ZeppelinConfiguration.create();
+  void testYarnClusterMode_3() throws IOException {
     SparkInterpreterLauncher launcher = new SparkInterpreterLauncher(zConf, null);
     Properties properties = new Properties();
     properties.setProperty("SPARK_HOME", sparkHome);

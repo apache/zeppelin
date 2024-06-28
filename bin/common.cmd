@@ -86,6 +86,10 @@ if not defined JAVA_HOME (
     set ZEPPELIN_RUNNER=%JAVA_HOME%\bin\java
 )
 
+if not defined ZEPPELIN_IDENT_STRING (
+    set ZEPPELIN_IDENT_STRING=%USERNAME%
+)
+
 if not defined ZEPPELIN_INTERPRETER_REMOTE_RUNNER (
     set ZEPPELIN_INTERPRETER_REMOTE_RUNNER=bin\interpreter.cmd
 )

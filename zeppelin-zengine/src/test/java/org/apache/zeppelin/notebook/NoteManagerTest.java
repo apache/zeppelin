@@ -21,7 +21,6 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.exception.NotePathAlreadyExistsException;
 import org.apache.zeppelin.notebook.repo.InMemoryNotebookRepo;
 import org.apache.zeppelin.user.AuthenticationInfo;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -38,20 +37,21 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class NoteManagerTest {
+class NoteManagerTest {
   private NoteManager noteManager;
   private ZeppelinConfiguration conf;
-
+  private NoteParser noteParser;
 
 
   @BeforeEach
   public void setUp() throws IOException {
-    conf = ZeppelinConfiguration.create();
+    conf = ZeppelinConfiguration.load();
     this.noteManager = new NoteManager(new InMemoryNotebookRepo(), conf);
+    this.noteParser = new GsonNoteParser(conf);
   }
 
   @Test
-  public void testNoteOperations() throws IOException {
+  void testNoteOperations() throws IOException {
     assertEquals(0, this.noteManager.getNotesInfo().size());
 
     Note note1 = createNote("/prod/my_note1");
@@ -94,7 +94,7 @@ public class NoteManagerTest {
   }
 
   @Test
-  public void testAddNoteRejectsDuplicatePath() throws IOException {
+  void testAddNoteRejectsDuplicatePath() throws IOException {
 
     assertThrows(NotePathAlreadyExistsException.class,
             () -> {
@@ -108,7 +108,7 @@ public class NoteManagerTest {
   }
 
   @Test
-  public void testMoveNoteRejectsDuplicatePath() throws IOException {
+  void testMoveNoteRejectsDuplicatePath() throws IOException {
     assertThrows(NotePathAlreadyExistsException.class,
             () -> {
               Note note1 = createNote("/prod/note-1");
@@ -123,11 +123,11 @@ public class NoteManagerTest {
   }
 
   private Note createNote(String notePath) {
-    return new Note(notePath, "test", null, null, null, null, null);
+    return new Note(notePath, "test", null, null, null, null, null, conf, noteParser);
   }
 
   @Test
-  public void testLruCache() throws IOException {
+  void testLruCache() throws IOException {
 
     int cacheThreshold = conf.getNoteCacheThreshold();
 
@@ -175,7 +175,7 @@ public class NoteManagerTest {
   }
 
   @Test
-  public void testConcurrentOperation() throws Exception {
+  void testConcurrentOperation() throws Exception {
     int threshold = 10, noteNum = 150;
     Map<Integer, String> notes = new ConcurrentHashMap<>();
     ExecutorService threadPool = Executors.newFixedThreadPool(threshold);

@@ -38,6 +38,7 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
+import org.apache.zeppelin.notebook.NoteParser;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,10 +46,9 @@ import org.slf4j.LoggerFactory;
 /**
 * NotebookRepo implementation based on apache vfs
 */
-public class VFSNotebookRepo implements NotebookRepo {
+public class VFSNotebookRepo extends AbstractNotebookRepo {
   private static final Logger LOGGER = LoggerFactory.getLogger(VFSNotebookRepo.class);
 
-  protected ZeppelinConfiguration conf;
   protected FileSystemManager fsManager;
   protected FileObject rootNotebookFileObject;
   protected String rootNotebookFolder;
@@ -58,8 +58,8 @@ public class VFSNotebookRepo implements NotebookRepo {
   }
 
   @Override
-  public void init(ZeppelinConfiguration conf) throws IOException {
-    this.conf = conf;
+  public void init(ZeppelinConfiguration conf, NoteParser noteParser) throws IOException {
+    super.init(conf, noteParser);
     setNotebookDirectory(conf.getNotebookDir());
   }
 
@@ -128,12 +128,13 @@ public class VFSNotebookRepo implements NotebookRepo {
   }
 
   @Override
-  public Note get(String noteId, String notePath, AuthenticationInfo subject) throws IOException {
+  public Note get(String noteId, String notePath, AuthenticationInfo subject)
+      throws IOException {
     FileObject noteFile = rootNotebookFileObject.resolveFile(buildNoteFileName(noteId, notePath),
         NameScope.DESCENDENT);
     String json = IOUtils.toString(noteFile.getContent().getInputStream(),
         conf.getString(ConfVars.ZEPPELIN_ENCODING));
-    Note note = Note.fromJson(noteId, json);
+    Note note = noteParser.fromJson(noteId, json);
     // setPath here just for testing, because actually NoteManager will setPath
     note.setPath(notePath);
     return note;

@@ -54,7 +54,7 @@ public class ClusterMockTest {
   public static void startCluster() throws IOException, InterruptedException {
     LOGGER.info("startCluster >>>");
 
-    zconf = ZeppelinConfiguration.create();
+    zconf = ZeppelinConfiguration.load();
 
     // Set the cluster IP and port
     zServerHost = RemoteInterpreterUtils.findAvailableHostAddress();
@@ -105,7 +105,6 @@ public class ClusterMockTest {
     }
 
     tSocket.close();
-    ZeppelinConfiguration.reset();
     LOGGER.info("stopCluster <<<");
   }
 

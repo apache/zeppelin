@@ -31,11 +31,11 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class NoteAuthTest {
+class NoteAuthTest {
   private ZeppelinConfiguration conf = mock(ZeppelinConfiguration.class);
 
   @Test
-  public void testAnonymous() {
+  void testAnonymous() {
     NoteAuth auth = new NoteAuth("note1", conf);
     assertEquals(0, auth.getOwners().size());
     assertEquals(0, auth.getReaders().size());
@@ -44,7 +44,7 @@ public class NoteAuthTest {
   }
 
   @Test
-  public void testPublicNotes() {
+  void testPublicNotes() {
 
     when(conf.isNotebookPublic()).thenReturn(true);
 
@@ -68,7 +68,7 @@ public class NoteAuthTest {
   }
 
   @Test
-  public void testNoPublicNotes() {
+  void testNoPublicNotes() {
 
     when(conf.isNotebookPublic()).thenReturn(false);
 
@@ -96,7 +96,7 @@ public class NoteAuthTest {
   }
 
   @Test
-  public void testFoceLowerCaseUsers() {
+  void testFoceLowerCaseUsers() {
 
     when(conf.isNotebookPublic()).thenReturn(false);
     when(conf.isUsernameForceLowerCase()).thenReturn(true);
@@ -116,7 +116,7 @@ public class NoteAuthTest {
   }
 
   @Test
-  public void testMapConstructor() {
+  void testMapConstructor() {
     when(conf.isNotebookPublic()).thenReturn(false);
 
     NoteAuth auth = new NoteAuth("note1", getTestMap("TestUser", "TestGroup"), conf);

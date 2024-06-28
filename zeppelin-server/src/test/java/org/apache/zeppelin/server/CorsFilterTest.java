@@ -23,6 +23,7 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.junit.jupiter.api.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -44,7 +45,7 @@ class CorsFilterTest {
   @Test
   @SuppressWarnings("rawtypes")
   void validCorsFilterTest() throws IOException, ServletException {
-    CorsFilter filter = new CorsFilter();
+    CorsFilter filter = new CorsFilter(ZeppelinConfiguration.load());
     HttpServletResponse mockResponse = mock(HttpServletResponse.class);
     FilterChain mockedFilterChain = mock(FilterChain.class);
     HttpServletRequest mockRequest = mock(HttpServletRequest.class);
@@ -69,7 +70,7 @@ class CorsFilterTest {
   @Test
   @SuppressWarnings("rawtypes")
   void invalidCorsFilterTest() throws IOException, ServletException {
-    CorsFilter filter = new CorsFilter();
+    CorsFilter filter = new CorsFilter(ZeppelinConfiguration.load());
     HttpServletResponse mockResponse = mock(HttpServletResponse.class);
     FilterChain mockedFilterChain = mock(FilterChain.class);
     HttpServletRequest mockRequest = mock(HttpServletRequest.class);

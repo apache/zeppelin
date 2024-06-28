@@ -19,8 +19,12 @@ package org.apache.zeppelin.integration;
 
 
 import org.apache.zeppelin.AbstractZeppelinIT;
+import org.apache.zeppelin.MiniZeppelinServer;
 import org.apache.zeppelin.ZeppelinITUtils;
+import org.apache.zeppelin.test.DownloadUtils;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.apache.zeppelin.WebDriverManager;
@@ -38,17 +42,36 @@ import java.util.List;
 
 class SparkParagraphIT extends AbstractZeppelinIT {
 
+  private static MiniZeppelinServer zepServer;
+
+  @BeforeAll
+  static void init() throws Exception {
+    String sparkHome = DownloadUtils.downloadSpark();
+
+    zepServer = new MiniZeppelinServer(SparkParagraphIT.class.getSimpleName());
+    zepServer.addInterpreter("spark");
+    zepServer.copyLogProperties();
+    zepServer.copyBinDir();
+    zepServer.start(true, SparkParagraphIT.class.getSimpleName());
+    TestHelper.configureSparkInterpreter(zepServer, sparkHome);
+  }
+
   @BeforeEach
   public void startUp() throws IOException {
-    manager = new WebDriverManager();
+    manager = new WebDriverManager(zepServer.getZeppelinConfiguration().getServerPort());
     createNewNote();
     waitForParagraph(1, "READY");
   }
 
   @AfterEach
-  public void tearDown() throws IOException {
+  public void tearDownManager() throws IOException {
     deleteTestNotebook(manager.getWebDriver());
     manager.close();
+  }
+
+  @AfterAll
+  public static void tearDown() throws Exception {
+    zepServer.destroy();
   }
 
   @Test

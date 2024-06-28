@@ -29,6 +29,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.OptionalInt;
+import java.util.OptionalLong;
 import java.util.TimeZone;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -65,8 +68,6 @@ public class ZeppelinConfiguration {
   private static final Logger LOGGER = LoggerFactory.getLogger(ZeppelinConfiguration.class);
 
   private Boolean anonymousAllowed;
-
-  private static ZeppelinConfiguration conf;
 
   private static final EnvironmentConfiguration envConfig = new EnvironmentConfiguration();
   private static final SystemConfiguration sysConfig = new SystemConfiguration();
@@ -117,37 +118,25 @@ public class ZeppelinConfiguration {
     }
   }
 
-  public static ZeppelinConfiguration create() {
-    if (conf != null) {
-      return conf;
-    }
-    return ZeppelinConfiguration.create(null);
+  public static ZeppelinConfiguration load() {
+    return ZeppelinConfiguration.load(null);
   }
   /**
    * Load from via filename.
    */
-  public static synchronized ZeppelinConfiguration create(@Nullable String filename) {
-    if (conf != null) {
-      return conf;
-    }
-
-    conf = new ZeppelinConfiguration(filename);
-
-
-    LOGGER.info("Server Host: {}", conf.getServerAddress());
-    if (conf.useSsl()) {
-      LOGGER.info("Server SSL Port: {}", conf.getServerSslPort());
-    } else {
-      LOGGER.info("Server Port: {}", conf.getServerPort());
-    }
-    LOGGER.info("Context Path: {}", conf.getServerContextPath());
-    LOGGER.info("Zeppelin Version: {}", Util.getVersion());
-
-    return conf;
+  public static ZeppelinConfiguration load(@Nullable String filename) {
+    return new ZeppelinConfiguration(filename);
   }
 
-  public static void reset() {
-    conf = null;
+  public void printShortInfo() {
+    LOGGER.info("Server Host: {}", getServerAddress());
+    if (useSsl()) {
+      LOGGER.info("Server SSL Port: {}", getServerSslPort());
+    } else {
+      LOGGER.info("Server Port: {}", getServerPort());
+    }
+    LOGGER.info("Context Path: {}", getServerContextPath());
+    LOGGER.info("Zeppelin Version: {}", Util.getVersion());
   }
 
   public void setProperty(String name, String value) {
@@ -212,42 +201,67 @@ public class ZeppelinConfiguration {
     return getString(c.name(), c.getVarName(), c.getStringValue());
   }
 
-  public String getString(String envName, String propertyName, String defaultValue) {
+  public static String getStaticString(ConfVars c) {
+    return getStaticString(c.name(), c.getVarName()).orElse(c.getStringValue());
+  }
+
+  public static Optional<String> getStaticString(String envName, String propertyName) {
     if (envConfig.containsKey(envName)) {
-      return envConfig.getString(envName);
+      return Optional.of(envConfig.getString(envName));
     }
     if (sysConfig.containsKey(propertyName)) {
-      return sysConfig.getString(propertyName);
+      return Optional.of(sysConfig.getString(propertyName));
     }
-    return getStringValue(propertyName, defaultValue);
+    return Optional.empty();
+  }
+  public String getString(String envName, String propertyName, String defaultValue) {
+    return getStaticString(envName, propertyName)
+        .orElseGet(() -> getStringValue(propertyName, defaultValue));
   }
 
   public int getInt(ConfVars c) {
     return getInt(c.name(), c.getVarName(), c.getIntValue());
   }
 
-  public int getInt(String envName, String propertyName, int defaultValue) {
+  public static int getStaticInt(ConfVars c) {
+    return getStaticInt(c.name(), c.getVarName()).orElse(c.getIntValue());
+  }
+
+  public static OptionalInt getStaticInt(String envName, String propertyName) {
     if (envConfig.containsKey(envName)) {
-      return envConfig.getInt(envName);
+      return OptionalInt.of(envConfig.getInt(envName));
     }
     if (sysConfig.containsKey(propertyName)) {
-      return sysConfig.getInt(propertyName);
+      return OptionalInt.of(sysConfig.getInt(propertyName));
     }
-    return getIntValue(propertyName, defaultValue);
+    return OptionalInt.empty();
+  }
+
+  public int getInt(String envName, String propertyName, int defaultValue) {
+    return getStaticInt(envName, propertyName)
+        .orElseGet(() -> getIntValue(propertyName, defaultValue));
   }
 
   public long getLong(ConfVars c) {
     return getLong(c.name(), c.getVarName(), c.getLongValue());
   }
 
-  public long getLong(String envName, String propertyName, long defaultValue) {
+  public static long getStaticLong(ConfVars c) {
+    return getStaticLong(c.name(), c.getVarName()).orElse(c.getLongValue());
+  }
+
+  public static OptionalLong getStaticLong(String envName, String propertyName) {
     if (envConfig.containsKey(envName)) {
-      return envConfig.getLong(envName);
+      return OptionalLong.of(envConfig.getLong(envName));
     }
     if (sysConfig.containsKey(propertyName)) {
-      return sysConfig.getLong(propertyName);
+      return OptionalLong.of(sysConfig.getLong(propertyName));
     }
-    return getLongValue(propertyName, defaultValue);
+    return OptionalLong.empty();
+  }
+  public long getLong(String envName, String propertyName, long defaultValue) {
+    return getStaticLong(envName, propertyName)
+        .orElseGet(() -> getLongValue(propertyName, defaultValue));
   }
 
   /**
@@ -785,7 +799,7 @@ public class ZeppelinConfiguration {
     return getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_MARKDOWN_ESCAPE_HTML);
   }
 
-  public Boolean isZeppelinNotebookCollaborativeModeEnable() {
+  public boolean isZeppelinNotebookCollaborativeModeEnable() {
     return getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_COLLABORATIVE_MODE_ENABLE);
   }
 

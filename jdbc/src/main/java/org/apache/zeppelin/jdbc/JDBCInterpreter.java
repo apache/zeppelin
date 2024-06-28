@@ -763,6 +763,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
     Statement statement;
     ResultSet resultSet = null;
     String paragraphId = context.getParagraphId();
+    String noteId = context.getNoteId();
     String user = getUser(context);
 
     try {
@@ -799,7 +800,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
           // so we need to trim it first in this case.
           sqlToExecute = sqlToExecute.trim();
         }
-        LOGGER.info("Execute sql: " + sqlToExecute);
+        LOGGER.info("[{}|{}|{}] Execute sql: {}", user, noteId, paragraphId, sqlToExecute);
         statement = connection.createStatement();
 
         // fetch n+1 rows in order to indicate there's more rows available (for large selects)

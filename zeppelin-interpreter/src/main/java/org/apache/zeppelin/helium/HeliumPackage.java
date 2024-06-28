@@ -17,10 +17,16 @@
 package org.apache.zeppelin.helium;
 
 import com.google.gson.Gson;
+import org.apache.commons.text.StringEscapeUtils;
 import org.apache.zeppelin.annotation.Experimental;
 import org.apache.zeppelin.common.JsonSerializable;
 
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
+
+import static org.apache.commons.text.StringEscapeUtils.escapeHtml4;
 
 /**
  * Helium package definition
@@ -47,7 +53,7 @@ public class HeliumPackage implements JsonSerializable {
   private SpellPackageInfo spell;
   private Map<String, Object> config;
 
-  public HeliumPackage(HeliumType type,
+  private HeliumPackage(HeliumType type,
                        String name,
                        String description,
                        String artifact,
@@ -140,6 +146,41 @@ public class HeliumPackage implements JsonSerializable {
   }
 
   public static HeliumPackage fromJson(String json) {
-    return gson.fromJson(json, HeliumPackage.class);
+    return preventXss(gson.fromJson(json, HeliumPackage.class));
+  }
+
+  // This is only for test
+  public static HeliumPackage newHeliumPackage(HeliumType type,
+                                               String name,
+                                               String description,
+                                               String artifact,
+                                               String className,
+                                               String[][] resources,
+                                               String license,
+                                               String icon) {
+    return preventXss(new HeliumPackage(
+            type, name, description, artifact, className, resources, license, icon));
+  }
+
+  private static HeliumPackage preventXss(HeliumPackage heliumPackage) {
+    heliumPackage.name = escapeHtml4(heliumPackage.name);
+    heliumPackage.description = escapeHtml4(heliumPackage.description);
+    heliumPackage.artifact = escapeHtml4(heliumPackage.artifact);
+    heliumPackage.className = escapeHtml4(heliumPackage.className);
+    heliumPackage.resources =
+            Optional.ofNullable(heliumPackage.getResources()).map(r -> Arrays.stream(r)
+                    .map(resource -> Arrays.stream(resource).map(StringEscapeUtils::escapeHtml4)
+                            .toArray(String[]::new))
+                    .toArray(String[][]::new)).orElse(null);
+    heliumPackage.license = escapeHtml4(heliumPackage.license);
+    heliumPackage.published = escapeHtml4(heliumPackage.published);
+    heliumPackage.groupId = escapeHtml4(heliumPackage.groupId);
+    heliumPackage.artifactId = escapeHtml4(heliumPackage.artifactId);
+    heliumPackage.spell = Optional.ofNullable(heliumPackage.getSpellInfo())
+            .map(spellPackageInfo -> new SpellPackageInfo(
+                    escapeHtml4(spellPackageInfo.getMagic()),
+                    escapeHtml4(spellPackageInfo.getUsage())))
+            .orElse(null);
+    return heliumPackage;
   }
 }

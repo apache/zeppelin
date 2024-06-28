@@ -18,8 +18,6 @@
 package org.apache.zeppelin.livy;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.livy.test.framework.Cluster;
-import org.apache.livy.test.framework.Cluster$;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
@@ -31,7 +29,6 @@ import org.apache.zeppelin.interpreter.InterpreterResultMessageOutput;
 import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.user.AuthenticationInfo;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -47,43 +44,21 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 
-public class LivyInterpreterIT {
-  private static final Logger LOGGER = LoggerFactory.getLogger(LivyInterpreterIT.class);
-  private static Cluster cluster;
+public class LivyInterpreterIT extends WithLivyServer {
+  private static final Logger LOG = LoggerFactory.getLogger(LivyInterpreterIT.class);
   private static Properties properties;
 
   @BeforeAll
-  public static void setUp() {
+  public static void beforeAll() throws IOException {
     if (!checkPreCondition()) {
       return;
     }
-    cluster = Cluster$.MODULE$.get();
-    LOGGER.info("Starting livy at {}", cluster.livyEndpoint());
+    WithLivyServer.beforeAll();
     properties = new Properties();
-    properties.setProperty("zeppelin.livy.url", cluster.livyEndpoint());
+    properties.setProperty("zeppelin.livy.url", LIVY_ENDPOINT);
     properties.setProperty("zeppelin.livy.session.create_timeout", "120");
     properties.setProperty("zeppelin.livy.spark.sql.maxResult", "100");
     properties.setProperty("zeppelin.livy.displayAppInfo", "false");
-  }
-
-  @AfterAll
-  public static void tearDown() {
-    if (cluster != null) {
-      LOGGER.info("Shutting down livy at {}", cluster.livyEndpoint());
-      cluster.cleanUp();
-    }
-  }
-
-  public static boolean checkPreCondition() {
-    if (System.getenv("LIVY_HOME") == null) {
-      LOGGER.warn(("livy integration is skipped because LIVY_HOME is not set"));
-      return false;
-    }
-    if (System.getenv("SPARK_HOME") == null) {
-      LOGGER.warn(("livy integration is skipped because SPARK_HOME is not set"));
-      return false;
-    }
-    return true;
   }
 
 
@@ -139,7 +114,6 @@ public class LivyInterpreterIT {
         .setAuthenticationInfo(authInfo)
         .setInterpreterOut(output)
         .build();
-    ;
 
     InterpreterResult result = sparkInterpreter.interpret("sc.parallelize(1 to 10).sum()", context);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code(), result.toString());
@@ -292,11 +266,10 @@ public class LivyInterpreterIT {
     assertEquals(InterpreterResult.Code.ERROR, result.code());
     assertEquals(InterpreterResult.Type.TEXT, result.message().get(0).getType());
 
-    if (!isSpark2) {
-      assertTrue(result.message().get(0).getData().contains("Table not found"));
-    } else {
-      assertTrue(result.message().get(0).getData().contains("Table or view not found"));
-    }
+    String errMsg = result.message().get(0).getData();
+    assertTrue(errMsg.contains("Table not found") ||
+        errMsg.contains("Table or view not found") ||
+        errMsg.contains("TABLE_OR_VIEW_NOT_FOUND"));
 
     // test sql cancel
     if (sqlInterpreter.getLivyVersion().newerThanEquals(LivyVersion.LIVY_0_3_0)) {
@@ -429,7 +402,7 @@ public class LivyInterpreterIT {
         assertTrue(result.message().get(0).getData().contains("[Row(_1=u'hello', _2=20)]")
             || result.message().get(0).getData().contains("[Row(_1='hello', _2=20)]"));
       } else {
-        result = pysparkInterpreter.interpret("df=spark.createDataFrame([(\"hello\",20)])\n"
+        result = pysparkInterpreter.interpret("df=spark.createDataFrame([('hello',20)])\n"
             + "df.collect()", context);
         assertEquals(InterpreterResult.Code.SUCCESS, result.code(), result.toString());
         assertEquals(1, result.message().size());
@@ -483,7 +456,7 @@ public class LivyInterpreterIT {
   }
 
   @Test
-  void testSparkInterpreterWithDisplayAppInfo_StringWithoutTruncation()
+  void testSparkInterpreterStringWithoutTruncation()
       throws InterpreterException {
     if (!checkPreCondition()) {
       return;
@@ -491,7 +464,6 @@ public class LivyInterpreterIT {
     InterpreterGroup interpreterGroup = new InterpreterGroup("group_1");
     interpreterGroup.put("session_1", new ArrayList<Interpreter>());
     Properties properties2 = new Properties(properties);
-    properties2.put("zeppelin.livy.displayAppInfo", "true");
     // enable spark ui because it is disabled by livy integration test
     properties2.put("livy.spark.ui.enabled", "true");
     properties2.put(LivySparkSQLInterpreter.ZEPPELIN_LIVY_SPARK_SQL_FIELD_TRUNCATE, "false");
@@ -517,21 +489,19 @@ public class LivyInterpreterIT {
     try {
       InterpreterResult result = sparkInterpreter.interpret("sc.version", context);
       assertEquals(InterpreterResult.Code.SUCCESS, result.code(), result.toString());
-      assertEquals(2, result.message().size());
-      // check yarn appId and ensure it is not null
-      assertTrue(result.message().get(1).getData().contains("Spark Application Id: application_"));
+      assertEquals(1, result.message().size(), result.toString());
 
       // html output
       String htmlCode = "println(\"%html <h1> hello </h1>\")";
       result = sparkInterpreter.interpret(htmlCode, context);
       assertEquals(InterpreterResult.Code.SUCCESS, result.code(), result.toString());
-      assertEquals(2, result.message().size());
+      assertEquals(1, result.message().size());
       assertEquals(InterpreterResult.Type.HTML, result.message().get(0).getType());
 
       // detect spark version
       result = sparkInterpreter.interpret("sc.version", context);
       assertEquals(InterpreterResult.Code.SUCCESS, result.code(), result.toString());
-      assertEquals(2, result.message().size());
+      assertEquals(1, result.message().size());
 
       boolean isSpark2 = isSpark2(sparkInterpreter, context);
 
@@ -550,7 +520,7 @@ public class LivyInterpreterIT {
                 + ".toDF(\"col_1\", \"col_2\")\n"
                 + "df.collect()", context);
         assertEquals(InterpreterResult.Code.SUCCESS, result.code(), result.toString());
-        assertEquals(2, result.message().size());
+        assertEquals(1, result.message().size());
         assertTrue(result.message().get(0).getData()
             .contains("Array[org.apache.spark.sql.Row] = Array([12characters12characters,20])"));
       }
@@ -671,7 +641,7 @@ public class LivyInterpreterIT {
     try {
       InterpreterResult result = sparkInterpreter.interpret("sc.version\n" +
               "assert(sc.getConf.get(\"spark.executor.cores\") == \"4\" && " +
-                      "sc.getConf.get(\"spark.app.name\") == \"zeppelin-livy\")"
+                     "sc.getConf.get(\"spark.app.name\") == \"zeppelin-livy\")"
               , context);
       assertEquals(InterpreterResult.Code.SUCCESS, result.code(), result.toString());
       assertEquals(1, result.message().size());

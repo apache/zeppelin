@@ -39,7 +39,7 @@
     <libpam4j.version>1.11</libpam4j.version>
     <jna.version>4.1.0</jna.version>
     <jackson.version>2.12.7.1</jackson.version>
-    <nimbus.version>9.13</nimbus.version>
+    <nimbus.version>9.37.2</nimbus.version>
     <kerberos.version>2.0.0-M15</kerberos.version>
 
     <!--test library versions-->
@@ -90,6 +90,10 @@
         </exclusion>
         <exclusion>
           <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-reload4j</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
           <artifactId>jcl-over-slf4j</artifactId>
         </exclusion>
       </exclusions>
@@ -102,7 +106,11 @@
 
     <dependency>
       <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-log4j12</artifactId>
+      <artifactId>slf4j-reload4j</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>ch.qos.reload4j</groupId>
+      <artifactId>reload4j</artifactId>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
@@ -302,16 +310,9 @@
 
     <dependency>
       <groupId>org.apache.zeppelin</groupId>
-      <artifactId>zeppelin-zengine</artifactId>
+      <artifactId>zeppelin-test</artifactId>
       <version>${project.version}</version>
-      <classifier>tests</classifier>
       <scope>test</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>com.google.guava</groupId>
-          <artifactId>guava</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
 
     <dependency>
@@ -376,6 +377,18 @@
         </exclusion>
       </exclusions>
     </dependency>
+    <dependency>
+      <groupId>org.awaitility</groupId>
+      <artifactId>awaitility</artifactId>
+      <scope>test</scope>
+      <exclusions>
+        <!-- separate dependency -->
+        <exclusion>
+          <groupId>org.hamcrest</groupId>
+          <artifactId>hamcrest</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
 
     <dependency> <!-- because there are two of them above  -->
       <groupId>xml-apis</groupId>
@@ -409,7 +422,7 @@
 
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
-        <configuration combine.children="append">
+        <configuration>
           <forkCount>1</forkCount>
           <reuseForks>false</reuseForks>
           <argLine>-Xmx3g -Xms1g -Dfile.encoding=UTF-8</argLine>
@@ -468,28 +481,12 @@
     </profile>
 
     <profile>
-      <id>hadoop2</id>
-
-      <properties>
-        <hadoop.version>${hadoop2.7.version}</hadoop.version>
-      </properties>
-      <dependencies>
-        <dependency>
-          <groupId>org.apache.hadoop</groupId>
-          <artifactId>hadoop-common</artifactId>
-          <version>${hadoop.version}</version>
-          <scope>${hadoop.deps.scope}</scope>
-        </dependency>
-      </dependencies>
-
-    </profile>
-    <profile>
       <id>hadoop3</id>
       <activation>
         <activeByDefault>true</activeByDefault>
       </activation>
       <properties>
-        <hadoop.version>${hadoop3.2.version}</hadoop.version>
+        <hadoop.version>${hadoop3.3.version}</hadoop.version>
         <hadoop-client-api.artifact>hadoop-client-api</hadoop-client-api.artifact>
         <hadoop-client-runtime.artifact>hadoop-client-runtime</hadoop-client-runtime.artifact>
       </properties>

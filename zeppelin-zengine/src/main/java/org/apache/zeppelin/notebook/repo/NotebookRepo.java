@@ -20,9 +20,11 @@ package org.apache.zeppelin.notebook.repo;
 import org.apache.zeppelin.annotation.ZeppelinApi;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.Note;
+import org.apache.zeppelin.notebook.NoteParser;
 import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.user.AuthenticationInfo;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -30,9 +32,9 @@ import java.util.Map;
 /**
  * Notebook repository (persistence layer) abstraction.
  */
-public interface NotebookRepo {
+public interface NotebookRepo extends Closeable {
 
-  void init(ZeppelinConfiguration zConf) throws IOException;
+  void init(ZeppelinConfiguration zConf, NoteParser parser) throws IOException;
 
   /**
    * Lists notebook information about all notebooks in storage. This method should only read
@@ -115,6 +117,7 @@ public interface NotebookRepo {
   /**
    * Release any underlying resources
    */
+  @Override
   @ZeppelinApi
   void close();
 
@@ -136,6 +139,8 @@ public interface NotebookRepo {
    */
   @ZeppelinApi
   void updateSettings(Map<String, String> settings, AuthenticationInfo subject);
+
+  NoteParser getNoteParser();
 
   default String buildNoteFileName(String noteId, String notePath) throws IOException {
     if (!notePath.startsWith("/")) {

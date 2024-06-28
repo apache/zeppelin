@@ -29,17 +29,17 @@ import java.util.Properties;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class StandardInterpreterLauncherTest {
+class StandardInterpreterLauncherTest {
+
+  private ZeppelinConfiguration zConf;
+
   @BeforeEach
   public void setUp() {
-    for (final ZeppelinConfiguration.ConfVars confVar : ZeppelinConfiguration.ConfVars.values()) {
-      System.clearProperty(confVar.getVarName());
-    }
+    zConf = ZeppelinConfiguration.load();
   }
 
   @Test
-  public void testLauncher() throws IOException {
-    ZeppelinConfiguration zConf = ZeppelinConfiguration.create();
+  void testLauncher() throws IOException {
     StandardInterpreterLauncher launcher = new StandardInterpreterLauncher(zConf, null);
     Properties properties = new Properties();
     properties.setProperty("ENV_1", "VALUE_1");
@@ -60,11 +60,11 @@ public class StandardInterpreterLauncherTest {
     assertEquals("VALUE_1", interpreterProcess.getEnv().get("ENV_1"));
     assertTrue(interpreterProcess.getEnv().containsKey("INTERPRETER_GROUP_ID"));
     assertEquals(true, interpreterProcess.isUserImpersonated());
+    interpreterProcess.close();
   }
 
   @Test
-  public void testConnectTimeOut() throws IOException {
-    ZeppelinConfiguration zConf = ZeppelinConfiguration.create();
+  void testConnectTimeOut() throws IOException {
     StandardInterpreterLauncher launcher = new StandardInterpreterLauncher(zConf, null);
     Properties properties = new Properties();
     properties.setProperty(
@@ -83,6 +83,7 @@ public class StandardInterpreterLauncherTest {
     assertTrue(interpreterProcess.getEnv().size() >= 1);
     assertTrue(interpreterProcess.getEnv().containsKey("INTERPRETER_GROUP_ID"));
     assertEquals(true, interpreterProcess.isUserImpersonated());
+    interpreterProcess.close();
   }
 
 }

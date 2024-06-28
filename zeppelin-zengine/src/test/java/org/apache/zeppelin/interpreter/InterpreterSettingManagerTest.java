@@ -42,7 +42,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
 
 
-public class InterpreterSettingManagerTest extends AbstractInterpreterTest {
+class InterpreterSettingManagerTest extends AbstractInterpreterTest {
 
   private String note1Id;
   private String note2Id;
@@ -58,7 +58,7 @@ public class InterpreterSettingManagerTest extends AbstractInterpreterTest {
   }
 
   @Test
-  public void testInitInterpreterSettingManager() throws IOException, RepositoryException {
+  void testInitInterpreterSettingManager() throws IOException, RepositoryException {
     assertEquals(6, interpreterSettingManager.get().size());
     InterpreterSetting interpreterSetting = interpreterSettingManager.getByName("test");
     assertEquals("test", interpreterSetting.getName());
@@ -87,7 +87,8 @@ public class InterpreterSettingManagerTest extends AbstractInterpreterTest {
 
     // Load it again
     InterpreterSettingManager interpreterSettingManager2 = new InterpreterSettingManager(conf,
-        mock(AngularObjectRegistryListener.class), mock(RemoteInterpreterProcessListener.class), mock(ApplicationEventListener.class));
+        mock(AngularObjectRegistryListener.class), mock(RemoteInterpreterProcessListener.class),
+        mock(ApplicationEventListener.class), storage, pluginManager);
     assertEquals(6, interpreterSettingManager2.get().size());
     interpreterSetting = interpreterSettingManager2.getByName("test");
     assertEquals("test", interpreterSetting.getName());
@@ -108,7 +109,7 @@ public class InterpreterSettingManagerTest extends AbstractInterpreterTest {
   }
 
   @Test
-  public void testCreateUpdateRemoveSetting() throws IOException, InterpreterException {
+  void testCreateUpdateRemoveSetting() throws IOException, InterpreterException {
     // create new interpreter setting
     InterpreterOption option = new InterpreterOption();
     option.setPerNote("scoped");
@@ -145,7 +146,8 @@ public class InterpreterSettingManagerTest extends AbstractInterpreterTest {
 
     // load it again, it should be saved in interpreter-setting.json. So we can restore it properly
     InterpreterSettingManager interpreterSettingManager2 = new InterpreterSettingManager(conf,
-        mock(AngularObjectRegistryListener.class), mock(RemoteInterpreterProcessListener.class), mock(ApplicationEventListener.class));
+        mock(AngularObjectRegistryListener.class), mock(RemoteInterpreterProcessListener.class),
+        mock(ApplicationEventListener.class), storage, pluginManager);
     assertEquals(7, interpreterSettingManager2.get().size());
     interpreterSetting = interpreterSettingManager2.getByName("test3");
     assertEquals("test3", interpreterSetting.getName());
@@ -196,14 +198,15 @@ public class InterpreterSettingManagerTest extends AbstractInterpreterTest {
     assertEquals(6, interpreterSettingManager.get().size());
 
     // load it again
-    InterpreterSettingManager interpreterSettingManager3 = new InterpreterSettingManager(ZeppelinConfiguration.create(),
-        mock(AngularObjectRegistryListener.class), mock(RemoteInterpreterProcessListener.class), mock(ApplicationEventListener.class));
+    InterpreterSettingManager interpreterSettingManager3 = new InterpreterSettingManager(conf,
+        mock(AngularObjectRegistryListener.class), mock(RemoteInterpreterProcessListener.class),
+        mock(ApplicationEventListener.class), storage, pluginManager);
     assertEquals(6, interpreterSettingManager3.get().size());
 
   }
 
   @Test
-  public void testGetEditor() {
+  void testGetEditor() {
     // get editor setting from interpreter-setting.json
     Map<String, Object> editor = interpreterSettingManager.getEditorSetting("%test.echo", note1Id);
     assertEquals("java", editor.get("language"));
@@ -213,7 +216,7 @@ public class InterpreterSettingManagerTest extends AbstractInterpreterTest {
   }
 
   @Test
-  public void testRestartShared() throws InterpreterException {
+  void testRestartShared() throws InterpreterException {
     InterpreterSetting interpreterSetting = interpreterSettingManager.getByName("test");
     interpreterSetting.getOption().setPerUser("shared");
     interpreterSetting.getOption().setPerNote("shared");
@@ -227,7 +230,7 @@ public class InterpreterSettingManagerTest extends AbstractInterpreterTest {
   }
 
   @Test
-  public void testRestartPerUserIsolated() throws InterpreterException {
+  void testRestartPerUserIsolated() throws InterpreterException {
     InterpreterSetting interpreterSetting = interpreterSettingManager.getByName("test");
     interpreterSetting.getOption().setPerUser("isolated");
     interpreterSetting.getOption().setPerNote("shared");
@@ -241,7 +244,7 @@ public class InterpreterSettingManagerTest extends AbstractInterpreterTest {
   }
 
   @Test
-  public void testRestartPerNoteIsolated() throws InterpreterException {
+  void testRestartPerNoteIsolated() throws InterpreterException {
     InterpreterSetting interpreterSetting = interpreterSettingManager.getByName("test");
     interpreterSetting.getOption().setPerUser("shared");
     interpreterSetting.getOption().setPerNote("isolated");
@@ -255,7 +258,7 @@ public class InterpreterSettingManagerTest extends AbstractInterpreterTest {
   }
 
   @Test
-  public void testRestartPerUserScoped() throws InterpreterException {
+  void testRestartPerUserScoped() throws InterpreterException {
     InterpreterSetting interpreterSetting = interpreterSettingManager.getByName("test");
     interpreterSetting.getOption().setPerUser("scoped");
     interpreterSetting.getOption().setPerNote("shared");
@@ -271,7 +274,7 @@ public class InterpreterSettingManagerTest extends AbstractInterpreterTest {
   }
 
   @Test
-  public void testRestartPerNoteScoped() throws InterpreterException {
+  void testRestartPerNoteScoped() throws InterpreterException {
     InterpreterSetting interpreterSetting = interpreterSettingManager.getByName("test");
     interpreterSetting.getOption().setPerUser("shared");
     interpreterSetting.getOption().setPerNote("scoped");
@@ -287,7 +290,7 @@ public class InterpreterSettingManagerTest extends AbstractInterpreterTest {
   }
 
   @Test
-  public void testInterpreterInclude() throws Exception {
+  void testInterpreterInclude() throws Exception {
     try {
       System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_INCLUDES.getVarName(), "mock1");
       setUp();
@@ -300,7 +303,7 @@ public class InterpreterSettingManagerTest extends AbstractInterpreterTest {
   }
 
   @Test
-  public void testInterpreterExclude() throws Exception {
+  void testInterpreterExclude() throws Exception {
     try {
       System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_EXCLUDES.getVarName(),
               "test,config_test,mock_resource_pool");
@@ -315,7 +318,7 @@ public class InterpreterSettingManagerTest extends AbstractInterpreterTest {
   }
 
   @Test
-  public void testInterpreterIncludeExcludeTogether() throws Exception {
+  void testInterpreterIncludeExcludeTogether() throws Exception {
     try {
       System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_INCLUDES.getVarName(),
               "test,");

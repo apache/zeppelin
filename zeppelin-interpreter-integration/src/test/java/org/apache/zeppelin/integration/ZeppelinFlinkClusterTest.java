@@ -18,8 +18,9 @@
 package org.apache.zeppelin.integration;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.zeppelin.test.DownloadUtils;
+import org.apache.zeppelin.MiniZeppelinServer;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
-import org.apache.zeppelin.interpreter.integration.DownloadUtils;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.rest.AbstractTestRestApi;
@@ -28,6 +29,7 @@ import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.utils.TestUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -45,26 +47,37 @@ import java.nio.file.Files;
 public abstract class ZeppelinFlinkClusterTest extends AbstractTestRestApi {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ZeppelinFlinkClusterTest.class);
-  private String flinkVersion;
   private String flinkHome;
 
   public void download(String flinkVersion, String scalaVersion) {
-    this.flinkVersion = flinkVersion;
     LOGGER.info("Testing FlinkVersion: " + flinkVersion);
     LOGGER.info("Testing ScalaVersion: " + scalaVersion);
     this.flinkHome = DownloadUtils.downloadFlink(flinkVersion, scalaVersion);
   }
 
+  private static MiniZeppelinServer zepServer;
+
   @BeforeAll
-  public static void setUp() throws Exception {
-    System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HELIUM_REGISTRY.getVarName(),
-            "helium");
-    AbstractTestRestApi.startUp(ZeppelinFlinkClusterTest.class.getSimpleName());
+  static void init() throws Exception {
+    zepServer = new MiniZeppelinServer(ZeppelinFlinkClusterTest.class.getSimpleName());
+    zepServer.addInterpreter("sh");
+    zepServer.addInterpreter("flink");
+    zepServer.addInterpreter("flink-cmd");
+    zepServer.copyBinDir();
+    zepServer.addLauncher("FlinkInterpreterLauncher");
+    zepServer.getZeppelinConfiguration().setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HELIUM_REGISTRY.getVarName(),
+        "helium");
+    zepServer.start();
   }
 
   @AfterAll
-  public static void destroy() throws Exception {
-    AbstractTestRestApi.shutDown();
+  static void destroy() throws Exception {
+    zepServer.destroy();
+  }
+
+  @BeforeEach
+  void setup() {
+    conf = zepServer.getZeppelinConfiguration();
   }
 
   @Disabled("(zjffdu) Disable Temporary")

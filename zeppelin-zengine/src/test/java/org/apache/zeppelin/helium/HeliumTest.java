@@ -18,6 +18,7 @@ package org.apache.zeppelin.helium;
 
 import com.github.eirslett.maven.plugins.frontend.lib.TaskRunnerException;
 import org.apache.commons.io.FileUtils;
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,18 +26,22 @@ import org.junit.jupiter.api.Test;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
 
+import static org.apache.zeppelin.helium.HeliumPackage.newHeliumPackage;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class HeliumTest {
+class HeliumTest {
   private File tmpDir;
   private File localRegistryPath;
+  private ZeppelinConfiguration zConf;
 
   @BeforeEach
   public void setUp() throws Exception {
-    tmpDir = new File(System.getProperty("java.io.tmpdir") + "/ZeppelinLTest_" + System.currentTimeMillis());
+    tmpDir = Files.createTempDirectory("ZeppelinLTest").toFile();
+    zConf = ZeppelinConfiguration.load();
     tmpDir.mkdirs();
     localRegistryPath = new File(tmpDir, "helium");
     localRegistryPath.mkdirs();
@@ -48,11 +53,11 @@ public class HeliumTest {
   }
 
   @Test
-  public void testSaveLoadConf() throws IOException, URISyntaxException, TaskRunnerException {
+  void testSaveLoadConf() throws IOException, URISyntaxException, TaskRunnerException {
     // given
     File heliumConf = new File(tmpDir, "helium.conf");
     Helium helium = new Helium(heliumConf.getAbsolutePath(), localRegistryPath.getAbsolutePath(),
-        null, null, null, null);
+        null, null, null, null, zConf);
     assertFalse(heliumConf.exists());
 
     // when
@@ -62,22 +67,23 @@ public class HeliumTest {
     assertTrue(heliumConf.exists());
 
     // then load without exception
-    Helium heliumRestored = new Helium(
-        heliumConf.getAbsolutePath(), localRegistryPath.getAbsolutePath(), null, null, null, null);
+    new Helium(heliumConf.getAbsolutePath(), localRegistryPath.getAbsolutePath(), null, null, null,
+        null, zConf);
   }
 
   @Test
-  public void testRestoreRegistryInstances() throws IOException, URISyntaxException, TaskRunnerException {
+  void testRestoreRegistryInstances() throws IOException, URISyntaxException, TaskRunnerException {
     File heliumConf = new File(tmpDir, "helium.conf");
     Helium helium = new Helium(
-        heliumConf.getAbsolutePath(), localRegistryPath.getAbsolutePath(), null, null, null, null);
+        heliumConf.getAbsolutePath(), localRegistryPath.getAbsolutePath(), null, null, null, null,
+        zConf);
     HeliumTestRegistry registry1 = new HeliumTestRegistry("r1", "r1");
     HeliumTestRegistry registry2 = new HeliumTestRegistry("r2", "r2");
     helium.addRegistry(registry1);
     helium.addRegistry(registry2);
 
     // when
-    registry1.add(new HeliumPackage(
+    registry1.add(newHeliumPackage(
         HeliumType.APPLICATION,
         "name1",
         "desc1",
@@ -87,7 +93,7 @@ public class HeliumTest {
         "",
         ""));
 
-    registry2.add(new HeliumPackage(
+    registry2.add(newHeliumPackage(
         HeliumType.APPLICATION,
         "name2",
         "desc2",
@@ -102,15 +108,16 @@ public class HeliumTest {
   }
 
   @Test
-  public void testRefresh() throws IOException, URISyntaxException, TaskRunnerException {
+  void testRefresh() throws IOException, URISyntaxException, TaskRunnerException {
     File heliumConf = new File(tmpDir, "helium.conf");
     Helium helium = new Helium(
-        heliumConf.getAbsolutePath(), localRegistryPath.getAbsolutePath(), null, null, null, null);
+        heliumConf.getAbsolutePath(), localRegistryPath.getAbsolutePath(), null, null, null, null,
+        zConf);
     HeliumTestRegistry registry1 = new HeliumTestRegistry("r1", "r1");
     helium.addRegistry(registry1);
 
     // when
-    registry1.add(new HeliumPackage(
+    registry1.add(newHeliumPackage(
         HeliumType.APPLICATION,
         "name1",
         "desc1",
@@ -124,7 +131,7 @@ public class HeliumTest {
     assertEquals(1, helium.getAllPackageInfo().size());
 
     // when
-    registry1.add(new HeliumPackage(
+    registry1.add(newHeliumPackage(
         HeliumType.APPLICATION,
         "name2",
         "desc2",

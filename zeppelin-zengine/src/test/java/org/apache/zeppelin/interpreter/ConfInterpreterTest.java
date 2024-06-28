@@ -24,13 +24,13 @@ import java.util.Properties;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class ConfInterpreterTest extends AbstractInterpreterTest {
+class ConfInterpreterTest extends AbstractInterpreterTest {
 
   private ExecutionContext executionContext = new ExecutionContext("user1", "note1", "test");
 
 
   @Test
-  public void testCorrectConf() throws InterpreterException {
+  void testCorrectConf() throws InterpreterException {
     assertTrue(interpreterFactory.getInterpreter("test.conf", executionContext) instanceof ConfInterpreter);
     ConfInterpreter confInterpreter = (ConfInterpreter) interpreterFactory.getInterpreter("test.conf", executionContext);
 
@@ -60,7 +60,7 @@ public class ConfInterpreterTest extends AbstractInterpreterTest {
   }
 
   @Test
-  public void testPropertyTrim() throws InterpreterException {
+  void testPropertyTrim() throws InterpreterException {
     assertTrue(interpreterFactory.getInterpreter("test.conf", executionContext) instanceof ConfInterpreter);
     ConfInterpreter confInterpreter = (ConfInterpreter) interpreterFactory.getInterpreter("test.conf", executionContext);
 
@@ -90,7 +90,7 @@ public class ConfInterpreterTest extends AbstractInterpreterTest {
   }
 
   @Test
-  public void testEmptyValue() throws InterpreterException {
+  void testEmptyValue() throws InterpreterException {
     ConfInterpreter confInterpreter = (ConfInterpreter) interpreterFactory.getInterpreter("test.conf", executionContext);
 
     InterpreterContext context = InterpreterContext.builder()
@@ -111,7 +111,7 @@ public class ConfInterpreterTest extends AbstractInterpreterTest {
   }
 
   @Test
-  public void testEmptyConf() throws InterpreterException {
+  void testEmptyConf() throws InterpreterException {
     assertTrue(interpreterFactory.getInterpreter("test.conf", executionContext) instanceof ConfInterpreter);
     ConfInterpreter confInterpreter = (ConfInterpreter) interpreterFactory.getInterpreter("test.conf", executionContext);
 
@@ -131,7 +131,7 @@ public class ConfInterpreterTest extends AbstractInterpreterTest {
 
 
   @Test
-  public void testRunningAfterOtherInterpreter() throws InterpreterException {
+  void testRunningAfterOtherInterpreter() throws InterpreterException {
     assertTrue(interpreterFactory.getInterpreter("test.conf", executionContext) instanceof ConfInterpreter);
     ConfInterpreter confInterpreter = (ConfInterpreter) interpreterFactory.getInterpreter("test.conf", executionContext);
 

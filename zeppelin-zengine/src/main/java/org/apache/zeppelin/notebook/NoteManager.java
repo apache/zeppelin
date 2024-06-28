@@ -66,12 +66,14 @@ public class NoteManager {
   private NoteCache noteCache;
   // noteId -> notePath
   private Map<String, String> notesInfo;
+  private final ZeppelinConfiguration zConf;
 
   @Inject
-  public NoteManager(NotebookRepo notebookRepo, ZeppelinConfiguration conf) throws IOException {
+  public NoteManager(NotebookRepo notebookRepo, ZeppelinConfiguration zConf) throws IOException {
+    this.zConf = zConf;
     this.notebookRepo = notebookRepo;
-    this.noteCache = new NoteCache(conf.getNoteCacheThreshold());
-    this.root = new Folder("/", notebookRepo, noteCache);
+    this.noteCache = new NoteCache(zConf.getNoteCacheThreshold());
+    this.root = new Folder("/", notebookRepo, noteCache, zConf);
     this.trash = this.root.getOrCreateFolder(TRASH_FOLDER);
     init();
   }
@@ -102,7 +104,7 @@ public class NoteManager {
    * @throws IOException
    */
   public void reloadNotes() throws IOException {
-    this.root = new Folder("/", notebookRepo, noteCache);
+    this.root = new Folder("/", notebookRepo, noteCache, zConf);
     this.trash = this.root.getOrCreateFolder(TRASH_FOLDER);
     init();
   }
@@ -436,20 +438,24 @@ public class NoteManager {
     private Folder parent;
     private NotebookRepo notebookRepo;
     private NoteCache noteCache;
+    private final ZeppelinConfiguration zConf;
 
     // noteName -> NoteNode
     private Map<String, NoteNode> notes = new ConcurrentHashMap<>();
     // folderName -> Folder
     private Map<String, Folder> subFolders = new ConcurrentHashMap<>();
 
-    public Folder(String name, NotebookRepo notebookRepo, NoteCache noteCache) {
+    public Folder(String name, NotebookRepo notebookRepo, NoteCache noteCache,
+        ZeppelinConfiguration zConf) {
       this.name = name;
+      this.zConf = zConf;
       this.notebookRepo = notebookRepo;
       this.noteCache = noteCache;
     }
 
-    public Folder(String name, Folder parent, NotebookRepo notebookRepo, NoteCache noteCache) {
-      this(name, notebookRepo, noteCache);
+    public Folder(String name, Folder parent, NotebookRepo notebookRepo, NoteCache noteCache,
+        ZeppelinConfiguration zConf) {
+      this(name, notebookRepo, noteCache, zConf);
       this.parent = parent;
     }
 
@@ -458,7 +464,7 @@ public class NoteManager {
         return this;
       }
       if (!subFolders.containsKey(folderName)) {
-        subFolders.put(folderName, new Folder(folderName, this, notebookRepo, noteCache));
+        subFolders.put(folderName, new Folder(folderName, this, notebookRepo, noteCache, zConf));
       }
       return subFolders.get(folderName);
     }
@@ -492,7 +498,7 @@ public class NoteManager {
     }
 
     public void addNote(String noteName, NoteInfo noteInfo) {
-      notes.put(noteName, new NoteNode(noteInfo, this, notebookRepo, noteCache));
+      notes.put(noteName, new NoteNode(noteInfo, this, notebookRepo, noteCache, zConf));
     }
 
     /**
@@ -589,12 +595,15 @@ public class NoteManager {
     private NoteInfo noteInfo;
     private NotebookRepo notebookRepo;
     private NoteCache noteCache;
+    private ZeppelinConfiguration zConf;
 
-    public NoteNode(NoteInfo noteInfo, Folder parent, NotebookRepo notebookRepo, NoteCache noteCache) {
+    public NoteNode(NoteInfo noteInfo, Folder parent, NotebookRepo notebookRepo,
+        NoteCache noteCache, ZeppelinConfiguration zConf) {
       this.noteInfo = noteInfo;
       this.parent = parent;
       this.notebookRepo = notebookRepo;
       this.noteCache = noteCache;
+      this.zConf = zConf;
     }
 
     /**
@@ -621,7 +630,7 @@ public class NoteManager {
           } else {
             note.setPath(parent.toString() + "/" + note.getName());
           }
-          note.setCronSupported(ZeppelinConfiguration.create());
+          note.setCronSupported(zConf);
           noteCache.putNote(note);
         }
       }

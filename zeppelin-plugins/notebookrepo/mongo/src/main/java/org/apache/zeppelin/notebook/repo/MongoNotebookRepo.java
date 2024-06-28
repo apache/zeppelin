@@ -33,6 +33,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
 import com.mongodb.client.AggregateIterable;
@@ -45,16 +46,15 @@ import com.mongodb.client.model.Updates;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
+import org.apache.zeppelin.notebook.NoteParser;
 import org.apache.zeppelin.user.AuthenticationInfo;
 
 /**
  * Backend for storing Notebook on MongoDB.
  */
-public class MongoNotebookRepo implements NotebookRepo {
+public class MongoNotebookRepo extends AbstractNotebookRepo {
 
   private static final Logger LOG = LoggerFactory.getLogger(MongoNotebookRepo.class);
-
-  private ZeppelinConfiguration conf;
 
   private MongoClient client;
 
@@ -72,8 +72,8 @@ public class MongoNotebookRepo implements NotebookRepo {
   }
 
   @Override
-  public void init(ZeppelinConfiguration zConf) throws IOException {
-    this.conf = zConf;
+  public void init(ZeppelinConfiguration conf, NoteParser noteParser) throws IOException {
+    super.init(conf, noteParser);
     client = new MongoClient(new MongoClientURI(conf.getMongoUri()));
     db = client.getDatabase(conf.getMongoDatabase());
     notes = db.getCollection(conf.getMongoCollection());
@@ -92,18 +92,17 @@ public class MongoNotebookRepo implements NotebookRepo {
    * If a note already exists in MongoDB, skip it.
    */
   private void insertFileSystemNotes() throws IOException {
-    NotebookRepo vfsRepo = new VFSNotebookRepo();
-    vfsRepo.init(this.conf);
-    Map<String, NoteInfo> infos = vfsRepo.list(null);
+    try (NotebookRepo vfsRepo = new VFSNotebookRepo()) {
+      vfsRepo.init(conf, noteParser);
+      Map<String, NoteInfo> infos = vfsRepo.list(null);
 
-    try (AutoLock autoLock = lock.lockForWrite()) {
-      for (NoteInfo info : infos.values()) {
-        Note note = vfsRepo.get(info.getId(), info.getPath(), null);
-        saveOrIgnore(note, null);
+      try (AutoLock autoLock = lock.lockForWrite()) {
+        for (NoteInfo info : infos.values()) {
+          Note note = vfsRepo.get(info.getId(), info.getPath(), null);
+          saveOrIgnore(note, null);
+        }
       }
     }
-
-    vfsRepo.close();
   }
 
   @Override
@@ -436,7 +435,7 @@ public class MongoNotebookRepo implements NotebookRepo {
     // document to JSON
     String json = doc.toJson();
     // JSON to note
-    return Note.fromJson(noteId, json);
+    return noteParser.fromJson(noteId, json);
   }
 
   /**

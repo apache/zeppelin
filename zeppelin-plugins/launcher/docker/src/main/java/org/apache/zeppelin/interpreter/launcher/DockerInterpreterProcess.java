@@ -432,9 +432,8 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
     return null;
   }
 
-  // upload configure file to submarine interpreter container
+  // upload keytab and configuration file to interpreter container:
   // keytab file & zeppelin-site.xml & krb5.conf
-  // The submarine configures the mount file into the container through `localization`
   // NOTE: The path to the file uploaded to the container,
   // Can not be repeated, otherwise it will lead to failure.
   private void copyRunFileToContainer(String containerId)
@@ -476,22 +475,18 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
       intpKeytab = properties.getProperty("spark.yarn.keytab", "");
     }
     if (StringUtils.isBlank(intpKeytab)) {
-      // 3.3) submarine interpreter properties keytab file
-      intpKeytab = properties.getProperty("submarine.hadoop.keytab", "");
-    }
-    if (StringUtils.isBlank(intpKeytab)) {
-      // 3.4) livy interpreter properties keytab file
+      // 3.3) livy interpreter properties keytab file
       intpKeytab = properties.getProperty("zeppelin.livy.keytab", "");
     }
     if (StringUtils.isBlank(intpKeytab)) {
-      // 3.5) jdbc interpreter properties keytab file
+      // 3.4) jdbc interpreter properties keytab file
       intpKeytab = properties.getProperty("zeppelin.jdbc.keytab.location", "");
     }
     if (!StringUtils.isBlank(intpKeytab)) {
       LOGGER.info("intpKeytab : {}", intpKeytab);
       copyFiles.putIfAbsent(intpKeytab, intpKeytab);
     }
-    // 3.6) zeppelin server keytab file
+    // 3.5) zeppelin server keytab file
     String zeppelinServerKeytab = zconf.getString(ZEPPELIN_SERVER_KERBEROS_KEYTAB);
     if (!StringUtils.isBlank(zeppelinServerKeytab)) {
       copyFiles.putIfAbsent(zeppelinServerKeytab, zeppelinServerKeytab);

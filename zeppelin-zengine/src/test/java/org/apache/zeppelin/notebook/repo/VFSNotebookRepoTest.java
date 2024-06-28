@@ -18,10 +18,13 @@
 package org.apache.zeppelin.notebook.repo;
 
 import com.google.common.collect.ImmutableMap;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.notebook.GsonNoteParser;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
+import org.apache.zeppelin.notebook.NoteParser;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.jupiter.api.AfterEach;
@@ -37,20 +40,22 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class VFSNotebookRepoTest {
+class VFSNotebookRepoTest {
 
   private ZeppelinConfiguration zConf;
+  private NoteParser noteParser;
   private VFSNotebookRepo notebookRepo;
   private File notebookDir;
 
   @BeforeEach
   public void setUp() throws IOException {
-    notebookDir = Files.createTempDirectory("notebookDir").toFile();
-    System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_DIR.getVarName(),
+    zConf = ZeppelinConfiguration.load();
+    noteParser = new GsonNoteParser(zConf);
+    notebookDir = Files.createTempDirectory(this.getClass().getSimpleName()).toFile();
+    zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_DIR.getVarName(),
         notebookDir.getAbsolutePath());
     notebookRepo = new VFSNotebookRepo();
-    zConf = ZeppelinConfiguration.create();
-    notebookRepo.init(zConf);
+    notebookRepo.init(zConf, noteParser);
   }
 
   @AfterEach
@@ -59,12 +64,13 @@ public class VFSNotebookRepoTest {
   }
 
   @Test
-  public void testBasics() throws IOException {
+  void testBasics() throws IOException {
     assertEquals(0, notebookRepo.list(AuthenticationInfo.ANONYMOUS).size());
 
     // create note1
     Note note1 = new Note();
     note1.setPath("/my_project/my_note1");
+    note1.setNoteParser(noteParser);
     Paragraph p1 = note1.insertNewParagraph(0, AuthenticationInfo.ANONYMOUS);
     p1.setText("%md hello world");
     p1.setTitle("my title");
@@ -78,6 +84,7 @@ public class VFSNotebookRepoTest {
     // create note2
     Note note2 = new Note();
     note2.setPath("/my_note2");
+    note2.setNoteParser(noteParser);
     Paragraph p2 = note2.insertNewParagraph(0, AuthenticationInfo.ANONYMOUS);
     p2.setText("%md hello world2");
     p2.setTitle("my title2");
@@ -91,6 +98,7 @@ public class VFSNotebookRepoTest {
     notebookRepo.move(note2.getId(), note2.getPath(), "/my_project2/my_note2", AuthenticationInfo.ANONYMOUS);
 
     Note note3 = notebookRepo.get(note2.getId(), newPath, AuthenticationInfo.ANONYMOUS);
+    note3.setNoteParser(noteParser);
     assertEquals(note2, note3);
 
     // move folder
@@ -99,6 +107,7 @@ public class VFSNotebookRepoTest {
     assertEquals(2, noteInfos.size());
 
     Note note4 = notebookRepo.get(note3.getId(), "/my_project3/my_project2/my_note2", AuthenticationInfo.ANONYMOUS);
+    note4.setNoteParser(noteParser);
     assertEquals(note3, note4);
 
     // remote note1
@@ -107,12 +116,13 @@ public class VFSNotebookRepoTest {
   }
 
   @Test
-  public void testNoteNameWithColon() throws IOException {
+  void testNoteNameWithColon() throws IOException {
     assertEquals(0, notebookRepo.list(AuthenticationInfo.ANONYMOUS).size());
 
     // create note with colon in name
     Note note1 = new Note();
     note1.setPath("/my_project/my:note1");
+    note1.setNoteParser(noteParser);
     Paragraph p1 = note1.insertNewParagraph(0, AuthenticationInfo.ANONYMOUS);
     p1.setText("%md hello world");
     p1.setTitle("my title");
@@ -122,7 +132,7 @@ public class VFSNotebookRepoTest {
   }
 
   @Test
-  public void testUpdateSettings() throws IOException {
+  void testUpdateSettings() throws IOException {
     List<NotebookRepoSettingsInfo> repoSettings = notebookRepo.getSettings(AuthenticationInfo.ANONYMOUS);
     assertEquals(1, repoSettings.size());
     NotebookRepoSettingsInfo settingInfo = repoSettings.get(0);

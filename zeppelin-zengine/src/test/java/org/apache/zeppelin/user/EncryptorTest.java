@@ -24,10 +24,10 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
-public class EncryptorTest {
+class EncryptorTest {
 
   @Test
-  public void testEncryption() throws IOException {
+  void testEncryption() throws IOException {
     Encryptor encryptor = new Encryptor("foobar1234567890");
 
     String input = "test";

@@ -31,7 +31,7 @@ public abstract class Application {
 
   private final ApplicationContext context;
 
-  public Application(ApplicationContext context) {
+  protected Application(ApplicationContext context) {
     this.context = context;
   }
 
@@ -129,7 +129,7 @@ public abstract class Application {
   }
 
   private void beginJavascript() throws IOException {
-    StringBuffer js = new StringBuffer();
+    StringBuilder js = new StringBuilder();
     js.append("\n<script id=\"app_js_" + js.hashCode() + "\">\n");
     js.append("(function() {\n");
     js.append("let $z = {\n");
@@ -142,7 +142,7 @@ public abstract class Application {
   }
 
   private void endJavascript() throws IOException {
-    StringBuffer js = new StringBuffer();
+    StringBuilder js = new StringBuilder();
     js.append("\n})();\n");
     js.append("</script>\n");
     context.out.write(js.toString());

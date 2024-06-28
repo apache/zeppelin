@@ -265,7 +265,7 @@ public class IPythonInterpreterTest extends BasePythonInterpreterTest {
         "x = [1, 2, 3, 4, 5]\n" +
         "y = [6, 7, 2, 4, 5]\n" +
         "p = figure(title=\"simple line example\", x_axis_label='x', y_axis_label='y')\n" +
-        "p.line(x, y, legend=\"Temp.\", line_width=2)\n" +
+        "p.line(x, y, legend_label=\"Temp.\", line_width=2)\n" +
         "show(p)", context);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code(),
         context.out.toInterpreterResultMessage().toString());

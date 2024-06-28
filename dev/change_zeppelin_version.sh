@@ -61,6 +61,12 @@ sed -i '' 's/"version": "'"${FROM_VERSION}"'",/"version": "'"${TO_VERSION}"'",/g
 
 # Change version in Dockerfile
 sed -i '' 's/Z_VERSION="'"${FROM_VERSION}"'"/Z_VERSION="'"${TO_VERSION}"'"/g' scripts/docker/zeppelin/bin/Dockerfile
+sed -i '' 's/version="'"${FROM_VERSION}"'"/version="'"${TO_VERSION}"'"/g' scripts/docker/zeppelin-interpreter/Dockerfile
+sed -i '' 's/version="'"${FROM_VERSION}"'"/version="'"${TO_VERSION}"'"/g' scripts/docker/zeppelin-server/Dockerfile
+
+# Change version in Kubernetes yaml
+sed -i '' 's/zeppelin-interpreter:${FROM_VERSION}/zeppelin-interpreter:${TO_VERSION}/g' k8s/zeppelin-server.yaml
+sed -i '' 's/zeppelin-server:${FROM_VERSION}/zeppelin-server:${TO_VERSION}/g' k8s/zeppelin-server.yaml
 
 # Change docker image version in configuration
 sed -i '' sed 's/zeppelin:'"${OLD_VERSION}"'/zeppelin:'"${NEW_VERSION}"'/g' conf/zeppelin-site.xml.template

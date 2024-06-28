@@ -50,7 +50,7 @@ class ClusterSingleNodeTest {
   static void startCluster() throws IOException, InterruptedException {
     LOGGER.info("startCluster >>>");
 
-    zconf = ZeppelinConfiguration.create("zeppelin-site-test.xml");
+    zconf = ZeppelinConfiguration.load("zeppelin-site-test.xml");
 
     // Set the cluster IP and port
     zServerHost = RemoteInterpreterUtils.findAvailableHostAddress();
@@ -92,7 +92,6 @@ class ClusterSingleNodeTest {
     if (null != clusterClient) {
       clusterServer.shutdown();
     }
-    ZeppelinConfiguration.reset();
     LOGGER.info("stopCluster");
   }
 

@@ -38,8 +38,7 @@
     -->
     <dependency>
       <groupId>org.apache.hadoop</groupId>
-      <artifactId>hadoop-common</artifactId>
-      <version>${hadoop.version}</version>
+      <artifactId>hadoop-client-api</artifactId>
       <scope>provided</scope>
     </dependency>
   </dependencies>

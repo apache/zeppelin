@@ -18,6 +18,7 @@
 package org.apache.zeppelin.helium;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.dep.DependencyResolver;
 import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.resource.LocalResourcePool;
@@ -25,6 +26,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import static org.apache.zeppelin.helium.HeliumPackage.newHeliumPackage;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -51,7 +53,8 @@ class ApplicationLoaderTest {
   void loadUnloadApplication() throws Exception {
     // given
     LocalResourcePool resourcePool = new LocalResourcePool("pool1");
-    DependencyResolver dep = new DependencyResolver(tmpDir.getAbsolutePath());
+    DependencyResolver dep =
+        new DependencyResolver(tmpDir.getAbsolutePath(), ZeppelinConfiguration.load());
     ApplicationLoader appLoader = new ApplicationLoader(resourcePool, dep);
 
     HeliumPackage pkg1 = createPackageInfo(MockApplication1.class.getName(), "artifact1");
@@ -74,7 +77,7 @@ class ApplicationLoaderTest {
   }
 
   public HeliumPackage createPackageInfo(String className, String artifact) {
-    HeliumPackage app1 = new HeliumPackage(
+    HeliumPackage app1 = newHeliumPackage(
         HeliumType.APPLICATION,
         "name1",
         "desc1",
