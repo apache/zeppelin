@@ -50,8 +50,8 @@ public class KyuubiUtils {
                                         InterpreterContext context,
                                         boolean displayLog,
                                         JDBCInterpreter jdbcInterpreter) {
-    KyuubiConnection kyuubiConn = (KyuubiConnection)
-            ((DelegatingConnection<?>) ((DelegatingConnection<?>) conn).getDelegate()).getDelegate();
+    KyuubiConnection kyuubiConn = (KyuubiConnection) ((DelegatingConnection<?>)
+        ((DelegatingConnection<?>) conn).getDelegate()).getDelegate();
     KyuubiStatement kyuubiStmt = (KyuubiStatement)
             ((DelegatingStatement) ((DelegatingStatement) stmt).getDelegate()).getDelegate();
     // need to use final variable progressBar in thread, so need progressBarTemp here.

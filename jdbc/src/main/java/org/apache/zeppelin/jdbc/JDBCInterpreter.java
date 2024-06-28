@@ -829,7 +829,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
           if (jdbcURL != null && driver != null) {
             if (driver.equals("org.apache.hive.jdbc.HiveDriver") &&
                 jdbcURL.startsWith("jdbc:hive2://")) {
-            HiveUtils.startHiveMonitorThread(statement, context,
+              HiveUtils.startHiveMonitorThread(statement, context,
                     Boolean.parseBoolean(getProperty("hive.log.display", "true")), this);
             } else if (driver.equals("org.apache.kyuubi.jdbc.KyuubiHiveDriver") &&
                 (jdbcURL.startsWith("jdbc:kyuubi://") || jdbcURL.startsWith("jdbc:hive2://"))) {
