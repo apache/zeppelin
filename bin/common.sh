@@ -171,6 +171,14 @@ else
 fi
 export ZEPPELIN_RUNNER
 
+if [[ -z "$ZEPPELIN_IDENT_STRING" ]]; then
+  # if for some reason the shell doesn't have $USER defined
+  # (e.g., ssh'd in to execute a command)
+  # let's get the effective username and use that
+  USER=${USER:-$(id -nu)}
+  export ZEPPELIN_IDENT_STRING="${USER}"
+fi
+
 if [[ -z "$ZEPPELIN_INTERPRETER_REMOTE_RUNNER" ]]; then
   export ZEPPELIN_INTERPRETER_REMOTE_RUNNER="bin/interpreter.sh"
 fi
