@@ -22,7 +22,7 @@
 if [[ -z "${TAR}" ]]; then
   TAR="tar"
   if [ "$(uname -s)" = "Darwin" ]; then
-    TAR="tar --no-mac-metadata --no-xattrs --no-fflags"
+    TAR="tar --no-mac-metadata --no-xattrs --no-fflags --disable-copyfile"
   fi
 fi
 
