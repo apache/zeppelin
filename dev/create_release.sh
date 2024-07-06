@@ -47,7 +47,7 @@ function make_source_package() {
   # create source package
   cd ${WORKING_DIR}
   cp -r "zeppelin" "zeppelin-${RELEASE_VERSION}"
-  ${TAR} cvzf "zeppelin-${RELEASE_VERSION}.tgz" "zeppelin-${RELEASE_VERSION}"
+  ${TAR} -cvzf "zeppelin-${RELEASE_VERSION}.tgz" "zeppelin-${RELEASE_VERSION}"
 
   echo "Signing the source package"
   cd "${WORKING_DIR}"
