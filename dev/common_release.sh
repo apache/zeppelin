@@ -20,7 +20,11 @@
 # common fucntions
 
 if [[ -z "${TAR}" ]]; then
-  TAR="/usr/bin/tar"
+  TAR="tar"
+  if [ "$(uname -s)" = "Darwin" ]; then
+    export COPYFILE_DISABLE=1
+    TAR="tar --no-mac-metadata --no-xattrs --no-fflags"
+  fi
 fi
 
 if [[ -z "${SHASUM}" ]]; then
