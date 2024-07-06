@@ -77,7 +77,7 @@ function make_binary_release() {
   cat ../../src/bin_license/LICENSE >> "zeppelin-${RELEASE_VERSION}-bin-${BIN_RELEASE_NAME}/LICENSE"
   cat ../../src/bin_license/NOTICE >> "zeppelin-${RELEASE_VERSION}-bin-${BIN_RELEASE_NAME}/NOTICE"
   cp ../../src/bin_license/licenses/* "zeppelin-${RELEASE_VERSION}-bin-${BIN_RELEASE_NAME}/licenses/"
-  ${TAR} cvzf "zeppelin-${RELEASE_VERSION}-bin-${BIN_RELEASE_NAME}.tgz" "zeppelin-${RELEASE_VERSION}-bin-${BIN_RELEASE_NAME}"
+  ${TAR} -cvzf "zeppelin-${RELEASE_VERSION}-bin-${BIN_RELEASE_NAME}.tgz" "zeppelin-${RELEASE_VERSION}-bin-${BIN_RELEASE_NAME}"
 
   # sign bin package
   echo "${GPG_PASSPHRASE}" | gpg --passphrase-fd 0 --armor \
