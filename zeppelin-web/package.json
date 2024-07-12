@@ -48,7 +48,7 @@
     "d3": "^3.4.4",
     "es5-shim": "~3.1.0",
     "excel-builder": "2.0.0",
-    "highlight.js": "9.4.0",
+    "highlight.js": "10.4.1",
     "jquery": ">=1.8",
     "jquery-ui": ">=1.8",
     "jquery.scrollto": "~2.1.2",
