@@ -155,6 +155,8 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
     noteVarShareService.put($scope.paragraph.id + '_paragraphScope', paragraphScope);
 
     initializeDefault($scope.paragraph.config);
+
+    $scope.updateParagraphNumbering();
   };
 
   $scope.$on('noteRunningStatus', function(event, status) {
@@ -175,6 +177,10 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
 
     if (config.enabled === undefined) {
       config.enabled = true;
+    }
+
+    if (config.numbering === undefined) {
+      config.numbering = $scope.note.config.numberingToggled
     }
 
     for (let idx in forms) {
@@ -640,6 +646,18 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
   $scope.openTable = function(paragraph) {
     console.log('open the output');
     paragraph.config.tableHide = false;
+    commitParagraph(paragraph);
+  };
+
+  $scope.showNumbering = function(paragraph) {
+    console.log('show numbering');
+    paragraph.config.numbering = true;
+    commitParagraph(paragraph);
+  };
+
+  $scope.hideNumbering = function(paragraph) {
+    console.log('hide numbering');
+    paragraph.config.numbering = false;
     commitParagraph(paragraph);
   };
 
@@ -1804,6 +1822,14 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
 
   $scope.$on('closeTable', function(event) {
     $scope.closeTable($scope.paragraph);
+  });
+
+  $scope.$on('setNumbering', function(event, value) {
+    if (value) {
+      $scope.showNumbering($scope.paragraph)
+    } else {
+      $scope.hideNumbering($scope.paragraph)
+    }
   });
 
   $scope.$on('resultRendered', function(event, paragraphId) {
