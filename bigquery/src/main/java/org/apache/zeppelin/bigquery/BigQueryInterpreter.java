@@ -289,7 +289,9 @@ public class BigQueryInterpreter extends Interpreter {
   }
 
   @Override
-  public InterpreterResult interpret(String sql, InterpreterContext contextInterpreter) {
+  public InterpreterResult interpret(String originalSql, InterpreterContext contextInterpreter) {
+    String sql = Boolean.parseBoolean(getProperty("zeppelin.bigquery.interpolation")) ?
+            interpolate(originalSql, contextInterpreter.getResourcePool()) : originalSql;
     logger.info("Run SQL command '{}'", sql);
     return executeSql(sql);
   }
