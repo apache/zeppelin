@@ -112,6 +112,7 @@ public abstract class AbstractInterpreterTest {
     notebook = new Notebook(conf, authorizationService, notebookRepo, noteManager, interpreterFactory, interpreterSettingManager, credentials);
     interpreterSettingManager.setNotebook(notebook);
 
+    // cleanup the test directories on exit
     FileUtils.forceDeleteOnExit(interpreterDir);
     FileUtils.forceDeleteOnExit(confDir);
     FileUtils.forceDeleteOnExit(notebookDir);
