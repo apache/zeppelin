@@ -111,6 +111,10 @@ public abstract class AbstractInterpreterTest {
     Credentials credentials = new Credentials(conf, storage);
     notebook = new Notebook(conf, authorizationService, notebookRepo, noteManager, interpreterFactory, interpreterSettingManager, credentials);
     interpreterSettingManager.setNotebook(notebook);
+
+    FileUtils.forceDeleteOnExit(interpreterDir);
+    FileUtils.forceDeleteOnExit(confDir);
+    FileUtils.forceDeleteOnExit(notebookDir);
   }
 
   @AfterEach
