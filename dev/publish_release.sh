@@ -138,8 +138,9 @@ function publish_to_maven() {
 
   echo "Creating hash and signature files"
   for file in $(find . -type f); do
-    echo "${GPG_PASSPHRASE}" | gpg --passphrase-fd 0 --output "${file}.asc" \
-      --detach-sig --armor "${file}"
+    gpg --batch --pinentry-mode loopback --passphrase "${GPG_PASSPHRASE}" --armor \
+      --output "${file}.asc" \
+      --detach-sig "${file}"
     md5 -q "${file}" > "${file}.md5"
     ${SHASUM} -a 1 "${file}" | cut -f1 -d' ' > "${file}.sha1"
   done

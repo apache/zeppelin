@@ -51,7 +51,7 @@ function make_source_package() {
 
   echo "Signing the source package"
   cd "${WORKING_DIR}"
-  echo "${GPG_PASSPHRASE}" | gpg --batch --yes --passphrase-fd 0 --armor \
+  gpg --batch --pinentry-mode loopback --passphrase "${GPG_PASSPHRASE}" --armor \
     --output "zeppelin-${RELEASE_VERSION}.tgz.asc" \
     --detach-sig "${WORKING_DIR}/zeppelin-${RELEASE_VERSION}.tgz"
   ${SHASUM} -a 512 "zeppelin-${RELEASE_VERSION}.tgz" > \
@@ -80,7 +80,7 @@ function make_binary_release() {
   ${TAR} -cvzf "zeppelin-${RELEASE_VERSION}-bin-${BIN_RELEASE_NAME}.tgz" "zeppelin-${RELEASE_VERSION}-bin-${BIN_RELEASE_NAME}"
 
   # sign bin package
-  echo "${GPG_PASSPHRASE}" | gpg --batch --yes --passphrase-fd 0 --armor \
+  gpg --batch --pinentry-mode loopback --passphrase "${GPG_PASSPHRASE}" --armor \
     --output "zeppelin-${RELEASE_VERSION}-bin-${BIN_RELEASE_NAME}.tgz.asc" \
     --detach-sig "zeppelin-${RELEASE_VERSION}-bin-${BIN_RELEASE_NAME}.tgz"
   ${SHASUM} -a 512 "zeppelin-${RELEASE_VERSION}-bin-${BIN_RELEASE_NAME}.tgz" > \
