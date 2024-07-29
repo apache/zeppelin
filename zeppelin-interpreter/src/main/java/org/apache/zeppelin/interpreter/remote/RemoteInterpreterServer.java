@@ -941,7 +941,7 @@ public class RemoteInterpreterServer extends Thread
     LOGGER.info("cancel {} {}", className, interpreterContext.getParagraphId());
     Interpreter intp = getInterpreter(sessionId, className);
     String jobId = interpreterContext.getParagraphId();
-    Job job = intp.getScheduler().getJob(jobId);
+    Job<?> job = intp.getScheduler().getJob(jobId);
 
     if (job != null && job.getStatus() == Status.PENDING) {
       job.setStatus(Status.ABORT);
@@ -1105,7 +1105,7 @@ public class RemoteInterpreterServer extends Thread
       for (Interpreter intp : interpreters) {
         Scheduler scheduler = intp.getScheduler();
         if (scheduler != null) {
-          Job job = scheduler.getJob(jobId);
+          Job<?> job = scheduler.getJob(jobId);
           if (job != null) {
             return job.getStatus().name();
           }

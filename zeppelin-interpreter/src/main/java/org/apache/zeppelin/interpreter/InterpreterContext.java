@@ -27,6 +27,7 @@ import org.apache.zeppelin.user.AuthenticationInfo;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * Interpreter context
@@ -51,7 +52,7 @@ public class InterpreterContext {
     allContexts.remove(Thread.currentThread());
   }
 
-  public static ConcurrentHashMap<Thread, InterpreterContext> getAllContexts() {
+  public static ConcurrentMap<Thread, InterpreterContext> getAllContexts() {
     return allContexts;
   }
 
@@ -295,7 +296,7 @@ public class InterpreterContext {
     if (progressMap != null) {
       n = Math.max(n, 0);
       n = Math.min(n, 100);
-      progressMap.put(paragraphId, new Integer(n));
+      progressMap.put(paragraphId, Integer.valueOf(n));
     }
   }
 }

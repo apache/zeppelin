@@ -150,7 +150,7 @@ public class ManagedInterpreterGroup extends InterpreterGroup {
     try {
       if (Boolean.parseBoolean(
               interpreter.getProperty("zeppelin.interpreter.close.cancel_job", "true"))) {
-        for (final Job job : scheduler.getAllJobs()) {
+        for (final Job<?> job : scheduler.getAllJobs()) {
           if (!job.isTerminated()) {
             job.abort();
             job.setStatus(Job.Status.ABORT);
