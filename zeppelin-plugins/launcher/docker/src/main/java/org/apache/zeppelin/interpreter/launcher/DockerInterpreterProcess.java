@@ -324,6 +324,9 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
     // remove JAVA_HOME from envs to avoid misconfiguration in container
     envs.remove("JAVA_HOME");
 
+    // remove PATH from envs to avoid misconfiguration in container
+    envs.remove("PATH");
+
     // set container time zone
     envs.put("TZ", zConf.getString(ConfVars.ZEPPELIN_DOCKER_TIME_ZONE));
 
