@@ -321,6 +321,9 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
     envs.put("ZEPPELIN_FORCE_STOP", "true");
     envs.put("SPARK_HOME", this.containerSparkHome);
 
+    // remove JAVA_HOME from envs to avoid misconfiguration in container
+    envs.remove("JAVA_HOME");
+
     // set container time zone
     envs.put("TZ", zConf.getString(ConfVars.ZEPPELIN_DOCKER_TIME_ZONE));
 
