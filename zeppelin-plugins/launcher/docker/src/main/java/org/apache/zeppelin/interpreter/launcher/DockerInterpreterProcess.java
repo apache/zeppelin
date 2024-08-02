@@ -192,7 +192,7 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
     // check if the interpreter process exit script
     // if interpreter process exit, then container need exit
     StringBuilder sbStartCmd = new StringBuilder();
-    sbStartCmd.append("sleep 10; ");
+    sbStartCmd.append("sleep 20; ");
     sbStartCmd.append("process=RemoteInterpreterServer; ");
     sbStartCmd.append("RUNNING_PIDS=$(ps x | grep $process | grep -v grep | awk '{print $1}'); ");
     sbStartCmd.append("while [ ! -z \"$RUNNING_PIDS\" ]; ");
