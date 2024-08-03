@@ -1,9 +1,9 @@
 ## Overview
 Shell interpreter for Apache Zeppelin
 
-A shell interpreter process is created when a paragraph using the shell interpreter is executed for the first time.
 ## Run the interpreter with docker
 You can run the shell interpreter as a standalone docker container.
+
 ### step 1. Specify the configuration for the shell interpreter
 ```bash
     # conf/interpreter.json
