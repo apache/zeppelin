@@ -102,7 +102,6 @@ import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.util.IdHashes;
 import org.apache.zeppelin.utils.CorsUtils;
 import org.apache.zeppelin.utils.ServerUtils;
-import org.apache.zeppelin.utils.TestUtils;
 import org.eclipse.jetty.util.annotation.ManagedAttribute;
 import org.eclipse.jetty.util.annotation.ManagedObject;
 import org.eclipse.jetty.util.annotation.ManagedOperation;
@@ -224,10 +223,6 @@ public class NotebookServer implements AngularObjectRegistryListener,
   public void setJobManagerService(
       Provider<JobManagerService> jobManagerServiceProvider) {
     this.jobManagerServiceProvider = jobManagerServiceProvider;
-  }
-
-  public static NotebookServer getInstance() {
-    return TestUtils.getInstance(NotebookServer.class);
   }
 
   public Notebook getNotebook() {

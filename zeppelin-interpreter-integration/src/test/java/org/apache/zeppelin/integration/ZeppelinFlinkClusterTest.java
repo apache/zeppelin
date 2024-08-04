@@ -26,7 +26,6 @@ import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.rest.AbstractTestRestApi;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.user.AuthenticationInfo;
-import org.apache.zeppelin.utils.TestUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -87,11 +86,11 @@ public abstract class ZeppelinFlinkClusterTest extends AbstractTestRestApi {
     String noteId = null;
     try {
       // create new note
-      noteId = TestUtils.getInstance(Notebook.class).createNote("note1", AuthenticationInfo.ANONYMOUS);
+      noteId = zepServer.getService(Notebook.class).createNote("note1", AuthenticationInfo.ANONYMOUS);
 
       // run p0 for %flink.conf
       String checkpointPath = Files.createTempDirectory("checkpoint").toAbsolutePath().toString();
-      TestUtils.getInstance(Notebook.class).processNote(noteId,
+      zepServer.getService(Notebook.class).processNote(noteId,
         note -> {
           Paragraph p0 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
           StringBuilder builder = new StringBuilder("%flink.conf\n");
@@ -142,7 +141,7 @@ public abstract class ZeppelinFlinkClusterTest extends AbstractTestRestApi {
       throw e;
     } finally {
       if (null != noteId) {
-        TestUtils.getInstance(Notebook.class).removeNote(noteId, AuthenticationInfo.ANONYMOUS);
+        zepServer.getService(Notebook.class).removeNote(noteId, AuthenticationInfo.ANONYMOUS);
       }
     }
   }
@@ -154,11 +153,11 @@ public abstract class ZeppelinFlinkClusterTest extends AbstractTestRestApi {
     String noteId = null;
     try {
       // create new note
-      noteId = TestUtils.getInstance(Notebook.class).createNote("note2", AuthenticationInfo.ANONYMOUS);
+      noteId = zepServer.getService(Notebook.class).createNote("note2", AuthenticationInfo.ANONYMOUS);
 
       // run p0 for %flink.conf
       String checkpointPath = Files.createTempDirectory("checkpoint").toAbsolutePath().toString();
-      TestUtils.getInstance(Notebook.class).processNote(noteId,
+      zepServer.getService(Notebook.class).processNote(noteId,
         note -> {
           Paragraph p0 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
           StringBuilder builder = new StringBuilder("%flink.conf\n");
@@ -207,7 +206,7 @@ public abstract class ZeppelinFlinkClusterTest extends AbstractTestRestApi {
       throw e;
     } finally {
       if (null != noteId) {
-        TestUtils.getInstance(Notebook.class).removeNote(noteId, AuthenticationInfo.ANONYMOUS);
+        zepServer.getService(Notebook.class).removeNote(noteId, AuthenticationInfo.ANONYMOUS);
       }
     }
   }

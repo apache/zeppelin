@@ -76,8 +76,8 @@ public class SparkSubmitIntegrationTest {
     zepServer.getZeppelinConfiguration().setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HELIUM_REGISTRY.getVarName(),
         "helium");
     zepServer.start();
-    interpreterSettingManager = zepServer.getServiceLocator().getService(InterpreterSettingManager.class);
-    interpreterFactory = zepServer.getServiceLocator().getService(InterpreterFactory.class);
+    interpreterSettingManager = zepServer.getService(InterpreterSettingManager.class);
+    interpreterFactory = zepServer.getService(InterpreterFactory.class);
     InterpreterSetting sparkSubmitInterpreterSetting = interpreterSettingManager.getInterpreterSettingByName("spark-submit");
     sparkSubmitInterpreterSetting.setProperty("SPARK_HOME", sparkHome);
     sparkSubmitInterpreterSetting.setProperty("HADOOP_CONF_DIR", hadoopCluster.getConfigPath());
