@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM apache/zeppelin:0.11.2
+FROM apache/zeppelin:0.11.2-SNAPSHOT
 MAINTAINER Apache Software Foundation <dev@zeppelin.apache.org>
 
 ENV SPARK_VERSION=2.3.3
