@@ -46,7 +46,7 @@ public class AuthorizationService implements ClusterEventListener {
   private static final Logger LOGGER = LoggerFactory.getLogger(AuthorizationService.class);
   private static final Set<String> EMPTY_SET = new HashSet<>();
 
-  private final ZeppelinConfiguration zConf;
+  private final ZeppelinConfiguration conf;
   private final ConfigStorage configStorage;
 
   // contains roles for each user (username --> roles)
@@ -56,10 +56,10 @@ public class AuthorizationService implements ClusterEventListener {
   private Map<String, NoteAuth> notesAuth = new ConcurrentHashMap<>();
 
   @Inject
-  public AuthorizationService(NoteManager noteManager, ZeppelinConfiguration zConf,
+  public AuthorizationService(NoteManager noteManager, ZeppelinConfiguration conf,
       ConfigStorage storage) {
     LOGGER.info("Injected AuthorizationService: {}", this);
-    this.zConf = zConf;
+    this.conf = conf;
     this.configStorage = storage;
     try {
       // init notesAuth by reading notebook-authorization.json
@@ -68,14 +68,14 @@ public class AuthorizationService implements ClusterEventListener {
         for (Map.Entry<String, Map<String, Set<String>>> entry : authorizationInfoSaving.getAuthInfo().entrySet()) {
           String noteId = entry.getKey();
           Map<String, Set<String>> permissions = entry.getValue();
-          notesAuth.put(noteId, new NoteAuth(noteId, permissions, zConf));
+          notesAuth.put(noteId, new NoteAuth(noteId, permissions, conf));
         }
       }
 
       // initialize NoteAuth for the notes without permission set explicitly.
       for (String noteId : noteManager.getNotesInfo().keySet()) {
         if (!notesAuth.containsKey(noteId)) {
-          notesAuth.put(noteId, new NoteAuth(noteId, zConf));
+          notesAuth.put(noteId, new NoteAuth(noteId, conf));
         }
       }
     } catch (IOException e) {
@@ -91,7 +91,7 @@ public class AuthorizationService implements ClusterEventListener {
    * @throws IOException
    */
   public void createNoteAuth(String noteId, AuthenticationInfo subject) {
-    NoteAuth noteAuth = new NoteAuth(noteId, subject, zConf);
+    NoteAuth noteAuth = new NoteAuth(noteId, subject, conf);
     this.notesAuth.put(noteId, noteAuth);
   }
 
@@ -284,7 +284,7 @@ public class AuthorizationService implements ClusterEventListener {
   }
 
   private boolean isAdmin(Set<String> entities) {
-    String adminRole = zConf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_OWNER_ROLE);
+    String adminRole = conf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_OWNER_ROLE);
     if (StringUtils.isBlank(adminRole)) {
       return false;
     }
@@ -299,7 +299,7 @@ public class AuthorizationService implements ClusterEventListener {
   }
 
   public boolean isOwner(Set<String> userAndRoles, String noteId) {
-    if (zConf.isAnonymousAllowed()) {
+    if (conf.isAnonymousAllowed()) {
       LOGGER.debug("Zeppelin runs in anonymous mode, everybody is owner");
       return true;
     }
@@ -311,7 +311,7 @@ public class AuthorizationService implements ClusterEventListener {
 
   //TODO(zjffdu) merge this hasWritePermission with isWriter ?
   public boolean hasWritePermission(Set<String> userAndRoles, String noteId) {
-    if (zConf.isAnonymousAllowed()) {
+    if (conf.isAnonymousAllowed()) {
       LOGGER.debug("Zeppelin runs in anonymous mode, everybody is writer");
       return true;
     }
@@ -322,7 +322,7 @@ public class AuthorizationService implements ClusterEventListener {
   }
 
   public boolean hasReadPermission(Set<String> userAndRoles, String noteId) {
-    if (zConf.isAnonymousAllowed()) {
+    if (conf.isAnonymousAllowed()) {
       LOGGER.debug("Zeppelin runs in anonymous mode, everybody is reader");
       return true;
     }
@@ -333,7 +333,7 @@ public class AuthorizationService implements ClusterEventListener {
   }
 
   public boolean hasRunPermission(Set<String> userAndRoles, String noteId) {
-    if (zConf.isAnonymousAllowed()) {
+    if (conf.isAnonymousAllowed()) {
       LOGGER.debug("Zeppelin runs in anonymous mode, everybody is reader");
       return true;
     }
@@ -344,7 +344,7 @@ public class AuthorizationService implements ClusterEventListener {
   }
 
   public boolean isPublic() {
-    return zConf.isNotebookPublic();
+    return conf.isNotebookPublic();
   }
 
   @Override
@@ -394,7 +394,7 @@ public class AuthorizationService implements ClusterEventListener {
   // broadcast cluster event
   private void broadcastClusterEvent(ClusterEvent event, String noteId,
                                      String user, Set<String> set) {
-    if (!zConf.isClusterMode()) {
+    if (!conf.isClusterMode()) {
       return;
     }
     ClusterMessage message = new ClusterMessage(event);
@@ -406,7 +406,7 @@ public class AuthorizationService implements ClusterEventListener {
     }.getType());
     message.put("set", json);
     String msg = ClusterMessage.serializeMessage(message);
-    ClusterManagerServer.getInstance(zConf).broadcastClusterEvent(
+    ClusterManagerServer.getInstance(conf).broadcastClusterEvent(
         ClusterManagerServer.CLUSTER_AUTH_EVENT_TOPIC, msg);
   }
 }

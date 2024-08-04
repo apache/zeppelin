@@ -50,13 +50,13 @@ public class InterpreterService {
               .setNameFormat(InterpreterService.class.getSimpleName() + "-")
               .build());
 
-  private final ZeppelinConfiguration zConf;
+  private final ZeppelinConfiguration conf;
   private final InterpreterSettingManager interpreterSettingManager;
 
   @Inject
   public InterpreterService(
-      ZeppelinConfiguration zConf, InterpreterSettingManager interpreterSettingManager) {
-    this.zConf = zConf;
+      ZeppelinConfiguration conf, InterpreterSettingManager interpreterSettingManager) {
+    this.conf = conf;
     this.interpreterSettingManager = interpreterSettingManager;
   }
 
@@ -68,10 +68,10 @@ public class InterpreterService {
     Preconditions.checkNotNull(interpreterName);
     Preconditions.checkNotNull(request.getArtifact());
 
-    String interpreterBaseDir = zConf.getInterpreterDir();
-    String localRepoPath = zConf.getInterpreterLocalRepoPath();
+    String interpreterBaseDir = conf.getInterpreterDir();
+    String localRepoPath = conf.getInterpreterLocalRepoPath();
 
-    final DependencyResolver dependencyResolver = new DependencyResolver(localRepoPath, zConf);
+    final DependencyResolver dependencyResolver = new DependencyResolver(localRepoPath, conf);
 
     // TODO(jl): Make a rule between an interpreter name and an installation directory
     List<String> possibleInterpreterDirectories = new ArrayList<>();

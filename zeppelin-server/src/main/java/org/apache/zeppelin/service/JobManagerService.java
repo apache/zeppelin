@@ -45,22 +45,22 @@ public class JobManagerService {
 
   private final Notebook notebook;
   private final AuthorizationService authorizationService;
-  private final ZeppelinConfiguration zConf;
+  private final ZeppelinConfiguration conf;
 
   @Inject
   public JobManagerService(Notebook notebook,
                            AuthorizationService authorizationService,
-                           ZeppelinConfiguration zConf) {
+                           ZeppelinConfiguration conf) {
     this.notebook = notebook;
     this.authorizationService = authorizationService;
-    this.zConf = zConf;
+    this.conf = conf;
   }
 
   public List<NoteJobInfo> getNoteJobInfo(String noteId,
                                           ServiceContext context,
                                           ServiceCallback<List<NoteJobInfo>> callback)
       throws IOException {
-    if (!zConf.isJobManagerEnabled()) {
+    if (!conf.isJobManagerEnabled()) {
       return new ArrayList<>();
     }
 
@@ -84,7 +84,7 @@ public class JobManagerService {
                                                     ServiceContext context,
                                                     ServiceCallback<List<NoteJobInfo>> callback)
       throws IOException {
-    if (!zConf.isJobManagerEnabled()) {
+    if (!conf.isJobManagerEnabled()) {
       return new ArrayList<>();
     }
 
@@ -104,7 +104,7 @@ public class JobManagerService {
   public void removeNoteJobInfo(String noteId,
                                 ServiceContext context,
                                 ServiceCallback<List<NoteJobInfo>> callback) throws IOException {
-    if (!zConf.isJobManagerEnabled()) {
+    if (!conf.isJobManagerEnabled()) {
       return;
     }
     List<NoteJobInfo> notesJobInfo = new ArrayList<>();

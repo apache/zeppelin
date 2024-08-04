@@ -68,14 +68,14 @@ public class ClusterMonitor {
   // and the interperterGroupID when monitoring the interperter processes
   private String metaKey;
 
-  private final ZeppelinConfiguration zConf;
+  private final ZeppelinConfiguration zconf;
 
-  public ClusterMonitor(ClusterManager clusterManagerServer, ZeppelinConfiguration zConf) {
+  public ClusterMonitor(ClusterManager clusterManagerServer, ZeppelinConfiguration zconf) {
     this.clusterManager = clusterManagerServer;
-    this.zConf = zConf;
+    this.zconf = zconf;
 
-    heartbeatInterval = zConf.getClusterHeartbeatInterval();
-    heartbeatTimeout = zConf.getClusterHeartbeatTimeout();
+    heartbeatInterval = zconf.getClusterHeartbeatInterval();
+    heartbeatTimeout = zconf.getClusterHeartbeatTimeout();
 
     if (heartbeatTimeout < heartbeatInterval) {
       LOGGER.error("Heartbeat timeout must be greater than heartbeat period.");
