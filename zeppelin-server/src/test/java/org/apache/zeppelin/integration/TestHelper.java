@@ -32,8 +32,8 @@ public class TestHelper {
 
   public static void configureSparkInterpreter(MiniZeppelinServer zepServer, String sparkHome) {
     await().until(interpreterSettingManagerAvailable(zepServer));
-    InterpreterSetting sparkInterpreterSetting = zepServer.getServiceLocator()
-        .getService(InterpreterSettingManager.class).getInterpreterSettingByName("spark");
+    InterpreterSetting sparkInterpreterSetting =
+        zepServer.getService(InterpreterSettingManager.class).getInterpreterSettingByName("spark");
     sparkInterpreterSetting.setProperty("spark.master", "local[*]");
     sparkInterpreterSetting.setProperty("SPARK_HOME", sparkHome);
     sparkInterpreterSetting.close();
@@ -41,6 +41,6 @@ public class TestHelper {
 
   private static Callable<Boolean> interpreterSettingManagerAvailable(
       MiniZeppelinServer zepServer) {
-    return () -> zepServer.getServiceLocator().getService(InterpreterSettingManager.class) != null;
+    return () -> zepServer.getService(InterpreterSettingManager.class) != null;
   }
 }
