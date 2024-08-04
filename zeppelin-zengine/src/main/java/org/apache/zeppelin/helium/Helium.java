@@ -65,22 +65,22 @@ public class Helium {
   private final HeliumApplicationFactory applicationFactory;
   private final InterpreterSettingManager interpreterSettingManager;
 
-  private final ZeppelinConfiguration conf;
+  private final ZeppelinConfiguration zConf;
 
   @Inject
   public Helium(
-      ZeppelinConfiguration conf,
+      ZeppelinConfiguration zConf,
       HeliumBundleFactory heliumBundleFactory,
       HeliumApplicationFactory heliumApplicationFactory,
       InterpreterSettingManager interpreterSettingManager) throws IOException {
     this(
-        conf.getHeliumConfPath(),
-        conf.getHeliumRegistry(),
-        new File(conf.getAbsoluteDir(ConfVars.ZEPPELIN_DEP_LOCALREPO), "helium-registry-cache"),
+        zConf.getHeliumConfPath(),
+        zConf.getHeliumRegistry(),
+        new File(zConf.getAbsoluteDir(ConfVars.ZEPPELIN_DEP_LOCALREPO), "helium-registry-cache"),
         heliumBundleFactory,
         heliumApplicationFactory,
         interpreterSettingManager,
-        conf);
+        zConf);
   }
 
   @VisibleForTesting
@@ -91,7 +91,7 @@ public class Helium {
       HeliumBundleFactory bundleFactory,
       HeliumApplicationFactory applicationFactory,
       InterpreterSettingManager interpreterSettingManager,
-      ZeppelinConfiguration conf)
+      ZeppelinConfiguration zConf)
       throws IOException {
     this.heliumConfPath = heliumConfPath;
     this.registryPaths = registryPaths;
@@ -99,7 +99,7 @@ public class Helium {
     this.bundleFactory = bundleFactory;
     this.applicationFactory = applicationFactory;
     this.interpreterSettingManager = interpreterSettingManager;
-    this.conf = conf;
+    this.zConf = zConf;
     heliumConf = loadConf(heliumConfPath);
     allPackages = getAllPackageInfo();
 
@@ -139,7 +139,7 @@ public class Helium {
       for (String uri : paths) {
         if (uri.startsWith("http://") || uri.startsWith("https://")) {
           logger.info("Add helium online registry {}", uri);
-          registry.add(new HeliumOnlineRegistry(uri, uri, registryCacheDir, conf));
+          registry.add(new HeliumOnlineRegistry(uri, uri, registryCacheDir, zConf));
         } else {
           logger.info("Add helium local registry {}", uri);
           registry.add(new HeliumLocalRegistry(uri, uri));

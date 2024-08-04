@@ -68,13 +68,13 @@ public class ShiroAuthenticationService implements AuthenticationService {
   private static final String ACTIVE_DIRECTORY_GROUP_REALM = "org.apache.zeppelin.realm.ActiveDirectoryGroupRealm";
   private static final String JDBC_REALM = "org.apache.shiro.realm.jdbc.JdbcRealm";
 
-  private final ZeppelinConfiguration conf;
+  private final ZeppelinConfiguration zConf;
 
   @Inject
-  public ShiroAuthenticationService(ZeppelinConfiguration conf) throws Exception {
+  public ShiroAuthenticationService(ZeppelinConfiguration zConf) throws Exception {
     LOGGER.info("ShiroAuthenticationService is initialized");
-    this.conf = conf;
-    if (conf.getShiroPath().length() > 0) {
+    this.zConf = zConf;
+    if (zConf.getShiroPath().length() > 0) {
       try {
         Collection<Realm> realms =
             ((DefaultSecurityManager) org.apache.shiro.SecurityUtils.getSecurityManager())
@@ -111,7 +111,7 @@ public class ShiroAuthenticationService implements AuthenticationService {
     String principal;
     if (subject.isAuthenticated()) {
       principal = extractPrincipal(subject);
-      if (conf.isUsernameForceLowerCase()) {
+      if (zConf.isUsernameForceLowerCase()) {
         if (LOGGER.isDebugEnabled()) {
           LOGGER.debug("Converting principal name {} to lower case: {}", principal, principal.toLowerCase());
         }
