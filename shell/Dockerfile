@@ -23,12 +23,16 @@ WORKDIR /zeppelin
 
 RUN chmod +x ./mvnw
 
-RUN ./mvnw install -am -pl zeppelin-interpreter,shell -DskipTests
+RUN ./mvnw package -am -pl zeppelin-interpreter-shaded,zeppelin-interpreter,shell -DskipTests
 
 
 FROM openjdk:11
 
-COPY --from=builder /zeppelin /zeppelin
+COPY --from=builder /zeppelin/bin /zeppelin/bin/
+COPY --from=builder /zeppelin/conf /zeppelin/conf
+
+COPY --from=builder /zeppelin/interpreter/sh /zeppelin/interpreter/sh
+COPY --from=builder /zeppelin/zeppelin-interpreter-shaded/target /zeppelin/zeppelin-interpreter-shaded/target
 
 WORKDIR /zeppelin
 
