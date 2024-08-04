@@ -73,6 +73,7 @@ export class NotebookParagraphControlComponent implements OnInit, OnChanges {
   @Output() readonly runAllBelowAndCurrent = new EventEmitter<void>();
   @Output() readonly cloneParagraph = new EventEmitter<void>();
   @Output() readonly removeParagraph = new EventEmitter<void>();
+  @Output() readonly clearParagraph = new EventEmitter<void>();
   @Output() readonly openSingleParagraph = new EventEmitter<string>();
   fontSizeOption = [9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
   dropdownVisible = false;
@@ -246,12 +247,17 @@ export class NotebookParagraphControlComponent implements OnInit, OnChanges {
   }
 
   clearParagraphOutput() {
+    console.log('힝', this.isEntireNoteRunning);
     if (!this.isEntireNoteRunning) {
+      console.log('붕');
       this.messageService.paragraphClearOutput(this.pid);
+      console.log('붕2');
+      this.clearParagraph.emit();
     }
   }
 
   onRemoveParagraph() {
+    console.log('얘는 아주 잘 됨');
     this.removeParagraph.emit();
   }
 
