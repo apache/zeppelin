@@ -16,8 +16,8 @@
 FROM apache/zeppelin:0.11.2-SNAPSHOT
 MAINTAINER Apache Software Foundation <dev@zeppelin.apache.org>
 
-ENV SPARK_VERSION=2.3.3
-ENV HADOOP_VERSION=2.7
+ENV SPARK_VERSION=3.5.1
+ENV HADOOP_VERSION=3
 
 USER root
 
