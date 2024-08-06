@@ -41,7 +41,7 @@ import org.apache.zeppelin.interpreter.jupyter.proto.StatusRequest;
 import org.apache.zeppelin.interpreter.jupyter.proto.StatusResponse;
 import org.apache.zeppelin.interpreter.jupyter.proto.StopRequest;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterUtils;
-import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
+import org.apache.zeppelin.protocol.thrift.InterpreterCompletion;
 import org.apache.zeppelin.interpreter.util.InterpreterOutputStream;
 import org.apache.zeppelin.interpreter.util.ProcessLauncher;
 import org.slf4j.Logger;

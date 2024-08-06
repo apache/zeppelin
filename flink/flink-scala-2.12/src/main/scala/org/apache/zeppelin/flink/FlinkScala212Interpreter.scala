@@ -23,7 +23,7 @@ import java.net.URLClassLoader
 import java.util.Properties
 
 import org.apache.zeppelin.interpreter.InterpreterContext
-import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion
+import org.apache.zeppelin.protocol.thrift.InterpreterCompletion
 import org.apache.zeppelin.conf.ZeppelinConfiguration
 
 import scala.tools.nsc.Settings

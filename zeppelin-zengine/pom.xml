@@ -284,6 +284,11 @@
       <artifactId>commons-compress</artifactId>
       <version>${commons.compress.version}</version>
     </dependency>
+      <dependency>
+          <groupId>${project.groupId}</groupId>
+          <artifactId>zeppelin-protocol</artifactId>
+          <version>${project.version}</version>
+      </dependency>
 
   </dependencies>
 

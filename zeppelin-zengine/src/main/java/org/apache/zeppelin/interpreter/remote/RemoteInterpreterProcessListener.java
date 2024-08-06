@@ -18,7 +18,7 @@ package org.apache.zeppelin.interpreter.remote;
 
 import org.apache.thrift.TException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
-import org.apache.zeppelin.interpreter.thrift.ParagraphInfo;
+import org.apache.zeppelin.protocol.thrift.ParagraphInfo;
 
 import java.io.IOException;
 import java.util.List;

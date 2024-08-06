@@ -19,7 +19,7 @@ package org.apache.zeppelin.spark
 
 import org.apache.spark.SparkConf
 import org.apache.spark.repl.SparkILoop
-import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion
+import org.apache.zeppelin.protocol.thrift.InterpreterCompletion
 import org.apache.zeppelin.interpreter.util.InterpreterOutputStream
 import org.apache.zeppelin.interpreter.{InterpreterContext, InterpreterException, InterpreterGroup, InterpreterResult}
 import org.slf4j.{Logger, LoggerFactory}

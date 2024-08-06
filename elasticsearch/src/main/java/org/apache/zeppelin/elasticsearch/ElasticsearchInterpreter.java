@@ -63,7 +63,7 @@ import org.apache.zeppelin.elasticsearch.action.HitWrapper;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterResult;
-import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
+import org.apache.zeppelin.protocol.thrift.InterpreterCompletion;
 
 import static org.apache.zeppelin.elasticsearch.client.ElasticsearchClientType.TRANSPORT;
 

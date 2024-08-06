@@ -50,7 +50,7 @@ import org.apache.zeppelin.flink.internal.FlinkShell
 import org.apache.zeppelin.flink.internal.FlinkShell._
 import org.apache.zeppelin.flink.internal.FlinkILoop
 import org.apache.zeppelin.interpreter.Interpreter.FormType
-import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion
+import org.apache.zeppelin.protocol.thrift.InterpreterCompletion
 import org.apache.zeppelin.interpreter.util.InterpreterOutputStream
 import org.apache.zeppelin.interpreter.{InterpreterContext, InterpreterException, InterpreterHookRegistry, InterpreterResult}
 import org.slf4j.{Logger, LoggerFactory}

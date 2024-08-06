@@ -25,18 +25,18 @@ import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistryListener;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResultMessage;
-import org.apache.zeppelin.interpreter.thrift.AppOutputAppendEvent;
-import org.apache.zeppelin.interpreter.thrift.AppOutputUpdateEvent;
-import org.apache.zeppelin.interpreter.thrift.AppStatusUpdateEvent;
-import org.apache.zeppelin.interpreter.thrift.LibraryMetadata;
-import org.apache.zeppelin.interpreter.thrift.OutputAppendEvent;
-import org.apache.zeppelin.interpreter.thrift.OutputUpdateAllEvent;
-import org.apache.zeppelin.interpreter.thrift.OutputUpdateEvent;
-import org.apache.zeppelin.interpreter.thrift.ParagraphInfo;
-import org.apache.zeppelin.interpreter.thrift.RegisterInfo;
-import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterEventService;
-import org.apache.zeppelin.interpreter.thrift.RunParagraphsEvent;
-import org.apache.zeppelin.interpreter.thrift.WebUrlInfo;
+import org.apache.zeppelin.protocol.thrift.AppOutputAppendEvent;
+import org.apache.zeppelin.protocol.thrift.AppOutputUpdateEvent;
+import org.apache.zeppelin.protocol.thrift.AppStatusUpdateEvent;
+import org.apache.zeppelin.protocol.thrift.LibraryMetadata;
+import org.apache.zeppelin.protocol.thrift.OutputAppendEvent;
+import org.apache.zeppelin.protocol.thrift.OutputUpdateAllEvent;
+import org.apache.zeppelin.protocol.thrift.OutputUpdateEvent;
+import org.apache.zeppelin.protocol.thrift.ParagraphInfo;
+import org.apache.zeppelin.protocol.thrift.RegisterInfo;
+import org.apache.zeppelin.protocol.thrift.RemoteInterpreterEventService;
+import org.apache.zeppelin.protocol.thrift.RunParagraphsEvent;
+import org.apache.zeppelin.protocol.thrift.WebUrlInfo;
 import org.apache.zeppelin.resource.RemoteResource;
 import org.apache.zeppelin.resource.Resource;
 import org.apache.zeppelin.resource.ResourceId;
@@ -263,13 +263,13 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector,
     }
   }
 
-  private List<org.apache.zeppelin.interpreter.thrift.RemoteInterpreterResultMessage>
+  private List<org.apache.zeppelin.protocol.thrift.RemoteInterpreterResultMessage>
         convertToThrift(List<InterpreterResultMessage> messages) {
-    List<org.apache.zeppelin.interpreter.thrift.RemoteInterpreterResultMessage> thriftMessages =
+    List<org.apache.zeppelin.protocol.thrift.RemoteInterpreterResultMessage> thriftMessages =
         new ArrayList<>();
     for (InterpreterResultMessage message : messages) {
       thriftMessages.add(
-          new org.apache.zeppelin.interpreter.thrift.RemoteInterpreterResultMessage(
+          new org.apache.zeppelin.protocol.thrift.RemoteInterpreterResultMessage(
               message.getType().name(), message.getData()));
     }
     return thriftMessages;
