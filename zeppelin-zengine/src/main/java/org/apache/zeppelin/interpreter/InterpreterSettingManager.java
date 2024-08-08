@@ -116,7 +116,7 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
       "language", (Object) "text",
       "editOnDblClick", false);
 
-  private final ZeppelinConfiguration conf;
+  private final ZeppelinConfiguration zConf;
   private final PluginManager pluginManager;
   private final Path interpreterDirPath;
 
@@ -169,7 +169,7 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
         pluginManager);
   }
 
-  public InterpreterSettingManager(ZeppelinConfiguration conf,
+  public InterpreterSettingManager(ZeppelinConfiguration zConf,
       InterpreterOption defaultOption,
       AngularObjectRegistryListener angularObjectRegistryListener,
       RemoteInterpreterProcessListener remoteInterpreterProcessListener,
@@ -177,29 +177,29 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
       ConfigStorage configStorage,
       PluginManager pluginManager)
       throws IOException {
-    this.conf = conf;
+    this.zConf = zConf;
     this.pluginManager = pluginManager;
     this.defaultOption = defaultOption;
-    this.interpreterDirPath = Paths.get(conf.getInterpreterDir());
+    this.interpreterDirPath = Paths.get(zConf.getInterpreterDir());
     LOGGER.debug("InterpreterRootPath: {}", interpreterDirPath);
     this.dependencyResolver =
-        new DependencyResolver(conf.getString(ConfVars.ZEPPELIN_INTERPRETER_LOCALREPO), conf);
+        new DependencyResolver(zConf.getString(ConfVars.ZEPPELIN_INTERPRETER_LOCALREPO), zConf);
     this.interpreterRepositories = dependencyResolver.getRepos();
-    this.defaultInterpreterGroup = conf.getString(ConfVars.ZEPPELIN_INTERPRETER_GROUP_DEFAULT);
+    this.defaultInterpreterGroup = zConf.getString(ConfVars.ZEPPELIN_INTERPRETER_GROUP_DEFAULT);
     this.gson = new GsonBuilder().setPrettyPrinting().create();
 
     this.angularObjectRegistryListener = angularObjectRegistryListener;
     this.remoteInterpreterProcessListener = remoteInterpreterProcessListener;
     this.appEventListener = appEventListener;
 
-    this.interpreterEventServer = new RemoteInterpreterEventServer(conf, this);
+    this.interpreterEventServer = new RemoteInterpreterEventServer(zConf, this);
     this.interpreterEventServer.start();
 
     this.recoveryStorage =
         ReflectionUtils.createClazzInstance(
-            conf.getRecoveryStorageClass(),
+            zConf.getRecoveryStorageClass(),
             new Class[] {ZeppelinConfiguration.class, InterpreterSettingManager.class},
-            new Object[] {conf, this});
+            new Object[] {zConf, this});
 
     LOGGER.info("Using RecoveryStorage: {}", this.recoveryStorage.getClass().getName());
 
@@ -229,7 +229,7 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
 
 
   private void initInterpreterSetting(InterpreterSetting interpreterSetting) {
-    interpreterSetting.setConf(conf)
+    interpreterSetting.setConf(zConf)
         .setInterpreterSettingManager(this)
         .setAngularObjectRegistryListener(angularObjectRegistryListener)
         .setRemoteInterpreterProcessListener(remoteInterpreterProcessListener)
@@ -368,12 +368,12 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
 
   private void init() throws IOException {
     this.includesInterpreters =
-            Arrays.asList(conf.getString(ConfVars.ZEPPELIN_INTERPRETER_INCLUDES).split(","))
+            Arrays.asList(zConf.getString(ConfVars.ZEPPELIN_INTERPRETER_INCLUDES).split(","))
                     .stream()
                     .filter(t -> !t.isEmpty())
                     .collect(Collectors.toList());
     this.excludesInterpreters =
-            Arrays.asList(conf.getString(ConfVars.ZEPPELIN_INTERPRETER_EXCLUDES).split(","))
+            Arrays.asList(zConf.getString(ConfVars.ZEPPELIN_INTERPRETER_EXCLUDES).split(","))
                     .stream()
                     .filter(t -> !t.isEmpty())
                     .collect(Collectors.toList());
@@ -407,7 +407,7 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
   }
 
   private void loadJupyterKernelLanguageMap() throws IOException {
-    String kernels = conf.getString(ConfVars.ZEPPELIN_INTERPRETER_JUPYTER_KERNELS);
+    String kernels = zConf.getString(ConfVars.ZEPPELIN_INTERPRETER_JUPYTER_KERNELS);
     for (String kernel : kernels.split(",")) {
       String[] tokens = kernel.split(":");
       if (tokens.length != 2) {
@@ -422,7 +422,7 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
   private void loadInterpreterSettingFromDefaultDir(boolean override) throws IOException {
     // 1. detect interpreter setting via interpreter-setting.json in each interpreter folder
     // 2. detect interpreter setting in interpreter.json that is saved before
-    String interpreterJson = conf.getInterpreterJson();
+    String interpreterJson = zConf.getInterpreterJson();
     ClassLoader cl = Thread.currentThread().getContextClassLoader();
     if (Files.exists(interpreterDirPath)) {
       try (DirectoryStream<Path> directoryPaths = Files
@@ -539,7 +539,7 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
         .setRunner(runner)
         .setInterpreterDir(interpreterDir)
         .setRunner(runner)
-        .setConf(conf)
+        .setConf(zConf)
         .setPluginManager(pluginManager)
         .setIntepreterSettingManager(this)
         .create();
@@ -795,7 +795,7 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
         LOGGER.info("Start to copy dependencies for interpreter: {}", setting.getName());
         for (Dependency d : deps) {
           File destDir = new File(
-              conf.getAbsoluteDir(ConfVars.ZEPPELIN_DEP_LOCALREPO));
+              zConf.getAbsoluteDir(ConfVars.ZEPPELIN_DEP_LOCALREPO));
 
           int numSplits = d.getGroupArtifactVersion().split(":").length;
           if (!(numSplits >= 3 && numSplits <= 6)) {
@@ -1044,7 +1044,7 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
         // Cluster event accepting nodes do not need to save files repeatedly
         saveToFile();
       }
-      File localRepoPath = new File(conf.getInterpreterLocalRepoPath());
+      File localRepoPath = new File(zConf.getInterpreterLocalRepoPath());
       FileUtils.deleteDirectory(new File(localRepoPath, id));
       removed = true;
     }
@@ -1074,7 +1074,7 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
 
   public InterpreterSetting getDefaultInterpreterSetting() {
     InterpreterSetting setting =
-        getByName(conf.getString(ConfVars.ZEPPELIN_INTERPRETER_GROUP_DEFAULT));
+        getByName(zConf.getString(ConfVars.ZEPPELIN_INTERPRETER_GROUP_DEFAULT));
     if (setting != null) {
       return setting;
     } else {
@@ -1261,7 +1261,7 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
 
   // broadcast cluster event
   private void broadcastClusterEvent(ClusterEvent event, InterpreterSetting intpSetting) {
-    if (!conf.isClusterMode()) {
+    if (!zConf.isClusterMode()) {
       return;
     }
 
@@ -1270,7 +1270,7 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
     ClusterMessage message = new ClusterMessage(event);
     message.put("intpSetting", jsonIntpSetting);
     String msg = ClusterMessage.serializeMessage(message);
-    ClusterManagerServer.getInstance(conf).broadcastClusterEvent(
+    ClusterManagerServer.getInstance(zConf).broadcastClusterEvent(
         CLUSTER_INTP_SETTING_EVENT_TOPIC, msg);
   }
 }

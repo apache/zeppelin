@@ -41,14 +41,14 @@ import org.slf4j.LoggerFactory;
 public class QuartzSchedulerService implements SchedulerService {
   private static final Logger LOGGER = LoggerFactory.getLogger(QuartzSchedulerService.class);
 
-  private final ZeppelinConfiguration zeppelinConfiguration;
+  private final ZeppelinConfiguration zConf;
   private final Notebook notebook;
   private final Scheduler scheduler;
 
   @Inject
-  public QuartzSchedulerService(ZeppelinConfiguration zeppelinConfiguration, Notebook notebook)
+  public QuartzSchedulerService(ZeppelinConfiguration zConf, Notebook notebook)
       throws SchedulerException {
-    this.zeppelinConfiguration = zeppelinConfiguration;
+    this.zConf = zConf;
     this.notebook = notebook;
     this.scheduler = getScheduler();
     this.scheduler.getListenerManager().addJobListener(new MetricCronJobListener());
@@ -82,7 +82,7 @@ public class QuartzSchedulerService implements SchedulerService {
             LOGGER.warn("Skip refresh cron of note: {} because its config is empty.", noteId);
             return false;
           }
-          if (!note.isCronSupported(zeppelinConfiguration)) {
+          if (!note.isCronSupported(zConf)) {
             LOGGER.warn("Skip refresh cron of note {} because its cron is not enabled.", noteId);
             return false;
           }
