@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
-import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
+import org.apache.zeppelin.protocol.thrift.InterpreterCompletion;
 import org.apache.zeppelin.scheduler.Scheduler;
 
 /**

@@ -17,7 +17,7 @@
 
 package org.apache.zeppelin.interpreter;
 
-import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
+import org.apache.zeppelin.protocol.thrift.InterpreterCompletion;
 import org.apache.zeppelin.resource.Resource;
 import org.apache.zeppelin.resource.ResourcePool;
 

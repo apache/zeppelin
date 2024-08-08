@@ -402,6 +402,11 @@
         <artifactId>diff-match-patch</artifactId>
         <version>1.1</version>
       </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>zeppelin-protocol</artifactId>
+      <version>${project.version}</version>
+    </dependency>
   </dependencies>
   <build>
     <plugins>

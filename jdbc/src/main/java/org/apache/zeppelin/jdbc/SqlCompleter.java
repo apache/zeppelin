@@ -33,7 +33,7 @@ import jline.console.completer.ArgumentCompleter.WhitespaceArgumentDelimiter;
 import org.apache.zeppelin.completer.CachedCompleter;
 import org.apache.zeppelin.completer.CompletionType;
 import org.apache.zeppelin.completer.StringsCompleter;
-import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
+import org.apache.zeppelin.protocol.thrift.InterpreterCompletion;
 
 /**
  * SQL auto complete functionality for the JdbcInterpreter.
