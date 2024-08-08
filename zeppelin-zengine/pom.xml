@@ -40,7 +40,7 @@
     <commons.vfs2.version>2.6.0</commons.vfs2.version>
     <!-- Should match which the version from commons-vfs2 -->
     <jackson.annocations.version>2.9.8</jackson.annocations.version>
-    <eclipse.jgit.version>4.5.4.201711221230-r</eclipse.jgit.version>
+    <eclipse.jgit.version>5.13.3.202401111512-r</eclipse.jgit.version>
     <eirslett.version>1.6</eirslett.version>
   </properties>
 
