@@ -24,13 +24,13 @@ import org.apache.zeppelin.notebook.NoteParser;
 
 public abstract class AbstractNotebookRepo implements NotebookRepo {
 
-  protected ZeppelinConfiguration conf;
+  protected ZeppelinConfiguration zConf;
   protected NoteParser noteParser;
 
   @Override
-  public void init(ZeppelinConfiguration conf, NoteParser parser) throws IOException {
+  public void init(ZeppelinConfiguration zConf, NoteParser parser) throws IOException {
     this.noteParser = parser;
-    this.conf = conf;
+    this.zConf = zConf;
   }
 
   @Override

@@ -48,12 +48,12 @@ public class FileSystemNotebookRepo extends AbstractNotebookRepo {
   }
 
   @Override
-  public void init(ZeppelinConfiguration conf, NoteParser noteParser) throws IOException {
-    super.init(conf, noteParser);
-    this.fs = new FileSystemStorage(conf,
-        conf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_DIR));
+  public void init(ZeppelinConfiguration zConf, NoteParser noteParser) throws IOException {
+    super.init(zConf, noteParser);
+    this.fs = new FileSystemStorage(zConf,
+        zConf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_DIR));
     LOGGER.info("Creating FileSystem: {}", this.fs.getFs().getClass().getName());
-    this.notebookDir = this.fs.makeQualified(new Path(conf.getNotebookDir()));
+    this.notebookDir = this.fs.makeQualified(new Path(zConf.getNotebookDir()));
     LOGGER.info("Using folder {} to store notebook", notebookDir);
     this.fs.tryMkDir(notebookDir);
   }

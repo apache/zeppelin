@@ -40,7 +40,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class InterpreterServiceTest {
-  private ZeppelinConfiguration mockZeppelinConfiguration;
+  private ZeppelinConfiguration zConf;
   private InterpreterSettingManager mockInterpreterSettingManager;
 
   private Path temporaryDir;
@@ -51,18 +51,18 @@ class InterpreterServiceTest {
 
   @BeforeEach
   public void setUp() throws Exception {
-    mockZeppelinConfiguration = mock(ZeppelinConfiguration.class);
+    zConf = mock(ZeppelinConfiguration.class);
     mockInterpreterSettingManager = mock(InterpreterSettingManager.class);
     temporaryDir = Files.createTempDirectory("tmp");
     interpreterDir = Files.createTempDirectory(temporaryDir, "interpreter");
     localRepoDir = Files.createTempDirectory(temporaryDir, "local-repo");
 
-    when(mockZeppelinConfiguration.getInterpreterDir()).thenReturn(interpreterDir.toString());
-    when(mockZeppelinConfiguration.getInterpreterLocalRepoPath())
+    when(zConf.getInterpreterDir()).thenReturn(interpreterDir.toString());
+    when(zConf.getInterpreterLocalRepoPath())
         .thenReturn(localRepoDir.toString());
 
     interpreterService =
-        new InterpreterService(mockZeppelinConfiguration, mockInterpreterSettingManager);
+        new InterpreterService(zConf, mockInterpreterSettingManager);
   }
 
   @AfterEach

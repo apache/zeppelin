@@ -216,12 +216,12 @@ public class InstallInterpreter {
       return;
     }
 
-    ZeppelinConfiguration conf = ZeppelinConfiguration.load();
+    ZeppelinConfiguration zConf = ZeppelinConfiguration.load();
     InstallInterpreter installer = new InstallInterpreter(
-        new File(conf.getInterpreterListPath()),
-        new File(conf.getInterpreterDir()),
-        conf.getInterpreterLocalRepoPath(),
-        conf);
+        new File(zConf.getInterpreterListPath()),
+        new File(zConf.getInterpreterDir()),
+        zConf.getInterpreterLocalRepoPath(),
+        zConf);
 
     String names = null;
     String artifacts = null;

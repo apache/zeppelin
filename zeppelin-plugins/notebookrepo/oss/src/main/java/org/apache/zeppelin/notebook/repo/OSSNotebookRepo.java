@@ -51,16 +51,16 @@ public class OSSNotebookRepo extends AbstractNotebookRepo
   }
 
   @Override
-  public void init(ZeppelinConfiguration conf, NoteParser noteParser) throws IOException {
-    super.init(conf, noteParser);
-    String endpoint = conf.getOSSEndpoint();
-    bucketName = conf.getOSSBucketName();
-    rootFolder = conf.getNotebookDir();
-    maxVersionNumber = conf.getOSSNoteMaxVersionNum();
+  public void init(ZeppelinConfiguration zConf, NoteParser noteParser) throws IOException {
+    super.init(zConf, noteParser);
+    String endpoint = zConf.getOSSEndpoint();
+    bucketName = zConf.getOSSBucketName();
+    rootFolder = zConf.getNotebookDir();
+    maxVersionNumber = zConf.getOSSNoteMaxVersionNum();
     // rootFolder is part of OSS key
     rootFolder = formatPath(rootFolder);
-    String accessKeyId = conf.getOSSAccessKeyId();
-    String accessKeySecret = conf.getOSSAccessKeySecret();
+    String accessKeyId = zConf.getOSSAccessKeyId();
+    String accessKeySecret = zConf.getOSSAccessKeySecret();
     this.ossOperator = new OSSOperator(endpoint, accessKeyId, accessKeySecret);
   }
 

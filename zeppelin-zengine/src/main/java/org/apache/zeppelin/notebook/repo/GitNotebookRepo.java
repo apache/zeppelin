@@ -61,9 +61,9 @@ public class GitNotebookRepo extends VFSNotebookRepo implements NotebookRepoWith
   }
 
   @Override
-  public void init(ZeppelinConfiguration conf, NoteParser noteParser) throws IOException {
-    super.init(conf, noteParser);
-    setNotebookDirectory(conf.getNotebookDir());
+  public void init(ZeppelinConfiguration zConf, NoteParser noteParser) throws IOException {
+    super.init(zConf, noteParser);
+    setNotebookDirectory(zConf.getNotebookDir());
 
     LOGGER.info("Opening a git repo at '{}'", this.rootNotebookFolder);
     Repository localRepo = new FileRepository(String.join(File.separator, this.rootNotebookFolder, ".git"));

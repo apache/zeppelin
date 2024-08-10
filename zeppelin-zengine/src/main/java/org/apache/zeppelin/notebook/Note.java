@@ -282,13 +282,13 @@ public class Note implements JsonSerializable {
     this.paragraphJobListener = paragraphJobListener;
   }
 
-  public boolean isCronSupported(ZeppelinConfiguration config) {
-    if (config.isZeppelinNotebookCronEnable()) {
-      config.getZeppelinNotebookCronFolders();
-      if (StringUtils.isBlank(config.getZeppelinNotebookCronFolders())) {
+  public boolean isCronSupported(ZeppelinConfiguration zConf) {
+    if (zConf.isZeppelinNotebookCronEnable()) {
+      zConf.getZeppelinNotebookCronFolders();
+      if (StringUtils.isBlank(zConf.getZeppelinNotebookCronFolders())) {
         return true;
       } else {
-        for (String folder : config.getZeppelinNotebookCronFolders().split(",")) {
+        for (String folder : zConf.getZeppelinNotebookCronFolders().split(",")) {
           if (this.path.startsWith(folder)) {
             return true;
           }
@@ -298,8 +298,8 @@ public class Note implements JsonSerializable {
     return false;
   }
 
-  public void setCronSupported(ZeppelinConfiguration config) {
-    getConfig().put("isZeppelinNotebookCronEnable", isCronSupported(config));
+  public void setCronSupported(ZeppelinConfiguration zConf) {
+    getConfig().put("isZeppelinNotebookCronEnable", isCronSupported(zConf));
   }
 
   public Credentials getCredentials() {

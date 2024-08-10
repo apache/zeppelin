@@ -43,7 +43,7 @@ public class ClusterMockTest {
   private static ClusterManagerServer clusterServer = null;
   private static ClusterManagerClient clusterClient = null;
 
-  protected static ZeppelinConfiguration zconf = null;
+  protected static ZeppelinConfiguration zConf = null;
 
   static String zServerHost;
   static int zServerPort;
@@ -54,19 +54,19 @@ public class ClusterMockTest {
   public static void startCluster() throws IOException, InterruptedException {
     LOGGER.info("startCluster >>>");
 
-    zconf = ZeppelinConfiguration.load();
+    zConf = ZeppelinConfiguration.load();
 
     // Set the cluster IP and port
     zServerHost = RemoteInterpreterUtils.findAvailableHostAddress();
     zServerPort = RemoteInterpreterUtils.findRandomAvailablePortOnAllLocalInterfaces();
-    zconf.setClusterAddress(zServerHost + ":" + zServerPort);
+    zConf.setClusterAddress(zServerHost + ":" + zServerPort);
 
     // mock cluster manager server
-    clusterServer = ClusterManagerServer.getInstance(zconf);
+    clusterServer = ClusterManagerServer.getInstance(zConf);
     clusterServer.start();
 
     // mock cluster manager client
-    clusterClient = ClusterManagerClient.getInstance(zconf);
+    clusterClient = ClusterManagerClient.getInstance(zConf);
     clusterClient.start(metaKey);
 
     // Waiting for cluster startup

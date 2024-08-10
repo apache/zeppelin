@@ -154,7 +154,7 @@ public class NotebookServer implements AngularObjectRegistryListener,
   // TODO(jl): This will be removed by handling session directly
   private final Map<String, NotebookSocket> sessionIdNotebookSocketMap = Metrics.gaugeMapSize("zeppelin_session_id_notebook_sockets", Tags.empty(), new ConcurrentHashMap<>());
   private ConnectionManager connectionManager;
-  private ZeppelinConfiguration zeppelinConfiguration;
+  private ZeppelinConfiguration zConf;
   private Provider<Notebook> notebookProvider;
   private Provider<NoteParser> noteParser;
   private Provider<NotebookService> notebookServiceProvider;
@@ -168,8 +168,8 @@ public class NotebookServer implements AngularObjectRegistryListener,
   }
 
   @Inject
-  public void setZeppelinConfiguration(ZeppelinConfiguration zeppelinConfiguration) {
-    this.zeppelinConfiguration = zeppelinConfiguration;
+  public void setZeppelinConfiguration(ZeppelinConfiguration zConf) {
+    this.zConf = zConf;
   }
 
   @Inject
@@ -243,7 +243,7 @@ public class NotebookServer implements AngularObjectRegistryListener,
 
   public boolean checkOrigin(String origin) {
     try {
-      return CorsUtils.isValidOrigin(origin, zeppelinConfiguration);
+      return CorsUtils.isValidOrigin(origin, zConf);
     } catch (UnknownHostException | URISyntaxException e) {
       LOG.error(e.toString(), e);
     }
@@ -308,7 +308,7 @@ public class NotebookServer implements AngularObjectRegistryListener,
         return;
       }
 
-      boolean allowAnonymous = zeppelinConfiguration.isAnonymousAllowed();
+      boolean allowAnonymous = zConf.isAnonymousAllowed();
       if (!allowAnonymous && receivedMessage.principal.equals("anonymous")) {
         LOG.warn("Anonymous access not allowed.");
         return;
@@ -515,7 +515,7 @@ public class NotebookServer implements AngularObjectRegistryListener,
   }
 
   private boolean sendParagraphStatusToFrontend() {
-    return zeppelinConfiguration.getBoolean(ZeppelinConfiguration.ConfVars.ZEPPELIN_WEBSOCKET_PARAGRAPH_STATUS_PROGRESS);
+    return zConf.getBoolean(ZeppelinConfiguration.ConfVars.ZEPPELIN_WEBSOCKET_PARAGRAPH_STATUS_PROGRESS);
   }
 
   @OnError
@@ -723,7 +723,7 @@ public class NotebookServer implements AngularObjectRegistryListener,
 
   // broadcast ClusterEvent
   private void broadcastClusterEvent(ClusterEvent event, String msgId, Object... objects) {
-    if (!zeppelinConfiguration.isClusterMode()) {
+    if (!zConf.isClusterMode()) {
       return;
     }
 
@@ -755,7 +755,7 @@ public class NotebookServer implements AngularObjectRegistryListener,
     }
 
     String msg = ClusterMessage.serializeMessage(clusterMessage);
-    ClusterManagerServer.getInstance(zeppelinConfiguration).broadcastClusterEvent(
+    ClusterManagerServer.getInstance(zConf).broadcastClusterEvent(
         ClusterManagerServer.CLUSTER_NOTE_EVENT_TOPIC, msg);
   }
 
@@ -1203,7 +1203,7 @@ public class NotebookServer implements AngularObjectRegistryListener,
   private void patchParagraph(NotebookSocket conn,
                               ServiceContext context,
                               Message fromMessage) throws IOException {
-    if (!zeppelinConfiguration.isZeppelinNotebookCollaborativeModeEnable()) {
+    if (!zConf.isZeppelinNotebookCollaborativeModeEnable()) {
       return;
     }
     String paragraphId = fromMessage.getType("id", LOG);

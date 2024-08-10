@@ -39,15 +39,15 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class NoteManagerTest {
   private NoteManager noteManager;
-  private ZeppelinConfiguration conf;
+  private ZeppelinConfiguration zConf;
   private NoteParser noteParser;
 
 
   @BeforeEach
   public void setUp() throws IOException {
-    conf = ZeppelinConfiguration.load();
-    this.noteManager = new NoteManager(new InMemoryNotebookRepo(), conf);
-    this.noteParser = new GsonNoteParser(conf);
+    zConf = ZeppelinConfiguration.load();
+    this.noteManager = new NoteManager(new InMemoryNotebookRepo(), zConf);
+    this.noteParser = new GsonNoteParser(zConf);
   }
 
   @Test
@@ -123,13 +123,13 @@ class NoteManagerTest {
   }
 
   private Note createNote(String notePath) {
-    return new Note(notePath, "test", null, null, null, null, null, conf, noteParser);
+    return new Note(notePath, "test", null, null, null, null, null, zConf, noteParser);
   }
 
   @Test
   void testLruCache() throws IOException {
 
-    int cacheThreshold = conf.getNoteCacheThreshold();
+    int cacheThreshold = zConf.getNoteCacheThreshold();
 
     // fill cache
     for (int i = 0; i < cacheThreshold; ++i) {

@@ -153,7 +153,7 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
   private List<String> excludesInterpreters;
 
   @Inject
-  public InterpreterSettingManager(ZeppelinConfiguration zeppelinConfiguration,
+  public InterpreterSettingManager(ZeppelinConfiguration zConf,
                                    AngularObjectRegistryListener angularObjectRegistryListener,
                                    RemoteInterpreterProcessListener
                                        remoteInterpreterProcessListener,
@@ -161,7 +161,7 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
                                    ConfigStorage storage,
                                    PluginManager pluginManager)
       throws IOException {
-    this(zeppelinConfiguration, new InterpreterOption(),
+    this(zConf, new InterpreterOption(),
         angularObjectRegistryListener,
         remoteInterpreterProcessListener,
         appEventListener,

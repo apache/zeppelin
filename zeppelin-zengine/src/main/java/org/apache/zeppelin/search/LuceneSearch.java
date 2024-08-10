@@ -82,12 +82,12 @@ public class LuceneSearch extends SearchService {
   private final Notebook notebook;
 
   @Inject
-  public LuceneSearch(ZeppelinConfiguration conf, Notebook notebook) throws IOException {
+  public LuceneSearch(ZeppelinConfiguration zConf, Notebook notebook) throws IOException {
     super("LuceneSearch");
     this.notebook = notebook;
-    if (conf.isZeppelinSearchUseDisk()) {
+    if (zConf.isZeppelinSearchUseDisk()) {
       try {
-        final Path indexPath = Paths.get(conf.getZeppelinSearchIndexPath());
+        final Path indexPath = Paths.get(zConf.getZeppelinSearchIndexPath());
         this.indexDirectory = FSDirectory.open(indexPath);
         LOGGER.info("Use {} for storing lucene search index", indexPath);
       } catch (IOException e) {
@@ -103,7 +103,7 @@ public class LuceneSearch extends SearchService {
     } catch (IOException e) {
       throw new IOException("Failed to create new IndexWriter", e);
     }
-    if (conf.isIndexRebuild()) {
+    if (zConf.isIndexRebuild()) {
       notebook.addInitConsumer(this::addNoteIndex);
     }
     this.notebook.addNotebookEventListener(this);

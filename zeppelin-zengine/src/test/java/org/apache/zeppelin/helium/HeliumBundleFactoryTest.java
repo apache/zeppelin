@@ -42,13 +42,13 @@ class HeliumBundleFactoryTest {
 
   @BeforeEach
   public void setUp() throws InstallationException, TaskRunnerException, IOException {
-    ZeppelinConfiguration conf = ZeppelinConfiguration.load();
-    conf.setProperty(ConfVars.ZEPPELIN_HOME.getVarName(),
+    ZeppelinConfiguration zConf = ZeppelinConfiguration.load();
+    zConf.setProperty(ConfVars.ZEPPELIN_HOME.getVarName(),
         new File("../").getAbsolutePath().toString());
     nodeInstallationDir =
-        new File(conf.getAbsoluteDir(ConfVars.ZEPPELIN_DEP_LOCALREPO), HELIUM_LOCAL_REPO);
+        new File(zConf.getAbsoluteDir(ConfVars.ZEPPELIN_DEP_LOCALREPO), HELIUM_LOCAL_REPO);
 
-    hbf = new HeliumBundleFactory(conf);
+    hbf = new HeliumBundleFactory(zConf);
     hbf.installNodeAndNpm();
     hbf.copyFrameworkModulesToInstallPath(true);
   }

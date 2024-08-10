@@ -50,15 +50,15 @@ import java.net.URISyntaxException;
  */
 public class GitHubNotebookRepo extends GitNotebookRepo {
   private static final Logger LOG = LoggerFactory.getLogger(GitHubNotebookRepo.class);
-  private ZeppelinConfiguration zeppelinConfiguration;
+  private ZeppelinConfiguration zConf;
   private Git git;
 
   @Override
-  public void init(ZeppelinConfiguration conf, NoteParser noteParser) throws IOException {
-    super.init(conf, noteParser);
+  public void init(ZeppelinConfiguration zConf, NoteParser noteParser) throws IOException {
+    super.init(zConf, noteParser);
     LOG.debug("initializing GitHubNotebookRepo");
     this.git = super.getGit();
-    this.zeppelinConfiguration = conf;
+    this.zConf = zConf;
 
     configureRemoteStream();
     pullFromRemoteStream();
@@ -81,8 +81,8 @@ public class GitHubNotebookRepo extends GitNotebookRepo {
     try {
       LOG.debug("Setting up remote stream");
       RemoteAddCommand remoteAddCommand = git.remoteAdd();
-      remoteAddCommand.setName(zeppelinConfiguration.getZeppelinNotebookGitRemoteOrigin());
-      remoteAddCommand.setUri(new URIish(zeppelinConfiguration.getZeppelinNotebookGitURL()));
+      remoteAddCommand.setName(zConf.getZeppelinNotebookGitRemoteOrigin());
+      remoteAddCommand.setUri(new URIish(zConf.getZeppelinNotebookGitURL()));
       remoteAddCommand.call();
     } catch (GitAPIException e) {
       LOG.error("Error configuring GitHub", e);
@@ -104,8 +104,8 @@ public class GitHubNotebookRepo extends GitNotebookRepo {
       PullCommand pullCommand = git.pull();
       pullCommand.setCredentialsProvider(
         new UsernamePasswordCredentialsProvider(
-          zeppelinConfiguration.getZeppelinNotebookGitUsername(),
-          zeppelinConfiguration.getZeppelinNotebookGitAccessToken()
+          zConf.getZeppelinNotebookGitUsername(),
+          zConf.getZeppelinNotebookGitAccessToken()
         )
       );
 
@@ -122,8 +122,8 @@ public class GitHubNotebookRepo extends GitNotebookRepo {
       PushCommand pushCommand = git.push();
       pushCommand.setCredentialsProvider(
         new UsernamePasswordCredentialsProvider(
-          zeppelinConfiguration.getZeppelinNotebookGitUsername(),
-          zeppelinConfiguration.getZeppelinNotebookGitAccessToken()
+          zConf.getZeppelinNotebookGitUsername(),
+          zConf.getZeppelinNotebookGitAccessToken()
         )
       );
 

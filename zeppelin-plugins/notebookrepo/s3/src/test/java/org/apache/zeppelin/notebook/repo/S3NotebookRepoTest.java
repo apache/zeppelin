@@ -48,7 +48,7 @@ class S3NotebookRepoTest {
   private AuthenticationInfo anonymous = AuthenticationInfo.ANONYMOUS;
   private S3NotebookRepo notebookRepo;
 
-  private ZeppelinConfiguration conf;
+  private ZeppelinConfiguration zConf;
   private NoteParser noteParser;
 
   @RegisterExtension
@@ -61,16 +61,16 @@ class S3NotebookRepoTest {
   void setUp() throws IOException {
     String bucket = "test-bucket";
     notebookRepo = new S3NotebookRepo();
-    conf = ZeppelinConfiguration.load();
-    noteParser = new GsonNoteParser(conf);
-    conf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_S3_ENDPOINT.getVarName(),
+    zConf = ZeppelinConfiguration.load();
+    noteParser = new GsonNoteParser(zConf);
+    zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_S3_ENDPOINT.getVarName(),
             s3Proxy.getUri().toString());
-    conf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_S3_BUCKET.getVarName(),
+    zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_S3_BUCKET.getVarName(),
             bucket);
     System.setProperty("aws.accessKeyId", s3Proxy.getAccessKey());
     System.setProperty("aws.secretKey", s3Proxy.getSecretKey());
 
-    notebookRepo.init(conf, noteParser);
+    notebookRepo.init(zConf, noteParser);
 
     // create bucket for notebook
     AmazonS3 s3Client = AmazonS3ClientBuilder
@@ -105,7 +105,7 @@ class S3NotebookRepoTest {
 
     // create Note note1
     Note note1 = new Note();
-    note1.setZeppelinConfiguration(conf);
+    note1.setZeppelinConfiguration(zConf);
     note1.setNoteParser(noteParser);
     note1.setPath("/spark/note_1");
     notebookRepo.save(note1, anonymous);
@@ -128,7 +128,7 @@ class S3NotebookRepoTest {
 
     // create another Note note2
     Note note2 = new Note();
-    note2.setZeppelinConfiguration(conf);
+    note2.setZeppelinConfiguration(zConf);
     note2.setNoteParser(noteParser);
     note2.setPath("/spark/note_2");
     notebookRepo.save(note2, anonymous);
