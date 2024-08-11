@@ -278,20 +278,28 @@ module.exports = function makeWebpackConfig () {
    * Reference: http://webpack.github.io/docs/webpack-dev-server.html
    */
   config.devServer = {
+    client: {
+      progress: true,
+      overlay: {
+        errors: true,
+        runtimeErrors: true,
+        warnings: false,
+      }
+    },
     historyApiFallback: true,
     port: webPort,
-    inline: true,
     hot: true,
-    progress: true,
-    contentBase: './src',
-    before: function(app) {
-      app.use('**/node_modules/', express.static(path.resolve(__dirname, './node_modules/')));
-      app.use('**/app/', express.static(path.resolve(__dirname, './src/app/')));
-      app.use('**/assets/', express.static(path.resolve(__dirname, './src/assets/')));
-      app.use('**/fonts/', express.static(path.resolve(__dirname, './src/fonts/')));
-      app.use('**/components/', express.static(path.resolve(__dirname, './src/components/')));
+    onBeforeSetupMiddleware: function(devServer) {
+      devServer.app.use('**/node_modules/', express.static(path.resolve(__dirname, './node_modules/')));
+      devServer.app.use('**/app/', express.static(path.resolve(__dirname, './src/app/')));
+      devServer.app.use('**/assets/', express.static(path.resolve(__dirname, './src/assets/')));
+      devServer.app.use('**/fonts/', express.static(path.resolve(__dirname, './src/fonts/')));
+      devServer.app.use('**/components/', express.static(path.resolve(__dirname, './src/components/')));
     },
-    stats: 'minimal',
+    devMiddleware: {
+      stats: 'minimal', // were moved to devMiddleware
+    },
+    static: './src'
   };
 
   return config;
