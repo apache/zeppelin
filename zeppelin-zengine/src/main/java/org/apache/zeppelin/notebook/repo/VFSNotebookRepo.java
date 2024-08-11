@@ -102,11 +102,13 @@ public class VFSNotebookRepo extends AbstractNotebookRepo {
 
   private Map<String, NoteInfo> listFolder(FileObject fileObject) throws IOException {
     Map<String, NoteInfo> noteInfos = new HashMap<>();
+
+    if (fileObject.getName().getBaseName().startsWith(".")) {
+      LOGGER.warn("Skip hidden item: {}", fileObject.getName());
+      return noteInfos;
+    }
+
     if (fileObject.isFolder()) {
-      if (fileObject.getName().getBaseName().startsWith(".")) {
-        LOGGER.warn("Skip hidden folder: {}", fileObject.getName().getPath());
-        return noteInfos;
-      }
       for (FileObject child : fileObject.getChildren()) {
         noteInfos.putAll(listFolder(child));
       }

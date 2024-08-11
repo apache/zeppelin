@@ -149,8 +149,33 @@ class VFSNotebookRepoTest {
     assertEquals(0, notebookRepo.list(AuthenticationInfo.ANONYMOUS).size());
   }
 
+  @Test
+  void testSkipInValidFileName() throws IOException {
+    assertEquals(0, notebookRepo.list(AuthenticationInfo.ANONYMOUS).size());
+
+    createNewNote("{}", "hidden_note", "my_project/.hidden_note");
+
+    Map<String, NoteInfo> noteInfos = notebookRepo.list(AuthenticationInfo.ANONYMOUS);
+    assertEquals(0, noteInfos.size());
+  }
+
+  @Test
+  void testSkipInvalidDirectoryName() throws IOException {
+    createNewDirectory(".hidden_dir");
+
+    createNewNote("{}", "hidden_note", "my_project/.hidden_dir/note");
+
+    Map<String, NoteInfo> noteInfos = notebookRepo.list(AuthenticationInfo.ANONYMOUS);
+    assertEquals(0, noteInfos.size());
+  }
+
   private void createNewNote(String content, String noteId, String noteName) throws IOException {
     FileUtils.writeStringToFile(
         new File(notebookDir + "/" + noteName + "_" + noteId + ".zpln"), content, StandardCharsets.UTF_8);
+  }
+
+  private void createNewDirectory(String dirName) {
+    File dir = new File(notebookDir + "/" + dirName);
+    dir.mkdir();
   }
 }
