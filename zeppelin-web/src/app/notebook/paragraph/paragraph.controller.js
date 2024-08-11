@@ -1018,7 +1018,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
   };
 
   // ref: https://github.com/ajaxorg/ace/blob/5021d0193d9f2bba5a978d0b1d7a4f73d18ce713/lib/ace/autocomplete.js#L454
-  const completionSupportWithoutBackend = function(str) {
+  const completionSupportWithoutBackend = (str) => {
     let matches;
     if (str.length > this.filterText && str.lastIndexOf(
         this.filterText, 0) === 0) {
@@ -1045,7 +1045,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
     this.filtered = matches;
   };
 
-  const completionSupportWithBackend = function(str) {
+  const completionSupportWithBackend = (str) => {
     let matches;
     if (str.length > this.filterText && str.lastIndexOf(
         this.filterText, 0) === 0) {

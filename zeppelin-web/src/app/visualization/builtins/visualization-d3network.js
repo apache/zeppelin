@@ -166,20 +166,20 @@ export default class NetworkVisualization extends Visualization {
 
     const drag = d3.behavior.drag()
       .origin((d) => d)
-      .on('dragstart', function(d) {
+      .on('dragstart', (d) => {
         console.log('dragstart');
         d3.event.sourceEvent.stopPropagation();
         d3.select(this).classed('dragging', true);
         self.force.stop();
       })
-      .on('drag', function(d) {
+      .on('drag', (d) => {
         console.log('drag');
         d.px += d3.event.dx;
         d.py += d3.event.dy;
         d.x += d3.event.dx;
         d.y += d3.event.dy;
       })
-      .on('dragend', function(d) {
+      .on('dragend', (d) => {
         console.log('dragend');
         d.fixed = true;
         d3.select(this).classed('dragging', false);

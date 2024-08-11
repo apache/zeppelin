@@ -364,12 +364,12 @@ export default class TableVisualization extends Visualization {
       gridApi.colResizable.on.columnSizeChanged(scope, () => {
         self.persistConfigWithGridState(self.config);
       });
-      gridApi.edit.on.beginCellEdit(scope, function(rowEntity, colDef, triggerEvent) {
+      gridApi.edit.on.beginCellEdit(scope, (rowEntity, colDef, triggerEvent) => {
         let textArea = triggerEvent.currentTarget.children[1].children[0].children[0];
         textArea.style.height = textArea.scrollHeight + 'px';
-        textArea.addEventListener('keydown', function() {
+        textArea.addEventListener('keydown', () => {
           let elem = this;
-          setTimeout(function() {
+          setTimeout(() => {
             elem.style.height = 'auto';
             elem.style.height = elem.scrollHeight + 'px';
           });
