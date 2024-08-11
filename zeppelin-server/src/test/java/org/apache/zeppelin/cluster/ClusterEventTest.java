@@ -92,7 +92,7 @@ public class ClusterEventTest extends AbstractTestRestApi {
 
   @BeforeEach
   void setup() {
-    conf = zepServer.getZeppelinConfiguration();
+    zConf = zepServer.getZeppelinConfiguration();
   }
 
   @BeforeAll
@@ -159,7 +159,7 @@ public class ClusterEventTest extends AbstractTestRestApi {
   @BeforeEach
   void setUp() {
     anonymous = new AuthenticationInfo("anonymous");
-    conf = zepServer.getZeppelinConfiguration();
+    zConf = zepServer.getZeppelinConfiguration();
   }
 
   private static void genClusterAddressConf(ZeppelinConfiguration zConf)

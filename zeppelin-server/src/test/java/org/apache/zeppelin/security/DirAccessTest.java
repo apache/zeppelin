@@ -40,15 +40,15 @@ class DirAccessTest extends AbstractTestRestApi {
   void testDirAccessForbidden() throws Exception {
     try {
       zepServer = new MiniZeppelinServer(DirAccessTest.class.getSimpleName());
-      conf = zepServer.getZeppelinConfiguration();
-      conf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_SERVER_DEFAULT_DIR_ALLOWED
+      zConf = zepServer.getZeppelinConfiguration();
+      zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_SERVER_DEFAULT_DIR_ALLOWED
           .getVarName(), "false");
       zepServer.start();
       CloseableHttpResponse getMethod =
           getHttpClient().execute(new HttpGet(getUrlToTest() + "/app"));
       LOG.info("Invoke getMethod - "
           + EntityUtils.toString(getMethod.getEntity(), StandardCharsets.UTF_8));
-      LOG.info("server port {}", conf.getServerPort());
+      LOG.info("server port {}", zConf.getServerPort());
       assertEquals(HttpStatus.SC_FORBIDDEN, getMethod.getStatusLine().getStatusCode());
     } finally {
       zepServer.destroy();
@@ -59,8 +59,8 @@ class DirAccessTest extends AbstractTestRestApi {
   void testDirAccessOk() throws Exception {
     try {
       zepServer = new MiniZeppelinServer(DirAccessTest.class.getSimpleName());
-      conf = zepServer.getZeppelinConfiguration();
-      conf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_SERVER_DEFAULT_DIR_ALLOWED
+      zConf = zepServer.getZeppelinConfiguration();
+      zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_SERVER_DEFAULT_DIR_ALLOWED
                 .getVarName(), "true");
       zepServer.start();
       CloseableHttpResponse getMethod =
@@ -74,7 +74,7 @@ class DirAccessTest extends AbstractTestRestApi {
   }
 
   protected String getUrlToTest() {
-    String url = "http://localhost:" + conf.getServerPort();
+    String url = "http://localhost:" + zConf.getServerPort();
     if (System.getProperty("url") != null) {
       url = System.getProperty("url");
     }

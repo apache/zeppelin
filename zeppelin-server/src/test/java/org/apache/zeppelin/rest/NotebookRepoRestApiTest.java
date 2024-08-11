@@ -66,7 +66,7 @@ public class NotebookRepoRestApiTest extends AbstractTestRestApi {
   @BeforeEach
   public void setUp() {
     anonymous = new AuthenticationInfo("anonymous");
-    conf = zepServer.getZeppelinConfiguration();
+    zConf = zepServer.getZeppelinConfiguration();
   }
 
   private List<Map<String, Object>> getListOfReposotiry() throws IOException {

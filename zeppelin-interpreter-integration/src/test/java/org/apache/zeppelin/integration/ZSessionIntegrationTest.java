@@ -90,8 +90,8 @@ public class ZSessionIntegrationTest extends AbstractTestRestApi {
 
   @BeforeEach
   void setup() {
-    conf = zepServer.getZeppelinConfiguration();
-    clientConfig = new ClientConfig("http://localhost:" + conf.getServerPort());
+    zConf = zepServer.getZeppelinConfiguration();
+    clientConfig = new ClientConfig("http://localhost:" + zConf.getServerPort());
   }
 
   @Test

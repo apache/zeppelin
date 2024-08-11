@@ -53,21 +53,21 @@ class RequestHeaderSizeTest extends AbstractTestRestApi {
 
   @BeforeEach
   void setup() {
-    conf = zep.getZeppelinConfiguration();
+    zConf = zep.getZeppelinConfiguration();
   }
 
   @Test
   void increased_request_header_size_do_not_cause_431_when_request_size_is_over_8K()
       throws Exception {
     CloseableHttpClient client = HttpClients.createDefault();
-    HttpGet httpGet = new HttpGet(getUrlToTest(conf) + "/version");
+    HttpGet httpGet = new HttpGet(getUrlToTest(zConf) + "/version");
     String headerValue = RandomStringUtils.randomAlphanumeric(REQUEST_HEADER_MAX_SIZE - 2000);
     httpGet.setHeader("not_too_large_header", headerValue);
     CloseableHttpResponse response = client.execute(httpGet);
     assertThat(response.getStatusLine().getStatusCode(), is(HttpStatus.SC_OK));
     response.close();
 
-    httpGet = new HttpGet(getUrlToTest(conf) + "/version");
+    httpGet = new HttpGet(getUrlToTest(zConf) + "/version");
     headerValue = RandomStringUtils.randomAlphanumeric(REQUEST_HEADER_MAX_SIZE + 2000);
     httpGet.setHeader("too_large_header", headerValue);
     response = client.execute(httpGet);
