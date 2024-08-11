@@ -274,8 +274,8 @@ module.exports = function makeWebpackConfig () {
 
   /**
    * Dev server configuration
-   * Reference: http://webpack.github.io/docs/configuration.html#devserver
-   * Reference: http://webpack.github.io/docs/webpack-dev-server.html
+   * Reference : https://v4.webpack.js.org/configuration/dev-server/#devserver
+   * Reference (Migration) : https://github.com/webpack/webpack-dev-server/blob/master/migration-v4.md
    */
   config.devServer = {
     client: {
