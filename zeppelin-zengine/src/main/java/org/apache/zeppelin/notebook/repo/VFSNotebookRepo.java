@@ -39,6 +39,7 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.NoteParser;
+import org.apache.zeppelin.notebook.exception.CorruptedNoteException;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -136,10 +137,23 @@ public class VFSNotebookRepo extends AbstractNotebookRepo {
         NameScope.DESCENDENT);
     String json = IOUtils.toString(noteFile.getContent().getInputStream(),
         conf.getString(ConfVars.ZEPPELIN_ENCODING));
-    Note note = noteParser.fromJson(noteId, json);
-    // setPath here just for testing, because actually NoteManager will setPath
-    note.setPath(notePath);
-    return note;
+
+    try {
+      Note note = noteParser.fromJson(noteId, json);
+      // setPath here just for testing, because actually NoteManager will setPath
+      note.setPath(notePath);
+      return note;
+    } catch (CorruptedNoteException e) {
+      String errorMessage = String.format(
+          "Fail to parse note json"
+          + "\nPlease check the file at this path to resolve the issue."
+          + "\n"
+          + "\nPath: %s"
+          + "\nContent: %s",
+          rootNotebookFolder + notePath, json
+      );
+      throw new CorruptedNoteException(noteId, errorMessage, e);
+    }
   }
 
   @Override
