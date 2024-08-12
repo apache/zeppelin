@@ -149,7 +149,7 @@ class VFSNotebookRepoTest {
   }
 
   @Test
-  void testSkipInValidFileName() throws IOException {
+  void testSkipInvalidFileName() throws IOException {
     assertEquals(0, notebookRepo.list(AuthenticationInfo.ANONYMOUS).size());
 
     createNewNote("{}", "hidden_note", "my_project/.hidden_note");
