@@ -80,7 +80,7 @@ class ZeppelinClientIntegrationTest extends AbstractTestRestApi {
 
   @BeforeEach
   void setup() {
-      zConf = zepServer.getZeppelinConfiguration();
+    zConf = zepServer.getZeppelinConfiguration();
   }
 
   @Test
