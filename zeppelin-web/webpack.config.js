@@ -299,7 +299,9 @@ module.exports = function makeWebpackConfig () {
     devMiddleware: {
       stats: 'minimal', // were moved to devMiddleware
     },
-    static: './src'
+    static: {
+      directory: './src'
+    }
   };
 
   return config;
