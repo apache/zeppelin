@@ -145,11 +145,9 @@ public class VFSNotebookRepo extends AbstractNotebookRepo {
       return note;
     } catch (CorruptedNoteException e) {
       String errorMessage = String.format(
-          "Fail to parse note json"
-          + "\nPlease check the file at this path to resolve the issue."
-          + "\n"
-          + "\nPath: %s"
-          + "\nContent: %s",
+          "Fail to parse note json. Please check the file at this path to resolve the issue. "
+          + "Path: %s, "
+          + "Content: %s",
           rootNotebookFolder + notePath, json
       );
       throw new CorruptedNoteException(noteId, errorMessage, e);
