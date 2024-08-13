@@ -172,7 +172,7 @@ function WebsocketEventFactory($rootScope, $websocket, $location, baseUrlSrv, sa
         closeByBackdrop: false,
         closeByKeyboard: false,
         title: 'Details',
-        message: _.escape(data.info.toString()).replace(/\n/g, '<br>'),
+        message: _.escape(data.info.toString()),
         buttons: [{
           // close all the dialogs when there are error on running all paragraphs
           label: 'Close',
