@@ -132,7 +132,7 @@ public class InterpreterSetting {
   private transient ApplicationEventListener appEventListener;
   private transient DependencyResolver dependencyResolver;
 
-  private transient ZeppelinConfiguration conf;
+  private transient ZeppelinConfiguration zConf;
   private transient PluginManager pluginManager;
 
   private transient RecoveryStorage recoveryStorage;
@@ -197,9 +197,9 @@ public class InterpreterSetting {
       return this;
     }
 
-    public Builder setConf(ZeppelinConfiguration conf) {
-      interpreterSetting.conf = conf;
-      interpreterSetting.option.setConf(conf);
+    public Builder setConf(ZeppelinConfiguration zConf) {
+      interpreterSetting.zConf = zConf;
+      interpreterSetting.option.setConf(zConf);
       return this;
     }
 
@@ -269,7 +269,7 @@ public class InterpreterSetting {
     this.id = this.name;
     if (this.recoveryStorage == null) {
       try {
-        this.recoveryStorage = new NullRecoveryStorage(conf, interpreterSettingManager);
+        this.recoveryStorage = new NullRecoveryStorage(zConf, interpreterSettingManager);
       } catch (IOException e) {
         // ignore this exception as NullRecoveryStorage will do nothing.
       }
@@ -293,7 +293,7 @@ public class InterpreterSetting {
     this.dependencies = new ArrayList<>(o.getDependencies());
     this.interpreterDir = o.getInterpreterDir();
     this.interpreterRunner = o.getInterpreterRunner();
-    this.conf = o.getConf();
+    this.zConf = o.getConf();
     this.pluginManager = o.getPluginMananger();
   }
 
@@ -642,15 +642,15 @@ public class InterpreterSetting {
 
     if (!jProperties.containsKey("zeppelin.interpreter.output.limit")) {
       jProperties.setProperty("zeppelin.interpreter.output.limit",
-          conf.getInt(ZEPPELIN_INTERPRETER_OUTPUT_LIMIT) + "");
+          zConf.getInt(ZEPPELIN_INTERPRETER_OUTPUT_LIMIT) + "");
     }
 
     if (!jProperties.containsKey(ZEPPELIN_INTERPRETER_CONNECTION_POOL_SIZE.getVarName())) {
       jProperties.setProperty(ZEPPELIN_INTERPRETER_CONNECTION_POOL_SIZE.getVarName(),
-          conf.getInt(ZEPPELIN_INTERPRETER_CONNECTION_POOL_SIZE) + "");
+          zConf.getInt(ZEPPELIN_INTERPRETER_CONNECTION_POOL_SIZE) + "");
     }
 
-    String interpreterLocalRepoPath = conf.getInterpreterLocalRepoPath();
+    String interpreterLocalRepoPath = zConf.getInterpreterLocalRepoPath();
     //TODO(zjffdu) change it to interpreterDir/{interpreter_name}
     jProperties.setProperty("zeppelin.interpreter.localRepo",
         interpreterLocalRepoPath + "/" + id);
@@ -658,12 +658,12 @@ public class InterpreterSetting {
   }
 
   public ZeppelinConfiguration getConf() {
-    return conf;
+    return zConf;
   }
 
-  public InterpreterSetting setConf(ZeppelinConfiguration conf) {
-    this.conf = conf;
-    this.option.setConf(conf);
+  public InterpreterSetting setConf(ZeppelinConfiguration zConf) {
+    this.zConf = zConf;
+    this.option.setConf(zConf);
     return this;
   }
 
@@ -808,16 +808,16 @@ public class InterpreterSetting {
   }
 
   private boolean isRunningOnKubernetes() {
-    return conf.getRunMode() == ZeppelinConfiguration.RUN_MODE.K8S;
+    return zConf.getRunMode() == ZeppelinConfiguration.RUN_MODE.K8S;
   }
 
 
   private boolean isRunningOnCluster() {
-    return conf.isClusterMode();
+    return zConf.isClusterMode();
   }
 
   private boolean isRunningOnDocker() {
-    return conf.getRunMode() == ZeppelinConfiguration.RUN_MODE.DOCKER;
+    return zConf.getRunMode() == ZeppelinConfiguration.RUN_MODE.DOCKER;
   }
 
   public boolean isUserAuthorized(List<String> userAndRoles) {
@@ -840,7 +840,7 @@ public class InterpreterSetting {
     Properties intpProperties = getJavaProperties();
     for (InterpreterInfo info : interpreterInfos) {
       Interpreter interpreter = new RemoteInterpreter(intpProperties, sessionId,
-          info.getClassName(), user, conf);
+          info.getClassName(), user, zConf);
       if (info.isDefaultInterpreter()) {
         interpreters.add(0, interpreter);
       } else {
@@ -937,7 +937,7 @@ public class InterpreterSetting {
 
   private ManagedInterpreterGroup createInterpreterGroup(String groupId) {
     AngularObjectRegistry angularObjectRegistry;
-    ManagedInterpreterGroup interpreterGroup = new ManagedInterpreterGroup(groupId, this, conf);
+    ManagedInterpreterGroup interpreterGroup = new ManagedInterpreterGroup(groupId, this, zConf);
     angularObjectRegistry =
         new RemoteAngularObjectRegistry(groupId, angularObjectRegistryListener, interpreterGroup);
     interpreterGroup.setAngularObjectRegistry(angularObjectRegistry);
@@ -975,7 +975,7 @@ public class InterpreterSetting {
       public void run() {
         try {
           // dependencies to prevent library conflict
-          File localRepoDir = new File(conf.getInterpreterLocalRepoPath() + '/' + id);
+          File localRepoDir = new File(zConf.getInterpreterLocalRepoPath() + '/' + id);
           if (localRepoDir.exists()) {
             try {
               FileUtils.forceDelete(localRepoDir);
@@ -990,7 +990,7 @@ public class InterpreterSetting {
             LOGGER.info("Start to download dependencies for interpreter: {}", name);
             for (Dependency d : deps) {
               File destDir = new File(
-                  conf.getAbsoluteDir(ZeppelinConfiguration.ConfVars.ZEPPELIN_DEP_LOCALREPO));
+                  zConf.getAbsoluteDir(ZeppelinConfiguration.ConfVars.ZEPPELIN_DEP_LOCALREPO));
 
               if (d.getExclusions() != null) {
                 dependencyResolver.load(d.getGroupArtifactVersion(), d.getExclusions(),

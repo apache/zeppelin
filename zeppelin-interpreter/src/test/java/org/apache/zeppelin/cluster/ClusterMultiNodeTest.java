@@ -39,7 +39,7 @@ public class ClusterMultiNodeTest {
 
   private static List<ClusterManagerServer> clusterServers = new ArrayList<>();
   private static ClusterManagerClient clusterClient = null;
-  private static ZeppelinConfiguration zconf;
+  private static ZeppelinConfiguration zConf;
 
   static final String metaKey = "ClusterMultiNodeTestKey";
 
@@ -57,8 +57,8 @@ public class ClusterMultiNodeTest {
         clusterAddrList += ",";
       }
     }
-    zconf = ZeppelinConfiguration.load();
-    zconf.setClusterAddress(clusterAddrList);
+    zConf = ZeppelinConfiguration.load();
+    zConf.setClusterAddress(clusterAddrList);
 
     // mock cluster manager server
     String cluster[] = clusterAddrList.split(",");
@@ -85,7 +85,7 @@ public class ClusterMultiNodeTest {
     }
 
     // mock cluster manager client
-    clusterClient = ClusterManagerClient.getInstance(zconf);
+    clusterClient = ClusterManagerClient.getInstance(zConf);
     clusterClient.start(metaKey);
 
     // Waiting for cluster startup

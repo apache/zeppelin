@@ -66,14 +66,14 @@ class GitNotebookRepoTest {
 
   private File zeppelinDir;
   private File notebooksDir;
-  private ZeppelinConfiguration conf;
+  private ZeppelinConfiguration zConf;
   private NoteParser noteParser;
   private GitNotebookRepo notebookRepo;
 
   @BeforeEach
   public void setUp() throws Exception {
-    conf = ZeppelinConfiguration.load();
-    noteParser = new GsonNoteParser(conf);
+    zConf = ZeppelinConfiguration.load();
+    noteParser = new GsonNoteParser(zConf);
     zeppelinDir = Files.createTempDirectory(this.getClass().getName()).toFile();
     File confDir = new File(zeppelinDir, "conf");
     confDir.mkdirs();
@@ -85,9 +85,9 @@ class GitNotebookRepoTest {
             new File(GitNotebookRepoTest.class.getResource("/notebook").getFile()),
         notebooksDir);
 
-    conf.setProperty(ConfVars.ZEPPELIN_HOME.getVarName(), zeppelinDir.getAbsolutePath());
-    conf.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_DIR.getVarName(), notebooksDir.getAbsolutePath());
-    conf.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_STORAGE.getVarName(),
+    zConf.setProperty(ConfVars.ZEPPELIN_HOME.getVarName(), zeppelinDir.getAbsolutePath());
+    zConf.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_DIR.getVarName(), notebooksDir.getAbsolutePath());
+    zConf.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_STORAGE.getVarName(),
         "org.apache.zeppelin.notebook.repo.GitNotebookRepo");
   }
 
@@ -104,7 +104,7 @@ class GitNotebookRepoTest {
 
     //when
     notebookRepo = new GitNotebookRepo();
-    notebookRepo.init(conf, noteParser);
+    notebookRepo.init(zConf, noteParser);
 
     //then
     Git git = notebookRepo.getGit();
@@ -122,7 +122,7 @@ class GitNotebookRepoTest {
   void showNotebookHistoryEmptyTest() throws GitAPIException, IOException {
     //given
     notebookRepo = new GitNotebookRepo();
-    notebookRepo.init(conf, noteParser);
+    notebookRepo.init(zConf, noteParser);
     assertFalse(notebookRepo.list(null).isEmpty());
 
     //when
@@ -137,7 +137,7 @@ class GitNotebookRepoTest {
   void showNotebookHistoryMultipleNotesTest() throws IOException {
     //initial checks
     notebookRepo = new GitNotebookRepo();
-    notebookRepo.init(conf, noteParser);
+    notebookRepo.init(zConf, noteParser);
     assertFalse(notebookRepo.list(null).isEmpty());
     assertTrue(containsNote(notebookRepo.list(null), TEST_NOTE_ID));
     assertTrue(containsNote(notebookRepo.list(null), TEST_NOTE_ID2));
@@ -183,7 +183,7 @@ class GitNotebookRepoTest {
   void addCheckpointTest() throws IOException, GitAPIException {
     // initial checks
     notebookRepo = new GitNotebookRepo();
-    notebookRepo.init(conf, noteParser);
+    notebookRepo.init(zConf, noteParser);
     assertFalse(notebookRepo.list(null).isEmpty());
     assertTrue(containsNote(notebookRepo.list(null), TEST_NOTE_ID));
     assertTrue(notebookRepo.revisionHistory(TEST_NOTE_ID, TEST_NOTE_PATH, null).isEmpty());
@@ -251,7 +251,7 @@ class GitNotebookRepoTest {
   void getRevisionTest() throws IOException {
     // initial checks
     notebookRepo = new GitNotebookRepo();
-    notebookRepo.init(conf, noteParser);
+    notebookRepo.init(zConf, noteParser);
     assertFalse(notebookRepo.list(null).isEmpty());
     assertTrue(containsNote(notebookRepo.list(null), TEST_NOTE_ID));
     assertTrue(notebookRepo.revisionHistory(TEST_NOTE_ID, TEST_NOTE_PATH, null).isEmpty());
@@ -310,7 +310,7 @@ class GitNotebookRepoTest {
   void getRevisionFailTest() throws IOException {
     // initial checks
     notebookRepo = new GitNotebookRepo();
-    notebookRepo.init(conf, noteParser);
+    notebookRepo.init(zConf, noteParser);
     assertFalse(notebookRepo.list(null).isEmpty());
     assertTrue(containsNote(notebookRepo.list(null), TEST_NOTE_ID));
     assertTrue(notebookRepo.revisionHistory(TEST_NOTE_ID, TEST_NOTE_PATH, null).isEmpty());
@@ -353,7 +353,7 @@ class GitNotebookRepoTest {
   void setRevisionTest() throws IOException {
     //create repo and check that note doesn't contain revisions
     notebookRepo = new GitNotebookRepo();
-    notebookRepo.init(conf, noteParser);
+    notebookRepo.init(zConf, noteParser);
     assertFalse(notebookRepo.list(null).isEmpty());
     assertTrue(containsNote(notebookRepo.list(null), TEST_NOTE_ID));
     assertTrue(notebookRepo.revisionHistory(TEST_NOTE_ID, TEST_NOTE_PATH, null).isEmpty());
@@ -416,7 +416,7 @@ class GitNotebookRepoTest {
   void moveNoteTest() throws IOException, GitAPIException {
     //given
     notebookRepo = new GitNotebookRepo();
-    notebookRepo.init(conf, noteParser);
+    notebookRepo.init(zConf, noteParser);
     notebookRepo.checkpoint(TEST_NOTE_ID, TEST_NOTE_PATH, "first commit, note1", null);
 
     //when
@@ -434,7 +434,7 @@ class GitNotebookRepoTest {
   void moveFolderTest() throws IOException, GitAPIException {
     //given
     notebookRepo = new GitNotebookRepo();
-    notebookRepo.init(conf, noteParser);
+    notebookRepo.init(zConf, noteParser);
     notebookRepo.checkpoint(TEST_NOTE_ID, TEST_NOTE_PATH, "first commit, note1", null);
     notebookRepo.checkpoint(TEST_NOTE_ID2, TEST_NOTE_PATH2, "second commit, note2", null);
 
@@ -452,7 +452,7 @@ class GitNotebookRepoTest {
   void removeNoteTest() throws IOException, GitAPIException {
     //given
     notebookRepo = new GitNotebookRepo();
-    notebookRepo.init(conf, noteParser);
+    notebookRepo.init(zConf, noteParser);
     notebookRepo.checkpoint(TEST_NOTE_ID, TEST_NOTE_PATH, "first commit, note1", null);
 
     //when
@@ -466,7 +466,7 @@ class GitNotebookRepoTest {
   void removeFolderTest() throws IOException, GitAPIException {
     //given
     notebookRepo = new GitNotebookRepo();
-    notebookRepo.init(conf, noteParser);
+    notebookRepo.init(zConf, noteParser);
     notebookRepo.checkpoint(TEST_NOTE_ID, TEST_NOTE_PATH, "first commit, note1", null);
 
     //when

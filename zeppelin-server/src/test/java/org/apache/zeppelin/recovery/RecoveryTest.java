@@ -88,7 +88,7 @@ class RecoveryTest extends AbstractTestRestApi {
 
   @BeforeEach
   void setUp() {
-    conf = zepServer.getZeppelinConfiguration();
+    zConf = zepServer.getZeppelinConfiguration();
     notebook = zepServer.getService(Notebook.class);
     anonymous = new AuthenticationInfo("anonymous");
   }
@@ -254,7 +254,7 @@ class RecoveryTest extends AbstractTestRestApi {
 
       // shutdown zeppelin and restart it
       zepServer.shutDown();
-      new StopInterpreter(conf);
+      new StopInterpreter(zConf);
       zepServer.start();
       Thread.sleep(5 * 1000);
       // run the paragraph again, but change the text to print variable `user`.

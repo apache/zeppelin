@@ -36,12 +36,12 @@ import static org.mockito.Mockito.when;
 
 class DockerInterpreterProcessTest {
 
-  protected static ZeppelinConfiguration zconf = spy(ZeppelinConfiguration.load());
+  protected static ZeppelinConfiguration zConf = spy(ZeppelinConfiguration.load());
 
   @Test
   void testCreateIntpProcess() throws IOException {
     DockerInterpreterLauncher launcher
-        = new DockerInterpreterLauncher(zconf, null);
+        = new DockerInterpreterLauncher(zConf, null);
     Properties properties = new Properties();
     properties.setProperty(
         ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT.getVarName(), "5000");
@@ -62,11 +62,11 @@ class DockerInterpreterProcessTest {
 
   @Test
   void testEnv() throws IOException {
-    when(zconf.getString(ConfVars.ZEPPELIN_DOCKER_CONTAINER_SPARK_HOME))
+    when(zConf.getString(ConfVars.ZEPPELIN_DOCKER_CONTAINER_SPARK_HOME))
         .thenReturn("my-spark-home");
-    when(zconf.getBoolean(ConfVars.ZEPPELIN_DOCKER_UPLOAD_LOCAL_LIB_TO_CONTAINTER))
+    when(zConf.getBoolean(ConfVars.ZEPPELIN_DOCKER_UPLOAD_LOCAL_LIB_TO_CONTAINTER))
         .thenReturn(false);
-    when(zconf.getString(ConfVars.ZEPPELIN_DOCKER_HOST))
+    when(zConf.getString(ConfVars.ZEPPELIN_DOCKER_HOST))
         .thenReturn("http://my-docker-host:2375");
 
     Properties properties = new Properties();
@@ -76,7 +76,7 @@ class DockerInterpreterProcessTest {
     envs.put("MY_ENV1", "V1");
 
     DockerInterpreterProcess intp = spy(new DockerInterpreterProcess(
-        zconf,
+        zConf,
         "interpreter-container:1.0",
         "shared_process",
         "sh",
@@ -102,7 +102,7 @@ class DockerInterpreterProcessTest {
     envs.put("MY_ENV1", "V1");
 
     DockerInterpreterProcess intp = new DockerInterpreterProcess(
-        zconf,
+        zConf,
         "interpreter-container:1.0",
         "shared_process",
         "sh",

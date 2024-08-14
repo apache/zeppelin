@@ -99,19 +99,19 @@ class NotebookTest extends AbstractInterpreterTest implements ParagraphJobListen
   @BeforeEach
   public void setUp() throws Exception {
     super.setUp();
-    conf.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_PUBLIC.getVarName(), "true");
-    conf.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_CRON_ENABLE.getVarName(), "true");
+    zConf.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_PUBLIC.getVarName(), "true");
+    zConf.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_CRON_ENABLE.getVarName(), "true");
 
     notebookRepo = new VFSNotebookRepo();
-    notebookRepo.init(conf, noteParser);
-    noteManager = new NoteManager(notebookRepo, conf);
+    notebookRepo.init(zConf, noteParser);
+    noteManager = new NoteManager(notebookRepo, zConf);
 
-    authorizationService = new AuthorizationService(noteManager, conf, storage);
+    authorizationService = new AuthorizationService(noteManager, zConf, storage);
 
-    credentials = new Credentials(conf, storage);
-    notebook = new Notebook(conf, authorizationService, notebookRepo, noteManager, interpreterFactory, interpreterSettingManager, credentials, null);
+    credentials = new Credentials(zConf, storage);
+    notebook = new Notebook(zConf, authorizationService, notebookRepo, noteManager, interpreterFactory, interpreterSettingManager, credentials, null);
     notebook.setParagraphJobListener(this);
-    schedulerService = new QuartzSchedulerService(conf, notebook);
+    schedulerService = new QuartzSchedulerService(zConf, notebook);
     notebook.initNotebook();
     notebook.waitForFinishInit(1, TimeUnit.MINUTES);
 
@@ -133,12 +133,12 @@ class NotebookTest extends AbstractInterpreterTest implements ParagraphJobListen
     Notebook notebook;
 
     notebookRepo = new DummyNotebookRepo();
-    notebook = new Notebook(conf, mock(AuthorizationService.class), notebookRepo, new NoteManager(notebookRepo, conf), interpreterFactory,
+    notebook = new Notebook(zConf, mock(AuthorizationService.class), notebookRepo, new NoteManager(notebookRepo, zConf), interpreterFactory,
         interpreterSettingManager, credentials, null);
     assertFalse( notebook.isRevisionSupported(), "Revision is not supported in DummyNotebookRepo");
 
     notebookRepo = new DummyNotebookRepoWithVersionControl();
-    notebook = new Notebook(conf, mock(AuthorizationService.class), notebookRepo, new NoteManager(notebookRepo, conf), interpreterFactory,
+    notebook = new Notebook(zConf, mock(AuthorizationService.class), notebookRepo, new NoteManager(notebookRepo, zConf), interpreterFactory,
         interpreterSettingManager, credentials, null);
     assertTrue(notebook.isRevisionSupported(), "Revision is supported in DummyNotebookRepoWithVersionControl");
   }
@@ -754,7 +754,7 @@ class NotebookTest extends AbstractInterpreterTest implements ParagraphJobListen
 
   @Test
   void testScheduleDisabled() throws InterruptedException, IOException {
-    conf.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_CRON_ENABLE.getVarName(), "false");
+    zConf.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_CRON_ENABLE.getVarName(), "false");
     final int timeout = 10;
     final String everySecondCron = "* * * * * ?";
     final CountDownLatch jobsToExecuteCount = new CountDownLatch(5);
@@ -780,7 +780,7 @@ class NotebookTest extends AbstractInterpreterTest implements ParagraphJobListen
   @Test
   void testScheduleDisabledWithName() throws InterruptedException, IOException {
 
-    conf.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_CRON_FOLDERS.getVarName(), "/System");
+    zConf.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_CRON_FOLDERS.getVarName(), "/System");
     final int timeout = 30;
     final String everySecondCron = "* * * * * ?";
     // each run starts a new JVM and the job takes about ~5 seconds
@@ -1365,7 +1365,7 @@ class NotebookTest extends AbstractInterpreterTest implements ParagraphJobListen
   void testInterpreterSettingConfig() {
     LOGGER.info("testInterpreterSettingConfig >>> ");
     Note note = new Note("testInterpreterSettingConfig", "config_test",
-        interpreterFactory, interpreterSettingManager, this, credentials, new ArrayList<>(), conf,
+        interpreterFactory, interpreterSettingManager, this, credentials, new ArrayList<>(), zConf,
         noteParser);
 
     // create paragraphs
@@ -1777,7 +1777,7 @@ class NotebookTest extends AbstractInterpreterTest implements ParagraphJobListen
   @Test
   void testPublicPrivateNewNote() throws IOException {
     // case of public note
-    assertTrue(conf.isNotebookPublic());
+    assertTrue(zConf.isNotebookPublic());
     assertTrue(authorizationService.isPublic());
 
     List<NoteInfo> notes1 = notebook.getNotesInfo(noteId -> authorizationService.isReader(noteId, new HashSet<>(Arrays.asList("user1"))));
@@ -1804,11 +1804,11 @@ class NotebookTest extends AbstractInterpreterTest implements ParagraphJobListen
 
     // case of private note
 
-    ZeppelinConfiguration conf2 = ZeppelinConfiguration.load();
-    conf2.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_PUBLIC.getVarName(), "false");
-    assertFalse(conf2.isNotebookPublic());
-    authorizationService = new AuthorizationService(noteManager, conf2, storage);
-    notebook = new Notebook(conf2, authorizationService, notebookRepo, noteManager,
+    ZeppelinConfiguration zConf = ZeppelinConfiguration.load();
+    zConf.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_PUBLIC.getVarName(), "false");
+    assertFalse(zConf.isNotebookPublic());
+    authorizationService = new AuthorizationService(noteManager, zConf, storage);
+    notebook = new Notebook(zConf, authorizationService, notebookRepo, noteManager,
         interpreterFactory, interpreterSettingManager, credentials, null);
     assertFalse(authorizationService.isPublic());
 
@@ -1889,7 +1889,7 @@ class NotebookTest extends AbstractInterpreterTest implements ParagraphJobListen
       // read note json file to check the name field is updated
       File noteFile = notebook.processNote(noteId,
         note -> {
-          return new File(conf.getNotebookDir() + "/" + notebookRepo.buildNoteFileName(note));
+          return new File(zConf.getNotebookDir() + "/" + notebookRepo.buildNoteFileName(note));
         });
       String noteJson = IOUtils.toString(new FileInputStream(noteFile), StandardCharsets.UTF_8);
       assertTrue(noteJson.contains(newName), noteJson);

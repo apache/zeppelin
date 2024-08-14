@@ -29,7 +29,7 @@ public class CorsUtils {
   }
 
   public static final String HEADER_ORIGIN = "Origin";
-  public static boolean isValidOrigin(String sourceHost, ZeppelinConfiguration conf)
+  public static boolean isValidOrigin(String sourceHost, ZeppelinConfiguration zConf)
       throws UnknownHostException, URISyntaxException {
 
     String sourceUriHost = "";
@@ -42,9 +42,9 @@ public class CorsUtils {
     sourceUriHost = sourceUriHost.toLowerCase();
     String currentHost = InetAddress.getLocalHost().getHostName().toLowerCase();
 
-    return conf.getAllowedOrigins().contains("*")
+    return zConf.getAllowedOrigins().contains("*")
         || currentHost.equals(sourceUriHost)
         || "localhost".equals(sourceUriHost)
-        || conf.getAllowedOrigins().contains(sourceHost);
+        || zConf.getAllowedOrigins().contains(sourceHost);
   }
 }

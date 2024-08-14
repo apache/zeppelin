@@ -47,13 +47,13 @@ class OSSNotebookRepoTest {
   private String bucket;
   private static int OSS_VERSION_MAX = 30;
 
-  private ZeppelinConfiguration conf;
+  private ZeppelinConfiguration zConf;
   private NoteParser noteParser;
 
   @BeforeEach
   void setUp() throws IOException {
-    ZeppelinConfiguration conf = ZeppelinConfiguration.load();
-    noteParser = new GsonNoteParser(conf);
+    ZeppelinConfiguration zConf = ZeppelinConfiguration.load();
+    noteParser = new GsonNoteParser(zConf);
     bucket = "zeppelin-test-bucket";
     String endpoint = "yourEndpoint";
     String accessKeyId = "yourAccessKeyId";
@@ -62,18 +62,18 @@ class OSSNotebookRepoTest {
     ossOperator.createBucket(bucket);
     notebookRepo = new OSSNotebookRepo();
 
-    conf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_OSS_ENDPOINT.getVarName(),
+    zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_OSS_ENDPOINT.getVarName(),
             endpoint);
-    conf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_OSS_BUCKET.getVarName(),
+    zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_OSS_BUCKET.getVarName(),
             bucket);
-    conf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_OSS_ACCESSKEYID.getVarName(),
+    zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_OSS_ACCESSKEYID.getVarName(),
             accessKeyId);
-    conf.setProperty(
+    zConf.setProperty(
         ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_OSS_ACCESSKEYSECRET.getVarName(),
             accessKeySecret);
-    conf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_OSS_VERSION_MAX.getVarName(),
+    zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_OSS_VERSION_MAX.getVarName(),
             OSS_VERSION_MAX + "");
-    notebookRepo.init(conf, noteParser);
+    notebookRepo.init(zConf, noteParser);
     notebookRepo.setOssOperator(ossOperator);
   }
 
@@ -98,7 +98,7 @@ class OSSNotebookRepoTest {
 
     // create Note note1
     Note note1 = new Note();
-    note1.setZeppelinConfiguration(conf);
+    note1.setZeppelinConfiguration(zConf);
     note1.setNoteParser(noteParser);
     note1.setPath("/spark/note_1");
     notebookRepo.save(note1, anonymous);
@@ -132,7 +132,7 @@ class OSSNotebookRepoTest {
 
     // create another Note note2
     Note note2 = new Note();
-    note2.setZeppelinConfiguration(conf);
+    note2.setZeppelinConfiguration(zConf);
     note2.setNoteParser(noteParser);
     note2.setPath("/spark/note_2");
     notebookRepo.save(note2, anonymous);
@@ -178,7 +178,7 @@ class OSSNotebookRepoTest {
 
     // create Note note1
     Note note1 = new Note();
-    note1.setZeppelinConfiguration(conf);
+    note1.setZeppelinConfiguration(zConf);
     note1.setNoteParser(noteParser);
     note1.setPath("/version_control/note_1");
 

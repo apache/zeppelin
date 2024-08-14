@@ -47,9 +47,9 @@ public class IndexHtmlServlet extends HttpServlet {
   final String bodyAddon;
   final String headAddon;
 
-  public IndexHtmlServlet(ZeppelinConfiguration conf) {
-    this.bodyAddon = conf.getHtmlBodyAddon();
-    this.headAddon = conf.getHtmlHeadAddon();
+  public IndexHtmlServlet(ZeppelinConfiguration zConf) {
+    this.bodyAddon = zConf.getHtmlBodyAddon();
+    this.headAddon = zConf.getHtmlHeadAddon();
   }
 
   @Override

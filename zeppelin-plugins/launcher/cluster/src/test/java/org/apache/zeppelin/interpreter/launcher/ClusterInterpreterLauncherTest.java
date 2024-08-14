@@ -56,7 +56,7 @@ class ClusterInterpreterLauncherTest extends ClusterMockTest {
     mockIntpProcessMeta("intpGroupId", true);
 
     ClusterInterpreterLauncher launcher =
-        new ClusterInterpreterLauncher(ClusterMockTest.zconf, null);
+        new ClusterInterpreterLauncher(ClusterMockTest.zConf, null);
     Properties properties = new Properties();
     properties.setProperty(
         ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT.getVarName(), "5000");
@@ -81,7 +81,7 @@ class ClusterInterpreterLauncherTest extends ClusterMockTest {
     mockIntpProcessMeta("intpGroupId2", false);
 
     ClusterInterpreterLauncher launcher =
-        new ClusterInterpreterLauncher(ClusterMockTest.zconf, null);
+        new ClusterInterpreterLauncher(ClusterMockTest.zConf, null);
     Properties properties = new Properties();
     properties.setProperty(
         ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT.getVarName(), "5000");
@@ -98,7 +98,7 @@ class ClusterInterpreterLauncherTest extends ClusterMockTest {
     assertEquals(".//interpreter/groupName", interpreterProcess.getInterpreterDir());
     assertEquals(".//local-repo/groupId", interpreterProcess.getLocalRepoDir());
     assertEquals(5000, interpreterProcess.getConnectTimeout());
-    assertEquals(zconf.getInterpreterRemoteRunnerPath(), interpreterProcess.getInterpreterRunner());
+    assertEquals(zConf.getInterpreterRemoteRunnerPath(), interpreterProcess.getInterpreterRunner());
     assertTrue(interpreterProcess.getEnv().size() >= 1);
     assertEquals(true, interpreterProcess.isUserImpersonated());
     interpreterProcess.close();
@@ -106,9 +106,9 @@ class ClusterInterpreterLauncherTest extends ClusterMockTest {
 
   @Test
   void testCreateIntpProcessDockerMode() throws IOException {
-    zconf.setRunMode(ZeppelinConfiguration.RUN_MODE.DOCKER);
+    zConf.setRunMode(ZeppelinConfiguration.RUN_MODE.DOCKER);
 
-    ClusterInterpreterLauncher launcher = new ClusterInterpreterLauncher(zconf, null);
+    ClusterInterpreterLauncher launcher = new ClusterInterpreterLauncher(zConf, null);
     Properties properties = new Properties();
     properties.setProperty(
         ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT.getVarName(), "1000");
@@ -124,9 +124,9 @@ class ClusterInterpreterLauncherTest extends ClusterMockTest {
 
   @Test
   void testCreateIntpProcessLocalMode() throws IOException {
-    zconf.setRunMode(ZeppelinConfiguration.RUN_MODE.LOCAL);
+    zConf.setRunMode(ZeppelinConfiguration.RUN_MODE.LOCAL);
 
-    ClusterInterpreterLauncher launcher = new ClusterInterpreterLauncher(zconf, null);
+    ClusterInterpreterLauncher launcher = new ClusterInterpreterLauncher(zConf, null);
     Properties properties = new Properties();
     properties.setProperty(
         ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT.getVarName(), "1000");

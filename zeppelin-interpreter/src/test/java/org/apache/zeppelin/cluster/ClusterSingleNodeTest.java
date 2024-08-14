@@ -37,7 +37,7 @@ import java.util.Map;
 
 class ClusterSingleNodeTest {
   private static Logger LOGGER = LoggerFactory.getLogger(ClusterSingleNodeTest.class);
-  private static ZeppelinConfiguration zconf;
+  private static ZeppelinConfiguration zConf;
 
   private static ClusterManagerServer clusterServer = null;
   private static ClusterManagerClient clusterClient = null;
@@ -50,18 +50,18 @@ class ClusterSingleNodeTest {
   static void startCluster() throws IOException, InterruptedException {
     LOGGER.info("startCluster >>>");
 
-    zconf = ZeppelinConfiguration.load("zeppelin-site-test.xml");
+    zConf = ZeppelinConfiguration.load("zeppelin-site-test.xml");
 
     // Set the cluster IP and port
     zServerHost = RemoteInterpreterUtils.findAvailableHostAddress();
     zServerPort = RemoteInterpreterUtils.findRandomAvailablePortOnAllLocalInterfaces();
-    zconf.setClusterAddress(zServerHost + ":" + zServerPort);
+    zConf.setClusterAddress(zServerHost + ":" + zServerPort);
 
-    clusterServer = ClusterManagerServer.getInstance(zconf);
+    clusterServer = ClusterManagerServer.getInstance(zConf);
     clusterServer.start();
 
     // mock cluster manager client
-    clusterClient = ClusterManagerClient.getInstance(zconf);
+    clusterClient = ClusterManagerClient.getInstance(zConf);
     clusterClient.start(metaKey);
 
     // Waiting for cluster startup

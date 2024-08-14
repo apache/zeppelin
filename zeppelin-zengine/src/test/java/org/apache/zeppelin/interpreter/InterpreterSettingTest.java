@@ -78,7 +78,7 @@ class InterpreterSettingTest extends AbstractInterpreterTest{
         .setInterpreterInfos(interpreterInfos)
         .setOption(interpreterOption)
         .setIntepreterSettingManager(interpreterSettingManager)
-        .setConf(conf)
+        .setConf(zConf)
         .create();
 
     // create default interpreter for user1 and note1
@@ -113,7 +113,7 @@ class InterpreterSettingTest extends AbstractInterpreterTest{
         .setInterpreterInfos(interpreterInfos)
         .setOption(interpreterOption)
         .setIntepreterSettingManager(interpreterSettingManager)
-        .setConf(conf)
+        .setConf(zConf)
         .create();
 
     // create default interpreter for user1 and note1
@@ -154,7 +154,7 @@ class InterpreterSettingTest extends AbstractInterpreterTest{
         .setInterpreterInfos(interpreterInfos)
         .setOption(interpreterOption)
         .setIntepreterSettingManager(interpreterSettingManager)
-        .setConf(conf)
+        .setConf(zConf)
         .create();
 
     // create interpreter for user1 and note1
@@ -195,7 +195,7 @@ class InterpreterSettingTest extends AbstractInterpreterTest{
         .setInterpreterInfos(interpreterInfos)
         .setOption(interpreterOption)
         .setIntepreterSettingManager(interpreterSettingManager)
-        .setConf(conf)
+        .setConf(zConf)
         .create();
 
     // create interpreter for user1 and note1
@@ -236,7 +236,7 @@ class InterpreterSettingTest extends AbstractInterpreterTest{
         .setInterpreterInfos(interpreterInfos)
         .setOption(interpreterOption)
         .setIntepreterSettingManager(interpreterSettingManager)
-        .setConf(conf)
+        .setConf(zConf)
         .create();
 
     // create interpreter for user1 and note1
@@ -278,7 +278,7 @@ class InterpreterSettingTest extends AbstractInterpreterTest{
         .setInterpreterInfos(interpreterInfos)
         .setOption(interpreterOption)
         .setIntepreterSettingManager(interpreterSettingManager)
-        .setConf(conf)
+        .setConf(zConf)
         .create();
 
     // create interpreter for user1 and note1
@@ -321,7 +321,7 @@ class InterpreterSettingTest extends AbstractInterpreterTest{
         .setInterpreterInfos(interpreterInfos)
         .setOption(interpreterOption)
         .setIntepreterSettingManager(interpreterSettingManager)
-        .setConf(conf)
+        .setConf(zConf)
         .create();
 
     // create interpreter for user1 and note1
@@ -378,7 +378,7 @@ class InterpreterSettingTest extends AbstractInterpreterTest{
         .setInterpreterInfos(interpreterInfos)
         .setOption(interpreterOption)
         .setIntepreterSettingManager(interpreterSettingManager)
-        .setConf(conf)
+        .setConf(zConf)
         .create();
 
     // create interpreter for user1 and note1
@@ -441,7 +441,7 @@ class InterpreterSettingTest extends AbstractInterpreterTest{
         .setInterpreterInfos(interpreterInfos)
         .setOption(interpreterOption)
         .setIntepreterSettingManager(interpreterSettingManager)
-        .setConf(conf)
+        .setConf(zConf)
         .create();
 
     // create interpreter for user1 and note1
@@ -534,7 +534,7 @@ class InterpreterSettingTest extends AbstractInterpreterTest{
           .setName("id")
           .setGroup("group")
           .setOption(interpreterOption)
-          .setConf(conf)
+          .setConf(zConf)
           .create();
       assertTrue(interpreterSetting.isUserAuthorized(userAndRoles));
 
@@ -549,7 +549,7 @@ class InterpreterSettingTest extends AbstractInterpreterTest{
           .setName("id")
           .setGroup("group")
           .setOption(interpreterOption)
-          .setConf(conf)
+          .setConf(zConf)
           .create();
       assertFalse(interpreterSetting.isUserAuthorized(userAndRoles));
 
@@ -577,8 +577,8 @@ class InterpreterSettingTest extends AbstractInterpreterTest{
             .setGroup("group")
             .setOption(interpreterOption)
             .setIntepreterSettingManager(interpreterSettingManager)
-            .setDependencyResolver(new DependencyResolver("/tmp", conf))
-            .setConf(conf)
+            .setDependencyResolver(new DependencyResolver("/tmp", zConf))
+            .setConf(zConf)
             .create();
 
     // set invalid dependency

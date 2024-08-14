@@ -59,16 +59,16 @@ public class VFSNotebookRepo extends AbstractNotebookRepo {
   }
 
   @Override
-  public void init(ZeppelinConfiguration conf, NoteParser noteParser) throws IOException {
-    super.init(conf, noteParser);
-    setNotebookDirectory(conf.getNotebookDir());
+  public void init(ZeppelinConfiguration zConf, NoteParser noteParser) throws IOException {
+    super.init(zConf, noteParser);
+    setNotebookDirectory(zConf.getNotebookDir());
   }
 
   protected void setNotebookDirectory(String notebookDirPath) throws IOException {
     URI filesystemRoot = null;
     try {
       LOGGER.info("Using notebookDir: {}", notebookDirPath);
-      if (conf.isWindowsPath(notebookDirPath)) {
+      if (zConf.isWindowsPath(notebookDirPath)) {
         filesystemRoot = new File(notebookDirPath).toURI();
       } else {
         filesystemRoot = new URI(notebookDirPath);
@@ -78,7 +78,7 @@ public class VFSNotebookRepo extends AbstractNotebookRepo {
     }
 
     if (filesystemRoot.getScheme() == null) { // it is local path
-      File f = new File(conf.getAbsoluteDir(filesystemRoot.getPath()));
+      File f = new File(zConf.getAbsoluteDir(filesystemRoot.getPath()));
       filesystemRoot = f.toURI();
     }
     this.fsManager = VFS.getManager();
@@ -136,7 +136,7 @@ public class VFSNotebookRepo extends AbstractNotebookRepo {
     FileObject noteFile = rootNotebookFileObject.resolveFile(buildNoteFileName(noteId, notePath),
         NameScope.DESCENDENT);
     String json = IOUtils.toString(noteFile.getContent().getInputStream(),
-        conf.getString(ConfVars.ZEPPELIN_ENCODING));
+        zConf.getString(ConfVars.ZEPPELIN_ENCODING));
 
     try {
       Note note = noteParser.fromJson(noteId, json);
@@ -163,7 +163,7 @@ public class VFSNotebookRepo extends AbstractNotebookRepo {
     OutputStream out = null;
     try {
       out = noteJson.getContent().getOutputStream(false);
-      IOUtils.write(note.toJson().getBytes(conf.getString(ConfVars.ZEPPELIN_ENCODING)), out);
+      IOUtils.write(note.toJson().getBytes(zConf.getString(ConfVars.ZEPPELIN_ENCODING)), out);
     } finally {
       if (out != null) {
         out.close();

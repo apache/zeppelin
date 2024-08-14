@@ -28,10 +28,10 @@ public class VFSNotebookRepoMock extends VFSNotebookRepo {
   }
 
   @Override
-  public void init(ZeppelinConfiguration conf, NoteParser noteParser) throws IOException {
-    this.conf = conf;
+  public void init(ZeppelinConfiguration zConf, NoteParser noteParser) throws IOException {
+    this.zConf = zConf;
     this.noteParser = noteParser;
-    setNotebookDirectory(conf.getNotebookDir() + "_secondary");
+    setNotebookDirectory(zConf.getNotebookDir() + "_secondary");
   }
 
 }

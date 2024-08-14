@@ -78,7 +78,7 @@ public class Notebook {
   private NoteManager noteManager;
   private InterpreterFactory replFactory;
   private InterpreterSettingManager interpreterSettingManager;
-  private ZeppelinConfiguration conf;
+  private ZeppelinConfiguration zConf;
   private ParagraphJobListener paragraphJobListener;
   private NotebookRepo notebookRepo;
   private List<NoteEventListener> noteEventListeners = new CopyOnWriteArrayList<>();
@@ -93,7 +93,7 @@ public class Notebook {
    * @throws SchedulerException
    */
   public Notebook(
-      ZeppelinConfiguration conf,
+      ZeppelinConfiguration zConf,
       AuthorizationService authorizationService,
       NotebookRepo notebookRepo,
       NoteManager noteManager,
@@ -101,7 +101,7 @@ public class Notebook {
       InterpreterSettingManager interpreterSettingManager,
       Credentials credentials)
       {
-    this.conf = conf;
+    this.zConf = zConf;
     this.authorizationService = authorizationService;
     this.noteManager = noteManager;
     this.notebookRepo = notebookRepo;
@@ -115,7 +115,7 @@ public class Notebook {
   }
 
   public void recoveryIfNecessary() {
-    if (conf.isRecoveryEnabled()) {
+    if (zConf.isRecoveryEnabled()) {
       recoverRunningParagraphs();
     }
   }
@@ -212,7 +212,7 @@ public class Notebook {
 
   @Inject
   public Notebook(
-      ZeppelinConfiguration conf,
+      ZeppelinConfiguration zConf,
       AuthorizationService authorizationService,
       NotebookRepo notebookRepo,
       NoteManager noteManager,
@@ -222,7 +222,7 @@ public class Notebook {
       NoteEventListener noteEventListener)
       throws IOException {
     this(
-        conf,
+        zConf,
         authorizationService,
         notebookRepo,
         noteManager,
@@ -309,7 +309,7 @@ public class Notebook {
                          boolean save) throws IOException {
     Note note =
             new Note(notePath, defaultInterpreterGroup, replFactory, interpreterSettingManager,
-                    paragraphJobListener, credentials, noteEventListeners, conf,
+                    paragraphJobListener, credentials, noteEventListeners, zConf,
                     notebookRepo.getNoteParser());
     noteManager.addNote(note, subject);
     // init noteMeta
@@ -647,7 +647,7 @@ public class Notebook {
     note.setCronSupported(getConf());
 
     if (note.getDefaultInterpreterGroup() == null) {
-      note.setDefaultInterpreterGroup(conf.getString(ConfVars.ZEPPELIN_INTERPRETER_GROUP_DEFAULT));
+      note.setDefaultInterpreterGroup(zConf.getString(ConfVars.ZEPPELIN_INTERPRETER_GROUP_DEFAULT));
     }
 
     Map<String, SnapshotAngularObject> angularObjectSnapshot = new HashMap<>();
@@ -752,9 +752,9 @@ public class Notebook {
   }
 
   public List<NoteInfo> getNotesInfo(Predicate<String> func) {
-    String homescreenNoteId = conf.getString(ConfVars.ZEPPELIN_NOTEBOOK_HOMESCREEN);
+    String homescreenNoteId = zConf.getString(ConfVars.ZEPPELIN_NOTEBOOK_HOMESCREEN);
     boolean hideHomeScreenNotebookFromList =
-        conf.getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_HOMESCREEN_HIDE);
+        zConf.getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_HOMESCREEN_HIDE);
 
     synchronized (noteManager.getNotesInfo()) {
       List<NoteInfo> notesInfo = noteManager.getNotesInfo().entrySet().stream().filter(entry ->
@@ -816,7 +816,7 @@ public class Notebook {
   }
 
   public ZeppelinConfiguration getConf() {
-    return conf;
+    return zConf;
   }
 
   public void close() {
@@ -849,7 +849,7 @@ public class Notebook {
   }
 
   public Boolean isRevisionSupported() {
-    if(!conf.getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_VERSIONED_MODE_ENABLE)) {
+    if(!zConf.getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_VERSIONED_MODE_ENABLE)) {
       return false;
     }
     if (notebookRepo instanceof NotebookRepoSync) {

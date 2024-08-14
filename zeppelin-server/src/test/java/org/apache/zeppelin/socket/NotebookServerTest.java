@@ -113,7 +113,7 @@ class NotebookServerTest extends AbstractTestRestApi {
 
   @BeforeEach
   void setUp() {
-    conf = zepServer.getZeppelinConfiguration();
+    zConf = zepServer.getZeppelinConfiguration();
     anonymous = AuthenticationInfo.ANONYMOUS;
   }
 
