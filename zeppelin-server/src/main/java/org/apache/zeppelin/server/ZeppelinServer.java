@@ -136,27 +136,27 @@ public class ZeppelinServer implements AutoCloseable {
   public static final String DEFAULT_SERVICE_LOCATOR_NAME = "shared-locator";
 
   private final AtomicBoolean duringShutdown = new AtomicBoolean(false);
-  private final ZeppelinConfiguration conf;
+  private final ZeppelinConfiguration zConf;
   private final Optional<PrometheusMeterRegistry> promMetricRegistry;
   private final Server jettyWebServer;
   private final ServiceLocator sharedServiceLocator;
   private final ConfigStorage storage;
 
-  public ZeppelinServer(ZeppelinConfiguration conf) throws IOException {
-    this(conf, DEFAULT_SERVICE_LOCATOR_NAME);
+  public ZeppelinServer(ZeppelinConfiguration zConf) throws IOException {
+    this(zConf, DEFAULT_SERVICE_LOCATOR_NAME);
   }
 
-  public ZeppelinServer(ZeppelinConfiguration conf, String serviceLocatorName) throws IOException {
+  public ZeppelinServer(ZeppelinConfiguration zConf, String serviceLocatorName) throws IOException {
     LOG.info("Instantiated ZeppelinServer");
-    this.conf = conf;
-    if (conf.isPrometheusMetricEnabled()) {
+    this.zConf = zConf;
+    if (zConf.isPrometheusMetricEnabled()) {
       promMetricRegistry = Optional.of(new PrometheusMeterRegistry(PrometheusConfig.DEFAULT));
     } else {
       promMetricRegistry = Optional.empty();
     }
     jettyWebServer = setupJettyServer();
     sharedServiceLocator = ServiceLocatorFactory.getInstance().create(serviceLocatorName);
-    storage = ConfigStorage.createConfigStorage(conf);
+    storage = ConfigStorage.createConfigStorage(zConf);
   }
 
   public void startZeppelin() {
@@ -184,7 +184,7 @@ public class ZeppelinServer implements AutoCloseable {
             bindAsContract(InterpreterFactory.class).in(Singleton.class);
             bindAsContract(NotebookRepoSync.class).to(NotebookRepo.class).in(Singleton.class);
             bindAsContract(Helium.class).in(Singleton.class);
-            bind(conf).to(ZeppelinConfiguration.class);
+            bind(zConf).to(ZeppelinConfiguration.class);
             bindAsContract(InterpreterSettingManager.class).in(Singleton.class);
             bindAsContract(InterpreterService.class).in(Singleton.class);
             bindAsContract(Credentials.class).in(Singleton.class);
@@ -193,7 +193,7 @@ public class ZeppelinServer implements AutoCloseable {
             bindAsContract(ConnectionManager.class).in(Singleton.class);
             bindAsContract(NoteManager.class).in(Singleton.class);
             // TODO(jl): Will make it more beautiful
-            if (!StringUtils.isBlank(conf.getShiroPath())) {
+            if (!StringUtils.isBlank(zConf.getShiroPath())) {
               bind(ShiroAuthenticationService.class).to(AuthenticationService.class).in(Singleton.class);
             } else {
               // TODO(jl): Will be added more type
@@ -212,12 +212,12 @@ public class ZeppelinServer implements AutoCloseable {
                 .to(NoteEventListener.class)
                 .to(WebSocketServlet.class)
                 .in(Singleton.class);
-            if (conf.isZeppelinNotebookCronEnable()) {
+            if (zConf.isZeppelinNotebookCronEnable()) {
               bind(QuartzSchedulerService.class).to(SchedulerService.class).in(Singleton.class);
             } else {
               bind(NoSchedulerService.class).to(SchedulerService.class).in(Singleton.class);
             }
-            if (conf.getBoolean(ConfVars.ZEPPELIN_SEARCH_ENABLE)) {
+            if (zConf.getBoolean(ConfVars.ZEPPELIN_SEARCH_ENABLE)) {
               bind(LuceneSearch.class).to(SearchService.class).in(Singleton.class);
             } else {
               bind(NoSearchService.class).to(SearchService.class).in(Singleton.class);
@@ -226,8 +226,8 @@ public class ZeppelinServer implements AutoCloseable {
         });
 
     // Multiple Web UI
-    final WebAppContext defaultWebApp = setupWebAppContext(contexts, conf, conf.getString(ConfVars.ZEPPELIN_WAR), conf.getServerContextPath());
-    final WebAppContext nextWebApp = setupWebAppContext(contexts, conf, conf.getString(ConfVars.ZEPPELIN_ANGULAR_WAR), WEB_APP_CONTEXT_NEXT);
+    final WebAppContext defaultWebApp = setupWebAppContext(contexts, zConf, zConf.getString(ConfVars.ZEPPELIN_WAR), zConf.getServerContextPath());
+    final WebAppContext nextWebApp = setupWebAppContext(contexts, zConf, zConf.getString(ConfVars.ZEPPELIN_ANGULAR_WAR), WEB_APP_CONTEXT_NEXT);
 
     initWebApp(defaultWebApp);
     initWebApp(nextWebApp);
@@ -237,7 +237,7 @@ public class ZeppelinServer implements AutoCloseable {
     NoteParser noteParser =
         ServiceLocatorUtilities.getService(sharedServiceLocator, NoteParser.class.getName());
     try {
-      repo.init(conf, noteParser);
+      repo.init(zConf, noteParser);
     } catch (IOException e) {
       LOG.error("Failed to init NotebookRepo", e);
     }
@@ -266,8 +266,8 @@ public class ZeppelinServer implements AutoCloseable {
     LOG.info("Starting zeppelin server");
     try {
       jettyWebServer.start(); // Instantiates ZeppelinServer
-      if (conf.getJettyName() != null) {
-        org.eclipse.jetty.http.HttpGenerator.setJettyVersion(conf.getJettyName());
+      if (zConf.getJettyName() != null) {
+        org.eclipse.jetty.http.HttpGenerator.setJettyVersion(zConf.getJettyName());
       }
     } catch (Exception e) {
       LOG.error("Error while running jettyServer", e);
@@ -305,17 +305,17 @@ public class ZeppelinServer implements AutoCloseable {
   }
 
   public static void main(String[] args) throws Exception {
-    ZeppelinConfiguration conf = ZeppelinConfiguration.load();
-    conf.printShortInfo();
-    try (ZeppelinServer server = new ZeppelinServer(conf)) {
+    ZeppelinConfiguration zConf = ZeppelinConfiguration.load();
+    zConf.printShortInfo();
+    try (ZeppelinServer server = new ZeppelinServer(zConf)) {
       server.startZeppelin();
     }
   }
 
   private void initJMX() {
     // JMX Enable
-    if (conf.isJMXEnabled()) {
-      int port = conf.getJMXPort();
+    if (zConf.isJMXEnabled()) {
+      int port = zConf.getJMXPort();
       // Setup JMX
       MBeanContainer mbeanContainer = new MBeanContainer(ManagementFactory.getPlatformMBeanServer());
       jettyWebServer.addBean(mbeanContainer);
@@ -334,7 +334,7 @@ public class ZeppelinServer implements AutoCloseable {
     }
   }
   private void initMetrics() {
-    if (conf.isJMXEnabled()) {
+    if (zConf.isJMXEnabled()) {
       Metrics.addRegistry(new JmxMeterRegistry(JmxConfig.DEFAULT, Clock.SYSTEM));
     }
     if (promMetricRegistry.isPresent()) {
@@ -357,7 +357,7 @@ public class ZeppelinServer implements AutoCloseable {
           jettyWebServer.stop();
         }
         if (sharedServiceLocator != null) {
-          if (!conf.isRecoveryEnabled()) {
+          if (!zConf.isRecoveryEnabled()) {
             sharedServiceLocator.getService(InterpreterSettingManager.class).close();
           }
           sharedServiceLocator.getService(Notebook.class).close();
@@ -379,9 +379,9 @@ public class ZeppelinServer implements AutoCloseable {
   private Server setupJettyServer() {
     InstrumentedQueuedThreadPool threadPool =
       new InstrumentedQueuedThreadPool(Metrics.globalRegistry, Tags.empty(),
-                           conf.getInt(ConfVars.ZEPPELIN_SERVER_JETTY_THREAD_POOL_MAX),
-                           conf.getInt(ConfVars.ZEPPELIN_SERVER_JETTY_THREAD_POOL_MIN),
-                           conf.getInt(ConfVars.ZEPPELIN_SERVER_JETTY_THREAD_POOL_TIMEOUT));
+                           zConf.getInt(ConfVars.ZEPPELIN_SERVER_JETTY_THREAD_POOL_MAX),
+                           zConf.getInt(ConfVars.ZEPPELIN_SERVER_JETTY_THREAD_POOL_MIN),
+                           zConf.getInt(ConfVars.ZEPPELIN_SERVER_JETTY_THREAD_POOL_TIMEOUT));
     final Server server = new Server(threadPool);
     initServerConnector(server);
     return server;
@@ -391,24 +391,24 @@ public class ZeppelinServer implements AutoCloseable {
     ServerConnector connector;
     HttpConfiguration httpConfig = new HttpConfiguration();
     httpConfig.addCustomizer(new ForwardedRequestCustomizer());
-    httpConfig.setSendServerVersion(conf.sendJettyName());
-    httpConfig.setRequestHeaderSize(conf.getJettyRequestHeaderSize());
-    if (conf.useSsl()) {
-      LOG.debug("Enabling SSL for Zeppelin Server on port {}", conf.getServerSslPort());
+    httpConfig.setSendServerVersion(zConf.sendJettyName());
+    httpConfig.setRequestHeaderSize(zConf.getJettyRequestHeaderSize());
+    if (zConf.useSsl()) {
+      LOG.debug("Enabling SSL for Zeppelin Server on port {}", zConf.getServerSslPort());
       httpConfig.setSecureScheme(HttpScheme.HTTPS.asString());
-      httpConfig.setSecurePort(conf.getServerSslPort());
+      httpConfig.setSecurePort(zConf.getServerSslPort());
 
       HttpConfiguration httpsConfig = new HttpConfiguration(httpConfig);
       httpsConfig.addCustomizer(new SecureRequestCustomizer());
 
-      SslConnectionFactory sslConnectionFactory = new SslConnectionFactory(getSslContextFactory(conf), HttpVersion.HTTP_1_1.asString());
+      SslConnectionFactory sslConnectionFactory = new SslConnectionFactory(getSslContextFactory(zConf), HttpVersion.HTTP_1_1.asString());
       HttpConnectionFactory httpsConnectionFactory = new HttpConnectionFactory(httpsConfig);
       connector =
               new ServerConnector(
                       server,
                       sslConnectionFactory,
                       httpsConnectionFactory);
-      connector.setPort(conf.getServerSslPort());
+      connector.setPort(zConf.getServerSslPort());
       connector.addBean(new JettySslHandshakeMetrics(Metrics.globalRegistry, Tags.empty()));
     } else {
       HttpConnectionFactory httpConnectionFactory = new HttpConnectionFactory(httpConfig);
@@ -416,25 +416,25 @@ public class ZeppelinServer implements AutoCloseable {
               new ServerConnector(
                       server,
                       httpConnectionFactory);
-      connector.setPort(conf.getServerPort());
+      connector.setPort(zConf.getServerPort());
     }
     // Set some timeout options to make debugging easier.
     int timeout = 1000 * 30;
     connector.setIdleTimeout(timeout);
-    connector.setHost(conf.getServerAddress());
+    connector.setHost(zConf.getServerAddress());
     connector.addBean(new JettyConnectionMetrics(Metrics.globalRegistry, Tags.empty()));
     server.addConnector(connector);
   }
 
   private void runNoteOnStart(ServiceLocator sharedServiceLocator) {
-    String noteIdToRun = conf.getNotebookRunId();
+    String noteIdToRun = zConf.getNotebookRunId();
     if (!StringUtils.isEmpty(noteIdToRun)) {
       LOG.info("Running note {} on start", noteIdToRun);
       NotebookService notebookService = ServiceLocatorUtilities.getService(
               sharedServiceLocator, NotebookService.class.getName());
 
       ServiceContext serviceContext;
-      String base64EncodedJsonSerializedServiceContext = conf.getNotebookRunServiceContext();
+      String base64EncodedJsonSerializedServiceContext = zConf.getNotebookRunServiceContext();
       if (StringUtils.isEmpty(base64EncodedJsonSerializedServiceContext)) {
         LOG.info("No service context provided. use ANONYMOUS");
         serviceContext = new ServiceContext(AuthenticationInfo.ANONYMOUS, new HashSet<>());
@@ -458,7 +458,7 @@ public class ZeppelinServer implements AutoCloseable {
           public void onFailure(Exception ex, ServiceContext context) throws IOException {
           }
         });
-        if (conf.getNotebookRunAutoShutdown()) {
+        if (zConf.getNotebookRunAutoShutdown()) {
           shutdown(success ? 0 : 1);
         }
       } catch (IOException e) {
@@ -468,7 +468,7 @@ public class ZeppelinServer implements AutoCloseable {
   }
 
   private void setupNotebookServer(WebAppContext webapp) {
-    String maxTextMessageSize = conf.getWebsocketMaxTextMessageSize();
+    String maxTextMessageSize = zConf.getWebsocketMaxTextMessageSize();
     WebSocketServerContainerInitializer
             .configure(webapp, (servletContext, wsContainer) -> {
               wsContainer.setDefaultMaxTextMessageBufferSize(Integer.parseInt(maxTextMessageSize));
@@ -478,9 +478,9 @@ public class ZeppelinServer implements AutoCloseable {
   }
 
   private void setupClusterManagerServer() {
-    if (conf.isClusterMode()) {
+    if (zConf.isClusterMode()) {
       LOG.info("Cluster mode is enabled, starting ClusterManagerServer");
-      ClusterManagerServer clusterManagerServer = ClusterManagerServer.getInstance(conf);
+      ClusterManagerServer clusterManagerServer = ClusterManagerServer.getInstance(zConf);
 
       NotebookServer notebookServer = sharedServiceLocator.getService(NotebookServer.class);
       clusterManagerServer.addClusterEventListeners(ClusterManagerServer.CLUSTER_NOTE_EVENT_TOPIC, notebookServer);
@@ -500,9 +500,9 @@ public class ZeppelinServer implements AutoCloseable {
         InterpreterSettingManager intpSettingManager =
             sharedServiceLocator.getService(InterpreterSettingManager.class);
         RecoveryStorage recoveryStorage = ReflectionUtils.createClazzInstance(
-                conf.getRecoveryStorageClass(),
+                zConf.getRecoveryStorageClass(),
                 new Class[] {ZeppelinConfiguration.class, InterpreterSettingManager.class},
-                new Object[] {conf, intpSettingManager});
+                new Object[] {zConf, intpSettingManager});
         recoveryStorage.init();
         sharedServiceLocator.getService(PluginManager.class).loadInterpreterLauncher(
             InterpreterSetting.CLUSTER_INTERPRETER_LAUNCHER_NAME, recoveryStorage);
@@ -516,40 +516,40 @@ public class ZeppelinServer implements AutoCloseable {
     }
   }
 
-  private static SslContextFactory getSslContextFactory(ZeppelinConfiguration conf) {
+  private static SslContextFactory getSslContextFactory(ZeppelinConfiguration zConf) {
     SslContextFactory.Server sslContextFactory = new SslContextFactory.Server();
 
     // initialize KeyStore
     // Check for PEM files
-    if (StringUtils.isNoneBlank(conf.getPemKeyFile(), conf.getPemCertFile())) {
-      setupKeystoreWithPemFiles(sslContextFactory, conf);
+    if (StringUtils.isNoneBlank(zConf.getPemKeyFile(), zConf.getPemCertFile())) {
+      setupKeystoreWithPemFiles(sslContextFactory, zConf);
     } else {
       // Set keystore
-      sslContextFactory.setKeyStorePath(conf.getKeyStorePath());
-      sslContextFactory.setKeyStoreType(conf.getKeyStoreType());
-      sslContextFactory.setKeyStorePassword(conf.getKeyStorePassword());
-      sslContextFactory.setKeyManagerPassword(conf.getKeyManagerPassword());
+      sslContextFactory.setKeyStorePath(zConf.getKeyStorePath());
+      sslContextFactory.setKeyStoreType(zConf.getKeyStoreType());
+      sslContextFactory.setKeyStorePassword(zConf.getKeyStorePassword());
+      sslContextFactory.setKeyManagerPassword(zConf.getKeyManagerPassword());
     }
 
     // initialize TrustStore
-    if (conf.useClientAuth()) {
-      if (StringUtils.isNotBlank(conf.getPemCAFile())) {
-        setupTruststoreWithPemFiles(sslContextFactory, conf);
+    if (zConf.useClientAuth()) {
+      if (StringUtils.isNotBlank(zConf.getPemCAFile())) {
+        setupTruststoreWithPemFiles(sslContextFactory, zConf);
       } else {
-        sslContextFactory.setNeedClientAuth(conf.useClientAuth());
+        sslContextFactory.setNeedClientAuth(zConf.useClientAuth());
         // Set truststore
-        sslContextFactory.setTrustStorePath(conf.getTrustStorePath());
-        sslContextFactory.setTrustStoreType(conf.getTrustStoreType());
-        sslContextFactory.setTrustStorePassword(conf.getTrustStorePassword());
+        sslContextFactory.setTrustStorePath(zConf.getTrustStorePath());
+        sslContextFactory.setTrustStoreType(zConf.getTrustStoreType());
+        sslContextFactory.setTrustStorePassword(zConf.getTrustStorePassword());
       }
     }
 
     return sslContextFactory;
   }
 
-  private static void setupKeystoreWithPemFiles(SslContextFactory.Server sslContextFactory, ZeppelinConfiguration conf) {
-    File pemKey = new File(conf.getPemKeyFile());
-    File pemCert = new File(conf.getPemCertFile());
+  private static void setupKeystoreWithPemFiles(SslContextFactory.Server sslContextFactory, ZeppelinConfiguration zConf) {
+    File pemKey = new File(zConf.getPemKeyFile());
+    File pemCert = new File(zConf.getPemCertFile());
     boolean isPemKeyFileReadable = Files.isReadable(pemKey.toPath());
     boolean isPemCertFileReadable = Files.isReadable(pemCert.toPath());
     if (!isPemKeyFileReadable) {
@@ -560,7 +560,7 @@ public class ZeppelinServer implements AutoCloseable {
     }
     if (isPemKeyFileReadable && isPemCertFileReadable) {
       try {
-        String password = conf.getPemKeyPassword();
+        String password = zConf.getPemKeyPassword();
         sslContextFactory.setKeyStore(PEMImporter.loadKeyStore(pemCert, pemKey, password));
         sslContextFactory.setKeyStoreType("JKS");
         sslContextFactory.setKeyStorePassword(password);
@@ -572,14 +572,14 @@ public class ZeppelinServer implements AutoCloseable {
     }
   }
 
-  private static void setupTruststoreWithPemFiles(SslContextFactory.Server sslContextFactory, ZeppelinConfiguration conf) {
-    File pemCa = new File(conf.getPemCAFile());
+  private static void setupTruststoreWithPemFiles(SslContextFactory.Server sslContextFactory, ZeppelinConfiguration zConf) {
+    File pemCa = new File(zConf.getPemCAFile());
     if (Files.isReadable(pemCa.toPath())) {
       try {
         sslContextFactory.setTrustStore(PEMImporter.loadTrustStore(pemCa));
         sslContextFactory.setTrustStoreType("JKS");
         sslContextFactory.setTrustStorePassword("");
-        sslContextFactory.setNeedClientAuth(conf.useClientAuth());
+        sslContextFactory.setNeedClientAuth(zConf.useClientAuth());
       } catch (IOException | GeneralSecurityException e) {
         LOG.error("Failed to initialize TrustStore from PEM CA file", e);
       }
@@ -596,7 +596,7 @@ public class ZeppelinServer implements AutoCloseable {
     servletHolder.setName("rest");
     webapp.addServlet(servletHolder, "/api/*");
 
-    String shiroIniPath = conf.getShiroPath();
+    String shiroIniPath = zConf.getShiroPath();
     if (!StringUtils.isBlank(shiroIniPath)) {
       webapp.setInitParameter("shiroConfigLocations", new File(shiroIniPath).toURI().toString());
       webapp
@@ -619,7 +619,7 @@ public class ZeppelinServer implements AutoCloseable {
   }
 
   private static WebAppContext setupWebAppContext(
-      ContextHandlerCollection contexts, ZeppelinConfiguration conf, String warPath, String contextPath) {
+      ContextHandlerCollection contexts, ZeppelinConfiguration zConf, String warPath, String contextPath) {
     WebAppContext webApp = new WebAppContext();
     webApp.setContextPath(contextPath);
     LOG.info("warPath is: {}", warPath);
@@ -632,20 +632,20 @@ public class ZeppelinServer implements AutoCloseable {
       // use packaged WAR
       webApp.setWar(warFile.getAbsolutePath());
       webApp.setExtractWAR(false);
-      File warTempDirectory = new File(conf.getAbsoluteDir(ConfVars.ZEPPELIN_WAR_TEMPDIR) + contextPath);
+      File warTempDirectory = new File(zConf.getAbsoluteDir(ConfVars.ZEPPELIN_WAR_TEMPDIR) + contextPath);
       warTempDirectory.mkdir();
       LOG.info("ZeppelinServer Webapp path: {}", warTempDirectory.getPath());
       webApp.setTempDirectory(warTempDirectory);
     }
     // Explicit bind to root
-    webApp.addServlet(new ServletHolder(new IndexHtmlServlet(conf)), "/index.html");
+    webApp.addServlet(new ServletHolder(new IndexHtmlServlet(zConf)), "/index.html");
     contexts.addHandler(webApp);
 
-    webApp.addFilter(new FilterHolder(new CorsFilter(conf)), "/*", EnumSet.allOf(DispatcherType.class));
+    webApp.addFilter(new FilterHolder(new CorsFilter(zConf)), "/*", EnumSet.allOf(DispatcherType.class));
 
     webApp.setInitParameter(
         "org.eclipse.jetty.servlet.Default.dirAllowed",
-        Boolean.toString(conf.getBoolean(ConfVars.ZEPPELIN_SERVER_DEFAULT_DIR_ALLOWED)));
+        Boolean.toString(zConf.getBoolean(ConfVars.ZEPPELIN_SERVER_DEFAULT_DIR_ALLOWED)));
     return webApp;
   }
 

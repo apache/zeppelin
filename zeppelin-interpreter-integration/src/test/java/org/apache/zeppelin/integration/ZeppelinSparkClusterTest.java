@@ -152,7 +152,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
 
   @BeforeEach
   void setup() {
-    conf = zepServer.getZeppelinConfiguration();
+    zConf = zepServer.getZeppelinConfiguration();
   }
 
   private Callable<Boolean> isParagraphFinish(Paragraph p) {

@@ -83,10 +83,10 @@ public class Booter {
   }
 
   public static List<RemoteRepository> newCentralRepositorys(Proxy proxy,
-      ZeppelinConfiguration conf) {
+      ZeppelinConfiguration zConf) {
     String mvnRepoEnv = System.getenv("ZEPPELIN_INTERPRETER_DEP_MVNREPO");
     if (mvnRepoEnv == null) {
-      mvnRepoEnv = conf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_DEP_MVNREPO);
+      mvnRepoEnv = zConf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_DEP_MVNREPO);
     }
     if (mvnRepoEnv == null) {
       mvnRepoEnv = "https://repo1.maven.org/maven2/";

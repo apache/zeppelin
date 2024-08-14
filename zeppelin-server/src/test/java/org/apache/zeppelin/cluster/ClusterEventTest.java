@@ -92,7 +92,7 @@ public class ClusterEventTest extends AbstractTestRestApi {
 
   @BeforeEach
   void setup() {
-    conf = zepServer.getZeppelinConfiguration();
+    zConf = zepServer.getZeppelinConfiguration();
   }
 
   @BeforeAll
@@ -104,23 +104,23 @@ public class ClusterEventTest extends AbstractTestRestApi {
     zepServer.start();
     notebook = zepServer.getService(Notebook.class);
     authorizationService = zepServer.getService(AuthorizationService.class);
-    ZeppelinConfiguration zconf = zepServer.getZeppelinConfiguration();
-    schedulerService = new QuartzSchedulerService(zconf, notebook);
+    ZeppelinConfiguration zConf = zepServer.getZeppelinConfiguration();
+    schedulerService = new QuartzSchedulerService(zConf, notebook);
     notebook.initNotebook();
     notebook.waitForFinishInit(1, TimeUnit.MINUTES);
     notebookServer = spy(zepServer.getService(NotebookServer.class));
-    notebookService = new NotebookService(notebook, authorizationService, zconf, schedulerService);
+    notebookService = new NotebookService(notebook, authorizationService, zConf, schedulerService);
 
     ConfigurationService configurationService = new ConfigurationService(notebook.getConf());
     when(notebookServer.getNotebookService()).thenReturn(notebookService);
     when(notebookServer.getConfigurationService()).thenReturn(configurationService);
 
-    startOtherZeppelinClusterNode(zconf);
+    startOtherZeppelinClusterNode(zConf);
 
     // wait zeppelin cluster startup
     Thread.sleep(10000);
     // mock cluster manager client
-    clusterClient = ClusterManagerClient.getInstance(zconf);
+    clusterClient = ClusterManagerClient.getInstance(zConf);
     clusterClient.start(metaKey);
 
     // Waiting for cluster startup
@@ -159,10 +159,10 @@ public class ClusterEventTest extends AbstractTestRestApi {
   @BeforeEach
   void setUp() {
     anonymous = new AuthenticationInfo("anonymous");
-    conf = zepServer.getZeppelinConfiguration();
+    zConf = zepServer.getZeppelinConfiguration();
   }
 
-  private static void genClusterAddressConf(ZeppelinConfiguration zconf)
+  private static void genClusterAddressConf(ZeppelinConfiguration zConf)
       throws IOException, InterruptedException {
     String clusterAddrList = "";
     String zServerHost = RemoteInterpreterUtils.findAvailableHostAddress();
@@ -174,7 +174,7 @@ public class ClusterEventTest extends AbstractTestRestApi {
         clusterAddrList += ",";
       }
     }
-    zconf.setClusterAddress(clusterAddrList);
+    zConf.setClusterAddress(clusterAddrList);
     LOGGER.info("clusterAddrList = {}", clusterAddrList);
   }
 
@@ -195,10 +195,10 @@ public class ClusterEventTest extends AbstractTestRestApi {
   }
 
   //
-  public static void startOtherZeppelinClusterNode(ZeppelinConfiguration zconf)
+  public static void startOtherZeppelinClusterNode(ZeppelinConfiguration zConf)
       throws IOException, InterruptedException {
     LOGGER.info("startCluster >>>");
-    String clusterAddrList = zconf.getClusterAddress();
+    String clusterAddrList = zConf.getClusterAddress();
 
     // mock cluster manager server
     String cluster[] = clusterAddrList.split(",");
@@ -210,7 +210,7 @@ public class ClusterEventTest extends AbstractTestRestApi {
         int clusterPort = Integer.valueOf(parts[1]);
 
         ClusterManagerServer clusterServer
-            = startClusterSingleNode(clusterAddrList, clusterHost, clusterPort, zconf);
+            = startClusterSingleNode(clusterAddrList, clusterHost, clusterPort, zConf);
         clusterServers.add(clusterServer);
       }
     } catch (Exception e) {

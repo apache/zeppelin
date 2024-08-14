@@ -269,7 +269,7 @@ public class ClusterInterpreterLauncher extends StandardInterpreterLauncher
     return clusterIntpProcess;
   }
 
-  private boolean isRunningOnDocker(ZeppelinConfiguration zconf) {
-    return zconf.getRunMode() == ZeppelinConfiguration.RUN_MODE.DOCKER;
+  private boolean isRunningOnDocker(ZeppelinConfiguration zConf) {
+    return zConf.getRunMode() == ZeppelinConfiguration.RUN_MODE.DOCKER;
   }
 }

@@ -79,11 +79,11 @@ public class GCSNotebookRepo extends AbstractNotebookRepo {
   }
 
   @VisibleForTesting
-  public GCSNotebookRepo(ZeppelinConfiguration conf, NoteParser noteParser, Storage storage)
+  public GCSNotebookRepo(ZeppelinConfiguration zConf, NoteParser noteParser, Storage storage)
       throws IOException
   {
     try {
-      init(conf, noteParser);
+      init(zConf, noteParser);
     } catch (IOException e) {
       // Skip Credentials Exception during tests
       if (!e.getMessage().contains("Default Credentials")) {

@@ -106,15 +106,15 @@ public class HeliumBundleFactory {
   private ByteArrayOutputStream out  = new ByteArrayOutputStream();
 
   @Inject
-  public HeliumBundleFactory(ZeppelinConfiguration conf) {
+  public HeliumBundleFactory(ZeppelinConfiguration zConf) {
     this.heliumLocalRepoDirectory =
-        new File(conf.getAbsoluteDir(ConfVars.ZEPPELIN_DEP_LOCALREPO), HELIUM_LOCAL_REPO);
+        new File(zConf.getAbsoluteDir(ConfVars.ZEPPELIN_DEP_LOCALREPO), HELIUM_LOCAL_REPO);
     this.heliumBundleDirectory = new File(heliumLocalRepoDirectory, HELIUM_BUNDLES_DIR);
     this.heliumLocalModuleDirectory = new File(heliumLocalRepoDirectory, HELIUM_LOCAL_MODULE_DIR);
     this.yarnCacheDir = new File(heliumLocalRepoDirectory, YARN_CACHE_DIR);
-    this.defaultNodeInstallerUrl = conf.getHeliumNodeInstallerUrl();
-    this.defaultNpmInstallerUrl = conf.getHeliumNpmInstallerUrl();
-    this.defaultYarnInstallerUrl = conf.getHeliumYarnInstallerUrl();
+    this.defaultNodeInstallerUrl = zConf.getHeliumNodeInstallerUrl();
+    this.defaultNpmInstallerUrl = zConf.getHeliumNpmInstallerUrl();
+    this.defaultYarnInstallerUrl = zConf.getHeliumYarnInstallerUrl();
     this.nodeInstallationDirectory = this.heliumLocalRepoDirectory;
 
     this.frontEndPluginFactory =
@@ -122,17 +122,17 @@ public class HeliumBundleFactory {
 
     this.gson = new Gson();
 
-    File zeppelinWebPath = new File(conf.getAbsoluteDir("zeppelin-web"));
+    File zeppelinWebPath = new File(zConf.getAbsoluteDir("zeppelin-web"));
     if (!zeppelinWebPath.isDirectory()) {
       this.tabledataModulePath =
-          new File(conf.getAbsoluteDir("lib/node_modules/zeppelin-tabledata"));
-      this.visualizationModulePath = new File(conf.getAbsoluteDir("lib/node_modules/zeppelin-vis"));
-      this.spellModulePath = new File(conf.getAbsoluteDir("lib/node_modules/zeppelin-spell"));
+          new File(zConf.getAbsoluteDir("lib/node_modules/zeppelin-tabledata"));
+      this.visualizationModulePath = new File(zConf.getAbsoluteDir("lib/node_modules/zeppelin-vis"));
+      this.spellModulePath = new File(zConf.getAbsoluteDir("lib/node_modules/zeppelin-spell"));
     } else {
-      this.tabledataModulePath = new File(conf.getAbsoluteDir("zeppelin-web/src/app/tabledata"));
+      this.tabledataModulePath = new File(zConf.getAbsoluteDir("zeppelin-web/src/app/tabledata"));
       this.visualizationModulePath =
-          new File(conf.getAbsoluteDir("zeppelin-web/src/app/visualization"));
-      this.spellModulePath = new File(conf.getAbsoluteDir("zeppelin-web/src/app/spell"));
+          new File(zConf.getAbsoluteDir("zeppelin-web/src/app/visualization"));
+      this.spellModulePath = new File(zConf.getAbsoluteDir("zeppelin-web/src/app/spell"));
     }
   }
 

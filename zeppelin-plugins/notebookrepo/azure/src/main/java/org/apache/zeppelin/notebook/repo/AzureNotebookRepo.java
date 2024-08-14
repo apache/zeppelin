@@ -48,7 +48,7 @@ import org.slf4j.LoggerFactory;
 public class AzureNotebookRepo extends AbstractNotebookRepo {
   private static final Logger LOGGER = LoggerFactory.getLogger(AzureNotebookRepo.class);
 
-  private ZeppelinConfiguration conf;
+  private ZeppelinConfiguration zConf;
   private String user;
   private String shareName;
   private CloudFileDirectory rootDir;
@@ -58,14 +58,14 @@ public class AzureNotebookRepo extends AbstractNotebookRepo {
   }
 
   @Override
-  public void init(ZeppelinConfiguration conf, NoteParser noteParser) throws IOException {
-    super.init(conf, noteParser);
-    user = conf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_AZURE_USER);
-    shareName = conf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_AZURE_SHARE);
+  public void init(ZeppelinConfiguration zConf, NoteParser noteParser) throws IOException {
+    super.init(zConf, noteParser);
+    user = zConf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_AZURE_USER);
+    shareName = zConf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_AZURE_SHARE);
 
     try {
       CloudStorageAccount account = CloudStorageAccount.parse(
-          conf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_AZURE_CONNECTION_STRING));
+          zConf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_AZURE_CONNECTION_STRING));
       CloudFileClient client = account.createCloudFileClient();
       CloudFileShare share = client.getShareReference(shareName);
       share.createIfNotExists();
@@ -124,7 +124,7 @@ public class AzureNotebookRepo extends AbstractNotebookRepo {
       throw new IOException(msg, e);
     }
     String json = IOUtils.toString(ins,
-        conf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_ENCODING));
+        zConf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_ENCODING));
     ins.close();
     return noteParser.fromJson(noteId, json);
   }

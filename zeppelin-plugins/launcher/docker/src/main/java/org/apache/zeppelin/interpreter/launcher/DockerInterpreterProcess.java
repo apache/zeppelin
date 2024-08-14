@@ -93,7 +93,7 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
   @VisibleForTesting
   boolean uploadLocalLibToContainter = true;
 
-  private ZeppelinConfiguration zconf;
+  private ZeppelinConfiguration zConf;
 
   private String zeppelinHome;
 
@@ -106,7 +106,7 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
   private static final String CONTAINER_UPLOAD_TAR_DIR = "/tmp/zeppelin-tar";
 
   public DockerInterpreterProcess(
-      ZeppelinConfiguration zconf,
+      ZeppelinConfiguration zConf,
       String containerImage,
       String interpreterGroupId,
       String interpreterGroupName,
@@ -127,11 +127,11 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
     this.properties = properties;
     this.envs = new HashMap<>(envs);
 
-    this.zconf = zconf;
+    this.zConf = zConf;
     this.containerName = interpreterGroupId.toLowerCase();
 
-    containerSparkHome = zconf.getString(ConfVars.ZEPPELIN_DOCKER_CONTAINER_SPARK_HOME);
-    uploadLocalLibToContainter = zconf.getBoolean(
+    containerSparkHome = zConf.getString(ConfVars.ZEPPELIN_DOCKER_CONTAINER_SPARK_HOME);
+    uploadLocalLibToContainter = zConf.getBoolean(
         ConfVars.ZEPPELIN_DOCKER_UPLOAD_LOCAL_LIB_TO_CONTAINTER);
 
     try {
@@ -139,7 +139,7 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
     } catch (IOException e) {
       LOGGER.error(e.getMessage(), e);
     }
-    dockerHost = zconf.getString(ConfVars.ZEPPELIN_DOCKER_HOST);
+    dockerHost = zConf.getString(ConfVars.ZEPPELIN_DOCKER_HOST);
   }
 
   @Override
@@ -319,7 +319,7 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
     envs.put("SPARK_HOME", this.containerSparkHome);
 
     // set container time zone
-    envs.put("TZ", zconf.getString(ConfVars.ZEPPELIN_DOCKER_TIME_ZONE));
+    envs.put("TZ", zConf.getString(ConfVars.ZEPPELIN_DOCKER_TIME_ZONE));
 
     List<String> listEnv = new ArrayList<>();
     for (Map.Entry<String, String> entry : this.envs.entrySet()) {
@@ -487,7 +487,7 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
       copyFiles.putIfAbsent(intpKeytab, intpKeytab);
     }
     // 3.5) zeppelin server keytab file
-    String zeppelinServerKeytab = zconf.getString(ZEPPELIN_SERVER_KERBEROS_KEYTAB);
+    String zeppelinServerKeytab = zConf.getString(ZEPPELIN_SERVER_KERBEROS_KEYTAB);
     if (!StringUtils.isBlank(zeppelinServerKeytab)) {
       copyFiles.putIfAbsent(zeppelinServerKeytab, zeppelinServerKeytab);
     }
@@ -620,9 +620,9 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
 
   private String getZeppelinHome() throws IOException {
     // check zeppelinHome is exist
-    File fileZeppelinHome = new File(zconf.getZeppelinHome());
+    File fileZeppelinHome = new File(zConf.getZeppelinHome());
     if (fileZeppelinHome.exists() && fileZeppelinHome.isDirectory()) {
-      return zconf.getZeppelinHome();
+      return zConf.getZeppelinHome();
     }
 
     throw new IOException("Can't find zeppelin home path!");
