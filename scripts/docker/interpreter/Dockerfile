@@ -14,7 +14,7 @@
 # limitations under the License.
 
 FROM apache/zeppelin:0.11.2-SNAPSHOT
-MAINTAINER Apache Zeppelin Community <dev@zeppelin.apache.org>
+LABEL maintainer="Apache Zeppelin Community <dev@zeppelin.apache.org>"
 
 ENV SPARK_VERSION=3.5.1
 ENV HADOOP_VERSION=3
