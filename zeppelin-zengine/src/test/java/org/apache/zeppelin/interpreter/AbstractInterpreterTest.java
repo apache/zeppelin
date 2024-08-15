@@ -62,7 +62,7 @@ public abstract class AbstractInterpreterTest {
   protected File interpreterDir;
   protected File confDir;
   protected File notebookDir;
-  protected ZeppelinConfiguration conf;
+  protected ZeppelinConfiguration zConf;
   protected ConfigStorage storage;
   protected PluginManager pluginManager;
 
@@ -88,33 +88,33 @@ public abstract class AbstractInterpreterTest {
     FileUtils.copyDirectory(new File("src/test/resources/interpreter"), interpreterDir);
     FileUtils.copyDirectory(new File("src/test/resources/conf"), confDir);
 
-    conf = ZeppelinConfiguration.load();
-    conf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HOME.getVarName(),
+    zConf = ZeppelinConfiguration.load();
+    zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HOME.getVarName(),
         zeppelinHome.getAbsolutePath());
-    conf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_CONF_DIR.getVarName(),
+    zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_CONF_DIR.getVarName(),
         confDir.getAbsolutePath());
-    conf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_DIR.getVarName(),
+    zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_DIR.getVarName(),
         interpreterDir.getAbsolutePath());
-    conf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_DIR.getVarName(),
+    zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_DIR.getVarName(),
         notebookDir.getAbsolutePath());
-    conf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_GROUP_DEFAULT.getVarName(),
+    zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_GROUP_DEFAULT.getVarName(),
         "test");
 
 
     NotebookRepo notebookRepo = new InMemoryNotebookRepo();
-    NoteManager noteManager = new NoteManager(notebookRepo, conf);
-    noteParser = new GsonNoteParser(conf);
-    storage = ConfigStorage.createConfigStorage(conf);
-    pluginManager = new PluginManager(conf);
+    NoteManager noteManager = new NoteManager(notebookRepo, zConf);
+    noteParser = new GsonNoteParser(zConf);
+    storage = ConfigStorage.createConfigStorage(zConf);
+    pluginManager = new PluginManager(zConf);
     AuthorizationService authorizationService =
-        new AuthorizationService(noteManager, conf, storage);
+        new AuthorizationService(noteManager, zConf, storage);
 
-    interpreterSettingManager = new InterpreterSettingManager(conf,
+    interpreterSettingManager = new InterpreterSettingManager(zConf,
         mock(AngularObjectRegistryListener.class), mock(RemoteInterpreterProcessListener.class),
         mock(ApplicationEventListener.class), storage, pluginManager);
     interpreterFactory = new InterpreterFactory(interpreterSettingManager);
-    Credentials credentials = new Credentials(conf, storage);
-    notebook = new Notebook(conf, authorizationService, notebookRepo, noteManager, interpreterFactory, interpreterSettingManager, credentials);
+    Credentials credentials = new Credentials(zConf, storage);
+    notebook = new Notebook(zConf, authorizationService, notebookRepo, noteManager, interpreterFactory, interpreterSettingManager, credentials);
     interpreterSettingManager.setNotebook(notebook);
   }
 
@@ -139,7 +139,7 @@ public abstract class AbstractInterpreterTest {
 
   protected Note createNote() {
     return new Note("test", "test", interpreterFactory, interpreterSettingManager, null, null, null,
-        conf, noteParser);
+            zConf, noteParser);
   }
 
   protected InterpreterContext createDummyInterpreterContext() {

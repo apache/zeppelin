@@ -56,8 +56,8 @@ class BooterTest {
 
   @Test
   void getInterpreterMvnRepoPathTest() {
-    ZeppelinConfiguration conf = ZeppelinConfiguration.load("zeppelin-site-test.xml");
-    List<RemoteRepository> remoteRepositories = Booter.newCentralRepositorys(null, conf);
+    ZeppelinConfiguration zConf = ZeppelinConfiguration.load("zeppelin-site-test.xml");
+    List<RemoteRepository> remoteRepositories = Booter.newCentralRepositorys(null, zConf);
     assertNotNull(remoteRepositories);
     assertEquals(2, remoteRepositories.size());
     assertEquals("https://repo1.maven.org/maven2/", remoteRepositories.get(0).getUrl());

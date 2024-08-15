@@ -59,7 +59,7 @@ public class NotebookSecurityRestApiTest extends AbstractTestRestApi {
   @BeforeEach
   void setup() {
     notebook = zepServer.getService(Notebook.class);
-    conf = zepServer.getZeppelinConfiguration();
+    zConf = zepServer.getZeppelinConfiguration();
   }
 
   @Test

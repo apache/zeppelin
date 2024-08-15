@@ -76,7 +76,7 @@ public abstract class ZeppelinFlinkClusterTest extends AbstractTestRestApi {
 
   @BeforeEach
   void setup() {
-    conf = zepServer.getZeppelinConfiguration();
+    zConf = zepServer.getZeppelinConfiguration();
   }
 
   @Disabled("(zjffdu) Disable Temporary")

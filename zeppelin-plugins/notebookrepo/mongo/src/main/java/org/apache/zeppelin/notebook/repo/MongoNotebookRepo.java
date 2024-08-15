@@ -72,15 +72,15 @@ public class MongoNotebookRepo extends AbstractNotebookRepo {
   }
 
   @Override
-  public void init(ZeppelinConfiguration conf, NoteParser noteParser) throws IOException {
-    super.init(conf, noteParser);
-    client = new MongoClient(new MongoClientURI(conf.getMongoUri()));
-    db = client.getDatabase(conf.getMongoDatabase());
-    notes = db.getCollection(conf.getMongoCollection());
-    folderName = conf.getMongoFolder();
+  public void init(ZeppelinConfiguration zConf, NoteParser noteParser) throws IOException {
+    super.init(zConf, noteParser);
+    client = new MongoClient(new MongoClientURI(zConf.getMongoUri()));
+    db = client.getDatabase(zConf.getMongoDatabase());
+    notes = db.getCollection(zConf.getMongoCollection());
+    folderName = zConf.getMongoFolder();
     folders = db.getCollection(folderName);
 
-    if (conf.getMongoAutoimport()) {
+    if (zConf.getMongoAutoimport()) {
       // import local notes into MongoDB
       insertFileSystemNotes();
     }
@@ -93,7 +93,7 @@ public class MongoNotebookRepo extends AbstractNotebookRepo {
    */
   private void insertFileSystemNotes() throws IOException {
     try (NotebookRepo vfsRepo = new VFSNotebookRepo()) {
-      vfsRepo.init(conf, noteParser);
+      vfsRepo.init(zConf, noteParser);
       Map<String, NoteInfo> infos = vfsRepo.list(null);
 
       try (AutoLock autoLock = lock.lockForWrite()) {

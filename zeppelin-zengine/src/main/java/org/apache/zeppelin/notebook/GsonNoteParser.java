@@ -31,18 +31,18 @@ import com.google.gson.JsonSyntaxException;
 
 public class GsonNoteParser implements NoteParser {
 
-  private final ZeppelinConfiguration conf;
+  private final ZeppelinConfiguration zConf;
   private final Gson gson;
 
   @Inject
-  public GsonNoteParser(ZeppelinConfiguration conf) {
-    this.conf = conf;
+  public GsonNoteParser(ZeppelinConfiguration zConf) {
+    this.zConf = zConf;
     this.gson = new GsonBuilder()
         .setPrettyPrinting()
         .setDateFormat("yyyy-MM-dd HH:mm:ss.SSS")
         .registerTypeAdapter(Date.class, new NotebookImportDeserializer())
         .registerTypeAdapterFactory(Input.TypeAdapterFactory)
-        .setExclusionStrategies(new NoteJsonExclusionStrategy(conf))
+        .setExclusionStrategies(new NoteJsonExclusionStrategy(zConf))
         .create();
   }
 
@@ -50,7 +50,7 @@ public class GsonNoteParser implements NoteParser {
   public Note fromJson(String noteId, String json) throws CorruptedNoteException {
     try {
       Note note = gson.fromJson(json, Note.class);
-      note.setZeppelinConfiguration(conf);
+      note.setZeppelinConfiguration(zConf);
       note.setNoteParser(this);
       convertOldInput(note);
       note.getInfo().remove("isRunning");

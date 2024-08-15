@@ -64,7 +64,7 @@ class HeliumApplicationFactoryTest extends AbstractInterpreterTest {
     notebookRepo = mock(NotebookRepo.class);
     notebook =
         new Notebook(
-            conf,
+            zConf,
             authorizationService,
             notebookRepo,
             new NoteManager(notebookRepo, ZeppelinConfiguration.load()),

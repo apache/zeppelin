@@ -49,14 +49,14 @@ public class Credentials {
    * Wrapper for user credentials. It can load credentials from a file
    * and will encrypt the file if an encryptKey is configured.
    *
-   * @param conf
+   * @param zConf
    * @throws IOException
    */
   @Inject
-  public Credentials(ZeppelinConfiguration conf, ConfigStorage storage) {
+  public Credentials(ZeppelinConfiguration zConf, ConfigStorage storage) {
     credentialsMap = new HashMap<>();
-    if (conf.credentialsPersist()) {
-      String encryptKey = conf.getCredentialsEncryptKey();
+    if (zConf.credentialsPersist()) {
+      String encryptKey = zConf.getCredentialsEncryptKey();
       if (StringUtils.isNotBlank(encryptKey)) {
         this.encryptor = new Encryptor(encryptKey);
       }
@@ -81,7 +81,7 @@ public class Credentials {
   /**
    * Wrapper for inmemory user credentials.
    *
-   * @param conf
+   * @param zConf
    * @throws IOException
    */
   public Credentials() {

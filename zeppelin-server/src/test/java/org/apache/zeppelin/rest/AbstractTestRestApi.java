@@ -59,7 +59,7 @@ public abstract class AbstractTestRestApi {
   private static final Logger LOG = LoggerFactory.getLogger(AbstractTestRestApi.class);
 
   public static final String REST_API_URL = "/api";
-  protected ZeppelinConfiguration conf;
+  protected ZeppelinConfiguration zConf;
 
   protected static final String ZEPPELIN_SHIRO =
       "[users]\n" +
@@ -130,8 +130,8 @@ public abstract class AbstractTestRestApi {
     return httpClient;
   }
 
-  protected static String getUrlToTest(ZeppelinConfiguration conf) {
-    return "http://localhost:" + conf.getServerPort() + REST_API_URL;
+  protected static String getUrlToTest(ZeppelinConfiguration zConf) {
+    return "http://localhost:" + zConf.getServerPort() + REST_API_URL;
   }
 
   public CloseableHttpResponse httpGet(String path)
@@ -146,9 +146,9 @@ public abstract class AbstractTestRestApi {
 
   public CloseableHttpResponse httpGet(String path, String user, String pwd, String cookies)
     throws IOException {
-    LOG.info("Connecting to {}", getUrlToTest(conf) + path);
-    HttpGet httpGet = new HttpGet(getUrlToTest(conf) + path);
-    httpGet.addHeader("Origin", getUrlToTest(conf));
+    LOG.info("Connecting to {}", getUrlToTest(zConf) + path);
+    HttpGet httpGet = new HttpGet(getUrlToTest(zConf) + path);
+    httpGet.addHeader("Origin", getUrlToTest(zConf));
     if (userAndPasswordAreNotBlank(user, pwd)) {
       httpGet.setHeader("Cookie", "JSESSIONID=" + getCookie(user, pwd));
     }
@@ -167,9 +167,9 @@ public abstract class AbstractTestRestApi {
 
   public CloseableHttpResponse httpDelete(String path, String user, String pwd)
       throws IOException {
-    LOG.info("Connecting to {}", getUrlToTest(conf) + path);
-    HttpDelete httpDelete = new HttpDelete(getUrlToTest(conf) + path);
-    httpDelete.addHeader("Origin", getUrlToTest(conf));
+    LOG.info("Connecting to {}", getUrlToTest(zConf) + path);
+    HttpDelete httpDelete = new HttpDelete(getUrlToTest(zConf) + path);
+    httpDelete.addHeader("Origin", getUrlToTest(zConf));
     if (userAndPasswordAreNotBlank(user, pwd)) {
       httpDelete.setHeader("Cookie", "JSESSIONID=" + getCookie(user, pwd));
     }
@@ -185,12 +185,12 @@ public abstract class AbstractTestRestApi {
 
   public CloseableHttpResponse httpPost(String path, String request, String user, String pwd)
       throws IOException {
-    LOG.info("Connecting to {}", getUrlToTest(conf) + path);
+    LOG.info("Connecting to {}", getUrlToTest(zConf) + path);
     RequestConfig localConfig = RequestConfig.custom()
       .setCookieSpec(CookieSpecs.IGNORE_COOKIES)
       .build();
 
-    HttpPost httpPost = new HttpPost(getUrlToTest(conf) + path);
+    HttpPost httpPost = new HttpPost(getUrlToTest(zConf) + path);
     httpPost.setConfig(localConfig);
     httpPost.setEntity(new StringEntity(request, ContentType.APPLICATION_JSON));
     if (userAndPasswordAreNotBlank(user, pwd)) {
@@ -208,9 +208,9 @@ public abstract class AbstractTestRestApi {
 
   public CloseableHttpResponse httpPut(String path, String body, String user, String pwd)
       throws IOException {
-    LOG.info("Connecting to {}", getUrlToTest(conf) + path);
-    HttpPut httpPut = new HttpPut(getUrlToTest(conf) + path);
-    httpPut.addHeader("Origin", getUrlToTest(conf));
+    LOG.info("Connecting to {}", getUrlToTest(zConf) + path);
+    HttpPut httpPut = new HttpPut(getUrlToTest(zConf) + path);
+    httpPut.addHeader("Origin", getUrlToTest(zConf));
     httpPut.setEntity(new StringEntity(body, ContentType.TEXT_PLAIN));
     if (userAndPasswordAreNotBlank(user, pwd)) {
       httpPut.setHeader("Cookie", "JSESSIONID=" + getCookie(user, pwd));
@@ -222,8 +222,8 @@ public abstract class AbstractTestRestApi {
 
   private String getCookie(String user, String password)
       throws IOException {
-    HttpPost httpPost = new HttpPost(getUrlToTest(conf) + "/login");
-    httpPost.addHeader("Origin", getUrlToTest(conf));
+    HttpPost httpPost = new HttpPost(getUrlToTest(zConf) + "/login");
+    httpPost.addHeader("Origin", getUrlToTest(zConf));
     ArrayList<NameValuePair> postParameters = new ArrayList<NameValuePair>();
     postParameters.add(new BasicNameValuePair("password", password));
     postParameters.add(new BasicNameValuePair("userName", user));

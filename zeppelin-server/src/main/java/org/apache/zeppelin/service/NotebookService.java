@@ -94,11 +94,11 @@ public class NotebookService {
   public NotebookService(
       Notebook notebook,
       AuthorizationService authorizationService,
-      ZeppelinConfiguration zeppelinConfiguration,
+      ZeppelinConfiguration zConf,
       SchedulerService schedulerService) {
     this.notebook = notebook;
     this.authorizationService = authorizationService;
-    this.zConf = zeppelinConfiguration;
+    this.zConf = zConf;
     this.schedulerService = schedulerService;
   }
 

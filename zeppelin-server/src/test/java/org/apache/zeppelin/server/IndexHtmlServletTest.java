@@ -46,9 +46,9 @@ class IndexHtmlServletTest {
 
     @Test
     void testZeppelinWebHtmlAddon() throws IOException, ServletException {
-      ZeppelinConfiguration conf = mock(ZeppelinConfiguration.class);
-      when(conf.getHtmlBodyAddon()).thenReturn(TEST_BODY_ADDON);
-      when(conf.getHtmlHeadAddon()).thenReturn(TEST_HEAD_ADDON);
+      ZeppelinConfiguration zConf = mock(ZeppelinConfiguration.class);
+      when(zConf.getHtmlBodyAddon()).thenReturn(TEST_BODY_ADDON);
+      when(zConf.getHtmlHeadAddon()).thenReturn(TEST_HEAD_ADDON);
 
       ServletConfig sc = mock(ServletConfig.class);
       ServletContext ctx = mock(ServletContext.class);
@@ -56,7 +56,7 @@ class IndexHtmlServletTest {
         .thenReturn(new URL("file:" + FILE_PATH_INDEX_HTML_ZEPPELIN_WEB));
       when(sc.getServletContext()).thenReturn(ctx);
 
-      IndexHtmlServlet servlet = new IndexHtmlServlet(conf);
+      IndexHtmlServlet servlet = new IndexHtmlServlet(zConf);
       servlet.init(sc);
 
       HttpServletResponse mockResponse = mock(HttpServletResponse.class);
@@ -80,9 +80,9 @@ class IndexHtmlServletTest {
     @Test
     @Disabled("ignored due to zeppelin-web-angular not build for core tests")
     void testZeppelinWebAngularHtmlAddon() throws IOException, ServletException {
-      ZeppelinConfiguration conf = mock(ZeppelinConfiguration.class);
-      when(conf.getHtmlBodyAddon()).thenReturn(TEST_BODY_ADDON);
-      when(conf.getHtmlHeadAddon()).thenReturn(TEST_HEAD_ADDON);
+      ZeppelinConfiguration zConf = mock(ZeppelinConfiguration.class);
+      when(zConf.getHtmlBodyAddon()).thenReturn(TEST_BODY_ADDON);
+      when(zConf.getHtmlHeadAddon()).thenReturn(TEST_HEAD_ADDON);
 
       ServletConfig sc = mock(ServletConfig.class);
       ServletContext ctx = mock(ServletContext.class);
@@ -90,7 +90,7 @@ class IndexHtmlServletTest {
         .thenReturn(new URL("file:" + FILE_PATH_INDEX_HTML_ZEPPELIN_WEB_ANGULAR));
       when(sc.getServletContext()).thenReturn(ctx);
 
-      IndexHtmlServlet servlet = new IndexHtmlServlet(conf);
+      IndexHtmlServlet servlet = new IndexHtmlServlet(zConf);
       servlet.init(sc);
 
       HttpServletResponse mockResponse = mock(HttpServletResponse.class);

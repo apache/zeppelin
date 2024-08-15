@@ -56,12 +56,12 @@ public class DependencyResolver extends AbstractDependencyResolver {
                                                     "org.apache.zeppelin:zeppelin-interpreter",
                                                     "org.apache.zeppelin:zeppelin-server"};
 
-  public DependencyResolver(String localRepoPath, ZeppelinConfiguration conf) {
-    super(localRepoPath, conf);
+  public DependencyResolver(String localRepoPath, ZeppelinConfiguration zConf) {
+    super(localRepoPath, zConf);
   }
 
-  public DependencyResolver(String localRepoPath, Proxy proxy, ZeppelinConfiguration conf) {
-    super(localRepoPath, proxy, conf);
+  public DependencyResolver(String localRepoPath, Proxy proxy, ZeppelinConfiguration zConf) {
+    super(localRepoPath, proxy, zConf);
   }
 
   public List<File> load(String artifact)

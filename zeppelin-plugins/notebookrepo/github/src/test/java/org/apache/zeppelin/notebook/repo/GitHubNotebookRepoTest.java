@@ -58,7 +58,7 @@ class GitHubNotebookRepoTest {
   private File localZeppelinDir;
   private File localNotebooksDir;
   private File remoteNotebooksDir;
-  private ZeppelinConfiguration conf;
+  private ZeppelinConfiguration zConf;
   private GitHubNotebookRepo gitHubNotebookRepo;
   private RevCommit firstCommitRevision;
   private Git remoteGit;
@@ -66,8 +66,8 @@ class GitHubNotebookRepoTest {
 
   @BeforeEach
   void setUp() throws Exception {
-    conf = ZeppelinConfiguration.load();
-    noteParser = new GsonNoteParser(conf);
+    zConf = ZeppelinConfiguration.load();
+    noteParser = new GsonNoteParser(zConf);
 
     // Create a fake remote notebook Git repository locally in another directory
     remoteZeppelinDir =
@@ -93,26 +93,26 @@ class GitHubNotebookRepoTest {
     firstCommitRevision = remoteGit.commit().setMessage("First commit from remote repository").call();
 
     // Set the Git and Git configurations
-    conf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HOME.getVarName(),
+    zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HOME.getVarName(),
         remoteZeppelinDir.getAbsolutePath());
-    conf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_DIR.getVarName(),
+    zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_DIR.getVarName(),
         localNotebooksDir.getAbsolutePath());
 
     // Set the GitHub configurations
-    conf.setProperty(
+    zConf.setProperty(
             ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_STORAGE.getVarName(),
             "org.apache.zeppelin.notebook.repo.GitHubNotebookRepo");
-    conf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_GIT_REMOTE_URL.getVarName(),
+    zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_GIT_REMOTE_URL.getVarName(),
             remoteNotebooksDir + File.separator + ".git");
-    conf.setProperty(
+    zConf.setProperty(
         ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_GIT_REMOTE_USERNAME.getVarName(), "token");
-    conf.setProperty(
+    zConf.setProperty(
         ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_GIT_REMOTE_ACCESS_TOKEN.getVarName(),
             "access-token");
 
     // Create the Notebook repository (configured for the local repository)
     gitHubNotebookRepo = new GitHubNotebookRepo();
-    gitHubNotebookRepo.init(conf, noteParser);
+    gitHubNotebookRepo.init(zConf, noteParser);
   }
 
   @AfterEach

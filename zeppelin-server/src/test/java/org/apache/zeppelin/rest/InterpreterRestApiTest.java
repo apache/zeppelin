@@ -76,7 +76,7 @@ class InterpreterRestApiTest extends AbstractTestRestApi {
 
   @BeforeEach
   void setUp() {
-    conf = zepServer.getZeppelinConfiguration();
+    zConf = zepServer.getZeppelinConfiguration();
     notebook = zepServer.getService(Notebook.class);
     anonymous = new AuthenticationInfo("anonymous");
   }

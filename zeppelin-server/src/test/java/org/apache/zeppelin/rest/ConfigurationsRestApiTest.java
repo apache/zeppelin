@@ -51,7 +51,7 @@ class ConfigurationsRestApiTest extends AbstractTestRestApi {
 
   @BeforeEach
   void setup() {
-    conf = zep.getZeppelinConfiguration();
+    zConf = zep.getZeppelinConfiguration();
   }
 
   @Test

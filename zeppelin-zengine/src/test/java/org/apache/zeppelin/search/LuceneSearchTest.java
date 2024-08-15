@@ -60,21 +60,21 @@ class LuceneSearchTest {
   @BeforeEach
   public void startUp() throws IOException {
     indexDir = Files.createTempDirectory(this.getClass().getSimpleName()).toFile();
-    ZeppelinConfiguration conf = ZeppelinConfiguration.load();
-    conf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_SEARCH_INDEX_PATH.getVarName(),
+    ZeppelinConfiguration zConf = ZeppelinConfiguration.load();
+    zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_SEARCH_INDEX_PATH.getVarName(),
         indexDir.getAbsolutePath());
 
 
-    noteManager = new NoteManager(new InMemoryNotebookRepo(), conf);
+    noteManager = new NoteManager(new InMemoryNotebookRepo(), zConf);
     interpreterSettingManager = mock(InterpreterSettingManager.class);
     InterpreterSetting defaultInterpreterSetting = mock(InterpreterSetting.class);
     when(defaultInterpreterSetting.getName()).thenReturn("test");
     when(interpreterSettingManager.getDefaultInterpreterSetting()).thenReturn(defaultInterpreterSetting);
-    notebook = new Notebook(conf, mock(AuthorizationService.class),
+    notebook = new Notebook(zConf, mock(AuthorizationService.class),
         mock(NotebookRepo.class), noteManager,
             mock(InterpreterFactory.class), interpreterSettingManager,
             mock(Credentials.class), null);
-    noteSearchService = new LuceneSearch(conf, notebook);
+    noteSearchService = new LuceneSearch(zConf, notebook);
   }
 
   @AfterEach
