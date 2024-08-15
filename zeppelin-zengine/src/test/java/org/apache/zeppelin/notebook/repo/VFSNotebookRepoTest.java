@@ -45,22 +45,21 @@ class VFSNotebookRepoTest {
   private ZeppelinConfiguration zConf;
   private NoteParser noteParser;
   private VFSNotebookRepo notebookRepo;
-  private File notebookDir;
 
   @BeforeEach
   public void setUp() throws IOException {
+    File notebookDir = Files.createTempDirectory(this.getClass().getSimpleName()).toFile();
     zConf = ZeppelinConfiguration.load();
     noteParser = new GsonNoteParser(zConf);
-    notebookDir = Files.createTempDirectory(this.getClass().getSimpleName()).toFile();
-    zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_DIR.getVarName(),
-        notebookDir.getAbsolutePath());
+    zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_DIR.getVarName(), notebookDir.getAbsolutePath());
     notebookRepo = new VFSNotebookRepo();
     notebookRepo.init(zConf, noteParser);
   }
 
   @AfterEach
   public void tearDown() throws IOException {
-    FileUtils.deleteDirectory(notebookDir);
+    File rootDir = new File(notebookRepo.rootNotebookFolder);
+    FileUtils.deleteDirectory(rootDir);
   }
 
   @Test
@@ -137,7 +136,7 @@ class VFSNotebookRepoTest {
     assertEquals(1, repoSettings.size());
     NotebookRepoSettingsInfo settingInfo = repoSettings.get(0);
     assertEquals("Notebook Path", settingInfo.name);
-    assertEquals(notebookDir.getAbsolutePath(), settingInfo.selected);
+    assertEquals(notebookRepo.rootNotebookFolder, settingInfo.selected);
 
     createNewNote("{}", "id2", "my_project/name2");
     assertEquals(1, notebookRepo.list(AuthenticationInfo.ANONYMOUS).size());
@@ -149,8 +148,33 @@ class VFSNotebookRepoTest {
     assertEquals(0, notebookRepo.list(AuthenticationInfo.ANONYMOUS).size());
   }
 
+  @Test
+  void testSkipInvalidFileName() throws IOException {
+    assertEquals(0, notebookRepo.list(AuthenticationInfo.ANONYMOUS).size());
+
+    createNewNote("{}", "hidden_note", "my_project/.hidden_note");
+
+    Map<String, NoteInfo> noteInfos = notebookRepo.list(AuthenticationInfo.ANONYMOUS);
+    assertEquals(0, noteInfos.size());
+  }
+
+  @Test
+  void testSkipInvalidDirectoryName() throws IOException {
+    createNewDirectory(".hidden_dir");
+
+    createNewNote("{}", "hidden_note", "my_project/.hidden_dir/note");
+
+    Map<String, NoteInfo> noteInfos = notebookRepo.list(AuthenticationInfo.ANONYMOUS);
+    assertEquals(0, noteInfos.size());
+  }
+
   private void createNewNote(String content, String noteId, String noteName) throws IOException {
     FileUtils.writeStringToFile(
-        new File(notebookDir + "/" + noteName + "_" + noteId + ".zpln"), content, StandardCharsets.UTF_8);
+        new File(notebookRepo.rootNotebookFolder + "/" + noteName + "_" + noteId + ".zpln"), content, StandardCharsets.UTF_8);
+  }
+
+  private void createNewDirectory(String dirName) {
+    File dir = new File(notebookRepo.rootNotebookFolder + "/" + dirName);
+    dir.mkdir();
   }
 }
