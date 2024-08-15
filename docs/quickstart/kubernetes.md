@@ -70,19 +70,19 @@ Next, we will build our `zeppelin-server` image:
 
 ```sh
 cd scripts/docker/zeppelin-server
-# Looking at the "./pom.xml" we can see the version is 0.11.1
+# Looking at the "./pom.xml" we can see the version is 0.11.2
 # Let's set the correct version in our Dockerfile:
 # vi Dockerfile
-# ARG version="0.11.1"
+# ARG version="0.11.2"
 # Once you saved the Dockerfile with the correct version we can build our image:
-docker build -t zeppelin-server:0.11.1 -f ./Dockerfile .
+docker build -t zeppelin-server:0.11.2 -f ./Dockerfile .
 ```
 
 The last image we build is `zeppelin-interpreter`:
 
 ```sh
 cd scripts/docker/zeppelin-interpreter
-docker build -t zeppelin-interpreter:0.11.1 -f ./Dockerfile .
+docker build -t zeppelin-interpreter:0.11.2 -f ./Dockerfile .
 ```
 
 So we should now have the following images:
@@ -92,8 +92,8 @@ So we should now have the following images:
 $ docker images
 
 REPOSITORY                    TAG               IMAGE ID       CREATED          SIZE
-zeppelin-interpreter          0.11.1            4f77fe989eed   3 minutes ago    622MB
-zeppelin-server               0.11.1            4f77fe989eed   3 minutes ago    622MB
+zeppelin-interpreter          0.11.2            4f77fe989eed   3 minutes ago    622MB
+zeppelin-server               0.11.2            4f77fe989eed   3 minutes ago    622MB
 zeppelin-distribution         latest            bd2fb4b321d2   40 minutes ago   1.27GB
 ```
 

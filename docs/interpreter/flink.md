@@ -116,7 +116,7 @@ e.g. Here we download Flink 1.12.2 to`/mnt/disk1/flink-1.12.2`,
 and we mount it to Zeppelin docker container and run the following command to start Zeppelin docker.
 
 ```bash
-docker run -u $(id -u) -p 8080:8080 -p 8081:8081 --rm -v /mnt/disk1/flink-1.12.2:/opt/flink -e FLINK_HOME=/opt/flink  --name zeppelin apache/zeppelin:0.11.1
+docker run -u $(id -u) -p 8080:8080 -p 8081:8081 --rm -v /mnt/disk1/flink-1.12.2:/opt/flink -e FLINK_HOME=/opt/flink  --name zeppelin apache/zeppelin:0.11.2
 ```
 
 After running the above command, you can open `http://localhost:8080` to play Flink in Zeppelin. We only verify the flink local mode in Zeppelin docker, other modes may not due to network issues.
@@ -133,7 +133,7 @@ e.g. Here's a repo of Flink sql cookbook on Zeppelin: [https://github.com/zjffdu
 You can clone this repo and mount it to docker,
 
 ```
-docker run -u $(id -u) -p 8080:8080 --rm -v /mnt/disk1/flink-sql-cookbook-on-zeppelin:/notebook -v /mnt/disk1/flink-1.12.2:/opt/flink -e FLINK_HOME=/opt/flink  -e ZEPPELIN_NOTEBOOK_DIR='/notebook' --name zeppelin apache/zeppelin:0.11.1
+docker run -u $(id -u) -p 8080:8080 --rm -v /mnt/disk1/flink-sql-cookbook-on-zeppelin:/notebook -v /mnt/disk1/flink-1.12.2:/opt/flink -e FLINK_HOME=/opt/flink  -e ZEPPELIN_NOTEBOOK_DIR='/notebook' --name zeppelin apache/zeppelin:0.11.2
 ```
 
 ## Prerequisites

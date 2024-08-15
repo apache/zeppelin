@@ -1057,7 +1057,7 @@ Before Adding one of the below dependencies, check the Phoenix version first.
     <th>Excludes</th>
   </tr>
   <tr>
-    <td>org.apache.tajo:tajo-jdbc:0.11.1</td>
+    <td>org.apache.tajo:tajo-jdbc:0.11.2</td>
     <td></td>
   </tr>
 </table>

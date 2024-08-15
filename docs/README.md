@@ -68,7 +68,11 @@ If you wish to help us and contribute to Zeppelin Documentation, please look at 
 
     ```
     # go to /docs under Zeppelin source
-    bundle exec jekyll build --safe
+    docker run --rm -it \
+       -v $PWD:/docs \
+       -w /docs \
+       ruby:2.0.0 \
+       bash -c "bundle install && bundle exec jekyll build --safe"
     ```
 
  2. checkout ASF repo

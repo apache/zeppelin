@@ -128,7 +128,7 @@ e.g. Here we download Spark 3.1.2 to`/mnt/disk1/spark-3.1.2`,
 and we mount it to Zeppelin docker container and run the following command to start Zeppelin docker container.
 
 ```bash
-docker run -u $(id -u) -p 8080:8080 -p 4040:4040 --rm -v /mnt/disk1/spark-3.1.2:/opt/spark -e SPARK_HOME=/opt/spark  --name zeppelin apache/zeppelin:0.11.1
+docker run -u $(id -u) -p 8080:8080 -p 4040:4040 --rm -v /mnt/disk1/spark-3.1.2:/opt/spark -e SPARK_HOME=/opt/spark  --name zeppelin apache/zeppelin:0.11.2
 ```
 
 After running the above command, you can open `http://localhost:8080` to play Spark in Zeppelin. We only verify the spark local mode in Zeppelin docker, other modes may not work due to network issues.
