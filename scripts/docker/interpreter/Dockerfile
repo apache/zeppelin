@@ -31,6 +31,6 @@ RUN rm -rf /opt/zeppelin
 
 RUN rm -rf /spark
 RUN wget https://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-${SPARK_BIN_NAME}.tgz
-RUN tar zxvf spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz
-RUN mv spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION} /opt/spark
-RUN rm spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz
+RUN tar zxvf spark-${SPARK_VERSION}-bin-${SPARK_BIN_NAME}.tgz
+RUN mv spark-${SPARK_VERSION}-bin-${SPARK_BIN_NAME} /opt/spark
+RUN rm spark-${SPARK_VERSION}-bin-${SPARK_BIN_NAME}.tgz
