@@ -40,4 +40,11 @@ ENV SHELL_INTERPRETER_PORT=8081
 
 RUN chmod +x ./bin/interpreter.sh
 
-CMD ./bin/interpreter.sh -d interpreter/sh -c host.docker.internal -p ${INTERPRETER_EVENT_SERVER_PORT} -r ${SHELL_INTERPRETER_PORT}:${SHELL_INTERPRETER_PORT} -i sh-shared_process -l ./local-repo -g sh
+CMD ["./bin/interpreter.sh", \
+    "-d", "interpreter/sh", \
+    "-c", "host.docker.internal", \
+    "-p", "${INTERPRETER_EVENT_SERVER_PORT}", \
+    "-r", "${SHELL_INTERPRETER_PORT}:${SHELL_INTERPRETER_PORT}", \
+    "-i", "sh-shared_process", \
+    "-l", "./local-repo", \
+    "-g", "sh"]
