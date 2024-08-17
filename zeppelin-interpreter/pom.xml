@@ -112,7 +112,7 @@
       <groupId>commons-beanutils</groupId>
       <artifactId>commons-beanutils</artifactId>
       <version>1.9.4</version>
-        <exclusions>
+      <exclusions>
         <!-- using jcl-over-slf4j instead -->
         <exclusion>
           <groupId>commons-logging</groupId>
@@ -240,6 +240,42 @@
           <failOnNoGitDirectory>false</failOnNoGitDirectory>
           <dateFormat>yyyy-MM-dd HH:mm:ss</dateFormat>
         </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>3.0.0</version>
+        <executions>
+          <execution>
+            <!-- This execution runs during the compile phase to generate Java files from Thrift files -->
+            <id>generate-thrift-sources</id>
+            <phase>compile</phase>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+            <configuration>
+              <executable>bash</executable>
+              <arguments>
+                <argument>${basedir}/src/main/thrift/genthrift.sh</argument>
+              </arguments>
+            </configuration>
+          </execution>
+          <execution>
+            <!-- This execution can be triggered manually to install Thrift by running the following command: -->
+            <!-- mvn exec:exec@install-thrift -->
+            <id>install-thrift</id>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+            <configuration>
+              <executable>bash</executable>
+              <arguments>
+                <argument>${basedir}/src/main/thrift/genthrift.sh</argument>
+                <argument>install</argument>
+              </arguments>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
 
