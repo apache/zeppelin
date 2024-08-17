@@ -4,7 +4,7 @@ Shell interpreter for Apache Zeppelin
 ## Run the interpreter with docker
 You can run the shell interpreter as a standalone docker container.
 
-### step 1. Specify the configuration for the shell interpreter
+### Step 1. Specify the configuration for the shell interpreter
 ```bash
     # conf/interpreter.json
     
@@ -20,7 +20,7 @@ You can run the shell interpreter as a standalone docker container.
       }
 ````
 
-### step 2. Build and run the shell interpreter
+### Step 2. Build and run the shell interpreter
 ```bash
 zeppelin $ ./mvnw clean install -DskipTests
  
