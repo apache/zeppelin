@@ -18,10 +18,11 @@ version: "3.8"
 
 services:
   zeppelin-server:
-    hostname: zeppelin-server
-    container_name: zeppelin-server
-    image: ${ZEPPELIN_IMAGE}:${ZEPPELIN_IMAGE_TAG}
+    hostname: zeppelin
+    container_name: zeppelin
+    image: apache/zeppelin:0.11.2
     ports:
       - "8080:8080"
-    volumes:
-      - ../notebook:/opt/zeppelin/notebook
+    environment:
+      ZEPPELIN_PORT: 8080
+      ZEPPELIN_MEM: -Xmx1024m -XX:MaxMetaspaceSize=512m
