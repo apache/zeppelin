@@ -92,7 +92,7 @@ class SqlCompleterTest {
 
       String explain = explain(buffer, cursor, candidates);
 
-      logger.info(explain);
+      LOGGER.info(explain);
 
       assertEquals(expected, new HashSet<>(candidates), "Buffer [" + buffer.replace(" ", ".")
               + "] and Cursor[" + cursor + "] " + explain);
@@ -128,7 +128,7 @@ class SqlCompleterTest {
     }
   }
 
-  private Logger logger = LoggerFactory.getLogger(SqlCompleterTest.class);
+  private Logger LOGGER = LoggerFactory.getLogger(SqlCompleterTest.class);
 
   private CompleterTester tester;
 

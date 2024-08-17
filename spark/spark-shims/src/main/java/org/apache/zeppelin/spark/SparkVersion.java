@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory;
  * Provide reading comparing capability of spark version returned from SparkContext.version()
  */
 public class SparkVersion {
-  private static final Logger logger = LoggerFactory.getLogger(SparkVersion.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(SparkVersion.class);
 
   public static final SparkVersion SPARK_3_2_0 = SparkVersion.fromVersionString("3.2.0");
 
@@ -60,7 +60,7 @@ public class SparkVersion {
       // version is always 5 digits. (e.g. 2.0.0 -> 20000, 1.6.2 -> 10602)
       version = Integer.parseInt(String.format("%d%02d%02d", majorVersion, minorVersion, patchVersion));
     } catch (Exception e) {
-      logger.error("Can not recognize Spark version " + versionString +
+      LOGGER.error("Can not recognize Spark version " + versionString +
           ". Assume it's a future release", e);
 
       // assume it is future release

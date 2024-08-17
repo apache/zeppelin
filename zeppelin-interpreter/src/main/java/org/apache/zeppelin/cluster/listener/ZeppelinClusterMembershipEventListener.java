@@ -27,8 +27,7 @@ import org.slf4j.LoggerFactory;
  * Monitor whether the metadata in the cluster server changes
  */
 public class ZeppelinClusterMembershipEventListener implements ClusterMembershipEventListener {
-  private static final Logger LOGGER
-      = LoggerFactory.getLogger(ZeppelinClusterMembershipEventListener.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(ZeppelinClusterMembershipEventListener.class);
 
   @Override
   public void event(ClusterMembershipEvent event) {

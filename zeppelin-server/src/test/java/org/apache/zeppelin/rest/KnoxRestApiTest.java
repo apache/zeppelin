@@ -42,7 +42,7 @@ public class KnoxRestApiTest extends AbstractTestRestApi {
           "liWYjr0M17Bm9GfPHRRR66s7YuYXa6DLbB4fHE0cyOoQnkfJFpU_vr1xhy0_0URc5v-Gb829b9rxuQfjKe-37h" +
           "qbUdkwww2q6QQETVMvzp0rQKprUClZujyDvh0;";
 
-  private static final Logger LOG = LoggerFactory.getLogger(KnoxRestApiTest.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(KnoxRestApiTest.class);
 
   Gson gson = new Gson();
   private static MiniZeppelinServer zepServer;

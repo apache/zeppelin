@@ -49,14 +49,14 @@ import java.net.URISyntaxException;
  * username + password authentication, not just GitHub.
  */
 public class GitHubNotebookRepo extends GitNotebookRepo {
-  private static final Logger LOG = LoggerFactory.getLogger(GitHubNotebookRepo.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(GitHubNotebookRepo.class);
   private ZeppelinConfiguration zConf;
   private Git git;
 
   @Override
   public void init(ZeppelinConfiguration zConf, NoteParser noteParser) throws IOException {
     super.init(zConf, noteParser);
-    LOG.debug("initializing GitHubNotebookRepo");
+    LOGGER.debug("initializing GitHubNotebookRepo");
     this.git = super.getGit();
     this.zConf = zConf;
 
@@ -79,20 +79,20 @@ public class GitHubNotebookRepo extends GitNotebookRepo {
 
   private void configureRemoteStream() {
     try {
-      LOG.debug("Setting up remote stream");
+      LOGGER.debug("Setting up remote stream");
       RemoteAddCommand remoteAddCommand = git.remoteAdd();
       remoteAddCommand.setName(zConf.getZeppelinNotebookGitRemoteOrigin());
       remoteAddCommand.setUri(new URIish(zConf.getZeppelinNotebookGitURL()));
       remoteAddCommand.call();
     } catch (GitAPIException e) {
-      LOG.error("Error configuring GitHub", e);
+      LOGGER.error("Error configuring GitHub", e);
     } catch (URISyntaxException e) {
-      LOG.error("Error in GitHub URL provided", e);
+      LOGGER.error("Error in GitHub URL provided", e);
     }
   }
 
   private void updateRemoteStream() {
-    LOG.debug("Updating remote stream");
+    LOGGER.debug("Updating remote stream");
 
     pullFromRemoteStream();
     pushToRemoteSteam();
@@ -100,7 +100,7 @@ public class GitHubNotebookRepo extends GitNotebookRepo {
 
   private void pullFromRemoteStream() {
     try {
-      LOG.debug("Pulling latest changes from remote stream");
+      LOGGER.debug("Pulling latest changes from remote stream");
       PullCommand pullCommand = git.pull();
       pullCommand.setCredentialsProvider(
         new UsernamePasswordCredentialsProvider(
@@ -112,13 +112,13 @@ public class GitHubNotebookRepo extends GitNotebookRepo {
       pullCommand.call();
 
     } catch (GitAPIException e) {
-      LOG.error("Error when pulling latest changes from remote repository", e);
+      LOGGER.error("Error when pulling latest changes from remote repository", e);
     }
   }
 
   private void pushToRemoteSteam() {
     try {
-      LOG.debug("Pushing latest changes to remote stream");
+      LOGGER.debug("Pushing latest changes to remote stream");
       PushCommand pushCommand = git.push();
       pushCommand.setCredentialsProvider(
         new UsernamePasswordCredentialsProvider(
@@ -129,7 +129,7 @@ public class GitHubNotebookRepo extends GitNotebookRepo {
 
       pushCommand.call();
     } catch (GitAPIException e) {
-      LOG.error("Error when pushing latest changes to remote repository", e);
+      LOGGER.error("Error when pushing latest changes to remote repository", e);
     }
   }
 }

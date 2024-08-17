@@ -45,7 +45,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 
 public class LivyInterpreterIT extends WithLivyServer {
-  private static final Logger LOG = LoggerFactory.getLogger(LivyInterpreterIT.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(LivyInterpreterIT.class);
   private static Properties properties;
 
   @BeforeAll

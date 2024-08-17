@@ -38,7 +38,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 abstract class WithLivyServer {
-  private static final Logger LOG = LoggerFactory.getLogger(WithLivyServer.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(WithLivyServer.class);
 
   private static Optional<Process> livy = Optional.empty();
 
@@ -53,11 +53,11 @@ abstract class WithLivyServer {
 
   public static boolean checkPreCondition() {
     if (System.getenv("LIVY_HOME") == null) {
-      LOG.warn(("livy integration is skipped because LIVY_HOME is not set"));
+      LOGGER.warn(("livy integration is skipped because LIVY_HOME is not set"));
       return false;
     }
     if (System.getenv("SPARK_HOME") == null) {
-      LOG.warn(("livy integration is skipped because SPARK_HOME is not set"));
+      LOGGER.warn(("livy integration is skipped because SPARK_HOME is not set"));
       return false;
     }
     return true;
@@ -78,14 +78,14 @@ abstract class WithLivyServer {
         Paths.get(LIVY_HOME, "conf", "log4j.properties.template"),
         LIVY_CONF_DIR.toPath().resolve("log4j.properties"));
 
-    LOG.info("SPARK_HOME: {}", SPARK_HOME);
-    LOG.info("LIVY_HOME: {}", LIVY_HOME);
-    LOG.info("LIVY_CONF_DIR: {}", LIVY_CONF_DIR.getAbsolutePath());
-    LOG.info("LIVY_LOG_DIR: {}", LIVY_LOG_DIR.getAbsolutePath());
+    LOGGER.info("SPARK_HOME: {}", SPARK_HOME);
+    LOGGER.info("LIVY_HOME: {}", LIVY_HOME);
+    LOGGER.info("LIVY_CONF_DIR: {}", LIVY_CONF_DIR.getAbsolutePath());
+    LOGGER.info("LIVY_LOG_DIR: {}", LIVY_LOG_DIR.getAbsolutePath());
 
     File logFile = new File(TMP_DIR, "output.log");
     assertTrue(logFile.createNewFile());
-    LOG.info("Redirect Livy's log to {}", logFile.getAbsolutePath());
+    LOGGER.info("Redirect Livy's log to {}", logFile.getAbsolutePath());
 
     ProcessBuilder pb = new ProcessBuilder(LIVY_HOME + "/bin/livy-server")
         .directory(TMP_DIR)
@@ -116,7 +116,7 @@ abstract class WithLivyServer {
       }
     });
 
-    LOG.info("Livy Server is started at {}", LIVY_ENDPOINT);
+    LOGGER.info("Livy Server is started at {}", LIVY_ENDPOINT);
     livy = Optional.of(livyProc);
   }
 
@@ -124,16 +124,16 @@ abstract class WithLivyServer {
   public static void afterAll() {
     livy.filter(Process::isAlive).ifPresent(proc -> {
       try {
-        LOG.info("Stopping the Livy Server running at {}", LIVY_ENDPOINT);
+        LOGGER.info("Stopping the Livy Server running at {}", LIVY_ENDPOINT);
         proc.destroy();
         if (!proc.waitFor(10, SECONDS)) {
-          LOG.warn("Forcibly stopping the Livy Server running at {}", LIVY_ENDPOINT);
+          LOGGER.warn("Forcibly stopping the Livy Server running at {}", LIVY_ENDPOINT);
           proc.destroyForcibly();
           assertFalse(proc.isAlive());
         }
       } catch (InterruptedException ignore) {
         if (proc.isAlive()) {
-          LOG.warn("Forcibly stopping the Livy Server running at {}", LIVY_ENDPOINT);
+          LOGGER.warn("Forcibly stopping the Livy Server running at {}", LIVY_ENDPOINT);
           proc.destroyForcibly();
           assertFalse(proc.isAlive());
         }

@@ -51,7 +51,7 @@ import org.apache.zeppelin.scheduler.SchedulerFactory;
  * Groovy interpreter for Zeppelin.
  */
 public class GroovyInterpreter extends Interpreter {
-  Logger log = LoggerFactory.getLogger(GroovyInterpreter.class);
+  Logger LOGGER = LoggerFactory.getLogger(GroovyInterpreter.class);
   GroovyShell shell = null; //new GroovyShell();
   //here we will store Interpreters shared variables. concurrent just in case.
   Map<String, Object> sharedBindings = new ConcurrentHashMap<String, Object>();
@@ -76,10 +76,10 @@ public class GroovyInterpreter extends Interpreter {
                 .getPath());
         classes = new File(jar.getParentFile(), "classes").toString();
       } catch (Exception e) {
-        log.error(e.getMessage());
+        LOGGER.error(e.getMessage());
       }
     }
-    log.info("groovy classes classpath: " + classes);
+    LOGGER.info("groovy classes classpath: " + classes);
     if (classes != null && classes.length() > 0) {
       File fClasses = new File(classes);
       if (!fClasses.exists()) {
@@ -161,15 +161,15 @@ public class GroovyInterpreter extends Interpreter {
       //put shared bindings evaluated in this interpreter
       bindings.putAll(sharedBindings);
       //put predefined bindings
-      bindings.put("g", new GObject(log, out, this.getProperties(), contextInterpreter, bindings));
+      bindings.put("g", new GObject(LOGGER, out, this.getProperties(), contextInterpreter, bindings));
       bindings.put("out", new PrintWriter(out, true));
 
       script.run();
       //let's get shared variables defined in current script and store them in shared map
       for (Map.Entry<String, Object> e : bindings.entrySet()) {
         if (!predefinedBindings.contains(e.getKey())) {
-          if (log.isTraceEnabled()) {
-            log.trace("groovy script variable " + e);  //let's see what we have...
+          if (LOGGER.isTraceEnabled()) {
+            LOGGER.trace("groovy script variable " + e);  //let's see what we have...
           }
           sharedBindings.put(e.getKey(), e.getValue());
         }
@@ -181,7 +181,7 @@ public class GroovyInterpreter extends Interpreter {
     } catch (Throwable t) {
       t = StackTraceUtils.deepSanitize(t);
       String msg = t.toString() + "\n at " + t.getStackTrace()[0];
-      log.error("Failed to run script: " + t + "\n" + cmd + "\n", t);
+      LOGGER.error("Failed to run script: " + t + "\n" + cmd + "\n", t);
       return new InterpreterResult(Code.ERROR, msg);
     }
   }
@@ -199,7 +199,7 @@ public class GroovyInterpreter extends Interpreter {
           t.interrupt();
           //t.stop(); //TODO(dlukyanov): need some way to terminate maybe through GObject..
         } catch (Throwable t) {
-          log.error("Failed to cancel script: " + t, t);
+          LOGGER.error("Failed to cancel script: " + t, t);
         }
       }
     }

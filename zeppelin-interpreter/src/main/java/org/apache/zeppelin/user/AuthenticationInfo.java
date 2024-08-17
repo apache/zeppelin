@@ -35,7 +35,7 @@ import com.google.gson.Gson;
  *
  */
 public class AuthenticationInfo implements JsonSerializable {
-  private static final Logger LOG = LoggerFactory.getLogger(AuthenticationInfo.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(AuthenticationInfo.class);
   private static final Gson GSON = new Gson();
 
   String user;
@@ -119,7 +119,7 @@ public class AuthenticationInfo implements JsonSerializable {
 
   public static boolean isAnonymous(AuthenticationInfo subject) {
     if (subject == null) {
-      LOG.warn("Subject is null, assuming anonymous. "
+      LOGGER.warn("Subject is null, assuming anonymous. "
           + "Not recommended to use subject as null except in tests");
       return true;
     }

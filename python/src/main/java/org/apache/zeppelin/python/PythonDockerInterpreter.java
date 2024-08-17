@@ -39,7 +39,7 @@ import java.util.regex.Pattern;
  * Helps run python interpreter on a docker container
  */
 public class PythonDockerInterpreter extends Interpreter {
-  Logger logger = LoggerFactory.getLogger(PythonDockerInterpreter.class);
+  Logger LOGGER = LoggerFactory.getLogger(PythonDockerInterpreter.class);
   Pattern activatePattern = Pattern.compile("activate\\s*(.*)");
   Pattern deactivatePattern = Pattern.compile("deactivate");
   Pattern helpPattern = Pattern.compile("help");
@@ -122,7 +122,7 @@ public class PythonDockerInterpreter extends Interpreter {
       out.setType(InterpreterResult.Type.HTML);
       out.writeResource("output_templates/docker_usage.html");
     } catch (IOException e) {
-      logger.error("Can't print usage", e);
+      LOGGER.error("Can't print usage", e);
     }
   }
 
@@ -166,7 +166,7 @@ public class PythonDockerInterpreter extends Interpreter {
     try {
       exit = runCommand(out, "docker", "pull", image);
     } catch (IOException | InterruptedException e) {
-      logger.error(e.getMessage(), e);
+      LOGGER.error(e.getMessage(), e);
       throw new InterpreterException(e);
     }
     return exit == 0;

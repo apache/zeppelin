@@ -1610,7 +1610,7 @@ public class RemoteInterpreterService {
   }
 
   public static class Processor<I extends Iface> extends org.apache.thrift.TBaseProcessor<I> implements org.apache.thrift.TProcessor {
-    private static final org.slf4j.Logger _LOGGER = org.slf4j.LoggerFactory.getLogger(Processor.class.getName());
+    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(Processor.class.getName());
     public Processor(I iface) {
       super(iface, getProcessMap(new java.util.HashMap<java.lang.String, org.apache.thrift.ProcessFunction<I, ? extends org.apache.thrift.TBase>>()));
     }
@@ -2314,7 +2314,7 @@ public class RemoteInterpreterService {
   }
 
   public static class AsyncProcessor<I extends AsyncIface> extends org.apache.thrift.TBaseAsyncProcessor<I> {
-    private static final org.slf4j.Logger _LOGGER = org.slf4j.LoggerFactory.getLogger(AsyncProcessor.class.getName());
+    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(AsyncProcessor.class.getName());
     public AsyncProcessor(I iface) {
       super(iface, getProcessMap(new java.util.HashMap<java.lang.String, org.apache.thrift.AsyncProcessFunction<I, ? extends org.apache.thrift.TBase, ?>>()));
     }
@@ -2367,10 +2367,10 @@ public class RemoteInterpreterService {
             try {
               fcall.sendResponse(fb, result, org.apache.thrift.protocol.TMessageType.REPLY,seqid);
             } catch (org.apache.thrift.transport.TTransportException e) {
-              _LOGGER.error("TTransportException writing to internal frame buffer", e);
+              LOGGER.error("TTransportException writing to internal frame buffer", e);
               fb.close();
             } catch (java.lang.Exception e) {
-              _LOGGER.error("Exception writing to internal frame buffer", e);
+              LOGGER.error("Exception writing to internal frame buffer", e);
               onError(e);
             }
           }
@@ -2383,22 +2383,22 @@ public class RemoteInterpreterService {
               result.setExIsSet(true);
               msg = result;
             } else if (e instanceof org.apache.thrift.transport.TTransportException) {
-              _LOGGER.error("TTransportException inside handler", e);
+              LOGGER.error("TTransportException inside handler", e);
               fb.close();
               return;
             } else if (e instanceof org.apache.thrift.TApplicationException) {
-              _LOGGER.error("TApplicationException inside handler", e);
+              LOGGER.error("TApplicationException inside handler", e);
               msgType = org.apache.thrift.protocol.TMessageType.EXCEPTION;
               msg = (org.apache.thrift.TApplicationException)e;
             } else {
-              _LOGGER.error("Exception inside handler", e);
+              LOGGER.error("Exception inside handler", e);
               msgType = org.apache.thrift.protocol.TMessageType.EXCEPTION;
               msg = new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.INTERNAL_ERROR, e.getMessage());
             }
             try {
               fcall.sendResponse(fb,msg,msgType,seqid);
             } catch (java.lang.Exception ex) {
-              _LOGGER.error("Exception writing to internal frame buffer", ex);
+              LOGGER.error("Exception writing to internal frame buffer", ex);
               fb.close();
             }
           }
@@ -2431,10 +2431,10 @@ public class RemoteInterpreterService {
             try {
               fcall.sendResponse(fb, result, org.apache.thrift.protocol.TMessageType.REPLY,seqid);
             } catch (org.apache.thrift.transport.TTransportException e) {
-              _LOGGER.error("TTransportException writing to internal frame buffer", e);
+              LOGGER.error("TTransportException writing to internal frame buffer", e);
               fb.close();
             } catch (java.lang.Exception e) {
-              _LOGGER.error("Exception writing to internal frame buffer", e);
+              LOGGER.error("Exception writing to internal frame buffer", e);
               onError(e);
             }
           }
@@ -2447,22 +2447,22 @@ public class RemoteInterpreterService {
               result.setExIsSet(true);
               msg = result;
             } else if (e instanceof org.apache.thrift.transport.TTransportException) {
-              _LOGGER.error("TTransportException inside handler", e);
+              LOGGER.error("TTransportException inside handler", e);
               fb.close();
               return;
             } else if (e instanceof org.apache.thrift.TApplicationException) {
-              _LOGGER.error("TApplicationException inside handler", e);
+              LOGGER.error("TApplicationException inside handler", e);
               msgType = org.apache.thrift.protocol.TMessageType.EXCEPTION;
               msg = (org.apache.thrift.TApplicationException)e;
             } else {
-              _LOGGER.error("Exception inside handler", e);
+              LOGGER.error("Exception inside handler", e);
               msgType = org.apache.thrift.protocol.TMessageType.EXCEPTION;
               msg = new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.INTERNAL_ERROR, e.getMessage());
             }
             try {
               fcall.sendResponse(fb,msg,msgType,seqid);
             } catch (java.lang.Exception ex) {
-              _LOGGER.error("Exception writing to internal frame buffer", ex);
+              LOGGER.error("Exception writing to internal frame buffer", ex);
               fb.close();
             }
           }
@@ -2495,10 +2495,10 @@ public class RemoteInterpreterService {
             try {
               fcall.sendResponse(fb, result, org.apache.thrift.protocol.TMessageType.REPLY,seqid);
             } catch (org.apache.thrift.transport.TTransportException e) {
-              _LOGGER.error("TTransportException writing to internal frame buffer", e);
+              LOGGER.error("TTransportException writing to internal frame buffer", e);
               fb.close();
             } catch (java.lang.Exception e) {
-              _LOGGER.error("Exception writing to internal frame buffer", e);
+              LOGGER.error("Exception writing to internal frame buffer", e);
               onError(e);
             }
           }
@@ -2511,22 +2511,22 @@ public class RemoteInterpreterService {
               result.setExIsSet(true);
               msg = result;
             } else if (e instanceof org.apache.thrift.transport.TTransportException) {
-              _LOGGER.error("TTransportException inside handler", e);
+              LOGGER.error("TTransportException inside handler", e);
               fb.close();
               return;
             } else if (e instanceof org.apache.thrift.TApplicationException) {
-              _LOGGER.error("TApplicationException inside handler", e);
+              LOGGER.error("TApplicationException inside handler", e);
               msgType = org.apache.thrift.protocol.TMessageType.EXCEPTION;
               msg = (org.apache.thrift.TApplicationException)e;
             } else {
-              _LOGGER.error("Exception inside handler", e);
+              LOGGER.error("Exception inside handler", e);
               msgType = org.apache.thrift.protocol.TMessageType.EXCEPTION;
               msg = new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.INTERNAL_ERROR, e.getMessage());
             }
             try {
               fcall.sendResponse(fb,msg,msgType,seqid);
             } catch (java.lang.Exception ex) {
-              _LOGGER.error("Exception writing to internal frame buffer", ex);
+              LOGGER.error("Exception writing to internal frame buffer", ex);
               fb.close();
             }
           }
@@ -2559,10 +2559,10 @@ public class RemoteInterpreterService {
             try {
               fcall.sendResponse(fb, result, org.apache.thrift.protocol.TMessageType.REPLY,seqid);
             } catch (org.apache.thrift.transport.TTransportException e) {
-              _LOGGER.error("TTransportException writing to internal frame buffer", e);
+              LOGGER.error("TTransportException writing to internal frame buffer", e);
               fb.close();
             } catch (java.lang.Exception e) {
-              _LOGGER.error("Exception writing to internal frame buffer", e);
+              LOGGER.error("Exception writing to internal frame buffer", e);
               onError(e);
             }
           }
@@ -2575,22 +2575,22 @@ public class RemoteInterpreterService {
               result.setExIsSet(true);
               msg = result;
             } else if (e instanceof org.apache.thrift.transport.TTransportException) {
-              _LOGGER.error("TTransportException inside handler", e);
+              LOGGER.error("TTransportException inside handler", e);
               fb.close();
               return;
             } else if (e instanceof org.apache.thrift.TApplicationException) {
-              _LOGGER.error("TApplicationException inside handler", e);
+              LOGGER.error("TApplicationException inside handler", e);
               msgType = org.apache.thrift.protocol.TMessageType.EXCEPTION;
               msg = (org.apache.thrift.TApplicationException)e;
             } else {
-              _LOGGER.error("Exception inside handler", e);
+              LOGGER.error("Exception inside handler", e);
               msgType = org.apache.thrift.protocol.TMessageType.EXCEPTION;
               msg = new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.INTERNAL_ERROR, e.getMessage());
             }
             try {
               fcall.sendResponse(fb,msg,msgType,seqid);
             } catch (java.lang.Exception ex) {
-              _LOGGER.error("Exception writing to internal frame buffer", ex);
+              LOGGER.error("Exception writing to internal frame buffer", ex);
               fb.close();
             }
           }
@@ -2623,10 +2623,10 @@ public class RemoteInterpreterService {
             try {
               fcall.sendResponse(fb, result, org.apache.thrift.protocol.TMessageType.REPLY,seqid);
             } catch (org.apache.thrift.transport.TTransportException e) {
-              _LOGGER.error("TTransportException writing to internal frame buffer", e);
+              LOGGER.error("TTransportException writing to internal frame buffer", e);
               fb.close();
             } catch (java.lang.Exception e) {
-              _LOGGER.error("Exception writing to internal frame buffer", e);
+              LOGGER.error("Exception writing to internal frame buffer", e);
               onError(e);
             }
           }
@@ -2639,22 +2639,22 @@ public class RemoteInterpreterService {
               result.setExIsSet(true);
               msg = result;
             } else if (e instanceof org.apache.thrift.transport.TTransportException) {
-              _LOGGER.error("TTransportException inside handler", e);
+              LOGGER.error("TTransportException inside handler", e);
               fb.close();
               return;
             } else if (e instanceof org.apache.thrift.TApplicationException) {
-              _LOGGER.error("TApplicationException inside handler", e);
+              LOGGER.error("TApplicationException inside handler", e);
               msgType = org.apache.thrift.protocol.TMessageType.EXCEPTION;
               msg = (org.apache.thrift.TApplicationException)e;
             } else {
-              _LOGGER.error("Exception inside handler", e);
+              LOGGER.error("Exception inside handler", e);
               msgType = org.apache.thrift.protocol.TMessageType.EXCEPTION;
               msg = new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.INTERNAL_ERROR, e.getMessage());
             }
             try {
               fcall.sendResponse(fb,msg,msgType,seqid);
             } catch (java.lang.Exception ex) {
-              _LOGGER.error("Exception writing to internal frame buffer", ex);
+              LOGGER.error("Exception writing to internal frame buffer", ex);
               fb.close();
             }
           }
@@ -2688,10 +2688,10 @@ public class RemoteInterpreterService {
             try {
               fcall.sendResponse(fb, result, org.apache.thrift.protocol.TMessageType.REPLY,seqid);
             } catch (org.apache.thrift.transport.TTransportException e) {
-              _LOGGER.error("TTransportException writing to internal frame buffer", e);
+              LOGGER.error("TTransportException writing to internal frame buffer", e);
               fb.close();
             } catch (java.lang.Exception e) {
-              _LOGGER.error("Exception writing to internal frame buffer", e);
+              LOGGER.error("Exception writing to internal frame buffer", e);
               onError(e);
             }
           }
@@ -2704,22 +2704,22 @@ public class RemoteInterpreterService {
               result.setExIsSet(true);
               msg = result;
             } else if (e instanceof org.apache.thrift.transport.TTransportException) {
-              _LOGGER.error("TTransportException inside handler", e);
+              LOGGER.error("TTransportException inside handler", e);
               fb.close();
               return;
             } else if (e instanceof org.apache.thrift.TApplicationException) {
-              _LOGGER.error("TApplicationException inside handler", e);
+              LOGGER.error("TApplicationException inside handler", e);
               msgType = org.apache.thrift.protocol.TMessageType.EXCEPTION;
               msg = (org.apache.thrift.TApplicationException)e;
             } else {
-              _LOGGER.error("Exception inside handler", e);
+              LOGGER.error("Exception inside handler", e);
               msgType = org.apache.thrift.protocol.TMessageType.EXCEPTION;
               msg = new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.INTERNAL_ERROR, e.getMessage());
             }
             try {
               fcall.sendResponse(fb,msg,msgType,seqid);
             } catch (java.lang.Exception ex) {
-              _LOGGER.error("Exception writing to internal frame buffer", ex);
+              LOGGER.error("Exception writing to internal frame buffer", ex);
               fb.close();
             }
           }
@@ -2752,10 +2752,10 @@ public class RemoteInterpreterService {
             try {
               fcall.sendResponse(fb, result, org.apache.thrift.protocol.TMessageType.REPLY,seqid);
             } catch (org.apache.thrift.transport.TTransportException e) {
-              _LOGGER.error("TTransportException writing to internal frame buffer", e);
+              LOGGER.error("TTransportException writing to internal frame buffer", e);
               fb.close();
             } catch (java.lang.Exception e) {
-              _LOGGER.error("Exception writing to internal frame buffer", e);
+              LOGGER.error("Exception writing to internal frame buffer", e);
               onError(e);
             }
           }
@@ -2768,22 +2768,22 @@ public class RemoteInterpreterService {
               result.setExIsSet(true);
               msg = result;
             } else if (e instanceof org.apache.thrift.transport.TTransportException) {
-              _LOGGER.error("TTransportException inside handler", e);
+              LOGGER.error("TTransportException inside handler", e);
               fb.close();
               return;
             } else if (e instanceof org.apache.thrift.TApplicationException) {
-              _LOGGER.error("TApplicationException inside handler", e);
+              LOGGER.error("TApplicationException inside handler", e);
               msgType = org.apache.thrift.protocol.TMessageType.EXCEPTION;
               msg = (org.apache.thrift.TApplicationException)e;
             } else {
-              _LOGGER.error("Exception inside handler", e);
+              LOGGER.error("Exception inside handler", e);
               msgType = org.apache.thrift.protocol.TMessageType.EXCEPTION;
               msg = new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.INTERNAL_ERROR, e.getMessage());
             }
             try {
               fcall.sendResponse(fb,msg,msgType,seqid);
             } catch (java.lang.Exception ex) {
-              _LOGGER.error("Exception writing to internal frame buffer", ex);
+              LOGGER.error("Exception writing to internal frame buffer", ex);
               fb.close();
             }
           }
@@ -2818,10 +2818,10 @@ public class RemoteInterpreterService {
             try {
               fcall.sendResponse(fb, result, org.apache.thrift.protocol.TMessageType.REPLY,seqid);
             } catch (org.apache.thrift.transport.TTransportException e) {
-              _LOGGER.error("TTransportException writing to internal frame buffer", e);
+              LOGGER.error("TTransportException writing to internal frame buffer", e);
               fb.close();
             } catch (java.lang.Exception e) {
-              _LOGGER.error("Exception writing to internal frame buffer", e);
+              LOGGER.error("Exception writing to internal frame buffer", e);
               onError(e);
             }
           }
@@ -2834,22 +2834,22 @@ public class RemoteInterpreterService {
               result.setExIsSet(true);
               msg = result;
             } else if (e instanceof org.apache.thrift.transport.TTransportException) {
-              _LOGGER.error("TTransportException inside handler", e);
+              LOGGER.error("TTransportException inside handler", e);
               fb.close();
               return;
             } else if (e instanceof org.apache.thrift.TApplicationException) {
-              _LOGGER.error("TApplicationException inside handler", e);
+              LOGGER.error("TApplicationException inside handler", e);
               msgType = org.apache.thrift.protocol.TMessageType.EXCEPTION;
               msg = (org.apache.thrift.TApplicationException)e;
             } else {
-              _LOGGER.error("Exception inside handler", e);
+              LOGGER.error("Exception inside handler", e);
               msgType = org.apache.thrift.protocol.TMessageType.EXCEPTION;
               msg = new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.INTERNAL_ERROR, e.getMessage());
             }
             try {
               fcall.sendResponse(fb,msg,msgType,seqid);
             } catch (java.lang.Exception ex) {
-              _LOGGER.error("Exception writing to internal frame buffer", ex);
+              LOGGER.error("Exception writing to internal frame buffer", ex);
               fb.close();
             }
           }
@@ -2883,10 +2883,10 @@ public class RemoteInterpreterService {
             try {
               fcall.sendResponse(fb, result, org.apache.thrift.protocol.TMessageType.REPLY,seqid);
             } catch (org.apache.thrift.transport.TTransportException e) {
-              _LOGGER.error("TTransportException writing to internal frame buffer", e);
+              LOGGER.error("TTransportException writing to internal frame buffer", e);
               fb.close();
             } catch (java.lang.Exception e) {
-              _LOGGER.error("Exception writing to internal frame buffer", e);
+              LOGGER.error("Exception writing to internal frame buffer", e);
               onError(e);
             }
           }
@@ -2899,22 +2899,22 @@ public class RemoteInterpreterService {
               result.setExIsSet(true);
               msg = result;
             } else if (e instanceof org.apache.thrift.transport.TTransportException) {
-              _LOGGER.error("TTransportException inside handler", e);
+              LOGGER.error("TTransportException inside handler", e);
               fb.close();
               return;
             } else if (e instanceof org.apache.thrift.TApplicationException) {
-              _LOGGER.error("TApplicationException inside handler", e);
+              LOGGER.error("TApplicationException inside handler", e);
               msgType = org.apache.thrift.protocol.TMessageType.EXCEPTION;
               msg = (org.apache.thrift.TApplicationException)e;
             } else {
-              _LOGGER.error("Exception inside handler", e);
+              LOGGER.error("Exception inside handler", e);
               msgType = org.apache.thrift.protocol.TMessageType.EXCEPTION;
               msg = new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.INTERNAL_ERROR, e.getMessage());
             }
             try {
               fcall.sendResponse(fb,msg,msgType,seqid);
             } catch (java.lang.Exception ex) {
-              _LOGGER.error("Exception writing to internal frame buffer", ex);
+              LOGGER.error("Exception writing to internal frame buffer", ex);
               fb.close();
             }
           }
@@ -2948,10 +2948,10 @@ public class RemoteInterpreterService {
             try {
               fcall.sendResponse(fb, result, org.apache.thrift.protocol.TMessageType.REPLY,seqid);
             } catch (org.apache.thrift.transport.TTransportException e) {
-              _LOGGER.error("TTransportException writing to internal frame buffer", e);
+              LOGGER.error("TTransportException writing to internal frame buffer", e);
               fb.close();
             } catch (java.lang.Exception e) {
-              _LOGGER.error("Exception writing to internal frame buffer", e);
+              LOGGER.error("Exception writing to internal frame buffer", e);
               onError(e);
             }
           }
@@ -2964,22 +2964,22 @@ public class RemoteInterpreterService {
               result.setExIsSet(true);
               msg = result;
             } else if (e instanceof org.apache.thrift.transport.TTransportException) {
-              _LOGGER.error("TTransportException inside handler", e);
+              LOGGER.error("TTransportException inside handler", e);
               fb.close();
               return;
             } else if (e instanceof org.apache.thrift.TApplicationException) {
-              _LOGGER.error("TApplicationException inside handler", e);
+              LOGGER.error("TApplicationException inside handler", e);
               msgType = org.apache.thrift.protocol.TMessageType.EXCEPTION;
               msg = (org.apache.thrift.TApplicationException)e;
             } else {
-              _LOGGER.error("Exception inside handler", e);
+              LOGGER.error("Exception inside handler", e);
               msgType = org.apache.thrift.protocol.TMessageType.EXCEPTION;
               msg = new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.INTERNAL_ERROR, e.getMessage());
             }
             try {
               fcall.sendResponse(fb,msg,msgType,seqid);
             } catch (java.lang.Exception ex) {
-              _LOGGER.error("Exception writing to internal frame buffer", ex);
+              LOGGER.error("Exception writing to internal frame buffer", ex);
               fb.close();
             }
           }
@@ -3012,10 +3012,10 @@ public class RemoteInterpreterService {
             try {
               fcall.sendResponse(fb, result, org.apache.thrift.protocol.TMessageType.REPLY,seqid);
             } catch (org.apache.thrift.transport.TTransportException e) {
-              _LOGGER.error("TTransportException writing to internal frame buffer", e);
+              LOGGER.error("TTransportException writing to internal frame buffer", e);
               fb.close();
             } catch (java.lang.Exception e) {
-              _LOGGER.error("Exception writing to internal frame buffer", e);
+              LOGGER.error("Exception writing to internal frame buffer", e);
               onError(e);
             }
           }
@@ -3024,22 +3024,22 @@ public class RemoteInterpreterService {
             org.apache.thrift.TSerializable msg;
             shutdown_result result = new shutdown_result();
             if (e instanceof org.apache.thrift.transport.TTransportException) {
-              _LOGGER.error("TTransportException inside handler", e);
+              LOGGER.error("TTransportException inside handler", e);
               fb.close();
               return;
             } else if (e instanceof org.apache.thrift.TApplicationException) {
-              _LOGGER.error("TApplicationException inside handler", e);
+              LOGGER.error("TApplicationException inside handler", e);
               msgType = org.apache.thrift.protocol.TMessageType.EXCEPTION;
               msg = (org.apache.thrift.TApplicationException)e;
             } else {
-              _LOGGER.error("Exception inside handler", e);
+              LOGGER.error("Exception inside handler", e);
               msgType = org.apache.thrift.protocol.TMessageType.EXCEPTION;
               msg = new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.INTERNAL_ERROR, e.getMessage());
             }
             try {
               fcall.sendResponse(fb,msg,msgType,seqid);
             } catch (java.lang.Exception ex) {
-              _LOGGER.error("Exception writing to internal frame buffer", ex);
+              LOGGER.error("Exception writing to internal frame buffer", ex);
               fb.close();
             }
           }
@@ -3073,10 +3073,10 @@ public class RemoteInterpreterService {
             try {
               fcall.sendResponse(fb, result, org.apache.thrift.protocol.TMessageType.REPLY,seqid);
             } catch (org.apache.thrift.transport.TTransportException e) {
-              _LOGGER.error("TTransportException writing to internal frame buffer", e);
+              LOGGER.error("TTransportException writing to internal frame buffer", e);
               fb.close();
             } catch (java.lang.Exception e) {
-              _LOGGER.error("Exception writing to internal frame buffer", e);
+              LOGGER.error("Exception writing to internal frame buffer", e);
               onError(e);
             }
           }
@@ -3089,22 +3089,22 @@ public class RemoteInterpreterService {
               result.setExIsSet(true);
               msg = result;
             } else if (e instanceof org.apache.thrift.transport.TTransportException) {
-              _LOGGER.error("TTransportException inside handler", e);
+              LOGGER.error("TTransportException inside handler", e);
               fb.close();
               return;
             } else if (e instanceof org.apache.thrift.TApplicationException) {
-              _LOGGER.error("TApplicationException inside handler", e);
+              LOGGER.error("TApplicationException inside handler", e);
               msgType = org.apache.thrift.protocol.TMessageType.EXCEPTION;
               msg = (org.apache.thrift.TApplicationException)e;
             } else {
-              _LOGGER.error("Exception inside handler", e);
+              LOGGER.error("Exception inside handler", e);
               msgType = org.apache.thrift.protocol.TMessageType.EXCEPTION;
               msg = new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.INTERNAL_ERROR, e.getMessage());
             }
             try {
               fcall.sendResponse(fb,msg,msgType,seqid);
             } catch (java.lang.Exception ex) {
-              _LOGGER.error("Exception writing to internal frame buffer", ex);
+              LOGGER.error("Exception writing to internal frame buffer", ex);
               fb.close();
             }
           }
@@ -3138,10 +3138,10 @@ public class RemoteInterpreterService {
             try {
               fcall.sendResponse(fb, result, org.apache.thrift.protocol.TMessageType.REPLY,seqid);
             } catch (org.apache.thrift.transport.TTransportException e) {
-              _LOGGER.error("TTransportException writing to internal frame buffer", e);
+              LOGGER.error("TTransportException writing to internal frame buffer", e);
               fb.close();
             } catch (java.lang.Exception e) {
-              _LOGGER.error("Exception writing to internal frame buffer", e);
+              LOGGER.error("Exception writing to internal frame buffer", e);
               onError(e);
             }
           }
@@ -3154,22 +3154,22 @@ public class RemoteInterpreterService {
               result.setExIsSet(true);
               msg = result;
             } else if (e instanceof org.apache.thrift.transport.TTransportException) {
-              _LOGGER.error("TTransportException inside handler", e);
+              LOGGER.error("TTransportException inside handler", e);
               fb.close();
               return;
             } else if (e instanceof org.apache.thrift.TApplicationException) {
-              _LOGGER.error("TApplicationException inside handler", e);
+              LOGGER.error("TApplicationException inside handler", e);
               msgType = org.apache.thrift.protocol.TMessageType.EXCEPTION;
               msg = (org.apache.thrift.TApplicationException)e;
             } else {
-              _LOGGER.error("Exception inside handler", e);
+              LOGGER.error("Exception inside handler", e);
               msgType = org.apache.thrift.protocol.TMessageType.EXCEPTION;
               msg = new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.INTERNAL_ERROR, e.getMessage());
             }
             try {
               fcall.sendResponse(fb,msg,msgType,seqid);
             } catch (java.lang.Exception ex) {
-              _LOGGER.error("Exception writing to internal frame buffer", ex);
+              LOGGER.error("Exception writing to internal frame buffer", ex);
               fb.close();
             }
           }
@@ -3203,10 +3203,10 @@ public class RemoteInterpreterService {
             try {
               fcall.sendResponse(fb, result, org.apache.thrift.protocol.TMessageType.REPLY,seqid);
             } catch (org.apache.thrift.transport.TTransportException e) {
-              _LOGGER.error("TTransportException writing to internal frame buffer", e);
+              LOGGER.error("TTransportException writing to internal frame buffer", e);
               fb.close();
             } catch (java.lang.Exception e) {
-              _LOGGER.error("Exception writing to internal frame buffer", e);
+              LOGGER.error("Exception writing to internal frame buffer", e);
               onError(e);
             }
           }
@@ -3219,22 +3219,22 @@ public class RemoteInterpreterService {
               result.setExIsSet(true);
               msg = result;
             } else if (e instanceof org.apache.thrift.transport.TTransportException) {
-              _LOGGER.error("TTransportException inside handler", e);
+              LOGGER.error("TTransportException inside handler", e);
               fb.close();
               return;
             } else if (e instanceof org.apache.thrift.TApplicationException) {
-              _LOGGER.error("TApplicationException inside handler", e);
+              LOGGER.error("TApplicationException inside handler", e);
               msgType = org.apache.thrift.protocol.TMessageType.EXCEPTION;
               msg = (org.apache.thrift.TApplicationException)e;
             } else {
-              _LOGGER.error("Exception inside handler", e);
+              LOGGER.error("Exception inside handler", e);
               msgType = org.apache.thrift.protocol.TMessageType.EXCEPTION;
               msg = new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.INTERNAL_ERROR, e.getMessage());
             }
             try {
               fcall.sendResponse(fb,msg,msgType,seqid);
             } catch (java.lang.Exception ex) {
-              _LOGGER.error("Exception writing to internal frame buffer", ex);
+              LOGGER.error("Exception writing to internal frame buffer", ex);
               fb.close();
             }
           }
@@ -3269,10 +3269,10 @@ public class RemoteInterpreterService {
             try {
               fcall.sendResponse(fb, result, org.apache.thrift.protocol.TMessageType.REPLY,seqid);
             } catch (org.apache.thrift.transport.TTransportException e) {
-              _LOGGER.error("TTransportException writing to internal frame buffer", e);
+              LOGGER.error("TTransportException writing to internal frame buffer", e);
               fb.close();
             } catch (java.lang.Exception e) {
-              _LOGGER.error("Exception writing to internal frame buffer", e);
+              LOGGER.error("Exception writing to internal frame buffer", e);
               onError(e);
             }
           }
@@ -3285,22 +3285,22 @@ public class RemoteInterpreterService {
               result.setExIsSet(true);
               msg = result;
             } else if (e instanceof org.apache.thrift.transport.TTransportException) {
-              _LOGGER.error("TTransportException inside handler", e);
+              LOGGER.error("TTransportException inside handler", e);
               fb.close();
               return;
             } else if (e instanceof org.apache.thrift.TApplicationException) {
-              _LOGGER.error("TApplicationException inside handler", e);
+              LOGGER.error("TApplicationException inside handler", e);
               msgType = org.apache.thrift.protocol.TMessageType.EXCEPTION;
               msg = (org.apache.thrift.TApplicationException)e;
             } else {
-              _LOGGER.error("Exception inside handler", e);
+              LOGGER.error("Exception inside handler", e);
               msgType = org.apache.thrift.protocol.TMessageType.EXCEPTION;
               msg = new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.INTERNAL_ERROR, e.getMessage());
             }
             try {
               fcall.sendResponse(fb,msg,msgType,seqid);
             } catch (java.lang.Exception ex) {
-              _LOGGER.error("Exception writing to internal frame buffer", ex);
+              LOGGER.error("Exception writing to internal frame buffer", ex);
               fb.close();
             }
           }
@@ -3334,10 +3334,10 @@ public class RemoteInterpreterService {
             try {
               fcall.sendResponse(fb, result, org.apache.thrift.protocol.TMessageType.REPLY,seqid);
             } catch (org.apache.thrift.transport.TTransportException e) {
-              _LOGGER.error("TTransportException writing to internal frame buffer", e);
+              LOGGER.error("TTransportException writing to internal frame buffer", e);
               fb.close();
             } catch (java.lang.Exception e) {
-              _LOGGER.error("Exception writing to internal frame buffer", e);
+              LOGGER.error("Exception writing to internal frame buffer", e);
               onError(e);
             }
           }
@@ -3350,22 +3350,22 @@ public class RemoteInterpreterService {
               result.setExIsSet(true);
               msg = result;
             } else if (e instanceof org.apache.thrift.transport.TTransportException) {
-              _LOGGER.error("TTransportException inside handler", e);
+              LOGGER.error("TTransportException inside handler", e);
               fb.close();
               return;
             } else if (e instanceof org.apache.thrift.TApplicationException) {
-              _LOGGER.error("TApplicationException inside handler", e);
+              LOGGER.error("TApplicationException inside handler", e);
               msgType = org.apache.thrift.protocol.TMessageType.EXCEPTION;
               msg = (org.apache.thrift.TApplicationException)e;
             } else {
-              _LOGGER.error("Exception inside handler", e);
+              LOGGER.error("Exception inside handler", e);
               msgType = org.apache.thrift.protocol.TMessageType.EXCEPTION;
               msg = new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.INTERNAL_ERROR, e.getMessage());
             }
             try {
               fcall.sendResponse(fb,msg,msgType,seqid);
             } catch (java.lang.Exception ex) {
-              _LOGGER.error("Exception writing to internal frame buffer", ex);
+              LOGGER.error("Exception writing to internal frame buffer", ex);
               fb.close();
             }
           }
@@ -3398,10 +3398,10 @@ public class RemoteInterpreterService {
             try {
               fcall.sendResponse(fb, result, org.apache.thrift.protocol.TMessageType.REPLY,seqid);
             } catch (org.apache.thrift.transport.TTransportException e) {
-              _LOGGER.error("TTransportException writing to internal frame buffer", e);
+              LOGGER.error("TTransportException writing to internal frame buffer", e);
               fb.close();
             } catch (java.lang.Exception e) {
-              _LOGGER.error("Exception writing to internal frame buffer", e);
+              LOGGER.error("Exception writing to internal frame buffer", e);
               onError(e);
             }
           }
@@ -3414,22 +3414,22 @@ public class RemoteInterpreterService {
               result.setExIsSet(true);
               msg = result;
             } else if (e instanceof org.apache.thrift.transport.TTransportException) {
-              _LOGGER.error("TTransportException inside handler", e);
+              LOGGER.error("TTransportException inside handler", e);
               fb.close();
               return;
             } else if (e instanceof org.apache.thrift.TApplicationException) {
-              _LOGGER.error("TApplicationException inside handler", e);
+              LOGGER.error("TApplicationException inside handler", e);
               msgType = org.apache.thrift.protocol.TMessageType.EXCEPTION;
               msg = (org.apache.thrift.TApplicationException)e;
             } else {
-              _LOGGER.error("Exception inside handler", e);
+              LOGGER.error("Exception inside handler", e);
               msgType = org.apache.thrift.protocol.TMessageType.EXCEPTION;
               msg = new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.INTERNAL_ERROR, e.getMessage());
             }
             try {
               fcall.sendResponse(fb,msg,msgType,seqid);
             } catch (java.lang.Exception ex) {
-              _LOGGER.error("Exception writing to internal frame buffer", ex);
+              LOGGER.error("Exception writing to internal frame buffer", ex);
               fb.close();
             }
           }
@@ -3462,10 +3462,10 @@ public class RemoteInterpreterService {
             try {
               fcall.sendResponse(fb, result, org.apache.thrift.protocol.TMessageType.REPLY,seqid);
             } catch (org.apache.thrift.transport.TTransportException e) {
-              _LOGGER.error("TTransportException writing to internal frame buffer", e);
+              LOGGER.error("TTransportException writing to internal frame buffer", e);
               fb.close();
             } catch (java.lang.Exception e) {
-              _LOGGER.error("Exception writing to internal frame buffer", e);
+              LOGGER.error("Exception writing to internal frame buffer", e);
               onError(e);
             }
           }
@@ -3478,22 +3478,22 @@ public class RemoteInterpreterService {
               result.setExIsSet(true);
               msg = result;
             } else if (e instanceof org.apache.thrift.transport.TTransportException) {
-              _LOGGER.error("TTransportException inside handler", e);
+              LOGGER.error("TTransportException inside handler", e);
               fb.close();
               return;
             } else if (e instanceof org.apache.thrift.TApplicationException) {
-              _LOGGER.error("TApplicationException inside handler", e);
+              LOGGER.error("TApplicationException inside handler", e);
               msgType = org.apache.thrift.protocol.TMessageType.EXCEPTION;
               msg = (org.apache.thrift.TApplicationException)e;
             } else {
-              _LOGGER.error("Exception inside handler", e);
+              LOGGER.error("Exception inside handler", e);
               msgType = org.apache.thrift.protocol.TMessageType.EXCEPTION;
               msg = new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.INTERNAL_ERROR, e.getMessage());
             }
             try {
               fcall.sendResponse(fb,msg,msgType,seqid);
             } catch (java.lang.Exception ex) {
-              _LOGGER.error("Exception writing to internal frame buffer", ex);
+              LOGGER.error("Exception writing to internal frame buffer", ex);
               fb.close();
             }
           }
@@ -3526,10 +3526,10 @@ public class RemoteInterpreterService {
             try {
               fcall.sendResponse(fb, result, org.apache.thrift.protocol.TMessageType.REPLY,seqid);
             } catch (org.apache.thrift.transport.TTransportException e) {
-              _LOGGER.error("TTransportException writing to internal frame buffer", e);
+              LOGGER.error("TTransportException writing to internal frame buffer", e);
               fb.close();
             } catch (java.lang.Exception e) {
-              _LOGGER.error("Exception writing to internal frame buffer", e);
+              LOGGER.error("Exception writing to internal frame buffer", e);
               onError(e);
             }
           }
@@ -3542,22 +3542,22 @@ public class RemoteInterpreterService {
               result.setExIsSet(true);
               msg = result;
             } else if (e instanceof org.apache.thrift.transport.TTransportException) {
-              _LOGGER.error("TTransportException inside handler", e);
+              LOGGER.error("TTransportException inside handler", e);
               fb.close();
               return;
             } else if (e instanceof org.apache.thrift.TApplicationException) {
-              _LOGGER.error("TApplicationException inside handler", e);
+              LOGGER.error("TApplicationException inside handler", e);
               msgType = org.apache.thrift.protocol.TMessageType.EXCEPTION;
               msg = (org.apache.thrift.TApplicationException)e;
             } else {
-              _LOGGER.error("Exception inside handler", e);
+              LOGGER.error("Exception inside handler", e);
               msgType = org.apache.thrift.protocol.TMessageType.EXCEPTION;
               msg = new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.INTERNAL_ERROR, e.getMessage());
             }
             try {
               fcall.sendResponse(fb,msg,msgType,seqid);
             } catch (java.lang.Exception ex) {
-              _LOGGER.error("Exception writing to internal frame buffer", ex);
+              LOGGER.error("Exception writing to internal frame buffer", ex);
               fb.close();
             }
           }
@@ -3590,10 +3590,10 @@ public class RemoteInterpreterService {
             try {
               fcall.sendResponse(fb, result, org.apache.thrift.protocol.TMessageType.REPLY,seqid);
             } catch (org.apache.thrift.transport.TTransportException e) {
-              _LOGGER.error("TTransportException writing to internal frame buffer", e);
+              LOGGER.error("TTransportException writing to internal frame buffer", e);
               fb.close();
             } catch (java.lang.Exception e) {
-              _LOGGER.error("Exception writing to internal frame buffer", e);
+              LOGGER.error("Exception writing to internal frame buffer", e);
               onError(e);
             }
           }
@@ -3606,22 +3606,22 @@ public class RemoteInterpreterService {
               result.setExIsSet(true);
               msg = result;
             } else if (e instanceof org.apache.thrift.transport.TTransportException) {
-              _LOGGER.error("TTransportException inside handler", e);
+              LOGGER.error("TTransportException inside handler", e);
               fb.close();
               return;
             } else if (e instanceof org.apache.thrift.TApplicationException) {
-              _LOGGER.error("TApplicationException inside handler", e);
+              LOGGER.error("TApplicationException inside handler", e);
               msgType = org.apache.thrift.protocol.TMessageType.EXCEPTION;
               msg = (org.apache.thrift.TApplicationException)e;
             } else {
-              _LOGGER.error("Exception inside handler", e);
+              LOGGER.error("Exception inside handler", e);
               msgType = org.apache.thrift.protocol.TMessageType.EXCEPTION;
               msg = new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.INTERNAL_ERROR, e.getMessage());
             }
             try {
               fcall.sendResponse(fb,msg,msgType,seqid);
             } catch (java.lang.Exception ex) {
-              _LOGGER.error("Exception writing to internal frame buffer", ex);
+              LOGGER.error("Exception writing to internal frame buffer", ex);
               fb.close();
             }
           }
@@ -3655,10 +3655,10 @@ public class RemoteInterpreterService {
             try {
               fcall.sendResponse(fb, result, org.apache.thrift.protocol.TMessageType.REPLY,seqid);
             } catch (org.apache.thrift.transport.TTransportException e) {
-              _LOGGER.error("TTransportException writing to internal frame buffer", e);
+              LOGGER.error("TTransportException writing to internal frame buffer", e);
               fb.close();
             } catch (java.lang.Exception e) {
-              _LOGGER.error("Exception writing to internal frame buffer", e);
+              LOGGER.error("Exception writing to internal frame buffer", e);
               onError(e);
             }
           }
@@ -3671,22 +3671,22 @@ public class RemoteInterpreterService {
               result.setExIsSet(true);
               msg = result;
             } else if (e instanceof org.apache.thrift.transport.TTransportException) {
-              _LOGGER.error("TTransportException inside handler", e);
+              LOGGER.error("TTransportException inside handler", e);
               fb.close();
               return;
             } else if (e instanceof org.apache.thrift.TApplicationException) {
-              _LOGGER.error("TApplicationException inside handler", e);
+              LOGGER.error("TApplicationException inside handler", e);
               msgType = org.apache.thrift.protocol.TMessageType.EXCEPTION;
               msg = (org.apache.thrift.TApplicationException)e;
             } else {
-              _LOGGER.error("Exception inside handler", e);
+              LOGGER.error("Exception inside handler", e);
               msgType = org.apache.thrift.protocol.TMessageType.EXCEPTION;
               msg = new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.INTERNAL_ERROR, e.getMessage());
             }
             try {
               fcall.sendResponse(fb,msg,msgType,seqid);
             } catch (java.lang.Exception ex) {
-              _LOGGER.error("Exception writing to internal frame buffer", ex);
+              LOGGER.error("Exception writing to internal frame buffer", ex);
               fb.close();
             }
           }
@@ -3720,10 +3720,10 @@ public class RemoteInterpreterService {
             try {
               fcall.sendResponse(fb, result, org.apache.thrift.protocol.TMessageType.REPLY,seqid);
             } catch (org.apache.thrift.transport.TTransportException e) {
-              _LOGGER.error("TTransportException writing to internal frame buffer", e);
+              LOGGER.error("TTransportException writing to internal frame buffer", e);
               fb.close();
             } catch (java.lang.Exception e) {
-              _LOGGER.error("Exception writing to internal frame buffer", e);
+              LOGGER.error("Exception writing to internal frame buffer", e);
               onError(e);
             }
           }
@@ -3736,22 +3736,22 @@ public class RemoteInterpreterService {
               result.setExIsSet(true);
               msg = result;
             } else if (e instanceof org.apache.thrift.transport.TTransportException) {
-              _LOGGER.error("TTransportException inside handler", e);
+              LOGGER.error("TTransportException inside handler", e);
               fb.close();
               return;
             } else if (e instanceof org.apache.thrift.TApplicationException) {
-              _LOGGER.error("TApplicationException inside handler", e);
+              LOGGER.error("TApplicationException inside handler", e);
               msgType = org.apache.thrift.protocol.TMessageType.EXCEPTION;
               msg = (org.apache.thrift.TApplicationException)e;
             } else {
-              _LOGGER.error("Exception inside handler", e);
+              LOGGER.error("Exception inside handler", e);
               msgType = org.apache.thrift.protocol.TMessageType.EXCEPTION;
               msg = new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.INTERNAL_ERROR, e.getMessage());
             }
             try {
               fcall.sendResponse(fb,msg,msgType,seqid);
             } catch (java.lang.Exception ex) {
-              _LOGGER.error("Exception writing to internal frame buffer", ex);
+              LOGGER.error("Exception writing to internal frame buffer", ex);
               fb.close();
             }
           }
@@ -3785,10 +3785,10 @@ public class RemoteInterpreterService {
             try {
               fcall.sendResponse(fb, result, org.apache.thrift.protocol.TMessageType.REPLY,seqid);
             } catch (org.apache.thrift.transport.TTransportException e) {
-              _LOGGER.error("TTransportException writing to internal frame buffer", e);
+              LOGGER.error("TTransportException writing to internal frame buffer", e);
               fb.close();
             } catch (java.lang.Exception e) {
-              _LOGGER.error("Exception writing to internal frame buffer", e);
+              LOGGER.error("Exception writing to internal frame buffer", e);
               onError(e);
             }
           }
@@ -3801,22 +3801,22 @@ public class RemoteInterpreterService {
               result.setExIsSet(true);
               msg = result;
             } else if (e instanceof org.apache.thrift.transport.TTransportException) {
-              _LOGGER.error("TTransportException inside handler", e);
+              LOGGER.error("TTransportException inside handler", e);
               fb.close();
               return;
             } else if (e instanceof org.apache.thrift.TApplicationException) {
-              _LOGGER.error("TApplicationException inside handler", e);
+              LOGGER.error("TApplicationException inside handler", e);
               msgType = org.apache.thrift.protocol.TMessageType.EXCEPTION;
               msg = (org.apache.thrift.TApplicationException)e;
             } else {
-              _LOGGER.error("Exception inside handler", e);
+              LOGGER.error("Exception inside handler", e);
               msgType = org.apache.thrift.protocol.TMessageType.EXCEPTION;
               msg = new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.INTERNAL_ERROR, e.getMessage());
             }
             try {
               fcall.sendResponse(fb,msg,msgType,seqid);
             } catch (java.lang.Exception ex) {
-              _LOGGER.error("Exception writing to internal frame buffer", ex);
+              LOGGER.error("Exception writing to internal frame buffer", ex);
               fb.close();
             }
           }

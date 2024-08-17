@@ -44,7 +44,7 @@ import org.apache.zeppelin.scheduler.SchedulerFactory;
  *
  */
 public abstract class FileInterpreter extends Interpreter {
-  Logger logger = LoggerFactory.getLogger(FileInterpreter.class);
+  Logger LOGGER = LoggerFactory.getLogger(FileInterpreter.class);
   String currentDir = null;
   CommandArgs args = null;
 
@@ -108,13 +108,13 @@ public abstract class FileInterpreter extends Interpreter {
   // Handle the command handling uniformly across all file systems
   @Override
   public InterpreterResult interpret(String cmd, InterpreterContext contextInterpreter) {
-    logger.info("Run File command '" + cmd + "'");
+    LOGGER.info("Run File command '" + cmd + "'");
 
     args = new CommandArgs(cmd);
     args.parseArgs();
 
     if (args.command == null) {
-      logger.info("Error: No command");
+      LOGGER.info("Error: No command");
       return new InterpreterResult(Code.ERROR, Type.TEXT, "No command");
     }
 
@@ -133,7 +133,7 @@ public abstract class FileInterpreter extends Interpreter {
         String results = listAll(newPath);
         return new InterpreterResult(Code.SUCCESS, Type.TEXT, results);
       } catch (Exception e) {
-        logger.error("Error listing files in path " + newPath, e);
+        LOGGER.error("Error listing files in path " + newPath, e);
         return new InterpreterResult(Code.ERROR, Type.TEXT, e.getMessage());
       }
 

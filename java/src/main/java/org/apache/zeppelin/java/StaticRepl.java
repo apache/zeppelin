@@ -45,7 +45,7 @@ import java.util.List;
  * StaticRepl for compling the java code in memory
  */
 public class StaticRepl {
-  static Logger logger = LoggerFactory.getLogger(StaticRepl.class);
+  static Logger LOGGER = LoggerFactory.getLogger(StaticRepl.class);
 
   public static String execute(String generatedClassName, String code) throws Exception {
 
@@ -80,7 +80,7 @@ public class StaticRepl {
 
     // if there isn't Main method, will retuen error
     if (mainClassName == null) {
-      logger.error("Exception for Main method", "There isn't any class "
+      LOGGER.error("Exception for Main method", "There isn't any class "
           + "containing static main method.");
       throw new Exception("There isn't any class containing static main method.");
     }
@@ -123,7 +123,7 @@ public class StaticRepl {
 
       System.setOut(oldOut);
       System.setErr(oldErr);
-      logger.error("Exception in Interpreter while compilation", baosErr.toString());
+      LOGGER.error("Exception in Interpreter while compilation", baosErr.toString());
       throw new Exception(baosErr.toString());
     } else {
       try {
@@ -147,7 +147,7 @@ public class StaticRepl {
 
       } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException
           | InvocationTargetException e) {
-        logger.error("Exception in Interpreter while execution", e);
+        LOGGER.error("Exception in Interpreter while execution", e);
         System.err.println(e);
         e.printStackTrace(newErr);
         throw new Exception(baosErr.toString(), e);

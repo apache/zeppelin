@@ -59,7 +59,7 @@ import static org.junit.jupiter.api.Assertions.fail;
  */
 @TestMethodOrder(MethodOrderer.MethodName.class)
 class NotebookRestApiTest extends AbstractTestRestApi {
-  private static final Logger LOG = LoggerFactory.getLogger(NotebookRestApiTest.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(NotebookRestApiTest.class);
   Gson gson = new Gson();
   AuthenticationInfo anonymous;
   private Notebook notebook;
@@ -90,7 +90,7 @@ class NotebookRestApiTest extends AbstractTestRestApi {
 
   @Test
   void testGetReloadNote() throws IOException {
-    LOG.info("Running testGetNote");
+    LOGGER.info("Running testGetNote");
     String note1Id = null;
     try {
       note1Id = notebook.createNote("note1", anonymous);
@@ -132,7 +132,7 @@ class NotebookRestApiTest extends AbstractTestRestApi {
 
   @Test
   void testGetNoteByPath() throws IOException {
-    LOG.info("Running testGetNoteByPath");
+    LOGGER.info("Running testGetNoteByPath");
     String note1Id = null;
     try {
         String notePath = "dir1/note1";
@@ -162,7 +162,7 @@ class NotebookRestApiTest extends AbstractTestRestApi {
 
   @Test
   void testGetNoteByPathWithPathNotExist() throws IOException {
-    LOG.info("Running testGetNoteByPathWithPathNotExist");
+    LOGGER.info("Running testGetNoteByPathWithPathNotExist");
     String notePath = "A note that doesn't exist";
     CloseableHttpResponse post = httpPost("/notebook/getByPath" , "{\"notePath\":\""+ notePath + "\"}" );
     assertThat(post, isNotFound());
@@ -175,7 +175,7 @@ class NotebookRestApiTest extends AbstractTestRestApi {
 
   @Test
   void testGetNoteRevisionHistory() throws IOException {
-    LOG.info("Running testGetNoteRevisionHistory");
+    LOGGER.info("Running testGetNoteRevisionHistory");
     String note1Id = null;
     try {
       String notePath = "note1";
@@ -235,7 +235,7 @@ class NotebookRestApiTest extends AbstractTestRestApi {
 
   @Test
   void testGetNoteByRevision() throws IOException {
-    LOG.info("Running testGetNoteByRevision");
+    LOGGER.info("Running testGetNoteByRevision");
     String note1Id = null;
     try {
       String notePath = "note1";
@@ -279,7 +279,7 @@ class NotebookRestApiTest extends AbstractTestRestApi {
 
   @Test
   void testGetNoteParagraphJobStatus() throws IOException {
-    LOG.info("Running testGetNoteParagraphJobStatus");
+    LOGGER.info("Running testGetNoteParagraphJobStatus");
     String note1Id = null;
     try {
       note1Id = notebook.createNote("note1", anonymous);
@@ -308,7 +308,7 @@ class NotebookRestApiTest extends AbstractTestRestApi {
 
   @Test
   void testCheckpointNote() throws IOException {
-    LOG.info("Running testCheckpointNote");
+    LOGGER.info("Running testCheckpointNote");
     String note1Id = null;
     try {
       String notePath = "note1";
@@ -351,7 +351,7 @@ class NotebookRestApiTest extends AbstractTestRestApi {
 
   @Test
   void testSetNoteRevision() throws IOException {
-    LOG.info("Running testSetNoteRevision");
+    LOGGER.info("Running testSetNoteRevision");
     String note1Id = null;
     try {
       String notePath = "note1";
@@ -399,7 +399,7 @@ class NotebookRestApiTest extends AbstractTestRestApi {
 
   @Test
   void testRunParagraphJob() throws Exception {
-    LOG.info("Running testRunParagraphJob");
+    LOGGER.info("Running testRunParagraphJob");
     String note1Id = null;
     try {
       note1Id = notebook.createNote("note1", anonymous);
@@ -439,7 +439,7 @@ class NotebookRestApiTest extends AbstractTestRestApi {
 
   @Test
   void testCancelNoteJob() throws Exception {
-    LOG.info("Running testCancelNoteJob");
+    LOGGER.info("Running testCancelNoteJob");
     String note1Id = null;
     try {
       note1Id = notebook.createNote("note1", anonymous);
@@ -482,7 +482,7 @@ class NotebookRestApiTest extends AbstractTestRestApi {
 
   @Test
   void testRunParagraphSynchronously() throws IOException {
-    LOG.info("Running testRunParagraphSynchronously");
+    LOGGER.info("Running testRunParagraphSynchronously");
     String note1Id = null;
     try {
       note1Id = notebook.createNote("note1", anonymous);
@@ -540,7 +540,7 @@ class NotebookRestApiTest extends AbstractTestRestApi {
 
   @Test
   void testCreateNote() throws Exception {
-    LOG.info("Running testCreateNote");
+    LOGGER.info("Running testCreateNote");
     String message1 = "{\n\t\"name\" : \"test1\",\n\t\"addingEmptyParagraph\" : true\n}";
     CloseableHttpResponse post1 = httpPost("/notebook/", message1);
     assertThat(post1, isAllowed());
@@ -579,7 +579,7 @@ class NotebookRestApiTest extends AbstractTestRestApi {
 
   @Test
   void testRunNoteBlocking() throws IOException {
-    LOG.info("Running testRunNoteBlocking");
+    LOGGER.info("Running testRunNoteBlocking");
     String note1Id = null;
     try {
       note1Id = notebook.createNote("note1", anonymous);
@@ -629,7 +629,7 @@ class NotebookRestApiTest extends AbstractTestRestApi {
 
   @Test
   void testRunNoteNonBlocking() throws Exception {
-    LOG.info("Running testRunNoteNonBlocking");
+    LOGGER.info("Running testRunNoteNonBlocking");
     String note1Id = null;
     try {
       note1Id = notebook.createNote("note1", anonymous);
@@ -685,7 +685,7 @@ class NotebookRestApiTest extends AbstractTestRestApi {
 
   @Test
   void testRunNoteBlocking_Isolated() throws IOException {
-    LOG.info("Running testRunNoteBlocking_Isolated");
+    LOGGER.info("Running testRunNoteBlocking_Isolated");
     String note1Id = null;
     try {
       InterpreterSettingManager interpreterSettingManager = notebook.getInterpreterSettingManager();
@@ -741,7 +741,7 @@ class NotebookRestApiTest extends AbstractTestRestApi {
 
   @Test
   void testRunNoteNonBlocking_Isolated() throws IOException, InterruptedException {
-    LOG.info("Running testRunNoteNonBlocking_Isolated");
+    LOGGER.info("Running testRunNoteNonBlocking_Isolated");
     String note1Id = null;
     try {
       InterpreterSettingManager interpreterSettingManager = notebook.getInterpreterSettingManager();
@@ -888,7 +888,7 @@ class NotebookRestApiTest extends AbstractTestRestApi {
 
   @Test
   void testRunAllParagraph_FirstFailed() throws IOException {
-    LOG.info("Running testRunAllParagraph_FirstFailed");
+    LOGGER.info("Running testRunAllParagraph_FirstFailed");
     String note1Id = null;
     try {
       note1Id = notebook.createNote("note1", anonymous);
@@ -938,7 +938,7 @@ class NotebookRestApiTest extends AbstractTestRestApi {
 
   @Test
   void testCloneNote() throws IOException {
-    LOG.info("Running testCloneNote");
+    LOGGER.info("Running testCloneNote");
     String note1Id = null;
     List<String> clonedNoteIds = new ArrayList<>();
     String text1 = "%text clone note";
@@ -973,7 +973,7 @@ class NotebookRestApiTest extends AbstractTestRestApi {
         String text = Arrays.asList(text1, text2).get(i);
 
         String postResponse = EntityUtils.toString(post.getEntity(), StandardCharsets.UTF_8);
-        LOG.info("testCloneNote response: {}", postResponse);
+        LOGGER.info("testCloneNote response: {}", postResponse);
         assertThat(post, isAllowed());
         Map<String, Object> resp = gson.fromJson(postResponse,
                 new TypeToken<Map<String, Object>>() {
@@ -1008,7 +1008,7 @@ class NotebookRestApiTest extends AbstractTestRestApi {
 
   @Test
   void testRenameNote() throws IOException {
-    LOG.info("Running testRenameNote");
+    LOGGER.info("Running testRenameNote");
     String noteId = null;
     try {
       String oldName = "old_name";
@@ -1033,7 +1033,7 @@ class NotebookRestApiTest extends AbstractTestRestApi {
 
   @Test
   void testUpdateParagraphConfig() throws IOException {
-    LOG.info("Running testUpdateParagraphConfig");
+    LOGGER.info("Running testUpdateParagraphConfig");
     String noteId = null;
     try {
       noteId = notebook.createNote("note1", anonymous);
@@ -1072,7 +1072,7 @@ class NotebookRestApiTest extends AbstractTestRestApi {
 
   @Test
   void testClearAllParagraphOutput() throws IOException {
-    LOG.info("Running testClearAllParagraphOutput");
+    LOGGER.info("Running testClearAllParagraphOutput");
     String noteId = null;
     try {
       // Create note and set result explicitly
@@ -1097,7 +1097,7 @@ class NotebookRestApiTest extends AbstractTestRestApi {
 
       // clear paragraph result
       CloseableHttpResponse put = httpPut("/notebook/" + noteId + "/clear", "");
-      LOG.info("test clear paragraph output response\n" + EntityUtils.toString(put.getEntity(), StandardCharsets.UTF_8));
+      LOGGER.info("test clear paragraph output response\n" + EntityUtils.toString(put.getEntity(), StandardCharsets.UTF_8));
       assertThat(put, isAllowed());
       put.close();
 
@@ -1127,7 +1127,7 @@ class NotebookRestApiTest extends AbstractTestRestApi {
 
   @Test
   void testRunWithServerRestart() throws Exception {
-    LOG.info("Running testRunWithServerRestart");
+    LOGGER.info("Running testRunWithServerRestart");
     String note1Id = null;
     try {
       note1Id = notebook.createNote("note1", anonymous);
@@ -1156,7 +1156,7 @@ class NotebookRestApiTest extends AbstractTestRestApi {
       assertThat(post1, isAllowed());
       post1.close();
       CloseableHttpResponse put = httpPut("/notebook/" + note1Id + "/clear", "");
-      LOG.info("test clear paragraph output response\n" + EntityUtils.toString(put.getEntity(), StandardCharsets.UTF_8));
+      LOGGER.info("test clear paragraph output response\n" + EntityUtils.toString(put.getEntity(), StandardCharsets.UTF_8));
       assertThat(put, isAllowed());
       put.close();
 

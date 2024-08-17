@@ -47,7 +47,7 @@ import java.util.Map.Entry;
 @Path("/cluster")
 @Produces("application/json")
 public class ClusterRestApi {
-  private static final Logger LOG = LoggerFactory.getLogger(ClusterRestApi.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(ClusterRestApi.class);
   Gson gson = new Gson();
 
   private ClusterManagerServer clusterManagerServer;
@@ -63,7 +63,7 @@ public class ClusterRestApi {
     if (zConf.isClusterMode()) {
       clusterManagerServer = ClusterManagerServer.getInstance(zConf);
     } else {
-      LOG.warn("Cluster mode is disabled, ClusterRestApi won't work");
+      LOGGER.warn("Cluster mode is disabled, ClusterRestApi won't work");
     }
   }
 

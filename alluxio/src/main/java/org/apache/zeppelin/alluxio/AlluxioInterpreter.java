@@ -48,7 +48,7 @@ import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
  */
 public class AlluxioInterpreter extends Interpreter {
   
-  Logger logger = LoggerFactory.getLogger(AlluxioInterpreter.class);
+  Logger LOGGER = LoggerFactory.getLogger(AlluxioInterpreter.class);
 
   protected static final String ALLUXIO_MASTER_HOSTNAME = "alluxio.master.hostname";
   protected static final String ALLUXIO_MASTER_PORT = "alluxio.master.port";
@@ -84,7 +84,7 @@ public class AlluxioInterpreter extends Interpreter {
 
   @Override
   public void open() {
-    logger.info("Starting Alluxio shell to connect to " + alluxioMasterHostname +
+    LOGGER.info("Starting Alluxio shell to connect to " + alluxioMasterHostname +
         " on port " + alluxioMasterPort);
     // Setting the extra parameters being set in the interpreter config starting with alluxio
     filteredProperties("alluxio.").forEach(x -> System.setProperty(x, properties.getProperty(x)));
@@ -98,11 +98,11 @@ public class AlluxioInterpreter extends Interpreter {
 
   @Override
   public void close() {
-    logger.info("Closing Alluxio shell");
+    LOGGER.info("Closing Alluxio shell");
     try {
       fs.close();
     } catch (IOException e) {
-      logger.error("Cannot close connection", e);
+      LOGGER.error("Cannot close connection", e);
     }
   }
 

@@ -54,7 +54,7 @@ import org.apache.zeppelin.user.AuthenticationInfo;
  */
 public class MongoNotebookRepo extends AbstractNotebookRepo {
 
-  private static final Logger LOG = LoggerFactory.getLogger(MongoNotebookRepo.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(MongoNotebookRepo.class);
 
   private MongoClient client;
 
@@ -107,7 +107,7 @@ public class MongoNotebookRepo extends AbstractNotebookRepo {
 
   @Override
   public Map<String, NoteInfo> list(AuthenticationInfo subject) throws IOException {
-    LOG.debug("list repo.");
+    LOGGER.debug("list repo.");
     Map<String, NoteInfo> infos = new HashMap<>();
 
     Document match = new Document("$match", new Document(Fields.IS_DIR, false));
@@ -144,7 +144,7 @@ public class MongoNotebookRepo extends AbstractNotebookRepo {
 
   @Override
   public Note get(String noteId, String notePath, AuthenticationInfo subject) throws IOException {
-    LOG.debug("get note, noteId: {}, notePath:{}", noteId, notePath);
+    LOGGER.debug("get note, noteId: {}, notePath:{}", noteId, notePath);
 
     return getNote(noteId, notePath);
   }
@@ -160,7 +160,7 @@ public class MongoNotebookRepo extends AbstractNotebookRepo {
 
   @Override
   public void save(Note note, AuthenticationInfo subject) throws IOException {
-    LOG.debug("save note, note: {}", note);
+    LOGGER.debug("save note, note: {}", note);
     String[] pathArray = toPathArray(note.getPath(), false);
 
     try (AutoLock autoLock = lock.lockForWrite()) {
@@ -178,7 +178,7 @@ public class MongoNotebookRepo extends AbstractNotebookRepo {
       saveNoteOrIgnore(note);
       saveNotePathOrIgnore(note.getId(), note.getName(), pId);
     } catch (Exception e) {
-      LOG.warn("ignore error when insert note '{}': {}", note, e.getMessage());
+      LOGGER.warn("ignore error when insert note '{}': {}", note, e.getMessage());
     }
   }
 
@@ -220,7 +220,7 @@ public class MongoNotebookRepo extends AbstractNotebookRepo {
   @Override
   public void move(String noteId, String notePath, String newNotePath,
                    AuthenticationInfo subject) throws IOException {
-    LOG.debug("move note, noteId: {}, notePath: {}, newNotePath: {}",
+    LOGGER.debug("move note, noteId: {}, notePath: {}, newNotePath: {}",
         noteId, notePath, newNotePath);
     if (StringUtils.equals(notePath, newNotePath)) {
       return;
@@ -247,7 +247,7 @@ public class MongoNotebookRepo extends AbstractNotebookRepo {
   @Override
   public void move(String folderPath, String newFolderPath,
                    AuthenticationInfo subject) throws IOException {
-    LOG.debug("move folder, folderPath: {}, newFolderPath: {}", folderPath, newFolderPath);
+    LOGGER.debug("move folder, folderPath: {}, newFolderPath: {}", folderPath, newFolderPath);
     if (StringUtils.equals(folderPath, newFolderPath)) {
       return;
     }
@@ -274,7 +274,7 @@ public class MongoNotebookRepo extends AbstractNotebookRepo {
   @Override
   public void remove(String noteId, String notePath,
                      AuthenticationInfo subject) throws IOException {
-    LOG.debug("remove note, noteId:{}, notePath:{}", noteId, notePath);
+    LOGGER.debug("remove note, noteId:{}, notePath:{}", noteId, notePath);
 
     try (AutoLock autoLock = lock.lockForWrite()) {
       folders.deleteOne(eq(Fields.ID, noteId));
@@ -297,7 +297,7 @@ public class MongoNotebookRepo extends AbstractNotebookRepo {
 
   @Override
   public void remove(String folderPath, AuthenticationInfo subject) throws IOException {
-    LOG.debug("remove folder, folderPath: {}", folderPath);
+    LOGGER.debug("remove folder, folderPath: {}", folderPath);
     String[] pathArray = toPathArray(folderPath, true);
 
     try (AutoLock autoLock = lock.lockForWrite()) {
@@ -334,13 +334,13 @@ public class MongoNotebookRepo extends AbstractNotebookRepo {
 
   @Override
   public List<NotebookRepoSettingsInfo> getSettings(AuthenticationInfo subject) {
-    LOG.warn("Method not implemented");
+    LOGGER.warn("Method not implemented");
     return Collections.emptyList();
   }
 
   @Override
   public void updateSettings(Map<String, String> settings, AuthenticationInfo subject) {
-    LOG.warn("Method not implemented");
+    LOGGER.warn("Method not implemented");
   }
 
   /**

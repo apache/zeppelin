@@ -33,7 +33,7 @@ import java.util.List;
  * InterpreterMessageOutputStream
  */
 public class InterpreterResultMessageOutput extends OutputStream {
-  Logger logger = LoggerFactory.getLogger(InterpreterResultMessageOutput.class);
+  Logger LOGGER = LoggerFactory.getLogger(InterpreterResultMessageOutput.class);
   private final int NEW_LINE_CHAR = '\n';
   private List<String> resourceSearchPaths;
 
@@ -275,7 +275,7 @@ public class InterpreterResultMessageOutput extends OutputStream {
     try {
       return "%" + type.name().toLowerCase() + " " + new String(toByteArray());
     } catch (IOException e) {
-      logger.error(e.getMessage(), e);
+      LOGGER.error(e.getMessage(), e);
       return "%" + type.name().toLowerCase() + "\n";
     }
   }

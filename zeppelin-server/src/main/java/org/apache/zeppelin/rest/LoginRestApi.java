@@ -60,7 +60,7 @@ import org.slf4j.LoggerFactory;
 @Produces("application/json")
 @Singleton
 public class LoginRestApi extends AbstractRestApi {
-  private static final Logger LOG = LoggerFactory.getLogger(LoginRestApi.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(LoginRestApi.class);
   private final ZeppelinConfiguration zConf;
 
   private final AuthorizationService authorizationService;
@@ -90,7 +90,7 @@ public class LoginRestApi extends AbstractRestApi {
             response = proceedToLogin(currentUser, token);
           }
         } catch (ParseException e) {
-          LOG.error("ParseException in LoginRestApi: ", e);
+          LOGGER.error("ParseException in LoginRestApi: ", e);
         }
       }
       if (response == null) {
@@ -116,12 +116,12 @@ public class LoginRestApi extends AbstractRestApi {
           }
         }
         if (null == response) {
-          LOG.warn("No Kerberos token received");
+          LOGGER.warn("No Kerberos token received");
           response = new JsonResponse<>(Status.UNAUTHORIZED, "", null);
         }
         return response.build();
       } catch (AuthenticationException e){
-        LOG.error("Error in Login", e);
+        LOGGER.error("Error in Login", e);
       }
     }
     return new JsonResponse<>(Status.METHOD_NOT_ALLOWED).build();
@@ -133,7 +133,7 @@ public class LoginRestApi extends AbstractRestApi {
       for (Realm realm : realmsList) {
         String name = realm.getClass().getName();
 
-        LOG.debug("RealmClass.getName: {}", name);
+        LOGGER.debug("RealmClass.getName: {}", name);
 
         if (name.equals("org.apache.zeppelin.realm.kerberos.KerberosRealm")) {
           return (KerberosRealm) realm;
@@ -206,7 +206,7 @@ public class LoginRestApi extends AbstractRestApi {
       // password didn't match, try again?
       // account for that username is locked - can't login.  Show them a message?
       // unexpected condition - error?
-      LOG.error("Exception in login: ", uae);
+      LOGGER.error("Exception in login: ", uae);
     }
     return response;
   }
@@ -223,13 +223,13 @@ public class LoginRestApi extends AbstractRestApi {
   @ZeppelinApi
   public Response postLogin(@FormParam("userName") String userName,
       @FormParam("password") String password) {
-    LOG.debug("userName: {}", userName);
+    LOGGER.debug("userName: {}", userName);
     // ticket set to anonymous for anonymous user. Simplify testing.
     Subject currentUser = SecurityUtils.getSubject();
     if (currentUser.isAuthenticated()) {
       currentUser.logout();
     }
-    LOG.debug("currentUser: {}", currentUser);
+    LOGGER.debug("currentUser: {}", currentUser);
     JsonResponse<Map<String, String>> response = null;
     if (!currentUser.isAuthenticated()) {
 
@@ -242,7 +242,7 @@ public class LoginRestApi extends AbstractRestApi {
       response = new JsonResponse<>(Response.Status.FORBIDDEN, "", null);
     }
 
-    LOG.info(response.toString());
+    LOGGER.info(response.toString());
     return response.build();
   }
 
@@ -274,7 +274,7 @@ public class LoginRestApi extends AbstractRestApi {
       data.put("isLogoutAPI", kerberosRealm.getLogoutAPI().toString());
     }
     JsonResponse<Map<String, String>> response = new JsonResponse<>(status, "", data);
-    LOG.info(response.toString());
+    LOGGER.info(response.toString());
     return response.build();
   }
 

@@ -57,7 +57,7 @@ import org.apache.zeppelin.server.JsonResponse;
 @Produces("application/json")
 @Singleton
 public class HeliumRestApi {
-  Logger logger = LoggerFactory.getLogger(HeliumRestApi.class);
+  Logger LOGGER = LoggerFactory.getLogger(HeliumRestApi.class);
 
   private final Helium helium;
   private final Notebook notebook;
@@ -78,7 +78,7 @@ public class HeliumRestApi {
     try {
       return new JsonResponse<>(Response.Status.OK, "", helium.getAllPackageInfo()).build();
     } catch (RuntimeException e) {
-      logger.error(e.getMessage(), e);
+      LOGGER.error(e.getMessage(), e);
       return new JsonResponse<>(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage()).build();
     }
   }
@@ -92,7 +92,7 @@ public class HeliumRestApi {
     try {
       return new JsonResponse<>(Response.Status.OK, "", helium.getAllEnabledPackages()).build();
     } catch (RuntimeException e) {
-      logger.error(e.getMessage(), e);
+      LOGGER.error(e.getMessage(), e);
       return new JsonResponse<>(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage()).build();
     }
   }
@@ -112,7 +112,7 @@ public class HeliumRestApi {
       return new JsonResponse<>(
           Response.Status.OK, "", helium.getSinglePackageInfo(packageName)).build();
     } catch (RuntimeException e) {
-      logger.error(e.getMessage(), e);
+      LOGGER.error(e.getMessage(), e);
       return new JsonResponse<>(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage()).build();
     }
   }
@@ -136,7 +136,7 @@ public class HeliumRestApi {
           try {
             return new JsonResponse<>(Response.Status.OK, "", helium.suggestApp(paragraph)).build();
           } catch (RuntimeException e) {
-            logger.error(e.getMessage(), e);
+            LOGGER.error(e.getMessage(), e);
             return new JsonResponse<>(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage()).build();
           }
         });
@@ -166,7 +166,7 @@ public class HeliumRestApi {
             return new JsonResponse<>(Response.Status.OK, "",
                     helium.getApplicationFactory().loadAndRun(pkg, paragraph)).build();
           } catch (RuntimeException e) {
-            logger.error(e.getMessage(), e);
+            LOGGER.error(e.getMessage(), e);
             return new JsonResponse<>(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage()).build();
           }
         });
@@ -216,7 +216,7 @@ public class HeliumRestApi {
         return Response.ok(stringified).build();
       }
     } catch (Exception e) {
-      logger.error(e.getMessage(), e);
+      LOGGER.error(e.getMessage(), e);
       // returning error will prevent zeppelin front-end render any notebook.
       // visualization load fail doesn't need to block notebook rendering work.
       // so it's better return ok instead of any error.
@@ -234,7 +234,7 @@ public class HeliumRestApi {
         return new JsonResponse<>(Response.Status.NOT_FOUND).build();
       }
     } catch (IOException e) {
-      logger.error(e.getMessage(), e);
+      LOGGER.error(e.getMessage(), e);
       return new JsonResponse<>(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage()).build();
     }
   }
@@ -249,7 +249,7 @@ public class HeliumRestApi {
         return new JsonResponse<>(Response.Status.NOT_FOUND).build();
       }
     } catch (IOException e) {
-      logger.error(e.getMessage(), e);
+      LOGGER.error(e.getMessage(), e);
       return new JsonResponse<>(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage()).build();
     }
   }
@@ -272,7 +272,7 @@ public class HeliumRestApi {
 
       return new JsonResponse<>(Response.Status.OK, config).build();
     } catch (RuntimeException e) {
-      logger.error(e.getMessage(), e);
+      LOGGER.error(e.getMessage(), e);
       return new JsonResponse<>(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage()).build();
     }
   }
@@ -284,7 +284,7 @@ public class HeliumRestApi {
       Map<String, Map<String, Object>> config = helium.getAllPackageConfig();
       return new JsonResponse<>(Response.Status.OK, config).build();
     } catch (RuntimeException e) {
-      logger.error(e.getMessage(), e);
+      LOGGER.error(e.getMessage(), e);
       return new JsonResponse<>(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage()).build();
     }
   }
@@ -310,7 +310,7 @@ public class HeliumRestApi {
 
       return new JsonResponse<>(Response.Status.OK, config).build();
     } catch (RuntimeException e) {
-      logger.error(e.getMessage(), e);
+      LOGGER.error(e.getMessage(), e);
       return new JsonResponse<>(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage()).build();
     }
   }
@@ -331,7 +331,7 @@ public class HeliumRestApi {
       helium.updatePackageConfig(artifact, packageConfig);
       return new JsonResponse<>(Response.Status.OK, packageConfig).build();
     } catch (JsonParseException e) {
-      logger.error(e.getMessage(), e);
+      LOGGER.error(e.getMessage(), e);
       return new JsonResponse<>(Response.Status.BAD_REQUEST,
           e.getMessage()).build();
     } catch (IOException | RuntimeException e) {
@@ -347,7 +347,7 @@ public class HeliumRestApi {
       List<String> order = helium.getVisualizationPackageOrder();
       return new JsonResponse<>(Response.Status.OK, order).build();
     } catch (RuntimeException e) {
-      logger.error(e.getMessage(), e);
+      LOGGER.error(e.getMessage(), e);
       return new JsonResponse<>(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage()).build();
     }
   }
@@ -361,7 +361,7 @@ public class HeliumRestApi {
       helium.setVisualizationPackageOrder(orderedList);
       return new JsonResponse<>(Response.Status.OK).build();
     } catch (IOException e) {
-      logger.error(e.getMessage(), e);
+      LOGGER.error(e.getMessage(), e);
       return new JsonResponse<>(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage()).build();
     }
   }

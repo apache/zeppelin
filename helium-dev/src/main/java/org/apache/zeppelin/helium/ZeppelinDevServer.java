@@ -34,7 +34,7 @@ import org.slf4j.LoggerFactory;
  */
 public class ZeppelinDevServer extends
     RemoteInterpreterServer implements InterpreterEvent, InterpreterOutputChangeListener {
-  private static final Logger logger = LoggerFactory.getLogger(ZeppelinDevServer.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(ZeppelinDevServer.class);
 
   private DevInterpreter interpreter = null;
   private InterpreterOutput out;
@@ -87,7 +87,7 @@ public class ZeppelinDevServer extends
               eventClient.onInterpreterOutputUpdate(noteId, paragraphId,
                   index, out.getType(), new String(out.toByteArray()));
             } catch (IOException e) {
-              logger.error(e.getMessage(), e);
+              LOGGER.error(e.getMessage(), e);
             }
           }
         }, this);

@@ -79,7 +79,7 @@ import org.apache.zeppelin.scheduler.SchedulerFactory;
  * 
  */
 public class BigQueryInterpreter extends Interpreter {
-  private static Logger logger = LoggerFactory.getLogger(BigQueryInterpreter.class);
+  private static Logger LOGGER = LoggerFactory.getLogger(BigQueryInterpreter.class);
   private static final char NEWLINE = '\n';
   private static final char TAB = '\t';
   private static Bigquery service = null;
@@ -117,9 +117,9 @@ public class BigQueryInterpreter extends Interpreter {
           try {
             service = createAuthorizedClient();
             exceptionOnConnect = null;
-            logger.info("Opened BigQuery SQL Connection");
+            LOGGER.info("Opened BigQuery SQL Connection");
           } catch (IOException e) {
-            logger.error("Cannot open connection", e);
+            LOGGER.error("Cannot open connection", e);
             exceptionOnConnect = e;   
             close();
           }
@@ -243,7 +243,7 @@ public class BigQueryInterpreter extends Interpreter {
     try {
       pages = run(sql, projId, wTime, maxRows, useLegacySql);
     } catch (IOException ex) {
-      logger.error(ex.getMessage());
+      LOGGER.error(ex.getMessage());
       return new InterpreterResult(Code.ERROR, ex.getMessage());
     }
     try {
@@ -261,7 +261,7 @@ public class BigQueryInterpreter extends Interpreter {
       final String projId, final long wTime, final long maxRows, Boolean useLegacySql)
           throws IOException {
     try {
-      logger.info("Use legacy sql: {}", useLegacySql);
+      LOGGER.info("Use legacy sql: {}", useLegacySql);
       QueryResponse query;
       query = service
           .jobs()
@@ -283,14 +283,14 @@ public class BigQueryInterpreter extends Interpreter {
 
   @Override
   public void close() {
-    logger.info("Close bqsql connection!");
+    LOGGER.info("Close bqsql connection!");
 
     service = null;
   }
 
   @Override
   public InterpreterResult interpret(String sql, InterpreterContext contextInterpreter) {
-    logger.info("Run SQL command '{}'", sql);
+    LOGGER.info("Run SQL command '{}'", sql);
     return executeSql(sql);
   }
 
@@ -312,19 +312,19 @@ public class BigQueryInterpreter extends Interpreter {
 
   @Override
   public void cancel(InterpreterContext context) {
-    logger.info("Trying to Cancel current query statement.");
+    LOGGER.info("Trying to Cancel current query statement.");
 
     if (service != null && jobId != null && projectId != null) {
       try {
         Bigquery.Jobs.Cancel request = service.jobs().cancel(projectId, jobId);
         JobCancelResponse response = request.execute();
         jobId = null;
-        logger.info("Query Execution cancelled");
+        LOGGER.info("Query Execution cancelled");
       } catch (IOException ex) {
-        logger.error("Could not cancel the SQL execution");
+        LOGGER.error("Could not cancel the SQL execution");
       }
     } else {
-      logger.info("Query Execution was already cancelled");
+      LOGGER.info("Query Execution was already cancelled");
     }
   }
 

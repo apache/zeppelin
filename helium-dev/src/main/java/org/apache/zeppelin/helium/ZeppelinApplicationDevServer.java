@@ -35,7 +35,7 @@ import org.slf4j.LoggerFactory;
  * Run this server for development mode.
  */
 public class ZeppelinApplicationDevServer extends ZeppelinDevServer {
-  final Logger logger = LoggerFactory.getLogger(ZeppelinApplicationDevServer.class);
+  final Logger LOGGER = LoggerFactory.getLogger(ZeppelinApplicationDevServer.class);
 
   private final String className;
   private final ResourceSet resourceSet;
@@ -70,7 +70,7 @@ public class ZeppelinApplicationDevServer extends ZeppelinDevServer {
   @Override
   public InterpreterResult interpret(String st, InterpreterContext context) {
     if (app == null) {
-      logger.info("Create instance " + className);
+      LOGGER.info("Create instance " + className);
       try {
         Class<?> appClass = ClassLoader.getSystemClassLoader().loadClass(className);
         Constructor<?> constructor = appClass.getConstructor(ApplicationContext.class);
@@ -84,19 +84,19 @@ public class ZeppelinApplicationDevServer extends ZeppelinDevServer {
         ApplicationContext appContext = getApplicationContext(context);
         app = (Application) constructor.newInstance(appContext);
       } catch (Exception e) {
-        logger.error(e.getMessage(), e);
+        LOGGER.error(e.getMessage(), e);
         return new InterpreterResult(Code.ERROR, e.getMessage());
       }
     }
 
     try {
-      logger.info("Run " + className);
+      LOGGER.info("Run " + className);
       app.context().out.clear();
       app.context().out.setType(InterpreterResult.Type.ANGULAR);
       transferTableResultDataToFrontend();
       app.run(resourceSet);
     } catch (IOException | ApplicationException e) {
-      logger.error(e.getMessage(), e);
+      LOGGER.error(e.getMessage(), e);
       return new InterpreterResult(Code.ERROR, e.getMessage());
     }
     return new InterpreterResult(Code.SUCCESS, "");
@@ -157,7 +157,7 @@ public class ZeppelinApplicationDevServer extends ZeppelinDevServer {
               eventClient.onInterpreterOutputUpdate(noteId, paragraphId,
                   index, out.getType(), new String(out.toByteArray()));
             } catch (IOException e) {
-              logger.error(e.getMessage(), e);
+              LOGGER.error(e.getMessage(), e);
             }
           }
 
