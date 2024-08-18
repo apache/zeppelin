@@ -249,7 +249,7 @@
           <execution>
             <!-- This execution runs during the compile phase to generate Java files from Thrift files -->
             <id>generate-thrift-sources</id>
-            <phase>compile</phase>
+            <phase>generate-sources</phase>
             <goals>
               <goal>exec</goal>
             </goals>
