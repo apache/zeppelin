@@ -44,18 +44,6 @@ class HeliumRegistrySerializerTest {
             "  \"icon\" : \"<i class='icon'></i>\"\n" +
             "}";
 
-    private String HELIUM_PACKAGE_JSON_2 = "{\n" +
-            "  \"name\" : \"[organization.B].[name.B]\",\n" +
-            "  \"description\" : \"Description-B\",\n" +
-            "  \"artifact\" : \"groupId:artifactId:version\",\n" +
-            "  \"className\" : \"your.package.name.YourApplicationClass-B\",\n" +
-            "  \"resources\" : [\n" +
-            "    [\"resource.name\", \":resource.class.name\"],\n" +
-            "    [\"alternative.resource.name\", \":alternative.class.name\"]\n" +
-            "  ],\n" +
-            "  \"icon\" : \"<i class='icon'></i>\"\n" +
-            "}";
-
     @Test
     void testDeserialization() throws IOException {
         // Given
@@ -65,15 +53,28 @@ class HeliumRegistrySerializerTest {
         Path dir = Files.createDirectory(Paths.get("./" + UUID.randomUUID().toString()));
         File newFile = Files.createTempFile(dir, UUID.randomUUID().toString(), ".json").toFile();
         FileUtils.writeStringToFile(newFile, HELIUM_PACKAGE_JSON_1, StandardCharsets.UTF_8);
+        FileUtils.forceDeleteOnExit(newFile);
 
         // Write JSON string to file using Apache Commons FileUtils
         HeliumRegistry registry = new HeliumLocalRegistry("my-registry", dir.toString());
 
         // Then
+        assertEquals("my-registry", registry.name());
         assertNotNull(registry.getAll());
-        // TODO: compare package now Helium package
-        assertEquals("HeliumLocalRegistry", registry.name());
-        assertEquals("http://test.uri", registry.uri());
+        assertEquals(1, registry.getAll().size());
+
+        HeliumPackage heliumPackage = registry.getAll().stream().findFirst().orElseThrow(RuntimeException::new);
+        assertEquals("[organization.A].[name.A]", heliumPackage.getName());
+        assertEquals("Description-A", heliumPackage.getDescription());
+        assertEquals("groupId:artifactId:version", heliumPackage.getArtifact());
+        assertEquals("your.package.name.YourApplicationClass-A", heliumPackage.getClassName());
+        assertEquals(2, heliumPackage.getResources().length);
+        assertEquals("resource.name", heliumPackage.getResources()[0][0]);
+        assertEquals(":resource.class.name", heliumPackage.getResources()[0][1]);
+        assertEquals("alternative.resource.name", heliumPackage.getResources()[1][0]);
+        assertEquals(":alternative.class.name", heliumPackage.getResources()[1][1]);
+        assertEquals("<i class='icon'></i>", heliumPackage.getIcon());
+
     }
 
     private File createHeliumPackage(Path testDir, String JSON) throws IOException {
