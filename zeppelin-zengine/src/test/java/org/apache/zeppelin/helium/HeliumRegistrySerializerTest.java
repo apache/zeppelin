@@ -16,59 +16,70 @@
  */
 package org.apache.zeppelin.helium;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Test;
 
+import java.io.File;
 import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class HeliumRegistrySerializerTest {
 
-    private final Gson gson = new GsonBuilder()
-            .registerTypeAdapter(HeliumRegistry.class, new HeliumRegistrySerializer())
-            .create();
+    private String HELIUM_PACKAGE_JSON_1 = "{\n" +
+            "  \"name\" : \"[organization.A].[name.A]\",\n" +
+            "  \"description\" : \"Description-A\",\n" +
+            "  \"artifact\" : \"groupId:artifactId:version\",\n" +
+            "  \"className\" : \"your.package.name.YourApplicationClass-A\",\n" +
+            "  \"resources\" : [\n" +
+            "    [\"resource.name\", \":resource.class.name\"],\n" +
+            "    [\"alternative.resource.name\", \":alternative.class.name\"]\n" +
+            "  ],\n" +
+            "  \"icon\" : \"<i class='icon'></i>\"\n" +
+            "}";
+
+    private String HELIUM_PACKAGE_JSON_2 = "{\n" +
+            "  \"name\" : \"[organization.B].[name.B]\",\n" +
+            "  \"description\" : \"Description-B\",\n" +
+            "  \"artifact\" : \"groupId:artifactId:version\",\n" +
+            "  \"className\" : \"your.package.name.YourApplicationClass-B\",\n" +
+            "  \"resources\" : [\n" +
+            "    [\"resource.name\", \":resource.class.name\"],\n" +
+            "    [\"alternative.resource.name\", \":alternative.class.name\"]\n" +
+            "  ],\n" +
+            "  \"icon\" : \"<i class='icon'></i>\"\n" +
+            "}";
 
     @Test
-    void testSerialization() {
+    void testDeserialization() throws IOException {
         // Given
-        HeliumRegistry registry = new SimpleHeliumRegistry("TestRegistry", "http://test.uri");
 
         // When
-        String json = gson.toJson(registry);
+        // Define the output file
+        Path dir = Files.createDirectory(Paths.get("./" + UUID.randomUUID().toString()));
+        File newFile = Files.createTempFile(dir, UUID.randomUUID().toString(), ".json").toFile();
+        FileUtils.writeStringToFile(newFile, HELIUM_PACKAGE_JSON_1, StandardCharsets.UTF_8);
+
+        // Write JSON string to file using Apache Commons FileUtils
+        HeliumRegistry registry = new HeliumLocalRegistry("my-registry", dir.toString());
 
         // Then
-        String expectedJson = "{\"uri\":\"http://test.uri\",\"name\":\"TestRegistry\"}";
-        assertEquals(expectedJson, json);
-    }
-
-    @Test
-    void testDeserialization() {
-        // Given
-        String json = "{\"class\":\"org.apache.zeppelin.helium.SimpleHeliumRegistry\",\"uri\":\"http://test.uri\",\"name\":\"TestRegistry\"}";
-
-        // When
-        HeliumRegistry registry = gson.fromJson(json, HeliumRegistry.class);
-
-        // Then
-        assertNotNull(registry);
-        assertEquals("TestRegistry", registry.name());
+        assertNotNull(registry.getAll());
+        // TODO: compare package now Helium package
+        assertEquals("HeliumLocalRegistry", registry.name());
         assertEquals("http://test.uri", registry.uri());
     }
 
-    public static class SimpleHeliumRegistry extends HeliumRegistry {
-        public SimpleHeliumRegistry(String name, String uri) {
-            super(name, uri);
-        }
-
-        @Override
-        public List<HeliumPackage> getAll() throws IOException {
-            return Collections.emptyList();
-        }
+    private File createHeliumPackage(Path testDir, String JSON) throws IOException {
+        File newFile = Files.createTempFile(testDir, UUID.randomUUID().toString(), ".json").toFile();
+        FileUtils.writeStringToFile(newFile, JSON, StandardCharsets.UTF_8);
+        return newFile;
     }
 
 }
