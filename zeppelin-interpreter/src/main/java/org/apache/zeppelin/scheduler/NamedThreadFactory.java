@@ -21,19 +21,18 @@ package org.apache.zeppelin.scheduler;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class SchedulerThreadFactory implements ThreadFactory {
+public class NamedThreadFactory implements ThreadFactory {
 
-  private String namePrefix;
-  private AtomicLong count = new AtomicLong(1);
+  private final String name;
+  private final AtomicLong count = new AtomicLong(1);
 
-  public SchedulerThreadFactory(String namePrefix) {
-    this.namePrefix = namePrefix;
+  public NamedThreadFactory(String name) {
+    this.name = name;
   }
 
   @Override
   public Thread newThread(Runnable r) {
-    Thread thread = new Thread(r);
-    thread.setName(namePrefix + count.getAndIncrement());
-    return thread;
+    return new Thread(r, name + "-" + count.getAndIncrement());
+
   }
 }

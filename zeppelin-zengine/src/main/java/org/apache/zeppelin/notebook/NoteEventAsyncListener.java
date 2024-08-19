@@ -18,7 +18,7 @@
 package org.apache.zeppelin.notebook;
 
 import org.apache.zeppelin.scheduler.Job;
-import org.apache.zeppelin.scheduler.SchedulerThreadFactory;
+import org.apache.zeppelin.scheduler.NamedThreadFactory;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.util.ExecutorUtil;
 import org.slf4j.Logger;
@@ -43,7 +43,7 @@ public abstract class NoteEventAsyncListener implements NoteEventListener, Close
   protected NoteEventAsyncListener(String name) {
     this.name = name;
     executor = new ThreadPoolExecutor(0, 1, 1, TimeUnit.MINUTES,
-            new LinkedBlockingQueue<>(), new SchedulerThreadFactory(name));
+            new LinkedBlockingQueue<>(), new NamedThreadFactory(name));
   }
 
   public abstract void handleNoteCreateEvent(NoteCreateEvent noteCreateEvent);

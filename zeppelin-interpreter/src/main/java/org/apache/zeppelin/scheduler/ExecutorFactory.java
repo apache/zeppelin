@@ -47,25 +47,19 @@ public class ExecutorFactory {
     return InstanceHolder.INSTANCE;
   }
 
-  public ExecutorService createOrGet(String name, int numThread) {
+  public ExecutorService createOrGet(final String name, final int numThread) {
     synchronized (executors) {
-      if (!executors.containsKey(name)) {
-        executors.put(name, Executors.newScheduledThreadPool(
-            numThread,
-            new SchedulerThreadFactory(name)));
-      }
-      return executors.get(name);
+      return executors.computeIfAbsent(name, k -> (Executors.newScheduledThreadPool(
+          numThread,
+          new NamedThreadFactory(k))));
     }
   }
 
-  public ScheduledExecutorService createOrGetScheduled(String name, int numThread) {
+  public ScheduledExecutorService createOrGetScheduled(final String name, final int numThread) {
     synchronized (scheduledExecutors) {
-      if (!scheduledExecutors.containsKey(name)) {
-        scheduledExecutors.put(name, Executors.newScheduledThreadPool(
-            numThread,
-            new SchedulerThreadFactory(name)));
-      }
-      return scheduledExecutors.get(name);
+      return scheduledExecutors.computeIfAbsent(name, k -> (Executors.newScheduledThreadPool(
+          numThread,
+          new NamedThreadFactory(k))));
     }
   }
 
@@ -75,22 +69,20 @@ public class ExecutorFactory {
    * @return
    */
   public ExecutorService getNoteJobExecutor() {
-    return createOrGet("NoteJobThread-", 50);
+    return createOrGet("NoteJobThread", 50);
   }
 
   public void shutdown(String name) {
     synchronized (executors) {
-      if (executors.containsKey(name)) {
-        ExecutorService e = executors.get(name);
+      ExecutorService e = executors.remove(name);
+      if (e != null) {
         ExecutorUtil.softShutdown(name, e, 1, TimeUnit.MINUTES);
-        executors.remove(name);
       }
     }
     synchronized (scheduledExecutors) {
-      if (scheduledExecutors.containsKey(name)) {
-        ExecutorService e = scheduledExecutors.get(name);
+      ExecutorService e = scheduledExecutors.remove(name);
+      if (e != null) {
         ExecutorUtil.softShutdown(name, e, 1, TimeUnit.MINUTES);
-        scheduledExecutors.remove(name);
       }
     }
   }

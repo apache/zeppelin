@@ -22,22 +22,18 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.zeppelin.util.ExecutorUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Parallel scheduler runs submitted job concurrently.
  */
 public class ParallelScheduler extends AbstractScheduler {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(ParallelScheduler.class);
-
   private ExecutorService executor;
 
   ParallelScheduler(String name, int maxConcurrency) {
     super(name);
     this.executor = Executors.newFixedThreadPool(maxConcurrency,
-        new SchedulerThreadFactory("ParallelScheduler-Worker-"));
+        new NamedThreadFactory("ParallelScheduler-Worker"));
   }
 
   @Override

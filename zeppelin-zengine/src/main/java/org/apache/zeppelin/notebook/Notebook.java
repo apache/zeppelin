@@ -57,7 +57,7 @@ import org.apache.zeppelin.notebook.repo.NotebookRepoSync;
 import org.apache.zeppelin.notebook.repo.NotebookRepoWithVersionControl;
 import org.apache.zeppelin.notebook.repo.NotebookRepoWithVersionControl.Revision;
 import org.apache.zeppelin.scheduler.Job;
-import org.apache.zeppelin.scheduler.SchedulerThreadFactory;
+import org.apache.zeppelin.scheduler.NamedThreadFactory;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
 import org.apache.zeppelin.util.ExecutorUtil;
@@ -138,7 +138,7 @@ public class Notebook {
   public void initNotebook() {
     if (initExecutor == null || initExecutor.isShutdown() || initExecutor.isTerminated()) {
       initExecutor = new ThreadPoolExecutor(0, Runtime.getRuntime().availableProcessors(), 1, TimeUnit.MINUTES,
-                     new LinkedBlockingQueue<>(), new SchedulerThreadFactory("NotebookInit"));
+                     new LinkedBlockingQueue<>(), new NamedThreadFactory("NotebookInit"));
     }
     for (NoteInfo noteInfo : getNotesInfo()) {
       initExecutor.execute(() -> {

@@ -25,7 +25,7 @@ import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterManagedProcess;
-import org.apache.zeppelin.scheduler.SchedulerThreadFactory;
+import org.apache.zeppelin.scheduler.NamedThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,7 +65,7 @@ public class YarnAppMonitor {
       yarnConf.set("yarn.timeline-service.enabled", "false");
       yarnClient.init(yarnConf);
       yarnClient.start();
-      this.executor = Executors.newSingleThreadScheduledExecutor(new SchedulerThreadFactory("YarnAppsMonitor-Thread"));
+      this.executor = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("YarnAppsMonitor-Thread"));
       this.apps = new ConcurrentHashMap<>();
       this.executor.scheduleAtFixedRate(() -> {
                 try {
