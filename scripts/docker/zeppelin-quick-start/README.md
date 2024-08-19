@@ -8,12 +8,12 @@ Please go to [install](https://www.docker.com/) to install Docker.
 ### Zeppelin Only
 #### Run docker-compose
 ```bash
-docker-compose -f docker-compose-zeppelin-only.yml up
+docker compose -f docker-compose-zeppelin-only.yml up
 ```
 
 #### Stop docker-compose
 ```bash
-docker-compose -f docker-compose-zeppelin-only.yml stop
+docker compose -f docker-compose-zeppelin-only.yml stop
 ```
 
 ### Apache Zeppelin Environment Variables
