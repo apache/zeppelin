@@ -32,7 +32,7 @@ import java.util.Map;
  */
 public class YarnInterpreterLauncher extends InterpreterLauncher {
 
-  private static Logger LOGGER = LoggerFactory.getLogger(YarnInterpreterLauncher.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(YarnInterpreterLauncher.class);
 
   public YarnInterpreterLauncher(ZeppelinConfiguration zConf, RecoveryStorage recoveryStorage) {
     super(zConf, recoveryStorage);

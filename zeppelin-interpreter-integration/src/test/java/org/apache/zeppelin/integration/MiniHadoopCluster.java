@@ -36,7 +36,7 @@ import java.io.IOException;
  */
 public class MiniHadoopCluster {
 
-  private static Logger LOGGER = LoggerFactory.getLogger(MiniHadoopCluster.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(MiniHadoopCluster.class);
 
   private Configuration hadoopConf;
   private MiniDFSCluster dfsCluster;

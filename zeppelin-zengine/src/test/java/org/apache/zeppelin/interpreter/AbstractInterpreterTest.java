@@ -52,7 +52,7 @@ import static org.mockito.Mockito.mock;
  *
  */
 public abstract class AbstractInterpreterTest {
-  protected static final Logger LOGGER = LoggerFactory.getLogger(AbstractInterpreterTest.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(AbstractInterpreterTest.class);
 
   protected InterpreterSettingManager interpreterSettingManager;
   protected InterpreterFactory interpreterFactory;

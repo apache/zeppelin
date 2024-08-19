@@ -46,7 +46,7 @@ import java.util.regex.Pattern;
  * TODO(zjffdu) Add removing conda env
  */
 public class PythonCondaInterpreter extends Interpreter {
-  private static Logger LOGGER = LoggerFactory.getLogger(PythonCondaInterpreter.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(PythonCondaInterpreter.class);
   public static final String ZEPPELIN_PYTHON = "zeppelin.python";
   public static final String CONDA_PYTHON_PATH = "/bin/python";
   public static final String DEFAULT_ZEPPELIN_PYTHON = "python";

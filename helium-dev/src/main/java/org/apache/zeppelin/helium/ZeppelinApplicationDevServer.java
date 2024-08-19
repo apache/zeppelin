@@ -35,7 +35,7 @@ import org.slf4j.LoggerFactory;
  * Run this server for development mode.
  */
 public class ZeppelinApplicationDevServer extends ZeppelinDevServer {
-  final Logger LOGGER = LoggerFactory.getLogger(ZeppelinApplicationDevServer.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(ZeppelinApplicationDevServer.class);
 
   private final String className;
   private final ResourceSet resourceSet;

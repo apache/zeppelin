@@ -55,7 +55,7 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
  *
  */
 public abstract class AbstractStreamSqlJob {
-  private static Logger LOGGER = LoggerFactory.getLogger(AbstractStreamSqlJob.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(AbstractStreamSqlJob.class);
 
   private static AtomicInteger SQL_INDEX = new AtomicInteger(0);
   protected StreamExecutionEnvironment senv;

@@ -128,7 +128,7 @@ class SqlCompleterTest {
     }
   }
 
-  private Logger LOGGER = LoggerFactory.getLogger(SqlCompleterTest.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(SqlCompleterTest.class);
 
   private CompleterTester tester;
 

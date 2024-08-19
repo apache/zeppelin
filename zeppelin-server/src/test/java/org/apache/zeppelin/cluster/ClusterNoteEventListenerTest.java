@@ -37,7 +37,7 @@ import java.util.Map;
 import java.util.Set;
 
 public class ClusterNoteEventListenerTest implements ClusterEventListener {
-  private static Logger LOGGER = LoggerFactory.getLogger(ClusterNoteEventListenerTest.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(ClusterNoteEventListenerTest.class);
 
   public String receiveMsg = null;
 

@@ -51,7 +51,7 @@ import org.slf4j.LoggerFactory;
  * Manages helium packages
  */
 public class Helium {
-  private Logger LOGGER = LoggerFactory.getLogger(Helium.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(Helium.class);
   private List<HeliumRegistry> registry = new LinkedList<>();
 
   private HeliumConf heliumConf;

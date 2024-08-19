@@ -82,7 +82,7 @@ import java.util.regex.Pattern;
  *
  */
 public class KerberosRealm extends AuthorizingRealm {
-  public static final Logger LOGGER = LoggerFactory.getLogger(KerberosRealm.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(KerberosRealm.class);
 
   // Configs to set in shiro.ini
   private String principal = null;

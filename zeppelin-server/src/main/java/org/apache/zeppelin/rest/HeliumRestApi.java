@@ -57,7 +57,7 @@ import org.apache.zeppelin.server.JsonResponse;
 @Produces("application/json")
 @Singleton
 public class HeliumRestApi {
-  Logger LOGGER = LoggerFactory.getLogger(HeliumRestApi.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(HeliumRestApi.class);
 
   private final Helium helium;
   private final Notebook notebook;

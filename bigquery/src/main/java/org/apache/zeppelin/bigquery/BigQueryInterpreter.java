@@ -79,7 +79,7 @@ import org.apache.zeppelin.scheduler.SchedulerFactory;
  * 
  */
 public class BigQueryInterpreter extends Interpreter {
-  private static Logger LOGGER = LoggerFactory.getLogger(BigQueryInterpreter.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryInterpreter.class);
   private static final char NEWLINE = '\n';
   private static final char TAB = '\t';
   private static Bigquery service = null;

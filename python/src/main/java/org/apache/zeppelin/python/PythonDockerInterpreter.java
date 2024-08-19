@@ -39,7 +39,7 @@ import java.util.regex.Pattern;
  * Helps run python interpreter on a docker container
  */
 public class PythonDockerInterpreter extends Interpreter {
-  Logger LOGGER = LoggerFactory.getLogger(PythonDockerInterpreter.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(PythonDockerInterpreter.class);
   Pattern activatePattern = Pattern.compile("activate\\s*(.*)");
   Pattern deactivatePattern = Pattern.compile("deactivate");
   Pattern helpPattern = Pattern.compile("help");

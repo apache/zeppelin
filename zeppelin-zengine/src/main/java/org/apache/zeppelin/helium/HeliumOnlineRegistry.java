@@ -59,7 +59,7 @@ import java.util.UUID;
  * ]
  */
 public class HeliumOnlineRegistry extends HeliumRegistry {
-  private Logger LOGGER = LoggerFactory.getLogger(HeliumOnlineRegistry.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(HeliumOnlineRegistry.class);
   private final Gson gson;
   private final File registryCacheFile;
   private final ZeppelinConfiguration zConf;

@@ -44,7 +44,7 @@ import org.apache.zeppelin.scheduler.SchedulerFactory;
  *
  */
 public abstract class FileInterpreter extends Interpreter {
-  Logger LOGGER = LoggerFactory.getLogger(FileInterpreter.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(FileInterpreter.class);
   String currentDir = null;
   CommandArgs args = null;
 

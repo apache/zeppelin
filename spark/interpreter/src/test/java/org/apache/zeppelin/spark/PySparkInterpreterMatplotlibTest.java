@@ -56,7 +56,7 @@ public class PySparkInterpreterMatplotlibTest {
   static SparkInterpreter sparkInterpreter;
   static PySparkInterpreter pyspark;
   static InterpreterGroup intpGroup;
-  static Logger LOGGER = LoggerFactory.getLogger(PySparkInterpreterTest.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(PySparkInterpreterTest.class);
   static InterpreterContext context;
 
   public static class AltPySparkInterpreter extends PySparkInterpreter {

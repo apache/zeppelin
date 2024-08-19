@@ -45,7 +45,7 @@ import java.util.List;
  * StaticRepl for compling the java code in memory
  */
 public class StaticRepl {
-  static Logger LOGGER = LoggerFactory.getLogger(StaticRepl.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(StaticRepl.class);
 
   public static String execute(String generatedClassName, String code) throws Exception {
 

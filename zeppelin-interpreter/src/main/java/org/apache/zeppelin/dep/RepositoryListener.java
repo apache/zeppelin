@@ -26,7 +26,7 @@ import org.slf4j.LoggerFactory;
  * Simple listener that print log.
  */
 public class RepositoryListener extends AbstractRepositoryListener {
-  Logger LOGGER = LoggerFactory.getLogger(RepositoryListener.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(RepositoryListener.class);
 
   public RepositoryListener() {}
 

@@ -33,7 +33,7 @@ import java.util.List;
  * InterpreterMessageOutputStream
  */
 public class InterpreterResultMessageOutput extends OutputStream {
-  Logger LOGGER = LoggerFactory.getLogger(InterpreterResultMessageOutput.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(InterpreterResultMessageOutput.class);
   private final int NEW_LINE_CHAR = '\n';
   private List<String> resourceSearchPaths;
 

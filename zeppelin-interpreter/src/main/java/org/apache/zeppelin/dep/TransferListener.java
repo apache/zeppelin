@@ -33,7 +33,7 @@ import org.slf4j.LoggerFactory;
  * Simple listener that show deps downloading progress.
  */
 public class TransferListener extends AbstractTransferListener {
-  private Logger LOGGER = LoggerFactory.getLogger(TransferListener.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(TransferListener.class);
 
   private Map<TransferResource, Long> downloads = new ConcurrentHashMap<>();
 

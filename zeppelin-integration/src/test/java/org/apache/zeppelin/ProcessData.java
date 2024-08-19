@@ -37,7 +37,7 @@ public class ProcessData {
     PROCESS_DATA_OBJECT
   }
 
-  private final static Logger LOGGER = LoggerFactory.getLogger(ProcessData.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(ProcessData.class);
 
   private Process checked_process;
   private boolean printToConsole = false;

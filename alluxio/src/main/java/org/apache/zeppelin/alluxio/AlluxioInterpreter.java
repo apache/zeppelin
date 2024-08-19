@@ -47,8 +47,8 @@ import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
  * Alluxio interpreter for Zeppelin.
  */
 public class AlluxioInterpreter extends Interpreter {
-  
-  Logger LOGGER = LoggerFactory.getLogger(AlluxioInterpreter.class);
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(AlluxioInterpreter.class);
 
   protected static final String ALLUXIO_MASTER_HOSTNAME = "alluxio.master.hostname";
   protected static final String ALLUXIO_MASTER_PORT = "alluxio.master.port";

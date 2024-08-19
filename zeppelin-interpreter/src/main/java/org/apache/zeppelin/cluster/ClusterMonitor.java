@@ -41,7 +41,7 @@ import static org.apache.zeppelin.cluster.meta.ClusterMetaType.SERVER_META;
  * 3. checks the heartbeat timeout of the zeppelin-server and interperter processes
  */
 public class ClusterMonitor {
-  private static Logger LOGGER = LoggerFactory.getLogger(ClusterMonitor.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(ClusterMonitor.class);
 
   // Whether the thread has started
   private static AtomicBoolean running = new AtomicBoolean(true);

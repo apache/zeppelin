@@ -39,7 +39,7 @@ import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
  * SQL auto complete functionality for the JdbcInterpreter.
  */
 public class SqlCompleter {
-  private static Logger LOGGER = LoggerFactory.getLogger(SqlCompleter.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(SqlCompleter.class);
 
   /**
    * Delimiter that can split SQL statement in keyword list.

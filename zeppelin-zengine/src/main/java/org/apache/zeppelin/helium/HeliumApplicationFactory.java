@@ -43,7 +43,7 @@ import org.slf4j.LoggerFactory;
  * HeliumApplicationFactory
  */
 public class HeliumApplicationFactory implements ApplicationEventListener, NoteEventListener {
-  private final Logger LOGGER = LoggerFactory.getLogger(HeliumApplicationFactory.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(HeliumApplicationFactory.class);
   private final ExecutorService executor;
   private Notebook notebook;
   private ApplicationEventListener applicationEventListener;

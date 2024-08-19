@@ -38,7 +38,7 @@ import java.util.Map;
  * R repl interaction
  */
 public class ZeppelinR {
-  private static Logger LOGGER = LoggerFactory.getLogger(ZeppelinR.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(ZeppelinR.class);
 
   private RInterpreter rInterpreter;
   private RProcessLogOutputStream processOutputStream;

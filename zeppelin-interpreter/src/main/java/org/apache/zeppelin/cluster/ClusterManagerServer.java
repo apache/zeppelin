@@ -57,7 +57,7 @@ import static org.apache.zeppelin.cluster.meta.ClusterMetaType.SERVER_META;
  * 2. Remotely create interpreter's thrift service
  */
 public class ClusterManagerServer extends ClusterManager {
-  private static Logger LOGGER = LoggerFactory.getLogger(ClusterManagerServer.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(ClusterManagerServer.class);
 
   private static ClusterManagerServer instance = null;
 

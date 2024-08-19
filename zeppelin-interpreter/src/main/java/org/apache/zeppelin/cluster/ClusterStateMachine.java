@@ -39,7 +39,7 @@ import java.util.Map;
  * Metadata information can be manipulated by put, get, remove, index, and snapshot.
  */
 public class ClusterStateMachine extends AbstractPrimitiveService {
-  private static Logger LOGGER = LoggerFactory.getLogger(ClusterStateMachine.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(ClusterStateMachine.class);
   private ClusterMeta clusterMeta = new ClusterMeta();
 
   // Command to operation a variable in cluster state machine

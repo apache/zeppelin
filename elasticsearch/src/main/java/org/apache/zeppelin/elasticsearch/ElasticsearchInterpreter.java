@@ -71,7 +71,7 @@ import static org.apache.zeppelin.elasticsearch.client.ElasticsearchClientType.T
  * Elasticsearch Interpreter for Zeppelin.
  */
 public class ElasticsearchInterpreter extends Interpreter {
-  private static Logger LOGGER = LoggerFactory.getLogger(ElasticsearchInterpreter.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(ElasticsearchInterpreter.class);
 
   private static final String HELP = "Elasticsearch interpreter:\n"
       + "General format: <command> /<indices>/<types>/<id> <option> <JSON>\n"

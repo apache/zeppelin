@@ -47,7 +47,7 @@ import org.apache.zeppelin.resource.ResourcePool;
  * Neo4j connection manager for Zeppelin.
  */
 public class Neo4jConnectionManager {
-  static final Logger LOGGER = LoggerFactory.getLogger(Neo4jConnectionManager.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(Neo4jConnectionManager.class);
 
   public static final String NEO4J_SERVER_URL = "neo4j.url";
   public static final String NEO4J_DATABASE = "neo4j.database";

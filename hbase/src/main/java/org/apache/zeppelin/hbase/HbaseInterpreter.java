@@ -57,7 +57,7 @@ public class HbaseInterpreter extends Interpreter {
   public static final String HBASE_RUBY_SRC = "hbase.ruby.sources";
   public static final String HBASE_TEST_MODE = "zeppelin.hbase.test.mode";
 
-  private Logger LOGGER = LoggerFactory.getLogger(HbaseInterpreter.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(HbaseInterpreter.class);
   private ScriptingContainer scriptingContainer;
 
   private StringWriter writer;

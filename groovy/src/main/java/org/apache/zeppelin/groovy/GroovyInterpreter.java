@@ -51,7 +51,7 @@ import org.apache.zeppelin.scheduler.SchedulerFactory;
  * Groovy interpreter for Zeppelin.
  */
 public class GroovyInterpreter extends Interpreter {
-  Logger LOGGER = LoggerFactory.getLogger(GroovyInterpreter.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(GroovyInterpreter.class);
   GroovyShell shell = null; //new GroovyShell();
   //here we will store Interpreters shared variables. concurrent just in case.
   Map<String, Object> sharedBindings = new ConcurrentHashMap<String, Object>();

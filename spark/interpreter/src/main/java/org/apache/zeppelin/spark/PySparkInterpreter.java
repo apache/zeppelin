@@ -48,7 +48,7 @@ import java.util.Properties;
  */
 public class PySparkInterpreter extends PythonInterpreter {
 
-  private static Logger LOGGER = LoggerFactory.getLogger(PySparkInterpreter.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(PySparkInterpreter.class);
 
   private SparkInterpreter sparkInterpreter;
   private InterpreterContext curIntpContext;

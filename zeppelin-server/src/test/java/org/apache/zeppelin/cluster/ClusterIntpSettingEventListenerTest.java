@@ -24,7 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ClusterIntpSettingEventListenerTest implements ClusterEventListener {
-  private static Logger LOGGER = LoggerFactory.getLogger(ClusterIntpSettingEventListenerTest.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(ClusterIntpSettingEventListenerTest.class);
 
   public String receiveMsg = null;
 

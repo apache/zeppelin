@@ -28,7 +28,7 @@ import java.util.List;
 
 public class CommandExecutor {
 
-  public final static Logger LOGGER = LoggerFactory.getLogger(CommandExecutor.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(CommandExecutor.class);
 
   public enum IGNORE_ERRORS {
     TRUE,
