@@ -70,9 +70,9 @@ import org.slf4j.LoggerFactory;
  */
 public class HeliumBundleFactory {
   private static final Logger LOGGER = LoggerFactory.getLogger(HeliumBundleFactory.class);
-  private static final String NODE_VERSION = "v6.9.1";
-  private static final String NPM_VERSION = "3.10.8";
-  private static final String YARN_VERSION = "v0.21.3";
+  private static final String NODE_VERSION = "v16.16.0";
+  private static final String NPM_VERSION = "8.11.0";
+  private static final String YARN_VERSION = "v1.22.0";
   private static final String NPM_PACKAGE_NAME = "npm";
   protected static final String HELIUM_LOCAL_REPO = "helium-bundle";
   private static final String HELIUM_BUNDLES_DIR = "bundles";
@@ -589,7 +589,8 @@ public class HeliumBundleFactory {
 
         if (!webpackRunDetected) {
           String trimed = line.trim();
-          if (trimed.contains("webpack") && trimed.endsWith("--json")) {
+          if (trimed.contains("webpack")
+              && trimed.endsWith("--json --registry=https://registry.npmjs.org/")) {
             webpackRunDetected = true;
           }
           continue;
