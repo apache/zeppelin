@@ -161,7 +161,8 @@ public class GroovyInterpreter extends Interpreter {
       //put shared bindings evaluated in this interpreter
       bindings.putAll(sharedBindings);
       //put predefined bindings
-      bindings.put("g", new GObject(LOGGER, out, this.getProperties(), contextInterpreter, bindings));
+      bindings.put("g",
+              new GObject(LOGGER, out, this.getProperties(), contextInterpreter, bindings));
       bindings.put("out", new PrintWriter(out, true));
 
       script.run();

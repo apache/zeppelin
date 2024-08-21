@@ -28,6 +28,8 @@ import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 
@@ -36,9 +38,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class RemoteSchedulerTest extends AbstractInterpreterTest
-{
-
+class RemoteSchedulerTest extends AbstractInterpreterTest {
+  private static final Logger LOGGER = LoggerFactory.getLogger(RemoteSchedulerTest.class);
   private InterpreterSetting interpreterSetting;
   private SchedulerFactory schedulerSvc;
   private static final int TICK_WAIT = 100;
