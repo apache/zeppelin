@@ -34,6 +34,7 @@ import org.apache.zeppelin.completer.CompletionType;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.junit.jupiter.api.Test;
+import org.slf4j.LoggerFactory;
 
 /**
  * Tests Interpreter by running pre-determined commands against mock file system.
@@ -274,12 +275,14 @@ class MockHDFSCommand extends HDFSCommand {
  * Mock Interpreter - uses Mock HDFS command.
  */
 class MockHDFSFileInterpreter extends HDFSFileInterpreter {
+  private static final Logger LOGGER = LoggerFactory.getLogger(MockHDFSFileInterpreter.class);
+
   @Override
   public void prepare() {
     // Run commands against mock File System instead of WebHDFS
     int i = Integer.parseInt(getProperty(HDFS_MAXLENGTH) == null ? "1000"
             : getProperty(HDFS_MAXLENGTH));
-    cmd = new MockHDFSCommand("", "", logger, i);
+    cmd = new MockHDFSCommand("", "", LOGGER, i);
     gson = new Gson();
   }
 
