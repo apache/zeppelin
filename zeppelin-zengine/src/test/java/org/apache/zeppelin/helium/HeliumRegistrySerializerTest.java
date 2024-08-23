@@ -63,7 +63,7 @@ class HeliumRegistrySerializerTest {
         assertNotNull(registry.getAll());
         assertEquals(1, registry.getAll().size());
 
-        HeliumPackage heliumPackage = registry.getAll().stream().findFirst().orElseThrow(RuntimeException::new);
+        HeliumPackage heliumPackage = registry.getAll().get(0);
         assertEquals("[organization.A].[name.A]", heliumPackage.getName());
         assertEquals("Description-A", heliumPackage.getDescription());
         assertEquals("groupId:artifactId:version", heliumPackage.getArtifact());
