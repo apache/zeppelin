@@ -44,14 +44,14 @@ class ClusterMessageSerDeserTest {
         // First, let's check the serialized JSON serialization
         String serializedJSON = ClusterMessage.serializeMessage(clusterMessage);
         assertEquals(
-                a2q("{\n" +
-                        "  'clusterEvent': 'BROADCAST_NEW_PARAGRAPH',\n" +
-                        "  'data': {\n" +
-                        "    'key1': 'value1',\n" +
-                        "    'key2': 'value2'\n" +
+                "{\n" +
+                        "  \"clusterEvent\": \"BROADCAST_NEW_PARAGRAPH\",\n" +
+                        "  \"data\": {\n" +
+                        "    \"key1\": \"value1\",\n" +
+                        "    \"key2\": \"value2\"\n" +
                         "  },\n" +
-                        "  'msgId': '" + clusterMessage.getMsgId() + "'\n" +
-                        "}"),
+                        "  \"msgId\": \"" + clusterMessage.getMsgId() + "\"\n" +
+                        "}",
                 serializedJSON);
 
         // Now, let's check the serialized JSON deserialization
@@ -63,11 +63,11 @@ class ClusterMessageSerDeserTest {
 
     @Test
     void fromJson_withInvalidField() {
-        String invalidJson = a2q("{" +
-                "'clusterEvent':'SET_RUNNERS_PERMISSIONS'," +
-                "'data':{'key1':'value1','key2':'value2'}," +
-                "'invalidField':'invalidValue'" +
-                "}");
+        String invalidJson = "{" +
+                "\"clusterEvent\":\"SET_RUNNERS_PERMISSIONS\"," +
+                "\"data\":{\"key1\":\"value1\",\"key2\":\"value2\"}," +
+                "\"invalidField\":\"invalidValue\"" +
+                "}";
 
         ClusterMessage deserialized = ClusterMessage.deserializeMessage(invalidJson);
         assertEquals(ClusterEvent.SET_RUNNERS_PERMISSIONS, deserialized.clusterEvent);
@@ -88,11 +88,11 @@ class ClusterMessageSerDeserTest {
 
     @Test
     void fromJson_withNullFields() {
-        String jsonWithNullFields = a2q("{" +
-                "'clusterEvent':null," +
-                "'data':null," +
-                "'msgId':null" +
-                "}");
+        String jsonWithNullFields = "{" +
+                "\"clusterEvent\":null," +
+                "\"data\":null," +
+                "\"msgId\":null" +
+                "}";
 
         ClusterMessage deserialized = ClusterMessage.deserializeMessage(jsonWithNullFields);
         assertNull(deserialized.clusterEvent);
@@ -108,11 +108,11 @@ class ClusterMessageSerDeserTest {
 
         String serializedJSON = ClusterMessage.serializeMessage(original);
         assertEquals(
-                a2q("{\n" +
-                        "  'clusterEvent': 'CLEAR_PERMISSION',\n" +
-                        "  'data': {},\n" +
-                        "  'msgId': ''\n" +
-                        "}"),
+                "{\n" +
+                        "  \"clusterEvent\": \"CLEAR_PERMISSION\",\n" +
+                        "  \"data\": {},\n" +
+                        "  \"msgId\": \"\"\n" +
+                        "}",
                 serializedJSON);
 
         ClusterMessage deserialized = ClusterMessage.deserializeMessage(serializedJSON);
@@ -150,7 +150,4 @@ class ClusterMessageSerDeserTest {
         return map;
     }
 
-    private static String a2q(String json) {
-        return json.replace("'", "\"");
-    }
 }

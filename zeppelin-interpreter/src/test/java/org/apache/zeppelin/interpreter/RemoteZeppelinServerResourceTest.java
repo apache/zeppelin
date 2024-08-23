@@ -38,11 +38,11 @@ class RemoteZeppelinServerResourceTest {
 
         // First, let's check the serializedJson serialization
         String serializedJSON = original.toJson();
-        assertEquals(a2q("{" +
-                "'ownerKey':'" + original.getOwnerKey() + "'," +
-                "'resourceType':'PARAGRAPH_RUNNERS'," +
-                "'data':{'key1':'value','key2':'value2'}" +
-                "}"), serializedJSON);
+        assertEquals("{" +
+                "\"ownerKey\":\"" + original.getOwnerKey() + "\"," +
+                "\"resourceType\":\"PARAGRAPH_RUNNERS\"," +
+                "\"data\":{\"key1\":\"value\",\"key2\":\"value2\"}" +
+                "}", serializedJSON);
 
         // Now, let's check the serializedJson deserialization
         RemoteZeppelinServerResource deserialized = RemoteZeppelinServerResource.fromJson(serializedJSON);
@@ -53,11 +53,11 @@ class RemoteZeppelinServerResourceTest {
 
     @Test
     void fromJson_withInvalidResourceType() {
-        String invalidJson = a2q("{" +
-                "'ownerKey':'1234'," +
-                "'resourceType':'INVALID_TYPE'," +
-                "'data':{'key1':'value','key2':'value2'}" +
-                "}");
+        String invalidJson = "{" +
+                "\"ownerKey\":\"1234\"," +
+                "\"resourceType\":\"INVALID_TYPE\"," +
+                "\"data\":{\"key1\":\"value\",\"key2\":\"value2\"}" +
+                "}";
 
         RemoteZeppelinServerResource deserialized = RemoteZeppelinServerResource.fromJson(invalidJson);
         // Deserialization is successful and type is null
@@ -80,11 +80,11 @@ class RemoteZeppelinServerResourceTest {
 
     @Test
     void fromJson_withNullFields() {
-        String jsonWithNullFields = a2q("{" +
-                "'ownerKey':null," +
-                "'resourceType':null," +
-                "'data':null" +
-                "}");
+        String jsonWithNullFields = "{" +
+                "\"ownerKey\":null," +
+                "\"resourceType\":null," +
+                "\"data\":null" +
+                "}";
 
         RemoteZeppelinServerResource deserialized = RemoteZeppelinServerResource.fromJson(jsonWithNullFields);
         assertNull(deserialized.getOwnerKey());
@@ -100,11 +100,11 @@ class RemoteZeppelinServerResourceTest {
         original.setResourceType(PARAGRAPH_RUNNERS);
 
         String serializedJSON = original.toJson();
-        assertEquals(a2q("{" +
-                "'ownerKey':''," +
-                "'resourceType':'PARAGRAPH_RUNNERS'," +
-                "'data':{}" +
-                "}"), serializedJSON);
+        assertEquals("{" +
+                "\"ownerKey\":\"\"," +
+                "\"resourceType\":\"PARAGRAPH_RUNNERS\"," +
+                "\"data\":{}" +
+                "}", serializedJSON);
 
         RemoteZeppelinServerResource deserialized = RemoteZeppelinServerResource.fromJson(serializedJSON);
         assertEquals(original.getOwnerKey(), deserialized.getOwnerKey());
@@ -141,10 +141,6 @@ class RemoteZeppelinServerResourceTest {
         map.put(key, value);
         map.put(key2, value2);
         return map;
-    }
-
-    private static String a2q(String json) {
-        return json.replace("'", "\"");
     }
 
 }
