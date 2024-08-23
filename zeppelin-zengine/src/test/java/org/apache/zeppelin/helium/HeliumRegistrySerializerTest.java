@@ -47,14 +47,14 @@ class HeliumRegistrySerializerTest {
     @Test
     void testDeserialization() throws IOException {
         // Given
+        Path dir = Files.createDirectory(Paths.get("./" + UUID.randomUUID()));
+        FileUtils.forceDeleteOnExit(dir.toFile());
+        File newFile = Files.createTempFile(dir, UUID.randomUUID().toString(), ".json").toFile();
+        FileUtils.forceDeleteOnExit(newFile);
 
         // When
         // Define the output file
-        Path dir = Files.createDirectory(Paths.get("./" + UUID.randomUUID().toString()));
-        File newFile = Files.createTempFile(dir, UUID.randomUUID().toString(), ".json").toFile();
         FileUtils.writeStringToFile(newFile, HELIUM_PACKAGE_JSON_1, StandardCharsets.UTF_8);
-        FileUtils.forceDeleteOnExit(newFile);
-
         // Write JSON string to file using Apache Commons FileUtils
         HeliumRegistry registry = new HeliumLocalRegistry("my-registry", dir.toString());
 
