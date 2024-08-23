@@ -224,10 +224,7 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
         this.renderAngular();
         break;
     }
-    this.cdr.markForCheck();
-    if (this.published) {
-      this.cdr.detectChanges();
-    }
+    this.cdr.detectChanges();
   }
 
   renderHTML(): void {
