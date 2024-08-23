@@ -74,13 +74,6 @@ class HeliumRegistrySerializerTest {
         assertEquals("alternative.resource.name", heliumPackage.getResources()[1][0]);
         assertEquals(":alternative.class.name", heliumPackage.getResources()[1][1]);
         assertEquals("<i class='icon'></i>", heliumPackage.getIcon());
-
-    }
-
-    private File createHeliumPackage(Path testDir, String JSON) throws IOException {
-        File newFile = Files.createTempFile(testDir, UUID.randomUUID().toString(), ".json").toFile();
-        FileUtils.writeStringToFile(newFile, JSON, StandardCharsets.UTF_8);
-        return newFile;
     }
 
 }
