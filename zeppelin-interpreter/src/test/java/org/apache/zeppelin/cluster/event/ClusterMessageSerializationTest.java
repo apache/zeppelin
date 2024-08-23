@@ -121,8 +121,9 @@ class ClusterMessageSerializationTest {
         assertEquals(original.getMsgId(), deserialized.getMsgId());
     }
 
+    // Let's test what happens if we have data over 1000
     @Test
-    void fromJson_withLargeDataSet() {
+    void fromJson_withLongDataSet() {
         Map<String, String> largeData = new HashMap<>();
         for (int i = 0; i < 1000; i++) {
             largeData.put("key" + i, "value" + i);
