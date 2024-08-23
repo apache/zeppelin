@@ -42,7 +42,7 @@ public class NotebookSocket {
     return String.valueOf(headers.get(key));
   }
 
-  public void send(String serializeMessage) throws IOException {
+  public synchronized void send(String serializeMessage) throws IOException {
     session.getBasicRemote().sendText(serializeMessage);
   }
 
