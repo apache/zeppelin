@@ -169,7 +169,7 @@ export default class NetworkVisualization extends Visualization {
       .on('dragstart', (d) => {
         console.log('dragstart');
         d3.event.sourceEvent.stopPropagation();
-        d3.select(this).classed('dragging', true);
+        d3.select(d3.event.sourceEvent.target).classed('dragging', true);
         self.force.stop();
       })
       .on('drag', (d) => {
@@ -182,7 +182,7 @@ export default class NetworkVisualization extends Visualization {
       .on('dragend', (d) => {
         console.log('dragend');
         d.fixed = true;
-        d3.select(this).classed('dragging', false);
+        d3.select(d3.event.sourceEvent.target).classed('dragging', false);
         self.force.resume();
       });
 
