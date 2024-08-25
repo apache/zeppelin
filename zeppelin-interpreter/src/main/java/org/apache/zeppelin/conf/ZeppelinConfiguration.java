@@ -1106,8 +1106,9 @@ public class ZeppelinConfiguration {
 
     // Used by K8s and Docker plugin
     ZEPPELIN_DOCKER_CONTAINER_IMAGE("zeppelin.docker.container.image", "apache/zeppelin:" + Util.getVersion()),
+    ZEPPELIN_DOCKER_CONTAINER_HOME("zeppelin.docker.container.home", "/opt/zeppelin"),
 
-    ZEPPELIN_DOCKER_CONTAINER_SPARK_HOME("zeppelin.docker.container.spark.home", "/spark"),
+    ZEPPELIN_DOCKER_CONTAINER_SPARK_HOME("zeppelin.docker.container.spark.home", "/opt/spark"),
     ZEPPELIN_DOCKER_UPLOAD_LOCAL_LIB_TO_CONTAINTER("zeppelin.docker.upload.local.lib.to.container", true),
     ZEPPELIN_DOCKER_HOST("zeppelin.docker.host", "http://0.0.0.0:2375"),
     ZEPPELIN_DOCKER_TIME_ZONE("zeppelin.docker.time.zone", TimeZone.getDefault().getID()),
