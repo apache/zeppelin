@@ -226,11 +226,11 @@ public class ZeppelinServer implements AutoCloseable {
         });
 
     // Multiple Web UI
-    final WebAppContext defaultWebApp = setupWebAppContext(contexts, zConf, zConf.getString(ConfVars.ZEPPELIN_WAR), WEB_APP_CONTEXT_CLASSIC);
-    final WebAppContext nextWebApp = setupWebAppContext(contexts, zConf, zConf.getString(ConfVars.ZEPPELIN_ANGULAR_WAR), zConf.getServerContextPath());
+    final WebAppContext defaultWebApp = setupWebAppContext(contexts, zConf, zConf.getString(ConfVars.ZEPPELIN_ANGULAR_WAR), zConf.getServerContextPath());
+    final WebAppContext classicWebApp = setupWebAppContext(contexts, zConf, zConf.getString(ConfVars.ZEPPELIN_WAR), WEB_APP_CONTEXT_CLASSIC);
 
     initWebApp(defaultWebApp);
-    initWebApp(nextWebApp);
+    initWebApp(classicWebApp);
 
     NotebookRepo repo =
         ServiceLocatorUtilities.getService(sharedServiceLocator, NotebookRepo.class.getName());
