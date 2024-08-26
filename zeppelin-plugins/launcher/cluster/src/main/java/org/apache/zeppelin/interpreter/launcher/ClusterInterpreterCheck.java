@@ -31,8 +31,7 @@ import static org.apache.zeppelin.cluster.meta.ClusterMeta.INTP_TSERVER_PORT;
 // Metadata registered in the cluster by the interpreter process,
 // Keep the interpreter process started
 public class ClusterInterpreterCheck implements Runnable {
-  private static final Logger LOGGER
-      = LoggerFactory.getLogger(ClusterInterpreterCheck.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(ClusterInterpreterCheck.class);
 
   private final InterpreterClient intpProcess;
   private final String intpGroupId;

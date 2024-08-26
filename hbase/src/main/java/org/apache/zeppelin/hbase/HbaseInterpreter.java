@@ -57,7 +57,7 @@ public class HbaseInterpreter extends Interpreter {
   public static final String HBASE_RUBY_SRC = "hbase.ruby.sources";
   public static final String HBASE_TEST_MODE = "zeppelin.hbase.test.mode";
 
-  private Logger logger = LoggerFactory.getLogger(HbaseInterpreter.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(HbaseInterpreter.class);
   private ScriptingContainer scriptingContainer;
 
   private StringWriter writer;
@@ -77,8 +77,8 @@ public class HbaseInterpreter extends Interpreter {
       String rubySrc = getProperty(HBASE_RUBY_SRC);
       Path absRubySrc = Paths.get(hbaseHome, rubySrc).toAbsolutePath();
 
-      logger.info("Home:" + hbaseHome);
-      logger.info("Ruby Src:" + rubySrc);
+      LOGGER.info("Home:" + hbaseHome);
+      LOGGER.info("Ruby Src:" + rubySrc);
 
       File f = absRubySrc.toFile();
       if (!f.exists() || !f.isDirectory()) {
@@ -86,7 +86,7 @@ public class HbaseInterpreter extends Interpreter {
             + "'");
       }
 
-      logger.info("Absolute Ruby Source:" + absRubySrc.toString());
+      LOGGER.info("Absolute Ruby Source:" + absRubySrc.toString());
       // hirb.rb:41 requires the following system properties to be set.
       Properties sysProps = System.getProperties();
       sysProps.setProperty(HBASE_RUBY_SRC, absRubySrc.toString());
@@ -112,14 +112,14 @@ public class HbaseInterpreter extends Interpreter {
   @Override
   public InterpreterResult interpret(String cmd, InterpreterContext interpreterContext) {
     try {
-      logger.info(cmd);
+      LOGGER.info(cmd);
       this.writer.getBuffer().setLength(0);
       this.scriptingContainer.runScriptlet(cmd);
       this.writer.flush();
-      logger.debug(writer.toString());
+      LOGGER.debug(writer.toString());
       return new InterpreterResult(InterpreterResult.Code.SUCCESS, writer.getBuffer().toString());
     } catch (Throwable t) {
-      logger.error("Can not run '" + cmd + "'", t);
+      LOGGER.error("Can not run '" + cmd + "'", t);
       return new InterpreterResult(InterpreterResult.Code.ERROR, t.getMessage());
     }
   }

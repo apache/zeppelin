@@ -28,6 +28,8 @@ import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResultMessage;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import java.io.File;
@@ -41,7 +43,7 @@ import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
 
 public class FlinkStreamSqlInterpreterTest extends FlinkSqlInterpreterTest {
-
+  private static final Logger LOGGER = LoggerFactory.getLogger(FlinkStreamSqlInterpreterTest.class);
 
   private static class FlinkJobListener implements JobListener {
 

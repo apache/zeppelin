@@ -53,7 +53,7 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 
 class RecoveryTest extends AbstractTestRestApi {
-  private static final Logger LOG = LoggerFactory.getLogger(RecoveryTest.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(RecoveryTest.class);
   private Gson gson = new Gson();
   private static File recoveryDir = null;
   private static MiniZeppelinServer zepServer;
@@ -96,7 +96,7 @@ class RecoveryTest extends AbstractTestRestApi {
 
   @Test
   void testRecovery() throws Exception {
-    LOG.info("Test testRecovery");
+    LOGGER.info("Test testRecovery");
     String note1Id = null;
     try {
       note1Id = notebook.createNote("note1", anonymous);
@@ -146,7 +146,7 @@ class RecoveryTest extends AbstractTestRestApi {
           return null;
         });
     } catch (Exception e) {
-      LOG.error(e.toString(), e);
+      LOGGER.error(e.toString(), e);
       throw e;
     } finally {
       if (null != note1Id) {
@@ -157,7 +157,7 @@ class RecoveryTest extends AbstractTestRestApi {
 
   @Test
   void testRecovery_2() throws Exception {
-    LOG.info("Test testRecovery_2");
+    LOGGER.info("Test testRecovery_2");
     String note1Id = null;
     try {
       note1Id = notebook.createNote("note2", AuthenticationInfo.ANONYMOUS);
@@ -215,7 +215,7 @@ class RecoveryTest extends AbstractTestRestApi {
           return null;
         });
     } catch (Exception e) {
-      LOG.error(e.toString(), e);
+      LOGGER.error(e.toString(), e);
       throw e;
     } finally {
       if (null != note1Id) {
@@ -226,7 +226,7 @@ class RecoveryTest extends AbstractTestRestApi {
 
   @Test
   void testRecovery_3() throws Exception {
-    LOG.info("Test testRecovery_3");
+    LOGGER.info("Test testRecovery_3");
     String note1Id = null;
     try {
       note1Id = notebook.createNote("note3", AuthenticationInfo.ANONYMOUS);
@@ -276,7 +276,7 @@ class RecoveryTest extends AbstractTestRestApi {
           return null;
         });
     } catch (Exception e ) {
-      LOG.error(e.toString(), e);
+      LOGGER.error(e.toString(), e);
       throw e;
     } finally {
       if (null != note1Id) {
@@ -295,7 +295,7 @@ class RecoveryTest extends AbstractTestRestApi {
 
   @Test
   void testRecovery_Running_Paragraph_sh() throws Exception {
-    LOG.info("Test testRecovery_Running_Paragraph_sh");
+    LOGGER.info("Test testRecovery_Running_Paragraph_sh");
     String note1Id = null;
     try {
       note1Id = notebook.createNote("note4",
@@ -327,7 +327,7 @@ class RecoveryTest extends AbstractTestRestApi {
       assertEquals("hello\n", p1.getReturn().message().get(0).getData());
       Thread.sleep(5 * 1000);
     } catch (Exception e ) {
-      LOG.error(e.toString(), e);
+      LOGGER.error(e.toString(), e);
       throw e;
     } finally {
       if (null != note1Id) {
@@ -338,7 +338,7 @@ class RecoveryTest extends AbstractTestRestApi {
 
   @Test
   void testRecovery_Finished_Paragraph_python() throws Exception {
-    LOG.info("Test testRecovery_Finished_Paragraph_python");
+    LOGGER.info("Test testRecovery_Finished_Paragraph_python");
     String note1Id = null;
     try {
       InterpreterSettingManager interpreterSettingManager =
@@ -387,7 +387,7 @@ class RecoveryTest extends AbstractTestRestApi {
               "8\n" +
               "9\n", p1.getReturn().message().get(0).getData());
     } catch (Exception e ) {
-      LOG.error(e.toString(), e);
+      LOGGER.error(e.toString(), e);
       throw e;
     } finally {
       if (null != note1Id) {

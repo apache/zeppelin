@@ -71,7 +71,7 @@ import static org.mockito.Mockito.mock;
 @RunWith(FlinkStandaloneHiveRunner.class)
 public abstract class FlinkSqlInterpreterTest {
 
-  protected static final Logger LOGGER = LoggerFactory.getLogger(FlinkSqlInterpreterTest.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(FlinkSqlInterpreterTest.class);
 
 
   protected FlinkInterpreter flinkInterpreter;

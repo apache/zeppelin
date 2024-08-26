@@ -28,7 +28,7 @@ import java.util.List;
 
 public class CommandExecutor {
 
-  public final static Logger LOG = LoggerFactory.getLogger(CommandExecutor.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(CommandExecutor.class);
 
   public enum IGNORE_ERRORS {
     TRUE,
@@ -43,7 +43,7 @@ public class CommandExecutor {
     List<String> subCommandsAsList = new ArrayList<>(Arrays.asList(command));
     String mergedCommand = StringUtils.join(subCommandsAsList, " ");
 
-    LOG.info("Sending command \"" + mergedCommand + "\" to localhost");
+    LOGGER.info("Sending command \"" + mergedCommand + "\" to localhost");
 
     ProcessBuilder processBuilder = new ProcessBuilder(command);
     Process process = null;
@@ -58,11 +58,11 @@ public class CommandExecutor {
     int exit_code = data_of_process.getExitCodeValue();
 
     if (!printToConsole)
-      LOG.trace(output_of_process.toString());
+      LOGGER.trace(output_of_process.toString());
     else
-      LOG.debug(output_of_process.toString());
+      LOGGER.debug(output_of_process.toString());
     if (ignore_errors == IGNORE_ERRORS.FALSE && exit_code != NORMAL_EXIT) {
-      LOG.error(String.format("*********************Command '%s' failed with exitcode %s *********************", mergedCommand, exit_code));
+      LOGGER.error(String.format("*********************Command '%s' failed with exitcode %s *********************", mergedCommand, exit_code));
     }
     return output_of_process;
   }

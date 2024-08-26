@@ -29,7 +29,7 @@ import java.util.Properties;
 
 public class SessionConfInterpreter extends ConfInterpreter {
 
-  private static Logger LOGGER = LoggerFactory.getLogger(SessionConfInterpreter.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(SessionConfInterpreter.class);
 
   public SessionConfInterpreter(Properties properties,
                                 String sessionId,

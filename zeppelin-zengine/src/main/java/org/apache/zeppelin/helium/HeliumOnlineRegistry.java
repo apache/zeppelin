@@ -59,7 +59,7 @@ import java.util.UUID;
  * ]
  */
 public class HeliumOnlineRegistry extends HeliumRegistry {
-  private Logger logger = LoggerFactory.getLogger(HeliumOnlineRegistry.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(HeliumOnlineRegistry.class);
   private final Gson gson;
   private final File registryCacheFile;
   private final ZeppelinConfiguration zConf;
@@ -96,14 +96,14 @@ public class HeliumOnlineRegistry extends HeliumRegistry {
       }
       response = client.execute(get);
     } catch (Exception e) {
-      logger.error(e.getMessage());
+      LOGGER.error(e.getMessage());
       return readFromCache();
     }
 
     if (response.getStatusLine().getStatusCode() != 200) {
       // try read from cache
-      if (logger.isErrorEnabled()) {
-        logger.error("{} returned {}", uri(), response.getStatusLine());
+      if (LOGGER.isErrorEnabled()) {
+        LOGGER.error("{} returned {}", uri(), response.getStatusLine());
       }
       return readFromCache();
     } else {
@@ -151,7 +151,7 @@ public class HeliumOnlineRegistry extends HeliumRegistry {
       }
       else return null;
     } catch (Exception ex) {
-      logger.error(ex.getMessage(), ex);
+      LOGGER.error(ex.getMessage(), ex);
       return null;
     }
   }
@@ -165,7 +165,7 @@ public class HeliumOnlineRegistry extends HeliumRegistry {
               new TypeToken<List<HeliumPackage>>() {
               }.getType());
         } catch (FileNotFoundException e) {
-          logger.error(e.getMessage(), e);
+          LOGGER.error(e.getMessage(), e);
           return new LinkedList<>();
         }
       } else {

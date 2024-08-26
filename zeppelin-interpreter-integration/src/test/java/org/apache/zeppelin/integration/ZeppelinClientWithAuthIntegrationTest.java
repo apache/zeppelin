@@ -36,7 +36,7 @@ import org.slf4j.LoggerFactory;
 
 class ZeppelinClientWithAuthIntegrationTest extends AbstractTestRestApi {
 
-  private static final Logger LOG = LoggerFactory.getLogger(ZeppelinClientWithAuthIntegrationTest.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(ZeppelinClientWithAuthIntegrationTest.class);
 
   private static ClientConfig clientConfig;
   private static ZeppelinClient zeppelinClient;
@@ -69,7 +69,7 @@ class ZeppelinClientWithAuthIntegrationTest extends AbstractTestRestApi {
   @Test
   void testZeppelinVersion() throws Exception {
     String version = zeppelinClient.getVersion();
-    LOG.info("Zeppelin version: " + version);
+    LOGGER.info("Zeppelin version: " + version);
     assertNotNull(version);
   }
 

@@ -49,7 +49,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 public class MiniZeppelinServer implements AutoCloseable {
-  protected static final Logger LOG = LoggerFactory.getLogger(MiniZeppelinServer.class);
+  protected static final Logger LOGGER = LoggerFactory.getLogger(MiniZeppelinServer.class);
 
   private final File zeppelinHome;
   private final File confDir;
@@ -66,7 +66,7 @@ public class MiniZeppelinServer implements AutoCloseable {
       try {
         zepServer.startZeppelin();
       } catch (Exception e) {
-        LOG.error("Exception in MiniZeppelinServer", e);
+        LOGGER.error("Exception in MiniZeppelinServer", e);
         throw new RuntimeException(e);
       }
     }
@@ -79,10 +79,10 @@ public class MiniZeppelinServer implements AutoCloseable {
   public MiniZeppelinServer(String classname, String zeppelinConfiguration) throws IOException {
     this.classname = classname;
     zeppelinHome = Files.createTempDirectory(classname).toFile();
-    LOG.info("ZEPPELIN_HOME: " + zeppelinHome.getAbsolutePath());
+    LOGGER.info("ZEPPELIN_HOME: " + zeppelinHome.getAbsolutePath());
     confDir = new File(zeppelinHome, "conf");
     confDir.mkdirs();
-    LOG.info("ZEPPELIN_CONF_DIR: " + confDir.getAbsolutePath());
+    LOGGER.info("ZEPPELIN_CONF_DIR: " + confDir.getAbsolutePath());
     notebookDir = new File(zeppelinHome, "notebook");
     notebookDir.mkdirs();
 
@@ -142,7 +142,7 @@ public class MiniZeppelinServer implements AutoCloseable {
   public void copyBinDir() throws IOException {
     File binDirDest = new File(zeppelinHome, "bin");
     File binDirSrc = new File(".." + File.separator + "bin");
-    LOG.info("Copy {} to {}", binDirSrc.getAbsolutePath(),
+    LOGGER.info("Copy {} to {}", binDirSrc.getAbsolutePath(),
         binDirDest.getAbsolutePath());
     FileUtils.copyDirectory(binDirSrc, binDirDest);
   }
@@ -158,7 +158,7 @@ public class MiniZeppelinServer implements AutoCloseable {
     File interpreterDirDest = new File(zeppelinHome, "interpreter" + File.separator + interpreterName);
     File interpreterDirSrc =
         new File(".." + File.separator + "interpreter" + File.separator + interpreterName);
-    LOG.info("Copy {}-Interpreter from {} to {}", interpreterName,
+    LOGGER.info("Copy {}-Interpreter from {} to {}", interpreterName,
         interpreterDirSrc.getAbsolutePath(),
         interpreterDirDest.getAbsolutePath());
     FileUtils.copyDirectory(interpreterDirSrc, interpreterDirDest);
@@ -170,7 +170,7 @@ public class MiniZeppelinServer implements AutoCloseable {
     File launcherDirSrc =
         new File(".." + File.separator + "plugins" + File.separator + "Launcher" + File.separator
             + launcherName);
-    LOG.info("Copy {} from {} to {}", launcherName, launcherDirSrc.getAbsolutePath(),
+    LOGGER.info("Copy {} from {} to {}", launcherName, launcherDirSrc.getAbsolutePath(),
         launcherDirDest.getAbsolutePath());
     FileUtils.copyDirectory(launcherDirSrc, launcherDirDest);
   }
@@ -183,7 +183,7 @@ public class MiniZeppelinServer implements AutoCloseable {
         File logPropertiesDest =
             new File(zeppelinHome, "conf" + File.separator + conffile);
         if (!logPropertiesDest.exists()) {
-          LOG.info("Copy {} to {}", logPropertiesSrc.getAbsolutePath(),
+          LOGGER.info("Copy {} to {}", logPropertiesSrc.getAbsolutePath(),
               logPropertiesDest.getAbsolutePath());
           FileUtils.copyFile(logPropertiesSrc, logPropertiesDest);
         }
@@ -199,7 +199,7 @@ public class MiniZeppelinServer implements AutoCloseable {
         File zeppelinInterpreterShadedDest =
             new File(zeppelinHome, "interpreter" + File.separator + interpreterfile);
         if (!zeppelinInterpreterShadedDest.exists()) {
-          LOG.info("Copy {} to {}", zeppelinInterpreterShadedSrc.getAbsolutePath(),
+          LOGGER.info("Copy {} to {}", zeppelinInterpreterShadedSrc.getAbsolutePath(),
               zeppelinInterpreterShadedDest.getAbsolutePath());
           FileUtils.copyFile(zeppelinInterpreterShadedSrc, zeppelinInterpreterShadedDest);
         }
@@ -241,7 +241,7 @@ public class MiniZeppelinServer implements AutoCloseable {
 
   public void start(boolean deleteNotebookData, String serviceLocator)
       throws Exception {
-    LOG.info("Starting ZeppelinServer testClassName: {}", classname);
+    LOGGER.info("Starting ZeppelinServer testClassName: {}", classname);
     // copy the resources files to a temp folder
     zConf.setServerPort(getFreePort());
     zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HOME.getVarName(),
@@ -260,14 +260,14 @@ public class MiniZeppelinServer implements AutoCloseable {
     }
     zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_DIR.getVarName(),
         notebookDir.getPath());
-    LOG.info("Staring ZeppelinServerMock Zeppelin up...");
+    LOGGER.info("Staring ZeppelinServerMock Zeppelin up...");
     this.serviceLocator = serviceLocator;
     zepServer = new ZeppelinServer(zConf, serviceLocator);
     executor = Executors.newSingleThreadExecutor();
     executor.submit(SERVER);
     await().pollDelay(Duration.ofSeconds(2)).atMost(Duration.ofMinutes(3))
         .until(checkIfServerIsRunningCallable());
-    LOG.info("ZeppelinServerMock started.");
+    LOGGER.info("ZeppelinServerMock started.");
   }
 
   public boolean checkIfServerIsRunning() {
@@ -295,14 +295,14 @@ public class MiniZeppelinServer implements AutoCloseable {
 
   public void shutDown(final boolean deleteConfDir) throws Exception {
     if (!executor.isShutdown()) {
-      LOG.info("ZeppelinServerMock shutDown...");
+      LOGGER.info("ZeppelinServerMock shutDown...");
       zepServer.close();
       executor.shutdown();
       executor.shutdownNow();
       await().pollDelay(2, TimeUnit.SECONDS).atMost(3, TimeUnit.MINUTES)
           .until(checkIfServerIsNotRunningCallable());
 
-      LOG.info("ZeppelinServerMock terminated.");
+      LOGGER.info("ZeppelinServerMock terminated.");
 
       if (deleteConfDir) {
         FileUtils.deleteDirectory(confDir);

@@ -33,7 +33,7 @@ import java.util.Date;
  * Get java.util.Date from resource pool and display it
  */
 public class Clock extends Application {
-  private final Logger logger = LoggerFactory.getLogger(Clock.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(Clock.class);
 
   Date date;
   boolean shutdown = false;

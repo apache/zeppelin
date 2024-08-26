@@ -33,7 +33,7 @@ public class SleepingJob extends Job {
   private long start;
   private int count;
 
-  static Logger LOGGER = LoggerFactory.getLogger(SleepingJob.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(SleepingJob.class);
   private Object results;
 
 

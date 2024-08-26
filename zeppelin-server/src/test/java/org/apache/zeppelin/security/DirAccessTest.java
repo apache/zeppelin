@@ -32,7 +32,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.nio.charset.StandardCharsets;
 
 class DirAccessTest extends AbstractTestRestApi {
-  private static final Logger LOG = LoggerFactory.getLogger(DirAccessTest.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(DirAccessTest.class);
 
   private MiniZeppelinServer zepServer;
 
@@ -46,9 +46,9 @@ class DirAccessTest extends AbstractTestRestApi {
       zepServer.start();
       CloseableHttpResponse getMethod =
           getHttpClient().execute(new HttpGet(getUrlToTest() + "/app"));
-      LOG.info("Invoke getMethod - "
+      LOGGER.info("Invoke getMethod - "
           + EntityUtils.toString(getMethod.getEntity(), StandardCharsets.UTF_8));
-      LOG.info("server port {}", zConf.getServerPort());
+      LOGGER.info("server port {}", zConf.getServerPort());
       assertEquals(HttpStatus.SC_FORBIDDEN, getMethod.getStatusLine().getStatusCode());
     } finally {
       zepServer.destroy();
@@ -65,7 +65,7 @@ class DirAccessTest extends AbstractTestRestApi {
       zepServer.start();
       CloseableHttpResponse getMethod =
           getHttpClient().execute(new HttpGet(getUrlToTest() + "/app"));
-      LOG.info("Invoke getMethod - "
+      LOGGER.info("Invoke getMethod - "
           + EntityUtils.toString(getMethod.getEntity(), StandardCharsets.UTF_8));
       assertEquals(HttpStatus.SC_OK, getMethod.getStatusLine().getStatusCode());
     } finally {

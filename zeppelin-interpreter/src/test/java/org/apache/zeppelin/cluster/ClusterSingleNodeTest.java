@@ -36,7 +36,7 @@ import java.util.Map;
 
 
 class ClusterSingleNodeTest {
-  private static Logger LOGGER = LoggerFactory.getLogger(ClusterSingleNodeTest.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(ClusterSingleNodeTest.class);
   private static ZeppelinConfiguration zConf;
 
   private static ClusterManagerServer clusterServer = null;

@@ -49,7 +49,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 class ZeppelinClientIntegrationTest extends AbstractTestRestApi {
-  private static final Logger LOG = LoggerFactory.getLogger(ZeppelinClientIntegrationTest.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(ZeppelinClientIntegrationTest.class);
   private static Notebook notebook;
 
   private static ClientConfig clientConfig;
@@ -86,7 +86,7 @@ class ZeppelinClientIntegrationTest extends AbstractTestRestApi {
   @Test
   void testZeppelinVersion() throws Exception {
     String version = zeppelinClient.getVersion();
-    LOG.info("Zeppelin version: " + version);
+    LOGGER.info("Zeppelin version: " + version);
     assertNotNull(version);
   }
 

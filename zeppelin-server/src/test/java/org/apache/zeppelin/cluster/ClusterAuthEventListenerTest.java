@@ -29,7 +29,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 import java.util.Set;
 
 public class ClusterAuthEventListenerTest implements ClusterEventListener {
-  private static Logger LOGGER = LoggerFactory.getLogger(ClusterAuthEventListenerTest.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(ClusterAuthEventListenerTest.class);
 
   public String receiveMsg = null;
 

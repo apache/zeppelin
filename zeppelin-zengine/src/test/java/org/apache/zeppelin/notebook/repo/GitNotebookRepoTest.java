@@ -57,7 +57,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 class GitNotebookRepoTest {
-  private static final Logger LOG = LoggerFactory.getLogger(GitNotebookRepoTest.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(GitNotebookRepoTest.class);
 
   private static final String TEST_NOTE_ID = "2A94M5J1Z";
   private static final String TEST_NOTE_ID2 = "2A94M5J2Z";
@@ -362,7 +362,7 @@ class GitNotebookRepoTest {
     Note note = notebookRepo.get(TEST_NOTE_ID, TEST_NOTE_PATH, null);
     note.setInterpreterFactory(mock(InterpreterFactory.class));
     int paragraphCount_1 = note.getParagraphs().size();
-    LOG.info("initial paragraph count: {}", paragraphCount_1);
+    LOGGER.info("initial paragraph count: {}", paragraphCount_1);
 
     // checkpoint revision1
     Revision revision1 = notebookRepo.checkpoint(TEST_NOTE_ID, TEST_NOTE_PATH, "set revision: first commit", null);
@@ -379,7 +379,7 @@ class GitNotebookRepoTest {
     notebookRepo.save(note, null);
     int paragraphCount_2 = note.getParagraphs().size();
     assertEquals(paragraphCount_1 + 1, paragraphCount_2);
-    LOG.info("paragraph count after modification: {}", paragraphCount_2);
+    LOGGER.info("paragraph count after modification: {}", paragraphCount_2);
 
     // checkpoint revision2
     Revision revision2 = notebookRepo.checkpoint(TEST_NOTE_ID, TEST_NOTE_PATH, "set revision: second commit", null);

@@ -44,7 +44,7 @@ import org.slf4j.LoggerFactory;
 @Produces("application/json")
 @Singleton
 public class SecurityRestApi extends AbstractRestApi {
-  private static final Logger LOG = LoggerFactory.getLogger(SecurityRestApi.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(SecurityRestApi.class);
 
   @Inject
   public SecurityRestApi(AuthenticationService authenticationService) {
@@ -79,7 +79,7 @@ public class SecurityRestApi extends AbstractRestApi {
     data.put("ticket", ticketEntry.getTicket());
 
     JsonResponse<Map<String, String>> response = new JsonResponse<>(Response.Status.OK, "", data);
-    LOG.warn("{}", response);
+    LOGGER.warn("{}", response);
     return response.build();
   }
 
