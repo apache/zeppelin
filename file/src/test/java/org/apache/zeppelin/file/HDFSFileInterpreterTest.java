@@ -24,6 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import com.google.gson.Gson;
 
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -34,7 +35,6 @@ import org.apache.zeppelin.completer.CompletionType;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.junit.jupiter.api.Test;
-import org.slf4j.LoggerFactory;
 
 /**
  * Tests Interpreter by running pre-determined commands against mock file system.

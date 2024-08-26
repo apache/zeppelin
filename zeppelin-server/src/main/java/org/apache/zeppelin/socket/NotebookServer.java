@@ -1605,7 +1605,7 @@ public class NotebookServer implements AngularObjectRegistryListener,
             });
         }
       } catch (Throwable t) {
-        NotebookServer.LOGGER.error("Error in running all paragraphs", t);
+        LOGGER.error("Error in running all paragraphs", t);
       }
     });
   }

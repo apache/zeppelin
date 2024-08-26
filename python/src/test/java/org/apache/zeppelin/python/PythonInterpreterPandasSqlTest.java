@@ -58,7 +58,7 @@ import static org.mockito.Mockito.mock;
 abstract class PythonInterpreterPandasSqlTest {
 
   private static final Logger LOGGER =
-          LoggerFactory.getLogger(PythonInterpreterPandasSqlTest.class);
+      LoggerFactory.getLogger(PythonInterpreterPandasSqlTest.class);
 
   protected boolean useIPython;
   private InterpreterGroup intpGroup;
