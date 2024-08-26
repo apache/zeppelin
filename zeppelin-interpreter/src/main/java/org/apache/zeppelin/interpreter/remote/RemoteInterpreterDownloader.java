@@ -27,7 +27,7 @@ import java.util.Set;
 
 
 import org.apache.commons.io.FileUtils;
-import org.apache.zeppelin.interpreter.thrift.LibraryMetadata;
+import org.apache.zeppelin.protocol.thrift.LibraryMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

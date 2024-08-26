@@ -32,7 +32,7 @@ import java.util.Properties;
 
 import org.apache.zeppelin.completer.CompletionType;
 import org.apache.zeppelin.interpreter.InterpreterResult;
-import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
+import org.apache.zeppelin.protocol.thrift.InterpreterCompletion;
 import org.junit.jupiter.api.Test;
 
 /**

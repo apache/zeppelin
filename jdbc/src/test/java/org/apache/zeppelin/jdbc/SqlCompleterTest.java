@@ -36,7 +36,7 @@ import java.util.Set;
 import jline.console.completer.ArgumentCompleter;
 
 import org.apache.zeppelin.completer.CompletionType;
-import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
+import org.apache.zeppelin.protocol.thrift.InterpreterCompletion;
 
 /**
  * SQL completer unit tests.

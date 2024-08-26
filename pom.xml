@@ -91,6 +91,7 @@
     <module>zeppelin-plugins</module>
     <module>zeppelin-distribution</module>
     <module>zeppelin-test</module>
+    <module>zeppelin-protocol</module>
   </modules>
 
   <properties>
