@@ -55,7 +55,7 @@ class DockerInterpreterProcessTest {
     DockerInterpreterProcess interpreterProcess = (DockerInterpreterProcess) client;
     assertEquals("name", interpreterProcess.getInterpreterSettingName());
 
-    assertEquals("/spark", interpreterProcess.containerSparkHome);
+    assertEquals("/opt/spark", interpreterProcess.containerSparkHome);
     assertTrue(interpreterProcess.uploadLocalLibToContainter);
     assertNotEquals("http://my-docker-host:2375", interpreterProcess.dockerHost);
   }
