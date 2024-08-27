@@ -41,12 +41,12 @@ if [[ -z "$ZEPPELIN_PID_DIR" ]]; then
   export ZEPPELIN_PID_DIR="${ZEPPELIN_HOME}/run"
 fi
 
-if [[ -z "${ZEPPELIN_WAR}" ]]; then
+if [[ -z "${ZEPPELIN_CLASSIC_WAR}" ]]; then
   if [[ -d "${ZEPPELIN_HOME}/zeppelin-web/dist" ]]; then
-    export ZEPPELIN_WAR="${ZEPPELIN_HOME}/zeppelin-web/dist"
+    export ZEPPELIN_CLASSIC_WAR="${ZEPPELIN_HOME}/zeppelin-web/dist"
   else
-    ZEPPELIN_WAR=$(find -L "${ZEPPELIN_HOME}" -name "zeppelin-web-[0-9]*.war")
-    export ZEPPELIN_WAR
+    ZEPPELIN_CLASSIC_WAR=$(find -L "${ZEPPELIN_HOME}" -name "zeppelin-web-[0-9]*.war")
+    export ZEPPELIN_CLASSIC_WAR
   fi
 fi
 

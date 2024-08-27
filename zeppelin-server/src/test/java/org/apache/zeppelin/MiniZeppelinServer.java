@@ -92,13 +92,13 @@ public class MiniZeppelinServer implements AutoCloseable {
     Optional<File> webWar = getWebWar();
     Optional<File> webAngularWar = getWebAngularWar();
     if (webWar.isPresent()) {
-      zConf.setProperty(ConfVars.ZEPPELIN_WAR.getVarName(), webWar.get().getAbsolutePath());
+      zConf.setProperty(ConfVars.ZEPPELIN_CLASSIC_WAR.getVarName(), webWar.get().getAbsolutePath());
     } else {
       // some test profile does not build zeppelin-web.
       // to prevent zeppelin starting up fail, create zeppelin-web/dist directory
       File dummyWebDir = new File(zeppelinHome, "zeppelin-web" + File.separator + "dist");
       dummyWebDir.mkdirs();
-      zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_WAR.getVarName(),
+      zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_CLASSIC_WAR.getVarName(),
           dummyWebDir.getAbsolutePath());
     }
     if (webAngularWar.isPresent()) {

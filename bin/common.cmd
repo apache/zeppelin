@@ -33,12 +33,12 @@ if not defined ZEPPELIN_PID_DIR (
     set ZEPPELIN_PID_DIR=%ZEPPELIN_HOME%\run
 )
 
-if not defined ZEPPELIN_WAR (
+if not defined ZEPPELIN_CLASSIC_WAR (
     if exist "%ZEPPELIN_HOME%\zeppelin-web\dist" (
-        set ZEPPELIN_WAR=%ZEPPELIN_HOME%\zeppelin-web\dist
+        set ZEPPELIN_CLASSIC_WAR=%ZEPPELIN_HOME%\zeppelin-web\dist
     ) else (
         for %%d in ("%ZEPPELIN_HOME%\zeppelin-web*.war") do (
-            set ZEPPELIN_WAR=%%d
+            set ZEPPELIN_CLASSIC_WAR=%%d
         )
     )
 )

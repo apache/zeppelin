@@ -227,7 +227,7 @@ public class ZeppelinServer implements AutoCloseable {
 
     // Multiple Web UI
     final WebAppContext defaultWebApp = setupWebAppContext(contexts, zConf, zConf.getString(ConfVars.ZEPPELIN_ANGULAR_WAR), zConf.getServerContextPath());
-    final WebAppContext classicWebApp = setupWebAppContext(contexts, zConf, zConf.getString(ConfVars.ZEPPELIN_WAR), WEB_APP_CONTEXT_CLASSIC);
+    final WebAppContext classicWebApp = setupWebAppContext(contexts, zConf, zConf.getString(ConfVars.ZEPPELIN_CLASSIC_WAR), WEB_APP_CONTEXT_CLASSIC);
 
     initWebApp(defaultWebApp);
     initWebApp(classicWebApp);
