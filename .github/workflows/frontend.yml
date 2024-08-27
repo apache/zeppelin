@@ -60,7 +60,7 @@ jobs:
         if: always()
         run: if [ -d "logs" ]; then cat logs/*; fi
 
-  run-tests-in-zeppelin-web-angular:
+  run-tests-in-zeppelin-web:
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout
@@ -84,7 +84,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-zeppelin-
       - name: Run headless test
-        run: xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" ./mvnw package -pl zeppelin-web-angular ${MAVEN_ARGS}
+        run: xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" ./mvnw package -pl zeppelin-web ${MAVEN_ARGS}
 
   test-selenium-with-spark-module-for-spark-3-4:
     runs-on: ubuntu-20.04
