@@ -100,7 +100,7 @@ group1 = *
 
 ## Configure Realm (optional)
 Realms are responsible for authentication and authorization in Apache Zeppelin. By default, Apache Zeppelin uses **IniRealm** (users and groups are configurable in `conf/shiro.ini` file under `[user]` and `[group]` section). You can also leverage Shiro Realms like **JndiLdapRealm**, **JdbcRealm** or create **AuthorizingRealm**.
-To learn more about Apache Shiro Realm, please check [this documentation](http://shiro.apache.org/realm.html).
+To learn more about Apache Shiro Realm, please check [this documentation](https://shiro.apache.org/realm.html).
 
 We also provide community custom Realms.
 
