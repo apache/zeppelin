@@ -26,7 +26,7 @@
     <version>0.12.0-SNAPSHOT</version>
   </parent>
 
-  <artifactId>zeppelin-web</artifactId>
+  <artifactId>zeppelin-web-classic</artifactId>
   <packaging>war</packaging>
   <name>Zeppelin: web Application</name>
 

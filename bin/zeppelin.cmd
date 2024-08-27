@@ -60,7 +60,8 @@ call "%bin%\functions.cmd" ADDJARINDIR "%ZEPPELIN_HOME%\lib\interpreter"
 call "%bin%\functions.cmd" ADDJARINDIR "%ZEPPELIN_HOME%\zeppelin-interpreter\target\lib"
 call "%bin%\functions.cmd" ADDJARINDIR "%ZEPPELIN_HOME%\zeppelin-zengine\target\lib"
 call "%bin%\functions.cmd" ADDJARINDIR "%ZEPPELIN_HOME%\zeppelin-server\target\lib"
-call "%bin%\functions.cmd" ADDJARINDIR "%ZEPPELIN_HOME%\zeppelin-web\target\lib"
+call "%bin%\functions.cmd" ADDJARINDIR "%ZEPPELIN_HOME%\zeppelin-web-classic\target\lib"
+call "%bin%\functions.cmd" ADDJARINDIR "%ZEPPELIN_HOME%\zeppelin-web-angular\target\lib"
 
 if not defined CLASSPATH (
     set CLASSPATH=%ZEPPELIN_CLASSPATH%

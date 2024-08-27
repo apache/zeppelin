@@ -122,17 +122,17 @@ public class HeliumBundleFactory {
 
     this.gson = new Gson();
 
-    File zeppelinWebPath = new File(zConf.getAbsoluteDir("zeppelin-web"));
-    if (!zeppelinWebPath.isDirectory()) {
+    File zeppelinWebClassicPath = new File(zConf.getAbsoluteDir("zeppelin-web-classic"));
+    if (!zeppelinWebClassicPath.isDirectory()) {
       this.tabledataModulePath =
           new File(zConf.getAbsoluteDir("lib/node_modules/zeppelin-tabledata"));
       this.visualizationModulePath = new File(zConf.getAbsoluteDir("lib/node_modules/zeppelin-vis"));
       this.spellModulePath = new File(zConf.getAbsoluteDir("lib/node_modules/zeppelin-spell"));
     } else {
-      this.tabledataModulePath = new File(zConf.getAbsoluteDir("zeppelin-web/src/app/tabledata"));
+      this.tabledataModulePath = new File(zConf.getAbsoluteDir("zeppelin-web-classic/src/app/tabledata"));
       this.visualizationModulePath =
-          new File(zConf.getAbsoluteDir("zeppelin-web/src/app/visualization"));
-      this.spellModulePath = new File(zConf.getAbsoluteDir("zeppelin-web/src/app/spell"));
+          new File(zConf.getAbsoluteDir("zeppelin-web-classic/src/app/visualization"));
+      this.spellModulePath = new File(zConf.getAbsoluteDir("zeppelin-web-classic/src/app/spell"));
     }
   }
 

@@ -34,10 +34,10 @@ if not defined ZEPPELIN_PID_DIR (
 )
 
 if not defined ZEPPELIN_CLASSIC_WAR (
-    if exist "%ZEPPELIN_HOME%\zeppelin-web\dist" (
-        set ZEPPELIN_CLASSIC_WAR=%ZEPPELIN_HOME%\zeppelin-web\dist
+    if exist "%ZEPPELIN_HOME%\zeppelin-web-classic\dist" (
+        set ZEPPELIN_CLASSIC_WAR=%ZEPPELIN_HOME%\zeppelin-web-classic\dist
     ) else (
-        for %%d in ("%ZEPPELIN_HOME%\zeppelin-web*.war") do (
+        for %%d in ("%ZEPPELIN_HOME%\zeppelin-web-classic*.war") do (
             set ZEPPELIN_CLASSIC_WAR=%%d
         )
     )

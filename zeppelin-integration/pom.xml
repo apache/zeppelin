@@ -146,7 +146,7 @@
     </dependency>
     <dependency>
       <groupId>org.apache.zeppelin</groupId>
-      <artifactId>zeppelin-web</artifactId>
+      <artifactId>zeppelin-web-classic</artifactId>
       <version>${project.version}</version>
       <scope>test</scope>
       <type>war</type>

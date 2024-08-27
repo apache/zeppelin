@@ -40,7 +40,7 @@ class IndexHtmlServletTest {
     private final static String TEST_BODY_ADDON = "<!-- foo -->";
     private final static String TEST_HEAD_ADDON = "<!-- bar -->";
 
-    private final static String FILE_PATH_INDEX_HTML_ZEPPELIN_WEB = "../zeppelin-web/dist/index.html";
+    private final static String FILE_PATH_INDEX_HTML_ZEPPELIN_WEB = "../zeppelin-web-classic/dist/index.html";
     private final static String FILE_PATH_INDEX_HTML_ZEPPELIN_WEB_ANGULAR = "../zeppelin-web-angular/dist/zeppelin/index.html";
 
 

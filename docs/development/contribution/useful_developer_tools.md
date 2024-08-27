@@ -23,9 +23,9 @@ limitations under the License.
 
 <div id="toc"></div>
 
-### Developing `zeppelin-web`
+### Developing `zeppelin-web-classic`
 
-Check [zeppelin-web: Local Development](https://github.com/apache/zeppelin/tree/master/zeppelin-web#local-development).
+Check [zeppelin-web-classic: Local Development](https://github.com/apache/zeppelin/tree/master/zeppelin-web-classic#local-development).
 
 ### Tools
 
@@ -60,8 +60,8 @@ you can use this function like `setjdk 1.8` / `setjdk 1.7`
 ### Building Submodules Selectively 
 
 ```bash
-# build `zeppelin-web` only
-./mvnw clean -pl 'zeppelin-web' package -DskipTests;
+# build `zeppelin-web-classic` only
+./mvnw clean -pl 'zeppelin-web-classic' package -DskipTests;
 
 # build `zeppelin-server` and its dependencies only
 ./mvnw clean package -pl 'spark,spark-dependencies,python,markdown,zeppelin-server' --am -DskipTests

@@ -114,7 +114,7 @@ Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.
 | Type | Description | Status |
 | ------  | ---- | ---- |
 | Prototype | To verify the implementable prototype | Y |
-| Publish Dependencies | Just like [zeppelin-vis](https://github.com/apache/zeppelin/tree/master/zeppelin-web/src/app/visualization)  | WIP |
+| Publish Dependencies | Just like [zeppelin-vis](https://github.com/apache/zeppelin/tree/master/zeppelin-web-classic/src/app/visualization)  | WIP |
 | Example Projects |   | Y |
 | Development Documents |   | WIP |
 

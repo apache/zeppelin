@@ -33,7 +33,7 @@
       <useAllReactorProjects>true</useAllReactorProjects> -->
       <!-- Now, select which projects to include in this module-set. -->
       <includes>
-        <include>${project.groupId}:zeppelin-web</include>
+        <include>${project.groupId}:zeppelin-web-classic</include>
         <include>${project.groupId}:zeppelin-web-angular</include>
       </includes>
       <useProjectArtifact>false</useProjectArtifact>
@@ -42,7 +42,7 @@
     <dependencySet>
       <outputDirectory>/lib</outputDirectory>
       <excludes>
-        <exclude>${project.groupId}:zeppelin-web</exclude>
+        <exclude>${project.groupId}:zeppelin-web-classic</exclude>
         <exclude>${project.groupId}:zeppelin-web-angular</exclude>
       </excludes>
       <useProjectArtifact>false</useProjectArtifact>
@@ -97,15 +97,15 @@
     </fileSet>
     <fileSet>
       <outputDirectory>/lib/node_modules/zeppelin-vis</outputDirectory>
-      <directory>../zeppelin-web/src/app/visualization</directory>
+      <directory>../zeppelin-web-classic/src/app/visualization</directory>
     </fileSet>
     <fileSet>
       <outputDirectory>/lib/node_modules/zeppelin-tabledata</outputDirectory>
-      <directory>../zeppelin-web/src/app/tabledata</directory>
+      <directory>../zeppelin-web-classic/src/app/tabledata</directory>
     </fileSet>
     <fileSet>
       <outputDirectory>/lib/node_modules/zeppelin-spell</outputDirectory>
-      <directory>../zeppelin-web/src/app/spell</directory>
+      <directory>../zeppelin-web-classic/src/app/spell</directory>
     </fileSet>
   </fileSets>
 </assembly>

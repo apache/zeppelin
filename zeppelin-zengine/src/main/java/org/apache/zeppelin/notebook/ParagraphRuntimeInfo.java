@@ -34,7 +34,7 @@ public class ParagraphRuntimeInfo {
   private String group;         // The interpretergroup from which the info was derived
 
   // runtimeInfos job url or dropdown-menu key in
-  // zeppelin-web/src/app/notebook/paragraph/paragraph-control.html
+  // zeppelin-web-classic/src/app/notebook/paragraph/paragraph-control.html
   private List<Object> values;  // values for the key-value pair property
   private String interpreterSettingId;
   

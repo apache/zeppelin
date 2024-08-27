@@ -43,14 +43,14 @@ spark/dependency-reduced-pom.xml
 reports
 
 # webapp
-zeppelin-web/node_modules
-zeppelin-web/dist
-zeppelin-web/.tmp
-zeppelin-web/.sass-cache
-zeppelin-web/npm-debug.log
-zeppelin-web/yarn-error.log
-zeppelin-web/bower_components
-zeppelin-web/yarn.lock
+zeppelin-web-classic/node_modules
+zeppelin-web-classic/dist
+zeppelin-web-classic/.tmp
+zeppelin-web-classic/.sass-cache
+zeppelin-web-classic/npm-debug.log
+zeppelin-web-classic/yarn-error.log
+zeppelin-web-classic/bower_components
+zeppelin-web-classic/yarn.lock
 **nbproject/
 **node/
 
