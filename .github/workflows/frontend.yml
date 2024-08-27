@@ -55,7 +55,7 @@ jobs:
       - name: Install application
         run: ./mvnw clean install -DskipTests -am -pl zeppelin-web -Pspark-scala-2.12 -Pspark-3.4 -Phadoop3 -Pweb-dist ${MAVEN_ARGS}
       - name: Run headless test
-        run: xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" ./mvnw verify -pl zeppelin-web -Pspark-scala-2.12 -Pspark-3.4 -Phadoop3 -Pweb-dist -Pweb-e2e ${MAVEN_ARGS}
+        run: xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" ./mvnw verify -pl zeppelin-web -Pweb-classic -Pspark-scala-2.12 -Pspark-3.4 -Phadoop3 -Pweb-dist -Pweb-e2e ${MAVEN_ARGS}
       - name: Print zeppelin logs
         if: always()
         run: if [ -d "logs" ]; then cat logs/*; fi
@@ -84,7 +84,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-zeppelin-
       - name: Run headless test
-        run: xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" ./mvnw package -pl zeppelin-web-angular -Pweb-angular ${MAVEN_ARGS}
+        run: xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" ./mvnw package -pl zeppelin-web-angular ${MAVEN_ARGS}
 
   test-selenium-with-spark-module-for-spark-3-4:
     runs-on: ubuntu-20.04
