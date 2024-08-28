@@ -29,7 +29,7 @@ permissions:
   contents: read # to fetch code (actions/checkout)
 
 jobs:
-  run-e2e-tests-in-zeppelin-web-classic:
+  run-e2e-tests-in-zeppelin-web:
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout
@@ -53,9 +53,9 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-zeppelin-
       - name: Install application
-        run: ./mvnw clean install -DskipTests -am -pl zeppelin-web-classic -Pspark-scala-2.12 -Pspark-3.4 -Phadoop3 -Pweb-dist ${MAVEN_ARGS}
+        run: ./mvnw clean install -DskipTests -am -pl zeppelin-web -Pspark-scala-2.12 -Pspark-3.4 -Phadoop3 -Pweb-dist ${MAVEN_ARGS}
       - name: Run headless test
-        run: xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" ./mvnw verify -pl zeppelin-web-classic -Pweb-classic -Pspark-scala-2.12 -Pspark-3.4 -Phadoop3 -Pweb-dist -Pweb-e2e ${MAVEN_ARGS}
+        run: xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" ./mvnw verify -pl zeppelin-web -Pweb-classic -Pspark-scala-2.12 -Pspark-3.4 -Phadoop3 -Pweb-dist -Pweb-e2e ${MAVEN_ARGS}
       - name: Print zeppelin logs
         if: always()
         run: if [ -d "logs" ]; then cat logs/*; fi

@@ -69,7 +69,7 @@ Making a new spell is similar to [Helium Visualization#write-new-visualization](
 
 Create a [package.json](https://docs.npmjs.com/files/package.json) in new directory for spell.
 
-- You have to add a framework called `zeppelin-spell` as a dependency to create spell ([zeppelin-spell](https://github.com/apache/zeppelin/tree/master/zeppelin-web-classic/src/app/spell))
+- You have to add a framework called `zeppelin-spell` as a dependency to create spell ([zeppelin-spell](https://github.com/apache/zeppelin/tree/master/zeppelin-web/src/app/spell))
 - Also, you can add any dependencies you want to utilise.
 
 Here's an example
@@ -203,7 +203,7 @@ It's automatically created when you publish to npm repository but in local case,
 ### 4. Run in dev mode
 
 ```bash
-cd zeppelin-web-classic
+cd zeppelin-web
 yarn run dev:helium
 ```
 

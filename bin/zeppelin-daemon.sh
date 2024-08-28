@@ -80,7 +80,7 @@ addJarInDir "${ZEPPELIN_HOME}/lib/interpreter"
 addJarInDir "${ZEPPELIN_HOME}/zeppelin-interpreter/target/lib"
 addJarInDir "${ZEPPELIN_HOME}/zeppelin-zengine/target/lib"
 addJarInDir "${ZEPPELIN_HOME}/zeppelin-server/target/lib"
-addJarInDir "${ZEPPELIN_HOME}/zeppelin-web-classic/target/lib"
+addJarInDir "${ZEPPELIN_HOME}/zeppelin-web/target/lib"
 addJarInDir "${ZEPPELIN_HOME}/zeppelin-web-angular/target/lib"
 
 ## Add hadoop jars when env USE_HADOOP is true

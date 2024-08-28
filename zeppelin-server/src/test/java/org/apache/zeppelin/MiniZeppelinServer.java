@@ -94,9 +94,9 @@ public class MiniZeppelinServer implements AutoCloseable {
     if (webWar.isPresent()) {
       zConf.setProperty(ConfVars.ZEPPELIN_CLASSIC_WAR.getVarName(), webWar.get().getAbsolutePath());
     } else {
-      // some test profile does not build zeppelin-web-classic.
-      // to prevent zeppelin starting up fail, create zeppelin-web-classic/dist directory
-      File dummyWebDir = new File(zeppelinHome, "zeppelin-web-classic" + File.separator + "dist");
+      // some test profile does not build zeppelin-web.
+      // to prevent zeppelin starting up fail, create zeppelin-web/dist directory
+      File dummyWebDir = new File(zeppelinHome, "zeppelin-web" + File.separator + "dist");
       dummyWebDir.mkdirs();
       zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_CLASSIC_WAR.getVarName(),
           dummyWebDir.getAbsolutePath());
@@ -113,10 +113,10 @@ public class MiniZeppelinServer implements AutoCloseable {
   }
 
   private Optional<File> getWebWar() {
-    File webWarTargetFolder = new File(".." + File.separator + "zeppelin-web-classic" + File.separator + "target");
+    File webWarTargetFolder = new File(".." + File.separator + "zeppelin-web" + File.separator + "target");
     if (webWarTargetFolder.exists()) {
       for (File targetFile : webWarTargetFolder.listFiles()) {
-        if (targetFile.getName().contains("zeppelin-web-classic")
+        if (targetFile.getName().contains("zeppelin-web")
             && targetFile.getName().contains(".war")) {
           return Optional.of(targetFile);
         }

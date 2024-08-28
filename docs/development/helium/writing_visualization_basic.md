@@ -61,7 +61,7 @@ User can use just like any other built-in visualizations.
 
 #### 1. Create a npm package
 
-Create a [package.json](https://docs.npmjs.com/files/package.json) in your new Visualization directory. You can add any dependencies in package.json, but you **must include two dependencies: [zeppelin-vis](https://github.com/apache/zeppelin/tree/master/zeppelin-web-classic/src/app/visualization) and [zeppelin-tabledata](https://github.com/apache/zeppelin/tree/master/zeppelin-web-classic/src/app/tabledata).**
+Create a [package.json](https://docs.npmjs.com/files/package.json) in your new Visualization directory. You can add any dependencies in package.json, but you **must include two dependencies: [zeppelin-vis](https://github.com/apache/zeppelin/tree/master/zeppelin-web/src/app/visualization) and [zeppelin-tabledata](https://github.com/apache/zeppelin/tree/master/zeppelin-web/src/app/tabledata).**
 
 Here's an example
 
@@ -82,9 +82,9 @@ Here's an example
 
 #### 2. Create your own visualization
 
-To create your own visualization, you need to create a js file and import [Visualization](https://github.com/apache/zeppelin/blob/master/zeppelin-web-classic/src/app/visualization/visualization.js) class from [zeppelin-vis](https://github.com/apache/zeppelin/tree/master/zeppelin-web-classic/src/app/visualization) package and extend the class. [zeppelin-tabledata](https://github.com/apache/zeppelin/tree/master/zeppelin-web-classic/src/app/tabledata) package provides some useful transformations, like pivot, you can use in your visualization. (you can create your own transformation, too).
+To create your own visualization, you need to create a js file and import [Visualization](https://github.com/apache/zeppelin/blob/master/zeppelin-web/src/app/visualization/visualization.js) class from [zeppelin-vis](https://github.com/apache/zeppelin/tree/master/zeppelin-web/src/app/visualization) package and extend the class. [zeppelin-tabledata](https://github.com/apache/zeppelin/tree/master/zeppelin-web/src/app/tabledata) package provides some useful transformations, like pivot, you can use in your visualization. (you can create your own transformation, too).
 
-[Visualization](https://github.com/apache/zeppelin/blob/master/zeppelin-web-classic/src/app/visualization/visualization.js) class, there're several methods that you need to override and implement. Here's simple visualization that just prints `Hello world`.
+[Visualization](https://github.com/apache/zeppelin/blob/master/zeppelin-web/src/app/visualization/visualization.js) class, there're several methods that you need to override and implement. Here's simple visualization that just prints `Hello world`.
 
 ```js
 import Visualization from 'zeppelin-vis'
@@ -106,11 +106,11 @@ export default class helloworld extends Visualization {
 }
 ```
 
-To learn more about `Visualization` class, check [visualization.js](https://github.com/apache/zeppelin/blob/master/zeppelin-web-classic/src/app/visualization/visualization.js).
+To learn more about `Visualization` class, check [visualization.js](https://github.com/apache/zeppelin/blob/master/zeppelin-web/src/app/visualization/visualization.js).
 
 You can check complete visualization package example [here](https://github.com/apache/zeppelin/tree/master/zeppelin-examples/zeppelin-example-horizontalbar).
 
-Zeppelin's built-in visualization uses the same API, so you can check [built-in visualizations](https://github.com/apache/zeppelin/tree/master/zeppelin-web-classic/src/app/visualization/builtins) as additional examples.
+Zeppelin's built-in visualization uses the same API, so you can check [built-in visualizations](https://github.com/apache/zeppelin/tree/master/zeppelin-web/src/app/visualization/builtins) as additional examples.
 
 
 #### 3. Create __Helium package file__ and locally deploy
@@ -191,10 +191,10 @@ e.g.
 #### 4. Run in dev mode
 
 Place your __Helium package file__ in local registry (`ZEPPELIN_HOME/helium`).
-Run Zeppelin. And then run zeppelin-web-classic in visualization dev mode.
+Run Zeppelin. And then run zeppelin-web in visualization dev mode.
 
 ```bash
-cd zeppelin-web-classic
+cd zeppelin-web
 yarn run dev:helium
 ```
 

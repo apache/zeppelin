@@ -14,7 +14,7 @@ All build commands are described in [package.json](./package.json)
 # install required depepdencies (only once)
 $ npm install
 
-# build zeppelin-web-classic for production
+# build zeppelin-web for production
 $ npm run build:dist
 
 # run frontend application only in dev mode (localhost:9000)
@@ -49,8 +49,8 @@ $ npm run e2e
 
 ### Packaging
 
-If you want to package the zeppelin-web-classic only, simply run this command in this folder.
-This will download all the dependencies including node (the binaries in the folder `zeppelin-web-classic/node`)
+If you want to package the zeppelin-web only, simply run this command in this folder.
+This will download all the dependencies including node (the binaries in the folder `zeppelin-web/node`)
 
 ```
 $ mvn package

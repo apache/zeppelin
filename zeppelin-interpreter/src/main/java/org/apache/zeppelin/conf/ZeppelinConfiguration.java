@@ -962,7 +962,7 @@ public class ZeppelinConfiguration {
     ZEPPELIN_SSL_TRUSTSTORE_PATH("zeppelin.ssl.truststore.path", null),
     ZEPPELIN_SSL_TRUSTSTORE_TYPE("zeppelin.ssl.truststore.type", null),
     ZEPPELIN_SSL_TRUSTSTORE_PASSWORD("zeppelin.ssl.truststore.password", null),
-    ZEPPELIN_CLASSIC_WAR("zeppelin.classic.war", "zeppelin-web-classic/dist"),
+    ZEPPELIN_CLASSIC_WAR("zeppelin.classic.war", "zeppelin-web/dist"),
     ZEPPELIN_WAR("zeppelin.war", "zeppelin-web-angular/dist"),
     ZEPPELIN_WAR_TEMPDIR("zeppelin.war.tempdir", "webapps"),
     ZEPPELIN_JMX_ENABLE("zeppelin.jmx.enable", false),

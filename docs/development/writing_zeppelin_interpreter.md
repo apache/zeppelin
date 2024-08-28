@@ -155,11 +155,11 @@ You can add `editor` object to `interpreter-setting.json` file to specify paragr
 ### Language
 If the interpreter uses a specific programming language (like Scala, Python, SQL), it is generally recommended to add a syntax highlighting supported for that to the note paragraph editor.
 
-To check out the list of languages supported, see the `mode-*.js` files under `zeppelin-web-classic/bower_components/ace-builds/src-noconflict` or from [github.com/ajaxorg/ace-builds](https://github.com/ajaxorg/ace-builds/tree/master/src-noconflict).
+To check out the list of languages supported, see the `mode-*.js` files under `zeppelin-web/bower_components/ace-builds/src-noconflict` or from [github.com/ajaxorg/ace-builds](https://github.com/ajaxorg/ace-builds/tree/master/src-noconflict).
 
 If you want to add a new set of syntax highlighting,  
 
-1. Add the `mode-*.js` file to <code>[zeppelin-web-classic/bower.json](https://github.com/apache/zeppelin/blob/master/zeppelin-web-classic/bower.json)</code> (when built, <code>[zeppelin-web-classic/src/index.html](https://github.com/apache/zeppelin/blob/master/zeppelin-web-classic/src/index.html)</code> will be changed automatically).
+1. Add the `mode-*.js` file to <code>[zeppelin-web/bower.json](https://github.com/apache/zeppelin/blob/master/zeppelin-web/bower.json)</code> (when built, <code>[zeppelin-web/src/index.html](https://github.com/apache/zeppelin/blob/master/zeppelin-web/src/index.html)</code> will be changed automatically).
 2. Add `language` field to `editor` object. Note that if you don't specify language field, your interpreter will use plain text mode for syntax highlighting. Let's say you want to set your language to `java`, then add:
 
   ```json

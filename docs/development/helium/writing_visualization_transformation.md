@@ -36,19 +36,19 @@ Zeppelin provides 4 types of transformations.
 
 `PassthroughTransformation` is the simple transformation which does not convert original tabledata at all.
 
-See [passthrough.js](https://github.com/apache/zeppelin/blob/master/zeppelin-web-classic/src/app/tabledata/passthrough.js)
+See [passthrough.js](https://github.com/apache/zeppelin/blob/master/zeppelin-web/src/app/tabledata/passthrough.js)
 
 ## 2. ColumnselectorTransformation
 
 `ColumnselectorTransformation` is uses when you need `N` axes but do not need aggregation. 
 
-See [columnselector.js](https://github.com/apache/zeppelin/blob/master/zeppelin-web-classic/src/app/tabledata/columnselector.js)
+See [columnselector.js](https://github.com/apache/zeppelin/blob/master/zeppelin-web/src/app/tabledata/columnselector.js)
 
 ## 3. PivotTransformation
 
 `PivotTransformation` provides group by and aggregation. Every chart using `PivotTransformation` has 3 axes. `Keys`, `Groups` and `Values`.
 
-See [pivot.js](https://github.com/apache/zeppelin/blob/master/zeppelin-web-classic/src/app/tabledata/pivot.js)
+See [pivot.js](https://github.com/apache/zeppelin/blob/master/zeppelin-web/src/app/tabledata/pivot.js)
 
 ## 4. AdvancedTransformation
 

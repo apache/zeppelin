@@ -85,7 +85,7 @@
       <dependencies>
         <dependency>
           <groupId>${project.groupId}</groupId>
-          <artifactId>zeppelin-web-classic</artifactId>
+          <artifactId>zeppelin-web</artifactId>
           <version>${project.version}</version>
           <type>war</type>
         </dependency>

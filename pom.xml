@@ -831,7 +831,7 @@
     <profile>
       <id>web-classic</id>
       <modules>
-        <module>zeppelin-web-classic</module>
+        <module>zeppelin-web</module>
       </modules>
     </profile>
 
@@ -1041,7 +1041,7 @@
               <exclude>**/**/*.log</exclude>
               <exclude>**/**/logs/**</exclude>
 
-              <!-- bundled from zeppelin-web-classic -->
+              <!-- bundled from zeppelin-web -->
               <exclude>**/test/karma.conf.js</exclude>
               <exclude>**/test/spec/**</exclude>
               <exclude>**/.babelrc</exclude>

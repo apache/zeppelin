@@ -53,7 +53,7 @@ public class ClusterRestApi {
   private ClusterManagerServer clusterManagerServer;
 
 
-  // Do not modify, Use by `zeppelin-web-classic/src/app/cluster/cluster.html`
+  // Do not modify, Use by `zeppelin-web/src/app/cluster/cluster.html`
   private static final String PROPERTIES = "properties";
   private final ZeppelinConfiguration zConf;
 
