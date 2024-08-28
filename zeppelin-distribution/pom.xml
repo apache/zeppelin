@@ -39,7 +39,7 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>zeppelin-web</artifactId>
+      <artifactId>zeppelin-web-angular</artifactId>
       <version>${project.version}</version>
       <type>war</type>
     </dependency>

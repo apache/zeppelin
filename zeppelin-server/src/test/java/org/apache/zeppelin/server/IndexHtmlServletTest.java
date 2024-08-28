@@ -40,8 +40,8 @@ class IndexHtmlServletTest {
     private final static String TEST_BODY_ADDON = "<!-- foo -->";
     private final static String TEST_HEAD_ADDON = "<!-- bar -->";
 
-    private final static String FILE_PATH_INDEX_HTML_ZEPPELIN_WEB_CLASSIC = "../zeppelin-web-classic/dist/index.html";
-    private final static String FILE_PATH_INDEX_HTML_ZEPPELIN_WEB = "../zeppelin-web/dist/zeppelin/index.html";
+    private final static String FILE_PATH_INDEX_HTML_ZEPPELIN_WEB = "../zeppelin-web-classic/dist/index.html";
+    private final static String FILE_PATH_INDEX_HTML_ZEPPELIN_WEB_ANGULAR = "../zeppelin-web-angular/dist/zeppelin/index.html";
 
 
     @Test
@@ -53,7 +53,7 @@ class IndexHtmlServletTest {
       ServletConfig sc = mock(ServletConfig.class);
       ServletContext ctx = mock(ServletContext.class);
       when(ctx.getResource("/index.html"))
-        .thenReturn(new URL("file:" + FILE_PATH_INDEX_HTML_ZEPPELIN_WEB_CLASSIC));
+        .thenReturn(new URL("file:" + FILE_PATH_INDEX_HTML_ZEPPELIN_WEB));
       when(sc.getServletContext()).thenReturn(ctx);
 
       IndexHtmlServlet servlet = new IndexHtmlServlet(zConf);
@@ -78,7 +78,7 @@ class IndexHtmlServletTest {
     }
 
     @Test
-    @Disabled("ignored due to zeppelin-web not build for core tests")
+    @Disabled("ignored due to zeppelin-web-angular not build for core tests")
     void testZeppelinWebAngularHtmlAddon() throws IOException, ServletException {
       ZeppelinConfiguration zConf = mock(ZeppelinConfiguration.class);
       when(zConf.getHtmlBodyAddon()).thenReturn(TEST_BODY_ADDON);
@@ -87,7 +87,7 @@ class IndexHtmlServletTest {
       ServletConfig sc = mock(ServletConfig.class);
       ServletContext ctx = mock(ServletContext.class);
       when(ctx.getResource("/index.html"))
-        .thenReturn(new URL("file:" + FILE_PATH_INDEX_HTML_ZEPPELIN_WEB));
+        .thenReturn(new URL("file:" + FILE_PATH_INDEX_HTML_ZEPPELIN_WEB_ANGULAR));
       when(sc.getServletContext()).thenReturn(ctx);
 
       IndexHtmlServlet servlet = new IndexHtmlServlet(zConf);

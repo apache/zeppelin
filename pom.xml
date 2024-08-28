@@ -85,7 +85,7 @@
     <module>zeppelin-common</module>
     <module>zeppelin-client</module>
     <module>zeppelin-client-examples</module>
-    <module>zeppelin-web</module>
+    <module>zeppelin-web-angular</module>
     <module>zeppelin-server</module>
     <module>zeppelin-jupyter</module>
     <module>zeppelin-plugins</module>
@@ -1075,7 +1075,7 @@
               <exclude>**/e2e/**/**.spec.js</exclude>
               <exclude>package-lock.json</exclude>
 
-              <!-- bundled from zeppelin-web -->
+              <!-- bundled from zeppelin-web-angular -->
               <exclude>**/*.json</exclude>
               <exclude>**/browserslist</exclude>
               <exclude>**/.prettierrc</exclude>
