@@ -38,8 +38,9 @@ import java.util.Map;
  * Changing/adding/deleting non transitive field name need consideration of that.
  */
 public abstract class Job<T> {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(Job.class);
-  private static SimpleDateFormat JOB_DATE_FORMAT = new SimpleDateFormat("yyyyMMdd-HHmmss");
+  private static final String DATE_FORMAT = "yyyyMMdd-HHmmss";
 
   /**
    * Job status.
@@ -93,15 +94,15 @@ public abstract class Job<T> {
   private transient volatile Throwable exception;
   private transient JobListener listener;
 
-  public Job(String jobName, JobListener listener) {
+  protected Job(String jobName, JobListener listener) {
     this.jobName = jobName;
     this.listener = listener;
     dateCreated = new Date();
-    id = JOB_DATE_FORMAT.format(dateCreated) + "_" + jobName;
+    id = new SimpleDateFormat(DATE_FORMAT).format(dateCreated) + "_" + jobName;
     setStatus(Status.READY);
   }
 
-  public Job(String jobId, String jobName, JobListener listener) {
+  protected Job(String jobId, String jobName, JobListener listener) {
     this.jobName = jobName;
     this.listener = listener;
     dateCreated = new Date();

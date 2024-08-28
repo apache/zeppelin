@@ -28,6 +28,8 @@ import org.apache.zeppelin.scheduler.Job;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -38,7 +40,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class TimeoutLifecycleManagerTest extends AbstractInterpreterTest {
-
+  private static final Logger LOGGER = LoggerFactory.getLogger(TimeoutLifecycleManagerTest.class);
   private File zeppelinSiteFile = new File("zeppelin-site.xml");
 
   @Override

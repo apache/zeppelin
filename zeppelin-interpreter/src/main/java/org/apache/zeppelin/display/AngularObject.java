@@ -178,7 +178,7 @@ public class AngularObject<T> implements JsonSerializable {
       emit();
     }
     LOGGER.debug("Update angular object: {} with value: {}", name, o);
-    final Logger logger = LoggerFactory.getLogger(AngularObject.class);
+    final Logger LOGGER = LoggerFactory.getLogger(AngularObject.class);
     List<AngularObjectWatcher> ws = new LinkedList<>();
     synchronized (watchers) {
       ws.addAll(watchers);
@@ -192,7 +192,7 @@ public class AngularObject<T> implements JsonSerializable {
           try {
             w.watch(before, after);
           } catch (Exception e) {
-            logger.error("Exception on watch", e);
+            LOGGER.error("Exception on watch", e);
           }
         }
       });

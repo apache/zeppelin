@@ -26,7 +26,7 @@ import java.util.Properties;
 
 public abstract class FlinkSqlInterpreter extends AbstractInterpreter {
 
-  protected static final Logger LOGGER = LoggerFactory.getLogger(FlinkSqlInterpreter.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(FlinkSqlInterpreter.class);
 
   protected FlinkInterpreter flinkInterpreter;
   protected FlinkShims flinkShims;

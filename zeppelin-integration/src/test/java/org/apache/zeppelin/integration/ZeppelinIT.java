@@ -53,7 +53,7 @@ import org.slf4j.LoggerFactory;
  *
  */
 class ZeppelinIT extends AbstractZeppelinIT {
-  private static final Logger LOG = LoggerFactory.getLogger(ZeppelinIT.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(ZeppelinIT.class);
 
   private static MiniZeppelinServer zepServer;
 
@@ -213,7 +213,7 @@ class ZeppelinIT extends AbstractZeppelinIT {
           "//div[@class='modal-footer']//button[contains(.,'OK')]"));
       ZeppelinITUtils.sleep(100, false);
 
-      LOG.info("testCreateNotebook Test executed");
+      LOGGER.info("testCreateNotebook Test executed");
     } catch (Exception e) {
       handleException("Exception in ZeppelinIT while testAngularDisplay ", e);
     }
@@ -346,7 +346,7 @@ class ZeppelinIT extends AbstractZeppelinIT {
       deleteTestNotebook(manager.getWebDriver());
       ZeppelinITUtils.sleep(1000, false);
 
-      LOG.info("testAngularRunParagraph Test executed");
+      LOGGER.info("testAngularRunParagraph Test executed");
     }  catch (Exception e) {
       handleException("Exception in ZeppelinIT while testAngularRunParagraph", e);
     }
@@ -362,7 +362,7 @@ class ZeppelinIT extends AbstractZeppelinIT {
       waitForParagraph(1, "READY");
 
       String currentUrl = manager.getWebDriver().getCurrentUrl();
-      LOG.info("currentUrl = " + currentUrl);
+      LOGGER.info("currentUrl = " + currentUrl);
 
       //delete created notebook to trash
       deleteTestNotebook(manager.getWebDriver());
@@ -375,7 +375,7 @@ class ZeppelinIT extends AbstractZeppelinIT {
       // delete note from trash
       deleteTrashNotebook(manager.getWebDriver());
       ZeppelinITUtils.sleep(2000, false);
-      LOG.info("deleteTrashNode executed");
+      LOGGER.info("deleteTrashNode executed");
     }  catch (Exception e) {
       handleException("Exception in ZeppelinIT while deleteTrashNode", e);
     }

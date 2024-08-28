@@ -71,7 +71,7 @@ class NotebookRepoSyncTest {
   private AuthenticationInfo anonymous;
   private NoteManager noteManager;
   private AuthorizationService authorizationService;
-  private static final Logger LOG = LoggerFactory.getLogger(NotebookRepoSyncTest.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(NotebookRepoSyncTest.class);
 
   @BeforeEach
   public void setUp() throws Exception {
@@ -95,8 +95,8 @@ class NotebookRepoSyncTest {
     zConf.setProperty(ConfVars.ZEPPELIN_CONFIG_FS_DIR.getVarName(), zeppelinHome.getAbsolutePath() + "/conf");
     zConf.setProperty(ConfVars.ZEPPELIN_PLUGINS_DIR.getVarName(), new File("../../../plugins").getAbsolutePath());
 
-    LOG.info("main Note dir : " + mainNotePath);
-    LOG.info("secondary note dir : " + secNotePath);
+    LOGGER.info("main Note dir : " + mainNotePath);
+    LOGGER.info("secondary note dir : " + secNotePath);
     pluginManager = new PluginManager(zConf);
     interpreterSettingManager = new InterpreterSettingManager(zConf,
         mock(AngularObjectRegistryListener.class), mock(RemoteInterpreterProcessListener.class),
@@ -246,7 +246,7 @@ class NotebookRepoSyncTest {
     try {
       FileUtils.copyDirectory(srcDir, destDir);
     } catch (IOException e) {
-      LOG.error(e.toString(), e);
+      LOGGER.error(e.toString(), e);
     }
 
     assertEquals(0, notebookRepoSync.list(0, anonymous).size());
@@ -280,7 +280,7 @@ class NotebookRepoSyncTest {
     try {
       FileUtils.copyDirectory(srcDir, destDir);
     } catch (IOException e) {
-      LOG.error(e.toString(), e);
+      LOGGER.error(e.toString(), e);
     }
     assertEquals(0, notebookRepoSync.list(0, null).size());
     assertEquals(2, notebookRepoSync.list(1, null).size());
@@ -296,7 +296,7 @@ class NotebookRepoSyncTest {
     try {
       FileUtils.copyDirectory(srcDir, destDir);
     } catch (IOException e) {
-      LOG.error(e.toString(), e);
+      LOGGER.error(e.toString(), e);
     }
     assertEquals(2, notebookRepoSync.list(0, null).size());
     assertEquals(0, notebookRepoSync.list(1, null).size());

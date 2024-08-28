@@ -45,7 +45,7 @@ import java.time.Duration;
 
 
 public class InterpreterModeActionsIT extends AbstractZeppelinIT {
-  private static final Logger LOG = LoggerFactory.getLogger(InterpreterModeActionsIT.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(InterpreterModeActionsIT.class);
 
   private final static String AUTH_SHIRO = "[users]\n" +
       "admin = password1, admin\n" +
@@ -232,7 +232,7 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
           "[contains(.,'Do you want to restart python interpreter?')]" +
           "//div[@class='bootstrap-dialog-footer-buttons']//button[contains(., 'OK')]"));
       locator = By.xpath("//div[@class='modal-dialog'][contains(.,'Do you want to restart python interpreter?')]");
-      LOG.info("Holding on until if interpreter restart dialog is disappeared or not testGloballyAction");
+      LOGGER.info("Holding on until if interpreter restart dialog is disappeared or not testGloballyAction");
       boolean invisibilityStatus =
         (new WebDriverWait(manager.getWebDriver(), Duration.ofSeconds(MAX_BROWSER_TIMEOUT_SEC)))
           .until(ExpectedConditions.invisibilityOfElementLocated(locator));
@@ -390,7 +390,7 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
           "[contains(.,'Do you want to restart python interpreter?')]" +
           "//div[@class='bootstrap-dialog-footer-buttons']//button[contains(., 'OK')]"));
       locator = By.xpath("//div[@class='modal-dialog'][contains(.,'Do you want to restart python interpreter?')]");
-      LOG.info("Holding on until if interpreter restart dialog is disappeared or not in testPerUserScopedAction");
+      LOGGER.info("Holding on until if interpreter restart dialog is disappeared or not in testPerUserScopedAction");
       boolean invisibilityStatus =
         (new WebDriverWait(manager.getWebDriver(), Duration.ofSeconds(MAX_BROWSER_TIMEOUT_SEC)))
           .until(ExpectedConditions.invisibilityOfElementLocated(locator));
@@ -432,7 +432,7 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
           "[contains(.,'Do you want to restart python interpreter?')]" +
           "//div[@class='bootstrap-dialog-footer-buttons']//button[contains(., 'OK')]"));
       locator = By.xpath("//div[@class='modal-dialog'][contains(.,'Do you want to restart python interpreter?')]");
-      LOG.info("Holding on until if interpreter restart dialog is disappeared or not in testPerUserScopedAction");
+      LOGGER.info("Holding on until if interpreter restart dialog is disappeared or not in testPerUserScopedAction");
       invisibilityStatus =
         (new WebDriverWait(manager.getWebDriver(), Duration.ofSeconds(MAX_BROWSER_TIMEOUT_SEC)))
           .until(ExpectedConditions.invisibilityOfElementLocated(locator));
@@ -524,7 +524,7 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
           "[contains(.,'Do you want to restart this interpreter?')]" +
           "//div[@class='bootstrap-dialog-footer-buttons']//button[contains(., 'OK')]"));
       locator = By.xpath("//div[@class='modal-dialog'][contains(.,'Do you want to restart python interpreter?')]");
-      LOG.info("Holding on until if interpreter restart dialog is disappeared or not in testPerUserScopedAction");
+      LOGGER.info("Holding on until if interpreter restart dialog is disappeared or not in testPerUserScopedAction");
       invisibilityStatus =
         (new WebDriverWait(manager.getWebDriver(), Duration.ofSeconds(MAX_BROWSER_TIMEOUT_SEC)))
           .until(ExpectedConditions.invisibilityOfElementLocated(locator));
@@ -674,7 +674,7 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
           "//div[@class='bootstrap-dialog-footer-buttons']//button[contains(., 'OK')]"));
 
       locator = By.xpath("//div[@class='modal-dialog'][contains(.,'Do you want to restart python interpreter?')]");
-      LOG.info("Holding on until if interpreter restart dialog is disappeared or not in testPerUserIsolatedAction");
+      LOGGER.info("Holding on until if interpreter restart dialog is disappeared or not in testPerUserIsolatedAction");
       boolean invisibilityStatus =
         (new WebDriverWait(manager.getWebDriver(), Duration.ofSeconds(MAX_BROWSER_TIMEOUT_SEC)))
           .until(ExpectedConditions.invisibilityOfElementLocated(locator));
@@ -717,7 +717,7 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
           "//div[@class='bootstrap-dialog-footer-buttons']//button[contains(., 'OK')]"));
 
       locator = By.xpath("//div[@class='modal-dialog'][contains(.,'Do you want to restart python interpreter?')]");
-      LOG.info("Holding on until if interpreter restart dialog is disappeared or not in testPerUserIsolatedAction");
+      LOGGER.info("Holding on until if interpreter restart dialog is disappeared or not in testPerUserIsolatedAction");
       invisibilityStatus =
         (new WebDriverWait(manager.getWebDriver(), Duration.ofSeconds(MAX_BROWSER_TIMEOUT_SEC)))
           .until(ExpectedConditions.invisibilityOfElementLocated(locator));
@@ -809,7 +809,7 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
           "[contains(.,'Do you want to restart this interpreter?')]" +
           "//div[@class='bootstrap-dialog-footer-buttons']//button[contains(., 'OK')]"));
       locator = By.xpath("//div[@class='modal-dialog'][contains(.,'Do you want to restart python interpreter?')]");
-      LOG.info("Holding on until if interpreter restart dialog is disappeared or not in testPerUserIsolatedAction");
+      LOGGER.info("Holding on until if interpreter restart dialog is disappeared or not in testPerUserIsolatedAction");
       invisibilityStatus =
         (new WebDriverWait(manager.getWebDriver(), Duration.ofSeconds(MAX_BROWSER_TIMEOUT_SEC)))
           .until(ExpectedConditions.invisibilityOfElementLocated(locator));

@@ -43,7 +43,7 @@ import org.slf4j.LoggerFactory;
  * HeliumApplicationFactory
  */
 public class HeliumApplicationFactory implements ApplicationEventListener, NoteEventListener {
-  private final Logger logger = LoggerFactory.getLogger(HeliumApplicationFactory.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(HeliumApplicationFactory.class);
   private final ExecutorService executor;
   private Notebook notebook;
   private ApplicationEventListener applicationEventListener;
@@ -108,7 +108,7 @@ public class HeliumApplicationFactory implements ApplicationEventListener, NoteE
         RunApplication runTask = new RunApplication(paragraph, appState.getId());
         runTask.run();
       } catch (Exception e) {
-        logger.error(e.getMessage(), e);
+        LOGGER.error(e.getMessage(), e);
 
         if (appState != null) {
           appStatusChange(paragraph, appState.getId(), ApplicationState.Status.ERROR);
@@ -185,7 +185,7 @@ public class HeliumApplicationFactory implements ApplicationEventListener, NoteE
         appState = paragraph.getApplicationState(appId);
 
         if (appState == null) {
-          logger.warn("Can not find {} to unload from {}", appId, paragraph.getId());
+          LOGGER.warn("Can not find {} to unload from {}", appId, paragraph.getId());
           return;
         }
         if (appState.getStatus() == ApplicationState.Status.UNLOADED) {
@@ -194,7 +194,7 @@ public class HeliumApplicationFactory implements ApplicationEventListener, NoteE
         }
         unload(appState);
       } catch (Exception e) {
-        logger.error(e.getMessage(), e);
+        LOGGER.error(e.getMessage(), e);
         if (appState != null) {
           appStatusChange(paragraph, appId, ApplicationState.Status.ERROR);
           appState.setOutput(e.getMessage());
@@ -263,13 +263,13 @@ public class HeliumApplicationFactory implements ApplicationEventListener, NoteE
         appState = paragraph.getApplicationState(appId);
 
         if (appState == null) {
-          logger.warn("Can not find {} to unload from {}", appId, paragraph.getId());
+          LOGGER.warn("Can not find {} to unload from {}", appId, paragraph.getId());
           return;
         }
 
         run(appState);
       } catch (Exception e) {
-        logger.error(e.getMessage(), e);
+        LOGGER.error(e.getMessage(), e);
         if (appState != null) {
           appStatusChange(paragraph, appId, ApplicationState.Status.UNLOADED);
           appState.setOutput(e.getMessage());
@@ -315,7 +315,7 @@ public class HeliumApplicationFactory implements ApplicationEventListener, NoteE
     if (appToUpdate != null) {
       appToUpdate.appendOutput(output);
     } else {
-      logger.error("Can't find app {}", appId);
+      LOGGER.error("Can't find app {}", appId);
     }
 
     if (applicationEventListener != null) {
@@ -332,7 +332,7 @@ public class HeliumApplicationFactory implements ApplicationEventListener, NoteE
     if (appToUpdate != null) {
       appToUpdate.setOutput(output);
     } else {
-      logger.error("Can't find app {}", appId);
+      LOGGER.error("Can't find app {}", appId);
     }
 
     if (applicationEventListener != null) {
@@ -375,18 +375,18 @@ public class HeliumApplicationFactory implements ApplicationEventListener, NoteE
       return notebook.processNote(noteId,
         note -> {
           if (note == null) {
-            logger.warn("Note {} not found", noteId);
+            LOGGER.warn("Note {} not found", noteId);
             return null;
           }
           Paragraph paragraph = note.getParagraph(paragraphId);
           if (paragraph == null) {
-            logger.error("Can't get paragraph {}", paragraphId);
+            LOGGER.error("Can't get paragraph {}", paragraphId);
             return null;
           }
           return paragraph.getApplicationState(appId);
         });
     } catch (IOException e) {
-      logger.error("Can't get note {}", noteId);
+      LOGGER.error("Can't get note {}", noteId);
       return null;
     }
   }

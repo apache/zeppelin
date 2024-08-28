@@ -33,11 +33,14 @@ import org.apache.zeppelin.completer.CompletionType;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * HDFS implementation of File interpreter for Zeppelin.
  */
 public class HDFSFileInterpreter extends FileInterpreter {
+  private static final Logger LOGGER = LoggerFactory.getLogger(HDFSFileInterpreter.class);
   static final String HDFS_URL = "hdfs.url";
   static final String HDFS_USER = "hdfs.user";
   static final String HDFS_MAXLENGTH = "hdfs.maxlength";
@@ -50,7 +53,7 @@ public class HDFSFileInterpreter extends FileInterpreter {
     String userName = getProperty(HDFS_USER);
     String hdfsUrl = getProperty(HDFS_URL);
     int i = Integer.parseInt(getProperty(HDFS_MAXLENGTH));
-    cmd = new HDFSCommand(hdfsUrl, userName, logger, i);
+    cmd = new HDFSCommand(hdfsUrl, userName, LOGGER, i);
     gson = new Gson();
   }
 
@@ -132,10 +135,10 @@ public class HDFSFileInterpreter extends FileInterpreter {
   private void testConnection() {
     try {
       if (isDirectory("/")) {
-        logger.info("Successfully created WebHDFS connection");
+        LOGGER.info("Successfully created WebHDFS connection");
       }
     } catch (Exception e) {
-      logger.error("testConnection: Cannot open WebHDFS connection. Bad URL: " + "/", e);
+      LOGGER.error("testConnection: Cannot open WebHDFS connection. Bad URL: " + "/", e);
       exceptionOnConnect = e;
     }
   }
@@ -212,7 +215,7 @@ public class HDFSFileInterpreter extends FileInterpreter {
         return listOne(filePath, sfs.fileStatus);
       }
     } catch (Exception e) {
-      logger.error("listFile: " + filePath, e);
+      LOGGER.error("listFile: " + filePath, e);
     }
     return "No such File or directory";
   }
@@ -246,7 +249,7 @@ public class HDFSFileInterpreter extends FileInterpreter {
         return listFile(path);
       }
     } catch (Exception e) {
-      logger.error("listall: listDir " + path, e);
+      LOGGER.error("listall: listDir " + path, e);
       throw new InterpreterException("Could not find file or directory:\t" + path);
     }
   }
@@ -264,7 +267,7 @@ public class HDFSFileInterpreter extends FileInterpreter {
         return sfs.fileStatus.type.equals("DIRECTORY");
       }
     } catch (Exception e) {
-      logger.error("IsDirectory: " + path, e);
+      LOGGER.error("IsDirectory: " + path, e);
       return false;
     }
     return ret;
@@ -273,7 +276,7 @@ public class HDFSFileInterpreter extends FileInterpreter {
   @Override
   public List<InterpreterCompletion> completion(String buf, int cursor,
       InterpreterContext interpreterContext) {
-    logger.info("Completion request at position\t" + cursor + " in string " + buf);
+    LOGGER.info("Completion request at position\t" + cursor + " in string " + buf);
     final List<InterpreterCompletion> suggestions = new ArrayList<>();
     if (StringUtils.isEmpty(buf)) {
       suggestions.add(new InterpreterCompletion("ls", "ls", CompletionType.command.name()));
@@ -337,11 +340,11 @@ public class HDFSFileInterpreter extends FileInterpreter {
           }
         }
       } catch (Exception e) {
-        logger.error("listall: listDir " + globalPath, e);
+        LOGGER.error("listall: listDir " + globalPath, e);
         return null;
       }
     } else {
-      logger.info("path is not a directory.  No values suggested.");
+      LOGGER.info("path is not a directory.  No values suggested.");
     }
 
     //Error in string.

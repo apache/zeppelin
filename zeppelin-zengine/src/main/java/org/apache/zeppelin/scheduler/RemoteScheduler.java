@@ -43,7 +43,7 @@ public class RemoteScheduler extends AbstractScheduler {
                          RemoteInterpreter remoteInterpreter) {
     super(name);
     this.executor =
-        Executors.newSingleThreadExecutor(new SchedulerThreadFactory("FIFO-" + name + "-"));
+        Executors.newSingleThreadExecutor(new NamedThreadFactory("FIFO-" + name));
     this.remoteInterpreter = remoteInterpreter;
   }
 
@@ -88,7 +88,7 @@ public class RemoteScheduler extends AbstractScheduler {
    * RUNNING status. This thread will exist after job is in RUNNING/FINISHED state.
    */
   private class JobStatusPoller extends Thread {
-    private final Logger logger = LoggerFactory.getLogger(JobRunner.class);
+    private final Logger LOGGER = LoggerFactory.getLogger(JobRunner.class);
     private final long checkIntervalMsec;
     private final AtomicBoolean terminate;
     private final JobListener listener;
@@ -120,7 +120,7 @@ public class RemoteScheduler extends AbstractScheduler {
             try {
               terminate.wait(checkIntervalMsec);
             } catch (InterruptedException e) {
-              logger.error("Exception in RemoteScheduler while run this.wait", e);
+              LOGGER.error("Exception in RemoteScheduler while run this.wait", e);
               // Restore interrupted state...
               Thread.currentThread().interrupt();
             }
@@ -158,7 +158,7 @@ public class RemoteScheduler extends AbstractScheduler {
   }
 
   private class JobRunner implements Runnable, JobListener {
-    private final Logger logger = LoggerFactory.getLogger(JobRunner.class);
+    private final Logger LOGGER = LoggerFactory.getLogger(JobRunner.class);
     private final RemoteScheduler scheduler;
     private final Job<?> job;
     private volatile boolean jobExecuted;
@@ -190,7 +190,7 @@ public class RemoteScheduler extends AbstractScheduler {
       try {
         jobStatusPoller.join();
       } catch (InterruptedException e) {
-        logger.error("JobStatusPoller interrupted", e);
+        LOGGER.error("JobStatusPoller interrupted", e);
         // Restore interrupted state...
         Thread.currentThread().interrupt();
       }
@@ -204,7 +204,7 @@ public class RemoteScheduler extends AbstractScheduler {
     @Override
     public void onStatusChange(Job<?> job, Status before, Status after) {
       if (!job.equals(this.job)) {
-        logger.error("StatusChange for an unkown job. {} != {}", this.job.getId(), job.getId());
+        LOGGER.error("StatusChange for an unkown job. {} != {}", this.job.getId(), job.getId());
         return;
       }
       if (!jobExecuted) {

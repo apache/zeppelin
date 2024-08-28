@@ -49,7 +49,7 @@ import java.io.IOException;
 import java.util.EnumSet;
 
 public abstract class FlinkIntegrationTest {
-  private static Logger LOGGER = LoggerFactory.getLogger(FlinkIntegrationTest.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(FlinkIntegrationTest.class);
 
   private static MiniHadoopCluster hadoopCluster;
   private static MiniZeppelinServer zepServer;

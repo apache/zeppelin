@@ -24,6 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import com.google.gson.Gson;
 
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -274,12 +275,14 @@ class MockHDFSCommand extends HDFSCommand {
  * Mock Interpreter - uses Mock HDFS command.
  */
 class MockHDFSFileInterpreter extends HDFSFileInterpreter {
+  private static final Logger LOGGER = LoggerFactory.getLogger(MockHDFSFileInterpreter.class);
+
   @Override
   public void prepare() {
     // Run commands against mock File System instead of WebHDFS
     int i = Integer.parseInt(getProperty(HDFS_MAXLENGTH) == null ? "1000"
             : getProperty(HDFS_MAXLENGTH));
-    cmd = new MockHDFSCommand("", "", logger, i);
+    cmd = new MockHDFSCommand("", "", LOGGER, i);
     gson = new Gson();
   }
 

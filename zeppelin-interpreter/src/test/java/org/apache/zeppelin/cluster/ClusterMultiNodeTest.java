@@ -35,7 +35,7 @@ import java.util.List;
 import java.util.Map;
 
 public class ClusterMultiNodeTest {
-  private static Logger LOGGER = LoggerFactory.getLogger(ClusterMultiNodeTest.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(ClusterMultiNodeTest.class);
 
   private static List<ClusterManagerServer> clusterServers = new ArrayList<>();
   private static ClusterManagerClient clusterClient = null;

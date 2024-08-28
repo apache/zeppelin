@@ -52,7 +52,7 @@ import java.util.stream.Collectors;
 
 public class SparkSubmitIntegrationTest {
 
-  private static Logger LOGGER = LoggerFactory.getLogger(SparkSubmitIntegrationTest.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(SparkSubmitIntegrationTest.class);
 
   private static MiniHadoopCluster hadoopCluster;
   private static InterpreterFactory interpreterFactory;

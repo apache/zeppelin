@@ -84,7 +84,7 @@ import static org.mockito.Mockito.mock;
 
 
 class NotebookTest extends AbstractInterpreterTest implements ParagraphJobListener {
-  private static final Logger logger = LoggerFactory.getLogger(NotebookTest.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(NotebookTest.class);
 
   private Notebook notebook;
   private NoteManager noteManager;
@@ -414,7 +414,7 @@ class NotebookTest extends AbstractInterpreterTest implements ParagraphJobListen
           return null;
         });
     } catch (IOException fe) {
-      logger.warn("Failed to create note and paragraph. Possible problem with persisting note, safe to ignore", fe);
+      LOGGER.warn("Failed to create note and paragraph. Possible problem with persisting note, safe to ignore", fe);
     }
 
     assertEquals(1, notebook.getNotesInfo().size());

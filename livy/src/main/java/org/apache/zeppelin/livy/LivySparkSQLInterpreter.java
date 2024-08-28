@@ -42,12 +42,15 @@ import org.apache.zeppelin.interpreter.InterpreterUtils;
 import org.apache.zeppelin.interpreter.ResultMessages;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
  * Livy SparkSQL Interpreter for Zeppelin.
  */
 public class LivySparkSQLInterpreter extends BaseLivyInterpreter {
+  private static final Logger LOGGER = LoggerFactory.getLogger(LivySparkSQLInterpreter.class);
 
   public static final String ZEPPELIN_LIVY_SPARK_SQL_FIELD_TRUNCATE =
       "zeppelin.livy.spark.sql.field.truncate";

@@ -36,8 +36,7 @@ import java.util.concurrent.LinkedBlockingQueue;
  */
 public class AppendOutputRunner implements Runnable {
 
-  private static final Logger LOGGER =
-      LoggerFactory.getLogger(AppendOutputRunner.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(AppendOutputRunner.class);
   public static final Long BUFFER_TIME_MS = new Long(100);
   private static final Long SAFE_PROCESSING_TIME = new Long(10);
   private static final Long SAFE_PROCESSING_STRING_SIZE = new Long(100000);

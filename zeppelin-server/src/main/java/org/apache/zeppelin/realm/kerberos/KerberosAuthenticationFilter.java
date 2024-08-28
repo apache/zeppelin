@@ -33,7 +33,7 @@ import java.util.Collection;
  */
 public class KerberosAuthenticationFilter extends PassThruAuthenticationFilter {
 
-  private static final Logger LOG = LoggerFactory.getLogger(KerberosAuthenticationFilter.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(KerberosAuthenticationFilter.class);
 
   @Override
   protected void saveRequestAndRedirectToLogin(ServletRequest request, ServletResponse response) {
@@ -71,7 +71,7 @@ public class KerberosAuthenticationFilter extends PassThruAuthenticationFilter {
     if (kerberosRealm != null) {
       kerberosRealm.doKerberosAuth(request, response, filterChain);
     } else {
-      LOG.error("Looks like this filter is enabled without enabling KerberosRealm, please refer"
+      LOGGER.error("Looks like this filter is enabled without enabling KerberosRealm, please refer"
           + " to https://zeppelin.apache.org/docs/latest/security/shiroauthentication.html"
           + "#kerberos-auth");
     }

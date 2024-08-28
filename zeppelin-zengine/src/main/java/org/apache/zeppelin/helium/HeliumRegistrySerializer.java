@@ -29,7 +29,7 @@ import java.lang.reflect.Type;
  */
 public class HeliumRegistrySerializer
     implements JsonSerializer<HeliumRegistry>, JsonDeserializer<HeliumRegistry> {
-  Logger logger = LoggerFactory.getLogger(HeliumRegistrySerializer.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(HeliumRegistrySerializer.class);
 
   @Override
   public HeliumRegistry deserialize(JsonElement json,
@@ -42,14 +42,14 @@ public class HeliumRegistrySerializer
     String name = jsonObject.get("name").getAsString();
 
     try {
-      logger.info("Restore helium registry {} {} {}", name, className, uri);
+      LOGGER.info("Restore helium registry {} {} {}", name, className, uri);
       Class<HeliumRegistry> cls =
           (Class<HeliumRegistry>) getClass().getClassLoader().loadClass(className);
       Constructor<HeliumRegistry> constructor = cls.getConstructor(String.class, String.class);
       return constructor.newInstance(name, uri);
     } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException |
         InstantiationException | InvocationTargetException e) {
-      logger.error(e.getMessage(), e);
+      LOGGER.error(e.getMessage(), e);
       return null;
     }
   }

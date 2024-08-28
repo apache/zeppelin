@@ -38,7 +38,7 @@ import java.util.stream.Collectors;
 
 public class AppendStreamSqlJob extends AbstractStreamSqlJob {
 
-  private static Logger LOGGER = LoggerFactory.getLogger(UpdateStreamSqlJob.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(UpdateStreamSqlJob.class);
 
   private List<Row> materializedTable = new ArrayList<>();
   private long tsWindowThreshold;

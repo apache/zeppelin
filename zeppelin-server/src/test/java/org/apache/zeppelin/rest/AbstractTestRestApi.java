@@ -56,7 +56,7 @@ import java.util.regex.Pattern;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 
 public abstract class AbstractTestRestApi {
-  private static final Logger LOG = LoggerFactory.getLogger(AbstractTestRestApi.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(AbstractTestRestApi.class);
 
   public static final String REST_API_URL = "/api";
   protected ZeppelinConfiguration zConf;
@@ -146,7 +146,7 @@ public abstract class AbstractTestRestApi {
 
   public CloseableHttpResponse httpGet(String path, String user, String pwd, String cookies)
     throws IOException {
-    LOG.info("Connecting to {}", getUrlToTest(zConf) + path);
+    LOGGER.info("Connecting to {}", getUrlToTest(zConf) + path);
     HttpGet httpGet = new HttpGet(getUrlToTest(zConf) + path);
     httpGet.addHeader("Origin", getUrlToTest(zConf));
     if (userAndPasswordAreNotBlank(user, pwd)) {
@@ -156,7 +156,7 @@ public abstract class AbstractTestRestApi {
       httpGet.setHeader("Cookie", httpGet.getFirstHeader("Cookie") + ";" + cookies);
     }
     CloseableHttpResponse response = getHttpClient().execute(httpGet);
-    LOG.info("{} - {}", response.getStatusLine().getStatusCode(), response.getStatusLine().getReasonPhrase());
+    LOGGER.info("{} - {}", response.getStatusLine().getStatusCode(), response.getStatusLine().getReasonPhrase());
     return response;
   }
 
@@ -167,14 +167,14 @@ public abstract class AbstractTestRestApi {
 
   public CloseableHttpResponse httpDelete(String path, String user, String pwd)
       throws IOException {
-    LOG.info("Connecting to {}", getUrlToTest(zConf) + path);
+    LOGGER.info("Connecting to {}", getUrlToTest(zConf) + path);
     HttpDelete httpDelete = new HttpDelete(getUrlToTest(zConf) + path);
     httpDelete.addHeader("Origin", getUrlToTest(zConf));
     if (userAndPasswordAreNotBlank(user, pwd)) {
       httpDelete.setHeader("Cookie", "JSESSIONID=" + getCookie(user, pwd));
     }
     CloseableHttpResponse response = getHttpClient().execute(httpDelete);
-    LOG.info("{} - {}", response.getStatusLine().getStatusCode(), response.getStatusLine().getReasonPhrase());
+    LOGGER.info("{} - {}", response.getStatusLine().getStatusCode(), response.getStatusLine().getReasonPhrase());
     return response;
   }
 
@@ -185,7 +185,7 @@ public abstract class AbstractTestRestApi {
 
   public CloseableHttpResponse httpPost(String path, String request, String user, String pwd)
       throws IOException {
-    LOG.info("Connecting to {}", getUrlToTest(zConf) + path);
+    LOGGER.info("Connecting to {}", getUrlToTest(zConf) + path);
     RequestConfig localConfig = RequestConfig.custom()
       .setCookieSpec(CookieSpecs.IGNORE_COOKIES)
       .build();
@@ -197,7 +197,7 @@ public abstract class AbstractTestRestApi {
       httpPost.setHeader("Cookie", "JSESSIONID=" + getCookie(user, pwd));
     }
     CloseableHttpResponse response = getHttpClient().execute(httpPost);
-    LOG.info("{} - {}", response.getStatusLine().getStatusCode(), response.getStatusLine().getReasonPhrase());
+    LOGGER.info("{} - {}", response.getStatusLine().getStatusCode(), response.getStatusLine().getReasonPhrase());
     return response;
   }
 
@@ -208,7 +208,7 @@ public abstract class AbstractTestRestApi {
 
   public CloseableHttpResponse httpPut(String path, String body, String user, String pwd)
       throws IOException {
-    LOG.info("Connecting to {}", getUrlToTest(zConf) + path);
+    LOGGER.info("Connecting to {}", getUrlToTest(zConf) + path);
     HttpPut httpPut = new HttpPut(getUrlToTest(zConf) + path);
     httpPut.addHeader("Origin", getUrlToTest(zConf));
     httpPut.setEntity(new StringEntity(body, ContentType.TEXT_PLAIN));
@@ -216,7 +216,7 @@ public abstract class AbstractTestRestApi {
       httpPut.setHeader("Cookie", "JSESSIONID=" + getCookie(user, pwd));
     }
     CloseableHttpResponse response = getHttpClient().execute(httpPut);
-    LOG.info("{} - {}", response.getStatusLine().getStatusCode(), response.getStatusLine().getReasonPhrase());
+    LOGGER.info("{} - {}", response.getStatusLine().getStatusCode(), response.getStatusLine().getReasonPhrase());
     return response;
   }
 
@@ -229,7 +229,7 @@ public abstract class AbstractTestRestApi {
     postParameters.add(new BasicNameValuePair("userName", user));
     httpPost.setEntity(new UrlEncodedFormEntity(postParameters, StandardCharsets.UTF_8));
     try (CloseableHttpResponse response = getHttpClient().execute(httpPost)) {
-      LOG.info("{} - {}", response.getStatusLine().getStatusCode(), response.getStatusLine().getReasonPhrase());
+      LOGGER.info("{} - {}", response.getStatusLine().getStatusCode(), response.getStatusLine().getReasonPhrase());
       Pattern pattern = Pattern.compile("JSESSIONID=([a-zA-Z0-9-]*)");
       Header[] setCookieHeaders = response.getHeaders("Set-Cookie");
       String jsessionId = null;
@@ -301,7 +301,7 @@ public abstract class AbstractTestRestApi {
         try {
           new JsonParser().parse(body);
         } catch (JsonParseException e) {
-          LOG.error("Exception in AbstractTestRestApi while matchesSafely ", e);
+          LOGGER.error("Exception in AbstractTestRestApi while matchesSafely ", e);
           isValid = false;
         }
         return isValid;
@@ -349,7 +349,7 @@ public abstract class AbstractTestRestApi {
     try {
       executor.execute(cmd);
     } catch (IOException e) {
-      LOG.error(e.getMessage(), e);
+      LOGGER.error(e.getMessage(), e);
     }
   }
 

@@ -24,7 +24,7 @@ import org.slf4j.LoggerFactory;
  * Provide reading comparing capability of semantic version which is used widely in Apache projects
  */
 public class SemanticVersion {
-  private static final Logger LOG = LoggerFactory.getLogger(SemanticVersion.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(SemanticVersion.class);
 
   public static SemanticVersion of(String versionString) {
     return new SemanticVersion(versionString);
@@ -54,7 +54,7 @@ public class SemanticVersion {
       // version is always 5 digits. (e.g. 2.0.0 -> 20000, 1.6.2 -> 10602)
       version = Integer.parseInt(String.format("%d%02d%02d", majorVersion, minorVersion, patchVersion));
     } catch (Exception e) {
-      LOG.error("Can not recognize Spark version {}. Assume it's a future release", versionString, e);
+      LOGGER.error("Can not recognize Spark version {}. Assume it's a future release", versionString, e);
       // assume it is future release
       version = 99999;
     }

@@ -55,7 +55,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
  */
 @TestMethodOrder(MethodOrderer.MethodName.class)
 class InterpreterRestApiTest extends AbstractTestRestApi {
-  private static final Logger LOG = LoggerFactory.getLogger(InterpreterRestApiTest.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(InterpreterRestApiTest.class);
   private Gson gson = new Gson();
   private AuthenticationInfo anonymous;
   private static MiniZeppelinServer zepServer;
@@ -129,7 +129,7 @@ class InterpreterRestApiTest extends AbstractTestRestApi {
     JsonObject jsonRequest = gson.fromJson(rawRequest, JsonElement.class).getAsJsonObject();
     CloseableHttpResponse post = httpPost("/interpreter/setting/", jsonRequest.toString());
     String postResponse = EntityUtils.toString(post.getEntity(), StandardCharsets.UTF_8);
-    LOG.info("testSettingCRUD create response\n" + postResponse);
+    LOGGER.info("testSettingCRUD create response\n" + postResponse);
     InterpreterSetting created = convertResponseToInterpreterSetting(postResponse);
     String newSettingId = created.getId();
     // then : call create setting API
@@ -139,7 +139,7 @@ class InterpreterRestApiTest extends AbstractTestRestApi {
     // when: call read setting API
     CloseableHttpResponse get = httpGet("/interpreter/setting/" + newSettingId);
     String getResponse = EntityUtils.toString(get.getEntity(), StandardCharsets.UTF_8);
-    LOG.info("testSettingCRUD get response\n" + getResponse);
+    LOGGER.info("testSettingCRUD get response\n" + getResponse);
     InterpreterSetting previouslyCreated = convertResponseToInterpreterSetting(getResponse);
     // then : read Setting API
     assertThat("Test get method:", get, isAllowed());
@@ -153,14 +153,14 @@ class InterpreterRestApiTest extends AbstractTestRestApi {
     jsonObject.addProperty("type", "textarea");
     jsonRequest.getAsJsonObject("properties").add("propname2", jsonObject);
     CloseableHttpResponse put = httpPut("/interpreter/setting/" + newSettingId, jsonRequest.toString());
-    LOG.info("testSettingCRUD update response\n" + EntityUtils.toString(put.getEntity(), StandardCharsets.UTF_8));
+    LOGGER.info("testSettingCRUD update response\n" + EntityUtils.toString(put.getEntity(), StandardCharsets.UTF_8));
     // then: call update setting API
     assertThat("test update method:", put, isAllowed());
     put.close();
 
     // when: call delete setting API
     CloseableHttpResponse delete = httpDelete("/interpreter/setting/" + newSettingId);
-    LOG.info("testSettingCRUD delete response\n" +  EntityUtils.toString(delete.getEntity(), StandardCharsets.UTF_8));
+    LOGGER.info("testSettingCRUD delete response\n" +  EntityUtils.toString(delete.getEntity(), StandardCharsets.UTF_8));
     // then: call delete setting API
     assertThat("Test delete method:", delete, isAllowed());
     delete.close();
@@ -239,7 +239,7 @@ class InterpreterRestApiTest extends AbstractTestRestApi {
   void testSettingsCreateWithEmptyJson() throws IOException {
     // Call Create Setting REST API
     CloseableHttpResponse post = httpPost("/interpreter/setting/", "");
-    LOG.info("testSettingCRUD create response\n" + EntityUtils.toString(post.getEntity(), StandardCharsets.UTF_8));
+    LOGGER.info("testSettingCRUD create response\n" + EntityUtils.toString(post.getEntity(), StandardCharsets.UTF_8));
     assertThat("test create method:", post, isBadRequest());
     post.close();
   }
@@ -271,7 +271,7 @@ class InterpreterRestApiTest extends AbstractTestRestApi {
     JsonObject jsonRequest = gson.fromJson(StringUtils.replace(reqBody, "mdName", "mdValidName"), JsonElement.class).getAsJsonObject();
     CloseableHttpResponse post = httpPost("/interpreter/setting/", jsonRequest.toString());
     String postResponse = EntityUtils.toString(post.getEntity(), StandardCharsets.UTF_8);
-    LOG.info("testSetting with valid name\n" + postResponse);
+    LOGGER.info("testSetting with valid name\n" + postResponse);
     InterpreterSetting created = convertResponseToInterpreterSetting(postResponse);
     String newSettingId = created.getId();
     // then : call create setting API
@@ -280,7 +280,7 @@ class InterpreterRestApiTest extends AbstractTestRestApi {
 
     // when: call delete setting API
     CloseableHttpResponse delete = httpDelete("/interpreter/setting/" + newSettingId);
-    LOG.info("testSetting delete response\n" + EntityUtils.toString(delete.getEntity(), StandardCharsets.UTF_8));
+    LOGGER.info("testSetting delete response\n" + EntityUtils.toString(delete.getEntity(), StandardCharsets.UTF_8));
     // then: call delete setting API
     assertThat("Test delete method:", delete, isAllowed());
     delete.close();
@@ -288,13 +288,13 @@ class InterpreterRestApiTest extends AbstractTestRestApi {
 
     JsonObject jsonRequest2 = gson.fromJson(StringUtils.replace(reqBody, "mdName", "name space"), JsonElement.class).getAsJsonObject();
     CloseableHttpResponse post2 = httpPost("/interpreter/setting/", jsonRequest2.toString());
-    LOG.info("testSetting with name with space\n" + EntityUtils.toString(post2.getEntity(), StandardCharsets.UTF_8));
+    LOGGER.info("testSetting with name with space\n" + EntityUtils.toString(post2.getEntity(), StandardCharsets.UTF_8));
     assertThat("test create method with space:", post2, isNotFound());
     post2.close();
 
     JsonObject jsonRequest3 = gson.fromJson(StringUtils.replace(reqBody, "mdName", ""), JsonElement.class).getAsJsonObject();
     CloseableHttpResponse post3 = httpPost("/interpreter/setting/", jsonRequest3.toString());
-    LOG.info("testSetting with empty name\n" + EntityUtils.toString(post3.getEntity(), StandardCharsets.UTF_8));
+    LOGGER.info("testSetting with empty name\n" + EntityUtils.toString(post3.getEntity(), StandardCharsets.UTF_8));
     assertThat("test create method with empty name:", post3, isNotFound());
     post3.close();
 

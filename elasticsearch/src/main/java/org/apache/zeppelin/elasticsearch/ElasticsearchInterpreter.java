@@ -71,7 +71,7 @@ import static org.apache.zeppelin.elasticsearch.client.ElasticsearchClientType.T
  * Elasticsearch Interpreter for Zeppelin.
  */
 public class ElasticsearchInterpreter extends Interpreter {
-  private static Logger logger = LoggerFactory.getLogger(ElasticsearchInterpreter.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(ElasticsearchInterpreter.class);
 
   private static final String HELP = "Elasticsearch interpreter:\n"
       + "General format: <command> /<indices>/<types>/<id> <option> <JSON>\n"
@@ -114,7 +114,7 @@ public class ElasticsearchInterpreter extends Interpreter {
 
   @Override
   public void open() {
-    logger.info("Properties: {}", getProperties());
+    LOGGER.info("Properties: {}", getProperties());
 
     ElasticsearchClientType clientType =
             ElasticsearchClientTypeBuilder
@@ -125,7 +125,7 @@ public class ElasticsearchInterpreter extends Interpreter {
       this.resultSize = Integer.parseInt(getProperty(ELASTICSEARCH_RESULT_SIZE));
     } catch (final NumberFormatException e) {
       this.resultSize = 10;
-      logger.error("Unable to parse " + ELASTICSEARCH_RESULT_SIZE + " : " +
+      LOGGER.error("Unable to parse " + ELASTICSEARCH_RESULT_SIZE + " : " +
           getProperty(ELASTICSEARCH_RESULT_SIZE), e);
     }
 
@@ -135,10 +135,10 @@ public class ElasticsearchInterpreter extends Interpreter {
       } else if (clientType.isHttp()) {
         elsClient = new HttpBasedClient(getProperties());
       } else {
-        logger.error("Unknown type of Elasticsearch client: " + clientType);
+        LOGGER.error("Unknown type of Elasticsearch client: " + clientType);
       }
     } catch (final IOException e) {
-      logger.error("Open connection with Elasticsearch", e);
+      LOGGER.error("Open connection with Elasticsearch", e);
     }
   }
 
@@ -151,7 +151,7 @@ public class ElasticsearchInterpreter extends Interpreter {
 
   @Override
   public InterpreterResult interpret(String cmd, InterpreterContext interpreterContext) {
-    logger.info("Run Elasticsearch command '" + cmd + "'");
+    LOGGER.info("Run Elasticsearch command '" + cmd + "'");
 
     if (StringUtils.isEmpty(cmd) || StringUtils.isEmpty(cmd.trim())) {
       return new InterpreterResult(InterpreterResult.Code.SUCCESS);
@@ -451,7 +451,7 @@ public class ElasticsearchInterpreter extends Interpreter {
           headerKeys.addAll(bucketMap.keySet());
           buckets.add(bucketMap);
         } catch (final IOException e) {
-          logger.error("Processing bucket: " + e.getMessage(), e);
+          LOGGER.error("Processing bucket: " + e.getMessage(), e);
         }
       }
 

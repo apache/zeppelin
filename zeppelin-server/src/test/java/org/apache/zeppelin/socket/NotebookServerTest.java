@@ -83,7 +83,7 @@ import org.slf4j.LoggerFactory;
 
 /** Basic REST API tests for notebookServer. */
 class NotebookServerTest extends AbstractTestRestApi {
-  private static final Logger LOG = LoggerFactory.getLogger(NotebookServerTest.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(NotebookServerTest.class);
   private static Notebook notebook;
   private static NotebookServer notebookServer;
   private static NotebookService notebookService;
@@ -479,7 +479,7 @@ class NotebookServerTest extends AbstractTestRestApi {
         noteId = notebookServer.importNote(null, context, messageReceived);
       } catch (NullPointerException e) {
         //broadcastNoteList(); failed nothing to worry.
-        LOG.error("Exception in NotebookServerTest while testImportNotebook, failed nothing to " +
+        LOGGER.error("Exception in NotebookServerTest while testImportNotebook, failed nothing to " +
                 "worry ", e);
       }
 
@@ -512,7 +512,7 @@ class NotebookServerTest extends AbstractTestRestApi {
         noteId = notebookServer.importNote(null, context, messageReceived);
       } catch (NullPointerException e) {
         //broadcastNoteList(); failed nothing to worry.
-        LOG.error("Exception in NotebookServerTest while testImportJupyterNote, failed nothing to " +
+        LOGGER.error("Exception in NotebookServerTest while testImportJupyterNote, failed nothing to " +
                 "worry ", e);
       }
 
@@ -715,7 +715,7 @@ class NotebookServerTest extends AbstractTestRestApi {
       noteId = notebookServer.importNote(null, context, messageReceived);
     } catch (NullPointerException e) {
       //broadcastNoteList(); failed nothing to worry.
-      LOG.error("Exception in NotebookServerTest while testImportNotebook, failed nothing to " +
+      LOGGER.error("Exception in NotebookServerTest while testImportNotebook, failed nothing to " +
           "worry ", e);
     } catch (IOException e) {
       e.printStackTrace();

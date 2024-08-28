@@ -37,7 +37,7 @@ public class ProcessData {
     PROCESS_DATA_OBJECT
   }
 
-  private final static Logger LOG = LoggerFactory.getLogger(ProcessData.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(ProcessData.class);
 
   private Process checked_process;
   private boolean printToConsole = false;
@@ -167,7 +167,7 @@ public class ProcessData {
       InputStream inErrors = this.checked_process.getErrorStream();
       BufferedReader inReader = new BufferedReader(new InputStreamReader(in));
       BufferedReader inReaderErrors = new BufferedReader(new InputStreamReader(inErrors));
-      LOG.trace("Started retrieving data from streams of attached process: " + this.checked_process);
+      LOGGER.trace("Started retrieving data from streams of attached process: " + this.checked_process);
 
       long lastStreamDataTime = System.currentTimeMillis();   //Store start time to be able to finish method if command hangs
       long unconditionalExitTime = System.currentTimeMillis() + TimeUnit.MILLISECONDS.convert(unconditionalExitDelayMinutes, TimeUnit.MINUTES); // Stop after 'unconditionalExitDelayMinutes' even if process is alive and sending output
@@ -212,9 +212,9 @@ public class ProcessData {
             if (printToConsole) {
               if (!temp.trim().equals("")) {
                 if (temp.toLowerCase().contains("error") || temp.toLowerCase().contains("failed")) {
-                  LOG.warn(temp.trim());
+                  LOGGER.warn(temp.trim());
                 } else {
-                  LOG.debug(temp.trim());
+                  LOGGER.debug(temp.trim());
                 }
               }
             }
@@ -225,22 +225,22 @@ public class ProcessData {
 
         if ((System.currentTimeMillis() - lastStreamDataTime > silenceTimeout) ||     //Exit if silenceTimeout ms has passed from last stream read. Means process is alive but not sending any data.
             (System.currentTimeMillis() > unconditionalExitTime)) {                    //Exit unconditionally - guards against alive process continuously sending data.
-          LOG.info("Conditions: " + (System.currentTimeMillis() - lastStreamDataTime > silenceTimeout) + " " +
+          LOGGER.info("Conditions: " + (System.currentTimeMillis() - lastStreamDataTime > silenceTimeout) + " " +
               (System.currentTimeMillis() > unconditionalExitTime));
           this.checked_process.destroy();
           try {
             if ((System.currentTimeMillis() > unconditionalExitTime)) {
-              LOG.error(
+              LOGGER.error(
                   "!@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@Unconditional exit occured@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@!\nsome process hag up for more than "
                       + unconditionalExitDelayMinutes + " minutes.");
             }
-            LOG.error("!##################################!");
+            LOGGER.error("!##################################!");
             StringWriter sw = new StringWriter();
             Exception e = new Exception("Exited from buildOutputAndErrorStreamData by timeout");
             e.printStackTrace(new PrintWriter(sw)); //Get stack trace
-            LOG.error(String.valueOf(e), e);
+            LOGGER.error(String.valueOf(e), e);
           } catch (Exception ignore) {
-            LOG.info("Exception in ProcessData while buildOutputAndErrorStreamData ", ignore);
+            LOGGER.info("Exception in ProcessData while buildOutputAndErrorStreamData ", ignore);
           }
           break;
         }
