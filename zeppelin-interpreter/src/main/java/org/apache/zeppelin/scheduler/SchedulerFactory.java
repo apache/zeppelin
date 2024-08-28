@@ -69,38 +69,35 @@ public class SchedulerFactory {
     ExecutorUtil.softShutdown("SchedulerFactoryExecutor", executor, 60, TimeUnit.SECONDS);
   }
 
-  public Scheduler createOrGetFIFOScheduler(String name) {
+  public Scheduler createOrGetFIFOScheduler(final String name) {
     synchronized (schedulers) {
-      if (!schedulers.containsKey(name)) {
-        LOGGER.info("Create FIFOScheduler: {}", name);
-        FIFOScheduler s = new FIFOScheduler(name);
-        schedulers.put(name, s);
+      return schedulers.computeIfAbsent(name, k -> {
+        LOGGER.info("Create FIFOScheduler: {}", k);
+        FIFOScheduler s = new FIFOScheduler(k);
         executor.execute(s);
-      }
-      return schedulers.get(name);
+        return s;
+      });
     }
   }
 
-  public Scheduler createOrGetParallelScheduler(String name, int maxConcurrency) {
+  public Scheduler createOrGetParallelScheduler(final String name, final int maxConcurrency) {
     synchronized (schedulers) {
-      if (!schedulers.containsKey(name)) {
-        LOGGER.info("Create ParallelScheduler: {} with maxConcurrency: {}", name, maxConcurrency);
-        ParallelScheduler s = new ParallelScheduler(name, maxConcurrency);
-        schedulers.put(name, s);
+      return schedulers.computeIfAbsent(name, k -> {
+        LOGGER.info("Create ParallelScheduler: {} with maxConcurrency: {}", k, maxConcurrency);
+        ParallelScheduler s = new ParallelScheduler(k, maxConcurrency);
         executor.execute(s);
-      }
-      return schedulers.get(name);
+        return s;
+      });
     }
   }
 
 
-  public Scheduler createOrGetScheduler(Scheduler scheduler) {
+  public Scheduler createOrGetScheduler(final Scheduler scheduler) {
     synchronized (schedulers) {
-      if (!schedulers.containsKey(scheduler.getName())) {
-        schedulers.put(scheduler.getName(), scheduler);
+      return schedulers.computeIfAbsent(scheduler.getName(), k -> {
         executor.execute(scheduler);
-      }
-      return schedulers.get(scheduler.getName());
+        return scheduler;
+      });
     }
   }
 

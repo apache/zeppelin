@@ -33,7 +33,7 @@ public class FIFOScheduler extends AbstractScheduler {
   FIFOScheduler(String name) {
     super(name);
     this.executor = Executors.newSingleThreadExecutor(
-        new SchedulerThreadFactory("FIFOScheduler-" + name + "-Worker-"));
+        new NamedThreadFactory("FIFOScheduler-" + name + "-Worker"));
   }
 
   @Override

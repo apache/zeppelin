@@ -39,10 +39,11 @@ public abstract class AbstractScheduler implements Scheduler {
   protected final String name;
   protected volatile boolean terminate = false;
   protected BlockingQueue<Job<?>> queue = new LinkedBlockingQueue<>();
+  // JobId -> Job
   protected Map<String, Job<?>> jobs = new ConcurrentHashMap<>();
   private Thread schedulerThread;
 
-  public AbstractScheduler(String name) {
+  protected AbstractScheduler(String name) {
     this.name = name;
   }
 

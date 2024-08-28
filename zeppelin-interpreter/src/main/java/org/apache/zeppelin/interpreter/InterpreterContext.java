@@ -295,7 +295,7 @@ public class InterpreterContext {
     if (progressMap != null) {
       n = Math.max(n, 0);
       n = Math.min(n, 100);
-      progressMap.put(paragraphId, new Integer(n));
+      progressMap.put(paragraphId, Integer.valueOf(n));
     }
   }
 }
