@@ -50,12 +50,12 @@ if [[ -z "${ZEPPELIN_CLASSIC_WAR}" ]]; then
   fi
 fi
 
-if [[ -z "${ZEPPELIN_WAR}" ]]; then
+if [[ -z "${ZEPPELIN_ANGULAR_WAR}" ]]; then
   if [[ -d "${ZEPPELIN_HOME}/zeppelin-web/dist" ]]; then
-    export ZEPPELIN_WAR="${ZEPPELIN_HOME}/zeppelin-web-angular/dist/zeppelin"
+    export ZEPPELIN_ANGULAR_WAR="${ZEPPELIN_HOME}/zeppelin-web-angular/dist/zeppelin"
   else
-    ZEPPELIN_WAR=$(find -L "${ZEPPELIN_HOME}" -name "zeppelin-web-angular*.war")
-    export ZEPPELIN_WAR
+    ZEPPELIN_ANGULAR_WAR=$(find -L "${ZEPPELIN_HOME}" -name "zeppelin-web-angular*.war")
+    export ZEPPELIN_ANGULAR_WAR
   fi
 fi
 
