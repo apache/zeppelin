@@ -65,7 +65,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-zeppelin-
       - name: install application with some interpreter
-        run: ./mvnw install -Pbuild-distr -DskipTests -pl zeppelin-server,zeppelin-web,spark-submit,spark/scala-2.12,spark/scala-2.13,markdown,angular,shell -am -Phelium-dev -Pexamples -P${{ matrix.hadoop }} ${MAVEN_ARGS}
+        run: ./mvnw install -Pbuild-distr -DskipTests -pl zeppelin-server,zeppelin-web,spark-submit,spark/scala-2.12,spark/scala-2.13,markdown,angular,shell -am -Pweb-classic -Phelium-dev -Pexamples -P${{ matrix.hadoop }} ${MAVEN_ARGS}
       - name: install and test plugins
         run: ./mvnw package -pl zeppelin-plugins -amd ${MAVEN_ARGS}
       - name: Setup conda environment with python 3.9 and R
@@ -85,7 +85,7 @@ jobs:
           conda list
           conda info
       - name: run tests with ${{ matrix.hadoop }} # skip spark test because we would run them in other CI
-        run: ./mvnw verify -Pusing-packaged-distr -pl zeppelin-server,zeppelin-web,spark-submit,spark/scala-2.12,spark/scala-2.13,markdown,angular,shell -am -Phelium-dev -Pexamples -P${{ matrix.hadoop }} -Dtests.to.exclude=**/org/apache/zeppelin/spark/* -DfailIfNoTests=false
+        run: ./mvnw verify -Pusing-packaged-distr -pl zeppelin-server,zeppelin-web,spark-submit,spark/scala-2.12,spark/scala-2.13,markdown,angular,shell -am -Pweb-classic -Phelium-dev -Pexamples -P${{ matrix.hadoop }} -Dtests.to.exclude=**/org/apache/zeppelin/spark/* -DfailIfNoTests=false
 
   # test interpreter modules except spark, flink, python, rlang, jupyter
   interpreter-test-non-core:
@@ -221,7 +221,7 @@ jobs:
             ${{ runner.os }}-zeppelin-
       - name: install environment
         run: |
-          ./mvnw install -DskipTests -Phadoop3 -Pintegration -pl zeppelin-interpreter-integration,zeppelin-web,spark-submit,spark/scala-2.12,spark/scala-2.13,markdown,flink-cmd,flink/flink-scala-2.12,jdbc,shell -am -Pflink-117 ${MAVEN_ARGS}
+          ./mvnw install -DskipTests -Phadoop3 -Pintegration -pl zeppelin-interpreter-integration,zeppelin-web,spark-submit,spark/scala-2.12,spark/scala-2.13,markdown,flink-cmd,flink/flink-scala-2.12,jdbc,shell -am -Pweb-classic -Pflink-117 ${MAVEN_ARGS}
           ./mvnw package -pl zeppelin-plugins -amd -DskipTests ${MAVEN_ARGS}
       - name: Setup conda environment with python 3.9 and R
         uses: conda-incubator/setup-miniconda@v3
@@ -328,7 +328,7 @@ jobs:
             ${{ runner.os }}-zeppelin-
       - name: install environment
         run: |
-          ./mvnw install -DskipTests -pl zeppelin-interpreter-integration,zeppelin-web,spark-submit,spark/scala-2.12,spark/scala-2.13,markdown -am -Phadoop3 -Pintegration ${MAVEN_ARGS}
+          ./mvnw install -DskipTests -pl zeppelin-interpreter-integration,zeppelin-web,spark-submit,spark/scala-2.12,spark/scala-2.13,markdown -am -Pweb-classic -Phadoop3 -Pintegration ${MAVEN_ARGS}
           ./mvnw clean package -pl zeppelin-plugins -amd -DskipTests ${MAVEN_ARGS}
       - name: Setup conda environment with python 3.9 and R
         uses: conda-incubator/setup-miniconda@v3
