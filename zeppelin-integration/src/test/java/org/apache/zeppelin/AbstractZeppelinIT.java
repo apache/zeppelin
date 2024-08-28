@@ -83,7 +83,7 @@ abstract public class AbstractZeppelinIT {
       manager.getWebDriver().findElement(
           By.xpath("//*[@id='loginModal']//div[contains(@class, 'modal-header')]/button")).click();
     }
-    manager.getWebDriver().get(new URI(manager.getWebDriver().getCurrentUrl()).resolve("/#/").toString());
+    manager.getWebDriver().get(new URI(manager.getWebDriver().getCurrentUrl()).resolve("/classic/#/").toString());
     ZeppelinITUtils.sleep(500, false);
   }
   
