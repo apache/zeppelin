@@ -86,7 +86,7 @@ export interface ConfigurationsInfo {
     'zeppelin.interpreter.setting': string;
     'zeppelin.server.xxss.protection': string;
     'zeppelin.server.rpc.portRange': string;
-    'zeppelin.classic.war': string;
+    'zeppelin.war': string;
     'zeppelin.interpreter.output.limit': string;
     'zeppelin.dep.localrepo': string;
     'zeppelin.interpreter.max.poolsize': string;
