@@ -84,25 +84,30 @@ public class IOHelper {
     final Set<String> nativeFiles = new HashSet<>();
 
     List<String> freebsd = Arrays.asList(
-        "libpty/freebsd/x86/libpty.so", "libpty/freebsd/x86_64/libpty.so");
+        "libpty/freebsd/x86/libpty.so", "libpty/freebsd/x86-64/libpty.so");
     List<String> linux = Arrays.asList(
-        "libpty/linux/x86/libpty.so", "libpty/linux/x86_64/libpty.so");
+        "libpty/linux/x86/libpty.so", "libpty/linux/x86-64/libpty.so",
+        "libpty/linux/aarch64/libpty.so", "libpty/linux/arm/libpty.so",
+        "libpty/linux/ppc64le/libpty.so", "libpty/linux/mips64el/libpty.so");
     List<String> macosx = Arrays.asList(
-        "libpty/macosx/x86/libpty.dylib", "libpty/macosx/x86_64/libpty.dylib");
+        "libpty/darwin/libpty.dylib", "libpty/darwin/pty4j-unix-spawn-helper");
     List<String> win_x86 = Arrays.asList(
-        "libpty/win/x86/winpty.dll", "libpty/win/x86/winpty-agent.exe");
+        "libpty/win/x86/winpty-agent.exe", "libpty/win/x86/winpty.dll");
     List<String> win_x86_64 = Arrays.asList(
-        "libpty/win/x86_64/winpty.dll", "libpty/win/x86_64/winpty-agent.exe",
-        "libpty/win/x86_64/cyglaunch.exe");
-    List<String> win_xp = Arrays.asList(
-        "libpty/win/xp/winpty.dll", "libpty/win/xp/winpty-agent.exe");
+        "libpty/win/x86-64/conpty.dll", "libpty/win/x86-64/OpenConsole.exe",
+        "libpty/win/x86-64/cyglaunch.exe", "libpty/win/x86-64/win-helper.dll",
+        "libpty/win/x86-64/winpty-agent.exe", "libpty/win/x86-64/winpty.dll");
+    List<String> win_aarch64 = Arrays.asList(
+        "libpty/win/aarch64/conpty.dll", "libpty/win/aarch64/OpenConsole.exe",
+        "libpty/win/aarch64/win-helper.dll", "libpty/win/aarch64/winpty-agent.exe",
+        "libpty/win/aarch64/winpty.dll");
 
     nativeFiles.addAll(freebsd);
     nativeFiles.addAll(linux);
     nativeFiles.addAll(macosx);
     nativeFiles.addAll(win_x86);
     nativeFiles.addAll(win_x86_64);
-    nativeFiles.addAll(win_xp);
+    nativeFiles.addAll(win_aarch64);
 
     return nativeFiles;
   }
