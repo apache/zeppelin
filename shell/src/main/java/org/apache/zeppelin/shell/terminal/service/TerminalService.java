@@ -19,6 +19,7 @@ package org.apache.zeppelin.shell.terminal.service;
 
 import com.google.gson.Gson;
 import com.pty4j.PtyProcess;
+import com.pty4j.PtyProcessBuilder;
 import com.pty4j.WinSize;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.shell.terminal.helper.IOHelper;
@@ -83,9 +84,9 @@ public class TerminalService {
     Map<String, String> envs = new HashMap<>(System.getenv());
     envs.put("TERM", "xterm");
 
-    System.setProperty("PTY_LIB_FOLDER", dataDir.resolve("libpty").toString());
+    System.setProperty("pty4j.preferred.native.folder", dataDir.resolve("libpty").toString());
 
-    this.process = PtyProcess.exec(termCommand, envs, userHome);
+    this.process = new PtyProcessBuilder().setCommand(termCommand).setEnvironment(envs).start();
 
     process.setWinSize(new WinSize(columns, rows));
     this.inputReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
