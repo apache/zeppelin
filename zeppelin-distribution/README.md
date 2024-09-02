@@ -20,7 +20,7 @@
 Apache Zeppelin is distributed as a single gzip archive with the following structure:
 
 ```
-Zeppelin
+zeppelin-<version>-bin
  ├── bin
  │   ├── zeppelin.sh
  │   └── zeppelin-daemon.sh

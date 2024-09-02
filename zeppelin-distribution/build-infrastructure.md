@@ -25,7 +25,7 @@
                        v v v
   Zeppelin Server  <- Zengine
          +               |
-    zeppeli web          v
+   Zeppelin Web          v
                         ZAN
 ```
 
@@ -44,12 +44,12 @@
  - compile                => *.class, minify *.js
  - build modules          => *.jar, war
  - test                   => UnitTest reports
- - package -P build-distr => final .zip
+ - package -P build-distr => final .tgz
  - integration-test       => selenium over running zeppelin-server (from package)
 
 
 ## Verify
 
- - pre-inegration-test   => start Zeppelin
+ - pre-integration-test   => start Zeppelin
  - integration-test
- - post-inegration-test  => stop Zeppelin
+ - post-integration-test  => stop Zeppelin

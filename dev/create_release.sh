@@ -72,8 +72,8 @@ function make_binary_release() {
   fi
 
   # re-create package with proper dir name with binary license
-  cd zeppelin-distribution/target/zeppelin-*
-  mv zeppelin-* "zeppelin-${RELEASE_VERSION}-bin-${BIN_RELEASE_NAME}"
+  cd zeppelin-distribution/target/zeppelin-${RELEASE_VERSION}-bin
+  mv zeppelin-${RELEASE_VERSION}-bin "zeppelin-${RELEASE_VERSION}-bin-${BIN_RELEASE_NAME}"
   cat ../../src/bin_license/LICENSE >> "zeppelin-${RELEASE_VERSION}-bin-${BIN_RELEASE_NAME}/LICENSE"
   cat ../../src/bin_license/NOTICE >> "zeppelin-${RELEASE_VERSION}-bin-${BIN_RELEASE_NAME}/NOTICE"
   cp ../../src/bin_license/licenses/* "zeppelin-${RELEASE_VERSION}-bin-${BIN_RELEASE_NAME}/licenses/"
