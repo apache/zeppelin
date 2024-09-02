@@ -22,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.HashSet;
 
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.AbstractInterpreterTest;
@@ -36,8 +36,9 @@ import org.apache.zeppelin.notebook.NoteManager;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
+import org.apache.zeppelin.storage.ConfigStorage;
 import org.apache.zeppelin.user.AuthenticationInfo;
-import org.apache.zeppelin.user.Credentials;
+import org.apache.zeppelin.user.CredentialsMgr;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -62,6 +63,8 @@ class HeliumApplicationFactoryTest extends AbstractInterpreterTest {
 
     AuthorizationService authorizationService = mock(AuthorizationService.class);
     notebookRepo = mock(NotebookRepo.class);
+    ConfigStorage storage = ConfigStorage.createConfigStorage(zConf);
+    CredentialsMgr credentialsMgr = new CredentialsMgr(zConf, storage);
     notebook =
         new Notebook(
             zConf,
@@ -70,7 +73,7 @@ class HeliumApplicationFactoryTest extends AbstractInterpreterTest {
             new NoteManager(notebookRepo, ZeppelinConfiguration.load()),
             interpreterFactory,
             interpreterSettingManager,
-            new Credentials());
+            credentialsMgr);
 
     heliumAppFactory = new HeliumApplicationFactory(notebook, null);
 
@@ -264,7 +267,7 @@ class HeliumApplicationFactoryTest extends AbstractInterpreterTest {
         return note1Tmp;
       });
     String mock1IntpSettingId = null;
-    for (InterpreterSetting setting : note1.getBindedInterpreterSettings(new ArrayList<>())) {
+    for (InterpreterSetting setting : note1.getBindedInterpreterSettings(new HashSet<>())) {
       if (setting.getName().equals("mock1")) {
         mock1IntpSettingId = setting.getId();
         break;

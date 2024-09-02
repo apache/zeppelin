@@ -69,13 +69,12 @@ import org.apache.zeppelin.search.LuceneSearch;
 import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.storage.ConfigStorage;
 import org.apache.zeppelin.user.AuthenticationInfo;
-import org.apache.zeppelin.user.Credentials;
+import org.apache.zeppelin.user.CredentialsMgr;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 
-import com.google.gson.Gson;
+import org.mockito.ArgumentCaptor;
 
 class NotebookServiceTest {
 
@@ -120,7 +119,7 @@ class NotebookServiceTest {
     when(mockInterpreterSetting.isUserAuthorized(any())).thenReturn(true);
     when(mockInterpreterGroup.getInterpreterSetting()).thenReturn(mockInterpreterSetting);
     when(mockInterpreterSetting.getStatus()).thenReturn(InterpreterSetting.Status.READY);
-    Credentials credentials = new Credentials();
+    CredentialsMgr credentials = new CredentialsMgr(zConf, storage);
     NoteManager noteManager = new NoteManager(notebookRepo, zConf);
     AuthorizationService authorizationService =
         new AuthorizationService(noteManager, zConf, storage);

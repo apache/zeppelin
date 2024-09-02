@@ -14,7 +14,12 @@ describe('Controller: Credential', function() {
     $httpBackend = _$httpBackend_;
   }));
 
-  const credentialResponse = {'spark.testCredential': {username: 'user1', password: 'password1'}};
+  const credentialResponse = {'spark.testCredential': {
+    username: 'user1',
+    password: 'password1',
+    readers: [],
+    owners: ['anonymous']},
+  };
   const interpreterResponse = [
     {'name': 'spark', 'group': 'spark'},
     {'name': 'md', 'group': 'md'},
@@ -42,7 +47,7 @@ describe('Controller: Credential', function() {
     $httpBackend.flush();
 
     expect($scope.credentialInfo).toEqual(
-      [{entity: 'spark.testCredential', username: 'user1', password: 'password1'}]
+      [{entity: 'spark.testCredential', username: 'user1', password: 'password1', readers: [], owners: ['anonymous']}]
     );
     expect($scope.availableInterpreters).toEqual(
       ['spark', 'md']

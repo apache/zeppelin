@@ -820,7 +820,7 @@ public class InterpreterSetting {
     return zConf.getRunMode() == ZeppelinConfiguration.RUN_MODE.DOCKER;
   }
 
-  public boolean isUserAuthorized(List<String> userAndRoles) {
+  public boolean isUserAuthorized(Set<String> userAndRoles) {
     if (!option.permissionIsSet()) {
       return true;
     }

@@ -43,6 +43,7 @@ import './app/interpreter/interpreter.filter.js';
 import './app/interpreter/interpreter-item.directive.js';
 import './app/interpreter/widget/number-widget.directive.js';
 import './app/credential/credential.controller.js';
+import './app/credential/credential-item.directive.js';
 import './app/configuration/configuration.controller.js';
 import './app/notebook/revisions-comparator/revisions-comparator.component.js';
 import './app/notebook/paragraph/paragraph.controller.js';
