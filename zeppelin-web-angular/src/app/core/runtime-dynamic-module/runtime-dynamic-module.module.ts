@@ -10,9 +10,9 @@
  * limitations under the License.
  */
 import { CommonModule } from '@angular/common';
-import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NzModule } from './ng-zorro-antd-module';
+import { NgModule } from './ngmodule.decorator';
 
 @NgModule({
   declarations: [],

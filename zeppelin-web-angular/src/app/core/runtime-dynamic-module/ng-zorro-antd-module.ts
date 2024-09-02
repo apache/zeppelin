@@ -10,7 +10,7 @@
  * limitations under the License.
  */
 
-import { NgModule } from '@angular/core';
+import { NgModule } from './ngmodule.decorator';
 
 import { NzAffixModule } from 'ng-zorro-antd/affix';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
