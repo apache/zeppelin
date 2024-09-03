@@ -74,7 +74,7 @@ class DirAccessTest extends AbstractTestRestApi {
   }
 
   protected String getUrlToTest() {
-    String url = "http://localhost:" + zConf.getServerPort();
+    String url = "http://localhost:" + zConf.getServerPort() + "/classic";
     if (System.getProperty("url") != null) {
       url = System.getProperty("url");
     }

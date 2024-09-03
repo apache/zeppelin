@@ -189,7 +189,7 @@ public class AuthenticationIT extends AbstractZeppelinIT {
       }
 
       manager.getWebDriver().get(new URI(manager.getWebDriver().getCurrentUrl())
-        .resolve("/#/notebook/" + noteId).toString());
+        .resolve("/classic/#/notebook/" + noteId).toString());
 
       List<WebElement> privilegesModal = manager.getWebDriver().findElements(
           By.xpath("//div[@class='modal-content']//div[@class='bootstrap-dialog-header']" +
@@ -210,7 +210,7 @@ public class AuthenticationIT extends AbstractZeppelinIT {
       }
 
       manager.getWebDriver().get(new URI(manager.getWebDriver().getCurrentUrl())
-        .resolve("/#/notebook/" + noteId).toString());
+        .resolve("/classic/#/notebook/" + noteId).toString());
 
       privilegesModal = manager.getWebDriver().findElements(
           By.xpath("//div[@class='modal-content']//div[@class='bootstrap-dialog-header']" +

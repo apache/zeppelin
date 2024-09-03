@@ -39,7 +39,7 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>zeppelin-web</artifactId>
+      <artifactId>zeppelin-web-angular</artifactId>
       <version>${project.version}</version>
       <type>war</type>
     </dependency>
@@ -81,11 +81,11 @@
 
   <profiles>
     <profile>
-      <id>web-angular</id>
+      <id>web-classic</id>
       <dependencies>
         <dependency>
           <groupId>${project.groupId}</groupId>
-          <artifactId>zeppelin-web-angular</artifactId>
+          <artifactId>zeppelin-web</artifactId>
           <version>${project.version}</version>
           <type>war</type>
         </dependency>
