@@ -46,7 +46,7 @@ if [[ $RELEASE_VERSION == *"SNAPSHOT"* ]]; then
   DO_SNAPSHOT="yes"
 fi
 
-PUBLISH_PROFILES="-Ppublish-distr -Pweb-angular"
+PUBLISH_PROFILES="-Ppublish-distr -Pweb-classic"
 PROJECT_OPTIONS="-pl !zeppelin-distribution -Dmaven.javadoc.skip=true"
 NEXUS_STAGING="https://repository.apache.org/service/local/staging"
 NEXUS_PROFILE="153446d1ac37c4"

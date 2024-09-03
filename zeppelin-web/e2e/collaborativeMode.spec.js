@@ -12,7 +12,7 @@
 //   let test_text_1 = "_one_more_text_for_tests";      // without space!!!
 //   let test_text_2 = "Collaborative_mode_test_text";  // without space!!!
 //
-//   browser.get('http://localhost:8080');
+//   browser.get('http://localhost:8080/classic');
 //   clickOn(element(by.linkText('Create new note')));
 //   waitVisibility(element(by.id('noteCreateModal')));
 //   clickOn(element(by.id('createNoteButton')));

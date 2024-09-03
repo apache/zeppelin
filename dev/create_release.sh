@@ -97,9 +97,9 @@ function make_binary_release() {
 git_clone
 make_source_package
 
-make_binary_release netinst "-Pweb-angular -pl !hbase,!jdbc,!file,!flink,!cassandra,!elasticsearch,!bigquery,!alluxio,!livy,!groovy,!java,!neo4j,!sparql,!mongodb,!shell -am"
+make_binary_release netinst "-Pweb-classic -pl !hbase,!jdbc,!file,!flink,!cassandra,!elasticsearch,!bigquery,!alluxio,!livy,!groovy,!java,!neo4j,!sparql,!mongodb,!shell -am"
 
-make_binary_release all "-Pweb-angular -pl !shell"
+make_binary_release all "-Pweb-classic -pl !shell"
 
 # remove non release files and dirs
 rm -rf "${WORKING_DIR}/zeppelin"
