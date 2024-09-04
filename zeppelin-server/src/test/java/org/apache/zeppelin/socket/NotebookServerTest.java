@@ -751,7 +751,7 @@ class NotebookServerTest extends AbstractTestRestApi {
 
       when(paragraph.getBindedInterpreter().getInterpreterGroup()).thenReturn(mdGroup);
 
-      final AngularObject<String> ao1 = AngularObjectBuilder.build(varName, value, "noteId",
+      final AngularObject ao1 = AngularObjectBuilder.build(varName, value, "noteId",
               "paragraphId");
 
       when(mdRegistry.addAndNotifyRemoteProcess(varName, value, "noteId", "paragraphId"))
@@ -810,7 +810,7 @@ class NotebookServerTest extends AbstractTestRestApi {
 
       when(paragraph.getBindedInterpreter().getInterpreterGroup()).thenReturn(mdGroup);
 
-      final AngularObject<String> ao1 = AngularObjectBuilder.build(varName, value, "noteId",
+      final AngularObject ao1 = AngularObjectBuilder.build(varName, value, "noteId",
               "paragraphId");
       when(mdRegistry.removeAndNotifyRemoteProcess(varName, "noteId", "paragraphId")).thenReturn(ao1);
       NotebookSocket conn = mock(NotebookSocket.class);

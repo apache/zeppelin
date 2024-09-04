@@ -218,7 +218,7 @@ class SparkZeppelinContext(val sc: SparkContext,
 
   private def angularWatch(name: String, noteId: String, func: (AnyRef, AnyRef) => Unit): Unit = {
     val w = new AngularObjectWatcher(getInterpreterContext) {
-      override def watch(oldObject: Any, newObject: AnyRef, context: InterpreterContext): Unit = {
+      override def watch(oldObject: AnyRef, newObject: AnyRef, context: InterpreterContext): Unit = {
         func(newObject, newObject)
       }
     }
