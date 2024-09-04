@@ -41,7 +41,7 @@ with BeforeAndAfter with BeforeAndAfterEach with Eventually {
   }
 
   def angularModel(name: String): AbstractAngularModel
-  def angularModel(name: String, value: Any): AbstractAngularModel
+  def angularModel(name: String, value: AnyRef): AbstractAngularModel
 
   "AngularModel" should "able to create AngularObject" in {
     val registry = InterpreterContext.get().getAngularObjectRegistry

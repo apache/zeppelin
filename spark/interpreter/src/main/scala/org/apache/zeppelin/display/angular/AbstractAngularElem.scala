@@ -29,7 +29,7 @@ import scala.xml._
   */
 abstract class AbstractAngularElem(val interpreterContext: InterpreterContext,
                                    val modelName: String,
-                                   val angularObjects: Map[String, AngularObject[Any]],
+                                   val angularObjects: Map[String, AngularObject],
                                    prefix: String,
                                    label: String,
                                    attributes1: MetaData,
@@ -70,7 +70,7 @@ abstract class AbstractAngularElem(val interpreterContext: InterpreterContext,
     * @return
     */
   @ZeppelinApi
-  def model(name: String, value: Any): AbstractAngularElem = {
+  def model(name: String, value: AnyRef): AbstractAngularElem = {
     val registry = interpreterContext.getAngularObjectRegistry
 
     // create AngularFunction in current paragraph
@@ -79,7 +79,7 @@ abstract class AbstractAngularElem(val interpreterContext: InterpreterContext,
       Null)
 
     val angularObject = addAngularObject(name, value)
-      .asInstanceOf[AngularObject[Any]]
+      .asInstanceOf[AngularObject]
 
     newElem(
       interpreterContext,
@@ -111,7 +111,7 @@ abstract class AbstractAngularElem(val interpreterContext: InterpreterContext,
     * @return
     */
   @ZeppelinApi
-  def model(): Any = {
+  def model(): AnyRef = {
     if (angularObjects.contains(modelName)) {
       angularObjects(modelName).get()
     } else {
@@ -134,7 +134,7 @@ abstract class AbstractAngularElem(val interpreterContext: InterpreterContext,
       Text(s"${functionName}=${functionName} + 1"),
       Null)
 
-    val angularObject = addAngularObject(functionName, 0)
+    val angularObject = addAngularObject(functionName, Int.box(0))
 
     angularObject.addWatcher(new AngularObjectWatcher(interpreterContext) {
       override def watch(oldObject: scala.Any, newObject: scala.Any, context: InterpreterContext)
@@ -151,11 +151,11 @@ abstract class AbstractAngularElem(val interpreterContext: InterpreterContext,
       elem)
   }
 
-  protected def addAngularObject(name: String, value: Any): AngularObject[Any]
+  protected def addAngularObject(name: String, value: AnyRef): AngularObject
 
   protected def newElem(interpreterContext: InterpreterContext,
                         name: String,
-                        angularObjects: Map[String, AngularObject[Any]],
+                        angularObjects: Map[String, AngularObject],
                         elem: scala.xml.Elem): AbstractAngularElem
 
   /**
