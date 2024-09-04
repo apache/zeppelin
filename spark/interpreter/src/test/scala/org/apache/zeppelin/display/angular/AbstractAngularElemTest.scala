@@ -142,7 +142,7 @@ trait AbstractAngularElemTest
 
   // simulate click
   def fireEvent(eventName: String, elem: org.apache.zeppelin.display.angular.AbstractAngularElem) = {
-    val angularObject: AngularObject[Any] = elem.angularObjects(eventName);
+    val angularObject: AngularObject = elem.angularObjects(eventName);
     angularObject.set("event");
   }
 }
