@@ -87,7 +87,7 @@ public class SparkInterpreter extends AbstractInterpreter {
     }
 
     this.enableSupportedVersionCheck = java.lang.Boolean.parseBoolean(
-        properties.getProperty("zeppelin.spark.enableSupportedVersionCheck", "true"));
+        properties.getProperty("zeppelin.spark.enableSupportedVersionCheck", "false"));
     innerInterpreterClassMap.put("2.12", "org.apache.zeppelin.spark.SparkScala212Interpreter");
     innerInterpreterClassMap.put("2.13", "org.apache.zeppelin.spark.SparkScala213Interpreter");
   }

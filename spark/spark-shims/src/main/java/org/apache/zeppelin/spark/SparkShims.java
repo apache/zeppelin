@@ -58,7 +58,7 @@ public abstract class SparkShims {
   private static SparkShims loadShims(int sparkMajorVersion, Properties properties, Object entryPoint)
       throws Exception {
     Class<?> sparkShimsClass;
-    if (sparkMajorVersion == 3) {
+    if (sparkMajorVersion == 3 || sparkMajorVersion == 4) {
       LOGGER.info("Initializing shims for Spark 3.x");
       sparkShimsClass = Class.forName("org.apache.zeppelin.spark.Spark3Shims");
     } else {

@@ -64,7 +64,8 @@ public class Spark3Shims extends SparkShims {
   @Override
   public String showDataFrame(Object obj, int maxResult, InterpreterContext context) {
     if (obj instanceof Dataset) {
-      Dataset<Row> df = ((Dataset) obj).toDF();
+      @SuppressWarnings("unchecked")
+      Dataset<Row> df = ((Dataset<Object>) obj).toDF();
       String[] columns = df.columns();
       // DDL will empty DataFrame
       if (columns.length == 0) {
@@ -111,8 +112,8 @@ public class Spark3Shims extends SparkShims {
     }
   }
 
-  private List sparkRowToList(Row row) {
-    List list = new ArrayList();
+  private List<Object> sparkRowToList(Row row) {
+    List<Object> list = new ArrayList<>();
     for (int i = 0; i< row.size(); i++) {
       list.add(row.get(i));
     }

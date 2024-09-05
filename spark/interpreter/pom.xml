@@ -338,7 +338,7 @@
               <target>
                 <delete dir="../../interpreter/spark/pyspark" />
                 <copy file="${project.build.directory}/${spark.archive}/python/lib/py4j-${py4j.version}-src.zip" todir="${project.build.directory}/../../../interpreter/spark/pyspark" />
-                <zip basedir="${project.build.directory}/${spark.archive}/python" destfile="${project.build.directory}/../../../interpreter/spark/pyspark/pyspark.zip" includes="pyspark/*.py,pyspark/**/*.py" />
+                <zip basedir="${project.build.directory}/${spark.archive}/python" destfile="${project.build.directory}/../../../interpreter/spark/pyspark/pyspark.zip" includes="pyspark/" />
               </target>
             </configuration>
           </execution>
@@ -556,6 +556,15 @@
       <properties>
         <spark.scala.version>2.12.17</spark.scala.version>
         <spark.scala.binary.version>2.12</spark.scala.binary.version>
+      </properties>
+    </profile>
+
+    <profile>
+      <id>spark-4.0</id>
+      <properties>
+        <spark.version>4.0.0-preview1</spark.version>
+        <protobuf.version>3.21.12</protobuf.version>
+        <py4j.version>0.10.9.7</py4j.version>
       </properties>
     </profile>
 
