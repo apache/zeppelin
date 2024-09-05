@@ -368,10 +368,9 @@ export default class TableVisualization extends Visualization {
         let textArea = triggerEvent.currentTarget.children[1].children[0].children[0];
         textArea.style.height = textArea.scrollHeight + 'px';
         textArea.addEventListener('keydown', () => {
-          let elem = this;
           setTimeout(() => {
-            elem.style.height = 'auto';
-            elem.style.height = elem.scrollHeight + 'px';
+            textArea.style.height = 'auto';
+            textArea.style.height = textArea.scrollHeight + 'px';
           });
         }, 0);
       });
