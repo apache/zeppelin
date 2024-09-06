@@ -166,6 +166,13 @@
       <artifactId>spark-core_${spark.scala.binary.version}</artifactId>
       <version>${spark.version}</version>
       <scope>provided</scope>
+      <exclusions>
+        <!-- Leads to conflicting Jackson versions -->
+        <exclusion>
+          <groupId>org.apache.avro</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <dependency>
@@ -565,7 +572,7 @@
         <spark.version>4.0.0-preview1</spark.version>
         <protobuf.version>3.21.12</protobuf.version>
         <py4j.version>0.10.9.7</py4j.version>
-        <jackson.version>2.17.1</jackson.version>
+        <libthrift.version>0.16.0</libthrift.version>
       </properties>
     </profile>
 
