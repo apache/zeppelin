@@ -31,6 +31,13 @@
         "defaultValue": "",
         "description": "BigQuery SQL dialect (standardSQL or legacySQL). If empty, query prefix like '#standardSQL' can be used.",
         "type": "string"
+      },
+      "zeppelin.bigquery.region": {
+        "envName": null,
+        "propertyName": "zeppelin.bigquery.region",
+        "defaultValue": "",
+        "description": "Location of BigQuery dataset. Needed if it is a single-region dataset.",
+        "type": "string"
       }
     },
     "editor": {

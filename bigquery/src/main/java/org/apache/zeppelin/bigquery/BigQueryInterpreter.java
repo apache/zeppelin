@@ -90,9 +90,13 @@ public class BigQueryInterpreter extends Interpreter {
   static final String WAIT_TIME = "zeppelin.bigquery.wait_time";
   static final String MAX_ROWS = "zeppelin.bigquery.max_no_of_rows";
   static final String SQL_DIALECT = "zeppelin.bigquery.sql_dialect";
+  static final String REGION = "zeppelin.bigquery.region";
+
 
   private static String jobId = null;
   private static String projectId = null;
+  private static String location = null;
+
 
   private static final List NO_COMPLETION = new ArrayList<>();
   private Exception exceptionOnConnect;
@@ -227,6 +231,7 @@ public class BigQueryInterpreter extends Interpreter {
     long wTime = Long.parseLong(getProperty(WAIT_TIME));
     long maxRows = Long.parseLong(getProperty(MAX_ROWS));
     String sqlDialect = getProperty(SQL_DIALECT, "").toLowerCase();
+    String region = getProperty(REGION, null);
     Boolean useLegacySql;
     switch (sqlDialect) {
       case "standardsql":
@@ -241,7 +246,9 @@ public class BigQueryInterpreter extends Interpreter {
     }
     Iterator<GetQueryResultsResponse> pages;
     try {
-      pages = run(sql, projId, wTime, maxRows, useLegacySql);
+      if (region != null) pages = run(sql, projId, wTime, maxRows, useLegacySql, region);
+      else pages = run(sql, projId, wTime, maxRows, useLegacySql);
+
     } catch (IOException ex) {
       LOGGER.error(ex.getMessage());
       return new InterpreterResult(Code.ERROR, ex.getMessage());
@@ -253,6 +260,33 @@ public class BigQueryInterpreter extends Interpreter {
       return new InterpreterResult(Code.SUCCESS, finalmessage.toString());
     } catch (NullPointerException ex) {
       return new InterpreterResult(Code.ERROR, ex.getMessage());
+    }
+  }
+
+  //Function to run the SQL on bigQuery service
+  public static Iterator<GetQueryResultsResponse> run(final String queryString,
+      final String projId, final long wTime, final long maxRows,
+      Boolean useLegacySql, final String region)
+        throws IOException {
+    try {
+      LOGGER.info("Use legacy sql: {}", useLegacySql);
+      QueryResponse query;
+      query = service
+          .jobs()
+          .query(
+              projId,
+              new QueryRequest().setTimeoutMs(wTime)
+                  .setUseLegacySql(useLegacySql).setQuery(queryString)
+                  .setMaxResults(maxRows)).execute();
+      jobId = query.getJobReference().getJobId();
+      projectId = query.getJobReference().getProjectId();
+      location = query.getJobReference().getLocation();
+      GetQueryResults getRequest = service.jobs().getQueryResults(
+          projectId,
+          jobId).setLocation(region);
+      return getPages(getRequest);
+    } catch (IOException ex) {
+      throw ex;
     }
   }
 
