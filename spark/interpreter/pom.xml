@@ -64,27 +64,7 @@
     <pyspark.test.exclude>**/PySparkInterpreterMatplotlibTest.java</pyspark.test.exclude>
     <pyspark.test.include>**/*Test.*</pyspark.test.include>
 
-    <!-- Needed for testing on Java 17 -->
-    <extraJavaTestArgs>
-      -XX:+IgnoreUnrecognizedVMOptions
-      --add-modules=jdk.incubator.vector
-      --add-opens=java.base/java.lang=ALL-UNNAMED
-      --add-opens=java.base/java.lang.invoke=ALL-UNNAMED
-      --add-opens=java.base/java.lang.reflect=ALL-UNNAMED
-      --add-opens=java.base/java.io=ALL-UNNAMED
-      --add-opens=java.base/java.net=ALL-UNNAMED
-      --add-opens=java.base/java.nio=ALL-UNNAMED
-      --add-opens=java.base/java.util=ALL-UNNAMED
-      --add-opens=java.base/java.util.concurrent=ALL-UNNAMED
-      --add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED
-      --add-opens=java.base/jdk.internal.ref=ALL-UNNAMED
-      --add-opens=java.base/sun.nio.ch=ALL-UNNAMED
-      --add-opens=java.base/sun.nio.cs=ALL-UNNAMED
-      --add-opens=java.base/sun.security.action=ALL-UNNAMED
-      --add-opens=java.base/sun.util.calendar=ALL-UNNAMED
-      -Djdk.reflect.useDirectMethodHandle=false
-      -Dio.netty.tryReflectionSetAccessible=true
-    </extraJavaTestArgs>
+    <extraJavaTestArgs></extraJavaTestArgs>
   </properties>
 
   <dependencies>
@@ -566,6 +546,35 @@
   </build>
 
   <profiles>
+
+    <profile>
+      <id>java-17</id>
+      <activation>
+        <jdk>[17,)</jdk>
+      </activation>
+      <properties>
+        <extraJavaTestArgs>
+          -XX:+IgnoreUnrecognizedVMOptions
+          --add-modules=jdk.incubator.vector
+          --add-opens=java.base/java.lang=ALL-UNNAMED
+          --add-opens=java.base/java.lang.invoke=ALL-UNNAMED
+          --add-opens=java.base/java.lang.reflect=ALL-UNNAMED
+          --add-opens=java.base/java.io=ALL-UNNAMED
+          --add-opens=java.base/java.net=ALL-UNNAMED
+          --add-opens=java.base/java.nio=ALL-UNNAMED
+          --add-opens=java.base/java.util=ALL-UNNAMED
+          --add-opens=java.base/java.util.concurrent=ALL-UNNAMED
+          --add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED
+          --add-opens=java.base/jdk.internal.ref=ALL-UNNAMED
+          --add-opens=java.base/sun.nio.ch=ALL-UNNAMED
+          --add-opens=java.base/sun.nio.cs=ALL-UNNAMED
+          --add-opens=java.base/sun.security.action=ALL-UNNAMED
+          --add-opens=java.base/sun.util.calendar=ALL-UNNAMED
+          -Djdk.reflect.useDirectMethodHandle=false
+          -Dio.netty.tryReflectionSetAccessible=true
+        </extraJavaTestArgs>
+      </properties>
+    </profile>
 
     <!-- profile spark-scala-x only affect the unit test in spark/interpreter module -->
 
