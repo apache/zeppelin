@@ -246,9 +246,7 @@ public class BigQueryInterpreter extends Interpreter {
     }
     Iterator<GetQueryResultsResponse> pages;
     try {
-      if (region != null) pages = run(sql, projId, wTime, maxRows, useLegacySql, region);
-      else pages = run(sql, projId, wTime, maxRows, useLegacySql);
-
+      pages = run(sql, projId, wTime, maxRows, useLegacySql, region);
     } catch (IOException ex) {
       LOGGER.error(ex.getMessage());
       return new InterpreterResult(Code.ERROR, ex.getMessage());
@@ -280,35 +278,10 @@ public class BigQueryInterpreter extends Interpreter {
                   .setMaxResults(maxRows)).execute();
       jobId = query.getJobReference().getJobId();
       projectId = query.getJobReference().getProjectId();
-      location = query.getJobReference().getLocation();
-      GetQueryResults getRequest = service.jobs().getQueryResults(
-          projectId,
-          jobId).setLocation(region);
-      return getPages(getRequest);
-    } catch (IOException ex) {
-      throw ex;
-    }
-  }
-
-  //Function to run the SQL on bigQuery service
-  public static Iterator<GetQueryResultsResponse> run(final String queryString,
-      final String projId, final long wTime, final long maxRows, Boolean useLegacySql)
-          throws IOException {
-    try {
-      LOGGER.info("Use legacy sql: {}", useLegacySql);
-      QueryResponse query;
-      query = service
-          .jobs()
-          .query(
-              projId,
-              new QueryRequest().setTimeoutMs(wTime)
-                  .setUseLegacySql(useLegacySql).setQuery(queryString)
-                  .setMaxResults(maxRows)).execute();
-      jobId = query.getJobReference().getJobId();
-      projectId = query.getJobReference().getProjectId();
       GetQueryResults getRequest = service.jobs().getQueryResults(
           projectId,
           jobId);
+      if (region != null) getRequest = getRequest.setLocation(region);
       return getPages(getRequest);
     } catch (IOException ex) {
       throw ex;
