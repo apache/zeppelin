@@ -92,11 +92,8 @@ public class BigQueryInterpreter extends Interpreter {
   static final String SQL_DIALECT = "zeppelin.bigquery.sql_dialect";
   static final String REGION = "zeppelin.bigquery.region";
 
-
   private static String jobId = null;
   private static String projectId = null;
-  private static String location = null;
-
 
   private static final List NO_COMPLETION = new ArrayList<>();
   private Exception exceptionOnConnect;
@@ -281,7 +278,9 @@ public class BigQueryInterpreter extends Interpreter {
       GetQueryResults getRequest = service.jobs().getQueryResults(
           projectId,
           jobId);
-      if (region != null) getRequest = getRequest.setLocation(region);
+      if (region != null) {
+        getRequest = getRequest.setLocation(region);
+      }
       return getPages(getRequest);
     } catch (IOException ex) {
       throw ex;
