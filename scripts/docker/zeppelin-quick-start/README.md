@@ -32,8 +32,8 @@ docker compose -f docker-compose-zeppelin-only.yml stop
 #### Install Spark Binary File
 ```bash
 cd scripts/docker/zeppelin-quick-start
-wget https://archive.apache.org/dist/spark/spark-3.2.4/spark-3.2.4-bin-hadoop3.2.tgz
-tar -xvf spark-3.2.4-bin-hadoop3.2.tgz
+wget https://archive.apache.org/dist/spark/spark-3.5.2/spark-3.5.2-bin-hadoop3.tgz
+tar -xvf spark-3.5.2-bin-hadoop3.tgz
 ```
 
 #### Run docker compose

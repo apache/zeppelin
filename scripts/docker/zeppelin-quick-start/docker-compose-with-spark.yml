@@ -18,7 +18,7 @@ services:
   zeppelin:
     hostname: zeppelin
     container_name: zeppelin
-    image: docker.io/apache/zeppelin:0.10.1
+    image: docker.io/apache/zeppelin:0.11.2
     ports:
       - "8080:8080"
     environment:
@@ -26,12 +26,12 @@ services:
       ZEPPELIN_MEM: -Xmx1024m -XX:MaxMetaspaceSize=512m
       SPARK_HOME: /opt/spark
     volumes:
-      - ./spark-3.2.4-bin-hadoop3.2:/opt/spark
+      - ./spark-3.5.2-bin-hadoop3:/opt/spark
 
   spark-master:
     hostname: spark-master
     container_name: spark-master
-    image: docker.io/bitnami/spark:3.2.4
+    image: docker.io/bitnami/spark:3.5.2
     ports:
       - "18080:8080"
       - "7077:7077"
@@ -48,7 +48,7 @@ services:
   spark-worker:
     hostname: spark-worker
     container_name: spark-worker
-    image: docker.io/bitnami/spark:3.2.4
+    image: docker.io/bitnami/spark:3.5.2
     ports:
       - "18081:8081"
     environment:
