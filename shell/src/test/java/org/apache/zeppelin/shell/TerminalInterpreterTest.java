@@ -41,6 +41,7 @@ import javax.websocket.Session;
 import javax.websocket.WebSocketContainer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
@@ -247,6 +248,107 @@ class TerminalInterpreterTest extends BaseInterpreterTest {
         }
       }
     }
+  }
+
+  @Test
+  void testValidOrigin() {
+    Session session = null;
+
+    // mock connect terminal
+    boolean running = terminal.terminalThreadIsRunning();
+    assertTrue(running);
+
+    URI webSocketConnectionUri = URI.create("ws://" + terminal.getTerminalHostIp() +
+        ":" + terminal.getTerminalPort() + "/terminal/");
+    LOGGER.info("webSocketConnectionUri: " + webSocketConnectionUri);
+    String origin = "http://" + terminal.getTerminalHostIp() + ":" + terminal.getTerminalPort();
+    LOGGER.info("origin: " + origin);
+    ClientEndpointConfig clientEndpointConfig = getOriginRequestHeaderConfig(origin);
+    WebSocketContainer webSocketContainer = ContainerProvider.getWebSocketContainer();
+
+    Throwable exception = null;
+    try {
+      // Attempt Connect
+      session = webSocketContainer.connectToServer(
+          TerminalSocketTest.class, clientEndpointConfig, webSocketConnectionUri);
+    } catch (DeploymentException e) {
+      exception = e;
+    } catch (IOException e) {
+      exception = e;
+    } finally {
+      if (session != null) {
+        try {
+          session.close();
+        } catch (IOException e) {
+          LOGGER.error(e.getMessage(), e);
+        }
+      }
+
+      // Force lifecycle stop when done with container.
+      // This is to free up threads and resources that the
+      // JSR-356 container allocates. But unfortunately
+      // the JSR-356 spec does not handle lifecycles (yet)
+      if (webSocketContainer instanceof LifeCycle) {
+        try {
+          ((LifeCycle) webSocketContainer).stop();
+        } catch (Exception e) {
+          LOGGER.error(e.getMessage(), e);
+        }
+      }
+    }
+
+    assertNull(exception);
+  }
+
+  @Test
+  void testInvalidOrigin() {
+    Session session = null;
+
+    // mock connect terminal
+    boolean running = terminal.terminalThreadIsRunning();
+    assertTrue(running);
+
+    URI webSocketConnectionUri = URI.create("ws://" + terminal.getTerminalHostIp() +
+        ":" + terminal.getTerminalPort() + "/terminal/");
+    LOGGER.info("webSocketConnectionUri: " + webSocketConnectionUri);
+    String origin = "http://invalid-origin";
+    LOGGER.info("origin: " + origin);
+    ClientEndpointConfig clientEndpointConfig = getOriginRequestHeaderConfig(origin);
+    WebSocketContainer webSocketContainer = ContainerProvider.getWebSocketContainer();
+
+    Throwable exception = null;
+    try {
+      // Attempt Connect
+      session = webSocketContainer.connectToServer(
+          TerminalSocketTest.class, clientEndpointConfig, webSocketConnectionUri);
+    } catch (DeploymentException e) {
+      exception = e;
+    } catch (IOException e) {
+      exception = e;
+    } finally {
+      if (session != null) {
+        try {
+          session.close();
+        } catch (IOException e) {
+          LOGGER.error(e.getMessage(), e);
+        }
+      }
+
+      // Force lifecycle stop when done with container.
+      // This is to free up threads and resources that the
+      // JSR-356 container allocates. But unfortunately
+      // the JSR-356 spec does not handle lifecycles (yet)
+      if (webSocketContainer instanceof LifeCycle) {
+        try {
+          ((LifeCycle) webSocketContainer).stop();
+        } catch (Exception e) {
+          LOGGER.error(e.getMessage(), e);
+        }
+      }
+    }
+
+    assertTrue(exception instanceof IOException);
+    assertEquals("Connect failure", exception.getMessage());
   }
 
   private static @NotNull ClientEndpointConfig getOriginRequestHeaderConfig(String origin) {
