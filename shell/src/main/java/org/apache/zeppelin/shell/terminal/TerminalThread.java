@@ -18,7 +18,9 @@
 package org.apache.zeppelin.shell.terminal;
 
 import javax.websocket.server.ServerContainer;
+import javax.websocket.server.ServerEndpointConfig;
 
+import org.apache.zeppelin.shell.terminal.websocket.TerminalSessionConfigurator;
 import org.apache.zeppelin.shell.terminal.websocket.TerminalSocket;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
@@ -72,7 +74,10 @@ public class TerminalThread extends Thread {
 
     try {
       ServerContainer container = WebSocketServerContainerInitializer.configureContext(context);
-      container.addEndpoint(TerminalSocket.class);
+      container.addEndpoint(
+          ServerEndpointConfig.Builder.create(TerminalSocket.class, "/")
+              .configurator(new TerminalSessionConfigurator())
+              .build());
       jettyServer.start();
       jettyServer.join();
     } catch (Exception e) {
