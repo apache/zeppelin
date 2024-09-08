@@ -34,7 +34,6 @@ public class TerminalSessionConfigurator  extends Configurator {
     boolean allowed = allowedOrigin.equals(originHeaderValue);
     LOGGER.info("Checking origin for TerminalSessionConfigurator: " +
         originHeaderValue + " allowed: " + allowed);
-    LOGGER.info("Allowed origin: " + allowedOrigin);
     return allowed;
   }
 }
