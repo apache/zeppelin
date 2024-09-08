@@ -1,0 +1,66 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+services:
+  zeppelin:
+    hostname: zeppelin
+    container_name: zeppelin
+    image: docker.io/apache/zeppelin:0.10.1
+    ports:
+      - "8080:8080"
+    environment:
+      ZEPPELIN_PORT: 8080
+      ZEPPELIN_MEM: -Xmx1024m -XX:MaxMetaspaceSize=512m
+      SPARK_HOME: /opt/spark
+    volumes:
+      - ./spark-3.2.4-bin-hadoop3.2:/opt/spark
+
+  spark-master:
+    hostname: spark-master
+    container_name: spark-master
+    image: docker.io/bitnami/spark:3.2.4
+    ports:
+      - "18080:8080"
+      - "7077:7077"
+    environment:
+      SPARK_MODE: master
+      SPARK_RPC_AUTHENTICATION_ENABLED: no
+      SPARK_RPC_ENCRYPTION_ENABLED: no
+      SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED: no
+      SPARK_SSL_ENABLED: no
+      SPARK_USER: spark
+      SPARK_MASTER_PORT: 7077
+      SPARK_MASTER_WEBUI_PORT: 8080
+
+  spark-worker:
+    hostname: spark-worker
+    container_name: spark-worker
+    image: docker.io/bitnami/spark:3.2.4
+    ports:
+      - "18081:8081"
+    environment:
+      SPARK_MODE: worker
+      SPARK_MASTER_URL: spark://spark-master:7077
+      SPARK_WORKER_MEMORY: 2G
+      SPARK_WORKER_CORES: 2
+      SPARK_RPC_AUTHENTICATION_ENABLED: no
+      SPARK_RPC_ENCRYPTION_ENABLED: no
+      SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED: no
+      SPARK_SSL_ENABLED: no
+      SPARK_USER: spark
+      SPARK_WORKER_WEBUI_PORT: 8081
+    depends_on:
+      - spark-master
