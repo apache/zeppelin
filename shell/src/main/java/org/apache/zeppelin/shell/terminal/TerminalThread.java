@@ -40,9 +40,11 @@ public class TerminalThread extends Thread {
   private Server jettyServer = new Server();
 
   private int port = 0;
+  private String allwedOrigin;
 
-  public TerminalThread(int port) {
+  public TerminalThread(int port, String allwedOrigin) {
     this.port = port;
+    this.allwedOrigin = allwedOrigin;
   }
 
   public void run() {
@@ -76,7 +78,7 @@ public class TerminalThread extends Thread {
       ServerContainer container = WebSocketServerContainerInitializer.configureContext(context);
       container.addEndpoint(
           ServerEndpointConfig.Builder.create(TerminalSocket.class, "/")
-              .configurator(new TerminalSessionConfigurator())
+              .configurator(new TerminalSessionConfigurator(allwedOrigin))
               .build());
       jettyServer.start();
       jettyServer.join();

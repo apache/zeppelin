@@ -63,6 +63,7 @@ public class TerminalInterpreter extends KerberosInterpreter {
   private InterpreterContext intpContext;
 
   private int terminalPort = 0;
+  private String terminalHostIp;
 
   // Internal and external IP mapping of zeppelin server
   private HashMap<String, String> mapIpMapping = new HashMap<>();
@@ -109,7 +110,11 @@ public class TerminalInterpreter extends KerberosInterpreter {
     if (null == terminalThread) {
       try {
         terminalPort = RemoteInterpreterUtils.findRandomAvailablePortOnAllLocalInterfaces();
-        terminalThread = new TerminalThread(terminalPort);
+        terminalHostIp =  RemoteInterpreterUtils.findAvailableHostAddress();
+        LOGGER.info("Terminal host IP: " + terminalHostIp);
+        LOGGER.info("Terminal port: " + terminalPort);
+        String allowedOrigin = generateOrigin(terminalHostIp, terminalPort);
+        terminalThread = new TerminalThread(terminalPort, allowedOrigin);
         terminalThread.start();
       } catch (IOException e) {
         LOGGER.error(e.getMessage(), e);
@@ -136,20 +141,19 @@ public class TerminalInterpreter extends KerberosInterpreter {
       mapIpMapping = gson.fromJson(strIpMapping, new TypeToken<Map<String, String>>(){}.getType());
     }
 
-    createTerminalDashboard(context.getNoteId(), context.getParagraphId(), terminalPort);
+    createTerminalDashboard(context.getNoteId(), context.getParagraphId(), terminalHostIp, terminalPort);
 
     return new InterpreterResult(Code.SUCCESS);
   }
 
-  public void createTerminalDashboard(String noteId, String paragraphId, int port) {
-    String hostName = "", hostIp = "";
+  public void createTerminalDashboard(String noteId, String paragraphId, String hostIp, int port) {
+    String hostName = "";
     URL urlTemplate = Resources.getResource("ui_templates/terminal-dashboard.jinja");
     String template = null;
     try {
       template = Resources.toString(urlTemplate, Charsets.UTF_8);
       InetAddress addr = InetAddress.getLocalHost();
       hostName = addr.getHostName().toString();
-      hostIp = RemoteInterpreterUtils.findAvailableHostAddress();
 
       // Internal and external IP mapping of zeppelin server
       if (mapIpMapping.containsKey(hostIp)) {
@@ -164,7 +168,7 @@ public class TerminalInterpreter extends KerberosInterpreter {
     Jinjava jinjava = new Jinjava();
     HashMap<String, Object> jinjaParams = new HashMap();
     Date now = new Date();
-    String terminalServerUrl = "http://" + hostIp + ":" + port +
+    String terminalServerUrl = generateOrigin(hostIp, port) +
         "?noteId=" + noteId + "&paragraphId=" + paragraphId + "&t=" + now.getTime();
     jinjaParams.put("HOST_NAME", hostName);
     jinjaParams.put("HOST_IP", hostIp);
@@ -181,6 +185,10 @@ public class TerminalInterpreter extends KerberosInterpreter {
     } catch (IOException e) {
       LOGGER.error(e.getMessage(), e);
     }
+  }
+
+  private String generateOrigin(String hostIp, int port) {
+    return "http://" + hostIp + ":" + port;
   }
 
   @Override

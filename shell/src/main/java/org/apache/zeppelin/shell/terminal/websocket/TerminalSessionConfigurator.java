@@ -6,10 +6,16 @@ import org.slf4j.LoggerFactory;
 
 public class TerminalSessionConfigurator  extends Configurator {
   private static final Logger LOGGER = LoggerFactory.getLogger(TerminalSessionConfigurator.class);
+  private String allowedOrigin;
+
+  public TerminalSessionConfigurator(String allowedOrigin) {
+    this.allowedOrigin = allowedOrigin;
+  }
 
   @Override
   public boolean checkOrigin(String originHeaderValue) {
-    LOGGER.info("TerminalSessionConfigurator checkOrigin: " + originHeaderValue);
-    return super.checkOrigin(originHeaderValue);
+    boolean allowed = allowedOrigin.equals(originHeaderValue);
+    LOGGER.info("Checking origin for TerminalSessionConfigurator: " + originHeaderValue + " allowed: " + allowed);
+    return allowed;
   }
 }
