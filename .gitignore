@@ -143,3 +143,6 @@ tramp
 
 # pyenv file
 .python-version
+
+# Spark Binary File
+scripts/docker/zeppelin-quick-start/spark-*
