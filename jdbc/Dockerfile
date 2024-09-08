@@ -23,7 +23,7 @@ WORKDIR /zeppelin
 
 RUN chmod +x ./mvnw
 
-RUN ./mvnw package -am -pl zeppelin-interpreter-shaded,zeppelin-interpreter,shell -DskipTests
+RUN ./mvnw clean package -am -pl zeppelin-interpreter-shaded,zeppelin-interpreter,jdbc -DskipTests
 
 
 FROM openjdk:11
@@ -31,20 +31,20 @@ FROM openjdk:11
 COPY --from=builder /zeppelin/bin /zeppelin/bin/
 COPY --from=builder /zeppelin/conf /zeppelin/conf
 
-COPY --from=builder /zeppelin/interpreter/sh /zeppelin/interpreter/sh
+COPY --from=builder /zeppelin/interpreter/jdbc /zeppelin/interpreter/jdbc
 COPY --from=builder /zeppelin/zeppelin-interpreter-shaded/target /zeppelin/zeppelin-interpreter-shaded/target
 
 WORKDIR /zeppelin
 
-ENV SHELL_INTERPRETER_PORT=8081
+ENV JDBC_INTERPRETER_PORT=8082
 
 RUN chmod +x ./bin/interpreter.sh
 
 CMD ["./bin/interpreter.sh", \
-    "-d", "interpreter/sh", \
+    "-d", "./interpreter/jdbc", \
     "-c", "host.docker.internal", \
     "-p", "${INTERPRETER_EVENT_SERVER_PORT}", \
-    "-r", "${SHELL_INTERPRETER_PORT}:${SHELL_INTERPRETER_PORT}", \
-    "-i", "sh-shared_process", \
+    "-r", "${JDBC_INTERPRETER_PORT}:${JDBC_INTERPRETER_PORT}", \
+    "-i", "jdbc-shared_process", \
     "-l", "./local-repo", \
-    "-g", "sh"]
+    "-g", "jdbc"]
