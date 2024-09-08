@@ -28,7 +28,6 @@ import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.shell.terminal.TerminalSocketTest;
 import org.eclipse.jetty.util.component.LifeCycle;
-import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -351,7 +350,7 @@ class TerminalInterpreterTest extends BaseInterpreterTest {
     assertEquals("Connect failure", exception.getMessage());
   }
 
-  private static @NotNull ClientEndpointConfig getOriginRequestHeaderConfig(String origin) {
+  private static ClientEndpointConfig getOriginRequestHeaderConfig(String origin) {
     Configurator configurator = new Configurator() {
       @Override
       public void beforeRequest(Map<String, List<String>> headers) {

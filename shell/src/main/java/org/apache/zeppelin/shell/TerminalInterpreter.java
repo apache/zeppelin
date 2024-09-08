@@ -141,7 +141,8 @@ public class TerminalInterpreter extends KerberosInterpreter {
       mapIpMapping = gson.fromJson(strIpMapping, new TypeToken<Map<String, String>>(){}.getType());
     }
 
-    createTerminalDashboard(context.getNoteId(), context.getParagraphId(), terminalHostIp, terminalPort);
+    createTerminalDashboard(context.getNoteId(), context.getParagraphId(),
+        terminalHostIp, terminalPort);
 
     return new InterpreterResult(Code.SUCCESS);
   }
