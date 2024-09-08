@@ -247,6 +247,11 @@ public class TerminalInterpreter extends KerberosInterpreter {
   }
 
   @VisibleForTesting
+  public String getTerminalHostIp() {
+    return terminalHostIp;
+  }
+
+  @VisibleForTesting
   public boolean terminalThreadIsRunning() {
     return terminalThread.isRunning();
   }

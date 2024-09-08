@@ -17,11 +17,18 @@
 
 package org.apache.zeppelin.shell;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import javax.websocket.ClientEndpointConfig;
+import javax.websocket.ClientEndpointConfig.Builder;
+import javax.websocket.ClientEndpointConfig.Configurator;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.shell.terminal.TerminalSocketTest;
 import org.eclipse.jetty.util.component.LifeCycle;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -81,11 +88,17 @@ class TerminalInterpreterTest extends BaseInterpreterTest {
       boolean running = terminal.terminalThreadIsRunning();
       assertTrue(running);
 
-      URI uri = URI.create("ws://localhost:" + terminal.getTerminalPort() + "/terminal/");
+      URI webSocketConnectionUri = URI.create("ws://" + terminal.getTerminalHostIp() +
+          ":" + terminal.getTerminalPort() + "/terminal/");
+      LOGGER.info("webSocketConnectionUri: " + webSocketConnectionUri);
+      String origin = "http://" + terminal.getTerminalHostIp() + ":" + terminal.getTerminalPort();
+      LOGGER.info("origin: " + origin);
+      ClientEndpointConfig clientEndpointConfig = getOriginRequestHeaderConfig(origin);
       webSocketContainer = ContainerProvider.getWebSocketContainer();
 
       // Attempt Connect
-      session = webSocketContainer.connectToServer(TerminalSocketTest.class, uri);
+      session = webSocketContainer.connectToServer(
+          TerminalSocketTest.class, clientEndpointConfig, webSocketConnectionUri);
 
       // Send Start terminal service message
       String terminalReadyCmd = String.format("{\"type\":\"TERMINAL_READY\"," +
@@ -161,11 +174,17 @@ class TerminalInterpreterTest extends BaseInterpreterTest {
       boolean running = terminal.terminalThreadIsRunning();
       assertTrue(running);
 
-      URI uri = URI.create("ws://localhost:" + terminal.getTerminalPort() + "/terminal/");
+      URI webSocketConnectionUri = URI.create("ws://" + terminal.getTerminalHostIp() +
+          ":" + terminal.getTerminalPort() + "/terminal/");
+      LOGGER.info("webSocketConnectionUri: " + webSocketConnectionUri);
+      String origin = "http://" + terminal.getTerminalHostIp() + ":" + terminal.getTerminalPort();
+      LOGGER.info("origin: " + origin);
+      ClientEndpointConfig clientEndpointConfig = getOriginRequestHeaderConfig(origin);
       webSocketContainer = ContainerProvider.getWebSocketContainer();
 
       // Attempt Connect
-      session = webSocketContainer.connectToServer(TerminalSocketTest.class, uri);
+      session = webSocketContainer.connectToServer(
+          TerminalSocketTest.class, clientEndpointConfig, webSocketConnectionUri);
 
       // Send Start terminal service message
       String terminalReadyCmd = String.format("{\"type\":\"TERMINAL_READY\"," +
@@ -228,5 +247,18 @@ class TerminalInterpreterTest extends BaseInterpreterTest {
         }
       }
     }
+  }
+
+  private static @NotNull ClientEndpointConfig getOriginRequestHeaderConfig(String origin) {
+    Configurator configurator = new Configurator() {
+      @Override
+      public void beforeRequest(Map<String, List<String>> headers) {
+        headers.put("Origin", Arrays.asList(origin));
+      }
+    };
+    ClientEndpointConfig clientEndpointConfig = Builder.create()
+        .configurator(configurator)
+        .build();
+    return clientEndpointConfig;
   }
 }
