@@ -812,7 +812,8 @@ public class JDBCInterpreter extends KerberosInterpreter {
           // TODO: add async query optimizer checks
           // adding test code
           if (sqlToExecute.contains("fail_fast_kill")) {
-            cancel(context.getLocalProperties().put(CANCEL_REASON, "Fail Fast custom error"));
+            context.getLocalProperties().put(CANCEL_REASON, "Fail Fast custom error")
+            cancel(context);
           }
 
 
