@@ -31,11 +31,11 @@ Zeppelin notebooks front-end built with Angular.
 
 Run the `npm install` command to install dependencies in the project directory.
 
-### Start Zeppelin server
+### Start Zeppelin Server
 
 [Run Zeppelin server](https://zeppelin.apache.org/contribution/contributions.html#run-zeppelin-server-in-development-mode) on `http://localhost:8080`.
 
-If you are using a custom port instead of the default(http://localhost:8080) or other network address, you can create `.env` file in the project directory and set `SERVER_PROXY`.
+If you are using a custom port instead of the default (`http://localhost:8080`) or other network address, you can create `.env` file in the project directory and set `SERVER_PROXY`.
 
 *.env*
 
@@ -43,15 +43,15 @@ If you are using a custom port instead of the default(http://localhost:8080) or 
 SERVER_PROXY=http://localhost:8080
 ```
 
-### Development server
+### Development Server
 
 Run `npm start` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
 
 ### Build
 
-Run `npm build` to build the project. The build artifacts will be stored in the `dist/` directory.
+Run `npm run build` to build the project. The build artifacts will be stored in the `dist/` directory.
 
-### Running unit tests
+### Running Unit Tests
 
 Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
 
@@ -134,7 +134,7 @@ In addition:
 - We use [Lodash](https://lodash.com/) [(MIT)](https://github.com/lodash/lodash/blob/master/LICENSE) to process complex data
 - We use [Monaco Editor](https://github.com/microsoft/monaco-editor) [(MIT)](https://github.com/microsoft/monaco-editor/blob/master/LICENSE.md) to make code editor
 
-### Coding style
+### Coding Style
 
 - We follow mainly the [Angular Style Guide](https://angular.io/guide/styleguide)
 - We use a 2 spaces indentation
@@ -260,7 +260,7 @@ Use we provide the function to wrap component styles to implement theming. You c
 });
 ```
 
-#### Imports order
+#### Imports Order
 
 Follow of the following imports order:
 
