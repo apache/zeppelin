@@ -809,6 +809,13 @@ public class JDBCInterpreter extends KerberosInterpreter {
             HiveUtils.startHiveMonitorThread(statement, context,
                     Boolean.parseBoolean(getProperty("hive.log.display", "true")), this);
           }
+          // TODO: add async query optimizer checks
+          // adding test code
+          if (sqlToExecute.contains("fail_fast_kill")) {
+            cancel(context.getLocalProperties().put(CANCEL_REASON, "Fail Fast custom error"));
+          }
+
+
           boolean isResultSetAvailable = statement.execute(sqlToExecute);
           getJDBCConfiguration(user).setConnectionInDBDriverPoolSuccessful(dbPrefix);
           if (isResultSetAvailable) {
