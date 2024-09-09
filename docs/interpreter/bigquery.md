@@ -53,6 +53,11 @@ limitations under the License.
     <td></td>
     <td>BigQuery SQL dialect (standardSQL or legacySQL). If empty, [query prefix](https://cloud.google.com/bigquery/docs/reference/standard-sql/enabling-standard-sql#sql-prefix) like '#standardSQL' can be used.</td>
   </tr>
+  <tr>
+    <td>zeppelin.bigquery.region</td>
+    <td></td>
+    <td>BigQuery dataset region (Needed for single region dataset)</td>
+  </tr>
 </table>
 
 
