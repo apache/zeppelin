@@ -37,6 +37,7 @@ import com.google.api.services.bigquery.model.TableFieldSchema;
 import com.google.api.services.bigquery.model.TableRow;
 import com.google.common.base.Function;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -278,7 +279,7 @@ public class BigQueryInterpreter extends Interpreter {
       GetQueryResults getRequest = service.jobs().getQueryResults(
           projectId,
           jobId);
-      if (region != null) {
+      if (StringUtils.isNotBlank(region)) {
         getRequest = getRequest.setLocation(region);
       }
       return getPages(getRequest);
