@@ -21,5 +21,12 @@ limitations under the License.
 
 # What is Personalized Mode? 
 
+Personalize your analysis result by switching the note to Personal Mode.
+
+This enables two different users to change the view of the same paragraph's result with different view even owner change paragraph and run it again.
+
+Currently, there are several bugs with this feature::
+[Apache Zeppelin Open Issues](https://issues.apache.org/jira/projects/ZEPPELIN/issues/ZEPPELIN-4293?filter=allopenissues)
+
 <div id="toc"></div>
 
