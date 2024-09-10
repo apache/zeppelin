@@ -89,16 +89,13 @@ public class IOHelper {
         "libpty/linux/x86/libpty.so", "libpty/linux/x86-64/libpty.so",
         "libpty/linux/aarch64/libpty.so", "libpty/linux/arm/libpty.so",
         "libpty/linux/ppc64le/libpty.so", "libpty/linux/mips64el/libpty.so");
-    List<String> macosx = Arrays.asList(
-        "libpty/darwin/libpty.dylib", "libpty/darwin/pty4j-unix-spawn-helper");
+    List<String> macosx = Arrays.asList("libpty/darwin/libpty.dylib");
     List<String> win_x86 = Arrays.asList(
         "libpty/win/x86/winpty-agent.exe", "libpty/win/x86/winpty.dll");
     List<String> win_x86_64 = Arrays.asList(
-        "libpty/win/x86-64/conpty.dll", "libpty/win/x86-64/OpenConsole.exe",
         "libpty/win/x86-64/cyglaunch.exe", "libpty/win/x86-64/win-helper.dll",
         "libpty/win/x86-64/winpty-agent.exe", "libpty/win/x86-64/winpty.dll");
     List<String> win_aarch64 = Arrays.asList(
-        "libpty/win/aarch64/conpty.dll", "libpty/win/aarch64/OpenConsole.exe",
         "libpty/win/aarch64/win-helper.dll", "libpty/win/aarch64/winpty-agent.exe",
         "libpty/win/aarch64/winpty.dll");
 
