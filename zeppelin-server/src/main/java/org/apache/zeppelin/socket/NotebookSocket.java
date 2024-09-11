@@ -44,9 +44,7 @@ public class NotebookSocket {
   }
 
   public String getHeader(String key) {
-    String headerValue = String.valueOf(headers.get(key));
-    LOGGER.debug("Getting header: {} with value: {}", key, headerValue);
-    return headerValue;
+      return String.valueOf(headers.get(key));
   }
 
   public void send(String serializeMessage) throws IOException {
@@ -58,7 +56,6 @@ public class NotebookSocket {
   }
 
   public String getUser() {
-    LOGGER.debug("Getting user: {}", user);
     return user;
   }
 
