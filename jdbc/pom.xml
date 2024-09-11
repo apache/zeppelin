@@ -46,6 +46,12 @@
 
   <dependencies>
 
+    <dependency>
+      <groupId>org.json</groupId>
+      <artifactId>json</artifactId>
+      <version>20210307</version>
+    </dependency>
+
 	<dependency>
       <groupId>org.postgresql</groupId>
       <artifactId>postgresql</artifactId>
