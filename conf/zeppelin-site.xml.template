@@ -56,6 +56,12 @@
 </property>
 
 <property>
+  <name>zeppelin.default.ui</name>
+  <value>new</value>
+  <description>Default UI for Zeppelin. Options: classic or new</description>
+</property>
+
+<property>
   <name>zeppelin.notebook.dir</name>
   <value>notebook</value>
   <description>path or URI for notebook persist</description>
