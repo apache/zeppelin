@@ -51,8 +51,14 @@
       <artifactId>json</artifactId>
       <version>20210307</version>
     </dependency>
+    <dependency>
+      <groupId>org.codehaus.jettison</groupId>
+      <artifactId>jettison</artifactId>
+      <version>1.4.1</version>
+    </dependency>
 
-	<dependency>
+
+    <dependency>
       <groupId>org.postgresql</groupId>
       <artifactId>postgresql</artifactId>
       <version>${postgresql.version}</version>
