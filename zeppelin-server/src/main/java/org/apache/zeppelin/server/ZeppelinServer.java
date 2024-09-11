@@ -63,6 +63,7 @@ import org.apache.shiro.web.servlet.ShiroFilter;
 import org.apache.zeppelin.cluster.ClusterManagerServer;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
+import org.apache.zeppelin.conf.ZeppelinConfiguration.DEFAULT_UI;
 import org.apache.zeppelin.display.AngularObjectRegistryListener;
 import org.apache.zeppelin.healthcheck.HealthChecks;
 import org.apache.zeppelin.helium.ApplicationEventListener;
@@ -132,7 +133,8 @@ import org.slf4j.LoggerFactory;
 /** Main class of Zeppelin. */
 public class ZeppelinServer implements AutoCloseable {
   private static final Logger LOGGER = LoggerFactory.getLogger(ZeppelinServer.class);
-  private static final String WEB_APP_CONTEXT_CLASSIC = "/classic";
+  private static final String NON_DEFAULT_NEW_UI_WEB_APP_CONTEXT_PATH = "/new";
+  private static final String NON_DEFAULT_CLASSIC_UI_WEB_APP_CONTEXT_PATH = "/classic";
   public static final String DEFAULT_SERVICE_LOCATOR_NAME = "shared-locator";
 
   private final AtomicBoolean duringShutdown = new AtomicBoolean(false);
@@ -141,6 +143,8 @@ public class ZeppelinServer implements AutoCloseable {
   private final Server jettyWebServer;
   private final ServiceLocator sharedServiceLocator;
   private final ConfigStorage storage;
+  private final String classicWebAppContextPath;
+  private final String newWebAppContextPath;
 
   public ZeppelinServer(ZeppelinConfiguration zConf) throws IOException {
     this(zConf, DEFAULT_SERVICE_LOCATOR_NAME);
@@ -157,6 +161,13 @@ public class ZeppelinServer implements AutoCloseable {
     jettyWebServer = setupJettyServer();
     sharedServiceLocator = ServiceLocatorFactory.getInstance().create(serviceLocatorName);
     storage = ConfigStorage.createConfigStorage(zConf);
+    if (isNewUiDefault(zConf)) {
+      classicWebAppContextPath = NON_DEFAULT_CLASSIC_UI_WEB_APP_CONTEXT_PATH;
+      newWebAppContextPath = zConf.getServerContextPath();
+    } else {
+      classicWebAppContextPath = zConf.getServerContextPath();
+      newWebAppContextPath = NON_DEFAULT_NEW_UI_WEB_APP_CONTEXT_PATH;
+    }
   }
 
   public void startZeppelin() {
@@ -226,8 +237,8 @@ public class ZeppelinServer implements AutoCloseable {
         });
 
     // Multiple Web UI
-    final WebAppContext defaultWebApp = setupWebAppContext(contexts, zConf, zConf.getString(ConfVars.ZEPPELIN_ANGULAR_WAR), zConf.getServerContextPath());
-    final WebAppContext classicWebApp = setupWebAppContext(contexts, zConf, zConf.getString(ConfVars.ZEPPELIN_WAR), WEB_APP_CONTEXT_CLASSIC);
+    final WebAppContext defaultWebApp = setupWebAppContext(contexts, zConf, zConf.getString(ConfVars.ZEPPELIN_ANGULAR_WAR), newWebAppContextPath);
+    final WebAppContext classicWebApp = setupWebAppContext(contexts, zConf, zConf.getString(ConfVars.ZEPPELIN_WAR), classicWebAppContextPath);
 
     initWebApp(defaultWebApp);
     initWebApp(classicWebApp);
@@ -333,6 +344,7 @@ public class ZeppelinServer implements AutoCloseable {
       }
     }
   }
+
   private void initMetrics() {
     if (zConf.isJMXEnabled()) {
       Metrics.addRegistry(new JmxMeterRegistry(JmxConfig.DEFAULT, Clock.SYSTEM));
@@ -348,7 +360,6 @@ public class ZeppelinServer implements AutoCloseable {
     new UptimeMetrics().bindTo(Metrics.globalRegistry);
     new JVMInfoBinder().bindTo(Metrics.globalRegistry);
   }
-
   public void shutdown(int exitCode) {
     if (!duringShutdown.getAndSet(true)) {
       LOGGER.info("Shutting down Zeppelin Server ... - ExitCode {}", exitCode);
@@ -673,6 +684,10 @@ public class ZeppelinServer implements AutoCloseable {
 
     // Notebook server
     setupNotebookServer(webApp);
+  }
+
+  private static boolean isNewUiDefault(ZeppelinConfiguration zConf) {
+    return zConf.getDefaultUi() == DEFAULT_UI.NEW;
   }
 
   @Override

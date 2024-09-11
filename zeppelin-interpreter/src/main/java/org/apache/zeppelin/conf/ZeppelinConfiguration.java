@@ -80,6 +80,11 @@ public class ZeppelinConfiguration {
     DOCKER
   }
 
+  public enum DEFAULT_UI {
+    NEW,
+    CLASSIC
+  }
+
   // private constructor, so that it is singleton.
   private ZeppelinConfiguration(@Nullable String filename) {
      try {
@@ -903,6 +908,10 @@ public class ZeppelinConfiguration {
 
   public boolean isPrometheusMetricEnabled() {
     return getBoolean(ConfVars.ZEPPELIN_METRIC_ENABLE_PROMETHEUS);
+  }
+
+  public DEFAULT_UI getDefaultUi() {
+    return DEFAULT_UI.valueOf(getString(ConfVars.ZEPPELIN_DEFAULT_UI).toUpperCase());
   }
 
   /**
