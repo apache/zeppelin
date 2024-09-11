@@ -965,6 +965,8 @@ public class ZeppelinConfiguration {
     ZEPPELIN_WAR("zeppelin.war", "zeppelin-web/dist"),
     ZEPPELIN_ANGULAR_WAR("zeppelin.angular.war", "zeppelin-web-angular/dist/zeppelin"),
     ZEPPELIN_WAR_TEMPDIR("zeppelin.war.tempdir", "webapps"),
+    // "new" or "classic"
+    ZEPPELIN_DEFAULT_UI("zeppelin.default.ui", "new"),
     ZEPPELIN_JMX_ENABLE("zeppelin.jmx.enable", false),
     ZEPPELIN_JMX_PORT("zeppelin.jmx.port", 9996),
 
