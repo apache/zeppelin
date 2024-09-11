@@ -34,6 +34,7 @@ export class HeaderComponent extends MessageListenersManager implements OnInit, 
   connectStatus = 'error';
   noteListVisible = false;
   queryStr: string | null = null;
+  classicUiHref: string;
 
   about() {
     this.nzModalService.create({
@@ -69,6 +70,7 @@ export class HeaderComponent extends MessageListenersManager implements OnInit, 
     private cdr: ChangeDetectorRef
   ) {
     super(messageService);
+    this.classicUiHref = this.resolveClassicUiHref();
   }
 
   ngOnInit() {
@@ -97,5 +99,13 @@ export class HeaderComponent extends MessageListenersManager implements OnInit, 
     this.destroy$.next();
     this.destroy$.complete();
     super.ngOnDestroy();
+  }
+
+  private resolveClassicUiHref() {
+    if (location.pathname === '/') {
+      return '/classic';
+    } else {
+      return '/';
+    }
   }
 }
