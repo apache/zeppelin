@@ -13,7 +13,6 @@
 # metals
 .bloop
 .metals
-.venv
 
 # interpreter temp files
 derby.log
@@ -144,3 +143,6 @@ tramp
 
 # pyenv file
 .python-version
+
+# python venv
+.venv
