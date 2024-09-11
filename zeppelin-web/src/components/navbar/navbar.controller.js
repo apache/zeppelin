@@ -270,6 +270,14 @@ function NavCtrl($scope, $rootScope, $http, $routeParams, $location,
     }
   });
 
+  $scope.resolveNewUiHref = function() {
+    if (location.pathname === '/') {
+      return '/new';
+    } else {
+      return '/';
+    }
+  };
+
   $rootScope.isRevisionSupported = function() {
     return revisionSupported;
   };
