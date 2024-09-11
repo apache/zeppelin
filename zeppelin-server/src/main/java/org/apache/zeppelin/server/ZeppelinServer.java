@@ -90,7 +90,6 @@ import org.apache.zeppelin.notebook.scheduler.NoSchedulerService;
 import org.apache.zeppelin.notebook.scheduler.QuartzSchedulerService;
 import org.apache.zeppelin.notebook.scheduler.SchedulerService;
 import org.apache.zeppelin.plugin.PluginManager;
-import org.apache.zeppelin.rest.exception.WebApplicationExceptionMapper;
 import org.apache.zeppelin.search.LuceneSearch;
 import org.apache.zeppelin.search.NoSearchService;
 import org.apache.zeppelin.search.SearchService;
@@ -143,8 +142,8 @@ public class ZeppelinServer implements AutoCloseable {
   private final Server jettyWebServer;
   private final ServiceLocator sharedServiceLocator;
   private final ConfigStorage storage;
-  private final String classicWebAppContextPath;
-  private final String newWebAppContextPath;
+  private final String classicUiWebAppContextPath;
+  private final String newUiWebAppContextPath;
 
   public ZeppelinServer(ZeppelinConfiguration zConf) throws IOException {
     this(zConf, DEFAULT_SERVICE_LOCATOR_NAME);
@@ -162,11 +161,11 @@ public class ZeppelinServer implements AutoCloseable {
     sharedServiceLocator = ServiceLocatorFactory.getInstance().create(serviceLocatorName);
     storage = ConfigStorage.createConfigStorage(zConf);
     if (isNewUiDefault(zConf)) {
-      classicWebAppContextPath = NON_DEFAULT_CLASSIC_UI_WEB_APP_CONTEXT_PATH;
-      newWebAppContextPath = zConf.getServerContextPath();
+      classicUiWebAppContextPath = NON_DEFAULT_CLASSIC_UI_WEB_APP_CONTEXT_PATH;
+      newUiWebAppContextPath = zConf.getServerContextPath();
     } else {
-      classicWebAppContextPath = zConf.getServerContextPath();
-      newWebAppContextPath = NON_DEFAULT_NEW_UI_WEB_APP_CONTEXT_PATH;
+      classicUiWebAppContextPath = zConf.getServerContextPath();
+      newUiWebAppContextPath = NON_DEFAULT_NEW_UI_WEB_APP_CONTEXT_PATH;
     }
   }
 
@@ -237,11 +236,13 @@ public class ZeppelinServer implements AutoCloseable {
         });
 
     // Multiple Web UI
-    final WebAppContext defaultWebApp = setupWebAppContext(contexts, zConf, zConf.getString(ConfVars.ZEPPELIN_ANGULAR_WAR), newWebAppContextPath);
-    final WebAppContext classicWebApp = setupWebAppContext(contexts, zConf, zConf.getString(ConfVars.ZEPPELIN_WAR), classicWebAppContextPath);
+    final WebAppContext newUiWebApp = setupWebAppContext(contexts, zConf, zConf.getString(ConfVars.ZEPPELIN_ANGULAR_WAR),
+        newUiWebAppContextPath);
+    final WebAppContext classicUiWebApp = setupWebAppContext(contexts, zConf, zConf.getString(ConfVars.ZEPPELIN_WAR),
+        classicUiWebAppContextPath);
 
-    initWebApp(defaultWebApp);
-    initWebApp(classicWebApp);
+    initWebApp(newUiWebApp);
+    initWebApp(classicUiWebApp);
 
     NotebookRepo repo =
         ServiceLocatorUtilities.getService(sharedServiceLocator, NotebookRepo.class.getName());
