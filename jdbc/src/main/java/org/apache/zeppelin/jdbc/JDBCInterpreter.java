@@ -871,10 +871,11 @@ public class JDBCInterpreter extends KerberosInterpreter {
             if (response.isPreSubmitFail()) {
               String outputMessage = response.getMessage();
               String userName = getUser(context);
-              System.out.println(userName);
+              context.out.write(userName);
               StringBuilder finalOutput = new StringBuilder();
 
               if (response.isFailFast()) {
+                context.out.write("Fail Fast custom error");
                 JSONObject jsonObject = new JSONObject(outputMessage);
                 finalOutput.append("The following TABLE(s) used in the query are not using partition filter:\n");
 
@@ -907,20 +908,22 @@ public class JDBCInterpreter extends KerberosInterpreter {
                 }
               }
               finalOutput.append(userName);
+              context.out.write(finalOutput.toString());
               context.getLocalProperties().put(CANCEL_REASON, finalOutput.toString());
               cancel(context);
               return new InterpreterResult(Code.ERROR, finalOutput.toString());
             }
 
           } catch (Exception e) {
+            context.out.write("Error occurred while sending request");
             System.err.println("Error occurred while sending request: " + e.getMessage());
             e.printStackTrace();
           }
 
-          if (sqlToExecute.contains("fail_fast_kill")) {
-            context.getLocalProperties().put(CANCEL_REASON, "Fail Fast custom error");
-            cancel(context);
-          }
+//          if (sqlToExecute.contains("fail_fast_kill")) {
+//            context.getLocalProperties().put(CANCEL_REASON, "Fail Fast custom error");
+//            cancel(context);
+//          }
 
 
           boolean isResultSetAvailable = statement.execute(sqlToExecute);
