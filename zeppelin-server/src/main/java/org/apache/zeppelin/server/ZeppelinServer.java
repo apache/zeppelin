@@ -142,8 +142,6 @@ public class ZeppelinServer implements AutoCloseable {
   private final Server jettyWebServer;
   private final ServiceLocator sharedServiceLocator;
   private final ConfigStorage storage;
-  private final String classicUiWebAppContextPath;
-  private final String newUiWebAppContextPath;
 
   public ZeppelinServer(ZeppelinConfiguration zConf) throws IOException {
     this(zConf, DEFAULT_SERVICE_LOCATOR_NAME);
@@ -160,13 +158,7 @@ public class ZeppelinServer implements AutoCloseable {
     jettyWebServer = setupJettyServer();
     sharedServiceLocator = ServiceLocatorFactory.getInstance().create(serviceLocatorName);
     storage = ConfigStorage.createConfigStorage(zConf);
-    if (isNewUiDefault(zConf)) {
-      classicUiWebAppContextPath = NON_DEFAULT_CLASSIC_UI_WEB_APP_CONTEXT_PATH;
-      newUiWebAppContextPath = zConf.getServerContextPath();
-    } else {
-      classicUiWebAppContextPath = zConf.getServerContextPath();
-      newUiWebAppContextPath = NON_DEFAULT_NEW_UI_WEB_APP_CONTEXT_PATH;
-    }
+
   }
 
   public void startZeppelin() {
@@ -236,6 +228,15 @@ public class ZeppelinServer implements AutoCloseable {
         });
 
     // Multiple Web UI
+    String classicUiWebAppContextPath;
+    String newUiWebAppContextPath;
+    if (isNewUiDefault(zConf)) {
+      classicUiWebAppContextPath = NON_DEFAULT_CLASSIC_UI_WEB_APP_CONTEXT_PATH;
+      newUiWebAppContextPath = zConf.getServerContextPath();
+    } else {
+      classicUiWebAppContextPath = zConf.getServerContextPath();
+      newUiWebAppContextPath = NON_DEFAULT_NEW_UI_WEB_APP_CONTEXT_PATH;
+    }
     final WebAppContext newUiWebApp = setupWebAppContext(contexts, zConf, zConf.getString(ConfVars.ZEPPELIN_ANGULAR_WAR),
         newUiWebAppContextPath);
     final WebAppContext classicUiWebApp = setupWebAppContext(contexts, zConf, zConf.getString(ConfVars.ZEPPELIN_WAR),
@@ -345,7 +346,6 @@ public class ZeppelinServer implements AutoCloseable {
       }
     }
   }
-
   private void initMetrics() {
     if (zConf.isJMXEnabled()) {
       Metrics.addRegistry(new JmxMeterRegistry(JmxConfig.DEFAULT, Clock.SYSTEM));
