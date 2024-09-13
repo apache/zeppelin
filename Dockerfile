@@ -24,7 +24,7 @@ RUN echo "unsafe-perm=true" > ~/.npmrc && \
     ./mvnw -B package -DskipTests -Pbuild-distr -Pspark-3.3 -Pinclude-hadoop -Phadoop3 -Pspark-scala-2.12 -Pweb-classic -Pweb-dist && \
     # Example with doesn't compile all interpreters
     # ./mvnw -B package -DskipTests -Pbuild-distr -Pspark-3.2 -Pinclude-hadoop -Phadoop3 -Pspark-scala-2.12 -Pweb-classic -Pweb-dist -pl '!groovy,!livy,!hbase,!file,!flink' && \
-    mv /workspace/zeppelin/zeppelin-distribution/target/zeppelin-*/zeppelin-* /opt/zeppelin/ && \
+    mv /workspace/zeppelin/zeppelin-distribution/target/zeppelin-*-bin/zeppelin-*-bin /opt/zeppelin/ && \
     # Removing stuff saves time, because docker creates a temporary layer
     rm -rf ~/.m2 && \
     rm -rf /workspace/zeppelin/*
