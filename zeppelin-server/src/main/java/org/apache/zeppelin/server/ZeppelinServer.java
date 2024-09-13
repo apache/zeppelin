@@ -650,7 +650,7 @@ public class ZeppelinServer implements AutoCloseable {
       webApp.setTempDirectory(warTempDirectory);
     }
     // Explicit bind to root
-    webApp.addServlet(new ServletHolder(new IndexHtmlServlet(zConf)), "/index.html");
+    webApp.addServlet(new ServletHolder(new IndexHtmlServlet(zConf, contextPath)), "/index.html");
     contexts.addHandler(webApp);
 
     webApp.addFilter(new FilterHolder(new CorsFilter(zConf)), "/*", EnumSet.allOf(DispatcherType.class));
