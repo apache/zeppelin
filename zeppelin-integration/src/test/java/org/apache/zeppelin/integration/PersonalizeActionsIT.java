@@ -19,6 +19,7 @@ package org.apache.zeppelin.integration;
 import org.apache.zeppelin.AbstractZeppelinIT;
 import org.apache.zeppelin.MiniZeppelinServer;
 import org.apache.zeppelin.WebDriverManager;
+import org.apache.zeppelin.ZeppelinITUtils;
 import org.apache.zeppelin.test.DownloadUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
@@ -239,6 +240,7 @@ public class PersonalizeActionsIT extends AbstractZeppelinIT {
 
       pollingWait(By.xpath(getParagraphXPath(1) +
           "//button[contains(@uib-tooltip, 'Table')]"), MAX_BROWSER_TIMEOUT_SEC).click();
+      ZeppelinITUtils.sleep(1000, false);
       assertEquals("fa fa-table", manager.getWebDriver().findElement(By.xpath(getParagraphXPath(1)
           + "//button[contains(@class," +
           "'btn btn-default btn-sm ng-binding ng-scope active')]//i")).getAttribute("class"));
