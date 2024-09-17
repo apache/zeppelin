@@ -44,13 +44,13 @@ public class NotebookSocket {
   }
 
   public String getHeader(String key) {
-      return String.valueOf(headers.get(key));
+    return String.valueOf(headers.get(key));
   }
 
   public void send(String serializeMessage) throws IOException {
     session.getAsyncRemote().sendText(serializeMessage, result -> {
       if (result.getException() != null) {
-          LOGGER.error("Failed to send async message for User {} in Session {}: {}", this.user, this.session.getId(), result.getException());
+        LOGGER.error("Failed to send async message for User {} in Session {}: {}", this.user, this.session.getId(), result.getException());
       }
     });
   }
