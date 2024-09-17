@@ -376,7 +376,6 @@ public class JDBCInterpreter extends KerberosInterpreter {
 
   private static void sendRequest(HttpURLConnection connection, ValidationRequest request) throws Exception {
     try (OutputStream os = connection.getOutputStream()) {
-      // Manually convert the request object to a JSON string
       String jsonRequest = request.toJson();
       byte[] input = jsonRequest.getBytes("utf-8");
       os.write(input, 0, input.length);
@@ -909,7 +908,6 @@ public class JDBCInterpreter extends KerberosInterpreter {
               cancel(context);
               return new InterpreterResult(Code.ERROR, "Failed by Fail Fast");
             }
-
           } catch (Exception e) {
             String error = "Error occurred while sending request" + e.getMessage();
             String mess = e.getLocalizedMessage();

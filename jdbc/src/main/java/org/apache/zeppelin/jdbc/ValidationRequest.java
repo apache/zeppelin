@@ -10,7 +10,7 @@ public class ValidationRequest {
     }
 
     public String toJson() {
-        return "{\"queryText\":\"" + queryText + "\",\"user\":\"" + user + "\"}";
+        return "{\"query_text\":\"" + queryText + "\",\"user\":\"" + user + "\"}";
     }
 }
 
