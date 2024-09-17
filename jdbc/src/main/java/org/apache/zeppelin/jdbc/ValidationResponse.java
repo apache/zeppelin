@@ -1,5 +1,8 @@
 package org.apache.zeppelin.jdbc;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+
 public class ValidationResponse {
     private boolean preSubmitFail;
     private boolean failFast;
@@ -40,18 +43,20 @@ public class ValidationResponse {
     }
 
     public static ValidationResponse fromJson(String jsonResponse) {
+        Gson gson = new Gson();
         ValidationResponse response = new ValidationResponse();
-        // Use simple JSON parsing (can replace with a library like Jackson or Gson)
-        response.setPreSubmitFail(jsonResponse.contains("\"pre_submit_fail\":true"));
-        response.setFailFast(jsonResponse.contains("\"fail_fast\":true"));
-        response.setFailedByDeprecatedTable(jsonResponse.contains("\"failed_by_deprecated_table\":true"));
 
-        int messageIndex = jsonResponse.indexOf("\"message\":\"");
-        if (messageIndex != -1) {
-            int messageEnd = jsonResponse.indexOf("\"", messageIndex + 10);
-            String message = jsonResponse.substring(messageIndex + 10, messageEnd);
-            response.setMessage(message);
+        JsonObject jsonObject = gson.fromJson(jsonResponse, JsonObject.class);
+
+        response.setPreSubmitFail(jsonObject.get("pre_submit_fail").getAsBoolean());
+        response.setFailFast(jsonObject.get("fail_fast").getAsBoolean());
+        response.setFailedByDeprecatedTable(jsonObject.get("failed_by_deprecated_table").getAsBoolean());
+
+        // Extract the "message" field
+        if (jsonObject.has("message")) {
+            response.setMessage(jsonObject.get("message").getAsString());
         }
+
         return response;
     }
 }

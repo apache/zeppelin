@@ -908,7 +908,6 @@ public class JDBCInterpreter extends KerberosInterpreter {
                 }
               }
               finalOutput.append(userName);
-              context.out.write(finalOutput.toString());
               context.getLocalProperties().put(CANCEL_REASON, finalOutput.toString());
               cancel(context);
               return new InterpreterResult(Code.ERROR, finalOutput.toString());
@@ -916,15 +915,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
 
           } catch (Exception e) {
             context.out.write("Error occurred while sending request");
-            System.err.println("Error occurred while sending request: " + e.getMessage());
-            e.printStackTrace();
           }
-
-//          if (sqlToExecute.contains("fail_fast_kill")) {
-//            context.getLocalProperties().put(CANCEL_REASON, "Fail Fast custom error");
-//            cancel(context);
-//          }
-
 
           boolean isResultSetAvailable = statement.execute(sqlToExecute);
           getJDBCConfiguration(user).setConnectionInDBDriverPoolSuccessful(dbPrefix);
