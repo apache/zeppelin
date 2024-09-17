@@ -867,11 +867,14 @@ public class JDBCInterpreter extends KerberosInterpreter {
 
           ValidationRequest request = new ValidationRequest(sqlToExecute);
           try {
+            context.out.write("Sending request for validation");
             ValidationResponse response = sendValidationRequest(request);
+            context.out.write("Response received for validation");
             if (response.isPreSubmitFail()) {
+              context.out.write("Pre Submit custom error check");
               String outputMessage = response.getMessage();
-              String userName = getUser(context);
-              context.out.write(userName);
+//              String userName = getUser(context);
+//              context.out.write(userName);
               StringBuilder finalOutput = new StringBuilder();
 
               if (response.isFailFast()) {
@@ -907,7 +910,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
                   }
                 }
               }
-              finalOutput.append(userName);
+//              finalOutput.append(userName);
               context.getLocalProperties().put(CANCEL_REASON, finalOutput.toString());
               cancel(context);
               return new InterpreterResult(Code.ERROR, finalOutput.toString());

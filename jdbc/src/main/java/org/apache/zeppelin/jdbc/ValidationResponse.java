@@ -51,8 +51,6 @@ public class ValidationResponse {
         response.setPreSubmitFail(jsonObject.get("pre_submit_fail").getAsBoolean());
         response.setFailFast(jsonObject.get("fail_fast").getAsBoolean());
         response.setFailedByDeprecatedTable(jsonObject.get("failed_by_deprecated_table").getAsBoolean());
-
-        // Extract the "message" field
         if (jsonObject.has("message")) {
             response.setMessage(jsonObject.get("message").getAsString());
         }
