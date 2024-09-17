@@ -32,7 +32,6 @@
     <name>Zeppelin: Spark Parent</name>
     <description>Zeppelin Spark Support</description>
 
-    <!-- spark versions -->
     <properties>
         <spark.version>3.4.1</spark.version>
         <protobuf.version>2.5.0</protobuf.version>
