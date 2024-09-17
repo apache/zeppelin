@@ -42,8 +42,8 @@ Assuming the minimal install, there are several programs that we will need to in
 
 - git
 - openssh-server
-- OpenJDK 7
-- Maven 3.1+
+- OpenJDK 11
+- Maven
 
 For git, openssh-server, and OpenJDK 7 we will be using the apt package manager.
 
@@ -60,17 +60,10 @@ sudo apt-get install git
 sudo apt-get install openssh-server
 ```
 
-##### OpenJDK 7
+##### OpenJDK 11
 
 ```bash
-sudo apt-get install openjdk-7-jdk openjdk-7-jre-lib
-```
-*A note for those using Ubuntu 16.04*: To install `openjdk-7` on Ubuntu 16.04, one must add a repository.  [Source](http://askubuntu.com/questions/761127/ubuntu-16-04-and-openjdk-7)
-
-```bash
-sudo add-apt-repository ppa:openjdk-r/ppa
-sudo apt-get update
-sudo apt-get install openjdk-7-jdk openjdk-7-jre-lib
+sudo apt-get install openjdk-11-jdk
 ```
 
 ### Installing Zeppelin
@@ -92,26 +85,23 @@ cd zeppelin
 Package Zeppelin.
 
 ```bash
-./mvnw clean package -DskipTests -Pspark-3.2 -Dflink.version=1.1.3 -Pscala-2.11
+./mvnw clean package -DskipTests -Pspark-3.5 -Pflink-1.17
 ```
 
 `-DskipTests` skips build tests- you're not developing (yet), so you don't need to do tests, the clone version *should* build.
 
-`-Pspark-3.2` tells maven to build a Zeppelin with Spark 3.2.  This is important because Zeppelin has its own Spark interpreter and the versions must be the same.
+`-Pspark-3.5` tells maven to build a Zeppelin with Spark 3.5.  This is important because Zeppelin has its own Spark interpreter and the versions must be the same.
 
-`-Dflink.version=1.1.3` tells maven specifically to build Zeppelin with Flink version 1.1.3.
+`-Pflink-1.17` tells maven to build a Zeppelin with Flink 1.17.
 
--`-Pscala-2.11` tells maven to build with Scala v2.11.
-
-
-**Note:** You can build against any version of Spark that has a Zeppelin build profile available. The key is to make sure you check out the matching version of Spark to build. At the time of this writing, Spark 3.2 was the most recent Spark version available.
+**Note:** You can build against any version of Spark that has a Zeppelin build profile available. The key is to make sure you check out the matching version of Spark to build. At the time of this writing, Spark 3.5 was the most recent Spark version available.
 
 **Note:** On build failures. Having installed Zeppelin close to 30 times now, I will tell you that sometimes the build fails for seemingly no reason.
 As long as you didn't edit any code, it is unlikely the build is failing because of something you did. What does tend to happen, is some dependency that maven is trying to download is unreachable.  If your build fails on this step here are some tips:
 
 - Don't get discouraged.
 - Scroll up and read through the logs. There will be clues there.
-- Retry (that is, run the `./mvnw clean package -DskipTests -Pspark-3.2` again)
+- Retry (that is, run the `./mvnw clean package -DskipTests -Pspark-3.5` again)
 - If there were clues that a dependency couldn't be downloaded wait a few hours or even days and retry again. Open source software when compiling is trying to download all of the dependencies it needs, if a server is off-line there is nothing you can do but wait for it to come back.
 - Make sure you followed all of the steps carefully.
 - Ask the community to help you. Go [here](http://zeppelin.apache.org/community.html) and join the user mailing list. People are there to help you. Make sure to copy and paste the build output (everything that happened in the console) and include that in your message.
@@ -225,7 +215,7 @@ Building from source is recommended  where possible, for simplicity in this tuto
 To download the Flink Binary use `wget`
 
 ```bash
-wget "http://mirror.cogentco.com/pub/apache/flink/flink-1.16.2/flink-1.16.2-bin-scala_2.12.tgz"
+wget "https://archive.apache.org/dist/flink/flink-1.16.2/flink-1.16.2-bin-scala_2.12.tgz"
 tar -xzvf flink-1.16.2-bin-scala_2.12.tgz
 ```
 
@@ -243,13 +233,13 @@ If you wish to build Flink from source, the following will be instructive.  Note
 
 See the [Flink Installation guide](https://github.com/apache/flink/blob/master/README.md) for more detailed instructions.
 
-Return to the directory where you have been downloading, this tutorial assumes that is `$HOME`. Clone Flink,  check out release-1.1.3-rc2, and build.
+Return to the directory where you have been downloading, this tutorial assumes that is `$HOME`. Clone Flink,  check out release-1.16.2, and build.
 
 ```bash
 cd $HOME
 git clone https://github.com/apache/flink.git
 cd flink
-git checkout release-1.1.3-rc2
+git checkout release-1.16.2
 mvn clean install -DskipTests
 ```
 
@@ -271,8 +261,8 @@ If no task managers are present, restart the Flink cluster with the following co
 (if binaries)
 
 ```bash
-flink-1.1.3/bin/stop-cluster.sh
-flink-1.1.3/bin/start-cluster.sh
+flink-1.16.2/bin/stop-cluster.sh
+flink-1.16.2/bin/start-cluster.sh
 ```
 
 
@@ -295,12 +285,12 @@ Using binaries is also
 To download the Spark Binary use `wget`
 
 ```bash
-wget "https://dlcdn.apache.org/spark/spark-3.4.1/spark-3.4.1-bin-hadoop3.tgz"
-tar -xzvf spark-3.4.1-bin-hadoop3.tgz
-mv spark-3.4.1-bin-hadoop3 spark
+wget "https://archive.apache.org/dist/spark/spark-3.5.2/spark-3.5.2-bin-hadoop3.tgz"
+tar -xzvf spark-3.5.2-bin-hadoop3.tgz
+mv spark-3.5.2-bin-hadoop3 spark
 ```
 
-This will download Spark 3.4.1, compatible with Hadoop 3.  You do not have to install Hadoop for this binary to work, but if you are using Hadoop, please change `3` to your appropriate version.
+This will download Spark 3.5.2, compatible with Hadoop 3.  You do not have to install Hadoop for this binary to work, but if you are using Hadoop, please change `3` to your appropriate version.
 
 ###### Building From source
 
@@ -308,21 +298,18 @@ Spark is an extraordinarily large project, which takes considerable time to down
 
 See the [Spark Installation](https://github.com/apache/spark/blob/master/README.md) guide for more detailed instructions.
 
-Return to the directory where you have been downloading, this tutorial assumes that is $HOME. Clone Spark, check out branch-1.6, and build.
-**Note:** Recall, we're only checking out 1.6 because it is the most recent Spark for which a Zeppelin profile exists at
-  the time of writing. You are free to check out other version, just make sure you build Zeppelin against the correct version of Spark. However if you use Spark 2.0, the word count example will need to be changed as Spark 2.0 is not compatible with the following examples.
-
+Return to the directory where you have been downloading, this tutorial assumes that is $HOME. Clone Spark, check out branch-3.5, and build.
 
 ```bash
 cd $HOME
 ```
 
-Clone, check out, and build Spark version 1.6.x.
+Clone, check out, and build Spark version 3.5.x.
 
 ```bash
 git clone https://github.com/apache/spark.git
 cd spark
-git checkout branch-1.6
+git checkout branch-3.5
 mvn clean package -DskipTests
 ```
 

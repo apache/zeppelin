@@ -32,12 +32,7 @@
     <name>Zeppelin: Spark Parent</name>
     <description>Zeppelin Spark Support</description>
 
-    <properties>
-        <datanucleus.rdbms.version>3.2.9</datanucleus.rdbms.version>
-        <datanucleus.apijdo.version>3.2.6</datanucleus.apijdo.version>
-        <datanucleus.core.version>3.2.10</datanucleus.core.version>
-
-        <!-- spark versions -->
+    <properties><!-- spark versions -->
         <spark.version>3.4.1</spark.version>
         <protobuf.version>2.5.0</protobuf.version>
         <py4j.version>0.10.9.7</py4j.version>
