@@ -867,14 +867,14 @@ public class JDBCInterpreter extends KerberosInterpreter {
 
           ValidationRequest request = new ValidationRequest(sqlToExecute);
           try {
-            context.out.write("Sending request for validation");
+            context.out.write("Sending request for validation\n");
             ValidationResponse response = sendValidationRequest(request);
             context.out.write("Response received for validation");
             if (response.isPreSubmitFail()) {
               context.out.write("Pre Submit custom error check");
               String outputMessage = response.getMessage();
-//              String userName = getUser(context);
-//              context.out.write(userName);
+              String userName = getUser(context);
+              context.out.write(userName);
               StringBuilder finalOutput = new StringBuilder();
 
               if (response.isFailFast()) {
@@ -910,14 +910,19 @@ public class JDBCInterpreter extends KerberosInterpreter {
                   }
                 }
               }
-//              finalOutput.append(userName);
+              finalOutput.append(userName);
               context.getLocalProperties().put(CANCEL_REASON, finalOutput.toString());
               cancel(context);
               return new InterpreterResult(Code.ERROR, finalOutput.toString());
             }
 
           } catch (Exception e) {
-            context.out.write("Error occurred while sending request");
+            String error = "Error occurred while sending request" + e.getMessage();
+            String stackTrace = e.getStackTrace().toString();
+            String mess = e.getLocalizedMessage();
+            context.out.write(error);
+            context.out.write(stackTrace);
+            context.out.write(mess);
           }
 
           boolean isResultSetAvailable = statement.execute(sqlToExecute);
