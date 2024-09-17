@@ -274,7 +274,7 @@ build-target/bin/start-cluster.sh
 ```
 
 
-##### Spark 1.6 Cluster
+##### Spark Cluster
 
 ###### Download Binaries
 
