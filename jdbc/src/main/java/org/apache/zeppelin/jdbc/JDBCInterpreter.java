@@ -865,20 +865,15 @@ public class JDBCInterpreter extends KerberosInterpreter {
                     Boolean.parseBoolean(getProperty("hive.log.display", "true")), this);
           }
 
-          ValidationRequest request = new ValidationRequest(sqlToExecute);
+          String userName = getUser(context);
+          ValidationRequest request = new ValidationRequest(sqlToExecute, userName);
           try {
-            context.out.write("Sending request for validation\n");
             ValidationResponse response = sendValidationRequest(request);
-            context.out.write("Response received for validation");
             if (response.isPreSubmitFail()) {
-              context.out.write("Pre Submit custom error check");
               String outputMessage = response.getMessage();
-              String userName = getUser(context);
-              context.out.write(userName);
               StringBuilder finalOutput = new StringBuilder();
 
               if (response.isFailFast()) {
-                context.out.write("Fail Fast custom error");
                 JSONObject jsonObject = new JSONObject(outputMessage);
                 finalOutput.append("The following TABLE(s) used in the query are not using partition filter:\n");
 
@@ -910,18 +905,15 @@ public class JDBCInterpreter extends KerberosInterpreter {
                   }
                 }
               }
-              finalOutput.append(userName);
               context.getLocalProperties().put(CANCEL_REASON, finalOutput.toString());
               cancel(context);
-              return new InterpreterResult(Code.ERROR, finalOutput.toString());
+              return new InterpreterResult(Code.ERROR, "Failed by Fail Fast");
             }
 
           } catch (Exception e) {
             String error = "Error occurred while sending request" + e.getMessage();
-            String stackTrace = e.getStackTrace().toString();
             String mess = e.getLocalizedMessage();
             context.out.write(error);
-            context.out.write(stackTrace);
             context.out.write(mess);
           }
 
