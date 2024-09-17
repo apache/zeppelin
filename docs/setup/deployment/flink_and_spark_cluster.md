@@ -215,16 +215,16 @@ Building from source is recommended  where possible, for simplicity in this tuto
 To download the Flink Binary use `wget`
 
 ```bash
-wget "https://archive.apache.org/dist/flink/flink-1.16.2/flink-1.16.2-bin-scala_2.12.tgz"
-tar -xzvf flink-1.16.2-bin-scala_2.12.tgz
+wget "https://archive.apache.org/dist/flink/flink-1.17.1/flink-1.17.1-bin-scala_2.12.tgz"
+tar -xzvf flink-1.17.1-bin-scala_2.12.tgz
 ```
 
-This will download Flink 1.16.2.
+This will download Flink 1.17.1.
 
 Start the Flink Cluster.
 
 ```bash
-flink-1.16.2/bin/start-cluster.sh
+flink-1.17.1/bin/start-cluster.sh
 ```
 
 ###### Building From source
@@ -233,13 +233,13 @@ If you wish to build Flink from source, the following will be instructive.  Note
 
 See the [Flink Installation guide](https://github.com/apache/flink/blob/master/README.md) for more detailed instructions.
 
-Return to the directory where you have been downloading, this tutorial assumes that is `$HOME`. Clone Flink,  check out release-1.16.2, and build.
+Return to the directory where you have been downloading, this tutorial assumes that is `$HOME`. Clone Flink,  check out release-1.17.1, and build.
 
 ```bash
 cd $HOME
 git clone https://github.com/apache/flink.git
 cd flink
-git checkout release-1.16.2
+git checkout release-1.17.1
 mvn clean install -DskipTests
 ```
 
@@ -261,8 +261,8 @@ If no task managers are present, restart the Flink cluster with the following co
 (if binaries)
 
 ```bash
-flink-1.16.2/bin/stop-cluster.sh
-flink-1.16.2/bin/start-cluster.sh
+flink-1.17.1/bin/stop-cluster.sh
+flink-1.17.1/bin/start-cluster.sh
 ```
 
 
