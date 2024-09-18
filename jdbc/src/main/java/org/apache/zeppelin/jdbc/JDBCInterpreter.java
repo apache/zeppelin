@@ -151,7 +151,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
           "zeppelin.jdbc.concurrent.max_connection";
   private static final String DBCP_STRING = "jdbc:apache:commons:dbcp:";
   private static final String MAX_ROWS_KEY = "zeppelin.jdbc.maxRows";
-  private static final String FAIL_FAST_VALIDATE_URL = "http://localhost:8080/api/validate";
+  private static final String FAIL_FAST_VALIDATE_URL = "http://spark-event-listener.prd.meesho.int/api/validate";
 
   private static final Set<String> PRESTO_PROPERTIES = new HashSet<>(Arrays.asList(
           "user", "password",
@@ -877,6 +877,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
               StringBuilder finalOutput = new StringBuilder();
 
               if (response.isFailFast()) {
+                context.out.write("Query failed because partitions were not used in the query. Please ensure that partition filters are applied.\n");
                 JSONObject jsonObject = new JSONObject(outputMessage);
                 finalOutput.append("The following TABLE(s) used in the query are not using partition filter:\n");
 
@@ -897,6 +898,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
                   }
                 }
               } else if (response.isFailedByDeprecatedTable()) {
+                context.out.write("Query failed as Restricted table(s) are used\n");
                 JSONObject jsonObject = new JSONObject(outputMessage);
                 finalOutput.append("The following TABLE(s) used in the query are restricted:\n");
 
@@ -910,7 +912,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
               }
               context.getLocalProperties().put(CANCEL_REASON, finalOutput.toString());
               cancel(context);
-              return new InterpreterResult(Code.ERROR, "Failed by Fail Fast");
+              return new InterpreterResult(Code.ERROR);
             }
           } catch (Exception e) {
             String error = "Error occurred while sending request " + e.getMessage();
