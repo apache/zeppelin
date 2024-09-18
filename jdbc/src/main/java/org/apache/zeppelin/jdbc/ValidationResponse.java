@@ -48,13 +48,18 @@ public class ValidationResponse {
 
         JsonObject jsonObject = gson.fromJson(jsonResponse, JsonObject.class);
 
-        response.setPreSubmitFail(jsonObject.get("pre_submit_fail").getAsBoolean());
-        response.setFailFast(jsonObject.get("fail_fast").getAsBoolean());
-        response.setFailedByDeprecatedTable(jsonObject.get("failed_by_deprecated_table").getAsBoolean());
-        if (jsonObject.has("message")) {
+        if (jsonObject.has("pre_submit_fail") && !jsonObject.get("pre_submit_fail").isJsonNull()) {
+            response.setPreSubmitFail(jsonObject.get("pre_submit_fail").getAsBoolean());
+        }
+        if (jsonObject.has("fail_fast") && !jsonObject.get("fail_fast").isJsonNull()) {
+            response.setFailFast(jsonObject.get("fail_fast").getAsBoolean());
+        }
+        if (jsonObject.has("failed_by_deprecated_table") && !jsonObject.get("failed_by_deprecated_table").isJsonNull()) {
+            response.setFailedByDeprecatedTable(jsonObject.get("failed_by_deprecated_table").getAsBoolean());
+        }
+        if (jsonObject.has("message") && !jsonObject.get("message").isJsonNull()) {
             response.setMessage(jsonObject.get("message").getAsString());
         }
-
         return response;
     }
 }

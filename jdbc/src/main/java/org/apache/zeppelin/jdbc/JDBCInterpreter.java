@@ -865,7 +865,13 @@ public class JDBCInterpreter extends KerberosInterpreter {
           }
 
           String userName = getUser(context);
-          ValidationRequest request = new ValidationRequest(sqlToExecute, userName);
+          String sqlToValidate = sqlToExecute
+                  .replace("\n", "\\n")  // Newlines
+                  .replace("\r", "\\r")  // Carriage return
+                  .replace("\t", "\\t")  // Tabs
+                  .replace("\"", "\\\"") // Double quotes
+                  .replace("\\", "\\\\"); // Backslashes
+          ValidationRequest request = new ValidationRequest(sqlToValidate, userName);
           try {
             ValidationResponse response = sendValidationRequest(request);
             if (response.isPreSubmitFail()) {
@@ -909,7 +915,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
               return new InterpreterResult(Code.ERROR, "Failed by Fail Fast");
             }
           } catch (Exception e) {
-            String error = "Error occurred while sending request" + e.getMessage();
+            String error = "Error occurred while sending request " + e.getMessage();
             String mess = e.getLocalizedMessage();
             context.out.write(error);
             context.out.write(mess);
