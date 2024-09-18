@@ -866,11 +866,9 @@ public class JDBCInterpreter extends KerberosInterpreter {
 
           String userName = getUser(context);
           String sqlToValidate = sqlToExecute
-                  .replace("\n", "\\n")  // Newlines
-                  .replace("\r", "\\r")  // Carriage return
-                  .replace("\t", "\\t")  // Tabs
-                  .replace("\"", "\\\"") // Double quotes
-                  .replace("\\", "\\\\"); // Backslashes
+                  .replace("\n", " ")
+                  .replace("\r", " ")
+                  .replace("\t", " ");
           ValidationRequest request = new ValidationRequest(sqlToValidate, userName);
           try {
             ValidationResponse response = sendValidationRequest(request);
