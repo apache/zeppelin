@@ -90,15 +90,16 @@ def http_req_and_return_json(req):
                 + "dev/merge_zeppelin_pr.py to configure an OAuth token for making authenticated "
                 + "GitHub requests."
             )
+            sys.exit(-1)
         elif e.code == 401:
             print_error(
                 "GITHUB_OAUTH_KEY is invalid or expired. Please regenerate a new one with "
                 + "at least the 'public_repo' scope on https://github.com/settings/tokens and "
                 + "update your local settings before you try again."
             )
+            sys.exit(-1)
         else:
-            print_error("Unable to preform HTTP request. %s" % req)
-        sys.exit(-1)
+            raise e
 
 
 def http_put(url, data):
@@ -161,9 +162,18 @@ def merge_pr(pr_num, target_ref, title, body, pr_repo_desc):
     message = "%s\n\nCloses #%s from %s." % (message, pr_num, pr_repo_desc)
     message = "%s\n\nSigned-off-by: %s <%s>" % (message, committer_name, committer_email)
 
-    merge_pr_resp = http_put(
-        "%s/pulls/%s/merge" % (GITHUB_API_BASE, pr_num),
-        {"commit_title": title, "commit_message": message, "merge_method": "squash"})
+    merge_pr_resp = None
+    try:
+        merge_pr_resp = http_put(
+            "%s/pulls/%s/merge" % (GITHUB_API_BASE, pr_num),
+            {"commit_title": title, "commit_message": message, "merge_method": "squash"})
+    except HTTPError as e:
+        if e.code == 405:
+            fail("Merge pull request #%s is not allowed." % pr_num)
+
+    # we must do a git fetch to make the merged commit visible in local
+    run_cmd("git fetch %s %s" % (PUSH_REMOTE_NAME, target_ref))
+
     merge_hash = merge_pr_resp["sha"][:8]
     print("Pull request #%s merged!" % pr_num)
     print("Merge hash: %s" % merge_hash)
