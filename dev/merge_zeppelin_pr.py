@@ -151,9 +151,9 @@ def clean_up():
 
 # merge the requested PR and return the merge hash
 def merge_pr(pr_num, target_ref, title, body, pr_repo_desc):
-    # We remove @ symbols from the body to avoid triggering e-mails
+    # We replace @ symbols with <at> from the body to avoid triggering e-mails
     # to people every time someone creates a public fork of Zeppelin.
-    message = body.replace("@", "")
+    message = body.replace("@", "<at>")
 
     committer_name = run_cmd("git config --get user.name").strip()
     committer_email = run_cmd("git config --get user.email").strip()
