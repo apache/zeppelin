@@ -78,12 +78,11 @@ def bold_input(prompt) -> str:
     return input("\033[1m%s\033[0m" % prompt)
 
 
-def get_json(url):
+def http_req_and_return_json(req):
     try:
-        request = Request(url)
         if GITHUB_OAUTH_KEY:
-            request.add_header("Authorization", "token %s" % GITHUB_OAUTH_KEY)
-        return json.load(urlopen(request))
+            req.add_header("Authorization", "token %s" % GITHUB_OAUTH_KEY)
+        return json.load(urlopen(req))
     except HTTPError as e:
         if "X-RateLimit-Remaining" in e.headers and e.headers["X-RateLimit-Remaining"] == "0":
             print_error(
@@ -98,8 +97,18 @@ def get_json(url):
                 + "update your local settings before you try again."
             )
         else:
-            print_error("Unable to fetch URL, exiting: %s" % url)
+            print_error("Unable to preform HTTP request. %s" % req)
         sys.exit(-1)
+
+
+def http_put(url, data):
+    req = Request(url, data=json.dumps(data).encode('utf-8'), method="PUT")
+    return http_req_and_return_json(req)
+
+
+def http_get(url):
+    req = Request(url)
+    return http_req_and_return_json(req)
 
 
 def fail(msg):
@@ -141,83 +150,21 @@ def clean_up():
 
 # merge the requested PR and return the merge hash
 def merge_pr(pr_num, target_ref, title, body, pr_repo_desc):
-    pr_branch_name = "%s_MERGE_PR_%s" % (BRANCH_PREFIX, pr_num)
-    target_branch_name = "%s_MERGE_PR_%s_%s" % (BRANCH_PREFIX, pr_num, target_ref.upper())
-    run_cmd("git fetch %s pull/%s/head:%s" % (PR_REMOTE_NAME, pr_num, pr_branch_name))
-    run_cmd("git fetch %s %s:%s" % (PUSH_REMOTE_NAME, target_ref, target_branch_name))
-    run_cmd("git checkout %s" % target_branch_name)
-
-    had_conflicts = False
-    try:
-        run_cmd(["git", "merge", pr_branch_name, "--squash"])
-    except Exception as e:
-        msg = "Error merging: %s\nWould you like to manually fix-up this merge?" % e
-        continue_maybe(msg)
-        msg = "Okay, please fix any conflicts and 'git add' conflicting files... Finished?"
-        continue_maybe(msg)
-        had_conflicts = True
-
-    # First commit author should be considered as the primary author when the rank is the same
-    commit_authors = run_cmd(
-        ["git", "log", "HEAD..%s" % pr_branch_name, "--pretty=format:%an <%ae>", "--reverse"]
-    ).split("\n")
-    distinct_authors = sorted(
-        list(dict.fromkeys(commit_authors)), key=lambda x: commit_authors.count(x), reverse=True
-    )
-    primary_author = bold_input(
-        'Enter primary author in the format of "name <email>" [%s]: ' % distinct_authors[0]
-    )
-    if primary_author == "":
-        primary_author = distinct_authors[0]
-    else:
-        # When primary author is specified manually, de-dup it from author list and
-        # put it at the head of author list.
-        distinct_authors = list(filter(lambda x: x != primary_author, distinct_authors))
-        distinct_authors.insert(0, primary_author)
-
-    merge_message_flags = []
-
-    merge_message_flags += ["-m", title]
-    if body is not None:
-        # We remove @ symbols from the body to avoid triggering e-mails
-        # to people every time someone creates a public fork of Zeppelin.
-        merge_message_flags += ["-m", body.replace("@", "")]
+    # We remove @ symbols from the body to avoid triggering e-mails
+    # to people every time someone creates a public fork of Zeppelin.
+    message = body.replace("@", "")
 
     committer_name = run_cmd("git config --get user.name").strip()
     committer_email = run_cmd("git config --get user.email").strip()
 
-    if had_conflicts:
-        message = "This patch had conflicts when merged, resolved by\nCommitter: %s <%s>" % (
-            committer_name,
-            committer_email,
-        )
-        merge_message_flags += ["-m", message]
-
     # The string "Closes #%s" string is required for GitHub to correctly close the PR
-    merge_message_flags += ["-m", "Closes #%s from %s." % (pr_num, pr_repo_desc)]
+    message = "%s\n\nCloses #%s from %s." % (message, pr_num, pr_repo_desc)
+    message = "%s\n\nSigned-off-by: %s <%s>" % (message, committer_name, committer_email)
 
-    authors = "Authored-by:" if len(distinct_authors) == 1 else "Lead-authored-by:"
-    authors += " %s" % (distinct_authors.pop(0))
-    if len(distinct_authors) > 0:
-        authors += "\n" + "\n".join(["Co-authored-by: %s" % a for a in distinct_authors])
-    authors += "\n" + "Signed-off-by: %s <%s>" % (committer_name, committer_email)
-
-    merge_message_flags += ["-m", authors]
-
-    run_cmd(["git", "commit", '--author="%s"' % primary_author] + merge_message_flags)
-
-    continue_maybe(
-        "Merge complete (local ref %s). Push to %s?" % (target_branch_name, PUSH_REMOTE_NAME)
-    )
-
-    try:
-        run_cmd("git push %s %s:%s" % (PUSH_REMOTE_NAME, target_branch_name, target_ref))
-    except Exception as e:
-        clean_up()
-        print_error("Exception while pushing: %s" % e)
-
-    merge_hash = run_cmd("git rev-parse %s" % target_branch_name)[:8]
-    clean_up()
+    merge_pr_resp = http_put(
+        "%s/pulls/%s/merge" % (GITHUB_API_BASE, pr_num),
+        {"commit_title": title, "commit_message": message, "merge_method": "squash"})
+    merge_hash = merge_pr_resp["sha"][:8]
     print("Pull request #%s merged!" % pr_num)
     print("Merge hash: %s" % merge_hash)
     return merge_hash
@@ -579,15 +526,15 @@ def main():
     os.chdir(ZEPPELIN_HOME)
     original_head = get_current_ref()
 
-    branches = get_json("%s/branches" % GITHUB_API_BASE)
+    branches = http_get("%s/branches" % GITHUB_API_BASE)
     branch_names = list(filter(lambda x: x.startswith("branch-"), [x["name"] for x in branches]))
     # Assumes branch names can be sorted lexicographically
     branch_names = sorted(branch_names, reverse=True)
     branch_iter = iter(branch_names)
 
     pr_num = bold_input("Which pull request would you like to merge? (e.g. 34): ")
-    pr = get_json("%s/pulls/%s" % (GITHUB_API_BASE, pr_num))
-    pr_events = get_json("%s/issues/%s/events" % (GITHUB_API_BASE, pr_num))
+    pr = http_get("%s/pulls/%s" % (GITHUB_API_BASE, pr_num))
+    pr_events = http_get("%s/issues/%s/events" % (GITHUB_API_BASE, pr_num))
 
     url = pr["url"]
 
@@ -636,37 +583,8 @@ def main():
     base_ref = pr["head"]["ref"]
     pr_repo_desc = "%s/%s" % (user_login, base_ref)
 
-    # Merged pull requests don't appear as merged in the GitHub API;
-    # Instead, they're closed by committers.
-    merge_commits = [e for e in pr_events if e["event"] == "closed" and e["commit_id"] is not None]
-
-    if merge_commits and pr["state"] == "closed":
-        # A PR might have multiple merge commits, if it's reopened and merged again. We shall
-        # cherry-pick PRs in closed state with the latest merge hash.
-        # If the PR is still open(reopened), we shall not cherry-pick it but perform the normal
-        # merge as it could have been reverted earlier.
-        merge_commits = sorted(merge_commits, key=lambda x: x["created_at"])
-        merge_hash = merge_commits[-1]["commit_id"]
-        message = get_json("%s/commits/%s" % (GITHUB_API_BASE, merge_hash))["commit"]["message"]
-
-        print("Pull request %s has already been merged, assuming you want to backport" % pr_num)
-        commit_is_downloaded = (
-            run_cmd(["git", "rev-parse", "--quiet", "--verify", "%s^{commit}" % merge_hash]).strip()
-            != ""
-        )
-        if not commit_is_downloaded:
-            fail("Couldn't find any merge commit for #%s, you may need to update HEAD." % pr_num)
-
-        print("Found commit %s:\n%s" % (merge_hash, message))
-        cherry_pick(pr_num, merge_hash, next(branch_iter, branch_names[0]))
-        sys.exit(0)
-
     if not bool(pr["mergeable"]):
-        msg = (
-            "Pull request %s is not mergeable in its current form.\n" % pr_num
-            + "Continue? (experts only!)"
-        )
-        continue_maybe(msg)
+        fail("Pull request %s is not mergeable in its current form." % pr_num)
 
     if asf_jira is not None:
         jira_ids = re.findall("ZEPPELIN-[0-9]{3,6}", title)
