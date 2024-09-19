@@ -42,6 +42,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -587,10 +589,18 @@ public class JDBCInterpreter extends KerberosInterpreter {
   }
 
   private void validateConnectionUrl(String url) {
-    if (containsIgnoreCase(url, ALLOW_LOAD_LOCAL_IN_FILE_NAME) ||
-        containsIgnoreCase(url, AUTO_DESERIALIZE) ||
-        containsIgnoreCase(url, ALLOW_LOCAL_IN_FILE_NAME) ||
-        containsIgnoreCase(url, ALLOW_URL_IN_LOCAL_IN_FILE_NAME)) {
+    String decodedUrl;
+    try {
+      decodedUrl = URLDecoder.decode(url, "UTF-8").replaceAll("\\s", "");
+    } catch (UnsupportedEncodingException e) {
+      LOGGER.info("fail to decode url : {}. continue to get connection.", url, e);
+      return;
+    }
+
+    if (containsIgnoreCase(decodedUrl, ALLOW_LOAD_LOCAL_IN_FILE_NAME) ||
+            containsIgnoreCase(decodedUrl, AUTO_DESERIALIZE) ||
+            containsIgnoreCase(decodedUrl, ALLOW_LOCAL_IN_FILE_NAME) ||
+            containsIgnoreCase(decodedUrl, ALLOW_URL_IN_LOCAL_IN_FILE_NAME)) {
       throw new IllegalArgumentException("Connection URL contains sensitive configuration");
     }
   }
