@@ -171,12 +171,12 @@ def merge_pr(pr_num, target_ref, title, body, pr_repo_desc):
         if e.code == 405:
             fail("Merge pull request #%s is not allowed." % pr_num)
 
-    # we must do a git fetch to make the merged commit visible in local
-    run_cmd("git fetch %s %s" % (PUSH_REMOTE_NAME, target_ref))
-
     merge_hash = merge_pr_resp["sha"][:8]
     print("Pull request #%s merged!" % pr_num)
     print("Merge hash: %s" % merge_hash)
+
+    # we must do a git fetch to make the merged commit visible in local
+    run_cmd("git fetch %s %s" % (PUSH_REMOTE_NAME, target_ref))
     return merge_hash
 
 
