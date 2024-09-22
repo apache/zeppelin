@@ -591,7 +591,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
   private void validateConnectionUrl(String url) {
     String decodedUrl;
     try {
-      decodedUrl = URLDecoder.decode(url, "UTF-8").replaceAll("\\s", "");
+      decodedUrl = URLDecoder.decode(url, "UTF-8");
     } catch (UnsupportedEncodingException e) {
       LOGGER.info("fail to decode url : {}. continue to get connection.", url, e);
       return;
