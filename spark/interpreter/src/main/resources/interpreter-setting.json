@@ -159,7 +159,7 @@
         "envName": null,
         "propertyName": "zeppelin.spark.deprecatedMsg.show",
         "defaultValue": true,
-        "description": "Whether show the spark deprecated message, spark 2.2 and before are deprecated. Zeppelin will display warning message by default",
+        "description": "Whether show the spark deprecated message, prior Spark 3.3 are deprecated. Zeppelin will display warning message by default",
         "type": "checkbox"
       }
     },

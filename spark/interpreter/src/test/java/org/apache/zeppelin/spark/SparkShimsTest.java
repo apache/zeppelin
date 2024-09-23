@@ -97,7 +97,7 @@ class SparkShimsTest {
       when(mockContext.getIntpEventClient()).thenReturn(mockIntpEventClient);
 
       try {
-        sparkShims = SparkShims.getInstance(SparkVersion.SPARK_3_2_0.toString(), new Properties(), null);
+        sparkShims = SparkShims.getInstance(SparkVersion.SPARK_3_3_0.toString(), new Properties(), null);
       } catch (Throwable e1) {
         throw new RuntimeException("All SparkShims are tried, but no one can be created.");
       }
