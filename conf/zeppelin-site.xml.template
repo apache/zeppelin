@@ -32,12 +32,6 @@
 </property>
 
 <property>
-  <name>zeppelin.cluster.addr</name>
-  <value></value>
-  <description>Server cluster address, eg. 127.0.0.1:6000,127.0.0.2:6000,127.0.0.3:6000</description>
-</property>
-
-<property>
   <name>zeppelin.server.ssl.port</name>
   <value>8443</value>
   <description>Server ssl port. (used when ssl property is set to true)</description>

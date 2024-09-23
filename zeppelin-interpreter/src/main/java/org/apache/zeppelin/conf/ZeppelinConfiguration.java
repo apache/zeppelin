@@ -831,26 +831,6 @@ public class ZeppelinConfiguration {
     return getBoolean(ConfVars.ZEPPELIN_SPARK_ONLY_YARN_CLUSTER);
   }
 
-  public String getClusterAddress() {
-    return getString(ConfVars.ZEPPELIN_CLUSTER_ADDR);
-  }
-
-  public void setClusterAddress(String clusterAddr) {
-    properties.put(ConfVars.ZEPPELIN_CLUSTER_ADDR.getVarName(), clusterAddr);
-  }
-
-  public boolean isClusterMode() {
-    return !StringUtils.isEmpty(getString(ConfVars.ZEPPELIN_CLUSTER_ADDR));
-  }
-
-  public int getClusterHeartbeatInterval() {
-    return getInt(ConfVars.ZEPPELIN_CLUSTER_HEARTBEAT_INTERVAL);
-  }
-
-  public int getClusterHeartbeatTimeout() {
-    return getInt(ConfVars.ZEPPELIN_CLUSTER_HEARTBEAT_TIMEOUT);
-  }
-
   public RUN_MODE getRunMode() {
     String mode = getString(ConfVars.ZEPPELIN_RUN_MODE);
     if ("auto".equalsIgnoreCase(mode)) { // auto detect
@@ -1089,10 +1069,6 @@ public class ZeppelinConfiguration {
     ZEPPELIN_INTERPRETER_SCHEDULER_POOL_SIZE("zeppelin.scheduler.threadpool.size", 100),
 
     ZEPPELIN_OWNER_ROLE("zeppelin.notebook.default.owner.username", ""),
-
-    ZEPPELIN_CLUSTER_ADDR("zeppelin.cluster.addr", ""),
-    ZEPPELIN_CLUSTER_HEARTBEAT_INTERVAL("zeppelin.cluster.heartbeat.interval", 3000),
-    ZEPPELIN_CLUSTER_HEARTBEAT_TIMEOUT("zeppelin.cluster.heartbeat.timeout", 9000),
 
     ZEPPELIN_RUN_MODE("zeppelin.run.mode", "auto"),              // auto | local | k8s | Docker
 
