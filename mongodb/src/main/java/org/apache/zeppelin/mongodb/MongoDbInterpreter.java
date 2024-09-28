@@ -197,8 +197,8 @@ public class MongoDbInterpreter extends Interpreter {
   private void prepareShellExtension(){
     shellExtension = shellExtension.replace("TABLE_LIMIT_PLACEHOLDER", getProperty("mongo.shell.command.table.limit"))
             .replace("TARGET_DB_PLACEHOLDER", getProperty("mongo.server.database"))
-            .replace("USER_NAME_PLACEHOLDER", getProperty("mongo.server.username"))
-            .replace("PASSWORD_PLACEHOLDER", getProperty("mongo.server.password"))
-            .replace("AUTH_DB_PLACEHOLDER", getProperty("mongo.server.authenticationDatabase"));
+            .replace("USER_NAME_PLACEHOLDER", getProperty("mongo.server.username", ""))
+            .replace("PASSWORD_PLACEHOLDER", getProperty("mongo.server.password", ""))
+            .replace("AUTH_DB_PLACEHOLDER", getProperty("mongo.server.authenticationDatabase", ""));
   }
 }
