@@ -261,6 +261,10 @@ export class Message {
     this.send<OP.RELOAD_NOTES_FROM_REPO>(OP.RELOAD_NOTES_FROM_REPO);
   }
 
+  reloadNote(noteId: string): void {
+    this.send<OP.RELOAD_NOTE>(OP.RELOAD_NOTE, { id: noteId })
+  }
+
   getNote(noteId: string): void {
     this.send<OP.GET_NOTE>(OP.GET_NOTE, { id: noteId });
   }

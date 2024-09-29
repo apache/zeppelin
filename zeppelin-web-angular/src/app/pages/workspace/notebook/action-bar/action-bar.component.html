@@ -67,6 +67,14 @@
               [disabled]="revisionView">
         <i nz-icon nzType="download" nzTheme="outline"></i>
       </button>
+      <button nz-button
+              nz-tooltip
+              nzTitle="Reload from note file"
+              (click)="reloadNote()"
+              *ngIf="!viewOnly"
+              [disabled]="revisionView">
+        <i nz-icon nzType="reload" nzTheme="outline"></i>
+      </button>
       <ng-container *ngIf="principal && principal !== 'anonymous' && !viewOnly">
         <ng-container [ngSwitch]="note.config.personalizedMode">
           <button *ngSwitchCase="'true'"
