@@ -70,7 +70,7 @@
   <dependencies>
     <dependency>
       <groupId>org.apache.zeppelin</groupId>
-      <artifactId>spark3-shims</artifactId>
+      <artifactId>spark-common</artifactId>
       <version>${project.version}</version>
     </dependency>
 
