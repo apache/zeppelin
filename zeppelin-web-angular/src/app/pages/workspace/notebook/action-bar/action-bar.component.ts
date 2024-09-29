@@ -198,6 +198,10 @@ export class NotebookActionBarComponent extends MessageListenersManager implemen
     }
   }
 
+  reloadNote() {
+    this.messageService.reloadNote(this.note.id);
+  }
+
   toggleAllEditor() {
     this.editorHide = !this.editorHide;
     this.editorHideChange.emit(this.editorHide);
