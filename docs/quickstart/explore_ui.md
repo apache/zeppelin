@@ -19,9 +19,21 @@ limitations under the License.
 -->
 {% include JB/setup %}
 
-# Explore Apache Zeppelin UI
+# Explore Apache Zeppelin UI (Classic UI)
 
 <div id="toc"></div>
+
+## How to Enable and Switch to the Classic UI
+
+Starting from Zeppelin 0.12.0, this UI has become optional. To use this UI, please build with the following profile:
+
+```
+-Pweb-classic
+```
+
+Afterward, you can switch to the classic UI via the `Swtich to Classic UI` button in the settings menu of the new UI app.
+
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/ui-img/switch_to_classic_ui.png" width="130" />
 
 ## Main home
 
