@@ -39,6 +39,7 @@ import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -74,6 +75,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.junit.jupiter.api.TestInfo;
+
 
 import com.google.gson.Gson;
 
@@ -82,6 +85,7 @@ class NotebookServiceTest {
   private static NotebookService notebookService;
 
   private File notebookDir;
+  private File confDir;
   private SearchService searchService;
   private Notebook notebook;
   private ServiceContext context =
@@ -93,11 +97,21 @@ class NotebookServiceTest {
 
 
   @BeforeEach
-  void setUp() throws Exception {
+  void setUp(TestInfo testInfo) throws Exception {
     notebookDir = Files.createTempDirectory("notebookDir").toAbsolutePath().toFile();
     ZeppelinConfiguration zConf = ZeppelinConfiguration.load();
     zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_DIR.getVarName(),
         notebookDir.getAbsolutePath());
+    // enable cron for testNoteUpdate method
+    if ("testNoteUpdate()".equals(testInfo.getDisplayName())){
+      confDir = Files.createTempDirectory("confDir").toAbsolutePath().toFile();
+      zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_CONF_DIR.getVarName(),
+            confDir.getAbsolutePath());
+      zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_CRON_ENABLE.getVarName(), "true");
+      String shiroPath = zConf.getAbsoluteDir(String.format("%s/shiro.ini", zConf.getConfDir()));
+      Files.createFile(new File(shiroPath).toPath());
+      context.getUserAndRoles().add("test");
+    }
     noteParser = new GsonNoteParser(zConf);
     ConfigStorage storage = ConfigStorage.createConfigStorage(zConf);
     NotebookRepo notebookRepo = new VFSNotebookRepo();
@@ -151,6 +165,9 @@ class NotebookServiceTest {
   @AfterEach
   void tearDown() {
     notebookDir.delete();
+    if (confDir != null){
+      confDir.delete();
+    }
     searchService.close();
   }
 
@@ -391,6 +408,64 @@ class NotebookServiceTest {
 
     notesInfo = notebookService.listNotesInfo(false, context, callback);
     assertEquals(0, notesInfo.size());
+  }
+
+  @Test
+  void testNoteUpdate() throws IOException {
+    // create note
+    String note1Id = notebookService.createNote("/folder_update/note_test_update", "test", true, context, callback);
+    // update note with cron for every 5 minutes
+    reset(callback);
+    Map<String, Object> updatedConfig = new HashMap<>();
+    updatedConfig.put("isZeppelinNotebookCronEnable", true);
+    updatedConfig.put("looknfeel", "looknfeel");
+    updatedConfig.put("personalizedMode", "false");
+    updatedConfig.put("cron", "0 0/5 * * * ?");
+    updatedConfig.put("cronExecutingRoles", "[\"test\"]");
+    updatedConfig.put("cronExecutingUser", "test");
+    notebookService.updateNote(note1Id, "note_test_update", updatedConfig, context, callback);
+    notebook.processNote(note1Id,
+            note1 -> {
+              assertEquals("note_test_update", note1.getName());
+              assertEquals("test", note1.getConfig().get("cronExecutingUser"));
+              assertEquals("[\"test\"]", note1.getConfig().get("cronExecutingRoles"));
+              assertEquals("0 0/5 * * * ?", note1.getConfig().get("cron"));
+              verify(callback).onSuccess(any(Note.class), any(ServiceContext.class));
+              return null;
+            });
+    // update note with cron for every 1 hour
+    reset(callback);
+    updatedConfig.put("cron", "0 0 0/1 * * ?");
+    notebookService.updateNote(note1Id, "note_test_update", updatedConfig, context, callback);
+    notebook.processNote(note1Id,
+            note1 -> {
+              assertEquals("0 0 0/1 * * ?", note1.getConfig().get("cron"));
+              verify(callback).onSuccess(any(Note.class), any(ServiceContext.class));
+              return null;
+            });
+    // update note with wrong user
+    reset(callback);
+    updatedConfig.put("cronExecutingUser", "wrong_user");
+    notebookService.updateNote(note1Id, "note_test_update", updatedConfig, context, callback);
+    notebook.processNote(note1Id,
+            note1 -> {
+              verify(callback).onFailure(any(IllegalArgumentException.class), any(ServiceContext.class));
+              return null;
+            });
+    // disable cron
+    reset(callback);
+    updatedConfig.put("cron", null);
+    updatedConfig.put("cronExecutingRoles", "");
+    updatedConfig.put("cronExecutingUser", "");
+    notebookService.updateNote(note1Id, "note_test_update", updatedConfig, context, callback);
+    notebook.processNote(note1Id,
+            note1 -> {
+              assertNull(note1.getConfig().get("cron"));
+              assertEquals("", note1.getConfig().get("cronExecutingRoles"));
+              assertEquals("", note1.getConfig().get("cronExecutingUser"));
+              verify(callback).onSuccess(any(Note.class), any(ServiceContext.class));
+              return null;
+            });
   }
 
   @Test
