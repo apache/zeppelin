@@ -22,7 +22,9 @@
     <nz-button-group nzSize="small">
       <button nz-button
               nz-popconfirm
-              nzTitle="Run all paragraphs?"
+              nzPopconfirmTitle="Run all paragraphs?"
+              nz-tooltip
+              nzTooltipTitle="Run all paragraphs"
               (nzOnConfirm)="runAllParagraphs()"
               [disabled]="revisionView || isNoteParagraphRunning">
         <i nz-icon nzType="play-circle" nzTheme="outline"></i>
@@ -45,9 +47,11 @@
       </button>
       <button nz-button
               nz-popconfirm
+              nzPopconfirmTitle="Do you want to clear all output?"
+              nz-tooltip
+              nzTooltipTitle="Clear all output"
               *ngIf="!viewOnly"
               [disabled]="revisionView"
-              nzTitle="Do you want to clear all output?"
               (nzOnConfirm)="clearAllParagraphOutput()">
         <i nz-icon nzType="fire" nzTheme="outline"></i>
       </button>
