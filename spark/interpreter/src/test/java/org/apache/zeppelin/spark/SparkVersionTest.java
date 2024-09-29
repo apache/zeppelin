@@ -48,14 +48,14 @@ class SparkVersionTest {
     assertEquals(SparkVersion.SPARK_3_5_0, SparkVersion.fromVersionString("3.5.0.2.5.0.0-1245"));
 
     // test newer than
-    assertTrue(SparkVersion.SPARK_3_5_0.newerThan(SparkVersion.SPARK_3_2_0));
+    assertTrue(SparkVersion.SPARK_3_5_0.newerThan(SparkVersion.SPARK_3_3_0));
     assertTrue(SparkVersion.SPARK_3_5_0.newerThanEquals(SparkVersion.SPARK_3_5_0));
-    assertFalse(SparkVersion.SPARK_3_2_0.newerThan(SparkVersion.SPARK_3_5_0));
+    assertFalse(SparkVersion.SPARK_3_3_0.newerThan(SparkVersion.SPARK_3_5_0));
 
     // test older than
-    assertTrue(SparkVersion.SPARK_3_2_0.olderThan(SparkVersion.SPARK_3_5_0));
-    assertTrue(SparkVersion.SPARK_3_2_0.olderThanEquals(SparkVersion.SPARK_3_2_0));
-    assertFalse(SparkVersion.SPARK_3_5_0.olderThan(SparkVersion.SPARK_3_2_0));
+    assertTrue(SparkVersion.SPARK_3_3_0.olderThan(SparkVersion.SPARK_3_5_0));
+    assertTrue(SparkVersion.SPARK_3_5_0.olderThanEquals(SparkVersion.SPARK_3_5_0));
+    assertFalse(SparkVersion.SPARK_3_5_0.olderThan(SparkVersion.SPARK_3_3_0));
 
     // test newerThanEqualsPatchVersion
     assertTrue(SparkVersion.fromVersionString("2.3.1")

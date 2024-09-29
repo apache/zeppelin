@@ -37,6 +37,7 @@ import com.google.api.services.bigquery.model.TableFieldSchema;
 import com.google.api.services.bigquery.model.TableRow;
 import com.google.common.base.Function;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -90,6 +91,7 @@ public class BigQueryInterpreter extends Interpreter {
   static final String WAIT_TIME = "zeppelin.bigquery.wait_time";
   static final String MAX_ROWS = "zeppelin.bigquery.max_no_of_rows";
   static final String SQL_DIALECT = "zeppelin.bigquery.sql_dialect";
+  static final String REGION = "zeppelin.bigquery.region";
 
   private static String jobId = null;
   private static String projectId = null;
@@ -227,6 +229,7 @@ public class BigQueryInterpreter extends Interpreter {
     long wTime = Long.parseLong(getProperty(WAIT_TIME));
     long maxRows = Long.parseLong(getProperty(MAX_ROWS));
     String sqlDialect = getProperty(SQL_DIALECT, "").toLowerCase();
+    String region = getProperty(REGION, null);
     Boolean useLegacySql;
     switch (sqlDialect) {
       case "standardsql":
@@ -241,7 +244,7 @@ public class BigQueryInterpreter extends Interpreter {
     }
     Iterator<GetQueryResultsResponse> pages;
     try {
-      pages = run(sql, projId, wTime, maxRows, useLegacySql);
+      pages = run(sql, projId, wTime, maxRows, useLegacySql, region);
     } catch (IOException ex) {
       LOGGER.error(ex.getMessage());
       return new InterpreterResult(Code.ERROR, ex.getMessage());
@@ -258,8 +261,9 @@ public class BigQueryInterpreter extends Interpreter {
 
   //Function to run the SQL on bigQuery service
   public static Iterator<GetQueryResultsResponse> run(final String queryString,
-      final String projId, final long wTime, final long maxRows, Boolean useLegacySql)
-          throws IOException {
+      final String projId, final long wTime, final long maxRows,
+      Boolean useLegacySql, final String region)
+        throws IOException {
     try {
       LOGGER.info("Use legacy sql: {}", useLegacySql);
       QueryResponse query;
@@ -275,6 +279,9 @@ public class BigQueryInterpreter extends Interpreter {
       GetQueryResults getRequest = service.jobs().getQueryResults(
           projectId,
           jobId);
+      if (StringUtils.isNotBlank(region)) {
+        getRequest = getRequest.setLocation(region);
+      }
       return getPages(getRequest);
     } catch (IOException ex) {
       throw ex;

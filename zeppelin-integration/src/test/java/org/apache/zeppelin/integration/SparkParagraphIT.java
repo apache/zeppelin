@@ -188,6 +188,7 @@ class SparkParagraphIT extends AbstractZeppelinIT {
       ZeppelinITUtils.sleep(2000, false);
       cancelParagraph(1);
       waitForParagraph(1, "ABORT");
+      ZeppelinITUtils.sleep(1000, false);
 
       assertEquals("ABORT", getParagraphStatus(1),
           "First paragraph status is " + getParagraphStatus(1));

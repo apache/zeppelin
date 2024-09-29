@@ -39,7 +39,7 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>zeppelin-web</artifactId>
+      <artifactId>zeppelin-web-angular</artifactId>
       <version>${project.version}</version>
       <type>war</type>
     </dependency>
@@ -66,7 +66,7 @@
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
         <configuration>
-          <finalName>${project.parent.artifactId}-${project.version}</finalName>
+          <finalName>${project.parent.artifactId}-${project.version}-bin</finalName>
           <appendAssemblyId>false</appendAssemblyId>
           <attach>false</attach>
           <tarLongFileMode>posix</tarLongFileMode>
@@ -81,11 +81,11 @@
 
   <profiles>
     <profile>
-      <id>web-angular</id>
+      <id>web-classic</id>
       <dependencies>
         <dependency>
           <groupId>${project.groupId}</groupId>
-          <artifactId>zeppelin-web-angular</artifactId>
+          <artifactId>zeppelin-web</artifactId>
           <version>${project.version}</version>
           <type>war</type>
         </dependency>
@@ -144,8 +144,8 @@
               <bucketName>zeppel.in</bucketName>
               <endpoint>s3-ap-northeast-1.amazonaws.com</endpoint>
               <makePublic>true</makePublic>
-              <sourceFile>zeppelin-distribution/target/zeppelin-${project.version}.tar.gz</sourceFile>
-              <destinationFile>zeppelin-${project.version}.tar.gz</destinationFile>
+              <sourceFile>zeppelin-distribution/target/zeppelin-${project.version}-bin.tgz</sourceFile>
+              <destinationFile>zeppelin-${project.version}-bin.tgz</destinationFile>
             </configuration>
             <executions>
               <execution>
