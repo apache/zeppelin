@@ -600,7 +600,7 @@
     <profile>
       <id>spark-4.0</id>
       <properties>
-        <spark.version>4.0.0-preview1</spark.version>
+        <spark.version>4.0.0-preview2</spark.version>
         <protobuf.version>3.21.12</protobuf.version>
         <py4j.version>0.10.9.7</py4j.version>
         <libthrift.version>0.16.0</libthrift.version>
