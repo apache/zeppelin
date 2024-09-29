@@ -158,7 +158,6 @@ public class ZeppelinServer implements AutoCloseable {
     jettyWebServer = setupJettyServer();
     sharedServiceLocator = ServiceLocatorFactory.getInstance().create(serviceLocatorName);
     storage = ConfigStorage.createConfigStorage(zConf);
-
   }
 
   public void startZeppelin() {
