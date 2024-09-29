@@ -360,6 +360,7 @@ public class ZeppelinServer implements AutoCloseable {
     new UptimeMetrics().bindTo(Metrics.globalRegistry);
     new JVMInfoBinder().bindTo(Metrics.globalRegistry);
   }
+
   public void shutdown(int exitCode) {
     if (!duringShutdown.getAndSet(true)) {
       LOGGER.info("Shutting down Zeppelin Server ... - ExitCode {}", exitCode);
