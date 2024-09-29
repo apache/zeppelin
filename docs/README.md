@@ -46,8 +46,8 @@ docker run --rm -it \
        -v $PWD:/docs \
        -w /docs \
        -p '4000:4000' \
-       ruby:2.0.0 \
-       bash -c "bundle install && bundle exec jekyll serve --watch"
+       ruby:3.3.5 \
+       bash -c "bundle install && bundle exec jekyll serve --watch --host 0.0.0.0"
 ```
 
 Using the above command, Jekyll will start a web server at `http://localhost:4000` and watch the `/docs` directory for updates.
