@@ -42,7 +42,7 @@ GEM
       net-http
     ffi (1.17.0)
     ffi (1.17.0-arm64-darwin)
-    ffi (1.17.0-x86_64-linux)
+    ffi (1.17.0-x86_64-linux-gnu)
     forwardable-extended (2.6.0)
     gemoji (4.1.0)
     github-pages (231)
@@ -282,4 +282,4 @@ DEPENDENCIES
   webrick (~> 1.8)
 
 BUNDLED WITH
-   2.5.19
+   2.5.16
