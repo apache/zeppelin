@@ -81,13 +81,6 @@
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
             <scope>test</scope>
-            <exclusions>
-              <!-- used from zeppelin-zenigne -->
-              <exclusion>
-                <groupId>org.objenesis</groupId>
-                <artifactId>objenesis</artifactId>
-              </exclusion>
-            </exclusions>
         </dependency>
     </dependencies>
 

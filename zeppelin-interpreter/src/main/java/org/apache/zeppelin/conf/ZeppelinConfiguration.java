@@ -17,7 +17,6 @@
 
 package org.apache.zeppelin.conf;
 
-import com.google.common.annotations.VisibleForTesting;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -326,7 +325,6 @@ public class ZeppelinConfiguration {
     return getString(ConfVars.ZEPPELIN_ADDR);
   }
 
-  @VisibleForTesting
   public void setServerPort(int port) {
     properties.put(ConfVars.ZEPPELIN_PORT.getVarName(), String.valueOf(port));
   }
@@ -844,7 +842,6 @@ public class ZeppelinConfiguration {
     }
   }
 
-  @VisibleForTesting
   public void setRunMode(RUN_MODE runMode) {
     properties.put(ConfVars.ZEPPELIN_RUN_MODE.getVarName(), runMode.name());
   }
