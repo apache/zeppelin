@@ -304,5 +304,3 @@ mvn verify
 # or take care of starting/stoping zeppelin-server from packaged zeppelin-distribuion/target
 mvn verify -P using-packaged-distr
 ```
-
-[![Analytics](https://ga-beacon.appspot.com/UA-45176241-4/apache/zeppelin/README.md?pixel)](https://github.com/igrigorik/ga-beacon)
