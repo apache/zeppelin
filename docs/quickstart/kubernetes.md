@@ -169,7 +169,7 @@ $ ./mvnw package -DskipTests -Pbuild-distr <your flags>
 Binary package will be created under `zeppelin-distribution/target` directory. Move created package file under `scripts/docker/zeppelin/bin/` directory.
 
 ```
-$ mv zeppelin-distribution/target/zeppelin-*.tar.gz scripts/docker/zeppelin/bin/
+$ mv zeppelin-distribution/target/zeppelin-*-bin.tgz scripts/docker/zeppelin/bin/
 ```
 
 `scripts/docker/zeppelin/bin/Dockerfile` downloads package from internet. Modify the file to add package from filesystem.

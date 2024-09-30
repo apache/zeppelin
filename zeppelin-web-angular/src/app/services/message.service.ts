@@ -137,6 +137,10 @@ export class MessageService extends Message implements OnDestroy {
     super.reloadAllNotesFromRepo();
   }
 
+  reloadNote(noteId: string): void {
+    super.reloadNote(noteId);
+  }
+
   getNote(noteId: string): void {
     super.getNote(noteId);
   }

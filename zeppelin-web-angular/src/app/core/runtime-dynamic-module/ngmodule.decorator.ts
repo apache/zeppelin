@@ -9,13 +9,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { NzModule } from './ng-zorro-antd-module';
-import { NgModule } from './ngmodule.decorator';
 
-@NgModule({
-  declarations: [],
-  exports: [CommonModule, FormsModule, NzModule]
-})
-export class RuntimeDynamicModuleModule {}
+// importing NgModule and Component from @angular/core
+// and re-exporting them to prevent AOT compiler from removing them
+import { Component, NgModule } from '@angular/core';
+export { NgModule, Component };

@@ -19,7 +19,7 @@ describe('Search block e2e Test', function() {
   }
 
   beforeEach(function() {
-    browser.get('http://localhost:8080')
+    browser.get('http://localhost:8080/classic')
     browser.sleep(500);
     waitVisibility(element(by.linkText('Create new note')))
     clickOn(element(by.linkText('Create new note')))

@@ -45,8 +45,8 @@ Second, create mongodb interpreter in Zeppelin.
   </tr>
   <tr>
     <td>mongo.shell.path</td>
-    <td>mongo</td>
-    <td>MongoDB shell local path. <br/> Use `which mongo` to get local path in linux or mac.</td>
+    <td>mongosh</td>
+    <td>MongoDB shell local path. <br/> Use `which mongosh` to get local path in linux or mac. <br>(For below [version 5.0](https://www.mongodb.com/docs/manual/release-notes/5.0/#shell-changes), check `mongo`)</td>
   </tr>
   <tr>
      <td>mongo.shell.command.table.limit</td>

@@ -255,7 +255,7 @@
       </activation>
       <properties>
         <zeppelin.daemon.package.base>
-          ../zeppelin-distribution/target/zeppelin-${project.version}/zeppelin-${project.version}/bin
+          ../zeppelin-distribution/target/zeppelin-${project.version}-bin/zeppelin-${project.version}-bin/bin
         </zeppelin.daemon.package.base>
       </properties>
     </profile>

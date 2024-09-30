@@ -40,10 +40,6 @@
     <maven.aeither.provider.version>3.0.3</maven.aeither.provider.version>
     <wagon.version>2.7</wagon.version>
 
-    <datanucleus.rdbms.version>4.1.19</datanucleus.rdbms.version>
-    <datanucleus.apijdo.version>4.2.4</datanucleus.apijdo.version>
-    <datanucleus.core.version>4.1.17</datanucleus.core.version>
-
     <!-- spark versions -->
     <spark.version>3.4.1</spark.version>
     <protobuf.version>3.21.12</protobuf.version>
@@ -231,27 +227,6 @@
     </dependency>
 
     <!--test libraries-->
-    <dependency>
-      <groupId>org.datanucleus</groupId>
-      <artifactId>datanucleus-core</artifactId>
-      <version>${datanucleus.core.version}</version>
-      <scope>test</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.datanucleus</groupId>
-      <artifactId>datanucleus-api-jdo</artifactId>
-      <version>${datanucleus.apijdo.version}</version>
-      <scope>test</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.datanucleus</groupId>
-      <artifactId>datanucleus-rdbms</artifactId>
-      <version>${datanucleus.rdbms.version}</version>
-      <scope>test</scope>
-    </dependency>
-
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
@@ -637,16 +612,6 @@
         <py4j.version>0.10.9.5</py4j.version>
       </properties>
     </profile>
-
-    <profile>
-      <id>spark-3.2</id>
-      <properties>
-        <spark.version>3.2.4</spark.version>
-        <protobuf.version>2.5.0</protobuf.version>
-        <py4j.version>0.10.9.5</py4j.version>
-      </properties>
-    </profile>
-
   </profiles>
 
 </project>

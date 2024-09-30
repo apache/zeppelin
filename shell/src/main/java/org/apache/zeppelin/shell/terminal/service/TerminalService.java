@@ -19,9 +19,9 @@ package org.apache.zeppelin.shell.terminal.service;
 
 import com.google.gson.Gson;
 import com.pty4j.PtyProcess;
+import com.pty4j.PtyProcessBuilder;
 import com.pty4j.WinSize;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.zeppelin.shell.terminal.helper.IOHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,8 +31,6 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -69,10 +67,6 @@ public class TerminalService {
   private void initializeProcess() throws Exception {
     LOGGER.info("initialize TerminalService Process");
 
-    String userHome = System.getProperty("user.home");
-    Path dataDir = Paths.get(userHome).resolve(".terminalfx");
-    IOHelper.copyLibPty(dataDir);
-
     boolean isWindows = System.getProperty("os.name").startsWith("Windows");
     if (isWindows) {
       this.termCommand = "cmd.exe".split("\\s+");
@@ -83,9 +77,7 @@ public class TerminalService {
     Map<String, String> envs = new HashMap<>(System.getenv());
     envs.put("TERM", "xterm");
 
-    System.setProperty("PTY_LIB_FOLDER", dataDir.resolve("libpty").toString());
-
-    this.process = PtyProcess.exec(termCommand, envs, userHome);
+    this.process = new PtyProcessBuilder().setCommand(termCommand).setEnvironment(envs).start();
 
     process.setWinSize(new WinSize(columns, rows));
     this.inputReader = new BufferedReader(new InputStreamReader(process.getInputStream()));

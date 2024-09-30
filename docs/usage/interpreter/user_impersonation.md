@@ -47,7 +47,7 @@ cat ~/.ssh/id_rsa.pub | ssh user1@localhost 'cat >> .ssh/authorized_keys'
 Alternatively instead of password-less, user can override ZEPPELIN_IMPERSONATE_CMD in zeppelin-env.sh
 
 ```bash
-export ZEPPELIN_IMPERSONATE_CMD='sudo -H -u ${ZEPPELIN_IMPERSONATE_USER} bash -c '
+export ZEPPELIN_IMPERSONATE_CMD=(sudo -H -u "${ZEPPELIN_IMPERSONATE_USER}" bash -c)
 ```
 
 

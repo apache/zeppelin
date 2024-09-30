@@ -196,6 +196,13 @@ export enum OP {
   RELOAD_NOTES_FROM_REPO = 'RELOAD_NOTES_FROM_REPO',
 
   /**
+   * [c-s]
+   * reload note
+   * @param id note id
+   */
+  RELOAD_NOTE = 'RELOAD_NOTE',
+
+  /**
    * [s-c]
    * list of note infos
    * @param notes serialized List<NoteInfo> object

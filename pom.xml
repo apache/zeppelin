@@ -85,7 +85,7 @@
     <module>zeppelin-common</module>
     <module>zeppelin-client</module>
     <module>zeppelin-client-examples</module>
-    <module>zeppelin-web</module>
+    <module>zeppelin-web-angular</module>
     <module>zeppelin-server</module>
     <module>zeppelin-jupyter</module>
     <module>zeppelin-plugins</module>
@@ -162,7 +162,7 @@
 
     <!-- plugin versions -->
     <plugin.antrun.version>1.8</plugin.antrun.version>
-    <plugin.assembly.version>3.2.0</plugin.assembly.version>
+    <plugin.assembly.version>3.7.1</plugin.assembly.version>
     <plugin.avro.version>1.7.7</plugin.avro.version>
     <plugin.buildhelper.version>1.7</plugin.buildhelper.version>
     <plugin.buildnumber.version>1.4</plugin.buildnumber.version>
@@ -829,9 +829,9 @@
 
   <profiles>
     <profile>
-      <id>web-angular</id>
+      <id>web-classic</id>
       <modules>
-        <module>zeppelin-web-angular</module>
+        <module>zeppelin-web</module>
       </modules>
     </profile>
 
@@ -1047,8 +1047,8 @@
               <exclude>**/.babelrc</exclude>
               <exclude>**/.bowerrc</exclude>
               <exclude>.editorconfig</exclude>
-              <exclude>.eslintrc</exclude>
-              <exclude>protractor.conf.js</exclude>
+              <exclude>**/.eslintrc</exclude>
+              <exclude>**/protractor.conf.js</exclude>
               <exclude>**/.tmp/**</exclude>
               <exclude>**/target/**</exclude>
               <exclude>**/node/**</exclude>
