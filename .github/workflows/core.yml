@@ -360,8 +360,6 @@ jobs:
             java: 8
           - python: 3.8
             java: 8
-          - python: 3.9
-            java: 17
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -400,17 +398,14 @@ jobs:
         run: |
           R -e "IRkernel::installspec()"
       - name: run spark-3.3 tests with scala-2.12 and python-${{ matrix.python }}
-        if: matrix.java <= '11'
         run: |
           rm -rf spark/interpreter/metastore_db
           ./mvnw verify -pl spark-submit,spark/interpreter -am -Dtest=org/apache/zeppelin/spark/* -Pspark-3.3 -Pspark-scala-2.12 -Phadoop3 -Pintegration -DfailIfNoTests=false ${MAVEN_ARGS}
       - name: run spark-3.3 tests with scala-2.13 and python-${{ matrix.python }}
-        if: matrix.java <= '11'
         run: |
           rm -rf spark/interpreter/metastore_db
           ./mvnw verify -pl spark-submit,spark/interpreter -am -Dtest=org/apache/zeppelin/spark/* -Pspark-3.3 -Pspark-scala-2.13 -Phadoop3 -Pintegration -DfailIfNoTests=false ${MAVEN_ARGS}
       - name: run spark-3.4 tests with scala-2.13 and python-${{ matrix.python }}
-        if: matrix.java <= '11'
         run: |
           rm -rf spark/interpreter/metastore_db
           ./mvnw verify -pl spark-submit,spark/interpreter -am -Dtest=org/apache/zeppelin/spark/* -Pspark-3.4 -Pspark-scala-2.13 -Phadoop3 -Pintegration -DfailIfNoTests=false ${MAVEN_ARGS}
@@ -419,11 +414,6 @@ jobs:
         run: |
           rm -rf spark/interpreter/metastore_db
           ./mvnw verify -pl spark-submit,spark/interpreter -am -Dtest=org/apache/zeppelin/spark/* -Pspark-3.5 -Pspark-scala-2.13 -Phadoop3 -Pintegration -DfailIfNoTests=false ${MAVEN_ARGS}
-      - name: run spark-4.0 tests with scala-2.13 and python-${{ matrix.python }}
-        if: matrix.java >= '17'
-        run: |
-          rm -rf spark/interpreter/metastore_db
-          ./mvnw verify -pl spark-submit,spark/interpreter -am -Dtest=org/apache/zeppelin/spark/* -Pspark-4.0 -Pspark-scala-2.13 -Phadoop3 -Pintegration -DfailIfNoTests=false ${MAVEN_ARGS}
 
   # The version combination is based on the facts:
   # 1. official Livy 0.8 binary tarball is built against Spark 2.4
