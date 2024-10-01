@@ -16,9 +16,7 @@ Spark interpreter is the first and most important interpreter of Zeppelin. It su
   - Scala module for Scala 2.12
 * scala-2.13
   - Scala module for Scala 2.13
-* spark-shims 
-  - Parent module for each Spark module
-* spark3-shims
-  - Shims module for Spark3
+* spark-common
+  - Common utils for all Scala versions
 
 

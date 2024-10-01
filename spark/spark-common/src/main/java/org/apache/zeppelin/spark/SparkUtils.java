@@ -15,9 +15,11 @@
  * limitations under the License.
  */
 
-
 package org.apache.zeppelin.spark;
 
+
+import org.apache.hadoop.util.VersionInfo;
+import org.apache.hadoop.util.VersionUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.spark.SparkContext;
 import org.apache.spark.scheduler.SparkListener;
@@ -31,18 +33,41 @@ import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.ResultMessages;
 import org.apache.zeppelin.interpreter.SingleRowInterpreterResult;
 import org.apache.zeppelin.tabledata.TableDataUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.Constructor;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
-public class Spark3Shims extends SparkShims {
+/**
+ * This is abstract class for anything that is api incompatible between spark1 and spark2. It will
+ * load the correct version of SparkUtils based on the version of Spark.
+ */
+public class SparkUtils {
 
-  private SparkSession sparkSession;
+  // the following lines for checking specific versions
+  private static final String HADOOP_VERSION_2_6_6 = "2.6.6";
+  private static final String HADOOP_VERSION_2_7_0 = "2.7.0";
+  private static final String HADOOP_VERSION_2_7_4 = "2.7.4";
+  private static final String HADOOP_VERSION_2_8_0 = "2.8.0";
+  private static final String HADOOP_VERSION_2_8_2 = "2.8.2";
+  private static final String HADOOP_VERSION_2_9_0 = "2.9.0";
+  private static final String HADOOP_VERSION_3_0_0 = "3.0.0";
+  private static final String HADOOP_VERSION_3_0_0_ALPHA4 = "3.0.0-alpha4";
 
-  public Spark3Shims(Properties properties, Object entryPoint) {
-    super(properties);
-    this.sparkSession = (SparkSession) entryPoint;
+  private static final Logger LOGGER = LoggerFactory.getLogger(SparkUtils.class);
+
+  protected SparkSession sparkSession;
+
+  protected Properties properties;
+
+  public SparkUtils(Properties properties, SparkSession sparkSession) {
+    this.properties = properties;
+    this.sparkSession = sparkSession;
   }
 
   public void setupSparkListener(final String master,
@@ -61,7 +86,6 @@ public class Spark3Shims extends SparkShims {
     });
   }
 
-  @Override
   public String showDataFrame(Object obj, int maxResult, InterpreterContext context) {
     if (obj instanceof Dataset) {
       Dataset<Row> df = ((Dataset) obj).toDF();
@@ -119,7 +143,6 @@ public class Spark3Shims extends SparkShims {
     return list;
   }
 
-  @Override
   public Dataset<Row> getAsDataFrame(String value) {
     String[] lines = value.split("\\n");
     String head = lines[0];
@@ -136,5 +159,67 @@ public class Spark3Shims extends SparkShims {
       rows.add(row);
     }
     return sparkSession.createDataFrame(rows, schema);
+  }
+
+  protected void buildSparkJobUrl(String master,
+                                  String sparkWebUrl,
+                                  int jobId,
+                                  Properties jobProperties,
+                                  InterpreterContext context) {
+    String jobUrl = null;
+    if (sparkWebUrl.contains("{jobId}")) {
+      jobUrl = sparkWebUrl.replace("{jobId}", jobId + "");
+    } else {
+      jobUrl = sparkWebUrl + "/jobs/job?id=" + jobId;
+      String version = VersionInfo.getVersion();
+      if (master.toLowerCase().contains("yarn") && !supportYarn6615(version)) {
+        jobUrl = sparkWebUrl + "/jobs";
+      }
+    }
+
+    String jobGroupId = jobProperties.getProperty("spark.jobGroup.id");
+
+    Map<String, String> infos = new HashMap<>();
+    infos.put("jobUrl", jobUrl);
+    infos.put("label", "SPARK JOB");
+    infos.put("tooltip", "View in Spark web UI");
+    infos.put("noteId", getNoteId(jobGroupId));
+    infos.put("paraId", getParagraphId(jobGroupId));
+    LOGGER.debug("Send spark job url: {}", infos);
+    context.getIntpEventClient().onParaInfosReceived(infos);
+  }
+
+  public static String getNoteId(String jobGroupId) {
+    String[] tokens = jobGroupId.split("\\|");
+    if (tokens.length != 4) {
+      throw new RuntimeException("Invalid jobGroupId: " + jobGroupId);
+    }
+    return tokens[2];
+  }
+
+  public static String getParagraphId(String jobGroupId) {
+    String[] tokens = jobGroupId.split("\\|");
+    if (tokens.length != 4) {
+      throw new RuntimeException("Invalid jobGroupId: " + jobGroupId);
+    }
+    return tokens[3];
+  }
+
+  /**
+   * This is temporal patch for support old versions of Yarn which is not adopted YARN-6615
+   *
+   * @return true if YARN-6615 is patched, false otherwise
+   */
+  protected static boolean supportYarn6615(String version) {
+    return (VersionUtil.compareVersions(HADOOP_VERSION_2_6_6, version) <= 0
+            && VersionUtil.compareVersions(HADOOP_VERSION_2_7_0, version) > 0)
+        || (VersionUtil.compareVersions(HADOOP_VERSION_2_7_4, version) <= 0
+            && VersionUtil.compareVersions(HADOOP_VERSION_2_8_0, version) > 0)
+        || (VersionUtil.compareVersions(HADOOP_VERSION_2_8_2, version) <= 0
+            && VersionUtil.compareVersions(HADOOP_VERSION_2_9_0, version) > 0)
+        || (VersionUtil.compareVersions(HADOOP_VERSION_2_9_0, version) <= 0
+            && VersionUtil.compareVersions(HADOOP_VERSION_3_0_0, version) > 0)
+        || (VersionUtil.compareVersions(HADOOP_VERSION_3_0_0_ALPHA4, version) <= 0)
+        || (VersionUtil.compareVersions(HADOOP_VERSION_3_0_0, version) <= 0);
   }
 }

@@ -198,9 +198,9 @@ class SparkScala212Interpreter(conf: SparkConf,
   }
 
   override def createZeppelinContext(): Unit = {
-    val sparkShims = SparkShims.getInstance(sc.version, properties, sparkSession)
-    sparkShims.setupSparkListener(sc.master, sparkUrl, InterpreterContext.get)
-    z = new SparkZeppelinContext(sc, sparkShims,
+    val sparkUtils = new SparkUtils(properties, sparkSession)
+    sparkUtils.setupSparkListener(sc.master, sparkUrl, InterpreterContext.get)
+    z = new SparkZeppelinContext(sc, sparkUtils,
       interpreterGroup.getInterpreterHookRegistry,
       properties.getProperty("zeppelin.spark.maxResult", "1000").toInt)
     bind("z", z.getClass.getCanonicalName, z, List("""@transient"""))
