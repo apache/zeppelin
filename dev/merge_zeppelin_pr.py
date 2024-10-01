@@ -270,7 +270,7 @@ def resolve_jira_issue(merge_branches, comment, default_jira_id=""):
         for x in versions
         if not x.raw["released"] and not x.raw["archived"] and re.match(r"\d+\.\d+\.\d+", x.name)
     ]
-    versions = sorted(versions, key=lambda x: x.name, reverse=True)
+    versions = sorted(versions, key=lambda x: list(map(int, x.name.split('.'))), reverse=True)
 
     default_fix_versions = []
     for b in merge_branches:
@@ -288,7 +288,8 @@ def resolve_jira_issue(merge_branches, comment, default_jira_id=""):
                 # For example, assuming
                 # versions = ['4.0.0', '3.5.1', '3.5.0', '3.4.2', '3.3.4', '3.3.3']
                 # we've found two candidates for branch-3.5, we pick the last/smallest one
-                default_fix_versions.append(found_versions[-1])
+                if found_versions[-1] not in default_fix_versions:
+                    default_fix_versions.append(found_versions[-1])
             else:
                 print_error(
                     "Target version for %s is not found on JIRA, it may be archived or "
@@ -538,8 +539,7 @@ def main():
 
     branches = http_get("%s/branches" % GITHUB_API_BASE)
     branch_names = list(filter(lambda x: x.startswith("branch-"), [x["name"] for x in branches]))
-    # Assumes branch names can be sorted lexicographically
-    branch_names = sorted(branch_names, reverse=True)
+    branch_names = sorted(branch_names, key=lambda x: list(map(int, x.removeprefix("branch-").split('.'))), reverse=True)
     branch_iter = iter(branch_names)
 
     pr_num = bold_input("Which pull request would you like to merge? (e.g. 34): ")
