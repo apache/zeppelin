@@ -50,6 +50,10 @@ const routes: Routes = [
           import('@zeppelin/pages/workspace/interpreter/interpreter.module').then(m => m.InterpreterModule)
       },
       {
+        path: 'helium',
+        loadChildren: () => import('@zeppelin/pages/workspace/helium/helium.module').then(m => m.HeliumModule)
+      },
+      {
         path: 'configuration',
         loadChildren: () =>
           import('@zeppelin/pages/workspace/configuration/configuration.module').then(m => m.ConfigurationModule)
