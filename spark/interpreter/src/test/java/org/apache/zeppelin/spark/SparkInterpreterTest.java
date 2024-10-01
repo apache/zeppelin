@@ -592,7 +592,6 @@ class SparkInterpreterTest {
     if (this.interpreter != null) {
       this.interpreter.close();
     }
-    SparkShims.reset();
   }
 
   private InterpreterContext getInterpreterContext() {

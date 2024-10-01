@@ -18,6 +18,7 @@
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+
   <parent>
     <artifactId>spark-parent</artifactId>
     <groupId>org.apache.zeppelin</groupId>
@@ -26,21 +27,19 @@
   </parent>
 
   <modelVersion>4.0.0</modelVersion>
-  <artifactId>spark3-shims</artifactId>
+  <artifactId>spark-common</artifactId>
   <packaging>jar</packaging>
-  <name>Zeppelin: Spark3 Shims</name>
-
-  <properties>
-    <scala.binary.version>2.12</scala.binary.version>
-    <spark.version>3.4.1</spark.version>
-  </properties>
+  <name>Zeppelin: Spark Common</name>
 
   <dependencies>
-
+    <!--
+      This is for ZEPPELIN-2221 using VersionInfo for check the version of Yarn.
+      It's checked that VersionInfo is compatible at least 2.2.0 to the latest one.
+    -->
     <dependency>
-      <groupId>org.apache.zeppelin</groupId>
-      <artifactId>spark-shims</artifactId>
-      <version>${project.version}</version>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-client-api</artifactId>
+      <scope>provided</scope>
     </dependency>
 
     <dependency>
