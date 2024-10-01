@@ -839,6 +839,12 @@ public class JDBCInterpreter extends KerberosInterpreter {
         LOGGER.info("Execute sql: " + sqlToExecute);
         statement = connection.createStatement();
 
+        String interpreterName = getProperty("zeppelin.jdbc.interpreter.name");
+
+        if (interpreterName != null && interpreterName.startsWith("spark_")) {
+          statement.setQueryTimeout(60); // 10800 seconds = 3 hours
+        }
+
         // fetch n+1 rows in order to indicate there's more rows available (for large selects)
         statement.setFetchSize(context.getIntLocalProperty("limit", getMaxResult()));
         statement.setMaxRows(context.getIntLocalProperty("limit", maxRows));
