@@ -119,7 +119,7 @@
             </goals>
             <configuration>
               <skip>${web.e2e.enabled}</skip>
-              <arguments>install</arguments>
+              <arguments>ci</arguments>
             </configuration>
           </execution>
 
