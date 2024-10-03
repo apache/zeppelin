@@ -22,7 +22,6 @@ import java.util.Set;
 import javax.ws.rs.core.Application;
 
 import org.apache.zeppelin.rest.AdminRestApi;
-import org.apache.zeppelin.rest.ClusterRestApi;
 import org.apache.zeppelin.rest.ConfigurationsRestApi;
 import org.apache.zeppelin.rest.CredentialRestApi;
 import org.apache.zeppelin.rest.HeliumRestApi;
@@ -40,7 +39,6 @@ public class RestApiApplication extends Application {
   public Set<Class<?>> getClasses() {
     Set<Class<?>> s = new HashSet<>();
     s.add(AdminRestApi.class);
-    s.add(ClusterRestApi.class);
     s.add(ConfigurationsRestApi.class);
     s.add(CredentialRestApi.class);
     s.add(HeliumRestApi.class);
