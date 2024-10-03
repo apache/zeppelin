@@ -113,19 +113,12 @@ Available profiles are
 -Pspark-scala-2.13
 ```
  
-#### Build hadoop with Zeppelin (`-Phadoop[version]`)
+#### Build hadoop with Zeppelin
  
 To be noticed, hadoop profiles only affect Zeppelin server, it doesn't affect any interpreter. 
 Zeppelin server use hadoop in some cases, such as using hdfs as notebook storage. You can check this [page](./hadoop_integration.html) for more details about how to configure hadoop in Zeppelin.
 
-Set hadoop major version (default hadoop3).
-Available profiles are
-
-```
--Phadoop3
-```
-
-minor version can be adjusted by `-Dhadoop.version=x.x.x`
+Hadoop version can be adjusted by `-Dhadoop.version=x.x.x`
 
 
 ##### `-Pvendor-repo` (optional)

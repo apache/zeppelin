@@ -395,6 +395,12 @@
         <artifactId>diff-match-patch</artifactId>
         <version>1.1</version>
       </dependency>
+
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-client-runtime</artifactId>
+      <scope>${hadoop.deps.scope}</scope>
+    </dependency>
   </dependencies>
   <build>
     <plugins>
@@ -472,29 +478,5 @@
         </zeppelin.daemon.package.base>
       </properties>
     </profile>
-
-    <profile>
-      <id>hadoop3</id>
-      <activation>
-        <activeByDefault>true</activeByDefault>
-      </activation>
-      <properties>
-        <hadoop.version>${hadoop3.3.version}</hadoop.version>
-        <hadoop-client-api.artifact>hadoop-client-api</hadoop-client-api.artifact>
-        <hadoop-client-runtime.artifact>hadoop-client-runtime</hadoop-client-runtime.artifact>
-      </properties>
-
-      <dependencies>
-        <dependency>
-          <groupId>org.apache.hadoop</groupId>
-          <artifactId>${hadoop-client-runtime.artifact}</artifactId>
-          <version>${hadoop.version}</version>
-          <scope>${hadoop.deps.scope}</scope>
-        </dependency>
-      </dependencies>
-
-    </profile>
-
   </profiles>
-
 </project>
