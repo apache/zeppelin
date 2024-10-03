@@ -42,7 +42,6 @@
     <hive.guava.version>14.0.1</hive.guava.version>
     <derby.version>10.14.2.0</derby.version>
     <hiverunner.version>5.3.0</hiverunner.version>
-    <grpc.version>1.15.0</grpc.version>
 
     <flink.bin.download.url>https://archive.apache.org/dist/flink/flink-${flink.version}/flink-${flink.version}-bin-scala_${flink.scala.binary.version}.tgz</flink.bin.download.url>
   </properties>
@@ -79,10 +78,6 @@
       <version>${project.version}</version>
       <exclusions>
         <exclusion>
-          <groupId>io.atomix</groupId>
-          <artifactId>*</artifactId>
-        </exclusion>
-        <exclusion>
           <groupId>com.google.guava</groupId>
           <artifactId>guava</artifactId>
         </exclusion>
@@ -94,20 +89,6 @@
       <artifactId>zeppelin-interpreter</artifactId>
       <version>${project.version}</version>
       <scope>provided</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>io.atomix</groupId>
-          <artifactId>*</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.google.guava</groupId>
-          <artifactId>guava</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>io.grpc</groupId>
-          <artifactId>*</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
 
     <dependency>
@@ -118,16 +99,8 @@
       <scope>test</scope>
       <exclusions>
         <exclusion>
-          <groupId>io.atomix</groupId>
-          <artifactId>*</artifactId>
-        </exclusion>
-        <exclusion>
           <groupId>com.google.guava</groupId>
           <artifactId>guava</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>io.grpc</groupId>
-          <artifactId>*</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -292,12 +265,6 @@
       <artifactId>guava</artifactId>
       <version>${hive.guava.version}</version>
       <scope>provided</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>log4j</groupId>
-          <artifactId>log4j</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
 
     <dependency>
