@@ -898,27 +898,29 @@ public class NotebookService {
             return null;
           }
         } else {
-          AuthenticationInfo requestingAuth = new AuthenticationInfo((String)config.get("cronExecutingUser"),(String) config.get("cronExecutingRoles"), null);
+          if (config.get("cron") != null) {
+            AuthenticationInfo requestingAuth = new AuthenticationInfo((String) config.get("cronExecutingUser"), (String) config.get("cronExecutingRoles"), null);
 
-          String requestCronUser = requestingAuth.getUser();
-          Set<String> requestCronRoles = requestingAuth.getRoles();
+            String requestCronUser = requestingAuth.getUser();
+            Set<String> requestCronRoles = requestingAuth.getRoles();
 
-          if (!authorizationService.hasRunPermission(Collections.singleton(requestCronUser), note.getId())) {
-            LOGGER.error("Wrong cronExecutingUser: {}", requestCronUser);
-            callback.onFailure(new IllegalArgumentException(requestCronUser), context);
-            return null;
-          } else {
-            // This part should be restarted but we need to prepare to notice who can be a cron user in advance
-            if (!context.getUserAndRoles().contains(requestCronUser)) {
+            if (!authorizationService.hasRunPermission(Collections.singleton(requestCronUser), note.getId())) {
               LOGGER.error("Wrong cronExecutingUser: {}", requestCronUser);
               callback.onFailure(new IllegalArgumentException(requestCronUser), context);
               return null;
-            }
+            } else {
+              // This part should be restarted but we need to prepare to notice who can be a cron user in advance
+              if (!context.getUserAndRoles().contains(requestCronUser)) {
+                LOGGER.error("Wrong cronExecutingUser: {}", requestCronUser);
+                callback.onFailure(new IllegalArgumentException(requestCronUser), context);
+                return null;
+              }
 
-            if (!context.getUserAndRoles().containsAll(requestCronRoles)) {
-              LOGGER.error("Wrong cronExecutingRoles: {}", requestCronRoles);
-              callback.onFailure(new IllegalArgumentException(requestCronRoles.toString()), context);
-              return null;
+              if (!context.getUserAndRoles().containsAll(requestCronRoles)) {
+                LOGGER.error("Wrong cronExecutingRoles: {}", requestCronRoles);
+                callback.onFailure(new IllegalArgumentException(requestCronRoles.toString()), context);
+                return null;
+              }
             }
           }
 
@@ -927,17 +929,18 @@ public class NotebookService {
               config.remove("cron");
             }
           }
-          boolean cronUpdated = isCronUpdated(config, note.getConfig());
-          if (cronUpdated) {
-            schedulerService.refreshCron(note.getId());
-          }
-        }
 
+        }
+        boolean cronUpdated = isCronUpdated(config, note.getConfig());
         note.setName(name);
         note.setConfig(config);
-
         notebook.updateNote(note, context.getAutheInfo());
         callback.onSuccess(note, context);
+        // refresh cron scheduler after note update
+        if (cronUpdated) {
+          schedulerService.refreshCron(note.getId());
+        }
+
         return null;
       });
   }

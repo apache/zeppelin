@@ -39,6 +39,7 @@ import {
   ParagraphMoved,
   RemoveFolder,
   RemoveNoteForms,
+  ReloadNote,
   RestoreFolder,
   RestoreNote,
   SaveNoteFormsReceived,
@@ -121,6 +122,7 @@ export interface MessageSendDataTypeMap {
   [OP.RESTORE_ALL]: undefined;
   [OP.EMPTY_TRASH]: undefined;
   [OP.RELOAD_NOTES_FROM_REPO]: undefined;
+  [OP.RELOAD_NOTE]: ReloadNote;
   [OP.GET_NOTE]: GetNode;
   [OP.NEW_NOTE]: NewNote;
   [OP.MOVE_NOTE_TO_TRASH]: MoveNoteToTrash;

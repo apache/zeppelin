@@ -22,7 +22,9 @@
     <nz-button-group nzSize="small">
       <button nz-button
               nz-popconfirm
-              nzTitle="Run all paragraphs?"
+              nzPopconfirmTitle="Run all paragraphs?"
+              nz-tooltip
+              nzTooltipTitle="Run all paragraphs"
               (nzOnConfirm)="runAllParagraphs()"
               [disabled]="revisionView || isNoteParagraphRunning">
         <i nz-icon nzType="play-circle" nzTheme="outline"></i>
@@ -45,9 +47,11 @@
       </button>
       <button nz-button
               nz-popconfirm
+              nzPopconfirmTitle="Do you want to clear all output?"
+              nz-tooltip
+              nzTooltipTitle="Clear all output"
               *ngIf="!viewOnly"
               [disabled]="revisionView"
-              nzTitle="Do you want to clear all output?"
               (nzOnConfirm)="clearAllParagraphOutput()">
         <i nz-icon nzType="fire" nzTheme="outline"></i>
       </button>
@@ -66,6 +70,14 @@
               *ngIf="!viewOnly"
               [disabled]="revisionView">
         <i nz-icon nzType="download" nzTheme="outline"></i>
+      </button>
+      <button nz-button
+              nz-tooltip
+              nzTitle="Reload from note file"
+              (click)="reloadNote()"
+              *ngIf="!viewOnly"
+              [disabled]="revisionView">
+        <i nz-icon nzType="reload" nzTheme="outline"></i>
       </button>
       <ng-container *ngIf="principal && principal !== 'anonymous' && !viewOnly">
         <ng-container [ngSwitch]="note.config.personalizedMode">

@@ -40,10 +40,6 @@
     <maven.aeither.provider.version>3.0.3</maven.aeither.provider.version>
     <wagon.version>2.7</wagon.version>
 
-    <datanucleus.rdbms.version>4.1.19</datanucleus.rdbms.version>
-    <datanucleus.apijdo.version>4.2.4</datanucleus.apijdo.version>
-    <datanucleus.core.version>4.1.17</datanucleus.core.version>
-
     <!-- spark versions -->
     <spark.version>3.4.1</spark.version>
     <protobuf.version>3.21.12</protobuf.version>
@@ -63,12 +59,14 @@
     <!-- settings -->
     <pyspark.test.exclude>**/PySparkInterpreterMatplotlibTest.java</pyspark.test.exclude>
     <pyspark.test.include>**/*Test.*</pyspark.test.include>
+
+    <extraJavaTestArgs></extraJavaTestArgs>
   </properties>
 
   <dependencies>
     <dependency>
       <groupId>org.apache.zeppelin</groupId>
-      <artifactId>spark3-shims</artifactId>
+      <artifactId>spark-common</artifactId>
       <version>${project.version}</version>
     </dependency>
 
@@ -166,6 +164,13 @@
       <artifactId>spark-core_${spark.scala.binary.version}</artifactId>
       <version>${spark.version}</version>
       <scope>provided</scope>
+      <exclusions>
+        <!-- Leads to conflicting Jackson versions in tests -->
+        <exclusion>
+          <groupId>org.apache.avro</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <dependency>
@@ -222,27 +227,6 @@
     </dependency>
 
     <!--test libraries-->
-    <dependency>
-      <groupId>org.datanucleus</groupId>
-      <artifactId>datanucleus-core</artifactId>
-      <version>${datanucleus.core.version}</version>
-      <scope>test</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.datanucleus</groupId>
-      <artifactId>datanucleus-api-jdo</artifactId>
-      <version>${datanucleus.apijdo.version}</version>
-      <scope>test</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.datanucleus</groupId>
-      <artifactId>datanucleus-rdbms</artifactId>
-      <version>${datanucleus.rdbms.version}</version>
-      <scope>test</scope>
-    </dependency>
-
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
@@ -338,7 +322,7 @@
               <target>
                 <delete dir="../../interpreter/spark/pyspark" />
                 <copy file="${project.build.directory}/${spark.archive}/python/lib/py4j-${py4j.version}-src.zip" todir="${project.build.directory}/../../../interpreter/spark/pyspark" />
-                <zip basedir="${project.build.directory}/${spark.archive}/python" destfile="${project.build.directory}/../../../interpreter/spark/pyspark/pyspark.zip" includes="pyspark/*.py,pyspark/**/*.py" />
+                <zip basedir="${project.build.directory}/${spark.archive}/python" destfile="${project.build.directory}/../../../interpreter/spark/pyspark/pyspark.zip" includes="pyspark/" />
               </target>
             </configuration>
           </execution>
@@ -384,7 +368,7 @@
         <configuration>
           <forkCount>1</forkCount>
           <reuseForks>false</reuseForks>
-          <argLine>-Xmx3072m -XX:MaxMetaspaceSize=256m</argLine>
+          <argLine>-Xmx3072m -XX:MaxMetaspaceSize=256m ${extraJavaTestArgs}</argLine>
           <excludes>
             <exclude>${pyspark.test.exclude}</exclude>
             <exclude>${tests.to.exclude}</exclude>
@@ -538,6 +522,35 @@
 
   <profiles>
 
+    <profile>
+      <id>java-17</id>
+      <activation>
+        <jdk>[17,)</jdk>
+      </activation>
+      <properties>
+        <extraJavaTestArgs>
+          -XX:+IgnoreUnrecognizedVMOptions
+          --add-modules=jdk.incubator.vector
+          --add-opens=java.base/java.lang=ALL-UNNAMED
+          --add-opens=java.base/java.lang.invoke=ALL-UNNAMED
+          --add-opens=java.base/java.lang.reflect=ALL-UNNAMED
+          --add-opens=java.base/java.io=ALL-UNNAMED
+          --add-opens=java.base/java.net=ALL-UNNAMED
+          --add-opens=java.base/java.nio=ALL-UNNAMED
+          --add-opens=java.base/java.util=ALL-UNNAMED
+          --add-opens=java.base/java.util.concurrent=ALL-UNNAMED
+          --add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED
+          --add-opens=java.base/jdk.internal.ref=ALL-UNNAMED
+          --add-opens=java.base/sun.nio.ch=ALL-UNNAMED
+          --add-opens=java.base/sun.nio.cs=ALL-UNNAMED
+          --add-opens=java.base/sun.security.action=ALL-UNNAMED
+          --add-opens=java.base/sun.util.calendar=ALL-UNNAMED
+          -Djdk.reflect.useDirectMethodHandle=false
+          -Dio.netty.tryReflectionSetAccessible=true
+        </extraJavaTestArgs>
+      </properties>
+    </profile>
+
     <!-- profile spark-scala-x only affect the unit test in spark/interpreter module -->
 
     <profile>
@@ -556,6 +569,16 @@
       <properties>
         <spark.scala.version>2.12.17</spark.scala.version>
         <spark.scala.binary.version>2.12</spark.scala.binary.version>
+      </properties>
+    </profile>
+
+    <profile>
+      <id>spark-4.0</id>
+      <properties>
+        <spark.version>4.0.0-preview2</spark.version>
+        <protobuf.version>3.21.12</protobuf.version>
+        <py4j.version>0.10.9.7</py4j.version>
+        <libthrift.version>0.16.0</libthrift.version>
       </properties>
     </profile>
 
@@ -589,16 +612,6 @@
         <py4j.version>0.10.9.5</py4j.version>
       </properties>
     </profile>
-
-    <profile>
-      <id>spark-3.2</id>
-      <properties>
-        <spark.version>3.2.4</spark.version>
-        <protobuf.version>2.5.0</protobuf.version>
-        <py4j.version>0.10.9.5</py4j.version>
-      </properties>
-    </profile>
-
   </profiles>
 
 </project>

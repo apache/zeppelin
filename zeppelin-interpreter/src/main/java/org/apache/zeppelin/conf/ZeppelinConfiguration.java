@@ -17,7 +17,6 @@
 
 package org.apache.zeppelin.conf;
 
-import com.google.common.annotations.VisibleForTesting;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -326,7 +325,6 @@ public class ZeppelinConfiguration {
     return getString(ConfVars.ZEPPELIN_ADDR);
   }
 
-  @VisibleForTesting
   public void setServerPort(int port) {
     properties.put(ConfVars.ZEPPELIN_PORT.getVarName(), String.valueOf(port));
   }
@@ -831,26 +829,6 @@ public class ZeppelinConfiguration {
     return getBoolean(ConfVars.ZEPPELIN_SPARK_ONLY_YARN_CLUSTER);
   }
 
-  public String getClusterAddress() {
-    return getString(ConfVars.ZEPPELIN_CLUSTER_ADDR);
-  }
-
-  public void setClusterAddress(String clusterAddr) {
-    properties.put(ConfVars.ZEPPELIN_CLUSTER_ADDR.getVarName(), clusterAddr);
-  }
-
-  public boolean isClusterMode() {
-    return !StringUtils.isEmpty(getString(ConfVars.ZEPPELIN_CLUSTER_ADDR));
-  }
-
-  public int getClusterHeartbeatInterval() {
-    return getInt(ConfVars.ZEPPELIN_CLUSTER_HEARTBEAT_INTERVAL);
-  }
-
-  public int getClusterHeartbeatTimeout() {
-    return getInt(ConfVars.ZEPPELIN_CLUSTER_HEARTBEAT_TIMEOUT);
-  }
-
   public RUN_MODE getRunMode() {
     String mode = getString(ConfVars.ZEPPELIN_RUN_MODE);
     if ("auto".equalsIgnoreCase(mode)) { // auto detect
@@ -864,7 +842,6 @@ public class ZeppelinConfiguration {
     }
   }
 
-  @VisibleForTesting
   public void setRunMode(RUN_MODE runMode) {
     properties.put(ConfVars.ZEPPELIN_RUN_MODE.getVarName(), runMode.name());
   }
@@ -963,7 +940,7 @@ public class ZeppelinConfiguration {
     ZEPPELIN_SSL_TRUSTSTORE_TYPE("zeppelin.ssl.truststore.type", null),
     ZEPPELIN_SSL_TRUSTSTORE_PASSWORD("zeppelin.ssl.truststore.password", null),
     ZEPPELIN_WAR("zeppelin.war", "zeppelin-web/dist"),
-    ZEPPELIN_ANGULAR_WAR("zeppelin.angular.war", "zeppelin-web-angular/dist"),
+    ZEPPELIN_ANGULAR_WAR("zeppelin.angular.war", "zeppelin-web-angular/dist/zeppelin"),
     ZEPPELIN_WAR_TEMPDIR("zeppelin.war.tempdir", "webapps"),
     ZEPPELIN_JMX_ENABLE("zeppelin.jmx.enable", false),
     ZEPPELIN_JMX_PORT("zeppelin.jmx.port", 9996),
@@ -1089,10 +1066,6 @@ public class ZeppelinConfiguration {
     ZEPPELIN_INTERPRETER_SCHEDULER_POOL_SIZE("zeppelin.scheduler.threadpool.size", 100),
 
     ZEPPELIN_OWNER_ROLE("zeppelin.notebook.default.owner.username", ""),
-
-    ZEPPELIN_CLUSTER_ADDR("zeppelin.cluster.addr", ""),
-    ZEPPELIN_CLUSTER_HEARTBEAT_INTERVAL("zeppelin.cluster.heartbeat.interval", 3000),
-    ZEPPELIN_CLUSTER_HEARTBEAT_TIMEOUT("zeppelin.cluster.heartbeat.timeout", 9000),
 
     ZEPPELIN_RUN_MODE("zeppelin.run.mode", "auto"),              // auto | local | k8s | Docker
 

@@ -64,7 +64,7 @@ REM however, it is not encouraged when you can define SPARK_HOME
 REM
 REM Options read in YARN client mode
 REM set HADOOP_CONF_DIR                         REM yarn-site.xml is located in configuration directory in HADOOP_CONF_DIR.
-REM Pyspark (supported with Spark 1.2.1 and above)
+REM Pyspark (supported with Spark 3.3 and above)
 REM To configure pyspark, you need to set spark distribution's path to 'spark.home' property in Interpreter setting screen in Zeppelin GUI
 REM set PYSPARK_PYTHON                          REM path to the python command. must be the same path on the driver(Zeppelin) and all workers.
 REM set PYTHONPATH

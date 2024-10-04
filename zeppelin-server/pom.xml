@@ -332,13 +332,6 @@
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
       <scope>test</scope>
-      <exclusions>
-        <!-- used from zeppelin-zenigne -->
-        <exclusion>
-          <groupId>org.objenesis</groupId>
-          <artifactId>objenesis</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
 
     <dependency>
@@ -475,7 +468,7 @@
       </activation>
       <properties>
         <zeppelin.daemon.package.base>
-	        ../zeppelin-distribution/target/zeppelin-${project.version}/zeppelin-${project.version}/bin
+	        ../zeppelin-distribution/target/zeppelin-${project.version}-bin/zeppelin-${project.version}-bin/bin
         </zeppelin.daemon.package.base>
       </properties>
     </profile>

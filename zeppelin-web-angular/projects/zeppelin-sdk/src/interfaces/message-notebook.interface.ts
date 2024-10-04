@@ -23,6 +23,7 @@ interface Name {
 export type GetNode = ID;
 export type MoveNoteToTrash = ID;
 export type MoveFolderToTrash = ID;
+export type ReloadNote = ID;
 export type RestoreNote = ID;
 export type RestoreFolder = ID;
 export type DeleteNote = ID;

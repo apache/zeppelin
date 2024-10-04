@@ -292,14 +292,7 @@ public class SparkSqlInterpreterTest {
     InterpreterContext context = getInterpreterContext();
     InterpreterResult ret = sqlInterpreter.interpret("create table t1(id int, name string)", context);
     assertEquals(InterpreterResult.Code.SUCCESS, ret.code(), context.out.toString());
-    // spark 1.x will still return DataFrame with non-empty columns.
-    // org.apache.spark.sql.DataFrame = [result: string]
-    if (!sparkInterpreter.getSparkContext().version().startsWith("1.")) {
-      assertTrue(ret.message().isEmpty());
-    } else {
-      assertEquals(Type.TABLE, ret.message().get(0).getType());
-      assertEquals("result\n", ret.message().get(0).getData());
-    }
+    assertTrue(ret.message().isEmpty());
 
     // create the same table again
     ret = sqlInterpreter.interpret("create table t1(id int, name string)", context);

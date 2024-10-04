@@ -101,9 +101,6 @@ fi
 
 . "${bin}/common.sh"
 
-# Escape envs
-ZEPPELIN_INTP_CLASSPATH_OVERRIDES=$(printf %q "${ZEPPELIN_INTP_CLASSPATH_OVERRIDES}")
-
 check_java_version
 
 ZEPPELIN_INTERPRETER_API_JAR=$(find "${ZEPPELIN_HOME}/interpreter" -name 'zeppelin-interpreter-shaded-*.jar')
@@ -247,13 +244,19 @@ addJarInDirForIntp "${LOCAL_INTERPRETER_REPO}"
 
 if [[ -n "$ZEPPELIN_IMPERSONATE_USER" ]]; then
   if [[ "${INTERPRETER_ID}" != "spark" || "$ZEPPELIN_IMPERSONATE_SPARK_PROXY_USER" == "false" ]]; then
-    suid="$(id -u "${ZEPPELIN_IMPERSONATE_USER}")"
-    if [[ -n  "${suid}" || -z "${SPARK_SUBMIT}" ]]; then
-       INTERPRETER_RUN_COMMAND+=("${ZEPPELIN_IMPERSONATE_RUN_CMD[@]}")
-       if [[ -f "${ZEPPELIN_CONF_DIR}/zeppelin-env.sh" ]]; then
-           INTERPRETER_RUN_COMMAND+=("source" "${ZEPPELIN_CONF_DIR}/zeppelin-env.sh;")
-       fi
+    # Build the command string
+    COMMAND_STRING=""
+    if [[ -f "${ZEPPELIN_CONF_DIR}/zeppelin-env.sh" ]]; then
+        COMMAND_STRING+="source ${ZEPPELIN_CONF_DIR}/zeppelin-env.sh; "
     fi
+    
+    # Add interpreter command to the command string
+    IFS=' ' read -r -a JAVA_INTP_OPTS_ARRAY <<< "${JAVA_INTP_OPTS}"
+    IFS=' ' read -r -a ZEPPELIN_INTP_MEM_ARRAY <<< "${ZEPPELIN_INTP_MEM}"
+    COMMAND_STRING+="${ZEPPELIN_RUNNER} ${JAVA_INTP_OPTS_ARRAY[@]} ${ZEPPELIN_INTP_MEM_ARRAY[@]} -cp '${ZEPPELIN_INTP_CLASSPATH_OVERRIDES}:${ZEPPELIN_INTP_CLASSPATH}' ${ZEPPELIN_SERVER} ${CALLBACK_HOST} ${PORT} ${INTP_GROUP_ID} ${INTP_PORT}"
+    
+    # Set INTERPRETER_RUN_COMMAND with the impersonation command and command string
+    INTERPRETER_RUN_COMMAND=("${ZEPPELIN_IMPERSONATE_CMD[@]}" "${COMMAND_STRING}")
   fi
 fi
 
