@@ -34,7 +34,7 @@
 
     <properties>
         <interpreter.name>r</interpreter.name>
-        <spark.version>3.4.1</spark.version>
+        <spark.version>3.5.3</spark.version>
 
         <spark.archive>spark-${spark.version}</spark.archive>
         <spark.bin.download.url>
