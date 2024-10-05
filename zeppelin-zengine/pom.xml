@@ -292,6 +292,10 @@
       <version>${commons.compress.version}</version>
     </dependency>
 
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-client-runtime</artifactId>
+    </dependency>
   </dependencies>
 
   <build>
@@ -328,23 +332,4 @@
 
     </plugins>
   </build>
-
-  <profiles>
-    <profile>
-      <id>hadoop3</id>
-      <activation>
-        <activeByDefault>true</activeByDefault>
-      </activation>
-      <properties>
-        <hadoop.version>${hadoop3.3.version}</hadoop.version>
-      </properties>
-
-      <dependencies>
-        <dependency>
-          <groupId>org.apache.hadoop</groupId>
-          <artifactId>hadoop-client-runtime</artifactId>
-        </dependency>
-      </dependencies>
-    </profile>
-  </profiles>
 </project>

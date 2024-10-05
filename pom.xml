@@ -141,9 +141,7 @@
     <micrometer.version>1.6.0</micrometer.version>
     <findbugs.jsr305.version>3.0.2</findbugs.jsr305.version>
 
-    <hadoop3.2.version>3.2.4</hadoop3.2.version>
-    <hadoop3.3.version>3.3.6</hadoop3.3.version>
-    <hadoop.version>${hadoop3.3.version}</hadoop.version>
+    <hadoop.version>3.3.6</hadoop.version>
     <hadoop.deps.scope>provided</hadoop.deps.scope>
 
     <quartz.scheduler.version>2.3.2</quartz.scheduler.version>
@@ -393,13 +391,6 @@
         <version>${jettison.version}</version>
       </dependency>
 
-      <dependency>
-        <groupId>org.apache.hadoop</groupId>
-        <artifactId>hadoop-client-api</artifactId>
-        <version>${hadoop.version}</version>
-        <scope>${hadoop.deps.scope}</scope>
-      </dependency>
-
       <!-- Test libraries -->
       <dependency>
         <groupId>org.junit.jupiter</groupId>
@@ -457,6 +448,12 @@
         <scope>test</scope>
       </dependency>
 
+      <dependency>
+        <groupId>org.apache.hadoop</groupId>
+        <artifactId>hadoop-client-api</artifactId>
+        <version>${hadoop.version}</version>
+        <scope>${hadoop.deps.scope}</scope>
+      </dependency>
       <dependency>
         <groupId>org.apache.hadoop</groupId>
         <artifactId>hadoop-client-runtime</artifactId>
