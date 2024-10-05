@@ -58,10 +58,6 @@
             <version>${project.version}</version>
             <scope>provided</scope>
             <exclusions>
-                <exclusion>
-                    <groupId>com.fasterxml.jackson.core</groupId>
-                    <artifactId>jackson-core</artifactId>
-                </exclusion>
                 <!-- jcl-over-slf4j is provided by zeppelin-interprerter -->
                 <exclusion>
                     <groupId>commons-logging</groupId>

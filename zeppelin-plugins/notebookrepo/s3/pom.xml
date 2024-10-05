@@ -36,38 +36,8 @@
     <properties>
         <aws.sdk.version>1.12.261</aws.sdk.version>
         <plugin.name>NotebookRepo/S3NotebookRepo</plugin.name>
-        <jackson.version>2.12.6</jackson.version>
     </properties>
 
-    <dependencyManagement>
-        <dependencies>
-            <!-- Fix enforcer plugin,
-                 since aws-java-sdk-s3 ships with multiple artifact versions of
-                 com.fasterxml.jackson.core:jackson-databind. -->
-            <dependency>
-                <groupId>com.fasterxml.jackson.dataformat</groupId>
-                <artifactId>jackson-dataformat-cbor</artifactId>
-                <version>${jackson.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>com.fasterxml.jackson.core</groupId>
-                        <artifactId>jackson-databind</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>com.fasterxml.jackson.dataformat</groupId>
-                <artifactId>jackson-dataformat-xml</artifactId>
-                <version>${jackson.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>com.fasterxml.jackson.core</groupId>
-                        <artifactId>jackson-databind</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
     <dependencies>
         <dependency>
             <groupId>com.amazonaws</groupId>
@@ -118,20 +88,8 @@
                     <artifactId>guava</artifactId>
                 </exclusion>
                 <exclusion>
-                    <groupId>com.fasterxml.jackson.core</groupId>
-                    <artifactId>jackson-core</artifactId>
-                </exclusion>
-                <exclusion>
                     <groupId>org.eclipse.jetty</groupId>
                     <artifactId>jetty-util</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.fasterxml.jackson.core</groupId>
-                    <artifactId>jackson-annotations</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.fasterxml.jackson.core</groupId>
-                    <artifactId>jackson-databind</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>com.google.errorprone</groupId>
