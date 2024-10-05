@@ -142,11 +142,11 @@ Build examples under zeppelin-examples directory
 Here are some examples with several options:
 
 ```bash
-# build with spark-3.3, spark-scala-2.12
-./mvnw clean package -Pspark-3.3 -Pspark-scala-2.12 -DskipTests
+# build with spark-3.5, spark-scala-2.12
+./mvnw clean package -Pspark-3.5 -Pspark-scala-2.12 -DskipTests
 
-# build with spark-3.4, spark-scala-2.13
-./mvnw clean package -Pspark-3.4 -Pspark-scala-2.13 -DskipTests
+# build with spark-3.5, spark-scala-2.13
+./mvnw clean package -Pspark-3.5 -Pspark-scala-2.13 -DskipTests
 
 ```
 
@@ -287,10 +287,10 @@ To package the final distribution including the compressed archive, run:
 To build a distribution with specific profiles, run:
 
 ```sh
-./mvnw clean package -Pbuild-distr -Pspark-3.4
+./mvnw clean package -Pbuild-distr -Pspark-3.5
 ```
 
-The profiles `-Pspark-3.4` can be adjusted if you wish to build to a specific spark versions.  
+The profiles `-Pspark-3.5` can be adjusted if you wish to build to a specific spark versions.  
 
 The archive is generated under _`zeppelin-distribution/target`_ directory
 
