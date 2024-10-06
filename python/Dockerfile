@@ -28,6 +28,11 @@ RUN ./mvnw clean package -am -pl zeppelin-interpreter-shaded,zeppelin-interprete
 
 FROM openjdk:11
 
+RUN apt-get update && \
+    apt-get install -y python3 python3-pip && \
+    ln -s /usr/bin/python3 /usr/bin/python && \
+    rm -rf /var/lib/apt/lists/*
+
 COPY --from=builder /zeppelin/bin /zeppelin/bin/
 COPY --from=builder /zeppelin/conf /zeppelin/conf
 
