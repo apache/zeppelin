@@ -28,6 +28,10 @@ RUN ./mvnw clean package -am -pl zeppelin-interpreter-shaded,zeppelin-interprete
 
 FROM openjdk:11
 
+RUN apt-get update && \
+    apt-get install -y r-base && \
+    rm -rf /var/lib/apt/lists/*
+
 COPY --from=builder /zeppelin/bin /zeppelin/bin/
 COPY --from=builder /zeppelin/conf /zeppelin/conf
 
