@@ -58,5 +58,9 @@ shift "$(($OPTIND -1))"
 
 PR_NUM=$1
 
-git fetch ${APACHE_ZEPPELIN_REMOTE_REPO_NAME} pull/${PR_NUM}/head:PR_${PR_NUM} ${FORCE}
-git checkout PR_${PR_NUM}
+if [[ $(git rev-parse --abbrev-ref HEAD) == "PR_${PR_NUM}" ]]; then
+  git pull ${APACHE_ZEPPELIN_REMOTE_REPO_NAME} pull/${PR_NUM}/head:PR_${PR_NUM} ${FORCE}
+else
+  git fetch ${APACHE_ZEPPELIN_REMOTE_REPO_NAME} pull/${PR_NUM}/head:PR_${PR_NUM} ${FORCE}
+  git checkout PR_${PR_NUM}
+fi
