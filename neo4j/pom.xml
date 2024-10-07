@@ -33,7 +33,6 @@
   
   <properties>
   	<neo4j.driver.version>4.1.1</neo4j.driver.version>
-  	<jackson.version>2.12.7.1</jackson.version>
     <interpreter.name>neo4j</interpreter.name>
   </properties>
 
@@ -41,7 +40,6 @@
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
-      <version>${jackson.version}</version>
     </dependency>
 
     <dependency>

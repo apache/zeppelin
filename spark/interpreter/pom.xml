@@ -164,13 +164,6 @@
       <artifactId>spark-core_${spark.scala.binary.version}</artifactId>
       <version>${spark.version}</version>
       <scope>provided</scope>
-      <exclusions>
-        <!-- Leads to conflicting Jackson versions in tests -->
-        <exclusion>
-          <groupId>org.apache.avro</groupId>
-          <artifactId>*</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
 
     <dependency>
