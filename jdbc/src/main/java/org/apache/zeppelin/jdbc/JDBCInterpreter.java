@@ -839,8 +839,12 @@ public class JDBCInterpreter extends KerberosInterpreter {
         LOGGER.info("Execute sql: " + sqlToExecute);
         statement = connection.createStatement();
 
-        String interpreterName = getProperty("zeppelin.jdbc.interpreter.name");
+        String interpreterName = getInterpreterGroup().getId();
         context.out.write("Interpreter Name: " + interpreterName);
+
+        String className = getClassName();
+        context.out.write("Class Name: " + className);
+
 
         if (interpreterName != null && interpreterName.startsWith("spark_")) {
           statement.setQueryTimeout(5); // 10800 seconds = 3 hours
@@ -885,16 +889,17 @@ public class JDBCInterpreter extends KerberosInterpreter {
               StringBuilder finalOutput = new StringBuilder();
 
               if (response.isFailFast()) {
-                context.out.write("Query failed because partitions were not used in the query. Please ensure that partition filters are applied.\n");
+                context.out.write("Query Error: Partition Filters Missing\n" +
+                        "Your query failed because some tables are missing partition filters. To avoid this, please ensure partition filters are applied to improve performance.");
                 JSONObject jsonObject = new JSONObject(outputMessage);
-                finalOutput.append("The following TABLE(s) used in the query are not using partition filter:\n");
+                finalOutput.append("The following table(s) are missing partition filters:\n");
 
                 JSONArray tableNames = jsonObject.names();
                 if (tableNames != null) {
                   for (int i = 0; i < tableNames.length(); i++) {
                     String table = tableNames.getString(i);
                     JSONArray partitions = jsonObject.getJSONArray(table);
-                    finalOutput.append(table).append(" -> ");
+                    finalOutput.append("Table: ").append(table).append(" Partition filters: ");
 
                     for (int j = 0; j < partitions.length(); j++) {
                       finalOutput.append(partitions.getString(j));
@@ -906,15 +911,15 @@ public class JDBCInterpreter extends KerberosInterpreter {
                   }
                 }
               } else if (response.isFailedByDeprecatedTable()) {
-                context.out.write("Query failed as Restricted table(s) are used\n");
+                context.out.write("Query Error: Restricted Table Used\n");
                 JSONObject jsonObject = new JSONObject(outputMessage);
-                finalOutput.append("The following TABLE(s) used in the query are restricted:\n");
+                finalOutput.append("It seems you're trying to use a restricted table:\n");
 
                 JSONArray tableNames = jsonObject.names();
                 if (tableNames != null) {
                   for (int i = 0; i < tableNames.length(); i++) {
                     String table = tableNames.getString(i);
-                    finalOutput.append(table).append(" -> ").append(jsonObject.getString(table)).append("\n");
+                    finalOutput.append("Use: ").append(jsonObject.getString(table)).append(" in place of ").append(table).append("\n");
                   }
                 }
               }
