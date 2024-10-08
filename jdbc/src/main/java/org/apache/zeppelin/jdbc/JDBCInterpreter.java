@@ -840,15 +840,9 @@ public class JDBCInterpreter extends KerberosInterpreter {
         statement = connection.createStatement();
 
         String interpreterName = getInterpreterGroup().getId();
-        context.out.write("Interpreter Name: " + interpreterName);
 
-        String className = getClassName();
-        context.out.write("Class Name: " + className);
-
-
-        if (interpreterName != null && interpreterName.startsWith("spark_")) {
-          statement.setQueryTimeout(5); // 10800 seconds = 3 hours
-          context.out.write("Query Timeout: 5 seconds");
+        if (interpreterName != null && interpreterName.startsWith("spark_rca_")) {
+          statement.setQueryTimeout(10800); // 10800 seconds = 3 hours
         }
 
         // fetch n+1 rows in order to indicate there's more rows available (for large selects)
@@ -890,7 +884,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
 
               if (response.isFailFast()) {
                 context.out.write("Query Error: Partition Filters Missing\n" +
-                        "Your query failed because some tables are missing partition filters. To avoid this, please ensure partition filters are applied to improve performance.");
+                        "Your query failed because some tables are missing partition filters. To avoid this, please ensure partition filters are applied to improve performance.\n");
                 JSONObject jsonObject = new JSONObject(outputMessage);
                 finalOutput.append("The following table(s) are missing partition filters:\n");
 
@@ -899,7 +893,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
                   for (int i = 0; i < tableNames.length(); i++) {
                     String table = tableNames.getString(i);
                     JSONArray partitions = jsonObject.getJSONArray(table);
-                    finalOutput.append("Table: ").append(table).append(" Partition filters: ");
+                    finalOutput.append("Table: ").append(table).append(", Partition filter's: ");
 
                     for (int j = 0; j < partitions.length(); j++) {
                       finalOutput.append(partitions.getString(j));
