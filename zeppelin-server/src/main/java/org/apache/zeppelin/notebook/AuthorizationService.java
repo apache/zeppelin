@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 import jakarta.inject.Inject;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -43,6 +44,12 @@ public class AuthorizationService {
 
   private final ZeppelinConfiguration zConf;
   private final ConfigStorage configStorage;
+
+  private static final Set<ZeppelinConfiguration.ConfVars> VALID_ROLES_CONF_VARS = EnumSet.of(
+      ZeppelinConfiguration.ConfVars.ZEPPELIN_OWNER_ROLES,
+      ZeppelinConfiguration.ConfVars.ZEPPELIN_WRITER_ROLES,
+      ZeppelinConfiguration.ConfVars.ZEPPELIN_READER_ROLES,
+      ZeppelinConfiguration.ConfVars.ZEPPELIN_RUNNER_ROLES);
 
   // contains roles for each user (username --> roles)
   private Map<String, Set<String>> userRoles = new ConcurrentHashMap<>();
@@ -107,9 +114,9 @@ public class AuthorizationService {
   private Set<String> normalizeUsers(Set<String> users) {
     Set<String> returnUser = new HashSet<>();
     for (String user : users) {
-      String trimedUser = user.trim();
-      if (!trimedUser.isEmpty()) {
-        returnUser.add(trimedUser);
+      String trimmedUser = user.trim();
+      if (!trimmedUser.isEmpty()) {
+        returnUser.add(trimmedUser);
       }
     }
     return returnUser;
@@ -298,19 +305,12 @@ public class AuthorizationService {
   }
 
   private Set<String> getDefaultRoles(ZeppelinConfiguration.ConfVars confvar) {
-    Set<String> defaultRoles = new HashSet<>();
-    String defaultRolesConf = null;
-    switch (confvar) {
-      case ZEPPELIN_OWNER_ROLES:
-      case ZEPPELIN_WRITER_ROLES:
-      case ZEPPELIN_READER_ROLES:
-      case ZEPPELIN_RUNNER_ROLES:
-        defaultRolesConf = zConf.getString(confvar);
-        break;
-      default:
-        LOGGER.warn("getDefaultRoles is used with {}, which is not valid", confvar);
-        break;
+    if (!VALID_ROLES_CONF_VARS.contains(confvar)) {
+      LOGGER.warn("getDefaultRoles is used with {}, which is not valid", confvar);
+      return Collections.emptySet();
     }
+    Set<String> defaultRoles = new HashSet<>();
+    String defaultRolesConf = zConf.getString(confvar);
     if (StringUtils.isNotBlank(defaultRolesConf)) {
       Collections.addAll(defaultRoles, StringUtils.split(defaultRolesConf, ','));
     }
