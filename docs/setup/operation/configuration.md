@@ -218,6 +218,12 @@ Sources descending by priority:
     <td>Location of the jetty temporary directory</td>
   </tr>
   <tr>
+    <td><h6 class="properties">ZEPPELIN_DEFAULT_UI</h6></td>
+    <td><h6 class="properties">zeppelin.default.ui</h6></td>
+    <td>new</td>
+    <td>Default UI for Zeppelin. <br />Options: <code>classic</code> or <code>new</code></td>
+  </tr>
+  <tr>
     <td><h6 class="properties">ZEPPELIN_NOTEBOOK_DIR</h6></td>
     <td><h6 class="properties">zeppelin.notebook.dir</h6></td>
     <td>notebook</td>

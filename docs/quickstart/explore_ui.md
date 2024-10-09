@@ -35,6 +35,21 @@ Afterward, you can switch to the classic UI via the `Swtich to Classic UI` butto
 
 <img src="{{BASE_PATH}}/assets/themes/zeppelin/img/ui-img/switch_to_classic_ui.png" width="130" />
 
+
+### Configuring the default UI
+
+Zeppelin allows you to configure the default, especially for users who prefer the classic UI.
+
+To set the default UI to classic, add the following property to the `zeppelin-site.xml` file:
+
+```xml
+<property>
+  <name>zeppelin.default.ui</name>
+  <value>classic</value>
+  <description>Default UI for Zeppelin. Options: classic or new. Default configuration is 'new'</description>
+</property>
+```
+
 ## Main home
 
 The first time you connect to Zeppelin ([default installations start on http://localhost:8080](http://localhost:8080/)), you'll land at the main page similar to the below screen capture.
