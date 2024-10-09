@@ -30,6 +30,7 @@ FROM openjdk:11
 
 RUN apt-get update && \
     apt-get install -y python3 python3-pip && \
+    pip3 install jupyter-client grpcio protobuf~=3.20 ipython ipykernel && \
     ln -s /usr/bin/python3 /usr/bin/python && \
     rm -rf /var/lib/apt/lists/*
 
