@@ -65,7 +65,7 @@ export class AppMessageInterceptor implements MessageInterceptor {
 
       if (!isDuplicateError && rData.info) {
         this.nzNotificationService.warning('ERROR', rData.info, {
-          nzStyle: { wordWrap: 'break-word' }
+          nzStyle: { wordWrap: 'break-word', wordBreak: 'break-all' }
         });
         this.prevErrorInfo = rData.info;
       }
