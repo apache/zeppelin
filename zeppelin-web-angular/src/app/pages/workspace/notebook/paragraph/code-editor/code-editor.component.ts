@@ -59,7 +59,7 @@ export class NotebookParagraphCodeEditorComponent implements OnChanges, OnDestro
   @Output() readonly editorFocus = new EventEmitter<void>();
   private editor: IStandaloneCodeEditor;
   private monacoDisposables: IDisposable[] = [];
-  height = 0;
+  height = 18;
   interpreterName: string;
 
   autoAdjustEditorHeight() {
