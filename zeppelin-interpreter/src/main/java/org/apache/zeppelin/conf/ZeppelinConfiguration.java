@@ -79,6 +79,11 @@ public class ZeppelinConfiguration {
     DOCKER
   }
 
+  public enum DEFAULT_UI {
+    NEW,
+    CLASSIC
+  }
+
   // private constructor, so that it is singleton.
   private ZeppelinConfiguration(@Nullable String filename) {
      try {
@@ -882,6 +887,10 @@ public class ZeppelinConfiguration {
     return getBoolean(ConfVars.ZEPPELIN_METRIC_ENABLE_PROMETHEUS);
   }
 
+  public DEFAULT_UI getDefaultUi() {
+    return DEFAULT_UI.valueOf(getString(ConfVars.ZEPPELIN_DEFAULT_UI).toUpperCase());
+  }
+
   /**
    * This method return the complete configuration map
    * @return
@@ -942,6 +951,8 @@ public class ZeppelinConfiguration {
     ZEPPELIN_WAR("zeppelin.war", "zeppelin-web/dist"),
     ZEPPELIN_ANGULAR_WAR("zeppelin.angular.war", "zeppelin-web-angular/dist/zeppelin"),
     ZEPPELIN_WAR_TEMPDIR("zeppelin.war.tempdir", "webapps"),
+    // "new" or "classic"
+    ZEPPELIN_DEFAULT_UI("zeppelin.default.ui", "new"),
     ZEPPELIN_JMX_ENABLE("zeppelin.jmx.enable", false),
     ZEPPELIN_JMX_PORT("zeppelin.jmx.port", 9996),
 

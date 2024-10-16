@@ -62,6 +62,7 @@ import org.apache.shiro.web.env.EnvironmentLoaderListener;
 import org.apache.shiro.web.servlet.ShiroFilter;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
+import org.apache.zeppelin.conf.ZeppelinConfiguration.DEFAULT_UI;
 import org.apache.zeppelin.display.AngularObjectRegistryListener;
 import org.apache.zeppelin.healthcheck.HealthChecks;
 import org.apache.zeppelin.helium.ApplicationEventListener;
@@ -127,7 +128,8 @@ import org.slf4j.LoggerFactory;
 /** Main class of Zeppelin. */
 public class ZeppelinServer implements AutoCloseable {
   private static final Logger LOGGER = LoggerFactory.getLogger(ZeppelinServer.class);
-  private static final String WEB_APP_CONTEXT_CLASSIC = "/classic";
+  private static final String NON_DEFAULT_NEW_UI_WEB_APP_CONTEXT_PATH = "/new";
+  private static final String NON_DEFAULT_CLASSIC_UI_WEB_APP_CONTEXT_PATH = "/classic";
   public static final String DEFAULT_SERVICE_LOCATOR_NAME = "shared-locator";
 
   private final AtomicBoolean duringShutdown = new AtomicBoolean(false);
@@ -221,11 +223,22 @@ public class ZeppelinServer implements AutoCloseable {
         });
 
     // Multiple Web UI
-    final WebAppContext defaultWebApp = setupWebAppContext(contexts, zConf, zConf.getString(ConfVars.ZEPPELIN_ANGULAR_WAR), zConf.getServerContextPath());
-    final WebAppContext classicWebApp = setupWebAppContext(contexts, zConf, zConf.getString(ConfVars.ZEPPELIN_WAR), WEB_APP_CONTEXT_CLASSIC);
+    String classicUiWebAppContextPath;
+    String newUiWebAppContextPath;
+    if (isNewUiDefault(zConf)) {
+      classicUiWebAppContextPath = NON_DEFAULT_CLASSIC_UI_WEB_APP_CONTEXT_PATH;
+      newUiWebAppContextPath = zConf.getServerContextPath();
+    } else {
+      classicUiWebAppContextPath = zConf.getServerContextPath();
+      newUiWebAppContextPath = NON_DEFAULT_NEW_UI_WEB_APP_CONTEXT_PATH;
+    }
+    final WebAppContext newUiWebApp = setupWebAppContext(contexts, zConf, zConf.getString(ConfVars.ZEPPELIN_ANGULAR_WAR),
+        newUiWebAppContextPath);
+    final WebAppContext classicUiWebApp = setupWebAppContext(contexts, zConf, zConf.getString(ConfVars.ZEPPELIN_WAR),
+        classicUiWebAppContextPath);
 
-    initWebApp(defaultWebApp);
-    initWebApp(classicWebApp);
+    initWebApp(newUiWebApp);
+    initWebApp(classicUiWebApp);
 
     NotebookRepo repo =
         ServiceLocatorUtilities.getService(sharedServiceLocator, NotebookRepo.class.getName());
@@ -592,7 +605,7 @@ public class ZeppelinServer implements AutoCloseable {
       webApp.setTempDirectory(warTempDirectory);
     }
     // Explicit bind to root
-    webApp.addServlet(new ServletHolder(new IndexHtmlServlet(zConf)), "/index.html");
+    webApp.addServlet(new ServletHolder(new IndexHtmlServlet(zConf, contextPath)), "/index.html");
     contexts.addHandler(webApp);
 
     webApp.addFilter(new FilterHolder(new CorsFilter(zConf)), "/*", EnumSet.allOf(DispatcherType.class));
@@ -627,6 +640,10 @@ public class ZeppelinServer implements AutoCloseable {
 
     // Notebook server
     setupNotebookServer(webApp);
+  }
+
+  private static boolean isNewUiDefault(ZeppelinConfiguration zConf) {
+    return zConf.getDefaultUi() == DEFAULT_UI.NEW;
   }
 
   @Override

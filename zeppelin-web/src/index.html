@@ -159,7 +159,14 @@ limitations under the License.
       }
       // add root only if it's not dev mode
       if (Number(location.port) !== WEB_PORT) {
-        config.root = '.';
+        const origin = window.location.origin;
+        const pathname = window.location.pathname;
+        config.root = window.location.origin + (
+          // remove trailing slash
+          pathname.charAt(pathname.length - 1) === '/' ?
+            pathname.slice(0, -1) :
+            pathname
+        );
       }
       MathJax.Hub.Config(config);
     </script>

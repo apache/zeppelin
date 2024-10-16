@@ -46,10 +46,12 @@ public class IndexHtmlServlet extends HttpServlet {
 
   final String bodyAddon;
   final String headAddon;
+  final String baseHref;
 
-  public IndexHtmlServlet(ZeppelinConfiguration zConf) {
+  public IndexHtmlServlet(ZeppelinConfiguration zConf, String contextPath) {
     this.bodyAddon = zConf.getHtmlBodyAddon();
     this.headAddon = zConf.getHtmlHeadAddon();
+    this.baseHref = getBaseHref(contextPath);
   }
 
   @Override
@@ -79,11 +81,36 @@ public class IndexHtmlServlet extends HttpServlet {
             "Unable to process Head html addon. Could not find proper anchor in index.html.");
         }
       }
+      // process base href
+      if (baseHref != null) {
+        String baseTag = "<base href=\".*\">";
+        if (content.matches(baseTag)) {
+          content = content.replaceAll(baseTag, baseHref);
+        } else if (content.contains(TAG_HEAD_CLOSING)) {
+          content = content.replace(TAG_HEAD_CLOSING, baseHref + TAG_HEAD_CLOSING);
+        } else if (content.contains(TAG_BODY_OPENING)) {
+          content = content.replace(TAG_BODY_OPENING, baseHref + TAG_BODY_OPENING);
+        } else {
+          LOGGER.error(
+            "Unable to process base href. Could not find proper anchor in index.html.");
+        }
+      }
+
       resp.setContentType("text/html");
       resp.setStatus(HttpServletResponse.SC_OK);
       resp.getWriter().append(content);
     } catch (IOException e) {
       LOGGER.error("Error rendering index.html.", e);
     }
+  }
+
+  private String getBaseHref(String contextPath) {
+    if (contextPath == null) {
+      return null;
+    }
+    if (!contextPath.endsWith("/")) {
+      contextPath = contextPath + "/";
+    }
+    return "<base href=\"" + contextPath + "\">";
   }
 }

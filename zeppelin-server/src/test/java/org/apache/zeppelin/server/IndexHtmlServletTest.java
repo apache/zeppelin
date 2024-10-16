@@ -56,7 +56,7 @@ class IndexHtmlServletTest {
         .thenReturn(new URL("file:" + FILE_PATH_INDEX_HTML_ZEPPELIN_WEB));
       when(sc.getServletContext()).thenReturn(ctx);
 
-      IndexHtmlServlet servlet = new IndexHtmlServlet(zConf);
+      IndexHtmlServlet servlet = new IndexHtmlServlet(zConf, null);
       servlet.init(sc);
 
       HttpServletResponse mockResponse = mock(HttpServletResponse.class);
@@ -90,7 +90,7 @@ class IndexHtmlServletTest {
         .thenReturn(new URL("file:" + FILE_PATH_INDEX_HTML_ZEPPELIN_WEB_ANGULAR));
       when(sc.getServletContext()).thenReturn(ctx);
 
-      IndexHtmlServlet servlet = new IndexHtmlServlet(zConf);
+      IndexHtmlServlet servlet = new IndexHtmlServlet(zConf, null);
       servlet.init(sc);
 
       HttpServletResponse mockResponse = mock(HttpServletResponse.class);
