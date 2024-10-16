@@ -26,7 +26,8 @@ export class AppMessageInterceptor implements MessageInterceptor {
     private router: Router,
     private nzNotificationService: NzNotificationService,
     private ticketService: TicketService,
-    private nzModalService: NzModalService
+    private nzModalService: NzModalService,
+    private prevErrorInfo: string
   ) {}
 
   received<T extends keyof MessageReceiveDataTypeMap>(data: WebSocketMessage<T>): WebSocketMessage<T> {
@@ -60,8 +61,18 @@ export class AppMessageInterceptor implements MessageInterceptor {
     } else if (data.op === OP.ERROR_INFO) {
       // tslint:disable-next-line:no-any
       const rData = (data.data as any) as MessageReceiveDataTypeMap[OP.ERROR_INFO];
-      if (rData.info) {
-        this.nzNotificationService.warning('ERROR', rData.info);
+      const isDuplicateError = this.prevErrorInfo === rData.info;
+
+      if (!isDuplicateError && rData.info) {
+        this.nzNotificationService.warning('ERROR', rData.info, {
+          nzStyle: { wordWrap: 'break-word', wordBreak: 'break-all' }
+        });
+        this.prevErrorInfo = rData.info;
+      }
+      if (isDuplicateError) {
+        setTimeout(() => {
+          this.prevErrorInfo = null;
+        }, 500);
       }
     }
     return data;
