@@ -97,7 +97,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
     <!-- language versions -->
-    <java.version>1.8</java.version>
+    <java.version>11</java.version>
     <!-- These two lines could be changed like `maven.compiler.release` after updating JDK11 -->
     <maven.compiler.source>${java.version}</maven.compiler.source>
     <maven.compiler.target>${java.version}</maven.compiler.target>
