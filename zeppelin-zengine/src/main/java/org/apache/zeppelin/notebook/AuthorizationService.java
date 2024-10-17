@@ -26,6 +26,8 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -42,6 +44,12 @@ public class AuthorizationService {
 
   private final ZeppelinConfiguration zConf;
   private final ConfigStorage configStorage;
+
+  private static final Set<ZeppelinConfiguration.ConfVars> VALID_ROLES_CONF_VARS = EnumSet.of(
+      ZeppelinConfiguration.ConfVars.ZEPPELIN_OWNER_ROLES,
+      ZeppelinConfiguration.ConfVars.ZEPPELIN_WRITER_ROLES,
+      ZeppelinConfiguration.ConfVars.ZEPPELIN_READER_ROLES,
+      ZeppelinConfiguration.ConfVars.ZEPPELIN_RUNNER_ROLES);
 
   // contains roles for each user (username --> roles)
   private Map<String, Set<String>> userRoles = new ConcurrentHashMap<>();
@@ -106,8 +114,9 @@ public class AuthorizationService {
   private Set<String> normalizeUsers(Set<String> users) {
     Set<String> returnUser = new HashSet<>();
     for (String user : users) {
-      if (!user.trim().isEmpty()) {
-        returnUser.add(user.trim());
+      String trimmedUser = user.trim();
+      if (!trimmedUser.isEmpty()) {
+        returnUser.add(trimmedUser);
       }
     }
     return returnUser;
@@ -235,28 +244,77 @@ public class AuthorizationService {
   }
 
   public boolean isOwner(String noteId, Set<String> entities) {
-    return isMember(entities, getOwners(noteId)) || isAdmin(entities);
+    Set<String> owners = new HashSet<>(getOwners(noteId));
+    owners.addAll(getDefaultOwners());
+    return isMember(entities, owners) || isAdmin(entities);
   }
 
   public boolean isWriter(String noteId, Set<String> entities) {
-    return isMember(entities, getWriters(noteId)) ||
-            isMember(entities, getOwners(noteId)) ||
-            isAdmin(entities);
+    Set<String> owners = new HashSet<>(getOwners(noteId));
+    owners.addAll(getDefaultOwners());
+    Set<String> writers = new HashSet<>(getWriters(noteId));
+    writers.addAll(getDefaultWriters());
+    return isMember(entities, writers) ||
+           isMember(entities, owners) ||
+           isAdmin(entities);
   }
 
   public boolean isReader(String noteId, Set<String> entities) {
-    return isMember(entities, getReaders(noteId)) ||
-            isMember(entities, getOwners(noteId)) ||
-            isMember(entities, getWriters(noteId)) ||
-            isMember(entities, getRunners(noteId)) ||
-            isAdmin(entities);
+    Set<String> owners = new HashSet<>(getOwners(noteId));
+    owners.addAll(getDefaultOwners());
+    Set<String> writers = new HashSet<>(getWriters(noteId));
+    writers.addAll(getDefaultWriters());
+    Set<String> runners = new HashSet<>(getRunners(noteId));
+    runners.addAll(getDefaultRunners());
+    Set<String> readers = new HashSet<>(getReaders(noteId));
+    readers.addAll(getDefaultReaders());
+    return isMember(entities, readers) ||
+           isMember(entities, owners) ||
+           isMember(entities, writers) ||
+           isMember(entities, runners) ||
+           isAdmin(entities);
   }
 
   public boolean isRunner(String noteId, Set<String> entities) {
-    return isMember(entities, getRunners(noteId)) ||
-            isMember(entities, getWriters(noteId)) ||
-            isMember(entities, getOwners(noteId)) ||
-            isAdmin(entities);
+    Set<String> owners = new HashSet<>(getOwners(noteId));
+    owners.addAll(getDefaultOwners());
+    Set<String> writers = new HashSet<>(getWriters(noteId));
+    writers.addAll(getDefaultWriters());
+    Set<String> runners = new HashSet<>(getRunners(noteId));
+    runners.addAll(getDefaultRunners());
+    return isMember(entities, runners) ||
+           isMember(entities, writers) ||
+           isMember(entities, owners) ||
+           isAdmin(entities);
+  }
+
+  private Set<String> getDefaultOwners() {
+    return getDefaultRoles(ZeppelinConfiguration.ConfVars.ZEPPELIN_OWNER_ROLES);
+  }
+
+  private Set<String> getDefaultWriters() {
+    return getDefaultRoles(ZeppelinConfiguration.ConfVars.ZEPPELIN_WRITER_ROLES);
+  }
+
+  private Set<String> getDefaultReaders() {
+    return getDefaultRoles(ZeppelinConfiguration.ConfVars.ZEPPELIN_READER_ROLES);
+  }
+
+  private Set<String> getDefaultRunners() {
+    return getDefaultRoles(ZeppelinConfiguration.ConfVars.ZEPPELIN_RUNNER_ROLES);
+  }
+
+  private Set<String> getDefaultRoles(ZeppelinConfiguration.ConfVars confvar) {
+    if (!VALID_ROLES_CONF_VARS.contains(confvar)) {
+      LOGGER.warn("getDefaultRoles is used with {}, which is not valid", confvar);
+      return Collections.emptySet();
+    }
+    Set<String> defaultRoles = new HashSet<>();
+    String defaultRolesConf = zConf.getString(confvar);
+    if (StringUtils.isNotBlank(defaultRolesConf)) {
+      Collections.addAll(defaultRoles, StringUtils.split(defaultRolesConf, ','));
+    }
+    return normalizeUsers(defaultRoles);
   }
 
   private boolean isAdmin(Set<String> entities) {
