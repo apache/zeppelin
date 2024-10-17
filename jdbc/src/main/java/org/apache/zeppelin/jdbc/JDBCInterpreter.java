@@ -1058,8 +1058,14 @@ public class JDBCInterpreter extends KerberosInterpreter {
     LOGGER.debug("Run SQL command '{}'", cmd);
     String dbPrefix = getDBPrefix(context);
     LOGGER.debug("DBPrefix: {}, SQL command: '{}'", dbPrefix, cmd);
+    String interpreterName = getInterpreterGroup().getId();
+    if (interpreterName!=null && interpreterName.startsWith("spark_rca_")) {
+      cmd = "set STATEMENT_TIMEOUT=10800;\n"+cmd;
+    }
+    LOGGER.debug("InterpreterName: {}, SQL command: '{}'", interpreterName, cmd);
+    String finalCmd = cmd;
     if (!isRefreshMode(context)) {
-      return executeSql(dbPrefix, cmd, context);
+      return executeSql(dbPrefix, finalCmd, context);
     } else {
       int refreshInterval = Integer.parseInt(context.getLocalProperties().get("refreshInterval"));
       paragraphCancelMap.put(context.getParagraphId(), false);
@@ -1070,7 +1076,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
       refreshExecutor.scheduleAtFixedRate(() -> {
         context.out.clear(false);
         try {
-          InterpreterResult result = executeSql(dbPrefix, cmd, context);
+          InterpreterResult result = executeSql(dbPrefix, finalCmd, context);
           context.out.flush();
           interpreterResultRef.set(result);
           if (result.code() != Code.SUCCESS) {
