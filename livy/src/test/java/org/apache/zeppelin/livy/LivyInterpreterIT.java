@@ -679,12 +679,10 @@ public class LivyInterpreterIT extends WithLivyServer {
           .build();
 
       // the case failed due to a classloader issue, see ZEPPELIN-6134 for more details.
-      /*
       String p1 = IOUtils.toString(getClass().getResourceAsStream("/livy_tutorial_1.scala"),
           StandardCharsets.UTF_8);
       InterpreterResult result1 = sparkInterpreter.interpret(p1, context);
-      assertEquals(InterpreterResult.Code.SUCCESS, result1.code(), result1.toString());
-      */
+      // assertEquals(InterpreterResult.Code.SUCCESS, result1.code(), result1.toString());
 
       String p2 = IOUtils.toString(getClass().getResourceAsStream("/livy_tutorial_2.sql"),
           StandardCharsets.UTF_8);
