@@ -30,6 +30,7 @@ import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -651,6 +652,7 @@ public class LivyInterpreterIT extends WithLivyServer {
   }
 
   @Test
+  @Disabled("ZEPPELIN-6134: failed due to a livy-side(likely) classloader issue")
   void testLivyTutorialNote() throws IOException, InterpreterException {
     if (!checkPreCondition()) {
       return;
@@ -678,17 +680,16 @@ public class LivyInterpreterIT extends WithLivyServer {
           .setInterpreterOut(output)
           .build();
 
-      // the case failed due to a classloader issue, see ZEPPELIN-6134 for more details.
       String p1 = IOUtils.toString(getClass().getResourceAsStream("/livy_tutorial_1.scala"),
           StandardCharsets.UTF_8);
-      InterpreterResult result1 = sparkInterpreter.interpret(p1, context);
-      // assertEquals(InterpreterResult.Code.SUCCESS, result1.code(), result1.toString());
+      InterpreterResult result = sparkInterpreter.interpret(p1, context);
+      assertEquals(InterpreterResult.Code.SUCCESS, result.code(), result.toString());
 
       String p2 = IOUtils.toString(getClass().getResourceAsStream("/livy_tutorial_2.sql"),
           StandardCharsets.UTF_8);
-      InterpreterResult result2 = sqlInterpreter.interpret(p2, context);
-      assertEquals(InterpreterResult.Code.SUCCESS, result2.code(), result2.toString());
-      assertEquals(InterpreterResult.Type.TABLE, result2.message().get(0).getType());
+      result = sqlInterpreter.interpret(p2, context);
+      assertEquals(InterpreterResult.Code.SUCCESS, result.code(), result.toString());
+      assertEquals(InterpreterResult.Type.TABLE, result.message().get(0).getType());
     } finally {
       sparkInterpreter.close();
       sqlInterpreter.close();
