@@ -40,7 +40,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        java: [ 8, 11 ]
+        java: [ 11 ]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -91,7 +91,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        java: [ 8, 11 ]
+        java: [ 11 ]
     env:
       INTERPRETERS: 'hbase,jdbc,file,flink-cmd,cassandra,elasticsearch,bigquery,alluxio,livy,groovy,java,neo4j,sparql,mongodb,influxdb,shell'
     steps:
@@ -137,12 +137,7 @@ jobs:
       fail-fast: false
       matrix:
         python: [ 3.9 ]
-        java: [ 8, 11 ]
-        include:
-          - python: 3.7
-            java: 8
-          - python: 3.8
-            java: 8
+        java: [ 11 ]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -190,7 +185,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        java: [ 8, 11 ]
+        java: [ 11 ]
     steps:
       # user/password => root/root
       - name: Start mysql
@@ -259,7 +254,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: 8
+          java-version: 11
       - name: Cache local Maven repository
         uses: actions/cache@v4
         with:
@@ -297,7 +292,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        java: [ 8, 11 ]
+        java: [ 11 ]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -346,12 +341,7 @@ jobs:
       fail-fast: false
       matrix:
         python: [ 3.9 ]
-        java: [ 8, 11 ]
-        include:
-          - python: 3.7
-            java: 8
-          - python: 3.8
-            java: 8
+        java: [ 11 ]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -401,68 +391,16 @@ jobs:
           rm -rf spark/interpreter/metastore_db
           ./mvnw verify -pl spark-submit,spark/interpreter -am -Dtest=org/apache/zeppelin/spark/* -Pspark-3.4 -Pspark-scala-2.13 -Pintegration -DfailIfNoTests=false ${MAVEN_ARGS}
       - name: run spark-3.5 tests with scala-2.13 and python-${{ matrix.python }}
-        if: matrix.python >= '3.8'
         run: |
           rm -rf spark/interpreter/metastore_db
           ./mvnw verify -pl spark-submit,spark/interpreter -am -Dtest=org/apache/zeppelin/spark/* -Pspark-3.5 -Pspark-scala-2.13 -Pintegration -DfailIfNoTests=false ${MAVEN_ARGS}
-
-  # The version combination is based on the facts:
-  # 1. official Livy 0.8 binary tarball is built against Spark 2.4
-  # 2. official Spark 2.4 binary tarball is built against Scala 2.11
-  # 3. Spark 2.4 support Python 2.7, 3.4 to 3.7
-  livy-0-8-with-spark-2-4-under-python37:
-    runs-on: ubuntu-20.04
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Tune Runner VM
-        uses: ./.github/actions/tune-runner-vm
-      - name: Set up JDK 8
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: 8
-      - name: Cache local Maven repository
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.m2/repository
-            !~/.m2/repository/org/apache/zeppelin/
-            ~/.spark-dist
-            ~/.cache
-          key: ${{ runner.os }}-zeppelin-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-zeppelin-
-      - name: install environment
-        run: |
-          ./mvnw install -DskipTests -pl livy -am  ${MAVEN_ARGS}
-          ./testing/downloadSpark.sh "2.4.8" "2.7"
-          ./testing/downloadLivy.sh "0.8.0-incubating" "2.11"
-      - name: Setup conda environment with python 3.7 and R
-        uses: conda-incubator/setup-miniconda@v3
-        with:
-          activate-environment: python_37_with_R
-          environment-file: testing/env_python_3.7_with_R.yml
-          python-version: 3.7
-          channels: conda-forge,defaults
-          channel-priority: true
-          auto-activate-base: false
-          use-mamba: true
-      - name: Make IRkernel available to Jupyter
-        run: |
-          R -e "IRkernel::installspec()"
-      - name: run tests
-        run: |
-          export SPARK_HOME=$PWD/spark-2.4.8-bin-hadoop2.7
-          export LIVY_HOME=$PWD/apache-livy-0.8.0-incubating_2.11-bin
-          ./mvnw verify -pl livy -am ${MAVEN_ARGS}
 
   default-build:
     runs-on: ubuntu-20.04
     strategy:
       fail-fast: false
       matrix:
-        java: [ 8, 11 ]
+        java: [ 11 ]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
