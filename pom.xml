@@ -960,6 +960,7 @@
               <exclude>.git/</exclude>
               <exclude>.github/</exclude>
               <exclude>.gitignore</exclude>
+              <exclude>.gitattributes</exclude>
               <exclude>git.properties</exclude>
               <exclude>.repository/</exclude>
               <exclude>.rat-excludes/</exclude>
