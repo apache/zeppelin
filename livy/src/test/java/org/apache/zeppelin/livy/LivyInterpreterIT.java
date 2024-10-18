@@ -680,14 +680,14 @@ public class LivyInterpreterIT extends WithLivyServer {
 
       String p1 = IOUtils.toString(getClass().getResourceAsStream("/livy_tutorial_1.scala"),
           StandardCharsets.UTF_8);
-      InterpreterResult result = sparkInterpreter.interpret(p1, context);
-      assertEquals(InterpreterResult.Code.SUCCESS, result.code(), result.toString());
+      InterpreterResult result1 = sparkInterpreter.interpret(p1, context);
+      assertEquals(InterpreterResult.Code.SUCCESS, result1.code(), result1.toString());
 
       String p2 = IOUtils.toString(getClass().getResourceAsStream("/livy_tutorial_2.sql"),
           StandardCharsets.UTF_8);
-      result = sqlInterpreter.interpret(p2, context);
-      assertEquals(InterpreterResult.Code.SUCCESS, result.code(), result.toString());
-      assertEquals(InterpreterResult.Type.TABLE, result.message().get(0).getType());
+      InterpreterResult result2 = sqlInterpreter.interpret(p2, context);
+      assertEquals(InterpreterResult.Code.SUCCESS, result2.code(), result2.toString());
+      assertEquals(InterpreterResult.Type.TABLE, result2.message().get(0).getType());
     } finally {
       sparkInterpreter.close();
       sqlInterpreter.close();
