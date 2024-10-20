@@ -23,14 +23,27 @@ WORKDIR /zeppelin
 
 RUN chmod +x ./mvnw
 
-RUN ./mvnw clean package -am -pl zeppelin-interpreter-shaded,zeppelin-interpreter,rlang -DskipTests
+RUN ./mvnw clean package -DskipTests -Pinclude-hadoop
 
 
 FROM openjdk:11
 
 RUN apt-get update && \
     apt-get install -y r-base && \
+    apt-get install -y python3 python3-pip && \
+        pip3 install jupyter-client grpcio protobuf~=3.20 ipython ipykernel && \
+    ln -s /usr/bin/python3 /usr/bin/python && \
+    wget https://archive.apache.org/dist/spark/spark-3.5.2/spark-3.5.2-bin-hadoop3.tgz && \
+        tar -xvf spark-3.5.2-bin-hadoop3.tgz && \
+        mv spark-3.5.2-bin-hadoop3/ /opt/spark && \
+        rm -rf spark-3.5.2-bin-hadoop3.tgz && \
     rm -rf /var/lib/apt/lists/*
+
+RUN R -e "install.packages('IRkernel', repos='http://cran.r-project.org')" && \
+    R -e "IRkernel::installspec(user = FALSE)" && \
+    R -e "install.packages('devtools', repos='http://cran.us.r-project.org')" && \
+    R -e "install.packages('knitr', repos='http://cran.us.r-project.org')" && \
+    R -e "install.packages('ggplot2', repos='http://cran.us.r-project.org')"
 
 COPY --from=builder /zeppelin/bin /zeppelin/bin/
 COPY --from=builder /zeppelin/conf /zeppelin/conf
