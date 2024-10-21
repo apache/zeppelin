@@ -33,6 +33,8 @@
     <description>Zeppelin Spark Support</description>
 
     <properties>
+        <interpreter.name>spark</interpreter.name>
+
         <spark.version>3.5.3</spark.version>
         <protobuf.version>3.21.12</protobuf.version>
         <py4j.version>0.10.9.7</py4j.version>
