@@ -40,7 +40,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        java: [ 8, 11 ]
+        java: [ 11 ]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -91,7 +91,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        java: [ 8, 11 ]
+        java: [ 11 ]
     env:
       INTERPRETERS: 'hbase,jdbc,file,flink-cmd,cassandra,elasticsearch,bigquery,alluxio,livy,groovy,java,neo4j,sparql,mongodb,influxdb,shell'
     steps:
@@ -137,12 +137,7 @@ jobs:
       fail-fast: false
       matrix:
         python: [ 3.9 ]
-        java: [ 8, 11 ]
-        include:
-          - python: 3.7
-            java: 8
-          - python: 3.8
-            java: 8
+        java: [ 11 ]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -190,7 +185,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        java: [ 8, 11 ]
+        java: [ 11 ]
     steps:
       # user/password => root/root
       - name: Start mysql
@@ -259,7 +254,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: 8
+          java-version: 11
       - name: Cache local Maven repository
         uses: actions/cache@v4
         with:
@@ -297,7 +292,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        java: [ 8, 11 ]
+        java: [ 11 ]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -346,12 +341,7 @@ jobs:
       fail-fast: false
       matrix:
         python: [ 3.9 ]
-        java: [ 8, 11 ]
-        include:
-          - python: 3.7
-            java: 8
-          - python: 3.8
-            java: 8
+        java: [ 11 ]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -401,7 +391,6 @@ jobs:
           rm -rf spark/interpreter/metastore_db
           ./mvnw verify -pl spark-submit,spark/interpreter -am -Dtest=org/apache/zeppelin/spark/* -Pspark-3.4 -Pspark-scala-2.13 -Pintegration -DfailIfNoTests=false ${MAVEN_ARGS}
       - name: run spark-3.5 tests with scala-2.13 and python-${{ matrix.python }}
-        if: matrix.python >= '3.8'
         run: |
           rm -rf spark/interpreter/metastore_db
           ./mvnw verify -pl spark-submit,spark/interpreter -am -Dtest=org/apache/zeppelin/spark/* -Pspark-3.5 -Pspark-scala-2.13 -Pintegration -DfailIfNoTests=false ${MAVEN_ARGS}
@@ -460,7 +449,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        java: [ 8, 11 ]
+        java: [ 11 ]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
