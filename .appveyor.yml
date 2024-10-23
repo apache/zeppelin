@@ -31,7 +31,7 @@ platform:
 build: Script
 
 os:
-  - Visual Studio 2022
+  - Visual Studio 2019
 
 environment:
   APPVEYOR_SAVE_CACHE_ON_ERROR: True
@@ -40,7 +40,7 @@ cache:
   - '%USERPROFILE%/.m2'
 
 build_script:
-  - cmd: set JAVA_HOME=C:\Program Files\Java\jdk1.8.0
+  - cmd: set JAVA_HOME=C:\Program Files\Java\jdk11
   - cmd: >-
       ./mvnw.cmd clean package -DskipTests ^
       -Dorg.slf4j.simpleLogger.log.org.apache.maven.plugins.shade.mojo.ShadeMojo=warn ^
