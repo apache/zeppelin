@@ -64,7 +64,7 @@ public class HttpBasedClient implements ElasticsearchClient {
   public HttpBasedClient(Properties props) {
     this.protocol = loadProtocol(props);
     this.host = props.getProperty(ElasticsearchInterpreter.ELASTICSEARCH_HOST);
-    this.port = Integer.parseInt(props.getProperty(ElasticsearchInterpreter.ELASTICSEARCH_PORT));
+    this.port = Integer.parseInt(props.getProperty(ElasticsearchInterpreter.ELASTICSEARCH_PORT).split("\\.")[0]);
     this.username = props.getProperty(ElasticsearchInterpreter.ELASTICSEARCH_BASIC_AUTH_USERNAME);
     this.password = props.getProperty(ElasticsearchInterpreter.ELASTICSEARCH_BASIC_AUTH_PASSWORD);
   }
