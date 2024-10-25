@@ -101,10 +101,10 @@ public class BigQueryInterpreter extends Interpreter {
 
   private static final Function<CharSequence, String> sequenceToStringTransformer =
       new Function<CharSequence, String>() {
-      public String apply(CharSequence seq) {
-        return seq.toString();
-      }
-    };
+        public String apply(CharSequence seq) {
+          return seq.toString();
+        }
+      };
 
   public BigQueryInterpreter(Properties property) {
     super(property);

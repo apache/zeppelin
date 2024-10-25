@@ -101,26 +101,24 @@ public class ElasticsearchInterpreterTest {
               .field("headers", Arrays.asList("Accept: *.*", "Host: apache.org"))
             .endObject()
             .field("status", STATUS[RandomUtils.nextInt(0, STATUS.length)])
-            .field("content_length", RandomUtils.nextInt(0, 2000))
-          )
-        .get();
+            .field("content_length", RandomUtils.nextInt(0, 2000)))
+            .get();
     }
 
     for (int i = 1; i < 3; i++) {
       elsClient.prepareIndex("logs", "http", "very/strange/id#" + i)
         .setRefresh(true)
         .setSource(jsonBuilder()
-            .startObject()
-              .field("date", new Date())
-              .startObject("request")
-                .field("method", METHODS[RandomUtils.nextInt(0, METHODS.length)])
-                .field("url", "/zeppelin/" + UUID.randomUUID().toString())
-                .field("headers", Arrays.asList("Accept: *.*", "Host: apache.org"))
-              .endObject()
-              .field("status", STATUS[RandomUtils.nextInt(0, STATUS.length)])
-              .field("content_length", RandomUtils.nextInt(0, 2000))
-            )
-        .get();
+          .startObject()
+            .field("date", new Date())
+            .startObject("request")
+              .field("method", METHODS[RandomUtils.nextInt(0, METHODS.length)])
+              .field("url", "/zeppelin/" + UUID.randomUUID().toString())
+              .field("headers", Arrays.asList("Accept: *.*", "Host: apache.org"))
+            .endObject()
+            .field("status", STATUS[RandomUtils.nextInt(0, STATUS.length)])
+            .field("content_length", RandomUtils.nextInt(0, 2000)))
+            .get();
     }
 
     final Properties props = new Properties();
