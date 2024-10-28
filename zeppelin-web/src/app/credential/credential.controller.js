@@ -26,6 +26,8 @@ function CredentialController($scope, $rootScope, $http, baseUrlSrv, ngToast) {
   $scope.entity = '';
   $scope.password = '';
   $scope.username = '';
+  $scope.readers = [];
+  $scope.owners = [];
 
   $scope.hasCredential = () => {
     return Array.isArray($scope.credentialInfo) && $scope.credentialInfo.length;
@@ -35,7 +37,7 @@ function CredentialController($scope, $rootScope, $http, baseUrlSrv, ngToast) {
     $http.get(baseUrlSrv.getRestApiBase() + '/credential')
       .success(function(data, status, headers, config) {
         $scope.credentialInfo.length = 0; // keep the ref while cleaning
-        const returnedCredentials = data.body.userCredentials;
+        const returnedCredentials = data.body;
 
         for (let key in returnedCredentials) {
           if (returnedCredentials.hasOwnProperty(key)) {
@@ -44,6 +46,8 @@ function CredentialController($scope, $rootScope, $http, baseUrlSrv, ngToast) {
               entity: key,
               password: value.password,
               username: value.username,
+              readers: value.readers,
+              owners: value.owners,
             });
           }
         }
@@ -75,8 +79,16 @@ function CredentialController($scope, $rootScope, $http, baseUrlSrv, ngToast) {
       'entity': $scope.entity,
       'username': $scope.username,
       'password': $scope.password,
+      'owners': angular.element('#NewCredentialOwners').val(),
+      'readers': angular.element('#NewCredentialReaders').val(),
     };
 
+    for (let i = 0; i < newCredential.owners.length; i++) {
+      newCredential.owners[i] = newCredential.owners[i].trim();
+    }
+    for (let i = 0; i < newCredential.readers.length; i++) {
+      newCredential.readers[i] = newCredential.readers[i].trim();
+    }
     $http.put(baseUrlSrv.getRestApiBase() + '/credential', newCredential)
       .success(function(data, status, headers, config) {
         showToast('Successfully saved credentials.', 'success');
@@ -115,8 +127,21 @@ function CredentialController($scope, $rootScope, $http, baseUrlSrv, ngToast) {
   $scope.toggleAddNewCredentialInfo = function() {
     if ($scope.showAddNewCredentialInfo) {
       $scope.showAddNewCredentialInfo = false;
+      angular.element('#NewCredentialOwners').select2({});
+      angular.element('#NewCredentialReaders').select2({});
     } else {
+      let initialOwner = $rootScope.ticket.principal === 'anonymous' ? [] : [$rootScope.ticket.principal];
       $scope.showAddNewCredentialInfo = true;
+      $scope.owners = initialOwner;
+      $scope.readers = [];
+      angular.element('#NewCredentialOwners').select2(getSelectJson());
+      angular.element('#NewCredentialReaders').select2(getSelectJson());
+      if (initialOwner.length) {
+        let initialOwnerOption = new Option(initialOwner[0], initialOwner[0], true, false);
+        angular.element('#NewCredentialOwners').append(initialOwnerOption).trigger('change');
+      }
+      angular.element('#NewCredentialOwners').val(null).trigger('change');
+      angular.element('#NewCredentialReaders').val(null).trigger('change');
     }
   };
 
@@ -129,10 +154,17 @@ function CredentialController($scope, $rootScope, $http, baseUrlSrv, ngToast) {
     $scope.entity = '';
     $scope.username = '';
     $scope.password = '';
+    $scope.readers = [];
+    $scope.owners = [];
   };
 
   $scope.copyOriginCredentialsInfo = function() {
     showToast('Since entity is a unique key, you can edit only username & password', 'info');
+  };
+
+  let renderOwnersReadersSelect2 = function(entity) {
+    angular.element('#' + entity + 'Owners').select2(getSelectJson());
+    angular.element('#' + entity + 'Readers').select2(getSelectJson());
   };
 
   $scope.updateCredentialInfo = function(form, data, entity) {
@@ -145,18 +177,32 @@ function CredentialController($scope, $rootScope, $http, baseUrlSrv, ngToast) {
       entity: entity,
       username: data.username,
       password: data.password,
+      owners: angular.element('#' + entity + 'Owners').val(),
+      readers: angular.element('#' + entity + 'Readers').val(),
     };
 
+    for (let i = 0; i < credential.owners.length; i++) {
+      credential.owners[i] = credential.owners[i].trim();
+    }
+    for (let i = 0; i < credential.readers.length; i++) {
+      credential.readers[i] = credential.readers[i].trim();
+    }
     $http.put(baseUrlSrv.getRestApiBase() + '/credential/', credential)
       .success(function(data, status, headers, config) {
         const index = $scope.credentialInfo.findIndex((elem) => elem.entity === entity);
         $scope.credentialInfo[index] = credential;
+        setTimeout(function() {
+          renderOwnersReadersSelect2(entity);
+        }, 100);
         return true;
       })
       .error(function(data, status, headers, config) {
         showToast('We could not save the credential', 'danger');
         console.log('Error %o %o', status, data.message);
         form.$show();
+        setTimeout(function() {
+          renderOwnersReadersSelect2(entity);
+        }, 100);
       });
     return false;
   };
@@ -197,6 +243,68 @@ function CredentialController($scope, $rootScope, $http, baseUrlSrv, ngToast) {
       ngToast.danger({content: message, verticalPosition: verticalPosition, timeout: timeout});
     }
   }
+
+  let getSelectJson = function() {
+    let selectJson = {
+      tags: true,
+      minimumInputLength: 3,
+      multiple: true,
+      tokenSeparators: [',', ' '],
+      ajax: {
+        url: function(params) {
+          if (!params.term) {
+            return false;
+          }
+          return baseUrlSrv.getRestApiBase() + '/security/userlist/' + params.term;
+        },
+        delay: 250,
+        processResults: function(data, params) {
+          let results = [];
+
+          if (data.body.users.length !== 0) {
+            let users = [];
+            for (let len = 0; len < data.body.users.length; len++) {
+              users.push({
+                'id': data.body.users[len],
+                'text': data.body.users[len],
+              });
+            }
+            results.push({
+              'text': 'Users :',
+              'children': users,
+            });
+          }
+          if (data.body.roles.length !== 0) {
+            let roles = [];
+            for (let len = 0; len < data.body.roles.length; len++) {
+              roles.push({
+                'id': data.body.roles[len],
+                'text': data.body.roles[len],
+              });
+            }
+            results.push({
+              'text': 'Roles :',
+              'children': roles,
+            });
+          }
+          return {
+            results: results,
+            pagination: {
+              more: false,
+            },
+          };
+        },
+        cache: false,
+      },
+    };
+    return selectJson;
+  };
+
+  $scope.$on('ngRenderFinished', function(event, data) {
+    for (let credential = 0; credential < $scope.credentialInfo.length; credential++) {
+      renderOwnersReadersSelect2($scope.credentialInfo[credential].entity);
+    }
+  });
 
   $scope.getCredentialDocsLink = function() {
     const currentVersion = $rootScope.zeppelinVersion;
