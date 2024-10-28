@@ -17,7 +17,7 @@
 
 package org.apache.zeppelin.sparql;
 
-import org.apache.jena.fuseki.Fuseki;
+import org.apache.jena.atlas.web.WebLib;
 import org.apache.jena.fuseki.main.FusekiServer;
 import org.apache.jena.fuseki.server.DataAccessPointRegistry;
 import org.apache.jena.query.Dataset;
@@ -52,7 +52,7 @@ class SparqlJenaEngineTest {
 
   @BeforeAll
   public static void setUp() {
-    port = Fuseki.choosePort();
+    port = WebLib.choosePort();
 
     Model model = ModelFactory.createDefaultModel();
     model.read(DATA_FILE);
