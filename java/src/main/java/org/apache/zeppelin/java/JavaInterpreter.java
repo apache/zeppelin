@@ -52,7 +52,7 @@ public class JavaInterpreter extends Interpreter {
     /* Clean up .class files created during the compilation process. */
     Stream.of(
       new File(".").listFiles(f -> f.getAbsolutePath().endsWith(".class")))
-      .forEach(f -> f.delete());
+        .forEach(f -> f.delete());
   }
 
   @Override
