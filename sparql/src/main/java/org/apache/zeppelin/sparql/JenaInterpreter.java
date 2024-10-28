@@ -19,6 +19,7 @@ package org.apache.zeppelin.sparql;
 
 import org.apache.http.HttpStatus;
 
+import org.apache.jena.atlas.web.HttpException;
 import org.apache.jena.query.QueryExecution;
 import org.apache.jena.query.QueryParseException;
 import org.apache.jena.query.ResultSet;
@@ -84,7 +85,7 @@ public class JenaInterpreter implements SparqlEngine {
               InterpreterResult.Code.SUCCESS,
               InterpreterResult.Type.TABLE,
               tsv);
-    } catch (QueryParseException e) {
+    } catch (QueryParseException | HttpException e) {
       LOGGER.error(e.toString());
       return new InterpreterResult(
         InterpreterResult.Code.ERROR,
