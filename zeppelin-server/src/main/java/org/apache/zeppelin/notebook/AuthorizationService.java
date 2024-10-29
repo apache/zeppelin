@@ -244,48 +244,38 @@ public class AuthorizationService {
   }
 
   public boolean isOwner(String noteId, Set<String> entities) {
-    Set<String> owners = new HashSet<>(getOwners(noteId));
-    owners.addAll(getDefaultOwners());
-    return isMember(entities, owners) || isAdmin(entities);
+    return isMember(entities, constructRoles(getOwners(noteId), getDefaultOwners())) ||
+           isAdmin(entities);
   }
 
   public boolean isWriter(String noteId, Set<String> entities) {
-    Set<String> owners = new HashSet<>(getOwners(noteId));
-    owners.addAll(getDefaultOwners());
-    Set<String> writers = new HashSet<>(getWriters(noteId));
-    writers.addAll(getDefaultWriters());
-    return isMember(entities, writers) ||
-           isMember(entities, owners) ||
+    return isMember(entities, constructRoles(getWriters(noteId), getDefaultWriters())) ||
+           isMember(entities, constructRoles(getOwners(noteId), getDefaultOwners())) ||
            isAdmin(entities);
   }
 
   public boolean isReader(String noteId, Set<String> entities) {
-    Set<String> owners = new HashSet<>(getOwners(noteId));
-    owners.addAll(getDefaultOwners());
-    Set<String> writers = new HashSet<>(getWriters(noteId));
-    writers.addAll(getDefaultWriters());
-    Set<String> runners = new HashSet<>(getRunners(noteId));
-    runners.addAll(getDefaultRunners());
-    Set<String> readers = new HashSet<>(getReaders(noteId));
-    readers.addAll(getDefaultReaders());
-    return isMember(entities, readers) ||
-           isMember(entities, owners) ||
-           isMember(entities, writers) ||
-           isMember(entities, runners) ||
+    return isMember(entities, constructRoles(getReaders(noteId), getDefaultReaders())) ||
+           isMember(entities, constructRoles(getOwners(noteId), getDefaultOwners())) ||
+           isMember(entities, constructRoles(getWriters(noteId), getDefaultWriters())) ||
+           isMember(entities, constructRoles(getRunners(noteId), getDefaultRunners())) ||
            isAdmin(entities);
   }
 
   public boolean isRunner(String noteId, Set<String> entities) {
-    Set<String> owners = new HashSet<>(getOwners(noteId));
-    owners.addAll(getDefaultOwners());
-    Set<String> writers = new HashSet<>(getWriters(noteId));
-    writers.addAll(getDefaultWriters());
-    Set<String> runners = new HashSet<>(getRunners(noteId));
-    runners.addAll(getDefaultRunners());
-    return isMember(entities, runners) ||
-           isMember(entities, writers) ||
-           isMember(entities, owners) ||
+    return isMember(entities, constructRoles(getRunners(noteId), getDefaultRunners())) ||
+           isMember(entities, constructRoles(getWriters(noteId), getDefaultWriters())) ||
+           isMember(entities, constructRoles(getOwners(noteId), getDefaultOwners())) ||
            isAdmin(entities);
+  }
+
+  private Set<String> constructRoles(Set<String> noteRoles, Set<String> globalRoles) {
+    Set<String> roles = new HashSet<>(noteRoles);
+    // If the note has no role, the note right is for everyone, so we are not allowed to add the default roles
+    if (!roles.isEmpty()) {
+      roles.addAll(globalRoles);
+    }
+    return roles;
   }
 
   private Set<String> getDefaultOwners() {

@@ -24,6 +24,7 @@ import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
@@ -40,6 +41,8 @@ class AuthorizationServiceTest {
   private AuthorizationService authorizationService;
   private static final String BLANK_ROLE = " ";
   private static final String EMPTY_ROLE = "";
+  private static final String TEST_USER_1 = "TestUser1";
+  private static final String TEST_USER_2 = "TestUser2";
 
   @BeforeEach
   private void setup() throws IOException {
@@ -54,7 +57,7 @@ class AuthorizationServiceTest {
   @Test
   void testDefaultOwners() throws IOException {
     Note testNote = new Note();
-    authorizationService.createNoteAuth(testNote.getId(), new AuthenticationInfo("TestUser"));
+    authorizationService.createNoteAuth(testNote.getId(), new AuthenticationInfo(TEST_USER_1));
 
     // Comma separated with trim
     when(zConf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_OWNER_ROLES)).thenReturn("TestGroup, TestGroup2");
@@ -73,14 +76,14 @@ class AuthorizationServiceTest {
     assertFalse(authorizationService.isOwner(testNote.getId(), new HashSet<>(Arrays.asList(EMPTY_ROLE))));
     // Empty - null
     when(zConf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_OWNER_ROLES)).thenReturn(null);
-    assertTrue(authorizationService.isOwner(testNote.getId(), new HashSet<>(Arrays.asList("TestUser"))));
+    assertTrue(authorizationService.isOwner(testNote.getId(), new HashSet<>(Arrays.asList(TEST_USER_1))));
 
   }
 
   @Test
   void testDefaultRunners() throws IOException {
     Note testNote = new Note();
-    authorizationService.createNoteAuth(testNote.getId(), new AuthenticationInfo("TestUser"));
+    authorizationService.createNoteAuth(testNote.getId(), new AuthenticationInfo(TEST_USER_1));
 
     // Comma separated with trim
     when(zConf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_RUNNER_ROLES)).thenReturn("TestGroup, TestGroup2");
@@ -99,13 +102,13 @@ class AuthorizationServiceTest {
     assertFalse(authorizationService.isRunner(testNote.getId(), new HashSet<>(Arrays.asList(EMPTY_ROLE))));
     // Empty - null
     when(zConf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_RUNNER_ROLES)).thenReturn(null);
-    assertTrue(authorizationService.isRunner(testNote.getId(), new HashSet<>(Arrays.asList("TestUser"))));
+    assertTrue(authorizationService.isRunner(testNote.getId(), new HashSet<>(Arrays.asList(TEST_USER_1))));
   }
 
   @Test
   void testDefaultWriters() throws IOException {
     Note testNote = new Note();
-    authorizationService.createNoteAuth(testNote.getId(), new AuthenticationInfo("TestUser"));
+    authorizationService.createNoteAuth(testNote.getId(), new AuthenticationInfo(TEST_USER_1));
 
     // Comma separated with trim
     when(zConf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_WRITER_ROLES)).thenReturn("TestGroup, TestGroup2");
@@ -124,13 +127,13 @@ class AuthorizationServiceTest {
     assertFalse(authorizationService.isWriter(testNote.getId(), new HashSet<>(Arrays.asList(EMPTY_ROLE))));
     // Empty - null
     when(zConf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_WRITER_ROLES)).thenReturn(null);
-    assertTrue(authorizationService.isWriter(testNote.getId(), new HashSet<>(Arrays.asList("TestUser"))));
+    assertTrue(authorizationService.isWriter(testNote.getId(), new HashSet<>(Arrays.asList(TEST_USER_1))));
   }
 
   @Test
   void testDefaultReaders() throws IOException {
     Note testNote = new Note();
-    authorizationService.createNoteAuth(testNote.getId(), new AuthenticationInfo("TestUser"));
+    authorizationService.createNoteAuth(testNote.getId(), new AuthenticationInfo(TEST_USER_1));
 
     // Comma separated with trim
     when(zConf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_READER_ROLES)).thenReturn("TestGroup, TestGroup2");
@@ -149,6 +152,55 @@ class AuthorizationServiceTest {
     assertFalse(authorizationService.isReader(testNote.getId(), new HashSet<>(Arrays.asList(EMPTY_ROLE))));
     // Empty - null
     when(zConf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_READER_ROLES)).thenReturn(null);
-    assertTrue(authorizationService.isReader(testNote.getId(), new HashSet<>(Arrays.asList("TestUser"))));
+    assertTrue(authorizationService.isReader(testNote.getId(), new HashSet<>(Arrays.asList(TEST_USER_1))));
   }
+
+  @Test
+  void testWorldReadable() throws IOException {
+    Note testNote = new Note();
+    authorizationService.createNoteAuth(testNote.getId(), new AuthenticationInfo(TEST_USER_1));
+    authorizationService.setReaders(testNote.getId(), Collections.emptySet());
+
+    assertTrue(authorizationService.isReader(testNote.getId(), new HashSet<>(Arrays.asList(TEST_USER_2))));
+    assertFalse(authorizationService.isRunner(testNote.getId(), new HashSet<>(Arrays.asList(TEST_USER_2))));
+    assertFalse(authorizationService.isWriter(testNote.getId(), new HashSet<>(Arrays.asList(TEST_USER_2))));
+    assertFalse(authorizationService.isOwner(testNote.getId(), new HashSet<>(Arrays.asList(TEST_USER_2))));
+  }
+
+  @Test
+  void testWorldRunnable() throws IOException {
+    Note testNote = new Note();
+    authorizationService.createNoteAuth(testNote.getId(), new AuthenticationInfo(TEST_USER_1));
+    authorizationService.setRunners(testNote.getId(), Collections.emptySet());
+
+    assertTrue(authorizationService.isReader(testNote.getId(), new HashSet<>(Arrays.asList(TEST_USER_2))));
+    assertTrue(authorizationService.isRunner(testNote.getId(), new HashSet<>(Arrays.asList(TEST_USER_2))));
+    assertFalse(authorizationService.isWriter(testNote.getId(), new HashSet<>(Arrays.asList(TEST_USER_2))));
+    assertFalse(authorizationService.isOwner(testNote.getId(), new HashSet<>(Arrays.asList(TEST_USER_2))));
+  }
+
+  @Test
+  void testWorldWritable() throws IOException {
+    Note testNote = new Note();
+    authorizationService.createNoteAuth(testNote.getId(), new AuthenticationInfo(TEST_USER_1));
+    authorizationService.setWriters(testNote.getId(), Collections.emptySet());
+
+    assertTrue(authorizationService.isReader(testNote.getId(), new HashSet<>(Arrays.asList(TEST_USER_2))));
+    assertTrue(authorizationService.isRunner(testNote.getId(), new HashSet<>(Arrays.asList(TEST_USER_2))));
+    assertTrue(authorizationService.isWriter(testNote.getId(), new HashSet<>(Arrays.asList(TEST_USER_2))));
+    assertFalse(authorizationService.isOwner(testNote.getId(), new HashSet<>(Arrays.asList(TEST_USER_2))));
+  }
+
+  @Test
+  void testWorldOwnership() throws IOException {
+    Note testNote = new Note();
+    authorizationService.createNoteAuth(testNote.getId(), new AuthenticationInfo(TEST_USER_1));
+    authorizationService.setOwners(testNote.getId(), Collections.emptySet());
+
+    assertTrue(authorizationService.isReader(testNote.getId(), new HashSet<>(Arrays.asList(TEST_USER_2))));
+    assertTrue(authorizationService.isRunner(testNote.getId(), new HashSet<>(Arrays.asList(TEST_USER_2))));
+    assertTrue(authorizationService.isWriter(testNote.getId(), new HashSet<>(Arrays.asList(TEST_USER_2))));
+    assertTrue(authorizationService.isOwner(testNote.getId(), new HashSet<>(Arrays.asList(TEST_USER_2))));
+  }
+
 }
