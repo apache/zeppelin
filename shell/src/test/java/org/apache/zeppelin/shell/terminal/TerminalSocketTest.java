@@ -17,49 +17,40 @@
 
 package org.apache.zeppelin.shell.terminal;
 
+import java.util.ArrayList;
+import java.util.List;
+import javax.websocket.CloseReason;
+import javax.websocket.Endpoint;
+import javax.websocket.EndpointConfig;
+import javax.websocket.Session;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.websocket.ClientEndpoint;
-import javax.websocket.CloseReason;
-import javax.websocket.OnClose;
-import javax.websocket.OnError;
-import javax.websocket.OnMessage;
-import javax.websocket.OnOpen;
-import javax.websocket.Session;
-import javax.websocket.server.ServerEndpoint;
-import java.util.ArrayList;
-import java.util.List;
-
-@ClientEndpoint
-@ServerEndpoint(value = "/")
-public class TerminalSocketTest {
+public class TerminalSocketTest extends Endpoint {
   private static final Logger LOGGER = LoggerFactory.getLogger(TerminalSocketTest.class);
 
   public static final List<String> ReceivedMsg = new ArrayList();
 
-  @OnOpen
-  public void onWebSocketConnect(Session sess)
-  {
-    LOGGER.info("Socket Connected: " + sess);
+  @Override
+  public void onOpen(Session session, EndpointConfig endpointConfig) {
+    LOGGER.info("Socket Connected: " + session);
+
+    session.addMessageHandler(new javax.websocket.MessageHandler.Whole<String>() {
+      @Override
+      public void onMessage(String message) {
+        LOGGER.info("Received TEXT message: " + message);
+        ReceivedMsg.add(message);
+      }
+    });
   }
 
-  @OnMessage
-  public void onWebSocketText(String message)
-  {
-    LOGGER.info("Received TEXT message: " + message);
-    ReceivedMsg.add(message);
+  @Override
+  public void onClose(Session session, CloseReason closeReason) {
+    LOGGER.info("Socket Closed: " + closeReason);
   }
 
-  @OnClose
-  public void onWebSocketClose(CloseReason reason)
-  {
-    LOGGER.info("Socket Closed: " + reason);
-  }
-
-  @OnError
-  public void onWebSocketError(Throwable cause)
-  {
+  @Override
+  public void onError(Session session, Throwable cause) {
     LOGGER.error(cause.getMessage(), cause);
   }
 }
