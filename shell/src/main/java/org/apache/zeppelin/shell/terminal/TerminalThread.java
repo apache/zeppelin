@@ -52,13 +52,13 @@ public class TerminalThread extends Thread {
     connector.setPort(port);
     jettyServer.addConnector(connector);
 
-    ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
-    context.setContextPath("/terminal/");
+    ServletContextHandler terminalSocketContext = new ServletContextHandler(ServletContextHandler.SESSIONS);
+    terminalSocketContext.setContextPath("/terminal/");
 
     // We look for a file, as ClassLoader.getResource() is not
     // designed to look for directories (we resolve the directory later)
     ClassLoader clazz = TerminalThread.class.getClassLoader();
-    URL url = clazz.getResource("html");
+    URL url = clazz.getResource("static");
     if (url == null) {
       throw new RuntimeException("Unable to find resource directory");
     }
@@ -68,14 +68,17 @@ public class TerminalThread extends Thread {
     String webRootUri = url.toExternalForm();
     LOGGER.info("WebRoot is " + webRootUri);
     // debug
-    // webRootUri = "/home/hadoop/zeppelin-current/interpreter/sh";
     resourceHandler.setResourceBase(webRootUri);
 
-    HandlerCollection handlers = new HandlerCollection(context, resourceHandler);
+    ServletContextHandler terminalWebContext = new ServletContextHandler(ServletContextHandler.SESSIONS);
+    terminalWebContext.setContextPath("/terminal-ui/");
+    terminalWebContext.addServlet(TerminalServlet.class, "/");
+
+    HandlerCollection handlers = new HandlerCollection(terminalSocketContext, terminalWebContext, resourceHandler);
     jettyServer.setHandler(handlers);
 
     try {
-      ServerContainer container = WebSocketServerContainerInitializer.configureContext(context);
+      ServerContainer container = WebSocketServerContainerInitializer.configureContext(terminalSocketContext);
       container.addEndpoint(
           ServerEndpointConfig.Builder.create(TerminalSocket.class, "/")
               .configurator(new TerminalSessionConfigurator(allwedOrigin))
