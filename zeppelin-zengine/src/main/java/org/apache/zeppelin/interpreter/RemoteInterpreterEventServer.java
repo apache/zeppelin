@@ -20,6 +20,7 @@ package org.apache.zeppelin.interpreter;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
+import java.util.OptionalInt;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.thrift.TException;
@@ -103,10 +104,11 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
   }
 
   public void start() throws IOException {
+    final OptionalInt portOpt = zConf.getEventServerPort();
     Thread startingThread = new Thread() {
       @Override
       public void run() {
-        try (TServerSocket tSocket = new TServerSocket(RemoteInterpreterUtils.findAvailablePort(portRange))){
+        try (TServerSocket tSocket = new TServerSocket(portOpt.orElse(RemoteInterpreterUtils.findAvailablePort(portRange)))) {
           port = tSocket.getServerSocket().getLocalPort();
           host = RemoteInterpreterUtils.findAvailableHostAddress();
           LOGGER.info("InterpreterEventServer is starting at {}:{}", host, port);
