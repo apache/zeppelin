@@ -265,18 +265,6 @@
     <plugins>
 
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-clean-plugin</artifactId>
-        <configuration>
-          <filesets>
-            <fileset>
-              <directory>${project.basedir}/../../interpreter/spark/</directory>
-            </fileset>
-          </filesets>
-        </configuration>
-      </plugin>
-
-      <plugin>
         <groupId>com.googlecode.maven-download-plugin</groupId>
         <artifactId>download-maven-plugin</artifactId>
         <executions>
