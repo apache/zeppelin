@@ -24,6 +24,7 @@ import static org.apache.zeppelin.interpreter.InterpreterResult.Code.ERROR;
 import static org.apache.zeppelin.scheduler.Job.Status.ABORT;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
@@ -239,7 +240,7 @@ public class NotebookService {
 
     notePath = notePath.replace("\r", " ").replace("\n", " ");
 
-    notePath = URLDecoder.decode(notePath, StandardCharsets.UTF_8.toString());
+    notePath = decodeRepeatedly(notePath);
     if (notePath.endsWith("/")) {
       throw new IOException("Note name shouldn't end with '/'");
     }
@@ -1552,5 +1553,22 @@ public class NotebookService {
       callback.onFailure(new ForbiddenException(errorMsg), context);
       return false;
     }
+  }
+
+  private String decodeRepeatedly(final String encoded) throws IOException {
+    String previous = encoded;
+    int maxDecodeAttempts = 5;
+    int attempts = 0;
+
+    while (attempts < maxDecodeAttempts) {
+      String decoded = URLDecoder.decode(previous, StandardCharsets.UTF_8.toString());
+      attempts++;
+      if (decoded.equals(previous)) {
+        return decoded;
+      }
+      previous = decoded;
+    }
+
+    throw new IOException("Exceeded maximum decode attempts. Possible malicious input.");
   }
 }
