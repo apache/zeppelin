@@ -41,8 +41,6 @@ public class TerminalManager {
   // NoteId@ParagraphId -> InterpreterContext
   private HashMap<String, InterpreterContext> noteParagraphId2IntpContext;
 
-  private String csrfToken;
-
   private static TerminalManager instance;
 
   public static synchronized TerminalManager getInstance(){
