@@ -46,12 +46,6 @@ function action(type, data) {
 }
 
 let app = {
-    onTerminalInit() {
-        // alert("TERMINAL_INIT");
-        ws.send(action("TERMINAL_INIT", {
-            noteId, paragraphId
-        }));
-    },
     onCommand(command) {
         ws.send(action("TERMINAL_COMMAND", {
             command

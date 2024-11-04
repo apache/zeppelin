@@ -64,12 +64,6 @@ public class TerminalSocket {
     if (messageMap.containsKey("type")) {
       String type = messageMap.get("type");
       switch (type) {
-        case "TERMINAL_INIT":
-          terminalService.onTerminalInit();
-          this.noteId = messageMap.get("noteId");
-          this.paragraphId = messageMap.get("paragraphId");
-          terminalManager.onWebSocketConnect(noteId, paragraphId);
-          break;
         case "TERMINAL_READY":
           terminalService.onTerminalReady();
           this.noteId = messageMap.get("noteId");
