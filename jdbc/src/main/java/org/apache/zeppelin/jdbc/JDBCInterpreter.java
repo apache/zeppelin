@@ -44,6 +44,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -591,10 +592,9 @@ public class JDBCInterpreter extends KerberosInterpreter {
   private void validateConnectionUrl(String url) {
     String decodedUrl;
     try {
-      decodedUrl = URLDecoder.decode(url, "UTF-8");
+      decodedUrl = URLDecoder.decode(url, StandardCharsets.UTF_8.toString());
     } catch (UnsupportedEncodingException e) {
-      LOGGER.info("fail to decode url : {}. continue to get connection.", url, e);
-      return;
+      throw new IllegalArgumentException("Connection URL decode failed");
     }
 
     if (containsIgnoreCase(decodedUrl, ALLOW_LOAD_LOCAL_IN_FILE_NAME) ||
