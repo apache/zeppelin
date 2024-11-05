@@ -1,0 +1,122 @@
+# Default values for zeppelin.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# -- String to partially override release name.
+nameOverride: ""
+
+# -- String to fully override release name.
+fullnameOverride: ""
+
+global:
+  image:
+    # -- Image registry.
+    registry: docker.io
+    # -- Image pull policy.
+    pullPolicy: IfNotPresent
+    # -- Image pull secrets for private image registry.
+    pullSecrets: []
+    # - name: <secret-name>
+
+server:
+  image:
+    # -- Zeppelin server image registry.
+    # @default -- If not set, `global.image.registry` will be used.
+    registry: ""
+    # -- Zeppelin server image repository.
+    repository: apache/zeppelin
+    # -- Zeppelin image tag.
+    # @default -- If not set, the chart appVersion will be used.
+    tag: ""
+
+  serviceAccount:
+    # -- Specifies whether a service account should be created for the Zeppelin server.
+    create: true
+    # -- Optional name for the Zeppelin server service account.
+    name: ""
+    # -- Extra annotations for the Zeppelin server service account.
+    annotations: {}
+
+interpreter:
+  image:
+    # -- Zeppelin interpreter image registry.
+    # @default -- If not set, `global.image.registry` will be used.
+    registry: ""
+    # -- Zeppelin interpreter image repository.
+    repository: apache/zeppelin-interpreter
+    # -- Zeppelin interpreter image tag.
+    # @default -- If not set, the chart appVersion will be used.
+    tag: ""
+  
+  serviceAccount:
+    serviceAccount:
+    # -- Specifies whether a service account should be created for the Zeppelin interpreter.
+    create: true
+    # -- Optional name for the Zeppelin interpreter service account.
+    name: ""
+    # -- Extra annotations for the Zeppelin interpreter service account.
+    annotations: {}
+
+spark:
+  image:
+    # -- Spark image registry.
+    # @default -- If not set, `global.image.registry` will be used.
+    registry: ""
+    # -- Spark image repository.
+    repository: spark
+    # -- Spark image tag.
+    tag: 3.5.3
+
+replicas: 1
+
+# -- Extra labels for controller pods.
+labels: {}
+  # key1: value1
+  # key2: value2
+
+# -- Extra annotations for controller pods.
+annotations: {}
+  # key1: value1
+  # key2: value2
+
+# -- Volumes for controller pods.
+volumes: []
+
+# -- Node selector for controller pods.
+nodeSelector: {}
+
+# -- Affinity for controller pods.
+affinity: {}
+
+# -- List of node taints to tolerate for controller pods.
+tolerations: []
+
+# -- Priority class for controller pods.
+priorityClassName: ""
+
+# -- Security context for controller pods.
+podSecurityContext: {}
+
+# -- Environment variables for controller containers.
+env: []
+
+# -- Environment variable sources for controller containers.
+envFrom: []
+
+# -- Volume mounts for controller containers.
+volumeMounts: []
+
+# -- Pod resource requests and limits for controller containers.
+resources: {}
+  # limits:
+  #   cpu: 100m
+  #   memory: 300Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 300Mi
+
+# -- Security context for controller containers.
+securityContext: {}
+
+service:
+  type: ClusterIP

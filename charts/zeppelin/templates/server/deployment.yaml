@@ -1,0 +1,159 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "zeppelin.server.deploymentName" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "zeppelin.server.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicas }}
+  selector:
+    matchLabels:
+      {{- include "zeppelin.server.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "zeppelin.server.selectorLabels" . | nindent 8 }}
+      {{- with .Values.annotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    spec:
+      containers:
+      - name: zeppelin-server
+        image: {{ include "zeppelin.server.image" . }}
+        {{- with .Values.global.image.pullPolicy }}
+        imagePullPolicy: {{ . }}
+        {{- end }}
+        command:
+        - sh
+        - -c
+        - $(ZEPPELIN_HOME)/bin/zeppelin.sh
+        env:
+        - name: POD_UID
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.uid
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.name
+        {{- with .Values.env }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        envFrom:
+        - configMapRef:
+            name: {{ include "zeppelin.envConfigMapName" . }}
+        volumeMounts:
+        - name: zeppelin-interpreter-conf
+          mountPath: /opt/zeppelin/k8s/interpreter
+        ports:
+        - name: http
+          containerPort: 8080
+        - name: https
+          containerPort: 8443
+        - name: rpc
+          containerPort: 12320
+        lifecycle:
+          preStop:
+            exec:
+              # SIGTERM triggers a quick exit; gracefully terminate instead
+              command:
+              - sh
+              - -c
+              - "ps -ef | grep org.apache.zeppelin.server.ZeppelinServer | grep -v grep | awk '{print $2}' | xargs kill"
+        {{- with .Values.resources }}
+        resources:
+          {{- toYaml . | nindent 12 }}
+        {{- end }}
+        {{- with .Values.securityContext }}
+        securityContext:
+          {{- toYaml . | nindent 12 }}
+        {{- end }}
+      - name: zeppelin-server-gateway
+        image: nginx:1.14.0
+        env:
+        - name: SERVICE_DOMAIN
+          valueFrom:
+            configMapKeyRef:
+              name: {{ include "zeppelin.envConfigMapName" . }}
+              key: SERVICE_DOMAIN
+        command:
+        - bin/sh
+        - -c
+        args:
+        - cp -f /tmp/conf/nginx.conf /etc/nginx/nginx.conf;
+          sed -i -e "s/SERVICE_DOMAIN/$SERVICE_DOMAIN/g" /etc/nginx/nginx.conf;
+          sed -i -e "s/NAMESPACE/$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace)/g" /etc/nginx/nginx.conf;
+          cat /etc/nginx/nginx.conf;
+          /usr/sbin/nginx
+        volumeMounts:
+        - name: nginx-conf
+          mountPath: /tmp/conf
+        lifecycle:
+          preStop:
+            exec:
+              command:
+              - /usr/sbin/nginx
+              - -s
+              - quit
+      - name: dnsmasq
+        image: janeczku/go-dnsmasq:release-1.0.5
+        args:
+        - --listen
+        - 127.0.0.1:53
+        - --default-resolver
+        - --append-search-domains
+        - --hostsfile=/etc/hosts
+        - --verbose
+      volumes:
+      - name: zeppelin-interpreter-conf
+        configMap:
+          name: {{ include "zeppelin.interpreter.configMapName" . }}
+          optional: false
+      - name: nginx-conf
+        configMap:
+          name: {{ include "zeppelin.nginxConfigMapName" . }}
+          items:
+          - key: nginx.conf
+            path: nginx.conf 
+      {{- with .Values.global.image.pullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "zeppelin.server.serviceAccountName" . }}
+      {{- with .Values.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
