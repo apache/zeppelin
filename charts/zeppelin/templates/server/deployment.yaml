@@ -64,6 +64,8 @@ spec:
         - configMapRef:
             name: {{ include "zeppelin.envConfigMapName" . }}
         volumeMounts:
+        - name: zeppelin-conf
+          mountPath: /opt/zeppelin/conf
         - name: zeppelin-interpreter-conf
           mountPath: /opt/zeppelin/k8s/interpreter
         ports:
@@ -126,6 +128,10 @@ spec:
         - --hostsfile=/etc/hosts
         - --verbose
       volumes:
+      - name: zeppelin-conf
+        configMap:
+          name: {{ include "zeppelin.configMapName" . }}
+          optional: false
       - name: zeppelin-interpreter-conf
         configMap:
           name: {{ include "zeppelin.interpreter.configMapName" . }}

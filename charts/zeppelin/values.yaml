@@ -10,11 +10,11 @@ fullnameOverride: ""
 
 global:
   image:
-    # -- Image registry.
+    # -- Global image registry.
     registry: docker.io
-    # -- Image pull policy.
+    # -- Global image pull policy.
     pullPolicy: IfNotPresent
-    # -- Image pull secrets for private image registry.
+    # -- Global image pull secrets for private image registry.
     pullSecrets: []
     # - name: <secret-name>
 
@@ -66,6 +66,14 @@ spark:
     repository: spark
     # -- Spark image tag.
     tag: 3.5.3
+
+zeppelin:
+  # -- Zeppelin configurations.
+  conf:
+    # Zeppelin server binding address.
+    zeppelin.server.addr: 127.0.0.1
+    # Zeppelin server port.
+    zeppelin.server.port: 8080
 
 replicas: 1
 

@@ -29,6 +29,7 @@ A Helm chart for deploying Apache Zeppelin on Kubernetes.
 | spark.image.registry | string | If not set, `global.image.registry` will be used. | Spark image registry. |
 | spark.image.repository | string | `"spark"` | Spark image repository. |
 | spark.image.tag | string | `"3.5.3"` | Spark image tag. |
+| zeppelinConf | object | `{"zeppelin.server.addr":"127.0.0.1","zeppelin.server.port":8080}` | Zeppelin configurations. |
 | replicas | int | `1` |  |
 | labels | object | `{}` | Extra labels for Zeppelin server pods. |
 | annotations | object | `{}` | Extra annotations for Zeppelin server pods. |
