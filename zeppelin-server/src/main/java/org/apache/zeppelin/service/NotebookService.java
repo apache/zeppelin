@@ -428,19 +428,19 @@ public class NotebookService {
                               ServiceCallback<Paragraph> callback) throws IOException {
 
     if (note == null) {
-      LOGGER.info("Failed to run paragraph: Note is null");
+      LOGGER.info("Failed to run paragraph {}, Note is null", paragraphId);
       return false;
     }
+
     LOGGER.info("Start to run paragraph: {} of note: {}", paragraphId, note.getId());
     if (!checkPermission(note.getId(), Permission.RUNNER, Message.OP.RUN_PARAGRAPH, context, callback)) {
-      LOGGER.info("Permission check failed for running paragraph: {} of note: {}", paragraphId, note.getId());
+      LOGGER.info("Permission check failed for running paragraph {} of note {}", paragraphId, note.getId());
       return false;
     }
 
     Paragraph p = note.getParagraph(paragraphId);
-
     if (p == null) {
-      LOGGER.info("Paragraph with ID {} not found in note: {}", paragraphId, note.getId());
+      LOGGER.info("Paragraph {} not found in note {}", paragraphId, note.getId());
       callback.onFailure(new ParagraphNotFoundException(paragraphId), context);
       return false;
     }
