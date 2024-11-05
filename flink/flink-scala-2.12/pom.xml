@@ -33,7 +33,6 @@
 
   <properties>
     <!--library versions-->
-    <interpreter.name>flink</interpreter.name>
     <flink.version>${flink1.17.version}</flink.version>
     <flink.scala.version>2.12.7</flink.scala.version>
     <flink.scala.binary.version>2.12</flink.scala.binary.version>
