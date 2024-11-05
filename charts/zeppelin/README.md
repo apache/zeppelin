@@ -30,20 +30,20 @@ A Helm chart for deploying Apache Zeppelin on Kubernetes.
 | spark.image.repository | string | `"spark"` | Spark image repository. |
 | spark.image.tag | string | `"3.5.3"` | Spark image tag. |
 | replicas | int | `1` |  |
-| labels | object | `{}` | Extra labels for controller pods. |
-| annotations | object | `{}` | Extra annotations for controller pods. |
-| volumes | list | `[]` | Volumes for controller pods. |
-| nodeSelector | object | `{}` | Node selector for controller pods. |
-| affinity | object | `{}` | Affinity for controller pods. |
-| tolerations | list | `[]` | List of node taints to tolerate for controller pods. |
-| priorityClassName | string | `""` | Priority class for controller pods. |
-| podSecurityContext | object | `{}` | Security context for controller pods. |
-| env | list | `[]` | Environment variables for controller containers. |
-| envFrom | list | `[]` | Environment variable sources for controller containers. |
-| volumeMounts | list | `[]` | Volume mounts for controller containers. |
-| resources | object | `{}` | Pod resource requests and limits for controller containers. |
-| securityContext | object | `{}` | Security context for controller containers. |
-| service.type | string | `"ClusterIP"` |  |
+| labels | object | `{}` | Extra labels for Zeppelin server pods. |
+| annotations | object | `{}` | Extra annotations for Zeppelin server pods. |
+| volumes | list | `[]` | Volumes for Zeppelin server pods. |
+| nodeSelector | object | `{}` | Node selector for Zeppelin server pods. |
+| affinity | object | `{}` | Affinity for Zeppelin server pods. |
+| tolerations | list | `[]` | List of node taints to tolerate for Zeppelin server pods. |
+| priorityClassName | string | `""` | Priority class for Zeppelin server pods. |
+| podSecurityContext | object | `{}` | Security context for Zeppelin server pods. |
+| env | list | `[]` | Environment variables for Zeppelin server containers. |
+| envFrom | list | `[]` | Environment variable sources for Zeppelin server containers. |
+| volumeMounts | list | `[]` | Volume mounts for Zeppelin server containers. |
+| resources | object | `{}` | Resource requests and limits for Zeppelin server containers. |
+| securityContext | object | `{}` | Security context for Zeppelin server containers. |
+| service.type | string | `"ClusterIP"` | Service type for Zeppelin server. |
 
 ## Maintainers
 

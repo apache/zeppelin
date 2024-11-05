@@ -69,44 +69,44 @@ spark:
 
 replicas: 1
 
-# -- Extra labels for controller pods.
+# -- Extra labels for Zeppelin server pods.
 labels: {}
   # key1: value1
   # key2: value2
 
-# -- Extra annotations for controller pods.
+# -- Extra annotations for Zeppelin server pods.
 annotations: {}
   # key1: value1
   # key2: value2
 
-# -- Volumes for controller pods.
+# -- Volumes for Zeppelin server pods.
 volumes: []
 
-# -- Node selector for controller pods.
+# -- Node selector for Zeppelin server pods.
 nodeSelector: {}
 
-# -- Affinity for controller pods.
+# -- Affinity for Zeppelin server pods.
 affinity: {}
 
-# -- List of node taints to tolerate for controller pods.
+# -- List of node taints to tolerate for Zeppelin server pods.
 tolerations: []
 
-# -- Priority class for controller pods.
+# -- Priority class for Zeppelin server pods.
 priorityClassName: ""
 
-# -- Security context for controller pods.
+# -- Security context for Zeppelin server pods.
 podSecurityContext: {}
 
-# -- Environment variables for controller containers.
+# -- Environment variables for Zeppelin server containers.
 env: []
 
-# -- Environment variable sources for controller containers.
+# -- Environment variable sources for Zeppelin server containers.
 envFrom: []
 
-# -- Volume mounts for controller containers.
+# -- Volume mounts for Zeppelin server containers.
 volumeMounts: []
 
-# -- Pod resource requests and limits for controller containers.
+# -- Resource requests and limits for Zeppelin server containers.
 resources: {}
   # limits:
   #   cpu: 100m
@@ -115,8 +115,9 @@ resources: {}
   #   cpu: 100m
   #   memory: 300Mi
 
-# -- Security context for controller containers.
+# -- Security context for Zeppelin server containers.
 securityContext: {}
 
 service:
+  # -- Service type for Zeppelin server.
   type: ClusterIP
