@@ -42,7 +42,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.security.PrivilegedExceptionAction;
@@ -593,7 +592,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
     String decodedUrl;
     decodedUrl = URLDecoder.decode(url, StandardCharsets.UTF_8);
 
-      if (containsIgnoreCase(decodedUrl, ALLOW_LOAD_LOCAL_IN_FILE_NAME) ||
+    if (containsIgnoreCase(decodedUrl, ALLOW_LOAD_LOCAL_IN_FILE_NAME) ||
             containsIgnoreCase(decodedUrl, AUTO_DESERIALIZE) ||
             containsIgnoreCase(decodedUrl, ALLOW_LOCAL_IN_FILE_NAME) ||
             containsIgnoreCase(decodedUrl, ALLOW_URL_IN_LOCAL_IN_FILE_NAME)) {
