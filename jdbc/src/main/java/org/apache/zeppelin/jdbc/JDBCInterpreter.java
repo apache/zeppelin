@@ -591,13 +591,9 @@ public class JDBCInterpreter extends KerberosInterpreter {
 
   private void validateConnectionUrl(String url) {
     String decodedUrl;
-    try {
-      decodedUrl = URLDecoder.decode(url, StandardCharsets.UTF_8.toString());
-    } catch (UnsupportedEncodingException e) {
-      throw new IllegalArgumentException("Connection URL decode failed");
-    }
+    decodedUrl = URLDecoder.decode(url, StandardCharsets.UTF_8);
 
-    if (containsIgnoreCase(decodedUrl, ALLOW_LOAD_LOCAL_IN_FILE_NAME) ||
+      if (containsIgnoreCase(decodedUrl, ALLOW_LOAD_LOCAL_IN_FILE_NAME) ||
             containsIgnoreCase(decodedUrl, AUTO_DESERIALIZE) ||
             containsIgnoreCase(decodedUrl, ALLOW_LOCAL_IN_FILE_NAME) ||
             containsIgnoreCase(decodedUrl, ALLOW_URL_IN_LOCAL_IN_FILE_NAME)) {
