@@ -33,7 +33,6 @@
   <description>Zeppelin spark support</description>
 
   <properties>
-    <interpreter.name>spark</interpreter.name>
     <!--library versions-->
     <maven.plugin.api.version>3.0</maven.plugin.api.version>
     <aether.version>1.12</aether.version>
