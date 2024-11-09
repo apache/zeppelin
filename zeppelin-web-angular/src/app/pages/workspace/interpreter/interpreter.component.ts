@@ -46,9 +46,8 @@ export class InterpreterComponent implements OnInit, OnDestroy {
   }
 
   filterInterpreters(value: string) {
-    const lowerCaseValue = value.toLowerCase();
-    this.filteredInterpreterSettings = this.interpreterSettings.filter(e =>
-      e.name.toLowerCase().includes(lowerCaseValue)
+    this.filteredInterpreterSettings = this.interpreterSettings.filter(
+      e => e.name.search(new RegExp(value, 'i')) !== -1
     );
 
     this.cdr.markForCheck();
