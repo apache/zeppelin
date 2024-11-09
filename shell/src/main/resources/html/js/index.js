@@ -72,8 +72,6 @@ function setupHterm() {
     t = new hterm.Terminal();
 
     t.onTerminalReady = function() {
-        // app.onTerminalInit();
-
         // Create a new terminal IO object and give it the foreground.
         // (The default IO object just prints warning messages about unhandled
         // things to the the JS console.)
