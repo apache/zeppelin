@@ -46,7 +46,10 @@ export class InterpreterComponent implements OnInit, OnDestroy {
   }
 
   filterInterpreters(value: string) {
-    this.filteredInterpreterSettings = this.interpreterSettings.filter(e => e.name.search(value) !== -1);
+    this.filteredInterpreterSettings = this.interpreterSettings.filter(
+      e => e.name.search(new RegExp(value, 'i')) !== -1
+    );
+
     this.cdr.markForCheck();
   }
 
