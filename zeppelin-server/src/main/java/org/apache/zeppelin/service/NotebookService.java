@@ -392,21 +392,28 @@ public class NotebookService {
   }
 
   /**
-   * Executes given paragraph with passed paragraph info like noteId, paragraphId, title, text and etc.
+   * Handles the execution of a specified paragraph within a note, applying provided configurations
+   * such as note ID, paragraph ID, title, text, and execution parameters.
    *
-   * @param note
-   * @param paragraphId
-   * @param title
-   * @param text
-   * @param params
-   * @param config
-   * @param failIfDisabled
-   * @param blocking
-   * @param context
-   * @param callback
-   * @return return true only when paragraph execution finished, it could end with succeed or error due to user code.
-   * return false when paragraph execution fails due to zeppelin internal issue.
-   * @throws IOException
+   * This method validates the provided note and paragraph ID, checks user permissions, applies
+   * settings such as text, title, parameters, and configurations to the paragraph, and executes it
+   * in either blocking or non-blocking mode based on the input. Supports personalized mode for
+   * executing user-specific paragraph versions.
+   *
+   * @param note             the note object containing the paragraph
+   * @param paragraphId      the ID of the paragraph to execute
+   * @param title            the title to set for the paragraph
+   * @param text             the content text of the paragraph
+   * @param params           a map of parameters for the paragraph execution
+   * @param config           a map of configuration settings for the paragraph
+   * @param sessionId        session ID for the execution context
+   * @param failIfDisabled   if true, execution fails if the paragraph is disabled
+   * @param blocking         specifies whether the execution should be blocking
+   * @param context          the context providing authentication and execution info
+   * @param callback         callback to handle success or failure results of the paragraph execution
+   * @return                 true if the paragraph completes execution successfully (either with success or error due to user code),
+   *                         false if execution fails due to an internal Zeppelin issue
+   * @throws IOException     if an I/O error occurs during execution
    */
   public boolean runParagraph(Note note,
                               String paragraphId,
@@ -420,22 +427,25 @@ public class NotebookService {
                               ServiceContext context,
                               ServiceCallback<Paragraph> callback) throws IOException {
 
-
     if (note == null) {
+      LOGGER.info("Failed to run paragraph {}, Note is null", paragraphId);
       return false;
     }
+
     LOGGER.info("Start to run paragraph: {} of note: {}", paragraphId, note.getId());
     if (!checkPermission(note.getId(), Permission.RUNNER, Message.OP.RUN_PARAGRAPH, context, callback)) {
+      LOGGER.info("Permission check failed for running paragraph {} of note {}", paragraphId, note.getId());
       return false;
     }
-
 
     Paragraph p = note.getParagraph(paragraphId);
     if (p == null) {
+      LOGGER.info("Paragraph {} not found in note {}", paragraphId, note.getId());
       callback.onFailure(new ParagraphNotFoundException(paragraphId), context);
       return false;
     }
     if (failIfDisabled && !p.isEnabled()) {
+      LOGGER.info("Paragraph {} in note {} is disabled, and 'failIfDisabled' flag is set.", paragraphId, note.getId());
       callback.onFailure(new IOException("paragraph is disabled."), context);
       return false;
     }
