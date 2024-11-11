@@ -22,6 +22,7 @@ import org.apache.zeppelin.interpreter.InterpreterProperty;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -48,7 +49,7 @@ class UpdateInterpreterSettingRequestTest {
   @BeforeEach
   void setUp() {
     properties = new HashMap<>();
-    dependencies = mock(List.class);
+    dependencies = Collections.emptyList();
     option = mock(InterpreterOption.class);
     request = new UpdateInterpreterSettingRequest(properties, dependencies, option);
   }
