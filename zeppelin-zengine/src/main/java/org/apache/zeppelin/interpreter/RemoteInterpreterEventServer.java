@@ -50,7 +50,6 @@ import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterEventService;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterResultMessage;
 import org.apache.zeppelin.interpreter.thrift.RunParagraphsEvent;
 import org.apache.zeppelin.interpreter.thrift.WebUrlInfo;
-import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.resource.RemoteResource;
 import org.apache.zeppelin.resource.Resource;
 import org.apache.zeppelin.resource.ResourceId;
@@ -104,7 +103,7 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
   }
 
   public void start() throws IOException {
-    final OptionalInt portOpt = zConf.getEventServerPort();
+    final OptionalInt portOpt = zConf.getZeppelinServerRpcPort();
     Thread startingThread = new Thread() {
       @Override
       public void run() {

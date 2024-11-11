@@ -338,12 +338,12 @@ public class ZeppelinConfiguration {
     return getInt(ConfVars.ZEPPELIN_PORT);
   }
 
-  public OptionalInt getEventServerPort() {
-    String eventServerPort = getString(ConfVars.ZEPPELIN_EVENT_SERVER_PORT);
-    if (StringUtils.isBlank(eventServerPort)) {
+  public OptionalInt getZeppelinServerRpcPort() {
+    String zeppelinServerRpcPort = getString(ConfVars.ZEPPELIN_SERVER_RPC_PORT);
+    if (StringUtils.isBlank(zeppelinServerRpcPort)) {
       return OptionalInt.empty();
     }
-    return OptionalInt.of(Integer.parseInt(eventServerPort));
+    return OptionalInt.of(Integer.parseInt(zeppelinServerRpcPort));
   }
 
   public String getServerContextPath() {
@@ -956,7 +956,7 @@ public class ZeppelinConfiguration {
     ZEPPELIN_SSL_TRUSTSTORE_PATH("zeppelin.ssl.truststore.path", null),
     ZEPPELIN_SSL_TRUSTSTORE_TYPE("zeppelin.ssl.truststore.type", null),
     ZEPPELIN_SSL_TRUSTSTORE_PASSWORD("zeppelin.ssl.truststore.password", null),
-    ZEPPELIN_EVENT_SERVER_PORT("zeppelin.event.server.port", null),
+    ZEPPELIN_SERVER_RPC_PORT("zeppelin.server.rpc.port", null),
     ZEPPELIN_WAR("zeppelin.war", "zeppelin-web/dist"),
     ZEPPELIN_ANGULAR_WAR("zeppelin.angular.war", "zeppelin-web-angular/dist/zeppelin"),
     ZEPPELIN_WAR_TEMPDIR("zeppelin.war.tempdir", "webapps"),

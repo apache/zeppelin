@@ -61,8 +61,8 @@ Sources descending by priority:
     <td>8443</td>
     <td>Zeppelin Server ssl port (used when ssl environment/property is set to true)</td>
   </tr>
-    <td><h6 class="properties">ZEPPELIN_EVENT_SERVER_PORT</h6></td>
-    <td><h6 class="properties">zeppelin.event.server.port</h6></td>
+    <td><h6 class="properties">ZEPPELIN_SERVER_RPC_PORT</h6></td>
+    <td><h6 class="properties">zeppelin.server.rpc.port</h6></td>
     <td></td>
     <td>Port for the Zeppelin Interpreter Event Server. If not set, an available port will be used automatically.</td>
   <tr>

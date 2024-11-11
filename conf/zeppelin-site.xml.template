@@ -44,7 +44,7 @@
 </property>
 
 <property>
-  <name>zeppelin.event.server.port</name>
+  <name>zeppelin.server.rpc.port</name>
   <value></value>
   <description>Port for the Zeppelin Interpreter Event Server. If not set, an available port will be used automatically.</description>
 </property>
