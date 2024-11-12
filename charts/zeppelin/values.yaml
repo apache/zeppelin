@@ -69,13 +69,9 @@ spark:
 
 zeppelin:
   # -- Zeppelin configurations.
+  # For detailed information, please refer: https://zeppelin.apache.org/docs/latest/setup/operation/configuration.html.
   conf:
-    # Zeppelin server binding address.
-    zeppelin.server.addr: 127.0.0.1
-    # Zeppelin server port.
-    zeppelin.server.port: 8080
-
-replicas: 1
+    # spark.kubernetes.driver.podTemplateFile: local:///driver.yml
 
 # -- Extra labels for Zeppelin server pods.
 labels: {}

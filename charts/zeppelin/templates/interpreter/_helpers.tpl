@@ -53,3 +53,10 @@ Create the name of the config map for Zeppelin interpreter.
 {{- define "zeppelin.interpreter.configMapName" -}}
 {{- include "zeppelin.interpreter.name" . }}-conf
 {{- end -}}
+
+{{/*
+Create the name of the config map for Zeppelin interpreter.
+*/}}
+{{- define "zeppelin.interpreter.spark.configMapName" -}}
+{{- include "zeppelin.interpreter.name" . }}-spark-conf
+{{- end -}}

@@ -23,7 +23,6 @@ metadata:
   labels:
     {{- include "zeppelin.server.labels" . | nindent 4 }}
 spec:
-  replicas: {{ .Values.replicas }}
   selector:
     matchLabels:
       {{- include "zeppelin.server.selectorLabels" . | nindent 6 }}
@@ -78,7 +77,6 @@ spec:
         lifecycle:
           preStop:
             exec:
-              # SIGTERM triggers a quick exit; gracefully terminate instead
               command:
               - sh
               - -c
@@ -131,11 +129,9 @@ spec:
       - name: zeppelin-conf
         configMap:
           name: {{ include "zeppelin.configMapName" . }}
-          optional: false
       - name: zeppelin-interpreter-conf
         configMap:
           name: {{ include "zeppelin.interpreter.configMapName" . }}
-          optional: false
       - name: nginx-conf
         configMap:
           name: {{ include "zeppelin.nginxConfigMapName" . }}

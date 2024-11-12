@@ -55,9 +55,9 @@ data:
       containers:
       - name: {{ "{{" }} zeppelin.k8s.interpreter.container.name {{ "}}" }}
         image: {{ "{{" }} zeppelin.k8s.interpreter.container.image {{ "}}" }}
-        {% if zeppelin.k8s.interpreter.container.imagePullPolicy is defined %}
-        imagePullPolicy: {{ "{{" }} zeppelin.k8s.interpreter.container.imagePullPolicy {{ "}}" }}
-        {% endif %}
+        {{- with .Values.global.image.pullPolicy }}
+        imagePullPolicy: {{ . }}
+        {{- end }}
         args:
           - "$(ZEPPELIN_HOME)/bin/interpreter.sh"
           - "-d"
@@ -101,6 +101,8 @@ data:
         volumeMounts:
         - name: spark-home
           mountPath: /spark
+        - name: spark-pod-template
+          mountPath: /etc/spark
       initContainers:
       - name: spark-home-init
         image: {{ "{{" }} zeppelin.k8s.spark.container.image {{ "}}" }}
@@ -120,6 +122,9 @@ data:
       volumes:
       - name: spark-home
         emptyDir: {}
+      - name: spark-pod-template
+        configMap:
+          name: {{ include "zeppelin.interpreter.spark.configMapName" . }}
       {% endif %}
 
     ---
