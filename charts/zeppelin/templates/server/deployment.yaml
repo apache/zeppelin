@@ -89,33 +89,6 @@ spec:
         securityContext:
           {{- toYaml . | nindent 12 }}
         {{- end }}
-      - name: zeppelin-server-gateway
-        image: nginx:1.14.0
-        env:
-        - name: SERVICE_DOMAIN
-          valueFrom:
-            configMapKeyRef:
-              name: {{ include "zeppelin.envConfigMapName" . }}
-              key: SERVICE_DOMAIN
-        command:
-        - bin/sh
-        - -c
-        args:
-        - cp -f /tmp/conf/nginx.conf /etc/nginx/nginx.conf;
-          sed -i -e "s/SERVICE_DOMAIN/$SERVICE_DOMAIN/g" /etc/nginx/nginx.conf;
-          sed -i -e "s/NAMESPACE/$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace)/g" /etc/nginx/nginx.conf;
-          cat /etc/nginx/nginx.conf;
-          /usr/sbin/nginx
-        volumeMounts:
-        - name: nginx-conf
-          mountPath: /tmp/conf
-        lifecycle:
-          preStop:
-            exec:
-              command:
-              - /usr/sbin/nginx
-              - -s
-              - quit
       - name: dnsmasq
         image: janeczku/go-dnsmasq:release-1.0.5
         args:
