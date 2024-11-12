@@ -89,28 +89,6 @@ spec:
         securityContext:
           {{- toYaml . | nindent 12 }}
         {{- end }}
-      - name: dnsmasq
-        image: janeczku/go-dnsmasq:release-1.0.5
-        args:
-        - --listen
-        - 127.0.0.1:53
-        - --default-resolver
-        - --append-search-domains
-        - --hostsfile=/etc/hosts
-        - --verbose
-      volumes:
-      - name: zeppelin-conf
-        configMap:
-          name: {{ include "zeppelin.configMapName" . }}
-      - name: zeppelin-interpreter-conf
-        configMap:
-          name: {{ include "zeppelin.interpreter.configMapName" . }}
-      - name: nginx-conf
-        configMap:
-          name: {{ include "zeppelin.nginxConfigMapName" . }}
-          items:
-          - key: nginx.conf
-            path: nginx.conf 
       {{- with .Values.global.image.pullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
