@@ -64,8 +64,10 @@ let app = {
     },
     onTerminalReady() {
         // alert("TERMINAL_READY");
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+
         ws.send(action("TERMINAL_READY", {
-            noteId, paragraphId
+            noteId, paragraphId, csrfToken
         }));
     }
 };

@@ -19,6 +19,8 @@ package org.apache.zeppelin.shell.terminal.websocket;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import java.io.IOException;
+import org.apache.zeppelin.shell.terminal.TerminalCsrfTokenManager;
 import org.apache.zeppelin.shell.terminal.TerminalManager;
 import org.apache.zeppelin.shell.terminal.service.TerminalService;
 import org.slf4j.Logger;
@@ -54,7 +56,7 @@ public class TerminalSocket {
   }
 
   @OnMessage
-  public void onWebSocketText(String message) {
+  public void onWebSocketText(String message, Session sess) throws IOException {
     if (LOGGER.isDebugEnabled()) {
       LOGGER.debug("Received TEXT message: " + message);
     }
@@ -74,6 +76,12 @@ public class TerminalSocket {
           terminalService.onTerminalReady();
           this.noteId = messageMap.get("noteId");
           this.paragraphId = messageMap.get("paragraphId");
+          String csrfToken = messageMap.get("csrfToken");
+          if (!isValidCsrfToken(csrfToken)) {
+            LOGGER.error("Invalid CSRF token: " + csrfToken);
+            sess.close(new CloseReason(CloseReason.CloseCodes.CANNOT_ACCEPT, "Invalid CSRF Token"));
+            return;
+          }
           terminalManager.onWebSocketConnect(noteId, paragraphId);
           break;
         case "TERMINAL_COMMAND":
@@ -107,5 +115,9 @@ public class TerminalSocket {
     Map<String, String> map = gson.fromJson(message,
         new TypeToken<Map<String, String>>(){}.getType());
     return map;
+  }
+
+  private boolean isValidCsrfToken(String csrfToken) {
+    return TerminalCsrfTokenManager.getInstance().validateToken(noteId, paragraphId, csrfToken);
   }
 }

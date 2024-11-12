@@ -169,11 +169,12 @@ public class TerminalInterpreter extends KerberosInterpreter {
     Jinjava jinjava = new Jinjava();
     HashMap<String, Object> jinjaParams = new HashMap();
     Date now = new Date();
-    String terminalServerUrl = generateOrigin(hostIp, port) +
-        "?noteId=" + noteId + "&paragraphId=" + paragraphId + "&t=" + now.getTime();
+    String terminalServerUrl = generateOrigin(hostIp, port) + "/terminal-ui" +
+    "?noteId=" + noteId + "&paragraphId=" + paragraphId + "&t=" + now.getTime();
     jinjaParams.put("HOST_NAME", hostName);
     jinjaParams.put("HOST_IP", hostIp);
     jinjaParams.put("TERMINAL_SERVER_URL", terminalServerUrl);
+
     String terminalDashboardTemplate = jinjava.render(template, jinjaParams);
 
     LOGGER.info(terminalDashboardTemplate);
