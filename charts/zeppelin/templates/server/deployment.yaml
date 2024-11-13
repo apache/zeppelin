@@ -22,6 +22,10 @@ metadata:
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "zeppelin.server.labels" . | nindent 4 }}
+  annotations:
+    zeppelin.apache.org/zeppelin-conf-hash: {{ include (print $.Template.BasePath "/server/zeppelin-conf.yaml") . | sha256sum }}
+    zeppelin.apache.org/zeppelin-env-hash: {{ include (print $.Template.BasePath "/server/zeppelin-env.yaml") . | sha256sum }}
+    zeppelin.apache.org/zeppelin-interpreter-spec-hash: {{ include (print $.Template.BasePath "/interpreter/configmap.yaml") . | sha256sum }}
 spec:
   selector:
     matchLabels:
