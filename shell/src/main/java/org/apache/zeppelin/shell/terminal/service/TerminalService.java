@@ -50,10 +50,6 @@ public class TerminalService {
 
   private LinkedBlockingQueue<String> commandQueue = new LinkedBlockingQueue<>();
 
-  public void onTerminalInit() {
-    LOGGER.info("onTerminalInit");
-  }
-
   public void onTerminalReady() {
     TerminalService.startThread(() -> {
       try {

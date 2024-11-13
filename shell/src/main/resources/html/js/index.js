@@ -46,12 +46,6 @@ function action(type, data) {
 }
 
 let app = {
-    onTerminalInit() {
-        // alert("TERMINAL_INIT");
-        ws.send(action("TERMINAL_INIT", {
-            noteId, paragraphId
-        }));
-    },
     onCommand(command) {
         ws.send(action("TERMINAL_COMMAND", {
             command
@@ -78,8 +72,6 @@ function setupHterm() {
     t = new hterm.Terminal();
 
     t.onTerminalReady = function() {
-        // app.onTerminalInit();
-
         // Create a new terminal IO object and give it the foreground.
         // (The default IO object just prints warning messages about unhandled
         // things to the the JS console.)
