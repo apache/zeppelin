@@ -68,9 +68,23 @@ spec:
             name: {{ include "zeppelin.envConfigMapName" . }}
         volumeMounts:
         - name: zeppelin-conf
-          mountPath: /opt/zeppelin/conf
+          mountPath: /opt/zeppelin/conf/zeppelin-site.xml
+          subPath: zeppelin-site.xml
+        - name: zeppelin-conf
+          mountPath: /opt/zeppelin/conf/log4j.properties
+          subPath: log4j.properties
+        - name: zeppelin-conf
+          mountPath: /opt/zeppelin/conf/log4j2.properties
+          subPath: log4j2.properties
+        - name: zeppelin-conf
+          mountPath: /opt/zeppelin/conf/interpreter-list
+          subPath: interpreter-list
+        - name: zeppelin-conf
+          mountPath: /opt/zeppelin/conf/configurations.xsl
+          subPath: configurations.xsl
         - name: zeppelin-interpreter-conf
-          mountPath: /opt/zeppelin/k8s/interpreter
+          mountPath: /opt/zeppelin/k8s/interpreter/interpreter-spec.yaml
+          subPath: interpreter-spec.yaml
         ports:
         - name: http
           containerPort: 8080
@@ -97,6 +111,27 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      volumes:
+      - name: zeppelin-conf
+        configMap:
+          name: {{ include "zeppelin.configMapName" . }}
+          items:
+          - key: zeppelin-site.xml
+            path: zeppelin-site.xml
+          - key: log4j.properties
+            path: log4j.properties
+          - key: log4j2.properties
+            path: log4j2.properties
+          - key: interpreter-list
+            path: interpreter-list
+          - key: configurations.xsl
+            path: configurations.xsl
+      - name: zeppelin-interpreter-conf
+        configMap:
+          name:  {{ include "zeppelin.interpreter.configMapName" . }}
+          items:
+          - key: interpreter-spec.yaml
+            path: interpreter-spec.yaml
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
