@@ -64,6 +64,23 @@ Create the name of the role binding for Zeppelin server.
 {{- end -}}
 
 {{/*
+Create the name of the configmap for Zeppelin server.
+*/}}
+{{- define "zeppelin.server.configMapName" -}}
+{{- include "zeppelin.server.name" . }}-conf
+{{- end -}}
+
+{{/*
+Create the name of the Zeppelin image to use
+*/}}
+{{- define "zeppelin.server.image" -}}
+{{- $imageRegistry := .Values.server.image.registry | default .Values.global.image.registry | default "docker.io" }}
+{{- $imageRepository := .Values.server.image.repository | default "apache/zeppelin" }}
+{{- $imageTag := .Values.server.image.tag | default "latest" }}
+{{- printf "%s/%s:%s" $imageRegistry $imageRepository $imageTag }}
+{{- end -}}
+
+{{/*
 Create the name of the deployment for Zeppelin server.
 */}}
 {{- define "zeppelin.server.deploymentName" -}}

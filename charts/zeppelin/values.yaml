@@ -28,6 +28,79 @@ server:
     # -- Zeppelin image tag.
     # @default -- If not set, the chart appVersion will be used.
     tag: ""
+    # -- Zeppelin server image pull policy.
+    pullPolicy: IfNotPresent
+    # -- Zeppelin server image pull secrets for private image registry.
+    pullSecrets: []
+    # - name: <secret-name>
+
+  # -- Zeppelin configurations.
+  # For detailed information, please refer: https://zeppelin.apache.org/docs/latest/setup/operation/configuration.html.
+  conf: {}
+
+  # -- Extra labels for Zeppelin server pods.
+  labels: {}
+    # key1: value1
+    # key2: value2
+
+  # -- Extra annotations for Zeppelin server pods.
+  annotations: {}
+    # key1: value1
+    # key2: value2
+
+  # -- Volumes for Zeppelin server pods.
+  volumes: []
+
+  # -- Node selector for Zeppelin server pods.
+  nodeSelector: {}
+
+  # -- Affinity for Zeppelin server pods.
+  affinity: {}
+
+  # -- List of node taints to tolerate for Zeppelin server pods.
+  tolerations: []
+
+  # -- Priority class for Zeppelin server pods.
+  priorityClassName: ""
+
+  # -- Security context for Zeppelin server pods.
+  podSecurityContext: {}
+
+  # -- Environment variables for Zeppelin server containers.
+  env:
+  - name: ZEPPELIN_HOME
+    value: /opt/zeppelin
+  - name: SPARK_HOME
+    value: /opt/spark
+  - name: SERVICE_DOMAIN
+    value: local.zeppelin-project.org:8080
+  - name: ZEPPELIN_PORT
+    value: "8080"
+  - name: ZEPPELIN_SERVER_RPC_PORTRANGE
+    value: 12320:12320
+  - name: ZEPPELIN_K8S_TEMPLATE_DIR
+    value: /opt/zeppelin/k8s
+
+  # -- Environment variable sources for Zeppelin server containers.
+  envFrom: []
+
+  # -- Volume mounts for Zeppelin server containers.
+  volumeMounts: []
+
+  # -- Resource requests and limits for Zeppelin server containers.
+  resources: {}
+    # limits:
+    #   cpu: 100m
+    #   memory: 300Mi
+    # requests:
+    #   cpu: 100m
+    #   memory: 300Mi
+
+  # -- Security context for Zeppelin server containers.
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 0
 
   serviceAccount:
     # -- Specifies whether a service account should be created for the Zeppelin server.
@@ -47,7 +120,85 @@ interpreter:
     # -- Zeppelin interpreter image tag.
     # @default -- If not set, the chart appVersion will be used.
     tag: ""
-  
+    # -- Zeppelin interpreter image pull policy.
+    pullPolicy: IfNotPresent
+    # -- Zeppelin interpreter image pull secrets for private image registry.
+    pullSecrets: []
+    # - name: <secret-name>
+
+  spark:
+    image:
+      # -- Spark image registry.
+      # @default -- If not set, `global.image.registry` will be used.
+      registry: ""
+      # -- Spark image repository.
+      repository: spark
+      # -- Spark image tag.
+      tag: 3.5.3
+    
+    # -- Spark configurations.
+    conf:
+      spark.kubernetes.driver.podTemplateFile: file:///opt/spark/conf/driver-pod-template.yaml
+      spark.kubernetes.executor.podTemplateFile: file:///opt/spark/conf/executor-pod-template.yaml
+
+  # -- Extra labels for Zeppelin interpreter pods.
+  labels: {}
+    # key1: value1
+    # key2: value2
+
+  # -- Extra annotations for Zeppelin interpreter pods.
+  annotations: {}
+    # key1: value1
+    # key2: value2
+
+  # -- Volumes for Zeppelin interpreter pods.
+  volumes: []
+
+  # -- Node selector for Zeppelin interpreter pods.
+  nodeSelector: {}
+
+  # -- Affinity for Zeppelin interpreter pods.
+  affinity: {}
+
+  # -- List of node taints to tolerate for Zeppelin interpreter pods.
+  tolerations: []
+
+  # -- Priority class for Zeppelin interpreter pods.
+  priorityClassName: ""
+
+  # -- Security context for Zeppelin interpreter pods.
+  podSecurityContext: {}
+
+  # -- Environment variables for Zeppelin interpreter containers.
+  env:
+  - name: ZEPPELIN_HOME
+    value: /opt/zeppelin
+  - name: SPARK_HOME
+    value: /opt/spark
+  - name: SPARK_CONF_DIR
+    value: /opt/spark/conf
+
+  # -- Environment variable sources for Zeppelin interpreter containers.
+  envFrom: []
+
+  # -- Volume mounts for Zeppelin interpreter containers.
+  volumeMounts: []
+
+  # -- Resource requests and limits for Zeppelin interpreter containers.
+  resources: {}
+    # limits:
+    #   cpu: 100m
+    #   memory: 300Mi
+    # requests:
+    #   cpu: 100m
+    #   memory: 300Mi
+
+  # -- Security context for Zeppelin interpreter containers.
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 0
+
   serviceAccount:
     serviceAccount:
     # -- Specifies whether a service account should be created for the Zeppelin interpreter.
@@ -56,71 +207,6 @@ interpreter:
     name: ""
     # -- Extra annotations for the Zeppelin interpreter service account.
     annotations: {}
-
-spark:
-  image:
-    # -- Spark image registry.
-    # @default -- If not set, `global.image.registry` will be used.
-    registry: ""
-    # -- Spark image repository.
-    repository: spark
-    # -- Spark image tag.
-    tag: 3.5.3
-
-zeppelin:
-  # -- Zeppelin configurations.
-  # For detailed information, please refer: https://zeppelin.apache.org/docs/latest/setup/operation/configuration.html.
-  conf:
-    # spark.kubernetes.driver.podTemplateFile: local:///driver.yml
-
-# -- Extra labels for Zeppelin server pods.
-labels: {}
-  # key1: value1
-  # key2: value2
-
-# -- Extra annotations for Zeppelin server pods.
-annotations: {}
-  # key1: value1
-  # key2: value2
-
-# -- Volumes for Zeppelin server pods.
-volumes: []
-
-# -- Node selector for Zeppelin server pods.
-nodeSelector: {}
-
-# -- Affinity for Zeppelin server pods.
-affinity: {}
-
-# -- List of node taints to tolerate for Zeppelin server pods.
-tolerations: []
-
-# -- Priority class for Zeppelin server pods.
-priorityClassName: ""
-
-# -- Security context for Zeppelin server pods.
-podSecurityContext: {}
-
-# -- Environment variables for Zeppelin server containers.
-env: []
-
-# -- Environment variable sources for Zeppelin server containers.
-envFrom: []
-
-# -- Volume mounts for Zeppelin server containers.
-volumeMounts: []
-
-# -- Resource requests and limits for Zeppelin server containers.
-resources: {}
-  # limits:
-  #   cpu: 100m
-  #   memory: 300Mi
-  # requests:
-  #   cpu: 100m
-  #   memory: 300Mi
-
-# -- Security context for Zeppelin server containers.
-securityContext: {}
 
 service:
   # -- Service type for Zeppelin server.

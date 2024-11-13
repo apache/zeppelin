@@ -23,6 +23,14 @@ Create the name of Zeppelin interpreter.
 {{- end -}}
 
 {{/*
+Common labels for Zeppelin server.
+*/}}
+{{- define "zeppelin.interpreter.labels" -}}
+{{ include "zeppelin.labels" . }}
+app.kubernetes.io/component: zeppelin-interpreter
+{{- end }}
+
+{{/*
 Create the name of the service account for Zeppelin interpreter.
 */}}
 {{- define "zeppelin.interpreter.serviceAccountName" -}}
@@ -55,8 +63,11 @@ Create the name of the config map for Zeppelin interpreter.
 {{- end -}}
 
 {{/*
-Create the name of the config map for Zeppelin interpreter.
+Create the name of the Zeppelin interpreter image to use
 */}}
-{{- define "zeppelin.interpreter.spark.configMapName" -}}
-{{- include "zeppelin.interpreter.name" . }}-spark-conf
+{{- define "zeppelin.interpreter.image" -}}
+{{- $imageRegistry := .Values.interpreter.image.registry | default .Values.global.image.registry | default "docker.io" }}
+{{- $imageRepository := .Values.interpreter.image.repository | default "apache/zeppelin" }}
+{{- $imageTag := .Values.interpreter.image.tag | default "latest" }}
+{{- printf "%s/%s:%s" $imageRegistry $imageRepository $imageTag }}
 {{- end -}}

@@ -30,6 +30,7 @@ data:
       name: {{ "{{" }} zeppelin.k8s.interpreter.pod.name {{ "}}" }}
       namespace: {{ "{{" }} zeppelin.k8s.interpreter.namespace {{ "}}" }}
       labels:
+        {{- include "zeppelin.interpreter.labels" . | nindent 8 }}
         app: {{ "{{" }} zeppelin.k8s.interpreter.pod.name {{ "}}" }}
         interpreterGroupId: {{ "{{" }} zeppelin.k8s.interpreter.group.id {{ "}}" }}
         interpreterSettingName: {{ "{{" }} zeppelin.k8s.interpreter.setting.name {{ "}}" }}
@@ -44,88 +45,125 @@ data:
         uid: {{ "{{" }} zeppelin.k8s.server.uid }}
       {% endif %}
     spec:
+      {% if zeppelin.k8s.interpreter.group.name == "spark" %}
+      initContainers:
+      - name: spark-home-init
+        image: {{ include "zeppelin.interpreter.spark.image" . }}
+        imagePullPolicy: {{ .Values.interpreter.image.pullPolicy | default .Values.global.image.pullPolicy | default "IfNotPresent" }}
+        command:
+        - sh
+        - -c
+        - cp -r /opt/spark/* /spark/
+        volumeMounts:
+        - name: spark
+          mountPath: /spark
+      {% endif %}
+      containers:
+      - name: zeppelin-interpreter
+        image: {{ include "zeppelin.interpreter.image" . }}
+        imagePullPolicy: {{ .Values.interpreter.image.pullPolicy | default .Values.global.image.pullPolicy | default "IfNotPresent" }}
+        args:
+        - $(ZEPPELIN_HOME)/bin/interpreter.sh
+        - -d
+        - $(ZEPPELIN_HOME)/interpreter/{{ "{{" }} zeppelin.k8s.interpreter.group.name {{ "}}" }}
+        - -r
+        - {{ "{{" }} zeppelin.k8s.interpreter.rpc.portRange {{ "}}" }}
+        - -c
+        - {{ "{{" }} zeppelin.k8s.server.rpc.service {{ "}}" }}
+        - -p
+        - {{ "{{" }} zeppelin.k8s.server.rpc.portRange {{ "}}" }}
+        - -i
+        - {{ "{{" }} zeppelin.k8s.interpreter.group.id {{ "}}" }}
+        - -l
+        - {{ "{{" }} zeppelin.k8s.interpreter.localRepo {{ "}}" }}/{{ "{{" }} zeppelin.k8s.interpreter.setting.name {{ "}}" }}
+        - -g
+        - {{ "{{" }} zeppelin.k8s.interpreter.setting.name {{ "}}" }}
+        env:
+        {% for key, value in zeppelin.k8s.envs.items() %}
+        - name: {{ "{{" }} key {{ "}}" }} 
+          value: {{ "{{" }} value {{ "}}" }} 
+        {% endfor %}
+        {{- with .Values.interpreter.env }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {% if zeppelin.k8s.interpreter.cores is defined and zeppelin.k8s.interpreter.memory is defined %}
+        resources:
+          requests:
+            memory: "{{ "{{" }} zeppelin.k8s.interpreter.memory {{ "}}" }}"
+            cpu: "{{ "{{" }} zeppelin.k8s.interpreter.cores {{ "}}" }}"
+          limits:
+            cpu: "{{ "{{" }} zeppelin.k8s.interpreter.cores {{ "}}" }}"
+            {% if zeppelin.k8s.interpreter.gpu.type is defined and zeppelin.k8s.interpreter.gpu.nums is defined %}
+            {{ "{{" }} zeppelin.k8s.interpreter.gpu.type {{ "}}" }}: " {{ "{{" }} zeppelin.k8s.interpreter.gpu.nums {{ "}}" }}"
+            {% endif %}
+        {% else %}
+        {% if zeppelin.k8s.interpreter.gpu.type is defined and zeppelin.k8s.interpreter.gpu.nums is defined %}
+        resources:
+          limits:  
+            {{ "{{" }} zeppelin.k8s.interpreter.gpu.type {{ "}}" }}: " {{ "{{" }} zeppelin.k8s.interpreter.gpu.nums {{ "}}" }}"
+        {% endif %}
+        {% endif %}
+        volumeMounts:
+        {% if zeppelin.k8s.interpreter.group.name == "spark" %}
+        - name: spark
+          mountPath: /opt/spark
+        - name: spark-conf
+          subPath: spark-defaults.conf
+          mountPath: /opt/spark/conf/spark-defaults.conf
+        - name: spark-conf
+          subPath: driver-pod-template.yaml
+          mountPath: /opt/spark/conf/driver-pod-template.yaml
+        - name: spark-conf
+          subPath: executor-pod-template.yaml
+          mountPath: /opt/spark/conf/executor-pod-template.yaml
+        {% endif %}
+        {{- with .Values.interpreter.volumeMounts }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      {{- with .Values.global.image.pullSecrets }}
+      imagePullSecrets:
+      {{- toYaml . | nindent 6 }}
+      {{- end }}
+      volumes:
+      {% if zeppelin.k8s.interpreter.group.name == "spark" %}
+      - name: spark
+        emptyDir: {}
+      - name: spark-conf
+        configMap:
+          name: {{ include "zeppelin.interpreter.spark.configMapName" . }}
+          items:
+          - key: spark-defaults.conf
+            path: spark-defaults.conf
+          - key: driver-pod-template.yaml
+            path: driver-pod-template.yaml
+          - key: executor-pod-template.yaml
+            path: executor-pod-template.yaml
+      {% endif %}
+      {{- with .Values.interpreter.volumes }}
+      {{- toYaml . | nindent 6 }}
+      {{- end }}
+      {{- with .Values.interpreter.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.interpreter.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.interpreter.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       serviceAccountName: {{ include "zeppelin.interpreter.serviceAccountName" . }}
       {% if zeppelin.k8s.interpreter.group.name == "spark" %}
       automountServiceAccountToken: true
       {% else %}
       automountServiceAccountToken: false
       {% endif %}
-      restartPolicy: Never
-      terminationGracePeriodSeconds: 30
-      containers:
-      - name: {{ "{{" }} zeppelin.k8s.interpreter.container.name {{ "}}" }}
-        image: {{ "{{" }} zeppelin.k8s.interpreter.container.image {{ "}}" }}
-        {{- with .Values.global.image.pullPolicy }}
-        imagePullPolicy: {{ . }}
-        {{- end }}
-        args:
-          - "$(ZEPPELIN_HOME)/bin/interpreter.sh"
-          - "-d"
-          - "$(ZEPPELIN_HOME)/interpreter/{{ "{{" }} zeppelin.k8s.interpreter.group.name {{ "}}" }}"
-          - "-r"
-          - "{{ "{{" }} zeppelin.k8s.interpreter.rpc.portRange {{ "}}" }}"
-          - "-c"
-          - "{{ "{{" }} zeppelin.k8s.server.rpc.service {{ "}}" }}"
-          - "-p"
-          - "{{ "{{" }} zeppelin.k8s.server.rpc.portRange {{ "}}" }}"
-          - "-i"
-          - "{{ "{{" }} zeppelin.k8s.interpreter.group.id {{ "}}" }}"
-          - "-l"
-          - "{{ "{{" }} zeppelin.k8s.interpreter.localRepo {{ "}}" }}/{{ "{{" }} zeppelin.k8s.interpreter.setting.name {{ "}}" }}"
-          - "-g"
-          - "{{ "{{" }} zeppelin.k8s.interpreter.setting.name {{ "}}" }}"
-        env:
-      {% for key, value in zeppelin.k8s.envs.items() %}
-        - name: {{ "{{" }} key {{ "}}" }} 
-          value: {{ "{{" }} value {{ "}}" }} 
-      {% endfor %}
-      {% if zeppelin.k8s.interpreter.cores is defined and zeppelin.k8s.interpreter.memory is defined %}
-        resources:
-          requests:
-            memory: "{{ "{{" }} zeppelin.k8s.interpreter.memory {{ "}}" }}"
-            cpu: "{{ "{{" }} zeppelin.k8s.interpreter.cores {{ "}}" }}"
-    {# limits.memory is not set because of a potential OOM-Killer. https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#requests-and-limits #}
-          limits:
-            cpu: "{{ "{{" }} zeppelin.k8s.interpreter.cores {{ "}}" }}"
-            {% if zeppelin.k8s.interpreter.gpu.type is defined and zeppelin.k8s.interpreter.gpu.nums is defined %}
-             {{ "{{" }} zeppelin.k8s.interpreter.gpu.type {{ "}}" }}: " {{ "{{" }} zeppelin.k8s.interpreter.gpu.nums {{ "}}" }}"
-            {% endif %}
-      {% else %}
-      {% if zeppelin.k8s.interpreter.gpu.type is defined and zeppelin.k8s.interpreter.gpu.nums is defined %}
-        resources:
-          limits:  
-             {{ "{{" }} zeppelin.k8s.interpreter.gpu.type {{ "}}" }}: " {{ "{{" }} zeppelin.k8s.interpreter.gpu.nums {{ "}}" }}"
-      {% endif %}
-      {% endif %}
-      {% if zeppelin.k8s.interpreter.group.name == "spark" %}
-        volumeMounts:
-        - name: spark-home
-          mountPath: /spark
-        - name: spark-pod-template
-          mountPath: /etc/spark
-      initContainers:
-      - name: spark-home-init
-        image: {{ "{{" }} zeppelin.k8s.spark.container.image {{ "}}" }}
-        {% if zeppelin.k8s.spark.container.imagePullPolicy is defined %}
-        imagePullPolicy: {{ "{{" }} zeppelin.k8s.spark.container.imagePullPolicy {{ "}}" }}
-        {% endif %}
-        command: ["sh", "-c", "cp -r /opt/spark/* /spark/"]
-        volumeMounts:
-        - name: spark-home
-          mountPath: /spark
-      {% if zeppelin.k8s.interpreter.imagePullSecrets is defined %}
-      imagePullSecrets:
-      {% for secret in zeppelin.k8s.interpreter.imagePullSecrets.split(',') %}
-      - name: {{ "{{" }} secret {{ "}}" }} 
-      {% endfor %}
-      {% endif %}
-      volumes:
-      - name: spark-home
-        emptyDir: {}
-      - name: spark-pod-template
-        configMap:
-          name: {{ include "zeppelin.interpreter.spark.configMapName" . }}
-      {% endif %}
+      {{- with .Values.interpreter.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
 
     ---
     apiVersion: v1
@@ -145,22 +183,23 @@ data:
     spec:
       clusterIP: None
       ports:
-        - name: intp
-          port: 12321
-        {% if zeppelin.k8s.interpreter.group.name == "spark" %}
-        - name: spark-driver
-          port: 22321
-        - name: spark-blockmanager
-          port: 22322
-        - name: spark-ui
-          port: 4040
-        {% endif %}
+      - name: intp
+        port: 12321
+      {% if zeppelin.k8s.interpreter.group.name == "spark" %}
+      - name: spark-driver
+        port: 22321
+      - name: spark-blockmanager
+        port: 22322
+      - name: spark-ui
+        port: 4040
+      {% endif %}
       selector:
+        {{- include "zeppelin.interpreter.labels" . | nindent 8 }}
         app: {{ "{{" }} zeppelin.k8s.interpreter.pod.name {{ "}}" }}
+
     {% if zeppelin.k8s.interpreter.group.name == "spark" %}
     {% if zeppelin.k8s.spark.useIngress is defined and zeppelin.k8s.spark.useIngress == "true" %}
     ---
-    # create ingress of spark UI
     apiVersion: networking.k8s.io/v1
     kind: Ingress
     metadata:
@@ -181,7 +220,7 @@ data:
         http:
           paths:
           - pathType: Prefix
-            path: "/"
+            path: /
             backend:
               service:
                 name: {{ "{{" }} zeppelin.k8s.interpreter.pod.name {{ "}}" }}
