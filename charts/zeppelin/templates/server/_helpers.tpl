@@ -93,3 +93,10 @@ Create the name of the service for Zeppelin server.
 {{- define "zeppelin.server.serviceName" -}}
 {{ include "zeppelin.server.name" . }}-svc
 {{- end -}}
+
+{{/*
+Create the name of the ingress for Zeppelin server.
+*/}}
+{{- define "zeppelin.server.ingressName" -}}
+{{ include "zeppelin.server.name" . }}-ingress
+{{- end -}}

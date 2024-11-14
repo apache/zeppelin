@@ -44,6 +44,7 @@ data:
 
     export SPARK_MASTER=k8s://https://kubernetes.default.svc
     export ZEPPELIN_K8S_SERVICE_NAME={{ include "zeppelin.server.serviceName" . }}
+    export ZEPPELIN_K8S_SPARK_CONTAINER_IMAGE={{ include "zeppelin.interpreter.spark.image" . }}
 
   zeppelin-site.xml: |
     <?xml version="1.0"?>

@@ -23,10 +23,11 @@ metadata:
   labels:
     {{- include "zeppelin.server.labels" . | nindent 4 }}
 spec:
-  type: {{ .Values.service.type }}
+  type: {{ .Values.server.service.type }}
   ports:
   - name: http
-    port: 8080
+    port: {{ .Values.server.service.port }}
+    targetPort: 8080
   - name: rpc
     port: 12320
   selector:

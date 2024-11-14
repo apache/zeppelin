@@ -35,6 +35,13 @@ A Helm chart for deploying Apache Zeppelin on Kubernetes.
 | server.serviceAccount.create | bool | `true` | Specifies whether a service account should be created for the Zeppelin server. |
 | server.serviceAccount.name | string | `""` | Optional name for the Zeppelin server service account. |
 | server.serviceAccount.annotations | object | `{}` | Extra annotations for the Zeppelin server service account. |
+| server.service.type | string | `"ClusterIP"` | Service type for Zeppelin server. |
+| server.service.port | int | `8080` | Service port for Zeppelin server. |
+| server.ingress.enable | bool | `false` | Enable ingress for Zeppelin server. |
+| server.ingress.className | string | `""` | Ingress class name for Zeppelin server ingress. |
+| server.ingress.annotations | object | `{}` | Annotations for the Zeppelin server ingress. |
+| server.ingress.hosts | list | `[{"host":"local.zeppelin-project.org","paths":[{"path":"/","pathType":"ImplementationSpecific"}]}]` | Hosts for Zeppelin server ingress. |
+| server.ingress.tls | list | `[]` | TLS configuration for Zeppelin server ingress. |
 | interpreter.image.registry | string | If not set, `global.image.registry` will be used. | Zeppelin interpreter image registry. |
 | interpreter.image.repository | string | `"apache/zeppelin-interpreter"` | Zeppelin interpreter image repository. |
 | interpreter.image.tag | string | If not set, the chart appVersion will be used. | Zeppelin interpreter image tag. |
@@ -61,7 +68,6 @@ A Helm chart for deploying Apache Zeppelin on Kubernetes.
 | interpreter.serviceAccount.create | bool | `true` | Specifies whether a service account should be created for the Zeppelin interpreter. |
 | interpreter.serviceAccount.name | string | `""` | Optional name for the Zeppelin interpreter service account. |
 | interpreter.serviceAccount.annotations | object | `{}` | Extra annotations for the Zeppelin interpreter service account. |
-| service.type | string | `"ClusterIP"` | Service type for Zeppelin server. |
 
 ## Maintainers
 
