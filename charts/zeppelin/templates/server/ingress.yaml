@@ -36,7 +36,7 @@ metadata:
     {{- include "zeppelin.server.labels" . | nindent 4 }}
   {{- with .Values.server.ingress.annotations }}
   annotations:
-    {{- toToml . | nindent 4 }}
+    {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:
   {{- if and .Values.server.ingress.className (semverCompare ">=1.18-0" .Capabilities.KubeVersion.GitVersion) }}
