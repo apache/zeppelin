@@ -52,6 +52,22 @@ data:
     spec:
       containers:
       - name: spark-kubernetes-driver
+        {{- with .Values.interpreter.spark.env }}
+        env:
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- with .Values.interpreter.spark.envFrom }}
+        envFrom:
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- with .Values.interpreter.spark.volumeMounts }}
+        volumeMounts:
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      {{- with .Values.interpreter.spark.volumes }}
+      volumes:
+      {{- toYaml . | nindent 8 }}
+      {{- end }}
       {{- with .Values.interpreter.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
@@ -73,6 +89,22 @@ data:
     spec:
       containers:
       - name: spark-kubernetes-executor
+        {{- with .Values.interpreter.spark.env }}
+        env:
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- with .Values.interpreter.spark.envFrom }}
+        envFrom:
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- with .Values.interpreter.spark.volumeMounts }}
+        volumeMounts:
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      {{- with .Values.interpreter.spark.volumes }}
+      volumes:
+      {{- toYaml . | nindent 8 }}
+      {{- end }}
       {{- with .Values.interpreter.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

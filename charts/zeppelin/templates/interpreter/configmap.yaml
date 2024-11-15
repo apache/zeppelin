@@ -120,6 +120,10 @@ data:
         {{- with .Values.interpreter.volumeMounts }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
+        {{- with .Values.interpreter.securityContext }}
+        securityContext:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
       {{- with .Values.global.image.pullSecrets }}
       imagePullSecrets:
       {{- toYaml . | nindent 6 }}
