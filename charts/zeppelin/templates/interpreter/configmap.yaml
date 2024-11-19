@@ -86,6 +86,10 @@ data:
         {{- with .Values.interpreter.env }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
+        {{- with .Values.interpreter.envFrom }}
+        envFrom:
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
         {% if zeppelin.k8s.interpreter.cores is defined and zeppelin.k8s.interpreter.memory is defined %}
         resources:
           requests:
