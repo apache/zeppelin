@@ -51,10 +51,12 @@ A Helm chart for deploying Apache Zeppelin on Kubernetes.
 | interpreter.spark.image.repository | string | `"spark"` | Spark image repository. |
 | interpreter.spark.image.tag | string | `"3.5.3"` | Spark image tag. |
 | interpreter.spark.conf | object | `{"spark.kubernetes.driver.podTemplateFile":"file:///opt/spark/conf/driver-pod-template.yaml","spark.kubernetes.executor.podTemplateFile":"file:///opt/spark/conf/executor-pod-template.yaml"}` | Spark configurations. |
-| interpreter.spark.volumes | list | `[]` | Volumes for Spark executor pods. |
-| interpreter.spark.env | list | `[]` | Environment variables for Spark executor containers. |
-| interpreter.spark.envFrom | list | `[]` | Environment variable sources for Spark executor containers. |
-| interpreter.spark.volumeMounts | list | `[]` | Volume mounts for Zeppelin interpreter containers. |
+| interpreter.spark.labels | object | `{}` | Extra labels for Spark pods. |
+| interpreter.spark.annotations | object | `{}` | Extra annotations for Spark pods. |
+| interpreter.spark.volumes | list | `[]` | Volumes for Spark pods. |
+| interpreter.spark.env | list | `[]` | Environment variables for Spark containers. |
+| interpreter.spark.envFrom | list | `[]` | Environment variable sources for Spark containers. |
+| interpreter.spark.volumeMounts | list | `[]` | Volume mounts for Spark containers. |
 | interpreter.labels | object | `{}` | Extra labels for Zeppelin interpreter pods. |
 | interpreter.annotations | object | `{}` | Extra annotations for Zeppelin interpreter pods. |
 | interpreter.volumes | list | `[]` | Volumes for Zeppelin interpreter pods. |
