@@ -185,16 +185,22 @@ interpreter:
       spark.kubernetes.driver.podTemplateFile: file:///opt/spark/conf/driver-pod-template.yaml
       spark.kubernetes.executor.podTemplateFile: file:///opt/spark/conf/executor-pod-template.yaml
 
-    # -- Volumes for Spark executor pods.
+    # -- Extra labels for Spark pods.
+    labels: {}
+
+    # -- Extra annotations for Spark pods.
+    annotations: {}
+
+    # -- Volumes for Spark pods.
     volumes: []
 
-    # -- Environment variables for Spark executor containers.
+    # -- Environment variables for Spark containers.
     env: []
 
-    # -- Environment variable sources for Spark executor containers.
+    # -- Environment variable sources for Spark containers.
     envFrom: []
 
-    # -- Volume mounts for Zeppelin interpreter containers.
+    # -- Volume mounts for Spark containers.
     volumeMounts: []
 
   # -- Extra labels for Zeppelin interpreter pods.

@@ -49,6 +49,15 @@ data:
     {{- end }}
 
   driver-pod-template.yaml: |
+    metadata:
+      {{- with .Values.interpreter.spark.labels }}
+      labels:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.interpreter.spark.annotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
     spec:
       containers:
       - name: spark-kubernetes-driver
@@ -86,6 +95,15 @@ data:
       {{- end }}
 
   executor-pod-template.yaml: |
+    metadata:
+      {{- with .Values.interpreter.spark.labels }}
+      labels:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.interpreter.spark.annotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
     spec:
       containers:
       - name: spark-kubernetes-executor
