@@ -1555,13 +1555,13 @@ public class NotebookService {
     }
   }
 
-  private String decodeRepeatedly(final String encoded) throws IOException {
+  private static String decodeRepeatedly(final String encoded) throws IOException {
     String previous = encoded;
     int maxDecodeAttempts = 5;
     int attempts = 0;
 
     while (attempts < maxDecodeAttempts) {
-      String decoded = URLDecoder.decode(previous, StandardCharsets.UTF_8.toString());
+      String decoded = URLDecoder.decode(previous, StandardCharsets.UTF_8);
       attempts++;
       if (decoded.equals(previous)) {
         return decoded;
