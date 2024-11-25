@@ -616,6 +616,19 @@ class NotebookServiceTest {
       assertEquals("Note name can not contain '..'", e.getMessage());
     }
     try {
+      // Double URL encoding of ".."
+      notebookService.normalizeNotePath("%252e%252e/%252e%252e/tmp/test333");
+      fail("Should fail");
+    } catch (IOException e) {
+      assertEquals("Note name can not contain '..'", e.getMessage());
+    }
+    try {
+      notebookService.normalizeNotePath("%252525252e%252525252e/tmp/test444");
+      fail("Should fail");
+    } catch (IOException e) {
+      assertEquals("Exceeded maximum decode attempts. Possible malicious input.", e.getMessage());
+    }
+    try {
       notebookService.normalizeNotePath("./");
       fail("Should fail");
     } catch (IOException e) {
