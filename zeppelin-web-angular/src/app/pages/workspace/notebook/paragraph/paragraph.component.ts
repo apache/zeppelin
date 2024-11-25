@@ -46,7 +46,6 @@ import {
 } from '@zeppelin/services';
 import { SpellResult } from '@zeppelin/spell/spell-result';
 
-import { NgTemplateAdapterService } from '@zeppelin/services/ng-template-adapter.service';
 import { NzResizeEvent } from 'ng-zorro-antd/resizable';
 import { NotebookParagraphResultComponent } from '../../share/result/result.component';
 import { NotebookParagraphCodeEditorComponent } from './code-editor/code-editor.component';
@@ -301,31 +300,8 @@ export class NotebookParagraphComponent extends ParagraphBase implements OnInit,
         this.runParagraphUsingSpell(text, magic, propagated);
         this.runParagraphAfter(text);
       } else {
-        const check = this.ngTemplateAdapterService.preCheck(text);
-        if (!check) {
-          this.runParagraphUsingBackendInterpreter(text);
-          this.runParagraphAfter(text);
-        } else {
-          this.waitConfirmFromEdit = true;
-          this.nzModalService
-            .confirm({
-              nzTitle: 'Do you want to migrate the Angular.js template?',
-              nzContent:
-                'The Angular.js template has been deprecated, please upgrade to Angular template.' +
-                ' (<a href="https://angular.io/guide/ajs-quick-reference" target="_blank">more info</a>)',
-              nzOnOk: () => {
-                this.switchMode('command');
-                this.ngTemplateAdapterService
-                  .openMigrationDialog(check)
-                  .pipe(takeUntil(this.destroy$))
-                  .subscribe(newText => {
-                    this.cloneParagraph('below', newText);
-                  });
-              }
-            })
-            .afterClose.pipe(takeUntil(this.destroy$))
-            .subscribe(() => (this.waitConfirmFromEdit = false));
-        }
+        this.runParagraphUsingBackendInterpreter(text);
+        this.runParagraphAfter(text);
       }
     }
   }
@@ -452,20 +428,17 @@ export class NotebookParagraphComponent extends ParagraphBase implements OnInit,
     private nzModalService: NzModalService,
     private noteVarShareService: NoteVarShareService,
     private shortcutService: ShortcutService,
-    private host: ElementRef,
-    private ngTemplateAdapterService: NgTemplateAdapterService
+    private host: ElementRef
   ) {
     super(messageService, noteStatusService, ngZService, cdr);
   }
 
   ngOnInit() {
     const shortcutService = this.shortcutService.forkByElement(this.host.nativeElement);
-    const observables: Array<
-      Observable<{
-        action: ParagraphActions;
-        event: KeyboardEvent;
-      }>
-    > = [];
+    const observables: Array<Observable<{
+      action: ParagraphActions;
+      event: KeyboardEvent;
+    }>> = [];
     Object.entries(ShortcutsMap).forEach(([action, keys]) => {
       const keysArr: string[] = Array.isArray(keys) ? keys : [keys];
       keysArr.forEach(key => {
@@ -617,6 +590,7 @@ export class NotebookParagraphComponent extends ParagraphBase implements OnInit,
       });
     }
   }
+
   ngOnChanges(changes: SimpleChanges): void {
     const { index, select, scrolled } = changes;
     if (
@@ -637,6 +611,7 @@ export class NotebookParagraphComponent extends ParagraphBase implements OnInit,
   getElement(): HTMLElement {
     return this.host && this.host.nativeElement;
   }
+
   ngAfterViewInit(): void {
     this.scrollIfNeeded();
   }
