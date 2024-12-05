@@ -62,6 +62,33 @@ Sources descending by priority:
     <td>Zeppelin Server ssl port (used when ssl environment/property is set to true)</td>
   </tr>
   <tr>
+    <td><h6 class="properties">ZEPPELIN_SERVER_RPC_PORTRANGE</h6></td>
+    <td><h6 class="properties">zeppelin.server.rpc.portRange</h6></td>
+    <td>:</td>
+     <td>
+      Specifies the port range for the Zeppelin Interpreter Event Server.
+      <br />Format: <code>&lt;startPort&gt;:&lt;endPort&gt;</code>
+      <br />If the <code>&lt;startPort&gt;</code> is omitted, the range will begin at 1024. If the <code>&lt;endPort&gt;</code> is omitted, the range will extend up to 65535.
+      <br /><span style="font-style:italic; color: gray"> Note: If <code>zeppelin.server.rpc.port</code> is set, this property will be ignored.</span>
+    </td>
+  </tr>
+  <tr>
+    <td><h6 class="properties">ZEPPELIN_INTERPRETER_RPC_PORTRANGE</h6></td>
+    <td><h6 class="properties">zeppelin.interpreter.rpc.portRange</h6></td>
+    <td>:</td>
+     <td>
+      Specifies the port range for the Zeppelin Interpreter.
+      <br />Format: <code>&lt;startPort&gt;:&lt;endPort&gt;</code>
+      <br />If the <code>&lt;startPort&gt;</code> is omitted, the range will begin at 1024. If the <code>&lt;endPort&gt;</code> is omitted, the range will extend up to 65535.
+    </td>
+  </tr>
+  <tr>
+    <td><h6 class="properties">ZEPPELIN_SERVER_RPC_PORT</h6></td>
+    <td><h6 class="properties">zeppelin.server.rpc.port</h6></td>
+    <td></td>
+    <td>Port for the Zeppelin Interpreter Event Server. If not set, an available port will be used automatically.</td>
+  </tr>
+  <tr>
     <td><h6 class="properties">ZEPPELIN_JMX_ENABLE</h6></td>
     <td><h6 class="properties">zeppelin.jmx.enable</h6></td>
     <td>false</td>

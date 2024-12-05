@@ -44,6 +44,12 @@
 </property>
 
 <property>
+  <name>zeppelin.server.rpc.port</name>
+  <value></value>
+  <description>Port for the Zeppelin Interpreter Event Server. If not set, an available port will be used automatically.</description>
+</property>
+
+<property>
   <name>zeppelin.war.tempdir</name>
   <value>webapps</value>
   <description>Location of jetty temporary directory</description>
