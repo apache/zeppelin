@@ -25,19 +25,19 @@ import org.apache.zeppelin.display.angular.AbstractAngularModel
 class AngularModel(name: String)
   extends org.apache.zeppelin.display.angular.AbstractAngularModel(name) {
 
-  def this(name: String, newValue: Any) = {
+  def this(name: String, newValue: AnyRef) = {
     this(name)
     value(newValue)
   }
 
-  override protected def getAngularObject(): AngularObject[Any] = {
+  override protected def getAngularObject(): AngularObject = {
     registry.get(name,
-      context.getNoteId, context.getParagraphId).asInstanceOf[AngularObject[Any]]
+      context.getNoteId, context.getParagraphId).asInstanceOf[AngularObject]
   }
 
-  override protected def addAngularObject(value: Any): AngularObject[Any] = {
+  override protected def addAngularObject(value: AnyRef): AngularObject = {
     registry.add(name, value,
-      context.getNoteId, context.getParagraphId).asInstanceOf[AngularObject[Any]]
+      context.getNoteId, context.getParagraphId).asInstanceOf[AngularObject]
   }
 }
 
@@ -47,7 +47,7 @@ object AngularModel {
     new AngularModel(name)
   }
 
-  def apply(name: String, newValue: Any): AbstractAngularModel = {
+  def apply(name: String, newValue: AnyRef): AbstractAngularModel = {
     new AngularModel(name, newValue)
   }
 }
