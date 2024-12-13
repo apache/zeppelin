@@ -42,7 +42,7 @@ ENV PATH $PATH:$JAVA_HOME/bin
 RUN yum install -y curl which tar sudo openssh-server openssh-clients rsync
 
 # hadoop
-RUN curl -s "https://www.apache.org/dyn/closer.lua/hadoop/core/hadoop-$HADOOP_VERSION/hadoop-$HADOOP_VERSION.tar.gz?action=download" | tar -xz -C /usr/local/
+RUN curl -s "https://www.apache.org/dyn/closer.lua/hadoop/common/hadoop-$HADOOP_VERSION/hadoop-$HADOOP_VERSION.tar.gz?action=download" | tar -xz -C /usr/local/
 RUN cd /usr/local && ln -s ./hadoop-$HADOOP_VERSION hadoop
 
 ENV HADOOP_PREFIX /usr/local/hadoop
