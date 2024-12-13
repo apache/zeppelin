@@ -215,7 +215,7 @@ Building from source is recommended  where possible, for simplicity in this tuto
 To download the Flink Binary use `wget`
 
 ```bash
-wget "https://archive.apache.org/dist/flink/flink-1.17.1/flink-1.17.1-bin-scala_2.12.tgz"
+wget -O flink-1.17.1-bin-scala_2.12.tgz "https://www.apache.org/dyn/closer.lua/flink/flink-1.17.1/flink-1.17.1-bin-scala_2.12.tgz?action=download"
 tar -xzvf flink-1.17.1-bin-scala_2.12.tgz
 ```
 
@@ -285,7 +285,7 @@ Using binaries is also
 To download the Spark Binary use `wget`
 
 ```bash
-wget "https://archive.apache.org/dist/spark/spark-3.5.2/spark-3.5.2-bin-hadoop3.tgz"
+wget -O spark-3.5.2-bin-hadoop3.tgz "https://www.apache.org/dyn/closer.lua/spark/spark-3.5.2/spark-3.5.2-bin-hadoop3.tgz?action=download"
 tar -xzvf spark-3.5.2-bin-hadoop3.tgz
 mv spark-3.5.2-bin-hadoop3 spark
 ```

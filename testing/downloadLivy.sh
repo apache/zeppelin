@@ -45,12 +45,14 @@ ZEPPELIN_HOME="$(cd "${FWDIR}/.."; pwd)"
 #   None
 # Arguments:
 #   url - source URL
+#   file - output filename
 # Returns:
 #   None
 #######################################
 download_with_retry() {
     local url="$1"
-    wget --retry-connrefused --waitretry=1 --read-timeout=20 --timeout=15 -t 3 "${url}"
+    local file="${2:-$(basename $url)}"
+    wget --retry-connrefused --waitretry=1 --read-timeout=20 --timeout=15 -t 3 --output-document "${file}" "${url}"
     if [[ "$?" -ne 0 ]]; then
         echo "3 download attempts for ${url} failed"
     fi
@@ -72,7 +74,7 @@ if [[ ! -d "${LIVY_HOME}" ]]; then
         # download livy from archive if not cached
         echo "${LIVY_VERSION} being downloaded from archives"
         STARTTIME=`date +%s`
-        download_with_retry "https://dist.apache.org/repos/dist/release/incubator/livy/${LIVY_VERSION}/${LIVY_ARCHIVE}.zip"
+        download_with_retry "https://www.apache.org/dyn/closer.lua/incubator/livy/${LIVY_VERSION}/${LIVY_ARCHIVE}.zip?action=download" "${LIVY_ARCHIVE}.zip"
         ENDTIME=`date +%s`
         DOWNLOADTIME="$((ENDTIME-STARTTIME))"
     fi
