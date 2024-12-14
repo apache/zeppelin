@@ -347,7 +347,7 @@ class TerminalInterpreterTest extends BaseInterpreterTest {
     }
 
     assertTrue(exception instanceof IOException);
-    assertEquals("Connect failure", exception.getMessage());
+    assertTrue(exception.getMessage().contains("403 Forbidden"));
   }
 
   private static ClientEndpointConfig getOriginRequestHeaderConfig(String origin) {
