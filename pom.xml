@@ -122,9 +122,10 @@
     <gson-extras.version>0.2.2</gson-extras.version>
     <org-json.version>20240205</org-json.version>
     <jackson.version>2.12.7.20240502</jackson.version>
-    <jetty.version>9.4.52.v20230823</jetty.version>
+    <jetty.version>11.0.24</jetty.version>
     <jakarta.activation.version>1.2.2</jakarta.activation.version>
     <jakarta.xml.bind.version>2.3.3</jakarta.xml.bind.version>
+    <jakarta.inject.version>2.0.1</jakarta.inject.version>
     <httpcomponents.core.version>4.4.1</httpcomponents.core.version>
     <httpcomponents.client.version>4.5.13</httpcomponents.client.version>
     <httpcomponents.asyncclient.version>4.0.2</httpcomponents.asyncclient.version>
@@ -140,8 +141,8 @@
     <shiro.version>1.13.0</shiro.version>
     <bouncycastle.version>1.80</bouncycastle.version>
     <maven.version>3.6.3</maven.version>
-    <dropwizard.version>4.1.14</dropwizard.version>
-    <micrometer.version>1.6.0</micrometer.version>
+    <dropwizard.version>4.2.29</dropwizard.version>
+    <micrometer.version>1.14.2</micrometer.version>
     <findbugs.jsr305.version>3.0.2</findbugs.jsr305.version>
 
     <hadoop.version>3.3.6</hadoop.version>
@@ -333,6 +334,12 @@
       </dependency>
 
       <dependency>
+        <groupId>jakarta.inject</groupId>
+        <artifactId>jakarta.inject-api</artifactId>
+        <version>${jakarta.inject.version}</version>
+      </dependency>
+
+      <dependency>
         <groupId>jakarta.xml.bind</groupId>
         <artifactId>jakarta.xml.bind-api</artifactId>
         <version>${jakarta.xml.bind.version}</version>
@@ -380,11 +387,13 @@
         <groupId>org.apache.shiro</groupId>
         <artifactId>shiro-core</artifactId>
         <version>${shiro.version}</version>
+        <classifier>jakarta</classifier>
       </dependency>
       <dependency>
         <groupId>org.apache.shiro</groupId>
         <artifactId>shiro-web</artifactId>
         <version>${shiro.version}</version>
+        <classifier>jakarta</classifier>
       </dependency>
       <dependency>
         <groupId>org.apache.shiro</groupId>

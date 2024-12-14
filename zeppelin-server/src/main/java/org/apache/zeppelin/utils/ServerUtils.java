@@ -16,7 +16,7 @@
  */
 package org.apache.zeppelin.utils;
 
-import javax.websocket.Session;
+import jakarta.websocket.Session;
 
 public class ServerUtils {
   private ServerUtils() {
@@ -30,7 +30,7 @@ public class ServerUtils {
    */
   public static String getRemoteAddress(Session session) {
     if (session != null && session.getUserProperties() != null) {
-      return String.valueOf(session.getUserProperties().get("javax.websocket.endpoint.remoteAddress"));
+      return String.valueOf(session.getUserProperties().get("jakarta.websocket.endpoint.remoteAddress"));
     }
     return "unknown";
   }
