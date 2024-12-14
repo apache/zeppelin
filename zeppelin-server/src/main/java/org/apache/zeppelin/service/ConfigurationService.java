@@ -18,7 +18,7 @@
 
 package org.apache.zeppelin.service;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import java.io.IOException;
 import java.util.Map;
