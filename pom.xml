@@ -121,10 +121,8 @@
     <gson.version>2.8.9</gson.version>
     <gson-extras.version>0.2.2</gson-extras.version>
     <org-json.version>20240205</org-json.version>
-    <jackson.version>2.12.7.20240502</jackson.version>
+    <jackson.version>2.17.3</jackson.version>
     <jetty.version>11.0.24</jetty.version>
-    <jakarta.activation.version>1.2.2</jakarta.activation.version>
-    <jakarta.xml.bind.version>2.3.3</jakarta.xml.bind.version>
     <jakarta.inject.version>2.0.1</jakarta.inject.version>
     <httpcomponents.core.version>4.4.1</httpcomponents.core.version>
     <httpcomponents.client.version>4.5.13</httpcomponents.client.version>
@@ -328,21 +326,9 @@
       </dependency>
 
       <dependency>
-        <groupId>jakarta.activation</groupId>
-        <artifactId>jakarta.activation-api</artifactId>
-        <version>${jakarta.activation.version}</version>
-      </dependency>
-
-      <dependency>
         <groupId>jakarta.inject</groupId>
         <artifactId>jakarta.inject-api</artifactId>
         <version>${jakarta.inject.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>jakarta.xml.bind</groupId>
-        <artifactId>jakarta.xml.bind-api</artifactId>
-        <version>${jakarta.xml.bind.version}</version>
       </dependency>
 
       <dependency>
