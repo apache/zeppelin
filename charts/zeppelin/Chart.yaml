@@ -1,0 +1,15 @@
+apiVersion: v2
+
+name: zeppelin
+
+description: A Helm chart for deploying Apache Zeppelin on Kubernetes.
+
+type: application
+
+version: 0.1.0
+
+appVersion: 0.11.2
+
+maintainers:
+- name: ChenYi015
+  email: github@chenyicn.net
