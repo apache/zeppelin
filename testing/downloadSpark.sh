@@ -38,12 +38,14 @@ ZEPPELIN_HOME="$(cd "${FWDIR}/.."; pwd)"
 #   None
 # Arguments:
 #   url - source URL
+#   file - output filename
 # Returns:
 #   None
 #######################################
 download_with_retry() {
     local url="$1"
-    wget --retry-connrefused --waitretry=1 --read-timeout=20 --timeout=15 -t 3 "${url}"
+    local file="${2:-$(basename $url)}"
+    wget --retry-connrefused --waitretry=1 --read-timeout=20 --timeout=15 -t 3 --output-document "${file}" "${url}"
     if [[ "$?" -ne 0 ]]; then
         echo "3 download attempts for ${url} failed"
     fi
@@ -65,8 +67,8 @@ if [[ ! -d "${SPARK_HOME}" ]]; then
         # download spark from archive if not cached
         echo "${SPARK_VERSION} being downloaded from archives"
         STARTTIME=`date +%s`
-        #timeout -s KILL "${MAX_DOWNLOAD_TIME_SEC}" wget "http://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/${SPARK_ARCHIVE}.tgz"
-        download_with_retry "http://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/${SPARK_ARCHIVE}.tgz"
+        #timeout -s KILL "${MAX_DOWNLOAD_TIME_SEC}" wget -O "${SPARK_ARCHIVE}.tgz" "https://www.apache.org/dyn/closer.lua/spark/spark-${SPARK_VERSION}/${SPARK_ARCHIVE}.tgz?action=download"
+        download_with_retry "https://www.apache.org/dyn/closer.lua/spark/spark-${SPARK_VERSION}/${SPARK_ARCHIVE}.tgz?action=download" "${SPARK_ARCHIVE}.tgz"
         ENDTIME=`date +%s`
         DOWNLOADTIME="$((ENDTIME-STARTTIME))"
     fi
