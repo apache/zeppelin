@@ -54,6 +54,12 @@
       <groupId>${project.groupId}</groupId>
       <artifactId>zeppelin-interpreter</artifactId>
       <version>${project.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>javax.inject</groupId>
+          <artifactId>javax.inject</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <dependency>
@@ -70,6 +76,11 @@
           <artifactId>jsoup</artifactId>
         </exclusion>
       </exclusions>
+    </dependency>
+
+    <dependency>
+        <groupId>jakarta.inject</groupId>
+        <artifactId>jakarta.inject-api</artifactId>
     </dependency>
 
     <dependency>
@@ -122,7 +133,7 @@
 
     <dependency>
       <groupId>org.eclipse.jetty.websocket</groupId>
-      <artifactId>websocket-client</artifactId>
+      <artifactId>websocket-jetty-client</artifactId>
       <version>${jetty.version}</version>
     </dependency>
 
@@ -253,7 +264,7 @@
 
     <dependency>
       <groupId>org.eclipse.jetty.websocket</groupId>
-      <artifactId>websocket-server</artifactId>
+      <artifactId>websocket-jetty-server</artifactId>
       <version>${jetty.version}</version>
       <scope>test</scope>
     </dependency>
