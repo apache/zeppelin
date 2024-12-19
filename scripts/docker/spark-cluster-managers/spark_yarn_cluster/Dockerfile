@@ -42,7 +42,7 @@ ENV PATH $PATH:$JAVA_HOME/bin
 RUN yum install -y curl which tar sudo openssh-server openssh-clients rsync
 
 # hadoop
-RUN curl -s https://archive.apache.org/dist/hadoop/core/hadoop-$HADOOP_VERSION/hadoop-$HADOOP_VERSION.tar.gz | tar -xz -C /usr/local/
+RUN curl -s "https://www.apache.org/dyn/closer.lua/hadoop/common/hadoop-$HADOOP_VERSION/hadoop-$HADOOP_VERSION.tar.gz?action=download" | tar -xz -C /usr/local/
 RUN cd /usr/local && ln -s ./hadoop-$HADOOP_VERSION hadoop
 
 ENV HADOOP_PREFIX /usr/local/hadoop
@@ -72,7 +72,7 @@ RUN rm  /usr/local/hadoop/lib/native/*
 RUN curl -Ls http://dl.bintray.com/sequenceiq/sequenceiq-bin/hadoop-native-64-$HADOOP_VERSION.tar|tar -x -C /usr/local/hadoop/lib/native/
 
 # install spark
-RUN curl -s http://archive.apache.org/dist/spark/spark-$SPARK_VERSION/spark-$SPARK_VERSION-bin-hadoop$HADOOP_PROFILE.tgz | tar -xz -C /usr/local/
+RUN curl -s "https://www.apache.org/dyn/closer.lua/spark/spark-$SPARK_VERSION/spark-$SPARK_VERSION-bin-hadoop$HADOOP_PROFILE.tgz?action=download" | tar -xz -C /usr/local/
 RUN cd /usr/local && ln -s spark-$SPARK_VERSION-bin-hadoop$HADOOP_PROFILE spark
 ENV SPARK_HOME /usr/local/spark
 

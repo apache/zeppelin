@@ -38,7 +38,7 @@
 
         <spark.archive>spark-${spark.version}</spark.archive>
         <spark.bin.download.url>
-            https://archive.apache.org/dist/spark/${spark.archive}/${spark.archive}-bin-without-hadoop.tgz
+            https://www.apache.org/dyn/closer.lua/spark/${spark.archive}/${spark.archive}-bin-without-hadoop.tgz?action=download
         </spark.bin.download.url>
         <interpreter.jar.name>zeppelin-interpreter-r</interpreter.jar.name>
     </properties>
@@ -154,6 +154,7 @@
                             <url>${spark.bin.download.url}</url>
                             <unpack>true</unpack>
                             <outputDirectory>${project.build.directory}</outputDirectory>
+                            <outputFileName>${spark.archive}-bin-without-hadoop.tgz</outputFileName>
                         </configuration>
                     </execution>
                 </executions>

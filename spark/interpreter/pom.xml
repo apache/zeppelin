@@ -48,10 +48,10 @@
 
     <spark.archive>spark-${spark.version}</spark.archive>
     <spark.src.download.url>
-      https://archive.apache.org/dist/spark/${spark.archive}/${spark.archive}.tgz
+      https://www.apache.org/dyn/closer.lua/spark/${spark.archive}/${spark.archive}.tgz?action=download
     </spark.src.download.url>
     <spark.bin.download.url>
-      https://archive.apache.org/dist/spark/${spark.archive}/${spark.archive}-bin-without-hadoop.tgz
+      https://www.apache.org/dyn/closer.lua/spark/${spark.archive}/${spark.archive}-bin-without-hadoop.tgz?action=download
     </spark.bin.download.url>
 
     <scala.compile.version>${spark.scala.version}</scala.compile.version>
@@ -280,6 +280,7 @@
               <unpack>true</unpack>
               <url>${spark.src.download.url}</url>
               <outputDirectory>${project.build.directory}</outputDirectory>
+              <outputFileName>${spark.archive}.tgz</outputFileName>
             </configuration>
           </execution>
           <!-- include sparkr by default -->
@@ -295,6 +296,7 @@
               <url>${spark.bin.download.url}</url>
               <unpack>true</unpack>
               <outputDirectory>${project.build.directory}</outputDirectory>
+              <outputFileName>${spark.archive}-bin-without-hadoop.tgz</outputFileName>
             </configuration>
           </execution>
         </executions>

@@ -30,7 +30,7 @@ RUN apt-get update && apt-get install -y curl unzip wget grep sed vim tzdata && 
 RUN rm -rf /opt/zeppelin
 
 RUN rm -rf /spark
-RUN wget https://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-${SPARK_BIN_NAME}.tgz
+RUN wget -O spark-${SPARK_VERSION}-bin-${SPARK_BIN_NAME}.tgz "https://www.apache.org/dyn/closer.lua/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-${SPARK_BIN_NAME}.tgz?action=download"
 RUN tar zxvf spark-${SPARK_VERSION}-bin-${SPARK_BIN_NAME}.tgz
 RUN mv spark-${SPARK_VERSION}-bin-${SPARK_BIN_NAME} /opt/spark
 RUN rm spark-${SPARK_VERSION}-bin-${SPARK_BIN_NAME}.tgz

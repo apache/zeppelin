@@ -42,7 +42,7 @@
     <derby.version>10.14.2.0</derby.version>
     <hiverunner.version>5.3.0</hiverunner.version>
 
-    <flink.bin.download.url>https://archive.apache.org/dist/flink/flink-${flink.version}/flink-${flink.version}-bin-scala_${flink.scala.binary.version}.tgz</flink.bin.download.url>
+    <flink.bin.download.url>https://www.apache.org/dyn/closer.lua/flink/flink-${flink.version}/flink-${flink.version}-bin-scala_${flink.scala.binary.version}.tgz?action=download</flink.bin.download.url>
   </properties>
   
   <dependencies>
@@ -1056,6 +1056,7 @@
               <url>${flink.bin.download.url}</url>
               <unpack>true</unpack>
               <outputDirectory>${project.build.directory}</outputDirectory>
+              <outputFileName>flink-${flink.version}-bin-scala_${flink.scala.binary.version}.tgz</outputFileName>
             </configuration>
           </execution>
         </executions>
