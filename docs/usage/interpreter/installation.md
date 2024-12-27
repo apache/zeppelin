@@ -84,87 +84,87 @@ You can also find the below community managed interpreter list in `conf/interpre
   </tr>
   <tr>
     <td>alluxio</td>
-    <td>org.apache.zeppelin:zeppelin-alluxio:0.12.0-SNAPSHOT</td>
+    <td>org.apache.zeppelin:zeppelin-alluxio:0.12.0</td>
     <td>Alluxio interpreter</td>
   </tr>
   <tr>
     <td>angular</td>
-    <td>org.apache.zeppelin:zeppelin-angular:0.12.0-SNAPSHOT</td>
+    <td>org.apache.zeppelin:zeppelin-angular:0.12.0</td>
     <td>HTML and AngularJS view rendering</td>
   </tr>
   <tr>
     <td>bigquery</td>
-    <td>org.apache.zeppelin:zeppelin-bigquery:0.12.0-SNAPSHOT</td>
+    <td>org.apache.zeppelin:zeppelin-bigquery:0.12.0</td>
     <td>BigQuery interpreter</td>
   </tr>
   <tr>
     <td>cassandra</td>
-    <td>org.apache.zeppelin:zeppelin-cassandra:0.12.0-SNAPSHOT</td>
+    <td>org.apache.zeppelin:zeppelin-cassandra:0.12.0</td>
     <td>Cassandra interpreter</td>
   </tr>
   <tr>
     <td>elasticsearch</td>
-    <td>org.apache.zeppelin:zeppelin-elasticsearch:0.12.0-SNAPSHOT</td>
+    <td>org.apache.zeppelin:zeppelin-elasticsearch:0.12.0</td>
     <td>Elasticsearch interpreter</td>
   </tr>
   <tr>
     <td>file</td>
-    <td>org.apache.zeppelin:zeppelin-file:0.12.0-SNAPSHOT</td>
+    <td>org.apache.zeppelin:zeppelin-file:0.12.0</td>
     <td>HDFS file interpreter</td>
   </tr>
   <tr>
     <td>flink</td>
-    <td>org.apache.zeppelin:zeppelin-flink:0.12.0-SNAPSHOT</td>
+    <td>org.apache.zeppelin:zeppelin-flink:0.12.0</td>
     <td>Flink interpreter</td>
   </tr>
   <tr>
     <td>hbase</td>
-    <td>org.apache.zeppelin:zeppelin-hbase:0.12.0-SNAPSHOT</td>
+    <td>org.apache.zeppelin:zeppelin-hbase:0.12.0</td>
     <td>Hbase interpreter</td>
   </tr>
   <tr>
     <td>groovy</td>
-    <td>org.apache.zeppelin:zeppelin-groovy:0.12.0-SNAPSHOT</td>
+    <td>org.apache.zeppelin:zeppelin-groovy:0.12.0</td>
     <td>Groovy interpreter</td>
   </tr>
   <tr>
     <td>java</td>
-    <td>org.apache.zeppelin:zeppelin-java:0.12.0-SNAPSHOT</td>
+    <td>org.apache.zeppelin:zeppelin-java:0.12.0</td>
     <td>Java interpreter</td>
   </tr>
   <tr>
     <td>jdbc</td>
-    <td>org.apache.zeppelin:zeppelin-jdbc:0.12.0-SNAPSHOT</td>
+    <td>org.apache.zeppelin:zeppelin-jdbc:0.12.0</td>
     <td>Jdbc interpreter</td>
   </tr>
   <tr>
     <td>livy</td>
-    <td>org.apache.zeppelin:zeppelin-livy:0.12.0-SNAPSHOT</td>
+    <td>org.apache.zeppelin:zeppelin-livy:0.12.0</td>
     <td>Livy interpreter</td>
   </tr>
   <tr>
     <td>md</td>
-    <td>org.apache.zeppelin:zeppelin-markdown:0.12.0-SNAPSHOT</td>
+    <td>org.apache.zeppelin:zeppelin-markdown:0.12.0</td>
     <td>Markdown support</td>
   </tr>
   <tr>
     <td>neo4j</td>
-    <td>org.apache.zeppelin:zeppelin-neo4j:0.12.0-SNAPSHOT</td>
+    <td>org.apache.zeppelin:zeppelin-neo4j:0.12.0</td>
     <td>Neo4j interpreter</td>
   </tr>
   <tr>
     <td>python</td>
-    <td>org.apache.zeppelin:zeppelin-python:0.12.0-SNAPSHOT</td>
+    <td>org.apache.zeppelin:zeppelin-python:0.12.0</td>
     <td>Python interpreter</td>
   </tr>
   <tr>
     <td>shell</td>
-    <td>org.apache.zeppelin:zeppelin-shell:0.12.0-SNAPSHOT</td>
+    <td>org.apache.zeppelin:zeppelin-shell:0.12.0</td>
     <td>Shell command</td>
   </tr>
   <tr>
     <td>sparql</td>
-    <td>org.apache.zeppelin:zeppelin-sparql:0.12.0-SNAPSHOT</td>
+    <td>org.apache.zeppelin:zeppelin-sparql:0.12.0</td>
     <td>Sparql interpreter</td>
   </tr>
 </table>
