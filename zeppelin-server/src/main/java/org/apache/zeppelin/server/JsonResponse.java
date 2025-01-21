@@ -21,8 +21,8 @@ import com.google.gson.GsonBuilder;
 
 import java.util.ArrayList;
 
-import javax.ws.rs.core.NewCookie;
-import javax.ws.rs.core.Response.ResponseBuilder;
+import jakarta.ws.rs.core.NewCookie;
+import jakarta.ws.rs.core.Response.ResponseBuilder;
 
 /**
  * Json response builder.
@@ -30,31 +30,31 @@ import javax.ws.rs.core.Response.ResponseBuilder;
  * @param <T>
  */
 public class JsonResponse<T> {
-  private javax.ws.rs.core.Response.Status status;
+  private jakarta.ws.rs.core.Response.Status status;
   private String message;
   private T body;
   transient ArrayList<NewCookie> cookies;
   transient boolean pretty = false;
 
-  public JsonResponse(javax.ws.rs.core.Response.Status status) {
+  public JsonResponse(jakarta.ws.rs.core.Response.Status status) {
     this.status = status;
     this.message = null;
     this.body = null;
   }
 
-  public JsonResponse(javax.ws.rs.core.Response.Status status, String message) {
+  public JsonResponse(jakarta.ws.rs.core.Response.Status status, String message) {
     this.status = status;
     this.message = message;
     this.body = null;
   }
 
-  public JsonResponse(javax.ws.rs.core.Response.Status status, T body) {
+  public JsonResponse(jakarta.ws.rs.core.Response.Status status, T body) {
     this.status = status;
     this.message = null;
     this.body = body;
   }
 
-  public JsonResponse(javax.ws.rs.core.Response.Status status, String message, T body) {
+  public JsonResponse(jakarta.ws.rs.core.Response.Status status, String message, T body) {
     this.status = status;
     this.message = message;
     this.body = body;
@@ -88,7 +88,7 @@ public class JsonResponse<T> {
    * @return
    */
   public JsonResponse<?> addCookie(String name, String value) {
-    return addCookie(new NewCookie(name, value));
+    return addCookie(new NewCookie.Builder(name).value(value).build());
   }
 
   @Override
@@ -102,11 +102,11 @@ public class JsonResponse<T> {
     return gson.toJson(this);
   }
 
-  public javax.ws.rs.core.Response.Status getCode() {
+  public jakarta.ws.rs.core.Response.Status getCode() {
     return status;
   }
 
-  public void setCode(javax.ws.rs.core.Response.Status status) {
+  public void setCode(jakarta.ws.rs.core.Response.Status status) {
     this.status = status;
   }
 
@@ -126,8 +126,8 @@ public class JsonResponse<T> {
     this.body = body;
   }
 
-  public javax.ws.rs.core.Response build() {
-    ResponseBuilder r = javax.ws.rs.core.Response.status(status).entity(this.toString());
+  public jakarta.ws.rs.core.Response build() {
+    ResponseBuilder r = jakarta.ws.rs.core.Response.status(status).entity(this.toString());
     if (cookies != null) {
       for (NewCookie nc : cookies) {
         r.cookie(nc);

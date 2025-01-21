@@ -19,7 +19,7 @@ package org.apache.zeppelin.helium;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
