@@ -54,10 +54,10 @@ Get the source code on your development machine using git.
 git clone git://gitbox.apache.org/repos/asf/zeppelin.git zeppelin
 ```
 
-You may also want to develop against a specific branch. For example, for branch-0.11.0
+You may also want to develop against a specific branch. For example, for branch-0.12
 
 ```bash
-git clone -b branch-0.11.0 git://gitbox.apache.org/repos/asf/zeppelin.git zeppelin
+git clone -b branch-0.12 git://gitbox.apache.org/repos/asf/zeppelin.git zeppelin
 ```
 
 Apache Zeppelin follows [Fork & Pull](https://github.com/sevntu-checkstyle/sevntu.checkstyle/wiki/Development-workflow-with-Git:-Fork,-Branching,-Commits,-and-Pull-Request) as a source control workflow.

@@ -51,8 +51,11 @@ RUN set -ex && \
     export PATH=/opt/conda/bin:$PATH && \
     conda config --set always_yes yes --set changeps1 no && \
     conda info -a && \
+    conda config --remove channels defaults && \
+    conda config --add channels conda-forge && \
+    conda config --set channel_priority strict && \
     conda install mamba -c conda-forge && \
-    mamba env update -f /env_python_3_with_R.yml --prune && \
+    mamba env create -f /env_python_3_with_R.yml -c conda-forge && \
     # Cleanup
     rm -v miniconda.sh anaconda.sha256  && \
     # Cleanup based on https://github.com/ContinuumIO/docker-images/commit/cac3352bf21a26fa0b97925b578fb24a0fe8c383
