@@ -394,6 +394,10 @@ jobs:
         run: |
           rm -rf spark/interpreter/metastore_db
           ./mvnw verify -pl spark-submit,spark/interpreter -am -Dtest=org/apache/zeppelin/spark/* -Pspark-3.5 -Pspark-scala-2.13 -Pintegration -DfailIfNoTests=false ${MAVEN_ARGS}
+      - name: run spark-4.0 tests with scala-2.13 and python-${{ matrix.python }}
+        run: |
+          rm -rf spark/interpreter/metastore_db
+          ./mvnw verify -pl spark-submit,spark/interpreter -am -Dtest=org/apache/zeppelin/spark/* -Pspark-4.0 -Pspark-scala-2.13 -Pintegration -DfailIfNoTests=false ${MAVEN_ARGS}
 
   # Livy 0.8.0 tested with Spark 3.2
   # https://github.com/apache/incubator-livy/blob/v0.8.0-incubating/dev/docker/livy-dev-spark/Dockerfile#L20
