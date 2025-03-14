@@ -45,11 +45,15 @@ import org.slf4j.LoggerFactory;
 import javax.security.auth.Subject;
 import javax.security.auth.kerberos.KerberosPrincipal;
 import javax.security.auth.kerberos.KeyTab;
-import javax.servlet.*;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletRequestWrapper;
-import javax.servlet.http.HttpServletResponse;
+
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequestWrapper;
+import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.File;
 import java.io.IOException;
@@ -737,12 +741,12 @@ public class KerberosRealm extends AuthorizingRealm {
    * @throws org.apache.shiro.authc.AuthenticationException
    */
   public static KerberosToken getKerberosTokenFromCookies(
-      Map<String, javax.ws.rs.core.Cookie> cookies)
+      Map<String, jakarta.ws.rs.core.Cookie> cookies)
       throws org.apache.shiro.authc.AuthenticationException {
     KerberosToken kerberosToken = null;
     String tokenStr = null;
     if (cookies != null) {
-      for (javax.ws.rs.core.Cookie cookie : cookies.values()) {
+      for (jakarta.ws.rs.core.Cookie cookie : cookies.values()) {
         if (cookie.getName().equals(KerberosAuthenticator.AUTHORIZATION)) {
           tokenStr = cookie.getValue();
           if (tokenStr.isEmpty()) {

@@ -19,23 +19,23 @@ package org.apache.zeppelin.shell.terminal;
 
 import java.util.ArrayList;
 import java.util.List;
-import javax.websocket.CloseReason;
-import javax.websocket.Endpoint;
-import javax.websocket.EndpointConfig;
-import javax.websocket.Session;
+import jakarta.websocket.CloseReason;
+import jakarta.websocket.Endpoint;
+import jakarta.websocket.EndpointConfig;
+import jakarta.websocket.Session;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class TerminalSocketTest extends Endpoint {
   private static final Logger LOGGER = LoggerFactory.getLogger(TerminalSocketTest.class);
 
-  public static final List<String> ReceivedMsg = new ArrayList();
+  public static final List<String> ReceivedMsg = new ArrayList<>();
 
   @Override
   public void onOpen(Session session, EndpointConfig endpointConfig) {
     LOGGER.info("Socket Connected: " + session);
 
-    session.addMessageHandler(new javax.websocket.MessageHandler.Whole<String>() {
+    session.addMessageHandler(new jakarta.websocket.MessageHandler.Whole<String>() {
       @Override
       public void onMessage(String message) {
         LOGGER.info("Received TEXT message: " + message);
