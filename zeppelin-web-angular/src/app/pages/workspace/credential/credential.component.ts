@@ -17,7 +17,7 @@ import { NzMessageService } from 'ng-zorro-antd/message';
 
 import { finalize } from 'rxjs/operators';
 
-import { CredentialForm } from '@zeppelin/interfaces';
+import { CredentialForm, ITicket } from '@zeppelin/interfaces';
 import { CredentialService, InterpreterService, TicketService } from '@zeppelin/services';
 
 @Component({
@@ -36,6 +36,7 @@ export class CredentialComponent implements OnInit {
   editFlags: Map<string, CredentialForm> = new Map();
   credentialFormArray: FormArray = this.fb.array([]);
   docsLink: string;
+  defaultOwners: string[];
 
   get credentialControls(): FormGroup[] {
     return this.credentialFormArray.controls as FormGroup[];
@@ -140,13 +141,15 @@ export class CredentialComponent implements OnInit {
 
   getCredentials() {
     this.credentialService.getCredentials().subscribe(data => {
-      const controls = [...Object.entries(data.userCredentials)].map(e => {
+      const controls = [...Object.entries(data)].map(e => {
         const entity = e[0];
-        const { username, password } = e[1];
+        const { username, password, owners, readers } = e[1];
         return this.fb.group({
           entity: [entity, [Validators.required]],
           username: [username, [Validators.required]],
-          password: [password, [Validators.required]]
+          password: [password, [Validators.required]],
+          owners: [owners, []],
+          readers: [readers, []]
         });
       });
       this.credentialFormArray = this.fb.array(controls);
@@ -185,18 +188,30 @@ export class CredentialComponent implements OnInit {
     this.addForm.reset({
       entity: null,
       username: null,
-      password: null
+      password: null,
+      owners: this.defaultOwners,
+      readers: []
     });
     this.cdr.markForCheck();
+  }
+
+  permissionSelect(form: FormGroup, field: string, value: string[]) {
+    const obj = {};
+    obj[field] = value;
+    form.patchValue(obj);
   }
 
   ngOnInit(): void {
     this.getCredentials();
     this.getInterpreterNames();
+    const ticket = this.ticketService.originTicket;
+    this.defaultOwners = ticket.ticket === 'anonymous' ? [] : [ticket.principal];
     this.addForm = this.fb.group({
       entity: [null, [Validators.required]],
       username: [null, [Validators.required]],
-      password: [null, [Validators.required]]
+      password: [null, [Validators.required]],
+      owners: [this.defaultOwners, []],
+      readers: [[], []]
     });
   }
 }

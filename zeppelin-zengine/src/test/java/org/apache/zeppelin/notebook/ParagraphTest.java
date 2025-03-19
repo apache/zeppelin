@@ -38,11 +38,13 @@ import org.apache.zeppelin.interpreter.InterpreterSetting.Status;
 import org.apache.zeppelin.interpreter.ManagedInterpreterGroup;
 import org.apache.zeppelin.resource.ResourcePool;
 import org.apache.zeppelin.user.AuthenticationInfo;
-import org.apache.zeppelin.user.Credentials;
-import org.apache.zeppelin.user.UserCredentials;
+import org.apache.zeppelin.user.CredentialsMgr;
 import org.apache.zeppelin.user.UsernamePassword;
+import org.apache.zeppelin.user.UsernamePasswords;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+
+
 import org.mockito.Mockito;
 
 import java.util.ArrayList;
@@ -57,6 +59,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anySet;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
@@ -256,7 +259,7 @@ class ParagraphTest extends AbstractInterpreterTest {
   @Test
   void returnUnchangedResultsWithDifferentUser() throws Throwable {
     Note mockNote = mock(Note.class);
-    when(mockNote.getCredentials()).thenReturn(mock(Credentials.class));
+    when(mockNote.getCredentials()).thenReturn(mock(CredentialsMgr.class));
     Paragraph spyParagraph = spy(new Paragraph("para_1", mockNote, null));
 
     Interpreter mockInterpreter = mock(Interpreter.class);
@@ -278,7 +281,7 @@ class ParagraphTest extends AbstractInterpreterTest {
     when(mockInterpreterSetting.getStatus()).thenReturn(Status.READY);
     when(mockInterpreterSetting.getId()).thenReturn("mock_id_1");
     when(mockInterpreterSetting.getOrCreateInterpreterGroup(anyString(), anyString())).thenReturn(mockInterpreterGroup);
-    when(mockInterpreterSetting.isUserAuthorized(any(List.class))).thenReturn(true);
+    when(mockInterpreterSetting.isUserAuthorized(anySet())).thenReturn(true);
     spyInterpreterSettingList.add(mockInterpreterSetting);
     when(mockNote.getId()).thenReturn("any_id");
 
@@ -353,11 +356,11 @@ class ParagraphTest extends AbstractInterpreterTest {
   @Test
   void credentialReplacement() throws Throwable {
     Note mockNote = mock(Note.class);
-    Credentials creds = mock(Credentials.class);
+    CredentialsMgr creds = mock(CredentialsMgr.class);
     when(mockNote.getCredentials()).thenReturn(creds);
     Paragraph spyParagraph = spy(new Paragraph("para_1", mockNote, null));
-    UserCredentials uc = mock(UserCredentials.class);
-    when(creds.getUserCredentials(anyString())).thenReturn(uc);
+    UsernamePasswords uc = mock(UsernamePasswords.class);
+    when(creds.getAllUsernamePasswords(anySet())).thenReturn(uc);
     UsernamePassword up = new UsernamePassword("user", "pwd");
     when(uc.getUsernamePassword("ent")).thenReturn(up);
 
@@ -367,7 +370,7 @@ class ParagraphTest extends AbstractInterpreterTest {
 
     InterpreterSetting mockInterpreterSetting = mock(InterpreterSetting.class);
     when(mockInterpreterSetting.getStatus()).thenReturn(InterpreterSetting.Status.READY);
-    when(mockInterpreterSetting.isUserAuthorized(anyList())).thenReturn(true);
+    when(mockInterpreterSetting.isUserAuthorized(anySet())).thenReturn(true);
 
     ManagedInterpreterGroup mockInterpreterGroup = mock(ManagedInterpreterGroup.class);
     when(mockInterpreter.getInterpreterGroup()).thenReturn(mockInterpreterGroup);
