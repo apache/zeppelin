@@ -180,7 +180,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
     }
 
     if (config.numbering === undefined) {
-      config.numbering = $scope.note.config.numberingToggled
+      config.numbering = $scope.note.config.numberingToggled;
     }
 
     for (let idx in forms) {
@@ -1826,9 +1826,9 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
 
   $scope.$on('setNumbering', function(event, value) {
     if (value) {
-      $scope.showNumbering($scope.paragraph)
+      $scope.showNumbering($scope.paragraph);
     } else {
-      $scope.hideNumbering($scope.paragraph)
+      $scope.hideNumbering($scope.paragraph);
     }
   });
 
