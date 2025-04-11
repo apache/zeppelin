@@ -155,8 +155,9 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
     noteVarShareService.put($scope.paragraph.id + '_paragraphScope', paragraphScope);
 
     initializeDefault($scope.paragraph.config);
-
-    $scope.updateParagraphNumbering();
+    if ($scope.updateParagraphNumbering) {
+      $scope.updateParagraphNumbering();
+    }
   };
 
   $scope.$on('noteRunningStatus', function(event, status) {
@@ -180,7 +181,11 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
     }
 
     if (config.numbering === undefined) {
-      config.numbering = $scope.note.config.numberingToggled;
+      if ($scope.note) {
+        config.numbering = $scope.note.config.numberingToggled;
+      } else {
+        config.numbering = false;
+      }
     }
 
     for (let idx in forms) {
