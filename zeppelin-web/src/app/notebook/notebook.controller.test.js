@@ -38,9 +38,10 @@ describe('Controller: NotebookCtrl', function() {
   });
 
   let functions = ['getCronOptionNameFromValue', 'removeNote', 'runAllParagraphs', 'saveNote', 'toggleAllEditor',
-    'showAllEditor', 'hideAllEditor', 'toggleAllTable', 'hideAllTable', 'showAllTable', 'isNoteRunning',
-    'killSaveTimer', 'startSaveTimer', 'setLookAndFeel', 'setCronScheduler', 'setConfig', 'updateNoteName',
-    'openSetting', 'closeSetting', 'saveSetting', 'toggleSetting'];
+    'showAllEditor', 'hideAllEditor', 'toggleAllTable', 'hideAllTable', 'toggleAllNumbering',
+    'updateParagraphNumbering', 'showAllTable', 'isNoteRunning', 'killSaveTimer', 'startSaveTimer',
+    'setLookAndFeel', 'setCronScheduler', 'setConfig', 'updateNoteName', 'openSetting', 'closeSetting',
+    'saveSetting', 'toggleSetting'];
 
   functions.forEach(function(fn) {
     it('check for scope functions to be defined : ' + fn, function() {
