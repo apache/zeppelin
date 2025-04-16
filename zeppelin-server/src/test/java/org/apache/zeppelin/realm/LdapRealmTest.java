@@ -132,6 +132,109 @@ class LdapRealmTest {
     assertEquals("gid=\\5C{0}\\5C", realm.getUserSearchFilter());
   }
 
+  @Test
+  void testMemberOfAttributeRolesFor() throws NamingException {
+    LdapRealm realm = new LdapRealm();
+    realm.setUseMemberOfForNestedGroups(true);
+    realm.setMemberOfAttribute("memberOf");
+    realm.setGroupIdAttribute("cn");
+    realm.setUserSearchBase("cn=users,cn=accounts,dc=ipa,dc=mgt");
+    realm.setUserObjectClass("person");
+    realm.setUserSearchAttributeName("uid");
+
+    HashMap<String, String> rolesByGroups = new HashMap<>();
+    rolesByGroups.put("res_zeppelin_sqx_admin", "admins_role");
+    rolesByGroups.put("ipausers", "users_role");
+    realm.setRolesByGroup(rolesByGroups);
+
+    LdapContextFactory ldapContextFactory = mock(LdapContextFactory.class);
+    LdapContext ldapCtx = mock(LdapContext.class);
+    Session session = mock(Session.class);
+
+    // Create user with memberOf attributes
+    BasicAttributes userAttrs = new BasicAttributes();
+    userAttrs.put("uid", "testuser");
+    
+    // Add memberOf attribute with two group DNs
+    javax.naming.directory.BasicAttribute memberOfAttr = 
+        new javax.naming.directory.BasicAttribute("memberOf");
+    memberOfAttr.add("cn=res_zeppelin_sqx_admin,cn=groups,cn=accounts,dc=ipa,dc=mgt");
+    memberOfAttr.add("cn=ipausers,cn=groups,cn=accounts,dc=ipa,dc=mgt");
+    userAttrs.put(memberOfAttr);
+    
+    // Create SearchResult with the user attributes
+    SearchResult userSearchResult = new SearchResult(
+        "uid=testuser,cn=users,cn=accounts,dc=ipa,dc=mgt", null, userAttrs);
+
+    // Configure mock to return our test user when searching
+    NamingEnumeration<SearchResult> userSearchResults = enumerationOf(userAttrs);
+    when(ldapCtx.search(any(String.class), any(String.class), any(SearchControls.class)))
+        .thenReturn(userSearchResults);
+
+    // Call the method being tested
+    Set<String> roles = realm.rolesFor(
+        new SimplePrincipalCollection("testuser", "ldapRealm"),
+        "testuser", ldapCtx, ldapContextFactory, session);
+
+    // Verify correct roles are assigned based on memberOf attribute values
+    Set<String> expectedRoles = new HashSet<>(Arrays.asList("admins_role", "users_role"));
+    assertEquals(expectedRoles, roles);
+    
+    // Verify session attributes are set with the correct roles and groups
+    verify(session).setAttribute("subject.userRoles", roles);
+    verify(session).setAttribute(any(String.class), any(Set.class));
+  }
+
+  @Test
+  void testGroupNameExtractionFromDN() throws Exception {
+    LdapRealm realm = new LdapRealm();
+    realm.setUseMemberOfForNestedGroups(true);
+    realm.setMemberOfAttribute("memberOf");
+    realm.setGroupIdAttribute("cn");
+    
+    // Create test data with different DN structures
+    LdapContextFactory ldapContextFactory = mock(LdapContextFactory.class);
+    LdapContext ldapCtx = mock(LdapContext.class);
+    Session session = mock(Session.class);
+
+    // Create user with complex memberOf structure
+    BasicAttributes userAttrs = new BasicAttributes();
+    userAttrs.put("uid", "testuser");
+    
+    // Add memberOf attribute with various DN formats to test extraction logic
+    javax.naming.directory.BasicAttribute memberOfAttr = 
+        new javax.naming.directory.BasicAttribute("memberOf");
+    // Standard group DN - cn is the leftmost part
+    memberOfAttr.add("cn=standard_group,ou=groups,dc=example,dc=com");
+    // Complex DN - where cn appears multiple times, should extract the leftmost one
+    memberOfAttr.add("cn=admin_group,cn=nested,ou=groups,dc=example,dc=com");
+    // DN with cn in middle - tests the fix for component ordering
+    memberOfAttr.add("ou=external,cn=special_group,dc=example,dc=com");
+    userAttrs.put(memberOfAttr);
+    
+    // Set up role mappings to verify behavior
+    HashMap<String, String> rolesByGroups = new HashMap<>();
+    rolesByGroups.put("standard_group", "standard_role");
+    rolesByGroups.put("admin_group", "admin_role");
+    rolesByGroups.put("special_group", "special_role");
+    realm.setRolesByGroup(rolesByGroups);
+    
+    // Configure mock to return our test user when searching
+    NamingEnumeration<SearchResult> userSearchResults = enumerationOf(userAttrs);
+    when(ldapCtx.search(any(String.class), any(String.class), any(SearchControls.class)))
+        .thenReturn(userSearchResults);
+
+    // Call the method being tested
+    Set<String> roles = realm.rolesFor(
+        new SimplePrincipalCollection("testuser", "ldapRealm"),
+        "testuser", ldapCtx, ldapContextFactory, session);
+
+    // Verify all group names were correctly extracted from the DNs
+    Set<String> expectedRoles = new HashSet<>(Arrays.asList(
+        "standard_role", "admin_role", "special_role"));
+    assertEquals(expectedRoles, roles);
+  }
+
   private NamingEnumeration<SearchResult> enumerationOf(BasicAttributes... attrs) {
     final Iterator<BasicAttributes> iterator = Arrays.asList(attrs).iterator();
     return new NamingEnumeration<SearchResult>() {
