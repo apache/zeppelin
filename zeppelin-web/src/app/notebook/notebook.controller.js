@@ -464,21 +464,21 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
     $scope.$broadcast('closeTable');
   };
 
-  $scope.toggleAllNumbering = function () {
+  $scope.toggleAllNumbering = function() {
     if ($scope.note.config.numberingToggled) {
-      $scope.$broadcast('setNumbering', false)
+      $scope.$broadcast('setNumbering', false);
     } else {
-      $scope.$broadcast('setNumbering', true)
+      $scope.$broadcast('setNumbering', true);
     }
-    $scope.note.config.numberingToggled = !$scope.note.config.numberingToggled
-    $scope.setConfig()
-  }
+    $scope.note.config.numberingToggled = !$scope.note.config.numberingToggled;
+    $scope.setConfig();
+  };
 
-  $scope.updateParagraphNumbering = function () {
+  $scope.updateParagraphNumbering = function() {
     for (let i = 0; i < $scope.note.paragraphs.length; i++) {
-      $scope.note.paragraphs[i].number = i + 1
+      $scope.note.paragraphs[i].number = i + 1;
     }
-  }
+  };
 
   /**
    * @returns {boolean} true if one more paragraphs are running. otherwise return false.
@@ -643,7 +643,7 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
     if (removedPara && removedPara.length === 1) {
       addPara(removedPara[0], newIdx);
     }
-    $scope.updateParagraphNumbering()
+    $scope.updateParagraphNumbering();
   });
 
   $scope.$on('updateNote', function(event, name, config, info) {
