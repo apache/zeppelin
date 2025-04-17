@@ -21,14 +21,12 @@ import static org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars.ZEPPELIN_N
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.IOException;
-import java.net.ServerSocket;
 import java.util.Map;
-import de.flapdoodle.embed.mongo.MongodExecutable;
-import de.flapdoodle.embed.mongo.MongodStarter;
-import de.flapdoodle.embed.mongo.config.MongodConfig;
-import de.flapdoodle.embed.mongo.config.Net;
 import de.flapdoodle.embed.mongo.distribution.Version;
-import de.flapdoodle.embed.process.runtime.Network;
+import de.flapdoodle.embed.mongo.transitions.Mongod;
+import de.flapdoodle.embed.mongo.transitions.RunningMongodProcess;
+import de.flapdoodle.reverse.TransitionWalker.ReachedState;
+
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.GsonNoteParser;
 import org.apache.zeppelin.notebook.Note;
@@ -42,7 +40,7 @@ import org.junit.jupiter.api.Test;
 
 class MongoNotebookRepoTest {
 
-  private MongodExecutable mongodExecutable;
+  private ReachedState<RunningMongodProcess> mongodProcess;
 
   private ZeppelinConfiguration zConf;
   private NoteParser noteParser;
@@ -53,21 +51,11 @@ class MongoNotebookRepoTest {
   void setUp() throws IOException {
     zConf = ZeppelinConfiguration.load();
     noteParser = new GsonNoteParser(zConf);
-    String bindIp = "localhost";
-    ServerSocket socket = new ServerSocket(0);
-    int port = socket.getLocalPort();
-    socket.close();
 
-    MongodConfig mongodConfig = MongodConfig.builder()
-        .version(Version.Main.PRODUCTION)
-        .net(new Net(bindIp, port, Network.localhostIsIPv6()))
-        .build();
-
-    mongodExecutable = MongodStarter.getDefaultInstance()
-        .prepare(mongodConfig);
-    mongodExecutable.start();
-
-    zConf.setProperty(ZEPPELIN_NOTEBOOK_MONGO_URI.getVarName(), "mongodb://" + bindIp + ":" + port);
+    ReachedState<RunningMongodProcess> mongodProcess = Mongod.instance().start(Version.Main.V8_0);
+    String host = mongodProcess.current().getServerAddress().getHost();
+    int port = mongodProcess.current().getServerAddress().getPort();
+    zConf.setProperty(ZEPPELIN_NOTEBOOK_MONGO_URI.getVarName(), "mongodb://" + host + ":" + port);
 
     notebookRepo = new MongoNotebookRepo();
     notebookRepo.init(zConf, noteParser);
@@ -75,8 +63,8 @@ class MongoNotebookRepoTest {
 
   @AfterEach
   void tearDown() throws IOException {
-    if (mongodExecutable != null) {
-      mongodExecutable.stop();
+    if (mongodProcess != null) {
+      mongodProcess.close();
     }
   }
 
