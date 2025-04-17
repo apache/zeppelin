@@ -17,9 +17,9 @@
 package org.apache.zeppelin.realm.jwt;
 
 import java.util.Collection;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.Cookie;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.Cookie;
 import org.apache.shiro.realm.Realm;
 import org.apache.shiro.util.ThreadContext;
 import org.apache.shiro.web.filter.authc.FormAuthenticationFilter;
@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
 public class KnoxAuthenticationFilter extends FormAuthenticationFilter {
   private static final Logger LOGGER = LoggerFactory.getLogger(KnoxAuthenticationFilter.class);
 
+  @Override
   protected boolean isAccessAllowed(
       ServletRequest request, ServletResponse response, Object mappedValue) {
     // Check with existing shiro authentication logic

@@ -582,18 +582,15 @@ class K8sRemoteInterpreterProcessTest {
       await().until(() -> client.pods().inNamespace(namespace).withName(podName).get() != null);
       // Pod is present set first phase
       Pod pod = client.pods().inNamespace(namespace).withName(podName).get();
-      pod.setStatus(new PodStatus(null, null, null, null, null, null, null, firstPhase,
-          null,
-          null, null, null, null));
-      client.pods().inNamespace(namespace).replaceStatus(pod);
+      pod.setStatus(new PodStatus());
+      pod.getStatus().setPhase(firstPhase);
+      client.pods().inNamespace(namespace).resource(pod).update();
       await().pollDelay(Duration.ofMillis(200)).until(() -> firstPhase.equals(
           client.pods().inNamespace(namespace).withName(podName).get().getStatus().getPhase()));
       // Set second Phase
       pod = client.pods().inNamespace(namespace).withName(podName).get();
-      pod.setStatus(new PodStatus(null, null, null, null, null, null, null, secondPhase,
-          null,
-          null, null, null, null));
-      client.pods().inNamespace(namespace).replaceStatus(pod);
+      pod.getStatus().setPhase(secondPhase);
+      client.pods().inNamespace(namespace).resource(pod).update();
       await().pollDelay(Duration.ofMillis(200)).until(() -> secondPhase.equals(
           client.pods().inNamespace(namespace).withName(podName).get().getStatus().getPhase()));
       if (successfulStart) {

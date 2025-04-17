@@ -24,7 +24,7 @@ import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
-import javax.ws.rs.BadRequestException;
+import jakarta.ws.rs.BadRequestException;
 import org.apache.log4j.LogManager;
 import org.apache.zeppelin.rest.message.LoggerRequest;
 
