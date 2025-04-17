@@ -17,8 +17,7 @@
 
 package org.apache.zeppelin.shell.terminal;
 
-import javax.websocket.server.ServerContainer;
-import javax.websocket.server.ServerEndpointConfig;
+import jakarta.websocket.server.ServerEndpointConfig;
 
 import org.apache.zeppelin.shell.terminal.websocket.TerminalSessionConfigurator;
 import org.apache.zeppelin.shell.terminal.websocket.TerminalSocket;
@@ -27,7 +26,8 @@ import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.handler.HandlerCollection;
 import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.servlet.ServletContextHandler;
-import org.eclipse.jetty.websocket.jsr356.server.deploy.WebSocketServerContainerInitializer;
+
+import org.eclipse.jetty.websocket.jakarta.server.config.JakartaWebSocketServletContainerInitializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,6 +47,7 @@ public class TerminalThread extends Thread {
     this.allwedOrigin = allwedOrigin;
   }
 
+  @Override
   public void run() {
     ServerConnector connector = new ServerConnector(jettyServer);
     connector.setPort(port);
@@ -75,11 +76,12 @@ public class TerminalThread extends Thread {
     jettyServer.setHandler(handlers);
 
     try {
-      ServerContainer container = WebSocketServerContainerInitializer.configureContext(context);
-      container.addEndpoint(
-          ServerEndpointConfig.Builder.create(TerminalSocket.class, "/")
-              .configurator(new TerminalSessionConfigurator(allwedOrigin))
-              .build());
+      JakartaWebSocketServletContainerInitializer.configure(context,
+          (servletContext, container) ->
+            container.addEndpoint(
+                ServerEndpointConfig.Builder.create(TerminalSocket.class, "/")
+                  .configurator(new TerminalSessionConfigurator(allwedOrigin))
+                  .build()));
       jettyServer.start();
       jettyServer.join();
     } catch (Exception e) {

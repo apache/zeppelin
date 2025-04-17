@@ -16,10 +16,11 @@
  */
 package org.apache.zeppelin.utils;
 
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.web.filter.authz.RolesAuthorizationFilter;
+
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
 
 /**
  * Allows access if current user has at least one role of the specified list.

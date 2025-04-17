@@ -17,7 +17,7 @@
 
 package org.apache.zeppelin.search;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
