@@ -37,6 +37,8 @@ import org.apache.zeppelin.interpreter.util.SqlSplitter;
 import org.apache.zeppelin.jdbc.hive.HiveUtils;
 import org.apache.zeppelin.tabledata.TableDataUtils;
 import org.apache.zeppelin.util.PropertiesUtil;
+import org.codehaus.jettison.json.JSONArray;
+import org.codehaus.jettison.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -74,6 +76,12 @@ import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.apache.zeppelin.user.UserCredentials;
 import org.apache.zeppelin.user.UsernamePassword;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 
 /**
  * JDBC interpreter for Zeppelin. This interpreter can also be used for accessing HAWQ,
@@ -143,6 +151,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
           "zeppelin.jdbc.concurrent.max_connection";
   private static final String DBCP_STRING = "jdbc:apache:commons:dbcp:";
   private static final String MAX_ROWS_KEY = "zeppelin.jdbc.maxRows";
+  private static final String FAIL_FAST_VALIDATE_URL = "http://spark-event-listener.prd.meesho.int/api/validate";
 
   private static final Set<String> PRESTO_PROPERTIES = new HashSet<>(Arrays.asList(
           "user", "password",
@@ -348,6 +357,51 @@ public class JDBCInterpreter extends KerberosInterpreter {
     } catch (Exception e) {
       LOGGER.error("Error while closing...", e);
     }
+  }
+
+  public static ValidationResponse sendValidationRequest(ValidationRequest request) throws Exception {
+    HttpURLConnection connection = createConnection();
+    sendRequest(connection, request);
+    return readResponse(connection);
+  }
+
+  private static HttpURLConnection createConnection() throws Exception {
+    URL url = new URL(FAIL_FAST_VALIDATE_URL);
+    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+    connection.setRequestMethod("POST");
+    connection.setRequestProperty("Content-Type", "application/json");
+    connection.setDoOutput(true); // Enable sending request body
+    return connection;
+  }
+
+  private static void sendRequest(HttpURLConnection connection, ValidationRequest request) throws Exception {
+    try (OutputStream os = connection.getOutputStream()) {
+      String jsonRequest = request.toJson();
+      byte[] input = jsonRequest.getBytes("utf-8");
+      os.write(input, 0, input.length);
+    }
+  }
+
+  private static ValidationResponse readResponse(HttpURLConnection connection) throws Exception {
+    int statusCode = connection.getResponseCode();
+    BufferedReader reader;
+
+    if (statusCode == HttpURLConnection.HTTP_OK) {
+      reader = new BufferedReader(new InputStreamReader(connection.getInputStream(), "utf-8"));
+    } else {
+      reader = new BufferedReader(new InputStreamReader(connection.getErrorStream(), "utf-8"));
+    }
+
+    StringBuilder responseBuilder = new StringBuilder();
+    String line;
+    while ((line = reader.readLine()) != null) {
+      responseBuilder.append(line.trim());
+    }
+
+    reader.close();
+    connection.disconnect();
+
+    return ValidationResponse.fromJson(responseBuilder.toString());
   }
 
   /* Get user of this sql.
@@ -785,6 +839,12 @@ public class JDBCInterpreter extends KerberosInterpreter {
         LOGGER.info("Execute sql: " + sqlToExecute);
         statement = connection.createStatement();
 
+        String interpreterName = getInterpreterGroup().getId();
+
+        if (interpreterName != null && interpreterName.startsWith("spark_rca_")) {
+          statement.setQueryTimeout(10800); // 10800 seconds = 3 hours
+        }
+
         // fetch n+1 rows in order to indicate there's more rows available (for large selects)
         statement.setFetchSize(context.getIntLocalProperty("limit", getMaxResult()));
         statement.setMaxRows(context.getIntLocalProperty("limit", maxRows));
@@ -809,6 +869,65 @@ public class JDBCInterpreter extends KerberosInterpreter {
             HiveUtils.startHiveMonitorThread(statement, context,
                     Boolean.parseBoolean(getProperty("hive.log.display", "true")), this);
           }
+
+          String userName = getUser(context);
+          String sqlToValidate = sqlToExecute
+                  .replace("\n", " ")
+                  .replace("\r", " ")
+                  .replace("\t", " ");
+          ValidationRequest request = new ValidationRequest(sqlToValidate, userName);
+          try {
+            ValidationResponse response = sendValidationRequest(request);
+            if (response.isPreSubmitFail()) {
+              String outputMessage = response.getMessage();
+              StringBuilder finalOutput = new StringBuilder();
+
+              if (response.isFailFast()) {
+                context.out.write("Query Error: Partition Filters Missing\n" +
+                        "Your query failed because some tables are missing partition filters. To avoid this, please ensure partition filters are applied to improve performance.\n");
+                JSONObject jsonObject = new JSONObject(outputMessage);
+                finalOutput.append("The following table(s) are missing partition filters:\n");
+
+                JSONArray tableNames = jsonObject.names();
+                if (tableNames != null) {
+                  for (int i = 0; i < tableNames.length(); i++) {
+                    String table = tableNames.getString(i);
+                    JSONArray partitions = jsonObject.getJSONArray(table);
+                    finalOutput.append("Table: ").append(table).append(", Partition filter's: ");
+
+                    for (int j = 0; j < partitions.length(); j++) {
+                      finalOutput.append(partitions.getString(j));
+                      if (j < partitions.length() - 1) {
+                        finalOutput.append(", ");
+                      }
+                    }
+                    finalOutput.append("\n");
+                  }
+                }
+              } else if (response.isFailedByDeprecatedTable()) {
+                context.out.write("Query Error: Restricted Table Used\n");
+                JSONObject jsonObject = new JSONObject(outputMessage);
+                finalOutput.append("It seems you're trying to use a restricted table:\n");
+
+                JSONArray tableNames = jsonObject.names();
+                if (tableNames != null) {
+                  for (int i = 0; i < tableNames.length(); i++) {
+                    String table = tableNames.getString(i);
+                    finalOutput.append("Use: ").append(jsonObject.getString(table)).append(" in place of ").append(table).append("\n");
+                  }
+                }
+              }
+              context.getLocalProperties().put(CANCEL_REASON, finalOutput.toString());
+              cancel(context);
+              return new InterpreterResult(Code.ERROR);
+            }
+          } catch (Exception e) {
+            String error = "Error occurred while sending request " + e.getMessage();
+            String mess = e.getLocalizedMessage();
+            context.out.write(error);
+            context.out.write(mess);
+          }
+
           boolean isResultSetAvailable = statement.execute(sqlToExecute);
           getJDBCConfiguration(user).setConnectionInDBDriverPoolSuccessful(dbPrefix);
           if (isResultSetAvailable) {
@@ -939,8 +1058,14 @@ public class JDBCInterpreter extends KerberosInterpreter {
     LOGGER.debug("Run SQL command '{}'", cmd);
     String dbPrefix = getDBPrefix(context);
     LOGGER.debug("DBPrefix: {}, SQL command: '{}'", dbPrefix, cmd);
+    String interpreterName = getInterpreterGroup().getId();
+    if (interpreterName!=null && interpreterName.startsWith("spark_rca_")) {
+      cmd = "set STATEMENT_TIMEOUT=10800;\n"+cmd;
+    }
+    LOGGER.debug("InterpreterName: {}, SQL command: '{}'", interpreterName, cmd);
+    String finalCmd = cmd;
     if (!isRefreshMode(context)) {
-      return executeSql(dbPrefix, cmd, context);
+      return executeSql(dbPrefix, finalCmd, context);
     } else {
       int refreshInterval = Integer.parseInt(context.getLocalProperties().get("refreshInterval"));
       paragraphCancelMap.put(context.getParagraphId(), false);
@@ -951,7 +1076,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
       refreshExecutor.scheduleAtFixedRate(() -> {
         context.out.clear(false);
         try {
-          InterpreterResult result = executeSql(dbPrefix, cmd, context);
+          InterpreterResult result = executeSql(dbPrefix, finalCmd, context);
           context.out.flush();
           interpreterResultRef.set(result);
           if (result.code() != Code.SUCCESS) {
