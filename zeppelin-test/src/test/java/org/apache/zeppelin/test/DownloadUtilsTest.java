@@ -76,5 +76,13 @@ class DownloadUtilsTest {
     assertTrue(sparkHomePath.toFile().exists());
     assertTrue(sparkHomePath.toFile().isDirectory());
   }
-
+  
+  @Test
+  void downloadHBase() {
+    String hbaseHome = DownloadUtils.downloadHBase("2.14.8");
+    Path hbaseHomePath = Paths.get(hbaseHome);
+    assertTrue(hbaseHomePath.toFile().exists());
+    assertTrue(hbaseHomePath.toFile().isDirectory());
+  }
+  
 }

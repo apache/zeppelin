@@ -198,7 +198,6 @@ public class DownloadUtils {
     return targetSparkHomeFolder.getAbsolutePath();
   }
 
-
   public static void download(String url, int retries, File dst) throws IOException {
     download(new URL(url), retries, dst);
   }
@@ -625,5 +624,51 @@ public class DownloadUtils {
           + "-bin.zip";
     }
     return "incubator/livy/" + livyVersion + "/apache-livy-" + livyVersion + "-bin.zip";
+  }
+
+  /**
+   * Download of a HBase distribution
+   *
+   * @param version HBase version
+   * @return home of HBase installation
+   */
+  public static String downloadHBase(String version) {
+    File hbaseDownloadFolder = new File(downloadFolder, "hbase");
+    hbaseDownloadFolder.mkdir();
+    File targetHBaseHomeFolder = new File(hbaseDownloadFolder, "hbase-" + version);
+    if (targetHBaseHomeFolder.exists()) {
+      LOGGER.info("Skip to download HBase {} as it is already downloaded.", version);
+      return targetHBaseHomeFolder.getAbsolutePath();
+    }
+    File hbaseTGZ = new File(hbaseDownloadFolder, "hbase-" + version + ".tar.gz");
+    try {
+      URL mirrorURL = new URL(MIRROR_URL + generateHBaseDownloadUrl(version));
+      URL archiveURL = new URL(ARCHIVE_URL + generateHBaseDownloadUrl(version));
+      LOGGER.info("Download HBase {}", version);
+      download(new DownloadRequest(mirrorURL, archiveURL), hbaseTGZ);
+      ProgressBarBuilder pbb = new ProgressBarBuilder()
+          .setTaskName("Unarchive")
+          .setUnit("MiB", 1048576) // setting the progress bar to use MiB as the unit
+          .setStyle(ProgressBarStyle.ASCII)
+          .setUpdateIntervalMillis(1000)
+          .setConsumer(new DelegatingProgressBarConsumer(LOGGER::info));
+      try (
+          InputStream fis = Files.newInputStream(hbaseTGZ.toPath());
+          InputStream pbis = ProgressBar.wrap(fis, pbb);
+          InputStream bis = new BufferedInputStream(pbis);
+          InputStream gzis = new GzipCompressorInputStream(bis);
+          ArchiveInputStream<TarArchiveEntry> o = new TarArchiveInputStream(gzis)) {
+        LOGGER.info("Unarchive HBase {} to {}", version, targetHBaseHomeFolder);
+        unarchive(o, targetHBaseHomeFolder, 1);
+        LOGGER.info("Unarchive HBase {} done", version);
+      }
+    } catch (IOException e) {
+      throw new RuntimeException("Unable to download HBase");
+    }
+    return targetHBaseHomeFolder.getAbsolutePath();
+  }
+
+  private static String generateHBaseDownloadUrl(String hbaseVersion) {
+    return "hbase/" + hbaseVersion + "/hbase-" + hbaseVersion + "-bin.tar.gz";
   }
 }
