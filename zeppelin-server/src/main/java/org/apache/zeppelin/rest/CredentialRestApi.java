@@ -28,14 +28,17 @@ import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.zeppelin.notebook.AuthorizationService;
 import org.apache.zeppelin.rest.message.CredentialRequest;
 import org.apache.zeppelin.server.JsonResponse;
 import org.apache.zeppelin.service.AuthenticationService;
+import org.apache.zeppelin.user.Credential;
 import org.apache.zeppelin.user.Credentials;
-import org.apache.zeppelin.user.UserCredentials;
-import org.apache.zeppelin.user.UsernamePassword;
+import org.apache.zeppelin.user.CredentialsMgr;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,18 +48,18 @@ import org.slf4j.LoggerFactory;
 @Singleton
 public class CredentialRestApi extends AbstractRestApi {
   private static final Logger LOGGER = LoggerFactory.getLogger(CredentialRestApi.class);
-  private final Credentials credentials;
+  private final CredentialsMgr credentialsMgr;
 
   @Inject
-  public CredentialRestApi(Credentials credentials, AuthenticationService authenticationService) {
+  public CredentialRestApi(CredentialsMgr credentials, AuthenticationService authenticationService) {
     super(authenticationService);
-    this.credentials = credentials;
+    this.credentialsMgr = credentials;
   }
 
   /**
    * Put User Credentials REST API.
    *
-   * @param message - JSON with entity, username, password.
+   * @param message - JSON with entity, username, password and shares
    * @return JSON with status.OK
    */
   @PUT
@@ -67,12 +70,20 @@ public class CredentialRestApi extends AbstractRestApi {
     }
 
     String user = authenticationService.getPrincipal();
-    LOGGER.info("Update credentials for user {} entity {}", user, request.getEntity());
-    UserCredentials uc;
+    Set<String> roles = authenticationService.getAssociatedRoles();
+    LOGGER.info("Update credential entity {} by user {} with roles {}", request.getEntity(), user, roles);
     try {
-      uc = credentials.getUserCredentials(user);
-      uc.putUsernamePassword(request.getEntity(), new UsernamePassword(request.getUsername(), request.getPassword()));
-      credentials.putUserCredentials(user, uc);
+      Credential credOld = credentialsMgr.getCredentialByEntity(request.getEntity());
+      if (credOld != null && !credentialsMgr.isOwner(request.getEntity(), getUserAndRoles())) {
+        return new JsonResponse<>(Status.FORBIDDEN).build();
+      }
+      // Ensure that the owner does not lose access to a created credential.
+      Set<String> owners = new HashSet<>(request.getOwners());
+      if (owners.isEmpty() || !AuthorizationService.isMember(getUserAndRoles(), owners)) {
+        owners.add(user);
+      }
+      Credential credNew = new Credential(request.getUsername(), request.getPassword(), request.getReader(), owners);
+      credentialsMgr.putCredentialsEntity(request.getEntity(), credNew);
       return new JsonResponse<>(Status.OK).build();
     } catch (IOException e) {
       LOGGER.error(e.getMessage(), e);
@@ -88,37 +99,10 @@ public class CredentialRestApi extends AbstractRestApi {
   @GET
   public Response getCredentials() {
     String user = authenticationService.getPrincipal();
-    LOGGER.info("getCredentials for user {} ", user);
-    UserCredentials uc;
-    try {
-      uc = credentials.getUserCredentials(user);
-      return new JsonResponse<>(Status.OK, uc).build();
-    } catch (IOException e) {
-      LOGGER.error(e.getMessage(), e);
-      return new JsonResponse<>(Status.INTERNAL_SERVER_ERROR).build();
-    }
-  }
-
-  /**
-   * Remove User Credentials REST API.
-   *
-   * @return JSON with status.OK
-   */
-  @DELETE
-  public Response removeCredentials() {
-    String user = authenticationService.getPrincipal();
-    LOGGER.info("removeCredentials for user {} ", user);
-    UserCredentials uc;
-    try {
-      uc = credentials.removeUserCredentials(user);
-      if (uc == null) {
-        return new JsonResponse<>(Status.NOT_FOUND).build();
-      }
-      return new JsonResponse<>(Status.OK).build();
-    } catch (IOException e) {
-      LOGGER.error(e.getMessage(), e);
-      return new JsonResponse<>(Status.INTERNAL_SERVER_ERROR).build();
-    }
+    Set<String> roles = authenticationService.getAssociatedRoles();
+    LOGGER.info("getCredentials for user {} with roles {}", user, roles);
+    Credentials creds = credentialsMgr.getAllReadableCredentials(getUserAndRoles(), true);
+    return new JsonResponse<>(Status.OK, creds).build();
   }
 
   /**
@@ -133,7 +117,14 @@ public class CredentialRestApi extends AbstractRestApi {
     String user = authenticationService.getPrincipal();
     LOGGER.info("removeCredentialEntity for user {} entity {}", user, entity);
     try {
-      if (!credentials.removeCredentialEntity(user, entity)) {
+      if (!credentialsMgr.exists(entity)) {
+        return new JsonResponse<>(Status.NOT_FOUND).build();
+      }
+      if (!credentialsMgr.isOwner(entity, getUserAndRoles())) {
+        return new JsonResponse<>(Status.FORBIDDEN).build();
+      }
+      boolean found = credentialsMgr.removeCredentialEntity(entity);
+      if (!found) {
         return new JsonResponse<>(Status.NOT_FOUND).build();
       }
       return new JsonResponse<>(Status.OK).build();

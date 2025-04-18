@@ -602,7 +602,7 @@ public class NotebookServer implements AngularObjectRegistryListener,
       note -> {
         if (note != null) {
           List<InterpreterSetting> bindedSettings =
-              note.getBindedInterpreterSettings(new ArrayList<>(context.getUserAndRoles()));
+            note.getBindedInterpreterSettings(context.getUserAndRoles());
           for (InterpreterSetting setting : bindedSettings) {
             settingList.add(new InterpreterSettingsList(setting.getId(), setting.getName(),
                 setting.getInterpreterInfos(), true));
@@ -630,7 +630,7 @@ public class NotebookServer implements AngularObjectRegistryListener,
             getNotebook().saveNote(note, context.getAutheInfo());
           }
           List<InterpreterSetting> bindedSettings =
-            note.getBindedInterpreterSettings(new ArrayList<>(context.getUserAndRoles()));
+            note.getBindedInterpreterSettings(context.getUserAndRoles());
           for (InterpreterSetting setting : bindedSettings) {
             settingList.add(new InterpreterSettingsList(setting.getId(), setting.getName(),
               setting.getInterpreterInfos(), true));
@@ -2076,7 +2076,7 @@ public class NotebookServer implements AngularObjectRegistryListener,
 
   private void updateNoteAngularObject(String noteId, AngularObject angularObject, String interpreterGroupId) throws IOException {
     List<InterpreterSetting> intpSettings = getNotebook().
-      processNote(noteId, note -> note.getBindedInterpreterSettings(new ArrayList<>(authorizationService.getOwners(note.getId()))));
+      processNote(noteId, note -> note.getBindedInterpreterSettings(authorizationService.getOwners(note.getId())));
     if (intpSettings.isEmpty()) {
       return;
     }
@@ -2149,7 +2149,7 @@ public class NotebookServer implements AngularObjectRegistryListener,
     List<InterpreterSetting> allSettings = getNotebook().getInterpreterSettingManager().get();
     List<InterpreterSetting> result = new ArrayList<>();
     for (InterpreterSetting setting : allSettings) {
-      if (setting.isUserAuthorized(new ArrayList<>(context.getUserAndRoles()))) {
+      if (setting.isUserAuthorized(context.getUserAndRoles())) {
         result.add(setting);
       }
     }

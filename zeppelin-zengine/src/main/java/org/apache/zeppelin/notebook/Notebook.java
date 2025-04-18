@@ -59,7 +59,7 @@ import org.apache.zeppelin.notebook.repo.NotebookRepoWithVersionControl.Revision
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.NamedThreadFactory;
 import org.apache.zeppelin.user.AuthenticationInfo;
-import org.apache.zeppelin.user.Credentials;
+import org.apache.zeppelin.user.CredentialsMgr;
 import org.apache.zeppelin.util.ExecutorUtil;
 import org.quartz.SchedulerException;
 import org.slf4j.Logger;
@@ -82,7 +82,7 @@ public class Notebook {
   private ParagraphJobListener paragraphJobListener;
   private NotebookRepo notebookRepo;
   private List<NoteEventListener> noteEventListeners = new CopyOnWriteArrayList<>();
-  private Credentials credentials;
+  private CredentialsMgr credentials;
   private final List<Consumer<String>> initConsumers;
   private ExecutorService initExecutor;
 
@@ -99,7 +99,7 @@ public class Notebook {
       NoteManager noteManager,
       InterpreterFactory replFactory,
       InterpreterSettingManager interpreterSettingManager,
-      Credentials credentials)
+      CredentialsMgr credentials)
       {
     this.zConf = zConf;
     this.authorizationService = authorizationService;
@@ -218,7 +218,7 @@ public class Notebook {
       NoteManager noteManager,
       InterpreterFactory replFactory,
       InterpreterSettingManager interpreterSettingManager,
-      Credentials credentials,
+      CredentialsMgr credentials,
       NoteEventListener noteEventListener)
       throws IOException {
     this(
