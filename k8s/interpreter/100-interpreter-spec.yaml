@@ -42,6 +42,12 @@ spec:
   {% endif %}
   restartPolicy: Never
   terminationGracePeriodSeconds: 30
+  {% if zeppelin.k8s.interpreter.imagePullSecrets is defined %}
+  imagePullSecrets:
+  {% for secret in zeppelin.k8s.interpreter.imagePullSecrets.split(',') %}
+  - name: {{secret}}
+  {% endfor %}
+  {% endif %}
   containers:
   - name: {{zeppelin.k8s.interpreter.container.name}}
     image: {{zeppelin.k8s.interpreter.container.image}}
@@ -101,12 +107,6 @@ spec:
     volumeMounts:
     - name: spark-home
       mountPath: /spark
-  {% if zeppelin.k8s.interpreter.imagePullSecrets is defined %}
-  imagePullSecrets:
-  {% for secret in zeppelin.k8s.interpreter.imagePullSecrets.split(',') %}
-  - name: {{secret}}
-  {% endfor %}
-  {% endif %}
   volumes:
   - name: spark-home
     emptyDir: {}
