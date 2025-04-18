@@ -33,11 +33,13 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.naming.AuthenticationException;
 import javax.naming.Context;
+import javax.naming.InvalidNameException;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.PartialResultException;
 import javax.naming.SizeLimitExceededException;
 import javax.naming.directory.Attribute;
+import javax.naming.directory.Attributes;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 import javax.naming.ldap.Control;
@@ -165,6 +167,9 @@ public class LdapRealm extends DefaultLdapRealm {
   private String userSearchScope = "subtree";
   private String groupSearchScope = "subtree";
   private boolean groupSearchEnableMatchingRuleInChain;
+  // Support for FreeIPA nested groups using memberOf attribute
+  private boolean useMemberOfForNestedGroups;
+  private String memberOfAttribute = "memberOf";
 
   private String groupSearchBase;
 
@@ -343,80 +348,155 @@ public class LdapRealm extends DefaultLdapRealm {
 
     String userDn = getUserDnForSearch(userName);
 
-    // Activate paged results
-    int pageSize = getPagingSize();
-    LOGGER.debug("Ldap PagingSize: {}", pageSize);
-    int numResults = 0;
-    try {
-      ldapCtx.addToEnvironment(Context.REFERRAL, "ignore");
-
-      ldapCtx.setRequestControls(new Control[]{new PagedResultsControl(pageSize,
-            Control.NONCRITICAL)});
-
-      // ldapsearch -h localhost -p 33389 -D
-      // uid=guest,ou=people,dc=hadoop,dc=apache,dc=org -w guest-password
-      // -b dc=hadoop,dc=apache,dc=org -s sub '(objectclass=*)'
+    // Check if we should use memberOf attribute for nested groups (FreeIPA support)
+    if (useMemberOfForNestedGroups) {
+      // Search for the user to get memberOf attribute values
+      SearchControls searchControls = getUserSearchControls();
+      searchControls.setReturningAttributes(new String[]{memberOfAttribute});
+      
       NamingEnumeration<SearchResult> searchResultEnum = null;
-      SearchControls searchControls = getGroupSearchControls();
       try {
-        if (groupSearchEnableMatchingRuleInChain) {
-          searchResultEnum = ldapCtx.search(
-              getGroupSearchBase(),
-              String.format(
-                  MATCHING_RULE_IN_CHAIN_FORMAT, groupObjectClass, memberAttribute, userDn),
-              searchControls);
-          while (searchResultEnum != null && searchResultEnum.hasMore()) {
-            // searchResults contains all the groups in search scope
-            numResults++;
-            final SearchResult group = searchResultEnum.next();
-
-            Attribute attribute = group.getAttributes().get(getGroupIdAttribute());
-            String groupName = attribute.get().toString();
-
-            String roleName = roleNameFor(groupName);
-            if (roleName != null) {
-              roleNames.add(roleName);
-            } else {
-              roleNames.add(groupName);
-            }
+        // Search for the user
+        String searchFilter;
+        if (userSearchFilter == null) {
+          if (userSearchAttributeName == null) {
+            searchFilter = String.format("(objectclass=%1$s)", getUserObjectClass());
+          } else {
+            searchFilter = String.format("(&(objectclass=%1$s)(%2$s=%3$s))", getUserObjectClass(),
+                userSearchAttributeName, expandTemplate(getUserSearchAttributeTemplate(), userName));
           }
         } else {
-          // Default group search filter
-          String searchFilter = String.format("(objectclass=%1$s)", groupObjectClass);
-
-          // If group search filter is defined in Shiro config, then use it
-          if (groupSearchFilter != null) {
-            searchFilter = expandTemplate(groupSearchFilter, userName);
-            //searchFilter = String.format("%1$s", groupSearchFilter);
-          }
-          LOGGER.debug("Group SearchBase|SearchFilter|GroupSearchScope: " + "{}|{}|{}",
-              getGroupSearchBase(), searchFilter, groupSearchScope);
-          searchResultEnum = ldapCtx.search(
-              getGroupSearchBase(),
-              searchFilter,
-              searchControls);
-          while (searchResultEnum != null && searchResultEnum.hasMore()) {
-            // searchResults contains all the groups in search scope
-            numResults++;
-            final SearchResult group = searchResultEnum.next();
-            addRoleIfMember(userDn, group, roleNames, groupNames, ldapContextFactory);
+          searchFilter = expandTemplate(userSearchFilter, userName);
+        }
+        
+        LOGGER.debug("MemberOf Attribute Search - SearchBase|SearchFilter: {}|{}", 
+            getUserSearchBase(), searchFilter);
+        searchResultEnum = ldapCtx.search(getUserSearchBase(), searchFilter, searchControls);
+        
+        if (searchResultEnum.hasMore()) {
+          SearchResult searchResult = searchResultEnum.next();
+          Attributes attrs = searchResult.getAttributes();
+          
+          if (attrs != null && attrs.get(memberOfAttribute) != null) {
+            Attribute memberOfAttr = attrs.get(memberOfAttribute);
+            NamingEnumeration<?> values = memberOfAttr.getAll();
+            
+            while (values.hasMore()) {
+              String groupDn = (String) values.next();
+              // Extract the group name from the full DN
+              String groupName = groupDn;
+              try {
+                LdapName ldapName = new LdapName(groupDn);
+                // LdapName components are in reverse order, so we need to start from the leftmost component
+                // which is actually the last one in the list
+                for (int i = ldapName.size() - 1; i >= 0; i--) {
+                  String rdn = ldapName.get(i);
+                  if (rdn.startsWith(getGroupIdAttribute() + "=")) {
+                    groupName = rdn.substring(getGroupIdAttribute().length() + 1);
+                    break;
+                  }
+                }
+              } catch (InvalidNameException e) {
+                // If parsing fails, use the full DN as fallback
+                LOGGER.warn("Unable to parse group DN: {}, using full DN as group name", groupDn, e);
+              }
+              
+              LOGGER.debug("Found group via memberOf: {}", groupName);
+              groupNames.add(groupName);
+              
+              String roleName = roleNameFor(groupName);
+              if (roleName != null) {
+                roleNames.add(roleName);
+              } else {
+                roleNames.add(groupName);
+              }
+            }
           }
         }
       } catch (PartialResultException e) {
-        LOGGER.debug("Ignoring PartitalResultException");
+        LOGGER.debug("Ignoring PartialResultException for memberOf search");
       } finally {
         if (searchResultEnum != null) {
           searchResultEnum.close();
         }
       }
-      // Re-activate paged results
-      ldapCtx.setRequestControls(new Control[]{new PagedResultsControl(pageSize,
-              null, Control.CRITICAL)});
-    } catch (SizeLimitExceededException e) {
-      LOGGER.info("Only retrieved first {} groups due to SizeLimitExceededException.", numResults);
-    } catch (IOException e) {
-      LOGGER.error("Unabled to setup paged results");
+    } else {
+      // Activate paged results
+      int pageSize = getPagingSize();
+      LOGGER.debug("Ldap PagingSize: {}", pageSize);
+      int numResults = 0;
+      try {
+        ldapCtx.addToEnvironment(Context.REFERRAL, "ignore");
+
+        ldapCtx.setRequestControls(new Control[]{new PagedResultsControl(pageSize,
+              Control.NONCRITICAL)});
+
+        // ldapsearch -h localhost -p 33389 -D
+        // uid=guest,ou=people,dc=hadoop,dc=apache,dc=org -w guest-password
+        // -b dc=hadoop,dc=apache,dc=org -s sub '(objectclass=*)'
+        NamingEnumeration<SearchResult> searchResultEnum = null;
+        SearchControls searchControls = getGroupSearchControls();
+        try {
+          if (groupSearchEnableMatchingRuleInChain) {
+            searchResultEnum = ldapCtx.search(
+                getGroupSearchBase(),
+                String.format(
+                    MATCHING_RULE_IN_CHAIN_FORMAT, groupObjectClass, memberAttribute, userDn),
+                searchControls);
+            while (searchResultEnum != null && searchResultEnum.hasMore()) {
+              // searchResults contains all the groups in search scope
+              numResults++;
+              final SearchResult group = searchResultEnum.next();
+
+              Attribute attribute = group.getAttributes().get(getGroupIdAttribute());
+              String groupName = attribute.get().toString();
+
+              String roleName = roleNameFor(groupName);
+              if (roleName != null) {
+                roleNames.add(roleName);
+              } else {
+                roleNames.add(groupName);
+              }
+            }
+          } else {
+            // Default group search filter
+            String searchFilter = String.format("(objectclass=%1$s)", groupObjectClass);
+
+            // If group search filter is defined in Shiro config, then use it
+            if (groupSearchFilter != null) {
+              searchFilter = expandTemplate(groupSearchFilter, userName);
+              //searchFilter = String.format("%1$s", groupSearchFilter);
+            }
+            LOGGER.debug("Group SearchBase|SearchFilter|GroupSearchScope: " + "{}|{}|{}",
+                getGroupSearchBase(), searchFilter, groupSearchScope);
+            searchResultEnum = ldapCtx.search(
+                getGroupSearchBase(),
+                searchFilter,
+                searchControls);
+            while (searchResultEnum != null && searchResultEnum.hasMore()) {
+              // searchResults contains all the groups in search scope
+              numResults++;
+              final SearchResult group = searchResultEnum.next();
+              addRoleIfMember(userDn, group, roleNames, groupNames, ldapContextFactory);
+            }
+          }
+        } catch (PartialResultException e) {
+          LOGGER.debug("Ignoring PartitalResultException");
+        } finally {
+          if (searchResultEnum != null) {
+            searchResultEnum.close();
+          }
+        }
+        // Re-activate paged results
+        ldapCtx.setRequestControls(new Control[]{new PagedResultsControl(pageSize,
+                null, Control.CRITICAL)});
+      } catch (SizeLimitExceededException e) {
+        LOGGER.info("Only retrieved first {} groups due to SizeLimitExceededException.", numResults);
+      } catch (IOException e) {
+        LOGGER.error("Unabled to setup paged results");
+      }
     }
+    
     // save role names and group names in session so that they can be
     // easily looked up outside of this object
     session.setAttribute(SUBJECT_USER_ROLES, roleNames);
@@ -815,6 +895,22 @@ public class LdapRealm extends DefaultLdapRealm {
   public void setGroupSearchEnableMatchingRuleInChain(
       boolean groupSearchEnableMatchingRuleInChain) {
     this.groupSearchEnableMatchingRuleInChain = groupSearchEnableMatchingRuleInChain;
+  }
+
+  public boolean isUseMemberOfForNestedGroups() {
+    return useMemberOfForNestedGroups;
+  }
+
+  public void setUseMemberOfForNestedGroups(boolean useMemberOfForNestedGroups) {
+    this.useMemberOfForNestedGroups = useMemberOfForNestedGroups;
+  }
+
+  public String getMemberOfAttribute() {
+    return memberOfAttribute;
+  }
+
+  public void setMemberOfAttribute(String memberOfAttribute) {
+    this.memberOfAttribute = memberOfAttribute;
   }
 
   private SearchControls getUserSearchControls() {
