@@ -230,8 +230,12 @@ GEM
     minitest (5.25.1)
     net-http (0.4.1)
       uri
-    nokogiri (1.15.4)
+    nokogiri (1.18.8)
       mini_portile2 (~> 2.8.2)
+      racc (~> 1.4)
+    nokogiri (1.18.8-arm64-darwin)
+      racc (~> 1.4)
+    nokogiri (1.18.8-x86_64-linux-gnu)
       racc (~> 1.4)
     octokit (4.25.1)
       faraday (>= 1, < 3)
@@ -277,7 +281,7 @@ DEPENDENCIES
   github-pages
   jekyll-twitter-plugin
   mini_portile2 (= 2.8.4)
-  nokogiri (= 1.15.4)
+  nokogiri (= 1.18.8)
   redcarpet
   webrick (~> 1.8)
 
