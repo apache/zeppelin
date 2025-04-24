@@ -37,13 +37,11 @@ function enable_systemd_service()
     ZEPPELIN_DIR=$(dirname "${MY_PWD}")
 
     # Copy the unit file.
-    cp "${ZEPPELIN_DIR}"/scripts/systemd/zeppelin.systemd "${SYSTEMD_DIR}"
+    cp "${ZEPPELIN_DIR}"/scripts/systemd/zeppelin.service "${SYSTEMD_DIR}"
 
     # Swap the template variable with the right directory path.
     sed -i -e "s#%ZEPPELIN_DIR%#${ZEPPELIN_DIR}#g;" \
-        "${SYSTEMD_DIR}"/zeppelin.systemd
-
-    mv "${SYSTEMD_DIR}"/zeppelin.systemd "${SYSTEMD_DIR}"/zeppelin.service
+        "${SYSTEMD_DIR}"/zeppelin.service
 
     # Set up the unit file.
     systemctl daemon-reload
