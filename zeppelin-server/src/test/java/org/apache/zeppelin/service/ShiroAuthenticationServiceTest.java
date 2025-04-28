@@ -23,17 +23,22 @@ import static org.mockito.Mockito.spy;
 
 import java.io.IOException;
 import java.security.Principal;
+import java.sql.Connection;
+import java.sql.Statement;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.mgt.DefaultSecurityManager;
+import org.apache.shiro.realm.jdbc.JdbcRealm;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.LifecycleUtils;
 import org.apache.shiro.util.ThreadContext;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.realm.jwt.KnoxJwtRealm;
 import org.apache.zeppelin.service.shiro.AbstractShiroTest;
+import org.h2.jdbcx.JdbcDataSource;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -51,6 +56,34 @@ class ShiroAuthenticationServiceTest extends AbstractShiroTest {
     when(zConf.getShiroPath()).thenReturn(StringUtils.EMPTY);
     setSubject(subject);
     shiroSecurityService = new ShiroAuthenticationService(zConf);
+  }
+
+  @Test
+  void testGetMatchedUsersWithJdbcRealm() throws Exception {
+
+	  // given in-memory jdbcRealm with some users
+	  JdbcRealm realm = new JdbcRealm();
+	  JdbcDataSource dataSource = new JdbcDataSource();
+	  dataSource.setURL("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1");
+	  dataSource.setUser("sa");
+	  realm.setDataSource(dataSource);
+
+	  LifecycleUtils.init(realm);
+	  DefaultSecurityManager securityManager = new DefaultSecurityManager(realm);
+	  ThreadContext.bind(securityManager);
+
+	  try (Connection conn = dataSource.getConnection(); Statement stmt = conn.createStatement()) {
+		  stmt.execute("CREATE TABLE users (username VARCHAR PRIMARY KEY, password VARCHAR)");
+		  stmt.execute("INSERT INTO users VALUES ('admin', '')");
+		  stmt.execute("INSERT INTO users VALUES ('test', '')");
+	  }
+
+	  // when
+	  List<String> users = shiroSecurityService.getMatchedUsers("adm", 10);
+
+	  // then
+	  assertEquals(1, users.size());
+	  assertEquals("admin", users.get(0));
   }
 
   @Test

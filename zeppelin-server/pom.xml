@@ -45,6 +45,7 @@
     <selenium.java.version>2.48.2</selenium.java.version>
     <xml.apis.version>1.4.01</xml.apis.version>
     <hamcrest.version>2.2</hamcrest.version>
+    <h2.version>2.3.232</h2.version>
   </properties>
 
   <dependencies>
@@ -367,6 +368,13 @@
       <version>${xml.apis.version}</version>
       <scope>test</scope>
     </dependency>
+
+	<dependency>
+	  <groupId>com.h2database</groupId>
+	  <artifactId>h2</artifactId>
+	  <version>${h2.version}</version>
+	  <scope>test</scope>
+	</dependency>
 
       <dependency>
         <groupId>org.bitbucket.cowwoc</groupId>
