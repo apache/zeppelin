@@ -61,29 +61,29 @@ class ShiroAuthenticationServiceTest extends AbstractShiroTest {
   @Test
   void testGetMatchedUsersWithJdbcRealm() throws Exception {
 
-	  // given in-memory jdbcRealm with some users
-	  JdbcRealm realm = new JdbcRealm();
-	  JdbcDataSource dataSource = new JdbcDataSource();
-	  dataSource.setURL("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1");
-	  dataSource.setUser("sa");
-	  realm.setDataSource(dataSource);
+    // given in-memory jdbcRealm with some users
+    JdbcRealm realm = new JdbcRealm();
+    JdbcDataSource dataSource = new JdbcDataSource();
+    dataSource.setURL("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1");
+    dataSource.setUser("sa");
+    realm.setDataSource(dataSource);
 
-	  LifecycleUtils.init(realm);
-	  DefaultSecurityManager securityManager = new DefaultSecurityManager(realm);
-	  ThreadContext.bind(securityManager);
+    LifecycleUtils.init(realm);
+    DefaultSecurityManager securityManager = new DefaultSecurityManager(realm);
+    ThreadContext.bind(securityManager);
 
-	  try (Connection conn = dataSource.getConnection(); Statement stmt = conn.createStatement()) {
-		  stmt.execute("CREATE TABLE users (username VARCHAR PRIMARY KEY, password VARCHAR)");
-		  stmt.execute("INSERT INTO users VALUES ('admin', '')");
-		  stmt.execute("INSERT INTO users VALUES ('test', '')");
-	  }
+    try (Connection conn = dataSource.getConnection(); Statement stmt = conn.createStatement()) {
+      stmt.execute("CREATE TABLE users (username VARCHAR PRIMARY KEY, password VARCHAR)");
+      stmt.execute("INSERT INTO users VALUES ('admin', '')");
+      stmt.execute("INSERT INTO users VALUES ('test', '')");
+    }
 
-	  // when
-	  List<String> users = shiroSecurityService.getMatchedUsers("adm", 10);
+    // when
+    List<String> users = shiroSecurityService.getMatchedUsers("adm", 10);
 
-	  // then
-	  assertEquals(1, users.size());
-	  assertEquals("admin", users.get(0));
+    // then
+    assertEquals(1, users.size());
+    assertEquals("admin", users.get(0));
   }
 
   @Test

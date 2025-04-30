@@ -180,8 +180,7 @@ public class ShiroAuthenticationService implements AuthenticationService {
           } else if (LDAP_REALM.equals(realClassName)) {
             usersList.addAll(getUserList((LdapRealm) realm, searchText, numUsersToFetch));
           } else if (ACTIVE_DIRECTORY_GROUP_REALM.equals(realClassName)) {
-            usersList.addAll(
-                getUserList((ActiveDirectoryGroupRealm) realm, searchText, numUsersToFetch));
+            usersList.addAll(getUserList((ActiveDirectoryGroupRealm) realm, searchText, numUsersToFetch));
           } else if (JDBC_REALM.equals(realClassName)) {
             usersList.addAll(getUserList((JdbcRealm) realm, searchText, numUsersToFetch));
           }
@@ -442,21 +441,21 @@ public class ShiroAuthenticationService implements AuthenticationService {
       if (StringUtils.isBlank(username) || StringUtils.isBlank(tablename)) {
         return userlist;
       }
-	  if (!isValidSqlIdentifier(username)) {
-	    throw new IllegalArgumentException(
-	      "Invalid column name in authenticationQuery to build userlist query: "
-				  + authQuery + ", allowed pattern: " + VALID_SQL_NAME_IDENTIFIER_PATTERN
-				  + ", name identifier: [" + username + "]");
-	  }
-	  if (!isValidSqlIdentifier(tablename)) {
-	    throw new IllegalArgumentException(
-	      "Invalid table name in authenticationQuery to build userlist query: "
-				  + authQuery + ", allowed pattern: " + VALID_SQL_NAME_IDENTIFIER_PATTERN
-				  + ", name identifier: [" + tablename + "]");
-	  }
+      if (!isValidSqlIdentifier(username)) {
+        throw new IllegalArgumentException(
+          "Invalid column name in authenticationQuery to build userlist query: "
+            + authQuery + ", allowed pattern: " + VALID_SQL_NAME_IDENTIFIER_PATTERN
+            + ", name identifier: [" + username + "]");
+      }
+      if (!isValidSqlIdentifier(tablename)) {
+        throw new IllegalArgumentException(
+          "Invalid table name in authenticationQuery to build userlist query: "
+            + authQuery + ", allowed pattern: " + VALID_SQL_NAME_IDENTIFIER_PATTERN
+            + ", name identifier: [" + tablename + "]");
+      }
 
-	  userquery = String.format("SELECT %s FROM %s WHERE %s LIKE ?", username, tablename, username);
-	  LOGGER.info("Built query for user list. userquery={}", userquery);
+      userquery = String.format("SELECT %s FROM %s WHERE %s LIKE ?", username, tablename, username);
+      LOGGER.info("Built query for user list. userquery={}", userquery);
     } catch (IllegalAccessException e) {
       LOGGER.error("Error while accessing dataSource for JDBC Realm", e);
       return new ArrayList<>();
@@ -465,12 +464,12 @@ public class ShiroAuthenticationService implements AuthenticationService {
     try {
       con = dataSource.getConnection();
       ps = con.prepareStatement(userquery);
-	  ps.setString(1, "%" + searchText + "%");
+      ps.setString(1, "%" + searchText + "%");
       rs = ps.executeQuery();
-	  int count = 0;
+      int count = 0;
       while (rs.next() && count < numUsersToFetch) {
-		userlist.add(rs.getString(1).trim());
-		count++;
+        userlist.add(rs.getString(1).trim());
+        count++;
       }
     } catch (Exception e) {
       LOGGER.error("Error retrieving User list from JDBC Realm", e);
