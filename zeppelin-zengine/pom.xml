@@ -38,7 +38,7 @@
     <lucene.version>8.7.0</lucene.version>
     <org.reflections.version>0.9.8</org.reflections.version>
     <xml.apis.version>1.4.01</xml.apis.version>
-    <commons.vfs2.version>2.6.0</commons.vfs2.version>
+    <commons.vfs2.version>2.10.0</commons.vfs2.version>
     <eclipse.jgit.version>4.5.4.201711221230-r</eclipse.jgit.version>
     <eirslett.version>1.6</eirslett.version>
   </properties>
