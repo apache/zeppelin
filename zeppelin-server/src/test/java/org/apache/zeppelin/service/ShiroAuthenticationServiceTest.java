@@ -75,11 +75,12 @@ class ShiroAuthenticationServiceTest extends AbstractShiroTest {
     try (Connection conn = dataSource.getConnection(); Statement stmt = conn.createStatement()) {
       stmt.execute("CREATE TABLE users (username VARCHAR PRIMARY KEY, password VARCHAR)");
       stmt.execute("INSERT INTO users VALUES ('admin', '')");
+      stmt.execute("INSERT INTO users VALUES ('admin1', '')");
       stmt.execute("INSERT INTO users VALUES ('test', '')");
     }
 
     // when
-    List<String> users = shiroSecurityService.getMatchedUsers("adm", 10);
+    List<String> users = shiroSecurityService.getMatchedUsers("adm", 1);
 
     // then
     assertEquals(1, users.size());

@@ -466,10 +466,8 @@ public class ShiroAuthenticationService implements AuthenticationService {
       ps = con.prepareStatement(userquery);
       ps.setString(1, "%" + searchText + "%");
       rs = ps.executeQuery();
-      int count = 0;
-      while (rs.next() && count < numUsersToFetch) {
-        userlist.add(rs.getString(1).trim());
-        count++;
+      while (rs.next() && userlist.size() < numUsersToFetch) {
+        userlist.add(rs.getString(1));
       }
     } catch (Exception e) {
       LOGGER.error("Error retrieving User list from JDBC Realm", e);
