@@ -435,7 +435,7 @@ public class ShiroAuthenticationService implements AuthenticationService {
         } else {
           retval = retval[0].split("=", 2);
         }
-        username = retval[0].trim();
+        username = retval[0].strip();
       }
 
       if (StringUtils.isBlank(username) || StringUtils.isBlank(tablename)) {
