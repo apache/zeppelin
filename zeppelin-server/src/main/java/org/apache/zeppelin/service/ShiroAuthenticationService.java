@@ -428,7 +428,7 @@ public class ShiroAuthenticationService implements AuthenticationService {
       retval = authQueryLowerCase.split("from", 2);
       if (retval.length >= 2) {
         retval = retval[1].split("with|where", 2);
-        tablename = retval[0].trim();
+        tablename = retval[0].strip();
         retval = retval[1].split("where", 2);
         if (retval.length >= 2) {
           retval = retval[1].split("=", 2);
