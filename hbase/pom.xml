@@ -33,14 +33,16 @@
   <properties>
     <!--library versions-->
     <interpreter.name>hbase</interpreter.name>
-    <jruby.version>1.6.8</jruby.version>
   </properties>
 
   <dependencies>
     <dependency>
-      <groupId>org.jruby</groupId>
-      <artifactId>jruby-complete</artifactId>
-      <version>${jruby.version}</version>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
     </dependency>
   </dependencies>
 

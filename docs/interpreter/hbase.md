@@ -28,19 +28,7 @@ limitations under the License.
 To get start with HBase, please see [HBase Quickstart](https://hbase.apache.org/book.html#quickstart).
 
 ## HBase release supported
-By default, Zeppelin is built against HBase 1.0.x releases. To work with HBase 1.1.x releases, use the following build command:
-
-```bash
-# HBase 1.1.4
-./mvnw clean package -DskipTests -Phadoop-2.6 -Dhadoop.version=2.6.0 -P build-distr -Dhbase.hbase.version=1.1.4 -Dhbase.hadoop.version=2.6.0
-```
-
-To work with HBase 1.2.0+, use the following build command:
-
-```bash
-# HBase 1.2.0
-./mvnw clean package -DskipTests -Phadoop-2.6 -Dhadoop.version=2.6.0 -P build-distr -Dhbase.hbase.version=1.2.0 -Dhbase.hadoop.version=2.6.0
-```
+Zeppelin is built against HBase 1.x and 2.x releases. 
 
 ## Configuration
 
@@ -54,16 +42,6 @@ To work with HBase 1.2.0+, use the following build command:
     <td>hbase.home</td>
     <td>/usr/lib/hbase</td>
     <td>Installation directory of HBase, defaults to HBASE_HOME in environment</td>
-  </tr>
-  <tr>
-    <td>hbase.ruby.sources</td>
-    <td>lib/ruby</td>
-    <td>Path to Ruby scripts relative to 'hbase.home'</td>
-  </tr>
-  <tr>
-    <td>zeppelin.hbase.test.mode</td>
-    <td>false</td>
-    <td>Disable checks for unit and manual tests</td>
   </tr>
 </table>
 

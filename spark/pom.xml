@@ -33,20 +33,22 @@
     <description>Zeppelin Spark Support</description>
 
     <properties>
-        <spark.version>3.4.1</spark.version>
-        <protobuf.version>2.5.0</protobuf.version>
+        <interpreter.name>spark</interpreter.name>
+
+        <spark.version>3.5.3</spark.version>
+        <protobuf.version>3.21.12</protobuf.version>
         <py4j.version>0.10.9.7</py4j.version>
-        <spark.scala.version>2.12.17</spark.scala.version>
+        <spark.scala.version>2.12.18</spark.scala.version>
         <spark.scala.binary.version>2.12</spark.scala.binary.version>
 
         <scala.compile.version>${spark.scala.version}</scala.compile.version>
 
         <spark.archive>spark-${spark.version}</spark.archive>
         <spark.src.download.url>
-            https://archive.apache.org/dist/spark/${spark.archive}/${spark.archive}.tgz
+            https://www.apache.org/dyn/closer.lua/spark/${spark.archive}/${spark.archive}.tgz?action=download
         </spark.src.download.url>
         <spark.bin.download.url>
-            https://archive.apache.org/dist/spark/${spark.archive}/${spark.archive}-bin-without-hadoop.tgz
+            https://www.apache.org/dyn/closer.lua/spark/${spark.archive}/${spark.archive}-bin-without-hadoop.tgz?action=download
         </spark.bin.download.url>
     </properties>
 
@@ -55,8 +57,7 @@
         <module>spark-scala-parent</module>
         <module>scala-2.12</module>
         <module>scala-2.13</module>
-        <module>spark-shims</module>
-        <module>spark3-shims</module>
+        <module>spark-common</module>
     </modules>
 
     <build>

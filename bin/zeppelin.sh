@@ -121,7 +121,9 @@ if [[ "${USE_HADOOP}" != "false"  ]]; then
     echo "Please specify HADOOP_CONF_DIR if USE_HADOOP is true"
   else
     ZEPPELIN_CLASSPATH+=":${HADOOP_CONF_DIR}"
-    if ! [ -x "$(command -v hadoop)" ]; then
+    if [ -n "${HADOOP_HOME}" ]; then
+      ZEPPELIN_CLASSPATH+=":`${HADOOP_HOME}/bin/hadoop classpath`"
+    elif ! [ -x "$(command -v hadoop)" ]; then
       echo 'hadoop command is not in PATH when HADOOP_CONF_DIR is specified.'
     else
       ZEPPELIN_CLASSPATH+=":`hadoop classpath`"

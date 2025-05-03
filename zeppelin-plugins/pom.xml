@@ -46,7 +46,6 @@
         <module>notebookrepo/oss</module>
 
         <module>launcher/k8s-standard</module>
-        <module>launcher/cluster</module>
         <module>launcher/docker</module>
         <module>launcher/yarn</module>
         <module>launcher/flink</module>
@@ -59,10 +58,6 @@
             <version>${project.version}</version>
             <scope>provided</scope>
             <exclusions>
-                <exclusion>
-                    <groupId>com.fasterxml.jackson.core</groupId>
-                    <artifactId>jackson-core</artifactId>
-                </exclusion>
                 <!-- jcl-over-slf4j is provided by zeppelin-interprerter -->
                 <exclusion>
                     <groupId>commons-logging</groupId>
@@ -82,13 +77,6 @@
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
             <scope>test</scope>
-            <exclusions>
-              <!-- used from zeppelin-zenigne -->
-              <exclusion>
-                <groupId>org.objenesis</groupId>
-                <artifactId>objenesis</artifactId>
-              </exclusion>
-            </exclusions>
         </dependency>
     </dependencies>
 

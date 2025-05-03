@@ -5,7 +5,7 @@
     "postinstall": "npm run build:projects",
     "ng": "./node_modules/.bin/ng",
     "start": "ng serve --proxy-config proxy.conf.js --extra-webpack-config webpack.partial.js",
-    "build": "ng build --prod --extra-webpack-config webpack.partial.js --base-href /",
+    "build": "ng build --prod --extra-webpack-config webpack.partial.js",
     "build:projects": "npm run build-project:sdk && npm run build-project:vis && npm run build-project:helium",
     "build-helium-vis-example": " ng build --project helium-vis-example",
     "build-project:sdk": " ng build --project zeppelin-sdk",
@@ -14,6 +14,9 @@
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e"
+  },
+  "engines": {
+    "node": "<17.0.0"
   },
   "private": true,
   "dependencies": {
@@ -38,7 +41,6 @@
     "mathjax": "2.7.5",
     "monaco-editor": "0.15.1",
     "ng-zorro-antd": "^8.4.0",
-    "ng1-template-updater": "0.0.4",
     "parse5": "^5.1.1",
     "rxjs": "~6.5.3",
     "systemjs": "^5.0.0",

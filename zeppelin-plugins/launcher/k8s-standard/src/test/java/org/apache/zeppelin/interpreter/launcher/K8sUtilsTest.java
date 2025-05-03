@@ -41,17 +41,17 @@ class K8sUtilsTest {
 
   @Test
   void testExceptionMaxLong() {
-    assertThrows(NumberFormatException.class, () -> {
-      K8sUtils.calculateMemoryWithDefaultOverhead("10000000Tb");
-    });
+    assertThrows(NumberFormatException.class, () ->
+      K8sUtils.calculateMemoryWithDefaultOverhead("10000000Tb")
+    );
 
   }
 
   @Test
   void testExceptionNoValidNumber() {
-    assertThrows(NumberFormatException.class, () -> {
-      K8sUtils.calculateMemoryWithDefaultOverhead("NoValidNumber10000000Tb");
-    });
+    assertThrows(NumberFormatException.class, () ->
+      K8sUtils.calculateMemoryWithDefaultOverhead("NoValidNumber10000000Tb")
+    );
   }
 
   @Test
@@ -61,10 +61,10 @@ class K8sUtilsTest {
     assertEquals("test", K8sUtils.generateK8sName("test", false));
     assertEquals("test", K8sUtils.generateK8sName("!test", false));
     assertEquals("zeppelin", K8sUtils.generateK8sName("!", false));
-    assertEquals("zeppelin.test", K8sUtils.generateK8sName(".test", false));
-    assertEquals("zeppelin.test", K8sUtils.generateK8sName("...test", false));
-    assertEquals("zeppelin.test.zeppelin", K8sUtils.generateK8sName(".test.", false));
-    assertEquals("zeppelin.test.zeppelin", K8sUtils.generateK8sName("...test....", false));
+    assertEquals("test", K8sUtils.generateK8sName(".test", false));
+    assertEquals("test", K8sUtils.generateK8sName("...test", false));
+    assertEquals("test", K8sUtils.generateK8sName(".test.", false));
+    assertEquals("test", K8sUtils.generateK8sName("...test....", false));
     assertEquals("test", K8sUtils.generateK8sName("Test", false));
 
     assertEquals(253 - "zeppelin".length() , K8sUtils.generateK8sName(RandomStringUtils.randomAlphabetic(260), true).length());

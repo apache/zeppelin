@@ -81,8 +81,9 @@ export class InterpreterItemComponent extends DestroyHookComponent implements On
           name: key
         };
       });
+    this.addProperties()
     formData.properties = properties;
-
+    this.addDependence()
     formData.dependencies.forEach(e => {
       e.exclusions = e.exclusions.split(',').filter(s => s !== '');
     });

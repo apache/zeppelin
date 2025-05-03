@@ -25,15 +25,17 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URL;
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+
 
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 class IndexHtmlServletTest {
 
@@ -56,7 +58,7 @@ class IndexHtmlServletTest {
         .thenReturn(new URL("file:" + FILE_PATH_INDEX_HTML_ZEPPELIN_WEB));
       when(sc.getServletContext()).thenReturn(ctx);
 
-      IndexHtmlServlet servlet = new IndexHtmlServlet(zConf);
+      IndexHtmlServlet servlet = new IndexHtmlServlet(zConf, null);
       servlet.init(sc);
 
       HttpServletResponse mockResponse = mock(HttpServletResponse.class);
@@ -90,7 +92,7 @@ class IndexHtmlServletTest {
         .thenReturn(new URL("file:" + FILE_PATH_INDEX_HTML_ZEPPELIN_WEB_ANGULAR));
       when(sc.getServletContext()).thenReturn(ctx);
 
-      IndexHtmlServlet servlet = new IndexHtmlServlet(zConf);
+      IndexHtmlServlet servlet = new IndexHtmlServlet(zConf, null);
       servlet.init(sc);
 
       HttpServletResponse mockResponse = mock(HttpServletResponse.class);

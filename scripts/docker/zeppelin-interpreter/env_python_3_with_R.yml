@@ -4,7 +4,7 @@ channels:
   - defaults
 dependencies:
   - python >=3.9,<3.10
-  - pyspark=3.3.2
+  - pyspark=3.5.3
   - pycodestyle
   - scipy
   - numpy

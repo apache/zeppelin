@@ -40,6 +40,7 @@ import { NzUploadModule } from 'ng-zorro-antd/upload';
 
 import { AboutZeppelinComponent } from '@zeppelin/share/about-zeppelin/about-zeppelin.component';
 import { CodeEditorModule } from '@zeppelin/share/code-editor';
+import { ExternalLinkDirective } from '@zeppelin/share/external-links/external-link.directive';
 import { FolderRenameComponent } from '@zeppelin/share/folder-rename/folder-rename.component';
 import { HeaderComponent } from '@zeppelin/share/header/header.component';
 import { MathJaxDirective } from '@zeppelin/share/math-jax/math-jax.directive';
@@ -51,9 +52,7 @@ import { NoteTocComponent } from '@zeppelin/share/note-toc/note-toc.component';
 import { PageHeaderComponent } from '@zeppelin/share/page-header/page-header.component';
 import { HumanizeBytesPipe } from '@zeppelin/share/pipes';
 import { RunScriptsDirective } from '@zeppelin/share/run-scripts/run-scripts.directive';
-import { ExternalLinkDirective } from "@zeppelin/share/external-links/external-link.directive";
 import { SpinComponent } from '@zeppelin/share/spin/spin.component';
-import { Ng1MigrationComponent } from './ng1-migration/ng1-migration.component';
 import { ResizeHandleComponent } from './resize-handle';
 
 const MODAL_LIST = [
@@ -61,8 +60,7 @@ const MODAL_LIST = [
   NoteImportComponent,
   NoteCreateComponent,
   NoteRenameComponent,
-  FolderRenameComponent,
-  Ng1MigrationComponent
+  FolderRenameComponent
 ];
 const EXPORT_LIST = [
   HeaderComponent,

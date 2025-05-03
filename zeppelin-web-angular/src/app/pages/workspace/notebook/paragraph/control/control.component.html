@@ -28,22 +28,28 @@
        (click)="runParagraph.emit()"
        nzType="play-circle"
        class="run-para"
-       nzTheme="outline"></i>
+       nzTheme="outline"
+       nz-tooltip
+       nzTooltipTitle="Run paragraph"></i>
     <i nz-icon
        *ngIf="status=='RUNNING' || status=='PENDING'"
        (click)="cancelParagraph.emit()"
        class="cancel-para"
        nzType="pause-circle"
-       nzTheme="outline"></i>
+       nzTheme="outline"
+       nz-tooltip
+       nzTooltipTitle="Cancel paragraph"></i>
   </a>
-  <a (click)="toggleEditor()">
+  <a (click)="toggleEditor()" nz-tooltip nzTooltipTitle="Show/hide the code">
     <i nz-icon [nzType]="editorHide ? 'fullscreen' : 'fullscreen-exit'" nzTheme="outline"></i>
   </a>
-  <a (click)="toggleOutput()">
+  <a (click)="toggleOutput()" nz-tooltip nzTooltipTitle="Show/hide the output">
     <i nz-icon [nzType]="tableHide ? 'book' : 'read'" nzTheme="outline"></i>
   </a>
   <a nz-dropdown [nzDropdownMenu]="menu" [nzTrigger]="'click'" [nzClickHide]="false" [(nzVisible)]="dropdownVisible">
-    <i nz-icon nzType="setting" nzTheme="outline"></i>
+    <span nz-tooltip nzTooltipTitle="More">
+      <i nz-icon nzType="setting" nzTheme="outline"></i>
+    </span>
   </a>
   <nz-dropdown-menu #menu="nzDropdownMenu">
     <ul nz-menu class="setting-menu">

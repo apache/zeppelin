@@ -16,7 +16,7 @@
  */
 package org.apache.zeppelin.utils;
 
-import javax.ws.rs.core.Response.Status;
+import jakarta.ws.rs.core.Response.Status;
 
 import org.apache.zeppelin.server.JsonResponse;
 
@@ -26,11 +26,11 @@ import org.apache.zeppelin.server.JsonResponse;
  */
 public class ExceptionUtils {
 
-  public static javax.ws.rs.core.Response jsonResponse(Status status) {
+  public static jakarta.ws.rs.core.Response jsonResponse(Status status) {
     return new JsonResponse<>(status).build();
   }
-  
-  public static javax.ws.rs.core.Response jsonResponseContent(Status status, String message) {
+
+  public static jakarta.ws.rs.core.Response jsonResponseContent(Status status, String message) {
     return new JsonResponse<>(status, message).build();
   }
 }

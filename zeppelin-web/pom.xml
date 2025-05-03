@@ -39,6 +39,8 @@
     <!--plugin versions-->
     <plugin.frontend.nodeDownloadRoot>https://nodejs.org/dist/</plugin.frontend.nodeDownloadRoot>
     <plugin.frontend.npmDownloadRoot>https://registry.npmjs.org/npm/-/</plugin.frontend.npmDownloadRoot>
+    <!-- the scope of the Hadoop dependencies is the same as for the other Zeppelin components -->
+    <hadoop.deps.scope>test</hadoop.deps.scope>
   </properties>
 
   <dependencies>
@@ -119,7 +121,7 @@
             </goals>
             <configuration>
               <skip>${web.e2e.enabled}</skip>
-              <arguments>install --no-lockfile</arguments>
+              <arguments>ci</arguments>
             </configuration>
           </execution>
 

@@ -4,7 +4,7 @@
 **Mailing Lists:** [User and Dev mailing list](https://zeppelin.apache.org/community.html)<br/>
 **Continuous Integration:** ![core](https://github.com/apache/zeppelin/workflows/core/badge.svg) ![frontend](https://github.com/apache/zeppelin/workflows/frontend/badge.svg) ![rat](https://github.com/apache/zeppelin/workflows/rat/badge.svg) <br/>
 **Contributing:** [Contribution Guide](https://zeppelin.apache.org/contribution/contributions.html)<br/>
-**Issue Tracker:** [Jira](https://issues.apache.org/jira/browse/ZEPPELIN)<br/>
+**Issue Tracker:** [Jira](https://issues.apache.org/jira/projects/ZEPPELIN/issues/filter=allissues)<br/>
 **License:** [Apache 2.0](https://github.com/apache/zeppelin/blob/master/LICENSE)
 
 

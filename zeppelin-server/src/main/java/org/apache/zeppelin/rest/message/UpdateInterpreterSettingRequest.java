@@ -39,8 +39,53 @@ public class UpdateInterpreterSettingRequest {
     this.option = option;
   }
 
+  /**
+   * Retrieves the properties of the interpreter and, if the property type is "number"
+   * and its value is a double that represents a whole number, converts that value to an integer.
+   *
+   * @return A map of the interpreter's properties with possible modifications to the numeric properties.
+   */
   public Map<String, InterpreterProperty> getProperties() {
+    properties.forEach((key, property) -> {
+      if (isNumberType(property) && isWholeNumberDouble(property.getValue())) {
+        convertDoubleToInt(property);
+      }
+    });
     return properties;
+  }
+
+  /**
+   * Checks if the property type is "number".
+   *
+   * @param property The InterpreterProperty to check.
+   * @return true if the property type is "number", false otherwise.
+   */
+  private boolean isNumberType(InterpreterProperty property) {
+    return "number".equals(property.getType());
+  }
+
+  /**
+   * Checks if the given value is a Double and represents a whole number.
+   *
+   * @param value The object to check.
+   * @return true if the value is a Double and a whole number, false otherwise.
+   */
+  private boolean isWholeNumberDouble(Object value) {
+    if (value instanceof Double) {
+      Double doubleValue = (Double) value;
+      return doubleValue == Math.floor(doubleValue);
+    }
+    return false;
+  }
+
+  /**
+   * Converts the value of the given property from a Double to an Integer if the Double represents a whole number.
+   *
+   * @param property The InterpreterProperty whose value will be converted.
+   */
+  private void convertDoubleToInt(InterpreterProperty property) {
+    Double doubleValue = (Double) property.getValue();
+    property.setValue(doubleValue.intValue());
   }
 
   public List<Dependency> getDependencies() {

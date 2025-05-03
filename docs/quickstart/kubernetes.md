@@ -179,7 +179,7 @@ $ mv zeppelin-distribution/target/zeppelin-*-bin.tgz scripts/docker/zeppelin/bin
 
 # Find following section and comment out
 #RUN echo "$LOG_TAG Download Zeppelin binary" && \
-#    wget -O /tmp/zeppelin-${Z_VERSION}-bin-all.tgz http://archive.apache.org/dist/zeppelin/zeppelin-${Z_VERSION}/zeppelin-${Z_VERSION}-bin-all.tgz && \
+#    wget -O /tmp/zeppelin-${Z_VERSION}-bin-all.tgz "https://www.apache.org/dyn/closer.lua/zeppelin/zeppelin-${Z_VERSION}/zeppelin-${Z_VERSION}-bin-all.tgz?action=download" && \
 #    tar -zxvf /tmp/zeppelin-${Z_VERSION}-bin-all.tgz && \
 #    rm -rf /tmp/zeppelin-${Z_VERSION}-bin-all.tgz && \
 #    mv /zeppelin-${Z_VERSION}-bin-all ${ZEPPELIN_HOME}

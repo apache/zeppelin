@@ -18,10 +18,10 @@ package org.apache.zeppelin.socket;
 
 import java.util.List;
 
-import javax.websocket.HandshakeResponse;
-import javax.websocket.server.HandshakeRequest;
-import javax.websocket.server.ServerEndpointConfig;
-import javax.websocket.server.ServerEndpointConfig.Configurator;
+import jakarta.websocket.HandshakeResponse;
+import jakarta.websocket.server.HandshakeRequest;
+import jakarta.websocket.server.ServerEndpointConfig;
+import jakarta.websocket.server.ServerEndpointConfig.Configurator;
 
 import org.apache.zeppelin.util.WatcherSecurityKey;
 import org.apache.zeppelin.utils.CorsUtils;

@@ -36,6 +36,7 @@
       <groupId>${project.groupId}</groupId>
       <artifactId>zeppelin-interpreter-shaded</artifactId>
       <version>${project.version}</version>
+      <scope>provided</scope>
     </dependency>
 
     <dependency>
@@ -45,11 +46,7 @@
       <scope>provided</scope>
       <exclusions>
         <exclusion>
-          <groupId>io.netty</groupId>
-          <artifactId>*</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>io.atomix</groupId>
+          <groupId>org.apache.hadoop</groupId>
           <artifactId>*</artifactId>
         </exclusion>
       </exclusions>

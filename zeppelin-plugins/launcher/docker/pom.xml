@@ -55,6 +55,12 @@
       <artifactId>docker-client</artifactId>
       <classifier>shaded</classifier>
       <version>8.15.2</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.bouncycastle</groupId>
+          <artifactId>bcpkix-jdk15on</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.commons</groupId>

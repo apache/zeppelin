@@ -25,7 +25,7 @@ env:
 
 jobs:
   license-check:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -37,11 +37,9 @@ jobs:
       - name: Check Rat
         run: ./mvnw apache-rat:check -Prat ${MAVEN_ARGS}
   maven-validate:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
-      matrix:
-        hadoop: [hadoop3]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -51,4 +49,4 @@ jobs:
           distribution: 'temurin'
           java-version: 11
       - name: Run Maven Validate
-        run: ./mvnw validate -P${{ matrix.hadoop }} -Pinclude-hadoop ${MAVEN_ARGS}
+        run: ./mvnw validate -Pinclude-hadoop ${MAVEN_ARGS}

@@ -40,24 +40,19 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicReference;
-import javax.inject.Inject;
-import javax.inject.Provider;
-import javax.websocket.CloseReason;
-import javax.websocket.Endpoint;
-import javax.websocket.EndpointConfig;
-import javax.websocket.OnClose;
-import javax.websocket.OnError;
-import javax.websocket.OnMessage;
-import javax.websocket.OnOpen;
-import javax.websocket.Session;
-import javax.websocket.server.ServerEndpoint;
+import jakarta.inject.Inject;
+import jakarta.inject.Provider;
+import jakarta.websocket.CloseReason;
+import jakarta.websocket.EndpointConfig;
+import jakarta.websocket.OnClose;
+import jakarta.websocket.OnError;
+import jakarta.websocket.OnMessage;
+import jakarta.websocket.OnOpen;
+import jakarta.websocket.Session;
+import jakarta.websocket.server.ServerEndpoint;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.thrift.TException;
-import org.apache.zeppelin.cluster.ClusterManagerServer;
-import org.apache.zeppelin.cluster.event.ClusterEvent;
-import org.apache.zeppelin.cluster.event.ClusterEventListener;
-import org.apache.zeppelin.cluster.event.ClusterMessage;
 import org.apache.zeppelin.common.Message;
 import org.apache.zeppelin.common.Message.OP;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
@@ -86,7 +81,6 @@ import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.NotebookImportDeserializer;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.notebook.ParagraphJobListener;
-import org.apache.zeppelin.notebook.exception.CorruptedNoteException;
 import org.apache.zeppelin.notebook.repo.NotebookRepoWithVersionControl.Revision;
 import org.apache.zeppelin.rest.exception.ForbiddenException;
 import org.apache.zeppelin.scheduler.Job;
@@ -122,8 +116,7 @@ public class NotebookServer implements AngularObjectRegistryListener,
     RemoteInterpreterProcessListener,
     ApplicationEventListener,
     ParagraphJobListener,
-    NoteEventListener,
-    ClusterEventListener {
+    NoteEventListener {
 
   /**
    * Job manager service type.
@@ -651,7 +644,6 @@ public class NotebookServer implements AngularObjectRegistryListener,
 
   public void broadcastNote(Note note) {
     inlineBroadcastNote(note);
-    broadcastClusterEvent(ClusterEvent.BROADCAST_NOTE, MSG_ID_NOT_DEFINED, note);
   }
 
   private void inlineBroadcastNote(Note note) {
@@ -672,7 +664,6 @@ public class NotebookServer implements AngularObjectRegistryListener,
 
   public void broadcastParagraph(Note note, Paragraph p, String msgId) {
     inlineBroadcastParagraph(note, p, msgId);
-    broadcastClusterEvent(ClusterEvent.BROADCAST_PARAGRAPH, msgId, note, p);
   }
 
   private void inlineBroadcastParagraphs(Map<String, Paragraph> userParagraphMap, String msgId) {
@@ -686,7 +677,6 @@ public class NotebookServer implements AngularObjectRegistryListener,
 
   private void broadcastParagraphs(Map<String, Paragraph> userParagraphMap, Paragraph defaultParagraph, String msgId) {
     inlineBroadcastParagraphs(userParagraphMap, msgId);
-    broadcastClusterEvent(ClusterEvent.BROADCAST_PARAGRAPHS, msgId, userParagraphMap, defaultParagraph);
   }
 
   private void inlineBroadcastNewParagraph(Note note, Paragraph para) {
@@ -699,7 +689,6 @@ public class NotebookServer implements AngularObjectRegistryListener,
 
   private void broadcastNewParagraph(Note note, Paragraph para) {
     inlineBroadcastNewParagraph(note, para);
-    broadcastClusterEvent(ClusterEvent.BROADCAST_NEW_PARAGRAPH, MSG_ID_NOT_DEFINED, note, para);
   }
 
   private void inlineBroadcastNoteList() {
@@ -718,110 +707,6 @@ public class NotebookServer implements AngularObjectRegistryListener,
 
   public void broadcastNoteList(AuthenticationInfo subject, Set<String> userAndRoles) {
     inlineBroadcastNoteList();
-    broadcastClusterEvent(ClusterEvent.BROADCAST_NOTE_LIST, MSG_ID_NOT_DEFINED, subject, userAndRoles);
-  }
-
-  // broadcast ClusterEvent
-  private void broadcastClusterEvent(ClusterEvent event, String msgId, Object... objects) {
-    if (!zConf.isClusterMode()) {
-      return;
-    }
-
-    ClusterMessage clusterMessage = new ClusterMessage(event);
-    clusterMessage.setMsgId(msgId);
-
-    for (Object object : objects) {
-      String json;
-      if (object instanceof AuthenticationInfo) {
-        json = ((AuthenticationInfo) object).toJson();
-        clusterMessage.put("AuthenticationInfo", json);
-      } else if (object instanceof Note) {
-        json = ((Note) object).toJson();
-        clusterMessage.put("Note", json);
-      } else if (object instanceof Paragraph) {
-        json = ((Paragraph) object).toJson();
-        clusterMessage.put("Paragraph", json);
-      } else if (object instanceof Set) {
-        Gson gson = new Gson();
-        json = gson.toJson(object);
-        clusterMessage.put("Set<String>", json);
-      } else if (object instanceof Map) {
-        Gson gson = new Gson();
-        json = gson.toJson(object);
-        clusterMessage.put("Map<String, Paragraph>", json);
-      } else {
-        LOGGER.error("Unknown object type!");
-      }
-    }
-
-    String msg = ClusterMessage.serializeMessage(clusterMessage);
-    ClusterManagerServer.getInstance(zConf).broadcastClusterEvent(
-        ClusterManagerServer.CLUSTER_NOTE_EVENT_TOPIC, msg);
-  }
-
-  @Override
-  public void onClusterEvent(String msg) {
-    if (LOGGER.isDebugEnabled()) {
-      LOGGER.debug("onClusterEvent : {}", msg);
-    }
-    ClusterMessage message = ClusterMessage.deserializeMessage(msg);
-
-    Note note = null;
-    Paragraph paragraph = null;
-    Set<String> userAndRoles = null;
-    Map<String, Paragraph> userParagraphMap = null;
-    AuthenticationInfo authenticationInfo = null;
-    for (Map.Entry<String, String> entry : message.getData().entrySet()) {
-      String key = entry.getKey();
-      String json = entry.getValue();
-      if (StringUtils.equals(key, "AuthenticationInfo")) {
-        authenticationInfo = AuthenticationInfo.fromJson(json);
-      } else if (StringUtils.equals(key, "Note")) {
-        try {
-          note = noteParser.get().fromJson(null, json);
-        } catch (CorruptedNoteException e) {
-          LOGGER.warn("Fail to parse note json", e);
-        }
-      } else if (StringUtils.equals(key, "Paragraph")) {
-        paragraph = noteParser.get().fromJson(json);
-      } else if (StringUtils.equals(key, "Set<String>")) {
-        Gson gson = new Gson();
-        userAndRoles = gson.fromJson(json, new TypeToken<Set<String>>() {
-        }.getType());
-      } else if (StringUtils.equals(key, "Map<String, Paragraph>")) {
-        Gson gson = new Gson();
-        userParagraphMap = gson.fromJson(json, new TypeToken<Map<String, Paragraph>>() {
-        }.getType());
-      } else {
-        LOGGER.error("Unknown key:{}, json:{}!", key, json);
-      }
-    }
-
-    switch (message.clusterEvent) {
-      case BROADCAST_NOTE:
-        inlineBroadcastNote(note);
-        break;
-      case BROADCAST_NOTE_LIST:
-        try {
-          getNotebook().reloadAllNotes(authenticationInfo);
-          inlineBroadcastNoteList();
-        } catch (IOException e) {
-          LOGGER.error(e.getMessage(), e);
-        }
-        break;
-      case BROADCAST_PARAGRAPH:
-        inlineBroadcastParagraph(note, paragraph, message.getMsgId());
-        break;
-      case BROADCAST_PARAGRAPHS:
-        inlineBroadcastParagraphs(userParagraphMap, message.getMsgId());
-        break;
-      case BROADCAST_NEW_PARAGRAPH:
-        inlineBroadcastNewParagraph(note, paragraph);
-        break;
-      default:
-        LOGGER.error("Unknown clusterEvent:{}, msg:{} ", message.clusterEvent, msg);
-        break;
-    }
   }
 
   public void listNotesInfo(NotebookSocket conn, ServiceContext context) throws IOException {

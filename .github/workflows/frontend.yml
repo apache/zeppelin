@@ -30,7 +30,7 @@ permissions:
 
 jobs:
   run-e2e-tests-in-zeppelin-web:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -53,15 +53,15 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-zeppelin-
       - name: Install application
-        run: ./mvnw clean install -DskipTests -am -pl zeppelin-web -Pweb-classic -Pspark-scala-2.12 -Pspark-3.4 -Phadoop3 -Pweb-dist ${MAVEN_ARGS}
+        run: ./mvnw clean install -DskipTests -am -pl zeppelin-web -Pweb-classic -Pspark-scala-2.12 -Pspark-3.4 -Pweb-dist ${MAVEN_ARGS}
       - name: Run headless test
-        run: xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" ./mvnw verify -pl zeppelin-web -Pweb-classic -Pspark-scala-2.12 -Pspark-3.4 -Phadoop3 -Pweb-dist -Pweb-e2e ${MAVEN_ARGS}
+        run: xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" ./mvnw verify -pl zeppelin-web -Pweb-classic -Pspark-scala-2.12 -Pspark-3.4 -Pweb-dist -Pweb-e2e ${MAVEN_ARGS}
       - name: Print zeppelin logs
         if: always()
         run: if [ -d "logs" ]; then cat logs/*; fi
 
   run-tests-in-zeppelin-web-angular:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -87,7 +87,7 @@ jobs:
         run: xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" ./mvnw package -pl zeppelin-web-angular ${MAVEN_ARGS}
 
   test-selenium-with-spark-module-for-spark-3-4:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     defaults:
       run:
         shell: bash -l {0}
@@ -118,7 +118,6 @@ jobs:
           activate-environment: python_3_with_R
           environment-file: testing/env_python_3_with_R.yml
           python-version: 3.9
-          miniforge-variant: Mambaforge
           channels: conda-forge,defaults
           channel-priority: true
           auto-activate-base: false
@@ -128,10 +127,10 @@ jobs:
           R -e "IRkernel::installspec()"
       - name: Install Environment
         run: |
-          ./mvnw clean install -DskipTests -am -pl zeppelin-integration -Pweb-classic -Pintegration -Pspark-scala-2.12 -Pspark-3.4 -Phadoop3 -Pweb-dist ${MAVEN_ARGS}
+          ./mvnw clean install -DskipTests -am -pl zeppelin-integration -Pweb-classic -Pintegration -Pspark-scala-2.12 -Pspark-3.4 -Pweb-dist ${MAVEN_ARGS}
       - name: run tests
         run: |
-          xvfb-run --auto-servernum --server-args="-screen 0 1600x1024x16" ./mvnw verify -DfailIfNoTests=false -pl zeppelin-integration -Pweb-classic -Pintegration -Pspark-scala-2.12 -Pspark-3.4 -Phadoop3 -Pweb-dist -Pusing-source-tree ${MAVEN_ARGS}
+          xvfb-run --auto-servernum --server-args="-screen 0 1600x1024x16" ./mvnw verify -DfailIfNoTests=false -pl zeppelin-integration -Pweb-classic -Pintegration -Pspark-scala-2.12 -Pspark-3.4 -Pweb-dist -Pusing-source-tree ${MAVEN_ARGS}
       - name: Print zeppelin logs
         if: always()
         run: if [ -d "logs" ]; then cat logs/*; fi

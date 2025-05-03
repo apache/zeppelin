@@ -46,6 +46,13 @@ limitations under the License.
       value='All TODOs should be named.  e.g. "TODO(johndoe): Refactor when v2 is released."'/>
   </module>
 
+  <!-- Checks if a line is too long. -->
+  <module name="LineLength">
+    <property name="severity" value="error"/>
+    <property name="max" value="100"/>
+    <property name="ignorePattern" value="^(package .*;\s*)|(import .*;\s*)|( *\* *https?://.*)$"/>
+  </module>
+
   <!-- <module name="JavadocPackage"> - Checks that each Java package has
     a Javadoc file used for commenting. Only allows a package-info.java, not
     package.html. </module> -->
@@ -69,14 +76,11 @@ limitations under the License.
     <!-- Checks for Javadoc comments. -->
     <!-- See http://checkstyle.sf.net/config_javadoc.html -->
     <module name="JavadocMethod">
-      <property name="scope" value="protected"/>
       <property name="severity" value="warning"/>
-      <property name="allowMissingJavadoc" value="true"/>
+      <property name="accessModifiers" value="protected"/>
       <property name="allowMissingParamTags" value="true"/>
       <property name="allowMissingReturnTag" value="true"/>
-      <property name="allowMissingThrowsTags" value="true"/>
-      <property name="allowThrowsTagsForSubclasses" value="true"/>
-      <property name="allowUndeclaredRTE" value="true"/>
+      <property name="validateThrows" value="false"/>
     </module>
 
     <module name="JavadocStyle">
@@ -165,21 +169,6 @@ limitations under the License.
 
 
     <!-- LENGTH and CODING CHECKS -->
-
-    <module name="LineLength">
-      <!-- Checks if a line is too long. -->
-      <property name="max"
-        value="${com.puppycrawl.tools.checkstyle.checks.sizes.LineLength.max}"
-        default="100"/>
-      <property name="severity" value="error"/>
-
-      <!-- The default ignore pattern exempts the following elements: - import
-        statements - long URLs inside comments -->
-
-      <property name="ignorePattern"
-        value="${com.puppycrawl.tools.checkstyle.checks.sizes.LineLength.ignorePattern}"
-        default="^(package .*;\s*)|(import .*;\s*)|( *\* *https?://.*)$"/>
-    </module>
 
     <module name="LeftCurly">
       <!-- Checks for placement of the left curly brace ('{'). -->

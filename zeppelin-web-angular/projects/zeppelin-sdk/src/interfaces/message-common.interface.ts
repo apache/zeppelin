@@ -63,7 +63,6 @@ export interface ConfigurationsInfo {
     'zeppelin.notebook.autoInterpreterBinding': string;
     'zeppelin.config.storage.class': string;
     'zeppelin.helium.node.installer.url': string;
-    'zeppelin.cluster.heartbeat.interval': string;
     'zeppelin.notebook.storage': string;
     'zeppelin.notebook.new_format.convert': string;
     'zeppelin.interpreter.dir': string;
@@ -76,7 +75,6 @@ export interface ConfigurationsInfo {
     'zeppelin.encoding': string;
     'zeppelin.server.jetty.request.header.size': string;
     'zeppelin.search.temp.path': string;
-    'zeppelin.cluster.heartbeat.timeout': string;
     'zeppelin.notebook.s3.endpoint': string;
     'zeppelin.notebook.homescreen.hide': string;
     'zeppelin.scheduler.threadpool.size': string;
@@ -102,7 +100,6 @@ export interface ConfigurationsInfo {
     'zeppelin.notebook.default.owner.username': string;
     'zeppelin.home': string;
     'zeppelin.interpreter.lifecyclemanager.timeout.threshold': string;
-    'zeppelin.cluster.addr': string;
     'zeppelin.notebook.git.remote.url': string;
     'zeppelin.notebook.mongo.autoimport': string;
     'zeppelin.notebook.one.way.sync': string;

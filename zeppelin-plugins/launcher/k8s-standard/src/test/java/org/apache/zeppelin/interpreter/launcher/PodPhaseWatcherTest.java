@@ -34,8 +34,6 @@ import org.junit.jupiter.api.Test;
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.PodBuilder;
 import io.fabric8.kubernetes.api.model.PodList;
-import io.fabric8.kubernetes.api.model.PodStatus;
-import io.fabric8.kubernetes.api.model.PodStatusBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.Watch;
 import io.fabric8.kubernetes.client.server.mock.EnableKubernetesMockClient;
@@ -49,8 +47,9 @@ class PodPhaseWatcherTest {
   void testPhase() throws InterruptedException {
     // CREATE
     client.pods().inNamespace("ns1")
-        .create(new PodBuilder().withNewMetadata().withName("pod1").endMetadata().withNewStatus()
-            .endStatus().build());
+        .resource(new PodBuilder().withNewMetadata().withName("pod1").endMetadata().withNewStatus()
+            .endStatus().build())
+        .create();
     await().until(isPodAvailable("pod1"));
     // READ
     PodList podList = client.pods().inNamespace("ns1").list();
@@ -62,17 +61,14 @@ class PodPhaseWatcherTest {
         phase -> StringUtils.equalsAnyIgnoreCase(phase, "Succeeded", "Failed", "Running"));
     try (Watch watch = client.pods().inNamespace("ns1").withName("pod1").watch(podWatcher)) {
       // Update Pod to "pending" phase
-      pod.setStatus(new PodStatus(null, null, null, null, null, null, null, "Pending", null, null,
-              null, null, null));
-      pod = client.pods().inNamespace("ns1").replaceStatus(pod);
-
+      pod.getStatus().setPhase("Pending");
+      pod = client.pods().inNamespace("ns1").resource(pod).update();
       // Wait a little bit, till update is applied
       await().pollDelay(Duration.ofSeconds(1))
           .until(isPodPhase(pod.getMetadata().getName(), "Pending"));
       // Update Pod to "Running" phase
-      pod.setStatus(new PodStatusBuilder(new PodStatus(null, null, null, null, null, null, null,
-              "Running", null, null, null, null, null)).build());
-      client.pods().inNamespace("ns1").replaceStatus(pod);
+      pod.getStatus().setPhase("Running");
+      client.pods().inNamespace("ns1").resource(pod).updateStatus();
       await().pollDelay(Duration.ofSeconds(1))
           .until(isPodPhase(pod.getMetadata().getName(), "Running"));
       assertTrue(podWatcher.getCountDownLatch().await(1, TimeUnit.SECONDS));
@@ -92,7 +88,7 @@ class PodPhaseWatcherTest {
   void testPhaseWithError() throws InterruptedException {
     // CREATE
     client.pods().inNamespace("ns1")
-        .create(new PodBuilder().withNewMetadata().withName("pod1").endMetadata().build());
+        .resource(new PodBuilder().withNewMetadata().withName("pod1").endMetadata().build()).create();
     // READ
     PodList podList = client.pods().inNamespace("ns1").list();
     assertNotNull(podList);

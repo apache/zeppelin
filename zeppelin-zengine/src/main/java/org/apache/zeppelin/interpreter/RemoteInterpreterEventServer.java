@@ -20,6 +20,7 @@ package org.apache.zeppelin.interpreter;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
+import java.util.OptionalInt;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.thrift.TException;
@@ -49,7 +50,6 @@ import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterEventService;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterResultMessage;
 import org.apache.zeppelin.interpreter.thrift.RunParagraphsEvent;
 import org.apache.zeppelin.interpreter.thrift.WebUrlInfo;
-import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.resource.RemoteResource;
 import org.apache.zeppelin.resource.Resource;
 import org.apache.zeppelin.resource.ResourceId;
@@ -78,7 +78,6 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
   private static final Logger LOGGER = LoggerFactory.getLogger(RemoteInterpreterEventServer.class);
   private static final Gson GSON = new Gson();
 
-  private String portRange;
   private int port;
   private String host;
   private ZeppelinConfiguration zConf;
@@ -96,7 +95,6 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
   public RemoteInterpreterEventServer(ZeppelinConfiguration zConf,
                                       InterpreterSettingManager interpreterSettingManager) {
     this.zConf = zConf;
-    this.portRange = zConf.getZeppelinServerRPCPortRange();
     this.interpreterSettingManager = interpreterSettingManager;
     this.listener = interpreterSettingManager.getRemoteInterpreterProcessListener();
     this.appListener = interpreterSettingManager.getAppEventListener();
@@ -106,7 +104,9 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
     Thread startingThread = new Thread() {
       @Override
       public void run() {
-        try (TServerSocket tSocket = new TServerSocket(RemoteInterpreterUtils.findAvailablePort(portRange))){
+        try (TServerSocket tSocket = new TServerSocket(zConf.getZeppelinServerRpcPort().orElse(
+            RemoteInterpreterUtils.findAvailablePort(zConf.getZeppelinServerRPCPortRange())))
+        ) {
           port = tSocket.getServerSocket().getLocalPort();
           host = RemoteInterpreterUtils.findAvailableHostAddress();
           LOGGER.info("InterpreterEventServer is starting at {}:{}", host, port);
