@@ -8,49 +8,49 @@
         "envName": "ELASTICSEARCH_HOST",
         "propertyName": "elasticsearch.host",
         "defaultValue": "localhost",
-        "description": "The host for Elasticsearch",
+        "description": "Elasticsearch server host (e.g., localhost, 127.0.0.1, or your cluster DNS)",
         "type": "string"
       },
       "elasticsearch.port": {
         "envName": "ELASTICSEARCH_PORT",
         "propertyName": "elasticsearch.port",
-        "defaultValue": "9300",
-        "description": "The port for Elasticsearch",
+        "defaultValue": "9200",
+        "description": "Port for connecting to Elasticsearch. Use 9200 for HTTP/REST, 9300 for Transport (legacy).",
         "type": "number"
       },
       "elasticsearch.client.type": {
         "envName": "ELASTICSEARCH_CLIENT_TYPE",
         "propertyName": "elasticsearch.client.type",
-        "defaultValue": "transport",
-        "description": "The type of client for Elasticsearch (transport or http or https)",
+        "defaultValue": "http",
+        "description": "Client type: 'http', 'https', or 'transport' (deprecated).",
         "type": "string"
       },
       "elasticsearch.cluster.name": {
         "envName": "ELASTICSEARCH_CLUSTER_NAME",
         "propertyName": "elasticsearch.cluster.name",
         "defaultValue": "elasticsearch",
-        "description": "The cluster name for Elasticsearch",
+        "description": "Name of the Elasticsearch cluster to connect to.",
         "type": "string"
       },
       "elasticsearch.result.size": {
         "envName": "ELASTICSEARCH_RESULT_SIZE",
         "propertyName": "elasticsearch.result.size",
         "defaultValue": "10",
-        "description": "The size of the result set of a search query",
+        "description": "Maximum number of results to return in search queries.",
         "type": "number"
       },
       "elasticsearch.basicauth.username": {
         "envName": "ELASTICSEARCH_BASIC_AUTH_USERNAME",
         "propertyName": "elasticsearch.basicauth.username",
         "defaultValue": "",
-        "description": "Username for a basic authentication",
+        "description": "Username for HTTP Basic Authentication (only used with http/https client).",
         "type": "string"
       },
       "elasticsearch.basicauth.password": {
         "envName": "ELASTICSEARCH_BASIC_AUTH_PASSWORD",
         "propertyName": "elasticsearch.basicauth.password",
         "defaultValue": "",
-        "description": "Password for a basic authentication",
+        "description": "Password for HTTP Basic Authentication (only used with http/https client).",
         "type": "password"
       }
     },
