@@ -27,7 +27,7 @@ import java.util.stream.{Collectors, Stream}
 import java.util.{Collections, Properties, UUID}
 
 /**
- * Java interpreter
+ * scala3 interpreter
  */
 object Scala3Interpreter {
   private val LOGGER = LoggerFactory.getLogger(classOf[Scala3Interpreter])
