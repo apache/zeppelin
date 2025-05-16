@@ -85,7 +85,8 @@ public class ElasticsearchInterpreter extends Interpreter {
           "Available Commands:",
           "  - search /<indices>/<types> <query>",
           "      • 'indices' and 'types' are optional, but '/' is required.",
-          "      • Query can be either a JSON-formatted Elasticsearch query or a Lucene query string.",
+          "      • Query can be either a JSON-formatted Elasticsearch query " +
+          "or a Lucene query string.",
           "",
           "  - size <value>",
           "      • Sets the number of results returned (default is set in config).",
