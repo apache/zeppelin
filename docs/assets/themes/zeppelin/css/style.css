@@ -1,6 +1,6 @@
 /* Move down content because we have a fixed navbar that is 60px tall */
-@import url(//fonts.googleapis.com/css?family=Patua+One);
-@import url(//fonts.googleapis.com/css?family=Open+Sans);
+@import url('./fonts-patua-one.css');
+@import url('./fonts-open-sans.css');
 
 body {
   padding-top: 50px;
@@ -21,7 +21,7 @@ body {
 }
 
 .jumbotron p {
-  font-size: 19px; 
+  font-size: 19px;
 }
 
 .jumbotron .btn {
@@ -147,12 +147,12 @@ body {
 
 .scrollable-menu::-webkit-scrollbar {
   -webkit-appearance: none;
-  width: 7px;        
-}  
+  width: 7px;
+}
 
 .scrollable-menu::-webkit-scrollbar-thumb {
   border-radius: 3px;
-  background-color: gray; 
+  background-color: gray;
 }
 
 .index-header {
@@ -305,7 +305,7 @@ a.anchor {
   position: absolute;
   top: 0;
   left: 0;
-  bottom: 0; 
+  bottom: 0;
 }
 
 /* <hn> */
