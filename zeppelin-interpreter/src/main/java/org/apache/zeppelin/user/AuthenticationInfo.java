@@ -41,7 +41,8 @@ public class AuthenticationInfo implements JsonSerializable {
   String user;
   Set<String> roles;
   String ticket;
-  UserCredentials userCredentials;
+  // enitiy -> UsernamePassword
+  UsernamePasswords usernamePasswords;
   public static final AuthenticationInfo ANONYMOUS = new AuthenticationInfo("anonymous", new HashSet<>(),
       "anonymous");
 
@@ -89,8 +90,8 @@ public class AuthenticationInfo implements JsonSerializable {
     this.roles = roles;
   }
 
-  public List<String> getUsersAndRoles() {
-    List<String> usersAndRoles = new ArrayList<>();
+  public Set<String> getUsersAndRoles() {
+    Set<String> usersAndRoles = new HashSet<>();
     if (roles != null) {
       usersAndRoles.addAll(roles);
     }
@@ -109,12 +110,12 @@ public class AuthenticationInfo implements JsonSerializable {
     this.ticket = ticket;
   }
 
-  public UserCredentials getUserCredentials() {
-    return userCredentials;
+  public UsernamePasswords getUsernamePasswords() {
+    return usernamePasswords;
   }
 
-  public void setUserCredentials(UserCredentials userCredentials) {
-    this.userCredentials = userCredentials;
+  public void setUsernamePasswords(UsernamePasswords usernamePasswords) {
+    this.usernamePasswords = usernamePasswords;
   }
 
   public static boolean isAnonymous(AuthenticationInfo subject) {

@@ -1,173 +1,51 @@
 /*
-* Licensed to the Apache Software Foundation (ASF) under one or more
-* contributor license agreements.  See the NOTICE file distributed with
-* this work for additional information regarding copyright ownership.
-* The ASF licenses this file to You under the Apache License, Version 2.0
-* (the "License"); you may not use this file except in compliance with
-* the License.  You may obtain a copy of the License at
-*
-*    http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 package org.apache.zeppelin.user;
 
-
-import java.io.IOException;
 import java.util.HashMap;
-import java.util.Map;
 
-import jakarta.inject.Inject;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.zeppelin.conf.ZeppelinConfiguration;
-import org.apache.zeppelin.storage.ConfigStorage;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-
-/**
- * Class defining credentials for data source authorization
- */
-public class Credentials {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(Credentials.class);
-
-  private final ConfigStorage storage;
-  private Map<String, UserCredentials> credentialsMap;
-  private Gson gson;
-  private Encryptor encryptor;
+// entity -> Credential
+public class Credentials extends HashMap<String, Credential> {
 
   /**
-   * Wrapper for user credentials. It can load credentials from a file
-   * and will encrypt the file if an encryptKey is configured.
    *
-   * @param zConf
-   * @throws IOException
    */
-  @Inject
-  public Credentials(ZeppelinConfiguration zConf, ConfigStorage storage) {
-    credentialsMap = new HashMap<>();
-    if (zConf.credentialsPersist()) {
-      String encryptKey = zConf.getCredentialsEncryptKey();
-      if (StringUtils.isNotBlank(encryptKey)) {
-        this.encryptor = new Encryptor(encryptKey);
-      }
-      this.storage = storage;
-      try {
-        GsonBuilder builder = new GsonBuilder();
-        builder.setPrettyPrinting();
-        gson = builder.create();
-        loadFromFile();
-      } catch (IOException e) {
-        LOGGER.error("Fail to create ConfigStorage for Credentials. Persistenz will be disabled", e);
-        encryptor = null;
-        gson = null;
-      }
-    } else {
-      encryptor = null;
-      this.storage = null;
-      gson = null;
-    }
+  private static final long serialVersionUID = 1L;
+
+  /**
+   * Wrapper method for {@link java.util.HashMap#remove(Object)}
+   */
+  public Credential removeCredential(String entity) {
+    return remove(entity);
   }
 
   /**
-   * Wrapper for inmemory user credentials.
-   *
-   * @param zConf
-   * @throws IOException
+   * Wrapper method for {@link java.util.HashMap#containsKey(Object)}
    */
-  public Credentials() {
-    credentialsMap = new HashMap<>();
-    encryptor = null;
-    storage = null;
-    gson = null;
+  public boolean containsEntity(String entity) {
+    return containsKey(entity);
   }
 
-  public UserCredentials getUserCredentials(String username) throws IOException {
-    UserCredentials uc = credentialsMap.get(username);
-    if (uc == null) {
-      uc = new UserCredentials();
-    }
-    return uc;
+  /**
+   * Wrapper method for {@link java.util.HashMap#put(Object, Object)}
+   */
+  public Credential putCredential(String entity, Credential credential) {
+    return put(entity, credential);
   }
 
-  public void putUserCredentials(String username, UserCredentials uc) throws IOException {
-    loadCredentials();
-    credentialsMap.put(username, uc);
-    saveCredentials();
-  }
-
-  public UserCredentials removeUserCredentials(String username) throws IOException {
-    loadCredentials();
-    UserCredentials uc = credentialsMap.remove(username);
-    saveCredentials();
-    return uc;
-  }
-
-  public boolean removeCredentialEntity(String username, String entity) throws IOException {
-    loadCredentials();
-    UserCredentials uc = credentialsMap.get(username);
-    if (uc == null || !uc.existUsernamePassword(entity)) {
-      return false;
-    }
-
-    uc.removeUsernamePassword(entity);
-    saveCredentials();
-    return true;
-  }
-
-  public void saveCredentials() throws IOException {
-    if (storage != null) {
-      saveToFile();
-    }
-  }
-
-  private void loadCredentials() throws IOException {
-    if (storage != null) {
-      loadFromFile();
-    }
-  }
-
-  private void loadFromFile() throws IOException {
-    try {
-      String json = storage.loadCredentials();
-      if (encryptor != null && StringUtils.isNotBlank(json)) {
-        json = encryptor.decrypt(json);
-      }
-
-      CredentialsInfoSaving info = CredentialsInfoSaving.fromJson(json);
-      if (info != null) {
-        this.credentialsMap = info.credentialsMap;
-      }
-    } catch (IOException e) {
-      throw new IOException("Error loading credentials file", e);
-    }
-  }
-
-  private void saveToFile() throws IOException {
-    String jsonString;
-
-    synchronized (credentialsMap) {
-      CredentialsInfoSaving info = new CredentialsInfoSaving();
-      info.credentialsMap = credentialsMap;
-      jsonString = gson.toJson(info);
-    }
-
-    try {
-      if (encryptor != null) {
-        jsonString = encryptor.encrypt(jsonString);
-      }
-      storage.saveCredentials(jsonString);
-    } catch (IOException e) {
-      throw new IOException("Error saving credentials file", e);
-    }
-  }
 }

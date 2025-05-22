@@ -235,13 +235,13 @@ public class AuthorizationService {
   }
 
   public boolean isOwner(String noteId, Set<String> entities) {
-    return isMember(entities, getOwners(noteId)) || isAdmin(entities);
+    return isMember(entities, getOwners(noteId)) || isAdmin(entities, zConf);
   }
 
   public boolean isWriter(String noteId, Set<String> entities) {
     return isMember(entities, getWriters(noteId)) ||
             isMember(entities, getOwners(noteId)) ||
-            isAdmin(entities);
+            isAdmin(entities, zConf);
   }
 
   public boolean isReader(String noteId, Set<String> entities) {
@@ -249,17 +249,22 @@ public class AuthorizationService {
             isMember(entities, getOwners(noteId)) ||
             isMember(entities, getWriters(noteId)) ||
             isMember(entities, getRunners(noteId)) ||
-            isAdmin(entities);
+            isAdmin(entities, zConf);
   }
 
   public boolean isRunner(String noteId, Set<String> entities) {
     return isMember(entities, getRunners(noteId)) ||
             isMember(entities, getWriters(noteId)) ||
             isMember(entities, getOwners(noteId)) ||
-            isAdmin(entities);
+            isAdmin(entities, zConf);
   }
 
-  private boolean isAdmin(Set<String> entities) {
+  /**
+   * @param entities - Username and roles of the current user
+   * @param zconf - ZeppelinConfiguration, where we can get the owner role
+   * @return true if the user or role is part of the owner role
+   */
+  public static boolean isAdmin(Set<String> entities, ZeppelinConfiguration zConf) {
     String adminRole = zConf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_OWNER_ROLE);
     if (StringUtils.isBlank(adminRole)) {
       return false;
@@ -267,11 +272,18 @@ public class AuthorizationService {
     return entities.contains(adminRole);
   }
 
-  // return true if b is empty or if (a intersection b) is non-empty
-  private boolean isMember(Set<String> a, Set<String> b) {
+  /**
+   * Checks whether the user with his roles is a member of a group. Attention: If the group is empty, the user is a member of
+   * the group.
+   *
+   * @param a - Username and roles of the current user
+   * @param b - Configured users and roles on the stored object
+   * @return true if b is empty or if (b intersection a) is non-empty
+   */
+  public static boolean isMember(Set<String> a, Set<String> b) {
     Set<String> intersection = new HashSet<>(b);
     intersection.retainAll(a);
-    return (b.isEmpty() || (intersection.size() > 0));
+    return (b.isEmpty() || !intersection.isEmpty());
   }
 
   public boolean isOwner(Set<String> userAndRoles, String noteId) {

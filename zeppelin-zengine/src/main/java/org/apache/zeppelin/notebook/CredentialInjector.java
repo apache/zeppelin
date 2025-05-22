@@ -25,8 +25,8 @@ import java.util.regex.Pattern;
 
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResultMessage;
-import org.apache.zeppelin.user.UserCredentials;
 import org.apache.zeppelin.user.UsernamePassword;
+import org.apache.zeppelin.user.UsernamePasswords;
 
 /**
  * Class for replacing {user.&gt;credentialkey&lt;} and
@@ -36,13 +36,13 @@ import org.apache.zeppelin.user.UsernamePassword;
 class CredentialInjector {
 
   private Set<String> passwords = new HashSet<>();
-  private final UserCredentials creds;
+  private final UsernamePasswords ups;
   private static final Pattern userpattern = Pattern.compile("\\{([^\\}]+)\\.user\\}");
   private static final Pattern passwordpattern = Pattern.compile("\\{([^\\}]+)\\.password\\}");
 
 
-  public CredentialInjector(UserCredentials creds) {
-    this.creds = creds;
+  public CredentialInjector(UsernamePasswords ups) {
+    this.ups = ups;
   }
 
   public String replaceCredentials(String code) {
@@ -53,7 +53,7 @@ class CredentialInjector {
     Matcher matcher = userpattern.matcher(replaced);
     while (matcher.find()) {
       String key = matcher.group(1);
-      UsernamePassword usernamePassword = creds.getUsernamePassword(key);
+      UsernamePassword usernamePassword = ups.getUsernamePassword(key);
       if (usernamePassword != null) {
         String value = usernamePassword.getUsername();
         String quotedValue = Matcher.quoteReplacement(value);
@@ -64,7 +64,7 @@ class CredentialInjector {
     matcher = passwordpattern.matcher(replaced);
     while (matcher.find()) {
       String key = matcher.group(1);
-      UsernamePassword usernamePassword = creds.getUsernamePassword(key);
+      UsernamePassword usernamePassword = ups.getUsernamePassword(key);
       if (usernamePassword != null) {
         passwords.add(usernamePassword.getPassword());
         String value = usernamePassword.getPassword();

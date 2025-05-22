@@ -24,8 +24,8 @@ import static org.mockito.Mockito.when;
 
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
-import org.apache.zeppelin.user.UserCredentials;
 import org.apache.zeppelin.user.UsernamePassword;
+import org.apache.zeppelin.user.UsernamePasswords;
 import org.junit.jupiter.api.Test;
 
 class CredentialInjectorTest {
@@ -42,9 +42,9 @@ class CredentialInjectorTest {
 
   @Test
   void replaceCredentials() {
-    UserCredentials userCredentials = mock(UserCredentials.class);
-    UsernamePassword usernamePassword = new UsernamePassword("username", "pwd");
-    when(userCredentials.getUsernamePassword("mysql")).thenReturn(usernamePassword);
+    UsernamePasswords userCredentials = mock(UsernamePasswords.class);
+    UsernamePassword cred = new UsernamePassword("username", "pwd");
+    when(userCredentials.getUsernamePassword("mysql")).thenReturn(cred);
     CredentialInjector testee = new CredentialInjector(userCredentials);
     String actual = testee.replaceCredentials(TEMPLATE);
     assertEquals(CORRECT_REPLACED, actual);
@@ -57,7 +57,7 @@ class CredentialInjectorTest {
 
   @Test
   void replaceCredentialNoTexts() {
-    UserCredentials userCredentials = mock(UserCredentials.class);
+    UsernamePasswords userCredentials = mock(UsernamePasswords.class);
     CredentialInjector testee = new CredentialInjector(userCredentials);
     String actual = testee.replaceCredentials(null);
     assertNull(actual);
@@ -65,7 +65,7 @@ class CredentialInjectorTest {
 
   @Test
   void replaceCredentialsNotExisting() {
-    UserCredentials userCredentials = mock(UserCredentials.class);
+    UsernamePasswords userCredentials = mock(UsernamePasswords.class);
     CredentialInjector testee = new CredentialInjector(userCredentials);
     String actual = testee.replaceCredentials(TEMPLATE);
     assertEquals(TEMPLATE, actual);
@@ -78,7 +78,7 @@ class CredentialInjectorTest {
 
   @Test
   void hidePasswordsNoResult() {
-    UserCredentials userCredentials = mock(UserCredentials.class);
+    UsernamePasswords userCredentials = mock(UsernamePasswords.class);
     CredentialInjector testee = new CredentialInjector(userCredentials);
     assertNull(testee.hidePasswords(null));
   }

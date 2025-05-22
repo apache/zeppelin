@@ -44,7 +44,7 @@ import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.notebook.repo.InMemoryNotebookRepo;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.user.AuthenticationInfo;
-import org.apache.zeppelin.user.Credentials;
+import org.apache.zeppelin.user.CredentialsMgr;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -73,7 +73,7 @@ class LuceneSearchTest {
     notebook = new Notebook(zConf, mock(AuthorizationService.class),
         mock(NotebookRepo.class), noteManager,
             mock(InterpreterFactory.class), interpreterSettingManager,
-            mock(Credentials.class), null);
+            mock(CredentialsMgr.class), null);
     noteSearchService = new LuceneSearch(zConf, notebook);
   }
 

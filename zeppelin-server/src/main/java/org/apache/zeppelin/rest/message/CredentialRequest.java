@@ -16,6 +16,11 @@
  */
 package org.apache.zeppelin.rest.message;
 
+import java.util.Collections;
+import java.util.Optional;
+import java.util.Set;
+
+
 /**
  *  CredentialRequest rest api request message.
  */
@@ -23,11 +28,23 @@ public class CredentialRequest {
   private final String entity;
   private final String username;
   private final String password;
+  private final Set<String> readers;
+  private final Set<String> owners;
 
-  public CredentialRequest(String entity, String username, String password) {
+  public CredentialRequest(String entity, String username, String password, Set<String> readers, Set<String> owners) {
     this.entity = entity;
     this.username = username;
     this.password = password;
+    if (readers == null) {
+      this.readers = Collections.emptySet();
+    } else {
+      this.readers = readers;
+    }
+    if (owners == null) {
+      this.owners = Collections.emptySet();
+    } else {
+      this.owners = owners;
+    }
   }
 
   public String getEntity() {
@@ -40,6 +57,14 @@ public class CredentialRequest {
 
   public String getPassword() {
     return password;
+  }
+
+  public Set<String> getReader() {
+    return Optional.ofNullable(readers).orElse(Collections.emptySet());
+  }
+
+  public Set<String> getOwners() {
+    return Optional.ofNullable(owners).orElse(Collections.emptySet());
   }
 
 }
