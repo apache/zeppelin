@@ -51,8 +51,7 @@ public interface ElasticsearchClient {
    *
    * @param index The index name.
    * @param type  The document type.
-   * @param id    The document ID. If null, a random ID may be generated depending on
-   *              implementation.
+   * @param id    The document ID. If null, a random ID may be generated depending on implementation.
    * @param data  The JSON string of the document to index.
    * @return The response indicating success or failure.
    */
