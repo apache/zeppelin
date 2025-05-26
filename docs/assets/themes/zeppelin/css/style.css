@@ -1,6 +1,6 @@
 /* Move down content because we have a fixed navbar that is 60px tall */
-@import url('./fonts-patua-one.css');
-@import url('./fonts-open-sans.css');
+@import url('../font/fonts-patua-one.css');
+@import url('../font/fonts-open-sans.css');
 
 body {
   padding-top: 50px;
