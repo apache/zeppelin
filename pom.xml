@@ -1050,8 +1050,8 @@
               <!-- bundled from bootstrap -->
               <exclude>docs/assets/themes/zeppelin/bootstrap/**</exclude>
               <exclude>docs/assets/themes/zeppelin/css/style.css</exclude>
-              <exclude>docs/assets/themes/zeppelin/css/fonts-open-sans.css</exclude>
-              <exclude>docs/assets/themes/zeppelin/css/fonts-patua-one.css</exclude>
+              <exclude>docs/assets/themes/zeppelin/font/fonts-open-sans.css</exclude>
+              <exclude>docs/assets/themes/zeppelin/font/fonts-patua-one.css</exclude>
               <exclude>docs/assets/themes/zeppelin/js/docs.js</exclude>
               <exclude>docs/assets/themes/zeppelin/js/search.js</exclude>
               <exclude>docs/assets/themes/zeppelin/js/jquery.min.js</exclude>
