@@ -100,7 +100,8 @@ public class ActionResponse {
    *
    * <p>If there are no hits, returns {@code Optional.empty()}.</p>
    *
-   * @return an {@code Optional} containing the first {@link HitWrapper}, or empty if the hit list is empty
+   * @return an {@code Optional} containing the first {@link HitWrapper}, or
+   *         empty if the hit list is empty
    */
   public Optional<HitWrapper> getFirstHit() {
     return hits.isEmpty() ? Optional.empty() : Optional.of(hits.get(0));
