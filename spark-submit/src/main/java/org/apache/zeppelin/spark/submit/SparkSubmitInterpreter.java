@@ -28,7 +28,9 @@ import org.apache.zeppelin.shell.ShellInterpreter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
@@ -64,12 +66,14 @@ public class SparkSubmitInterpreter extends ShellInterpreter {
   private static final Logger LOGGER = LoggerFactory.getLogger(SparkSubmitInterpreter.class);
 
   private final String sparkHome;
+
+  // paragraphId --> yarnAppId
   private ConcurrentMap<String, String> yarnAppIdMap = new ConcurrentHashMap<>();
 
   public SparkSubmitInterpreter(Properties property) {
     super(property);
     setProperty("shell.command.timeout.millisecs", String.valueOf(Integer.MAX_VALUE));
-    this.sparkHome = property.getProperty("SPARK_HOME");
+    this.sparkHome = properties.getProperty("SPARK_HOME");
     LOGGER.info("SPARK_HOME: {}", sparkHome);
   }
 
@@ -102,7 +106,14 @@ public class SparkSubmitInterpreter extends ShellInterpreter {
       return new InterpreterResult(InterpreterResult.Code.ERROR, errorMsg);
     }
 
-    String sparkSubmitCommand = sparkHome + "/bin/spark-submit " + cmd.trim();
+    File sparkSubmit = Paths.get(sparkHome, "bin", "spark-submit").toFile();
+    if (!sparkSubmit.exists()) {
+      String errorMsg = "spark-submit command does not exist at: " + sparkSubmit.getAbsolutePath();
+      LOGGER.error("Failed to run spark-submit: {}", errorMsg);
+      return new InterpreterResult(InterpreterResult.Code.ERROR, errorMsg);
+    }
+
+    String sparkSubmitCommand = sparkSubmit.getAbsolutePath() + " " + cmd.trim();
     LOGGER.info("Run spark command: {}", sparkSubmitCommand);
     context.out.addInterpreterOutListener(new SparkSubmitOutputListener(context));
     InterpreterResult result = super.internalInterpret(sparkSubmitCommand, context);
