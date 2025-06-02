@@ -196,6 +196,7 @@ The text of each license is also included at licenses/LICENSE-[project]-[version
 
     (OFT 1.1) Font Awesome v4.2.0 (http://fortawesome.github.io/Font-Awesome/) - http://scripts.sil.org/OFL
     (OFL 1.1) Patua One Font (see licenses/LICENSE-patuaOne-font)
+    (OFL 1.1) Open Sans Font (see licenses/LICENSE-openSans-font)
     (OFL 1.1) Source Code Pro Font (see licenses/LICENSE-source_code_pro-font)
 
 ========================================================================
@@ -213,6 +214,7 @@ The text of each license is also included at licenses/LICENSE-[project]-[version
     (The MIT License) @antv/G2 3.5 (https://github.com/antvis/g2) - https://github.com/antvis/g2/blob/master/LICENSE
     (The MIT License) Lodash (https://lodash.com) - https://github.com/lodash/lodash/blob/master/LICENSE
     (The MIT License) Monaco Editor (https://github.com/microsoft/monaco-editor) - https://github.com/microsoft/monaco-editor/blob/master/LICENSE.md
+    (The MIT License) jQuery 1.10.2 (https://jquery.com/) - https://github.com/jquery/jquery/blob/main/LICENSE.txt
 
 ========================================================================
 MIT-style licenses
