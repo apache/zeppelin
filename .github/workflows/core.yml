@@ -74,7 +74,7 @@ jobs:
           environment-file: testing/env_python_3.9_with_R.yml
           python-version: 3.9
           channels: conda-forge,defaults
-          channel-priority: true
+          channel-priority: strict
           auto-activate-base: false
           use-mamba: true
       - name: Make IRkernel available to Jupyter
@@ -166,7 +166,7 @@ jobs:
           environment-file: testing/env_python_${{ matrix.python }}_with_R.yml
           python-version: ${{ matrix.python }}
           channels: conda-forge,defaults
-          channel-priority: true
+          channel-priority: strict
           auto-activate-base: false
           use-mamba: true
       - name: Make IRkernel available to Jupyter
@@ -221,7 +221,7 @@ jobs:
           environment-file: testing/env_python_3_with_R.yml
           python-version: 3.9
           channels: conda-forge,defaults
-          channel-priority: true
+          channel-priority: strict
           auto-activate-base: false
           use-mamba: true
       - name: Make IRkernel available to Jupyter
@@ -277,7 +277,7 @@ jobs:
           environment-file: testing/env_python_3_with_flink_${{ matrix.flink }}.yml
           python-version: ${{ matrix.python }}
           channels: conda-forge,defaults
-          channel-priority: true
+          channel-priority: strict
           auto-activate-base: false
           use-mamba: true
       - name: run tests for flink
@@ -325,7 +325,7 @@ jobs:
           environment-file: testing/env_python_3_with_R.yml
           python-version: 3.9
           channels: conda-forge,defaults
-          channel-priority: true
+          channel-priority: strict
           auto-activate-base: false
           use-mamba: true
       - name: Make IRkernel available to Jupyter
@@ -372,7 +372,7 @@ jobs:
           environment-file: testing/env_python_${{ matrix.python }}_with_R.yml
           python-version: ${{ matrix.python }}
           channels: conda-forge,defaults
-          channel-priority: true
+          channel-priority: strict
           auto-activate-base: false
           use-mamba: true
       - name: Make IRkernel available to Jupyter
@@ -432,7 +432,7 @@ jobs:
           environment-file: testing/env_python_3.9_with_R.yml
           python-version: 3.9
           channels: conda-forge,defaults
-          channel-priority: true
+          channel-priority: strict
           auto-activate-base: false
           use-mamba: true
       - name: Make IRkernel available to Jupyter
