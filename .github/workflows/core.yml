@@ -124,7 +124,7 @@ jobs:
           environment-file: testing/env_python_3_with_R_and_tensorflow.yml
           python-version: 3.9
           channels: conda-forge,defaults
-          channel-priority: true
+          channel-priority: strict
           auto-activate-base: false
           use-mamba: true
       - name: verify interpreter
