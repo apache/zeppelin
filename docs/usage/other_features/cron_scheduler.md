@@ -53,7 +53,7 @@ When this checkbox is set to "on", the interpreters which are binded to the note
 
 ### Enable cron
 
-Set property **zeppelin.notebook.cron.enable** to **true** in `$ZEPPELIN_HOME/conf/zeppelin-site.xml` to enable Cron feature.
+Set property **zeppelin.notebook.cron.enable** to **true** in `$ZEPPELIN_HOME/conf/zeppelin-site.xml` and you have to set up [Shiro Authentication](../../setup/security/shiro_authentication.html) also to enable Cron feature.
 
 ### Run cron selectively on folders
 
