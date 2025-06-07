@@ -38,7 +38,7 @@
 
   <properties>
     <!--test library versions-->
-    <selenium.java.version>4.11.0</selenium.java.version>
+    <selenium.java.version>4.20.0</selenium.java.version>
   </properties>
 
   <dependencies>
