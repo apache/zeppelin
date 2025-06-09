@@ -21,7 +21,8 @@ import org.apache.zeppelin.elasticsearch.action.AggWrapper.AggregationType;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class AggWrapperTest {
 
