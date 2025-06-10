@@ -466,6 +466,13 @@ export class NotebookParagraphComponent extends ParagraphBase implements OnInit,
     }>(...observables)
       .pipe(takeUntil(this.destroy$))
       .subscribe(({ action, event }) => {
+        const target = event.target as HTMLElement;
+
+        // Skip handling shortcut if focused element is an input (by Dynamic form)
+        if (target.tagName === 'INPUT') {
+          return; // ignore shortcut to make input work
+        }
+
         if (this.mode === 'command') {
           switch (action) {
             case ParagraphActions.InsertAbove:
