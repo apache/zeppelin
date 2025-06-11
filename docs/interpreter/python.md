@@ -530,7 +530,7 @@ The interpreter can use all modules already installed (with pip, easy_install...
     %python.conda env list
     ```
 
-- create a conda enviornment: 
+- create a conda environment: 
 
     ```
     %python.conda create --name [ENV NAME]

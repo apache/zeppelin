@@ -84,7 +84,7 @@ The `Notebook` menu proposes almost the same features as the note management sec
 <img src="{{BASE_PATH}}/assets/themes/zeppelin/img/ui-img/notebook_menu.png" width="170px" />
 
 ### Settings
-This menu gives you access to settings and displays information about Zeppelin. User name is set to `anonymous` if you use default shiro configuration. If you want to set up authentification, see [Shiro Authentication](../setup/security/shiro_authentication.html).
+This menu gives you access to settings and displays information about Zeppelin. User name is set to `anonymous` if you use default shiro configuration. If you want to set up authentication, see [Shiro Authentication](../setup/security/shiro_authentication.html).
 
 <img src="{{BASE_PATH}}/assets/themes/zeppelin/img/ui-img/settings_menu.png" width="170px" />
 
@@ -178,7 +178,7 @@ In the middle of the toolbar you can find the command buttons:
 
 On the right of the note tool bar you can find configuration icons:
 
-* display all the keyboard shorcuts
+* display all the keyboard shortcuts
 * configure the interpreters binding to the current note
 * configure the note permissions
 * switch the node display mode between `default`, `simple` and `report`
