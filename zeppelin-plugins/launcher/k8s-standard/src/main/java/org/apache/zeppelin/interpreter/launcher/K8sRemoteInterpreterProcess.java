@@ -49,7 +49,7 @@ import io.fabric8.kubernetes.api.model.PodStatus;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.LocalPortForward;
 import io.fabric8.kubernetes.client.Watch;
-import io.fabric8.kubernetes.client.dsl.ParameterNamespaceListVisitFromServerGetDeleteRecreateWaitApplicable;
+import io.fabric8.kubernetes.client.dsl.NamespaceListVisitFromServerGetDeleteRecreateWaitApplicable;
 
 public class K8sRemoteInterpreterProcess extends RemoteInterpreterManagedProcess {
   private static final Logger LOGGER = LoggerFactory.getLogger(K8sRemoteInterpreterProcess.class);
@@ -279,7 +279,8 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterManagedProcess
       K8sSpecTemplate specTemplate = new K8sSpecTemplate();
       specTemplate.loadProperties(templateProperties);
       String template = specTemplate.render(path);
-      ParameterNamespaceListVisitFromServerGetDeleteRecreateWaitApplicable<HasMetadata> k8sObjects = client.load(IOUtils.toInputStream(template, StandardCharsets.UTF_8));
+      NamespaceListVisitFromServerGetDeleteRecreateWaitApplicable<HasMetadata> k8sObjects =
+          client.load(IOUtils.toInputStream(template, StandardCharsets.UTF_8));
       LOGGER.info("Apply {} with {} K8s Objects", path.getAbsolutePath(), k8sObjects.get().size());
       LOGGER.debug(template);
       if (delete) {

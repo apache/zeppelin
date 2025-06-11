@@ -46,7 +46,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.servlet.ServletException;
+import jakarta.servlet.ServletException;
 
 import com.nimbusds.jose.JWSObject;
 import com.nimbusds.jose.JWSVerifier;

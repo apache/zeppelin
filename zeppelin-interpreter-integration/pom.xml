@@ -149,6 +149,26 @@
       <artifactId>hadoop-client-minicluster</artifactId>
       <scope>test</scope>
     </dependency>
+    <!-- Needed for Minihadoop Cluster
+         Do not use jakarta.xml.bind-api
+         because this dependency is used in a higher version in zeppelin-server and results in dependency-conflicts
+     -->
+    <dependency>
+      <groupId>javax.xml.bind</groupId>
+      <artifactId>jaxb-api</artifactId>
+      <version>2.3.1</version>
+      <scope>test</scope>
+    </dependency>
+    <!-- Also needed for Mini Hadoop Cluster
+         Do not use jakarta.activation-api,
+         because this dependency is used in a higher version in zeppelin-server and results in dependency-conflicts
+     -->
+    <dependency>
+      <groupId>javax.activation</groupId>
+      <artifactId>javax.activation-api</artifactId>
+      <version>1.2.0</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>

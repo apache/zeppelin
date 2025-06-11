@@ -121,10 +121,9 @@
     <gson.version>2.8.9</gson.version>
     <gson-extras.version>0.2.2</gson-extras.version>
     <org-json.version>20240205</org-json.version>
-    <jackson.version>2.12.7.20240502</jackson.version>
-    <jetty.version>9.4.52.v20230823</jetty.version>
-    <jakarta.activation.version>1.2.2</jakarta.activation.version>
-    <jakarta.xml.bind.version>2.3.3</jakarta.xml.bind.version>
+    <jackson.version>2.18.3</jackson.version>
+    <jetty.version>11.0.24</jetty.version>
+    <jakarta.inject.version>2.0.1</jakarta.inject.version>
     <httpcomponents.core.version>4.4.1</httpcomponents.core.version>
     <httpcomponents.client.version>4.5.13</httpcomponents.client.version>
     <httpcomponents.asyncclient.version>4.0.2</httpcomponents.asyncclient.version>
@@ -138,10 +137,10 @@
     <commons.collections.version>3.2.2</commons.collections.version>
     <commons.cli.version>1.4</commons.cli.version>
     <shiro.version>1.13.0</shiro.version>
-    <bouncycastle.version>1.70</bouncycastle.version>
+    <bouncycastle.version>1.80</bouncycastle.version>
     <maven.version>3.6.3</maven.version>
-    <dropwizard.version>4.1.14</dropwizard.version>
-    <micrometer.version>1.6.0</micrometer.version>
+    <dropwizard.version>4.2.29</dropwizard.version>
+    <micrometer.version>1.14.2</micrometer.version>
     <findbugs.jsr305.version>3.0.2</findbugs.jsr305.version>
 
     <hadoop.version>3.3.6</hadoop.version>
@@ -327,15 +326,9 @@
       </dependency>
 
       <dependency>
-        <groupId>jakarta.activation</groupId>
-        <artifactId>jakarta.activation-api</artifactId>
-        <version>${jakarta.activation.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>jakarta.xml.bind</groupId>
-        <artifactId>jakarta.xml.bind-api</artifactId>
-        <version>${jakarta.xml.bind.version}</version>
+        <groupId>jakarta.inject</groupId>
+        <artifactId>jakarta.inject-api</artifactId>
+        <version>${jakarta.inject.version}</version>
       </dependency>
 
       <dependency>
@@ -380,11 +373,13 @@
         <groupId>org.apache.shiro</groupId>
         <artifactId>shiro-core</artifactId>
         <version>${shiro.version}</version>
+        <classifier>jakarta</classifier>
       </dependency>
       <dependency>
         <groupId>org.apache.shiro</groupId>
         <artifactId>shiro-web</artifactId>
         <version>${shiro.version}</version>
+        <classifier>jakarta</classifier>
       </dependency>
       <dependency>
         <groupId>org.apache.shiro</groupId>
@@ -394,7 +389,7 @@
 
       <dependency>
         <groupId>org.bouncycastle</groupId>
-        <artifactId>bcpkix-jdk15on</artifactId>
+        <artifactId>bcpkix-jdk18on</artifactId>
         <version>${bouncycastle.version}</version>
       </dependency>
 
@@ -1055,8 +1050,12 @@
               <!-- bundled from bootstrap -->
               <exclude>docs/assets/themes/zeppelin/bootstrap/**</exclude>
               <exclude>docs/assets/themes/zeppelin/css/style.css</exclude>
+              <exclude>docs/assets/themes/zeppelin/font/fonts-open-sans.css</exclude>
+              <exclude>docs/assets/themes/zeppelin/font/fonts-patua-one.css</exclude>
               <exclude>docs/assets/themes/zeppelin/js/docs.js</exclude>
               <exclude>docs/assets/themes/zeppelin/js/search.js</exclude>
+              <exclude>docs/assets/themes/zeppelin/js/jquery-1.10.2.min.js</exclude>
+              <exclude>docs/assets/themes/zeppelin/font-awesome-4.2.0/*</exclude>
               <exclude>docs/_includes/themes/zeppelin/_jumbotron.html</exclude>
               <exclude>docs/_includes/themes/zeppelin/_navigation.html</exclude>
 
@@ -1078,13 +1077,13 @@
               <exclude>**/dependency-reduced-pom.xml</exclude>
 
               <!-- bundled from anchor -->
-              <exclude>docs/assets/themes/zeppelin/js/anchor.min.js</exclude>
+              <exclude>docs/assets/themes/zeppelin/js/anchor-1.1.1.min.js</exclude>
 
               <!-- bundled from toc -->
               <exclude>docs/assets/themes/zeppelin/js/toc.js</exclude>
 
               <!-- bundled from lunrjs -->
-              <exclude>docs/assets/themes/zeppelin/js/lunr.min.js</exclude>
+              <exclude>docs/assets/themes/zeppelin/js/lunr-0.7.0.min.js</exclude>
 
               <!-- bundled from jekyll -->
               <exclude>docs/assets/themes/zeppelin/css/syntax.css</exclude>

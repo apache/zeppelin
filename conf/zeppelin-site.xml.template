@@ -28,7 +28,7 @@
 <property>
   <name>zeppelin.server.port</name>
   <value>8080</value>
-  <description>Server port.</description>
+  <description>Server port. Please make sure you're not using the same port with Zeppelin web application development port(default: 9000).</description>
 </property>
 
 <property>

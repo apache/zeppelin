@@ -73,23 +73,39 @@ import static org.apache.zeppelin.elasticsearch.client.ElasticsearchClientType.T
 public class ElasticsearchInterpreter extends Interpreter {
   private static final Logger LOGGER = LoggerFactory.getLogger(ElasticsearchInterpreter.class);
 
-  private static final String HELP = "Elasticsearch interpreter:\n"
-      + "General format: <command> /<indices>/<types>/<id> <option> <JSON>\n"
-      + "  - indices: list of indices separated by commas (depends on the command)\n"
-      + "  - types: list of document types separated by commas (depends on the command)\n"
-      + "Commands:\n"
-      + "  - search /indices/types <query>\n"
-      + "    . indices and types can be omitted (at least, you have to provide '/')\n"
-      + "    . a query is either a JSON-formatted query, nor a lucene query\n"
-      + "  - size <value>\n"
-      + "    . defines the size of the result set (default value is in the config)\n"
-      + "    . if used, this command must be declared before a search command\n"
-      + "  - count /indices/types <query>\n"
-      + "    . same comments as for the search\n"
-      + "  - get /index/type/id\n"
-      + "  - delete /index/type/id\n"
-      + "  - index /index/type/id <json-formatted document>\n"
-      + "    . the id can be omitted, elasticsearch will generate one";
+  private static final String HELP = String.join("\n",
+          "Elasticsearch Interpreter Usage:",
+          "",
+          "General format:",
+          "  <command> /<indices>/<types>/<id> <option> <JSON>",
+          "",
+          "  - indices: comma-separated list of index names (depends on the command)",
+          "  - types: comma-separated list of document types (depends on the command)",
+          "",
+          "Available Commands:",
+          "  - search /<indices>/<types> <query>",
+          "      • 'indices' and 'types' are optional, but '/' is required.",
+          "      • Query can be either a JSON-formatted Elasticsearch query " +
+          "or a Lucene query string.",
+          "",
+          "  - size <value>",
+          "      • Sets the number of results returned (default is set in config).",
+          "      • Must be declared before the search command if used.",
+          "",
+          "  - count /<indices>/<types> <query>",
+          "      • Similar format and behavior as the 'search' command.",
+          "",
+          "  - get /<index>/<type>/<id>",
+          "      • Retrieves a document by ID.",
+          "",
+          "  - delete /<index>/<type>/<id>",
+          "      • Deletes a document by ID.",
+          "",
+          "  - index /<index>/<type>/<id> <JSON document>",
+          "      • Creates or updates a document with the given ID.",
+          "      • If 'id' is omitted, Elasticsearch will generate one automatically.",
+          ""
+  );
 
   protected static final List<String> COMMANDS = Arrays.asList(
       "count", "delete", "get", "help", "index", "search");

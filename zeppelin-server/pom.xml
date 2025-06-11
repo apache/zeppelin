@@ -33,7 +33,7 @@
   <properties>
 
     <!--library versions-->
-    <jersey.version>2.30</jersey.version>
+    <jersey.version>3.1.9</jersey.version>
     <jersey.servlet.version>1.13</jersey.servlet.version>
     <javax.ws.rsapi.version>2.1</javax.ws.rsapi.version>
     <libpam4j.version>1.11</libpam4j.version>
@@ -45,6 +45,7 @@
     <selenium.java.version>2.48.2</selenium.java.version>
     <xml.apis.version>1.4.01</xml.apis.version>
     <hamcrest.version>2.2</hamcrest.version>
+    <h2.version>2.3.232</h2.version>
   </properties>
 
   <dependencies>
@@ -110,7 +111,7 @@
 
     <dependency>
       <groupId>io.dropwizard.metrics</groupId>
-      <artifactId>metrics-servlets</artifactId>
+      <artifactId>metrics-jakarta-servlets</artifactId>
       <version>${dropwizard.version}</version>
     </dependency>
 
@@ -136,6 +137,18 @@
       <groupId>io.dropwizard.metrics</groupId>
       <artifactId>metrics-jmx</artifactId>
       <version>${dropwizard.version}</version>
+    </dependency>
+    <dependency>
+        <groupId>io.micrometer</groupId>
+        <artifactId>micrometer-jetty11</artifactId>
+        <version>${micrometer.version}</version>
+        <exclusions>
+            <!-- Provided by jetty directly-->
+            <exclusion>
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-server</artifactId>
+            </exclusion>
+        </exclusions>
     </dependency>
 
     <dependency>
@@ -176,14 +189,8 @@
     </dependency>
 
     <dependency>
-      <groupId>javax.ws.rs</groupId>
-      <artifactId>javax.ws.rs-api</artifactId>
-      <version>${javax.ws.rsapi.version}</version>
-    </dependency>
-
-    <dependency>
       <groupId>org.bouncycastle</groupId>
-      <artifactId>bcpkix-jdk15on</artifactId>
+      <artifactId>bcpkix-jdk18on</artifactId>
     </dependency>
 
     <dependency>
@@ -194,6 +201,7 @@
     <dependency>
       <groupId>org.apache.shiro</groupId>
       <artifactId>shiro-core</artifactId>
+      <classifier>jakarta</classifier>
       <exclusions>
         <exclusion>
           <groupId>commons-beanutils</groupId>
@@ -217,6 +225,7 @@
     <dependency>
       <groupId>org.apache.shiro</groupId>
       <artifactId>shiro-web</artifactId>
+      <classifier>jakarta</classifier>
     </dependency>
 
     <dependency>
@@ -251,7 +260,7 @@
 
     <dependency>
       <groupId>org.eclipse.jetty.websocket</groupId>
-      <artifactId>javax-websocket-server-impl</artifactId>
+      <artifactId>websocket-jakarta-server</artifactId>
       <version>${jetty.version}</version>
     </dependency>
 
@@ -357,6 +366,13 @@
       <groupId>xml-apis</groupId>
       <artifactId>xml-apis</artifactId>
       <version>${xml.apis.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>com.h2database</groupId>
+      <artifactId>h2</artifactId>
+      <version>${h2.version}</version>
       <scope>test</scope>
     </dependency>
 
