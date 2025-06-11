@@ -568,24 +568,11 @@
 
     <profile>
       <id>spark-4.0</id>
-       <repositories>
-        <repository>
-          <id>spark-4.0.0-rc1</id>
-          <name>Spark 4.0.0 RC1 Staging</name>
-          <url>https://repository.apache.org/content/repositories/orgapachespark-1475/</url>
-        </repository>
-      </repositories>
       <properties>
         <spark.version>4.0.0</spark.version>
         <protobuf.version>3.21.12</protobuf.version>
         <py4j.version>0.10.9.9</py4j.version>
         <libthrift.version>0.16.0</libthrift.version>
-        <spark.src.download.url>
-            https://dist.apache.org/repos/dist/dev/spark/v4.0.0-rc1-bin/spark-4.0.0-bin-without-hadoop.tgz
-        </spark.src.download.url>
-        <spark.bin.download.url>
-            https://dist.apache.org/repos/dist/dev/spark/v4.0.0-rc1-bin/spark-4.0.0.tgz
-        </spark.bin.download.url>
       </properties>
     </profile>
 
