@@ -1,0 +1,162 @@
+{{- /*
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/ -}}
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "zeppelin.server.deploymentName" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "zeppelin.server.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "zeppelin.server.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "zeppelin.server.selectorLabels" . | nindent 8 }}
+      annotations:
+        zeppelin.apache.org/zeppelin-server-conf-hash: {{ include (print .Template.BasePath "/server/configmap.yaml") . | sha256sum }}
+        zeppelin.apache.org/zeppelin-interpreter-conf-hash: {{ include (print .Template.BasePath "/interpreter/configmap.yaml") . | sha256sum }}
+        zeppelin.apache.org/zeppelin-interpreter-spark-conf-hash: {{ include (print .Template.BasePath "/interpreter/spark/configmap.yaml") . | sha256sum }}
+      {{- with .Values.server.annotations }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    spec:
+      containers:
+      - name: zeppelin-server
+        image: {{ include "zeppelin.server.image" . }}
+        {{- with .Values.global.image.pullPolicy }}
+        imagePullPolicy: {{ . }}
+        {{- end }}
+        command:
+        - sh
+        - -c
+        - $(ZEPPELIN_HOME)/bin/zeppelin.sh
+        env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.name
+        - name: POD_UID
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.uid
+        {{- with .Values.server.env }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- with .Values.server.envFrom }}
+        envFrom:
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        volumeMounts:
+        - name: zeppelin-conf
+          subPath: zeppelin-env.sh
+          mountPath: /opt/zeppelin/conf/zeppelin-env.sh
+        - name: zeppelin-conf
+          subPath: zeppelin-site.xml
+          mountPath: /opt/zeppelin/conf/zeppelin-site.xml
+        - name: zeppelin-conf
+          subPath: log4j.properties
+          mountPath: /opt/zeppelin/conf/log4j.properties
+        - name: zeppelin-conf
+          subPath: log4j2.properties
+          mountPath: /opt/zeppelin/conf/log4j2.properties
+        - name: zeppelin-conf
+          subPath: interpreter-list
+          mountPath: /opt/zeppelin/conf/interpreter-list
+        - name: zeppelin-conf
+          subPath: configuration.xsl
+          mountPath: /opt/zeppelin/conf/configuration.xsl
+        - name: zeppelin-interpreter-conf
+          subPath: interpreter-spec.yaml
+          mountPath: /opt/zeppelin/k8s/interpreter/100-interpreter-spec.yaml
+        {{- with .Values.server.volumeMounts }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        ports:
+        - name: http
+          containerPort: 8080
+        - name: https
+          containerPort: 8443
+        - name: rpc
+          containerPort: 12320
+        lifecycle:
+          preStop:
+            exec:
+              command:
+              - sh
+              - -c
+              - "ps -ef | grep org.apache.zeppelin.server.ZeppelinServer | grep -v grep | awk '{print $2}' | xargs kill"
+        {{- with .Values.server.resources }}
+        resources:
+          {{- toYaml . | nindent 12 }}
+        {{- end }}
+        {{- with .Values.server.securityContext }}
+        securityContext:
+          {{- toYaml . | nindent 12 }}
+        {{- end }}
+      {{- with .Values.global.image.pullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+      - name: zeppelin-conf
+        configMap:
+          name: {{ include "zeppelin.server.configMapName" . }}
+          items:
+          - key: zeppelin-env.sh
+            path: zeppelin-env.sh
+          - key: zeppelin-site.xml
+            path: zeppelin-site.xml
+          - key: log4j.properties
+            path: log4j.properties
+          - key: log4j2.properties
+            path: log4j2.properties
+          - key: interpreter-list
+            path: interpreter-list
+          - key: configuration.xsl
+            path: configuration.xsl
+      - name: zeppelin-interpreter-conf
+        configMap:
+          name:  {{ include "zeppelin.interpreter.configMapName" . }}
+          items:
+          - key: interpreter-spec.yaml
+            path: interpreter-spec.yaml
+      {{- with .Values.server.volumes }}
+      {{- toYaml . | nindent 6 }}
+      {{- end }}
+      {{- with .Values.server.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.server.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.server.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "zeppelin.server.serviceAccountName" . }}
+      {{- with .Values.server.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
