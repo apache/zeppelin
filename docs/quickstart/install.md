@@ -101,7 +101,7 @@ docker run -u $(id -u) -p 8080:8080 --rm -v $PWD/logs:/logs -v $PWD/notebook:/no
 `-u $(id -u)` is to make sure you have the permission to write logs and notebooks. 
 
 For many interpreters, they require other dependencies, e.g. Spark interpreter requires Spark binary distribution
-and Flink interpreter requires Flink binary distribution. You can also mount them via docker volumn. e.g.
+and Flink interpreter requires Flink binary distribution. You can also mount them via docker volume. e.g.
 
 ```bash
 docker run -u $(id -u) -p 8080:8080 --rm -v /mnt/disk1/notebook:/notebook \

@@ -182,7 +182,7 @@ Example: `spark.driver.memory` to `livy.spark.driver.memory`
   </tr>
 </table>
 
-**We remove livy.spark.master in zeppelin-0.7. Because we sugguest user to use livy 0.3 in zeppelin-0.7. And livy 0.3 don't allow to specify livy.spark.master, it enfornce yarn-cluster mode.**
+**We remove livy.spark.master in zeppelin-0.7. Because we suggest user to use livy 0.3 in zeppelin-0.7. And livy 0.3 don't allow to specify livy.spark.master, it enfornce yarn-cluster mode.**
 
 ## Adding External libraries
 You can load dynamic library to livy interpreter by set `livy.spark.jars.packages` property to comma-separated list of maven coordinates of jars to include on the driver and executor classpaths. The format for the coordinates should be groupId:artifactId:version.
@@ -238,14 +238,14 @@ i.e. sends extra parameter for creating and running a session ("proxyUser": "${l
 This is particularly useful when multi users are sharing a Notebook server.
 
 ## Apply Zeppelin Dynamic Forms
-You can leverage [Zeppelin Dynamic Form](../usage/dynamic_form/intro.html). Form templates is only avalible for livy sql interpreter.
+You can leverage [Zeppelin Dynamic Form](../usage/dynamic_form/intro.html). Form templates is only available for livy sql interpreter.
 
 ```sql
 %livy.sql
 select * from products where ${product_id=1}
 ```
 
-And creating dynamic formst programmatically is not feasible in livy interpreter, because ZeppelinContext is not available in livy interpreter.
+And creating dynamic format programmatically is not feasible in livy interpreter, because ZeppelinContext is not available in livy interpreter.
 
 ## Shared SparkContext
 Starting from livy 0.5 which is supported by Zeppelin 0.8.0, SparkContext is shared between scala, python, r and sql.

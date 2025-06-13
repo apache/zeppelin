@@ -47,7 +47,7 @@ The Neo4j Interpreter supports all Neo4j versions since v3 via the official [Neo
   <tr>
     <td>neo4j.database</td>
     <td></td>
-    <td>The neo4j target database, if empty use the dafault db.</td>
+    <td>The neo4j target database, if empty use the default db.</td>
   </tr>
   <tr>
     <td>neo4j.multi.statement</td>

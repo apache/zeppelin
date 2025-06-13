@@ -108,7 +108,7 @@ The new NETWORK visualization is based on json with the following params:
     * "label": the main type of the edge;
     * "data": the data attached to the edge;
 * "labels": a map (K, V) where K is the node label and V is the color of the node;
-* "directed": (true/false, default false) wich tells if is directed graph or not;
+* "directed": (true/false, default false) which tells if is directed graph or not;
 * "types": a *distinct* list of the edge types of the graph
 
 If you click on a node or edge on the bottom of the paragraph you find a list of entity properties

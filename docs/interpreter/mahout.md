@@ -75,7 +75,7 @@ The `add_mahout.py` script contains several command line arguments for advanced 
 
 __NOTE 1:__ Apache Mahout at this time only supports Spark 1.5 and Spark 1.6 and Scala 2.10.  If the user is using another version of Spark (e.g. 2.0), the `%sparkMahout` will likely not work.  The `%flinkMahout` interpreter will still work and the user is encouraged to develop with that engine as the code can be ported via copy and paste, as is evidenced by the tutorial notebook.
 
-__NOTE 2:__ If using Apache Flink in cluster mode, the following libraries will also need to be coppied to `${FLINK_HOME}/lib`
+__NOTE 2:__ If using Apache Flink in cluster mode, the following libraries will also need to be copied to `${FLINK_HOME}/lib`
 - mahout-math-0.12.2.jar
 - mahout-math-scala_2.10-0.12.2.jar
 - mahout-flink_2.10-0.12.2.jar
@@ -173,7 +173,7 @@ z.put("foo", myVal)
 val myFetchedVal = z.get("foo")
 ```
 
-To add this functionality to a Flink based interpreter we declare the follwoing
+To add this functionality to a Flink based interpreter we declare the following
 
 ```scala
 %flinkMahout

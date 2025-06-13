@@ -118,7 +118,7 @@ If you [turned off port forwarding](#tweaking-the-virtual-machine) in the `Vagra
 
 ## Tweaking the Virtual Machine
 
-If you plan to run this virtual machine along side other Vagrant images, you may wish to bind the virtual machine to a specific IP address, and not use port fowarding from your local host.
+If you plan to run this virtual machine along side other Vagrant images, you may wish to bind the virtual machine to a specific IP address, and not use port forwarding from your local host.
 
 Comment out the `forward_port` line, and uncomment the `private_network` line in Vagrantfile.  The subnet that works best for your local network will vary so adjust `192.168.*.*` accordingly.
 

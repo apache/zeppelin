@@ -448,7 +448,7 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```GET``` method exports a note by the given id and gernerates a JSON
+      <td>This ```GET``` method exports a note by the given id and generates a JSON
       </td>
     </tr>
     <tr>
