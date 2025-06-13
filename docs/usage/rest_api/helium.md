@@ -316,12 +316,12 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     </tr>
     <tr>
       <td>Success code</td>
-      <td>200 reponse body is executable javascript</td>
+      <td>200 response body is executable javascript</td>
     </tr>
     <tr>
       <td>Fail code</td>
       <td>
-          200 reponse body is error message string starts with ERROR:<br/>
+          200 response body is error message string starts with ERROR:<br/>
       </td>
     </tr>
   </table>

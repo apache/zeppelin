@@ -107,7 +107,7 @@ HADOOP_HOME=YOUR_HADOOP_HOME JAVA_HOME=YOUR_JAVA_HOME \
 ./mvnw clean install -DskipTests
 ```
 
-in your zeppelin root directory, otherwise your server build will fail to find the required dependencies in the local repro.
+in your zeppelin root directory, otherwise your server build will fail to find the required dependencies in the local repo.
 
 or use daemon script
 

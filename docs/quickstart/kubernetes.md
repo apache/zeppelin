@@ -231,7 +231,7 @@ and all interpreter properties are accessible inside the templates.
 
 When interpreter group is `spark`, Zeppelin sets necessary spark configuration automatically to use Spark on Kubernetes.
 It uses client mode, so Spark interpreter Pod works as a Spark driver, spark executors are launched in separate Pods.
-This auto configuration can be overrided by manually setting `spark.master` property of Spark interpreter.
+This auto configuration can be overridden by manually setting `spark.master` property of Spark interpreter.
 
 
 ### Accessing Spark UI (or Service running in interpreter Pod)
@@ -266,7 +266,7 @@ If you like to use your custom domain
 ## Persist /notebook and /conf directory
 
 Notebook and configurations are not persisted by default. Please configure volume and update `k8s/zeppelin-server.yaml`
-to use the volume to persiste /notebook and /conf directory if necessary.
+to use the volume to persist /notebook and /conf directory if necessary.
 
 
 ## Customization

@@ -106,7 +106,7 @@ g.table(
 * `groovy.xml.MarkupBuilder g.html()`
 
    Starts or continues rendering of `%angular` to output and returns [groovy.xml.MarkupBuilder](http://groovy-lang.org/processing-xml.html#_markupbuilder)
-   MarkupBuilder is usefull to generate html (xml)
+   MarkupBuilder is useful to generate html (xml)
 
 * `void g.table(obj)`
 
