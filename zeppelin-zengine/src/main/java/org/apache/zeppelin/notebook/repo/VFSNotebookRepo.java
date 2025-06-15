@@ -22,6 +22,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -114,9 +116,12 @@ public class VFSNotebookRepo extends AbstractNotebookRepo {
         noteInfos.putAll(listFolder(child));
       }
     } else {
-      // getPath() method returns a string without root directory in windows, so we use getURI() instead
-      // windows does not support paths with "file:///" prepended. so we replace it by "/"
-      String noteFileName = fileObject.getName().getURI().replace("file:///", "/");
+      // getPath() drops the drive on Windows, so use getURI().
+      // Decode URI to change %20 to spaces.
+      // Windows cannot handle "file:///", replace it with "/".
+      String noteFileName = URLDecoder.decode(
+          fileObject.getName().getURI(), StandardCharsets.UTF_8
+      ).replace("file:///", "/");
       if (noteFileName.endsWith(".zpln")) {
         try {
           String noteId = getNoteId(noteFileName);
