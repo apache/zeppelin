@@ -17,13 +17,25 @@
 # * limitations under the License.
 # */
 
-rm -rf gen-java
-rm -rf ../java/org/apache/zeppelin/interpreter/thrift
+# Determine the base directory dynamically (directory where the script is located)
+THRIFT_EXEC="$(dirname "$(realpath "$0")")"
+
+# Change to THRIFT_EXEC
+cd "$THRIFT_EXEC" || exit
+
+# Remove existing generated Java files
+rm -rf "$THRIFT_EXEC/gen-java"
+rm -rf "$THRIFT_EXEC/../java/org/apache/zeppelin/interpreter/thrift"
+
+# Generate Thrift files
 thrift --gen java RemoteInterpreterService.thrift
 thrift --gen java RemoteInterpreterEventService.thrift
-for file in gen-java/org/apache/zeppelin/interpreter/thrift/* ; do
-  cat java_license_header.txt ${file} > ${file}.tmp
-  mv -f ${file}.tmp ${file}
+
+# Add license header and move files
+for file in "$THRIFT_EXEC/gen-java/org/apache/zeppelin/interpreter/thrift/"*; do
+  cat "$THRIFT_EXEC/java_license_header.txt" "${file}" > "${file}.tmp"
+  mv -f "${file}.tmp" "${file}"
 done
-mv gen-java/org/apache/zeppelin/interpreter/thrift ../java/org/apache/zeppelin/interpreter/thrift
-rm -rf gen-java
+
+mv "$THRIFT_EXEC/gen-java/org/apache/zeppelin/interpreter/thrift" "$THRIFT_EXEC/../java/org/apache/zeppelin/interpreter/thrift"
+rm -rf "$THRIFT_EXEC/gen-java"
