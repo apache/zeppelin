@@ -12,7 +12,7 @@
 
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { collapseMotion } from 'ng-zorro-antd/core';
+import { collapseMotion } from 'ng-zorro-antd/core/animation';
 import { NzMessageService } from 'ng-zorro-antd/message';
 
 import { finalize } from 'rxjs/operators';

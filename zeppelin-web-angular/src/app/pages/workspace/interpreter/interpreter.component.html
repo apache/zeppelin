@@ -36,7 +36,7 @@
     <nz-tag *ngFor="let repo of repositories"
       class="repo-item"
       [nz-tooltip]="repo.url"
-      nzPlacement="topLeft"
+      nzTooltipPlacement="topLeft"
       [nzMode]="['central', 'local'].indexOf(repo.id) === -1 ? 'closeable' : 'default'"
       (nzOnClose)="$event.preventDefault(); removeRepository(repo)">
       {{repo.id}}

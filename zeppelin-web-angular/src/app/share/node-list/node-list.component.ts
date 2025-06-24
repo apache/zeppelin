@@ -13,8 +13,8 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Inject, Input, OnInit } from '@angular/core';
 import { TRASH_FOLDER_ID_TOKEN } from '@zeppelin/interfaces';
 
-import { NzTreeNode } from 'ng-zorro-antd/core';
 import { NzModalService } from 'ng-zorro-antd/modal';
+import { NzTreeNode } from 'ng-zorro-antd/tree';
 
 import { MessageListener, MessageListenersManager } from '@zeppelin/core';
 import { MessageReceiveDataTypeMap, OP } from '@zeppelin/sdk';
