@@ -626,7 +626,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
     return parameters;
   }
 
-  private boolean containsKeyIgnoreCase(Map<String, String> map, String key) {
+  private static boolean containsKeyIgnoreCase(Map<String, String> map, String key) {
     for (String k : map.keySet()) {
       if (k.equalsIgnoreCase(key)) {
         return true;
