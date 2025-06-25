@@ -777,6 +777,21 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
             interpreterResult.message().get(0).getData());
   }
 
+  @Test
+  void testValidateConnectionH2UrlWithInit() throws IOException, InterpreterException {
+    Properties properties = new Properties();
+    properties.setProperty("default.driver", "org.h2.Driver");
+    properties.setProperty("default.url", getJdbcConnection() + ";INIT=RUNSCRIPT FROM 'http://localhost/init.sql'");
+    properties.setProperty("default.user", "");
+    properties.setProperty("default.password", "");
+    JDBCInterpreter jdbcInterpreter = new JDBCInterpreter(properties);
+    jdbcInterpreter.open();
+    InterpreterResult interpreterResult = jdbcInterpreter.interpret("SELECT 1", context);
+    assertEquals(InterpreterResult.Code.ERROR, interpreterResult.code());
+    assertEquals("Connection URL contains improper configuration",
+            interpreterResult.message().get(0).getData());
+  }
+
   private InterpreterContext getInterpreterContext() {
     return InterpreterContext.builder()
             .setAuthenticationInfo(new AuthenticationInfo("testUser"))

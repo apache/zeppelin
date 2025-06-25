@@ -164,6 +164,8 @@ public class JDBCInterpreter extends KerberosInterpreter {
 
   private static final String ALLOW_URL_IN_LOCAL_IN_FILE_NAME = "allowUrlInLocalInfile";
 
+  private static final String INIT = "INIT";
+
   // database --> Properties
   private final HashMap<String, Properties> basePropertiesMap;
   // username --> User Configuration
@@ -589,15 +591,48 @@ public class JDBCInterpreter extends KerberosInterpreter {
   }
 
   private void validateConnectionUrl(String url) {
-    String decodedUrl;
-    decodedUrl = URLDecoder.decode(url, StandardCharsets.UTF_8);
+    String decodedUrl = URLDecoder.decode(url, StandardCharsets.UTF_8);
+    Map<String, String> params = parseUrlParameters(decodedUrl);
 
-    if (containsIgnoreCase(decodedUrl, ALLOW_LOAD_LOCAL_IN_FILE_NAME) ||
-            containsIgnoreCase(decodedUrl, AUTO_DESERIALIZE) ||
-            containsIgnoreCase(decodedUrl, ALLOW_LOCAL_IN_FILE_NAME) ||
-            containsIgnoreCase(decodedUrl, ALLOW_URL_IN_LOCAL_IN_FILE_NAME)) {
+    if (containsKeyIgnoreCase(params, ALLOW_LOAD_LOCAL_IN_FILE_NAME) ||
+            containsKeyIgnoreCase(params, AUTO_DESERIALIZE) ||
+            containsKeyIgnoreCase(params, ALLOW_LOCAL_IN_FILE_NAME) ||
+            containsKeyIgnoreCase(params, ALLOW_URL_IN_LOCAL_IN_FILE_NAME)) {
       throw new IllegalArgumentException("Connection URL contains sensitive configuration");
     }
+
+    if (containsIgnoreCase(decodedUrl, "jdbc:h2") && containsKeyIgnoreCase(params, INIT)) {
+      throw new IllegalArgumentException("Connection URL contains sensitive configuration");
+    }
+  }
+
+  private static Map<String, String> parseUrlParameters(final String url) {
+    final Map<String, String> parameters = new HashMap<>();
+
+    // Split the URL into the base part and the parameters part
+    String[] parts = url.split(";");
+    if (parts.length > 1) {
+      // The first part is the base URL, so we start from the second part
+      for (int i = 1; i < parts.length; i++) {
+        String[] keyValue = parts[i].split("=");
+        if (keyValue.length >= 2) {
+          parameters.put(keyValue[0].trim(), keyValue[1].trim());
+        } else {
+          // Handle cases where there might not be a value
+          parameters.put(keyValue[0].trim(), "");
+        }
+      }
+    }
+    return parameters;
+  }
+
+  private boolean containsKeyIgnoreCase(Map<String, String> map, String key) {
+    for (String k : map.keySet()) {
+      if (k.equalsIgnoreCase(key)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   private String appendProxyUserToURL(String url, String user) {
