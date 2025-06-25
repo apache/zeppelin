@@ -782,7 +782,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     Properties properties = new Properties();
     properties.setProperty("default.driver", "org.h2.Driver");
     properties.setProperty("default.url", getJdbcConnection() +
-      ";INIT=RUNSCRIPT FROM 'http://localhost/init.sql'");
+        ";INIT=RUNSCRIPT FROM 'http://localhost/init.sql'");
     properties.setProperty("default.user", "");
     properties.setProperty("default.password", "");
     JDBCInterpreter jdbcInterpreter = new JDBCInterpreter(properties);
