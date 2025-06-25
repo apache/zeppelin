@@ -32,6 +32,10 @@
   }
   nz-tree {
     display: block;
+  
+    ::ng-deep nz-tree-node-title {
+      width: calc(~'100% - 24px');
+    }
   }
   nz-input-group {
     width: 100%;
@@ -40,15 +44,28 @@
   }
   .node {
     line-height: 24px;
-    display: inline-block;
-    width: calc(~"100% - 24px");
+    width: 100%;
 
     &.not-matched {
       opacity: 0.5;
       filter: grayscale(1);
     }
 
+    .folder,
+    .file {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      .name {
+        min-width: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+    }
+
     .operation {
+      flex-shrink: 0;
       margin-left: 12px;
 
       i {
