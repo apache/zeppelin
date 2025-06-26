@@ -17,27 +17,41 @@
 
 package org.apache.zeppelin.elasticsearch.client;
 
-
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
+
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ElasticsearchClientTypeTest {
 
+  @ParameterizedTest
+  @EnumSource(value = ElasticsearchClientType.class, names = {"HTTP", "HTTPS"})
+  @DisplayName("should be marked as HTTP-based when client type is HTTP or HTTPS")
+  void shouldBeHttpWhenTypeIsHttpOrHttps(ElasticsearchClientType type) {
+    assertTrue(type.isHttp(), type + " should be marked as HTTP-based");
+  }
+
+  @ParameterizedTest
+  @EnumSource(value = ElasticsearchClientType.class, names = {"TRANSPORT", "UNKNOWN"})
+  @DisplayName("should NOT be marked as HTTP-based when client type is TRANSPORT or UNKNOWN")
+  void shouldNotBeHttpWhenTypeIsTransportOrUnknown(ElasticsearchClientType type) {
+    assertFalse(type.isHttp(), type + " should NOT be marked as HTTP-based");
+  }
+
   @Test
-  void it_should_return_http_when_reducing_on_http_types() {
-    //GIVEN
-    List<ElasticsearchClientType> httpTypes =
-        new ArrayList<>(Arrays.asList(ElasticsearchClientType.HTTP, ElasticsearchClientType.HTTPS));
-    //WHEN
-    Boolean httpTypesReduced = httpTypes.stream()
-        .map(ElasticsearchClientType::isHttp)
-        .reduce(true, (ident, elasticsearchClientType) -> ident && elasticsearchClientType);
-    //THEN
-    assertTrue(httpTypesReduced);
+  @DisplayName("should contain all expected enum values in order")
+  void shouldContainAllEnumValuesInOrder() {
+    ElasticsearchClientType[] expected = {
+        ElasticsearchClientType.HTTP,
+        ElasticsearchClientType.HTTPS,
+        ElasticsearchClientType.TRANSPORT,
+        ElasticsearchClientType.UNKNOWN
+    };
+    assertArrayEquals(expected, ElasticsearchClientType.values(), "Enum values should match " +
+        "declared order");
   }
 }
