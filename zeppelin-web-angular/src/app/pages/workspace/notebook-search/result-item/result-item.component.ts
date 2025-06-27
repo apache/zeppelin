@@ -53,7 +53,7 @@ export class NotebookSearchResultItemComponent implements OnChanges, OnDestroy {
     glyphMargin: false,
     scrollBeyondLastLine: false,
     contextmenu: false
-  };
+  } as const;
 
   constructor(private ngZone: NgZone, private cdr: ChangeDetectorRef, private router: ActivatedRoute) {}
 

@@ -12,9 +12,12 @@
 
 <zeppelin-page-header
   title="Interpreters"
-  description="Manage interpreters settings. You can create / edit / remove settings. Note can bind / unbind these interpreter settings."
+  [description]="interpreterDescription"
   [extra]="headerExtra"
 >
+  <ng-template #interpreterDescription>
+    Manage interpreters settings. You can create / edit / remove settings. Note can bind / unbind these interpreter settings.
+  </ng-template>
   <nz-input-group [nzPrefix]="prefixSearch">
     <input [(ngModel)]="searchInterpreter" (ngModelChange)="onSearchChange($event)" class="search-input" nz-input placeholder="Search interpreters..." />
   </nz-input-group>
@@ -36,7 +39,7 @@
     <nz-tag *ngFor="let repo of repositories"
       class="repo-item"
       [nz-tooltip]="repo.url"
-      nzPlacement="topLeft"
+      nzTooltipPlacement="topLeft"
       [nzMode]="['central', 'local'].indexOf(repo.id) === -1 ? 'closeable' : 'default'"
       (nzOnClose)="$event.preventDefault(); removeRepository(repo)">
       {{repo.id}}

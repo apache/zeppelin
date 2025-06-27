@@ -18,7 +18,7 @@ import { IconDefinition } from '@ant-design/icons-angular';
 import { ClockCircleOutline, FileOutline, FileUnknownOutline, SearchOutline } from '@ant-design/icons-angular/icons';
 import { NzBadgeModule } from 'ng-zorro-antd/badge';
 import { NzCardModule } from 'ng-zorro-antd/card';
-import { NzHighlightModule } from 'ng-zorro-antd/core';
+import { NzHighlightModule } from 'ng-zorro-antd/core/highlight';
 import { NzDividerModule } from 'ng-zorro-antd/divider';
 import { NzEmptyModule } from 'ng-zorro-antd/empty';
 import { NzFormModule } from 'ng-zorro-antd/form';

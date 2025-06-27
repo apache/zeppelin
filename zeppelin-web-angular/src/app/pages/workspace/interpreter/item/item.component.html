@@ -20,34 +20,31 @@
     <div class="card-title" *ngIf="interpreter">
       <h3>
         {{ interpreter.name }}
-        <small class="interpreter-group-item"
+        <small
+          class="interpreter-group-item"
           *ngFor="let item of interpreter.interpreterGroup; first as isFirst"
-          [attr.title]="item.class">
+          [attr.title]="item.class"
+        >
           <ng-container *ngIf="!isFirst">, %{{ interpreter.name }}.{{ item.name }}</ng-container>
           <ng-container *ngIf="isFirst">%{{ interpreter.name }}</ng-container>
         </small>
         <span class="interpreter-status" [ngSwitch]="interpreter.status">
-          <nz-badge *ngSwitchCase="'READY'"
-            nz-tooltip="Ready"
-            nzStatus="success"></nz-badge>
-          <nz-badge *ngSwitchCase="'ERROR'"
-            nz-tooltip="Error downloading dependencies"
-            nzStatus="error"></nz-badge>
-          <nz-badge *ngSwitchDefault
-            nz-tooltip="Dependencies are downloading"
-            nzStatus="warning"></nz-badge>
+          <nz-badge *ngSwitchCase="'READY'" nz-tooltip="Ready" nzStatus="success"></nz-badge>
+          <nz-badge *ngSwitchCase="'ERROR'" nz-tooltip="Error downloading dependencies" nzStatus="error"></nz-badge>
+          <nz-badge *ngSwitchDefault nz-tooltip="Dependencies are downloading" nzStatus="warning"></nz-badge>
         </span>
       </h3>
     </div>
   </ng-template>
 
-  <nz-alert class="error-alter"
+  <nz-alert
+    class="error-alter"
     *ngIf="interpreter?.status === 'ERROR' && mode === 'view'"
     nzType="error"
     nzCloseable
     nzShowIcon
-    [nzMessage]="interpreter?.errorReason">
-  </nz-alert>
+    [nzMessage]="interpreter?.errorReason"
+  ></nz-alert>
 
   <ng-template #extraTemplate>
     <div class="extra-wrap">
@@ -71,11 +68,11 @@
     <form class="interpreter-form" nz-form [nzLayout]="'vertical'" [formGroup]="formGroup">
       <nz-form-item>
         <nz-form-label nzRequired>Interpreter Name</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="nameErrorTpl">
           <input nz-input formControlName="name" placeholder="interpreter name" />
-          <nz-form-explain *ngIf="formGroup.get('name')?.dirty && formGroup.get('name')?.errors?.exist">
-            {{ formGroup.get('name')?.errors?.message }}
-          </nz-form-explain>
+          <ng-template #nameErrorTpl let-control>
+            <ng-container *ngIf="control.hasError('exist')">{{  control.errors.message }}</ng-container>
+          </ng-template>
         </nz-form-control>
       </nz-form-item>
       <nz-form-item>
@@ -109,7 +106,6 @@
       <i nz-icon nzType="down"></i>
     </a>
     <nz-dropdown-menu #interpreterMenu="nzDropdownMenu">
-
       <ul nz-menu>
         <li nz-menu-item>
           <a (click)="setInterpreterRunningOption('shared', 'shared')">Globally</a>
@@ -123,16 +119,18 @@
       </ul>
     </nz-dropdown-menu>
     in
-    <a nz-dropdown
-       [nzDropdownMenu]="perUserMenu"
-       [nzDisabled]="interpreterRunningOption === runningOptionMap.globallyModeName || mode === 'view'">
-        <span *ngIf="interpreterRunningOption === runningOptionMap.perUserModeName; else perNote">
-          {{ optionFormGroup.get('perUser').value }}
-        </span>
+    <a
+      nz-dropdown
+      [nzDropdownMenu]="perUserMenu"
+      [nzDisabled]="interpreterRunningOption === runningOptionMap.globallyModeName || mode === 'view'"
+    >
+      <span *ngIf="interpreterRunningOption === runningOptionMap.perUserModeName; else perNote">
+        {{ optionFormGroup.get('perUser').value }}
+      </span>
       <ng-template #perNote>
-          <span>
-            {{ optionFormGroup.get('perNote').value }}
-          </span>
+        <span>
+          {{ optionFormGroup.get('perNote').value }}
+        </span>
       </ng-template>
       <i nz-icon nzType="down"></i>
     </a>
@@ -171,13 +169,21 @@
       </ul>
     </nz-dropdown-menu>
     process
-    <ng-container *ngIf="interpreterRunningOption === runningOptionMap.perUserModeName &&
-    ticketService.ticket.principal !== 'anonymous' &&
-    optionFormGroup.get('perNote').value !== sessionOptionMap.shared">
-      and <a disabled>Per Note</a> in
-      <a nz-dropdown
-         [nzDropdownMenu]="perNoteMenu"
-         [nzDisabled]="interpreterRunningOption === runningOptionMap.globallyModeName || mode === 'view'">
+    <ng-container
+      *ngIf="
+        interpreterRunningOption === runningOptionMap.perUserModeName &&
+        ticketService.ticket.principal !== 'anonymous' &&
+        optionFormGroup.get('perNote').value !== sessionOptionMap.shared
+      "
+    >
+      and
+      <a disabled>Per Note</a>
+      in
+      <a
+        nz-dropdown
+        [nzDropdownMenu]="perNoteMenu"
+        [nzDisabled]="interpreterRunningOption === runningOptionMap.globallyModeName || mode === 'view'"
+      >
         {{ optionFormGroup.get('perNote').value }}
         <i nz-icon nzType="down"></i>
       </a>
@@ -194,12 +200,18 @@
       process
     </ng-container>
     .
-    <ng-container *ngIf="interpreterRunningOption === runningOptionMap.perUserModeName &&
-    ticketService.ticket.principal !== 'anonymous' && mode !== 'view'">
+    <ng-container
+      *ngIf="
+        interpreterRunningOption === runningOptionMap.perUserModeName &&
+        ticketService.ticket.principal !== 'anonymous' &&
+        mode !== 'view'
+      "
+    >
       <button
         *ngIf="optionFormGroup.get('perNote').value === sessionOptionMap.shared; else minusButton"
         nz-button
-        (click)="setPerNoteOrUserOption('perNote', 'scoped')">
+        (click)="setPerNoteOrUserOption('perNote', 'scoped')"
+      >
         <i nz-icon nzType="plus" nzTheme="outline"></i>
       </button>
       <ng-template #minusButton>
@@ -262,7 +274,9 @@
     <ng-container *ngIf="optionForm.control.get('setPermission').value">
       <nz-form-item>
         <nz-form-label>Owners</nz-form-label>
-        <nz-form-control>
+        <nz-form-control
+          nzExtra="Enter comma separated users and groups in the fields. Empty field (*) implies anyone can run this interpreter."
+        >
           <nz-select
             nzMode="tags"
             class="owners-input"
@@ -277,10 +291,6 @@
           >
             <nz-option *ngFor="let option of userList$ | async" [nzLabel]="option" [nzValue]="option"></nz-option>
           </nz-select>
-          <nz-form-extra>
-            Enter comma separated users and groups in the fields. Empty field (*) implies anyone can run this
-            interpreter.
-          </nz-form-extra>
         </nz-form-control>
       </nz-form-item>
     </ng-container>
@@ -325,7 +335,7 @@
                 <ng-container [ngSwitch]="control.get('type').value">
                   <ng-container *ngSwitchCase="'password'">******</ng-container>
                   <ng-container *ngSwitchCase="'url'">
-                    <a [href]="control.get('value').value" target="_blank">{{control.get('value').value}}</a>
+                    <a [href]="control.get('value').value" target="_blank">{{ control.get('value').value }}</a>
                   </ng-container>
                   <ng-container *ngSwitchDefault>{{ control.get('value').value }}</ng-container>
                 </ng-container>
@@ -399,7 +409,13 @@
                 <textarea nz-input formControlName="exclusions" placeholder="" [nzAutosize]="{ maxRows: 3 }"></textarea>
               </td>
               <td>
-                <button class="transparent-button" (click)="removeDependence(i)" nz-button nzShape="circle" nzSize="small">
+                <button
+                  class="transparent-button"
+                  (click)="removeDependence(i)"
+                  nz-button
+                  nzShape="circle"
+                  nzSize="small"
+                >
                   <i nz-icon nzType="close" nzTheme="outline"></i>
                 </button>
               </td>
