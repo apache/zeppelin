@@ -274,9 +274,6 @@ public class ZeppelinServer implements AutoCloseable {
      */
     try {
       jettyWebServer.start(); // Instantiates ZeppelinServer
-      if (zConf.getJettyName() != null) {
-        org.eclipse.jetty.http.HttpGenerator.setJettyVersion(zConf.getJettyName());
-      }
     } catch (Exception e) {
       LOGGER.error("Error while running jettyServer", e);
       System.exit(-1);
@@ -430,6 +427,7 @@ public class ZeppelinServer implements AutoCloseable {
     int timeout = 1000 * 30;
     connector.setIdleTimeout(timeout);
     connector.setHost(zConf.getServerAddress());
+    connector.addBean(new JettyServername(zConf));
     connector.addBean(new JettyConnectionMetrics(Metrics.globalRegistry, Tags.empty()));
     server.addConnector(connector);
   }
