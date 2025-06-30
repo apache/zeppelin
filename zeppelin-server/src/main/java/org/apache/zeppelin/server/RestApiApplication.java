@@ -35,6 +35,7 @@ import org.apache.zeppelin.rest.SecurityRestApi;
 import org.apache.zeppelin.rest.SessionRestApi;
 import org.apache.zeppelin.rest.ZeppelinRestApi;
 import org.apache.zeppelin.rest.exception.WebApplicationExceptionMapper;
+import org.apache.zeppelin.rest.filter.CacheControlFilter;
 import org.glassfish.jersey.server.ServerProperties;
 
 public class RestApiApplication extends Application {
@@ -57,6 +58,8 @@ public class RestApiApplication extends Application {
     s.add(WebApplicationExceptionMapper.class);
     // add JSON-Consumer and Producer
     s.add(GsonProvider.class);
+    // Filter
+    s.add(CacheControlFilter.class);
     return s;
   }
 
