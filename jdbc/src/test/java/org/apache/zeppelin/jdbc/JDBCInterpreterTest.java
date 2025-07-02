@@ -785,7 +785,8 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
   @Test
   void testValidateConnectionMySQLProps2() throws IOException, InterpreterException {
     testBannedURL("com.mysql.cj.jdbc.Driver",
-        "jdbc:mysql://address=(host=172.18.0.1)(port=3309)(%2561llowLoadLocalInfile=true),localhost:3306/test");
+        "jdbc:mysql://address=(host=172.18.0.1)(port=3309)" +
+            "(%2561llowLoadLocalInfile=true),localhost:3306/test");
   }
 
   private void testBannedH2QueryParam(String param) throws IOException, InterpreterException {
@@ -796,7 +797,8 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     testBannedURL("org.h2.Driver", "jdbc:mysql://localhost/test?" + param);
   }
 
-  private void testBannedMySQLQueryParamWithValidParam(String param) throws IOException, InterpreterException {
+  private void testBannedMySQLQueryParamWithValidParam(String param)
+      throws IOException, InterpreterException {
     testBannedURL("org.h2.Driver", "jdbc:mysql://localhost/test?paranoid=true&" + param);
   }
 

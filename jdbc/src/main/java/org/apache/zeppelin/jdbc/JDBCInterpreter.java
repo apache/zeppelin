@@ -626,7 +626,9 @@ public class JDBCInterpreter extends KerberosInterpreter {
    * @return the decoded string
    * @throws IllegalArgumentException if the recursion depth exceeds 100
    */
-  private static String urlDecode(final String url, final String encoded, final int recurseCount) {
+  private static String urlDecode(final String url,
+                                  final String encoded,
+                                  final int recurseCount) {
     if (recurseCount > 100) {
       throw new IllegalArgumentException("illegal URL encoding detected" + url);
     }
@@ -640,7 +642,8 @@ public class JDBCInterpreter extends KerberosInterpreter {
   private static Map<String, String> parseUrlParameters(final String url) {
     final Map<String, String> parameters = new HashMap<>();
 
-    // MySQL supports parentheses in the URL - https://dev.mysql.com/doc/connectors/en/connector-j-reference-jdbc-url-format.html
+    // MySQL supports parentheses in the URL
+    // https://dev.mysql.com/doc/connectors/en/connector-j-reference-jdbc-url-format.html
     // eg jdbc:mysql://(host=myhost,port=1111,allowLoadLocalInfile=true)/db
     int parensIndex = extractFromParens(url, 0, parameters);
     while (parensIndex > 0) {
