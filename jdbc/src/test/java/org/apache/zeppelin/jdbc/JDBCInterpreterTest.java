@@ -750,6 +750,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
   @Test
   void testValidateConnectionUrl() throws IOException, InterpreterException {
     Properties properties = new Properties();
+    // it easier to unit test with H2 but this is really a MySQL issue (and maybe MariaDB too)
     properties.setProperty("default.driver", "org.h2.Driver");
     properties.setProperty("default.url", getJdbcConnection() + ";allowLoadLocalInfile=true");
     properties.setProperty("default.user", "");
@@ -763,8 +764,25 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
   }
 
   @Test
+  void testValidateConnectionUrlAllowLoadLocal() throws IOException, InterpreterException {
+    Properties properties = new Properties();
+    // it easier to unit test with H2 but this is really a MySQL issue (and maybe MariaDB too)
+    properties.setProperty("default.driver", "org.h2.Driver");
+    properties.setProperty("default.url", getJdbcConnection() + ";allowLoadLocal=true");
+    properties.setProperty("default.user", "");
+    properties.setProperty("default.password", "");
+    JDBCInterpreter jdbcInterpreter = new JDBCInterpreter(properties);
+    jdbcInterpreter.open();
+    InterpreterResult interpreterResult = jdbcInterpreter.interpret("SELECT 1", context);
+    assertEquals(InterpreterResult.Code.ERROR, interpreterResult.code());
+    assertEquals("Connection URL contains improper configuration",
+        interpreterResult.message().get(0).getData());
+  }
+
+  @Test
   void testValidateConnectionUrlEncoded() throws IOException, InterpreterException {
     Properties properties = new Properties();
+    // it easier to unit test with H2 but this is really a MySQL issue (and maybe MariaDB too)
     properties.setProperty("default.driver", "org.h2.Driver");
     properties.setProperty("default.url", getJdbcConnection() + ";%61llowLoadLocalInfile=true");
     properties.setProperty("default.user", "");
