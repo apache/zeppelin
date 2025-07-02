@@ -630,7 +630,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
                                   final String encoded,
                                   final int recurseCount) {
     if (recurseCount > 100) {
-      throw new IllegalArgumentException("illegal URL encoding detected" + url);
+      throw new IllegalArgumentException("illegal URL encoding detected: " + url);
     }
     final String decoded = URLDecoder.decode(encoded, StandardCharsets.UTF_8);
     if (decoded.equals(encoded)) {
