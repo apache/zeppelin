@@ -619,18 +619,19 @@ public class JDBCInterpreter extends KerberosInterpreter {
   private static Map<String, String> parseUrlParameters(final String url) {
     final Map<String, String> parameters = new HashMap<>();
 
+    // MySQL supports parentheses in the URL - https://dev.mysql.com/doc/connectors/en/connector-j-reference-jdbc-url-format.html
+    // eg jdbc:mysql://(host=myhost,port=1111,allowLoadLocalInfile=true)/db
+    int parensIndex = extractFromParens(url, 0, parameters);
+    while (parensIndex > 0) {
+      parensIndex = extractFromParens(url, parensIndex, parameters);
+    }
+
     // Split the URL into the base part and the parameters part
-    String[] parts = url.split(";");
+    String[] parts = url.split("[?&;]");
     if (parts.length > 1) {
       // The first part is the base URL, so we start from the second part
       for (int i = 1; i < parts.length; i++) {
-        String[] keyValue = parts[i].split("=");
-        if (keyValue.length >= 2) {
-          parameters.put(keyValue[0].trim(), keyValue[1].trim());
-        } else {
-          // Handle cases where there might not be a value
-          parameters.put(keyValue[0].trim(), "");
-        }
+        splitNameValue(parts[i], parameters);
       }
     }
     return parameters;
@@ -643,6 +644,50 @@ public class JDBCInterpreter extends KerberosInterpreter {
       }
     }
     return false;
+  }
+
+  /**
+   * Extracts key-value pairs from parentheses in the input string.
+   * The expected format is "(key1=value1, key2=value2, ...)".
+   *
+   * @param input the input string containing parameters in parentheses
+   * @param initIndex the index to start searching for parentheses
+   * @param parameters the map to store extracted key-value pairs
+   * @return the index of the closing parenthesis or -1 if not found
+   */
+  private static int extractFromParens(final String input,
+                                       final int initIndex,
+                                       final Map<String, String> parameters) {
+    final int startIndex = input.indexOf('(', initIndex);
+    if (startIndex == -1) {
+      return -1;
+    }
+    final int endIndex = input.indexOf(')', startIndex);
+    if (startIndex != -1 && endIndex != -1) {
+      String params = input.substring(startIndex + 1, endIndex);
+      String[] keyValuePairs = params.split(",");
+      for (String pair : keyValuePairs) {
+        splitNameValue(pair, parameters);
+      }
+    }
+    return endIndex;
+  }
+
+  /**
+   * Splits a name-value pair and adds it to the parameters map.
+   * Handles cases where the value might be missing.
+   *
+   * @param nameValue the name-value pair as a string
+   * @param parameters the map to store the extracted key-value pair
+   */
+  private static void splitNameValue(String nameValue, Map<String, String> parameters) {
+    String[] keyValue = nameValue.split("=");
+    if (keyValue.length >= 2) {
+      parameters.put(keyValue[0].trim(), keyValue[1].trim());
+    } else {
+      // Handle cases where there might not be a value
+      parameters.put(keyValue[0].trim(), "");
+    }
   }
 
   private String appendProxyUserToURL(String url, String user) {

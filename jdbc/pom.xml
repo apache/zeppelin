@@ -39,6 +39,7 @@
     <commons.dbcp2.version>2.0.1</commons.dbcp2.version>
     <hive3.version>3.1.3</hive3.version>
     <kyuubi.version>1.9.1</kyuubi.version>
+    <mysql.connector.version>9.3.0</mysql.connector.version>
 
     <!--test library versions-->
     <mockrunner.jdbc.version>1.0.8</mockrunner.jdbc.version>
@@ -56,6 +57,13 @@
       <groupId>com.h2database</groupId>
       <artifactId>h2</artifactId>
       <version>${h2.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>com.mysql</groupId>
+      <artifactId>mysql-connector-j</artifactId>
+      <version>${mysql.connector.version}</version>
       <scope>test</scope>
     </dependency>
 

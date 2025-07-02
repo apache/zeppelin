@@ -749,37 +749,53 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
 
   @Test
   void testValidateConnectionUrlAllowLoadLocalInFile() throws IOException, InterpreterException {
-    // it easier to unit test with H2 but this is really a MySQL issue (and maybe MariaDB too)
-    testBannedQueryParam("allowLoadLocalInfile=true");
+    testBannedMySQLQueryParam("allowLoadLocalInfile=true");
+    testBannedMySQLQueryParamWithValidParam("allowLoadLocalInfile=true");
   }
 
   @Test
   void testValidateConnectionUrlAllowLoadLocal() throws IOException, InterpreterException {
-    // it easier to unit test with H2 but this is really a MySQL issue (and maybe MariaDB too)
-    testBannedQueryParam("allowLoadLocal=true");
+    testBannedMySQLQueryParam("allowLoadLocal=true");
   }
 
   @Test
   void testValidateConnectionUrlSocketFactory() throws IOException, InterpreterException {
     // it easier to unit test with H2 but this is really a Postgres issue
-    testBannedQueryParam("socketFactory=com.example.MySocketFactory");
+    testBannedH2QueryParam("socketFactory=com.example.MySocketFactory");
   }
 
   @Test
   void testValidateConnectionUrlEncoded() throws IOException, InterpreterException {
-    // it easier to unit test with H2 but this is really a MySQL issue (and maybe MariaDB too)
-    testBannedQueryParam("%61llowLoadLocalInfile=true");
+    testBannedMySQLQueryParam("%61llowLoadLocalInfile=true");
   }
 
   @Test
   void testValidateConnectionH2UrlWithInit() throws IOException, InterpreterException {
-    testBannedQueryParam("INIT=RUNSCRIPT FROM 'http://localhost/init.sql'");
+    testBannedH2QueryParam("INIT=RUNSCRIPT FROM 'http://localhost/init.sql'");
   }
 
-  private void testBannedQueryParam(String param) throws IOException, InterpreterException {
+  @Test
+  void testValidateConnectionMySQLProps() throws IOException, InterpreterException {
+    testBannedURL("com.mysql.cj.jdbc.Driver",
+        "jdbc:mysql://(host=myhost,port=1111,allowLoadLocalInfile=true)/db");
+  }
+
+  private void testBannedH2QueryParam(String param) throws IOException, InterpreterException {
+    testBannedURL("org.h2.Driver", getJdbcConnection() + ";" + param);
+  }
+
+  private void testBannedMySQLQueryParam(String param) throws IOException, InterpreterException {
+    testBannedURL("org.h2.Driver", "jdbc:mysql://localhost/test?" + param);
+  }
+
+  private void testBannedMySQLQueryParamWithValidParam(String param) throws IOException, InterpreterException {
+    testBannedURL("org.h2.Driver", "jdbc:mysql://localhost/test?paranoid=true&" + param);
+  }
+
+  private void testBannedURL(String driver, String url) throws IOException, InterpreterException {
     Properties properties = new Properties();
-    properties.setProperty("default.driver", "org.h2.Driver");
-    properties.setProperty("default.url", getJdbcConnection() + ";" + param);
+    properties.setProperty("default.driver", driver);
+    properties.setProperty("default.url", url);
     properties.setProperty("default.user", "");
     properties.setProperty("default.password", "");
     JDBCInterpreter jdbcInterpreter = new JDBCInterpreter(properties);
