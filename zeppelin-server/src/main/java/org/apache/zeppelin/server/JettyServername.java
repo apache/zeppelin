@@ -32,7 +32,7 @@ public class JettyServername implements HttpChannel.Listener {
 
   public JettyServername(final ZeppelinConfiguration zConf) {
     if (zConf.sendJettyName() && StringUtils.isNotBlank(zConf.getJettyName())) {
-      this.servername = Optional.of(zConf.getJettyName());
+      this.servername = Optional.of(zConf.getJettyName().strip());
     } else {
       this.servername = Optional.empty();
     }
@@ -40,8 +40,6 @@ public class JettyServername implements HttpChannel.Listener {
 
   @Override
   public void onResponseBegin(Request request) {
-    if (servername.isPresent()) {
-      request.getResponse().setHeader(HttpHeader.SERVER, servername.get());
-    }
+    servername.ifPresent(value -> request.getResponse().setHeader(HttpHeader.SERVER, value));
   }
 }
