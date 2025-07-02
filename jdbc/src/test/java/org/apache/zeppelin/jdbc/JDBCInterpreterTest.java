@@ -767,6 +767,8 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
   @Test
   void testValidateConnectionUrlEncoded() throws IOException, InterpreterException {
     testBannedMySQLQueryParam("%61llowLoadLocalInfile=true");
+    // also test encoded param with %2561 (%25 is the encoded form of %)
+    testBannedMySQLQueryParam("%2561llowLoadLocalInfile=true");
   }
 
   @Test
@@ -778,6 +780,12 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
   void testValidateConnectionMySQLProps() throws IOException, InterpreterException {
     testBannedURL("com.mysql.cj.jdbc.Driver",
         "jdbc:mysql://(host=myhost,port=1111,allowLoadLocalInfile=true)/db");
+  }
+
+  @Test
+  void testValidateConnectionMySQLProps2() throws IOException, InterpreterException {
+    testBannedURL("com.mysql.cj.jdbc.Driver",
+        "jdbc:mysql://address=(host=172.18.0.1)(port=3309)(%2561llowLoadLocalInfile=true),localhost:3306/test");
   }
 
   private void testBannedH2QueryParam(String param) throws IOException, InterpreterException {

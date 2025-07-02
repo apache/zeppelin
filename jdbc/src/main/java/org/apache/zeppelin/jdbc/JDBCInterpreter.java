@@ -597,8 +597,8 @@ public class JDBCInterpreter extends KerberosInterpreter {
   }
 
   private void validateConnectionUrl(String url) {
-    String decodedUrl = URLDecoder.decode(url, StandardCharsets.UTF_8);
-    Map<String, String> params = parseUrlParameters(decodedUrl);
+    final String decodedUrl = urlDecode(url, url, 0);
+    final Map<String, String> params = parseUrlParameters(decodedUrl);
 
     if (containsKeyIgnoreCase(params, ALLOW_LOAD_LOCAL) ||
             containsKeyIgnoreCase(params, ALLOW_LOAD_LOCAL_IN_FILE_NAME) ||
@@ -614,6 +614,27 @@ public class JDBCInterpreter extends KerberosInterpreter {
     if (containsIgnoreCase(decodedUrl, "jdbc:h2") && containsKeyIgnoreCase(params, INIT)) {
       throw new IllegalArgumentException("Connection URL contains sensitive configuration");
     }
+  }
+
+  /**
+   * Decode the URL encoded string recursively until no more decoding is needed.
+   * This is to handle cases where the URL might be double-encoded.
+   *
+   * @param url the original URL (for logging purposes)
+   * @param encoded the URL encoded string
+   * @param recurseCount the current recursion depth
+   * @return the decoded string
+   * @throws IllegalArgumentException if the recursion depth exceeds 100
+   */
+  private static String urlDecode(final String url, final String encoded, final int recurseCount) {
+    if (recurseCount > 100) {
+      throw new IllegalArgumentException("illegal URL encoding detected" + url);
+    }
+    final String decoded = URLDecoder.decode(encoded, StandardCharsets.UTF_8);
+    if (decoded.equals(encoded)) {
+      return decoded; // No more decoding needed or max recursion reached
+    }
+    return urlDecode(url, decoded, recurseCount + 1);
   }
 
   private static Map<String, String> parseUrlParameters(final String url) {
