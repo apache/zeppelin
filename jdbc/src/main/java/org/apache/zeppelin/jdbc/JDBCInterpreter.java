@@ -156,6 +156,8 @@ public class JDBCInterpreter extends KerberosInterpreter {
           "KerberosConfigPath", "KerberosKeytabPath", "KerberosCredentialCachePath",
           "extraCredentials", "roles", "sessionProperties"));
 
+  private static final String ALLOW_LOAD_LOCAL = "allowLoadLocal";
+
   private static final String ALLOW_LOAD_LOCAL_IN_FILE_NAME = "allowLoadLocalInfile";
 
   private static final String AUTO_DESERIALIZE = "autoDeserialize";
@@ -594,7 +596,8 @@ public class JDBCInterpreter extends KerberosInterpreter {
     String decodedUrl = URLDecoder.decode(url, StandardCharsets.UTF_8);
     Map<String, String> params = parseUrlParameters(decodedUrl);
 
-    if (containsKeyIgnoreCase(params, ALLOW_LOAD_LOCAL_IN_FILE_NAME) ||
+    if (containsKeyIgnoreCase(params, ALLOW_LOAD_LOCAL) ||
+            containsKeyIgnoreCase(params, ALLOW_LOAD_LOCAL_IN_FILE_NAME) ||
             containsKeyIgnoreCase(params, AUTO_DESERIALIZE) ||
             containsKeyIgnoreCase(params, ALLOW_LOCAL_IN_FILE_NAME) ||
             containsKeyIgnoreCase(params, ALLOW_URL_IN_LOCAL_IN_FILE_NAME)) {
