@@ -748,27 +748,38 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
   }
 
   @Test
-  void testValidateConnectionUrl() throws IOException, InterpreterException {
-    Properties properties = new Properties();
+  void testValidateConnectionUrlAllowLoadLocalInFile() throws IOException, InterpreterException {
     // it easier to unit test with H2 but this is really a MySQL issue (and maybe MariaDB too)
-    properties.setProperty("default.driver", "org.h2.Driver");
-    properties.setProperty("default.url", getJdbcConnection() + ";allowLoadLocalInfile=true");
-    properties.setProperty("default.user", "");
-    properties.setProperty("default.password", "");
-    JDBCInterpreter jdbcInterpreter = new JDBCInterpreter(properties);
-    jdbcInterpreter.open();
-    InterpreterResult interpreterResult = jdbcInterpreter.interpret("SELECT 1", context);
-    assertEquals(InterpreterResult.Code.ERROR, interpreterResult.code());
-    assertEquals("Connection URL contains improper configuration",
-            interpreterResult.message().get(0).getData());
+    testBannedQueryParam("allowLoadLocalInfile=true");
   }
 
   @Test
   void testValidateConnectionUrlAllowLoadLocal() throws IOException, InterpreterException {
-    Properties properties = new Properties();
     // it easier to unit test with H2 but this is really a MySQL issue (and maybe MariaDB too)
+    testBannedQueryParam("allowLoadLocal=true");
+  }
+
+  @Test
+  void testValidateConnectionUrlSocketFactory() throws IOException, InterpreterException {
+    // it easier to unit test with H2 but this is really a Postgres issue
+    testBannedQueryParam("socketFactory=com.example.MySocketFactory");
+  }
+
+  @Test
+  void testValidateConnectionUrlEncoded() throws IOException, InterpreterException {
+    // it easier to unit test with H2 but this is really a MySQL issue (and maybe MariaDB too)
+    testBannedQueryParam("%61llowLoadLocalInfile=true");
+  }
+
+  @Test
+  void testValidateConnectionH2UrlWithInit() throws IOException, InterpreterException {
+    testBannedQueryParam("INIT=RUNSCRIPT FROM 'http://localhost/init.sql'");
+  }
+
+  private void testBannedQueryParam(String param) throws IOException, InterpreterException {
+    Properties properties = new Properties();
     properties.setProperty("default.driver", "org.h2.Driver");
-    properties.setProperty("default.url", getJdbcConnection() + ";allowLoadLocal=true");
+    properties.setProperty("default.url", getJdbcConnection() + ";" + param);
     properties.setProperty("default.user", "");
     properties.setProperty("default.password", "");
     JDBCInterpreter jdbcInterpreter = new JDBCInterpreter(properties);
@@ -777,38 +788,6 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     assertEquals(InterpreterResult.Code.ERROR, interpreterResult.code());
     assertEquals("Connection URL contains improper configuration",
         interpreterResult.message().get(0).getData());
-  }
-
-  @Test
-  void testValidateConnectionUrlEncoded() throws IOException, InterpreterException {
-    Properties properties = new Properties();
-    // it easier to unit test with H2 but this is really a MySQL issue (and maybe MariaDB too)
-    properties.setProperty("default.driver", "org.h2.Driver");
-    properties.setProperty("default.url", getJdbcConnection() + ";%61llowLoadLocalInfile=true");
-    properties.setProperty("default.user", "");
-    properties.setProperty("default.password", "");
-    JDBCInterpreter jdbcInterpreter = new JDBCInterpreter(properties);
-    jdbcInterpreter.open();
-    InterpreterResult interpreterResult = jdbcInterpreter.interpret("SELECT 1", context);
-    assertEquals(InterpreterResult.Code.ERROR, interpreterResult.code());
-    assertEquals("Connection URL contains improper configuration",
-            interpreterResult.message().get(0).getData());
-  }
-
-  @Test
-  void testValidateConnectionH2UrlWithInit() throws IOException, InterpreterException {
-    Properties properties = new Properties();
-    properties.setProperty("default.driver", "org.h2.Driver");
-    properties.setProperty("default.url", getJdbcConnection() +
-        ";INIT=RUNSCRIPT FROM 'http://localhost/init.sql'");
-    properties.setProperty("default.user", "");
-    properties.setProperty("default.password", "");
-    JDBCInterpreter jdbcInterpreter = new JDBCInterpreter(properties);
-    jdbcInterpreter.open();
-    InterpreterResult interpreterResult = jdbcInterpreter.interpret("SELECT 1", context);
-    assertEquals(InterpreterResult.Code.ERROR, interpreterResult.code());
-    assertEquals("Connection URL contains improper configuration",
-            interpreterResult.message().get(0).getData());
   }
 
   private InterpreterContext getInterpreterContext() {
