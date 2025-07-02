@@ -160,11 +160,15 @@ public class JDBCInterpreter extends KerberosInterpreter {
 
   private static final String ALLOW_LOAD_LOCAL_IN_FILE_NAME = "allowLoadLocalInfile";
 
-  private static final String AUTO_DESERIALIZE = "autoDeserialize";
+  private static final String ALLOW_LOAD_LOCAL_IN_FILE_IN_PATH = "allowLoadLocalInfileInPath";
 
   private static final String ALLOW_LOCAL_IN_FILE_NAME = "allowLocalInfile";
 
   private static final String ALLOW_URL_IN_LOCAL_IN_FILE_NAME = "allowUrlInLocalInfile";
+
+  private static final String AUTO_DESERIALIZE = "autoDeserialize";
+
+  private static final String SOCKET_FACTORY = "socketFactory";
 
   private static final String INIT = "INIT";
 
@@ -598,12 +602,15 @@ public class JDBCInterpreter extends KerberosInterpreter {
 
     if (containsKeyIgnoreCase(params, ALLOW_LOAD_LOCAL) ||
             containsKeyIgnoreCase(params, ALLOW_LOAD_LOCAL_IN_FILE_NAME) ||
-            containsKeyIgnoreCase(params, AUTO_DESERIALIZE) ||
             containsKeyIgnoreCase(params, ALLOW_LOCAL_IN_FILE_NAME) ||
-            containsKeyIgnoreCase(params, ALLOW_URL_IN_LOCAL_IN_FILE_NAME)) {
+            containsKeyIgnoreCase(params, ALLOW_URL_IN_LOCAL_IN_FILE_NAME) ||
+            containsKeyIgnoreCase(params, ALLOW_LOAD_LOCAL_IN_FILE_IN_PATH) ||
+            containsKeyIgnoreCase(params, AUTO_DESERIALIZE) ||
+            containsKeyIgnoreCase(params, SOCKET_FACTORY)) {
       throw new IllegalArgumentException("Connection URL contains sensitive configuration");
     }
 
+    // the INIT parameter name is a bit generic so we check it only for H2
     if (containsIgnoreCase(decodedUrl, "jdbc:h2") && containsKeyIgnoreCase(params, INIT)) {
       throw new IllegalArgumentException("Connection URL contains sensitive configuration");
     }
