@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <properties>
+        <!-- 设置 Scala 版本 -->
+        <scala.version>3.6.4</scala.version>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
+        <interpreter.name>storch</interpreter.name>
+    </properties>
+    <groupId>dev.storch</groupId>
+    <artifactId>storch-scala3-zeppelin-interpreter</artifactId>
+    <version>1.0</version>
+
+<!--    <parent>-->
+<!--        <artifactId>zeppelin-interpreter-parent</artifactId>-->
+<!--        <groupId>org.apache.zeppelin</groupId>-->
+<!--        <version>0.12.0-SNAPSHOT</version>-->
+<!--        <relativePath>../zeppelin-interpreter-parent/pom.xml</relativePath>-->
+<!--    </parent>-->
+
+
+    <packaging>jar</packaging>
+    <name>Zeppelin: Storch-Scala3 interpreter</name>
+
+
+
+    <dependencies>
+        <dependency>
+            <groupId>org.scala-lang</groupId>
+            <artifactId>scala3-library_3</artifactId>
+            <version>${scala.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.scala-lang</groupId>
+            <artifactId>scala3-compiler_3</artifactId>
+            <version>${scala.version}</version>
+<!--            <version>3.6.1-RC1-bin-20241016-2fc299b-NIGHTLY</version>-->
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.scala-lang/scala3-library -->
+
+<!--        <dependency>-->
+<!--            <groupId>org.scala-lang</groupId>-->
+<!--            <artifactId>scala-reflect</artifactId>-->
+<!--            <version>${scala.version}</version>-->
+<!--        </dependency>-->
+
+        <dependency>
+            <groupId>org.apache.zeppelin</groupId>
+            <artifactId>zeppelin-interpreter</artifactId>
+            <version>0.11.2</version>
+            <scope>provided</scope>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.bytedeco/pytorch -->
+        <dependency>
+            <groupId>org.bytedeco</groupId>
+            <artifactId>pytorch</artifactId>
+            <version>2.5.1-1.5.11</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.bytedeco/pytorch-platform -->
+        <dependency>
+            <groupId>org.bytedeco</groupId>
+            <artifactId>pytorch-platform</artifactId>
+            <version>2.5.1-1.5.11</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.bytedeco/openblas -->
+        <dependency>
+            <groupId>org.bytedeco</groupId>
+            <artifactId>openblas</artifactId>
+            <version>0.3.28-1.5.11</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.bytedeco/openblas-platform -->
+        <dependency>
+            <groupId>org.bytedeco</groupId>
+            <artifactId>openblas-platform</artifactId>
+            <version>0.3.28-1.5.11</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.bytedeco/mkl -->
+        <dependency>
+            <groupId>org.bytedeco</groupId>
+            <artifactId>mkl</artifactId>
+            <version>2025.0-1.5.11</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.bytedeco/mkl-platform -->
+        <dependency>
+            <groupId>org.bytedeco</groupId>
+            <artifactId>mkl-platform</artifactId>
+            <version>2025.0-1.5.11</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.mullerhai</groupId>
+            <artifactId>core_3</artifactId>
+            <version>0.2.5-1.15.1</version>
+
+        </dependency>
+
+    </dependencies>
+
+    <build>
+        <sourceDirectory>src/main/scala</sourceDirectory>
+        <testSourceDirectory>src/test/scala</testSourceDirectory>
+        <plugins>
+            <plugin>
+                <artifactId>maven-enforcer-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <artifactId>maven-resources-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <artifactId>maven-shade-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <forkCount>1</forkCount>
+                    <reuseForks>false</reuseForks>
+                    <argLine>-Xmx1024m -XX:MaxMetaspaceSize=512m</argLine>
+                </configuration>
+            </plugin>
+            <!-- Scala Maven 插件 -->
+            <plugin>
+                <groupId>net.alchim31.maven</groupId>
+                <artifactId>scala-maven-plugin</artifactId>
+                <version>4.9.0</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>compile</goal>
+                            <goal>testCompile</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <scalaVersion>${scala.version}</scalaVersion>
+                    <args>
+                        <arg>-feature</arg>
+                        <arg>-deprecation</arg>
+                    </args>
+                </configuration>
+            </plugin>
+            <!-- 打包插件 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.3.0</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+<!--    <build>-->
+<!--        <pluginManagement>-->
+<!--            <plugins>-->
+<!--                <plugin>-->
+<!--                    <groupId>net.alchim31.maven</groupId>-->
+<!--                    <artifactId>scala-maven-plugin</artifactId>-->
+<!--                    <version>4.9.0</version>-->
+<!--                    <executions>-->
+<!--                        <execution>-->
+<!--                            <goals>-->
+<!--                                <goal>compile</goal>-->
+<!--                            </goals>-->
+<!--                        </execution>-->
+<!--                    </executions>-->
+<!--                </plugin>-->
+<!--            </plugins>-->
+<!--        </pluginManagement>-->
+<!--        <plugins>-->
+<!--&lt;!&ndash;            <plugin>&ndash;&gt;-->
+<!--&lt;!&ndash;                <groupId>net.alchim31.maven</groupId>&ndash;&gt;-->
+<!--&lt;!&ndash;                <artifactId>scala-maven-plugin</artifactId>&ndash;&gt;-->
+<!--&lt;!&ndash;            </plugin>&ndash;&gt;-->
+
+
+<!--            <plugin>-->
+<!--                <artifactId>maven-resources-plugin</artifactId>-->
+<!--            </plugin>-->
+<!--            <plugin>-->
+<!--                <groupId>org.codehaus.mojo</groupId>-->
+<!--                <artifactId>build-helper-maven-plugin</artifactId>-->
+<!--            </plugin>-->
+<!--            <plugin>-->
+<!--                <groupId>net.alchim31.maven</groupId>-->
+<!--                <artifactId>scala-maven-plugin</artifactId>-->
+<!--            </plugin>-->
+<!--            <plugin>-->
+<!--                <groupId>org.apache.maven.plugins</groupId>-->
+<!--                <artifactId>maven-jar-plugin</artifactId>-->
+<!--            </plugin>-->
+<!--        </plugins>-->
+<!--    </build>-->
+
+</project>
