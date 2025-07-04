@@ -14,7 +14,7 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnIni
 import { Subject } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 
-import { collapseMotion } from 'ng-zorro-antd/core';
+import { collapseMotion } from 'ng-zorro-antd/core/animation';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzModalService } from 'ng-zorro-antd/modal';
 
