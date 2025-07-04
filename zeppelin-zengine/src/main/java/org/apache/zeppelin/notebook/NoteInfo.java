@@ -17,6 +17,9 @@
 
 package org.apache.zeppelin.notebook;
 
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+
 /**
  * Metadata of Note: noteId & note Path
  */
@@ -25,9 +28,12 @@ public class NoteInfo {
   String path;
 
   public NoteInfo(String id, String path) {
-    super();
     this.id = id;
-    this.path = path;
+    try {
+      this.path = URLDecoder.decode(path, StandardCharsets.UTF_8.name());
+    } catch (Exception e) {
+      this.path = path;
+    }
   }
 
   public NoteInfo(Note note) {
