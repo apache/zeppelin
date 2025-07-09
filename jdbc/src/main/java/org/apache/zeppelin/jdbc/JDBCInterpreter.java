@@ -843,6 +843,8 @@ public class JDBCInterpreter extends KerberosInterpreter {
 
         if (interpreterName != null && interpreterName.startsWith("spark_rca_")) {
           statement.setQueryTimeout(10800); // 10800 seconds = 3 hours
+        } else if (interpreterName != null && interpreterName.startsWith("spark_")) {
+          statement.setQueryTimeout(3600); // 3600 seconds = 1 hour
         }
 
         // fetch n+1 rows in order to indicate there's more rows available (for large selects)
