@@ -63,6 +63,7 @@ export class CompletionService extends MessageListenersManager {
       monaco.languages.registerCompletionItemProvider(l, {
         provideCompletionItems(model: monaco.editor.ITextModel, position: monaco.Position) {
           const id = that.getIdForModel(model);
+          const word = model.getWordUntilPosition(position);
 
           if (!id) {
             return { suggestions: null };
@@ -76,12 +77,19 @@ export class CompletionService extends MessageListenersManager {
               take(1),
               map(d => {
                 return {
-                  suggestions: d.completions.map(i => ({
-                    kind: monaco.languages.CompletionItemKind.Keyword,
-                    label: i.name,
-                    insertText: i.name,
-                    range: undefined
-                  }))
+                  suggestions: d.completions.map(
+                    (i): monaco.languages.CompletionItem => ({
+                      kind: monaco.languages.CompletionItemKind.Keyword,
+                      label: i.name,
+                      insertText: i.name,
+                      range: {
+                        startLineNumber: position.lineNumber,
+                        endLineNumber: position.lineNumber,
+                        startColumn: word.startColumn,
+                        endColumn: word.endColumn
+                      }
+                    })
+                  )
                 };
               })
             )

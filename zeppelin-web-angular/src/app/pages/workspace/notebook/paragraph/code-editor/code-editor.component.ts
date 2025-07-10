@@ -66,7 +66,7 @@ export class NotebookParagraphCodeEditorComponent implements OnChanges, OnDestro
     if (this.editor) {
       this.ngZone.run(() => {
         this.height =
-          this.editor.getTopForLineNumber(Number.MAX_SAFE_INTEGER) + this.editor.getConfiguration().lineHeight * 2;
+          this.editor.getOption(monaco.editor.EditorOption.lineHeight) * (this.editor.getModel().getLineCount() + 2);
         this.editor.layout();
         this.cdr.markForCheck();
       });
@@ -148,7 +148,7 @@ export class NotebookParagraphCodeEditorComponent implements OnChanges, OnDestro
         folding: false,
         scrollBeyondLastLine: false,
         contextmenu: false,
-        matchBrackets: false
+        matchBrackets: 'always'
       });
     }
   }

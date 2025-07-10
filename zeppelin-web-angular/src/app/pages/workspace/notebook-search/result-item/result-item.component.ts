@@ -142,7 +142,7 @@ export class NotebookSearchResultItemComponent implements OnChanges, OnDestroy {
       setTimeout(() => {
         if (this.editor) {
           this.height =
-            this.editor.getTopForLineNumber(Number.MAX_SAFE_INTEGER) + this.editor.getConfiguration().lineHeight * 2;
+            this.editor.getOption(monaco.editor.EditorOption.lineHeight) * (this.editor.getModel().getLineCount() + 2);
           this.editor.layout();
           this.cdr.markForCheck();
         }

@@ -13,7 +13,7 @@
 import { InjectionToken } from '@angular/core';
 import { SafeUrl } from '@angular/platform-browser';
 import { editor } from 'monaco-editor';
-import IEditorConstructionOptions = editor.IEditorConstructionOptions;
+import IEditorConstructionOptions = editor.IStandaloneEditorConstructionOptions;
 import IDiffEditorConstructionOptions = editor.IDiffEditorConstructionOptions;
 
 export type EditorOptions = IEditorConstructionOptions;
