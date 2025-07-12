@@ -624,7 +624,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
    * @param encoded the URL encoded string
    * @param recurseCount the current recursion depth
    * @return the decoded string
-   * @throws IllegalArgumentException if the recursion depth exceeds 100
+   * @throws IllegalArgumentException if the recursion depth exceeds 10
    */
   private static String urlDecode(final String url,
                                   final String encoded,
