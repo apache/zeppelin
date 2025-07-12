@@ -58,11 +58,7 @@ import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_STATEMENT_PRECODE
 import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_URL;
 import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_USER;
 import static org.apache.zeppelin.jdbc.JDBCInterpreter.PRECODE_KEY_TEMPLATE;
-
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.fail;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 /**
@@ -785,8 +781,21 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
   @Test
   void testValidateConnectionMySQLProps2() throws IOException, InterpreterException {
     testBannedURL("com.mysql.cj.jdbc.Driver",
+        "jdbc:mysql://[(host=myhost,port=1111,allowLoadLocalInfile=true),(host=myhost2)]/db");
+  }
+
+  @Test
+  void testValidateConnectionMySQLProps3() throws IOException, InterpreterException {
+    testBannedURL("com.mysql.cj.jdbc.Driver",
         "jdbc:mysql://address=(host=172.18.0.1)(port=3309)" +
             "(%2561llowLoadLocalInfile=true),localhost:3306/test");
+  }
+
+  @Test
+  void testValidateConnectionMySQLWeirdPassword() throws IOException, InterpreterException {
+    // we strongly discourage putting passwords in the URL
+    assertDoesNotThrow(() -> JDBCInterpreter.validateConnectionUrl
+        ("jdbc:mysql://localhost:3306/test?user=xyz&password=(allowLoadLocalInfile)"));
   }
 
   private void testBannedH2QueryParam(String param) throws IOException, InterpreterException {
