@@ -51,6 +51,7 @@ import { NoteTocComponent } from '@zeppelin/share/note-toc/note-toc.component';
 import { PageHeaderComponent } from '@zeppelin/share/page-header/page-header.component';
 import { HumanizeBytesPipe } from '@zeppelin/share/pipes';
 import { RunScriptsDirective } from '@zeppelin/share/run-scripts/run-scripts.directive';
+import { ShortcutComponent } from '@zeppelin/share/shortcut/shortcut.component';
 import { SpinComponent } from '@zeppelin/share/spin/spin.component';
 import { ResizeHandleComponent } from './resize-handle';
 
@@ -58,6 +59,7 @@ const MODAL_LIST = [
   AboutZeppelinComponent,
   NoteImportComponent,
   NoteCreateComponent,
+  ShortcutComponent,
   NoteRenameComponent,
   FolderRenameComponent
 ];
