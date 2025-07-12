@@ -596,7 +596,8 @@ public class JDBCInterpreter extends KerberosInterpreter {
     return connection;
   }
 
-  private void validateConnectionUrl(String url) {
+  // package private for testing purposes
+  static void validateConnectionUrl(String url) {
     final String decodedUrl = urlDecode(url, url, 0);
     final Map<String, String> params = parseUrlParameters(decodedUrl);
 
@@ -655,7 +656,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
     if (parts.length > 1) {
       // The first part is the base URL, so we start from the second part
       for (int i = 1; i < parts.length; i++) {
-        splitNameValue(parts[i], parameters);
+        splitNameValue(parts[i], parameters, true);
       }
     }
     return parameters;
@@ -691,7 +692,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
       String params = input.substring(startIndex + 1, endIndex);
       String[] keyValuePairs = params.split(",");
       for (String pair : keyValuePairs) {
-        splitNameValue(pair, parameters);
+        splitNameValue(pair, parameters, false);
       }
     }
     return endIndex;
@@ -703,12 +704,14 @@ public class JDBCInterpreter extends KerberosInterpreter {
    *
    * @param nameValue the name-value pair as a string
    * @param parameters the map to store the extracted key-value pair
+   * @param allowEmptyValue whether to allow empty values
    */
-  private static void splitNameValue(String nameValue, Map<String, String> parameters) {
+  private static void splitNameValue(String nameValue, Map<String, String> parameters,
+                                     boolean allowEmptyValue) {
     String[] keyValue = nameValue.split("=");
     if (keyValue.length >= 2) {
       parameters.put(keyValue[0].trim(), keyValue[1].trim());
-    } else {
+    } else if (allowEmptyValue) {
       // Handle cases where there might not be a value
       parameters.put(keyValue[0].trim(), "");
     }
