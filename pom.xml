@@ -103,9 +103,9 @@
     <maven.compiler.target>${java.version}</maven.compiler.target>
     <scala.version>${scala.2.12.version}</scala.version>
     <scala.binary.version>2.12</scala.binary.version>
-    <scala.2.12.version>2.12.18</scala.2.12.version>
-    <scalatest.version>3.2.16</scalatest.version>
-    <scalacheck.version>1.17.0</scalacheck.version>
+    <scala.2.12.version>2.12.10</scala.2.12.version>
+    <scalatest.version>3.2.19</scalatest.version>
+    <scalacheck.version>1.18.1</scalacheck.version>
 
     <!-- frontend maven plugin related versions-->
     <node.version>v16.20.2</node.version>
@@ -174,7 +174,7 @@
     <plugin.protobuf.version>3.11.4</plugin.protobuf.version>
     <plugin.resource.version>3.1.0</plugin.resource.version>
     <plugin.s3.upload.version>1.4</plugin.s3.upload.version>
-    <plugin.scala.alchim31.version>4.8.0</plugin.scala.alchim31.version>
+    <plugin.scala.alchim31.version>4.9.2</plugin.scala.alchim31.version>
     <plugin.scalate.version>1.7.1</plugin.scalate.version>
     <plugin.scalatest.version>2.2.0</plugin.scalatest.version>
     <plugin.scm.version>1.11.2</plugin.scm.version>
