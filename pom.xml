@@ -103,7 +103,7 @@
     <maven.compiler.target>${java.version}</maven.compiler.target>
     <scala.version>${scala.2.12.version}</scala.version>
     <scala.binary.version>2.12</scala.binary.version>
-    <scala.2.12.version>2.12.10</scala.2.12.version>
+    <scala.2.12.version>2.12.20</scala.2.12.version>
     <scalatest.version>3.2.19</scalatest.version>
     <scalacheck.version>1.18.1</scalacheck.version>
 

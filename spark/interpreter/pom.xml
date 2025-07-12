@@ -43,7 +43,7 @@
     <spark.version>3.5.3</spark.version>
     <protobuf.version>3.21.12</protobuf.version>
     <py4j.version>0.10.9.7</py4j.version>
-    <spark.scala.version>2.12.10</spark.scala.version>
+    <spark.scala.version>2.12.20</spark.scala.version>
     <spark.scala.binary.version>2.12</spark.scala.binary.version>
 
     <spark.archive>spark-${spark.version}</spark.archive>
@@ -561,7 +561,7 @@
         <activeByDefault>true</activeByDefault>
       </activation>
       <properties>
-        <spark.scala.version>2.12.10</spark.scala.version>
+        <spark.scala.version>2.12.20</spark.scala.version>
         <spark.scala.binary.version>2.12</spark.scala.binary.version>
       </properties>
     </profile>
