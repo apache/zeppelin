@@ -14,19 +14,19 @@
         "envName": null,
         "propertyName": "neo4j.database",
         "defaultValue": "",
-        "description": "The Neo4j target database, if empty use the dafault db."
+        "description": "The target Neo4j database. If left empty, the default database will be used."
       },
       "neo4j.multi.statement": {
         "envName": null,
         "propertyName": "neo4j.multi.statement",
         "defaultValue": "true",
-        "description": "Enables the multi statement management, if true it computes multiple queries separated by semicolon."
+        "description": "Enable multi-statement support. If set to true, queries separated by semicolons will be executed as separate statements."
       },
       "neo4j.auth.type": {
         "envName": null,
         "propertyName": "neo4j.auth.type",
         "defaultValue": "BASIC",
-        "description": "The Neo4j's authentication type (NONE, BASIC)."
+        "description": "Authentication type to use with Neo4j. Supported values: NONE, BASIC."
       },
       "neo4j.auth.user": {
         "envName": null,
@@ -44,7 +44,7 @@
         "envName": null,
         "propertyName": "neo4j.max.concurrency",
         "defaultValue": "50",
-        "description": "Max concurrency call from Zeppelin to Neo4j server."
+        "description": "Maximum number of concurrent requests from Zeppelin to the Neo4j server."
       }
     },
     "editor": {
