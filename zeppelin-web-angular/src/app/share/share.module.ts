@@ -19,7 +19,6 @@ import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzBadgeModule } from 'ng-zorro-antd/badge';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
-import { NzAddOnModule } from 'ng-zorro-antd/core';
 import { NzDividerModule } from 'ng-zorro-antd/divider';
 import { NzDropDownModule } from 'ng-zorro-antd/dropdown';
 import { NzFormModule } from 'ng-zorro-antd/form';
@@ -80,7 +79,6 @@ const PIPES = [HumanizeBytesPipe];
     FormsModule,
     CommonModule,
     NzMenuModule,
-    NzAddOnModule,
     NzIconModule,
     NzInputModule,
     NzDropDownModule,

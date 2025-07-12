@@ -38,7 +38,7 @@
   <div>
     <a *ngFor="let item of note.paragraphs"
       [nz-tooltip]="item.name + ' is ' + item.status"
-      nzPlacement="topLeft"
+      nzTooltipPlacement="topLeft"
       [nzOverlayStyle]="{ 'margin-left': '-14px' }"
       [routerLink]="['/', 'notebook', note.noteId]"
       [queryParams]="{paragraph: item.id}">

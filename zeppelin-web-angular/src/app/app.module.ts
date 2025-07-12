@@ -29,7 +29,7 @@ import { loadMonacoBefore } from '@zeppelin/languages';
 import { TicketService } from '@zeppelin/services';
 import { ShareModule } from '@zeppelin/share';
 
-import { NZ_CODE_EDITOR_CONFIG } from '@zeppelin/share/code-editor';
+import { JoinedEditorOptions, NZ_CODE_EDITOR_CONFIG } from '@zeppelin/share/code-editor';
 import { AppHttpInterceptor } from './app-http.interceptor';
 import { AppMessageInterceptor } from './app-message.interceptor';
 import { AppRoutingModule } from './app-routing.module';
@@ -71,7 +71,8 @@ registerLocaleData(en);
       useValue: {
         defaultEditorOption: {
           scrollBeyondLastLine: false
-        },
+          // TODO: Change 'as' to 'satisfies' when typescript version is over 4.9 to detect unsupported editor options at compile time.
+        } as JoinedEditorOptions,
         onLoad: loadMonaco
       }
     },

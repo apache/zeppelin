@@ -21,7 +21,7 @@ import {
   SimpleChanges
 } from '@angular/core';
 
-import * as distanceInWords from 'date-fns/distance_in_words';
+import formatDistance from 'date-fns/formatDistance';
 
 import { JobsItem, JobStatus } from '@zeppelin/sdk';
 
@@ -53,7 +53,7 @@ export class JobManagerJobComponent implements OnInit, OnChanges {
   }
 
   setRelativeTime(): void {
-    this.relativeTime = distanceInWords(new Date(), new Date(this.note.unixTimeLastRun));
+    this.relativeTime = formatDistance(new Date(), new Date(this.note.unixTimeLastRun));
   }
 
   setProgress(): void {

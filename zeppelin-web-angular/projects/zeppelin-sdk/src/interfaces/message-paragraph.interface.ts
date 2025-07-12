@@ -141,8 +141,7 @@ export interface ParagraphItem {
   focus?: boolean;
   // tslint:disable-next-line no-any TODO(hsuanxyz)
   aborted: any;
-  // tslint:disable-next-line no-any TODO(hsuanxyz)
-  lineNumbers: any;
+  lineNumbers: boolean;
   // tslint:disable-next-line no-any TODO(hsuanxyz)
   fontSize: any;
 }
