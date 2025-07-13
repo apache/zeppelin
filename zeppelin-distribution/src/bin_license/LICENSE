@@ -143,7 +143,7 @@ The following components are provided under Apache License.
     (Apache 2.0) akka-remote (com.typesafe.akka:akka-remote_2.10:2.3.7 - http://akka.io/)
     (Apache 2.0) akka-slf4j (com.typesafe.akka:akka-slf4j_2.10:2.3.7 - http://akka.io/)
     (Apache 2.0) Metrics Core Library (com.yammer.metrics:metrics-core:2.2.0 - http://metrics.codahale.com/metrics-core/)
-    (Apache 2.0) Commons BeanUtils Bean Collections (commons-beanutils:commons-beanutils-bean-collections:1.9.4 - http://commons.apache.org/beanutils/)
+    (Apache 2.0) Commons BeanUtils Bean Collections (commons-beanutils:commons-beanutils-bean-collections:1.11.0 - http://commons.apache.org/beanutils/)
     (Apache 2.0) Apache Log4j (log4j:log4j:1.2.17 - http://logging.apache.org/log4j/1.2/)
     (Apache 2.0) Apache Avro IPC (org.apache.avro:avro-ipc:1.8.1 - http://avro.apache.org)
     (Apache 2.0) Apache Avro Mapred API (org.apache.avro:avro-mapred:1.8.1 - http://avro.apache.org/avro-mapred)
