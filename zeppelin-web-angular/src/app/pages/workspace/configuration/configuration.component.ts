@@ -29,7 +29,7 @@ export class ConfigurationComponent implements OnInit {
 
   getAllConfig(): void {
     this.configurationService.getAll().subscribe(data => {
-      this.configEntries = [...Object.entries<string>(data)];
+      this.configEntries = [...Object.entries<string>(data)].sort((a, b) => a[0].localeCompare(b[0]));
       this.cdr.markForCheck();
     });
   }
